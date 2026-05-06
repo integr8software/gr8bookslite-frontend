@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useLoginForm } from "@/app/src/hooks/auth/useLoginForm";
 import { AuthField } from "./AuthField";
-import { AuthStatusMessage } from "./AuthStatusMessage";
 
 export function LoginForm() {
 	const { state, formAction, pending } = useLoginForm();
@@ -38,7 +37,6 @@ export function LoginForm() {
 							action={formAction}
 							className="mt-10 w-full space-y-4"
 						>
-							<AuthStatusMessage state={state} />
 							<AuthField
 								label="Email Address"
 								name="email"
@@ -109,10 +107,11 @@ export function LoginForm() {
 							</button>
 						</form>
 
-						<p className="mt-5 text-center text-sm text-darknavy/70">
+						<p className="mt-5 text-center text-darknavy/70">
 							Don&apos;t have an account yet?{" "}
 							<Link
 								href="/signup"
+								transitionTypes={["auth-forward"]}
 								className="font-medium text-coralpink"
 							>
 								Register
@@ -122,13 +121,14 @@ export function LoginForm() {
 				</div>
 
 				<div className="relative hidden min-h-screen lg:block lg:basis-1/2">
+					<p className="text-[20rem] z-10">Khyrsean</p>
 					<Image
 						src="/img/login-bg.png"
 						alt="Office illustration with accounting desks and reporting monitors."
 						fill
 						preload
 						sizes="(max-width: 1024px) 0vw, 50vw"
-						className="object-cover object-center"
+						className="object-cover object-center z-20"
 					/>
 				</div>
 			</section>

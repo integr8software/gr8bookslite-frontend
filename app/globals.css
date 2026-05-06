@@ -27,3 +27,77 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+::view-transition-old(.auth-forward) {
+	--slide-offset: -100%;
+	animation:
+		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide reverse,
+		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-out;
+}
+
+::view-transition-new(.auth-forward) {
+	--slide-offset: 100%;
+	animation:
+		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide,
+		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-in;
+}
+
+::view-transition-old(.auth-back) {
+	--slide-offset: 100%;
+	animation:
+		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide reverse,
+		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-out;
+}
+
+::view-transition-new(.auth-back) {
+	--slide-offset: -100%;
+	animation:
+		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide,
+		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-in;
+}
+
+::view-transition-group(.auth-forward),
+::view-transition-group(.auth-back) {
+	animation-duration: 560ms;
+	overflow: clip;
+}
+
+@keyframes auth-slide {
+	from {
+		translate: var(--slide-offset);
+	}
+	to {
+		translate: 0;
+	}
+}
+
+@keyframes auth-depth-in {
+	from {
+		filter: saturate(0.96);
+		scale: 0.985;
+	}
+	to {
+		filter: saturate(1);
+		scale: 1;
+	}
+}
+
+@keyframes auth-depth-out {
+	from {
+		filter: saturate(1);
+		scale: 1;
+	}
+	to {
+		filter: saturate(0.96);
+		scale: 0.985;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-old(*),
+	::view-transition-new(*),
+	::view-transition-group(*) {
+		animation-duration: 0s !important;
+		animation-delay: 0s !important;
+	}
+}

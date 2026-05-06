@@ -17,9 +17,9 @@ app/
     signup/page.tsx
     forgot-password/page.tsx
     otp/page.tsx
-  (dashboard)/
+  (onboarding)/
     layout.tsx
-    page.tsx
+    onboarding/page.tsx
   api/
   src/
     data/
@@ -28,7 +28,7 @@ app/
     ui/
 ```
 
-Route group folder names should be lowercase, for example `(auth)` and `(dashboard)`.
+Route group folder names should be lowercase, for example `(auth)` and `(onboarding)`.
 
 Shared feature code belongs under `app/src`:
 
@@ -52,7 +52,7 @@ Examples:
 - `LoginForm.tsx`
 - `AuthShell.tsx`
 
-Only use lowercase route-group folder names where required by Next.js, for example `(auth)` and `(dashboard)`.
+Only use lowercase route-group folder names where required by Next.js, for example `(auth)` and `(onboarding)`.
 
 Hooks should keep the React hook convention:
 
@@ -79,8 +79,6 @@ Auth form server actions should return a typed `AuthActionState` from `app/src/d
 Client form components should use `useActionState` through hooks in `app/src/hooks/auth`.
 
 Auth constants and static auth helpers should live in `app/src/data/auth`, for example `OtpData.ts`.
-
-Document auth structure and current behavior changes in `app/src/ui/auth/README.md` when the auth flow is updated significantly.
 
 # Styling
 

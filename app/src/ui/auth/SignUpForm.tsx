@@ -1,14 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSignUpForm } from "@/app/src/hooks/auth/useSignUpForm";
 import { AuthField } from "./AuthField";
-import { AuthStatusMessage } from "./AuthStatusMessage";
+import { AuthPasswordRequirements } from "./AuthPasswordRequirements";
 import { ArrowRight } from "lucide-react";
 
 export function SignUpForm() {
 	const { state, formAction, pending } = useSignUpForm();
+	const [password, setPassword] = useState("");
 
 	return (
 		<main className="min-h-screen bg-white text-darknavy">
@@ -46,7 +48,6 @@ export function SignUpForm() {
 						</div>
 
 						<form action={formAction} className="mt-10 space-y-4">
-							<AuthStatusMessage state={state} />
 							<AuthField
 								label="Full Name"
 								name="name"
@@ -89,9 +90,14 @@ export function SignUpForm() {
 								type="password"
 								autoComplete="new-password"
 								placeholder="...................."
+								value={password}
+								onChange={(event) =>
+									setPassword(event.target.value)
+								}
 								errors={state.errors?.password}
 								required
 							/>
+							<AuthPasswordRequirements password={password} />
 							<AuthField
 								label="Confirm Password"
 								name="confirmPassword"
@@ -151,10 +157,11 @@ export function SignUpForm() {
 							</button>
 						</form>
 
-						<p className="mt-5 text-center text-base text-darknavy/70">
+						<p className="mt-5 text-center text-darknavy/70">
 							Already have an account?{" "}
 							<Link
 								href="/login"
+								transitionTypes={["auth-back"]}
 								className="font-medium text-coralpink"
 							>
 								Sign In

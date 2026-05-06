@@ -3,8 +3,10 @@
 import {
   ForgotPasswordSchema,
   LoginSchema,
+  OtpSchema,
   SignUpSchema,
 } from "@/app/src/data/auth/AuthSchemas";
+import { MOCK_OTP_CODE } from "@/app/src/data/auth/OtpData";
 import type {
   AuthActionState,
   AuthFieldErrors,
@@ -78,5 +80,32 @@ export async function ForgotPasswordAction(
   return {
     status: "success",
     message: "Reset request validated. Connect email delivery next.",
+  };
+}
+
+export async function OtpAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const otp = GetFormValue(formData, "otp");
+  const parsed = OtpSchema.safeParse({ otp });
+
+  if (!parsed.success) {
+    return InvalidState(parsed.error.flatten().fieldErrors);
+  }
+
+  if (otp !== MOCK_OTP_CODE) {
+    return {
+      status: "error",
+      message: "Incorrect OTP. Try again.",
+      errors: {
+        otp: ["The code you entered is invalid."],
+      },
+    };
+  }
+
+  return {
+    status: "success",
+    message: "OTP validated successfully.",
   };
 }

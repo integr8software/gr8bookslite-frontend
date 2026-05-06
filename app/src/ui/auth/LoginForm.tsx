@@ -14,7 +14,7 @@ export function LoginForm() {
 		<main className="min-h-screen bg-white text-darknavy">
 			<section className="flex min-h-screen flex-col bg-white lg:flex-row">
 				<div className="flex w-full items-center justify-center px-5 py-8 sm:px-8 sm:py-10 lg:min-h-screen lg:basis-1/2 lg:px-14">
-					<div className="flex w-full max-w-[420px] flex-col items-center lg:items-stretch">
+					<div className="flex flex-col w-full max-w-107.5">
 						<Link
 							href="/"
 							className="inline-flex items-baseline text-xl font-semibold tracking-tight text-darknavy sm:text-2xl lg:self-start"
@@ -34,7 +34,10 @@ export function LoginForm() {
 							</p>
 						</div>
 
-						<form action={formAction} className="mt-10 w-full space-y-4">
+						<form
+							action={formAction}
+							className="mt-10 w-full space-y-4"
+						>
 							<AuthStatusMessage state={state} />
 							<AuthField
 								label="Email Address"
@@ -82,7 +85,7 @@ export function LoginForm() {
 									}
 									className="flex h-12 w-12 items-center justify-center rounded-full bg-darknavy text-offwhite transition hover:bg-darknavy/90 disabled:cursor-not-allowed disabled:bg-darknavy/50"
 								>
-									<ArrowRight className="h-5 w-5" />
+									<ArrowRight />
 								</button>
 							</div>
 

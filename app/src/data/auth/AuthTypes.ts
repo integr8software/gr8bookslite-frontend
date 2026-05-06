@@ -1,6 +1,6 @@
 export type AuthFieldErrors = Partial<
   Record<
-    "email" | "password" | "confirmPassword" | "name",
+    "email" | "password" | "confirmPassword" | "name" | "otp",
     string[] | undefined
   >
 >;

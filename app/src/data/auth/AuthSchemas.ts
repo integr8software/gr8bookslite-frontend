@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { OTP_LENGTH } from "./OtpData";
 
 export const LoginSchema = z.object({
   email: z.string().trim().email("Enter a valid email address."),
@@ -19,6 +20,15 @@ export const ForgotPasswordSchema = z.object({
   email: z.string().trim().email("Enter a valid email address."),
 });
 
+export const OtpSchema = z.object({
+  otp: z
+    .string()
+    .trim()
+    .length(OTP_LENGTH, `OTP must be exactly ${OTP_LENGTH} digits.`)
+    .regex(/^\d+$/, "OTP must contain only numbers."),
+});
+
 export type LoginInput = z.infer<typeof LoginSchema>;
 export type SignUpInput = z.infer<typeof SignUpSchema>;
 export type ForgotPasswordInput = z.infer<typeof ForgotPasswordSchema>;
+export type OtpInput = z.infer<typeof OtpSchema>;

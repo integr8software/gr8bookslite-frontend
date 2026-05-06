@@ -44,6 +44,16 @@ export function useOtpForm() {
   }, [secondsRemaining, step]);
 
   useEffect(() => {
+    if (step !== "verify") {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      otpInputRef.current?.focus();
+    });
+  }, [step]);
+
+  useEffect(() => {
     const justFinishedSubmitting = wasPendingRef.current && !pending;
     wasPendingRef.current = pending;
 

@@ -4,6 +4,7 @@ import {
   ForgotPasswordSchema,
   LoginSchema,
   OtpSchema,
+  ResetPasswordSchema,
   SignUpSchema,
 } from "@/app/src/data/auth/AuthSchemas";
 import { MOCK_OTP_CODE } from "@/app/src/data/auth/OtpData";
@@ -79,7 +80,53 @@ export async function ForgotPasswordAction(
 
   return {
     status: "success",
-    message: "Reset request validated. Connect email delivery next.",
+    message: "Password reset OTP sent. Please check your email.",
+  };
+}
+
+export async function ForgotPasswordOtpAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const otp = GetFormValue(formData, "otp");
+  const parsed = OtpSchema.safeParse({ otp });
+
+  if (!parsed.success) {
+    return InvalidState(parsed.error.flatten().fieldErrors);
+  }
+
+  if (otp !== MOCK_OTP_CODE) {
+    return {
+      status: "error",
+      message: "Incorrect OTP. Try again.",
+      errors: {
+        otp: ["The code you entered is invalid."],
+      },
+    };
+  }
+
+  return {
+    status: "success",
+    message: "OTP verified. Create a new password.",
+  };
+}
+
+export async function ResetPasswordAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = ResetPasswordSchema.safeParse({
+    password: GetFormValue(formData, "password"),
+    confirmPassword: GetFormValue(formData, "confirmPassword"),
+  });
+
+  if (!parsed.success) {
+    return InvalidState(parsed.error.flatten().fieldErrors);
+  }
+
+  return {
+    status: "success",
+    message: "Password reset successfully. You can now log in.",
   };
 }
 

@@ -9,10 +9,14 @@ export function MaskEmailAddress(email: string) {
     return email;
   }
 
-  const visibleLocal = localPart.slice(0, 2);
-  const maskedLocal = `${visibleLocal}${"*".repeat(
-    Math.max(localPart.length - visibleLocal.length, 0),
-  )}`;
+  if (localPart.length <= 3) {
+    // fallback for very short emails
+    return `${localPart[0] || ""}${"*".repeat(localPart.length - 1)}@${domain}`;
+  }
 
-  return `${maskedLocal}@${domain}`;
+  const first = localPart.slice(0, 2);
+  const last = localPart.slice(-1);
+  const masked = "*".repeat(localPart.length - 3);
+
+  return `${first}${masked}${last}@${domain}`;
 }

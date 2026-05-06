@@ -1,9 +1,8 @@
 import { z } from "zod";
 import {
-  OnboardingCompanySizeOptions,
   OnboardingDepartmentOptions,
-  OnboardingIndustryOptions,
   OnboardingMaxImageSizeBytes,
+  OnboardingNonIndividualTypeOptions,
 } from "./OnboardingData";
 
 const PasswordSchema = z
@@ -13,17 +12,30 @@ const PasswordSchema = z
   .regex(/[a-z]/, "Password must include at least 1 lowercase letter.")
   .regex(/[^A-Za-z0-9]/, "Password must include at least 1 special character.");
 
-export const OnboardingStepOneSchema = z.object({
-  companyName: z
-    .string()
-    .trim()
-    .min(2, "Company name must be at least 2 characters."),
-  industry: z.enum(OnboardingIndustryOptions, {
-    error: "Select an industry.",
-  }),
-  companySize: z.enum(OnboardingCompanySizeOptions, {
-    error: "Select a company size.",
-  }),
+const TINSchema = z
+  .string()
+  .trim()
+  .min(1, "TIN is required.")
+  .regex(
+    /^\d{3}-\d{3}-\d{3}-\d{3}$|^\d{9,12}$/,
+    "Enter a valid TIN (e.g. 123-456-789-000).",
+  );
+
+const LogoSchema = z
+  .instanceof(File, { message: "Upload a logo image." })
+  .refine((file) => file.size > 0, "Upload a logo image.")
+  .refine(
+    (file) => file.type.startsWith("image/"),
+    "Only image files are allowed.",
+  )
+  .refine(
+    (file) => file.size <= OnboardingMaxImageSizeBytes,
+    "Logo must be 5MB or smaller.",
+  );
+
+const SharedStepOneFields = {
+  address: z.string().trim().min(5, "Address must be at least 5 characters."),
+  tin: TINSchema,
   website: z
     .string()
     .trim()
@@ -35,35 +47,81 @@ export const OnboardingStepOneSchema = z.object({
         z.url({ protocol: /^https?$/ }).safeParse(value).success,
       "Enter a valid website URL.",
     ),
-  contactNumber: z
+  contactNumber: z.string().trim().min(7, "Enter a valid contact number."),
+  logo: LogoSchema,
+};
+
+export const OnboardingStepOneIndividualSchema = z.object({
+  taxpayerType: z.literal("individual"),
+  lastName: z
     .string()
     .trim()
-    .min(7, "Enter a valid contact number."),
-  attachment: z
-    .instanceof(File, { message: "Upload an image attachment." })
-    .refine((file) => file.size > 0, "Upload an image attachment.")
-    .refine((file) => file.type.startsWith("image/"), "Only image files are allowed.")
-    .refine(
-      (file) => file.size <= OnboardingMaxImageSizeBytes,
-      "Image must be 5MB or smaller.",
-    ),
+    .min(2, "Last name must be at least 2 characters."),
+  firstName: z
+    .string()
+    .trim()
+    .min(2, "First name must be at least 2 characters."),
+  middleName: z
+    .string()
+    .trim()
+    .min(2, "Middle name must be at least 2 characters."),
+  ...SharedStepOneFields,
 });
+
+export const OnboardingStepOneNonIndividualSchema = z
+  .object({
+    taxpayerType: z.literal("non-individual"),
+    companyName: z
+      .string()
+      .trim()
+      .min(2, "Company name must be at least 2 characters."),
+    nonIndividualType: z.enum(OnboardingNonIndividualTypeOptions, {
+      error: "Select an organisation type.",
+    }),
+    nonIndividualTypeOther: z.string().optional(),
+    ...SharedStepOneFields,
+  })
+  .refine(
+    (data) =>
+      data.nonIndividualType !== "Others" ||
+      (data.nonIndividualTypeOther &&
+        data.nonIndividualTypeOther.trim().length >= 2),
+    {
+      message: "Please specify the organisation type.",
+      path: ["nonIndividualTypeOther"],
+    },
+  );
+
+export const OnboardingStepOneSchema = z.discriminatedUnion("taxpayerType", [
+  OnboardingStepOneIndividualSchema,
+  OnboardingStepOneNonIndividualSchema,
+]);
 
 export const OnboardingStepTwoSchema = z
   .object({
-    firstName: z.string().trim().min(2, "First name must be at least 2 characters."),
-    lastName: z.string().trim().min(2, "Last name must be at least 2 characters."),
+    accountFirstName: z
+      .string()
+      .trim()
+      .min(2, "First name must be at least 2 characters."),
+    accountLastName: z
+      .string()
+      .trim()
+      .min(2, "Last name must be at least 2 characters."),
     workEmail: z.string().trim().email("Enter a valid work email."),
     department: z.enum(OnboardingDepartmentOptions, {
       error: "Select a department.",
     }),
     password: PasswordSchema,
-    confirmPassword: z.string().min(8, "Confirm password must be at least 8 characters."),
+    confirmPassword: z
+      .string()
+      .min(8, "Confirm password must be at least 8 characters."),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords must match.",
     path: ["confirmPassword"],
   });
 
-export type OnboardingStepOneInput = z.infer<typeof OnboardingStepOneSchema>;
+export type OnboardingStepOneInput =
+  | z.infer<typeof OnboardingStepOneIndividualSchema>
+  | z.infer<typeof OnboardingStepOneNonIndividualSchema>;
 export type OnboardingStepTwoInput = z.infer<typeof OnboardingStepTwoSchema>;

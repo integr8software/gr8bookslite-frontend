@@ -33,24 +33,23 @@ export function OnboardingStepTwo({
       <div className="grid gap-6 md:grid-cols-2">
         <OnboardingField
           label="First Name"
-          id="firstName"
-          name="firstName"
+          id="accountFirstName"
+          name="accountFirstName"
           type="text"
           placeholder="John"
-          value={values.firstName}
-          onChange={(event) => updateValue("firstName", event.target.value)}
-          errors={errors.firstName}
+          value={values.accountFirstName}
+          onChange={(e) => updateValue("accountFirstName", e.target.value)}
+          errors={errors.accountFirstName}
         />
-
         <OnboardingField
           label="Last Name"
-          id="lastName"
-          name="lastName"
+          id="accountLastName"
+          name="accountLastName"
           type="text"
           placeholder="Doe"
-          value={values.lastName}
-          onChange={(event) => updateValue("lastName", event.target.value)}
-          errors={errors.lastName}
+          value={values.accountLastName}
+          onChange={(e) => updateValue("accountLastName", e.target.value)}
+          errors={errors.accountLastName}
         />
       </div>
 
@@ -60,12 +59,11 @@ export function OnboardingStepTwo({
           id="workEmail"
           name="workEmail"
           type="email"
-          placeholder="johndoe@gmail.com"
+          placeholder="johndoe@company.com"
           value={values.workEmail}
-          onChange={(event) => updateValue("workEmail", event.target.value)}
+          onChange={(e) => updateValue("workEmail", e.target.value)}
           errors={errors.workEmail}
         />
-
         <OnboardingSelectField
           id="department"
           name="department"
@@ -85,7 +83,7 @@ export function OnboardingStepTwo({
           type="password"
           placeholder="Min. 8 Characters"
           value={values.password}
-          onChange={(event) => updateValue("password", event.target.value)}
+          onChange={(e) => updateValue("password", e.target.value)}
           errors={errors.password}
         />
         <OnboardingPasswordStrength strength={passwordStrength} />
@@ -99,7 +97,7 @@ export function OnboardingStepTwo({
         type="password"
         placeholder="Re-enter password"
         value={values.confirmPassword}
-        onChange={(event) => updateValue("confirmPassword", event.target.value)}
+        onChange={(e) => updateValue("confirmPassword", e.target.value)}
         errors={errors.confirmPassword}
       />
 

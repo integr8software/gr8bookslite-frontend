@@ -22,22 +22,13 @@ export const OnboardingSteps = [
   },
 ] as const;
 
-export const OnboardingIndustryOptions = [
-  "Accounting",
-  "Construction",
-  "Education",
-  "Healthcare",
-  "Information Technology",
-  "Manufacturing",
-  "Retail",
-] as const;
-
-export const OnboardingCompanySizeOptions = [
-  "1-10 employees",
-  "11-50 employees",
-  "51-200 employees",
-  "201-500 employees",
-  "500+ employees",
+export const OnboardingNonIndividualTypeOptions = [
+  "Partnership",
+  "Corporation",
+  "Association",
+  "Non Stock",
+  "Non Profit Organization",
+  "Others",
 ] as const;
 
 export const OnboardingDepartmentOptions = [

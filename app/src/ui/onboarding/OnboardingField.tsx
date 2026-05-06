@@ -15,11 +15,12 @@ export function OnboardingField({
 }: OnboardingFieldProps) {
   const fieldId = id ?? String(name);
   const errorId = `${fieldId}-error`;
-  const fieldClassName = `h-14 w-full rounded-md border bg-white px-4 text-base text-darknavy outline-none transition focus:ring-4 ${
-    errors?.length
-      ? "border-coralpink focus:border-coralpink focus:ring-coralpink/20"
-      : "border-darknavy/20 focus:border-skyblue focus:ring-skyblue/20"
-  } ${className ?? ""}`.trim();
+  const fieldClassName =
+    `h-14 w-full rounded-md border bg-white px-4 text-base text-darknavy outline-none transition focus:ring-4 ${
+      errors?.length
+        ? "border-coralpink focus:border-coralpink focus:ring-coralpink/20"
+        : "border-darknavy/20 focus:border-skyblue focus:ring-skyblue/20"
+    } ${className ?? ""}`.trim();
 
   return (
     <div>

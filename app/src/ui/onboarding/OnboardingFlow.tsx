@@ -12,11 +12,12 @@ export function OnboardingFlow() {
     currentStep,
     values,
     errors,
-    attachmentInputKey,
+    logoInputKey,
     passwordStrength,
     updateValue,
-    handleAttachmentChange,
-    handleAttachmentRemove,
+    setTaxpayerType,
+    handleLogoChange,
+    handleLogoRemove,
     handleNext,
     handleBack,
   } = useOnboardingFlow();
@@ -36,10 +37,11 @@ export function OnboardingFlow() {
           <OnboardingStepOne
             values={values}
             errors={errors}
-            attachmentInputKey={attachmentInputKey}
+            logoInputKey={logoInputKey}
             updateValue={updateValue}
-            handleAttachmentChange={handleAttachmentChange}
-            handleAttachmentRemove={handleAttachmentRemove}
+            setTaxpayerType={setTaxpayerType}
+            handleLogoChange={handleLogoChange}
+            handleLogoRemove={handleLogoRemove}
             handleNext={handleNext}
           />
         ) : null}

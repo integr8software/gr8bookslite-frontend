@@ -1,13 +1,21 @@
+export type OnboardingTaxpayerType = "individual" | "non-individual";
+
 export type OnboardingFieldErrors = Partial<
   Record<
-    | "companyName"
-    | "industry"
-    | "companySize"
-    | "website"
-    | "contactNumber"
-    | "attachment"
-    | "firstName"
+    | "taxpayerType"
     | "lastName"
+    | "firstName"
+    | "middleName"
+    | "companyName"
+    | "nonIndividualType"
+    | "nonIndividualTypeOther"
+    | "address"
+    | "tin"
+    | "website"
+    | "logo"
+    | "contactNumber"
+    | "accountFirstName"
+    | "accountLastName"
     | "workEmail"
     | "department"
     | "password"
@@ -17,15 +25,26 @@ export type OnboardingFieldErrors = Partial<
 >;
 
 export type OnboardingValues = {
+  // Step 1 - taxpayer identity
+  taxpayerType: OnboardingTaxpayerType;
+  // Individual fields
+  lastName: string;
+  firstName: string;
+  middleName: string;
+  // Non-individual fields
   companyName: string;
-  industry: string;
-  companySize: string;
+  nonIndividualType: string;
+  nonIndividualTypeOther: string;
+  // Shared step 1 fields
+  address: string;
+  tin: string;
   website: string;
   contactNumber: string;
-  attachmentName: string;
-  attachmentFile: File | null;
-  firstName: string;
-  lastName: string;
+  logoName: string;
+  logoFile: File | null;
+  // Step 2 - account
+  accountFirstName: string;
+  accountLastName: string;
   workEmail: string;
   department: string;
   password: string;
@@ -33,15 +52,21 @@ export type OnboardingValues = {
 };
 
 export const InitialOnboardingValues: OnboardingValues = {
-  companyName: "",
-  industry: "",
-  companySize: "",
-  website: "",
-  contactNumber: "",
-  attachmentName: "",
-  attachmentFile: null,
-  firstName: "",
+  taxpayerType: "individual",
   lastName: "",
+  firstName: "",
+  middleName: "",
+  companyName: "",
+  nonIndividualType: "",
+  nonIndividualTypeOther: "",
+  address: "",
+  tin: "",
+  website: "",
+  contactNumber: "+63 ",
+  logoName: "",
+  logoFile: null,
+  accountFirstName: "",
+  accountLastName: "",
   workEmail: "",
   department: "",
   password: "",

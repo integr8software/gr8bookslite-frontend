@@ -7,6 +7,7 @@ import { OnboardingSteps } from "@/app/src/data/onboarding/OnboardingData";
 import {
   InitialOnboardingValues,
   type OnboardingFieldErrors,
+  type OnboardingTaxpayerType,
   type OnboardingValues,
 } from "@/app/src/data/onboarding/OnboardingTypes";
 import {
@@ -17,9 +18,11 @@ import {
 export function useOnboardingFlow() {
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
-  const [values, setValues] = useState<OnboardingValues>(InitialOnboardingValues);
+  const [values, setValues] = useState<OnboardingValues>(
+    InitialOnboardingValues,
+  );
   const [errors, setErrors] = useState<OnboardingFieldErrors>({});
-  const [attachmentInputKey, setAttachmentInputKey] = useState(0);
+  const [logoInputKey, setLogoInputKey] = useState(0);
 
   const currentStep = OnboardingSteps[stepIndex];
   const isFirstStep = stepIndex === 0;
@@ -29,25 +32,11 @@ export function useOnboardingFlow() {
     const password = values.password;
     let score = 0;
 
-    if (!password) {
-      return 0;
-    }
-
-    if (password.length >= 8) {
-      score += 1;
-    }
-
-    if (/[A-Z]/.test(password)) {
-      score += 1;
-    }
-
-    if (/[a-z]/.test(password)) {
-      score += 1;
-    }
-
-    if (/[^A-Za-z0-9]/.test(password)) {
-      score += 1;
-    }
+    if (!password) return 0;
+    if (password.length >= 8) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[a-z]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
 
     return score;
   }, [values.password]);
@@ -59,32 +48,66 @@ export function useOnboardingFlow() {
     }));
   }
 
-  function handleAttachmentChange(file: File | undefined) {
+  function setTaxpayerType(type: OnboardingTaxpayerType) {
     setValues((current) => ({
       ...current,
-      attachmentFile: file || null,
-      attachmentName: file?.name || "",
+      taxpayerType: type,
+      // Clear identity fields when switching type
+      lastName: "",
+      firstName: "",
+      middleName: "",
+      companyName: "",
+      nonIndividualType: "",
+      nonIndividualTypeOther: "",
+    }));
+    setErrors({});
+  }
+
+  function handleLogoChange(file: File | undefined) {
+    setValues((current) => ({
+      ...current,
+      logoFile: file || null,
+      logoName: file?.name || "",
     }));
   }
 
-  function handleAttachmentRemove() {
+  function handleLogoRemove() {
     setValues((current) => ({
       ...current,
-      attachmentFile: null,
-      attachmentName: "",
+      logoFile: null,
+      logoName: "",
     }));
-    setAttachmentInputKey((current) => current + 1);
+    setLogoInputKey((current) => current + 1);
   }
 
   function validateStepOne() {
-    const parsed = OnboardingStepOneSchema.safeParse({
-      companyName: values.companyName,
-      industry: values.industry,
-      companySize: values.companySize,
-      website: values.website,
-      contactNumber: values.contactNumber,
-      attachment: values.attachmentFile,
-    });
+    const isIndividual = values.taxpayerType === "individual";
+
+    const payload = isIndividual
+      ? {
+          taxpayerType: "individual" as const,
+          lastName: values.lastName,
+          firstName: values.firstName,
+          middleName: values.middleName,
+          address: values.address,
+          tin: values.tin,
+          website: values.website,
+          contactNumber: values.contactNumber,
+          logo: values.logoFile,
+        }
+      : {
+          taxpayerType: "non-individual" as const,
+          companyName: values.companyName,
+          nonIndividualType: values.nonIndividualType,
+          nonIndividualTypeOther: values.nonIndividualTypeOther,
+          address: values.address,
+          tin: values.tin,
+          website: values.website,
+          contactNumber: values.contactNumber,
+          logo: values.logoFile,
+        };
+
+    const parsed = OnboardingStepOneSchema.safeParse(payload);
 
     if (!parsed.success) {
       setErrors(parsed.error.flatten().fieldErrors);
@@ -98,8 +121,8 @@ export function useOnboardingFlow() {
 
   function validateStepTwo() {
     const parsed = OnboardingStepTwoSchema.safeParse({
-      firstName: values.firstName,
-      lastName: values.lastName,
+      accountFirstName: values.accountFirstName,
+      accountLastName: values.accountLastName,
       workEmail: values.workEmail,
       department: values.department,
       password: values.password,
@@ -117,13 +140,8 @@ export function useOnboardingFlow() {
   }
 
   function handleNext() {
-    if (stepIndex === 0 && !validateStepOne()) {
-      return;
-    }
-
-    if (stepIndex === 1 && !validateStepTwo()) {
-      return;
-    }
+    if (stepIndex === 0 && !validateStepOne()) return;
+    if (stepIndex === 1 && !validateStepTwo()) return;
 
     if (isLastStep) {
       toast.success("Onboarding complete.");
@@ -135,10 +153,7 @@ export function useOnboardingFlow() {
   }
 
   function handleBack() {
-    if (isFirstStep) {
-      return;
-    }
-
+    if (isFirstStep) return;
     setErrors({});
     setStepIndex((current) => current - 1);
   }
@@ -147,13 +162,14 @@ export function useOnboardingFlow() {
     currentStep,
     values,
     errors,
-    attachmentInputKey,
+    logoInputKey,
     passwordStrength,
     isFirstStep,
     isLastStep,
     updateValue,
-    handleAttachmentChange,
-    handleAttachmentRemove,
+    setTaxpayerType,
+    handleLogoChange,
+    handleLogoRemove,
     handleNext,
     handleBack,
   };

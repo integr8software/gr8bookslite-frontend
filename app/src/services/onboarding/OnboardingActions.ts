@@ -28,14 +28,37 @@ export async function OnboardingStepOneAction(
   _previousState: OnboardingActionState,
   formData: FormData,
 ): Promise<OnboardingActionState> {
-  const parsed = OnboardingStepOneSchema.safeParse({
-    companyName: GetFormValue(formData, "companyName"),
-    industry: GetFormValue(formData, "industry"),
-    companySize: GetFormValue(formData, "companySize"),
+  const taxpayerType = GetFormValue(formData, "taxpayerType");
+
+  const sharedFields = {
+    address: GetFormValue(formData, "address"),
+    tin: GetFormValue(formData, "tin"),
     website: GetFormValue(formData, "website"),
     contactNumber: GetFormValue(formData, "contactNumber"),
-    attachment: GetFileValue(formData, "attachment"),
-  });
+    logo: GetFileValue(formData, "logo"),
+  };
+
+  const payload =
+    taxpayerType === "individual"
+      ? {
+          taxpayerType: "individual" as const,
+          lastName: GetFormValue(formData, "lastName"),
+          firstName: GetFormValue(formData, "firstName"),
+          middleName: GetFormValue(formData, "middleName"),
+          ...sharedFields,
+        }
+      : {
+          taxpayerType: "non-individual" as const,
+          companyName: GetFormValue(formData, "companyName"),
+          nonIndividualType: GetFormValue(formData, "nonIndividualType"),
+          nonIndividualTypeOther: GetFormValue(
+            formData,
+            "nonIndividualTypeOther",
+          ),
+          ...sharedFields,
+        };
+
+  const parsed = OnboardingStepOneSchema.safeParse(payload);
 
   if (!parsed.success) {
     return InvalidState(parsed.error.flatten().fieldErrors);
@@ -43,6 +66,6 @@ export async function OnboardingStepOneAction(
 
   return {
     status: "success",
-    message: "Company details validated. Step 2 can be connected next.",
+    message: "Company details validated.",
   };
 }

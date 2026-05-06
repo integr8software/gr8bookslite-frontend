@@ -12,7 +12,7 @@ export function LoginForm() {
 	return (
 		<main className="min-h-screen bg-white text-darknavy">
 			<section className="flex min-h-screen flex-col bg-white lg:flex-row">
-				<div className="flex w-full items-center justify-center px-5 py-8 sm:px-8 sm:py-10 lg:min-h-screen lg:basis-1/2 lg:px-14">
+				<div className="flex w-full items-center justify-center px-5 py-8 sm:px-8 sm:py-10 lg:min-h-screen lg:w-1/2 lg:px-14">
 					<div className="flex flex-col w-full max-w-107.5">
 						<Link
 							href="/"
@@ -120,7 +120,7 @@ export function LoginForm() {
 					</div>
 				</div>
 
-				<div className="relative hidden min-h-screen lg:block lg:basis-1/2">
+				<div className="relative hidden min-h-screen lg:block lg:w-1/2">
 					<p className="text-[20rem] z-10">Khyrsean</p>
 					<Image
 						src="/img/login-bg.png"

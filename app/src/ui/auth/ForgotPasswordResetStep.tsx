@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { AuthActionState } from "@/app/src/data/auth/AuthTypes";
+import { AuthField } from "@/app/src/ui/auth/AuthField";
+import { AuthPasswordRequirements } from "@/app/src/ui/auth/AuthPasswordRequirements";
 
 type ForgotPasswordResetStepProps = {
   state: AuthActionState;
@@ -16,8 +19,18 @@ export function ForgotPasswordResetStep({
   pending,
   isResetComplete,
 }: ForgotPasswordResetStepProps) {
-  const passwordErrors = state.errors?.password;
-  const confirmPasswordErrors = state.errors?.confirmPassword;
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const wasPendingRef = useRef(false);
+
+  useEffect(() => {
+    const justFinishedSubmitting = wasPendingRef.current && !pending;
+    wasPendingRef.current = pending;
+
+    if (justFinishedSubmitting && state.status === "error") {
+      setConfirmPassword("");
+    }
+  }, [pending, state.status]);
 
   if (isResetComplete) {
     return (
@@ -44,59 +57,34 @@ export function ForgotPasswordResetStep({
       <input type="hidden" name="intent" value="reset-password" />
 
       <div>
-        <label
-          htmlFor="new-password"
-          className="mb-2 block text-sm font-medium text-darknavy"
-        >
-          New Password
-        </label>
-        <input
+        <AuthField
+          label="New Password"
           id="new-password"
           name="password"
           type="password"
-          autoComplete="new-password"
-          aria-describedby={
-            passwordErrors?.length ? "new-password-error" : undefined
-          }
-          aria-invalid={passwordErrors?.length ? true : undefined}
-          className="h-12 w-full rounded-md border border-darknavy/20 bg-white px-4 text-sm text-darknavy outline-none transition placeholder:text-darknavy/45 focus:border-skyblue focus:ring-4 focus:ring-skyblue/20"
+          autoComplete="off"
+          placeholder="Enter your new password..."
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          errors={state.errors?.password}
+          required
         />
-        {passwordErrors?.length ? (
-          <p id="new-password-error" className="mt-2 text-sm text-coralpink">
-            {passwordErrors[0]}
-          </p>
-        ) : null}
       </div>
 
-      <div>
-        <label
-          htmlFor="confirm-new-password"
-          className="mb-2 block text-sm font-medium text-darknavy"
-        >
-          Confirm Password
-        </label>
-        <input
-          id="confirm-new-password"
-          name="confirmPassword"
-          type="password"
-          autoComplete="new-password"
-          aria-describedby={
-            confirmPasswordErrors?.length
-              ? "confirm-new-password-error"
-              : undefined
-          }
-          aria-invalid={confirmPasswordErrors?.length ? true : undefined}
-          className="h-12 w-full rounded-md border border-darknavy/20 bg-white px-4 text-sm text-darknavy outline-none transition placeholder:text-darknavy/45 focus:border-skyblue focus:ring-4 focus:ring-skyblue/20"
-        />
-        {confirmPasswordErrors?.length ? (
-          <p
-            id="confirm-new-password-error"
-            className="mt-2 text-sm text-coralpink"
-          >
-            {confirmPasswordErrors[0]}
-          </p>
-        ) : null}
-      </div>
+      <AuthPasswordRequirements password={password} />
+
+      <AuthField
+        label="Confirm Password"
+        id="confirm-new-password"
+        name="confirmPassword"
+        type="password"
+        autoComplete="off"
+        placeholder="Please re-enter your new password for confirmation..."
+        value={confirmPassword}
+        onChange={(event) => setConfirmPassword(event.target.value)}
+        errors={state.errors?.confirmPassword}
+        required
+      />
 
       <button
         type="submit"

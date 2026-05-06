@@ -42,7 +42,7 @@ export function LoginForm() {
 								name="email"
 								type="email"
 								autoComplete="email"
-								placeholder="johndoe@example.com"
+								placeholder="Enter your email..."
 								errors={state.errors?.email}
 								required
 							/>
@@ -51,7 +51,7 @@ export function LoginForm() {
 								name="password"
 								type="password"
 								autoComplete="current-password"
-								placeholder="...................."
+								placeholder="Enter your password..."
 								errors={state.errors?.password}
 								required
 							/>
@@ -121,7 +121,6 @@ export function LoginForm() {
 				</div>
 
 				<div className="relative hidden min-h-screen lg:block lg:w-1/2">
-					<p className="text-[20rem] z-10">Khyrsean</p>
 					<Image
 						src="/img/login-bg.png"
 						alt="Office illustration with accounting desks and reporting monitors."

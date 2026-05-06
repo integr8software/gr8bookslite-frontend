@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, KeyRound } from "lucide-react";
 import { useOtpForm } from "@/app/src/hooks/auth/useOtpForm";
 
 export function OtpForm() {
@@ -28,11 +28,11 @@ export function OtpForm() {
 	} = useOtpForm();
 
 	function getOtpBoxClass(index: number) {
-		if (state.status === "error") {
+		if (state.status === "error" && otp.length === otpLength) {
 			return "border-coralpink ring-2 ring-coralpink/20";
 		}
 
-		if (state.status === "success") {
+		if (state.status === "success" && otp.length === otpLength) {
 			return "border-green-500 ring-2 ring-green-500/30";
 		}
 
@@ -49,6 +49,12 @@ export function OtpForm() {
 	return (
 		<main className="flex min-h-screen items-center justify-center bg-white px-4 py-8 sm:px-6">
 			<section className="w-full max-w-140 rounded-md bg-white px-6 py-6 shadow-[0_18px_60px_rgba(33,39,56,0.14)] ring-1 ring-darknavy/8 sm:px-8">
+				<div className="hidden mb-4 d-flex justify-center">
+					<div className="flex h-14 w-14 items-center justify-center rounded-full bg-darknavy text-offwhite">
+						<KeyRound size={27} strokeWidth={2.5} aria-hidden="true" />
+					</div>
+				</div>
+
 				<div className="flex items-start gap-4">
 					<div>
 						<h1 className="text-3xl font-semibold tracking-tight text-darknavy">

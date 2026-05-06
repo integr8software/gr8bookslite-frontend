@@ -24,15 +24,15 @@ export function ForgotPasswordForm() {
           </div>
         </div>
 
-        <div className="mb-6 text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-darknavy">
+        <div className="mb-6">
+          <h1 className="text-3xl text-center font-semibold tracking-tight text-darknavy">
             {form.step === "email" ? "Forgot Password?" : "Reset Password"}
           </h1>
           <p className="mt-3 text-sm leading-6 text-darknavy/80">
             {form.step === "email"
-              ? "No worries, we'll send you a reset OTP."
+              ? `Enter your email address and we'll send you a one-time password (OTP) to reset your password.`
               : form.step === "verify"
-                ? `Enter the passcode sent to ${form.maskedEmail}.`
+                ? `We've sent a one-time password (OTP) to ${form.maskedEmail}. Please enter it below to continue.`
                 : "Create a new password for your account."}
           </p>
         </div>

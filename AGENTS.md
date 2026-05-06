@@ -16,6 +16,7 @@ app/
     login/page.tsx
     signup/page.tsx
     forgot-password/page.tsx
+    otp/page.tsx
   (dashboard)/
     layout.tsx
     page.tsx
@@ -38,21 +39,27 @@ Shared feature code belongs under `app/src`:
 
 # Naming
 
-Use PascalCase for TypeScript files that export components, schemas, actions, or shared types.
+Use PascalCase as the default naming standard for shared project files under `app/src`.
+
+Use PascalCase for TypeScript files that export components, schemas, actions, shared types, constants, or reusable modules.
 
 Examples:
 
 - `AuthSchemas.ts`
 - `AuthTypes.ts`
 - `AuthActions.ts`
+- `OtpData.ts`
 - `LoginForm.tsx`
 - `AuthShell.tsx`
+
+Only use lowercase route-group folder names where required by Next.js, for example `(auth)` and `(dashboard)`.
 
 Hooks should keep the React hook convention:
 
 - `useLoginForm.ts`
 - `useSignUpForm.ts`
 - `useForgotPasswordForm.ts`
+- `useOtpForm.ts`
 
 # Auth
 
@@ -62,6 +69,7 @@ Auth routes currently use:
 app/(auth)/login/page.tsx
 app/(auth)/signup/page.tsx
 app/(auth)/forgot-password/page.tsx
+app/(auth)/otp/page.tsx
 ```
 
 Auth validation should use Zod schemas from `app/src/data/auth/AuthSchemas.ts`.
@@ -69,6 +77,10 @@ Auth validation should use Zod schemas from `app/src/data/auth/AuthSchemas.ts`.
 Auth form server actions should return a typed `AuthActionState` from `app/src/data/auth/AuthTypes.ts`.
 
 Client form components should use `useActionState` through hooks in `app/src/hooks/auth`.
+
+Auth constants and static auth helpers should live in `app/src/data/auth`, for example `OtpData.ts`.
+
+Document auth structure and current behavior changes in `app/src/ui/auth/README.md` when the auth flow is updated significantly.
 
 # Styling
 

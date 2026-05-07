@@ -5,6 +5,10 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { InitialAuthActionState } from "@/app/src/data/auth/AuthTypes";
+import {
+  ClearPendingVerificationEmail,
+  SavePendingVerificationEmail,
+} from "@/app/src/data/auth/AuthVerificationStorage";
 import { LoginAction } from "@/app/src/services/auth/AuthActions";
 
 export function useLoginForm() {
@@ -24,15 +28,31 @@ export function useLoginForm() {
     }
 
     if (state.status === "success") {
+      ClearPendingVerificationEmail();
       toast.success(state.message);
-      router.push("/onboarding");
+      if (state.redirectTo) {
+        router.push(state.redirectTo);
+      }
       return;
     }
 
     if (state.status === "error") {
       toast.error(state.message);
+      if (state.pendingVerificationEmail) {
+        SavePendingVerificationEmail(state.pendingVerificationEmail);
+      }
+      if (state.redirectTo) {
+        router.push(state.redirectTo);
+      }
     }
-  }, [pending, router, state.message, state.status]);
+  }, [
+    pending,
+    router,
+    state.message,
+    state.pendingVerificationEmail,
+    state.redirectTo,
+    state.status,
+  ]);
 
   return {
     state,

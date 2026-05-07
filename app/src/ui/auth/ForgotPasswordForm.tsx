@@ -49,6 +49,7 @@ export function ForgotPasswordForm() {
             state={form.state}
             formAction={form.formAction}
             pending={form.pending}
+            email={form.email}
             otp={form.otp}
             otpInputRef={form.otpInputRef}
             formattedTime={form.formattedTime}
@@ -68,6 +69,8 @@ export function ForgotPasswordForm() {
             formAction={form.formAction}
             pending={form.pending}
             isResetComplete={form.isResetComplete}
+            email={form.email}
+            otp={form.otp}
           />
         )}
 

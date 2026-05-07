@@ -21,6 +21,7 @@ import {
 import {
   ForgotPasswordAction,
   ForgotPasswordOtpAction,
+  ResendForgotPasswordAction,
   ResetPasswordAction,
 } from "@/app/src/services/auth/AuthActions";
 
@@ -182,12 +183,12 @@ export function useForgotPasswordForm() {
       const formData = new FormData();
       formData.set("email", email);
 
-      const nextState = await ForgotPasswordAction(state, formData);
+      const nextState = await ResendForgotPasswordAction(state, formData);
 
       if (nextState.status === "success") {
         setOtp("");
         setSecondsRemaining(OTP_RESEND_SECONDS);
-        toast.success("A new reset code has been sent.");
+        toast.success(nextState.message);
         window.requestAnimationFrame(() => {
           otpInputRef.current?.focus();
         });

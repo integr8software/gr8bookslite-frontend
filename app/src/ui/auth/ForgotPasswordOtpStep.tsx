@@ -7,6 +7,7 @@ type ForgotPasswordOtpStepProps = {
   state: AuthActionState;
   formAction: (formData: FormData) => void;
   pending: boolean;
+  email: string;
   otp: string;
   otpInputRef: RefObject<HTMLInputElement | null>;
   formattedTime: string;
@@ -25,6 +26,7 @@ export function ForgotPasswordOtpStep({
   state,
   formAction,
   pending,
+  email,
   otp,
   otpInputRef,
   formattedTime,
@@ -56,6 +58,7 @@ export function ForgotPasswordOtpStep({
   return (
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="intent" value="verify-otp" />
+      <input type="hidden" name="email" value={email} />
       <input
         ref={otpInputRef}
         type="text"

@@ -1,8 +1,11 @@
 import { z } from "zod";
 import {
+  GetSyncedReportEndDate,
+  IsValidOnboardingDateValue,
   OnboardingDepartmentOptions,
   OnboardingMaxImageSizeBytes,
   OnboardingNonIndividualTypeOptions,
+  OnboardingReportYearBasisOptions,
 } from "./OnboardingData";
 
 const NamePattern = /^[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*$/;
@@ -74,6 +77,10 @@ const LogoSchema = z
     "Logo must be 5MB or smaller.",
   );
 
+const ReportDateSchema = z
+  .string()
+  .refine(IsValidOnboardingDateValue, "Select a valid date.");
+
 const SharedStepOneFields = {
   address: z.string().trim().min(5, "Address must be at least 5 characters."),
   tin: TINSchema,
@@ -88,7 +95,30 @@ const SharedStepOneFields = {
     ),
   contactNumber: z.string().trim().min(7, "Enter a valid contact number."),
   logo: LogoSchema,
+  reportYearBasis: z.enum(OnboardingReportYearBasisOptions, {
+    error: "Select a report year type.",
+  }),
+  reportStartDate: ReportDateSchema,
+  reportEndDate: ReportDateSchema,
 };
+
+function ValidateReportYearRange(
+  data: {
+    reportStartDate: string;
+    reportEndDate: string;
+  },
+  ctx: z.RefinementCtx,
+) {
+  const syncedEndDate = GetSyncedReportEndDate(data.reportStartDate);
+
+  if (syncedEndDate && data.reportEndDate !== syncedEndDate) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "End date must sync to a 1-year report period.",
+      path: ["reportEndDate"],
+    });
+  }
+}
 
 export const OnboardingStepOneIndividualSchema = z.object({
   taxpayerType: z.literal("individual"),
@@ -122,10 +152,12 @@ export const OnboardingStepOneNonIndividualSchema = z
     },
   );
 
-export const OnboardingStepOneSchema = z.discriminatedUnion("taxpayerType", [
-  OnboardingStepOneIndividualSchema,
-  OnboardingStepOneNonIndividualSchema,
-]);
+export const OnboardingStepOneSchema = z
+  .discriminatedUnion("taxpayerType", [
+    OnboardingStepOneIndividualSchema,
+    OnboardingStepOneNonIndividualSchema,
+  ])
+  .superRefine(ValidateReportYearRange);
 
 export const OnboardingStepTwoSchema = z
   .object({

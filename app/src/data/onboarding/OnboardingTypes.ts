@@ -1,4 +1,11 @@
+import {
+  GetCalendarYearReportDates,
+  OnboardingReportYearBasisOptions,
+} from "./OnboardingData";
+
 export type OnboardingTaxpayerType = "individual" | "non-individual";
+export type OnboardingReportYearBasis =
+  (typeof OnboardingReportYearBasisOptions)[number];
 
 export type OnboardingFieldErrors = Partial<
   Record<
@@ -14,6 +21,9 @@ export type OnboardingFieldErrors = Partial<
     | "website"
     | "logo"
     | "contactNumber"
+    | "reportYearBasis"
+    | "reportStartDate"
+    | "reportEndDate"
     | "accountFirstName"
     | "accountLastName"
     | "workEmail"
@@ -42,6 +52,9 @@ export type OnboardingValues = {
   contactNumber: string;
   logoName: string;
   logoFile: File | null;
+  reportYearBasis: OnboardingReportYearBasis;
+  reportStartDate: string;
+  reportEndDate: string;
   // Step 2 - account
   accountFirstName: string;
   accountLastName: string;
@@ -50,6 +63,8 @@ export type OnboardingValues = {
   password: string;
   confirmPassword: string;
 };
+
+const DefaultReportYear = GetCalendarYearReportDates();
 
 export const InitialOnboardingValues: OnboardingValues = {
   taxpayerType: "individual",
@@ -65,6 +80,9 @@ export const InitialOnboardingValues: OnboardingValues = {
   contactNumber: "+63 ",
   logoName: "",
   logoFile: null,
+  reportYearBasis: "Calendar Year",
+  reportStartDate: DefaultReportYear.reportStartDate,
+  reportEndDate: DefaultReportYear.reportEndDate,
   accountFirstName: "",
   accountLastName: "",
   workEmail: "",

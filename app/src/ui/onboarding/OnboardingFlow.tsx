@@ -13,6 +13,7 @@ export function OnboardingFlow() {
     values,
     errors,
     logoInputKey,
+    logoPreviewUrl,
     passwordStrength,
     updateValue,
     setTaxpayerType,
@@ -23,7 +24,7 @@ export function OnboardingFlow() {
   } = useOnboardingFlow();
 
   return (
-    <main className="min-h-screen bg-offwhite px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+    <main className="min-h-screen bg-white px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
       <section className="mx-auto w-full max-w-[1120px] rounded-sm bg-white px-5 py-8 shadow-[0_18px_60px_rgba(33,39,56,0.12)] ring-1 ring-darknavy/10 sm:px-8 lg:px-14 lg:py-12">
         <OnboardingProgressHeader
           currentStep={currentStep.currentStep}
@@ -38,6 +39,7 @@ export function OnboardingFlow() {
             values={values}
             errors={errors}
             logoInputKey={logoInputKey}
+            logoPreviewUrl={logoPreviewUrl}
             updateValue={updateValue}
             setTaxpayerType={setTaxpayerType}
             handleLogoChange={handleLogoChange}

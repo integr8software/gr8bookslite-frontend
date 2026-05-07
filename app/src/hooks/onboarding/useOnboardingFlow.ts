@@ -1,9 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { OnboardingSteps } from "@/app/src/data/onboarding/OnboardingData";
+import {
+  GetSyncedReportEndDate,
+  GetSyncedReportStartDate,
+  OnboardingMaxImageSizeBytes,
+  OnboardingSteps,
+} from "@/app/src/data/onboarding/OnboardingData";
 import {
   InitialOnboardingValues,
   type OnboardingFieldErrors,
@@ -23,10 +28,20 @@ export function useOnboardingFlow() {
   );
   const [errors, setErrors] = useState<OnboardingFieldErrors>({});
   const [logoInputKey, setLogoInputKey] = useState(0);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState("");
+  const logoPreviewUrlRef = useRef("");
 
   const currentStep = OnboardingSteps[stepIndex];
   const isFirstStep = stepIndex === 0;
   const isLastStep = stepIndex === OnboardingSteps.length - 1;
+
+  useEffect(() => {
+    return () => {
+      if (logoPreviewUrlRef.current) {
+        URL.revokeObjectURL(logoPreviewUrlRef.current);
+      }
+    };
+  }, []);
 
   const passwordStrength = useMemo(() => {
     const password = values.password;
@@ -43,6 +58,46 @@ export function useOnboardingFlow() {
   }, [values.password]);
 
   function updateValue(key: keyof OnboardingValues, value: string) {
+    if (key === "reportStartDate") {
+      setValues((current) => {
+        const reportEndDate = GetSyncedReportEndDate(value);
+
+        return {
+          ...current,
+          reportStartDate: value,
+          reportEndDate,
+          reportYearBasis: "Calendar Year",
+        };
+      });
+      setErrors((current) => ({
+        ...current,
+        reportYearBasis: undefined,
+        reportStartDate: undefined,
+        reportEndDate: undefined,
+      }));
+      return;
+    }
+
+    if (key === "reportEndDate") {
+      setValues((current) => {
+        const reportStartDate = GetSyncedReportStartDate(value);
+
+        return {
+          ...current,
+          reportStartDate,
+          reportEndDate: value,
+          reportYearBasis: "Calendar Year",
+        };
+      });
+      setErrors((current) => ({
+        ...current,
+        reportYearBasis: undefined,
+        reportStartDate: undefined,
+        reportEndDate: undefined,
+      }));
+      return;
+    }
+
     setValues((current) => ({
       ...current,
       [key]: value,
@@ -64,12 +119,66 @@ export function useOnboardingFlow() {
     setErrors({});
   }
 
+  function updateLogoPreviewUrl(nextPreviewUrl: string) {
+    if (logoPreviewUrlRef.current) {
+      URL.revokeObjectURL(logoPreviewUrlRef.current);
+    }
+
+    logoPreviewUrlRef.current = nextPreviewUrl;
+    setLogoPreviewUrl(nextPreviewUrl);
+  }
+
   function handleLogoChange(file: File | undefined) {
+    if (!file) {
+      setValues((current) => ({
+        ...current,
+        logoFile: null,
+        logoName: "",
+      }));
+      updateLogoPreviewUrl("");
+      setErrors((current) => ({ ...current, logo: undefined }));
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setValues((current) => ({
+        ...current,
+        logoFile: null,
+        logoName: "",
+      }));
+      updateLogoPreviewUrl("");
+      setErrors((current) => ({
+        ...current,
+        logo: ["Only image files are allowed."],
+      }));
+      setLogoInputKey((current) => current + 1);
+      toast.error("Only image files are allowed.");
+      return;
+    }
+
+    if (file.size > OnboardingMaxImageSizeBytes) {
+      setValues((current) => ({
+        ...current,
+        logoFile: null,
+        logoName: "",
+      }));
+      updateLogoPreviewUrl("");
+      setErrors((current) => ({
+        ...current,
+        logo: ["Logo must be 5MB or smaller."],
+      }));
+      setLogoInputKey((current) => current + 1);
+      toast.error("Logo must be 5MB or smaller.");
+      return;
+    }
+
     setValues((current) => ({
       ...current,
-      logoFile: file || null,
-      logoName: file?.name || "",
+      logoFile: file,
+      logoName: file.name,
     }));
+    updateLogoPreviewUrl(URL.createObjectURL(file));
+    setErrors((current) => ({ ...current, logo: undefined }));
   }
 
   function handleLogoRemove() {
@@ -78,6 +187,7 @@ export function useOnboardingFlow() {
       logoFile: null,
       logoName: "",
     }));
+    updateLogoPreviewUrl("");
     setLogoInputKey((current) => current + 1);
   }
 
@@ -95,6 +205,9 @@ export function useOnboardingFlow() {
           website: values.website,
           contactNumber: values.contactNumber,
           logo: values.logoFile,
+          reportYearBasis: values.reportYearBasis,
+          reportStartDate: values.reportStartDate,
+          reportEndDate: values.reportEndDate,
         }
       : {
           taxpayerType: "non-individual" as const,
@@ -106,6 +219,9 @@ export function useOnboardingFlow() {
           website: values.website,
           contactNumber: values.contactNumber,
           logo: values.logoFile,
+          reportYearBasis: values.reportYearBasis,
+          reportStartDate: values.reportStartDate,
+          reportEndDate: values.reportEndDate,
         };
 
     const parsed = OnboardingStepOneSchema.safeParse(payload);
@@ -164,6 +280,7 @@ export function useOnboardingFlow() {
     values,
     errors,
     logoInputKey,
+    logoPreviewUrl,
     passwordStrength,
     isFirstStep,
     isLastStep,

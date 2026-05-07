@@ -29,6 +29,8 @@ export async function OnboardingStepOneAction(
   formData: FormData,
 ): Promise<OnboardingActionState> {
   const taxpayerType = GetFormValue(formData, "taxpayerType");
+  const reportStartDate = GetFormValue(formData, "reportStartDate");
+  const reportEndDate = GetFormValue(formData, "reportEndDate");
 
   const sharedFields = {
     address: GetFormValue(formData, "address"),
@@ -36,6 +38,9 @@ export async function OnboardingStepOneAction(
     website: GetFormValue(formData, "website"),
     contactNumber: GetFormValue(formData, "contactNumber"),
     logo: GetFileValue(formData, "logo"),
+    reportYearBasis: "Calendar Year" as const,
+    reportStartDate,
+    reportEndDate,
   };
 
   const payload =

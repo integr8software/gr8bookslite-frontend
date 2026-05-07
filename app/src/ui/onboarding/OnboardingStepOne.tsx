@@ -9,12 +9,14 @@ import type {
 import { OnboardingActionRow } from "./OnboardingActionRow";
 import { OnboardingField } from "./OnboardingField";
 import { OnboardingFileField } from "./OnboardingFileField";
+import { OnboardingReportYearField } from "./OnboardingReportYearField";
 import { OnboardingSelectField } from "./OnboardingSelectField";
 
 type OnboardingStepOneProps = {
   values: OnboardingValues;
   errors: OnboardingFieldErrors;
   logoInputKey: number;
+  logoPreviewUrl: string;
   updateValue: (key: keyof OnboardingValues, value: string) => void;
   setTaxpayerType: (type: OnboardingTaxpayerType) => void;
   handleLogoChange: (file: File | undefined) => void;
@@ -26,6 +28,7 @@ export function OnboardingStepOne({
   values,
   errors,
   logoInputKey,
+  logoPreviewUrl,
   updateValue,
   setTaxpayerType,
   handleLogoChange,
@@ -45,22 +48,20 @@ export function OnboardingStepOne({
           <button
             type="button"
             onClick={() => setTaxpayerType("individual")}
-            className={`flex-1 py-3 text-sm font-semibold transition ${
-              isIndividual
-                ? "bg-black text-white"
-                : "bg-white text-darknavy hover:bg-offwhite"
-            }`}
+            className={`flex-1 py-3 text-sm font-semibold transition ${isIndividual
+              ? "bg-black text-white"
+              : "bg-white text-darknavy hover:bg-offwhite"
+              }`}
           >
             Individual
           </button>
           <button
             type="button"
             onClick={() => setTaxpayerType("non-individual")}
-            className={`flex-1 border-l border-darknavy/20 py-3 text-sm font-semibold transition ${
-              !isIndividual
-                ? "bg-black text-white"
-                : "bg-white text-darknavy hover:bg-offwhite"
-            }`}
+            className={`flex-1 border-l border-darknavy/20 py-3 text-sm font-semibold transition ${!isIndividual
+              ? "bg-black text-white"
+              : "bg-white text-darknavy hover:bg-offwhite"
+              }`}
           >
             Non-Individual
           </button>
@@ -111,7 +112,7 @@ export function OnboardingStepOne({
         /* Non-Individual Fields */
         <div className="space-y-6">
           <OnboardingField
-            label="Company / Organisation Name"
+            label="Company / Organization Name"
             id="companyName"
             name="companyName"
             type="text"
@@ -124,7 +125,7 @@ export function OnboardingStepOne({
             <OnboardingSelectField
               id="nonIndividualType"
               name="nonIndividualType"
-              label="Organisation Type"
+              label="Organization Type"
               value={values.nonIndividualType}
               options={OnboardingNonIndividualTypeOptions}
               errors={errors.nonIndividualType}
@@ -136,7 +137,7 @@ export function OnboardingStepOne({
                 id="nonIndividualTypeOther"
                 name="nonIndividualTypeOther"
                 type="text"
-                placeholder="Specify organisation type"
+                placeholder="Specify organization type"
                 value={values.nonIndividualTypeOther}
                 onChange={(e) =>
                   updateValue("nonIndividualTypeOther", e.target.value)
@@ -154,6 +155,7 @@ export function OnboardingStepOne({
         name="logo"
         label="Logo"
         fileName={values.logoName}
+        previewUrl={logoPreviewUrl}
         hint="Upload your company or personal logo. Max 5MB."
         inputKey={logoInputKey}
         errors={errors.logo}
@@ -225,6 +227,15 @@ export function OnboardingStepOne({
           errors={errors.contactNumber}
         />
       </div>
+
+      <OnboardingReportYearField
+        basis={values.reportYearBasis}
+        startDate={values.reportStartDate}
+        endDate={values.reportEndDate}
+        errors={errors}
+        onStartDateChange={(value) => updateValue("reportStartDate", value)}
+        onEndDateChange={(value) => updateValue("reportEndDate", value)}
+      />
 
       {/* Website (Optional) */}
       <OnboardingField

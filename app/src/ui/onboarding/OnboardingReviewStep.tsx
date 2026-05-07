@@ -1,5 +1,6 @@
 "use client";
 
+import { FormatOnboardingReportDateLabel } from "@/app/src/data/onboarding/OnboardingData";
 import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
 import { OnboardingActionRow } from "./OnboardingActionRow";
 
@@ -51,7 +52,7 @@ export function OnboardingReviewStep({
             <>
               <ReviewRow label="Company Name" value={values.companyName} />
               <ReviewRow
-                label="Organisation Type"
+                label="Organization Type"
                 value={
                   values.nonIndividualType === "Others"
                     ? values.nonIndividualTypeOther
@@ -65,7 +66,15 @@ export function OnboardingReviewStep({
           <ReviewRow label="Address" value={values.address} />
           <ReviewRow label="TIN" value={values.tin} />
           <ReviewRow label="Contact Number" value={values.contactNumber} />
-          <ReviewRow label="Website" value={values.website || "—"} />
+          <ReviewRow label="Website" value={values.website} />
+          <ReviewRow
+            label="Report Start"
+            value={FormatOnboardingReportDateLabel(values.reportStartDate)}
+          />
+          <ReviewRow
+            label="Report End"
+            value={FormatOnboardingReportDateLabel(values.reportEndDate)}
+          />
         </div>
       </section>
 

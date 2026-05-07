@@ -1,3 +1,6 @@
+"use client";
+
+import Image from "next/image";
 import { ImageUp, X } from "lucide-react";
 
 type OnboardingFileFieldProps = {
@@ -5,6 +8,7 @@ type OnboardingFileFieldProps = {
   name: string;
   label: string;
   fileName: string;
+  previewUrl: string;
   hint?: string;
   inputKey: number;
   errors?: string[];
@@ -17,6 +21,7 @@ export function OnboardingFileField({
   name,
   label,
   fileName,
+  previewUrl,
   hint,
   inputKey,
   errors,
@@ -33,15 +38,14 @@ export function OnboardingFileField({
       </label>
       <label
         htmlFor={id}
-        className={`flex h-14 cursor-pointer overflow-hidden rounded-md border bg-white ${
-          errors?.length ? "border-coralpink" : "border-darknavy/20"
-        }`}
+        className={`flex h-14 cursor-pointer overflow-hidden rounded-md border bg-white ${errors?.length ? "border-coralpink" : "border-darknavy/20"
+          }`}
       >
         <span className="flex w-14 items-center justify-center bg-black text-white">
           <ImageUp className="h-5 w-5" />
         </span>
-        <span className="flex flex-1 items-center px-4 text-base text-darknavy/65">
-          {fileName || "Upload image"}
+        <span className="flex min-w-0 flex-1 items-center px-4 text-base text-darknavy/65">
+          <span className="truncate">{fileName || "Upload image"}</span>
         </span>
         {hasFile ? (
           <button
@@ -69,6 +73,20 @@ export function OnboardingFileField({
           onChange={(event) => onChange(event.target.files?.[0])}
         />
       </label>
+      {previewUrl ? (
+        <div className="mt-3 rounded-md border border-darknavy/10 p-3">
+          <div className="relative h-40 w-full overflow-hidden rounded-sm bg-white">
+            <Image
+              src={previewUrl}
+              alt={`${label} preview`}
+              fill
+              sizes="(min-width: 768px) 320px, 100vw"
+              unoptimized
+              className="object-contain p-3"
+            />
+          </div>
+        </div>
+      ) : null}
       {errors?.length ? (
         <p id={errorId} className="mt-2 text-sm text-coralpink">
           {errors[0]}

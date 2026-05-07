@@ -9,23 +9,48 @@ const SignUpPasswordSchema = z
   .regex(/[a-z]/, "Password must include at least 1 lowercase letter.")
   .regex(/[^A-Za-z0-9]/, "Password must include at least 1 special character.");
 
+const EmailSchema = z.string().trim().email("Enter a valid email address.");
+
 export const LoginSchema = z.object({
-  email: z.string().trim().email("Enter a valid email address."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
+  email: z.string().trim().email("Email or Password is incorrect."),
+  password: z.string().min(1, "Email or Password is incorrect."),
 });
 
-export const SignUpSchema = LoginSchema.extend({
-  name: z.string().trim().min(2, "Name must be at least 2 characters."),
-  contactNumber: z.string().trim().optional(),
+export const SignUpSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must be at least 2 characters.")
+    .regex(
+      /^[A-Za-z][A-Za-z\s.'-]*$/,
+      "Name must contain letters only.",
+    ),
+  email: EmailSchema,
+  contactNumber: z
+    .string()
+    .trim()
+    .min(1, "Contact number is required.")
+    .regex(
+      /^\+63\s\d{3}\s\d{3}\s\d{4}$/,
+      "Enter a valid contact number in the format.",
+    ),
   password: SignUpPasswordSchema,
-  confirmPassword: z.string().min(8, "Confirm password must be at least 8 characters."),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords must match.",
-  path: ["confirmPassword"],
-});
+  confirmPassword: z
+    .string()
+    .min(8, "Confirm password must be at least 8 characters."),
+  termsAccepted: z.boolean(),
+})
+  .refine((data) => data.termsAccepted, {
+    message: "You must agree to the Terms of Service and Privacy Policy.",
+    path: ["termsAccepted"],
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords must match.",
+    path: ["confirmPassword"],
+  });
 
 export const ForgotPasswordSchema = z.object({
-  email: z.string().trim().email("Enter a valid email address."),
+  email: EmailSchema,
 });
 
 const SecurePasswordSchema = z

@@ -44,7 +44,6 @@ export function LoginForm() {
 								autoComplete="email"
 								placeholder="Enter your email..."
 								errors={state.errors?.email}
-								required
 							/>
 							<AuthField
 								label="Password"
@@ -53,7 +52,6 @@ export function LoginForm() {
 								autoComplete="current-password"
 								placeholder="Enter your password..."
 								errors={state.errors?.password}
-								required
 							/>
 
 							<div className="flex flex-col gap-3 text-xs text-darknavy/70 sm:flex-row sm:items-center sm:justify-between sm:gap-4">

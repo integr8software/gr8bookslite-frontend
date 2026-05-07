@@ -112,7 +112,7 @@ const TermsOfServiceForm = () => {
           <div>
             <h2 className="font-bold text-lg">7. Disclaimers</h2>
             <p className="mt-1">
-              Gr8BookLite is provided "as is" without warranties. We do not
+              Gr8BookLite is provided &quot;as is&quot; without warranties. We do not
               guarantee error-free or uninterrupted service. We are not a
               licensed accounting firm and do not provide legal, tax, or
               financial advice.

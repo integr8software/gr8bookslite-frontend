@@ -12,6 +12,7 @@ import type {
   AuthActionState,
   AuthFieldErrors,
 } from "@/app/src/data/auth/AuthTypes";
+import { PostAuthJson } from "@/app/src/services/auth/AuthApi";
 
 function GetFormValue(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -25,6 +26,22 @@ function InvalidState(errors: AuthFieldErrors): AuthActionState {
     errors,
   };
 }
+
+type RegisterRequest = {
+  fullName: string;
+  email: string;
+  contactNumber?: string;
+  password: string;
+  confirmPassword: string;
+};
+
+type RegisterResponse = {
+  message: string;
+  verificationRequired: boolean;
+  nextStep: string;
+  email: string;
+  maskedEmail: string;
+};
 
 export async function LoginAction(
   _previousState: AuthActionState,
@@ -52,6 +69,7 @@ export async function SignUpAction(
   const parsed = SignUpSchema.safeParse({
     name: GetFormValue(formData, "name"),
     email: GetFormValue(formData, "email"),
+    contactNumber: GetFormValue(formData, "contactNumber"),
     password: GetFormValue(formData, "password"),
     confirmPassword: GetFormValue(formData, "confirmPassword"),
   });
@@ -60,10 +78,36 @@ export async function SignUpAction(
     return InvalidState(parsed.error.flatten().fieldErrors);
   }
 
-  return {
-    status: "success",
-    message: "Account details validated. Connect persistence next.",
-  };
+  try {
+    const response = await PostAuthJson<RegisterRequest, RegisterResponse>(
+      "/auth/register",
+      {
+        fullName: parsed.data.name,
+        email: parsed.data.email,
+        contactNumber: parsed.data.contactNumber || undefined,
+        password: parsed.data.password,
+        confirmPassword: parsed.data.confirmPassword,
+      },
+    );
+
+    const otpParams = new URLSearchParams({
+      email: response.email,
+    });
+
+    return {
+      status: "success",
+      message: response.message,
+      redirectTo: `/otp?${otpParams.toString()}`,
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "We could not create your account right now.",
+    };
+  }
 }
 
 export async function ForgotPasswordAction(

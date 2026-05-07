@@ -4,7 +4,11 @@ import Link from "next/link";
 import { ArrowRight, KeyRound } from "lucide-react";
 import { useOtpForm } from "@/app/src/hooks/auth/useOtpForm";
 
-export function OtpForm() {
+type OtpFormProps = {
+	initialEmail?: string;
+};
+
+export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 	const {
 		state,
 		formAction,
@@ -25,7 +29,7 @@ export function OtpForm() {
 		handleOtpBlur,
 		handleResend,
 		handleChangeEmail,
-	} = useOtpForm();
+	} = useOtpForm({ initialEmail });
 
 	function getOtpBoxClass(index: number) {
 		if (state.status === "error" && otp.length === otpLength) {

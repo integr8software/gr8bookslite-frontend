@@ -8,13 +8,20 @@ Clone and run the project locally:
 git clone <your-repository-url>
 cd gr8bookslite-frontend
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
 Open:
 
 ```txt
-http://localhost:3000
+http://localhost:3001
+```
+
+Frontend API requests should target the backend through:
+
+```txt
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api/v1
 ```
 
 ## Services And Features Implemented

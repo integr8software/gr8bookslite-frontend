@@ -5,6 +5,7 @@ const SignUpPasswordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters.")
   .regex(/[A-Z]/, "Password must include at least 1 uppercase letter.")
+  .regex(/\d/, "Password must include at least 1 number.")
   .regex(/[a-z]/, "Password must include at least 1 lowercase letter.")
   .regex(/[^A-Za-z0-9]/, "Password must include at least 1 special character.");
 
@@ -15,6 +16,7 @@ export const LoginSchema = z.object({
 
 export const SignUpSchema = LoginSchema.extend({
   name: z.string().trim().min(2, "Name must be at least 2 characters."),
+  contactNumber: z.string().trim().optional(),
   password: SignUpPasswordSchema,
   confirmPassword: z.string().min(8, "Confirm password must be at least 8 characters."),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -30,6 +32,7 @@ const SecurePasswordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters.")
   .regex(/[A-Z]/, "Password must include at least one uppercase letter.")
+  .regex(/\d/, "Password must include at least one number.")
   .regex(/[a-z]/, "Password must include at least one lowercase letter.")
   .regex(/[^A-Za-z0-9]/, "Password must include at least one special character.");
 

@@ -11,13 +11,19 @@ import {
 } from "@/app/src/data/auth/OtpData";
 import { OtpAction } from "@/app/src/services/auth/AuthActions";
 
-export function useOtpForm() {
+type UseOtpFormOptions = {
+  initialEmail?: string;
+};
+
+export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
   const [state, formAction, pending] = useActionState(
     OtpAction,
     InitialAuthActionState,
   );
-  const [step, setStep] = useState<"email" | "verify">("email");
-  const [email, setEmail] = useState("");
+  const [step, setStep] = useState<"email" | "verify">(
+    initialEmail ? "verify" : "email",
+  );
+  const [email, setEmail] = useState(initialEmail);
   const [otp, setOtp] = useState("");
   const [secondsRemaining, setSecondsRemaining] = useState(OTP_RESEND_SECONDS);
   const [isOtpFocused, setIsOtpFocused] = useState(false);
@@ -127,6 +133,7 @@ export function useOtpForm() {
 
   function handleChangeEmail() {
     setOtp("");
+    setEmail("");
     setSecondsRemaining(OTP_RESEND_SECONDS);
     setStep("email");
   }

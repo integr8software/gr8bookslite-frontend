@@ -1,6 +1,13 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useActionState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import toast from "react-hot-toast";
 import {
   InitialAuthActionState,
@@ -131,33 +138,33 @@ export function useForgotPasswordForm() {
   const maskedEmail = useMemo(() => MaskEmailAddress(email), [email]);
   const canResend = secondsRemaining === 0;
 
-  function handleEmailSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const handleEmailSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
     const formData = new FormData(event.currentTarget);
     const submittedEmail = formData.get("email");
 
     if (typeof submittedEmail === "string") {
       setEmail(submittedEmail.trim());
     }
-  }
+  }, []);
 
-  function handleOtpChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const handleOtpChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const nextValue = event.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH);
     setOtp(nextValue);
-  }
+  }, []);
 
-  function handleOtpFocus() {
+  const handleOtpFocus = useCallback(() => {
     if (state.status === "error" && state.errors?.otp && otp.length === OTP_LENGTH) {
       setOtp("");
     }
 
     setIsOtpFocused(true);
-  }
+  }, [otp.length, state.errors?.otp, state.status]);
 
-  function handleOtpBlur() {
+  const handleOtpBlur = useCallback(() => {
     setIsOtpFocused(false);
-  }
+  }, []);
 
-  async function handleResend() {
+  const handleResend = useCallback(async () => {
     if (!canResend) {
       toast(`Please wait ${formattedTime} before requesting a new code.`);
       return;
@@ -193,14 +200,14 @@ export function useForgotPasswordForm() {
     } finally {
       setIsResending(false);
     }
-  }
+  }, [canResend, email, formattedTime, state]);
 
-  function handleChangeEmail() {
+  const handleChangeEmail = useCallback(() => {
     setOtp("");
     setIsResetComplete(false);
     setSecondsRemaining(OTP_RESEND_SECONDS);
     setStep("email");
-  }
+  }, []);
 
   return {
     state,

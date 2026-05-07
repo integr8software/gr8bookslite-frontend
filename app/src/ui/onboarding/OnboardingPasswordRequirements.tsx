@@ -34,6 +34,10 @@ export function OnboardingPasswordRequirements({
         label="At least 1 uppercase letter"
       />
       <RequirementItem
+        met={/\d/.test(password)}
+        label="At least 1 number"
+      />
+      <RequirementItem
         met={/[a-z]/.test(password)}
         label="At least 1 lowercase letter"
       />

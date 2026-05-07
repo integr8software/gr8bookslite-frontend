@@ -5,10 +5,51 @@ import {
   OnboardingNonIndividualTypeOptions,
 } from "./OnboardingData";
 
+const NamePattern = /^[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*$/;
+
+function IsValidWebsiteUrl(value: string) {
+  const candidate = /^[A-Za-z][A-Za-z\d+\-.]*:\/\//.test(value)
+    ? value
+    : `https://${value}`;
+
+  try {
+    const url = new URL(candidate);
+    return (
+      (url.protocol === "http:" || url.protocol === "https:") &&
+      url.hostname.includes(".")
+    );
+  } catch {
+    return false;
+  }
+}
+
+function RequiredNameSchema(label: string) {
+  return z
+    .string()
+    .trim()
+    .min(2, `${label} must be at least 2 characters.`)
+    .regex(NamePattern, `${label} must contain letters only.`);
+}
+
+function OptionalNameSchema(label: string) {
+  return z
+    .string()
+    .trim()
+    .refine(
+      (value) => value === "" || value.length >= 2,
+      `${label} must be at least 2 characters when provided.`,
+    )
+    .refine(
+      (value) => value === "" || NamePattern.test(value),
+      `${label} must contain letters only.`,
+    );
+}
+
 const PasswordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters.")
   .regex(/[A-Z]/, "Password must include at least 1 uppercase letter.")
+  .regex(/\d/, "Password must include at least 1 number.")
   .regex(/[a-z]/, "Password must include at least 1 lowercase letter.")
   .regex(/[^A-Za-z0-9]/, "Password must include at least 1 special character.");
 
@@ -42,9 +83,7 @@ const SharedStepOneFields = {
     .optional()
     .transform((value) => value || "")
     .refine(
-      (value) =>
-        value === "" ||
-        z.url({ protocol: /^https?$/ }).safeParse(value).success,
+      (value) => value === "" || IsValidWebsiteUrl(value),
       "Enter a valid website URL.",
     ),
   contactNumber: z.string().trim().min(7, "Enter a valid contact number."),
@@ -53,18 +92,9 @@ const SharedStepOneFields = {
 
 export const OnboardingStepOneIndividualSchema = z.object({
   taxpayerType: z.literal("individual"),
-  lastName: z
-    .string()
-    .trim()
-    .min(2, "Last name must be at least 2 characters."),
-  firstName: z
-    .string()
-    .trim()
-    .min(2, "First name must be at least 2 characters."),
-  middleName: z
-    .string()
-    .trim()
-    .min(2, "Middle name must be at least 2 characters."),
+  lastName: RequiredNameSchema("Last name"),
+  firstName: RequiredNameSchema("First name"),
+  middleName: OptionalNameSchema("Middle name"),
   ...SharedStepOneFields,
 });
 
@@ -99,22 +129,14 @@ export const OnboardingStepOneSchema = z.discriminatedUnion("taxpayerType", [
 
 export const OnboardingStepTwoSchema = z
   .object({
-    accountFirstName: z
-      .string()
-      .trim()
-      .min(2, "First name must be at least 2 characters."),
-    accountLastName: z
-      .string()
-      .trim()
-      .min(2, "Last name must be at least 2 characters."),
+    accountFirstName: RequiredNameSchema("First name"),
+    accountLastName: RequiredNameSchema("Last name"),
     workEmail: z.string().trim().email("Enter a valid work email."),
     department: z.enum(OnboardingDepartmentOptions, {
       error: "Select a department.",
     }),
     password: PasswordSchema,
-    confirmPassword: z
-      .string()
-      .min(8, "Confirm password must be at least 8 characters."),
+    confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords must match.",

@@ -51,7 +51,7 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 	}
 
 	return (
-		<main className="flex min-h-screen items-center justify-center bg-white px-4 py-8 sm:px-6">
+		<main className="flex min-h-screen items-center justify-center bg-transparent px-4 py-8 sm:px-6">
 			<section className="w-full max-w-140 rounded-md bg-white px-6 py-6 shadow-[0_18px_60px_rgba(33,39,56,0.14)] ring-1 ring-darknavy/8 sm:px-8">
 				<div className="hidden mb-4 d-flex justify-center">
 					<div className="flex h-14 w-14 items-center justify-center rounded-full bg-darknavy text-offwhite">

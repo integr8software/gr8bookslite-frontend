@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GradientBlurBackground } from "@/app/src/ui/components/backgrounds/GradientBlurBackground";
 import { OtpForm } from "@/app/src/ui/auth/OtpForm";
 
 export const metadata: Metadata = {
@@ -18,5 +19,10 @@ function ReadInitialEmail(value: string | string[] | undefined) {
 export default async function OtpPage({ searchParams }: OtpPageProps) {
   const { email } = await searchParams;
 
-  return <OtpForm initialEmail={ReadInitialEmail(email)} />;
+  return (
+    <div className="relative isolate min-h-screen">
+      <GradientBlurBackground />
+      <OtpForm initialEmail={ReadInitialEmail(email)} />
+    </div>
+  );
 }

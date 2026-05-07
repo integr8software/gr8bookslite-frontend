@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GradientBlurBackground } from "@/app/src/ui/components/backgrounds/GradientBlurBackground";
 import { ForgotPasswordForm } from "@/app/src/ui/auth/ForgotPasswordForm";
 
 export const metadata: Metadata = {
@@ -7,6 +8,9 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
 	return (
-		<ForgotPasswordForm />
+		<div className="relative isolate min-h-screen">
+			<GradientBlurBackground />
+			<ForgotPasswordForm />
+		</div>
 	);
 }

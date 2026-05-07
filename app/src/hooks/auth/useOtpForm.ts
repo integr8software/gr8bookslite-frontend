@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { InitialAuthActionState } from "@/app/src/data/auth/AuthTypes";
 import {
   ClearPendingVerificationEmail,
@@ -99,6 +100,9 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
 
     if (state.status === "success") {
       ClearPendingVerificationEmail();
+      if (state.accessToken) {
+        SaveAccessToken(state.accessToken);
+      }
       toast.success(state.message);
       if (state.redirectTo) {
         router.push(state.redirectTo);
@@ -109,7 +113,15 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
     if (state.status === "error") {
       toast.error(state.message);
     }
-  }, [pending, router, state.message, state.redirectTo, state.status, step]);
+  }, [
+    pending,
+    router,
+    state.accessToken,
+    state.message,
+    state.redirectTo,
+    state.status,
+    step,
+  ]);
 
   const formattedTime = useMemo(() => {
     const minutes = Math.floor(secondsRemaining / 60);

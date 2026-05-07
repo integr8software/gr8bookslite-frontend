@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSignUpForm } from "@/app/src/hooks/auth/useSignUpForm";
 import { AuthField } from "./AuthField";
+import { GoogleAuthButton } from "./GoogleAuthButton";
 import { AuthPasswordRequirements } from "./AuthPasswordRequirements";
 import { ArrowRight } from "lucide-react";
 
@@ -195,18 +196,7 @@ export function SignUpForm() {
 								<div className="h-px flex-1 bg-darknavy/30" />
 							</div>
 
-							<button
-								type="button"
-								className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-darknavy/30 bg-white px-4 text-sm font-medium text-darknavy transition hover:border-darknavy/50 hover:bg-offwhite"
-							>
-								<span>Continue with Google</span>
-								<Image
-									src="/img/google-icon.png"
-									alt="Google icon"
-									width={18}
-									height={18}
-								/>
-							</button>
+							<GoogleAuthButton disabled={pending} />
 						</form>
 
 						<p className="mt-5 text-center text-darknavy/70">

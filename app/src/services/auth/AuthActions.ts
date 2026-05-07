@@ -127,6 +127,7 @@ export async function LoginAction(
     return {
       status: "success",
       message: response.message ?? "Login successful.",
+      accessToken: response.accessToken,
       redirectTo: "/onboarding",
     };
   } catch (error) {
@@ -370,6 +371,7 @@ export async function OtpAction(
     return {
       status: "success",
       message: response.message ?? "Email verified successfully.",
+      accessToken: response.accessToken,
       redirectTo: "/onboarding",
     };
   } catch (error) {

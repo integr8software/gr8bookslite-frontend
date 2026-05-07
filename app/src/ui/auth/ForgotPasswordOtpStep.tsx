@@ -121,6 +121,14 @@ export function ForgotPasswordOtpStep({
       >
         {pending ? "Verifying..." : "Verify"}
       </button>
+
+      <button
+        type="button"
+        onClick={handleChangeEmail}
+        className="block w-full text-center text-sm font-semibold text-darknavy/65 transition hover:text-darknavy"
+      >
+        Change Email
+      </button>
     </form>
   );
 }

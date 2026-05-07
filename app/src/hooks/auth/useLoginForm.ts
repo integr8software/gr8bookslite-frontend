@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { InitialAuthActionState } from "@/app/src/data/auth/AuthTypes";
 import {
   ClearPendingVerificationEmail,
@@ -29,6 +30,9 @@ export function useLoginForm() {
 
     if (state.status === "success") {
       ClearPendingVerificationEmail();
+      if (state.accessToken) {
+        SaveAccessToken(state.accessToken);
+      }
       toast.success(state.message);
       if (state.redirectTo) {
         router.push(state.redirectTo);
@@ -49,6 +53,7 @@ export function useLoginForm() {
     pending,
     router,
     state.message,
+    state.accessToken,
     state.pendingVerificationEmail,
     state.redirectTo,
     state.status,

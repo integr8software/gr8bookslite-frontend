@@ -18,6 +18,7 @@ export type AuthActionState = {
   errors?: AuthFieldErrors;
   redirectTo?: string;
   pendingVerificationEmail?: string;
+  accessToken?: string;
 };
 
 export const InitialAuthActionState: AuthActionState = {

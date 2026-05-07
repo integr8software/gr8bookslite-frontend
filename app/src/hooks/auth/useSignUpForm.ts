@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { InitialAuthActionState } from "@/app/src/data/auth/AuthTypes";
+import { SavePendingVerificationEmail } from "@/app/src/data/auth/AuthVerificationStorage";
 import { SignUpAction } from "@/app/src/services/auth/AuthActions";
 
 export function useSignUpForm() {
@@ -25,6 +26,9 @@ export function useSignUpForm() {
 
     if (state.status === "success") {
       toast.success(state.message);
+      if (state.pendingVerificationEmail) {
+        SavePendingVerificationEmail(state.pendingVerificationEmail);
+      }
       if (state.redirectTo) {
         router.push(state.redirectTo);
       }
@@ -34,7 +38,14 @@ export function useSignUpForm() {
     if (state.status === "error") {
       toast.error(state.message);
     }
-  }, [pending, router, state.message, state.redirectTo, state.status]);
+  }, [
+    pending,
+    router,
+    state.message,
+    state.pendingVerificationEmail,
+    state.redirectTo,
+    state.status,
+  ]);
 
   return {
     state,

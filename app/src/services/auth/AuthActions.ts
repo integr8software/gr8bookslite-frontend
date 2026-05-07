@@ -1,6 +1,7 @@
 "use server";
 
 import {
+  ChangeVerificationEmailSchema,
   ForgotPasswordSchema,
   LoginSchema,
   OtpSchema,
@@ -40,6 +41,35 @@ type RegisterResponse = {
   verificationRequired: boolean;
   nextStep: string;
   email: string;
+  maskedEmail: string;
+};
+
+type VerifyEmailRequest = {
+  email: string;
+  code: string;
+};
+
+type VerifyEmailResponse = {
+  message?: string;
+  accessToken: string;
+};
+
+type ResendVerificationRequest = {
+  email: string;
+};
+
+type ResendVerificationResponse = {
+  message: string;
+  maskedEmail: string;
+};
+
+type ChangeVerificationEmailRequest = {
+  currentEmail: string;
+  newEmail: string;
+};
+
+type ChangeVerificationEmailResponse = {
+  message: string;
   maskedEmail: string;
 };
 
@@ -105,6 +135,7 @@ export async function SignUpAction(
       status: "success",
       message: response.message,
       redirectTo: `/otp?${otpParams.toString()}`,
+      pendingVerificationEmail: response.email,
     };
   } catch (error) {
     return {
@@ -185,6 +216,7 @@ export async function OtpAction(
   _previousState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
+  const email = GetFormValue(formData, "email");
   const otp = GetFormValue(formData, "otp");
   const parsed = OtpSchema.safeParse({ otp });
 
@@ -192,18 +224,120 @@ export async function OtpAction(
     return InvalidState(parsed.error.flatten().fieldErrors);
   }
 
-  if (otp !== MOCK_OTP_CODE) {
+  const emailValidation = ForgotPasswordSchema.safeParse({ email });
+
+  if (!emailValidation.success) {
     return {
       status: "error",
-      message: "Incorrect OTP. Try again.",
+      message: "Enter a valid email address.",
+      errors: {
+        email: emailValidation.error.flatten().fieldErrors.email,
+      },
+    };
+  }
+
+  try {
+    const response = await PostAuthJson<VerifyEmailRequest, VerifyEmailResponse>(
+      "/auth/verify-email",
+      {
+        email: emailValidation.data.email,
+        code: parsed.data.otp,
+      },
+    );
+
+    return {
+      status: "success",
+      message: response.message ?? "Email verified successfully.",
+      redirectTo: "/login",
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "We could not verify your email right now.",
       errors: {
         otp: ["The code you entered is invalid."],
       },
     };
   }
+}
 
-  return {
-    status: "success",
-    message: "OTP validated successfully.",
-  };
+export async function ResendVerificationAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = ForgotPasswordSchema.safeParse({
+    email: GetFormValue(formData, "email"),
+  });
+
+  if (!parsed.success) {
+    return InvalidState(parsed.error.flatten().fieldErrors);
+  }
+
+  try {
+    const response = await PostAuthJson<
+      ResendVerificationRequest,
+      ResendVerificationResponse
+    >("/auth/resend-verification", {
+      email: parsed.data.email,
+    });
+
+    return {
+      status: "success",
+      message: response.message,
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "We could not resend the verification code right now.",
+    };
+  }
+}
+
+export async function ChangeVerificationEmailAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = ChangeVerificationEmailSchema.safeParse({
+    currentEmail: GetFormValue(formData, "currentEmail"),
+    newEmail: GetFormValue(formData, "newEmail"),
+  });
+
+  if (!parsed.success) {
+    const { fieldErrors } = parsed.error.flatten();
+
+    return {
+      status: "error",
+      message: "Please enter a valid new email address.",
+      errors: {
+        email: fieldErrors.newEmail,
+        newEmail: fieldErrors.newEmail,
+      },
+    };
+  }
+
+  try {
+    const response = await PostAuthJson<
+      ChangeVerificationEmailRequest,
+      ChangeVerificationEmailResponse
+    >("/auth/change-verification-email", parsed.data);
+
+    return {
+      status: "success",
+      message: response.message,
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "We could not update your verification email right now.",
+    };
+  }
 }

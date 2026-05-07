@@ -2,31 +2,51 @@
 
 import { useActionState } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { InitialAuthActionState } from "@/app/src/data/auth/AuthTypes";
+import {
+  ClearPendingVerificationEmail,
+  GetPendingVerificationEmail,
+  SavePendingVerificationEmail,
+} from "@/app/src/data/auth/AuthVerificationStorage";
 import {
   MaskEmailAddress,
   OTP_LENGTH,
   OTP_RESEND_SECONDS,
 } from "@/app/src/data/auth/OtpData";
-import { OtpAction } from "@/app/src/services/auth/AuthActions";
+import {
+  ChangeVerificationEmailAction,
+  OtpAction,
+  ResendVerificationAction,
+} from "@/app/src/services/auth/AuthActions";
 
 type UseOtpFormOptions = {
   initialEmail?: string;
 };
 
+function ResolveInitialVerificationEmail(initialEmail: string) {
+  return initialEmail || GetPendingVerificationEmail();
+}
+
 export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
+  const router = useRouter();
+  const initialVerificationEmail = ResolveInitialVerificationEmail(initialEmail);
   const [state, formAction, pending] = useActionState(
     OtpAction,
     InitialAuthActionState,
   );
   const [step, setStep] = useState<"email" | "verify">(
-    initialEmail ? "verify" : "email",
+    initialVerificationEmail ? "verify" : "email",
   );
-  const [email, setEmail] = useState(initialEmail);
+  const [email, setEmail] = useState(initialVerificationEmail);
+  const [emailInput, setEmailInput] = useState(initialVerificationEmail);
   const [otp, setOtp] = useState("");
   const [secondsRemaining, setSecondsRemaining] = useState(OTP_RESEND_SECONDS);
   const [isOtpFocused, setIsOtpFocused] = useState(false);
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
+  const [isSubmittingEmailStep, setIsSubmittingEmailStep] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const otpInputRef = useRef<HTMLInputElement>(null);
   const wasPendingRef = useRef(false);
 
@@ -68,14 +88,18 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
     }
 
     if (state.status === "success") {
+      ClearPendingVerificationEmail();
       toast.success(state.message);
+      if (state.redirectTo) {
+        router.push(state.redirectTo);
+      }
       return;
     }
 
     if (state.status === "error") {
       toast.error(state.message);
     }
-  }, [pending, state.message, state.status, step]);
+  }, [pending, router, state.message, state.redirectTo, state.status, step]);
 
   const formattedTime = useMemo(() => {
     const minutes = Math.floor(secondsRemaining / 60);
@@ -87,19 +111,57 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
   const maskedEmail = useMemo(() => MaskEmailAddress(email), [email]);
   const canResend = secondsRemaining === 0;
 
-  function handleEmailSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const trimmedEmail = email.trim();
-
-    if (!trimmedEmail) {
+  useEffect(() => {
+    if (!email) {
       return;
     }
 
-    setEmail(trimmedEmail);
-    setOtp("");
-    setSecondsRemaining(OTP_RESEND_SECONDS);
-    setStep("verify");
+    SavePendingVerificationEmail(email);
+  }, [email]);
+
+  async function handleEmailSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const trimmedEmail = emailInput.trim();
+
+    if (!trimmedEmail) {
+      toast.error("Enter a valid email address.");
+      return;
+    }
+
+    if (!isChangingEmail) {
+      setEmail(trimmedEmail);
+      setEmailInput(trimmedEmail);
+      setOtp("");
+      setSecondsRemaining(OTP_RESEND_SECONDS);
+      setStep("verify");
+      return;
+    }
+
+    setIsSubmittingEmailStep(true);
+
+    try {
+      const formData = new FormData();
+      formData.set("currentEmail", email);
+      formData.set("newEmail", trimmedEmail);
+
+      const nextState = await ChangeVerificationEmailAction(state, formData);
+
+      if (nextState.status === "success") {
+        setEmail(trimmedEmail);
+        setEmailInput(trimmedEmail);
+        setOtp("");
+        setSecondsRemaining(OTP_RESEND_SECONDS);
+        setIsChangingEmail(false);
+        setStep("verify");
+        toast.success(nextState.message);
+        return;
+      }
+
+      toast.error(nextState.message);
+    } finally {
+      setIsSubmittingEmailStep(false);
+    }
   }
 
   function handleOtpChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -119,21 +181,38 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
     setIsOtpFocused(false);
   }
 
-  function handleResend() {
+  async function handleResend() {
     if (!canResend) {
       toast(`Please wait ${formattedTime} before requesting a new code.`);
       return;
     }
 
-    setOtp("");
-    setSecondsRemaining(OTP_RESEND_SECONDS);
-    toast.success("A new verification code has been sent.");
-    otpInputRef.current?.focus();
+    setIsResending(true);
+
+    try {
+      const formData = new FormData();
+      formData.set("email", email);
+
+      const nextState = await ResendVerificationAction(state, formData);
+
+      if (nextState.status === "success") {
+        setOtp("");
+        setSecondsRemaining(OTP_RESEND_SECONDS);
+        toast.success(nextState.message);
+        otpInputRef.current?.focus();
+        return;
+      }
+
+      toast.error(nextState.message);
+    } finally {
+      setIsResending(false);
+    }
   }
 
   function handleChangeEmail() {
     setOtp("");
-    setEmail("");
+    setIsChangingEmail(true);
+    setEmailInput(email);
     setSecondsRemaining(OTP_RESEND_SECONDS);
     setStep("email");
   }
@@ -145,11 +224,16 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
     step,
     email,
     setEmail,
+    emailInput,
+    setEmailInput,
     otp,
     otpInputRef,
     formattedTime,
     maskedEmail,
     canResend,
+    isChangingEmail,
+    isSubmittingEmailStep,
+    isResending,
     isOtpFocused,
     otpLength: OTP_LENGTH,
     handleEmailSubmit,

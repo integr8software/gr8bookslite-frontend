@@ -6,7 +6,8 @@ export type AuthFieldErrors = Partial<
     | "name"
     | "contactNumber"
     | "termsAccepted"
-    | "otp",
+    | "otp"
+    | "newEmail",
     string[] | undefined
   >
 >;
@@ -16,6 +17,7 @@ export type AuthActionState = {
   message: string;
   errors?: AuthFieldErrors;
   redirectTo?: string;
+  pendingVerificationEmail?: string;
 };
 
 export const InitialAuthActionState: AuthActionState = {

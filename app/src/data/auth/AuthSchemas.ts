@@ -53,6 +53,16 @@ export const ForgotPasswordSchema = z.object({
   email: EmailSchema,
 });
 
+export const ChangeVerificationEmailSchema = z
+  .object({
+    currentEmail: z.string().trim().email("Enter a valid email address."),
+    newEmail: z.string().trim().email("Enter a valid email address."),
+  })
+  .refine((data) => data.currentEmail !== data.newEmail, {
+    message: "New email must be different.",
+    path: ["newEmail"],
+  });
+
 const SecurePasswordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters.")
@@ -82,5 +92,8 @@ export const OtpSchema = z.object({
 export type LoginInput = z.infer<typeof LoginSchema>;
 export type SignUpInput = z.infer<typeof SignUpSchema>;
 export type ForgotPasswordInput = z.infer<typeof ForgotPasswordSchema>;
+export type ChangeVerificationEmailInput = z.infer<
+  typeof ChangeVerificationEmailSchema
+>;
 export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
 export type OtpInput = z.infer<typeof OtpSchema>;

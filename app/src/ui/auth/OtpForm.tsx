@@ -15,7 +15,8 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 		pending,
 		step,
 		email,
-		setEmail,
+		emailInput,
+		setEmailInput,
 		otp,
 		otpInputRef,
 		formattedTime,
@@ -86,11 +87,12 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 							</label>
 							<input
 								id="otp-email"
+								name="email"
 								type="email"
 								autoComplete="email"
-								value={email}
+								value={emailInput}
 								onChange={(event) =>
-									setEmail(event.target.value)
+									setEmailInput(event.target.value)
 								}
 								placeholder="johndoe@example.com"
 								required
@@ -108,6 +110,7 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 					</form>
 				) : (
 					<form action={formAction} className="mt-6 space-y-5">
+						<input type="hidden" name="email" value={email} />
 						<input
 							ref={otpInputRef}
 							type="text"

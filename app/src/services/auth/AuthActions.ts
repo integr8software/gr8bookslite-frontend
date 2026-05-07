@@ -53,7 +53,13 @@ export async function LoginAction(
   });
 
   if (!parsed.success) {
-    return InvalidState(parsed.error.flatten().fieldErrors);
+    return {
+      status: "error",
+      message: "Email or Password is incorrect.",
+      errors: {
+        password: ["Email or Password is incorrect."],
+      },
+    };
   }
 
   return {
@@ -72,6 +78,7 @@ export async function SignUpAction(
     contactNumber: GetFormValue(formData, "contactNumber"),
     password: GetFormValue(formData, "password"),
     confirmPassword: GetFormValue(formData, "confirmPassword"),
+    termsAccepted: formData.has("termsAccepted"),
   });
 
   if (!parsed.success) {
@@ -84,7 +91,7 @@ export async function SignUpAction(
       {
         fullName: parsed.data.name,
         email: parsed.data.email,
-        contactNumber: parsed.data.contactNumber || undefined,
+        contactNumber: parsed.data.contactNumber,
         password: parsed.data.password,
         confirmPassword: parsed.data.confirmPassword,
       },

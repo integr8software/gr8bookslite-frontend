@@ -22,6 +22,7 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 		formattedTime,
 		maskedEmail,
 		canResend,
+		hasActivatedResendCooldown,
 		isOtpFocused,
 		otpLength,
 		handleEmailSubmit,
@@ -143,12 +144,16 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 						</button>
 
 						<div className="flex flex-col gap-2 text-xs text-darknavy/75 sm:flex-row sm:items-center sm:justify-between">
-							<p>
-								Remaining Time:{" "}
-								<span className="font-semibold text-[#3d76ea]">
-									{formattedTime}
-								</span>
-							</p>
+							{hasActivatedResendCooldown ? (
+								<p>
+									Remaining Time:{" "}
+									<span className="font-semibold text-[#3d76ea]">
+										{canResend ? "Ready" : formattedTime}
+									</span>
+								</p>
+							) : (
+								<span />
+							)}
 
 							<p>
 								Didn&apos;t got the code?{" "}

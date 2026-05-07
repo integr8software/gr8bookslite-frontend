@@ -7,8 +7,9 @@ import toast from "react-hot-toast";
 import { InitialAuthActionState } from "@/app/src/data/auth/AuthTypes";
 import {
   ClearPendingVerificationEmail,
-  GetPendingVerificationEmail,
+  GetVerificationResendSecondsRemaining,
   SavePendingVerificationEmail,
+  SaveVerificationResendCooldown,
 } from "@/app/src/data/auth/AuthVerificationStorage";
 import {
   MaskEmailAddress,
@@ -25,13 +26,17 @@ type UseOtpFormOptions = {
   initialEmail?: string;
 };
 
-function ResolveInitialVerificationEmail(initialEmail: string) {
-  return initialEmail || GetPendingVerificationEmail();
+function ResolveInitialResendSeconds(email: string) {
+  return email ? GetVerificationResendSecondsRemaining(email) : 0;
+}
+
+function ResolveHasResendCooldown(email: string) {
+  return ResolveInitialResendSeconds(email) > 0;
 }
 
 export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
   const router = useRouter();
-  const initialVerificationEmail = ResolveInitialVerificationEmail(initialEmail);
+  const initialVerificationEmail = initialEmail.trim();
   const [state, formAction, pending] = useActionState(
     OtpAction,
     InitialAuthActionState,
@@ -42,7 +47,12 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
   const [email, setEmail] = useState(initialVerificationEmail);
   const [emailInput, setEmailInput] = useState(initialVerificationEmail);
   const [otp, setOtp] = useState("");
-  const [secondsRemaining, setSecondsRemaining] = useState(OTP_RESEND_SECONDS);
+  const [secondsRemaining, setSecondsRemaining] = useState(() =>
+    ResolveInitialResendSeconds(initialVerificationEmail),
+  );
+  const [hasActivatedResendCooldown, setHasActivatedResendCooldown] = useState(
+    () => ResolveHasResendCooldown(initialVerificationEmail),
+  );
   const [isOtpFocused, setIsOtpFocused] = useState(false);
   const [isChangingEmail, setIsChangingEmail] = useState(false);
   const [isSubmittingEmailStep, setIsSubmittingEmailStep] = useState(false);
@@ -130,10 +140,14 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
     }
 
     if (!isChangingEmail) {
+      const nextSecondsRemaining =
+        GetVerificationResendSecondsRemaining(trimmedEmail);
+
       setEmail(trimmedEmail);
       setEmailInput(trimmedEmail);
       setOtp("");
-      setSecondsRemaining(OTP_RESEND_SECONDS);
+      setSecondsRemaining(nextSecondsRemaining);
+      setHasActivatedResendCooldown(nextSecondsRemaining > 0);
       setStep("verify");
       return;
     }
@@ -148,10 +162,14 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
       const nextState = await ChangeVerificationEmailAction(state, formData);
 
       if (nextState.status === "success") {
+        const nextSecondsRemaining =
+          GetVerificationResendSecondsRemaining(trimmedEmail);
+
         setEmail(trimmedEmail);
         setEmailInput(trimmedEmail);
         setOtp("");
-        setSecondsRemaining(OTP_RESEND_SECONDS);
+        setSecondsRemaining(nextSecondsRemaining);
+        setHasActivatedResendCooldown(nextSecondsRemaining > 0);
         setIsChangingEmail(false);
         setStep("verify");
         toast.success(nextState.message);
@@ -198,6 +216,8 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
       if (nextState.status === "success") {
         setOtp("");
         setSecondsRemaining(OTP_RESEND_SECONDS);
+        setHasActivatedResendCooldown(true);
+        SaveVerificationResendCooldown(email, OTP_RESEND_SECONDS);
         toast.success(nextState.message);
         otpInputRef.current?.focus();
         return;
@@ -213,7 +233,7 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
     setOtp("");
     setIsChangingEmail(true);
     setEmailInput(email);
-    setSecondsRemaining(OTP_RESEND_SECONDS);
+    setSecondsRemaining(0);
     setStep("email");
   }
 
@@ -231,6 +251,7 @@ export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
     formattedTime,
     maskedEmail,
     canResend,
+    hasActivatedResendCooldown,
     isChangingEmail,
     isSubmittingEmailStep,
     isResending,

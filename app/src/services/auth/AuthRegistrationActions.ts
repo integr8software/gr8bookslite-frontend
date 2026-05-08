@@ -27,17 +27,19 @@ export async function SignUpAction(
   _previousState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
-  const parsed = SignUpSchema.safeParse({
+  const formValues = {
     name: GetFormValue(formData, "name"),
     email: GetFormValue(formData, "email"),
     contactNumber: GetFormValue(formData, "contactNumber"),
     password: GetFormValue(formData, "password"),
     confirmPassword: GetFormValue(formData, "confirmPassword"),
-    termsAccepted: formData.has("termsAccepted"),
-  });
+    termsAccepted: GetFormValue(formData, "termsAccepted") === "true",
+  };
+
+  const parsed = SignUpSchema.safeParse(formValues);
 
   if (!parsed.success) {
-    return InvalidState(parsed.error.flatten().fieldErrors);
+    return InvalidState(parsed.error.flatten().fieldErrors, formValues);
   }
 
   try {
@@ -69,6 +71,7 @@ export async function SignUpAction(
         error instanceof Error
           ? error.message
           : "We could not create your account right now.",
+      formValues,
     };
   }
 }

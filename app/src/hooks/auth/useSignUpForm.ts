@@ -5,8 +5,13 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { InitialAuthActionState } from "@/app/src/data/auth/AuthTypes";
+import type { AuthFieldErrors } from "@/app/src/data/auth/AuthTypes";
 import { SavePendingVerificationEmail } from "@/app/src/data/auth/AuthVerificationStorage";
 import { SignUpAction } from "@/app/src/services/auth/AuthActions";
+
+function HasFieldErrors(errors?: AuthFieldErrors) {
+  return Object.values(errors ?? {}).some((messages) => messages?.length);
+}
 
 export function useSignUpForm() {
   const router = useRouter();
@@ -35,7 +40,7 @@ export function useSignUpForm() {
       return;
     }
 
-    if (state.status === "error") {
+    if (state.status === "error" && !HasFieldErrors(state.errors)) {
       toast.error(state.message);
     }
   }, [
@@ -44,6 +49,7 @@ export function useSignUpForm() {
     state.message,
     state.pendingVerificationEmail,
     state.redirectTo,
+    state.errors,
     state.status,
   ]);
 

@@ -12,10 +12,20 @@ export type AuthFieldErrors = Partial<
   >
 >;
 
+export type AuthFormValues = {
+  name?: string;
+  email?: string;
+  contactNumber?: string;
+  password?: string;
+  confirmPassword?: string;
+  termsAccepted?: boolean;
+};
+
 export type AuthActionState = {
   status: "idle" | "error" | "success";
   message: string;
   errors?: AuthFieldErrors;
+  formValues?: AuthFormValues;
   redirectTo?: string;
   pendingVerificationEmail?: string;
 };

@@ -1,6 +1,7 @@
 import type {
   AuthActionState,
   AuthFieldErrors,
+  AuthFormValues,
 } from "@/app/src/data/auth/AuthTypes";
 
 export function GetFormValue(formData: FormData, key: string) {
@@ -8,10 +9,14 @@ export function GetFormValue(formData: FormData, key: string) {
   return typeof value === "string" ? value : "";
 }
 
-export function InvalidState(errors: AuthFieldErrors): AuthActionState {
+export function InvalidState(
+  errors: AuthFieldErrors,
+  formValues?: AuthFormValues,
+): AuthActionState {
   return {
     status: "error",
     message: "Please fix the highlighted fields.",
     errors,
+    formValues,
   };
 }

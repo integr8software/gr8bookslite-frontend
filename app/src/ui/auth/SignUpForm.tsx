@@ -1,29 +1,68 @@
 "use client";
 
 import { useState } from "react";
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
 	FormatPhilippineContactNumber,
 	PHILIPPINE_PREFIX,
 } from "@/app/src/data/shared/ContactData";
+import type { AuthFormValues } from "@/app/src/data/auth/AuthTypes";
 import { useSignUpForm } from "@/app/src/hooks/auth/useSignUpForm";
 import { AuthField } from "./AuthField";
 import { AuthPasswordRequirements } from "./AuthPasswordRequirements";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check, LoaderCircle } from "lucide-react";
+
+type SignUpFormValues = Required<AuthFormValues>;
+
+const InitialSignUpFormValues: SignUpFormValues = {
+	name: "",
+	email: "",
+	contactNumber: `${PHILIPPINE_PREFIX} `,
+	password: "",
+	confirmPassword: "",
+	termsAccepted: false,
+};
+
+function GetSubmittedValue(formData: FormData, key: string) {
+	const value = formData.get(key);
+	return typeof value === "string" ? value : "";
+}
 
 export function SignUpForm() {
 	const { state, formAction, pending } = useSignUpForm();
-	const [name, setName] = useState("");
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
-	const [contactNumber, setContactNumber] = useState(`${PHILIPPINE_PREFIX} `);
-	const [termsAccepted, setTermsAccepted] = useState(false);
+	const [formValues, setFormValues] = useState<Partial<SignUpFormValues>>({});
+	const values: SignUpFormValues = {
+		...InitialSignUpFormValues,
+		...state.formValues,
+		...formValues,
+	};
+
+	function updateValues(nextValues: Partial<SignUpFormValues>) {
+		setFormValues((currentValues) => ({
+			...currentValues,
+			...nextValues,
+		}));
+	}
 
 	function handleContactNumberChange(event: ChangeEvent<HTMLInputElement>) {
-		setContactNumber(FormatPhilippineContactNumber(event.target.value));
+		updateValues({
+			contactNumber: FormatPhilippineContactNumber(event.target.value),
+		});
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		const submittedFormData = new FormData(event.currentTarget);
+
+		updateValues({
+			name: GetSubmittedValue(submittedFormData, "name"),
+			email: GetSubmittedValue(submittedFormData, "email"),
+			contactNumber: GetSubmittedValue(submittedFormData, "contactNumber"),
+			password: GetSubmittedValue(submittedFormData, "password"),
+			confirmPassword: GetSubmittedValue(submittedFormData, "confirmPassword"),
+			termsAccepted: values.termsAccepted,
+		});
 	}
 
 	return (
@@ -61,15 +100,21 @@ export function SignUpForm() {
 							</p>
 						</div>
 
-						<form action={formAction} className="mt-10 space-y-4">
+						<form
+							action={formAction}
+							onSubmit={handleSubmit}
+							className="mt-10 space-y-4"
+						>
 							<AuthField
 								label="Full Name"
 								name="name"
 								type="text"
 								autoComplete="name"
 								placeholder="John Doe"
-								value={name}
-								onChange={(event) => setName(event.target.value)}
+								value={values.name}
+								onChange={(event) =>
+									updateValues({ name: event.target.value })
+								}
 								errors={state.errors?.name}
 							/>
 							<AuthField
@@ -78,9 +123,9 @@ export function SignUpForm() {
 								type="email"
 								autoComplete="email"
 								placeholder="johndoe@example.com"
-								value={email}
+								value={values.email}
 								onChange={(event) =>
-									setEmail(event.target.value)
+									updateValues({ email: event.target.value })
 								}
 								errors={state.errors?.email}
 							/>
@@ -91,7 +136,7 @@ export function SignUpForm() {
 								type="tel"
 								autoComplete="tel"
 								placeholder="+63 934 305 9435"
-								value={contactNumber}
+								value={values.contactNumber}
 								onChange={handleContactNumberChange}
 								errors={state.errors?.contactNumber}
 							/>
@@ -102,36 +147,63 @@ export function SignUpForm() {
 								type="password"
 								autoComplete="new-password"
 								placeholder="Enter your password..."
-								value={password}
+								value={values.password}
 								onChange={(event) =>
-									setPassword(event.target.value)
+									updateValues({ password: event.target.value })
 								}
 								errors={state.errors?.password}
 							/>
-							<AuthPasswordRequirements password={password} />
+							<AuthPasswordRequirements password={values.password} />
 							<AuthField
 								label="Confirm Password"
 								name="confirmPassword"
 								type="password"
 								autoComplete="new-password"
 								placeholder="Please re-enter your password for confirmation..."
-								value={confirmPassword}
+								value={values.confirmPassword}
 								onChange={(event) =>
-									setConfirmPassword(event.target.value)
+									updateValues({
+										confirmPassword: event.target.value,
+									})
 								}
 								errors={state.errors?.confirmPassword}
 							/>
 
 							<label className="flex items-start gap-3 pt-2 text-xs leading-4 text-darknavy/75">
 								<input
-									type="checkbox"
+									type="hidden"
 									name="termsAccepted"
-									checked={termsAccepted}
-									onChange={(event) =>
-										setTermsAccepted(event.target.checked)
-									}
-									className="mt-0.5 h-4 w-4 rounded border border-darknavy/30 text-darknavy focus:ring-2 focus:ring-skyblue/30"
+									value={values.termsAccepted ? "true" : "false"}
 								/>
+								<input
+									type="checkbox"
+									checked={values.termsAccepted}
+									onChange={(event) =>
+										updateValues({
+											termsAccepted: event.target.checked,
+										})
+									}
+									aria-invalid={
+										state.errors?.termsAccepted?.length
+											? true
+											: undefined
+									}
+									className="peer sr-only"
+								/>
+								<span
+									aria-hidden="true"
+									className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition peer-focus-visible:ring-2 peer-focus-visible:ring-skyblue/30 ${
+										values.termsAccepted
+											? "border-darknavy bg-darknavy text-offwhite"
+											: state.errors?.termsAccepted?.length
+												? "border-coralpink bg-white"
+												: "border-darknavy/30 bg-white"
+									}`}
+								>
+									{values.termsAccepted ? (
+										<Check className="h-3 w-3" strokeWidth={3} />
+									) : null}
+								</span>
 								<span>
 									By signing in, I agree to the{" "}
 									<Link
@@ -170,7 +242,14 @@ export function SignUpForm() {
 									}
 									className="flex h-12 w-12 items-center justify-center rounded-full bg-darknavy text-offwhite transition hover:bg-darknavy/90 disabled:cursor-not-allowed disabled:bg-darknavy/50"
 								>
-									<ArrowRight />
+									{pending ? (
+										<LoaderCircle
+											className="h-5 w-5 animate-spin"
+											aria-hidden="true"
+										/>
+									) : (
+										<ArrowRight aria-hidden="true" />
+									)}
 								</button>
 							</div>
 

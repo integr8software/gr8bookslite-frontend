@@ -19,6 +19,7 @@ export type AuthFormValues = {
   password?: string;
   confirmPassword?: string;
   termsAccepted?: boolean;
+  rememberMe?: boolean;
 };
 
 export type AuthActionState = {
@@ -29,6 +30,8 @@ export type AuthActionState = {
   redirectTo?: string;
   pendingVerificationEmail?: string;
   resetToken?: string;
+  accessToken?: string;
+  rememberMe?: boolean;
 };
 
 export const InitialAuthActionState: AuthActionState = {

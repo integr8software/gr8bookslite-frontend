@@ -10,7 +10,9 @@ import {
   ClearPendingVerificationEmail,
   SavePendingVerificationEmail,
 } from "@/app/src/data/auth/AuthVerificationStorage";
+import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { LoginAction } from "@/app/src/services/auth/AuthActions";
+import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 
 type LoginFormValues = {
   email: string;
@@ -27,6 +29,8 @@ function GetSubmittedValue(formData: FormData, key: string) {
 
 export function useLoginForm() {
   const router = useRouter();
+  const accessToken = useAppStore((state) => state.accessToken);
+  const setAccessToken = useAppStore((state) => state.setAccessToken);
   const [state, formAction, pending] = useActionState(
     LoginAction,
     InitialAuthActionState,
@@ -58,6 +62,12 @@ export function useLoginForm() {
   }
 
   useEffect(() => {
+    if (accessToken) {
+      router.replace("/onboarding");
+    }
+  }, [accessToken, router]);
+
+  useEffect(() => {
     const justFinishedSubmitting = wasPendingRef.current && !pending;
     wasPendingRef.current = pending;
 
@@ -67,6 +77,10 @@ export function useLoginForm() {
 
     if (state.status === "success") {
       ClearPendingVerificationEmail();
+      if (state.accessToken) {
+        SaveAccessToken(state.accessToken, state.rememberMe ?? false);
+        setAccessToken(state.accessToken);
+      }
       toast.success(state.message);
       if (state.redirectTo) {
         router.push(state.redirectTo);
@@ -86,10 +100,13 @@ export function useLoginForm() {
   }, [
     pending,
     router,
+    state.accessToken,
     state.message,
+    state.rememberMe,
     state.pendingVerificationEmail,
     state.redirectTo,
     state.status,
+    setAccessToken,
   ]);
 
   return {

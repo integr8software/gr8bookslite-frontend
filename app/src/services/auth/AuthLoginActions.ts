@@ -18,11 +18,14 @@ export async function LoginAction(
 ): Promise<AuthActionState> {
   const formValues = {
     email: GetFormValue(formData, "email"),
+    password: GetFormValue(formData, "password"),
   };
+
+  const rememberMe = formData.has("rememberMe");
 
   const parsed = LoginSchema.safeParse({
     email: formValues.email,
-    password: GetFormValue(formData, "password"),
+    password: formValues.password,
   });
 
   if (!parsed.success) {
@@ -41,6 +44,8 @@ export async function LoginAction(
     return {
       status: "success",
       message: response.message ?? "Login successful.",
+      accessToken: response.accessToken,
+      rememberMe,
       redirectTo: "/onboarding",
     };
   } catch (error) {
@@ -60,6 +65,7 @@ export async function LoginAction(
         redirectTo: `/otp?${otpParams.toString()}`,
         pendingVerificationEmail: parsed.data.email,
         formValues,
+        rememberMe,
       };
     }
 

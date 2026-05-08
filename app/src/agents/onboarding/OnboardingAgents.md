@@ -62,7 +62,7 @@ Use `data` for onboarding constants, Zod schemas, types, and initial values.
 
 - `OnboardingData.ts`
   - step metadata for the 3-step flow
-  - select options such as department and organisation type
+  - select options such as department and organization type
   - upload limits such as the 5MB logo size
 - `OnboardingSchemas.ts`
   - step 1 validation
@@ -104,7 +104,7 @@ Use `ui` for presentational onboarding pieces and reusable step components.
   - top-level onboarding screen controller
   - renders the active step
 - `OnboardingStepOne.tsx`
-  - taxpayer and organisation details
+  - taxpayer and organization details
 - `OnboardingStepTwo.tsx`
   - account creation
 - `OnboardingReviewStep.tsx`
@@ -128,7 +128,7 @@ Implemented onboarding behavior:
 - step 1 taxpayer flow:
   - individual path
   - non-individual path
-  - conditional organisation type input for `Others`
+  - conditional organization type input for `Others`
 - step 1 validation:
   - address
   - TIN

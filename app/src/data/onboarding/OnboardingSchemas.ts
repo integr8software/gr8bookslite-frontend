@@ -146,7 +146,7 @@ export const OnboardingStepOneNonIndividualSchema = z
       .trim()
       .min(2, "Company name must be at least 2 characters."),
     nonIndividualType: z.enum(OnboardingNonIndividualTypeOptions, {
-      error: "Select an organisation type.",
+      error: "Select an organization type.",
     }),
     nonIndividualTypeOther: z.string().optional(),
     ...SharedStepOneFields,
@@ -157,7 +157,7 @@ export const OnboardingStepOneNonIndividualSchema = z
       (data.nonIndividualTypeOther &&
         data.nonIndividualTypeOther.trim().length >= 2),
     {
-      message: "Please specify the organisation type.",
+      message: "Please specify the organization type.",
       path: ["nonIndividualTypeOther"],
     },
   );

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GradientBlurBackground } from "@/app/src/ui/components/backgrounds/GradientBlurBackground";
+import { GradientBlurBackground } from "@/app/src/ui/shared/GradientBlurBackground";
 import { ForgotPasswordForm } from "@/app/src/ui/auth/ForgotPasswordForm";
 
 export const metadata: Metadata = {

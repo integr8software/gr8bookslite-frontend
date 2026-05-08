@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import type { ComponentPropsWithoutRef } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { usePasswordVisibility } from "@/app/src/hooks/shared/usePasswordVisibility";
 
 type AuthFieldProps = ComponentPropsWithoutRef<"input"> & {
   label: string;
@@ -12,9 +12,12 @@ type AuthFieldProps = ComponentPropsWithoutRef<"input"> & {
 export function AuthField({ label, errors, id, name, ...props }: AuthFieldProps) {
   const fieldId = id ?? String(name);
   const errorId = `${fieldId}-error`;
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const isPassword = props.type === "password";
-  const inputType = isPassword && isPasswordVisible ? "text" : props.type;
+  const {
+    isPassword,
+    inputType,
+    isPasswordVisible,
+    togglePasswordVisibility,
+  } = usePasswordVisibility(props.type);
 
   return (
     <div>
@@ -37,7 +40,7 @@ export function AuthField({ label, errors, id, name, ...props }: AuthFieldProps)
         {isPassword ? (
           <button
             type="button"
-            onClick={() => setIsPasswordVisible((current) => !current)}
+            onClick={togglePasswordVisibility}
             aria-label={isPasswordVisible ? "Hide password" : "Show password"}
             className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-darknavy/55 transition hover:text-darknavy focus:outline-none focus:ring-2 focus:ring-skyblue/30"
           >

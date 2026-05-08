@@ -4,29 +4,14 @@ import { useState } from "react";
 import type { ChangeEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import {
+	FormatPhilippineContactNumber,
+	PHILIPPINE_PREFIX,
+} from "@/app/src/data/shared/ContactData";
 import { useSignUpForm } from "@/app/src/hooks/auth/useSignUpForm";
 import { AuthField } from "./AuthField";
 import { AuthPasswordRequirements } from "./AuthPasswordRequirements";
 import { ArrowRight } from "lucide-react";
-
-const PHILIPPINE_PREFIX = "+63";
-
-function formatPhilippineContactNumber(value: string) {
-	const digits = value.replace(/\D/g, "");
-	const withoutCountryCode = digits.startsWith("63")
-		? digits.slice(2)
-		: digits;
-	const mobileDigits = withoutCountryCode.slice(0, 10);
-	const formattedGroups = [
-		mobileDigits.slice(0, 3),
-		mobileDigits.slice(3, 6),
-		mobileDigits.slice(6, 10),
-	].filter(Boolean);
-
-	return formattedGroups.length
-		? `${PHILIPPINE_PREFIX} ${formattedGroups.join(" ")}`
-		: `${PHILIPPINE_PREFIX} `;
-}
 
 export function SignUpForm() {
 	const { state, formAction, pending } = useSignUpForm();
@@ -38,13 +23,13 @@ export function SignUpForm() {
 	const [termsAccepted, setTermsAccepted] = useState(false);
 
 	function handleContactNumberChange(event: ChangeEvent<HTMLInputElement>) {
-		setContactNumber(formatPhilippineContactNumber(event.target.value));
+		setContactNumber(FormatPhilippineContactNumber(event.target.value));
 	}
 
 	return (
 		<main className="min-h-screen bg-white text-darknavy">
-			<section className="flex min-h-screen flex-col bg-white lg:flex-row">
-				<div className="relative hidden min-h-screen lg:block lg:basis-1/2">
+			<section className="flex min-h-screen flex-col bg-white lg:h-screen lg:flex-row lg:overflow-hidden">
+				<div className="relative hidden h-screen lg:block lg:basis-1/2 lg:flex-none">
 					<Image
 						src="/img/signup-bg.png"
 						alt="Office illustration with people collaborating at workstations."
@@ -55,7 +40,7 @@ export function SignUpForm() {
 					/>
 				</div>
 
-				<div className="flex w-full items-center justify-center px-5 py-8 sm:px-8 sm:py-10 lg:min-h-screen lg:basis-1/2 lg:px-10 xl:px-14">
+				<div className="flex w-full items-center justify-center px-5 py-8 sm:px-8 sm:py-10 lg:min-h-screen lg:basis-1/2 lg:overflow-y-auto lg:px-10 xl:px-14">
 					<div className="w-full max-w-107.5">
 						<Link
 							href="/"

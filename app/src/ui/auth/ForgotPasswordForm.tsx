@@ -61,7 +61,6 @@ export function ForgotPasswordForm() {
             handleOtpFocus={form.handleOtpFocus}
             handleOtpBlur={form.handleOtpBlur}
             handleResend={form.handleResend}
-            handleChangeEmail={form.handleChangeEmail}
           />
         ) : (
           <ForgotPasswordResetStep

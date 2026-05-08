@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
 import {
   GetSyncedReportEndDate,
   IsValidOnboardingDateValue,
@@ -65,6 +66,15 @@ const TINSchema = z
     "Enter a valid TIN (e.g. 123-456-789-000).",
   );
 
+const ContactNumberSchema = z
+  .string()
+  .trim()
+  .min(1, "Contact number is required.")
+  .refine(
+    (value) => value === FormatPhilippineContactNumber(value),
+    "Enter a valid contact number in the format.",
+  );
+
 const LogoSchema = z
   .instanceof(File, { message: "Upload a logo image." })
   .refine((file) => file.size > 0, "Upload a logo image.")
@@ -93,7 +103,7 @@ const SharedStepOneFields = {
       (value) => value === "" || IsValidWebsiteUrl(value),
       "Enter a valid website URL.",
     ),
-  contactNumber: z.string().trim().min(7, "Enter a valid contact number."),
+  contactNumber: ContactNumberSchema,
   logo: LogoSchema,
   reportYearBasis: z.enum(OnboardingReportYearBasisOptions, {
     error: "Select a report year type.",

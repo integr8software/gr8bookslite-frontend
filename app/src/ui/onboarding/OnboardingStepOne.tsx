@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  FormatPhilippineContactNumber,
+  PHILIPPINE_PREFIX,
+} from "@/app/src/data/shared/ContactData";
 import { OnboardingNonIndividualTypeOptions } from "@/app/src/data/onboarding/OnboardingData";
 import type {
   OnboardingFieldErrors,
@@ -202,27 +206,16 @@ export function OnboardingStepOne({
           placeholder="+63 917 123 4567"
           maxLength={16}
           value={values.contactNumber}
-          onChange={(e) => {
-            const prefix = "+63 ";
-            const digits = e.target.value
-              .replace(/^\+63\s?/, "")
-              .replace(/\D/g, "")
-              .slice(0, 10);
-            let formatted = "";
-            if (digits.length <= 3) {
-              formatted = digits;
-            } else if (digits.length <= 6) {
-              formatted = `${digits.slice(0, 3)} ${digits.slice(3)}`;
-            } else {
-              formatted = `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
-            }
+          onChange={(e) =>
             updateValue(
               "contactNumber",
-              digits ? `${prefix}${formatted}` : prefix,
-            );
-          }}
+              FormatPhilippineContactNumber(e.target.value),
+            )
+          }
           onFocus={(e) => {
-            if (!e.target.value) updateValue("contactNumber", "+63 ");
+            if (!e.target.value) {
+              updateValue("contactNumber", `${PHILIPPINE_PREFIX} `);
+            }
           }}
           errors={errors.contactNumber}
         />

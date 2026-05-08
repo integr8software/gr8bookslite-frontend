@@ -102,6 +102,10 @@ export function useOnboardingFlow() {
       ...current,
       [key]: value,
     }));
+    setErrors((current) => ({
+      ...current,
+      [key]: undefined,
+    }));
   }
 
   function setTaxpayerType(type: OnboardingTaxpayerType) {

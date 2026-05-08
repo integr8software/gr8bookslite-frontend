@@ -34,7 +34,9 @@ function ResolveHasResendCooldown(email: string) {
   return ResolveInitialResendSeconds(email) > 0;
 }
 
-export function useOtpForm({ initialEmail = "" }: UseOtpFormOptions = {}) {
+export function useOtpForm({
+  initialEmail = "",
+}: UseOtpFormOptions = {}) {
   const router = useRouter();
   const initialVerificationEmail = initialEmail.trim();
   const [state, formAction, pending] = useActionState(

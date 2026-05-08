@@ -31,6 +31,7 @@ export function useForgotPasswordForm() {
   const [step, setStep] = useState<ForgotPasswordStep>("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [resetToken, setResetToken] = useState("");
   const [secondsRemaining, setSecondsRemaining] = useState(OTP_RESEND_SECONDS);
   const [isResending, setIsResending] = useState(false);
   const [isOtpFocused, setIsOtpFocused] = useState(false);
@@ -45,7 +46,8 @@ export function useForgotPasswordForm() {
       if (intent === "verify-otp") {
         const nextState = await ForgotPasswordOtpAction(previousState, formData);
 
-        if (nextState.status === "success") {
+        if (nextState.status === "success" && nextState.resetToken) {
+          setResetToken(nextState.resetToken);
           setStep("reset");
         }
 
@@ -72,6 +74,7 @@ export function useForgotPasswordForm() {
         }
 
         setOtp("");
+        setResetToken("");
         setIsResetComplete(false);
         setSecondsRemaining(OTP_RESEND_SECONDS);
         setStep("verify");
@@ -187,6 +190,7 @@ export function useForgotPasswordForm() {
 
       if (nextState.status === "success") {
         setOtp("");
+        setResetToken("");
         setSecondsRemaining(OTP_RESEND_SECONDS);
         toast.success(nextState.message);
         window.requestAnimationFrame(() => {
@@ -205,6 +209,7 @@ export function useForgotPasswordForm() {
 
   const handleChangeEmail = useCallback(() => {
     setOtp("");
+    setResetToken("");
     setIsResetComplete(false);
     setSecondsRemaining(OTP_RESEND_SECONDS);
     setStep("email");
@@ -217,6 +222,7 @@ export function useForgotPasswordForm() {
     step,
     email,
     otp,
+    resetToken,
     otpInputRef,
     formattedTime,
     maskedEmail,

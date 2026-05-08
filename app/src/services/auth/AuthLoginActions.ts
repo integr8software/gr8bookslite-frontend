@@ -45,7 +45,7 @@ export async function LoginAction(
         ? error.message
         : "We could not sign you in right now.";
 
-    if (message === "Please verify your email before logging in.") {
+    if (message.startsWith("Please verify your email before logging in.")) {
       const otpParams = new URLSearchParams({
         email: parsed.data.email,
       });

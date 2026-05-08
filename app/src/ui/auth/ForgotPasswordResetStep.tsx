@@ -11,8 +11,7 @@ type ForgotPasswordResetStepProps = {
 	formAction: (formData: FormData) => void;
 	pending: boolean;
 	isResetComplete: boolean;
-	email: string;
-	otp: string;
+	resetToken: string;
 };
 
 export function ForgotPasswordResetStep({
@@ -20,8 +19,7 @@ export function ForgotPasswordResetStep({
 	formAction,
 	pending,
 	isResetComplete,
-	email,
-	otp,
+	resetToken,
 }: ForgotPasswordResetStepProps) {
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
@@ -59,8 +57,7 @@ export function ForgotPasswordResetStep({
 	return (
 		<form action={formAction} className="space-y-5">
 			<input type="hidden" name="intent" value="reset-password" />
-			<input type="hidden" name="email" value={email} />
-			<input type="hidden" name="otp" value={otp} />
+			<input type="hidden" name="resetToken" value={resetToken} />
 
 			<div>
 				<AuthField

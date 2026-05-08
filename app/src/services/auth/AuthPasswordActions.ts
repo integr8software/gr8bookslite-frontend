@@ -11,6 +11,8 @@ import {
   type ForgotPasswordResponse,
   type ResetPasswordRequest,
   type ResetPasswordResponse,
+  type VerifyForgotPasswordCodeRequest,
+  type VerifyForgotPasswordCodeResponse,
 } from "@/app/src/services/auth/AuthApiTypes";
 import { PostAuthJson } from "@/app/src/services/auth/AuthApi";
 import {
@@ -57,6 +59,7 @@ export async function ForgotPasswordOtpAction(
   _previousState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
+  const email = GetFormValue(formData, "email");
   const otp = GetFormValue(formData, "otp");
   const parsed = OtpSchema.safeParse({ otp });
 
@@ -64,10 +67,52 @@ export async function ForgotPasswordOtpAction(
     return InvalidState(parsed.error.flatten().fieldErrors);
   }
 
-  return {
-    status: "success",
-    message: "Code accepted. Create a new password.",
-  };
+  const emailValidation = ForgotPasswordSchema.safeParse({ email });
+
+  if (!emailValidation.success) {
+    return {
+      status: "error",
+      message: "Enter a valid email address.",
+      errors: {
+        email: emailValidation.error.flatten().fieldErrors.email,
+      },
+    };
+  }
+
+  try {
+    const response = await PostAuthJson<
+      VerifyForgotPasswordCodeRequest,
+      VerifyForgotPasswordCodeResponse
+    >("/auth/verify-forgot-password-code", {
+      email: emailValidation.data.email,
+      code: parsed.data.otp,
+    });
+
+    return {
+      status: "success",
+      message: response.message,
+      resetToken: response.resetToken,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "We could not verify your reset code right now.";
+
+    return {
+      status: "error",
+      message,
+      errors: {
+        otp: [
+          message === "Reset code is invalid." ||
+          message === "Reset code has expired." ||
+          message === "No active reset code was found."
+            ? message
+            : "The code you entered is invalid.",
+        ],
+      },
+    };
+  }
 }
 
 export async function ResendForgotPasswordAction(
@@ -109,8 +154,7 @@ export async function ResetPasswordAction(
   _previousState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
-  const email = GetFormValue(formData, "email");
-  const otp = GetFormValue(formData, "otp");
+  const resetToken = GetFormValue(formData, "resetToken");
   const parsed = ResetPasswordSchema.safeParse({
     password: GetFormValue(formData, "password"),
     confirmPassword: GetFormValue(formData, "confirmPassword"),
@@ -120,25 +164,13 @@ export async function ResetPasswordAction(
     return InvalidState(parsed.error.flatten().fieldErrors);
   }
 
-  const emailValidation = ForgotPasswordSchema.safeParse({ email });
-
-  if (!emailValidation.success) {
+  if (!resetToken) {
     return {
       status: "error",
-      message: "Enter a valid email address.",
+      message: "Verify your reset code before creating a new password.",
       errors: {
-        email: emailValidation.error.flatten().fieldErrors.email,
+        otp: ["Verify your reset code before creating a new password."],
       },
-    };
-  }
-
-  const otpValidation = OtpSchema.safeParse({ otp });
-
-  if (!otpValidation.success) {
-    return {
-      status: "error",
-      message: "Enter a valid reset code.",
-      errors: otpValidation.error.flatten().fieldErrors,
     };
   }
 
@@ -147,8 +179,7 @@ export async function ResetPasswordAction(
       ResetPasswordRequest,
       ResetPasswordResponse
     >("/auth/reset-password", {
-      email: emailValidation.data.email,
-      code: otpValidation.data.otp,
+      resetToken,
       newPassword: parsed.data.password,
       confirmNewPassword: parsed.data.confirmPassword,
     });
@@ -169,9 +200,9 @@ export async function ResetPasswordAction(
       message,
       errors: {
         otp:
-          message === "Reset code is invalid." ||
-          message === "Reset code has expired." ||
-          message === "No active reset code was found."
+          message === "Password reset token is invalid." ||
+          message === "Password reset token is invalid or expired." ||
+          message === "Password reset request is invalid."
             ? [message]
             : undefined,
       },

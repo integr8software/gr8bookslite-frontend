@@ -68,8 +68,7 @@ export function ForgotPasswordForm() {
             formAction={form.formAction}
             pending={form.pending}
             isResetComplete={form.isResetComplete}
-            email={form.email}
-            otp={form.otp}
+            resetToken={form.resetToken}
           />
         )}
 

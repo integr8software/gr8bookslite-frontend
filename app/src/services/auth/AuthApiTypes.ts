@@ -52,9 +52,18 @@ export type ForgotPasswordResponse = {
   maskedEmail?: string;
 };
 
-export type ResetPasswordRequest = {
+export type VerifyForgotPasswordCodeRequest = {
   email: string;
   code: string;
+};
+
+export type VerifyForgotPasswordCodeResponse = {
+  message: string;
+  resetToken: string;
+};
+
+export type ResetPasswordRequest = {
+  resetToken: string;
   newPassword: string;
   confirmNewPassword: string;
 };

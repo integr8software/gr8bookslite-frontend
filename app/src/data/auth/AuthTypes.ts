@@ -28,6 +28,7 @@ export type AuthActionState = {
   formValues?: AuthFormValues;
   redirectTo?: string;
   pendingVerificationEmail?: string;
+  resetToken?: string;
 };
 
 export const InitialAuthActionState: AuthActionState = {

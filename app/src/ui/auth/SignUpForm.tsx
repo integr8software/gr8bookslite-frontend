@@ -103,6 +103,7 @@ export function SignUpForm() {
 						<form
 							action={formAction}
 							onSubmit={handleSubmit}
+							noValidate
 							className="mt-10 space-y-4"
 						>
 							<AuthField
@@ -192,13 +193,12 @@ export function SignUpForm() {
 								/>
 								<span
 									aria-hidden="true"
-									className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition peer-focus-visible:ring-2 peer-focus-visible:ring-skyblue/30 ${
-										values.termsAccepted
-											? "border-darknavy bg-darknavy text-offwhite"
-											: state.errors?.termsAccepted?.length
-												? "border-coralpink bg-white"
-												: "border-darknavy/30 bg-white"
-									}`}
+									className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition peer-focus-visible:ring-2 peer-focus-visible:ring-skyblue/30 ${values.termsAccepted
+										? "border-darknavy bg-darknavy text-offwhite"
+										: state.errors?.termsAccepted?.length
+											? "border-coralpink bg-white"
+											: "border-darknavy/30 bg-white"
+										}`}
 								>
 									{values.termsAccepted ? (
 										<Check className="h-3 w-3" strokeWidth={3} />

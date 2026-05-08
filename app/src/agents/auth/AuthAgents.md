@@ -23,6 +23,14 @@ app/src/hooks/auth/
 app/src/ui/auth/
 ```
 
+Shared cross-feature foundation also exists in:
+
+```txt
+app/src/services/shared/
+app/src/hooks/shared/
+app/src/ui/shared/
+```
+
 Current route files:
 
 ```txt
@@ -43,6 +51,9 @@ Examples:
 - `AuthSchemas.ts`
 - `AuthTypes.ts`
 - `AuthActions.ts`
+- `AuthLoginActions.ts`
+- `AuthRegistrationActions.ts`
+- `AuthPasswordActions.ts`
 - `OtpData.ts`
 - `LoginForm.tsx`
 - `SignUpForm.tsx`
@@ -60,6 +71,12 @@ app/src/data/auth/
 
 app/src/services/auth/
   AuthActions.ts
+  AuthApi.ts
+  AuthApiTypes.ts
+  AuthActionUtils.ts
+  AuthLoginActions.ts
+  AuthRegistrationActions.ts
+  AuthPasswordActions.ts
 
 app/src/hooks/auth/
   useForgotPasswordForm.ts
@@ -69,13 +86,33 @@ app/src/hooks/auth/
 
 app/src/ui/auth/
   AuthField.tsx
-  AuthShell.tsx
-  AuthStatusMessage.tsx
-  AuthSubmitButton.tsx
+  AuthPasswordRequirements.tsx
   ForgotPasswordForm.tsx
+  ForgotPasswordEmailStep.tsx
+  ForgotPasswordOtpStep.tsx
+  ForgotPasswordResetStep.tsx
   LoginForm.tsx
   OtpForm.tsx
+  PrivacyPolicyForm.tsx
   SignUpForm.tsx
+  TermsOfServiceForm.tsx
+```
+
+Shared frontend boilerplate available to auth:
+
+```txt
+app/src/services/shared/
+  ApiClient.ts
+  QueryClient.ts
+
+app/src/hooks/shared/
+  useAppStore.ts
+  usePasswordVisibility.ts
+
+app/src/ui/shared/
+  AppProviders.tsx
+  AppToaster.tsx
+  GradientBlurBackground.tsx
 ```
 
 ## How The Auth Layers Work
@@ -102,12 +139,54 @@ This layer stores auth validation, types, constants, and small reusable helpers.
 This layer contains server-side auth operations.
 
 - `AuthActions.ts`
-  - contains `LoginAction`
-  - contains `SignUpAction`
-  - contains `ForgotPasswordAction`
-  - contains `OtpAction`
-  - each action validates form data using schemas from `data/auth`
-  - each action returns `AuthActionState`
+  - acts as a thin barrel for auth actions
+  - re-exports the flow-based action modules
+
+- `AuthLoginActions.ts`
+  - contains login-only server actions
+
+- `AuthRegistrationActions.ts`
+  - contains sign-up, email verification, and verification-email-change actions
+
+- `AuthPasswordActions.ts`
+  - contains forgot-password and reset-password actions
+
+- `AuthActionUtils.ts`
+  - contains shared auth action helpers such as form-value extraction and invalid-state mapping
+
+- `AuthApiTypes.ts`
+  - contains auth API request and response types
+
+Quick mental model for these files:
+
+- `AuthActions.ts`
+  - main entry file
+  - re-exports auth actions from the smaller flow-based files
+  - lets the rest of the app import from one place when preferred
+
+- `AuthActionUtils.ts`
+  - shared helper functions for auth actions
+  - things like reading `FormData` values and returning common invalid-state responses
+  - avoids repeating tiny utility logic in every auth action file
+
+- `AuthApi.ts`
+  - auth request helper layer
+  - knows how to call backend auth endpoints
+  - handles base URL building and error shaping for auth requests
+
+- `AuthApiTypes.ts`
+  - shared request and response TypeScript types for auth API calls
+  - keeps payload and response shapes in one place
+  - avoids repeating those types across multiple auth action files
+
+- `AuthApi.ts`
+  - contains auth-specific request helpers
+  - currently uses `fetch`
+  - can later be unified with the shared Axios client when auth request handling is centralized
+
+- shared services
+  - `ApiClient.ts` is the shared Axios boilerplate
+  - `QueryClient.ts` is the shared TanStack Query client factory
 
 ### `hooks/auth`
 
@@ -129,15 +208,17 @@ This layer contains client-side form state and interaction logic.
   - manages OTP input state and focus state
   - manages toast-based feedback for OTP interactions
 
+- shared hooks
+  - `useAppStore.ts` is the shared Zustand boilerplate for lightweight client state
+  - `usePasswordVisibility.ts` handles shared password-visibility state
+
 ### `ui/auth`
 
 This layer contains reusable and screen-level auth components.
 
 - Shared components:
   - `AuthField.tsx`
-  - `AuthShell.tsx`
-  - `AuthStatusMessage.tsx`
-  - `AuthSubmitButton.tsx`
+  - `AuthPasswordRequirements.tsx`
 
 - Screen/form components:
   - `LoginForm.tsx`
@@ -147,10 +228,12 @@ This layer contains reusable and screen-level auth components.
 
 ## UI Rules
 
-- Reuse `AuthField.tsx`, `AuthStatusMessage.tsx`, and `AuthSubmitButton.tsx` where they still fit the flow.
+- Reuse `AuthField.tsx` and shared auth helpers where they still fit the flow.
 - If a form becomes custom and screen-specific, keep business logic in hooks or data files and keep the component focused on rendering.
 - Prefer project color tokens from `app/globals.css`.
 - Keep auth screens mobile responsive first, then enhance for desktop.
+- Use TanStack Query for shared auth/session server state when those queries are introduced.
+- Use Zustand for lightweight auth-adjacent client state, not for form validation already handled in hooks and Zod.
 
 ## What Has Been Done
 
@@ -213,9 +296,13 @@ This layer contains reusable and screen-level auth components.
 - Shared auth types belong in `app/src/data/auth/AuthTypes.ts`
 - OTP constants and helpers belong in `app/src/data/auth/OtpData.ts`
 - Server actions belong in `app/src/services/auth/AuthActions.ts`
-- Client-side interaction state belongs in hooks under `app/src/hooks/auth`
+- Shared Axios boilerplate belongs in `app/src/services/shared/ApiClient.ts`
+- Shared TanStack Query client setup belongs in `app/src/services/shared/QueryClient.ts`
+- Client-side interaction state, side effects, derived state, and auth flow logic belong in hooks under `app/src/hooks/auth`
+- Shared lightweight client state belongs in Zustand hooks under `app/src/hooks/shared`
 - Keep screen components focused on rendering and event wiring
 - Move reusable logic out of UI files when a form starts getting large
+- If an auth service file grows too large, split it by auth flow such as login, registration/verification, and password reset
 
 ## Toasts
 
@@ -232,7 +319,7 @@ This layer contains reusable and screen-level auth components.
 
 - Prefer this sequence when adding a new auth feature:
   1. Add or update schema and types
-  2. Add or update server action
+  2. Add or update the correct flow-based auth service file
   3. Add or update hook
   4. Build or update the UI component
   5. Connect the route page

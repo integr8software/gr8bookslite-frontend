@@ -23,9 +23,6 @@ app/src/data/onboarding/
   OnboardingSchemas.ts
   OnboardingTypes.ts
 
-app/src/services/onboarding/
-  OnboardingActions.ts
-
 app/src/hooks/onboarding/
   useOnboardingFlow.ts
 
@@ -44,15 +41,30 @@ app/src/ui/onboarding/
 
 app/src/agents/onboarding/
   OnboardingAgents.md
+
+app/src/services/shared/
+  ApiClient.ts
+  QueryClient.ts
+
+app/src/hooks/shared/
+  useAppStore.ts
+  usePasswordVisibility.ts
+
+app/src/ui/shared/
+  AppProviders.tsx
+  AppToaster.tsx
 ```
 
 ## Rules
 
 - Use PascalCase for shared onboarding files.
 - Keep onboarding logic out of auth folders.
-- Keep the module split as `data -> services -> hooks -> ui`.
+- Keep the module split as `data -> services -> hooks -> ui` when a real onboarding service layer exists.
 - Reuse onboarding UI components before adding large inline JSX to a step screen.
 - Prefer project color tokens from `app/globals.css` over ad hoc values.
+- Use shared services and hooks for cross-feature concerns such as Axios clients, TanStack Query setup, and Zustand state.
+- Put onboarding interaction logic, flow control, derived state, and side effects in hooks.
+- Keep onboarding UI components focused on rendering and event wiring.
 
 ## Layer Responsibilities
 
@@ -73,15 +85,6 @@ Use `data` for onboarding constants, Zod schemas, types, and initial values.
   - form value shape
   - field error types
   - initial onboarding values
-
-### `services/onboarding`
-
-Use `services` for server-side onboarding actions when a step needs to validate or submit through a server action.
-
-- `OnboardingActions.ts`
-  - currently contains a step 1 server action
-  - this is not the main active flow driver right now
-  - keep it aligned if the onboarding flow is moved back to `useActionState`
 
 ### `hooks/onboarding`
 
@@ -118,6 +121,17 @@ Use `ui` for presentational onboarding pieces and reusable step components.
   - `OnboardingPasswordStrength.tsx`
   - `OnboardingPasswordRequirements.tsx`
 
+### Shared frontend foundation
+
+- `ApiClient.ts`
+  - shared Axios boilerplate for future onboarding API wrappers
+- `QueryClient.ts`
+  - shared TanStack Query client factory
+- `useAppStore.ts`
+  - shared Zustand boilerplate for lightweight client state
+- `AppProviders.tsx`
+  - shared app provider entrypoint with TanStack Query
+
 ## Current Progress
 
 Implemented onboarding behavior:
@@ -133,7 +147,7 @@ Implemented onboarding behavior:
   - address
   - TIN
   - website
-  - contact number
+  - Philippine contact number format
   - required logo upload
   - image-only upload
   - max upload size `5MB`
@@ -157,5 +171,5 @@ Implemented onboarding behavior:
 ## Notes
 
 - The active onboarding screen is client-driven through `useOnboardingFlow.ts`.
-- `OnboardingActions.ts` exists, but the current multi-step flow does not depend on it for progression.
-- If a future change reintroduces server actions per step, document that update here and keep the data and hook layers aligned.
+- There is currently no dedicated `services/onboarding` runtime layer because the active flow is fully client-driven.
+- If a future change introduces onboarding API wrappers, place them under `app/src/services/onboarding/` and build them on the shared Axios and TanStack foundation.

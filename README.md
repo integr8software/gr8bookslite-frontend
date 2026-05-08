@@ -24,6 +24,54 @@ Frontend API requests should target the backend through:
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api/v1
 ```
 
+## Frontend Stack
+
+- `next` `16.2.4`
+- `react` `19.2.4`
+- `tailwindcss` `4`
+- `zod`
+- `axios`
+- `@tanstack/react-query`
+- `zustand`
+- `react-hot-toast`
+- `lucide-react`
+
+## Shared Services Boilerplate
+
+Shared frontend foundation now includes:
+
+```txt
+app/src/services/shared/ApiClient.ts
+app/src/services/shared/QueryClient.ts
+app/src/hooks/shared/useAppStore.ts
+app/src/ui/shared/AppProviders.tsx
+```
+
+What each one is for:
+
+- `ApiClient.ts`
+  - shared Axios instance
+  - uses `NEXT_PUBLIC_API_BASE_URL`
+  - central place for request defaults and response error shaping
+
+- `QueryClient.ts`
+  - shared TanStack Query client factory
+  - holds default cache and retry behavior
+
+- `useAppStore.ts`
+  - shared Zustand store boilerplate
+  - currently includes `accessToken`, `activeCompanyId`, and `isSidebarOpen`
+
+- `AppProviders.tsx`
+  - mounts shared app providers
+  - currently wraps the app in `QueryClientProvider`
+
+Recommended usage:
+
+- use `axios` for reusable API wrappers
+- use `@tanstack/react-query` for cached server state such as session, profile, and company data
+- use `zustand` for lightweight client state, not for form validation already handled by hooks and Zod
+
 ## Services And Features Implemented
 
 - Login
@@ -49,21 +97,6 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api/v1
   - interactive OTP ring states
   - toast-based success and error feedback
   - mock valid OTP: `1234`
-
-## Libraries Used
-
-- `react-hot-toast`
-  - for toast notifications
-
-- `lucide-react`
-  - for icons such as arrow actions and auth UI icons
-
-- `zod`
-  - for form validation schemas
-
-- `next`
-- `react`
-- `react-dom`
 
 ## Scripts
 

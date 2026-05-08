@@ -32,10 +32,11 @@ export function useForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [resetToken, setResetToken] = useState("");
-  const [secondsRemaining, setSecondsRemaining] = useState(OTP_RESEND_SECONDS);
+  const [secondsRemaining, setSecondsRemaining] = useState(0);
   const [isResending, setIsResending] = useState(false);
   const [isOtpFocused, setIsOtpFocused] = useState(false);
   const [isResetComplete, setIsResetComplete] = useState(false);
+  const [hasEditedOtpAfterError, setHasEditedOtpAfterError] = useState(false);
   const otpInputRef = useRef<HTMLInputElement>(null);
   const wasPendingRef = useRef(false);
 
@@ -46,7 +47,12 @@ export function useForgotPasswordForm() {
       if (intent === "verify-otp") {
         const nextState = await ForgotPasswordOtpAction(previousState, formData);
 
+        if (nextState.status === "error" && nextState.errors?.otp) {
+          setHasEditedOtpAfterError(false);
+        }
+
         if (nextState.status === "success" && nextState.resetToken) {
+          setHasEditedOtpAfterError(false);
           setResetToken(nextState.resetToken);
           setStep("reset");
         }
@@ -74,9 +80,10 @@ export function useForgotPasswordForm() {
         }
 
         setOtp("");
+        setHasEditedOtpAfterError(false);
         setResetToken("");
         setIsResetComplete(false);
-        setSecondsRemaining(OTP_RESEND_SECONDS);
+        setSecondsRemaining(0);
         setStep("verify");
       }
 
@@ -153,16 +160,15 @@ export function useForgotPasswordForm() {
 
   const handleOtpChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const nextValue = event.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH);
+    if (state.status === "error" && state.errors?.otp) {
+      setHasEditedOtpAfterError(true);
+    }
     setOtp(nextValue);
-  }, []);
+  }, [state.errors?.otp, state.status]);
 
   const handleOtpFocus = useCallback(() => {
-    if (state.status === "error" && state.errors?.otp && otp.length === OTP_LENGTH) {
-      setOtp("");
-    }
-
     setIsOtpFocused(true);
-  }, [otp.length, state.errors?.otp, state.status]);
+  }, []);
 
   const handleOtpBlur = useCallback(() => {
     setIsOtpFocused(false);
@@ -190,6 +196,7 @@ export function useForgotPasswordForm() {
 
       if (nextState.status === "success") {
         setOtp("");
+        setHasEditedOtpAfterError(false);
         setResetToken("");
         setSecondsRemaining(OTP_RESEND_SECONDS);
         toast.success(nextState.message);
@@ -209,9 +216,10 @@ export function useForgotPasswordForm() {
 
   const handleChangeEmail = useCallback(() => {
     setOtp("");
+    setHasEditedOtpAfterError(false);
     setResetToken("");
     setIsResetComplete(false);
-    setSecondsRemaining(OTP_RESEND_SECONDS);
+    setSecondsRemaining(0);
     setStep("email");
   }, []);
 
@@ -219,6 +227,8 @@ export function useForgotPasswordForm() {
     state,
     formAction,
     pending,
+    isOtpErrorActive:
+      state.status === "error" && Boolean(state.errors?.otp) && !hasEditedOtpAfterError,
     step,
     email,
     otp,

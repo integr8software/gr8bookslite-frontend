@@ -46,9 +46,9 @@ export function ForgotPasswordForm() {
           />
         ) : form.step === "verify" ? (
           <ForgotPasswordOtpStep
-            state={form.state}
             formAction={form.formAction}
             pending={form.pending}
+            isOtpErrorActive={form.isOtpErrorActive}
             email={form.email}
             otp={form.otp}
             otpInputRef={form.otpInputRef}

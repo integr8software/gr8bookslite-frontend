@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, KeyRound } from "lucide-react";
+import { ArrowRight, ShieldUser } from "lucide-react";
 import { useOtpForm } from "@/app/src/hooks/auth/useOtpForm";
 
 type OtpFormProps = {
@@ -13,6 +13,7 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 		state,
 		formAction,
 		pending,
+		isOtpErrorActive,
 		step,
 		email,
 		emailInput,
@@ -23,6 +24,7 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 		maskedEmail,
 		canResend,
 		hasActivatedResendCooldown,
+		isResending,
 		isOtpFocused,
 		otpLength,
 		handleEmailSubmit,
@@ -34,7 +36,7 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 	} = useOtpForm({ initialEmail });
 
 	function getOtpBoxClass(index: number) {
-		if (state.status === "error" && otp.length === otpLength) {
+		if (isOtpErrorActive && otp.length === otpLength) {
 			return "border-coralpink ring-2 ring-coralpink/20";
 		}
 
@@ -55,18 +57,18 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 	return (
 		<main className="flex min-h-screen items-center justify-center bg-transparent px-4 py-8 sm:px-6">
 			<section className="w-full max-w-140 rounded-md bg-white px-6 py-6 shadow-[0_18px_60px_rgba(33,39,56,0.14)] ring-1 ring-darknavy/8 sm:px-8">
-				<div className="hidden mb-4 d-flex justify-center">
+				<div className="mb-4 flex justify-center">
 					<div className="flex h-14 w-14 items-center justify-center rounded-full bg-darknavy text-offwhite">
-						<KeyRound size={27} strokeWidth={2.5} aria-hidden="true" />
+						<ShieldUser size={27} strokeWidth={2.5} aria-hidden="true" />
 					</div>
 				</div>
 
-				<div className="flex items-start gap-4">
+				<div className="mb-6">
 					<div>
-						<h1 className="text-3xl font-semibold tracking-tight text-darknavy">
+						<h1 className="text-3xl text-center font-semibold tracking-tight text-darknavy">
 							OTP Verification
 						</h1>
-						<p className="mt-3 max-w-md text-sm leading-6 text-darknavy/80">
+						<p className="mt-3 text-sm leading-6 text-darknavy/80">
 							{step === "email"
 								? "Enter your email address to receive a verification code."
 								: `Enter the passcode you just received on your email address ending with ${maskedEmail}`}
@@ -143,27 +145,34 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 							)}
 						</button>
 
-						<div className="flex flex-col gap-2 text-xs text-darknavy/75 sm:flex-row sm:items-center sm:justify-between">
+						<div className="flex items-center justify-between gap-3 text-xs text-darknavy/75">
 							{hasActivatedResendCooldown ? (
-								<p>
+								<p className="whitespace-nowrap">
 									Remaining Time:{" "}
 									<span className="font-semibold text-[#3d76ea]">
 										{canResend ? "Ready" : formattedTime}
 									</span>
 								</p>
 							) : (
-								<span />
+								<span aria-hidden="true" />
 							)}
 
-							<p>
-								Didn&apos;t got the code?{" "}
+							<p className="flex items-center gap-1.5 whitespace-nowrap">
+								Didn&apos;t get the code?{" "}
 								<button
 									type="button"
 									onClick={handleResend}
-									aria-disabled={!canResend}
-									className={`font-semibold ${canResend ? "text-[#3d76ea]" : "text-darknavy/45"}`}
+									disabled={!canResend || isResending}
+									aria-disabled={!canResend || isResending}
+									className={`inline-flex items-center justify-center gap-1.5 leading-none font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${canResend ? "text-[#3d76ea]" : "text-darknavy/45"}`}
 								>
-									Resend
+									{isResending ? (
+										<span
+											className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-current border-r-transparent"
+											aria-hidden="true"
+										/>
+									) : null}
+									<span>Resend</span>
 								</button>
 							</p>
 						</div>

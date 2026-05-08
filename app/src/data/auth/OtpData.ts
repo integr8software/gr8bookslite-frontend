@@ -1,5 +1,5 @@
 export const OTP_LENGTH = 4;
-export const OTP_RESEND_SECONDS = 300;
+export const OTP_RESEND_SECONDS = 60;
 export const MOCK_OTP_CODE = "1234";
 
 export function MaskEmailAddress(email: string) {

@@ -4,7 +4,10 @@ import { useActionState } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { InitialAuthActionState } from "@/app/src/data/auth/AuthTypes";
+import {
+  InitialAuthActionState,
+  type AuthActionState,
+} from "@/app/src/data/auth/AuthTypes";
 import {
   ClearPendingVerificationEmail,
   GetVerificationResendSecondsRemaining,
@@ -39,8 +42,17 @@ export function useOtpForm({
 }: UseOtpFormOptions = {}) {
   const router = useRouter();
   const initialVerificationEmail = initialEmail.trim();
+  const [hasEditedOtpAfterError, setHasEditedOtpAfterError] = useState(false);
   const [state, formAction, pending] = useActionState(
-    OtpAction,
+    async (previousState: AuthActionState, formData: FormData) => {
+      const nextState = await OtpAction(previousState, formData);
+
+      if (nextState.status === "error" || nextState.status === "success") {
+        setHasEditedOtpAfterError(false);
+      }
+
+      return nextState;
+    },
     InitialAuthActionState,
   );
   const [step, setStep] = useState<"email" | "verify">(
@@ -148,6 +160,7 @@ export function useOtpForm({
       setEmail(trimmedEmail);
       setEmailInput(trimmedEmail);
       setOtp("");
+      setHasEditedOtpAfterError(false);
       setSecondsRemaining(nextSecondsRemaining);
       setHasActivatedResendCooldown(nextSecondsRemaining > 0);
       setStep("verify");
@@ -170,6 +183,7 @@ export function useOtpForm({
         setEmail(trimmedEmail);
         setEmailInput(trimmedEmail);
         setOtp("");
+        setHasEditedOtpAfterError(false);
         setSecondsRemaining(nextSecondsRemaining);
         setHasActivatedResendCooldown(nextSecondsRemaining > 0);
         setIsChangingEmail(false);
@@ -186,14 +200,13 @@ export function useOtpForm({
 
   function handleOtpChange(event: React.ChangeEvent<HTMLInputElement>) {
     const nextValue = event.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH);
+    if (state.status === "error") {
+      setHasEditedOtpAfterError(true);
+    }
     setOtp(nextValue);
   }
 
   function handleOtpFocus() {
-    if (state.status === "error" && otp.length === OTP_LENGTH) {
-      setOtp("");
-    }
-
     setIsOtpFocused(true);
   }
 
@@ -217,6 +230,7 @@ export function useOtpForm({
 
       if (nextState.status === "success") {
         setOtp("");
+        setHasEditedOtpAfterError(false);
         setSecondsRemaining(OTP_RESEND_SECONDS);
         setHasActivatedResendCooldown(true);
         SaveVerificationResendCooldown(email, OTP_RESEND_SECONDS);
@@ -233,6 +247,7 @@ export function useOtpForm({
 
   function handleChangeEmail() {
     setOtp("");
+    setHasEditedOtpAfterError(false);
     setIsChangingEmail(true);
     setEmailInput(email);
     setSecondsRemaining(0);
@@ -243,6 +258,7 @@ export function useOtpForm({
     state,
     formAction,
     pending,
+    isOtpErrorActive: state.status === "error" && !hasEditedOtpAfterError,
     step,
     email,
     setEmail,

@@ -1,12 +1,11 @@
 "use client";
 
 import type { RefObject } from "react";
-import type { AuthActionState } from "@/app/src/data/auth/AuthTypes";
 
 type ForgotPasswordOtpStepProps = {
-	state: AuthActionState;
 	formAction: (formData: FormData) => void;
 	pending: boolean;
+	isOtpErrorActive: boolean;
 	email: string;
 	otp: string;
 	otpInputRef: RefObject<HTMLInputElement | null>;
@@ -22,9 +21,9 @@ type ForgotPasswordOtpStepProps = {
 };
 
 export function ForgotPasswordOtpStep({
-	state,
 	formAction,
 	pending,
+	isOtpErrorActive,
 	email,
 	otp,
 	otpInputRef,
@@ -39,7 +38,7 @@ export function ForgotPasswordOtpStep({
 	handleResend,
 }: ForgotPasswordOtpStepProps) {
 	function getOtpBoxClass(index: number) {
-		if (state.errors?.otp && otp.length === otpLength) {
+		if (isOtpErrorActive && otp.length === otpLength) {
 			return "border-coralpink ring-2 ring-coralpink/20";
 		}
 
@@ -86,9 +85,9 @@ export function ForgotPasswordOtpStep({
 				))}
 			</button>
 
-			<div className="flex flex-col gap-2 text-xs text-darknavy/75 sm:flex-row sm:items-center sm:justify-between">
+			<div className="flex items-center justify-between gap-3 text-xs text-darknavy/75">
 				{!canResend ? (
-					<p>
+					<p className="whitespace-nowrap">
 						Remaining Time:{" "}
 						<span className="font-semibold text-[#3d76ea]">
 							{formattedTime}
@@ -98,16 +97,22 @@ export function ForgotPasswordOtpStep({
 					<span aria-hidden="true" />
 				)}
 
-				<p>
+				<p className="flex items-center gap-1.5 whitespace-nowrap">
 					Didn&apos;t get the code?{" "}
 					<button
 						type="button"
 						onClick={handleResend}
-						disabled={isResending}
-						aria-disabled={!canResend}
-						className={`font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${canResend ? "text-[#3d76ea]" : "text-darknavy/45"}`}
+						disabled={!canResend || isResending}
+						aria-disabled={!canResend || isResending}
+						className={`inline-flex items-center justify-center gap-1.5 leading-none font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${canResend ? "text-[#3d76ea]" : "text-darknavy/45"}`}
 					>
-						{isResending ? "Sending..." : "Resend"}
+						{isResending ? (
+							<span
+								className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-current border-r-transparent"
+								aria-hidden="true"
+							/>
+						) : null}
+						<span>Resend</span>
 					</button>
 				</p>
 			</div>

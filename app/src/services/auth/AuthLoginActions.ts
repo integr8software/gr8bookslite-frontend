@@ -16,13 +16,17 @@ export async function LoginAction(
   _previousState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
-  const parsed = LoginSchema.safeParse({
+  const formValues = {
     email: GetFormValue(formData, "email"),
+  };
+
+  const parsed = LoginSchema.safeParse({
+    email: formValues.email,
     password: GetFormValue(formData, "password"),
   });
 
   if (!parsed.success) {
-    return InvalidState(parsed.error.flatten().fieldErrors);
+    return InvalidState(parsed.error.flatten().fieldErrors, formValues);
   }
 
   try {
@@ -55,6 +59,7 @@ export async function LoginAction(
         message,
         redirectTo: `/otp?${otpParams.toString()}`,
         pendingVerificationEmail: parsed.data.email,
+        formValues,
       };
     }
 
@@ -64,6 +69,7 @@ export async function LoginAction(
       errors: {
         password: ["Email or Password is incorrect."],
       },
+      formValues,
     };
   }
 }

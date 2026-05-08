@@ -2,12 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LoaderCircle } from "lucide-react";
 import { useLoginForm } from "@/app/src/hooks/auth/useLoginForm";
 import { AuthField } from "./AuthField";
 
 export function LoginForm() {
-	const { state, formAction, pending } = useLoginForm();
+	const {
+		state,
+		formAction,
+		pending,
+		values,
+		handleEmailChange,
+		handleSubmit,
+	} = useLoginForm();
 
 	return (
 		<main className="min-h-screen bg-white text-darknavy">
@@ -35,7 +42,9 @@ export function LoginForm() {
 
 						<form
 							action={formAction}
+							onSubmit={handleSubmit}
 							className="mt-10 w-full space-y-4"
+							noValidate
 						>
 							<AuthField
 								label="Email Address"
@@ -43,6 +52,8 @@ export function LoginForm() {
 								type="email"
 								autoComplete="email"
 								placeholder="Enter your email..."
+								value={values.email}
+								onChange={handleEmailChange}
 								errors={state.errors?.email}
 							/>
 							<AuthField
@@ -81,7 +92,14 @@ export function LoginForm() {
 									}
 									className="flex h-12 w-12 items-center justify-center rounded-full bg-darknavy text-offwhite transition hover:bg-darknavy/90 disabled:cursor-not-allowed disabled:bg-darknavy/50"
 								>
-									<ArrowRight />
+									{pending ? (
+										<LoaderCircle
+											className="h-5 w-5 animate-spin"
+											aria-hidden="true"
+										/>
+									) : (
+										<ArrowRight aria-hidden="true" />
+									)}
 								</button>
 							</div>
 

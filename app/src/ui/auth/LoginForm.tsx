@@ -11,8 +11,8 @@ export function LoginForm() {
 
 	return (
 		<main className="min-h-screen bg-white text-darknavy">
-			<section className="flex min-h-screen flex-col bg-white lg:h-screen lg:flex-row lg:overflow-hidden">
-				<div className="flex w-full items-center justify-center px-5 py-8 sm:px-8 sm:py-10 lg:min-h-screen lg:w-1/2 lg:overflow-y-auto lg:px-14">
+			<section className="flex min-h-screen flex-col bg-white lg:flex-row">
+				<div className="flex min-h-screen w-full items-center justify-center px-5 py-8 sm:px-8 sm:py-10 lg:w-1/2 lg:px-14">
 					<div className="flex flex-col w-full max-w-107.5">
 						<Link
 							href="/"
@@ -118,7 +118,7 @@ export function LoginForm() {
 					</div>
 				</div>
 
-				<div className="relative hidden h-screen lg:block lg:w-1/2 lg:flex-none">
+				<div className="sticky top-0 hidden h-screen lg:block lg:w-1/2 lg:flex-none">
 					<Image
 						src="/img/login-bg.png"
 						alt="Office illustration with accounting desks and reporting monitors."

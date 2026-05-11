@@ -7,15 +7,20 @@ import {
 	BillingOptions,
 	PricingHeader,
 	PricingPlans,
+	type PricingPlan,
 	type BillingCycle,
 } from "@/app/src/data/pricing/PricingData";
 
-export function PricingPage() {
+type PricingPageProps = {
+	onGetStarted?: (plan: PricingPlan, billingCycle: BillingCycle) => void;
+};
+
+export function PricingPage({ onGetStarted }: PricingPageProps) {
 	const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
 	const [selectedPlan, setSelectedPlan] = useState(PricingPlans[1]?.name ?? "");
 
 	return (
-		<main className="mx-auto flex justify-center items-center min-h-screen w-full max-w-360 flex-col bg-white px-5 py-12 text-darknavy sm:px-8 lg:px-12 lg:py-16">
+		<div className="mx-auto flex w-full max-w-360 flex-col items-center justify-center bg-white px-5 py-12 text-darknavy sm:px-8 lg:px-12 lg:py-16">
 			<section className="flex flex-col items-center">
 				<h1 className="text-center text-4xl font-semibold tracking-tight sm:text-5xl">
 					{PricingHeader.title}
@@ -87,7 +92,7 @@ export function PricingPage() {
 								</p>
 							</div>
 
-							<ul className="mt-5 space-y-3 text-sm text-darknavy/80">
+							<ul className="mt-5 flex-1 space-y-3 text-sm text-darknavy/80">
 								{plan.features.map((feature) => (
 									<li
 										key={feature.label}
@@ -102,16 +107,26 @@ export function PricingPage() {
 								))}
 							</ul>
 
-							<Link
-								href={plan.ctaHref}
-								className="mt-7 inline-flex items-center justify-center rounded-md bg-darknavy px-5 py-3 text-sm font-semibold text-offwhite transition hover:bg-coralpink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink focus-visible:ring-offset-2"
-							>
-								{plan.ctaLabel}
-							</Link>
+							{onGetStarted ? (
+								<button
+									type="button"
+									onClick={() => onGetStarted(plan, billingCycle)}
+									className="mt-7 inline-flex items-center justify-center rounded-md bg-darknavy px-5 py-3 text-sm font-semibold text-offwhite transition hover:bg-coralpink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink focus-visible:ring-offset-2"
+								>
+									{plan.ctaLabel}
+								</button>
+							) : (
+								<Link
+									href={plan.ctaHref}
+									className="mt-7 inline-flex items-center justify-center rounded-md bg-darknavy px-5 py-3 text-sm font-semibold text-offwhite transition hover:bg-coralpink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink focus-visible:ring-offset-2"
+								>
+									{plan.ctaLabel}
+								</Link>
+							)}
 						</article>
 					);
 				})}
 			</section>
-		</main>
+		</div>
 	);
 }

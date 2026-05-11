@@ -19,6 +19,10 @@ import {
   OnboardingStepOneSchema,
   OnboardingStepTwoSchema,
 } from "@/app/src/data/onboarding/OnboardingSchemas";
+import type {
+  BillingCycle,
+  PricingPlan,
+} from "@/app/src/data/pricing/PricingData";
 
 export function useOnboardingFlow() {
   const router = useRouter();
@@ -29,7 +33,11 @@ export function useOnboardingFlow() {
   const [errors, setErrors] = useState<OnboardingFieldErrors>({});
   const [logoInputKey, setLogoInputKey] = useState(0);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
+  const [selectedBillingCycle, setSelectedBillingCycle] =
+    useState<BillingCycle>("monthly");
   const logoPreviewUrlRef = useRef("");
+  const previousStepIndexRef = useRef(stepIndex);
 
   const currentStep = OnboardingSteps[stepIndex];
   const isFirstStep = stepIndex === 0;
@@ -42,6 +50,18 @@ export function useOnboardingFlow() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (previousStepIndexRef.current === stepIndex) {
+      return;
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+    previousStepIndexRef.current = stepIndex;
+  }, [stepIndex]);
 
   const passwordStrength = useMemo(() => {
     const password = values.password;
@@ -195,6 +215,12 @@ export function useOnboardingFlow() {
     setLogoInputKey((current) => current + 1);
   }
 
+  function handlePlanSelection(plan: PricingPlan, billingCycle: BillingCycle) {
+    setSelectedPlan(plan);
+    setSelectedBillingCycle(billingCycle);
+    setStepIndex(1);
+  }
+
   function validateStepOne() {
     const isIndividual = values.taxpayerType === "individual";
 
@@ -245,7 +271,7 @@ export function useOnboardingFlow() {
       accountFirstName: values.accountFirstName,
       accountLastName: values.accountLastName,
       workEmail: values.workEmail,
-      department: values.department,
+      role: values.role,
       password: values.password,
       confirmPassword: values.confirmPassword,
     });
@@ -261,8 +287,8 @@ export function useOnboardingFlow() {
   }
 
   function handleNext() {
-    if (stepIndex === 0 && !validateStepOne()) return;
-    if (stepIndex === 1 && !validateStepTwo()) return;
+    if (stepIndex === 2 && !validateStepOne()) return;
+    if (stepIndex === 3 && !validateStepTwo()) return;
 
     if (isLastStep) {
       toast.success("Onboarding complete.");
@@ -285,6 +311,8 @@ export function useOnboardingFlow() {
     errors,
     logoInputKey,
     logoPreviewUrl,
+    selectedPlan,
+    selectedBillingCycle,
     passwordStrength,
     isFirstStep,
     isLastStep,
@@ -292,6 +320,7 @@ export function useOnboardingFlow() {
     setTaxpayerType,
     handleLogoChange,
     handleLogoRemove,
+    handlePlanSelection,
     handleNext,
     handleBack,
   };

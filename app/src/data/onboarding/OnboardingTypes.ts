@@ -27,7 +27,7 @@ export type OnboardingFieldErrors = Partial<
     | "accountFirstName"
     | "accountLastName"
     | "workEmail"
-    | "department"
+    | "role"
     | "password"
     | "confirmPassword",
     string[] | undefined
@@ -59,7 +59,7 @@ export type OnboardingValues = {
   accountFirstName: string;
   accountLastName: string;
   workEmail: string;
-  department: string;
+  role: string;
   password: string;
   confirmPassword: string;
 };
@@ -86,7 +86,7 @@ export const InitialOnboardingValues: OnboardingValues = {
   accountFirstName: "",
   accountLastName: "",
   workEmail: "",
-  department: "",
+  role: "",
   password: "",
   confirmPassword: "",
 };

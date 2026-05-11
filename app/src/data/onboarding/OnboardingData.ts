@@ -1,23 +1,37 @@
 export const OnboardingSteps = [
   {
+    title: "Choose your free trial",
+    description: "Review the plans available after your free trial starts",
+    currentStep: 1,
+    totalSteps: 5,
+    progressPercent: 20,
+  },
+  {
+    title: "Set up billing",
+    description: "Choose how you want to pay once your free trial ends",
+    currentStep: 2,
+    totalSteps: 5,
+    progressPercent: 40,
+  },
+  {
     title: "Company Details",
     description: "Tell us about your organization",
-    currentStep: 1,
-    totalSteps: 3,
-    progressPercent: 33,
+    currentStep: 3,
+    totalSteps: 5,
+    progressPercent: 60,
   },
   {
     title: "Create your login",
     description: "This will be the user account for your company",
-    currentStep: 2,
-    totalSteps: 3,
-    progressPercent: 67,
+    currentStep: 4,
+    totalSteps: 5,
+    progressPercent: 80,
   },
   {
     title: "Review details",
     description: "Confirm your company and account details before continuing",
-    currentStep: 3,
-    totalSteps: 3,
+    currentStep: 5,
+    totalSteps: 5,
     progressPercent: 100,
   },
 ] as const;
@@ -31,14 +45,7 @@ export const OnboardingNonIndividualTypeOptions = [
   "Others",
 ] as const;
 
-export const OnboardingDepartmentOptions = [
-  "Administration",
-  "Finance",
-  "Human Resources",
-  "Operations",
-  "Sales",
-  "Technology",
-] as const;
+export const OnboardingRoleOptions = ["Admin", "Viewer", "Editor"] as const;
 
 export const OnboardingReportYearBasisOptions = ["Calendar Year"] as const;
 
@@ -125,21 +132,18 @@ export function GetSyncedReportStartDate(endDate: string) {
   return GetOnboardingDateValue(startDate);
 }
 
-export function IsCalendarYearReportRange(
-  startDate: string,
-  endDate: string,
-) {
+export function IsCalendarYearReportRange(startDate: string, endDate: string) {
   const start = GetOnboardingDateParts(startDate);
   const end = GetOnboardingDateParts(endDate);
 
   return Boolean(
     start &&
-      end &&
-      start.month === 1 &&
-      start.day === 1 &&
-      end.month === 12 &&
-      end.day === 31 &&
-      start.year === end.year,
+    end &&
+    start.month === 1 &&
+    start.day === 1 &&
+    end.month === 12 &&
+    end.day === 31 &&
+    start.year === end.year,
   );
 }
 

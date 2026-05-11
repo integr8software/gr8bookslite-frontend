@@ -3,10 +3,10 @@ import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData
 import {
   GetSyncedReportEndDate,
   IsValidOnboardingDateValue,
-  OnboardingDepartmentOptions,
   OnboardingMaxImageSizeBytes,
   OnboardingNonIndividualTypeOptions,
   OnboardingReportYearBasisOptions,
+  OnboardingRoleOptions,
 } from "./OnboardingData";
 
 const NamePattern = /^[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*$/;
@@ -174,8 +174,8 @@ export const OnboardingStepTwoSchema = z
     accountFirstName: RequiredNameSchema("First name"),
     accountLastName: RequiredNameSchema("Last name"),
     workEmail: z.string().trim().email("Enter a valid work email."),
-    department: z.enum(OnboardingDepartmentOptions, {
-      error: "Select a department.",
+    role: z.enum(OnboardingRoleOptions, {
+      error: "Select a role.",
     }),
     password: PasswordSchema,
     confirmPassword: z.string(),

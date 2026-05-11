@@ -25,6 +25,7 @@ type OnboardingStepOneProps = {
   setTaxpayerType: (type: OnboardingTaxpayerType) => void;
   handleLogoChange: (file: File | undefined) => void;
   handleLogoRemove: () => void;
+  handleBack: () => void;
   handleNext: () => void;
 };
 
@@ -37,6 +38,7 @@ export function OnboardingStepOne({
   setTaxpayerType,
   handleLogoChange,
   handleLogoRemove,
+  handleBack,
   handleNext,
 }: OnboardingStepOneProps) {
   const isIndividual = values.taxpayerType === "individual";
@@ -243,10 +245,10 @@ export function OnboardingStepOne({
       />
 
       <OnboardingActionRow
-        showBack={false}
+        showBack
         primaryLabel="Continue"
         onPrimary={handleNext}
-        onBack={() => undefined}
+        onBack={handleBack}
       />
     </div>
   );

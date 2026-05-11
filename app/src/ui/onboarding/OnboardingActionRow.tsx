@@ -1,8 +1,9 @@
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 
 type OnboardingActionRowProps = {
   showBack: boolean;
-  primaryLabel: string;
+  primaryLabel?: string;
+  primaryVariant?: "default" | "circle";
   onPrimary: () => void;
   onBack: () => void;
 };
@@ -10,11 +11,20 @@ type OnboardingActionRowProps = {
 export function OnboardingActionRow({
   showBack,
   primaryLabel,
+  primaryVariant = "default",
   onPrimary,
   onBack,
 }: OnboardingActionRowProps) {
+  const isCirclePrimary = primaryVariant === "circle";
+
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div
+      className={
+        showBack && !isCirclePrimary
+          ? "grid gap-4 md:grid-cols-2"
+          : "flex justify-center"
+      }
+    >
       {showBack ? (
         <button
           type="button"
@@ -24,18 +34,26 @@ export function OnboardingActionRow({
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>
         </button>
-      ) : (
-        <div />
-      )}
+      ) : null}
 
-      <button
-        type="button"
-        onClick={onPrimary}
-        className="flex h-14 items-center justify-center gap-2 rounded-sm bg-black px-5 text-sm font-semibold text-white transition hover:bg-black/90"
-      >
-        <span>{primaryLabel}</span>
-        <ArrowRight className="h-4 w-4" />
-      </button>
+      {isCirclePrimary ? (
+        <button
+          type="button"
+          onClick={onPrimary}
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-darknavy text-offwhite transition hover:bg-darknavy/90 disabled:cursor-not-allowed disabled:bg-darknavy/50"
+        >
+          <ArrowDown className="h-4 w-4" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={onPrimary}
+          className="flex h-14 items-center justify-center gap-2 rounded-sm bg-black px-5 text-sm font-semibold text-white transition hover:bg-black/90"
+        >
+          <span>{primaryLabel ?? "Continue"}</span>
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 }

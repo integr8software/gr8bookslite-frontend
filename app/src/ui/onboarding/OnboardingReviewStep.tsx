@@ -84,7 +84,7 @@ export function OnboardingReviewStep({
           <ReviewRow label="First Name" value={values.accountFirstName} />
           <ReviewRow label="Last Name" value={values.accountLastName} />
           <ReviewRow label="Work Email" value={values.workEmail} />
-          <ReviewRow label="Department" value={values.department} />
+          <ReviewRow label="Role" value={values.role} />
         </div>
       </section>
 

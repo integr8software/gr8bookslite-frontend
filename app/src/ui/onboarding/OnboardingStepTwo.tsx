@@ -1,6 +1,6 @@
 "use client";
 
-import { OnboardingDepartmentOptions } from "@/app/src/data/onboarding/OnboardingData";
+import { OnboardingRoleOptions } from "@/app/src/data/onboarding/OnboardingData";
 import type {
   OnboardingFieldErrors,
   OnboardingValues,
@@ -65,13 +65,13 @@ export function OnboardingStepTwo({
           errors={errors.workEmail}
         />
         <OnboardingSelectField
-          id="department"
-          name="department"
-          label="Department"
-          value={values.department}
-          options={OnboardingDepartmentOptions}
-          errors={errors.department}
-          onChange={(value) => updateValue("department", value)}
+          id="role"
+          name="role"
+          label="Role"
+          value={values.role}
+          options={OnboardingRoleOptions}
+          errors={errors.role}
+          onChange={(value) => updateValue("role", value)}
         />
       </div>
 

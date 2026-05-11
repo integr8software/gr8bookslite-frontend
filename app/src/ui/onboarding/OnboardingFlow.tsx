@@ -7,7 +7,6 @@ import { OnboardingFreeTrialStep } from "./OnboardingFreeTrialStep";
 import { OnboardingProgressHeader } from "./OnboardingProgressHeader";
 import { OnboardingReviewStep } from "./OnboardingReviewStep";
 import { OnboardingStepOne } from "./OnboardingStepOne";
-import { OnboardingStepTwo } from "./OnboardingStepTwo";
 
 export function OnboardingFlow() {
   const {
@@ -18,7 +17,6 @@ export function OnboardingFlow() {
     logoPreviewUrl,
     selectedPlan,
     selectedBillingCycle,
-    passwordStrength,
     updateValue,
     setTaxpayerType,
     handleLogoChange,
@@ -30,7 +28,7 @@ export function OnboardingFlow() {
 
   return (
     <div className="min-h-screen bg-white px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
-      <section className="mx-auto w-full max-w-[1120px] rounded-sm bg-white px-5 py-8 shadow-[0_18px_60px_rgba(33,39,56,0.12)] ring-1 ring-darknavy/10 sm:px-8 lg:px-14 lg:py-12">
+      <section className="mx-auto w-full max-w-280 rounded-sm bg-white px-5 py-8 shadow-[0_18px_60px_rgba(33,39,56,0.12)] ring-1 ring-darknavy/10 sm:px-8 lg:px-14 lg:py-12">
         <OnboardingProgressHeader
           currentStep={currentStep.currentStep}
           totalSteps={currentStep.totalSteps}
@@ -46,6 +44,7 @@ export function OnboardingFlow() {
         {currentStep.currentStep === OnboardingSteps[1].currentStep ? (
           <OnboardingBillingStep
             values={values}
+            errors={errors}
             selectedPlan={selectedPlan}
             selectedBillingCycle={selectedBillingCycle}
             updateValue={updateValue}
@@ -70,17 +69,6 @@ export function OnboardingFlow() {
         ) : null}
 
         {currentStep.currentStep === OnboardingSteps[3].currentStep ? (
-          <OnboardingStepTwo
-            values={values}
-            errors={errors}
-            passwordStrength={passwordStrength}
-            updateValue={updateValue}
-            handleNext={handleNext}
-            handleBack={handleBack}
-          />
-        ) : null}
-
-        {currentStep.currentStep === OnboardingSteps[4].currentStep ? (
           <OnboardingReviewStep
             values={values}
             handleBack={handleBack}

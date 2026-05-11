@@ -19,10 +19,14 @@ export function OnboardingPricingDesktopPlans({
   onReviewPlans,
   onSelectPlan,
 }: OnboardingPricingDesktopPlansProps) {
+  const visiblePlans = PricingPlans.filter(
+    (plan) => plan.name !== "Additional Company",
+  );
+
   return (
     <div className="hidden overflow-x-auto lg:block">
-      <div className="min-w-[980px]">
-        <div className="grid grid-cols-[1.2fr_repeat(3,minmax(0,1fr))] border-b border-darknavy/10">
+      <div className="min-w-245">
+        <div className="grid grid-cols-[1.2fr_repeat(2,minmax(0,1fr))] border-b border-darknavy/10">
           <div className="border-r border-darknavy/10 bg-linear-to-br from-offwhite to-white p-6 sm:p-8">
             <div className="max-w-xs">
               <p className="text-sm font-semibold text-darknavy">
@@ -43,7 +47,7 @@ export function OnboardingPricingDesktopPlans({
             </div>
           </div>
 
-          {PricingPlans.map((plan) => {
+          {visiblePlans.map((plan) => {
             const isHighlighted = plan.highlighted;
             const price =
               billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
@@ -62,10 +66,10 @@ export function OnboardingPricingDesktopPlans({
                     : "bg-white"
                 }`}
               >
-                <div className="relative flex min-h-[72px] items-start justify-center">
+                <div className="relative flex min-h-18 items-start justify-center">
                   {isHighlighted ? (
-                    <div className="absolute inset-x-[-1.5rem] top-[-1.75rem] flex items-stretch border-b border-skyblue/25 bg-[linear-gradient(180deg,rgba(209,246,235,0.92),rgba(209,246,235,0.68))] sm:inset-x-[-2rem]">
-                      <div className="flex min-h-[72px] flex-1 items-center justify-center px-4 py-4">
+                    <div className="absolute -inset-x-6 -top-7 flex items-stretch border-b border-skyblue/25 bg-[linear-gradient(180deg,rgba(209,246,235,0.92),rgba(209,246,235,0.68))] sm:-inset-x-8">
+                      <div className="flex min-h-18 flex-1 items-center justify-center px-4 py-4">
                         <p className="text-center text-xs font-semibold uppercase tracking-[0.28em] text-darknavy/55">
                           Most Popular
                         </p>
@@ -119,7 +123,7 @@ export function OnboardingPricingDesktopPlans({
         {OnboardingPlanComparisonRows.map((row, rowIndex) => (
           <div
             key={row.label}
-            className={`grid grid-cols-[1.2fr_repeat(3,minmax(0,1fr))] ${
+            className={`grid grid-cols-[1.2fr_repeat(2,minmax(0,1fr))] ${
               rowIndex !== OnboardingPlanComparisonRows.length - 1
                 ? "border-b border-darknavy/10"
                 : ""
@@ -129,28 +133,32 @@ export function OnboardingPricingDesktopPlans({
               {row.label}
             </div>
 
-            {row.values.map((value, valueIndex) => (
-              <div
-                key={`${row.label}-${PricingPlans[valueIndex]?.name}`}
-                className={`flex items-center justify-center border-r border-darknavy/10 px-6 py-5 text-center text-sm text-darknavy/75 last:border-r-0 ${
-                  PricingPlans[valueIndex]?.highlighted ? "bg-[#f5fffb]" : "bg-white"
-                }`}
-              >
-                {typeof value === "boolean" ? (
-                  value ? (
-                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-skyblue/35 bg-skyblue/10 text-skyblue">
-                      <Check className="h-4 w-4" />
-                    </span>
+            {row.values
+              .slice(0, visiblePlans.length)
+              .map((value, valueIndex) => (
+                <div
+                  key={`${row.label}-${visiblePlans[valueIndex]?.name}`}
+                  className={`flex items-center justify-center border-r border-darknavy/10 px-6 py-5 text-center text-sm text-darknavy/75 last:border-r-0 ${
+                    visiblePlans[valueIndex]?.highlighted
+                      ? "bg-[#f5fffb]"
+                      : "bg-white"
+                  }`}
+                >
+                  {typeof value === "boolean" ? (
+                    value ? (
+                      <span className="inline-flex h-6 w-6 items-center justify-center text-green-700">
+                        <Check className="h-4 w-4" />
+                      </span>
+                    ) : (
+                      <span className="text-base font-semibold text-darknavy/30">
+                        -
+                      </span>
+                    )
                   ) : (
-                    <span className="text-base font-semibold text-darknavy/30">
-                      -
-                    </span>
-                  )
-                ) : (
-                  value
-                )}
-              </div>
-            ))}
+                    value
+                  )}
+                </div>
+              ))}
           </div>
         ))}
       </div>

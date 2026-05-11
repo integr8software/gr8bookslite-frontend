@@ -1,17 +1,20 @@
 "use client";
 
 import { CalendarDays, ShieldCheck, Sparkles } from "lucide-react";
-import { useState } from "react";
 import type {
   BillingCycle,
   PricingPlan,
 } from "@/app/src/data/pricing/PricingData";
-import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
+import type {
+  OnboardingFieldErrors,
+  OnboardingValues,
+} from "@/app/src/data/onboarding/OnboardingTypes";
 import { OnboardingActionRow } from "./OnboardingActionRow";
 import { OnboardingField } from "./OnboardingField";
 
 type OnboardingBillingStepProps = {
   values: OnboardingValues;
+  errors: OnboardingFieldErrors;
   selectedPlan: PricingPlan | null;
   selectedBillingCycle: BillingCycle;
   updateValue: (key: keyof OnboardingValues, value: string) => void;
@@ -21,6 +24,7 @@ type OnboardingBillingStepProps = {
 
 export function OnboardingBillingStep({
   values,
+  errors,
   selectedPlan,
   selectedBillingCycle,
   updateValue,
@@ -45,7 +49,7 @@ export function OnboardingBillingStep({
 
   return (
     <div className="mt-10 space-y-8">
-      <section className="rounded-3xl border border-darknavy/10 bg-gradient-to-br from-offwhite via-white to-citron/10 p-6 shadow-sm sm:p-8">
+      <section className="rounded-3xl border border-darknavy/10 bg-linear-to-br from-offwhite via-white to-citron/10 p-6 shadow-sm sm:p-8">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-coralpink">
           Billing
         </p>
@@ -71,7 +75,7 @@ export function OnboardingBillingStep({
               onChange={(event) =>
                 updateValue("cardholderName", event.target.value)
               }
-              errors={undefined}
+              errors={errors.cardholderName}
             />
             <OnboardingField
               label="Billing Email"
@@ -83,7 +87,7 @@ export function OnboardingBillingStep({
               onChange={(event) =>
                 updateValue("billingEmail", event.target.value)
               }
-              errors={undefined}
+              errors={errors.billingEmail}
             />
           </div>
 
@@ -93,10 +97,11 @@ export function OnboardingBillingStep({
             name="cardNumber"
             type="text"
             inputMode="numeric"
+            maxLength={23}
             placeholder="1234 5678 9012 3456"
             value={values.cardNumber}
             onChange={(event) => updateValue("cardNumber", event.target.value)}
-            errors={undefined}
+            errors={errors.cardNumber}
           />
 
           <div className="grid gap-6 md:grid-cols-3">
@@ -105,24 +110,28 @@ export function OnboardingBillingStep({
               id="expiryMonth"
               name="expiryMonth"
               type="text"
+              inputMode="numeric"
+              maxLength={2}
               placeholder="MM"
               value={values.expiryMonth}
               onChange={(event) =>
                 updateValue("expiryMonth", event.target.value)
               }
-              errors={undefined}
+              errors={errors.expiryMonth}
             />
             <OnboardingField
               label="Expiry Year"
               id="expiryYear"
               name="expiryYear"
               type="text"
+              inputMode="numeric"
+              maxLength={4}
               placeholder="YYYY"
               value={values.expiryYear}
               onChange={(event) =>
                 updateValue("expiryYear", event.target.value)
               }
-              errors={undefined}
+              errors={errors.expiryYear}
             />
             <OnboardingField
               label="CVC"
@@ -130,10 +139,11 @@ export function OnboardingBillingStep({
               name="cvc"
               type="text"
               inputMode="numeric"
+              maxLength={4}
               placeholder="123"
               value={values.cvc}
               onChange={(event) => updateValue("cvc", event.target.value)}
-              errors={undefined}
+              errors={errors.cvc}
             />
           </div>
 
@@ -147,7 +157,7 @@ export function OnboardingBillingStep({
             onChange={(event) =>
               updateValue("billingAddress", event.target.value)
             }
-            errors={undefined}
+            errors={errors.billingAddress}
           />
 
           <OnboardingActionRow

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
@@ -16,13 +16,23 @@ import {
   type OnboardingValues,
 } from "@/app/src/data/onboarding/OnboardingTypes";
 import {
+  OnboardingBillingStepSchema,
   OnboardingStepOneSchema,
-  OnboardingStepTwoSchema,
 } from "@/app/src/data/onboarding/OnboardingSchemas";
 import type {
   BillingCycle,
   PricingPlan,
 } from "@/app/src/data/pricing/PricingData";
+
+function GetDigitsOnly(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+function FormatCardNumber(value: string) {
+  return GetDigitsOnly(value)
+    .slice(0, 19)
+    .replace(/(\d{4})(?=\d)/g, "$1 ");
+}
 
 export function useOnboardingFlow() {
   const router = useRouter();
@@ -63,21 +73,55 @@ export function useOnboardingFlow() {
     previousStepIndexRef.current = stepIndex;
   }, [stepIndex]);
 
-  const passwordStrength = useMemo(() => {
-    const password = values.password;
-    let score = 0;
-
-    if (!password) return 0;
-    if (password.length >= 8) score += 1;
-    if (/[A-Z]/.test(password)) score += 1;
-    if (/\d/.test(password)) score += 1;
-    if (/[a-z]/.test(password)) score += 1;
-    if (/[^A-Za-z0-9]/.test(password)) score += 1;
-
-    return score;
-  }, [values.password]);
-
   function updateValue(key: keyof OnboardingValues, value: string) {
+    if (key === "cardNumber") {
+      setValues((current) => ({
+        ...current,
+        cardNumber: FormatCardNumber(value),
+      }));
+      setErrors((current) => ({
+        ...current,
+        cardNumber: undefined,
+      }));
+      return;
+    }
+
+    if (key === "expiryMonth") {
+      setValues((current) => ({
+        ...current,
+        expiryMonth: GetDigitsOnly(value).slice(0, 2),
+      }));
+      setErrors((current) => ({
+        ...current,
+        expiryMonth: undefined,
+      }));
+      return;
+    }
+
+    if (key === "expiryYear") {
+      setValues((current) => ({
+        ...current,
+        expiryYear: GetDigitsOnly(value).slice(0, 4),
+      }));
+      setErrors((current) => ({
+        ...current,
+        expiryYear: undefined,
+      }));
+      return;
+    }
+
+    if (key === "cvc") {
+      setValues((current) => ({
+        ...current,
+        cvc: GetDigitsOnly(value).slice(0, 4),
+      }));
+      setErrors((current) => ({
+        ...current,
+        cvc: undefined,
+      }));
+      return;
+    }
+
     if (key === "reportStartDate") {
       setValues((current) => {
         const reportEndDate = GetSyncedReportEndDate(value);
@@ -266,14 +310,15 @@ export function useOnboardingFlow() {
     return true;
   }
 
-  function validateStepTwo() {
-    const parsed = OnboardingStepTwoSchema.safeParse({
-      accountFirstName: values.accountFirstName,
-      accountLastName: values.accountLastName,
-      workEmail: values.workEmail,
-      role: values.role,
-      password: values.password,
-      confirmPassword: values.confirmPassword,
+  function validateBillingStep() {
+    const parsed = OnboardingBillingStepSchema.safeParse({
+      cardholderName: values.cardholderName,
+      billingEmail: values.billingEmail,
+      cardNumber: values.cardNumber,
+      expiryMonth: values.expiryMonth,
+      expiryYear: values.expiryYear,
+      cvc: values.cvc,
+      billingAddress: values.billingAddress,
     });
 
     if (!parsed.success) {
@@ -287,8 +332,8 @@ export function useOnboardingFlow() {
   }
 
   function handleNext() {
+    if (stepIndex === 1 && !validateBillingStep()) return;
     if (stepIndex === 2 && !validateStepOne()) return;
-    if (stepIndex === 3 && !validateStepTwo()) return;
 
     if (isLastStep) {
       toast.success("Onboarding complete.");
@@ -313,7 +358,6 @@ export function useOnboardingFlow() {
     logoPreviewUrl,
     selectedPlan,
     selectedBillingCycle,
-    passwordStrength,
     isFirstStep,
     isLastStep,
     updateValue,

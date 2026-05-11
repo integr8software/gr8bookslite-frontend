@@ -6,7 +6,6 @@ import {
   OnboardingMaxImageSizeBytes,
   OnboardingNonIndividualTypeOptions,
   OnboardingReportYearBasisOptions,
-  OnboardingRoleOptions,
 } from "./OnboardingData";
 
 const NamePattern = /^[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*$/;
@@ -49,13 +48,31 @@ function OptionalNameSchema(label: string) {
     );
 }
 
-const PasswordSchema = z
-  .string()
-  .min(8, "Password must be at least 8 characters.")
-  .regex(/[A-Z]/, "Password must include at least 1 uppercase letter.")
-  .regex(/\d/, "Password must include at least 1 number.")
-  .regex(/[a-z]/, "Password must include at least 1 lowercase letter.")
-  .regex(/[^A-Za-z0-9]/, "Password must include at least 1 special character.");
+function GetDigitsOnly(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+function PassesLuhnCheck(value: string) {
+  let checksum = 0;
+  let shouldDouble = false;
+
+  for (let index = value.length - 1; index >= 0; index -= 1) {
+    let digit = Number(value[index]);
+
+    if (shouldDouble) {
+      digit *= 2;
+
+      if (digit > 9) {
+        digit -= 9;
+      }
+    }
+
+    checksum += digit;
+    shouldDouble = !shouldDouble;
+  }
+
+  return checksum % 10 === 0;
+}
 
 const TINSchema = z
   .string()
@@ -169,23 +186,75 @@ export const OnboardingStepOneSchema = z
   ])
   .superRefine(ValidateReportYearRange);
 
-export const OnboardingStepTwoSchema = z
+export const OnboardingBillingStepSchema = z
   .object({
-    accountFirstName: RequiredNameSchema("First name"),
-    accountLastName: RequiredNameSchema("Last name"),
-    workEmail: z.string().trim().email("Enter a valid work email."),
-    role: z.enum(OnboardingRoleOptions, {
-      error: "Select a role.",
-    }),
-    password: PasswordSchema,
-    confirmPassword: z.string(),
+    cardholderName: RequiredNameSchema("Cardholder name"),
+    billingEmail: z.string().trim().email("Enter a valid billing email."),
+    cardNumber: z
+      .string()
+      .trim()
+      .min(1, "Card number is required.")
+      .refine(
+        (value) => /^\d[\d -]*\d$|^\d$/.test(value),
+        "Card number can only contain digits, spaces, and hyphens.",
+      )
+      .refine((value) => {
+        const digits = GetDigitsOnly(value);
+        return digits.length >= 12 && digits.length <= 19;
+      }, "Enter a valid card number.")
+      .refine((value) => PassesLuhnCheck(GetDigitsOnly(value)), {
+        message: "Enter a valid card number.",
+      }),
+    expiryMonth: z
+      .string()
+      .trim()
+      .min(1, "Expiry month is required.")
+      .refine((value) => /^(0?[1-9]|1[0-2])$/.test(value), {
+        message: "Enter a valid expiry month.",
+      }),
+    expiryYear: z
+      .string()
+      .trim()
+      .min(1, "Expiry year is required.")
+      .refine((value) => /^\d{4}$/.test(value), {
+        message: "Enter a valid expiry year.",
+      }),
+    cvc: z
+      .string()
+      .trim()
+      .min(1, "CVC is required.")
+      .refine((value) => /^\d{3,4}$/.test(value), {
+        message: "Enter a valid CVC.",
+      }),
+    billingAddress: z
+      .string()
+      .trim()
+      .min(5, "Billing address must be at least 5 characters."),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords must match.",
-    path: ["confirmPassword"],
+  .superRefine((data, ctx) => {
+    const month = Number(data.expiryMonth);
+    const year = Number(data.expiryYear);
+
+    if (Number.isNaN(month) || Number.isNaN(year)) {
+      return;
+    }
+
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    if (year < currentYear || (year === currentYear && month < currentMonth)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Card expiry date cannot be in the past.",
+        path: ["expiryYear"],
+      });
+    }
   });
 
 export type OnboardingStepOneInput =
   | z.infer<typeof OnboardingStepOneIndividualSchema>
   | z.infer<typeof OnboardingStepOneNonIndividualSchema>;
-export type OnboardingStepTwoInput = z.infer<typeof OnboardingStepTwoSchema>;
+export type OnboardingBillingStepInput = z.infer<
+  typeof OnboardingBillingStepSchema
+>;

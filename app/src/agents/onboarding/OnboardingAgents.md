@@ -28,16 +28,15 @@ app/src/hooks/onboarding/
 
 app/src/ui/onboarding/
   OnboardingActionRow.tsx
+  OnboardingBillingStep.tsx
   OnboardingField.tsx
   OnboardingFileField.tsx
   OnboardingFlow.tsx
-  OnboardingPasswordRequirements.tsx
-  OnboardingPasswordStrength.tsx
+  OnboardingFreeTrialStep.tsx
   OnboardingProgressHeader.tsx
   OnboardingReviewStep.tsx
   OnboardingSelectField.tsx
   OnboardingStepOne.tsx
-  OnboardingStepTwo.tsx
 
 app/src/agents/onboarding/
   OnboardingAgents.md
@@ -73,13 +72,12 @@ app/src/ui/shared/
 Use `data` for onboarding constants, Zod schemas, types, and initial values.
 
 - `OnboardingData.ts`
-  - step metadata for the 3-step flow
-  - select options such as department and organization type
+  - step metadata for the 4-step flow
+  - select options such as organization type
   - upload limits such as the 5MB logo size
 - `OnboardingSchemas.ts`
   - step 1 validation
-  - step 2 validation
-  - password rules
+  - billing step validation
   - TIN and logo validation
 - `OnboardingTypes.ts`
   - form value shape
@@ -93,9 +91,8 @@ Use hooks for client state, step movement, validation orchestration, file handli
 - `useOnboardingFlow.ts`
   - owns current step index
   - owns accumulated onboarding values across all steps
-  - runs Zod validation for step 1 and step 2
+  - runs Zod validation for billing and company details
   - handles logo upload and removal
-  - computes password strength
   - shows `react-hot-toast` feedback
   - handles final navigation after completion
 
@@ -108,8 +105,8 @@ Use `ui` for presentational onboarding pieces and reusable step components.
   - renders the active step
 - `OnboardingStepOne.tsx`
   - taxpayer and organization details
-- `OnboardingStepTwo.tsx`
-  - account creation
+- `OnboardingBillingStep.tsx`
+  - billing details and plan summary
 - `OnboardingReviewStep.tsx`
   - final review screen
 - shared components
@@ -118,8 +115,6 @@ Use `ui` for presentational onboarding pieces and reusable step components.
   - `OnboardingFileField.tsx`
   - `OnboardingActionRow.tsx`
   - `OnboardingProgressHeader.tsx`
-  - `OnboardingPasswordStrength.tsx`
-  - `OnboardingPasswordRequirements.tsx`
 
 ### Shared frontend foundation
 
@@ -137,9 +132,16 @@ Use `ui` for presentational onboarding pieces and reusable step components.
 Implemented onboarding behavior:
 
 - direct route at `/onboarding`
-- 5-step onboarding flow
+- 4-step onboarding flow
 - free-trial plan selection step
 - billing setup step
+- billing validation:
+  - cardholder name
+  - billing email
+  - card number
+  - expiry month and year
+  - CVC
+  - billing address
 - animated progress header
 - step 1 taxpayer flow:
   - individual path
@@ -153,20 +155,6 @@ Implemented onboarding behavior:
   - required logo upload
   - image-only upload
   - max upload size `5MB`
-- step 2 account setup:
-  - account first name
-  - account last name
-  - work email
-  - department
-  - password
-  - confirm password
-- password rules:
-  - minimum 8 characters
-  - at least 1 uppercase letter
-  - at least 1 lowercase letter
-  - at least 1 special character
-- live password strength bar
-- password requirement helper list
 - review step for submitted details
 - toast-based validation feedback
 

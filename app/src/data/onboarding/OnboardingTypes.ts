@@ -24,12 +24,13 @@ export type OnboardingFieldErrors = Partial<
     | "reportYearBasis"
     | "reportStartDate"
     | "reportEndDate"
-    | "accountFirstName"
-    | "accountLastName"
-    | "workEmail"
-    | "role"
-    | "password"
-    | "confirmPassword",
+    | "cardholderName"
+    | "billingEmail"
+    | "cardNumber"
+    | "expiryMonth"
+    | "expiryYear"
+    | "cvc"
+    | "billingAddress",
     string[] | undefined
   >
 >;
@@ -55,13 +56,6 @@ export type OnboardingValues = {
   reportYearBasis: OnboardingReportYearBasis;
   reportStartDate: string;
   reportEndDate: string;
-  // Step 2 - account
-  accountFirstName: string;
-  accountLastName: string;
-  workEmail: string;
-  role: string;
-  password: string;
-  confirmPassword: string;
   cardholderName: string;
   billingEmail: string;
   cardNumber: string;
@@ -90,12 +84,6 @@ export const InitialOnboardingValues: OnboardingValues = {
   reportYearBasis: "Calendar Year",
   reportStartDate: DefaultReportYear.reportStartDate,
   reportEndDate: DefaultReportYear.reportEndDate,
-  accountFirstName: "",
-  accountLastName: "",
-  workEmail: "",
-  role: "",
-  password: "",
-  confirmPassword: "",
   cardholderName: "",
   billingEmail: "",
   cardNumber: "",

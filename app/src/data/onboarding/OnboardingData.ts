@@ -3,35 +3,28 @@ export const OnboardingSteps = [
     title: "Choose your free trial",
     description: "Review the plans available after your free trial starts",
     currentStep: 1,
-    totalSteps: 5,
-    progressPercent: 20,
+    totalSteps: 4,
+    progressPercent: 25,
   },
   {
     title: "Set up billing",
     description: "Choose how you want to pay once your free trial ends",
     currentStep: 2,
-    totalSteps: 5,
-    progressPercent: 40,
+    totalSteps: 4,
+    progressPercent: 50,
   },
   {
     title: "Company Details",
     description: "Tell us about your organization",
     currentStep: 3,
-    totalSteps: 5,
-    progressPercent: 60,
-  },
-  {
-    title: "Create your login",
-    description: "This will be the user account for your company",
-    currentStep: 4,
-    totalSteps: 5,
-    progressPercent: 80,
+    totalSteps: 4,
+    progressPercent: 75,
   },
   {
     title: "Review details",
-    description: "Confirm your company and account details before continuing",
-    currentStep: 5,
-    totalSteps: 5,
+    description: "Confirm your company details before continuing",
+    currentStep: 4,
+    totalSteps: 4,
     progressPercent: 100,
   },
 ] as const;
@@ -44,8 +37,6 @@ export const OnboardingNonIndividualTypeOptions = [
   "Non Profit Organization",
   "Others",
 ] as const;
-
-export const OnboardingRoleOptions = ["Admin", "Viewer", "Editor"] as const;
 
 export const OnboardingReportYearBasisOptions = ["Calendar Year"] as const;
 

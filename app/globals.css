@@ -5,7 +5,7 @@
   --darknavy: #212738;
   --coralpink: #f97068;
   --citron: #d1d646;
-  --offwhite: #FFFFF0;
+  --offwhite: #fffff0;
   --skyblue: #57c4e5;
   --background: var(--offwhite);
   --foreground: var(--darknavy);
@@ -34,87 +34,98 @@ button {
 }
 
 ::view-transition-old(.auth-forward) {
-	--slide-offset: -100%;
-	animation:
-		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide reverse,
-		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-out;
+  --slide-offset: -100%;
+  animation:
+    560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide reverse,
+    560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-out;
 }
 
 ::view-transition-new(.auth-forward) {
-	--slide-offset: 100%;
-	animation:
-		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide,
-		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-in;
+  --slide-offset: 100%;
+  animation:
+    560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide,
+    560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-in;
 }
 
 ::view-transition-old(.auth-back) {
-	--slide-offset: 100%;
-	animation:
-		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide reverse,
-		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-out;
+  --slide-offset: 100%;
+  animation:
+    560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide reverse,
+    560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-out;
 }
 
 ::view-transition-new(.auth-back) {
-	--slide-offset: -100%;
-	animation:
-		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide,
-		560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-in;
+  --slide-offset: -100%;
+  animation:
+    560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-slide,
+    560ms cubic-bezier(0.22, 1, 0.36, 1) both auth-depth-in;
 }
 
 ::view-transition-group(.auth-forward),
 ::view-transition-group(.auth-back) {
-	animation-duration: 560ms;
-	overflow: clip;
+  animation-duration: 560ms;
+  overflow: clip;
 }
 
 @keyframes auth-slide {
-	from {
-		translate: var(--slide-offset);
-	}
-	to {
-		translate: 0;
-	}
+  from {
+    translate: var(--slide-offset);
+  }
+  to {
+    translate: 0;
+  }
 }
 
 @keyframes auth-depth-in {
-	from {
-		filter: saturate(0.96);
-		scale: 0.985;
-	}
-	to {
-		filter: saturate(1);
-		scale: 1;
-	}
+  from {
+    filter: saturate(0.96);
+    scale: 0.985;
+  }
+  to {
+    filter: saturate(1);
+    scale: 1;
+  }
 }
 
 @keyframes auth-depth-out {
-	from {
-		filter: saturate(1);
-		scale: 1;
-	}
-	to {
-		filter: saturate(0.96);
-		scale: 0.985;
-	}
+  from {
+    filter: saturate(1);
+    scale: 1;
+  }
+  to {
+    filter: saturate(0.96);
+    scale: 0.985;
+  }
 }
 
 @keyframes bounce-once {
-  0%, 100% { transform: translateY(0); }
-  20%       { transform: translateY(-10px); }
-  40%       { transform: translateY(0); }
-  60%       { transform: translateY(-5px); }
-  80%       { transform: translateY(0); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(-10px);
+  }
+  40% {
+    transform: translateY(0);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+  80% {
+    transform: translateY(0);
+  }
 }
 
 .animate-bounce-once {
-  animation: bounce-once 1.5s ease-in-out forwards;
+  animation: bounce-once 5s ease-in-out forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
-	::view-transition-old(*),
-	::view-transition-new(*),
-	::view-transition-group(*) {
-		animation-duration: 0s !important;
-		animation-delay: 0s !important;
-	}
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
 }

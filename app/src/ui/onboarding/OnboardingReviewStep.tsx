@@ -77,17 +77,6 @@ export function OnboardingReviewStep({
           />
         </div>
       </section>
-
-      <section>
-        <h2 className="text-lg font-semibold text-darknavy">Account Details</h2>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <ReviewRow label="First Name" value={values.accountFirstName} />
-          <ReviewRow label="Last Name" value={values.accountLastName} />
-          <ReviewRow label="Work Email" value={values.workEmail} />
-          <ReviewRow label="Role" value={values.role} />
-        </div>
-      </section>
-
       <OnboardingActionRow
         showBack
         primaryLabel="Finish"

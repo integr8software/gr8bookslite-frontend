@@ -70,6 +70,7 @@ export function OnboardingFlow() {
       {currentStep.currentStep === OnboardingSteps[3].currentStep ? (
         <OnboardingReviewStep
           values={values}
+          logoPreviewUrl={logoPreviewUrl}
           handleBack={handleBack}
           handleFinish={handleNext}
         />

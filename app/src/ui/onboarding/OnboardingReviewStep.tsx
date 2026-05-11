@@ -1,11 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import { FormatOnboardingReportDateLabel } from "@/app/src/data/onboarding/OnboardingData";
 import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
 import { OnboardingActionRow } from "./OnboardingActionRow";
 
 type OnboardingReviewStepProps = {
   values: OnboardingValues;
+  logoPreviewUrl: string;
   handleBack: () => void;
   handleFinish: () => void;
 };
@@ -23,8 +25,47 @@ function ReviewRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function ReviewLogoRow({
+  label,
+  previewUrl,
+  fileName,
+}: {
+  label: string;
+  previewUrl: string;
+  fileName: string;
+}) {
+  return (
+    <div className="rounded-md border border-darknavy/10 bg-offwhite px-4 py-3">
+      <p className="text-xs font-medium uppercase tracking-[0.08em] text-darknavy/50">
+        {label}
+      </p>
+      {previewUrl ? (
+        <div className="mt-3 flex items-center gap-4">
+          <Image
+            src={previewUrl}
+            alt={fileName ? `${fileName} logo preview` : "Uploaded logo preview"}
+            width={160}
+            height={80}
+            unoptimized
+            className="h-20 w-auto rounded-md border border-darknavy/10 bg-white object-contain p-2"
+          />
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-darknavy">Uploaded logo</p>
+            <p className="mt-1 text-xs text-darknavy/55">
+              This logo will appear on your company profile.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-1 text-sm font-medium text-darknavy">Not provided</p>
+      )}
+    </div>
+  );
+}
+
 export function OnboardingReviewStep({
   values,
+  logoPreviewUrl,
   handleBack,
   handleFinish,
 }: OnboardingReviewStepProps) {
@@ -36,7 +77,7 @@ export function OnboardingReviewStep({
         <h2 className="text-lg font-semibold text-darknavy">
           {isIndividual ? "Individual Details" : "Company Details"}
         </h2>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="mt-4 grid items-start gap-4 md:grid-cols-2">
           <ReviewRow
             label="Taxpayer Type"
             value={isIndividual ? "Individual" : "Non-Individual"}
@@ -62,7 +103,11 @@ export function OnboardingReviewStep({
             </>
           )}
 
-          <ReviewRow label="Logo" value={values.logoName} />
+          <ReviewLogoRow
+            label="Logo"
+            previewUrl={logoPreviewUrl}
+            fileName={values.logoName}
+          />
           <ReviewRow label="Address" value={values.address} />
           <ReviewRow label="TIN" value={values.tin} />
           <ReviewRow label="Contact Number" value={values.contactNumber} />

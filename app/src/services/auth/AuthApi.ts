@@ -21,6 +21,10 @@ export function BuildAuthApiUrl(path: string) {
   return `${GetAuthApiBaseUrl()}${normalizedPath}`;
 }
 
+export function BuildGoogleAuthUrl(mode: "login" | "signup") {
+  return BuildAuthApiUrl(`/auth/google?mode=${mode}`);
+}
+
 type ApiErrorPayload = {
   message?: string | string[];
 };

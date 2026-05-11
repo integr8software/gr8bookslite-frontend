@@ -10,11 +10,22 @@ import {
 } from "@/app/src/data/shared/ContactData";
 import type { AuthFormValues } from "@/app/src/data/auth/AuthTypes";
 import { useSignUpForm } from "@/app/src/hooks/auth/useSignUpForm";
+import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
 import { AuthField } from "./AuthField";
 import { AuthPasswordRequirements } from "./AuthPasswordRequirements";
 import { ArrowRight, Check, LoaderCircle } from "lucide-react";
 
-type SignUpFormValues = Required<AuthFormValues>;
+type SignUpFormValues = Required<
+	Pick<
+		AuthFormValues,
+		| "name"
+		| "email"
+		| "contactNumber"
+		| "password"
+		| "confirmPassword"
+		| "termsAccepted"
+	>
+>;
 
 const InitialSignUpFormValues: SignUpFormValues = {
 	name: "",
@@ -32,6 +43,7 @@ function GetSubmittedValue(formData: FormData, key: string) {
 
 export function SignUpForm() {
 	const { state, formAction, pending } = useSignUpForm();
+	const googleAuthUrl = BuildGoogleAuthUrl("signup");
 	const [formValues, setFormValues] = useState<Partial<SignUpFormValues>>({});
 	const values: SignUpFormValues = {
 		...InitialSignUpFormValues,
@@ -259,8 +271,8 @@ export function SignUpForm() {
 								<div className="h-px flex-1 bg-darknavy/30" />
 							</div>
 
-							<button
-								type="button"
+							<a
+								href={googleAuthUrl}
 								className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-darknavy/30 bg-white px-4 text-sm font-medium text-darknavy transition hover:border-darknavy/50 hover:bg-offwhite"
 							>
 								<span>Continue with Google</span>
@@ -270,7 +282,7 @@ export function SignUpForm() {
 									width={18}
 									height={18}
 								/>
-							</button>
+							</a>
 						</form>
 
 						<p className="mt-5 text-center text-darknavy/70">

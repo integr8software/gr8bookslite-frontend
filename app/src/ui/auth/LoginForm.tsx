@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { useLoginForm } from "@/app/src/hooks/auth/useLoginForm";
+import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
 import { AuthField } from "./AuthField";
 
 export function LoginForm() {
@@ -15,6 +16,7 @@ export function LoginForm() {
 		handleEmailChange,
 		handleSubmit,
 	} = useLoginForm();
+	const googleAuthUrl = BuildGoogleAuthUrl("login");
 
 	return (
 		<main className="min-h-screen bg-white text-darknavy">
@@ -109,8 +111,8 @@ export function LoginForm() {
 								<div className="h-px flex-1 bg-darknavy/30" />
 							</div>
 
-							<button
-								type="button"
+							<a
+								href={googleAuthUrl}
 								className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-darknavy/30 bg-white px-4 text-sm font-medium text-darknavy transition hover:border-darknavy/50 hover:bg-offwhite"
 							>
 								<span>Continue with Google</span>
@@ -120,7 +122,7 @@ export function LoginForm() {
 									width={18}
 									height={18}
 								/>
-							</button>
+							</a>
 						</form>
 
 						<p className="mt-5 text-center text-darknavy/70">

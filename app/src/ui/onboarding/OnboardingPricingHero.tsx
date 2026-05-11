@@ -27,7 +27,7 @@ export function OnboardingPricingHero({
           Start Here
         </p>
         <h2 className="mt-4 max-w-4xl text-balance text-4xl font-semibold tracking-[-0.04em] text-offwhite sm:text-5xl lg:text-6xl">
-          Start with a free trial before choosing your plan
+          Start with a 15-days free trial before choosing your plan.
         </h2>
         <p className="mt-6 max-w-2xl text-center text-sm leading-7 text-offwhite/68 sm:text-base">
           Explore the available plans below. Every option begins with a free

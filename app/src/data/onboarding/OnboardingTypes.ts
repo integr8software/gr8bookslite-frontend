@@ -62,6 +62,13 @@ export type OnboardingValues = {
   role: string;
   password: string;
   confirmPassword: string;
+  cardholderName: string;
+  billingEmail: string;
+  cardNumber: string;
+  expiryMonth: string;
+  expiryYear: string;
+  cvc: string;
+  billingAddress: string;
 };
 
 const DefaultReportYear = GetCalendarYearReportDates();
@@ -89,6 +96,13 @@ export const InitialOnboardingValues: OnboardingValues = {
   role: "",
   password: "",
   confirmPassword: "",
+  cardholderName: "",
+  billingEmail: "",
+  cardNumber: "",
+  expiryMonth: "",
+  expiryYear: "",
+  cvc: "",
+  billingAddress: "",
 };
 
 export type OnboardingActionState = {

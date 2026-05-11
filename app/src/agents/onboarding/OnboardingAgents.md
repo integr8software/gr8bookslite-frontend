@@ -137,7 +137,9 @@ Use `ui` for presentational onboarding pieces and reusable step components.
 Implemented onboarding behavior:
 
 - direct route at `/onboarding`
-- 3-step onboarding flow
+- 5-step onboarding flow
+- free-trial plan selection step
+- billing setup step
 - animated progress header
 - step 1 taxpayer flow:
   - individual path
@@ -167,6 +169,14 @@ Implemented onboarding behavior:
 - password requirement helper list
 - review step for submitted details
 - toast-based validation feedback
+
+Current UI files also include:
+
+- `OnboardingBillingStep.tsx`
+- `OnboardingFreeTrialStep.tsx`
+- `OnboardingPricingHero.tsx`
+- `OnboardingPricingMobilePlans.tsx`
+- `OnboardingPricingDesktopPlans.tsx`
 
 ## Notes
 

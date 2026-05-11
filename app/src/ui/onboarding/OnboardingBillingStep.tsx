@@ -1,33 +1,30 @@
 "use client";
 
-import { useState } from "react";
 import type {
   BillingCycle,
   PricingPlan,
 } from "@/app/src/data/pricing/PricingData";
+import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
 import { OnboardingActionRow } from "./OnboardingActionRow";
 import { OnboardingField } from "./OnboardingField";
 
 type OnboardingBillingStepProps = {
+  values: OnboardingValues;
   selectedPlan: PricingPlan | null;
   selectedBillingCycle: BillingCycle;
+  updateValue: (key: keyof OnboardingValues, value: string) => void;
   handleBack: () => void;
   handleNext: () => void;
 };
 
 export function OnboardingBillingStep({
+  values,
   selectedPlan,
   selectedBillingCycle,
+  updateValue,
   handleBack,
   handleNext,
 }: OnboardingBillingStepProps) {
-  const [cardholderName, setCardholderName] = useState("");
-  const [billingEmail, setBillingEmail] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiryMonth, setExpiryMonth] = useState("");
-  const [expiryYear, setExpiryYear] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [billingAddress, setBillingAddress] = useState("");
   const selectedPrice = selectedPlan
     ? selectedBillingCycle === "monthly"
       ? selectedPlan.monthlyPrice
@@ -58,8 +55,10 @@ export function OnboardingBillingStep({
               name="cardholderName"
               type="text"
               placeholder="John Doe"
-              value={cardholderName}
-              onChange={(event) => setCardholderName(event.target.value)}
+              value={values.cardholderName}
+              onChange={(event) =>
+                updateValue("cardholderName", event.target.value)
+              }
               errors={undefined}
             />
             <OnboardingField
@@ -68,8 +67,10 @@ export function OnboardingBillingStep({
               name="billingEmail"
               type="email"
               placeholder="billing@company.com"
-              value={billingEmail}
-              onChange={(event) => setBillingEmail(event.target.value)}
+              value={values.billingEmail}
+              onChange={(event) =>
+                updateValue("billingEmail", event.target.value)
+              }
               errors={undefined}
             />
           </div>
@@ -81,8 +82,8 @@ export function OnboardingBillingStep({
             type="text"
             inputMode="numeric"
             placeholder="1234 5678 9012 3456"
-            value={cardNumber}
-            onChange={(event) => setCardNumber(event.target.value)}
+            value={values.cardNumber}
+            onChange={(event) => updateValue("cardNumber", event.target.value)}
             errors={undefined}
           />
 
@@ -93,8 +94,10 @@ export function OnboardingBillingStep({
               name="expiryMonth"
               type="text"
               placeholder="MM"
-              value={expiryMonth}
-              onChange={(event) => setExpiryMonth(event.target.value)}
+              value={values.expiryMonth}
+              onChange={(event) =>
+                updateValue("expiryMonth", event.target.value)
+              }
               errors={undefined}
             />
             <OnboardingField
@@ -103,8 +106,8 @@ export function OnboardingBillingStep({
               name="expiryYear"
               type="text"
               placeholder="YYYY"
-              value={expiryYear}
-              onChange={(event) => setExpiryYear(event.target.value)}
+              value={values.expiryYear}
+              onChange={(event) => updateValue("expiryYear", event.target.value)}
               errors={undefined}
             />
             <OnboardingField
@@ -114,8 +117,8 @@ export function OnboardingBillingStep({
               type="text"
               inputMode="numeric"
               placeholder="123"
-              value={cvc}
-              onChange={(event) => setCvc(event.target.value)}
+              value={values.cvc}
+              onChange={(event) => updateValue("cvc", event.target.value)}
               errors={undefined}
             />
           </div>
@@ -126,8 +129,10 @@ export function OnboardingBillingStep({
             name="billingAddress"
             type="text"
             placeholder="123 Main St, City, Province"
-            value={billingAddress}
-            onChange={(event) => setBillingAddress(event.target.value)}
+            value={values.billingAddress}
+            onChange={(event) =>
+              updateValue("billingAddress", event.target.value)
+            }
             errors={undefined}
           />
 

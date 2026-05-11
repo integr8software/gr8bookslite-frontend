@@ -49,6 +49,37 @@ export const OnboardingRoleOptions = ["Admin", "Viewer", "Editor"] as const;
 
 export const OnboardingReportYearBasisOptions = ["Calendar Year"] as const;
 
+export const OnboardingPlanComparisonRows = [
+  {
+    label: "Best for",
+    values: [
+      "Solo bookkeeping and lean teams",
+      "Growing operations with inventory",
+      "Expanding into multiple entities",
+    ],
+  },
+  {
+    label: "Included users",
+    values: ["Up to 3 users", "Up to 10 users", "Per additional company"],
+  },
+  {
+    label: "Priority support",
+    values: [true, true, true],
+  },
+  {
+    label: "Inventory workflows",
+    values: [false, true, false],
+  },
+  {
+    label: "Multi-company management",
+    values: [false, false, true],
+  },
+  {
+    label: "Storage upgrades",
+    values: [true, true, true],
+  },
+] as const;
+
 export const OnboardingMaxImageSizeBytes = 5 * 1024 * 1024;
 
 const OnboardingMonthNames = [

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source inline("animate-bounce-once");
 
 :root {
   --darknavy: #212738;
@@ -95,6 +96,18 @@ button {
 		filter: saturate(0.96);
 		scale: 0.985;
 	}
+}
+
+@keyframes bounce-once {
+  0%, 100% { transform: translateY(0); }
+  20%       { transform: translateY(-10px); }
+  40%       { transform: translateY(0); }
+  60%       { transform: translateY(-5px); }
+  80%       { transform: translateY(0); }
+}
+
+.animate-bounce-once {
+  animation: bounce-once 1.5s ease-in-out forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

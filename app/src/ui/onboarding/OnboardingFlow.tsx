@@ -45,8 +45,10 @@ export function OnboardingFlow() {
 
         {currentStep.currentStep === OnboardingSteps[1].currentStep ? (
           <OnboardingBillingStep
+            values={values}
             selectedPlan={selectedPlan}
             selectedBillingCycle={selectedBillingCycle}
+            updateValue={updateValue}
             handleBack={handleBack}
             handleNext={handleNext}
           />

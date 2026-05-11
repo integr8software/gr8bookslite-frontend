@@ -164,10 +164,10 @@ export function OnboardingFreeTrialStep({
                 billingCycle === "monthly"
                   ? plan.monthlyPrice
                   : plan.yearlyPrice;
-              const alternatePrice =
+              const compareAtPrice =
                 billingCycle === "monthly"
-                  ? plan.yearlyPrice
-                  : plan.monthlyPrice;
+                  ? plan.monthlyCompareAtPrice
+                  : plan.yearlyCompareAtPrice;
               const billingLabel = plan.billingLabel[billingCycle];
 
               return (
@@ -200,9 +200,11 @@ export function OnboardingFreeTrialStep({
                       {plan.name}
                     </h4>
                     <div className="mt-4">
-                      <p className="text-sm text-darknavy/35 line-through">
-                        {alternatePrice}
-                      </p>
+                      {compareAtPrice ? (
+                        <p className="text-sm text-darknavy/35 line-through">
+                          {compareAtPrice}
+                        </p>
+                      ) : null}
                       <div className="mt-1 flex items-end gap-1 whitespace-nowrap">
                         <p className="text-4xl font-semibold tracking-tight text-darknavy">
                           {price}
@@ -291,10 +293,10 @@ export function OnboardingFreeTrialStep({
                   billingCycle === "monthly"
                     ? plan.monthlyPrice
                     : plan.yearlyPrice;
-                const alternatePrice =
+                const compareAtPrice =
                   billingCycle === "monthly"
-                    ? plan.yearlyPrice
-                    : plan.monthlyPrice;
+                    ? plan.monthlyCompareAtPrice
+                    : plan.yearlyCompareAtPrice;
                 const billingLabel = plan.billingLabel[billingCycle];
 
                 return (
@@ -327,9 +329,11 @@ export function OnboardingFreeTrialStep({
                         {plan.name}
                       </h4>
                       <div className="mt-4 space-y-1">
-                        <p className="text-sm text-darknavy/35 line-through">
-                          {alternatePrice}
-                        </p>
+                        {compareAtPrice ? (
+                          <p className="text-sm text-darknavy/35 line-through">
+                            {compareAtPrice}
+                          </p>
+                        ) : null}
                         <div className="flex items-end justify-center gap-1 whitespace-nowrap">
                           <p className="text-3xl font-semibold tracking-tight text-darknavy">
                             {price}

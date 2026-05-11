@@ -8,6 +8,8 @@ export type PricingPlan = {
   name: string;
   monthlyPrice: string;
   yearlyPrice: string;
+  monthlyCompareAtPrice?: string;
+  yearlyCompareAtPrice?: string;
   billingLabel: {
     monthly: string;
     yearly: string;
@@ -38,8 +40,10 @@ export const BillingOptions: { label: string; value: BillingCycle }[] = [
 export const PricingPlans: PricingPlan[] = [
   {
     name: "Accounting",
-    monthlyPrice: "P 399.00",
-    yearlyPrice: "P 3,990.00",
+    monthlyPrice: "₱ 399.00",
+    yearlyPrice: "₱ 3,990.00",
+    monthlyCompareAtPrice: "₱ 499.00",
+    yearlyCompareAtPrice: "₱ 4,788.00",
     billingLabel: {
       monthly: "Per month/user",
       yearly: "Per year/user",
@@ -55,8 +59,10 @@ export const PricingPlans: PricingPlan[] = [
   },
   {
     name: "Accounting & Inventory",
-    monthlyPrice: "P 499.00",
-    yearlyPrice: "P 4,990.00",
+    monthlyPrice: "₱ 499.00",
+    yearlyPrice: "₱ 4,990.00",
+    monthlyCompareAtPrice: "₱ 599.00",
+    yearlyCompareAtPrice: "₱ 5,988.00",
     billingLabel: {
       monthly: "Per month/user",
       yearly: "Per year/user",
@@ -73,8 +79,10 @@ export const PricingPlans: PricingPlan[] = [
   },
   {
     name: "Additional Company",
-    monthlyPrice: "P100.00",
-    yearlyPrice: "P1,000.00",
+    monthlyPrice: "₱ 100.00",
+    yearlyPrice: "₱ 1,000.00",
+    monthlyCompareAtPrice: "₱ 125.00",
+    yearlyCompareAtPrice: "₱ 1,200.00",
     billingLabel: {
       monthly: "Per company/month",
       yearly: "Per company/year",

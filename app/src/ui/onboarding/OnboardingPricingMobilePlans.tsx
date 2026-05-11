@@ -26,8 +26,8 @@ export function OnboardingPricingMobilePlans({
           Need help choosing?
         </p>
         <p className="mt-3 text-sm leading-6 text-darknavy/60">
-          Start with your free trial now and pick the plan that best matches
-          your current workflow and reporting needs.
+          Start with a 15-days free trial now and pick the plan that best
+          matches your current workflow and reporting needs.
         </p>
         <button
           type="button"

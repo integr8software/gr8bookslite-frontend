@@ -10,32 +10,28 @@ export function OnboardingPricingHero({
   onReviewPlans,
 }: OnboardingPricingHeroProps) {
   return (
-    <section className="relative flex min-h-[72vh] items-center justify-center overflow-hidden rounded-4xl border border-white/10 bg-[#121316] px-6 py-10 text-offwhite shadow-[0_30px_90px_rgba(18,19,22,0.28)] sm:px-8 sm:py-14">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(87,196,229,0.18),transparent_34%),radial-gradient(circle_at_bottom,rgba(249,112,104,0.14),transparent_26%)]" />
-      <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-size-[18px_18px]" />
-      <div className="absolute left-[10%] top-[14%] h-16 w-16 -rotate-12 rounded-2xl border border-white/12 bg-white/6 shadow-[0_18px_35px_rgba(0,0,0,0.25)] backdrop-blur-md" />
-      <div className="absolute right-[12%] top-[18%] hidden h-18 w-18 rotate-14 rounded-2xl border border-white/12 bg-white/6 shadow-[0_18px_35px_rgba(0,0,0,0.25)] backdrop-blur-md sm:block" />
-      <div className="absolute bottom-[18%] left-[18%] hidden h-14 w-14 rotate-10 rounded-2xl border border-white/12 bg-white/6 shadow-[0_18px_35px_rgba(0,0,0,0.25)] backdrop-blur-md md:block" />
-      <div className="absolute bottom-[20%] right-[16%] hidden h-14 w-14 rotate-[-10deg] rounded-2xl border border-white/12 bg-white/6 shadow-[0_18px_35px_rgba(0,0,0,0.25)] backdrop-blur-md md:block" />
+    <section className="relative flex min-h-[62vh] items-center justify-center overflow-hidden rounded-[2.25rem] border border-white/8 bg-darknavy px-6 py-12 text-offwhite shadow-[0_28px_80px_rgba(11,15,26,0.34)] sm:px-8 sm:py-16 lg:px-12 lg:py-20">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(87,196,229,0.16),transparent_28%),radial-gradient(circle_at_bottom,rgba(249,112,104,0.18),transparent_30%),linear-gradient(180deg,rgba(7,10,18,0.94),rgba(10,13,22,0.98))]" />
+      <div className="absolute inset-0 opacity-[0.08] bg-[radial-gradient(circle_at_center,rgba(236,242,239,0.95)_1px,transparent_1.2px)] bg-size-[18px_18px]" />
+      <div className="absolute inset-x-[28%] bottom-[-18%] h-56 rounded-full bg-coralpink/18 blur-3xl sm:h-64" />
+      <div className="absolute inset-x-[34%] top-[-16%] h-40 rounded-full bg-skyblue/10 blur-3xl sm:h-48" />
 
-      <div className="relative flex max-w-3xl flex-col items-center justify-center text-center">
-        <div className="rounded-full border border-white/12 bg-white/8 px-4 py-2 text-xs font-medium text-offwhite/90 shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-md">
-          Free Trial Experience
-        </div>
+      <div className="absolute left-[9%] top-[13%] h-14 w-12 rotate-[-13deg]rounded-[1.15rem] border border-white/10 bg-white/6 shadow-[0_18px_35px_rgba(0,0,0,0.28)] backdrop-blur-md sm:h-16 sm:w-14" />
+      <div className="absolute right-[12%] top-[16%] h-12 w-10 rotate-11 rounded-2xl border border-white/10 bg-white/6 shadow-[0_18px_35px_rgba(0,0,0,0.28)] backdrop-blur-md sm:h-14 sm:w-12" />
+      <div className="absolute bottom-[18%] left-[18%] hidden h-12 w-12 rotate-10 rounded-2xl border border-white/10 bg-white/6 shadow-[0_18px_35px_rgba(0,0,0,0.28)] backdrop-blur-md md:block" />
+      <div className="absolute bottom-[20%] right-[16%] hidden h-12 w-12 -rotate-12 rounded-2xl border border-white/10 bg-white/6 shadow-[0_18px_35px_rgba(0,0,0,0.28)] backdrop-blur-md md:block" />
 
-        <p className="mt-8 text-sm font-semibold uppercase tracking-[0.32em] text-skyblue">
-          Start Here
-        </p>
-        <h2 className="mt-4 max-w-4xl text-balance text-4xl font-semibold tracking-[-0.04em] text-offwhite sm:text-5xl lg:text-6xl">
-          Start with a 15-days free trial before choosing your plan.
+      <div className="relative flex max-w-4xl flex-col items-center justify-center text-center">
+        <h2 className="max-w-5xl text-balance text-[2.55rem] font-semibold leading-[0.98] tracking-[-0.06em] text-offwhite sm:text-6xl lg:text-[4rem]">
+          Start with a 15-days free trial after choosing your plan.
         </h2>
-        <p className="mt-6 max-w-2xl text-center text-sm leading-7 text-offwhite/68 sm:text-base">
+        <p className="mt-7 max-w-3xl text-center text-sm leading-7 text-offwhite/60 sm:text-lg sm:leading-8">
           Explore the available plans below. Every option begins with a free
           trial, so you can continue onboarding now and decide on pricing when
           you are ready.
         </p>
 
-        <div className="mt-10">
+        <div className="mt-10 sm:mt-12">
           <OnboardingActionRow
             showBack={false}
             primaryVariant="circle"

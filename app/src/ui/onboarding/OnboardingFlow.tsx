@@ -27,55 +27,53 @@ export function OnboardingFlow() {
   } = useOnboardingFlow();
 
   return (
-    <div className="min-h-screen bg-white px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
-      <section className="mx-auto w-full max-w-280 rounded-sm bg-white px-5 py-8 shadow-[0_18px_60px_rgba(33,39,56,0.12)] ring-1 ring-darknavy/10 sm:px-8 lg:px-14 lg:py-12">
-        <OnboardingProgressHeader
-          currentStep={currentStep.currentStep}
-          totalSteps={currentStep.totalSteps}
-          progressPercent={currentStep.progressPercent}
-          title={currentStep.title}
-          description={currentStep.description}
+    <>
+      <OnboardingProgressHeader
+        currentStep={currentStep.currentStep}
+        totalSteps={currentStep.totalSteps}
+        progressPercent={currentStep.progressPercent}
+        title={currentStep.title}
+        description={currentStep.description}
+      />
+
+      {currentStep.currentStep === OnboardingSteps[0].currentStep ? (
+        <OnboardingFreeTrialStep handlePlanSelection={handlePlanSelection} />
+      ) : null}
+
+      {currentStep.currentStep === OnboardingSteps[1].currentStep ? (
+        <OnboardingBillingStep
+          values={values}
+          errors={errors}
+          selectedPlan={selectedPlan}
+          selectedBillingCycle={selectedBillingCycle}
+          updateValue={updateValue}
+          handleBack={handleBack}
+          handleNext={handleNext}
         />
+      ) : null}
 
-        {currentStep.currentStep === OnboardingSteps[0].currentStep ? (
-          <OnboardingFreeTrialStep handlePlanSelection={handlePlanSelection} />
-        ) : null}
+      {currentStep.currentStep === OnboardingSteps[2].currentStep ? (
+        <OnboardingStepOne
+          values={values}
+          errors={errors}
+          logoInputKey={logoInputKey}
+          logoPreviewUrl={logoPreviewUrl}
+          updateValue={updateValue}
+          setTaxpayerType={setTaxpayerType}
+          handleLogoChange={handleLogoChange}
+          handleLogoRemove={handleLogoRemove}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />
+      ) : null}
 
-        {currentStep.currentStep === OnboardingSteps[1].currentStep ? (
-          <OnboardingBillingStep
-            values={values}
-            errors={errors}
-            selectedPlan={selectedPlan}
-            selectedBillingCycle={selectedBillingCycle}
-            updateValue={updateValue}
-            handleBack={handleBack}
-            handleNext={handleNext}
-          />
-        ) : null}
-
-        {currentStep.currentStep === OnboardingSteps[2].currentStep ? (
-          <OnboardingStepOne
-            values={values}
-            errors={errors}
-            logoInputKey={logoInputKey}
-            logoPreviewUrl={logoPreviewUrl}
-            updateValue={updateValue}
-            setTaxpayerType={setTaxpayerType}
-            handleLogoChange={handleLogoChange}
-            handleLogoRemove={handleLogoRemove}
-            handleBack={handleBack}
-            handleNext={handleNext}
-          />
-        ) : null}
-
-        {currentStep.currentStep === OnboardingSteps[3].currentStep ? (
-          <OnboardingReviewStep
-            values={values}
-            handleBack={handleBack}
-            handleFinish={handleNext}
-          />
-        ) : null}
-      </section>
-    </div>
+      {currentStep.currentStep === OnboardingSteps[3].currentStep ? (
+        <OnboardingReviewStep
+          values={values}
+          handleBack={handleBack}
+          handleFinish={handleNext}
+        />
+      ) : null}
+    </>
   );
 }

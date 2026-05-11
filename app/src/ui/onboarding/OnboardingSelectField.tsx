@@ -20,11 +20,10 @@ export function OnboardingSelectField({
   onChange,
 }: OnboardingSelectFieldProps) {
   const errorId = `${id}-error`;
-  const fieldClassName = `h-14 w-full appearance-none rounded-md border bg-white px-4 pr-12 text-base font-semibold text-darknavy outline-none transition focus:ring-4 ${
-    errors?.length
-      ? "border-coralpink focus:border-coralpink focus:ring-coralpink/20"
-      : "border-darknavy/20 focus:border-skyblue focus:ring-skyblue/20"
-  }`;
+  const fieldClassName = `h-14 w-full appearance-none rounded-md border bg-white px-4 pr-12 text-base text-darknavy outline-none transition focus:ring-4 ${errors?.length
+    ? "border-coralpink focus:border-coralpink focus:ring-coralpink/20"
+    : "border-darknavy/20 focus:border-skyblue focus:ring-skyblue/20"
+    }`;
 
   return (
     <div>

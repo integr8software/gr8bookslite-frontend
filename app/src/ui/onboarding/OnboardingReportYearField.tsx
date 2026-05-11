@@ -35,11 +35,10 @@ export function OnboardingReportYearField({
     startDateLabel && endDateLabel ? `${startDateLabel} to ${endDateLabel}` : "";
 
   function getDateInputClassName(hasError: boolean) {
-    return `h-14 w-full rounded-md border bg-white px-4 text-base font-semibold text-darknavy outline-none transition focus:ring-4 ${
-      hasError
-        ? "border-coralpink focus:border-coralpink focus:ring-coralpink/20"
-        : "border-darknavy/20 focus:border-skyblue focus:ring-skyblue/20"
-    }`;
+    return `h-14 w-full rounded-md border bg-white px-4 text-base text-darknavy outline-none transition focus:ring-4 ${hasError
+      ? "border-coralpink focus:border-coralpink focus:ring-coralpink/20"
+      : "border-darknavy/20 focus:border-skyblue focus:ring-skyblue/20"
+      }`;
   }
 
   return (

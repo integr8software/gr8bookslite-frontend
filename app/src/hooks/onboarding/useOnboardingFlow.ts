@@ -34,6 +34,31 @@ function FormatCardNumber(value: string) {
     .replace(/(\d{4})(?=\d)/g, "$1 ");
 }
 
+function GetOnboardingIdentityPayload(values: OnboardingValues) {
+  if (values.taxpayerType === "individual") {
+    return {
+      taxpayerType: "individual" as const,
+      lastName: values.lastName,
+      firstName: values.firstName,
+      middleName: values.middleName,
+      companyName: "",
+      nonIndividualType: "",
+      nonIndividualTypeOther: "",
+    };
+  }
+
+  return {
+    taxpayerType: "non-individual" as const,
+    lastName: "",
+    firstName: "",
+    middleName: "",
+    companyName: values.companyName,
+    nonIndividualType: values.nonIndividualType,
+    nonIndividualTypeOther:
+      values.nonIndividualType === "Others" ? values.nonIndividualTypeOther : "",
+  };
+}
+
 export function useOnboardingFlow() {
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
@@ -176,13 +201,6 @@ export function useOnboardingFlow() {
     setValues((current) => ({
       ...current,
       taxpayerType: type,
-      // Clear identity fields when switching type
-      lastName: "",
-      firstName: "",
-      middleName: "",
-      companyName: "",
-      nonIndividualType: "",
-      nonIndividualTypeOther: "",
     }));
     setErrors({});
   }
@@ -266,37 +284,17 @@ export function useOnboardingFlow() {
   }
 
   function validateStepOne() {
-    const isIndividual = values.taxpayerType === "individual";
-
-    const payload = isIndividual
-      ? {
-          taxpayerType: "individual" as const,
-          lastName: values.lastName,
-          firstName: values.firstName,
-          middleName: values.middleName,
-          address: values.address,
-          tin: values.tin,
-          website: values.website,
-          contactNumber: values.contactNumber,
-          logo: values.logoFile,
-          reportYearBasis: values.reportYearBasis,
-          reportStartDate: values.reportStartDate,
-          reportEndDate: values.reportEndDate,
-        }
-      : {
-          taxpayerType: "non-individual" as const,
-          companyName: values.companyName,
-          nonIndividualType: values.nonIndividualType,
-          nonIndividualTypeOther: values.nonIndividualTypeOther,
-          address: values.address,
-          tin: values.tin,
-          website: values.website,
-          contactNumber: values.contactNumber,
-          logo: values.logoFile,
-          reportYearBasis: values.reportYearBasis,
-          reportStartDate: values.reportStartDate,
-          reportEndDate: values.reportEndDate,
-        };
+    const payload = {
+      ...GetOnboardingIdentityPayload(values),
+      address: values.address,
+      tin: values.tin,
+      website: values.website,
+      contactNumber: values.contactNumber,
+      logo: values.logoFile,
+      reportYearBasis: values.reportYearBasis,
+      reportStartDate: values.reportStartDate,
+      reportEndDate: values.reportEndDate,
+    };
 
     const parsed = OnboardingStepOneSchema.safeParse(payload);
 

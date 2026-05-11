@@ -42,6 +42,7 @@ export function OnboardingStepOne({
   handleNext,
 }: OnboardingStepOneProps) {
   const isIndividual = values.taxpayerType === "individual";
+  const isOtherOrganizationType = values.nonIndividualType === "Others";
 
   return (
     <div className="mt-10 space-y-6">
@@ -127,7 +128,11 @@ export function OnboardingStepOne({
             onChange={(e) => updateValue("companyName", e.target.value)}
             errors={errors.companyName}
           />
-          <div className="grid gap-6 md:grid-cols-2">
+          <div
+            className={`grid gap-6 ${
+              isOtherOrganizationType ? "md:grid-cols-2" : "md:grid-cols-1"
+            }`}
+          >
             <OnboardingSelectField
               id="nonIndividualType"
               name="nonIndividualType"
@@ -137,7 +142,7 @@ export function OnboardingStepOne({
               errors={errors.nonIndividualType}
               onChange={(value) => updateValue("nonIndividualType", value)}
             />
-            {values.nonIndividualType === "Others" && (
+            {isOtherOrganizationType && (
               <OnboardingField
                 label="Please Specify"
                 id="nonIndividualTypeOther"

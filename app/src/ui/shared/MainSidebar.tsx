@@ -106,13 +106,13 @@ export function MainSidebar({
     <aside
       data-main-sidebar-root
       className={joinClasses(
-        "fixed inset-y-0 left-0 z-50 w-[19.5rem] overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] transition-[transform,opacity] duration-500 ease-out will-change-[transform,opacity,width] motion-reduce:transition-none lg:bottom-0 lg:top-16 lg:z-20 lg:h-auto lg:shadow-none lg:transition-[width,opacity,border-color]",
+        "fixed inset-y-0 left-0 z-50 w-78 overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] transition-[transform,opacity] duration-500 ease-out will-change-[transform,opacity,width] motion-reduce:transition-none lg:bottom-0 lg:top-16 lg:z-20 lg:h-auto lg:shadow-none lg:transition-[width,opacity,border-color]",
         isOpen
-          ? "translate-x-0 opacity-100 lg:w-[19.5rem]"
+          ? "translate-x-0 opacity-100 lg:w-78"
           : "pointer-events-none -translate-x-full opacity-0 lg:w-0 lg:translate-x-0 lg:border-transparent",
       )}
     >
-      <div className="flex h-full min-h-0 w-[19.5rem] flex-col">
+      <div className="flex h-full min-h-0 w-78 flex-col">
         <div className="flex items-center justify-between border-b border-darknavy/10 px-4 py-4">
           <Link
             href="/dashboard"

@@ -390,7 +390,7 @@ export function MainTopbar({
 
             <div
               className={joinClasses(
-                "fixed right-2 top-[4.5rem] z-50 w-[calc(100vw-1rem)] max-w-[22rem] origin-top-right transition-[opacity,transform] duration-150 ease-out will-change-[opacity,transform] motion-reduce:transition-none sm:absolute sm:right-0 sm:top-12 sm:w-80 sm:max-w-none md:w-96 xl:hidden",
+                "fixed right-2 top-18 z-50 w-[calc(100vw-1rem)] max-w-88 origin-top-right transition-[opacity,transform] duration-150 ease-out will-change-[opacity,transform] motion-reduce:transition-none sm:absolute sm:right-0 sm:top-12 sm:w-80 sm:max-w-none md:w-96 xl:hidden",
                 isNotificationsOpen
                   ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
                   : "pointer-events-none translate-y-1 scale-[0.98] opacity-0",
@@ -501,7 +501,7 @@ export function MainTopbar({
             results={searchResults}
             onClose={onCloseSearch}
             onQueryChange={onQueryChange}
-            className="fixed left-3 right-3 top-[4.5rem] lg:hidden"
+            className="fixed left-3 right-3 top-18 lg:hidden"
           />
         </div>
       ) : null}
@@ -545,7 +545,7 @@ function BreadcrumbDropdown({
               className={joinClasses(
                 "flex items-start gap-3 rounded-md px-3 py-2.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
                 isManagementAction
-                  ? "mt-1 border-t border-darknavy/10 bg-darknavy/[0.03] hover:bg-citron/20"
+                  ? "mt-1 border-t border-darknavy/10 bg-darknavy/3 hover:bg-citron/20"
                   : "hover:bg-skyblue/10",
               )}
             >

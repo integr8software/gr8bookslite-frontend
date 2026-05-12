@@ -43,7 +43,7 @@ export function MainSearchPanel({
         </button>
       </div>
 
-      <div className="max-h-[21rem] overflow-y-auto p-2">
+      <div className="max-h-84 overflow-y-auto p-2">
         {results.length ? (
           results.map((result) => (
             <Link

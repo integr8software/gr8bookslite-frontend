@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
@@ -11,6 +11,14 @@ function ReadRedirectPath(mode: string | null) {
 }
 
 export default function GoogleAuthCallbackPage() {
+	return (
+		<Suspense fallback={<GoogleAuthCallbackMessage />}>
+			<GoogleAuthCallbackContent />
+		</Suspense>
+	);
+}
+
+function GoogleAuthCallbackContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const setAccessToken = useAppStore((state) => state.setAccessToken);
@@ -33,6 +41,10 @@ export default function GoogleAuthCallbackPage() {
 		router.replace(ReadRedirectPath(mode));
 	}, [router, searchParams, setAccessToken]);
 
+	return <GoogleAuthCallbackMessage />;
+}
+
+function GoogleAuthCallbackMessage() {
 	return (
 		<main className="flex min-h-screen items-center justify-center bg-white px-6 text-center text-darknavy">
 			<p className="text-sm text-darknavy/70">

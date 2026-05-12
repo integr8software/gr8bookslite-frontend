@@ -10,6 +10,7 @@ import {
 } from "@/app/src/data/auth/AuthTypes";
 import {
   ClearPendingVerificationEmail,
+  GetPendingVerificationEmail,
   GetVerificationResendSecondsRemaining,
   SavePendingVerificationEmail,
   SaveVerificationResendCooldown,
@@ -29,6 +30,14 @@ type UseOtpFormOptions = {
   initialEmail?: string;
 };
 
+function NormalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+function ResolveInitialEmail(initialEmail: string) {
+  return NormalizeEmail(initialEmail) || GetPendingVerificationEmail();
+}
+
 function ResolveInitialResendSeconds(email: string) {
   return email ? GetVerificationResendSecondsRemaining(email) : 0;
 }
@@ -41,7 +50,7 @@ export function useOtpForm({
   initialEmail = "",
 }: UseOtpFormOptions = {}) {
   const router = useRouter();
-  const initialVerificationEmail = initialEmail.trim();
+  const initialVerificationEmail = ResolveInitialEmail(initialEmail);
   const [hasEditedOtpAfterError, setHasEditedOtpAfterError] = useState(false);
   const [state, formAction, pending] = useActionState(
     async (previousState: AuthActionState, formData: FormData) => {
@@ -73,6 +82,13 @@ export function useOtpForm({
   const [isResending, setIsResending] = useState(false);
   const otpInputRef = useRef<HTMLInputElement>(null);
   const wasPendingRef = useRef(false);
+
+  useEffect(() => {
+    if (!initialVerificationEmail) {
+      toast.error("Start email verification from sign up or log in.");
+      router.replace("/login");
+    }
+  }, [initialVerificationEmail, router]);
 
   useEffect(() => {
     if (step !== "verify" || secondsRemaining <= 0) {
@@ -188,6 +204,7 @@ export function useOtpForm({
         setHasActivatedResendCooldown(nextSecondsRemaining > 0);
         setIsChangingEmail(false);
         setStep("verify");
+        SavePendingVerificationEmail(trimmedEmail);
         toast.success(nextState.message);
         return;
       }
@@ -258,6 +275,7 @@ export function useOtpForm({
     state,
     formAction,
     pending,
+    hasRouteAccess: Boolean(initialVerificationEmail),
     isOtpErrorActive: state.status === "error" && !hasEditedOtpAfterError,
     step,
     email,

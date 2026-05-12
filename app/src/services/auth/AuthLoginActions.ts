@@ -55,14 +55,10 @@ export async function LoginAction(
         : "We could not sign you in right now.";
 
     if (message.startsWith("Please verify your email before logging in.")) {
-      const otpParams = new URLSearchParams({
-        email: parsed.data.email,
-      });
-
       return {
         status: "error",
         message,
-        redirectTo: `/otp?${otpParams.toString()}`,
+        redirectTo: "/auth/verify-email",
         pendingVerificationEmail: parsed.data.email,
         formValues,
         rememberMe,

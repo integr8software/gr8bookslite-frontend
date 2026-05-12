@@ -137,7 +137,7 @@ export function useForgotPasswordForm() {
     if (state.status === "error") {
       toast.error(state.message);
     }
-  }, [pending, state.message, state.status]);
+  }, [pending, state]);
 
   const formattedTime = useMemo(() => {
     const minutes = Math.floor(secondsRemaining / 60);

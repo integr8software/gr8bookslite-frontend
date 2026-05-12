@@ -54,14 +54,10 @@ export async function SignUpAction(
       },
     );
 
-    const otpParams = new URLSearchParams({
-      email: response.email,
-    });
-
     return {
       status: "success",
       message: response.message,
-      redirectTo: `/otp?${otpParams.toString()}`,
+      redirectTo: "/auth/verify-email",
       pendingVerificationEmail: response.email,
     };
   } catch (error) {

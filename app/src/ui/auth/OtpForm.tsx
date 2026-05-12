@@ -13,6 +13,7 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 		state,
 		formAction,
 		pending,
+		hasRouteAccess,
 		isOtpErrorActive,
 		step,
 		email,
@@ -34,6 +35,17 @@ export function OtpForm({ initialEmail = "" }: OtpFormProps) {
 		handleResend,
 		handleChangeEmail,
 	} = useOtpForm({ initialEmail });
+
+	if (!hasRouteAccess) {
+		return (
+			<main className="flex min-h-screen items-center justify-center bg-transparent px-4 py-8 sm:px-6">
+				<div className="flex items-center gap-3 rounded-full bg-white px-5 py-3 text-sm font-medium text-darknavy shadow-[0_18px_60px_rgba(33,39,56,0.14)] ring-1 ring-darknavy/8">
+					<LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+					<span>Preparing verification...</span>
+				</div>
+			</main>
+		);
+	}
 
 	function getOtpBoxClass(index: number) {
 		if (isOtpErrorActive && otp.length === otpLength) {

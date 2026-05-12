@@ -44,15 +44,23 @@ export function GetPendingVerificationEmail() {
     return "";
   }
 
-  return window.sessionStorage.getItem(PENDING_VERIFICATION_EMAIL_KEY) ?? "";
+  return NormalizeEmail(
+    window.sessionStorage.getItem(PENDING_VERIFICATION_EMAIL_KEY) ?? "",
+  );
 }
 
 export function SavePendingVerificationEmail(email: string) {
+  const normalizedEmail = NormalizeEmail(email);
+
+  if (!normalizedEmail) {
+    return;
+  }
+
   if (!CanUseSessionStorage()) {
     return;
   }
 
-  window.sessionStorage.setItem(PENDING_VERIFICATION_EMAIL_KEY, email);
+  window.sessionStorage.setItem(PENDING_VERIFICATION_EMAIL_KEY, normalizedEmail);
 }
 
 export function ClearPendingVerificationEmail() {

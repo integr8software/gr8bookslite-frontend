@@ -14,6 +14,7 @@ export function useOnboardingFlow() {
     setSelectedBillingCycle: formState.setSelectedBillingCycle,
     setStepIndex: formState.setStepIndex,
     setValues: formState.setValues,
+    setPersistedLogoPreviewUrl: formState.setPersistedLogoPreviewUrl,
   });
   const { handlePlanSelection, handleNext, handleBack } =
     useOnboardingSubmission({

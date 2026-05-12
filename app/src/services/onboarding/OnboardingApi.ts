@@ -7,6 +7,7 @@ import type {
   SaveOnboardingBillingRequest,
   SaveOnboardingCompanyDetailsRequest,
   SelectOnboardingPlanRequest,
+  UploadOnboardingCompanyLogoResponse,
 } from "./OnboardingApiTypes";
 
 function GetAuthorizationHeaders(accessToken: string | null) {
@@ -55,6 +56,27 @@ export async function SaveOnboardingCompanyDetails(
   await ApiClient.post("/onboarding/company-details", body, {
     headers: GetAuthorizationHeaders(accessToken),
   });
+}
+
+export async function UploadOnboardingCompanyLogo(
+  accessToken: string | null,
+  logoFile: File,
+) {
+  const formData = new FormData();
+  formData.append("logo", logoFile);
+
+  const response = await ApiClient.post<UploadOnboardingCompanyLogoResponse>(
+    "/onboarding/company-logo",
+    formData,
+    {
+      headers: {
+        ...GetAuthorizationHeaders(accessToken),
+        "Content-Type": undefined,
+      },
+    },
+  );
+
+  return response.data;
 }
 
 export async function CompleteOnboarding(accessToken: string | null) {

@@ -192,6 +192,8 @@ export function useOnboardingFormState() {
         ...current,
         logoFile: null,
         logoName: "",
+        logoStoragePath: "",
+        logoPublicUrl: "",
       }));
       updateLogoPreviewUrl("");
       setErrors((current) => ({ ...current, logo: undefined }));
@@ -203,6 +205,8 @@ export function useOnboardingFormState() {
         ...current,
         logoFile: null,
         logoName: "",
+        logoStoragePath: "",
+        logoPublicUrl: "",
       }));
       updateLogoPreviewUrl("");
       setErrors((current) => ({
@@ -218,6 +222,8 @@ export function useOnboardingFormState() {
         ...current,
         logoFile: null,
         logoName: "",
+        logoStoragePath: "",
+        logoPublicUrl: "",
       }));
       updateLogoPreviewUrl("");
       setErrors((current) => ({
@@ -232,6 +238,8 @@ export function useOnboardingFormState() {
       ...current,
       logoFile: file,
       logoName: file.name,
+      logoStoragePath: "",
+      logoPublicUrl: "",
     }));
     updateLogoPreviewUrl(URL.createObjectURL(file));
     setErrors((current) => ({ ...current, logo: undefined }));
@@ -242,9 +250,15 @@ export function useOnboardingFormState() {
       ...current,
       logoFile: null,
       logoName: "",
+      logoStoragePath: "",
+      logoPublicUrl: "",
     }));
     updateLogoPreviewUrl("");
     setLogoInputKey((current) => current + 1);
+  }
+
+  function setPersistedLogoPreviewUrl(nextPreviewUrl: string) {
+    updateLogoPreviewUrl(nextPreviewUrl);
   }
 
   return {
@@ -272,5 +286,6 @@ export function useOnboardingFormState() {
     setTaxpayerType,
     handleLogoChange,
     handleLogoRemove,
+    setPersistedLogoPreviewUrl,
   };
 }

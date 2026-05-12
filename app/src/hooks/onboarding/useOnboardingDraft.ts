@@ -64,6 +64,7 @@ type UseOnboardingDraftParams = {
   setSelectedBillingCycle: React.Dispatch<React.SetStateAction<BillingCycle>>;
   setStepIndex: React.Dispatch<React.SetStateAction<number>>;
   setValues: React.Dispatch<React.SetStateAction<OnboardingValues>>;
+  setPersistedLogoPreviewUrl: (value: string) => void;
 };
 
 export function useOnboardingDraft({
@@ -72,6 +73,7 @@ export function useOnboardingDraft({
   setSelectedBillingCycle,
   setStepIndex,
   setValues,
+  setPersistedLogoPreviewUrl,
 }: UseOnboardingDraftParams) {
   const [browserAccessToken, setBrowserAccessToken] = useState<
     string | null | undefined
@@ -132,6 +134,7 @@ export function useOnboardingDraft({
         setSelectedPlan(selectedDraftPlan);
         setSelectedBillingCycle(GetUiBillingCycle(draft.billingCycle));
         setStepIndex(GetDraftStepIndex(draft));
+        setPersistedLogoPreviewUrl(draftCompanyDetails.logoPublicUrl ?? "");
         setValues((current) => ({
           ...current,
           taxpayerType:
@@ -150,6 +153,8 @@ export function useOnboardingDraft({
             draftCompanyDetails.contactNumber ?? current.contactNumber,
           logoName: draftCompanyDetails.logoName ?? "",
           logoFile: null,
+          logoStoragePath: draftCompanyDetails.logoStoragePath ?? "",
+          logoPublicUrl: draftCompanyDetails.logoPublicUrl ?? "",
           reportStartDate:
             draftCompanyDetails.reportStartDate ?? current.reportStartDate,
           reportEndDate:
@@ -192,6 +197,7 @@ export function useOnboardingDraft({
     setSelectedBillingCycle,
     setSelectedPlan,
     setStepIndex,
+    setPersistedLogoPreviewUrl,
     setValues,
   ]);
 

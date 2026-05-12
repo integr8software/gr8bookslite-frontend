@@ -36,6 +36,8 @@ export type OnboardingDraftCompanyDetails = {
   nonIndividualTypeOther: string | null;
   logoName: string | null;
   logoMimeType: string | null;
+  logoStoragePath: string | null;
+  logoPublicUrl: string | null;
   address: string | null;
   tin: string | null;
   website: string | null;
@@ -90,6 +92,8 @@ export type SaveOnboardingCompanyDetailsRequest = {
   nonIndividualTypeOther?: string;
   logoName: string;
   logoMimeType?: string;
+  logoStoragePath?: string;
+  logoPublicUrl?: string;
   address: string;
   tin: string;
   website?: string;
@@ -102,4 +106,14 @@ export type CompleteOnboardingResponse = {
   message: string;
   nextStep: "APP_READY";
   requiresReauthentication: boolean;
+};
+
+export type UploadOnboardingCompanyLogoResponse = {
+  message: string;
+  logo: {
+    fileName: string;
+    mimeType: string;
+    storagePath: string;
+    publicUrl: string;
+  };
 };

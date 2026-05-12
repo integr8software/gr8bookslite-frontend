@@ -106,13 +106,13 @@ export function MainSidebar({
     <aside
       data-main-sidebar-root
       className={joinClasses(
-        "fixed inset-y-0 left-0 z-50 w-[19.5rem] overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] transition-[transform,opacity] duration-500 ease-out will-change-[transform,opacity,width] motion-reduce:transition-none lg:sticky lg:top-16 lg:z-20 lg:h-[calc(100vh-4rem)] lg:shrink-0 lg:shadow-none lg:transition-[width,opacity,border-color]",
+        "fixed inset-y-0 left-0 z-50 w-[19.5rem] overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] transition-[transform,opacity] duration-500 ease-out will-change-[transform,opacity,width] motion-reduce:transition-none lg:bottom-0 lg:top-16 lg:z-20 lg:h-auto lg:shadow-none lg:transition-[width,opacity,border-color]",
         isOpen
           ? "translate-x-0 opacity-100 lg:w-[19.5rem]"
           : "pointer-events-none -translate-x-full opacity-0 lg:w-0 lg:translate-x-0 lg:border-transparent",
       )}
     >
-      <div className="flex h-full w-[19.5rem] flex-col">
+      <div className="flex h-full min-h-0 w-[19.5rem] flex-col">
         <div className="flex items-center justify-between border-b border-darknavy/10 px-4 py-4">
           <Link
             href="/dashboard"
@@ -142,7 +142,7 @@ export function MainSidebar({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 py-4">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4">
           <div className="mb-5">
             <div className="mb-2 grid grid-cols-2 gap-1 rounded-md bg-darknavy/5 p-1">
               <QuickListButton

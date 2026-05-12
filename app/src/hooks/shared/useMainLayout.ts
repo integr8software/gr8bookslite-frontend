@@ -431,7 +431,7 @@ function findNavigationTrail(
           key: section.key,
           label: section.title,
           href: section.href ?? section.items[0]?.href,
-          dropdownItems: section.items.map(toDropdownItem),
+          dropdownItems: getSectionDropdownItems(section),
         },
         ...itemTrail,
       ];
@@ -443,13 +443,34 @@ function findNavigationTrail(
           key: section.key,
           label: section.title,
           href: section.href,
-          dropdownItems: section.items.map(toDropdownItem),
+          dropdownItems: getSectionDropdownItems(section),
         },
       ];
     }
   }
 
   return [];
+}
+
+function getSectionDropdownItems(
+  section: MainNavigationSection,
+): MainBreadcrumbDropdownItem[] {
+  const sectionItems = section.items.map(toDropdownItem);
+
+  if (section.key !== "dashboard") {
+    return sectionItems;
+  }
+
+  return [
+    ...sectionItems,
+    {
+      key: "dashboard-management",
+      label: "Dashboard Management",
+      href: "/dashboard/management",
+      helperText: "Manage dashboard records",
+      isManagementAction: true,
+    },
+  ];
 }
 
 function findItemTrail(

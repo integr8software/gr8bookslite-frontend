@@ -253,9 +253,8 @@ type PreviewBlockProps = {
 function PreviewBlock({ label, tall }: PreviewBlockProps) {
   return (
     <div
-      className={`flex items-center justify-center rounded-md border border-dashed border-darknavy/15 bg-darknavy/5 px-3 text-center text-xs font-semibold text-darknavy/45 ${
-        tall ? "min-h-28" : "min-h-16"
-      }`}
+      className={`flex items-center justify-center rounded-md border border-dashed border-darknavy/15 bg-darknavy/5 px-3 text-center text-xs font-semibold text-darknavy/45 ${tall ? "min-h-28" : "min-h-16"
+        }`}
     >
       {label}
     </div>

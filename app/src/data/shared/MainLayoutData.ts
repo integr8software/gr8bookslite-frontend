@@ -199,14 +199,6 @@ export const MainNavigationSections: MainNavigationSection[] = [
         "/dashboard/operations-overview",
         "dashboard",
       ),
-      item(
-        "dashboard-new",
-        "Add Dashboard",
-        "/dashboard/new",
-        "dashboard",
-        "core",
-        ["add"],
-      ),
     ],
   },
   {
@@ -1005,7 +997,8 @@ export const MainLayoutMockData = {
       key: "help-dashboard",
       title: "Customizable dashboards",
       path: "/dashboard",
-      summary: "Create, arrange, and share dashboards based on user permissions.",
+      summary:
+        "Create, arrange, and share dashboards based on user permissions.",
       content: [
         "Dashboards are user-configurable workspaces. Users with add access can create more dashboards, while view access controls visibility.",
         "Use dashboard widgets for summaries, queues, charts, and saved operational views.",
@@ -1016,7 +1009,8 @@ export const MainLayoutMockData = {
       key: "help-maintenance",
       title: "Maintenance workspace",
       path: "/maintenance",
-      summary: "Manage shared master files outside accounting and inventory routes.",
+      summary:
+        "Manage shared master files outside accounting and inventory routes.",
       content: [
         "Maintenance is its own workspace for company setup, party records, approval rules, workflow management, and audit tools.",
         "Each maintenance page can be enabled independently by view, add, edit, delete, cancel, and uncancel permissions.",
@@ -1027,7 +1021,8 @@ export const MainLayoutMockData = {
       key: "help-branches",
       title: "Branches",
       path: "/settings/branches",
-      summary: "Switch branches and manage branch records when your role allows it.",
+      summary:
+        "Switch branches and manage branch records when your role allows it.",
       content: [
         "The first breadcrumb is the active branch. Opening it lazy-loads branch choices so the layout can later call the backend only when needed.",
         "Branch Management appears below the branch list when the current user has branch management access.",
@@ -1128,7 +1123,11 @@ export function filterMainNavigationSections(
   return sections
     .map((section) => ({
       ...section,
-      items: filterMainNavigationItems(section.items, accessContext, subscription),
+      items: filterMainNavigationItems(
+        section.items,
+        accessContext,
+        subscription,
+      ),
     }))
     .filter(
       (section) =>
@@ -1152,7 +1151,9 @@ export function filterMainSearchItems(
 }
 
 export function getAccessibleBranches(branches: MainBranch[]) {
-  return branches.filter((branch) => Object.values(branch.access).some(Boolean));
+  return branches.filter((branch) =>
+    Object.values(branch.access).some(Boolean),
+  );
 }
 
 export function getHelpArticleForPath(

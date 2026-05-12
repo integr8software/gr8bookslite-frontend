@@ -66,7 +66,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   } = useMainLayout();
 
   return (
-    <div className="min-h-screen max-w-full overflow-x-hidden bg-white text-darknavy">
+    <div className="min-h-screen max-w-full overflow-x-clip bg-white text-darknavy">
       <MainTopbar
         activeHref={activeHref}
         breadcrumbs={breadcrumbs}
@@ -124,7 +124,12 @@ export function MainLayout({ children }: MainLayoutProps) {
           onToggleExpandedKey={toggleExpandedKey}
         />
 
-        <main className="min-w-0 flex-1 overflow-x-hidden px-3 py-4 sm:px-5 lg:px-6">
+        <main
+          className={joinClasses(
+            "min-w-0 flex-1 overflow-x-hidden px-3 py-4 transition-[margin] duration-500 ease-out motion-reduce:transition-none sm:px-5 lg:px-6",
+            isSidebarOpen && "lg:ml-[19.5rem]",
+          )}
+        >
           {hasBranchAccess ? children : (
             <NoBranchAccess companyName={currentCompany.name} />
           )}

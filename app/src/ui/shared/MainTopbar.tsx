@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
+  ArrowLeftRight,
   Bell,
   Building2,
   ChevronDown,
@@ -195,7 +196,7 @@ export function MainTopbar({
   return (
     <header
       data-main-topbar-root
-      className="sticky top-0 z-40 border-b border-darknavy/10 bg-white/95 backdrop-blur"
+      className="sticky top-0 z-50 border-b border-darknavy/10 bg-white/95 backdrop-blur"
     >
       <div className="flex h-16 items-center gap-2 px-3 sm:px-4 lg:px-6">
         <button
@@ -214,12 +215,12 @@ export function MainTopbar({
 
         <Link
           href="/dashboard"
-          className="mr-1 hidden min-w-fit items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 sm:flex"
+          className="mr-1 hidden min-w-fit items-baseline rounded-md px-2 py-1.5 text-xl font-semibold tracking-tight text-darknavy transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 sm:inline-flex"
         >
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-darknavy text-xs font-bold text-offwhite">
-            G8
+          <span>Gr8books</span>
+          <span className="ml-1 text-sm font-medium italic text-skyblue">
+            Lite
           </span>
-          <span>Gr8Books Lite</span>
         </Link>
 
         <button
@@ -453,10 +454,9 @@ export function MainTopbar({
             {isProfileMenuOpen ? (
               <div className="absolute right-0 top-12 z-50 w-72 overflow-hidden rounded-lg border border-darknavy/10 bg-white p-1 shadow-[0_24px_70px_rgba(33,39,56,0.18)]">
                 <AccountDetails
-                  canSwitchCompany={canSwitchCompany}
                   companyName={currentCompany.name}
                   currentUser={currentUser}
-                  onSwitchCompany={() => setProfileMenuOpenPath(null)}
+                  onSwitchAccount={() => setProfileMenuOpenPath(null)}
                 />
                 <MenuSeparator />
                 {canSwitchCompany ? (
@@ -577,17 +577,15 @@ function BreadcrumbDropdown({
 }
 
 type AccountDetailsProps = {
-  canSwitchCompany: boolean;
   companyName: string;
   currentUser: MainTopbarProps["currentUser"];
-  onSwitchCompany: () => void;
+  onSwitchAccount: () => void;
 };
 
 function AccountDetails({
-  canSwitchCompany,
   companyName,
   currentUser,
-  onSwitchCompany,
+  onSwitchAccount,
 }: AccountDetailsProps) {
   const userTypeName = currentUser.userType?.name;
   const shouldShowRole = currentUser.userRole !== "User";
@@ -598,17 +596,15 @@ function AccountDetails({
         <p className="text-xs font-semibold uppercase text-darknavy/45">
           Account Details
         </p>
-        {canSwitchCompany ? (
-          <Link
-            href="/onboarding"
-            onClick={onSwitchCompany}
-            aria-label="Switch Company"
-            title="Switch Company"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-darknavy/55 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-          >
-            <Building2 className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        ) : null}
+        <Link
+          href="/logout"
+          onClick={onSwitchAccount}
+          aria-label="Switch Account"
+          title="Switch Account"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-darknavy/55 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+        >
+          <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
       </div>
       <div className="mt-3 flex items-start gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-skyblue/25 text-xs font-bold text-darknavy">

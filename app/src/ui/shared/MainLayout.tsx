@@ -128,6 +128,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           className={joinClasses(
             "min-w-0 flex-1 overflow-x-hidden px-3 py-4 transition-[margin] duration-500 ease-out motion-reduce:transition-none sm:px-5 lg:px-6",
             isSidebarOpen && "lg:ml-[19.5rem]",
+            isNotificationsOpen && "xl:mr-[22rem]",
           )}
         >
           {hasBranchAccess ? children : (
@@ -138,7 +139,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <aside
           data-main-notifications-root
           className={joinClasses(
-            "hidden overflow-hidden border-l border-darknavy/10 bg-white transition-[width,opacity,transform,border-color] duration-200 ease-out will-change-[width,opacity,transform] motion-reduce:transition-none xl:block",
+            "fixed bottom-0 right-0 top-16 z-20 hidden overflow-hidden border-l border-darknavy/10 bg-white transition-[width,opacity,transform,border-color] duration-200 ease-out will-change-[width,opacity,transform] motion-reduce:transition-none xl:block",
             isNotificationsOpen
               ? "w-[22rem] translate-x-0 opacity-100"
               : "pointer-events-none w-0 translate-x-3 border-transparent opacity-0",

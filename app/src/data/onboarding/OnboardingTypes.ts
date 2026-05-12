@@ -54,6 +54,8 @@ export type OnboardingValues = {
   contactNumber: string;
   logoName: string;
   logoFile: File | null;
+  logoStoragePath: string;
+  logoPublicUrl: string;
   reportYearBasis: OnboardingReportYearBasis;
   reportStartDate: string;
   reportEndDate: string;
@@ -93,6 +95,8 @@ export const InitialOnboardingValues: OnboardingValues = {
   contactNumber: "+63 ",
   logoName: "",
   logoFile: null,
+  logoStoragePath: "",
+  logoPublicUrl: "",
   reportYearBasis: "Calendar Year",
   reportStartDate: DefaultReportYear.reportStartDate,
   reportEndDate: DefaultReportYear.reportEndDate,

@@ -18,6 +18,7 @@ import {
   SaveOnboardingBilling,
   SaveOnboardingCompanyDetails,
   SelectOnboardingPlan,
+  UploadOnboardingCompanyLogo,
 } from "@/app/src/services/onboarding/OnboardingApi";
 
 function GetOnboardingApiBillingCycle(value: BillingCycle) {
@@ -195,10 +196,29 @@ export function useOnboardingSubmission({
       }
 
       if (stepIndex === 2) {
+        let logoName = values.logoName.trim();
+        let logoMimeType = values.logoFile?.type || undefined;
+        let logoStoragePath = values.logoStoragePath.trim();
+        let logoPublicUrl = values.logoPublicUrl.trim();
+
+        if (values.logoFile) {
+          const uploadResponse = await UploadOnboardingCompanyLogo(
+            token,
+            values.logoFile,
+          );
+
+          logoName = uploadResponse.logo.fileName;
+          logoMimeType = uploadResponse.logo.mimeType;
+          logoStoragePath = uploadResponse.logo.storagePath;
+          logoPublicUrl = uploadResponse.logo.publicUrl;
+        }
+
         await SaveOnboardingCompanyDetails(token, {
           ...GetOnboardingIdentityPayload(values),
-          logoName: values.logoName.trim(),
-          logoMimeType: values.logoFile?.type || undefined,
+          logoName,
+          logoMimeType,
+          logoStoragePath: logoStoragePath || undefined,
+          logoPublicUrl: logoPublicUrl || undefined,
           address: values.address.trim(),
           tin: values.tin.trim(),
           website: values.website.trim() || undefined,

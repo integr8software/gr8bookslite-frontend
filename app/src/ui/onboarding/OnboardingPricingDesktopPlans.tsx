@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, MoveRight } from "lucide-react";
+import { Check, LoaderCircle, MoveRight } from "lucide-react";
 import {
   PricingPlans,
   type BillingCycle,
@@ -10,12 +10,16 @@ import { OnboardingPlanComparisonRows } from "@/app/src/data/onboarding/Onboardi
 
 type OnboardingPricingDesktopPlansProps = {
   billingCycle: BillingCycle;
+  isSubmitting: boolean;
+  submittingPlanCode: string | null;
   onReviewPlans: () => void;
   onSelectPlan: (plan: PricingPlan, billingCycle: BillingCycle) => void;
 };
 
 export function OnboardingPricingDesktopPlans({
   billingCycle,
+  isSubmitting,
+  submittingPlanCode,
   onReviewPlans,
   onSelectPlan,
 }: OnboardingPricingDesktopPlansProps) {
@@ -39,6 +43,7 @@ export function OnboardingPricingDesktopPlans({
               <button
                 type="button"
                 onClick={onReviewPlans}
+                disabled={isSubmitting}
                 className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-skyblue transition hover:text-darknavy"
               >
                 Review plans
@@ -56,6 +61,8 @@ export function OnboardingPricingDesktopPlans({
                 ? plan.monthlyCompareAtPrice
                 : plan.yearlyCompareAtPrice;
             const billingLabel = plan.billingLabel[billingCycle];
+            const isSubmittingThisPlan =
+              isSubmitting && submittingPlanCode === plan.code;
 
             return (
               <div
@@ -107,13 +114,20 @@ export function OnboardingPricingDesktopPlans({
                 <button
                   type="button"
                   onClick={() => onSelectPlan(plan, billingCycle)}
-                  className={`mt-auto inline-flex min-w-33 items-center justify-center self-center rounded-md border px-4 py-2.5 text-sm font-semibold transition ${
+                  disabled={isSubmitting}
+                  className={`mt-auto inline-flex min-w-33 items-center justify-center gap-2 self-center rounded-md border px-4 py-2.5 text-sm font-semibold transition ${
                     isHighlighted
                       ? "border-darknavy bg-darknavy text-offwhite hover:bg-coralpink hover:border-coralpink"
                       : "border-skyblue/40 bg-white text-darknavy hover:border-darknavy hover:bg-offwhite"
-                  }`}
+                  } disabled:cursor-not-allowed disabled:opacity-60`}
                 >
                   Choose plan
+                  {isSubmittingThisPlan ? (
+                    <LoaderCircle
+                      className="h-5 w-5 animate-spin"
+                      aria-hidden="true"
+                    />
+                  ) : null}
                 </button>
               </div>
             );

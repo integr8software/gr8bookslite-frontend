@@ -12,10 +12,14 @@ import { OnboardingPricingMobilePlans } from "./OnboardingPricingMobilePlans";
 
 type OnboardingFreeTrialStepProps = {
   handlePlanSelection: (plan: PricingPlan, billingCycle: BillingCycle) => void;
+  isSubmitting: boolean;
+  submittingPlanCode: string | null;
 };
 
 export function OnboardingFreeTrialStep({
   handlePlanSelection,
+  isSubmitting,
+  submittingPlanCode,
 }: OnboardingFreeTrialStepProps) {
   const pricingSectionRef = useRef<HTMLElement | null>(null);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
@@ -59,11 +63,12 @@ export function OnboardingFreeTrialStep({
                     key={option.value}
                     type="button"
                     onClick={() => setBillingCycle(option.value)}
+                    disabled={isSubmitting}
                     className={`rounded-full px-5 py-2 text-sm font-medium transition ${
                       isActive
                         ? "bg-darknavy text-offwhite"
                         : "text-darknavy/70 hover:bg-darknavy/5"
-                    }`}
+                    } disabled:cursor-not-allowed disabled:opacity-60`}
                   >
                     {option.label}
                   </button>
@@ -75,12 +80,16 @@ export function OnboardingFreeTrialStep({
 
         <OnboardingPricingMobilePlans
           billingCycle={billingCycle}
+          isSubmitting={isSubmitting}
+          submittingPlanCode={submittingPlanCode}
           onReviewPlans={scrollToPricing}
           onSelectPlan={handlePlanSelection}
         />
 
         <OnboardingPricingDesktopPlans
           billingCycle={billingCycle}
+          isSubmitting={isSubmitting}
+          submittingPlanCode={submittingPlanCode}
           onReviewPlans={scrollToPricing}
           onSelectPlan={handlePlanSelection}
         />

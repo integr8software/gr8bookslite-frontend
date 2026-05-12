@@ -2,6 +2,7 @@ import {
   GetCalendarYearReportDates,
   OnboardingReportYearBasisOptions,
 } from "./OnboardingData";
+import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingData";
 
 export type OnboardingTaxpayerType = "individual" | "non-individual";
 export type OnboardingReportYearBasis =
@@ -63,6 +64,17 @@ export type OnboardingValues = {
   expiryYear: string;
   cvc: string;
   billingAddress: string;
+};
+
+export type OnboardingBillingStepProps = {
+  values: OnboardingValues;
+  errors: OnboardingFieldErrors;
+  selectedPlan: PricingPlan | null;
+  selectedBillingCycle: BillingCycle;
+  isSubmitting: boolean;
+  updateValue: (key: keyof OnboardingValues, value: string) => void;
+  handleBack: () => void;
+  handleNext: () => void;
 };
 
 const DefaultReportYear = GetCalendarYearReportDates();

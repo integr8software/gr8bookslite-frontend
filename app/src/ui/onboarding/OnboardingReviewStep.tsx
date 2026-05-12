@@ -8,6 +8,7 @@ import { OnboardingActionRow } from "./OnboardingActionRow";
 type OnboardingReviewStepProps = {
   values: OnboardingValues;
   logoPreviewUrl: string;
+  isSubmitting: boolean;
   handleBack: () => void;
   handleFinish: () => void;
 };
@@ -66,6 +67,7 @@ function ReviewLogoRow({
 export function OnboardingReviewStep({
   values,
   logoPreviewUrl,
+  isSubmitting,
   handleBack,
   handleFinish,
 }: OnboardingReviewStepProps) {
@@ -125,6 +127,7 @@ export function OnboardingReviewStep({
       <OnboardingActionRow
         showBack
         primaryLabel="Finish"
+        isPending={isSubmitting}
         onPrimary={handleFinish}
         onBack={handleBack}
       />

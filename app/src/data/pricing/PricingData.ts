@@ -5,6 +5,7 @@ export type PricingFeature = {
 };
 
 export type PricingPlan = {
+  code: string;
   name: string;
   monthlyPrice: string;
   yearlyPrice: string;
@@ -39,6 +40,7 @@ export const BillingOptions: { label: string; value: BillingCycle }[] = [
 
 export const PricingPlans: PricingPlan[] = [
   {
+    code: "ACCOUNTING",
     name: "Accounting",
     monthlyPrice: "₱ 399.00",
     yearlyPrice: "₱ 3,990.00",
@@ -58,6 +60,7 @@ export const PricingPlans: PricingPlan[] = [
     ],
   },
   {
+    code: "ACCOUNTING_INVENTORY",
     name: "Accounting & Inventory",
     monthlyPrice: "₱ 499.00",
     yearlyPrice: "₱ 4,990.00",
@@ -78,6 +81,7 @@ export const PricingPlans: PricingPlan[] = [
     highlighted: true,
   },
   {
+    code: "ADDITIONAL_COMPANY",
     name: "Additional Company",
     monthlyPrice: "₱ 100.00",
     yearlyPrice: "₱ 1,000.00",

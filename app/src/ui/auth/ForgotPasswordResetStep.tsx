@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { LoaderCircle } from "lucide-react";
 import type { AuthActionState } from "@/app/src/data/auth/AuthTypes";
 import { AuthField } from "@/app/src/ui/auth/AuthField";
 import { AuthPasswordRequirements } from "@/app/src/ui/auth/AuthPasswordRequirements";
@@ -92,8 +93,14 @@ export function ForgotPasswordResetStep({
 			<button
 				type="submit"
 				disabled={pending}
-				className="h-12 w-full rounded-full bg-[#3d76ea] px-5 text-sm font-semibold text-white transition hover:bg-[#2f67d8] disabled:cursor-not-allowed disabled:opacity-60"
+				className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#3d76ea] px-5 text-sm font-semibold text-white transition hover:bg-[#2f67d8] disabled:cursor-not-allowed disabled:opacity-60"
 			>
+				{pending ? (
+					<LoaderCircle
+						className="h-5 w-5 animate-spin"
+						aria-hidden="true"
+					/>
+				) : null}
 				{pending ? "Saving..." : "Reset Password"}
 			</button>
 		</form>

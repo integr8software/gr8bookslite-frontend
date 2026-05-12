@@ -7,6 +7,10 @@ import { OnboardingFreeTrialStep } from "./OnboardingFreeTrialStep";
 import { OnboardingProgressHeader } from "./OnboardingProgressHeader";
 import { OnboardingReviewStep } from "./OnboardingReviewStep";
 import { OnboardingStepOne } from "./OnboardingStepOne";
+import {
+  AppSkeleton,
+  AppSkeletonCard,
+} from "@/app/src/ui/shared/AppSkeleton";
 
 export function OnboardingFlow() {
   const {
@@ -17,6 +21,9 @@ export function OnboardingFlow() {
     logoPreviewUrl,
     selectedPlan,
     selectedBillingCycle,
+    isSubmitting,
+    submittingPlanCode,
+    isDraftLoading,
     updateValue,
     setTaxpayerType,
     handleLogoChange,
@@ -25,6 +32,29 @@ export function OnboardingFlow() {
     handleNext,
     handleBack,
   } = useOnboardingFlow();
+
+  if (isDraftLoading) {
+    return (
+      <div className="mt-10 space-y-6">
+        <AppSkeletonCard>
+          <AppSkeleton className="h-3 w-32" />
+          <AppSkeleton className="mt-5 h-10 w-72" />
+          <AppSkeleton className="mt-4 h-4 w-full max-w-2xl" />
+          <AppSkeleton className="mt-2 h-4 w-full max-w-xl" />
+        </AppSkeletonCard>
+
+        <AppSkeletonCard>
+          <AppSkeleton className="h-5 w-48" />
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <AppSkeleton className="h-14 rounded-2xl" />
+            <AppSkeleton className="h-14 rounded-2xl" />
+            <AppSkeleton className="h-14 rounded-2xl md:col-span-2" />
+            <AppSkeleton className="h-14 rounded-2xl md:col-span-2" />
+          </div>
+        </AppSkeletonCard>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -37,7 +67,11 @@ export function OnboardingFlow() {
       />
 
       {currentStep.currentStep === OnboardingSteps[0].currentStep ? (
-        <OnboardingFreeTrialStep handlePlanSelection={handlePlanSelection} />
+        <OnboardingFreeTrialStep
+          handlePlanSelection={handlePlanSelection}
+          isSubmitting={isSubmitting}
+          submittingPlanCode={submittingPlanCode}
+        />
       ) : null}
 
       {currentStep.currentStep === OnboardingSteps[1].currentStep ? (
@@ -46,6 +80,7 @@ export function OnboardingFlow() {
           errors={errors}
           selectedPlan={selectedPlan}
           selectedBillingCycle={selectedBillingCycle}
+          isSubmitting={isSubmitting}
           updateValue={updateValue}
           handleBack={handleBack}
           handleNext={handleNext}
@@ -58,6 +93,7 @@ export function OnboardingFlow() {
           errors={errors}
           logoInputKey={logoInputKey}
           logoPreviewUrl={logoPreviewUrl}
+          isSubmitting={isSubmitting}
           updateValue={updateValue}
           setTaxpayerType={setTaxpayerType}
           handleLogoChange={handleLogoChange}
@@ -71,6 +107,7 @@ export function OnboardingFlow() {
         <OnboardingReviewStep
           values={values}
           logoPreviewUrl={logoPreviewUrl}
+          isSubmitting={isSubmitting}
           handleBack={handleBack}
           handleFinish={handleNext}
         />

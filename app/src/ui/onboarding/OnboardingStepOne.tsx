@@ -21,6 +21,7 @@ type OnboardingStepOneProps = {
   errors: OnboardingFieldErrors;
   logoInputKey: number;
   logoPreviewUrl: string;
+  isSubmitting: boolean;
   updateValue: (key: keyof OnboardingValues, value: string) => void;
   setTaxpayerType: (type: OnboardingTaxpayerType) => void;
   handleLogoChange: (file: File | undefined) => void;
@@ -34,6 +35,7 @@ export function OnboardingStepOne({
   errors,
   logoInputKey,
   logoPreviewUrl,
+  isSubmitting,
   updateValue,
   setTaxpayerType,
   handleLogoChange,
@@ -252,6 +254,7 @@ export function OnboardingStepOne({
       <OnboardingActionRow
         showBack
         primaryLabel="Continue"
+        isPending={isSubmitting}
         onPrimary={handleNext}
         onBack={handleBack}
       />

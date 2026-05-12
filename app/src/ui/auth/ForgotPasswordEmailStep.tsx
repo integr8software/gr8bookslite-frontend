@@ -1,5 +1,6 @@
 "use client";
 
+import { LoaderCircle } from "lucide-react";
 import type { AuthActionState } from "@/app/src/data/auth/AuthTypes";
 
 type ForgotPasswordEmailStepProps = {
@@ -46,8 +47,14 @@ export function ForgotPasswordEmailStep({
       <button
         type="submit"
         disabled={pending}
-        className="h-12 w-full rounded-full bg-[#3d76ea] px-5 text-sm font-semibold text-white transition hover:bg-[#2f67d8] disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#3d76ea] px-5 text-sm font-semibold text-white transition hover:bg-[#2f67d8] disabled:cursor-not-allowed disabled:opacity-60"
       >
+        {pending ? (
+          <LoaderCircle
+            className="h-5 w-5 animate-spin"
+            aria-hidden="true"
+          />
+        ) : null}
         {pending ? "Sending..." : "Send OTP"}
       </button>
     </form>

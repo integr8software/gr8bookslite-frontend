@@ -1,6 +1,7 @@
 "use client";
 
 import type { RefObject } from "react";
+import { LoaderCircle } from "lucide-react";
 
 type ForgotPasswordOtpStepProps = {
 	formAction: (formData: FormData) => void;
@@ -107,8 +108,8 @@ export function ForgotPasswordOtpStep({
 						className={`inline-flex items-center justify-center gap-1.5 leading-none font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${canResend ? "text-[#3d76ea]" : "text-darknavy/45"}`}
 					>
 						{isResending ? (
-							<span
-								className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-current border-r-transparent"
+							<LoaderCircle
+								className="h-4 w-4 shrink-0 animate-spin"
 								aria-hidden="true"
 							/>
 						) : null}
@@ -120,8 +121,14 @@ export function ForgotPasswordOtpStep({
 			<button
 				type="submit"
 				disabled={pending || otp.length !== otpLength}
-				className="h-12 w-full rounded-full bg-[#3d76ea] px-5 text-sm font-semibold text-white transition hover:bg-[#2f67d8] disabled:cursor-not-allowed disabled:opacity-60"
+				className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#3d76ea] px-5 text-sm font-semibold text-white transition hover:bg-[#2f67d8] disabled:cursor-not-allowed disabled:opacity-60"
 			>
+				{pending ? (
+					<LoaderCircle
+						className="h-5 w-5 animate-spin"
+						aria-hidden="true"
+					/>
+				) : null}
 				{pending ? "Verifying..." : "Verify"}
 			</button>
 		</form>

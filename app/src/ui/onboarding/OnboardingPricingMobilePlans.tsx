@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, MoveRight } from "lucide-react";
+import { Check, LoaderCircle, MoveRight } from "lucide-react";
 import {
   PricingPlans,
   type BillingCycle,
@@ -10,12 +10,16 @@ import { OnboardingPlanComparisonRows } from "@/app/src/data/onboarding/Onboardi
 
 type OnboardingPricingMobilePlansProps = {
   billingCycle: BillingCycle;
+  isSubmitting: boolean;
+  submittingPlanCode: string | null;
   onReviewPlans: () => void;
   onSelectPlan: (plan: PricingPlan, billingCycle: BillingCycle) => void;
 };
 
 export function OnboardingPricingMobilePlans({
   billingCycle,
+  isSubmitting,
+  submittingPlanCode,
   onReviewPlans,
   onSelectPlan,
 }: OnboardingPricingMobilePlansProps) {
@@ -32,6 +36,7 @@ export function OnboardingPricingMobilePlans({
         <button
           type="button"
           onClick={onReviewPlans}
+          disabled={isSubmitting}
           className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-skyblue transition hover:text-darknavy"
         >
           Review plans
@@ -50,6 +55,8 @@ export function OnboardingPricingMobilePlans({
                 ? plan.monthlyCompareAtPrice
                 : plan.yearlyCompareAtPrice;
             const billingLabel = plan.billingLabel[billingCycle];
+            const isSubmittingThisPlan =
+              isSubmitting && submittingPlanCode === plan.code;
 
             return (
               <article
@@ -131,13 +138,20 @@ export function OnboardingPricingMobilePlans({
                 <button
                   type="button"
                   onClick={() => onSelectPlan(plan, billingCycle)}
-                  className={`mt-6 inline-flex w-full items-center justify-center rounded-md border px-4 py-3 text-sm font-semibold transition ${
+                  disabled={isSubmitting}
+                  className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md border px-4 py-3 text-sm font-semibold transition ${
                     isHighlighted
                       ? "border-darknavy bg-darknavy text-offwhite hover:bg-coralpink hover:border-coralpink"
                       : "border-skyblue/40 bg-white text-darknavy hover:border-darknavy hover:bg-offwhite"
-                  }`}
+                  } disabled:cursor-not-allowed disabled:opacity-60`}
                 >
                   Choose plan
+                  {isSubmittingThisPlan ? (
+                    <LoaderCircle
+                      className="h-5 w-5 animate-spin"
+                      aria-hidden="true"
+                    />
+                  ) : null}
                 </button>
               </article>
             );

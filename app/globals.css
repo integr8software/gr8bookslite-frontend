@@ -24,6 +24,7 @@
 }
 
 body {
+  overflow-x: hidden;
   background: white;
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;

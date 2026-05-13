@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { MainLayout } from "@/app/src/ui/shared/MainLayout";
+import { WorkspaceLayout } from "@/app/src/ui/modules/shared/WorkspaceLayout";
 
 export default function ModulesLayout({ children }: { children: ReactNode }) {
-  return <MainLayout>{children}</MainLayout>;
+  return <WorkspaceLayout>{children}</WorkspaceLayout>;
 }

@@ -317,7 +317,7 @@ export function MainTopbar({
 
         <nav
           aria-label="Workspace controls"
-          className="hidden min-w-0 flex-1 items-center gap-2 md:flex md:max-w-[34rem] lg:max-w-[38rem] xl:max-w-[42rem]"
+          className="hidden min-w-0 flex-1 items-center gap-2 md:flex md:max-w-[23rem] lg:max-w-[28rem] xl:max-w-[32rem]"
         >
           {canSwitchCompany ? (
             <CompanySwitcher
@@ -346,7 +346,7 @@ export function MainTopbar({
           ) : null}
         </nav>
 
-        <div className="ml-auto flex items-center justify-end gap-1 sm:gap-2">
+        <div className="ml-auto flex shrink-0 items-center justify-end gap-1 sm:gap-2">
           <div
             className="relative hidden w-52 shrink-0 xl:block 2xl:w-72"
             data-main-search-root
@@ -589,7 +589,9 @@ function CompanySwitcher({
     <div
       className={joinClasses(
         "relative min-w-0",
-        variant === "desktop" ? "w-56 flex-none xl:w-64" : "w-full",
+        variant === "desktop"
+          ? "min-w-36 max-w-52 flex-1 basis-0 lg:max-w-56 xl:max-w-60"
+          : "w-full",
       )}
       data-main-switcher-root
     >
@@ -676,7 +678,9 @@ function BranchSwitcher({
     <div
       className={joinClasses(
         "relative min-w-0",
-        variant === "desktop" ? "w-52 flex-none xl:w-56" : "w-full",
+        variant === "desktop"
+          ? "min-w-36 max-w-52 flex-1 basis-0 lg:max-w-56 xl:max-w-60"
+          : "w-full",
       )}
       data-main-switcher-root
     >

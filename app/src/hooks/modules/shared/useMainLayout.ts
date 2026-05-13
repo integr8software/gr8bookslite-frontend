@@ -92,7 +92,8 @@ export function useMainLayout() {
   const [activeBranchId, setActiveBranchId] = useState(
     MainLayoutMockData.activeBranchId,
   );
-  const isSuperAdmin = MainLayoutMockData.currentUser.userRole === "Super Admin";
+  const isSuperAdmin =
+    MainLayoutMockData.currentUser.userRole === "Super Admin";
   const [activeNavigationScope, setActiveNavigationScope] =
     useState<MainNavigationScope>(() =>
       isSuperAdmin ? "workspace" : "company",
@@ -100,8 +101,9 @@ export function useMainLayout() {
   const [activeCompanyId, setActiveCompanyId] = useState(
     MainLayoutMockData.currentCompany.id,
   );
-  const [lazyLoadedBranches, setLazyLoadedBranches] =
-    useState<MainBranch[] | null>(null);
+  const [lazyLoadedBranches, setLazyLoadedBranches] = useState<
+    MainBranch[] | null
+  >(null);
   const [isBranchLoading, setIsBranchLoading] = useState(false);
   const [notifications, setNotifications] = useState<MainNotification[]>(
     MainLayoutMockData.notifications,
@@ -185,7 +187,7 @@ export function useMainLayout() {
   }, [activeNavigationScope]);
   const activeQuickListTab = enabledQuickListTabs.includes(quickListTab)
     ? quickListTab
-    : enabledQuickListTabs[0] ?? quickListTab;
+    : (enabledQuickListTabs[0] ?? quickListTab);
 
   const searchResults = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -217,7 +219,7 @@ export function useMainLayout() {
     const branchItems =
       lazyLoadedBranches?.map((branch) => ({
         key: branch.id,
-        label: `${branch.name}${branch.isMain ? " (Main)" : ""}`,
+        label: `${branch.name}${branch.isMain ? " (Head Office)" : ""}`,
         href: branch.href,
         helperText: branch.code,
         branchId: branch.id,
@@ -251,7 +253,8 @@ export function useMainLayout() {
   const moduleTitle = breadcrumbs[breadcrumbs.length - 1]?.label ?? "Module";
 
   const currentHelpArticle = useMemo(
-    () => getHelpArticleForPath(pathname, MainHelpArticles) ?? MainHelpArticles[0],
+    () =>
+      getHelpArticleForPath(pathname, MainHelpArticles) ?? MainHelpArticles[0],
     [pathname],
   );
   const [selectedHelpArticleState, setSelectedHelpArticleState] = useState({
@@ -292,7 +295,9 @@ export function useMainLayout() {
 
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
 
-    function syncSidebarToViewport(event: MediaQueryList | MediaQueryListEvent) {
+    function syncSidebarToViewport(
+      event: MediaQueryList | MediaQueryListEvent,
+    ) {
       setIsSidebarOpen(event.matches);
     }
 
@@ -599,9 +604,7 @@ function getPathFallbackTitle(pathname: string) {
     .join(" ");
 }
 
-function toDropdownItem(
-  item: MainNavigationItem,
-): MainBreadcrumbDropdownItem {
+function toDropdownItem(item: MainNavigationItem): MainBreadcrumbDropdownItem {
   return {
     key: item.key,
     label: item.label,

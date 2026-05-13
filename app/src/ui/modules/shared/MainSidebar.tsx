@@ -190,10 +190,10 @@ export function MainSidebar({
     <aside
       data-main-sidebar-root
       className={joinClasses(
-        "fixed inset-y-0 left-0 z-50 w-78 transform-gpu overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[transform,opacity] motion-reduce:transition-none lg:bottom-0 lg:top-16 lg:z-20 lg:h-auto lg:shadow-none lg:transition-[width,opacity,border-color] lg:will-change-[width,opacity]",
+        "fixed inset-y-0 left-0 z-50 w-78 transform-gpu overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform motion-reduce:transition-none lg:bottom-0 lg:top-16 lg:z-20 lg:h-auto lg:shadow-none",
         isOpen
-          ? "translate-x-0 opacity-100 lg:w-78"
-          : "pointer-events-none -translate-x-full opacity-0 lg:w-0 lg:translate-x-0 lg:border-transparent",
+          ? "translate-x-0"
+          : "pointer-events-none -translate-x-full",
       )}
     >
       <div className="flex h-full min-h-0 w-78 flex-col">

@@ -163,7 +163,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
         <main
           className={joinClasses(
-            "min-w-0 flex-1 overflow-x-hidden px-3 py-4 transition-[margin] duration-500 ease-out motion-reduce:transition-none sm:px-5 lg:px-6",
+            "min-w-0 flex-1 overflow-x-hidden px-3 py-4 transition-[margin] duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none sm:px-5 lg:px-6",
             isSidebarOpen && "lg:ml-78",
             isNotificationsOpen && "xl:mr-88",
           )}

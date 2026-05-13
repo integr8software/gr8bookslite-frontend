@@ -7,6 +7,13 @@ export type MainAccessAction =
   | "uncancel";
 
 export type MainAccessKey =
+  | "workspace.overview"
+  | "workspace.dashboard"
+  | "workspace.companies"
+  | "workspace.users"
+  | "workspace.approval"
+  | "workspace.mail"
+  | "workspace.audit"
   | "dashboard"
   | "cashReceipt"
   | "cashDisbursement"
@@ -44,6 +51,8 @@ export type MainAccessKey =
 
 export type MainProductKey = "core" | "accounting" | "inventory";
 
+export type MainNavigationScope = "workspace" | "company";
+
 export type MainPermissionMap = Partial<
   Record<MainAccessKey, Partial<Record<MainAccessAction, boolean>>>
 >;
@@ -72,6 +81,7 @@ export type MainNavigationItem = {
   href: string;
   accessKey: MainAccessKey;
   productKey?: MainProductKey;
+  productKeys?: MainProductKey[];
   requiredActions?: MainAccessAction[];
   children?: MainNavigationItem[];
 };
@@ -83,6 +93,7 @@ export type MainNavigationSection = {
   icon: MainIconName;
   accessKey: MainAccessKey;
   productKey?: MainProductKey;
+  productKeys?: MainProductKey[];
   items: MainNavigationItem[];
 };
 
@@ -92,8 +103,15 @@ export type MainSearchItem = {
   href: string;
   accessKey: MainAccessKey;
   productKey: MainProductKey;
+  productKeys?: MainProductKey[];
   section: string;
   trail: string[];
+};
+
+export type MainCompany = {
+  id: string;
+  name: string;
+  helperText?: string;
 };
 
 export type MainSubscriptionOption = {
@@ -134,15 +152,6 @@ export type MainNotification = {
   isRead: boolean;
 };
 
-export type MainHelpArticle = {
-  key: string;
-  title: string;
-  path: string;
-  summary: string;
-  content: string[];
-  relatedKeys: string[];
-};
-
 export type MainDashboardWidget = {
   id: string;
   title: string;
@@ -178,7 +187,61 @@ const MainSubscriptionPlans: MainSubscriptionOption[] = [
   },
 ];
 
-export const MainNavigationSections: MainNavigationSection[] = [
+export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
+  {
+    key: "workspace",
+    title: "Work Space",
+    href: "/workspace",
+    icon: "settings",
+    accessKey: "workspace.overview",
+    items: [
+      item(
+        "workspace-overview",
+        "Overview",
+        "/workspace",
+        "workspace.overview",
+      ),
+      item(
+        "workspace-dashboard",
+        "Dashboard",
+        "/workspace/dashboard",
+        "workspace.dashboard",
+      ),
+      item(
+        "workspace-companies",
+        "Companies",
+        "/workspace/companies",
+        "workspace.companies",
+      ),
+      item(
+        "workspace-users",
+        "User Management",
+        "/workspace/user-management",
+        "workspace.users",
+      ),
+      item(
+        "workspace-approval",
+        "Approval Management",
+        "/workspace/approval-management",
+        "workspace.approval",
+      ),
+      item(
+        "workspace-mail",
+        "Mail Maintenance",
+        "/workspace/mail-maintenance",
+        "workspace.mail",
+      ),
+      item(
+        "workspace-audit",
+        "Audit Logs",
+        "/workspace/audit-logs",
+        "workspace.audit",
+      ),
+    ],
+  },
+];
+
+export const MainCompanyNavigationSections: MainNavigationSection[] = [
   {
     key: "dashboard",
     title: "Dashboard",
@@ -186,17 +249,10 @@ export const MainNavigationSections: MainNavigationSection[] = [
     icon: "dashboard",
     accessKey: "dashboard",
     items: [
-      item("dashboard-default", "Default Dashboard", "/dashboard", "dashboard"),
       item(
-        "dashboard-sales",
-        "Sales Overview",
-        "/dashboard/sales-overview",
-        "dashboard",
-      ),
-      item(
-        "dashboard-operations",
-        "Operations Overview",
-        "/dashboard/operations-overview",
+        "dashboard-management",
+        "Dashboard Management",
+        "/dashboard",
         "dashboard",
       ),
     ],
@@ -209,212 +265,130 @@ export const MainNavigationSections: MainNavigationSection[] = [
     accessKey: "maintenance.chartOfAccounts",
     items: [
       navGroup(
-        "maintenance-charts-of-accounts",
-        "Charts of Accounts",
-        "/maintenance/charts-of-accounts",
+        "maintenance-financial",
+        "Financial Management",
+        "/maintenance/financial-management",
         "maintenance.chartOfAccounts",
-        "core",
+        "accounting",
         [
           child(
-            "charts-assets",
-            "Assets",
-            "/maintenance/charts-of-accounts/assets",
+            "maintenance-charts-of-accounts",
+            "Charts of Accounts",
+            "/maintenance/charts-of-accounts",
             "maintenance.chartOfAccounts",
+            "accounting",
           ),
           child(
-            "charts-liabilities",
-            "Liabilities",
-            "/maintenance/charts-of-accounts/liabilities",
-            "maintenance.chartOfAccounts",
+            "maintenance-bank",
+            "Bank Management",
+            "/maintenance/bank-management",
+            "maintenance.bank",
+            "accounting",
           ),
           child(
-            "charts-equity",
-            "Equity",
-            "/maintenance/charts-of-accounts/equity",
-            "maintenance.chartOfAccounts",
+            "maintenance-currency",
+            "Multi Currency Setup",
+            "/maintenance/multi-currency-setup",
+            "maintenance.currency",
+            "accounting",
+          ),
+          multiProductChild(
+            "maintenance-discount",
+            "Discount Management",
+            "/maintenance/discount-management",
+            "maintenance.discount",
+            ["accounting", "inventory"],
           ),
           child(
-            "charts-revenues",
-            "Revenues",
-            "/maintenance/charts-of-accounts/revenues",
-            "maintenance.chartOfAccounts",
+            "maintenance-term",
+            "Term Management",
+            "/maintenance/term-management",
+            "maintenance.term",
+            "accounting",
           ),
           child(
-            "charts-expenses",
-            "Expenses",
-            "/maintenance/charts-of-accounts/expenses",
-            "maintenance.chartOfAccounts",
-          ),
-          child(
-            "charts-cost-of-sales",
-            "Cost of Sales",
-            "/maintenance/charts-of-accounts/cost-of-sales",
-            "maintenance.chartOfAccounts",
-          ),
-          child(
-            "charts-other-income",
-            "Other Income",
-            "/maintenance/charts-of-accounts/other-income",
-            "maintenance.chartOfAccounts",
-          ),
-          child(
-            "charts-other-expenses",
-            "Other Expenses",
-            "/maintenance/charts-of-accounts/other-expenses",
-            "maintenance.chartOfAccounts",
-          ),
-          child(
-            "charts-tax",
-            "Tax",
-            "/maintenance/charts-of-accounts/tax",
-            "maintenance.chartOfAccounts",
+            "maintenance-transaction-type",
+            "Transaction Type",
+            "/maintenance/transaction-type",
+            "maintenance.transactionType",
+            "accounting",
           ),
         ],
       ),
-      item(
-        "maintenance-bank",
-        "Bank Management",
-        "/maintenance/bank-management",
-        "maintenance.bank",
-      ),
-      item(
-        "maintenance-currency",
-        "Multi Currency Setup",
-        "/maintenance/multi-currency-setup",
-        "maintenance.currency",
-      ),
-      item(
-        "maintenance-party",
-        "Party Management",
-        "/maintenance/party-management",
-        "maintenance.party",
-      ),
-      item(
-        "maintenance-discount",
-        "Discount Management",
-        "/maintenance/discount-management",
-        "maintenance.discount",
-      ),
-      item(
-        "maintenance-transaction-type",
-        "Transaction Type",
-        "/maintenance/transaction-type",
-        "maintenance.transactionType",
-      ),
-      item(
-        "maintenance-responsibility-center",
-        "Responsibility Center",
-        "/maintenance/responsibility-center",
-        "maintenance.responsibilityCenter",
-      ),
-      item(
-        "maintenance-term",
-        "Term Management",
-        "/maintenance/term-management",
-        "maintenance.term",
-      ),
-      item(
-        "maintenance-mail",
-        "Mail Maintenance",
-        "/maintenance/mail-maintenance",
-        "maintenance.mail",
-      ),
-      item(
-        "maintenance-warehouse",
-        "Warehouse Management",
-        "/maintenance/warehouse-management",
+      navGroup(
+        "maintenance-inventory-warehouse",
+        "Inventory & Warehouse Management",
+        "/maintenance/inventory-warehouse-management",
         "maintenance.warehouse",
         "inventory",
-      ),
-      navGroup(
-        "maintenance-item",
-        "Item Management",
-        "/maintenance/item-management",
-        "maintenance.item",
-        "core",
         [
+          child(
+            "maintenance-warehouse",
+            "Warehouse Management",
+            "/maintenance/warehouse-management",
+            "maintenance.warehouse",
+            "inventory",
+          ),
+          child(
+            "maintenance-item",
+            "Item Management",
+            "/maintenance/item-management",
+            "maintenance.item",
+            "inventory",
+          ),
           child(
             "maintenance-item-category",
             "Category",
             "/maintenance/item-management/category",
             "maintenance.item",
+            "inventory",
           ),
           child(
             "maintenance-item-sub-category",
             "Sub Category",
             "/maintenance/item-management/sub-category",
             "maintenance.item",
+            "inventory",
           ),
           child(
             "maintenance-item-type",
             "Item Type",
             "/maintenance/item-management/item-type",
             "maintenance.item",
+            "inventory",
           ),
           child(
             "maintenance-item-sub-type",
             "Sub Item Type",
             "/maintenance/item-management/sub-item-type",
             "maintenance.item",
+            "inventory",
           ),
           child(
             "maintenance-item-unit",
-            "Item Unit of Measurement",
+            "Unit of Measurement",
             "/maintenance/item-management/unit-of-measurement",
             "maintenance.item",
+            "inventory",
           ),
         ],
-      ),
-      item(
-        "maintenance-audit",
-        "Audit Trail",
-        "/maintenance/audit-trail",
-        "maintenance.audit",
-      ),
-      item(
-        "maintenance-users",
-        "User Management",
-        "/maintenance/user-management",
-        "maintenance.users",
       ),
       navGroup(
-        "maintenance-approval",
-        "Approval Management",
-        "/maintenance/approval-management",
-        "maintenance.approval",
-        "core",
+        "maintenance-party-management",
+        "Party Management",
+        "/maintenance/party-management",
+        "maintenance.party",
+        "accounting",
         [
-          child(
-            "approval-settings",
-            "Settings Approval",
-            "/maintenance/approval-management/settings",
-            "maintenance.approval",
-          ),
-          child(
-            "approval-module-approvers",
-            "Set Approval per Module",
-            "/maintenance/approval-management/module-approvers",
-            "maintenance.approval",
-          ),
-          child(
-            "approval-transactions",
-            "Transactions for Approval",
-            "/maintenance/approval-management/transactions",
-            "maintenance.approval",
+          multiProductChild(
+            "maintenance-party",
+            "Party Management",
+            "/maintenance/party-management",
+            "maintenance.party",
+            ["accounting", "inventory"],
           ),
         ],
-      ),
-      item(
-        "maintenance-workflow",
-        "Workflow Management",
-        "/maintenance/workflow-management",
-        "maintenance.workflow",
-      ),
-      item(
-        "maintenance-reports",
-        "Report Maintenance",
-        "/maintenance/report-maintenance",
-        "maintenance.reports",
+        ["accounting", "inventory"],
       ),
     ],
   },
@@ -477,6 +451,13 @@ export const MainNavigationSections: MainNavigationSection[] = [
     productKey: "accounting",
     items: [
       item(
+        "cash-disbursement-voucher",
+        "Disbursement Voucher",
+        "/cash-disbursement/disbursement-voucher",
+        "cashDisbursement",
+        "accounting",
+      ),
+      item(
         "cash-disbursement-cash-advance",
         "Cash Advance",
         "/cash-disbursement/cash-advance",
@@ -515,6 +496,13 @@ export const MainNavigationSections: MainNavigationSection[] = [
         "cash-disbursement-petty-cash-advance",
         "Petty Cash Advance",
         "/cash-disbursement/petty-cash-advance",
+        "cashDisbursement",
+        "accounting",
+      ),
+      item(
+        "cash-disbursement-request-payment",
+        "Request For Payment",
+        "/cash-disbursement/request-for-payment",
         "cashDisbursement",
         "accounting",
       ),
@@ -580,27 +568,28 @@ export const MainNavigationSections: MainNavigationSection[] = [
         "sales",
         "accounting",
       ),
-      item(
+      multiProductItem(
         "sales-quotation",
         "Sales Quotation",
         "/sales/sales-quotation",
         "sales",
-        "accounting",
+        ["accounting", "inventory"],
       ),
-      item(
+      multiProductItem(
         "sales-order",
         "Sales Order",
         "/sales/sales-order",
         "sales",
-        "accounting",
+        ["accounting", "inventory"],
       ),
-      item(
+      multiProductItem(
         "sales-invoice",
         "Sales Invoice",
         "/sales/sales-invoice",
         "sales",
-        "accounting",
+        ["accounting", "inventory"],
       ),
+      item("sales-billing", "Billing", "/sales/billing", "sales", "accounting"),
       item(
         "sales-billing-statement",
         "Billing Statement",
@@ -622,19 +611,19 @@ export const MainNavigationSections: MainNavigationSection[] = [
         "sales",
         "accounting",
       ),
-      item(
+      multiProductItem(
         "sales-cash-sales-invoice",
         "Cash Sales Invoice",
         "/sales/cash-sales-invoice",
         "sales",
-        "accounting",
+        ["accounting", "inventory"],
       ),
-      item(
+      multiProductItem(
         "sales-journal",
         "Sales Journal",
         "/sales/sales-journal",
         "sales",
-        "accounting",
+        ["accounting", "inventory"],
       ),
       item(
         "sales-statement-account",
@@ -653,9 +642,30 @@ export const MainNavigationSections: MainNavigationSection[] = [
     productKey: "inventory",
     items: [
       item(
-        "inventory-delivery-receipt",
-        "Delivery Receipt",
-        "/inventory/delivery-receipt",
+        "inventory-receiving-report",
+        "Receiving Report",
+        "/inventory/receiving-report",
+        "inventory",
+        "inventory",
+      ),
+      item(
+        "inventory-goods-receipt",
+        "Goods Receipt",
+        "/inventory/goods-receipt",
+        "inventory",
+        "inventory",
+      ),
+      item(
+        "inventory-account",
+        "Inventory Account",
+        "/inventory/inventory-account",
+        "inventory",
+        "inventory",
+      ),
+      item(
+        "inventory-material-request",
+        "Material Request",
+        "/inventory/material-request",
         "inventory",
         "inventory",
       ),
@@ -674,30 +684,9 @@ export const MainNavigationSections: MainNavigationSection[] = [
         "inventory",
       ),
       item(
-        "inventory-goods-receipt",
-        "Goods Receipt",
-        "/inventory/goods-receipt",
-        "inventory",
-        "inventory",
-      ),
-      item(
-        "inventory-receiving-report",
-        "Receiving Report",
-        "/inventory/receiving-report",
-        "inventory",
-        "inventory",
-      ),
-      item(
-        "inventory-material-request",
-        "Material Request",
-        "/inventory/material-request",
-        "inventory",
-        "inventory",
-      ),
-      item(
-        "inventory-account",
-        "Inventory Account",
-        "/inventory/inventory-account",
+        "inventory-delivery-receipt",
+        "Delivery Receipt",
+        "/inventory/delivery-receipt",
         "inventory",
         "inventory",
       ),
@@ -718,6 +707,13 @@ export const MainNavigationSections: MainNavigationSection[] = [
         "inventory",
       ),
       item(
+        "purchasing-canvass-form",
+        "Canvass Form",
+        "/purchasing/canvass-form",
+        "canvass",
+        "inventory",
+      ),
+      item(
         "purchasing-order",
         "Purchase Order",
         "/purchasing/purchase-order",
@@ -734,24 +730,8 @@ export const MainNavigationSections: MainNavigationSection[] = [
     ],
   },
   {
-    key: "canvass-form",
-    title: "Canvass Form",
-    icon: "purchasing",
-    accessKey: "canvass",
-    productKey: "inventory",
-    items: [
-      item(
-        "canvass-form-default",
-        "Canvass Form",
-        "/canvass-form",
-        "canvass",
-        "inventory",
-      ),
-    ],
-  },
-  {
-    key: "fixed-asset",
-    title: "Fixed Asset",
+    key: "others",
+    title: "Others",
     icon: "asset",
     accessKey: "fixedAsset",
     productKey: "accounting",
@@ -766,69 +746,144 @@ export const MainNavigationSections: MainNavigationSection[] = [
     ],
   },
   {
-    key: "reports",
-    title: "Reports",
+    key: "system-administration",
+    title: "System Administration",
+    icon: "settings",
+    accessKey: "maintenance.users",
+    items: [
+      item(
+        "maintenance-users",
+        "User Management",
+        "/system-administration/user-management",
+        "maintenance.users",
+      ),
+      item(
+        "maintenance-approval",
+        "Approval Management",
+        "/system-administration/approval-management",
+        "maintenance.approval",
+      ),
+      item(
+        "maintenance-audit",
+        "Audit Trail",
+        "/system-administration/audit-trail",
+        "maintenance.audit",
+      ),
+      item(
+        "maintenance-mail",
+        "Mail Maintenance",
+        "/system-administration/mail-maintenance",
+        "maintenance.mail",
+      ),
+    ],
+  },
+  {
+    key: "reporting-analytics",
+    title: "Reporting & Analytics",
     icon: "reports",
     accessKey: "reports.accounting",
     items: [
+      item(
+        "reports-maintenance",
+        "Report Maintenance",
+        "/reports/maintenance",
+        "maintenance.reports",
+      ),
       navGroup(
-        "reports-accounting",
-        "Accounting",
-        "/reports/accounting",
+        "reports-financial",
+        "Financial Reports",
+        "/reports/financial",
         "reports.accounting",
         "accounting",
         [
           child(
-            "reports-accounting-transaction-reports",
-            "Transaction Reports",
-            "/reports/accounting/transaction-reports",
-            "reports.accounting",
-            "accounting",
-          ),
-          child(
-            "reports-accounting-financial-reports",
-            "Financial Reports",
-            "/reports/accounting/financial-reports",
-            "reports.accounting",
-            "accounting",
-          ),
-          child(
-            "reports-accounting-books-of-accounts",
+            "reports-books-of-accounts",
             "Books of Accounts",
-            "/reports/accounting/books-of-accounts",
+            "/reports/financial/books-of-accounts",
             "reports.accounting",
             "accounting",
           ),
           child(
-            "reports-accounting-journals",
-            "Journals",
-            "/reports/accounting/journals",
+            "reports-general-ledger",
+            "General Ledger",
+            "/reports/financial/general-ledger",
             "reports.accounting",
             "accounting",
           ),
           child(
-            "reports-accounting-bir",
-            "BIR",
-            "/reports/accounting/bir",
+            "reports-journal-ledger",
+            "Journal Ledger",
+            "/reports/financial/journal-ledger",
             "reports.accounting",
             "accounting",
           ),
           child(
-            "reports-accounting-receivable",
-            "Account Receivable Reports",
-            "/reports/accounting/account-receivable-reports",
+            "reports-trial-balance",
+            "Trial Balance",
+            "/reports/financial/trial-balance",
             "reports.accounting",
             "accounting",
+          ),
+          child(
+            "reports-balance-sheet",
+            "Balance Sheet",
+            "/reports/financial/balance-sheet",
+            "reports.accounting",
+            "accounting",
+          ),
+          child(
+            "reports-income-statement",
+            "Income Statement",
+            "/reports/financial/income-statement",
+            "reports.accounting",
+            "accounting",
+          ),
+          child(
+            "reports-cash-flow",
+            "Cash Flow Statement",
+            "/reports/financial/cash-flow-statement",
+            "reports.accounting",
+            "accounting",
+          ),
+          navGroup(
+            "reports-accounts-receivable",
+            "Accounts Receivable",
+            "/reports/financial/accounts-receivable",
+            "reports.accounting",
+            "accounting",
+            [
+              child(
+                "reports-ar-aging",
+                "Aging of Accounts Receivable",
+                "/reports/financial/accounts-receivable/aging",
+                "reports.accounting",
+                "accounting",
+              ),
+              child(
+                "reports-ar-statement",
+                "Statement of Account",
+                "/reports/financial/accounts-receivable/statement-of-account",
+                "reports.accounting",
+                "accounting",
+              ),
+            ],
           ),
         ],
       ),
       navGroup(
         "reports-inventory",
-        "Inventory",
+        "Inventory Reports",
         "/reports/inventory",
         "reports.inventory",
         "inventory",
         [
+          child(
+            "reports-inventory-audit",
+            "Inventory Audit",
+            "/reports/inventory/audit",
+            "reports.inventory",
+            "inventory",
+          ),
           child(
             "reports-inventory-item-query",
             "Item Query Generator",
@@ -837,17 +892,49 @@ export const MainNavigationSections: MainNavigationSection[] = [
             "inventory",
           ),
           child(
-            "reports-inventory-movements",
-            "Inventory Movements",
-            "/reports/inventory/inventory-movements",
+            "reports-inventory-stock-movement",
+            "Stock Movement Report",
+            "/reports/inventory/stock-movement",
             "reports.inventory",
             "inventory",
+          ),
+          child(
+            "reports-inventory-valuation",
+            "Inventory Valuation",
+            "/reports/inventory/valuation",
+            "reports.inventory",
+            "inventory",
+          ),
+        ],
+      ),
+      navGroup(
+        "reports-bir",
+        "BIR Reports",
+        "/reports/bir",
+        "reports.accounting",
+        "accounting",
+        [
+          child(
+            "reports-bir-vat-relief",
+            "VAT Relief",
+            "/reports/bir/vat-relief",
+            "reports.accounting",
+            "accounting",
+          ),
+          child(
+            "reports-bir-alpha-list",
+            "Alpha list",
+            "/reports/bir/alpha-list",
+            "reports.accounting",
+            "accounting",
           ),
         ],
       ),
     ],
   },
 ];
+
+export const MainNavigationSections = MainCompanyNavigationSections;
 
 export const MainLayoutMockData = {
   currentUser: {
@@ -917,9 +1004,9 @@ export const MainLayoutMockData = {
     name: "Gr8Books Lite",
   },
   availableCompanies: [
-    { id: "cmp-001", name: "Gr8Books Lite" },
-    { id: "cmp-002", name: "Demo Trading Corp." },
-  ],
+    { id: "cmp-001", name: "Gr8Books Lite", helperText: "Primary company" },
+    { id: "cmp-002", name: "Demo Trading Corp.", helperText: "Trading group" },
+  ] satisfies MainCompany[],
   activeBranchId: "branch-main",
   activeSubscription: MainSubscriptionPlans[0],
   branches: [
@@ -947,23 +1034,27 @@ export const MainLayoutMockData = {
     },
   ] satisfies MainBranch[],
   favoriteNavigationKeys: [
-    "dashboard-default",
+    "dashboard-management",
     "cash-receipt-official-receipt",
     "inventory-receiving-report",
     "maintenance-item",
   ],
   recentlyVisitedNavigationKeys: [
-    "approval-transactions",
-    "reports-accounting",
+    "maintenance-approval",
+    "reports-financial",
     "maintenance-users",
-    "dashboard-operations",
+    "dashboard-management",
   ],
+  quickListSettings: {
+    favorites: true,
+    recently: true,
+  },
   notifications: [
     {
       id: "notif-001",
-      title: "Dashboard shared",
-      body: "Maria shared the Operations Overview dashboard with you.",
-      href: "/dashboard/operations-overview",
+      title: "Dashboard Management updated",
+      body: "Dashboard widget settings were updated for your role.",
+      href: "/dashboard",
       time: "Just now",
       isRead: false,
     },
@@ -992,66 +1083,6 @@ export const MainLayoutMockData = {
       isRead: true,
     },
   ] satisfies MainNotification[],
-  helpArticles: [
-    {
-      key: "help-dashboard",
-      title: "Customizable dashboards",
-      path: "/dashboard",
-      summary:
-        "Create, arrange, and share dashboards based on user permissions.",
-      content: [
-        "Dashboards are user-configurable workspaces. Users with add access can create more dashboards, while view access controls visibility.",
-        "Use dashboard widgets for summaries, queues, charts, and saved operational views.",
-      ],
-      relatedKeys: ["help-branches", "help-permissions"],
-    },
-    {
-      key: "help-maintenance",
-      title: "Maintenance workspace",
-      path: "/maintenance",
-      summary:
-        "Manage shared master files outside accounting and inventory routes.",
-      content: [
-        "Maintenance is its own workspace for company setup, party records, approval rules, workflow management, and audit tools.",
-        "Each maintenance page can be enabled independently by view, add, edit, delete, cancel, and uncancel permissions.",
-      ],
-      relatedKeys: ["help-permissions", "help-branches"],
-    },
-    {
-      key: "help-branches",
-      title: "Branches",
-      path: "/settings/branches",
-      summary:
-        "Switch branches and manage branch records when your role allows it.",
-      content: [
-        "The first breadcrumb is the active branch. Opening it lazy-loads branch choices so the layout can later call the backend only when needed.",
-        "Branch Management appears below the branch list when the current user has branch management access.",
-      ],
-      relatedKeys: ["help-permissions"],
-    },
-    {
-      key: "help-permissions",
-      title: "Role permissions",
-      path: "/settings/permissions",
-      summary: "Control module visibility through granular access actions.",
-      content: [
-        "A module appears when the current user has at least one enabled action for that module.",
-        "Action-level checks support view, add, edit, delete, cancel, and uncancel access.",
-      ],
-      relatedKeys: ["help-branches", "help-dashboard"],
-    },
-    {
-      key: "help-profile",
-      title: "Profile menu",
-      path: "/profile",
-      summary: "Open profile tools, settings, company switching, and logout.",
-      content: [
-        "The profile menu gives users direct access to their profile, settings, company switching, and logout actions.",
-        "Future backend integration can populate companies and user details from the session endpoint.",
-      ],
-      relatedKeys: ["help-permissions"],
-    },
-  ] satisfies MainHelpArticle[],
   dashboardWidgets: [
     {
       id: "dashboard-widget-001",
@@ -1084,7 +1115,13 @@ export const MainLayoutMockData = {
   ] satisfies MainDashboardWidget[],
 };
 
-export const MainSearchItems = flattenSections(MainNavigationSections);
+export const MainWorkspaceSearchItems = flattenSections(
+  MainWorkspaceNavigationSections,
+);
+export const MainCompanySearchItems = flattenSections(
+  MainCompanyNavigationSections,
+);
+export const MainSearchItems = MainCompanySearchItems;
 
 export function hasAccess(
   accessContext: MainUserAccessContext,
@@ -1111,7 +1148,14 @@ export function hasAccess(
 export function isProductEnabled(
   productKey: MainProductKey | undefined,
   subscription: MainSubscriptionOption,
+  productKeys?: MainProductKey[],
 ) {
+  if (productKeys?.length) {
+    return productKeys.some((key) =>
+      subscription.enabledProductKeys.includes(key),
+    );
+  }
+
   return subscription.enabledProductKeys.includes(productKey ?? "core");
 }
 
@@ -1132,7 +1176,11 @@ export function filterMainNavigationSections(
     .filter(
       (section) =>
         (hasAccess(accessContext, section.accessKey) &&
-          isProductEnabled(section.productKey, subscription)) ||
+          isProductEnabled(
+            section.productKey,
+            subscription,
+            section.productKeys,
+          )) ||
         section.items.length > 0,
     )
     .filter((section) => section.items.length > 0);
@@ -1146,27 +1194,13 @@ export function filterMainSearchItems(
   return items.filter(
     (item) =>
       hasAccess(accessContext, item.accessKey) &&
-      isProductEnabled(item.productKey, subscription),
+      isProductEnabled(item.productKey, subscription, item.productKeys),
   );
 }
 
 export function getAccessibleBranches(branches: MainBranch[]) {
   return branches.filter((branch) =>
     Object.values(branch.access).some(Boolean),
-  );
-}
-
-export function getHelpArticleForPath(
-  pathname: string,
-  articles: MainHelpArticle[],
-) {
-  return (
-    [...articles]
-      .sort((first, second) => second.path.length - first.path.length)
-      .find(
-        (article) =>
-          pathname === article.path || pathname.startsWith(`${article.path}/`),
-      ) ?? articles[0]
   );
 }
 
@@ -1193,7 +1227,11 @@ function filterMainNavigationItems(
           navigationItem.accessKey,
           navigationItem.requiredActions,
         ) &&
-          isProductEnabled(navigationItem.productKey, subscription)) ||
+          isProductEnabled(
+            navigationItem.productKey,
+            subscription,
+            navigationItem.productKeys,
+          )) ||
         Boolean(navigationItem.children?.length),
     );
 }
@@ -1217,6 +1255,7 @@ function flattenItems(
       href: navigationItem.href,
       accessKey: navigationItem.accessKey,
       productKey: navigationItem.productKey ?? "core",
+      productKeys: navigationItem.productKeys,
       section,
       trail,
     };
@@ -1248,6 +1287,27 @@ function item(
   };
 }
 
+function multiProductItem(
+  key: string,
+  label: string,
+  href: string,
+  accessKey: MainAccessKey,
+  productKeys: MainProductKey[],
+  requiredActions?: MainAccessAction[],
+) {
+  return {
+    ...item(
+      key,
+      label,
+      href,
+      accessKey,
+      productKeys[0] ?? "core",
+      requiredActions,
+    ),
+    productKeys,
+  };
+}
+
 function child(
   key: string,
   label: string,
@@ -1258,6 +1318,16 @@ function child(
   return item(key, label, href, accessKey, productKey);
 }
 
+function multiProductChild(
+  key: string,
+  label: string,
+  href: string,
+  accessKey: MainAccessKey,
+  productKeys: MainProductKey[],
+) {
+  return multiProductItem(key, label, href, accessKey, productKeys);
+}
+
 function navGroup(
   key: string,
   label: string,
@@ -1265,6 +1335,7 @@ function navGroup(
   accessKey: MainAccessKey,
   productKey: MainProductKey,
   children: MainNavigationItem[],
+  productKeys?: MainProductKey[],
 ) {
   return {
     key,
@@ -1272,6 +1343,7 @@ function navGroup(
     href,
     accessKey,
     productKey,
+    productKeys,
     children,
   };
 }

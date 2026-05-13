@@ -16,29 +16,17 @@ import {
 
 const DashboardLibrary = [
   {
-    title: "Default Dashboard",
+    title: "Dashboard Management",
     owner: "System",
     visibility: "Everyone with dashboard view",
-    widgets: "8 widgets",
-  },
-  {
-    title: "Operations Overview",
-    owner: "Maria Santos",
-    visibility: "Shared with administrators",
-    widgets: "6 widgets",
-  },
-  {
-    title: "Executive Snapshot",
-    owner: "John Dela Cruz",
-    visibility: "Private",
-    widgets: "5 widgets",
+    widgets: "Configurable dashboards",
   },
 ];
 
 const ActivityItems = [
-  "Maria shared Operations Overview.",
-  "Default Dashboard was rearranged.",
-  "Executive Snapshot added a saved view.",
+  "Dashboard Management was updated.",
+  "Dashboard widget settings were reviewed.",
+  "Dashboard access rules were synchronized.",
 ];
 
 export function CustomizableDashboard() {
@@ -53,20 +41,13 @@ export function CustomizableDashboard() {
       <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <StatusPill label="Default dashboard" tone="sky" />
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusPill label="Dashboard management" tone="sky" />
               <StatusPill label="Customizable" tone="citron" />
               {canAddDashboard ? (
                 <StatusPill label="Add enabled" tone="dark" />
               ) : null}
             </div>
-            <h1 className="text-2xl font-semibold text-darknavy sm:text-3xl">
-              Customizable Dashboard
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-darknavy/60">
-              Build personal or shared dashboards from widgets, saved views, and
-              role-based data access.
-            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-2 sm:flex">

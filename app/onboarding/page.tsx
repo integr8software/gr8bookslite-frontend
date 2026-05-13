@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { LogOut } from "lucide-react";
+import { LogoutButton } from "@/app/src/ui/auth/LogoutButton";
 import { OnboardingFlow } from "@/app/src/ui/onboarding/OnboardingFlow";
 
 export const metadata: Metadata = {
@@ -18,13 +18,12 @@ export default function OnboardingPage() {
           </span>
         </div>
 
-        <Link
-          href="/logout"
+        <LogoutButton
           className="inline-flex w-fit items-center justify-center gap-2 rounded-md border border-darknavy/15 px-4 py-2.5 text-sm font-semibold text-darknavy transition hover:border-coralpink hover:bg-coralpink hover:text-offwhite"
         >
           <span>Logout</span>
           <LogOut className="h-4 w-4" aria-hidden="true" />
-        </Link>
+        </LogoutButton>
       </nav>
 
       <div className="max-w-280 mx-auto px-5 py-8 sm:px-8 lg:px-14 lg:py-12">

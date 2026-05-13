@@ -1,26 +1,45 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { createElement, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
+  Activity,
   BadgeDollarSign,
+  BadgePercent,
   BarChart3,
   BookOpen,
   Boxes,
   Building2,
+  CalendarClock,
   ChevronRight,
+  ClipboardList,
   Clock3,
+  Coins,
   CreditCard,
+  FileBarChart,
+  FileCheck2,
+  FileText,
+  Gauge,
   GitBranch,
+  Landmark,
   LayoutDashboard,
+  ListTree,
+  Mail,
+  Package,
+  Receipt,
   ReceiptText,
+  Ruler,
   Settings,
   ShieldCheck,
   ShoppingCart,
   Star,
+  Tags,
+  UserCog,
   UserCircle,
+  Users,
   WalletCards,
+  Warehouse,
   X,
 } from "lucide-react";
 import type {
@@ -42,8 +61,10 @@ const NestedBatchSize = 6;
 type MainSidebarProps = {
   activeHref: string;
   companyName: string;
+  enabledQuickListTabs: Array<"favorites" | "recent">;
   expandedKeys: string[];
   favoriteModules: MainSearchItem[];
+  homeHref: string;
   isOpen: boolean;
   navigationSections: MainNavigationSection[];
   quickListTab: "favorites" | "recent";
@@ -72,11 +93,68 @@ const MainIcons: Record<MainIconName, LucideIcon> = {
   settings: Settings,
 };
 
+const SidebarItemIcons: Record<string, LucideIcon> = {
+  "workspace-overview": Gauge,
+  "workspace-dashboard": LayoutDashboard,
+  "workspace-companies": Building2,
+  "workspace-users": UserCog,
+  "workspace-approval": ShieldCheck,
+  "workspace-mail": Mail,
+  "workspace-audit": Activity,
+  "dashboard-management": LayoutDashboard,
+  "maintenance-financial": Landmark,
+  "maintenance-charts-of-accounts": ListTree,
+  "maintenance-bank": Landmark,
+  "maintenance-currency": Coins,
+  "maintenance-discount": BadgePercent,
+  "maintenance-term": CalendarClock,
+  "maintenance-transaction-type": Receipt,
+  "maintenance-inventory-warehouse": Warehouse,
+  "maintenance-warehouse": Warehouse,
+  "maintenance-item": Package,
+  "maintenance-item-category": Tags,
+  "maintenance-item-sub-category": Tags,
+  "maintenance-item-type": Package,
+  "maintenance-item-sub-type": Package,
+  "maintenance-item-unit": Ruler,
+  "maintenance-party-management": Users,
+  "maintenance-party": Users,
+  "cash-disbursement-voucher": FileCheck2,
+  "cash-disbursement-request-payment": FileText,
+  "purchasing-canvass-form": ClipboardList,
+  "reports-maintenance": Settings,
+  "reports-financial": FileBarChart,
+  "reports-books-of-accounts": BookOpen,
+  "reports-general-ledger": BookOpen,
+  "reports-journal-ledger": BookOpen,
+  "reports-trial-balance": FileBarChart,
+  "reports-balance-sheet": FileBarChart,
+  "reports-income-statement": FileBarChart,
+  "reports-cash-flow": FileBarChart,
+  "reports-accounts-receivable": CreditCard,
+  "reports-ar-aging": CalendarClock,
+  "reports-ar-statement": FileText,
+  "reports-inventory": Boxes,
+  "reports-inventory-audit": Activity,
+  "reports-inventory-item-query": Package,
+  "reports-inventory-stock-movement": Warehouse,
+  "reports-inventory-valuation": FileBarChart,
+  "reports-bir": FileText,
+  "reports-bir-vat-relief": FileText,
+  "reports-bir-alpha-list": FileText,
+  "maintenance-users": UserCog,
+  "maintenance-approval": ShieldCheck,
+  "maintenance-audit": Activity,
+  "maintenance-mail": Mail,
+};
+
 export function MainSidebar({
   activeHref,
   companyName,
+  enabledQuickListTabs,
   expandedKeys,
   favoriteModules,
+  homeHref,
   isOpen,
   navigationSections,
   quickListTab,
@@ -87,6 +165,7 @@ export function MainSidebar({
 }: MainSidebarProps) {
   const quickListItems =
     quickListTab === "favorites" ? favoriteModules : recentlyVisitedModules;
+  const shouldShowQuickList = enabledQuickListTabs.length > 0;
   const [
     quickListVisibleCount,
     hasMoreQuickListItems,
@@ -106,7 +185,7 @@ export function MainSidebar({
     <aside
       data-main-sidebar-root
       className={joinClasses(
-        "fixed inset-y-0 left-0 z-50 w-78 overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] transition-[transform,opacity] duration-500 ease-out will-change-[transform,opacity,width] motion-reduce:transition-none lg:bottom-0 lg:top-16 lg:z-20 lg:h-auto lg:shadow-none lg:transition-[width,opacity,border-color]",
+        "fixed inset-y-0 left-0 z-50 w-78 transform-gpu overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[transform,opacity] motion-reduce:transition-none lg:bottom-0 lg:top-16 lg:z-20 lg:h-auto lg:shadow-none lg:transition-[width,opacity,border-color] lg:will-change-[width,opacity]",
         isOpen
           ? "translate-x-0 opacity-100 lg:w-78"
           : "pointer-events-none -translate-x-full opacity-0 lg:w-0 lg:translate-x-0 lg:border-transparent",
@@ -115,7 +194,7 @@ export function MainSidebar({
       <div className="flex h-full min-h-0 w-78 flex-col">
         <div className="flex items-center justify-between border-b border-darknavy/10 px-4 py-4">
           <Link
-            href="/dashboard"
+            href={homeHref}
             aria-label={`${companyName} dashboard`}
             className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
           >
@@ -143,55 +222,86 @@ export function MainSidebar({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4">
-          <div className="mb-5">
-            <div className="mb-2 grid grid-cols-2 gap-1 rounded-md bg-darknavy/5 p-1">
-              <QuickListButton
-                icon={Star}
-                isActive={quickListTab === "favorites"}
-                label="Favorites"
-                onClick={() => onQuickListTabChange("favorites")}
-              />
-              <QuickListButton
-                icon={Clock3}
-                isActive={quickListTab === "recent"}
-                label="Recently"
-                onClick={() => onQuickListTabChange("recent")}
-              />
-            </div>
+          {shouldShowQuickList ? (
+            <div className="mb-5">
+              <div
+                className={joinClasses(
+                  "mb-2 grid gap-1 rounded-md bg-darknavy/5 p-1",
+                  enabledQuickListTabs.length === 1
+                    ? "grid-cols-1"
+                    : "grid-cols-2",
+                )}
+              >
+                {enabledQuickListTabs.includes("favorites") ? (
+                  <QuickListButton
+                    icon={Star}
+                    isActive={quickListTab === "favorites"}
+                    label="Favorites"
+                    onClick={() => onQuickListTabChange("favorites")}
+                  />
+                ) : null}
+                {enabledQuickListTabs.includes("recent") ? (
+                  <QuickListButton
+                    icon={Clock3}
+                    isActive={quickListTab === "recent"}
+                    label="Recently"
+                    onClick={() => onQuickListTabChange("recent")}
+                  />
+                ) : null}
+              </div>
 
-            <div className="space-y-1">
-              {visibleQuickListItems.map((item) => (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  onClick={handleMobileNavigation(onClose)}
-                  className="flex min-h-9 items-center gap-2 rounded-md px-3 text-sm text-darknavy/75 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-                >
-                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-citron" />
-                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                </Link>
-              ))}
-              {hasMoreQuickListItems ? (
-                <div
-                  ref={setQuickListSentinel}
-                  className="h-3"
-                  aria-hidden="true"
-                />
-              ) : null}
+              <div className="space-y-1">
+                {visibleQuickListItems.map((item) => (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    onClick={handleMobileNavigation(onClose)}
+                    className="flex min-h-9 items-center gap-2 rounded-md px-3 text-sm text-darknavy/75 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+                  >
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-citron" />
+                    <span className="min-w-0 flex-1 truncate">
+                      {item.label}
+                    </span>
+                  </Link>
+                ))}
+                {hasMoreQuickListItems ? (
+                  <div
+                    ref={setQuickListSentinel}
+                    className="h-3"
+                    aria-hidden="true"
+                  />
+                ) : null}
+              </div>
             </div>
-          </div>
+          ) : null}
 
           <div className="space-y-2">
-            {navigationSections.map((section) => (
-              <SidebarSection
-                key={section.key}
-                activeHref={activeHref}
-                expandedKeys={expandedKeys}
-                section={section}
-                onNavigate={onClose}
-                onToggleExpandedKey={onToggleExpandedKey}
-              />
-            ))}
+            {navigationSections.map((section) =>
+              section.key === "workspace" ? (
+                <div key={section.key} className="space-y-1">
+                  {section.items.map((item) => (
+                    <SidebarItem
+                      key={item.key}
+                      activeHref={activeHref}
+                      expandedKeys={expandedKeys}
+                      item={item}
+                      depth={-1}
+                      onNavigate={onClose}
+                      onToggleExpandedKey={onToggleExpandedKey}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <SidebarSection
+                  key={section.key}
+                  activeHref={activeHref}
+                  expandedKeys={expandedKeys}
+                  section={section}
+                  onNavigate={onClose}
+                  onToggleExpandedKey={onToggleExpandedKey}
+                />
+              ),
+            )}
           </div>
         </div>
       </div>
@@ -336,19 +446,21 @@ function SidebarItem({
   onToggleExpandedKey,
 }: SidebarItemProps) {
   const hasChildren = Boolean(item.children?.length);
+  const shouldShowIcon = depth < 0 || hasChildren;
+  const shouldShowModuleDot = !shouldShowIcon;
   const childItems = item.children ?? [];
   const isExpanded = expandedKeys.includes(item.key);
   const isActive = hasChildren
     ? activeHref === item.href || activeHref.startsWith(`${item.href}/`)
     : activeHref === item.href;
   const paddingClass =
-    depth === 0
-      ? "pl-9 pr-3"
+    depth < 0
+      ? "px-3"
+      : depth === 0
+        ? "pl-8 pr-3"
       : depth === 1
-        ? "pl-12 pr-3"
-        : "pl-[3.75rem] pr-3";
-  const markerOffsetClass =
-    depth === 0 ? "left-6" : depth === 1 ? "left-9" : "left-12";
+        ? "pl-11 pr-3"
+        : "pl-14 pr-3";
   const [
     childVisibleCount,
     hasMoreChildItems,
@@ -374,6 +486,7 @@ function SidebarItem({
             isActive ? "bg-skyblue/10 font-semibold text-darknavy" : "text-darknavy/70",
           )}
         >
+          {shouldShowIcon ? renderSidebarItemIcon(item, isActive) : null}
           <span className="min-w-0 flex-1 truncate">{item.label}</span>
           <ChevronRight
             className={joinClasses(
@@ -424,21 +537,103 @@ function SidebarItem({
       href={item.href}
       onClick={handleMobileNavigation(onNavigate)}
       className={joinClasses(
-        "relative flex min-h-9 items-center rounded-md py-2 text-sm transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+        "flex min-h-9 items-center gap-2 rounded-md py-2 text-sm transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
         paddingClass,
+        depth < 0 && "font-semibold",
         isActive ? "bg-skyblue/15 font-semibold text-darknavy" : "text-darknavy/65",
       )}
     >
-      <span
-        className={joinClasses(
-          "absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full",
-          markerOffsetClass,
-          isActive ? "bg-skyblue" : "bg-darknavy/25",
-        )}
-      />
+      {shouldShowIcon ? renderSidebarItemIcon(item, isActive) : null}
+      {shouldShowModuleDot ? (
+        <span
+          className={joinClasses(
+            "h-1.5 w-1.5 shrink-0 rounded-full",
+            isActive ? "bg-skyblue" : "bg-darknavy/30",
+          )}
+          aria-hidden="true"
+        />
+      ) : null}
       <span className="min-w-0 flex-1 truncate">{item.label}</span>
     </Link>
   );
+}
+
+function renderSidebarItemIcon(item: MainNavigationItem, isActive: boolean) {
+  return createElement(getSidebarItemIcon(item), {
+    "aria-hidden": true,
+    className: joinClasses(
+      "h-4 w-4 shrink-0",
+      isActive ? "text-skyblue" : "text-darknavy/45",
+    ),
+  });
+}
+
+function getSidebarItemIcon(item: MainNavigationItem) {
+  const exactIcon = SidebarItemIcons[item.key];
+
+  if (exactIcon) {
+    return exactIcon;
+  }
+
+  if (item.key.includes("invoice") || item.key.includes("receipt")) {
+    return ReceiptText;
+  }
+
+  if (item.key.includes("voucher")) {
+    return FileCheck2;
+  }
+
+  if (item.key.includes("bank")) {
+    return Landmark;
+  }
+
+  if (item.key.includes("report")) {
+    return FileBarChart;
+  }
+
+  switch (item.accessKey) {
+    case "dashboard":
+      return LayoutDashboard;
+    case "cashReceipt":
+      return ReceiptText;
+    case "cashDisbursement":
+      return WalletCards;
+    case "accountsPayable":
+      return CreditCard;
+    case "generalJournal":
+      return BookOpen;
+    case "sales":
+      return BadgeDollarSign;
+    case "inventory":
+      return Boxes;
+    case "purchasing":
+      return ShoppingCart;
+    case "canvass":
+      return ClipboardList;
+    case "fixedAsset":
+      return Building2;
+    case "maintenance.mail":
+      return Mail;
+    case "maintenance.users":
+      return UserCog;
+    case "maintenance.approval":
+      return ShieldCheck;
+    case "maintenance.audit":
+      return Activity;
+    case "maintenance.warehouse":
+      return Warehouse;
+    case "maintenance.item":
+      return Package;
+    case "maintenance.party":
+      return Users;
+    case "maintenance.discount":
+      return BadgePercent;
+    case "reports.accounting":
+    case "reports.inventory":
+      return FileBarChart;
+    default:
+      return FileText;
+  }
 }
 
 function handleMobileNavigation(onNavigate: () => void) {

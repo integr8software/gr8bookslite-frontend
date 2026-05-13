@@ -1,241 +1,75 @@
-export type MainAccessAction =
-  | "view"
-  | "add"
-  | "edit"
-  | "delete"
-  | "cancel"
-  | "uncancel";
-
-export type MainAccessKey =
-  | "workspace.overview"
-  | "workspace.dashboard"
-  | "workspace.companies"
-  | "workspace.users"
-  | "workspace.approval"
-  | "workspace.mail"
-  | "workspace.audit"
-  | "dashboard"
-  | "cashReceipt"
-  | "cashDisbursement"
-  | "accountsPayable"
-  | "generalJournal"
-  | "sales"
-  | "inventory"
-  | "purchasing"
-  | "canvass"
-  | "fixedAsset"
-  | "maintenance.chartOfAccounts"
-  | "maintenance.bank"
-  | "maintenance.currency"
-  | "maintenance.party"
-  | "maintenance.discount"
-  | "maintenance.transactionType"
-  | "maintenance.responsibilityCenter"
-  | "maintenance.term"
-  | "maintenance.mail"
-  | "maintenance.item"
-  | "maintenance.warehouse"
-  | "maintenance.approval"
-  | "maintenance.workflow"
-  | "maintenance.audit"
-  | "maintenance.users"
-  | "maintenance.reports"
-  | "reports.accounting"
-  | "reports.inventory"
-  | "settings"
-  | "settings.permissions"
-  | "settings.notifications"
-  | "settings.billing"
-  | "branch.management"
-  | "profile";
-
-export type MainProductKey = "core" | "accounting" | "inventory";
-
-export type MainNavigationScope = "workspace" | "company";
-
-export type MainPermissionMap = Partial<
-  Record<MainAccessKey, Partial<Record<MainAccessAction, boolean>>>
->;
-
-export type MainIconName =
-  | "approval"
-  | "asset"
-  | "branch"
-  | "cashIn"
-  | "cashOut"
-  | "dashboard"
-  | "favorite"
-  | "inventory"
-  | "journal"
-  | "maintenance"
-  | "payable"
-  | "profile"
-  | "purchasing"
-  | "reports"
-  | "sales"
-  | "settings";
-
-export type MainNavigationItem = {
-  key: string;
-  label: string;
-  href: string;
-  accessKey: MainAccessKey;
-  productKey?: MainProductKey;
-  productKeys?: MainProductKey[];
-  requiredActions?: MainAccessAction[];
-  children?: MainNavigationItem[];
-};
-
-export type MainNavigationSection = {
-  key: string;
-  title: string;
-  href?: string;
-  icon: MainIconName;
-  accessKey: MainAccessKey;
-  productKey?: MainProductKey;
-  productKeys?: MainProductKey[];
-  items: MainNavigationItem[];
-};
-
-export type MainSearchItem = {
-  key: string;
-  label: string;
-  href: string;
-  accessKey: MainAccessKey;
-  productKey: MainProductKey;
-  productKeys?: MainProductKey[];
-  section: string;
-  trail: string[];
-};
-
-export type MainCompany = {
-  id: string;
-  name: string;
-  helperText?: string;
-};
-
-export type MainSubscriptionOption = {
-  id: string;
-  label: string;
-  description: string;
-  enabledProductKeys: MainProductKey[];
-};
-
-export type MainUserRole = "Super Admin" | "Admin" | "User";
-
-export type MainUserType = {
-  id: string;
-  name: string;
-  permissions: MainPermissionMap;
-};
-
-export type MainUserAccessContext = {
-  userRole: MainUserRole;
-  userType?: MainUserType;
-};
-
-export type MainBranch = {
-  id: string;
-  code: string;
-  name: string;
-  href: string;
-  isMain?: boolean;
-  access: Partial<Record<MainAccessAction, boolean>>;
-};
-
-export type MainNotification = {
-  id: string;
-  title: string;
-  body: string;
-  href: string;
-  time: string;
-  isRead: boolean;
-};
-
-export type MainDashboardWidget = {
-  id: string;
-  title: string;
-  value: string;
-  supportingText: string;
-  tone: "sky" | "citron" | "coral" | "dark";
-};
-
-const MainSubscriptionPlans: MainSubscriptionOption[] = [
-  {
-    id: "lite-suite",
-    label: "Lite Suite",
-    description: "Core workspace with accounting and inventory enabled.",
-    enabledProductKeys: ["core", "accounting", "inventory"],
-  },
-  {
-    id: "core",
-    label: "Core",
-    description: "Dashboards and maintenance workspace.",
-    enabledProductKeys: ["core"],
-  },
-  {
-    id: "accounting",
-    label: "Accounting",
-    description: "Core workspace plus accounting workflows.",
-    enabledProductKeys: ["core", "accounting"],
-  },
-  {
-    id: "inventory",
-    label: "Inventory",
-    description: "Core workspace plus inventory workflows.",
-    enabledProductKeys: ["core", "inventory"],
-  },
-];
+import type {
+  MainAccessAction,
+  MainAccessKey,
+  MainNavigationItem,
+  MainNavigationSection,
+  MainProductKey,
+} from "@/app/src/data/modules/shared/MainLayoutTypes";
+import { flattenSections } from "@/app/src/data/modules/shared/MainLayoutUtils";
 
 export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
   {
     key: "workspace",
-    title: "Work Space",
-    href: "/workspace",
+    title: "Workspace",
+    href: "/dashboard",
     icon: "settings",
     accessKey: "workspace.overview",
     items: [
+      item("dashboard-overview", "Overview", "/dashboard", "workspace.overview"),
+      item("workspace-companies", "Companies", "/companies", "workspace.companies"),
+      item("workspace-users-roles", "Users & Roles", "/users-roles", "workspace.users"),
+      item("workspace-permissions", "Permissions", "/permissions", "workspace.approval"),
+      item("workspace-audit", "Audit Logs", "/audit-logs", "workspace.audit"),
+      item("workspace-settings", "Settings", "/settings", "settings"),
+    ],
+  },
+  {
+    key: "workspace-modules",
+    title: "Modules",
+    icon: "dashboard",
+    accessKey: "maintenance.chartOfAccounts",
+    items: [
       item(
-        "workspace-overview",
-        "Overview",
-        "/workspace",
-        "workspace.overview",
+        "workspace-module-financial-management",
+        "Financial Management",
+        "/financial-management",
+        "maintenance.chartOfAccounts",
       ),
       item(
-        "workspace-dashboard",
-        "Dashboard",
-        "/workspace/dashboard",
-        "workspace.dashboard",
+        "workspace-module-sales-management",
+        "Sales Management",
+        "/sales-management",
+        "sales",
       ),
       item(
-        "workspace-companies",
-        "Companies",
-        "/workspace/companies",
-        "workspace.companies",
+        "workspace-module-purchasing",
+        "Purchasing",
+        "/purchasing",
+        "purchasing",
       ),
       item(
-        "workspace-users",
-        "User Management",
-        "/workspace/user-management",
-        "workspace.users",
+        "workspace-module-inventory",
+        "Inventory",
+        "/inventory",
+        "inventory",
       ),
       item(
-        "workspace-approval",
-        "Approval Management",
-        "/workspace/approval-management",
-        "workspace.approval",
+        "workspace-module-projects",
+        "Projects",
+        "/projects",
+        "branch.management",
       ),
       item(
-        "workspace-mail",
-        "Mail Maintenance",
-        "/workspace/mail-maintenance",
-        "workspace.mail",
+        "workspace-module-human-resources",
+        "Human Resources",
+        "/human-resources",
+        "maintenance.users",
       ),
       item(
-        "workspace-audit",
-        "Audit Logs",
-        "/workspace/audit-logs",
-        "workspace.audit",
+        "workspace-module-reports-analytics",
+        "Reports & Analytics",
+        "/reports-analytics",
+        "reports.accounting",
       ),
     ],
   },
@@ -249,12 +83,7 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
     icon: "dashboard",
     accessKey: "dashboard",
     items: [
-      item(
-        "dashboard-management",
-        "Dashboard Management",
-        "/dashboard",
-        "dashboard",
-      ),
+      item("dashboard-overview", "Dashboard Overview", "/dashboard", "dashboard"),
     ],
   },
   {
@@ -554,20 +383,8 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
     accessKey: "sales",
     productKey: "accounting",
     items: [
-      item(
-        "sales-debit-memo",
-        "Debit Memo",
-        "/sales/debit-memo",
-        "sales",
-        "accounting",
-      ),
-      item(
-        "sales-credit-memo",
-        "Credit Memo",
-        "/sales/credit-memo",
-        "sales",
-        "accounting",
-      ),
+      item("sales-debit-memo", "Debit Memo", "/sales/debit-memo", "sales", "accounting"),
+      item("sales-credit-memo", "Credit Memo", "/sales/credit-memo", "sales", "accounting"),
       multiProductItem(
         "sales-quotation",
         "Sales Quotation",
@@ -575,20 +392,14 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
         "sales",
         ["accounting", "inventory"],
       ),
-      multiProductItem(
-        "sales-order",
-        "Sales Order",
-        "/sales/sales-order",
-        "sales",
-        ["accounting", "inventory"],
-      ),
-      multiProductItem(
-        "sales-invoice",
-        "Sales Invoice",
-        "/sales/sales-invoice",
-        "sales",
-        ["accounting", "inventory"],
-      ),
+      multiProductItem("sales-order", "Sales Order", "/sales/sales-order", "sales", [
+        "accounting",
+        "inventory",
+      ]),
+      multiProductItem("sales-invoice", "Sales Invoice", "/sales/sales-invoice", "sales", [
+        "accounting",
+        "inventory",
+      ]),
       item("sales-billing", "Billing", "/sales/billing", "sales", "accounting"),
       item(
         "sales-billing-statement",
@@ -618,13 +429,10 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
         "sales",
         ["accounting", "inventory"],
       ),
-      multiProductItem(
-        "sales-journal",
-        "Sales Journal",
-        "/sales/sales-journal",
-        "sales",
-        ["accounting", "inventory"],
-      ),
+      multiProductItem("sales-journal", "Sales Journal", "/sales/sales-journal", "sales", [
+        "accounting",
+        "inventory",
+      ]),
       item(
         "sales-statement-account",
         "Statement of Account",
@@ -648,20 +456,8 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
         "inventory",
         "inventory",
       ),
-      item(
-        "inventory-goods-receipt",
-        "Goods Receipt",
-        "/inventory/goods-receipt",
-        "inventory",
-        "inventory",
-      ),
-      item(
-        "inventory-account",
-        "Inventory Account",
-        "/inventory/inventory-account",
-        "inventory",
-        "inventory",
-      ),
+      item("inventory-goods-receipt", "Goods Receipt", "/inventory/goods-receipt", "inventory", "inventory"),
+      item("inventory-account", "Inventory Account", "/inventory/inventory-account", "inventory", "inventory"),
       item(
         "inventory-material-request",
         "Material Request",
@@ -669,20 +465,8 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
         "inventory",
         "inventory",
       ),
-      item(
-        "inventory-pick-list",
-        "Pick List",
-        "/inventory/pick-list",
-        "inventory",
-        "inventory",
-      ),
-      item(
-        "inventory-goods-issue",
-        "Goods Issue",
-        "/inventory/goods-issue",
-        "inventory",
-        "inventory",
-      ),
+      item("inventory-pick-list", "Pick List", "/inventory/pick-list", "inventory", "inventory"),
+      item("inventory-goods-issue", "Goods Issue", "/inventory/goods-issue", "inventory", "inventory"),
       item(
         "inventory-delivery-receipt",
         "Delivery Receipt",
@@ -736,13 +520,7 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
     accessKey: "fixedAsset",
     productKey: "accounting",
     items: [
-      item(
-        "fixed-asset-default",
-        "Fixed Asset",
-        "/fixed-asset",
-        "fixedAsset",
-        "accounting",
-      ),
+      item("fixed-asset-default", "Fixed Asset", "/fixed-asset", "fixedAsset", "accounting"),
     ],
   },
   {
@@ -935,186 +713,6 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
 ];
 
 export const MainNavigationSections = MainCompanyNavigationSections;
-
-export const MainLayoutMockData = {
-  currentUser: {
-    id: "usr-001",
-    name: "John Dela Cruz",
-    shortName: "John D.",
-    initials: "JD",
-    userRole: "Super Admin" as MainUserRole,
-    userType: {
-      id: "user-type-operations-admin",
-      name: "Operations Admin",
-      permissions: {
-        dashboard: { view: true, add: true, edit: true },
-        cashReceipt: {
-          view: true,
-          add: true,
-          edit: true,
-          cancel: true,
-          uncancel: true,
-        },
-        cashDisbursement: { view: true, add: true, edit: true },
-        accountsPayable: { view: true, add: true },
-        generalJournal: { view: true, add: true, edit: true },
-        sales: { view: true, add: true, edit: true },
-        inventory: { view: true, add: true, edit: true },
-        purchasing: { view: true, add: true },
-        canvass: { view: true },
-        fixedAsset: { view: true },
-        "maintenance.chartOfAccounts": { view: true, add: true, edit: true },
-        "maintenance.bank": { view: true, add: true, edit: true },
-        "maintenance.currency": { view: true, edit: true },
-        "maintenance.party": { view: true, add: true, edit: true },
-        "maintenance.discount": { view: true, add: true, edit: true },
-        "maintenance.transactionType": { view: true, edit: true },
-        "maintenance.responsibilityCenter": {
-          view: true,
-          add: true,
-          edit: true,
-        },
-        "maintenance.term": { view: true, add: true, edit: true },
-        "maintenance.mail": { view: true, edit: true },
-        "maintenance.item": { view: true, add: true, edit: true },
-        "maintenance.warehouse": { view: true, add: true },
-        "maintenance.approval": { view: true, edit: true },
-        "maintenance.workflow": { view: true },
-        "maintenance.audit": { view: true },
-        "maintenance.users": {
-          view: true,
-          add: true,
-          edit: true,
-          delete: false,
-        },
-        "maintenance.reports": { view: true, edit: true },
-        "reports.accounting": { view: true },
-        "reports.inventory": { view: true },
-        settings: { view: true },
-        "settings.permissions": { view: true, edit: true },
-        "settings.notifications": { view: true, edit: true },
-        "settings.billing": { view: true },
-        "branch.management": { view: true, add: true, edit: true },
-        profile: { view: true, edit: true },
-      } satisfies MainPermissionMap,
-    } satisfies MainUserType,
-  },
-  currentCompany: {
-    id: "cmp-001",
-    name: "Gr8Books Lite",
-  },
-  availableCompanies: [
-    { id: "cmp-001", name: "Gr8Books Lite", helperText: "Primary company" },
-    { id: "cmp-002", name: "Demo Trading Corp.", helperText: "Trading group" },
-  ] satisfies MainCompany[],
-  activeBranchId: "branch-main",
-  activeSubscription: MainSubscriptionPlans[0],
-  branches: [
-    {
-      id: "branch-main",
-      code: "MAIN",
-      name: "Main Branch",
-      href: "/dashboard",
-      isMain: true,
-      access: { view: true, edit: true },
-    },
-    {
-      id: "branch-north",
-      code: "NORTH",
-      name: "North Branch",
-      href: "/dashboard",
-      access: { view: true },
-    },
-    {
-      id: "branch-south",
-      code: "SOUTH",
-      name: "South Branch",
-      href: "/dashboard",
-      access: { view: false },
-    },
-  ] satisfies MainBranch[],
-  favoriteNavigationKeys: [
-    "dashboard-management",
-    "cash-receipt-official-receipt",
-    "inventory-receiving-report",
-    "maintenance-item",
-  ],
-  recentlyVisitedNavigationKeys: [
-    "maintenance-approval",
-    "reports-financial",
-    "maintenance-users",
-    "dashboard-management",
-  ],
-  quickListSettings: {
-    favorites: true,
-    recently: true,
-  },
-  notifications: [
-    {
-      id: "notif-001",
-      title: "Dashboard Management updated",
-      body: "Dashboard widget settings were updated for your role.",
-      href: "/dashboard",
-      time: "Just now",
-      isRead: false,
-    },
-    {
-      id: "notif-002",
-      title: "Branch access updated",
-      body: "North Branch view access is now available for your role.",
-      href: "/settings/branches",
-      time: "18m ago",
-      isRead: false,
-    },
-    {
-      id: "notif-003",
-      title: "Approval rule changed",
-      body: "A maintenance approval workflow was updated.",
-      href: "/maintenance/approval-management/settings",
-      time: "1h ago",
-      isRead: true,
-    },
-    {
-      id: "notif-004",
-      title: "Subscription reviewed",
-      body: "Your Lite Suite subscription details are ready for billing review.",
-      href: "/settings/billing",
-      time: "Yesterday",
-      isRead: true,
-    },
-  ] satisfies MainNotification[],
-  dashboardWidgets: [
-    {
-      id: "dashboard-widget-001",
-      title: "Open approvals",
-      value: "14",
-      supportingText: "Across all active workflows",
-      tone: "coral",
-    },
-    {
-      id: "dashboard-widget-002",
-      title: "Shared dashboards",
-      value: "6",
-      supportingText: "Available to your role",
-      tone: "sky",
-    },
-    {
-      id: "dashboard-widget-003",
-      title: "Branch scope",
-      value: "2",
-      supportingText: "Branches visible to you",
-      tone: "citron",
-    },
-    {
-      id: "dashboard-widget-004",
-      title: "Saved views",
-      value: "21",
-      supportingText: "Personal and team views",
-      tone: "dark",
-    },
-  ] satisfies MainDashboardWidget[],
-};
-
 export const MainWorkspaceSearchItems = flattenSections(
   MainWorkspaceNavigationSections,
 );
@@ -1122,152 +720,6 @@ export const MainCompanySearchItems = flattenSections(
   MainCompanyNavigationSections,
 );
 export const MainSearchItems = MainCompanySearchItems;
-
-export function hasAccess(
-  accessContext: MainUserAccessContext,
-  accessKey: MainAccessKey,
-  requiredActions?: MainAccessAction[],
-) {
-  if (accessContext.userRole === "Super Admin") {
-    return true;
-  }
-
-  const access = accessContext.userType?.permissions[accessKey];
-
-  if (!access) {
-    return false;
-  }
-
-  if (requiredActions?.length) {
-    return requiredActions.every((action) => Boolean(access[action]));
-  }
-
-  return Object.values(access).some(Boolean);
-}
-
-export function isProductEnabled(
-  productKey: MainProductKey | undefined,
-  subscription: MainSubscriptionOption,
-  productKeys?: MainProductKey[],
-) {
-  if (productKeys?.length) {
-    return productKeys.some((key) =>
-      subscription.enabledProductKeys.includes(key),
-    );
-  }
-
-  return subscription.enabledProductKeys.includes(productKey ?? "core");
-}
-
-export function filterMainNavigationSections(
-  sections: MainNavigationSection[],
-  accessContext: MainUserAccessContext,
-  subscription: MainSubscriptionOption,
-) {
-  return sections
-    .map((section) => ({
-      ...section,
-      items: filterMainNavigationItems(
-        section.items,
-        accessContext,
-        subscription,
-      ),
-    }))
-    .filter(
-      (section) =>
-        (hasAccess(accessContext, section.accessKey) &&
-          isProductEnabled(
-            section.productKey,
-            subscription,
-            section.productKeys,
-          )) ||
-        section.items.length > 0,
-    )
-    .filter((section) => section.items.length > 0);
-}
-
-export function filterMainSearchItems(
-  items: MainSearchItem[],
-  accessContext: MainUserAccessContext,
-  subscription: MainSubscriptionOption,
-) {
-  return items.filter(
-    (item) =>
-      hasAccess(accessContext, item.accessKey) &&
-      isProductEnabled(item.productKey, subscription, item.productKeys),
-  );
-}
-
-export function getAccessibleBranches(branches: MainBranch[]) {
-  return branches.filter((branch) =>
-    Object.values(branch.access).some(Boolean),
-  );
-}
-
-function filterMainNavigationItems(
-  items: MainNavigationItem[],
-  accessContext: MainUserAccessContext,
-  subscription: MainSubscriptionOption,
-): MainNavigationItem[] {
-  return items
-    .map((navigationItem) => ({
-      ...navigationItem,
-      children: navigationItem.children
-        ? filterMainNavigationItems(
-            navigationItem.children,
-            accessContext,
-            subscription,
-          )
-        : undefined,
-    }))
-    .filter(
-      (navigationItem) =>
-        (hasAccess(
-          accessContext,
-          navigationItem.accessKey,
-          navigationItem.requiredActions,
-        ) &&
-          isProductEnabled(
-            navigationItem.productKey,
-            subscription,
-            navigationItem.productKeys,
-          )) ||
-        Boolean(navigationItem.children?.length),
-    );
-}
-
-function flattenSections(sections: MainNavigationSection[]) {
-  return sections.flatMap((section) =>
-    flattenItems(section.items, section.title, [section.title]),
-  );
-}
-
-function flattenItems(
-  items: MainNavigationItem[],
-  section: string,
-  trail: string[],
-): MainSearchItem[] {
-  return items.flatMap((navigationItem) => {
-    const currentTrail = [...trail, navigationItem.label];
-    const current: MainSearchItem = {
-      key: navigationItem.key,
-      label: navigationItem.label,
-      href: navigationItem.href,
-      accessKey: navigationItem.accessKey,
-      productKey: navigationItem.productKey ?? "core",
-      productKeys: navigationItem.productKeys,
-      section,
-      trail,
-    };
-
-    return [
-      current,
-      ...(navigationItem.children
-        ? flattenItems(navigationItem.children, section, currentTrail)
-        : []),
-    ];
-  });
-}
 
 function item(
   key: string,

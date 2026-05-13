@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Search, X } from "lucide-react";
-import type { MainSearchItem } from "@/app/src/data/shared/MainLayoutData";
+import type { MainSearchItem } from "@/app/src/data/modules/shared/MainLayoutData";
 
 type MainSearchPanelProps = {
   query: string;

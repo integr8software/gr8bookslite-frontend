@@ -47,7 +47,7 @@ import type {
   MainNavigationItem,
   MainNavigationSection,
   MainSearchItem,
-} from "@/app/src/data/shared/MainLayoutData";
+} from "@/app/src/data/modules/shared/MainLayoutData";
 
 const QuickListInitialCount = 4;
 const QuickListBatchSize = 6;
@@ -95,12 +95,17 @@ const MainIcons: Record<MainIconName, LucideIcon> = {
 
 const SidebarItemIcons: Record<string, LucideIcon> = {
   "workspace-overview": Gauge,
-  "workspace-dashboard": LayoutDashboard,
   "workspace-companies": Building2,
-  "workspace-users": UserCog,
-  "workspace-approval": ShieldCheck,
-  "workspace-mail": Mail,
+  "workspace-users-roles": UserCog,
+  "workspace-permissions": ShieldCheck,
   "workspace-audit": Activity,
+  "workspace-module-financial-management": Landmark,
+  "workspace-module-sales-management": BadgeDollarSign,
+  "workspace-module-purchasing": ShoppingCart,
+  "workspace-module-inventory": Boxes,
+  "workspace-module-projects": ClipboardList,
+  "workspace-module-human-resources": Users,
+  "workspace-module-reports-analytics": FileBarChart,
   "dashboard-management": LayoutDashboard,
   "maintenance-financial": Landmark,
   "maintenance-charts-of-accounts": ListTree,
@@ -275,10 +280,13 @@ export function MainSidebar({
             </div>
           ) : null}
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             {navigationSections.map((section) =>
-              section.key === "workspace" ? (
-                <div key={section.key} className="space-y-1">
+              section.key === "workspace" || section.key === "workspace-modules" ? (
+                <div key={section.key} className="space-y-3">
+                  <p className="px-3 text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/38">
+                    {section.title}
+                  </p>
                   {section.items.map((item) => (
                     <SidebarItem
                       key={item.key}

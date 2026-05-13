@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Bell, CheckCheck, X } from "lucide-react";
-import type { MainNotification } from "@/app/src/data/shared/MainLayoutData";
-import type { MainNotificationTab } from "@/app/src/hooks/shared/useMainLayout";
+import type { MainNotification } from "@/app/src/data/modules/shared/MainLayoutData";
+import type { MainNotificationTab } from "@/app/src/hooks/modules/shared/useMainLayout";
 
 const NotificationInitialCount = 8;
 const NotificationBatchSize = 8;

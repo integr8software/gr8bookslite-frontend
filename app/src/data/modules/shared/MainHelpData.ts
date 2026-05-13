@@ -10,11 +10,11 @@ export type MainHelpArticle = {
 export const MainHelpArticles: MainHelpArticle[] = [
   article(
     "help-workspace",
-    "Work Space",
-    "/workspace",
-    "Manage global administration outside a single company context.",
+    "Workspace Dashboard",
+    "/dashboard",
+    "Manage global administration and cross-company visibility from one dashboard.",
     [
-      "The Work Space is used by super administrators for cross-company administration, company records, users, approval setup, mail maintenance, and audit visibility.",
+      "The workspace dashboard is used by super administrators for cross-company administration, company records, users, permissions, settings, and audit visibility.",
       "Switching into a company returns you to company-scoped dashboards, transactions, maintenance, inventory, and reports.",
     ],
     ["help-workspace-companies", "help-workspace-users", "help-dashboard"],
@@ -22,7 +22,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
   article(
     "help-workspace-dashboard",
     "Workspace Dashboard",
-    "/workspace/dashboard",
+    "/dashboard",
     "Review administrative dashboard views across the workspace.",
     [
       "Workspace dashboards summarize platform-level activity such as active companies, shared setup work, user administration, and approval queues.",
@@ -33,7 +33,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
   article(
     "help-workspace-companies",
     "Companies",
-    "/workspace/companies",
+    "/companies",
     "Create and maintain company records available to the workspace.",
     [
       "Company records define the business entities users can access from the topbar switcher.",
@@ -43,8 +43,8 @@ export const MainHelpArticles: MainHelpArticle[] = [
   ),
   article(
     "help-workspace-users",
-    "Workspace User Management",
-    "/workspace/user-management",
+    "Users & Roles",
+    "/users-roles",
     "Administer users who can access workspace and company modules.",
     [
       "Workspace user management controls user identity, role assignment, and access to administrative capabilities.",
@@ -54,9 +54,9 @@ export const MainHelpArticles: MainHelpArticle[] = [
   ),
   article(
     "help-workspace-approval",
-    "Workspace Approval Management",
-    "/workspace/approval-management",
-    "Maintain approval controls for administrative workflows.",
+    "Permissions",
+    "/permissions",
+    "Maintain permission controls for administrative workflows.",
     [
       "Approval management defines how requests are reviewed before sensitive actions are completed.",
       "Use approval rules to separate routine entry work from review and authorization responsibilities.",
@@ -65,9 +65,9 @@ export const MainHelpArticles: MainHelpArticle[] = [
   ),
   article(
     "help-workspace-mail",
-    "Workspace Mail Maintenance",
-    "/workspace/mail-maintenance",
-    "Maintain reusable mail settings for notifications and system messages.",
+    "Settings",
+    "/settings",
+    "Maintain reusable workspace settings for notifications and system behavior.",
     [
       "Mail maintenance stores templates and delivery settings used by system notifications.",
       "Keep mail content consistent so users receive clear messages for approvals, account changes, and operational updates.",
@@ -77,7 +77,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
   article(
     "help-workspace-audit",
     "Workspace Audit Logs",
-    "/workspace/audit-logs",
+    "/audit-logs",
     "Review administrative activity and system changes.",
     [
       "Audit logs help administrators trace important changes, user actions, and configuration updates.",

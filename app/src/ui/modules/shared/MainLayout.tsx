@@ -8,6 +8,7 @@ import {
   useMainLayout,
   type MainBreadcrumb,
 } from "@/app/src/hooks/modules/shared/useMainLayout";
+import { MainNavigationProgress } from "@/app/src/ui/modules/shared/MainNavigationProgress";
 import { MainNotificationsPanel } from "@/app/src/ui/modules/shared/MainNotificationsPanel";
 import { MainSidebar } from "@/app/src/ui/modules/shared/MainSidebar";
 import { MainTopbar } from "@/app/src/ui/modules/shared/MainTopbar";
@@ -86,6 +87,8 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <div className="min-h-screen max-w-full overflow-x-clip bg-white text-darknavy">
+      <MainNavigationProgress />
+
       <MainTopbar
         activeHref={activeHref}
         activeNavigationScope={activeNavigationScope}

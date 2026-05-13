@@ -280,10 +280,10 @@ export function MainSidebar({
             </div>
           ) : null}
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             {navigationSections.map((section) =>
               section.key === "workspace" || section.key === "workspace-modules" ? (
-                <div key={section.key} className="space-y-2">
+                <div key={section.key} className="space-y-3">
                   <p className="px-3 text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/38">
                     {section.title}
                   </p>

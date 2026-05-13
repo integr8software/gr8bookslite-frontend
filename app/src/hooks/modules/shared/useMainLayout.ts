@@ -18,14 +18,15 @@ import {
   type MainNavigationSection,
   type MainNotification,
   type MainSearchItem,
-} from "@/app/src/data/shared/MainLayoutData";
+} from "@/app/src/data/modules/shared/MainLayoutData";
 import {
   MainHelpArticles,
   getHelpArticleForPath,
-} from "@/app/src/data/shared/MainHelpData";
+} from "@/app/src/data/modules/shared/MainHelpData";
 
 const DefaultExpandedKeys = [
   "workspace",
+  "workspace-modules",
   "dashboard",
   "maintenance",
   "maintenance-financial",
@@ -71,7 +72,6 @@ export function useMainLayout() {
   const pathname = usePathname();
   const router = useRouter();
   const branchLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const initialWorkspaceRedirectRef = useRef(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchOpenPath, setSearchOpenPath] = useState<string | null>(null);
   const [notificationsOpenPath, setNotificationsOpenPath] = useState<
@@ -117,65 +117,53 @@ export function useMainLayout() {
     availableCompanies.find((company) => company.id === activeCompanyId) ??
     MainLayoutMockData.currentCompany;
 
-  const navigationSections = useMemo(
-    () => {
-      const sourceSections =
-        activeNavigationScope === "workspace"
-          ? MainWorkspaceNavigationSections
-          : MainCompanyNavigationSections;
+  const navigationSections = useMemo(() => {
+    const sourceSections =
+      activeNavigationScope === "workspace"
+        ? MainWorkspaceNavigationSections
+        : MainCompanyNavigationSections;
 
-      return filterMainNavigationSections(
-        sourceSections,
-        MainLayoutMockData.currentUser,
-        subscription,
-      );
-    },
-    [activeNavigationScope, subscription],
-  );
+    return filterMainNavigationSections(
+      sourceSections,
+      MainLayoutMockData.currentUser,
+      subscription,
+    );
+  }, [activeNavigationScope, subscription]);
 
-  const availableSearchItems = useMemo(
-    () => {
-      const sourceItems =
-        activeNavigationScope === "workspace"
-          ? MainWorkspaceSearchItems
-          : MainCompanySearchItems;
+  const availableSearchItems = useMemo(() => {
+    const sourceItems =
+      activeNavigationScope === "workspace"
+        ? MainWorkspaceSearchItems
+        : MainCompanySearchItems;
 
-      return filterMainSearchItems(
-        sourceItems,
-        MainLayoutMockData.currentUser,
-        subscription,
-      );
-    },
-    [activeNavigationScope, subscription],
-  );
+    return filterMainSearchItems(
+      sourceItems,
+      MainLayoutMockData.currentUser,
+      subscription,
+    );
+  }, [activeNavigationScope, subscription]);
 
-  const favoriteModules = useMemo(
-    () => {
-      if (activeNavigationScope !== "company") {
-        return [];
-      }
+  const favoriteModules = useMemo(() => {
+    if (activeNavigationScope !== "company") {
+      return [];
+    }
 
-      return findSearchItemsByKeys(
-        availableSearchItems,
-        MainLayoutMockData.favoriteNavigationKeys,
-      );
-    },
-    [activeNavigationScope, availableSearchItems],
-  );
+    return findSearchItemsByKeys(
+      availableSearchItems,
+      MainLayoutMockData.favoriteNavigationKeys,
+    );
+  }, [activeNavigationScope, availableSearchItems]);
 
-  const recentlyVisitedModules = useMemo(
-    () => {
-      if (activeNavigationScope !== "company") {
-        return [];
-      }
+  const recentlyVisitedModules = useMemo(() => {
+    if (activeNavigationScope !== "company") {
+      return [];
+    }
 
-      return findSearchItemsByKeys(
-        availableSearchItems,
-        MainLayoutMockData.recentlyVisitedNavigationKeys,
-      );
-    },
-    [activeNavigationScope, availableSearchItems],
-  );
+    return findSearchItemsByKeys(
+      availableSearchItems,
+      MainLayoutMockData.recentlyVisitedNavigationKeys,
+    );
+  }, [activeNavigationScope, availableSearchItems]);
 
   const enabledQuickListTabs = useMemo(() => {
     if (activeNavigationScope !== "company") {
@@ -244,7 +232,7 @@ export function useMainLayout() {
       {
         key: "branch-management",
         label: "Branch Management",
-        href: "/settings/branches",
+        href: "/settings",
         helperText: "Manage branch records",
         isManagementAction: true,
       },
@@ -263,9 +251,7 @@ export function useMainLayout() {
   const moduleTitle = breadcrumbs[breadcrumbs.length - 1]?.label ?? "Module";
 
   const currentHelpArticle = useMemo(
-    () =>
-      getHelpArticleForPath(pathname, MainHelpArticles) ??
-      MainHelpArticles[0],
+    () => getHelpArticleForPath(pathname, MainHelpArticles) ?? MainHelpArticles[0],
     [pathname],
   );
   const [selectedHelpArticleState, setSelectedHelpArticleState] = useState({
@@ -317,20 +303,6 @@ export function useMainLayout() {
       mediaQuery.removeEventListener("change", syncSidebarToViewport);
     };
   }, []);
-
-  useEffect(() => {
-    if (
-      initialWorkspaceRedirectRef.current ||
-      !isSuperAdmin ||
-      activeNavigationScope !== "workspace" ||
-      pathname !== "/dashboard"
-    ) {
-      return;
-    }
-
-    initialWorkspaceRedirectRef.current = true;
-    router.replace("/workspace");
-  }, [activeNavigationScope, isSuperAdmin, pathname, router]);
 
   function toggleSidebar() {
     setIsSidebarOpen((current) => !current);
@@ -425,7 +397,7 @@ export function useMainLayout() {
     setActiveNavigationScope("workspace");
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
-    router.push("/workspace");
+    router.push("/dashboard");
   }
 
   function markNotificationAsRead(notificationId: string) {
@@ -505,7 +477,7 @@ function buildBreadcrumbs({
   const trail = findNavigationTrail(navigationSections, pathname);
   const fallbackLabel =
     activeNavigationScope === "workspace"
-      ? "Overview"
+      ? "Dashboard"
       : getPathFallbackTitle(pathname);
   const fallbackTrail =
     trail.length > 0
@@ -519,7 +491,7 @@ function buildBreadcrumbs({
         ];
   const normalizedTrail =
     activeNavigationScope === "workspace" &&
-    fallbackTrail[0]?.label === "Work Space"
+    fallbackTrail[0]?.label === "Workspace"
       ? fallbackTrail.slice(1)
       : fallbackTrail;
 

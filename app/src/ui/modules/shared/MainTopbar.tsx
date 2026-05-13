@@ -30,14 +30,14 @@ import type {
   MainNavigationScope,
   MainNotification,
   MainSearchItem,
-} from "@/app/src/data/shared/MainLayoutData";
+} from "@/app/src/data/modules/shared/MainLayoutData";
 import type {
   MainBreadcrumbDropdownItem,
   MainNotificationTab,
-} from "@/app/src/hooks/shared/useMainLayout";
+} from "@/app/src/hooks/modules/shared/useMainLayout";
 import { useLogout } from "@/app/src/hooks/auth/useLogout";
-import { MainNotificationsPanel } from "./MainNotificationsPanel";
-import { MainSearchPanel } from "./MainSearchPanel";
+import { MainNotificationsPanel } from "@/app/src/ui/modules/shared/MainNotificationsPanel";
+import { MainSearchPanel } from "@/app/src/ui/modules/shared/MainSearchPanel";
 
 type MainTopbarProps = {
   activeHref: string;
@@ -138,8 +138,7 @@ export function MainTopbar({
     openSwitcherState.href === activeHref ? openSwitcherState.key : null;
   const isProfileMenuOpen = profileMenuOpenPath === activeHref;
   const userDescriptor = getTopbarUserDescriptor(currentUser);
-  const homeHref =
-    activeNavigationScope === "workspace" ? "/workspace" : "/dashboard";
+  const homeHref = "/dashboard";
   const hasMobileWorkspaceControls =
     canSwitchCompany || activeNavigationScope === "company";
   const mobileFloatingPanelTopClass = hasMobileWorkspaceControls
@@ -584,7 +583,7 @@ function CompanySwitcher({
   onToggle,
 }: CompanySwitcherProps) {
   const isWorkspaceActive = activeNavigationScope === "workspace";
-  const label = isWorkspaceActive ? "Work Space" : currentCompany.name;
+  const label = isWorkspaceActive ? "Workspace" : currentCompany.name;
 
   return (
     <div
@@ -623,7 +622,7 @@ function CompanySwitcher({
                 description="Global administration"
                 icon={LayoutDashboard}
                 isActive={isWorkspaceActive}
-                label="Work Space"
+                label="Workspace"
                 onClick={() => {
                   onSwitchToWorkspace();
                   onClose();

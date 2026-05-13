@@ -7,14 +7,17 @@ import { BookOpenText, ChevronRight } from "lucide-react";
 import {
   useMainLayout,
   type MainBreadcrumb,
-} from "@/app/src/hooks/shared/useMainLayout";
-import { MainNotificationsPanel } from "./MainNotificationsPanel";
-import { MainSidebar } from "./MainSidebar";
-import { MainTopbar } from "./MainTopbar";
-import { NoBranchAccess } from "./NoBranchAccess";
+} from "@/app/src/hooks/modules/shared/useMainLayout";
+import { MainNotificationsPanel } from "@/app/src/ui/modules/shared/MainNotificationsPanel";
+import { MainSidebar } from "@/app/src/ui/modules/shared/MainSidebar";
+import { MainTopbar } from "@/app/src/ui/modules/shared/MainTopbar";
+import { NoBranchAccess } from "@/app/src/ui/modules/shared/NoBranchAccess";
 
 const MainHelpModal = dynamic(
-  () => import("./MainHelpModal").then((mod) => mod.MainHelpModal),
+  () =>
+    import("@/app/src/ui/modules/shared/MainHelpModal").then(
+      (mod) => mod.MainHelpModal,
+    ),
   {
     loading: () => <HelpModalLoading />,
   },
@@ -137,14 +140,14 @@ export function MainLayout({ children }: MainLayoutProps) {
           activeHref={activeHref}
           companyName={
             activeNavigationScope === "workspace"
-              ? "Work Space"
+              ? "Workspace"
               : currentCompany.name
           }
           enabledQuickListTabs={enabledQuickListTabs}
           expandedKeys={expandedKeys}
           favoriteModules={favoriteModules}
           homeHref={
-            activeNavigationScope === "workspace" ? "/workspace" : "/dashboard"
+            "/dashboard"
           }
           isOpen={isSidebarOpen}
           navigationSections={navigationSections}

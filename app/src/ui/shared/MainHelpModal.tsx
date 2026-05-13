@@ -1,7 +1,7 @@
 "use client";
 
 import { BookOpenText, ChevronRight, X } from "lucide-react";
-import type { MainHelpArticle } from "@/app/src/data/shared/MainLayoutData";
+import type { MainHelpArticle } from "@/app/src/data/shared/MainHelpData";
 
 type MainHelpModalProps = {
   articles: MainHelpArticle[];

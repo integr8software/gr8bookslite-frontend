@@ -1,31 +1,41 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
+  MainCompanyNavigationSections,
+  MainCompanySearchItems,
   MainLayoutMockData,
-  MainNavigationSections,
-  MainSearchItems,
+  MainWorkspaceNavigationSections,
+  MainWorkspaceSearchItems,
   filterMainNavigationSections,
   filterMainSearchItems,
   getAccessibleBranches,
-  getHelpArticleForPath,
   hasAccess,
   type MainBranch,
   type MainNavigationItem,
+  type MainNavigationScope,
   type MainNavigationSection,
   type MainNotification,
   type MainSearchItem,
 } from "@/app/src/data/shared/MainLayoutData";
+import {
+  MainHelpArticles,
+  getHelpArticleForPath,
+} from "@/app/src/data/shared/MainHelpData";
 
 const DefaultExpandedKeys = [
+  "workspace",
   "dashboard",
   "maintenance",
+  "maintenance-financial",
+  "maintenance-inventory-warehouse",
   "cash-receipt",
   "cash-disbursement",
   "sales",
   "inventory",
   "reports",
+  "reporting-analytics",
 ];
 
 export type MainQuickListTab = "favorites" | "recent";
@@ -59,8 +69,10 @@ type NavigationTrailNode = {
 
 export function useMainLayout() {
   const pathname = usePathname();
+  const router = useRouter();
   const branchLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const initialWorkspaceRedirectRef = useRef(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchOpenPath, setSearchOpenPath] = useState<string | null>(null);
   const [notificationsOpenPath, setNotificationsOpenPath] = useState<
     string | null
@@ -80,6 +92,14 @@ export function useMainLayout() {
   const [activeBranchId, setActiveBranchId] = useState(
     MainLayoutMockData.activeBranchId,
   );
+  const isSuperAdmin = MainLayoutMockData.currentUser.userRole === "Super Admin";
+  const [activeNavigationScope, setActiveNavigationScope] =
+    useState<MainNavigationScope>(() =>
+      isSuperAdmin ? "workspace" : "company",
+    );
+  const [activeCompanyId, setActiveCompanyId] = useState(
+    MainLayoutMockData.currentCompany.id,
+  );
   const [lazyLoadedBranches, setLazyLoadedBranches] =
     useState<MainBranch[] | null>(null);
   const [isBranchLoading, setIsBranchLoading] = useState(false);
@@ -92,44 +112,92 @@ export function useMainLayout() {
   const isHelpOpen = helpOpenPath === pathname;
 
   const subscription = MainLayoutMockData.activeSubscription;
+  const availableCompanies = MainLayoutMockData.availableCompanies;
+  const currentCompany =
+    availableCompanies.find((company) => company.id === activeCompanyId) ??
+    MainLayoutMockData.currentCompany;
 
   const navigationSections = useMemo(
-    () =>
-      filterMainNavigationSections(
-        MainNavigationSections,
+    () => {
+      const sourceSections =
+        activeNavigationScope === "workspace"
+          ? MainWorkspaceNavigationSections
+          : MainCompanyNavigationSections;
+
+      return filterMainNavigationSections(
+        sourceSections,
         MainLayoutMockData.currentUser,
         subscription,
-      ),
-    [subscription],
+      );
+    },
+    [activeNavigationScope, subscription],
   );
 
   const availableSearchItems = useMemo(
-    () =>
-      filterMainSearchItems(
-        MainSearchItems,
+    () => {
+      const sourceItems =
+        activeNavigationScope === "workspace"
+          ? MainWorkspaceSearchItems
+          : MainCompanySearchItems;
+
+      return filterMainSearchItems(
+        sourceItems,
         MainLayoutMockData.currentUser,
         subscription,
-      ),
-    [subscription],
+      );
+    },
+    [activeNavigationScope, subscription],
   );
 
   const favoriteModules = useMemo(
-    () =>
-      findSearchItemsByKeys(
+    () => {
+      if (activeNavigationScope !== "company") {
+        return [];
+      }
+
+      return findSearchItemsByKeys(
         availableSearchItems,
         MainLayoutMockData.favoriteNavigationKeys,
-      ),
-    [availableSearchItems],
+      );
+    },
+    [activeNavigationScope, availableSearchItems],
   );
 
   const recentlyVisitedModules = useMemo(
-    () =>
-      findSearchItemsByKeys(
+    () => {
+      if (activeNavigationScope !== "company") {
+        return [];
+      }
+
+      return findSearchItemsByKeys(
         availableSearchItems,
         MainLayoutMockData.recentlyVisitedNavigationKeys,
-      ),
-    [availableSearchItems],
+      );
+    },
+    [activeNavigationScope, availableSearchItems],
   );
+
+  const enabledQuickListTabs = useMemo(() => {
+    if (activeNavigationScope !== "company") {
+      return [] as MainQuickListTab[];
+    }
+
+    const settings = MainLayoutMockData.quickListSettings;
+    const tabs: MainQuickListTab[] = [];
+
+    if (settings.favorites) {
+      tabs.push("favorites");
+    }
+
+    if (settings.recently) {
+      tabs.push("recent");
+    }
+
+    return tabs;
+  }, [activeNavigationScope]);
+  const activeQuickListTab = enabledQuickListTabs.includes(quickListTab)
+    ? quickListTab
+    : enabledQuickListTabs[0] ?? quickListTab;
 
   const searchResults = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -188,25 +256,16 @@ export function useMainLayout() {
       buildBreadcrumbs({
         pathname,
         navigationSections,
-        currentBranch,
-        branchDropdownItems,
-        hasBranchAccess,
-        isBranchLoading,
+        activeNavigationScope,
       }),
-    [
-      branchDropdownItems,
-      currentBranch,
-      hasBranchAccess,
-      isBranchLoading,
-      navigationSections,
-      pathname,
-    ],
+    [activeNavigationScope, navigationSections, pathname],
   );
+  const moduleTitle = breadcrumbs[breadcrumbs.length - 1]?.label ?? "Module";
 
   const currentHelpArticle = useMemo(
     () =>
-      getHelpArticleForPath(pathname, MainLayoutMockData.helpArticles) ??
-      MainLayoutMockData.helpArticles[0],
+      getHelpArticleForPath(pathname, MainHelpArticles) ??
+      MainHelpArticles[0],
     [pathname],
   );
   const [selectedHelpArticleState, setSelectedHelpArticleState] = useState({
@@ -239,6 +298,39 @@ export function useMainLayout() {
     },
     [],
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+
+    function syncSidebarToViewport(event: MediaQueryList | MediaQueryListEvent) {
+      setIsSidebarOpen(event.matches);
+    }
+
+    syncSidebarToViewport(mediaQuery);
+    mediaQuery.addEventListener("change", syncSidebarToViewport);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncSidebarToViewport);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (
+      initialWorkspaceRedirectRef.current ||
+      !isSuperAdmin ||
+      activeNavigationScope !== "workspace" ||
+      pathname !== "/dashboard"
+    ) {
+      return;
+    }
+
+    initialWorkspaceRedirectRef.current = true;
+    router.replace("/workspace");
+  }, [activeNavigationScope, isSuperAdmin, pathname, router]);
 
   function toggleSidebar() {
     setIsSidebarOpen((current) => !current);
@@ -314,6 +406,26 @@ export function useMainLayout() {
 
   function selectBranch(branchId: string) {
     setActiveBranchId(branchId);
+    setActiveNavigationScope("company");
+  }
+
+  function selectCompany(companyId: string) {
+    setActiveCompanyId(companyId);
+    setActiveNavigationScope("company");
+    setSearchOpenPath(null);
+    setNotificationsOpenPath(null);
+    router.push("/dashboard");
+  }
+
+  function switchToWorkspace() {
+    if (!isSuperAdmin) {
+      return;
+    }
+
+    setActiveNavigationScope("workspace");
+    setSearchOpenPath(null);
+    setNotificationsOpenPath(null);
+    router.push("/workspace");
   }
 
   function markNotificationAsRead(notificationId: string) {
@@ -328,25 +440,32 @@ export function useMainLayout() {
 
   return {
     activeHref: pathname,
+    activeNavigationScope,
+    availableCompanies,
+    branchDropdownItems,
     breadcrumbs,
-    canSwitchCompany: MainLayoutMockData.availableCompanies.length > 0,
+    canAccessWorkspace: isSuperAdmin,
+    canSwitchCompany: availableCompanies.length > 1,
     currentBranch,
-    currentCompany: MainLayoutMockData.currentCompany,
+    currentCompany,
     currentHelpArticle,
     currentUser: MainLayoutMockData.currentUser,
+    enabledQuickListTabs,
     expandedKeys,
     favoriteModules,
     hasBranchAccess,
-    helpArticles: MainLayoutMockData.helpArticles,
+    helpArticles: MainHelpArticles,
     isCurrentPageFavorite,
+    isBranchLoading,
     isHelpOpen,
     isNotificationsOpen,
     isSearchOpen,
     isSidebarOpen,
+    moduleTitle,
     navigationSections,
     notificationTab,
     query,
-    quickListTab,
+    quickListTab: activeQuickListTab,
     recentlyVisitedModules,
     searchResults,
     selectedHelpArticleKey,
@@ -360,6 +479,7 @@ export function useMainLayout() {
     markNotificationAsRead,
     openHelp,
     selectBranch,
+    selectCompany,
     setNotificationTab,
     setQuery: updateQuery,
     setQuickListTab,
@@ -369,53 +489,45 @@ export function useMainLayout() {
     toggleNotifications,
     toggleSearch,
     toggleSidebar,
+    switchToWorkspace,
   };
 }
 
 function buildBreadcrumbs({
   pathname,
   navigationSections,
-  currentBranch,
-  branchDropdownItems,
-  hasBranchAccess,
-  isBranchLoading,
+  activeNavigationScope,
 }: {
   pathname: string;
   navigationSections: MainNavigationSection[];
-  currentBranch: MainBranch | null;
-  branchDropdownItems: MainBreadcrumbDropdownItem[];
-  hasBranchAccess: boolean;
-  isBranchLoading: boolean;
+  activeNavigationScope: MainNavigationScope;
 }): MainBreadcrumb[] {
   const trail = findNavigationTrail(navigationSections, pathname);
+  const fallbackLabel =
+    activeNavigationScope === "workspace"
+      ? "Overview"
+      : getPathFallbackTitle(pathname);
   const fallbackTrail =
     trail.length > 0
       ? trail
       : [
           {
-            key: "workspace",
-            label: "Workspace",
+            key: `${activeNavigationScope}-fallback`,
+            label: fallbackLabel,
             href: pathname,
           },
         ];
+  const normalizedTrail =
+    activeNavigationScope === "workspace" &&
+    fallbackTrail[0]?.label === "Work Space"
+      ? fallbackTrail.slice(1)
+      : fallbackTrail;
 
-  return [
-    {
-      key: "branch",
-      label: currentBranch?.name ?? "No Branch Access",
-      href: currentBranch?.href,
-      canOpenDropdown: hasBranchAccess,
-      dropdownItems: branchDropdownItems,
-      isLoading: isBranchLoading,
-    },
-    ...fallbackTrail.map((item) => ({
-      key: item.key,
-      label: item.label,
-      href: item.href,
-      canOpenDropdown: Boolean(item.dropdownItems?.length),
-      dropdownItems: item.dropdownItems,
-    })),
-  ];
+  return normalizedTrail.map((item) => ({
+    key: item.key,
+    label: item.label,
+    href: item.href,
+  }));
 }
 
 function findNavigationTrail(
@@ -455,22 +567,7 @@ function findNavigationTrail(
 function getSectionDropdownItems(
   section: MainNavigationSection,
 ): MainBreadcrumbDropdownItem[] {
-  const sectionItems = section.items.map(toDropdownItem);
-
-  if (section.key !== "dashboard") {
-    return sectionItems;
-  }
-
-  return [
-    ...sectionItems,
-    {
-      key: "dashboard-management",
-      label: "Dashboard Management",
-      href: "/dashboard/management",
-      helperText: "Manage dashboard records",
-      isManagementAction: true,
-    },
-  ];
+  return section.items.map(toDropdownItem);
 }
 
 function findItemTrail(
@@ -515,6 +612,19 @@ function findItemTrail(
 
 function pathMatches(href: string, pathname: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function getPathFallbackTitle(pathname: string) {
+  const lastSegment = pathname.split("/").filter(Boolean).pop();
+
+  if (!lastSegment) {
+    return "Dashboard";
+  }
+
+  return lastSegment
+    .split("-")
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
 }
 
 function toDropdownItem(

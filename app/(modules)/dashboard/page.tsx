@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CustomizableDashboard } from "@/app/src/ui/modules/CustomizableDashboard";
+import { CustomizableDashboard } from "@/app/src/ui/modules/dashboard/CustomizableDashboard";
 
 export const metadata: Metadata = {
   title: "Dashboard | Gr8Books Lite",

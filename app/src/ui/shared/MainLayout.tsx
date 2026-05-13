@@ -2,8 +2,12 @@
 
 import type { ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { BookOpenText } from "lucide-react";
-import { useMainLayout } from "@/app/src/hooks/shared/useMainLayout";
+import Link from "next/link";
+import { BookOpenText, ChevronRight } from "lucide-react";
+import {
+  useMainLayout,
+  type MainBreadcrumb,
+} from "@/app/src/hooks/shared/useMainLayout";
 import { MainNotificationsPanel } from "./MainNotificationsPanel";
 import { MainSidebar } from "./MainSidebar";
 import { MainTopbar } from "./MainTopbar";
@@ -23,20 +27,28 @@ type MainLayoutProps = {
 export function MainLayout({ children }: MainLayoutProps) {
   const {
     activeHref,
+    activeNavigationScope,
+    availableCompanies,
+    branchDropdownItems,
     breadcrumbs,
+    canAccessWorkspace,
     canSwitchCompany,
+    currentBranch,
     currentCompany,
     currentHelpArticle,
     currentUser,
+    enabledQuickListTabs,
     expandedKeys,
     favoriteModules,
     hasBranchAccess,
     helpArticles,
+    isBranchLoading,
     isCurrentPageFavorite,
     isHelpOpen,
     isNotificationsOpen,
     isSearchOpen,
     isSidebarOpen,
+    moduleTitle,
     navigationSections,
     notificationTab,
     query,
@@ -54,6 +66,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     markNotificationAsRead,
     openHelp,
     selectBranch,
+    selectCompany,
     setNotificationTab,
     setQuery,
     setQuickListTab,
@@ -63,16 +76,24 @@ export function MainLayout({ children }: MainLayoutProps) {
     toggleNotifications,
     toggleSearch,
     toggleSidebar,
+    switchToWorkspace,
   } = useMainLayout();
+  const shouldShowBranchContent =
+    activeNavigationScope !== "company" || hasBranchAccess;
 
   return (
     <div className="min-h-screen max-w-full overflow-x-clip bg-white text-darknavy">
       <MainTopbar
         activeHref={activeHref}
-        breadcrumbs={breadcrumbs}
+        activeNavigationScope={activeNavigationScope}
+        availableCompanies={availableCompanies}
+        branchDropdownItems={branchDropdownItems}
+        canAccessWorkspace={canAccessWorkspace}
         canSwitchCompany={canSwitchCompany}
+        currentBranch={currentBranch}
         currentCompany={currentCompany}
         currentUser={currentUser}
+        isBranchLoading={isBranchLoading}
         isCurrentPageFavorite={isCurrentPageFavorite}
         isNotificationsOpen={isNotificationsOpen}
         isSearchOpen={isSearchOpen}
@@ -82,39 +103,49 @@ export function MainLayout({ children }: MainLayoutProps) {
         query={query}
         searchResults={searchResults}
         unreadNotificationCount={unreadNotificationCount}
-        onBreadcrumbOpen={(breadcrumbKey) => {
-          if (breadcrumbKey === "branch") {
-            loadBranchOptions();
-          }
-        }}
         onCloseNotifications={closeNotifications}
         onCloseSearch={closeSearch}
+        onCloseSidebar={closeSidebar}
+        onLoadBranchOptions={loadBranchOptions}
         onMarkNotificationAsRead={markNotificationAsRead}
         onNotificationTabChange={setNotificationTab}
         onOpenHelp={openHelp}
         onQueryChange={setQuery}
         onSelectBranch={selectBranch}
+        onSelectCompany={selectCompany}
+        onSwitchToWorkspace={switchToWorkspace}
         onToggleFavorite={toggleCurrentPageFavorite}
         onToggleNotifications={toggleNotifications}
         onToggleSearch={toggleSearch}
         onToggleSidebar={toggleSidebar}
       />
 
-      <div className="relative flex min-h-[calc(100vh-4rem)] max-w-full overflow-x-hidden">
-        {isSidebarOpen ? (
-          <button
-            type="button"
-            aria-label="Close sidebar overlay"
-            onClick={closeSidebar}
-            className="fixed inset-0 z-40 bg-darknavy/35 lg:hidden"
-          />
-        ) : null}
+      <div className="relative flex min-h-[calc(100vh-7.5rem)] max-w-full overflow-x-hidden md:min-h-[calc(100vh-4rem)]">
+        <button
+          type="button"
+          aria-label="Close sidebar overlay"
+          onClick={closeSidebar}
+          className={joinClasses(
+            "fixed inset-0 z-40 bg-darknavy/35 transition-opacity duration-300 ease-out motion-reduce:transition-none lg:hidden",
+            isSidebarOpen
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none opacity-0",
+          )}
+        />
 
         <MainSidebar
           activeHref={activeHref}
-          companyName={currentCompany.name}
+          companyName={
+            activeNavigationScope === "workspace"
+              ? "Work Space"
+              : currentCompany.name
+          }
+          enabledQuickListTabs={enabledQuickListTabs}
           expandedKeys={expandedKeys}
           favoriteModules={favoriteModules}
+          homeHref={
+            activeNavigationScope === "workspace" ? "/workspace" : "/dashboard"
+          }
           isOpen={isSidebarOpen}
           navigationSections={navigationSections}
           quickListTab={quickListTab}
@@ -131,7 +162,8 @@ export function MainLayout({ children }: MainLayoutProps) {
             isNotificationsOpen && "xl:mr-88",
           )}
         >
-          {hasBranchAccess ? children : (
+          <MainPageHeader breadcrumbs={breadcrumbs} title={moduleTitle} />
+          {shouldShowBranchContent ? children : (
             <NoBranchAccess companyName={currentCompany.name} />
           )}
         </main>
@@ -173,6 +205,65 @@ export function MainLayout({ children }: MainLayoutProps) {
           onSelectArticle={setSelectedHelpArticleKey}
         />
       ) : null}
+    </div>
+  );
+}
+
+type MainPageHeaderProps = {
+  breadcrumbs: MainBreadcrumb[];
+  title: string;
+};
+
+function MainPageHeader({ breadcrumbs, title }: MainPageHeaderProps) {
+  return (
+    <div className="mx-auto mb-4 flex w-full max-w-[94rem] flex-col gap-2">
+      <nav
+        aria-label="Breadcrumb"
+        className="flex min-w-0 flex-wrap items-center gap-1 text-xs font-medium text-darknavy/50"
+      >
+        {breadcrumbs.map((breadcrumb, index) => {
+          const isLast = index === breadcrumbs.length - 1;
+          const content = (
+            <span
+              className={joinClasses(
+                "block max-w-[14rem] truncate rounded py-1 sm:max-w-[18rem]",
+                isLast ? "text-darknavy" : "hover:text-darknavy",
+              )}
+            >
+              {breadcrumb.label}
+            </span>
+          );
+
+          return (
+            <span
+              key={breadcrumb.key}
+              className="flex min-w-0 items-center gap-1"
+            >
+              {index > 0 ? (
+                <ChevronRight
+                  className="h-3.5 w-3.5 shrink-0 text-darknavy/30"
+                  aria-hidden="true"
+                />
+              ) : null}
+              {!isLast && breadcrumb.href ? (
+                <Link
+                  href={breadcrumb.href}
+                  className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+                >
+                  {content}
+                </Link>
+              ) : (
+                <span aria-current={isLast ? "page" : undefined}>
+                  {content}
+                </span>
+              )}
+            </span>
+          );
+        })}
+      </nav>
+      <h1 className="text-2xl font-semibold tracking-tight text-darknavy sm:text-3xl">
+        {title}
+      </h1>
     </div>
   );
 }

@@ -1,14 +1,6 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import { GradientBlurBackground } from "@/app/src/ui/shared/GradientBlurBackground";
-
-const OtpForm = dynamic(
-	() =>
-		import("@/app/src/ui/auth/OtpForm").then((module) => module.OtpForm),
-	{
-		ssr: false,
-	},
-);
+import { OtpForm } from "@/app/src/ui/auth/OtpForm";
 
 export const metadata: Metadata = {
 	title: "Verify email | GR8BooksLite",

@@ -69,7 +69,9 @@ export function OnboardingBillingSummaryCard({
               <p className="whitespace-nowrap text-[2.4rem] leading-none font-semibold tracking-tight sm:text-4xl">
                 {selectedPrice ?? "Choose a plan first"}
               </p>
-              <p className="mt-2 text-sm text-offwhite/70">{cadenceLabel}</p>
+              <p className="mt-2 text-sm text-offwhite/70">
+                {cadenceLabel}
+              </p>
             </div>
             <div className="inline-flex self-start rounded-2xl bg-coralpink px-3 py-2 text-right text-xs font-semibold uppercase tracking-[0.18em] text-offwhite shadow-[0_14px_30px_rgba(249,112,104,0.3)] sm:self-auto">
               Free Trial

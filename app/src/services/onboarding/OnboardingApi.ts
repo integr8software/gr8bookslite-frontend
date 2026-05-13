@@ -4,6 +4,7 @@ import { ApiClient } from "@/app/src/services/shared/ApiClient";
 import type {
   CompleteOnboardingResponse,
   GetOnboardingDraftResponse,
+  SaveOnboardingBillingResponse,
   SaveOnboardingBillingRequest,
   SaveOnboardingCompanyDetailsRequest,
   SelectOnboardingPlanRequest,
@@ -44,9 +45,15 @@ export async function SaveOnboardingBilling(
   accessToken: string | null,
   body: SaveOnboardingBillingRequest,
 ) {
-  await ApiClient.post("/onboarding/billing", body, {
-    headers: GetAuthorizationHeaders(accessToken),
-  });
+  const response = await ApiClient.post<SaveOnboardingBillingResponse>(
+    "/onboarding/billing",
+    body,
+    {
+      headers: GetAuthorizationHeaders(accessToken),
+    },
+  );
+
+  return response.data;
 }
 
 export async function SaveOnboardingCompanyDetails(

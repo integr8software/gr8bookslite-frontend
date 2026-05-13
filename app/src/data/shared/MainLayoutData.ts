@@ -987,7 +987,7 @@ export const MainLayoutMockData = {
       id: "notif-004",
       title: "Subscription reviewed",
       body: "Your Lite Suite subscription details are ready for billing review.",
-      href: "/settings/billing",
+      href: "/onboarding",
       time: "Yesterday",
       isRead: true,
     },

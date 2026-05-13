@@ -80,6 +80,18 @@ export type SaveOnboardingBillingRequest = {
   expiryYear: number;
   cvc: string;
   billingAddress: string;
+  paymentMethodId: string;
+};
+
+export type SaveOnboardingBillingResponse = {
+  message: string;
+  pendingProviderActivation?: boolean;
+  paymentSetupState?: "pending_provider_activation" | "ready_for_confirmation";
+  paymentIntent?: {
+    id: string | null;
+    status: string | null;
+    redirectUrl: string | null;
+  };
 };
 
 export type SaveOnboardingCompanyDetailsRequest = {

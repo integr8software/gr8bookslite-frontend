@@ -5,10 +5,10 @@ import {
   WorkspaceSummaryCards,
   WorkspaceSystemNotifications,
 } from "@/app/src/data/modules/dashboard/WorkspaceOverviewData";
-import { WorkspaceOverviewCompaniesPanel } from "@/app/src/ui/modules/dashboard/WorkspaceOverviewCompaniesPanel";
-import { WorkspaceOverviewHero } from "@/app/src/ui/modules/dashboard/WorkspaceOverviewHero";
-import { WorkspaceOverviewPanels } from "@/app/src/ui/modules/dashboard/WorkspaceOverviewPanels";
-import { WorkspaceOverviewStatsGrid } from "@/app/src/ui/modules/dashboard/WorkspaceOverviewStatsGrid";
+import { WorkspaceOverviewCompaniesPanel } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewCompaniesPanel";
+import { WorkspaceOverviewHero } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewHero";
+import { WorkspaceOverviewPanels } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewPanels";
+import { WorkspaceOverviewStatsGrid } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewStatsGrid";
 
 export function WorkspaceOverviewPage() {
   const activeCompanies = WorkspaceCompanies.filter(

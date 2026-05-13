@@ -27,6 +27,7 @@ import type {
   MainBreadcrumb,
   MainNotificationTab,
 } from "@/app/src/hooks/shared/useMainLayout";
+import { useLogout } from "@/app/src/hooks/auth/useLogout";
 import { MainNotificationsPanel } from "./MainNotificationsPanel";
 import { MainSearchPanel } from "./MainSearchPanel";
 
@@ -97,6 +98,7 @@ export function MainTopbar({
   onToggleSearch,
   onToggleSidebar,
 }: MainTopbarProps) {
+  const logout = useLogout();
   const SidebarIcon = isSidebarOpen ? PanelLeftClose : PanelLeftOpen;
   const [openBreadcrumbState, setOpenBreadcrumbState] = useState<{
     href: string;
@@ -191,6 +193,11 @@ export function MainTopbar({
     }
 
     setOpenBreadcrumbState({ href: activeHref, key: next });
+  }
+
+  function handleLogoutClick(onAfterLogout?: () => void) {
+    onAfterLogout?.();
+    void logout();
   }
 
   return (
@@ -482,11 +489,10 @@ export function MainTopbar({
                   label="Settings"
                   onClick={() => setProfileMenuOpenPath(null)}
                 />
-                <ProfileMenuLink
-                  href="/logout"
+                <ProfileMenuButton
                   icon={LogOut}
                   label="Logout"
-                  onClick={() => setProfileMenuOpenPath(null)}
+                  onClick={() => handleLogoutClick(() => setProfileMenuOpenPath(null))}
                 />
               </div>
             ) : null}
@@ -587,6 +593,7 @@ function AccountDetails({
   currentUser,
   onSwitchAccount,
 }: AccountDetailsProps) {
+  const logout = useLogout();
   const userTypeName = currentUser.userType?.name;
   const shouldShowRole = currentUser.userRole !== "User";
 
@@ -596,15 +603,18 @@ function AccountDetails({
         <p className="text-xs font-semibold uppercase text-darknavy/45">
           Account Details
         </p>
-        <Link
-          href="/logout"
-          onClick={onSwitchAccount}
+        <button
+          type="button"
+          onClick={() => {
+            onSwitchAccount();
+            void logout();
+          }}
           aria-label="Switch Account"
           title="Switch Account"
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-darknavy/55 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
         >
           <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
+        </button>
       </div>
       <div className="mt-3 flex items-start gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-skyblue/25 text-xs font-bold text-darknavy">
@@ -652,6 +662,12 @@ type ProfileMenuLinkProps = {
   onClick: () => void;
 };
 
+type ProfileMenuButtonProps = {
+  icon: LucideIcon;
+  label: string;
+  onClick: () => void;
+};
+
 function ProfileMenuLink({
   href,
   icon: Icon,
@@ -667,6 +683,23 @@ function ProfileMenuLink({
       <Icon className="h-4 w-4 shrink-0 text-darknavy/50" aria-hidden="true" />
       <span className="truncate">{label}</span>
     </Link>
+  );
+}
+
+function ProfileMenuButton({
+  icon: Icon,
+  label,
+  onClick,
+}: ProfileMenuButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-semibold text-darknavy/72 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+    >
+      <Icon className="h-4 w-4 shrink-0 text-darknavy/50" aria-hidden="true" />
+      <span className="truncate">{label}</span>
+    </button>
   );
 }
 

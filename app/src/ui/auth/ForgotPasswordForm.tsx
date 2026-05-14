@@ -32,7 +32,7 @@ export function ForgotPasswordForm() {
             {form.step === "email"
               ? `Enter your email address and we'll send you a one-time password (OTP) to reset your password.`
               : form.step === "verify"
-                ? `We've sent a one-time password (OTP) to ${form.maskedEmail}. Please enter it below to continue.`
+                ? `If an account exists for ${form.maskedEmail}, a one-time password (OTP) was sent there. Please enter it below to continue.`
                 : "Create a new password for your account."}
           </p>
         </div>

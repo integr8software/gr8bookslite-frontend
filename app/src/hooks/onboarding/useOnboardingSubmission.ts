@@ -26,6 +26,23 @@ function GetOnboardingApiBillingCycle(value: BillingCycle) {
   return value === "yearly" ? "YEARLY" : "MONTHLY";
 }
 
+function GetDigitsOnly(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+function GetCardBrand(value: string) {
+  const digits = GetDigitsOnly(value);
+
+  if (/^4/.test(digits)) return "visa";
+  if (/^(5[1-5]|2[2-7])/.test(digits)) return "mastercard";
+  if (/^3[47]/.test(digits)) return "amex";
+  if (/^(6011|65|64[4-9])/.test(digits)) return "discover";
+  if (/^(35(2[89]|[3-8]))/.test(digits)) return "jcb";
+  if (/^(30[0-5]|36|38|39)/.test(digits)) return "diners";
+
+  return "card";
+}
+
 function GetOnboardingIdentityPayload(values: OnboardingValues) {
   if (values.taxpayerType === "individual") {
     return {
@@ -218,6 +235,7 @@ export function useOnboardingSubmission({
       }
 
       if (stepIndex === 2) {
+        const cardDigits = GetDigitsOnly(values.cardNumber);
         const paymentMethod = await CreatePaymongoCardPaymentMethod({
           cardholderName: values.cardholderName.trim(),
           billingEmail: values.billingEmail.trim(),
@@ -232,10 +250,10 @@ export function useOnboardingSubmission({
         const billingResponse = await SaveOnboardingBilling(token, {
           cardholderName: values.cardholderName.trim(),
           billingEmail: values.billingEmail.trim(),
-          cardNumber: values.cardNumber.trim(),
+          cardLast4: cardDigits.slice(-4),
+          cardBrand: GetCardBrand(cardDigits),
           expiryMonth: Number(values.expiryMonth),
           expiryYear: Number(values.expiryYear),
-          cvc: values.cvc.trim(),
           billingAddress: values.billingAddress.trim(),
           paymentMethodId: paymentMethod.paymentMethodId,
         });

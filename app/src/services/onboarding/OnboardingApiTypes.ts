@@ -75,10 +75,10 @@ export type SelectOnboardingPlanRequest = {
 export type SaveOnboardingBillingRequest = {
   cardholderName: string;
   billingEmail: string;
-  cardNumber: string;
+  cardLast4: string;
+  cardBrand: string;
   expiryMonth: number;
   expiryYear: number;
-  cvc: string;
   billingAddress: string;
   paymentMethodId: string;
 };

@@ -6,6 +6,7 @@ import type {
   MainProductKey,
 } from "@/app/src/data/modules/shared/MainLayoutTypes";
 import { flattenSections } from "@/app/src/data/modules/shared/MainLayoutUtils";
+import { MainModuleNavigationSections } from "@/app/src/data/modules/shared/MainModuleRegistry";
 
 export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
   {
@@ -100,7 +101,9 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
   },
 ];
 
-export const MainCompanyNavigationSections: MainNavigationSection[] = [
+const RegisteredMainCompanyNavigationSections = MainModuleNavigationSections;
+
+export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
   {
     key: "dashboard",
     title: "Dashboard",
@@ -758,11 +761,38 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
     icon: "settings",
     accessKey: "maintenance.users",
     items: [
-      item(
+      navGroup(
         "maintenance-users",
         "User Management",
         "/system-administration/user-management",
         "maintenance.users",
+        "core",
+        [
+          item(
+            "maintenance-user-list",
+            "User List",
+            "/system-administration/user-management/user-list",
+            "maintenance.users",
+          ),
+          item(
+            "maintenance-user-type",
+            "User Type",
+            "/system-administration/user-management/user-type",
+            "maintenance.users",
+          ),
+          item(
+            "maintenance-user-group",
+            "User Group",
+            "/system-administration/user-management/user-group",
+            "maintenance.users",
+          ),
+        ],
+      ),
+      item(
+        "branch-management",
+        "Branch Management",
+        "/system-administration/branch-management",
+        "branch.management",
       ),
       item(
         "maintenance-approval",
@@ -790,6 +820,13 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
       ),
     ],
   },
+];
+
+export const MainCompanyNavigationSections: MainNavigationSection[] = [
+  ...RegisteredMainCompanyNavigationSections,
+  ...LegacyMainCompanyNavigationSections.filter((section) =>
+    ["reporting-analytics", "system-administration"].includes(section.key),
+  ),
 ];
 
 export const MainNavigationSections = MainCompanyNavigationSections;

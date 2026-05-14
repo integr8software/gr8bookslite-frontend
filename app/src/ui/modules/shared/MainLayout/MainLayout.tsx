@@ -1,12 +1,18 @@
 "use client";
 
-import type { ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { BookOpenText, ChevronRight } from "lucide-react";
+import { BookOpenText, ChevronDown, ChevronRight } from "lucide-react";
 import {
   useMainLayout,
   type MainBreadcrumb,
+  type MainBreadcrumbDropdownItem,
 } from "@/app/src/hooks/modules/shared/useMainLayout";
 import { MainNavigationProgress } from "./MainNavigationProgress";
 import { MainNotificationsPanel } from "./MainNotificationsPanel";
@@ -60,6 +66,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     recentlyVisitedModules,
     searchResults,
     selectedHelpArticleKey,
+    shouldAutoRevealActiveRoute,
     unreadNotificationCount,
     visibleNotifications,
     closeHelp,
@@ -67,6 +74,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     closeSearch,
     closeSidebar,
     loadBranchOptions,
+    markSidebarNavigation,
     markNotificationAsRead,
     openHelp,
     selectBranch,
@@ -90,7 +98,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       : "/dashboard";
 
   return (
-    <div className="min-h-screen max-w-full overflow-x-clip bg-white text-darknavy">
+    <div className="flex h-[100dvh] max-w-full flex-col overflow-hidden bg-white text-darknavy">
       <MainNavigationProgress />
 
       <MainTopbar
@@ -130,7 +138,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         onToggleSidebar={toggleSidebar}
       />
 
-      <div className="relative flex min-h-[calc(100vh-7.5rem)] max-w-full overflow-x-hidden md:min-h-[calc(100vh-4rem)]">
+      <div className="relative flex min-h-0 flex-1 max-w-full overflow-hidden">
         <button
           type="button"
           aria-label="Close sidebar overlay"
@@ -150,6 +158,11 @@ export function MainLayout({ children }: MainLayoutProps) {
               ? "Workspace"
               : currentCompany.name
           }
+          typeOfCompany={
+            activeNavigationScope === "workspace"
+              ? "Administration"
+              : currentCompany.businessKind ?? "Company"
+          }
           enabledQuickListTabs={enabledQuickListTabs}
           expandedKeys={expandedKeys}
           favoriteModules={favoriteModules}
@@ -158,14 +171,16 @@ export function MainLayout({ children }: MainLayoutProps) {
           navigationSections={navigationSections}
           quickListTab={quickListTab}
           recentlyVisitedModules={recentlyVisitedModules}
+          shouldAutoScrollActiveItem={shouldAutoRevealActiveRoute}
           onClose={closeSidebar}
+          onNavigateFromSidebar={markSidebarNavigation}
           onQuickListTabChange={setQuickListTab}
           onToggleExpandedKey={toggleExpandedKey}
         />
 
         <main
           className={joinClasses(
-            "min-w-0 flex-1 overflow-x-hidden px-3 py-4 transition-[margin] duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none sm:px-5 lg:px-6",
+            "min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 transition-[margin] duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none sm:px-5 lg:px-6",
             isSidebarOpen && "lg:ml-78",
             isNotificationsOpen && "xl:mr-88",
           )}
@@ -223,19 +238,57 @@ type MainPageHeaderProps = {
 };
 
 function MainPageHeader({ breadcrumbs, title }: MainPageHeaderProps) {
+  const [openBreadcrumbKey, setOpenBreadcrumbKey] = useState<string | null>(
+    null,
+  );
+  const navRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!openBreadcrumbKey) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (navRef.current?.contains(event.target as Node)) {
+        return;
+      }
+
+      setOpenBreadcrumbKey(null);
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenBreadcrumbKey(null);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [openBreadcrumbKey]);
+
   return (
     <div className="mx-auto mb-4 flex w-full max-w-[94rem] flex-col gap-2">
       <nav
+        ref={navRef}
         aria-label="Breadcrumb"
         className="flex min-w-0 flex-wrap items-center gap-1 text-xs font-medium text-darknavy/50"
       >
         {breadcrumbs.map((breadcrumb, index) => {
           const isLast = index === breadcrumbs.length - 1;
+          const dropdownItems = breadcrumb.dropdownItems ?? [];
+          const hasDropdown =
+            breadcrumb.canOpenDropdown && dropdownItems.length > 0;
+          const isOpen = openBreadcrumbKey === breadcrumb.key;
           const content = (
             <span
               className={joinClasses(
-                "block max-w-[14rem] truncate rounded py-1 sm:max-w-[18rem]",
-                isLast ? "text-darknavy" : "hover:text-darknavy",
+                "block max-w-[14rem] truncate sm:max-w-[18rem]",
+                isLast ? "text-darknavy" : "text-darknavy/55 group-hover:text-darknavy",
               )}
             >
               {breadcrumb.label}
@@ -253,15 +306,53 @@ function MainPageHeader({ breadcrumbs, title }: MainPageHeaderProps) {
                   aria-hidden="true"
                 />
               ) : null}
-              {!isLast && breadcrumb.href ? (
+              {hasDropdown ? (
+                <span className="relative min-w-0">
+                  <button
+                    type="button"
+                    aria-current={isLast ? "page" : undefined}
+                    aria-expanded={isOpen}
+                    aria-haspopup="menu"
+                    aria-controls={`breadcrumb-menu-${breadcrumb.key}`}
+                    onClick={() =>
+                      setOpenBreadcrumbKey((current) =>
+                        current === breadcrumb.key ? null : breadcrumb.key,
+                      )
+                    }
+                    className={joinClasses(
+                      "group flex min-h-7 max-w-[15.5rem] items-center gap-1 rounded px-1 text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25 sm:max-w-[19.5rem]",
+                      isOpen && "text-darknavy",
+                    )}
+                  >
+                    {content}
+                    <ChevronDown
+                      className={joinClasses(
+                        "h-3.5 w-3.5 shrink-0 text-darknavy/35 transition group-hover:text-darknavy",
+                        isOpen && "rotate-180 text-darknavy/65",
+                      )}
+                      aria-hidden="true"
+                    />
+                  </button>
+                  {isOpen ? (
+                    <BreadcrumbDropdown
+                      id={`breadcrumb-menu-${breadcrumb.key}`}
+                      items={dropdownItems}
+                      onNavigate={() => setOpenBreadcrumbKey(null)}
+                    />
+                  ) : null}
+                </span>
+              ) : !isLast && breadcrumb.href ? (
                 <Link
                   href={breadcrumb.href}
-                  className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+                  className="group rounded px-1 py-1 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
                 >
                   {content}
                 </Link>
               ) : (
-                <span aria-current={isLast ? "page" : undefined}>
+                <span
+                  aria-current={isLast ? "page" : undefined}
+                  className="rounded px-1 py-1"
+                >
                   {content}
                 </span>
               )}
@@ -272,6 +363,45 @@ function MainPageHeader({ breadcrumbs, title }: MainPageHeaderProps) {
       <h1 className="text-2xl font-semibold tracking-tight text-darknavy sm:text-3xl">
         {title}
       </h1>
+    </div>
+  );
+}
+
+type BreadcrumbDropdownProps = {
+  id: string;
+  items: MainBreadcrumbDropdownItem[];
+  onNavigate: () => void;
+};
+
+function BreadcrumbDropdown({
+  id,
+  items,
+  onNavigate,
+}: BreadcrumbDropdownProps) {
+  return (
+    <div
+      id={id}
+      role="menu"
+      className="absolute left-0 top-full z-30 mt-1 max-h-80 w-64 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg border border-darknavy/10 bg-white p-1 shadow-[0_18px_50px_rgba(33,39,56,0.14)]"
+    >
+      {items.map((item) => (
+        <Link
+          key={item.key}
+          href={item.href}
+          role="menuitem"
+          onClick={onNavigate}
+          className="group block rounded-md px-3 py-2 text-left text-sm transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
+        >
+          <span className="block truncate font-semibold text-darknavy/75 transition group-hover:text-darknavy">
+            {item.label}
+          </span>
+          {item.helperText ? (
+            <span className="mt-0.5 block truncate text-xs text-darknavy/48">
+              {item.helperText}
+            </span>
+          ) : null}
+        </Link>
+      ))}
     </div>
   );
 }

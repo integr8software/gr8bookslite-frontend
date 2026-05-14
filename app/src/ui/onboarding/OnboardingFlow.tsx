@@ -75,19 +75,6 @@ export function OnboardingFlow() {
       ) : null}
 
       {currentStep.currentStep === OnboardingSteps[1].currentStep ? (
-        <OnboardingBillingStep
-          values={values}
-          errors={errors}
-          selectedPlan={selectedPlan}
-          selectedBillingCycle={selectedBillingCycle}
-          isSubmitting={isSubmitting}
-          updateValue={updateValue}
-          handleBack={handleBack}
-          handleNext={handleNext}
-        />
-      ) : null}
-
-      {currentStep.currentStep === OnboardingSteps[2].currentStep ? (
         <OnboardingStepOne
           values={values}
           errors={errors}
@@ -98,6 +85,19 @@ export function OnboardingFlow() {
           setTaxpayerType={setTaxpayerType}
           handleLogoChange={handleLogoChange}
           handleLogoRemove={handleLogoRemove}
+          handleBack={handleBack}
+          handleNext={handleNext}
+        />
+      ) : null}
+
+      {currentStep.currentStep === OnboardingSteps[2].currentStep ? (
+        <OnboardingBillingStep
+          values={values}
+          errors={errors}
+          selectedPlan={selectedPlan}
+          selectedBillingCycle={selectedBillingCycle}
+          isSubmitting={isSubmitting}
+          updateValue={updateValue}
           handleBack={handleBack}
           handleNext={handleNext}
         />

@@ -20,6 +20,7 @@ import {
   SelectOnboardingPlan,
   UploadOnboardingCompanyLogo,
 } from "@/app/src/services/onboarding/OnboardingApi";
+import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
 
 function GetOnboardingApiBillingCycle(value: BillingCycle) {
   return value === "yearly" ? "YEARLY" : "MONTHLY";
@@ -171,8 +172,8 @@ export function useOnboardingSubmission({
       return;
     }
 
-    if (stepIndex === 1 && !validateBillingStep()) return;
-    if (stepIndex === 2 && !validateStepOne()) return;
+    if (stepIndex === 1 && !validateStepOne()) return;
+    if (stepIndex === 2 && !validateBillingStep()) return;
 
     setIsSubmitting(true);
 
@@ -180,22 +181,6 @@ export function useOnboardingSubmission({
       const token = resolvedAccessToken ?? GetAccessToken();
 
       if (stepIndex === 1) {
-        await SaveOnboardingBilling(token, {
-          cardholderName: values.cardholderName.trim(),
-          billingEmail: values.billingEmail.trim(),
-          cardNumber: values.cardNumber.trim(),
-          expiryMonth: Number(values.expiryMonth),
-          expiryYear: Number(values.expiryYear),
-          cvc: values.cvc.trim(),
-          billingAddress: values.billingAddress.trim(),
-        });
-
-        setStepIndex((current) => current + 1);
-        toast.success("Billing details saved.");
-        return;
-      }
-
-      if (stepIndex === 2) {
         let logoName = values.logoName.trim();
         let logoMimeType = values.logoFile?.type || undefined;
         let logoStoragePath = values.logoStoragePath.trim();
@@ -229,6 +214,46 @@ export function useOnboardingSubmission({
 
         setStepIndex((current) => current + 1);
         toast.success("Company details saved.");
+        return;
+      }
+
+      if (stepIndex === 2) {
+        const paymentMethod = await CreatePaymongoCardPaymentMethod({
+          cardholderName: values.cardholderName.trim(),
+          billingEmail: values.billingEmail.trim(),
+          cardNumber: values.cardNumber.trim(),
+          expiryMonth: values.expiryMonth.trim(),
+          expiryYear: values.expiryYear.trim(),
+          cvc: values.cvc.trim(),
+          billingAddress: values.billingAddress.trim(),
+          contactNumber: values.contactNumber.trim(),
+        });
+
+        const billingResponse = await SaveOnboardingBilling(token, {
+          cardholderName: values.cardholderName.trim(),
+          billingEmail: values.billingEmail.trim(),
+          cardNumber: values.cardNumber.trim(),
+          expiryMonth: Number(values.expiryMonth),
+          expiryYear: Number(values.expiryYear),
+          cvc: values.cvc.trim(),
+          billingAddress: values.billingAddress.trim(),
+          paymentMethodId: paymentMethod.paymentMethodId,
+        });
+
+        if (billingResponse.paymentIntent?.redirectUrl) {
+          toast.success(
+            "Card details attached. Redirecting you to complete PayMongo authentication.",
+          );
+          window.location.assign(billingResponse.paymentIntent.redirectUrl);
+          return;
+        }
+
+        setStepIndex((current) => current + 1);
+        toast.success(
+          billingResponse.pendingProviderActivation
+            ? "Billing setup is pending while PayMongo subscription billing is being activated."
+            : billingResponse.message || "Billing details saved.",
+        );
         return;
       }
 

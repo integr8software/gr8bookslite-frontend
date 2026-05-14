@@ -22,7 +22,11 @@ Frontend API requests should target the backend through:
 
 ```txt
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api/v1
+NEXT_PUBLIC_PAYMONGO_PUBLIC_KEY=pk_test_xxxxx
+NEXT_PUBLIC_PAYMONGO_API_BASE_URL=https://api.paymongo.com/v1
 ```
+
+For the company billing page, the frontend only uses the PayMongo public key to create a payment method in test mode. The backend remains the source of truth for plan loading, subscription creation, attachment, cancellation, and webhook-driven status updates.
 
 ## Frontend Stack
 

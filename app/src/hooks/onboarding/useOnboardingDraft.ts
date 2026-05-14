@@ -39,11 +39,11 @@ function GetDraftStepIndex(draft: OnboardingDraft | null) {
     return 0;
   }
 
-  if (draft.hasCompanyDetails) {
+  if (draft.hasBillingSetup) {
     return 3;
   }
 
-  if (draft.hasBillingSetup) {
+  if (draft.hasCompanyDetails) {
     return 2;
   }
 

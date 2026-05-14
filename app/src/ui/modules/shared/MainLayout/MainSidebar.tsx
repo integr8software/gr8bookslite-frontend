@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement, useCallback, useEffect, useState } from "react";
+import { createElement, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -61,6 +61,7 @@ const NestedBatchSize = 6;
 type MainSidebarProps = {
   activeHref: string;
   companyName: string;
+  typeOfCompany: string;
   enabledQuickListTabs: Array<"favorites" | "recent">;
   expandedKeys: string[];
   favoriteModules: MainSearchItem[];
@@ -69,7 +70,9 @@ type MainSidebarProps = {
   navigationSections: MainNavigationSection[];
   quickListTab: "favorites" | "recent";
   recentlyVisitedModules: MainSearchItem[];
+  shouldAutoScrollActiveItem: boolean;
   onClose: () => void;
+  onNavigateFromSidebar: (href: string) => void;
   onQuickListTabChange: (tab: "favorites" | "recent") => void;
   onToggleExpandedKey: (key: string) => void;
 };
@@ -106,7 +109,6 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
   "workspace-module-projects": ClipboardList,
   "workspace-module-human-resources": Users,
   "workspace-module-reports-analytics": FileBarChart,
-  "dashboard-management": LayoutDashboard,
   "maintenance-financial": Landmark,
   "maintenance-charts-of-accounts": ListTree,
   "maintenance-currency": Coins,
@@ -147,6 +149,10 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
   "reports-bir-vat-relief": FileText,
   "reports-bir-alpha-list": FileText,
   "maintenance-users": UserCog,
+  "maintenance-user-list": UserCog,
+  "maintenance-user-type": Users,
+  "maintenance-user-group": Users,
+  "branch-management": GitBranch,
   "maintenance-approval": ShieldCheck,
   "maintenance-audit": Activity,
   "maintenance-mail": Mail,
@@ -156,6 +162,7 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 export function MainSidebar({
   activeHref,
   companyName,
+  typeOfCompany,
   enabledQuickListTabs,
   expandedKeys,
   favoriteModules,
@@ -164,10 +171,21 @@ export function MainSidebar({
   navigationSections,
   quickListTab,
   recentlyVisitedModules,
+  shouldAutoScrollActiveItem,
   onClose,
+  onNavigateFromSidebar,
   onQuickListTabChange,
   onToggleExpandedKey,
 }: MainSidebarProps) {
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const pendingAutoScrollTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
+  const clearSidebarNavigationTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
+  const sidebarNavigationHrefRef = useRef<string | null>(null);
+  const sidebarInteractionUntilRef = useRef(0);
   const quickListItems =
     quickListTab === "favorites" ? favoriteModules : recentlyVisitedModules;
   const shouldShowQuickList = enabledQuickListTabs.length > 0;
@@ -185,10 +203,109 @@ export function MainSidebar({
     0,
     quickListVisibleCount,
   );
+  const suppressAutoScrollFromSidebarInteraction = useCallback(() => {
+    sidebarInteractionUntilRef.current = Date.now() + 1800;
+
+    if (pendingAutoScrollTimeoutRef.current) {
+      clearTimeout(pendingAutoScrollTimeoutRef.current);
+      pendingAutoScrollTimeoutRef.current = null;
+    }
+  }, []);
+  const handleNavigateFromSidebar = useCallback(
+    (href: string) => () => {
+      suppressAutoScrollFromSidebarInteraction();
+      sidebarNavigationHrefRef.current = href;
+
+      if (clearSidebarNavigationTimeoutRef.current) {
+        clearTimeout(clearSidebarNavigationTimeoutRef.current);
+      }
+
+      clearSidebarNavigationTimeoutRef.current = setTimeout(() => {
+        sidebarNavigationHrefRef.current = null;
+        clearSidebarNavigationTimeoutRef.current = null;
+      }, 5000);
+
+      onNavigateFromSidebar(href);
+
+      if (typeof window !== "undefined" && window.innerWidth < 1024) {
+        onClose();
+      }
+    },
+    [onClose, onNavigateFromSidebar, suppressAutoScrollFromSidebarInteraction],
+  );
+
+  useEffect(() => {
+    if (!isOpen || !shouldAutoScrollActiveItem) {
+      return;
+    }
+
+    if (Date.now() < sidebarInteractionUntilRef.current) {
+      return;
+    }
+
+    if (sidebarNavigationHrefRef.current) {
+      if (!pathMatches(sidebarNavigationHrefRef.current, activeHref)) {
+        return;
+      }
+
+      if (clearSidebarNavigationTimeoutRef.current) {
+        clearTimeout(clearSidebarNavigationTimeoutRef.current);
+      }
+
+      clearSidebarNavigationTimeoutRef.current = setTimeout(() => {
+        sidebarNavigationHrefRef.current = null;
+        clearSidebarNavigationTimeoutRef.current = null;
+      }, 1200);
+
+      return;
+    }
+
+    sidebarNavigationHrefRef.current = null;
+    if (clearSidebarNavigationTimeoutRef.current) {
+      clearTimeout(clearSidebarNavigationTimeoutRef.current);
+      clearSidebarNavigationTimeoutRef.current = null;
+    }
+
+    const scrollContainer = scrollContainerRef.current;
+
+    if (!scrollContainer) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      pendingAutoScrollTimeoutRef.current = null;
+      const activeItem = scrollContainer.querySelector<HTMLElement>(
+        "[data-main-sidebar-active-item='true']",
+      );
+
+      activeItem?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    }, 360);
+    pendingAutoScrollTimeoutRef.current = timeoutId;
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (pendingAutoScrollTimeoutRef.current === timeoutId) {
+        pendingAutoScrollTimeoutRef.current = null;
+      }
+    };
+  }, [activeHref, expandedKeys, isOpen, shouldAutoScrollActiveItem]);
+
+  useEffect(() => {
+    return () => {
+      if (clearSidebarNavigationTimeoutRef.current) {
+        clearTimeout(clearSidebarNavigationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <aside
       data-main-sidebar-root
+      onPointerDownCapture={suppressAutoScrollFromSidebarInteraction}
       className={joinClasses(
         "fixed inset-y-0 left-0 z-50 w-78 transform-gpu overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform motion-reduce:transition-none lg:bottom-0 lg:top-16 lg:z-20 lg:h-auto lg:shadow-none",
         isOpen
@@ -201,17 +318,17 @@ export function MainSidebar({
           <Link
             href={homeHref}
             aria-label={`${companyName} dashboard`}
-            className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+            className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-darknavy text-sm font-bold text-offwhite">
               G8
             </span>
             <span className="min-w-0">
               <span className="block truncate text-base font-semibold leading-5 text-darknavy">
-                Gr8Books Lite
+                {companyName}
               </span>
               <span className="block truncate text-xs text-darknavy/55">
-                {companyName}
+                {typeOfCompany}
               </span>
             </span>
           </Link>
@@ -220,13 +337,16 @@ export function MainSidebar({
             type="button"
             onClick={onClose}
             aria-label="Close sidebar"
-            className="flex h-9 w-9 items-center justify-center rounded-md text-darknavy/65 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-md text-darknavy/65 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25 lg:hidden"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4">
+        <div
+          ref={scrollContainerRef}
+          className="min-h-0 flex-1 scroll-smooth overflow-y-auto overscroll-contain px-3 py-4"
+        >
           {shouldShowQuickList ? (
             <div className="mb-5">
               <div
@@ -260,8 +380,8 @@ export function MainSidebar({
                   <Link
                     key={item.key}
                     href={item.href}
-                    onClick={handleMobileNavigation(onClose)}
-                    className="flex min-h-9 items-center gap-2 rounded-md px-3 text-sm text-darknavy/75 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+                    onClick={handleNavigateFromSidebar(item.href)}
+                    className="flex min-h-9 items-center gap-2 rounded-md px-3 text-sm text-darknavy/75 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
                   >
                     <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-citron" />
                     <span className="min-w-0 flex-1 truncate">
@@ -294,7 +414,8 @@ export function MainSidebar({
                       expandedKeys={expandedKeys}
                       item={item}
                       depth={-1}
-                      onNavigate={onClose}
+                      onInteract={suppressAutoScrollFromSidebarInteraction}
+                      onNavigateFromSidebar={handleNavigateFromSidebar}
                       onToggleExpandedKey={onToggleExpandedKey}
                     />
                   ))}
@@ -305,7 +426,8 @@ export function MainSidebar({
                   activeHref={activeHref}
                   expandedKeys={expandedKeys}
                   section={section}
-                  onNavigate={onClose}
+                  onInteract={suppressAutoScrollFromSidebarInteraction}
+                  onNavigateFromSidebar={handleNavigateFromSidebar}
                   onToggleExpandedKey={onToggleExpandedKey}
                 />
               ),
@@ -336,7 +458,7 @@ function QuickListButton({
       onClick={onClick}
       aria-pressed={isActive}
       className={joinClasses(
-        "flex min-h-8 items-center justify-center gap-1.5 rounded px-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+        "flex min-h-8 items-center justify-center gap-1.5 rounded px-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25",
         isActive
           ? "bg-white text-darknavy shadow-sm"
           : "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
@@ -352,7 +474,8 @@ type SidebarSectionProps = {
   activeHref: string;
   expandedKeys: string[];
   section: MainNavigationSection;
-  onNavigate: () => void;
+  onInteract: () => void;
+  onNavigateFromSidebar: (href: string) => () => void;
   onToggleExpandedKey: (key: string) => void;
 };
 
@@ -360,7 +483,8 @@ function SidebarSection({
   activeHref,
   expandedKeys,
   section,
-  onNavigate,
+  onInteract,
+  onNavigateFromSidebar,
   onToggleExpandedKey,
 }: SidebarSectionProps) {
   const Icon = MainIcons[section.icon];
@@ -369,13 +493,17 @@ function SidebarSection({
     section.key === "dashboard" ? DashboardInitialCount : SectionInitialCount;
   const sectionBatchSize =
     section.key === "dashboard" ? DashboardBatchSize : SectionBatchSize;
+  const activeItemVisibleCount = getVisibleCountToActiveItem(
+    section.items,
+    activeHref,
+  );
   const [
     sectionVisibleCount,
     hasMoreSectionItems,
     setSectionSentinel,
   ] = useIncrementalVisibleCount(
     section.items.length,
-    sectionInitialCount,
+    Math.max(sectionInitialCount, activeItemVisibleCount),
     sectionBatchSize,
     isExpanded,
   );
@@ -388,9 +516,12 @@ function SidebarSection({
     <section>
       <button
         type="button"
-        onClick={() => onToggleExpandedKey(section.key)}
+        onClick={() => {
+          onInteract();
+          onToggleExpandedKey(section.key);
+        }}
         aria-expanded={isExpanded}
-        className="flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-left text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+        className="flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-left text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
       >
         <Icon className="h-4 w-4 shrink-0 text-darknavy/65" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate">{section.title}</span>
@@ -418,7 +549,8 @@ function SidebarSection({
                 expandedKeys={expandedKeys}
                 item={item}
                 depth={0}
-                onNavigate={onNavigate}
+                onInteract={onInteract}
+                onNavigateFromSidebar={onNavigateFromSidebar}
                 onToggleExpandedKey={onToggleExpandedKey}
               />
             ))}
@@ -441,7 +573,8 @@ type SidebarItemProps = {
   depth: number;
   expandedKeys: string[];
   item: MainNavigationItem;
-  onNavigate: () => void;
+  onInteract: () => void;
+  onNavigateFromSidebar: (href: string) => () => void;
   onToggleExpandedKey: (key: string) => void;
 };
 
@@ -450,7 +583,8 @@ function SidebarItem({
   depth,
   expandedKeys,
   item,
-  onNavigate,
+  onInteract,
+  onNavigateFromSidebar,
   onToggleExpandedKey,
 }: SidebarItemProps) {
   const hasChildren = Boolean(item.children?.length);
@@ -458,9 +592,13 @@ function SidebarItem({
   const shouldShowModuleDot = !shouldShowIcon;
   const childItems = item.children ?? [];
   const isExpanded = expandedKeys.includes(item.key);
+  const isExactActive = activeHref === item.href;
+  const isDescendantActive =
+    !isExactActive && activeHref.startsWith(`${item.href}/`);
+  const isAncestorActive = hasChildren && isDescendantActive;
   const isActive = hasChildren
-    ? activeHref === item.href || activeHref.startsWith(`${item.href}/`)
-    : activeHref === item.href;
+    ? isExactActive || isDescendantActive
+    : pathMatches(item.href, activeHref);
   const paddingClass =
     depth < 0
       ? "px-3"
@@ -475,7 +613,7 @@ function SidebarItem({
     setChildSentinel,
   ] = useIncrementalVisibleCount(
     childItems.length,
-    NestedInitialCount,
+    Math.max(NestedInitialCount, getVisibleCountToActiveItem(childItems, activeHref)),
     NestedBatchSize,
     hasChildren && isExpanded,
   );
@@ -486,24 +624,34 @@ function SidebarItem({
       <div>
         <button
           type="button"
-          onClick={() => onToggleExpandedKey(item.key)}
+          onClick={() => {
+            onInteract();
+            onToggleExpandedKey(item.key);
+          }}
           aria-expanded={isExpanded}
+          data-main-sidebar-active-item={isExactActive ? "true" : undefined}
           className={joinClasses(
             "group relative flex min-h-9 w-full items-center gap-2 rounded-md py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
             paddingClass,
-            isActive
-              ? "rounded-2xl bg-blue-50 font-semibold text-blue-600 shadow-[0_8px_20px_rgba(37,99,235,0.10)] ring-1 ring-blue-100 hover:bg-blue-50"
-              : "text-darknavy/70 hover:bg-blue-50/70 hover:text-blue-600",
+            isAncestorActive
+              ? "font-semibold text-blue-600 hover:bg-blue-50/45"
+            : isExactActive
+                ? "rounded-2xl bg-blue-50 font-semibold text-blue-600 shadow-[0_8px_20px_rgba(37,99,235,0.10)] ring-1 ring-blue-100 hover:bg-blue-50"
+                : "text-darknavy/70 hover:bg-blue-50/70 hover:text-blue-600",
           )}
         >
-          {shouldShowIcon ? renderSidebarItemIcon(item, isActive) : null}
+          {shouldShowIcon
+            ? renderSidebarItemIcon(item, isActive, isAncestorActive)
+            : null}
           <span className="min-w-0 flex-1 truncate">{item.label}</span>
           <ChevronRight
             className={joinClasses(
               "h-4 w-4 shrink-0 transition",
-              isActive
-                ? "text-blue-500/70"
-                : "text-darknavy/40 group-hover:text-blue-500",
+              isAncestorActive
+                ? "text-blue-500/80"
+                : isExactActive
+                  ? "text-blue-500/70"
+                  : "text-darknavy/40 group-hover:text-blue-500",
               isExpanded && "rotate-90",
             )}
             aria-hidden="true"
@@ -527,7 +675,8 @@ function SidebarItem({
                   expandedKeys={expandedKeys}
                   item={childItem}
                   depth={depth + 1}
-                  onNavigate={onNavigate}
+                  onInteract={onInteract}
+                  onNavigateFromSidebar={onNavigateFromSidebar}
                   onToggleExpandedKey={onToggleExpandedKey}
                 />
               ))}
@@ -548,7 +697,8 @@ function SidebarItem({
   return (
     <Link
       href={item.href}
-      onClick={handleMobileNavigation(onNavigate)}
+      onClick={onNavigateFromSidebar(item.href)}
+      data-main-sidebar-active-item={isActive ? "true" : undefined}
       className={joinClasses(
         "group relative flex min-h-9 items-center gap-2 rounded-md py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
         paddingClass,
@@ -558,13 +708,13 @@ function SidebarItem({
           : "text-darknavy/65 hover:bg-blue-50/70 hover:text-blue-600",
       )}
     >
-      {shouldShowIcon ? renderSidebarItemIcon(item, isActive) : null}
+      {shouldShowIcon ? renderSidebarItemIcon(item, isActive, false) : null}
       {shouldShowModuleDot ? (
         <span
           className={joinClasses(
-            "h-1.5 w-1.5 shrink-0 rounded-full transition-[background-color,box-shadow] group-hover:bg-blue-500 group-hover:shadow-[0_0_8px_rgba(37,99,235,0.38)]",
+            "h-1.5 w-1.5 shrink-0 rounded-full transition-[background-color,box-shadow] group-hover:bg-blue-500 group-hover:shadow-[0_0_8px_rgba(59,130,246,0.36)]",
             isActive
-              ? "bg-blue-500 shadow-[0_0_8px_rgba(37,99,235,0.38)]"
+              ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.36)]"
               : "bg-darknavy/30",
           )}
           aria-hidden="true"
@@ -575,14 +725,20 @@ function SidebarItem({
   );
 }
 
-function renderSidebarItemIcon(item: MainNavigationItem, isActive: boolean) {
+function renderSidebarItemIcon(
+  item: MainNavigationItem,
+  isActive: boolean,
+  isAncestorActive: boolean,
+) {
   return createElement(getSidebarItemIcon(item), {
     "aria-hidden": true,
     className: joinClasses(
-      "h-4 w-4 shrink-0 transition-[color,filter] group-hover:text-blue-600 group-hover:drop-shadow-[0_0_8px_rgba(37,99,235,0.38)]",
-      isActive
-        ? "text-blue-600 drop-shadow-[0_0_8px_rgba(37,99,235,0.38)]"
-        : "text-darknavy/45",
+      "h-4 w-4 shrink-0 transition-[color,filter] group-hover:text-blue-500 group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.32)]",
+      isAncestorActive
+        ? "text-blue-500/80"
+        : isActive
+          ? "text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.28)]"
+          : "text-darknavy/45",
     ),
   });
 }
@@ -655,12 +811,30 @@ function getSidebarItemIcon(item: MainNavigationItem) {
   }
 }
 
-function handleMobileNavigation(onNavigate: () => void) {
-  return () => {
-    if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      onNavigate();
-    }
-  };
+function pathMatches(href: string, pathname: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function getVisibleCountToActiveItem(
+  items: MainNavigationItem[],
+  activeHref: string,
+) {
+  const activeIndex = items.findIndex((item) => itemMatchesActiveHref(item, activeHref));
+
+  return activeIndex >= 0 ? activeIndex + 1 : 0;
+}
+
+function itemMatchesActiveHref(
+  item: MainNavigationItem,
+  activeHref: string,
+): boolean {
+  if (pathMatches(item.href, activeHref)) {
+    return true;
+  }
+
+  return Boolean(
+    item.children?.some((child) => itemMatchesActiveHref(child, activeHref)),
+  );
 }
 
 function useIncrementalVisibleCount(
@@ -676,7 +850,10 @@ function useIncrementalVisibleCount(
   const sentinelRef = useCallback((node: HTMLDivElement | null) => {
     setSentinelNode(node);
   }, []);
-  const clampedVisibleCount = Math.min(visibleCount, totalItems);
+  const clampedVisibleCount = Math.min(
+    Math.max(visibleCount, initialCount),
+    totalItems,
+  );
 
   useEffect(() => {
     if (!isEnabled || clampedVisibleCount >= totalItems || !sentinelNode) {
@@ -705,7 +882,13 @@ function useIncrementalVisibleCount(
     return () => {
       observer.disconnect();
     };
-  }, [batchSize, clampedVisibleCount, isEnabled, sentinelNode, totalItems]);
+  }, [
+    batchSize,
+    clampedVisibleCount,
+    isEnabled,
+    sentinelNode,
+    totalItems,
+  ]);
 
   return [
     clampedVisibleCount,

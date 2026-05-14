@@ -1,3 +1,5 @@
+import { AppName } from "@/app/src/data/shared/AppConstants";
+
 export type MainAccessAction =
   | "view"
   | "add"
@@ -914,10 +916,10 @@ export const MainLayoutMockData = {
   },
   currentCompany: {
     id: "cmp-001",
-    name: "Gr8Books Lite",
+    name: AppName,
   },
   availableCompanies: [
-    { id: "cmp-001", name: "Gr8Books Lite" },
+    { id: "cmp-001", name: AppName },
     { id: "cmp-002", name: "Demo Trading Corp." },
   ],
   activeBranchId: "branch-main",
@@ -1025,7 +1027,7 @@ export const MainLayoutMockData = {
         "Switch branches and manage branch records when your role allows it.",
       content: [
         "The first breadcrumb is the active branch. Opening it lazy-loads branch choices so the layout can later call the backend only when needed.",
-        "Branch Management appears below the branch list when the current user has branch management access.",
+        "Branches and satellites are separated in the Branch Management switcher for easier selection.",
       ],
       relatedKeys: ["help-permissions"],
     },

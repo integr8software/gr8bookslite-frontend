@@ -1,0 +1,16 @@
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/data/shared/AppConstants";
+import { BillingStatementMain } from "@/app/src/ui/modules/sales/billing-statement/Main";
+
+const PageTitle = "Billing Statement";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function SalesBillingStatementPage() {
+  return <BillingStatementMain />;
+}
+
+

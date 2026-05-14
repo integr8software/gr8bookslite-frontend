@@ -87,11 +87,11 @@ export const MainHelpArticles: MainHelpArticle[] = [
   ),
   article(
     "help-dashboard",
-    "Dashboard Management",
+    "Dashboard",
     "/dashboard",
     "Create, arrange, and share dashboards based on user permissions.",
     [
-      "Dashboard Management is the company landing area for summaries, saved views, approval queues, charts, and operational widgets.",
+      "Dashboard is the company landing area for summaries, saved views, approval queues, charts, and operational widgets.",
       "Users with add or edit access can configure dashboards, while view access controls which dashboards and widgets are visible.",
     ],
     ["help-branches", "help-permissions", "help-reports"],
@@ -103,7 +103,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
     "Switch branches and manage branch records when your role allows it.",
     [
       "The branch switcher controls which company branch or satellite the user is working in.",
-      "Branch Management appears in the branch list for users with branch management access, allowing branch records to be maintained separately from daily transactions.",
+      "Branches and satellites are separated in the Branch Management switcher for easier selection.",
     ],
     ["help-dashboard", "help-permissions"],
   ),
@@ -116,7 +116,11 @@ export const MainHelpArticles: MainHelpArticle[] = [
       "Maintenance stores master files such as accounts, banks, currencies, terms, items, warehouses, parties, approvals, users, and mail setup.",
       "Accurate maintenance data keeps transaction entry faster and makes reports more consistent.",
     ],
-    ["help-maintenance-financial", "help-maintenance-inventory", "help-maintenance-party"],
+    [
+      "help-maintenance-financial",
+      "help-maintenance-inventory",
+      "help-maintenance-party",
+    ],
   ),
   article(
     "help-maintenance-financial",
@@ -248,7 +252,11 @@ export const MainHelpArticles: MainHelpArticle[] = [
       "Cash Receipt modules capture incoming payments and collection documents tied to customers, invoices, payment references, or other records.",
       "Receipt records support cash monitoring, reconciliation, audit review, and accounting reports.",
     ],
-    ["help-system-transaction-numbering", "help-sales", "help-financial-reports"],
+    [
+      "help-system-transaction-numbering",
+      "help-sales",
+      "help-financial-reports",
+    ],
   ),
   article(
     "help-cash-disbursement",
@@ -259,7 +267,11 @@ export const MainHelpArticles: MainHelpArticle[] = [
       "Cash Disbursement modules manage payment documents such as disbursement vouchers, request for payment, petty cash, replenishments, and advances.",
       "Use disbursement records to control cash-out activity and keep payment approvals, references, and postings traceable.",
     ],
-    ["help-system-transaction-numbering", "help-accounts-payable", "help-financial-reports"],
+    [
+      "help-system-transaction-numbering",
+      "help-accounts-payable",
+      "help-financial-reports",
+    ],
   ),
   article(
     "help-accounts-payable",
@@ -303,7 +315,11 @@ export const MainHelpArticles: MainHelpArticle[] = [
       "Inventory modules track stock activity across warehouses and items.",
       "Use inventory documents to capture receiving, issuing, movement, delivery, and stock account information for operational and reporting visibility.",
     ],
-    ["help-maintenance-inventory", "help-warehouse-management", "help-inventory-reports"],
+    [
+      "help-maintenance-inventory",
+      "help-warehouse-management",
+      "help-inventory-reports",
+    ],
   ),
   article(
     "help-purchasing",
@@ -413,7 +429,11 @@ export const MainHelpArticles: MainHelpArticle[] = [
       "Financial Reports summarize accounting activity from journals, vouchers, receipts, disbursements, sales, payables, and other posted records.",
       "Use these reports to review account balances, financial position, performance, cash movement, and customer receivables.",
     ],
-    ["help-general-journal", "help-charts-of-accounts", "help-accounts-receivable-reports"],
+    [
+      "help-general-journal",
+      "help-charts-of-accounts",
+      "help-accounts-receivable-reports",
+    ],
   ),
   article(
     "help-books-ledgers",

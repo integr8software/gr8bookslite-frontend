@@ -623,35 +623,37 @@ function CompanySwitcher({
 
       {isOpen ? (
         <div className={getSwitcherMenuClassName(variant)}>
-          {canAccessWorkspace ? (
-            <>
+          <div className="max-h-[min(24rem,calc(100vh-8rem))] space-y-1.5 overflow-y-auto overscroll-contain p-2">
+            {canAccessWorkspace ? (
+              <>
+                <SwitcherButton
+                  description="Global administration"
+                  icon={LayoutDashboard}
+                  isActive={isWorkspaceActive}
+                  label="Workspace"
+                  onClick={() => {
+                    onSwitchToWorkspace();
+                    onClose();
+                  }}
+                />
+                <MenuSeparator />
+              </>
+            ) : null}
+
+            {availableCompanies.map((company) => (
               <SwitcherButton
-                description="Global administration"
-                icon={LayoutDashboard}
-                isActive={isWorkspaceActive}
-                label="Workspace"
+                key={company.id}
+                description={getCompanySwitcherDescription(company)}
+                icon={Building2}
+                isActive={!isWorkspaceActive && company.id === currentCompany.id}
+                label={company.name}
                 onClick={() => {
-                  onSwitchToWorkspace();
+                  onSelectCompany(company.id);
                   onClose();
                 }}
               />
-              <MenuSeparator />
-            </>
-          ) : null}
-
-          {availableCompanies.map((company) => (
-            <SwitcherButton
-              key={company.id}
-              description={getCompanySwitcherDescription(company)}
-              icon={Building2}
-              isActive={!isWorkspaceActive && company.id === currentCompany.id}
-              label={company.name}
-              onClick={() => {
-                onSelectCompany(company.id);
-                onClose();
-              }}
-            />
-          ))}
+            ))}
+          </div>
         </div>
       ) : null}
     </div>
@@ -692,7 +694,7 @@ function BranchSwitcher({
       <button
         type="button"
         onClick={onToggle}
-        aria-label="Switch branch or satellite"
+        aria-label="Switch branch"
         aria-expanded={isOpen}
         className={joinClasses(
           "flex h-10 w-full min-w-0 items-center gap-2 border border-darknavy/10 bg-white px-3 text-left text-sm shadow-sm transition-all duration-200 ease-out hover:border-skyblue/45 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 motion-reduce:transition-none motion-reduce:active:scale-100",
@@ -701,7 +703,7 @@ function BranchSwitcher({
       >
         <GitBranch className="h-4 w-4 shrink-0 text-darknavy/55" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate font-semibold text-darknavy">
-          {currentBranch?.name ?? "No Branch Access"}
+          {currentBranch ? getBranchLabel(currentBranch) : "No Branch Access"}
         </span>
         <ChevronDown className="h-4 w-4 shrink-0 text-darknavy/45" aria-hidden="true" />
       </button>
@@ -715,57 +717,12 @@ function BranchSwitcher({
               <span className="block h-3 w-24 rounded bg-darknavy/10" />
             </div>
           ) : branchDropdownItems.length ? (
-            branchDropdownItems.map((item) => {
-              const isManagementAction = Boolean(item.isManagementAction);
-              const isCurrentBranch = item.branchId === currentBranch?.id;
-
-              return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  onClick={() => {
-                    if (item.branchId) {
-                      onSelectBranch(item.branchId);
-                    }
-                    onClose();
-                  }}
-                  className={joinClasses(
-                    "flex items-start gap-3 rounded-md px-3 py-2.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
-                    isManagementAction
-                      ? "mt-1 border-t border-darknavy/10 bg-darknavy/3 hover:bg-citron/20"
-                      : "hover:bg-skyblue/10",
-                  )}
-                >
-                  <span
-                    className={joinClasses(
-                      "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
-                      isManagementAction
-                        ? "bg-citron/30 text-darknavy"
-                        : "bg-skyblue/15 text-darknavy",
-                    )}
-                  >
-                    {isManagementAction ? (
-                      <Settings className="h-4 w-4" aria-hidden="true" />
-                    ) : (
-                      <GitBranch className="h-4 w-4" aria-hidden="true" />
-                    )}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-darknavy">
-                      {item.label}
-                    </span>
-                    {item.helperText ? (
-                      <span className="mt-1 block truncate text-xs text-darknavy/50">
-                        {item.helperText}
-                      </span>
-                    ) : null}
-                  </span>
-                  {isCurrentBranch ? (
-                    <Check className="mt-2 h-4 w-4 shrink-0 text-skyblue" aria-hidden="true" />
-                  ) : null}
-                </Link>
-              );
-            })
+            <BranchSwitcherGroups
+              branchDropdownItems={branchDropdownItems}
+              currentBranchId={currentBranch?.id}
+              onClose={onClose}
+              onSelectBranch={onSelectBranch}
+            />
           ) : (
             <div className="px-3 py-4 text-sm text-darknavy/55">
               No branches available.
@@ -779,7 +736,7 @@ function BranchSwitcher({
 
 function getSwitcherMenuClassName(variant: SwitcherVariant) {
   const baseClassName =
-    "z-50 max-h-[min(24rem,calc(100vh-8rem))] overflow-y-auto overscroll-contain rounded-lg border border-darknavy/10 bg-white p-1 shadow-[0_24px_70px_rgba(33,39,56,0.18)]";
+    "z-50 max-h-[min(24rem,calc(100vh-8rem))] overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_24px_70px_rgba(33,39,56,0.18)]";
 
   return joinClasses(
     baseClassName,
@@ -805,6 +762,144 @@ function getCompanySwitcherDescription(company: MainCompany) {
       : company.branchName;
 
   return [company.helperText, branchLabel].filter(Boolean).join(" - ");
+}
+
+type BranchSwitcherGroupsProps = {
+  branchDropdownItems: MainBreadcrumbDropdownItem[];
+  currentBranchId?: string;
+  onClose: () => void;
+  onSelectBranch: (branchId: string) => void;
+};
+
+function BranchSwitcherGroups({
+  branchDropdownItems,
+  currentBranchId,
+  onClose,
+  onSelectBranch,
+}: BranchSwitcherGroupsProps) {
+  const selectionItems = branchDropdownItems.filter(
+    (item) => !item.isManagementAction,
+  );
+  const managementItem = branchDropdownItems.find(
+    (item) => item.isManagementAction,
+  );
+  const branchItems = selectionItems.filter(
+    (item) => item.kind !== "satellite",
+  );
+  const satelliteItems = selectionItems.filter(
+    (item) => item.kind === "satellite",
+  );
+
+  return (
+    <div className="flex max-h-[min(24rem,calc(100vh-8rem))] flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1">
+        <BranchSwitcherGroup
+          currentBranchId={currentBranchId}
+          items={branchItems}
+          label="Branch"
+          onClose={onClose}
+          onSelectBranch={onSelectBranch}
+        />
+        <MenuSeparator />
+        <BranchSwitcherGroup
+          currentBranchId={currentBranchId}
+          items={satelliteItems}
+          label="Satellite"
+          onClose={onClose}
+          onSelectBranch={onSelectBranch}
+        />
+      </div>
+      {managementItem ? (
+        <div className="sticky bottom-0 border-t border-darknavy/10 bg-white p-1">
+          <Link
+            href={managementItem.href}
+            onClick={onClose}
+            className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-citron/35 text-darknavy">
+              <Settings className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate">{managementItem.label}</span>
+              {managementItem.helperText ? (
+                <span className="mt-0.5 block truncate text-xs font-normal text-darknavy/50">
+                  {managementItem.helperText}
+                </span>
+              ) : null}
+            </span>
+          </Link>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+type BranchSwitcherGroupProps = {
+  currentBranchId?: string;
+  items: MainBreadcrumbDropdownItem[];
+  label: string;
+  onClose: () => void;
+  onSelectBranch: (branchId: string) => void;
+};
+
+function BranchSwitcherGroup({
+  currentBranchId,
+  items,
+  label,
+  onClose,
+  onSelectBranch,
+}: BranchSwitcherGroupProps) {
+  return (
+    <div className="py-0.5">
+      <p className="px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-darknavy/45">
+        {label}
+      </p>
+      {items.length ? (
+        items.map((item) => {
+          const isCurrentBranch = item.branchId === currentBranchId;
+
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              onClick={() => {
+                if (item.branchId) {
+                  onSelectBranch(item.branchId);
+                }
+                onClose();
+              }}
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
+            >
+              <span
+                className={joinClasses(
+                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
+                  isCurrentBranch
+                    ? "bg-darknavy text-offwhite"
+                    : "bg-darknavy/8 text-darknavy",
+                )}
+              >
+                <GitBranch className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-semibold text-darknavy">
+                  {item.label}
+                </span>
+              </span>
+              {isCurrentBranch ? (
+                <Check className="h-4 w-4 shrink-0 text-darknavy" aria-hidden="true" />
+              ) : null}
+            </Link>
+          );
+        })
+      ) : (
+        <p className="px-3 py-2 text-sm text-darknavy/45">None available.</p>
+      )}
+    </div>
+  );
+}
+
+function getBranchLabel(branch: MainBranch) {
+  return `${branch.name}${branch.isMain ? " (Head Office)" : ""}`;
 }
 
 type SwitcherButtonProps = {

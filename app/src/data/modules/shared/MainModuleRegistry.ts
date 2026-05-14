@@ -1,0 +1,257 @@
+import type {
+  MainAccessAction,
+  MainAccessKey,
+  MainNavigationItem,
+  MainNavigationSection,
+  MainProductKey,
+} from "@/app/src/data/modules/shared/MainLayoutTypes";
+
+export type MainModuleAction = Extract<
+  MainAccessAction,
+  "view" | "add" | "edit"
+>;
+
+const CrudActions: MainModuleAction[] = ["view", "add", "edit"];
+const MockRecordIds = ["1001", "1002", "1003"];
+
+export const MainModuleNavigationSections: MainNavigationSection[] = [
+  section("dashboard", "Dashboard", "/dashboard", "dashboard", "dashboard", [
+    moduleItem(
+      "dashboard-overview",
+      "Dashboard Overview",
+      "/dashboard",
+      "dashboard",
+      "core",
+      undefined,
+      ["view"],
+    ),
+  ]),
+  section(
+    "maintenance",
+    "Maintenance",
+    "/maintenance",
+    "maintenance",
+    "maintenance.chartOfAccounts",
+    [
+      group(
+        "maintenance-financial-management",
+        "Financial Management",
+        "/maintenance/financial-management",
+        "maintenance.chartOfAccounts",
+        [
+          moduleItem(
+            "maintenance-financial-management-charts-of-accounts",
+            "Charts of Accounts",
+            "/maintenance/financial-management/charts-of-accounts",
+            "maintenance.chartOfAccounts",
+            "accounting",
+          ),
+          moduleItem(
+            "maintenance-financial-management-multi-currency-setup",
+            "Multi Currency Setup",
+            "/maintenance/financial-management/multi-currency-setup",
+            "maintenance.currency",
+            "accounting",
+          ),
+          moduleItem(
+            "maintenance-financial-management-discount-management",
+            "Discount Management",
+            "/maintenance/financial-management/discount-management",
+            "maintenance.discount",
+            "accounting",
+            ["accounting", "inventory"],
+          ),
+          moduleItem(
+            "maintenance-financial-management-term-management",
+            "Term Management",
+            "/maintenance/financial-management/term-management",
+            "maintenance.term",
+            "accounting",
+          ),
+          moduleItem(
+            "maintenance-financial-management-transaction-type",
+            "Transaction Type",
+            "/maintenance/financial-management/transaction-type",
+            "maintenance.transactionType",
+            "accounting",
+          ),
+        ],
+      ),
+      group(
+        "maintenance-inventory-warehouse-management",
+        "Inventory & Warehouse Management",
+        "/maintenance/inventory-warehouse-management",
+        "maintenance.warehouse",
+        [
+          moduleItem(
+            "maintenance-inventory-warehouse-management-warehouse-management",
+            "Warehouse Management",
+            "/maintenance/inventory-warehouse-management/warehouse-management",
+            "maintenance.warehouse",
+            "inventory",
+          ),
+          moduleItem(
+            "maintenance-inventory-warehouse-management-item-management",
+            "Item Management",
+            "/maintenance/inventory-warehouse-management/item-management",
+            "maintenance.item",
+            "inventory",
+          ),
+          moduleItem(
+            "maintenance-inventory-warehouse-management-item-category",
+            "Category",
+            "/maintenance/inventory-warehouse-management/item-category",
+            "maintenance.item",
+            "inventory",
+          ),
+          moduleItem(
+            "maintenance-inventory-warehouse-management-item-subcategory",
+            "Sub Category",
+            "/maintenance/inventory-warehouse-management/item-subcategory",
+            "maintenance.item",
+            "inventory",
+          ),
+          moduleItem(
+            "maintenance-inventory-warehouse-management-item-type",
+            "Item Type",
+            "/maintenance/inventory-warehouse-management/item-type",
+            "maintenance.item",
+            "inventory",
+          ),
+          moduleItem(
+            "maintenance-inventory-warehouse-management-item-subtype",
+            "Sub Item Type",
+            "/maintenance/inventory-warehouse-management/item-subtype",
+            "maintenance.item",
+            "inventory",
+          ),
+          moduleItem(
+            "maintenance-inventory-warehouse-management-item-uom",
+            "Unit of Measurement",
+            "/maintenance/inventory-warehouse-management/item-uom",
+            "maintenance.item",
+            "inventory",
+          ),
+        ],
+      ),
+      group(
+        "maintenance-party-management",
+        "Party Management",
+        "/maintenance/party-management",
+        "maintenance.party",
+        [
+          moduleItem(
+            "maintenance-party-management-party-management",
+            "Party Management",
+            "/maintenance/party-management/party-management",
+            "maintenance.party",
+            "accounting",
+            ["accounting", "inventory"],
+          ),
+        ],
+      ),
+    ],
+  ),
+  section("cash-receipt", "Cash Receipt", "/cash-receipt", "cashIn", "cashReceipt", [
+    moduleItem("cash-receipt-official-receipt", "Official Receipt", "/cash-receipt/official-receipt", "cashReceipt", "accounting"),
+    moduleItem("cash-receipt-collection-receipt", "Collection Receipt", "/cash-receipt/collection-receipt", "cashReceipt", "accounting"),
+    moduleItem("cash-receipt-acknowledgement-receipt", "Acknowledgement Receipt", "/cash-receipt/acknowledgement-receipt", "cashReceipt", "accounting"),
+    moduleItem("cash-receipt-provisional-receipt", "Provisional Receipt", "/cash-receipt/provisional-receipt", "cashReceipt", "accounting"),
+    moduleItem("cash-receipt-bank-reconciliation", "Bank Reconciliation", "/cash-receipt/bank-reconciliation", "cashReceipt", "accounting"),
+    moduleItem("cash-receipt-product-distribution-center-warehouse", "Product Distribution Center Warehouse", "/cash-receipt/product-distribution-center-warehouse", "cashReceipt", "accounting", ["accounting", "inventory"]),
+  ]),
+  section("cash-disbursement", "Cash Disbursement", "/cash-disbursement", "cashOut", "cashDisbursement", [
+    moduleItem("cash-disbursement-disbursement-voucher", "Disbursement Voucher", "/cash-disbursement/disbursement-voucher", "cashDisbursement", "accounting"),
+    moduleItem("cash-disbursement-cash-advance", "Cash Advance", "/cash-disbursement/cash-advance", "cashDisbursement", "accounting"),
+    moduleItem("cash-disbursement-cash-advance-multiple-entry", "Cash Advance Multiple Entry", "/cash-disbursement/cash-advance-multiple-entry", "cashDisbursement", "accounting"),
+    moduleItem("cash-disbursement-petty-cash-disbursement", "Petty Cash Disbursement", "/cash-disbursement/petty-cash-disbursement", "cashDisbursement", "accounting"),
+    moduleItem("cash-disbursement-petty-cash-fund", "Petty Cash Fund", "/cash-disbursement/petty-cash-fund", "cashDisbursement", "accounting"),
+    moduleItem("cash-disbursement-petty-cash-replenishment", "Petty Cash Replenishment", "/cash-disbursement/petty-cash-replenishment", "cashDisbursement", "accounting"),
+    moduleItem("cash-disbursement-petty-cash-advance", "Petty Cash Advance", "/cash-disbursement/petty-cash-advance", "cashDisbursement", "accounting"),
+    moduleItem("cash-disbursement-request-for-payment", "Request For Payment", "/cash-disbursement/request-for-payment", "cashDisbursement", "accounting"),
+    moduleItem("cash-disbursement-advances-to-supplier", "Advances To Supplier", "/cash-disbursement/advances-to-supplier", "cashDisbursement", "accounting"),
+  ]),
+  section("accounts-payable", "Accounts Payable", "/accounts-payable", "payable", "accountsPayable", [
+    moduleItem("accounts-payable-accounts-payable-voucher", "Accounts Payable Voucher", "/accounts-payable/accounts-payable-voucher", "accountsPayable", "accounting"),
+  ]),
+  section("general-journal", "General Journal", "/general-journal", "journal", "generalJournal", [
+    moduleItem("general-journal-journal-voucher", "Journal Voucher", "/general-journal/journal-voucher", "generalJournal", "accounting"),
+  ]),
+  section("sales", "Sales", "/sales", "sales", "sales", [
+    moduleItem("sales-debit-memo", "Debit Memo", "/sales/debit-memo", "sales", "accounting"),
+    moduleItem("sales-credit-memo", "Credit Memo", "/sales/credit-memo", "sales", "accounting"),
+    moduleItem("sales-sales-quotation", "Sales Quotation", "/sales/sales-quotation", "sales", "accounting", ["accounting", "inventory"]),
+    moduleItem("sales-sales-order", "Sales Order", "/sales/sales-order", "sales", "accounting", ["accounting", "inventory"]),
+    moduleItem("sales-sales-invoice", "Sales Invoice", "/sales/sales-invoice", "sales", "accounting", ["accounting", "inventory"]),
+    moduleItem("sales-billing", "Billing", "/sales/billing", "sales", "accounting"),
+    moduleItem("sales-billing-statement", "Billing Statement", "/sales/billing-statement", "sales", "accounting"),
+    moduleItem("sales-billing-invoice", "Billing Invoice", "/sales/billing-invoice", "sales", "accounting"),
+    moduleItem("sales-service-invoice", "Service Invoice", "/sales/service-invoice", "sales", "accounting"),
+    moduleItem("sales-cash-sales-invoice", "Cash Sales Invoice", "/sales/cash-sales-invoice", "sales", "accounting", ["accounting", "inventory"]),
+    moduleItem("sales-sales-journal", "Sales Journal", "/sales/sales-journal", "sales", "accounting", ["accounting", "inventory"]),
+    moduleItem("sales-statement-of-account", "Statement of Account", "/sales/statement-of-account", "sales", "accounting"),
+  ]),
+  section("inventory", "Inventory", "/inventory", "inventory", "inventory", [
+    moduleItem("inventory-receiving-report", "Receiving Report", "/inventory/receiving-report", "inventory", "inventory"),
+    moduleItem("inventory-goods-receipt", "Goods Receipt", "/inventory/goods-receipt", "inventory", "inventory"),
+    moduleItem("inventory-inventory-account", "Inventory Account", "/inventory/inventory-account", "inventory", "inventory"),
+    moduleItem("inventory-material-request", "Material Request", "/inventory/material-request", "inventory", "inventory"),
+    moduleItem("inventory-pick-list", "Pick List", "/inventory/pick-list", "inventory", "inventory"),
+    moduleItem("inventory-goods-issue", "Goods Issue", "/inventory/goods-issue", "inventory", "inventory"),
+    moduleItem("inventory-delivery-receipt", "Delivery Receipt", "/inventory/delivery-receipt", "inventory", "inventory"),
+  ]),
+  section("purchasing", "Purchasing", "/purchasing", "purchasing", "purchasing", [
+    moduleItem("purchasing-purchase-request", "Purchase Request", "/purchasing/purchase-request", "purchasing", "inventory"),
+    moduleItem("purchasing-canvass-form", "Canvass Form", "/purchasing/canvass-form", "canvass", "inventory"),
+    moduleItem("purchasing-purchase-order", "Purchase Order", "/purchasing/purchase-order", "purchasing", "inventory"),
+    moduleItem("purchasing-purchase-journal", "Purchase Journal", "/purchasing/purchase-journal", "purchasing", "inventory"),
+  ]),
+  section("others", "Others", "/others", "asset", "fixedAsset", [
+    moduleItem("others-fixed-asset", "Fixed Asset", "/others/fixed-asset", "fixedAsset", "accounting"),
+  ]),
+];
+
+function section(
+  key: string,
+  title: string,
+  href: string,
+  icon: MainNavigationSection["icon"],
+  accessKey: MainAccessKey,
+  items: MainNavigationItem[],
+): MainNavigationSection {
+  return { key, title, href, icon, accessKey, items };
+}
+
+function group(
+  key: string,
+  label: string,
+  href: string,
+  accessKey: MainAccessKey,
+  children: MainNavigationItem[],
+): MainNavigationItem {
+  return { key, label, href, accessKey, productKey: "core", children };
+}
+
+function moduleItem(
+  key: string,
+  label: string,
+  href: string,
+  accessKey: MainAccessKey,
+  productKey: MainProductKey = "core",
+  productKeys?: MainProductKey[],
+  actions: MainModuleAction[] = CrudActions,
+): MainNavigationItem {
+  return {
+    key,
+    label,
+    href,
+    accessKey,
+    productKey,
+    productKeys,
+    requiredActions: ["view"],
+    module: {
+      actions,
+      mockRecordIds: MockRecordIds,
+    },
+  };
+}

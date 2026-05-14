@@ -37,6 +37,7 @@ const DefaultExpandedKeys = [
   "inventory",
   "reports",
   "reporting-analytics",
+  "system-administration",
 ];
 
 const WorkspaceRoutePrefix = "/workspace";
@@ -54,6 +55,7 @@ export type MainBreadcrumbDropdownItem = {
   helperText?: string;
   branchId?: string;
   isManagementAction?: boolean;
+  kind?: MainBranch["kind"];
 };
 
 export type MainBreadcrumb = {
@@ -87,8 +89,11 @@ export function useMainLayout() {
     useState<MainQuickListTab>("favorites");
   const [notificationTab, setNotificationTab] =
     useState<MainNotificationTab>("all");
-  const [expandedKeys, setExpandedKeys] =
+  const [manualExpandedKeys, setManualExpandedKeys] =
     useState<string[]>(DefaultExpandedKeys);
+  const [sidebarNavigationPath, setSidebarNavigationPath] = useState<
+    string | null
+  >(null);
   const [queryState, setQueryState] = useState({
     pathname,
     value: "",
@@ -133,6 +138,21 @@ export function useMainLayout() {
       subscription,
     );
   }, [activeNavigationScope, subscription]);
+  const activeExpandedKeys = useMemo(
+    () => getActiveExpandedKeys(navigationSections, pathname),
+    [navigationSections, pathname],
+  );
+  const shouldAutoRevealActiveRoute = sidebarNavigationPath !== pathname;
+  const expandedKeys = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...manualExpandedKeys,
+          ...(shouldAutoRevealActiveRoute ? activeExpandedKeys : []),
+        ]),
+      ),
+    [activeExpandedKeys, manualExpandedKeys, shouldAutoRevealActiveRoute],
+  );
 
   const availableSearchItems = useMemo(() => {
     const sourceItems =
@@ -204,7 +224,10 @@ export function useMainLayout() {
   }, [availableSearchItems, query]);
 
   const accessibleBranches = useMemo(
-    () => getAccessibleBranches(MainLayoutMockData.branches),
+    () =>
+      sortBranchesByPriority(
+        getAccessibleBranches(MainLayoutMockData.branches),
+      ),
     [],
   );
   const hasBranchAccess = accessibleBranches.length > 0;
@@ -221,10 +244,10 @@ export function useMainLayout() {
     const branchItems =
       lazyLoadedBranches?.map((branch) => ({
         key: branch.id,
-        label: `${branch.name}${branch.isMain ? " (Head Office)" : ""}`,
+        label: getBranchSwitcherLabel(branch),
         href: branch.href,
-        helperText: branch.code,
         branchId: branch.id,
+        kind: branch.kind ?? "branch",
       })) ?? [];
 
     if (!canManageBranches) {
@@ -237,7 +260,7 @@ export function useMainLayout() {
         key: "branch-management",
         label: "Branch Management",
         href: "/settings",
-        helperText: "Manage branch records",
+        helperText: "Manage branch and satellite records",
         isManagementAction: true,
       },
     ];
@@ -364,11 +387,15 @@ export function useMainLayout() {
   }
 
   function toggleExpandedKey(key: string) {
-    setExpandedKeys((current) =>
+    setManualExpandedKeys((current) =>
       current.includes(key)
         ? current.filter((expandedKey) => expandedKey !== key)
         : [...current, key],
     );
+  }
+
+  function markSidebarNavigation(href: string) {
+    setSidebarNavigationPath(href);
   }
 
   function loadBranchOptions() {
@@ -445,6 +472,7 @@ export function useMainLayout() {
     recentlyVisitedModules,
     searchResults,
     selectedHelpArticleKey,
+    shouldAutoRevealActiveRoute,
     unreadNotificationCount,
     visibleNotifications,
     closeHelp,
@@ -453,6 +481,7 @@ export function useMainLayout() {
     closeSidebar,
     loadBranchOptions,
     markNotificationAsRead,
+    markSidebarNavigation,
     openHelp,
     selectBranch,
     selectCompany,
@@ -498,11 +527,17 @@ function buildBreadcrumbs({
     fallbackTrail[0]?.label === "Workspace"
       ? fallbackTrail.slice(1)
       : fallbackTrail;
+  const completeTrail = appendPathSegmentBreadcrumbs(
+    normalizedTrail,
+    pathname,
+  );
 
-  return normalizedTrail.map((item) => ({
+  return completeTrail.map((item) => ({
     key: item.key,
     label: item.label,
     href: item.href,
+    canOpenDropdown: Boolean(item.dropdownItems?.length),
+    dropdownItems: item.dropdownItems,
   }));
 }
 
@@ -510,16 +545,19 @@ function findNavigationTrail(
   sections: MainNavigationSection[],
   pathname: string,
 ): NavigationTrailNode[] {
+  const sectionDropdownItems = sections.map(toSectionDropdownItem);
+
   for (const section of sections) {
     const itemTrail = findItemTrail(section.items, pathname);
+    const sectionHref = getSectionTargetHref(section);
 
     if (itemTrail.length > 0) {
       return [
         {
           key: section.key,
           label: section.title,
-          href: section.href ?? section.items[0]?.href,
-          dropdownItems: getSectionDropdownItems(section),
+          href: sectionHref,
+          dropdownItems: sectionDropdownItems,
         },
         ...itemTrail,
       ];
@@ -530,8 +568,8 @@ function findNavigationTrail(
         {
           key: section.key,
           label: section.title,
-          href: section.href,
-          dropdownItems: getSectionDropdownItems(section),
+          href: sectionHref,
+          dropdownItems: sectionDropdownItems,
         },
       ];
     }
@@ -540,16 +578,37 @@ function findNavigationTrail(
   return [];
 }
 
-function getSectionDropdownItems(
-  section: MainNavigationSection,
-): MainBreadcrumbDropdownItem[] {
-  return section.items.map(toDropdownItem);
+function appendPathSegmentBreadcrumbs(
+  trail: NavigationTrailNode[],
+  pathname: string,
+): NavigationTrailNode[] {
+  const lastHref = trail[trail.length - 1]?.href;
+
+  if (!lastHref || lastHref === pathname || !pathMatches(lastHref, pathname)) {
+    return trail;
+  }
+
+  const extraSegments = pathname
+    .slice(lastHref.length)
+    .split("/")
+    .filter(Boolean);
+
+  return [
+    ...trail,
+    ...extraSegments.map((segment, index) => ({
+      key: `path-${extraSegments.slice(0, index + 1).join("-")}`,
+      label: titleFromPathSegment(segment),
+      href: index === extraSegments.length - 1 ? pathname : undefined,
+    })),
+  ];
 }
 
 function findItemTrail(
   items: MainNavigationItem[],
   pathname: string,
 ): NavigationTrailNode[] {
+  const siblingDropdownItems = items.map(toDropdownItem);
+
   for (const item of items) {
     const childTrail = item.children
       ? findItemTrail(item.children, pathname)
@@ -560,26 +619,65 @@ function findItemTrail(
         {
           key: item.key,
           label: item.label,
-          href: item.href,
-          dropdownItems: item.children?.map(toDropdownItem),
+          href: getItemTargetHref(item),
+          dropdownItems: siblingDropdownItems,
         },
         ...childTrail,
       ];
     }
 
-    const isCurrentItem = item.children?.length
-      ? pathMatches(item.href, pathname)
-      : item.href === pathname;
+    const isCurrentItem = pathMatches(item.href, pathname);
 
     if (isCurrentItem) {
       return [
         {
           key: item.key,
           label: item.label,
-          href: item.href,
-          dropdownItems: item.children?.map(toDropdownItem),
+          href: getItemTargetHref(item),
+          dropdownItems: siblingDropdownItems,
         },
       ];
+    }
+  }
+
+  return [];
+}
+
+function getActiveExpandedKeys(
+  sections: MainNavigationSection[],
+  pathname: string,
+): string[] {
+  const activeKeys: string[] = [];
+
+  for (const section of sections) {
+    const itemKeys = getActiveItemAncestorKeys(section.items, pathname);
+
+    if (
+      itemKeys.length > 0 ||
+      (section.href && pathMatches(section.href, pathname))
+    ) {
+      activeKeys.push(section.key, ...itemKeys);
+    }
+  }
+
+  return activeKeys;
+}
+
+function getActiveItemAncestorKeys(
+  items: MainNavigationItem[],
+  pathname: string,
+): string[] {
+  for (const item of items) {
+    if (item.children?.length) {
+      const childKeys = getActiveItemAncestorKeys(item.children, pathname);
+
+      if (childKeys.length > 0 || pathMatches(item.href, pathname)) {
+        return [item.key, ...childKeys];
+      }
+    }
+
+    if (pathMatches(item.href, pathname)) {
+      return [];
     }
   }
 
@@ -604,24 +702,256 @@ function getPathFallbackTitle(pathname: string) {
     return "Dashboard";
   }
 
-  return lastSegment
+  return titleFromPathSegment(lastSegment);
+}
+
+function titleFromPathSegment(segment: string) {
+  return segment
     .split("-")
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(" ");
 }
 
+function toSectionDropdownItem(
+  section: MainNavigationSection,
+): MainBreadcrumbDropdownItem {
+  const firstItem = section.items[0];
+
+  return {
+    key: section.key,
+    label: section.title,
+    href: getSectionTargetHref(section),
+    helperText:
+      getNavigationDropdownHelperText(section.key) ??
+      (firstItem ? `Starts at ${firstItem.label}` : undefined),
+  };
+}
+
 function toDropdownItem(item: MainNavigationItem): MainBreadcrumbDropdownItem {
+  const firstChild = item.children?.[0];
+
   return {
     key: item.key,
     label: item.label,
-    href: item.href,
+    href: getItemTargetHref(item),
+    helperText:
+      getNavigationDropdownHelperText(item.key) ??
+      (firstChild ? `Starts at ${firstChild.label}` : undefined),
   };
+}
+
+function getNavigationDropdownHelperText(key: string) {
+  if (key.startsWith("workspace")) {
+    return undefined;
+  }
+
+  return NavigationDropdownHelperText[key];
+}
+
+const NavigationDropdownHelperText: Record<string, string> = {
+  dashboard: "View company activity, approvals, and performance.",
+  maintenance: "Maintain reusable setup records for company operations.",
+  "cash-receipt": "Record and reconcile incoming payments.",
+  "cash-disbursement": "Prepare and track outgoing payments.",
+  "accounts-payable": "Manage supplier obligations and payable records.",
+  "general-journal": "Post manual journal entries and adjustments.",
+  sales: "Manage customer sales, billing, and account documents.",
+  inventory: "Track stock movements, requests, receipts, and issues.",
+  purchasing: "Manage purchase requests, canvassing, and supplier orders.",
+  others: "Track supporting asset and miscellaneous records.",
+  "reporting-analytics": "Generate accounting, inventory, and compliance reports.",
+  "system-administration": "Manage users, approvals, audits, numbering, and mail setup.",
+  "dashboard-overview": "View company activity, approvals, and performance.",
+  "maintenance-financial-management":
+    "Maintain financial setup records used by accounting workflows.",
+  "maintenance-financial-management-charts-of-accounts":
+    "Maintain account codes used by transactions and reports.",
+  "maintenance-financial-management-multi-currency-setup":
+    "Configure currencies and exchange settings.",
+  "maintenance-financial-management-discount-management":
+    "Maintain discount rules for sales and purchasing.",
+  "maintenance-financial-management-term-management":
+    "Manage payment and collection terms.",
+  "maintenance-financial-management-transaction-type":
+    "Configure transaction classifications and numbering behavior.",
+  "maintenance-inventory-warehouse-management-warehouse-management":
+    "Maintain warehouse records and storage locations.",
+  "maintenance-warehouse": "Maintain warehouse records and storage locations.",
+  "maintenance-inventory-warehouse-management-item-management":
+    "Maintain item master records.",
+  "maintenance-item": "Maintain item master records.",
+  "maintenance-inventory-warehouse-management-item-category":
+    "Group items by category.",
+  "maintenance-item-category": "Group items by category.",
+  "maintenance-inventory-warehouse-management-item-subcategory":
+    "Group items by subcategory.",
+  "maintenance-item-sub-category": "Group items by subcategory.",
+  "maintenance-inventory-warehouse-management-item-type":
+    "Maintain item type classifications.",
+  "maintenance-item-type": "Maintain item type classifications.",
+  "maintenance-inventory-warehouse-management-item-subtype":
+    "Maintain item subtype classifications.",
+  "maintenance-item-sub-type": "Maintain item subtype classifications.",
+  "maintenance-inventory-warehouse-management-item-uom":
+    "Manage item units of measure.",
+  "maintenance-item-unit": "Manage item units of measure.",
+  "maintenance-inventory-warehouse-management":
+    "Maintain inventory items, classifications, units, and warehouses.",
+  "maintenance-party-management":
+    "Maintain parties used across sales, purchasing, and accounting.",
+  "maintenance-party-management-party-management":
+    "Maintain customers, suppliers, vendors, members, and employees.",
+  "maintenance-party":
+    "Maintain customers, suppliers, vendors, members, and employees.",
+  "cash-receipt-official-receipt":
+    "Record official customer payments.",
+  "cash-receipt-collection-receipt":
+    "Record collections received from customers.",
+  "cash-receipt-acknowledgement-receipt":
+    "Acknowledge received payments before official posting.",
+  "cash-receipt-provisional-receipt":
+    "Record temporary receipts pending final confirmation.",
+  "cash-receipt-bank-reconciliation":
+    "Match bank transactions against company records.",
+  "cash-receipt-product-distribution-center-warehouse":
+    "Track product distribution center warehouse receipts.",
+  "cash-disbursement-disbursement-voucher":
+    "Prepare and track payment vouchers.",
+  "cash-disbursement-voucher": "Prepare and track payment vouchers.",
+  "cash-disbursement-cash-advance":
+    "Record employee cash advances.",
+  "cash-disbursement-cash-advance-multiple-entry":
+    "Record cash advances across multiple entries.",
+  "cash-disbursement-cash-advance-multiple":
+    "Record cash advances across multiple entries.",
+  "cash-disbursement-petty-cash-disbursement":
+    "Record petty cash disbursements.",
+  "cash-disbursement-petty-cash": "Record petty cash disbursements.",
+  "cash-disbursement-petty-cash-fund":
+    "Manage petty cash fund setup and balances.",
+  "cash-disbursement-petty-cash-replenishment":
+    "Replenish petty cash funds.",
+  "cash-disbursement-petty-cash-advance":
+    "Record petty cash advances.",
+  "cash-disbursement-request-for-payment":
+    "Create and track payment requests.",
+  "cash-disbursement-request-payment": "Create and track payment requests.",
+  "cash-disbursement-advances-to-supplier":
+    "Record supplier advances before final billing.",
+  "accounts-payable-accounts-payable-voucher":
+    "Create and track supplier payable vouchers.",
+  "accounts-payable-voucher": "Create and track supplier payable vouchers.",
+  "general-journal-journal-voucher":
+    "Post manual journal entries and adjustments.",
+  "general-journal-voucher": "Post manual journal entries and adjustments.",
+  "sales-debit-memo": "Record debit adjustments to customer accounts.",
+  "sales-credit-memo": "Record credit adjustments to customer accounts.",
+  "sales-sales-quotation": "Prepare customer sales quotations.",
+  "sales-quotation": "Prepare customer sales quotations.",
+  "sales-sales-order": "Convert approved quotes into sales orders.",
+  "sales-order": "Convert approved quotes into sales orders.",
+  "sales-sales-invoice": "Bill customers for delivered goods or services.",
+  "sales-invoice": "Bill customers for delivered goods or services.",
+  "sales-billing": "Manage customer billing records.",
+  "sales-billing-statement": "Generate customer billing statements.",
+  "sales-billing-invoice": "Create billing invoices.",
+  "sales-service-invoice": "Bill customers for services rendered.",
+  "sales-cash-sales-invoice": "Record immediate cash sales invoices.",
+  "sales-sales-journal": "Review and post sales journal entries.",
+  "sales-journal": "Review and post sales journal entries.",
+  "sales-statement-of-account": "Generate customer account statements.",
+  "sales-statement-account": "Generate customer account statements.",
+  "inventory-receiving-report": "Record received inventory items.",
+  "inventory-goods-receipt": "Record goods received into inventory.",
+  "inventory-inventory-account": "Monitor inventory account balances.",
+  "inventory-account": "Monitor inventory account balances.",
+  "inventory-material-request": "Request materials from inventory.",
+  "inventory-pick-list": "Prepare items for picking and release.",
+  "inventory-goods-issue": "Issue goods out of inventory.",
+  "inventory-delivery-receipt": "Record delivered goods and receipts.",
+  "purchasing-purchase-request": "Request items or services for purchase.",
+  "purchasing-request": "Request items or services for purchase.",
+  "purchasing-canvass-form": "Compare supplier canvass details.",
+  "purchasing-purchase-order": "Create and track supplier purchase orders.",
+  "purchasing-order": "Create and track supplier purchase orders.",
+  "purchasing-purchase-journal": "Review and post purchase journal entries.",
+  "purchasing-journal": "Review and post purchase journal entries.",
+  "others-fixed-asset": "Track fixed asset records and movements.",
+  "fixed-asset-default": "Track fixed asset records and movements.",
+  "reports-maintenance": "Configure reusable report definitions and settings.",
+  "reports-financial": "Generate financial statements and ledger reports.",
+  "reports-books-of-accounts": "Generate books of accounts reports.",
+  "reports-general-ledger": "Review general ledger account activity.",
+  "reports-journal-ledger": "Review journal ledger entries.",
+  "reports-trial-balance": "Generate trial balance summaries.",
+  "reports-balance-sheet": "Generate balance sheet statements.",
+  "reports-income-statement": "Generate income statement reports.",
+  "reports-cash-flow": "Generate cash flow statements.",
+  "reports-accounts-receivable": "Review customer receivable reports.",
+  "reports-ar-aging": "Analyze overdue customer balances by aging bucket.",
+  "reports-ar-statement": "Generate customer statements of account.",
+  "reports-inventory": "Generate inventory movement and valuation reports.",
+  "reports-inventory-audit": "Review inventory audit history.",
+  "reports-inventory-item-query": "Build item-level inventory queries.",
+  "reports-inventory-stock-movement": "Review stock movement activity.",
+  "reports-inventory-valuation": "Generate inventory valuation reports.",
+  "reports-bir": "Generate BIR compliance reports.",
+  "reports-bir-vat-relief": "Prepare VAT relief reporting data.",
+  "reports-bir-alpha-list": "Prepare alpha list reporting data.",
+  "maintenance-users": "Manage users, user types, and user groups.",
+  "maintenance-user-list": "Create and maintain system user accounts.",
+  "maintenance-user-type": "Maintain user type classifications.",
+  "maintenance-user-group": "Organize users into permission groups.",
+  "branch-management": "Maintain branch and satellite records.",
+  "maintenance-approval": "Configure approval workflows and rules.",
+  "maintenance-audit": "Review audit trail activity.",
+  "transaction-number-setup": "Configure transaction numbering sequences.",
+  "maintenance-mail": "Maintain mail server and notification settings.",
+};
+
+function getSectionTargetHref(section: MainNavigationSection) {
+  return section.items[0]
+    ? getItemTargetHref(section.items[0])
+    : section.href ?? "/";
+}
+
+function getItemTargetHref(item: MainNavigationItem): string {
+  if (!item.children?.length || item.module) {
+    return item.href;
+  }
+
+  return getItemTargetHref(item.children[0]);
 }
 
 function findSearchItemsByKeys(items: MainSearchItem[], keys: string[]) {
   return keys
     .map((key) => items.find((item) => item.key === key))
     .filter((item): item is MainSearchItem => Boolean(item));
+}
+
+function sortBranchesByPriority(branches: MainBranch[]) {
+  return [...branches].sort((first, second) => {
+    const priorityDelta =
+      getBranchPriority(first) - getBranchPriority(second);
+
+    if (priorityDelta !== 0) {
+      return priorityDelta;
+    }
+
+    return first.name.localeCompare(second.name);
+  });
+}
+
+function getBranchPriority(branch: MainBranch) {
+  if (branch.isMain) {
+    return 0;
+  }
+
+  return branch.kind === "satellite" ? 2 : 1;
+}
+
+function getBranchSwitcherLabel(branch: MainBranch) {
+  return `${branch.name}${branch.isMain ? " (Head Office)" : ""}`;
 }
 
 function matchesSearchQuery(item: MainSearchItem, query: string) {

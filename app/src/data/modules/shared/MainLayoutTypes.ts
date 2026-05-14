@@ -33,6 +33,7 @@ export type MainAccessKey =
   | "maintenance.term"
   | "maintenance.mail"
   | "maintenance.item"
+  | "maintenance.warehouse.access"
   | "maintenance.warehouse"
   | "maintenance.approval"
   | "maintenance.workflow"
@@ -82,6 +83,10 @@ export type MainNavigationItem = {
   productKey?: MainProductKey;
   productKeys?: MainProductKey[];
   requiredActions?: MainAccessAction[];
+  module?: {
+    actions: Extract<MainAccessAction, "view" | "add" | "edit">[];
+    mockRecordIds?: string[];
+  };
   children?: MainNavigationItem[];
 };
 
@@ -142,6 +147,7 @@ export type MainBranch = {
   code: string;
   name: string;
   href: string;
+  kind?: "branch" | "satellite";
   isMain?: boolean;
   access: Partial<Record<MainAccessAction, boolean>>;
 };

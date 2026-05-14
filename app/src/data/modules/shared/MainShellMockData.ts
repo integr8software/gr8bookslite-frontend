@@ -1,4 +1,5 @@
 import type {
+  MainBranch,
   MainCompany,
   MainDashboardWidget,
   MainNotification,
@@ -7,6 +8,7 @@ import type {
   MainUserRole,
   MainUserType,
 } from "@/app/src/data/modules/shared/MainLayoutTypes";
+import { AppName } from "@/app/src/data/shared/AppConstants";
 
 const MainSubscriptionPlans: MainSubscriptionOption[] = [
   {
@@ -76,6 +78,7 @@ export const MainLayoutMockData = {
         "maintenance.mail": { view: true, edit: true },
         "maintenance.item": { view: true, add: true, edit: true },
         "maintenance.warehouse": { view: true, add: true },
+        "maintenance.warehouse.access": { view: true, add: true, edit: true },
         "maintenance.approval": { view: true, edit: true },
         "maintenance.workflow": { view: true },
         "maintenance.audit": { view: true },
@@ -99,7 +102,7 @@ export const MainLayoutMockData = {
   },
   currentCompany: {
     id: "cmp-001",
-    name: "Gr8Books Lite",
+    name: AppName,
     businessKind: "Accounting software",
     totalBranches: 3,
     branchCode: "MAIN",
@@ -108,7 +111,7 @@ export const MainLayoutMockData = {
   availableCompanies: [
     {
       id: "cmp-001",
-      name: "Gr8Books Lite",
+      name: AppName,
       businessKind: "Accounting software",
       totalBranches: 3,
       branchCode: "MAIN",
@@ -133,6 +136,7 @@ export const MainLayoutMockData = {
       code: "MAIN",
       name: "Main Branch",
       href: "/dashboard",
+      kind: "branch",
       isMain: true,
       access: { view: true, edit: true },
     },
@@ -141,16 +145,18 @@ export const MainLayoutMockData = {
       code: "NORTH",
       name: "North Branch",
       href: "/dashboard",
+      kind: "branch",
       access: { view: true },
     },
     {
       id: "branch-south",
       code: "SOUTH",
-      name: "South Branch",
+      name: "South Satellite",
       href: "/dashboard",
-      access: { view: false },
+      kind: "satellite",
+      access: { view: true },
     },
-  ],
+  ] satisfies MainBranch[],
   favoriteNavigationKeys: [
     "dashboard-overview",
     "cash-receipt-official-receipt",

@@ -10,8 +10,8 @@ export function ModulePreviewPage({ data }: ModulePreviewPageProps) {
   const Icon = data.icon;
 
   return (
-    <div className="mx-auto flex w-full max-w-[94rem] flex-col gap-6">
-      <section className="overflow-hidden rounded-[2rem] border border-darknavy/10 bg-white shadow-[0_24px_70px_rgba(33,39,56,0.08)]">
+    <div className="mx-auto flex w-full max-w-376 flex-col gap-6">
+      <section className="overflow-hidden rounded-4xl border border-darknavy/10 bg-white shadow-[0_24px_70px_rgba(33,39,56,0.08)]">
         <div className="relative px-6 py-8 sm:px-8 sm:py-10">
           <div className="absolute inset-x-0 top-0 h-36 bg-[radial-gradient(circle_at_top_left,rgba(87,196,229,0.28),transparent_55%),radial-gradient(circle_at_top_right,rgba(249,112,104,0.18),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,1))]" />
           <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
@@ -52,7 +52,7 @@ export function ModulePreviewPage({ data }: ModulePreviewPageProps) {
         {data.metrics.map((metric) => (
           <article
             key={metric.label}
-            className="rounded-[1.5rem] border border-darknavy/10 bg-white p-5 shadow-[0_18px_50px_rgba(33,39,56,0.06)]"
+            className="rounded-3xl border border-darknavy/10 bg-white p-5 shadow-[0_18px_50px_rgba(33,39,56,0.06)]"
           >
             <p className="text-sm font-medium text-darknavy/55">{metric.label}</p>
             <p className="mt-3 text-3xl font-semibold tracking-tight text-darknavy">
@@ -121,7 +121,7 @@ type PreviewSurfaceProps = {
 
 function PreviewSurface({ description, icon: Icon, title }: PreviewSurfaceProps) {
   return (
-    <div className="rounded-[1.5rem] border border-dashed border-darknavy/15 bg-[linear-gradient(180deg,rgba(87,196,229,0.08),rgba(255,255,255,0.9))] p-5">
+    <div className="rounded-3xl border border-dashed border-darknavy/15 bg-[linear-gradient(180deg,rgba(87,196,229,0.08),rgba(255,255,255,0.9))] p-5">
       <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-darknavy shadow-sm">
         <Icon className="h-5 w-5" aria-hidden="true" />
       </span>

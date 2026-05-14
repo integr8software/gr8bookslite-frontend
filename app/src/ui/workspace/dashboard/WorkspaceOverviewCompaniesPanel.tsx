@@ -1,4 +1,4 @@
-import { Check, Plus, Search } from "lucide-react";
+import { Check, GitBranch, Plus, Search } from "lucide-react";
 import type { WorkspaceCompanyRecord } from "@/app/src/data/modules/dashboard/WorkspaceOverviewData";
 
 type WorkspaceOverviewCompaniesPanelProps = {
@@ -45,6 +45,12 @@ export function WorkspaceOverviewCompaniesPanel({
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-darknavy">
                 {company.name}
+              </p>
+              <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-darknavy/45">
+                <GitBranch className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="truncate">
+                  {company.branchName} ({company.branchCode})
+                </span>
               </p>
             </div>
             <span className={statusTone(company.status)}>{company.status}</span>

@@ -36,8 +36,8 @@ import type {
   MainNotificationTab,
 } from "@/app/src/hooks/modules/shared/useMainLayout";
 import { useLogout } from "@/app/src/hooks/auth/useLogout";
-import { MainNotificationsPanel } from "@/app/src/ui/modules/shared/MainNotificationsPanel";
-import { MainSearchPanel } from "@/app/src/ui/modules/shared/MainSearchPanel";
+import { MainNotificationsPanel } from "./MainNotificationsPanel";
+import { MainSearchPanel } from "./MainSearchPanel";
 
 type MainTopbarProps = {
   activeHref: string;
@@ -138,7 +138,12 @@ export function MainTopbar({
     openSwitcherState.href === activeHref ? openSwitcherState.key : null;
   const isProfileMenuOpen = profileMenuOpenPath === activeHref;
   const userDescriptor = getTopbarUserDescriptor(currentUser);
-  const homeHref = "/dashboard";
+  const homeHref =
+    activeNavigationScope === "workspace"
+      ? "/workspace/dashboard"
+      : "/dashboard";
+  const settingsHref =
+    activeNavigationScope === "workspace" ? "/workspace/settings" : "/settings";
   const hasMobileWorkspaceControls =
     canSwitchCompany || activeNavigationScope === "company";
   const mobileFloatingPanelTopClass = hasMobileWorkspaceControls
@@ -483,7 +488,7 @@ export function MainTopbar({
                   onClick={() => setProfileMenuOpenPath(null)}
                 />
                 <ProfileMenuLink
-                  href="/settings"
+                  href={settingsHref}
                   icon={Settings}
                   label="Settings"
                   onClick={() => setProfileMenuOpenPath(null)}
@@ -637,7 +642,7 @@ function CompanySwitcher({
           {availableCompanies.map((company) => (
             <SwitcherButton
               key={company.id}
-              description={company.helperText}
+              description={getCompanySwitcherDescription(company)}
               icon={Building2}
               isActive={!isWorkspaceActive && company.id === currentCompany.id}
               label={company.name}
@@ -784,6 +789,15 @@ function getSwitcherMenuClassName(variant: SwitcherVariant) {
   );
 }
 
+function getCompanySwitcherDescription(company: MainCompany) {
+  const branchLabel =
+    company.branchName && company.branchCode
+      ? `${company.branchName} (${company.branchCode})`
+      : company.branchName;
+
+  return [company.helperText, branchLabel].filter(Boolean).join(" - ");
+}
+
 type SwitcherButtonProps = {
   description?: string;
   icon: LucideIcon;
@@ -803,9 +817,19 @@ function SwitcherButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+      className={joinClasses(
+        "flex w-full items-start gap-3 rounded-2xl px-3 py-2.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+        isActive
+          ? "bg-blue-50 text-blue-600 ring-1 ring-blue-100"
+          : "text-darknavy hover:bg-blue-50/70",
+      )}
     >
-      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-skyblue/15 text-darknavy">
+      <span
+        className={joinClasses(
+          "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white shadow-sm",
+          isActive ? "text-blue-600" : "text-darknavy",
+        )}
+      >
         <Icon className="h-4 w-4" aria-hidden="true" />
       </span>
       <span className="min-w-0 flex-1">
@@ -819,7 +843,9 @@ function SwitcherButton({
         ) : null}
       </span>
       {isActive ? (
-        <Check className="mt-2 h-4 w-4 shrink-0 text-skyblue" aria-hidden="true" />
+        <span className="mt-1 inline-flex min-h-6 items-center rounded-full bg-blue-600 px-3 text-xs font-semibold text-white">
+          Current
+        </span>
       ) : null}
     </button>
   );

@@ -109,7 +109,6 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
   "dashboard-management": LayoutDashboard,
   "maintenance-financial": Landmark,
   "maintenance-charts-of-accounts": ListTree,
-  "maintenance-bank": Landmark,
   "maintenance-currency": Coins,
   "maintenance-discount": BadgePercent,
   "maintenance-term": CalendarClock,
@@ -151,6 +150,7 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
   "maintenance-approval": ShieldCheck,
   "maintenance-audit": Activity,
   "maintenance-mail": Mail,
+  "system-transaction-numbering": ReceiptText,
 };
 
 export function MainSidebar({
@@ -489,16 +489,21 @@ function SidebarItem({
           onClick={() => onToggleExpandedKey(item.key)}
           aria-expanded={isExpanded}
           className={joinClasses(
-            "flex min-h-9 w-full items-center gap-2 rounded-md py-2 text-left text-sm transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+            "group relative flex min-h-9 w-full items-center gap-2 rounded-md py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
             paddingClass,
-            isActive ? "bg-skyblue/10 font-semibold text-darknavy" : "text-darknavy/70",
+            isActive
+              ? "rounded-2xl bg-blue-50 font-semibold text-blue-600 shadow-[0_8px_20px_rgba(37,99,235,0.10)] ring-1 ring-blue-100 hover:bg-blue-50"
+              : "text-darknavy/70 hover:bg-blue-50/70 hover:text-blue-600",
           )}
         >
           {shouldShowIcon ? renderSidebarItemIcon(item, isActive) : null}
           <span className="min-w-0 flex-1 truncate">{item.label}</span>
           <ChevronRight
             className={joinClasses(
-              "h-4 w-4 shrink-0 text-darknavy/40 transition",
+              "h-4 w-4 shrink-0 transition",
+              isActive
+                ? "text-blue-500/70"
+                : "text-darknavy/40 group-hover:text-blue-500",
               isExpanded && "rotate-90",
             )}
             aria-hidden="true"
@@ -545,18 +550,20 @@ function SidebarItem({
       href={item.href}
       onClick={handleMobileNavigation(onNavigate)}
       className={joinClasses(
-        "flex min-h-9 items-center gap-2 rounded-md py-2 text-sm transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+        "group relative flex min-h-9 items-center gap-2 rounded-md py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
         paddingClass,
         depth < 0 && "font-semibold",
-        isActive ? "bg-skyblue/15 font-semibold text-darknavy" : "text-darknavy/65",
+        isActive
+          ? "rounded-2xl bg-blue-50 font-semibold text-blue-600 shadow-[0_8px_20px_rgba(37,99,235,0.10)] ring-1 ring-blue-100 hover:bg-blue-50"
+          : "text-darknavy/65 hover:bg-blue-50/70 hover:text-blue-600",
       )}
     >
       {shouldShowIcon ? renderSidebarItemIcon(item, isActive) : null}
       {shouldShowModuleDot ? (
         <span
           className={joinClasses(
-            "h-1.5 w-1.5 shrink-0 rounded-full",
-            isActive ? "bg-skyblue" : "bg-darknavy/30",
+            "h-1.5 w-1.5 shrink-0 rounded-full transition-[background-color,box-shadow] group-hover:bg-blue-500 group-hover:shadow-[0_0_8px_rgba(37,99,235,0.38)]",
+            isActive ? "bg-darknavy/25" : "bg-darknavy/30",
           )}
           aria-hidden="true"
         />
@@ -570,8 +577,8 @@ function renderSidebarItemIcon(item: MainNavigationItem, isActive: boolean) {
   return createElement(getSidebarItemIcon(item), {
     "aria-hidden": true,
     className: joinClasses(
-      "h-4 w-4 shrink-0",
-      isActive ? "text-skyblue" : "text-darknavy/45",
+      "h-4 w-4 shrink-0 transition-[color,filter] group-hover:text-blue-600 group-hover:drop-shadow-[0_0_8px_rgba(37,99,235,0.38)]",
+      isActive ? "text-blue-600" : "text-darknavy/45",
     ),
   });
 }

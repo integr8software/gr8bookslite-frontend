@@ -9,6 +9,7 @@
   --skyblue: #57c4e5;
   --background: var(--offwhite);
   --foreground: var(--darknavy);
+  --font-inter: "Inter";
 }
 
 @theme inline {

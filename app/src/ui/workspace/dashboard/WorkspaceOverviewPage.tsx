@@ -16,7 +16,7 @@ export function WorkspaceOverviewPage() {
   ).length;
 
   return (
-    <div className="mx-auto flex w-full max-w-[94rem] flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-376 flex-col gap-6">
       <section className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
         <WorkspaceOverviewCompaniesPanel companies={WorkspaceCompanies} />
 

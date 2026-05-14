@@ -11,7 +11,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
   article(
     "help-workspace",
     "Workspace Dashboard",
-    "/dashboard",
+    "/workspace/dashboard",
     "Manage global administration and cross-company visibility from one dashboard.",
     [
       "The workspace dashboard is used by super administrators for cross-company administration, company records, users, permissions, settings, and audit visibility.",
@@ -22,7 +22,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
   article(
     "help-workspace-dashboard",
     "Workspace Dashboard",
-    "/dashboard",
+    "/workspace/dashboard",
     "Review administrative dashboard views across the workspace.",
     [
       "Workspace dashboards summarize platform-level activity such as active companies, shared setup work, user administration, and approval queues.",
@@ -33,7 +33,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
   article(
     "help-workspace-companies",
     "Companies",
-    "/companies",
+    "/workspace/companies",
     "Create and maintain company records available to the workspace.",
     [
       "Company records define the business entities users can access from the topbar switcher.",
@@ -44,7 +44,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
   article(
     "help-workspace-users",
     "Users & Roles",
-    "/users-roles",
+    "/workspace/users-roles",
     "Administer users who can access workspace and company modules.",
     [
       "Workspace user management controls user identity, role assignment, and access to administrative capabilities.",
@@ -55,7 +55,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
   article(
     "help-workspace-approval",
     "Permissions",
-    "/permissions",
+    "/workspace/permissions",
     "Maintain permission controls for administrative workflows.",
     [
       "Approval management defines how requests are reviewed before sensitive actions are completed.",
@@ -66,7 +66,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
   article(
     "help-workspace-mail",
     "Settings",
-    "/settings",
+    "/workspace/settings",
     "Maintain reusable workspace settings for notifications and system behavior.",
     [
       "Mail maintenance stores templates and delivery settings used by system notifications.",
@@ -77,7 +77,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
   article(
     "help-workspace-audit",
     "Workspace Audit Logs",
-    "/audit-logs",
+    "/workspace/audit-logs",
     "Review administrative activity and system changes.",
     [
       "Audit logs help administrators trace important changes, user actions, and configuration updates.",
@@ -124,10 +124,10 @@ export const MainHelpArticles: MainHelpArticle[] = [
     "/maintenance/financial-management",
     "Configure accounting master files used across financial transactions.",
     [
-      "Financial Management groups setup records such as charts of accounts, banks, currencies, discounts, payment terms, and transaction types.",
+      "Financial Management groups setup records such as charts of accounts, currencies, discounts, payment terms, and transaction types.",
       "These records support accounting documents, ledgers, receivables, payables, and financial reports.",
     ],
-    ["help-charts-of-accounts", "help-bank-management", "help-financial-reports"],
+    ["help-charts-of-accounts", "help-currency", "help-financial-reports"],
   ),
   article(
     "help-charts-of-accounts",
@@ -139,17 +139,6 @@ export const MainHelpArticles: MainHelpArticle[] = [
       "Keep account names, account types, and posting behavior aligned with the company's reporting requirements.",
     ],
     ["help-general-journal", "help-financial-reports"],
-  ),
-  article(
-    "help-bank-management",
-    "Bank Management",
-    "/maintenance/bank-management",
-    "Maintain bank accounts and banking references.",
-    [
-      "Bank Management stores bank names, account details, and references used for receipts, disbursements, and reconciliation.",
-      "Clean bank records reduce duplicate setup and make cash transactions easier to trace.",
-    ],
-    ["help-cash-receipt", "help-cash-disbursement"],
   ),
   article(
     "help-currency",
@@ -256,10 +245,10 @@ export const MainHelpArticles: MainHelpArticle[] = [
     "/cash-receipt",
     "Record collections, official receipts, acknowledgement receipts, and related cash-in activity.",
     [
-      "Cash Receipt modules capture incoming payments and collection documents tied to customers, banks, invoices, or other references.",
+      "Cash Receipt modules capture incoming payments and collection documents tied to customers, invoices, payment references, or other records.",
       "Receipt records support cash monitoring, reconciliation, audit review, and accounting reports.",
     ],
-    ["help-bank-management", "help-sales", "help-financial-reports"],
+    ["help-system-transaction-numbering", "help-sales", "help-financial-reports"],
   ),
   article(
     "help-cash-disbursement",
@@ -270,7 +259,7 @@ export const MainHelpArticles: MainHelpArticle[] = [
       "Cash Disbursement modules manage payment documents such as disbursement vouchers, request for payment, petty cash, replenishments, and advances.",
       "Use disbursement records to control cash-out activity and keep payment approvals, references, and postings traceable.",
     ],
-    ["help-bank-management", "help-accounts-payable", "help-financial-reports"],
+    ["help-system-transaction-numbering", "help-accounts-payable", "help-financial-reports"],
   ),
   article(
     "help-accounts-payable",
@@ -359,6 +348,17 @@ export const MainHelpArticles: MainHelpArticle[] = [
       "Approval rules help enforce review before users complete sensitive or high-impact actions.",
     ],
     ["help-workspace-approval", "help-permissions"],
+  ),
+  article(
+    "help-system-transaction-numbering",
+    "Transaction Numbering",
+    "/system-administration/transaction-numbering",
+    "Configure transaction ID formats and running numbers.",
+    [
+      "Transaction Numbering defines document prefixes, digit padding, and sequence patterns such as DV000001.",
+      "Use this setup to keep vouchers, receipts, journals, and other transaction IDs consistent across the company.",
+    ],
+    ["help-system-audit", "help-cash-disbursement"],
   ),
   article(
     "help-system-audit",

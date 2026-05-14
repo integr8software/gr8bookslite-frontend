@@ -39,6 +39,10 @@ const DefaultExpandedKeys = [
   "reporting-analytics",
 ];
 
+const WorkspaceRoutePrefix = "/workspace";
+const WorkspaceHomeHref = "/workspace/dashboard";
+const CompanyHomeHref = "/dashboard";
+
 export type MainQuickListTab = "favorites" | "recent";
 
 export type MainNotificationTab = "all" | "unread" | "read";
@@ -94,10 +98,8 @@ export function useMainLayout() {
   );
   const isSuperAdmin =
     MainLayoutMockData.currentUser.userRole === "Super Admin";
-  const [activeNavigationScope, setActiveNavigationScope] =
-    useState<MainNavigationScope>(() =>
-      isSuperAdmin ? "workspace" : "company",
-    );
+  const activeNavigationScope: MainNavigationScope =
+    isSuperAdmin && isWorkspacePath(pathname) ? "workspace" : "company";
   const [activeCompanyId, setActiveCompanyId] = useState(
     MainLayoutMockData.currentCompany.id,
   );
@@ -383,15 +385,13 @@ export function useMainLayout() {
 
   function selectBranch(branchId: string) {
     setActiveBranchId(branchId);
-    setActiveNavigationScope("company");
   }
 
   function selectCompany(companyId: string) {
     setActiveCompanyId(companyId);
-    setActiveNavigationScope("company");
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
-    router.push("/dashboard");
+    router.push(CompanyHomeHref);
   }
 
   function switchToWorkspace() {
@@ -399,10 +399,9 @@ export function useMainLayout() {
       return;
     }
 
-    setActiveNavigationScope("workspace");
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
-    router.push("/dashboard");
+    router.push(WorkspaceHomeHref);
   }
 
   function markNotificationAsRead(notificationId: string) {
@@ -589,6 +588,13 @@ function findItemTrail(
 
 function pathMatches(href: string, pathname: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function isWorkspacePath(pathname: string) {
+  return (
+    pathname === WorkspaceRoutePrefix ||
+    pathname.startsWith(`${WorkspaceRoutePrefix}/`)
+  );
 }
 
 function getPathFallbackTitle(pathname: string) {

@@ -25,7 +25,6 @@ export type MainAccessKey =
   | "canvass"
   | "fixedAsset"
   | "maintenance.chartOfAccounts"
-  | "maintenance.bank"
   | "maintenance.currency"
   | "maintenance.party"
   | "maintenance.discount"
@@ -111,6 +110,8 @@ export type MainSearchItem = {
 export type MainCompany = {
   id: string;
   name: string;
+  branchCode?: string;
+  branchName?: string;
   helperText?: string;
 };
 

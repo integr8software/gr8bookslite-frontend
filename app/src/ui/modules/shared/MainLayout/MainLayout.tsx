@@ -8,15 +8,15 @@ import {
   useMainLayout,
   type MainBreadcrumb,
 } from "@/app/src/hooks/modules/shared/useMainLayout";
-import { MainNavigationProgress } from "@/app/src/ui/modules/shared/MainNavigationProgress";
-import { MainNotificationsPanel } from "@/app/src/ui/modules/shared/MainNotificationsPanel";
-import { MainSidebar } from "@/app/src/ui/modules/shared/MainSidebar";
-import { MainTopbar } from "@/app/src/ui/modules/shared/MainTopbar";
-import { NoBranchAccess } from "@/app/src/ui/modules/shared/NoBranchAccess";
+import { MainNavigationProgress } from "./MainNavigationProgress";
+import { MainNotificationsPanel } from "./MainNotificationsPanel";
+import { MainSidebar } from "./MainSidebar";
+import { MainTopbar } from "./MainTopbar";
+import { NoBranchAccess } from "./NoBranchAccess";
 
 const MainHelpModal = dynamic(
   () =>
-    import("@/app/src/ui/modules/shared/MainHelpModal").then(
+    import("./MainHelpModal").then(
       (mod) => mod.MainHelpModal,
     ),
   {
@@ -84,6 +84,10 @@ export function MainLayout({ children }: MainLayoutProps) {
   } = useMainLayout();
   const shouldShowBranchContent =
     activeNavigationScope !== "company" || hasBranchAccess;
+  const homeHref =
+    activeNavigationScope === "workspace"
+      ? "/workspace/dashboard"
+      : "/dashboard";
 
   return (
     <div className="min-h-screen max-w-full overflow-x-clip bg-white text-darknavy">
@@ -149,9 +153,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           enabledQuickListTabs={enabledQuickListTabs}
           expandedKeys={expandedKeys}
           favoriteModules={favoriteModules}
-          homeHref={
-            "/dashboard"
-          }
+          homeHref={homeHref}
           isOpen={isSidebarOpen}
           navigationSections={navigationSections}
           quickListTab={quickListTab}

@@ -15,6 +15,8 @@ export type WorkspaceCompanyRecord = {
   id: string;
   initials: string;
   name: string;
+  branchCode: string;
+  branchName: string;
   status: "Active" | "Inactive";
   monthlyRevenue: string;
   monthlyExpenses: string;
@@ -56,6 +58,8 @@ export const WorkspaceCompanies: WorkspaceCompanyRecord[] = [
     id: "company-gr8-construction",
     initials: "GC",
     name: "Gr8 Construction Inc.",
+    branchCode: "MAIN",
+    branchName: "Main Branch",
     status: "Active",
     monthlyRevenue: "$4.25M",
     monthlyExpenses: "$3.10M",
@@ -67,6 +71,8 @@ export const WorkspaceCompanies: WorkspaceCompanyRecord[] = [
     id: "company-gr8-technologies",
     initials: "GT",
     name: "Gr8 Technologies Corp.",
+    branchCode: "BGC",
+    branchName: "BGC Branch",
     status: "Active",
     monthlyRevenue: "$3.60M",
     monthlyExpenses: "$2.45M",
@@ -78,6 +84,8 @@ export const WorkspaceCompanies: WorkspaceCompanyRecord[] = [
     id: "company-gr8-retail",
     initials: "GR",
     name: "Gr8 Retail Solutions",
+    branchCode: "CEB",
+    branchName: "Cebu Branch",
     status: "Active",
     monthlyRevenue: "$2.30M",
     monthlyExpenses: "$1.80M",
@@ -89,6 +97,8 @@ export const WorkspaceCompanies: WorkspaceCompanyRecord[] = [
     id: "company-gr8-manufacturing",
     initials: "GM",
     name: "Gr8 Manufacturing Inc.",
+    branchCode: "LAG",
+    branchName: "Laguna Plant",
     status: "Active",
     monthlyRevenue: "$1.75M",
     monthlyExpenses: "$1.40M",
@@ -100,6 +110,8 @@ export const WorkspaceCompanies: WorkspaceCompanyRecord[] = [
     id: "company-gr8-services",
     initials: "GS",
     name: "Gr8 Services Group",
+    branchCode: "MKT",
+    branchName: "Makati Branch",
     status: "Inactive",
     monthlyRevenue: "$550K",
     monthlyExpenses: "$480K",

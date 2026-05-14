@@ -1,4 +1,4 @@
-import { ArrowRight, MoreVertical } from "lucide-react";
+import { ArrowRight, GitBranch, MoreVertical } from "lucide-react";
 import type {
   WorkspaceApprovalItem,
   WorkspaceCompanyRecord,
@@ -34,7 +34,7 @@ export function WorkspaceOverviewPanels({
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] border-separate border-spacing-0 text-left">
+            <table className="w-full min-w-190 border-separate border-spacing-0 text-left">
               <thead>
                 <tr className="text-xs font-semibold uppercase tracking-[0.16em] text-darknavy/42">
                   <th className="border-b border-darknavy/8 px-6 py-4">Company</th>
@@ -121,7 +121,15 @@ function CompanyPerformanceRow({
           >
             {company.initials}
           </span>
-          <span className="font-semibold">{company.name}</span>
+          <span className="min-w-0">
+            <span className="block truncate font-semibold">{company.name}</span>
+            <span className="mt-1 flex min-w-0 items-center gap-1.5 text-xs font-medium text-darknavy/45">
+              <GitBranch className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">
+                {company.branchName} ({company.branchCode})
+              </span>
+            </span>
+          </span>
         </div>
       </td>
       <td className="border-b border-darknavy/6 px-4 py-4">
@@ -212,7 +220,7 @@ function TimelinePanel({
           return (
             <div
               key={item.id}
-              className="flex gap-4 rounded-[1.5rem] border border-darknavy/8 bg-offwhite px-4 py-4"
+              className="flex gap-4 rounded-3xl border border-darknavy/8 bg-offwhite px-4 py-4"
             >
               <span
                 className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${summaryTone(item.tone)}`}

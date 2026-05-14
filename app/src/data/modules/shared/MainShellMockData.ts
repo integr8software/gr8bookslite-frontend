@@ -100,6 +100,8 @@ export const MainLayoutMockData = {
   currentCompany: {
     id: "cmp-001",
     name: "Gr8Books Lite",
+    businessKind: "Accounting software",
+    totalBranches: 3,
     branchCode: "MAIN",
     branchName: "Main Branch",
   },
@@ -107,6 +109,8 @@ export const MainLayoutMockData = {
     {
       id: "cmp-001",
       name: "Gr8Books Lite",
+      businessKind: "Accounting software",
+      totalBranches: 3,
       branchCode: "MAIN",
       branchName: "Main Branch",
       helperText: "Primary company",
@@ -114,6 +118,8 @@ export const MainLayoutMockData = {
     {
       id: "cmp-002",
       name: "Demo Trading Corp.",
+      businessKind: "Trading",
+      totalBranches: 1,
       branchCode: "NORTH",
       branchName: "North Branch",
       helperText: "Trading group",

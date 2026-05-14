@@ -110,6 +110,8 @@ export type MainSearchItem = {
 export type MainCompany = {
   id: string;
   name: string;
+  businessKind?: string;
+  totalBranches?: number;
   branchCode?: string;
   branchName?: string;
   helperText?: string;

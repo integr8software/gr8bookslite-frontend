@@ -790,6 +790,15 @@ function getSwitcherMenuClassName(variant: SwitcherVariant) {
 }
 
 function getCompanySwitcherDescription(company: MainCompany) {
+  const branchCountLabel =
+    typeof company.totalBranches === "number"
+      ? `${company.totalBranches} ${company.totalBranches === 1 ? "branch" : "branches"}`
+      : undefined;
+
+  if (company.businessKind || branchCountLabel) {
+    return [company.businessKind, branchCountLabel].filter(Boolean).join(" - ");
+  }
+
   const branchLabel =
     company.branchName && company.branchCode
       ? `${company.branchName} (${company.branchCode})`

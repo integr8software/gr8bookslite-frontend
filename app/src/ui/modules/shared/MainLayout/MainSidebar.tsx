@@ -280,7 +280,7 @@ export function MainSidebar({
             </div>
           ) : null}
 
-          <div className="space-y-4">
+          <div className="space-y-2">
             {navigationSections.map((section) =>
               section.key === "workspace" || section.key === "workspace-modules" ? (
                 <div key={section.key} className="space-y-3">
@@ -466,9 +466,9 @@ function SidebarItem({
       ? "px-3"
       : depth === 0
         ? "pl-8 pr-3"
-      : depth === 1
-        ? "pl-11 pr-3"
-        : "pl-14 pr-3";
+        : depth === 1
+          ? "pl-11 pr-3"
+          : "pl-14 pr-3";
   const [
     childVisibleCount,
     hasMoreChildItems,

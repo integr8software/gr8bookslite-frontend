@@ -110,7 +110,7 @@ export function MainHelpModal({
               {selectedArticle.summary}
             </p>
 
-            <div className="mt-6 space-y-4">
+            <div className="mt-4 space-y-2">
               {selectedArticle.content.map((paragraph) => (
                 <p
                   key={paragraph}

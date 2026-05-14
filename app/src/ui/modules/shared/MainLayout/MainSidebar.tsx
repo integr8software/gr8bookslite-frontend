@@ -563,7 +563,9 @@ function SidebarItem({
         <span
           className={joinClasses(
             "h-1.5 w-1.5 shrink-0 rounded-full transition-[background-color,box-shadow] group-hover:bg-blue-500 group-hover:shadow-[0_0_8px_rgba(37,99,235,0.38)]",
-            isActive ? "bg-darknavy/25" : "bg-darknavy/30",
+            isActive
+              ? "bg-blue-500 shadow-[0_0_8px_rgba(37,99,235,0.38)]"
+              : "bg-darknavy/30",
           )}
           aria-hidden="true"
         />
@@ -578,7 +580,9 @@ function renderSidebarItemIcon(item: MainNavigationItem, isActive: boolean) {
     "aria-hidden": true,
     className: joinClasses(
       "h-4 w-4 shrink-0 transition-[color,filter] group-hover:text-blue-600 group-hover:drop-shadow-[0_0_8px_rgba(37,99,235,0.38)]",
-      isActive ? "text-blue-600" : "text-darknavy/45",
+      isActive
+        ? "text-blue-600 drop-shadow-[0_0_8px_rgba(37,99,235,0.38)]"
+        : "text-darknavy/45",
     ),
   });
 }

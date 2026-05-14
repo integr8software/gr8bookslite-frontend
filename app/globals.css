@@ -19,18 +19,36 @@
   --color-citron: var(--citron);
   --color-offwhite: var(--offwhite);
   --color-skyblue: var(--skyblue);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), Arial, Helvetica, sans-serif;
+  --font-mono: "Courier New", Courier, monospace;
 }
 
 body {
   background: white;
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
 }
 
 button {
   cursor: pointer;
+}
+
+.workspace-dashboard-layout {
+  grid-auto-flow: dense;
+  grid-auto-rows: 8px;
+}
+
+.workspace-dashboard-section {
+  grid-column: span 1 / span 1;
+  grid-row: span var(--dashboard-section-row-span, 1) /
+    span var(--dashboard-section-row-span, 1);
+}
+
+@media (min-width: 1280px) {
+  .workspace-dashboard-section {
+    grid-column: span var(--dashboard-section-span) /
+      span var(--dashboard-section-span);
+  }
 }
 
 ::view-transition-old(.auth-forward) {

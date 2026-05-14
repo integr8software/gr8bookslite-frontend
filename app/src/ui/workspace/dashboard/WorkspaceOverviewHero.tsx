@@ -1,6 +1,22 @@
-import { CalendarDays, ChevronDown, Plus } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronDown,
+  LayoutDashboard,
+  Plus,
+  SlidersHorizontal,
+} from "lucide-react";
 
-export function WorkspaceOverviewHero() {
+type WorkspaceOverviewHeroProps = {
+  isEditingLayout: boolean;
+  onCustomize: () => void;
+  onToggleLayoutEditing: () => void;
+};
+
+export function WorkspaceOverviewHero({
+  isEditingLayout,
+  onCustomize,
+  onToggleLayoutEditing,
+}: WorkspaceOverviewHeroProps) {
   return (
     <section className="overflow-hidden rounded-[1.75rem] border border-darknavy/10 bg-white shadow-[0_20px_60px_rgba(33,39,56,0.08)]">
       <div className="relative px-6 py-7 sm:px-8">
@@ -16,6 +32,26 @@ export function WorkspaceOverviewHero() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={onCustomize}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+            >
+              <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+              Customize
+            </button>
+            <button
+              type="button"
+              onClick={onToggleLayoutEditing}
+              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 ${
+                isEditingLayout
+                  ? "bg-darknavy text-offwhite hover:bg-darknavy/90"
+                  : "border border-darknavy/10 bg-white text-darknavy hover:border-skyblue/35 hover:bg-skyblue/8"
+              }`}
+            >
+              <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+              {isEditingLayout ? "Done Layout" : "Edit Layout"}
+            </button>
             <button
               type="button"
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"

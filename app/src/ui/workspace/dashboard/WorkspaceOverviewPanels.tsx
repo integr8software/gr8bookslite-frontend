@@ -9,6 +9,10 @@ type WorkspaceOverviewPanelsProps = {
   approvals: WorkspaceApprovalItem[];
   companies: WorkspaceCompanyRecord[];
   recentActivity: WorkspaceTimelineItem[];
+  showApprovals: boolean;
+  showPerformance: boolean;
+  showRecentActivity: boolean;
+  showSystemNotifications: boolean;
   systemNotifications: WorkspaceTimelineItem[];
 };
 
@@ -16,93 +20,139 @@ export function WorkspaceOverviewPanels({
   approvals,
   companies,
   recentActivity,
+  showApprovals,
+  showPerformance,
+  showRecentActivity,
+  showSystemNotifications,
   systemNotifications,
 }: WorkspaceOverviewPanelsProps) {
+  const showPrimaryRow = showPerformance || showApprovals;
+  const showTimelineRow = showRecentActivity || showSystemNotifications;
+
   return (
     <>
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.75fr)_420px]">
-        <article className="overflow-hidden rounded-[1.75rem] border border-darknavy/10 bg-white shadow-[0_20px_60px_rgba(33,39,56,0.08)]">
-          <div className="flex items-center justify-between gap-3 border-b border-darknavy/8 px-6 py-5">
-            <div>
-              <h3 className="text-xl font-semibold text-darknavy">
-                Company Performance Overview
-              </h3>
-              <p className="mt-1 text-sm text-darknavy/50">
-                Snapshot of this month&apos;s revenue, expenses, and momentum.
-              </p>
-            </div>
-          </div>
+      {showPrimaryRow ? (
+        <section
+          className={
+            showPerformance && showApprovals
+              ? "grid gap-6 xl:grid-cols-[minmax(0,1.75fr)_420px]"
+              : "grid gap-6"
+          }
+        >
+          {showPerformance ? (
+            <article className="overflow-hidden rounded-[1.75rem] border border-darknavy/10 bg-white shadow-[0_20px_60px_rgba(33,39,56,0.08)]">
+              <div className="flex items-center justify-between gap-3 border-b border-darknavy/8 px-6 py-5">
+                <div>
+                  <h3 className="text-xl font-semibold text-darknavy">
+                    Company Performance Overview
+                  </h3>
+                  <p className="mt-1 text-sm text-darknavy/50">
+                    Snapshot of this month&apos;s revenue, expenses, and momentum.
+                  </p>
+                </div>
+              </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-190 border-separate border-spacing-0 text-left">
-              <thead>
-                <tr className="text-xs font-semibold uppercase tracking-[0.16em] text-darknavy/42">
-                  <th className="border-b border-darknavy/8 px-6 py-4">Company</th>
-                  <th className="border-b border-darknavy/8 px-4 py-4">Status</th>
-                  <th className="border-b border-darknavy/8 px-4 py-4">Revenue</th>
-                  <th className="border-b border-darknavy/8 px-4 py-4">Expenses</th>
-                  <th className="border-b border-darknavy/8 px-4 py-4">Net Profit</th>
-                  <th className="border-b border-darknavy/8 px-4 py-4">Trend</th>
-                  <th className="border-b border-darknavy/8 px-6 py-4" />
-                </tr>
-              </thead>
-              <tbody>
-                {companies.map((company) => (
-                  <CompanyPerformanceRow key={company.id} company={company} />
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-190 border-separate border-spacing-0 text-left">
+                  <thead>
+                    <tr className="text-xs font-semibold uppercase tracking-[0.16em] text-darknavy/42">
+                      <th className="border-b border-darknavy/8 px-6 py-4">
+                        Company
+                      </th>
+                      <th className="border-b border-darknavy/8 px-4 py-4">
+                        Status
+                      </th>
+                      <th className="border-b border-darknavy/8 px-4 py-4">
+                        Revenue
+                      </th>
+                      <th className="border-b border-darknavy/8 px-4 py-4">
+                        Expenses
+                      </th>
+                      <th className="border-b border-darknavy/8 px-4 py-4">
+                        Net Profit
+                      </th>
+                      <th className="border-b border-darknavy/8 px-4 py-4">
+                        Trend
+                      </th>
+                      <th className="border-b border-darknavy/8 px-6 py-4" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {companies.map((company) => (
+                      <CompanyPerformanceRow
+                        key={company.id}
+                        company={company}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="px-6 py-5">
+                <button
+                  type="button"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl text-sm font-semibold text-skyblue transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+                >
+                  View all companies
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            </article>
+          ) : null}
+
+          {showApprovals ? (
+            <article className="overflow-hidden rounded-[1.75rem] border border-darknavy/10 bg-white shadow-[0_20px_60px_rgba(33,39,56,0.08)]">
+              <div className="flex items-center justify-between gap-3 border-b border-darknavy/8 px-6 py-5">
+                <div>
+                  <h3 className="text-xl font-semibold text-darknavy">
+                    Approval Queue
+                  </h3>
+                  <p className="mt-1 text-sm text-darknavy/50">
+                    Items that need action from workspace admins.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="text-sm font-semibold text-skyblue transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+                >
+                  View all
+                </button>
+              </div>
+
+              <div className="divide-y divide-darknavy/8">
+                {approvals.map((item) => (
+                  <ApprovalQueueItem key={item.id} item={item} />
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            </article>
+          ) : null}
+        </section>
+      ) : null}
 
-          <div className="px-6 py-5">
-            <button
-              type="button"
-              className="inline-flex min-h-10 items-center gap-2 rounded-xl text-sm font-semibold text-skyblue transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-            >
-              View all companies
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-        </article>
-
-        <article className="overflow-hidden rounded-[1.75rem] border border-darknavy/10 bg-white shadow-[0_20px_60px_rgba(33,39,56,0.08)]">
-          <div className="flex items-center justify-between gap-3 border-b border-darknavy/8 px-6 py-5">
-            <div>
-              <h3 className="text-xl font-semibold text-darknavy">
-                Approval Queue
-              </h3>
-              <p className="mt-1 text-sm text-darknavy/50">
-                Items that need action from workspace admins.
-              </p>
-            </div>
-            <button
-              type="button"
-              className="text-sm font-semibold text-skyblue transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-            >
-              View all
-            </button>
-          </div>
-
-          <div className="divide-y divide-darknavy/8">
-            {approvals.map((item) => (
-              <ApprovalQueueItem key={item.id} item={item} />
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[1.1fr_1fr]">
-        <TimelinePanel
-          title="Recent Activity"
-          subtitle="Cross-company updates for your workspace."
-          items={recentActivity}
-        />
-        <TimelinePanel
-          title="System Notifications"
-          subtitle="Important workspace notices and scheduled events."
-          items={systemNotifications}
-        />
-      </section>
+      {showTimelineRow ? (
+        <section
+          className={
+            showRecentActivity && showSystemNotifications
+              ? "grid gap-6 xl:grid-cols-[1.1fr_1fr]"
+              : "grid gap-6"
+          }
+        >
+          {showRecentActivity ? (
+            <TimelinePanel
+              title="Recent Activity"
+              subtitle="Cross-company updates for your workspace."
+              items={recentActivity}
+            />
+          ) : null}
+          {showSystemNotifications ? (
+            <TimelinePanel
+              title="System Notifications"
+              subtitle="Important workspace notices and scheduled events."
+              items={systemNotifications}
+            />
+          ) : null}
+        </section>
+      ) : null}
     </>
   );
 }
@@ -173,7 +223,9 @@ function ApprovalQueueItem({ item }: { item: WorkspaceApprovalItem }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-darknavy">{item.title}</p>
+            <p className="truncate text-sm font-semibold text-darknavy">
+              {item.title}
+            </p>
             <p className="mt-1 text-sm text-darknavy/52">{item.company}</p>
           </div>
           <div className="flex items-center gap-3">

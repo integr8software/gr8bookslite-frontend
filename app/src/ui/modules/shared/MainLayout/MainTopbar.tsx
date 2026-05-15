@@ -293,7 +293,7 @@ export function MainTopbar({
 
         <nav
           aria-label="Workspace controls"
-          className="hidden min-w-0 flex-1 items-center gap-2 md:flex md:max-w-[23rem] lg:max-w-[28rem] xl:max-w-[32rem]"
+          className="hidden min-w-0 flex-1 items-center gap-2 md:flex md:max-w-92 lg:max-w-md xl:max-w-lg"
         >
           {canSwitchCompany ? (
             <CompanySwitcher

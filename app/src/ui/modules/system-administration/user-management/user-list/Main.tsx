@@ -1,3 +1,1 @@
-export function UserListMain() {
-  return null;
-}
+export { UserListMain } from "./ui/Main";

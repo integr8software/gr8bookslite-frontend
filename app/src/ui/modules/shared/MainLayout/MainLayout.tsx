@@ -276,7 +276,7 @@ function MainPageHeader({ breadcrumbs, title }: MainPageHeaderProps) {
   }, [openBreadcrumbKey]);
 
   return (
-    <div className="mx-auto mb-4 flex w-full max-w-[94rem] flex-col gap-2">
+    <div className="mb-4 flex w-full flex-col gap-2">
       <nav
         ref={navRef}
         aria-label="Breadcrumb"

@@ -487,13 +487,6 @@ function BuildSidebarBadgeLabel(companyName: string) {
     .join("");
 }
 
-type QuickListButtonProps = {
-  icon: LucideIcon;
-  isActive: boolean;
-  label: string;
-  onClick: () => void;
-};
-
 type SidebarSectionProps = {
   activeHref: string;
   expandedKeys: string[];

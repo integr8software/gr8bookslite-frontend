@@ -263,6 +263,7 @@ export function useMainLayout() {
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- keep the layout company switcher synced with the loaded profile.
     setActiveCompanyId(String(authProfile.activeCompanyId));
   }, [authProfile?.activeCompanyId]);
 

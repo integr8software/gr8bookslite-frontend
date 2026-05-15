@@ -77,6 +77,13 @@ export function UserListTable() {
         header: "Email",
       },
       {
+        accessorKey: "contactNo",
+        header: "Contact No",
+        cell: ({ getValue }) => (
+          <span className="whitespace-nowrap">{getValue<string>()}</span>
+        ),
+      },
+      {
         accessorKey: "userType",
         header: "User Type",
         cell: ({ getValue }) => <TypeBadge value={getValue<string>()} />,
@@ -197,7 +204,7 @@ export function UserListTable() {
             Reset
           </button>
           <Link
-            href={`${UserListHref}/add/new`}
+            href={`${UserListHref}/add`}
             className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded bg-blue-600 px-4 text-xs font-semibold text-white shadow-sm shadow-blue-600/15 transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />

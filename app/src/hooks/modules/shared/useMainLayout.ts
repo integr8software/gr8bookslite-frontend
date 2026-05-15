@@ -762,6 +762,15 @@ function appendPathSegmentBreadcrumbs(
     .slice(lastHref.length)
     .split("/")
     .filter(Boolean);
+  const actionBreadcrumb = getActionBreadcrumb({
+    baseLabel: trail[trail.length - 1]?.label,
+    extraSegments,
+    pathname,
+  });
+
+  if (actionBreadcrumb) {
+    return [...trail, actionBreadcrumb];
+  }
 
   return [
     ...trail,
@@ -771,6 +780,32 @@ function appendPathSegmentBreadcrumbs(
       href: index === extraSegments.length - 1 ? pathname : undefined,
     })),
   ];
+}
+
+function getActionBreadcrumb({
+  baseLabel,
+  extraSegments,
+  pathname,
+}: {
+  baseLabel?: string;
+  extraSegments: string[];
+  pathname: string;
+}): NavigationTrailNode | null {
+  const [actionSegment] = extraSegments;
+
+  if (!baseLabel || !actionSegment || !isPageActionSegment(actionSegment)) {
+    return null;
+  }
+
+  return {
+    key: `path-${actionSegment}`,
+    label: `${titleFromPathSegment(actionSegment)} ${baseLabel}`,
+    href: pathname,
+  };
+}
+
+function isPageActionSegment(segment: string) {
+  return segment === "add" || segment === "edit" || segment === "view";
 }
 
 function findItemTrail(

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { UserTypeMain } from "@/app/src/ui/modules/system-administration/user-management/user-type/Main";
+import { UserTypePage } from "@/app/src/ui/modules/system-administration/user-management/user-type/UserTypePage";
 
 const PageTitle = "User Type";
 
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function SystemAdministrationUserTypePage() {
-  return <UserTypeMain />;
+  return <UserTypePage />;
 }

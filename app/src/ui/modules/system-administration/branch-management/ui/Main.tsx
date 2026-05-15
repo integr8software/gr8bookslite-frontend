@@ -5,24 +5,26 @@ import { BranchManagementHeader } from "./BranchManagementHeader";
 import { BranchManagementTable } from "./BranchManagementTable";
 
 export function BranchManagementMain() {
-  const branches = useBranchManagementStore((state) => state.branches);
-  const deleteBranch = useBranchManagementStore((state) => state.deleteBranch);
+	const branches = useBranchManagementStore((state) => state.branches);
+	const deleteBranch = useBranchManagementStore(
+		(state) => state.deleteBranch,
+	);
 
-  function handleDeleteBranch(branchId: string, branchName: string) {
-    if (!window.confirm(`Delete ${branchName}?`)) {
-      return;
-    }
+	function handleDeleteBranch(branchId: string, branchName: string) {
+		if (!window.confirm(`Delete ${branchName}?`)) {
+			return;
+		}
 
-    deleteBranch(branchId);
-  }
+		deleteBranch(branchId);
+	}
 
-  return (
-    <section className="grid gap-5">
-      <BranchManagementHeader />
-      <BranchManagementTable
-        branches={branches}
-        onDeleteBranch={handleDeleteBranch}
-      />
-    </section>
-  );
+	return (
+		<section className="grid gap-5">
+			<BranchManagementHeader />
+			<BranchManagementTable
+				branches={branches}
+				onDeleteBranch={handleDeleteBranch}
+			/>
+		</section>
+	);
 }

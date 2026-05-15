@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { UserGroupAction } from "@/app/src/ui/modules/system-administration/user-management/user-group/Action";
+import { UserGroupFormPage } from "@/app/src/ui/modules/system-administration/user-management/user-group/UserGroupFormPage";
 
 const PageTitle = "Add User Group";
 
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function SystemAdministrationUserGroupAddPage() {
-  return <UserGroupAction />;
+  return <UserGroupFormPage />;
 }

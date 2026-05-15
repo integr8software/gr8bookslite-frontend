@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { UserTypeAction } from "@/app/src/ui/modules/system-administration/user-management/user-type/Action";
+import { UserTypeFormPage } from "@/app/src/ui/modules/system-administration/user-management/user-type/UserTypeFormPage";
 
 const PageTitle = "Edit User Type";
 
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function SystemAdministrationUserTypeEditPage() {
-  return <UserTypeAction />;
+  return <UserTypeFormPage />;
 }

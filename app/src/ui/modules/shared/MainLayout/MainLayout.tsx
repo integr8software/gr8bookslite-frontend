@@ -50,7 +50,6 @@ export function MainLayout({ children }: MainLayoutProps) {
 		isNotificationsOpen,
 		isSearchOpen,
 		isSidebarOpen,
-		moduleTitle,
 		navigationSections,
 		notificationTab,
 		query,
@@ -180,10 +179,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 						isNotificationsOpen && "xl:mr-88",
 					)}
 				>
-					<MainPageHeader
-						breadcrumbs={breadcrumbs}
-						title={moduleTitle}
-					/>
+					<MainPageHeader breadcrumbs={breadcrumbs} />
 					<div className="mx-auto w-full max-w-[94rem]">
 						{shouldShowBranchContent ? (
 							children
@@ -237,10 +233,9 @@ export function MainLayout({ children }: MainLayoutProps) {
 
 type MainPageHeaderProps = {
 	breadcrumbs: MainBreadcrumb[];
-	title: string;
 };
 
-function MainPageHeader({ breadcrumbs, title }: MainPageHeaderProps) {
+function MainPageHeader({ breadcrumbs }: MainPageHeaderProps) {
 	const [openBreadcrumbKey, setOpenBreadcrumbKey] = useState<string | null>(
 		null,
 	);
@@ -372,9 +367,6 @@ function MainPageHeader({ breadcrumbs, title }: MainPageHeaderProps) {
 					);
 				})}
 			</nav>
-			<h1 className="text-2xl font-semibold tracking-tight text-darknavy sm:text-3xl">
-				{title}
-			</h1>
 		</div>
 	);
 }

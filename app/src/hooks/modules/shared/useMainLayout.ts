@@ -762,14 +762,13 @@ function appendPathSegmentBreadcrumbs(
     .slice(lastHref.length)
     .split("/")
     .filter(Boolean);
-  const actionBreadcrumb = getActionBreadcrumb({
-    baseLabel: trail[trail.length - 1]?.label,
+  const actionBreadcrumbs = getActionBreadcrumbs({
     extraSegments,
     pathname,
   });
 
-  if (actionBreadcrumb) {
-    return [...trail, actionBreadcrumb];
+  if (actionBreadcrumbs.length > 0) {
+    return [...trail, ...actionBreadcrumbs];
   }
 
   return [
@@ -782,26 +781,49 @@ function appendPathSegmentBreadcrumbs(
   ];
 }
 
-function getActionBreadcrumb({
-  baseLabel,
+function getActionBreadcrumbs({
   extraSegments,
   pathname,
 }: {
-  baseLabel?: string;
   extraSegments: string[];
   pathname: string;
-}): NavigationTrailNode | null {
-  const [actionSegment] = extraSegments;
+}): NavigationTrailNode[] {
+  const [actionSegment, recordId] = extraSegments;
 
-  if (!baseLabel || !actionSegment || !isPageActionSegment(actionSegment)) {
-    return null;
+  if (!actionSegment || !isPageActionSegment(actionSegment)) {
+    return [];
   }
 
-  return {
-    key: `path-${actionSegment}`,
-    label: `${titleFromPathSegment(actionSegment)} ${baseLabel}`,
-    href: pathname,
-  };
+  const actionHref = getActionBreadcrumbHref(pathname, actionSegment, recordId);
+  const breadcrumbs: NavigationTrailNode[] = [
+    {
+      key: `path-${actionSegment}`,
+      label: titleFromPathSegment(actionSegment),
+      href: recordId ? actionHref : pathname,
+    },
+  ];
+
+  if (recordId) {
+    breadcrumbs.push({
+      key: `path-${actionSegment}-${recordId}`,
+      label: recordId,
+      href: pathname,
+    });
+  }
+
+  return breadcrumbs;
+}
+
+function getActionBreadcrumbHref(
+  pathname: string,
+  actionSegment: string,
+  recordId?: string,
+) {
+  if (!recordId) {
+    return pathname;
+  }
+
+  return pathname.slice(0, -(recordId.length + 1)) || `/${actionSegment}`;
 }
 
 function isPageActionSegment(segment: string) {

@@ -15,6 +15,7 @@ import {
   SavePendingVerificationEmail,
   SaveVerificationResendCooldown,
 } from "@/app/src/data/auth/AuthVerificationStorage";
+import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   MaskEmailAddress,
   OTP_LENGTH,
@@ -25,6 +26,11 @@ import {
   OtpAction,
   ResendVerificationAction,
 } from "@/app/src/services/auth/AuthActions";
+import {
+  GetFallbackPostAuthRedirectPath,
+  ResolvePostAuthDestination,
+} from "@/app/src/services/auth/AuthRedirects";
+import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 
 type UseOtpFormOptions = {
   initialEmail?: string;
@@ -50,6 +56,8 @@ export function useOtpForm({
   initialEmail = "",
 }: UseOtpFormOptions = {}) {
   const router = useRouter();
+  const setActiveCompanyId = useAppStore((state) => state.setActiveCompanyId);
+  const setAccessToken = useAppStore((state) => state.setAccessToken);
   const initialVerificationEmail = ResolveInitialEmail(initialEmail);
   const [hasEditedOtpAfterError, setHasEditedOtpAfterError] = useState(false);
   const [state, formAction, pending] = useActionState(
@@ -129,7 +137,25 @@ export function useOtpForm({
 
     if (state.status === "success") {
       ClearPendingVerificationEmail();
+      if (state.accessToken) {
+        SaveAccessToken(state.accessToken, false);
+        setAccessToken(state.accessToken);
+      }
       toast.success(state.message);
+      if (state.accessToken) {
+        void ResolvePostAuthDestination(state.accessToken)
+          .then(({ profile, redirectPath }) => {
+            setActiveCompanyId(profile.activeCompanyId);
+            router.push(redirectPath);
+          })
+          .catch(() => {
+            router.push(
+              state.redirectTo ??
+                GetFallbackPostAuthRedirectPath(state.accessToken),
+            );
+          });
+        return;
+      }
       if (state.redirectTo) {
         router.push(state.redirectTo);
       }
@@ -139,7 +165,17 @@ export function useOtpForm({
     if (state.status === "error") {
       toast.error(state.message);
     }
-  }, [pending, router, state.message, state.redirectTo, state.status, step]);
+  }, [
+    pending,
+    router,
+    setAccessToken,
+    setActiveCompanyId,
+    state.accessToken,
+    state.message,
+    state.redirectTo,
+    state.status,
+    step,
+  ]);
 
   const formattedTime = useMemo(() => {
     const minutes = Math.floor(secondsRemaining / 60);

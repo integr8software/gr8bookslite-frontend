@@ -4,6 +4,10 @@ import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
+import {
+  GetFallbackPostAuthRedirectPath,
+  ResolvePostAuthDestination,
+} from "@/app/src/services/auth/AuthRedirects";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 
 function ReadRedirectPath(mode: string | null) {
@@ -21,6 +25,7 @@ export default function GoogleAuthCallbackPage() {
 function GoogleAuthCallbackContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
+	const setActiveCompanyId = useAppStore((state) => state.setActiveCompanyId);
 	const setAccessToken = useAppStore((state) => state.setAccessToken);
 
 	useEffect(() => {
@@ -33,13 +38,20 @@ function GoogleAuthCallbackContent() {
 			SaveAccessToken(accessToken, false);
 			setAccessToken(accessToken);
 			toast.success("Google sign-in successful.");
-			router.replace("/onboarding");
+			void ResolvePostAuthDestination(accessToken)
+				.then(({ profile, redirectPath }) => {
+					setActiveCompanyId(profile.activeCompanyId);
+					router.replace(redirectPath);
+				})
+				.catch(() => {
+					router.replace(GetFallbackPostAuthRedirectPath(accessToken));
+				});
 			return;
 		}
 
 		toast.error(error ?? "Google sign-in could not be completed.");
 		router.replace(ReadRedirectPath(mode));
-	}, [router, searchParams, setAccessToken]);
+	}, [router, searchParams, setAccessToken, setActiveCompanyId]);
 
 	return <GoogleAuthCallbackMessage />;
 }

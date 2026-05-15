@@ -118,6 +118,7 @@ export type CompleteOnboardingResponse = {
   message: string;
   nextStep: "APP_READY";
   requiresReauthentication: boolean;
+  accessToken?: string;
 };
 
 export type UploadOnboardingCompanyLogoResponse = {

@@ -12,6 +12,10 @@ import {
 } from "@/app/src/data/auth/AuthVerificationStorage";
 import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { LoginAction } from "@/app/src/services/auth/AuthActions";
+import {
+  GetFallbackPostAuthRedirectPath,
+  ResolvePostAuthDestination,
+} from "@/app/src/services/auth/AuthRedirects";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 
 type LoginFormValues = {
@@ -30,6 +34,7 @@ function GetSubmittedValue(formData: FormData, key: string) {
 export function useLoginForm() {
   const router = useRouter();
   const accessToken = useAppStore((state) => state.accessToken);
+  const setActiveCompanyId = useAppStore((state) => state.setActiveCompanyId);
   const setAccessToken = useAppStore((state) => state.setAccessToken);
   const [state, formAction, pending] = useActionState(
     LoginAction,
@@ -63,7 +68,7 @@ export function useLoginForm() {
 
   useEffect(() => {
     if (accessToken) {
-      router.replace("/onboarding");
+      router.replace(GetFallbackPostAuthRedirectPath(accessToken));
     }
   }, [accessToken, router]);
 
@@ -82,6 +87,20 @@ export function useLoginForm() {
         setAccessToken(state.accessToken);
       }
       toast.success(state.message);
+      if (state.accessToken) {
+        void ResolvePostAuthDestination(state.accessToken)
+          .then(({ profile, redirectPath }) => {
+            setActiveCompanyId(profile.activeCompanyId);
+            router.push(redirectPath);
+          })
+          .catch(() => {
+            router.push(
+              state.redirectTo ??
+                GetFallbackPostAuthRedirectPath(state.accessToken),
+            );
+          });
+        return;
+      }
       if (state.redirectTo) {
         router.push(state.redirectTo);
       }
@@ -106,6 +125,7 @@ export function useLoginForm() {
     state.pendingVerificationEmail,
     state.redirectTo,
     state.status,
+    setActiveCompanyId,
     setAccessToken,
   ]);
 

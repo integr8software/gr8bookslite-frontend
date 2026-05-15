@@ -26,6 +26,7 @@ import {
   getHelpArticleForPath,
 } from "@/app/src/data/modules/shared/ModuleHelp";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { useBranchManagementStore } from "@/app/src/hooks/modules/system-administration/branch-management/useBranchManagement";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 

@@ -49,10 +49,20 @@ export type AuthProfileResponse = {
   activeCompanyId: number | null;
   activeAccess: {
     membershipRole: "ADMIN" | "USER" | null;
+    companyRoleId?: number | null;
+    companyRoleCode?: string | null;
   } | null;
   onboarding: {
     requiresCompanySetup: boolean;
   };
+  companies?: {
+    companyId: number;
+    companyName: string;
+    role: "ADMIN" | "USER";
+    membershipStatus: string;
+    companyRoleId?: number | null;
+    companyRoleCode?: string | null;
+  }[];
 };
 
 export type ResendVerificationRequest = {

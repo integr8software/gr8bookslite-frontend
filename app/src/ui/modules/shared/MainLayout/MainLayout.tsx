@@ -52,6 +52,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     hasBranchAccess,
     helpArticles,
     homeHref,
+    isProfileLoading,
     isBranchLoading,
     isHelpOpen,
     isNotificationsOpen,
@@ -94,19 +95,20 @@ export function MainLayout({ children }: MainLayoutProps) {
     <div className="flex h-[100dvh] max-w-full flex-col overflow-hidden bg-white text-darknavy">
       <MainNavigationProgress />
 
-      <MainTopbar
-        activeHref={activeHref}
-        activeNavigationScope={activeNavigationScope}
-        availableCompanies={availableCompanies}
+        <MainTopbar
+          activeHref={activeHref}
+          activeNavigationScope={activeNavigationScope}
+          availableCompanies={availableCompanies}
         branchDropdownItems={branchDropdownItems}
         canAccessWorkspace={canAccessWorkspace}
         canSwitchCompany={canSwitchCompany}
-        currentBranch={currentBranch}
-        currentCompany={currentCompany}
-        currentUser={currentUser}
-        homeHref={homeHref}
-        isBranchLoading={isBranchLoading}
-        isNotificationsOpen={isNotificationsOpen}
+          currentBranch={currentBranch}
+          currentCompany={currentCompany}
+          currentUser={currentUser}
+          homeHref={homeHref}
+          isBranchLoading={isBranchLoading}
+          isProfileLoading={isProfileLoading}
+          isNotificationsOpen={isNotificationsOpen}
         isSearchOpen={isSearchOpen}
         isSidebarOpen={isSidebarOpen}
         notificationTab={notificationTab}
@@ -146,6 +148,11 @@ export function MainLayout({ children }: MainLayoutProps) {
 
         <MainSidebar
           activeHref={activeHref}
+          companyBadgeLabel={
+            activeNavigationScope === "workspace"
+              ? currentUser.initials
+              : undefined
+          }
           companyName={
             activeNavigationScope === "workspace"
               ? "Workspace"
@@ -164,6 +171,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           enabledQuickListTabs={enabledQuickListTabs}
           expandedKeys={expandedKeys}
           homeHref={homeHref}
+          isLoading={isProfileLoading}
           isOpen={isSidebarOpen}
           navigationSections={navigationSections}
           recentlyVisitedModules={recentlyVisitedModules}

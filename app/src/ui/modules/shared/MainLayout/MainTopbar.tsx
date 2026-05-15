@@ -35,6 +35,8 @@ import type {
   MainNotificationTab,
 } from "@/app/src/hooks/modules/shared/useMainLayout";
 import { useLogout } from "@/app/src/hooks/auth/useLogout";
+import { AppSkeleton } from "@/app/src/ui/shared/AppSkeleton";
+import { GradientBlurBackground } from "@/app/src/ui/shared/GradientBlurBackground";
 import { MainNotificationsPanel } from "./MainNotificationsPanel";
 import { MainSearchPanel } from "./MainSearchPanel";
 
@@ -59,6 +61,7 @@ type MainTopbarProps = {
   isBranchLoading: boolean;
   homeHref: string;
   isNotificationsOpen: boolean;
+  isProfileLoading?: boolean;
   isSearchOpen: boolean;
   isSidebarOpen: boolean;
   notificationTab: MainNotificationTab;
@@ -99,6 +102,7 @@ export function MainTopbar({
   isBranchLoading,
   homeHref,
   isNotificationsOpen,
+  isProfileLoading = false,
   isSearchOpen,
   isSidebarOpen,
   notificationTab,
@@ -140,8 +144,9 @@ export function MainTopbar({
   const userDescriptor = getTopbarUserDescriptor(currentUser);
   const settingsHref =
     activeNavigationScope === "workspace" ? "/workspace/settings" : "/settings";
+  const canShowCompanySwitcher = canAccessWorkspace || canSwitchCompany;
   const hasMobileWorkspaceControls =
-    canSwitchCompany || activeNavigationScope === "company";
+    canShowCompanySwitcher || activeNavigationScope === "company";
   const mobileFloatingPanelTopClass = hasMobileWorkspaceControls
     ? "top-[7.75rem]"
     : "top-18";
@@ -295,7 +300,9 @@ export function MainTopbar({
           aria-label="Workspace controls"
           className="hidden min-w-0 flex-1 items-center gap-2 md:flex md:max-w-[23rem] lg:max-w-[28rem] xl:max-w-[32rem]"
         >
-          {canSwitchCompany ? (
+          {isProfileLoading ? (
+            <TopbarWorkspaceSkeleton />
+          ) : canShowCompanySwitcher ? (
             <CompanySwitcher
               activeNavigationScope={activeNavigationScope}
               availableCompanies={availableCompanies}
@@ -408,36 +415,40 @@ export function MainTopbar({
           </button>
 
           <div className="relative" data-main-profile-root>
-            <button
-              type="button"
-              onClick={() => {
-                closeSwitcher();
-                closeMobileSidebar();
-                onCloseSearch();
-                onCloseNotifications();
-                setProfileMenuOpenPath((current) =>
-                  current === activeHref ? null : activeHref,
-                );
-              }}
-              aria-expanded={isProfileMenuOpen}
-              className="flex h-10 min-w-10 items-center justify-center gap-2 rounded-full border border-darknavy/20 bg-white p-0.5 text-left shadow-sm transition-all duration-200 ease-out hover:border-skyblue/55 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 motion-reduce:transition-none motion-reduce:active:scale-100 md:rounded-md xl:justify-start xl:pr-2"
-            >
-              <UserAvatar currentUser={currentUser} className="h-8 w-8 md:rounded-md" />
-              <span className="hidden min-w-0 max-w-44 xl:block 2xl:max-w-56">
-                <span className="block truncate text-sm font-semibold leading-4 text-darknavy">
-                  {currentUser.name}
-                </span>
-                {userDescriptor ? (
-                  <span className="block truncate text-xs text-darknavy/55">
-                    {userDescriptor}
+            {isProfileLoading ? (
+              <TopbarProfileSkeleton />
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  closeSwitcher();
+                  closeMobileSidebar();
+                  onCloseSearch();
+                  onCloseNotifications();
+                  setProfileMenuOpenPath((current) =>
+                    current === activeHref ? null : activeHref,
+                  );
+                }}
+                aria-expanded={isProfileMenuOpen}
+                className="flex h-10 min-w-10 items-center justify-center gap-2 rounded-full border border-darknavy/20 bg-white p-0.5 text-left shadow-sm transition-all duration-200 ease-out hover:border-skyblue/55 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 motion-reduce:transition-none motion-reduce:active:scale-100 md:rounded-md xl:justify-start xl:pr-2"
+              >
+                <UserAvatar currentUser={currentUser} className="h-8 w-8 md:rounded-md" />
+                <span className="hidden min-w-0 max-w-44 xl:block 2xl:max-w-56">
+                  <span className="block truncate text-sm font-semibold leading-4 text-darknavy">
+                    {currentUser.name}
                   </span>
-                ) : null}
-              </span>
-              <ChevronDown
-                className="hidden h-4 w-4 shrink-0 text-darknavy/50 xl:block"
-                aria-hidden="true"
-              />
-            </button>
+                  {userDescriptor ? (
+                    <span className="block truncate text-xs text-darknavy/55">
+                      {userDescriptor}
+                    </span>
+                  ) : null}
+                </span>
+                <ChevronDown
+                  className="hidden h-4 w-4 shrink-0 text-darknavy/50 xl:block"
+                  aria-hidden="true"
+                />
+              </button>
+            )}
 
             {isProfileMenuOpen ? (
               <div
@@ -447,6 +458,11 @@ export function MainTopbar({
                 )}
               >
                 <AccountDetails
+                  companyName={
+                    activeNavigationScope === "workspace"
+                      ? "Workspace"
+                      : currentCompany.name
+                  }
                   currentUser={currentUser}
                 />
                 <MenuSeparator />
@@ -483,7 +499,7 @@ export function MainTopbar({
               : "grid-cols-1",
           )}
         >
-          {canSwitchCompany ? (
+          {canShowCompanySwitcher ? (
             <CompanySwitcher
               activeNavigationScope={activeNavigationScope}
               availableCompanies={availableCompanies}
@@ -528,6 +544,39 @@ export function MainTopbar({
         </div>
       ) : null}
     </header>
+  );
+}
+
+function TopbarWorkspaceSkeleton() {
+  return (
+    <div className="relative h-10 min-w-36 max-w-52 flex-1 basis-0 overflow-hidden rounded-md border border-darknavy/10 bg-white px-3 lg:max-w-56 xl:max-w-60">
+      <GradientBlurBackground
+        fixed={false}
+        height="h-full"
+        className="opacity-50"
+      />
+      <div className="relative flex h-full items-center gap-2">
+        <AppSkeleton className="h-4 w-4 shrink-0 rounded-sm" />
+        <AppSkeleton className="h-4 w-32 rounded-md" />
+      </div>
+    </div>
+  );
+}
+
+function TopbarProfileSkeleton() {
+  return (
+    <div className="relative flex h-10 min-w-10 items-center gap-2 overflow-hidden rounded-full border border-darknavy/20 bg-white p-0.5 shadow-sm md:rounded-md xl:pr-2">
+      <GradientBlurBackground
+        fixed={false}
+        height="h-full"
+        className="opacity-50"
+      />
+      <AppSkeleton className="relative h-8 w-8 shrink-0 rounded-full md:rounded-md" />
+      <div className="relative hidden min-w-0 max-w-44 space-y-1.5 xl:block 2xl:max-w-56">
+        <AppSkeleton className="h-3.5 w-24 rounded-md" />
+        <AppSkeleton className="h-3 w-16 rounded-md" />
+      </div>
+    </div>
   );
 }
 
@@ -944,10 +993,11 @@ function SwitcherButton({
 }
 
 type AccountDetailsProps = {
+  companyName: string;
   currentUser: MainTopbarProps["currentUser"];
 };
 
-function AccountDetails({ currentUser }: AccountDetailsProps) {
+function AccountDetails({ companyName, currentUser }: AccountDetailsProps) {
   const userTypeName = currentUser.userType?.name;
   const shouldShowRole = currentUser.userRole !== "User";
 
@@ -972,6 +1022,9 @@ function AccountDetails({ currentUser }: AccountDetailsProps) {
               {currentUser.userRole}
             </p>
           ) : null}
+          <p className="mt-1 truncate text-xs text-darknavy/45">
+            {companyName}
+          </p>
         </div>
       </div>
     </div>

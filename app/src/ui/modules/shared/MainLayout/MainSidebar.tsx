@@ -47,6 +47,8 @@ import type {
   MainNavigationSection,
   MainSearchItem,
 } from "@/app/src/data/modules/shared/MainLayoutData";
+import { AppSkeleton } from "@/app/src/ui/shared/AppSkeleton";
+import { GradientBlurBackground } from "@/app/src/ui/shared/GradientBlurBackground";
 
 const QuickListInitialCount = 4;
 const QuickListBatchSize = 6;
@@ -59,12 +61,14 @@ const NestedBatchSize = 6;
 
 type MainSidebarProps = {
   activeHref: string;
+  companyBadgeLabel?: string;
   companyName: string;
   companyLogoUrl?: string;
   typeOfCompany: string;
   enabledQuickListTabs: Array<"recent">;
   expandedKeys: string[];
   homeHref: string;
+  isLoading?: boolean;
   isOpen: boolean;
   navigationSections: MainNavigationSection[];
   recentlyVisitedModules: MainSearchItem[];
@@ -157,12 +161,14 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 
 export function MainSidebar({
   activeHref,
+  companyBadgeLabel,
   companyName,
   companyLogoUrl,
   typeOfCompany,
   enabledQuickListTabs,
   expandedKeys,
   homeHref,
+  isLoading = false,
   isOpen,
   navigationSections,
   recentlyVisitedModules,
@@ -314,15 +320,25 @@ export function MainSidebar({
             aria-label={`${companyName} dashboard`}
             className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
           >
-            <SidebarLogo companyLogoUrl={companyLogoUrl} companyName={companyName} />
-            <span className="min-w-0">
-              <span className="block truncate text-base font-semibold leading-5 text-darknavy">
-                {companyName}
-              </span>
-              <span className="block truncate text-xs text-darknavy/55">
-                {typeOfCompany}
-              </span>
-            </span>
+            {isLoading ? (
+              <SidebarIdentitySkeleton />
+            ) : (
+              <>
+                <SidebarLogo
+                  companyBadgeLabel={companyBadgeLabel}
+                  companyLogoUrl={companyLogoUrl}
+                  companyName={companyName}
+                />
+                <span className="min-w-0">
+                  <span className="block truncate text-base font-semibold leading-5 text-darknavy">
+                    {companyName}
+                  </span>
+                  <span className="block truncate text-xs text-darknavy/55">
+                    {typeOfCompany}
+                  </span>
+                </span>
+              </>
+            )}
           </Link>
 
           <button
@@ -414,9 +430,11 @@ export function MainSidebar({
 }
 
 function SidebarLogo({
+  companyBadgeLabel,
   companyLogoUrl,
   companyName,
 }: {
+  companyBadgeLabel?: string;
   companyLogoUrl?: string;
   companyName: string;
 }) {
@@ -429,27 +447,52 @@ function SidebarLogo({
       />
     );
   }
+  
+  const badgeLabel = companyBadgeLabel ?? BuildSidebarBadgeLabel(companyName);
 
   return (
     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-darknavy text-sm font-bold text-offwhite">
-      {getCompanyInitials(companyName)}
+      {badgeLabel}
     </span>
   );
 }
 
-function getCompanyInitials(companyName: string) {
-  const words = companyName.trim().split(/\s+/).filter(Boolean);
+function SidebarIdentitySkeleton() {
+  return (
+    <span className="relative flex min-w-0 items-center gap-3 overflow-hidden rounded-xl px-1 py-1">
+      <GradientBlurBackground
+        fixed={false}
+        height="h-full"
+        className="opacity-60"
+      />
+      <AppSkeleton className="relative h-9 w-9 shrink-0 rounded-md" />
+      <span className="relative min-w-0 space-y-2">
+        <AppSkeleton className="h-4 w-28 rounded-md" />
+        <AppSkeleton className="h-3 w-20 rounded-md" />
+      </span>
+    </span>
+  );
+}
 
-  if (words.length === 0) {
-    return "G8";
+function BuildSidebarBadgeLabel(companyName: string) {
+  const parts = companyName.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return "WS";
   }
 
-  return words
+  return parts
     .slice(0, 2)
-    .map((word) => word.charAt(0))
-    .join("")
-    .toUpperCase();
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
 }
+
+type QuickListButtonProps = {
+  icon: LucideIcon;
+  isActive: boolean;
+  label: string;
+  onClick: () => void;
+};
 
 type SidebarSectionProps = {
   activeHref: string;

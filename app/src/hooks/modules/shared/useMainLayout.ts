@@ -12,6 +12,7 @@ import {
   filterMainSearchItems,
   getAccessibleBranches,
   hasAccess,
+  type MainCurrentUser,
   type MainBranch,
   type MainNavigationItem,
   type MainNavigationScope,
@@ -23,6 +24,9 @@ import {
   ModuleHelpArticles,
   getHelpArticleForPath,
 } from "@/app/src/data/modules/shared/ModuleHelp";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
+import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 
 const DefaultExpandedKeys = [
   "workspace",
@@ -77,6 +81,7 @@ type NavigationTrailNode = {
 export function useMainLayout() {
   const pathname = usePathname();
   const router = useRouter();
+  const storedAccessToken = useAppStore((state) => state.accessToken);
   const branchLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchOpenPath, setSearchOpenPath] = useState<string | null>(null);
@@ -99,10 +104,27 @@ export function useMainLayout() {
   const [activeBranchId, setActiveBranchId] = useState(
     ModuleShellMockData.activeBranchId,
   );
-  const isSuperAdmin =
-    ModuleShellMockData.currentUser.userRole === "Super Admin";
+  const accessToken = storedAccessToken;
+  const { data: authProfile, isLoading: isAuthProfileLoading } =
+    useAuthProfileQuery({ accessToken });
+  const isWorkspaceRoute = isWorkspacePath(pathname);
+  const hasWorkspaceAccess =
+    isWorkspaceRoute && authProfile
+      ? ProfileHasWorkspaceAccess(authProfile)
+      : ModuleShellMockData.currentUser.userRole === "Super Admin";
+  const displayUser =
+    isWorkspaceRoute && authProfile
+      ? CreateWorkspaceCurrentUserFromProfile(authProfile)
+      : ModuleShellMockData.currentUser;
+  const isProfileLoading = Boolean(accessToken) && isWorkspaceRoute
+    ? isAuthProfileLoading
+    : false;
   const activeNavigationScope: MainNavigationScope =
-    isSuperAdmin && isWorkspacePath(pathname) ? "workspace" : "company";
+    hasWorkspaceAccess && isWorkspaceRoute ? "workspace" : "company";
+  const workspaceCompanies =
+    isWorkspaceRoute && authProfile
+      ? MapProfileCompaniesToMainCompanies(authProfile)
+      : null;
   const [activeCompanyId, setActiveCompanyId] = useState(
     ModuleShellMockData.currentCompany.id,
   );
@@ -119,9 +141,11 @@ export function useMainLayout() {
   const isHelpOpen = helpOpenPath === pathname;
 
   const subscription = ModuleShellMockData.activeSubscription;
-  const availableCompanies = ModuleShellMockData.availableCompanies;
+  const availableCompanies =
+    workspaceCompanies ?? ModuleShellMockData.availableCompanies;
   const currentCompany =
     availableCompanies.find((company) => company.id === activeCompanyId) ??
+    availableCompanies[0] ??
     ModuleShellMockData.currentCompany;
 
   const navigationSections = useMemo(() => {
@@ -234,6 +258,14 @@ export function useMainLayout() {
     ModuleShellMockData.currentUser,
     "branch.management",
   );
+
+  useEffect(() => {
+    if (!authProfile?.activeCompanyId) {
+      return;
+    }
+
+    setActiveCompanyId(String(authProfile.activeCompanyId));
+  }, [authProfile?.activeCompanyId]);
 
   const branchDropdownItems = useMemo(() => {
     if (!shouldShowBranchSwitcher) {
@@ -431,7 +463,7 @@ export function useMainLayout() {
   }
 
   function switchToWorkspace() {
-    if (!isSuperAdmin) {
+    if (!hasWorkspaceAccess) {
       return;
     }
 
@@ -462,17 +494,18 @@ export function useMainLayout() {
     availableCompanies,
     branchDropdownItems,
     breadcrumbs,
-    canAccessWorkspace: isSuperAdmin,
-    canSwitchCompany: isSuperAdmin || availableCompanies.length > 1,
+    canAccessWorkspace: hasWorkspaceAccess,
+    canSwitchCompany: availableCompanies.length > 1,
     currentBranch,
     currentCompany,
     currentHelpArticle,
-    currentUser: ModuleShellMockData.currentUser,
+    currentUser: displayUser,
     enabledQuickListTabs,
     expandedKeys,
     hasBranchAccess,
     helpArticles: ModuleHelpArticles,
     homeHref,
+    isProfileLoading,
     isBranchLoading,
     shouldShowBranchSwitcher,
     isHelpOpen,
@@ -527,6 +560,119 @@ function shouldShowBranchControls(branches: MainBranch[]) {
   }
 
   return true;
+}
+
+function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
+  if (profile.user.systemRole === "SUPER_ADMIN") {
+    return true;
+  }
+
+  if (profile.activeAccess?.membershipRole === "ADMIN") {
+    return true;
+  }
+
+  return profile.companies?.some((company) => company.role === "ADMIN") ?? false;
+}
+
+function CreateWorkspaceCurrentUserFromProfile(
+  profile: AuthProfileResponse,
+): MainCurrentUser {
+  const fallbackUserType = ModuleShellMockData.currentUser.userType;
+  const [firstName, ...lastNameParts] = profile.user.name.trim().split(/\s+/);
+  const lastName = lastNameParts.join(" ");
+  const activeCompanyMembership =
+    profile.companies?.find(
+      (company) => company.companyId === profile.activeCompanyId,
+    ) ?? profile.companies?.[0];
+  const companyRoleName = FormatCompanyRoleName(
+    activeCompanyMembership?.companyRoleCode,
+  );
+
+  return {
+    ...ModuleShellMockData.currentUser,
+    firstName: firstName || profile.user.name,
+    lastName,
+    name: profile.user.name,
+    shortName: BuildShortName(profile.user.name),
+    initials: BuildInitials(profile.user.name),
+    userRole:
+      profile.user.systemRole === "SUPER_ADMIN"
+        ? "Super Admin"
+        : profile.activeAccess?.membershipRole === "ADMIN"
+          ? "Admin"
+          : "User",
+    userType: companyRoleName
+      ? {
+          ...(fallbackUserType ?? {
+            id: "user-type-workspace",
+            name: "Workspace User",
+            permissions: {},
+          }),
+          id:
+            activeCompanyMembership?.companyRoleCode ??
+            fallbackUserType?.id ??
+            "user-type-workspace",
+          name: companyRoleName,
+        }
+      : undefined,
+  };
+}
+
+function MapProfileCompaniesToMainCompanies(
+  profile: AuthProfileResponse,
+) {
+  return (profile.companies ?? []).map((company) => ({
+    id: String(company.companyId),
+    name: company.companyName,
+    logoUrl: undefined,
+    status: "Active" as const,
+    businessKind: undefined,
+    subscriptionPackage: undefined,
+    branches: [],
+    totalBranches: 0,
+    branchCode: undefined,
+    branchName: undefined,
+    helperText: company.role === "ADMIN" ? "Admin access" : "User access",
+  }));
+}
+
+function FormatCompanyRoleName(companyRoleCode: string | null | undefined) {
+  if (!companyRoleCode) {
+    return undefined;
+  }
+
+  return companyRoleCode
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function BuildInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return "U";
+  }
+
+  return parts
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+}
+
+function BuildShortName(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return name;
+  }
+
+  if (parts.length === 1) {
+    return parts[0];
+  }
+
+  return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
 }
 
 function buildBreadcrumbs({

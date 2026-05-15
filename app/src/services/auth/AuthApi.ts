@@ -1,3 +1,6 @@
+import { ApiClient } from "@/app/src/services/shared/ApiClient";
+import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
+
 const API_BASE_URL_ENV = "NEXT_PUBLIC_API_BASE_URL";
 
 function NormalizeApiBaseUrl(value: string) {
@@ -71,4 +74,14 @@ export async function PostAuthJson<TRequest, TResponse>(
   }
 
   return payload as TResponse;
+}
+
+export async function GetAuthProfile(accessToken: string) {
+  const response = await ApiClient.get<AuthProfileResponse>("/auth/me", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return response.data;
 }

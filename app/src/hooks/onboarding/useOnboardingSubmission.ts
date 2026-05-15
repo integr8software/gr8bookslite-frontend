@@ -2,7 +2,11 @@
 
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { ClearAccessToken, GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
+import {
+  ClearAccessToken,
+  GetAccessToken,
+  SaveAccessToken,
+} from "@/app/src/data/auth/AuthSessionStorage";
 import {
   type OnboardingFieldErrors,
   type OnboardingValues,
@@ -21,6 +25,10 @@ import {
   UploadOnboardingCompanyLogo,
 } from "@/app/src/services/onboarding/OnboardingApi";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
+import {
+  GetFallbackPostAuthRedirectPath,
+  ResolvePostAuthDestination,
+} from "@/app/src/services/auth/AuthRedirects";
 
 function GetOnboardingApiBillingCycle(value: BillingCycle) {
   return value === "yearly" ? "YEARLY" : "MONTHLY";
@@ -279,6 +287,28 @@ export function useOnboardingSubmission({
         const response = await CompleteOnboarding(token);
 
         toast.success(response.message);
+
+        if (response.accessToken) {
+          SaveAccessToken(response.accessToken, false);
+          useAppStore.setState({ accessToken: response.accessToken });
+
+          try {
+            const { profile, redirectPath } = await ResolvePostAuthDestination(
+              response.accessToken,
+            );
+
+            useAppStore.setState({
+              accessToken: response.accessToken,
+              activeCompanyId: profile.activeCompanyId,
+            });
+            router.replace(redirectPath);
+          } catch {
+            router.replace(
+              GetFallbackPostAuthRedirectPath(response.accessToken),
+            );
+          }
+          return;
+        }
 
         if (response.requiresReauthentication) {
           ClearAccessToken();

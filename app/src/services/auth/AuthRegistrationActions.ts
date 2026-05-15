@@ -22,6 +22,7 @@ import {
   GetFormValue,
   InvalidState,
 } from "@/app/src/services/auth/AuthActionUtils";
+import { GetFallbackPostAuthRedirectPath } from "@/app/src/services/auth/AuthRedirects";
 
 export async function SignUpAction(
   _previousState: AuthActionState,
@@ -108,7 +109,8 @@ export async function OtpAction(
     return {
       status: "success",
       message: response.message ?? "Email verified successfully.",
-      redirectTo: "/onboarding",
+      accessToken: response.accessToken,
+      redirectTo: GetFallbackPostAuthRedirectPath(response.accessToken),
     };
   } catch (error) {
     return {

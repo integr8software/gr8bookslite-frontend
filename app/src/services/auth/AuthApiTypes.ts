@@ -34,6 +34,27 @@ export type VerifyEmailResponse = {
   accessToken: string;
 };
 
+export type AuthProfileResponse = {
+  user: {
+    id: number;
+    email: string;
+    name: string;
+    contactNumber: string | null;
+    systemRole: "SUPER_ADMIN" | "STANDARD";
+    status: string;
+    emailVerifiedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+  activeCompanyId: number | null;
+  activeAccess: {
+    membershipRole: "ADMIN" | "USER" | null;
+  } | null;
+  onboarding: {
+    requiresCompanySetup: boolean;
+  };
+};
+
 export type ResendVerificationRequest = {
   email: string;
 };

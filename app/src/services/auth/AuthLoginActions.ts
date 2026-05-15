@@ -11,6 +11,7 @@ import {
   GetFormValue,
   InvalidState,
 } from "@/app/src/services/auth/AuthActionUtils";
+import { GetFallbackPostAuthRedirectPath } from "@/app/src/services/auth/AuthRedirects";
 
 export async function LoginAction(
   _previousState: AuthActionState,
@@ -46,7 +47,7 @@ export async function LoginAction(
       message: response.message ?? "Login successful.",
       accessToken: response.accessToken,
       rememberMe,
-      redirectTo: "/onboarding",
+      redirectTo: GetFallbackPostAuthRedirectPath(response.accessToken),
     };
   } catch (error) {
     const message =

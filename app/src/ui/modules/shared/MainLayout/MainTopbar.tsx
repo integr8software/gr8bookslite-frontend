@@ -50,6 +50,7 @@ type MainTopbarProps = {
   currentUser: {
     initials: string;
     name: string;
+    profileImageUrl?: string;
     userRole: string;
     userType?: {
       name: string;
@@ -69,6 +70,7 @@ type MainTopbarProps = {
   onCloseSearch: () => void;
   onCloseSidebar: () => void;
   onLoadBranchOptions: () => void;
+  onMarkAllNotificationsAsRead: () => void;
   onMarkNotificationAsRead: (notificationId: string) => void;
   onNotificationTabChange: (tab: MainNotificationTab) => void;
   onOpenHelp: () => void;
@@ -108,6 +110,7 @@ export function MainTopbar({
   onCloseSearch,
   onCloseSidebar,
   onLoadBranchOptions,
+  onMarkAllNotificationsAsRead,
   onMarkNotificationAsRead,
   onNotificationTabChange,
   onOpenHelp,
@@ -306,7 +309,7 @@ export function MainTopbar({
             />
           ) : null}
 
-          {activeNavigationScope === "company" ? (
+          {activeNavigationScope === "company" && branchDropdownItems.length ? (
             <BranchSwitcher
               branchDropdownItems={branchDropdownItems}
               currentBranch={currentBranch}
@@ -384,6 +387,7 @@ export function MainTopbar({
                 unreadCount={unreadNotificationCount}
                 onClose={onCloseNotifications}
                 onMarkAsRead={onMarkNotificationAsRead}
+                onMarkAllAsRead={onMarkAllNotificationsAsRead}
                 onTabChange={onNotificationTabChange}
                 className="max-h-[calc(100vh-5.5rem)] rounded-lg"
               />
@@ -418,9 +422,7 @@ export function MainTopbar({
               aria-expanded={isProfileMenuOpen}
               className="flex h-10 min-w-10 items-center justify-center gap-2 rounded-full border border-darknavy/20 bg-white p-0.5 text-left shadow-sm transition-all duration-200 ease-out hover:border-skyblue/55 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 motion-reduce:transition-none motion-reduce:active:scale-100 md:rounded-md xl:justify-start xl:pr-2"
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-skyblue/25 text-xs font-bold leading-none text-darknavy md:rounded-md">
-                {currentUser.initials}
-              </span>
+              <UserAvatar currentUser={currentUser} className="h-8 w-8 md:rounded-md" />
               <span className="hidden min-w-0 max-w-44 xl:block 2xl:max-w-56">
                 <span className="block truncate text-sm font-semibold leading-4 text-darknavy">
                   {currentUser.name}
@@ -445,7 +447,6 @@ export function MainTopbar({
                 )}
               >
                 <AccountDetails
-                  companyName={currentCompany.name}
                   currentUser={currentUser}
                 />
                 <MenuSeparator />
@@ -497,7 +498,7 @@ export function MainTopbar({
             />
           ) : null}
 
-          {activeNavigationScope === "company" ? (
+          {activeNavigationScope === "company" && branchDropdownItems.length ? (
             <BranchSwitcher
               branchDropdownItems={branchDropdownItems}
               currentBranch={currentBranch}
@@ -580,6 +581,8 @@ function CompanySwitcher({
       >
         {isWorkspaceActive ? (
           <LayoutDashboard className="h-4 w-4 shrink-0 text-darknavy/55" aria-hidden="true" />
+        ) : currentCompany.logoUrl ? (
+          <ImageSwatch imageUrl={currentCompany.logoUrl} className="h-5 w-5 rounded" />
         ) : (
           <Building2 className="h-4 w-4 shrink-0 text-darknavy/55" aria-hidden="true" />
         )}
@@ -613,8 +616,10 @@ function CompanySwitcher({
                 key={company.id}
                 description={getCompanySwitcherDescription(company)}
                 icon={Building2}
+                imageUrl={company.logoUrl}
                 isActive={!isWorkspaceActive && company.id === currentCompany.id}
                 label={company.name}
+                status={company.status}
                 onClick={() => {
                   onSelectCompany(company.id);
                   onClose();
@@ -715,13 +720,10 @@ function getSwitcherMenuClassName(variant: SwitcherVariant) {
 }
 
 function getCompanySwitcherDescription(company: MainCompany) {
-  const branchCountLabel =
-    typeof company.totalBranches === "number"
-      ? `${company.totalBranches} ${company.totalBranches === 1 ? "branch" : "branches"}`
-      : undefined;
+  const statusLabel = company.status;
 
-  if (company.businessKind || branchCountLabel) {
-    return [company.businessKind, branchCountLabel].filter(Boolean).join(" - ");
+  if (company.businessKind || statusLabel) {
+    return [statusLabel, company.businessKind].filter(Boolean).join(" - ");
   }
 
   const branchLabel =
@@ -757,25 +759,31 @@ function BranchSwitcherGroups({
   const satelliteItems = selectionItems.filter(
     (item) => item.kind === "satellite",
   );
+  const hasBranchItems = branchItems.length > 0;
+  const hasSatelliteItems = satelliteItems.length > 0;
 
   return (
     <div className="flex max-h-[min(24rem,calc(100vh-8rem))] flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1">
-        <BranchSwitcherGroup
-          currentBranchId={currentBranchId}
-          items={branchItems}
-          label="Branch"
-          onClose={onClose}
-          onSelectBranch={onSelectBranch}
-        />
-        <MenuSeparator />
-        <BranchSwitcherGroup
-          currentBranchId={currentBranchId}
-          items={satelliteItems}
-          label="Satellite"
-          onClose={onClose}
-          onSelectBranch={onSelectBranch}
-        />
+        {hasBranchItems ? (
+          <BranchSwitcherGroup
+            currentBranchId={currentBranchId}
+            items={branchItems}
+            label="Branch"
+            onClose={onClose}
+            onSelectBranch={onSelectBranch}
+          />
+        ) : null}
+        {hasBranchItems && hasSatelliteItems ? <MenuSeparator /> : null}
+        {hasSatelliteItems ? (
+          <BranchSwitcherGroup
+            currentBranchId={currentBranchId}
+            items={satelliteItems}
+            label="Satellite"
+            onClose={onClose}
+            onSelectBranch={onSelectBranch}
+          />
+        ) : null}
       </div>
       {managementItem ? (
         <div className="sticky bottom-0 border-t border-darknavy/10 bg-white p-1">
@@ -873,16 +881,20 @@ function getBranchLabel(branch: MainBranch) {
 type SwitcherButtonProps = {
   description?: string;
   icon: LucideIcon;
+  imageUrl?: string;
   isActive: boolean;
   label: string;
+  status?: MainCompany["status"];
   onClick: () => void;
 };
 
 function SwitcherButton({
   description,
   icon: Icon,
+  imageUrl,
   isActive,
   label,
+  status,
   onClick,
 }: SwitcherButtonProps) {
   return (
@@ -902,7 +914,11 @@ function SwitcherButton({
           isActive ? "text-blue-600" : "text-darknavy",
         )}
       >
-        <Icon className="h-4 w-4" aria-hidden="true" />
+        {imageUrl ? (
+          <ImageSwatch imageUrl={imageUrl} className="h-5 w-5 rounded" />
+        ) : (
+          <Icon className="h-4 w-4" aria-hidden="true" />
+        )}
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-darknavy">
@@ -918,17 +934,20 @@ function SwitcherButton({
         <span className="mt-1 inline-flex min-h-6 items-center rounded-full bg-blue-600 px-3 text-xs font-semibold text-white">
           Current
         </span>
+      ) : status ? (
+        <span className="mt-1 inline-flex min-h-6 items-center rounded-full bg-citron/35 px-3 text-xs font-semibold text-darknavy">
+          {status}
+        </span>
       ) : null}
     </button>
   );
 }
 
 type AccountDetailsProps = {
-  companyName: string;
   currentUser: MainTopbarProps["currentUser"];
 };
 
-function AccountDetails({ companyName, currentUser }: AccountDetailsProps) {
+function AccountDetails({ currentUser }: AccountDetailsProps) {
   const userTypeName = currentUser.userType?.name;
   const shouldShowRole = currentUser.userRole !== "User";
 
@@ -938,9 +957,7 @@ function AccountDetails({ companyName, currentUser }: AccountDetailsProps) {
         Account Details
       </p>
       <div className="mt-3 flex items-start gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-skyblue/25 text-xs font-bold text-darknavy">
-          {currentUser.initials}
-        </span>
+        <UserAvatar currentUser={currentUser} className="h-9 w-9 rounded-md" />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-darknavy">
             {currentUser.name}
@@ -955,12 +972,53 @@ function AccountDetails({ companyName, currentUser }: AccountDetailsProps) {
               {currentUser.userRole}
             </p>
           ) : null}
-          <p className="mt-1 truncate text-xs text-darknavy/45">
-            {companyName}
-          </p>
         </div>
       </div>
     </div>
+  );
+}
+
+function UserAvatar({
+  currentUser,
+  className,
+}: {
+  currentUser: MainTopbarProps["currentUser"];
+  className: string;
+}) {
+  if (currentUser.profileImageUrl) {
+    return (
+      <ImageSwatch
+        imageUrl={currentUser.profileImageUrl}
+        className={joinClasses("rounded-full", className)}
+      />
+    );
+  }
+
+  return (
+    <span
+      className={joinClasses(
+        "flex shrink-0 items-center justify-center rounded-full bg-skyblue/25 text-darknavy",
+        className,
+      )}
+    >
+      <UserCircle className="h-5 w-5" aria-hidden="true" />
+    </span>
+  );
+}
+
+function ImageSwatch({
+  imageUrl,
+  className,
+}: {
+  imageUrl: string;
+  className: string;
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      className={joinClasses("block shrink-0 bg-cover bg-center", className)}
+      style={{ backgroundImage: `url("${imageUrl}")` }}
+    />
   );
 }
 

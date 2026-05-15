@@ -61,7 +61,6 @@ export function MainLayout({ children }: MainLayoutProps) {
     navigationSections,
     notificationTab,
     query,
-    quickListTab,
     recentlyVisitedModules,
     searchResults,
     selectedHelpArticleKey,
@@ -74,13 +73,13 @@ export function MainLayout({ children }: MainLayoutProps) {
     closeSidebar,
     loadBranchOptions,
     markSidebarNavigation,
+    markAllNotificationsAsRead,
     markNotificationAsRead,
     openHelp,
     selectBranch,
     selectCompany,
     setNotificationTab,
     setQuery,
-    setQuickListTab,
     setSelectedHelpArticleKey,
     toggleExpandedKey,
     toggleNotifications,
@@ -120,6 +119,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         onCloseSidebar={closeSidebar}
         onLoadBranchOptions={loadBranchOptions}
         onMarkNotificationAsRead={markNotificationAsRead}
+        onMarkAllNotificationsAsRead={markAllNotificationsAsRead}
         onNotificationTabChange={setNotificationTab}
         onOpenHelp={openHelp}
         onQueryChange={setQuery}
@@ -151,6 +151,11 @@ export function MainLayout({ children }: MainLayoutProps) {
               ? "Workspace"
               : currentCompany.name
           }
+          companyLogoUrl={
+            activeNavigationScope === "workspace"
+              ? undefined
+              : currentCompany.logoUrl
+          }
           typeOfCompany={
             activeNavigationScope === "workspace"
               ? "Administration"
@@ -161,12 +166,10 @@ export function MainLayout({ children }: MainLayoutProps) {
           homeHref={homeHref}
           isOpen={isSidebarOpen}
           navigationSections={navigationSections}
-          quickListTab={quickListTab}
           recentlyVisitedModules={recentlyVisitedModules}
           shouldAutoScrollActiveItem={shouldAutoRevealActiveRoute}
           onClose={closeSidebar}
           onNavigateFromSidebar={markSidebarNavigation}
-          onQuickListTabChange={setQuickListTab}
           onToggleExpandedKey={toggleExpandedKey}
         />
 
@@ -204,6 +207,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               unreadCount={unreadNotificationCount}
               onClose={closeNotifications}
               onMarkAsRead={markNotificationAsRead}
+              onMarkAllAsRead={markAllNotificationsAsRead}
               onTabChange={setNotificationTab}
               className="h-full border-0 shadow-none"
             />

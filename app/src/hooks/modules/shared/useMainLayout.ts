@@ -225,6 +225,7 @@ export function useMainLayout() {
     [currentCompany.branches],
   );
   const hasBranchAccess = accessibleBranches.length > 0;
+  const shouldShowBranchSwitcher = shouldShowBranchControls(accessibleBranches);
   const currentBranch =
     accessibleBranches.find((branch) => branch.id === activeBranchId) ??
     accessibleBranches[0] ??
@@ -235,14 +236,20 @@ export function useMainLayout() {
   );
 
   const branchDropdownItems = useMemo(() => {
+    if (!shouldShowBranchSwitcher) {
+      return [];
+    }
+
     const branchItems =
-      lazyLoadedBranches?.map((branch) => ({
-        key: branch.id,
-        label: getBranchSwitcherLabel(branch),
-        href: branch.href,
-        branchId: branch.id,
-        kind: branch.kind ?? "branch",
-      })) ?? [];
+      lazyLoadedBranches
+        ?.filter((branch) => branch.kind)
+        .map((branch) => ({
+          key: branch.id,
+          label: getBranchSwitcherLabel(branch),
+          href: companyHomeHref,
+          branchId: branch.id,
+          kind: branch.kind,
+        })) ?? [];
 
     if (!canManageBranches) {
       return branchItems;
@@ -258,7 +265,12 @@ export function useMainLayout() {
         isManagementAction: true,
       },
     ];
-  }, [canManageBranches, lazyLoadedBranches]);
+  }, [
+    canManageBranches,
+    companyHomeHref,
+    lazyLoadedBranches,
+    shouldShowBranchSwitcher,
+  ]);
 
   const breadcrumbs = useMemo(
     () =>
@@ -438,6 +450,12 @@ export function useMainLayout() {
     );
   }
 
+  function markAllNotificationsAsRead() {
+    setNotifications((current) =>
+      current.map((notification) => ({ ...notification, isRead: true })),
+    );
+  }
+
   return {
     activeHref: pathname,
     activeNavigationScope,
@@ -445,7 +463,7 @@ export function useMainLayout() {
     branchDropdownItems,
     breadcrumbs,
     canAccessWorkspace: isSuperAdmin,
-    canSwitchCompany: availableCompanies.length > 1,
+    canSwitchCompany: isSuperAdmin || availableCompanies.length > 1,
     currentBranch,
     currentCompany,
     currentHelpArticle,
@@ -456,6 +474,7 @@ export function useMainLayout() {
     helpArticles: ModuleHelpArticles,
     homeHref,
     isBranchLoading,
+    shouldShowBranchSwitcher,
     isHelpOpen,
     isNotificationsOpen,
     isSearchOpen,
@@ -477,6 +496,7 @@ export function useMainLayout() {
     closeSidebar,
     loadBranchOptions,
     markNotificationAsRead,
+    markAllNotificationsAsRead,
     markSidebarNavigation,
     openHelp,
     selectBranch,
@@ -491,6 +511,22 @@ export function useMainLayout() {
     toggleSidebar,
     switchToWorkspace,
   };
+}
+
+function shouldShowBranchControls(branches: MainBranch[]) {
+  if (branches.length === 0) {
+    return false;
+  }
+
+  if (!branches.some((branch) => branch.kind)) {
+    return false;
+  }
+
+  if (branches.length === 1 && branches[0]?.kind === "satellite") {
+    return false;
+  }
+
+  return true;
 }
 
 function buildBreadcrumbs({

@@ -119,7 +119,10 @@ export type MainSearchItem = {
 export type MainCompany = {
   id: string;
   name: string;
+  logoUrl?: string;
+  status: "Active" | "Inactive";
   businessKind?: string;
+  subscriptionPackage?: MainSubscriptionOption;
   branches?: MainBranch[];
   totalBranches?: number;
   branchCode?: string;
@@ -149,18 +152,20 @@ export type MainUserAccessContext = {
 
 export type MainCurrentUser = MainUserAccessContext & {
   id: string;
+  activeCompanyId?: string;
+  companyIds: string[];
   firstName: string;
   lastName: string;
   name: string;
   shortName: string;
   initials: string;
+  profileImageUrl?: string;
 };
 
 export type MainBranch = {
   id: string;
   code: string;
   name: string;
-  href: string;
   kind?: "branch" | "satellite";
   isMain?: boolean;
   access: Partial<Record<MainAccessAction, boolean>>;

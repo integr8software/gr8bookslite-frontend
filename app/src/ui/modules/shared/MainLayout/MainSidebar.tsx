@@ -60,18 +60,17 @@ const NestedBatchSize = 6;
 type MainSidebarProps = {
   activeHref: string;
   companyName: string;
+  companyLogoUrl?: string;
   typeOfCompany: string;
   enabledQuickListTabs: Array<"recent">;
   expandedKeys: string[];
   homeHref: string;
   isOpen: boolean;
   navigationSections: MainNavigationSection[];
-  quickListTab: "recent";
   recentlyVisitedModules: MainSearchItem[];
   shouldAutoScrollActiveItem: boolean;
   onClose: () => void;
   onNavigateFromSidebar: (href: string) => void;
-  onQuickListTabChange: (tab: "recent") => void;
   onToggleExpandedKey: (key: string) => void;
 };
 
@@ -159,18 +158,17 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 export function MainSidebar({
   activeHref,
   companyName,
+  companyLogoUrl,
   typeOfCompany,
   enabledQuickListTabs,
   expandedKeys,
   homeHref,
   isOpen,
   navigationSections,
-  quickListTab,
   recentlyVisitedModules,
   shouldAutoScrollActiveItem,
   onClose,
   onNavigateFromSidebar,
-  onQuickListTabChange,
   onToggleExpandedKey,
 }: MainSidebarProps) {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -183,7 +181,8 @@ export function MainSidebar({
   const sidebarNavigationHrefRef = useRef<string | null>(null);
   const sidebarInteractionUntilRef = useRef(0);
   const quickListItems = recentlyVisitedModules;
-  const shouldShowQuickList = enabledQuickListTabs.length > 0;
+  const shouldShowQuickList =
+    enabledQuickListTabs.includes("recent") && quickListItems.length > 0;
   const [
     quickListVisibleCount,
     hasMoreQuickListItems,
@@ -315,9 +314,7 @@ export function MainSidebar({
             aria-label={`${companyName} dashboard`}
             className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-darknavy text-sm font-bold text-offwhite">
-              G8
-            </span>
+            <SidebarLogo companyLogoUrl={companyLogoUrl} companyName={companyName} />
             <span className="min-w-0">
               <span className="block truncate text-base font-semibold leading-5 text-darknavy">
                 {companyName}
@@ -344,24 +341,12 @@ export function MainSidebar({
         >
           {shouldShowQuickList ? (
             <div className="mb-5">
-              <div
-                className={joinClasses(
-                  "mb-2 grid gap-1 rounded-md bg-darknavy/5 p-1",
-                  enabledQuickListTabs.length === 1
-                    ? "grid-cols-1"
-                    : "grid-cols-2",
-                )}
-              >
-                {enabledQuickListTabs.includes("recent") ? (
-                  <QuickListButton
-                    icon={Clock3}
-                    isActive={quickListTab === "recent"}
-                    label="Recently"
-                    onClick={() => onQuickListTabChange("recent")}
-                  />
-                ) : null}
+              <div className="mb-2 flex items-center gap-2 px-3">
+                <Clock3 className="h-3.5 w-3.5 shrink-0 text-darknavy/45" aria-hidden="true" />
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">
+                  Recently Viewed
+                </p>
               </div>
-
               <div className="space-y-1">
                 {visibleQuickListItems.map((item) => (
                   <Link
@@ -370,7 +355,9 @@ export function MainSidebar({
                     onClick={handleNavigateFromSidebar(item.href)}
                     className="flex min-h-9 items-center gap-2 rounded-md px-3 text-sm text-darknavy/75 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
                   >
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-citron" />
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-darknavy">
+                      <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
+                    </span>
                     <span className="min-w-0 flex-1 truncate">
                       {item.label}
                     </span>
@@ -426,35 +413,42 @@ export function MainSidebar({
   );
 }
 
-type QuickListButtonProps = {
-  icon: LucideIcon;
-  isActive: boolean;
-  label: string;
-  onClick: () => void;
-};
+function SidebarLogo({
+  companyLogoUrl,
+  companyName,
+}: {
+  companyLogoUrl?: string;
+  companyName: string;
+}) {
+  if (companyLogoUrl) {
+    return (
+      <span
+        aria-hidden="true"
+        className="block h-9 w-9 shrink-0 rounded-md bg-cover bg-center ring-1 ring-darknavy/10"
+        style={{ backgroundImage: `url("${companyLogoUrl}")` }}
+      />
+    );
+  }
 
-function QuickListButton({
-  icon: Icon,
-  isActive,
-  label,
-  onClick,
-}: QuickListButtonProps) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={isActive}
-      className={joinClasses(
-        "flex min-h-8 items-center justify-center gap-1.5 rounded px-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25",
-        isActive
-          ? "bg-white text-darknavy shadow-sm"
-          : "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
-      )}
-    >
-      <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-      <span className="truncate">{label}</span>
-    </button>
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-darknavy text-sm font-bold text-offwhite">
+      {getCompanyInitials(companyName)}
+    </span>
   );
+}
+
+function getCompanyInitials(companyName: string) {
+  const words = companyName.trim().split(/\s+/).filter(Boolean);
+
+  if (words.length === 0) {
+    return "G8";
+  }
+
+  return words
+    .slice(0, 2)
+    .map((word) => word.charAt(0))
+    .join("")
+    .toUpperCase();
 }
 
 type SidebarSectionProps = {

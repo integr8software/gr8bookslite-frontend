@@ -78,49 +78,31 @@ const CurrentUserType = {
 
 const CurrentUser = createCurrentUser({
   id: "usr-001",
+  activeCompanyId: "cmp-001",
+  companyIds: ["cmp-001"],
   firstName: "John",
   lastName: "Dela Cruz",
   userRole: "Super Admin",
   userType: CurrentUserType,
+  profileImageUrl: undefined,
 });
 
-const PrimaryCompanyBranches = [
+const CompanyBranches = [
   {
-    id: "branch-main",
-    code: "MAIN",
-    name: "Main Branch",
-    href: "/dashboard",
+    id: "branch-satellite-main",
+    code: "SAT",
+    name: "Main Satellite",
     kind: "branch",
     isMain: true,
     access: { view: true, edit: true },
   },
   {
-    id: "branch-north",
-    code: "NORTH",
-    name: "North Branch",
-    href: "/dashboard",
-    kind: "branch",
-    access: { view: true },
-  },
-  {
-    id: "branch-south",
-    code: "SOUTH",
-    name: "South Satellite",
-    href: "/dashboard",
+    id: "branch-satellite-sub",
+    code: "SATO",
+    name: "Sub Satellite",
     kind: "satellite",
-    access: { view: true },
-  },
-] satisfies MainBranch[];
-
-const TradingCompanyBranches = [
-  {
-    id: "branch-trading-main",
-    code: "MAIN",
-    name: "Trading Main",
-    href: "/dashboard",
-    kind: "branch",
-    isMain: true,
-    access: { view: true },
+    isMain: false,
+    access: { view: true, edit: true },
   },
 ] satisfies MainBranch[];
 
@@ -128,30 +110,44 @@ const Companies = [
   createCompany({
     id: "cmp-001",
     name: AppName,
+    logoUrl: "/img/company-background.jpg",
+    status: "Active",
     businessKind: "Accounting software",
-    branches: PrimaryCompanyBranches,
-    helperText: "Primary company",
+    subscriptionPackage: ModuleSubscriptionPlans[2],
+    branches: CompanyBranches,
+    helperText: "Current company",
   }),
   createCompany({
-    id: "cmp-002",
-    name: "Demo Trading Corp.",
-    businessKind: "Trading",
-    branches: TradingCompanyBranches,
-    helperText: "Trading group",
+    id: "cmp-archived",
+    name: "Archived Company",
+    status: "Inactive",
+    businessKind: "Inactive company",
+    subscriptionPackage: ModuleSubscriptionPlans[0],
+    branches: [],
+    helperText: "Hidden from active company switching",
   }),
 ] satisfies MainCompany[];
 
-const CurrentCompany = Companies[0];
+const ActiveCompanies = Companies.filter(
+  (company) => company.status === "Active",
+);
+const CurrentCompany =
+  ActiveCompanies.find(
+    (company) => company.id === CurrentUser.activeCompanyId,
+  ) ?? ActiveCompanies[0];
+const ActiveSubscription =
+  CurrentCompany.subscriptionPackage ?? ModuleSubscriptionPlans[0];
+const VisibleBranches = getVisibleBranches(CurrentCompany.branches);
 
 export const ModuleShellMockData = {
   currentUser: CurrentUser,
   currentCompany: CurrentCompany,
-  availableCompanies: Companies,
+  availableCompanies: ActiveCompanies,
   activeBranchId: getDefaultBranchId(CurrentCompany.branches),
-  activeSubscription: ModuleSubscriptionPlans[2],
-  branches: CurrentCompany.branches ?? [],
-  recentCompanyIds: ["cmp-001", "cmp-002"],
-  recentBranchIds: ["branch-main", "branch-north", "branch-south"],
+  activeSubscription: ActiveSubscription,
+  branches: VisibleBranches,
+  recentCompanyIds: ["cmp-001"],
+  recentBranchIds: VisibleBranches.map((branch) => branch.id),
   recentNavigationKeys: [
     "maintenance-approval",
     "reports-financial",
@@ -170,8 +166,8 @@ export const ModuleShellMockData = {
     },
     {
       id: "notif-002",
-      title: "Branch access updated",
-      body: "North Branch view access is now available for your role.",
+      title: "Company access checked",
+      body: "Your company and Accounting + Inventory package are active.",
       href: "/settings",
       time: "18m ago",
       isRead: false,
@@ -187,7 +183,7 @@ export const ModuleShellMockData = {
     {
       id: "notif-004",
       title: "Subscription reviewed",
-      body: "Your Accounting + Inventory subscription details are ready for billing review.",
+      body: "Your company has one Accounting + Inventory subscription package on record.",
       href: "/workspace/settings",
       time: "Yesterday",
       isRead: true,
@@ -210,9 +206,9 @@ export const ModuleShellMockData = {
     },
     {
       id: "dashboard-widget-003",
-      title: "Branch scope",
-      value: String(CurrentCompany.branches?.length ?? 0),
-      supportingText: "Branches visible to you",
+      title: "Company package",
+      value: ActiveSubscription.label,
+      supportingText: "Single backend subscription package",
       tone: "citron",
     },
     {
@@ -227,10 +223,13 @@ export const ModuleShellMockData = {
 
 type CurrentUserInput = {
   id: string;
+  activeCompanyId?: string;
+  companyIds: string[];
   firstName: string;
   lastName: string;
   userRole: MainUserRole;
   userType: MainUserType;
+  profileImageUrl?: string;
 };
 
 function createCurrentUser(user: CurrentUserInput): MainCurrentUser {
@@ -263,6 +262,25 @@ function getDefaultBranchId(branches: MainBranch[] | undefined) {
   const mainBranch = accessibleBranches.find((branch) => branch.isMain);
 
   return mainBranch?.id ?? accessibleBranches.at(-1)?.id ?? "";
+}
+
+function getVisibleBranches(branches: MainBranch[] | undefined) {
+  const accessibleBranches =
+    branches?.filter((branch) => Object.values(branch.access).some(Boolean)) ??
+    [];
+
+  if (!accessibleBranches.some((branch) => branch.kind)) {
+    return [];
+  }
+
+  if (
+    accessibleBranches.length <= 1 &&
+    accessibleBranches[0]?.kind === "satellite"
+  ) {
+    return [];
+  }
+
+  return accessibleBranches;
 }
 
 function getInitials(firstName: string, lastName: string) {

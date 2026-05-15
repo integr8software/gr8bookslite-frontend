@@ -15,6 +15,7 @@ type MainNotificationsPanelProps = {
   unreadCount: number;
   className?: string;
   onClose?: () => void;
+  onMarkAllAsRead: () => void;
   onMarkAsRead: (notificationId: string) => void;
   onTabChange: (tab: MainNotificationTab) => void;
 };
@@ -25,6 +26,7 @@ export function MainNotificationsPanel({
   unreadCount,
   className,
   onClose,
+  onMarkAllAsRead,
   onMarkAsRead,
   onTabChange,
 }: MainNotificationsPanelProps) {
@@ -91,6 +93,18 @@ export function MainNotificationsPanel({
           label="Read"
           onClick={() => onTabChange("read")}
         />
+      </div>
+
+      <div className="border-b border-darknavy/10 px-3 py-2">
+        <button
+          type="button"
+          onClick={onMarkAllAsRead}
+          disabled={unreadCount === 0}
+          className="flex min-h-9 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold text-darknavy transition hover:bg-skyblue/10 disabled:cursor-not-allowed disabled:text-darknavy/35 disabled:hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+        >
+          <CheckCheck className="h-4 w-4" aria-hidden="true" />
+          <span>Mark all as read</span>
+        </button>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-2">

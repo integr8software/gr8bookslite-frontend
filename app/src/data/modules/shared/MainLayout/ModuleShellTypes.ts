@@ -51,6 +51,11 @@ export type MainAccessKey =
 
 export type MainProductKey = "core" | "accounting" | "inventory";
 
+export type ModuleSubscriptionPlanId =
+  | "ACCOUNTING"
+  | "INVENTORY"
+  | "ACCOUNTING_INVENTORY";
+
 export type MainNavigationScope = "workspace" | "company";
 
 export type MainPermissionMap = Partial<
@@ -64,7 +69,6 @@ export type MainIconName =
   | "cashIn"
   | "cashOut"
   | "dashboard"
-  | "favorite"
   | "inventory"
   | "journal"
   | "maintenance"
@@ -116,6 +120,7 @@ export type MainCompany = {
   id: string;
   name: string;
   businessKind?: string;
+  branches?: MainBranch[];
   totalBranches?: number;
   branchCode?: string;
   branchName?: string;
@@ -123,7 +128,7 @@ export type MainCompany = {
 };
 
 export type MainSubscriptionOption = {
-  id: string;
+  id: ModuleSubscriptionPlanId;
   label: string;
   description: string;
   enabledProductKeys: MainProductKey[];
@@ -140,6 +145,15 @@ export type MainUserType = {
 export type MainUserAccessContext = {
   userRole: MainUserRole;
   userType?: MainUserType;
+};
+
+export type MainCurrentUser = MainUserAccessContext & {
+  id: string;
+  firstName: string;
+  lastName: string;
+  name: string;
+  shortName: string;
+  initials: string;
 };
 
 export type MainBranch = {

@@ -21,7 +21,6 @@ import {
   PanelLeftOpen,
   Search,
   Settings,
-  Star,
   UserCircle,
 } from "lucide-react";
 import type {
@@ -57,7 +56,7 @@ type MainTopbarProps = {
     };
   };
   isBranchLoading: boolean;
-  isCurrentPageFavorite: boolean;
+  homeHref: string;
   isNotificationsOpen: boolean;
   isSearchOpen: boolean;
   isSidebarOpen: boolean;
@@ -77,7 +76,6 @@ type MainTopbarProps = {
   onSelectBranch: (branchId: string) => void;
   onSelectCompany: (companyId: string) => void;
   onSwitchToWorkspace: () => void;
-  onToggleFavorite: () => void;
   onToggleNotifications: () => void;
   onToggleSearch: () => void;
   onToggleSidebar: () => void;
@@ -97,7 +95,7 @@ export function MainTopbar({
   currentCompany,
   currentUser,
   isBranchLoading,
-  isCurrentPageFavorite,
+  homeHref,
   isNotificationsOpen,
   isSearchOpen,
   isSidebarOpen,
@@ -117,7 +115,6 @@ export function MainTopbar({
   onSelectBranch,
   onSelectCompany,
   onSwitchToWorkspace,
-  onToggleFavorite,
   onToggleNotifications,
   onToggleSearch,
   onToggleSidebar,
@@ -138,10 +135,6 @@ export function MainTopbar({
     openSwitcherState.href === activeHref ? openSwitcherState.key : null;
   const isProfileMenuOpen = profileMenuOpenPath === activeHref;
   const userDescriptor = getTopbarUserDescriptor(currentUser);
-  const homeHref =
-    activeNavigationScope === "workspace"
-      ? "/workspace/dashboard"
-      : "/dashboard";
   const settingsHref =
     activeNavigationScope === "workspace" ? "/workspace/settings" : "/settings";
   const hasMobileWorkspaceControls =
@@ -294,31 +287,6 @@ export function MainTopbar({
             Lite
           </span>
         </Link>
-
-        <button
-          type="button"
-          onClick={() => {
-            closeSwitcher();
-            closeMobileSidebar();
-            onToggleFavorite();
-          }}
-          aria-label={
-            isCurrentPageFavorite ? "Remove from favorites" : "Add to favorites"
-          }
-          aria-pressed={isCurrentPageFavorite}
-          className={joinClasses(
-            "flex h-10 w-10 items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
-            isCurrentPageFavorite
-              ? "text-yellow-400 hover:text-yellow-400"
-              : "text-darknavy/60 hover:bg-darknavy/5 hover:text-darknavy",
-          )}
-        >
-          <Star
-            className="h-5 w-5"
-            fill={isCurrentPageFavorite ? "currentColor" : "none"}
-            aria-hidden="true"
-          />
-        </button>
 
         <nav
           aria-label="Workspace controls"

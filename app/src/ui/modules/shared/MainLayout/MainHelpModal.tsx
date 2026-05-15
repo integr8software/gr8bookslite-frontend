@@ -1,11 +1,11 @@
 "use client";
 
 import { BookOpenText, ChevronRight, X } from "lucide-react";
-import type { MainHelpArticle } from "@/app/src/data/modules/shared/MainHelpData";
+import type { ModuleHelpArticle } from "@/app/src/data/modules/shared/ModuleHelp";
 
 type MainHelpModalProps = {
-  articles: MainHelpArticle[];
-  currentArticle: MainHelpArticle;
+  articles: ModuleHelpArticle[];
+  currentArticle: ModuleHelpArticle;
   selectedArticleKey: string;
   onClose: () => void;
   onSelectArticle: (articleKey: string) => void;
@@ -23,7 +23,7 @@ export function MainHelpModal({
     currentArticle;
   const relatedArticles = currentArticle.relatedKeys
     .map((key) => articles.find((article) => article.key === key))
-    .filter((article): article is MainHelpArticle => Boolean(article));
+    .filter((article): article is ModuleHelpArticle => Boolean(article));
   const remainingArticles = articles.filter(
     (article) =>
       article.key !== currentArticle.key &&
@@ -144,7 +144,7 @@ function ArticleGroup({ children, title }: ArticleGroupProps) {
 }
 
 type ArticleButtonProps = {
-  article: MainHelpArticle;
+  article: ModuleHelpArticle;
   isActive: boolean;
   onClick: () => void;
 };

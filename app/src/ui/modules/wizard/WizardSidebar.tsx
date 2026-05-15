@@ -1,6 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { ModulesWizardSteps } from "@/app/src/data/modules/wizard/ModulesWizardData";
 
 type WizardSidebarProps = {
@@ -49,7 +50,13 @@ export function WizardSidebar({ stepIndex, onSelectStep }: WizardSidebarProps) {
 	);
 }
 
-function SidebarIcon({ isComplete, icon }: { isComplete: boolean; icon: any }) {
+function SidebarIcon({
+	isComplete,
+	icon,
+}: {
+	isComplete: boolean;
+	icon: LucideIcon;
+}) {
 	const Icon = icon;
 	return (
 		<span

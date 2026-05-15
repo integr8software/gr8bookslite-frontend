@@ -49,11 +49,10 @@ export function MainLayout({ children }: MainLayoutProps) {
     currentUser,
     enabledQuickListTabs,
     expandedKeys,
-    favoriteModules,
     hasBranchAccess,
     helpArticles,
+    homeHref,
     isBranchLoading,
-    isCurrentPageFavorite,
     isHelpOpen,
     isNotificationsOpen,
     isSearchOpen,
@@ -83,7 +82,6 @@ export function MainLayout({ children }: MainLayoutProps) {
     setQuery,
     setQuickListTab,
     setSelectedHelpArticleKey,
-    toggleCurrentPageFavorite,
     toggleExpandedKey,
     toggleNotifications,
     toggleSearch,
@@ -92,10 +90,6 @@ export function MainLayout({ children }: MainLayoutProps) {
   } = useMainLayout();
   const shouldShowBranchContent =
     activeNavigationScope !== "company" || hasBranchAccess;
-  const homeHref =
-    activeNavigationScope === "workspace"
-      ? "/workspace/dashboard"
-      : "/dashboard";
 
   return (
     <div className="flex h-[100dvh] max-w-full flex-col overflow-hidden bg-white text-darknavy">
@@ -111,8 +105,8 @@ export function MainLayout({ children }: MainLayoutProps) {
         currentBranch={currentBranch}
         currentCompany={currentCompany}
         currentUser={currentUser}
+        homeHref={homeHref}
         isBranchLoading={isBranchLoading}
-        isCurrentPageFavorite={isCurrentPageFavorite}
         isNotificationsOpen={isNotificationsOpen}
         isSearchOpen={isSearchOpen}
         isSidebarOpen={isSidebarOpen}
@@ -132,7 +126,6 @@ export function MainLayout({ children }: MainLayoutProps) {
         onSelectBranch={selectBranch}
         onSelectCompany={selectCompany}
         onSwitchToWorkspace={switchToWorkspace}
-        onToggleFavorite={toggleCurrentPageFavorite}
         onToggleNotifications={toggleNotifications}
         onToggleSearch={toggleSearch}
         onToggleSidebar={toggleSidebar}
@@ -165,7 +158,6 @@ export function MainLayout({ children }: MainLayoutProps) {
           }
           enabledQuickListTabs={enabledQuickListTabs}
           expandedKeys={expandedKeys}
-          favoriteModules={favoriteModules}
           homeHref={homeHref}
           isOpen={isSidebarOpen}
           navigationSections={navigationSections}

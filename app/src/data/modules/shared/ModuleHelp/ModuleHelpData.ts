@@ -1,13 +1,8 @@
-export type MainHelpArticle = {
-  key: string;
-  title: string;
-  path: string;
-  summary: string;
-  content: string[];
-  relatedKeys: string[];
-};
+import type { ModuleHelpArticle } from "@/app/src/data/modules/shared/ModuleHelp/ModuleHelpTypes";
+import { createHelpArticle as article } from "@/app/src/data/modules/shared/ModuleHelp/ModuleHelpUtils";
+export { getHelpArticleForPath } from "@/app/src/data/modules/shared/ModuleHelp/ModuleHelpUtils";
 
-export const MainHelpArticles: MainHelpArticle[] = [
+export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-workspace",
     "Workspace Dashboard",
@@ -524,35 +519,3 @@ export const MainHelpArticles: MainHelpArticle[] = [
     ["help-permissions", "help-workspace-users"],
   ),
 ];
-
-export function getHelpArticleForPath(
-  pathname: string,
-  articles: MainHelpArticle[],
-) {
-  return (
-    [...articles]
-      .sort((first, second) => second.path.length - first.path.length)
-      .find(
-        (article) =>
-          pathname === article.path || pathname.startsWith(`${article.path}/`),
-      ) ?? articles[0]
-  );
-}
-
-function article(
-  key: string,
-  title: string,
-  path: string,
-  summary: string,
-  content: string[],
-  relatedKeys: string[],
-): MainHelpArticle {
-  return {
-    key,
-    title,
-    path,
-    summary,
-    content,
-    relatedKeys,
-  };
-}

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   MainCompanyNavigationSections,
   MainCompanySearchItems,
-  MainLayoutMockData,
+  ModuleShellMockData,
   MainWorkspaceNavigationSections,
   MainWorkspaceSearchItems,
   filterMainNavigationSections,
@@ -20,9 +20,9 @@ import {
   type MainSearchItem,
 } from "@/app/src/data/modules/shared/MainLayoutData";
 import {
-  MainHelpArticles,
+  ModuleHelpArticles,
   getHelpArticleForPath,
-} from "@/app/src/data/modules/shared/MainHelpData";
+} from "@/app/src/data/modules/shared/ModuleHelp";
 
 const DefaultExpandedKeys = [
   "workspace",
@@ -42,9 +42,9 @@ const DefaultExpandedKeys = [
 
 const WorkspaceRoutePrefix = "/workspace";
 const WorkspaceHomeHref = "/workspace/dashboard";
-const CompanyHomeHref = "/dashboard";
+const CompanyFallbackHomeHref = "/profile";
 
-export type MainQuickListTab = "favorites" | "recent";
+export type MainQuickListTab = "recent";
 
 export type MainNotificationTab = "all" | "unread" | "read";
 
@@ -84,9 +84,7 @@ export function useMainLayout() {
     string | null
   >(null);
   const [helpOpenPath, setHelpOpenPath] = useState<string | null>(null);
-  const [isCurrentPageFavorite, setIsCurrentPageFavorite] = useState(true);
-  const [quickListTab, setQuickListTab] =
-    useState<MainQuickListTab>("favorites");
+  const [quickListTab, setQuickListTab] = useState<MainQuickListTab>("recent");
   const [notificationTab, setNotificationTab] =
     useState<MainNotificationTab>("all");
   const [manualExpandedKeys, setManualExpandedKeys] =
@@ -99,32 +97,32 @@ export function useMainLayout() {
     value: "",
   });
   const [activeBranchId, setActiveBranchId] = useState(
-    MainLayoutMockData.activeBranchId,
+    ModuleShellMockData.activeBranchId,
   );
   const isSuperAdmin =
-    MainLayoutMockData.currentUser.userRole === "Super Admin";
+    ModuleShellMockData.currentUser.userRole === "Super Admin";
   const activeNavigationScope: MainNavigationScope =
     isSuperAdmin && isWorkspacePath(pathname) ? "workspace" : "company";
   const [activeCompanyId, setActiveCompanyId] = useState(
-    MainLayoutMockData.currentCompany.id,
+    ModuleShellMockData.currentCompany.id,
   );
   const [lazyLoadedBranches, setLazyLoadedBranches] = useState<
     MainBranch[] | null
   >(null);
   const [isBranchLoading, setIsBranchLoading] = useState(false);
   const [notifications, setNotifications] = useState<MainNotification[]>(
-    MainLayoutMockData.notifications,
+    ModuleShellMockData.notifications,
   );
   const query = queryState.pathname === pathname ? queryState.value : "";
   const isSearchOpen = searchOpenPath === pathname;
   const isNotificationsOpen = notificationsOpenPath === pathname;
   const isHelpOpen = helpOpenPath === pathname;
 
-  const subscription = MainLayoutMockData.activeSubscription;
-  const availableCompanies = MainLayoutMockData.availableCompanies;
+  const subscription = ModuleShellMockData.activeSubscription;
+  const availableCompanies = ModuleShellMockData.availableCompanies;
   const currentCompany =
     availableCompanies.find((company) => company.id === activeCompanyId) ??
-    MainLayoutMockData.currentCompany;
+    ModuleShellMockData.currentCompany;
 
   const navigationSections = useMemo(() => {
     const sourceSections =
@@ -134,7 +132,7 @@ export function useMainLayout() {
 
     return filterMainNavigationSections(
       sourceSections,
-      MainLayoutMockData.currentUser,
+      ModuleShellMockData.currentUser,
       subscription,
     );
   }, [activeNavigationScope, subscription]);
@@ -162,21 +160,25 @@ export function useMainLayout() {
 
     return filterMainSearchItems(
       sourceItems,
-      MainLayoutMockData.currentUser,
+      ModuleShellMockData.currentUser,
       subscription,
     );
   }, [activeNavigationScope, subscription]);
-
-  const favoriteModules = useMemo(() => {
-    if (activeNavigationScope !== "company") {
-      return [];
-    }
-
-    return findSearchItemsByKeys(
-      availableSearchItems,
-      MainLayoutMockData.favoriteNavigationKeys,
-    );
-  }, [activeNavigationScope, availableSearchItems]);
+  const companySearchItems = useMemo(
+    () =>
+      filterMainSearchItems(
+        MainCompanySearchItems,
+        ModuleShellMockData.currentUser,
+        subscription,
+      ),
+    [subscription],
+  );
+  const companyHomeHref = getCompanyHomeHref(
+    companySearchItems,
+    ModuleShellMockData.recentNavigationKeys,
+  );
+  const homeHref =
+    activeNavigationScope === "workspace" ? WorkspaceHomeHref : companyHomeHref;
 
   const recentlyVisitedModules = useMemo(() => {
     if (activeNavigationScope !== "company") {
@@ -185,7 +187,7 @@ export function useMainLayout() {
 
     return findSearchItemsByKeys(
       availableSearchItems,
-      MainLayoutMockData.recentlyVisitedNavigationKeys,
+      ModuleShellMockData.recentNavigationKeys,
     );
   }, [activeNavigationScope, availableSearchItems]);
 
@@ -194,16 +196,8 @@ export function useMainLayout() {
       return [] as MainQuickListTab[];
     }
 
-    const settings = MainLayoutMockData.quickListSettings;
     const tabs: MainQuickListTab[] = [];
-
-    if (settings.favorites) {
-      tabs.push("favorites");
-    }
-
-    if (settings.recently) {
-      tabs.push("recent");
-    }
+    tabs.push("recent");
 
     return tabs;
   }, [activeNavigationScope]);
@@ -226,9 +220,9 @@ export function useMainLayout() {
   const accessibleBranches = useMemo(
     () =>
       sortBranchesByPriority(
-        getAccessibleBranches(MainLayoutMockData.branches),
+        getAccessibleBranches(currentCompany.branches ?? []),
       ),
-    [],
+    [currentCompany.branches],
   );
   const hasBranchAccess = accessibleBranches.length > 0;
   const currentBranch =
@@ -236,7 +230,7 @@ export function useMainLayout() {
     accessibleBranches[0] ??
     null;
   const canManageBranches = hasAccess(
-    MainLayoutMockData.currentUser,
+    ModuleShellMockData.currentUser,
     "branch.management",
   );
 
@@ -279,7 +273,8 @@ export function useMainLayout() {
 
   const currentHelpArticle = useMemo(
     () =>
-      getHelpArticleForPath(pathname, MainHelpArticles) ?? MainHelpArticles[0],
+      getHelpArticleForPath(pathname, ModuleHelpArticles) ??
+      ModuleHelpArticles[0],
     [pathname],
   );
   const [selectedHelpArticleState, setSelectedHelpArticleState] = useState({
@@ -340,10 +335,6 @@ export function useMainLayout() {
 
   function closeSidebar() {
     setIsSidebarOpen(false);
-  }
-
-  function toggleCurrentPageFavorite() {
-    setIsCurrentPageFavorite((current) => !current);
   }
 
   function toggleSearch() {
@@ -415,10 +406,16 @@ export function useMainLayout() {
   }
 
   function selectCompany(companyId: string) {
+    const selectedCompany =
+      availableCompanies.find((company) => company.id === companyId) ??
+      currentCompany;
+
     setActiveCompanyId(companyId);
+    setActiveBranchId(getDefaultAccessibleBranchId(selectedCompany.branches));
+    setLazyLoadedBranches(null);
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
-    router.push(CompanyHomeHref);
+    router.push(companyHomeHref);
   }
 
   function switchToWorkspace() {
@@ -452,13 +449,12 @@ export function useMainLayout() {
     currentBranch,
     currentCompany,
     currentHelpArticle,
-    currentUser: MainLayoutMockData.currentUser,
+    currentUser: ModuleShellMockData.currentUser,
     enabledQuickListTabs,
     expandedKeys,
-    favoriteModules,
     hasBranchAccess,
-    helpArticles: MainHelpArticles,
-    isCurrentPageFavorite,
+    helpArticles: ModuleHelpArticles,
+    homeHref,
     isBranchLoading,
     isHelpOpen,
     isNotificationsOpen,
@@ -489,7 +485,6 @@ export function useMainLayout() {
     setQuery: updateQuery,
     setQuickListTab,
     setSelectedHelpArticleKey: selectHelpArticle,
-    toggleCurrentPageFavorite,
     toggleExpandedKey,
     toggleNotifications,
     toggleSearch,
@@ -527,10 +522,7 @@ function buildBreadcrumbs({
     fallbackTrail[0]?.label === "Workspace"
       ? fallbackTrail.slice(1)
       : fallbackTrail;
-  const completeTrail = appendPathSegmentBreadcrumbs(
-    normalizedTrail,
-    pathname,
-  );
+  const completeTrail = appendPathSegmentBreadcrumbs(normalizedTrail, pathname);
 
   return completeTrail.map((item) => ({
     key: item.key,
@@ -759,8 +751,10 @@ const NavigationDropdownHelperText: Record<string, string> = {
   inventory: "Track stock movements, requests, receipts, and issues.",
   purchasing: "Manage purchase requests, canvassing, and supplier orders.",
   others: "Track supporting asset and miscellaneous records.",
-  "reporting-analytics": "Generate accounting, inventory, and compliance reports.",
-  "system-administration": "Manage users, approvals, audits, numbering, and mail setup.",
+  "reporting-analytics":
+    "Generate accounting, inventory, and compliance reports.",
+  "system-administration":
+    "Manage users, approvals, audits, numbering, and mail setup.",
   "dashboard-overview": "View company activity, approvals, and performance.",
   "maintenance-financial-management":
     "Maintain financial setup records used by accounting workflows.",
@@ -803,8 +797,7 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Maintain customers, suppliers, vendors, members, and employees.",
   "maintenance-party":
     "Maintain customers, suppliers, vendors, members, and employees.",
-  "cash-receipt-official-receipt":
-    "Record official customer payments.",
+  "cash-receipt-official-receipt": "Record official customer payments.",
   "cash-receipt-collection-receipt":
     "Record collections received from customers.",
   "cash-receipt-acknowledgement-receipt":
@@ -818,8 +811,7 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "cash-disbursement-disbursement-voucher":
     "Prepare and track payment vouchers.",
   "cash-disbursement-voucher": "Prepare and track payment vouchers.",
-  "cash-disbursement-cash-advance":
-    "Record employee cash advances.",
+  "cash-disbursement-cash-advance": "Record employee cash advances.",
   "cash-disbursement-cash-advance-multiple-entry":
     "Record cash advances across multiple entries.",
   "cash-disbursement-cash-advance-multiple":
@@ -829,12 +821,9 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "cash-disbursement-petty-cash": "Record petty cash disbursements.",
   "cash-disbursement-petty-cash-fund":
     "Manage petty cash fund setup and balances.",
-  "cash-disbursement-petty-cash-replenishment":
-    "Replenish petty cash funds.",
-  "cash-disbursement-petty-cash-advance":
-    "Record petty cash advances.",
-  "cash-disbursement-request-for-payment":
-    "Create and track payment requests.",
+  "cash-disbursement-petty-cash-replenishment": "Replenish petty cash funds.",
+  "cash-disbursement-petty-cash-advance": "Record petty cash advances.",
+  "cash-disbursement-request-for-payment": "Create and track payment requests.",
   "cash-disbursement-request-payment": "Create and track payment requests.",
   "cash-disbursement-advances-to-supplier":
     "Record supplier advances before final billing.",
@@ -912,7 +901,7 @@ const NavigationDropdownHelperText: Record<string, string> = {
 function getSectionTargetHref(section: MainNavigationSection) {
   return section.items[0]
     ? getItemTargetHref(section.items[0])
-    : section.href ?? "/";
+    : (section.href ?? "/");
 }
 
 function getItemTargetHref(item: MainNavigationItem): string {
@@ -929,10 +918,30 @@ function findSearchItemsByKeys(items: MainSearchItem[], keys: string[]) {
     .filter((item): item is MainSearchItem => Boolean(item));
 }
 
+function getCompanyHomeHref(items: MainSearchItem[], recentKeys: string[]) {
+  const dashboard = items.find((item) => item.key === "dashboard-overview");
+
+  if (dashboard) {
+    return dashboard.href;
+  }
+
+  return (
+    findSearchItemsByKeys(items, recentKeys)[0]?.href ??
+    items[0]?.href ??
+    CompanyFallbackHomeHref
+  );
+}
+
+function getDefaultAccessibleBranchId(branches: MainBranch[] | undefined) {
+  const accessibleBranches = getAccessibleBranches(branches ?? []);
+  const mainBranch = accessibleBranches.find((branch) => branch.isMain);
+
+  return mainBranch?.id ?? accessibleBranches.at(-1)?.id ?? "";
+}
+
 function sortBranchesByPriority(branches: MainBranch[]) {
   return [...branches].sort((first, second) => {
-    const priorityDelta =
-      getBranchPriority(first) - getBranchPriority(second);
+    const priorityDelta = getBranchPriority(first) - getBranchPriority(second);
 
     if (priorityDelta !== 0) {
       return priorityDelta;

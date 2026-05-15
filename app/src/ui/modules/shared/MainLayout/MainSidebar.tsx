@@ -33,7 +33,6 @@ import {
   Settings,
   ShieldCheck,
   ShoppingCart,
-  Star,
   Tags,
   UserCog,
   UserCircle,
@@ -62,18 +61,17 @@ type MainSidebarProps = {
   activeHref: string;
   companyName: string;
   typeOfCompany: string;
-  enabledQuickListTabs: Array<"favorites" | "recent">;
+  enabledQuickListTabs: Array<"recent">;
   expandedKeys: string[];
-  favoriteModules: MainSearchItem[];
   homeHref: string;
   isOpen: boolean;
   navigationSections: MainNavigationSection[];
-  quickListTab: "favorites" | "recent";
+  quickListTab: "recent";
   recentlyVisitedModules: MainSearchItem[];
   shouldAutoScrollActiveItem: boolean;
   onClose: () => void;
   onNavigateFromSidebar: (href: string) => void;
-  onQuickListTabChange: (tab: "favorites" | "recent") => void;
+  onQuickListTabChange: (tab: "recent") => void;
   onToggleExpandedKey: (key: string) => void;
 };
 
@@ -84,7 +82,6 @@ const MainIcons: Record<MainIconName, LucideIcon> = {
   cashIn: ReceiptText,
   cashOut: WalletCards,
   dashboard: LayoutDashboard,
-  favorite: Star,
   inventory: Boxes,
   journal: BookOpen,
   maintenance: Settings,
@@ -165,7 +162,6 @@ export function MainSidebar({
   typeOfCompany,
   enabledQuickListTabs,
   expandedKeys,
-  favoriteModules,
   homeHref,
   isOpen,
   navigationSections,
@@ -186,8 +182,7 @@ export function MainSidebar({
   > | null>(null);
   const sidebarNavigationHrefRef = useRef<string | null>(null);
   const sidebarInteractionUntilRef = useRef(0);
-  const quickListItems =
-    quickListTab === "favorites" ? favoriteModules : recentlyVisitedModules;
+  const quickListItems = recentlyVisitedModules;
   const shouldShowQuickList = enabledQuickListTabs.length > 0;
   const [
     quickListVisibleCount,
@@ -357,14 +352,6 @@ export function MainSidebar({
                     : "grid-cols-2",
                 )}
               >
-                {enabledQuickListTabs.includes("favorites") ? (
-                  <QuickListButton
-                    icon={Star}
-                    isActive={quickListTab === "favorites"}
-                    label="Favorites"
-                    onClick={() => onQuickListTabChange("favorites")}
-                  />
-                ) : null}
                 {enabledQuickListTabs.includes("recent") ? (
                   <QuickListButton
                     icon={Clock3}
@@ -635,7 +622,7 @@ function SidebarItem({
             paddingClass,
             isAncestorActive
               ? "font-semibold text-blue-600 hover:bg-blue-50/45"
-            : isExactActive
+              : isExactActive
                 ? "rounded-2xl bg-blue-50 font-semibold text-blue-600 shadow-[0_8px_20px_rgba(37,99,235,0.10)] ring-1 ring-blue-100 hover:bg-blue-50"
                 : "text-darknavy/70 hover:bg-blue-50/70 hover:text-blue-600",
           )}

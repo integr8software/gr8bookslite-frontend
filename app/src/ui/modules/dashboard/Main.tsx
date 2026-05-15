@@ -9,9 +9,9 @@ import {
   SlidersHorizontal,
   Users,
 } from "lucide-react";
-import type { MainDashboardWidget } from "@/app/src/data/modules/shared/MainLayoutTypes";
-import { hasAccess } from "@/app/src/data/modules/shared/MainLayoutUtils";
-import { MainLayoutMockData } from "@/app/src/data/modules/shared/MainShellMockData";
+import type { MainDashboardWidget } from "@/app/src/data/modules/shared/MainLayout/ModuleShellTypes";
+import { hasAccess } from "@/app/src/data/modules/shared/MainLayout/ModuleShellUtils";
+import { ModuleShellMockData } from "@/app/src/data/modules/shared/ModuleShellMockData";
 
 const DashboardLibrary = [
   {
@@ -30,7 +30,7 @@ const ActivityItems = [
 
 export function ManagementMain() {
   const canAddDashboard = hasAccess(
-    MainLayoutMockData.currentUser,
+    ModuleShellMockData.currentUser,
     "dashboard",
     ["add"],
   );
@@ -60,7 +60,7 @@ export function ManagementMain() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {MainLayoutMockData.dashboardWidgets.map((widget) => (
+        {ModuleShellMockData.dashboardWidgets.map((widget) => (
           <WidgetCard key={widget.id} widget={widget} />
         ))}
       </section>

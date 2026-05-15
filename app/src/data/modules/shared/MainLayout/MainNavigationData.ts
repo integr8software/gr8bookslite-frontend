@@ -4,9 +4,9 @@ import type {
   MainNavigationItem,
   MainNavigationSection,
   MainProductKey,
-} from "@/app/src/data/modules/shared/MainLayoutTypes";
-import { flattenSections } from "@/app/src/data/modules/shared/MainLayoutUtils";
-import { MainModuleNavigationSections } from "@/app/src/data/modules/shared/MainModuleRegistry";
+} from "@/app/src/data/modules/shared/MainLayout/ModuleShellTypes";
+import { flattenSections } from "@/app/src/data/modules/shared/MainLayout/ModuleShellUtils";
+import { MainModuleNavigationSections } from "@/app/src/data/modules/shared/MainLayout/MainModuleRegistry";
 
 export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
   {

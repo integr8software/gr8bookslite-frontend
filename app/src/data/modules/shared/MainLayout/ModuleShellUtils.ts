@@ -7,7 +7,7 @@ import type {
   MainSearchItem,
   MainSubscriptionOption,
   MainUserAccessContext,
-} from "@/app/src/data/modules/shared/MainLayoutTypes";
+} from "@/app/src/data/modules/shared/MainLayout/ModuleShellTypes";
 
 export function hasAccess(
   accessContext: MainUserAccessContext,
@@ -157,7 +157,9 @@ function flattenItems(
 
 function readAccess(
   accessContext: MainUserAccessContext,
-  accessKey: keyof NonNullable<MainUserAccessContext["userType"]>["permissions"],
+  accessKey: keyof NonNullable<
+    MainUserAccessContext["userType"]
+  >["permissions"],
 ) {
   return accessContext.userType?.permissions[accessKey];
 }

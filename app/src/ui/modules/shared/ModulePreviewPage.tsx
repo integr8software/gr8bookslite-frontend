@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, Sparkles } from "lucide-react";
-import type { ModulePreviewData } from "@/app/src/data/modules/shared/ModulePreviewData";
+import type { ModulePreviewData } from "@/app/src/data/modules/shared/MainLayout/ModulePreviewData";
 
 type ModulePreviewPageProps = {
   data: ModulePreviewData;

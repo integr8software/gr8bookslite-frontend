@@ -1,1 +1,1 @@
-export const AppName = "Gr8Books Lite";
+export { AppName } from "@/app/src/constants/shared/AppConstants";

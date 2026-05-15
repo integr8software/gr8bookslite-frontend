@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { BranchManagementAction } from "@/app/src/ui/modules/system-administration/branch-management/Action";
+import { BranchManagementAction } from "@/app/src/ui/modules/system-administration/branch-management/ui/Action";
 
 const PageTitle = "Edit Branch Management";
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
 import {
   MainCompanyNavigationSections,
   MainCompanySearchItems,
@@ -116,9 +117,8 @@ export function useMainLayout() {
     isWorkspaceRoute && authProfile
       ? CreateWorkspaceCurrentUserFromProfile(authProfile)
       : ModuleShellMockData.currentUser;
-  const isProfileLoading = Boolean(accessToken) && isWorkspaceRoute
-    ? isAuthProfileLoading
-    : false;
+  const isProfileLoading =
+    Boolean(accessToken) && isWorkspaceRoute ? isAuthProfileLoading : false;
   const activeNavigationScope: MainNavigationScope =
     hasWorkspaceAccess && isWorkspaceRoute ? "workspace" : "company";
   const workspaceCompanies =
@@ -135,6 +135,7 @@ export function useMainLayout() {
   const [notifications, setNotifications] = useState<MainNotification[]>(
     ModuleShellMockData.notifications,
   );
+  const branches = useBranchManagementStore((state) => state.branches);
   const query = queryState.pathname === pathname ? queryState.value : "";
   const isSearchOpen = searchOpenPath === pathname;
   const isNotificationsOpen = notificationsOpenPath === pathname;
@@ -242,11 +243,8 @@ export function useMainLayout() {
   }, [availableSearchItems, query]);
 
   const accessibleBranches = useMemo(
-    () =>
-      sortBranchesByPriority(
-        getAccessibleBranches(currentCompany.branches ?? []),
-      ),
-    [currentCompany.branches],
+    () => sortBranchesByPriority(getAccessibleBranches(branches)),
+    [branches],
   );
   const hasBranchAccess = accessibleBranches.length > 0;
   const shouldShowBranchSwitcher = shouldShowBranchControls(accessibleBranches);
@@ -292,7 +290,7 @@ export function useMainLayout() {
       {
         key: "branch-management",
         label: "Branch Management",
-        href: "/settings",
+        href: BranchManagementHref,
         helperText: "Manage branch and satellite records",
         isManagementAction: true,
       },
@@ -450,12 +448,8 @@ export function useMainLayout() {
   }
 
   function selectCompany(companyId: string) {
-    const selectedCompany =
-      availableCompanies.find((company) => company.id === companyId) ??
-      currentCompany;
-
     setActiveCompanyId(companyId);
-    setActiveBranchId(getDefaultAccessibleBranchId(selectedCompany.branches));
+    setActiveBranchId(getDefaultAccessibleBranchId(branches));
     setLazyLoadedBranches(null);
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
@@ -571,7 +565,9 @@ function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
     return true;
   }
 
-  return profile.companies?.some((company) => company.role === "ADMIN") ?? false;
+  return (
+    profile.companies?.some((company) => company.role === "ADMIN") ?? false
+  );
 }
 
 function CreateWorkspaceCurrentUserFromProfile(
@@ -618,9 +614,7 @@ function CreateWorkspaceCurrentUserFromProfile(
   };
 }
 
-function MapProfileCompaniesToMainCompanies(
-  profile: AuthProfileResponse,
-) {
+function MapProfileCompaniesToMainCompanies(profile: AuthProfileResponse) {
   return (profile.companies ?? []).map((company) => ({
     id: String(company.companyId),
     name: company.companyName,

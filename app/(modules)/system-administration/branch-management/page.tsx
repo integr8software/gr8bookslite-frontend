@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { BranchManagementMain } from "@/app/src/ui/modules/system-administration/branch-management/Main";
+import { BranchManagementMain } from "@/app/src/ui/modules/system-administration/branch-management/ui/Main";
 
 const PageTitle = "Branch Management";
 

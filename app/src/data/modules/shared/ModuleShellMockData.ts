@@ -9,7 +9,7 @@ import type {
   MainUserRole,
   MainUserType,
 } from "@/app/src/data/modules/shared/MainLayout/ModuleShellTypes";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 
 export const ModuleSubscriptionPlans: MainSubscriptionOption[] = [
   {
@@ -91,7 +91,14 @@ const CompanyBranches = [
   {
     id: "branch-satellite-main",
     code: "SAT",
+    companyCode: "GR8",
     name: "Main Satellite",
+    contactNo: "+63 2 8123 4567",
+    email: "main@gr8books.test",
+    description: "Primary operating branch for the company.",
+    tin: "123-456-789-000",
+    address: "Makati City, Metro Manila",
+    href: "/dashboard",
     kind: "branch",
     isMain: true,
     access: { view: true, edit: true },
@@ -99,7 +106,15 @@ const CompanyBranches = [
   {
     id: "branch-satellite-sub",
     code: "SATO",
+    companyCode: "GR8",
     name: "Sub Satellite",
+    contactNo: "+63 32 412 7788",
+    email: "satellite@gr8books.test",
+    description: "Satellite office using the main branch TIN.",
+    tin: "123-456-789-000",
+    linkedMainBranchId: "branch-satellite-main",
+    address: "Cebu City, Cebu",
+    href: "/dashboard",
     kind: "satellite",
     isMain: false,
     access: { view: true, edit: true },

@@ -1,0 +1,1 @@
+export const AppName = "Gr8Books Lite";

@@ -1,9 +1,11 @@
 "use client";
 
 import {
+  DefaultPhilippineContactNumber,
   FormatPhilippineContactNumber,
-  PHILIPPINE_PREFIX,
+  PhilippineContactNumberPlaceholder,
 } from "@/app/src/data/shared/ContactData";
+import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
 import { OnboardingNonIndividualTypeOptions } from "@/app/src/data/onboarding/OnboardingData";
 import type {
   OnboardingFieldErrors,
@@ -196,14 +198,10 @@ export function OnboardingStepOne({
           name="tin"
           type="text"
           inputMode="numeric"
-          placeholder="123-456-789-000"
+          placeholder="3242-3424-42432"
           maxLength={15}
           value={values.tin}
-          onChange={(e) => {
-            const digits = e.target.value.replace(/\D/g, "").slice(0, 12);
-            const formatted = digits.replace(/(\d{3})(?=\d)/g, "$1-");
-            updateValue("tin", formatted);
-          }}
+          onChange={(e) => updateValue("tin", FormatTinNumber(e.target.value))}
           errors={errors.tin}
         />
         <OnboardingField
@@ -212,7 +210,7 @@ export function OnboardingStepOne({
           name="contactNumber"
           type="tel"
           inputMode="numeric"
-          placeholder="+63 917 123 4567"
+          placeholder={PhilippineContactNumberPlaceholder}
           maxLength={16}
           value={values.contactNumber}
           onChange={(e) =>
@@ -223,7 +221,7 @@ export function OnboardingStepOne({
           }
           onFocus={(e) => {
             if (!e.target.value) {
-              updateValue("contactNumber", `${PHILIPPINE_PREFIX} `);
+              updateValue("contactNumber", DefaultPhilippineContactNumber);
             }
           }}
           errors={errors.contactNumber}

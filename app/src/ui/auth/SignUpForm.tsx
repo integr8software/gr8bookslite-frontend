@@ -5,8 +5,9 @@ import type { ChangeEvent, FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
+	DefaultPhilippineContactNumber,
 	FormatPhilippineContactNumber,
-	PHILIPPINE_PREFIX,
+	PhilippineContactNumberPlaceholder,
 } from "@/app/src/data/shared/ContactData";
 import type { AuthFormValues } from "@/app/src/data/auth/AuthTypes";
 import { useSignUpForm } from "@/app/src/hooks/auth/useSignUpForm";
@@ -30,7 +31,7 @@ type SignUpFormValues = Required<
 const InitialSignUpFormValues: SignUpFormValues = {
 	name: "",
 	email: "",
-	contactNumber: `${PHILIPPINE_PREFIX} `,
+	contactNumber: DefaultPhilippineContactNumber,
 	password: "",
 	confirmPassword: "",
 	termsAccepted: false,
@@ -148,7 +149,7 @@ export function SignUpForm() {
 								name="contactNumber"
 								type="tel"
 								autoComplete="tel"
-								placeholder="+63 934 305 9435"
+								placeholder={PhilippineContactNumberPlaceholder}
 								value={values.contactNumber}
 								onChange={handleContactNumberChange}
 								errors={state.errors?.contactNumber}

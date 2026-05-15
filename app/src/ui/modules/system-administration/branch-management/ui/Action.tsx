@@ -165,10 +165,6 @@ function getActionMode(pathname: string): BranchActionMode {
 function validateBranchForm(values: BranchManagementFormValues) {
   const errors: BranchFormErrors = {};
 
-  if (!values.companyCode.trim()) {
-    errors.companyCode = "Company code is required.";
-  }
-
   if (!values.name.trim()) {
     errors.name = "Name is required.";
   }

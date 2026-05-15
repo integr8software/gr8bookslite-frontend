@@ -33,7 +33,8 @@ export function createBranchFromForm(
   mainBranch?: MainBranch,
 ): MainBranch {
   const normalizedName = values.name.trim();
-  const code = createBranchCode(values.companyCode, normalizedName);
+  const resolvedCompanyCode = resolveCompanyCode(values, mainBranch, normalizedName);
+  const code = createBranchCode(resolvedCompanyCode, normalizedName);
   const tin =
     values.classification === "satellite"
       ? (mainBranch?.tin ?? values.tin).trim()
@@ -42,7 +43,7 @@ export function createBranchFromForm(
   return {
     id: `branch-${Date.now()}`,
     code,
-    companyCode: values.companyCode.trim().toUpperCase(),
+    companyCode: resolvedCompanyCode,
     name: normalizedName,
     contactNo: optionalTrim(values.contactNo),
     email: optionalTrim(values.email),
@@ -111,6 +112,35 @@ function createBranchCode(companyCode: string, name: string) {
     .toUpperCase();
 
   return [companyPrefix, namePrefix].filter(Boolean).join("-");
+}
+
+function resolveCompanyCode(
+  values: BranchManagementFormValues,
+  mainBranch: MainBranch | undefined,
+  normalizedName: string,
+) {
+  const manualCompanyCode = values.companyCode.trim().toUpperCase();
+
+  if (manualCompanyCode) {
+    return manualCompanyCode;
+  }
+
+  const inheritedCompanyCode = mainBranch?.companyCode?.trim().toUpperCase();
+
+  if (inheritedCompanyCode) {
+    return inheritedCompanyCode;
+  }
+
+  const generatedCompanyCode = normalizedName
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part.replace(/[^A-Za-z0-9]/g, "").charAt(0))
+    .filter(Boolean)
+    .join("")
+    .slice(0, 4)
+    .toUpperCase();
+
+  return generatedCompanyCode || "AUTO";
 }
 
 function optionalTrim(value: string) {

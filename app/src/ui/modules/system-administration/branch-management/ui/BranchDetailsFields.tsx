@@ -37,18 +37,7 @@ export function BranchDetailsFields({
   return (
     <div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
       <div className="grid gap-4 lg:grid-cols-2">
-        <Field label="Company Code" error={errors.companyCode} required>
-          <input
-            name="companyCode"
-            value={values.companyCode}
-            onChange={onInputChange}
-            readOnly={isReadonly}
-            className={fieldClassName}
-            placeholder="GR8"
-          />
-        </Field>
-
-        <Field label="Classification" required>
+        <Field label="Classification" required className="lg:col-span-2">
           <div className="grid grid-cols-2 gap-2">
             <ClassificationButton
               active={values.classification === "branch"}

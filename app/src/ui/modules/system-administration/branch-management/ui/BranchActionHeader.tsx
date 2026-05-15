@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Edit3, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit3, Save, Trash2, X } from "lucide-react";
 import type { MainBranch } from "@/app/src/data/modules/shared/MainLayout/ModuleShellTypes";
 import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
 import type { BranchActionMode } from "@/app/src/types/modules/branch-manager/BranchActionTypes";
@@ -37,6 +37,15 @@ export function BranchActionHeader({
         <p className="mt-1 text-sm text-darknavy/55">{helperText}</p>
       </div>
       <div className="flex flex-wrap gap-2">
+        {mode === "view" ? (
+          <Link
+            href={BranchManagementHref}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/15 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:border-skyblue/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Back
+          </Link>
+        ) : null}
         {mode === "view" && branch ? (
           <Link
             href={`${BranchManagementHref}/edit/${branch.id}`}
@@ -55,6 +64,15 @@ export function BranchActionHeader({
             <Trash2 className="h-4 w-4" aria-hidden="true" />
             Delete
           </button>
+        ) : null}
+        {mode === "edit" && branch ? (
+          <Link
+            href={`${BranchManagementHref}/view/${branch.id}`}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/15 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:border-skyblue/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+            Cancel
+          </Link>
         ) : null}
         {!isReadonly ? (
           <button

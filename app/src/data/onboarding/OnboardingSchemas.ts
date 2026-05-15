@@ -52,6 +52,19 @@ function GetDigitsOnly(value: string) {
   return value.replace(/\D/g, "");
 }
 
+function GetCardBrand(value: string) {
+  const digits = GetDigitsOnly(value);
+
+  if (/^3[47]/.test(digits)) return "amex";
+  if (/^4/.test(digits)) return "visa";
+  if (/^(5[1-5]|2[2-7])/.test(digits)) return "mastercard";
+  if (/^(6011|65|64[4-9])/.test(digits)) return "discover";
+  if (/^(35(2[89]|[3-8]))/.test(digits)) return "jcb";
+  if (/^(30[0-5]|36|38|39)/.test(digits)) return "diners";
+
+  return "card";
+}
+
 function PassesLuhnCheck(value: string) {
   let checksum = 0;
   let shouldDouble = false;
@@ -234,9 +247,23 @@ export const OnboardingBillingStepSchema = z
   .superRefine((data, ctx) => {
     const month = Number(data.expiryMonth);
     const year = Number(data.expiryYear);
+    const cardBrand = GetCardBrand(data.cardNumber);
+    const expectedCvcPattern =
+      cardBrand === "amex" ? /^\d{4}$/ : /^\d{3}$/;
 
     if (Number.isNaN(month) || Number.isNaN(year)) {
       return;
+    }
+
+    if (!expectedCvcPattern.test(data.cvc.trim())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          cardBrand === "amex"
+            ? "American Express cards require a 4-digit CVC."
+            : "This card requires a 3-digit CVC.",
+        path: ["cvc"],
+      });
     }
 
     const now = new Date();

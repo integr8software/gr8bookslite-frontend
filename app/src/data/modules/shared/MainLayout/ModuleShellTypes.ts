@@ -52,6 +52,10 @@ export type MainAccessKey =
 export type MainProductKey = "core" | "accounting" | "inventory";
 
 export type ModuleSubscriptionPlanId =
+  | "lite-suite"
+  | "core"
+  | "accounting"
+  | "inventory"
   | "ACCOUNTING"
   | "INVENTORY"
   | "ACCOUNTING_INVENTORY";
@@ -165,7 +169,15 @@ export type MainCurrentUser = MainUserAccessContext & {
 export type MainBranch = {
   id: string;
   code: string;
+  companyCode: string;
   name: string;
+  contactNo?: string;
+  email?: string;
+  description?: string;
+  tin: string;
+  linkedMainBranchId?: string;
+  address?: string;
+  href: string;
   kind?: "branch" | "satellite";
   isMain?: boolean;
   access: Partial<Record<MainAccessAction, boolean>>;

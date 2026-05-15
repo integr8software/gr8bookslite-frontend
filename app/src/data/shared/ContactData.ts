@@ -1,4 +1,10 @@
-export const PHILIPPINE_PREFIX = "+63";
+import { PHILIPPINE_PREFIX } from "@/app/src/constants/shared/ContactConstants";
+
+export { PHILIPPINE_PREFIX };
+
+export const DefaultPhilippineContactNumber = `${PHILIPPINE_PREFIX}`;
+
+export const PhilippineContactNumberPlaceholder = `${PHILIPPINE_PREFIX}`;
 
 export function FormatPhilippineContactNumber(value: string) {
   const digits = value.replace(/\D/g, "");
@@ -14,5 +20,9 @@ export function FormatPhilippineContactNumber(value: string) {
 
   return formattedGroups.length
     ? `${PHILIPPINE_PREFIX} ${formattedGroups.join(" ")}`
-    : `${PHILIPPINE_PREFIX} `;
+    : DefaultPhilippineContactNumber;
+}
+
+export function GetDefaultPhilippineContactNumber(value: string) {
+  return value || DefaultPhilippineContactNumber;
 }

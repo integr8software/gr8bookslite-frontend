@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
 import {
   MainCompanyNavigationSections,
   MainCompanySearchItems,
@@ -23,6 +24,7 @@ import {
   ModuleHelpArticles,
   getHelpArticleForPath,
 } from "@/app/src/data/modules/shared/ModuleHelp";
+import { useBranchManagementStore } from "@/app/src/hooks/modules/system-administration/branch-management/useBranchManagement";
 
 const DefaultExpandedKeys = [
   "workspace",
@@ -113,6 +115,7 @@ export function useMainLayout() {
   const [notifications, setNotifications] = useState<MainNotification[]>(
     ModuleShellMockData.notifications,
   );
+  const branches = useBranchManagementStore((state) => state.branches);
   const query = queryState.pathname === pathname ? queryState.value : "";
   const isSearchOpen = searchOpenPath === pathname;
   const isNotificationsOpen = notificationsOpenPath === pathname;
@@ -218,11 +221,8 @@ export function useMainLayout() {
   }, [availableSearchItems, query]);
 
   const accessibleBranches = useMemo(
-    () =>
-      sortBranchesByPriority(
-        getAccessibleBranches(currentCompany.branches ?? []),
-      ),
-    [currentCompany.branches],
+    () => sortBranchesByPriority(getAccessibleBranches(branches)),
+    [branches],
   );
   const hasBranchAccess = accessibleBranches.length > 0;
   const shouldShowBranchSwitcher = shouldShowBranchControls(accessibleBranches);
@@ -260,7 +260,7 @@ export function useMainLayout() {
       {
         key: "branch-management",
         label: "Branch Management",
-        href: "/settings",
+        href: BranchManagementHref,
         helperText: "Manage branch and satellite records",
         isManagementAction: true,
       },
@@ -418,12 +418,8 @@ export function useMainLayout() {
   }
 
   function selectCompany(companyId: string) {
-    const selectedCompany =
-      availableCompanies.find((company) => company.id === companyId) ??
-      currentCompany;
-
     setActiveCompanyId(companyId);
-    setActiveBranchId(getDefaultAccessibleBranchId(selectedCompany.branches));
+    setActiveBranchId(getDefaultAccessibleBranchId(branches));
     setLazyLoadedBranches(null);
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);

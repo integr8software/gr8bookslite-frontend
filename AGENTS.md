@@ -8,7 +8,7 @@ This version has breaking changes. APIs, conventions, and file structure may all
 
 Use a modular monolith structure inside the `app` directory.
 
-Routes live directly under `app` with route groups for major areas:
+Routes live directly under `app` with route groups for major areas. Route files should stay thin and import the real feature UI from `app/src/ui/...`.
 
 ```txt
 app/
@@ -20,28 +20,71 @@ app/
   (onboarding)/
     layout.tsx
     onboarding/page.tsx
+  (modules)/
+    <domain>/
+      <feature>/
+        page.tsx
+        add/[recordId]/page.tsx
+        edit/[recordId]/page.tsx
+        view/[recordId]/page.tsx
   api/
   src/
+    constants/
     data/
-    services/
     hooks/
+    services/
+    types/
     ui/
 ```
 
 Route group folder names should be lowercase, for example `(auth)` and `(onboarding)`.
 
-Shared feature code belongs under `app/src`:
+Feature code belongs under `app/src`, grouped by concern first and module/domain second. Do not create a separate `app/src/modules` folder.
 
-- `app/src/data/<feature>/` for schemas, types, constants, and static data.
-- `app/src/services/<feature>/` for server actions, Axios API wrappers, TanStack Query helpers, and business operations.
-- `app/src/hooks/<feature>/` for client hooks.
-- `app/src/ui/<feature>/` for reusable UI components.
+- `app/src/ui/modules/<domain>/<feature>/` for React components only.
+- `app/src/data/modules/<domain>/<feature>/` for static data, schemas, form defaults, and pure data helpers.
+- `app/src/hooks/modules/<domain>/<feature>/` for client hooks and feature stores.
+- `app/src/services/modules/<domain>/<feature>/` for server actions, Axios API wrappers, TanStack Query helpers, and business operations.
+- `app/src/types/modules/<feature>/` for shared TypeScript-only types.
+- `app/src/constants/modules/<feature>/` for shared runtime constants.
+
+Example:
+
+```txt
+app/(modules)/system-administration/branch-management/
+  page.tsx
+  add/[recordId]/page.tsx
+  edit/[recordId]/page.tsx
+  view/[recordId]/page.tsx
+
+app/src/ui/modules/system-administration/branch-management/
+  ui/
+    Main.tsx
+    Action.tsx
+    BranchManagementTable.tsx
+
+app/src/data/modules/system-administration/branch-management/
+  BranchManagementData.ts
+
+app/src/hooks/modules/system-administration/branch-management/
+  useBranchManagement.ts
+
+app/src/types/modules/branch-manager/
+  BranchActionTypes.ts
+
+app/src/constants/modules/branch-manager/
+  BranchManagementConstants.ts
+```
+
+When adding a module, keep each concern in its matching root folder. For example, do not put hooks, constants, or data files inside `app/src/ui/...`, and do not put constants inside `app/src/types/...`.
 
 Use `shared` folders under `app/src` for cross-feature modules:
 
 - `app/src/data/shared/`
+- `app/src/constants/shared/`
 - `app/src/services/shared/`
 - `app/src/hooks/shared/`
+- `app/src/types/shared/`
 - `app/src/ui/shared/`
 
 # Naming
@@ -75,7 +118,9 @@ Keep logic out of UI components as much as possible.
 
 - Put client interaction logic, state orchestration, derived state, side effects, and flow control in hooks.
 - Keep UI components focused on rendering, props, and event wiring.
-- Put validation schemas, constants, types, and pure helpers in `data`.
+- Put validation schemas, form defaults, static data, and pure data helpers in `data`.
+- Put TypeScript-only shared types in `types`.
+- Put runtime constants in `constants`.
 - Put API wrappers, server actions, and business operations in `services`.
 - If component logic grows beyond small field-local state, move it into a feature hook or shared hook.
 - If a service file gets too large, split it by feature flow or domain responsibility instead of keeping all operations in one file.
@@ -115,13 +160,13 @@ app/(auth)/forgot-password/page.tsx
 app/(auth)/otp/page.tsx
 ```
 
-Auth validation should use Zod schemas from `app/src/data/auth/AuthSchemas.ts`.
+Auth validation should use Zod schemas from `app/src/data/auth/AuthSchemas.ts` or the matching `app/src/data/modules/...` feature folder when auth is organized as a module.
 
-Auth form server actions should return a typed `AuthActionState` from `app/src/data/auth/AuthTypes.ts`.
+Auth form server actions should return a typed `AuthActionState` from `app/src/types/...`.
 
 Client form components should use `useActionState` through hooks in `app/src/hooks/auth`.
 
-Auth constants and static auth helpers should live in `app/src/data/auth`, for example `OtpData.ts`.
+Auth runtime constants should live in `app/src/constants/...`. Static auth data and pure helpers should live in `app/src/data/...`.
 
 Auth may continue to use feature-specific service modules, but shared API and cache infrastructure should build on the shared Axios and TanStack Query boilerplate.
 

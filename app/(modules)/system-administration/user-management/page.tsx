@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { UserManagementMain } from "@/app/src/ui/modules/system-administration/user-management/Main";
+import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 
 const PageTitle = "User Management";
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default function SystemAdministrationUserManagementPage() {
-  return <UserManagementMain />;
+  redirect(UserListHref);
 }
 
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { UserGroupMain } from "@/app/src/ui/modules/system-administration/user-management/user-group/Main";
+import { UserGroupPage } from "@/app/src/ui/modules/system-administration/user-management/user-group/UserGroupPage";
 
 const PageTitle = "User Group";
 
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function SystemAdministrationUserGroupPage() {
-  return <UserGroupMain />;
+  return <UserGroupPage />;
 }

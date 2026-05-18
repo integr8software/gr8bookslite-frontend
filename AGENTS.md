@@ -24,7 +24,7 @@ app/
     <domain>/
       <feature>/
         page.tsx
-        add/[recordId]/page.tsx
+        add/page.tsx
         edit/[recordId]/page.tsx
         view/[recordId]/page.tsx
   api/
@@ -53,7 +53,7 @@ Example:
 ```txt
 app/(modules)/system-administration/branch-management/
   page.tsx
-  add/[recordId]/page.tsx
+  add/page.tsx
   edit/[recordId]/page.tsx
   view/[recordId]/page.tsx
 
@@ -86,6 +86,233 @@ Use `shared` folders under `app/src` for cross-feature modules:
 - `app/src/hooks/shared/`
 - `app/src/types/shared/`
 - `app/src/ui/shared/`
+
+# CRUD Module Pattern
+
+Use this section when creating or refactoring CRUD modules. `AGENTS.md` is the
+canonical project instruction file.
+
+## CRUD Routes
+
+Before changing routes, read the relevant guide in
+`node_modules/next/dist/docs/`.
+
+Routes stay thin and only import feature UI from `app/src/ui/...`.
+
+```txt
+app/(modules)/<domain>/<feature>/
+  page.tsx
+  add/page.tsx
+  edit/[recordId]/page.tsx
+  view/[recordId]/page.tsx
+```
+
+Use `add/page.tsx` for create pages. Do not create `add/[recordId]` and do not
+link to `/add/new`.
+
+Route files should look like this:
+
+```tsx
+import { FeatureMain } from "@/app/src/ui/modules/<domain>/<feature>/ui/Main";
+
+export default function Page() {
+  return <FeatureMain />;
+}
+```
+
+For add/edit/view routes:
+
+```tsx
+import { FeatureAction } from "@/app/src/ui/modules/<domain>/<feature>/ui/Action";
+
+export default function Page() {
+  return <FeatureAction />;
+}
+```
+
+## CRUD Feature Layout
+
+Place files by concern, not all inside UI.
+
+```txt
+app/src/ui/modules/<domain>/<feature>/ui/
+  Main.tsx
+  Action.tsx
+  FeatureHeader.tsx
+  FeatureTable.tsx
+  FeatureActionHeader.tsx
+  FeatureDetailsFields.tsx
+  FeatureNotFound.tsx
+
+app/src/data/modules/<domain>/<feature>/
+  FeatureData.ts
+
+app/src/hooks/modules/<domain>/<feature>/
+  useFeature.ts
+
+app/src/services/modules/<domain>/<feature>/
+  FeatureQueryKeys.ts
+
+app/src/types/modules/<feature>/
+  FeatureTypes.ts
+
+app/src/constants/modules/<feature>/
+  FeatureConstants.ts
+```
+
+Branch Management is the reference CRUD implementation. User Management should
+move toward this same shape when refactored.
+
+## CRUD List Page Pattern
+
+`Main.tsx` owns page composition only:
+
+- Read list state from the feature hook.
+- Render the feature header.
+- Render the table/list component.
+- Wire delete/status actions through clear handler props.
+- Use shared dialogs such as `AppConfirmDialog` instead of `window.confirm`
+  when adding or refactoring UI.
+
+`FeatureHeader.tsx` owns the top action area:
+
+- Title and short helper text when needed.
+- Primary Add button linked to `${FeatureHref}/add`.
+- Keep import/export/filter buttons only when the feature requires them.
+
+`FeatureTable.tsx` owns rendering:
+
+- Prefer TanStack Table for data tables with sorting, filtering, pagination,
+  selection, and column visibility.
+- Keep table columns local to the table unless reused elsewhere.
+- Use project shared controls and `AppSkeleton` for loading rows.
+- Keep actions as icon buttons with accessible labels.
+- Center action cells. Keep text-heavy identity fields left aligned.
+
+## CRUD Action Page Pattern
+
+`Action.tsx` handles add/edit/view orchestration:
+
+- Detect mode from pathname:
+  - `/add` means `add`
+  - `/edit/[recordId]` means `edit`
+  - `/view/[recordId]` means `view`
+- Read `recordId` only for edit/view.
+- Build initial form values from data helpers.
+- Keep validation and field update orchestration in the hook or action
+  component, depending on complexity.
+- Make view mode readonly.
+- If edit/view record is missing, render `FeatureNotFound`.
+- After successful add/edit/delete, navigate back to `FeatureHref`.
+
+`FeatureActionHeader.tsx` owns:
+
+- Mode-aware heading/actions.
+- Back/cancel navigation.
+- Save button for add/edit.
+- Delete button for edit/view when allowed.
+
+`FeatureDetailsFields.tsx` owns:
+
+- Field layout and inputs.
+- Error display.
+- Disabled/readonly behavior.
+- No business logic beyond calling provided handlers.
+
+## CRUD Data, Types, Constants, Services
+
+`FeatureTypes.ts`:
+
+- Shared TypeScript-only record, status, action mode, and form error types.
+
+`FeatureConstants.ts`:
+
+- Runtime constants such as `FeatureHref`, status options, page-size options,
+  and labels.
+
+`FeatureData.ts`:
+
+- Mock/static records.
+- Initial form values.
+- Pure data mappers such as `createFeatureFormValues`,
+  `createFeatureFromForm`, and `updateFeatureFromForm`.
+- Validation helpers if they are pure and reusable.
+
+`FeatureQueryKeys.ts`:
+
+- TanStack Query key factories.
+
+`useFeature.ts`:
+
+- TanStack Query data loading.
+- Mutations for create, update, delete, and status changes.
+- Derived options for filters.
+- Table state and handlers when the feature has a TanStack table.
+
+## User Management Refactor Notes
+
+User Type and User Group currently use a flatter component structure that
+mirrors the Branch Management concepts with different names:
+
+```txt
+BranchManagementMain      -> UserTypePage / UserGroupPage
+BranchManagementHeader    -> UserTypeHeader / UserGroupHeader
+BranchManagementTable     -> UserTypeList / UserGroupList
+BranchManagementAction    -> UserTypeFormPage / UserGroupFormPage
+BranchActionHeader        -> UserTypeFormHeader / UserGroupFormHeader
+BranchDetailsFields       -> UserTypeForm / UserGroupForm
+BranchNotFound            -> UserTypeNotFound / UserGroupNotFound
+```
+
+When refactoring User Management:
+
+1. Keep route shape consistent: `add/page.tsx`, `edit/[recordId]`,
+   `view/[recordId]`.
+2. Replace all `/add/new` links with `/add`.
+3. Move User List route imports to the newer `ui/Main` pattern.
+4. Create `ui/Action.tsx` for User List if add/edit/view should match Branch
+   Management.
+5. Move User Type and User Group components into a `ui/` folder.
+6. Rename User Type/User Group page components to match the Branch pattern:
+   `Main`, `Action`, `Header`, `Table` or `List`, `ActionHeader`,
+   `DetailsFields`, `NotFound`.
+7. Replace `window.confirm` with shared `AppConfirmDialog`.
+8. Split `useUserManagement.ts` only when submodules need independent query
+   state or the file becomes too large.
+
+## CRUD Links
+
+Use constants for hrefs:
+
+```tsx
+export const FeatureHref = "/<domain>/<feature>";
+```
+
+Then build links consistently:
+
+```tsx
+`${FeatureHref}/add`
+`${FeatureHref}/edit/${record.id}`
+`${FeatureHref}/view/${record.id}`
+```
+
+Never hard-code `/add/new`.
+
+## CRUD Validation Checklist
+
+After CRUD refactors, run:
+
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build
+```
+
+Also search for route regressions:
+
+```bash
+rg '/add/new|add/\[recordId\]|add\\\[recordId\\\]' 'app/(modules)' app/src -g '*.tsx' -g '*.ts'
+```
 
 # Naming
 

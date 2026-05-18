@@ -85,7 +85,10 @@ export function useMainLayout() {
   const router = useRouter();
   const storedAccessToken = useAppStore((state) => state.accessToken);
   const branchLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sidebarTransitionFrameRef = useRef<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarTransitionEnabled, setIsSidebarTransitionEnabled] =
+    useState(false);
   const [searchOpenPath, setSearchOpenPath] = useState<string | null>(null);
   const [notificationsOpenPath, setNotificationsOpenPath] = useState<
     string | null
@@ -348,6 +351,10 @@ export function useMainLayout() {
       if (branchLoadTimerRef.current) {
         clearTimeout(branchLoadTimerRef.current);
       }
+
+      if (sidebarTransitionFrameRef.current !== null) {
+        cancelAnimationFrame(sidebarTransitionFrameRef.current);
+      }
     },
     [],
   );
@@ -366,6 +373,10 @@ export function useMainLayout() {
     }
 
     syncSidebarToViewport(mediaQuery);
+    sidebarTransitionFrameRef.current = requestAnimationFrame(() => {
+      setIsSidebarTransitionEnabled(true);
+      sidebarTransitionFrameRef.current = null;
+    });
     mediaQuery.addEventListener("change", syncSidebarToViewport);
 
     return () => {
@@ -383,7 +394,6 @@ export function useMainLayout() {
 
   function toggleSearch() {
     setSearchOpenPath((current) => (current === pathname ? null : pathname));
-    setNotificationsOpenPath(null);
   }
 
   function closeSearch() {
@@ -406,7 +416,6 @@ export function useMainLayout() {
     setSelectedHelpArticleState({ pathname, key: currentHelpArticle.key });
     setHelpOpenPath(pathname);
     setSearchOpenPath(null);
-    setNotificationsOpenPath(null);
   }
 
   function closeHelp() {
@@ -508,6 +517,7 @@ export function useMainLayout() {
     isNotificationsOpen,
     isSearchOpen,
     isSidebarOpen,
+    isSidebarTransitionEnabled,
     moduleTitle,
     navigationSections,
     notificationTab,

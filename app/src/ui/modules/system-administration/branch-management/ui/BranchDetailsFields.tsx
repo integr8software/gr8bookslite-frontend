@@ -4,7 +4,7 @@ import {
   DefaultPhilippineContactNumber,
   PhilippineContactNumberPlaceholder,
 } from "@/app/src/data/shared/ContactData";
-import type { MainBranch } from "@/app/src/data/modules/shared/MainLayout/ModuleShellTypes";
+import type { MainBranch } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
 import type { BranchManagementFormValues } from "@/app/src/data/modules/system-administration/branch-management/BranchManagementData";
 import type { BranchFormErrors } from "@/app/src/types/modules/branch-manager/BranchActionTypes";
 

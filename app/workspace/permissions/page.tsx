@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { ModulePreviewPages } from "@/app/src/data/modules/shared/MainLayout/ModulePreviewData";
-import { ModulePreviewPage } from "@/app/src/ui/modules/shared/ModulePreviewPage";
+import { ModulePreviewPages } from "@/app/src/data/shared/MainLayout/ModulePreviewData";
+import { ModulePreviewPage } from "@/app/src/ui/shared/ModulePreview/ModulePreviewPage";
 
 export const metadata: Metadata = {
   title: "Permissions | Gr8Books Lite",

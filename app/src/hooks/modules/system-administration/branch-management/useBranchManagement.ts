@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { MainBranch } from "@/app/src/data/modules/shared/MainLayout/ModuleShellTypes";
-import { MainLayoutMockData } from "@/app/src/data/modules/shared/MainShellMockData";
+import type { MainBranch } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+import { MainLayoutMockData } from "@/app/src/data/shared/MainLayout/MainShellMockData";
 import { BranchManagementQueryKeys } from "@/app/src/services/modules/system-administration/branch-management/BranchManagementQueryKeys";
 
 type BranchManagementStoreState = {

@@ -27,6 +27,11 @@ app/
         add/page.tsx
         edit/[recordId]/page.tsx
         view/[recordId]/page.tsx
+  pricing/
+    page.tsx
+  workspace/
+    layout.tsx
+    dashboard/page.tsx
   api/
   src/
     constants/
@@ -38,6 +43,10 @@ app/
 ```
 
 Route group folder names should be lowercase, for example `(auth)` and `(onboarding)`.
+
+`app/pricing/page.tsx` is intentionally public. Keep it outside authenticated route groups unless the product flow changes.
+
+`app/workspace/...` is intentionally a separate admin workspace URL space. Keep company module pages such as `/dashboard` under `(modules)`, and keep admin workspace pages such as `/workspace/dashboard` under `workspace` so the same visible URL does not change meaning based only on the signed-in role.
 
 Feature code belongs under `app/src`, grouped by concern first and module/domain second. Do not create a separate `app/src/modules` folder.
 

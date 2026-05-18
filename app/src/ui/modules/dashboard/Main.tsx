@@ -9,9 +9,9 @@ import {
   SlidersHorizontal,
   Users,
 } from "lucide-react";
-import type { MainDashboardWidget } from "@/app/src/data/modules/shared/MainLayout/ModuleShellTypes";
-import { hasAccess } from "@/app/src/data/modules/shared/MainLayout/ModuleShellUtils";
-import { ModuleShellMockData } from "@/app/src/data/modules/shared/ModuleShellMockData";
+import type { MainDashboardWidget } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+import { hasAccess } from "@/app/src/data/shared/MainLayout/ModuleShellUtils";
+import { ModuleShellMockData } from "@/app/src/data/shared/MainLayout/ModuleShellMockData";
 
 const DashboardLibrary = [
   {

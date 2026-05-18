@@ -50,6 +50,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 		isNotificationsOpen,
 		isSearchOpen,
 		isSidebarOpen,
+		isSidebarTransitionEnabled,
 		navigationSections,
 		notificationTab,
 		query,
@@ -164,6 +165,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 					homeHref={homeHref}
 					isLoading={isProfileLoading}
 					isOpen={isSidebarOpen}
+					isTransitionEnabled={isSidebarTransitionEnabled}
 					navigationSections={navigationSections}
 					recentlyVisitedModules={recentlyVisitedModules}
 					shouldAutoScrollActiveItem={shouldAutoRevealActiveRoute}
@@ -174,7 +176,9 @@ export function MainLayout({ children }: MainLayoutProps) {
 
 				<main
 					className={joinClasses(
-						"min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 transition-[margin] duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none sm:px-5 lg:px-6",
+						"min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 motion-reduce:transition-none sm:px-5 lg:px-6",
+						isSidebarTransitionEnabled &&
+							"transition-[margin] duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
 						isSidebarOpen && "lg:ml-78",
 						isNotificationsOpen && "xl:mr-88",
 					)}

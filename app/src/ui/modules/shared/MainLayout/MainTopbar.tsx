@@ -145,11 +145,13 @@ export function MainTopbar({
   const settingsHref =
     activeNavigationScope === "workspace" ? "/workspace/settings" : "/settings";
   const canShowCompanySwitcher = canAccessWorkspace || canSwitchCompany;
+  const canShowBranchSwitcher =
+    activeNavigationScope === "company" && branchDropdownItems.length > 0;
+  const hasBothMobileWorkspaceControls =
+    canShowCompanySwitcher && canShowBranchSwitcher;
   const hasMobileWorkspaceControls =
-    canShowCompanySwitcher || activeNavigationScope === "company";
-  const mobileFloatingPanelTopClass = hasMobileWorkspaceControls
-    ? "top-[7.75rem]"
-    : "top-18";
+    canShowCompanySwitcher || canShowBranchSwitcher;
+  const topbarFloatingPanelTopClass = "top-14";
 
   useEffect(() => {
     if (
@@ -316,7 +318,7 @@ export function MainTopbar({
             />
           ) : null}
 
-          {activeNavigationScope === "company" && branchDropdownItems.length ? (
+          {canShowBranchSwitcher ? (
             <BranchSwitcher
               branchDropdownItems={branchDropdownItems}
               currentBranch={currentBranch}
@@ -382,7 +384,7 @@ export function MainTopbar({
             <div
               className={joinClasses(
                 "fixed right-2 z-50 w-[calc(100vw-1rem)] max-w-88 origin-top-right transition-[opacity,transform] duration-150 ease-out will-change-[opacity,transform] motion-reduce:transition-none sm:right-4 sm:w-80 sm:max-w-none md:top-18 md:w-96 xl:hidden",
-                mobileFloatingPanelTopClass,
+                topbarFloatingPanelTopClass,
                 isNotificationsOpen
                   ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
                   : "pointer-events-none translate-y-1 scale-[0.98] opacity-0",
@@ -453,8 +455,7 @@ export function MainTopbar({
             {isProfileMenuOpen ? (
               <div
                 className={joinClasses(
-                  "fixed right-3 z-50 w-[calc(100vw-1.5rem)] max-w-72 overflow-hidden rounded-lg border border-darknavy/10 bg-white p-1 shadow-[0_24px_70px_rgba(33,39,56,0.18)] md:absolute md:right-0 md:top-12 md:w-72",
-                  mobileFloatingPanelTopClass,
+                  "fixed right-3 top-14 z-50 w-[calc(100vw-1.5rem)] max-w-72 overflow-hidden rounded-lg border border-darknavy/10 bg-white p-1 shadow-[0_24px_70px_rgba(33,39,56,0.18)] md:absolute md:right-0 md:top-12 md:w-72",
                 )}
               >
                 <AccountDetails
@@ -493,10 +494,8 @@ export function MainTopbar({
         <nav
           aria-label="Mobile workspace controls"
           className={joinClasses(
-            "grid gap-2 border-t border-darknavy/10 px-3 py-2 md:hidden",
-            canSwitchCompany && activeNavigationScope === "company"
-              ? "grid-cols-2"
-              : "grid-cols-1",
+            "grid grid-cols-1 gap-2 border-t border-darknavy/10 px-3 py-2 md:hidden",
+            hasBothMobileWorkspaceControls && "sm:grid-cols-2",
           )}
         >
           {canShowCompanySwitcher ? (
@@ -514,12 +513,13 @@ export function MainTopbar({
             />
           ) : null}
 
-          {activeNavigationScope === "company" && branchDropdownItems.length ? (
+          {canShowBranchSwitcher ? (
             <BranchSwitcher
               branchDropdownItems={branchDropdownItems}
               currentBranch={currentBranch}
               isLoading={isBranchLoading}
               isOpen={openSwitcherKey === "branch"}
+              mobileMenuTopClass="top-[10.75rem] sm:top-[7.75rem]"
               variant="mobile"
               onClose={closeSwitcher}
               onSelectBranch={onSelectBranch}
@@ -537,8 +537,8 @@ export function MainTopbar({
             onClose={onCloseSearch}
             onQueryChange={onQueryChange}
             className={joinClasses(
-              "fixed left-3 right-3 md:top-18 lg:hidden",
-              mobileFloatingPanelTopClass,
+              "fixed left-3 right-3 md:top-18 xl:hidden",
+              topbarFloatingPanelTopClass,
             )}
           />
         </div>
@@ -687,6 +687,7 @@ type BranchSwitcherProps = {
   currentBranch: MainBranch | null;
   isLoading: boolean;
   isOpen: boolean;
+  mobileMenuTopClass?: string;
   variant?: SwitcherVariant;
   onClose: () => void;
   onSelectBranch: (branchId: string) => void;
@@ -698,6 +699,7 @@ function BranchSwitcher({
   currentBranch,
   isLoading,
   isOpen,
+  mobileMenuTopClass,
   variant = "desktop",
   onClose,
   onSelectBranch,
@@ -731,7 +733,7 @@ function BranchSwitcher({
       </button>
 
       {isOpen ? (
-        <div className={getSwitcherMenuClassName(variant)}>
+        <div className={getSwitcherMenuClassName(variant, mobileMenuTopClass)}>
           {isLoading ? (
             <div className="space-y-2 p-3" aria-label="Loading branches">
               <span className="block h-3 w-32 rounded bg-darknavy/10" />
@@ -756,14 +758,17 @@ function BranchSwitcher({
   );
 }
 
-function getSwitcherMenuClassName(variant: SwitcherVariant) {
+function getSwitcherMenuClassName(
+  variant: SwitcherVariant,
+  mobileTopClass = "top-[7.75rem]",
+) {
   const baseClassName =
     "z-50 max-h-[min(24rem,calc(100vh-8rem))] overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_24px_70px_rgba(33,39,56,0.18)]";
 
   return joinClasses(
     baseClassName,
     variant === "mobile"
-      ? "fixed left-3 right-3 top-[7.75rem]"
+      ? joinClasses("fixed left-3 right-3", mobileTopClass)
       : "absolute left-0 top-12 w-[min(20rem,calc(100vw-1.5rem))]",
   );
 }

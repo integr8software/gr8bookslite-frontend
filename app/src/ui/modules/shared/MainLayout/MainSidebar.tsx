@@ -70,6 +70,7 @@ type MainSidebarProps = {
   homeHref: string;
   isLoading?: boolean;
   isOpen: boolean;
+  isTransitionEnabled: boolean;
   navigationSections: MainNavigationSection[];
   recentlyVisitedModules: MainSearchItem[];
   shouldAutoScrollActiveItem: boolean;
@@ -170,6 +171,7 @@ export function MainSidebar({
   homeHref,
   isLoading = false,
   isOpen,
+  isTransitionEnabled,
   navigationSections,
   recentlyVisitedModules,
   shouldAutoScrollActiveItem,
@@ -307,7 +309,9 @@ export function MainSidebar({
       data-main-sidebar-root
       onPointerDownCapture={suppressAutoScrollFromSidebarInteraction}
       className={joinClasses(
-        "fixed inset-y-0 left-0 z-50 w-78 transform-gpu overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform motion-reduce:transition-none lg:bottom-0 lg:top-16 lg:z-20 lg:h-auto lg:shadow-none",
+        "fixed inset-y-0 left-0 z-50 w-78 transform-gpu overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] will-change-transform motion-reduce:transition-none lg:bottom-0 lg:top-16 lg:z-20 lg:h-auto lg:shadow-none",
+        isTransitionEnabled &&
+          "transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
         isOpen
           ? "translate-x-0"
           : "pointer-events-none -translate-x-full",

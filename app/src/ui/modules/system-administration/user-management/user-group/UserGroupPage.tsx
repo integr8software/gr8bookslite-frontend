@@ -18,8 +18,8 @@ export function UserGroupPage() {
   return (
     <section className="grid gap-5">
       <UserGroupHeader
-        addHref={`${UserGroupHref}/add/new`}
-        description="Maintain grouped access roles for teams and departments."
+        addHref={`${UserGroupHref}/add`}
+        description="Maintain teams and department groupings for users."
         title="User Groups"
       />
       <UserGroupList

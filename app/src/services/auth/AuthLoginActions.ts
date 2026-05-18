@@ -13,6 +13,19 @@ import {
 } from "@/app/src/services/auth/AuthActionUtils";
 import { GetFallbackPostAuthRedirectPath } from "@/app/src/services/auth/AuthRedirects";
 
+const AccessStateLoginErrors = [
+  "This company subscription",
+  "This company trial",
+  "This company membership",
+  "This company is",
+  "You do not belong to this company.",
+  "User account is suspended.",
+];
+
+function IsAccessStateLoginError(message: string) {
+  return AccessStateLoginErrors.some((prefix) => message.startsWith(prefix));
+}
+
 export async function LoginAction(
   _previousState: AuthActionState,
   formData: FormData,
@@ -61,6 +74,15 @@ export async function LoginAction(
         message,
         redirectTo: "/auth/verify-email",
         pendingVerificationEmail: parsed.data.email,
+        formValues,
+        rememberMe,
+      };
+    }
+
+    if (IsAccessStateLoginError(message)) {
+      return {
+        status: "error",
+        message,
         formValues,
         rememberMe,
       };

@@ -183,10 +183,10 @@ export function SidebarItem({
             "group relative flex min-h-9 w-full items-center gap-2 rounded-md py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
             paddingClass,
             isAncestorActive
-              ? "font-semibold text-blue-600 hover:bg-blue-50/45"
+              ? "font-semibold text-darknavy hover:bg-skyblue/10"
               : isExactActive
-                ? "rounded-2xl bg-blue-50 font-semibold text-blue-600 shadow-[0_8px_20px_rgba(37,99,235,0.10)] ring-1 ring-blue-100 hover:bg-blue-50"
-                : "text-darknavy/70 hover:bg-blue-50/70 hover:text-blue-600",
+                ? "rounded-2xl bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgba(87,196,229,0.12)] ring-1 ring-skyblue/22 hover:bg-skyblue/18"
+                : "text-darknavy/70 hover:bg-skyblue/10 hover:text-darknavy",
           )}
         >
           {shouldShowIcon
@@ -197,10 +197,10 @@ export function SidebarItem({
             className={joinClasses(
               "h-4 w-4 shrink-0 transition",
               isAncestorActive
-                ? "text-blue-500/80"
+                ? "text-skyblue"
                 : isExactActive
-                  ? "text-blue-500/70"
-                  : "text-darknavy/40 group-hover:text-blue-500",
+                  ? "text-skyblue"
+                  : "text-darknavy/40 group-hover:text-skyblue",
               isExpanded && "rotate-90",
             )}
             aria-hidden="true"
@@ -253,17 +253,17 @@ export function SidebarItem({
         paddingClass,
         depth < 0 && "font-semibold",
         isActive
-          ? "rounded-2xl bg-blue-50 font-semibold text-blue-600 shadow-[0_8px_20px_rgba(37,99,235,0.10)] ring-1 ring-blue-100 hover:bg-blue-50"
-          : "text-darknavy/65 hover:bg-blue-50/70 hover:text-blue-600",
+          ? "rounded-2xl bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgba(87,196,229,0.12)] ring-1 ring-skyblue/22 hover:bg-skyblue/18"
+          : "text-darknavy/65 hover:bg-skyblue/10 hover:text-darknavy",
       )}
     >
       {shouldShowIcon ? renderSidebarItemIcon(item, isActive, false) : null}
       {shouldShowModuleDot ? (
         <span
           className={joinClasses(
-            "h-1.5 w-1.5 shrink-0 rounded-full transition-[background-color,box-shadow] group-hover:bg-blue-500 group-hover:shadow-[0_0_8px_rgba(59,130,246,0.36)]",
+            "h-1.5 w-1.5 shrink-0 rounded-full transition-[background-color,box-shadow] group-hover:bg-skyblue group-hover:shadow-[0_0_8px_rgba(87,196,229,0.36)]",
             isActive
-              ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.36)]"
+              ? "bg-skyblue shadow-[0_0_8px_rgba(87,196,229,0.36)]"
               : "bg-darknavy/30",
           )}
           aria-hidden="true"

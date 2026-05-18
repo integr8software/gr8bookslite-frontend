@@ -29,14 +29,16 @@ export function SwitcherButton({
       className={joinClasses(
         "flex w-full items-start gap-3 rounded-2xl px-3 py-2.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
         isActive
-          ? "bg-blue-50 text-blue-600 ring-1 ring-blue-100"
-          : "text-darknavy hover:bg-blue-50/70",
+          ? "bg-skyblue/12 text-darknavy ring-1 ring-skyblue/28"
+          : "text-darknavy hover:bg-darknavy/5",
       )}
     >
       <span
         className={joinClasses(
-          "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white shadow-sm",
-          isActive ? "text-blue-600" : "text-darknavy",
+          "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md shadow-sm",
+          isActive
+            ? "bg-skyblue/18 text-darknavy"
+            : "bg-white text-darknavy",
         )}
       >
         {imageUrl ? (
@@ -56,7 +58,7 @@ export function SwitcherButton({
         ) : null}
       </span>
       {isActive ? (
-        <span className="mt-1 inline-flex min-h-6 items-center rounded-full bg-blue-600 px-3 text-xs font-semibold text-white">
+        <span className="mt-1 inline-flex min-h-6 items-center rounded-full bg-skyblue px-3 text-xs font-semibold text-darknavy">
           Current
         </span>
       ) : status ? (

@@ -12,6 +12,36 @@
   --font-inter: "Inter";
 }
 
+:root[data-app-theme="classic-light"] {
+  --darknavy: #212738;
+  --coralpink: #f97068;
+  --citron: #d1d646;
+  --offwhite: #fffff0;
+  --skyblue: #57c4e5;
+  --background: #fffff0;
+  --foreground: #212738;
+}
+
+:root[data-app-theme="soft-sky"] {
+  --darknavy: #1f2d3d;
+  --coralpink: #ff8a7a;
+  --citron: #d9df62;
+  --offwhite: #f4fbff;
+  --skyblue: #67c9ee;
+  --background: #f4fbff;
+  --foreground: #1f2d3d;
+}
+
+:root[data-app-theme="warm-contrast"] {
+  --darknavy: #1d2433;
+  --coralpink: #ef6a5b;
+  --citron: #cbd83f;
+  --offwhite: #fffaf0;
+  --skyblue: #51b9db;
+  --background: #fffaf0;
+  --foreground: #1d2433;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -25,7 +55,7 @@
 }
 
 body {
-  background: white;
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), Arial, Helvetica, sans-serif;
 }

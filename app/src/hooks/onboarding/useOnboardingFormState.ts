@@ -18,6 +18,12 @@ import type {
   PricingPlan,
 } from "@/app/src/data/pricing/PricingData";
 
+type PendingLogoCrop = {
+  fileName: string;
+  mimeType: string;
+  sourceImageUrl: string;
+};
+
 function GetDigitsOnly(value: string) {
   return value.replace(/\D/g, "");
 }
@@ -36,6 +42,9 @@ export function useOnboardingFormState() {
   const [errors, setErrors] = useState<OnboardingFieldErrors>({});
   const [logoInputKey, setLogoInputKey] = useState(0);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState("");
+  const [pendingLogoCrop, setPendingLogoCrop] = useState<PendingLogoCrop | null>(
+    null,
+  );
   const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
   const [selectedBillingCycle, setSelectedBillingCycle] =
     useState<BillingCycle>("monthly");
@@ -55,8 +64,12 @@ export function useOnboardingFormState() {
       if (logoPreviewUrlRef.current) {
         URL.revokeObjectURL(logoPreviewUrlRef.current);
       }
+
+      if (pendingLogoCrop?.sourceImageUrl) {
+        URL.revokeObjectURL(pendingLogoCrop.sourceImageUrl);
+      }
     };
-  }, []);
+  }, [pendingLogoCrop]);
 
   useEffect(() => {
     if (previousStepIndexRef.current === stepIndex) {
@@ -234,15 +247,11 @@ export function useOnboardingFormState() {
       return;
     }
 
-    setValues((current) => ({
-      ...current,
-      logoFile: file,
-      logoName: file.name,
-      logoStoragePath: "",
-      logoPublicUrl: "",
-    }));
-    updateLogoPreviewUrl(URL.createObjectURL(file));
-    setErrors((current) => ({ ...current, logo: undefined }));
+    setPendingLogoCrop({
+      fileName: file.name,
+      mimeType: file.type || "image/png",
+      sourceImageUrl: URL.createObjectURL(file),
+    });
   }
 
   function handleLogoRemove() {
@@ -261,6 +270,27 @@ export function useOnboardingFormState() {
     updateLogoPreviewUrl(nextPreviewUrl);
   }
 
+  function applyCroppedLogo(file: File) {
+    setValues((current) => ({
+      ...current,
+      logoFile: file,
+      logoName: file.name,
+      logoStoragePath: "",
+      logoPublicUrl: "",
+    }));
+    updateLogoPreviewUrl(URL.createObjectURL(file));
+    setErrors((current) => ({ ...current, logo: undefined }));
+    dismissLogoCropper();
+  }
+
+  function dismissLogoCropper() {
+    if (pendingLogoCrop?.sourceImageUrl) {
+      URL.revokeObjectURL(pendingLogoCrop.sourceImageUrl);
+    }
+
+    setPendingLogoCrop(null);
+  }
+
   return {
     stepIndex,
     setStepIndex,
@@ -271,6 +301,7 @@ export function useOnboardingFormState() {
     logoInputKey,
     setLogoInputKey,
     logoPreviewUrl,
+    pendingLogoCrop,
     selectedPlan,
     setSelectedPlan,
     selectedBillingCycle,
@@ -284,6 +315,8 @@ export function useOnboardingFormState() {
     isLastStep,
     updateValue,
     setTaxpayerType,
+    applyCroppedLogo,
+    dismissLogoCropper,
     handleLogoChange,
     handleLogoRemove,
     setPersistedLogoPreviewUrl,

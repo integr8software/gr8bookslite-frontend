@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 import { CreateQueryClient } from "@/app/src/services/shared/QueryClient";
+import { AppThemeEffect } from "@/app/src/ui/shared/AppThemeEffect";
 
 type AppProvidersProps = {
   children: React.ReactNode;
@@ -20,6 +21,7 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AppThemeEffect />
       {children}
     </QueryClientProvider>
   );

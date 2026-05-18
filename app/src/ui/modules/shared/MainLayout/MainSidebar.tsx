@@ -314,7 +314,10 @@ export function MainSidebar({
           "transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
         isOpen
           ? "translate-x-0"
-          : "pointer-events-none -translate-x-full",
+          : joinClasses(
+              "pointer-events-none -translate-x-full",
+              !isTransitionEnabled && "lg:translate-x-0",
+            ),
       )}
     >
       <div className="flex h-full min-h-0 w-78 flex-col">

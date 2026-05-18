@@ -394,7 +394,6 @@ export function useMainLayout() {
 
   function toggleSearch() {
     setSearchOpenPath((current) => (current === pathname ? null : pathname));
-    setNotificationsOpenPath(null);
   }
 
   function closeSearch() {
@@ -417,7 +416,6 @@ export function useMainLayout() {
     setSelectedHelpArticleState({ pathname, key: currentHelpArticle.key });
     setHelpOpenPath(pathname);
     setSearchOpenPath(null);
-    setNotificationsOpenPath(null);
   }
 
   function closeHelp() {

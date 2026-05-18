@@ -176,6 +176,7 @@ export function MainTopbar({
 
       if (
         isNotificationsOpen &&
+        !isLargeNotificationPanel() &&
         !target.closest("[data-main-notifications-root]")
       ) {
         onCloseNotifications();
@@ -238,6 +239,7 @@ export function MainTopbar({
   function handleToggleSearch() {
     closeSwitcher();
     closeMobileSidebar();
+    closeDropdownNotifications();
     onToggleSearch();
   }
 
@@ -245,6 +247,25 @@ export function MainTopbar({
     closeSwitcher();
     closeMobileSidebar();
     onToggleNotifications();
+  }
+
+  function handleToggleSidebar() {
+    closeSwitcher();
+    closeDropdownNotifications();
+    onToggleSidebar();
+  }
+
+  function handleOpenHelp() {
+    closeSwitcher();
+    closeMobileSidebar();
+    closeDropdownNotifications();
+    onOpenHelp();
+  }
+
+  function closeDropdownNotifications() {
+    if (!isLargeNotificationPanel()) {
+      onCloseNotifications();
+    }
   }
 
   function toggleSwitcher(key: OpenSwitcherKey) {
@@ -256,7 +277,7 @@ export function MainTopbar({
 
     closeMobileSidebar();
     onCloseSearch();
-    onCloseNotifications();
+    closeDropdownNotifications();
     setProfileMenuOpenPath(null);
     setOpenSwitcherState({ href: activeHref, key: next });
   }
@@ -276,10 +297,7 @@ export function MainTopbar({
         <button
           type="button"
           data-main-sidebar-toggle
-          onClick={() => {
-            closeSwitcher();
-            onToggleSidebar();
-          }}
+          onClick={handleToggleSidebar}
           aria-label="Toggle sidebar"
           aria-pressed={isSidebarOpen}
           className="flex h-10 w-10 items-center justify-center rounded-md text-darknavy transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
@@ -405,11 +423,7 @@ export function MainTopbar({
 
           <button
             type="button"
-            onClick={() => {
-              closeSwitcher();
-              closeMobileSidebar();
-              onOpenHelp();
-            }}
+            onClick={handleOpenHelp}
             aria-label="Help"
             className="flex h-10 w-10 items-center justify-center rounded-full text-darknavy transition-all duration-200 ease-out hover:bg-darknavy/5 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 motion-reduce:transition-none motion-reduce:active:scale-100 md:rounded-md"
           >
@@ -426,7 +440,7 @@ export function MainTopbar({
                   closeSwitcher();
                   closeMobileSidebar();
                   onCloseSearch();
-                  onCloseNotifications();
+                  closeDropdownNotifications();
                   setProfileMenuOpenPath((current) =>
                     current === activeHref ? null : activeHref,
                   );
@@ -1082,6 +1096,10 @@ function ImageSwatch({
 
 function getTopbarUserDescriptor(currentUser: MainTopbarProps["currentUser"]) {
   return currentUser.userType?.name ?? getVisibleUserRole(currentUser);
+}
+
+function isLargeNotificationPanel() {
+  return typeof window !== "undefined" && window.innerWidth >= 1280;
 }
 
 function getVisibleUserRole(currentUser: MainTopbarProps["currentUser"]) {

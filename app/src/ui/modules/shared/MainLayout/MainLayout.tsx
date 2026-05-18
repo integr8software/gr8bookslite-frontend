@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+	useEffect,
+	useRef,
+	useState,
+	type ReactNode,
+} from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { BookOpenText, ChevronDown, ChevronRight } from "lucide-react";
@@ -179,7 +184,8 @@ export function MainLayout({ children }: MainLayoutProps) {
 						"min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 motion-reduce:transition-none sm:px-5 lg:px-6",
 						isSidebarTransitionEnabled &&
 							"transition-[margin] duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-						isSidebarOpen && "lg:ml-78",
+						(isSidebarOpen || !isSidebarTransitionEnabled) &&
+							"lg:ml-78",
 						isNotificationsOpen && "xl:mr-88",
 					)}
 				>

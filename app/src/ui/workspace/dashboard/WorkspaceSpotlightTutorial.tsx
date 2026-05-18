@@ -23,10 +23,7 @@ export function WorkspaceSpotlightTutorial() {
   }
 
   return (
-    <div
-      className="pointer-events-none fixed inset-0 z-[120]"
-      aria-live="polite"
-    >
+    <div className="pointer-events-none fixed inset-0 z-120" aria-live="polite">
       {overlayStyles ? (
         <>
           <div
@@ -66,7 +63,7 @@ export function WorkspaceSpotlightTutorial() {
         role="dialog"
         aria-modal="true"
         aria-label="Workspace tutorial"
-        className="pointer-events-auto fixed max-h-[calc(100vh-2rem)] w-[calc(100vw-2rem)] max-w-[22.5rem] overflow-y-auto rounded-[1.75rem] border border-white/15 bg-darknavy p-5 text-offwhite shadow-[0_24px_80px_rgba(33,39,56,0.45)]"
+        className="pointer-events-auto fixed w-[calc(100vw-2rem)] max-w-90 rounded-[1.75rem] border border-white/15 bg-darknavy p-5 text-offwhite shadow-[0_24px_80px_rgba(33,39,56,0.45)]"
         style={{
           top: cardPosition.top,
           left: cardPosition.left,
@@ -101,9 +98,7 @@ export function WorkspaceSpotlightTutorial() {
             <span
               key={index}
               className={`h-1.5 rounded-full transition-all ${
-                index === activeStepIndex
-                  ? "w-8 bg-skyblue"
-                  : "w-3 bg-white/20"
+                index === activeStepIndex ? "w-8 bg-skyblue" : "w-3 bg-white/20"
               }`}
             />
           ))}

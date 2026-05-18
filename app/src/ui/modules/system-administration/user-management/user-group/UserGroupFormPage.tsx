@@ -34,26 +34,16 @@ export function UserGroupFormPage() {
       ? {
           name: existingUserGroup.name,
           description: existingUserGroup.description,
-          accessRoles: existingUserGroup.accessRoles,
           status: existingUserGroup.status,
         }
       : InitialUserGroupFormValues,
   );
   const [errors, setErrors] = useState<UserGroupFormErrors>({});
 
-  function updateField(field: keyof UserGroupFormValues, value: string | string[]) {
+  function updateField(field: keyof UserGroupFormValues, value: string) {
     if (isReadonly) return;
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
-  }
-
-  function toggleAccessRole(role: string) {
-    updateField(
-      "accessRoles",
-      values.accessRoles.includes(role)
-        ? values.accessRoles.filter((item) => item !== role)
-        : [...values.accessRoles, role],
-    );
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -107,7 +97,6 @@ export function UserGroupFormPage() {
         isReadonly={isReadonly}
         values={values}
         onSubmit={handleSubmit}
-        onToggleAccessRole={toggleAccessRole}
         onUpdateField={updateField}
       />
     </section>
@@ -124,9 +113,6 @@ function validate(values: UserGroupFormValues) {
   const errors: UserGroupFormErrors = {};
 
   if (!values.name.trim()) errors.name = "Name is required.";
-  if (values.accessRoles.length === 0) {
-    errors.accessRoles = "Select at least one access role.";
-  }
 
   return errors;
 }

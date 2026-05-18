@@ -33,9 +33,7 @@ export function UserGroupList({
               </p>
             </div>
           </div>
-          <p className="text-sm text-darknavy/65">
-            {item.accessRoles.length} access roles
-          </p>
+          <p className="text-sm text-darknavy/65">{item.status}</p>
           <UserGroupRecordActions
             baseHref={baseHref}
             id={item.id}

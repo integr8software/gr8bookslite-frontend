@@ -55,6 +55,10 @@ export function UserTypeFormPage() {
     updateField("accessRoles", nextRoles);
   }
 
+  function updateAccessRoles(accessRoles: string[]) {
+    updateField("accessRoles", accessRoles);
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextErrors = validate(values);
@@ -106,6 +110,7 @@ export function UserTypeFormPage() {
         isReadonly={isReadonly}
         values={values}
         onSubmit={handleSubmit}
+        onUpdateAccessRoles={updateAccessRoles}
         onToggleAccessRole={toggleAccessRole}
         onUpdateField={updateField}
       />

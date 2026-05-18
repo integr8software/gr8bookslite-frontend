@@ -8,6 +8,7 @@
   --offwhite: #fffff0;
   --skyblue: #57c4e5;
   --skyblue-rgb: 87 196 229;
+  --background-rgb: 255 255 240;
   --background: var(--offwhite);
   --foreground: var(--darknavy);
   --font-inter: "Inter";
@@ -20,6 +21,7 @@
   --offwhite: #fffff0;
   --skyblue: #57c4e5;
   --skyblue-rgb: 87 196 229;
+  --background-rgb: 255 255 240;
   --background: #fffff0;
   --foreground: #212738;
 }
@@ -31,6 +33,7 @@
   --offwhite: #f4fbff;
   --skyblue: #67c9ee;
   --skyblue-rgb: 103 201 238;
+  --background-rgb: 244 251 255;
   --background: #f4fbff;
   --foreground: #1f2d3d;
 }
@@ -42,6 +45,7 @@
   --offwhite: #f4f8f6;
   --skyblue: #57c4e5;
   --skyblue-rgb: 87 196 229;
+  --background-rgb: 15 23 36;
   --background: #0f1724;
   --foreground: #ecf2ef;
   --surface-primary: #111b2b;

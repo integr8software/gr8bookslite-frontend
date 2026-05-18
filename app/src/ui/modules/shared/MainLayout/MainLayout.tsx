@@ -89,7 +89,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 		activeNavigationScope !== "company" || hasBranchAccess;
 
 	return (
-		<div className="flex h-[100dvh] max-w-full flex-col overflow-hidden bg-white text-darknavy">
+		<div className="flex h-dvh max-w-full flex-col overflow-hidden bg-white text-darknavy">
 			<MainNavigationProgress />
 
 			<MainTopbar
@@ -183,14 +183,14 @@ export function MainLayout({ children }: MainLayoutProps) {
 					className={joinClasses(
 						"min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 motion-reduce:transition-none sm:px-5 lg:px-6",
 						isSidebarTransitionEnabled &&
-							"transition-[margin] duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+						"transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
 						(isSidebarOpen || !isSidebarTransitionEnabled) &&
-							"lg:ml-78",
+						"lg:ml-78",
 						isNotificationsOpen && "xl:mr-88",
 					)}
 				>
 					<MainPageHeader breadcrumbs={breadcrumbs} />
-					<div className="mx-auto w-full max-w-[94rem]">
+					<div className="mx-auto w-full max-w-376">
 						{shouldShowBranchContent ? (
 							children
 						) : (
@@ -295,7 +295,7 @@ function MainPageHeader({ breadcrumbs }: MainPageHeaderProps) {
 					const content = (
 						<span
 							className={joinClasses(
-								"block max-w-[14rem] truncate sm:max-w-[18rem]",
+								"block max-w-56 truncate sm:max-w-[18rem]",
 								isLast
 									? "text-darknavy"
 									: "text-darknavy/55 group-hover:text-darknavy",
@@ -334,7 +334,7 @@ function MainPageHeader({ breadcrumbs }: MainPageHeaderProps) {
 											)
 										}
 										className={joinClasses(
-											"group flex min-h-7 max-w-[15.5rem] items-center gap-1 rounded px-1 text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25 sm:max-w-[19.5rem]",
+											"group flex min-h-7 max-w-62 items-center gap-1 rounded px-1 text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25 sm:max-w-78",
 											isOpen && "text-darknavy",
 										)}
 									>
@@ -343,7 +343,7 @@ function MainPageHeader({ breadcrumbs }: MainPageHeaderProps) {
 											className={joinClasses(
 												"h-3.5 w-3.5 shrink-0 text-darknavy/35 transition group-hover:text-darknavy",
 												isOpen &&
-													"rotate-180 text-darknavy/65",
+												"rotate-180 text-darknavy/65",
 											)}
 											aria-hidden="true"
 										/>

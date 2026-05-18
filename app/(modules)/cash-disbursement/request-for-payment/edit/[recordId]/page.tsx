@@ -1,0 +1,16 @@
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/data/shared/AppConstants";
+import { RequestForPaymentAction } from "@/app/src/ui/modules/cash-disbursement/request-for-payment/Action";
+
+const PageTitle = "Edit Request For Payment";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function CashDisbursementRequestForPaymentEditPage() {
+  return <RequestForPaymentAction />;
+}
+
+

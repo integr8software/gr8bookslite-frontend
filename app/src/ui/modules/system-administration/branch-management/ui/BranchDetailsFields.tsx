@@ -1,0 +1,237 @@
+import type { ChangeEvent, ReactNode } from "react";
+import { Building2, GitBranch, type LucideIcon } from "lucide-react";
+import {
+  DefaultPhilippineContactNumber,
+  PhilippineContactNumberPlaceholder,
+} from "@/app/src/data/shared/ContactData";
+import type { MainBranch } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+import type { BranchManagementFormValues } from "@/app/src/data/modules/system-administration/branch-management/BranchManagementData";
+import type { BranchFormErrors } from "@/app/src/types/modules/branch-manager/BranchActionTypes";
+
+type BranchDetailsFieldsProps = {
+  errors: BranchFormErrors;
+  isReadonly: boolean;
+  mainBranchOptions: MainBranch[];
+  values: BranchManagementFormValues;
+  onInputChange: (
+    event: ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => void;
+  onUpdateField: (
+    field: keyof BranchManagementFormValues,
+    value: string | boolean,
+  ) => void;
+};
+
+export function BranchDetailsFields({
+  errors,
+  isReadonly,
+  mainBranchOptions,
+  onInputChange,
+  onUpdateField,
+  values,
+}: BranchDetailsFieldsProps) {
+  const isSatellite = values.classification === "satellite";
+
+  return (
+    <div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Field label="Classification" required className="lg:col-span-2">
+          <div className="grid grid-cols-2 gap-2">
+            <ClassificationButton
+              active={values.classification === "branch"}
+              disabled={isReadonly}
+              icon={Building2}
+              label="Branch"
+              onClick={() => onUpdateField("classification", "branch")}
+            />
+            <ClassificationButton
+              active={values.classification === "satellite"}
+              disabled={isReadonly}
+              icon={GitBranch}
+              label="Satellite"
+              onClick={() => onUpdateField("classification", "satellite")}
+            />
+          </div>
+        </Field>
+
+        <Field label="Name" error={errors.name} required>
+          <input
+            name="name"
+            value={values.name}
+            onChange={onInputChange}
+            readOnly={isReadonly}
+            className={fieldClassName}
+            placeholder="Cebu Branch"
+          />
+        </Field>
+
+        <Field label="Contact No.">
+          <input
+            name="contactNo"
+            type="tel"
+            inputMode="numeric"
+            value={values.contactNo}
+            onChange={onInputChange}
+            onFocus={() => {
+              if (!values.contactNo) {
+                onUpdateField("contactNo", DefaultPhilippineContactNumber);
+              }
+            }}
+            readOnly={isReadonly}
+            maxLength={16}
+            className={fieldClassName}
+            placeholder={PhilippineContactNumberPlaceholder}
+          />
+        </Field>
+
+        <Field label="Email">
+          <input
+            name="email"
+            type="email"
+            value={values.email}
+            onChange={onInputChange}
+            readOnly={isReadonly}
+            className={fieldClassName}
+            placeholder="branch@company.com"
+          />
+        </Field>
+
+        {isSatellite ? (
+          <Field
+            label="Main Branch TIN"
+            error={errors.linkedMainBranchId}
+            required
+          >
+            <select
+              name="linkedMainBranchId"
+              value={values.linkedMainBranchId}
+              onChange={onInputChange}
+              disabled={isReadonly}
+              className={fieldClassName}
+            >
+              <option value="">Select main branch TIN</option>
+              {mainBranchOptions.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name} - {branch.tin}
+                </option>
+              ))}
+            </select>
+          </Field>
+        ) : (
+          <Field label="TIN" error={errors.tin} required>
+            <input
+              name="tin"
+              value={values.tin}
+              onChange={onInputChange}
+              readOnly={isReadonly}
+              inputMode="numeric"
+              maxLength={15}
+              className={fieldClassName}
+              placeholder="3242-3424-42432"
+            />
+          </Field>
+        )}
+
+        <Field label="Address">
+          <input
+            name="address"
+            value={values.address}
+            onChange={onInputChange}
+            readOnly={isReadonly}
+            className={fieldClassName}
+            placeholder="Street, city, province"
+          />
+        </Field>
+
+        <label className="flex min-h-11 items-center gap-3 rounded-md border border-darknavy/10 px-3">
+          <input
+            type="checkbox"
+            checked={values.isMain}
+            disabled={isSatellite || isReadonly}
+            onChange={(event) => onUpdateField("isMain", event.target.checked)}
+            className="h-4 w-4 rounded border-darknavy/20 text-skyblue"
+          />
+          <span className="text-sm font-semibold text-darknavy">
+            Mark as main branch
+          </span>
+        </label>
+
+        <Field label="Description" className="lg:col-span-2">
+          <textarea
+            name="description"
+            value={values.description}
+            onChange={onInputChange}
+            readOnly={isReadonly}
+            rows={4}
+            className={fieldClassName}
+            placeholder="Optional notes for this branch or satellite."
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  children,
+  className,
+  error,
+  label,
+  required,
+}: {
+  children: ReactNode;
+  className?: string;
+  error?: string;
+  label: string;
+  required?: boolean;
+}) {
+  return (
+    <label className={className}>
+      <span className="mb-2 block text-sm font-semibold text-darknavy">
+        {label}
+        {required ? <span className="text-coralpink"> *</span> : null}
+      </span>
+      {children}
+      {error ? (
+        <span className="mt-1 block text-xs font-medium text-coralpink">
+          {error}
+        </span>
+      ) : null}
+    </label>
+  );
+}
+
+function ClassificationButton({
+  active,
+  disabled,
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  disabled?: boolean;
+  icon: LucideIcon;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex h-11 items-center justify-center gap-2 rounded-md border text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-70 ${
+        active
+          ? "border-skyblue bg-skyblue/10 text-darknavy"
+          : "border-darknavy/10 text-darknavy/65 hover:border-skyblue/50"
+      }`}
+    >
+      <Icon className="h-4 w-4" aria-hidden="true" />
+      {label}
+    </button>
+  );
+}
+
+const fieldClassName =
+  "min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5 read-only:bg-darknavy/[0.03]";

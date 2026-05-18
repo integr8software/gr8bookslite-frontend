@@ -1,0 +1,16 @@
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/data/shared/AppConstants";
+import { PartyManagementPartyManagementAction } from "@/app/src/ui/modules/maintenance/party-management/party-management/Action";
+
+const PageTitle = "Edit Party Management";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function MaintenancePartyManagementPartyManagementEditPage() {
+  return <PartyManagementPartyManagementAction />;
+}
+
+

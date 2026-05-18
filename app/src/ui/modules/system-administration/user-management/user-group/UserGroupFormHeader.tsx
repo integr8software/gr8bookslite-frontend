@@ -16,7 +16,7 @@ export function UserGroupFormHeader({
       <div>
         <h2 className="text-xl font-semibold text-darknavy">{title}</h2>
         <p className="mt-1 text-sm text-darknavy/55">
-          Maintain team access roles.
+          Maintain teams and department groupings.
         </p>
       </div>
       <div className="flex flex-wrap gap-2">

@@ -22,8 +22,8 @@ export function UserListPage() {
   return (
     <section className="grid gap-5">
       <UserListHeader
-        addHref={`${UserListHref}/add/new`}
-        description="Maintain users, assigned user types, and access groups."
+        addHref={`${UserListHref}/add`}
+        description="Maintain users, assigned roles, and team groups."
         title="User List"
       />
       <UserListTable

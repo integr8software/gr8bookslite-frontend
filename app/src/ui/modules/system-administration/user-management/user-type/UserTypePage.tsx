@@ -18,7 +18,7 @@ export function UserTypePage() {
   return (
     <section className="grid gap-5">
       <UserTypeHeader
-        addHref={`${UserTypeHref}/add/new`}
+        addHref={`${UserTypeHref}/add`}
         description="Maintain access role templates for users."
         title="User Types"
       />

@@ -1,9 +1,6 @@
 import Link from "next/link";
 import type { FormEvent } from "react";
-import {
-  UserAccessRoleOptions,
-  type UserGroupFormValues,
-} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type { UserGroupFormValues } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import type { UserGroupFormErrors } from "@/app/src/types/modules/user-management/UserManagementTypes";
 
 export function UserGroupForm({
@@ -12,7 +9,6 @@ export function UserGroupForm({
   isReadonly,
   values,
   onSubmit,
-  onToggleAccessRole,
   onUpdateField,
 }: {
   backHref: string;
@@ -20,8 +16,7 @@ export function UserGroupForm({
   isReadonly: boolean;
   values: UserGroupFormValues;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  onToggleAccessRole: (role: string) => void;
-  onUpdateField: (field: keyof UserGroupFormValues, value: string | string[]) => void;
+  onUpdateField: (field: keyof UserGroupFormValues, value: string) => void;
 }) {
   return (
     <form id="user-group-form" onSubmit={onSubmit} className="grid gap-5">
@@ -57,35 +52,6 @@ export function UserGroupForm({
               className={fieldClassName}
             />
           </UserGroupField>
-          <div className="lg:col-span-2">
-            <p className="mb-2 text-sm font-semibold text-darknavy">
-              Access Roles <span className="text-coralpink">*</span>
-            </p>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {UserAccessRoleOptions.map((role) => (
-                <label
-                  key={role.value}
-                  className="flex min-h-11 items-center gap-3 rounded-md border border-darknavy/10 px-3"
-                >
-                  <input
-                    type="checkbox"
-                    checked={values.accessRoles.includes(role.value)}
-                    disabled={isReadonly}
-                    onChange={() => onToggleAccessRole(role.value)}
-                    className="h-4 w-4 rounded border-darknavy/20 text-skyblue"
-                  />
-                  <span className="text-sm font-semibold text-darknavy">
-                    {role.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-            {errors.accessRoles ? (
-              <span className="mt-1 block text-xs font-medium text-coralpink">
-                {errors.accessRoles}
-              </span>
-            ) : null}
-          </div>
         </div>
       </div>
       <Link href={backHref} className="text-sm font-semibold text-skyblue">

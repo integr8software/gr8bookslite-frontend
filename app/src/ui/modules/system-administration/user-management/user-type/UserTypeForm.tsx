@@ -1,10 +1,8 @@
 import Link from "next/link";
 import type { FormEvent } from "react";
-import {
-  UserAccessRoleOptions,
-  type UserTypeFormValues,
-} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type { UserTypeFormValues } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import type { UserTypeFormErrors } from "@/app/src/types/modules/user-management/UserManagementTypes";
+import { AccessPermissionMatrix } from "@/app/src/ui/modules/system-administration/user-management/user-type/AccessPermissionMatrix";
 
 export function UserTypeForm({
   backHref,
@@ -12,6 +10,7 @@ export function UserTypeForm({
   isReadonly,
   values,
   onSubmit,
+  onUpdateAccessRoles,
   onToggleAccessRole,
   onUpdateField,
 }: {
@@ -20,6 +19,7 @@ export function UserTypeForm({
   isReadonly: boolean;
   values: UserTypeFormValues;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onUpdateAccessRoles: (accessRoles: string[]) => void;
   onToggleAccessRole: (role: string) => void;
   onUpdateField: (field: keyof UserTypeFormValues, value: string | string[]) => void;
 }) {
@@ -58,33 +58,13 @@ export function UserTypeForm({
             />
           </UserTypeField>
           <div className="lg:col-span-2">
-            <p className="mb-2 text-sm font-semibold text-darknavy">
-              Access Roles <span className="text-coralpink">*</span>
-            </p>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {UserAccessRoleOptions.map((role) => (
-                <label
-                  key={role.value}
-                  className="flex min-h-11 items-center gap-3 rounded-md border border-darknavy/10 px-3"
-                >
-                  <input
-                    type="checkbox"
-                    checked={values.accessRoles.includes(role.value)}
-                    disabled={isReadonly}
-                    onChange={() => onToggleAccessRole(role.value)}
-                    className="h-4 w-4 rounded border-darknavy/20 text-skyblue"
-                  />
-                  <span className="text-sm font-semibold text-darknavy">
-                    {role.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-            {errors.accessRoles ? (
-              <span className="mt-1 block text-xs font-medium text-coralpink">
-                {errors.accessRoles}
-              </span>
-            ) : null}
+            <AccessPermissionMatrix
+              error={errors.accessRoles}
+              isReadonly={isReadonly}
+              values={values.accessRoles}
+              onUpdateAccessRoles={onUpdateAccessRoles}
+              onToggleAccessRole={onToggleAccessRole}
+            />
           </div>
         </div>
       </div>

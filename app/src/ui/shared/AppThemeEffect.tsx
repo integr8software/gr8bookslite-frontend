@@ -19,6 +19,7 @@ const PublicLightThemeRoutes = [
   "/forgot-password",
   "/otp",
   "/auth/verify-email",
+  "/onboarding"
 ];
 
 function ResolveTheme(pathname: string | null, theme: AccountTheme): AccountTheme {

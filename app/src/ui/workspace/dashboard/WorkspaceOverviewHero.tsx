@@ -18,7 +18,10 @@ export function WorkspaceOverviewHero({
   onToggleLayoutEditing,
 }: WorkspaceOverviewHeroProps) {
   return (
-    <section className="overflow-hidden rounded-[1.75rem] border border-darknavy/10 bg-white shadow-[0_20px_60px_rgba(33,39,56,0.08)]">
+    <section
+      data-spotlight-id="workspace-dashboard-hero"
+      className="overflow-hidden rounded-[1.75rem] border border-darknavy/10 bg-white shadow-[0_20px_60px_rgba(33,39,56,0.08)]"
+    >
       <div className="relative px-6 py-7 sm:px-8">
         <div
           className="absolute inset-x-0 top-0 h-36"
@@ -41,6 +44,7 @@ export function WorkspaceOverviewHero({
             <button
               type="button"
               onClick={onCustomize}
+              data-spotlight-id="workspace-dashboard-customize"
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
             >
               <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />

@@ -25,6 +25,7 @@ import {
 import { WorkspaceOverviewCompaniesPanel } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewCompaniesPanel";
 import { WorkspaceOverviewHero } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewHero";
 import { WorkspaceOverviewPanels } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewPanels";
+import { WorkspaceSpotlightTutorial } from "@/app/src/ui/workspace/dashboard/WorkspaceSpotlightTutorial";
 import { WorkspaceOverviewStatsGrid } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewStatsGrid";
 
 const WorkspaceDashboardStorageKey =
@@ -611,6 +612,7 @@ export function WorkspaceOverviewPage() {
 
   return (
     <>
+      <WorkspaceSpotlightTutorial />
       <div className="mx-auto flex w-full max-w-376 flex-col gap-6">
         <WorkspaceOverviewHero
           isEditingLayout={isEditingLayout}

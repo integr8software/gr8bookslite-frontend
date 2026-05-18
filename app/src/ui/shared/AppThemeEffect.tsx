@@ -13,7 +13,13 @@ import type {
   AccountTheme,
 } from "@/app/src/types/shared/AccountTypes";
 
-const PublicLightThemeRoutes = ["/login", "/signup", "/forgot-password", "/otp"];
+const PublicLightThemeRoutes = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/otp",
+  "/auth/verify-email",
+];
 
 function ResolveTheme(pathname: string | null, theme: AccountTheme): AccountTheme {
   if (!pathname) {

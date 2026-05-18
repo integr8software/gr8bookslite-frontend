@@ -1,36 +1,112 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GR8BooksLite Frontend
 
-## Getting Started
+## Setup
 
-First, run the development server:
+Clone and run the project locally:
+
+```bash
+git clone <your-repository-url>
+cd gr8bookslite-frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Open:
+
+```txt
+http://localhost:3001
+```
+
+Frontend API requests should target the backend through:
+
+```txt
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api/v1
+NEXT_PUBLIC_PAYMONGO_PUBLIC_KEY=pk_test_xxxxx
+NEXT_PUBLIC_PAYMONGO_API_BASE_URL=https://api.paymongo.com/v1
+```
+
+For the company billing page, the frontend only uses the PayMongo public key to create a payment method in test mode. The backend remains the source of truth for plan loading, subscription creation, attachment, cancellation, and webhook-driven status updates.
+
+## Frontend Stack
+
+- `next` `16.2.4`
+- `react` `19.2.4`
+- `tailwindcss` `4`
+- `zod`
+- `axios`
+- `@tanstack/react-query`
+- `zustand`
+- `react-hot-toast`
+- `lucide-react`
+
+## Shared Services Boilerplate
+
+Shared frontend foundation now includes:
+
+```txt
+app/src/services/shared/ApiClient.ts
+app/src/services/shared/QueryClient.ts
+app/src/hooks/shared/useAppStore.ts
+app/src/ui/shared/AppProviders.tsx
+```
+
+What each one is for:
+
+- `ApiClient.ts`
+  - shared Axios instance
+  - uses `NEXT_PUBLIC_API_BASE_URL`
+  - central place for request defaults and response error shaping
+
+- `QueryClient.ts`
+  - shared TanStack Query client factory
+  - holds default cache and retry behavior
+
+- `useAppStore.ts`
+  - shared Zustand store boilerplate
+  - currently includes `accessToken`, `activeCompanyId`, and `isSidebarOpen`
+
+- `AppProviders.tsx`
+  - mounts shared app providers
+  - currently wraps the app in `QueryClientProvider`
+
+Recommended usage:
+
+- use `axios` for reusable API wrappers
+- use `@tanstack/react-query` for cached server state such as session, profile, and company data
+- use `zustand` for lightweight client state, not for form validation already handled by hooks and Zod
+
+## Services And Features Implemented
+
+- Login
+  - responsive custom login screen
+  - validation with Zod
+  - form action flow using `useActionState`
+
+- Sign Up
+  - responsive custom signup screen
+  - validation with Zod
+  - form action flow using `useActionState`
+
+- Forgot Password
+  - reset request form
+  - validation with Zod
+  - server action flow
+
+- OTP Verification
+  - email entry step
+  - 4-digit OTP verification
+  - 5-minute resend timeout
+  - resend protection
+  - interactive OTP ring states
+  - toast-based success and error feedback
+  - mock valid OTP: `1234`
+
+## Scripts
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm run start
+npm run lint
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

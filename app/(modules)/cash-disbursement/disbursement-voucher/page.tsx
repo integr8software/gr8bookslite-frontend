@@ -1,0 +1,16 @@
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/data/shared/AppConstants";
+import { DisbursementVoucherMain } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/Main";
+
+const PageTitle = "Disbursement Voucher";
+
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function CashDisbursementDisbursementVoucherPage() {
+  return <DisbursementVoucherMain />;
+}
+
+

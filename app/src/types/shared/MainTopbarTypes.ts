@@ -1,0 +1,63 @@
+import type {
+  MainBranch,
+  MainCompany,
+  MainNavigationScope,
+  MainNotification,
+  MainSearchItem,
+} from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+import type {
+  MainBreadcrumbDropdownItem,
+  MainNotificationTab,
+} from "@/app/src/types/shared/MainLayoutTypes";
+
+export type MainTopbarUser = {
+  initials: string;
+  name: string;
+  profileImageUrl?: string;
+  userRole: string;
+  userType?: {
+    name: string;
+  };
+};
+
+export type MainTopbarProps = {
+  activeHref: string;
+  activeNavigationScope: MainNavigationScope;
+  availableCompanies: MainCompany[];
+  branchDropdownItems: MainBreadcrumbDropdownItem[];
+  canAccessWorkspace: boolean;
+  canSwitchCompany: boolean;
+  currentBranch: MainBranch | null;
+  currentCompany: MainCompany;
+  currentUser: MainTopbarUser;
+  isBranchLoading: boolean;
+  homeHref: string;
+  isNotificationsOpen: boolean;
+  isProfileLoading?: boolean;
+  isSearchOpen: boolean;
+  isSidebarOpen: boolean;
+  notificationTab: MainNotificationTab;
+  notifications: MainNotification[];
+  query: string;
+  searchResults: MainSearchItem[];
+  unreadNotificationCount: number;
+  onCloseNotifications: () => void;
+  onCloseSearch: () => void;
+  onCloseSidebar: () => void;
+  onLoadBranchOptions: () => void;
+  onMarkAllNotificationsAsRead: () => void;
+  onMarkNotificationAsRead: (notificationId: string) => void;
+  onNotificationTabChange: (tab: MainNotificationTab) => void;
+  onOpenHelp: () => void;
+  onQueryChange: (value: string) => void;
+  onSelectBranch: (branchId: string) => void;
+  onSelectCompany: (companyId: string) => void;
+  onSwitchToWorkspace: () => void;
+  onToggleNotifications: () => void;
+  onToggleSearch: () => void;
+  onToggleSidebar: () => void;
+};
+
+export type OpenSwitcherKey = "company" | "branch";
+
+export type SwitcherVariant = "desktop" | "mobile";

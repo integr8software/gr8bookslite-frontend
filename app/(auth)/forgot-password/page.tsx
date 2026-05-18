@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AuthShell } from "@/app/src/ui/auth/AuthShell";
+import { GradientBlurBackground } from "@/app/src/ui/shared/GradientBlurBackground";
 import { ForgotPasswordForm } from "@/app/src/ui/auth/ForgotPasswordForm";
 
 export const metadata: Metadata = {
@@ -8,16 +8,9 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
 	return (
-		<AuthShell
-			title="Reset password"
-			subtitle="Enter your email to validate a password reset request."
-			footer={{
-				label: "Remember your password?",
-				href: "/login",
-				action: "Log in",
-			}}
-		>
+		<div className="relative isolate min-h-screen">
+			<GradientBlurBackground />
 			<ForgotPasswordForm />
-		</AuthShell>
+		</div>
 	);
 }

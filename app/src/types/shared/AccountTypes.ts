@@ -9,9 +9,19 @@ export type AccountProfileFieldKey =
 export type AccountSettingsItemKey =
   | "changePassword"
   | "theme"
+  | "accentColor"
   | "notificationPreference";
 
-export type AccountTheme = "classic-light" | "soft-sky" | "warm-contrast";
+export type AccountTheme = "classic-light" | "midnight-dark";
+
+export type AccountAccentColor =
+  | "#57c4e5"
+  | "#3b82f6"
+  | "#14b8a6"
+  | "#22c55e"
+  | "#f97068"
+  | "#f59e0b"
+  | "#a855f7";
 
 export type AccountNotificationPreference = "all" | "important" | "none";
 

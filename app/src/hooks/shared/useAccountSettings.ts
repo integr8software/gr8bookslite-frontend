@@ -11,11 +11,14 @@ import { useAccountPreferences } from "@/app/src/hooks/shared/useAccountPreferen
 
 export function useAccountSettings() {
   const accessToken = useAppStore((state) => state.accessToken);
+  const hasHydrated = useAccountPreferences((state) => state.hasHydrated);
   const theme = useAccountPreferences((state) => state.theme);
+  const accentColor = useAccountPreferences((state) => state.accentColor);
   const notificationPreference = useAccountPreferences(
     (state) => state.notificationPreference,
   );
   const setTheme = useAccountPreferences((state) => state.setTheme);
+  const setAccentColor = useAccountPreferences((state) => state.setAccentColor);
   const setNotificationPreference = useAccountPreferences(
     (state) => state.setNotificationPreference,
   );
@@ -24,10 +27,13 @@ export function useAccountSettings() {
   const visibleItemKeys = useMemo(() => GetVisibleSettingsItems(role), [role]);
 
   return {
+    accentColor,
+    hasHydrated,
     notificationPreference,
     role,
     theme,
     visibleItemKeys,
+    setAccentColor,
     setNotificationPreference,
     setTheme,
   };

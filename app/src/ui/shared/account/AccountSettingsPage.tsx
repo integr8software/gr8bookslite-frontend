@@ -2,13 +2,18 @@
 
 import type { ReactNode } from "react";
 import toast from "react-hot-toast";
-import { BellRing, KeyRound, Palette } from "lucide-react";
+import { BellRing, Check, KeyRound, Palette } from "lucide-react";
 import {
+  AccountAccentColorOptions,
   AccountNotificationPreferenceOptions,
   AccountThemeOptions,
 } from "@/app/src/constants/shared/AccountConstants";
 import { useAccountSettings } from "@/app/src/hooks/shared/useAccountSettings";
-import type { AccountNotificationPreference, AccountTheme } from "@/app/src/types/shared/AccountTypes";
+import type {
+  AccountAccentColor,
+  AccountNotificationPreference,
+  AccountTheme,
+} from "@/app/src/types/shared/AccountTypes";
 import { GradientBlurBackground } from "@/app/src/ui/shared/GradientBlurBackground";
 
 type AccountSettingsPageProps = {
@@ -17,10 +22,13 @@ type AccountSettingsPageProps = {
 
 export function AccountSettingsPage({ scope }: AccountSettingsPageProps) {
   const {
+    accentColor,
+    hasHydrated,
     notificationPreference,
     role,
     theme,
     visibleItemKeys,
+    setAccentColor,
     setNotificationPreference,
     setTheme,
   } = useAccountSettings();
@@ -71,12 +79,51 @@ export function AccountSettingsPage({ scope }: AccountSettingsPageProps) {
               description="Theme selection is shared globally through Zustand, then applied through the root app theme effect so future pages can use the same preference."
               icon={Palette}
               title="Theme"
+              compactHeader
             >
-              <OptionGrid<AccountTheme>
-                options={AccountThemeOptions}
-                selectedValue={theme}
-                onSelect={setTheme}
-              />
+              <div className="space-y-4">
+                <ThemePreviewGrid
+                  disabled={!hasHydrated}
+                  options={AccountThemeOptions}
+                  selectedValue={theme}
+                  onSelect={(nextTheme) => {
+                    setTheme(nextTheme);
+                    toast.success("Theme updated for this device.");
+                  }}
+                />
+                <div className="rounded-2xl border border-skyblue/18 bg-skyblue/10 px-4 py-3 text-sm leading-6 text-darknavy/68">
+                  {hasHydrated
+                    ? "Your selected theme is saved in this browser and applied immediately across the app."
+                    : "Loading your saved theme preference..."}
+                </div>
+              </div>
+            </SettingsCard>
+          ) : null}
+
+          {visibleItemKeys.includes("accentColor") ? (
+            <SettingsCard
+              description="Pick an accent color like Windows personalization. This changes the app highlight color and is saved for this browser."
+              icon={Palette}
+              title="Accent Color"
+            >
+              <div className="space-y-4">
+                <AccentColorGrid
+                  disabled={!hasHydrated}
+                  options={AccountAccentColorOptions}
+                  selectedValue={accentColor}
+                  onSelect={(nextAccentColor) => {
+                    setAccentColor(nextAccentColor);
+                    toast.success("Accent color updated for this device.");
+                  }}
+                />
+                <div className="flex items-center gap-3 rounded-2xl border border-skyblue/18 bg-skyblue/10 px-4 py-3 text-sm text-darknavy/70">
+                  <span
+                    className="h-6 w-6 rounded-full border border-darknavy/10 shadow-sm"
+                    style={{ backgroundColor: accentColor }}
+                  />
+                  <span>Current accent: {accentColor}</span>
+                </div>
+              </div>
             </SettingsCard>
           ) : null}
 
@@ -99,21 +146,178 @@ export function AccountSettingsPage({ scope }: AccountSettingsPageProps) {
   );
 }
 
+function AccentColorGrid({
+  disabled,
+  onSelect,
+  options,
+  selectedValue,
+}: {
+  disabled: boolean;
+  onSelect: (value: AccountAccentColor) => void;
+  options: typeof AccountAccentColorOptions;
+  selectedValue: AccountAccentColor;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+      {options.map((option) => {
+        const isSelected = option.value === selectedValue;
+
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onSelect(option.value)}
+            disabled={disabled}
+            className={`rounded-[1.35rem] border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-wait disabled:opacity-70 ${
+              isSelected
+                ? "border-darknavy bg-white shadow-[0_16px_36px_rgba(33,39,56,0.14)]"
+                : "border-darknavy/10 bg-offwhite/72 hover:border-skyblue/35 hover:bg-white"
+            }`}
+          >
+            <span
+              className="block h-12 rounded-xl border border-white/30 shadow-sm"
+              style={{ backgroundColor: option.value }}
+            />
+            <span className="mt-3 flex items-center justify-between gap-2">
+              <span className="truncate text-xs font-semibold text-darknavy">
+                {option.label}
+              </span>
+              <span
+                className={`inline-flex h-5 w-5 items-center justify-center rounded-full border ${
+                  isSelected
+                    ? "border-darknavy bg-darknavy text-offwhite"
+                    : "border-darknavy/12 bg-white text-transparent"
+                }`}
+              >
+                <Check className="h-3 w-3" aria-hidden="true" />
+              </span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ThemePreviewGrid({
+  disabled,
+  onSelect,
+  options,
+  selectedValue,
+}: {
+  disabled: boolean;
+  onSelect: (value: AccountTheme) => void;
+  options: typeof AccountThemeOptions;
+  selectedValue: AccountTheme;
+}) {
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      {options.map((option) => {
+        const isSelected = option.value === selectedValue;
+
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onSelect(option.value)}
+            disabled={disabled}
+            className={`group overflow-hidden rounded-[1.6rem] border text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-wait disabled:opacity-70 ${
+              isSelected
+                ? "border-darknavy bg-white shadow-[0_22px_48px_rgba(33,39,56,0.14)]"
+                : "border-darknavy/10 bg-white hover:border-skyblue/38 hover:shadow-[0_18px_40px_rgba(87,196,229,0.14)]"
+            }`}
+          >
+            <div
+              className="p-4"
+              style={{ backgroundColor: option.preview.surface }}
+            >
+              <div
+                className="rounded-[1.2rem] border p-3 shadow-sm"
+                style={{
+                  backgroundColor: option.preview.panel,
+                  borderColor: `${option.preview.accent}18`,
+                }}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div
+                    className="h-3 w-16 rounded-full"
+                    style={{ backgroundColor: `${option.preview.text}20` }}
+                  />
+                  <div
+                    className="h-8 w-8 rounded-xl"
+                    style={{ backgroundColor: option.preview.accent }}
+                  />
+                </div>
+                <div className="mt-4 grid gap-2">
+                  <div
+                    className="h-3 w-24 rounded-full"
+                    style={{ backgroundColor: `${option.preview.text}22` }}
+                  />
+                  <div
+                    className="h-3 w-18 rounded-full"
+                    style={{ backgroundColor: `${option.preview.text}12` }}
+                  />
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <div
+                    className="h-9 flex-1 rounded-xl"
+                    style={{ backgroundColor: option.preview.accent }}
+                  />
+                  <div
+                    className="h-9 w-12 rounded-xl"
+                    style={{ backgroundColor: option.preview.highlight }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start justify-between gap-3 px-4 py-4">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-darknavy">{option.label}</p>
+                <p className="mt-1 text-xs leading-5 text-darknavy/58">
+                  {option.description}
+                </p>
+              </div>
+              <span
+                className={`inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full border transition ${
+                  isSelected
+                    ? "border-darknavy bg-darknavy text-offwhite"
+                    : "border-darknavy/12 bg-white text-transparent group-hover:border-skyblue/38"
+                }`}
+              >
+                <Check className="h-3.5 w-3.5" aria-hidden="true" />
+              </span>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function SettingsCard({
   children,
+  compactHeader = false,
   description,
   icon: Icon,
   title,
 }: {
   children: ReactNode;
+  compactHeader?: boolean;
   description: string;
   icon: typeof Palette;
   title: string;
 }) {
   return (
     <article className="rounded-[1.75rem] border border-darknavy/10 bg-white/92 p-5 shadow-sm backdrop-blur">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-2xl">
+      <div
+        className={
+          compactHeader
+            ? "grid gap-5"
+            : "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"
+        }
+      >
+        <div className={compactHeader ? "max-w-3xl" : "max-w-2xl"}>
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-offwhite text-darknavy shadow-sm">
             <Icon className="h-5 w-5" aria-hidden="true" />
           </span>
@@ -122,7 +326,9 @@ function SettingsCard({
           </h2>
           <p className="mt-2 text-sm leading-6 text-darknavy/62">{description}</p>
         </div>
-        <div className="w-full max-w-3xl">{children}</div>
+        <div className={compactHeader ? "w-full" : "w-full max-w-3xl"}>
+          {children}
+        </div>
       </div>
     </article>
   );

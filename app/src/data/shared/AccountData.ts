@@ -24,6 +24,7 @@ export const AccountSettingsItemVisibility: Array<
 > = [
   { key: "changePassword", visibleTo: AllRoles },
   { key: "theme", visibleTo: AllRoles },
+  { key: "accentColor", visibleTo: AllRoles },
   { key: "notificationPreference", visibleTo: AllRoles },
 ];
 

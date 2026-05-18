@@ -1,22 +1,5 @@
 import axios from "axios";
-
-const API_BASE_URL_ENV = "NEXT_PUBLIC_API_BASE_URL";
-
-function NormalizeApiBaseUrl(value: string) {
-  return value.endsWith("/") ? value.slice(0, -1) : value;
-}
-
-export function GetApiBaseUrl() {
-  const value = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  if (!value) {
-    throw new Error(
-      `Missing ${API_BASE_URL_ENV}. Add it to your frontend environment variables.`,
-    );
-  }
-
-  return NormalizeApiBaseUrl(value);
-}
+import { GetApiBaseUrl } from "@/app/src/services/shared/ApiUrl";
 
 export const ApiClient = axios.create({
   baseURL: GetApiBaseUrl(),

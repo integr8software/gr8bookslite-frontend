@@ -1,28 +1,18 @@
 import { ApiClient } from "@/app/src/services/shared/ApiClient";
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
-
-const API_BASE_URL_ENV = "NEXT_PUBLIC_API_BASE_URL";
-
-function NormalizeApiBaseUrl(value: string) {
-  return value.endsWith("/") ? value.slice(0, -1) : value;
-}
-
-export function GetAuthApiBaseUrl() {
-  const value = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  if (!value) {
-    throw new AuthApiError(
-      `Missing ${API_BASE_URL_ENV}. Add it to your frontend environment variables.`,
-    );
-  }
-
-  return NormalizeApiBaseUrl(value);
-}
+import { BuildApiUrl, GetApiBaseUrl } from "@/app/src/services/shared/ApiUrl";
 
 export function BuildAuthApiUrl(path: string) {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${GetAuthApiBaseUrl()}${normalizedPath}`;
+  try {
+    return BuildApiUrl(path);
+  } catch (error) {
+    throw new AuthApiError(
+      error instanceof Error ? error.message : "Missing API base URL.",
+    );
+  }
 }
+
+export const GetAuthApiBaseUrl = GetApiBaseUrl;
 
 export function BuildGoogleAuthUrl(mode: "login" | "signup") {
   return BuildAuthApiUrl(`/auth/google?mode=${mode}`);

@@ -26,6 +26,10 @@ NEXT_PUBLIC_PAYMONGO_PUBLIC_KEY=pk_test_xxxxx
 NEXT_PUBLIC_PAYMONGO_API_BASE_URL=https://api.paymongo.com/v1
 ```
 
+For Vercel staging, copy the values from `env.staging.example` into the
+Vercel project's **Environment Variables** for the Preview environment. Update
+`NEXT_PUBLIC_API_BASE_URL` after Render gives you the real backend staging URL.
+
 For the company billing page, the frontend only uses the PayMongo public key to create a payment method in test mode. The backend remains the source of truth for plan loading, subscription creation, attachment, cancellation, and webhook-driven status updates.
 
 ## Frontend Stack

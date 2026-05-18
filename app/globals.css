@@ -264,6 +264,25 @@ button {
   }
 }
 
+@keyframes gr8-page-turn {
+  0% {
+    opacity: 0;
+    transform: rotateY(0deg) skewY(0deg);
+  }
+  12% {
+    opacity: 1;
+  }
+  48% {
+    opacity: 1;
+    transform: rotateY(-155deg) skewY(-2deg);
+  }
+  64%,
+  100% {
+    opacity: 0;
+    transform: rotateY(-178deg) skewY(-3deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(*),
   ::view-transition-new(*),
@@ -273,7 +292,9 @@ button {
   }
 
   .animate-\[skeleton-soft-pulse_1\.8s_ease-in-out_infinite\],
-  .animate-\[skeleton-shimmer_1\.55s_ease-out_infinite\] {
+  .animate-\[skeleton-shimmer_1\.55s_ease-out_infinite\],
+  .animate-\[gr8-page-turn_1\.45s_ease-in-out_infinite\],
+  .animate-\[gr8-page-turn_1\.45s_ease-in-out_0\.32s_infinite\] {
     animation: none !important;
   }
 }

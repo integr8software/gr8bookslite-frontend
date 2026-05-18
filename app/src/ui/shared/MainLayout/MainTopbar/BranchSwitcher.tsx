@@ -150,7 +150,7 @@ function BranchSwitcherGroups({
             onClick={onClose}
             className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
           >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-citron/35 text-darknavy">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-skyblue/18 text-darknavy">
               <Settings className="h-4 w-4" aria-hidden="true" />
             </span>
             <span className="min-w-0 flex-1">
@@ -202,13 +202,18 @@ function BranchSwitcherGroup({
                 }
                 onClose();
               }}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
+              className={joinClasses(
+                "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+                isCurrentBranch
+                  ? "bg-skyblue/12 ring-1 ring-skyblue/28 hover:bg-skyblue/18"
+                  : "hover:bg-skyblue/10",
+              )}
             >
               <span
                 className={joinClasses(
                   "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
                   isCurrentBranch
-                    ? "bg-darknavy text-offwhite"
+                    ? "bg-skyblue text-darknavy shadow-[0_0_10px_rgb(var(--skyblue-rgb)/0.26)]"
                     : "bg-darknavy/8 text-darknavy",
                 )}
               >
@@ -221,7 +226,7 @@ function BranchSwitcherGroup({
               </span>
               {isCurrentBranch ? (
                 <Check
-                  className="h-4 w-4 shrink-0 text-darknavy"
+                  className="h-4 w-4 shrink-0 text-skyblue"
                   aria-hidden="true"
                 />
               ) : null}

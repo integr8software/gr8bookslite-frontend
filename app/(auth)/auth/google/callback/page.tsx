@@ -1,11 +1,13 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
+import { Gr8BooksLoadingScreen } from "@/app/src/ui/shared/Gr8BooksLoadingScreen";
 import {
   GetFallbackPostAuthRedirectPath,
+  IsSystemRedirectPath,
   ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
@@ -16,7 +18,7 @@ function ReadRedirectPath(mode: string | null) {
 
 export default function GoogleAuthCallbackPage() {
 	return (
-		<Suspense fallback={<GoogleAuthCallbackMessage />}>
+		<Suspense fallback={<Gr8BooksLoadingScreen />}>
 			<GoogleAuthCallbackContent />
 		</Suspense>
 	);
@@ -27,6 +29,7 @@ function GoogleAuthCallbackContent() {
 	const searchParams = useSearchParams();
 	const setActiveCompanyId = useAppStore((state) => state.setActiveCompanyId);
 	const setAccessToken = useAppStore((state) => state.setAccessToken);
+	const [isSystemRedirecting, setIsSystemRedirecting] = useState(true);
 
 	useEffect(() => {
 		const hashParams = new URLSearchParams(window.location.hash.slice(1));
@@ -41,10 +44,14 @@ function GoogleAuthCallbackContent() {
 			void ResolvePostAuthDestination(accessToken)
 				.then(({ profile, redirectPath }) => {
 					setActiveCompanyId(profile.activeCompanyId);
+					setIsSystemRedirecting(IsSystemRedirectPath(redirectPath));
 					router.replace(redirectPath);
 				})
 				.catch(() => {
-					router.replace(GetFallbackPostAuthRedirectPath(accessToken));
+					const fallbackPath = GetFallbackPostAuthRedirectPath(accessToken);
+
+					setIsSystemRedirecting(IsSystemRedirectPath(fallbackPath));
+					router.replace(fallbackPath);
 				});
 			return;
 		}
@@ -52,6 +59,10 @@ function GoogleAuthCallbackContent() {
 		toast.error(error ?? "Google sign-in could not be completed.");
 		router.replace(ReadRedirectPath(mode));
 	}, [router, searchParams, setAccessToken, setActiveCompanyId]);
+
+	if (isSystemRedirecting) {
+		return <Gr8BooksLoadingScreen />;
+	}
 
 	return <GoogleAuthCallbackMessage />;
 }

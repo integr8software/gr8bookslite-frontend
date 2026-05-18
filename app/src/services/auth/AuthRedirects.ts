@@ -7,6 +7,34 @@ type AuthJwtPayload = {
   membershipRole?: string | null;
 };
 
+const SystemRedirectPathPrefixes = [
+  "/accounts-payable",
+  "/cash-disbursement",
+  "/cash-receipt",
+  "/dashboard",
+  "/general-journal",
+  "/inventory",
+  "/maintenance",
+  "/others",
+  "/profile",
+  "/purchasing",
+  "/reports",
+  "/sales",
+  "/settings",
+  "/system-administration",
+  "/workspace",
+] as const;
+
+export function IsSystemRedirectPath(path: string | null | undefined) {
+  if (!path) {
+    return false;
+  }
+
+  return SystemRedirectPathPrefixes.some(
+    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+  );
+}
+
 function NormalizeBase64Url(value: string) {
   const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
   const padding = normalized.length % 4;

@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { BookOpenText, ChevronDown, ChevronRight } from "lucide-react";
 import { useMainLayout } from "@/app/src/hooks/shared/useMainLayout";
+import { Gr8BooksLoadingScreen } from "@/app/src/ui/shared/Gr8BooksLoadingScreen";
 import type {
 	MainBreadcrumb,
 	MainBreadcrumbDropdownItem,
@@ -44,6 +45,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 		hasBranchAccess,
 		helpArticles,
 		homeHref,
+		isShellLoading,
 		isProfileLoading,
 		isBranchLoading,
 		isHelpOpen,
@@ -82,6 +84,12 @@ export function MainLayout({ children }: MainLayoutProps) {
 	} = useMainLayout();
 	const shouldShowBranchContent =
 		activeNavigationScope !== "company" || hasBranchAccess;
+
+	if (isShellLoading) {
+		return (
+			<Gr8BooksLoadingScreen message="Loading your workspace data..." />
+		);
+	}
 
 	return (
 		<div className="flex h-dvh max-w-full flex-col overflow-hidden bg-white text-darknavy">

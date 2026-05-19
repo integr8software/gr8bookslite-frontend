@@ -23,13 +23,7 @@ export function WorkspaceOverviewHero({
       className="overflow-hidden rounded-[1.75rem] border border-darknavy/10 bg-white shadow-[0_20px_60px_rgba(33,39,56,0.08)]"
     >
       <div className="relative px-6 py-7 sm:px-8">
-        <div
-          className="absolute inset-x-0 top-0 h-36"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at top left, rgb(var(--skyblue-rgb) / 0.22), transparent 54%), radial-gradient(circle at top right, rgb(var(--skyblue-rgb) / 0.08), transparent 46%), linear-gradient(180deg, rgb(var(--background-rgb) / 0.72), rgb(var(--background-rgb) / 0.08))",
-          }}
-        />
+        <div />
         <div className="relative flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div>
             <h2 className="text-3xl font-semibold tracking-tight text-darknavy sm:text-[2.2rem]">

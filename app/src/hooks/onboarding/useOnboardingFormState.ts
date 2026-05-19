@@ -24,6 +24,12 @@ type PendingLogoCrop = {
   sourceImageUrl: string;
 };
 
+function RevokeObjectUrlIfNeeded(value: string) {
+  if (value.startsWith("blob:")) {
+    URL.revokeObjectURL(value);
+  }
+}
+
 function GetDigitsOnly(value: string) {
   return value.replace(/\D/g, "");
 }
@@ -61,12 +67,16 @@ export function useOnboardingFormState() {
 
   useEffect(() => {
     return () => {
-      if (logoPreviewUrlRef.current) {
-        URL.revokeObjectURL(logoPreviewUrlRef.current);
-      }
+      RevokeObjectUrlIfNeeded(logoPreviewUrlRef.current);
+    };
+  }, []);
 
-      if (pendingLogoCrop?.sourceImageUrl) {
-        URL.revokeObjectURL(pendingLogoCrop.sourceImageUrl);
+  useEffect(() => {
+    const sourceImageUrl = pendingLogoCrop?.sourceImageUrl;
+
+    return () => {
+      if (sourceImageUrl) {
+        RevokeObjectUrlIfNeeded(sourceImageUrl);
       }
     };
   }, [pendingLogoCrop]);
@@ -192,7 +202,7 @@ export function useOnboardingFormState() {
 
   function updateLogoPreviewUrl(nextPreviewUrl: string) {
     if (logoPreviewUrlRef.current) {
-      URL.revokeObjectURL(logoPreviewUrlRef.current);
+      RevokeObjectUrlIfNeeded(logoPreviewUrlRef.current);
     }
 
     logoPreviewUrlRef.current = nextPreviewUrl;
@@ -285,7 +295,7 @@ export function useOnboardingFormState() {
 
   function dismissLogoCropper() {
     if (pendingLogoCrop?.sourceImageUrl) {
-      URL.revokeObjectURL(pendingLogoCrop.sourceImageUrl);
+      RevokeObjectUrlIfNeeded(pendingLogoCrop.sourceImageUrl);
     }
 
     setPendingLogoCrop(null);

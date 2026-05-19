@@ -1,6 +1,4 @@
 "use client";
-
-import Image from "next/image";
 import { FormatOnboardingReportDateLabel } from "@/app/src/data/onboarding/OnboardingData";
 import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
 import { OnboardingActionRow } from "./OnboardingActionRow";
@@ -42,12 +40,14 @@ function ReviewLogoRow({
       </p>
       {previewUrl ? (
         <div className="mt-3 flex items-center gap-4">
-          <Image
+          {/* User-uploaded preview URLs can be blob or backend-hosted values that don't work reliably with next/image. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={previewUrl}
             alt={fileName ? `${fileName} logo preview` : "Uploaded logo preview"}
             width={160}
             height={80}
-            unoptimized
+            loading="lazy"
             className="h-20 w-auto rounded-md border border-darknavy/10 bg-white object-contain p-2"
           />
           <div className="min-w-0">

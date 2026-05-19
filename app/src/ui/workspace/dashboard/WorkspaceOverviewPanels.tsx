@@ -101,7 +101,10 @@ export function WorkspaceOverviewPanels({
           ) : null}
 
           {showApprovals ? (
-            <article className="overflow-hidden rounded-[1.75rem] border border-darknavy/10 bg-white shadow-[0_20px_60px_rgba(33,39,56,0.08)]">
+            <article
+              data-spotlight-id="workspace-dashboard-approvals"
+              className="overflow-hidden rounded-[1.75rem] border border-darknavy/10 bg-white shadow-[0_20px_60px_rgba(33,39,56,0.08)]"
+            >
               <div className="flex items-center justify-between gap-3 border-b border-darknavy/8 px-6 py-5">
                 <div>
                   <h3 className="text-xl font-semibold text-darknavy">

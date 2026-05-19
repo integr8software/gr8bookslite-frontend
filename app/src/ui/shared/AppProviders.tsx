@@ -14,10 +14,14 @@ type AppProvidersProps = {
 export function AppProviders({ children }: AppProvidersProps) {
   const [queryClient] = useState(CreateQueryClient);
   const setAccessToken = useAppStore((state) => state.setAccessToken);
+  const setIsAuthSessionReady = useAppStore(
+    (state) => state.setIsAuthSessionReady,
+  );
 
   useEffect(() => {
     setAccessToken(GetAccessToken());
-  }, [setAccessToken]);
+    setIsAuthSessionReady(true);
+  }, [setAccessToken, setIsAuthSessionReady]);
 
   return (
     <QueryClientProvider client={queryClient}>

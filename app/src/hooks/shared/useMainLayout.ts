@@ -69,6 +69,7 @@ export function useMainLayout() {
   const pathname = usePathname();
   const router = useRouter();
   const storedAccessToken = useAppStore((state) => state.accessToken);
+  const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const branchLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sidebarTransitionFrameRef = useRef<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -99,19 +100,18 @@ export function useMainLayout() {
     useAuthProfileQuery({ accessToken });
   const isWorkspaceRoute = isWorkspacePath(pathname);
   const hasWorkspaceAccess =
-    isWorkspaceRoute && authProfile
+    authProfile
       ? ProfileHasWorkspaceAccess(authProfile)
       : ModuleShellMockData.currentUser.userRole === "Super Admin";
   const displayUser =
-    isWorkspaceRoute && authProfile
+    authProfile
       ? CreateWorkspaceCurrentUserFromProfile(authProfile)
       : ModuleShellMockData.currentUser;
-  const isProfileLoading =
-    Boolean(accessToken) && isWorkspaceRoute ? isAuthProfileLoading : false;
+  const isProfileLoading = Boolean(accessToken) && isAuthProfileLoading;
   const activeNavigationScope: MainNavigationScope =
     hasWorkspaceAccess && isWorkspaceRoute ? "workspace" : "company";
   const workspaceCompanies =
-    isWorkspaceRoute && authProfile
+    authProfile
       ? MapProfileCompaniesToMainCompanies(authProfile)
       : null;
   const [activeCompanyId, setActiveCompanyId] = useState(
@@ -495,6 +495,7 @@ export function useMainLayout() {
     hasBranchAccess,
     helpArticles: ModuleHelpArticles,
     homeHref,
+    isShellLoading: !isAuthSessionReady || isProfileLoading,
     isProfileLoading,
     isBranchLoading,
     shouldShowBranchSwitcher,

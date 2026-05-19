@@ -66,10 +66,10 @@ export function MainHelpModal({
     searchInputRef.current?.focus();
   }, []);
 
-	return (
-		<div
-			className="fixed inset-0 z-70 flex items-center justify-center bg-darknavy/30 px-3 py-4 backdrop-blur-sm"
-			role="dialog"
+  return (
+    <div
+      className="fixed inset-0 z-70 flex items-center justify-center bg-transparent px-3 py-4 backdrop-blur-sm"
+      role="dialog"
       aria-modal="true"
       aria-labelledby="main-help-title"
     >
@@ -232,7 +232,10 @@ function ArticleButton({ article, isActive, onClick }: ArticleButtonProps) {
           {article.path}
         </span>
       </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-darknavy/35" aria-hidden="true" />
+      <ChevronRight
+        className="h-4 w-4 shrink-0 text-darknavy/35"
+        aria-hidden="true"
+      />
     </button>
   );
 }

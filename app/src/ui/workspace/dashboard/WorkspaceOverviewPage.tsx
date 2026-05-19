@@ -22,6 +22,7 @@ import {
   type WorkspaceDashboardSectionKey,
   type WorkspaceDashboardSectionOption,
 } from "@/app/src/ui/workspace/dashboard/WorkspaceDashboardCustomizer";
+import { WorkspaceSpotlightTutorialOpenEvent } from "@/app/src/data/modules/dashboard/WorkspaceSpotlightTutorialData";
 import { WorkspaceOverviewCompaniesPanel } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewCompaniesPanel";
 import { WorkspaceOverviewHero } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewHero";
 import { WorkspaceOverviewPanels } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewPanels";
@@ -234,6 +235,10 @@ export function WorkspaceOverviewPage() {
   const activeCompanies = WorkspaceCompanies.filter(
     (company) => company.status === "Active",
   ).length;
+
+  const openSpotlightTutorial = useCallback(() => {
+    window.dispatchEvent(new Event(WorkspaceSpotlightTutorialOpenEvent));
+  }, []);
 
   useEffect(() => {
     window.localStorage.removeItem(ReactGridLayoutStorageKey);
@@ -617,6 +622,7 @@ export function WorkspaceOverviewPage() {
         <WorkspaceOverviewHero
           isEditingLayout={isEditingLayout}
           onCustomize={() => setIsCustomizerOpen(true)}
+          onStartSpotlightTutorial={openSpotlightTutorial}
           onToggleLayoutEditing={toggleLayoutEditing}
         />
 

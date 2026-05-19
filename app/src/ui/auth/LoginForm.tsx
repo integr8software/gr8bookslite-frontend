@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { useLoginForm } from "@/app/src/hooks/auth/useLoginForm";
 import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
+import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
+import { Gr8BooksLoadingScreen } from "@/app/src/ui/shared/Gr8BooksLoadingScreen";
 import { AuthField } from "./AuthField";
 
 export function LoginForm() {
@@ -12,11 +14,21 @@ export function LoginForm() {
 		state,
 		formAction,
 		pending,
+		isSystemRedirecting,
+		isOnboardingRedirecting,
 		values,
 		handleEmailChange,
 		handleSubmit,
 	} = useLoginForm();
 	const googleAuthUrl = BuildGoogleAuthUrl("login");
+
+	if (isOnboardingRedirecting) {
+		return <OnboardingDraftLoadingScreen isFullScreen />;
+	}
+
+	if (isSystemRedirecting) {
+		return <Gr8BooksLoadingScreen />;
+	}
 
 	return (
 		<main className="min-h-screen bg-white text-darknavy">

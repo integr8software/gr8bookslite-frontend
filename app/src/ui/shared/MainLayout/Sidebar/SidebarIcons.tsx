@@ -130,11 +130,11 @@ export function renderSidebarItemIcon(
   return createElement(getSidebarItemIcon(item), {
     "aria-hidden": true,
     className: joinClasses(
-      "h-4 w-4 shrink-0 transition-[color,filter] group-hover:text-blue-500 group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.32)]",
+      "h-4 w-4 shrink-0 transition-[color,filter] group-hover:text-skyblue group-hover:drop-shadow-[0_0_8px_rgb(var(--skyblue-rgb)/0.32)]",
       isAncestorActive
-        ? "text-blue-500/80"
+        ? "text-skyblue/80"
         : isActive
-          ? "text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.28)]"
+          ? "text-skyblue drop-shadow-[0_0_8px_rgb(var(--skyblue-rgb)/0.28)]"
           : "text-darknavy/45",
     ),
   });

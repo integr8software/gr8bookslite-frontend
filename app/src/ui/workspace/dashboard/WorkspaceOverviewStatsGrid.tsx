@@ -12,7 +12,10 @@ export function WorkspaceOverviewStatsGrid({
   totalCompanies,
 }: WorkspaceOverviewStatsGridProps) {
   return (
-    <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+    <section
+      data-spotlight-id="workspace-dashboard-summary"
+      className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4"
+    >
       {cards.map((card) => {
         const Icon = card.icon;
         const supportingText =
@@ -23,7 +26,7 @@ export function WorkspaceOverviewStatsGrid({
         return (
           <article
             key={card.title}
-            className="rounded-[1.5rem] border border-darknavy/10 bg-white p-5 shadow-[0_18px_50px_rgba(33,39,56,0.06)]"
+            className="rounded-3xl border border-darknavy/10 bg-white p-5 shadow-[0_18px_50px_rgba(33,39,56,0.06)]"
           >
             <div className="flex items-start justify-between gap-4">
               <span

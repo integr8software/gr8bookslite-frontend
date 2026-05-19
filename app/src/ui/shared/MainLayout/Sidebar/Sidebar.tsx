@@ -185,6 +185,7 @@ export function MainSidebar({
   return (
     <aside
       data-main-sidebar-root
+      data-spotlight-id="workspace-sidebar"
       onPointerDownCapture={suppressAutoScrollFromSidebarInteraction}
       className={joinClasses(
         "fixed inset-y-0 left-0 z-50 w-78 transform-gpu overflow-hidden border-r border-darknavy/10 bg-white shadow-[18px_0_45px_rgba(33,39,56,0.10)] will-change-transform motion-reduce:transition-none lg:bottom-0 lg:top-16 lg:z-20 lg:h-auto lg:shadow-none",

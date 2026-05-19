@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { Search, X } from "lucide-react";
+import type { RefObject } from "react";
 import type { MainSearchItem } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
 
 type MainSearchPanelProps = {
   query: string;
   results: MainSearchItem[];
   className?: string;
+  inputRef?: RefObject<HTMLInputElement | null>;
   onClose: () => void;
   onQueryChange: (value: string) => void;
 };
@@ -14,6 +16,7 @@ export function MainSearchPanel({
   query,
   results,
   className,
+  inputRef,
   onClose,
   onQueryChange,
 }: MainSearchPanelProps) {
@@ -28,6 +31,7 @@ export function MainSearchPanel({
         <Search className="h-4 w-4 shrink-0 text-darknavy/45" aria-hidden="true" />
         <input
           autoFocus
+          ref={inputRef}
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Search modules, reports, transactions..."

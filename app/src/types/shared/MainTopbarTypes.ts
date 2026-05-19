@@ -32,6 +32,7 @@ export type MainTopbarProps = {
   currentUser: MainTopbarUser;
   isBranchLoading: boolean;
   homeHref: string;
+  isHelpOpen: boolean;
   isNotificationsOpen: boolean;
   isProfileLoading?: boolean;
   isSearchOpen: boolean;
@@ -41,6 +42,7 @@ export type MainTopbarProps = {
   query: string;
   searchResults: MainSearchItem[];
   unreadNotificationCount: number;
+  onCloseHelp: () => void;
   onCloseNotifications: () => void;
   onCloseSearch: () => void;
   onCloseSidebar: () => void;

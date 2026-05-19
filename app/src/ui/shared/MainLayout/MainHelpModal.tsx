@@ -1,6 +1,7 @@
 "use client";
 
-import { BookOpenText, ChevronRight, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { BookOpenText, ChevronRight, Search, X } from "lucide-react";
 import type { ModuleHelpArticle } from "@/app/src/data/shared/ModuleHelp/ModuleHelpTypes";
 
 type MainHelpModalProps = {
@@ -18,22 +19,57 @@ export function MainHelpModal({
   onClose,
   onSelectArticle,
 }: MainHelpModalProps) {
+  const [query, setQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const selectedArticle =
     articles.find((article) => article.key === selectedArticleKey) ??
     currentArticle;
-  const relatedArticles = currentArticle.relatedKeys
-    .map((key) => articles.find((article) => article.key === key))
-    .filter((article): article is ModuleHelpArticle => Boolean(article));
-  const remainingArticles = articles.filter(
-    (article) =>
-      article.key !== currentArticle.key &&
-      !currentArticle.relatedKeys.includes(article.key),
-  );
+  const normalizedQuery = query.trim().toLowerCase();
+  const matchesQuery = useMemo(
+    () => (article: ModuleHelpArticle) => {
+      if (!normalizedQuery) {
+        return true;
+      }
 
-  return (
-    <div
-      className="fixed inset-0 z-70 flex items-center justify-center bg-darknavy/40 px-3 py-4 backdrop-blur-sm"
-      role="dialog"
+      return [article.title, article.path, article.summary]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery);
+    },
+    [normalizedQuery],
+  );
+  const relatedArticles = useMemo(
+    () =>
+      currentArticle.relatedKeys
+        .map((key) => articles.find((article) => article.key === key))
+        .filter((article): article is ModuleHelpArticle => Boolean(article))
+        .filter(matchesQuery),
+    [articles, currentArticle.relatedKeys, matchesQuery],
+  );
+  const remainingArticles = useMemo(
+    () =>
+      articles.filter(
+        (article) =>
+          article.key !== currentArticle.key &&
+          !currentArticle.relatedKeys.includes(article.key) &&
+          matchesQuery(article),
+      ),
+    [articles, currentArticle.key, currentArticle.relatedKeys, matchesQuery],
+  );
+  const shouldShowCurrentArticle = matchesQuery(currentArticle);
+  const hasManualResults =
+    shouldShowCurrentArticle ||
+    relatedArticles.length > 0 ||
+    remainingArticles.length > 0;
+
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
+	return (
+		<div
+			className="fixed inset-0 z-70 flex items-center justify-center bg-darknavy/30 px-3 py-4 backdrop-blur-sm"
+			role="dialog"
       aria-modal="true"
       aria-labelledby="main-help-title"
     >
@@ -68,35 +104,61 @@ export function MainHelpModal({
 
         <div className="grid min-h-0 flex-1 md:grid-cols-[19rem_1fr]">
           <aside className="min-h-0 overflow-y-auto border-b border-darknavy/10 bg-darknavy/5 p-3 md:border-b-0 md:border-r">
-            <ArticleGroup title="Current page">
-              <ArticleButton
-                article={currentArticle}
-                isActive={selectedArticle.key === currentArticle.key}
-                onClick={() => onSelectArticle(currentArticle.key)}
+            <div className="mb-3 flex items-center gap-2 rounded-md border border-darknavy/10 bg-white px-3 py-2 shadow-sm focus-within:border-skyblue focus-within:ring-2 focus-within:ring-skyblue/25">
+              <Search
+                className="h-4 w-4 shrink-0 text-darknavy/40"
+                aria-hidden="true"
               />
-            </ArticleGroup>
+              <input
+                ref={searchInputRef}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search manual..."
+                className="min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none placeholder:text-darknavy/40"
+              />
+            </div>
 
-            <ArticleGroup title="Related">
-              {relatedArticles.map((article) => (
+            {shouldShowCurrentArticle ? (
+              <ArticleGroup title="Current page">
                 <ArticleButton
-                  key={article.key}
-                  article={article}
-                  isActive={selectedArticle.key === article.key}
-                  onClick={() => onSelectArticle(article.key)}
+                  article={currentArticle}
+                  isActive={selectedArticle.key === currentArticle.key}
+                  onClick={() => onSelectArticle(currentArticle.key)}
                 />
-              ))}
-            </ArticleGroup>
+              </ArticleGroup>
+            ) : null}
 
-            <ArticleGroup title="More manuals">
-              {remainingArticles.map((article) => (
-                <ArticleButton
-                  key={article.key}
-                  article={article}
-                  isActive={selectedArticle.key === article.key}
-                  onClick={() => onSelectArticle(article.key)}
-                />
-              ))}
-            </ArticleGroup>
+            {relatedArticles.length ? (
+              <ArticleGroup title="Related">
+                {relatedArticles.map((article) => (
+                  <ArticleButton
+                    key={article.key}
+                    article={article}
+                    isActive={selectedArticle.key === article.key}
+                    onClick={() => onSelectArticle(article.key)}
+                  />
+                ))}
+              </ArticleGroup>
+            ) : null}
+
+            {remainingArticles.length ? (
+              <ArticleGroup title="More manuals">
+                {remainingArticles.map((article) => (
+                  <ArticleButton
+                    key={article.key}
+                    article={article}
+                    isActive={selectedArticle.key === article.key}
+                    onClick={() => onSelectArticle(article.key)}
+                  />
+                ))}
+              </ArticleGroup>
+            ) : null}
+
+            {!hasManualResults ? (
+              <p className="px-3 py-8 text-center text-sm text-darknavy/55">
+                No manuals found.
+              </p>
+            ) : null}
           </aside>
 
           <article className="min-h-0 overflow-y-auto px-5 py-5 sm:px-7">

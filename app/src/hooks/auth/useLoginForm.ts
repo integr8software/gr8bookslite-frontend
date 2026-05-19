@@ -14,6 +14,7 @@ import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { LoginAction } from "@/app/src/services/auth/AuthActions";
 import {
   GetFallbackPostAuthRedirectPath,
+  IsSystemRedirectPath,
   ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
@@ -25,6 +26,10 @@ type LoginFormValues = {
 const InitialLoginFormValues: LoginFormValues = {
   email: "",
 };
+
+function IsOnboardingRedirectPath(path: string | null | undefined) {
+  return path === "/onboarding" || path?.startsWith("/onboarding/");
+}
 
 function GetSubmittedValue(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -41,12 +46,29 @@ export function useLoginForm() {
     InitialAuthActionState,
   );
   const [formValues, setFormValues] = useState<Partial<LoginFormValues>>({});
+  const [isSystemRedirecting, setIsSystemRedirecting] = useState(false);
+  const [postAuthRedirectPath, setPostAuthRedirectPath] = useState<
+    string | null
+  >(null);
   const values: LoginFormValues = {
     ...InitialLoginFormValues,
     ...state.formValues,
     ...formValues,
   };
+  const shouldShowImmediateSystemLoader =
+    state.status === "success" &&
+    Boolean(state.accessToken) &&
+    IsSystemRedirectPath(
+      state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken),
+    );
+  const successfulAuthRedirectPath =
+    state.status === "success" && state.accessToken
+      ? state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken)
+      : null;
+  const activePostAuthRedirectPath =
+    postAuthRedirectPath ?? successfulAuthRedirectPath;
   const wasPendingRef = useRef(false);
+  const isResolvingPostAuthRef = useRef(false);
 
   function updateValues(nextValues: Partial<LoginFormValues>) {
     setFormValues((currentValues) => ({
@@ -67,7 +89,7 @@ export function useLoginForm() {
   }
 
   useEffect(() => {
-    if (accessToken) {
+    if (accessToken && !isResolvingPostAuthRef.current) {
       router.replace(GetFallbackPostAuthRedirectPath(accessToken));
     }
   }, [accessToken, router]);
@@ -83,6 +105,7 @@ export function useLoginForm() {
     if (state.status === "success") {
       ClearPendingVerificationEmail();
       if (state.accessToken) {
+        isResolvingPostAuthRef.current = true;
         SaveAccessToken(state.accessToken, state.rememberMe ?? false);
         setAccessToken(state.accessToken);
       }
@@ -91,13 +114,18 @@ export function useLoginForm() {
         void ResolvePostAuthDestination(state.accessToken)
           .then(({ profile, redirectPath }) => {
             setActiveCompanyId(profile.activeCompanyId);
+            setPostAuthRedirectPath(redirectPath);
+            setIsSystemRedirecting(IsSystemRedirectPath(redirectPath));
             router.push(redirectPath);
           })
           .catch(() => {
-            router.push(
+            const fallbackPath =
               state.redirectTo ??
-                GetFallbackPostAuthRedirectPath(state.accessToken),
-            );
+              GetFallbackPostAuthRedirectPath(state.accessToken);
+
+            setPostAuthRedirectPath(fallbackPath);
+            setIsSystemRedirecting(IsSystemRedirectPath(fallbackPath));
+            router.push(fallbackPath);
           });
         return;
       }
@@ -108,6 +136,7 @@ export function useLoginForm() {
     }
 
     if (state.status === "error") {
+      isResolvingPostAuthRef.current = false;
       toast.error(state.message);
       if (state.pendingVerificationEmail) {
         SavePendingVerificationEmail(state.pendingVerificationEmail);
@@ -133,6 +162,8 @@ export function useLoginForm() {
     state,
     formAction,
     pending,
+    isSystemRedirecting: isSystemRedirecting || shouldShowImmediateSystemLoader,
+    isOnboardingRedirecting: IsOnboardingRedirectPath(activePostAuthRedirectPath),
     values,
     handleEmailChange,
     handleSubmit,

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { ImageUp, X } from "lucide-react";
 
 type OnboardingFileFieldProps = {
@@ -76,13 +75,13 @@ export function OnboardingFileField({
       {previewUrl ? (
         <div className="mt-3 rounded-md border border-darknavy/10 p-3">
           <div className="relative h-40 w-full overflow-hidden rounded-sm bg-white">
-            <Image
+            {/* User-uploaded preview URLs can be blob or backend-hosted values that don't work reliably with next/image. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={previewUrl}
               alt={`${label} preview`}
-              fill
-              sizes="(min-width: 768px) 320px, 100vw"
-              unoptimized
-              className="object-contain p-3"
+              loading="lazy"
+              className="h-full w-full object-contain p-3"
             />
           </div>
         </div>

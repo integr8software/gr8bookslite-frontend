@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function OnboardingPage() {
   return (
-    <div>
+    <div className="min-h-screen bg-white">
       <nav className="flex items-center justify-between border-b border-darknavy/10 px-5 py-5 sm:px-8 lg:px-14">
         <div className="inline-flex w-fit items-baseline text-xl font-semibold tracking-tight text-darknavy sm:text-2xl">
           <span>Gr8books</span>

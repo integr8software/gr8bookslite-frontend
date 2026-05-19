@@ -185,7 +185,7 @@ export function SidebarItem({
             isAncestorActive
               ? "font-semibold text-darknavy hover:bg-skyblue/10"
               : isExactActive
-                ? "rounded-2xl bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgba(87,196,229,0.12)] ring-1 ring-skyblue/22 hover:bg-skyblue/18"
+                ? "rounded-2xl bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] ring-1 ring-skyblue/22 hover:bg-skyblue/18"
                 : "text-darknavy/70 hover:bg-skyblue/10 hover:text-darknavy",
           )}
         >
@@ -253,7 +253,7 @@ export function SidebarItem({
         paddingClass,
         depth < 0 && "font-semibold",
         isActive
-          ? "rounded-2xl bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgba(87,196,229,0.12)] ring-1 ring-skyblue/22 hover:bg-skyblue/18"
+          ? "rounded-2xl bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] ring-1 ring-skyblue/22 hover:bg-skyblue/18"
           : "text-darknavy/65 hover:bg-skyblue/10 hover:text-darknavy",
       )}
     >
@@ -261,9 +261,9 @@ export function SidebarItem({
       {shouldShowModuleDot ? (
         <span
           className={joinClasses(
-            "h-1.5 w-1.5 shrink-0 rounded-full transition-[background-color,box-shadow] group-hover:bg-skyblue group-hover:shadow-[0_0_8px_rgba(87,196,229,0.36)]",
+            "h-1.5 w-1.5 shrink-0 rounded-full transition-[background-color,box-shadow] group-hover:bg-skyblue group-hover:shadow-[0_0_8px_rgb(var(--skyblue-rgb)/0.36)]",
             isActive
-              ? "bg-skyblue shadow-[0_0_8px_rgba(87,196,229,0.36)]"
+              ? "bg-skyblue shadow-[0_0_8px_rgb(var(--skyblue-rgb)/0.36)]"
               : "bg-darknavy/30",
           )}
           aria-hidden="true"

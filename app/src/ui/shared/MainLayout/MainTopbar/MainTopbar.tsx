@@ -1,7 +1,9 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
+  useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -43,6 +45,7 @@ export function MainTopbar({
   currentUser,
   isBranchLoading,
   homeHref,
+  isHelpOpen,
   isNotificationsOpen,
   isProfileLoading = false,
   isSearchOpen,
@@ -52,6 +55,7 @@ export function MainTopbar({
   query,
   searchResults,
   unreadNotificationCount,
+  onCloseHelp,
   onCloseNotifications,
   onCloseSearch,
   onCloseSidebar,
@@ -69,6 +73,8 @@ export function MainTopbar({
   onToggleSidebar,
 }: MainTopbarProps) {
   const logout = useLogout();
+  const desktopSearchInputRef = useRef<HTMLInputElement>(null);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
   const SidebarIcon = isSidebarOpen ? PanelLeftClose : PanelLeftOpen;
   const [openSwitcherState, setOpenSwitcherState] = useState<{
     href: string;
@@ -94,6 +100,34 @@ export function MainTopbar({
   const hasMobileWorkspaceControls =
     canShowCompanySwitcher || canShowBranchSwitcher;
   const topbarFloatingPanelTopClass = "top-14";
+
+  const closeMobileSidebar = useCallback(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      onCloseSidebar();
+    }
+  }, [onCloseSidebar]);
+
+  const closeSwitcher = useCallback(() => {
+    setOpenSwitcherState({ href: activeHref, key: null });
+  }, [activeHref]);
+
+  const closeDropdownNotifications = useCallback(() => {
+    if (!isLargeNotificationPanel()) {
+      onCloseNotifications();
+    }
+  }, [onCloseNotifications]);
+
+  const focusSearchInput = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      const visibleInput = [
+        desktopSearchInputRef.current,
+        mobileSearchInputRef.current,
+      ].find((input) => input && input.getClientRects().length > 0);
+
+      visibleInput?.focus();
+      visibleInput?.select();
+    });
+  }, []);
 
   useEffect(() => {
     if (
@@ -148,15 +182,70 @@ export function MainTopbar({
     openSwitcherKey,
   ]);
 
-  function closeMobileSidebar() {
-    if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      onCloseSidebar();
+  useEffect(() => {
+    if (!isSearchOpen) {
+      return;
     }
-  }
 
-  function closeSwitcher() {
-    setOpenSwitcherState({ href: activeHref, key: null });
-  }
+    focusSearchInput();
+  }, [focusSearchInput, isSearchOpen]);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const isSearchShortcut =
+        (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k";
+      const isHelpShortcut = event.key === "F1";
+
+      if (!isSearchShortcut && !isHelpShortcut) {
+        return;
+      }
+
+      event.preventDefault();
+      closeSwitcher();
+      closeMobileSidebar();
+      closeDropdownNotifications();
+
+      if (isHelpShortcut) {
+        onCloseSearch();
+
+        if (isHelpOpen) {
+          onCloseHelp();
+          return;
+        }
+
+        onOpenHelp();
+        return;
+      }
+
+      if (isSearchOpen) {
+        onCloseSearch();
+        return;
+      }
+
+      onToggleSearch();
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [
+    activeHref,
+    closeDropdownNotifications,
+    closeMobileSidebar,
+    closeSwitcher,
+    focusSearchInput,
+    isHelpOpen,
+    isSearchOpen,
+    isSidebarOpen,
+    onCloseHelp,
+    onCloseNotifications,
+    onCloseSearch,
+    onCloseSidebar,
+    onOpenHelp,
+    onToggleSearch,
+  ]);
 
   function handleTopbarPointerDownCapture(
     event: ReactPointerEvent<HTMLElement>,
@@ -204,12 +293,6 @@ export function MainTopbar({
     onOpenHelp();
   }
 
-  function closeDropdownNotifications() {
-    if (!isLargeNotificationPanel()) {
-      onCloseNotifications();
-    }
-  }
-
   function toggleSwitcher(key: OpenSwitcherKey) {
     const next = openSwitcherKey === key ? null : key;
 
@@ -244,6 +327,7 @@ export function MainTopbar({
         <button
           type="button"
           data-main-sidebar-toggle
+          data-spotlight-id="workspace-sidebar-toggle"
           onClick={handleToggleSidebar}
           aria-label="Toggle sidebar"
           aria-pressed={isSidebarOpen}
@@ -270,17 +354,19 @@ export function MainTopbar({
           {isProfileLoading ? (
             <TopbarWorkspaceSkeleton />
           ) : canShowCompanySwitcher ? (
-            <CompanySwitcher
-              activeNavigationScope={activeNavigationScope}
-              availableCompanies={availableCompanies}
-              canAccessWorkspace={canAccessWorkspace}
-              currentCompany={currentCompany}
-              isOpen={openSwitcherKey === "company"}
-              onClose={closeSwitcher}
-              onSelectCompany={onSelectCompany}
-              onSwitchToWorkspace={onSwitchToWorkspace}
-              onToggle={() => toggleSwitcher("company")}
-            />
+            <div data-spotlight-id="workspace-company-switcher">
+              <CompanySwitcher
+                activeNavigationScope={activeNavigationScope}
+                availableCompanies={availableCompanies}
+                canAccessWorkspace={canAccessWorkspace}
+                currentCompany={currentCompany}
+                isOpen={openSwitcherKey === "company"}
+                onClose={closeSwitcher}
+                onSelectCompany={onSelectCompany}
+                onSwitchToWorkspace={onSwitchToWorkspace}
+                onToggle={() => toggleSwitcher("company")}
+              />
+            </div>
           ) : null}
 
           {canShowBranchSwitcher ? (
@@ -300,6 +386,7 @@ export function MainTopbar({
           <div
             className="relative hidden w-52 shrink-0 xl:block 2xl:w-72"
             data-main-search-root
+            data-spotlight-id="workspace-search"
           >
             <button
               type="button"
@@ -311,9 +398,13 @@ export function MainTopbar({
               <span className="min-w-0 flex-1 truncate">
                 Search anything...
               </span>
+              <kbd className="hidden shrink-0 rounded border border-darknavy/10 bg-offwhite px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-darknavy/50 2xl:inline-flex">
+                Ctrl + K
+              </kbd>
             </button>
             {isSearchOpen ? (
               <MainSearchPanel
+                inputRef={desktopSearchInputRef}
                 query={query}
                 results={searchResults}
                 onClose={onCloseSearch}
@@ -329,12 +420,17 @@ export function MainTopbar({
             aria-label="Search"
             aria-expanded={isSearchOpen}
             data-main-search-root
+            data-spotlight-id="workspace-search"
             className="flex h-10 w-10 items-center justify-center rounded-full text-darknavy transition-all duration-200 ease-out hover:bg-darknavy/5 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 motion-reduce:transition-none motion-reduce:active:scale-100 md:rounded-md xl:hidden"
           >
             <Search className="h-5 w-5" aria-hidden="true" />
           </button>
 
-          <div className="relative" data-main-notifications-root>
+          <div
+            className="relative"
+            data-main-notifications-root
+            data-spotlight-id="workspace-notifications"
+          >
             <button
               type="button"
               onClick={handleToggleNotifications}
@@ -436,6 +532,7 @@ export function MainTopbar({
       {isSearchOpen ? (
         <div data-main-search-root>
           <MainSearchPanel
+            inputRef={mobileSearchInputRef}
             query={query}
             results={searchResults}
             onClose={onCloseSearch}

@@ -3,51 +3,89 @@ import Link from "next/link";
 
 export default function NotFound() {
 	return (
-		<main className="relative flex min-h-screen overflow-hidden bg-offwhite text-darknavy">
-			<div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(87,196,229,0.20),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(249,112,104,0.18),transparent_30%),linear-gradient(135deg,rgba(236,242,239,1),rgba(255,255,255,1))]" />
-			<div className="absolute inset-x-0 top-0 bg-[radial-gradient(circle_at_top,rgba(87,196,229,0.18),transparent_68%)]" />
+		<main className="relative h-screen w-screen overflow-hidden bg-[#f6eee2] max-lg:flex max-lg:h-dvh max-lg:flex-col max-lg:items-center max-lg:justify-end">
+			<Image
+				src="/404/bg.png"
+				alt="404 library background"
+				fill
+				priority
+				quality={100}
+				sizes="100vw"
+				className="object-cover object-center"
+			/>
 
-			<div className="relative mx-auto flex w-full max-w-7xl items-center px-5 py-10 sm:px-8 lg:px-12 lg:py-14">
-				<section className="w-full">
-					<div className="mx-auto max-w-6xl">
-						<div className="flex justify-center">
-							<Image
-								src="/img/404-background.png"
-								alt="Illustration for a 404 page not found error."
-								width={1536}
-								height={1152}
-								priority
-								className="h-auto w-full max-w-3xl lg:max-w-xl"
-							/>
-						</div>
+			{/* Penguin Shadow */}
+			<div className="absolute left-[51%] top-[78%] z-10 h-[22px] w-[180px] -translate-x-1/2 rounded-full bg-black/75 blur-[12px] max-lg:hidden" />
 
-						<div className="mx-auto mt-3 max-w-2xl text-center sm:mt-1">
-							<h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
-								This page wandered off the ledger.
-							</h1>
-							<p className="mt-4 text-base leading-7 text-darknavy/70 sm:text-lg">
-								The link may be outdated, the address may be
-								mistyped, or the page may have been moved.
-								Let&apos;s get you back to something useful.
-							</p>
-						</div>
-
-						<div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-							<Link
-								href="/"
-								className="inline-flex items-center justify-center rounded-full bg-darknavy px-6 py-3 text-sm font-semibold text-offwhite transition hover:bg-coralpink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink focus-visible:ring-offset-2"
-							>
-								Return home
-							</Link>
-							<a
-								href="mailto:legal@gr8booklite.com"
-								className="inline-flex items-center justify-center rounded-full border border-darknavy/15 bg-white px-6 py-3 text-sm font-semibold text-darknavy transition hover:border-darknavy/30 hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue focus-visible:ring-offset-2"
-							>
-								Contact us
-							</a>
-						</div>
+			{/* Penguin - desktop only */}
+			<div className="absolute left-1/2 top-[68%] z-20 w-[23vw] min-w-[230px] max-w-[370px] -translate-x-1/2 -translate-y-1/2 max-lg:hidden">
+				<div className="penguin-layer relative">
+					<div className="stars-ring">
+						<span className="star star-1">★</span>
+						<span className="star star-2">★</span>
+						<span className="star star-3">★</span>
+						<span className="star star-4">★</span>
+						<span className="star star-5">★</span>
 					</div>
-				</section>
+					<Image
+						src="/404/penguin.png"
+						alt="Dizzy penguin"
+						width={900}
+						height={900}
+						priority
+						className="h-auto w-full"
+					/>
+				</div>
+			</div>
+
+			{/* Buttons */}
+			<div className="absolute bottom-[-25px] left-1/2 z-30 flex w-full -translate-x-1/2 justify-center gap-[2.6vw] px-5 max-lg:static max-lg:flex-col max-lg:items-center max-lg:gap-2 max-lg:px-6 max-lg:pb-0 max-lg:translate-x-0 max-sm:pb-6">
+				{/* Penguin - tablet + mobile, above buttons */}
+				<div className="hidden max-lg:block w-[280px] max-sm:w-[200px] mx-auto mb-1 relative">
+					<div className="stars-ring">
+						<span className="star star-1">★</span>
+						<span className="star star-2">★</span>
+						<span className="star star-3">★</span>
+						<span className="star star-4">★</span>
+						<span className="star star-5">★</span>
+					</div>
+					<Image
+						src="/404/penguin.png"
+						alt="Dizzy penguin"
+						width={900}
+						height={900}
+						priority
+						className="h-auto w-full"
+					/>
+				</div>
+
+				<Link
+					href="/"
+					className="button-img relative w-[23vw] min-w-[280px] max-w-[425px] max-lg:h-[118px] max-lg:w-[58vw] max-lg:min-w-[240px] max-lg:max-w-[360px] max-lg:overflow-hidden max-sm:h-[104px] max-sm:w-[78vw] max-sm:min-w-0 max-sm:max-w-[310px]"
+				>
+					<div className="absolute left-1/2 top-[68%] z-0 h-[18px] w-[72%] -translate-x-1/2 rounded-full bg-black/75 blur-[10px] max-lg:hidden" />
+					<Image
+						src="/404/return-home.png"
+						alt="Return Home"
+						width={1000}
+						height={300}
+						className="relative z-10 h-auto w-full max-lg:absolute max-lg:left-1/2 max-lg:top-1/2 max-lg:w-[138%] max-lg:max-w-none max-lg:-translate-x-1/2 max-lg:-translate-y-1/2"
+					/>
+				</Link>
+
+				<a
+					href="mailto:legal@gr8booklite.com"
+					className="button-img relative w-[23vw] min-w-[280px] max-w-[425px] max-lg:h-[118px] max-lg:w-[58vw] max-lg:min-w-[240px] max-lg:max-w-[360px] max-lg:overflow-hidden max-sm:h-[104px] max-sm:w-[78vw] max-sm:min-w-0 max-sm:max-w-[310px]"
+				>
+					<div className="absolute left-1/2 top-[68%] z-0 h-[18px] w-[72%] -translate-x-1/2 rounded-full bg-black/75 blur-[10px] max-lg:hidden" />
+					<Image
+						src="/404/contact-us.png"
+						alt="Contact Us"
+						width={1000}
+						height={300}
+						className="relative z-10 h-auto w-full max-lg:absolute max-lg:left-1/2 max-lg:top-1/2 max-lg:w-[138%] max-lg:max-w-none max-lg:-translate-x-1/2 max-lg:-translate-y-1/2"
+					/>
+				</a>
 			</div>
 		</main>
 	);

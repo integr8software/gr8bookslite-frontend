@@ -13,11 +13,13 @@ export function ModulePreviewPage({ data }: ModulePreviewPageProps) {
     <div className="mx-auto flex w-full max-w-376 flex-col gap-6">
       <section className="overflow-hidden rounded-4xl border border-darknavy/10 bg-white shadow-[0_24px_70px_rgba(33,39,56,0.08)]">
         <div className="relative px-6 py-8 sm:px-8 sm:py-10">
-          <div className="absolute inset-x-0 top-0 h-36 bg-[radial-gradient(circle_at_top_left,rgba(87,196,229,0.28),transparent_55%),radial-gradient(circle_at_top_right,rgba(249,112,104,0.18),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,1))]" />
           <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-darknavy/10 bg-offwhite px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/55">
-                <Sparkles className="h-3.5 w-3.5 text-skyblue" aria-hidden="true" />
+                <Sparkles
+                  className="h-3.5 w-3.5 text-skyblue"
+                  aria-hidden="true"
+                />
                 {data.eyebrow}
               </span>
               <div className="mt-5 flex items-start gap-4">
@@ -54,7 +56,9 @@ export function ModulePreviewPage({ data }: ModulePreviewPageProps) {
             key={metric.label}
             className="rounded-3xl border border-darknavy/10 bg-white p-5 shadow-[0_18px_50px_rgba(33,39,56,0.06)]"
           >
-            <p className="text-sm font-medium text-darknavy/55">{metric.label}</p>
+            <p className="text-sm font-medium text-darknavy/55">
+              {metric.label}
+            </p>
             <p className="mt-3 text-3xl font-semibold tracking-tight text-darknavy">
               {metric.value}
             </p>
@@ -73,7 +77,8 @@ export function ModulePreviewPage({ data }: ModulePreviewPageProps) {
                 Suggested Layout Direction
               </h3>
               <p className="mt-1 text-sm text-darknavy/55">
-                A safe mock zone for testing cards, lists, filters, and internal module actions.
+                A safe mock zone for testing cards, lists, filters, and internal
+                module actions.
               </p>
             </div>
             <span className="rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">
@@ -96,7 +101,9 @@ export function ModulePreviewPage({ data }: ModulePreviewPageProps) {
         </article>
 
         <article className="rounded-[1.75rem] border border-darknavy/10 bg-white p-6 shadow-[0_20px_60px_rgba(33,39,56,0.06)]">
-          <h3 className="text-lg font-semibold text-darknavy">Why This Helps</h3>
+          <h3 className="text-lg font-semibold text-darknavy">
+            Why This Helps
+          </h3>
           <div className="mt-5 space-y-3">
             {data.highlights.map((highlight) => (
               <div
@@ -119,7 +126,11 @@ type PreviewSurfaceProps = {
   title: string;
 };
 
-function PreviewSurface({ description, icon: Icon, title }: PreviewSurfaceProps) {
+function PreviewSurface({
+  description,
+  icon: Icon,
+  title,
+}: PreviewSurfaceProps) {
   return (
     <div className="rounded-3xl border border-dashed border-darknavy/15 bg-[linear-gradient(180deg,rgba(87,196,229,0.08),rgba(255,255,255,0.9))] p-5">
       <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-darknavy shadow-sm">

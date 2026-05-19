@@ -115,10 +115,14 @@ body {
 }
 
 :root[data-app-theme="midnight-dark"] .shadow-sm,
-:root[data-app-theme="midnight-dark"] .shadow-\[0_22px_70px_rgba\(33\,39\,56\,0\.08\)\],
-:root[data-app-theme="midnight-dark"] .shadow-\[0_18px_60px_rgba\(33\,39\,56\,0\.08\)\],
-:root[data-app-theme="midnight-dark"] .shadow-\[0_24px_70px_rgba\(33\,39\,56\,0\.18\)\],
-:root[data-app-theme="midnight-dark"] .shadow-\[0_24px_70px_rgba\(33\,39\,56\,0\.16\)\] {
+:root[data-app-theme="midnight-dark"]
+  .shadow-\[0_22px_70px_rgba\(33\,39\,56\,0\.08\)\],
+:root[data-app-theme="midnight-dark"]
+  .shadow-\[0_18px_60px_rgba\(33\,39\,56\,0\.08\)\],
+:root[data-app-theme="midnight-dark"]
+  .shadow-\[0_24px_70px_rgba\(33\,39\,56\,0\.18\)\],
+:root[data-app-theme="midnight-dark"]
+  .shadow-\[0_24px_70px_rgba\(33\,39\,56\,0\.16\)\] {
   box-shadow: var(--shadow-dark-lg) !important;
 }
 
@@ -147,14 +151,14 @@ button {
 
 .workspace-dashboard-section {
   grid-column: span 1 / span 1;
-  grid-row: span var(--dashboard-section-row-span, 1) /
-    span var(--dashboard-section-row-span, 1);
+  grid-row: span var(--dashboard-section-row-span, 1) / span
+    var(--dashboard-section-row-span, 1);
 }
 
 @media (min-width: 1280px) {
   .workspace-dashboard-section {
-    grid-column: span var(--dashboard-section-span) /
-      span var(--dashboard-section-span);
+    grid-column: span var(--dashboard-section-span) / span
+      var(--dashboard-section-span);
   }
 }
 

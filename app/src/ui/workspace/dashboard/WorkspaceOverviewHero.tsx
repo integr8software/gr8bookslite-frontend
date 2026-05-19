@@ -66,7 +66,11 @@ export function WorkspaceOverviewHero({
             </button>
             <button
               type="button"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-skyblue px-4 text-sm font-semibold text-darknavy shadow-[0_18px_35px_rgba(87,196,229,0.35)] transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-skyblue/18 px-4 text-sm font-semibold text-darknavy shadow-[0_14px_30px_rgb(var(--skyblue-rgb)/0.16)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgb(var(--skyblue-rgb)/0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgb(var(--skyblue-rgb) / 0.82), rgb(var(--skyblue-rgb) / 0.68))",
+              }}
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               Create New

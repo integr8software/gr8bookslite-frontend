@@ -283,6 +283,117 @@ button {
   }
 }
 
+@keyframes draft-stack-front {
+  0% {
+    transform: translate(-50%, -50%) translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-5px) rotate(0.5deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes draft-stack-mid {
+  0% {
+    transform: translate(-50%, -50%) translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(5px) rotate(-5deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateY(0) rotate(-3deg);
+  }
+}
+
+@keyframes draft-stack-back {
+  0% {
+    transform: translate(-50%, -50%) translateY(0) rotate(4deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(7px) rotate(6deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateY(0) rotate(4deg);
+  }
+}
+
+@keyframes draft-restore-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  48% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes draft-restore-check {
+  0%,
+  52% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+  68%,
+  88% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+}
+
+@keyframes draft-dot-bounce {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-0.2em);
+  }
+}
+
+.draft-stack-card-front {
+  animation: draft-stack-front 2.4s ease-in-out infinite;
+}
+
+.draft-stack-card-mid {
+  animation: draft-stack-mid 2.4s ease-in-out infinite;
+}
+
+.draft-stack-card-back {
+  animation: draft-stack-back 2.4s ease-in-out infinite;
+}
+
+.draft-restore-bar {
+  animation: draft-restore-bar 2.1s ease-in-out infinite;
+}
+
+.draft-restore-check {
+  animation: draft-restore-check 2.4s ease-in-out infinite;
+}
+
+.draft-loader-dots span {
+  display: inline-block;
+  animation: draft-dot-bounce 1.2s ease-in-out infinite;
+}
+
+.draft-loader-dots span:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.draft-loader-dots span:nth-child(3) {
+  animation-delay: 300ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(*),
   ::view-transition-new(*),
@@ -294,7 +405,13 @@ button {
   .animate-\[skeleton-soft-pulse_1\.8s_ease-in-out_infinite\],
   .animate-\[skeleton-shimmer_1\.55s_ease-out_infinite\],
   .animate-\[gr8-page-turn_1\.45s_ease-in-out_infinite\],
-  .animate-\[gr8-page-turn_1\.45s_ease-in-out_0\.32s_infinite\] {
+  .animate-\[gr8-page-turn_1\.45s_ease-in-out_0\.32s_infinite\],
+  .draft-stack-card-front,
+  .draft-stack-card-mid,
+  .draft-stack-card-back,
+  .draft-restore-bar,
+  .draft-restore-check,
+  .draft-loader-dots span {
     animation: none !important;
   }
 }

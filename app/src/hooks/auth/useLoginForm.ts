@@ -27,6 +27,10 @@ const InitialLoginFormValues: LoginFormValues = {
   email: "",
 };
 
+function IsOnboardingRedirectPath(path: string | null | undefined) {
+  return path === "/onboarding" || path?.startsWith("/onboarding/");
+}
+
 function GetSubmittedValue(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value : "";
@@ -43,6 +47,9 @@ export function useLoginForm() {
   );
   const [formValues, setFormValues] = useState<Partial<LoginFormValues>>({});
   const [isSystemRedirecting, setIsSystemRedirecting] = useState(false);
+  const [postAuthRedirectPath, setPostAuthRedirectPath] = useState<
+    string | null
+  >(null);
   const values: LoginFormValues = {
     ...InitialLoginFormValues,
     ...state.formValues,
@@ -54,6 +61,12 @@ export function useLoginForm() {
     IsSystemRedirectPath(
       state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken),
     );
+  const successfulAuthRedirectPath =
+    state.status === "success" && state.accessToken
+      ? state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken)
+      : null;
+  const activePostAuthRedirectPath =
+    postAuthRedirectPath ?? successfulAuthRedirectPath;
   const wasPendingRef = useRef(false);
   const isResolvingPostAuthRef = useRef(false);
 
@@ -101,6 +114,7 @@ export function useLoginForm() {
         void ResolvePostAuthDestination(state.accessToken)
           .then(({ profile, redirectPath }) => {
             setActiveCompanyId(profile.activeCompanyId);
+            setPostAuthRedirectPath(redirectPath);
             setIsSystemRedirecting(IsSystemRedirectPath(redirectPath));
             router.push(redirectPath);
           })
@@ -109,6 +123,7 @@ export function useLoginForm() {
               state.redirectTo ??
               GetFallbackPostAuthRedirectPath(state.accessToken);
 
+            setPostAuthRedirectPath(fallbackPath);
             setIsSystemRedirecting(IsSystemRedirectPath(fallbackPath));
             router.push(fallbackPath);
           });
@@ -148,6 +163,7 @@ export function useLoginForm() {
     formAction,
     pending,
     isSystemRedirecting: isSystemRedirecting || shouldShowImmediateSystemLoader,
+    isOnboardingRedirecting: IsOnboardingRedirectPath(activePostAuthRedirectPath),
     values,
     handleEmailChange,
     handleSubmit,

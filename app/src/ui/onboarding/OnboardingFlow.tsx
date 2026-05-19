@@ -8,10 +8,7 @@ import { OnboardingProgressHeader } from "./OnboardingProgressHeader";
 import { OnboardingReviewStep } from "./OnboardingReviewStep";
 import { OnboardingStepOne } from "./OnboardingStepOne";
 import { ImageCropDialog } from "@/app/src/ui/shared/ImageCropDialog";
-import {
-  AppSkeleton,
-  AppSkeletonCard,
-} from "@/app/src/ui/shared/AppSkeleton";
+import { OnboardingDraftLoadingScreen } from "./OnboardingDraftLoadingScreen";
 
 export function OnboardingFlow() {
   const {
@@ -38,26 +35,7 @@ export function OnboardingFlow() {
   } = useOnboardingFlow();
 
   if (isDraftLoading) {
-    return (
-      <div className="mt-10 space-y-6">
-        <AppSkeletonCard>
-          <AppSkeleton className="h-3 w-32" />
-          <AppSkeleton className="mt-5 h-10 w-72" />
-          <AppSkeleton className="mt-4 h-4 w-full max-w-2xl" />
-          <AppSkeleton className="mt-2 h-4 w-full max-w-xl" />
-        </AppSkeletonCard>
-
-        <AppSkeletonCard>
-          <AppSkeleton className="h-5 w-48" />
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <AppSkeleton className="h-14 rounded-2xl" />
-            <AppSkeleton className="h-14 rounded-2xl" />
-            <AppSkeleton className="h-14 rounded-2xl md:col-span-2" />
-            <AppSkeleton className="h-14 rounded-2xl md:col-span-2" />
-          </div>
-        </AppSkeletonCard>
-      </div>
-    );
+    return <OnboardingDraftLoadingScreen isFullScreen />;
   }
 
   return (

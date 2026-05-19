@@ -107,6 +107,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 				currentUser={currentUser}
 				homeHref={homeHref}
 				isBranchLoading={isBranchLoading}
+				isHelpOpen={isHelpOpen}
 				isProfileLoading={isProfileLoading}
 				isNotificationsOpen={isNotificationsOpen}
 				isSearchOpen={isSearchOpen}
@@ -116,6 +117,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 				query={query}
 				searchResults={searchResults}
 				unreadNotificationCount={unreadNotificationCount}
+				onCloseHelp={closeHelp}
 				onCloseNotifications={closeNotifications}
 				onCloseSearch={closeSearch}
 				onCloseSidebar={closeSidebar}
@@ -139,7 +141,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 					aria-label="Close sidebar overlay"
 					onClick={closeSidebar}
 					className={joinClasses(
-						"fixed inset-0 z-40 bg-darknavy/35 transition-opacity duration-300 ease-out motion-reduce:transition-none lg:hidden",
+						"fixed inset-0 z-40 bg-darknavy/25 transition-opacity duration-300 ease-out motion-reduce:transition-none lg:hidden",
 						isSidebarOpen
 							? "pointer-events-auto opacity-100"
 							: "pointer-events-none opacity-0",
@@ -186,9 +188,9 @@ export function MainLayout({ children }: MainLayoutProps) {
 					className={joinClasses(
 						"min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 motion-reduce:transition-none sm:px-5 lg:px-6",
 						isSidebarTransitionEnabled &&
-							"transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+						"transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
 						(isSidebarOpen || !isSidebarTransitionEnabled) &&
-							"lg:ml-78",
+						"lg:ml-78",
 						isNotificationsOpen && "xl:mr-88",
 					)}
 				>
@@ -346,7 +348,7 @@ function MainPageHeader({ breadcrumbs }: MainPageHeaderProps) {
 											className={joinClasses(
 												"h-3.5 w-3.5 shrink-0 text-darknavy/35 transition group-hover:text-darknavy",
 												isOpen &&
-													"rotate-180 text-darknavy/65",
+												"rotate-180 text-darknavy/65",
 											)}
 											aria-hidden="true"
 										/>
@@ -425,7 +427,7 @@ function BreadcrumbDropdown({
 
 function HelpModalLoading() {
 	return (
-		<div className="fixed inset-0 z-70 flex items-center justify-center bg-darknavy/40 px-3 py-4 backdrop-blur-sm">
+		<div className="fixed inset-0 z-70 flex items-center justify-center bg-darknavy/30 px-3 py-4 backdrop-blur-sm">
 			<div className="w-full max-w-md rounded-lg border border-darknavy/10 bg-white p-6 text-center shadow-[0_30px_90px_rgba(33,39,56,0.25)]">
 				<div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md bg-skyblue/15 text-darknavy">
 					<BookOpenText className="h-5 w-5" aria-hidden="true" />

@@ -85,8 +85,6 @@ export function MainLayout({ children }: MainLayoutProps) {
 	} = useMainLayout();
 	const shouldShowBranchContent =
 		activeNavigationScope !== "company" || hasBranchAccess;
-	const shouldUseWideContent =
-		isSidebarTransitionEnabled && !isSidebarOpen;
 
 	if (isShellLoading) {
 		return (
@@ -198,21 +196,14 @@ export function MainLayout({ children }: MainLayoutProps) {
 					)}
 				>
 					<MainPageHeader breadcrumbs={breadcrumbs} />
-					<div
-						className={joinClasses(
-							"mx-auto w-full flex-1",
-							shouldUseWideContent
-								? "max-w-376 lg:max-w-736"
-								: "max-w-376",
-						)}
-					>
+					<div className="w-full flex-1">
 						{shouldShowBranchContent ? (
 							children
 						) : (
 							<NoBranchAccess companyName={currentCompany.name} />
 						)}
 					</div>
-					<MainFooter isWide={shouldUseWideContent} />
+					<MainFooter />
 				</main>
 
 				<aside

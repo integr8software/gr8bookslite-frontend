@@ -155,10 +155,16 @@ function SpotlightTourContent({
       return;
     }
 
-    function updateMeasurements() {
-      const targetElement = getSpotlightTarget(activeStep);
+    const targetElement = getSpotlightTarget(activeStep);
 
-      if (!targetElement) {
+    if (!targetElement) {
+      return;
+    }
+
+    function updateMeasurements() {
+      const currentTargetElement = getSpotlightTarget(activeStep);
+
+      if (!currentTargetElement) {
         setSpotlightRect(null);
         setCardPosition({
           top: Math.max(getViewportGap(window.innerWidth), window.innerHeight / 2 - 160),
@@ -170,19 +176,7 @@ function SpotlightTourContent({
         return;
       }
 
-      const targetBounds = targetElement.getBoundingClientRect();
-      const nextRect = {
-        top: Math.max(0, targetBounds.top - SpotlightPadding),
-        left: Math.max(0, targetBounds.left - SpotlightPadding),
-        width: Math.min(
-          window.innerWidth,
-          targetBounds.width + SpotlightPadding * 2,
-        ),
-        height: Math.min(
-          window.innerHeight,
-          targetBounds.height + SpotlightPadding * 2,
-        ),
-      };
+      const nextRect = getMeasuredSpotlightRect(currentTargetElement);
 
       setSpotlightRect(nextRect);
       setCardPosition(getCardPosition(nextRect));
@@ -192,9 +186,14 @@ function SpotlightTourContent({
     window.addEventListener("resize", updateMeasurements);
     window.addEventListener("scroll", updateMeasurements, true);
 
+    const resizeObserver = new ResizeObserver(updateMeasurements);
+    resizeObserver.observe(targetElement);
+    resizeObserver.observe(document.documentElement);
+
     return () => {
       window.removeEventListener("resize", updateMeasurements);
       window.removeEventListener("scroll", updateMeasurements, true);
+      resizeObserver.disconnect();
     };
   }, [activeStep]);
 
@@ -435,8 +434,12 @@ function getCardPosition(rect: SpotlightRect): SpotlightCardPosition {
   );
   const spaceBelow = viewportHeight - (rect.top + rect.height);
   const spaceAbove = rect.top;
+  const bottomSheetTop = Math.max(
+    viewportGap,
+    viewportHeight - estimatedCardHeight - viewportGap,
+  );
   const desiredTop = isMobileViewport
-    ? viewportHeight - estimatedCardHeight - viewportGap
+    ? bottomSheetTop
     : (viewportWidth < 768
         ? spaceBelow >= estimatedCardHeight || spaceBelow >= spaceAbove
         : spaceBelow >= estimatedCardHeight || rect.top < 260)
@@ -524,6 +527,31 @@ function getViewportSize() {
   return {
     width: window.innerWidth,
     height: window.innerHeight,
+  };
+}
+
+function getMeasuredSpotlightRect(element: HTMLElement): SpotlightRect {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const bounds = element.getBoundingClientRect();
+  const top = clamp(bounds.top - SpotlightPadding, 0, viewportHeight);
+  const left = clamp(bounds.left - SpotlightPadding, 0, viewportWidth);
+  const right = clamp(
+    bounds.right + SpotlightPadding,
+    0,
+    viewportWidth,
+  );
+  const bottom = clamp(
+    bounds.bottom + SpotlightPadding,
+    0,
+    viewportHeight,
+  );
+
+  return {
+    top,
+    left,
+    width: Math.max(0, right - left),
+    height: Math.max(0, bottom - top),
   };
 }
 

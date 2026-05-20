@@ -85,6 +85,8 @@ export function MainLayout({ children }: MainLayoutProps) {
 	} = useMainLayout();
 	const shouldShowBranchContent =
 		activeNavigationScope !== "company" || hasBranchAccess;
+	const shouldUseWideContent =
+		isSidebarTransitionEnabled && !isSidebarOpen;
 
 	if (isShellLoading) {
 		return (
@@ -189,21 +191,28 @@ export function MainLayout({ children }: MainLayoutProps) {
 					className={joinClasses(
 						"flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-3 py-4 motion-reduce:transition-none sm:px-5 lg:px-6",
 						isSidebarTransitionEnabled &&
-							"transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+						"transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
 						(isSidebarOpen || !isSidebarTransitionEnabled) &&
-							"lg:ml-78",
+						"lg:ml-78",
 						isNotificationsOpen && "xl:mr-88",
 					)}
 				>
 					<MainPageHeader breadcrumbs={breadcrumbs} />
-					<div className="mx-auto w-full max-w-376 flex-1">
+					<div
+						className={joinClasses(
+							"mx-auto w-full flex-1",
+							shouldUseWideContent
+								? "max-w-376 lg:max-w-736"
+								: "max-w-376",
+						)}
+					>
 						{shouldShowBranchContent ? (
 							children
 						) : (
 							<NoBranchAccess companyName={currentCompany.name} />
 						)}
 					</div>
-					<MainFooter />
+					<MainFooter isWide={shouldUseWideContent} />
 				</main>
 
 				<aside
@@ -350,7 +359,7 @@ function MainPageHeader({ breadcrumbs }: MainPageHeaderProps) {
 											className={joinClasses(
 												"h-3.5 w-3.5 shrink-0 text-darknavy/35 transition group-hover:text-darknavy",
 												isOpen &&
-													"rotate-180 text-darknavy/65",
+												"rotate-180 text-darknavy/65",
 											)}
 											aria-hidden="true"
 										/>

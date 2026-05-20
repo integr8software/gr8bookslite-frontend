@@ -3,9 +3,16 @@
 import Link from "next/link";
 import { AppName } from "@/app/src/constants/shared/AppConstants";
 
-export function MainFooter() {
+type MainFooterProps = {
+  isWide: boolean;
+};
+
+export function MainFooter({ isWide }: MainFooterProps) {
   return (
-    <footer className="mx-auto mt-8 flex w-full max-w-376 flex-col gap-3 border-t border-darknavy/10 py-5 text-xs text-darknavy/55 sm:flex-row sm:items-center sm:justify-between">
+    <footer
+      className={`mx-auto mt-8 flex w-full flex-col gap-3 border-t border-darknavy/10 py-5 text-xs text-darknavy/55 sm:flex-row sm:items-center sm:justify-between ${isWide ? "max-w-376 lg:max-w-736" : "max-w-376"
+        }`}
+    >
       <p>&copy; 2026 {AppName}. All rights reserved.</p>
       <nav
         aria-label="Legal links"

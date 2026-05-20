@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { AccountSettingsPage } from "@/app/src/ui/shared/account/AccountSettingsPage";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 
 export const metadata: Metadata = {
-  title: "Settings | Gr8Books Lite",
-  description: "Manage workspace settings in Gr8Books Lite.",
+  title: `Settings | ${AppName}`,
+  description: `Manage workspace settings in ${AppName}.`,
 };
 
 export default function SettingsPage() {

@@ -1,4 +1,5 @@
 import React from "react";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 
 const PrivacyPolicyForm = () => {
   return (
@@ -31,7 +32,7 @@ const PrivacyPolicyForm = () => {
       {/* Content */}
       <section className="mx-auto max-w-360 px-6 py-10 text-black">
         <p className="mb-6">
-          Gr8BookLite is committed to protecting the privacy and security of
+          {AppName} is committed to protecting the privacy and security of
           your financial and personal data. By creating an account, you agree to
           the collection and use of your information as described below.
         </p>
@@ -107,7 +108,7 @@ const PrivacyPolicyForm = () => {
         {/* Section 7 */}
         <h2 className="font-semibold text-lg mb-2">7. Cookies</h2>
         <p className="mb-6">
-          Gr8BookLite uses essential cookies only to maintain session security.
+          {AppName} uses essential cookies only to maintain session security.
           No advertising or tracking cookies are used.
         </p>
 

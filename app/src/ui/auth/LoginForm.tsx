@@ -7,6 +7,7 @@ import { useLoginForm } from "@/app/src/hooks/auth/useLoginForm";
 import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
 import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
 import { Gr8BooksLoadingScreen } from "@/app/src/ui/shared/Gr8BooksLoadingScreen";
+import { Gr8BooksLogoText } from "@/app/src/ui/shared/Gr8BooksLogoText";
 import { AuthField } from "./AuthField";
 
 export function LoginForm() {
@@ -37,12 +38,9 @@ export function LoginForm() {
 					<div className="flex flex-col w-full max-w-107.5">
 						<Link
 							href="/"
-							className="inline-flex items-baseline text-xl font-semibold tracking-tight text-darknavy sm:text-2xl lg:self-start"
+							className="inline-flex text-xl font-semibold sm:text-2xl lg:self-start"
 						>
-							<span>Gr8books</span>
-							<span className="ml-1 text-sm font-medium italic text-skyblue">
-								Lite
-							</span>
+							<Gr8BooksLogoText neoClassName="text-sm" />
 						</Link>
 
 						<div className="mt-10 text-center sm:mt-14 lg:mt-20">

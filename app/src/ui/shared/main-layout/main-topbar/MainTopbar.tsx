@@ -17,6 +17,7 @@ import {
 	Search,
 } from "lucide-react";
 import { useLogout } from "@/app/src/hooks/auth/useLogout";
+import { Gr8BooksLogoText } from "@/app/src/ui/shared/Gr8BooksLogoText";
 import type {
 	MainTopbarProps,
 	OpenSwitcherKey,
@@ -366,12 +367,9 @@ export function MainTopbar({
 
 				<Link
 					href={homeHref}
-					className="mr-1 hidden min-w-fit items-baseline rounded-md px-2 py-1.5 text-xl font-semibold tracking-tight text-darknavy transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 sm:inline-flex"
+					className="mr-1 hidden min-w-fit rounded-md px-2 py-1.5 text-xl font-semibold transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 sm:inline-flex"
 				>
-					<span>Gr8books</span>
-					<span className="ml-1 text-sm font-medium italic text-skyblue">
-						Lite
-					</span>
+					<Gr8BooksLogoText neoClassName="text-sm" />
 				</Link>
 
 				<nav

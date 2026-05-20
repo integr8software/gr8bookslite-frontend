@@ -35,7 +35,7 @@ export function ModuleTable<TData>({
 	const pageSizeOptionsKey = pageSizeOptions.join(",");
 	const storageKey = useMemo(
 		() =>
-			`gr8bookslite:module-table:${paginationStorageKey ?? pathname}:pagination`,
+			`gr8booksneo:module-table:${paginationStorageKey ?? pathname}:pagination`,
 		[paginationStorageKey, pathname],
 	);
 

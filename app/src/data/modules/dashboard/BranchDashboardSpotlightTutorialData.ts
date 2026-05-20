@@ -2,9 +2,9 @@ import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourType
 
 export const BranchDashboardSpotlightTutorialStorageVersion = "v1";
 export const BranchDashboardSpotlightTutorialOpenEvent =
-  "gr8bookslite:branch-dashboard-spotlight-open";
+  "gr8booksneo:branch-dashboard-spotlight-open";
 export const BranchDashboardSpotlightTutorialStorageKey =
-  `gr8bookslite.spotlightTutorial.${BranchDashboardSpotlightTutorialStorageVersion}./dashboard`;
+  `gr8booksneo.spotlightTutorial.${BranchDashboardSpotlightTutorialStorageVersion}./dashboard`;
 
 export const BranchDashboardSpotlightTutorialSteps = [
   {

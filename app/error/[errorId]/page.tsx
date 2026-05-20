@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 import { notFound } from "next/navigation";
 import {
 	StatusErrorPage,
@@ -17,24 +18,24 @@ type ErrorRoutePageProps = {
 
 const errorMetadata: Record<StatusErrorPageVariant, Metadata> = {
 	"401": {
-		title: "401 Unauthorized Access | GR8BooksLite",
-		description: "Unauthorized access state for GR8BooksLite.",
+		title: `401 Unauthorized Access | ${AppName}`,
+		description: `Unauthorized access state for ${AppName}.`,
 		robots: {
 			follow: false,
 			index: false,
 		},
 	},
 	"403": {
-		title: "403 Forbidden | GR8BooksLite",
-		description: "Forbidden access state for GR8BooksLite.",
+		title: `403 Forbidden | ${AppName}`,
+		description: `Forbidden access state for ${AppName}.`,
 		robots: {
 			follow: false,
 			index: false,
 		},
 	},
 	"500": {
-		title: "500 Server Error | GR8BooksLite",
-		description: "Server error page for GR8BooksLite.",
+		title: `500 Server Error | ${AppName}`,
+		description: `Server error page for ${AppName}.`,
 		robots: {
 			follow: false,
 			index: false,

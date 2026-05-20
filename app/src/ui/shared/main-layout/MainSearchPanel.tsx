@@ -1,6 +1,13 @@
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
-import type { RefObject } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type RefObject,
+} from "react";
 import type { MainSearchItem } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
 
 type MainSearchPanelProps = {
@@ -20,6 +27,57 @@ export function MainSearchPanel({
   onClose,
   onQueryChange,
 }: MainSearchPanelProps) {
+  const router = useRouter();
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const resultRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+  const selectedResultIndex = results.length
+    ? Math.min(selectedIndex, results.length - 1)
+    : 0;
+  const selectedResult = results[selectedResultIndex];
+
+  useEffect(() => {
+    resultRefs.current[selectedResultIndex]?.scrollIntoView({
+      block: "nearest",
+    });
+  }, [selectedResultIndex]);
+
+  function handleInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (!results.length) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setSelectedIndex((current) => (current + 1) % results.length);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setSelectedIndex(
+        (current) => (current - 1 + results.length) % results.length,
+      );
+      return;
+    }
+
+    if (event.key === "Enter" && selectedResult) {
+      event.preventDefault();
+      onClose();
+      router.push(selectedResult.href);
+      return;
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+    }
+  }
+
   return (
     <div
       className={joinClasses(
@@ -33,8 +91,20 @@ export function MainSearchPanel({
           autoFocus
           ref={inputRef}
           value={query}
-          onChange={(event) => onQueryChange(event.target.value)}
+          onChange={(event) => {
+            setSelectedIndex(0);
+            onQueryChange(event.target.value);
+          }}
+          onKeyDown={handleInputKeyDown}
           placeholder="Search modules, reports, transactions..."
+          role="combobox"
+          aria-expanded="true"
+          aria-controls="main-search-results"
+          aria-activedescendant={
+            selectedResult
+              ? `main-search-result-${selectedResult.key}`
+              : undefined
+          }
           className="min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none placeholder:text-darknavy/40"
         />
         <button
@@ -47,23 +117,42 @@ export function MainSearchPanel({
         </button>
       </div>
 
-      <div className="max-h-84 overflow-y-auto p-2">
+      <div
+        id="main-search-results"
+        role="listbox"
+        className="max-h-84 overflow-y-auto p-2"
+      >
         {results.length ? (
-          results.map((result) => (
-            <Link
-              key={result.key}
-              href={result.href}
-              onClick={onClose}
-              className="block rounded-md px-3 py-2.5 transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-            >
-              <span className="block truncate text-sm font-semibold text-darknavy">
-                {result.label}
-              </span>
-              <span className="mt-1 block truncate text-xs text-darknavy/55">
-                {result.trail.join(" / ")}
-              </span>
-            </Link>
-          ))
+          results.map((result, index) => {
+            const isSelected = index === selectedResultIndex;
+
+            return (
+              <Link
+                key={result.key}
+                id={`main-search-result-${result.key}`}
+                ref={(element) => {
+                  resultRefs.current[index] = element;
+                }}
+                href={result.href}
+                role="option"
+                aria-selected={isSelected}
+                onClick={onClose}
+                onFocus={() => setSelectedIndex(index)}
+                onMouseEnter={() => setSelectedIndex(index)}
+                className={joinClasses(
+                  "block rounded-md px-3 py-2.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+                  isSelected ? "bg-skyblue/10" : "hover:bg-skyblue/10",
+                )}
+              >
+                <span className="block truncate text-sm font-semibold text-darknavy">
+                  {result.label}
+                </span>
+                <span className="mt-1 block truncate text-xs text-darknavy/55">
+                  {result.trail.join(" / ")}
+                </span>
+              </Link>
+            );
+          })
         ) : (
           <div className="px-3 py-8 text-center text-sm text-darknavy/55">
             No records found.

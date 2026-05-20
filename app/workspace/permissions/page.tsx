@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { ModulePreviewPages } from "@/app/src/data/shared/MainLayout/ModulePreviewData";
 import { ModulePreviewPage } from "@/app/src/ui/shared/module-preview/ModulePreviewPage";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 
 export const metadata: Metadata = {
-	title: "Permissions | Gr8Books Lite",
-	description: "Permissions workspace mockup for Gr8Books Lite.",
+	title: `Permissions | ${AppName}`,
+	description: `Permissions workspace mockup for ${AppName}.`,
 };
 
 export default function PermissionsPage() {

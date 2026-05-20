@@ -1,6 +1,6 @@
-const PENDING_VERIFICATION_EMAIL_KEY = "gr8bookslite.pendingVerificationEmail";
+const PENDING_VERIFICATION_EMAIL_KEY = "gr8booksneo.pendingVerificationEmail";
 const VERIFICATION_RESEND_COOLDOWNS_KEY =
-  "gr8bookslite.verificationResendCooldowns";
+  "gr8booksneo.verificationResendCooldowns";
 
 function CanUseSessionStorage() {
   return typeof window !== "undefined" && typeof window.sessionStorage !== "undefined";

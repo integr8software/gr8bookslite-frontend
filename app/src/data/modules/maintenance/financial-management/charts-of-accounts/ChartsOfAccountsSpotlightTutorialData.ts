@@ -3,9 +3,9 @@ import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourType
 
 export const ChartsOfAccountsSpotlightTutorialStorageVersion = "v1";
 export const ChartsOfAccountsSpotlightTutorialOpenEvent =
-  "gr8bookslite:charts-of-accounts-spotlight-open";
+  "gr8booksneo:charts-of-accounts-spotlight-open";
 export const ChartsOfAccountsSpotlightTutorialStorageKey =
-  `gr8bookslite.spotlightTutorial.${ChartsOfAccountsSpotlightTutorialStorageVersion}.${ChartsOfAccountsHref}`;
+  `gr8booksneo.spotlightTutorial.${ChartsOfAccountsSpotlightTutorialStorageVersion}.${ChartsOfAccountsHref}`;
 
 export const ChartsOfAccountsSpotlightTutorialSteps = [
   {

@@ -3,9 +3,9 @@ import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourType
 
 export const UserGroupSpotlightTutorialStorageVersion = "v1";
 export const UserGroupSpotlightTutorialOpenEvent =
-  "gr8bookslite:user-group-spotlight-open";
+  "gr8booksneo:user-group-spotlight-open";
 export const UserGroupSpotlightTutorialStorageKey =
-  `gr8bookslite.spotlightTutorial.${UserGroupSpotlightTutorialStorageVersion}.${UserGroupHref}`;
+  `gr8booksneo.spotlightTutorial.${UserGroupSpotlightTutorialStorageVersion}.${UserGroupHref}`;
 
 export const UserGroupSpotlightTutorialSteps = [
   {

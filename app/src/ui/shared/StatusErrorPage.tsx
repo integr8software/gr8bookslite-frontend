@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 import {
 	ArrowLeft,
 	Home,
@@ -61,7 +62,7 @@ const statusErrorPageContent: Record<StatusErrorPageVariant, StatusErrorPageCont
 	"500": {
 		accentClassName: "bg-coralpink",
 		eyebrow: "Server error",
-		helper: "The request reached GR8BooksLite, but something failed while preparing the page.",
+		helper: `The request reached ${AppName}, but something failed while preparing the page.`,
 		icon: ServerCrash,
 		primaryHref: "/dashboard",
 		primaryIcon: RefreshCw,

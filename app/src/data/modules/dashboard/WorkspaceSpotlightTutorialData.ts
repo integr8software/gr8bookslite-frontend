@@ -4,7 +4,7 @@ export const WorkspaceSpotlightTutorialAccountWindowDays = 14;
 
 export const WorkspaceSpotlightTutorialStorageVersion = "v1";
 export const WorkspaceSpotlightTutorialOpenEvent =
-  "gr8bookslite:workspace-spotlight-open";
+  "gr8booksneo:workspace-spotlight-open";
 
 export const WorkspaceSpotlightTutorialSteps = [
   {

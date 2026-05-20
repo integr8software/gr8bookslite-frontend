@@ -10,7 +10,7 @@ import {
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 
-const SpotlightStoragePrefix = "gr8bookslite.workspaceSpotlightTutorial";
+const SpotlightStoragePrefix = "gr8booksneo.workspaceSpotlightTutorial";
 
 type SpotlightStorageValue = {
   status: "completed" | "skipped";

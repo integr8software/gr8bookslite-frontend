@@ -1,4 +1,4 @@
-# GR8BooksLite Frontend
+# Gr8Books Neo Frontend
 
 ## Setup
 
@@ -6,7 +6,7 @@ Clone and run the project locally:
 
 ```bash
 git clone <your-repository-url>
-cd gr8bookslite-frontend
+cd gr8booksneo-frontend
 npm install
 cp .env.example .env.local
 npm run dev

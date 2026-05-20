@@ -12,6 +12,7 @@ import {
 import type { AuthFormValues } from "@/app/src/data/auth/AuthTypes";
 import { useSignUpForm } from "@/app/src/hooks/auth/useSignUpForm";
 import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
+import { Gr8BooksLogoText } from "@/app/src/ui/shared/Gr8BooksLogoText";
 import { AuthField } from "./AuthField";
 import { AuthPasswordRequirements } from "./AuthPasswordRequirements";
 import { ArrowRight, Check, LoaderCircle } from "lucide-react";
@@ -96,12 +97,9 @@ export function SignUpForm() {
 					<div className="w-full max-w-107.5">
 						<Link
 							href="/"
-							className="inline-flex items-baseline text-xl font-semibold tracking-tight text-darknavy sm:text-2xl"
+							className="inline-flex text-xl font-semibold sm:text-2xl"
 						>
-							<span>Gr8books</span>
-							<span className="ml-1 text-sm font-medium italic text-skyblue">
-								Lite
-							</span>
+							<Gr8BooksLogoText neoClassName="text-sm" />
 						</Link>
 
 						<div className="mt-10 text-center sm:mt-12">

@@ -135,22 +135,25 @@ function flattenItems(
 ): MainSearchItem[] {
   return items.flatMap((navigationItem) => {
     const currentTrail = [...trail, navigationItem.label];
-    const current: MainSearchItem = {
-      key: navigationItem.key,
-      label: navigationItem.label,
-      href: navigationItem.href,
-      accessKey: navigationItem.accessKey,
-      productKey: navigationItem.productKey ?? "core",
-      productKeys: navigationItem.productKeys,
-      section,
-      trail,
-    };
+    const childItems = navigationItem.children
+      ? flattenItems(navigationItem.children, section, currentTrail)
+      : [];
+
+    if (navigationItem.children?.length) {
+      return childItems;
+    }
 
     return [
-      current,
-      ...(navigationItem.children
-        ? flattenItems(navigationItem.children, section, currentTrail)
-        : []),
+      {
+        key: navigationItem.key,
+        label: navigationItem.label,
+        href: navigationItem.href,
+        accessKey: navigationItem.accessKey,
+        productKey: navigationItem.productKey ?? "core",
+        productKeys: navigationItem.productKeys,
+        section,
+        trail,
+      },
     ];
   });
 }

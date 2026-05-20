@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { PricingPage } from "@/app/src/ui/pricing/PricingPage";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 
 export const metadata: Metadata = {
-  title: "Pricing | GR8BooksLite",
-  description: "Choose the GR8BooksLite plan that fits your business stage.",
+  title: `Pricing | ${AppName}`,
+  description: `Choose the ${AppName} plan that fits your business stage.`,
 };
 
 export default function PricingRoute() {

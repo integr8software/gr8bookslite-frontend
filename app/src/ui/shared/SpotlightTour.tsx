@@ -67,7 +67,7 @@ export function SpotlightTour({
 type SpotlightTourContentProps = Omit<SpotlightTourProps, "isOpen">;
 
 function SpotlightTourContent({
-  appearance,
+  appearance = "auto",
   ariaLabel,
   badge,
   onComplete,

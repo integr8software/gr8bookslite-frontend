@@ -1,4 +1,4 @@
-import type { ModulesWizardValues } from "@/app/src/data/modules/wizard/ModulesWizardData";
+export type ModulesWizardValues = Record<string, unknown>;
 
 const ModulesWizardDraftKey = "gr8bookslite.modulesWizardDraft";
 

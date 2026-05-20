@@ -204,17 +204,22 @@ export function MainTopbar({
 				(event.ctrlKey || event.metaKey) &&
 				event.key.toLowerCase() === "k";
 			const isHelpShortcut = event.key === "F1";
+			const isNotificationsShortcut = event.key === "F9";
 
-			if (!isSearchShortcut && !isHelpShortcut) {
+			if (
+				!isSearchShortcut &&
+				!isHelpShortcut &&
+				!isNotificationsShortcut
+			) {
 				return;
 			}
 
 			event.preventDefault();
 			closeSwitcher();
 			closeMobileSidebar();
-			closeDropdownNotifications();
 
 			if (isHelpShortcut) {
+				closeDropdownNotifications();
 				onCloseSearch();
 
 				if (isHelpOpen) {
@@ -225,6 +230,15 @@ export function MainTopbar({
 				onOpenHelp();
 				return;
 			}
+
+			if (isNotificationsShortcut) {
+				onCloseSearch();
+				onCloseHelp();
+				onToggleNotifications();
+				return;
+			}
+
+			closeDropdownNotifications();
 
 			if (isSearchOpen) {
 				onCloseSearch();
@@ -253,6 +267,7 @@ export function MainTopbar({
 		onCloseSearch,
 		onCloseSidebar,
 		onOpenHelp,
+		onToggleNotifications,
 		onToggleSearch,
 	]);
 

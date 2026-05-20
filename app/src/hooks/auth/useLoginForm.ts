@@ -14,6 +14,8 @@ import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { LoginAction } from "@/app/src/services/auth/AuthActions";
 import {
   GetFallbackPostAuthRedirectPath,
+  GetRemainingPostAuthRedirectDelayMs,
+  IsOnboardingRedirectPath,
   IsSystemRedirectPath,
   ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
@@ -27,13 +29,20 @@ const InitialLoginFormValues: LoginFormValues = {
   email: "",
 };
 
-function IsOnboardingRedirectPath(path: string | null | undefined) {
-  return path === "/onboarding" || path?.startsWith("/onboarding/");
-}
-
 function GetSubmittedValue(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value : "";
+}
+
+function NavigateAfterPostAuthDelay(startedAt: number, navigate: () => void) {
+  const remainingDelay = GetRemainingPostAuthRedirectDelayMs(startedAt);
+
+  if (remainingDelay === 0) {
+    navigate();
+    return null;
+  }
+
+  return window.setTimeout(navigate, remainingDelay);
 }
 
 export function useLoginForm() {
@@ -111,23 +120,56 @@ export function useLoginForm() {
       }
       toast.success(state.message);
       if (state.accessToken) {
+        const redirectStartedAt = Date.now();
+        let isCancelled = false;
+        let redirectTimeout: ReturnType<typeof NavigateAfterPostAuthDelay> =
+          null;
+
         void ResolvePostAuthDestination(state.accessToken)
           .then(({ profile, redirectPath }) => {
+            if (isCancelled) {
+              return;
+            }
+
             setActiveCompanyId(profile.activeCompanyId);
             setPostAuthRedirectPath(redirectPath);
             setIsSystemRedirecting(IsSystemRedirectPath(redirectPath));
-            router.push(redirectPath);
+            redirectTimeout = NavigateAfterPostAuthDelay(
+              redirectStartedAt,
+              () => {
+                if (!isCancelled) {
+                  router.push(redirectPath);
+                }
+              },
+            );
           })
           .catch(() => {
+            if (isCancelled) {
+              return;
+            }
+
             const fallbackPath =
               state.redirectTo ??
               GetFallbackPostAuthRedirectPath(state.accessToken);
 
             setPostAuthRedirectPath(fallbackPath);
             setIsSystemRedirecting(IsSystemRedirectPath(fallbackPath));
-            router.push(fallbackPath);
+            redirectTimeout = NavigateAfterPostAuthDelay(
+              redirectStartedAt,
+              () => {
+                if (!isCancelled) {
+                  router.push(fallbackPath);
+                }
+              },
+            );
           });
-        return;
+        return () => {
+          isCancelled = true;
+
+          if (redirectTimeout !== null) {
+            window.clearTimeout(redirectTimeout);
+          }
+        };
       }
       if (state.redirectTo) {
         router.push(state.redirectTo);

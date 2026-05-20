@@ -4,17 +4,20 @@ import {
   LayoutDashboard,
   Plus,
   SlidersHorizontal,
+  Sparkles,
 } from "lucide-react";
 
 type WorkspaceOverviewHeroProps = {
   isEditingLayout: boolean;
   onCustomize: () => void;
+  onStartSpotlightTutorial: () => void;
   onToggleLayoutEditing: () => void;
 };
 
 export function WorkspaceOverviewHero({
   isEditingLayout,
   onCustomize,
+  onStartSpotlightTutorial,
   onToggleLayoutEditing,
 }: WorkspaceOverviewHeroProps) {
   return (
@@ -35,6 +38,14 @@ export function WorkspaceOverviewHero({
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={onStartSpotlightTutorial}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+            >
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+              Spotlight Tutorial
+            </button>
             <button
               type="button"
               onClick={onCustomize}

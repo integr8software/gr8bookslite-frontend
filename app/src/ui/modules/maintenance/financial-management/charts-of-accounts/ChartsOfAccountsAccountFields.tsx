@@ -6,7 +6,6 @@ import {
 	AccountStatuses,
 	AccountTypes,
 	NormalBalances,
-	StatementGroups,
 	StatementSections,
 } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
@@ -77,14 +76,6 @@ export function ChartsOfAccountsAccountFields({
 				options={AccountTypes}
 				onChange={(value) =>
 					onFieldChange("accountType", value as never)
-				}
-			/>
-			<SelectField
-				label="Statement Group"
-				value={values.statementGroup}
-				options={StatementGroups}
-				onChange={(value) =>
-					onFieldChange("statementGroup", value as never)
 				}
 			/>
 			<SelectField

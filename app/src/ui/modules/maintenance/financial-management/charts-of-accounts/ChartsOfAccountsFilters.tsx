@@ -5,14 +5,12 @@ import {
 	AccountStatuses,
 	AccountTypes,
 	ChartsOfAccountsNavs,
-	StatementGroups,
 	type ChartsOfAccountsNav,
 } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
 	AccountStatus,
 	AccountType,
 	FilterValue,
-	StatementGroup,
 } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 import {
 	Button,
@@ -25,11 +23,9 @@ type ChartsOfAccountsFiltersProps = {
 	accountTypeFilter: FilterValue<AccountType>;
 	activeTab: ChartsOfAccountsNav;
 	searchQuery: string;
-	statementGroupFilter: FilterValue<StatementGroup>;
 	statusFilter: FilterValue<AccountStatus>;
 	onAccountTypeChange: (value: FilterValue<AccountType>) => void;
 	onSearchChange: (value: string) => void;
-	onStatementGroupChange: (value: FilterValue<StatementGroup>) => void;
 	onStatusChange: (value: FilterValue<AccountStatus>) => void;
 	onTabChange: (value: ChartsOfAccountsNav) => void;
 };
@@ -38,11 +34,9 @@ export function ChartsOfAccountsFilters({
 	accountTypeFilter,
 	activeTab,
 	searchQuery,
-	statementGroupFilter,
 	statusFilter,
 	onAccountTypeChange,
 	onSearchChange,
-	onStatementGroupChange,
 	onStatusChange,
 	onTabChange,
 }: ChartsOfAccountsFiltersProps) {
@@ -82,22 +76,6 @@ export function ChartsOfAccountsFilters({
 					{AccountTypes.map((type) => (
 						<option key={type} value={type}>
 							{type}
-						</option>
-					))}
-				</Select>
-
-				<Select
-					value={statementGroupFilter}
-					onChange={(event) =>
-						onStatementGroupChange(
-							event.target.value as FilterValue<StatementGroup>,
-						)
-					}
-				>
-					<option value="All">Statement Group</option>
-					{StatementGroups.map((group) => (
-						<option key={group} value={group}>
-							{group}
 						</option>
 					))}
 				</Select>

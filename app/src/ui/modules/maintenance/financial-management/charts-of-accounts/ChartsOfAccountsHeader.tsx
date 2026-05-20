@@ -28,10 +28,7 @@ export function ChartsOfAccountsHeader({
 				</p>
 			</div>
 			<div className="flex flex-wrap gap-2">
-				<Button
-					variant="secondary"
-					onClick={onStartSpotlightTutorial}
-				>
+				<Button variant="secondary" onClick={onStartSpotlightTutorial}>
 					<Sparkles className="h-4 w-4" aria-hidden="true" />
 					Quick Tour
 				</Button>

@@ -1,0 +1,39 @@
+import type { ReactNode } from "react";
+import type { Row, Table } from "@tanstack/react-table";
+
+export type ModuleTableProps<TData> = {
+	emptyDescription?: string;
+	emptyIcon?: ReactNode;
+	emptyTitle?: string;
+	isLoading?: boolean;
+	maxHeightClassName?: string;
+	minWidthClassName?: string;
+	paginationLabel?: string;
+	paginationPageLimit?: number;
+	paginationStorageKey?: string;
+	pageSizeOptions?: number[];
+	renderRow: (row: Row<TData>) => ReactNode;
+	skeletonRowCount?: number;
+	table: Table<TData>;
+};
+
+export type ModuleTableBodyProps<TData> = {
+	emptyDescription: string;
+	emptyIcon?: ReactNode;
+	emptyTitle: string;
+	isLoading: boolean;
+	renderRow: (row: Row<TData>) => ReactNode;
+	rows: Row<TData>[];
+	skeletonRowCount: number;
+	visibleColumnCount: number;
+};
+
+export type ModuleTablePaginationProps = {
+	page: number;
+	pageLimit: number;
+	pageSize: number;
+	pageSizeOptions: number[];
+	totalPages: number;
+	onPageChange: (page: number) => void;
+	onPageSizeChange: (pageSize: number) => void;
+};

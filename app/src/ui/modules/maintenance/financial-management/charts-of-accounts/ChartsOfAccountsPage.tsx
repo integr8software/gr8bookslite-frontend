@@ -31,11 +31,9 @@ export function ChartsOfAccountsMain() {
 						accountTypeFilter={coa.accountTypeFilter}
 						activeTab={coa.activeTab}
 						searchQuery={coa.searchQuery}
-						statementGroupFilter={coa.statementGroupFilter}
 						statusFilter={coa.statusFilter}
 						onAccountTypeChange={coa.setAccountTypeFilter}
 						onSearchChange={coa.setSearchQuery}
-						onStatementGroupChange={coa.setStatementGroupFilter}
 						onStatusChange={coa.setStatusFilter}
 						onTabChange={coa.setActiveTab}
 					/>
@@ -43,16 +41,9 @@ export function ChartsOfAccountsMain() {
 					<ChartsOfAccountsTable
 						expandedIds={coa.expandedIds}
 						isLoading={coa.isLoading}
-						page={coa.page}
-						rows={coa.paginatedAccounts}
-						sortDirection={coa.sortDirection}
-						sortKey={coa.sortKey}
-						totalPages={coa.totalPages}
-						totalRows={coa.visibleAccounts.length}
+						table={coa.table}
 						onDelete={coa.deleteAccount}
 						onEdit={coa.openEditDrawer}
-						onPageChange={coa.setPage}
-						onSort={coa.handleSort}
 						onToggleExpanded={coa.toggleExpanded}
 					/>
 				</Card>

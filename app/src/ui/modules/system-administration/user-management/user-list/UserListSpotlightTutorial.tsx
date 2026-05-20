@@ -13,9 +13,8 @@ export function UserListSpotlightTutorial() {
 
   return (
     <SpotlightTour
-      appearance="light"
       ariaLabel="User management tutorial"
-      badge={<SpotlightTourBadge appearance="light">User management guide</SpotlightTourBadge>}
+      badge={<SpotlightTourBadge>User management guide</SpotlightTourBadge>}
       isOpen={isOpen}
       steps={UserListSpotlightTutorialSteps}
       onComplete={completeTutorial}

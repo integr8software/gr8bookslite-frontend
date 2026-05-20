@@ -13,10 +13,9 @@ export function BranchManagementSpotlightTutorial() {
 
   return (
     <SpotlightTour
-      appearance="light"
       ariaLabel="Branch management tutorial"
       badge={
-        <SpotlightTourBadge appearance="light">
+        <SpotlightTourBadge>
           Branch management guide
         </SpotlightTourBadge>
       }

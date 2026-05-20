@@ -13,10 +13,9 @@ export function WorkspaceSpotlightTutorial() {
 
   return (
     <SpotlightTour
-      appearance="light"
       ariaLabel="Workspace tutorial"
       badge={
-        <SpotlightTourBadge appearance="light">
+        <SpotlightTourBadge>
           New account guide
         </SpotlightTourBadge>
       }

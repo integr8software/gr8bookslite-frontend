@@ -15,10 +15,9 @@ export function ChartsOfAccountsSpotlightTutorial() {
 
   return (
     <SpotlightTour
-      appearance="light"
       ariaLabel="Chart of accounts tutorial"
       badge={
-        <SpotlightTourBadge appearance="light">
+        <SpotlightTourBadge>
           Charts of accounts guide
         </SpotlightTourBadge>
       }

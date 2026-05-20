@@ -13,10 +13,9 @@ export function BranchDashboardSpotlightTutorial() {
 
   return (
     <SpotlightTour
-      appearance="light"
       ariaLabel="Branch dashboard tutorial"
       badge={
-        <SpotlightTourBadge appearance="light">
+        <SpotlightTourBadge>
           Branch dashboard guide
         </SpotlightTourBadge>
       }

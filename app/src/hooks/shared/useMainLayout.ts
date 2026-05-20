@@ -1054,8 +1054,6 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "maintenance-inventory-warehouse-management-item-subtype":
     "Maintain item subtype classifications.",
   "maintenance-item-sub-type": "Maintain item subtype classifications.",
-  "maintenance-inventory-warehouse-management-item-uom":
-    "Manage item units of measure.",
   "maintenance-item-unit": "Manage item units of measure.",
   "maintenance-inventory-warehouse-management":
     "Maintain inventory items, classifications, units, and warehouses.",
@@ -1084,9 +1082,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Record cash advances across multiple entries.",
   "cash-disbursement-cash-advance-multiple":
     "Record cash advances across multiple entries.",
-  "cash-disbursement-petty-cash-disbursement":
-    "Record petty cash disbursements.",
-  "cash-disbursement-petty-cash": "Record petty cash disbursements.",
+  "cash-disbursement-petty-cash": "Record petty cash vouchers.",
+  "cash-disbursement-petty-cash-voucher": "Record petty cash vouchers.",
   "cash-disbursement-petty-cash-fund":
     "Manage petty cash fund setup and balances.",
   "cash-disbursement-petty-cash-replenishment": "Replenish petty cash funds.",
@@ -1139,6 +1136,12 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "reports-financial": "Generate financial statements and ledger reports.",
   "reports-books-of-accounts": "Generate books of accounts reports.",
   "reports-general-ledger": "Review general ledger account activity.",
+  "reports-beginning-balance-general-ledger-uploader":
+    "Upload beginning general ledger balances.",
+  "reports-beginning-balance-subsidiary-ledger-uploader":
+    "Upload beginning subsidiary ledger balances.",
+  "reports-budget-uploader": "Upload financial budget records.",
+  "reports-verifier": "Verify uploaded financial records.",
   "reports-journal-ledger": "Review journal ledger entries.",
   "reports-trial-balance": "Generate trial balance summaries.",
   "reports-balance-sheet": "Generate balance sheet statements.",

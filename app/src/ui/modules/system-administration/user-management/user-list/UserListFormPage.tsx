@@ -15,8 +15,8 @@ import type {
   UserFormErrors,
   UserManagementActionMode,
 } from "@/app/src/types/modules/user-management/UserManagementTypes";
-import { UserListFormHeader } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListFormHeader";
 import { UserListForm } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListForm";
+import { UserListFormHeader } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListFormHeader";
 import { UserListNotFound } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListNotFound";
 
 export function UserListFormPage() {
@@ -24,8 +24,8 @@ export function UserListFormPage() {
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
   const users = useUserManagementStore((state) => state.users);
-  const userTypes = useUserManagementStore((state) => state.userTypes);
-  const userGroups = useUserManagementStore((state) => state.userGroups);
+  const userRoles = useUserManagementStore((state) => state.userRoles);
+  const departments = useUserManagementStore((state) => state.departments);
   const addUser = useUserManagementStore((state) => state.addUser);
   const updateUser = useUserManagementStore((state) => state.updateUser);
   const deleteUser = useUserManagementStore((state) => state.deleteUser);
@@ -38,8 +38,8 @@ export function UserListFormPage() {
           name: existingUser.name,
           email: existingUser.email,
           contactNumber: existingUser.contactNumber,
-          userTypeId: existingUser.userTypeId,
-          userGroupId: existingUser.userGroupId,
+          userRoleId: existingUser.userRoleId,
+          departmentId: existingUser.departmentId,
           status: existingUser.status,
         }
       : InitialUserFormValues,
@@ -86,7 +86,10 @@ export function UserListFormPage() {
   }
 
   function handleDelete() {
-    if (!existingUser || !window.confirm(`Delete ${existingUser.name}?`)) {
+    if (
+      !existingUser ||
+      !window.confirm(`Set ${existingUser.name} as inactive?`)
+    ) {
       return;
     }
 
@@ -101,7 +104,9 @@ export function UserListFormPage() {
   return (
     <section className="grid gap-5">
       <UserListFormHeader
-        title={mode === "view" ? "View User" : mode === "edit" ? "Edit User" : "Add User"}
+        title={
+          mode === "view" ? "View User" : mode === "edit" ? "Edit User" : "Add User"
+        }
         isReadonly={isReadonly}
         canDelete={Boolean(existingUser)}
         onDelete={handleDelete}
@@ -109,8 +114,8 @@ export function UserListFormPage() {
       <UserListForm
         errors={errors}
         isReadonly={isReadonly}
-        userGroups={userGroups}
-        userTypes={userTypes}
+        departments={departments}
+        userRoles={userRoles}
         values={values}
         onChange={handleInputChange}
         onSubmit={handleSubmit}

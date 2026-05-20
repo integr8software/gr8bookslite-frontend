@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { AppToaster } from "@/app/src/ui/shared/AppToaster";
 import { AppProviders } from "@/app/src/ui/shared/AppProviders";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 import "./globals.css";
 
 export const metadata: Metadata = {
-	title: "GR8BooksLite",
-	description: "GR8BooksLite frontend",
+	title: AppName,
+	description: `${AppName} frontend`,
 };
 
 export default function RootLayout({

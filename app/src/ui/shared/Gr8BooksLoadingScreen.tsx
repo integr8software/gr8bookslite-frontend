@@ -1,4 +1,5 @@
 import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { Gr8BooksLogoText } from "@/app/src/ui/shared/Gr8BooksLogoText";
 
 type Gr8BooksLoadingScreenProps = {
 	message?: string;
@@ -15,10 +16,7 @@ export function Gr8BooksLoadingScreen({
 				aria-live="polite"
 			>
 				<div className="text-2xl font-semibold tracking-tight text-darknavy">
-					<span>Gr8Books</span>
-					<span className="ml-1 text-base font-medium italic text-skyblue">
-						Lite
-					</span>
+					<Gr8BooksLogoText neoClassName="text-base" />
 				</div>
 
 				<div className="relative mt-10 h-36 w-44 perspective-distant">

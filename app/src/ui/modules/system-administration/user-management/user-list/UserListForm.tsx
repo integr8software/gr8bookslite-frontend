@@ -1,8 +1,8 @@
 import type { ChangeEvent, FormEvent } from "react";
 import type {
+  DepartmentRecord,
   UserFormValues,
-  UserGroupRecord,
-  UserTypeRecord,
+  UserRoleRecord,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import {
   DefaultPhilippineContactNumber,
@@ -13,8 +13,8 @@ import type { UserFormErrors } from "@/app/src/types/modules/user-management/Use
 export function UserListForm({
   errors,
   isReadonly,
-  userGroups,
-  userTypes,
+  departments,
+  userRoles,
   values,
   onChange,
   onSubmit,
@@ -22,8 +22,8 @@ export function UserListForm({
 }: {
   errors: UserFormErrors;
   isReadonly: boolean;
-  userGroups: UserGroupRecord[];
-  userTypes: UserTypeRecord[];
+  departments: DepartmentRecord[];
+  userRoles: UserRoleRecord[];
   values: UserFormValues;
   onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -86,32 +86,32 @@ export function UserListForm({
               <option value="Inactive">Inactive</option>
             </select>
           </UserListField>
-          <UserListField label="User Type">
+          <UserListField label="User Role">
             <select
-              name="userTypeId"
-              value={values.userTypeId}
+              name="userRoleId"
+              value={values.userRoleId}
               onChange={onChange}
               disabled={isReadonly}
               className={UserListFieldClassName}
             >
-              {userTypes.map((userType) => (
-                <option key={userType.id} value={userType.id}>
-                  {userType.name}
+              {userRoles.map((userRole) => (
+                <option key={userRole.id} value={userRole.id}>
+                  {userRole.name}
                 </option>
               ))}
             </select>
           </UserListField>
-          <UserListField label="User Group">
+          <UserListField label="Department">
             <select
-              name="userGroupId"
-              value={values.userGroupId}
+              name="departmentId"
+              value={values.departmentId}
               onChange={onChange}
               disabled={isReadonly}
               className={UserListFieldClassName}
             >
-              {userGroups.map((userGroup) => (
-                <option key={userGroup.id} value={userGroup.id}>
-                  {userGroup.name}
+              {departments.map((department) => (
+                <option key={department.id} value={department.id}>
+                  {department.name}
                 </option>
               ))}
             </select>

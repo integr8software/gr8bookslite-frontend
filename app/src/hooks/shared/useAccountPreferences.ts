@@ -53,7 +53,7 @@ export const useAccountPreferences = create<AccountPreferencesState>()(
         })),
     }),
     {
-      name: "gr8bookslite.accountPreferences",
+      name: "gr8booksneo.accountPreferences",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         theme: state.theme,

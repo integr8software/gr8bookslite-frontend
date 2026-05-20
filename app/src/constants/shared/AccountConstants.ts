@@ -3,6 +3,7 @@ import type {
   AccountNotificationPreference,
   AccountTheme,
 } from "@/app/src/types/shared/AccountTypes";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 
 export const ProfileHref = "/profile";
 export const SettingsHref = "/settings";
@@ -23,7 +24,7 @@ export const AccountThemeOptions: Array<{
   {
     value: "classic-light",
     label: "Classic Light",
-    description: "A bright default theme using the core Gr8Books Lite palette.",
+    description: `A bright default theme using the core ${AppName} palette.`,
     preview: {
       surface: "#fffff0",
       panel: "#ffffff",

@@ -125,13 +125,6 @@ export const MainModuleNavigationSections: MainNavigationSection[] = [
             "maintenance.item",
             "inventory",
           ),
-          moduleItem(
-            "maintenance-inventory-warehouse-management-item-uom",
-            "Unit of Measurement",
-            "/maintenance/inventory-warehouse-management/item-uom",
-            "maintenance.item",
-            "inventory",
-          ),
         ],
       ),
       group(
@@ -233,9 +226,9 @@ export const MainModuleNavigationSections: MainNavigationSection[] = [
         "accounting",
       ),
       moduleItem(
-        "cash-disbursement-petty-cash-disbursement",
-        "Petty Cash Disbursement",
-        "/cash-disbursement/petty-cash-disbursement",
+        "cash-disbursement-petty-cash-voucher",
+        "Petty Cash Voucher",
+        "/cash-disbursement/petty-cash-voucher",
         "cashDisbursement",
         "accounting",
       ),

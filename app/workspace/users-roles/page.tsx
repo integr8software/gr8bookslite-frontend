@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { ModulePreviewPages } from "@/app/src/data/shared/MainLayout/ModulePreviewData";
-import { ModulePreviewPage } from "@/app/src/ui/shared/ModulePreview/ModulePreviewPage";
+import { ModulePreviewPage } from "@/app/src/ui/shared/module-preview/ModulePreviewPage";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 
 export const metadata: Metadata = {
-  title: "Users & Roles | Gr8Books Lite",
-  description: "Users and roles workspace mockup for Gr8Books Lite.",
+	title: `Users & Roles | ${AppName}`,
+	description: `Users and roles workspace mockup for ${AppName}.`,
 };
 
 export default function UsersRolesPage() {
-  return <ModulePreviewPage data={ModulePreviewPages.usersRoles} />;
+	return <ModulePreviewPage data={ModulePreviewPages.usersRoles} />;
 }

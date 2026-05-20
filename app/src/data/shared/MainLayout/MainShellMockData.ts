@@ -6,7 +6,7 @@ import type {
   MainPermissionMap,
   MainSubscriptionOption,
   MainUserRole,
-  MainUserType,
+  MainUserRoleDetails,
 } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
 import { AppName } from "@/app/src/constants/shared/AppConstants";
 
@@ -44,8 +44,8 @@ export const MainLayoutMockData = {
     shortName: "John D.",
     initials: "JD",
     userRole: "Super Admin" as MainUserRole,
-    userType: {
-      id: "user-type-operations-admin",
+    userRoleDetails: {
+      id: "user-role-operations-admin",
       name: "Operations Admin",
       permissions: {
         dashboard: { view: true, add: true, edit: true },
@@ -98,7 +98,7 @@ export const MainLayoutMockData = {
         "branch.management": { view: true, add: true, edit: true },
         profile: { view: true, edit: true },
       } satisfies MainPermissionMap,
-    } satisfies MainUserType,
+    } satisfies MainUserRoleDetails,
   },
   currentCompany: {
     id: "cmp-001",

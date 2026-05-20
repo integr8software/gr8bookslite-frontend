@@ -1,8 +1,10 @@
+import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourTypes";
+
 export const WorkspaceSpotlightTutorialAccountWindowDays = 14;
 
 export const WorkspaceSpotlightTutorialStorageVersion = "v1";
 export const WorkspaceSpotlightTutorialOpenEvent =
-  "gr8bookslite:workspace-spotlight-open";
+  "gr8booksneo:workspace-spotlight-open";
 
 export const WorkspaceSpotlightTutorialSteps = [
   {
@@ -60,7 +62,4 @@ export const WorkspaceSpotlightTutorialSteps = [
       "Your approval queue gathers high-priority items so new admins know where to take action first.",
     selectors: ["[data-spotlight-id='workspace-dashboard-approvals']"],
   },
-] as const;
-
-export type WorkspaceSpotlightTutorialStep =
-  (typeof WorkspaceSpotlightTutorialSteps)[number];
+] satisfies readonly SpotlightTourStep[];

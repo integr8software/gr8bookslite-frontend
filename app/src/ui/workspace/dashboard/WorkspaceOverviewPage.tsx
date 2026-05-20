@@ -30,9 +30,9 @@ import { WorkspaceSpotlightTutorial } from "@/app/src/ui/workspace/dashboard/Wor
 import { WorkspaceOverviewStatsGrid } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewStatsGrid";
 
 const WorkspaceDashboardStorageKey =
-  "gr8bookslite.workspaceDashboard.visibleSections";
+  "gr8booksneo.workspaceDashboard.visibleSections";
 const ReactGridLayoutStorageKey =
-  "gr8bookslite.workspaceDashboard.reactGridLayout";
+  "gr8booksneo.workspaceDashboard.reactGridLayout";
 
 const WorkspaceDashboardSectionOptions: WorkspaceDashboardSectionOption[] = [
   {

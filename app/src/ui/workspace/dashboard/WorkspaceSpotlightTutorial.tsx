@@ -27,29 +27,29 @@ export function WorkspaceSpotlightTutorial() {
       {overlayStyles ? (
         <>
           <div
-            className="fixed bg-darknavy/58 backdrop-blur-[1px]"
+            className="fixed bg-transparent px-3 py-4 backdrop-blur-sm"
             style={overlayStyles.top}
           />
           <div
-            className="fixed bg-darknavy/58 backdrop-blur-[1px]"
+            className="fixed bg-transparent px-3 py-4 backdrop-blur-sm"
             style={overlayStyles.left}
           />
           <div
-            className="fixed bg-darknavy/58 backdrop-blur-[1px]"
+            className="fixed bg-transparent px-3 py-4 backdrop-blur-sm"
             style={overlayStyles.right}
           />
           <div
-            className="fixed bg-darknavy/58 backdrop-blur-[1px]"
+            className="fixed bg-transparent px-3 py-4 backdrop-blur-sm"
             style={overlayStyles.bottom}
           />
         </>
       ) : (
-        <div className="fixed inset-0 bg-darknavy/62 backdrop-blur-[1px]" />
+        <div className="fixed inset-0 bg-transparent px-3 py-4 backdrop-blur-sm" />
       )}
 
       {spotlightRect ? (
         <div
-          className="fixed rounded-[1.75rem] border border-skyblue/80 shadow-[0_0_0_1px_rgba(255,255,255,0.65),0_0_0_9999px_rgba(0,0,0,0)]"
+          className="fixed rounded-[1.75rem] border border-skyblue/55 shadow-[0_0_0_9999px_rgba(0,0,0,0)]"
           style={{
             top: spotlightRect.top,
             left: spotlightRect.left,

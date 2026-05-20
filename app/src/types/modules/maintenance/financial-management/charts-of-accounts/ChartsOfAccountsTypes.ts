@@ -35,6 +35,8 @@ export type BankDetails = {
 	contactNumber: string;
 };
 
+export type BankDetailsKey = keyof BankDetails;
+
 export type ChartAccount = {
 	id: string;
 	accountNumber: string;
@@ -53,6 +55,17 @@ export type ChartAccount = {
 };
 
 export type ChartAccountFormValues = Omit<ChartAccount, "id" | "children">;
+
+export type FlattenedChartAccount = {
+	account: ChartAccount;
+	level: number;
+};
+
+export type FilterValue<TValue> = TValue | "All";
+
+export type ChartsOfAccountsActionMode = "add" | "edit" | "view";
+
+export type ChartsOfAccountsFormTab = "Account Information" | "Bank Details";
 
 export type AccountSortKey =
 	| "accountNumber"

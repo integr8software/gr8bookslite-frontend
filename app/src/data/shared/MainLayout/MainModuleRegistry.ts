@@ -75,6 +75,13 @@ export const MainModuleNavigationSections: MainNavigationSection[] = [
             "maintenance.transactionType",
             "accounting",
           ),
+          moduleItem(
+            "maintenance-financial-management-responsibility-center",
+            "Responsibility Center",
+            "/maintenance/financial-management/responsibility-center",
+            "maintenance.responsibilityCenter",
+            "accounting",
+          ),
         ],
       ),
       group(

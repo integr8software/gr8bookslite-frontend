@@ -13,25 +13,26 @@ import type {
   AccountTheme,
 } from "@/app/src/types/shared/AccountTypes";
 
-const PublicLightThemeRoutes = [
-  "/login",
-  "/signup",
-  "/forgot-password",
-  "/otp",
-  "/auth/verify-email",
-  "/onboarding"
+const ModuleRoutePrefixes = [
+  "/accounts-payable",
+  "/cash-disbursement",
+  "/cash-receipt",
+  "/dashboard",
+  "/general-journal",
+  "/inventory",
+  "/maintenance",
+  "/others",
+  "/profile",
+  "/purchasing",
+  "/reports",
+  "/sales",
+  "/settings",
+  "/system-administration",
+  "/workspace"
 ];
 
 function ResolveTheme(pathname: string | null, theme: AccountTheme): AccountTheme {
-  if (!pathname) {
-    return theme;
-  }
-
-  if (
-    pathname === "/onboarding" ||
-    pathname.startsWith("/onboarding/") ||
-    PublicLightThemeRoutes.includes(pathname)
-  ) {
+  if (!IsModuleRoute(pathname)) {
     return "classic-light";
   }
 
@@ -42,19 +43,21 @@ function ResolveAccentColor(
   pathname: string | null,
   accentColor: AccountAccentColor,
 ): AccountAccentColor {
-  if (!pathname) {
-    return accentColor;
-  }
-
-  if (
-    pathname === "/onboarding" ||
-    pathname.startsWith("/onboarding/") ||
-    PublicLightThemeRoutes.includes(pathname)
-  ) {
+  if (!IsModuleRoute(pathname)) {
     return DefaultAccountAccentColor;
   }
 
   return accentColor;
+}
+
+function IsModuleRoute(pathname: string | null) {
+  if (!pathname) {
+    return false;
+  }
+
+  return ModuleRoutePrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
 
 export function AppThemeEffect() {

@@ -99,27 +99,26 @@ export function useMainLayout() {
   const [activeBranchId, setActiveBranchId] = useState(
     ModuleShellMockData.activeBranchId,
   );
+  const missingRecordActionRedirectHref =
+    getMissingRecordActionRedirectHref(pathname);
   const accessToken = storedAccessToken;
   const { data: authProfile, isLoading: isAuthProfileLoading } =
     useAuthProfileQuery({ accessToken });
   const hasProfileLoadTimedOut = timedOutProfileToken === accessToken;
   const isWorkspaceRoute = isWorkspacePath(pathname);
-  const hasWorkspaceAccess =
-    authProfile
-      ? ProfileHasWorkspaceAccess(authProfile)
-      : ModuleShellMockData.currentUser.userRole === "Super Admin";
-  const displayUser =
-    authProfile
-      ? CreateWorkspaceCurrentUserFromProfile(authProfile)
-      : ModuleShellMockData.currentUser;
+  const hasWorkspaceAccess = authProfile
+    ? ProfileHasWorkspaceAccess(authProfile)
+    : ModuleShellMockData.currentUser.userRole === "Super Admin";
+  const displayUser = authProfile
+    ? CreateWorkspaceCurrentUserFromProfile(authProfile)
+    : ModuleShellMockData.currentUser;
   const isProfileLoading =
     Boolean(accessToken) && isAuthProfileLoading && !hasProfileLoadTimedOut;
   const activeNavigationScope: MainNavigationScope =
     hasWorkspaceAccess && isWorkspaceRoute ? "workspace" : "company";
-  const workspaceCompanies =
-    authProfile
-      ? MapProfileCompaniesToMainCompanies(authProfile)
-      : null;
+  const workspaceCompanies = authProfile
+    ? MapProfileCompaniesToMainCompanies(authProfile)
+    : null;
   const [activeCompanyId, setActiveCompanyId] = useState(
     ModuleShellMockData.currentCompany.id,
   );
@@ -349,6 +348,14 @@ export function useMainLayout() {
     },
     [],
   );
+
+  useEffect(() => {
+    if (!missingRecordActionRedirectHref) {
+      return;
+    }
+
+    router.replace(missingRecordActionRedirectHref);
+  }, [missingRecordActionRedirectHref, router]);
 
   useEffect(() => {
     if (!accessToken || !isAuthProfileLoading || hasProfileLoadTimedOut) {
@@ -778,6 +785,11 @@ function appendPathSegmentBreadcrumbs(
     .slice(lastHref.length)
     .split("/")
     .filter(Boolean);
+
+  if (isMissingRecordActionPath(extraSegments)) {
+    return trail;
+  }
+
   const actionBreadcrumbs = getActionBreadcrumbs({
     extraSegments,
     pathname,
@@ -810,12 +822,10 @@ function getActionBreadcrumbs({
     return [];
   }
 
-  const actionHref = getActionBreadcrumbHref(pathname, actionSegment, recordId);
   const breadcrumbs: NavigationTrailNode[] = [
     {
       key: `path-${actionSegment}`,
       label: titleFromPathSegment(actionSegment),
-      href: recordId ? actionHref : pathname,
     },
   ];
 
@@ -830,20 +840,27 @@ function getActionBreadcrumbs({
   return breadcrumbs;
 }
 
-function getActionBreadcrumbHref(
-  pathname: string,
-  actionSegment: string,
-  recordId?: string,
-) {
-  if (!recordId) {
-    return pathname;
-  }
-
-  return pathname.slice(0, -(recordId.length + 1)) || `/${actionSegment}`;
-}
-
 function isPageActionSegment(segment: string) {
   return segment === "add" || segment === "edit" || segment === "view";
+}
+
+function isMissingRecordActionPath(extraSegments: string[]) {
+  const [actionSegment, recordId] = extraSegments;
+
+  return (actionSegment === "edit" || actionSegment === "view") && !recordId;
+}
+
+function getMissingRecordActionRedirectHref(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const actionSegment = segments.at(-1);
+
+  if (actionSegment !== "edit" && actionSegment !== "view") {
+    return null;
+  }
+
+  const parentSegments = segments.slice(0, -1);
+
+  return parentSegments.length > 0 ? `/${parentSegments.join("/")}` : "/";
 }
 
 function findItemTrail(

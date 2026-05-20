@@ -1,153 +1,43 @@
 "use client";
 
-import { ChevronsUpDown } from "lucide-react";
-import { ChartsOfAccountsTableColumns } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+import { Search } from "lucide-react";
+import type { Table } from "@tanstack/react-table";
 import type {
-	AccountSortKey,
 	ChartAccount,
 	FlattenedChartAccount,
-	SortDirection,
 } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
+import { ModuleTable } from "@/app/src/ui/shared/module-table/ModuleTable";
 import { ChartsOfAccountsTableRow } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTableRow";
-import {
-	ChartsOfAccountsEmptyRow,
-	ChartsOfAccountsSkeletonRows,
-	ChartsOfAccountsTablePagination,
-} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTableState";
-import { joinClasses } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls.tsx";
 
 type ChartsOfAccountsTableProps = {
 	expandedIds: Set<string>;
 	isLoading: boolean;
-	page: number;
-	rows: FlattenedChartAccount[];
-	sortDirection: SortDirection;
-	sortKey: AccountSortKey;
-	totalPages: number;
-	totalRows: number;
+	table: Table<FlattenedChartAccount>;
 	onDelete: (accountId: string) => void;
 	onEdit: (account: ChartAccount) => void;
-	onPageChange: (page: number) => void;
-	onSort: (key: AccountSortKey) => void;
 	onToggleExpanded: (accountId: string) => void;
 };
 
 export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
 	return (
-		<div data-spotlight-id="charts-of-accounts-table">
-			<div className="max-h-[58vh] overflow-auto">
-				<table className="w-full min-w-[78rem] border-collapse text-left">
-					<TableHeader {...props} />
-					<TableBody {...props} />
-				</table>
-			</div>
-
-			<ChartsOfAccountsTablePagination
-				page={props.page}
-				rowCount={props.rows.length}
-				totalPages={props.totalPages}
-				totalRows={props.totalRows}
-				onPageChange={props.onPageChange}
-			/>
-		</div>
-	);
-}
-
-function TableHeader({
-	sortDirection,
-	sortKey,
-	onSort,
-}: Pick<ChartsOfAccountsTableProps, "sortDirection" | "sortKey" | "onSort">) {
-	return (
-		<thead className="sticky top-0 z-10 bg-slate-50 text-xs font-semibold uppercase text-slate-500">
-			<tr className="border-b border-slate-200">
-				{ChartsOfAccountsTableColumns.map((column) => (
-					<th
-						key={column.label}
-						className={joinClasses("px-4 py-3", column.className)}
-					>
-						{column.key ? (
-							<SortButton
-								columnKey={column.key}
-								label={column.label}
-								sortDirection={sortDirection}
-								sortKey={sortKey}
-								onSort={onSort}
-							/>
-						) : (
-							column.label
-						)}
-					</th>
-				))}
-			</tr>
-		</thead>
-	);
-}
-
-function SortButton({
-	columnKey,
-	label,
-	sortDirection,
-	sortKey,
-	onSort,
-}: {
-	columnKey: AccountSortKey;
-	label: string;
-	sortDirection: SortDirection;
-	sortKey: AccountSortKey;
-	onSort: (key: AccountSortKey) => void;
-}) {
-	return (
-		<button
-			type="button"
-			onClick={() => onSort(columnKey)}
-			className="flex items-center gap-1 rounded text-left transition hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30"
-		>
-			{label}
-			<ChevronsUpDown
-				className={joinClasses(
-					"h-3.5 w-3.5",
-					sortKey === columnKey && "text-blue-600",
-					sortKey === columnKey &&
-						sortDirection === "desc" &&
-						"rotate-180",
-				)}
-				aria-hidden="true"
-			/>
-		</button>
-	);
-}
-
-function TableBody(props: ChartsOfAccountsTableProps) {
-	if (props.isLoading) {
-		return (
-			<tbody className="divide-y divide-slate-100 bg-white">
-				<ChartsOfAccountsSkeletonRows />
-			</tbody>
-		);
-	}
-
-	if (props.rows.length === 0) {
-		return (
-			<tbody className="divide-y divide-slate-100 bg-white">
-				<ChartsOfAccountsEmptyRow />
-			</tbody>
-		);
-	}
-
-	return (
-		<tbody className="divide-y divide-slate-100 bg-white">
-			{props.rows.map(({ account, level }) => (
+		<ModuleTable
+			emptyDescription="Adjust the filters or add a new ledger account."
+			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+			emptyTitle="No accounts found"
+			isLoading={props.isLoading}
+			paginationLabel="accounts"
+			table={props.table}
+			renderRow={({ id, original }) => (
 				<ChartsOfAccountsTableRow
-					key={account.id}
-					account={account}
+					key={id}
+					account={original.account}
 					expandedIds={props.expandedIds}
-					level={level}
+					level={original.level}
 					onDelete={props.onDelete}
 					onEdit={props.onEdit}
 					onToggleExpanded={props.onToggleExpanded}
 				/>
-			))}
-		</tbody>
+			)}
+		/>
 	);
 }

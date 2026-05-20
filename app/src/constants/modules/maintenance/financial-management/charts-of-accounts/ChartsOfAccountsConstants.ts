@@ -5,26 +5,20 @@ import type {
 	BankDetailsKey,
 	ChartsOfAccountsActionMode,
 	ChartsOfAccountsFormTab,
+	ChartsOfAccountsTableColumnKey,
 	NormalBalance,
-	StatementGroup,
-	AccountSortKey,
 } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 
 export const ChartsOfAccountsHref =
 	"/maintenance/financial-management/charts-of-accounts";
 
 export const AccountTypes: AccountType[] = [
-	"Asset",
-	"Liability",
+	"Assets",
+	"Liabilities",
 	"Equity",
-	"Revenue",
-	"Expense",
-];
-
-export const StatementGroups: StatementGroup[] = [
-	"Balance Sheet",
-	"Income Statement",
-	"Cash Flow",
+	"Revenues",
+	"Expenses",
+	"Other Income/Expenses",
 ];
 
 export const AccountStatuses: AccountStatus[] = ["Active", "Inactive"];
@@ -115,14 +109,19 @@ export const ChartsOfAccountsBankFields: Array<{
 
 export const ChartsOfAccountsTableColumns: Array<{
 	label: string;
-	key?: AccountSortKey;
+	key?: ChartsOfAccountsTableColumnKey;
 	className?: string;
+	sortable?: boolean;
 }> = [
 	{ label: "Account Number", key: "accountNumber", className: "min-w-36" },
 	{ label: "Account Name", key: "accountName", className: "min-w-72" },
 	{ label: "Account Type", key: "accountType", className: "min-w-32" },
-	{ label: "Statement Group", key: "statementGroup", className: "min-w-40" },
-	{ label: "Statement Section", className: "min-w-44" },
+	{
+		label: "Statement Section",
+		key: "statementSection",
+		className: "min-w-44",
+		sortable: false,
+	},
 	{ label: "Normal Balance", key: "normalBalance", className: "min-w-36" },
 	{ label: "Status", key: "status", className: "min-w-28" },
 	{
@@ -135,11 +134,12 @@ export const AccountTypeBadgeVariants: Record<
 	AccountType,
 	"blue" | "green" | "gray" | "amber" | "violet" | "rose"
 > = {
-	Asset: "blue",
-	Liability: "amber",
+	Assets: "blue",
+	Liabilities: "amber",
 	Equity: "violet",
-	Revenue: "green",
-	Expense: "rose",
+	Revenues: "green",
+	Expenses: "rose",
+	"Other Income/Expenses": "gray",
 };
 
 export const BadgeVariantClasses = {

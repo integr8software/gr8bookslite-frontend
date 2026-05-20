@@ -61,16 +61,16 @@ Use this guide when working on the Charts of Accounts feature.
 
 - `useChartsOfAccounts.ts`
   Owns feature behavior:
-  - account list state
-  - expanded tree ids
-  - active nav
-  - search and filters
-  - sorting
-  - pagination
-  - loading state
-  - drawer open/close state
-  - selected drawer account
-  - save and delete handlers
+    - account list state
+    - expanded tree ids
+    - active nav
+    - search and filters
+    - sorting
+    - pagination
+    - loading state
+    - drawer open/close state
+    - selected drawer account
+    - save and delete handlers
 
 The drawer is controlled here through `drawerAccount`, `isDrawerOpen`, `openAddDrawer`, `openEditDrawer`, and `closeDrawer`.
 
@@ -95,19 +95,18 @@ The drawer is controlled here through `drawerAccount`, `isDrawerOpen`, `openAddD
 
 - `ChartsOfAccountsConstants.ts`
   Runtime values used by the app:
-  - `ChartsOfAccountsHref`
-  - account type options
-  - statement group options
-  - status options
-  - normal balance options
-  - account category options
-  - statement sections
-  - `ChartsOfAccountsNavs`
-  - action page copy
-  - drawer tabs
-  - bank field definitions
-  - table columns
-  - badge variant classes
+    - `ChartsOfAccountsHref`
+    - account type options
+    - status options
+    - normal balance options
+    - account category options
+    - statement sections
+    - `ChartsOfAccountsNavs`
+    - action page copy
+    - drawer tabs
+    - bank field definitions
+    - table columns
+    - badge variant classes
 
 Use constants for values React renders or JavaScript reads at runtime.
 
@@ -115,21 +114,21 @@ Use constants for values React renders or JavaScript reads at runtime.
 
 - `ChartsOfAccountsTypes.ts`
   TypeScript-only rules and shapes:
-  - `AccountType`
-  - `NormalBalance`
-  - `AccountStatus`
-  - `StatementGroup`
-  - `AccountCategory`
-  - `BankDetails`
-  - `BankDetailsKey`
-  - `ChartAccount`
-  - `ChartAccountFormValues`
-  - `FlattenedChartAccount`
-  - `FilterValue`
-  - `ChartsOfAccountsActionMode`
-  - `ChartsOfAccountsFormTab`
-  - `AccountSortKey`
-  - `SortDirection`
+    - `AccountType`
+    - `NormalBalance`
+    - `AccountStatus`
+    - `StatementGroup`
+    - `AccountCategory`
+    - `BankDetails`
+    - `BankDetailsKey`
+    - `ChartAccount`
+    - `ChartAccountFormValues`
+    - `FlattenedChartAccount`
+    - `FilterValue`
+    - `ChartsOfAccountsActionMode`
+    - `ChartsOfAccountsFormTab`
+    - `AccountSortKey`
+    - `SortDirection`
 
 Use types to describe what values are allowed. Types do not exist at runtime after TypeScript compiles.
 

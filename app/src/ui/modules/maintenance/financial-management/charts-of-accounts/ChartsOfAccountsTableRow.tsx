@@ -49,9 +49,6 @@ export function ChartsOfAccountsTableRow({
 				<TypeBadge type={account.accountType} />
 			</td>
 			<td className="px-4 py-3 text-sm text-slate-600">
-				{account.statementGroup}
-			</td>
-			<td className="px-4 py-3 text-sm text-slate-600">
 				{account.statementSection}
 			</td>
 			<td className="px-4 py-3">

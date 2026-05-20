@@ -20,7 +20,7 @@ export const EmptyAccountFormValues: ChartAccountFormValues = {
 	accountNumber: "",
 	accountName: "",
 	parentId: null,
-	accountType: "Asset",
+	accountType: "Assets",
 	statementGroup: "Balance Sheet",
 	statementSection: "Current Assets",
 	normalBalance: "Debit",

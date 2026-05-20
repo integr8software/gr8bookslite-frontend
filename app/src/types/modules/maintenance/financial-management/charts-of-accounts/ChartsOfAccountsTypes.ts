@@ -1,4 +1,10 @@
-export type AccountType = "Asset" | "Liability" | "Equity" | "Revenue" | "Expense";
+export type AccountType =
+	| "Assets"
+	| "Liabilities"
+	| "Equity"
+	| "Revenues"
+	| "Expenses"
+	| "Other Income/Expenses";
 
 export type NormalBalance = "Debit" | "Credit";
 
@@ -67,11 +73,12 @@ export type ChartsOfAccountsActionMode = "add" | "edit" | "view";
 
 export type ChartsOfAccountsFormTab = "Account Information" | "Bank Details";
 
-export type AccountSortKey =
+export type ChartsOfAccountsTableColumnKey =
 	| "accountNumber"
 	| "accountName"
 	| "accountType"
 	| "statementGroup"
+	| "statementSection"
 	| "normalBalance"
 	| "status";
 

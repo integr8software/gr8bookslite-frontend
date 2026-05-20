@@ -2,6 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+	type ColumnDef,
+	type PaginationState,
+	type SortingState,
+	getCoreRowModel,
+	getPaginationRowModel,
+	getSortedRowModel,
+	useReactTable,
+} from "@tanstack/react-table";
+import {
+	ChartsOfAccountsTableColumns,
 	ChartsOfAccountsNavs,
 	type ChartsOfAccountsNav,
 } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
@@ -14,14 +24,16 @@ import {
 	updateAccountTree,
 } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
 import type {
-	AccountSortKey,
 	AccountStatus,
 	AccountType,
 	ChartAccount,
 	ChartAccountFormValues,
+	ChartsOfAccountsTableColumnKey,
 	FilterValue,
-	StatementGroup,
+	FlattenedChartAccount,
 } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
+
+const PageSize = 8;
 
 export function useChartsOfAccounts() {
 	const [accounts, setAccounts] = useState<ChartAccount[]>(MockChartAccounts);
@@ -33,13 +45,15 @@ export function useChartsOfAccounts() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [accountTypeFilter, setAccountTypeFilter] =
 		useState<FilterValue<AccountType>>("All");
-	const [statementGroupFilter, setStatementGroupFilter] =
-		useState<FilterValue<StatementGroup>>("All");
 	const [statusFilter, setStatusFilter] =
 		useState<FilterValue<AccountStatus>>("All");
-	const [sortKey, setSortKey] = useState<AccountSortKey>("accountNumber");
-	const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-	const [page, setPage] = useState(1);
+	const [sorting, setSorting] = useState<SortingState>([
+		{ id: "accountNumber", desc: false },
+	]);
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: PageSize,
+	});
 	const [isLoading, setIsLoading] = useState(true);
 	const [drawerAccount, setDrawerAccount] = useState<ChartAccount | null>(null);
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -68,62 +82,75 @@ export function useChartsOfAccounts() {
 			return true;
 		});
 
-		return expanded
-			.filter(({ account }) => {
-				const query = searchQuery.trim().toLowerCase();
-				const matchesQuery =
-					!query ||
-					account.accountName.toLowerCase().includes(query) ||
-					account.accountNumber.toLowerCase().includes(query);
-				const matchesType =
-					accountTypeFilter === "All" ||
-					account.accountType === accountTypeFilter;
-				const matchesStatement =
-					statementGroupFilter === "All" ||
-					account.statementGroup === statementGroupFilter;
-				const matchesStatus =
-					statusFilter === "All" || account.status === statusFilter;
-				const matchesTab =
-					activeTab === "All Accounts" ||
-					(activeTab === "Inactive Accounts" &&
-						account.status === "Inactive") ||
-					account.statementGroup === activeTab;
+		return expanded.filter(({ account }) => {
+			const query = searchQuery.trim().toLowerCase();
+			const matchesQuery =
+				!query ||
+				account.accountName.toLowerCase().includes(query) ||
+				account.accountNumber.toLowerCase().includes(query);
+			const matchesType =
+				accountTypeFilter === "All" ||
+				account.accountType === accountTypeFilter;
+			const matchesStatus =
+				statusFilter === "All" || account.status === statusFilter;
+			const matchesTab =
+				activeTab === "All Accounts" ||
+				(activeTab === "Inactive Accounts" &&
+					account.status === "Inactive") ||
+				account.statementGroup === activeTab;
 
-				return (
-					matchesQuery &&
-					matchesType &&
-					matchesStatement &&
-					matchesStatus &&
-					matchesTab
-				);
-			})
-			.sort((left, right) => {
-				const leftValue = String(left.account[sortKey]);
-				const rightValue = String(right.account[sortKey]);
-				const comparison = leftValue.localeCompare(rightValue, undefined, {
-					numeric: true,
-				});
-
-				return sortDirection === "asc" ? comparison : comparison * -1;
-			});
+			return (
+				matchesQuery &&
+				matchesType &&
+				matchesStatus &&
+				matchesTab
+			);
+		});
 	}, [
 		activeTab,
 		accountTypeFilter,
 		expandedIds,
 		flatAccounts,
 		searchQuery,
-		sortDirection,
-		sortKey,
-		statementGroupFilter,
 		statusFilter,
 	]);
 
-	const pageSize = 8;
-	const totalPages = Math.max(1, Math.ceil(visibleAccounts.length / pageSize));
-	const paginatedAccounts = visibleAccounts.slice(
-		(page - 1) * pageSize,
-		page * pageSize,
+	const columns = useMemo<ColumnDef<FlattenedChartAccount>[]>(
+		() =>
+			ChartsOfAccountsTableColumns.map((column) => {
+				if (!column.key) {
+					return {
+						id: "actions",
+						header: column.label,
+						enableSorting: false,
+						meta: { className: column.className },
+					};
+				}
+
+				return createAccountColumn(
+					column.key,
+					column.label,
+					column.className ?? "",
+					column.sortable ?? true,
+				);
+			}),
+		[],
 	);
+
+	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table exposes table helper functions that React Compiler cannot memoize safely.
+	const table = useReactTable({
+		data: visibleAccounts,
+		columns,
+		state: {
+			pagination,
+			sorting,
+		},
+		onPaginationChange: setPagination,
+		onSortingChange: setSorting,
+		getCoreRowModel: getCoreRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+	});
 
 	function toggleExpanded(accountId: string) {
 		setExpandedIds((current) => {
@@ -137,39 +164,24 @@ export function useChartsOfAccounts() {
 		});
 	}
 
-	function handleSort(nextSortKey: AccountSortKey) {
-		if (sortKey === nextSortKey) {
-			setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
-			return;
-		}
-
-		setSortKey(nextSortKey);
-		setSortDirection("asc");
-	}
-
 	function changeActiveTab(nextTab: ChartsOfAccountsNav) {
 		setActiveTab(nextTab);
-		setPage(1);
+		table.setPageIndex(0);
 	}
 
 	function changeSearchQuery(nextQuery: string) {
 		setSearchQuery(nextQuery);
-		setPage(1);
+		table.setPageIndex(0);
 	}
 
 	function changeAccountTypeFilter(nextFilter: FilterValue<AccountType>) {
 		setAccountTypeFilter(nextFilter);
-		setPage(1);
-	}
-
-	function changeStatementGroupFilter(nextFilter: FilterValue<StatementGroup>) {
-		setStatementGroupFilter(nextFilter);
-		setPage(1);
+		table.setPageIndex(0);
 	}
 
 	function changeStatusFilter(nextFilter: FilterValue<AccountStatus>) {
 		setStatusFilter(nextFilter);
-		setPage(1);
+		table.setPageIndex(0);
 	}
 
 	function openAddDrawer() {
@@ -222,27 +234,35 @@ export function useChartsOfAccounts() {
 		flatAccounts,
 		isDrawerOpen,
 		isLoading,
-		page,
-		paginatedAccounts,
 		searchQuery,
-		sortDirection,
-		sortKey,
-		statementGroupFilter,
 		statusFilter,
-		totalPages,
+		table,
 		visibleAccounts,
 		closeDrawer,
 		deleteAccount,
-		handleSort,
 		openAddDrawer,
 		openEditDrawer,
 		saveAccount,
 		setAccountTypeFilter: changeAccountTypeFilter,
 		setActiveTab: changeActiveTab,
-		setPage,
 		setSearchQuery: changeSearchQuery,
-		setStatementGroupFilter: changeStatementGroupFilter,
 		setStatusFilter: changeStatusFilter,
 		toggleExpanded,
+	};
+}
+
+function createAccountColumn(
+	id: ChartsOfAccountsTableColumnKey,
+	header: string,
+	className: string,
+	enableSorting = true,
+): ColumnDef<FlattenedChartAccount> {
+	return {
+		id,
+		header,
+		accessorFn: (row) => row.account[id],
+		enableSorting,
+		sortingFn: "alphanumeric",
+		meta: { className },
 	};
 }

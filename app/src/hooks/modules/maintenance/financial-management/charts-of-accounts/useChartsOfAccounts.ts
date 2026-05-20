@@ -2,13 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-	AccountTabs,
-	type AccountTab,
-} from "@/app/src/constants/modules/charts-of-accounts/ChartsOfAccountsConstants";
+	ChartsOfAccountsNavs,
+	type ChartsOfAccountsNav,
+} from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import {
 	MockChartAccounts,
 	createAccountFromForm,
 	flattenAccounts,
+	insertAccount,
+	removeAccount,
+	updateAccountTree,
 } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
 import type {
 	AccountSortKey,
@@ -16,17 +19,17 @@ import type {
 	AccountType,
 	ChartAccount,
 	ChartAccountFormValues,
+	FilterValue,
 	StatementGroup,
-} from "@/app/src/types/modules/charts-of-accounts/ChartsOfAccountsTypes";
-
-type FilterValue<T> = T | "All";
+} from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 
 export function useChartsOfAccounts() {
 	const [accounts, setAccounts] = useState<ChartAccount[]>(MockChartAccounts);
 	const [expandedIds, setExpandedIds] = useState<Set<string>>(
 		() => new Set(["assets", "cash-equivalents", "liabilities", "revenue", "expenses"]),
 	);
-	const [activeTab, setActiveTab] = useState<AccountTab>(AccountTabs[0]);
+	const [activeTab, setActiveTab] =
+		useState<ChartsOfAccountsNav>(ChartsOfAccountsNavs[0]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [accountTypeFilter, setAccountTypeFilter] =
 		useState<FilterValue<AccountType>>("All");
@@ -144,7 +147,7 @@ export function useChartsOfAccounts() {
 		setSortDirection("asc");
 	}
 
-	function changeActiveTab(nextTab: AccountTab) {
+	function changeActiveTab(nextTab: ChartsOfAccountsNav) {
 		setActiveTab(nextTab);
 		setPage(1);
 	}
@@ -242,56 +245,4 @@ export function useChartsOfAccounts() {
 		setStatusFilter: changeStatusFilter,
 		toggleExpanded,
 	};
-}
-
-function insertAccount(accounts: ChartAccount[], newAccount: ChartAccount): ChartAccount[] {
-	if (!newAccount.parentId) {
-		return [...accounts, newAccount];
-	}
-
-	return accounts.map((account) => {
-		if (account.id === newAccount.parentId) {
-			return {
-				...account,
-				children: [...(account.children ?? []), newAccount],
-			};
-		}
-
-		return {
-			...account,
-			children: account.children
-				? insertAccount(account.children, newAccount)
-				: account.children,
-		};
-	});
-}
-
-function updateAccountTree(
-	accounts: ChartAccount[],
-	accountId: string,
-	updatedAccount: ChartAccount,
-): ChartAccount[] {
-	return accounts.map((account) => {
-		if (account.id === accountId) {
-			return { ...updatedAccount, children: account.children };
-		}
-
-		return {
-			...account,
-			children: account.children
-				? updateAccountTree(account.children, accountId, updatedAccount)
-				: account.children,
-		};
-	});
-}
-
-function removeAccount(accounts: ChartAccount[], accountId: string): ChartAccount[] {
-	return accounts
-		.filter((account) => account.id !== accountId)
-		.map((account) => ({
-			...account,
-			children: account.children
-				? removeAccount(account.children, accountId)
-				: account.children,
-		}));
 }

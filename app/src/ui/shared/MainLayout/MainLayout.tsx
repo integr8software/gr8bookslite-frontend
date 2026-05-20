@@ -10,6 +10,7 @@ import type {
   MainBreadcrumb,
   MainBreadcrumbDropdownItem,
 } from "@/app/src/types/shared/MainLayoutTypes";
+import { MainFooter } from "./MainFooter";
 import { MainNavigationProgress } from "./NavigationProgress";
 import { MainNotificationsPanel } from "./NotificationsPanel/NotificationsPanel";
 import { MainSidebar } from "./Sidebar/Sidebar";
@@ -184,21 +185,22 @@ export function MainLayout({ children }: MainLayoutProps) {
 
         <main
           className={joinClasses(
-            "min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 motion-reduce:transition-none sm:px-5 lg:px-6",
+            "flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-3 py-4 motion-reduce:transition-none sm:px-5 lg:px-6",
             isSidebarTransitionEnabled &&
-              "transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            "transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
             (isSidebarOpen || !isSidebarTransitionEnabled) && "lg:ml-78",
             isNotificationsOpen && "xl:mr-88",
           )}
         >
           <MainPageHeader breadcrumbs={breadcrumbs} />
-          <div className="mx-auto w-full max-w-376">
+          <div className="mx-auto w-full max-w-376 flex-1">
             {shouldShowBranchContent ? (
               children
             ) : (
               <NoBranchAccess companyName={currentCompany.name} />
             )}
           </div>
+          <MainFooter />
         </main>
 
         <aside

@@ -8,7 +8,6 @@ import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/Onboarding
 import { Gr8BooksLoadingScreen } from "@/app/src/ui/shared/Gr8BooksLoadingScreen";
 import {
   GetFallbackPostAuthRedirectPath,
-  GetRemainingPostAuthRedirectDelayMs,
   IsOnboardingRedirectPath,
   IsSystemRedirectPath,
   ResolvePostAuthDestination,
@@ -19,17 +18,6 @@ type GoogleAuthRedirectState = "resolving" | "system" | "onboarding";
 
 function ReadRedirectPath(mode: string | null) {
 	return mode === "signup" ? "/signup" : "/login";
-}
-
-function NavigateAfterPostAuthDelay(startedAt: number, navigate: () => void) {
-	const remainingDelay = GetRemainingPostAuthRedirectDelayMs(startedAt);
-
-	if (remainingDelay === 0) {
-		navigate();
-		return null;
-	}
-
-	return window.setTimeout(navigate, remainingDelay);
 }
 
 export default function GoogleAuthCallbackPage() {
@@ -55,55 +43,22 @@ function GoogleAuthCallbackContent() {
 		const mode = searchParams.get("mode");
 
 		if (accessToken) {
-			const redirectStartedAt = Date.now();
-			let isCancelled = false;
-			let redirectTimeout: ReturnType<typeof NavigateAfterPostAuthDelay> =
-				null;
-
 			SaveAccessToken(accessToken, false);
 			setAccessToken(accessToken);
 			toast.success("Google sign-in successful.");
 			void ResolvePostAuthDestination(accessToken)
 				.then(({ profile, redirectPath }) => {
-					if (isCancelled) {
-						return;
-					}
-
 					setActiveCompanyId(profile.activeCompanyId);
 					setRedirectState(GetGoogleAuthRedirectState(redirectPath));
-					redirectTimeout = NavigateAfterPostAuthDelay(
-						redirectStartedAt,
-						() => {
-							if (!isCancelled) {
-								router.replace(redirectPath);
-							}
-						},
-					);
+					router.replace(redirectPath);
 				})
 				.catch(() => {
-					if (isCancelled) {
-						return;
-					}
-
 					const fallbackPath = GetFallbackPostAuthRedirectPath(accessToken);
 
 					setRedirectState(GetGoogleAuthRedirectState(fallbackPath));
-					redirectTimeout = NavigateAfterPostAuthDelay(
-						redirectStartedAt,
-						() => {
-							if (!isCancelled) {
-								router.replace(fallbackPath);
-							}
-						},
-					);
+					router.replace(fallbackPath);
 				});
-			return () => {
-				isCancelled = true;
-
-				if (redirectTimeout !== null) {
-					window.clearTimeout(redirectTimeout);
-				}
-			};
+			return;
 		}
 
 		toast.error(error ?? "Google sign-in could not be completed.");

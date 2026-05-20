@@ -57,6 +57,7 @@ const DefaultExpandedKeys = [
 const WorkspaceRoutePrefix = "/workspace";
 const WorkspaceHomeHref = "/workspace/dashboard";
 const CompanyFallbackHomeHref = "/profile";
+const MaxBlockingProfileLoadMs = 4500;
 
 type NavigationTrailNode = {
   key: string;
@@ -79,6 +80,9 @@ export function useMainLayout() {
   const [notificationsOpenPath, setNotificationsOpenPath] = useState<
     string | null
   >(null);
+  const [timedOutProfileToken, setTimedOutProfileToken] = useState<
+    string | null
+  >(null);
   const [helpOpenPath, setHelpOpenPath] = useState<string | null>(null);
   const [quickListTab, setQuickListTab] = useState<MainQuickListTab>("recent");
   const [notificationTab, setNotificationTab] =
@@ -98,6 +102,7 @@ export function useMainLayout() {
   const accessToken = storedAccessToken;
   const { data: authProfile, isLoading: isAuthProfileLoading } =
     useAuthProfileQuery({ accessToken });
+  const hasProfileLoadTimedOut = timedOutProfileToken === accessToken;
   const isWorkspaceRoute = isWorkspacePath(pathname);
   const hasWorkspaceAccess =
     authProfile
@@ -107,7 +112,8 @@ export function useMainLayout() {
     authProfile
       ? CreateWorkspaceCurrentUserFromProfile(authProfile)
       : ModuleShellMockData.currentUser;
-  const isProfileLoading = Boolean(accessToken) && isAuthProfileLoading;
+  const isProfileLoading =
+    Boolean(accessToken) && isAuthProfileLoading && !hasProfileLoadTimedOut;
   const activeNavigationScope: MainNavigationScope =
     hasWorkspaceAccess && isWorkspaceRoute ? "workspace" : "company";
   const workspaceCompanies =
@@ -343,6 +349,20 @@ export function useMainLayout() {
     },
     [],
   );
+
+  useEffect(() => {
+    if (!accessToken || !isAuthProfileLoading || hasProfileLoadTimedOut) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setTimedOutProfileToken(accessToken);
+    }, MaxBlockingProfileLoadMs);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [accessToken, hasProfileLoadTimedOut, isAuthProfileLoading]);
 
   useEffect(() => {
     if (typeof window === "undefined") {

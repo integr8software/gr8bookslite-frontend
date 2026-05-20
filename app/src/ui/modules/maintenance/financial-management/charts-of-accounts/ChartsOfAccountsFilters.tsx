@@ -48,13 +48,18 @@ export function ChartsOfAccountsFilters({
 }: ChartsOfAccountsFiltersProps) {
 	return (
 		<div className="border-b border-slate-200 p-4 sm:p-5">
-			<Tabs
-				value={activeTab}
-				options={[...ChartsOfAccountsNavs]}
-				onChange={onTabChange}
-			/>
+			<div data-spotlight-id="charts-of-accounts-tabs">
+				<Tabs
+					value={activeTab}
+					options={[...ChartsOfAccountsNavs]}
+					onChange={onTabChange}
+				/>
+			</div>
 
-			<div className="mt-5 grid gap-3 xl:grid-cols-[minmax(16rem,1fr)_13rem_13rem_11rem_auto]">
+			<div
+				className="mt-5 grid gap-3 xl:grid-cols-[minmax(16rem,1fr)_13rem_13rem_11rem_auto]"
+				data-spotlight-id="charts-of-accounts-filters"
+			>
 				<div className="relative">
 					<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 					<Input

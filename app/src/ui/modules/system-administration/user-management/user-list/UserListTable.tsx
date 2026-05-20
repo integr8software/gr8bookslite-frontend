@@ -7,7 +7,6 @@ import {
   ChevronsRight,
   Edit3,
   Eye,
-  Plus,
   Search,
   UserCircle,
 } from "lucide-react";
@@ -140,8 +139,14 @@ export function UserListTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center gap-3 border-b border-darknavy/10 px-4 py-3">
+    <div
+      className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm"
+      data-spotlight-id="user-list-table"
+    >
+      <div
+        className="flex flex-wrap items-center gap-3 border-b border-darknavy/10 px-4 py-3"
+        data-spotlight-id="user-list-filters"
+      >
         <div className="relative w-full sm:w-72">
           <Search
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/38"
@@ -186,13 +191,6 @@ export function UserListTable({
         >
           Reset
         </button>
-        <Link
-          href={`${UserListHref}/add`}
-          className="inline-flex h-9 items-center justify-center gap-2 rounded bg-blue-600 px-4 text-xs font-semibold text-white shadow-sm shadow-blue-600/15 transition hover:bg-blue-700"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          Add User
-        </Link>
       </div>
 
       <div className="overflow-x-auto">

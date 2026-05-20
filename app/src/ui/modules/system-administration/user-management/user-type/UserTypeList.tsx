@@ -14,7 +14,7 @@ export function UserTypeList({
   onDelete: (id: string, name: string) => void;
 }) {
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-3" data-spotlight-id="user-type-list">
       {items.map((item) => (
         <article
           key={item.id}
@@ -36,12 +36,14 @@ export function UserTypeList({
           <p className="text-sm text-darknavy/65">
             {item.accessRoles.length} access roles
           </p>
-          <UserTypeRecordActions
-            baseHref={baseHref}
-            id={item.id}
-            name={item.name}
-            onDelete={onDelete}
-          />
+          <div data-spotlight-id="user-type-actions">
+            <UserTypeRecordActions
+              baseHref={baseHref}
+              id={item.id}
+              name={item.name}
+              onDelete={onDelete}
+            />
+          </div>
         </article>
       ))}
     </div>

@@ -34,7 +34,7 @@ type ChartsOfAccountsTableProps = {
 
 export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
 	return (
-		<div>
+		<div data-spotlight-id="charts-of-accounts-table">
 			<div className="max-h-[58vh] overflow-auto">
 				<table className="w-full min-w-[78rem] border-collapse text-left">
 					<TableHeader {...props} />

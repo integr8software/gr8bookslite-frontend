@@ -14,7 +14,7 @@ export function UserGroupList({
   onDelete: (id: string, name: string) => void;
 }) {
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-3" data-spotlight-id="user-group-list">
       {items.map((item) => (
         <article
           key={item.id}
@@ -34,12 +34,14 @@ export function UserGroupList({
             </div>
           </div>
           <p className="text-sm text-darknavy/65">{item.status}</p>
-          <UserGroupRecordActions
-            baseHref={baseHref}
-            id={item.id}
-            name={item.name}
-            onDelete={onDelete}
-          />
+          <div data-spotlight-id="user-group-actions">
+            <UserGroupRecordActions
+              baseHref={baseHref}
+              id={item.id}
+              name={item.name}
+              onDelete={onDelete}
+            />
+          </div>
         </article>
       ))}
     </div>

@@ -1,15 +1,20 @@
 "use client";
 
-import { Download, Home, Plus, Upload } from "lucide-react";
+import { Download, Home, Plus, Sparkles, Upload } from "lucide-react";
 import { Button } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls.tsx";
 
 export function ChartsOfAccountsHeader({
 	onAddAccount,
+	onStartSpotlightTutorial,
 }: {
 	onAddAccount: () => void;
+	onStartSpotlightTutorial: () => void;
 }) {
 	return (
-		<div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+		<div
+			className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:flex-row lg:items-center lg:justify-between"
+			data-spotlight-id="charts-of-accounts-header"
+		>
 			<div>
 				<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-blue-700">
 					<Home className="h-3.5 w-3.5" aria-hidden="true" />
@@ -23,6 +28,13 @@ export function ChartsOfAccountsHeader({
 				</p>
 			</div>
 			<div className="flex flex-wrap gap-2">
+				<Button
+					variant="secondary"
+					onClick={onStartSpotlightTutorial}
+				>
+					<Sparkles className="h-4 w-4" aria-hidden="true" />
+					Quick Tour
+				</Button>
 				<Button variant="secondary">
 					<Upload className="h-4 w-4" aria-hidden="true" />
 					Import
@@ -31,7 +43,10 @@ export function ChartsOfAccountsHeader({
 					<Download className="h-4 w-4" aria-hidden="true" />
 					Export
 				</Button>
-				<Button onClick={onAddAccount}>
+				<Button
+					onClick={onAddAccount}
+					data-spotlight-id="charts-of-accounts-add-account"
+				>
 					<Plus className="h-4 w-4" aria-hidden="true" />
 					Add Account
 				</Button>

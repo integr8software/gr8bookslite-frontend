@@ -598,7 +598,8 @@ function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
 function CreateWorkspaceCurrentUserFromProfile(
   profile: AuthProfileResponse,
 ): MainCurrentUser {
-  const fallbackUserType = ModuleShellMockData.currentUser.userType;
+  const fallbackUserRoleDetails =
+    ModuleShellMockData.currentUser.userRoleDetails;
   const [firstName, ...lastNameParts] = profile.user.name.trim().split(/\s+/);
   const lastName = lastNameParts.join(" ");
   const activeCompanyMembership =
@@ -622,17 +623,17 @@ function CreateWorkspaceCurrentUserFromProfile(
         : profile.activeAccess?.membershipRole === "ADMIN"
           ? "Admin"
           : "User",
-    userType: companyRoleName
+    userRoleDetails: companyRoleName
       ? {
-          ...(fallbackUserType ?? {
-            id: "user-type-workspace",
+          ...(fallbackUserRoleDetails ?? {
+            id: "user-role-workspace",
             name: "Workspace User",
             permissions: {},
           }),
           id:
             activeCompanyMembership?.companyRoleCode ??
-            fallbackUserType?.id ??
-            "user-type-workspace",
+            fallbackUserRoleDetails?.id ??
+            "user-role-workspace",
           name: companyRoleName,
         }
       : undefined,
@@ -1160,8 +1161,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "reports-bir-alpha-list": "Prepare alpha list reporting data.",
   "maintenance-users": "Manage users, user types, and user groups.",
   "maintenance-user-list": "Create and maintain system user accounts.",
-  "maintenance-user-type": "Maintain user type classifications.",
-  "maintenance-user-group": "Organize users into permission groups.",
+  "maintenance-user-role": "Maintain user role classifications.",
+  "maintenance-department": "Organize users into departments.",
   "branch-management": "Maintain branch and satellite records.",
   "maintenance-approval": "Configure approval workflows and rules.",
   "maintenance-audit": "Review audit trail activity.",

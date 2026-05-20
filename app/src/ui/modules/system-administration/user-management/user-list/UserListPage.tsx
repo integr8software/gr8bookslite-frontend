@@ -9,12 +9,12 @@ import { UserListTable } from "@/app/src/ui/modules/system-administration/user-m
 
 export function UserListPage() {
   const users = useUserManagementStore((state) => state.users);
-  const userTypes = useUserManagementStore((state) => state.userTypes);
-  const userGroups = useUserManagementStore((state) => state.userGroups);
+  const userRoles = useUserManagementStore((state) => state.userRoles);
+  const departments = useUserManagementStore((state) => state.departments);
   const deleteUser = useUserManagementStore((state) => state.deleteUser);
 
   function handleDeleteUser(userId: string, userName: string) {
-    if (!window.confirm(`Delete ${userName}?`)) {
+    if (!window.confirm(`Set ${userName} as inactive?`)) {
       return;
     }
 
@@ -35,9 +35,9 @@ export function UserListPage() {
         title="User List"
       />
       <UserListTable
-        userGroups={userGroups}
+        departments={departments}
         users={users}
-        userTypes={userTypes}
+        userRoles={userRoles}
         onDelete={handleDeleteUser}
       />
     </section>

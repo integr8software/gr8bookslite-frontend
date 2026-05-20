@@ -2,177 +2,185 @@
 
 import { useMemo, useState } from "react";
 import {
-  functionalUpdate,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
-  type ColumnFiltersState,
-  type RowSelectionState,
+  type PaginationState,
   type SortingState,
-  type VisibilityState,
 } from "@tanstack/react-table";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { UserListMockData } from "@/app/src/data/modules/system-administration/user-management/user-list/UserListData";
-import { UserListQueryKeys } from "@/app/src/services/modules/system-administration/user-management/user-list/UserListQueryKeys";
+import {
+  UserListTableColumns,
+  UserListStatusOptions,
+} from "@/app/src/constants/modules/user-management/UserListConstants";
 import type {
-  UserListRecord,
-  UserListStatus,
+  DepartmentRecord,
+  UserManagementRecord,
+  UserRoleRecord,
+  UserStatus,
+} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type {
+  UserListTableColumnKey,
+  UserListTableRecord,
 } from "@/app/src/types/modules/user-management/UserListTypes";
 
 type UseUserListTableInput = {
-  columns: ColumnDef<UserListRecord>[];
+  departments: DepartmentRecord[];
+  users: UserManagementRecord[];
+  userRoles: UserRoleRecord[];
 };
 
-export function useUserListTable({ columns }: UseUserListTableInput) {
-  const queryClient = useQueryClient();
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const usersQuery = useQuery({
-    queryKey: UserListQueryKeys.users(),
-    queryFn: async () => UserListMockData,
-    initialData: UserListMockData,
+export function useUserListTable({
+  departments,
+  users,
+  userRoles,
+}: UseUserListTableInput) {
+  const [departmentFilter, setDepartmentFilterState] = useState("All");
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 5,
   });
+  const [query, setQueryState] = useState("");
+  const [roleFilter, setRoleFilterState] = useState("All");
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "name", desc: false },
+  ]);
+  const [statusFilter, setStatusFilterState] = useState<UserStatus | "All">(
+    "All",
+  );
+  const departmentOptions = useMemo(
+    () => departments.map((department) => department.name).sort(),
+    [departments],
+  );
+  const roleOptions = useMemo(
+    () => userRoles.map((role) => role.name).sort(),
+    [userRoles],
+  );
+  const statusOptions = useMemo(() => [...UserListStatusOptions], []);
+  const tableData = useMemo(
+    () =>
+      users.map((user) => ({
+        ...user,
+        department:
+          departments.find((department) => department.id === user.departmentId)
+            ?.name ?? "-",
+        userRole:
+          userRoles.find((role) => role.id === user.userRoleId)?.name ?? "-",
+      })),
+    [departments, userRoles, users],
+  );
+  const filteredUsers = useMemo(
+    () =>
+      tableData.filter((user) => {
+        const searchable = [
+          user.name,
+          user.email,
+          user.contactNumber,
+          user.userRole,
+          user.department,
+          user.status,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
 
-  const updateUsersStatusMutation = useMutation({
-    mutationFn: async ({
-      status,
-      userIds,
-    }: {
-      status: UserListStatus;
-      userIds: string[];
-    }) => ({ status, userIds }),
-    onSuccess: ({ status, userIds }) => {
-      queryClient.setQueryData<UserListRecord[]>(
-        UserListQueryKeys.users(),
-        (currentUsers = UserListMockData) =>
-          currentUsers.map((user) =>
-            userIds.includes(user.id) ? { ...user, status } : user,
-          ),
-      );
-      setRowSelection({});
-    },
-  });
+        return (
+          searchable.includes(query.toLowerCase()) &&
+          (statusFilter === "All" || user.status === statusFilter) &&
+          (roleFilter === "All" || user.userRole === roleFilter) &&
+          (departmentFilter === "All" ||
+            user.department === departmentFilter)
+        );
+      }),
+    [departmentFilter, query, roleFilter, statusFilter, tableData],
+  );
+  const columns = useMemo<ColumnDef<UserListTableRecord>[]>(
+    () =>
+      UserListTableColumns.map((column) => {
+        if (!("key" in column)) {
+          return {
+            id: "actions",
+            header: column.label,
+            enableSorting: false,
+            meta: { className: column.className },
+          };
+        }
+
+        return createUserColumn(column.key, column.label, column.className);
+      }),
+    [],
+  );
 
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
   const table = useReactTable({
-    data: usersQuery.data,
+    data: filteredUsers,
     columns,
     state: {
-      columnFilters,
-      columnVisibility,
-      globalFilter,
-      rowSelection,
+      pagination,
       sorting,
     },
-    enableRowSelection: true,
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onGlobalFilterChange: (updater) => {
-      const nextValue = functionalUpdate(updater, globalFilter);
-
-      setGlobalFilter(nextValue ?? "");
-    },
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    initialState: {
-      pagination: {
-        pageIndex: 0,
-        pageSize: 8,
-      },
-    },
   });
 
-  const selectedUsers = table
-    .getSelectedRowModel()
-    .rows.map((row) => row.original);
-  const activeStatusFilter = getStatusFilterValue(columnFilters);
-  const activeGroupFilter = getStringFilterValue(columnFilters, "userGroup");
-  const activeTypeFilter = getStringFilterValue(columnFilters, "userType");
-  const groupOptions = useMemo(
-    () =>
-      Array.from(new Set(usersQuery.data.map((user) => user.userGroup))).sort(),
-    [usersQuery.data],
-  );
-  const typeOptions = useMemo(
-    () =>
-      Array.from(new Set(usersQuery.data.map((user) => user.userType))).sort(),
-    [usersQuery.data],
-  );
-
-  function setStatusFilter(status: UserListStatus | "All") {
-    table
-      .getColumn("status")
-      ?.setFilterValue(status === "All" ? undefined : status);
-  }
-
-  function setGroupFilter(group: string) {
-    table
-      .getColumn("userGroup")
-      ?.setFilterValue(group === "All" ? undefined : group);
-  }
-
-  function setTypeFilter(type: string) {
-    table
-      .getColumn("userType")
-      ?.setFilterValue(type === "All" ? undefined : type);
-  }
-
   function resetFilters() {
-    setColumnFilters([]);
-    setSorting([]);
-    setRowSelection({});
-    setGlobalFilter("");
+    setDepartmentFilterState("All");
+    setQueryState("");
+    setRoleFilterState("All");
+    setStatusFilterState("All");
+    table.setPageIndex(0);
   }
 
-  function updateSelectedUsersStatus(status: UserListStatus) {
-    updateUsersStatusMutation.mutate({
-      status,
-      userIds: selectedUsers.map((user) => user.id),
-    });
+  function setDepartmentFilter(value: string) {
+    setDepartmentFilterState(value);
+    table.setPageIndex(0);
+  }
+
+  function setQuery(value: string) {
+    setQueryState(value);
+    table.setPageIndex(0);
+  }
+
+  function setRoleFilter(value: string) {
+    setRoleFilterState(value);
+    table.setPageIndex(0);
+  }
+
+  function setStatusFilter(value: UserStatus | "All") {
+    setStatusFilterState(value);
+    table.setPageIndex(0);
   }
 
   return {
-    activeGroupFilter,
-    activeStatusFilter,
-    activeTypeFilter,
-    globalFilter,
-    groupOptions,
-    isLoading: usersQuery.isLoading,
-    isUpdatingStatus: updateUsersStatusMutation.isPending,
+    departmentFilter,
+    departmentOptions,
+    query,
     resetFilters,
-    selectedUsers,
-    setGlobalFilter,
-    setGroupFilter,
+    roleFilter,
+    roleOptions,
+    setDepartmentFilter,
+    setQuery,
+    setRoleFilter,
     setStatusFilter,
-    setTypeFilter,
+    statusFilter,
+    statusOptions,
     table,
-    totalUsers: usersQuery.data.length,
-    typeOptions,
-    updateSelectedUsersStatus,
   };
 }
 
-function getStatusFilterValue(columnFilters: ColumnFiltersState) {
-  return columnFilters.find((filter) => filter.id === "status")?.value as
-    | UserListStatus
-    | undefined;
-}
-
-function getStringFilterValue(
-  columnFilters: ColumnFiltersState,
-  columnId: string,
-) {
-  return columnFilters.find((filter) => filter.id === columnId)?.value as
-    | string
-    | undefined;
+function createUserColumn(
+  key: UserListTableColumnKey,
+  header: string,
+  className: string,
+): ColumnDef<UserListTableRecord> {
+  return {
+    accessorKey: key,
+    header,
+    sortingFn: "alphanumeric",
+    meta: { className },
+  };
 }

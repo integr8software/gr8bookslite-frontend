@@ -143,7 +143,7 @@ export type MainSubscriptionOption = {
 
 export type MainUserRole = "Super Admin" | "Admin" | "User";
 
-export type MainUserType = {
+export type MainUserRoleDetails = {
   id: string;
   name: string;
   permissions: MainPermissionMap;
@@ -151,7 +151,7 @@ export type MainUserType = {
 
 export type MainUserAccessContext = {
   userRole: MainUserRole;
-  userType?: MainUserType;
+  userRoleDetails?: MainUserRoleDetails;
 };
 
 export type MainCurrentUser = MainUserAccessContext & {

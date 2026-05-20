@@ -1,4 +1,4 @@
-import { Save, Trash2 } from "lucide-react";
+import { CircleOff, Save } from "lucide-react";
 
 export function UserListFormHeader({
   canDelete,
@@ -22,8 +22,8 @@ export function UserListFormHeader({
       <div className="flex flex-wrap gap-2">
         {canDelete ? (
           <button type="button" onClick={onDelete} className={deleteClassName}>
-            <Trash2 className="h-4 w-4" aria-hidden="true" />
-            Delete
+            <CircleOff className="h-4 w-4" aria-hidden="true" />
+            Inactive
           </button>
         ) : null}
         {!isReadonly ? (

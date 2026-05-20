@@ -1,0 +1,117 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { UserRoleHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
+import {
+  UserRoleSpotlightTutorialOpenEvent,
+  UserRoleSpotlightTutorialStorageKey,
+} from "@/app/src/data/modules/system-administration/user-management/user-role/UserRoleSpotlightTutorialData";
+
+type SpotlightStorageValue = {
+  status: "completed" | "skipped";
+  updatedAt: string;
+};
+
+export function useUserRoleSpotlightTutorial() {
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    let frameId: number | null = null;
+
+    function scheduleVisibilityChange(nextIsOpen: boolean) {
+      frameId = window.requestAnimationFrame(() => {
+        setIsOpen(nextIsOpen);
+      });
+    }
+
+    if (pathname !== UserRoleHref) {
+      scheduleVisibilityChange(false);
+      return () => {
+        if (frameId !== null) {
+          window.cancelAnimationFrame(frameId);
+        }
+      };
+    }
+
+    const storedValue = window.localStorage.getItem(
+      UserRoleSpotlightTutorialStorageKey,
+    );
+
+    if (!storedValue) {
+      scheduleVisibilityChange(true);
+      return () => {
+        if (frameId !== null) {
+          window.cancelAnimationFrame(frameId);
+        }
+      };
+    }
+
+    try {
+      const parsedValue = JSON.parse(storedValue) as SpotlightStorageValue;
+
+      if (parsedValue.status === "completed" || parsedValue.status === "skipped") {
+        scheduleVisibilityChange(false);
+      } else {
+        scheduleVisibilityChange(false);
+      }
+    } catch {
+      window.localStorage.removeItem(UserRoleSpotlightTutorialStorageKey);
+      scheduleVisibilityChange(true);
+    }
+
+    return () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+    };
+  }, [pathname]);
+
+  useEffect(() => {
+    if (pathname !== UserRoleHref) {
+      return;
+    }
+
+    function handleOpenTutorial() {
+      setIsOpen(true);
+    }
+
+    window.addEventListener(UserRoleSpotlightTutorialOpenEvent, handleOpenTutorial);
+
+    return () => {
+      window.removeEventListener(
+        UserRoleSpotlightTutorialOpenEvent,
+        handleOpenTutorial,
+      );
+    };
+  }, [pathname]);
+
+  function completeTutorial() {
+    persistStatus("completed");
+    setIsOpen(false);
+  }
+
+  function skipTutorial() {
+    persistStatus("skipped");
+    setIsOpen(false);
+  }
+
+  return {
+    completeTutorial,
+    isOpen,
+    skipTutorial,
+  };
+
+  function persistStatus(status: SpotlightStorageValue["status"]) {
+    const value: SpotlightStorageValue = {
+      status,
+      updatedAt: new Date().toISOString(),
+    };
+
+    window.localStorage.setItem(
+      UserRoleSpotlightTutorialStorageKey,
+      JSON.stringify(value),
+    );
+  }
+}

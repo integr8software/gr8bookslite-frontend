@@ -161,8 +161,8 @@ function flattenItems(
 function readAccess(
   accessContext: MainUserAccessContext,
   accessKey: keyof NonNullable<
-    MainUserAccessContext["userType"]
+    MainUserAccessContext["userRoleDetails"]
   >["permissions"],
 ) {
-  return accessContext.userType?.permissions[accessKey];
+  return accessContext.userRoleDetails?.permissions[accessKey];
 }

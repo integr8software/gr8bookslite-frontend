@@ -12,7 +12,7 @@ export function ChartsOfAccountsHeader({
 }) {
 	return (
 		<div
-			className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:flex-row lg:items-center lg:justify-between"
+			className="flex flex-col gap-4 self-start rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:h-36 lg:flex-row lg:items-center lg:justify-between"
 			data-spotlight-id="charts-of-accounts-header"
 		>
 			<div>

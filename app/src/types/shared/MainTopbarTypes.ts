@@ -15,7 +15,7 @@ export type MainTopbarUser = {
   name: string;
   profileImageUrl?: string;
   userRole: string;
-  userType?: {
+  userRoleDetails?: {
     name: string;
   };
 };

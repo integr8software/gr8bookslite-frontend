@@ -3,28 +3,28 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  InitialUserGroups,
-  InitialUserTypes,
+  InitialDepartments,
+  InitialUserRoles,
   InitialUsers,
-  type UserGroupRecord,
+  type DepartmentRecord,
   type UserManagementRecord,
-  type UserTypeRecord,
+  type UserRoleRecord,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import { UserManagementQueryKeys } from "@/app/src/services/modules/system-administration/user-management/UserManagementQueryKeys";
 
 type UserManagementState = {
   users: UserManagementRecord[];
-  userTypes: UserTypeRecord[];
-  userGroups: UserGroupRecord[];
+  userRoles: UserRoleRecord[];
+  departments: DepartmentRecord[];
   addUser: (user: UserManagementRecord) => void;
   updateUser: (user: UserManagementRecord) => void;
   deleteUser: (userId: string) => void;
-  addUserType: (userType: UserTypeRecord) => void;
-  updateUserType: (userType: UserTypeRecord) => void;
-  deleteUserType: (userTypeId: string) => void;
-  addUserGroup: (userGroup: UserGroupRecord) => void;
-  updateUserGroup: (userGroup: UserGroupRecord) => void;
-  deleteUserGroup: (userGroupId: string) => void;
+  addUserRole: (userRole: UserRoleRecord) => void;
+  updateUserRole: (userRole: UserRoleRecord) => void;
+  deleteUserRole: (userRoleId: string) => void;
+  addDepartment: (department: DepartmentRecord) => void;
+  updateDepartment: (department: DepartmentRecord) => void;
+  deleteDepartment: (departmentId: string) => void;
   isLoading: boolean;
   isMutating: boolean;
 };
@@ -38,35 +38,41 @@ export function useUserManagementStore<TSelected = UserManagementState>(
     queryFn: async () => InitialUsers,
     initialData: InitialUsers,
   });
-  const userTypesQuery = useQuery({
-    queryKey: UserManagementQueryKeys.userTypes(),
-    queryFn: async () => InitialUserTypes,
-    initialData: InitialUserTypes,
+  const userRolesQuery = useQuery({
+    queryKey: UserManagementQueryKeys.userRoles(),
+    queryFn: async () => InitialUserRoles,
+    initialData: InitialUserRoles,
   });
-  const userGroupsQuery = useQuery({
-    queryKey: UserManagementQueryKeys.userGroups(),
-    queryFn: async () => InitialUserGroups,
-    initialData: InitialUserGroups,
+  const departmentsQuery = useQuery({
+    queryKey: UserManagementQueryKeys.departments(),
+    queryFn: async () => InitialDepartments,
+    initialData: InitialDepartments,
   });
 
-  function setUsers(updater: (users: UserManagementRecord[]) => UserManagementRecord[]) {
+  function setUsers(
+    updater: (users: UserManagementRecord[]) => UserManagementRecord[],
+  ) {
     queryClient.setQueryData<UserManagementRecord[]>(
       UserManagementQueryKeys.users(),
       (current = InitialUsers) => updater(current),
     );
   }
 
-  function setUserTypes(updater: (userTypes: UserTypeRecord[]) => UserTypeRecord[]) {
-    queryClient.setQueryData<UserTypeRecord[]>(
-      UserManagementQueryKeys.userTypes(),
-      (current = InitialUserTypes) => updater(current),
+  function setUserRoles(
+    updater: (userRoles: UserRoleRecord[]) => UserRoleRecord[],
+  ) {
+    queryClient.setQueryData<UserRoleRecord[]>(
+      UserManagementQueryKeys.userRoles(),
+      (current = InitialUserRoles) => updater(current),
     );
   }
 
-  function setUserGroups(updater: (userGroups: UserGroupRecord[]) => UserGroupRecord[]) {
-    queryClient.setQueryData<UserGroupRecord[]>(
-      UserManagementQueryKeys.userGroups(),
-      (current = InitialUserGroups) => updater(current),
+  function setDepartments(
+    updater: (departments: DepartmentRecord[]) => DepartmentRecord[],
+  ) {
+    queryClient.setQueryData<DepartmentRecord[]>(
+      UserManagementQueryKeys.departments(),
+      (current = InitialDepartments) => updater(current),
     );
   }
 
@@ -84,94 +90,110 @@ export function useUserManagementStore<TSelected = UserManagementState>(
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => userId,
     onSuccess: (userId) =>
-      setUsers((users) => users.filter((user) => user.id !== userId)),
-  });
-  const addUserTypeMutation = useMutation({
-    mutationFn: async (userType: UserTypeRecord) => userType,
-    onSuccess: (userType) => setUserTypes((userTypes) => [...userTypes, userType]),
-  });
-  const updateUserTypeMutation = useMutation({
-    mutationFn: async (userType: UserTypeRecord) => userType,
-    onSuccess: (userType) =>
-      setUserTypes((userTypes) =>
-        userTypes.map((current) =>
-          current.id === userType.id ? userType : current,
+      setUsers((users) =>
+        users.map((user) =>
+          user.id === userId ? { ...user, status: "Inactive" } : user,
         ),
       ),
   });
-  const deleteUserTypeMutation = useMutation({
-    mutationFn: async (userTypeId: string) => userTypeId,
-    onSuccess: (userTypeId) =>
-      setUserTypes((userTypes) =>
-        userTypes.filter((userType) => userType.id !== userTypeId),
-      ),
+  const addUserRoleMutation = useMutation({
+    mutationFn: async (userRole: UserRoleRecord) => userRole,
+    onSuccess: (userRole) =>
+      setUserRoles((userRoles) => [...userRoles, userRole]),
   });
-  const addUserGroupMutation = useMutation({
-    mutationFn: async (userGroup: UserGroupRecord) => userGroup,
-    onSuccess: (userGroup) =>
-      setUserGroups((userGroups) => [...userGroups, userGroup]),
-  });
-  const updateUserGroupMutation = useMutation({
-    mutationFn: async (userGroup: UserGroupRecord) => userGroup,
-    onSuccess: (userGroup) =>
-      setUserGroups((userGroups) =>
-        userGroups.map((current) =>
-          current.id === userGroup.id ? userGroup : current,
+  const updateUserRoleMutation = useMutation({
+    mutationFn: async (userRole: UserRoleRecord) => userRole,
+    onSuccess: (userRole) =>
+      setUserRoles((userRoles) =>
+        userRoles.map((current) =>
+          current.id === userRole.id ? userRole : current,
         ),
       ),
   });
-  const deleteUserGroupMutation = useMutation({
-    mutationFn: async (userGroupId: string) => userGroupId,
-    onSuccess: (userGroupId) =>
-      setUserGroups((userGroups) =>
-        userGroups.filter((userGroup) => userGroup.id !== userGroupId),
+  const deleteUserRoleMutation = useMutation({
+    mutationFn: async (userRoleId: string) => userRoleId,
+    onSuccess: (userRoleId) =>
+      setUserRoles((userRoles) =>
+        userRoles.map((userRole) =>
+          userRole.id === userRoleId
+            ? { ...userRole, status: "Inactive" }
+            : userRole,
+        ),
+      ),
+  });
+  const addDepartmentMutation = useMutation({
+    mutationFn: async (department: DepartmentRecord) => department,
+    onSuccess: (department) =>
+      setDepartments((departments) => [...departments, department]),
+  });
+  const updateDepartmentMutation = useMutation({
+    mutationFn: async (department: DepartmentRecord) => department,
+    onSuccess: (department) =>
+      setDepartments((departments) =>
+        departments.map((current) =>
+          current.id === department.id ? department : current,
+        ),
+      ),
+  });
+  const deleteDepartmentMutation = useMutation({
+    mutationFn: async (departmentId: string) => departmentId,
+    onSuccess: (departmentId) =>
+      setDepartments((departments) =>
+        departments.map((department) =>
+          department.id === departmentId
+            ? { ...department, status: "Inactive" }
+            : department,
+        ),
       ),
   });
 
   const state = useMemo<UserManagementState>(
     () => ({
       users: usersQuery.data,
-      userTypes: userTypesQuery.data,
-      userGroups: userGroupsQuery.data,
+      userRoles: userRolesQuery.data,
+      departments: departmentsQuery.data,
       addUser: (user) => addUserMutation.mutate(user),
       updateUser: (user) => updateUserMutation.mutate(user),
       deleteUser: (userId) => deleteUserMutation.mutate(userId),
-      addUserType: (userType) => addUserTypeMutation.mutate(userType),
-      updateUserType: (userType) => updateUserTypeMutation.mutate(userType),
-      deleteUserType: (userTypeId) => deleteUserTypeMutation.mutate(userTypeId),
-      addUserGroup: (userGroup) => addUserGroupMutation.mutate(userGroup),
-      updateUserGroup: (userGroup) => updateUserGroupMutation.mutate(userGroup),
-      deleteUserGroup: (userGroupId) =>
-        deleteUserGroupMutation.mutate(userGroupId),
+      addUserRole: (userRole) => addUserRoleMutation.mutate(userRole),
+      updateUserRole: (userRole) => updateUserRoleMutation.mutate(userRole),
+      deleteUserRole: (userRoleId) =>
+        deleteUserRoleMutation.mutate(userRoleId),
+      addDepartment: (department) =>
+        addDepartmentMutation.mutate(department),
+      updateDepartment: (department) =>
+        updateDepartmentMutation.mutate(department),
+      deleteDepartment: (departmentId) =>
+        deleteDepartmentMutation.mutate(departmentId),
       isLoading:
         usersQuery.isLoading ||
-        userTypesQuery.isLoading ||
-        userGroupsQuery.isLoading,
+        userRolesQuery.isLoading ||
+        departmentsQuery.isLoading,
       isMutating:
         addUserMutation.isPending ||
         updateUserMutation.isPending ||
         deleteUserMutation.isPending ||
-        addUserTypeMutation.isPending ||
-        updateUserTypeMutation.isPending ||
-        deleteUserTypeMutation.isPending ||
-        addUserGroupMutation.isPending ||
-        updateUserGroupMutation.isPending ||
-        deleteUserGroupMutation.isPending,
+        addUserRoleMutation.isPending ||
+        updateUserRoleMutation.isPending ||
+        deleteUserRoleMutation.isPending ||
+        addDepartmentMutation.isPending ||
+        updateDepartmentMutation.isPending ||
+        deleteDepartmentMutation.isPending,
     }),
     [
-      addUserGroupMutation,
+      addDepartmentMutation,
       addUserMutation,
-      addUserTypeMutation,
-      deleteUserGroupMutation,
+      addUserRoleMutation,
+      deleteDepartmentMutation,
       deleteUserMutation,
-      deleteUserTypeMutation,
-      updateUserGroupMutation,
+      deleteUserRoleMutation,
+      departmentsQuery.data,
+      departmentsQuery.isLoading,
+      updateDepartmentMutation,
       updateUserMutation,
-      updateUserTypeMutation,
-      userGroupsQuery.data,
-      userGroupsQuery.isLoading,
-      userTypesQuery.data,
-      userTypesQuery.isLoading,
+      updateUserRoleMutation,
+      userRolesQuery.data,
+      userRolesQuery.isLoading,
       usersQuery.data,
       usersQuery.isLoading,
     ],

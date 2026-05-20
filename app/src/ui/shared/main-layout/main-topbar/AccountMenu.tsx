@@ -111,7 +111,7 @@ type AccountDetailsProps = {
 };
 
 function AccountDetails({ companyName, currentUser }: AccountDetailsProps) {
-  const userTypeName = currentUser.userType?.name;
+  const userRoleDetailsName = currentUser.userRoleDetails?.name;
   const shouldShowRole = currentUser.userRole !== "User";
 
   return (
@@ -125,9 +125,9 @@ function AccountDetails({ companyName, currentUser }: AccountDetailsProps) {
           <p className="truncate text-sm font-semibold text-darknavy">
             {currentUser.name}
           </p>
-          {userTypeName ? (
+          {userRoleDetailsName ? (
             <p className="mt-1 truncate text-xs text-darknavy/55">
-              {userTypeName}
+              {userRoleDetailsName}
             </p>
           ) : null}
           {shouldShowRole ? (

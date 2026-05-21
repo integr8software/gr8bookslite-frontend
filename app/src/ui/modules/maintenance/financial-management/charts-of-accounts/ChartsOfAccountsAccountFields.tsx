@@ -224,7 +224,7 @@ function DescriptionField({
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
 				placeholder="Internal reporting notes"
-				className="min-h-24 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+				className="min-h-24 w-full rounded-lg border border-darknavy/10 bg-white px-3 py-2 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
 			/>
 		</Field>
 	);
@@ -238,12 +238,12 @@ function ReportsField({
 	onChange: (checked: boolean) => void;
 }) {
 	return (
-		<label className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2.5">
+		<label className="flex items-center justify-between rounded-lg border border-darknavy/10 px-3 py-2.5">
 			<span>
-				<span className="block text-sm font-semibold text-slate-800">
+				<span className="block text-sm font-semibold text-darknavy">
 					Show in Reports
 				</span>
-				<span className="text-xs text-slate-500">
+				<span className="text-xs text-darknavy/55">
 					Include this account in financial statements
 				</span>
 			</span>
@@ -251,7 +251,7 @@ function ReportsField({
 				type="checkbox"
 				checked={checked}
 				onChange={(event) => onChange(event.target.checked)}
-				className="h-5 w-5 rounded border-slate-300 text-blue-600"
+				className="h-5 w-5 rounded border-darknavy/20 text-skyblue focus:ring-2 focus:ring-skyblue/20"
 			/>
 		</label>
 	);
@@ -259,17 +259,17 @@ function ReportsField({
 
 function BankDetailsNotice() {
 	return (
-		<div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 sm:col-span-2">
+		<div className="rounded-xl border border-skyblue/25 bg-skyblue/10 p-4 sm:col-span-2">
 			<div className="flex items-start gap-3">
 				<Landmark
 					className="mt-0.5 h-5 w-5 text-skyblue"
 					aria-hidden="true"
 				/>
 				<div>
-					<p className="text-sm font-semibold text-slate-950">
+					<p className="text-sm font-semibold text-darknavy">
 						Bank details enabled
 					</p>
-					<p className="mt-1 text-sm text-slate-600">
+					<p className="mt-1 text-sm text-darknavy/60">
 						Use the Bank Details tab to maintain branch, currency,
 						and opening balance information.
 					</p>

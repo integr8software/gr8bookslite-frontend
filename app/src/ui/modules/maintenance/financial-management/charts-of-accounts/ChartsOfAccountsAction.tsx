@@ -15,9 +15,9 @@ export function ChartsOfAccountsAction() {
 	const copy = ChartsOfAccountsActionCopy[mode];
 
 	return (
-		<section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] bg-slate-100 px-4 py-6 text-slate-950 sm:-mx-5 sm:px-6 lg:-mx-6">
+		<section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] bg-background px-4 py-6 text-darknavy sm:-mx-5 sm:px-6 lg:-mx-6">
 			<div className="mx-auto grid min-h-[calc(100dvh-8rem)] max-w-3xl place-items-center">
-				<div className="w-full rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+				<div className="w-full rounded-xl border border-darknavy/10 bg-white p-6 text-center shadow-sm">
 					<div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-skyblue/10 text-skyblue">
 						<ListTree className="h-6 w-6" aria-hidden="true" />
 					</div>
@@ -25,10 +25,10 @@ export function ChartsOfAccountsAction() {
 					<p className="mt-5 text-xs font-semibold uppercase tracking-wide text-skyblue">
 						Chart of Accounts
 					</p>
-					<h1 className="mt-2 text-2xl font-semibold text-slate-950">
+					<h1 className="mt-2 text-2xl font-semibold text-darknavy">
 						{copy.heading}
 					</h1>
-					<p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
+					<p className="mx-auto mt-2 max-w-xl text-sm text-darknavy/55">
 						{copy.helper}
 					</p>
 

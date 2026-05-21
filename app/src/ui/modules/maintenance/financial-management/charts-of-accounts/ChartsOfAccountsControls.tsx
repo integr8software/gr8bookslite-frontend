@@ -65,7 +65,7 @@ export function Input({ className, ...props }: ComponentProps<"input">) {
 	return (
 		<input
 			className={joinClasses(
-				"h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10",
+				"h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20",
 				className,
 			)}
 			{...props}
@@ -82,7 +82,7 @@ export function Select({
 		<div className="relative">
 			<select
 				className={joinClasses(
-					"h-10 w-full appearance-none rounded-lg border border-darknavy/10 bg-white px-3 pr-9 text-sm font-medium text-darknavy outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10",
+					"h-10 w-full appearance-none rounded-lg border border-darknavy/10 bg-white px-3 pr-9 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20",
 					className,
 				)}
 				{...props}

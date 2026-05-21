@@ -118,7 +118,7 @@ function DrawerPanel({
 			>
 				<DrawerHeader account={account} onClose={onClose} />
 
-				<div className="border-b border-slate-200 px-6 py-4">
+				<div className="border-b border-darknavy/10 px-6 py-4">
 					<Tabs
 						value={activeTab}
 						options={tabs}
@@ -136,7 +136,7 @@ function DrawerPanel({
 					onFieldChange={updateField}
 				/>
 
-				<div className="sticky bottom-0 flex items-center justify-end gap-2 border-t border-slate-200 bg-white px-6 py-4">
+				<div className="sticky bottom-0 flex items-center justify-end gap-2 border-t border-darknavy/10 bg-white px-6 py-4">
 					<Button variant="secondary" onClick={onClose}>
 						Cancel
 					</Button>
@@ -157,15 +157,15 @@ function DrawerHeader({
 	onClose: () => void;
 }) {
 	return (
-		<div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+		<div className="flex items-start justify-between border-b border-darknavy/10 px-6 py-5">
 			<div>
 				<p className="text-xs font-semibold uppercase tracking-wide text-skyblue">
 					{account ? "Edit ledger account" : "Create ledger account"}
 				</p>
-				<h2 className="mt-1 text-xl font-semibold text-slate-950">
+				<h2 className="mt-1 text-xl font-semibold text-darknavy">
 					{account ? account.accountName : "Add Account"}
 				</h2>
-				<p className="mt-1 text-sm text-slate-500">
+				<p className="mt-1 text-sm text-darknavy/55">
 					Configure reporting, hierarchy, and bank setup.
 				</p>
 			</div>

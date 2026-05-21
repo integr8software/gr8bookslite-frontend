@@ -7,7 +7,6 @@ import type {
 	WorkspaceCompanyStatus,
 	WorkspaceCompanyTableColumnKey,
 	WorkspaceCompanyType,
-	WorkspaceCompanyUserRole,
 	WorkspaceCompanyUserTableColumnKey,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
 
@@ -37,14 +36,6 @@ export const WorkspaceCompanyPlanOptions = [
 	"Inventory",
 	"Accounting + Inventory",
 ] as const satisfies readonly WorkspaceCompanyPlan[];
-
-export const WorkspaceCompanyUserRoleOptions = [
-	"Company Admin",
-	"Accountant",
-	"Bookkeeper",
-	"Approver",
-	"Viewer",
-] as const satisfies readonly WorkspaceCompanyUserRole[];
 
 export const WorkspaceCompanyBranchKindOptions = [
 	"Head Office",
@@ -93,7 +84,6 @@ export const WorkspaceCompanyTableColumns = [
 export const WorkspaceCompanyUserTableColumns = [
 	{ key: "name", label: "User", className: "w-[18rem]" },
 	{ key: "email", label: "Email", className: "w-[20rem]" },
-	{ key: "role", label: "Role", className: "w-[12rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
 	{ key: "lastLogin", label: "Last Login", className: "w-[13rem]" },
 	{ label: "Actions", className: "w-[7rem] text-center" },

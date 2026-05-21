@@ -1,23 +1,14 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { Users } from "lucide-react";
-import {
-	WorkspaceCompanyStatusOptions,
-	WorkspaceCompanyUserRoleOptions,
-	WorkspaceCompaniesHref,
-} from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
-import { getNextWorkspaceCompanyStatus } from "@/app/src/data/modules/workspace/companies/WorkspaceCompanyData";
-import {
-	DefaultPhilippineContactNumber,
-	PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
+import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
+import { PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/ContactData";
 import { useWorkspaceCompanyUserAction } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyAction";
 import type {
 	WorkspaceCompanyUserFormErrors,
 	WorkspaceCompanyUserFormValues,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 import { WorkspaceCompanyActionHeader } from "./WorkspaceCompanyActionHeader";
 import {
 	WorkspaceCompanyField,
@@ -38,10 +29,6 @@ export function WorkspaceCompanyUserAction() {
 
 function WorkspaceCompanyUserActionInner() {
 	const action = useWorkspaceCompanyUserAction();
-	const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
-	const nextStatus = action.existingUser
-		? getNextWorkspaceCompanyStatus(action.existingUser.status)
-		: "Inactive";
 
 	if (!action.company) {
 		return (
@@ -73,7 +60,6 @@ function WorkspaceCompanyUserActionInner() {
 				isReadonly={action.isReadonly}
 				mode={action.mode}
 				saveLabel="Save User"
-				status={action.existingUser?.status}
 				title={
 					action.mode === "view"
 						? "View User"
@@ -81,7 +67,6 @@ function WorkspaceCompanyUserActionInner() {
 							? "Edit User"
 							: "Add User"
 				}
-				onStatusChange={() => setIsStatusDialogOpen(true)}
 			/>
 			<CompanyUserFields
 				errors={action.errors}
@@ -89,24 +74,6 @@ function WorkspaceCompanyUserActionInner() {
 				values={action.values}
 				onInputChange={action.handleInputChange}
 				onSubmit={action.handleSubmit}
-				onUpdateField={action.updateField}
-			/>
-			<AppConfirmDialog
-				isOpen={isStatusDialogOpen}
-				isPending={action.isMutating}
-				title={`Set user as ${nextStatus.toLowerCase()}?`}
-				description={`This will mark ${
-					action.existingUser?.name ?? "the selected user"
-				} as ${nextStatus.toLowerCase()}.`}
-				confirmLabel={
-					nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active"
-				}
-				tone={nextStatus === "Inactive" ? "danger" : "success"}
-				onCancel={() => setIsStatusDialogOpen(false)}
-				onConfirm={() => {
-					action.handleStatusChange();
-					setIsStatusDialogOpen(false);
-				}}
 			/>
 		</section>
 	);
@@ -118,7 +85,6 @@ function CompanyUserFields({
 	values,
 	onInputChange,
 	onSubmit,
-	onUpdateField,
 }: {
 	errors: WorkspaceCompanyUserFormErrors;
 	isReadonly: boolean;
@@ -127,10 +93,6 @@ function CompanyUserFields({
 		event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
 	) => void;
 	onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
-	onUpdateField: (
-		field: keyof WorkspaceCompanyUserFormValues,
-		value: string,
-	) => void;
 }) {
 	return (
 		<form id={CompanyUserFormId} onSubmit={onSubmit}>
@@ -161,7 +123,6 @@ function CompanyUserFields({
 					<WorkspaceCompanyField
 						label="Contact No."
 						error={errors.contactNumber}
-						required
 					>
 						<input
 							name="contactNumber"
@@ -170,45 +131,10 @@ function CompanyUserFields({
 							maxLength={16}
 							value={values.contactNumber}
 							onChange={onInputChange}
-							onFocus={() => {
-								if (!values.contactNumber) {
-									onUpdateField("contactNumber", DefaultPhilippineContactNumber);
-								}
-							}}
 							readOnly={isReadonly}
 							className={WorkspaceCompanyFieldClassName}
 							placeholder={PhilippineContactNumberPlaceholder}
 						/>
-					</WorkspaceCompanyField>
-					<WorkspaceCompanyField label="Role">
-						<select
-							name="role"
-							value={values.role}
-							onChange={onInputChange}
-							disabled={isReadonly}
-							className={WorkspaceCompanyFieldClassName}
-						>
-							{WorkspaceCompanyUserRoleOptions.map((role) => (
-								<option key={role} value={role}>
-									{role}
-								</option>
-							))}
-						</select>
-					</WorkspaceCompanyField>
-					<WorkspaceCompanyField label="Status">
-						<select
-							name="status"
-							value={values.status}
-							onChange={onInputChange}
-							disabled={isReadonly}
-							className={WorkspaceCompanyFieldClassName}
-						>
-							{WorkspaceCompanyStatusOptions.map((status) => (
-								<option key={status} value={status}>
-									{status}
-								</option>
-							))}
-						</select>
 					</WorkspaceCompanyField>
 				</div>
 			</WorkspaceCompanySection>

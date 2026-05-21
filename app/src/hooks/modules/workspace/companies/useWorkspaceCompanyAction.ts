@@ -235,17 +235,6 @@ export function useWorkspaceCompanyUserAction() {
 		router.push(listHref);
 	}
 
-	function handleStatusChange() {
-		if (!existingUser) {
-			return;
-		}
-
-		updateCompanyUser({
-			...existingUser,
-			status: getNextWorkspaceCompanyStatus(existingUser.status),
-		});
-	}
-
 	return {
 		cancelHref,
 		company,
@@ -253,7 +242,6 @@ export function useWorkspaceCompanyUserAction() {
 		errors,
 		existingUser,
 		handleInputChange,
-		handleStatusChange,
 		handleSubmit,
 		isMutating,
 		isReadonly,

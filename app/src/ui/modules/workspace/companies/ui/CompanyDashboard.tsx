@@ -145,7 +145,7 @@ export function WorkspaceCompanyDashboard() {
 					href={usersHref}
 					items={companyUsers.map((user) => ({
 						id: user.id,
-						meta: user.role,
+						meta: user.status,
 						title: user.name,
 					}))}
 					title="Recent Company Users"

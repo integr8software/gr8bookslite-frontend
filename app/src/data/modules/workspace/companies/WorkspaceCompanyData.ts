@@ -31,8 +31,6 @@ export const InitialWorkspaceCompanyUserFormValues: WorkspaceCompanyUserFormValu
 		contactNumber: "",
 		email: "",
 		name: "",
-		role: "Company Admin",
-		status: "Active",
 	};
 
 export const InitialWorkspaceCompanyBranchFormValues: WorkspaceCompanyBranchFormValues =
@@ -119,7 +117,6 @@ export const MockWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [
 		name: "John Dela Cruz",
 		email: "john.delacruz@gr8books.test",
 		contactNumber: "+63 916 460 4120",
-		role: "Company Admin",
 		status: "Active",
 		lastLogin: "May 21, 2026 08:45 AM",
 		profileImageUrl:
@@ -131,7 +128,6 @@ export const MockWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [
 		name: "Jane Santos",
 		email: "jane.santos@gr8books.test",
 		contactNumber: "+63 917 120 3301",
-		role: "Accountant",
 		status: "Active",
 		lastLogin: "May 20, 2026 10:20 AM",
 		profileImageUrl:
@@ -143,7 +139,6 @@ export const MockWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [
 		name: "Carlo Mendoza",
 		email: "carlo.mendoza@gr8books.test",
 		contactNumber: "+63 924 716 8830",
-		role: "Approver",
 		status: "Active",
 		lastLogin: "May 21, 2026 06:50 AM",
 	},
@@ -153,7 +148,6 @@ export const MockWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [
 		name: "Alyssa Tan",
 		email: "alyssa.tan@demotrading.test",
 		contactNumber: "+63 925 613 4208",
-		role: "Company Admin",
 		status: "Pending",
 		lastLogin: "Invitation sent",
 	},
@@ -163,7 +157,6 @@ export const MockWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [
 		name: "Daniel Wilson",
 		email: "daniel.wilson@ceburetail.test",
 		contactNumber: "+63 917 884 1209",
-		role: "Bookkeeper",
 		status: "Active",
 		lastLogin: "May 19, 2026 09:00 AM",
 	},
@@ -348,8 +341,6 @@ export function createWorkspaceCompanyUserFormValues(
 		contactNumber: user.contactNumber,
 		email: user.email,
 		name: user.name,
-		role: user.role,
-		status: user.status,
 	};
 }
 
@@ -362,6 +353,7 @@ export function createWorkspaceCompanyUserFromForm(
 		companyId,
 		id: `cu-${Date.now()}`,
 		lastLogin: "Invitation sent",
+		status: "Pending",
 	};
 }
 
@@ -382,9 +374,6 @@ export function validateWorkspaceCompanyUserForm(
 
 	if (!values.name.trim()) errors.name = "Name is required.";
 	if (!values.email.trim()) errors.email = "Email is required.";
-	if (!values.contactNumber.trim()) {
-		errors.contactNumber = "Contact number is required.";
-	}
 
 	return errors;
 }

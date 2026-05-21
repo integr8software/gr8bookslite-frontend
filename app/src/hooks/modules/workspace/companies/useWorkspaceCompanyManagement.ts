@@ -22,7 +22,6 @@ import {
 	WorkspaceCompanyStatusOptions,
 	WorkspaceCompanyTableColumns,
 	WorkspaceCompanyTypeOptions,
-	WorkspaceCompanyUserRoleOptions,
 	WorkspaceCompanyUserTableColumns,
 } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
 import {
@@ -48,7 +47,6 @@ import type {
 	WorkspaceCompanyTableRecord,
 	WorkspaceCompanyType,
 	WorkspaceCompanyUserRecord,
-	WorkspaceCompanyUserRole,
 	WorkspaceCompanyUserTableColumnKey,
 	WorkspaceCompanyUserTableRecord,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
@@ -464,9 +462,6 @@ export function useWorkspaceCompanyUsersTable(
 		pageSize: 5,
 	});
 	const [query, setQueryState] = useState("");
-	const [roleFilter, setRoleFilterState] = useState<
-		WorkspaceCompanyUserRole | "All"
-	>("All");
 	const [statusFilter, setStatusFilterState] = useState<
 		WorkspaceCompanyStatus | "All"
 	>("All");
@@ -480,7 +475,6 @@ export function useWorkspaceCompanyUsersTable(
 					user.name,
 					user.email,
 					user.contactNumber,
-					user.role,
 					user.status,
 					user.lastLogin,
 				]
@@ -490,11 +484,10 @@ export function useWorkspaceCompanyUsersTable(
 
 				return (
 					searchable.includes(query.toLowerCase()) &&
-					(roleFilter === "All" || user.role === roleFilter) &&
 					(statusFilter === "All" || user.status === statusFilter)
 				);
 			}),
-		[query, roleFilter, statusFilter, users],
+		[query, statusFilter, users],
 	);
 	const columns = useMemo<ColumnDef<WorkspaceCompanyUserTableRecord>[]>(
 		() =>
@@ -529,18 +522,12 @@ export function useWorkspaceCompanyUsersTable(
 
 	function resetFilters() {
 		setQueryState("");
-		setRoleFilterState("All");
 		setStatusFilterState("All");
 		table.setPageIndex(0);
 	}
 
 	function setQuery(value: string) {
 		setQueryState(value);
-		table.setPageIndex(0);
-	}
-
-	function setRoleFilter(value: WorkspaceCompanyUserRole | "All") {
-		setRoleFilterState(value);
 		table.setPageIndex(0);
 	}
 
@@ -552,10 +539,7 @@ export function useWorkspaceCompanyUsersTable(
 	return {
 		query,
 		resetFilters,
-		roleFilter,
-		roleOptions: WorkspaceCompanyUserRoleOptions,
 		setQuery,
-		setRoleFilter,
 		setStatusFilter,
 		statusFilter,
 		statusOptions: WorkspaceCompanyStatusOptions,

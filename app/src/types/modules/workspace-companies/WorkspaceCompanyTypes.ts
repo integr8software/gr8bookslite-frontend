@@ -37,20 +37,12 @@ export type WorkspaceCompanyFormErrors = Partial<
   Record<keyof WorkspaceCompanyFormValues, string>
 >;
 
-export type WorkspaceCompanyUserRole =
-  | "Company Admin"
-  | "Accountant"
-  | "Bookkeeper"
-  | "Approver"
-  | "Viewer";
-
 export type WorkspaceCompanyUserRecord = {
   id: string;
   companyId: string;
   name: string;
   email: string;
   contactNumber: string;
-  role: WorkspaceCompanyUserRole;
   status: WorkspaceCompanyStatus;
   lastLogin?: string;
   profileImageUrl?: string;
@@ -58,7 +50,7 @@ export type WorkspaceCompanyUserRecord = {
 
 export type WorkspaceCompanyUserFormValues = Omit<
   WorkspaceCompanyUserRecord,
-  "id" | "companyId" | "lastLogin" | "profileImageUrl"
+  "id" | "companyId" | "lastLogin" | "profileImageUrl" | "status"
 >;
 
 export type WorkspaceCompanyUserFormErrors = Partial<
@@ -138,7 +130,7 @@ export type WorkspaceCompanyTableColumnKey = keyof Pick<
 
 export type WorkspaceCompanyUserTableColumnKey = keyof Pick<
   WorkspaceCompanyUserTableRecord,
-  "name" | "email" | "role" | "status" | "lastLogin"
+  "name" | "email" | "status" | "lastLogin"
 >;
 
 export type WorkspaceCompanyBranchTableColumnKey = keyof Pick<

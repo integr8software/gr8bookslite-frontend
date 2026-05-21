@@ -1,3 +1,5 @@
+"use client";
+
 import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import { useUserListFormPage } from "@/app/src/hooks/modules/system-administration/user-management/users/useUserListFormPage";
 import { UserListForm } from "@/app/src/ui/modules/system-administration/user-management/users/UserListForm";

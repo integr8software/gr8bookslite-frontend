@@ -79,6 +79,18 @@ export async function LoginAction(
       };
     }
 
+    if (message === "Your account is not yet registered.") {
+      return {
+        status: "error",
+        message,
+        errors: {
+          email: [message],
+        },
+        formValues,
+        rememberMe,
+      };
+    }
+
     if (IsAccessStateLoginError(message)) {
       return {
         status: "error",

@@ -1,5 +1,12 @@
 import { ApiClient } from "@/app/src/services/shared/ApiClient";
-import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
+import type {
+  AuthProfileResponse,
+  ChangeAuthenticatedPasswordRequest,
+  ChangeAuthenticatedPasswordResponse,
+  RequestPasswordChangeOtpResponse,
+  VerifyPasswordChangeOtpRequest,
+  VerifyPasswordChangeOtpResponse,
+} from "@/app/src/services/auth/AuthApiTypes";
 import { BuildApiUrl, GetApiBaseUrl } from "@/app/src/services/shared/ApiUrl";
 
 export function BuildAuthApiUrl(path: string) {
@@ -72,6 +79,54 @@ export async function GetAuthProfile(accessToken: string) {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+
+  return response.data;
+}
+
+function GetAuthorizationHeaders(accessToken: string) {
+  return {
+    Authorization: `Bearer ${accessToken}`,
+  };
+}
+
+export async function RequestPasswordChangeOtp(accessToken: string) {
+  const response = await ApiClient.post<RequestPasswordChangeOtpResponse>(
+    "/auth/me/password/otp",
+    undefined,
+    {
+      headers: GetAuthorizationHeaders(accessToken),
+    },
+  );
+
+  return response.data;
+}
+
+export async function VerifyPasswordChangeOtp(
+  accessToken: string,
+  body: VerifyPasswordChangeOtpRequest,
+) {
+  const response = await ApiClient.post<VerifyPasswordChangeOtpResponse>(
+    "/auth/me/password/verify-otp",
+    body,
+    {
+      headers: GetAuthorizationHeaders(accessToken),
+    },
+  );
+
+  return response.data;
+}
+
+export async function ChangeAuthenticatedPassword(
+  accessToken: string,
+  body: ChangeAuthenticatedPasswordRequest,
+) {
+  const response = await ApiClient.patch<ChangeAuthenticatedPasswordResponse>(
+    "/auth/me/password",
+    body,
+    {
+      headers: GetAuthorizationHeaders(accessToken),
+    },
+  );
 
   return response.data;
 }

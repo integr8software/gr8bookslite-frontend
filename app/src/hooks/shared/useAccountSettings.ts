@@ -28,6 +28,8 @@ export function useAccountSettings() {
 
   return {
     accentColor,
+    accessToken,
+    email: authProfile?.user.email ?? "",
     hasHydrated,
     notificationPreference,
     role,

@@ -1,14 +1,35 @@
 "use client";
 
+import { ChangeEvent, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import toast from "react-hot-toast";
-import { BellRing, Check, KeyRound, Palette } from "lucide-react";
+import {
+  BellRing,
+  Check,
+  Eye,
+  EyeOff,
+  KeyRound,
+  LockKeyhole,
+  MailCheck,
+  Palette,
+  Send,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 import {
   AccountAccentColorOptions,
   AccountNotificationPreferenceOptions,
   AccountThemeOptions,
 } from "@/app/src/constants/shared/AccountConstants";
+import { OTP_LENGTH } from "@/app/src/data/auth/OtpData";
+import { ResetPasswordSchema, OtpSchema } from "@/app/src/data/auth/AuthSchemas";
 import { useAccountSettings } from "@/app/src/hooks/shared/useAccountSettings";
+import { usePasswordVisibility } from "@/app/src/hooks/shared/usePasswordVisibility";
+import {
+  ChangeAuthenticatedPassword,
+  RequestPasswordChangeOtp,
+  VerifyPasswordChangeOtp,
+} from "@/app/src/services/auth/AuthApi";
 import type {
   AccountAccentColor,
   AccountNotificationPreference,
@@ -20,9 +41,20 @@ type AccountSettingsPageProps = {
   scope: "account" | "workspace";
 };
 
+const SettingsInputClassName =
+  "h-12 w-full rounded-2xl border border-darknavy/12 bg-white px-4 text-sm text-darknavy shadow-sm outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-2 focus:ring-skyblue/20";
+
+const PrimarySettingsButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-darknavy px-4 text-sm font-semibold text-offwhite shadow-sm transition hover:bg-darknavy/92 disabled:cursor-not-allowed disabled:bg-darknavy/35 disabled:text-offwhite/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35";
+
+const SecondarySettingsButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:bg-offwhite disabled:cursor-not-allowed disabled:border-darknavy/8 disabled:text-darknavy/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35";
+
 export function AccountSettingsPage({ scope }: AccountSettingsPageProps) {
   const {
+    accessToken,
     accentColor,
+    email,
     hasHydrated,
     notificationPreference,
     role,
@@ -58,19 +90,12 @@ export function AccountSettingsPage({ scope }: AccountSettingsPageProps) {
         <div className="grid gap-5">
           {visibleItemKeys.includes("changePassword") ? (
             <SettingsCard
-              description="The password flow is intentionally parked here so profile stays focused on identity data. You can wire the real security action later without moving the layout."
+              description="Verify your account with an OTP before setting a new password."
               icon={KeyRound}
               title="Change Password"
+              compactHeader
             >
-              <button
-                type="button"
-                onClick={() => {
-                  toast("Change password can be connected here once the security flow is ready.");
-                }}
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-              >
-                Open Password Settings
-              </button>
+              <ChangePasswordPanel accessToken={accessToken} email={email} />
             </SettingsCard>
           ) : null}
 
@@ -197,6 +222,443 @@ function AccentColorGrid({
       })}
     </div>
   );
+}
+
+type ChangePasswordStep = "request-otp" | "verify-otp" | "set-password";
+
+type PasswordErrors = {
+  confirmPassword?: string;
+  otp?: string;
+  password?: string;
+};
+
+function ChangePasswordPanel({
+  accessToken,
+  email,
+}: {
+  accessToken: string | null;
+  email: string;
+}) {
+  const [step, setStep] = useState<ChangePasswordStep>("request-otp");
+  const [otp, setOtp] = useState("");
+  const [resetToken, setResetToken] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState<PasswordErrors>({});
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const passwordVisibility = usePasswordVisibility("password");
+  const confirmPasswordVisibility = usePasswordVisibility("password");
+  const maskedEmail = useMemo(() => MaskEmail(email), [email]);
+
+  async function sendOtp() {
+    if (!accessToken) {
+      toast.error("Please sign in before changing your password.");
+      return;
+    }
+
+    setIsSendingOtp(true);
+
+    try {
+      const response = await RequestPasswordChangeOtp(accessToken);
+
+      setStep("verify-otp");
+      setErrors({});
+      toast.success(response.message);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "We could not send the OTP right now.",
+      );
+    } finally {
+      setIsSendingOtp(false);
+    }
+  }
+
+  async function verifyOtp() {
+    if (!accessToken) {
+      toast.error("Please sign in before changing your password.");
+      return;
+    }
+
+    const parsedOtp = OtpSchema.safeParse({ otp });
+
+    if (!parsedOtp.success) {
+      setErrors({
+        otp: parsedOtp.error.flatten().fieldErrors.otp?.[0],
+      });
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+
+    try {
+      const response = await VerifyPasswordChangeOtp(accessToken, {
+        code: parsedOtp.data.otp,
+      });
+
+      setResetToken(response.resetToken);
+      setStep("set-password");
+      setErrors({});
+      toast.success(response.message);
+    } catch (error) {
+      setErrors({
+        otp:
+          error instanceof Error
+            ? error.message
+            : "We could not verify the OTP right now.",
+      });
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  }
+
+  async function savePassword() {
+    if (!accessToken) {
+      toast.error("Please sign in before changing your password.");
+      return;
+    }
+
+    if (!resetToken) {
+      toast.error("Verify your OTP before changing your password.");
+      setStep("verify-otp");
+      return;
+    }
+
+    const parsedPassword = ResetPasswordSchema.safeParse({
+      password,
+      confirmPassword,
+    });
+
+    if (!parsedPassword.success) {
+      const fieldErrors = parsedPassword.error.flatten().fieldErrors;
+
+      setErrors({
+        password: fieldErrors.password?.[0],
+        confirmPassword: fieldErrors.confirmPassword?.[0],
+      });
+      return;
+    }
+
+    setIsSavingPassword(true);
+
+    try {
+      const response = await ChangeAuthenticatedPassword(accessToken, {
+        resetToken,
+        newPassword: parsedPassword.data.password,
+        confirmNewPassword: parsedPassword.data.confirmPassword,
+      });
+
+      resetFlow();
+      toast.success(response.message);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "We could not change your password right now.",
+      );
+    } finally {
+      setIsSavingPassword(false);
+    }
+  }
+
+  function updateOtp(event: ChangeEvent<HTMLInputElement>) {
+    setOtp(event.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH));
+    setErrors((current) => ({ ...current, otp: undefined }));
+  }
+
+  function resetFlow() {
+    setStep("request-otp");
+    setOtp("");
+    setResetToken("");
+    setPassword("");
+    setConfirmPassword("");
+    setErrors({});
+  }
+
+  return (
+    <div className="grid gap-4">
+      <div className="grid gap-3 md:grid-cols-3">
+        <PasswordStepPill
+          icon={MailCheck}
+          isActive={step === "request-otp"}
+          isComplete={step !== "request-otp"}
+          label="Send OTP"
+        />
+        <PasswordStepPill
+          icon={ShieldCheck}
+          isActive={step === "verify-otp"}
+          isComplete={step === "set-password"}
+          label="Verify"
+        />
+        <PasswordStepPill
+          icon={LockKeyhole}
+          isActive={step === "set-password"}
+          isComplete={false}
+          label="New Password"
+        />
+      </div>
+
+      <div className="rounded-[1.5rem] border border-darknavy/10 bg-offwhite/65 p-4">
+        {step === "request-otp" ? (
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-darknavy">
+                Send OTP to {maskedEmail || "your account email"}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-darknavy/58">
+                You will use this code before entering a new password.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={sendOtp}
+              disabled={isSendingOtp}
+              className={PrimarySettingsButtonClassName}
+            >
+              <Send className="h-4 w-4" aria-hidden="true" />
+              <span>{isSendingOtp ? "Sending..." : "Send OTP"}</span>
+            </button>
+          </div>
+        ) : null}
+
+        {step === "verify-otp" ? (
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <SettingsInputField
+              error={errors.otp}
+              label="OTP Code"
+            >
+              <input
+                type="text"
+                inputMode="numeric"
+                value={otp}
+                onChange={updateOtp}
+                maxLength={OTP_LENGTH}
+                placeholder="Enter OTP"
+                className={SettingsInputClassName}
+              />
+            </SettingsInputField>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={resetFlow}
+                className={SecondarySettingsButtonClassName}
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+                <span>Cancel</span>
+              </button>
+              <button
+                type="button"
+                onClick={verifyOtp}
+                disabled={isVerifyingOtp || otp.length !== OTP_LENGTH}
+                className={PrimarySettingsButtonClassName}
+              >
+                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                <span>{isVerifyingOtp ? "Verifying..." : "Verify OTP"}</span>
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {step === "set-password" ? (
+          <div className="grid gap-4">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <SettingsInputField
+                error={errors.password}
+                label="New Password"
+              >
+                <PasswordInput
+                  autoComplete="new-password"
+                  placeholder="Enter your new password"
+                  value={password}
+                  visibility={passwordVisibility}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    setErrors((current) => ({ ...current, password: undefined }));
+                  }}
+                />
+              </SettingsInputField>
+              <SettingsInputField
+                error={errors.confirmPassword}
+                label="Confirm Password"
+              >
+                <PasswordInput
+                  autoComplete="new-password"
+                  placeholder="Confirm your new password"
+                  value={confirmPassword}
+                  visibility={confirmPasswordVisibility}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value);
+                    setErrors((current) => ({
+                      ...current,
+                      confirmPassword: undefined,
+                    }));
+                  }}
+                />
+              </SettingsInputField>
+            </div>
+            <PasswordRequirementList password={password} />
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={resetFlow}
+                className={SecondarySettingsButtonClassName}
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+                <span>Cancel</span>
+              </button>
+              <button
+                type="button"
+                onClick={savePassword}
+                disabled={isSavingPassword}
+                className={PrimarySettingsButtonClassName}
+              >
+                <KeyRound className="h-4 w-4" aria-hidden="true" />
+                <span>{isSavingPassword ? "Saving..." : "Change Password"}</span>
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function PasswordStepPill({
+  icon: Icon,
+  isActive,
+  isComplete,
+  label,
+}: {
+  icon: typeof KeyRound;
+  isActive: boolean;
+  isComplete: boolean;
+  label: string;
+}) {
+  return (
+    <span
+      className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold ${
+        isActive
+          ? "border-skyblue/40 bg-skyblue/12 text-darknavy"
+          : isComplete
+            ? "border-citron/35 bg-citron/18 text-darknavy"
+            : "border-darknavy/10 bg-white text-darknavy/55"
+      }`}
+    >
+      <Icon className="h-4 w-4" aria-hidden="true" />
+      {label}
+    </span>
+  );
+}
+
+function SettingsInputField({
+  children,
+  error,
+  label,
+}: {
+  children: ReactNode;
+  error?: string;
+  label: string;
+}) {
+  return (
+    <label className="grid gap-2 self-start">
+      <span className="text-sm font-semibold text-darknavy">{label}</span>
+      {children}
+      <span className="min-h-4 text-xs font-medium text-coralpink">
+        {error ?? ""}
+      </span>
+    </label>
+  );
+}
+
+function PasswordInput({
+  autoComplete,
+  onChange,
+  placeholder,
+  value,
+  visibility,
+}: {
+  autoComplete: string;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  placeholder: string;
+  value: string;
+  visibility: ReturnType<typeof usePasswordVisibility>;
+}) {
+  const ToggleIcon = visibility.isPasswordVisible ? EyeOff : Eye;
+
+  return (
+    <div className="relative">
+      <input
+        type={visibility.inputType}
+        autoComplete={autoComplete}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`${SettingsInputClassName} pr-12`}
+      />
+      <button
+        type="button"
+        onClick={visibility.togglePasswordVisibility}
+        className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-darknavy/55 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+        aria-label={visibility.isPasswordVisible ? "Hide password" : "Show password"}
+      >
+        <ToggleIcon className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function PasswordRequirementList({ password }: { password: string }) {
+  const requirements = [
+    { label: "At least 8 characters", met: password.length >= 8 },
+    { label: "At least 1 uppercase letter", met: /[A-Z]/.test(password) },
+    { label: "At least 1 number", met: /\d/.test(password) },
+    { label: "At least 1 lowercase letter", met: /[a-z]/.test(password) },
+    {
+      label: "At least 1 special character",
+      met: /[^A-Za-z0-9]/.test(password),
+    },
+  ];
+
+  return (
+    <ul className="grid gap-2 rounded-2xl border border-darknavy/10 bg-white/70 p-4 sm:grid-cols-2 lg:grid-cols-5">
+      {requirements.map((requirement) => (
+        <li
+          key={requirement.label}
+          className={`flex items-center gap-2 text-xs font-medium ${
+            requirement.met ? "text-green-600" : "text-darknavy/55"
+          }`}
+        >
+          <span
+            className={`inline-flex h-5 w-5 items-center justify-center rounded-full border ${
+              requirement.met
+                ? "border-green-500 bg-green-500 text-white"
+                : "border-darknavy/12 bg-white text-transparent"
+            }`}
+          >
+            <Check className="h-3 w-3" aria-hidden="true" />
+          </span>
+          {requirement.label}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function MaskEmail(email: string) {
+  const [name, domain] = email.split("@");
+
+  if (!name || !domain) {
+    return "";
+  }
+
+  if (name.length <= 2) {
+    return `${name[0] ?? "*"}***@${domain}`;
+  }
+
+  return `${name.slice(0, 2)}***${name.slice(-1)}@${domain}`;
 }
 
 function ThemePreviewGrid({

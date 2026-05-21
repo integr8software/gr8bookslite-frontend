@@ -107,6 +107,30 @@ export type ResetPasswordResponse = {
   message: string;
 };
 
+export type RequestPasswordChangeOtpResponse = {
+  message: string;
+  maskedEmail: string;
+};
+
+export type VerifyPasswordChangeOtpRequest = {
+  code: string;
+};
+
+export type VerifyPasswordChangeOtpResponse = {
+  message: string;
+  resetToken: string;
+};
+
+export type ChangeAuthenticatedPasswordRequest = {
+  resetToken: string;
+  newPassword: string;
+  confirmNewPassword: string;
+};
+
+export type ChangeAuthenticatedPasswordResponse = {
+  message: string;
+};
+
 export type ChangeVerificationEmailRequest = {
   currentEmail: string;
   newEmail: string;

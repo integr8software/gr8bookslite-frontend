@@ -1,7 +1,6 @@
 import { Search } from "lucide-react";
 import { UserListTablePaginationStorageKey } from "@/app/src/constants/modules/user-management/UserListConstants";
 import type {
-	DepartmentRecord,
 	UserManagementRecord,
 	UserRoleRecord,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
@@ -11,17 +10,15 @@ import { UserListTableRow } from "@/app/src/ui/modules/system-administration/use
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 
 export function UserListTable({
-	departments,
 	users,
 	userRoles,
 	onStatusChange,
 }: {
-	departments: DepartmentRecord[];
 	users: UserManagementRecord[];
 	userRoles: UserRoleRecord[];
 	onStatusChange: (user: UserManagementRecord) => void;
 }) {
-	const userList = useUserListTable({ departments, users, userRoles });
+	const userList = useUserListTable({ users, userRoles });
 
 	return (
 		<div
@@ -29,14 +26,11 @@ export function UserListTable({
 			data-spotlight-id="users-table"
 		>
 			<UserListTableFilters
-				groupFilter={userList.departmentFilter}
-				groupOptions={userList.departmentOptions}
 				query={userList.query}
 				statusFilter={userList.statusFilter}
 				statusOptions={userList.statusOptions}
 				typeFilter={userList.roleFilter}
 				typeOptions={userList.roleOptions}
-				onGroupFilterChange={userList.setDepartmentFilter}
 				onQueryChange={userList.setQuery}
 				onResetFilters={userList.resetFilters}
 				onStatusFilterChange={userList.setStatusFilter}

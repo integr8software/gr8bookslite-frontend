@@ -15,7 +15,6 @@ import {
   UserListStatusOptions,
 } from "@/app/src/constants/modules/user-management/UserListConstants";
 import type {
-  DepartmentRecord,
   UserManagementRecord,
   UserRoleRecord,
   UserStatus,
@@ -26,17 +25,14 @@ import type {
 } from "@/app/src/types/modules/user-management/UserListTypes";
 
 type UseUserListTableInput = {
-  departments: DepartmentRecord[];
   users: UserManagementRecord[];
   userRoles: UserRoleRecord[];
 };
 
 export function useUserListTable({
-  departments,
   users,
   userRoles,
 }: UseUserListTableInput) {
-  const [departmentFilter, setDepartmentFilterState] = useState("All");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
@@ -49,10 +45,6 @@ export function useUserListTable({
   const [statusFilter, setStatusFilterState] = useState<UserStatus | "All">(
     "All",
   );
-  const departmentOptions = useMemo(
-    () => departments.map((department) => department.name).sort(),
-    [departments],
-  );
   const roleOptions = useMemo(
     () => userRoles.map((role) => role.name).sort(),
     [userRoles],
@@ -62,13 +54,10 @@ export function useUserListTable({
     () =>
       users.map((user) => ({
         ...user,
-        department:
-          departments.find((department) => department.id === user.departmentId)
-            ?.name ?? "-",
         userRole:
           userRoles.find((role) => role.id === user.userRoleId)?.name ?? "-",
       })),
-    [departments, userRoles, users],
+    [userRoles, users],
   );
   const filteredUsers = useMemo(
     () =>
@@ -78,7 +67,6 @@ export function useUserListTable({
           user.email,
           user.contactNumber,
           user.userRole,
-          user.department,
           user.status,
         ]
           .filter(Boolean)
@@ -88,12 +76,10 @@ export function useUserListTable({
         return (
           searchable.includes(query.toLowerCase()) &&
           (statusFilter === "All" || user.status === statusFilter) &&
-          (roleFilter === "All" || user.userRole === roleFilter) &&
-          (departmentFilter === "All" ||
-            user.department === departmentFilter)
+          (roleFilter === "All" || user.userRole === roleFilter)
         );
       }),
-    [departmentFilter, query, roleFilter, statusFilter, tableData],
+    [query, roleFilter, statusFilter, tableData],
   );
   const columns = useMemo<ColumnDef<UserListTableRecord>[]>(
     () =>
@@ -128,15 +114,9 @@ export function useUserListTable({
   });
 
   function resetFilters() {
-    setDepartmentFilterState("All");
     setQueryState("");
     setRoleFilterState("All");
     setStatusFilterState("All");
-    table.setPageIndex(0);
-  }
-
-  function setDepartmentFilter(value: string) {
-    setDepartmentFilterState(value);
     table.setPageIndex(0);
   }
 
@@ -156,13 +136,10 @@ export function useUserListTable({
   }
 
   return {
-    departmentFilter,
-    departmentOptions,
     query,
     resetFilters,
     roleFilter,
     roleOptions,
-    setDepartmentFilter,
     setQuery,
     setRoleFilter,
     setStatusFilter,

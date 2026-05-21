@@ -44,7 +44,6 @@ export function UserListTableRow({
 					{user.userRole}
 				</span>
 			</UserListTableCell>
-			<UserListTableCell>{user.department}</UserListTableCell>
 			<UserListTableCell>
 				<UserListStatusBadge status={user.status} />
 			</UserListTableCell>

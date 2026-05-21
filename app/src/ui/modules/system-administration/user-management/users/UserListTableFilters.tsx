@@ -2,14 +2,11 @@ import { Search } from "lucide-react";
 import type { UserStatus } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 
 type UserListTableFiltersProps = {
-	groupFilter: string;
-	groupOptions: string[];
 	query: string;
 	statusFilter: UserStatus | "All";
 	statusOptions: readonly UserStatus[];
 	typeFilter: string;
 	typeOptions: string[];
-	onGroupFilterChange: (value: string) => void;
 	onQueryChange: (value: string) => void;
 	onResetFilters: () => void;
 	onStatusFilterChange: (value: UserStatus | "All") => void;
@@ -17,14 +14,11 @@ type UserListTableFiltersProps = {
 };
 
 export function UserListTableFilters({
-	groupFilter,
-	groupOptions,
 	query,
 	statusFilter,
 	statusOptions,
 	typeFilter,
 	typeOptions,
-	onGroupFilterChange,
 	onQueryChange,
 	onResetFilters,
 	onStatusFilterChange,
@@ -48,7 +42,7 @@ export function UserListTableFilters({
 					className="h-9 w-full rounded border border-darknavy/10 bg-white pl-9 pr-3 text-xs text-darknavy outline-none transition placeholder:text-darknavy/38 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
 				/>
 			</div>
-			<div className="grid min-w-full flex-1 gap-3 sm:min-w-0 sm:grid-cols-2 xl:grid-cols-3">
+			<div className="grid min-w-full flex-1 gap-3 sm:min-w-0 sm:grid-cols-2">
 				<ToolbarSelect
 					label="Status"
 					value={statusFilter}
@@ -62,12 +56,6 @@ export function UserListTableFilters({
 					value={typeFilter}
 					options={["All", ...typeOptions]}
 					onChange={onTypeFilterChange}
-				/>
-				<ToolbarSelect
-					label="Department"
-					value={groupFilter}
-					options={["All", ...groupOptions]}
-					onChange={onGroupFilterChange}
 				/>
 			</div>
 			<button

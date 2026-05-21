@@ -19,14 +19,14 @@ export const UserListSpotlightTutorialSteps = [
     key: "add-user",
     title: "Add new users from here",
     description:
-      "Use this action to create a user profile, assign the right user role, and place each person in the correct department.",
+      "Use this action to create a user profile and assign the right user role.",
     selectors: ["[data-spotlight-id='users-add-user']"],
   },
   {
     key: "filters",
     title: "Filter the user directory quickly",
     description:
-      "Search and filter by status, user role, and department to narrow the list before reviewing account access.",
+      "Search and filter by status or user role to narrow the list before reviewing account access.",
     selectors: ["[data-spotlight-id='users-filters']"],
   },
   {

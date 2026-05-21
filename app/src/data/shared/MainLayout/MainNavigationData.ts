@@ -801,12 +801,6 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
             "/system-administration/user-management/user-role",
             "maintenance.users",
           ),
-          item(
-            "maintenance-department",
-            "Department",
-            "/system-administration/user-management/department",
-            "maintenance.users",
-          ),
         ],
       ),
       item(

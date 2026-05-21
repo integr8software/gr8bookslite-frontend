@@ -51,7 +51,6 @@ function UserListFormPageInner() {
       <UserListForm
         errors={page.errors}
         isReadonly={page.isReadonly}
-        departments={page.departments}
         userRoles={page.userRoles}
         values={page.values}
         onChange={page.handleInputChange}

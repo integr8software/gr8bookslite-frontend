@@ -8,7 +8,6 @@ export type UserListRecord = {
   username: string;
   email: string;
   contactNo: string;
-  department: string;
   userRole: string;
   status: UserListStatus;
   lastLogin: string;
@@ -17,7 +16,6 @@ export type UserListRecord = {
 };
 
 export type UserListTableRecord = UserManagementRecord & {
-  department: string;
   userRole: string;
 };
 
@@ -26,5 +24,4 @@ export type UserListTableColumnKey =
   | "lastLogin"
   | "name"
   | "status"
-  | "department"
   | "userRole";

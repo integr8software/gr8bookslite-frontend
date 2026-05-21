@@ -4,10 +4,8 @@ import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
-  InitialDepartments,
   InitialUserRoles,
   InitialUsers,
-  type DepartmentRecord,
   type UserManagementRecord,
   type UserRoleRecord,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
@@ -16,16 +14,12 @@ import { UserManagementQueryKeys } from "@/app/src/services/modules/system-admin
 type UserManagementState = {
   users: UserManagementRecord[];
   userRoles: UserRoleRecord[];
-  departments: DepartmentRecord[];
   addUser: (user: UserManagementRecord) => void;
   updateUser: (user: UserManagementRecord) => void;
   deleteUser: (userId: string) => void;
   addUserRole: (userRole: UserRoleRecord) => void;
   updateUserRole: (userRole: UserRoleRecord) => void;
   deleteUserRole: (userRoleId: string) => void;
-  addDepartment: (department: DepartmentRecord) => void;
-  updateDepartment: (department: DepartmentRecord) => void;
-  deleteDepartment: (departmentId: string) => void;
   isLoading: boolean;
   isMutating: boolean;
 };
@@ -44,11 +38,6 @@ export function useUserManagementStore<TSelected = UserManagementState>(
     queryFn: async () => InitialUserRoles,
     initialData: InitialUserRoles,
   });
-  const departmentsQuery = useQuery({
-    queryKey: UserManagementQueryKeys.departments(),
-    queryFn: async () => InitialDepartments,
-    initialData: InitialDepartments,
-  });
 
   function setUsers(
     updater: (users: UserManagementRecord[]) => UserManagementRecord[],
@@ -65,15 +54,6 @@ export function useUserManagementStore<TSelected = UserManagementState>(
     queryClient.setQueryData<UserRoleRecord[]>(
       UserManagementQueryKeys.userRoles(),
       (current = InitialUserRoles) => updater(current),
-    );
-  }
-
-  function setDepartments(
-    updater: (departments: DepartmentRecord[]) => DepartmentRecord[],
-  ) {
-    queryClient.setQueryData<DepartmentRecord[]>(
-      UserManagementQueryKeys.departments(),
-      (current = InitialDepartments) => updater(current),
     );
   }
 
@@ -153,52 +133,10 @@ export function useUserManagementStore<TSelected = UserManagementState>(
       toast.error("Could not update user role status. Please try again.");
     },
   });
-  const addDepartmentMutation = useMutation({
-    mutationFn: async (department: DepartmentRecord) => department,
-    onSuccess: (department) => {
-      setDepartments((departments) => [...departments, department]);
-      toast.success("Department created.");
-    },
-    onError: () => {
-      toast.error("Could not create department. Please try again.");
-    },
-  });
-  const updateDepartmentMutation = useMutation({
-    mutationFn: async (department: DepartmentRecord) => department,
-    onSuccess: (department) => {
-      setDepartments((departments) =>
-        departments.map((current) =>
-          current.id === department.id ? department : current,
-        ),
-      );
-      toast.success("Department updated.");
-    },
-    onError: () => {
-      toast.error("Could not update department. Please try again.");
-    },
-  });
-  const deleteDepartmentMutation = useMutation({
-    mutationFn: async (departmentId: string) => departmentId,
-    onSuccess: (departmentId) => {
-      setDepartments((departments) =>
-        departments.map((department) =>
-          department.id === departmentId
-            ? { ...department, status: "Inactive" }
-            : department,
-        ),
-      );
-      toast.success("Department set as inactive.");
-    },
-    onError: () => {
-      toast.error("Could not update department status. Please try again.");
-    },
-  });
-
   const state = useMemo<UserManagementState>(
     () => ({
       users: usersQuery.data,
       userRoles: userRolesQuery.data,
-      departments: departmentsQuery.data,
       addUser: (user) => addUserMutation.mutate(user),
       updateUser: (user) => updateUserMutation.mutate(user),
       deleteUser: (userId) => deleteUserMutation.mutate(userId),
@@ -206,37 +144,20 @@ export function useUserManagementStore<TSelected = UserManagementState>(
       updateUserRole: (userRole) => updateUserRoleMutation.mutate(userRole),
       deleteUserRole: (userRoleId) =>
         deleteUserRoleMutation.mutate(userRoleId),
-      addDepartment: (department) =>
-        addDepartmentMutation.mutate(department),
-      updateDepartment: (department) =>
-        updateDepartmentMutation.mutate(department),
-      deleteDepartment: (departmentId) =>
-        deleteDepartmentMutation.mutate(departmentId),
-      isLoading:
-        usersQuery.isLoading ||
-        userRolesQuery.isLoading ||
-        departmentsQuery.isLoading,
+      isLoading: usersQuery.isLoading || userRolesQuery.isLoading,
       isMutating:
         addUserMutation.isPending ||
         updateUserMutation.isPending ||
         deleteUserMutation.isPending ||
         addUserRoleMutation.isPending ||
         updateUserRoleMutation.isPending ||
-        deleteUserRoleMutation.isPending ||
-        addDepartmentMutation.isPending ||
-        updateDepartmentMutation.isPending ||
-        deleteDepartmentMutation.isPending,
+        deleteUserRoleMutation.isPending,
     }),
     [
-      addDepartmentMutation,
       addUserMutation,
       addUserRoleMutation,
-      deleteDepartmentMutation,
       deleteUserMutation,
       deleteUserRoleMutation,
-      departmentsQuery.data,
-      departmentsQuery.isLoading,
-      updateDepartmentMutation,
       updateUserMutation,
       updateUserRoleMutation,
       userRolesQuery.data,

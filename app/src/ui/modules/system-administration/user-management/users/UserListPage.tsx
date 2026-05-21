@@ -16,7 +16,6 @@ import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 export function UserListPage() {
   const users = useUserManagementStore((state) => state.users);
   const userRoles = useUserManagementStore((state) => state.userRoles);
-  const departments = useUserManagementStore((state) => state.departments);
   const updateUser = useUserManagementStore((state) => state.updateUser);
   const isMutating = useUserManagementStore((state) => state.isMutating);
   const [pendingStatusUser, setPendingStatusUser] =
@@ -53,7 +52,6 @@ export function UserListPage() {
         title="Users"
       />
       <UserListTable
-        departments={departments}
         users={users}
         userRoles={userRoles}
         onStatusChange={setPendingStatusUser}

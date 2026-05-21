@@ -1,7 +1,6 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { UserListStatusOptions } from "@/app/src/constants/modules/user-management/UserListConstants";
 import type {
-  DepartmentRecord,
   UserFormValues,
   UserRoleRecord,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
@@ -14,7 +13,6 @@ import type { UserFormErrors } from "@/app/src/types/modules/user-management/Use
 export function UserListForm({
   errors,
   isReadonly,
-  departments,
   userRoles,
   values,
   onChange,
@@ -23,7 +21,6 @@ export function UserListForm({
 }: {
   errors: UserFormErrors;
   isReadonly: boolean;
-  departments: DepartmentRecord[];
   userRoles: UserRoleRecord[];
   values: UserFormValues;
   onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
@@ -101,21 +98,6 @@ export function UserListForm({
               {userRoles.map((userRole) => (
                 <option key={userRole.id} value={userRole.id}>
                   {userRole.name}
-                </option>
-              ))}
-            </select>
-          </UserListField>
-          <UserListField label="Department">
-            <select
-              name="departmentId"
-              value={values.departmentId}
-              onChange={onChange}
-              disabled={isReadonly}
-              className={UserListFieldClassName}
-            >
-              {departments.map((department) => (
-                <option key={department.id} value={department.id}>
-                  {department.name}
                 </option>
               ))}
             </select>

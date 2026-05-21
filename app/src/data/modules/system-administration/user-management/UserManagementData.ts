@@ -1,12 +1,4 @@
 import {
-  InitialDepartmentFormValues as InitialDepartmentFormValuesSource,
-  InitialDepartments,
-  createDepartmentRecord,
-  updateDepartmentRecord,
-  type DepartmentFormValues as DepartmentFormValuesSource,
-  type DepartmentRecord as DepartmentRecordSource,
-} from "@/app/src/data/modules/system-administration/user-management/department/DepartmentData";
-import {
   InitialUserRoleFormValues as InitialUserRoleFormValuesSource,
   InitialUserRoles,
   UserAccessRoleOptions,
@@ -25,7 +17,6 @@ export type UserManagementRecord = {
   email: string;
   contactNumber: string;
   userRoleId: string;
-  departmentId: string;
   status: UserStatus;
   lastLogin?: string;
   profileImageUrl?: string;
@@ -33,22 +24,15 @@ export type UserManagementRecord = {
 
 export type UserRoleRecord = UserRoleRecordSource;
 
-export type DepartmentRecord = DepartmentRecordSource;
-
 export type UserFormValues = Omit<UserManagementRecord, "id">;
 
 export type UserRoleFormValues = UserRoleFormValuesSource;
 
-export type DepartmentFormValues = DepartmentFormValuesSource;
-
 export {
-  InitialDepartments,
   InitialUserRoles,
   UserAccessRoleOptions,
   UserPermissionActions,
-  createDepartmentRecord,
   createUserRoleRecord,
-  updateDepartmentRecord,
   updateUserRoleRecord,
 };
 
@@ -57,13 +41,10 @@ export const InitialUserFormValues: UserFormValues = {
   email: "",
   contactNumber: "",
   userRoleId: "user-role-admin",
-  departmentId: "department-operations",
   status: "Active",
 };
 
 export const InitialUserRoleFormValues = InitialUserRoleFormValuesSource;
-
-export const InitialDepartmentFormValues = InitialDepartmentFormValuesSource;
 
 export const InitialUsers: UserManagementRecord[] = [
   {
@@ -72,7 +53,6 @@ export const InitialUsers: UserManagementRecord[] = [
     email: "john.delacruz@gr8books.test",
     contactNumber: "+63 916 460 4120",
     userRoleId: "user-role-admin",
-    departmentId: "department-operations",
     status: "Active",
     lastLogin: "May 15, 2026 08:45 AM",
     profileImageUrl:
@@ -84,7 +64,6 @@ export const InitialUsers: UserManagementRecord[] = [
     email: "jane.santos@gr8books.test",
     contactNumber: "+63 917 120 3301",
     userRoleId: "user-role-encoder",
-    departmentId: "department-finance",
     status: "Active",
     lastLogin: "May 14, 2026 10:20 AM",
     profileImageUrl:
@@ -96,7 +75,6 @@ export const InitialUsers: UserManagementRecord[] = [
     email: "michael.reyes@gr8books.test",
     contactNumber: "+63 919 443 7902",
     userRoleId: "user-role-admin",
-    departmentId: "department-it",
     status: "Active",
     lastLogin: "May 15, 2026 10:15 AM",
     profileImageUrl:
@@ -108,7 +86,6 @@ export const InitialUsers: UserManagementRecord[] = [
     email: "emily.lim@gr8books.test",
     contactNumber: "+63 920 115 8364",
     userRoleId: "user-role-encoder",
-    departmentId: "department-hr",
     status: "Inactive",
     lastLogin: "May 12, 2026 02:30 PM",
     profileImageUrl:
@@ -120,7 +97,6 @@ export const InitialUsers: UserManagementRecord[] = [
     email: "daniel.wilson@gr8books.test",
     contactNumber: "+63 917 884 1209",
     userRoleId: "user-role-manager",
-    departmentId: "department-operations",
     status: "Pending",
     lastLogin: "May 15, 2026 09:00 AM",
     profileImageUrl:
@@ -132,7 +108,6 @@ export const InitialUsers: UserManagementRecord[] = [
     email: "sarah.davis@gr8books.test",
     contactNumber: "+63 921 771 3004",
     userRoleId: "user-role-encoder",
-    departmentId: "department-marketing",
     status: "Pending",
     lastLogin: "May 13, 2026 11:00 AM",
     profileImageUrl:
@@ -144,7 +119,6 @@ export const InitialUsers: UserManagementRecord[] = [
     email: "david.martinez@gr8books.test",
     contactNumber: "+63 922 556 4421",
     userRoleId: "user-role-encoder",
-    departmentId: "department-finance",
     status: "Inactive",
     lastLogin: "May 8, 2026 09:15 AM",
     profileImageUrl:
@@ -156,7 +130,6 @@ export const InitialUsers: UserManagementRecord[] = [
     email: "laura.taylor@gr8books.test",
     contactNumber: "+63 923 661 2105",
     userRoleId: "user-role-manager",
-    departmentId: "department-it",
     status: "Active",
     lastLogin: "May 14, 2026 03:40 PM",
     profileImageUrl:
@@ -168,7 +141,6 @@ export const InitialUsers: UserManagementRecord[] = [
     email: "carlo.mendoza@gr8books.test",
     contactNumber: "+63 924 716 8830",
     userRoleId: "user-role-auditor",
-    departmentId: "department-compliance",
     status: "Active",
     lastLogin: "May 15, 2026 06:50 AM",
   },
@@ -178,7 +150,6 @@ export const InitialUsers: UserManagementRecord[] = [
     email: "alyssa.tan@gr8books.test",
     contactNumber: "+63 925 613 4208",
     userRoleId: "user-role-encoder",
-    departmentId: "department-purchasing",
     status: "Pending",
     lastLogin: "May 15, 2026 07:10 AM",
   },

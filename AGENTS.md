@@ -189,6 +189,8 @@ move toward this same shape when refactored.
 `FeatureHeader.tsx` owns the top action area:
 
 - Title and short helper text/description that explains what the module is for.
+- Header eyebrow/context should show the parent area with the icon first, then
+  the parent label text, such as `<UserCog /> User management`.
 - Keep a Quick Tour action when the module has spotlight/tutorial data.
 - Primary Add button linked to `${FeatureHref}/add`.
 - Add buttons must use the shared module primary button styling so they follow
@@ -312,6 +314,9 @@ column scanning, refactor them toward `ModuleTable`.
   navigation in `useFeatureAction.ts`.
 - Make view mode readonly.
 - If edit/view record is missing, render `FeatureNotFound`.
+- Track edit origin explicitly instead of relying on `router.back()`. A direct
+  list-to-edit flow should have list origin, while a view-to-edit flow should
+  preserve view origin with a safe in-app marker such as `?from=view`.
 - After successful add, navigate back to `FeatureHref`.
 - After successful edit, navigate to the record view page when edit was opened
   from view, otherwise navigate back to `FeatureHref`.
@@ -323,7 +328,14 @@ column scanning, refactor them toward `ModuleTable`.
 `FeatureActionHeader.tsx` owns:
 
 - Mode-aware heading/actions.
+- Header eyebrow/context should show the parent area with the icon first, then
+  the parent label text, matching the list header convention.
 - Back/cancel navigation.
+- When edit mode was opened from the list, Cancel/Close should return to
+  `FeatureHref`.
+- When edit mode was opened from a view page, Cancel/Close should return to
+  `${FeatureHref}/view/${record.id}` so list -> view -> edit can go back to
+  view.
 - View mode actions should include Back, Edit, and a status action when the
   feature has status toggling. Use `Set as Inactive` for active records and
   `Set as Active` for inactive records.

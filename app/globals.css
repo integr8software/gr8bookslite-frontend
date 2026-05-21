@@ -536,6 +536,43 @@ button {
   }
 }
 
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .purchase-request-print-document,
+  .purchase-request-print-document * {
+    visibility: visible !important;
+  }
+
+  .purchase-request-print-controls {
+    display: none !important;
+  }
+
+  .purchase-request-print-stage {
+    background: #ffffff !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .purchase-request-print-document {
+    box-shadow: none !important;
+    left: 0 !important;
+    margin: 0 auto !important;
+    min-height: auto !important;
+    padding: 0 !important;
+    position: absolute !important;
+    top: 0 !important;
+    width: 190mm !important;
+  }
+}
+
 /* Start of Book 404 Animation Styles */
 
 .button-shadow {

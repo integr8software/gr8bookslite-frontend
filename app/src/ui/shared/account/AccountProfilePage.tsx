@@ -1,7 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Camera, Mail, Phone, ShieldCheck } from "lucide-react";
+import { Camera, Mail, Phone, Save, ShieldCheck, X } from "lucide-react";
+import { PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/ContactData";
 import { useAccountProfile } from "@/app/src/hooks/shared/useAccountProfile";
 import { ImageCropDialog } from "@/app/src/ui/shared/ImageCropDialog";
 import { AppSkeleton } from "@/app/src/ui/shared/AppSkeleton";
@@ -10,6 +11,9 @@ import { GradientBlurBackground } from "@/app/src/ui/shared/GradientBlurBackgrou
 export function AccountProfilePage() {
   const {
     isLoading,
+    isUpdatingAvatar,
+    isSavingProfile,
+    hasPendingProfileChanges,
     pendingAvatarCrop,
     profile,
     visibleFieldKeys,
@@ -17,8 +21,11 @@ export function AccountProfilePage() {
     dismissAvatarCropper,
     updateAvatar,
     updateContactNumber,
+    focusContactNumber,
     updateFullName,
     removeAvatar,
+    cancelProfileChanges,
+    saveProfileChanges,
   } = useAccountProfile();
 
   if (isLoading) {
@@ -29,8 +36,8 @@ export function AccountProfilePage() {
     <section className="relative overflow-hidden rounded-[2rem] border border-darknavy/10 bg-white px-4 py-5 shadow-[0_22px_70px_rgba(33,39,56,0.08)] sm:px-6 sm:py-6 lg:px-8">
       <GradientBlurBackground fixed={false} height="h-full" className="opacity-60" />
       <div className="relative grid gap-6">
-        <header className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-skyblue">
               Account Profile
             </p>
@@ -42,9 +49,29 @@ export function AccountProfilePage() {
               `SUPER_ADMIN`, `ADMIN`, and `USER` differences without changing the page structure later.
             </p>
           </div>
-          <span className="inline-flex w-fit items-center rounded-full bg-citron/40 px-3 py-1 text-xs font-semibold text-darknavy">
-            {profile.roleLabel}
-          </span>
+          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto xl:justify-end">
+            <span className="inline-flex min-h-10 w-full items-center justify-center rounded-full bg-citron/40 px-3 py-1 text-xs font-semibold text-darknavy sm:w-auto">
+              {profile.roleLabel}
+            </span>
+            <button
+              type="button"
+              onClick={cancelProfileChanges}
+              disabled={!hasPendingProfileChanges || isSavingProfile}
+              className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-full border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:bg-offwhite disabled:cursor-not-allowed disabled:border-darknavy/8 disabled:text-darknavy/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 sm:flex-none"
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+              <span>Cancel</span>
+            </button>
+            <button
+              type="button"
+              onClick={saveProfileChanges}
+              disabled={!hasPendingProfileChanges || isSavingProfile}
+              className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-full bg-darknavy px-4 text-sm font-semibold text-offwhite shadow-sm transition hover:bg-darknavy/92 disabled:cursor-not-allowed disabled:bg-darknavy/35 disabled:text-offwhite/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 sm:flex-none"
+            >
+              <Save className="h-4 w-4" aria-hidden="true" />
+              <span>{isSavingProfile ? "Saving..." : "Save Changes"}</span>
+            </button>
+          </div>
         </header>
 
         <div className="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
@@ -79,16 +106,16 @@ export function AccountProfilePage() {
                     <button
                       type="button"
                       onClick={removeAvatar}
+                      disabled={isUpdatingAvatar}
                       className="text-sm font-semibold text-coralpink transition hover:text-coralpink/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
                     >
-                      Remove avatar
+                      {isUpdatingAvatar ? "Updating avatar..." : "Remove avatar"}
                     </button>
                   ) : null}
                 </>
               ) : null}
               <p className="max-w-xs text-xs leading-5 text-darknavy/50">
-                Avatar changes are stored locally for now, which keeps this first profile flow simple until backend media
-                persistence is added.
+                Avatar images are cropped before upload and stored in your Supabase user avatar folder.
               </p>
             </div>
           </section>
@@ -136,9 +163,12 @@ export function AccountProfilePage() {
                 >
                   <input
                     type="tel"
+                    inputMode="numeric"
                     value={profile.contactNumber}
                     onChange={updateContactNumber}
-                    placeholder="Add your contact number"
+                    onFocus={focusContactNumber}
+                    maxLength={16}
+                    placeholder={PhilippineContactNumberPlaceholder}
                     className={InputClassName}
                   />
                 </FieldCard>

@@ -40,6 +40,10 @@ export type AuthProfileResponse = {
     email: string;
     name: string;
     contactNumber: string | null;
+    avatarFileName: string | null;
+    avatarMimeType: string | null;
+    avatarStoragePath: string | null;
+    avatarPublicUrl: string | null;
     systemRole: "SUPER_ADMIN" | "STANDARD";
     status: string;
     emailVerifiedAt: string | null;

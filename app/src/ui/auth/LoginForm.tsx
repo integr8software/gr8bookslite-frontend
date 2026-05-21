@@ -6,8 +6,8 @@ import { ArrowRight, LoaderCircle } from "lucide-react";
 import { useLoginForm } from "@/app/src/hooks/auth/useLoginForm";
 import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
 import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
-import { Gr8BooksLoadingScreen } from "@/app/src/ui/shared/Gr8BooksLoadingScreen";
-import { Gr8BooksLogoText } from "@/app/src/ui/shared/Gr8BooksLogoText";
+import { MainLoadingScreen } from "@/app/src/ui/shared/MainLoadingScreen";
+import { LogoText } from "@/app/src/ui/shared/LogoText";
 import { AuthField } from "./AuthField";
 
 export function LoginForm() {
@@ -28,7 +28,7 @@ export function LoginForm() {
 	}
 
 	if (isSystemRedirecting) {
-		return <Gr8BooksLoadingScreen />;
+		return <MainLoadingScreen />;
 	}
 
 	return (
@@ -40,7 +40,7 @@ export function LoginForm() {
 							href="/"
 							className="inline-flex text-xl font-semibold sm:text-2xl lg:self-start"
 						>
-							<Gr8BooksLogoText neoClassName="text-sm" />
+							<LogoText brandSuffixClassName="text-sm" />
 						</Link>
 
 						<div className="mt-10 text-center sm:mt-14 lg:mt-20">

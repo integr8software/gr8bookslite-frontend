@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { BookOpenText, ChevronDown, ChevronRight } from "lucide-react";
 import { useMainLayout } from "@/app/src/hooks/shared/useMainLayout";
-import { Gr8BooksLoadingScreen } from "@/app/src/ui/shared/Gr8BooksLoadingScreen";
+import { MainLoadingScreen } from "@/app/src/ui/shared/MainLoadingScreen";
 import type {
 	MainBreadcrumb,
 	MainBreadcrumbDropdownItem,
@@ -88,7 +88,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
 	if (isShellLoading) {
 		return (
-			<Gr8BooksLoadingScreen message="Loading your workspace data..." />
+			<MainLoadingScreen message="Loading your workspace data..." />
 		);
 	}
 

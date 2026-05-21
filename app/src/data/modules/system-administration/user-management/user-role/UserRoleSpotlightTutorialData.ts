@@ -3,9 +3,8 @@ import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourType
 
 export const UserRoleSpotlightTutorialStorageVersion = "v1";
 export const UserRoleSpotlightTutorialOpenEvent =
-  "gr8bookslite:user-role-spotlight-open";
-export const UserRoleSpotlightTutorialStorageKey =
-  `gr8bookslite.spotlightTutorial.${UserRoleSpotlightTutorialStorageVersion}.${UserRoleHref}`;
+  "gr8booksneo:user-role-spotlight-open";
+export const UserRoleSpotlightTutorialStorageKey = `gr8booksneo.spotlightTutorial.${UserRoleSpotlightTutorialStorageVersion}.${UserRoleHref}`;
 
 export const UserRoleSpotlightTutorialSteps = [
   {

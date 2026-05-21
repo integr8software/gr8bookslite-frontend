@@ -1,13 +1,13 @@
 import { AppName } from "@/app/src/constants/shared/AppConstants";
-import { Gr8BooksLogoText } from "@/app/src/ui/shared/Gr8BooksLogoText";
+import { LogoText } from "@/app/src/ui/shared/LogoText";
 
-type Gr8BooksLoadingScreenProps = {
+type MainLoadingScreenProps = {
 	message?: string;
 };
 
-export function Gr8BooksLoadingScreen({
+export function MainLoadingScreen({
 	message = "Opening your workspace...",
-}: Gr8BooksLoadingScreenProps) {
+}: MainLoadingScreenProps) {
 	return (
 		<main className="flex min-h-screen items-center justify-center overflow-hidden bg-white px-6 py-10 text-darknavy">
 			<section
@@ -16,7 +16,7 @@ export function Gr8BooksLoadingScreen({
 				aria-live="polite"
 			>
 				<div className="text-2xl font-semibold tracking-tight text-darknavy">
-					<Gr8BooksLogoText neoClassName="text-base" />
+					<LogoText brandSuffixClassName="text-base" />
 				</div>
 
 				<div className="relative mt-10 h-36 w-44 perspective-distant">

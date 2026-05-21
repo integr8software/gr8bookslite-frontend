@@ -3,9 +3,8 @@ import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourType
 
 export const DepartmentSpotlightTutorialStorageVersion = "v1";
 export const DepartmentSpotlightTutorialOpenEvent =
-  "gr8bookslite:department-spotlight-open";
-export const DepartmentSpotlightTutorialStorageKey =
-  `gr8bookslite.spotlightTutorial.${DepartmentSpotlightTutorialStorageVersion}.${DepartmentHref}`;
+  "gr8booksneo:department-spotlight-open";
+export const DepartmentSpotlightTutorialStorageKey = `gr8booksneo.spotlightTutorial.${DepartmentSpotlightTutorialStorageVersion}.${DepartmentHref}`;
 
 export const DepartmentSpotlightTutorialSteps = [
   {

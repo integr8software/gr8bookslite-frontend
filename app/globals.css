@@ -140,15 +140,15 @@ button {
   cursor: pointer;
 }
 
-.neo-gradient-text {
+.brand-accent-text {
   @apply bg-gradient-to-r from-[#216dff] via-[#4937f2] to-[#8b00ff] bg-clip-text text-transparent;
 }
 
-.gr8books-logo-text {
+.brand-logo-text {
   color: #172554;
 }
 
-:root[data-app-theme="midnight-dark"] .gr8books-logo-text {
+:root[data-app-theme="midnight-dark"] .brand-logo-text {
   color: var(--offwhite);
   text-shadow:
     0 0 10px rgb(var(--skyblue-rgb) / 0.36),
@@ -156,7 +156,7 @@ button {
     0 0 42px rgba(209, 214, 70, 0.14);
 }
 
-:root[data-app-theme="midnight-dark"] .neo-gradient-text {
+:root[data-app-theme="midnight-dark"] .brand-accent-text {
   @apply from-skyblue via-citron to-coralpink;
   filter: drop-shadow(0 0 8px rgb(var(--skyblue-rgb) / 0.5))
     drop-shadow(0 0 18px rgba(249, 112, 104, 0.26));

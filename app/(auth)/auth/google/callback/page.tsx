@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
-import { Gr8BooksLoadingScreen } from "@/app/src/ui/shared/Gr8BooksLoadingScreen";
+import { MainLoadingScreen } from "@/app/src/ui/shared/MainLoadingScreen";
 import {
   GetFallbackPostAuthRedirectPath,
   IsOnboardingRedirectPath,
@@ -22,7 +22,7 @@ function ReadRedirectPath(mode: string | null) {
 
 export default function GoogleAuthCallbackPage() {
 	return (
-		<Suspense fallback={<Gr8BooksLoadingScreen />}>
+		<Suspense fallback={<MainLoadingScreen />}>
 			<GoogleAuthCallbackContent />
 		</Suspense>
 	);
@@ -70,7 +70,7 @@ function GoogleAuthCallbackContent() {
 	}
 
 	if (redirectState === "system") {
-		return <Gr8BooksLoadingScreen />;
+		return <MainLoadingScreen />;
 	}
 
 	return <GoogleAuthCallbackMessage />;

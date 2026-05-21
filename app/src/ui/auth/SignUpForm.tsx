@@ -12,7 +12,7 @@ import {
 import type { AuthFormValues } from "@/app/src/data/auth/AuthTypes";
 import { useSignUpForm } from "@/app/src/hooks/auth/useSignUpForm";
 import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
-import { Gr8BooksLogoText } from "@/app/src/ui/shared/Gr8BooksLogoText";
+import { LogoText } from "@/app/src/ui/shared/LogoText";
 import { AuthField } from "./AuthField";
 import { AuthPasswordRequirements } from "./AuthPasswordRequirements";
 import { ArrowRight, Check, LoaderCircle } from "lucide-react";
@@ -99,7 +99,7 @@ export function SignUpForm() {
 							href="/"
 							className="inline-flex text-xl font-semibold sm:text-2xl"
 						>
-							<Gr8BooksLogoText neoClassName="text-sm" />
+							<LogoText brandSuffixClassName="text-sm" />
 						</Link>
 
 						<div className="mt-10 text-center sm:mt-12">

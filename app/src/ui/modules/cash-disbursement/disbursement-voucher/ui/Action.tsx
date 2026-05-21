@@ -2,9 +2,13 @@
 
 import { Suspense, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
-  CheckCircle2,
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+import {
   CirclePlus,
   FileText,
   Paperclip,
@@ -12,7 +16,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { DisbursementVoucherHref, DisbursementVoucherWorkflowSteps } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
+import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
   DisbursementVoucherInitialEntryDraft,
   createAttachmentPlaceholders,
@@ -69,14 +73,22 @@ function DisbursementVoucherActionInner() {
   const params = useParams<{ recordId?: string }>();
   const searchParams = useSearchParams();
   const mode = getActionMode(pathname);
-  const transactions = useDisbursementVoucherStore((state) => state.transactions);
+  const transactions = useDisbursementVoucherStore(
+    (state) => state.transactions,
+  );
   const vouchers = useDisbursementVoucherStore((state) => state.vouchers);
   const addVoucher = useDisbursementVoucherStore((state) => state.addVoucher);
-  const updateVoucher = useDisbursementVoucherStore((state) => state.updateVoucher);
-  const deleteVoucher = useDisbursementVoucherStore((state) => state.deleteVoucher);
+  const updateVoucher = useDisbursementVoucherStore(
+    (state) => state.updateVoucher,
+  );
+  const deleteVoucher = useDisbursementVoucherStore(
+    (state) => state.deleteVoucher,
+  );
   const isMutating = useDisbursementVoucherStore((state) => state.isMutating);
   const initialTransactionId =
-    mode === "add" ? searchParams.get("transactionId") ?? "" : params.recordId ?? "";
+    mode === "add"
+      ? (searchParams.get("transactionId") ?? "")
+      : (params.recordId ?? "");
   const [selectedTransactionId, setSelectedTransactionId] =
     useState(initialTransactionId);
   const selectedTransaction = transactions.find(
@@ -130,7 +142,8 @@ function DisbursementVoucherActionInner() {
   }
 
   function handleDraftChange(nextDraft: DisbursementVoucherEntryDraft) {
-    const amount = Number(nextDraft.debit || 0) || Number(nextDraft.credit || 0);
+    const amount =
+      Number(nextDraft.debit || 0) || Number(nextDraft.credit || 0);
 
     setEntryDraft({
       ...nextDraft,
@@ -184,11 +197,17 @@ function DisbursementVoucherActionInner() {
     }
 
     if (values.attachments.length === 0 && selectedTransaction) {
-      updateField("attachments", createAttachmentPlaceholders(selectedTransaction));
+      updateField(
+        "attachments",
+        createAttachmentPlaceholders(selectedTransaction),
+      );
     }
 
     if (values.lineEntries.length === 0 && selectedTransaction) {
-      updateField("lineEntries", createAutoDisbursementLineEntries(selectedTransaction));
+      updateField(
+        "lineEntries",
+        createAutoDisbursementLineEntries(selectedTransaction),
+      );
     }
 
     setStep("entries");
@@ -301,7 +320,11 @@ function DisbursementVoucherActionInner() {
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
-      setStep(detailsErrors.transactionId || detailsErrors.amount ? "details" : "entries");
+      setStep(
+        detailsErrors.transactionId || detailsErrors.amount
+          ? "details"
+          : "entries",
+      );
       return;
     }
 
@@ -367,56 +390,45 @@ function DisbursementVoucherActionInner() {
           onSubmit={() => handleSubmit()}
         />
 
-        <WorkflowStepper currentStep={step} />
-
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_22rem]">
-          <div className="grid gap-6">
-            {step === "details" ? (
-              <VoucherDetailsStep
-                errors={errors}
-                transactionOptions={transactions}
-                selectedTransaction={selectedTransaction}
-                values={values}
-                onProceed={handleProceedFromDetails}
-                onSelectTransaction={handleSelectTransaction}
-                onUpdateField={updateField}
-              />
-            ) : null}
-            {step === "entries" ? (
-              <VoucherEntriesStep
-                entryDraft={entryDraft}
-                errors={errors}
-                entries={values.lineEntries}
-                isBalanced={isBalanced}
-                onApplyAutoEntries={handleApplyAutoEntries}
-                onDraftChange={handleDraftChange}
-                onOpenDraftTaxEditor={handleOpenDraftTaxEditor}
-                onOpenEntryTaxEditor={handleOpenEntryTaxEditor}
-                totalCredit={totalCredit}
-                totalDebit={totalDebit}
-                onAddEntry={handleAddEntry}
-                onBack={() => setStep("details")}
-                onProceed={handleProceedFromEntries}
-                onRemoveEntry={handleRemoveEntry}
-              />
-            ) : null}
-            {step === "review" ? (
-              <VoucherReviewStep
-                selectedTransaction={selectedTransaction}
-                totalCredit={totalCredit}
-                totalDebit={totalDebit}
-                values={values}
-                onBack={() => setStep("entries")}
-              />
-            ) : null}
-          </div>
-          <VoucherSummaryRail
-            isBalanced={isBalanced}
-            mode={mode}
-            selectedTransaction={selectedTransaction}
-            step={step}
-            values={values}
-          />
+        <div className="grid gap-6">
+          {step === "details" ? (
+            <VoucherDetailsStep
+              errors={errors}
+              transactionOptions={transactions}
+              selectedTransaction={selectedTransaction}
+              values={values}
+              onProceed={handleProceedFromDetails}
+              onSelectTransaction={handleSelectTransaction}
+              onUpdateField={updateField}
+            />
+          ) : null}
+          {step === "entries" ? (
+            <VoucherEntriesStep
+              entryDraft={entryDraft}
+              errors={errors}
+              entries={values.lineEntries}
+              isBalanced={isBalanced}
+              onApplyAutoEntries={handleApplyAutoEntries}
+              onDraftChange={handleDraftChange}
+              onOpenDraftTaxEditor={handleOpenDraftTaxEditor}
+              onOpenEntryTaxEditor={handleOpenEntryTaxEditor}
+              totalCredit={totalCredit}
+              totalDebit={totalDebit}
+              onAddEntry={handleAddEntry}
+              onBack={() => setStep("details")}
+              onProceed={handleProceedFromEntries}
+              onRemoveEntry={handleRemoveEntry}
+            />
+          ) : null}
+          {step === "review" ? (
+            <VoucherReviewStep
+              selectedTransaction={selectedTransaction}
+              totalCredit={totalCredit}
+              totalDebit={totalDebit}
+              values={values}
+              onBack={() => setStep("entries")}
+            />
+          ) : null}
         </div>
       </form>
 
@@ -459,65 +471,8 @@ function VoucherWorkflowSkeleton() {
   return (
     <section className="grid gap-6">
       <div className="h-28 animate-pulse rounded-[28px] bg-darknavy/6" />
-      <div className="h-24 animate-pulse rounded-[28px] bg-darknavy/6" />
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_22rem]">
-        <div className="h-[36rem] animate-pulse rounded-[28px] bg-darknavy/6" />
-        <div className="h-[36rem] animate-pulse rounded-[28px] bg-darknavy/6" />
-      </div>
+      <div className="h-[36rem] animate-pulse rounded-[28px] bg-darknavy/6" />
     </section>
-  );
-}
-
-function WorkflowStepper({ currentStep }: { currentStep: WorkflowStep }) {
-  return (
-    <div className="rounded-[28px] border border-darknavy/10 bg-white p-5 shadow-[0_18px_60px_rgba(33,39,56,0.08)]">
-      <div className="grid gap-4 lg:grid-cols-3">
-        {DisbursementVoucherWorkflowSteps.map((step) => {
-          const isActive = currentStep === step.id;
-          const isComplete =
-            (currentStep === "entries" && step.id === "details") ||
-            (currentStep === "review" &&
-              (step.id === "details" || step.id === "entries"));
-
-          return (
-            <div
-              key={step.id}
-              className={`rounded-[22px] border p-4 transition ${
-                isActive
-                  ? "border-darknavy bg-darknavy text-white"
-                  : isComplete
-                    ? "border-citron/60 bg-citron/22 text-darknavy"
-                    : "border-darknavy/10 bg-offwhite/60 text-darknavy"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span
-                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
-                    isActive
-                      ? "bg-white text-darknavy"
-                      : isComplete
-                        ? "bg-darknavy text-white"
-                        : "bg-darknavy/8 text-darknavy/55"
-                  }`}
-                >
-                  {isComplete ? <CheckCircle2 className="h-4 w-4" /> : step.id[0].toUpperCase()}
-                </span>
-                <div>
-                  <p className="text-base font-semibold">{step.title}</p>
-                  <p
-                    className={`text-sm ${
-                      isActive ? "text-white/75" : "text-darknavy/58"
-                    }`}
-                  >
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
   );
 }
 
@@ -540,243 +495,7 @@ function VoucherDetailsStep({
     field: TKey,
     value: DisbursementVoucherFormValues[TKey],
   ) => void;
-}) {
-  return (
-    <section className="grid gap-5">
-      <CardShell
-        eyebrow="Selected Transaction"
-        title="Choose the source transaction first"
-        description="This section anchors the voucher to a real disbursement transaction before you continue."
-      >
-        <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-          <FieldBlock label="Transaction" error={errors.transactionId}>
-            <select
-              name="transactionId"
-              value={values.transactionId}
-              onChange={(event) => {
-                onUpdateField("transactionId", event.target.value);
-                onSelectTransaction(event.target.value);
-              }}
-              className={FieldInputClassName}
-            >
-              <option value="">Select a transaction...</option>
-              {transactionOptions.map((transaction) => (
-                <option key={transaction.id} value={transaction.id}>
-                  {transaction.transactionNo} - {transaction.payee}
-                </option>
-              ))}
-            </select>
-          </FieldBlock>
-          <div className="rounded-[22px] border border-darknavy/10 bg-darknavy p-5 text-white">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/65">
-              Transaction Snapshot
-            </p>
-            {selectedTransaction ? (
-              <dl className="mt-4 grid gap-3">
-                <InfoLine label="Payee" value={selectedTransaction.payee} invert />
-                <InfoLine
-                  label="Amount"
-                  value={formatCurrency(selectedTransaction.amount)}
-                  invert
-                />
-                <InfoLine
-                  label="Requested by"
-                  value={selectedTransaction.requestedBy}
-                  invert
-                />
-                <InfoLine
-                  label="Due date"
-                  value={formatDateLabel(selectedTransaction.paymentDueDate)}
-                  invert
-                />
-              </dl>
-            ) : (
-              <p className="mt-4 text-sm text-white/70">
-                Pick a transaction to auto-fill the voucher details.
-              </p>
-            )}
-          </div>
-        </div>
-      </CardShell>
-
-      <div className="grid gap-5 xl:grid-cols-2">
-        <CardShell
-          eyebrow="Payment Setup"
-          title="Define how the release will move"
-          description="These values control how the disbursement will be categorized and posted."
-          tone="sky"
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FieldBlock label="Payment method" error={errors.paymentMethod}>
-              <select
-                value={values.paymentMethod}
-                onChange={(event) =>
-                  onUpdateField("paymentMethod", event.target.value as DisbursementVoucherFormValues["paymentMethod"])
-                }
-                className={FieldInputClassName}
-              >
-                <option value="">Select payment method...</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Check">Check</option>
-                <option value="Online Payment">Online Payment</option>
-                <option value="Petty Cash">Petty Cash</option>
-              </select>
-            </FieldBlock>
-            <FieldBlock label="Disbursement type" error={errors.disbursementType}>
-              <select
-                value={values.disbursementType}
-                onChange={(event) =>
-                  onUpdateField("disbursementType", event.target.value as DisbursementVoucherFormValues["disbursementType"])
-                }
-                className={FieldInputClassName}
-              >
-                <option value="">Select disbursement type...</option>
-                <option value="Vendor Payment">Vendor Payment</option>
-                <option value="Operating Expense">Operating Expense</option>
-                <option value="Reimbursement">Reimbursement</option>
-                <option value="Capital Expenditure">Capital Expenditure</option>
-              </select>
-            </FieldBlock>
-            <FieldBlock label="Currency">
-              <select
-                value={values.currency}
-                onChange={(event) =>
-                  onUpdateField("currency", event.target.value as DisbursementVoucherFormValues["currency"])
-                }
-                className={FieldInputClassName}
-              >
-                <option value="PHP">PHP</option>
-                <option value="USD">USD</option>
-              </select>
-            </FieldBlock>
-            <FieldBlock label="Cost center" error={errors.costCenter}>
-              <input
-                value={values.costCenter}
-                onChange={(event) => onUpdateField("costCenter", event.target.value)}
-                className={FieldInputClassName}
-                placeholder="e.g. CC-FIN-0042"
-              />
-            </FieldBlock>
-          </div>
-        </CardShell>
-
-        <CardShell
-          eyebrow="Payee Information"
-          title="Capture the settlement recipient"
-          description="Keep the source payee and the accounting VCE details aligned."
-          tone="citron"
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FieldBlock label="VCE code" error={errors.vceCode}>
-              <input
-                value={values.vceCode}
-                onChange={(event) => onUpdateField("vceCode", event.target.value)}
-                className={FieldInputClassName}
-                placeholder="e.g. VCE-00123"
-              />
-            </FieldBlock>
-            <FieldBlock label="VCE name" error={errors.vceName}>
-              <input
-                value={values.vceName}
-                onChange={(event) => onUpdateField("vceName", event.target.value)}
-                className={FieldInputClassName}
-                placeholder="Vendor or payee full name"
-              />
-            </FieldBlock>
-            <FieldBlock label="Amount" error={errors.amount}>
-              <input
-                value={values.amount}
-                onChange={(event) => onUpdateField("amount", event.target.value)}
-                className={FieldInputClassName}
-                placeholder="0.00"
-              />
-            </FieldBlock>
-            <FieldBlock label="Prepared by">
-              <input
-                value={values.preparedBy}
-                onChange={(event) => onUpdateField("preparedBy", event.target.value)}
-                className={FieldInputClassName}
-                placeholder="Finance Shared Services"
-              />
-            </FieldBlock>
-          </div>
-        </CardShell>
-      </div>
-
-      <CardShell
-        eyebrow="Reference Trail"
-        title="Lock in the audit references"
-        description="Reference numbers and dates will travel with the voucher through review and release."
-        tone="offwhite"
-      >
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <FieldBlock label="Voucher no.">
-            <input
-              value={values.voucherNo}
-              onChange={(event) => onUpdateField("voucherNo", event.target.value)}
-              className={FieldInputClassName}
-            />
-          </FieldBlock>
-          <FieldBlock label="Voucher reference no." error={errors.voucherReferenceNo}>
-            <input
-              value={values.voucherReferenceNo}
-              onChange={(event) =>
-                onUpdateField("voucherReferenceNo", event.target.value)
-              }
-              className={FieldInputClassName}
-            />
-          </FieldBlock>
-          <FieldBlock label="Invoice / PO reference" error={errors.invoiceReferenceNo}>
-            <input
-              value={values.invoiceReferenceNo}
-              onChange={(event) =>
-                onUpdateField("invoiceReferenceNo", event.target.value)
-              }
-              className={FieldInputClassName}
-            />
-          </FieldBlock>
-          <FieldBlock label="Voucher date" error={errors.voucherDate}>
-            <input
-              type="date"
-              value={values.voucherDate}
-              onChange={(event) => onUpdateField("voucherDate", event.target.value)}
-              className={FieldInputClassName}
-            />
-          </FieldBlock>
-          <FieldBlock label="Payment due date" error={errors.paymentDueDate}>
-            <input
-              type="date"
-              value={values.paymentDueDate}
-              onChange={(event) =>
-                onUpdateField("paymentDueDate", event.target.value)
-              }
-              className={FieldInputClassName}
-            />
-          </FieldBlock>
-          <div className="sm:col-span-2 xl:col-span-3">
-            <FieldBlock label="Remarks">
-              <textarea
-                value={values.remarks}
-                onChange={(event) => onUpdateField("remarks", event.target.value)}
-                className={`${FieldInputClassName} min-h-28 resize-none py-3`}
-                placeholder="Describe the payment release context and reviewer notes."
-              />
-            </FieldBlock>
-          </div>
-        </div>
-        <div className="mt-6 flex justify-end">
-          <button
-            type="button"
-            onClick={onProceed}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-darknavy px-5 text-sm font-semibold text-white transition hover:bg-darknavy/92"
-          >
-            Continue to Line Entries
-          </button>
-        </div>
-      </CardShell>
-    </section>
-  );
-}
+}) {}
 
 function VoucherEntriesStep({
   entryDraft,
@@ -822,8 +541,8 @@ function VoucherEntriesStep({
             </h3>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-darknavy/58">
               Enter each line directly into the journal-style grid below. This
-              layout is designed to feel faster for accounting encoding and easier
-              to review before balancing.
+              layout is designed to feel faster for accounting encoding and
+              easier to review before balancing.
             </p>
           </div>
           <span
@@ -846,7 +565,8 @@ function VoucherEntriesStep({
             Auto Entries
           </button>
           <p className="text-sm text-darknavy/55">
-            Rebuild default debit and credit lines from the selected transaction.
+            Rebuild default debit and credit lines from the selected
+            transaction.
           </p>
         </div>
       </div>
@@ -911,7 +631,10 @@ function VoucherEntriesStep({
                     <input
                       value={entryDraft.debit}
                       onChange={(event) =>
-                        onDraftChange({ ...entryDraft, debit: event.target.value })
+                        onDraftChange({
+                          ...entryDraft,
+                          debit: event.target.value,
+                        })
                       }
                       className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
                       placeholder="0.00"
@@ -921,7 +644,10 @@ function VoucherEntriesStep({
                     <input
                       value={entryDraft.credit}
                       onChange={(event) =>
-                        onDraftChange({ ...entryDraft, credit: event.target.value })
+                        onDraftChange({
+                          ...entryDraft,
+                          credit: event.target.value,
+                        })
                       }
                       className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
                       placeholder="0.00"
@@ -952,7 +678,10 @@ function VoucherEntriesStep({
                 </tr>
                 {errors.entryDraft ? (
                   <tr className="border-t border-darknavy/8 bg-coralpink/8">
-                    <td colSpan={7} className="px-4 py-3 text-sm font-medium text-coralpink">
+                    <td
+                      colSpan={7}
+                      className="px-4 py-3 text-sm font-medium text-coralpink"
+                    >
                       {errors.entryDraft}
                     </td>
                   </tr>
@@ -1004,7 +733,8 @@ function VoucherEntriesStep({
                       colSpan={7}
                       className="px-4 py-10 text-center text-sm text-darknavy/55"
                     >
-                      No line entries yet. Start encoding in the first row above.
+                      No line entries yet. Start encoding in the first row
+                      above.
                     </td>
                   </tr>
                 )}
@@ -1153,17 +883,27 @@ function TaxDetailsDialogEditor({
         <div className="grid gap-4 px-5 py-5">
           <div className="grid gap-4 sm:grid-cols-[10rem_1fr] sm:items-center">
             <label className="text-sm text-darknavy/75">Gross Amount :</label>
-            <input value={formatNumberInput(draftValues.grossAmount)} readOnly className={DisabledFieldClassName} />
+            <input
+              value={formatNumberInput(draftValues.grossAmount)}
+              readOnly
+              className={DisabledFieldClassName}
+            />
           </div>
           <div className="grid gap-4 sm:grid-cols-[10rem_1fr] sm:items-center">
             <label className="text-sm text-darknavy/75">Net Amount :</label>
-            <input value={formatNumberInput(draftValues.netAmount)} readOnly className={DisabledFieldClassName} />
+            <input
+              value={formatNumberInput(draftValues.netAmount)}
+              readOnly
+              className={DisabledFieldClassName}
+            />
           </div>
           <div className="grid gap-4 sm:grid-cols-[10rem_1fr] sm:items-center">
             <label className="text-sm text-darknavy/75">VAT Code :</label>
             <select
               value={draftValues.vatCode}
-              onChange={(event) => updateTaxValue("vatCode", event.target.value)}
+              onChange={(event) =>
+                updateTaxValue("vatCode", event.target.value)
+              }
               className={ModalFieldClassName}
             >
               <option value="">--Select VAT Rate--</option>
@@ -1177,20 +917,29 @@ function TaxDetailsDialogEditor({
             <input
               value={formatPercentInput(draftValues.vatPercent)}
               onChange={(event) =>
-                updateTaxValue("vatPercent", Number.parseFloat(event.target.value) || 0)
+                updateTaxValue(
+                  "vatPercent",
+                  Number.parseFloat(event.target.value) || 0,
+                )
               }
               className={ModalFieldClassName}
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-[10rem_1fr] sm:items-center">
             <label className="text-sm text-darknavy/75">VAT Amount :</label>
-            <input value={formatNumberInput(draftValues.vatAmount)} readOnly className={DisabledFieldClassName} />
+            <input
+              value={formatNumberInput(draftValues.vatAmount)}
+              readOnly
+              className={DisabledFieldClassName}
+            />
           </div>
           <div className="grid gap-4 sm:grid-cols-[10rem_1fr] sm:items-center">
             <label className="text-sm text-darknavy/75">EWT Code :</label>
             <select
               value={draftValues.ewtCode}
-              onChange={(event) => updateTaxValue("ewtCode", event.target.value)}
+              onChange={(event) =>
+                updateTaxValue("ewtCode", event.target.value)
+              }
               className={ModalFieldClassName}
             >
               <option value="">--Select EWT Code--</option>
@@ -1204,18 +953,29 @@ function TaxDetailsDialogEditor({
             <input
               value={formatPercentInput(draftValues.ewtPercent)}
               onChange={(event) =>
-                updateTaxValue("ewtPercent", Number.parseFloat(event.target.value) || 0)
+                updateTaxValue(
+                  "ewtPercent",
+                  Number.parseFloat(event.target.value) || 0,
+                )
               }
               className={ModalFieldClassName}
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-[10rem_1fr] sm:items-center">
             <label className="text-sm text-darknavy/75">EWT Amount :</label>
-            <input value={formatNumberInput(draftValues.ewtAmount)} readOnly className={DisabledFieldClassName} />
+            <input
+              value={formatNumberInput(draftValues.ewtAmount)}
+              readOnly
+              className={DisabledFieldClassName}
+            />
           </div>
           <div className="grid gap-4 sm:grid-cols-[10rem_1fr] sm:items-center">
             <label className="text-sm text-darknavy/75">Amount :</label>
-            <input value={formatNumberInput(draftValues.amount)} readOnly className={DisabledFieldClassName} />
+            <input
+              value={formatNumberInput(draftValues.amount)}
+              readOnly
+              className={DisabledFieldClassName}
+            />
           </div>
         </div>
         <div className="border-t border-darknavy/8 px-5 py-4">
@@ -1303,7 +1063,9 @@ function VoucherReviewStep({
                   <p className="text-sm font-semibold text-darknavy">
                     {attachment.name}
                   </p>
-                  <p className="text-xs text-darknavy/50">{attachment.sizeLabel}</p>
+                  <p className="text-xs text-darknavy/50">
+                    {attachment.sizeLabel}
+                  </p>
                 </div>
               </div>
             </div>
@@ -1320,14 +1082,23 @@ function VoucherReviewStep({
         <div className="grid gap-4 xl:grid-cols-2">
           <ReviewCard title="Voucher Details">
             <InfoLine label="Voucher no." value={values.voucherNo} />
-            <InfoLine label="Date" value={formatDateLabel(values.voucherDate)} />
+            <InfoLine
+              label="Date"
+              value={formatDateLabel(values.voucherDate)}
+            />
             <InfoLine label="Payment method" value={values.paymentMethod} />
-            <InfoLine label="Purpose" value={selectedTransaction?.purpose ?? values.remarks} />
+            <InfoLine
+              label="Purpose"
+              value={selectedTransaction?.purpose ?? values.remarks}
+            />
           </ReviewCard>
           <ReviewCard title="Payee and Amount">
             <InfoLine label="Payee" value={values.vceName} />
             <InfoLine label="VCE code" value={values.vceCode} />
-            <InfoLine label="Total amount" value={formatCurrency(Number(values.amount))} />
+            <InfoLine
+              label="Total amount"
+              value={formatCurrency(Number(values.amount))}
+            />
             <InfoLine label="Cost center" value={values.costCenter} />
           </ReviewCard>
         </div>
@@ -1410,69 +1181,6 @@ function VoucherReviewStep({
   );
 }
 
-function VoucherSummaryRail({
-  isBalanced,
-  mode,
-  selectedTransaction,
-  step,
-  values,
-}: {
-  isBalanced: boolean;
-  mode: DisbursementVoucherActionMode;
-  selectedTransaction?: DisbursementTransactionRecord;
-  step: WorkflowStep;
-  values: DisbursementVoucherFormValues;
-}) {
-  return (
-    <aside className="rounded-[28px] border border-darknavy/10 bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(236,242,239,0.86))] p-5 shadow-[0_18px_60px_rgba(33,39,56,0.08)]">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
-        Workflow Summary
-      </p>
-      <h3 className="mt-2 text-2xl font-semibold text-darknavy">
-        {mode === "edit" ? "Voucher refresh" : "Voucher build"}
-      </h3>
-
-      <div className="mt-5 rounded-[22px] bg-darknavy p-5 text-white">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Current Step
-        </p>
-        <p className="mt-3 text-lg font-semibold">
-          {DisbursementVoucherWorkflowSteps.find((item) => item.id === step)?.title}
-        </p>
-        <p className="mt-2 text-sm text-white/72">
-          {DisbursementVoucherWorkflowSteps.find((item) => item.id === step)?.description}
-        </p>
-      </div>
-
-      <div className="mt-5 space-y-4">
-        <ReviewCard title="Transaction">
-          <InfoLine
-            label="Transaction no."
-            value={selectedTransaction?.transactionNo ?? "Not selected yet"}
-          />
-          <InfoLine label="Payee" value={selectedTransaction?.payee ?? "-"} />
-          <InfoLine
-            label="Requested by"
-            value={selectedTransaction?.requestedBy ?? "-"}
-          />
-        </ReviewCard>
-        <ReviewCard title="Voucher">
-          <InfoLine label="Voucher no." value={values.voucherNo || "-"} />
-          <InfoLine
-            label="Amount"
-            value={values.amount ? formatCurrency(Number(values.amount)) : "-"}
-          />
-          <InfoLine label="Status" value={values.status} />
-          <InfoLine
-            label="Line balance"
-            value={isBalanced ? "Balanced" : "Pending balance"}
-          />
-        </ReviewCard>
-      </div>
-    </aside>
-  );
-}
-
 function VoucherPreviewPanel({
   transaction,
   voucher,
@@ -1489,7 +1197,10 @@ function VoucherPreviewPanel({
         tone="offwhite"
       >
         <div className="grid gap-3">
-          <InfoLine label="Transaction no." value={transaction?.transactionNo ?? "-"} />
+          <InfoLine
+            label="Transaction no."
+            value={transaction?.transactionNo ?? "-"}
+          />
           <InfoLine label="Department" value={transaction?.department ?? "-"} />
           <InfoLine
             label="Requested by"
@@ -1519,7 +1230,10 @@ function VoucherPreviewPanel({
         {voucher ? (
           <>
             <div className="grid gap-3">
-              <InfoLine label="Voucher date" value={formatDateLabel(voucher.voucherDate)} />
+              <InfoLine
+                label="Voucher date"
+                value={formatDateLabel(voucher.voucherDate)}
+              />
               <InfoLine label="Payment method" value={voucher.paymentMethod} />
               <InfoLine label="Prepared by" value={voucher.preparedBy} />
               <InfoLine label="Status" value={voucher.status} />
@@ -1536,9 +1250,9 @@ function VoucherPreviewPanel({
           </>
         ) : (
           <div className="rounded-[22px] border border-dashed border-darknavy/14 bg-white p-6 text-sm leading-6 text-darknavy/58">
-            No voucher has been created for this transaction yet. The New Voucher
-            action will prefill the transaction details so finance can proceed
-            through the guided workflow.
+            No voucher has been created for this transaction yet. The New
+            Voucher action will prefill the transaction details so finance can
+            proceed through the guided workflow.
           </div>
         )}
       </CardShell>
@@ -1575,9 +1289,7 @@ function CardShell({
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
         {eyebrow}
       </p>
-      <h3 className="mt-2 text-2xl font-semibold text-darknavy">
-        {title}
-      </h3>
+      <h3 className="mt-2 text-2xl font-semibold text-darknavy">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-darknavy/58">{description}</p>
       <div className="mt-5">{children}</div>
     </section>
@@ -1599,7 +1311,9 @@ function FieldBlock({
         {label}
       </span>
       {children}
-      {error ? <span className="text-sm font-medium text-coralpink">{error}</span> : null}
+      {error ? (
+        <span className="text-sm font-medium text-coralpink">{error}</span>
+      ) : null}
     </label>
   );
 }
@@ -1639,7 +1353,13 @@ function InfoLine({
       >
         {label}
       </dt>
-      <dd className={invert ? "text-sm font-medium text-white" : "text-sm font-medium text-darknavy"}>
+      <dd
+        className={
+          invert
+            ? "text-sm font-medium text-white"
+            : "text-sm font-medium text-darknavy"
+        }
+      >
         {value}
       </dd>
     </div>

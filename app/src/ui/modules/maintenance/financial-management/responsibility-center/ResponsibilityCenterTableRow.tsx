@@ -1,18 +1,25 @@
 import Link from "next/link";
-import { Building2, Edit3, Eye, Trash2, type LucideIcon } from "lucide-react";
+import {
+	Building2,
+	CheckCircle2,
+	CircleOff,
+	Edit3,
+	Eye,
+	type LucideIcon,
+} from "lucide-react";
 import { ResponsibilityCenterHref } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
 
 type ResponsibilityCenterTableRowProps = {
 	center: ResponsibilityCenter;
 	parentName?: string;
-	onDeleteCenter: (center: ResponsibilityCenter) => void;
+	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
 };
 
 export function ResponsibilityCenterTableRow({
 	center,
 	parentName,
-	onDeleteCenter,
+	onStatusChangeCenter,
 }: ResponsibilityCenterTableRowProps) {
 	return (
 		<article className="grid gap-3 px-4 py-4 lg:grid-cols-[0.65fr_1.15fr_0.8fr_0.85fr_0.7fr_8rem] lg:items-center lg:gap-4">
@@ -21,7 +28,7 @@ export function ResponsibilityCenterTableRow({
 			<Detail label="Type" value={center.type} />
 			<Detail label="Manager" value={center.manager} />
 			<StatusBadge status={center.status} />
-			<RowActions center={center} onDeleteCenter={onDeleteCenter} />
+			<RowActions center={center} onStatusChangeCenter={onStatusChangeCenter} />
 		</article>
 	);
 }
@@ -52,11 +59,14 @@ function CenterIdentity({
 
 function RowActions({
 	center,
-	onDeleteCenter,
+	onStatusChangeCenter,
 }: {
 	center: ResponsibilityCenter;
-	onDeleteCenter: (center: ResponsibilityCenter) => void;
+	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
 }) {
+	const nextStatus = center.status === "Active" ? "Inactive" : "Active";
+	const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
+
 	return (
 		<div className="flex items-center gap-1 lg:justify-end">
 			<IconLink
@@ -71,11 +81,11 @@ function RowActions({
 			/>
 			<button
 				type="button"
-				onClick={() => onDeleteCenter(center)}
-				aria-label={`Delete ${center.name}`}
+				onClick={() => onStatusChangeCenter(center)}
+				aria-label={`Set ${center.name} as ${nextStatus.toLowerCase()}`}
 				className="flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
 			>
-				<Trash2 className="h-4 w-4" aria-hidden="true" />
+				<StatusIcon className="h-4 w-4" aria-hidden="true" />
 			</button>
 		</div>
 	);

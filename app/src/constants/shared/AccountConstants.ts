@@ -26,7 +26,7 @@ export const AccountThemeOptions: Array<{
     label: "Classic Light",
     description: `A bright default theme using the core ${AppName} palette.`,
     preview: {
-      surface: "#fffff0",
+      surface: "#f8fafc",
       panel: "#ffffff",
       accent: "#212738",
       highlight: "#57c4e5",

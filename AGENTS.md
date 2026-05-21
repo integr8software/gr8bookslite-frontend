@@ -158,6 +158,7 @@ app/src/data/modules/<domain>/<feature>/
 
 app/src/hooks/modules/<domain>/<feature>/
   useFeature.ts
+  useFeatureAction.ts
 
 app/src/services/modules/<domain>/<feature>/
   FeatureQueryKeys.ts
@@ -182,44 +183,158 @@ move toward this same shape when refactored.
 - Wire delete/status actions through clear handler props.
 - Use shared dialogs such as `AppConfirmDialog` instead of `window.confirm`
   when adding or refactoring UI.
+- Follow the Users page shape as the default composition reference:
+  spotlight/tutorial, feature header, then feature table/list.
 
 `FeatureHeader.tsx` owns the top action area:
 
-- Title and short helper text when needed.
+- Title and short helper text/description that explains what the module is for.
+- Keep a Quick Tour action when the module has spotlight/tutorial data.
 - Primary Add button linked to `${FeatureHref}/add`.
-- Keep import/export/filter buttons only when the feature requires them.
+- Add buttons must use the shared module primary button styling so they follow
+  the active Settings accent color. Prefer `moduleHeaderActionClassNames.primary`
+  or an equivalent `bg-skyblue` token-based class instead of hardcoded blues.
+- If the prompt does not specify header actions, default to the standard module
+  header actions that apply to the feature: Quick Tour, Import, Export, and Add.
+- Keep Import and Export actions in the header for data-heavy modules when the
+  feature supports or is expected to support file workflows.
+- Header action order should generally be: Quick Tour, Import, Export, Add.
+- Name the primary action for the feature, such as Add User or Add Account.
 
 `FeatureTable.tsx` owns rendering:
 
-- Prefer TanStack Table for data tables with sorting, filtering, pagination,
-  selection, and column visibility.
-- Keep table columns local to the table unless reused elsewhere.
-- Use project shared controls and `AppSkeleton` for loading rows.
+- Use the shared `ModuleTable` from `app/src/ui/shared/module-table/ModuleTable`
+  as the default data-table shell for module list pages.
+- Build table instances with TanStack Table in the feature hook. The hook owns
+  column definitions, sorting, pagination state, filtering state, derived
+  options, and handlers that reset pagination when filters/search change.
+- Keep table column metadata in feature constants when reused by the hook and
+  row renderer. Use `meta.className` for width, alignment, and sticky column
+  classes consumed by `ModuleTableHeader`.
+- Keep row rendering in a feature row component such as `FeatureTableRow`.
+  Pass `renderRow` to `ModuleTable` and keep row actions in a small
+  `FeatureRecordActions` component when they are reused or non-trivial.
+- Put search/filter controls above `ModuleTable`, usually in
+  `FeatureTableFilters`, and keep the controls wired to the feature hook.
+- Table filters should sit at the top of the table container. Include search
+  when records have names/codes/emails, include relevant select filters, and
+  include a Reset button that clears all filters and returns pagination to page
+  1.
+- Use `paginationStorageKey` constants when pagination should persist per
+  feature. Do not hard-code storage keys inline.
+- Use `ModuleTable` loading, empty state, pagination, min width, and max height
+  props instead of rebuilding table chrome.
+- Use `AppSkeleton` and `AppSkeletonCard` from
+  `app/src/ui/shared/AppSkeleton.tsx` for loading placeholders outside the
+  shared table, such as headers, cards, detail fields, and filter panels while
+  data is fetching.
 - Keep actions as icon buttons with accessible labels.
+- If the prompt does not specify row actions, default the action column to the
+  module's allowed CRUD actions. Row actions usually include view/edit/delete
+  for full CRUD modules, or edit/delete when there is no separate view route.
+- If the feature has an Active/Inactive status, prefer a status toggle action
+  over delete. Use `Set as Inactive` for active records and `Set as Active`
+  for inactive records.
 - Center action cells. Keep text-heavy identity fields left aligned.
+- Use project theme tokens and semantic shared classes for table styling.
+  Do not add hardcoded light backgrounds to sticky headers or sticky action
+  cells without a matching dark-mode-safe class in `app/globals.css`.
+
+## Shared ModuleTable Pattern
+
+`app/src/ui/shared/module-table/` is the standard data-table template for
+module pages.
+
+Use this structure for table-based modules:
+
+```txt
+app/src/constants/modules/<feature>/
+  FeatureConstants.ts       # hrefs, labels, table columns, storage keys
+
+app/src/hooks/modules/<domain>/<feature>/
+  useFeature.ts             # TanStack table state, filters, mutations
+
+app/src/ui/modules/<domain>/<feature>/
+  FeatureTable.tsx          # filter composition + ModuleTable
+  FeatureTableFilters.tsx   # search/select/reset controls
+  FeatureTableRow.tsx       # row cells only
+  FeatureRecordActions.tsx  # view/edit/delete/status icon actions
+```
+
+`ModuleTable` should receive:
+
+- `table` from the feature hook.
+- `renderRow={({ id, original }) => <FeatureTableRow key={id} ... />}`.
+- `paginationStorageKey` from constants when persistent pagination is desired.
+- `minWidthClassName` when the table has many columns.
+- `emptyTitle`, `emptyDescription`, and `emptyIcon` for feature-specific empty
+  states.
+- `isLoading` when feature data is still fetching. `ModuleTable` owns row-level
+  skeleton rows; use `AppSkeleton` for surrounding non-table loading UI.
+
+`FeatureTableFilters` should include:
+
+- A search field when the feature has searchable identity fields.
+- Select filters for common dimensions such as status, role/type, department,
+  account type, or statement section.
+- A Reset button that clears search and filters and resets pagination.
+
+Reference implementations:
+
+- Users: best overall reference for page composition, header description,
+  Quick Tour/Add actions, filters with Reset, `ModuleTable`, centered row
+  actions, and `UserListTableRow` for a normal flat user table.
+- Chart of Accounts: filters/tabs + `ModuleTable` + `ChartsOfAccountsTableRow`
+  for header Quick Tour/Import/Export/Add Account actions, hierarchical rows,
+  expansion state, and sticky actions.
+
+Use card/list layouts instead of `ModuleTable` only when records are naturally
+card-like and low-density, such as current User Management Department and User
+Role lists. If those features need sorting, pagination, dense comparison, or
+column scanning, refactor them toward `ModuleTable`.
 
 ## CRUD Action Page Pattern
 
 `Action.tsx` handles add/edit/view orchestration:
 
+- Prefer moving action-page orchestration into `useFeatureAction.ts` when the
+  feature has add/edit/view routes. The UI `Action.tsx` should mostly call the
+  hook, handle the missing-record branch, and render `FeatureActionHeader`,
+  `FeatureDetailsFields`, and status/delete confirmation dialogs.
 - Detect mode from pathname:
   - `/add` means `add`
   - `/edit/[recordId]` means `edit`
   - `/view/[recordId]` means `view`
 - Read `recordId` only for edit/view.
 - Build initial form values from data helpers.
-- Keep validation and field update orchestration in the hook or action
-  component, depending on complexity.
+- Keep validation, field updates, submit handling, status/delete confirmation
+  state, parent/lookup options, readonly state, mutation pending state, and
+  navigation in `useFeatureAction.ts`.
 - Make view mode readonly.
 - If edit/view record is missing, render `FeatureNotFound`.
-- After successful add/edit/delete, navigate back to `FeatureHref`.
+- After successful add, navigate back to `FeatureHref`.
+- After successful edit, navigate to the record view page when edit was opened
+  from view, otherwise navigate back to `FeatureHref`.
+- After successful status changes, keep the record available and update the
+  displayed status. Navigate only when the feature flow explicitly requires it.
+- After successful delete, navigate back to `FeatureHref`. Prefer status
+  toggling instead of delete when records should remain auditable.
 
 `FeatureActionHeader.tsx` owns:
 
 - Mode-aware heading/actions.
 - Back/cancel navigation.
-- Save button for add/edit.
-- Delete button for edit/view when allowed.
+- View mode actions should include Back, Edit, and a status action when the
+  feature has status toggling. Use `Set as Inactive` for active records and
+  `Set as Active` for inactive records.
+- Edit mode actions should include the same status action when the feature has
+  status toggling, Close, and Save.
+- Close in edit mode should return to the record view page when edit was opened
+  from view, otherwise return to `FeatureHref`.
+- Save in edit mode should return to the record view page when edit was opened
+  from view, otherwise return to `FeatureHref`.
+- Delete is optional and should only appear on edit/view when the feature
+  requires delete from the action page.
 
 `FeatureDetailsFields.tsx` owns:
 
@@ -257,6 +372,31 @@ move toward this same shape when refactored.
 - Mutations for create, update, delete, and status changes.
 - Derived options for filters.
 - Table state and handlers when the feature has a TanStack table.
+- For cached/mock CRUD modules, expose a selector-friendly feature store hook
+  such as `useFeatureStore(selector?)` backed by TanStack Query and mutations.
+  Keep cache update helpers inside this hook and mutate query data through
+  `queryClient.setQueryData`.
+
+`useFeatureAction.ts`:
+
+- Route-aware action-page hook for add/edit/view forms.
+- Reads pathname/params/router.
+- Gets records and mutations from `useFeature.ts`.
+- Resolves `mode`, `record`, `isReadonly`, initial form values, lookup options,
+  validation errors, delete dialog state, and pending mutation state.
+- Exposes UI event handlers such as `onInputChange`, `onSubmit`,
+  `onConfirmDelete`, and `setIsDeleteOpen`.
+- Uses pure data helpers from `FeatureData.ts` for validation and record/form
+  mapping.
+
+Responsibility Center is the reference implementation for the split hook
+pattern:
+
+```txt
+useResponsibilityCenter.ts        # query-backed store and mutations
+useResponsibilityCenterAction.ts  # add/edit/view orchestration
+ResponsibilityCenterAction.tsx    # thin UI shell around the action hook
+```
 
 ## User Management Refactor Notes
 
@@ -278,8 +418,8 @@ When refactoring User Management:
 1. Keep route shape consistent: `add/page.tsx`, `edit/[recordId]`,
    `view/[recordId]`.
 2. Replace all `/add/new` links with `/add`.
-3. Move User List route imports to the newer `ui/Main` pattern.
-4. Create `ui/Action.tsx` for User List if add/edit/view should match Branch
+3. Move Users route imports to the newer `ui/Main` pattern.
+4. Create `ui/Action.tsx` for Users if add/edit/view should match Branch
    Management.
 5. Move User Type and User Group components into a `ui/` folder.
 6. Rename User Type/User Group page components to match the Branch pattern:
@@ -288,6 +428,13 @@ When refactoring User Management:
 7. Replace `window.confirm` with shared `AppConfirmDialog`.
 8. Split `useUserManagement.ts` only when submodules need independent query
    state or the file becomes too large.
+9. Keep Users as the table reference for User Management. It should use
+   `ModuleTable`, feature table filters, a feature hook that owns TanStack
+   state, constants for table columns and pagination storage keys, and a
+   dedicated row/action renderer.
+10. Department and User Role may stay as card/list layouts while they remain
+    simple. If they gain table behavior, migrate them to the same
+    `ModuleTable` pattern instead of hand-rolling a second table.
 
 ## CRUD Links
 

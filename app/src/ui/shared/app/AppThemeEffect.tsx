@@ -7,7 +7,10 @@ import {
   ApplyAccountTheme,
 } from "@/app/src/services/shared/AccountTheme";
 import { DefaultAccountAccentColor } from "@/app/src/constants/shared/AccountConstants";
-import { useAccountPreferences } from "@/app/src/hooks/shared/useAccountPreferences";
+import {
+  AccountPreferencesStorageKey,
+  useAccountPreferences,
+} from "@/app/src/hooks/shared/useAccountPreferences";
 import type {
   AccountAccentColor,
   AccountTheme,
@@ -74,6 +77,26 @@ export function AppThemeEffect() {
   useEffect(() => {
     ApplyAccountAccentColor(resolvedAccentColor);
   }, [resolvedAccentColor]);
+
+  useEffect(() => {
+    function handleAccountPreferencesStorage(event: StorageEvent) {
+      if (event.storageArea !== window.localStorage) {
+        return;
+      }
+
+      if (event.key !== AccountPreferencesStorageKey) {
+        return;
+      }
+
+      void useAccountPreferences.persist.rehydrate();
+    }
+
+    window.addEventListener("storage", handleAccountPreferencesStorage);
+
+    return () => {
+      window.removeEventListener("storage", handleAccountPreferencesStorage);
+    };
+  }, []);
 
   return null;
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { UserListFormPage } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListFormPage";
+import { UserListFormPage } from "@/app/src/ui/modules/system-administration/user-management/users/UserListFormPage";
 
 const PageTitle = "View User";
 

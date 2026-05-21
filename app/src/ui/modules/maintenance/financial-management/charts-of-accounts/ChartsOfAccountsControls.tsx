@@ -19,7 +19,7 @@ export function Card({
 	return (
 		<div
 			className={joinClasses(
-				"rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70",
+				"rounded-xl border border-darknavy/10 bg-white shadow-sm shadow-darknavy/8",
 				className,
 			)}
 		>
@@ -45,11 +45,11 @@ export function Button({
 				"inline-flex items-center justify-center gap-2 rounded-lg text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-45",
 				size === "icon" ? "h-9 w-9" : "h-10 px-4",
 				variant === "primary" &&
-					"bg-blue-600 text-white shadow-sm shadow-blue-600/20 hover:bg-blue-700 focus-visible:ring-blue-500/20",
+					"bg-skyblue text-white shadow-sm shadow-skyblue/20 hover:opacity-90 focus-visible:ring-skyblue/20",
 				variant === "secondary" &&
-					"border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:ring-blue-500/15",
+					"border border-darknavy/10 bg-white text-darknavy/70 hover:bg-skyblue/10 hover:text-darknavy focus-visible:ring-skyblue/15",
 				variant === "ghost" &&
-					"text-slate-600 hover:bg-slate-100 hover:text-slate-950 focus-visible:ring-blue-500/15",
+					"text-darknavy/60 hover:bg-skyblue/10 hover:text-darknavy focus-visible:ring-skyblue/15",
 				variant === "danger" &&
 					"text-red-600 hover:bg-red-50 focus-visible:ring-red-500/15",
 				className,
@@ -65,7 +65,7 @@ export function Input({ className, ...props }: ComponentProps<"input">) {
 	return (
 		<input
 			className={joinClasses(
-				"h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10",
+				"h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10",
 				className,
 			)}
 			{...props}
@@ -82,7 +82,7 @@ export function Select({
 		<div className="relative">
 			<select
 				className={joinClasses(
-					"h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-9 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10",
+					"h-10 w-full appearance-none rounded-lg border border-darknavy/10 bg-white px-3 pr-9 text-sm font-medium text-darknavy outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10",
 					className,
 				)}
 				{...props}
@@ -90,7 +90,7 @@ export function Select({
 				{children}
 			</select>
 			<ChevronDown
-				className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+				className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/40"
 				aria-hidden="true"
 			/>
 		</div>
@@ -110,7 +110,7 @@ export function Field({
 }) {
 	return (
 		<label className={joinClasses("grid gap-1.5", className)}>
-			<span className="flex items-center justify-between text-sm font-semibold text-slate-700">
+			<span className="flex items-center justify-between text-sm font-semibold text-darknavy/70">
 				{label}
 				{error ? <span className="text-xs text-red-500">{error}</span> : null}
 			</span>
@@ -152,7 +152,7 @@ export function Tabs<TValue extends string>({
 	value: TValue;
 }) {
 	return (
-		<div className="flex gap-1 overflow-x-auto rounded-lg bg-slate-100 p-1">
+		<div className="flex gap-1 overflow-x-auto rounded-lg bg-darknavy/5 p-1">
 			{options.map((option) => (
 				<button
 					key={option}
@@ -161,8 +161,8 @@ export function Tabs<TValue extends string>({
 					className={joinClasses(
 						"relative whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold transition",
 						value === option
-							? "text-blue-700"
-							: "text-slate-500 hover:text-slate-950",
+							? "text-skyblue"
+							: "text-darknavy/55 hover:text-darknavy",
 					)}
 				>
 					{value === option ? (

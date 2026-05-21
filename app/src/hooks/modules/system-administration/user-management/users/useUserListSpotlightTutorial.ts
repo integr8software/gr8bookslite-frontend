@@ -6,7 +6,7 @@ import { UserListHref } from "@/app/src/constants/modules/user-management/UserMa
 import {
   UserListSpotlightTutorialOpenEvent,
   UserListSpotlightTutorialStorageKey,
-} from "@/app/src/data/modules/system-administration/user-management/user-list/UserListSpotlightTutorialData";
+} from "@/app/src/data/modules/system-administration/user-management/users/UserListSpotlightTutorialData";
 
 type SpotlightStorageValue = {
   status: "completed" | "skipped";

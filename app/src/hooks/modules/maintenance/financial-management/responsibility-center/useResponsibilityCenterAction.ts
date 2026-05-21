@@ -12,6 +12,7 @@ import type {
 	ResponsibilityCenterActionMode,
 	ResponsibilityCenterFormErrors,
 	ResponsibilityCenterFormValues,
+	ResponsibilityCenterStatus,
 } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
 import { useResponsibilityCenterStore } from "./useResponsibilityCenter";
 
@@ -23,8 +24,10 @@ export function useResponsibilityCenterAction() {
 	const mode = getActionMode(pathname);
 	const center = store.centers.find(({ id }) => id === params.recordId);
 	const isReadonly = mode === "view";
+	const nextStatus: ResponsibilityCenterStatus =
+		center?.status === "Active" ? "Inactive" : "Active";
 	const [errors, setErrors] = useState<ResponsibilityCenterFormErrors>({});
-	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+	const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 	const [values, setValues] = useState(() =>
 		center
 			? createResponsibilityCenterFormValues(center)
@@ -75,29 +78,36 @@ export function useResponsibilityCenterAction() {
 		router.push(ResponsibilityCenterHref);
 	}
 
-	function onConfirmDelete() {
+	function onConfirmStatusChange() {
 		if (!center) {
 			return;
 		}
 
-		store.deleteCenter(center.id);
-		setIsDeleteOpen(false);
-		router.push(ResponsibilityCenterHref);
+		const nextCenter = {
+			...center,
+			status: nextStatus,
+			updatedAt: new Date().toISOString(),
+		};
+
+		store.updateCenter(nextCenter);
+		setValues((current) => ({ ...current, status: nextStatus }));
+		setIsStatusDialogOpen(false);
 	}
 
 	return {
 		center,
 		errors,
-		isDeleteOpen,
 		isMutating: store.isMutating,
 		isReadonly,
+		isStatusDialogOpen,
 		mode,
+		nextStatus,
 		parentOptions,
 		values,
-		onConfirmDelete,
+		onConfirmStatusChange,
 		onInputChange,
 		onSubmit,
-		setIsDeleteOpen,
+		setIsStatusDialogOpen,
 	};
 }
 

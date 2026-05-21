@@ -3,12 +3,12 @@ import { ResponsibilityCenterTableRow } from "./ResponsibilityCenterTableRow";
 
 type ResponsibilityCenterTableProps = {
 	centers: ResponsibilityCenter[];
-	onDeleteCenter: (center: ResponsibilityCenter) => void;
+	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
 };
 
 export function ResponsibilityCenterTable({
 	centers,
-	onDeleteCenter,
+	onStatusChangeCenter,
 }: ResponsibilityCenterTableProps) {
 	const centerById = new Map(centers.map((center) => [center.id, center]));
 
@@ -31,7 +31,7 @@ export function ResponsibilityCenterTable({
 							parentName={
 								center.parentId ? centerById.get(center.parentId)?.name : undefined
 							}
-							onDeleteCenter={onDeleteCenter}
+							onStatusChangeCenter={onStatusChangeCenter}
 						/>
 					))
 				) : (

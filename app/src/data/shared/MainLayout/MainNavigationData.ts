@@ -783,16 +783,16 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
     accessKey: "maintenance.users",
     items: [
       navGroup(
-        "maintenance-users",
+        "maintenance-user-management",
         "User Management",
         "/system-administration/user-management",
         "maintenance.users",
         "core",
         [
           item(
-            "maintenance-user-list",
-            "User List",
-            "/system-administration/user-management/user-list",
+            "maintenance-users",
+            "Users",
+            "/system-administration/user-management/users",
             "maintenance.users",
           ),
           item(

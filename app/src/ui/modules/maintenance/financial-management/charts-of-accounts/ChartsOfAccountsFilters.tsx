@@ -41,7 +41,7 @@ export function ChartsOfAccountsFilters({
 	onTabChange,
 }: ChartsOfAccountsFiltersProps) {
 	return (
-		<div className="border-b border-slate-200 p-4 sm:p-5">
+		<div className="border-b border-darknavy/10 p-4 sm:p-5">
 			<div data-spotlight-id="charts-of-accounts-tabs">
 				<Tabs
 					value={activeTab}
@@ -55,7 +55,7 @@ export function ChartsOfAccountsFilters({
 				data-spotlight-id="charts-of-accounts-filters"
 			>
 				<div className="relative">
-					<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+					<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/40" />
 					<Input
 						value={searchQuery}
 						onChange={(event) => onSearchChange(event.target.value)}

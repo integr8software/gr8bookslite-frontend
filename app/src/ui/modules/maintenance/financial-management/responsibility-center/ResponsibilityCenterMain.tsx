@@ -5,30 +5,40 @@ import Link from "next/link";
 import { Home, Plus } from "lucide-react";
 import { ResponsibilityCenterHref } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/financial-management/responsibility-center/useResponsibilityCenter";
-import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
+import type {
+	ResponsibilityCenter,
+	ResponsibilityCenterStatus,
+} from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ResponsibilityCenterDeleteDialog } from "./ResponsibilityCenterDeleteDialog";
+import { ResponsibilityCenterSetStatusDialog } from "./ResponsibilityCenterSetStatusDialog";
 import { ResponsibilityCenterTable } from "./ResponsibilityCenterTable";
 
 export function ResponsibilityCenterMain() {
 	const centers = useResponsibilityCenterStore((state) => state.centers);
-	const deleteCenter = useResponsibilityCenterStore(
-		(state) => state.deleteCenter,
+	const updateCenter = useResponsibilityCenterStore(
+		(state) => state.updateCenter,
 	);
 	const isMutating = useResponsibilityCenterStore((state) => state.isMutating);
-	const [pendingDeleteCenter, setPendingDeleteCenter] =
+	const [pendingStatusCenter, setPendingStatusCenter] =
 		useState<ResponsibilityCenter | null>(null);
 
-	function handleConfirmDelete() {
-		if (!pendingDeleteCenter) {
+	function handleConfirmStatusChange() {
+		if (!pendingStatusCenter) {
 			return;
 		}
 
-		deleteCenter(pendingDeleteCenter.id);
-		setPendingDeleteCenter(null);
+		const nextStatus: ResponsibilityCenterStatus =
+			pendingStatusCenter.status === "Active" ? "Inactive" : "Active";
+
+		updateCenter({
+			...pendingStatusCenter,
+			status: nextStatus,
+			updatedAt: new Date().toISOString(),
+		});
+		setPendingStatusCenter(null);
 	}
 
 	return (
@@ -56,14 +66,14 @@ export function ResponsibilityCenterMain() {
 			/>
 			<ResponsibilityCenterTable
 				centers={centers}
-				onDeleteCenter={setPendingDeleteCenter}
+				onStatusChangeCenter={setPendingStatusCenter}
 			/>
-			<ResponsibilityCenterDeleteDialog
-				center={pendingDeleteCenter}
-				isOpen={Boolean(pendingDeleteCenter)}
+			<ResponsibilityCenterSetStatusDialog
+				center={pendingStatusCenter}
+				isOpen={Boolean(pendingStatusCenter)}
 				isPending={isMutating}
-				onCancel={() => setPendingDeleteCenter(null)}
-				onConfirm={handleConfirmDelete}
+				onCancel={() => setPendingStatusCenter(null)}
+				onConfirm={handleConfirmStatusChange}
 			/>
 		</section>
 	);

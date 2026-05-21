@@ -39,7 +39,7 @@ export function AccountSettingsPage({ scope }: AccountSettingsPageProps) {
       <div className="relative grid gap-6">
         <header className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-coralpink">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
               {scope === "workspace" ? "Workspace Settings" : "Account Settings"}
             </p>
             <h1 className="mt-2 text-2xl font-semibold tracking-tight text-darknavy sm:text-3xl">

@@ -1,7 +1,7 @@
 "use client";
 
-import { UserListSpotlightTutorialSteps } from "@/app/src/data/modules/system-administration/user-management/user-list/UserListSpotlightTutorialData";
-import { useUserListSpotlightTutorial } from "@/app/src/hooks/modules/system-administration/user-management/user-list/useUserListSpotlightTutorial";
+import { UserListSpotlightTutorialSteps } from "@/app/src/data/modules/system-administration/user-management/users/UserListSpotlightTutorialData";
+import { useUserListSpotlightTutorial } from "@/app/src/hooks/modules/system-administration/user-management/users/useUserListSpotlightTutorial";
 import {
   SpotlightTour,
   SpotlightTourBadge,

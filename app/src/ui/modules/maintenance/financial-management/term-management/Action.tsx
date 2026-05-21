@@ -1,7 +1,6 @@
 "use client";
 
 import {
-	useMemo,
 	useState,
 	type ChangeEvent,
 	type FormEvent,
@@ -49,12 +48,6 @@ export function FinancialManagementTermManagementAction() {
 	);
 	const [errors, setErrors] = useState<TermManagementFormErrors>({});
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
-	useMemo(() => {
-		if (existingTerm) {
-			setValues(createTermManagementFormValues(existingTerm));
-		}
-	}, [existingTerm]);
 
 	function updateField(
 		field: keyof TermManagementFormValues,

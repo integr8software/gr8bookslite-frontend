@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Plus, Edit3, Eye, Trash2, Upload, Download } from "lucide-react";
 import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 import { TermManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
@@ -10,20 +9,11 @@ import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/fina
 import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 
 export function FinancialManagementTermManagementMain() {
-	const router = useRouter();
 	const terms = useTermManagementStore((state) => state.terms);
 	const deleteTerm = useTermManagementStore((state) => state.deleteTerm);
 	const isLoading = useTermManagementStore((state) => state.isLoading);
 	const isMutating = useTermManagementStore((state) => state.isMutating);
 	const [pendingDeleteTerm, setPendingDeleteTerm] = useState<TermManagement | null>(null);
-
-	function handleViewTerm(termId: string) {
-		router.push(`${TermManagementHref}/view/${termId}`);
-	}
-
-	function handleEditTerm(termId: string) {
-		router.push(`${TermManagementHref}/edit/${termId}`);
-	}
 
 	function handleDeleteTerm(term: TermManagement) {
 		setPendingDeleteTerm(term);

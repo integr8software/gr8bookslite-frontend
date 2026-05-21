@@ -2,7 +2,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  Building2,
   Download,
   Edit3,
   Eye,
@@ -11,13 +10,16 @@ import {
   Upload,
 } from "lucide-react";
 import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
-import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagement";
+import {
+  useDiscountManagementStore,
+  type Discount,
+} from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagement";
 
 export function FinancialManagementDiscountManagementMain() {
   const discounts = useDiscountManagementStore((s) => s.discounts);
   const deleteDiscount = useDiscountManagementStore((s) => s.deleteDiscount);
   const isMutating = useDiscountManagementStore((s) => s.isMutating);
-  const [pendingDelete, setPendingDelete] = useState<any | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Discount | null>(null);
 
   function handleConfirmDelete() {
     if (!pendingDelete) return;

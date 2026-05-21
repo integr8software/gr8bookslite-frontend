@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Edit3, Home, Save, Trash2, X } from "lucide-react";
+import {
+	ArrowLeft,
+	CheckCircle2,
+	CircleOff,
+	Edit3,
+	Home,
+	Save,
+	X,
+} from "lucide-react";
 import {
 	ResponsibilityCenterActionCopy,
 	ResponsibilityCenterHref,
@@ -11,7 +19,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ResponsibilityCenterDeleteDialog } from "./ResponsibilityCenterDeleteDialog";
+import { ResponsibilityCenterSetStatusDialog } from "./ResponsibilityCenterSetStatusDialog";
 import { ResponsibilityCenterDetailsFields } from "./ResponsibilityCenterDetailsFields";
 import { ResponsibilityCenterNotFound } from "./ResponsibilityCenterNotFound";
 
@@ -19,6 +27,9 @@ export function ResponsibilityCenterAction() {
 	const action = useResponsibilityCenterAction();
 	const needsRecord = action.mode === "edit" || action.mode === "view";
 	const copy = ResponsibilityCenterActionCopy[action.mode];
+	const StatusIcon = action.nextStatus === "Inactive" ? CircleOff : CheckCircle2;
+	const statusLabel =
+		action.nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active";
 
 	if (needsRecord && !action.center) {
 		return <ResponsibilityCenterNotFound />;
@@ -61,11 +72,11 @@ export function ResponsibilityCenterAction() {
 							{action.center ? (
 								<button
 									type="button"
-									onClick={() => action.setIsDeleteOpen(true)}
-									className={moduleHeaderActionClassNames.danger}
+									onClick={() => action.setIsStatusDialogOpen(true)}
+									className={inactiveActionClassName}
 								>
-									<Trash2 className="h-4 w-4" aria-hidden="true" />
-									Delete
+									<StatusIcon className="h-4 w-4" aria-hidden="true" />
+									{statusLabel}
 								</button>
 							) : null}
 							{action.mode === "edit" && action.center ? (
@@ -97,13 +108,16 @@ export function ResponsibilityCenterAction() {
 					onInputChange={action.onInputChange}
 				/>
 			</form>
-			<ResponsibilityCenterDeleteDialog
+			<ResponsibilityCenterSetStatusDialog
 				center={action.center}
-				isOpen={action.isDeleteOpen}
+				isOpen={action.isStatusDialogOpen}
 				isPending={action.isMutating}
-				onCancel={() => action.setIsDeleteOpen(false)}
-				onConfirm={action.onConfirmDelete}
+				onCancel={() => action.setIsStatusDialogOpen(false)}
+				onConfirm={action.onConfirmStatusChange}
 			/>
 		</>
 	);
 }
+
+const inactiveActionClassName =
+	"inline-flex h-10 items-center justify-center gap-2 rounded-md border border-coralpink/25 bg-white px-4 text-sm font-semibold text-coralpink";

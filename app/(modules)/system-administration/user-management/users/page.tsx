@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { UserListPage } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListPage";
+import { UserListPage } from "@/app/src/ui/modules/system-administration/user-management/users/UserListPage";
 
-const PageTitle = "User List";
+const PageTitle = "Users";
 
 export const metadata: Metadata = {
   title: `${PageTitle} | ${AppName}`,

@@ -262,7 +262,7 @@ function BankDetailsNotice() {
 		<div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 sm:col-span-2">
 			<div className="flex items-start gap-3">
 				<Landmark
-					className="mt-0.5 h-5 w-5 text-blue-700"
+					className="mt-0.5 h-5 w-5 text-skyblue"
 					aria-hidden="true"
 				/>
 				<div>

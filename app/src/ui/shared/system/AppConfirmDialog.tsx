@@ -52,7 +52,7 @@ export function AppConfirmDialog({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-80 flex items-center justify-center bg-darknavy/45 px-4 py-6 backdrop-blur-none"
+      className="app-confirm-dialog-backdrop fixed inset-0 z-80 flex items-center justify-center px-4 py-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onCancel();

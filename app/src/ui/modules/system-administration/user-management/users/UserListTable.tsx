@@ -5,9 +5,9 @@ import type {
 	UserManagementRecord,
 	UserRoleRecord,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
-import { useUserListTable } from "@/app/src/hooks/modules/system-administration/user-management/user-list/useUserList";
-import { UserListTableFilters } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListTableFilters";
-import { UserListTableRow } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListTableRow";
+import { useUserListTable } from "@/app/src/hooks/modules/system-administration/user-management/users/useUserList";
+import { UserListTableFilters } from "@/app/src/ui/modules/system-administration/user-management/users/UserListTableFilters";
+import { UserListTableRow } from "@/app/src/ui/modules/system-administration/user-management/users/UserListTableRow";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 
 export function UserListTable({
@@ -26,7 +26,7 @@ export function UserListTable({
 	return (
 		<div
 			className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm"
-			data-spotlight-id="user-list-table"
+			data-spotlight-id="users-table"
 		>
 			<UserListTableFilters
 				groupFilter={userList.departmentFilter}

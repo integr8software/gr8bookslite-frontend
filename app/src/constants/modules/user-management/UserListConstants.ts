@@ -1,9 +1,9 @@
-export const UserListHref = "/system-administration/user-management/user-list";
+export const UserListHref = "/system-administration/user-management/users";
 
 export const UserListStatusOptions = ["Active", "Pending", "Inactive"] as const;
 
 export const UserListTablePaginationStorageKey =
-  "system-administration-user-list";
+  "system-administration-users";
 
 export const UserListTableColumns = [
   { key: "name", label: "Full Name", className: "w-[18rem]" },

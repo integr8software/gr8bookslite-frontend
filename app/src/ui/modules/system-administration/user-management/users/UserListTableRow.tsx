@@ -2,7 +2,7 @@ import { UserCircle } from "lucide-react";
 import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import type { UserStatus } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import type { UserListTableRecord } from "@/app/src/types/modules/user-management/UserListTypes";
-import { UserListRecordActions } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListRecordActions";
+import { UserListRecordActions } from "@/app/src/ui/modules/system-administration/user-management/users/UserListRecordActions";
 
 type UserListTableRowProps = {
 	user: UserListTableRecord;
@@ -11,7 +11,7 @@ type UserListTableRowProps = {
 
 export function UserListTableRow({ user, onDelete }: UserListTableRowProps) {
 	return (
-		<tr className="transition hover:bg-skyblue/4">
+		<tr className="module-table-row">
 			<td className="px-4 py-3">
 				<div className="flex min-w-0 items-center gap-3">
 					{user.profileImageUrl ? (

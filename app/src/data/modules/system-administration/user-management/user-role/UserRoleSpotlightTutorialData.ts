@@ -18,7 +18,7 @@ export const UserRoleSpotlightTutorialSteps = [
     key: "add-type",
     title: "Create new user roles here",
     description:
-      "Use this action to add a new role template before assigning it to users in the user list.",
+      "Use this action to add a new role template before assigning it to users.",
     selectors: ["[data-spotlight-id='user-role-add']"],
   },
   {

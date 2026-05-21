@@ -33,7 +33,7 @@ export function UserListTableFilters({
 	return (
 		<div
 			className="flex flex-wrap items-center gap-3 border-b border-darknavy/10 px-4 py-3"
-			data-spotlight-id="user-list-filters"
+			data-spotlight-id="users-filters"
 		>
 			<div className="relative w-full sm:w-72">
 				<Search

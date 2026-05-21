@@ -19,7 +19,7 @@ export function ChartsOfAccountsMain() {
 	}
 
 	return (
-		<section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] text-slate-950 sm:-mx-5 lg:-mx-6">
+		<section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] text-darknavy sm:-mx-5 lg:-mx-6">
 			<ChartsOfAccountsSpotlightTutorial />
 			<main className="grid min-h-[calc(100dvh-5rem)] content-start gap-5 p-4 sm:p-6">
 				<ModuleHeader

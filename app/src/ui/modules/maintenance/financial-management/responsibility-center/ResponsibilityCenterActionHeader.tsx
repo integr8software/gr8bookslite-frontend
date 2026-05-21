@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArrowLeft, Edit3, Save, Trash2, X } from "lucide-react";
 import {
 	ResponsibilityCenterActionCopy,
@@ -8,6 +7,11 @@ import type {
 	ResponsibilityCenter,
 	ResponsibilityCenterActionMode,
 } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
+import {
+	ResponsibilityCenterDangerButton,
+	ResponsibilityCenterPrimaryButton,
+	ResponsibilityCenterSecondaryLink,
+} from "./ResponsibilityCenterButtons";
 
 type ResponsibilityCenterActionHeaderProps = {
 	center?: ResponsibilityCenter;
@@ -32,55 +36,41 @@ export function ResponsibilityCenterActionHeader({
 			</div>
 			<div className="flex flex-wrap gap-2">
 				{mode === "view" ? (
-					<Link
+					<ResponsibilityCenterSecondaryLink
 						href={ResponsibilityCenterHref}
-						className={secondaryButtonClassName}
-					>
-						<ArrowLeft className="h-4 w-4" aria-hidden="true" />
-						Back
-					</Link>
+						icon={ArrowLeft}
+						label="Back"
+					/>
 				) : null}
 				{mode === "view" && center ? (
-					<Link
+					<ResponsibilityCenterSecondaryLink
 						href={`${ResponsibilityCenterHref}/edit/${center.id}`}
-						className={secondaryButtonClassName}
-					>
-						<Edit3 className="h-4 w-4" aria-hidden="true" />
-						Edit
-					</Link>
+						icon={Edit3}
+						label="Edit"
+					/>
 				) : null}
 				{center ? (
-					<button
-						type="button"
+					<ResponsibilityCenterDangerButton
 						onClick={onDeleteCenter}
-						className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-coralpink/25 bg-white px-4 text-sm font-semibold text-coralpink shadow-sm transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
-					>
-						<Trash2 className="h-4 w-4" aria-hidden="true" />
-						Delete
-					</button>
+						icon={Trash2}
+						label="Delete"
+					/>
 				) : null}
 				{mode === "edit" && center ? (
-					<Link
+					<ResponsibilityCenterSecondaryLink
 						href={`${ResponsibilityCenterHref}/view/${center.id}`}
-						className={secondaryButtonClassName}
-					>
-						<X className="h-4 w-4" aria-hidden="true" />
-						Cancel
-					</Link>
+						icon={X}
+						label="Cancel"
+					/>
 				) : null}
 				{!isReadonly ? (
-					<button
+					<ResponsibilityCenterPrimaryButton
 						type="submit"
-						className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-					>
-						<Save className="h-4 w-4" aria-hidden="true" />
-						Save Center
-					</button>
+						icon={Save}
+						label="Save Center"
+					/>
 				) : null}
 			</div>
 		</div>
 	);
 }
-
-const secondaryButtonClassName =
-	"inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/15 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:border-skyblue/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35";

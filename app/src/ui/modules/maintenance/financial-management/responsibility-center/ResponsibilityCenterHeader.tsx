@@ -16,7 +16,7 @@ export function ResponsibilityCenterHeader() {
 			</div>
 			<Link
 				href={`${ResponsibilityCenterHref}/add`}
-				className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+				className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
 			>
 				<Plus className="h-4 w-4" aria-hidden="true" />
 				Add Center

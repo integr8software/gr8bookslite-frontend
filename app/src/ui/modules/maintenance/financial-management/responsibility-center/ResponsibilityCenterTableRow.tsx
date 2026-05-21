@@ -1,71 +1,20 @@
 import Link from "next/link";
-import {
-	Building2,
-	Edit3,
-	Eye,
-	Trash2,
-	type LucideIcon,
-} from "lucide-react";
+import { Building2, Edit3, Eye, Trash2, type LucideIcon } from "lucide-react";
 import { ResponsibilityCenterHref } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
+import { iconButtonClassName } from "./ResponsibilityCenterButtons";
 
-type ResponsibilityCenterTableProps = {
-	centers: ResponsibilityCenter[];
-	onDeleteCenter: (center: ResponsibilityCenter) => void;
-};
-
-export function ResponsibilityCenterTable({
-	centers,
-	onDeleteCenter,
-}: ResponsibilityCenterTableProps) {
-	const centerById = new Map(centers.map((center) => [center.id, center]));
-
-	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<div className="grid grid-cols-[0.65fr_1.15fr_0.8fr_0.85fr_0.7fr_8rem] gap-4 border-b border-darknavy/10 bg-darknavy/[0.03] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-darknavy/50 max-lg:hidden">
-				<span>Code</span>
-				<span>Name</span>
-				<span>Type</span>
-				<span>Manager</span>
-				<span>Status</span>
-				<span className="text-right">Actions</span>
-			</div>
-			<div className="divide-y divide-darknavy/10">
-				{centers.length > 0 ? (
-					centers.map((center) => (
-						<ResponsibilityCenterRow
-							key={center.id}
-							center={center}
-							parentName={
-								center.parentId ? centerById.get(center.parentId)?.name : undefined
-							}
-							onDeleteCenter={onDeleteCenter}
-						/>
-					))
-				) : (
-					<div className="px-4 py-10 text-center">
-						<p className="text-sm font-semibold text-darknavy">
-							No responsibility centers yet
-						</p>
-						<p className="mt-1 text-sm text-darknavy/55">
-							Add a center to start grouping financial accountability.
-						</p>
-					</div>
-				)}
-			</div>
-		</div>
-	);
-}
-
-function ResponsibilityCenterRow({
-	center,
-	parentName,
-	onDeleteCenter,
-}: {
+type ResponsibilityCenterTableRowProps = {
 	center: ResponsibilityCenter;
 	parentName?: string;
 	onDeleteCenter: (center: ResponsibilityCenter) => void;
-}) {
+};
+
+export function ResponsibilityCenterTableRow({
+	center,
+	parentName,
+	onDeleteCenter,
+}: ResponsibilityCenterTableRowProps) {
 	return (
 		<article className="grid gap-3 px-4 py-4 lg:grid-cols-[0.65fr_1.15fr_0.8fr_0.85fr_0.7fr_8rem] lg:items-center lg:gap-4">
 			<Detail label="Code" value={center.code} />
@@ -146,12 +95,11 @@ function Detail({ label, value }: { label: string; value?: string }) {
 	);
 }
 
-function StatusBadge({
-	status,
-}: {
-	status: ResponsibilityCenter["status"];
-}) {
-	const isActive = status === "Active";
+function StatusBadge({ status }: { status: ResponsibilityCenter["status"] }) {
+	const statusClass =
+		status === "Active"
+			? "bg-citron/25 text-darknavy"
+			: "bg-darknavy/8 text-darknavy/55";
 
 	return (
 		<div>
@@ -159,11 +107,7 @@ function StatusBadge({
 				Status
 			</p>
 			<span
-				className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold lg:mt-0 ${
-					isActive
-						? "bg-citron/25 text-darknavy"
-						: "bg-darknavy/8 text-darknavy/55"
-				}`}
+				className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold lg:mt-0 ${statusClass}`}
 			>
 				{status}
 			</span>
@@ -181,11 +125,7 @@ function IconLink({
 	label: string;
 }) {
 	return (
-		<Link
-			href={href}
-			aria-label={label}
-			className="flex h-9 w-9 items-center justify-center rounded-md text-darknavy/65 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-		>
+		<Link href={href} aria-label={label} className={iconButtonClassName}>
 			<Icon className="h-4 w-4" aria-hidden="true" />
 		</Link>
 	);

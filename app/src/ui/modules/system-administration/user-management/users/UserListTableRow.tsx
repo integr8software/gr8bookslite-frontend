@@ -6,10 +6,13 @@ import { UserListRecordActions } from "@/app/src/ui/modules/system-administratio
 
 type UserListTableRowProps = {
 	user: UserListTableRecord;
-	onDelete: (id: string, name: string) => void;
+	onStatusChange: (user: UserListTableRecord) => void;
 };
 
-export function UserListTableRow({ user, onDelete }: UserListTableRowProps) {
+export function UserListTableRow({
+	user,
+	onStatusChange,
+}: UserListTableRowProps) {
 	return (
 		<tr className="module-table-row">
 			<td className="px-4 py-3">
@@ -51,7 +54,8 @@ export function UserListTableRow({ user, onDelete }: UserListTableRowProps) {
 					baseHref={UserListHref}
 					id={user.id}
 					name={user.name}
-					onDelete={onDelete}
+					status={user.status}
+					onStatusChange={() => onStatusChange(user)}
 				/>
 			</UserListTableCell>
 		</tr>

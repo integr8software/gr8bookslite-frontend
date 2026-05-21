@@ -1,8 +1,18 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
+import {
+	useParams,
+	usePathname,
+	useRouter,
+	useSearchParams,
+} from "next/navigation";
+import {
+	UserListHref,
+	UserManagementEditFromParam,
+	UserManagementEditFromViewQuery,
+	UserManagementEditFromViewValue,
+} from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import {
 	InitialUserFormValues,
 	createUserRecord,
@@ -20,13 +30,17 @@ export function useUserListFormPage() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
+	const searchParams = useSearchParams();
 	const users = useUserManagementStore((state) => state.users);
 	const userRoles = useUserManagementStore((state) => state.userRoles);
 	const departments = useUserManagementStore((state) => state.departments);
 	const addUser = useUserManagementStore((state) => state.addUser);
 	const updateUser = useUserManagementStore((state) => state.updateUser);
-	const deleteUser = useUserManagementStore((state) => state.deleteUser);
 	const mode = getActionMode(pathname);
+	const wasOpenedFromView =
+		mode === "edit" &&
+		searchParams.get(UserManagementEditFromParam) ===
+			UserManagementEditFromViewValue;
 	const existingUser = users.find((user) => user.id === params.recordId);
 	const isReadonly = mode === "view";
 	const [values, setValues] = useState<UserFormValues>(() =>
@@ -42,6 +56,16 @@ export function useUserListFormPage() {
 			: InitialUserFormValues,
 	);
 	const [errors, setErrors] = useState<UserFormErrors>({});
+	const viewHref = existingUser
+		? `${UserListHref}/view/${existingUser.id}`
+		: UserListHref;
+	const submitHref =
+		mode === "edit" && wasOpenedFromView ? viewHref : UserListHref;
+	const cancelHref =
+		mode === "edit" && wasOpenedFromView ? viewHref : UserListHref;
+	const editHref = existingUser
+		? `${UserListHref}/edit/${existingUser.id}?${UserManagementEditFromViewQuery}`
+		: undefined;
 
 	function updateField(field: keyof UserFormValues, value: string) {
 		if (isReadonly) {
@@ -79,26 +103,15 @@ export function useUserListFormPage() {
 			addUser(createUserRecord(values));
 		}
 
-		router.push(UserListHref);
-	}
-
-	function handleDelete() {
-		if (
-			!existingUser ||
-			!window.confirm(`Set ${existingUser.name} as inactive?`)
-		) {
-			return;
-		}
-
-		deleteUser(existingUser.id);
-		router.push(UserListHref);
+		router.push(submitHref);
 	}
 
 	return {
+		cancelHref,
 		departments,
+		editHref,
 		errors,
 		existingUser,
-		handleDelete,
 		handleInputChange,
 		handleSubmit,
 		isReadonly,

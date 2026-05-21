@@ -6,12 +6,12 @@ export function DepartmentList({
 	baseHref,
 	icon: Icon,
 	items,
-	onDelete,
+	onStatusChange,
 }: {
 	baseHref: string;
 	icon: LucideIcon;
 	items: DepartmentRecord[];
-	onDelete: (id: string, name: string) => void;
+	onStatusChange: (department: DepartmentRecord) => void;
 }) {
 	return (
 		<div className="grid gap-3" data-spotlight-id="department-list">
@@ -39,7 +39,8 @@ export function DepartmentList({
 							baseHref={baseHref}
 							id={item.id}
 							name={item.name}
-							onDelete={onDelete}
+							status={item.status}
+							onStatusChange={() => onStatusChange(item)}
 						/>
 					</div>
 				</article>

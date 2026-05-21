@@ -1,24 +1,42 @@
 "use client";
 
+import { useState } from "react";
 import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import { UserListSpotlightTutorialOpenEvent } from "@/app/src/data/modules/system-administration/user-management/users/UserListSpotlightTutorialData";
+import {
+  getNextUserStatus,
+  type UserManagementRecord,
+} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import { useUserManagementStore } from "@/app/src/hooks/modules/system-administration/user-management/useUserManagement";
 import { UserListHeader } from "@/app/src/ui/modules/system-administration/user-management/users/UserListHeader";
 import { UserListSpotlightTutorial } from "@/app/src/ui/modules/system-administration/user-management/users/UserListSpotlightTutorial";
 import { UserListTable } from "@/app/src/ui/modules/system-administration/user-management/users/UserListTable";
+import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 
 export function UserListPage() {
   const users = useUserManagementStore((state) => state.users);
   const userRoles = useUserManagementStore((state) => state.userRoles);
   const departments = useUserManagementStore((state) => state.departments);
-  const deleteUser = useUserManagementStore((state) => state.deleteUser);
+  const updateUser = useUserManagementStore((state) => state.updateUser);
+  const isMutating = useUserManagementStore((state) => state.isMutating);
+  const [pendingStatusUser, setPendingStatusUser] =
+    useState<UserManagementRecord | null>(null);
+  const pendingNextStatus = pendingStatusUser
+    ? getNextUserStatus(pendingStatusUser.status)
+    : "Inactive";
+  const pendingStatusLabel =
+    pendingNextStatus === "Inactive" ? "Set as Inactive" : "Set as Active";
 
-  function handleDeleteUser(userId: string, userName: string) {
-    if (!window.confirm(`Set ${userName} as inactive?`)) {
+  function handleConfirmStatusChange() {
+    if (!pendingStatusUser) {
       return;
     }
 
-    deleteUser(userId);
+    updateUser({
+      ...pendingStatusUser,
+      status: pendingNextStatus,
+    });
+    setPendingStatusUser(null);
   }
 
   function openSpotlightTutorial() {
@@ -38,7 +56,23 @@ export function UserListPage() {
         departments={departments}
         users={users}
         userRoles={userRoles}
-        onDelete={handleDeleteUser}
+        onStatusChange={setPendingStatusUser}
+      />
+      <AppConfirmDialog
+        isOpen={Boolean(pendingStatusUser)}
+        isPending={isMutating}
+        title={
+          pendingNextStatus === "Inactive"
+            ? "Set user as inactive?"
+            : "Set user as active?"
+        }
+        description={`This will mark ${
+          pendingStatusUser?.name ?? "the selected user"
+        } as ${pendingNextStatus.toLowerCase()} while keeping the account record available.`}
+        confirmLabel={pendingStatusLabel}
+        tone={pendingNextStatus === "Inactive" ? "danger" : "success"}
+        onCancel={() => setPendingStatusUser(null)}
+        onConfirm={handleConfirmStatusChange}
       />
     </section>
   );

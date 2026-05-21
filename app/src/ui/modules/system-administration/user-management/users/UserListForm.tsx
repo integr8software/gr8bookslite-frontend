@@ -1,4 +1,5 @@
 import type { ChangeEvent, FormEvent } from "react";
+import { UserListStatusOptions } from "@/app/src/constants/modules/user-management/UserListConstants";
 import type {
   DepartmentRecord,
   UserFormValues,
@@ -82,8 +83,11 @@ export function UserListForm({
               disabled={isReadonly}
               className={UserListFieldClassName}
             >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              {UserListStatusOptions.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
             </select>
           </UserListField>
           <UserListField label="User Role">

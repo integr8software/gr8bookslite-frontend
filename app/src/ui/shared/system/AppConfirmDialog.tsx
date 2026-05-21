@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-type AppConfirmDialogTone = "default" | "danger";
+type AppConfirmDialogTone = "default" | "danger" | "success";
 
 type AppConfirmDialogProps = {
   cancelLabel?: string;
@@ -107,6 +107,10 @@ function getConfirmButtonClassName(tone: AppConfirmDialogTone) {
 
   if (tone === "danger") {
     return `${baseClassName} bg-coralpink hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;
+  }
+
+  if (tone === "success") {
+    return `${baseClassName} bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-500/35`;
   }
 
   return `${baseClassName} bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500/35`;

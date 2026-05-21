@@ -201,6 +201,10 @@ export function updateUserRecord(
   };
 }
 
+export function getNextUserStatus(status: UserStatus): UserStatus {
+  return status === "Inactive" ? "Active" : "Inactive";
+}
+
 function trimUserValues(values: UserFormValues): UserFormValues {
   return {
     ...values,

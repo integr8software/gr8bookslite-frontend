@@ -1,17 +1,14 @@
-import Link from "next/link";
 import type { FormEvent } from "react";
 import type { DepartmentFormValues } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import type { DepartmentFormErrors } from "@/app/src/types/modules/user-management/UserManagementTypes";
 
 export function DepartmentForm({
-  backHref,
   errors,
   isReadonly,
   values,
   onSubmit,
   onUpdateField,
 }: {
-  backHref: string;
   errors: DepartmentFormErrors;
   isReadonly: boolean;
   values: DepartmentFormValues;
@@ -54,9 +51,6 @@ export function DepartmentForm({
           </DepartmentField>
         </div>
       </div>
-      <Link href={backHref} className="text-sm font-semibold text-skyblue">
-        Back to list
-      </Link>
     </form>
   );
 }

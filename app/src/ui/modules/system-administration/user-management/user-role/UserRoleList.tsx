@@ -6,12 +6,12 @@ export function UserRoleList({
 	baseHref,
 	icon: Icon,
 	items,
-	onDelete,
+	onStatusChange,
 }: {
 	baseHref: string;
 	icon: LucideIcon;
 	items: UserRoleRecord[];
-	onDelete: (id: string, name: string) => void;
+	onStatusChange: (role: UserRoleRecord) => void;
 }) {
 	return (
 		<div className="grid gap-3" data-spotlight-id="user-role-list">
@@ -41,7 +41,8 @@ export function UserRoleList({
 							baseHref={baseHref}
 							id={item.id}
 							name={item.name}
-							onDelete={onDelete}
+							status={item.status}
+							onStatusChange={() => onStatusChange(item)}
 						/>
 					</div>
 				</article>

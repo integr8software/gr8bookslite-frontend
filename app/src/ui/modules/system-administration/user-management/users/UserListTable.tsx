@@ -14,12 +14,12 @@ export function UserListTable({
 	departments,
 	users,
 	userRoles,
-	onDelete,
+	onStatusChange,
 }: {
 	departments: DepartmentRecord[];
 	users: UserManagementRecord[];
 	userRoles: UserRoleRecord[];
-	onDelete: (id: string, name: string) => void;
+	onStatusChange: (user: UserManagementRecord) => void;
 }) {
 	const userList = useUserListTable({ departments, users, userRoles });
 
@@ -54,7 +54,7 @@ export function UserListTable({
 					<UserListTableRow
 						key={id}
 						user={original}
-						onDelete={onDelete}
+						onStatusChange={onStatusChange}
 					/>
 				)}
 			/>

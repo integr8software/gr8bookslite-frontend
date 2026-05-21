@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import { useUserListFormPage } from "@/app/src/hooks/modules/system-administration/user-management/users/useUserListFormPage";
 import { UserListForm } from "@/app/src/ui/modules/system-administration/user-management/users/UserListForm";
@@ -7,6 +8,14 @@ import { UserListFormHeader } from "@/app/src/ui/modules/system-administration/u
 import { UserListNotFound } from "@/app/src/ui/modules/system-administration/user-management/users/UserListNotFound";
 
 export function UserListFormPage() {
+  return (
+    <Suspense fallback={null}>
+      <UserListFormPageInner />
+    </Suspense>
+  );
+}
+
+function UserListFormPageInner() {
   const page = useUserListFormPage();
 
   if (page.needsRecord && !page.existingUser) {
@@ -16,9 +25,10 @@ export function UserListFormPage() {
   return (
     <section className="grid gap-5">
       <UserListFormHeader
-        canDelete={Boolean(page.existingUser)}
+        cancelHref={page.cancelHref}
+        editHref={page.editHref}
         isReadonly={page.isReadonly}
-        onDelete={page.handleDelete}
+        mode={page.mode}
         title={
           page.mode === "view"
             ? "View User"

@@ -1,8 +1,18 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { DepartmentHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
+import {
+	useParams,
+	usePathname,
+	useRouter,
+	useSearchParams,
+} from "next/navigation";
+import {
+	DepartmentHref,
+	UserManagementEditFromParam,
+	UserManagementEditFromViewQuery,
+	UserManagementEditFromViewValue,
+} from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import {
 	InitialDepartmentFormValues,
 	createDepartmentRecord,
@@ -19,15 +29,17 @@ export function useDepartmentFormPage() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
+	const searchParams = useSearchParams();
 	const departments = useDepartmentStore((state) => state.departments);
 	const addDepartment = useDepartmentStore((state) => state.addDepartment);
 	const updateDepartment = useDepartmentStore(
 		(state) => state.updateDepartment,
 	);
-	const deleteDepartment = useDepartmentStore(
-		(state) => state.deleteDepartment,
-	);
 	const mode = getActionMode(pathname);
+	const wasOpenedFromView =
+		mode === "edit" &&
+		searchParams.get(UserManagementEditFromParam) ===
+			UserManagementEditFromViewValue;
 	const existingDepartment = departments.find(
 		(item) => item.id === params.recordId,
 	);
@@ -42,6 +54,16 @@ export function useDepartmentFormPage() {
 			: InitialDepartmentFormValues,
 	);
 	const [errors, setErrors] = useState<DepartmentFormErrors>({});
+	const viewHref = existingDepartment
+		? `${DepartmentHref}/view/${existingDepartment.id}`
+		: DepartmentHref;
+	const submitHref =
+		mode === "edit" && wasOpenedFromView ? viewHref : DepartmentHref;
+	const cancelHref =
+		mode === "edit" && wasOpenedFromView ? viewHref : DepartmentHref;
+	const editHref = existingDepartment
+		? `${DepartmentHref}/edit/${existingDepartment.id}?${UserManagementEditFromViewQuery}`
+		: undefined;
 
 	function updateField(field: keyof DepartmentFormValues, value: string) {
 		if (isReadonly) return;
@@ -64,25 +86,14 @@ export function useDepartmentFormPage() {
 			addDepartment(createDepartmentRecord(values));
 		}
 
-		router.push(DepartmentHref);
-	}
-
-	function handleDelete() {
-		if (
-			!existingDepartment ||
-			!window.confirm(`Set ${existingDepartment.name} as inactive?`)
-		) {
-			return;
-		}
-
-		deleteDepartment(existingDepartment.id);
-		router.push(DepartmentHref);
+		router.push(submitHref);
 	}
 
 	return {
+		cancelHref,
+		editHref,
 		errors,
 		existingDepartment,
-		handleDelete,
 		handleSubmit,
 		isReadonly,
 		mode,

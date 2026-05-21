@@ -1,8 +1,18 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { UserRoleHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
+import {
+	useParams,
+	usePathname,
+	useRouter,
+	useSearchParams,
+} from "next/navigation";
+import {
+	UserManagementEditFromParam,
+	UserManagementEditFromViewQuery,
+	UserManagementEditFromViewValue,
+	UserRoleHref,
+} from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import {
 	InitialUserRoleFormValues,
 	createUserRoleRecord,
@@ -19,15 +29,17 @@ export function useUserRoleFormPage() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
+	const searchParams = useSearchParams();
 	const userRoles = useUserRoleStore((state) => state.userRoles);
 	const addUserRole = useUserRoleStore((state) => state.addUserRole);
 	const updateUserRole = useUserRoleStore(
 		(state) => state.updateUserRole,
 	);
-	const deleteUserRole = useUserRoleStore(
-		(state) => state.deleteUserRole,
-	);
 	const mode = getActionMode(pathname);
+	const wasOpenedFromView =
+		mode === "edit" &&
+		searchParams.get(UserManagementEditFromParam) ===
+			UserManagementEditFromViewValue;
 	const existingUserRole = userRoles.find(
 		(item) => item.id === params.recordId,
 	);
@@ -43,6 +55,16 @@ export function useUserRoleFormPage() {
 			: InitialUserRoleFormValues,
 	);
 	const [errors, setErrors] = useState<UserRoleFormErrors>({});
+	const viewHref = existingUserRole
+		? `${UserRoleHref}/view/${existingUserRole.id}`
+		: UserRoleHref;
+	const submitHref =
+		mode === "edit" && wasOpenedFromView ? viewHref : UserRoleHref;
+	const cancelHref =
+		mode === "edit" && wasOpenedFromView ? viewHref : UserRoleHref;
+	const editHref = existingUserRole
+		? `${UserRoleHref}/edit/${existingUserRole.id}?${UserManagementEditFromViewQuery}`
+		: undefined;
 
 	function updateField(
 		field: keyof UserRoleFormValues,
@@ -80,25 +102,14 @@ export function useUserRoleFormPage() {
 			addUserRole(createUserRoleRecord(values));
 		}
 
-		router.push(UserRoleHref);
-	}
-
-	function handleDelete() {
-		if (
-			!existingUserRole ||
-			!window.confirm(`Set ${existingUserRole.name} as inactive?`)
-		) {
-			return;
-		}
-
-		deleteUserRole(existingUserRole.id);
-		router.push(UserRoleHref);
+		router.push(submitHref);
 	}
 
 	return {
+		cancelHref,
+		editHref,
 		errors,
 		existingUserRole,
-		handleDelete,
 		handleSubmit,
 		isReadonly,
 		mode,

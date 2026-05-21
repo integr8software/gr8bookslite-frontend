@@ -57,7 +57,7 @@ export function AccountProfilePage() {
               type="button"
               onClick={cancelProfileChanges}
               disabled={!hasPendingProfileChanges || isSavingProfile}
-              className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-full border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:bg-offwhite disabled:cursor-not-allowed disabled:border-darknavy/8 disabled:text-darknavy/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 sm:flex-none"
+              className="account-profile-cancel-action inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-full border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:bg-offwhite disabled:cursor-not-allowed disabled:border-darknavy/8 disabled:text-darknavy/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 sm:flex-none"
             >
               <X className="h-4 w-4" aria-hidden="true" />
               <span>Cancel</span>
@@ -66,7 +66,7 @@ export function AccountProfilePage() {
               type="button"
               onClick={saveProfileChanges}
               disabled={!hasPendingProfileChanges || isSavingProfile}
-              className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-full bg-darknavy px-4 text-sm font-semibold text-offwhite shadow-sm transition hover:bg-darknavy/92 disabled:cursor-not-allowed disabled:bg-darknavy/35 disabled:text-offwhite/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 sm:flex-none"
+              className="account-profile-save-action inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-full bg-darknavy px-4 text-sm font-semibold text-offwhite shadow-sm transition hover:bg-darknavy/92 disabled:cursor-not-allowed disabled:bg-darknavy/35 disabled:text-offwhite/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 sm:flex-none"
             >
               <Save className="h-4 w-4" aria-hidden="true" />
               <span>{isSavingProfile ? "Saving..." : "Save Changes"}</span>

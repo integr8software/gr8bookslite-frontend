@@ -136,6 +136,35 @@ body {
   color: rgba(236, 242, 239, 0.42);
 }
 
+:root[data-app-theme="midnight-dark"] .account-profile-cancel-action {
+  background-color: transparent !important;
+  border-color: rgba(236, 242, 239, 0.18) !important;
+  color: rgba(236, 242, 239, 0.88) !important;
+  box-shadow: none !important;
+}
+
+:root[data-app-theme="midnight-dark"] .account-profile-cancel-action:hover {
+  background-color: rgba(236, 242, 239, 0.06) !important;
+}
+
+:root[data-app-theme="midnight-dark"] .account-profile-save-action {
+  background-color: var(--skyblue) !important;
+  color: #0f1724 !important;
+  box-shadow: 0 14px 34px rgba(87, 196, 229, 0.18) !important;
+}
+
+:root[data-app-theme="midnight-dark"] .account-profile-save-action:hover {
+  background-color: #76d4ee !important;
+}
+
+:root[data-app-theme="midnight-dark"] .account-profile-cancel-action:disabled,
+:root[data-app-theme="midnight-dark"] .account-profile-save-action:disabled {
+  background-color: rgba(236, 242, 239, 0.08) !important;
+  border-color: rgba(236, 242, 239, 0.08) !important;
+  color: rgba(236, 242, 239, 0.38) !important;
+  box-shadow: none !important;
+}
+
 button {
   cursor: pointer;
 }

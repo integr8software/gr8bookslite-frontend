@@ -2,83 +2,88 @@
 
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-type Discount = {
-  id: string;
-  description: string;
-  percentage: number;
-  accountId?: string;
-  accountCode?: string;
-  accountTitle?: string;
-};
-
-const MockDiscounts: Discount[] = [
-  {
-    id: "d_001",
-    description: "Early payment discount",
-    percentage: 5,
-    accountCode: "1110",
-    accountTitle: "Cash in Bank - BDO",
-  },
-  {
-    id: "d_002",
-    description: "Volume purchase discount",
-    percentage: 10,
-    accountCode: "1210",
-    accountTitle: "Accounts Receivable",
-  },
-  {
-    id: "d_003",
-    description: "Seasonal promo discount",
-    percentage: 15,
-    accountCode: "2210",
-    accountTitle: "Sales Discounts Allowed",
-  },
-];
+import { MockDiscounts } from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
+import type { Discount } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
 
 const DiscountQueryKeys = {
-  discounts: () => ["discounts"],
+	discounts: () => ["discounts"],
 };
 
 type DiscountStoreState = {
-  discounts: Discount[];
-  addDiscount: (d: Discount) => void;
-  deleteDiscount: (id: string) => void;
-  isLoading: boolean;
-  isMutating: boolean;
+	discounts: Discount[];
+	addDiscount: (discount: Discount) => void;
+	updateDiscount: (discount: Discount) => void;
+	deleteDiscount: (id: string) => void;
+	isLoading: boolean;
+	isMutating: boolean;
 };
 
-export function useDiscountManagementStore<TSelected = DiscountStoreState>(selector?: (s: DiscountStoreState) => TSelected) {
-  const queryClient = useQueryClient();
-  const discountsQuery = useQuery({
-    queryKey: DiscountQueryKeys.discounts(),
-    queryFn: async () => MockDiscounts,
-    initialData: MockDiscounts,
-  });
+export function useDiscountManagementStore<TSelected = DiscountStoreState>(
+	selector?: (state: DiscountStoreState) => TSelected,
+) {
+	const queryClient = useQueryClient();
+	const discountsQuery = useQuery({
+		queryKey: DiscountQueryKeys.discounts(),
+		queryFn: async () => MockDiscounts,
+		initialData: MockDiscounts,
+	});
 
-  function updateCachedDiscounts(updater: (d: Discount[]) => Discount[]) {
-    queryClient.setQueryData<Discount[]>(DiscountQueryKeys.discounts(), (current = MockDiscounts) => updater(current));
-  }
+	function updateCachedDiscounts(
+		updater: (discounts: Discount[]) => Discount[],
+	) {
+		queryClient.setQueryData<Discount[]>(
+			DiscountQueryKeys.discounts(),
+			(current = MockDiscounts) => updater(current),
+		);
+	}
 
-  const addMutation = useMutation({
-    mutationFn: async (d: Discount) => d,
-    onSuccess: (d) => updateCachedDiscounts((current) => [...current, d]),
-  });
+	const addDiscountMutation = useMutation({
+		mutationFn: async (discount: Discount) => discount,
+		onSuccess: (discount) => {
+			updateCachedDiscounts((discounts) => [...discounts, discount]);
+		},
+	});
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => id,
-    onSuccess: (id) => updateCachedDiscounts((current) => current.filter((x) => x.id !== id)),
-  });
+	const updateDiscountMutation = useMutation({
+		mutationFn: async (discount: Discount) => discount,
+		onSuccess: (discount) => {
+			updateCachedDiscounts((discounts) =>
+				discounts.map((currentDiscount) =>
+					currentDiscount.id === discount.id ? discount : currentDiscount,
+				),
+			);
+		},
+	});
 
-  const state = useMemo<DiscountStoreState>(() => ({
-    discounts: discountsQuery.data,
-    addDiscount: (d) => addMutation.mutate(d),
-    deleteDiscount: (id) => deleteMutation.mutate(id),
-    isLoading: discountsQuery.isLoading,
-    isMutating: addMutation.isPending || deleteMutation.isPending,
-  }), [discountsQuery.data, discountsQuery.isLoading, addMutation, deleteMutation]);
+	const deleteDiscountMutation = useMutation({
+		mutationFn: async (id: string) => id,
+		onSuccess: (id) => {
+			updateCachedDiscounts((discounts) =>
+				discounts.filter((discount) => discount.id !== id),
+			);
+		},
+	});
 
-  return selector ? selector(state) : (state as TSelected);
+	const state = useMemo<DiscountStoreState>(
+		() => ({
+			discounts: discountsQuery.data,
+			addDiscount: (discount) => addDiscountMutation.mutate(discount),
+			updateDiscount: (discount) => updateDiscountMutation.mutate(discount),
+			deleteDiscount: (id) => deleteDiscountMutation.mutate(id),
+			isLoading: discountsQuery.isLoading,
+			isMutating:
+				addDiscountMutation.isPending ||
+				updateDiscountMutation.isPending ||
+				deleteDiscountMutation.isPending,
+		}),
+		[
+			addDiscountMutation,
+			deleteDiscountMutation,
+			discountsQuery.data,
+			discountsQuery.isLoading,
+			updateDiscountMutation,
+		],
+	);
+
+	return selector ? selector(state) : (state as TSelected);
 }
-
-export type { Discount };

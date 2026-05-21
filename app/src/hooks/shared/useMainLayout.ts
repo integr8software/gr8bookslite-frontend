@@ -1037,6 +1037,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Manage payment and collection terms.",
   "maintenance-financial-management-transaction-type":
     "Configure transaction classifications and numbering behavior.",
+  "maintenance-financial-management-responsibility-center":
+    "Maintain accountability centers for financial reporting.",
   "maintenance-inventory-warehouse-management-warehouse-management":
     "Maintain warehouse records and storage locations.",
   "maintenance-warehouse": "Maintain warehouse records and storage locations.",

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const ACCESS_TOKEN_COOKIE = "gr8bookslite.accessToken";
+const ACCESS_TOKEN_COOKIE = "gr8booksneo.accessToken";
 
 export function proxy(request: NextRequest) {
   const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;

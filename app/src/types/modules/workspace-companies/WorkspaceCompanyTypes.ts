@@ -57,7 +57,7 @@ export type WorkspaceCompanyUserFormErrors = Partial<
   Record<keyof WorkspaceCompanyUserFormValues, string>
 >;
 
-export type WorkspaceCompanyBranchKind = "Head Office" | "Branch" | "Satellite";
+export type WorkspaceCompanyBranchKind = "Branch" | "Satellite";
 
 export type WorkspaceCompanyBranchRecord = {
   id: string;
@@ -70,12 +70,22 @@ export type WorkspaceCompanyBranchRecord = {
   email: string;
   contactNumber: string;
   address: string;
+  description: string;
+  isMain: boolean;
+  linkedMainBranchId?: string;
 };
 
-export type WorkspaceCompanyBranchFormValues = Omit<
-  WorkspaceCompanyBranchRecord,
-  "id" | "companyId"
->;
+export type WorkspaceCompanyBranchFormValues = {
+  branchType: WorkspaceCompanyBranchKind;
+  name: string;
+  contactNumber: string;
+  email: string;
+  description: string;
+  tin: string;
+  linkedMainBranchId: string;
+  address: string;
+  isMain: boolean;
+};
 
 export type WorkspaceCompanyBranchFormErrors = Partial<
   Record<keyof WorkspaceCompanyBranchFormValues, string>

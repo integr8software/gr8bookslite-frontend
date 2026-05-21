@@ -276,6 +276,13 @@ export function useWorkspaceCompanyBranchAction() {
 			branch.companyId === params.companyId &&
 			branch.id === params.branchId,
 	);
+	const mainBranchOptions = branches.filter(
+		(branch) =>
+			branch.companyId === params.companyId &&
+			branch.branchType === "Branch" &&
+			Boolean(branch.tin) &&
+			branch.id !== params.branchId,
+	);
 	const isReadonly = mode === "view";
 	const wasOpenedFromView =
 		mode === "edit" &&
@@ -310,18 +317,36 @@ export function useWorkspaceCompanyBranchAction() {
 
 	function updateField(
 		field: keyof WorkspaceCompanyBranchFormValues,
-		value: string,
+		value: boolean | string,
 	) {
 		if (isReadonly) {
 			return;
 		}
 
-		setValues((current) => ({ ...current, [field]: value }));
+		setValues((current) => {
+			if (field === "branchType") {
+				return {
+					...current,
+					branchType: value as WorkspaceCompanyBranchFormValues["branchType"],
+					isMain:
+						value === "Satellite"
+							? false
+							: current.isMain,
+					linkedMainBranchId:
+						value === "Branch" ? "" : current.linkedMainBranchId,
+					tin: value === "Satellite" ? "" : current.tin,
+				};
+			}
+
+			return { ...current, [field]: value };
+		});
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
 	function handleInputChange(
-		event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+		event: ChangeEvent<
+			HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+		>,
 	) {
 		const value =
 			event.target.name === "contactNumber"
@@ -346,16 +371,36 @@ export function useWorkspaceCompanyBranchAction() {
 			return;
 		}
 
+		if (!company) {
+			return;
+		}
+
 		if (mode === "edit" && existingBranch) {
 			updateBranch(
-				updateWorkspaceCompanyBranchFromForm(existingBranch, values),
+				updateWorkspaceCompanyBranchFromForm(
+					existingBranch,
+					company,
+					values,
+					mainBranchOptions.find(
+						(branch) => branch.id === values.linkedMainBranchId,
+					),
+				),
 			);
 			router.push(wasOpenedFromView ? viewHref : listHref);
 			return;
 		}
 
 		if (params.companyId) {
-			addBranch(createWorkspaceCompanyBranchFromForm(params.companyId, values));
+			addBranch(
+				createWorkspaceCompanyBranchFromForm(
+					company,
+					params.companyId,
+					values,
+					mainBranchOptions.find(
+						(branch) => branch.id === values.linkedMainBranchId,
+					),
+				),
+			);
 		}
 
 		router.push(listHref);
@@ -384,6 +429,7 @@ export function useWorkspaceCompanyBranchAction() {
 		isMutating,
 		isReadonly,
 		listHref,
+		mainBranchOptions,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
 		updateField,

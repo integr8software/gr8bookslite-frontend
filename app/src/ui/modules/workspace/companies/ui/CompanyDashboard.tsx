@@ -155,7 +155,7 @@ export function WorkspaceCompanyDashboard() {
 					href={branchesHref}
 					items={companyBranches.map((branch) => ({
 						id: branch.id,
-						meta: branch.branchType,
+						meta: branch.isMain ? "Head Office" : branch.branchType,
 						title: branch.name,
 					}))}
 					title="Branches"

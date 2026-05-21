@@ -38,7 +38,6 @@ export const WorkspaceCompanyPlanOptions = [
 ] as const satisfies readonly WorkspaceCompanyPlan[];
 
 export const WorkspaceCompanyBranchKindOptions = [
-	"Head Office",
 	"Branch",
 	"Satellite",
 ] as const satisfies readonly WorkspaceCompanyBranchKind[];

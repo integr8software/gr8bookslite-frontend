@@ -37,11 +37,12 @@ export const InitialWorkspaceCompanyBranchFormValues: WorkspaceCompanyBranchForm
 	{
 		address: "",
 		branchType: "Branch",
-		code: "",
 		contactNumber: "",
+		description: "",
 		email: "",
+		isMain: false,
+		linkedMainBranchId: "",
 		name: "",
-		status: "Active",
 		tin: "",
 	};
 
@@ -166,14 +167,16 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 	{
 		id: "br-gr8-main",
 		companyId: "cmp-gr8books",
-		code: "MAIN",
+		code: "GH-MB",
 		name: "Main Branch",
-		branchType: "Head Office",
+		branchType: "Branch",
 		status: "Active",
 		tin: "123-456-789-000",
 		email: "main@gr8books.test",
 		contactNumber: "+63 2 8123 4567",
 		address: "Makati City, Metro Manila",
+		description: "Primary operating branch for the company.",
+		isMain: true,
 	},
 	{
 		id: "br-gr8-north",
@@ -186,6 +189,8 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "north@gr8books.test",
 		contactNumber: "+63 2 8123 8899",
 		address: "Quezon City, Metro Manila",
+		description: "Northern Metro Manila branch.",
+		isMain: false,
 	},
 	{
 		id: "br-gr8-cebu",
@@ -198,30 +203,37 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "cebu@gr8books.test",
 		contactNumber: "+63 32 412 7788",
 		address: "Cebu City, Cebu",
+		description: "Satellite site linked to Main Branch.",
+		isMain: false,
+		linkedMainBranchId: "br-gr8-main",
 	},
 	{
 		id: "br-demo-main",
 		companyId: "cmp-demo-trading",
-		code: "HQ",
+		code: "DT-TH",
 		name: "Trading HQ",
-		branchType: "Head Office",
+		branchType: "Branch",
 		status: "Active",
 		tin: "987-654-321-000",
 		email: "hq@demotrading.test",
 		contactNumber: "+63 2 8899 1000",
 		address: "Pasig City, Metro Manila",
+		description: "Main trading office.",
+		isMain: true,
 	},
 	{
 		id: "br-cebu-main",
 		companyId: "cmp-cebu-retail",
 		code: "CEB",
 		name: "Cebu Central",
-		branchType: "Head Office",
+		branchType: "Branch",
 		status: "Active",
 		tin: "456-100-200-000",
 		email: "central@ceburetail.test",
 		contactNumber: "+63 32 410 1200",
 		address: "Cebu City, Cebu",
+		description: "Primary Cebu operating branch.",
+		isMain: true,
 	},
 ];
 
@@ -384,34 +396,61 @@ export function createWorkspaceCompanyBranchFormValues(
 	return {
 		address: branch.address,
 		branchType: branch.branchType,
-		code: branch.code,
 		contactNumber: branch.contactNumber,
+		description: branch.description,
 		email: branch.email,
+		isMain: branch.isMain,
+		linkedMainBranchId: branch.linkedMainBranchId ?? "",
 		name: branch.name,
-		status: branch.status,
-		tin: branch.tin,
+		tin: branch.branchType === "Satellite" ? "" : branch.tin,
 	};
 }
 
 export function createWorkspaceCompanyBranchFromForm(
+	company: WorkspaceCompanyRecord,
 	companyId: string,
 	values: WorkspaceCompanyBranchFormValues,
+	mainBranch?: WorkspaceCompanyBranchRecord,
 ): WorkspaceCompanyBranchRecord {
+	const trimmedValues = trimBranchValues(values);
+	const tin =
+		trimmedValues.branchType === "Satellite"
+			? (mainBranch?.tin ?? "").trim()
+			: trimmedValues.tin;
+
 	return {
-		...trimBranchValues(values),
+		...trimmedValues,
 		companyId,
+		code: createWorkspaceBranchCode(company.initials, trimmedValues.name),
 		id: `br-${Date.now()}`,
+		isMain: trimmedValues.branchType === "Branch" ? trimmedValues.isMain : false,
+		linkedMainBranchId:
+			trimmedValues.branchType === "Satellite"
+				? trimmedValues.linkedMainBranchId
+				: undefined,
+		status: "Active",
+		tin,
 	};
 }
 
 export function updateWorkspaceCompanyBranchFromForm(
 	branch: WorkspaceCompanyBranchRecord,
+	company: WorkspaceCompanyRecord,
 	values: WorkspaceCompanyBranchFormValues,
+	mainBranch?: WorkspaceCompanyBranchRecord,
 ): WorkspaceCompanyBranchRecord {
+	const nextBranch = createWorkspaceCompanyBranchFromForm(
+		company,
+		branch.companyId,
+		values,
+		mainBranch,
+	);
+
 	return {
 		...branch,
-		...trimBranchValues(values),
-		code: values.code.trim().toUpperCase(),
+		...nextBranch,
+		id: branch.id,
+		status: branch.status,
 	};
 }
 
@@ -420,14 +459,14 @@ export function validateWorkspaceCompanyBranchForm(
 ) {
 	const errors: WorkspaceCompanyBranchFormErrors = {};
 
-	if (!values.code.trim()) errors.code = "Code is required.";
 	if (!values.name.trim()) errors.name = "Branch name is required.";
-	if (!values.tin.trim()) errors.tin = "TIN is required.";
-	if (!values.email.trim()) errors.email = "Email is required.";
-	if (!values.contactNumber.trim()) {
-		errors.contactNumber = "Contact number is required.";
+	if (values.branchType === "Satellite") {
+		if (!values.linkedMainBranchId) {
+			errors.linkedMainBranchId = "Select the main branch TIN.";
+		}
+	} else if (!values.tin.trim()) {
+		errors.tin = "TIN is required for a branch.";
 	}
-	if (!values.address.trim()) errors.address = "Address is required.";
 
 	return errors;
 }
@@ -519,12 +558,27 @@ function trimBranchValues(
 	return {
 		...values,
 		address: values.address.trim(),
-		code: values.code.trim().toUpperCase(),
 		contactNumber: values.contactNumber.trim(),
+		description: values.description.trim(),
 		email: values.email.trim(),
+		linkedMainBranchId: values.linkedMainBranchId.trim(),
 		name: values.name.trim(),
 		tin: values.tin.trim(),
 	};
+}
+
+function createWorkspaceBranchCode(companyInitials: string, name: string) {
+	const companyPrefix = companyInitials.trim().toUpperCase();
+	const namePrefix = name
+		.trim()
+		.split(/\s+/)
+		.map((part) => part.replace(/[^A-Za-z0-9]/g, "").charAt(0))
+		.filter(Boolean)
+		.join("")
+		.slice(0, 4)
+		.toUpperCase();
+
+	return [companyPrefix, namePrefix || "BR"].filter(Boolean).join("-");
 }
 
 function trimBranchUserValues(

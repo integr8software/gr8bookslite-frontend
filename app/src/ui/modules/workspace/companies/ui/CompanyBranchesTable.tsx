@@ -154,13 +154,16 @@ function CompanyBranchesTableRow({
 				<div className="min-w-0">
 					<p className="truncate text-xs font-semibold text-darknavy">
 						{branch.name}
+						{branch.isMain ? " (Head Office)" : ""}
 					</p>
 					<p className="mt-1 truncate text-xs text-darknavy/50">
 						{branch.email}
 					</p>
 				</div>
 			</td>
-			<WorkspaceCompaniesTableCell>{branch.branchType}</WorkspaceCompaniesTableCell>
+			<WorkspaceCompaniesTableCell>
+				{branch.isMain ? "Head Office" : branch.branchType}
+			</WorkspaceCompaniesTableCell>
 			<WorkspaceCompaniesTableCell>
 				<WorkspaceTextBadge>{branch.totalUsers}</WorkspaceTextBadge>
 			</WorkspaceCompaniesTableCell>

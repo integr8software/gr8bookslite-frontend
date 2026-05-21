@@ -804,12 +804,6 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
         ],
       ),
       item(
-        "branch-management",
-        "Branch Management",
-        "/system-administration/branch-management",
-        "branch.management",
-      ),
-      item(
         "maintenance-approval",
         "Approval Management",
         "/system-administration/approval-management",

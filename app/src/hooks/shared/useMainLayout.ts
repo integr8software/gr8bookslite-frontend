@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
+import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
 import {
   type MainCurrentUser,
   type MainBranch,
@@ -285,8 +285,8 @@ export function useMainLayout() {
       {
         key: "branch-management",
         label: "Branch Management",
-        href: BranchManagementHref,
-        helperText: "Manage branch and satellite records",
+        href: WorkspaceCompaniesHref,
+        helperText: "Manage workspace companies, branches, and satellites",
         isManagementAction: true,
       },
     ];
@@ -1164,7 +1164,6 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "maintenance-user-management": "Manage users and roles.",
   "maintenance-users": "Create and maintain system user accounts.",
   "maintenance-user-role": "Maintain user role classifications.",
-  "branch-management": "Maintain branch and satellite records.",
   "maintenance-approval": "Configure approval workflows and rules.",
   "maintenance-audit": "Review audit trail activity.",
   "transaction-number-setup": "Configure transaction numbering sequences.",

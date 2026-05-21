@@ -7,7 +7,6 @@ import { OnboardingFreeTrialStep } from "./OnboardingFreeTrialStep";
 import { OnboardingProgressHeader } from "./OnboardingProgressHeader";
 import { OnboardingReviewStep } from "./OnboardingReviewStep";
 import { OnboardingStepOne } from "./OnboardingStepOne";
-import { ImageCropDialog } from "@/app/src/ui/shared/ImageCropDialog";
 import { OnboardingDraftLoadingScreen } from "./OnboardingDraftLoadingScreen";
 
 export function OnboardingFlow() {
@@ -17,7 +16,6 @@ export function OnboardingFlow() {
     errors,
     logoInputKey,
     logoPreviewUrl,
-    pendingLogoCrop,
     selectedPlan,
     selectedBillingCycle,
     isSubmitting,
@@ -25,8 +23,6 @@ export function OnboardingFlow() {
     isDraftLoading,
     updateValue,
     setTaxpayerType,
-    applyCroppedLogo,
-    dismissLogoCropper,
     handleLogoChange,
     handleLogoRemove,
     handlePlanSelection,
@@ -94,19 +90,6 @@ export function OnboardingFlow() {
           handleFinish={handleNext}
         />
       ) : null}
-
-      <ImageCropDialog
-        isOpen={Boolean(pendingLogoCrop)}
-        title="Crop Logo"
-        aspect={4 / 3}
-        fileName={pendingLogoCrop?.fileName ?? "logo.png"}
-        mimeType={pendingLogoCrop?.mimeType ?? "image/png"}
-        sourceImageUrl={pendingLogoCrop?.sourceImageUrl ?? ""}
-        onCancel={dismissLogoCropper}
-        onConfirm={async (file) => {
-          applyCroppedLogo(file);
-        }}
-      />
     </>
   );
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { DisbursementVoucherAction } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/Action";
+import { DisbursementVoucherAction } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/Action";
 
 const PageTitle = "Edit Disbursement Voucher";
 

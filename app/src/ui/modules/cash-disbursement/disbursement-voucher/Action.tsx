@@ -1,3 +1,2 @@
-export function DisbursementVoucherAction() {
-  return null;
-}
+export { DisbursementVoucherAction } from "./ui/Action";
+

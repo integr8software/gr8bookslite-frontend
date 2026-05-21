@@ -1,17 +1,20 @@
 import { UserCircle } from "lucide-react";
-import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
-import type { UserStatus } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type {
+	UserManagementRecord,
+	UserRoleRecord,
+} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import type { UserListTableRecord } from "@/app/src/types/modules/user-management/UserListTypes";
-import { UserListRecordActions } from "@/app/src/ui/modules/system-administration/user-management/users/UserListRecordActions";
 
 type UserListTableRowProps = {
 	user: UserListTableRecord;
-	onStatusChange: (user: UserListTableRecord) => void;
+	userRoles: UserRoleRecord[];
+	onRoleChange: (user: UserManagementRecord, userRoleId: string) => void;
 };
 
 export function UserListTableRow({
 	user,
-	onStatusChange,
+	userRoles,
+	onRoleChange,
 }: UserListTableRowProps) {
 	return (
 		<tr className="module-table-row">
@@ -40,57 +43,31 @@ export function UserListTableRow({
 			</td>
 			<UserListTableCell>{user.email}</UserListTableCell>
 			<UserListTableCell>
-				<span className="inline-flex min-h-6 items-center rounded bg-blue-50 px-2.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
-					{user.userRole}
-				</span>
-			</UserListTableCell>
-			<UserListTableCell>
-				<UserListStatusBadge status={user.status} />
-			</UserListTableCell>
-			<UserListTableCell>{user.lastLogin ?? "-"}</UserListTableCell>
-			<UserListTableCell align="center">
-				<UserListRecordActions
-					baseHref={UserListHref}
-					id={user.id}
-					name={user.name}
-					status={user.status}
-					onStatusChange={() => onStatusChange(user)}
-				/>
+				<select
+					aria-label={`Change role for ${user.name}`}
+					value={user.userRoleId}
+					onChange={(event) => onRoleChange(user, event.target.value)}
+					className="h-8 rounded border border-blue-100 bg-blue-50 px-2.5 text-xs font-semibold text-blue-700 outline-none transition hover:border-skyblue/45 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
+				>
+					{userRoles.map((role) => (
+						<option key={role.id} value={role.id}>
+							{role.name}
+						</option>
+					))}
+				</select>
 			</UserListTableCell>
 		</tr>
 	);
 }
 
 function UserListTableCell({
-	align = "left",
 	children,
 }: {
-	align?: "center" | "left";
 	children: React.ReactNode;
 }) {
 	return (
-		<td
-			className={`px-4 py-3 align-middle text-xs text-darknavy first:pl-5 last:pr-5 ${
-				align === "center" ? "text-center" : "text-left"
-			}`}
-		>
+		<td className="px-4 py-3 align-middle text-xs text-darknavy first:pl-5 last:pr-5">
 			{children}
 		</td>
-	);
-}
-
-function UserListStatusBadge({ status }: { status: UserStatus }) {
-	const classes = {
-		Active: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-		Pending: "bg-amber-50 text-amber-700 ring-amber-100",
-		Inactive: "bg-orange-50 text-orange-700 ring-orange-100",
-	} satisfies Record<UserStatus, string>;
-
-	return (
-		<span
-			className={`inline-flex min-h-6 items-center rounded px-2.5 text-xs font-semibold ring-1 ${classes[status]}`}
-		>
-			{status}
-		</span>
 	);
 }

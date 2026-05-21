@@ -25,6 +25,14 @@ import {
 	WorkspaceStatusBadge,
 	WorkspaceTextBadge,
 } from "./WorkspaceCompanyBadges";
+import {
+	WorkspaceCompaniesFilterBar,
+	WorkspaceCompaniesFilterSelect,
+	WorkspaceCompaniesIconLink,
+	WorkspaceCompaniesResetButton,
+	WorkspaceCompaniesSearchInput,
+	WorkspaceCompaniesTableCell,
+} from "./WorkspaceCompanyListPrimitives";
 
 export function CompanyBranchesTable({
 	baseHref,
@@ -61,7 +69,7 @@ export function CompanyBranchesTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No branches found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[72rem]"
+				minWidthClassName="min-w-[63rem]"
 				paginationStorageKey={WorkspaceCompanyBranchesTablePaginationStorageKey}
 				table={branchList.table}
 				renderRow={({ id, original }) => (
@@ -100,17 +108,13 @@ function CompanyBranchesTableFilters({
 	onStatusFilterChange: (value: WorkspaceCompanyStatus | "All") => void;
 }) {
 	return (
-		<div className="grid gap-3 border-b border-darknavy/10 bg-white p-4 md:grid-cols-[1fr_14rem_12rem_auto]">
-			<label className="flex min-h-11 items-center gap-2 rounded-lg border border-darknavy/10 px-3 text-sm text-darknavy shadow-sm">
-				<Search className="h-4 w-4 text-darknavy/35" aria-hidden="true" />
-				<input
-					value={query}
-					onChange={(event) => onQueryChange(event.target.value)}
-					className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-darknavy/35"
-					placeholder="Search branches"
-				/>
-			</label>
-			<FilterSelect
+		<WorkspaceCompaniesFilterBar className="md:grid-cols-[1fr_12rem_10rem_auto]">
+			<WorkspaceCompaniesSearchInput
+				value={query}
+				onChange={onQueryChange}
+				placeholder="Search branches"
+			/>
+			<WorkspaceCompaniesFilterSelect
 				label="Type"
 				options={kindOptions}
 				value={kindFilter}
@@ -118,7 +122,7 @@ function CompanyBranchesTableFilters({
 					onKindFilterChange(value as WorkspaceCompanyBranchKind | "All")
 				}
 			/>
-			<FilterSelect
+			<WorkspaceCompaniesFilterSelect
 				label="Status"
 				options={statusOptions}
 				value={statusFilter}
@@ -126,46 +130,8 @@ function CompanyBranchesTableFilters({
 					onStatusFilterChange(value as WorkspaceCompanyStatus | "All")
 				}
 			/>
-			<button
-				type="button"
-				onClick={onResetFilters}
-				className="inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 px-4 text-sm font-semibold text-darknavy transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-			>
-				Reset
-			</button>
-		</div>
-	);
-}
-
-function FilterSelect({
-	label,
-	options,
-	value,
-	onChange,
-}: {
-	label: string;
-	options: readonly string[];
-	value: string;
-	onChange: (value: string) => void;
-}) {
-	return (
-		<label className="grid gap-1">
-			<span className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">
-				{label}
-			</span>
-			<select
-				value={value}
-				onChange={(event) => onChange(event.target.value)}
-				className="h-11 rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
-			>
-				<option value="All">All</option>
-				{options.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
-		</label>
+			<WorkspaceCompaniesResetButton onClick={onResetFilters} />
+		</WorkspaceCompaniesFilterBar>
 	);
 }
 
@@ -182,10 +148,10 @@ function CompanyBranchesTableRow({
 }) {
 	return (
 		<tr className="module-table-row">
-			<TableCell>
+			<WorkspaceCompaniesTableCell>
 				<WorkspaceTextBadge>{branch.code}</WorkspaceTextBadge>
-			</TableCell>
-			<td className="px-4 py-3">
+			</WorkspaceCompaniesTableCell>
+			<td className="px-3 py-2.5">
 				<div className="min-w-0">
 					<p className="truncate text-xs font-semibold text-darknavy">
 						{branch.name}
@@ -195,40 +161,22 @@ function CompanyBranchesTableRow({
 					</p>
 				</div>
 			</td>
-			<TableCell>{branch.branchType}</TableCell>
-			<TableCell>
+			<WorkspaceCompaniesTableCell>{branch.branchType}</WorkspaceCompaniesTableCell>
+			<WorkspaceCompaniesTableCell>
 				<WorkspaceTextBadge>{branch.totalUsers}</WorkspaceTextBadge>
-			</TableCell>
-			<TableCell>
+			</WorkspaceCompaniesTableCell>
+			<WorkspaceCompaniesTableCell>
 				<WorkspaceStatusBadge status={branch.status} />
-			</TableCell>
-			<TableCell align="center">
+			</WorkspaceCompaniesTableCell>
+			<WorkspaceCompaniesTableCell align="center">
 				<BranchRecordActions
 					baseHref={baseHref}
 					branch={branch}
 					companyId={companyId}
 					onStatusChange={() => onStatusChange(branch)}
 				/>
-			</TableCell>
+			</WorkspaceCompaniesTableCell>
 		</tr>
-	);
-}
-
-function TableCell({
-	align = "left",
-	children,
-}: {
-	align?: "center" | "left";
-	children: React.ReactNode;
-}) {
-	return (
-		<td
-			className={`px-4 py-3 align-middle text-xs text-darknavy first:pl-5 last:pr-5 ${
-				align === "center" ? "text-center" : "text-left"
-			}`}
-		>
-			{children}
-		</td>
 	);
 }
 
@@ -286,12 +234,8 @@ function IconLink({
 	label: string;
 }) {
 	return (
-		<Link
-			href={href}
-			aria-label={label}
-			className="flex h-9 w-9 items-center justify-center rounded-md text-darknavy/65 transition hover:bg-darknavy/5"
-		>
+		<WorkspaceCompaniesIconLink href={href} label={label}>
 			{children}
-		</Link>
+		</WorkspaceCompaniesIconLink>
 	);
 }

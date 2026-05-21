@@ -14,8 +14,10 @@ export function UserListHeader({
   addHref?: string;
   description: string;
   title: string;
-  onStartSpotlightTutorial: () => void;
+  onStartSpotlightTutorial?: () => void;
 }) {
+  const hasActions = Boolean(addHref || onStartSpotlightTutorial);
+
   return (
     <ModuleHeader
       variant="panel"
@@ -30,16 +32,19 @@ export function UserListHeader({
         </>
       }
       actions={
-        <>
-          <button
-            type="button"
-            onClick={onStartSpotlightTutorial}
-            className={moduleHeaderActionClassNames.secondary}
-          >
-            <Sparkles className="h-4 w-4" aria-hidden="true" />
-            Quick Tour
-          </button>
-          {addHref ? (
+        hasActions ? (
+          <>
+            {onStartSpotlightTutorial ? (
+              <button
+                type="button"
+                onClick={onStartSpotlightTutorial}
+                className={moduleHeaderActionClassNames.secondary}
+              >
+                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                Quick Tour
+              </button>
+            ) : null}
+            {addHref ? (
             <Link
               href={addHref}
               data-spotlight-id="users-add-user"
@@ -48,8 +53,9 @@ export function UserListHeader({
               <Plus className="h-4 w-4" aria-hidden="true" />
               Add User
             </Link>
-          ) : null}
-        </>
+            ) : null}
+          </>
+        ) : null
       }
     />
   );

@@ -33,6 +33,14 @@ import {
 	WorkspaceStatusBadge,
 	WorkspaceTextBadge,
 } from "./WorkspaceCompanyBadges";
+import {
+	WorkspaceCompaniesFilterBar,
+	WorkspaceCompaniesFilterSelect,
+	WorkspaceCompaniesIconLink,
+	WorkspaceCompaniesResetButton,
+	WorkspaceCompaniesSearchInput,
+	WorkspaceCompaniesTableCell,
+} from "./WorkspaceCompanyListPrimitives";
 
 export function CompanyTable({
 	branches,
@@ -75,7 +83,7 @@ export function CompanyTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No companies found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[80rem]"
+				minWidthClassName="min-w-[66rem]"
 				paginationStorageKey={WorkspaceCompaniesTablePaginationStorageKey}
 				table={companyList.table}
 				renderRow={({ id, original }) => (
@@ -118,17 +126,13 @@ function CompanyTableFilters({
 	onTypeFilterChange: (value: WorkspaceCompanyType | "All") => void;
 }) {
 	return (
-		<div className="grid gap-3 border-b border-darknavy/10 bg-white p-4 lg:grid-cols-[1fr_12rem_12rem_14rem_auto]">
-			<label className="flex min-h-11 items-center gap-2 rounded-lg border border-darknavy/10 px-3 text-sm text-darknavy shadow-sm">
-				<Search className="h-4 w-4 text-darknavy/35" aria-hidden="true" />
-				<input
-					value={query}
-					onChange={(event) => onQueryChange(event.target.value)}
-					className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-darknavy/35"
-					placeholder="Search companies"
-				/>
-			</label>
-			<FilterSelect
+		<WorkspaceCompaniesFilterBar className="lg:grid-cols-[1fr_10rem_10rem_13rem_auto]">
+			<WorkspaceCompaniesSearchInput
+				value={query}
+				onChange={onQueryChange}
+				placeholder="Search companies"
+			/>
+			<WorkspaceCompaniesFilterSelect
 				label="Status"
 				value={statusFilter}
 				options={statusOptions}
@@ -136,7 +140,7 @@ function CompanyTableFilters({
 					onStatusFilterChange(value as WorkspaceCompanyStatus | "All")
 				}
 			/>
-			<FilterSelect
+			<WorkspaceCompaniesFilterSelect
 				label="Type"
 				value={typeFilter}
 				options={typeOptions}
@@ -144,7 +148,7 @@ function CompanyTableFilters({
 					onTypeFilterChange(value as WorkspaceCompanyType | "All")
 				}
 			/>
-			<FilterSelect
+			<WorkspaceCompaniesFilterSelect
 				label="Plan"
 				value={planFilter}
 				options={planOptions}
@@ -152,46 +156,8 @@ function CompanyTableFilters({
 					onPlanFilterChange(value as WorkspaceCompanyPlan | "All")
 				}
 			/>
-			<button
-				type="button"
-				onClick={onResetFilters}
-				className="inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 px-4 text-sm font-semibold text-darknavy transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-			>
-				Reset
-			</button>
-		</div>
-	);
-}
-
-function FilterSelect({
-	label,
-	options,
-	value,
-	onChange,
-}: {
-	label: string;
-	options: readonly string[];
-	value: string;
-	onChange: (value: string) => void;
-}) {
-	return (
-		<label className="grid gap-1">
-			<span className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">
-				{label}
-			</span>
-			<select
-				value={value}
-				onChange={(event) => onChange(event.target.value)}
-				className="h-11 rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
-			>
-				<option value="All">All</option>
-				{options.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
-		</label>
+			<WorkspaceCompaniesResetButton onClick={onResetFilters} />
+		</WorkspaceCompaniesFilterBar>
 	);
 }
 
@@ -204,7 +170,7 @@ function CompanyTableRow({
 }) {
 	return (
 		<tr className="module-table-row">
-			<td className="px-4 py-3">
+			<td className="px-3 py-2.5">
 				<Link
 					href={getWorkspaceCompanyHref(company.id)}
 					className="flex min-w-0 items-center gap-3 rounded-md transition hover:text-skyblue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
@@ -224,44 +190,26 @@ function CompanyTableRow({
 					</span>
 				</Link>
 			</td>
-			<CompanyTableCell>
+			<WorkspaceCompaniesTableCell>
 				<WorkspaceTextBadge>{company.totalBranches}</WorkspaceTextBadge>
-			</CompanyTableCell>
-			<CompanyTableCell>
+			</WorkspaceCompaniesTableCell>
+			<WorkspaceCompaniesTableCell>
 				<WorkspaceTextBadge>{company.totalUsers}</WorkspaceTextBadge>
-			</CompanyTableCell>
-			<CompanyTableCell>{company.companyType}</CompanyTableCell>
-			<CompanyTableCell>
+			</WorkspaceCompaniesTableCell>
+			<WorkspaceCompaniesTableCell>{company.companyType}</WorkspaceCompaniesTableCell>
+			<WorkspaceCompaniesTableCell>
 				<WorkspacePlanBadge plan={company.plan} />
-			</CompanyTableCell>
-			<CompanyTableCell>
+			</WorkspaceCompaniesTableCell>
+			<WorkspaceCompaniesTableCell>
 				<WorkspaceStatusBadge status={company.status} />
-			</CompanyTableCell>
-			<CompanyTableCell align="center">
+			</WorkspaceCompaniesTableCell>
+			<WorkspaceCompaniesTableCell align="center">
 				<CompanyRecordActions
 					company={company}
 					onStatusChange={() => onStatusChange(company)}
 				/>
-			</CompanyTableCell>
+			</WorkspaceCompaniesTableCell>
 		</tr>
-	);
-}
-
-function CompanyTableCell({
-	align = "left",
-	children,
-}: {
-	align?: "center" | "left";
-	children: React.ReactNode;
-}) {
-	return (
-		<td
-			className={`px-4 py-3 align-middle text-xs text-darknavy first:pl-5 last:pr-5 ${
-				align === "center" ? "text-center" : "text-left"
-			}`}
-		>
-			{children}
-		</td>
 	);
 }
 
@@ -309,12 +257,8 @@ function IconLink({
 	label: string;
 }) {
 	return (
-		<Link
-			href={href}
-			aria-label={label}
-			className="flex h-9 w-9 items-center justify-center rounded-md text-darknavy/65 transition hover:bg-darknavy/5"
-		>
+		<WorkspaceCompaniesIconLink href={href} label={label}>
 			{children}
-		</Link>
+		</WorkspaceCompaniesIconLink>
 	);
 }

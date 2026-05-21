@@ -1,18 +1,16 @@
 import Link from "next/link";
-import { Building2, Download, Plus, Upload } from "lucide-react";
+import { Building2, Plus } from "lucide-react";
 import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
-import {
-	ModuleHeader,
-	moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
+import { WorkspaceCompaniesActionClassName } from "./WorkspaceCompanyListPrimitives";
 
 export function CompanyHeader() {
 	return (
 		<ModuleHeader
-			variant="panel"
+			variant="card"
 			titleAs="h1"
 			title="Companies"
-			description="Manage companies, plans, branches, and company-level user access from the workspace."
+			description="Manage companies, plans, branches, and company users."
 			eyebrow={
 				<>
 					<Building2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -20,23 +18,13 @@ export function CompanyHeader() {
 				</>
 			}
 			actions={
-				<>
-					<button type="button" className={moduleHeaderActionClassNames.secondary}>
-						<Upload className="h-4 w-4" aria-hidden="true" />
-						Import
-					</button>
-					<button type="button" className={moduleHeaderActionClassNames.secondary}>
-						<Download className="h-4 w-4" aria-hidden="true" />
-						Export
-					</button>
-					<Link
-						href={`${WorkspaceCompaniesHref}/add`}
-						className={moduleHeaderActionClassNames.primary}
-					>
-						<Plus className="h-4 w-4" aria-hidden="true" />
-						Add Company
-					</Link>
-				</>
+				<Link
+					href={`${WorkspaceCompaniesHref}/add`}
+					className={`${WorkspaceCompaniesActionClassName} bg-skyblue text-white shadow-sm shadow-skyblue/20 hover:opacity-90`}
+				>
+					<Plus className="h-4 w-4" aria-hidden="true" />
+					Add Company
+				</Link>
 			}
 		/>
 	);

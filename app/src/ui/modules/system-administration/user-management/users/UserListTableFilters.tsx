@@ -1,27 +1,20 @@
 import { Search } from "lucide-react";
-import type { UserStatus } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 
 type UserListTableFiltersProps = {
 	query: string;
-	statusFilter: UserStatus | "All";
-	statusOptions: readonly UserStatus[];
 	typeFilter: string;
 	typeOptions: string[];
 	onQueryChange: (value: string) => void;
 	onResetFilters: () => void;
-	onStatusFilterChange: (value: UserStatus | "All") => void;
 	onTypeFilterChange: (value: string) => void;
 };
 
 export function UserListTableFilters({
 	query,
-	statusFilter,
-	statusOptions,
 	typeFilter,
 	typeOptions,
 	onQueryChange,
 	onResetFilters,
-	onStatusFilterChange,
 	onTypeFilterChange,
 }: UserListTableFiltersProps) {
 	return (
@@ -42,15 +35,7 @@ export function UserListTableFilters({
 					className="h-9 w-full rounded border border-darknavy/10 bg-white pl-9 pr-3 text-xs text-darknavy outline-none transition placeholder:text-darknavy/38 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
 				/>
 			</div>
-			<div className="grid min-w-full flex-1 gap-3 sm:min-w-0 sm:grid-cols-2">
-				<ToolbarSelect
-					label="Status"
-					value={statusFilter}
-					options={["All", ...statusOptions]}
-					onChange={(value) =>
-						onStatusFilterChange(value as UserStatus | "All")
-					}
-				/>
+			<div className="grid min-w-full flex-1 gap-3 sm:min-w-0 sm:grid-cols-1">
 				<ToolbarSelect
 					label="User Role"
 					value={typeFilter}

@@ -12,11 +12,11 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 export function UserListTable({
 	users,
 	userRoles,
-	onStatusChange,
+	onRoleChange,
 }: {
 	users: UserManagementRecord[];
 	userRoles: UserRoleRecord[];
-	onStatusChange: (user: UserManagementRecord) => void;
+	onRoleChange: (user: UserManagementRecord, userRoleId: string) => void;
 }) {
 	const userList = useUserListTable({ users, userRoles });
 
@@ -27,13 +27,10 @@ export function UserListTable({
 		>
 			<UserListTableFilters
 				query={userList.query}
-				statusFilter={userList.statusFilter}
-				statusOptions={userList.statusOptions}
 				typeFilter={userList.roleFilter}
 				typeOptions={userList.roleOptions}
 				onQueryChange={userList.setQuery}
 				onResetFilters={userList.resetFilters}
-				onStatusFilterChange={userList.setStatusFilter}
 				onTypeFilterChange={userList.setRoleFilter}
 			/>
 
@@ -41,14 +38,15 @@ export function UserListTable({
 				emptyDescription="Try adjusting your filters or search query."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No users found"
-				minWidthClassName="min-w-[70rem]"
+				minWidthClassName="min-w-[50rem]"
 				paginationStorageKey={UserListTablePaginationStorageKey}
 				table={userList.table}
 				renderRow={({ id, original }) => (
 					<UserListTableRow
 						key={id}
 						user={original}
-						onStatusChange={onStatusChange}
+						userRoles={userRoles}
+						onRoleChange={onRoleChange}
 					/>
 				)}
 			/>

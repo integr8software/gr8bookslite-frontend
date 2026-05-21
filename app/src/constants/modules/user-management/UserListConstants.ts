@@ -8,11 +8,5 @@ export const UserListTablePaginationStorageKey =
 export const UserListTableColumns = [
   { key: "name", label: "Full Name", className: "w-[18rem]" },
   { key: "email", label: "Email", className: "w-[22rem]" },
-  { key: "userRole", label: "User Role", className: "w-[12rem]" },
-  { key: "status", label: "Status", className: "w-[11rem]" },
-  { key: "lastLogin", label: "Last Login", className: "w-[16rem]" },
-  {
-    label: "Actions",
-    className: "w-[8rem] text-center",
-  },
+  { key: "userRole", label: "User Role", className: "w-[16rem]" },
 ] as const;

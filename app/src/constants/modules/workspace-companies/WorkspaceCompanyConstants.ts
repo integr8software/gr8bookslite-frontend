@@ -74,13 +74,13 @@ export const WorkspaceBranchUsersTablePaginationStorageKey =
 	"workspace-branch-users";
 
 export const WorkspaceCompanyTableColumns = [
-	{ key: "name", label: "Company", className: "w-[22rem]" },
-	{ key: "totalBranches", label: "Branches", className: "w-[9rem]" },
-	{ key: "totalUsers", label: "Users", className: "w-[8rem]" },
-	{ key: "companyType", label: "Company Type", className: "w-[14rem]" },
-	{ key: "plan", label: "Plan", className: "w-[14rem]" },
-	{ key: "status", label: "Status", className: "w-[10rem]" },
-	{ label: "Actions", className: "w-[8rem] text-center" },
+	{ key: "name", label: "Company", className: "w-[20rem]" },
+	{ key: "totalBranches", label: "Branches", className: "w-[7rem]" },
+	{ key: "totalUsers", label: "Users", className: "w-[6rem]" },
+	{ key: "companyType", label: "Type", className: "w-[12rem]" },
+	{ key: "plan", label: "Plan", className: "w-[13rem]" },
+	{ key: "status", label: "Status", className: "w-[9rem]" },
+	{ label: "Actions", className: "w-[7rem] text-center" },
 ] as const satisfies readonly (
 	| {
 			key: WorkspaceCompanyTableColumnKey;
@@ -93,10 +93,10 @@ export const WorkspaceCompanyTableColumns = [
 export const WorkspaceCompanyUserTableColumns = [
 	{ key: "name", label: "User", className: "w-[18rem]" },
 	{ key: "email", label: "Email", className: "w-[20rem]" },
-	{ key: "role", label: "Role", className: "w-[14rem]" },
-	{ key: "status", label: "Status", className: "w-[10rem]" },
-	{ key: "lastLogin", label: "Last Login", className: "w-[14rem]" },
-	{ label: "Actions", className: "w-[8rem] text-center" },
+	{ key: "role", label: "Role", className: "w-[12rem]" },
+	{ key: "status", label: "Status", className: "w-[9rem]" },
+	{ key: "lastLogin", label: "Last Login", className: "w-[13rem]" },
+	{ label: "Actions", className: "w-[7rem] text-center" },
 ] as const satisfies readonly (
 	| {
 			key: WorkspaceCompanyUserTableColumnKey;
@@ -107,12 +107,12 @@ export const WorkspaceCompanyUserTableColumns = [
 )[];
 
 export const WorkspaceCompanyBranchTableColumns = [
-	{ key: "code", label: "Code", className: "w-[9rem]" },
-	{ key: "name", label: "Branch", className: "w-[20rem]" },
-	{ key: "branchType", label: "Type", className: "w-[12rem]" },
-	{ key: "totalUsers", label: "Branch Users", className: "w-[11rem]" },
-	{ key: "status", label: "Status", className: "w-[10rem]" },
-	{ label: "Actions", className: "w-[10rem] text-center" },
+	{ key: "code", label: "Code", className: "w-[7rem]" },
+	{ key: "name", label: "Branch", className: "w-[19rem]" },
+	{ key: "branchType", label: "Type", className: "w-[11rem]" },
+	{ key: "totalUsers", label: "Users", className: "w-[8rem]" },
+	{ key: "status", label: "Status", className: "w-[9rem]" },
+	{ label: "Actions", className: "w-[9rem] text-center" },
 ] as const satisfies readonly (
 	| {
 			key: WorkspaceCompanyBranchTableColumnKey;
@@ -125,10 +125,10 @@ export const WorkspaceCompanyBranchTableColumns = [
 export const WorkspaceBranchUserTableColumns = [
 	{ key: "name", label: "Branch User", className: "w-[18rem]" },
 	{ key: "email", label: "Email", className: "w-[20rem]" },
-	{ key: "role", label: "Branch Role", className: "w-[15rem]" },
-	{ key: "status", label: "Status", className: "w-[10rem]" },
-	{ key: "assignedAt", label: "Assigned", className: "w-[14rem]" },
-	{ label: "Actions", className: "w-[8rem] text-center" },
+	{ key: "role", label: "Branch Role", className: "w-[13rem]" },
+	{ key: "status", label: "Status", className: "w-[9rem]" },
+	{ key: "assignedAt", label: "Assigned", className: "w-[12rem]" },
+	{ label: "Actions", className: "w-[7rem] text-center" },
 ] as const satisfies readonly (
 	| {
 			key: WorkspaceBranchUserTableColumnKey;

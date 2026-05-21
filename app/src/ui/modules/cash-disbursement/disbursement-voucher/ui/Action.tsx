@@ -1273,18 +1273,9 @@ function CardShell({
   title: string;
   tone?: "white" | "sky" | "citron" | "offwhite";
 }) {
-  const toneClassName =
-    tone === "sky"
-      ? "bg-[linear-gradient(180deg,rgba(87,196,229,0.12),rgba(255,255,255,1))]"
-      : tone === "citron"
-        ? "bg-[linear-gradient(180deg,rgba(209,214,70,0.18),rgba(255,255,255,1))]"
-        : tone === "offwhite"
-          ? "bg-[linear-gradient(180deg,rgba(236,242,239,0.92),rgba(255,255,255,1))]"
-          : "bg-white";
-
   return (
     <section
-      className={`rounded-[28px] border border-darknavy/10 p-5 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-6 ${toneClassName}`}
+      className={`rounded-[28px] border border-darknavy/10 p-5 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-6`}
     >
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
         {eyebrow}

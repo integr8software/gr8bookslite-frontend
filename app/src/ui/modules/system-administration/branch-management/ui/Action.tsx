@@ -6,7 +6,9 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
+import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
+import { ArrowLeft, Building2, Edit3, Save, Trash2, X } from "lucide-react";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
 import {
@@ -23,7 +25,10 @@ import type {
   BranchActionMode,
   BranchFormErrors,
 } from "@/app/src/types/modules/branch-manager/BranchActionTypes";
-import { BranchActionHeader } from "./BranchActionHeader";
+import {
+  ModuleHeader,
+  moduleHeaderActionClassNames,
+} from "@/app/src/ui/shared/module/ModuleHeader";
 import { BranchDetailsFields } from "./BranchDetailsFields";
 import { BranchNotFound } from "./BranchNotFound";
 
@@ -132,11 +137,79 @@ export function BranchManagementAction() {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-5">
-      <BranchActionHeader
-        branch={existingBranch}
-        mode={mode}
-        isReadonly={isReadonly}
-        onDeleteBranch={handleDeleteBranch}
+      <ModuleHeader
+        variant="panel"
+        titleAs="h1"
+        title={
+          mode === "view"
+            ? "View Branch"
+            : mode === "edit"
+              ? "Edit Branch"
+              : "Add Branch"
+        }
+        description={
+          mode === "view"
+            ? "Review branch and satellite details used by the topbar switcher."
+            : mode === "edit"
+              ? "Update the branch record shared with the topbar switcher."
+              : "New records are added to the shared branch mock data used by the topbar switcher."
+        }
+        eyebrow={
+          <>
+            <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
+            System administration
+          </>
+        }
+        actions={
+          <>
+            {mode === "view" ? (
+              <Link
+                href={BranchManagementHref}
+                className={moduleHeaderActionClassNames.secondary}
+              >
+                <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                Back
+              </Link>
+            ) : null}
+            {mode === "view" && existingBranch ? (
+              <Link
+                href={`${BranchManagementHref}/edit/${existingBranch.id}`}
+                className={moduleHeaderActionClassNames.secondary}
+              >
+                <Edit3 className="h-4 w-4" aria-hidden="true" />
+                Edit
+              </Link>
+            ) : null}
+            {existingBranch ? (
+              <button
+                type="button"
+                onClick={handleDeleteBranch}
+                className={moduleHeaderActionClassNames.danger}
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                Delete
+              </button>
+            ) : null}
+            {mode === "edit" && existingBranch ? (
+              <Link
+                href={`${BranchManagementHref}/view/${existingBranch.id}`}
+                className={moduleHeaderActionClassNames.secondary}
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+                Cancel
+              </Link>
+            ) : null}
+            {!isReadonly ? (
+              <button
+                type="submit"
+                className={moduleHeaderActionClassNames.primary}
+              >
+                <Save className="h-4 w-4" aria-hidden="true" />
+                Save Branch
+              </button>
+            ) : null}
+          </>
+        }
       />
       <BranchDetailsFields
         errors={errors}

@@ -2,6 +2,7 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
+import { CircleOff, Save, UserRoundCog } from "lucide-react";
 import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import {
   InitialUserFormValues,
@@ -16,8 +17,11 @@ import type {
   UserManagementActionMode,
 } from "@/app/src/types/modules/user-management/UserManagementTypes";
 import { UserListForm } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListForm";
-import { UserListFormHeader } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListFormHeader";
 import { UserListNotFound } from "@/app/src/ui/modules/system-administration/user-management/user-list/UserListNotFound";
+import {
+  ModuleHeader,
+  moduleHeaderActionClassNames,
+} from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function UserListFormPage() {
   const router = useRouter();
@@ -103,13 +107,43 @@ export function UserListFormPage() {
 
   return (
     <section className="grid gap-5">
-      <UserListFormHeader
+      <ModuleHeader
+        variant="panel"
+        titleAs="h1"
         title={
           mode === "view" ? "View User" : mode === "edit" ? "Edit User" : "Add User"
         }
-        isReadonly={isReadonly}
-        canDelete={Boolean(existingUser)}
-        onDelete={handleDelete}
+        description="Maintain user account assignments and access."
+        eyebrow={
+          <>
+            <UserRoundCog className="h-3.5 w-3.5" aria-hidden="true" />
+            User management
+          </>
+        }
+        actions={
+          <>
+            {existingUser ? (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className={moduleHeaderActionClassNames.danger}
+              >
+                <CircleOff className="h-4 w-4" aria-hidden="true" />
+                Inactive
+              </button>
+            ) : null}
+            {!isReadonly ? (
+              <button
+                type="submit"
+                form="user-list-form"
+                className={moduleHeaderActionClassNames.primary}
+              >
+                <Save className="h-4 w-4" aria-hidden="true" />
+                Save User
+              </button>
+            ) : null}
+          </>
+        }
       />
       <UserListForm
         errors={errors}

@@ -3,7 +3,7 @@ import { ChevronsUpDown } from "lucide-react";
 import {
 	getColumnClassName,
 	joinClasses,
-} from "@/app/src/ui/shared/module-table/utils";
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 	return (

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
+import { CircleOff, Save, Users } from "lucide-react";
 import { DepartmentHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import {
 	InitialDepartmentFormValues,
@@ -14,9 +15,12 @@ import type {
 	DepartmentFormErrors,
 	UserManagementActionMode,
 } from "@/app/src/types/modules/user-management/UserManagementTypes";
-import { DepartmentFormHeader } from "@/app/src/ui/modules/system-administration/user-management/department/DepartmentFormHeader";
 import { DepartmentForm } from "@/app/src/ui/modules/system-administration/user-management/department/DepartmentForm";
 import { DepartmentNotFound } from "@/app/src/ui/modules/system-administration/user-management/department/DepartmentNotFound";
+import {
+	ModuleHeader,
+	moduleHeaderActionClassNames,
+} from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function DepartmentFormPage() {
 	const router = useRouter();
@@ -93,16 +97,46 @@ export function DepartmentFormPage() {
 
 	return (
 		<section className="grid gap-5">
-			<DepartmentFormHeader
-				canDelete={Boolean(existingDepartment)}
-				isReadonly={isReadonly}
-				onDelete={handleDelete}
+			<ModuleHeader
+				variant="panel"
+				titleAs="h1"
 				title={
 					mode === "view"
 						? "View Department"
 						: mode === "edit"
 							? "Edit Department"
 							: "Add Department"
+				}
+				description="Maintain teams and department groupings."
+				eyebrow={
+					<>
+						<Users className="h-3.5 w-3.5" aria-hidden="true" />
+						User management
+					</>
+				}
+				actions={
+					<>
+						{existingDepartment ? (
+							<button
+								type="button"
+								onClick={handleDelete}
+								className={moduleHeaderActionClassNames.danger}
+							>
+								<CircleOff className="h-4 w-4" aria-hidden="true" />
+								Inactive
+							</button>
+						) : null}
+						{!isReadonly ? (
+							<button
+								type="submit"
+								form="department-form"
+								className={moduleHeaderActionClassNames.primary}
+							>
+								<Save className="h-4 w-4" aria-hidden="true" />
+								Save
+							</button>
+						) : null}
+					</>
 				}
 			/>
 			<DepartmentForm

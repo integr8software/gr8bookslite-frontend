@@ -6,7 +6,7 @@ import type {
 	ChartAccount,
 	FlattenedChartAccount,
 } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
-import { ModuleTable } from "@/app/src/ui/shared/module-table/ModuleTable";
+import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { ChartsOfAccountsTableRow } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTableRow";
 
 type ChartsOfAccountsTableProps = {

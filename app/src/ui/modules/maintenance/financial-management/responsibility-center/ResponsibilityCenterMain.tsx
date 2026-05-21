@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { Home, Plus } from "lucide-react";
+import { ResponsibilityCenterHref } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/financial-management/responsibility-center/useResponsibilityCenter";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
+import {
+	ModuleHeader,
+	moduleHeaderActionClassNames,
+} from "@/app/src/ui/shared/module/ModuleHeader";
 import { ResponsibilityCenterDeleteDialog } from "./ResponsibilityCenterDeleteDialog";
-import { ResponsibilityCenterHeader } from "./ResponsibilityCenterHeader";
 import { ResponsibilityCenterTable } from "./ResponsibilityCenterTable";
 
 export function ResponsibilityCenterMain() {
@@ -27,7 +33,27 @@ export function ResponsibilityCenterMain() {
 
 	return (
 		<section className="grid gap-5">
-			<ResponsibilityCenterHeader />
+			<ModuleHeader
+				variant="panel"
+				titleAs="h1"
+				title="Responsibility Center"
+				description="Maintain accountability centers for cost, revenue, profit, and investment reporting."
+				eyebrow={
+					<>
+						<Home className="h-3.5 w-3.5" aria-hidden="true" />
+						Accounting master data
+					</>
+				}
+				actions={
+					<Link
+						href={`${ResponsibilityCenterHref}/add`}
+						className={moduleHeaderActionClassNames.primary}
+					>
+						<Plus className="h-4 w-4" aria-hidden="true" />
+						Add Center
+					</Link>
+				}
+			/>
 			<ResponsibilityCenterTable
 				centers={centers}
 				onDeleteCenter={setPendingDeleteCenter}

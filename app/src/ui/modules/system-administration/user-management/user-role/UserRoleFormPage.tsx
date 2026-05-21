@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
+import { CircleOff, Save, ShieldCheck } from "lucide-react";
 import { UserRoleHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import {
 	InitialUserRoleFormValues,
@@ -14,9 +15,12 @@ import type {
 	UserManagementActionMode,
 	UserRoleFormErrors,
 } from "@/app/src/types/modules/user-management/UserManagementTypes";
-import { UserRoleFormHeader } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleFormHeader";
 import { UserRoleForm } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleForm";
 import { UserRoleNotFound } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleNotFound";
+import {
+	ModuleHeader,
+	moduleHeaderActionClassNames,
+} from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function UserRoleFormPage() {
 	const router = useRouter();
@@ -106,16 +110,46 @@ export function UserRoleFormPage() {
 
 	return (
 		<section className="grid gap-5">
-			<UserRoleFormHeader
-				canDelete={Boolean(existingUserRole)}
-				isReadonly={isReadonly}
-				onDelete={handleDelete}
+			<ModuleHeader
+				variant="panel"
+				titleAs="h1"
 				title={
 					mode === "view"
 						? "View User Role"
 						: mode === "edit"
 							? "Edit User Role"
 							: "Add User Role"
+				}
+				description="Maintain access roles and permissions."
+				eyebrow={
+					<>
+						<ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+						User management
+					</>
+				}
+				actions={
+					<>
+						{existingUserRole ? (
+							<button
+								type="button"
+								onClick={handleDelete}
+								className={moduleHeaderActionClassNames.danger}
+							>
+								<CircleOff className="h-4 w-4" aria-hidden="true" />
+								Inactive
+							</button>
+						) : null}
+						{!isReadonly ? (
+							<button
+								type="submit"
+								form="user-role-form"
+								className={moduleHeaderActionClassNames.primary}
+							>
+								<Save className="h-4 w-4" aria-hidden="true" />
+								Save
+							</button>
+						) : null}
+					</>
 				}
 			/>
 			<UserRoleForm

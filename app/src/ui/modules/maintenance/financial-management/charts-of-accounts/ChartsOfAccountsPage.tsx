@@ -1,13 +1,14 @@
 "use client";
 
+import { Download, Home, Plus, Sparkles, Upload } from "lucide-react";
 import { ChartsOfAccountsSpotlightTutorialOpenEvent } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
 import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsDrawer";
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsFilters";
-import { ChartsOfAccountsHeader } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsHeader";
 import { ChartsOfAccountsTable } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTable";
 import { ChartsOfAccountsSpotlightTutorial } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorial";
-import { Card } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls.tsx";
+import { Button, Card } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls.tsx";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
+import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function ChartsOfAccountsMain() {
 	const coa = useChartsOfAccounts();
@@ -21,9 +22,41 @@ export function ChartsOfAccountsMain() {
 		<section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] text-slate-950 sm:-mx-5 lg:-mx-6">
 			<ChartsOfAccountsSpotlightTutorial />
 			<main className="grid min-h-[calc(100dvh-5rem)] content-start gap-5 p-4 sm:p-6">
-				<ChartsOfAccountsHeader
-					onAddAccount={coa.openAddDrawer}
-					onStartSpotlightTutorial={openSpotlightTutorial}
+				<ModuleHeader
+					variant="panel"
+					data-spotlight-id="charts-of-accounts-header"
+					titleAs="h1"
+					title="Chart of Accounts"
+					description="Manage all company accounts and financial statement mapping"
+					eyebrow={
+						<>
+							<Home className="h-3.5 w-3.5" aria-hidden="true" />
+							Accounting master data
+						</>
+					}
+					actions={
+						<>
+							<Button variant="secondary" onClick={openSpotlightTutorial}>
+								<Sparkles className="h-4 w-4" aria-hidden="true" />
+								Quick Tour
+							</Button>
+							<Button variant="secondary">
+								<Upload className="h-4 w-4" aria-hidden="true" />
+								Import
+							</Button>
+							<Button variant="secondary">
+								<Download className="h-4 w-4" aria-hidden="true" />
+								Export
+							</Button>
+							<Button
+								onClick={coa.openAddDrawer}
+								data-spotlight-id="charts-of-accounts-add-account"
+							>
+								<Plus className="h-4 w-4" aria-hidden="true" />
+								Add Account
+							</Button>
+						</>
+					}
 				/>
 
 				<Card className="overflow-hidden">

@@ -4,7 +4,7 @@ import type { ModuleTablePaginationProps } from "@/app/src/types/shared/ModuleTa
 import {
 	getVisiblePaginationPages,
 	joinClasses,
-} from "@/app/src/ui/shared/module-table/utils";
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ModuleTablePagination({
 	page,

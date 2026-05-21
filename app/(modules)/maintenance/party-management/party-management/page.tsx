@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { PartyManagementPartyManagementMain } from "@/app/src/ui/modules/maintenance/party-management/party-management/Main";
+import { PartyManagementPartyManagementMain } from "@/app/src/ui/modules/maintenance/party-management/party-management/ui/Main";
 
 const PageTitle = "Party Management";
 

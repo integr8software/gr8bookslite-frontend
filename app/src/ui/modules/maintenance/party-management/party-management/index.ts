@@ -1,2 +1,2 @@
-export * from "./Main";
-export * from "./Action";
+export * from "./ui/Main";
+export * from "./ui/Action";

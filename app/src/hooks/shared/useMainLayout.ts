@@ -57,6 +57,7 @@ const DefaultExpandedKeys = [
 const WorkspaceRoutePrefix = "/workspace";
 const WorkspaceHomeHref = "/workspace/dashboard";
 const CompanyFallbackHomeHref = "/profile";
+const MaxBlockingProfileLoadMs = 4500;
 
 type NavigationTrailNode = {
   key: string;
@@ -79,6 +80,9 @@ export function useMainLayout() {
   const [notificationsOpenPath, setNotificationsOpenPath] = useState<
     string | null
   >(null);
+  const [timedOutProfileToken, setTimedOutProfileToken] = useState<
+    string | null
+  >(null);
   const [helpOpenPath, setHelpOpenPath] = useState<string | null>(null);
   const [quickListTab, setQuickListTab] = useState<MainQuickListTab>("recent");
   const [notificationTab, setNotificationTab] =
@@ -95,25 +99,26 @@ export function useMainLayout() {
   const [activeBranchId, setActiveBranchId] = useState(
     ModuleShellMockData.activeBranchId,
   );
+  const missingRecordActionRedirectHref =
+    getMissingRecordActionRedirectHref(pathname);
   const accessToken = storedAccessToken;
   const { data: authProfile, isLoading: isAuthProfileLoading } =
     useAuthProfileQuery({ accessToken });
+  const hasProfileLoadTimedOut = timedOutProfileToken === accessToken;
   const isWorkspaceRoute = isWorkspacePath(pathname);
-  const hasWorkspaceAccess =
-    authProfile
-      ? ProfileHasWorkspaceAccess(authProfile)
-      : ModuleShellMockData.currentUser.userRole === "Super Admin";
-  const displayUser =
-    authProfile
-      ? CreateWorkspaceCurrentUserFromProfile(authProfile)
-      : ModuleShellMockData.currentUser;
-  const isProfileLoading = Boolean(accessToken) && isAuthProfileLoading;
+  const hasWorkspaceAccess = authProfile
+    ? ProfileHasWorkspaceAccess(authProfile)
+    : ModuleShellMockData.currentUser.userRole === "Super Admin";
+  const displayUser = authProfile
+    ? CreateWorkspaceCurrentUserFromProfile(authProfile)
+    : ModuleShellMockData.currentUser;
+  const isProfileLoading =
+    Boolean(accessToken) && isAuthProfileLoading && !hasProfileLoadTimedOut;
   const activeNavigationScope: MainNavigationScope =
     hasWorkspaceAccess && isWorkspaceRoute ? "workspace" : "company";
-  const workspaceCompanies =
-    authProfile
-      ? MapProfileCompaniesToMainCompanies(authProfile)
-      : null;
+  const workspaceCompanies = authProfile
+    ? MapProfileCompaniesToMainCompanies(authProfile)
+    : null;
   const [activeCompanyId, setActiveCompanyId] = useState(
     ModuleShellMockData.currentCompany.id,
   );
@@ -345,6 +350,28 @@ export function useMainLayout() {
   );
 
   useEffect(() => {
+    if (!missingRecordActionRedirectHref) {
+      return;
+    }
+
+    router.replace(missingRecordActionRedirectHref);
+  }, [missingRecordActionRedirectHref, router]);
+
+  useEffect(() => {
+    if (!accessToken || !isAuthProfileLoading || hasProfileLoadTimedOut) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setTimedOutProfileToken(accessToken);
+    }, MaxBlockingProfileLoadMs);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [accessToken, hasProfileLoadTimedOut, isAuthProfileLoading]);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
@@ -571,7 +598,8 @@ function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
 function CreateWorkspaceCurrentUserFromProfile(
   profile: AuthProfileResponse,
 ): MainCurrentUser {
-  const fallbackUserType = ModuleShellMockData.currentUser.userType;
+  const fallbackUserRoleDetails =
+    ModuleShellMockData.currentUser.userRoleDetails;
   const [firstName, ...lastNameParts] = profile.user.name.trim().split(/\s+/);
   const lastName = lastNameParts.join(" ");
   const activeCompanyMembership =
@@ -595,17 +623,17 @@ function CreateWorkspaceCurrentUserFromProfile(
         : profile.activeAccess?.membershipRole === "ADMIN"
           ? "Admin"
           : "User",
-    userType: companyRoleName
+    userRoleDetails: companyRoleName
       ? {
-          ...(fallbackUserType ?? {
-            id: "user-type-workspace",
+          ...(fallbackUserRoleDetails ?? {
+            id: "user-role-workspace",
             name: "Workspace User",
             permissions: {},
           }),
           id:
             activeCompanyMembership?.companyRoleCode ??
-            fallbackUserType?.id ??
-            "user-type-workspace",
+            fallbackUserRoleDetails?.id ??
+            "user-role-workspace",
           name: companyRoleName,
         }
       : undefined,
@@ -758,6 +786,11 @@ function appendPathSegmentBreadcrumbs(
     .slice(lastHref.length)
     .split("/")
     .filter(Boolean);
+
+  if (isMissingRecordActionPath(extraSegments)) {
+    return trail;
+  }
+
   const actionBreadcrumbs = getActionBreadcrumbs({
     extraSegments,
     pathname,
@@ -790,12 +823,10 @@ function getActionBreadcrumbs({
     return [];
   }
 
-  const actionHref = getActionBreadcrumbHref(pathname, actionSegment, recordId);
   const breadcrumbs: NavigationTrailNode[] = [
     {
       key: `path-${actionSegment}`,
       label: titleFromPathSegment(actionSegment),
-      href: recordId ? actionHref : pathname,
     },
   ];
 
@@ -810,20 +841,27 @@ function getActionBreadcrumbs({
   return breadcrumbs;
 }
 
-function getActionBreadcrumbHref(
-  pathname: string,
-  actionSegment: string,
-  recordId?: string,
-) {
-  if (!recordId) {
-    return pathname;
-  }
-
-  return pathname.slice(0, -(recordId.length + 1)) || `/${actionSegment}`;
-}
-
 function isPageActionSegment(segment: string) {
   return segment === "add" || segment === "edit" || segment === "view";
+}
+
+function isMissingRecordActionPath(extraSegments: string[]) {
+  const [actionSegment, recordId] = extraSegments;
+
+  return (actionSegment === "edit" || actionSegment === "view") && !recordId;
+}
+
+function getMissingRecordActionRedirectHref(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const actionSegment = segments.at(-1);
+
+  if (actionSegment !== "edit" && actionSegment !== "view") {
+    return null;
+  }
+
+  const parentSegments = segments.slice(0, -1);
+
+  return parentSegments.length > 0 ? `/${parentSegments.join("/")}` : "/";
 }
 
 function findItemTrail(
@@ -999,6 +1037,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Manage payment and collection terms.",
   "maintenance-financial-management-transaction-type":
     "Configure transaction classifications and numbering behavior.",
+  "maintenance-financial-management-responsibility-center":
+    "Maintain accountability centers for financial reporting.",
   "maintenance-inventory-warehouse-management-warehouse-management":
     "Maintain warehouse records and storage locations.",
   "maintenance-warehouse": "Maintain warehouse records and storage locations.",
@@ -1017,8 +1057,6 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "maintenance-inventory-warehouse-management-item-subtype":
     "Maintain item subtype classifications.",
   "maintenance-item-sub-type": "Maintain item subtype classifications.",
-  "maintenance-inventory-warehouse-management-item-uom":
-    "Manage item units of measure.",
   "maintenance-item-unit": "Manage item units of measure.",
   "maintenance-inventory-warehouse-management":
     "Maintain inventory items, classifications, units, and warehouses.",
@@ -1047,9 +1085,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Record cash advances across multiple entries.",
   "cash-disbursement-cash-advance-multiple":
     "Record cash advances across multiple entries.",
-  "cash-disbursement-petty-cash-disbursement":
-    "Record petty cash disbursements.",
-  "cash-disbursement-petty-cash": "Record petty cash disbursements.",
+  "cash-disbursement-petty-cash": "Record petty cash vouchers.",
+  "cash-disbursement-petty-cash-voucher": "Record petty cash vouchers.",
   "cash-disbursement-petty-cash-fund":
     "Manage petty cash fund setup and balances.",
   "cash-disbursement-petty-cash-replenishment": "Replenish petty cash funds.",
@@ -1102,6 +1139,12 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "reports-financial": "Generate financial statements and ledger reports.",
   "reports-books-of-accounts": "Generate books of accounts reports.",
   "reports-general-ledger": "Review general ledger account activity.",
+  "reports-beginning-balance-general-ledger-uploader":
+    "Upload beginning general ledger balances.",
+  "reports-beginning-balance-subsidiary-ledger-uploader":
+    "Upload beginning subsidiary ledger balances.",
+  "reports-budget-uploader": "Upload financial budget records.",
+  "reports-verifier": "Verify uploaded financial records.",
   "reports-journal-ledger": "Review journal ledger entries.",
   "reports-trial-balance": "Generate trial balance summaries.",
   "reports-balance-sheet": "Generate balance sheet statements.",
@@ -1120,8 +1163,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "reports-bir-alpha-list": "Prepare alpha list reporting data.",
   "maintenance-users": "Manage users, user types, and user groups.",
   "maintenance-user-list": "Create and maintain system user accounts.",
-  "maintenance-user-type": "Maintain user type classifications.",
-  "maintenance-user-group": "Organize users into permission groups.",
+  "maintenance-user-role": "Maintain user role classifications.",
+  "maintenance-department": "Organize users into departments.",
   "branch-management": "Maintain branch and satellite records.",
   "maintenance-approval": "Configure approval workflows and rules.",
   "maintenance-audit": "Review audit trail activity.",

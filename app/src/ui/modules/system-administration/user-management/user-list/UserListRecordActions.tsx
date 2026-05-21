@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Edit3, Eye, Trash2 } from "lucide-react";
+import { CircleOff, Edit3, Eye } from "lucide-react";
 
 export function UserListRecordActions({
   baseHref,
@@ -23,10 +23,10 @@ export function UserListRecordActions({
       <button
         type="button"
         onClick={() => onDelete(id, name)}
-        aria-label={`Delete ${name}`}
+        aria-label={`Set ${name} inactive`}
         className="flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10"
       >
-        <Trash2 className="h-4 w-4" aria-hidden="true" />
+        <CircleOff className="h-4 w-4" aria-hidden="true" />
       </button>
     </div>
   );

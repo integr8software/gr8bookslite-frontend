@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import PrivacyPolicyForm from "@/app/src/ui/auth/PrivacyPolicyForm";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 
 export const metadata: Metadata = {
-  title: "Data Privacy Statement | GR8BooksLite",
+  title: `Data Privacy Statement | ${AppName}`,
 };
 
 export default function PrivacyPolicyPage() {

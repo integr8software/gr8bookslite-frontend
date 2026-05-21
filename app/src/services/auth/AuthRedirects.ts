@@ -25,8 +25,6 @@ const SystemRedirectPathPrefixes = [
   "/workspace",
 ] as const;
 
-export const MinimumPostAuthRedirectDurationMs = 1500;
-
 export function IsSystemRedirectPath(path: string | null | undefined) {
   if (!path) {
     return false;
@@ -39,13 +37,6 @@ export function IsSystemRedirectPath(path: string | null | undefined) {
 
 export function IsOnboardingRedirectPath(path: string | null | undefined) {
   return path === "/onboarding" || path?.startsWith("/onboarding/");
-}
-
-export function GetRemainingPostAuthRedirectDelayMs(startedAt: number) {
-  return Math.max(
-    MinimumPostAuthRedirectDurationMs - (Date.now() - startedAt),
-    0,
-  );
 }
 
 function NormalizeBase64Url(value: string) {

@@ -1,1 +1,1 @@
-export const AppName = "Gr8Books Lite";
+export const AppName = "Gr8Books Neo";

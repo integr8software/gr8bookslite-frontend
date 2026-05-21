@@ -198,7 +198,7 @@ export function OnboardingStepOne({
           name="tin"
           type="text"
           inputMode="numeric"
-          placeholder="3242-3424-42432"
+          placeholder="123-456-789-000"
           maxLength={15}
           value={values.tin}
           onChange={(e) => updateValue("tin", FormatTinNumber(e.target.value))}

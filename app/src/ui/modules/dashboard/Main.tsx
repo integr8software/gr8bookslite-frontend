@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -7,11 +9,14 @@ import {
   Plus,
   Share2,
   SlidersHorizontal,
+  Sparkles,
   Users,
 } from "lucide-react";
+import { BranchDashboardSpotlightTutorialOpenEvent } from "@/app/src/data/modules/dashboard/BranchDashboardSpotlightTutorialData";
 import type { MainDashboardWidget } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
 import { hasAccess } from "@/app/src/data/shared/MainLayout/ModuleShellUtils";
 import { ModuleShellMockData } from "@/app/src/data/shared/MainLayout/ModuleShellMockData";
+import { BranchDashboardSpotlightTutorial } from "@/app/src/ui/modules/dashboard/BranchDashboardSpotlightTutorial";
 
 const DashboardLibrary = [
   {
@@ -35,9 +40,17 @@ export function ManagementMain() {
     ["add"],
   );
 
+  function openSpotlightTutorial() {
+    window.dispatchEvent(new Event(BranchDashboardSpotlightTutorialOpenEvent));
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-[94rem] flex-col gap-4">
-      <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
+      <BranchDashboardSpotlightTutorial />
+      <section
+        className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5"
+        data-spotlight-id="branch-dashboard-header"
+      >
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -50,8 +63,17 @@ export function ManagementMain() {
           </div>
 
           <div className="grid grid-cols-2 gap-2 sm:flex">
+            <ActionButton
+              icon={Sparkles}
+              label="Quick Tour"
+              onClick={openSpotlightTutorial}
+            />
             {canAddDashboard ? (
-              <ActionButton icon={Plus} label="Add Dashboard" />
+              <ActionButton
+                dataSpotlightId="branch-dashboard-add"
+                icon={Plus}
+                label="Add Dashboard"
+              />
             ) : null}
             <ActionButton icon={SlidersHorizontal} label="Customize" />
             <ActionButton icon={Share2} label="Share" />
@@ -59,14 +81,21 @@ export function ManagementMain() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section
+        className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+        data-spotlight-id="branch-dashboard-summary"
+      >
         {ModuleShellMockData.dashboardWidgets.map((widget) => (
           <WidgetCard key={widget.id} widget={widget} />
         ))}
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.35fr_0.85fr]">
-        <Panel title="Dashboard Library" icon={LayoutDashboard}>
+        <Panel
+          dataSpotlightId="branch-dashboard-library"
+          title="Dashboard Library"
+          icon={LayoutDashboard}
+        >
           <div className="overflow-x-auto">
             <table className="w-full min-w-[42rem] border-separate border-spacing-0 text-left text-sm">
               <thead>
@@ -107,7 +136,11 @@ export function ManagementMain() {
           </div>
         </Panel>
 
-        <Panel title="Builder Preview" icon={PanelsTopLeft}>
+        <Panel
+          dataSpotlightId="branch-dashboard-builder"
+          title="Builder Preview"
+          icon={PanelsTopLeft}
+        >
           <div className="grid min-h-72 gap-3">
             <div className="grid grid-cols-2 gap-3">
               <PreviewBlock label="Summary" />
@@ -124,7 +157,11 @@ export function ManagementMain() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-        <Panel title="Team Access" icon={Users}>
+        <Panel
+          dataSpotlightId="branch-dashboard-team-access"
+          title="Team Access"
+          icon={Users}
+        >
           <div className="space-y-3">
             <AccessRow label="Administrators" value="Can view, add, edit" />
             <AccessRow label="Managers" value="Can view shared dashboards" />
@@ -132,7 +169,11 @@ export function ManagementMain() {
           </div>
         </Panel>
 
-        <Panel title="Recent Dashboard Activity" icon={BarChart3}>
+        <Panel
+          dataSpotlightId="branch-dashboard-activity"
+          title="Recent Dashboard Activity"
+          icon={BarChart3}
+        >
           <div className="space-y-2">
             {ActivityItems.map((activity) => (
               <div
@@ -177,13 +218,17 @@ function WidgetCard({ widget }: WidgetCardProps) {
 
 type PanelProps = {
   children: ReactNode;
+  dataSpotlightId?: string;
   icon: LucideIcon;
   title: string;
 };
 
-function Panel({ children, icon: Icon, title }: PanelProps) {
+function Panel({ children, dataSpotlightId, icon: Icon, title }: PanelProps) {
   return (
-    <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm">
+    <section
+      className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm"
+      data-spotlight-id={dataSpotlightId}
+    >
       <div className="mb-4 flex items-center gap-2">
         <Icon className="h-4 w-4 text-darknavy/55" aria-hidden="true" />
         <h2 className="text-base font-semibold text-darknavy">{title}</h2>
@@ -194,14 +239,23 @@ function Panel({ children, icon: Icon, title }: PanelProps) {
 }
 
 type ActionButtonProps = {
+  dataSpotlightId?: string;
   icon: LucideIcon;
   label: string;
+  onClick?: () => void;
 };
 
-function ActionButton({ icon: Icon, label }: ActionButtonProps) {
+function ActionButton({
+  dataSpotlightId,
+  icon: Icon,
+  label,
+  onClick,
+}: ActionButtonProps) {
   return (
     <button
       type="button"
+      onClick={onClick}
+      data-spotlight-id={dataSpotlightId}
       className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm transition hover:border-skyblue/45 hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
     >
       <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />

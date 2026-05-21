@@ -7,7 +7,7 @@ import type {
   MainPermissionMap,
   MainSubscriptionOption,
   MainUserRole,
-  MainUserType,
+  MainUserRoleDetails,
 } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
 import { AppName } from "@/app/src/constants/shared/AppConstants";
 
@@ -35,8 +35,8 @@ export const ModuleSubscriptionPlans: MainSubscriptionOption[] = [
   },
 ];
 
-const CurrentUserType = {
-  id: "user-type-operations-admin",
+const CurrentUserRoleDetails = {
+  id: "user-role-operations-admin",
   name: "Operations Admin",
   permissions: {
     dashboard: { view: true, add: true, edit: true },
@@ -74,7 +74,7 @@ const CurrentUserType = {
     "branch.management": { view: true, add: true, edit: true },
     profile: { view: true, edit: true },
   } satisfies MainPermissionMap,
-} satisfies MainUserType;
+} satisfies MainUserRoleDetails;
 
 const CurrentUser = createCurrentUser({
   id: "usr-001",
@@ -83,7 +83,7 @@ const CurrentUser = createCurrentUser({
   firstName: "John",
   lastName: "Dela Cruz",
   userRole: "Super Admin",
-  userType: CurrentUserType,
+  userRoleDetails: CurrentUserRoleDetails,
   profileImageUrl: undefined,
 });
 
@@ -243,7 +243,7 @@ type CurrentUserInput = {
   firstName: string;
   lastName: string;
   userRole: MainUserRole;
-  userType: MainUserType;
+  userRoleDetails: MainUserRoleDetails;
   profileImageUrl?: string;
 };
 

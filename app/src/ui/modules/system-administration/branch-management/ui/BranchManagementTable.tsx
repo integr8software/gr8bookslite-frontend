@@ -20,7 +20,10 @@ export function BranchManagementTable({
   onDeleteBranch,
 }: BranchManagementTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+    <div
+      className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm"
+      data-spotlight-id="branch-management-table"
+    >
       <div className="grid grid-cols-[1.1fr_0.7fr_0.65fr_0.75fr_8rem] gap-4 border-b border-darknavy/10 bg-darknavy/[0.03] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-darknavy/50 max-lg:hidden">
         <span>Name</span>
         <span>Company Code</span>
@@ -91,7 +94,10 @@ function BranchRowActions({
   onDeleteBranch: (branchId: string, branchName: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-1 lg:justify-end">
+    <div
+      className="flex items-center gap-1 lg:justify-end"
+      data-spotlight-id="branch-management-actions"
+    >
       <IconLink
         href={`${BranchManagementHref}/view/${branch.id}`}
         label="View"

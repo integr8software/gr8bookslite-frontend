@@ -1,3 +1,5 @@
+import type { UserManagementRecord } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+
 export type UserListStatus = "Active" | "Pending" | "Inactive";
 
 export type UserListRecord = {
@@ -7,10 +9,22 @@ export type UserListRecord = {
   email: string;
   contactNo: string;
   department: string;
-  userType: string;
-  userGroup: string;
+  userRole: string;
   status: UserListStatus;
   lastLogin: string;
   lastLoginMeta: string;
   profileImageUrl?: string;
 };
+
+export type UserListTableRecord = UserManagementRecord & {
+  department: string;
+  userRole: string;
+};
+
+export type UserListTableColumnKey =
+  | "email"
+  | "lastLogin"
+  | "name"
+  | "status"
+  | "department"
+  | "userRole";

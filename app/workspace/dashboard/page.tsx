@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { WorkspaceOverviewPage } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewPage";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 
 export const metadata: Metadata = {
-  title: "Dashboard | Gr8Books Lite",
-  description: "Workspace administration overview mockup for Gr8Books Lite.",
+  title: `Dashboard | ${AppName}`,
+  description: `Workspace administration overview mockup for ${AppName}.`,
 };
 
 export default function DashboardPage() {

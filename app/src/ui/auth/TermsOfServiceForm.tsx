@@ -1,4 +1,5 @@
 import React from "react";
+import { AppName } from "@/app/src/constants/shared/AppConstants";
 
 const TermsOfServiceForm = () => {
   return (
@@ -42,7 +43,7 @@ const TermsOfServiceForm = () => {
           <div>
             <h2 className="font-bold text-lg">2. Description of service</h2>
             <p className="mt-1">
-              Gr8BookLite is a cloud-based accounting software for individuals
+              {AppName} is a cloud-based accounting software for individuals
               and small businesses providing tools for managing income,
               expenses, invoices, and financial reporting. Features may change
               over time.
@@ -69,7 +70,7 @@ const TermsOfServiceForm = () => {
           <div>
             <h2 className="font-bold text-lg">4. Acceptable use</h2>
 
-            <p className="mt-1">You must not use Gr8BookLite to:</p>
+            <p className="mt-1">You must not use {AppName} to:</p>
 
             <ul className="list-disc pl-6 mt-2 space-y-1">
               <li>Commit fraud or engage in illegal financial activity</li>
@@ -84,8 +85,8 @@ const TermsOfServiceForm = () => {
           <div>
             <h2 className="font-bold text-lg">5. Intellectual property</h2>
             <p className="mt-1">
-              All software, designs, logos, and content within Gr8BookLite are
-              owned by or licensed to Gr8BookLite. You retain ownership of all
+              All software, designs, logos, and content within {AppName} are
+              owned by or licensed to {AppName}. You retain ownership of all
               financial data you enter.
             </p>
           </div>
@@ -112,7 +113,7 @@ const TermsOfServiceForm = () => {
           <div>
             <h2 className="font-bold text-lg">7. Disclaimers</h2>
             <p className="mt-1">
-              Gr8BookLite is provided &quot;as is&quot; without warranties. We do not
+              {AppName} is provided &quot;as is&quot; without warranties. We do not
               guarantee error-free or uninterrupted service. We are not a
               licensed accounting firm and do not provide legal, tax, or
               financial advice.
@@ -123,7 +124,7 @@ const TermsOfServiceForm = () => {
           <div>
             <h2 className="font-bold text-lg">8. Limitation of liability</h2>
             <p className="mt-1">
-              To the maximum extent permitted by law, Gr8BookLite shall not be
+              To the maximum extent permitted by law, {AppName} shall not be
               liable for any indirect, incidental, or consequential damages
               arising from your use of the service.
             </p>

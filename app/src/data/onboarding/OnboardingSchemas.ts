@@ -91,10 +91,10 @@ const TINSchema = z
   .string()
   .trim()
   .min(1, "TIN is required.")
-  .regex(
-    /^\d{3}-\d{3}-\d{3}-\d{3}$|^\d{4}-\d{4}-\d{5}$|^\d{9,13}$/,
-    "Enter a valid TIN (e.g. 123-456-789-000 or 3242-3424-42432).",
-  );
+  .refine((value) => {
+    const digits = value.replace(/\D/g, "");
+    return digits.length === 9 || digits.length === 12;
+  }, "Enter a valid TIN in the format XXX-XXX-XXX or XXX-XXX-XXX-XXX.");
 
 const ContactNumberSchema = z
   .string()

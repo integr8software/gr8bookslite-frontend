@@ -1,5 +1,5 @@
-const ACCESS_TOKEN_KEY = "gr8bookslite.accessToken";
-const REMEMBER_ME_KEY = "gr8bookslite.rememberMe";
+const ACCESS_TOKEN_KEY = "gr8booksneo.accessToken";
+const REMEMBER_ME_KEY = "gr8booksneo.rememberMe";
 const THIRTY_DAYS_IN_SECONDS = 60 * 60 * 24 * 30;
 
 function CanUseBrowserStorage() {

@@ -21,7 +21,5 @@ export type UserListTableRecord = UserManagementRecord & {
 
 export type UserListTableColumnKey =
   | "email"
-  | "lastLogin"
   | "name"
-  | "status"
   | "userRole";

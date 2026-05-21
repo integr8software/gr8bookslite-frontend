@@ -12,12 +12,10 @@ import {
 } from "@tanstack/react-table";
 import {
   UserListTableColumns,
-  UserListStatusOptions,
 } from "@/app/src/constants/modules/user-management/UserListConstants";
 import type {
   UserManagementRecord,
   UserRoleRecord,
-  UserStatus,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import type {
   UserListTableColumnKey,
@@ -42,14 +40,10 @@ export function useUserListTable({
   const [sorting, setSorting] = useState<SortingState>([
     { id: "name", desc: false },
   ]);
-  const [statusFilter, setStatusFilterState] = useState<UserStatus | "All">(
-    "All",
-  );
   const roleOptions = useMemo(
     () => userRoles.map((role) => role.name).sort(),
     [userRoles],
   );
-  const statusOptions = useMemo(() => [...UserListStatusOptions], []);
   const tableData = useMemo(
     () =>
       users.map((user) => ({
@@ -67,7 +61,6 @@ export function useUserListTable({
           user.email,
           user.contactNumber,
           user.userRole,
-          user.status,
         ]
           .filter(Boolean)
           .join(" ")
@@ -75,26 +68,16 @@ export function useUserListTable({
 
         return (
           searchable.includes(query.toLowerCase()) &&
-          (statusFilter === "All" || user.status === statusFilter) &&
           (roleFilter === "All" || user.userRole === roleFilter)
         );
       }),
-    [query, roleFilter, statusFilter, tableData],
+    [query, roleFilter, tableData],
   );
   const columns = useMemo<ColumnDef<UserListTableRecord>[]>(
     () =>
-      UserListTableColumns.map((column) => {
-        if (!("key" in column)) {
-          return {
-            id: "actions",
-            header: column.label,
-            enableSorting: false,
-            meta: { className: column.className },
-          };
-        }
-
-        return createUserColumn(column.key, column.label, column.className);
-      }),
+      UserListTableColumns.map((column) =>
+        createUserColumn(column.key, column.label, column.className),
+      ),
     [],
   );
 
@@ -116,7 +99,6 @@ export function useUserListTable({
   function resetFilters() {
     setQueryState("");
     setRoleFilterState("All");
-    setStatusFilterState("All");
     table.setPageIndex(0);
   }
 
@@ -130,11 +112,6 @@ export function useUserListTable({
     table.setPageIndex(0);
   }
 
-  function setStatusFilter(value: UserStatus | "All") {
-    setStatusFilterState(value);
-    table.setPageIndex(0);
-  }
-
   return {
     query,
     resetFilters,
@@ -142,9 +119,6 @@ export function useUserListTable({
     roleOptions,
     setQuery,
     setRoleFilter,
-    setStatusFilter,
-    statusFilter,
-    statusOptions,
     table,
   };
 }

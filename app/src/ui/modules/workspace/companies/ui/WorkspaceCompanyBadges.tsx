@@ -18,14 +18,14 @@ export function WorkspaceCompanyAvatar({
 		return (
 			<span
 				aria-label={`${name} logo`}
-				className="block h-10 w-10 shrink-0 rounded-lg bg-cover bg-center ring-1 ring-darknavy/10"
+				className="block h-9 w-9 shrink-0 rounded-md bg-cover bg-center ring-1 ring-darknavy/10"
 				style={{ backgroundImage: `url("${logoUrl}")` }}
 			/>
 		);
 	}
 
 	return (
-		<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-skyblue/18 text-xs font-bold text-darknavy ring-1 ring-darknavy/10">
+		<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-skyblue/18 text-xs font-bold text-darknavy ring-1 ring-darknavy/10">
 			{initials || <Building2 className="h-4 w-4" aria-hidden="true" />}
 		</span>
 	);
@@ -69,7 +69,7 @@ export function WorkspaceStatusBadge({
 	return (
 		<span
 			className={joinClasses(
-				"inline-flex min-h-6 items-center rounded px-2.5 text-xs font-semibold ring-1",
+				"inline-flex min-h-6 items-center rounded px-2 text-xs font-semibold ring-1",
 				classes[status],
 			)}
 		>
@@ -89,7 +89,7 @@ export function WorkspacePlanBadge({ plan }: { plan: WorkspaceCompanyPlan }) {
 	return (
 		<span
 			className={joinClasses(
-				"inline-flex min-h-6 items-center rounded px-2.5 text-xs font-semibold ring-1",
+				"inline-flex min-h-6 items-center rounded px-2 text-xs font-semibold ring-1",
 				classes[plan],
 			)}
 		>
@@ -100,7 +100,7 @@ export function WorkspacePlanBadge({ plan }: { plan: WorkspaceCompanyPlan }) {
 
 export function WorkspaceTextBadge({ children }: { children: React.ReactNode }) {
 	return (
-		<span className="inline-flex min-h-6 items-center rounded bg-darknavy/5 px-2.5 text-xs font-semibold text-darknavy/70 ring-1 ring-darknavy/8">
+		<span className="inline-flex min-h-6 items-center rounded bg-darknavy/5 px-2 text-xs font-semibold text-darknavy/70 ring-1 ring-darknavy/8">
 			{children}
 		</span>
 	);

@@ -16,6 +16,7 @@ import {
 import {
 	InitialUserRoleFormValues,
 	createUserRoleRecord,
+	getNextUserStatus,
 	updateUserRoleRecord,
 	type UserRoleFormValues,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
@@ -35,6 +36,7 @@ export function useUserRoleFormPage() {
 	const updateUserRole = useUserRoleStore(
 		(state) => state.updateUserRole,
 	);
+	const isMutating = useUserRoleStore((state) => state.isMutating);
 	const mode = getActionMode(pathname);
 	const wasOpenedFromView =
 		mode === "edit" &&
@@ -105,12 +107,26 @@ export function useUserRoleFormPage() {
 		router.push(submitHref);
 	}
 
+	function handleStatusChange() {
+		if (!existingUserRole) {
+			return;
+		}
+
+		updateUserRole({
+			...existingUserRole,
+			status: getNextUserStatus(existingUserRole.status),
+		});
+		router.push(UserRoleHref);
+	}
+
 	return {
 		cancelHref,
 		editHref,
 		errors,
 		existingUserRole,
+		handleStatusChange,
 		handleSubmit,
+		isMutating,
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",

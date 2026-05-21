@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import {
   InitialDepartments,
   InitialUserRoles,
@@ -78,73 +79,119 @@ export function useUserManagementStore<TSelected = UserManagementState>(
 
   const addUserMutation = useMutation({
     mutationFn: async (user: UserManagementRecord) => user,
-    onSuccess: (user) => setUsers((users) => [...users, user]),
+    onSuccess: (user) => {
+      setUsers((users) => [...users, user]);
+      toast.success("User created.");
+    },
+    onError: () => {
+      toast.error("Could not create user. Please try again.");
+    },
   });
   const updateUserMutation = useMutation({
     mutationFn: async (user: UserManagementRecord) => user,
-    onSuccess: (user) =>
+    onSuccess: (user) => {
       setUsers((users) =>
         users.map((current) => (current.id === user.id ? user : current)),
-      ),
+      );
+      toast.success("User updated.");
+    },
+    onError: () => {
+      toast.error("Could not update user. Please try again.");
+    },
   });
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => userId,
-    onSuccess: (userId) =>
+    onSuccess: (userId) => {
       setUsers((users) =>
         users.map((user) =>
           user.id === userId ? { ...user, status: "Inactive" } : user,
         ),
-      ),
+      );
+      toast.success("User set as inactive.");
+    },
+    onError: () => {
+      toast.error("Could not update user status. Please try again.");
+    },
   });
   const addUserRoleMutation = useMutation({
     mutationFn: async (userRole: UserRoleRecord) => userRole,
-    onSuccess: (userRole) =>
-      setUserRoles((userRoles) => [...userRoles, userRole]),
+    onSuccess: (userRole) => {
+      setUserRoles((userRoles) => [...userRoles, userRole]);
+      toast.success("User role created.");
+    },
+    onError: () => {
+      toast.error("Could not create user role. Please try again.");
+    },
   });
   const updateUserRoleMutation = useMutation({
     mutationFn: async (userRole: UserRoleRecord) => userRole,
-    onSuccess: (userRole) =>
+    onSuccess: (userRole) => {
       setUserRoles((userRoles) =>
         userRoles.map((current) =>
           current.id === userRole.id ? userRole : current,
         ),
-      ),
+      );
+      toast.success("User role updated.");
+    },
+    onError: () => {
+      toast.error("Could not update user role. Please try again.");
+    },
   });
   const deleteUserRoleMutation = useMutation({
     mutationFn: async (userRoleId: string) => userRoleId,
-    onSuccess: (userRoleId) =>
+    onSuccess: (userRoleId) => {
       setUserRoles((userRoles) =>
         userRoles.map((userRole) =>
           userRole.id === userRoleId
             ? { ...userRole, status: "Inactive" }
             : userRole,
         ),
-      ),
+      );
+      toast.success("User role set as inactive.");
+    },
+    onError: () => {
+      toast.error("Could not update user role status. Please try again.");
+    },
   });
   const addDepartmentMutation = useMutation({
     mutationFn: async (department: DepartmentRecord) => department,
-    onSuccess: (department) =>
-      setDepartments((departments) => [...departments, department]),
+    onSuccess: (department) => {
+      setDepartments((departments) => [...departments, department]);
+      toast.success("Department created.");
+    },
+    onError: () => {
+      toast.error("Could not create department. Please try again.");
+    },
   });
   const updateDepartmentMutation = useMutation({
     mutationFn: async (department: DepartmentRecord) => department,
-    onSuccess: (department) =>
+    onSuccess: (department) => {
       setDepartments((departments) =>
         departments.map((current) =>
           current.id === department.id ? department : current,
         ),
-      ),
+      );
+      toast.success("Department updated.");
+    },
+    onError: () => {
+      toast.error("Could not update department. Please try again.");
+    },
   });
   const deleteDepartmentMutation = useMutation({
     mutationFn: async (departmentId: string) => departmentId,
-    onSuccess: (departmentId) =>
+    onSuccess: (departmentId) => {
       setDepartments((departments) =>
         departments.map((department) =>
           department.id === departmentId
             ? { ...department, status: "Inactive" }
             : department,
         ),
-      ),
+      );
+      toast.success("Department set as inactive.");
+    },
+    onError: () => {
+      toast.error("Could not update department status. Please try again.");
+    },
   });
 
   const state = useMemo<UserManagementState>(

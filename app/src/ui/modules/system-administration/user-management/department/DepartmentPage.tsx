@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Sparkles, UserCog, UsersRound } from "lucide-react";
+import { Plus, Sparkles, UsersRound } from "lucide-react";
 import { DepartmentHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
+import {
+	getNextUserStatus,
+	type DepartmentRecord,
+} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import { DepartmentSpotlightTutorialOpenEvent } from "@/app/src/data/modules/system-administration/user-management/department/DepartmentSpotlightTutorialData";
-import type { DepartmentRecord } from "@/app/src/data/modules/system-administration/user-management/department/DepartmentData";
-import { getNextUserStatus } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import { useDepartmentStore } from "@/app/src/hooks/modules/system-administration/user-management/department/useDepartment";
 import { DepartmentList } from "@/app/src/ui/modules/system-administration/user-management/department/DepartmentList";
 import { DepartmentSpotlightTutorial } from "@/app/src/ui/modules/system-administration/user-management/department/DepartmentSpotlightTutorial";
@@ -55,7 +57,7 @@ export function DepartmentPage() {
 				description="Maintain teams and department groupings for users."
 				eyebrow={
 					<>
-						<UserCog className="h-3.5 w-3.5" aria-hidden="true" />
+						<UsersRound className="h-3.5 w-3.5" aria-hidden="true" />
 						User management
 					</>
 				}
@@ -75,7 +77,7 @@ export function DepartmentPage() {
 							className={moduleHeaderActionClassNames.primary}
 						>
 							<Plus className="h-4 w-4" aria-hidden="true" />
-							Add Department
+							Add Group
 						</Link>
 					</>
 				}
@@ -94,8 +96,9 @@ export function DepartmentPage() {
 						? "Set department as inactive?"
 						: "Set department as active?"
 				}
-				description={`This will mark ${pendingStatusDepartment?.name ?? "the selected department"
-					} as ${pendingNextStatus.toLowerCase()} while keeping the department available for reference.`}
+				description={`This will mark ${
+					pendingStatusDepartment?.name ?? "the selected department"
+				} as ${pendingNextStatus.toLowerCase()} while keeping the department available for reference.`}
 				confirmLabel={pendingStatusLabel}
 				tone={pendingNextStatus === "Inactive" ? "danger" : "success"}
 				onCancel={() => setPendingStatusDepartment(null)}

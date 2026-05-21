@@ -1,11 +1,17 @@
 import Link from "next/link";
 import {
   ArrowLeft,
+  CheckCircle2,
+  CircleOff,
   Edit3,
   Save,
   UserCog,
   X,
 } from "lucide-react";
+import {
+  getNextUserStatus,
+  type UserStatus,
+} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import type { UserManagementActionMode } from "@/app/src/types/modules/user-management/UserManagementTypes";
 import {
   ModuleHeader,
@@ -17,14 +23,21 @@ export function UserListFormHeader({
   editHref,
   isReadonly,
   mode,
+  status,
   title,
+  onStatusChange,
 }: {
   cancelHref: string;
   editHref?: string;
   isReadonly: boolean;
   mode: UserManagementActionMode;
+  status?: UserStatus;
   title: string;
+  onStatusChange?: () => void;
 }) {
+  const nextStatus = status ? getNextUserStatus(status) : undefined;
+  const StatusIcon = nextStatus === "Active" ? CheckCircle2 : CircleOff;
+
   return (
     <ModuleHeader
       variant="panel"
@@ -56,6 +69,20 @@ export function UserListFormHeader({
               <X className="h-4 w-4" aria-hidden="true" />
               Cancel
             </Link>
+          ) : null}
+          {status && onStatusChange ? (
+            <button
+              type="button"
+              onClick={onStatusChange}
+              className={
+                nextStatus === "Inactive"
+                  ? moduleHeaderActionClassNames.danger
+                  : moduleHeaderActionClassNames.secondary
+              }
+            >
+              <StatusIcon className="h-4 w-4" aria-hidden="true" />
+              {nextStatus === "Inactive" ? "Inactive" : "Active"}
+            </button>
           ) : null}
           {!isReadonly ? (
             <button type="submit" form="users-form" className={saveClassName}>

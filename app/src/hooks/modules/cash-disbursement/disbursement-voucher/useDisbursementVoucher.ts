@@ -11,6 +11,7 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { DisbursementVoucherStatusFilters } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
   MockDisbursementTransactions,
@@ -62,6 +63,10 @@ export function useDisbursementVoucherStore<
     mutationFn: async (voucher: DisbursementVoucherRecord) => voucher,
     onSuccess: (voucher) => {
       updateCachedVouchers((vouchers) => [...vouchers, voucher]);
+      toast.success("Disbursement voucher created.");
+    },
+    onError: () => {
+      toast.error("Could not create disbursement voucher. Please try again.");
     },
   });
 
@@ -73,6 +78,10 @@ export function useDisbursementVoucherStore<
           currentVoucher.id === voucher.id ? voucher : currentVoucher,
         ),
       );
+      toast.success("Disbursement voucher updated.");
+    },
+    onError: () => {
+      toast.error("Could not update disbursement voucher. Please try again.");
     },
   });
 
@@ -82,6 +91,10 @@ export function useDisbursementVoucherStore<
       updateCachedVouchers((vouchers) =>
         vouchers.filter((voucher) => voucher.id !== voucherId),
       );
+      toast.success("Disbursement voucher deleted.");
+    },
+    onError: () => {
+      toast.error("Could not delete disbursement voucher. Please try again.");
     },
   });
 

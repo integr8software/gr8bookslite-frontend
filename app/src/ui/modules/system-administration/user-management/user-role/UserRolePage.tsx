@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, ShieldCheck, Sparkles, UserCog } from "lucide-react";
+import { Plus, ShieldCheck, Sparkles } from "lucide-react";
 import { UserRoleHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
+import {
+	getNextUserStatus,
+	type UserRoleRecord,
+} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import { UserRoleSpotlightTutorialOpenEvent } from "@/app/src/data/modules/system-administration/user-management/user-role/UserRoleSpotlightTutorialData";
-import type { UserRoleRecord } from "@/app/src/data/modules/system-administration/user-management/user-role/UserRoleData";
-import { getNextUserStatus } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import { useUserRoleStore } from "@/app/src/hooks/modules/system-administration/user-management/user-role/useUserRole";
 import { UserRoleList } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleList";
 import { UserRoleSpotlightTutorial } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleSpotlightTutorial";
@@ -55,7 +57,7 @@ export function UserRolePage() {
 				description="Maintain access role templates for users."
 				eyebrow={
 					<>
-						<UserCog className="h-3.5 w-3.5" aria-hidden="true" />
+						<ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
 						User management
 					</>
 				}
@@ -75,7 +77,7 @@ export function UserRolePage() {
 							className={moduleHeaderActionClassNames.primary}
 						>
 							<Plus className="h-4 w-4" aria-hidden="true" />
-							Add Role
+							Add Type
 						</Link>
 					</>
 				}
@@ -94,8 +96,9 @@ export function UserRolePage() {
 						? "Set user role as inactive?"
 						: "Set user role as active?"
 				}
-				description={`This will mark ${pendingStatusRole?.name ?? "the selected role"
-					} as ${pendingNextStatus.toLowerCase()} while keeping the role available for reference.`}
+				description={`This will mark ${
+					pendingStatusRole?.name ?? "the selected role"
+				} as ${pendingNextStatus.toLowerCase()} while keeping the role available for reference.`}
 				confirmLabel={pendingStatusLabel}
 				tone={pendingNextStatus === "Inactive" ? "danger" : "success"}
 				onCancel={() => setPendingStatusRole(null)}

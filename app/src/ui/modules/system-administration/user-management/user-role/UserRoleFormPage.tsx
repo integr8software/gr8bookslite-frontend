@@ -1,15 +1,21 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import {
 	ArrowLeft,
+	CheckCircle2,
+	CircleOff,
 	Edit3,
 	Save,
 	UserCog,
 	X,
 } from "lucide-react";
 import { UserRoleHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
+import {
+	getNextUserStatus,
+	type UserStatus,
+} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import { useUserRoleFormPage } from "@/app/src/hooks/modules/system-administration/user-management/user-role/useUserRoleFormPage";
 import { UserRoleForm } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleForm";
 import { UserRoleNotFound } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleNotFound";
@@ -17,6 +23,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 
 export function UserRoleFormPage() {
 	return (
@@ -28,6 +35,11 @@ export function UserRoleFormPage() {
 
 function UserRoleFormPageInner() {
 	const page = useUserRoleFormPage();
+	const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+	const nextStatus = page.existingUserRole
+		? getNextUserStatus(page.existingUserRole.status)
+		: "Inactive";
+	const StatusIcon = nextStatus === "Active" ? CheckCircle2 : CircleOff;
 
 	if (page.needsRecord && !page.existingUserRole) {
 		return (
@@ -83,6 +95,20 @@ function UserRoleFormPageInner() {
 								Cancel
 							</Link>
 						) : null}
+						{page.existingUserRole ? (
+							<button
+								type="button"
+								onClick={() => setIsStatusDialogOpen(true)}
+								className={
+									nextStatus === "Inactive"
+										? moduleHeaderActionClassNames.danger
+										: moduleHeaderActionClassNames.secondary
+								}
+							>
+								<StatusIcon className="h-4 w-4" aria-hidden="true" />
+								{nextStatus === "Inactive" ? "Inactive" : "Active"}
+							</button>
+						) : null}
 						{!page.isReadonly ? (
 							<button
 								type="submit"
@@ -105,6 +131,48 @@ function UserRoleFormPageInner() {
 				onToggleAccessRole={page.toggleAccessRole}
 				onUpdateField={page.updateField}
 			/>
+			<StatusConfirmDialog
+				entityName={page.existingUserRole?.name}
+				isOpen={isStatusDialogOpen}
+				isPending={page.isMutating}
+				nextStatus={nextStatus}
+				noun="user role"
+				onCancel={() => setIsStatusDialogOpen(false)}
+				onConfirm={page.handleStatusChange}
+			/>
 		</section>
+	);
+}
+
+function StatusConfirmDialog({
+	entityName,
+	isOpen,
+	isPending,
+	nextStatus,
+	noun,
+	onCancel,
+	onConfirm,
+}: {
+	entityName?: string;
+	isOpen: boolean;
+	isPending: boolean;
+	nextStatus: UserStatus;
+	noun: string;
+	onCancel: () => void;
+	onConfirm: () => void;
+}) {
+	return (
+		<AppConfirmDialog
+			isOpen={isOpen}
+			isPending={isPending}
+			title={`Set ${noun} as ${nextStatus.toLowerCase()}?`}
+			description={`This will mark ${entityName ?? `the selected ${noun}`} as ${nextStatus.toLowerCase()}.`}
+			confirmLabel={
+				nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active"
+			}
+			tone={nextStatus === "Inactive" ? "danger" : "success"}
+			onCancel={onCancel}
+			onConfirm={onConfirm}
+		/>
 	);
 }

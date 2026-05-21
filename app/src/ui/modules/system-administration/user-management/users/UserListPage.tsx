@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
-import { UserListSpotlightTutorialOpenEvent } from "@/app/src/data/modules/system-administration/user-management/users/UserListSpotlightTutorialData";
 import {
-  getNextUserStatus,
-  type UserManagementRecord,
+	getNextUserStatus,
+	type UserManagementRecord,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import { UserListSpotlightTutorialOpenEvent } from "@/app/src/data/modules/system-administration/user-management/users/UserListSpotlightTutorialData";
 import { useUserManagementStore } from "@/app/src/hooks/modules/system-administration/user-management/useUserManagement";
 import { UserListHeader } from "@/app/src/ui/modules/system-administration/user-management/users/UserListHeader";
 import { UserListSpotlightTutorial } from "@/app/src/ui/modules/system-administration/user-management/users/UserListSpotlightTutorial";

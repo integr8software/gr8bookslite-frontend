@@ -1,15 +1,21 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import {
 	ArrowLeft,
+	CheckCircle2,
+	CircleOff,
 	Edit3,
 	Save,
 	UserCog,
 	X,
 } from "lucide-react";
 import { DepartmentHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
+import {
+	getNextUserStatus,
+	type UserStatus,
+} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import { useDepartmentFormPage } from "@/app/src/hooks/modules/system-administration/user-management/department/useDepartmentFormPage";
 import { DepartmentForm } from "@/app/src/ui/modules/system-administration/user-management/department/DepartmentForm";
 import { DepartmentNotFound } from "@/app/src/ui/modules/system-administration/user-management/department/DepartmentNotFound";
@@ -17,6 +23,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 
 export function DepartmentFormPage() {
 	return (
@@ -28,6 +35,11 @@ export function DepartmentFormPage() {
 
 function DepartmentFormPageInner() {
 	const page = useDepartmentFormPage();
+	const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+	const nextStatus = page.existingDepartment
+		? getNextUserStatus(page.existingDepartment.status)
+		: "Inactive";
+	const StatusIcon = nextStatus === "Active" ? CheckCircle2 : CircleOff;
 
 	if (page.needsRecord && !page.existingDepartment) {
 		return (
@@ -86,6 +98,20 @@ function DepartmentFormPageInner() {
 								Cancel
 							</Link>
 						) : null}
+						{page.existingDepartment ? (
+							<button
+								type="button"
+								onClick={() => setIsStatusDialogOpen(true)}
+								className={
+									nextStatus === "Inactive"
+										? moduleHeaderActionClassNames.danger
+										: moduleHeaderActionClassNames.secondary
+								}
+							>
+								<StatusIcon className="h-4 w-4" aria-hidden="true" />
+								{nextStatus === "Inactive" ? "Inactive" : "Active"}
+							</button>
+						) : null}
 						{!page.isReadonly ? (
 							<button
 								type="submit"
@@ -106,6 +132,48 @@ function DepartmentFormPageInner() {
 				onSubmit={page.handleSubmit}
 				onUpdateField={page.updateField}
 			/>
+			<StatusConfirmDialog
+				entityName={page.existingDepartment?.name}
+				isOpen={isStatusDialogOpen}
+				isPending={page.isMutating}
+				nextStatus={nextStatus}
+				noun="department"
+				onCancel={() => setIsStatusDialogOpen(false)}
+				onConfirm={page.handleStatusChange}
+			/>
 		</section>
+	);
+}
+
+function StatusConfirmDialog({
+	entityName,
+	isOpen,
+	isPending,
+	nextStatus,
+	noun,
+	onCancel,
+	onConfirm,
+}: {
+	entityName?: string;
+	isOpen: boolean;
+	isPending: boolean;
+	nextStatus: UserStatus;
+	noun: string;
+	onCancel: () => void;
+	onConfirm: () => void;
+}) {
+	return (
+		<AppConfirmDialog
+			isOpen={isOpen}
+			isPending={isPending}
+			title={`Set ${noun} as ${nextStatus.toLowerCase()}?`}
+			description={`This will mark ${entityName ?? `the selected ${noun}`} as ${nextStatus.toLowerCase()}.`}
+			confirmLabel={
+				nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active"
+			}
+			tone={nextStatus === "Inactive" ? "danger" : "success"}
+			onCancel={onCancel}
+			onConfirm={onConfirm}
+		/>
 	);
 }

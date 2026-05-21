@@ -16,6 +16,7 @@ import {
 import {
 	InitialDepartmentFormValues,
 	createDepartmentRecord,
+	getNextUserStatus,
 	updateDepartmentRecord,
 	type DepartmentFormValues,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
@@ -35,6 +36,7 @@ export function useDepartmentFormPage() {
 	const updateDepartment = useDepartmentStore(
 		(state) => state.updateDepartment,
 	);
+	const isMutating = useDepartmentStore((state) => state.isMutating);
 	const mode = getActionMode(pathname);
 	const wasOpenedFromView =
 		mode === "edit" &&
@@ -89,12 +91,26 @@ export function useDepartmentFormPage() {
 		router.push(submitHref);
 	}
 
+	function handleStatusChange() {
+		if (!existingDepartment) {
+			return;
+		}
+
+		updateDepartment({
+			...existingDepartment,
+			status: getNextUserStatus(existingDepartment.status),
+		});
+		router.push(DepartmentHref);
+	}
+
 	return {
 		cancelHref,
 		editHref,
 		errors,
 		existingDepartment,
+		handleStatusChange,
 		handleSubmit,
+		isMutating,
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { MockDiscounts } from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
 import type { Discount } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
 
@@ -41,6 +42,10 @@ export function useDiscountManagementStore<TSelected = DiscountStoreState>(
 		mutationFn: async (discount: Discount) => discount,
 		onSuccess: (discount) => {
 			updateCachedDiscounts((discounts) => [...discounts, discount]);
+			toast.success("Discount created.");
+		},
+		onError: () => {
+			toast.error("Could not create discount. Please try again.");
 		},
 	});
 
@@ -52,6 +57,10 @@ export function useDiscountManagementStore<TSelected = DiscountStoreState>(
 					currentDiscount.id === discount.id ? discount : currentDiscount,
 				),
 			);
+			toast.success("Discount updated.");
+		},
+		onError: () => {
+			toast.error("Could not update discount. Please try again.");
 		},
 	});
 
@@ -61,6 +70,10 @@ export function useDiscountManagementStore<TSelected = DiscountStoreState>(
 			updateCachedDiscounts((discounts) =>
 				discounts.filter((discount) => discount.id !== id),
 			);
+			toast.success("Discount deleted.");
+		},
+		onError: () => {
+			toast.error("Could not delete discount. Please try again.");
 		},
 	});
 

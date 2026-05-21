@@ -16,6 +16,7 @@ import {
 import {
 	InitialUserFormValues,
 	createUserRecord,
+	getNextUserStatus,
 	updateUserRecord,
 	type UserFormValues,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
@@ -36,6 +37,7 @@ export function useUserListFormPage() {
 	const departments = useUserManagementStore((state) => state.departments);
 	const addUser = useUserManagementStore((state) => state.addUser);
 	const updateUser = useUserManagementStore((state) => state.updateUser);
+	const isMutating = useUserManagementStore((state) => state.isMutating);
 	const mode = getActionMode(pathname);
 	const wasOpenedFromView =
 		mode === "edit" &&
@@ -106,6 +108,18 @@ export function useUserListFormPage() {
 		router.push(submitHref);
 	}
 
+	function handleStatusChange() {
+		if (!existingUser) {
+			return;
+		}
+
+		updateUser({
+			...existingUser,
+			status: getNextUserStatus(existingUser.status),
+		});
+		router.push(UserListHref);
+	}
+
 	return {
 		cancelHref,
 		departments,
@@ -113,7 +127,9 @@ export function useUserListFormPage() {
 		errors,
 		existingUser,
 		handleInputChange,
+		handleStatusChange,
 		handleSubmit,
+		isMutating,
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",

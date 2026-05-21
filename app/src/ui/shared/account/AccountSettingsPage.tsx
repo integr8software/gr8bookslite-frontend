@@ -22,7 +22,10 @@ import {
   AccountThemeOptions,
 } from "@/app/src/constants/shared/AccountConstants";
 import { OTP_LENGTH } from "@/app/src/data/auth/OtpData";
-import { ResetPasswordSchema, OtpSchema } from "@/app/src/data/auth/AuthSchemas";
+import {
+	validateOtpValue,
+	validateResetPasswordValues,
+} from "@/app/src/validations/auth/AuthValidation";
 import { useAccountSettings } from "@/app/src/hooks/shared/useAccountSettings";
 import { usePasswordVisibility } from "@/app/src/hooks/shared/usePasswordVisibility";
 import {
@@ -283,11 +286,11 @@ function ChangePasswordPanel({
       return;
     }
 
-    const parsedOtp = OtpSchema.safeParse({ otp });
+    const otpValidation = validateOtpValue(otp);
 
-    if (!parsedOtp.success) {
+    if (otpValidation.error) {
       setErrors({
-        otp: parsedOtp.error.flatten().fieldErrors.otp?.[0],
+        otp: otpValidation.error,
       });
       return;
     }
@@ -296,7 +299,7 @@ function ChangePasswordPanel({
 
     try {
       const response = await VerifyPasswordChangeOtp(accessToken, {
-        code: parsedOtp.data.otp,
+        code: otpValidation.value,
       });
 
       setResetToken(response.resetToken);
@@ -327,18 +330,13 @@ function ChangePasswordPanel({
       return;
     }
 
-    const parsedPassword = ResetPasswordSchema.safeParse({
+    const passwordValidation = validateResetPasswordValues({
       password,
       confirmPassword,
     });
 
-    if (!parsedPassword.success) {
-      const fieldErrors = parsedPassword.error.flatten().fieldErrors;
-
-      setErrors({
-        password: fieldErrors.password?.[0],
-        confirmPassword: fieldErrors.confirmPassword?.[0],
-      });
+    if (!passwordValidation.values) {
+      setErrors(passwordValidation.errors);
       return;
     }
 
@@ -347,8 +345,8 @@ function ChangePasswordPanel({
     try {
       const response = await ChangeAuthenticatedPassword(accessToken, {
         resetToken,
-        newPassword: parsedPassword.data.password,
-        confirmNewPassword: parsedPassword.data.confirmPassword,
+        newPassword: passwordValidation.values.password,
+        confirmNewPassword: passwordValidation.values.confirmPassword,
       });
 
       resetFlow();

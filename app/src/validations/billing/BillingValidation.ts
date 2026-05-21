@@ -1,4 +1,8 @@
 import { z } from "zod";
+import type {
+  BillingPaymentFormErrors,
+  BillingPaymentFormValues,
+} from "@/app/src/data/billing/BillingTypes";
 
 export const BillingPaymentFormSchema = z.object({
   cardholderName: z.string().trim().min(2, "Cardholder name is required."),
@@ -37,3 +41,29 @@ export const BillingPaymentFormSchema = z.object({
     .trim()
     .min(5, "Billing address is required."),
 });
+
+export function validateBillingPaymentForm(
+  values: BillingPaymentFormValues,
+): {
+  errors: BillingPaymentFormErrors;
+  values?: BillingPaymentFormValues;
+} {
+  const parsedValues = BillingPaymentFormSchema.safeParse(values);
+
+  if (parsedValues.success) {
+    return {
+      errors: {},
+      values: parsedValues.data,
+    };
+  }
+
+  return {
+    errors: mapZodErrorsToBillingErrors(parsedValues.error.flatten().fieldErrors),
+  };
+}
+
+function mapZodErrorsToBillingErrors(
+  fieldErrors: Record<string, string[] | undefined>,
+): BillingPaymentFormErrors {
+  return fieldErrors;
+}

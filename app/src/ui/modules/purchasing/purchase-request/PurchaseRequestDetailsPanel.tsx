@@ -3,7 +3,6 @@ import {
 	PurchaseRequestStatusOptions,
 	PurchaseRequestTypeOptions,
 } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
-import { formatPurchaseRequestCurrency } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import type {
 	PurchaseRequestFormErrors,
 	PurchaseRequestFormValues,
@@ -17,7 +16,6 @@ import {
 
 type PurchaseRequestDetailsPanelProps = {
 	errors: PurchaseRequestFormErrors;
-	grossAmount: number;
 	isReadonly: boolean;
 	updateField: <TKey extends keyof PurchaseRequestFormValues>(
 		field: TKey,
@@ -28,7 +26,6 @@ type PurchaseRequestDetailsPanelProps = {
 
 export function PurchaseRequestDetailsPanel({
 	errors,
-	grossAmount,
 	isReadonly,
 	updateField,
 	values,

@@ -10,11 +10,8 @@ import {
   type BillingPaymentFormErrors,
   type BillingPaymentFormValues,
 } from "@/app/src/data/billing/BillingTypes";
-import { BillingPaymentFormSchema } from "@/app/src/data/billing/BillingSchemas";
-import {
-  GetBillingCycleApiValue,
-  MapZodErrorsToBillingErrors,
-} from "@/app/src/data/billing/BillingUtils";
+import { validateBillingPaymentForm } from "@/app/src/validations/billing/BillingValidation";
+import { GetBillingCycleApiValue } from "@/app/src/data/billing/BillingUtils";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 import {
   AttachCompanySubscriptionPaymentMethod,
@@ -61,7 +58,7 @@ export function useBillingSubscriptionManager() {
         throw new Error("You need to sign in before managing billing.");
       }
 
-      const parsedValues = BillingPaymentFormSchema.safeParse(paymentValues);
+      const paymentValidation = validateBillingPaymentForm(paymentValues);
 
       if (!resolvedSelectedPlanCode) {
         setPaymentErrors({
@@ -70,11 +67,8 @@ export function useBillingSubscriptionManager() {
         throw new Error("Select a billing plan before continuing.");
       }
 
-      if (!parsedValues.success) {
-        const nextErrors = MapZodErrorsToBillingErrors(
-          parsedValues.error.flatten().fieldErrors,
-        );
-        setPaymentErrors(nextErrors);
+      if (Object.keys(paymentValidation.errors).length > 0) {
+        setPaymentErrors(paymentValidation.errors);
         throw new Error("Please fix the highlighted payment details.");
       }
 
@@ -85,7 +79,7 @@ export function useBillingSubscriptionManager() {
         billingCycle: GetBillingCycleApiValue(selectedBillingCycle),
       });
       const paymentMethod = await CreatePaymongoCardPaymentMethod(
-        parsedValues.data,
+        paymentValidation.values ?? paymentValues,
       );
 
       return AttachCompanySubscriptionPaymentMethod(

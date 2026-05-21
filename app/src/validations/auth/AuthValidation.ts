@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { OTP_LENGTH } from "./OtpData";
+import { OTP_LENGTH } from "@/app/src/data/auth/OtpData";
 
 const SignUpPasswordSchema = z
   .string()
@@ -97,3 +97,40 @@ export type ChangeVerificationEmailInput = z.infer<
 >;
 export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
 export type OtpInput = z.infer<typeof OtpSchema>;
+
+export function validateOtpValue(otp: string) {
+  const parsed = OtpSchema.safeParse({ otp });
+
+  if (parsed.success) {
+    return {
+      error: undefined,
+      value: parsed.data.otp,
+    };
+  }
+
+  return {
+    error: parsed.error.flatten().fieldErrors.otp?.[0],
+    value: "",
+  };
+}
+
+export function validateResetPasswordValues(values: ResetPasswordInput) {
+  const parsed = ResetPasswordSchema.safeParse(values);
+
+  if (parsed.success) {
+    return {
+      errors: {},
+      values: parsed.data,
+    };
+  }
+
+  const fieldErrors = parsed.error.flatten().fieldErrors;
+
+  return {
+    errors: {
+      confirmPassword: fieldErrors.confirmPassword?.[0],
+      password: fieldErrors.password?.[0],
+    },
+    values: undefined,
+  };
+}

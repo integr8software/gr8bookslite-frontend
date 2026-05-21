@@ -61,7 +61,6 @@ function PurchaseRequestFormPageInner() {
 			<div className="grid min-w-0 gap-5">
 				<PurchaseRequestDetailsPanel
 					errors={page.errors}
-					grossAmount={grossAmount}
 					isReadonly={page.isReadonly}
 					updateField={page.updateField}
 					values={page.values}

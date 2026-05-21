@@ -25,6 +25,7 @@ import type {
 	UserFormErrors,
 	UserManagementActionMode,
 } from "@/app/src/types/modules/user-management/UserManagementTypes";
+import { validateUserForm } from "@/app/src/validations/modules/system-administration/user-management/users/UserListValidation";
 import { useUserManagementStore } from "../useUserManagement";
 
 export function useUserListFormPage() {
@@ -90,7 +91,7 @@ export function useUserListFormPage() {
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
-		const nextErrors = validateUser(values);
+		const nextErrors = validateUserForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
@@ -142,14 +143,3 @@ function getActionMode(pathname: string): UserManagementActionMode {
 	return "add";
 }
 
-function validateUser(values: UserFormValues) {
-	const errors: UserFormErrors = {};
-
-	if (!values.name.trim()) errors.name = "Name is required.";
-	if (!values.email.trim()) errors.email = "Email is required.";
-	if (!values.contactNumber.trim()) {
-		errors.contactNumber = "Contact number is required.";
-	}
-
-	return errors;
-}

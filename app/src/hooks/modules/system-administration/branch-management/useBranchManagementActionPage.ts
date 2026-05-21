@@ -18,6 +18,7 @@ import type {
 	BranchFormErrors,
 } from "@/app/src/types/modules/branch-manager/BranchActionTypes";
 import { useBranchManagementStore } from "@/app/src/hooks/modules/system-administration/branch-management/useBranchManagement";
+import { validateBranchForm } from "@/app/src/validations/modules/system-administration/branch-management/BranchManagementValidation";
 
 export function useBranchManagementActionPage() {
 	const router = useRouter();
@@ -154,22 +155,4 @@ function getActionMode(pathname: string): BranchActionMode {
 	}
 
 	return "add";
-}
-
-function validateBranchForm(values: BranchManagementFormValues) {
-	const errors: BranchFormErrors = {};
-
-	if (!values.name.trim()) {
-		errors.name = "Name is required.";
-	}
-
-	if (values.classification === "satellite") {
-		if (!values.linkedMainBranchId) {
-			errors.linkedMainBranchId = "Select the main branch TIN.";
-		}
-	} else if (!values.tin.trim()) {
-		errors.tin = "TIN is required for a branch.";
-	}
-
-	return errors;
 }

@@ -4,7 +4,6 @@ import {
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import type {
 	PartyAtcCodeOption,
-	PartyInformationFormErrors,
 	PartyInformationFormValues,
 	PartyInformationRecord,
 	PartyType,
@@ -276,53 +275,6 @@ export function updatePartyInformationRecord(
 	};
 }
 
-export function validatePartyInformationForm(
-	values: PartyInformationFormValues,
-): PartyInformationFormErrors {
-	const errors: PartyInformationFormErrors = {};
-
-	if (!values.classification) {
-		errors.classification = "Select a party classification first.";
-	}
-
-	if (values.classification && values.partyTypes.length === 0) {
-		errors.partyTypes = "Select at least one party type.";
-	}
-
-	if (
-		values.classification === "Non-Individual" &&
-		!values.partyName.trim()
-	) {
-		errors.partyName = "Party name is required.";
-	}
-
-	if (values.classification === "Individual") {
-		if (!values.firstName.trim()) {
-			errors.firstName = "First name is required.";
-		}
-
-		if (!values.lastName.trim()) {
-			errors.lastName = "Last name is required.";
-		}
-	}
-
-	if (values.classification && !isKnownAtcCode(values.atcCode)) {
-		errors.atcCode = "Select a valid BIR ATC code from the list.";
-	}
-
-	if (values.email.trim() && !isValidEmail(values.email)) {
-		errors.email = "Enter a valid email address.";
-	}
-
-	return errors;
-}
-
-export function isPartyInformationFormSubmittable(
-	values: PartyInformationFormValues,
-) {
-	return Object.keys(validatePartyInformationForm(values)).length === 0;
-}
-
 export function getPartyDisplayName(record: PartyInformationRecord) {
 	if (record.classification === "Non-Individual") {
 		return record.partyName;
@@ -383,6 +335,3 @@ function createPartyCodeNo() {
 	return `PTY-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
 }
 
-function isValidEmail(value: string) {
-	return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}

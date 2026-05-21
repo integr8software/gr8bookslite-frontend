@@ -8,13 +8,13 @@ import {
 	createTermManagementFormValues,
 	createTermManagementFromForm,
 	updateTermManagementFromForm,
-	validateTermManagementForm,
 } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
 import type {
 	TermManagementActionMode,
 	TermManagementFormErrors,
 	TermManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
+import { validateTermManagementForm } from "@/app/src/validations/modules/maintenance/financial-management/term-management/TermManagementValidation";
 import { useTermManagementStore } from "./useTermManagement";
 
 export function useTermManagementActionPage() {

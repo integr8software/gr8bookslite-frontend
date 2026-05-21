@@ -25,9 +25,7 @@ import {
 	createPartyInformationRecord,
 	createPartySubmitPayload,
 	isKnownPartyType,
-	isPartyInformationFormSubmittable,
 	updatePartyInformationRecord,
-	validatePartyInformationForm,
 } from "@/app/src/data/modules/maintenance/party-management/party-management/PartyManagementData";
 import type {
 	PartyAddress,
@@ -36,6 +34,10 @@ import type {
 	PartyInformationFormValues,
 	PartyType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import {
+	isPartyInformationFormSubmittable,
+	validatePartyInformationForm,
+} from "@/app/src/validations/modules/maintenance/party-management/party-management/PartyManagementValidation";
 import { usePartyManagementStore } from "./usePartyManagement";
 
 export function usePartyManagementAction() {

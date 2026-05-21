@@ -1,6 +1,5 @@
 import { PurchaseRequestStorageKey } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import type {
-	PurchaseRequestFormErrors,
 	PurchaseRequestFormValues,
 	PurchaseRequestItem,
 	PurchaseRequestRecord,
@@ -134,55 +133,6 @@ export function createPurchaseRequestRecord(
 			cost: Number(item.cost) || 0,
 		})),
 	};
-}
-
-export function validatePurchaseRequestForm(
-	values: PurchaseRequestFormValues,
-): PurchaseRequestFormErrors {
-	const errors: PurchaseRequestFormErrors = {};
-
-	if (!values.vceCode.trim()) {
-		errors.vceCode = "Enter a VCE code.";
-	}
-
-	if (!values.vceName.trim()) {
-		errors.vceName = "Enter a VCE name.";
-	}
-
-	if (!values.purchaseType.trim()) {
-		errors.purchaseType = "Select a purchase type.";
-	}
-
-	if (!values.transNo.trim()) {
-		errors.transNo = "Enter a transaction number.";
-	}
-
-	if (!values.prDate.trim()) {
-		errors.prDate = "Select a PR date.";
-	}
-
-	if (!values.currency.trim()) {
-		errors.currency = "Select a currency.";
-	}
-
-	if (!Number.isFinite(Number(values.exchangeRate)) || Number(values.exchangeRate) <= 0) {
-		errors.exchangeRate = "Enter a valid exchange rate.";
-	}
-
-	const validItems = values.items.filter(
-		(item) =>
-			item.itemCode.trim() &&
-			item.description.trim() &&
-			Number(item.quantity) > 0 &&
-			Number(item.cost) >= 0,
-	);
-
-	if (validItems.length === 0) {
-		errors.items =
-			"Add at least one item with item code, description, quantity, and cost.";
-	}
-
-	return errors;
 }
 
 export function getPurchaseRequestTotal(record: Pick<PurchaseRequestRecord, "items">) {

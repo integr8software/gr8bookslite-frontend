@@ -24,6 +24,7 @@ import type {
 	UserManagementActionMode,
 	UserRoleFormErrors,
 } from "@/app/src/types/modules/user-management/UserManagementTypes";
+import { validateUserRoleForm } from "@/app/src/validations/modules/system-administration/user-management/user-role/UserRoleValidation";
 import { useUserRoleStore } from "./useUserRole";
 
 export function useUserRoleFormPage() {
@@ -91,7 +92,7 @@ export function useUserRoleFormPage() {
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-		const nextErrors = validate(values);
+		const nextErrors = validateUserRoleForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
@@ -143,13 +144,3 @@ function getActionMode(pathname: string): UserManagementActionMode {
 	return "add";
 }
 
-function validate(values: UserRoleFormValues) {
-	const errors: UserRoleFormErrors = {};
-
-	if (!values.name.trim()) errors.name = "Name is required.";
-	if (values.accessRoles.length === 0) {
-		errors.accessRoles = "Select at least one access role.";
-	}
-
-	return errors;
-}

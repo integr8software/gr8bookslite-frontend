@@ -1,12 +1,16 @@
 import { z } from "zod";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
+import type {
+  OnboardingFieldErrors,
+  OnboardingValues,
+} from "@/app/src/data/onboarding/OnboardingTypes";
 import {
   GetSyncedReportEndDate,
   IsValidOnboardingDateValue,
   OnboardingMaxImageSizeBytes,
   OnboardingNonIndividualTypeOptions,
   OnboardingReportYearBasisOptions,
-} from "./OnboardingData";
+} from "@/app/src/data/onboarding/OnboardingData";
 
 const NamePattern = /^[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*$/;
 
@@ -285,3 +289,55 @@ export type OnboardingStepOneInput =
 export type OnboardingBillingStepInput = z.infer<
   typeof OnboardingBillingStepSchema
 >;
+
+export function validateOnboardingStepOneValues(
+  values: OnboardingValues,
+): OnboardingFieldErrors {
+  const parsed = OnboardingStepOneSchema.safeParse({
+    ...getOnboardingIdentityPayload(values),
+    address: values.address,
+    tin: values.tin,
+    website: values.website,
+    contactNumber: values.contactNumber,
+    logo: values.logoFile,
+    reportYearBasis: values.reportYearBasis,
+    reportStartDate: values.reportStartDate,
+    reportEndDate: values.reportEndDate,
+  });
+
+  return parsed.success ? {} : parsed.error.flatten().fieldErrors;
+}
+
+export function validateOnboardingBillingValues(
+  values: OnboardingValues,
+): OnboardingFieldErrors {
+  const parsed = OnboardingBillingStepSchema.safeParse({
+    cardholderName: values.cardholderName,
+    billingEmail: values.billingEmail,
+    cardNumber: values.cardNumber,
+    expiryMonth: values.expiryMonth,
+    expiryYear: values.expiryYear,
+    cvc: values.cvc,
+    billingAddress: values.billingAddress,
+  });
+
+  return parsed.success ? {} : parsed.error.flatten().fieldErrors;
+}
+
+function getOnboardingIdentityPayload(values: OnboardingValues) {
+  if (values.taxpayerType === "individual") {
+    return {
+      taxpayerType: "individual" as const,
+      lastName: values.lastName,
+      firstName: values.firstName,
+      middleName: values.middleName,
+    };
+  }
+
+  return {
+    taxpayerType: "non-individual" as const,
+    companyName: values.companyName,
+    nonIndividualType: values.nonIndividualType,
+    nonIndividualTypeOther: values.nonIndividualTypeOther,
+  };
+}

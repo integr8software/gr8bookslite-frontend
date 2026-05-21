@@ -4,7 +4,7 @@ import {
   ForgotPasswordSchema,
   OtpSchema,
   ResetPasswordSchema,
-} from "@/app/src/data/auth/AuthSchemas";
+} from "@/app/src/validations/auth/AuthValidation";
 import type { AuthActionState } from "@/app/src/data/auth/AuthTypes";
 import {
   type ForgotPasswordRequest,

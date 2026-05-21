@@ -25,11 +25,13 @@ import {
   formatDateLabel,
   syncTaxDetailsAmount,
   updateDisbursementVoucherFromForm,
+} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
+import {
   validateDisbursementEntryDraft,
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
-} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
+} from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 import type {
   DisbursementLineEntry,

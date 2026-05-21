@@ -8,7 +8,6 @@ import {
 	createPurchaseRequestId,
 	createPurchaseRequestRecord,
 	emptyPurchaseRequestItem,
-	validatePurchaseRequestForm,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import type {
 	PurchaseRequestFormErrors,
@@ -16,6 +15,7 @@ import type {
 	PurchaseRequestItem,
 	PurchaseRequestFormMode,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import { validatePurchaseRequestForm } from "@/app/src/validations/modules/purchasing/purchase-request/PurchaseRequestValidation";
 import { usePurchaseRequestStore } from "./usePurchaseRequest";
 
 export function usePurchaseRequestFormPage() {

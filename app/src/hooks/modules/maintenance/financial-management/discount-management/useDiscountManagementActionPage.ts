@@ -13,7 +13,6 @@ import {
 	createDiscountFromForm,
 	createDiscountManagementFormValues,
 	updateDiscountFromForm,
-	validateDiscountManagementForm,
 } from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
@@ -22,6 +21,7 @@ import type {
 	DiscountManagementFormErrors,
 	DiscountManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
+import { validateDiscountManagementForm } from "@/app/src/validations/modules/maintenance/financial-management/discount-management/DiscountManagementValidation";
 import { useDiscountManagementStore } from "./useDiscountManagement";
 
 export function useDiscountManagementActionPage() {

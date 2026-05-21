@@ -6,7 +6,6 @@ import {
 	createResponsibilityCenterFormValues,
 	createResponsibilityCenterFromForm,
 	updateResponsibilityCenterFromForm,
-	validateResponsibilityCenterForm,
 } from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
 import type {
 	ResponsibilityCenterActionMode,
@@ -14,6 +13,7 @@ import type {
 	ResponsibilityCenterFormValues,
 	ResponsibilityCenterStatus,
 } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
+import { validateResponsibilityCenterForm } from "@/app/src/validations/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterValidation";
 import { useResponsibilityCenterStore } from "./useResponsibilityCenter";
 
 export function useResponsibilityCenterAction() {

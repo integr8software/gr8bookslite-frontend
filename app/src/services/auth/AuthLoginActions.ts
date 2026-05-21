@@ -1,6 +1,6 @@
 "use server";
 
-import { LoginSchema } from "@/app/src/data/auth/AuthSchemas";
+import { LoginSchema } from "@/app/src/validations/auth/AuthValidation";
 import type { AuthActionState } from "@/app/src/data/auth/AuthTypes";
 import {
   type LoginRequest,

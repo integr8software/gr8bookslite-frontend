@@ -6,8 +6,8 @@ import { ArrowRight, LoaderCircle } from "lucide-react";
 import { useLoginForm } from "@/app/src/hooks/auth/useLoginForm";
 import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
 import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
-import { MainLoadingScreen } from "@/app/src/ui/shared/MainLoadingScreen";
-import { LogoText } from "@/app/src/ui/shared/LogoText";
+import { MainLoadingScreen } from "@/app/src/ui/shared/system/MainLoadingScreen";
+import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 import { AuthField } from "./AuthField";
 
 export function LoginForm() {

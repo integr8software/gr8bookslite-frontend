@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Building2, Edit3, Eye, Trash2, type LucideIcon } from "lucide-react";
 import { ResponsibilityCenterHref } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
-import { iconButtonClassName } from "./ResponsibilityCenterButtons";
 
 type ResponsibilityCenterTableRowProps = {
 	center: ResponsibilityCenter;
@@ -130,3 +129,6 @@ function IconLink({
 		</Link>
 	);
 }
+
+const iconButtonClassName =
+	"flex h-9 w-9 items-center justify-center rounded-md text-darknavy/65 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35";

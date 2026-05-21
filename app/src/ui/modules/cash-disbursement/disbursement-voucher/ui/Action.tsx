@@ -30,7 +30,7 @@ import {
   validateDisbursementVoucherEntries,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
-import { AppConfirmDialog } from "@/app/src/ui/shared/AppConfirmDialog";
+import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 import type {
   DisbursementLineEntry,
   DisbursementTaxDetails,

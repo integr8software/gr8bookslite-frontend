@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 import { CreateQueryClient } from "@/app/src/services/shared/QueryClient";
-import { AppThemeEffect } from "@/app/src/ui/shared/AppThemeEffect";
+import { AppThemeEffect } from "@/app/src/ui/shared/app/AppThemeEffect";
 
 type AppProvidersProps = {
   children: React.ReactNode;

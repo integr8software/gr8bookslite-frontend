@@ -14,7 +14,7 @@ import type {
   AccountNotificationPreference,
   AccountTheme,
 } from "@/app/src/types/shared/AccountTypes";
-import { GradientBlurBackground } from "@/app/src/ui/shared/GradientBlurBackground";
+import { GradientBlurBackground } from "@/app/src/ui/shared/layout/GradientBlurBackground";
 
 type AccountSettingsPageProps = {
   scope: "account" | "workspace";

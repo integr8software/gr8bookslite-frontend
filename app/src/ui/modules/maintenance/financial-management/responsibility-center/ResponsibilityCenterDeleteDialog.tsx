@@ -1,4 +1,4 @@
-import { AppConfirmDialog } from "@/app/src/ui/shared/AppConfirmDialog";
+import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
 
 type ResponsibilityCenterDeleteDialogProps = {

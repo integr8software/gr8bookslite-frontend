@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
-import { MainLoadingScreen } from "@/app/src/ui/shared/MainLoadingScreen";
+import { MainLoadingScreen } from "@/app/src/ui/shared/system/MainLoadingScreen";
 import {
   GetFallbackPostAuthRedirectPath,
   IsOnboardingRedirectPath,

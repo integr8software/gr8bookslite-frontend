@@ -1,5 +1,5 @@
 import { AppName } from "@/app/src/constants/shared/AppConstants";
-import { LogoText } from "@/app/src/ui/shared/LogoText";
+import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 
 type MainLoadingScreenProps = {
 	message?: string;

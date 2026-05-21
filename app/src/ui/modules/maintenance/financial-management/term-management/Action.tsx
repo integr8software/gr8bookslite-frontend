@@ -22,7 +22,7 @@ import {
 	validateTermManagementForm,
 } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
 import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
-import { AppConfirmDialog } from "@/app/src/ui/shared/AppConfirmDialog";
+import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 import type {
 	TermManagement,
 	TermManagementActionMode,

@@ -12,7 +12,7 @@ import {
 import type { AuthFormValues } from "@/app/src/data/auth/AuthTypes";
 import { useSignUpForm } from "@/app/src/hooks/auth/useSignUpForm";
 import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
-import { LogoText } from "@/app/src/ui/shared/LogoText";
+import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 import { AuthField } from "./AuthField";
 import { AuthPasswordRequirements } from "./AuthPasswordRequirements";
 import { ArrowRight, Check, LoaderCircle } from "lucide-react";

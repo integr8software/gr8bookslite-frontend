@@ -17,7 +17,7 @@ import {
 	Search,
 } from "lucide-react";
 import { useLogout } from "@/app/src/hooks/auth/useLogout";
-import { LogoText } from "@/app/src/ui/shared/LogoText";
+import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 import type {
 	MainTopbarProps,
 	OpenSwitcherKey,

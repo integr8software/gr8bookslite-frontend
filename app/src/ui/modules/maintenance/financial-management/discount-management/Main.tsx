@@ -10,7 +10,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { AppConfirmDialog } from "@/app/src/ui/shared/AppConfirmDialog";
+import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagement";
 
 export function FinancialManagementDiscountManagementMain() {

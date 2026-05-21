@@ -19,7 +19,7 @@ import { ChartsOfAccountsForm } from "@/app/src/ui/modules/maintenance/financial
 import {
 	Button,
 	Tabs,
-} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls.tsx";
+} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 
 type ChartsOfAccountsDrawerProps = {
 	account: ChartAccount | null;

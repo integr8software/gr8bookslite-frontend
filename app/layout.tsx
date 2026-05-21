@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { AppToaster } from "@/app/src/ui/shared/AppToaster";
-import { AppProviders } from "@/app/src/ui/shared/AppProviders";
+import { AppToaster } from "@/app/src/ui/shared/app/AppToaster";
+import { AppProviders } from "@/app/src/ui/shared/app/AppProviders";
 import { AppName } from "@/app/src/constants/shared/AppConstants";
 import "./globals.css";
 

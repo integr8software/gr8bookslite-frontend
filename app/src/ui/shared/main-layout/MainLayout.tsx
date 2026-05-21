@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { BookOpenText, ChevronDown, ChevronRight } from "lucide-react";
 import { useMainLayout } from "@/app/src/hooks/shared/useMainLayout";
-import { MainLoadingScreen } from "@/app/src/ui/shared/MainLoadingScreen";
+import { MainLoadingScreen } from "@/app/src/ui/shared/system/MainLoadingScreen";
 import type {
 	MainBreadcrumb,
 	MainBreadcrumbDropdownItem,

@@ -1,0 +1,129 @@
+"use client";
+
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
+import {
+	InitialUserFormValues,
+	createUserRecord,
+	updateUserRecord,
+	type UserFormValues,
+} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
+import type {
+	UserFormErrors,
+	UserManagementActionMode,
+} from "@/app/src/types/modules/user-management/UserManagementTypes";
+import { useUserManagementStore } from "../useUserManagement";
+
+export function useUserListFormPage() {
+	const router = useRouter();
+	const pathname = usePathname();
+	const params = useParams<{ recordId?: string }>();
+	const users = useUserManagementStore((state) => state.users);
+	const userRoles = useUserManagementStore((state) => state.userRoles);
+	const departments = useUserManagementStore((state) => state.departments);
+	const addUser = useUserManagementStore((state) => state.addUser);
+	const updateUser = useUserManagementStore((state) => state.updateUser);
+	const deleteUser = useUserManagementStore((state) => state.deleteUser);
+	const mode = getActionMode(pathname);
+	const existingUser = users.find((user) => user.id === params.recordId);
+	const isReadonly = mode === "view";
+	const [values, setValues] = useState<UserFormValues>(() =>
+		existingUser
+			? {
+					name: existingUser.name,
+					email: existingUser.email,
+					contactNumber: existingUser.contactNumber,
+					userRoleId: existingUser.userRoleId,
+					departmentId: existingUser.departmentId,
+					status: existingUser.status,
+				}
+			: InitialUserFormValues,
+	);
+	const [errors, setErrors] = useState<UserFormErrors>({});
+
+	function updateField(field: keyof UserFormValues, value: string) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({ ...current, [field]: value }));
+		setErrors((current) => ({ ...current, [field]: undefined }));
+	}
+
+	function handleInputChange(
+		event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+	) {
+		const value =
+			event.target.name === "contactNumber"
+				? FormatPhilippineContactNumber(event.target.value)
+				: event.target.value;
+
+		updateField(event.target.name as keyof UserFormValues, value);
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		const nextErrors = validateUser(values);
+
+		if (Object.keys(nextErrors).length > 0) {
+			setErrors(nextErrors);
+			return;
+		}
+
+		if (mode === "edit" && existingUser) {
+			updateUser(updateUserRecord(existingUser, values));
+		} else {
+			addUser(createUserRecord(values));
+		}
+
+		router.push(UserListHref);
+	}
+
+	function handleDelete() {
+		if (
+			!existingUser ||
+			!window.confirm(`Set ${existingUser.name} as inactive?`)
+		) {
+			return;
+		}
+
+		deleteUser(existingUser.id);
+		router.push(UserListHref);
+	}
+
+	return {
+		departments,
+		errors,
+		existingUser,
+		handleDelete,
+		handleInputChange,
+		handleSubmit,
+		isReadonly,
+		mode,
+		needsRecord: mode === "edit" || mode === "view",
+		updateField,
+		userRoles,
+		values,
+	};
+}
+
+function getActionMode(pathname: string): UserManagementActionMode {
+	if (pathname.includes("/view/")) return "view";
+	if (pathname.includes("/edit/")) return "edit";
+	return "add";
+}
+
+function validateUser(values: UserFormValues) {
+	const errors: UserFormErrors = {};
+
+	if (!values.name.trim()) errors.name = "Name is required.";
+	if (!values.email.trim()) errors.email = "Email is required.";
+	if (!values.contactNumber.trim()) {
+		errors.contactNumber = "Contact number is required.";
+	}
+
+	return errors;
+}

@@ -6,7 +6,7 @@ import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/financi
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsFilters";
 import { ChartsOfAccountsTable } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTable";
 import { ChartsOfAccountsSpotlightTutorial } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorial";
-import { Button, Card } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls.tsx";
+import { Button, Card } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 

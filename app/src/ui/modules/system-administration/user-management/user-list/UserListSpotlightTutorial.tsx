@@ -5,7 +5,7 @@ import { useUserListSpotlightTutorial } from "@/app/src/hooks/modules/system-adm
 import {
   SpotlightTour,
   SpotlightTourBadge,
-} from "@/app/src/ui/shared/SpotlightTour";
+} from "@/app/src/ui/shared/tour/SpotlightTour";
 
 export function UserListSpotlightTutorial() {
   const { completeTutorial, isOpen, skipTutorial } =

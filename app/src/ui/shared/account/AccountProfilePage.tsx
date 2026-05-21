@@ -4,9 +4,9 @@ import type { ReactNode } from "react";
 import { Camera, Mail, Phone, Save, ShieldCheck, X } from "lucide-react";
 import { PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/ContactData";
 import { useAccountProfile } from "@/app/src/hooks/shared/useAccountProfile";
-import { ImageCropDialog } from "@/app/src/ui/shared/ImageCropDialog";
-import { AppSkeleton } from "@/app/src/ui/shared/AppSkeleton";
-import { GradientBlurBackground } from "@/app/src/ui/shared/GradientBlurBackground";
+import { ImageCropDialog } from "@/app/src/ui/shared/media/ImageCropDialog";
+import { AppSkeleton } from "@/app/src/ui/shared/system/AppSkeleton";
+import { GradientBlurBackground } from "@/app/src/ui/shared/layout/GradientBlurBackground";
 
 export function AccountProfilePage() {
   const {

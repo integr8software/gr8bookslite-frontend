@@ -5,7 +5,7 @@ import { useBranchManagementSpotlightTutorial } from "@/app/src/hooks/modules/sy
 import {
   SpotlightTour,
   SpotlightTourBadge,
-} from "@/app/src/ui/shared/SpotlightTour";
+} from "@/app/src/ui/shared/tour/SpotlightTour";
 
 export function BranchManagementSpotlightTutorial() {
   const { completeTutorial, isOpen, skipTutorial } =

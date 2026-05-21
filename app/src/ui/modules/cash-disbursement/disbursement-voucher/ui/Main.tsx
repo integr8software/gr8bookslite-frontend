@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { RotateCcw, Search } from "lucide-react";
 import { useDisbursementVoucherPreviewTable, useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
-import { AppConfirmDialog } from "@/app/src/ui/shared/AppConfirmDialog";
+import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 import type { DisbursementVoucherPreviewRow } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { DisbursementVoucherHeader } from "./DisbursementVoucherHeader";
 import { DisbursementVoucherTable } from "./DisbursementVoucherTable";

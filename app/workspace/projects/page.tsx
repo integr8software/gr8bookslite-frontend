@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ModulePreviewPages } from "@/app/src/data/shared/MainLayout/ModulePreviewData";
-import { ModulePreviewPage } from "@/app/src/ui/shared/module/module-preview/ModulePreviewPage";
+import { ModulePreviewPage } from "@/app/src/ui/shared/workspace/workspace-placeholder/WorkspacePlaceholderPage";
 import { AppName } from "@/app/src/constants/shared/AppConstants";
 
 export const metadata: Metadata = {

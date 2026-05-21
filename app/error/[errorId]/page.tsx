@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import {
 	StatusErrorPage,
 	type StatusErrorPageVariant,
-} from "@/app/src/ui/shared/StatusErrorPage";
+} from "@/app/src/ui/shared/system/StatusErrorPage";
 
 const supportedErrorIds = ["401", "403", "500"] as const;
 

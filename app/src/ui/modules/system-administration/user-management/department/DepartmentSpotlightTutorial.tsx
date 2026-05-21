@@ -5,7 +5,7 @@ import { useDepartmentSpotlightTutorial } from "@/app/src/hooks/modules/system-a
 import {
 	SpotlightTour,
 	SpotlightTourBadge,
-} from "@/app/src/ui/shared/SpotlightTour";
+} from "@/app/src/ui/shared/tour/SpotlightTour";
 
 export function DepartmentSpotlightTutorial() {
 	const { completeTutorial, isOpen, skipTutorial } =

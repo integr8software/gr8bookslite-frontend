@@ -16,7 +16,7 @@ import {
 	Field,
 	Input,
 	Select,
-} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls.tsx";
+} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 
 type AccountFieldsProps = {
 	account: ChartAccount | null;

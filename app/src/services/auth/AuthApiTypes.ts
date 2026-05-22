@@ -34,6 +34,24 @@ export type VerifyEmailResponse = {
   accessToken: string;
 };
 
+export type AuthSystemRole = "SUPER_ADMIN" | "STANDARD";
+
+export type AuthMembershipRole = "ADMIN" | "USER" | null;
+
+export type AuthProfileAccess = {
+  id?: number;
+  companyId?: number | null;
+  role?: "ADMIN" | "USER" | null;
+  systemRole?: AuthSystemRole;
+  membershipRole: AuthMembershipRole;
+  membershipStatus?: string;
+  companyRoleId?: number | null;
+  companyRoleCode?: string | null;
+  accessScope?: string;
+  enabledModules?: string[];
+  permissions?: unknown[];
+};
+
 export type AuthProfileResponse = {
   user: {
     id: number;
@@ -44,20 +62,25 @@ export type AuthProfileResponse = {
     avatarMimeType: string | null;
     avatarStoragePath: string | null;
     avatarPublicUrl: string | null;
-    systemRole: "SUPER_ADMIN" | "STANDARD";
+    systemRole: AuthSystemRole;
     status: string;
     emailVerifiedAt: string | null;
     createdAt: string;
     updatedAt: string;
   };
+  companyId?: number | null;
+  role?: "ADMIN" | "USER" | null;
   activeCompanyId: number | null;
-  activeAccess: {
-    membershipRole: "ADMIN" | "USER" | null;
-    companyRoleId?: number | null;
-    companyRoleCode?: string | null;
-  } | null;
+  activeAccess: AuthProfileAccess | null;
+  access?: AuthProfileAccess | null;
   onboarding: {
+    emailVerified?: boolean;
+    hasCompany?: boolean;
+    hasActiveCompany?: boolean;
+    hasActiveCompanyContext?: boolean;
     requiresCompanySetup: boolean;
+    canManageCompany?: boolean;
+    nextStep?: string;
   };
   companies?: {
     companyId: number;

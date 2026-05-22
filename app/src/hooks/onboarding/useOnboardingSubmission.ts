@@ -29,6 +29,7 @@ import {
   GetFallbackPostAuthRedirectPath,
   ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
+import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
 
 function GetOnboardingApiBillingCycle(value: BillingCycle) {
   return value === "yearly" ? "YEARLY" : "MONTHLY";
@@ -279,7 +280,7 @@ export function useOnboardingSubmission({
 
             useAppStore.setState({
               accessToken: response.accessToken,
-              activeCompanyId: profile.activeCompanyId,
+              activeCompanyId: GetAuthProfileCompanyId(profile),
             });
             router.replace(redirectPath);
           } catch {

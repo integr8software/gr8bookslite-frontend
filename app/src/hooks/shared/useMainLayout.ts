@@ -30,6 +30,11 @@ import { getHelpArticleForPath } from "@/app/src/data/shared/ModuleHelp/ModuleHe
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useBranchManagementStore } from "@/app/src/hooks/modules/system-administration/branch-management/useBranchManagement";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
+import {
+  GetAuthProfileAccess,
+  GetAuthProfileCompanyId,
+  ResolveAuthProfileEffectiveRole,
+} from "@/app/src/services/auth/AuthProfileAccess";
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 import type {
   MainBreadcrumb,
@@ -131,6 +136,9 @@ export function useMainLayout() {
     hasWorkspaceAccess && isWorkspaceRoute ? "workspace" : "company";
   const workspaceCompanies = authProfile
     ? MapProfileCompaniesToMainCompanies(authProfile)
+    : null;
+  const profileActiveCompanyId = authProfile
+    ? GetAuthProfileCompanyId(authProfile)
     : null;
   const [activeCompanyId, setActiveCompanyId] = useState(
     ModuleShellMockData.currentCompany.id,
@@ -265,13 +273,13 @@ export function useMainLayout() {
   );
 
   useEffect(() => {
-    if (!authProfile?.activeCompanyId) {
+    if (profileActiveCompanyId == null) {
       return;
     }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect -- keep the layout company switcher synced with the loaded profile.
-    setActiveCompanyId(String(authProfile.activeCompanyId));
-  }, [authProfile?.activeCompanyId]);
+    setActiveCompanyId(String(profileActiveCompanyId));
+  }, [profileActiveCompanyId]);
 
   useEffect(() => {
     if (!routedCompanyId) {
@@ -641,11 +649,9 @@ function shouldShowBranchControls(branches: MainBranch[]) {
 }
 
 function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
-  if (profile.user.systemRole === "SUPER_ADMIN") {
-    return true;
-  }
+  const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
 
-  if (profile.activeAccess?.membershipRole === "ADMIN") {
+  if (effectiveRole === "SUPER_ADMIN" || effectiveRole === "ADMIN") {
     return true;
   }
 
@@ -661,13 +667,39 @@ function CreateWorkspaceCurrentUserFromProfile(
     ModuleShellMockData.currentUser.userRoleDetails;
   const [firstName, ...lastNameParts] = profile.user.name.trim().split(/\s+/);
   const lastName = lastNameParts.join(" ");
+  const activeAccess = GetAuthProfileAccess(profile);
+  const activeCompanyId = GetAuthProfileCompanyId(profile);
   const activeCompanyMembership =
     profile.companies?.find(
-      (company) => company.companyId === profile.activeCompanyId,
+      (company) => company.companyId === activeCompanyId,
     ) ?? profile.companies?.[0];
   const companyRoleName = FormatCompanyRoleName(
-    activeCompanyMembership?.companyRoleCode,
+    activeAccess?.companyRoleCode ?? activeCompanyMembership?.companyRoleCode,
   );
+  const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
+  const userRole =
+    effectiveRole === "SUPER_ADMIN"
+      ? "Super Admin"
+      : effectiveRole === "ADMIN"
+        ? "Admin"
+        : "User";
+  const userRoleDetails = companyRoleName
+    ? {
+        ...(fallbackUserRoleDetails ?? {
+          id: "user-role-workspace",
+          name: "Workspace User",
+          permissions: {},
+        }),
+        id:
+          activeAccess?.companyRoleCode ??
+          activeCompanyMembership?.companyRoleCode ??
+          fallbackUserRoleDetails?.id ??
+          "user-role-workspace",
+        name: companyRoleName,
+      }
+    : effectiveRole === "ADMIN"
+      ? fallbackUserRoleDetails
+      : undefined;
 
   return {
     ...ModuleShellMockData.currentUser,
@@ -676,26 +708,8 @@ function CreateWorkspaceCurrentUserFromProfile(
     name: profile.user.name,
     shortName: BuildShortName(profile.user.name),
     initials: BuildInitials(profile.user.name),
-    userRole:
-      profile.user.systemRole === "SUPER_ADMIN"
-        ? "Super Admin"
-        : profile.activeAccess?.membershipRole === "ADMIN"
-          ? "Admin"
-          : "User",
-    userRoleDetails: companyRoleName
-      ? {
-          ...(fallbackUserRoleDetails ?? {
-            id: "user-role-workspace",
-            name: "Workspace User",
-            permissions: {},
-          }),
-          id:
-            activeCompanyMembership?.companyRoleCode ??
-            fallbackUserRoleDetails?.id ??
-            "user-role-workspace",
-          name: companyRoleName,
-        }
-      : undefined,
+    userRole,
+    userRoleDetails,
   };
 }
 

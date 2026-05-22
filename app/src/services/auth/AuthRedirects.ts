@@ -1,4 +1,8 @@
 import { GetAuthProfile } from "@/app/src/services/auth/AuthApi";
+import {
+  GetAuthProfileCompanyId,
+  ResolveAuthProfileEffectiveRole,
+} from "@/app/src/services/auth/AuthProfileAccess";
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 
 type AuthJwtPayload = {
@@ -113,14 +117,13 @@ export function GetPostAuthRedirectPathFromProfile(
     return "/onboarding";
   }
 
-  if (
-    profile.user.systemRole === "SUPER_ADMIN" ||
-    profile.activeAccess?.membershipRole === "ADMIN"
-  ) {
+  const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
+
+  if (effectiveRole === "SUPER_ADMIN" || effectiveRole === "ADMIN") {
     return "/workspace/dashboard";
   }
 
-  if (profile.activeCompanyId != null) {
+  if (GetAuthProfileCompanyId(profile) != null) {
     return "/dashboard";
   }
 

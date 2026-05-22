@@ -1,5 +1,6 @@
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
+import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
 import type {
   AccountProfileDraft,
   AccountProfileFieldKey,
@@ -44,15 +45,7 @@ export function GetVisibleSettingsItems(role: AccountVisibilityRole) {
 export function ResolveAccountVisibilityRole(
   profile: AuthProfileResponse | undefined,
 ): AccountVisibilityRole {
-  if (profile?.user.systemRole === "SUPER_ADMIN") {
-    return "SUPER_ADMIN";
-  }
-
-  if (profile?.activeAccess?.membershipRole === "ADMIN") {
-    return "ADMIN";
-  }
-
-  return "USER";
+  return ResolveAuthProfileEffectiveRole(profile);
 }
 
 export function BuildAccountProfileViewModel(

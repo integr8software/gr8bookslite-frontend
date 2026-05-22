@@ -12,6 +12,7 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
+import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 import { PettyCashReplenishmentListFilters } from "./PettyCashReplenishmentListFilters";
 import { PettyCashReplenishmentTableRow } from "./PettyCashReplenishmentTableRow";
 
@@ -72,11 +73,25 @@ export function PettyCashReplenishmentListPage() {
               paginationStorageKey={PettyCashReplenishmentPaginationStorageKey}
               table={page.table}
               renderRow={({ id, original }) => (
-                <PettyCashReplenishmentTableRow key={id} row={original} />
+                <PettyCashReplenishmentTableRow
+                  key={id}
+                  row={original}
+                  onDelete={page.setPendingDelete}
+                />
               )}
             />
           </div>
         </div>
+
+        <AppConfirmDialog
+          isOpen={Boolean(page.pendingDelete)}
+          title="Delete petty cash replenishment?"
+          description={`This will remove ${page.pendingDelete?.replenishmentNo ?? "the selected replenishment"}.`}
+          confirmLabel="Delete"
+          tone="danger"
+          onCancel={() => page.setPendingDelete(null)}
+          onConfirm={page.handleConfirmDelete}
+        />
       </main>
     </section>
   );

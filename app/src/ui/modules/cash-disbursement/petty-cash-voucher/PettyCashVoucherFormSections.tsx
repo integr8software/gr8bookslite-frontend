@@ -53,6 +53,7 @@ export function PettyCashVoucherDetailsFields({
 				<Field label="Status" error={page.errors.status}>
 					<select
 						value={page.values.status}
+						disabled={page.isReadonly}
 						onChange={(event) =>
 							page.updateField(
 								"status",
@@ -87,6 +88,7 @@ export function PettyCashVoucherDetailsFields({
 				<Field label="Vatable" error={page.errors.vatable}>
 					<select
 						value={page.values.vatable}
+						disabled={page.isReadonly}
 						onChange={(event) =>
 							page.updateField(
 								"vatable",
@@ -117,6 +119,7 @@ export function PettyCashVoucherDetailsFields({
 				<Field label="Remarks" error={page.errors.remarks}>
 					<textarea
 						value={page.values.remarks}
+						readOnly={page.isReadonly}
 						onChange={(event) =>
 							page.updateField("remarks", event.target.value)
 						}
@@ -169,6 +172,7 @@ function TextField({
 			<input
 				type={type}
 				value={page.values[field]}
+				readOnly={page.isReadonly}
 				onChange={(event) => page.updateField(field, event.target.value)}
 				className={inputClassName}
 				placeholder={placeholder}

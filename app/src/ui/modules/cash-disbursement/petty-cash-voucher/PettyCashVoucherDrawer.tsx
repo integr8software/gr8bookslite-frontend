@@ -50,16 +50,18 @@ export function PettyCashVoucherDrawer({
 					className={secondaryButtonClassName}
 				>
 					<X className="h-4 w-4" />
-					Cancel
+					{page.isReadonly ? "Close" : "Cancel"}
 				</button>
-				<button
-					type="button"
-					onClick={page.handleSubmit}
-					className={primaryButtonClassName}
-				>
-					<Save className="h-4 w-4" />
-					Save
-				</button>
+				{!page.isReadonly ? (
+					<button
+						type="button"
+						onClick={page.handleSubmit}
+						className={primaryButtonClassName}
+					>
+						<Save className="h-4 w-4" />
+						Save
+					</button>
+				) : null}
 			</div>
 		</ModuleDrawer>
 	);

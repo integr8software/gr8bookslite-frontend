@@ -39,23 +39,27 @@ export function PettyCashReplenishmentToolbar({
 				</p>
 			</div>
 			<div className="relative flex flex-wrap items-center gap-3">
-				<PettyCashReplenishmentCopyFromMenu page={page} />
+				{!page.isReadonly ? (
+					<PettyCashReplenishmentCopyFromMenu page={page} />
+				) : null}
 				<button
 					type="button"
 					onClick={onCancel}
 					className={secondaryButtonClassName}
 				>
 					<X className="h-4 w-4" />
-					Cancel
+					{page.isReadonly ? "Close" : "Cancel"}
 				</button>
-				<button
-					type="button"
-					onClick={page.handleSubmit}
-					className={`${buttonBaseClassName} bg-darknavy text-white hover:bg-darknavy/90`}
-				>
-					<Save className="h-4 w-4" />
-					Save
-				</button>
+				{!page.isReadonly ? (
+					<button
+						type="button"
+						onClick={page.handleSubmit}
+						className={`${buttonBaseClassName} bg-darknavy text-white hover:bg-darknavy/90`}
+					>
+						<Save className="h-4 w-4" />
+						Save
+					</button>
+				) : null}
 			</div>
 		</div>
 	);
@@ -72,6 +76,7 @@ export function PettyCashReplenishmentDetailsFields({
 				<Field label="VCE Code *" error={page.errors.vceCode}>
 					<input
 						value={page.values.vceCode}
+						readOnly={page.isReadonly}
 						onChange={(event) =>
 							page.updateField("vceCode", event.target.value)
 						}
@@ -82,6 +87,7 @@ export function PettyCashReplenishmentDetailsFields({
 				<Field label="VCE Name *" error={page.errors.vceName}>
 					<input
 						value={page.values.vceName}
+						readOnly={page.isReadonly}
 						onChange={(event) =>
 							page.updateField("vceName", event.target.value)
 						}
@@ -92,6 +98,7 @@ export function PettyCashReplenishmentDetailsFields({
 				<Field label="Remarks" error={page.errors.remarks}>
 					<textarea
 						value={page.values.remarks}
+						readOnly={page.isReadonly}
 						onChange={(event) =>
 							page.updateField("remarks", event.target.value)
 						}
@@ -130,6 +137,7 @@ export function PettyCashReplenishmentSummaryFields({
 				<Field label="Trans No. *" error={page.errors.transNo}>
 					<input
 						value={page.values.transNo}
+						readOnly={page.isReadonly}
 						onChange={(event) =>
 							page.updateField("transNo", event.target.value)
 						}
@@ -141,6 +149,7 @@ export function PettyCashReplenishmentSummaryFields({
 					<input
 						type="date"
 						value={page.values.documentDate}
+						readOnly={page.isReadonly}
 						onChange={(event) =>
 							page.updateField("documentDate", event.target.value)
 						}
@@ -150,6 +159,7 @@ export function PettyCashReplenishmentSummaryFields({
 				<Field label="Status" error={page.errors.status}>
 					<select
 						value={page.values.status}
+						disabled={page.isReadonly}
 						onChange={(event) =>
 							page.updateField(
 								"status",
@@ -169,6 +179,7 @@ export function PettyCashReplenishmentSummaryFields({
 				<Field label="Project Ref" error={page.errors.projectRef}>
 					<input
 						value={page.values.projectRef}
+						readOnly={page.isReadonly}
 						onChange={(event) =>
 							page.updateField("projectRef", event.target.value)
 						}
@@ -179,6 +190,7 @@ export function PettyCashReplenishmentSummaryFields({
 				<Field label="Project Name" error={page.errors.projectName}>
 					<input
 						value={page.values.projectName}
+						readOnly={page.isReadonly}
 						onChange={(event) =>
 							page.updateField("projectName", event.target.value)
 						}
@@ -213,14 +225,16 @@ export function PettyCashReplenishmentEntriesTable({
 						</p>
 					) : null}
 				</div>
-				<button
-					type="button"
-					onClick={page.addEntry}
-					className={outlineButtonClassName}
-				>
-					<Plus className="h-4 w-4" />
-					Add row
-				</button>
+				{!page.isReadonly ? (
+					<button
+						type="button"
+						onClick={page.addEntry}
+						className={outlineButtonClassName}
+					>
+						<Plus className="h-4 w-4" />
+						Add row
+					</button>
+				) : null}
 			</div>
 
 			<div className="overflow-x-auto">
@@ -232,6 +246,7 @@ export function PettyCashReplenishmentEntriesTable({
 								key={entry.id}
 								entry={entry}
 								index={index}
+								isReadonly={page.isReadonly}
 								updateEntry={page.updateEntry}
 							/>
 						))}
@@ -305,10 +320,12 @@ function PettyCashReplenishmentEntriesHeader() {
 function PettyCashReplenishmentEntryRow({
 	entry,
 	index,
+	isReadonly,
 	updateEntry,
 }: {
 	entry: PettyCashReplenishmentEntry;
 	index: number;
+	isReadonly: boolean;
 	updateEntry: (
 		entryId: string,
 		field: keyof PettyCashReplenishmentEntry,
@@ -323,48 +340,56 @@ function PettyCashReplenishmentEntryRow({
 			<EntryInputCell
 				entry={entry}
 				field="pettyCashDate"
+				isReadonly={isReadonly}
 				type="date"
 				updateEntry={updateEntry}
 			/>
 			<EntryInputCell
 				entry={entry}
 				field="pettyCashNo"
+				isReadonly={isReadonly}
 				placeholder="Enter ref"
 				updateEntry={updateEntry}
 			/>
 			<EntryInputCell
 				entry={entry}
 				field="code"
+				isReadonly={isReadonly}
 				placeholder="Enter code"
 				updateEntry={updateEntry}
 			/>
 			<EntryInputCell
 				entry={entry}
 				field="name"
+				isReadonly={isReadonly}
 				placeholder="Enter name"
 				updateEntry={updateEntry}
 			/>
 			<EntryInputCell
 				entry={entry}
 				field="totalAmount"
+				isReadonly={isReadonly}
 				placeholder="0.00"
 				updateEntry={updateEntry}
 			/>
 			<EntryInputCell
 				entry={entry}
 				field="netAmount"
+				isReadonly={isReadonly}
 				placeholder="0.00"
 				updateEntry={updateEntry}
 			/>
 			<EntryInputCell
 				entry={entry}
 				field="vatAmount"
+				isReadonly={isReadonly}
 				placeholder="0.00"
 				updateEntry={updateEntry}
 			/>
 			<EntryInputCell
 				entry={entry}
 				field="remarks"
+				isReadonly={isReadonly}
 				placeholder="Remarks"
 				updateEntry={updateEntry}
 			/>
@@ -375,12 +400,14 @@ function PettyCashReplenishmentEntryRow({
 function EntryInputCell({
 	entry,
 	field,
+	isReadonly,
 	placeholder,
 	type = "text",
 	updateEntry,
 }: {
 	entry: PettyCashReplenishmentEntry;
 	field: keyof PettyCashReplenishmentEntry;
+	isReadonly: boolean;
 	placeholder?: string;
 	type?: string;
 	updateEntry: (
@@ -394,6 +421,7 @@ function EntryInputCell({
 			<input
 				type={type}
 				value={entry[field]}
+				readOnly={isReadonly}
 				onChange={(event) =>
 					updateEntry(entry.id, field, event.target.value)
 				}

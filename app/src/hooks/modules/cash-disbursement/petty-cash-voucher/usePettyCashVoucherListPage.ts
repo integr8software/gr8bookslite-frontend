@@ -6,17 +6,21 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import toast from "react-hot-toast";
 import { PettyCashVoucherRecords } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
 import type { PettyCashVoucherRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 
 const columnHelper = createColumnHelper<PettyCashVoucherRecord>();
 
 export function usePettyCashVoucherListPage() {
+  const [vouchers, setVouchers] = useState(PettyCashVoucherRecords);
+  const [pendingDelete, setPendingDelete] =
+    useState<PettyCashVoucherRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
   const filteredVouchers = useMemo(() => {
-    return PettyCashVoucherRecords.filter((voucher) => {
+    return vouchers.filter((voucher) => {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         voucher.voucherNo.toLowerCase().includes(query) ||
@@ -29,7 +33,7 @@ export function usePettyCashVoucherListPage() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [searchQuery, statusFilter]);
+  }, [searchQuery, statusFilter, vouchers]);
 
   const columns = useMemo(
     () => [
@@ -68,8 +72,24 @@ export function usePettyCashVoucherListPage() {
     getCoreRowModel: getCoreRowModel(),
   });
 
+  function handleConfirmDelete() {
+    if (!pendingDelete) {
+      toast.error("Could not find the voucher to delete.");
+      return;
+    }
+
+    setVouchers((current) =>
+      current.filter((voucher) => voucher.id !== pendingDelete.id),
+    );
+    toast.success("Petty cash voucher deleted.");
+    setPendingDelete(null);
+  }
+
   return {
+    handleConfirmDelete,
+    pendingDelete,
     searchQuery,
+    setPendingDelete,
     setSearchQuery,
     setStatusFilter,
     statusFilter,

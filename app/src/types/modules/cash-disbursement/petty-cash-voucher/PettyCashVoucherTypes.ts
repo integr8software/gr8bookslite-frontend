@@ -30,3 +30,5 @@ export type PettyCashVoucherFormValues = {
 export type PettyCashVoucherFormErrors = Partial<
   Record<keyof PettyCashVoucherFormValues, string>
 >;
+
+export type PettyCashVoucherFormMode = "add" | "edit" | "view";

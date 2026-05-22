@@ -6,17 +6,21 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import toast from "react-hot-toast";
 import { PettyCashReplenishmentRecords } from "@/app/src/data/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentData";
 import type { PettyCashReplenishmentRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
 
 const columnHelper = createColumnHelper<PettyCashReplenishmentRecord>();
 
 export function usePettyCashReplenishmentListPage() {
+  const [records, setRecords] = useState(PettyCashReplenishmentRecords);
+  const [pendingDelete, setPendingDelete] =
+    useState<PettyCashReplenishmentRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
   const filteredRecords = useMemo(() => {
-    return PettyCashReplenishmentRecords.filter((record) => {
+    return records.filter((record) => {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         record.replenishmentNo.toLowerCase().includes(query) ||
@@ -28,7 +32,7 @@ export function usePettyCashReplenishmentListPage() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [searchQuery, statusFilter]);
+  }, [records, searchQuery, statusFilter]);
 
   const columns = useMemo(
     () => [
@@ -64,8 +68,24 @@ export function usePettyCashReplenishmentListPage() {
     getCoreRowModel: getCoreRowModel(),
   });
 
+  function handleConfirmDelete() {
+    if (!pendingDelete) {
+      toast.error("Could not find the replenishment to delete.");
+      return;
+    }
+
+    setRecords((current) =>
+      current.filter((record) => record.id !== pendingDelete.id),
+    );
+    toast.success("Petty cash replenishment deleted.");
+    setPendingDelete(null);
+  }
+
   return {
+    handleConfirmDelete,
+    pendingDelete,
     searchQuery,
+    setPendingDelete,
     setSearchQuery,
     setStatusFilter,
     statusFilter,

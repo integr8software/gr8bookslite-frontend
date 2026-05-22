@@ -62,6 +62,19 @@ export const PettyCashReplenishmentInitialEntries: PettyCashReplenishmentEntry[]
     },
   ];
 
+export function createPettyCashReplenishmentFormValues(
+  record: PettyCashReplenishmentRecord,
+): PettyCashReplenishmentFormValues {
+  return {
+    ...PettyCashReplenishmentInitialFormValues,
+    documentDate: record.documentDate,
+    status: record.status,
+    transNo: record.replenishmentNo,
+    vceCode: record.vceCode,
+    vceName: record.vceName,
+  };
+}
+
 export const PettyCashReplenishmentCopyFromRecords: PettyCashReplenishmentCopyFromRecord[] =
   [
     {

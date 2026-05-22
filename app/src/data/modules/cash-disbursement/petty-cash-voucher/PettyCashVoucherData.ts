@@ -51,3 +51,19 @@ export const PettyCashVoucherInitialFormValues: PettyCashVoucherFormValues = {
   vceCode: "",
   vceName: "",
 };
+
+export function createPettyCashVoucherFormValues(
+  record: PettyCashVoucherRecord,
+): PettyCashVoucherFormValues {
+  return {
+    ...PettyCashVoucherInitialFormValues,
+    accountCode: record.accountCode,
+    amount: record.amount,
+    documentDate: record.documentDate,
+    netAmount: record.amount,
+    status: record.status,
+    transactionNo: record.voucherNo,
+    vceCode: record.vceCode,
+    vceName: record.vceName,
+  };
+}

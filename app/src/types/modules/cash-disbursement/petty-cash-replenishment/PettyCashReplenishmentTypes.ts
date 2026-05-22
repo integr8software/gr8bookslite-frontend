@@ -55,3 +55,5 @@ export type PettyCashReplenishmentCopyFromRecord = {
 export type PettyCashReplenishmentCopySource =
   | "Petty Cash Voucher"
   | "Petty Cash Fund";
+
+export type PettyCashReplenishmentFormMode = "add" | "edit" | "view";

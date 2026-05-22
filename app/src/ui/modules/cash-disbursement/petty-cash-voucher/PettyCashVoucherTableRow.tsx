@@ -1,7 +1,9 @@
-import { Edit3, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Edit3, Eye, Trash2 } from "lucide-react";
+import { PettyCashVoucherHref } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type { PettyCashVoucherRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 
-const editActionClassName = [
+const rowActionClassName = [
   "inline-flex h-9 items-center justify-center rounded-lg border",
   "border-darknavy/10 bg-white px-3 text-sm font-semibold",
   "text-darknavy/80 transition hover:bg-skyblue/10",
@@ -15,11 +17,15 @@ const deleteActionClassName = [
 
 const tableCellClassName = "px-4 py-3 text-sm text-darknavy/70";
 
-export function PettyCashVoucherTableRow({
-  row,
-}: {
+type PettyCashVoucherTableRowProps = {
+  onDelete: (row: PettyCashVoucherRecord) => void;
   row: PettyCashVoucherRecord;
-}) {
+};
+
+export function PettyCashVoucherTableRow({
+  onDelete,
+  row,
+}: PettyCashVoucherTableRowProps) {
   return (
     <tr className="module-table-row text-darknavy">
       <td className="px-4 py-3 text-sm font-semibold text-darknavy/80">
@@ -35,10 +41,26 @@ export function PettyCashVoucherTableRow({
       </td>
       <td className="px-4 py-3 text-right">
         <div className="flex justify-end gap-2">
-          <button type="button" className={editActionClassName}>
+          <Link
+            href={`${PettyCashVoucherHref}/view/${row.id}`}
+            aria-label={`View ${row.voucherNo}`}
+            className={rowActionClassName}
+          >
+            <Eye className="h-4 w-4" />
+          </Link>
+          <Link
+            href={`${PettyCashVoucherHref}/edit/${row.id}`}
+            aria-label={`Edit ${row.voucherNo}`}
+            className={rowActionClassName}
+          >
             <Edit3 className="h-4 w-4" />
-          </button>
-          <button type="button" className={deleteActionClassName}>
+          </Link>
+          <button
+            type="button"
+            onClick={() => onDelete(row)}
+            aria-label={`Delete ${row.voucherNo}`}
+            className={deleteActionClassName}
+          >
             <Trash2 className="h-4 w-4" />
           </button>
         </div>

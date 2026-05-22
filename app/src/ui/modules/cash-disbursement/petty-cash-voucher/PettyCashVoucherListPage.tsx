@@ -12,6 +12,7 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
+import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
 import { PettyCashVoucherListFilters } from "./PettyCashVoucherListFilters";
 import { PettyCashVoucherTableRow } from "./PettyCashVoucherTableRow";
 
@@ -48,11 +49,25 @@ export function PettyCashVoucherListPage() {
               paginationStorageKey={PettyCashVoucherPaginationStorageKey}
               table={page.table}
               renderRow={({ id, original }) => (
-                <PettyCashVoucherTableRow key={id} row={original} />
+                <PettyCashVoucherTableRow
+                  key={id}
+                  row={original}
+                  onDelete={page.setPendingDelete}
+                />
               )}
             />
           </div>
         </div>
+
+        <AppConfirmDialog
+          isOpen={Boolean(page.pendingDelete)}
+          title="Delete petty cash voucher?"
+          description={`This will remove ${page.pendingDelete?.voucherNo ?? "the selected voucher"}.`}
+          confirmLabel="Delete"
+          tone="danger"
+          onCancel={() => page.setPendingDelete(null)}
+          onConfirm={page.handleConfirmDelete}
+        />
       </main>
     </section>
   );

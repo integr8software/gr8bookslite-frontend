@@ -141,11 +141,13 @@ export function AppPaymentTypeDialog({
       return;
     }
 
+    /* eslint-disable react-hooks/set-state-in-effect -- reset transient dialog state whenever this modal opens. */
     setQuery("");
     setStatusFilter("Active");
     setMode("list");
     setActiveRecordId(null);
     setDraft({ paymentType: "", withBank: "", accountCode: "", accountTitle: "" });
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [isOpen]);
 
   useEffect(() => {
@@ -243,7 +245,12 @@ export function AppPaymentTypeDialog({
             records={records}
             statusFilter={statusFilter}
             onAdd={() => {
-              setDraft({ paymentType: "", withBank: "" });
+              setDraft({
+                paymentType: "",
+                withBank: "",
+                accountCode: "",
+                accountTitle: "",
+              });
               setActiveRecordId(null);
               setMode("add");
             }}

@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+	Suspense,
+	useEffect,
+	useRef,
+	useState,
+	type ReactNode,
+} from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { BookOpenText, ChevronDown, ChevronRight } from "lucide-react";
@@ -29,6 +35,18 @@ type MainLayoutProps = {
 };
 
 export function MainLayout({ children }: MainLayoutProps) {
+	return (
+		<Suspense
+			fallback={
+				<MainLoadingScreen message="Loading your workspace data..." />
+			}
+		>
+			<MainLayoutContent>{children}</MainLayoutContent>
+		</Suspense>
+	);
+}
+
+function MainLayoutContent({ children }: MainLayoutProps) {
 	const {
 		activeHref,
 		activeNavigationScope,

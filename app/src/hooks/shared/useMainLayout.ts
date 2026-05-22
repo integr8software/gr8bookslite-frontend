@@ -39,8 +39,14 @@ import type {
 } from "@/app/src/types/shared/MainLayoutTypes";
 
 const DefaultExpandedKeys = [
-  "workspace",
-  "workspace-modules",
+  "workspace-overview-section",
+  "workspace-tenant-management",
+  "workspace-subscription-billing",
+  "workspace-platform-configuration",
+  "workspace-monitoring-security",
+  "workspace-support-maintenance",
+  "workspace-settings-section",
+  "workspace-admin",
   "dashboard",
   "maintenance",
   "maintenance-financial",
@@ -158,10 +164,10 @@ export function useMainLayout() {
 
     return filterMainNavigationSections(
       sourceSections,
-      ModuleShellMockData.currentUser,
+      displayUser,
       subscription,
     );
-  }, [activeNavigationScope, subscription]);
+  }, [activeNavigationScope, displayUser, subscription]);
   const activeExpandedKeys = useMemo(
     () => getActiveExpandedKeys(navigationSections, pathname),
     [navigationSections, pathname],
@@ -186,18 +192,18 @@ export function useMainLayout() {
 
     return filterMainSearchItems(
       sourceItems,
-      ModuleShellMockData.currentUser,
+      displayUser,
       subscription,
     );
-  }, [activeNavigationScope, subscription]);
+  }, [activeNavigationScope, displayUser, subscription]);
   const companySearchItems = useMemo(
     () =>
       filterMainSearchItems(
         MainCompanySearchItems,
-        ModuleShellMockData.currentUser,
+        displayUser,
         subscription,
       ),
-    [subscription],
+    [displayUser, subscription],
   );
   const companyHomeHref = getCompanyHomeHref(
     companySearchItems,
@@ -254,7 +260,7 @@ export function useMainLayout() {
     accessibleBranches[0] ??
     null;
   const canManageBranches = hasAccess(
-    ModuleShellMockData.currentUser,
+    displayUser,
     "branch.management",
   );
 

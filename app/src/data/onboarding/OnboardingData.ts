@@ -44,14 +44,22 @@ export const OnboardingPlanComparisonRows = [
   {
     label: "Best for",
     values: [
-      "Solo bookkeeping and lean teams",
-      "Growing operations with inventory",
-      "Expanding into multiple entities",
+      "Accounting teams and service businesses",
+      "Companies that need accounting plus stock control",
+      "Adding another tenant company",
     ],
   },
   {
     label: "Included users",
-    values: ["Up to 3 users", "Up to 10 users", "Per additional company"],
+    values: ["1 user included", "1 user included", "Uses company plan users"],
+  },
+  {
+    label: "Additional users",
+    values: [
+      "PHP 100/user/month",
+      "PHP 100/user/month",
+      "Configured per company",
+    ],
   },
   {
     label: "Priority support",
@@ -66,8 +74,8 @@ export const OnboardingPlanComparisonRows = [
     values: [false, false, true],
   },
   {
-    label: "Storage upgrades",
-    values: [true, true, true],
+    label: "Branch and satellite add-ons",
+    values: ["Configurable", "Configurable", "Configurable"],
   },
 ] as const;
 

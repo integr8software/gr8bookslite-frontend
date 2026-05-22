@@ -80,7 +80,7 @@ export function DiscountManagementMain() {
 			/>
 
 			<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-				<div className="grid grid-cols-[0.9fr_1fr_0.8fr_8rem] gap-4 border-b border-darknavy/10 bg-darknavy/[0.03] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-darknavy/50">
+				<div className="grid grid-cols-[0.9fr_1fr_0.8fr_8rem] gap-4 border-b border-darknavy/10 bg-darknavy/30 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-darknavy/50">
 					<span>Description</span>
 					<span>Discount %</span>
 					<span>Account</span>
@@ -100,12 +100,12 @@ export function DiscountManagementMain() {
 					) : null}
 					{!isLoading
 						? discounts.map((discount) => (
-								<DiscountManagementListRow
-									key={discount.id}
-									discount={discount}
-									onDeleteDiscount={setPendingDelete}
-								/>
-							))
+							<DiscountManagementListRow
+								key={discount.id}
+								discount={discount}
+								onDeleteDiscount={setPendingDelete}
+							/>
+						))
 						: null}
 				</div>
 			</div>

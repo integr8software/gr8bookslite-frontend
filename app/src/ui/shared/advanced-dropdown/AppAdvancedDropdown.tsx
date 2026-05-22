@@ -16,6 +16,7 @@ import {
 	useRef,
 	useState,
 	type KeyboardEvent,
+	type MouseEvent as ReactMouseEvent,
 } from "react";
 
 export type AppAdvancedDropdownOption = {
@@ -176,6 +177,13 @@ export function AppAdvancedDropdown({
 		showOptions(getInitialActiveOptionValue(selectableOptions, selectedValueSet));
 	}
 
+	function handleControlClick(event: ReactMouseEvent<HTMLDivElement>) {
+		event.preventDefault();
+		event.stopPropagation();
+		event.currentTarget.focus();
+		openOptions();
+	}
+
 	function showOptions(nextActiveValue?: string) {
 		if (isDisabled) {
 			return;
@@ -329,14 +337,14 @@ export function AppAdvancedDropdown({
 				aria-expanded={isOpen}
 				aria-haspopup="listbox"
 				tabIndex={isDisabled ? -1 : 0}
-				onClick={openOptions}
+				onClick={handleControlClick}
 				onKeyDown={handleComboboxKeyDown}
 				className={joinClasses(
-					"w-full rounded-lg border border-darknavy/10 bg-white text-sm text-darknavy outline-none transition focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",
-					isMultiple ? "min-h-11 px-2 py-1.5" : "h-11 px-2.5",
+					"app-disabled-control w-full rounded-lg border border-darknavy/10 bg-white text-sm text-darknavy outline-none transition",
+					isMultiple ? "min-h-11 px-2 py-1.5" : "h-11 px-3",
 					isDisabled
-						? "cursor-not-allowed bg-offwhite/70 text-darknavy/45"
-						: "cursor-pointer",
+						? "pointer-events-none cursor-not-allowed border-darknavy/10 bg-darknavy/[0.035] text-darknavy/35 shadow-none"
+						: "cursor-pointer focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",
 				)}
 			>
 				<div
@@ -365,6 +373,7 @@ export function AppAdvancedDropdown({
 								))
 							) : (
 								<SelectedSingle
+									disabled={isDisabled}
 									option={selectedOptions[0]}
 									showDetails={showSelectedDetails}
 								/>
@@ -372,19 +381,21 @@ export function AppAdvancedDropdown({
 						) : (
 							<span
 								className={joinClasses(
-									"px-0.5 text-darknavy/38",
+									"px-0.5 text-darknavy/35",
 									isMultiple ? "py-1.5" : "py-1",
+									isDisabled && "text-darknavy/35",
 								)}
 							>
 								{placeholder}
 							</span>
 						)}
 					</div>
-					{selectedValues.length > 0 && isClearable && !readOnly ? (
+					{selectedValues.length > 0 && isClearable && !isDisabled ? (
 						<button
 							type="button"
 							disabled={disabled}
 							onClick={(event) => {
+								event.preventDefault();
 								event.stopPropagation();
 								clearSelection();
 							}}
@@ -398,6 +409,7 @@ export function AppAdvancedDropdown({
 						className={joinClasses(
 							"pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/40 transition",
 							isOpen && "rotate-180",
+							isDisabled && "text-darknavy/35",
 						)}
 						aria-hidden="true"
 					/>
@@ -540,6 +552,7 @@ function OptionRow({
 						}
 					}}
 					onClick={(event) => {
+						event.stopPropagation();
 						if (option.disabled) {
 							event.preventDefault();
 						}
@@ -555,7 +568,11 @@ function OptionRow({
 					role="option"
 					aria-selected={isSelected}
 					disabled={option.disabled}
-					onClick={() => onSelect(option)}
+					onClick={(event) => {
+						event.preventDefault();
+						event.stopPropagation();
+						onSelect(option);
+					}}
 					onMouseEnter={() => {
 						if (!option.disabled) {
 							onActive(option.value);
@@ -599,12 +616,18 @@ function SelectionChip({
 	onRemove: () => void;
 }) {
 	return (
-		<span className="inline-flex h-7 max-w-full min-w-0 items-center gap-1 rounded-md bg-skyblue/15 px-2.5 text-xs font-semibold text-darknavy">
+		<span
+			className={joinClasses(
+				"inline-flex h-7 max-w-full min-w-0 items-center gap-1 rounded-md bg-skyblue/15 px-2.5 text-xs font-semibold text-darknavy",
+				disabled && "bg-transparent text-darknavy/35",
+			)}
+		>
 			<span className="min-w-0 truncate">{option.name}</span>
 			<button
 				type="button"
 				disabled={disabled}
 				onClick={(event) => {
+					event.preventDefault();
 					event.stopPropagation();
 					onRemove();
 				}}
@@ -618,19 +641,33 @@ function SelectionChip({
 }
 
 function SelectedSingle({
+	disabled,
 	option,
 	showDetails,
 }: {
+	disabled: boolean;
 	option: AppAdvancedDropdownOption;
 	showDetails: boolean;
 }) {
 	return (
 		<span className="flex min-w-0 items-center gap-2 px-0.5">
-			<span className="truncate text-sm font-semibold text-darknavy">
+			<span
+				className={joinClasses(
+					"truncate text-sm font-semibold text-darknavy",
+					disabled && "text-darknavy/35",
+				)}
+			>
 				{option.name}
 			</span>
 			{showDetails && option.label ? (
-				<span className="truncate text-xs text-darknavy/55">{option.label}</span>
+				<span
+					className={joinClasses(
+						"truncate text-xs text-darknavy/55",
+						disabled && "text-darknavy/35",
+					)}
+				>
+					{option.label}
+				</span>
 			) : null}
 		</span>
 	);

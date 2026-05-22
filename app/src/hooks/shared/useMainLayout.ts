@@ -1114,8 +1114,6 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "maintenance-inventory-warehouse-management":
     "Maintain inventory items, classifications, units, and warehouses.",
   "maintenance-party-management":
-    "Maintain parties used across sales, purchasing, and accounting.",
-  "maintenance-party-management-party-management":
     "Maintain customers, suppliers, vendors, members, and employees.",
   "maintenance-party":
     "Maintain customers, suppliers, vendors, members, and employees.",

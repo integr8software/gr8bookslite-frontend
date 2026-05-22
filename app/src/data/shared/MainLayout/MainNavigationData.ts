@@ -221,21 +221,11 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
           ),
         ],
       ),
-      navGroup(
+      multiProductItem(
         "maintenance-party-management",
         "Party Management",
         "/maintenance/party-management",
         "maintenance.party",
-        "accounting",
-        [
-          multiProductChild(
-            "maintenance-party",
-            "Party Management",
-            "/maintenance/party-management",
-            "maintenance.party",
-            ["accounting", "inventory"],
-          ),
-        ],
         ["accounting", "inventory"],
       ),
     ],

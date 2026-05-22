@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
+export type ModuleDrawerPosition = "bottom" | "left" | "right" | "top";
+
 type ModuleDrawerProps = {
 	actions?: ReactNode;
 	children: ReactNode;
@@ -14,7 +16,38 @@ type ModuleDrawerProps = {
 	isOpen: boolean;
 	maxWidthClassName?: string;
 	onClose: () => void;
+	position?: ModuleDrawerPosition;
 	title: ReactNode;
+};
+
+const drawerPositionStyles: Record<
+	ModuleDrawerPosition,
+	{
+		className: string;
+		initial: { x?: string; y?: string };
+		shadowClassName: string;
+	}
+> = {
+	bottom: {
+		className: "bottom-0 left-0 right-0 max-h-[85dvh] w-full rounded-t-2xl",
+		initial: { y: "100%" },
+		shadowClassName: "shadow-[0_-30px_70px_rgba(15,23,42,0.22)]",
+	},
+	left: {
+		className: "bottom-0 left-0 top-0 w-full",
+		initial: { x: "-100%" },
+		shadowClassName: "shadow-[30px_0_70px_rgba(15,23,42,0.22)]",
+	},
+	right: {
+		className: "bottom-0 right-0 top-0 w-full",
+		initial: { x: "100%" },
+		shadowClassName: "shadow-[-30px_0_70px_rgba(15,23,42,0.22)]",
+	},
+	top: {
+		className: "left-0 right-0 top-0 max-h-[85dvh] w-full rounded-b-2xl",
+		initial: { y: "-100%" },
+		shadowClassName: "shadow-[0_30px_70px_rgba(15,23,42,0.22)]",
+	},
 };
 
 export function ModuleDrawer({
@@ -26,8 +59,13 @@ export function ModuleDrawer({
 	isOpen,
 	maxWidthClassName = "max-w-2xl",
 	onClose,
+	position = "right",
 	title,
 }: ModuleDrawerProps) {
+	const positionStyles = drawerPositionStyles[position];
+	const sizeClassName =
+		position === "left" || position === "right" ? maxWidthClassName : "";
+
 	return (
 		<AnimatePresence>
 			{isOpen ? (
@@ -46,12 +84,14 @@ export function ModuleDrawer({
 						aria-modal="true"
 						aria-label={typeof title === "string" ? title : "Module drawer"}
 						className={joinClasses(
-							"fixed bottom-0 right-0 top-0 z-[60] flex w-full flex-col bg-white shadow-[-30px_0_70px_rgba(15,23,42,0.22)]",
-							maxWidthClassName,
+							"fixed z-[60] flex flex-col bg-white",
+							positionStyles.className,
+							positionStyles.shadowClassName,
+							sizeClassName,
 						)}
-						initial={{ x: "100%" }}
-						animate={{ x: 0 }}
-						exit={{ x: "100%" }}
+						initial={positionStyles.initial}
+						animate={{ x: 0, y: 0 }}
+						exit={positionStyles.initial}
 						transition={{ type: "spring", damping: 32, stiffness: 260 }}
 					>
 						<ModuleDrawerHeader

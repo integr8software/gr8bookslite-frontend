@@ -21,8 +21,10 @@ const tableHeaderClassName = "border-b border-darknavy/10 px-3 py-3";
 const tableCellClassName = "px-3 py-3";
 
 export function PettyCashReplenishmentToolbar({
+	onCancel,
 	page,
 }: {
+	onCancel: () => void;
 	page: PettyCashReplenishmentFormPageState;
 }) {
 	return (
@@ -38,7 +40,11 @@ export function PettyCashReplenishmentToolbar({
 			</div>
 			<div className="relative flex flex-wrap items-center gap-3">
 				<PettyCashReplenishmentCopyFromMenu page={page} />
-				<button type="button" className={secondaryButtonClassName}>
+				<button
+					type="button"
+					onClick={onCancel}
+					className={secondaryButtonClassName}
+				>
 					<X className="h-4 w-4" />
 					Cancel
 				</button>

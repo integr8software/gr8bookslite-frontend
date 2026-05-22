@@ -12,7 +12,7 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import { PettyCashReplenishmentListFilters } from "./PettyCashReplenishmentListFilters";
 import { PettyCashReplenishmentTableRow } from "./PettyCashReplenishmentTableRow";
 
@@ -83,7 +83,7 @@ export function PettyCashReplenishmentListPage() {
           </div>
         </div>
 
-        <AppConfirmDialog
+        <AppDialog
           isOpen={Boolean(page.pendingDelete)}
           title="Delete petty cash replenishment?"
           description={`This will remove ${page.pendingDelete?.replenishmentNo ?? "the selected replenishment"}.`}
@@ -96,3 +96,4 @@ export function PettyCashReplenishmentListPage() {
     </section>
   );
 }
+

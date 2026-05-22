@@ -10,7 +10,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import { TermManagementTable } from "./TermManagementTable";
 
 export function TermManagementListPage() {
@@ -52,7 +52,7 @@ export function TermManagementListPage() {
 				onDeleteTerm={setPendingDeleteTerm}
 			/>
 
-			<AppConfirmDialog
+			<AppDialog
 				isOpen={Boolean(pendingDeleteTerm)}
 				isPending={isMutating}
 				title="Delete term definition?"
@@ -87,3 +87,4 @@ function TermManagementHeaderActions() {
 		</>
 	);
 }
+

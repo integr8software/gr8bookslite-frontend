@@ -23,7 +23,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 
 export function UserRoleFormPage() {
 	return (
@@ -162,7 +162,7 @@ function StatusConfirmDialog({
 	onConfirm: () => void;
 }) {
 	return (
-		<AppConfirmDialog
+		<AppDialog
 			isOpen={isOpen}
 			isPending={isPending}
 			title={`Set ${noun} as ${nextStatus.toLowerCase()}?`}
@@ -176,3 +176,4 @@ function StatusConfirmDialog({
 		/>
 	);
 }
+

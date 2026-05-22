@@ -10,7 +10,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import { DiscountManagementTable } from "./DiscountManagementTable";
 
 export function DiscountManagementListPage() {
@@ -54,7 +54,7 @@ export function DiscountManagementListPage() {
 				onDeleteDiscount={setPendingDelete}
 			/>
 
-			<AppConfirmDialog
+			<AppDialog
 				isOpen={Boolean(pendingDelete)}
 				isPending={isMutating}
 				title="Delete discount?"
@@ -89,3 +89,4 @@ function DiscountManagementHeaderActions() {
 		</>
 	);
 }
+

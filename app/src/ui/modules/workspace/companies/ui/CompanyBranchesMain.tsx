@@ -18,7 +18,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
 import { CompanyBranchesTable } from "./CompanyBranchesTable";
 
@@ -101,7 +101,7 @@ export function WorkspaceCompanyBranchesMain() {
 				isLoading={isLoading}
 				onStatusChange={setPendingStatusBranch}
 			/>
-			<AppConfirmDialog
+			<AppDialog
 				isOpen={Boolean(pendingStatusBranch)}
 				isPending={isMutating}
 				title={
@@ -122,3 +122,4 @@ export function WorkspaceCompanyBranchesMain() {
 		</section>
 	);
 }
+

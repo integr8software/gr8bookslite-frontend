@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { Download, Home, Plus, Sparkles, Upload } from "lucide-react";
 import { ChartsOfAccountsSpotlightTutorialOpenEvent } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
+import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsDrawer";
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsFilters";
 import { ChartsOfAccountsTable } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTable";
@@ -9,13 +11,25 @@ import { ChartsOfAccountsSpotlightTutorial } from "@/app/src/ui/modules/maintena
 import { Button, Card } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 
 export function ChartsOfAccountsMain() {
 	const coa = useChartsOfAccounts();
 	const accountOptions = coa.flatAccounts.map((item) => item.account);
+	const [pendingDeleteAccount, setPendingDeleteAccount] =
+		useState<ChartAccount | null>(null);
 
 	function openSpotlightTutorial() {
 		window.dispatchEvent(new Event(ChartsOfAccountsSpotlightTutorialOpenEvent));
+	}
+
+	function handleConfirmDelete() {
+		if (!pendingDeleteAccount) {
+			return;
+		}
+
+		coa.deleteAccount(pendingDeleteAccount.id);
+		setPendingDeleteAccount(null);
 	}
 
 	return (
@@ -75,7 +89,7 @@ export function ChartsOfAccountsMain() {
 						expandedIds={coa.expandedIds}
 						isLoading={coa.isLoading}
 						table={coa.table}
-						onDelete={coa.deleteAccount}
+						onDelete={setPendingDeleteAccount}
 						onEdit={coa.openEditDrawer}
 						onToggleExpanded={coa.toggleExpanded}
 					/>
@@ -88,6 +102,15 @@ export function ChartsOfAccountsMain() {
 				isOpen={coa.isDrawerOpen}
 				onClose={coa.closeDrawer}
 				onSave={coa.saveAccount}
+			/>
+			<AppDialog
+				isOpen={Boolean(pendingDeleteAccount)}
+				title="Delete chart account?"
+				description={`This will remove ${pendingDeleteAccount?.accountName ?? "the selected account"} (${pendingDeleteAccount?.accountNumber ?? ""}).`}
+				confirmLabel="Delete Account"
+				tone="danger"
+				onCancel={() => setPendingDeleteAccount(null)}
+				onConfirm={handleConfirmDelete}
 			/>
 		</section>
 	);

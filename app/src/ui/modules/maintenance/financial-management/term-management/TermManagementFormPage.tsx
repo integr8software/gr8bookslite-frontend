@@ -4,7 +4,7 @@ import { CalendarDays } from "lucide-react";
 import { TermManagementActionCopy } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import { useTermManagementFormPage } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagementFormPage";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import { TermManagementActionButtons } from "./TermManagementActionButtons";
 import { TermManagementFields } from "./TermManagementFields";
 import { TermManagementNotFound } from "./TermManagementNotFound";
@@ -49,7 +49,7 @@ export function TermManagementFormPage() {
 				/>
 			</form>
 
-			<AppConfirmDialog
+			<AppDialog
 				isOpen={page.isDeleteDialogOpen}
 				isPending={page.isMutating}
 				title="Delete term definition?"
@@ -62,3 +62,4 @@ export function TermManagementFormPage() {
 		</>
 	);
 }
+

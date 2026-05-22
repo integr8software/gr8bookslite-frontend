@@ -12,7 +12,7 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import { PettyCashVoucherListFilters } from "./PettyCashVoucherListFilters";
 import { PettyCashVoucherTableRow } from "./PettyCashVoucherTableRow";
 
@@ -59,7 +59,7 @@ export function PettyCashVoucherListPage() {
           </div>
         </div>
 
-        <AppConfirmDialog
+        <AppDialog
           isOpen={Boolean(page.pendingDelete)}
           title="Delete petty cash voucher?"
           description={`This will remove ${page.pendingDelete?.voucherNo ?? "the selected voucher"}.`}
@@ -98,3 +98,4 @@ function PettyCashVoucherHeaderActions() {
     </>
   );
 }
+

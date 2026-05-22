@@ -12,7 +12,7 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import { PurchaseRequestTableRow } from "./PurchaseRequestTableRow";
 
 export function PurchaseRequestListPage() {
@@ -84,7 +84,7 @@ export function PurchaseRequestListPage() {
 				/>
 			</div>
 
-			<AppConfirmDialog
+			<AppDialog
 				isOpen={Boolean(pendingDeleteRequest)}
 				isPending={isMutating}
 				title="Delete purchase request?"
@@ -97,3 +97,4 @@ export function PurchaseRequestListPage() {
 		</section>
 	);
 }
+

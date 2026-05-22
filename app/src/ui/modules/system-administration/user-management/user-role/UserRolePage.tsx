@@ -16,7 +16,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 
 export function UserRolePage() {
 	const userRoles = useUserRoleStore((state) => state.userRoles);
@@ -88,7 +88,7 @@ export function UserRolePage() {
 				items={userRoles}
 				onStatusChange={setPendingStatusRole}
 			/>
-			<AppConfirmDialog
+			<AppDialog
 				isOpen={Boolean(pendingStatusRole)}
 				isPending={isMutating}
 				title={
@@ -107,3 +107,4 @@ export function UserRolePage() {
 		</section>
 	);
 }
+

@@ -1,4 +1,4 @@
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
 
 type ResponsibilityCenterSetStatusDialogProps = {
@@ -25,7 +25,7 @@ export function ResponsibilityCenterSetStatusDialog({
 		nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active";
 
 	return (
-		<AppConfirmDialog
+		<AppDialog
 			isOpen={isOpen}
 			isPending={isPending}
 			title={title}
@@ -39,3 +39,4 @@ export function ResponsibilityCenterSetStatusDialog({
 		/>
 	);
 }
+

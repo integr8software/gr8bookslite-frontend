@@ -6,7 +6,7 @@ import { ChevronDown, Download, Edit3, Eye, Plus, Trash2, Upload } from "lucide-
 import { TransactionTypeHref, TransactionTypeStatusOptions } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
 import { useTransactionTypeStore } from "@/app/src/hooks/modules/maintenance/financial-management/transaction-type/useTransactionType";
 import type { TransactionType } from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function FinancialManagementTransactionTypeMain() {
@@ -175,7 +175,7 @@ export function FinancialManagementTransactionTypeMain() {
 				</table>
 			</div>
 
-			<AppConfirmDialog
+			<AppDialog
 				isOpen={Boolean(pendingStatusTransactionType)}
 				isPending={isMutating}
 				title={
@@ -195,7 +195,7 @@ export function FinancialManagementTransactionTypeMain() {
 				onCancel={() => setPendingStatusTransactionType(null)}
 				onConfirm={handleConfirmStatusChange}
 			/>
-			<AppConfirmDialog
+			<AppDialog
 				isOpen={Boolean(pendingDeleteTransactionType)}
 				isPending={isMutating}
 				title="Delete transaction type?"
@@ -272,3 +272,4 @@ function TransactionTypeTableMessage({
 
 const tableActionClassName =
 	"inline-flex h-9 w-9 items-center justify-center rounded-md text-darknavy transition hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35";
+

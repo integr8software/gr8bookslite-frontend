@@ -2,21 +2,21 @@
 
 import { useEffect } from "react";
 
-type AppConfirmDialogTone = "default" | "danger" | "success";
+export type AppDialogTone = "default" | "danger" | "success";
 
-type AppConfirmDialogProps = {
+export type AppDialogProps = {
   cancelLabel?: string;
   confirmLabel?: string;
   description: string;
   isOpen: boolean;
   isPending?: boolean;
   title: string;
-  tone?: AppConfirmDialogTone;
+  tone?: AppDialogTone;
   onCancel: () => void;
   onConfirm: () => void;
 };
 
-export function AppConfirmDialog({
+export function AppDialog({
   cancelLabel = "Cancel",
   confirmLabel = "Confirm",
   description,
@@ -26,7 +26,7 @@ export function AppConfirmDialog({
   tone = "default",
   onCancel,
   onConfirm,
-}: AppConfirmDialogProps) {
+}: AppDialogProps) {
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -52,7 +52,7 @@ export function AppConfirmDialog({
   return (
     <div
       role="presentation"
-      className="app-confirm-dialog-backdrop fixed inset-0 z-80 flex items-center justify-center px-4 py-6"
+      className="app-dialog-backdrop fixed inset-0 z-80 flex items-center justify-center bg-darknavy/45 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onCancel();
@@ -62,18 +62,18 @@ export function AppConfirmDialog({
       <section
         role="alertdialog"
         aria-modal="true"
-        aria-labelledby="app-confirm-dialog-title"
-        aria-describedby="app-confirm-dialog-description"
+        aria-labelledby="app-dialog-title"
+        aria-describedby="app-dialog-description"
         className="w-full max-w-md rounded-lg border border-darknavy/10 bg-white p-5 shadow-[0_28px_90px_rgba(33,39,56,0.24)]"
       >
         <h2
-          id="app-confirm-dialog-title"
+          id="app-dialog-title"
           className="text-base font-semibold text-darknavy"
         >
           {title}
         </h2>
         <p
-          id="app-confirm-dialog-description"
+          id="app-dialog-description"
           className="mt-2 text-sm leading-6 text-darknavy/62"
         >
           {description}
@@ -101,7 +101,7 @@ export function AppConfirmDialog({
   );
 }
 
-function getConfirmButtonClassName(tone: AppConfirmDialogTone) {
+function getConfirmButtonClassName(tone: AppDialogTone) {
   const baseClassName =
     "inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2";
 

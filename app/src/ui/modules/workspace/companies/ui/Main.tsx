@@ -8,7 +8,7 @@ import {
 	useWorkspaceCompanyManagementStore,
 } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyManagement";
 import type { WorkspaceCompanyRecord } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import { CompanyHeader } from "./CompanyHeader";
 import { CompanySummaryCards } from "./CompanySummaryCards";
 import { CompanyTable } from "./CompanyTable";
@@ -60,7 +60,7 @@ export function WorkspaceCompaniesMain() {
 				users={companyManagement.users}
 				onStatusChange={setPendingStatusCompany}
 			/>
-			<AppConfirmDialog
+			<AppDialog
 				isOpen={Boolean(pendingStatusCompany)}
 				isPending={companyManagement.isMutating}
 				title={
@@ -81,3 +81,4 @@ export function WorkspaceCompaniesMain() {
 		</section>
 	);
 }
+

@@ -17,7 +17,7 @@ import type {
 	WorkspaceBranchUserFormErrors,
 	WorkspaceBranchUserFormValues,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import { WorkspaceCompanyActionHeader } from "./WorkspaceCompanyActionHeader";
 import {
 	WorkspaceCompanyField,
@@ -100,7 +100,7 @@ function WorkspaceBranchUserActionInner() {
 				onSubmit={action.handleSubmit}
 				onUpdateField={action.updateField}
 			/>
-			<AppConfirmDialog
+			<AppDialog
 				isOpen={isStatusDialogOpen}
 				isPending={action.isMutating}
 				title={`Set branch user as ${nextStatus.toLowerCase()}?`}
@@ -221,3 +221,4 @@ function BranchUserFields({
 		</form>
 	);
 }
+

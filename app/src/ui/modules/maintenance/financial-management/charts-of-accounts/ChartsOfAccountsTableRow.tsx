@@ -14,7 +14,7 @@ type ChartsOfAccountsTableRowProps = {
 	account: ChartAccount;
 	expandedIds: Set<string>;
 	level: number;
-	onDelete: (accountId: string) => void;
+	onDelete: (account: ChartAccount) => void;
 	onEdit: (account: ChartAccount) => void;
 	onToggleExpanded: (accountId: string) => void;
 };
@@ -130,7 +130,7 @@ function RowActions({
 	onEdit,
 }: {
 	account: ChartAccount;
-	onDelete: (accountId: string) => void;
+	onDelete: (account: ChartAccount) => void;
 	onEdit: (account: ChartAccount) => void;
 }) {
 	return (
@@ -147,7 +147,7 @@ function RowActions({
 				size="icon"
 				variant="danger"
 				aria-label={`Delete ${account.accountName}`}
-				onClick={() => onDelete(account.id)}
+				onClick={() => onDelete(account)}
 			>
 				<Trash2 className="h-4 w-4" aria-hidden="true" />
 			</Button>

@@ -10,7 +10,7 @@ import { useUserListFormPage } from "@/app/src/hooks/modules/system-administrati
 import { UserListForm } from "@/app/src/ui/modules/system-administration/user-management/users/UserListForm";
 import { UserListFormHeader } from "@/app/src/ui/modules/system-administration/user-management/users/UserListFormHeader";
 import { UserListNotFound } from "@/app/src/ui/modules/system-administration/user-management/users/UserListNotFound";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 
 export function UserListFormPage() {
   return (
@@ -88,7 +88,7 @@ function StatusConfirmDialog({
 	onConfirm: () => void;
 }) {
 	return (
-		<AppConfirmDialog
+		<AppDialog
 			isOpen={isOpen}
 			isPending={isPending}
 			title={`Set ${noun} as ${nextStatus.toLowerCase()}?`}
@@ -102,3 +102,4 @@ function StatusConfirmDialog({
 		/>
 	);
 }
+

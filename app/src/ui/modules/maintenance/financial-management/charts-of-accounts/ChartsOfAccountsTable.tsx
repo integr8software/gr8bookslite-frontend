@@ -13,7 +13,7 @@ type ChartsOfAccountsTableProps = {
 	expandedIds: Set<string>;
 	isLoading: boolean;
 	table: Table<FlattenedChartAccount>;
-	onDelete: (accountId: string) => void;
+	onDelete: (account: ChartAccount) => void;
 	onEdit: (account: ChartAccount) => void;
 	onToggleExpanded: (accountId: string) => void;
 };

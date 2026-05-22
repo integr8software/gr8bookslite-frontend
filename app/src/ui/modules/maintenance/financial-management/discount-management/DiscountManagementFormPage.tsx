@@ -4,7 +4,7 @@ import { Percent } from "lucide-react";
 import { DiscountManagementActionCopy } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
 import { useDiscountManagementFormPage } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagementFormPage";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import { DiscountManagementActionButtons } from "./DiscountManagementActionButtons";
 import { DiscountManagementFields } from "./DiscountManagementFields";
 import { DiscountManagementNotFound } from "./DiscountManagementNotFound";
@@ -54,7 +54,7 @@ export function DiscountManagementFormPage() {
 				/>
 			</form>
 
-			<AppConfirmDialog
+			<AppDialog
 				isOpen={page.isDeleteDialogOpen}
 				isPending={page.isMutating}
 				title="Delete discount?"
@@ -67,3 +67,4 @@ export function DiscountManagementFormPage() {
 		</>
 	);
 }
+

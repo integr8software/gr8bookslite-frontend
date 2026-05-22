@@ -7,7 +7,7 @@ import {
   createDisbursementVoucherFromForm,
   updateDisbursementVoucherFromForm,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import type {
   DisbursementVoucherFormValues,
   DisbursementVoucherPreviewRow,
@@ -149,7 +149,7 @@ export function DisbursementVoucherMain() {
         </div>
       </section>
 
-      <AppConfirmDialog
+      <AppDialog
         isOpen={Boolean(pendingDeleteRow)}
         isPending={isMutating}
         title="Delete linked voucher?"
@@ -171,3 +171,4 @@ export function DisbursementVoucherMain() {
     </>
   );
 }
+

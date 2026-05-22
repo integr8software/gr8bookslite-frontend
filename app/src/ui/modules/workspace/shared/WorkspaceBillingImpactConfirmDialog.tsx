@@ -1,6 +1,6 @@
 "use client";
 
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 
 type WorkspaceBillingImpactConfirmDialogProps = {
 	description?: string;
@@ -22,7 +22,7 @@ export function WorkspaceBillingImpactConfirmDialog({
 	onConfirm,
 }: WorkspaceBillingImpactConfirmDialogProps) {
 	return (
-		<AppConfirmDialog
+		<AppDialog
 			isOpen={isOpen}
 			isPending={isPending}
 			title={title}
@@ -38,3 +38,4 @@ export function WorkspaceBillingImpactConfirmDialog({
 		/>
 	);
 }
+

@@ -36,7 +36,7 @@ import {
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
-import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
+import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
 import type {
   DisbursementLineEntry,
   DisbursementTaxDetails,
@@ -365,7 +365,7 @@ function DisbursementVoucherActionInner() {
             voucher={existingVoucher}
           />
         </section>
-        <AppConfirmDialog
+        <AppDialog
           isOpen={isDeleteDialogOpen}
           isPending={isMutating}
           title="Delete this voucher?"
@@ -421,7 +421,7 @@ function DisbursementVoucherActionInner() {
         </div>
       </form>
 
-      <AppConfirmDialog
+      <AppDialog
         isOpen={isDeleteDialogOpen}
         isPending={isMutating}
         title="Delete this voucher?"
@@ -1345,3 +1345,4 @@ function InfoLine({
     </div>
   );
 }
+

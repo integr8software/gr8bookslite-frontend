@@ -12,7 +12,7 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { PettyCashReplenishmentListFilters } from "./PettyCashReplenishmentListFilters";
 import { PettyCashReplenishmentTableRow } from "./PettyCashReplenishmentTableRow";
 
@@ -96,4 +96,3 @@ export function PettyCashReplenishmentListPage() {
     </section>
   );
 }
-

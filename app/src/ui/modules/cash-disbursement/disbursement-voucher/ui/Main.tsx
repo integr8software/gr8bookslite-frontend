@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { RotateCcw, Search } from "lucide-react";
-import { useDisbursementVoucherPreviewTable, useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
+import {
+  useDisbursementVoucherPreviewTable,
+  useDisbursementVoucherStore,
+} from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import {
   createDisbursementVoucherFromForm,
   updateDisbursementVoucherFromForm,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import type {
   DisbursementVoucherFormValues,
   DisbursementVoucherPreviewRow,
@@ -16,20 +19,24 @@ import { DisbursementVoucherDrawer } from "./DisbursementVoucherDrawer";
 import { DisbursementVoucherHeader } from "./DisbursementVoucherHeader";
 import { DisbursementVoucherTable } from "./DisbursementVoucherTable";
 
-type DrawerState =
-  | {
-      mode: "add" | "edit";
-      row?: DisbursementVoucherPreviewRow;
-    }
-  | null;
+type DrawerState = {
+  mode: "add" | "edit";
+  row?: DisbursementVoucherPreviewRow;
+} | null;
 
 export function DisbursementVoucherMain() {
-  const transactions = useDisbursementVoucherStore((state) => state.transactions);
+  const transactions = useDisbursementVoucherStore(
+    (state) => state.transactions,
+  );
   const vouchers = useDisbursementVoucherStore((state) => state.vouchers);
   const previewRows = useDisbursementVoucherStore((state) => state.previewRows);
   const addVoucher = useDisbursementVoucherStore((state) => state.addVoucher);
-  const updateVoucher = useDisbursementVoucherStore((state) => state.updateVoucher);
-  const deleteVoucher = useDisbursementVoucherStore((state) => state.deleteVoucher);
+  const updateVoucher = useDisbursementVoucherStore(
+    (state) => state.updateVoucher,
+  );
+  const deleteVoucher = useDisbursementVoucherStore(
+    (state) => state.deleteVoucher,
+  );
   const isMutating = useDisbursementVoucherStore((state) => state.isMutating);
   const [pendingDeleteRow, setPendingDeleteRow] =
     useState<DisbursementVoucherPreviewRow | null>(null);
@@ -91,7 +98,8 @@ export function DisbursementVoucherMain() {
               </h3>
               <p className="mt-2 text-sm leading-6 text-darknavy/58">
                 Search by payee, voucher number, remarks, or transaction number,
-                then move directly into Preview, New Voucher, Edit Voucher, or Delete.
+                then move directly into Preview, New Voucher, Edit Voucher, or
+                Delete.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -171,4 +179,3 @@ export function DisbursementVoucherMain() {
     </>
   );
 }
-

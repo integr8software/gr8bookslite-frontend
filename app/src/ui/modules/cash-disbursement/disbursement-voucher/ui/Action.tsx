@@ -36,7 +36,7 @@ import {
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
-import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import type {
   DisbursementLineEntry,
   DisbursementTaxDetails,
@@ -1345,4 +1345,3 @@ function InfoLine({
     </div>
   );
 }
-

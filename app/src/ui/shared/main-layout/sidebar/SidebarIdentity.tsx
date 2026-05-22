@@ -1,4 +1,4 @@
-import { AppSkeleton } from "@/app/src/ui/shared/system/AppSkeleton";
+import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import { GradientBlurBackground } from "@/app/src/ui/shared/layout/GradientBlurBackground";
 
 type SidebarLogoProps = {

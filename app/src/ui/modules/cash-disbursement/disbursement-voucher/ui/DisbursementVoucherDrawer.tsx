@@ -21,7 +21,7 @@ import {
   AppPaymentTypeDialog,
   InitialAppPaymentTypeRecords,
   type AppPaymentTypeRecord,
-} from "@/app/src/ui/shared/system/AppPaymentTypeDialog";
+} from "@/app/src/ui/shared/app/AppPaymentTypeDialog";
 import type {
   DisbursementLineEntry,
   DisbursementPaymentMethod,
@@ -83,9 +83,9 @@ function DrawerPanel({
   const [activeTab, setActiveTab] = useState<DrawerTab>("cash-disbursement");
   const [step, setStep] = useState<WorkflowStep>("details");
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
-  const [paymentTypeRecords, setPaymentTypeRecords] = useState<AppPaymentTypeRecord[]>(
-    InitialAppPaymentTypeRecords,
-  );
+  const [paymentTypeRecords, setPaymentTypeRecords] = useState<
+    AppPaymentTypeRecord[]
+  >(InitialAppPaymentTypeRecords);
   const [values, setValues] = useState<DisbursementVoucherFormValues>(() =>
     createDisbursementVoucherFormValues(transaction, voucher),
   );
@@ -191,11 +191,17 @@ function DrawerPanel({
     }
 
     if (values.attachments.length === 0 && selectedTransaction) {
-      updateField("attachments", createAttachmentPlaceholders(selectedTransaction));
+      updateField(
+        "attachments",
+        createAttachmentPlaceholders(selectedTransaction),
+      );
     }
 
     if (values.lineEntries.length === 0 && selectedTransaction) {
-      updateField("lineEntries", createAutoDisbursementLineEntries(selectedTransaction));
+      updateField(
+        "lineEntries",
+        createAutoDisbursementLineEntries(selectedTransaction),
+      );
     }
 
     setStep("entries");
@@ -259,7 +265,9 @@ function DrawerPanel({
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       setStep(
-        detailsErrors.transactionId || detailsErrors.amount ? "details" : "entries",
+        detailsErrors.transactionId || detailsErrors.amount
+          ? "details"
+          : "entries",
       );
       return;
     }
@@ -272,7 +280,9 @@ function DrawerPanel({
     <ModuleDrawer
       isOpen={isOpen}
       maxWidthClassName="max-w-6xl"
-      eyebrow={isEditing ? "Edit disbursement voucher" : "New disbursement voucher"}
+      eyebrow={
+        isEditing ? "Edit disbursement voucher" : "New disbursement voucher"
+      }
       title={isEditing ? values.voucherNo : "Disbursement Voucher"}
       description="Create the voucher details, continue to accounting entries, then review everything before saving."
       onClose={onClose}
@@ -387,7 +397,8 @@ function DrawerStepper({ step }: { step: WorkflowStep }) {
       <div className="flex flex-wrap items-center gap-3">
         {steps.map((currentStep, index) => {
           const isActive = currentStep.id === step;
-          const isComplete = steps.findIndex((item) => item.id === step) > index;
+          const isComplete =
+            steps.findIndex((item) => item.id === step) > index;
 
           return (
             <div key={currentStep.id} className="flex items-center gap-3">
@@ -445,9 +456,14 @@ function DetailsTab({
   const availablePaymentTypeOptions = useMemo(() => {
     if (
       values.paymentMethod &&
-      !paymentTypeOptions.includes(values.paymentMethod as DisbursementPaymentMethod)
+      !paymentTypeOptions.includes(
+        values.paymentMethod as DisbursementPaymentMethod,
+      )
     ) {
-      return [values.paymentMethod as DisbursementPaymentMethod, ...paymentTypeOptions];
+      return [
+        values.paymentMethod as DisbursementPaymentMethod,
+        ...paymentTypeOptions,
+      ];
     }
 
     return paymentTypeOptions;
@@ -497,7 +513,9 @@ function DetailsTab({
             control={
               <input
                 value={values.vceName}
-                onChange={(event) => onUpdateField("vceName", event.target.value)}
+                onChange={(event) =>
+                  onUpdateField("vceName", event.target.value)
+                }
                 className={FieldClassName}
               />
             }
@@ -533,7 +551,9 @@ function DetailsTab({
             control={
               <input
                 value={values.amount}
-                onChange={(event) => onUpdateField("amount", event.target.value)}
+                onChange={(event) =>
+                  onUpdateField("amount", event.target.value)
+                }
                 className={`${FieldClassName} text-right`}
               />
             }
@@ -603,7 +623,9 @@ function DetailsTab({
           <input
             type="date"
             value={values.voucherDate}
-            onChange={(event) => onUpdateField("voucherDate", event.target.value)}
+            onChange={(event) =>
+              onUpdateField("voucherDate", event.target.value)
+            }
             className={FieldClassName}
           />
         </FieldShell>
@@ -619,7 +641,11 @@ function DetailsTab({
         </FieldShell>
 
         <FieldShell label="Status :">
-          <input value={values.status} readOnly className={ReadOnlyFieldClassName} />
+          <input
+            value={values.status}
+            readOnly
+            className={ReadOnlyFieldClassName}
+          />
         </FieldShell>
 
         <FieldShell error={errors.costCenter} label="ProjectRef :">
@@ -630,7 +656,10 @@ function DetailsTab({
           />
         </FieldShell>
 
-        <FieldShell error={errors.invoiceReferenceNo} label="Importation Ref No :">
+        <FieldShell
+          error={errors.invoiceReferenceNo}
+          label="Importation Ref No :"
+        >
           <input
             value={values.invoiceReferenceNo}
             readOnly
@@ -651,7 +680,9 @@ function AttachmentsTab({ values }: { values: DisbursementVoucherFormValues }) {
             <Paperclip className="h-5 w-5" aria-hidden="true" />
           </span>
           <div>
-            <p className="text-sm font-semibold text-darknavy">File attachments</p>
+            <p className="text-sm font-semibold text-darknavy">
+              File attachments
+            </p>
             <p className="text-sm text-darknavy/58">
               Supporting files stay grouped with the voucher entry.
             </p>
@@ -675,8 +706,8 @@ function AttachmentsTab({ values }: { values: DisbursementVoucherFormValues }) {
             ))
           ) : (
             <div className="rounded-xl border border-dashed border-darknavy/16 bg-white px-4 py-8 text-center text-sm text-darknavy/55">
-              No attachments yet. Attachments will follow the selected transaction
-              or can be added later.
+              No attachments yet. Attachments will follow the selected
+              transaction or can be added later.
             </div>
           )}
         </div>
@@ -844,7 +875,10 @@ function EntriesStep({
                   </tr>
 
                   {entries.map((entry) => (
-                    <tr key={entry.id} className="border-t border-darknavy/8 align-top">
+                    <tr
+                      key={entry.id}
+                      className="border-t border-darknavy/8 align-top"
+                    >
                       <td className="px-4 py-4 text-sm font-semibold text-darknavy">
                         {entry.accountCode}
                       </td>
@@ -889,8 +923,14 @@ function EntriesStep({
           ) : null}
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <SummaryCard label="Total Debit" value={formatCurrency(totalDebit)} />
-            <SummaryCard label="Total Credit" value={formatCurrency(totalCredit)} />
+            <SummaryCard
+              label="Total Debit"
+              value={formatCurrency(totalDebit)}
+            />
+            <SummaryCard
+              label="Total Credit"
+              value={formatCurrency(totalCredit)}
+            />
             <SummaryCard
               label="Variance"
               value={formatCurrency(Math.abs(totalDebit - totalCredit))}
@@ -923,16 +963,31 @@ function ReviewStep({
         description="Review the encoded disbursement details before the final save."
       >
         <div className="grid gap-3">
-          <InfoLine label="Trans No." value={selectedTransaction?.transactionNo ?? "-"} />
+          <InfoLine
+            label="Trans No."
+            value={selectedTransaction?.transactionNo ?? "-"}
+          />
           <InfoLine label="Voucher No." value={values.voucherNo} />
-          <InfoLine label="Document Date" value={formatDateLabel(values.voucherDate)} />
+          <InfoLine
+            label="Document Date"
+            value={formatDateLabel(values.voucherDate)}
+          />
           <InfoLine label="Payment Type" value={values.paymentMethod || "-"} />
-          <InfoLine label="Disbursement Type" value={values.disbursementType || "-"} />
+          <InfoLine
+            label="Disbursement Type"
+            value={values.disbursementType || "-"}
+          />
           <InfoLine label="VCE Code" value={values.vceCode} />
           <InfoLine label="VCE Name" value={values.vceName} />
           <InfoLine label="ProjectRef" value={values.costCenter} />
-          <InfoLine label="Importation Ref No." value={values.invoiceReferenceNo || "-"} />
-          <InfoLine label="Amount" value={formatCurrency(Number(values.amount || 0))} />
+          <InfoLine
+            label="Importation Ref No."
+            value={values.invoiceReferenceNo || "-"}
+          />
+          <InfoLine
+            label="Amount"
+            value={formatCurrency(Number(values.amount || 0))}
+          />
           <InfoLine label="Remarks" value={values.remarks || "-"} />
         </div>
       </ReviewCardShell>
@@ -966,11 +1021,21 @@ function ReviewStep({
                   <p className="text-sm font-semibold text-darknavy">
                     {entry.accountCode} - {entry.accountName}
                   </p>
-                  <p className="mt-1 text-sm text-darknavy/58">{entry.particulars}</p>
+                  <p className="mt-1 text-sm text-darknavy/58">
+                    {entry.particulars}
+                  </p>
                 </div>
                 <div className="text-right text-sm font-semibold text-darknavy">
-                  <p>{entry.debit > 0 ? `DR ${formatCurrency(entry.debit)}` : "-"}</p>
-                  <p>{entry.credit > 0 ? `CR ${formatCurrency(entry.credit)}` : "-"}</p>
+                  <p>
+                    {entry.debit > 0
+                      ? `DR ${formatCurrency(entry.debit)}`
+                      : "-"}
+                  </p>
+                  <p>
+                    {entry.credit > 0
+                      ? `CR ${formatCurrency(entry.credit)}`
+                      : "-"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -1012,7 +1077,9 @@ function ReviewStep({
                     {attachment.name}
                   </span>
                 </div>
-                <span className="text-xs text-darknavy/50">{attachment.sizeLabel}</span>
+                <span className="text-xs text-darknavy/50">
+                  {attachment.sizeLabel}
+                </span>
               </div>
             ))}
           </div>

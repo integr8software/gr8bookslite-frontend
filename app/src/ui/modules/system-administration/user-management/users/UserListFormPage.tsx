@@ -2,15 +2,15 @@
 
 import { Suspense, useState } from "react";
 import {
-	getNextUserStatus,
-	type UserStatus,
+  getNextUserStatus,
+  type UserStatus,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import { useUserListFormPage } from "@/app/src/hooks/modules/system-administration/user-management/users/useUserListFormPage";
 import { UserListForm } from "@/app/src/ui/modules/system-administration/user-management/users/UserListForm";
 import { UserListFormHeader } from "@/app/src/ui/modules/system-administration/user-management/users/UserListFormHeader";
 import { UserListNotFound } from "@/app/src/ui/modules/system-administration/user-management/users/UserListNotFound";
-import { AppDialog } from "@/app/src/ui/shared/system/AppDialog";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
 export function UserListFormPage() {
   return (
@@ -71,35 +71,34 @@ function UserListFormPageInner() {
 }
 
 function StatusConfirmDialog({
-	entityName,
-	isOpen,
-	isPending,
-	nextStatus,
-	noun,
-	onCancel,
-	onConfirm,
+  entityName,
+  isOpen,
+  isPending,
+  nextStatus,
+  noun,
+  onCancel,
+  onConfirm,
 }: {
-	entityName?: string;
-	isOpen: boolean;
-	isPending: boolean;
-	nextStatus: UserStatus;
-	noun: string;
-	onCancel: () => void;
-	onConfirm: () => void;
+  entityName?: string;
+  isOpen: boolean;
+  isPending: boolean;
+  nextStatus: UserStatus;
+  noun: string;
+  onCancel: () => void;
+  onConfirm: () => void;
 }) {
-	return (
-		<AppDialog
-			isOpen={isOpen}
-			isPending={isPending}
-			title={`Set ${noun} as ${nextStatus.toLowerCase()}?`}
-			description={`This will mark ${entityName ?? `the selected ${noun}`} as ${nextStatus.toLowerCase()}.`}
-			confirmLabel={
-				nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active"
-			}
-			tone={nextStatus === "Inactive" ? "danger" : "success"}
-			onCancel={onCancel}
-			onConfirm={onConfirm}
-		/>
-	);
+  return (
+    <AppDialog
+      isOpen={isOpen}
+      isPending={isPending}
+      title={`Set ${noun} as ${nextStatus.toLowerCase()}?`}
+      description={`This will mark ${entityName ?? `the selected ${noun}`} as ${nextStatus.toLowerCase()}.`}
+      confirmLabel={
+        nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active"
+      }
+      tone={nextStatus === "Inactive" ? "danger" : "success"}
+      onCancel={onCancel}
+      onConfirm={onConfirm}
+    />
+  );
 }
-

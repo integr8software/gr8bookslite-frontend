@@ -17,22 +17,23 @@ import {
 	PartyManagementEditFromViewQuery,
 	PartyManagementEditFromViewValue,
 	PartyManagementHref,
+	PartyTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
+import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
 import {
-	PartyAtcCodeOptions,
 	PartyInformationInitialFormValues,
 	createPartyInformationFormValues,
 	createPartyInformationRecord,
-	createPartySubmitPayload,
+	getPartyAtcCodeOptionsByClassification,
 	isKnownPartyType,
 	updatePartyInformationRecord,
 } from "@/app/src/data/modules/maintenance/party-management/party-management/PartyManagementData";
+import { usePhilippineAddressOptions } from "@/app/src/hooks/shared/address/ph/usePhilippineAddressOptions";
 import type {
 	PartyAddress,
 	PartyInformationActionMode,
 	PartyInformationFormErrors,
 	PartyInformationFormValues,
-	PartyType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import {
 	isPartyInformationFormSubmittable,
@@ -60,32 +61,18 @@ export function usePartyManagementAction() {
 			: PartyInformationInitialFormValues,
 	);
 	const [errors, setErrors] = useState<PartyInformationFormErrors>({});
-	const [partyTypeQuery, setPartyTypeQuery] = useState("");
-	const [atcQuery, setAtcQuery] = useState("");
+	const addressOptions = usePhilippineAddressOptions({
+		cityMunicipalityCode: values.address.cityMunicipalityCode,
+		provinceCode: values.address.provinceCode,
+		regionCode: values.address.regionCode,
+	});
 	const isReadonly = mode === "view";
 	const isClassificationSelected = Boolean(values.classification);
 	const isSubmittable =
 		!isReadonly && isPartyInformationFormSubmittable(values);
-	const selectedAtcOption = PartyAtcCodeOptions.find(
-		(option) => option.code === values.atcCode,
-	);
-	const atcOptions = useMemo(() => {
-		const query = atcQuery.trim().toLowerCase();
-
-		if (!query) {
-			return PartyAtcCodeOptions;
-		}
-
-		return PartyAtcCodeOptions.filter(
-			(option) =>
-				option.code.toLowerCase().includes(query) ||
-				option.label.toLowerCase().includes(query) ||
-				option.category.toLowerCase().includes(query),
-		);
-	}, [atcQuery]);
-	const submitPayload = useMemo(
-		() => createPartySubmitPayload(values),
-		[values],
+	const atcOptions = useMemo(
+		() => getPartyAtcCodeOptionsByClassification(values.classification),
+		[values.classification],
 	);
 	const viewHref = existingRecord
 		? `${PartyManagementHref}/view/${existingRecord.id}`
@@ -114,6 +101,7 @@ export function usePartyManagementAction() {
 					middleName: "",
 					lastName: "",
 					suffixName: "",
+					atcCode: "",
 				};
 			}
 
@@ -143,61 +131,135 @@ export function usePartyManagementAction() {
 		event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
 	) {
 		const field = event.target.name as keyof PartyInformationFormValues;
-		updateField(field, event.target.value as never);
+		const value =
+			field === "tin" ? FormatTinNumber(event.target.value) : event.target.value;
+
+		updateField(field, value as never);
 	}
 
 	function handleAddressInputChange(event: ChangeEvent<HTMLInputElement>) {
 		updateAddressField(event.target.name as keyof PartyAddress, event.target.value);
 	}
 
-	function togglePartyType(type: PartyType) {
+	function handlePartyTypesChange(value: string | string[]) {
 		if (isReadonly || !isClassificationSelected) {
 			return;
 		}
 
-		setValues((current) => {
-			const partyTypes = current.partyTypes.includes(type)
-				? current.partyTypes.filter((item) => item !== type)
-				: [...current.partyTypes, type];
-
-			return {
-				...current,
-				partyTypes,
-			};
-		});
-		setErrors((current) => ({ ...current, partyTypes: undefined }));
-	}
-
-	function removePartyType(type: PartyType) {
-		if (isReadonly || !isClassificationSelected) {
-			return;
-		}
+		const values = Array.isArray(value) ? value : [value];
+		const partyTypes = values.filter(isKnownPartyType);
 
 		setValues((current) => ({
 			...current,
-			partyTypes: current.partyTypes.filter((item) => item !== type),
+			partyTypes,
 		}));
+		setErrors((current) => ({ ...current, partyTypes: undefined }));
 	}
 
-	function handlePartyTypeQueryChange(value: string) {
-		setPartyTypeQuery(value);
-	}
-
-	function selectAtcCode(code: string) {
+	function selectAtcCode(value: string | string[]) {
 		if (isReadonly || !isClassificationSelected) {
 			return;
 		}
+
+		const code = getSingleSelectedValue(value);
 
 		setValues((current) => ({
 			...current,
 			atcCode: code,
 		}));
 		setErrors((current) => ({ ...current, atcCode: undefined }));
-		setAtcQuery("");
 	}
 
-	function handleAtcQueryChange(value: string) {
-		setAtcQuery(value);
+	function selectRegion(value: string | string[]) {
+		if (isReadonly || !isClassificationSelected) {
+			return;
+		}
+
+		const code = getSingleSelectedValue(value);
+		const option = addressOptions.regionOptions.find(
+			(region) => region.value === code,
+		);
+
+		setValues((current) => ({
+			...current,
+			address: {
+				...current.address,
+				barangay: "",
+				barangayCode: "",
+				cityMunicipality: "",
+				cityMunicipalityCode: "",
+				province: "",
+				provinceCode: "",
+				region: option?.name ?? "",
+				regionCode: code,
+			},
+		}));
+	}
+
+	function selectProvince(value: string | string[]) {
+		if (isReadonly || !isClassificationSelected) {
+			return;
+		}
+
+		const code = getSingleSelectedValue(value);
+		const option = addressOptions.provinceOptions.find(
+			(province) => province.value === code,
+		);
+
+		setValues((current) => ({
+			...current,
+			address: {
+				...current.address,
+				barangay: "",
+				barangayCode: "",
+				cityMunicipality: "",
+				cityMunicipalityCode: "",
+				province: option?.name ?? "",
+				provinceCode: code,
+			},
+		}));
+	}
+
+	function selectCityMunicipality(value: string | string[]) {
+		if (isReadonly || !isClassificationSelected) {
+			return;
+		}
+
+		const code = getSingleSelectedValue(value);
+		const option = addressOptions.cityMunicipalityOptions.find(
+			(cityMunicipality) => cityMunicipality.value === code,
+		);
+
+		setValues((current) => ({
+			...current,
+			address: {
+				...current.address,
+				barangay: "",
+				barangayCode: "",
+				cityMunicipality: option?.name ?? "",
+				cityMunicipalityCode: code,
+			},
+		}));
+	}
+
+	function selectBarangay(value: string | string[]) {
+		if (isReadonly || !isClassificationSelected) {
+			return;
+		}
+
+		const code = getSingleSelectedValue(value);
+		const option = addressOptions.barangayOptions.find(
+			(barangay) => barangay.value === code,
+		);
+
+		setValues((current) => ({
+			...current,
+			address: {
+				...current.address,
+				barangay: option?.name ?? "",
+				barangayCode: code,
+			},
+		}));
 	}
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -220,29 +282,27 @@ export function usePartyManagementAction() {
 	}
 
 	return {
+		addressOptions,
 		atcOptions,
-		atcQuery,
 		cancelHref,
 		editHref,
 		errors,
 		existingRecord,
 		handleAddressInputChange,
-		handleAtcQueryChange,
 		handleInputChange,
-		handlePartyTypeQueryChange,
+		handlePartyTypesChange,
 		handleSubmit,
 		isClassificationSelected,
 		isReadonly,
 		isSubmittable,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
-		partyTypeOptions: getFilteredPartyTypes(partyTypeQuery),
-		partyTypeQuery,
-		removePartyType,
-		selectedAtcOption,
+		partyTypeOptions: PartyTypeOptions,
+		selectBarangay,
+		selectCityMunicipality,
+		selectProvince,
+		selectRegion,
 		selectAtcCode,
-		submitPayload,
-		togglePartyType,
 		updateField,
 		values,
 	};
@@ -260,16 +320,6 @@ function getActionMode(pathname: string): PartyInformationActionMode {
 	return "add";
 }
 
-function getFilteredPartyTypes(query: string) {
-	const normalizedQuery = query.trim().toLowerCase();
-	const partyTypes = ["Vendor", "Customer", "Employee"];
-
-	if (!normalizedQuery) {
-		return partyTypes.filter(isKnownPartyType);
-	}
-
-	return partyTypes.filter(
-		(type): type is PartyType =>
-			isKnownPartyType(type) && type.toLowerCase().includes(normalizedQuery),
-	);
+function getSingleSelectedValue(value: string | string[]) {
+	return Array.isArray(value) ? (value[0] ?? "") : value;
 }

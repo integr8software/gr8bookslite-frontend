@@ -18,7 +18,7 @@ import {
 	PartyTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import {
-	MockPartyInformationRecords,
+	PartyInformationInitialRecords,
 	getPartyDisplayName,
 } from "@/app/src/data/modules/maintenance/party-management/party-management/PartyManagementData";
 import { PartyManagementQueryKeys } from "@/app/src/services/modules/maintenance/party-management/party-management/PartyManagementQueryKeys";
@@ -44,8 +44,8 @@ export function usePartyManagementStore<
 	const queryClient = useQueryClient();
 	const recordsQuery = useQuery({
 		queryKey: PartyManagementQueryKeys.records(),
-		queryFn: async () => MockPartyInformationRecords,
-		initialData: MockPartyInformationRecords,
+		queryFn: async () => PartyInformationInitialRecords,
+		initialData: PartyInformationInitialRecords,
 	});
 
 	function updateCachedRecords(
@@ -53,7 +53,7 @@ export function usePartyManagementStore<
 	) {
 		queryClient.setQueryData<PartyInformationRecord[]>(
 			PartyManagementQueryKeys.records(),
-			(current = MockPartyInformationRecords) => updater(current),
+			(current = PartyInformationInitialRecords) => updater(current),
 		);
 	}
 

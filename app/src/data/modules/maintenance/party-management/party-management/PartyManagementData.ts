@@ -3,7 +3,9 @@ import {
 	PartyTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import type {
+	PartyAddress,
 	PartyAtcCodeOption,
+	PartyClassification,
 	PartyInformationFormValues,
 	PartyInformationRecord,
 	PartyType,
@@ -12,103 +14,151 @@ import type {
 export const PartyAtcCodeOptions: PartyAtcCodeOption[] = [
 	{
 		code: "WI010",
-		label: "Professional fees - individual, gross income did not exceed P3M",
 		category: "Expanded Withholding Tax",
+		classifications: ["Individual"],
+		description: "Individual payee with gross income that did not exceed P3M.",
+		label: "Professional Fees",
 	},
 	{
 		code: "WI011",
-		label: "Professional fees - individual, gross income over P3M or VAT registered",
 		category: "Expanded Withholding Tax",
+		classifications: ["Individual"],
+		description:
+			"Individual payee with gross income over P3M or VAT registration.",
+		label: "Professional Fees",
 	},
 	{
 		code: "WC010",
-		label: "Professional fees - corporation, gross income did not exceed P720,000",
 		category: "Expanded Withholding Tax",
+		classifications: ["Non-Individual"],
+		description:
+			"Corporate payee with gross income that did not exceed P720,000.",
+		label: "Professional Fees",
 	},
 	{
 		code: "WC011",
-		label: "Professional fees - corporation, gross income exceeds P720,000",
 		category: "Expanded Withholding Tax",
+		classifications: ["Non-Individual"],
+		description: "Corporate payee with gross income exceeding P720,000.",
+		label: "Professional Fees",
 	},
 	{
 		code: "WI100",
-		label: "Rentals - individual",
 		category: "Expanded Withholding Tax",
+		classifications: ["Individual"],
+		description: "Rental income payments to individual payees.",
+		label: "Rentals",
 	},
 	{
 		code: "WC100",
-		label: "Rentals - corporation",
 		category: "Expanded Withholding Tax",
+		classifications: ["Non-Individual"],
+		description: "Rental income payments to corporate payees.",
+		label: "Rentals",
 	},
 	{
 		code: "WI120",
-		label: "Income payments to certain contractors - individual",
 		category: "Expanded Withholding Tax",
+		classifications: ["Individual"],
+		description: "Income payments to certain individual contractors.",
+		label: "Certain Contractors",
 	},
 	{
 		code: "WC120",
-		label: "Income payments to certain contractors - corporation",
 		category: "Expanded Withholding Tax",
+		classifications: ["Non-Individual"],
+		description: "Income payments to certain corporate contractors.",
+		label: "Certain Contractors",
 	},
 	{
 		code: "WI151",
-		label: "Professional fees paid to medical practitioners - individual",
 		category: "Expanded Withholding Tax",
+		classifications: ["Individual"],
+		description: "Professional fees paid to individual medical practitioners.",
+		label: "Medical Practitioners",
 	},
 	{
 		code: "WC151",
-		label: "Professional fees paid to medical practitioners - corporation",
 		category: "Expanded Withholding Tax",
+		classifications: ["Non-Individual"],
+		description: "Professional fees paid to corporate medical practitioners.",
+		label: "Medical Practitioners",
 	},
 	{
 		code: "WI158",
-		label: "Top withholding agents payments to local/resident suppliers of goods - individual",
 		category: "Expanded Withholding Tax",
+		classifications: ["Individual"],
+		description:
+			"Top withholding agent payments to individual local or resident suppliers of goods.",
+		label: "Supplier Goods",
 	},
 	{
 		code: "WC158",
-		label: "Top withholding agents payments to local/resident suppliers of goods - corporation",
 		category: "Expanded Withholding Tax",
+		classifications: ["Non-Individual"],
+		description:
+			"Top withholding agent payments to corporate local or resident suppliers of goods.",
+		label: "Supplier Goods",
 	},
 	{
 		code: "WI160",
-		label: "Top withholding agents payments to local/resident suppliers of services - individual",
 		category: "Expanded Withholding Tax",
+		classifications: ["Individual"],
+		description:
+			"Top withholding agent payments to individual local or resident suppliers of services.",
+		label: "Supplier Services",
 	},
 	{
 		code: "WC160",
-		label: "Top withholding agents payments to local/resident suppliers of services - corporation",
 		category: "Expanded Withholding Tax",
+		classifications: ["Non-Individual"],
+		description:
+			"Top withholding agent payments to corporate local or resident suppliers of services.",
+		label: "Supplier Services",
 	},
 	{
 		code: "WI610",
-		label: "Payments to suppliers of agricultural products - individual",
 		category: "Expanded Withholding Tax",
+		classifications: ["Individual"],
+		description: "Payments to individual suppliers of agricultural products.",
+		label: "Agricultural Products",
 	},
 	{
 		code: "WC610",
-		label: "Payments to suppliers of agricultural products - corporation",
 		category: "Expanded Withholding Tax",
+		classifications: ["Non-Individual"],
+		description: "Payments to corporate suppliers of agricultural products.",
+		label: "Agricultural Products",
 	},
 	{
 		code: "WV012",
-		label: "VAT withholding on purchases of goods",
 		category: "VAT Withholding",
+		classifications: ["Individual", "Non-Individual"],
+		description: "VAT withholding on purchases of goods.",
+		label: "Purchases of Goods",
 	},
 	{
 		code: "WV022",
-		label: "VAT withholding on purchases of services",
 		category: "VAT Withholding",
+		classifications: ["Individual", "Non-Individual"],
+		description: "VAT withholding on purchases of services.",
+		label: "Purchases of Services",
 	},
 	{
 		code: "WB080",
-		label: "Persons exempt from VAT under Sec. 109BB - government withholding agent",
 		category: "Business Tax Withholding",
+		classifications: ["Individual", "Non-Individual"],
+		description:
+			"Persons exempt from VAT under Sec. 109BB with a government withholding agent.",
+		label: "VAT Exempt Persons",
 	},
 	{
 		code: "WB082",
-		label: "Persons exempt from VAT under Sec. 109BB - private withholding agent",
 		category: "Business Tax Withholding",
+		classifications: ["Individual", "Non-Individual"],
+		description:
+			"Persons exempt from VAT under Sec. 109BB with a private withholding agent.",
+		label: "VAT Exempt Persons",
 	},
 ];
 
@@ -126,16 +176,7 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
 	middleName: "",
 	lastName: "",
 	suffixName: "",
-	address: {
-		region: "",
-		province: "",
-		cityMunicipality: "",
-		barangay: "",
-		lotUnit: "",
-		blockBuildingStreet: "",
-		subdivision: "",
-		zipcode: "",
-	},
+	address: createEmptyPartyAddress(),
 	tin: "",
 	vatRegistrationType: "",
 	atcCode: "",
@@ -143,69 +184,7 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
 	contactNo: "",
 };
 
-export const PartyInformationSampleState: PartyInformationFormValues = {
-	partyCodeNo: "PTY-2026-0001",
-	classification: "Individual",
-	partyTypes: ["Vendor", "Customer"],
-	partyName: "",
-	firstName: "Maria",
-	middleName: "Santos",
-	lastName: "Reyes",
-	suffixName: "",
-	address: {
-		region: "NCR",
-		province: "Metro Manila",
-		cityMunicipality: "Makati City",
-		barangay: "Bel-Air",
-		lotUnit: "Unit 1204",
-		blockBuildingStreet: "Ayala Avenue",
-		subdivision: "Legazpi Village",
-		zipcode: "1229",
-	},
-	tin: "123-456-789-000",
-	vatRegistrationType: "VAT Registered",
-	atcCode: "WI120",
-	email: "maria.reyes@example.com",
-	contactNo: "+63 917 123 4567",
-};
-
-export const MockPartyInformationRecords: PartyInformationRecord[] = [
-	{
-		id: "party_001",
-		...PartyInformationSampleState,
-		classification: "Individual",
-		createdAt: "2026-01-08T08:00:00.000Z",
-		updatedAt: "2026-01-08T08:00:00.000Z",
-	},
-	{
-		id: "party_002",
-		partyCodeNo: "PTY-2026-0002",
-		classification: "Non-Individual",
-		partyTypes: ["Vendor"],
-		partyName: "Northstar Office Supplies Inc.",
-		firstName: "",
-		middleName: "",
-		lastName: "",
-		suffixName: "",
-		address: {
-			region: "CALABARZON",
-			province: "Laguna",
-			cityMunicipality: "Santa Rosa",
-			barangay: "Balibago",
-			lotUnit: "Warehouse 3",
-			blockBuildingStreet: "Technology Avenue",
-			subdivision: "Greenfield Auto Park",
-			zipcode: "4026",
-		},
-		tin: "009-876-543-000",
-		vatRegistrationType: "Non-VAT",
-		atcCode: "WC120",
-		email: "ap@northstar.example",
-		contactNo: "+63 49 555 0188",
-		createdAt: "2026-01-10T08:00:00.000Z",
-		updatedAt: "2026-01-10T08:00:00.000Z",
-	},
-];
+export const PartyInformationInitialRecords: PartyInformationRecord[] = [];
 
 export function createPartyInformationFormValues(
 	record: PartyInformationRecord,
@@ -293,6 +272,18 @@ export function isKnownAtcCode(value: string) {
 	return PartyAtcCodeOptions.some((option) => option.code === value);
 }
 
+export function getPartyAtcCodeOptionsByClassification(
+	classification: PartyClassification | "",
+) {
+	if (!classification) {
+		return [];
+	}
+
+	return PartyAtcCodeOptions.filter((option) =>
+		option.classifications.includes(classification),
+	);
+}
+
 function normalizePartyRecordValues(
 	values: PartyInformationFormValues,
 ): Omit<PartyInformationRecord, "id" | "createdAt" | "updatedAt"> {
@@ -315,16 +306,7 @@ function normalizePartyRecordValues(
 			values.classification === "Individual" ? values.lastName.trim() : "",
 		suffixName:
 			values.classification === "Individual" ? values.suffixName.trim() : "",
-		address: {
-			region: values.address.region.trim(),
-			province: values.address.province.trim(),
-			cityMunicipality: values.address.cityMunicipality.trim(),
-			barangay: values.address.barangay.trim(),
-			lotUnit: values.address.lotUnit.trim(),
-			blockBuildingStreet: values.address.blockBuildingStreet.trim(),
-			subdivision: values.address.subdivision.trim(),
-			zipcode: values.address.zipcode.trim(),
-		},
+		address: normalizePartyAddress(values.address),
 		tin: values.tin.trim(),
 		email: values.email.trim(),
 		contactNo: values.contactNo.trim(),
@@ -333,5 +315,35 @@ function normalizePartyRecordValues(
 
 function createPartyCodeNo() {
 	return `PTY-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
+}
+
+function createEmptyPartyAddress(): PartyAddress {
+	return {
+		addressLine1: "",
+		addressLine2: "",
+		barangay: "",
+		barangayCode: "",
+		cityMunicipality: "",
+		cityMunicipalityCode: "",
+		province: "",
+		provinceCode: "",
+		region: "",
+		regionCode: "",
+	};
+}
+
+function normalizePartyAddress(address: PartyAddress): PartyAddress {
+	return {
+		addressLine1: address.addressLine1.trim(),
+		addressLine2: address.addressLine2.trim(),
+		barangay: address.barangay.trim(),
+		barangayCode: address.barangayCode,
+		cityMunicipality: address.cityMunicipality.trim(),
+		cityMunicipalityCode: address.cityMunicipalityCode,
+		province: address.province.trim(),
+		provinceCode: address.provinceCode,
+		region: address.region.trim(),
+		regionCode: address.regionCode,
+	};
 }
 

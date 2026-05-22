@@ -1,4 +1,4 @@
-import { PartyAtcCodeOptions } from "@/app/src/data/modules/maintenance/party-management/party-management/PartyManagementData";
+import { getPartyAtcCodeOptionsByClassification } from "@/app/src/data/modules/maintenance/party-management/party-management/PartyManagementData";
 import type {
 	PartyInformationFormErrors,
 	PartyInformationFormValues,
@@ -34,7 +34,10 @@ export function validatePartyInformationForm(
 		}
 	}
 
-	if (values.classification && !isKnownAtcCode(values.atcCode)) {
+	if (
+		values.classification &&
+		!isKnownAtcCodeForClassification(values.atcCode, values.classification)
+	) {
 		errors.atcCode = "Select a valid BIR ATC code from the list.";
 	}
 
@@ -51,8 +54,13 @@ export function isPartyInformationFormSubmittable(
 	return Object.keys(validatePartyInformationForm(values)).length === 0;
 }
 
-function isKnownAtcCode(value: string) {
-	return PartyAtcCodeOptions.some((option) => option.code === value);
+function isKnownAtcCodeForClassification(
+	value: string,
+	classification: PartyInformationFormValues["classification"],
+) {
+	return getPartyAtcCodeOptionsByClassification(classification).some(
+		(option) => option.code === value,
+	);
 }
 
 function isValidEmail(value: string) {

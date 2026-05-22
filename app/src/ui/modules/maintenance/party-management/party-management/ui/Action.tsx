@@ -5,7 +5,6 @@ import { usePartyManagementAction } from "@/app/src/hooks/modules/maintenance/pa
 import { PartyInformationActionHeader } from "./PartyInformationActionHeader";
 import { PartyInformationDetailsFields } from "./PartyInformationDetailsFields";
 import { PartyInformationNotFound } from "./PartyInformationNotFound";
-import { PartyInformationPreview } from "./PartyInformationPreview";
 
 export function PartyManagementPartyManagementAction() {
 	return (
@@ -32,26 +31,21 @@ function PartyManagementPartyManagementActionInner() {
 				mode={page.mode}
 			/>
 			<PartyInformationDetailsFields
+				addressOptions={page.addressOptions}
 				atcOptions={page.atcOptions}
-				atcQuery={page.atcQuery}
 				errors={page.errors}
 				isClassificationSelected={page.isClassificationSelected}
 				isReadonly={page.isReadonly}
 				partyTypeOptions={page.partyTypeOptions}
-				partyTypeQuery={page.partyTypeQuery}
-				selectedAtcOption={page.selectedAtcOption}
 				values={page.values}
 				onAddressInputChange={page.handleAddressInputChange}
-				onAtcQueryChange={page.handleAtcQueryChange}
 				onInputChange={page.handleInputChange}
-				onPartyTypeQueryChange={page.handlePartyTypeQueryChange}
-				onRemovePartyType={page.removePartyType}
+				onPartyTypesChange={page.handlePartyTypesChange}
+				onSelectBarangay={page.selectBarangay}
 				onSelectAtcCode={page.selectAtcCode}
-				onTogglePartyType={page.togglePartyType}
-			/>
-			<PartyInformationPreview
-				submitPayload={page.submitPayload}
-				values={page.values}
+				onSelectCityMunicipality={page.selectCityMunicipality}
+				onSelectProvince={page.selectProvince}
+				onSelectRegion={page.selectRegion}
 			/>
 		</form>
 	);

@@ -12,14 +12,16 @@ export type VatRegistrationType =
 	| "Services";
 
 export type PartyAddress = {
-	region: string;
-	province: string;
-	cityMunicipality: string;
+	addressLine1: string;
+	addressLine2: string;
 	barangay: string;
-	lotUnit: string;
-	blockBuildingStreet: string;
-	subdivision: string;
-	zipcode: string;
+	barangayCode: string;
+	cityMunicipality: string;
+	cityMunicipalityCode: string;
+	province: string;
+	provinceCode: string;
+	region: string;
+	regionCode: string;
 };
 
 export type PartyInformationRecord = {
@@ -73,9 +75,11 @@ export type PartyInformationFormErrors = Partial<{
 export type PartyInformationActionMode = "add" | "edit" | "view";
 
 export type PartyAtcCodeOption = {
-	code: string;
-	label: string;
 	category: string;
+	classifications: PartyClassification[];
+	code: string;
+	description: string;
+	label: string;
 };
 
 export type PartyInformationTableColumnKey =

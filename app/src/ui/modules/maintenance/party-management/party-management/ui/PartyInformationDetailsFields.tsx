@@ -1,60 +1,82 @@
 import type { ChangeEventHandler, ReactNode } from "react";
-import { Search, X } from "lucide-react";
 import {
 	PartyClassificationOptions,
 	VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
-import { PartyAtcCodeSource } from "@/app/src/data/modules/maintenance/party-management/party-management/PartyManagementData";
 import type {
+	PartyAddress,
 	PartyAtcCodeOption,
 	PartyInformationFormErrors,
 	PartyInformationFormValues,
 	PartyType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	AppAdvancedDropdown,
+	type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+
+type PartyAddressOptionSet = {
+	barangayOptions: AppAdvancedDropdownOption[];
+	cityMunicipalityOptions: AppAdvancedDropdownOption[];
+	isBarangaysLoading: boolean;
+	isCitiesMunicipalitiesLoading: boolean;
+	isProvincesLoading: boolean;
+	isRegionsLoading: boolean;
+	provinceOptions: AppAdvancedDropdownOption[];
+	regionOptions: AppAdvancedDropdownOption[];
+	requiresProvince: boolean;
+};
 
 export function PartyInformationDetailsFields({
 	atcOptions,
-	atcQuery,
+	addressOptions,
 	errors,
 	isClassificationSelected,
 	isReadonly,
 	partyTypeOptions,
-	partyTypeQuery,
-	selectedAtcOption,
 	values,
 	onAddressInputChange,
-	onAtcQueryChange,
 	onInputChange,
-	onPartyTypeQueryChange,
-	onRemovePartyType,
+	onPartyTypesChange,
+	onSelectBarangay,
 	onSelectAtcCode,
-	onTogglePartyType,
+	onSelectCityMunicipality,
+	onSelectProvince,
+	onSelectRegion,
 }: {
+	addressOptions: PartyAddressOptionSet;
 	atcOptions: PartyAtcCodeOption[];
-	atcQuery: string;
 	errors: PartyInformationFormErrors;
 	isClassificationSelected: boolean;
 	isReadonly: boolean;
-	partyTypeOptions: PartyType[];
-	partyTypeQuery: string;
-	selectedAtcOption?: PartyAtcCodeOption;
+	partyTypeOptions: readonly PartyType[];
 	values: PartyInformationFormValues;
 	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
-	onAtcQueryChange: (value: string) => void;
 	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
-	onPartyTypeQueryChange: (value: string) => void;
-	onRemovePartyType: (type: PartyType) => void;
-	onSelectAtcCode: (code: string) => void;
-	onTogglePartyType: (type: PartyType) => void;
+	onPartyTypesChange: (value: string | string[]) => void;
+	onSelectAtcCode: (value: string | string[]) => void;
+	onSelectBarangay: (value: string | string[]) => void;
+	onSelectCityMunicipality: (value: string | string[]) => void;
+	onSelectProvince: (value: string | string[]) => void;
+	onSelectRegion: (value: string | string[]) => void;
 }) {
 	const isDetailsDisabled = isReadonly || !isClassificationSelected;
+	const partyTypeSelectOptions = partyTypeOptions.map((type) => ({
+		name: type,
+		value: type,
+	}));
+	const atcSelectOptions = atcOptions.map((option) => ({
+		description: `${option.category}. ${option.description}`,
+		label: option.label,
+		name: option.code,
+		value: option.code,
+	}));
 
 	return (
 		<div className="grid gap-5">
 			<section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
 				<div className="grid gap-4 lg:grid-cols-3">
-					<Field label="Party Code No">
+					<Field label="Party Code Number">
 						<input
 							name="partyCodeNo"
 							value={values.partyCodeNo}
@@ -83,14 +105,14 @@ export function PartyInformationDetailsFields({
 						</select>
 					</Field>
 					<Field label="Party Type" error={errors.partyTypes} required>
-						<PartyTypeMultiSelect
+						<AppAdvancedDropdown
 							disabled={isDetailsDisabled}
-							options={partyTypeOptions}
-							query={partyTypeQuery}
-							selected={values.partyTypes}
-							onQueryChange={onPartyTypeQueryChange}
-							onRemove={onRemovePartyType}
-							onToggle={onTogglePartyType}
+							isSearchable={false}
+							options={partyTypeSelectOptions}
+							placeholder="Select party type"
+							selectionMode="multiple"
+							value={values.partyTypes}
+							onChange={onPartyTypesChange}
 						/>
 					</Field>
 				</div>
@@ -167,70 +189,18 @@ export function PartyInformationDetailsFields({
 				) : null}
 			</section>
 
-			<section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
-				<SectionHeading
-					description="Complete registered address details for reporting and documents."
-					title="Address"
-				/>
-				<div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-					<AddressInput
-						disabled={isDetailsDisabled}
-						label="Region"
-						name="region"
-						value={values.address.region}
-						onChange={onAddressInputChange}
-					/>
-					<AddressInput
-						disabled={isDetailsDisabled}
-						label="Province"
-						name="province"
-						value={values.address.province}
-						onChange={onAddressInputChange}
-					/>
-					<AddressInput
-						disabled={isDetailsDisabled}
-						label="City/Municipality"
-						name="cityMunicipality"
-						value={values.address.cityMunicipality}
-						onChange={onAddressInputChange}
-					/>
-					<AddressInput
-						disabled={isDetailsDisabled}
-						label="Barangay"
-						name="barangay"
-						value={values.address.barangay}
-						onChange={onAddressInputChange}
-					/>
-					<AddressInput
-						disabled={isDetailsDisabled}
-						label="Lot/Unit"
-						name="lotUnit"
-						value={values.address.lotUnit}
-						onChange={onAddressInputChange}
-					/>
-					<AddressInput
-						disabled={isDetailsDisabled}
-						label="Block/Building/Street"
-						name="blockBuildingStreet"
-						value={values.address.blockBuildingStreet}
-						onChange={onAddressInputChange}
-					/>
-					<AddressInput
-						disabled={isDetailsDisabled}
-						label="Subdivision"
-						name="subdivision"
-						value={values.address.subdivision}
-						onChange={onAddressInputChange}
-					/>
-					<AddressInput
-						disabled={isDetailsDisabled}
-						label="Zipcode"
-						name="zipcode"
-						value={values.address.zipcode}
-						onChange={onAddressInputChange}
-					/>
-				</div>
-			</section>
+			<AddressSection
+				address={values.address}
+				description="Address used for deliveries and shipping documents."
+				disabled={isDetailsDisabled}
+				options={addressOptions}
+				title="Delivery Address"
+				onAddressInputChange={onAddressInputChange}
+				onSelectBarangay={onSelectBarangay}
+				onSelectCityMunicipality={onSelectCityMunicipality}
+				onSelectProvince={onSelectProvince}
+				onSelectRegion={onSelectRegion}
+			/>
 
 			<section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
 				<SectionHeading
@@ -238,9 +208,11 @@ export function PartyInformationDetailsFields({
 					title="Tax & Contact"
 				/>
 				<div className="mt-4 grid gap-4 lg:grid-cols-2">
-					<Field label="Party TIN">
+					<Field label="Tax Identification Number (TIN)">
 						<input
 							name="tin"
+							inputMode="numeric"
+							maxLength={15}
 							value={values.tin}
 							onChange={onInputChange}
 							readOnly={isReadonly}
@@ -265,15 +237,15 @@ export function PartyInformationDetailsFields({
 							))}
 						</select>
 					</Field>
-					<Field label="Party ATC Code" error={errors.atcCode} required>
-						<AtcCodeCombobox
+					<Field label="BIR ATC Code" error={errors.atcCode} required>
+						<AppAdvancedDropdown
 							disabled={isDetailsDisabled}
-							options={atcOptions}
-							query={atcQuery}
-							selected={selectedAtcOption}
+							emptyMessage="No ATC codes match the selected classification."
+							options={atcSelectOptions}
+							placeholder="Select BIR ATC code"
+							searchPlaceholder="Search ATC code, label, or description"
 							value={values.atcCode}
-							onQueryChange={onAtcQueryChange}
-							onSelect={onSelectAtcCode}
+							onChange={onSelectAtcCode}
 						/>
 					</Field>
 					<Field label="Email Address" error={errors.email}>
@@ -288,7 +260,7 @@ export function PartyInformationDetailsFields({
 							placeholder="name@example.com"
 						/>
 					</Field>
-					<Field label="Contact No">
+					<Field label="Contact Number">
 						<input
 							name="contactNo"
 							value={values.contactNo}
@@ -305,149 +277,128 @@ export function PartyInformationDetailsFields({
 	);
 }
 
-function PartyTypeMultiSelect({
+function AddressSection({
+	address,
+	description,
 	disabled,
 	options,
-	query,
-	selected,
-	onQueryChange,
-	onRemove,
-	onToggle,
+	title,
+	onAddressInputChange,
+	onSelectBarangay,
+	onSelectCityMunicipality,
+	onSelectProvince,
+	onSelectRegion,
 }: {
+	address: PartyAddress;
+	description: string;
 	disabled: boolean;
-	options: PartyType[];
-	query: string;
-	selected: PartyType[];
-	onQueryChange: (value: string) => void;
-	onRemove: (type: PartyType) => void;
-	onToggle: (type: PartyType) => void;
+	options: PartyAddressOptionSet;
+	title: string;
+	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
+	onSelectBarangay: (value: string | string[]) => void;
+	onSelectCityMunicipality: (value: string | string[]) => void;
+	onSelectProvince: (value: string | string[]) => void;
+	onSelectRegion: (value: string | string[]) => void;
 }) {
-	return (
-		<div className="rounded-lg border border-darknavy/10 bg-white p-2">
-			<div className="flex min-h-10 flex-wrap gap-1.5">
-				{selected.length > 0 ? (
-					selected.map((type) => (
-						<span
-							key={type}
-							className="inline-flex items-center gap-1 rounded-md bg-skyblue/15 px-2.5 py-1 text-xs font-semibold text-darknavy"
-						>
-							{type}
-							<button
-								type="button"
-								disabled={disabled}
-								onClick={() => onRemove(type)}
-								className="text-darknavy/55 hover:text-darknavy disabled:pointer-events-none"
-								aria-label={`Remove ${type}`}
-							>
-								<X className="h-3 w-3" aria-hidden="true" />
-							</button>
-						</span>
-					))
-				) : (
-					<span className="px-2 py-1.5 text-sm text-darknavy/38">
-						Select party type
-					</span>
-				)}
-			</div>
-			<div className="mt-2 flex items-center gap-2 rounded-md border border-darknavy/10 px-2">
-				<Search className="h-4 w-4 text-darknavy/35" aria-hidden="true" />
-				<input
-					value={query}
-					onChange={(event) => onQueryChange(event.target.value)}
-					disabled={disabled}
-					className="h-9 min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none disabled:cursor-not-allowed"
-					placeholder="Search party types"
-				/>
-			</div>
-			<div className="mt-2 grid gap-1">
-				{options.map((option) => (
-					<label
-						key={option}
-						className={joinClasses(
-							"flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-darknavy transition",
-							disabled ? "opacity-50" : "hover:bg-skyblue/10",
-						)}
-					>
-						<input
-							type="checkbox"
-							checked={selected.includes(option)}
-							disabled={disabled}
-							onChange={() => onToggle(option)}
-							className="h-4 w-4 accent-skyblue"
-						/>
-						{option}
-					</label>
-				))}
-			</div>
-		</div>
-	);
-}
+	const isProvinceDisabled =
+		disabled ||
+		!address.regionCode ||
+		options.isProvincesLoading ||
+		(!options.requiresProvince && options.provinceOptions.length === 0);
+	const isCityMunicipalityDisabled =
+		disabled ||
+		!address.regionCode ||
+		options.isCitiesMunicipalitiesLoading ||
+		(options.requiresProvince && !address.provinceCode);
+	const isBarangayDisabled =
+		disabled || !address.cityMunicipalityCode || options.isBarangaysLoading;
 
-function AtcCodeCombobox({
-	disabled,
-	options,
-	query,
-	selected,
-	value,
-	onQueryChange,
-	onSelect,
-}: {
-	disabled: boolean;
-	options: PartyAtcCodeOption[];
-	query: string;
-	selected?: PartyAtcCodeOption;
-	value: string;
-	onQueryChange: (value: string) => void;
-	onSelect: (code: string) => void;
-}) {
 	return (
-		<div className="rounded-lg border border-darknavy/10 bg-white p-2">
-			<div className="rounded-md bg-offwhite/55 px-3 py-2 text-sm text-darknavy">
-				{selected ? (
-					<>
-						<span className="font-semibold">{selected.code}</span>
-						<span className="text-darknavy/55"> - {selected.label}</span>
-					</>
-				) : value ? (
-					<span className="text-coralpink">Invalid ATC code selected</span>
-				) : (
-					<span className="text-darknavy/38">Select BIR ATC code</span>
-				)}
-			</div>
-			<div className="mt-2 flex items-center gap-2 rounded-md border border-darknavy/10 px-2">
-				<Search className="h-4 w-4 text-darknavy/35" aria-hidden="true" />
-				<input
-					value={query}
-					onChange={(event) => onQueryChange(event.target.value)}
+		<section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
+			<SectionHeading description={description} title={title} />
+			<div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+				<Field label="Region">
+					<AppAdvancedDropdown
+						disabled={disabled || options.isRegionsLoading}
+						options={options.regionOptions}
+						placeholder={
+							options.isRegionsLoading ? "Loading regions" : "Select region"
+						}
+						searchPlaceholder="Search region"
+						value={address.regionCode}
+						onChange={onSelectRegion}
+					/>
+				</Field>
+				<Field label="Province">
+					<AppAdvancedDropdown
+						disabled={isProvinceDisabled}
+						options={options.provinceOptions}
+						placeholder={
+							!address.regionCode
+								? "Select region first"
+								: options.isProvincesLoading
+									? "Loading provinces"
+									: options.requiresProvince
+										? "Select province"
+										: "No province required"
+						}
+						searchPlaceholder="Search province"
+						value={address.provinceCode}
+						onChange={onSelectProvince}
+					/>
+				</Field>
+				<Field label="City or Municipality">
+					<AppAdvancedDropdown
+						disabled={isCityMunicipalityDisabled}
+						options={options.cityMunicipalityOptions}
+						placeholder={
+							!address.regionCode
+								? "Select region first"
+								: options.requiresProvince && !address.provinceCode
+									? "Select province first"
+									: options.isCitiesMunicipalitiesLoading
+										? "Loading cities"
+										: "Select city or municipality"
+						}
+						searchPlaceholder="Search city or municipality"
+						value={address.cityMunicipalityCode}
+						onChange={onSelectCityMunicipality}
+					/>
+				</Field>
+				<Field label="Barangay">
+					<AppAdvancedDropdown
+						disabled={isBarangayDisabled}
+						options={options.barangayOptions}
+						placeholder={
+							!address.cityMunicipalityCode
+								? "Select city first"
+								: options.isBarangaysLoading
+									? "Loading barangays"
+									: "Select barangay"
+						}
+						searchPlaceholder="Search barangay"
+						value={address.barangayCode}
+						onChange={onSelectBarangay}
+					/>
+				</Field>
+				<AddressInput
 					disabled={disabled}
-					className="h-9 min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none disabled:cursor-not-allowed"
-					placeholder="Search ATC code or description"
+					label="Address Line 1"
+					name="addressLine1"
+					placeholder="Unit, building, block, or lot"
+					value={address.addressLine1}
+					onChange={onAddressInputChange}
+				/>
+				<AddressInput
+					disabled={disabled}
+					label="Address Line 2"
+					name="addressLine2"
+					placeholder="Street, subdivision, village, or phase"
+					value={address.addressLine2}
+					onChange={onAddressInputChange}
 				/>
 			</div>
-			<div className="mt-2 max-h-56 overflow-y-auto">
-				{options.map((option) => (
-					<button
-						key={option.code}
-						type="button"
-						disabled={disabled}
-						onClick={() => onSelect(option.code)}
-						className={joinClasses(
-							"grid w-full gap-0.5 rounded-md px-2 py-2 text-left transition",
-							option.code === value
-								? "bg-skyblue/15 text-darknavy"
-								: "text-darknavy hover:bg-skyblue/10",
-							disabled && "cursor-not-allowed opacity-50",
-						)}
-					>
-						<span className="text-sm font-semibold">{option.code}</span>
-						<span className="text-xs text-darknavy/58">{option.label}</span>
-					</button>
-				))}
-			</div>
-			<p className="mt-2 text-[11px] leading-4 text-darknavy/45">
-				Source: {PartyAtcCodeSource.label}
-			</p>
-		</div>
+		</section>
 	);
 }
 
@@ -455,12 +406,14 @@ function AddressInput({
 	disabled,
 	label,
 	name,
+	placeholder,
 	value,
 	onChange,
 }: {
 	disabled: boolean;
 	label: string;
 	name: string;
+	placeholder?: string;
 	value: string;
 	onChange: ChangeEventHandler<HTMLInputElement>;
 }) {
@@ -472,6 +425,7 @@ function AddressInput({
 				onChange={onChange}
 				disabled={disabled}
 				className={fieldClassName}
+				placeholder={placeholder}
 			/>
 		</Field>
 	);
@@ -505,7 +459,7 @@ function Field({
 }) {
 	return (
 		<div className="grid gap-2">
-			<span className="text-xs font-semibold uppercase tracking-wide text-darknavy/55">
+			<span className="text-xs font-semibold text-darknavy/60">
 				{label}
 				{required ? <span className="text-coralpink"> *</span> : null}
 			</span>

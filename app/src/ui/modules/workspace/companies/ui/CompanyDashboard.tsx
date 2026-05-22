@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, Edit3, GitBranch, Plus, Users } from "lucide-react";
+import { Building2, Edit3, GitBranch, Plus, type LucideIcon } from "lucide-react";
 import {
 	WorkspaceCompaniesHref,
 	getWorkspaceCompanyBranchesHref,
 	getWorkspaceCompanyEditHref,
-	getWorkspaceCompanyUsersHref,
 } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
 import {
 	useWorkspaceCompanyContext,
@@ -28,7 +27,6 @@ export function WorkspaceCompanyDashboard() {
 		company,
 		companyBranches,
 		companyBranchUsers,
-		companyUsers,
 	} = useWorkspaceCompanyContext();
 
 	if (!company) {
@@ -40,7 +38,6 @@ export function WorkspaceCompanyDashboard() {
 		);
 	}
 
-	const usersHref = getWorkspaceCompanyUsersHref(company.id);
 	const branchesHref = getWorkspaceCompanyBranchesHref(company.id);
 
 	return (
@@ -49,7 +46,7 @@ export function WorkspaceCompanyDashboard() {
 				variant="panel"
 				titleAs="h1"
 				title={company.name}
-				description="Open company users, branch management, and branch-specific user assignments."
+				description="Review company details and manage branches or satellites."
 				eyebrow={
 					<>
 						<Building2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -64,13 +61,6 @@ export function WorkspaceCompanyDashboard() {
 						>
 							<Edit3 className="h-4 w-4" aria-hidden="true" />
 							Edit Company
-						</Link>
-						<Link
-							href={`${usersHref}/add`}
-							className={moduleHeaderActionClassNames.secondary}
-						>
-							<Plus className="h-4 w-4" aria-hidden="true" />
-							Add User
 						</Link>
 						<Link
 							href={`${branchesHref}/add`}
@@ -113,22 +103,13 @@ export function WorkspaceCompanyDashboard() {
 					</div>
 				</article>
 
-				<section className="grid gap-3 sm:grid-cols-3">
-					<MetricCard label="Company Users" value={companyUsers.length} />
+				<section className="grid gap-3 sm:grid-cols-2">
 					<MetricCard label="Branches" value={companyBranches.length} />
 					<MetricCard label="Branch Users" value={companyBranchUsers.length} />
 				</section>
 			</section>
 
-			<section className="grid gap-4 xl:grid-cols-2">
-				<ModuleLinkCard
-					description="Company-level users can access the company shell and may have different branch assignments later."
-					href={usersHref}
-					icon={Users}
-					label="Users Module"
-					primaryAction="Open Users"
-					secondaryText={`${companyUsers.length} users`}
-				/>
+			<section className="grid gap-4">
 				<ModuleLinkCard
 					description="Branches and satellites live inside the company. Each branch has a separate user list."
 					href={branchesHref}
@@ -136,29 +117,6 @@ export function WorkspaceCompanyDashboard() {
 					label="Branch Management"
 					primaryAction="Open Branches"
 					secondaryText={`${companyBranches.length} branches`}
-				/>
-			</section>
-
-			<section className="grid gap-4 xl:grid-cols-2">
-				<PreviewList
-					emptyText="No company users yet."
-					href={usersHref}
-					items={companyUsers.map((user) => ({
-						id: user.id,
-						meta: user.status,
-						title: user.name,
-					}))}
-					title="Recent Company Users"
-				/>
-				<PreviewList
-					emptyText="No branches yet."
-					href={branchesHref}
-					items={companyBranches.map((branch) => ({
-						id: branch.id,
-						meta: branch.isMain ? "Head Office" : branch.branchType,
-						title: branch.name,
-					}))}
-					title="Branches"
 				/>
 			</section>
 		</section>
@@ -197,7 +155,7 @@ function ModuleLinkCard({
 }: {
 	description: string;
 	href: string;
-	icon: typeof Users;
+	icon: LucideIcon;
 	label: string;
 	primaryAction: string;
 	secondaryText: string;
@@ -221,49 +179,5 @@ function ModuleLinkCard({
 				{primaryAction}
 			</p>
 		</Link>
-	);
-}
-
-function PreviewList({
-	emptyText,
-	href,
-	items,
-	title,
-}: {
-	emptyText: string;
-	href: string;
-	items: Array<{ id: string; meta: string; title: string }>;
-	title: string;
-}) {
-	return (
-		<section className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
-			<div className="flex items-center justify-between gap-3">
-				<h2 className="text-base font-semibold text-darknavy">{title}</h2>
-				<Link href={href} className="text-sm font-semibold text-skyblue">
-					View all
-				</Link>
-			</div>
-			<div className="mt-4 grid gap-2">
-				{items.length ? (
-					items.slice(0, 4).map((item) => (
-						<div
-							key={item.id}
-							className="flex items-center justify-between gap-3 rounded-md border border-darknavy/10 px-3 py-2"
-						>
-							<span className="truncate text-sm font-semibold text-darknavy">
-								{item.title}
-							</span>
-							<span className="shrink-0 rounded bg-darknavy/5 px-2 py-1 text-xs font-semibold text-darknavy/55">
-								{item.meta}
-							</span>
-						</div>
-					))
-				) : (
-					<p className="rounded-md border border-dashed border-darknavy/15 px-3 py-4 text-sm text-darknavy/55">
-						{emptyText}
-					</p>
-				)}
-			</div>
-		</section>
 	);
 }

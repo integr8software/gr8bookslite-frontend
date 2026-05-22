@@ -12,6 +12,8 @@ import type {
 
 export const WorkspaceCompaniesHref = "/workspace/companies";
 
+export const WorkspaceUsersManagementHref = "/workspace/users-roles";
+
 export const WorkspaceCompanyEditFromParam = "from";
 
 export const WorkspaceCompanyEditFromViewValue = "view";

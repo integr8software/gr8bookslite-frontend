@@ -155,7 +155,10 @@ export function useWorkspaceCompanyUserAction() {
 	const company = companies.find((record) => record.id === params.companyId);
 	const existingUser = users.find(
 		(user) =>
-			user.companyId === params.companyId && user.id === params.userId,
+			user.id === params.userId &&
+			user.companyAssignments.some(
+				(assignment) => assignment.companyId === params.companyId,
+			),
 	);
 	const isReadonly = mode === "view";
 	const wasOpenedFromView =
@@ -178,7 +181,12 @@ export function useWorkspaceCompanyUserAction() {
 	const [values, setValues] = useState<WorkspaceCompanyUserFormValues>(() =>
 		existingUser
 			? createWorkspaceCompanyUserFormValues(existingUser)
-			: InitialWorkspaceCompanyUserFormValues,
+			: {
+					...InitialWorkspaceCompanyUserFormValues,
+					companyAssignments: params.companyId
+						? [{ companyId: params.companyId, branchIds: [] }]
+						: [],
+				},
 	);
 	const [errors, setErrors] = useState<WorkspaceCompanyUserFormErrors>({});
 

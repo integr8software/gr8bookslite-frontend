@@ -291,7 +291,11 @@ export function useWorkspaceCompanyContext() {
 		(state) => state.isLoading,
 	);
 	const company = companies.find((record) => record.id === params.companyId);
-	const companyUsers = users.filter((user) => user.companyId === params.companyId);
+	const companyUsers = users.filter((user) =>
+		user.companyAssignments.some(
+			(assignment) => assignment.companyId === params.companyId,
+		),
+	);
 	const companyBranches = branches.filter(
 		(branch) => branch.companyId === params.companyId,
 	);
@@ -349,8 +353,11 @@ export function useWorkspaceCompaniesTable({
 				totalBranches: branches.filter(
 					(branch) => branch.companyId === company.id,
 				).length,
-				totalUsers: users.filter((user) => user.companyId === company.id)
-					.length,
+				totalUsers: users.filter((user) =>
+					user.companyAssignments.some(
+						(assignment) => assignment.companyId === company.id,
+					),
+				).length,
 			})),
 		[branches, companies, users],
 	);

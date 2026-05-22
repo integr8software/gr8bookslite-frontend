@@ -30,7 +30,7 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
       ),
       item(
         "workspace-users-roles",
-        "Users & Roles",
+        "Users Management",
         "/workspace/users-roles",
         "workspace.users",
       ),

@@ -40,6 +40,7 @@ export type WorkspaceCompanyFormErrors = Partial<
 export type WorkspaceCompanyUserRecord = {
   id: string;
   companyId: string;
+  companyAssignments: WorkspaceUserCompanyAssignment[];
   name: string;
   email: string;
   contactNumber: string;
@@ -48,10 +49,17 @@ export type WorkspaceCompanyUserRecord = {
   profileImageUrl?: string;
 };
 
-export type WorkspaceCompanyUserFormValues = Omit<
-  WorkspaceCompanyUserRecord,
-  "id" | "companyId" | "lastLogin" | "profileImageUrl" | "status"
->;
+export type WorkspaceUserCompanyAssignment = {
+  companyId: string;
+  branchIds: string[];
+};
+
+export type WorkspaceCompanyUserFormValues = {
+  companyAssignments: WorkspaceUserCompanyAssignment[];
+  contactNumber: string;
+  email: string;
+  name: string;
+};
 
 export type WorkspaceCompanyUserFormErrors = Partial<
   Record<keyof WorkspaceCompanyUserFormValues, string>

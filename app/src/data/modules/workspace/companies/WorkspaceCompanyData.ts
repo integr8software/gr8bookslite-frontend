@@ -28,6 +28,7 @@ export const InitialWorkspaceCompanyFormValues: WorkspaceCompanyFormValues = {
 
 export const InitialWorkspaceCompanyUserFormValues: WorkspaceCompanyUserFormValues =
 	{
+		companyAssignments: [],
 		contactNumber: "",
 		email: "",
 		name: "",
@@ -115,6 +116,9 @@ export const MockWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [
 	{
 		id: "cu-gr8-001",
 		companyId: "cmp-gr8books",
+		companyAssignments: [
+			{ companyId: "cmp-gr8books", branchIds: ["br-gr8-main"] },
+		],
 		name: "John Dela Cruz",
 		email: "john.delacruz@gr8books.test",
 		contactNumber: "+63 916 460 4120",
@@ -126,6 +130,9 @@ export const MockWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [
 	{
 		id: "cu-gr8-002",
 		companyId: "cmp-gr8books",
+		companyAssignments: [
+			{ companyId: "cmp-gr8books", branchIds: ["br-gr8-north"] },
+		],
 		name: "Jane Santos",
 		email: "jane.santos@gr8books.test",
 		contactNumber: "+63 917 120 3301",
@@ -137,6 +144,9 @@ export const MockWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [
 	{
 		id: "cu-gr8-003",
 		companyId: "cmp-gr8books",
+		companyAssignments: [
+			{ companyId: "cmp-gr8books", branchIds: [] },
+		],
 		name: "Carlo Mendoza",
 		email: "carlo.mendoza@gr8books.test",
 		contactNumber: "+63 924 716 8830",
@@ -146,6 +156,9 @@ export const MockWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [
 	{
 		id: "cu-demo-001",
 		companyId: "cmp-demo-trading",
+		companyAssignments: [
+			{ companyId: "cmp-demo-trading", branchIds: ["br-demo-main"] },
+		],
 		name: "Alyssa Tan",
 		email: "alyssa.tan@demotrading.test",
 		contactNumber: "+63 925 613 4208",
@@ -155,6 +168,9 @@ export const MockWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [
 	{
 		id: "cu-cebu-001",
 		companyId: "cmp-cebu-retail",
+		companyAssignments: [
+			{ companyId: "cmp-cebu-retail", branchIds: ["br-cebu-main"] },
+		],
 		name: "Daniel Wilson",
 		email: "daniel.wilson@ceburetail.test",
 		contactNumber: "+63 917 884 1209",
@@ -350,6 +366,7 @@ export function createWorkspaceCompanyUserFormValues(
 	user: WorkspaceCompanyUserRecord,
 ): WorkspaceCompanyUserFormValues {
 	return {
+		companyAssignments: user.companyAssignments,
 		contactNumber: user.contactNumber,
 		email: user.email,
 		name: user.name,
@@ -363,6 +380,7 @@ export function createWorkspaceCompanyUserFromForm(
 	return {
 		...trimUserValues(values),
 		companyId,
+		companyAssignments: normalizeUserAssignments(values.companyAssignments, companyId),
 		id: `cu-${Date.now()}`,
 		lastLogin: "Invitation sent",
 		status: "Pending",
@@ -376,6 +394,10 @@ export function updateWorkspaceCompanyUserFromForm(
 	return {
 		...user,
 		...trimUserValues(values),
+		companyAssignments: normalizeUserAssignments(
+			values.companyAssignments,
+			user.companyId,
+		),
 	};
 }
 
@@ -386,6 +408,9 @@ export function validateWorkspaceCompanyUserForm(
 
 	if (!values.name.trim()) errors.name = "Name is required.";
 	if (!values.email.trim()) errors.email = "Email is required.";
+	if (values.companyAssignments.length === 0) {
+		errors.companyAssignments = "Add at least one company.";
+	}
 
 	return errors;
 }
@@ -546,10 +571,29 @@ function trimUserValues(
 ): WorkspaceCompanyUserFormValues {
 	return {
 		...values,
+		companyAssignments: values.companyAssignments.map((assignment) => ({
+			companyId: assignment.companyId,
+			branchIds: assignment.branchIds,
+		})),
 		contactNumber: values.contactNumber.trim(),
 		email: values.email.trim(),
 		name: values.name.trim(),
 	};
+}
+
+function normalizeUserAssignments(
+	assignments: WorkspaceCompanyUserFormValues["companyAssignments"],
+	fallbackCompanyId: string,
+) {
+	const normalizedAssignments =
+		assignments.length > 0
+			? assignments
+			: [{ companyId: fallbackCompanyId, branchIds: [] }];
+
+	return normalizedAssignments.map((assignment) => ({
+		companyId: assignment.companyId,
+		branchIds: Array.from(new Set(assignment.branchIds)),
+	}));
 }
 
 function trimBranchValues(

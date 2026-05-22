@@ -22,3 +22,10 @@ export type TransactionTypeFormErrors = Partial<
 >;
 
 export type TransactionTypeActionMode = "add" | "edit" | "view";
+
+export type TransactionTypeTableColumnKey =
+	| "type"
+	| "description"
+	| "accountCode"
+	| "accountTitle"
+	| "status";

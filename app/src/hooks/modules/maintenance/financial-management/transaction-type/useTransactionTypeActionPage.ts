@@ -2,6 +2,7 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { TransactionTypeHref } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
 import {
 	TransactionTypeInitialFormValues,
@@ -78,6 +79,7 @@ export function useTransactionTypeActionPage() {
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
+			toast.error("Please correct the highlighted transaction type fields.");
 			return;
 		}
 

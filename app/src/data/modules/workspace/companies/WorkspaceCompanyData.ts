@@ -558,10 +558,7 @@ export function createWorkspaceCompanyBranchFromForm(
 		code: createWorkspaceBranchCode(company.initials, trimmedValues.name),
 		id: `br-${Date.now()}`,
 		isMain: trimmedValues.branchType === "Branch" ? trimmedValues.isMain : false,
-		linkedMainBranchId:
-			trimmedValues.branchType === "Satellite"
-				? trimmedValues.linkedMainBranchId
-				: undefined,
+		linkedMainBranchId: undefined,
 		status: "Active",
 		tin,
 	};
@@ -594,11 +591,7 @@ export function validateWorkspaceCompanyBranchForm(
 	const errors: WorkspaceCompanyBranchFormErrors = {};
 
 	if (!values.name.trim()) errors.name = "Branch name is required.";
-	if (values.branchType === "Satellite") {
-		if (!values.linkedMainBranchId) {
-			errors.linkedMainBranchId = "Select the main branch TIN.";
-		}
-	} else if (!values.tin.trim()) {
+	if (values.branchType === "Branch" && !values.tin.trim()) {
 		errors.tin = "TIN is required for a branch.";
 	}
 

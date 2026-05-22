@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
 import {
   type MainCurrentUser,
@@ -58,6 +58,9 @@ const WorkspaceRoutePrefix = "/workspace";
 const WorkspaceHomeHref = "/workspace/dashboard";
 const CompanyFallbackHomeHref = "/profile";
 const MaxBlockingProfileLoadMs = 4500;
+const BranchUsersContextParam = "workspaceBranchId";
+const CompanyUsersContextParam = "workspaceCompanyId";
+const BranchUsersNameParam = "branchName";
 
 type NavigationTrailNode = {
   key: string;
@@ -69,6 +72,7 @@ type NavigationTrailNode = {
 export function useMainLayout() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const storedAccessToken = useAppStore((state) => state.accessToken);
   const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const branchLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -101,6 +105,9 @@ export function useMainLayout() {
   );
   const missingRecordActionRedirectHref =
     getMissingRecordActionRedirectHref(pathname);
+  const routedCompanyId = searchParams.get(CompanyUsersContextParam);
+  const routedBranchId = searchParams.get(BranchUsersContextParam);
+  const routedBranchName = searchParams.get(BranchUsersNameParam);
   const accessToken = storedAccessToken;
   const { data: authProfile, isLoading: isAuthProfileLoading } =
     useAuthProfileQuery({ accessToken });
@@ -259,6 +266,52 @@ export function useMainLayout() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- keep the layout company switcher synced with the loaded profile.
     setActiveCompanyId(String(authProfile.activeCompanyId));
   }, [authProfile?.activeCompanyId]);
+
+  useEffect(() => {
+    if (!routedCompanyId) {
+      return;
+    }
+
+    if (!availableCompanies.some((company) => company.id === routedCompanyId)) {
+      return;
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- route context shortcuts should sync the topbar company when available.
+    setActiveCompanyId(routedCompanyId);
+  }, [availableCompanies, routedCompanyId]);
+
+  useEffect(() => {
+    if (!routedBranchId && !routedBranchName) {
+      return;
+    }
+
+    const normalizedRoutedBranchName = normalizeBranchRouteToken(
+      routedBranchName ?? "",
+    );
+    const routedBranch = accessibleBranches.find((branch) => {
+      if (branch.id === routedBranchId) {
+        return true;
+      }
+
+      if (!normalizedRoutedBranchName) {
+        return false;
+      }
+
+      return (
+        normalizeBranchRouteToken(branch.name) === normalizedRoutedBranchName ||
+        normalizeBranchRouteToken(getBranchSwitcherLabel(branch)) ===
+          normalizedRoutedBranchName ||
+        normalizeBranchRouteToken(branch.code) === normalizedRoutedBranchName
+      );
+    });
+
+    if (!routedBranch) {
+      return;
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- route context shortcuts should sync the topbar branch when available.
+    setActiveBranchId(routedBranch.id);
+  }, [accessibleBranches, routedBranchId, routedBranchName]);
 
   const branchDropdownItems = useMemo(() => {
     if (!shouldShowBranchSwitcher) {
@@ -1233,6 +1286,13 @@ function getBranchPriority(branch: MainBranch) {
 
 function getBranchSwitcherLabel(branch: MainBranch) {
   return `${branch.name}${branch.isMain ? " (Head Office)" : ""}`;
+}
+
+function normalizeBranchRouteToken(value: string) {
+  return value
+    .replace(/\s*\(head office\)\s*/i, "")
+    .trim()
+    .toLowerCase();
 }
 
 function matchesSearchQuery(item: MainSearchItem, query: string) {

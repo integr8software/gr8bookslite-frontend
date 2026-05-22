@@ -298,13 +298,22 @@ export function useWorkspaceCompanyBranchAction() {
 			branch.companyId === params.companyId &&
 			branch.id === params.branchId,
 	);
-	const mainBranchOptions = branches.filter(
-		(branch) =>
-			branch.companyId === params.companyId &&
-			branch.branchType === "Branch" &&
-			Boolean(branch.tin) &&
-			branch.id !== params.branchId,
-	);
+	const headOfficeBranch =
+		branches.find(
+			(branch) =>
+				branch.companyId === params.companyId &&
+				branch.branchType === "Branch" &&
+				branch.isMain &&
+				Boolean(branch.tin) &&
+				branch.id !== params.branchId,
+		) ??
+		branches.find(
+			(branch) =>
+				branch.companyId === params.companyId &&
+				branch.branchType === "Branch" &&
+				Boolean(branch.tin) &&
+				branch.id !== params.branchId,
+		);
 	const isReadonly = mode === "view";
 	const wasOpenedFromView =
 		mode === "edit" &&
@@ -354,8 +363,7 @@ export function useWorkspaceCompanyBranchAction() {
 						value === "Satellite"
 							? false
 							: current.isMain,
-					linkedMainBranchId:
-						value === "Branch" ? "" : current.linkedMainBranchId,
+					linkedMainBranchId: "",
 					tin: value === "Satellite" ? "" : current.tin,
 				};
 			}
@@ -403,9 +411,7 @@ export function useWorkspaceCompanyBranchAction() {
 					existingBranch,
 					company,
 					values,
-					mainBranchOptions.find(
-						(branch) => branch.id === values.linkedMainBranchId,
-					),
+					headOfficeBranch,
 				),
 			);
 			router.push(wasOpenedFromView ? viewHref : listHref);
@@ -418,9 +424,7 @@ export function useWorkspaceCompanyBranchAction() {
 					company,
 					params.companyId,
 					values,
-					mainBranchOptions.find(
-						(branch) => branch.id === values.linkedMainBranchId,
-					),
+					headOfficeBranch,
 				),
 			);
 		}
@@ -451,7 +455,6 @@ export function useWorkspaceCompanyBranchAction() {
 		isMutating,
 		isReadonly,
 		listHref,
-		mainBranchOptions,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
 		updateField,

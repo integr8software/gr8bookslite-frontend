@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { Suspense, useMemo, useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { ArrowLeft, Building2, Edit3, Save, UserCog, X } from "lucide-react";
+import {
+	ArrowLeft,
+	Building2,
+	Edit3,
+	ExternalLink,
+	Save,
+	UserCog,
+	X,
+} from "lucide-react";
+import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import {
 	WorkspaceUsersManagementHref,
 } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
@@ -32,6 +41,10 @@ import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/compani
 import { WorkspaceBillingImpactConfirmDialog } from "@/app/src/ui/modules/workspace/shared/WorkspaceBillingImpactConfirmDialog";
 
 const WorkspaceUserFormId = "workspace-user-management-form";
+const BranchUsersContextParam = "workspaceBranchId";
+const CompanyUsersContextParam = "workspaceCompanyId";
+const BranchUsersNameParam = "branchName";
+const CompanyUsersNameParam = "companyName";
 
 export function WorkspaceUserAction() {
 	return (
@@ -427,9 +440,8 @@ function UserAssignmentsSection({
 									const branchCheckboxId = `workspace-user-${assignment.companyId}-${branch.id}`;
 
 									return (
-										<label
+										<div
 											key={branch.id}
-											htmlFor={branchCheckboxId}
 											className="flex items-center gap-3 rounded-md border border-darknavy/10 bg-white px-3 py-2 text-sm font-medium text-darknavy"
 										>
 											<input
@@ -442,11 +454,26 @@ function UserAssignmentsSection({
 												disabled={isReadonly}
 												className="h-4 w-4 rounded border-darknavy/20 text-skyblue"
 											/>
-											<span className="min-w-0 truncate">
+											<label
+												htmlFor={branchCheckboxId}
+												className="min-w-0 flex-1 cursor-pointer truncate"
+											>
 												{branch.name}
 												{branch.isMain ? " (Head Office)" : ""}
-											</span>
-										</label>
+											</label>
+											<Link
+												href={getBranchScopedUsersHref({
+													branch,
+													company,
+													companyId: assignment.companyId,
+												})}
+												aria-label={`Open user management for ${branch.name}`}
+												className="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-md px-2 text-xs font-semibold text-darknavy/55 transition hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
+											>
+												<ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+												Users
+											</Link>
+										</div>
 									);
 								})}
 							</div>
@@ -456,4 +483,27 @@ function UserAssignmentsSection({
 			</div>
 		</WorkspaceCompanySection>
 	);
+}
+
+function getBranchScopedUsersHref({
+	branch,
+	company,
+	companyId,
+}: {
+	branch: WorkspaceCompanyBranchRecord;
+	company?: WorkspaceCompanyRecord;
+	companyId: string;
+}) {
+	const params = new URLSearchParams({
+		[BranchUsersContextParam]: branch.id,
+		[BranchUsersNameParam]: getBranchDisplayName(branch),
+		[CompanyUsersContextParam]: company?.id ?? companyId,
+		[CompanyUsersNameParam]: company?.name ?? "Company",
+	});
+
+	return `${UserListHref}?${params.toString()}`;
+}
+
+function getBranchDisplayName(branch: WorkspaceCompanyBranchRecord) {
+	return `${branch.name}${branch.isMain ? " (Head Office)" : ""}`;
 }

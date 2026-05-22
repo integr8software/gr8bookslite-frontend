@@ -16,7 +16,6 @@ import type {
 	WorkspaceCompanyBranchFormErrors,
 	WorkspaceCompanyBranchFormValues,
 	WorkspaceCompanyBranchKind,
-	WorkspaceCompanyBranchRecord,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
 import { WorkspaceCompanyActionHeader } from "./WorkspaceCompanyActionHeader";
 import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
@@ -75,7 +74,6 @@ function WorkspaceCompanyBranchActionInner() {
 			<CompanyBranchFields
 				errors={action.errors}
 				isReadonly={action.isReadonly}
-				mainBranchOptions={action.mainBranchOptions}
 				values={action.values}
 				onInputChange={action.handleInputChange}
 				onSubmit={action.handleSubmit}
@@ -88,7 +86,6 @@ function WorkspaceCompanyBranchActionInner() {
 function CompanyBranchFields({
 	errors,
 	isReadonly,
-	mainBranchOptions,
 	values,
 	onInputChange,
 	onSubmit,
@@ -96,7 +93,6 @@ function CompanyBranchFields({
 }: {
 	errors: WorkspaceCompanyBranchFormErrors;
 	isReadonly: boolean;
-	mainBranchOptions: WorkspaceCompanyBranchRecord[];
 	values: WorkspaceCompanyBranchFormValues;
 	onInputChange: (
 		event: React.ChangeEvent<
@@ -180,28 +176,7 @@ function CompanyBranchFields({
 						/>
 					</BranchField>
 
-					{isSatellite ? (
-						<BranchField
-							label="Main Branch TIN"
-							error={errors.linkedMainBranchId}
-							required
-						>
-							<select
-								name="linkedMainBranchId"
-								value={values.linkedMainBranchId}
-								onChange={onInputChange}
-								disabled={isReadonly}
-								className={WorkspaceBranchFieldClassName}
-							>
-								<option value="">Select main branch TIN</option>
-								{mainBranchOptions.map((branch) => (
-									<option key={branch.id} value={branch.id}>
-										{branch.name} - {branch.tin}
-									</option>
-								))}
-							</select>
-						</BranchField>
-					) : (
+					{isSatellite ? null : (
 						<BranchField label="TIN" error={errors.tin} required>
 							<input
 								name="tin"
@@ -226,21 +201,6 @@ function CompanyBranchFields({
 							placeholder="Street, city, province"
 						/>
 					</BranchField>
-
-					<label className="flex min-h-11 items-center gap-3 rounded-md border border-darknavy/10 px-3">
-						<input
-							type="checkbox"
-							checked={values.isMain}
-							disabled={isSatellite || isReadonly}
-							onChange={(event) =>
-								onUpdateField("isMain", event.target.checked)
-							}
-							className="h-4 w-4 rounded border-darknavy/20 text-skyblue"
-						/>
-						<span className="text-sm font-semibold text-darknavy">
-							Mark as main branch
-						</span>
-					</label>
 
 					<BranchField label="Description" className="lg:col-span-2">
 						<textarea

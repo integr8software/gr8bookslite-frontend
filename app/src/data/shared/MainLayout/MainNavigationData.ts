@@ -43,12 +43,6 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
         "workspace.companies",
       ),
       item(
-        "workspace-branches",
-        "Branches",
-        "/workspace/branches",
-        "workspace.branches",
-      ),
-      item(
         "workspace-users-roles",
         "Users",
         "/workspace/users-roles",

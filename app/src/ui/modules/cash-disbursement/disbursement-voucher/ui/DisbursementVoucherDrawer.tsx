@@ -17,6 +17,11 @@ import {
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import {
+  AppPaymentTypeDialog,
+  InitialAppPaymentTypeRecords,
+  type AppPaymentTypeRecord,
+} from "@/app/src/ui/shared/system/AppPaymentTypeDialog";
 import type {
   DisbursementLineEntry,
   DisbursementPaymentMethod,
@@ -77,6 +82,10 @@ function DrawerPanel({
 }: DisbursementVoucherDrawerProps) {
   const [activeTab, setActiveTab] = useState<DrawerTab>("cash-disbursement");
   const [step, setStep] = useState<WorkflowStep>("details");
+  const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
+  const [paymentTypeRecords, setPaymentTypeRecords] = useState<AppPaymentTypeRecord[]>(
+    InitialAppPaymentTypeRecords,
+  );
   const [values, setValues] = useState<DisbursementVoucherFormValues>(() =>
     createDisbursementVoucherFormValues(transaction, voucher),
   );
@@ -97,6 +106,13 @@ function DrawerPanel({
     [transactionNumber, transactions],
   );
   const selectedTransaction = matchedTransaction ?? transaction;
+  const activePaymentTypeOptions = useMemo(
+    () =>
+      paymentTypeRecords
+        .filter((record) => record.status === "Active")
+        .map((record) => record.paymentType),
+    [paymentTypeRecords],
+  );
   const totalDebit = useMemo(
     () => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0),
     [values.lineEntries],
@@ -306,9 +322,11 @@ function DrawerPanel({
               errors={errors}
               isEditing={isEditing}
               matchedTransaction={matchedTransaction}
+              paymentTypeOptions={activePaymentTypeOptions}
               transactionNumber={transactionNumber}
               transactions={transactions}
               values={values}
+              onOpenPaymentTypeDialog={() => setIsPaymentTypeDialogOpen(true)}
               onTransactionNumberChange={handleTransactionNumberChange}
               onUpdateField={updateField}
             />
@@ -342,6 +360,17 @@ function DrawerPanel({
           onEditEntries={() => setStep("entries")}
         />
       ) : null}
+
+      <AppPaymentTypeDialog
+        isOpen={isPaymentTypeDialogOpen}
+        records={paymentTypeRecords}
+        onClose={() => setIsPaymentTypeDialogOpen(false)}
+        onRecordsChange={setPaymentTypeRecords}
+        onSelect={(value) => {
+          updateField("paymentMethod", value);
+          setIsPaymentTypeDialogOpen(false);
+        }}
+      />
     </ModuleDrawer>
   );
 }
@@ -391,31 +420,46 @@ function DetailsTab({
   errors,
   isEditing,
   matchedTransaction,
+  paymentTypeOptions,
   transactionNumber,
   transactions,
   values,
+  onOpenPaymentTypeDialog,
   onTransactionNumberChange,
   onUpdateField,
 }: {
   errors: DisbursementVoucherFormErrors;
   isEditing: boolean;
   matchedTransaction?: DisbursementTransactionRecord;
+  paymentTypeOptions: DisbursementPaymentMethod[];
   transactionNumber: string;
   transactions: DisbursementTransactionRecord[];
   values: DisbursementVoucherFormValues;
+  onOpenPaymentTypeDialog: () => void;
   onTransactionNumberChange: (value: string) => void;
   onUpdateField: <TKey extends keyof DisbursementVoucherFormValues>(
     field: TKey,
     value: DisbursementVoucherFormValues[TKey],
   ) => void;
 }) {
+  const availablePaymentTypeOptions = useMemo(() => {
+    if (
+      values.paymentMethod &&
+      !paymentTypeOptions.includes(values.paymentMethod as DisbursementPaymentMethod)
+    ) {
+      return [values.paymentMethod as DisbursementPaymentMethod, ...paymentTypeOptions];
+    }
+
+    return paymentTypeOptions;
+  }, [paymentTypeOptions, values.paymentMethod]);
+
   return (
     <div className="grid gap-6 px-6 py-6 xl:grid-cols-[1fr_0.72fr]">
       <div className="grid gap-4">
         <FieldShell error={errors.paymentMethod} label="Payment Type : *">
           <ActionField
             actionLabel="Add"
-            onAction={() => undefined}
+            onAction={onOpenPaymentTypeDialog}
             control={
               <select
                 value={values.paymentMethod}
@@ -428,10 +472,11 @@ function DetailsTab({
                 className={FieldClassName}
               >
                 <option value="">--Select Payment Type--</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Check">Check</option>
-                <option value="Online Payment">Online Payment</option>
-                <option value="Petty Cash">Petty Cash</option>
+                {availablePaymentTypeOptions.map((paymentType) => (
+                  <option key={paymentType} value={paymentType}>
+                    {paymentType}
+                  </option>
+                ))}
               </select>
             }
           />
@@ -440,8 +485,8 @@ function DetailsTab({
         <FieldShell error={errors.vceCode} label="VCECode : *">
           <input
             value={values.vceCode}
-            onChange={(event) => onUpdateField("vceCode", event.target.value)}
-            className={FieldClassName}
+            readOnly
+            className={ReadOnlyFieldClassName}
           />
         </FieldShell>
 
@@ -535,9 +580,8 @@ function DetailsTab({
             <input
               list="disbursement-voucher-transaction-nos"
               value={transactionNumber}
-              onChange={(event) => onTransactionNumberChange(event.target.value)}
-              readOnly={isEditing}
-              className={FieldClassName}
+              readOnly
+              className={ReadOnlyFieldClassName}
             />
             <datalist id="disbursement-voucher-transaction-nos">
               {transactions.map((currentTransaction) => (
@@ -581,18 +625,16 @@ function DetailsTab({
         <FieldShell error={errors.costCenter} label="ProjectRef :">
           <input
             value={values.costCenter}
-            onChange={(event) => onUpdateField("costCenter", event.target.value)}
-            className={FieldClassName}
+            readOnly
+            className={ReadOnlyFieldClassName}
           />
         </FieldShell>
 
         <FieldShell error={errors.invoiceReferenceNo} label="Importation Ref No :">
           <input
             value={values.invoiceReferenceNo}
-            onChange={(event) =>
-              onUpdateField("invoiceReferenceNo", event.target.value)
-            }
-            className={FieldClassName}
+            readOnly
+            className={ReadOnlyFieldClassName}
           />
         </FieldShell>
       </div>

@@ -8,7 +8,8 @@ export type DisbursementPaymentMethod =
   | "Bank Transfer"
   | "Check"
   | "Online Payment"
-  | "Petty Cash";
+  | "Petty Cash"
+  | (string & {});
 
 export type DisbursementType =
   | "Vendor Payment"

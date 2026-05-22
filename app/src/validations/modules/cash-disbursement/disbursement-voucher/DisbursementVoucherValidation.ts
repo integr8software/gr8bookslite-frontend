@@ -17,40 +17,12 @@ export function validateDisbursementVoucherDetails(
 		errors.paymentMethod = "Payment method is required.";
 	}
 
-	if (!values.disbursementType) {
-		errors.disbursementType = "Disbursement type is required.";
-	}
-
-	if (!values.costCenter.trim()) {
-		errors.costCenter = "Project reference is required.";
-	}
-
 	if (!values.vceCode.trim()) {
 		errors.vceCode = "VCE code is required.";
 	}
 
 	if (!values.vceName.trim()) {
 		errors.vceName = "Payee name is required.";
-	}
-
-	if (!values.amount.trim() || Number(values.amount) <= 0) {
-		errors.amount = "Amount must be greater than zero.";
-	}
-
-	if (!values.voucherReferenceNo.trim()) {
-		errors.voucherReferenceNo = "Voucher reference number is required.";
-	}
-
-	if (!values.invoiceReferenceNo.trim()) {
-		errors.invoiceReferenceNo = "Importation reference number is required.";
-	}
-
-	if (!values.voucherDate) {
-		errors.voucherDate = "Voucher date is required.";
-	}
-
-	if (!values.paymentDueDate) {
-		errors.paymentDueDate = "Payment due date is required.";
 	}
 
 	return errors;

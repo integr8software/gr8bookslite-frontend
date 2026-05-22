@@ -91,15 +91,13 @@ export type PartyAtcCodeOption = {
 };
 
 export type PartyInformationTableColumnKey =
-	| "partyCodeNo"
+	| "addressLabel"
 	| "name"
 	| "classification"
-	| "partyTypesLabel"
-	| "atcCode"
-	| "contact";
+	| "partyTypesLabel";
 
 export type PartyInformationTableRecord = PartyInformationRecord & {
+	addressLabel: string;
 	name: string;
 	partyTypesLabel: string;
-	contact: string;
 };

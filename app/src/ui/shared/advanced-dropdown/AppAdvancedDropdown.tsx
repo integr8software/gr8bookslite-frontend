@@ -653,7 +653,7 @@ function SelectedSingle({
 		<span className="flex min-w-0 items-center gap-2 px-0.5">
 			<span
 				className={joinClasses(
-					"truncate text-sm font-semibold text-darknavy",
+					"truncate text-sm text-darknavy",
 					disabled && "text-darknavy/35",
 				)}
 			>

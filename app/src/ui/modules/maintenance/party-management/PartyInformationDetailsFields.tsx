@@ -472,7 +472,12 @@ function SectionHeading({
 }) {
 	return (
 		<div>
-			<h2 className="text-base font-semibold text-darknavy">{title}</h2>
+			<div className="flex items-center gap-3">
+				<h2 className="shrink-0 text-base font-semibold text-darknavy">
+					{title}
+				</h2>
+				<div className="h-px flex-1 bg-darknavy/10" aria-hidden="true" />
+			</div>
 			{description ? (
 				<p className="mt-1 text-sm text-darknavy/55">{description}</p>
 			) : null}

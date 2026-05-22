@@ -121,7 +121,7 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		() =>
 			records.map((record) => ({
 				...record,
-				contact: record.email || record.contactNo || "-",
+				addressLabel: formatPartyAddress(record.address),
 				name: getPartyDisplayName(record),
 				partyTypesLabel: record.partyTypes.join(", "),
 			})),
@@ -135,10 +135,7 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 					record.name,
 					record.classification,
 					record.partyTypesLabel,
-					record.atcCode,
-					record.email,
-					record.contactNo,
-					record.tin,
+					record.addressLabel,
 				]
 					.filter(Boolean)
 					.join(" ")
@@ -224,6 +221,20 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		setQuery,
 		table,
 	};
+}
+
+function formatPartyAddress(address: PartyInformationRecord["address"]) {
+	return [
+		address.addressLine1,
+		address.addressLine2,
+		address.barangay,
+		address.cityMunicipality,
+		address.province,
+		address.region,
+	]
+		.map((part) => part.trim())
+		.filter(Boolean)
+		.join(", ") || "-";
 }
 
 function createPartyInformationColumn(

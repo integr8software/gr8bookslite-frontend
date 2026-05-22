@@ -33,7 +33,7 @@ export function PartyInformationTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No party records found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[76rem]"
+				minWidthClassName="min-w-[52rem]"
 				paginationStorageKey={PartyManagementTablePaginationStorageKey}
 				table={partyTable.table}
 				renderRow={({ id, original }) => (

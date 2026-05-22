@@ -8,16 +8,10 @@ export function PartyInformationTableRow({
 }) {
 	return (
 		<tr className="module-table-row">
-			<PartyInformationTableCell>
-				<span className="font-semibold">{record.partyCodeNo}</span>
-			</PartyInformationTableCell>
 			<td className="px-4 py-3">
 				<div className="min-w-0">
 					<p className="truncate text-xs font-semibold text-darknavy">
 						{record.name}
-					</p>
-					<p className="mt-0.5 truncate text-xs text-darknavy/50">
-						{record.tin || "No TIN"}
 					</p>
 				</div>
 			</td>
@@ -29,8 +23,7 @@ export function PartyInformationTableRow({
 			<PartyInformationTableCell>
 				{record.partyTypesLabel}
 			</PartyInformationTableCell>
-			<PartyInformationTableCell>{record.atcCode}</PartyInformationTableCell>
-			<PartyInformationTableCell>{record.contact}</PartyInformationTableCell>
+			<PartyInformationTableCell>{record.addressLabel}</PartyInformationTableCell>
 			<PartyInformationTableCell align="center">
 				<PartyInformationRecordActions id={record.id} name={record.name} />
 			</PartyInformationTableCell>

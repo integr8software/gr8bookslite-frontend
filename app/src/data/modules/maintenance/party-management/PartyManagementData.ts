@@ -2,6 +2,12 @@ import {
 	BIRAtcSourceUrl,
 	PartyTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
+import {
+	PhilippineAtcTaxRows,
+	getPhilippineAtcPartyClassification,
+	normalizePhilippineAtcCode,
+	type PhilippineTaxCodeRow,
+} from "@/app/src/data/shared/PhilippineAtcData";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
 import type {
 	PartyAddress,
@@ -12,161 +18,100 @@ import type {
 	PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 
-export const PartyAtcCodeOptions: PartyAtcCodeOption[] = [
-	{
-		code: "WI010",
-		category: "Expanded Withholding Tax",
-		classifications: ["Individual"],
-		description: "Individual payee with gross income that did not exceed P3M.",
-		label: "Professional Fees",
-	},
-	{
-		code: "WI011",
-		category: "Expanded Withholding Tax",
-		classifications: ["Individual"],
-		description:
-			"Individual payee with gross income over P3M or VAT registration.",
-		label: "Professional Fees",
-	},
-	{
-		code: "WC010",
-		category: "Expanded Withholding Tax",
-		classifications: ["Non-Individual"],
-		description:
-			"Corporate payee with gross income that did not exceed P720,000.",
-		label: "Professional Fees",
-	},
-	{
-		code: "WC011",
-		category: "Expanded Withholding Tax",
-		classifications: ["Non-Individual"],
-		description: "Corporate payee with gross income exceeding P720,000.",
-		label: "Professional Fees",
-	},
-	{
-		code: "WI100",
-		category: "Expanded Withholding Tax",
-		classifications: ["Individual"],
-		description: "Rental income payments to individual payees.",
-		label: "Rentals",
-	},
-	{
-		code: "WC100",
-		category: "Expanded Withholding Tax",
-		classifications: ["Non-Individual"],
-		description: "Rental income payments to corporate payees.",
-		label: "Rentals",
-	},
-	{
-		code: "WI120",
-		category: "Expanded Withholding Tax",
-		classifications: ["Individual"],
-		description: "Income payments to certain individual contractors.",
-		label: "Certain Contractors",
-	},
-	{
-		code: "WC120",
-		category: "Expanded Withholding Tax",
-		classifications: ["Non-Individual"],
-		description: "Income payments to certain corporate contractors.",
-		label: "Certain Contractors",
-	},
-	{
-		code: "WI151",
-		category: "Expanded Withholding Tax",
-		classifications: ["Individual"],
-		description: "Professional fees paid to individual medical practitioners.",
-		label: "Medical Practitioners",
-	},
-	{
-		code: "WC151",
-		category: "Expanded Withholding Tax",
-		classifications: ["Non-Individual"],
-		description: "Professional fees paid to corporate medical practitioners.",
-		label: "Medical Practitioners",
-	},
-	{
-		code: "WI158",
-		category: "Expanded Withholding Tax",
-		classifications: ["Individual"],
-		description:
-			"Top withholding agent payments to individual local or resident suppliers of goods.",
-		label: "Supplier Goods",
-	},
-	{
-		code: "WC158",
-		category: "Expanded Withholding Tax",
-		classifications: ["Non-Individual"],
-		description:
-			"Top withholding agent payments to corporate local or resident suppliers of goods.",
-		label: "Supplier Goods",
-	},
-	{
-		code: "WI160",
-		category: "Expanded Withholding Tax",
-		classifications: ["Individual"],
-		description:
-			"Top withholding agent payments to individual local or resident suppliers of services.",
-		label: "Supplier Services",
-	},
-	{
-		code: "WC160",
-		category: "Expanded Withholding Tax",
-		classifications: ["Non-Individual"],
-		description:
-			"Top withholding agent payments to corporate local or resident suppliers of services.",
-		label: "Supplier Services",
-	},
-	{
-		code: "WI610",
-		category: "Expanded Withholding Tax",
-		classifications: ["Individual"],
-		description: "Payments to individual suppliers of agricultural products.",
-		label: "Agricultural Products",
-	},
-	{
-		code: "WC610",
-		category: "Expanded Withholding Tax",
-		classifications: ["Non-Individual"],
-		description: "Payments to corporate suppliers of agricultural products.",
-		label: "Agricultural Products",
-	},
-	{
-		code: "WV012",
-		category: "VAT Withholding",
-		classifications: ["Individual", "Non-Individual"],
-		description: "VAT withholding on purchases of goods.",
-		label: "Purchases of Goods",
-	},
-	{
-		code: "WV022",
-		category: "VAT Withholding",
-		classifications: ["Individual", "Non-Individual"],
-		description: "VAT withholding on purchases of services.",
-		label: "Purchases of Services",
-	},
-	{
-		code: "WB080",
-		category: "Business Tax Withholding",
-		classifications: ["Individual", "Non-Individual"],
-		description:
-			"Persons exempt from VAT under Sec. 109BB with a government withholding agent.",
-		label: "VAT Exempt Persons",
-	},
-	{
-		code: "WB082",
-		category: "Business Tax Withholding",
-		classifications: ["Individual", "Non-Individual"],
-		description:
-			"Persons exempt from VAT under Sec. 109BB with a private withholding agent.",
-		label: "VAT Exempt Persons",
-	},
-];
+export const PartyAtcCodeOptions: PartyAtcCodeOption[] =
+	createPartyAtcCodeOptions();
 
 export const PartyAtcCodeSource = {
 	label: "BIR Form 2307, January 2018 ENCS - Schedules of Alphanumeric Tax Codes",
 	url: BIRAtcSourceUrl,
 };
+
+function createPartyAtcCodeOptions() {
+	const optionsByCode = new Map<
+		string,
+		{ option: PartyAtcCodeOption; priority: number }
+	>();
+
+	for (const row of PhilippineAtcTaxRows) {
+		const option = createPartyAtcCodeOption(row);
+		const priority = getPartyAtcRowPriority(row);
+		const currentOption = optionsByCode.get(option.code);
+
+		if (!currentOption || priority > currentOption.priority) {
+			optionsByCode.set(option.code, { option, priority });
+		}
+	}
+
+	return [...optionsByCode.values()].map(({ option }) => option);
+}
+
+function createPartyAtcCodeOption(
+	row: PhilippineTaxCodeRow & { officialAtcCode: string },
+): PartyAtcCodeOption {
+	return {
+		category: getPartyAtcCategory(row),
+		classifications: getPartyAtcClassifications(row.officialAtcCode),
+		code: row.officialAtcCode,
+		description: getPartyAtcDescription(row),
+		label: `${row.transactionType} ${row.taxType} ${formatPartyAtcRate(
+			row.taxRate,
+		)}`,
+	};
+}
+
+function getPartyAtcCategory(
+	row: PhilippineTaxCodeRow & { officialAtcCode: string },
+) {
+	if (row.officialAtcCode.startsWith("WV ")) {
+		return "VAT Withholding";
+	}
+
+	if (row.taxType === "CWT") {
+		return "Creditable Withholding Tax";
+	}
+
+	if (row.officialAtcCode.startsWith("WB ")) {
+		return "Business Tax Withholding";
+	}
+
+	if (row.taxType === "EWT") {
+		return "Expanded Withholding Tax";
+	}
+
+	return row.taxType;
+}
+
+function getPartyAtcClassifications(code: string): PartyClassification[] {
+	const classification = getPhilippineAtcPartyClassification(code);
+
+	if (classification === "individual") {
+		return ["Individual"];
+	}
+
+	if (classification === "nonIndividual") {
+		return ["Non-Individual"];
+	}
+
+	return ["Individual", "Non-Individual"];
+}
+
+function getPartyAtcDescription(row: PhilippineTaxCodeRow) {
+	return (
+		row.natureOfIncome?.trim() ||
+		row.taxDescription.replace(/^[A-Z]{2}\s?\d{3}\s*\|\s*/, "").trim()
+	);
+}
+
+function getPartyAtcRowPriority(row: PhilippineTaxCodeRow) {
+	const isDirectAtcRow =
+		row.officialAtcCode === normalizePhilippineAtcCode(row.taxCode);
+
+	return (isDirectAtcRow ? 1_000_000 : 0) + getPartyAtcDescription(row).length;
+}
+
+function formatPartyAtcRate(rate: number) {
+	return `${rate.toFixed(2)}%`;
+}
 
 export const PartyInformationInitialFormValues: PartyInformationFormValues = {
 	partyCodeNo: "",
@@ -204,7 +149,7 @@ export function createPartyInformationFormValues(
 		address: { ...record.address },
 		tin: record.tin,
 		vatRegistrationType: record.vatRegistrationType,
-		atcCode: record.atcCode,
+		atcCode: record.atcCode ? normalizePhilippineAtcCode(record.atcCode) : "",
 		email: record.email,
 		contactNo: record.contactNo,
 	};
@@ -231,7 +176,7 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
 		address: { ...values.address },
 		tin: values.tin.trim(),
 		vatRegistrationType: values.vatRegistrationType,
-		atcCode: values.atcCode,
+		atcCode: values.atcCode ? normalizePhilippineAtcCode(values.atcCode) : "",
 		email: values.email.trim() || null,
 		contactNo: normalizePartyContactNo(values.contactNo) || null,
 	};
@@ -276,7 +221,9 @@ export function isKnownPartyType(value: string): value is PartyType {
 }
 
 export function isKnownAtcCode(value: string) {
-	return PartyAtcCodeOptions.some((option) => option.code === value);
+	const normalizedCode = normalizePhilippineAtcCode(value);
+
+	return PartyAtcCodeOptions.some((option) => option.code === normalizedCode);
 }
 
 export function getPartyAtcCodeOptionsByClassification(
@@ -320,6 +267,7 @@ function normalizePartyRecordValues(
 			values.classification === "Individual" ? values.suffixName.trim() : "",
 		address: normalizePartyAddress(values.address),
 		tin: values.tin.trim(),
+		atcCode: values.atcCode ? normalizePhilippineAtcCode(values.atcCode) : "",
 		email: values.email.trim(),
 		contactNo: normalizePartyContactNo(values.contactNo),
 	};

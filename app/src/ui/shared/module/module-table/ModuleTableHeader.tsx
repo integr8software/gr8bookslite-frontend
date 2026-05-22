@@ -7,14 +7,14 @@ import {
 
 export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 	return (
-		<thead className="module-table-header sticky top-0 z-10 bg-slate-50 text-xs font-semibold text-darknavy/60">
+		<thead className="module-table-header sticky top-0 z-10 bg-slate-50 text-sm font-semibold text-darknavy/60">
 			{table.getHeaderGroups().map((headerGroup) => (
 				<tr key={headerGroup.id} className="border-b border-darknavy/10">
 					{headerGroup.headers.map((header) => (
 						<th
 							key={header.id}
 							className={joinClasses(
-								"px-4 py-3",
+								"px-4 py-3.5",
 								getColumnClassName(header),
 							)}
 						>

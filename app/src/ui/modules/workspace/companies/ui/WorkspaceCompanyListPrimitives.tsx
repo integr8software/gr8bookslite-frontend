@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export const WorkspaceCompaniesActionClassName =
-	"inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/25";
+	"inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
 
 export function WorkspaceCompaniesFilterBar({
 	children,
@@ -15,7 +15,7 @@ export function WorkspaceCompaniesFilterBar({
 	return (
 		<div
 			className={joinClasses(
-				"grid gap-2 border-b border-darknavy/10 bg-white p-3",
+				"grid gap-3 border-b border-darknavy/10 bg-white p-4",
 				className,
 			)}
 		>
@@ -34,7 +34,7 @@ export function WorkspaceCompaniesSearchInput({
 	value: string;
 }) {
 	return (
-		<label className="flex h-9 items-center gap-2 rounded-md border border-darknavy/10 px-3 text-xs text-darknavy shadow-sm">
+		<label className="flex h-11 items-center gap-3 rounded-lg border border-darknavy/10 px-4 text-sm text-darknavy shadow-sm shadow-darknavy/5">
 			<Search className="h-4 w-4 text-darknavy/35" aria-hidden="true" />
 			<input
 				value={value}
@@ -58,12 +58,12 @@ export function WorkspaceCompaniesFilterSelect({
 	value: string;
 }) {
 	return (
-		<label className="flex min-w-0 items-center gap-2 text-xs font-semibold text-darknavy/48">
+		<label className="flex min-w-0 items-center gap-2 text-sm font-semibold text-darknavy/55">
 			<span className="shrink-0">{label}</span>
 			<select
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
-				className="h-9 min-w-0 flex-1 rounded-md border border-darknavy/10 bg-white px-2 text-xs font-semibold text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
+				className="h-11 min-w-0 flex-1 rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition focus:border-skyblue focus:ring-4 focus:ring-skyblue/10"
 			>
 				<option value="All">All</option>
 				{options.map((option) => (
@@ -85,7 +85,7 @@ export function WorkspaceCompaniesResetButton({
 		<button
 			type="button"
 			onClick={onClick}
-			className="inline-flex h-9 items-center justify-center rounded-md border border-darknavy/10 px-3 text-xs font-semibold text-darknavy/55 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/25"
+			className="inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 px-4 text-sm font-semibold text-darknavy/60 shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
 		>
 			Reset
 		</button>
@@ -102,7 +102,7 @@ export function WorkspaceCompaniesTableCell({
 	return (
 		<td
 			className={joinClasses(
-				"px-3 py-2.5 align-middle text-xs text-darknavy first:pl-4 last:pr-4",
+				"px-4 py-4 align-middle text-sm text-darknavy first:pl-5 last:pr-5",
 				align === "center" ? "text-center" : "text-left",
 			)}
 		>
@@ -124,7 +124,7 @@ export function WorkspaceCompaniesIconLink({
 		<Link
 			href={href}
 			aria-label={label}
-			className="flex h-8 w-8 items-center justify-center rounded-md text-darknavy/65 transition hover:bg-darknavy/5 hover:text-darknavy"
+			className="flex h-10 w-10 items-center justify-center rounded-lg text-darknavy/65 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
 		>
 			{children}
 		</Link>

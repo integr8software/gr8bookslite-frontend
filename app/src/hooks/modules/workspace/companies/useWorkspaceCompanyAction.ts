@@ -104,13 +104,25 @@ export function useWorkspaceCompanyAction() {
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
+		if (!validateCompany()) {
+			return;
+		}
+
+		saveCompany();
+	}
+
+	function validateCompany() {
 		const nextErrors = validateWorkspaceCompanyForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
-			return;
+			return false;
 		}
 
+		return true;
+	}
+
+	function saveCompany() {
 		if (mode === "edit" && existingCompany) {
 			updateCompany(updateWorkspaceCompanyFromForm(existingCompany, values));
 			router.push(companyHref);
@@ -130,7 +142,9 @@ export function useWorkspaceCompanyAction() {
 		isMutating,
 		mode,
 		needsRecord: mode === "edit",
+		saveCompany,
 		updateField,
+		validateCompany,
 		values,
 	};
 }

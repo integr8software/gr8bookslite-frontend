@@ -27,10 +27,13 @@ export const WorkspaceCompanyStatusOptions = [
 ] as const satisfies readonly WorkspaceCompanyStatus[];
 
 export const WorkspaceCompanyTypeOptions = [
+	"Individual",
 	"Corporation",
 	"Partnership",
-	"Single Proprietorship",
-	"Non-Profit",
+	"Association",
+	"Non Stock",
+	"Non Profit Organization",
+	"Others",
 ] as const satisfies readonly WorkspaceCompanyType[];
 
 export const WorkspaceCompanyPlanOptions = [
@@ -101,9 +104,8 @@ export const WorkspaceCompanyBranchTableColumns = [
 	{ key: "code", label: "Code", className: "w-[7rem]" },
 	{ key: "name", label: "Branch", className: "w-[19rem]" },
 	{ key: "branchType", label: "Type", className: "w-[11rem]" },
-	{ key: "totalUsers", label: "Users", className: "w-[8rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
-	{ label: "Actions", className: "w-[9rem] text-center" },
+	{ label: "Actions", className: "w-[7rem] text-center" },
 ] as const satisfies readonly (
 	| {
 			key: WorkspaceCompanyBranchTableColumnKey;

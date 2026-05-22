@@ -423,26 +423,32 @@ function UserAssignmentsSection({
 								</button>
 							</div>
 							<div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-								{companyBranches.map((branch) => (
-									<label
-										key={branch.id}
-										className="flex items-center gap-3 rounded-md border border-darknavy/10 bg-white px-3 py-2 text-sm font-medium text-darknavy"
-									>
-										<input
-											type="checkbox"
-											checked={assignment.branchIds.includes(branch.id)}
-											onChange={() =>
-												onToggleBranch(assignment.companyId, branch.id)
-											}
-											disabled={isReadonly}
-											className="h-4 w-4 rounded border-darknavy/20 text-skyblue"
-										/>
-										<span className="min-w-0 truncate">
-											{branch.name}
-											{branch.isMain ? " (Head Office)" : ""}
-										</span>
-									</label>
-								))}
+								{companyBranches.map((branch) => {
+									const branchCheckboxId = `workspace-user-${assignment.companyId}-${branch.id}`;
+
+									return (
+										<label
+											key={branch.id}
+											htmlFor={branchCheckboxId}
+											className="flex items-center gap-3 rounded-md border border-darknavy/10 bg-white px-3 py-2 text-sm font-medium text-darknavy"
+										>
+											<input
+												id={branchCheckboxId}
+												type="checkbox"
+												checked={assignment.branchIds.includes(branch.id)}
+												onChange={() =>
+													onToggleBranch(assignment.companyId, branch.id)
+												}
+												disabled={isReadonly}
+												className="h-4 w-4 rounded border-darknavy/20 text-skyblue"
+											/>
+											<span className="min-w-0 truncate">
+												{branch.name}
+												{branch.isMain ? " (Head Office)" : ""}
+											</span>
+										</label>
+									);
+								})}
 							</div>
 						</article>
 					);

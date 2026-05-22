@@ -111,10 +111,10 @@ function CompanyUsersTableRow({
 }) {
 	return (
 		<tr className="module-table-row">
-			<td className="px-3 py-2.5">
+			<td className="px-4 py-4">
 				<div className="flex min-w-0 items-center gap-3">
 					<WorkspaceUserAvatar imageUrl={user.profileImageUrl} name={user.name} />
-					<span className="truncate text-xs font-semibold text-darknavy">
+					<span className="truncate text-sm font-semibold text-darknavy">
 						{user.name}
 					</span>
 				</div>
@@ -142,7 +142,7 @@ function UserRecordActions({
 	user: WorkspaceCompanyUserTableRecord;
 }) {
 	return (
-		<div className="flex items-center justify-center gap-1">
+		<div className="flex items-center justify-center gap-1.5">
 			<IconLink href={`${baseHref}/view/${user.id}`} label={`View ${user.name}`}>
 				<Eye className="h-4 w-4" aria-hidden="true" />
 			</IconLink>

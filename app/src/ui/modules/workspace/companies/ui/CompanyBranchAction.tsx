@@ -1,11 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import {
 	Building2,
 	GitBranch,
-	Users,
 	type LucideIcon,
 } from "lucide-react";
 import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
@@ -20,7 +18,6 @@ import type {
 	WorkspaceCompanyBranchKind,
 	WorkspaceCompanyBranchRecord,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
-import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { WorkspaceCompanyActionHeader } from "./WorkspaceCompanyActionHeader";
 import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
 
@@ -59,21 +56,10 @@ function WorkspaceCompanyBranchActionInner() {
 		<section className="grid gap-5">
 			<WorkspaceCompanyActionHeader
 				cancelHref={action.cancelHref}
-				description="Maintain branch and satellite records. Branch users are managed from the branch user list."
+				description="Maintain branch and satellite records. User access is assigned from Workspace Users Management."
 				editHref={action.editHref}
 				eyebrowIcon={GitBranch}
 				eyebrowLabel={action.company.name}
-				extraActions={
-					action.mode === "view" && action.usersHref ? (
-						<Link
-							href={action.usersHref}
-							className={moduleHeaderActionClassNames.secondary}
-						>
-							<Users className="h-4 w-4" aria-hidden="true" />
-							Branch Users
-						</Link>
-					) : null
-				}
 				formId={CompanyBranchFormId}
 				isReadonly={action.isReadonly}
 				mode={action.mode}

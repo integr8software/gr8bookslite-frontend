@@ -556,10 +556,8 @@ export function useWorkspaceCompanyUsersTable(
 
 export function useWorkspaceCompanyBranchesTable({
 	branches,
-	branchUsers,
 }: {
 	branches: WorkspaceCompanyBranchRecord[];
-	branchUsers: WorkspaceBranchUserRecord[];
 }) {
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
@@ -575,19 +573,9 @@ export function useWorkspaceCompanyBranchesTable({
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
 	]);
-	const tableData = useMemo<WorkspaceCompanyBranchTableRecord[]>(
-		() =>
-			branches.map((branch) => ({
-				...branch,
-				totalUsers: branchUsers.filter(
-					(user) => user.branchId === branch.id,
-				).length,
-			})),
-		[branches, branchUsers],
-	);
 	const filteredBranches = useMemo(
 		() =>
-			tableData.filter((branch) => {
+			branches.filter((branch) => {
 				const searchable = [
 					branch.code,
 					branch.name,
@@ -606,7 +594,7 @@ export function useWorkspaceCompanyBranchesTable({
 					(statusFilter === "All" || branch.status === statusFilter)
 				);
 			}),
-		[kindFilter, query, statusFilter, tableData],
+		[branches, kindFilter, query, statusFilter],
 	);
 	const columns = useMemo<ColumnDef<WorkspaceCompanyBranchTableRecord>[]>(
 		() =>

@@ -1,12 +1,11 @@
 "use client";
 
-import { Building2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Building2, ImageUp, X } from "lucide-react";
 import {
-	WorkspaceCompanyPlanOptions,
-	WorkspaceCompanyStatusOptions,
-	WorkspaceCompanyTypeOptions,
 	WorkspaceCompaniesHref,
 } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
+import { OnboardingNonIndividualTypeOptions } from "@/app/src/data/onboarding/OnboardingData";
 import { useWorkspaceCompanyAction } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyAction";
 import type {
 	WorkspaceCompanyFormErrors,
@@ -14,8 +13,10 @@ import type {
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
 import {
 	DefaultPhilippineContactNumber,
+	FormatPhilippineContactNumber,
 	PhilippineContactNumberPlaceholder,
 } from "@/app/src/data/shared/ContactData";
+import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
 import { WorkspaceCompanyActionHeader } from "./WorkspaceCompanyActionHeader";
 import {
 	WorkspaceCompanyField,
@@ -23,11 +24,13 @@ import {
 	WorkspaceCompanySection,
 } from "./WorkspaceCompanyFormPrimitives";
 import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
+import { WorkspaceBillingImpactConfirmDialog } from "@/app/src/ui/modules/workspace/shared/WorkspaceBillingImpactConfirmDialog";
 
 const CompanyFormId = "workspace-company-form";
 
 export function WorkspaceCompanyAction() {
 	const action = useWorkspaceCompanyAction();
+	const [isBillingConfirmOpen, setIsBillingConfirmOpen] = useState(false);
 
 	if (action.needsRecord && !action.existingCompany) {
 		return (
@@ -59,8 +62,31 @@ export function WorkspaceCompanyAction() {
 				errors={action.errors}
 				values={action.values}
 				onInputChange={action.handleInputChange}
-				onSubmit={action.handleSubmit}
+				onSubmit={(event) => {
+					if (action.mode === "edit") {
+						action.handleSubmit(event);
+						return;
+					}
+
+					event.preventDefault();
+
+					if (action.validateCompany()) {
+						setIsBillingConfirmOpen(true);
+					}
+				}}
 				onUpdateField={action.updateField}
+			/>
+			<WorkspaceBillingImpactConfirmDialog
+				isOpen={isBillingConfirmOpen}
+				isPending={action.isMutating}
+				title="Create company?"
+				resourceName={action.values.companyName || "this company"}
+				description="Creating this company may affect workspace billing, including company access costs, payments, or deductions. Confirm before saving the company."
+				onCancel={() => setIsBillingConfirmOpen(false)}
+				onConfirm={() => {
+					setIsBillingConfirmOpen(false);
+					action.saveCompany();
+				}}
 			/>
 		</section>
 	);
@@ -81,6 +107,53 @@ function CompanyDetailsFields({
 	onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 	onUpdateField: (field: keyof WorkspaceCompanyFormValues, value: string) => void;
 }) {
+	const logoInputRef = useRef<HTMLInputElement | null>(null);
+	const [logoInputKey, setLogoInputKey] = useState(0);
+	const [logoPreviewUrl, setLogoPreviewUrl] = useState(values.logoUrl);
+	const isIndividual = values.taxpayerType === "individual";
+	const isOtherOrganizationType = values.nonIndividualType === "Others";
+
+	useEffect(() => {
+		return () => {
+			if (logoPreviewUrl.startsWith("blob:")) {
+				URL.revokeObjectURL(logoPreviewUrl);
+			}
+		};
+	}, [logoPreviewUrl]);
+
+	function updateLogoPreviewUrl(nextPreviewUrl: string) {
+		setLogoPreviewUrl((current) => {
+			if (current.startsWith("blob:")) {
+				URL.revokeObjectURL(current);
+			}
+
+			return nextPreviewUrl;
+		});
+	}
+
+	function handleLogoChange(file: File | undefined) {
+		if (!file) {
+			return;
+		}
+
+		if (!file.type.startsWith("image/")) {
+			setLogoInputKey((current) => current + 1);
+			return;
+		}
+
+		onUpdateField("logoName", file.name);
+		const nextPreviewUrl = URL.createObjectURL(file);
+		onUpdateField("logoUrl", nextPreviewUrl);
+		updateLogoPreviewUrl(nextPreviewUrl);
+	}
+
+	function handleLogoRemove() {
+		onUpdateField("logoName", "");
+		onUpdateField("logoUrl", "");
+		updateLogoPreviewUrl("");
+		setLogoInputKey((current) => current + 1);
+	}
+
 	return (
 		<form id={CompanyFormId} onSubmit={onSubmit}>
 			<input type="submit" hidden />
@@ -88,82 +161,139 @@ function CompanyDetailsFields({
 				title="Company Details"
 				description="These details appear in the workspace company list and company switcher surfaces."
 			>
-				<div className="grid gap-4 lg:grid-cols-2">
-					<WorkspaceCompanyField
-						label="Company Name"
-						error={errors.name}
-						required
-					>
+				<div className="grid gap-4">
+					<div>
+						<p className="mb-2 block text-sm font-semibold text-darknavy">
+							Taxpayer Type
+						</p>
+						<div className="flex overflow-hidden rounded-lg border border-darknavy/10">
+							<button
+								type="button"
+								onClick={() => onUpdateField("taxpayerType", "individual")}
+								className={`flex-1 py-3 text-sm font-semibold transition ${
+									isIndividual
+										? "bg-darknavy text-white"
+										: "bg-white text-darknavy hover:bg-offwhite"
+								}`}
+							>
+								Individual
+							</button>
+							<button
+								type="button"
+								onClick={() => onUpdateField("taxpayerType", "non-individual")}
+								className={`flex-1 border-l border-darknavy/10 py-3 text-sm font-semibold transition ${
+									!isIndividual
+										? "bg-darknavy text-white"
+										: "bg-white text-darknavy hover:bg-offwhite"
+								}`}
+							>
+								Non-Individual
+							</button>
+						</div>
+					</div>
+
+					{isIndividual ? (
+						<div className="grid gap-4 lg:grid-cols-3">
+							<WorkspaceCompanyField label="Last Name" error={errors.lastName} required>
+								<input
+									name="lastName"
+									value={values.lastName}
+									onChange={onInputChange}
+									className={WorkspaceCompanyFieldClassName}
+								/>
+							</WorkspaceCompanyField>
+							<WorkspaceCompanyField label="First Name" error={errors.firstName} required>
+								<input
+									name="firstName"
+									value={values.firstName}
+									onChange={onInputChange}
+									className={WorkspaceCompanyFieldClassName}
+								/>
+							</WorkspaceCompanyField>
+							<WorkspaceCompanyField label="Middle Name" error={errors.middleName}>
+								<input
+									name="middleName"
+									value={values.middleName}
+									onChange={onInputChange}
+									className={WorkspaceCompanyFieldClassName}
+								/>
+							</WorkspaceCompanyField>
+						</div>
+					) : (
+						<div className="grid gap-4 lg:grid-cols-2">
+							<WorkspaceCompanyField
+								label="Company / Organization Name"
+								error={errors.companyName}
+								required
+							>
+								<input
+									name="companyName"
+									value={values.companyName}
+									onChange={onInputChange}
+									className={WorkspaceCompanyFieldClassName}
+								/>
+							</WorkspaceCompanyField>
+							<WorkspaceCompanyField
+								label="Organization Type"
+								error={errors.nonIndividualType}
+								required
+							>
+								<select
+									name="nonIndividualType"
+									value={values.nonIndividualType}
+									onChange={onInputChange}
+									className={WorkspaceCompanyFieldClassName}
+								>
+									<option value="">Select organization type</option>
+									{OnboardingNonIndividualTypeOptions.map((option) => (
+										<option key={option} value={option}>
+											{option}
+										</option>
+									))}
+								</select>
+							</WorkspaceCompanyField>
+							{isOtherOrganizationType ? (
+								<WorkspaceCompanyField
+									label="Please Specify"
+									error={errors.nonIndividualTypeOther}
+									required
+								>
+									<input
+										name="nonIndividualTypeOther"
+										value={values.nonIndividualTypeOther}
+										onChange={onInputChange}
+										className={WorkspaceCompanyFieldClassName}
+									/>
+								</WorkspaceCompanyField>
+							) : null}
+						</div>
+					)}
+
+					<CompanyLogoField
+						error={errors.logoName}
+						fileName={values.logoName}
+						inputKey={logoInputKey}
+						inputRef={logoInputRef}
+						previewUrl={logoPreviewUrl}
+						onChange={handleLogoChange}
+						onRemove={handleLogoRemove}
+					/>
+
+					<div className="grid gap-4 lg:grid-cols-2">
+					<WorkspaceCompanyField label="TIN" error={errors.tin} required>
 						<input
-							name="name"
-							value={values.name}
-							onChange={onInputChange}
+							name="tin"
+							value={values.tin}
+							onChange={(event) =>
+								onUpdateField("tin", FormatTinNumber(event.target.value))
+							}
+							inputMode="numeric"
+							maxLength={15}
 							className={WorkspaceCompanyFieldClassName}
+							placeholder="123-456-789-000"
 						/>
 					</WorkspaceCompanyField>
-					<WorkspaceCompanyField
-						label="Primary Contact"
-						error={errors.primaryContact}
-						required
-					>
-						<input
-							name="primaryContact"
-							value={values.primaryContact}
-							onChange={onInputChange}
-							className={WorkspaceCompanyFieldClassName}
-						/>
-					</WorkspaceCompanyField>
-					<WorkspaceCompanyField label="Company Type">
-						<select
-							name="companyType"
-							value={values.companyType}
-							onChange={onInputChange}
-							className={WorkspaceCompanyFieldClassName}
-						>
-							{WorkspaceCompanyTypeOptions.map((option) => (
-								<option key={option} value={option}>
-									{option}
-								</option>
-							))}
-						</select>
-					</WorkspaceCompanyField>
-					<WorkspaceCompanyField label="Plan">
-						<select
-							name="plan"
-							value={values.plan}
-							onChange={onInputChange}
-							className={WorkspaceCompanyFieldClassName}
-						>
-							{WorkspaceCompanyPlanOptions.map((option) => (
-								<option key={option} value={option}>
-									{option}
-								</option>
-							))}
-						</select>
-					</WorkspaceCompanyField>
-					<WorkspaceCompanyField label="Status">
-						<select
-							name="status"
-							value={values.status}
-							onChange={onInputChange}
-							className={WorkspaceCompanyFieldClassName}
-						>
-							{WorkspaceCompanyStatusOptions.map((option) => (
-								<option key={option} value={option}>
-									{option}
-								</option>
-							))}
-						</select>
-					</WorkspaceCompanyField>
-					<WorkspaceCompanyField label="Logo URL">
-						<input
-							name="logoUrl"
-							value={values.logoUrl}
-							onChange={onInputChange}
-							className={WorkspaceCompanyFieldClassName}
-							placeholder="/img/company-background.jpg"
-						/>
-					</WorkspaceCompanyField>
+					</div>
 				</div>
 			</WorkspaceCompanySection>
 
@@ -193,7 +323,12 @@ function CompanyDetailsFields({
 							inputMode="numeric"
 							maxLength={16}
 							value={values.contactNumber}
-							onChange={onInputChange}
+							onChange={(event) =>
+								onUpdateField(
+									"contactNumber",
+									FormatPhilippineContactNumber(event.target.value),
+								)
+							}
 							onFocus={() => {
 								if (!values.contactNumber) {
 									onUpdateField("contactNumber", DefaultPhilippineContactNumber);
@@ -217,8 +352,110 @@ function CompanyDetailsFields({
 							/>
 						</WorkspaceCompanyField>
 					</div>
+					<WorkspaceCompanyField label="Report Start Date" error={errors.reportStartDate} required>
+						<input
+							name="reportStartDate"
+							type="date"
+							value={values.reportStartDate}
+							onChange={onInputChange}
+							className={WorkspaceCompanyFieldClassName}
+						/>
+					</WorkspaceCompanyField>
+					<WorkspaceCompanyField label="Report End Date" error={errors.reportEndDate} required>
+						<input
+							name="reportEndDate"
+							type="date"
+							value={values.reportEndDate}
+							onChange={onInputChange}
+							className={WorkspaceCompanyFieldClassName}
+						/>
+					</WorkspaceCompanyField>
+					<div className="lg:col-span-2">
+						<WorkspaceCompanyField label="Company Website (Optional)" error={errors.website}>
+							<input
+								name="website"
+								type="url"
+								value={values.website}
+								onChange={onInputChange}
+								className={WorkspaceCompanyFieldClassName}
+								placeholder="https://acmecorp.com"
+							/>
+						</WorkspaceCompanyField>
+					</div>
 				</div>
 			</WorkspaceCompanySection>
 		</form>
+	);
+}
+
+function CompanyLogoField({
+	error,
+	fileName,
+	inputKey,
+	inputRef,
+	previewUrl,
+	onChange,
+	onRemove,
+}: {
+	error?: string;
+	fileName: string;
+	inputKey: number;
+	inputRef: React.RefObject<HTMLInputElement | null>;
+	previewUrl: string;
+	onChange: (file: File | undefined) => void;
+	onRemove: () => void;
+}) {
+	return (
+		<div>
+			<p className="mb-2 block text-sm font-semibold text-darknavy">Logo</p>
+			<label className="flex h-12 cursor-pointer overflow-hidden rounded-lg border border-darknavy/10 bg-white">
+				<span className="flex w-12 items-center justify-center bg-darknavy text-white">
+					<ImageUp className="h-5 w-5" aria-hidden="true" />
+				</span>
+				<span className="flex min-w-0 flex-1 items-center px-4 text-sm font-medium text-darknavy/65">
+					<span className="truncate">{fileName || "Upload image"}</span>
+				</span>
+				{fileName ? (
+					<button
+						type="button"
+						onClick={(event) => {
+							event.preventDefault();
+							event.stopPropagation();
+							onRemove();
+						}}
+						aria-label="Remove uploaded image"
+						className="flex w-12 items-center justify-center text-darknavy/60 transition hover:text-darknavy"
+					>
+						<X className="h-4 w-4" aria-hidden="true" />
+					</button>
+				) : null}
+				<input
+					key={inputKey}
+					ref={inputRef}
+					type="file"
+					accept="image/*"
+					className="sr-only"
+					onChange={(event) => onChange(event.target.files?.[0])}
+				/>
+			</label>
+			{previewUrl ? (
+				<div className="mt-3 rounded-md border border-darknavy/10 p-3">
+					<div className="relative h-32 w-full overflow-hidden rounded-sm bg-white">
+						{/* eslint-disable-next-line @next/next/no-img-element */}
+						<img
+							src={previewUrl}
+							alt="Company logo preview"
+							className="h-full w-full object-contain p-3"
+						/>
+					</div>
+				</div>
+			) : null}
+			<p className="mt-2 text-sm text-darknavy/55">
+				Upload your company or personal logo. Max 5MB.
+			</p>
+			{error ? (
+				<p className="mt-2 text-sm font-medium text-coralpink">{error}</p>
+			) : null}
+		</div>
 	);
 }

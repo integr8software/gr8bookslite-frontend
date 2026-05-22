@@ -9,21 +9,35 @@ import type {
 	WorkspaceCompanyFormValues,
 	WorkspaceCompanyRecord,
 	WorkspaceCompanyStatus,
+	WorkspaceCompanyType,
 	WorkspaceCompanyUserFormErrors,
 	WorkspaceCompanyUserFormValues,
 	WorkspaceCompanyUserRecord,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
+import { GetCalendarYearReportDates } from "@/app/src/data/onboarding/OnboardingData";
+
+const DefaultWorkspaceCompanyReportYear = GetCalendarYearReportDates();
 
 export const InitialWorkspaceCompanyFormValues: WorkspaceCompanyFormValues = {
 	address: "",
-	companyType: "Corporation",
+	companyName: "",
 	contactNumber: "",
 	email: "",
+	firstName: "",
+	lastName: "",
+	logoFile: null,
+	logoName: "",
 	logoUrl: "",
-	name: "",
+	middleName: "",
+	nonIndividualType: "Corporation",
+	nonIndividualTypeOther: "",
 	plan: "Accounting + Inventory",
-	primaryContact: "",
+	reportEndDate: DefaultWorkspaceCompanyReportYear.reportEndDate,
+	reportStartDate: DefaultWorkspaceCompanyReportYear.reportStartDate,
 	status: "Active",
+	taxpayerType: "non-individual",
+	tin: "",
+	website: "",
 };
 
 export const InitialWorkspaceCompanyUserFormValues: WorkspaceCompanyUserFormValues =
@@ -70,6 +84,12 @@ export const MockWorkspaceCompanies: WorkspaceCompanyRecord[] = [
 		address: "Makati City, Metro Manila",
 		primaryContact: "John Dela Cruz",
 		createdAt: "May 01, 2026",
+		nonIndividualType: "Corporation",
+		reportEndDate: "2026-12-31",
+		reportStartDate: "2026-01-01",
+		taxpayerType: "non-individual",
+		tin: "123-456-789-000",
+		website: "https://gr8books.test",
 	},
 	{
 		id: "cmp-demo-trading",
@@ -83,6 +103,11 @@ export const MockWorkspaceCompanies: WorkspaceCompanyRecord[] = [
 		address: "Quezon City, Metro Manila",
 		primaryContact: "Jane Santos",
 		createdAt: "May 05, 2026",
+		nonIndividualType: "Corporation",
+		reportEndDate: "2026-12-31",
+		reportStartDate: "2026-01-01",
+		taxpayerType: "non-individual",
+		tin: "987-654-321-000",
 	},
 	{
 		id: "cmp-cebu-retail",
@@ -96,6 +121,11 @@ export const MockWorkspaceCompanies: WorkspaceCompanyRecord[] = [
 		address: "Cebu City, Cebu",
 		primaryContact: "Michael Reyes",
 		createdAt: "May 08, 2026",
+		nonIndividualType: "Partnership",
+		reportEndDate: "2026-12-31",
+		reportStartDate: "2026-01-01",
+		taxpayerType: "non-individual",
+		tin: "456-100-200-000",
 	},
 	{
 		id: "cmp-laguna-manufacturing",
@@ -109,6 +139,11 @@ export const MockWorkspaceCompanies: WorkspaceCompanyRecord[] = [
 		address: "Santa Rosa, Laguna",
 		primaryContact: "Emily Lim",
 		createdAt: "May 10, 2026",
+		nonIndividualType: "Corporation",
+		reportEndDate: "2026-12-31",
+		reportStartDate: "2026-01-01",
+		taxpayerType: "non-individual",
+		tin: "654-321-987-000",
 	},
 ];
 
@@ -303,16 +338,31 @@ export const MockWorkspaceBranchUsers: WorkspaceBranchUserRecord[] = [
 export function createWorkspaceCompanyFormValues(
 	company: WorkspaceCompanyRecord,
 ): WorkspaceCompanyFormValues {
+	const taxpayerType = company.taxpayerType ?? "non-individual";
+
 	return {
 		address: company.address,
-		companyType: company.companyType,
+		companyName: taxpayerType === "non-individual" ? company.name : "",
 		contactNumber: company.contactNumber,
 		email: company.email,
+		firstName: company.firstName ?? "",
+		lastName: company.lastName ?? "",
+		logoFile: null,
+		logoName: company.logoUrl ? "Current logo" : "",
 		logoUrl: company.logoUrl ?? "",
-		name: company.name,
+		middleName: company.middleName ?? "",
+		nonIndividualType: company.nonIndividualType ?? company.companyType,
+		nonIndividualTypeOther: company.nonIndividualTypeOther ?? "",
 		plan: company.plan,
-		primaryContact: company.primaryContact,
+		reportEndDate:
+			company.reportEndDate ?? DefaultWorkspaceCompanyReportYear.reportEndDate,
+		reportStartDate:
+			company.reportStartDate ??
+			DefaultWorkspaceCompanyReportYear.reportStartDate,
 		status: company.status,
+		taxpayerType,
+		tin: company.tin ?? "",
+		website: company.website ?? "",
 	};
 }
 
@@ -320,13 +370,32 @@ export function createWorkspaceCompanyFromForm(
 	values: WorkspaceCompanyFormValues,
 ): WorkspaceCompanyRecord {
 	const trimmedValues = trimCompanyValues(values);
+	const name = getWorkspaceCompanyDisplayName(trimmedValues);
+	const companyType = getWorkspaceCompanyType(trimmedValues);
 
 	return {
-		...trimmedValues,
+		address: trimmedValues.address,
+		companyType,
+		contactNumber: trimmedValues.contactNumber,
+		email: trimmedValues.email,
 		id: `cmp-${Date.now()}`,
-		initials: getInitials(trimmedValues.name),
+		initials: getInitials(name),
 		logoUrl: trimmedValues.logoUrl || undefined,
+		name,
+		plan: trimmedValues.plan,
+		primaryContact: getWorkspaceCompanyPrimaryContact(trimmedValues),
+		status: trimmedValues.status,
 		createdAt: "May 21, 2026",
+		firstName: trimmedValues.firstName || undefined,
+		lastName: trimmedValues.lastName || undefined,
+		middleName: trimmedValues.middleName || undefined,
+		nonIndividualType: trimmedValues.nonIndividualType || undefined,
+		nonIndividualTypeOther: trimmedValues.nonIndividualTypeOther || undefined,
+		reportEndDate: trimmedValues.reportEndDate,
+		reportStartDate: trimmedValues.reportStartDate,
+		taxpayerType: trimmedValues.taxpayerType,
+		tin: trimmedValues.tin,
+		website: trimmedValues.website || undefined,
 	};
 }
 
@@ -335,12 +404,31 @@ export function updateWorkspaceCompanyFromForm(
 	values: WorkspaceCompanyFormValues,
 ): WorkspaceCompanyRecord {
 	const trimmedValues = trimCompanyValues(values);
+	const name = getWorkspaceCompanyDisplayName(trimmedValues);
+	const companyType = getWorkspaceCompanyType(trimmedValues);
 
 	return {
 		...company,
-		...trimmedValues,
-		initials: getInitials(trimmedValues.name),
+		address: trimmedValues.address,
+		companyType,
+		contactNumber: trimmedValues.contactNumber,
+		email: trimmedValues.email,
+		firstName: trimmedValues.firstName || undefined,
+		initials: getInitials(name),
+		lastName: trimmedValues.lastName || undefined,
 		logoUrl: trimmedValues.logoUrl || undefined,
+		middleName: trimmedValues.middleName || undefined,
+		name,
+		nonIndividualType: trimmedValues.nonIndividualType || undefined,
+		nonIndividualTypeOther: trimmedValues.nonIndividualTypeOther || undefined,
+		plan: trimmedValues.plan,
+		primaryContact: getWorkspaceCompanyPrimaryContact(trimmedValues),
+		reportEndDate: trimmedValues.reportEndDate,
+		reportStartDate: trimmedValues.reportStartDate,
+		status: trimmedValues.status,
+		taxpayerType: trimmedValues.taxpayerType,
+		tin: trimmedValues.tin,
+		website: trimmedValues.website || undefined,
 	};
 }
 
@@ -349,15 +437,36 @@ export function validateWorkspaceCompanyForm(
 ) {
 	const errors: WorkspaceCompanyFormErrors = {};
 
-	if (!values.name.trim()) errors.name = "Company name is required.";
+	if (values.taxpayerType === "individual") {
+		if (!values.lastName.trim()) errors.lastName = "Last name is required.";
+		if (!values.firstName.trim()) errors.firstName = "First name is required.";
+	} else {
+		if (!values.companyName.trim()) errors.companyName = "Company name is required.";
+		if (!values.nonIndividualType.trim()) {
+			errors.nonIndividualType = "Organization type is required.";
+		}
+		if (
+			values.nonIndividualType === "Others" &&
+			!values.nonIndividualTypeOther.trim()
+		) {
+			errors.nonIndividualTypeOther = "Please specify the organization type.";
+		}
+	}
 	if (!values.email.trim()) errors.email = "Email is required.";
 	if (!values.contactNumber.trim()) {
 		errors.contactNumber = "Contact number is required.";
 	}
-	if (!values.primaryContact.trim()) {
-		errors.primaryContact = "Primary contact is required.";
-	}
 	if (!values.address.trim()) errors.address = "Address is required.";
+	if (!values.tin.trim()) errors.tin = "TIN is required.";
+	if (!values.logoName.trim() && !values.logoUrl.trim()) {
+		errors.logoName = "Upload a logo image.";
+	}
+	if (!values.reportStartDate) {
+		errors.reportStartDate = "Report start date is required.";
+	}
+	if (!values.reportEndDate) {
+		errors.reportEndDate = "Report end date is required.";
+	}
 
 	return errors;
 }
@@ -558,12 +667,54 @@ function trimCompanyValues(
 	return {
 		...values,
 		address: values.address.trim(),
+		companyName: values.companyName.trim(),
 		contactNumber: values.contactNumber.trim(),
 		email: values.email.trim(),
+		firstName: values.firstName.trim(),
+		lastName: values.lastName.trim(),
+		logoName: values.logoName.trim(),
 		logoUrl: values.logoUrl?.trim() ?? "",
-		name: values.name.trim(),
-		primaryContact: values.primaryContact.trim(),
+		middleName: values.middleName.trim(),
+		nonIndividualType: values.nonIndividualType.trim(),
+		nonIndividualTypeOther: values.nonIndividualTypeOther.trim(),
+		reportEndDate: values.reportEndDate.trim(),
+		reportStartDate: values.reportStartDate.trim(),
+		tin: values.tin.trim(),
+		website: values.website.trim(),
 	};
+}
+
+function getWorkspaceCompanyDisplayName(values: WorkspaceCompanyFormValues) {
+	if (values.taxpayerType === "individual") {
+		return [values.firstName, values.middleName, values.lastName]
+			.filter(Boolean)
+			.join(" ");
+	}
+
+	return values.companyName;
+}
+
+function getWorkspaceCompanyPrimaryContact(values: WorkspaceCompanyFormValues) {
+	if (values.taxpayerType === "individual") {
+		return getWorkspaceCompanyDisplayName(values);
+	}
+
+	return values.companyName;
+}
+
+function getWorkspaceCompanyType(
+	values: WorkspaceCompanyFormValues,
+): WorkspaceCompanyType {
+	if (values.taxpayerType === "individual") {
+		return "Individual";
+	}
+
+	const resolvedType =
+		values.nonIndividualType === "Others"
+			? "Others"
+			: values.nonIndividualType;
+
+	return resolvedType as WorkspaceCompanyType;
 }
 
 function trimUserValues(

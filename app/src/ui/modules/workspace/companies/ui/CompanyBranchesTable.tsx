@@ -4,16 +4,13 @@ import {
 	Edit3,
 	Eye,
 	Search,
-	Users,
 } from "lucide-react";
 import {
 	WorkspaceCompanyBranchesTablePaginationStorageKey,
-	getWorkspaceCompanyBranchUsersHref,
 } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
 import { getNextWorkspaceCompanyStatus } from "@/app/src/data/modules/workspace/companies/WorkspaceCompanyData";
 import { useWorkspaceCompanyBranchesTable } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyManagement";
 import type {
-	WorkspaceBranchUserRecord,
 	WorkspaceCompanyBranchKind,
 	WorkspaceCompanyBranchRecord,
 	WorkspaceCompanyBranchTableRecord,
@@ -35,20 +32,16 @@ import {
 
 export function CompanyBranchesTable({
 	baseHref,
-	branchUsers,
 	branches,
-	companyId,
 	isLoading,
 	onStatusChange,
 }: {
 	baseHref: string;
-	branchUsers: WorkspaceBranchUserRecord[];
 	branches: WorkspaceCompanyBranchRecord[];
-	companyId: string;
 	isLoading: boolean;
 	onStatusChange: (branch: WorkspaceCompanyBranchRecord) => void;
 }) {
-	const branchList = useWorkspaceCompanyBranchesTable({ branches, branchUsers });
+	const branchList = useWorkspaceCompanyBranchesTable({ branches });
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
@@ -76,7 +69,6 @@ export function CompanyBranchesTable({
 						key={id}
 						baseHref={baseHref}
 						branch={original}
-						companyId={companyId}
 						onStatusChange={onStatusChange}
 					/>
 				)}
@@ -137,12 +129,10 @@ function CompanyBranchesTableFilters({
 function CompanyBranchesTableRow({
 	baseHref,
 	branch,
-	companyId,
 	onStatusChange,
 }: {
 	baseHref: string;
 	branch: WorkspaceCompanyBranchTableRecord;
-	companyId: string;
 	onStatusChange: (branch: WorkspaceCompanyBranchRecord) => void;
 }) {
 	return (
@@ -150,13 +140,13 @@ function CompanyBranchesTableRow({
 			<WorkspaceCompaniesTableCell>
 				<WorkspaceTextBadge>{branch.code}</WorkspaceTextBadge>
 			</WorkspaceCompaniesTableCell>
-			<td className="px-3 py-2.5">
+			<td className="px-4 py-4">
 				<div className="min-w-0">
-					<p className="truncate text-xs font-semibold text-darknavy">
+					<p className="truncate text-sm font-semibold text-darknavy">
 						{branch.name}
 						{branch.isMain ? " (Head Office)" : ""}
 					</p>
-					<p className="mt-1 truncate text-xs text-darknavy/50">
+					<p className="mt-1 truncate text-sm text-darknavy/50">
 						{branch.email}
 					</p>
 				</div>
@@ -165,16 +155,12 @@ function CompanyBranchesTableRow({
 				{branch.isMain ? "Head Office" : branch.branchType}
 			</WorkspaceCompaniesTableCell>
 			<WorkspaceCompaniesTableCell>
-				<WorkspaceTextBadge>{branch.totalUsers}</WorkspaceTextBadge>
-			</WorkspaceCompaniesTableCell>
-			<WorkspaceCompaniesTableCell>
 				<WorkspaceStatusBadge status={branch.status} />
 			</WorkspaceCompaniesTableCell>
 			<WorkspaceCompaniesTableCell align="center">
 				<BranchRecordActions
 					baseHref={baseHref}
 					branch={branch}
-					companyId={companyId}
 					onStatusChange={() => onStatusChange(branch)}
 				/>
 			</WorkspaceCompaniesTableCell>
@@ -185,30 +171,22 @@ function CompanyBranchesTableRow({
 function BranchRecordActions({
 	baseHref,
 	branch,
-	companyId,
 	onStatusChange,
 }: {
 	baseHref: string;
 	branch: WorkspaceCompanyBranchTableRecord;
-	companyId: string;
 	onStatusChange: () => void;
 }) {
 	const nextStatus = getNextWorkspaceCompanyStatus(branch.status);
 	const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
 
 	return (
-		<div className="flex items-center justify-center gap-1">
+		<div className="flex items-center justify-center gap-1.5">
 			<IconLink href={`${baseHref}/view/${branch.id}`} label={`View ${branch.name}`}>
 				<Eye className="h-4 w-4" aria-hidden="true" />
 			</IconLink>
 			<IconLink href={`${baseHref}/edit/${branch.id}`} label={`Edit ${branch.name}`}>
 				<Edit3 className="h-4 w-4" aria-hidden="true" />
-			</IconLink>
-			<IconLink
-				href={getWorkspaceCompanyBranchUsersHref(companyId, branch.id)}
-				label={`Open users for ${branch.name}`}
-			>
-				<Users className="h-4 w-4" aria-hidden="true" />
 			</IconLink>
 			<button
 				type="button"
@@ -216,8 +194,8 @@ function BranchRecordActions({
 				aria-label={`Set ${branch.name} as ${nextStatus.toLowerCase()}`}
 				className={
 					nextStatus === "Inactive"
-						? "flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10"
-						: "flex h-9 w-9 items-center justify-center rounded-md text-emerald-700 transition hover:bg-emerald-50"
+						? "flex h-10 w-10 items-center justify-center rounded-lg text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coralpink/15"
+						: "flex h-10 w-10 items-center justify-center rounded-lg text-emerald-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/15"
 				}
 			>
 				<StatusIcon className="h-4 w-4" aria-hidden="true" />

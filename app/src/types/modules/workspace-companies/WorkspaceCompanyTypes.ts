@@ -6,10 +6,13 @@ export type WorkspaceCompanyPlan =
   | "Accounting + Inventory";
 
 export type WorkspaceCompanyType =
+  | "Individual"
   | "Corporation"
   | "Partnership"
-  | "Single Proprietorship"
-  | "Non-Profit";
+  | "Association"
+  | "Non Stock"
+  | "Non Profit Organization"
+  | "Others";
 
 export type WorkspaceCompanyActionMode = "add" | "edit" | "view";
 
@@ -26,12 +29,40 @@ export type WorkspaceCompanyRecord = {
   address: string;
   primaryContact: string;
   createdAt: string;
+  contactPerson?: string;
+  firstName?: string;
+  lastName?: string;
+  middleName?: string;
+  nonIndividualType?: string;
+  nonIndividualTypeOther?: string;
+  reportEndDate?: string;
+  reportStartDate?: string;
+  taxpayerType?: "individual" | "non-individual";
+  tin?: string;
+  website?: string;
 };
 
-export type WorkspaceCompanyFormValues = Omit<
-  WorkspaceCompanyRecord,
-  "id" | "initials" | "createdAt"
->;
+export type WorkspaceCompanyFormValues = {
+  address: string;
+  companyName: string;
+  contactNumber: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  logoFile: File | null;
+  logoName: string;
+  logoUrl: string;
+  middleName: string;
+  nonIndividualType: string;
+  nonIndividualTypeOther: string;
+  plan: WorkspaceCompanyPlan;
+  reportEndDate: string;
+  reportStartDate: string;
+  status: WorkspaceCompanyStatus;
+  taxpayerType: "individual" | "non-individual";
+  tin: string;
+  website: string;
+};
 
 export type WorkspaceCompanyFormErrors = Partial<
   Record<keyof WorkspaceCompanyFormValues, string>
@@ -135,9 +166,7 @@ export type WorkspaceCompanyTableRecord = WorkspaceCompanyRecord & {
 
 export type WorkspaceCompanyUserTableRecord = WorkspaceCompanyUserRecord;
 
-export type WorkspaceCompanyBranchTableRecord = WorkspaceCompanyBranchRecord & {
-  totalUsers: number;
-};
+export type WorkspaceCompanyBranchTableRecord = WorkspaceCompanyBranchRecord;
 
 export type WorkspaceBranchUserTableRecord = WorkspaceBranchUserRecord;
 
@@ -153,7 +182,7 @@ export type WorkspaceCompanyUserTableColumnKey = keyof Pick<
 
 export type WorkspaceCompanyBranchTableColumnKey = keyof Pick<
   WorkspaceCompanyBranchTableRecord,
-  "code" | "name" | "branchType" | "totalUsers" | "status"
+  "code" | "name" | "branchType" | "status"
 >;
 
 export type WorkspaceBranchUserTableColumnKey = keyof Pick<

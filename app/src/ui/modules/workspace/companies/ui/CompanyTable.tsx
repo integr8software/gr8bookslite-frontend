@@ -83,7 +83,7 @@ export function CompanyTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No companies found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[66rem]"
+				minWidthClassName="min-w-[72rem]"
 				paginationStorageKey={WorkspaceCompaniesTablePaginationStorageKey}
 				table={companyList.table}
 				renderRow={({ id, original }) => (
@@ -126,7 +126,7 @@ function CompanyTableFilters({
 	onTypeFilterChange: (value: WorkspaceCompanyType | "All") => void;
 }) {
 	return (
-		<WorkspaceCompaniesFilterBar className="lg:grid-cols-[1fr_10rem_10rem_13rem_auto]">
+		<WorkspaceCompaniesFilterBar className="lg:grid-cols-[1fr_11rem_11rem_15rem_auto]">
 			<WorkspaceCompaniesSearchInput
 				value={query}
 				onChange={onQueryChange}
@@ -170,10 +170,10 @@ function CompanyTableRow({
 }) {
 	return (
 		<tr className="module-table-row">
-			<td className="px-3 py-2.5">
+			<td className="px-5 py-4">
 				<Link
 					href={getWorkspaceCompanyHref(company.id)}
-					className="flex min-w-0 items-center gap-3 rounded-md transition hover:text-skyblue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+					className="flex min-w-0 items-center gap-3 rounded-lg transition hover:text-skyblue focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 				>
 					<WorkspaceCompanyAvatar
 						initials={company.initials}
@@ -181,10 +181,10 @@ function CompanyTableRow({
 						name={company.name}
 					/>
 					<span className="min-w-0">
-						<span className="block truncate text-xs font-semibold text-darknavy">
+						<span className="block truncate text-sm font-semibold text-darknavy">
 							{company.name}
 						</span>
-						<span className="mt-1 block truncate text-xs text-darknavy/50">
+						<span className="mt-1 block truncate text-sm text-darknavy/50">
 							{company.email}
 						</span>
 					</span>
@@ -224,7 +224,7 @@ function CompanyRecordActions({
 	const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
 
 	return (
-		<div className="flex items-center justify-center gap-1">
+		<div className="flex items-center justify-center gap-1.5">
 			<IconLink href={getWorkspaceCompanyHref(company.id)} label={`Open ${company.name}`}>
 				<Eye className="h-4 w-4" aria-hidden="true" />
 			</IconLink>
@@ -237,8 +237,8 @@ function CompanyRecordActions({
 				aria-label={`Set ${company.name} as ${nextStatus.toLowerCase()}`}
 				className={
 					nextStatus === "Inactive"
-						? "flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10"
-						: "flex h-9 w-9 items-center justify-center rounded-md text-emerald-700 transition hover:bg-emerald-50"
+						? "flex h-10 w-10 items-center justify-center rounded-lg text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coralpink/15"
+						: "flex h-10 w-10 items-center justify-center rounded-lg text-emerald-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/15"
 				}
 			>
 				<StatusIcon className="h-4 w-4" aria-hidden="true" />

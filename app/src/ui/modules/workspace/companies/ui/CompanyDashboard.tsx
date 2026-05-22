@@ -26,7 +26,6 @@ export function WorkspaceCompanyDashboard() {
 	const {
 		company,
 		companyBranches,
-		companyBranchUsers,
 	} = useWorkspaceCompanyContext();
 
 	if (!company) {
@@ -103,15 +102,14 @@ export function WorkspaceCompanyDashboard() {
 					</div>
 				</article>
 
-				<section className="grid gap-3 sm:grid-cols-2">
+				<section className="grid gap-3">
 					<MetricCard label="Branches" value={companyBranches.length} />
-					<MetricCard label="Branch Users" value={companyBranchUsers.length} />
 				</section>
 			</section>
 
 			<section className="grid gap-4">
 				<ModuleLinkCard
-					description="Branches and satellites live inside the company. Each branch has a separate user list."
+					description="Branches and satellites live inside the company. User access is assigned from Workspace Users Management."
 					href={branchesHref}
 					icon={GitBranch}
 					label="Branch Management"

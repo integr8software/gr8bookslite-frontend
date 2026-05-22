@@ -26,7 +26,6 @@ export function WorkspaceCompanyBranchesMain() {
 	const {
 		company,
 		companyBranches,
-		companyBranchUsers,
 		isLoading,
 	} = useWorkspaceCompanyContext();
 	const updateBranch = useWorkspaceCompanyManagementStore(
@@ -70,7 +69,7 @@ export function WorkspaceCompanyBranchesMain() {
 				variant="panel"
 				titleAs="h1"
 				title="Branch Management"
-				description={`Manage branches for ${company.name}. Users added inside a branch appear only in that branch user list.`}
+				description={`Manage branches and satellites for ${company.name}. User access is assigned from Workspace Users Management.`}
 				eyebrow={
 					<>
 						<GitBranch className="h-3.5 w-3.5" aria-hidden="true" />
@@ -98,9 +97,7 @@ export function WorkspaceCompanyBranchesMain() {
 			/>
 			<CompanyBranchesTable
 				baseHref={branchesHref}
-				branchUsers={companyBranchUsers}
 				branches={companyBranches}
-				companyId={company.id}
 				isLoading={isLoading}
 				onStatusChange={setPendingStatusBranch}
 			/>
@@ -114,7 +111,7 @@ export function WorkspaceCompanyBranchesMain() {
 				}
 				description={`This will mark ${
 					pendingStatusBranch?.name ?? "the selected branch"
-				} as ${nextStatus.toLowerCase()} while keeping its branch user records available.`}
+				} as ${nextStatus.toLowerCase()} while keeping company records and assigned access available.`}
 				confirmLabel={
 					nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active"
 				}

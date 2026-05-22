@@ -10,6 +10,7 @@ export type ModuleDrawerPosition = "bottom" | "left" | "right" | "top";
 type ModuleDrawerProps = {
 	actions?: ReactNode;
 	children: ReactNode;
+	className?: string;
 	description?: ReactNode;
 	eyebrow?: ReactNode;
 	footer?: ReactNode;
@@ -17,6 +18,7 @@ type ModuleDrawerProps = {
 	maxWidthClassName?: string;
 	onClose: () => void;
 	position?: ModuleDrawerPosition;
+	showCloseButton?: boolean;
 	title: ReactNode;
 };
 
@@ -53,6 +55,7 @@ const drawerPositionStyles: Record<
 export function ModuleDrawer({
 	actions,
 	children,
+	className,
 	description,
 	eyebrow,
 	footer,
@@ -60,6 +63,7 @@ export function ModuleDrawer({
 	maxWidthClassName = "max-w-2xl",
 	onClose,
 	position = "right",
+	showCloseButton = true,
 	title,
 }: ModuleDrawerProps) {
 	const positionStyles = drawerPositionStyles[position];
@@ -88,6 +92,7 @@ export function ModuleDrawer({
 							positionStyles.className,
 							positionStyles.shadowClassName,
 							sizeClassName,
+							className,
 						)}
 						initial={positionStyles.initial}
 						animate={{ x: 0, y: 0 }}
@@ -99,6 +104,7 @@ export function ModuleDrawer({
 							eyebrow={eyebrow}
 							actions={actions}
 							onClose={onClose}
+							showCloseButton={showCloseButton}
 							title={title}
 						/>
 						<div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
@@ -119,10 +125,16 @@ function ModuleDrawerHeader({
 	description,
 	eyebrow,
 	onClose,
+	showCloseButton,
 	title,
 }: Pick<
 	ModuleDrawerProps,
-	"actions" | "description" | "eyebrow" | "onClose" | "title"
+	| "actions"
+	| "description"
+	| "eyebrow"
+	| "onClose"
+	| "showCloseButton"
+	| "title"
 >) {
 	return (
 		<div className="flex flex-col gap-4 border-b border-darknavy/10 px-6 py-5 sm:flex-row sm:items-start sm:justify-between">
@@ -139,14 +151,16 @@ function ModuleDrawerHeader({
 			</div>
 			<div className="flex items-center gap-2 sm:justify-end">
 				{actions}
-				<button
-					type="button"
-					aria-label="Close drawer"
-					onClick={onClose}
-					className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
-				>
-					<X className="h-5 w-5" aria-hidden="true" />
-				</button>
+				{showCloseButton ? (
+					<button
+						type="button"
+						aria-label="Close drawer"
+						onClick={onClose}
+						className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
+					>
+						<X className="h-5 w-5" aria-hidden="true" />
+					</button>
+				) : null}
 			</div>
 		</div>
 	);

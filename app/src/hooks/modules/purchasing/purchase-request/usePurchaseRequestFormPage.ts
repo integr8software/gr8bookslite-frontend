@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
 import { PurchaseRequestHref } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import {
 	createPurchaseRequestFormValues,
@@ -9,6 +10,7 @@ import {
 	createPurchaseRequestRecord,
 	emptyPurchaseRequestItem,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
+import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
 import type {
 	PurchaseRequestFormErrors,
 	PurchaseRequestFormValues,
@@ -46,7 +48,12 @@ export function usePurchaseRequestFormPage() {
 			return;
 		}
 
-		setValues((current) => ({ ...current, [field]: value }));
+		const nextValue =
+			field === "vatRegTin" && typeof value === "string"
+				? FormatTinNumber(value)
+				: value;
+
+		setValues((current) => ({ ...current, [field]: nextValue }));
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
@@ -107,18 +114,25 @@ export function usePurchaseRequestFormPage() {
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
+			toast.error("Please complete the required purchase request fields.");
 			return;
 		}
 
-		const nextRequest = createPurchaseRequestRecord(values, params.recordId);
+		try {
+			const nextRequest = createPurchaseRequestRecord(values, params.recordId);
 
-		if (mode === "edit") {
-			updateRequest(nextRequest);
-		} else {
-			addRequest(nextRequest);
+			if (mode === "edit") {
+				updateRequest(nextRequest);
+				toast.success("Purchase request updated.");
+			} else {
+				addRequest(nextRequest);
+				toast.success("Purchase request created.");
+			}
+
+			router.push(`${PurchaseRequestHref}/view/${nextRequest.id}`);
+		} catch {
+			toast.error("Could not save the purchase request. Please try again.");
 		}
-
-		router.push(`${PurchaseRequestHref}/view/${nextRequest.id}`);
 	}
 
 	return {

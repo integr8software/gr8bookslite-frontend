@@ -17,7 +17,8 @@ export type PurchaseRequestRecord = {
 	id: string;
 	companyAddress: string;
 	companyName: string;
-	logoText: string;
+	logoFileName: string;
+	logoImageUrl: string;
 	telephoneNo: string;
 	vatRegTin: string;
 	vceCode: string;
@@ -35,7 +36,11 @@ export type PurchaseRequestRecord = {
 	remarks: string;
 	forDepartment: string;
 	preparedBy: string;
+	preparedBySignatureFileName: string;
+	preparedBySignatureImageUrl: string;
 	approvedBy: string;
+	approvedBySignatureFileName: string;
+	approvedBySignatureImageUrl: string;
 	items: PurchaseRequestItem[];
 };
 

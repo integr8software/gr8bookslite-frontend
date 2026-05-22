@@ -19,7 +19,7 @@ export default function RootLayout({
 			<body className="min-h-full flex flex-col">
 				<AppProviders>
 					{children}
-					<AppToaster position="bottom-center" reverseOrder={false} />
+					<AppToaster position="top-center" reverseOrder={false} />
 				</AppProviders>
 			</body>
 		</html>

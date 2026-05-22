@@ -1,4 +1,5 @@
 import { PurchaseRequestStorageKey } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
+import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
 import type {
 	PurchaseRequestFormValues,
 	PurchaseRequestItem,
@@ -9,9 +10,10 @@ const DefaultPurchaseRequestPrintHeader = {
 	companyAddress:
 		"Abc, 123, Sample, Malamig, City Of Mandaluyong, Ncr, Second District",
 	companyName: "Your Company Name Here",
-	logoText: "QUANTUM EDGE",
+	logoFileName: "",
+	logoImageUrl: "",
 	telephoneNo: "0967-237-4514",
-	vatRegTin: "000-000-000",
+	vatRegTin: "000-000-000-000",
 };
 
 export const purchaseRequestSeedRecords: PurchaseRequestRecord[] = [
@@ -33,7 +35,11 @@ export const purchaseRequestSeedRecords: PurchaseRequestRecord[] = [
 		remarks: "",
 		forDepartment: "",
 		preparedBy: "",
+		preparedBySignatureFileName: "",
+		preparedBySignatureImageUrl: "",
 		approvedBy: "",
+		approvedBySignatureFileName: "",
+		approvedBySignatureImageUrl: "",
 		items: [
 			{
 				id: "pr-000292-item-1",
@@ -73,7 +79,12 @@ export function createPurchaseRequestFormValues(
 				record.companyAddress ?? DefaultPurchaseRequestPrintHeader.companyAddress,
 			companyName:
 				record.companyName ?? DefaultPurchaseRequestPrintHeader.companyName,
-			logoText: record.logoText ?? DefaultPurchaseRequestPrintHeader.logoText,
+			logoFileName:
+				record.logoFileName ??
+				DefaultPurchaseRequestPrintHeader.logoFileName,
+			logoImageUrl:
+				record.logoImageUrl ??
+				DefaultPurchaseRequestPrintHeader.logoImageUrl,
 			telephoneNo:
 				record.telephoneNo ?? DefaultPurchaseRequestPrintHeader.telephoneNo,
 			vatRegTin: record.vatRegTin ?? DefaultPurchaseRequestPrintHeader.vatRegTin,
@@ -92,7 +103,11 @@ export function createPurchaseRequestFormValues(
 			remarks: record.remarks,
 			forDepartment: record.forDepartment,
 			preparedBy: record.preparedBy,
+			preparedBySignatureFileName: record.preparedBySignatureFileName ?? "",
+			preparedBySignatureImageUrl: record.preparedBySignatureImageUrl ?? "",
 			approvedBy: record.approvedBy,
+			approvedBySignatureFileName: record.approvedBySignatureFileName ?? "",
+			approvedBySignatureImageUrl: record.approvedBySignatureImageUrl ?? "",
 			items: record.items.map((item) => ({ ...item })),
 		};
 	}
@@ -114,7 +129,11 @@ export function createPurchaseRequestFormValues(
 		remarks: "",
 		forDepartment: "",
 		preparedBy: "",
+		preparedBySignatureFileName: "",
+		preparedBySignatureImageUrl: "",
 		approvedBy: "",
+		approvedBySignatureFileName: "",
+		approvedBySignatureImageUrl: "",
 		items: [{ ...emptyPurchaseRequestItem, id: createPurchaseRequestId("item") }],
 	};
 }
@@ -126,6 +145,7 @@ export function createPurchaseRequestRecord(
 	return {
 		id,
 		...values,
+		vatRegTin: FormatTinNumber(values.vatRegTin),
 		items: values.items.map((item) => ({
 			...item,
 			id: item.id || createPurchaseRequestId("item"),
@@ -151,6 +171,38 @@ export function formatPurchaseRequestCurrency(amount: number) {
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2,
 	});
+}
+
+export function formatPurchaseRequestMoney(amount: number, currency: string) {
+	const symbol = getPurchaseRequestCurrencySymbol(currency);
+
+	return `${symbol}${formatPurchaseRequestCurrency(amount)}`;
+}
+
+function getPurchaseRequestCurrencySymbol(currency: string) {
+	const symbols: Record<string, string> = {
+		EUR: "€",
+		JPY: "¥",
+		PHP: "₱",
+		USD: "$",
+	};
+
+	if (symbols[currency]) {
+		return symbols[currency];
+	}
+
+	switch (currency) {
+		case "PHP":
+			return "₱";
+		case "USD":
+			return "$";
+		case "JPY":
+			return "¥";
+		case "EUR":
+			return "€";
+		default:
+			return currency ? `${currency} ` : "";
+	}
 }
 
 export function formatPurchaseRequestDate(value: string) {

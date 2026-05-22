@@ -54,6 +54,16 @@ import type {
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyManagement";
 
+function getDigitsOnly(value: string) {
+	return value.replace(/\D/g, "");
+}
+
+function formatCardNumber(value: string) {
+	return getDigitsOnly(value)
+		.slice(0, 19)
+		.replace(/(\d{4})(?=\d)/g, "$1 ");
+}
+
 export function useWorkspaceCompanyAction() {
 	const router = useRouter();
 	const pathname = usePathname();
@@ -86,6 +96,42 @@ export function useWorkspaceCompanyAction() {
 	const cancelHref = mode === "edit" ? companyHref : WorkspaceCompaniesHref;
 
 	function updateField(field: keyof WorkspaceCompanyFormValues, value: string) {
+		if (field === "billingCardNumber") {
+			setValues((current) => ({
+				...current,
+				billingCardNumber: formatCardNumber(value),
+			}));
+			setErrors((current) => ({ ...current, billingCardNumber: undefined }));
+			return;
+		}
+
+		if (field === "billingExpiryMonth") {
+			setValues((current) => ({
+				...current,
+				billingExpiryMonth: getDigitsOnly(value).slice(0, 2),
+			}));
+			setErrors((current) => ({ ...current, billingExpiryMonth: undefined }));
+			return;
+		}
+
+		if (field === "billingExpiryYear") {
+			setValues((current) => ({
+				...current,
+				billingExpiryYear: getDigitsOnly(value).slice(0, 4),
+			}));
+			setErrors((current) => ({ ...current, billingExpiryYear: undefined }));
+			return;
+		}
+
+		if (field === "billingCvc") {
+			setValues((current) => ({
+				...current,
+				billingCvc: getDigitsOnly(value).slice(0, 4),
+			}));
+			setErrors((current) => ({ ...current, billingCvc: undefined }));
+			return;
+		}
+
 		setValues((current) => ({ ...current, [field]: value }));
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}

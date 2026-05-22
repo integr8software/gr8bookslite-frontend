@@ -20,6 +20,14 @@ const DefaultWorkspaceCompanyReportYear = GetCalendarYearReportDates();
 
 export const InitialWorkspaceCompanyFormValues: WorkspaceCompanyFormValues = {
 	address: "",
+	billingAddress: "",
+	billingCardNumber: "",
+	billingCardholderName: "",
+	billingCvc: "",
+	billingEmail: "",
+	billingExpiryMonth: "",
+	billingExpiryYear: "",
+	billingPaymentMethodId: "current-card",
 	companyName: "",
 	contactNumber: "",
 	email: "",
@@ -342,6 +350,14 @@ export function createWorkspaceCompanyFormValues(
 
 	return {
 		address: company.address,
+		billingAddress: "",
+		billingCardNumber: "",
+		billingCardholderName: "",
+		billingCvc: "",
+		billingEmail: company.email,
+		billingExpiryMonth: "",
+		billingExpiryYear: "",
+		billingPaymentMethodId: company.billingPaymentMethodId ?? "current-card",
 		companyName: taxpayerType === "non-individual" ? company.name : "",
 		contactNumber: company.contactNumber,
 		email: company.email,
@@ -386,6 +402,10 @@ export function createWorkspaceCompanyFromForm(
 		primaryContact: getWorkspaceCompanyPrimaryContact(trimmedValues),
 		status: trimmedValues.status,
 		createdAt: "May 21, 2026",
+		billingCardBrand: getBillingCardBrand(trimmedValues),
+		billingCardLast4: getBillingCardLast4(trimmedValues),
+		billingPaymentMethodId: trimmedValues.billingPaymentMethodId,
+		billingPaymentMethodLabel: getBillingPaymentMethodLabel(trimmedValues),
 		firstName: trimmedValues.firstName || undefined,
 		lastName: trimmedValues.lastName || undefined,
 		middleName: trimmedValues.middleName || undefined,
@@ -410,6 +430,10 @@ export function updateWorkspaceCompanyFromForm(
 	return {
 		...company,
 		address: trimmedValues.address,
+		billingCardBrand: getBillingCardBrand(trimmedValues),
+		billingCardLast4: getBillingCardLast4(trimmedValues),
+		billingPaymentMethodId: trimmedValues.billingPaymentMethodId,
+		billingPaymentMethodLabel: getBillingPaymentMethodLabel(trimmedValues),
 		companyType,
 		contactNumber: trimmedValues.contactNumber,
 		email: trimmedValues.email,
@@ -466,6 +490,9 @@ export function validateWorkspaceCompanyForm(
 	}
 	if (!values.reportEndDate) {
 		errors.reportEndDate = "Report end date is required.";
+	}
+	if (values.billingPaymentMethodId === "new-paymongo-card") {
+		validateBillingCardDetails(values, errors);
 	}
 
 	return errors;
@@ -660,6 +687,14 @@ function trimCompanyValues(
 	return {
 		...values,
 		address: values.address.trim(),
+		billingAddress: values.billingAddress.trim(),
+		billingCardNumber: values.billingCardNumber.trim(),
+		billingCardholderName: values.billingCardholderName.trim(),
+		billingCvc: values.billingCvc.trim(),
+		billingEmail: values.billingEmail.trim(),
+		billingExpiryMonth: values.billingExpiryMonth.trim(),
+		billingExpiryYear: values.billingExpiryYear.trim(),
+		billingPaymentMethodId: values.billingPaymentMethodId.trim(),
 		companyName: values.companyName.trim(),
 		contactNumber: values.contactNumber.trim(),
 		email: values.email.trim(),
@@ -675,6 +710,133 @@ function trimCompanyValues(
 		tin: values.tin.trim(),
 		website: values.website.trim(),
 	};
+}
+
+function getBillingCardLast4(values: WorkspaceCompanyFormValues) {
+	if (values.billingPaymentMethodId !== "new-paymongo-card") {
+		return undefined;
+	}
+
+	const digits = getDigitsOnly(values.billingCardNumber);
+
+	return digits.slice(-4) || undefined;
+}
+
+function getBillingPaymentMethodLabel(values: WorkspaceCompanyFormValues) {
+	if (values.billingPaymentMethodId !== "new-paymongo-card") {
+		return values.billingPaymentMethodId;
+	}
+
+	const last4 = getBillingCardLast4(values);
+
+	return last4 ? `New PayMongo card ending ${last4}` : "New PayMongo card";
+}
+
+function getBillingCardBrand(values: WorkspaceCompanyFormValues) {
+	if (values.billingPaymentMethodId !== "new-paymongo-card") {
+		return undefined;
+	}
+
+	return getCardBrand(values.billingCardNumber);
+}
+
+function validateBillingCardDetails(
+	values: WorkspaceCompanyFormValues,
+	errors: WorkspaceCompanyFormErrors,
+) {
+	if (!values.billingCardholderName.trim()) {
+		errors.billingCardholderName = "Cardholder name is required.";
+	}
+	if (!values.billingEmail.trim()) {
+		errors.billingEmail = "Billing email is required.";
+	} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.billingEmail.trim())) {
+		errors.billingEmail = "Enter a valid billing email.";
+	}
+
+	const cardDigits = getDigitsOnly(values.billingCardNumber);
+	if (!cardDigits) {
+		errors.billingCardNumber = "Card number is required.";
+	} else if (
+		cardDigits.length < 12 ||
+		cardDigits.length > 19 ||
+		!passesLuhnCheck(cardDigits)
+	) {
+		errors.billingCardNumber = "Enter a valid card number.";
+	}
+
+	const expiryMonth = Number(values.billingExpiryMonth);
+	const expiryYear = Number(values.billingExpiryYear);
+	if (!/^(0?[1-9]|1[0-2])$/.test(values.billingExpiryMonth.trim())) {
+		errors.billingExpiryMonth = "Enter a valid expiry month.";
+	}
+	if (!/^\d{4}$/.test(values.billingExpiryYear.trim())) {
+		errors.billingExpiryYear = "Enter a valid expiry year.";
+	} else if (!Number.isNaN(expiryMonth) && !Number.isNaN(expiryYear)) {
+		const now = new Date();
+		const currentMonth = now.getMonth() + 1;
+		const currentYear = now.getFullYear();
+
+		if (
+			expiryYear < currentYear ||
+			(expiryYear === currentYear && expiryMonth < currentMonth)
+		) {
+			errors.billingExpiryYear = "Card expiry date cannot be in the past.";
+		}
+	}
+
+	const cvcPattern =
+		getCardBrand(values.billingCardNumber) === "amex" ? /^\d{4}$/ : /^\d{3}$/;
+	if (!values.billingCvc.trim()) {
+		errors.billingCvc = "CVC is required.";
+	} else if (!cvcPattern.test(values.billingCvc.trim())) {
+		errors.billingCvc =
+			getCardBrand(values.billingCardNumber) === "amex"
+				? "American Express cards require a 4-digit CVC."
+				: "This card requires a 3-digit CVC.";
+	}
+
+	if (values.billingAddress.trim().length < 5) {
+		errors.billingAddress = "Billing address must be at least 5 characters.";
+	}
+}
+
+function getDigitsOnly(value: string) {
+	return value.replace(/\D/g, "");
+}
+
+function getCardBrand(value: string) {
+	const digits = getDigitsOnly(value);
+
+	if (/^3[47]/.test(digits)) return "amex";
+	if (/^4/.test(digits)) return "visa";
+	if (/^(5[1-5]|2[2-7])/.test(digits)) return "mastercard";
+	if (/^(6011|65|64[4-9])/.test(digits)) return "discover";
+	if (/^(35(2[89]|[3-8]))/.test(digits)) return "jcb";
+	if (/^(30[0-5]|36|38|39)/.test(digits)) return "diners";
+
+	return "card";
+}
+
+function passesLuhnCheck(value: string) {
+	let checksum = 0;
+	let shouldDouble = false;
+
+	for (let index = value.length - 1; index >= 0; index -= 1) {
+		let digit = Number(value[index]);
+
+		if (shouldDouble) {
+			digit *= 2;
+
+			if (digit > 9) {
+				digit -= 9;
+			}
+		}
+
+		checksum += digit;
+		shouldDouble = !shouldDouble;
+	}
+
+	return checksum % 10 === 0;
 }
 
 function getWorkspaceCompanyDisplayName(values: WorkspaceCompanyFormValues) {

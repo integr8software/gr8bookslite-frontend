@@ -40,10 +40,22 @@ export type WorkspaceCompanyRecord = {
   taxpayerType?: "individual" | "non-individual";
   tin?: string;
   website?: string;
+  billingCardBrand?: string;
+  billingCardLast4?: string;
+  billingPaymentMethodId?: string;
+  billingPaymentMethodLabel?: string;
 };
 
 export type WorkspaceCompanyFormValues = {
   address: string;
+  billingAddress: string;
+  billingCardNumber: string;
+  billingCardholderName: string;
+  billingCvc: string;
+  billingEmail: string;
+  billingExpiryMonth: string;
+  billingExpiryYear: string;
+  billingPaymentMethodId: string;
   companyName: string;
   contactNumber: string;
   email: string;

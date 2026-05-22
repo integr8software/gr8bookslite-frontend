@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Building2, ImageUp, X } from "lucide-react";
+import { Building2, CreditCard, ImageUp, X } from "lucide-react";
 import {
 	WorkspaceCompaniesHref,
 } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
@@ -27,6 +27,24 @@ import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
 import { WorkspaceBillingImpactConfirmDialog } from "@/app/src/ui/modules/workspace/shared/WorkspaceBillingImpactConfirmDialog";
 
 const CompanyFormId = "workspace-company-form";
+const WorkspaceBillingPaymentMethods = [
+	{
+		id: "current-card",
+		label: "Use current PayMongo card - Visa ending 4242",
+	},
+	{
+		id: "card-visa-1881",
+		label: "PayMongo Visa ending 1881",
+	},
+	{
+		id: "card-mastercard-5820",
+		label: "PayMongo Mastercard ending 5820",
+	},
+	{
+		id: "new-paymongo-card",
+		label: "Add new PayMongo card",
+	},
+] as const;
 
 export function WorkspaceCompanyAction() {
 	const action = useWorkspaceCompanyAction();
@@ -60,6 +78,7 @@ export function WorkspaceCompanyAction() {
 			/>
 			<CompanyDetailsFields
 				errors={action.errors}
+				showBillingDetails={action.mode === "add"}
 				values={action.values}
 				onInputChange={action.handleInputChange}
 				onSubmit={(event) => {
@@ -94,12 +113,14 @@ export function WorkspaceCompanyAction() {
 
 function CompanyDetailsFields({
 	errors,
+	showBillingDetails,
 	values,
 	onInputChange,
 	onSubmit,
 	onUpdateField,
 }: {
 	errors: WorkspaceCompanyFormErrors;
+	showBillingDetails: boolean;
 	values: WorkspaceCompanyFormValues;
 	onInputChange: (
 		event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -384,6 +405,167 @@ function CompanyDetailsFields({
 					</div>
 				</div>
 			</WorkspaceCompanySection>
+
+			{showBillingDetails ? (
+				<WorkspaceCompanySection
+					title="Billing Details"
+					description="Choose a saved PayMongo payment method or add card details for the new company."
+					className="mt-5"
+				>
+					<div className="grid gap-4">
+						<div className="rounded-xl border border-darknavy/10 bg-offwhite/50 p-4">
+							<div className="mb-4 flex items-start gap-3">
+								<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-darknavy shadow-sm">
+									<CreditCard className="h-5 w-5" aria-hidden="true" />
+								</span>
+								<div>
+									<p className="text-sm font-semibold text-darknavy">
+										PayMongo payment method
+									</p>
+									<p className="mt-1 text-sm leading-6 text-darknavy/60">
+										Use the selected card for this company workspace billing.
+									</p>
+								</div>
+							</div>
+							<div className="grid gap-4 lg:grid-cols-2">
+								<WorkspaceCompanyField
+									label="Payment Method"
+									error={errors.billingPaymentMethodId}
+									required
+								>
+									<select
+										name="billingPaymentMethodId"
+										value={values.billingPaymentMethodId}
+										onChange={onInputChange}
+										className={WorkspaceCompanyFieldClassName}
+									>
+										{WorkspaceBillingPaymentMethods.map((method) => (
+											<option key={method.id} value={method.id}>
+												{method.label}
+											</option>
+										))}
+									</select>
+								</WorkspaceCompanyField>
+							</div>
+						</div>
+
+						{values.billingPaymentMethodId === "new-paymongo-card" ? (
+							<div className="grid gap-4 rounded-xl border border-darknavy/10 bg-white p-4 lg:grid-cols-2">
+								<WorkspaceCompanyField
+									label="Cardholder Name"
+									error={errors.billingCardholderName}
+									required
+								>
+									<input
+										name="billingCardholderName"
+										value={values.billingCardholderName}
+										onChange={onInputChange}
+										autoComplete="cc-name"
+										className={WorkspaceCompanyFieldClassName}
+										placeholder="John Doe"
+									/>
+								</WorkspaceCompanyField>
+								<WorkspaceCompanyField
+									label="Billing Email"
+									error={errors.billingEmail}
+									required
+								>
+									<input
+										name="billingEmail"
+										type="email"
+										value={values.billingEmail}
+										onChange={onInputChange}
+										autoComplete="email"
+										className={WorkspaceCompanyFieldClassName}
+										placeholder="billing@company.com"
+									/>
+								</WorkspaceCompanyField>
+								<div className="lg:col-span-2">
+									<WorkspaceCompanyField
+										label="Card Number"
+										error={errors.billingCardNumber}
+										required
+									>
+										<input
+											name="billingCardNumber"
+											value={values.billingCardNumber}
+											onChange={onInputChange}
+											inputMode="numeric"
+											maxLength={23}
+											autoComplete="cc-number"
+											className={WorkspaceCompanyFieldClassName}
+											placeholder="1234 5678 9012 3456"
+										/>
+									</WorkspaceCompanyField>
+								</div>
+								<WorkspaceCompanyField
+									label="Expiry Month"
+									error={errors.billingExpiryMonth}
+									required
+								>
+									<input
+										name="billingExpiryMonth"
+										value={values.billingExpiryMonth}
+										onChange={onInputChange}
+										inputMode="numeric"
+										maxLength={2}
+										autoComplete="cc-exp-month"
+										className={WorkspaceCompanyFieldClassName}
+										placeholder="MM"
+									/>
+								</WorkspaceCompanyField>
+								<WorkspaceCompanyField
+									label="Expiry Year"
+									error={errors.billingExpiryYear}
+									required
+								>
+									<input
+										name="billingExpiryYear"
+										value={values.billingExpiryYear}
+										onChange={onInputChange}
+										inputMode="numeric"
+										maxLength={4}
+										autoComplete="cc-exp-year"
+										className={WorkspaceCompanyFieldClassName}
+										placeholder="YYYY"
+									/>
+								</WorkspaceCompanyField>
+								<WorkspaceCompanyField
+									label="CVC"
+									error={errors.billingCvc}
+									required
+								>
+									<input
+										name="billingCvc"
+										value={values.billingCvc}
+										onChange={onInputChange}
+										inputMode="numeric"
+										maxLength={4}
+										autoComplete="cc-csc"
+										className={WorkspaceCompanyFieldClassName}
+										placeholder="123"
+									/>
+								</WorkspaceCompanyField>
+								<div className="lg:col-span-2">
+									<WorkspaceCompanyField
+										label="Billing Address"
+										error={errors.billingAddress}
+										required
+									>
+										<input
+											name="billingAddress"
+											value={values.billingAddress}
+											onChange={onInputChange}
+											className={WorkspaceCompanyFieldClassName}
+											placeholder="123 Main St, City, Province"
+										/>
+									</WorkspaceCompanyField>
+								</div>
+							</div>
+						) : null}
+					</div>
+				</WorkspaceCompanySection>
+			) : null}
 		</form>
 	);
 }

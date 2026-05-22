@@ -30,6 +30,7 @@ import {
   GetFallbackPostAuthRedirectPath,
   ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
+import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 
 type UseOtpFormOptions = {
@@ -145,7 +146,7 @@ export function useOtpForm({
       if (state.accessToken) {
         void ResolvePostAuthDestination(state.accessToken)
           .then(({ profile, redirectPath }) => {
-            setActiveCompanyId(profile.activeCompanyId);
+            setActiveCompanyId(GetAuthProfileCompanyId(profile));
             router.push(redirectPath);
           })
           .catch(() => {

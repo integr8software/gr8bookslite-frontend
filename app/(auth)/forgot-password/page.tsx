@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GradientBlurBackground } from "@/app/src/ui/shared/GradientBlurBackground";
+import { GradientBlurBackground } from "@/app/src/ui/shared/layout/GradientBlurBackground";
 import { ForgotPasswordForm } from "@/app/src/ui/auth/ForgotPasswordForm";
 import { AppName } from "@/app/src/constants/shared/AppConstants";
 

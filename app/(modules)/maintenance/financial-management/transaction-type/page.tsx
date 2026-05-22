@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { FinancialManagementTransactionTypeMain } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/Main";
+import { TransactionTypeListPage } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeListPage";
 
 const PageTitle = "Transaction Type";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function MaintenanceFinancialManagementTransactionTypePage() {
-  return <FinancialManagementTransactionTypeMain />;
+  return <TransactionTypeListPage />;
 }
 
 

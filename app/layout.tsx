@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { AppToaster } from "@/app/src/ui/shared/AppToaster";
-import { AppProviders } from "@/app/src/ui/shared/AppProviders";
+import { AppToaster } from "@/app/src/ui/shared/app/AppToaster";
+import { AppProviders } from "@/app/src/ui/shared/app/AppProviders";
 import { AppName } from "@/app/src/constants/shared/AppConstants";
 import "./globals.css";
 
@@ -15,14 +15,11 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html
-			lang="en"
-			className="h-full antialiased"
-		>
+		<html lang="en" className="h-full antialiased">
 			<body className="min-h-full flex flex-col">
 				<AppProviders>
 					{children}
-					<AppToaster position="top-right" reverseOrder={false} />
+					<AppToaster position="top-center" reverseOrder={false} />
 				</AppProviders>
 			</body>
 		</html>

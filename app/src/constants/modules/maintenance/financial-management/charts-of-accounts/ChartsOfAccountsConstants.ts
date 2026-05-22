@@ -120,13 +120,12 @@ export const ChartsOfAccountsTableColumns: Array<{
 		label: "Statement Section",
 		key: "statementSection",
 		className: "min-w-44",
-		sortable: false,
 	},
 	{ label: "Normal Balance", key: "normalBalance", className: "min-w-36" },
 	{ label: "Status", key: "status", className: "min-w-28" },
 	{
 		label: "Actions",
-		className: "sticky right-0 min-w-28 bg-slate-50 text-right",
+		className: "module-table-sticky-header sticky right-0 min-w-28 text-right",
 	},
 ];
 

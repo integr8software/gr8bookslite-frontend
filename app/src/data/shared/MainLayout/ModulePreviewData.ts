@@ -5,11 +5,19 @@ import {
   BarChart3,
   Briefcase,
   Building2,
+  CreditCard,
+  FileText,
   FolderKanban,
+  GitBranch,
+  Package,
   ShieldCheck,
   ShoppingCart,
+  Settings,
+  Tags,
   TrendingUp,
   UserRound,
+  WalletCards,
+  Warehouse,
 } from "lucide-react";
 
 export type ModulePreviewMetric = {
@@ -116,6 +124,330 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
       "Useful for testing dense settings forms before wiring real persistence.",
       "Provides a clean destination for the sidebar and branch shortcuts.",
       "Keeps the module shell complete for stakeholder walkthroughs.",
+    ],
+  },
+  activityFeed: {
+    eyebrow: "Workspace Overview",
+    title: "Activity Feed",
+    description:
+      "A cross-tenant timeline for subscription changes, company events, security signals, and support activity.",
+    icon: Activity,
+    tone: "sky",
+    metrics: [
+      { label: "Events Today", value: "184" },
+      { label: "Needs Review", value: "09" },
+      { label: "Automations", value: "12" },
+    ],
+    highlights: [
+      "Separates live operational signals from the dashboard summary.",
+      "Gives admins one place to review important workspace changes.",
+      "Can be scoped globally for Super Admin or per company for Admin.",
+    ],
+  },
+  branches: {
+    eyebrow: "Tenant Management",
+    title: "Branches",
+    description:
+      "A branch and satellite management surface for company-level access, addresses, and operating locations.",
+    icon: GitBranch,
+    tone: "citron",
+    metrics: [
+      { label: "Branches", value: "08" },
+      { label: "Satellites", value: "03" },
+      { label: "Pending Setup", value: "02" },
+    ],
+    highlights: [
+      "Keeps branch administration near companies and users.",
+      "Supports tenant-scoped views for company admins.",
+      "Creates room for future branch billing and access controls.",
+    ],
+  },
+  plansPackages: {
+    eyebrow: "Subscription & Billing",
+    title: "Plans & Packages",
+    description:
+      "A billing configuration area for Accounting, Inventory, combined packages, included users, and add-on pricing.",
+    icon: Package,
+    tone: "coral",
+    metrics: [
+      { label: "Packages", value: "03" },
+      { label: "Included User", value: "01" },
+      { label: "User Add-on", value: "PHP 100" },
+    ],
+    highlights: [
+      "Best kept as a Super Admin control because it changes platform revenue rules.",
+      "Can drive onboarding plan copy from a single source of truth later.",
+      "Supports clear add-on pricing for users, branches, satellites, and companies.",
+    ],
+  },
+  subscriptions: {
+    eyebrow: "Subscription & Billing",
+    title: "Subscriptions",
+    description:
+      "A subscription operations area for active company packages, renewal state, cancellations, and billing ownership.",
+    icon: WalletCards,
+    tone: "sky",
+    metrics: [
+      { label: "Active", value: "42" },
+      { label: "Trial", value: "07" },
+      { label: "Past Due", value: "03" },
+    ],
+    highlights: [
+      "Super Admin can manage every tenant subscription.",
+      "Company admins can review their own company subscription state.",
+      "Keeps plan configuration separate from subscription lifecycle work.",
+    ],
+  },
+  invoices: {
+    eyebrow: "Subscription & Billing",
+    title: "Invoices",
+    description:
+      "A billing record area for tenant invoices, payment status, receipt trails, and finance review.",
+    icon: FileText,
+    tone: "citron",
+    metrics: [
+      { label: "Open", value: "18" },
+      { label: "Paid", value: "226" },
+      { label: "Overdue", value: "04" },
+    ],
+    highlights: [
+      "Gives finance teams a clean destination for billing history.",
+      "Can be filtered globally or limited to a company admin's tenant.",
+      "Pairs naturally with payment methods and subscription records.",
+    ],
+  },
+  couponsPromotions: {
+    eyebrow: "Subscription & Billing",
+    title: "Coupons & Promotions",
+    description:
+      "A promotion management surface for discounts, vouchers, campaign codes, and redemption rules.",
+    icon: Tags,
+    tone: "violet",
+    metrics: [
+      { label: "Active Codes", value: "14" },
+      { label: "Campaigns", value: "05" },
+      { label: "Redemptions", value: "318" },
+    ],
+    highlights: [
+      "Keeps marketing discounts out of plan configuration.",
+      "Supports future rules for expiration, package eligibility, and usage caps.",
+      "Works well as a Super Admin-only billing tool.",
+    ],
+  },
+  modulesFeatures: {
+    eyebrow: "Platform Configuration",
+    title: "Modules & Features",
+    description:
+      "A platform catalog for enabling modules, feature flags, product bundles, and tenant availability.",
+    icon: BarChart3,
+    tone: "mint",
+    metrics: [
+      { label: "Modules", value: "11" },
+      { label: "Feature Flags", value: "28" },
+      { label: "Bundles", value: "03" },
+    ],
+    highlights: [
+      "This is the right home for Accounting and Inventory availability rules.",
+      "Keeps company operational modules out of the global sidebar.",
+      "Creates a clean path for plan-to-module entitlement mapping.",
+    ],
+  },
+  domainsPorts: {
+    eyebrow: "Platform Configuration",
+    title: "Domains & Ports",
+    description:
+      "A deployment configuration area for custom domains, allowed origins, ports, and tenant routing rules.",
+    icon: GitBranch,
+    tone: "sky",
+    metrics: [
+      { label: "Domains", value: "09" },
+      { label: "Ports", value: "04" },
+      { label: "Pending DNS", value: "02" },
+    ],
+    highlights: [
+      "Good as a Super Admin-only tool because it affects infrastructure.",
+      "Keeps tenant routing controls away from company-level settings.",
+      "Can later connect to domain verification and environment status.",
+    ],
+  },
+  integrations: {
+    eyebrow: "Platform Configuration",
+    title: "Integrations",
+    description:
+      "A connection hub for payment gateways, email providers, accounting services, and external platform hooks.",
+    icon: FolderKanban,
+    tone: "coral",
+    metrics: [
+      { label: "Connected", value: "06" },
+      { label: "Needs Auth", value: "02" },
+      { label: "Providers", value: "12" },
+    ],
+    highlights: [
+      "Centralizes platform-level integrations and provider credentials.",
+      "Can expose tenant-safe connection status to company admins later.",
+      "Keeps provider setup separate from daily operating modules.",
+    ],
+  },
+  systemSettings: {
+    eyebrow: "Platform Configuration",
+    title: "System Settings",
+    description:
+      "A global configuration area for defaults, environment rules, notification behavior, and platform policy.",
+    icon: Settings,
+    tone: "citron",
+    metrics: [
+      { label: "Policies", value: "16" },
+      { label: "Defaults", value: "24" },
+      { label: "Pending Review", value: "03" },
+    ],
+    highlights: [
+      "Best reserved for Super Admin because these settings affect every tenant.",
+      "Reduces confusion with company-specific settings.",
+      "Creates a stable home for future global configuration forms.",
+    ],
+  },
+  systemLogs: {
+    eyebrow: "Monitoring & Security",
+    title: "System Logs",
+    description:
+      "A technical log review area for platform events, jobs, API failures, and background processing.",
+    icon: FileText,
+    tone: "violet",
+    metrics: [
+      { label: "Log Lines", value: "32K" },
+      { label: "Errors", value: "18" },
+      { label: "Jobs", value: "74" },
+    ],
+    highlights: [
+      "Keeps technical monitoring separate from user-facing audit trails.",
+      "Useful for support escalation and maintenance review.",
+      "Should remain limited to platform administrators.",
+    ],
+  },
+  securityCenter: {
+    eyebrow: "Monitoring & Security",
+    title: "Security Center",
+    description:
+      "A security command area for suspicious activity, account protection, device sessions, and access policy health.",
+    icon: ShieldCheck,
+    tone: "coral",
+    metrics: [
+      { label: "Alerts", value: "06" },
+      { label: "MFA Coverage", value: "91%" },
+      { label: "Sessions", value: "214" },
+    ],
+    highlights: [
+      "Separates security posture from ordinary settings.",
+      "Works well beside audit logs, system logs, and backups.",
+      "Can later include company-scoped views for tenant admins.",
+    ],
+  },
+  backups: {
+    eyebrow: "Monitoring & Security",
+    title: "Backups",
+    description:
+      "A recovery operations area for backup schedules, retention, restore points, and tenant export controls.",
+    icon: Warehouse,
+    tone: "mint",
+    metrics: [
+      { label: "Restore Points", value: "31" },
+      { label: "Successful", value: "99%" },
+      { label: "Retention", value: "90d" },
+    ],
+    highlights: [
+      "Backup visibility belongs with security and monitoring.",
+      "Creates a clear destination for restore workflows later.",
+      "Should be strongly permissioned because it touches tenant data.",
+    ],
+  },
+  announcements: {
+    eyebrow: "Support & Maintenance",
+    title: "Announcements",
+    description:
+      "A communication area for release notices, outage advisories, planned maintenance, and tenant broadcasts.",
+    icon: Briefcase,
+    tone: "sky",
+    metrics: [
+      { label: "Published", value: "18" },
+      { label: "Drafts", value: "04" },
+      { label: "Scheduled", value: "02" },
+    ],
+    highlights: [
+      "Good for Super Admin publishing and company admin visibility.",
+      "Keeps platform notices out of operational dashboards.",
+      "Can later support audience targeting by plan or company.",
+    ],
+  },
+  supportTickets: {
+    eyebrow: "Support & Maintenance",
+    title: "Support Tickets",
+    description:
+      "A support queue for tenant requests, billing questions, platform incidents, and maintenance follow-up.",
+    icon: UserRound,
+    tone: "citron",
+    metrics: [
+      { label: "Open", value: "23" },
+      { label: "Waiting", value: "08" },
+      { label: "SLA Risk", value: "03" },
+    ],
+    highlights: [
+      "Super Admin can manage every queue item.",
+      "Company admins can create and review tickets for their own company.",
+      "Pairs naturally with announcements and maintenance notices.",
+    ],
+  },
+  maintenance: {
+    eyebrow: "Support & Maintenance",
+    title: "Maintenance",
+    description:
+      "A maintenance planning area for scheduled downtime, service windows, operational tasks, and incident notes.",
+    icon: Settings,
+    tone: "coral",
+    metrics: [
+      { label: "Windows", value: "04" },
+      { label: "Tasks", value: "19" },
+      { label: "Incidents", value: "02" },
+    ],
+    highlights: [
+      "Keeps platform maintenance separate from company maintenance records.",
+      "Can feed announcements and activity events.",
+      "Works best as a Super Admin operational tool.",
+    ],
+  },
+  companySettings: {
+    eyebrow: "Admin",
+    title: "Company Settings",
+    description:
+      "A company-admin workspace for tenant profile, billing contact, branches, and subscription-facing preferences.",
+    icon: Building2,
+    tone: "sky",
+    metrics: [
+      { label: "Profile Fields", value: "18" },
+      { label: "Admins", value: "03" },
+      { label: "Branches", value: "05" },
+    ],
+    highlights: [
+      "This should be tenant-scoped for company admins.",
+      "Keeps company preferences separate from global system settings.",
+      "Provides a clear admin destination without exposing platform controls.",
+    ],
+  },
+  paymentMethods: {
+    eyebrow: "Admin",
+    title: "Payment Methods",
+    description:
+      "A billing admin area for cards, payment defaults, renewal readiness, and company-level billing ownership.",
+    icon: CreditCard,
+    tone: "violet",
+    metrics: [
+      { label: "Methods", value: "02" },
+      { label: "Default", value: "Card" },
+      { label: "Renewal", value: "Ready" },
+    ],
+    highlights: [
+      "Belongs in Admin because company owners need direct billing control.",
+      "Works beside subscriptions and invoices without changing plan rules.",
+      "Should be scoped to the active company for non-Super Admin users.",
     ],
   },
   financialManagement: {

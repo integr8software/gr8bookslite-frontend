@@ -5,13 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
-import { Gr8BooksLoadingScreen } from "@/app/src/ui/shared/Gr8BooksLoadingScreen";
+import { MainLoadingScreen } from "@/app/src/ui/shared/app/MainLoadingScreen";
 import {
-  GetFallbackPostAuthRedirectPath,
-  IsOnboardingRedirectPath,
-  IsSystemRedirectPath,
-  ResolvePostAuthDestination,
+	GetFallbackPostAuthRedirectPath,
+	IsOnboardingRedirectPath,
+	IsSystemRedirectPath,
+	ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
+import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 
 type GoogleAuthRedirectState = "resolving" | "system" | "onboarding";
@@ -22,7 +23,7 @@ function ReadRedirectPath(mode: string | null) {
 
 export default function GoogleAuthCallbackPage() {
 	return (
-		<Suspense fallback={<Gr8BooksLoadingScreen />}>
+		<Suspense fallback={<MainLoadingScreen />}>
 			<GoogleAuthCallbackContent />
 		</Suspense>
 	);
@@ -48,7 +49,7 @@ function GoogleAuthCallbackContent() {
 			toast.success("Google sign-in successful.");
 			void ResolvePostAuthDestination(accessToken)
 				.then(({ profile, redirectPath }) => {
-					setActiveCompanyId(profile.activeCompanyId);
+					setActiveCompanyId(GetAuthProfileCompanyId(profile));
 					setRedirectState(GetGoogleAuthRedirectState(redirectPath));
 					router.replace(redirectPath);
 				})
@@ -70,7 +71,7 @@ function GoogleAuthCallbackContent() {
 	}
 
 	if (redirectState === "system") {
-		return <Gr8BooksLoadingScreen />;
+		return <MainLoadingScreen />;
 	}
 
 	return <GoogleAuthCallbackMessage />;

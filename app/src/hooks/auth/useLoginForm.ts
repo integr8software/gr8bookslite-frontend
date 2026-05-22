@@ -18,6 +18,7 @@ import {
   IsSystemRedirectPath,
   ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
+import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 
 type LoginFormValues = {
@@ -110,7 +111,7 @@ export function useLoginForm() {
       if (state.accessToken) {
         void ResolvePostAuthDestination(state.accessToken)
           .then(({ profile, redirectPath }) => {
-            setActiveCompanyId(profile.activeCompanyId);
+            setActiveCompanyId(GetAuthProfileCompanyId(profile));
             setPostAuthRedirectPath(redirectPath);
             setIsSystemRedirecting(IsSystemRedirectPath(redirectPath));
             router.push(redirectPath);

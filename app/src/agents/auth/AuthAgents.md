@@ -48,7 +48,7 @@ app/(auth)/otp/page.tsx
 
 Examples:
 
-- `AuthSchemas.ts`
+- `AuthValidation.ts`
 - `AuthTypes.ts`
 - `AuthActions.ts`
 - `AuthLoginActions.ts`
@@ -65,9 +65,11 @@ Examples:
 
 ```txt
 app/src/data/auth/
-  AuthSchemas.ts
   AuthTypes.ts
   OtpData.ts
+
+app/src/validations/auth/
+  AuthValidation.ts
 
 app/src/services/auth/
   AuthActions.ts
@@ -119,9 +121,9 @@ app/src/ui/shared/
 
 ### `data/auth`
 
-This layer stores auth validation, types, constants, and small reusable helpers.
+This layer stores auth types, constants, and small reusable helpers.
 
-- `AuthSchemas.ts`
+- `validations/auth/AuthValidation.ts`
   - contains Zod schemas for login, signup, forgot password, and OTP
   - exports inferred input types
 
@@ -292,7 +294,7 @@ This layer contains reusable and screen-level auth components.
 
 ## Logic Placement
 
-- Validation belongs in `app/src/data/auth/AuthSchemas.ts`
+- Validation belongs in `app/src/validations/auth/AuthValidation.ts`
 - Shared auth types belong in `app/src/data/auth/AuthTypes.ts`
 - OTP constants and helpers belong in `app/src/data/auth/OtpData.ts`
 - Server actions belong in `app/src/services/auth/AuthActions.ts`

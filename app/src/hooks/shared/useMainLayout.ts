@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
 import {
   type MainCurrentUser,
   type MainBranch,
@@ -30,6 +30,11 @@ import { getHelpArticleForPath } from "@/app/src/data/shared/ModuleHelp/ModuleHe
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useBranchManagementStore } from "@/app/src/hooks/modules/system-administration/branch-management/useBranchManagement";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
+import {
+  GetAuthProfileAccess,
+  GetAuthProfileCompanyId,
+  ResolveAuthProfileEffectiveRole,
+} from "@/app/src/services/auth/AuthProfileAccess";
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 import type {
   MainBreadcrumb,
@@ -39,8 +44,14 @@ import type {
 } from "@/app/src/types/shared/MainLayoutTypes";
 
 const DefaultExpandedKeys = [
-  "workspace",
-  "workspace-modules",
+  "workspace-overview-section",
+  "workspace-tenant-management",
+  "workspace-subscription-billing",
+  "workspace-platform-configuration",
+  "workspace-monitoring-security",
+  "workspace-support-maintenance",
+  "workspace-settings-section",
+  "workspace-admin",
   "dashboard",
   "maintenance",
   "maintenance-financial",
@@ -58,6 +69,9 @@ const WorkspaceRoutePrefix = "/workspace";
 const WorkspaceHomeHref = "/workspace/dashboard";
 const CompanyFallbackHomeHref = "/profile";
 const MaxBlockingProfileLoadMs = 4500;
+const BranchUsersContextParam = "workspaceBranchId";
+const CompanyUsersContextParam = "workspaceCompanyId";
+const BranchUsersNameParam = "branchName";
 
 type NavigationTrailNode = {
   key: string;
@@ -69,6 +83,7 @@ type NavigationTrailNode = {
 export function useMainLayout() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const storedAccessToken = useAppStore((state) => state.accessToken);
   const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const branchLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -101,6 +116,9 @@ export function useMainLayout() {
   );
   const missingRecordActionRedirectHref =
     getMissingRecordActionRedirectHref(pathname);
+  const routedCompanyId = searchParams.get(CompanyUsersContextParam);
+  const routedBranchId = searchParams.get(BranchUsersContextParam);
+  const routedBranchName = searchParams.get(BranchUsersNameParam);
   const accessToken = storedAccessToken;
   const { data: authProfile, isLoading: isAuthProfileLoading } =
     useAuthProfileQuery({ accessToken });
@@ -118,6 +136,9 @@ export function useMainLayout() {
     hasWorkspaceAccess && isWorkspaceRoute ? "workspace" : "company";
   const workspaceCompanies = authProfile
     ? MapProfileCompaniesToMainCompanies(authProfile)
+    : null;
+  const profileActiveCompanyId = authProfile
+    ? GetAuthProfileCompanyId(authProfile)
     : null;
   const [activeCompanyId, setActiveCompanyId] = useState(
     ModuleShellMockData.currentCompany.id,
@@ -151,10 +172,10 @@ export function useMainLayout() {
 
     return filterMainNavigationSections(
       sourceSections,
-      ModuleShellMockData.currentUser,
+      displayUser,
       subscription,
     );
-  }, [activeNavigationScope, subscription]);
+  }, [activeNavigationScope, displayUser, subscription]);
   const activeExpandedKeys = useMemo(
     () => getActiveExpandedKeys(navigationSections, pathname),
     [navigationSections, pathname],
@@ -179,18 +200,18 @@ export function useMainLayout() {
 
     return filterMainSearchItems(
       sourceItems,
-      ModuleShellMockData.currentUser,
+      displayUser,
       subscription,
     );
-  }, [activeNavigationScope, subscription]);
+  }, [activeNavigationScope, displayUser, subscription]);
   const companySearchItems = useMemo(
     () =>
       filterMainSearchItems(
         MainCompanySearchItems,
-        ModuleShellMockData.currentUser,
+        displayUser,
         subscription,
       ),
-    [subscription],
+    [displayUser, subscription],
   );
   const companyHomeHref = getCompanyHomeHref(
     companySearchItems,
@@ -247,18 +268,64 @@ export function useMainLayout() {
     accessibleBranches[0] ??
     null;
   const canManageBranches = hasAccess(
-    ModuleShellMockData.currentUser,
+    displayUser,
     "branch.management",
   );
 
   useEffect(() => {
-    if (!authProfile?.activeCompanyId) {
+    if (profileActiveCompanyId == null) {
       return;
     }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect -- keep the layout company switcher synced with the loaded profile.
-    setActiveCompanyId(String(authProfile.activeCompanyId));
-  }, [authProfile?.activeCompanyId]);
+    setActiveCompanyId(String(profileActiveCompanyId));
+  }, [profileActiveCompanyId]);
+
+  useEffect(() => {
+    if (!routedCompanyId) {
+      return;
+    }
+
+    if (!availableCompanies.some((company) => company.id === routedCompanyId)) {
+      return;
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- route context shortcuts should sync the topbar company when available.
+    setActiveCompanyId(routedCompanyId);
+  }, [availableCompanies, routedCompanyId]);
+
+  useEffect(() => {
+    if (!routedBranchId && !routedBranchName) {
+      return;
+    }
+
+    const normalizedRoutedBranchName = normalizeBranchRouteToken(
+      routedBranchName ?? "",
+    );
+    const routedBranch = accessibleBranches.find((branch) => {
+      if (branch.id === routedBranchId) {
+        return true;
+      }
+
+      if (!normalizedRoutedBranchName) {
+        return false;
+      }
+
+      return (
+        normalizeBranchRouteToken(branch.name) === normalizedRoutedBranchName ||
+        normalizeBranchRouteToken(getBranchSwitcherLabel(branch)) ===
+          normalizedRoutedBranchName ||
+        normalizeBranchRouteToken(branch.code) === normalizedRoutedBranchName
+      );
+    });
+
+    if (!routedBranch) {
+      return;
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- route context shortcuts should sync the topbar branch when available.
+    setActiveBranchId(routedBranch.id);
+  }, [accessibleBranches, routedBranchId, routedBranchName]);
 
   const branchDropdownItems = useMemo(() => {
     if (!shouldShowBranchSwitcher) {
@@ -285,8 +352,8 @@ export function useMainLayout() {
       {
         key: "branch-management",
         label: "Branch Management",
-        href: BranchManagementHref,
-        helperText: "Manage branch and satellite records",
+        href: WorkspaceCompaniesHref,
+        helperText: "Manage workspace companies, branches, and satellites",
         isManagementAction: true,
       },
     ];
@@ -582,11 +649,9 @@ function shouldShowBranchControls(branches: MainBranch[]) {
 }
 
 function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
-  if (profile.user.systemRole === "SUPER_ADMIN") {
-    return true;
-  }
+  const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
 
-  if (profile.activeAccess?.membershipRole === "ADMIN") {
+  if (effectiveRole === "SUPER_ADMIN" || effectiveRole === "ADMIN") {
     return true;
   }
 
@@ -602,13 +667,39 @@ function CreateWorkspaceCurrentUserFromProfile(
     ModuleShellMockData.currentUser.userRoleDetails;
   const [firstName, ...lastNameParts] = profile.user.name.trim().split(/\s+/);
   const lastName = lastNameParts.join(" ");
+  const activeAccess = GetAuthProfileAccess(profile);
+  const activeCompanyId = GetAuthProfileCompanyId(profile);
   const activeCompanyMembership =
     profile.companies?.find(
-      (company) => company.companyId === profile.activeCompanyId,
+      (company) => company.companyId === activeCompanyId,
     ) ?? profile.companies?.[0];
   const companyRoleName = FormatCompanyRoleName(
-    activeCompanyMembership?.companyRoleCode,
+    activeAccess?.companyRoleCode ?? activeCompanyMembership?.companyRoleCode,
   );
+  const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
+  const userRole =
+    effectiveRole === "SUPER_ADMIN"
+      ? "Super Admin"
+      : effectiveRole === "ADMIN"
+        ? "Admin"
+        : "User";
+  const userRoleDetails = companyRoleName
+    ? {
+        ...(fallbackUserRoleDetails ?? {
+          id: "user-role-workspace",
+          name: "Workspace User",
+          permissions: {},
+        }),
+        id:
+          activeAccess?.companyRoleCode ??
+          activeCompanyMembership?.companyRoleCode ??
+          fallbackUserRoleDetails?.id ??
+          "user-role-workspace",
+        name: companyRoleName,
+      }
+    : effectiveRole === "ADMIN"
+      ? fallbackUserRoleDetails
+      : undefined;
 
   return {
     ...ModuleShellMockData.currentUser,
@@ -617,26 +708,8 @@ function CreateWorkspaceCurrentUserFromProfile(
     name: profile.user.name,
     shortName: BuildShortName(profile.user.name),
     initials: BuildInitials(profile.user.name),
-    userRole:
-      profile.user.systemRole === "SUPER_ADMIN"
-        ? "Super Admin"
-        : profile.activeAccess?.membershipRole === "ADMIN"
-          ? "Admin"
-          : "User",
-    userRoleDetails: companyRoleName
-      ? {
-          ...(fallbackUserRoleDetails ?? {
-            id: "user-role-workspace",
-            name: "Workspace User",
-            permissions: {},
-          }),
-          id:
-            activeCompanyMembership?.companyRoleCode ??
-            fallbackUserRoleDetails?.id ??
-            "user-role-workspace",
-          name: companyRoleName,
-        }
-      : undefined,
+    userRole,
+    userRoleDetails,
   };
 }
 
@@ -1061,8 +1134,6 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "maintenance-inventory-warehouse-management":
     "Maintain inventory items, classifications, units, and warehouses.",
   "maintenance-party-management":
-    "Maintain parties used across sales, purchasing, and accounting.",
-  "maintenance-party-management-party-management":
     "Maintain customers, suppliers, vendors, members, and employees.",
   "maintenance-party":
     "Maintain customers, suppliers, vendors, members, and employees.",
@@ -1161,11 +1232,9 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "reports-bir": "Generate BIR compliance reports.",
   "reports-bir-vat-relief": "Prepare VAT relief reporting data.",
   "reports-bir-alpha-list": "Prepare alpha list reporting data.",
-  "maintenance-users": "Manage users, user types, and user groups.",
-  "maintenance-user-list": "Create and maintain system user accounts.",
+  "maintenance-user-management": "Manage users and roles.",
+  "maintenance-users": "Create and maintain system user accounts.",
   "maintenance-user-role": "Maintain user role classifications.",
-  "maintenance-department": "Organize users into departments.",
-  "branch-management": "Maintain branch and satellite records.",
   "maintenance-approval": "Configure approval workflows and rules.",
   "maintenance-audit": "Review audit trail activity.",
   "transaction-number-setup": "Configure transaction numbering sequences.",
@@ -1235,6 +1304,13 @@ function getBranchPriority(branch: MainBranch) {
 
 function getBranchSwitcherLabel(branch: MainBranch) {
   return `${branch.name}${branch.isMain ? " (Head Office)" : ""}`;
+}
+
+function normalizeBranchRouteToken(value: string) {
+  return value
+    .replace(/\s*\(head office\)\s*/i, "")
+    .trim()
+    .toLowerCase();
 }
 
 function matchesSearchQuery(item: MainSearchItem, query: string) {

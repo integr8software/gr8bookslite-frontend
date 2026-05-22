@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import type { MainBranch } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
 import { MainLayoutMockData } from "@/app/src/data/shared/MainLayout/MainShellMockData";
 import { BranchManagementQueryKeys } from "@/app/src/services/modules/system-administration/branch-management/BranchManagementQueryKeys";
@@ -39,6 +40,10 @@ export function useBranchManagementStore<TSelected = BranchManagementStoreState>
     mutationFn: async (branch: MainBranch) => branch,
     onSuccess: (branch) => {
       updateCachedBranches((branches) => [...branches, branch]);
+      toast.success("Branch created.");
+    },
+    onError: () => {
+      toast.error("Could not create branch. Please try again.");
     },
   });
 
@@ -50,6 +55,10 @@ export function useBranchManagementStore<TSelected = BranchManagementStoreState>
           currentBranch.id === branch.id ? branch : currentBranch,
         ),
       );
+      toast.success("Branch updated.");
+    },
+    onError: () => {
+      toast.error("Could not update branch. Please try again.");
     },
   });
 
@@ -59,6 +68,10 @@ export function useBranchManagementStore<TSelected = BranchManagementStoreState>
       updateCachedBranches((branches) =>
         branches.filter((branch) => branch.id !== branchId),
       );
+      toast.success("Branch deleted.");
+    },
+    onError: () => {
+      toast.error("Could not delete branch. Please try again.");
     },
   });
 

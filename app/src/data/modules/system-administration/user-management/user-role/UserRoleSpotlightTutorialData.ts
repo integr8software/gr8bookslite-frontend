@@ -3,9 +3,8 @@ import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourType
 
 export const UserRoleSpotlightTutorialStorageVersion = "v1";
 export const UserRoleSpotlightTutorialOpenEvent =
-  "gr8bookslite:user-role-spotlight-open";
-export const UserRoleSpotlightTutorialStorageKey =
-  `gr8bookslite.spotlightTutorial.${UserRoleSpotlightTutorialStorageVersion}.${UserRoleHref}`;
+  "gr8booksneo:user-role-spotlight-open";
+export const UserRoleSpotlightTutorialStorageKey = `gr8booksneo.spotlightTutorial.${UserRoleSpotlightTutorialStorageVersion}.${UserRoleHref}`;
 
 export const UserRoleSpotlightTutorialSteps = [
   {
@@ -19,7 +18,7 @@ export const UserRoleSpotlightTutorialSteps = [
     key: "add-type",
     title: "Create new user roles here",
     description:
-      "Use this action to add a new role template before assigning it to users in the user list.",
+      "Use this action to add a new role template before assigning it to users.",
     selectors: ["[data-spotlight-id='user-role-add']"],
   },
   {

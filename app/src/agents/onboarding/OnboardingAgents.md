@@ -20,8 +20,10 @@ app/onboarding/
 
 app/src/data/onboarding/
   OnboardingData.ts
-  OnboardingSchemas.ts
   OnboardingTypes.ts
+
+app/src/validations/onboarding/
+  OnboardingValidation.ts
 
 app/src/hooks/onboarding/
   useOnboardingDraft.ts
@@ -89,7 +91,7 @@ Use `data` for onboarding constants, Zod schemas, types, and initial values.
   - step metadata for the 4-step flow
   - select options such as organization type
   - upload limits such as the 5MB logo size
-- `OnboardingSchemas.ts`
+- `OnboardingValidation.ts`
   - step 1 validation
   - billing step validation
   - TIN and logo validation

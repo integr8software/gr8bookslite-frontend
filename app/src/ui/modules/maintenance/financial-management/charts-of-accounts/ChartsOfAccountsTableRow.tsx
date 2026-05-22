@@ -8,13 +8,13 @@ import {
 	Button,
 	TypeBadge,
 	joinClasses,
-} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls.tsx";
+} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 
 type ChartsOfAccountsTableRowProps = {
 	account: ChartAccount;
 	expandedIds: Set<string>;
 	level: number;
-	onDelete: (accountId: string) => void;
+	onDelete: (account: ChartAccount) => void;
 	onEdit: (account: ChartAccount) => void;
 	onToggleExpanded: (accountId: string) => void;
 };
@@ -32,9 +32,9 @@ export function ChartsOfAccountsTableRow({
 			initial={{ opacity: 0, y: 8 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.18 }}
-			className="group hover:bg-blue-50/40"
+			className="module-table-row group text-darknavy"
 		>
-			<td className="px-4 py-3 text-sm font-semibold text-slate-800">
+			<td className="px-4 py-3 text-sm font-semibold text-darknavy/75">
 				{account.accountNumber}
 			</td>
 			<td className="px-4 py-3">
@@ -48,7 +48,7 @@ export function ChartsOfAccountsTableRow({
 			<td className="px-4 py-3">
 				<TypeBadge type={account.accountType} />
 			</td>
-			<td className="px-4 py-3 text-sm text-slate-600">
+			<td className="px-4 py-3 text-sm text-darknavy/60">
 				{account.statementSection}
 			</td>
 			<td className="px-4 py-3">
@@ -65,7 +65,7 @@ export function ChartsOfAccountsTableRow({
 					{account.status}
 				</Badge>
 			</td>
-			<td className="sticky right-0 bg-white px-4 py-3 text-right shadow-[-12px_0_20px_rgba(255,255,255,0.86)] group-hover:bg-blue-50">
+			<td className="charts-account-actions-cell sticky right-0 px-4 py-3 text-right">
 				<RowActions
 					account={account}
 					onDelete={onDelete}
@@ -100,7 +100,7 @@ function AccountNameCell({
 				className={joinClasses(
 					"flex h-7 w-7 items-center justify-center rounded-md transition",
 					account.children?.length
-						? "text-slate-500 hover:bg-white hover:text-blue-700"
+						? "text-darknavy/50 hover:bg-white hover:text-skyblue"
 						: "text-transparent",
 				)}
 			>
@@ -113,10 +113,10 @@ function AccountNameCell({
 				/>
 			</button>
 			<div className="min-w-0">
-				<p className="truncate text-sm font-semibold text-slate-950">
+				<p className="truncate text-sm font-semibold text-darknavy">
 					{account.accountName}
 				</p>
-				<p className="truncate text-xs text-slate-500">
+				<p className="truncate text-xs text-darknavy/55">
 					{account.description || "No description"}
 				</p>
 			</div>
@@ -130,7 +130,7 @@ function RowActions({
 	onEdit,
 }: {
 	account: ChartAccount;
-	onDelete: (accountId: string) => void;
+	onDelete: (account: ChartAccount) => void;
 	onEdit: (account: ChartAccount) => void;
 }) {
 	return (
@@ -147,7 +147,7 @@ function RowActions({
 				size="icon"
 				variant="danger"
 				aria-label={`Delete ${account.accountName}`}
-				onClick={() => onDelete(account.id)}
+				onClick={() => onDelete(account)}
 			>
 				<Trash2 className="h-4 w-4" aria-hidden="true" />
 			</Button>

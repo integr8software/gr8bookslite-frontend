@@ -10,6 +10,8 @@ import type {
 } from "@/app/src/types/shared/AccountTypes";
 import { DefaultAccountAccentColor } from "@/app/src/constants/shared/AccountConstants";
 
+export const AccountPreferencesStorageKey = "gr8booksneo.accountPreferences";
+
 type AccountPreferencesState = {
   hasHydrated: boolean;
   theme: AccountTheme;
@@ -53,7 +55,7 @@ export const useAccountPreferences = create<AccountPreferencesState>()(
         })),
     }),
     {
-      name: "gr8booksneo.accountPreferences",
+      name: AccountPreferencesStorageKey,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         theme: state.theme,

@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { ModulePreviewPages } from "@/app/src/data/shared/MainLayout/ModulePreviewData";
-import { ModulePreviewPage } from "@/app/src/ui/shared/module-preview/ModulePreviewPage";
 import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { WorkspaceCompaniesMain } from "@/app/src/ui/modules/workspace/companies/ui/Main";
 
 export const metadata: Metadata = {
 	title: `Companies | ${AppName}`,
-	description: `Companies workspace mockup for ${AppName}.`,
+	description: `Manage companies, users, and branches for ${AppName}.`,
 };
 
 export default function CompaniesPage() {
-	return <ModulePreviewPage data={ModulePreviewPages.companies} />;
+	return <WorkspaceCompaniesMain />;
 }

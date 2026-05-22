@@ -86,9 +86,11 @@ export function ModuleDrawer({
 					<motion.aside
 						role="dialog"
 						aria-modal="true"
-						aria-label={typeof title === "string" ? title : "Module drawer"}
+						aria-label={
+							typeof title === "string" ? title : "Module drawer"
+						}
 						className={joinClasses(
-							"fixed z-[60] flex flex-col bg-white",
+							"fixed z-60 flex flex-col bg-white",
 							positionStyles.className,
 							positionStyles.shadowClassName,
 							sizeClassName,
@@ -97,7 +99,11 @@ export function ModuleDrawer({
 						initial={positionStyles.initial}
 						animate={{ x: 0, y: 0 }}
 						exit={positionStyles.initial}
-						transition={{ type: "spring", damping: 32, stiffness: 260 }}
+						transition={{
+							type: "spring",
+							damping: 32,
+							stiffness: 260,
+						}}
 					>
 						<ModuleDrawerHeader
 							description={description}
@@ -107,7 +113,9 @@ export function ModuleDrawer({
 							showCloseButton={showCloseButton}
 							title={title}
 						/>
-						<div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+						<div className="min-h-0 flex-1 overflow-y-auto">
+							{children}
+						</div>
 						{footer ? (
 							<div className="sticky bottom-0 border-t border-darknavy/10 bg-white px-6 py-4">
 								{footer}
@@ -144,9 +152,13 @@ function ModuleDrawerHeader({
 						{eyebrow}
 					</p>
 				) : null}
-				<h2 className="mt-1 text-xl font-semibold text-darknavy">{title}</h2>
+				<h2 className="mt-1 text-xl font-semibold text-darknavy">
+					{title}
+				</h2>
 				{description ? (
-					<p className="mt-1 text-sm text-darknavy/55">{description}</p>
+					<p className="mt-1 text-sm text-darknavy/55">
+						{description}
+					</p>
 				) : null}
 			</div>
 			<div className="flex items-center gap-2 sm:justify-end">

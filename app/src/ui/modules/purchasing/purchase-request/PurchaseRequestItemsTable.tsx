@@ -59,8 +59,8 @@ export function PurchaseRequestItemsTable({
 					Add Item
 				</button>
 			</div>
-			<div className="max-h-[520px] overflow-auto">
-				<table className="min-w-[920px] divide-y divide-darknavy/10 text-sm text-darknavy">
+			<div className="max-h-130 overflow-auto">
+				<table className="min-w-230 divide-y divide-darknavy/10 text-sm text-darknavy">
 					<thead className="module-table-header sticky top-0 z-10 text-left text-xs uppercase tracking-wide text-darknavy/70">
 						<tr>
 							<th className="w-14 px-3 py-3">No.</th>

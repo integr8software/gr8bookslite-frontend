@@ -52,6 +52,12 @@ export type DisbursementLineEntry = {
 };
 
 export type DisbursementTaxDetails = {
+  code: string;
+  name: string;
+  responsibilityCenter: string;
+  refId: string;
+  vatType: string;
+  atcCode: string;
   grossAmount: number;
   netAmount: number;
   vatCode: string;
@@ -77,6 +83,7 @@ export type DisbursementVoucherRecord = {
   paymentMethod: DisbursementPaymentMethod;
   disbursementType: DisbursementType;
   currency: VoucherCurrency;
+  fxRate: string;
   costCenter: string;
   vceCode: string;
   vceName: string;
@@ -103,6 +110,7 @@ export type DisbursementVoucherFormValues = {
   paymentMethod: DisbursementPaymentMethod | "";
   disbursementType: DisbursementType | "";
   currency: VoucherCurrency;
+  fxRate: string;
   costCenter: string;
   vceCode: string;
   vceName: string;

@@ -1,12 +1,12 @@
-import Link from "next/link";
 import { ArrowRight, NotebookPen } from "lucide-react";
-import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type { DisbursementVoucherPreviewRow } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
 export function DisbursementVoucherHeader({
   previewRows,
+  onStartVoucher,
 }: {
   previewRows: DisbursementVoucherPreviewRow[];
+  onStartVoucher: () => void;
 }) {
   return (
     <section className="overflow-hidden rounded-[28px] border border-darknavy/10">
@@ -20,20 +20,21 @@ export function DisbursementVoucherHeader({
             Disbursement voucher control center
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-darknavy/60 sm:text-base">
-            Search source transactions, preview linked vouchers, and move into a
-            guided multi-step voucher workflow when a transaction is ready.
+            Search source transactions, preview linked vouchers, and launch the
+            shared drawer form for new or edit encoding when a transaction is ready.
           </p>
           <p className="mt-3 text-sm font-medium text-darknavy/55">
             {previewRows.length} transactions currently visible in the voucher desk.
           </p>
         </div>
-        <Link
-          href={`${DisbursementVoucherHref}/add`}
+        <button
+          type="button"
+          onClick={onStartVoucher}
           className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-darknavy px-5 text-sm font-semibold text-white shadow-lg shadow-darknavy/15 transition hover:-translate-y-0.5 hover:bg-darknavy/95"
         >
           Start New Voucher
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
+        </button>
       </div>
     </section>
   );

@@ -3,17 +3,37 @@
 import { useMemo, useState } from "react";
 import { RotateCcw, Search } from "lucide-react";
 import { useDisbursementVoucherPreviewTable, useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
+import {
+  createDisbursementVoucherFromForm,
+  updateDisbursementVoucherFromForm,
+} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { AppConfirmDialog } from "@/app/src/ui/shared/system/AppConfirmDialog";
-import type { DisbursementVoucherPreviewRow } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type {
+  DisbursementVoucherFormValues,
+  DisbursementVoucherPreviewRow,
+} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import { DisbursementVoucherDrawer } from "./DisbursementVoucherDrawer";
 import { DisbursementVoucherHeader } from "./DisbursementVoucherHeader";
 import { DisbursementVoucherTable } from "./DisbursementVoucherTable";
 
+type DrawerState =
+  | {
+      mode: "add" | "edit";
+      row?: DisbursementVoucherPreviewRow;
+    }
+  | null;
+
 export function DisbursementVoucherMain() {
+  const transactions = useDisbursementVoucherStore((state) => state.transactions);
+  const vouchers = useDisbursementVoucherStore((state) => state.vouchers);
   const previewRows = useDisbursementVoucherStore((state) => state.previewRows);
+  const addVoucher = useDisbursementVoucherStore((state) => state.addVoucher);
+  const updateVoucher = useDisbursementVoucherStore((state) => state.updateVoucher);
   const deleteVoucher = useDisbursementVoucherStore((state) => state.deleteVoucher);
   const isMutating = useDisbursementVoucherStore((state) => state.isMutating);
   const [pendingDeleteRow, setPendingDeleteRow] =
     useState<DisbursementVoucherPreviewRow | null>(null);
+  const [drawerState, setDrawerState] = useState<DrawerState>(null);
   const previewTable = useDisbursementVoucherPreviewTable(previewRows);
   const visibleRows = useMemo(
     () => previewTable.table.getRowModel().rows.map((row) => row.original),
@@ -29,10 +49,36 @@ export function DisbursementVoucherMain() {
     setPendingDeleteRow(null);
   }
 
+  function handleCloseDrawer() {
+    setDrawerState(null);
+  }
+
+  function handleSaveDrawer(values: DisbursementVoucherFormValues) {
+    if (drawerState?.mode === "edit" && drawerState.row?.voucher) {
+      updateVoucher(
+        updateDisbursementVoucherFromForm(drawerState.row.voucher, values),
+      );
+      return;
+    }
+
+    addVoucher(createDisbursementVoucherFromForm(values));
+  }
+
+  const drawerTransactionId = drawerState?.row?.transaction.id;
+  const drawerTransaction = drawerTransactionId
+    ? transactions.find((transaction) => transaction.id === drawerTransactionId)
+    : undefined;
+  const drawerVoucher = drawerTransactionId
+    ? vouchers.find((voucher) => voucher.transactionId === drawerTransactionId)
+    : undefined;
+
   return (
     <>
       <section className="grid gap-6">
-        <DisbursementVoucherHeader previewRows={previewRows} />
+        <DisbursementVoucherHeader
+          previewRows={previewRows}
+          onStartVoucher={() => setDrawerState({ mode: "add" })}
+        />
 
         <div className="rounded-[28px] border border-darknavy/10 bg-white p-5 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -93,6 +139,8 @@ export function DisbursementVoucherMain() {
 
           <div className="mt-6">
             <DisbursementVoucherTable
+              onCreateVoucher={(row) => setDrawerState({ mode: "add", row })}
+              onEditVoucher={(row) => setDrawerState({ mode: "edit", row })}
               rows={visibleRows}
               table={previewTable.table}
               onDeleteVoucher={setPendingDeleteRow}
@@ -110,6 +158,15 @@ export function DisbursementVoucherMain() {
         tone="danger"
         onCancel={() => setPendingDeleteRow(null)}
         onConfirm={handleConfirmDelete}
+      />
+      <DisbursementVoucherDrawer
+        isOpen={Boolean(drawerState)}
+        mode={drawerState?.mode ?? "add"}
+        transaction={drawerTransaction}
+        transactions={transactions}
+        voucher={drawerVoucher}
+        onClose={handleCloseDrawer}
+        onSave={handleSaveDrawer}
       />
     </>
   );

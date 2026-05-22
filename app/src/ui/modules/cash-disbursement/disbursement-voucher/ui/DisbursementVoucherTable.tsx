@@ -9,10 +9,14 @@ import type { DisbursementVoucherPreviewRow } from "@/app/src/types/modules/cash
 import { DisbursementVoucherRecordActions } from "./DisbursementVoucherRecordActions";
 
 export function DisbursementVoucherTable({
+  onCreateVoucher,
+  onEditVoucher,
 	rows,
 	table,
 	onDeleteVoucher,
 }: {
+	onCreateVoucher: (row: DisbursementVoucherPreviewRow) => void;
+	onEditVoucher: (row: DisbursementVoucherPreviewRow) => void;
 	rows: DisbursementVoucherPreviewRow[];
 	table: ReturnType<
 		typeof import("@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher").useDisbursementVoucherPreviewTable
@@ -80,6 +84,8 @@ export function DisbursementVoucherTable({
 						</td>
 						<td className="px-4 py-4 align-top">
 							<DisbursementVoucherRecordActions
+								onCreateVoucher={onCreateVoucher}
+								onEditVoucher={onEditVoucher}
 								row={original}
 								onDeleteVoucher={onDeleteVoucher}
 							/>

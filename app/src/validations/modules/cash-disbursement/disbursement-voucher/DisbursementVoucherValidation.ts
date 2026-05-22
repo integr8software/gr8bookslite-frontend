@@ -22,7 +22,7 @@ export function validateDisbursementVoucherDetails(
 	}
 
 	if (!values.costCenter.trim()) {
-		errors.costCenter = "Cost center is required.";
+		errors.costCenter = "Project reference is required.";
 	}
 
 	if (!values.vceCode.trim()) {
@@ -42,7 +42,7 @@ export function validateDisbursementVoucherDetails(
 	}
 
 	if (!values.invoiceReferenceNo.trim()) {
-		errors.invoiceReferenceNo = "Invoice or PO reference is required.";
+		errors.invoiceReferenceNo = "Importation reference number is required.";
 	}
 
 	if (!values.voucherDate) {

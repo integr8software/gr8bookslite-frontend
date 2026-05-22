@@ -391,17 +391,6 @@ function DisbursementVoucherActionInner() {
         />
 
         <div className="grid gap-6">
-          {step === "details" ? (
-            <VoucherDetailsStep
-              errors={errors}
-              transactionOptions={transactions}
-              selectedTransaction={selectedTransaction}
-              values={values}
-              onProceed={handleProceedFromDetails}
-              onSelectTransaction={handleSelectTransaction}
-              onUpdateField={updateField}
-            />
-          ) : null}
           {step === "entries" ? (
             <VoucherEntriesStep
               entryDraft={entryDraft}

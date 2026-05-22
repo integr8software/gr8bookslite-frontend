@@ -34,26 +34,53 @@ export type VerifyEmailResponse = {
   accessToken: string;
 };
 
+export type AuthSystemRole = "SUPER_ADMIN" | "STANDARD";
+
+export type AuthMembershipRole = "ADMIN" | "USER" | null;
+
+export type AuthProfileAccess = {
+  id?: number;
+  companyId?: number | null;
+  role?: "ADMIN" | "USER" | null;
+  systemRole?: AuthSystemRole;
+  membershipRole: AuthMembershipRole;
+  membershipStatus?: string;
+  companyRoleId?: number | null;
+  companyRoleCode?: string | null;
+  accessScope?: string;
+  enabledModules?: string[];
+  permissions?: unknown[];
+};
+
 export type AuthProfileResponse = {
   user: {
     id: number;
     email: string;
     name: string;
     contactNumber: string | null;
-    systemRole: "SUPER_ADMIN" | "STANDARD";
+    avatarFileName: string | null;
+    avatarMimeType: string | null;
+    avatarStoragePath: string | null;
+    avatarPublicUrl: string | null;
+    systemRole: AuthSystemRole;
     status: string;
     emailVerifiedAt: string | null;
     createdAt: string;
     updatedAt: string;
   };
+  companyId?: number | null;
+  role?: "ADMIN" | "USER" | null;
   activeCompanyId: number | null;
-  activeAccess: {
-    membershipRole: "ADMIN" | "USER" | null;
-    companyRoleId?: number | null;
-    companyRoleCode?: string | null;
-  } | null;
+  activeAccess: AuthProfileAccess | null;
+  access?: AuthProfileAccess | null;
   onboarding: {
+    emailVerified?: boolean;
+    hasCompany?: boolean;
+    hasActiveCompany?: boolean;
+    hasActiveCompanyContext?: boolean;
     requiresCompanySetup: boolean;
+    canManageCompany?: boolean;
+    nextStep?: string;
   };
   companies?: {
     companyId: number;
@@ -100,6 +127,30 @@ export type ResetPasswordRequest = {
 };
 
 export type ResetPasswordResponse = {
+  message: string;
+};
+
+export type RequestPasswordChangeOtpResponse = {
+  message: string;
+  maskedEmail: string;
+};
+
+export type VerifyPasswordChangeOtpRequest = {
+  code: string;
+};
+
+export type VerifyPasswordChangeOtpResponse = {
+  message: string;
+  resetToken: string;
+};
+
+export type ChangeAuthenticatedPasswordRequest = {
+  resetToken: string;
+  newPassword: string;
+  confirmNewPassword: string;
+};
+
+export type ChangeAuthenticatedPasswordResponse = {
   message: string;
 };
 

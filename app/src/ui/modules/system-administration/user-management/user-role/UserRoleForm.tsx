@@ -1,11 +1,9 @@
-import Link from "next/link";
 import type { FormEvent } from "react";
 import type { UserRoleFormValues } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import type { UserRoleFormErrors } from "@/app/src/types/modules/user-management/UserManagementTypes";
 import { UserRolePermissionsPanel } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRolePermissionsPanel";
 
 export function UserRoleForm({
-	backHref,
 	errors,
 	isReadonly,
 	values,
@@ -14,7 +12,6 @@ export function UserRoleForm({
 	onToggleAccessRole,
 	onUpdateField,
 }: {
-	backHref: string;
 	errors: UserRoleFormErrors;
 	isReadonly: boolean;
 	values: UserRoleFormValues;
@@ -78,12 +75,6 @@ export function UserRoleForm({
 					</div>
 				</div>
 			</div>
-			<Link
-				href={backHref}
-				className="text-sm font-semibold text-skyblue"
-			>
-				Back to list
-			</Link>
 		</form>
 	);
 }

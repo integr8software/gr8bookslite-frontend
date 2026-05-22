@@ -1,5 +1,5 @@
-import { AppSkeleton } from "@/app/src/ui/shared/AppSkeleton";
-import { GradientBlurBackground } from "@/app/src/ui/shared/GradientBlurBackground";
+import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
+import { GradientBlurBackground } from "@/app/src/ui/shared/layout/GradientBlurBackground";
 
 export function TopbarWorkspaceSkeleton() {
   return (

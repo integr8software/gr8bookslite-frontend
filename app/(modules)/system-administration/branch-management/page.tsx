@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { BranchManagementMain } from "@/app/src/ui/modules/system-administration/branch-management/ui/Main";
+import { BranchManagementMain } from "@/app/src/ui/modules/system-administration/branch-management/BranchManagementMain";
 
 const PageTitle = "Branch Management";
 
 export const metadata: Metadata = {
-  title: `${PageTitle} | ${AppName}`,
-  description: `${PageTitle} page for ${AppName}.`,
+	title: `${PageTitle} | ${AppName}`,
+	description: `${PageTitle} page for ${AppName}.`,
 };
 
 export default function SystemAdministrationBranchManagementPage() {
-  return <BranchManagementMain />;
+	return <BranchManagementMain />;
 }

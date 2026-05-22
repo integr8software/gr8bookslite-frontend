@@ -1,7 +1,7 @@
 "use client";
 
 import { Download, Home, Plus, Sparkles, Upload } from "lucide-react";
-import { Button } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls.tsx";
+import { Button } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 
 export function ChartsOfAccountsHeader({
 	onAddAccount,
@@ -12,18 +12,18 @@ export function ChartsOfAccountsHeader({
 }) {
 	return (
 		<div
-			className="flex flex-col gap-4 self-start rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:h-36 lg:flex-row lg:items-center lg:justify-between"
+			className="flex flex-col gap-4 self-start rounded-xl border border-darknavy/10 bg-white p-5 shadow-sm lg:h-36 lg:flex-row lg:items-center lg:justify-between"
 			data-spotlight-id="charts-of-accounts-header"
 		>
 			<div>
-				<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-blue-700">
+				<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-skyblue">
 					<Home className="h-3.5 w-3.5" aria-hidden="true" />
 					Accounting master data
 				</div>
-				<h1 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl">
+				<h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">
 					Chart of Accounts
 				</h1>
-				<p className="mt-2 max-w-2xl text-sm text-slate-500">
+				<p className="mt-2 max-w-2xl text-sm text-darknavy/55">
 					Manage all company accounts and financial statement mapping
 				</p>
 			</div>

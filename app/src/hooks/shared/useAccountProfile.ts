@@ -1,11 +1,22 @@
 "use client";
 
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { BuildAccountProfileViewModel, GetVisibleProfileFields } from "@/app/src/data/shared/AccountData";
+import {
+  DefaultPhilippineContactNumber,
+  FormatPhilippineContactNumber,
+} from "@/app/src/data/shared/ContactData";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 import { useAccountPreferences } from "@/app/src/hooks/shared/useAccountPreferences";
+import {
+  DeleteUserAccountAvatar,
+  UpdateUserAccountProfile,
+  UploadUserAccountAvatar,
+} from "@/app/src/services/users/UserAccountApi";
+import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { ReadFileAsDataUrl } from "@/app/src/services/shared/ImageCropper";
 
 const AllowedAvatarMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -18,6 +29,7 @@ type PendingAvatarCrop = {
 };
 
 export function useAccountProfile() {
+  const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
   const profileDrafts = useAccountPreferences((state) => state.profileDrafts);
   const updateProfileDraft = useAccountPreferences(
@@ -27,6 +39,10 @@ export function useAccountProfile() {
   const [pendingAvatarCrop, setPendingAvatarCrop] = useState<PendingAvatarCrop | null>(
     null,
   );
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
+  const [pendingAvatarAction, setPendingAvatarAction] = useState<
+    "replace" | "remove" | null
+  >(null);
   const draft = profileDrafts[String(authProfile?.user.id ?? "local-account-user")];
   const profile = useMemo(
     () => BuildAccountProfileViewModel(authProfile, draft),
@@ -36,6 +52,83 @@ export function useAccountProfile() {
     () => GetVisibleProfileFields(profile.role),
     [profile.role],
   );
+  const hasPendingProfileChanges = useMemo(() => {
+    if (!authProfile) {
+      return false;
+    }
+
+    const savedContactNumber = authProfile.user.contactNumber
+      ? FormatPhilippineContactNumber(authProfile.user.contactNumber)
+      : "";
+
+    return (
+      profile.fullName.trim() !== authProfile.user.name ||
+      GetSubmittedContactNumber(profile.contactNumber) !==
+        GetSubmittedContactNumber(savedContactNumber) ||
+      pendingAvatarAction !== null
+    );
+  }, [
+    authProfile,
+    pendingAvatarAction,
+    profile.contactNumber,
+    profile.fullName,
+  ]);
+
+  const saveProfileMutation = useMutation({
+    mutationFn: async () => {
+      if (!accessToken) {
+        throw new Error("Please sign in before saving profile changes.");
+      }
+
+      if (!profile.fullName.trim()) {
+        throw new Error("Full name is required.");
+      }
+
+      await UpdateUserAccountProfile(accessToken, {
+        fullName: profile.fullName,
+        contactNumber: GetSubmittedContactNumber(profile.contactNumber),
+      });
+
+      if (pendingAvatarAction === "replace") {
+        if (!pendingAvatarFile) {
+          throw new Error("Please choose an avatar image again.");
+        }
+
+        await UploadUserAccountAvatar(accessToken, pendingAvatarFile);
+      }
+
+      if (pendingAvatarAction === "remove") {
+        await DeleteUserAccountAvatar(accessToken);
+      }
+    },
+    onSuccess: async () => {
+      await invalidateAuthProfile();
+      updateProfileDraft(profile.userId, {
+        fullName: undefined,
+        contactNumber: undefined,
+        avatarDataUrl: undefined,
+      });
+      setPendingAvatarFile(null);
+      setPendingAvatarAction(null);
+      toast.success("Profile changes saved.");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "We could not save your profile changes.",
+      );
+    },
+  });
+  async function invalidateAuthProfile() {
+    if (!accessToken) {
+      return;
+    }
+
+    await queryClient.invalidateQueries({
+      queryKey: AuthQueryKeys.profile(accessToken),
+    });
+  }
 
   useEffect(() => {
     return () => {
@@ -50,7 +143,17 @@ export function useAccountProfile() {
   }
 
   function updateContactNumber(event: ChangeEvent<HTMLInputElement>) {
-    updateProfileDraft(profile.userId, { contactNumber: event.target.value });
+    updateProfileDraft(profile.userId, {
+      contactNumber: FormatPhilippineContactNumber(event.target.value),
+    });
+  }
+
+  function focusContactNumber() {
+    if (!profile.contactNumber) {
+      updateProfileDraft(profile.userId, {
+        contactNumber: DefaultPhilippineContactNumber,
+      });
+    }
   }
 
   async function updateAvatar(event: ChangeEvent<HTMLInputElement>) {
@@ -79,15 +182,22 @@ export function useAccountProfile() {
   }
 
   function removeAvatar() {
+    setPendingAvatarFile(null);
+    setPendingAvatarAction("remove");
     updateProfileDraft(profile.userId, { avatarDataUrl: null });
-    toast.success("Avatar removed for this device.");
   }
 
   async function applyCroppedAvatar(file: File) {
+    if (file.size > MaxAvatarSizeInBytes) {
+      toast.error("Cropped avatar image must be 2MB or smaller.");
+      return;
+    }
+
     const avatarDataUrl = await ReadFileAsDataUrl(file);
+    setPendingAvatarFile(file);
+    setPendingAvatarAction("replace");
     updateProfileDraft(profile.userId, { avatarDataUrl });
     dismissAvatarCropper();
-    toast.success("Avatar updated for this device.");
   }
 
   function dismissAvatarCropper() {
@@ -98,8 +208,30 @@ export function useAccountProfile() {
     setPendingAvatarCrop(null);
   }
 
+  function saveProfileChanges() {
+    saveProfileMutation.mutate();
+  }
+
+  function cancelProfileChanges() {
+    if (saveProfileMutation.isPending) {
+      return;
+    }
+
+    updateProfileDraft(profile.userId, {
+      fullName: undefined,
+      contactNumber: undefined,
+      avatarDataUrl: undefined,
+    });
+    setPendingAvatarFile(null);
+    setPendingAvatarAction(null);
+    dismissAvatarCropper();
+  }
+
   return {
+    hasPendingProfileChanges,
     isLoading: Boolean(accessToken) && isLoading,
+    isSavingProfile: saveProfileMutation.isPending,
+    isUpdatingAvatar: saveProfileMutation.isPending,
     pendingAvatarCrop,
     profile,
     visibleFieldKeys,
@@ -107,7 +239,16 @@ export function useAccountProfile() {
     dismissAvatarCropper,
     updateAvatar,
     updateContactNumber,
+    focusContactNumber,
     updateFullName,
     removeAvatar,
+    cancelProfileChanges,
+    saveProfileChanges,
   };
+}
+
+function GetSubmittedContactNumber(value: string) {
+  const trimmedValue = value.trim();
+
+  return trimmedValue === DefaultPhilippineContactNumber ? "" : trimmedValue;
 }

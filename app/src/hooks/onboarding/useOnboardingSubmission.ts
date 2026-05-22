@@ -12,9 +12,9 @@ import {
   type OnboardingValues,
 } from "@/app/src/data/onboarding/OnboardingTypes";
 import {
-  OnboardingBillingStepSchema,
-  OnboardingStepOneSchema,
-} from "@/app/src/data/onboarding/OnboardingSchemas";
+  validateOnboardingBillingValues,
+  validateOnboardingStepOneValues,
+} from "@/app/src/validations/onboarding/OnboardingValidation";
 import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingData";
 import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
 import {
@@ -29,6 +29,7 @@ import {
   GetFallbackPostAuthRedirectPath,
   ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
+import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
 
 function GetOnboardingApiBillingCycle(value: BillingCycle) {
   return value === "yearly" ? "YEARLY" : "MONTHLY";
@@ -110,23 +111,11 @@ export function useOnboardingSubmission({
   const router = useRouter();
   const resetAppStore = useAppStore((state) => state.resetAppStore);
 
-  function validateStepOne() {
-    const payload = {
-      ...GetOnboardingIdentityPayload(values),
-      address: values.address,
-      tin: values.tin,
-      website: values.website,
-      contactNumber: values.contactNumber,
-      logo: values.logoFile,
-      reportYearBasis: values.reportYearBasis,
-      reportStartDate: values.reportStartDate,
-      reportEndDate: values.reportEndDate,
-    };
+  function canContinueFromStepOne() {
+    const nextErrors = validateOnboardingStepOneValues(values);
 
-    const parsed = OnboardingStepOneSchema.safeParse(payload);
-
-    if (!parsed.success) {
-      setErrors(parsed.error.flatten().fieldErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       toast.error("Please fix the highlighted fields.");
       return false;
     }
@@ -135,19 +124,11 @@ export function useOnboardingSubmission({
     return true;
   }
 
-  function validateBillingStep() {
-    const parsed = OnboardingBillingStepSchema.safeParse({
-      cardholderName: values.cardholderName,
-      billingEmail: values.billingEmail,
-      cardNumber: values.cardNumber,
-      expiryMonth: values.expiryMonth,
-      expiryYear: values.expiryYear,
-      cvc: values.cvc,
-      billingAddress: values.billingAddress,
-    });
+  function canContinueFromBillingStep() {
+    const nextErrors = validateOnboardingBillingValues(values);
 
-    if (!parsed.success) {
-      setErrors(parsed.error.flatten().fieldErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       toast.error("Please fix the highlighted fields.");
       return false;
     }
@@ -197,8 +178,8 @@ export function useOnboardingSubmission({
       return;
     }
 
-    if (stepIndex === 1 && !validateStepOne()) return;
-    if (stepIndex === 2 && !validateBillingStep()) return;
+    if (stepIndex === 1 && !canContinueFromStepOne()) return;
+    if (stepIndex === 2 && !canContinueFromBillingStep()) return;
 
     setIsSubmitting(true);
 
@@ -299,7 +280,7 @@ export function useOnboardingSubmission({
 
             useAppStore.setState({
               accessToken: response.accessToken,
-              activeCompanyId: profile.activeCompanyId,
+              activeCompanyId: GetAuthProfileCompanyId(profile),
             });
             router.replace(redirectPath);
           } catch {

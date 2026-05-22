@@ -7,7 +7,7 @@ import { useChartsOfAccountsSpotlightTutorial } from "@/app/src/hooks/modules/ma
 import {
   SpotlightTour,
   SpotlightTourBadge,
-} from "@/app/src/ui/shared/SpotlightTour";
+} from "@/app/src/ui/shared/tour/SpotlightTour";
 
 export function ChartsOfAccountsSpotlightTutorial() {
   const { completeTutorial, isOpen, skipTutorial } =

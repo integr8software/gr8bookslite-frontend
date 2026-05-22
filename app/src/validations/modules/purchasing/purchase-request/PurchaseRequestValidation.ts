@@ -1,0 +1,133 @@
+import { z } from "zod";
+import type {
+	PurchaseRequestFormErrors,
+	PurchaseRequestFormValues,
+} from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+
+const requiredText = (message: string) => z.string().trim().min(1, message);
+const MaxLogoImageSizeInBytes = 5 * 1024 * 1024;
+
+export const PurchaseRequestItemValidationSchema = z.object({
+	barcode: requiredText("Enter a barcode."),
+	cost: z.coerce.number().min(0),
+	description: requiredText("Enter an item name."),
+	expiryDate: z.string(),
+	id: z.string(),
+	itemCode: requiredText("Enter an item code."),
+	lotNo: z.string(),
+	quantity: z.coerce.number().positive("Enter a valid quantity."),
+	responsibilityCenter: z.string(),
+	uom: requiredText("Select a UOM."),
+});
+
+export const PurchaseRequestFormValidationSchema = z
+	.object({
+		approvedBy: requiredText("Enter the approver name."),
+		bomNo: z.string(),
+		companyAddress: requiredText("Enter the company address."),
+		companyName: requiredText("Enter the company name."),
+		currency: requiredText("Select a currency."),
+		exchangeRate: z.coerce
+			.number()
+			.finite()
+			.positive("Enter a valid exchange rate."),
+		forDepartment: requiredText("Enter the FOR details."),
+		items: z.array(PurchaseRequestItemValidationSchema),
+		logoFileName: requiredText("Upload a logo image."),
+		logoImageUrl: requiredText("Upload a logo image."),
+		prDate: requiredText("Select a PR date."),
+		preparedBy: requiredText("Enter the preparer name."),
+		preparedBySignatureFileName: requiredText("Upload the preparer signature."),
+		preparedBySignatureImageUrl: requiredText("Upload the preparer signature."),
+		projectCode: z.string(),
+		projectName: z.string(),
+		purchaseType: z.string(),
+		remarks: z.string(),
+		status: z.enum(["Draft", "Open", "Closed", "Cancelled"]),
+		telephoneNo: requiredText("Enter the telephone number."),
+		transNo: requiredText("Enter a transaction number."),
+		vatRegTin: requiredText("Enter the VAT Reg TIN."),
+		vceCode: z.string(),
+		vceName: requiredText("Enter a VCE name."),
+		vendorAddress: z.string(),
+		approvedBySignatureFileName: requiredText("Upload the approver signature."),
+		approvedBySignatureImageUrl: requiredText("Upload the approver signature."),
+	})
+	.superRefine((values, context) => {
+		const hasValidItem = values.items.some(
+			(item) =>
+				item.itemCode.trim() &&
+				item.description.trim() &&
+				Number(item.quantity) > 0 &&
+				Number(item.cost) >= 0,
+		);
+
+		if (!hasValidItem) {
+			context.addIssue({
+				code: "custom",
+				message:
+					"Add at least one item with item code, description, quantity, and cost.",
+				path: ["items"],
+			});
+		}
+
+		if (getDataUrlSizeInBytes(values.logoImageUrl) > MaxLogoImageSizeInBytes) {
+			context.addIssue({
+				code: "custom",
+				message: "Logo image must be 5MB or smaller.",
+				path: ["logoImageUrl"],
+			});
+		}
+
+		if (
+			getDataUrlSizeInBytes(values.preparedBySignatureImageUrl) >
+			MaxLogoImageSizeInBytes
+		) {
+			context.addIssue({
+				code: "custom",
+				message: "Prepared by signature must be 5MB or smaller.",
+				path: ["preparedBySignatureImageUrl"],
+			});
+		}
+
+		if (
+			getDataUrlSizeInBytes(values.approvedBySignatureImageUrl) >
+			MaxLogoImageSizeInBytes
+		) {
+			context.addIssue({
+				code: "custom",
+				message: "Approved by signature must be 5MB or smaller.",
+				path: ["approvedBySignatureImageUrl"],
+			});
+		}
+	});
+
+export function validatePurchaseRequestForm(
+	values: PurchaseRequestFormValues,
+): PurchaseRequestFormErrors {
+	const result = PurchaseRequestFormValidationSchema.safeParse(values);
+
+	if (result.success) {
+		return {};
+	}
+
+	return result.error.issues.reduce<PurchaseRequestFormErrors>((errors, issue) => {
+		const field = issue.path[0] as keyof PurchaseRequestFormErrors | undefined;
+
+		if (field && !errors[field]) {
+			errors[field] = issue.message;
+		}
+
+		return errors;
+	}, {});
+}
+
+function getDataUrlSizeInBytes(value: string) {
+	const base64 = value.split(",")[1] ?? "";
+
+	if (!base64) {
+		return 0;
+	}
+
+	return Math.floor((base64.length * 3) / 4);
+}

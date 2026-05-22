@@ -3,7 +3,7 @@ import { LogOut } from "lucide-react";
 import { LogoutButton } from "@/app/src/ui/auth/LogoutButton";
 import { OnboardingFlow } from "@/app/src/ui/onboarding/OnboardingFlow";
 import { AppName } from "@/app/src/constants/shared/AppConstants";
-import { Gr8BooksLogoText } from "@/app/src/ui/shared/Gr8BooksLogoText";
+import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 
 export const metadata: Metadata = {
   title: `Onboarding | ${AppName}`,
@@ -14,7 +14,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-white">
       <nav className="flex items-center justify-between border-b border-darknavy/10 px-5 py-5 sm:px-8 lg:px-14">
         <div className="inline-flex w-fit text-xl font-semibold sm:text-2xl">
-          <Gr8BooksLogoText neoClassName="text-sm" />
+          <LogoText brandSuffixClassName="text-sm" />
         </div>
 
         <LogoutButton

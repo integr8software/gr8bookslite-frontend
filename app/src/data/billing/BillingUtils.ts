@@ -1,7 +1,6 @@
 import type {
   BillingCycle,
   BillingCycleApi,
-  BillingPaymentFormErrors,
   BillingPlan,
   BillingPlanPrice,
 } from "./BillingTypes";
@@ -59,12 +58,6 @@ export function GetPlanPriceForCycle(
   billingCycle: BillingCycle,
 ): BillingPlanPrice {
   return billingCycle === "yearly" ? plan.pricing.yearly : plan.pricing.monthly;
-}
-
-export function MapZodErrorsToBillingErrors(
-  fieldErrors: Record<string, string[] | undefined>,
-): BillingPaymentFormErrors {
-  return fieldErrors;
 }
 
 export function GetStatusTone(status: string) {

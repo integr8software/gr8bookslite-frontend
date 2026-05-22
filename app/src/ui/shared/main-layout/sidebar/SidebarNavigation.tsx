@@ -138,7 +138,7 @@ export function SidebarItem({
 	onToggleExpandedKey,
 }: SidebarItemProps) {
 	const hasChildren = Boolean(item.children?.length);
-	const shouldShowIcon = depth < 0 || hasChildren;
+	const shouldShowIcon = hasChildren || item.accessKey === "maintenance.party";
 	const shouldShowModuleDot = !shouldShowIcon;
 	const childItems = item.children ?? [];
 	const isExpanded = expandedKeys.includes(item.key);

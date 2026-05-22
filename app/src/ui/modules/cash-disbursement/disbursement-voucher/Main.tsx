@@ -1,3 +1,2 @@
-export function DisbursementVoucherMain() {
-  return null;
-}
+export { DisbursementVoucherMain } from "./ui/Main";
+

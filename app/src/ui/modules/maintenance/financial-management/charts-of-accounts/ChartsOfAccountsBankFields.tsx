@@ -8,7 +8,7 @@ import type {
 import {
 	Field,
 	Input,
-} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls.tsx";
+} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 
 export function ChartsOfAccountsBankFields({
 	values,

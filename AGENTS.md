@@ -1,38 +1,28 @@
 <!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+# Next.js Note
 
-This version has breaking changes. APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+This project uses a newer Next.js version. Before changing framework APIs,
+routes, layouts, or server/client boundaries, check the relevant guide in
+`node_modules/next/dist/docs/`.
 <!-- END:nextjs-agent-rules -->
 
 # Project Structure
 
-Use a modular monolith structure inside the `app` directory.
+Use a modular monolith inside `app`.
 
-Routes live directly under `app` with route groups for major areas. Route files should stay thin and import the real feature UI from `app/src/ui/...`.
+Routes stay thin and import real UI from `app/src/ui/...`.
 
 ```txt
 app/
   (auth)/
-    login/page.tsx
-    signup/page.tsx
-    forgot-password/page.tsx
-    otp/page.tsx
-  (onboarding)/
-    layout.tsx
-    onboarding/page.tsx
   (modules)/
-    <domain>/
-      <feature>/
-        page.tsx
-        add/page.tsx
-        edit/[recordId]/page.tsx
-        view/[recordId]/page.tsx
-  pricing/
-    page.tsx
+    <domain>/<feature>/
+      page.tsx
+      add/page.tsx
+      edit/[recordId]/page.tsx
+      view/[recordId]/page.tsx
   workspace/
-    layout.tsx
-    dashboard/page.tsx
-  api/
+  pricing/
   src/
     constants/
     data/
@@ -40,382 +30,197 @@ app/
     services/
     types/
     ui/
+    validations/
 ```
 
-Route group folder names should be lowercase, for example `(auth)` and `(onboarding)`.
-
-`app/pricing/page.tsx` is intentionally public. Keep it outside authenticated route groups unless the product flow changes.
-
-`app/workspace/...` is intentionally a separate admin workspace URL space. Keep company module pages such as `/dashboard` under `(modules)`, and keep admin workspace pages such as `/workspace/dashboard` under `workspace` so the same visible URL does not change meaning based only on the signed-in role.
-
-Feature code belongs under `app/src`, grouped by concern first and module/domain second. Do not create a separate `app/src/modules` folder.
-
-- `app/src/ui/modules/<domain>/<feature>/` for React components only.
-- `app/src/data/modules/<domain>/<feature>/` for static data, schemas, form defaults, and pure data helpers.
-- `app/src/hooks/modules/<domain>/<feature>/` for client hooks and feature stores.
-- `app/src/services/modules/<domain>/<feature>/` for server actions, Axios API wrappers, TanStack Query helpers, and business operations.
-- `app/src/types/modules/<feature>/` for shared TypeScript-only types.
-- `app/src/constants/modules/<feature>/` for shared runtime constants.
-
-Example:
+Feature files are grouped by concern first:
 
 ```txt
-app/(modules)/system-administration/branch-management/
-  page.tsx
-  add/page.tsx
-  edit/[recordId]/page.tsx
-  view/[recordId]/page.tsx
-
-app/src/ui/modules/system-administration/branch-management/
-  ui/
-    Main.tsx
-    Action.tsx
-    BranchManagementTable.tsx
-
-app/src/data/modules/system-administration/branch-management/
-  BranchManagementData.ts
-
-app/src/hooks/modules/system-administration/branch-management/
-  useBranchManagement.ts
-
-app/src/types/modules/branch-manager/
-  BranchActionTypes.ts
-
-app/src/constants/modules/branch-manager/
-  BranchManagementConstants.ts
+app/src/ui/modules/<domain>/<feature>/          # React components only
+app/src/hooks/modules/<domain>/<feature>/       # state, orchestration, stores
+app/src/data/modules/<domain>/<feature>/        # mock data, defaults, mappers
+app/src/types/modules/<domain>/<feature>/       # TypeScript-only types
+app/src/constants/modules/<domain>/<feature>/   # hrefs, options, table config
+app/src/validations/modules/<domain>/<feature>/ # Zod schemas and validators
+app/src/services/modules/<domain>/<feature>/    # API/server/query helpers
 ```
 
-When adding a module, keep each concern in its matching root folder. For example, do not put hooks, constants, or data files inside `app/src/ui/...`, and do not put constants inside `app/src/types/...`.
-
-Use `shared` folders under `app/src` for cross-feature modules:
-
-- `app/src/data/shared/`
-- `app/src/constants/shared/`
-- `app/src/services/shared/`
-- `app/src/hooks/shared/`
-- `app/src/types/shared/`
-- `app/src/ui/shared/`
-
-# CRUD Module Pattern
-
-Use this section when creating or refactoring CRUD modules. `AGENTS.md` is the
-canonical project instruction file.
-
-## CRUD Routes
-
-Before changing routes, read the relevant guide in
-`node_modules/next/dist/docs/`.
-
-Routes stay thin and only import feature UI from `app/src/ui/...`.
+Top-level areas follow the same split, for example:
 
 ```txt
-app/(modules)/<domain>/<feature>/
-  page.tsx
-  add/page.tsx
-  edit/[recordId]/page.tsx
-  view/[recordId]/page.tsx
+app/src/ui/auth/             app/src/validations/auth/
+app/src/ui/billing/          app/src/validations/billing/
+app/src/ui/onboarding/       app/src/validations/onboarding/
+app/src/ui/pricing/          app/src/validations/pricing/
+app/src/ui/shared/           app/src/validations/shared/
 ```
 
-Use `add/page.tsx` for create pages. Do not create `add/[recordId]` and do not
-link to `/add/new`.
+# Module Rules
 
-Route files should look like this:
+When creating or refactoring a module:
+
+- Do not put hooks, constants, data, types, or validation inside `app/src/ui/...`.
+- Do not put validation in hooks or data. Put it in `app/src/validations/...`.
+- Use Zod for validation when adding new validation logic.
+- Keep route files thin.
+- Use `/add`, `/edit/[recordId]`, and `/view/[recordId]`. Never use `/add/new`.
+- Use clear file names such as `PurchaseRequestListPage.tsx`,
+  `PurchaseRequestFormPage.tsx`, `PurchaseRequestDetailsPanel.tsx`, and
+  `PurchaseRequestTableRow.tsx`.
+- Avoid generic new module files named `Main.tsx`, `Action.tsx`, or `index.ts`.
+
+Route files should look like:
 
 ```tsx
-import { FeatureMain } from "@/app/src/ui/modules/<domain>/<feature>/ui/Main";
+import { FeatureListPage } from "@/app/src/ui/modules/<domain>/<feature>/FeatureListPage";
 
 export default function Page() {
-  return <FeatureMain />;
+  return <FeatureListPage />;
 }
 ```
 
-For add/edit/view routes:
+Add/edit/view route files should import the form page:
 
 ```tsx
-import { FeatureAction } from "@/app/src/ui/modules/<domain>/<feature>/ui/Action";
+import { FeatureFormPage } from "@/app/src/ui/modules/<domain>/<feature>/FeatureFormPage";
 
 export default function Page() {
-  return <FeatureAction />;
+  return <FeatureFormPage />;
 }
 ```
 
-## CRUD Feature Layout
-
-Place files by concern, not all inside UI.
+# Recommended Module Files
 
 ```txt
-app/src/ui/modules/<domain>/<feature>/ui/
-  Main.tsx
-  Action.tsx
-  FeatureHeader.tsx
+app/src/ui/modules/<domain>/<feature>/
+  FeatureListPage.tsx
+  FeatureFormPage.tsx
   FeatureTable.tsx
-  FeatureActionHeader.tsx
-  FeatureDetailsFields.tsx
+  FeatureTableRow.tsx
+  FeatureRecordActions.tsx
+  FeatureDetailsPanel.tsx
+  FeatureItemsTable.tsx
   FeatureNotFound.tsx
+
+app/src/hooks/modules/<domain>/<feature>/
+  useFeature.ts
+  useFeatureListPage.ts
+  useFeatureFormPage.ts
 
 app/src/data/modules/<domain>/<feature>/
   FeatureData.ts
 
-app/src/hooks/modules/<domain>/<feature>/
-  useFeature.ts
-
-app/src/services/modules/<domain>/<feature>/
-  FeatureQueryKeys.ts
-
-app/src/types/modules/<feature>/
+app/src/types/modules/<domain>/<feature>/
   FeatureTypes.ts
 
-app/src/constants/modules/<feature>/
+app/src/constants/modules/<domain>/<feature>/
   FeatureConstants.ts
+
+app/src/validations/modules/<domain>/<feature>/
+  FeatureValidation.ts
 ```
 
-Branch Management is the reference CRUD implementation. User Management should
-move toward this same shape when refactored.
+# Shared Module UI
 
-## CRUD List Page Pattern
+Use the shared module UI for list pages.
 
-`Main.tsx` owns page composition only:
+- Use `app/src/ui/shared/module/ModuleHeader.tsx` for module page headers.
+- Use `app/src/ui/shared/module/module-table/ModuleTable.tsx` for table-based
+  module lists.
+- Use the rest of `app/src/ui/shared/module/module-table/` instead of creating
+  custom table chrome.
+- Build TanStack table instances in feature hooks, not in UI components.
+- Keep table columns, pagination storage keys, hrefs, and option lists in
+  constants.
+- Keep row cells in `FeatureTableRow.tsx`.
+- Keep row action buttons in `FeatureRecordActions.tsx` when actions are
+  reused or non-trivial.
 
-- Read list state from the feature hook.
-- Render the feature header.
-- Render the table/list component.
-- Wire delete/status actions through clear handler props.
-- Use shared dialogs such as `AppConfirmDialog` instead of `window.confirm`
-  when adding or refactoring UI.
+Use `ModuleTable` for dense record lists with sorting, pagination, filtering,
+or scan-heavy data. Use cards/lists only when records are naturally low-density.
 
-`FeatureHeader.tsx` owns the top action area:
+# Validation
 
-- Title and short helper text when needed.
-- Primary Add button linked to `${FeatureHref}/add`.
-- Keep import/export/filter buttons only when the feature requires them.
+Validation belongs in `app/src/validations/...`.
 
-`FeatureTable.tsx` owns rendering:
+Validation files should contain:
 
-- Prefer TanStack Table for data tables with sorting, filtering, pagination,
-  selection, and column visibility.
-- Keep table columns local to the table unless reused elsewhere.
-- Use project shared controls and `AppSkeleton` for loading rows.
-- Keep actions as icon buttons with accessible labels.
-- Center action cells. Keep text-heavy identity fields left aligned.
+- Zod schemas.
+- Helper functions such as `validateFeatureForm(values)`.
+- Cross-field checks, duplicate checks, conditional required fields, item table
+  requirements, and debit/credit balance rules.
+- Mapping from Zod errors to the feature's form error shape.
 
-## CRUD Action Page Pattern
+Hooks may call validation helpers, but hooks should not define validation rules.
+Data files should not export validation helpers.
 
-`Action.tsx` handles add/edit/view orchestration:
+# Hook, Data, Type, Constant Separation
 
-- Detect mode from pathname:
-  - `/add` means `add`
-  - `/edit/[recordId]` means `edit`
-  - `/view/[recordId]` means `view`
-- Read `recordId` only for edit/view.
-- Build initial form values from data helpers.
-- Keep validation and field update orchestration in the hook or action
-  component, depending on complexity.
-- Make view mode readonly.
-- If edit/view record is missing, render `FeatureNotFound`.
-- After successful add/edit/delete, navigate back to `FeatureHref`.
+Hooks:
 
-`FeatureActionHeader.tsx` owns:
+- Own client state, form state, derived state, table state, routing, and submit
+  handlers.
+- Call data mappers and validation helpers.
+- Keep UI files mostly presentational.
 
-- Mode-aware heading/actions.
-- Back/cancel navigation.
-- Save button for add/edit.
-- Delete button for edit/view when allowed.
-
-`FeatureDetailsFields.tsx` owns:
-
-- Field layout and inputs.
-- Error display.
-- Disabled/readonly behavior.
-- No business logic beyond calling provided handlers.
-
-## CRUD Data, Types, Constants, Services
-
-`FeatureTypes.ts`:
-
-- Shared TypeScript-only record, status, action mode, and form error types.
-
-`FeatureConstants.ts`:
-
-- Runtime constants such as `FeatureHref`, status options, page-size options,
-  and labels.
-
-`FeatureData.ts`:
+Data:
 
 - Mock/static records.
 - Initial form values.
-- Pure data mappers such as `createFeatureFormValues`,
-  `createFeatureFromForm`, and `updateFeatureFromForm`.
-- Validation helpers if they are pure and reusable.
+- Local storage helpers.
+- Pure mappers such as `createFeatureFormValues`,
+  `createFeatureRecord`, and `updateFeatureRecord`.
 
-`FeatureQueryKeys.ts`:
+Types:
 
-- TanStack Query key factories.
+- Record types.
+- Form value and form error types.
+- Status/mode unions.
 
-`useFeature.ts`:
+Constants:
 
-- TanStack Query data loading.
-- Mutations for create, update, delete, and status changes.
-- Derived options for filters.
-- Table state and handlers when the feature has a TanStack table.
+- `FeatureHref`.
+- Select options.
+- Table columns.
+- Pagination storage keys.
+- Reusable copy/labels.
 
-## User Management Refactor Notes
+Services:
 
-User Type and User Group currently use a flatter component structure that
-mirrors the Branch Management concepts with different names:
+- API wrappers, server actions, TanStack Query key factories, and business
+  operations that talk outside the UI layer.
 
-```txt
-BranchManagementMain      -> UserTypePage / UserGroupPage
-BranchManagementHeader    -> UserTypeHeader / UserGroupHeader
-BranchManagementTable     -> UserTypeList / UserGroupList
-BranchManagementAction    -> UserTypeFormPage / UserGroupFormPage
-BranchActionHeader        -> UserTypeFormHeader / UserGroupFormHeader
-BranchDetailsFields       -> UserTypeForm / UserGroupForm
-BranchNotFound            -> UserTypeNotFound / UserGroupNotFound
-```
+# Naming
 
-When refactoring User Management:
+- Use PascalCase for components, data files, constants, validations, and types.
+- Use React hook naming for hooks, such as `usePurchaseRequestFormPage.ts`.
+- Route-group folders stay lowercase where Next.js requires it.
+- Prefer feature-specific names over vague names.
 
-1. Keep route shape consistent: `add/page.tsx`, `edit/[recordId]`,
-   `view/[recordId]`.
-2. Replace all `/add/new` links with `/add`.
-3. Move User List route imports to the newer `ui/Main` pattern.
-4. Create `ui/Action.tsx` for User List if add/edit/view should match Branch
-   Management.
-5. Move User Type and User Group components into a `ui/` folder.
-6. Rename User Type/User Group page components to match the Branch pattern:
-   `Main`, `Action`, `Header`, `Table` or `List`, `ActionHeader`,
-   `DetailsFields`, `NotFound`.
-7. Replace `window.confirm` with shared `AppConfirmDialog`.
-8. Split `useUserManagement.ts` only when submodules need independent query
-   state or the file becomes too large.
+# Checks
 
-## CRUD Links
-
-Use constants for hrefs:
-
-```tsx
-export const FeatureHref = "/<domain>/<feature>";
-```
-
-Then build links consistently:
-
-```tsx
-`${FeatureHref}/add`
-`${FeatureHref}/edit/${record.id}`
-`${FeatureHref}/view/${record.id}`
-```
-
-Never hard-code `/add/new`.
-
-## CRUD Validation Checklist
-
-After CRUD refactors, run:
+Run checks once near the end of the work, not after every small edit.
 
 ```bash
 npm run lint
-npx tsc --noEmit
 npm run build
 ```
 
-Also search for route regressions:
+For route refactors, also search for old add routes:
 
 ```bash
 rg '/add/new|add/\[recordId\]|add\\\[recordId\\\]' 'app/(modules)' app/src -g '*.tsx' -g '*.ts'
 ```
 
-# Naming
-
-Use PascalCase as the default naming standard for shared project files under `app/src`.
-
-Use PascalCase for TypeScript files that export components, schemas, actions, shared types, constants, or reusable modules.
-
-Examples:
-
-- `AuthSchemas.ts`
-- `AuthTypes.ts`
-- `AuthActions.ts`
-- `OtpData.ts`
-- `LoginForm.tsx`
-- `AuthShell.tsx`
-
-Only use lowercase route-group folder names where required by Next.js, for example `(auth)` and `(onboarding)`.
-
-Hooks should keep the React hook convention:
-
-- `useLoginForm.ts`
-- `useSignUpForm.ts`
-- `useForgotPasswordForm.ts`
-- `useOtpForm.ts`
-- `useAppStore.ts`
-
-# Logic Placement
-
-Keep logic out of UI components as much as possible.
-
-- Put client interaction logic, state orchestration, derived state, side effects, and flow control in hooks.
-- Keep UI components focused on rendering, props, and event wiring.
-- Put validation schemas, form defaults, static data, and pure data helpers in `data`.
-- Put TypeScript-only shared types in `types`.
-- Put runtime constants in `constants`.
-- Put API wrappers, server actions, and business operations in `services`.
-- If component logic grows beyond small field-local state, move it into a feature hook or shared hook.
-- If a service file gets too large, split it by feature flow or domain responsibility instead of keeping all operations in one file.
-
-# Shared Frontend Stack
-
-The frontend now includes shared boilerplate for:
-
-- `axios`
-  - use for reusable API clients and request wrappers
-  - shared base client belongs in `app/src/services/shared/ApiClient.ts`
-- `@tanstack/react-query`
-  - use for cached server state such as session, profile, and company data
-  - shared query client setup belongs in `app/src/services/shared/QueryClient.ts`
-  - shared provider belongs in `app/src/ui/shared/AppProviders.tsx`
-- `zustand`
-  - use for lightweight client state such as access token, active company, and UI state
-  - shared stores should live under `app/src/hooks/shared/`
-
-Current shared boilerplate:
-
-```txt
-app/src/services/shared/ApiClient.ts
-app/src/services/shared/QueryClient.ts
-app/src/hooks/shared/useAppStore.ts
-app/src/ui/shared/AppProviders.tsx
-```
-
-# Auth
-
-Auth routes currently use:
-
-```txt
-app/(auth)/login/page.tsx
-app/(auth)/signup/page.tsx
-app/(auth)/forgot-password/page.tsx
-app/(auth)/otp/page.tsx
-```
-
-Auth validation should use Zod schemas from `app/src/data/auth/AuthSchemas.ts` or the matching `app/src/data/modules/...` feature folder when auth is organized as a module.
-
-Auth form server actions should return a typed `AuthActionState` from `app/src/types/...`.
-
-Client form components should use `useActionState` through hooks in `app/src/hooks/auth`.
-
-Auth runtime constants should live in `app/src/constants/...`. Static auth data and pure helpers should live in `app/src/data/...`.
-
-Auth may continue to use feature-specific service modules, but shared API and cache infrastructure should build on the shared Axios and TanStack Query boilerplate.
-
 # Styling
 
-Global Tailwind color tokens are defined in `app/globals.css`.
+Use project Tailwind tokens from `app/globals.css`.
 
-Use these project colors:
+- `darknavy`
+- `coralpink`
+- `citron`
+- `offwhite`
+- `skyblue`
 
-- `darknavy`: `#212738`
-- `coralpink`: `#f97068`
-- `citron`: `#d1d646`
-- `offwhite`: `#ecf2ef`
-- `skyblue`: `#57c4e5`
-
-Prefer project tokens like `text-darknavy`, `bg-offwhite`, `bg-coralpink`, `bg-citron`, and `bg-skyblue` over ad hoc hex values.
+Prefer token classes such as `text-darknavy`, `bg-offwhite`,
+`bg-coralpink`, `bg-citron`, and `bg-skyblue` over ad hoc hex values.

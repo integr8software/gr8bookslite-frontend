@@ -134,21 +134,13 @@ export const MainModuleNavigationSections: MainNavigationSection[] = [
           ),
         ],
       ),
-      group(
+      moduleItem(
         "maintenance-party-management",
         "Party Management",
         "/maintenance/party-management",
         "maintenance.party",
-        [
-          moduleItem(
-            "maintenance-party-management-party-management",
-            "Party Management",
-            "/maintenance/party-management/party-management",
-            "maintenance.party",
-            "accounting",
-            ["accounting", "inventory"],
-          ),
-        ],
+        "accounting",
+        ["accounting", "inventory"],
       ),
     ],
   ),

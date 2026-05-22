@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { ModulePreviewPages } from "@/app/src/data/shared/MainLayout/ModulePreviewData";
-import { ModulePreviewPage } from "@/app/src/ui/shared/module-preview/ModulePreviewPage";
 import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { WorkspaceUsersManagementMain } from "@/app/src/ui/modules/workspace/users-management/WorkspaceUsersManagementMain";
 
 export const metadata: Metadata = {
-	title: `Users & Roles | ${AppName}`,
-	description: `Users and roles workspace mockup for ${AppName}.`,
+	title: `Users Management | ${AppName}`,
+	description: `Workspace users management for ${AppName}.`,
 };
 
 export default function UsersRolesPage() {
-	return <ModulePreviewPage data={ModulePreviewPages.usersRoles} />;
+	return <WorkspaceUsersManagementMain />;
 }

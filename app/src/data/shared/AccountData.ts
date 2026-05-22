@@ -1,4 +1,6 @@
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
+import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
+import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
 import type {
   AccountProfileDraft,
   AccountProfileFieldKey,
@@ -43,15 +45,7 @@ export function GetVisibleSettingsItems(role: AccountVisibilityRole) {
 export function ResolveAccountVisibilityRole(
   profile: AuthProfileResponse | undefined,
 ): AccountVisibilityRole {
-  if (profile?.user.systemRole === "SUPER_ADMIN") {
-    return "SUPER_ADMIN";
-  }
-
-  if (profile?.activeAccess?.membershipRole === "ADMIN") {
-    return "ADMIN";
-  }
-
-  return "USER";
+  return ResolveAuthProfileEffectiveRole(profile);
 }
 
 export function BuildAccountProfileViewModel(
@@ -59,11 +53,13 @@ export function BuildAccountProfileViewModel(
   draft: AccountProfileDraft | undefined,
 ): AccountProfileViewModel {
   const role = ResolveAccountVisibilityRole(profile);
-  const fullName = draft?.fullName?.trim() || profile?.user.name || "Account User";
+  const fullName = draft?.fullName ?? profile?.user.name ?? "Account User";
   const email = profile?.user.email || "No email available";
   const contactNumber =
     draft?.contactNumber ??
-    profile?.user.contactNumber ??
+    (profile?.user.contactNumber
+      ? FormatPhilippineContactNumber(profile.user.contactNumber)
+      : "") ??
     "";
 
   return {
@@ -72,7 +68,10 @@ export function BuildAccountProfileViewModel(
     fullName,
     email,
     contactNumber,
-    avatarDataUrl: draft?.avatarDataUrl ?? null,
+    avatarDataUrl:
+      draft?.avatarDataUrl !== undefined
+        ? draft.avatarDataUrl
+        : profile?.user.avatarPublicUrl ?? null,
     initials: BuildInitials(fullName),
     roleLabel: FormatRoleLabel(role),
   };

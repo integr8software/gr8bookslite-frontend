@@ -18,3 +18,12 @@ export type DiscountManagementFormErrors = Partial<
 >;
 
 export type DiscountManagementActionMode = "add" | "edit" | "view";
+
+export type DiscountManagementTableColumnKey =
+	| "description"
+	| "percentage"
+	| "accountLabel";
+
+export type DiscountManagementTableRecord = Discount & {
+	accountLabel: string;
+};

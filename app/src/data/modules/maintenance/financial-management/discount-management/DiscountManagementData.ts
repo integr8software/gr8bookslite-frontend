@@ -4,9 +4,6 @@ import type {
 	DiscountManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
 
-export const DiscountManagementHref =
-	"/maintenance/financial-management/discount-management";
-
 export const MockDiscounts: Discount[] = [
 	{
 		id: "d_001",

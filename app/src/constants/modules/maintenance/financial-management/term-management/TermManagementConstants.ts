@@ -3,6 +3,31 @@ import type { TermManagementDatemode } from "@/app/src/types/modules/maintenance
 export const TermManagementHref =
 	"/maintenance/financial-management/term-management";
 
+export const TermManagementTablePaginationStorageKey =
+	"maintenance:financial-management:term-management";
+
+export const TermManagementTableColumns = [
+	{
+		key: "description",
+		label: "Description",
+		className: "w-[38%]",
+	},
+	{
+		key: "datemode",
+		label: "Datemode",
+		className: "w-[22%]",
+	},
+	{
+		key: "period",
+		label: "Period",
+		className: "w-[20%]",
+	},
+	{
+		label: "Actions",
+		className: "w-[20%] text-right",
+	},
+] as const;
+
 export const TermManagementDatemodeOptions: TermManagementDatemode[] = [
 	"Day",
 	"Month",

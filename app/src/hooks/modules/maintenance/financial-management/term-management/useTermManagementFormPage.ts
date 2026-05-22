@@ -2,6 +2,7 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { TermManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import {
 	TermManagementInitialFormValues,
@@ -17,7 +18,7 @@ import type {
 import { validateTermManagementForm } from "@/app/src/validations/modules/maintenance/financial-management/term-management/TermManagementValidation";
 import { useTermManagementStore } from "./useTermManagement";
 
-export function useTermManagementActionPage() {
+export function useTermManagementFormPage() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
@@ -70,11 +71,15 @@ export function useTermManagementActionPage() {
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
+			toast.error("Please fix the highlighted term fields.");
 			return;
 		}
 
 		if (mode === "edit" && existingTerm) {
 			updateTerm(updateTermManagementFromForm(existingTerm, values));
+		} else if (mode === "edit") {
+			toast.error("Could not find the term definition to update.");
+			return;
 		} else {
 			addTerm(createTermManagementFromForm(values));
 		}
@@ -84,6 +89,7 @@ export function useTermManagementActionPage() {
 
 	function handleConfirmDelete() {
 		if (!existingTerm) {
+			toast.error("Could not find the term definition to delete.");
 			return;
 		}
 

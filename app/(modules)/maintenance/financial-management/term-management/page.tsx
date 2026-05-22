@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { TermManagementMain } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementMain";
+import { TermManagementListPage } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementListPage";
 
 const PageTitle = "Term Management";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function MaintenanceFinancialManagementTermManagementPage() {
-	return <TermManagementMain />;
+	return <TermManagementListPage />;
 }
 
 

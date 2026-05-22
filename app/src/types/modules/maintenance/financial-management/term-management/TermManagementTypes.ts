@@ -18,3 +18,8 @@ export type TermManagementFormErrors = Partial<
 >;
 
 export type TermManagementActionMode = "add" | "edit" | "view";
+
+export type TermManagementTableColumnKey =
+	| "description"
+	| "datemode"
+	| "period";

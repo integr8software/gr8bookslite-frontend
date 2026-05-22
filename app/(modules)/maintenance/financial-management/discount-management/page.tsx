@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { DiscountManagementMain } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementMain";
+import { DiscountManagementListPage } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementListPage";
 
 const PageTitle = "Discount Management";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function MaintenanceFinancialManagementDiscountManagementPage() {
-	return <DiscountManagementMain />;
+	return <DiscountManagementListPage />;
 }
 
 

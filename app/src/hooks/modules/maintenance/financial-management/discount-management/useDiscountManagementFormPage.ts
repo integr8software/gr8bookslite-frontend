@@ -7,8 +7,9 @@ import {
 	type FormEvent,
 } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { DiscountManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
 import {
-	DiscountManagementHref,
 	DiscountManagementInitialFormValues,
 	createDiscountFromForm,
 	createDiscountManagementFormValues,
@@ -24,7 +25,7 @@ import type {
 import { validateDiscountManagementForm } from "@/app/src/validations/modules/maintenance/financial-management/discount-management/DiscountManagementValidation";
 import { useDiscountManagementStore } from "./useDiscountManagement";
 
-export function useDiscountManagementActionPage() {
+export function useDiscountManagementFormPage() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
@@ -127,11 +128,15 @@ export function useDiscountManagementActionPage() {
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
+			toast.error("Please fix the highlighted discount fields.");
 			return;
 		}
 
 		if (mode === "edit" && existingDiscount) {
 			updateDiscount(updateDiscountFromForm(existingDiscount, values, selectedAccount));
+		} else if (mode === "edit") {
+			toast.error("Could not find the discount to update.");
+			return;
 		} else {
 			addDiscount(createDiscountFromForm(values, selectedAccount));
 		}
@@ -141,6 +146,7 @@ export function useDiscountManagementActionPage() {
 
 	function handleConfirmDelete() {
 		if (!existingDiscount) {
+			toast.error("Could not find the discount to delete.");
 			return;
 		}
 

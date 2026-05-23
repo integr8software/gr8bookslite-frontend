@@ -7,6 +7,7 @@ import type {
 import { MainIcons, renderSidebarItemIcon } from "./SidebarIcons";
 import {
 	getVisibleCountToActiveItem,
+	itemMatchesActiveHref,
 	joinClasses,
 	pathMatches,
 	useIncrementalVisibleCount,
@@ -138,16 +139,25 @@ export function SidebarItem({
 	onToggleExpandedKey,
 }: SidebarItemProps) {
 	const hasChildren = Boolean(item.children?.length);
-	const shouldShowIcon = hasChildren || item.accessKey === "maintenance.party";
+	const shouldShowIcon =
+		hasChildren ||
+		item.accessKey === "maintenance.party" ||
+		item.accessKey === "maintenance.warehouse";
 	const shouldShowModuleDot = !shouldShowIcon;
 	const childItems = item.children ?? [];
 	const isExpanded = expandedKeys.includes(item.key);
 	const isExactActive = activeHref === item.href;
 	const isDescendantActive =
 		!isExactActive && activeHref.startsWith(`${item.href}/`);
-	const isAncestorActive = hasChildren && isDescendantActive;
+	const hasActiveChild =
+		hasChildren &&
+		childItems.some((childItem) =>
+			itemMatchesActiveHref(childItem, activeHref),
+		);
+	const isAncestorActive =
+		hasChildren && !isExactActive && (isDescendantActive || hasActiveChild);
 	const isActive = hasChildren
-		? isExactActive || isDescendantActive
+		? isExactActive || isDescendantActive || hasActiveChild
 		: pathMatches(item.href, activeHref);
 	const paddingClass =
 		depth < 0

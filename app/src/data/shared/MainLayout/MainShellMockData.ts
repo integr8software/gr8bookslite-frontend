@@ -183,7 +183,7 @@ export const MainLayoutMockData = {
     "dashboard-overview",
     "cash-receipt-official-receipt",
     "inventory-receiving-report",
-    "maintenance-item",
+    "maintenance-items",
   ],
   recentlyVisitedNavigationKeys: [
     "maintenance-approval",

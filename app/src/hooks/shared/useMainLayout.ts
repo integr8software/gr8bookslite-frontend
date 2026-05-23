@@ -55,7 +55,7 @@ const DefaultExpandedKeys = [
   "dashboard",
   "maintenance",
   "maintenance-financial",
-  "maintenance-inventory-warehouse",
+  "maintenance-item-management",
   "cash-receipt",
   "cash-disbursement",
   "sales",
@@ -1001,12 +1001,19 @@ function getActiveItemAncestorKeys(
   items: MainNavigationItem[],
   pathname: string,
 ): string[] {
+  return findActiveItemAncestorKeys(items, pathname) ?? [];
+}
+
+function findActiveItemAncestorKeys(
+  items: MainNavigationItem[],
+  pathname: string,
+): string[] | null {
   for (const item of items) {
     if (item.children?.length) {
-      const childKeys = getActiveItemAncestorKeys(item.children, pathname);
+      const childKeys = findActiveItemAncestorKeys(item.children, pathname);
 
-      if (childKeys.length > 0 || pathMatches(item.href, pathname)) {
-        return [item.key, ...childKeys];
+      if (childKeys || pathMatches(item.href, pathname)) {
+        return [item.key, ...(childKeys ?? [])];
       }
     }
 
@@ -1015,7 +1022,7 @@ function getActiveItemAncestorKeys(
     }
   }
 
-  return [];
+  return null;
 }
 
 function pathMatches(href: string, pathname: string) {
@@ -1112,27 +1119,19 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Configure transaction classifications and numbering behavior.",
   "maintenance-financial-management-responsibility-center":
     "Maintain accountability centers for financial reporting.",
-  "maintenance-inventory-warehouse-management-warehouse-management":
+  "maintenance-warehouse-management":
     "Maintain warehouse records and storage locations.",
+  "maintenance-item-management":
+    "Maintain item master records, categories, and classifications.",
+  "maintenance-items": "Maintain item master records.",
   "maintenance-warehouse": "Maintain warehouse records and storage locations.",
-  "maintenance-inventory-warehouse-management-item-management":
-    "Maintain item master records.",
   "maintenance-item": "Maintain item master records.",
-  "maintenance-inventory-warehouse-management-item-category":
-    "Group items by category.",
   "maintenance-item-category": "Group items by category.",
-  "maintenance-inventory-warehouse-management-item-subcategory":
-    "Group items by subcategory.",
+  "maintenance-item-subcategory": "Group items by subcategory.",
   "maintenance-item-sub-category": "Group items by subcategory.",
-  "maintenance-inventory-warehouse-management-item-type":
-    "Maintain item type classifications.",
   "maintenance-item-type": "Maintain item type classifications.",
-  "maintenance-inventory-warehouse-management-item-subtype":
-    "Maintain item subtype classifications.",
+  "maintenance-item-subtype": "Maintain item subtype classifications.",
   "maintenance-item-sub-type": "Maintain item subtype classifications.",
-  "maintenance-item-unit": "Manage item units of measure.",
-  "maintenance-inventory-warehouse-management":
-    "Maintain inventory items, classifications, units, and warehouses.",
   "maintenance-party-management":
     "Maintain customers, suppliers, vendors, members, and employees.",
   "maintenance-party":

@@ -20,7 +20,7 @@ export function getVisibleCountToActiveItem(
   return activeIndex >= 0 ? activeIndex + 1 : 0;
 }
 
-function itemMatchesActiveHref(
+export function itemMatchesActiveHref(
   item: MainNavigationItem,
   activeHref: string,
 ): boolean {

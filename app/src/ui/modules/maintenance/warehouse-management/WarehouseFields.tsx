@@ -1,35 +1,47 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import { WarehouseStatusOptions } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import type {
+	WarehouseBranchAvailability,
 	WarehouseFormErrors,
 	WarehouseFormValues,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type WarehouseFieldsProps = {
+	availabilityOptions: readonly WarehouseBranchAvailability[];
+	branchOptions: readonly string[];
 	errors: WarehouseFormErrors;
 	values: WarehouseFormValues;
+	onAvailableBranchesChange: (value: string | string[]) => void;
+	onFieldChange: <TKey extends keyof WarehouseFormValues>(
+		field: TKey,
+		value: WarehouseFormValues[TKey],
+	) => void;
 	onInputChange: ChangeEventHandler<
 		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 	>;
 };
 
 export function WarehouseFields({
+	availabilityOptions,
+	branchOptions,
 	errors,
+	onAvailableBranchesChange,
+	onFieldChange,
 	onInputChange,
 	values,
 }: WarehouseFieldsProps) {
+	const branchDropdownOptions = createSimpleOptions([...branchOptions]);
+	const selectedBranchValues =
+		values.availability === "All Branches"
+			? [...branchOptions]
+			: values.availability === "Home Branch Only" && values.branchName
+				? [values.branchName]
+				: values.availableBranches;
+
 	return (
 		<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
 			<div className="grid gap-4 lg:grid-cols-2">
-				<FormField label="Warehouse Code" error={errors.code} required>
-					<input
-						name="code"
-						value={values.code}
-						onChange={onInputChange}
-						className={fieldClassName}
-						placeholder="WH-MAIN"
-					/>
-				</FormField>
 				<FormField label="Warehouse Name" error={errors.name} required>
 					<input
 						name="name"
@@ -40,12 +52,41 @@ export function WarehouseFields({
 					/>
 				</FormField>
 				<FormField label="Branch" error={errors.branchName} required>
-					<input
-						name="branchName"
+					<AppAdvancedDropdown
+						isClearable={false}
+						options={branchDropdownOptions}
+						placeholder="Select home branch"
 						value={values.branchName}
+						onChange={(value) => onFieldChange("branchName", String(value))}
+					/>
+				</FormField>
+				<FormField label="Availability" error={errors.availability} required>
+					<select
+						name="availability"
+						value={values.availability}
 						onChange={onInputChange}
 						className={fieldClassName}
-						placeholder="Main Branch"
+					>
+						{availabilityOptions.map((availability) => (
+							<option key={availability} value={availability}>
+								{availability}
+							</option>
+						))}
+					</select>
+				</FormField>
+				<FormField
+					label="Available Branches"
+					error={errors.availableBranches}
+					required={values.availability === "Selected Branches"}
+				>
+					<AppAdvancedDropdown
+						isClearable={values.availability === "Selected Branches"}
+						options={branchDropdownOptions}
+						placeholder="Select branches"
+						readOnly={values.availability !== "Selected Branches"}
+						selectionMode="multiple"
+						value={selectedBranchValues}
+						onChange={onAvailableBranchesChange}
 					/>
 				</FormField>
 				<FormField label="Manager" error={errors.managerName} required>
@@ -133,3 +174,9 @@ function FormField({
 const fieldClassName =
 	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20";
 
+function createSimpleOptions(options: string[]) {
+	return options.map((option) => ({
+		name: option,
+		value: option,
+	}));
+}

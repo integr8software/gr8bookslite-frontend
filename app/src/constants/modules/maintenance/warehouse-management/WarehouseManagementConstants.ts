@@ -1,5 +1,7 @@
 import type {
-	WarehouseDetailsTab,
+	WarehouseAccessLevel,
+	WarehouseAccessPermission,
+	WarehouseBranchAvailability,
 	WarehouseStatus,
 	WarehouseTableColumnKey,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
@@ -11,14 +13,32 @@ export const WarehouseManagementTablePaginationStorageKey =
 
 export const WarehouseStatusOptions: WarehouseStatus[] = ["Active", "Inactive"];
 
-export const WarehouseDetailsTabs: Array<{
-	key: WarehouseDetailsTab;
-	label: string;
-}> = [
-	{ key: "information", label: "Information" },
-	{ key: "access", label: "Warehouse Access" },
-	{ key: "items", label: "Items" },
-];
+export const WarehouseBranchOptions = [
+	"Main Branch",
+	"North Branch",
+	"South Branch",
+	"Cebu Branch",
+] as const;
+
+export const WarehouseBranchAvailabilityOptions = [
+	"Home Branch Only",
+	"Selected Branches",
+	"All Branches",
+] as const satisfies readonly WarehouseBranchAvailability[];
+
+export const WarehouseAccessLevelOptions = [
+	"Viewer",
+	"Picker",
+	"Manager",
+] as const satisfies readonly WarehouseAccessLevel[];
+
+export const WarehouseAccessPermissionOptions = [
+	"View Stock",
+	"Receive Stock",
+	"Issue Stock",
+	"Transfer Stock",
+	"Adjust Stock",
+] as const satisfies readonly WarehouseAccessPermission[];
 
 export const WarehouseManagementTableColumns: Array<
 	| {
@@ -32,13 +52,12 @@ export const WarehouseManagementTableColumns: Array<
 			className: string;
 	  }
 > = [
-	{ key: "code", label: "Code", className: "w-[9rem]" },
 	{ key: "name", label: "Warehouse", className: "w-[18rem]" },
 	{ key: "branchName", label: "Branch", className: "w-[14rem]" },
+	{ key: "availability", label: "Availability", className: "w-[14rem]" },
 	{ key: "managerName", label: "Manager", className: "w-[14rem]" },
-	{ key: "itemCount", label: "Items", className: "w-[8rem] text-right" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
-	{ id: "actions", label: "Actions", className: "w-[10rem]" },
+	{ id: "actions", label: "Actions", className: "w-[14rem]" },
 ];
 
 export const WarehouseFormPageCopy = {
@@ -55,7 +74,14 @@ export const WarehouseFormPageCopy = {
 	view: {
 		title: "Warehouse Management",
 		description:
-			"Review warehouse information, access assignments, and item counts.",
+			"Review warehouse information, branch availability, and access assignments.",
 	},
 } as const;
 
+export function createWarehouseAccessHref(warehouseId: string) {
+	return `${WarehouseManagementHref}/view/${warehouseId}/access`;
+}
+
+export function createWarehouseItemsHref(warehouseId: string) {
+	return `${WarehouseManagementHref}/view/${warehouseId}/items`;
+}

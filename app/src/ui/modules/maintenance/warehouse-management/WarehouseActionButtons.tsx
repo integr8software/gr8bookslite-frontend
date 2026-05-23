@@ -1,6 +1,10 @@
 import Link from "next/link";
-import { ArrowLeft, Edit3, Save, Trash2, X } from "lucide-react";
-import { WarehouseManagementHref } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
+import { ArrowLeft, Edit3, Package, Save, ShieldCheck, Trash2, X } from "lucide-react";
+import {
+	WarehouseManagementHref,
+	createWarehouseAccessHref,
+	createWarehouseItemsHref,
+} from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import type {
 	WarehouseActionMode,
 	WarehouseRecord,
@@ -38,6 +42,24 @@ export function WarehouseActionButtons({
 					Edit
 				</Link>
 			) : null}
+			{mode === "view" && warehouse ? (
+				<Link
+					href={createWarehouseAccessHref(warehouse.id)}
+					className={moduleHeaderActionClassNames.secondary}
+				>
+					<ShieldCheck className="h-4 w-4" aria-hidden="true" />
+					Access
+				</Link>
+			) : null}
+			{mode === "view" && warehouse ? (
+				<Link
+					href={createWarehouseItemsHref(warehouse.id)}
+					className={moduleHeaderActionClassNames.secondary}
+				>
+					<Package className="h-4 w-4" aria-hidden="true" />
+					Items
+				</Link>
+			) : null}
 			{warehouse ? (
 				<button
 					type="button"
@@ -66,4 +88,3 @@ export function WarehouseActionButtons({
 		</>
 	);
 }
-

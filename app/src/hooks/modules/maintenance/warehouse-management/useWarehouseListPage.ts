@@ -43,9 +43,10 @@ export function useWarehouseListPage() {
 
 		return warehouses.filter((warehouse) =>
 			[
-				warehouse.code,
 				warehouse.name,
 				warehouse.branchName,
+				warehouse.availability,
+				warehouse.availableBranches.join(" "),
 				warehouse.managerName,
 				warehouse.status,
 				warehouse.address,
@@ -122,16 +123,6 @@ function createWarehouseColumn(
 	header: string,
 	className: string,
 ): ColumnDef<WarehouseRecord> {
-	if (key === "itemCount") {
-		return {
-			id: key,
-			header,
-			accessorFn: (warehouse) => warehouse.items.length,
-			sortingFn: "basic",
-			meta: { className },
-		};
-	}
-
 	return {
 		accessorKey: key,
 		header,
@@ -139,4 +130,3 @@ function createWarehouseColumn(
 		meta: { className },
 	};
 }
-

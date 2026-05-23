@@ -5,13 +5,10 @@ import { WarehouseFormPageCopy } from "@/app/src/constants/modules/maintenance/w
 import { useWarehouseFormPage } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseFormPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { WarehouseAccessTable } from "./WarehouseAccessTable";
 import { WarehouseActionButtons } from "./WarehouseActionButtons";
 import { WarehouseDetailsPanel } from "./WarehouseDetailsPanel";
 import { WarehouseFields } from "./WarehouseFields";
-import { WarehouseItemsTable } from "./WarehouseItemsTable";
 import { WarehouseNotFound } from "./WarehouseNotFound";
-import { WarehouseTabs } from "./WarehouseTabs";
 
 export function WarehouseFormPage() {
 	const page = useWarehouseFormPage();
@@ -50,25 +47,15 @@ export function WarehouseFormPage() {
 				/>
 
 				{page.mode === "view" && page.existingWarehouse ? (
-					<>
-						<WarehouseTabs
-							activeTab={page.activeTab}
-							warehouse={page.existingWarehouse}
-						/>
-						{page.activeTab === "information" ? (
-							<WarehouseDetailsPanel warehouse={page.existingWarehouse} />
-						) : null}
-						{page.activeTab === "access" ? (
-							<WarehouseAccessTable warehouse={page.existingWarehouse} />
-						) : null}
-						{page.activeTab === "items" ? (
-							<WarehouseItemsTable warehouse={page.existingWarehouse} />
-						) : null}
-					</>
+					<WarehouseDetailsPanel warehouse={page.existingWarehouse} />
 				) : (
 					<WarehouseFields
+						availabilityOptions={page.availabilityOptions}
+						branchOptions={page.branchOptions}
 						errors={page.errors}
 						values={page.values}
+						onAvailableBranchesChange={page.handleAvailableBranchesChange}
+						onFieldChange={page.updateField}
 						onInputChange={page.handleInputChange}
 					/>
 				)}
@@ -87,4 +74,3 @@ export function WarehouseFormPage() {
 		</>
 	);
 }
-

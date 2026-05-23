@@ -1,4 +1,6 @@
 import type { ChangeEventHandler, ReactNode } from "react";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import type {
 	ItemFormErrors,
 	ItemFormValues,
@@ -19,6 +21,7 @@ type ItemFieldsProps = {
 	typeOptions: AppAdvancedDropdownOption[];
 	uomOptions: AppAdvancedDropdownOption[];
 	values: ItemFormValues;
+	warehouseItemsHref?: string;
 	warehouseOptions: AppAdvancedDropdownOption[];
 	onAddTag: (tag: string) => void;
 	onFieldChange: <TKey extends keyof ItemFormValues>(
@@ -45,6 +48,7 @@ export function ItemFields({
 	typeOptions,
 	uomOptions,
 	values,
+	warehouseItemsHref,
 	warehouseOptions,
 }: ItemFieldsProps) {
 	const suggestedSellingPrice = createSuggestedSellingPrice(values);
@@ -193,6 +197,15 @@ export function ItemFields({
 							onFieldChange("defaultWarehouse", String(value))
 						}
 					/>
+					{warehouseItemsHref ? (
+						<Link
+							href={warehouseItemsHref}
+							className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-skyblue transition hover:text-darknavy"
+						>
+							View warehouse items
+							<ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+						</Link>
+					) : null}
 				</FormField>
 				<ToggleField
 					checked={values.supportsBundle}

@@ -23,7 +23,7 @@ export function WarehouseTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No warehouses found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[82rem]"
+				minWidthClassName="min-w-[68rem]"
 				paginationStorageKey={WarehouseManagementTablePaginationStorageKey}
 				table={table}
 				renderRow={({ id, original }) => (

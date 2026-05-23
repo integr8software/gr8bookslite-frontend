@@ -175,7 +175,7 @@ export const MockItems: ItemRecord[] = [
 		isVatable: true,
 		isVatIncluded: false,
 		status: "Active",
-		defaultWarehouse: "Main Warehouse",
+		defaultWarehouse: "North Warehouse",
 		supportsBundle: false,
 		description: "Thermal paper roll for POS printers.",
 		tags: ["pos", "paper"],

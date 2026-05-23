@@ -2,16 +2,30 @@ export type WarehouseStatus = "Active" | "Inactive";
 
 export type WarehouseAccessLevel = "Viewer" | "Picker" | "Manager";
 
+export type WarehouseAccessPermission =
+	| "View Stock"
+	| "Receive Stock"
+	| "Issue Stock"
+	| "Transfer Stock"
+	| "Adjust Stock";
+
+export type WarehouseBranchAvailability =
+	| "Home Branch Only"
+	| "Selected Branches"
+	| "All Branches";
+
 export type WarehouseAccessRecord = {
 	id: string;
 	userName: string;
 	role: string;
 	accessLevel: WarehouseAccessLevel;
+	permissions: WarehouseAccessPermission[];
 	status: WarehouseStatus;
 };
 
 export type WarehouseStockItem = {
 	id: string;
+	itemId: string;
 	itemCode: string;
 	itemName: string;
 	category: string;
@@ -25,6 +39,8 @@ export type WarehouseRecord = {
 	code: string;
 	name: string;
 	branchName: string;
+	availability: WarehouseBranchAvailability;
+	availableBranches: string[];
 	managerName: string;
 	status: WarehouseStatus;
 	address: string;
@@ -35,9 +51,10 @@ export type WarehouseRecord = {
 };
 
 export type WarehouseFormValues = {
-	code: string;
 	name: string;
 	branchName: string;
+	availability: WarehouseBranchAvailability;
+	availableBranches: string[];
 	managerName: string;
 	status: WarehouseStatus;
 	address: string;
@@ -47,15 +64,16 @@ export type WarehouseFormValues = {
 
 export type WarehouseFormErrors = Partial<Record<keyof WarehouseFormValues, string>>;
 
+export type WarehouseAccessFormErrors = Record<
+	string,
+	Partial<Record<keyof WarehouseAccessRecord | "permissions", string>>
+>;
+
 export type WarehouseActionMode = "add" | "edit" | "view";
 
-export type WarehouseDetailsTab = "information" | "access" | "items";
-
 export type WarehouseTableColumnKey =
-	| "code"
 	| "name"
 	| "branchName"
+	| "availability"
 	| "managerName"
-	| "status"
-	| "itemCount";
-
+	| "status";

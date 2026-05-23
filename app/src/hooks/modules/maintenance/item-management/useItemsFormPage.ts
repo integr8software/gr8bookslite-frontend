@@ -6,9 +6,9 @@ import toast from "react-hot-toast";
 import {
 	ItemSupplierOptions,
 	ItemUomDictionary,
-	ItemWarehouseOptions,
 	ItemsHref,
 } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
+import { createWarehouseItemsHref } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import {
 	ItemInitialFormValues,
 	createItemFormValues,
@@ -26,7 +26,9 @@ import type {
 	ItemSupplierAssignment,
 	ItemUomConversion,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
+import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 import { validateItemForm } from "@/app/src/validations/modules/maintenance/item-management/ItemManagementValidation";
+import { useWarehouseManagementStore } from "../warehouse-management/useWarehouseManagement";
 import { useItemManagementStore } from "./useItemManagement";
 
 const NumberItemFormFields = new Set<keyof ItemFormValues>([
@@ -39,6 +41,7 @@ export function useItemsFormPage() {
 	const pathname = usePathname();
 	const router = useRouter();
 	const store = useItemManagementStore();
+	const { warehouses } = useWarehouseManagementStore();
 	const { addItem, deleteItem, isMutating, items, updateItem } = store;
 	const mode = getActionMode(pathname);
 	const existingItem = items.find((item) => item.id === params.recordId);
@@ -416,7 +419,11 @@ export function useItemsFormPage() {
 		updateSupplier,
 		updateUomConversion,
 		values,
-		warehouseOptions: createSimpleOptions([...ItemWarehouseOptions]),
+		warehouseItemsHref: createSelectedWarehouseItemsHref(
+			warehouses,
+			values.defaultWarehouse,
+		),
+		warehouseOptions: createWarehouseOptions(warehouses),
 		bundleComponentItemOptions: createBundleComponentItemOptions(
 			items,
 			existingItem?.id,
@@ -598,4 +605,39 @@ function createSimpleOptions(options: string[]) {
 		name: option,
 		value: option,
 	}));
+}
+
+function createWarehouseOptions(warehouses: WarehouseRecord[]) {
+	return warehouses
+		.filter((warehouse) => warehouse.status === "Active")
+		.map((warehouse) => ({
+			description: createWarehouseDescription(warehouse),
+			name: warehouse.name,
+			value: warehouse.name,
+		}));
+}
+
+function createSelectedWarehouseItemsHref(
+	warehouses: WarehouseRecord[],
+	warehouseName: string,
+) {
+	const warehouse = warehouses.find(
+		(currentWarehouse) => currentWarehouse.name === warehouseName,
+	);
+
+	return warehouse ? createWarehouseItemsHref(warehouse.id) : undefined;
+}
+
+function createWarehouseDescription(warehouse: WarehouseRecord) {
+	if (warehouse.availability === "All Branches") {
+		return "Available to all branches";
+	}
+
+	if (warehouse.availability === "Selected Branches") {
+		return warehouse.availableBranches.length > 0
+			? `Available to ${warehouse.availableBranches.join(", ")}`
+			: "No branch access selected";
+	}
+
+	return `Available to ${warehouse.branchName}`;
 }

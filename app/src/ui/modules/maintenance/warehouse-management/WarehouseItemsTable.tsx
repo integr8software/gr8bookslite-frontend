@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ItemsHref } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import { getWarehouseAvailableStock } from "@/app/src/data/modules/maintenance/warehouse-management/WarehouseManagementData";
 import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 
@@ -23,7 +25,12 @@ export function WarehouseItemsTable({ warehouse }: { warehouse: WarehouseRecord 
 					{warehouse.items.map((item) => (
 						<tr key={item.id}>
 							<td className="px-4 py-4">
-								<div className="font-medium text-darknavy">{item.itemName}</div>
+								<Link
+									href={`${ItemsHref}/view/${item.itemId}`}
+									className="font-medium text-darknavy transition hover:text-skyblue"
+								>
+									{item.itemName}
+								</Link>
 								<div className="text-xs text-darknavy/55">{item.itemCode}</div>
 							</td>
 							<td className="px-4 py-4 text-darknavy/70">{item.category}</td>
@@ -44,4 +51,3 @@ export function WarehouseItemsTable({ warehouse }: { warehouse: WarehouseRecord 
 		</div>
 	);
 }
-

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
-	WarehouseDetailsTabs,
+	WarehouseBranchAvailabilityOptions,
+	WarehouseBranchOptions,
 	WarehouseManagementHref,
 } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import {
@@ -15,7 +16,6 @@ import {
 } from "@/app/src/data/modules/maintenance/warehouse-management/WarehouseManagementData";
 import type {
 	WarehouseActionMode,
-	WarehouseDetailsTab,
 	WarehouseFormErrors,
 	WarehouseFormValues,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
@@ -26,7 +26,6 @@ export function useWarehouseFormPage() {
 	const params = useParams<{ recordId?: string }>();
 	const pathname = usePathname();
 	const router = useRouter();
-	const searchParams = useSearchParams();
 	const {
 		addWarehouse,
 		deleteWarehouse,
@@ -46,8 +45,6 @@ export function useWarehouseFormPage() {
 	);
 	const [errors, setErrors] = useState<WarehouseFormErrors>({});
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-	const tabParam = searchParams.get("tab");
-	const activeTab = isWarehouseTab(tabParam) ? tabParam : "information";
 
 	function updateField(
 		field: keyof WarehouseFormValues,
@@ -57,8 +54,20 @@ export function useWarehouseFormPage() {
 			return;
 		}
 
-		setValues((current) => ({ ...current, [field]: value }));
-		setErrors((current) => ({ ...current, [field]: undefined }));
+		setValues((current) => {
+			const nextValues = { ...current, [field]: value };
+
+			if (field === "availability" && value !== "Selected Branches") {
+				nextValues.availableBranches = [];
+			}
+
+			return nextValues;
+		});
+		setErrors((current) => ({
+			...current,
+			[field]: undefined,
+			...(field === "availability" ? { availableBranches: undefined } : {}),
+		}));
 	}
 
 	function handleInputChange(
@@ -69,6 +78,13 @@ export function useWarehouseFormPage() {
 		updateField(
 			event.target.name as keyof WarehouseFormValues,
 			event.target.value,
+		);
+	}
+
+	function handleAvailableBranchesChange(value: string | string[]) {
+		updateField(
+			"availableBranches",
+			Array.isArray(value) ? value : value ? [value] : [],
 		);
 	}
 
@@ -110,9 +126,11 @@ export function useWarehouseFormPage() {
 	}
 
 	return {
-		activeTab,
+		availabilityOptions: WarehouseBranchAvailabilityOptions,
+		branchOptions: WarehouseBranchOptions,
 		errors,
 		existingWarehouse,
+		handleAvailableBranchesChange,
 		handleConfirmDelete,
 		handleInputChange,
 		handleSubmit,
@@ -122,7 +140,7 @@ export function useWarehouseFormPage() {
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
 		setIsDeleteDialogOpen,
-		tabs: WarehouseDetailsTabs,
+		updateField,
 		values,
 	};
 }
@@ -138,8 +156,3 @@ function getActionMode(pathname: string): WarehouseActionMode {
 
 	return "add";
 }
-
-function isWarehouseTab(value: string | null): value is WarehouseDetailsTab {
-	return value === "information" || value === "access" || value === "items";
-}
-

@@ -20,7 +20,7 @@ export function WarehouseListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Warehouse Management"
-				description="Maintain warehouses, review access assignments, and monitor item counts by location."
+				description="Maintain warehouses, branch availability, and access assignments by location."
 				eyebrow={
 					<>
 						<Warehouse className="h-3.5 w-3.5" aria-hidden="true" />
@@ -48,7 +48,7 @@ export function WarehouseListPage() {
 					<input
 						value={page.query}
 						onChange={(event) => page.handleQueryChange(event.target.value)}
-						placeholder="Search by warehouse, code, branch, manager, or status"
+						placeholder="Search by warehouse, branch, availability, manager, or status"
 						className="h-12 w-full rounded-lg border border-darknavy/10 bg-offwhite/65 pl-11 pr-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15"
 					/>
 				</label>
@@ -73,4 +73,3 @@ export function WarehouseListPage() {
 		</section>
 	);
 }
-

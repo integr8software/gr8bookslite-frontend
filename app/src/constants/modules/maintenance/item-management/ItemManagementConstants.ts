@@ -30,8 +30,7 @@ export const ItemSupplierOptions = [
 
 export const ItemWarehouseOptions = [
 	"Main Warehouse",
-	"North Branch Warehouse",
-	"South Satellite Storage",
+	"North Warehouse",
 ] as const;
 
 export const ItemsTablePaginationStorageKey = "maintenance.item-management.items";

@@ -45,8 +45,8 @@ export function ItemUomConversionsTable({
 				) : null}
 			</div>
 			<div className="mt-4 overflow-auto">
-				<table className="w-full min-w-[38rem] text-left text-sm">
-					<thead className="bg-darknavy/[0.03] text-xs font-semibold uppercase tracking-wide text-darknavy/50">
+				<table className="w-full min-w-152 text-left text-sm">
+					<thead className="bg-darknavy/30 text-xs font-semibold uppercase tracking-wide text-darknavy/50">
 						<tr>
 							<th className="px-3 py-3">From</th>
 							<th className="px-3 py-3 text-right">Quantity</th>

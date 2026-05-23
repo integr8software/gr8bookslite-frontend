@@ -1127,10 +1127,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "maintenance-warehouse": "Maintain warehouse records and storage locations.",
   "maintenance-item": "Maintain item master records.",
   "maintenance-item-category": "Group items by category.",
-  "maintenance-item-subcategory": "Group items by subcategory.",
   "maintenance-item-sub-category": "Group items by subcategory.",
   "maintenance-item-type": "Maintain item type classifications.",
-  "maintenance-item-subtype": "Maintain item subtype classifications.",
   "maintenance-item-sub-type": "Maintain item subtype classifications.",
   "maintenance-party-management":
     "Maintain customers, suppliers, vendors, members, and employees.",

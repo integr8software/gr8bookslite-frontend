@@ -221,9 +221,9 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     "help-item-category",
     "Item Classifications",
     "/maintenance/item-management/item-category",
-    "Organize items by category, subcategory, type, and subtype.",
+    "Organize items by category/sub category and item type/sub item type.",
     [
-      "Item classifications make item lists easier to search and keep reports grouped in a meaningful way.",
+      "Category and Item Type pages show their child classifications in expandable rows, so reusable sub categories and sub item types can stay visible with their parents.",
       "Use consistent classifications so receiving, issuing, sales, purchasing, and valuation documents remain easier to filter and report.",
     ],
     ["help-item-management", "help-inventory-reports"],

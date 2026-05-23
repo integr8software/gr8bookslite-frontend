@@ -11,12 +11,16 @@ type ItemSetupTableProps = Pick<
 	ReturnType<typeof useItemSetupListPage>,
 	"isLoading" | "setPendingDeleteRecord" | "table"
 > & {
+	expandedIds: Set<string>;
 	kind: ItemSetupKind;
+	onToggleExpanded: (recordId: string) => void;
 };
 
 export function ItemSetupTable({
+	expandedIds,
 	isLoading,
 	kind,
+	onToggleExpanded,
 	setPendingDeleteRecord,
 	table,
 }: ItemSetupTableProps) {
@@ -33,13 +37,13 @@ export function ItemSetupTable({
 				renderRow={({ id, original }) => (
 					<ItemSetupTableRow
 						key={id}
-						kind={kind}
-						record={original}
+						expandedIds={expandedIds}
+						row={original}
 						onDeleteRecord={setPendingDeleteRecord}
+						onToggleExpanded={onToggleExpanded}
 					/>
 				)}
 			/>
 		</div>
 	);
 }
-

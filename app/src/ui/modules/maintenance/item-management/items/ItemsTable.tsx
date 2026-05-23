@@ -23,7 +23,7 @@ export function ItemsTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No items found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[86rem]"
+				minWidthClassName="min-w-[92rem]"
 				paginationStorageKey={ItemsTablePaginationStorageKey}
 				table={table}
 				renderRow={({ id, original }) => (
@@ -37,4 +37,3 @@ export function ItemsTable({
 		</div>
 	);
 }
-

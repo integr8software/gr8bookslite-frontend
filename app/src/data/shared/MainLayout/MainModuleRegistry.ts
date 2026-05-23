@@ -105,23 +105,9 @@ export const MainModuleNavigationSections: MainNavigationSection[] = [
             "inventory",
           ),
           moduleItem(
-            "maintenance-item-subcategory",
-            "Sub Category",
-            "/maintenance/item-management/item-subcategory",
-            "maintenance.item",
-            "inventory",
-          ),
-          moduleItem(
             "maintenance-item-type",
             "Item Type",
             "/maintenance/item-management/item-type",
-            "maintenance.item",
-            "inventory",
-          ),
-          moduleItem(
-            "maintenance-item-subtype",
-            "Sub Item Type",
-            "/maintenance/item-management/item-subtype",
             "maintenance.item",
             "inventory",
           ),

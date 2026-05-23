@@ -3,7 +3,11 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ItemSetupConfigByKind } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
+import {
+	ItemSetupAllParentsValue,
+	ItemSetupConfigByKind,
+	ItemSetupParentKindByKind,
+} from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import {
 	ItemSetupInitialFormValues,
 	createItemSetupFormValues,
@@ -25,7 +29,12 @@ export function useItemSetupFormPage(kind: ItemSetupKind) {
 	const router = useRouter();
 	const store = useItemManagementStore();
 	const config = ItemSetupConfigByKind[kind];
+	const parentKind = ItemSetupParentKindByKind[kind];
+	const listHref = parentKind
+		? ItemSetupConfigByKind[parentKind].href
+		: config.href;
 	const records = store.getSetupRecords(kind);
+	const parentRecords = parentKind ? store.getSetupRecords(parentKind) : [];
 	const mode = getActionMode(pathname);
 	const existingRecord = records.find((record) => record.id === params.recordId);
 	const isReadonly = mode === "view";
@@ -60,6 +69,10 @@ export function useItemSetupFormPage(kind: ItemSetupKind) {
 		);
 	}
 
+	function handleParentIdsChange(parentIds: string[]) {
+		updateField("parentIds", parentIds);
+	}
+
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
@@ -76,7 +89,9 @@ export function useItemSetupFormPage(kind: ItemSetupKind) {
 				kind,
 				updateItemSetupRecord(existingRecord, values),
 			);
-			router.push(`${config.href}/view/${existingRecord.id}`);
+			router.push(
+				parentKind ? listHref : `${config.href}/view/${existingRecord.id}`,
+			);
 			return;
 		}
 
@@ -86,7 +101,7 @@ export function useItemSetupFormPage(kind: ItemSetupKind) {
 		}
 
 		store.addSetupRecord(kind, createItemSetupRecord(values));
-		router.push(config.href);
+		router.push(listHref);
 	}
 
 	function handleConfirmDelete() {
@@ -97,7 +112,7 @@ export function useItemSetupFormPage(kind: ItemSetupKind) {
 
 		store.deleteSetupRecord(kind, existingRecord.id);
 		setIsDeleteDialogOpen(false);
-		router.push(config.href);
+		router.push(listHref);
 	}
 
 	return {
@@ -106,12 +121,32 @@ export function useItemSetupFormPage(kind: ItemSetupKind) {
 		existingRecord,
 		handleConfirmDelete,
 		handleInputChange,
+		handleParentIdsChange,
 		handleSubmit,
 		isDeleteDialogOpen,
 		isMutating: store.isMutating,
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
+		parentKind,
+		parentOptions: parentKind
+			? [
+					{
+						description: `Reusable across all ${ItemSetupConfigByKind[
+							parentKind
+						].title.toLowerCase()} records.`,
+						label: "Default",
+						name: "All",
+						value: ItemSetupAllParentsValue,
+					},
+					...parentRecords.map((record) => ({
+						description: record.description,
+						label: record.code,
+						name: record.name,
+						value: record.id,
+					})),
+				]
+			: [],
 		setIsDeleteDialogOpen,
 		values,
 	};
@@ -128,4 +163,3 @@ function getActionMode(pathname: string): ItemActionMode {
 
 	return "add";
 }
-

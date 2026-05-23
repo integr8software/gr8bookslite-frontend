@@ -9,6 +9,8 @@ import { ItemActionButtons } from "./ItemActionButtons";
 import { ItemBundleComponentsTable } from "./ItemBundleComponentsTable";
 import { ItemFields } from "./ItemFields";
 import { ItemNotFound } from "./ItemNotFound";
+import { ItemSuppliersTable } from "./ItemSuppliersTable";
+import { ItemUomConversionsTable } from "./ItemUomConversionsTable";
 
 export function ItemsFormPage() {
 	const page = useItemsFormPage();
@@ -47,18 +49,51 @@ export function ItemsFormPage() {
 				/>
 
 				<ItemFields
+					categoryOptions={page.categoryOptions}
 					errors={page.errors}
 					isReadonly={page.isReadonly}
+					statusOptions={page.statusOptions}
+					subcategoryOptions={page.subcategoryOptions}
+					subtypeOptions={page.subtypeOptions}
+					typeOptions={page.typeOptions}
+					uomOptions={page.uomOptions}
 					values={page.values}
+					warehouseOptions={page.warehouseOptions}
+					onAddTag={page.addTag}
+					onFieldChange={page.updateField}
 					onInputChange={page.handleInputChange}
+					onRemoveTag={page.removeTag}
 				/>
+
+				<ItemSuppliersTable
+					error={page.errors.suppliers}
+					isReadonly={page.isReadonly}
+					supplierOptions={page.supplierOptions}
+					suppliers={page.values.suppliers}
+					onAddSupplier={page.addSupplier}
+					onReorderSupplier={page.reorderSupplier}
+					onRemoveSupplier={page.removeSupplier}
+					onUpdateSupplier={page.updateSupplier}
+				/>
+
+				{!page.values.supportsBundle ? (
+					<ItemUomConversionsTable
+						conversions={page.values.uomConversions}
+						isReadonly={page.isReadonly}
+						onAddConversion={page.addUomConversion}
+						onRemoveConversion={page.removeUomConversion}
+						onUpdateConversion={page.updateUomConversion}
+					/>
+				) : null}
 
 				{page.values.supportsBundle ? (
 					<ItemBundleComponentsTable
 						components={page.values.bundleComponents}
 						error={page.errors.bundleComponents}
 						isReadonly={page.isReadonly}
+						itemOptions={page.bundleComponentItemOptions}
 						onAddComponent={page.addBundleComponent}
+						onReorderComponent={page.reorderBundleComponent}
 						onRemoveComponent={page.removeBundleComponent}
 						onUpdateComponent={page.updateBundleComponent}
 					/>
@@ -78,4 +113,3 @@ export function ItemsFormPage() {
 		</>
 	);
 }
-

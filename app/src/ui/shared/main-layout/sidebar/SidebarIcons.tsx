@@ -108,8 +108,6 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"maintenance-item-type": Package,
 	"maintenance-item-sub-type": Package,
 	"maintenance-items": Package,
-	"maintenance-item-subcategory": Tags,
-	"maintenance-item-subtype": Package,
 	"maintenance-party-management": Users,
 	"maintenance-party": Users,
 	"cash-disbursement-voucher": FileCheck2,

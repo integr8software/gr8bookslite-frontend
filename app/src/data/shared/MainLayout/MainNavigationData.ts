@@ -299,23 +299,9 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
             "inventory",
           ),
           child(
-            "maintenance-item-subcategory",
-            "Sub Category",
-            "/maintenance/item-management/item-subcategory",
-            "maintenance.item",
-            "inventory",
-          ),
-          child(
             "maintenance-item-type",
             "Item Type",
             "/maintenance/item-management/item-type",
-            "maintenance.item",
-            "inventory",
-          ),
-          child(
-            "maintenance-item-subtype",
-            "Sub Item Type",
-            "/maintenance/item-management/item-subtype",
             "maintenance.item",
             "inventory",
           ),

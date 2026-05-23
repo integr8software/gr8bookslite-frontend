@@ -1,25 +1,45 @@
 import type { ChangeEventHandler, ReactNode } from "react";
-import { ItemStatusOptions } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
+import {
+	ItemSetupAllParentsValue,
+	ItemSetupConfigByKind,
+	ItemStatusOptions,
+} from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import type {
 	ItemSetupFormErrors,
 	ItemSetupFormValues,
+	ItemSetupKind,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
+import {
+	AppAdvancedDropdown,
+	type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type ItemSetupFieldsProps = {
 	errors: ItemSetupFormErrors;
 	isReadonly: boolean;
+	parentKind?: ItemSetupKind;
+	parentOptions: AppAdvancedDropdownOption[];
 	values: ItemSetupFormValues;
 	onInputChange: ChangeEventHandler<
 		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 	>;
+	onParentIdsChange: (parentIds: string[]) => void;
 };
 
 export function ItemSetupFields({
 	errors,
 	isReadonly,
 	onInputChange,
+	onParentIdsChange,
+	parentKind,
+	parentOptions,
 	values,
 }: ItemSetupFieldsProps) {
+	const selectedParentIds =
+		parentKind && values.parentIds.length === 0
+			? [ItemSetupAllParentsValue]
+			: values.parentIds;
+
 	return (
 		<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
 			<div className="grid gap-4 lg:grid-cols-2">
@@ -58,6 +78,40 @@ export function ItemSetupFields({
 						))}
 					</select>
 				</FormField>
+				{parentKind ? (
+					<FormField
+						label={`Applies To ${ItemSetupConfigByKind[parentKind].title}`}
+						error={errors.parentIds}
+					>
+						<AppAdvancedDropdown
+							isClearable
+							options={parentOptions}
+							placeholder={`Reusable across all ${ItemSetupConfigByKind[
+								parentKind
+							].title.toLowerCase()} records`}
+							readOnly={isReadonly}
+							searchPlaceholder="Search parent records"
+							selectionMode="multiple"
+							value={selectedParentIds}
+							onChange={(nextValue) => {
+								const parentIds = Array.isArray(nextValue)
+									? nextValue
+									: [nextValue];
+
+								onParentIdsChange(
+									parentIds.filter(
+										(parentId) => parentId !== ItemSetupAllParentsValue,
+									),
+								);
+							}}
+							onSelectOption={(option) => {
+								if (option.value === ItemSetupAllParentsValue) {
+									onParentIdsChange([]);
+								}
+							}}
+						/>
+					</FormField>
+				) : null}
 				<FormField label="Description" error={errors.description}>
 					<textarea
 						name="description"
@@ -101,5 +155,4 @@ function FormField({
 }
 
 const fieldClassName =
-	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5 read-only:bg-darknavy/[0.03]";
-
+	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy read-only:bg-offwhite/65";

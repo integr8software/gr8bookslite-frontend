@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
 import { ItemSubtypeListPage } from "@/app/src/ui/modules/maintenance/item-management/item-subtype/ItemSubtypeListPage";
 
-const PageTitle = "Item Subtype";
+const PageTitle = "Item Type";
 
 export const metadata: Metadata = {
   title: `${PageTitle} | ${AppName}`,

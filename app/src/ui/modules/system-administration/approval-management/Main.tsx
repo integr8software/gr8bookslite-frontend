@@ -1,3 +1,5 @@
+import { ApprovalManagementListPage } from "./ApprovalManagementListPage";
+
 export function ApprovalManagementMain() {
-  return null;
+	return <ApprovalManagementListPage />;
 }

@@ -55,8 +55,11 @@ export function ItemSetupFormPage({ kind }: { kind: ItemSetupKind }) {
 				<ItemSetupFields
 					errors={page.errors}
 					isReadonly={page.isReadonly}
+					parentKind={page.parentKind}
+					parentOptions={page.parentOptions}
 					values={page.values}
 					onInputChange={page.handleInputChange}
+					onParentIdsChange={page.handleParentIdsChange}
 				/>
 			</form>
 
@@ -73,4 +76,3 @@ export function ItemSetupFormPage({ kind }: { kind: ItemSetupKind }) {
 		</>
 	);
 }
-

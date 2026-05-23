@@ -15,9 +15,11 @@ import {
 	useMemo,
 	useRef,
 	useState,
+	type CSSProperties,
 	type KeyboardEvent,
 	type MouseEvent as ReactMouseEvent,
 } from "react";
+import { createPortal } from "react-dom";
 
 export type AppAdvancedDropdownOption = {
 	children?: AppAdvancedDropdownOption[];
@@ -44,6 +46,7 @@ type AppAdvancedDropdownProps = {
 	isClearable?: boolean;
 	isSearchable?: boolean;
 	name?: string;
+	menuPortal?: boolean;
 	options: AppAdvancedDropdownOption[];
 	placeholder?: string;
 	readOnly?: boolean;
@@ -63,6 +66,7 @@ export function AppAdvancedDropdown({
 	id,
 	isClearable = true,
 	isSearchable = true,
+	menuPortal = false,
 	name,
 	options,
 	placeholder = "Select option",
@@ -80,6 +84,8 @@ export function AppAdvancedDropdown({
 	const [isOpen, setIsOpen] = useState(false);
 	const [query, setQuery] = useState("");
 	const [activeOptionValue, setActiveOptionValue] = useState("");
+	const [portalStyle, setPortalStyle] = useState<CSSProperties>({});
+	const menuRef = useRef<HTMLDivElement>(null);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const selectedValues = useMemo(
 		() => (Array.isArray(value) ? value : value ? [value] : []),
@@ -118,7 +124,7 @@ export function AppAdvancedDropdown({
 		[visibleOptions, listboxId],
 	);
 	const hasOptions = filteredOptions.length > 0;
-	const isDisabled = disabled || readOnly;
+	const isInteractionLocked = disabled || readOnly;
 	const isMultiple = selectionMode === "multiple";
 	const hasActiveOption = selectableOptions.some(
 		(option) => option.value === activeOptionValue,
@@ -142,7 +148,12 @@ export function AppAdvancedDropdown({
 		}
 
 		function handlePointerDown(event: MouseEvent) {
-			if (!rootRef.current?.contains(event.target as Node)) {
+			const target = event.target as Node;
+
+			if (
+				!rootRef.current?.contains(target) &&
+				!menuRef.current?.contains(target)
+			) {
 				setIsOpen(false);
 			}
 		}
@@ -155,6 +166,35 @@ export function AppAdvancedDropdown({
 	}, [isOpen]);
 
 	useEffect(() => {
+		if (!isOpen || !menuPortal) {
+			return;
+		}
+
+		function updatePortalStyle() {
+			const rect = rootRef.current?.getBoundingClientRect();
+
+			if (!rect) {
+				return;
+			}
+
+			setPortalStyle({
+				left: rect.left,
+				top: rect.bottom + 4,
+				width: rect.width,
+			});
+		}
+
+		updatePortalStyle();
+		window.addEventListener("resize", updatePortalStyle);
+		window.addEventListener("scroll", updatePortalStyle, true);
+
+		return () => {
+			window.removeEventListener("resize", updatePortalStyle);
+			window.removeEventListener("scroll", updatePortalStyle, true);
+		};
+	}, [isOpen, menuPortal]);
+
+	useEffect(() => {
 		if (!isOpen || !activeOptionId) {
 			return;
 		}
@@ -165,7 +205,7 @@ export function AppAdvancedDropdown({
 	}, [activeOptionId, isOpen]);
 
 	function openOptions() {
-		if (isDisabled) {
+		if (isInteractionLocked) {
 			return;
 		}
 
@@ -185,7 +225,7 @@ export function AppAdvancedDropdown({
 	}
 
 	function showOptions(nextActiveValue?: string) {
-		if (isDisabled) {
+		if (isInteractionLocked) {
 			return;
 		}
 
@@ -216,7 +256,7 @@ export function AppAdvancedDropdown({
 	}
 
 	function handleComboboxKeyDown(event: KeyboardEvent<HTMLElement>) {
-		if (isDisabled) {
+		if (isInteractionLocked) {
 			return;
 		}
 
@@ -279,7 +319,7 @@ export function AppAdvancedDropdown({
 	}
 
 	function selectOption(option: AppAdvancedDropdownOption) {
-		if (isDisabled || option.disabled) {
+		if (isInteractionLocked || option.disabled) {
 			return;
 		}
 
@@ -299,7 +339,7 @@ export function AppAdvancedDropdown({
 	}
 
 	function removeOption(optionValue: string) {
-		if (isDisabled) {
+		if (isInteractionLocked) {
 			return;
 		}
 
@@ -312,12 +352,83 @@ export function AppAdvancedDropdown({
 	}
 
 	function clearSelection() {
-		if (isDisabled) {
+		if (isInteractionLocked) {
 			return;
 		}
 
 		onChange(selectionMode === "multiple" ? [] : "");
 	}
+
+	const menu = isOpen ? (
+		<div
+			ref={menuRef}
+			id={listboxId}
+			role="listbox"
+			aria-multiselectable={selectionMode === "multiple"}
+			style={menuPortal ? portalStyle : undefined}
+			className={joinClasses(
+				menuPortal ? "fixed" : "absolute",
+				"z-40 mt-1 w-full overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.14)]",
+			)}
+		>
+			{addAction ? (
+				<button
+					type="button"
+					disabled={addAction.disabled}
+					onClick={() => {
+						addAction.onClick();
+						setIsOpen(false);
+					}}
+					className="flex w-full items-center gap-2 border-b border-darknavy/10 px-3 py-2.5 text-left text-sm font-semibold text-skyblue transition hover:bg-skyblue/10 disabled:cursor-not-allowed disabled:opacity-45"
+				>
+					<Plus className="h-4 w-4" aria-hidden="true" />
+					{addAction.label}
+				</button>
+			) : null}
+			{isSearchable ? (
+				<div className="border-b border-darknavy/10 p-2">
+					<div className="flex h-10 items-center gap-2 rounded-md border border-darknavy/10 px-2.5">
+						<Search
+							className="h-4 w-4 text-darknavy/35"
+							aria-hidden="true"
+						/>
+						<input
+							value={query}
+							onChange={(event) => setQuery(event.target.value)}
+							onKeyDown={handleComboboxKeyDown}
+							aria-controls={listboxId}
+							aria-activedescendant={activeOptionId}
+							className="h-full min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none placeholder:text-darknavy/35"
+							placeholder={searchPlaceholder}
+							autoFocus
+						/>
+					</div>
+				</div>
+			) : null}
+			<div className="grid max-h-64 gap-1 overflow-y-auto p-2">
+				{hasOptions ? (
+					filteredOptions.map((option) => (
+						<OptionRow
+							key={option.value}
+							activeValue={effectiveActiveOptionValue}
+							getOptionId={(visibleOption) =>
+								optionIdByValue.get(visibleOption.value)
+							}
+							level={0}
+							option={option}
+							selectedValues={selectedValueSet}
+							onActive={setActiveOptionValue}
+							onSelect={selectOption}
+						/>
+					))
+				) : (
+					<div className="px-3 py-6 text-center text-sm text-darknavy/45">
+						{emptyMessage}
+					</div>
+				)}
+			</div>
+		</div>
+	) : null;
 
 	return (
 		<div ref={rootRef} className={joinClasses("relative", className)}>
@@ -333,17 +444,19 @@ export function AppAdvancedDropdown({
 				role="combobox"
 				aria-controls={listboxId}
 				aria-activedescendant={isOpen ? activeOptionId : undefined}
-				aria-disabled={isDisabled}
+				aria-disabled={isInteractionLocked}
 				aria-expanded={isOpen}
 				aria-haspopup="listbox"
-				tabIndex={isDisabled ? -1 : 0}
+				tabIndex={isInteractionLocked ? -1 : 0}
 				onClick={handleControlClick}
 				onKeyDown={handleComboboxKeyDown}
 				className={joinClasses(
 					"app-disabled-control w-full rounded-lg border border-darknavy/10 bg-white text-sm text-darknavy outline-none transition",
 					isMultiple ? "min-h-11 px-2 py-1.5" : "h-11 px-3",
-					isDisabled
+					disabled
 						? "pointer-events-none cursor-not-allowed border-darknavy/10 bg-darknavy/[0.035] text-darknavy/35 shadow-none"
+						: readOnly
+							? "pointer-events-none cursor-default border-darknavy/10 bg-offwhite/65 text-darknavy shadow-none"
 						: "cursor-pointer focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",
 				)}
 			>
@@ -366,14 +479,14 @@ export function AppAdvancedDropdown({
 								selectedOptions.map((option) => (
 									<SelectionChip
 										key={option.value}
-										disabled={isDisabled}
+										disabled={disabled}
 										option={option}
 										onRemove={() => removeOption(option.value)}
 									/>
 								))
 							) : (
 								<SelectedSingle
-									disabled={isDisabled}
+									disabled={disabled}
 									option={selectedOptions[0]}
 									showDetails={showSelectedDetails}
 								/>
@@ -383,14 +496,16 @@ export function AppAdvancedDropdown({
 								className={joinClasses(
 									"px-0.5 text-darknavy/35",
 									isMultiple ? "py-1.5" : "py-1",
-									isDisabled && "text-darknavy/35",
+									disabled && "text-darknavy/35",
 								)}
 							>
 								{placeholder}
 							</span>
 						)}
 					</div>
-					{selectedValues.length > 0 && isClearable && !isDisabled ? (
+					{selectedValues.length > 0 &&
+					isClearable &&
+					!isInteractionLocked ? (
 						<button
 							type="button"
 							disabled={disabled}
@@ -409,78 +524,16 @@ export function AppAdvancedDropdown({
 						className={joinClasses(
 							"pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/40 transition",
 							isOpen && "rotate-180",
-							isDisabled && "text-darknavy/35",
+							disabled && "text-darknavy/35",
 						)}
 						aria-hidden="true"
 					/>
 				</div>
 			</div>
 
-			{isOpen ? (
-				<div
-					id={listboxId}
-					role="listbox"
-					aria-multiselectable={selectionMode === "multiple"}
-					className="absolute z-40 mt-1 w-full overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.14)]"
-				>
-					{addAction ? (
-						<button
-							type="button"
-							disabled={addAction.disabled}
-							onClick={() => {
-								addAction.onClick();
-								setIsOpen(false);
-							}}
-							className="flex w-full items-center gap-2 border-b border-darknavy/10 px-3 py-2.5 text-left text-sm font-semibold text-skyblue transition hover:bg-skyblue/10 disabled:cursor-not-allowed disabled:opacity-45"
-						>
-							<Plus className="h-4 w-4" aria-hidden="true" />
-							{addAction.label}
-						</button>
-					) : null}
-					{isSearchable ? (
-						<div className="border-b border-darknavy/10 p-2">
-							<div className="flex h-10 items-center gap-2 rounded-md border border-darknavy/10 px-2.5">
-								<Search
-									className="h-4 w-4 text-darknavy/35"
-									aria-hidden="true"
-								/>
-								<input
-									value={query}
-									onChange={(event) => setQuery(event.target.value)}
-									onKeyDown={handleComboboxKeyDown}
-									aria-controls={listboxId}
-									aria-activedescendant={activeOptionId}
-									className="h-full min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none placeholder:text-darknavy/35"
-									placeholder={searchPlaceholder}
-									autoFocus
-								/>
-							</div>
-						</div>
-					) : null}
-					<div className="grid max-h-64 gap-1 overflow-y-auto p-2">
-						{hasOptions ? (
-							filteredOptions.map((option) => (
-								<OptionRow
-									key={option.value}
-									activeValue={effectiveActiveOptionValue}
-									getOptionId={(visibleOption) =>
-										optionIdByValue.get(visibleOption.value)
-									}
-									level={0}
-									option={option}
-									selectedValues={selectedValueSet}
-									onActive={setActiveOptionValue}
-									onSelect={selectOption}
-								/>
-							))
-						) : (
-							<div className="px-3 py-6 text-center text-sm text-darknavy/45">
-								{emptyMessage}
-							</div>
-						)}
-					</div>
-				</div>
-			) : null}
+			{menuPortal && menu && typeof document !== "undefined"
+				? createPortal(menu, document.body)
+				: menu}
 		</div>
 	);
 }

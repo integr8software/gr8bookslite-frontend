@@ -39,12 +39,16 @@ export function useItemsListPage() {
 		return items.filter((item) =>
 			[
 				item.code,
+				item.skuCode,
 				item.name,
 				item.category,
 				item.subcategory,
 				item.type,
 				item.subtype,
-				item.trackingType,
+				item.brand,
+				item.barcode,
+				item.supplier,
+				...(item.suppliers ?? []).map((supplier) => supplier.supplier),
 				item.status,
 			]
 				.join(" ")
@@ -115,11 +119,11 @@ function createItemColumn(
 	header: string,
 	className: string,
 ): ColumnDef<ItemRecord> {
-	if (key === "supportsBundle") {
+	if (key === "sellingPrice") {
 		return {
 			id: key,
 			header,
-			accessorFn: (item) => (item.supportsBundle ? "Yes" : "No"),
+			accessorFn: (item) => item.sellingPrice,
 			sortingFn: "alphanumeric",
 			meta: { className },
 		};
@@ -132,4 +136,3 @@ function createItemColumn(
 		meta: { className },
 	};
 }
-

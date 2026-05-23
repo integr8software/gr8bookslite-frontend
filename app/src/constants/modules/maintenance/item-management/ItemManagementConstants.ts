@@ -3,8 +3,8 @@ import type {
 	ItemSetupTableColumnKey,
 	ItemStatus,
 	ItemTableColumnKey,
-	ItemTrackingType,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
+import { SystemUomOptions, SystemUomRows } from "@/app/src/data/shared/UomData";
 
 export const ItemsHref = "/maintenance/item-management/items";
 export const ItemCategoryHref = "/maintenance/item-management/item-category";
@@ -15,13 +15,24 @@ export const ItemSubtypeHref = "/maintenance/item-management/item-subtype";
 
 export const ItemStatusOptions: ItemStatus[] = ["Active", "Inactive"];
 
-export const ItemTrackingTypeOptions: ItemTrackingType[] = [
-	"Inventory",
-	"Non-Inventory",
-	"Service",
-];
+export const ItemUomDictionary = SystemUomRows;
+export const ItemUomOptions = SystemUomOptions;
 
-export const ItemUomOptions = ["PC", "BOX", "SET", "REAM", "ROLL"] as const;
+export const ItemSetupAllParentsValue = "__all_parents__";
+export const ItemSetupAllParentsRecordId = "item-setup-all-parents";
+
+export const ItemSupplierOptions = [
+	"TechSource Inc.",
+	"Global Supply Co.",
+	"Prime Distributors",
+	"Northline Trading",
+] as const;
+
+export const ItemWarehouseOptions = [
+	"Main Warehouse",
+	"North Branch Warehouse",
+	"South Satellite Storage",
+] as const;
 
 export const ItemsTablePaginationStorageKey = "maintenance.item-management.items";
 
@@ -45,11 +56,12 @@ export const ItemsTableColumns: Array<
 	  }
 > = [
 	{ key: "code", label: "Item Code", className: "w-[10rem]" },
-	{ key: "name", label: "Item", className: "w-[18rem]" },
+	{ key: "skuCode", label: "SKU", className: "w-[10rem]" },
+	{ key: "name", label: "Item", className: "w-[16rem]" },
 	{ key: "category", label: "Category", className: "w-[12rem]" },
 	{ key: "type", label: "Type", className: "w-[12rem]" },
-	{ key: "trackingType", label: "Tracking", className: "w-[11rem]" },
-	{ key: "supportsBundle", label: "Bundle", className: "w-[8rem]" },
+	{ key: "uom", label: "UOM", className: "w-[8rem]" },
+	{ key: "sellingPrice", label: "Selling Price", className: "w-[10rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
 	{ id: "actions", label: "Actions", className: "w-[10rem]" },
 ];
@@ -68,9 +80,25 @@ export const ItemSetupTableColumns: Array<
 > = [
 	{ key: "code", label: "Code", className: "w-[11rem]" },
 	{ key: "name", label: "Name", className: "w-[18rem]" },
+	{ key: "recordKindLabel", label: "Level", className: "w-[10rem]" },
+	{ key: "appliesToLabel", label: "Applies To", className: "w-[18rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
 	{ id: "actions", label: "Actions", className: "w-[10rem]" },
 ];
+
+export const ItemSetupChildKindByKind: Partial<
+	Record<ItemSetupKind, ItemSetupKind>
+> = {
+	category: "subcategory",
+	type: "subtype",
+};
+
+export const ItemSetupParentKindByKind: Partial<
+	Record<ItemSetupKind, ItemSetupKind>
+> = {
+	subcategory: "category",
+	subtype: "type",
+};
 
 export const ItemSetupConfigByKind: Record<
 	ItemSetupKind,
@@ -86,28 +114,32 @@ export const ItemSetupConfigByKind: Record<
 		href: ItemCategoryHref,
 		title: "Category",
 		singularTitle: "Item Category",
-		description: "Maintain item categories used to group inventory records.",
+		description:
+			"Maintain item categories and the sub categories that can be assigned to one, many, or all categories.",
 		eyebrow: "Item setup",
 	},
 	subcategory: {
 		href: ItemSubcategoryHref,
 		title: "Sub Category",
 		singularTitle: "Item Sub Category",
-		description: "Maintain sub categories for finer item grouping.",
+		description:
+			"Maintain sub categories and choose which categories can use them.",
 		eyebrow: "Item setup",
 	},
 	type: {
 		href: ItemTypeHref,
 		title: "Item Type",
 		singularTitle: "Item Type",
-		description: "Maintain item type classifications for item records.",
+		description:
+			"Maintain item type classifications and the sub item types that can be reused across types.",
 		eyebrow: "Item setup",
 	},
 	subtype: {
 		href: ItemSubtypeHref,
 		title: "Sub Item Type",
 		singularTitle: "Sub Item Type",
-		description: "Maintain subtype classifications under item types.",
+		description:
+			"Maintain sub item types and choose which item types can use them.",
 		eyebrow: "Item setup",
 	},
 };
@@ -129,4 +161,3 @@ export const ItemsFormPageCopy = {
 			"Review item master information and bundle composition details.",
 	},
 } as const;
-

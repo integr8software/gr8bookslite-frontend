@@ -15,6 +15,9 @@ import { ItemSetupTable } from "./ItemSetupTable";
 export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 	const config = ItemSetupConfigByKind[kind];
 	const page = useItemSetupListPage(kind);
+	const childConfig = page.childKind
+		? ItemSetupConfigByKind[page.childKind]
+		: null;
 
 	return (
 		<section className="grid gap-5">
@@ -30,26 +33,45 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 					</>
 				}
 				actions={
-					<Link
-						href={`${config.href}/add`}
-						className={moduleHeaderActionClassNames.primary}
-					>
-						<Plus className="h-4 w-4" aria-hidden="true" />
-						Add {config.singularTitle}
-					</Link>
+					<>
+						{childConfig ? (
+							<Link
+								href={`${childConfig.href}/add`}
+								className={moduleHeaderActionClassNames.secondary}
+							>
+								<Plus className="h-4 w-4" aria-hidden="true" />
+								Add {childConfig.singularTitle}
+							</Link>
+						) : null}
+						<Link
+							href={`${config.href}/add`}
+							className={moduleHeaderActionClassNames.primary}
+						>
+							<Plus className="h-4 w-4" aria-hidden="true" />
+							Add {config.singularTitle}
+						</Link>
+					</>
 				}
 			/>
 			<ItemSetupTable
+				expandedIds={page.expandedIds}
 				isLoading={page.isLoading}
 				kind={kind}
 				setPendingDeleteRecord={page.setPendingDeleteRecord}
 				table={page.table}
+				onToggleExpanded={page.toggleExpanded}
 			/>
 			<AppDialog
 				isOpen={Boolean(page.pendingDeleteRecord)}
 				isPending={page.isMutating}
-				title={`Delete ${config.singularTitle.toLowerCase()}?`}
-				description={`This will remove ${page.pendingDeleteRecord?.name ?? "the selected record"}.`}
+				title={`Delete ${
+					page.pendingDeleteRecord
+						? ItemSetupConfigByKind[
+								page.pendingDeleteRecord.kind
+							].singularTitle.toLowerCase()
+						: "setup record"
+				}?`}
+				description={`This will remove ${page.pendingDeleteRecord?.record.name ?? "the selected record"}.`}
 				confirmLabel="Delete Record"
 				tone="danger"
 				onCancel={() => page.setPendingDeleteRecord(null)}
@@ -58,4 +80,3 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 		</section>
 	);
 }
-

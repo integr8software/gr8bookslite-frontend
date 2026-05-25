@@ -6,9 +6,9 @@ import {
   type BillingCycle,
   type PricingPlan,
 } from "@/app/src/data/pricing/PricingData";
-import { OnboardingPricingDesktopPlans } from "./OnboardingPricingDesktopPlans";
-import { OnboardingPricingHero } from "./OnboardingPricingHero";
-import { OnboardingPricingMobilePlans } from "./OnboardingPricingMobilePlans";
+import { OnboardingPricingDesktopPlans } from "@/app/src/ui/onboarding/OnboardingPricingDesktopPlans";
+import { OnboardingPricingHero } from "@/app/src/ui/onboarding/OnboardingPricingHero";
+import { OnboardingPricingMobilePlans } from "@/app/src/ui/onboarding/OnboardingPricingMobilePlans";
 
 type OnboardingFreeTrialStepProps = {
   handlePlanSelection: (plan: PricingPlan, billingCycle: BillingCycle) => void;

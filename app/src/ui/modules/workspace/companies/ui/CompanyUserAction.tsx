@@ -9,13 +9,13 @@ import type {
 	WorkspaceCompanyUserFormErrors,
 	WorkspaceCompanyUserFormValues,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
-import { WorkspaceCompanyActionHeader } from "./WorkspaceCompanyActionHeader";
+import { WorkspaceCompanyActionHeader } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyActionHeader";
 import {
 	WorkspaceCompanyField,
 	WorkspaceCompanyFieldClassName,
 	WorkspaceCompanySection,
-} from "./WorkspaceCompanyFormPrimitives";
-import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyFormPrimitives";
+import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
 
 const CompanyUserFormId = "workspace-company-user-form";
 

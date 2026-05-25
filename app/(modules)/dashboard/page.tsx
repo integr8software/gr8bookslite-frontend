@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/AppConstants";
-import { ManagementMain } from "@/app/src/ui/modules/dashboard/../dashboard/Main";
+import { ManagementMain } from "@/app/src/ui/modules/dashboard/Main";
 
 const PageTitle = "Dashboard";
 

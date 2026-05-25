@@ -2,14 +2,14 @@
 
 import type { ModuleDrawerPosition } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
-import { PettyCashReplenishmentCopyFromDialog } from "./CopyFromDialog";
+import { PettyCashReplenishmentCopyFromDialog } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/CopyFromDialog";
 import {
 	PettyCashReplenishmentDetailsFields,
 	PettyCashReplenishmentEntriesTable,
 	PettyCashReplenishmentSummaryFields,
 	PettyCashReplenishmentToolbar,
-} from "./PettyCashReplenishmentFormSections";
-import type { PettyCashReplenishmentFormPageState } from "./PettyCashReplenishmentFormControls";
+} from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentFormSections";
+import type { PettyCashReplenishmentFormPageState } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentFormControls";
 
 type PettyCashReplenishmentDrawerProps = {
 	isOpen: boolean;

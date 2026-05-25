@@ -5,10 +5,10 @@ import { WarehouseFormPageCopy } from "@/app/src/constants/modules/maintenance/w
 import { useWarehouseFormPage } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseFormPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { WarehouseActionButtons } from "./WarehouseActionButtons";
-import { WarehouseDetailsPanel } from "./WarehouseDetailsPanel";
-import { WarehouseFields } from "./WarehouseFields";
-import { WarehouseNotFound } from "./WarehouseNotFound";
+import { WarehouseActionButtons } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseActionButtons";
+import { WarehouseDetailsPanel } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseDetailsPanel";
+import { WarehouseFields } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseFields";
+import { WarehouseNotFound } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseNotFound";
 
 export function WarehouseFormPage() {
 	const page = useWarehouseFormPage();

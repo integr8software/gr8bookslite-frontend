@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { WarehouseManagementTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import type { useWarehouseListPage } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseListPage";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { WarehouseTableRow } from "./WarehouseTableRow";
+import { WarehouseTableRow } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseTableRow";
 
 type WarehouseTableProps = Pick<
 	ReturnType<typeof useWarehouseListPage>,

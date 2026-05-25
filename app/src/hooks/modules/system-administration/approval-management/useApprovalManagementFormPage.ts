@@ -29,7 +29,7 @@ import type {
 	ApprovalStageFormValues,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
 import { validateApprovalManagementForm } from "@/app/src/validations/modules/system-administration/approval-management/ApprovalManagementValidation";
-import { useApprovalManagementStore } from "./useApprovalManagement";
+import { useApprovalManagementStore } from "@/app/src/hooks/modules/system-administration/approval-management/useApprovalManagement";
 
 export function useApprovalManagementFormPage() {
 	const params = useParams<{ recordId?: string }>();

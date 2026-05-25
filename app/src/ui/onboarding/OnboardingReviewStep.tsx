@@ -1,7 +1,7 @@
 "use client";
 import { FormatOnboardingReportDateLabel } from "@/app/src/data/onboarding/OnboardingData";
 import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
-import { OnboardingActionRow } from "./OnboardingActionRow";
+import { OnboardingActionRow } from "@/app/src/ui/onboarding/OnboardingActionRow";
 
 type OnboardingReviewStepProps = {
   values: OnboardingValues;

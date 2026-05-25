@@ -9,7 +9,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { WarehouseTable } from "./WarehouseTable";
+import { WarehouseTable } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseTable";
 
 export function WarehouseListPage() {
 	const page = useWarehouseListPage();

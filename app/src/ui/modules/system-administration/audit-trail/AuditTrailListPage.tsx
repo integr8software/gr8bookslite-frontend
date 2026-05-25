@@ -5,7 +5,7 @@ import { useAuditTrailListPage } from "@/app/src/hooks/modules/system-administra
 import {
 	ModuleHeader,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { AuditTrailTable } from "./AuditTrailTable";
+import { AuditTrailTable } from "@/app/src/ui/modules/system-administration/audit-trail/AuditTrailTable";
 
 export function AuditTrailListPage() {
 	const page = useAuditTrailListPage();

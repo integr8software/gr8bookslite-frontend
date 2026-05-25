@@ -13,8 +13,8 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { PettyCashReplenishmentListFilters } from "./PettyCashReplenishmentListFilters";
-import { PettyCashReplenishmentTableRow } from "./PettyCashReplenishmentTableRow";
+import { PettyCashReplenishmentListFilters } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentListFilters";
+import { PettyCashReplenishmentTableRow } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTableRow";
 
 export function PettyCashReplenishmentListPage() {
   const page = usePettyCashReplenishmentListPage();

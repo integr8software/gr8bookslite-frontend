@@ -1,2 +1,2 @@
-export * from "./Main";
-export * from "./Action";
+export * from "@/app/src/ui/modules/cash-disbursement/cash-advance/Main";
+export * from "@/app/src/ui/modules/cash-disbursement/cash-advance/Action";

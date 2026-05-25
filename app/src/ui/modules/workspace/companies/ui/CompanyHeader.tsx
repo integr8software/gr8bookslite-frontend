@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Building2, Plus } from "lucide-react";
 import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { WorkspaceCompaniesActionClassName } from "./WorkspaceCompanyListPrimitives";
+import { WorkspaceCompaniesActionClassName } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyListPrimitives";
 
 export function CompanyHeader() {
 	return (

@@ -1,5 +1,5 @@
 import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
-import { ResponsibilityCenterTableRow } from "./ResponsibilityCenterTableRow";
+import { ResponsibilityCenterTableRow } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTableRow";
 
 type ResponsibilityCenterTableProps = {
 	centers: ResponsibilityCenter[];

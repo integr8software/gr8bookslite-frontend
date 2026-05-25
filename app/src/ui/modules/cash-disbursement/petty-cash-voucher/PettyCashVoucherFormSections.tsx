@@ -5,7 +5,7 @@ import {
 	inputClassName,
 	secondaryButtonClassName,
 	type PettyCashVoucherFormPageState,
-} from "./PettyCashVoucherFormControls";
+} from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherFormControls";
 
 export function PettyCashVoucherDetailsFields({
 	page,

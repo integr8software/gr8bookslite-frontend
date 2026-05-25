@@ -9,8 +9,8 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { TransactionNumberSetupForm } from "./TransactionNumberSetupForm";
-import { TransactionNumberSetupNotFound } from "./TransactionNumberSetupNotFound";
+import { TransactionNumberSetupForm } from "@/app/src/ui/modules/system-administration/transaction-number-setup/TransactionNumberSetupForm";
+import { TransactionNumberSetupNotFound } from "@/app/src/ui/modules/system-administration/transaction-number-setup/TransactionNumberSetupNotFound";
 
 export function TransactionNumberSetupFormPage() {
 	return (

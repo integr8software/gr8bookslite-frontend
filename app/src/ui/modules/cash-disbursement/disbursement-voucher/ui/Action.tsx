@@ -48,8 +48,8 @@ import type {
   DisbursementVoucherRecord,
   WorkflowStep,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import { DisbursementVoucherActionHeader } from "./DisbursementVoucherActionHeader";
-import { DisbursementVoucherNotFound } from "./DisbursementVoucherNotFound";
+import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherActionHeader";
+import { DisbursementVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherNotFound";
 
 const FieldInputClassName =
   "h-12 w-full rounded-2xl border border-darknavy/12 bg-white px-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:bg-skyblue/6";

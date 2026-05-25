@@ -23,7 +23,7 @@ import type {
 	ApprovalManagementStatus,
 	ApprovalManagementTableColumnKey,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
-import { useApprovalManagementStore } from "./useApprovalManagement";
+import { useApprovalManagementStore } from "@/app/src/hooks/modules/system-administration/approval-management/useApprovalManagement";
 
 export function useApprovalManagementListPage() {
 	const {

@@ -9,7 +9,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ItemsTable } from "./ItemsTable";
+import { ItemsTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemsTable";
 
 export function ItemsListPage() {
 	const page = useItemsListPage();

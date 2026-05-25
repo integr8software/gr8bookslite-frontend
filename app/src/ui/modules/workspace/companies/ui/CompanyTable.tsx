@@ -32,7 +32,7 @@ import {
 	WorkspacePlanBadge,
 	WorkspaceStatusBadge,
 	WorkspaceTextBadge,
-} from "./WorkspaceCompanyBadges";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyBadges";
 import {
 	WorkspaceCompaniesFilterBar,
 	WorkspaceCompaniesFilterSelect,
@@ -40,7 +40,7 @@ import {
 	WorkspaceCompaniesResetButton,
 	WorkspaceCompaniesSearchInput,
 	WorkspaceCompaniesTableCell,
-} from "./WorkspaceCompanyListPrimitives";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyListPrimitives";
 
 export function CompanyTable({
 	branches,

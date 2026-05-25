@@ -1,7 +1,7 @@
 import { formatTransactionNumber } from "@/app/src/services/modules/system-administration/transaction-number-setup/TransactionNumberGenerationService";
 import { formatBranchScopeLabel } from "@/app/src/services/modules/system-administration/transaction-number-setup/TransactionNumberSetupFormatters";
 import type { TransactionNumberSetupRecord } from "@/app/src/types/modules/system-administration/transaction-number-setup/TransactionNumberSetupTypes";
-import { TransactionNumberSetupRecordActions } from "./TransactionNumberSetupRecordActions";
+import { TransactionNumberSetupRecordActions } from "@/app/src/ui/modules/system-administration/transaction-number-setup/TransactionNumberSetupRecordActions";
 
 type TransactionNumberSetupTableRowProps = {
 	branchNameById: Map<string, string>;

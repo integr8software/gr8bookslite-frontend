@@ -8,6 +8,206 @@ import type {
 import { flattenSections } from "@/app/src/data/shared/MainLayout/ModuleShellUtils";
 import { MainModuleNavigationSections } from "@/app/src/data/shared/MainLayout/MainModuleRegistry";
 
+export const MainMasterNavigationSections: MainNavigationSection[] = [
+  {
+    key: "master-overview-section",
+    title: "Overview",
+    href: "/master/dashboard",
+    icon: "dashboard",
+    accessKey: "workspace.overview",
+    items: [
+      item(
+        "master-dashboard",
+        "Dashboard",
+        "/master/dashboard",
+        "workspace.dashboard",
+      ),
+      item(
+        "master-activity-feed",
+        "Activity Feed",
+        "/master/activity-feed",
+        "workspace.activity",
+      ),
+    ],
+  },
+  {
+    key: "master-company-administration",
+    title: "Company Administration",
+    icon: "branch",
+    accessKey: "workspace.companies",
+    items: [
+      item(
+        "master-companies",
+        "Company Management",
+        "/master/companies",
+        "workspace.companies",
+      ),
+      item(
+        "master-users-roles",
+        "User Management",
+        "/master/users-roles",
+        "workspace.users",
+      ),
+    ],
+  },
+  {
+    key: "master-subscription-billing",
+    title: "Subscription & Billing",
+    icon: "billing",
+    accessKey: "workspace.billing.plans",
+    items: [
+      item(
+        "master-plans-packages",
+        "Plans & Packages",
+        "/master/plans-packages",
+        "workspace.billing.plans",
+      ),
+      item(
+        "master-subscriptions",
+        "Subscriptions",
+        "/master/subscriptions",
+        "workspace.billing.subscriptions",
+      ),
+      item(
+        "master-invoices",
+        "Invoices",
+        "/master/invoices",
+        "workspace.billing.invoices",
+      ),
+      item(
+        "master-coupons-promotions",
+        "Coupons & Promotions",
+        "/master/coupons-promotions",
+        "workspace.billing.promotions",
+      ),
+    ],
+  },
+  {
+    key: "master-platform-configuration",
+    title: "Platform Configuration",
+    icon: "settings",
+    accessKey: "workspace.platform.modules",
+    items: [
+      item(
+        "master-modules-features",
+        "Modules & Features",
+        "/master/modules-features",
+        "workspace.platform.modules",
+      ),
+      item(
+        "master-domains-ports",
+        "Domains & Ports",
+        "/master/domains-ports",
+        "workspace.platform.domains",
+      ),
+      item(
+        "master-integrations",
+        "Integrations",
+        "/master/integrations",
+        "workspace.platform.integrations",
+      ),
+      item(
+        "master-system-settings",
+        "System Settings",
+        "/master/system-settings",
+        "workspace.platform.settings",
+      ),
+    ],
+  },
+  {
+    key: "master-monitoring-security",
+    title: "Monitoring & Security",
+    icon: "security",
+    accessKey: "workspace.audit",
+    items: [
+      item(
+        "master-audit",
+        "Audit Logs",
+        "/master/audit-logs",
+        "workspace.audit",
+      ),
+      item(
+        "master-system-logs",
+        "System Logs",
+        "/master/system-logs",
+        "workspace.monitoring.logs",
+      ),
+      item(
+        "master-security-center",
+        "Security Center",
+        "/master/security-center",
+        "workspace.monitoring.security",
+      ),
+      item(
+        "master-backups",
+        "Backups",
+        "/master/backups",
+        "workspace.monitoring.backups",
+      ),
+    ],
+  },
+  {
+    key: "master-support-maintenance",
+    title: "Support & Maintenance",
+    icon: "maintenance",
+    accessKey: "workspace.support.announcements",
+    items: [
+      item(
+        "master-announcements",
+        "Announcements",
+        "/master/announcements",
+        "workspace.support.announcements",
+      ),
+      item(
+        "master-support-tickets",
+        "Support Tickets",
+        "/master/support-tickets",
+        "workspace.support.tickets",
+      ),
+      item(
+        "master-maintenance",
+        "Maintenance",
+        "/master/maintenance",
+        "workspace.support.maintenance",
+      ),
+    ],
+  },
+  {
+    key: "master-settings-section",
+    title: "Settings",
+    icon: "settings",
+    accessKey: "workspace.settings",
+    items: [
+      item(
+        "master-settings",
+        "Settings",
+        "/master/settings",
+        "workspace.settings",
+      ),
+    ],
+  },
+  {
+    key: "master-admin",
+    title: "Admin",
+    icon: "profile",
+    accessKey: "workspace.admin.companySettings",
+    items: [
+      item(
+        "master-company-settings",
+        "Company Settings",
+        "/master/company-settings",
+        "workspace.admin.companySettings",
+      ),
+      item(
+        "master-payment-methods",
+        "Payment Methods",
+        "/master/payment-methods",
+        "workspace.admin.paymentMethods",
+      ),
+    ],
+  },
+];
+
 export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
   {
     key: "workspace-overview-section",
@@ -31,37 +231,31 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
     ],
   },
   {
-    key: "workspace-tenant-management",
-    title: "Tenant Management",
+    key: "workspace-company-administration",
+    title: "Company Administration",
     icon: "branch",
     accessKey: "workspace.companies",
     items: [
       item(
         "workspace-companies",
-        "Companies",
+        "Company Management",
         "/workspace/companies",
         "workspace.companies",
       ),
       item(
         "workspace-users-roles",
-        "Users",
+        "User Management",
         "/workspace/users-roles",
         "workspace.users",
       ),
     ],
   },
   {
-    key: "workspace-subscription-billing",
-    title: "Subscription & Billing",
+    key: "workspace-billing",
+    title: "Billing",
     icon: "billing",
-    accessKey: "workspace.billing.plans",
+    accessKey: "workspace.billing.subscriptions",
     items: [
-      item(
-        "workspace-plans-packages",
-        "Plans & Packages",
-        "/workspace/plans-packages",
-        "workspace.billing.plans",
-      ),
       item(
         "workspace-subscriptions",
         "Subscriptions",
@@ -75,80 +269,16 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
         "workspace.billing.invoices",
       ),
       item(
-        "workspace-coupons-promotions",
-        "Coupons & Promotions",
-        "/workspace/coupons-promotions",
-        "workspace.billing.promotions",
+        "workspace-payment-methods",
+        "Payment Methods",
+        "/workspace/payment-methods",
+        "workspace.admin.paymentMethods",
       ),
     ],
   },
   {
-    key: "workspace-platform-configuration",
-    title: "Platform Configuration",
-    icon: "settings",
-    accessKey: "workspace.platform.modules",
-    items: [
-      item(
-        "workspace-modules-features",
-        "Modules & Features",
-        "/workspace/modules-features",
-        "workspace.platform.modules",
-      ),
-      item(
-        "workspace-domains-ports",
-        "Domains & Ports",
-        "/workspace/domains-ports",
-        "workspace.platform.domains",
-      ),
-      item(
-        "workspace-integrations",
-        "Integrations",
-        "/workspace/integrations",
-        "workspace.platform.integrations",
-      ),
-      item(
-        "workspace-system-settings",
-        "System Settings",
-        "/workspace/system-settings",
-        "workspace.platform.settings",
-      ),
-    ],
-  },
-  {
-    key: "workspace-monitoring-security",
-    title: "Monitoring & Security",
-    icon: "security",
-    accessKey: "workspace.audit",
-    items: [
-      item(
-        "workspace-audit",
-        "Audit Logs",
-        "/workspace/audit-logs",
-        "workspace.audit",
-      ),
-      item(
-        "workspace-system-logs",
-        "System Logs",
-        "/workspace/system-logs",
-        "workspace.monitoring.logs",
-      ),
-      item(
-        "workspace-security-center",
-        "Security Center",
-        "/workspace/security-center",
-        "workspace.monitoring.security",
-      ),
-      item(
-        "workspace-backups",
-        "Backups",
-        "/workspace/backups",
-        "workspace.monitoring.backups",
-      ),
-    ],
-  },
-  {
-    key: "workspace-support-maintenance",
-    title: "Support & Maintenance",
+    key: "workspace-support",
+    title: "Support",
     icon: "maintenance",
     accessKey: "workspace.support.announcements",
     items: [
@@ -164,12 +294,6 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
         "/workspace/support-tickets",
         "workspace.support.tickets",
       ),
-      item(
-        "workspace-maintenance",
-        "Maintenance",
-        "/workspace/maintenance",
-        "workspace.support.maintenance",
-      ),
     ],
   },
   {
@@ -183,26 +307,6 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
         "Settings",
         "/workspace/settings",
         "workspace.settings",
-      ),
-    ],
-  },
-  {
-    key: "workspace-admin",
-    title: "Admin",
-    icon: "profile",
-    accessKey: "workspace.admin.companySettings",
-    items: [
-      item(
-        "workspace-company-settings",
-        "Company Settings",
-        "/workspace/company-settings",
-        "workspace.admin.companySettings",
-      ),
-      item(
-        "workspace-payment-methods",
-        "Payment Methods",
-        "/workspace/payment-methods",
-        "workspace.admin.paymentMethods",
       ),
     ],
   },
@@ -922,6 +1026,9 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
 ];
 
 export const MainNavigationSections = MainCompanyNavigationSections;
+export const MainMasterSearchItems = flattenSections(
+  MainMasterNavigationSections,
+);
 export const MainWorkspaceSearchItems = flattenSections(
   MainWorkspaceNavigationSections,
 );

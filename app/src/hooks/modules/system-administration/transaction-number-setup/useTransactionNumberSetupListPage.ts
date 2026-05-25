@@ -18,7 +18,7 @@ import type {
 	TransactionNumberSetupRecord,
 	TransactionNumberSetupTableColumnKey,
 } from "@/app/src/types/modules/system-administration/transaction-number-setup/TransactionNumberSetupTypes";
-import { useTransactionNumberSetupStore } from "./useTransactionNumberSetup";
+import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetup";
 
 export function useTransactionNumberSetupListPage() {
 	const {

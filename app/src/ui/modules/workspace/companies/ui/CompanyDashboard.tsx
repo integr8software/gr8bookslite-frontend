@@ -19,8 +19,8 @@ import {
 	WorkspacePlanBadge,
 	WorkspaceStatusBadge,
 	WorkspaceTextBadge,
-} from "./WorkspaceCompanyBadges";
-import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyBadges";
+import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
 
 export function WorkspaceCompanyDashboard() {
 	const {

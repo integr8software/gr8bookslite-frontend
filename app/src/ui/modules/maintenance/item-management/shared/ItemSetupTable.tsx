@@ -5,7 +5,7 @@ import { ItemSetupTablePaginationStorageKeys } from "@/app/src/constants/modules
 import type { useItemSetupListPage } from "@/app/src/hooks/modules/maintenance/item-management/useItemSetupListPage";
 import type { ItemSetupKind } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { ItemSetupTableRow } from "./ItemSetupTableRow";
+import { ItemSetupTableRow } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupTableRow";
 
 type ItemSetupTableProps = Pick<
 	ReturnType<typeof useItemSetupListPage>,

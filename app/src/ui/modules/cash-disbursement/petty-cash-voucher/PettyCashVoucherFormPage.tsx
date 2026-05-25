@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { PettyCashVoucherHref } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { usePettyCashVoucherFormPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherFormPage";
-import { PettyCashVoucherDrawer } from "./PettyCashVoucherDrawer";
-import { PettyCashVoucherListPage } from "./PettyCashVoucherListPage";
-import { PettyCashVoucherNotFound } from "./PettyCashVoucherNotFound";
+import { PettyCashVoucherDrawer } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherDrawer";
+import { PettyCashVoucherListPage } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherListPage";
+import { PettyCashVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherNotFound";
 
 export function PettyCashVoucherFormPage() {
 	const router = useRouter();

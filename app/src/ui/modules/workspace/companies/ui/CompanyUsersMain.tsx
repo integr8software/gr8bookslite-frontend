@@ -12,8 +12,8 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
-import { CompanyUsersTable } from "./CompanyUsersTable";
+import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
+import { CompanyUsersTable } from "@/app/src/ui/modules/workspace/companies/ui/CompanyUsersTable";
 
 export function WorkspaceCompanyUsersMain() {
 	const { company, companyUsers, isLoading } = useWorkspaceCompanyContext();

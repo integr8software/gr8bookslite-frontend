@@ -8,9 +8,9 @@ import {
   MenuSeparator,
   ProfileMenuButton,
   ProfileMenuLink,
-} from "./MenuPrimitives";
-import { TopbarProfileSkeleton } from "./TopbarSkeletons";
-import { UserAvatar } from "./UserAvatar";
+} from "@/app/src/ui/shared/main-layout/main-topbar/MenuPrimitives";
+import { TopbarProfileSkeleton } from "@/app/src/ui/shared/main-layout/main-topbar/TopbarSkeletons";
+import { UserAvatar } from "@/app/src/ui/shared/main-layout/main-topbar/UserAvatar";
 
 type AccountMenuProps = {
   activeNavigationScope: MainNavigationScope;
@@ -72,9 +72,11 @@ export function AccountMenu({
         >
           <AccountDetails
             companyName={
-              activeNavigationScope === "workspace"
-                ? "Workspace"
-                : currentCompany.name
+              activeNavigationScope === "master"
+                ? "Master"
+                : activeNavigationScope === "workspace"
+                  ? "Workspace"
+                  : currentCompany.name
             }
             currentUser={currentUser}
           />

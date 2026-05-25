@@ -11,7 +11,7 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { DiscountManagementTable } from "./DiscountManagementTable";
+import { DiscountManagementTable } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementTable";
 
 export function DiscountManagementListPage() {
   const discounts = useDiscountManagementStore((state) => state.discounts);

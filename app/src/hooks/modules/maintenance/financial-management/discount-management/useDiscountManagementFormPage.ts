@@ -23,7 +23,7 @@ import type {
 	DiscountManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
 import { validateDiscountManagementForm } from "@/app/src/validations/modules/maintenance/financial-management/discount-management/DiscountManagementValidation";
-import { useDiscountManagementStore } from "./useDiscountManagement";
+import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagement";
 
 export function useDiscountManagementFormPage() {
 	const router = useRouter();

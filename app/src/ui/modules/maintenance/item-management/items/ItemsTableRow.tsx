@@ -1,5 +1,5 @@
 import type { ItemRecord } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
-import { ItemRecordActions } from "./ItemRecordActions";
+import { ItemRecordActions } from "@/app/src/ui/modules/maintenance/item-management/items/ItemRecordActions";
 
 type ItemsTableRowProps = {
 	item: ItemRecord;

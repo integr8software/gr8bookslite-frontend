@@ -10,15 +10,18 @@ import type {
   MainBreadcrumb,
   MainBreadcrumbDropdownItem,
 } from "@/app/src/types/shared/MainLayoutTypes";
-import { MainFooter } from "./MainFooter";
-import { MainNavigationProgress } from "./NavigationProgress";
-import { MainNotificationsPanel } from "./notifications-panel/NotificationsPanel";
-import { MainSidebar } from "./sidebar/Sidebar";
-import { MainTopbar } from "./main-topbar/MainTopbar";
-import { NoBranchAccess } from "./NoBranchAccess";
+import { MainFooter } from "@/app/src/ui/shared/main-layout/MainFooter";
+import { MainNavigationProgress } from "@/app/src/ui/shared/main-layout/NavigationProgress";
+import { MainNotificationsPanel } from "@/app/src/ui/shared/main-layout/notifications-panel/NotificationsPanel";
+import { MainSidebar } from "@/app/src/ui/shared/main-layout/sidebar/Sidebar";
+import { MainTopbar } from "@/app/src/ui/shared/main-layout/main-topbar/MainTopbar";
+import { NoBranchAccess } from "@/app/src/ui/shared/main-layout/NoBranchAccess";
 
 const MainHelpModal = dynamic(
-  () => import("./MainHelpModal").then((mod) => mod.MainHelpModal),
+  () =>
+    import("@/app/src/ui/shared/main-layout/MainHelpModal").then(
+      (mod) => mod.MainHelpModal,
+    ),
   {
     loading: () => <HelpModalLoading />,
   },
@@ -45,6 +48,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
     availableCompanies,
     branchDropdownItems,
     breadcrumbs,
+    canAccessMaster,
     canAccessWorkspace,
     canSwitchCompany,
     currentBranch,
@@ -91,10 +95,18 @@ function MainLayoutContent({ children }: MainLayoutProps) {
     toggleNotifications,
     toggleSearch,
     toggleSidebar,
+    switchToMaster,
     switchToWorkspace,
   } = useMainLayout();
   const shouldShowBranchContent =
     activeNavigationScope !== "company" || hasBranchAccess;
+  const isAdministrationScope = activeNavigationScope !== "company";
+  const administrationSidebarName =
+    activeNavigationScope === "master" ? "Master" : "Workspace";
+  const administrationSidebarType =
+    activeNavigationScope === "master"
+      ? "Platform Administration"
+      : "Company Administration";
 
   if (isShellLoading) {
     return <MainLoadingScreen message="Loading your workspace data..." />;
@@ -109,6 +121,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         activeNavigationScope={activeNavigationScope}
         availableCompanies={availableCompanies}
         branchDropdownItems={branchDropdownItems}
+        canAccessMaster={canAccessMaster}
         canAccessWorkspace={canAccessWorkspace}
         canSwitchCompany={canSwitchCompany}
         currentBranch={currentBranch}
@@ -138,6 +151,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         onQueryChange={setQuery}
         onSelectBranch={selectBranch}
         onSelectCompany={selectCompany}
+        onSwitchToMaster={switchToMaster}
         onSwitchToWorkspace={switchToWorkspace}
         onToggleNotifications={toggleNotifications}
         onToggleSearch={toggleSearch}
@@ -160,23 +174,19 @@ function MainLayoutContent({ children }: MainLayoutProps) {
         <MainSidebar
           activeHref={activeHref}
           companyBadgeLabel={
-            activeNavigationScope === "workspace"
-              ? currentUser.initials
-              : undefined
+            isAdministrationScope ? currentUser.initials : undefined
           }
           companyName={
-            activeNavigationScope === "workspace"
-              ? "Workspace"
+            isAdministrationScope
+              ? administrationSidebarName
               : currentCompany.name
           }
           companyLogoUrl={
-            activeNavigationScope === "workspace"
-              ? undefined
-              : currentCompany.logoUrl
+            isAdministrationScope ? undefined : currentCompany.logoUrl
           }
           typeOfCompany={
-            activeNavigationScope === "workspace"
-              ? "Administration"
+            isAdministrationScope
+              ? administrationSidebarType
               : (currentCompany.businessKind ?? "Company")
           }
           enabledQuickListTabs={enabledQuickListTabs}
@@ -197,7 +207,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
           className={joinClasses(
             "flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-3 py-4 motion-reduce:transition-none sm:px-5 lg:px-6",
             isSidebarTransitionEnabled &&
-              "transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            "transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
             (isSidebarOpen || !isSidebarTransitionEnabled) && "lg:ml-78",
             isNotificationsOpen && "xl:mr-88",
           )}

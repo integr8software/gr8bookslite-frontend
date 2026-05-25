@@ -1,5 +1,5 @@
 import type { MainNotificationTab } from "@/app/src/types/shared/MainLayoutTypes";
-import { joinClasses } from "./utils";
+import { joinClasses } from "@/app/src/ui/shared/main-layout/notifications-panel/utils";
 
 type NotificationTabsProps = {
 	activeTab: MainNotificationTab;

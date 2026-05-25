@@ -13,8 +13,8 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ResponsibilityCenterSetStatusDialog } from "./ResponsibilityCenterSetStatusDialog";
-import { ResponsibilityCenterTable } from "./ResponsibilityCenterTable";
+import { ResponsibilityCenterSetStatusDialog } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterSetStatusDialog";
+import { ResponsibilityCenterTable } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTable";
 
 export function ResponsibilityCenterMain() {
 	const centers = useResponsibilityCenterStore((state) => state.centers);

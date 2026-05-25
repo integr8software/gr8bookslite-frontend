@@ -5,9 +5,9 @@ import { getNextWorkspaceCompanyStatus } from "@/app/src/data/modules/workspace/
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyManagement";
 import type { WorkspaceCompanyRecord } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { CompanyHeader } from "./CompanyHeader";
-import { CompanySummaryCards } from "./CompanySummaryCards";
-import { CompanyTable } from "./CompanyTable";
+import { CompanyHeader } from "@/app/src/ui/modules/workspace/companies/ui/CompanyHeader";
+import { CompanySummaryCards } from "@/app/src/ui/modules/workspace/companies/ui/CompanySummaryCards";
+import { CompanyTable } from "@/app/src/ui/modules/workspace/companies/ui/CompanyTable";
 
 export function WorkspaceCompaniesMain() {
   const companyManagement = useWorkspaceCompanyManagementStore((state) => ({

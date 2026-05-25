@@ -1,6 +1,6 @@
 "use client";
 
-import { OnboardingActionRow } from "./OnboardingActionRow";
+import { OnboardingActionRow } from "@/app/src/ui/onboarding/OnboardingActionRow";
 
 type OnboardingPricingHeroProps = {
   onReviewPlans: () => void;

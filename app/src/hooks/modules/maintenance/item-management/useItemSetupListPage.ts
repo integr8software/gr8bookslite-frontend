@@ -20,7 +20,7 @@ import type {
 	ItemSetupTableColumnKey,
 	ItemSetupTableRowData,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
-import { useItemManagementStore } from "./useItemManagement";
+import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item-management/useItemManagement";
 
 const EmptyItemSetupRecords: ItemSetupRecord[] = [];
 

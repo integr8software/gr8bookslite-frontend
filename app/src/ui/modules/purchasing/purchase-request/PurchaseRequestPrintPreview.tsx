@@ -9,7 +9,7 @@ import {
 import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { openPurchaseRequestPdf } from "./PurchaseRequestPdf";
+import { openPurchaseRequestPdf } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestPdf";
 
 export function PurchaseRequestPrintPreview({
 	record,

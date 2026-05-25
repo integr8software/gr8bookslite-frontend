@@ -13,7 +13,7 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { PurchaseRequestTableRow } from "./PurchaseRequestTableRow";
+import { PurchaseRequestTableRow } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestTableRow";
 
 export function PurchaseRequestListPage() {
   const {

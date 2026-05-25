@@ -3,9 +3,9 @@
 import { Bell, CheckCheck, X } from "lucide-react";
 import type { MainNotification } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
 import type { MainNotificationTab } from "@/app/src/types/shared/MainLayoutTypes";
-import { NotificationList } from "./NotificationList";
-import { NotificationTabs } from "./NotificationTabs";
-import { joinClasses, useIncrementalVisibleCount } from "./utils";
+import { NotificationList } from "@/app/src/ui/shared/main-layout/notifications-panel/NotificationList";
+import { NotificationTabs } from "@/app/src/ui/shared/main-layout/notifications-panel/NotificationTabs";
+import { joinClasses, useIncrementalVisibleCount } from "@/app/src/ui/shared/main-layout/notifications-panel/utils";
 
 const NotificationInitialCount = 8;
 const NotificationBatchSize = 8;

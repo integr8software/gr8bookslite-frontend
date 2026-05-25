@@ -18,13 +18,13 @@ import type {
   WorkspaceBranchUserFormValues,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { WorkspaceCompanyActionHeader } from "./WorkspaceCompanyActionHeader";
+import { WorkspaceCompanyActionHeader } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyActionHeader";
 import {
   WorkspaceCompanyField,
   WorkspaceCompanyFieldClassName,
   WorkspaceCompanySection,
-} from "./WorkspaceCompanyFormPrimitives";
-import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyFormPrimitives";
+import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
 
 const BranchUserFormId = "workspace-branch-user-form";
 

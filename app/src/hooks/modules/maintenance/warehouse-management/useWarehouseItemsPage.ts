@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { WarehouseManagementHref } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
-import { useWarehouseManagementStore } from "./useWarehouseManagement";
+import { useWarehouseManagementStore } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseManagement";
 
 export function useWarehouseItemsPage() {
 	const params = useParams<{ recordId?: string }>();

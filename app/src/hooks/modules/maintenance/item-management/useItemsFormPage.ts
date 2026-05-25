@@ -28,8 +28,8 @@ import type {
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 import { validateItemForm } from "@/app/src/validations/modules/maintenance/item-management/ItemManagementValidation";
-import { useWarehouseManagementStore } from "../warehouse-management/useWarehouseManagement";
-import { useItemManagementStore } from "./useItemManagement";
+import { useWarehouseManagementStore } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseManagement";
+import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item-management/useItemManagement";
 
 const NumberItemFormFields = new Set<keyof ItemFormValues>([
 	"costPrice",

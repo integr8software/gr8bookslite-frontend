@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
 import {
   type MainCurrentUser,
   type MainBranch,
@@ -21,6 +20,8 @@ import {
 import {
   MainCompanyNavigationSections,
   MainCompanySearchItems,
+  MainMasterNavigationSections,
+  MainMasterSearchItems,
   MainWorkspaceNavigationSections,
   MainWorkspaceSearchItems,
 } from "@/app/src/data/shared/MainLayout/MainNavigationData";
@@ -44,14 +45,18 @@ import type {
 } from "@/app/src/types/shared/MainLayoutTypes";
 
 const DefaultExpandedKeys = [
+  "master-overview-section",
+  "master-subscription-billing",
+  "master-platform-configuration",
+  "master-monitoring-security",
+  "master-support-maintenance",
+  "master-settings-section",
+  "master-admin",
   "workspace-overview-section",
-  "workspace-tenant-management",
-  "workspace-subscription-billing",
-  "workspace-platform-configuration",
-  "workspace-monitoring-security",
-  "workspace-support-maintenance",
+  "workspace-company-administration",
+  "workspace-billing",
+  "workspace-support",
   "workspace-settings-section",
-  "workspace-admin",
   "dashboard",
   "maintenance",
   "maintenance-financial",
@@ -67,6 +72,8 @@ const DefaultExpandedKeys = [
 
 const WorkspaceRoutePrefix = "/workspace";
 const WorkspaceHomeHref = "/workspace/dashboard";
+const MasterRoutePrefix = "/master";
+const MasterHomeHref = "/master/dashboard";
 const CompanyFallbackHomeHref = "/profile";
 const MaxBlockingProfileLoadMs = 4500;
 const BranchUsersContextParam = "workspaceBranchId";
@@ -123,17 +130,32 @@ export function useMainLayout() {
   const { data: authProfile, isLoading: isAuthProfileLoading } =
     useAuthProfileQuery({ accessToken });
   const hasProfileLoadTimedOut = timedOutProfileToken === accessToken;
+  const profileEffectiveRole = authProfile
+    ? ResolveAuthProfileEffectiveRole(authProfile)
+    : null;
+  const fallbackEffectiveRole = getFallbackEffectiveRole(
+    ModuleShellMockData.currentUser.userRole,
+  );
+  const isMasterRoute = isMasterPath(pathname);
   const isWorkspaceRoute = isWorkspacePath(pathname);
+  const hasMasterAccess = authProfile
+    ? profileEffectiveRole === "SUPER_ADMIN"
+    : fallbackEffectiveRole === "SUPER_ADMIN";
   const hasWorkspaceAccess = authProfile
     ? ProfileHasWorkspaceAccess(authProfile)
-    : ModuleShellMockData.currentUser.userRole === "Super Admin";
+    : fallbackEffectiveRole === "SUPER_ADMIN" ||
+      fallbackEffectiveRole === "ADMIN";
   const displayUser = authProfile
     ? CreateWorkspaceCurrentUserFromProfile(authProfile)
     : ModuleShellMockData.currentUser;
   const isProfileLoading =
     Boolean(accessToken) && isAuthProfileLoading && !hasProfileLoadTimedOut;
   const activeNavigationScope: MainNavigationScope =
-    hasWorkspaceAccess && isWorkspaceRoute ? "workspace" : "company";
+    hasMasterAccess && isMasterRoute
+      ? "master"
+      : hasWorkspaceAccess && isWorkspaceRoute
+        ? "workspace"
+        : "company";
   const workspaceCompanies = authProfile
     ? MapProfileCompaniesToMainCompanies(authProfile)
     : null;
@@ -165,10 +187,7 @@ export function useMainLayout() {
     ModuleShellMockData.currentCompany;
 
   const navigationSections = useMemo(() => {
-    const sourceSections =
-      activeNavigationScope === "workspace"
-        ? MainWorkspaceNavigationSections
-        : MainCompanyNavigationSections;
+    const sourceSections = getNavigationSectionsForScope(activeNavigationScope);
 
     return filterMainNavigationSections(
       sourceSections,
@@ -193,10 +212,7 @@ export function useMainLayout() {
   );
 
   const availableSearchItems = useMemo(() => {
-    const sourceItems =
-      activeNavigationScope === "workspace"
-        ? MainWorkspaceSearchItems
-        : MainCompanySearchItems;
+    const sourceItems = getSearchItemsForScope(activeNavigationScope);
 
     return filterMainSearchItems(
       sourceItems,
@@ -217,8 +233,15 @@ export function useMainLayout() {
     companySearchItems,
     ModuleShellMockData.recentNavigationKeys,
   );
+  const branchManagementHref = hasMasterAccess
+    ? "/master/companies"
+    : "/workspace/companies";
   const homeHref =
-    activeNavigationScope === "workspace" ? WorkspaceHomeHref : companyHomeHref;
+    activeNavigationScope === "master"
+      ? MasterHomeHref
+      : activeNavigationScope === "workspace"
+        ? WorkspaceHomeHref
+        : companyHomeHref;
 
   const recentlyVisitedModules = useMemo(() => {
     if (activeNavigationScope !== "company") {
@@ -352,14 +375,15 @@ export function useMainLayout() {
       {
         key: "branch-management",
         label: "Branch Management",
-        href: WorkspaceCompaniesHref,
-        helperText: "Manage workspace companies, branches, and satellites",
+        href: branchManagementHref,
+        helperText: "Manage branches inside company records",
         isManagementAction: true,
       },
     ];
   }, [
     canManageBranches,
     companyHomeHref,
+    branchManagementHref,
     lazyLoadedBranches,
     shouldShowBranchSwitcher,
   ]);
@@ -423,6 +447,23 @@ export function useMainLayout() {
 
     router.replace(missingRecordActionRedirectHref);
   }, [missingRecordActionRedirectHref, router]);
+
+  useEffect(() => {
+    if (!profileEffectiveRole) {
+      return;
+    }
+
+    if (profileEffectiveRole !== "SUPER_ADMIN" && isMasterRoute) {
+      router.replace(
+        profileEffectiveRole === "ADMIN" ? WorkspaceHomeHref : companyHomeHref,
+      );
+    }
+  }, [
+    companyHomeHref,
+    isMasterRoute,
+    profileEffectiveRole,
+    router,
+  ]);
 
   useEffect(() => {
     if (!accessToken || !isAuthProfileLoading || hasProfileLoadTimedOut) {
@@ -556,6 +597,16 @@ export function useMainLayout() {
     router.push(WorkspaceHomeHref);
   }
 
+  function switchToMaster() {
+    if (!hasMasterAccess) {
+      return;
+    }
+
+    setSearchOpenPath(null);
+    setNotificationsOpenPath(null);
+    router.push(MasterHomeHref);
+  }
+
   function markNotificationAsRead(notificationId: string) {
     setNotifications((current) =>
       current.map((notification) =>
@@ -578,6 +629,7 @@ export function useMainLayout() {
     availableCompanies,
     branchDropdownItems,
     breadcrumbs,
+    canAccessMaster: hasMasterAccess,
     canAccessWorkspace: hasWorkspaceAccess,
     canSwitchCompany: availableCompanies.length > 1,
     currentBranch,
@@ -629,6 +681,7 @@ export function useMainLayout() {
     toggleSearch,
     toggleSidebar,
     switchToWorkspace,
+    switchToMaster,
   };
 }
 
@@ -648,16 +701,46 @@ function shouldShowBranchControls(branches: MainBranch[]) {
   return true;
 }
 
+function getNavigationSectionsForScope(scope: MainNavigationScope) {
+  if (scope === "master") {
+    return MainMasterNavigationSections;
+  }
+
+  if (scope === "workspace") {
+    return MainWorkspaceNavigationSections;
+  }
+
+  return MainCompanyNavigationSections;
+}
+
+function getSearchItemsForScope(scope: MainNavigationScope) {
+  if (scope === "master") {
+    return MainMasterSearchItems;
+  }
+
+  if (scope === "workspace") {
+    return MainWorkspaceSearchItems;
+  }
+
+  return MainCompanySearchItems;
+}
+
+function getFallbackEffectiveRole(userRole: MainCurrentUser["userRole"]) {
+  if (userRole === "Super Admin") {
+    return "SUPER_ADMIN";
+  }
+
+  if (userRole === "Admin") {
+    return "ADMIN";
+  }
+
+  return "USER";
+}
+
 function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
   const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
 
-  if (effectiveRole === "SUPER_ADMIN" || effectiveRole === "ADMIN") {
-    return true;
-  }
-
-  return (
-    profile.companies?.some((company) => company.role === "ADMIN") ?? false
-  );
+  return effectiveRole === "SUPER_ADMIN" || effectiveRole === "ADMIN";
 }
 
 function CreateWorkspaceCurrentUserFromProfile(
@@ -1033,6 +1116,12 @@ function isWorkspacePath(pathname: string) {
   return (
     pathname === WorkspaceRoutePrefix ||
     pathname.startsWith(`${WorkspaceRoutePrefix}/`)
+  );
+}
+
+function isMasterPath(pathname: string) {
+  return (
+    pathname === MasterRoutePrefix || pathname.startsWith(`${MasterRoutePrefix}/`)
   );
 }
 

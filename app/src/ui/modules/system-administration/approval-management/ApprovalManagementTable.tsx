@@ -4,8 +4,8 @@ import { Search } from "lucide-react";
 import { ApprovalManagementPaginationStorageKey } from "@/app/src/constants/modules/system-administration/approval-management/ApprovalManagementConstants";
 import type { useApprovalManagementListPage } from "@/app/src/hooks/modules/system-administration/approval-management/useApprovalManagementListPage";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { ApprovalManagementTableFilters } from "./ApprovalManagementTableFilters";
-import { ApprovalManagementTableRow } from "./ApprovalManagementTableRow";
+import { ApprovalManagementTableFilters } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementTableFilters";
+import { ApprovalManagementTableRow } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementTableRow";
 
 type ApprovalManagementTableProps = Pick<
 	ReturnType<typeof useApprovalManagementListPage>,

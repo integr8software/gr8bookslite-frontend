@@ -15,9 +15,9 @@ import type {
   DisbursementVoucherFormValues,
   DisbursementVoucherPreviewRow,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import { DisbursementVoucherDrawer } from "./DisbursementVoucherDrawer";
-import { DisbursementVoucherHeader } from "./DisbursementVoucherHeader";
-import { DisbursementVoucherTable } from "./DisbursementVoucherTable";
+import { DisbursementVoucherDrawer } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherDrawer";
+import { DisbursementVoucherHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherHeader";
+import { DisbursementVoucherTable } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherTable";
 
 type DrawerState = {
   mode: "add" | "edit";

@@ -21,7 +21,7 @@ import type {
 	ItemSetupKind,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { validateItemSetupForm } from "@/app/src/validations/modules/maintenance/item-management/ItemManagementValidation";
-import { useItemManagementStore } from "./useItemManagement";
+import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item-management/useItemManagement";
 
 export function useItemSetupFormPage(kind: ItemSetupKind) {
 	const params = useParams<{ recordId?: string }>();

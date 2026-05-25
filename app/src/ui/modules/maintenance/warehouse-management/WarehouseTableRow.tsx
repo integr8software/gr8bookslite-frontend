@@ -1,6 +1,6 @@
 import { getWarehouseAvailableBranchLabel } from "@/app/src/data/modules/maintenance/warehouse-management/WarehouseManagementData";
 import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
-import { WarehouseRecordActions } from "./WarehouseRecordActions";
+import { WarehouseRecordActions } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseRecordActions";
 
 type WarehouseTableRowProps = {
 	warehouse: WarehouseRecord;

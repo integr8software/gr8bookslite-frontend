@@ -8,7 +8,7 @@ import type {
 import {
 	PurchaseRequestFieldClassName,
 	PurchaseRequestFormField,
-} from "./PurchaseRequestFormControls";
+} from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestFormControls";
 
 type PurchaseRequestSummaryPanelProps = {
 	errors: PurchaseRequestFormErrors;

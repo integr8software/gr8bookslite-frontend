@@ -5,9 +5,9 @@ import { useItemSetupFormPage } from "@/app/src/hooks/modules/maintenance/item-m
 import type { ItemSetupKind } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ItemSetupActionButtons } from "./ItemSetupActionButtons";
-import { ItemSetupFields } from "./ItemSetupFields";
-import { ItemSetupNotFound } from "./ItemSetupNotFound";
+import { ItemSetupActionButtons } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupActionButtons";
+import { ItemSetupFields } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupFields";
+import { ItemSetupNotFound } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupNotFound";
 
 export function ItemSetupFormPage({ kind }: { kind: ItemSetupKind }) {
 	const page = useItemSetupFormPage(kind);

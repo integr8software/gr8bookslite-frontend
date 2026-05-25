@@ -1,7 +1,7 @@
 import { UserCircle } from "lucide-react";
 import type { MainTopbarUser } from "@/app/src/types/shared/MainTopbarTypes";
-import { ImageSwatch } from "./ImageSwatch";
-import { joinClasses } from "./utils";
+import { ImageSwatch } from "@/app/src/ui/shared/main-layout/main-topbar/ImageSwatch";
+import { joinClasses } from "@/app/src/ui/shared/main-layout/main-topbar/utils";
 
 type UserAvatarProps = {
   currentUser: MainTopbarUser;

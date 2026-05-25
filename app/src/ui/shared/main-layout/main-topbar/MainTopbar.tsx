@@ -22,23 +22,24 @@ import type {
 	MainTopbarProps,
 	OpenSwitcherKey,
 } from "@/app/src/types/shared/MainTopbarTypes";
-import { MainNotificationsPanel } from "../notifications-panel/NotificationsPanel";
-import { MainSearchPanel } from "../MainSearchPanel";
-import { AccountMenu } from "./AccountMenu";
-import { BranchSwitcher } from "./BranchSwitcher";
-import { CompanySwitcher } from "./CompanySwitcher";
-import { TopbarWorkspaceSkeleton } from "./TopbarSkeletons";
+import { MainNotificationsPanel } from "@/app/src/ui/shared/main-layout/notifications-panel/NotificationsPanel";
+import { MainSearchPanel } from "@/app/src/ui/shared/main-layout/MainSearchPanel";
+import { AccountMenu } from "@/app/src/ui/shared/main-layout/main-topbar/AccountMenu";
+import { BranchSwitcher } from "@/app/src/ui/shared/main-layout/main-topbar/BranchSwitcher";
+import { CompanySwitcher } from "@/app/src/ui/shared/main-layout/main-topbar/CompanySwitcher";
+import { TopbarWorkspaceSkeleton } from "@/app/src/ui/shared/main-layout/main-topbar/TopbarSkeletons";
 import {
 	getTopbarUserDescriptor,
 	isLargeNotificationPanel,
 	joinClasses,
-} from "./utils";
+} from "@/app/src/ui/shared/main-layout/main-topbar/utils";
 
 export function MainTopbar({
 	activeHref,
 	activeNavigationScope,
 	availableCompanies,
 	branchDropdownItems,
+	canAccessMaster,
 	canAccessWorkspace,
 	canSwitchCompany,
 	currentBranch,
@@ -68,6 +69,7 @@ export function MainTopbar({
 	onQueryChange,
 	onSelectBranch,
 	onSelectCompany,
+	onSwitchToMaster,
 	onSwitchToWorkspace,
 	onToggleNotifications,
 	onToggleSearch,
@@ -92,10 +94,13 @@ export function MainTopbar({
 	const isProfileMenuOpen = profileMenuOpenPath === activeHref;
 	const userDescriptor = getTopbarUserDescriptor(currentUser);
 	const settingsHref =
-		activeNavigationScope === "workspace"
-			? "/workspace/settings"
-			: "/settings";
-	const canShowCompanySwitcher = canAccessWorkspace || canSwitchCompany;
+		activeNavigationScope === "master"
+			? "/master/settings"
+			: activeNavigationScope === "workspace"
+				? "/workspace/settings"
+				: "/settings";
+	const canShowCompanySwitcher =
+		canAccessMaster || canAccessWorkspace || canSwitchCompany;
 	const canShowBranchSwitcher =
 		activeNavigationScope === "company" && branchDropdownItems.length > 0;
 	const hasBothMobileWorkspaceControls =
@@ -383,11 +388,13 @@ export function MainTopbar({
 							<CompanySwitcher
 								activeNavigationScope={activeNavigationScope}
 								availableCompanies={availableCompanies}
+								canAccessMaster={canAccessMaster}
 								canAccessWorkspace={canAccessWorkspace}
 								currentCompany={currentCompany}
 								isOpen={openSwitcherKey === "company"}
 								onClose={closeSwitcher}
 								onSelectCompany={onSelectCompany}
+								onSwitchToMaster={onSwitchToMaster}
 								onSwitchToWorkspace={onSwitchToWorkspace}
 								onToggle={() => toggleSwitcher("company")}
 							/>
@@ -530,12 +537,14 @@ export function MainTopbar({
 						<CompanySwitcher
 							activeNavigationScope={activeNavigationScope}
 							availableCompanies={availableCompanies}
+							canAccessMaster={canAccessMaster}
 							canAccessWorkspace={canAccessWorkspace}
 							currentCompany={currentCompany}
 							isOpen={openSwitcherKey === "company"}
 							variant="mobile"
 							onClose={closeSwitcher}
 							onSelectCompany={onSelectCompany}
+							onSwitchToMaster={onSwitchToMaster}
 							onSwitchToWorkspace={onSwitchToWorkspace}
 							onToggle={() => toggleSwitcher("company")}
 						/>

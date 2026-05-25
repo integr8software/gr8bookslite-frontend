@@ -8,8 +8,8 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { WarehouseItemsTable } from "./WarehouseItemsTable";
-import { WarehouseNotFound } from "./WarehouseNotFound";
+import { WarehouseItemsTable } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseItemsTable";
+import { WarehouseNotFound } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseNotFound";
 
 export function WarehouseItemsPage() {
 	const page = useWarehouseItemsPage();

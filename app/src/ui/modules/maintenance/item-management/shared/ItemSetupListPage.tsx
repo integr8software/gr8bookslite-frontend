@@ -10,7 +10,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ItemSetupTable } from "./ItemSetupTable";
+import { ItemSetupTable } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupTable";
 
 export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 	const config = ItemSetupConfigByKind[kind];

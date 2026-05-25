@@ -3,12 +3,12 @@ import { Check, ChevronDown, GitBranch, Settings } from "lucide-react";
 import type { MainBranch } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
 import type { MainBreadcrumbDropdownItem } from "@/app/src/types/shared/MainLayoutTypes";
 import type { SwitcherVariant } from "@/app/src/types/shared/MainTopbarTypes";
-import { MenuSeparator } from "./MenuPrimitives";
+import { MenuSeparator } from "@/app/src/ui/shared/main-layout/main-topbar/MenuPrimitives";
 import {
   getBranchLabel,
   getSwitcherMenuClassName,
   joinClasses,
-} from "./utils";
+} from "@/app/src/ui/shared/main-layout/main-topbar/utils";
 
 type BranchSwitcherProps = {
   branchDropdownItems: MainBreadcrumbDropdownItem[];

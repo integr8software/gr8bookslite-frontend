@@ -25,7 +25,7 @@ import type {
 	UserRoleFormErrors,
 } from "@/app/src/types/modules/user-management/UserManagementTypes";
 import { validateUserRoleForm } from "@/app/src/validations/modules/system-administration/user-management/user-role/UserRoleValidation";
-import { useUserRoleStore } from "./useUserRole";
+import { useUserRoleStore } from "@/app/src/hooks/modules/system-administration/user-management/user-role/useUserRole";
 
 export function useUserRoleFormPage() {
 	const router = useRouter();

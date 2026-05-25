@@ -6,7 +6,7 @@ import {
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import type { DisbursementVoucherPreviewRow } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import { DisbursementVoucherRecordActions } from "./DisbursementVoucherRecordActions";
+import { DisbursementVoucherRecordActions } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherRecordActions";
 
 export function DisbursementVoucherTable({
   onCreateVoucher,

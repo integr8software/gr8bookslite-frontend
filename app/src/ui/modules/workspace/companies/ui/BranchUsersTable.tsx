@@ -21,7 +21,7 @@ import {
 	WorkspaceStatusBadge,
 	WorkspaceTextBadge,
 	WorkspaceUserAvatar,
-} from "./WorkspaceCompanyBadges";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyBadges";
 import {
 	WorkspaceCompaniesFilterBar,
 	WorkspaceCompaniesFilterSelect,
@@ -29,7 +29,7 @@ import {
 	WorkspaceCompaniesResetButton,
 	WorkspaceCompaniesSearchInput,
 	WorkspaceCompaniesTableCell,
-} from "./WorkspaceCompanyListPrimitives";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyListPrimitives";
 
 export function BranchUsersTable({
 	baseHref,

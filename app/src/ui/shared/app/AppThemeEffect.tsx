@@ -23,6 +23,7 @@ const ModuleRoutePrefixes = [
   "/dashboard",
   "/general-journal",
   "/inventory",
+  "/master",
   "/maintenance",
   "/others",
   "/profile",

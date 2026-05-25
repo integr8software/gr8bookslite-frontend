@@ -5,12 +5,12 @@ import { ItemsFormPageCopy } from "@/app/src/constants/modules/maintenance/item-
 import { useItemsFormPage } from "@/app/src/hooks/modules/maintenance/item-management/useItemsFormPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ItemActionButtons } from "./ItemActionButtons";
-import { ItemBundleComponentsTable } from "./ItemBundleComponentsTable";
-import { ItemFields } from "./ItemFields";
-import { ItemNotFound } from "./ItemNotFound";
-import { ItemSuppliersTable } from "./ItemSuppliersTable";
-import { ItemUomConversionsTable } from "./ItemUomConversionsTable";
+import { ItemActionButtons } from "@/app/src/ui/modules/maintenance/item-management/items/ItemActionButtons";
+import { ItemBundleComponentsTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemBundleComponentsTable";
+import { ItemFields } from "@/app/src/ui/modules/maintenance/item-management/items/ItemFields";
+import { ItemNotFound } from "@/app/src/ui/modules/maintenance/item-management/items/ItemNotFound";
+import { ItemSuppliersTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemSuppliersTable";
+import { ItemUomConversionsTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemUomConversionsTable";
 
 export function ItemsFormPage() {
 	const page = useItemsFormPage();

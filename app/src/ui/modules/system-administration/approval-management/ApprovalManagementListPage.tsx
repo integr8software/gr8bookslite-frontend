@@ -9,7 +9,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ApprovalManagementTable } from "./ApprovalManagementTable";
+import { ApprovalManagementTable } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementTable";
 
 export function ApprovalManagementListPage() {
 	const page = useApprovalManagementListPage();

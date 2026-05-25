@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { ItemsTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import type { useItemsListPage } from "@/app/src/hooks/modules/maintenance/item-management/useItemsListPage";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { ItemsTableRow } from "./ItemsTableRow";
+import { ItemsTableRow } from "@/app/src/ui/modules/maintenance/item-management/items/ItemsTableRow";
 
 type ItemsTableProps = Pick<
 	ReturnType<typeof useItemsListPage>,

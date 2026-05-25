@@ -8,7 +8,7 @@ import type {
 	DiscountManagementTableRecord,
 } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { DiscountManagementTableRow } from "./DiscountManagementTableRow";
+import { DiscountManagementTableRow } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementTableRow";
 
 type DiscountManagementTableProps = {
 	discounts: Discount[];

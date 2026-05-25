@@ -25,6 +25,7 @@ export type MainTopbarProps = {
   activeNavigationScope: MainNavigationScope;
   availableCompanies: MainCompany[];
   branchDropdownItems: MainBreadcrumbDropdownItem[];
+  canAccessMaster: boolean;
   canAccessWorkspace: boolean;
   canSwitchCompany: boolean;
   currentBranch: MainBranch | null;
@@ -54,6 +55,7 @@ export type MainTopbarProps = {
   onQueryChange: (value: string) => void;
   onSelectBranch: (branchId: string) => void;
   onSelectCompany: (companyId: string) => void;
+  onSwitchToMaster: () => void;
   onSwitchToWorkspace: () => void;
   onToggleNotifications: () => void;
   onToggleSearch: () => void;

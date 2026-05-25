@@ -4,8 +4,8 @@ import { Search } from "lucide-react";
 import { AuditTrailPaginationStorageKey } from "@/app/src/constants/modules/system-administration/audit-trail/AuditTrailConstants";
 import type { useAuditTrailListPage } from "@/app/src/hooks/modules/system-administration/audit-trail/useAuditTrailListPage";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { AuditTrailTableFilters } from "./AuditTrailTableFilters";
-import { AuditTrailTableRow } from "./AuditTrailTableRow";
+import { AuditTrailTableFilters } from "@/app/src/ui/modules/system-administration/audit-trail/AuditTrailTableFilters";
+import { AuditTrailTableRow } from "@/app/src/ui/modules/system-administration/audit-trail/AuditTrailTableRow";
 
 type AuditTrailTableProps = Pick<
 	ReturnType<typeof useAuditTrailListPage>,

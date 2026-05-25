@@ -15,7 +15,7 @@ import type {
 	WarehouseRecord,
 	WarehouseTableColumnKey,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
-import { useWarehouseManagementStore } from "./useWarehouseManagement";
+import { useWarehouseManagementStore } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseManagement";
 
 export function useWarehouseListPage() {
 	const {

@@ -12,10 +12,10 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { PurchaseRequestDetailsPanel } from "./PurchaseRequestDetailsPanel";
-import { PurchaseRequestItemsTable } from "./PurchaseRequestItemsTable";
-import { PurchaseRequestPreviewDrawer } from "./PurchaseRequestPreviewDrawer";
-import { PurchaseRequestSummaryPanel } from "./PurchaseRequestSummaryPanel";
+import { PurchaseRequestDetailsPanel } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestDetailsPanel";
+import { PurchaseRequestItemsTable } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestItemsTable";
+import { PurchaseRequestPreviewDrawer } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestPreviewDrawer";
+import { PurchaseRequestSummaryPanel } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestSummaryPanel";
 
 export function PurchaseRequestFormPage() {
 	return (

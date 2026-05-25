@@ -29,7 +29,7 @@ import type {
 	TransactionNumberSetupFormValues,
 } from "@/app/src/types/modules/system-administration/transaction-number-setup/TransactionNumberSetupTypes";
 import { validateTransactionNumberSetupForm } from "@/app/src/validations/modules/system-administration/transaction-number-setup/TransactionNumberSetupValidation";
-import { useTransactionNumberSetupStore } from "./useTransactionNumberSetup";
+import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetup";
 
 const NumberFields = new Set<keyof TransactionNumberSetupFormValues>([
 	"padding",

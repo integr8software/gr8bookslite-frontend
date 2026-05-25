@@ -9,7 +9,7 @@ import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-import { ItemTagsInput } from "./ItemTagsInput";
+import { ItemTagsInput } from "@/app/src/ui/modules/maintenance/item-management/items/ItemTagsInput";
 
 type ItemFieldsProps = {
 	categoryOptions: AppAdvancedDropdownOption[];

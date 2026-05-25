@@ -13,7 +13,7 @@ import type {
 	WarehouseAccessRecord,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 import { validateWarehouseAccess } from "@/app/src/validations/modules/maintenance/warehouse-management/WarehouseManagementValidation";
-import { useWarehouseManagementStore } from "./useWarehouseManagement";
+import { useWarehouseManagementStore } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseManagement";
 
 export function useWarehouseAccessPage() {
 	const params = useParams<{ recordId?: string }>();

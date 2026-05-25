@@ -8,8 +8,8 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { WarehouseAccessTable } from "./WarehouseAccessTable";
-import { WarehouseNotFound } from "./WarehouseNotFound";
+import { WarehouseAccessTable } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseAccessTable";
+import { WarehouseNotFound } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseNotFound";
 
 export function WarehouseAccessPage() {
 	const page = useWarehouseAccessPage();

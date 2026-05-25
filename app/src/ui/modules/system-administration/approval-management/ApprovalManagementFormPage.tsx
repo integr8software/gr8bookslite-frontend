@@ -9,8 +9,8 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ApprovalManagementForm } from "./ApprovalManagementForm";
-import { ApprovalManagementNotFound } from "./ApprovalManagementNotFound";
+import { ApprovalManagementForm } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementForm";
+import { ApprovalManagementNotFound } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementNotFound";
 
 export function ApprovalManagementFormPage() {
 	return (

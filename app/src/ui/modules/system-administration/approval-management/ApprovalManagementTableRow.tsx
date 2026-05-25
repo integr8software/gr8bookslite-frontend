@@ -4,7 +4,7 @@ import {
 	formatApprovalWorkflowUpdatedAt,
 } from "@/app/src/services/modules/system-administration/approval-management/ApprovalManagementFormatters";
 import type { ApprovalManagementRecord } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
-import { ApprovalManagementRecordActions } from "./ApprovalManagementRecordActions";
+import { ApprovalManagementRecordActions } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementRecordActions";
 
 type ApprovalManagementTableRowProps = {
 	approverNameById: Map<string, string>;

@@ -7,9 +7,13 @@ import type {
 	MainNavigationSection,
 	MainSearchItem,
 } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
-import { SidebarIdentitySkeleton, SidebarLogo } from "./SidebarIdentity";
-import { SidebarItem, SidebarSection } from "./SidebarNavigation";
-import { joinClasses, pathMatches, useIncrementalVisibleCount } from "./utils";
+import { SidebarIdentitySkeleton, SidebarLogo } from "@/app/src/ui/shared/main-layout/sidebar/SidebarIdentity";
+import {
+	SidebarCategorySection,
+	SidebarItem,
+	SidebarSection,
+} from "@/app/src/ui/shared/main-layout/sidebar/SidebarNavigation";
+import { joinClasses, pathMatches, useIncrementalVisibleCount } from "@/app/src/ui/shared/main-layout/sidebar/utils";
 
 const QuickListInitialCount = 4;
 const QuickListBatchSize = 6;
@@ -308,6 +312,20 @@ export function MainSidebar({
 										/>
 									))}
 								</div>
+							) : isAdminNavigationSection(section) ? (
+								<SidebarCategorySection
+									key={section.key}
+									activeHref={activeHref}
+									expandedKeys={expandedKeys}
+									section={section}
+									onInteract={
+										suppressAutoScrollFromSidebarInteraction
+									}
+									onNavigateFromSidebar={
+										handleNavigateFromSidebar
+									}
+									onToggleExpandedKey={onToggleExpandedKey}
+								/>
 							) : (
 								<SidebarSection
 									key={section.key}
@@ -328,5 +346,11 @@ export function MainSidebar({
 				</div>
 			</div>
 		</aside>
+	);
+}
+
+function isAdminNavigationSection(section: MainNavigationSection) {
+	return (
+		section.key.startsWith("workspace-") || section.key.startsWith("master-")
 	);
 }

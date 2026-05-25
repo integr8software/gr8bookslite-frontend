@@ -17,13 +17,13 @@ import {
 	PhilippineContactNumberPlaceholder,
 } from "@/app/src/data/shared/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
-import { WorkspaceCompanyActionHeader } from "./WorkspaceCompanyActionHeader";
+import { WorkspaceCompanyActionHeader } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyActionHeader";
 import {
 	WorkspaceCompanyField,
 	WorkspaceCompanyFieldClassName,
 	WorkspaceCompanySection,
-} from "./WorkspaceCompanyFormPrimitives";
-import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyFormPrimitives";
+import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
 import { WorkspaceBillingImpactConfirmDialog } from "@/app/src/ui/modules/workspace/shared/WorkspaceBillingImpactConfirmDialog";
 
 const CompanyFormId = "workspace-company-form";

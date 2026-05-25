@@ -41,7 +41,7 @@ import type {
 import { GradientBlurBackground } from "@/app/src/ui/shared/layout/GradientBlurBackground";
 
 type AccountSettingsPageProps = {
-  scope: "account" | "workspace";
+  scope: "account" | "master" | "workspace";
 };
 
 const SettingsInputClassName =
@@ -52,6 +52,14 @@ const PrimarySettingsButtonClassName =
 
 const SecondarySettingsButtonClassName =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:bg-offwhite disabled:cursor-not-allowed disabled:border-darknavy/8 disabled:text-darknavy/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35";
+
+function getSettingsScopeLabel(scope: AccountSettingsPageProps["scope"]) {
+  if (scope === "master") {
+    return "Master Settings";
+  }
+
+  return scope === "workspace" ? "Workspace Settings" : "Account Settings";
+}
 
 export function AccountSettingsPage({ scope }: AccountSettingsPageProps) {
   const {
@@ -75,7 +83,7 @@ export function AccountSettingsPage({ scope }: AccountSettingsPageProps) {
         <header className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
-              {scope === "workspace" ? "Workspace Settings" : "Account Settings"}
+              {getSettingsScopeLabel(scope)}
             </p>
             <h1 className="mt-2 text-2xl font-semibold tracking-tight text-darknavy sm:text-3xl">
               Global configuration

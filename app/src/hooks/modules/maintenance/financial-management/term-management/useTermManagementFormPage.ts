@@ -16,7 +16,7 @@ import type {
 	TermManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 import { validateTermManagementForm } from "@/app/src/validations/modules/maintenance/financial-management/term-management/TermManagementValidation";
-import { useTermManagementStore } from "./useTermManagement";
+import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
 
 export function useTermManagementFormPage() {
 	const router = useRouter();

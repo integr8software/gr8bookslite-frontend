@@ -13,8 +13,8 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { PettyCashVoucherListFilters } from "./PettyCashVoucherListFilters";
-import { PettyCashVoucherTableRow } from "./PettyCashVoucherTableRow";
+import { PettyCashVoucherListFilters } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherListFilters";
+import { PettyCashVoucherTableRow } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTableRow";
 
 export function PettyCashVoucherListPage() {
   const page = usePettyCashVoucherListPage();

@@ -9,7 +9,7 @@ import type {
   SaveOnboardingCompanyDetailsRequest,
   SelectOnboardingPlanRequest,
   UploadOnboardingCompanyLogoResponse,
-} from "./OnboardingApiTypes";
+} from "@/app/src/services/onboarding/OnboardingApiTypes";
 
 function GetAuthorizationHeaders(accessToken: string | null) {
   if (!accessToken) {

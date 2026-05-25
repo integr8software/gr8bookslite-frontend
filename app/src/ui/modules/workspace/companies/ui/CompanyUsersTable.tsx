@@ -16,7 +16,7 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 import {
 	WorkspaceStatusBadge,
 	WorkspaceUserAvatar,
-} from "./WorkspaceCompanyBadges";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyBadges";
 import {
 	WorkspaceCompaniesFilterBar,
 	WorkspaceCompaniesFilterSelect,
@@ -24,7 +24,7 @@ import {
 	WorkspaceCompaniesResetButton,
 	WorkspaceCompaniesSearchInput,
 	WorkspaceCompaniesTableCell,
-} from "./WorkspaceCompanyListPrimitives";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyListPrimitives";
 
 export function CompanyUsersTable({
 	baseHref,

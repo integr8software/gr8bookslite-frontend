@@ -9,8 +9,8 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { BranchManagementSpotlightTutorial } from "./BranchManagementSpotlightTutorial";
-import { BranchManagementTable } from "./BranchManagementTable";
+import { BranchManagementSpotlightTutorial } from "@/app/src/ui/modules/system-administration/branch-management/BranchManagementSpotlightTutorial";
+import { BranchManagementTable } from "@/app/src/ui/modules/system-administration/branch-management/BranchManagementTable";
 
 export function BranchManagementMain() {
 	const branches = useBranchManagementStore((state) => state.branches);

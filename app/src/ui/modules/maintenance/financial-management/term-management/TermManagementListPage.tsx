@@ -11,7 +11,7 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { TermManagementTable } from "./TermManagementTable";
+import { TermManagementTable } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementTable";
 
 export function TermManagementListPage() {
   const terms = useTermManagementStore((state) => state.terms);

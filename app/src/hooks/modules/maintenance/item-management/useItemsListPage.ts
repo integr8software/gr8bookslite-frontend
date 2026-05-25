@@ -15,7 +15,7 @@ import type {
 	ItemRecord,
 	ItemTableColumnKey,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
-import { useItemManagementStore } from "./useItemManagement";
+import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item-management/useItemManagement";
 
 export function useItemsListPage() {
 	const { deleteItem, isLoading, isMutating, items } = useItemManagementStore();

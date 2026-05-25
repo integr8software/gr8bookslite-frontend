@@ -5,7 +5,7 @@ import { TermManagementTablePaginationStorageKey } from "@/app/src/constants/mod
 import { useTermManagementTable } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagementTable";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import { TermManagementTableRow } from "./TermManagementTableRow";
+import { TermManagementTableRow } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementTableRow";
 
 type TermManagementTableProps = {
 	isLoading: boolean;

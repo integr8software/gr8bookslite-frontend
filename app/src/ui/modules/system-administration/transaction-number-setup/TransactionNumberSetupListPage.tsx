@@ -9,8 +9,8 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { TransactionNumberSetupBlueprintPanel } from "./TransactionNumberSetupBlueprintPanel";
-import { TransactionNumberSetupTable } from "./TransactionNumberSetupTable";
+import { TransactionNumberSetupBlueprintPanel } from "@/app/src/ui/modules/system-administration/transaction-number-setup/TransactionNumberSetupBlueprintPanel";
+import { TransactionNumberSetupTable } from "@/app/src/ui/modules/system-administration/transaction-number-setup/TransactionNumberSetupTable";
 
 export function TransactionNumberSetupListPage() {
 	const page = useTransactionNumberSetupListPage();

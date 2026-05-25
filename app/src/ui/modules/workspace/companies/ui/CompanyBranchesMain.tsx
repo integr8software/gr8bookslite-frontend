@@ -19,8 +19,8 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
-import { CompanyBranchesTable } from "./CompanyBranchesTable";
+import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
+import { CompanyBranchesTable } from "@/app/src/ui/modules/workspace/companies/ui/CompanyBranchesTable";
 
 export function WorkspaceCompanyBranchesMain() {
   const { company, companyBranches, isLoading } = useWorkspaceCompanyContext();

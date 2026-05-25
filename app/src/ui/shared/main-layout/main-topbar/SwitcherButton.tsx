@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { MainCompany } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
-import { ImageSwatch } from "./ImageSwatch";
-import { joinClasses } from "./utils";
+import { ImageSwatch } from "@/app/src/ui/shared/main-layout/main-topbar/ImageSwatch";
+import { joinClasses } from "@/app/src/ui/shared/main-layout/main-topbar/utils";
 
 type SwitcherButtonProps = {
   description?: string;

@@ -4,7 +4,7 @@ import type {
 	ItemSetupTableRowData,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { ItemSetupRecordActions } from "./ItemSetupRecordActions";
+import { ItemSetupRecordActions } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupRecordActions";
 
 type ItemSetupTableRowProps = {
 	expandedIds: Set<string>;

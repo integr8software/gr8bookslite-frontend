@@ -18,7 +18,7 @@ import type {
 	PurchaseRequestFormMode,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import { validatePurchaseRequestForm } from "@/app/src/validations/modules/purchasing/purchase-request/PurchaseRequestValidation";
-import { usePurchaseRequestStore } from "./usePurchaseRequest";
+import { usePurchaseRequestStore } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequest";
 
 export function usePurchaseRequestFormPage() {
 	const router = useRouter();

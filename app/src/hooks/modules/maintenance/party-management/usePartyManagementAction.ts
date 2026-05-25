@@ -37,7 +37,7 @@ import type {
 	PartyInformationFormValues,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
-import { usePartyManagementStore } from "./usePartyManagement";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 
 export function usePartyManagementAction() {
 	const router = useRouter();

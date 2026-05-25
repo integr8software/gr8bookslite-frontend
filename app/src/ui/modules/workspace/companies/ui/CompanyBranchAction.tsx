@@ -17,8 +17,8 @@ import type {
 	WorkspaceCompanyBranchFormValues,
 	WorkspaceCompanyBranchKind,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
-import { WorkspaceCompanyActionHeader } from "./WorkspaceCompanyActionHeader";
-import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
+import { WorkspaceCompanyActionHeader } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyActionHeader";
+import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
 
 const CompanyBranchFormId = "workspace-company-branch-form";
 

@@ -3,25 +3,27 @@ import type {
   MainCompany,
   MainNavigationScope,
 } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
-import { ImageSwatch } from "./ImageSwatch";
-import { MenuSeparator } from "./MenuPrimitives";
-import { SwitcherButton } from "./SwitcherButton";
+import { ImageSwatch } from "@/app/src/ui/shared/main-layout/main-topbar/ImageSwatch";
+import { MenuSeparator } from "@/app/src/ui/shared/main-layout/main-topbar/MenuPrimitives";
+import { SwitcherButton } from "@/app/src/ui/shared/main-layout/main-topbar/SwitcherButton";
 import type { SwitcherVariant } from "@/app/src/types/shared/MainTopbarTypes";
 import {
   getCompanySwitcherDescription,
   getSwitcherMenuClassName,
   joinClasses,
-} from "./utils";
+} from "@/app/src/ui/shared/main-layout/main-topbar/utils";
 
 type CompanySwitcherProps = {
   activeNavigationScope: MainNavigationScope;
   availableCompanies: MainCompany[];
+  canAccessMaster: boolean;
   canAccessWorkspace: boolean;
   currentCompany: MainCompany;
   isOpen: boolean;
   variant?: SwitcherVariant;
   onClose: () => void;
   onSelectCompany: (companyId: string) => void;
+  onSwitchToMaster: () => void;
   onSwitchToWorkspace: () => void;
   onToggle: () => void;
 };
@@ -29,17 +31,25 @@ type CompanySwitcherProps = {
 export function CompanySwitcher({
   activeNavigationScope,
   availableCompanies,
+  canAccessMaster,
   canAccessWorkspace,
   currentCompany,
   isOpen,
   variant = "desktop",
   onClose,
   onSelectCompany,
+  onSwitchToMaster,
   onSwitchToWorkspace,
   onToggle,
 }: CompanySwitcherProps) {
-  const isWorkspaceActive = activeNavigationScope === "workspace";
-  const label = isWorkspaceActive ? "Workspace" : currentCompany.name;
+  const isAdministrationActive = activeNavigationScope !== "company";
+  const label =
+    activeNavigationScope === "master"
+      ? "Master Control"
+      : activeNavigationScope === "workspace"
+        ? "Workspace"
+        : currentCompany.name;
+  const hasAdministrationOptions = canAccessMaster || canAccessWorkspace;
 
   return (
     <div
@@ -61,7 +71,7 @@ export function CompanySwitcher({
           variant === "mobile" ? "rounded-full" : "rounded-md",
         )}
       >
-        {isWorkspaceActive ? (
+        {isAdministrationActive ? (
           <LayoutDashboard
             className="h-4 w-4 shrink-0 text-darknavy/55"
             aria-hidden="true"
@@ -89,18 +99,32 @@ export function CompanySwitcher({
       {isOpen ? (
         <div className={getSwitcherMenuClassName(variant)}>
           <div className="max-h-[min(24rem,calc(100vh-8rem))] space-y-1.5 overflow-y-auto overscroll-contain p-2">
-            {canAccessWorkspace ? (
+            {hasAdministrationOptions ? (
               <>
-                <SwitcherButton
-                  description="Global administration"
-                  icon={LayoutDashboard}
-                  isActive={isWorkspaceActive}
-                  label="Workspace"
-                  onClick={() => {
-                    onSwitchToWorkspace();
-                    onClose();
-                  }}
-                />
+                {canAccessMaster ? (
+                  <SwitcherButton
+                    description="Platform administration"
+                    icon={LayoutDashboard}
+                    isActive={activeNavigationScope === "master"}
+                    label="Master Control"
+                    onClick={() => {
+                      onSwitchToMaster();
+                      onClose();
+                    }}
+                  />
+                ) : null}
+                {canAccessWorkspace ? (
+                  <SwitcherButton
+                    description="Company administration"
+                    icon={LayoutDashboard}
+                    isActive={activeNavigationScope === "workspace"}
+                    label="Workspace"
+                    onClick={() => {
+                      onSwitchToWorkspace();
+                      onClose();
+                    }}
+                  />
+                ) : null}
                 <MenuSeparator />
               </>
             ) : null}
@@ -111,7 +135,7 @@ export function CompanySwitcher({
                 description={getCompanySwitcherDescription(company)}
                 icon={Building2}
                 imageUrl={company.logoUrl}
-                isActive={!isWorkspaceActive && company.id === currentCompany.id}
+                isActive={!isAdministrationActive && company.id === currentCompany.id}
                 label={company.name}
                 status={company.status}
                 onClick={() => {

@@ -9,207 +9,173 @@ import { flattenSections } from "@/app/src/data/shared/main-layout/sidebar/Sideb
 import { SidebarModuleNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarModuleRegistry";
 
 export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
-  {
-    key: "workspace-overview-section",
-    title: "Overview",
-    href: "/workspace/dashboard",
-    icon: "dashboard",
-    accessKey: "workspace.overview",
-    items: [
-      item(
-        "workspace-dashboard",
-        "Dashboard",
-        "/workspace/dashboard",
-        "workspace.dashboard",
-      ),
-      item(
-        "workspace-activity-feed",
-        "Activity Feed",
-        "/workspace/activity-feed",
-        "workspace.activity",
-      ),
-    ],
-  },
-  {
-    key: "workspace-tenant-management",
-    title: "Tenant Management",
-    icon: "branch",
-    accessKey: "workspace.companies",
-    items: [
-      item(
-        "workspace-companies",
-        "Companies",
-        "/workspace/companies",
-        "workspace.companies",
-      ),
-      item(
-        "workspace-users-roles",
-        "Users",
-        "/workspace/users-roles",
-        "workspace.users",
-      ),
-    ],
-  },
-  {
-    key: "workspace-subscription-billing",
-    title: "Subscription & Billing",
-    icon: "billing",
-    accessKey: "workspace.billing.plans",
-    items: [
-      item(
-        "workspace-plans-packages",
-        "Plans & Packages",
-        "/workspace/plans-packages",
-        "workspace.billing.plans",
-      ),
-      item(
-        "workspace-subscriptions",
-        "Subscriptions",
-        "/workspace/subscriptions",
-        "workspace.billing.subscriptions",
-      ),
-      item(
-        "workspace-invoices",
-        "Invoices",
-        "/workspace/invoices",
-        "workspace.billing.invoices",
-      ),
-      item(
-        "workspace-coupons-promotions",
-        "Coupons & Promotions",
-        "/workspace/coupons-promotions",
-        "workspace.billing.promotions",
-      ),
-    ],
-  },
-  {
-    key: "workspace-platform-configuration",
-    title: "Platform Configuration",
-    icon: "settings",
-    accessKey: "workspace.platform.modules",
-    items: [
-      item(
-        "workspace-modules-features",
-        "Modules & Features",
-        "/workspace/modules-features",
-        "workspace.platform.modules",
-      ),
-      item(
-        "workspace-domains-ports",
-        "Domains & Ports",
-        "/workspace/domains-ports",
-        "workspace.platform.domains",
-      ),
-      item(
-        "workspace-integrations",
-        "Integrations",
-        "/workspace/integrations",
-        "workspace.platform.integrations",
-      ),
-      item(
-        "workspace-system-settings",
-        "System Settings",
-        "/workspace/system-settings",
-        "workspace.platform.settings",
-      ),
-    ],
-  },
-  {
-    key: "workspace-monitoring-security",
-    title: "Monitoring & Security",
-    icon: "security",
-    accessKey: "workspace.audit",
-    items: [
-      item(
-        "workspace-audit",
-        "Audit Logs",
-        "/workspace/audit-logs",
-        "workspace.audit",
-      ),
-      item(
-        "workspace-system-logs",
-        "System Logs",
-        "/workspace/system-logs",
-        "workspace.monitoring.logs",
-      ),
-      item(
-        "workspace-security-center",
-        "Security Center",
-        "/workspace/security-center",
-        "workspace.monitoring.security",
-      ),
-      item(
-        "workspace-backups",
-        "Backups",
-        "/workspace/backups",
-        "workspace.monitoring.backups",
-      ),
-    ],
-  },
-  {
-    key: "workspace-support-maintenance",
-    title: "Support & Maintenance",
-    icon: "maintenance",
-    accessKey: "workspace.support.announcements",
-    items: [
-      item(
-        "workspace-announcements",
-        "Announcements",
-        "/workspace/announcements",
-        "workspace.support.announcements",
-      ),
-      item(
-        "workspace-support-tickets",
-        "Support Tickets",
-        "/workspace/support-tickets",
-        "workspace.support.tickets",
-      ),
-      item(
-        "workspace-maintenance",
-        "Maintenance",
-        "/workspace/maintenance",
-        "workspace.support.maintenance",
-      ),
-    ],
-  },
-  {
-    key: "workspace-settings-section",
-    title: "Settings",
-    icon: "settings",
-    accessKey: "workspace.settings",
-    items: [
-      item(
-        "workspace-settings",
-        "Settings",
-        "/workspace/settings",
-        "workspace.settings",
-      ),
-    ],
-  },
-  {
-    key: "workspace-admin",
-    title: "Admin",
-    icon: "profile",
-    accessKey: "workspace.admin.companySettings",
-    items: [
-      item(
-        "workspace-company-settings",
-        "Company Settings",
-        "/workspace/company-settings",
-        "workspace.admin.companySettings",
-      ),
-      item(
-        "workspace-payment-methods",
-        "Payment Methods",
-        "/workspace/payment-methods",
-        "workspace.admin.paymentMethods",
-      ),
-    ],
-  },
+  directSection(
+    "workspace-dashboard-section",
+    "Dashboard",
+    "/workspace/dashboard",
+    "dashboard",
+    "workspace.dashboard",
+    "workspace-dashboard",
+  ),
+  directSection(
+    "workspace-company-management-section",
+    "Company Management",
+    "/workspace/companies",
+    "company",
+    "workspace.companies",
+    "workspace-companies",
+  ),
+  directSection(
+    "workspace-user-management-section",
+    "User Management",
+    "/workspace/users-roles",
+    "user",
+    "workspace.users",
+    "workspace-users-roles",
+  ),
+  directSection(
+    "workspace-billing-subscription-section",
+    "Billing & Subscription",
+    "/workspace/subscriptions",
+    "billing",
+    "workspace.billing.subscriptions",
+    "workspace-subscriptions",
+  ),
+  directSection(
+    "workspace-audit-logs-section",
+    "Audit Logs",
+    "/workspace/audit-logs",
+    "security",
+    "workspace.audit",
+    "workspace-audit",
+  ),
+  directSection(
+    "workspace-company-settings-section",
+    "Company Settings",
+    "/workspace/company-settings",
+    "settings",
+    "workspace.admin.companySettings",
+    "workspace-company-settings",
+  ),
+];
+
+const MasterControlSourceNavigationSections: MainNavigationSection[] = [
+  directSection(
+    "workspace-dashboard-section",
+    "Dashboard",
+    "/workspace/dashboard",
+    "dashboard",
+    "workspace.dashboard",
+    "workspace-dashboard",
+  ),
+  directSection(
+    "workspace-announcement-section",
+    "Announcement",
+    "/workspace/announcements",
+    "announcement",
+    "workspace.support.announcements",
+    "workspace-announcements",
+  ),
+  directSection(
+    "workspace-company-management-section",
+    "Company Management",
+    "/workspace/companies",
+    "company",
+    "workspace.companies",
+    "workspace-companies",
+  ),
+  directSection(
+    "workspace-branch-management-section",
+    "Branch Management",
+    "/workspace/branches",
+    "branch",
+    "workspace.branches",
+    "workspace-branches",
+  ),
+  directSection(
+    "workspace-user-management-section",
+    "User Management",
+    "/workspace/users-roles",
+    "user",
+    "workspace.users",
+    "workspace-users-roles",
+  ),
+  directSection(
+    "workspace-plan-and-packages-section",
+    "Plan and Packages",
+    "/workspace/plans-packages",
+    "billing",
+    "workspace.billing.plans",
+    "workspace-plans-packages",
+  ),
+  directSection(
+    "workspace-subscription-section",
+    "Subscription",
+    "/workspace/subscriptions",
+    "subscription",
+    "workspace.billing.subscriptions",
+    "workspace-subscriptions",
+  ),
+  directSection(
+    "workspace-invoices-section",
+    "Invoices",
+    "/workspace/invoices",
+    "invoice",
+    "workspace.billing.invoices",
+    "workspace-invoices",
+  ),
+  directSection(
+    "workspace-payment-methods-section",
+    "Payment Methods",
+    "/workspace/payment-methods",
+    "payment",
+    "workspace.admin.paymentMethods",
+    "workspace-payment-methods",
+  ),
+  directSection(
+    "workspace-promotions-section",
+    "Promotions",
+    "/workspace/coupons-promotions",
+    "promotion",
+    "workspace.billing.promotions",
+    "workspace-coupons-promotions",
+  ),
+  directSection(
+    "workspace-subscriber-promotions-section",
+    "Subscriber Promotions",
+    "/workspace/subscriber-promotions",
+    "promotion",
+    "workspace.billing.promotions",
+    "workspace-subscriber-promotions",
+  ),
+  directSection(
+    "workspace-audit-system-logs-section",
+    "Audit/System Logs",
+    "/workspace/audit-system-logs",
+    "security",
+    "workspace.audit",
+    "workspace-audit-system-logs",
+  ),
+  directSection(
+    "workspace-support-tickets-section",
+    "Support Tickets",
+    "/workspace/support-tickets",
+    "support",
+    "workspace.support.tickets",
+    "workspace-support-tickets",
+  ),
+  directSection(
+    "workspace-system-settings-section",
+    "System Settings",
+    "/workspace/system-settings",
+    "settings",
+    "workspace.platform.settings",
+    "workspace-system-settings",
+  ),
 ];
 
 export const MainMasterNavigationSections =
-  createMasterNavigationSections(MainWorkspaceNavigationSections);
+  createMasterNavigationSections(MasterControlSourceNavigationSections);
 
 const RegisteredMainCompanyNavigationSections = SidebarModuleNavigationSections;
 
@@ -932,7 +898,27 @@ export const MainCompanySearchItems = flattenSections(
   MainCompanyNavigationSections,
 );
 export const MainSearchItems = MainCompanySearchItems;
-export const MainMasterSearchItems = flattenSections(MainMasterNavigationSections);
+export const MainMasterSearchItems = flattenSections(
+  MainMasterNavigationSections,
+);
+
+function directSection(
+  key: string,
+  title: string,
+  href: string,
+  icon: MainNavigationSection["icon"],
+  accessKey: MainAccessKey,
+  itemKey: string,
+): MainNavigationSection {
+  return {
+    key,
+    title,
+    href,
+    icon,
+    accessKey,
+    items: [item(itemKey, title, href, accessKey)],
+  };
+}
 
 function item(
   key: string,

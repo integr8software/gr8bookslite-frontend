@@ -2,9 +2,9 @@ import Link from "next/link";
 import { getMasterPlanAndPackageViewHref } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import {
 	formatMasterPlanAndPackagePricing,
-	formatMasterPlanAndPackageUserLimit,
+	formatMasterPlanAndPackageScalePricing,
 	getMasterPlanAndPackagePricingSupportingText,
-	getMasterPlanAndPackageUserSupportingText,
+	getMasterPlanAndPackageScaleSupportingText,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
 import type { MasterPlanAndPackageRecord } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 import { MasterPlanAndPackageStatusBadge } from "@/app/src/ui/master/plan-and-packages/MasterPlanAndPackageBadges";
@@ -47,10 +47,10 @@ export function MasterPlanAndPackageTableRow({
 			</td>
 			<td className="px-4 py-4">
 				<p className="text-sm font-semibold text-darknavy">
-					{formatMasterPlanAndPackageUserLimit(record.userLimit)}
+					{formatMasterPlanAndPackageScalePricing(record.scalePricing)}
 				</p>
 				<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/38">
-					{getMasterPlanAndPackageUserSupportingText(record.userLimit)}
+					{getMasterPlanAndPackageScaleSupportingText(record.scalePricing)}
 				</p>
 			</td>
 			<td className="px-4 py-4">

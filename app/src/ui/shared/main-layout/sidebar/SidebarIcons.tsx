@@ -42,22 +42,30 @@ import { joinClasses } from "./utils";
 
 export const MainIcons: Record<MainIconName, LucideIcon> = {
 	approval: ShieldCheck,
+	announcement: Mail,
 	asset: Building2,
 	branch: GitBranch,
 	billing: CreditCard,
 	cashIn: ReceiptText,
 	cashOut: WalletCards,
+	company: Building2,
 	dashboard: LayoutDashboard,
 	inventory: Boxes,
+	invoice: FileText,
 	journal: BookOpen,
 	maintenance: Settings,
 	payable: CreditCard,
+	payment: CreditCard,
 	profile: UserCircle,
+	promotion: BadgePercent,
 	purchasing: ShoppingCart,
 	reports: BarChart3,
 	sales: BadgeDollarSign,
 	security: ShieldCheck,
 	settings: Settings,
+	subscription: WalletCards,
+	support: Users,
+	user: UserCog,
 };
 
 const SidebarItemIcons: Record<string, LucideIcon> = {

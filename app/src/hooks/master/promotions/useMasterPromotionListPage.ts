@@ -9,7 +9,10 @@ import {
 	type PaginationState,
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
-import { MasterPromotionTableColumns } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
+import {
+	MasterPromotionTableColumns,
+	getMasterPromotionTargetLabel,
+} from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 import {
 	MasterPromotionRecords,
 	formatMasterPromotionDate,
@@ -43,7 +46,7 @@ export function useMasterPromotionListPage() {
 				record.code,
 				record.description,
 				record.type,
-				record.target,
+				getMasterPromotionTargetLabel(record.target),
 				record.status,
 				formatMasterPromotionValue(record),
 				formatMasterPromotionDate(record.expiresAt),
@@ -151,6 +154,16 @@ function createColumn(
 		return {
 			id: key,
 			accessorFn: (record) => formatMasterPromotionValue(record),
+			header: label,
+			enableSorting: false,
+			meta: { className },
+		};
+	}
+
+	if (key === "target") {
+		return {
+			id: key,
+			accessorFn: (record) => getMasterPromotionTargetLabel(record.target),
 			header: label,
 			enableSorting: false,
 			meta: { className },

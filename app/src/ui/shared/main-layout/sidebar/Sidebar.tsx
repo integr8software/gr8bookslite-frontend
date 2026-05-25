@@ -312,6 +312,20 @@ export function MainSidebar({
 										/>
 									))}
 								</div>
+							) : isDirectNavigationSection(section) ? (
+								<SidebarSection
+									key={section.key}
+									activeHref={activeHref}
+									expandedKeys={expandedKeys}
+									section={section}
+									onInteract={
+										suppressAutoScrollFromSidebarInteraction
+									}
+									onNavigateFromSidebar={
+										handleNavigateFromSidebar
+									}
+									onToggleExpandedKey={onToggleExpandedKey}
+								/>
 							) : isAdminNavigationSection(section) ? (
 								<SidebarCategorySection
 									key={section.key}
@@ -353,5 +367,13 @@ function isAdminNavigationSection(section: MainNavigationSection) {
 	return (
 		section.key.startsWith("workspace-") ||
 		section.key.startsWith("master-")
+	);
+}
+
+function isDirectNavigationSection(section: MainNavigationSection) {
+	return Boolean(
+		section.href &&
+			section.items.length === 1 &&
+			section.items[0]?.href === section.href,
 	);
 }

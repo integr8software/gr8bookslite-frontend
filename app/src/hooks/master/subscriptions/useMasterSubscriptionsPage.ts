@@ -126,7 +126,9 @@ export function useMasterSubscriptionsPage() {
 				subscription.name,
 				subscription.ownerName,
 				subscription.status,
+				subscription.rating,
 				subscription.billingCycle,
+				`${subscription.durationMonths} months`,
 				plan?.name,
 			]
 				.join(" ")
@@ -173,9 +175,25 @@ export function useMasterSubscriptionsPage() {
 			(total, quote) => total + quote.total,
 			0,
 		);
+		const activeSubscriptions = MasterSubscriptionCompanies.filter(
+			(subscription) => subscription.status === "Active",
+		).length;
+		const atRiskSubscriptions = MasterSubscriptionCompanies.filter(
+			(subscription) =>
+				subscription.status === "Past Due" || subscription.rating === "At Risk",
+		).length;
+		const averageDurationMonths = Math.round(
+			MasterSubscriptionCompanies.reduce(
+				(total, subscription) => total + subscription.durationMonths,
+				0,
+			) / Math.max(1, MasterSubscriptionCompanies.length),
+		);
 
 		return {
 			activePlans: activePlans.length,
+			activeSubscriptions,
+			atRiskSubscriptions,
+			averageDurationMonths,
 			draftPlans: draftPlans.length,
 			enabledModules: enabledModuleIds.size,
 			inactivePlans: inactivePlans.length,

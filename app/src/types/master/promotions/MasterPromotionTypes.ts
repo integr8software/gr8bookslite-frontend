@@ -8,13 +8,7 @@ export type MasterPromotionDiscountKind = "Percent" | "Fixed";
 
 export type MasterPromotionStatus = "Active" | "Draft" | "Inactive";
 
-export type MasterPromotionTarget =
-	| "All Plans"
-	| "Accounting"
-	| "Inventory"
-	| "Accounting + Inventory"
-	| "Add-ons"
-	| "Event Attendees";
+export type MasterPromotionTarget = string;
 
 export type MasterPromotionRecord = {
 	code: string;

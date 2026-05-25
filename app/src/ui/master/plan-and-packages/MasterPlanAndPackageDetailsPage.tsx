@@ -6,11 +6,12 @@ import {
 	getMasterPlanAndPackageEditHref,
 } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import {
+	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackagePricing,
-	formatMasterPlanAndPackageUserLimit,
+	getMasterPlanAndPackageFeatureLabels,
 	getMasterPlanAndPackageById,
 	getMasterPlanAndPackagePricingSupportingText,
-	getMasterPlanAndPackageUserSupportingText,
+	getMasterPlanAndPackageScaleSupportingText,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
 import {
 	ModuleHeader,
@@ -69,7 +70,6 @@ export function MasterPlanAndPackageDetailsPage({
 			<div className="grid gap-5 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
 				<div className="grid content-start gap-4">
 					<DetailPanel title="Plan Details">
-						<DetailLine label="Code" value={record.code} />
 						<div className="grid gap-2">
 							<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/42">
 								Status
@@ -85,18 +85,20 @@ export function MasterPlanAndPackageDetailsPage({
 							value={formatMasterPlanAndPackagePricing(record.pricing)}
 						/>
 					</DetailPanel>
-					<DetailPanel title="Users">
+					<DetailPanel title="Scale Pricing">
 						<DetailLine
-							label={getMasterPlanAndPackageUserSupportingText(
-								record.userLimit,
+							label={getMasterPlanAndPackageScaleSupportingText(
+								record.scalePricing,
 							)}
-							value={formatMasterPlanAndPackageUserLimit(record.userLimit)}
+							value={formatMasterPlanAndPackageScalePricing(
+								record.scalePricing,
+							)}
 						/>
 					</DetailPanel>
 				</div>
-				<DetailPanel title="Included Features">
+				<DetailPanel title="Included Module Features">
 					<div className="grid gap-3">
-						{record.features.map((feature) => (
+						{getMasterPlanAndPackageFeatureLabels(record.featureIds).map((feature) => (
 							<div
 								key={feature}
 								className="flex items-start gap-3 rounded-lg border border-darknavy/10 bg-offwhite/45 px-3 py-2"

@@ -87,22 +87,30 @@ export type MainPermissionMap = Partial<
 
 export type MainIconName =
   | "approval"
+  | "announcement"
   | "asset"
   | "branch"
   | "billing"
   | "cashIn"
   | "cashOut"
+  | "company"
   | "dashboard"
   | "inventory"
+  | "invoice"
   | "journal"
   | "maintenance"
   | "payable"
+  | "payment"
   | "profile"
+  | "promotion"
   | "purchasing"
   | "reports"
   | "sales"
   | "security"
-  | "settings";
+  | "settings"
+  | "subscription"
+  | "support"
+  | "user";
 
 export type MainNavigationItem = {
   key: string;

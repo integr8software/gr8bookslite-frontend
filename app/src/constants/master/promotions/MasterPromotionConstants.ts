@@ -2,9 +2,9 @@ import type {
 	MasterPromotionDiscountKind,
 	MasterPromotionStatus,
 	MasterPromotionTableColumnKey,
-	MasterPromotionTarget,
 	MasterPromotionType,
 } from "@/app/src/types/master/promotions/MasterPromotionTypes";
+import { MasterPlanAndPackageRecords } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
 
 export const MasterPromotionsHref = "/master/promotions";
 
@@ -32,14 +32,29 @@ export const MasterPromotionDiscountKindOptions = [
 	"Fixed",
 ] as const satisfies readonly MasterPromotionDiscountKind[];
 
+export const MasterPromotionAllPlansTarget = "all-plans";
+
 export const MasterPromotionTargetOptions = [
-	"All Plans",
-	"Accounting",
-	"Inventory",
-	"Accounting + Inventory",
-	"Add-ons",
-	"Event Attendees",
-] as const satisfies readonly MasterPromotionTarget[];
+	{
+		description: "Every active and future plan can receive this promotion.",
+		label: "Global",
+		name: "All Plans",
+		value: MasterPromotionAllPlansTarget,
+	},
+	...MasterPlanAndPackageRecords.map((plan) => ({
+		description: plan.description,
+		label: "Plan",
+		name: plan.name,
+		value: plan.id,
+	})),
+];
+
+export function getMasterPromotionTargetLabel(target: string) {
+	return (
+		MasterPromotionTargetOptions.find((option) => option.value === target)
+			?.name ?? target
+	);
+}
 
 export const MasterPromotionStatusOptions = [
 	"Active",

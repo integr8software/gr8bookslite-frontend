@@ -4,10 +4,10 @@ import Link from "next/link";
 import {
 	BadgePercent,
 	Check,
+	Layers3,
 	Package,
 	Plus,
 	ToggleLeft,
-	Users,
 } from "lucide-react";
 import { MasterPlanAndPackageAddHref } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import { useMasterPlanAndPackageListPage } from "@/app/src/hooks/master/plan-and-packages/useMasterPlanAndPackageListPage";
@@ -27,8 +27,8 @@ export function MasterPlanAndPackageListPage() {
 				variant="card"
 				titleAs="h1"
 				eyebrow="Subscription & Billing"
-				title="Plan & Packages"
-				description="Maintain plan records, activation status, pricing terms, user limits, and add-on user rules."
+				title="Plan and Packages"
+				description="Maintain plan records, activation status, module entitlements, pricing terms, and company, branch, and user scale rules."
 				actions={
 					<Link
 						href={MasterPlanAndPackageAddHref}
@@ -50,8 +50,9 @@ function MasterPlanAndPackageSummaryCards({
 }: {
 	summary: {
 		activePlans: number;
-		addOnUserPlans: number;
+		addOnScalePlans: number;
 		draftPlans: number;
+		enabledModules: number;
 		inactivePlans: number;
 		totalPlans: number;
 	};
@@ -82,15 +83,21 @@ function MasterPlanAndPackageSummaryCards({
 			value: summary.inactivePlans,
 		},
 		{
-			icon: Users,
-			label: "User Add-on Plans",
+			icon: Layers3,
+			label: "Enabled Modules",
 			tone: "bg-skyblue/12 text-darknavy",
-			value: summary.addOnUserPlans,
+			value: summary.enabledModules,
+		},
+		{
+			icon: BadgePercent,
+			label: "Scale Add-ons",
+			tone: "bg-offwhite text-darknavy",
+			value: summary.addOnScalePlans,
 		},
 	];
 
 	return (
-		<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+		<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
 			{metrics.map((metric) => {
 				const Icon = metric.icon;
 

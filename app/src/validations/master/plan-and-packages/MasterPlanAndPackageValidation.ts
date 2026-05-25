@@ -3,23 +3,52 @@ import type {
 	MasterPlanAndPackageFormErrors,
 	MasterPlanAndPackageFormValues,
 	MasterPlanAndPackageRecord,
+	MasterPlanAndPackageScaleKind,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
+
+const ScaleKindSchema = z.enum(["Fixed", "Range", "Add-on"]);
 
 const MasterPlanAndPackageFormSchema = z
 	.object({
 		amount: z.number().min(0, "Amount cannot be negative."),
 		baseAmount: z.number().min(0, "Base amount cannot be negative."),
-		billingLabel: z.string().trim(),
-		code: z
-			.string()
-			.trim()
-			.min(3, "Code must be at least 3 characters.")
-			.max(32, "Code must be 32 characters or less."),
+		branchAddOnPrice: z.number().min(0, "Branch add-on price cannot be negative."),
+		branchAddOnStart: z
+			.number()
+			.int()
+			.min(1, "Branch add-on start must be at least 1."),
+		branchIncludedFree: z
+			.number()
+			.int()
+			.min(1, "Included branches must be at least 1."),
+		branchLimitKind: ScaleKindSchema,
+		branchMax: z.number().int().min(1, "Maximum branches must be at least 1."),
+		branchMin: z.number().int().min(1, "Minimum branches must be at least 1."),
+		companyAddOnPrice: z.number().min(0, "Company add-on price cannot be negative."),
+		companyAddOnStart: z
+			.number()
+			.int()
+			.min(1, "Company add-on start must be at least 1."),
+		companyIncludedFree: z
+			.number()
+			.int()
+			.min(1, "Included companies must be at least 1."),
+		companyLimitKind: ScaleKindSchema,
+		companyMax: z.number().int().min(1, "Maximum companies must be at least 1."),
+		companyMin: z.number().int().min(1, "Minimum companies must be at least 1."),
 		description: z
 			.string()
 			.trim()
 			.min(10, "Description must be at least 10 characters."),
-		features: z.string().trim().min(3, "Add at least one feature."),
+		discountAppliesFrom: z
+			.number()
+			.int()
+			.min(1, "Discount range must start at 1 or higher."),
+		discountAppliesTo: z
+			.number()
+			.int()
+			.min(1, "Discount range must end at 1 or higher."),
+		featureIds: z.array(z.string()).min(1, "Select at least one module feature."),
 		id: z.string().optional(),
 		intervalMonths: z
 			.number()
@@ -38,17 +67,16 @@ const MasterPlanAndPackageFormSchema = z
 			"Percent Off",
 		]),
 		status: z.enum(["Active", "Draft", "Inactive"]),
-		unitLabel: z.string().trim(),
-		userAddOnPrice: z.number().min(0, "Add-on price cannot be negative."),
+		userAddOnPrice: z.number().min(0, "User add-on price cannot be negative."),
 		userAddOnStart: z
 			.number()
 			.int()
-			.min(1, "Add-on start must be at least 1."),
+			.min(1, "User add-on start must be at least 1."),
 		userIncludedFree: z
 			.number()
 			.int()
 			.min(1, "Included users must be at least 1."),
-		userLimitKind: z.enum(["Fixed", "Range", "Add-on"]),
+		userLimitKind: ScaleKindSchema,
 		userMax: z.number().int().min(1, "Maximum users must be at least 1."),
 		userMin: z.number().int().min(1, "Minimum users must be at least 1."),
 	})
@@ -58,14 +86,6 @@ const MasterPlanAndPackageFormSchema = z
 				code: "custom",
 				message: "Amount must be greater than 0.",
 				path: ["amount"],
-			});
-		}
-
-		if (values.pricingKind === "Transactional" && !values.unitLabel.trim()) {
-			context.addIssue({
-				code: "custom",
-				message: "Unit label is required for transactional pricing.",
-				path: ["unitLabel"],
 			});
 		}
 
@@ -86,33 +106,48 @@ const MasterPlanAndPackageFormSchema = z
 				});
 			}
 
-			if (!values.billingLabel.trim()) {
+			if (values.discountAppliesTo < values.discountAppliesFrom) {
 				context.addIssue({
 					code: "custom",
-					message: "Billing label is required for percent-off pricing.",
-					path: ["billingLabel"],
+					message: "Discount range end must be greater than or equal to start.",
+					path: ["discountAppliesTo"],
 				});
 			}
 		}
 
-		if (values.userLimitKind === "Range" && values.userMax < values.userMin) {
-			context.addIssue({
-				code: "custom",
-				message: "Maximum users must be greater than or equal to minimum users.",
-				path: ["userMax"],
-			});
-		}
-
-		if (
-			values.userLimitKind === "Add-on" &&
-			values.userAddOnStart <= values.userIncludedFree
-		) {
-			context.addIssue({
-				code: "custom",
-				message: "Add-ons must start after the free user count.",
-				path: ["userAddOnStart"],
-			});
-		}
+		validateScaleRule({
+			addOnStart: values.companyAddOnStart,
+			includedFree: values.companyIncludedFree,
+			kind: values.companyLimitKind,
+			max: values.companyMax,
+			maxPath: "companyMax",
+			min: values.companyMin,
+			name: "Company",
+			path: "companyAddOnStart",
+			context,
+		});
+		validateScaleRule({
+			addOnStart: values.branchAddOnStart,
+			includedFree: values.branchIncludedFree,
+			kind: values.branchLimitKind,
+			max: values.branchMax,
+			maxPath: "branchMax",
+			min: values.branchMin,
+			name: "Branch",
+			path: "branchAddOnStart",
+			context,
+		});
+		validateScaleRule({
+			addOnStart: values.userAddOnStart,
+			includedFree: values.userIncludedFree,
+			kind: values.userLimitKind,
+			max: values.userMax,
+			maxPath: "userMax",
+			min: values.userMin,
+			name: "User",
+			path: "userAddOnStart",
+			context,
+		});
 	});
 
 export function validateMasterPlanAndPackageForm({
@@ -128,18 +163,56 @@ export function validateMasterPlanAndPackageForm({
 		: zodIssuesToErrors<MasterPlanAndPackageFormErrors>(
 				result.error.issues,
 			);
-	const normalizedCode = values.code.trim().toUpperCase();
-	const hasDuplicateCode = records.some(
+	const normalizedName = values.name.trim().toLowerCase();
+	const hasDuplicateName = records.some(
 		(record) =>
 			record.id !== values.id &&
-			record.code.trim().toUpperCase() === normalizedCode,
+			record.name.trim().toLowerCase() === normalizedName,
 	);
 
-	if (hasDuplicateCode) {
-		errors.code = "A plan with this code already exists.";
+	if (hasDuplicateName) {
+		errors.name = "A plan with this name already exists.";
 	}
 
 	return errors;
+}
+
+function validateScaleRule({
+	addOnStart,
+	context,
+	includedFree,
+	kind,
+	max,
+	maxPath,
+	min,
+	name,
+	path,
+}: {
+	addOnStart: number;
+	context: z.RefinementCtx;
+	includedFree: number;
+	kind: MasterPlanAndPackageScaleKind;
+	max: number;
+	maxPath: keyof MasterPlanAndPackageFormValues;
+	min: number;
+	name: string;
+	path: keyof MasterPlanAndPackageFormValues;
+}) {
+	if (kind === "Range" && max < min) {
+		context.addIssue({
+			code: "custom",
+			message: `${name} range maximum must be greater than or equal to minimum.`,
+			path: [maxPath],
+		});
+	}
+
+	if (kind === "Add-on" && addOnStart <= includedFree) {
+		context.addIssue({
+			code: "custom",
+			message: `${name} add-ons must start after the free count.`,
+			path: [path],
+		});
+	}
 }
 
 function zodIssuesToErrors<TErrorShape>(issues: z.ZodIssue[]) {

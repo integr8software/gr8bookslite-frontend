@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { getMasterPromotionViewHref } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
+import {
+	getMasterPromotionTargetLabel,
+	getMasterPromotionViewHref,
+} from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 import {
 	formatMasterPromotionDate,
 	formatMasterPromotionValue,
@@ -36,7 +39,7 @@ export function MasterPromotionTableRow({
 				</div>
 			</td>
 			<td className="px-4 py-4 text-sm font-medium text-darknavy/65">
-				{record.target}
+				{getMasterPromotionTargetLabel(record.target)}
 			</td>
 			<td className="px-4 py-4">
 				<p className="text-sm font-semibold text-darknavy">

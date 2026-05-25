@@ -7,10 +7,9 @@ export type MasterPlanAndPackagePricingKind =
 	| "Transactional"
 	| "Percent Off";
 
-export type MasterPlanAndPackageUserLimitKind =
-	| "Fixed"
-	| "Range"
-	| "Add-on";
+export type MasterPlanAndPackageScaleUnit = "company" | "branch" | "user";
+
+export type MasterPlanAndPackageScaleKind = "Fixed" | "Range" | "Add-on";
 
 export type MasterPlanAndPackagePricing =
 	| {
@@ -29,61 +28,83 @@ export type MasterPlanAndPackagePricing =
 	| {
 			amount: number;
 			kind: "Transactional";
-			unitLabel: string;
 	  }
 	| {
+			appliesFrom: number;
+			appliesTo: number;
 			baseAmount: number;
-			billingLabel: string;
 			kind: "Percent Off";
 			percentOff: number;
 	  };
 
-export type MasterPlanAndPackageUserLimit =
+export type MasterPlanAndPackageScaleRule =
 	| {
-			includedUsers: number;
+			includedCount: number;
 			kind: "Fixed";
 	  }
 	| {
 			kind: "Range";
-			maxUsers: number;
-			minUsers: number;
+			maxCount: number;
+			minCount: number;
 	  }
 	| {
 			addOnPrice: number;
 			addOnStart: number;
-			includedFreeUsers: number;
+			includedFreeCount: number;
 			kind: "Add-on";
 	  };
 
-export type MasterPlanAndPackageRecord = {
-	code: string;
+export type MasterPlanAndPackageScalePricing = Record<
+	MasterPlanAndPackageScaleUnit,
+	MasterPlanAndPackageScaleRule
+>;
+
+export type MasterPlanAndPackageFeatureOption = {
 	description: string;
-	features: string[];
+	id: string;
+	name: string;
+	section: string;
+};
+
+export type MasterPlanAndPackageRecord = {
+	description: string;
+	featureIds: string[];
 	id: string;
 	name: string;
 	pricing: MasterPlanAndPackagePricing;
+	scalePricing: MasterPlanAndPackageScalePricing;
 	status: MasterPlanAndPackageStatus;
-	userLimit: MasterPlanAndPackageUserLimit;
 };
 
 export type MasterPlanAndPackageFormValues = {
 	amount: number;
 	baseAmount: number;
-	billingLabel: string;
-	code: string;
+	branchAddOnPrice: number;
+	branchAddOnStart: number;
+	branchIncludedFree: number;
+	branchLimitKind: MasterPlanAndPackageScaleKind;
+	branchMax: number;
+	branchMin: number;
+	companyAddOnPrice: number;
+	companyAddOnStart: number;
+	companyIncludedFree: number;
+	companyLimitKind: MasterPlanAndPackageScaleKind;
+	companyMax: number;
+	companyMin: number;
 	description: string;
-	features: string;
+	discountAppliesFrom: number;
+	discountAppliesTo: number;
+	featureIds: string[];
 	id?: string;
 	intervalMonths: number;
 	name: string;
 	percentOff: number;
 	pricingKind: MasterPlanAndPackagePricingKind;
 	status: MasterPlanAndPackageStatus;
-	unitLabel: string;
 	userAddOnPrice: number;
 	userAddOnStart: number;
 	userIncludedFree: number;
-	userLimitKind: MasterPlanAndPackageUserLimitKind;
+	userLimitKind: MasterPlanAndPackageScaleKind;
 	userMax: number;
 	userMin: number;
 };
@@ -96,4 +117,4 @@ export type MasterPlanAndPackageTableColumnKey =
 	| "name"
 	| "status"
 	| "pricing"
-	| "users";
+	| "scalePricing";

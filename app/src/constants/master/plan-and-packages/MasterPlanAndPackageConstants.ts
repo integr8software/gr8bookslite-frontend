@@ -1,8 +1,12 @@
+import type { MainNavigationItem } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import { SidebarModuleNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarModuleRegistry";
 import type {
+	MasterPlanAndPackageFeatureOption,
 	MasterPlanAndPackagePricingKind,
+	MasterPlanAndPackageScaleKind,
+	MasterPlanAndPackageScaleUnit,
 	MasterPlanAndPackageStatus,
 	MasterPlanAndPackageTableColumnKey,
-	MasterPlanAndPackageUserLimitKind,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
 export const MasterPlanAndPackagesHref = "/master/plan-and-packages";
@@ -34,17 +38,34 @@ export const MasterPlanAndPackagePricingKindOptions = [
 	"Percent Off",
 ] as const satisfies readonly MasterPlanAndPackagePricingKind[];
 
-export const MasterPlanAndPackageUserLimitKindOptions = [
+export const MasterPlanAndPackageScaleKindOptions = [
 	"Fixed",
 	"Range",
 	"Add-on",
-] as const satisfies readonly MasterPlanAndPackageUserLimitKind[];
+] as const satisfies readonly MasterPlanAndPackageScaleKind[];
+
+export const MasterPlanAndPackageScaleUnits = [
+	"company",
+	"branch",
+	"user",
+] as const satisfies readonly MasterPlanAndPackageScaleUnit[];
+
+export const MasterPlanAndPackageScaleUnitLabels = {
+	branch: "Branch",
+	company: "Company",
+	user: "User",
+} as const satisfies Record<MasterPlanAndPackageScaleUnit, string>;
+
+export const MasterPlanAndPackageFeatureOptions =
+	SidebarModuleNavigationSections.flatMap((section) =>
+		flattenFeatureOptions(section.items, section.title, [section.title]),
+	);
 
 export const MasterPlanAndPackageTableColumns = [
 	{ key: "name", label: "Plan", className: "w-[24rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
-	{ key: "pricing", label: "Pricing", className: "w-[16rem]" },
-	{ key: "users", label: "Users", className: "w-[15rem]" },
+	{ key: "pricing", label: "Pricing", className: "w-[18rem]" },
+	{ key: "scalePricing", label: "Scale Pricing", className: "w-[22rem]" },
 	{ label: "Actions", className: "w-[17rem] text-right" },
 ] as const satisfies readonly (
 	| {
@@ -54,3 +75,26 @@ export const MasterPlanAndPackageTableColumns = [
 	  }
 	| { label: string; className: string }
 )[];
+
+function flattenFeatureOptions(
+	items: MainNavigationItem[],
+	section: string,
+	trail: string[],
+): MasterPlanAndPackageFeatureOption[] {
+	return items.flatMap((item) => {
+		const currentTrail = [...trail, item.label];
+
+		if (item.children?.length) {
+			return flattenFeatureOptions(item.children, section, currentTrail);
+		}
+
+		return [
+			{
+				description: currentTrail.join(" / "),
+				id: item.key,
+				name: item.label,
+				section,
+			},
+		];
+	});
+}

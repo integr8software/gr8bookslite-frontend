@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Edit3, Tags } from "lucide-react";
 import {
 	MasterPromotionsHref,
+	getMasterPromotionTargetLabel,
 	getMasterPromotionEditHref,
 } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 import {
@@ -68,7 +69,10 @@ export function MasterPromotionDetailsPage({
 				<DetailPanel title="Promotion Details">
 					<DetailLine label="Code" value={record.code} />
 					<DetailLine label="Type" value={record.type} />
-					<DetailLine label="Target" value={record.target} />
+					<DetailLine
+						label="Target"
+						value={getMasterPromotionTargetLabel(record.target)}
+					/>
 					<div className="grid gap-2">
 						<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/42">
 							Status

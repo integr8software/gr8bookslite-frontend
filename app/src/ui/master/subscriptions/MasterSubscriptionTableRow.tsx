@@ -8,6 +8,7 @@ import {
 } from "@/app/src/data/master/subscriptions/MasterSubscriptionData";
 import type {
 	MasterSubscriptionCompanyRecord,
+	MasterSubscriptionCompanyRating,
 	MasterSubscriptionCompanyStatus,
 	MasterSubscriptionPlanRecord,
 	MasterSubscriptionQuote,
@@ -41,12 +42,12 @@ export function MasterSubscriptionTableRow({
 				<MasterSubscriptionStatusBadge status={subscription.status} />
 			</td>
 			<td className="px-4 py-4">
+				<MasterSubscriptionRatingBadge rating={subscription.rating} />
+			</td>
+			<td className="px-4 py-4">
 				<div className="min-w-0">
 					<p className="truncate text-sm font-semibold text-darknavy">
 						{plan?.name ?? "Unassigned"}
-					</p>
-					<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/42">
-						{plan?.code ?? "No plan"}
 					</p>
 				</div>
 			</td>
@@ -54,6 +55,9 @@ export function MasterSubscriptionTableRow({
 				<span className="rounded-md bg-offwhite px-2.5 py-1 text-xs font-semibold text-darknavy/65 ring-1 ring-darknavy/10">
 					{subscription.billingCycle}
 				</span>
+			</td>
+			<td className="px-4 py-4 text-sm font-semibold text-darknavy">
+				{subscription.durationMonths} mo.
 			</td>
 			<td className="px-4 py-4 text-sm font-semibold text-darknavy">
 				{subscription.companyCount}
@@ -95,6 +99,30 @@ export function MasterSubscriptionTableRow({
 				</div>
 			</td>
 		</tr>
+	);
+}
+
+function MasterSubscriptionRatingBadge({
+	rating,
+}: {
+	rating: MasterSubscriptionCompanyRating;
+}) {
+	const classes = {
+		"At Risk": "bg-coralpink/12 text-coralpink ring-coralpink/20",
+		Excellent: "bg-citron/30 text-darknavy ring-citron/45",
+		Good: "bg-skyblue/12 text-darknavy ring-skyblue/22",
+		Watch: "bg-offwhite text-darknavy/70 ring-darknavy/10",
+	} satisfies Record<MasterSubscriptionCompanyRating, string>;
+
+	return (
+		<span
+			className={joinClasses(
+				"inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ring-1",
+				classes[rating],
+			)}
+		>
+			{rating}
+		</span>
 	);
 }
 

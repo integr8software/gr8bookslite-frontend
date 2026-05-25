@@ -67,14 +67,22 @@ export type MasterSubscriptionCompanyStatus =
 	| "Past Due"
 	| "Scheduled";
 
+export type MasterSubscriptionCompanyRating =
+	| "Excellent"
+	| "Good"
+	| "Watch"
+	| "At Risk";
+
 export type MasterSubscriptionCompanyRecord = {
 	billingCycle: MasterSubscriptionBillingCycle;
 	branchCount: number;
 	companyCount: number;
+	durationMonths: number;
 	id: string;
 	name: string;
 	ownerName: string;
 	planId: string;
+	rating: MasterSubscriptionCompanyRating;
 	renewalDate: string;
 	status: MasterSubscriptionCompanyStatus;
 	userCount: number;
@@ -111,5 +119,7 @@ export type MasterSubscriptionTableColumnKey = keyof Pick<
 	| "companyCount"
 	| "branchCount"
 	| "userCount"
+	| "durationMonths"
+	| "rating"
 	| "renewalDate"
 >;

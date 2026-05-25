@@ -15,7 +15,6 @@ import type {
 	MasterPromotionFormErrors,
 	MasterPromotionFormValues,
 	MasterPromotionStatus,
-	MasterPromotionTarget,
 	MasterPromotionType,
 } from "@/app/src/types/master/promotions/MasterPromotionTypes";
 import {
@@ -23,6 +22,7 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 const ControlClassName =
@@ -149,14 +149,25 @@ function MasterPromotionForm({
 								onUpdate({ type: type as MasterPromotionType })
 							}
 						/>
-						<SelectField
-							label="Target"
-							value={values.target}
-							options={MasterPromotionTargetOptions}
-							onChange={(target) =>
-								onUpdate({ target: target as MasterPromotionTarget })
-							}
-						/>
+						<label className={FieldLabelClassName}>
+							Target plan
+							<AppAdvancedDropdown
+								menuPortal
+								options={MasterPromotionTargetOptions}
+								placeholder="Select target plan"
+								searchPlaceholder="Search plans"
+								showSelectedDetails
+								value={values.target}
+								onChange={(target) =>
+									onUpdate({
+										target: Array.isArray(target)
+											? target[0] ?? ""
+											: target,
+									})
+								}
+							/>
+							<FieldError message={errors.target} />
+						</label>
 					</div>
 					<div className="grid gap-4 md:grid-cols-2">
 						<SelectField

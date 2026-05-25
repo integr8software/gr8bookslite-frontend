@@ -3,29 +3,38 @@
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
 import {
+	MasterPlanAndPackageFeatureOptions,
 	MasterPlanAndPackagePricingKindOptions,
 	MasterPlanAndPackagesHref,
+	MasterPlanAndPackageScaleKindOptions,
+	MasterPlanAndPackageScaleUnitLabels,
 	MasterPlanAndPackageStatusOptions,
-	MasterPlanAndPackageUserLimitKindOptions,
 } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import { useMasterPlanAndPackageFormPage } from "@/app/src/hooks/master/plan-and-packages/useMasterPlanAndPackageFormPage";
 import type {
 	MasterPlanAndPackageFormErrors,
 	MasterPlanAndPackageFormValues,
 	MasterPlanAndPackagePricingKind,
+	MasterPlanAndPackageScaleKind,
 	MasterPlanAndPackageStatus,
-	MasterPlanAndPackageUserLimitKind,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 const ControlClassName =
 	"h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm transition placeholder:text-darknavy/35 focus:border-skyblue focus:outline-none focus:ring-4 focus:ring-skyblue/15";
 const FieldLabelClassName = "grid gap-1.5 text-sm font-semibold text-darknavy/58";
+const FeatureDropdownOptions = MasterPlanAndPackageFeatureOptions.map((feature) => ({
+	description: feature.description,
+	label: feature.section,
+	name: feature.name,
+	value: feature.id,
+}));
 
 type MasterPlanAndPackageFormPageProps = {
 	mode: "add" | "edit";
@@ -56,7 +65,7 @@ export function MasterPlanAndPackageFormPage({
 				titleAs="h1"
 				eyebrow="Subscription & Billing"
 				title={mode === "edit" ? "Edit Plan" : "Add Plan"}
-				description="Set the plan identity, billing model, user allowance, and feature notes."
+				description="Set the plan identity, billing model, module entitlements, and scale pricing rules."
 				actions={
 					<>
 						<Link
@@ -111,21 +120,15 @@ function MasterPlanAndPackageForm({
 							value={values.name}
 							onChange={(name) => onUpdate({ name })}
 						/>
-						<TextField
-							error={errors.code}
-							label="Plan code"
-							value={values.code}
-							onChange={(code) => onUpdate({ code: code.toUpperCase() })}
+						<SelectField
+							label="Status"
+							value={values.status}
+							options={MasterPlanAndPackageStatusOptions}
+							onChange={(status) =>
+								onUpdate({ status: status as MasterPlanAndPackageStatus })
+							}
 						/>
 					</div>
-					<SelectField
-						label="Status"
-						value={values.status}
-						options={MasterPlanAndPackageStatusOptions}
-						onChange={(status) =>
-							onUpdate({ status: status as MasterPlanAndPackageStatus })
-						}
-					/>
 					<label className={FieldLabelClassName}>
 						Description
 						<textarea
@@ -139,14 +142,24 @@ function MasterPlanAndPackageForm({
 						<FieldError message={errors.description} />
 					</label>
 					<label className={FieldLabelClassName}>
-						Features
-						<textarea
-							value={values.features}
-							onChange={(event) => onUpdate({ features: event.target.value })}
-							rows={4}
-							className="min-h-28 rounded-lg border border-darknavy/10 bg-white px-3 py-3 text-sm font-medium leading-6 text-darknavy shadow-sm transition placeholder:text-darknavy/35 focus:border-skyblue focus:outline-none focus:ring-4 focus:ring-skyblue/15"
+						Module features
+						<AppAdvancedDropdown
+							menuPortal
+							options={FeatureDropdownOptions}
+							placeholder="Select modules"
+							searchPlaceholder="Search modules"
+							selectionMode="multiple"
+							showSelectedDetails
+							value={values.featureIds}
+							onChange={(featureIds) =>
+								onUpdate({
+									featureIds: Array.isArray(featureIds)
+										? featureIds
+										: [featureIds].filter(Boolean),
+								})
+							}
 						/>
-						<FieldError message={errors.features} />
+						<FieldError message={errors.featureIds} />
 					</label>
 				</div>
 
@@ -157,7 +170,7 @@ function MasterPlanAndPackageForm({
 								Pricing
 							</h2>
 							<p className="mt-1 text-sm text-darknavy/55">
-								Supports monthly, interval, yearly, transactional, and percent-off pricing.
+								Monthly, interval, yearly, transaction-based, and percent-off models.
 							</p>
 						</div>
 						<SelectField
@@ -202,98 +215,115 @@ function MasterPlanAndPackageForm({
 								onChange={(intervalMonths) => onUpdate({ intervalMonths })}
 							/>
 						) : null}
-						{values.pricingKind === "Transactional" ? (
-							<TextField
-								error={errors.unitLabel}
-								label="Transactional unit"
-								value={values.unitLabel}
-								onChange={(unitLabel) => onUpdate({ unitLabel })}
-							/>
-						) : null}
 						{values.pricingKind === "Percent Off" ? (
-							<TextField
-								error={errors.billingLabel}
-								label="Discount applies to"
-								value={values.billingLabel}
-								onChange={(billingLabel) => onUpdate({ billingLabel })}
-							/>
+							<div className="grid gap-4 md:grid-cols-2">
+								<NumberField
+									error={errors.discountAppliesFrom}
+									label="Applies from"
+									value={values.discountAppliesFrom}
+									onChange={(discountAppliesFrom) =>
+										onUpdate({ discountAppliesFrom })
+									}
+								/>
+								<NumberField
+									error={errors.discountAppliesTo}
+									label="Applies to"
+									value={values.discountAppliesTo}
+									onChange={(discountAppliesTo) =>
+										onUpdate({ discountAppliesTo })
+									}
+								/>
+							</div>
 						) : null}
 					</section>
 
 					<section className="grid gap-4 rounded-lg border border-darknavy/10 bg-offwhite/35 p-4">
 						<div>
 							<h2 className="text-base font-semibold text-darknavy">
-								Users
+								Scale Pricing
 							</h2>
 							<p className="mt-1 text-sm text-darknavy/55">
-								Set fixed seats, a user range, or included free users followed by add-ons.
+								Company, branch, and user allowances can be fixed, ranged, or add-on priced.
 							</p>
 						</div>
-						<SelectField
-							label="User rule"
-							value={values.userLimitKind}
-							options={MasterPlanAndPackageUserLimitKindOptions}
-							onChange={(userLimitKind) =>
+						<ScaleRuleSection
+							addOnPrice={values.companyAddOnPrice}
+							addOnStart={values.companyAddOnStart}
+							errors={{
+								addOnPrice: errors.companyAddOnPrice,
+								addOnStart: errors.companyAddOnStart,
+								includedFree: errors.companyIncludedFree,
+								max: errors.companyMax,
+								min: errors.companyMin,
+							}}
+							includedFree={values.companyIncludedFree}
+							limitKind={values.companyLimitKind}
+							max={values.companyMax}
+							min={values.companyMin}
+							unitLabel={MasterPlanAndPackageScaleUnitLabels.company}
+							onUpdate={({ addOnPrice, addOnStart, includedFree, limitKind, max, min }) =>
 								onUpdate({
-									userLimitKind:
-										userLimitKind as MasterPlanAndPackageUserLimitKind,
+									companyAddOnPrice: addOnPrice,
+									companyAddOnStart: addOnStart,
+									companyIncludedFree: includedFree,
+									companyLimitKind: limitKind,
+									companyMax: max,
+									companyMin: min,
 								})
 							}
 						/>
-						{values.userLimitKind === "Fixed" ? (
-							<NumberField
-								error={errors.userIncludedFree}
-								label="Fixed users"
-								value={values.userIncludedFree}
-								onChange={(userIncludedFree) =>
-									onUpdate({ userIncludedFree })
-								}
-							/>
-						) : null}
-						{values.userLimitKind === "Range" ? (
-							<div className="grid gap-4 md:grid-cols-2">
-								<NumberField
-									error={errors.userMin}
-									label="Minimum users"
-									value={values.userMin}
-									onChange={(userMin) => onUpdate({ userMin })}
-								/>
-								<NumberField
-									error={errors.userMax}
-									label="Maximum users"
-									value={values.userMax}
-									onChange={(userMax) => onUpdate({ userMax })}
-								/>
-							</div>
-						) : null}
-						{values.userLimitKind === "Add-on" ? (
-							<div className="grid gap-4 md:grid-cols-3">
-								<NumberField
-									error={errors.userIncludedFree}
-									label="Free users"
-									value={values.userIncludedFree}
-									onChange={(userIncludedFree) =>
-										onUpdate({ userIncludedFree })
-									}
-								/>
-								<NumberField
-									error={errors.userAddOnStart}
-									label="Add-on starts at"
-									value={values.userAddOnStart}
-									onChange={(userAddOnStart) =>
-										onUpdate({ userAddOnStart })
-									}
-								/>
-								<NumberField
-									error={errors.userAddOnPrice}
-									label="Add-on price"
-									value={values.userAddOnPrice}
-									onChange={(userAddOnPrice) =>
-										onUpdate({ userAddOnPrice })
-									}
-								/>
-							</div>
-						) : null}
+						<ScaleRuleSection
+							addOnPrice={values.branchAddOnPrice}
+							addOnStart={values.branchAddOnStart}
+							errors={{
+								addOnPrice: errors.branchAddOnPrice,
+								addOnStart: errors.branchAddOnStart,
+								includedFree: errors.branchIncludedFree,
+								max: errors.branchMax,
+								min: errors.branchMin,
+							}}
+							includedFree={values.branchIncludedFree}
+							limitKind={values.branchLimitKind}
+							max={values.branchMax}
+							min={values.branchMin}
+							unitLabel={MasterPlanAndPackageScaleUnitLabels.branch}
+							onUpdate={({ addOnPrice, addOnStart, includedFree, limitKind, max, min }) =>
+								onUpdate({
+									branchAddOnPrice: addOnPrice,
+									branchAddOnStart: addOnStart,
+									branchIncludedFree: includedFree,
+									branchLimitKind: limitKind,
+									branchMax: max,
+									branchMin: min,
+								})
+							}
+						/>
+						<ScaleRuleSection
+							addOnPrice={values.userAddOnPrice}
+							addOnStart={values.userAddOnStart}
+							errors={{
+								addOnPrice: errors.userAddOnPrice,
+								addOnStart: errors.userAddOnStart,
+								includedFree: errors.userIncludedFree,
+								max: errors.userMax,
+								min: errors.userMin,
+							}}
+							includedFree={values.userIncludedFree}
+							limitKind={values.userLimitKind}
+							max={values.userMax}
+							min={values.userMin}
+							unitLabel={MasterPlanAndPackageScaleUnitLabels.user}
+							onUpdate={({ addOnPrice, addOnStart, includedFree, limitKind, max, min }) =>
+								onUpdate({
+									userAddOnPrice: addOnPrice,
+									userAddOnStart: addOnStart,
+									userIncludedFree: includedFree,
+									userLimitKind: limitKind,
+									userMax: max,
+									userMin: min,
+								})
+							}
+						/>
 					</section>
 
 					<div className="flex justify-end">
@@ -307,6 +337,114 @@ function MasterPlanAndPackageForm({
 						</button>
 					</div>
 				</div>
+			</div>
+		</div>
+	);
+}
+
+type ScaleRuleValues = {
+	addOnPrice: number;
+	addOnStart: number;
+	includedFree: number;
+	limitKind: MasterPlanAndPackageScaleKind;
+	max: number;
+	min: number;
+};
+
+function ScaleRuleSection({
+	addOnPrice,
+	addOnStart,
+	errors,
+	includedFree,
+	limitKind,
+	max,
+	min,
+	unitLabel,
+	onUpdate,
+}: ScaleRuleValues & {
+	errors: Partial<Record<keyof Omit<ScaleRuleValues, "limitKind">, string>>;
+	unitLabel: string;
+	onUpdate: (values: ScaleRuleValues) => void;
+}) {
+	function update(nextValues: Partial<ScaleRuleValues>) {
+		onUpdate({
+			addOnPrice,
+			addOnStart,
+			includedFree,
+			limitKind,
+			max,
+			min,
+			...nextValues,
+		});
+	}
+
+	return (
+		<div className="grid gap-3 rounded-lg border border-darknavy/10 bg-white p-3">
+			<div className="grid gap-3 md:grid-cols-[minmax(10rem,0.7fr)_minmax(0,1fr)]">
+				<SelectField
+					label={`${unitLabel} rule`}
+					value={limitKind}
+					options={MasterPlanAndPackageScaleKindOptions}
+					onChange={(nextLimitKind) =>
+						update({
+							limitKind: nextLimitKind as MasterPlanAndPackageScaleKind,
+						})
+					}
+				/>
+				{limitKind === "Fixed" ? (
+					<NumberField
+						error={errors.includedFree}
+						label={`Fixed ${unitLabel.toLowerCase()} count`}
+						value={includedFree}
+						onChange={(nextIncludedFree) =>
+							update({ includedFree: nextIncludedFree })
+						}
+					/>
+				) : null}
+				{limitKind === "Range" ? (
+					<div className="grid gap-3 md:grid-cols-2">
+						<NumberField
+							error={errors.min}
+							label="Minimum"
+							value={min}
+							onChange={(nextMin) => update({ min: nextMin })}
+						/>
+						<NumberField
+							error={errors.max}
+							label="Maximum"
+							value={max}
+							onChange={(nextMax) => update({ max: nextMax })}
+						/>
+					</div>
+				) : null}
+				{limitKind === "Add-on" ? (
+					<div className="grid gap-3 md:grid-cols-3">
+						<NumberField
+							error={errors.includedFree}
+							label="Free count"
+							value={includedFree}
+							onChange={(nextIncludedFree) =>
+								update({ includedFree: nextIncludedFree })
+							}
+						/>
+						<NumberField
+							error={errors.addOnStart}
+							label="Add-on starts"
+							value={addOnStart}
+							onChange={(nextAddOnStart) =>
+								update({ addOnStart: nextAddOnStart })
+							}
+						/>
+						<NumberField
+							error={errors.addOnPrice}
+							label="Add-on price"
+							value={addOnPrice}
+							onChange={(nextAddOnPrice) =>
+								update({ addOnPrice: nextAddOnPrice })
+							}
+						/>
+					</div>
+				) : null}
 			</div>
 		</div>
 	);

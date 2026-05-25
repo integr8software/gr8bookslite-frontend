@@ -94,7 +94,7 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
     eyebrow: "Workspace Monitoring",
     title: "Audit Logs",
     description:
-      "A monitoring placeholder focused on timeline patterns, alert cards, and searchable records for UX review.",
+      "A company-scoped audit area for filtering activity by company, branch, module, and user.",
     icon: Activity,
     tone: "coral",
     metrics: [
@@ -146,9 +146,9 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
   },
   branches: {
     eyebrow: "Tenant Management",
-    title: "Branches",
+    title: "Branch Management",
     description:
-      "A branch and satellite management surface for company-level access, addresses, and operating locations.",
+      "A branch and satellite management surface grouped by company for access, addresses, and operating locations.",
     icon: GitBranch,
     tone: "citron",
     metrics: [
@@ -182,9 +182,9 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
   },
   subscriptions: {
     eyebrow: "Subscription & Billing",
-    title: "Subscriptions",
+    title: "Billing & Subscription",
     description:
-      "A subscription operations area for active company packages, renewal state, cancellations, and billing ownership.",
+      "A company billing area for subscription computation, payment review, renewal state, and payment history.",
     icon: WalletCards,
     tone: "sky",
     metrics: [
@@ -193,16 +193,16 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
       { label: "Past Due", value: "03" },
     ],
     highlights: [
-      "Super Admin can manage every tenant subscription.",
       "Company admins can review their own company subscription state.",
-      "Keeps plan configuration separate from subscription lifecycle work.",
+      "Payment lists stay near computed subscription totals.",
+      "Plan configuration stays separate from company billing review.",
     ],
   },
   invoices: {
     eyebrow: "Subscription & Billing",
     title: "Invoices",
     description:
-      "A billing record area for tenant invoices, payment status, receipt trails, and finance review.",
+      "A receipt and invoice record area for paid subscribers, payment status, receipt trails, and finance review.",
     icon: FileText,
     tone: "citron",
     metrics: [
@@ -418,7 +418,7 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
     eyebrow: "Admin",
     title: "Company Settings",
     description:
-      "A company-admin workspace for tenant profile, billing contact, branches, and subscription-facing preferences.",
+      "A company-admin workspace for tenant profile, default theme, custom-field policy, and strict theme controls.",
     icon: Building2,
     tone: "sky",
     metrics: [
@@ -428,8 +428,44 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
     ],
     highlights: [
       "This should be tenant-scoped for company admins.",
-      "Keeps company preferences separate from global system settings.",
-      "Provides a clear admin destination without exposing platform controls.",
+      "Default company themes and custom fields stay separate from global system settings.",
+      "Strict theme controls can be enforced per company without exposing platform controls.",
+    ],
+  },
+  subscriberPromotions: {
+    eyebrow: "Subscription & Billing",
+    title: "Subscriber Promotions",
+    description:
+      "A Super Admin distribution area for granting promotions to every subscriber or selected companies.",
+    icon: Tags,
+    tone: "coral",
+    metrics: [
+      { label: "Assigned", value: "128" },
+      { label: "Selected Companies", value: "16" },
+      { label: "Scheduled", value: "05" },
+    ],
+    highlights: [
+      "Promotion maintenance stays separate from subscriber assignment.",
+      "Audience rules can target all subscribers or a selected company list.",
+      "Assignment history can later connect to invoices and renewal credits.",
+    ],
+  },
+  auditSystemLogs: {
+    eyebrow: "Monitoring & Security",
+    title: "Audit/System Logs",
+    description:
+      "A Super Admin log center for all company audit events, system jobs, API failures, and user activity.",
+    icon: FileText,
+    tone: "violet",
+    metrics: [
+      { label: "Events Today", value: "8.2K" },
+      { label: "System Errors", value: "18" },
+      { label: "Companies", value: "42" },
+    ],
+    highlights: [
+      "Combines tenant audit trails with platform-level system logs.",
+      "Filters should support company, branch, module, user, severity, and source.",
+      "Useful for support escalation, compliance review, and incident triage.",
     ],
   },
   paymentMethods: {

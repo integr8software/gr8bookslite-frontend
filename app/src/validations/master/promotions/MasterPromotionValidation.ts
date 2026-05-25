@@ -21,14 +21,7 @@ const MasterPromotionFormSchema = z
 		id: z.string().optional(),
 		name: z.string().trim().min(3, "Name must be at least 3 characters."),
 		status: z.enum(["Active", "Draft", "Inactive"]),
-		target: z.enum([
-			"All Plans",
-			"Accounting",
-			"Inventory",
-			"Accounting + Inventory",
-			"Add-ons",
-			"Event Attendees",
-		]),
+		target: z.string().trim().min(1, "Target plan is required."),
 		type: z.enum(["Promo Code", "Coupon", "Voucher", "Event Promo"]),
 		value: z.number().positive("Discount value must be greater than 0."),
 	})

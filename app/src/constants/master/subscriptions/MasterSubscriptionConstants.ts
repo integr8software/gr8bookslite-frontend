@@ -42,8 +42,10 @@ export const MasterSubscriptionUnitShortLabels = {
 export const MasterSubscriptionTableColumns = [
 	{ key: "name", label: "Company", className: "w-[19rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
+	{ key: "rating", label: "Rating", className: "w-[9rem]" },
 	{ label: "Plan", className: "w-[13rem]" },
 	{ key: "billingCycle", label: "Cycle", className: "w-[8rem]" },
+	{ key: "durationMonths", label: "Duration", className: "w-[8rem]" },
 	{ key: "companyCount", label: "Companies", className: "w-[8rem]" },
 	{ key: "branchCount", label: "Branches", className: "w-[8rem]" },
 	{ key: "userCount", label: "Users", className: "w-[7rem]" },

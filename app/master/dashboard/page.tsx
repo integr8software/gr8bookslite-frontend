@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { WorkspaceOverviewPage } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewPage";
+import { MasterDashboardPage as MasterDashboardModulePage } from "@/app/src/ui/master/dashboard/MasterDashboardPage";
 
 export const metadata: Metadata = {
 	title: `Master Dashboard | ${AppName}`,
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function MasterDashboardPage() {
-	return <WorkspaceOverviewPage />;
+	return <MasterDashboardModulePage />;
 }

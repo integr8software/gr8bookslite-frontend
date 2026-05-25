@@ -12,8 +12,9 @@ import toast from "react-hot-toast";
 import { MasterPlanAndPackageTableColumns } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import {
 	MasterPlanAndPackageRecords,
+	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackagePricing,
-	formatMasterPlanAndPackageUserLimit,
+	getMasterPlanAndPackageFeatureLabels,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
 import type {
 	MasterPlanAndPackageRecord,
@@ -40,11 +41,11 @@ export function useMasterPlanAndPackageListPage() {
 		return records.filter((record) =>
 			[
 				record.name,
-				record.code,
 				record.description,
 				record.status,
 				formatMasterPlanAndPackagePricing(record.pricing),
-				formatMasterPlanAndPackageUserLimit(record.userLimit),
+				formatMasterPlanAndPackageScalePricing(record.scalePricing),
+				...getMasterPlanAndPackageFeatureLabels(record.featureIds),
 			]
 				.join(" ")
 				.toLowerCase()
@@ -88,14 +89,20 @@ export function useMasterPlanAndPackageListPage() {
 		const inactivePlans = records.filter(
 			(record) => record.status === "Inactive",
 		).length;
-		const addOnUserPlans = records.filter(
-			(record) => record.userLimit.kind === "Add-on",
+		const addOnScalePlans = records.filter((record) =>
+			Object.values(record.scalePricing).some(
+				(scaleRule) => scaleRule.kind === "Add-on",
+			),
 		).length;
+		const enabledModules = new Set(
+			records.flatMap((record) => record.featureIds),
+		).size;
 
 		return {
 			activePlans,
-			addOnUserPlans,
+			addOnScalePlans,
 			draftPlans,
+			enabledModules,
 			inactivePlans,
 			totalPlans: records.length,
 		};
@@ -154,11 +161,11 @@ function createColumn(
 		};
 	}
 
-	if (key === "users") {
+	if (key === "scalePricing") {
 		return {
 			id: key,
 			accessorFn: (record) =>
-				formatMasterPlanAndPackageUserLimit(record.userLimit),
+				formatMasterPlanAndPackageScalePricing(record.scalePricing),
 			header: label,
 			enableSorting: false,
 			meta: { className },

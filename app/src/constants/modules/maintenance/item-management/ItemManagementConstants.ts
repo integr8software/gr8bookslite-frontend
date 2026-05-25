@@ -4,7 +4,7 @@ import type {
 	ItemStatus,
 	ItemTableColumnKey,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
-import { SystemUomOptions, SystemUomRows } from "@/app/src/data/shared/UomData";
+import { SystemUomOptions, SystemUomRows } from "@/app/src/data/shared/uom/UomData";
 
 export const ItemsHref = "/maintenance/item-management/items";
 export const ItemCategoryHref = "/maintenance/item-management/item-category";

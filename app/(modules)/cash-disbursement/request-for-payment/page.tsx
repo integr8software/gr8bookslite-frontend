@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { RequestForPaymentMain } from "@/app/src/ui/modules/cash-disbursement/request-for-payment/Main";
 
 const PageTitle = "Request For Payment";

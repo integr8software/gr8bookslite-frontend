@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { ApprovalManagementFormPage } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementFormPage";
 
 const PageTitle = "Add Approval Workflow";

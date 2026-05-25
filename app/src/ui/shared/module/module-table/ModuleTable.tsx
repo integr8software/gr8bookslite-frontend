@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ModuleTableBody } from "@/app/src/ui/shared/module/module-table/ModuleTableBody";
 import { ModuleTableHeader } from "@/app/src/ui/shared/module/module-table/ModuleTableHeader";
 import { ModuleTablePagination } from "@/app/src/ui/shared/module/module-table/ModuleTablePagination";
-import type { ModuleTableProps } from "@/app/src/types/shared/ModuleTable.types";
+import type { ModuleTableProps } from "@/app/src/types/shared/module/module-table/ModuleTable.types";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 const DefaultPageSizeOptions = [5, 10, 15, 20, 25, 50];

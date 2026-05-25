@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Search } from "lucide-react";
-import type { ModuleTableBodyProps } from "@/app/src/types/shared/ModuleTable.types";
+import type { ModuleTableBodyProps } from "@/app/src/types/shared/module/module-table/ModuleTable.types";
 
 export function ModuleTableBody<TData>({
 	emptyDescription,

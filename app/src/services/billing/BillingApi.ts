@@ -1,4 +1,4 @@
-import { ApiClient } from "@/app/src/services/shared/ApiClient";
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   AttachPaymentMethodRequest,
   AttachPaymentMethodResponse,

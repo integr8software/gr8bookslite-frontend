@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { MainNavigationItem } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+import type { MainNavigationItem } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 
 export function joinClasses(...classes: Array<string | undefined | false>) {
   return classes.filter(Boolean).join(" ");

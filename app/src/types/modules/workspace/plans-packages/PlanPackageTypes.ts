@@ -1,4 +1,4 @@
-import type { MainProductKey } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+import type { MainProductKey } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 
 export type PlanPackagePlanCode =
   | "ACCOUNTING"

@@ -12,7 +12,7 @@ import {
 } from "@/app/src/data/billing/BillingTypes";
 import { validateBillingPaymentForm } from "@/app/src/validations/billing/BillingValidation";
 import { GetBillingCycleApiValue } from "@/app/src/data/billing/BillingUtils";
-import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
   AttachCompanySubscriptionPaymentMethod,
   CancelCompanySubscription,

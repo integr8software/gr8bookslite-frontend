@@ -11,7 +11,7 @@ import { getNextWorkspaceCompanyStatus } from "@/app/src/data/modules/workspace/
 import {
   DefaultPhilippineContactNumber,
   PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
+} from "@/app/src/data/shared/contact/ContactData";
 import { useWorkspaceBranchUserAction } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyAction";
 import type {
   WorkspaceBranchUserFormErrors,

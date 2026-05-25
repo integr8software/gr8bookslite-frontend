@@ -20,14 +20,14 @@ import {
   AccountAccentColorOptions,
   AccountNotificationPreferenceOptions,
   AccountThemeOptions,
-} from "@/app/src/constants/shared/AccountConstants";
+} from "@/app/src/constants/shared/account/AccountConstants";
 import { OTP_LENGTH } from "@/app/src/data/auth/OtpData";
 import {
 	validateOtpValue,
 	validateResetPasswordValues,
 } from "@/app/src/validations/auth/AuthValidation";
-import { useAccountSettings } from "@/app/src/hooks/shared/useAccountSettings";
-import { usePasswordVisibility } from "@/app/src/hooks/shared/usePasswordVisibility";
+import { useAccountSettings } from "@/app/src/hooks/shared/account/useAccountSettings";
+import { usePasswordVisibility } from "@/app/src/hooks/shared/account/usePasswordVisibility";
 import {
   ChangeAuthenticatedPassword,
   RequestPasswordChangeOtp,
@@ -37,7 +37,7 @@ import type {
   AccountAccentColor,
   AccountNotificationPreference,
   AccountTheme,
-} from "@/app/src/types/shared/AccountTypes";
+} from "@/app/src/types/shared/account/AccountTypes";
 import { GradientBlurBackground } from "@/app/src/ui/shared/layout/GradientBlurBackground";
 
 type AccountSettingsPageProps = {

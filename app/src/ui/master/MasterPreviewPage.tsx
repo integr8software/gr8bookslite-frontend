@@ -1,4 +1,4 @@
-import { ModulePreviewPages } from "@/app/src/data/shared/MainLayout/ModulePreviewData";
+import { ModulePreviewPages } from "@/app/src/data/shared/workspace/workspace-placeholder/WorkspacePlaceholderData";
 import { ModulePreviewPage } from "@/app/src/ui/shared/workspace/workspace-placeholder/WorkspacePlaceholderPage";
 
 type MasterPreviewPageProps = {

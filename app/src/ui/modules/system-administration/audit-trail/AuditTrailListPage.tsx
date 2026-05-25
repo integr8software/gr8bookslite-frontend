@@ -47,6 +47,7 @@ export function AuditTrailListPage() {
 				handleModuleFilterChange={page.handleModuleFilterChange}
 				handleQueryChange={page.handleQueryChange}
 				handleSeverityFilterChange={page.handleSeverityFilterChange}
+				isLoading={page.isLoading}
 				moduleFilter={page.moduleFilter}
 				moduleOptions={page.moduleOptions}
 				query={page.query}

@@ -4,8 +4,8 @@ import {
   DefaultPhilippineContactNumber,
   FormatPhilippineContactNumber,
   PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
-import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
+} from "@/app/src/data/shared/contact/ContactData";
+import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { OnboardingNonIndividualTypeOptions } from "@/app/src/data/onboarding/OnboardingData";
 import type {
   OnboardingFieldErrors,

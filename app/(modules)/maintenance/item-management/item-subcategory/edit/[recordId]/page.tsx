@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { ItemSubcategoryFormPage } from "@/app/src/ui/modules/maintenance/item-management/item-subcategory/ItemSubcategoryFormPage";
 
 const PageTitle = "Edit Item Subcategory";

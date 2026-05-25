@@ -68,7 +68,7 @@ export function PettyCashReplenishmentListPage() {
               emptyDescription="Adjust the filters or create a new replenishment record to view petty cash activity."
               emptyTitle="No replenishments found"
               emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-              isLoading={false}
+              isLoading={page.isLoading}
               paginationLabel="replenishments"
               paginationStorageKey={PettyCashReplenishmentPaginationStorageKey}
               table={page.table}

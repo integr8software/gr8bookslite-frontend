@@ -13,7 +13,7 @@ import {
 	ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
 import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
-import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 type GoogleAuthRedirectState = "resolving" | "system" | "onboarding";
 

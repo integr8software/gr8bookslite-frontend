@@ -11,7 +11,7 @@ import {
 	getPurchaseRequestItemAmount,
 	getPurchaseRequestTotal,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
-import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
+import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
 	PurchaseRequestItem,
 	PurchaseRequestRecord,

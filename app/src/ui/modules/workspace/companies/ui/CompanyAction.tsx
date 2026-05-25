@@ -2,9 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Building2, CreditCard, ImageUp, X } from "lucide-react";
-import {
-	WorkspaceCompaniesHref,
-} from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
+import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
 import { OnboardingNonIndividualTypeOptions } from "@/app/src/data/onboarding/OnboardingData";
 import { useWorkspaceCompanyAction } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyAction";
 import type {
@@ -15,8 +13,8 @@ import {
 	DefaultPhilippineContactNumber,
 	FormatPhilippineContactNumber,
 	PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
-import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
+} from "@/app/src/data/shared/contact/ContactData";
+import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { WorkspaceCompanyActionHeader } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyActionHeader";
 import {
 	WorkspaceCompanyField,
@@ -126,7 +124,10 @@ function CompanyDetailsFields({
 		event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
 	) => void;
 	onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
-	onUpdateField: (field: keyof WorkspaceCompanyFormValues, value: string) => void;
+	onUpdateField: (
+		field: keyof WorkspaceCompanyFormValues,
+		value: string,
+	) => void;
 }) {
 	const logoInputRef = useRef<HTMLInputElement | null>(null);
 	const [logoInputKey, setLogoInputKey] = useState(0);
@@ -190,7 +191,9 @@ function CompanyDetailsFields({
 						<div className="flex overflow-hidden rounded-lg border border-darknavy/10">
 							<button
 								type="button"
-								onClick={() => onUpdateField("taxpayerType", "individual")}
+								onClick={() =>
+									onUpdateField("taxpayerType", "individual")
+								}
 								className={`flex-1 py-3 text-sm font-semibold transition ${
 									isIndividual
 										? "bg-darknavy text-white"
@@ -201,7 +204,12 @@ function CompanyDetailsFields({
 							</button>
 							<button
 								type="button"
-								onClick={() => onUpdateField("taxpayerType", "non-individual")}
+								onClick={() =>
+									onUpdateField(
+										"taxpayerType",
+										"non-individual",
+									)
+								}
 								className={`flex-1 border-l border-darknavy/10 py-3 text-sm font-semibold transition ${
 									!isIndividual
 										? "bg-darknavy text-white"
@@ -215,7 +223,11 @@ function CompanyDetailsFields({
 
 					{isIndividual ? (
 						<div className="grid gap-4 lg:grid-cols-3">
-							<WorkspaceCompanyField label="Last Name" error={errors.lastName} required>
+							<WorkspaceCompanyField
+								label="Last Name"
+								error={errors.lastName}
+								required
+							>
 								<input
 									name="lastName"
 									value={values.lastName}
@@ -223,7 +235,11 @@ function CompanyDetailsFields({
 									className={WorkspaceCompanyFieldClassName}
 								/>
 							</WorkspaceCompanyField>
-							<WorkspaceCompanyField label="First Name" error={errors.firstName} required>
+							<WorkspaceCompanyField
+								label="First Name"
+								error={errors.firstName}
+								required
+							>
 								<input
 									name="firstName"
 									value={values.firstName}
@@ -231,7 +247,10 @@ function CompanyDetailsFields({
 									className={WorkspaceCompanyFieldClassName}
 								/>
 							</WorkspaceCompanyField>
-							<WorkspaceCompanyField label="Middle Name" error={errors.middleName}>
+							<WorkspaceCompanyField
+								label="Middle Name"
+								error={errors.middleName}
+							>
 								<input
 									name="middleName"
 									value={values.middleName}
@@ -265,12 +284,16 @@ function CompanyDetailsFields({
 									onChange={onInputChange}
 									className={WorkspaceCompanyFieldClassName}
 								>
-									<option value="">Select organization type</option>
-									{OnboardingNonIndividualTypeOptions.map((option) => (
-										<option key={option} value={option}>
-											{option}
-										</option>
-									))}
+									<option value="">
+										Select organization type
+									</option>
+									{OnboardingNonIndividualTypeOptions.map(
+										(option) => (
+											<option key={option} value={option}>
+												{option}
+											</option>
+										),
+									)}
 								</select>
 							</WorkspaceCompanyField>
 							{isOtherOrganizationType ? (
@@ -283,7 +306,9 @@ function CompanyDetailsFields({
 										name="nonIndividualTypeOther"
 										value={values.nonIndividualTypeOther}
 										onChange={onInputChange}
-										className={WorkspaceCompanyFieldClassName}
+										className={
+											WorkspaceCompanyFieldClassName
+										}
 									/>
 								</WorkspaceCompanyField>
 							) : null}
@@ -301,19 +326,26 @@ function CompanyDetailsFields({
 					/>
 
 					<div className="grid gap-4 lg:grid-cols-2">
-					<WorkspaceCompanyField label="TIN" error={errors.tin} required>
-						<input
-							name="tin"
-							value={values.tin}
-							onChange={(event) =>
-								onUpdateField("tin", FormatTinNumber(event.target.value))
-							}
-							inputMode="numeric"
-							maxLength={15}
-							className={WorkspaceCompanyFieldClassName}
-							placeholder="123-456-789-000"
-						/>
-					</WorkspaceCompanyField>
+						<WorkspaceCompanyField
+							label="TIN"
+							error={errors.tin}
+							required
+						>
+							<input
+								name="tin"
+								value={values.tin}
+								onChange={(event) =>
+									onUpdateField(
+										"tin",
+										FormatTinNumber(event.target.value),
+									)
+								}
+								inputMode="numeric"
+								maxLength={15}
+								className={WorkspaceCompanyFieldClassName}
+								placeholder="123-456-789-000"
+							/>
+						</WorkspaceCompanyField>
 					</div>
 				</div>
 			</WorkspaceCompanySection>
@@ -324,7 +356,11 @@ function CompanyDetailsFields({
 				className="mt-5"
 			>
 				<div className="grid gap-4 lg:grid-cols-2">
-					<WorkspaceCompanyField label="Email" error={errors.email} required>
+					<WorkspaceCompanyField
+						label="Email"
+						error={errors.email}
+						required
+					>
 						<input
 							name="email"
 							type="email"
@@ -347,12 +383,17 @@ function CompanyDetailsFields({
 							onChange={(event) =>
 								onUpdateField(
 									"contactNumber",
-									FormatPhilippineContactNumber(event.target.value),
+									FormatPhilippineContactNumber(
+										event.target.value,
+									),
 								)
 							}
 							onFocus={() => {
 								if (!values.contactNumber) {
-									onUpdateField("contactNumber", DefaultPhilippineContactNumber);
+									onUpdateField(
+										"contactNumber",
+										DefaultPhilippineContactNumber,
+									);
 								}
 							}}
 							className={WorkspaceCompanyFieldClassName}
@@ -373,7 +414,11 @@ function CompanyDetailsFields({
 							/>
 						</WorkspaceCompanyField>
 					</div>
-					<WorkspaceCompanyField label="Report Start Date" error={errors.reportStartDate} required>
+					<WorkspaceCompanyField
+						label="Report Start Date"
+						error={errors.reportStartDate}
+						required
+					>
 						<input
 							name="reportStartDate"
 							type="date"
@@ -382,7 +427,11 @@ function CompanyDetailsFields({
 							className={WorkspaceCompanyFieldClassName}
 						/>
 					</WorkspaceCompanyField>
-					<WorkspaceCompanyField label="Report End Date" error={errors.reportEndDate} required>
+					<WorkspaceCompanyField
+						label="Report End Date"
+						error={errors.reportEndDate}
+						required
+					>
 						<input
 							name="reportEndDate"
 							type="date"
@@ -392,7 +441,10 @@ function CompanyDetailsFields({
 						/>
 					</WorkspaceCompanyField>
 					<div className="lg:col-span-2">
-						<WorkspaceCompanyField label="Company Website (Optional)" error={errors.website}>
+						<WorkspaceCompanyField
+							label="Company Website (Optional)"
+							error={errors.website}
+						>
 							<input
 								name="website"
 								type="url"
@@ -416,14 +468,18 @@ function CompanyDetailsFields({
 						<div className="rounded-xl border border-darknavy/10 bg-offwhite/50 p-4">
 							<div className="mb-4 flex items-start gap-3">
 								<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-darknavy shadow-sm">
-									<CreditCard className="h-5 w-5" aria-hidden="true" />
+									<CreditCard
+										className="h-5 w-5"
+										aria-hidden="true"
+									/>
 								</span>
 								<div>
 									<p className="text-sm font-semibold text-darknavy">
 										PayMongo payment method
 									</p>
 									<p className="mt-1 text-sm leading-6 text-darknavy/60">
-										Use the selected card for this company workspace billing.
+										Use the selected card for this company
+										workspace billing.
 									</p>
 								</div>
 							</div>
@@ -437,19 +493,27 @@ function CompanyDetailsFields({
 										name="billingPaymentMethodId"
 										value={values.billingPaymentMethodId}
 										onChange={onInputChange}
-										className={WorkspaceCompanyFieldClassName}
+										className={
+											WorkspaceCompanyFieldClassName
+										}
 									>
-										{WorkspaceBillingPaymentMethods.map((method) => (
-											<option key={method.id} value={method.id}>
-												{method.label}
-											</option>
-										))}
+										{WorkspaceBillingPaymentMethods.map(
+											(method) => (
+												<option
+													key={method.id}
+													value={method.id}
+												>
+													{method.label}
+												</option>
+											),
+										)}
 									</select>
 								</WorkspaceCompanyField>
 							</div>
 						</div>
 
-						{values.billingPaymentMethodId === "new-paymongo-card" ? (
+						{values.billingPaymentMethodId ===
+						"new-paymongo-card" ? (
 							<div className="grid gap-4 rounded-xl border border-darknavy/10 bg-white p-4 lg:grid-cols-2">
 								<WorkspaceCompanyField
 									label="Cardholder Name"
@@ -461,7 +525,9 @@ function CompanyDetailsFields({
 										value={values.billingCardholderName}
 										onChange={onInputChange}
 										autoComplete="cc-name"
-										className={WorkspaceCompanyFieldClassName}
+										className={
+											WorkspaceCompanyFieldClassName
+										}
 										placeholder="John Doe"
 									/>
 								</WorkspaceCompanyField>
@@ -476,7 +542,9 @@ function CompanyDetailsFields({
 										value={values.billingEmail}
 										onChange={onInputChange}
 										autoComplete="email"
-										className={WorkspaceCompanyFieldClassName}
+										className={
+											WorkspaceCompanyFieldClassName
+										}
 										placeholder="billing@company.com"
 									/>
 								</WorkspaceCompanyField>
@@ -493,7 +561,9 @@ function CompanyDetailsFields({
 											inputMode="numeric"
 											maxLength={23}
 											autoComplete="cc-number"
-											className={WorkspaceCompanyFieldClassName}
+											className={
+												WorkspaceCompanyFieldClassName
+											}
 											placeholder="1234 5678 9012 3456"
 										/>
 									</WorkspaceCompanyField>
@@ -510,7 +580,9 @@ function CompanyDetailsFields({
 										inputMode="numeric"
 										maxLength={2}
 										autoComplete="cc-exp-month"
-										className={WorkspaceCompanyFieldClassName}
+										className={
+											WorkspaceCompanyFieldClassName
+										}
 										placeholder="MM"
 									/>
 								</WorkspaceCompanyField>
@@ -526,7 +598,9 @@ function CompanyDetailsFields({
 										inputMode="numeric"
 										maxLength={4}
 										autoComplete="cc-exp-year"
-										className={WorkspaceCompanyFieldClassName}
+										className={
+											WorkspaceCompanyFieldClassName
+										}
 										placeholder="YYYY"
 									/>
 								</WorkspaceCompanyField>
@@ -542,7 +616,9 @@ function CompanyDetailsFields({
 										inputMode="numeric"
 										maxLength={4}
 										autoComplete="cc-csc"
-										className={WorkspaceCompanyFieldClassName}
+										className={
+											WorkspaceCompanyFieldClassName
+										}
 										placeholder="123"
 									/>
 								</WorkspaceCompanyField>
@@ -556,7 +632,9 @@ function CompanyDetailsFields({
 											name="billingAddress"
 											value={values.billingAddress}
 											onChange={onInputChange}
-											className={WorkspaceCompanyFieldClassName}
+											className={
+												WorkspaceCompanyFieldClassName
+											}
 											placeholder="123 Main St, City, Province"
 										/>
 									</WorkspaceCompanyField>
@@ -589,13 +667,17 @@ function CompanyLogoField({
 }) {
 	return (
 		<div>
-			<p className="mb-2 block text-sm font-semibold text-darknavy">Logo</p>
+			<p className="mb-2 block text-sm font-semibold text-darknavy">
+				Logo
+			</p>
 			<label className="flex h-12 cursor-pointer overflow-hidden rounded-lg border border-darknavy/10 bg-white">
 				<span className="flex w-12 items-center justify-center bg-darknavy text-white">
 					<ImageUp className="h-5 w-5" aria-hidden="true" />
 				</span>
 				<span className="flex min-w-0 flex-1 items-center px-4 text-sm font-medium text-darknavy/65">
-					<span className="truncate">{fileName || "Upload image"}</span>
+					<span className="truncate">
+						{fileName || "Upload image"}
+					</span>
 				</span>
 				{fileName ? (
 					<button
@@ -636,7 +718,9 @@ function CompanyLogoField({
 				Upload your company or personal logo. Max 5MB.
 			</p>
 			{error ? (
-				<p className="mt-2 text-sm font-medium text-coralpink">{error}</p>
+				<p className="mt-2 text-sm font-medium text-coralpink">
+					{error}
+				</p>
 			) : null}
 		</div>
 	);

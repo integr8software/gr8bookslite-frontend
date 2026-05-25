@@ -7,7 +7,7 @@ import type {
 import {
   DefaultPhilippineContactNumber,
   PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
+} from "@/app/src/data/shared/contact/ContactData";
 import type { UserFormErrors } from "@/app/src/types/modules/user-management/UserManagementTypes";
 
 export function UserListForm({

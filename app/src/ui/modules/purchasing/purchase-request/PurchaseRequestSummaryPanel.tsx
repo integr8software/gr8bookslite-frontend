@@ -1,6 +1,6 @@
 import type { ChangeEvent } from "react";
 import { ImageIcon } from "lucide-react";
-import { ReadFileAsDataUrl } from "@/app/src/services/shared/ImageCropper";
+import { ReadFileAsDataUrl } from "@/app/src/services/shared/media/ImageCropper";
 import type {
 	PurchaseRequestFormErrors,
 	PurchaseRequestFormValues,

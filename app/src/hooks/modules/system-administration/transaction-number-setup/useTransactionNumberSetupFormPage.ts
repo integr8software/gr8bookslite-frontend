@@ -20,7 +20,7 @@ import {
 	createTransactionNumberSetupRecord,
 	updateTransactionNumberSetupRecord,
 } from "@/app/src/data/modules/system-administration/transaction-number-setup/TransactionNumberSetupData";
-import { MainLayoutMockData } from "@/app/src/data/shared/MainLayout/MainShellMockData";
+import { MainLayoutMockData } from "@/app/src/data/shared/main-layout/MainLayoutMockData";
 import { formatTransactionNumber } from "@/app/src/services/modules/system-administration/transaction-number-setup/TransactionNumberGenerationService";
 import type {
 	TransactionNumberModuleCode,

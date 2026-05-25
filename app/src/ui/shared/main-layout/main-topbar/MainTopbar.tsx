@@ -21,13 +21,13 @@ import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 import type {
 	MainTopbarProps,
 	OpenSwitcherKey,
-} from "@/app/src/types/shared/MainTopbarTypes";
-import { MainNotificationsPanel } from "@/app/src/ui/shared/main-layout/notifications-panel/NotificationsPanel";
-import { MainSearchPanel } from "@/app/src/ui/shared/main-layout/MainSearchPanel";
-import { AccountMenu } from "@/app/src/ui/shared/main-layout/main-topbar/AccountMenu";
-import { BranchSwitcher } from "@/app/src/ui/shared/main-layout/main-topbar/BranchSwitcher";
-import { CompanySwitcher } from "@/app/src/ui/shared/main-layout/main-topbar/CompanySwitcher";
-import { TopbarWorkspaceSkeleton } from "@/app/src/ui/shared/main-layout/main-topbar/TopbarSkeletons";
+} from "@/app/src/types/shared/main-layout/MainTopbarTypes";
+import { MainNotificationsPanel } from "../notifications-panel/NotificationsPanel";
+import { MainSearchPanel } from "../MainSearchPanel";
+import { AccountMenu } from "./AccountMenu";
+import { BranchSwitcher } from "./BranchSwitcher";
+import { CompanySwitcher } from "./CompanySwitcher";
+import { TopbarWorkspaceSkeleton } from "./TopbarSkeletons";
 import {
 	getTopbarUserDescriptor,
 	isLargeNotificationPanel,

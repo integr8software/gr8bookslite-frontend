@@ -3,8 +3,8 @@ import { ChevronRight } from "lucide-react";
 import type {
 	MainNavigationItem,
 	MainNavigationSection,
-} from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
-import { MainIcons, renderSidebarItemIcon } from "@/app/src/ui/shared/main-layout/sidebar/SidebarIcons";
+} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import { MainIcons, renderSidebarItemIcon } from "./SidebarIcons";
 import {
 	getVisibleCountToActiveItem,
 	itemMatchesActiveHref,
@@ -107,7 +107,9 @@ export function SidebarSection({
 				<Link
 					href={directItem.href}
 					onClick={onNavigateFromSidebar(directItem.href)}
-					data-main-sidebar-active-item={isDirectActive ? "true" : undefined}
+					data-main-sidebar-active-item={
+						isDirectActive ? "true" : undefined
+					}
 					className={joinClasses(
 						"group relative flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
 						isDirectActive
@@ -118,11 +120,15 @@ export function SidebarSection({
 					<Icon
 						className={joinClasses(
 							"h-4 w-4 shrink-0",
-							isDirectActive ? "text-skyblue" : "text-darknavy/65",
+							isDirectActive
+								? "text-skyblue"
+								: "text-darknavy/65",
 						)}
 						aria-hidden="true"
 					/>
-					<span className="min-w-0 flex-1 truncate">{section.title}</span>
+					<span className="min-w-0 flex-1 truncate">
+						{section.title}
+					</span>
 				</Link>
 			</section>
 		);

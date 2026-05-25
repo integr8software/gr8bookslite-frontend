@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { InventoryStockMovementMain } from "@/app/src/ui/modules/reports/inventory/stock-movement/Main";
 
 const PageTitle = "Stock Movement";

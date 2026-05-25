@@ -1,4 +1,4 @@
-import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourTypes";
+import type { SpotlightTourStep } from "@/app/src/types/shared/tour/SpotlightTourTypes";
 
 export const WorkspaceSpotlightTutorialAccountWindowDays = 14;
 

@@ -1,4 +1,4 @@
-import { MainCompanySearchItems } from "@/app/src/data/shared/MainLayout/MainNavigationData";
+import { MainCompanySearchItems } from "@/app/src/data/shared/main-layout/sidebar/SidebarNavigationData";
 import { UserListMockData } from "@/app/src/data/modules/system-administration/user-management/users/UserListData";
 import type {
 	AuditTrailAction,

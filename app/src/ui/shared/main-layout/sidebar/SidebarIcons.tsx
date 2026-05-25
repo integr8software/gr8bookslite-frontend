@@ -37,8 +37,8 @@ import {
 import type {
 	MainIconName,
 	MainNavigationItem,
-} from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
-import { joinClasses } from "@/app/src/ui/shared/main-layout/sidebar/utils";
+} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import { joinClasses } from "./utils";
 
 export const MainIcons: Record<MainIconName, LucideIcon> = {
 	approval: ShieldCheck,

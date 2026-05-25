@@ -1,5 +1,5 @@
 import { ChartsOfAccountsHref } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
-import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourTypes";
+import type { SpotlightTourStep } from "@/app/src/types/shared/tour/SpotlightTourTypes";
 
 export const ChartsOfAccountsSpotlightTutorialStorageVersion = "v1";
 export const ChartsOfAccountsSpotlightTutorialOpenEvent =

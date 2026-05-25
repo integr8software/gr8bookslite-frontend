@@ -14,6 +14,7 @@ type AuditTrailTableProps = Pick<
 	| "handleModuleFilterChange"
 	| "handleQueryChange"
 	| "handleSeverityFilterChange"
+	| "isLoading"
 	| "moduleFilter"
 	| "moduleOptions"
 	| "query"
@@ -27,6 +28,7 @@ export function AuditTrailTable({
 	handleModuleFilterChange,
 	handleQueryChange,
 	handleSeverityFilterChange,
+	isLoading,
 	moduleFilter,
 	moduleOptions,
 	query,
@@ -50,7 +52,7 @@ export function AuditTrailTable({
 				emptyDescription="Adjust filters to review activity across sidebar modules."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No audit trail records found"
-				isLoading={false}
+				isLoading={isLoading}
 				minWidthClassName="min-w-[92rem]"
 				pageSizeOptions={[10, 20, 50]}
 				paginationStorageKey={AuditTrailPaginationStorageKey}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -8,19 +9,39 @@ import {
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import { PettyCashVoucherRecords } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
+import { PettyCashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherQueryKeys";
 import type { PettyCashVoucherRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 
 const columnHelper = createColumnHelper<PettyCashVoucherRecord>();
 
 export function usePettyCashVoucherListPage() {
-  const [vouchers, setVouchers] = useState(PettyCashVoucherRecords);
+  const queryClient = useQueryClient();
+  const vouchersQuery = useQuery({
+    queryKey: PettyCashVoucherQueryKeys.vouchers(),
+    queryFn: async () => PettyCashVoucherRecords,
+    initialData: PettyCashVoucherRecords,
+  });
   const [pendingDelete, setPendingDelete] =
     useState<PettyCashVoucherRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const deleteVoucherMutation = useMutation({
+    mutationFn: async (voucherId: string) => voucherId,
+    onSuccess: (voucherId) => {
+      queryClient.setQueryData<PettyCashVoucherRecord[]>(
+        PettyCashVoucherQueryKeys.vouchers(),
+        (current = PettyCashVoucherRecords) =>
+          current.filter((voucher) => voucher.id !== voucherId),
+      );
+      toast.success("Petty cash voucher deleted.");
+    },
+    onError: () => {
+      toast.error("Could not delete the voucher. Please try again.");
+    },
+  });
 
   const filteredVouchers = useMemo(() => {
-    return vouchers.filter((voucher) => {
+    return vouchersQuery.data.filter((voucher) => {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         voucher.voucherNo.toLowerCase().includes(query) ||
@@ -33,7 +54,7 @@ export function usePettyCashVoucherListPage() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [searchQuery, statusFilter, vouchers]);
+  }, [searchQuery, statusFilter, vouchersQuery.data]);
 
   const columns = useMemo(
     () => [
@@ -78,15 +99,14 @@ export function usePettyCashVoucherListPage() {
       return;
     }
 
-    setVouchers((current) =>
-      current.filter((voucher) => voucher.id !== pendingDelete.id),
-    );
-    toast.success("Petty cash voucher deleted.");
+    deleteVoucherMutation.mutate(pendingDelete.id);
     setPendingDelete(null);
   }
 
   return {
     handleConfirmDelete,
+    isLoading: vouchersQuery.isLoading,
+    isMutating: deleteVoucherMutation.isPending,
     pendingDelete,
     searchQuery,
     setPendingDelete,

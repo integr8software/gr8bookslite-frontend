@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { FinancialAccountsReceivableStatementOfAccountMain } from "@/app/src/ui/modules/reports/financial/accounts-receivable/statement-of-account/Main";
 
 const PageTitle = "Statement Of Account";

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { CashSalesInvoiceAction } from "@/app/src/ui/modules/sales/cash-sales-invoice/Action";
 
 const PageTitle = "View Cash Sales Invoice";

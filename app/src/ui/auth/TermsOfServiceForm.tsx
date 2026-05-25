@@ -1,5 +1,5 @@
 import React from "react";
-import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 
 const TermsOfServiceForm = () => {
   return (

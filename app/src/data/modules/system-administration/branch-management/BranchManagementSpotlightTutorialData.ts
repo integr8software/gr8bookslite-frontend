@@ -1,5 +1,5 @@
 import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
-import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourTypes";
+import type { SpotlightTourStep } from "@/app/src/types/shared/tour/SpotlightTourTypes";
 
 export const BranchManagementSpotlightTutorialStorageVersion = "v1";
 export const BranchManagementSpotlightTutorialOpenEvent =

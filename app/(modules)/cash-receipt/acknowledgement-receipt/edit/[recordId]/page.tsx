@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { AcknowledgementReceiptAction } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/Action";
 
 const PageTitle = "Edit Acknowledgement Receipt";

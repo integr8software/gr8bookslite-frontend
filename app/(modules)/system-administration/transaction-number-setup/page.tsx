@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { TransactionNumberSetupListPage } from "@/app/src/ui/modules/system-administration/transaction-number-setup/TransactionNumberSetupListPage";
 
 const PageTitle = "Transaction Number Setup";

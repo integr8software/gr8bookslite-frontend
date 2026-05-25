@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import { ChevronDown, ChevronsLeft, ChevronsRight } from "lucide-react";
-import type { ModuleTablePaginationProps } from "@/app/src/types/shared/ModuleTable.types";
+import type { ModuleTablePaginationProps } from "@/app/src/types/shared/module/module-table/ModuleTable.types";
 import {
 	getVisiblePaginationPages,
 	joinClasses,

@@ -2,7 +2,7 @@
 
 import type { ComponentPropsWithoutRef } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { usePasswordVisibility } from "@/app/src/hooks/shared/usePasswordVisibility";
+import { usePasswordVisibility } from "@/app/src/hooks/shared/account/usePasswordVisibility";
 
 type AuthFieldProps = ComponentPropsWithoutRef<"input"> & {
   label: string;

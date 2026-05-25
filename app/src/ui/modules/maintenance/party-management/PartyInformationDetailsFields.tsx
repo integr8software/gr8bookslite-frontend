@@ -10,7 +10,7 @@ import {
 import {
 	DefaultPhilippineContactNumber,
 	PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
+} from "@/app/src/data/shared/contact/ContactData";
 import type {
 	PartyAddress,
 	PartyAtcCodeOption,

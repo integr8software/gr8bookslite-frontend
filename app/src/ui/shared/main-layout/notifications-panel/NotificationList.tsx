@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { CheckCheck } from "lucide-react";
-import type { MainNotification } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
-import type { MainNotificationTab } from "@/app/src/types/shared/MainLayoutTypes";
-import { getEmptyNotificationText, joinClasses } from "@/app/src/ui/shared/main-layout/notifications-panel/utils";
+import type { MainNotification } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainNotificationTab } from "@/app/src/types/shared/main-layout/MainLayoutTypes";
+import { getEmptyNotificationText, joinClasses } from "./utils";
 
 type NotificationListProps = {
 	hasMoreNotifications: boolean;

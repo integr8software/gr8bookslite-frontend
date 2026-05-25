@@ -39,8 +39,8 @@ import {
 	validateWorkspaceCompanyForm,
 	validateWorkspaceCompanyUserForm,
 } from "@/app/src/data/modules/workspace/companies/WorkspaceCompanyData";
-import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
-import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
+import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
+import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
 	WorkspaceBranchUserFormErrors,
 	WorkspaceBranchUserFormValues,

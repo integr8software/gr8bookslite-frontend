@@ -20,7 +20,7 @@ import {
 	updateUserRecord,
 	type UserFormValues,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
-import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
+import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import type {
 	UserFormErrors,
 	UserManagementActionMode,

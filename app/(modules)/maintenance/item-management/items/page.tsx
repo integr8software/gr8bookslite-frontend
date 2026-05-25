@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { ItemsListPage } from "@/app/src/ui/modules/maintenance/item-management/items/ItemsListPage";
 
 const PageTitle = "Items";

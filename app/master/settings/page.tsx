@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { AccountSettingsPage } from "@/app/src/ui/shared/account/AccountSettingsPage";
 
 export const metadata: Metadata = {

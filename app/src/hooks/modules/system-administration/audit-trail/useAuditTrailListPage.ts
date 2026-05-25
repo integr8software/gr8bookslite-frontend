@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
 	type ColumnDef,
 	type PaginationState,
@@ -19,6 +20,7 @@ import {
 	formatAuditTrailCreatedAt,
 	formatAuditTrailModuleTrail,
 } from "@/app/src/services/modules/system-administration/audit-trail/AuditTrailFormatters";
+import { AuditTrailQueryKeys } from "@/app/src/services/modules/system-administration/audit-trail/AuditTrailQueryKeys";
 import type {
 	AuditTrailAction,
 	AuditTrailRecord,
@@ -27,6 +29,11 @@ import type {
 } from "@/app/src/types/modules/system-administration/audit-trail/AuditTrailTypes";
 
 export function useAuditTrailListPage() {
+	const recordsQuery = useQuery({
+		queryKey: AuditTrailQueryKeys.records(),
+		queryFn: async () => MockAuditTrailRecords,
+		initialData: MockAuditTrailRecords,
+	});
 	const [query, setQuery] = useState("");
 	const [moduleFilter, setModuleFilter] = useState("all");
 	const [actionFilter, setActionFilter] = useState<AuditTrailAction | "all">(
@@ -45,7 +52,7 @@ export function useAuditTrailListPage() {
 	const filteredRecords = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
-		return MockAuditTrailRecords.filter((record) => {
+		return recordsQuery.data.filter((record) => {
 			if (moduleFilter !== "all" && record.moduleKey !== moduleFilter) {
 				return false;
 			}
@@ -78,7 +85,7 @@ export function useAuditTrailListPage() {
 				.toLowerCase()
 				.includes(normalizedQuery);
 		});
-	}, [actionFilter, moduleFilter, query, severityFilter]);
+	}, [actionFilter, moduleFilter, query, recordsQuery.data, severityFilter]);
 	const columns = useMemo<ColumnDef<AuditTrailRecord>[]>(
 		() =>
 			AuditTrailTableColumns.map((column) =>
@@ -128,20 +135,21 @@ export function useAuditTrailListPage() {
 
 	return {
 		actionFilter,
-		criticalCount: MockAuditTrailRecords.filter(
+		criticalCount: recordsQuery.data.filter(
 			(record) => record.severity === "Critical",
 		).length,
 		handleActionFilterChange,
 		handleModuleFilterChange,
 		handleQueryChange,
 		handleSeverityFilterChange,
+		isLoading: recordsQuery.isLoading,
 		moduleFilter,
 		moduleOptions: AuditTrailModuleOptions,
 		query,
-		recordCount: MockAuditTrailRecords.length,
+		recordCount: recordsQuery.data.length,
 		severityFilter,
 		table,
-		todayCount: MockAuditTrailRecords.filter((record) =>
+		todayCount: recordsQuery.data.filter((record) =>
 			record.createdAt.startsWith("2026-05-23"),
 		).length,
 	};

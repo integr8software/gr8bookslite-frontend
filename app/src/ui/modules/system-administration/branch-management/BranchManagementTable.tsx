@@ -7,7 +7,7 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
-import type { MainBranch } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
 
 type BranchManagementTableProps = {

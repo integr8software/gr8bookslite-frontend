@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { Users } from "lucide-react";
 import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
-import { PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/ContactData";
+import { PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/contact/ContactData";
 import { useWorkspaceCompanyUserAction } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyAction";
 import type {
 	WorkspaceCompanyUserFormErrors,

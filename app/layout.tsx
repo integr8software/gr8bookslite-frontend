@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { AppToaster } from "@/app/src/ui/shared/app/AppToaster";
 import { AppProviders } from "@/app/src/ui/shared/app/AppProviders";
-import { AppName } from "@/app/src/constants/shared/AppConstants";
-import "@/app/globals.css";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import "./globals.css";
 
 export const metadata: Metadata = {
 	title: AppName,

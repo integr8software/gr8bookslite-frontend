@@ -44,7 +44,7 @@ export function PettyCashVoucherListPage() {
               emptyDescription="Adjust the filters or add a new voucher to view petty cash records."
               emptyTitle="No vouchers found"
               emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-              isLoading={false}
+              isLoading={page.isLoading}
               paginationLabel="vouchers"
               paginationStorageKey={PettyCashVoucherPaginationStorageKey}
               table={page.table}

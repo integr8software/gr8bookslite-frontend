@@ -6,14 +6,14 @@ import { Clock3, X } from "lucide-react";
 import type {
 	MainNavigationSection,
 	MainSearchItem,
-} from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
-import { SidebarIdentitySkeleton, SidebarLogo } from "@/app/src/ui/shared/main-layout/sidebar/SidebarIdentity";
+} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import { SidebarIdentitySkeleton, SidebarLogo } from "./SidebarIdentity";
 import {
 	SidebarCategorySection,
 	SidebarItem,
 	SidebarSection,
-} from "@/app/src/ui/shared/main-layout/sidebar/SidebarNavigation";
-import { joinClasses, pathMatches, useIncrementalVisibleCount } from "@/app/src/ui/shared/main-layout/sidebar/utils";
+} from "./SidebarNavigation";
+import { joinClasses, pathMatches, useIncrementalVisibleCount } from "./utils";
 
 const QuickListInitialCount = 4;
 const QuickListBatchSize = 6;
@@ -351,6 +351,7 @@ export function MainSidebar({
 
 function isAdminNavigationSection(section: MainNavigationSection) {
 	return (
-		section.key.startsWith("workspace-") || section.key.startsWith("master-")
+		section.key.startsWith("workspace-") ||
+		section.key.startsWith("master-")
 	);
 }

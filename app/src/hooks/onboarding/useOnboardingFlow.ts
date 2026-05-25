@@ -1,9 +1,9 @@
 "use client";
 
-import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
-import { useOnboardingDraft } from "@/app/src/hooks/onboarding/useOnboardingDraft";
-import { useOnboardingFormState } from "@/app/src/hooks/onboarding/useOnboardingFormState";
-import { useOnboardingSubmission } from "@/app/src/hooks/onboarding/useOnboardingSubmission";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { useOnboardingDraft } from "./useOnboardingDraft";
+import { useOnboardingFormState } from "./useOnboardingFormState";
+import { useOnboardingSubmission } from "./useOnboardingSubmission";
 
 export function useOnboardingFlow() {
   const accessToken = useAppStore((state) => state.accessToken);

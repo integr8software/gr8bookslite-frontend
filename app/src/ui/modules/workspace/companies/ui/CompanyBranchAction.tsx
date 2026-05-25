@@ -10,7 +10,7 @@ import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-co
 import {
 	DefaultPhilippineContactNumber,
 	PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
+} from "@/app/src/data/shared/contact/ContactData";
 import { useWorkspaceCompanyBranchAction } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyAction";
 import type {
 	WorkspaceCompanyBranchFormErrors,

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { FinancialBudgetUploaderMain } from "@/app/src/ui/modules/reports/financial/budget-uploader/Main";
 
 const PageTitle = "Budget Uploader";

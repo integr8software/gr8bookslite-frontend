@@ -1,5 +1,5 @@
 import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
-import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourTypes";
+import type { SpotlightTourStep } from "@/app/src/types/shared/tour/SpotlightTourTypes";
 
 export const UserListSpotlightTutorialStorageVersion = "v1";
 export const UserListSpotlightTutorialOpenEvent =

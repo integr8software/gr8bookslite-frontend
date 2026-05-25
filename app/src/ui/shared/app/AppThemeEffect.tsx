@@ -5,16 +5,16 @@ import { usePathname } from "next/navigation";
 import {
   ApplyAccountAccentColor,
   ApplyAccountTheme,
-} from "@/app/src/services/shared/AccountTheme";
-import { DefaultAccountAccentColor } from "@/app/src/constants/shared/AccountConstants";
+} from "@/app/src/services/shared/account/AccountTheme";
+import { DefaultAccountAccentColor } from "@/app/src/constants/shared/account/AccountConstants";
 import {
   AccountPreferencesStorageKey,
   useAccountPreferences,
-} from "@/app/src/hooks/shared/useAccountPreferences";
+} from "@/app/src/hooks/shared/account/useAccountPreferences";
 import type {
   AccountAccentColor,
   AccountTheme,
-} from "@/app/src/types/shared/AccountTypes";
+} from "@/app/src/types/shared/account/AccountTypes";
 
 const ModuleRoutePrefixes = [
   "/accounts-payable",

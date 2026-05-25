@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { WorkspaceUsersManagementMain } from "@/app/src/ui/modules/workspace/users-management/WorkspaceUsersManagementMain";
 
 export const metadata: Metadata = {

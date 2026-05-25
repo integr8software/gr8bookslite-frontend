@@ -2,8 +2,8 @@ import { ChevronDown, LogOut, Settings, UserCircle } from "lucide-react";
 import type {
   MainCompany,
   MainNavigationScope,
-} from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
-import type { MainTopbarUser } from "@/app/src/types/shared/MainTopbarTypes";
+} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainTopbarUser } from "@/app/src/types/shared/main-layout/MainTopbarTypes";
 import {
   MenuSeparator,
   ProfileMenuButton,

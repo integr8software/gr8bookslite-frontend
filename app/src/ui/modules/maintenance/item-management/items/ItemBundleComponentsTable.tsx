@@ -14,8 +14,8 @@ import {
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus, Trash2 } from "lucide-react";
-import type { CSSProperties, ReactNode } from "react";
+import { GripVertical, Plus } from "lucide-react";
+import type { CSSProperties } from "react";
 import type {
 	ItemBundleComponent,
 	ItemBundleComponentItemOption,
@@ -25,6 +25,7 @@ import {
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleTableActionButton } from "@/app/src/ui/shared/module/ModuleTableActions";
 
 type ItemBundleComponentsTableProps = {
 	components: ItemBundleComponent[];
@@ -273,49 +274,15 @@ function BundleComponentRow({
 			<td className="px-3 py-3 text-right">
 				{!isReadonly ? (
 					<div className="flex justify-end gap-1">
-						<IconButton
+						<ModuleTableActionButton
+							variant="delete"
 							label={`Remove ${component.itemName || "component"}`}
-							tone="danger"
 							onClick={() => onRemoveComponent(component.id)}
-						>
-							<Trash2 className="h-4 w-4" aria-hidden="true" />
-						</IconButton>
+						/>
 					</div>
 				) : null}
 			</td>
 		</tr>
-	);
-}
-
-function IconButton({
-	children,
-	disabled,
-	label,
-	onClick,
-	tone = "default",
-}: {
-	children: ReactNode;
-	disabled?: boolean;
-	label: string;
-	onClick: () => void;
-	tone?: "danger" | "default";
-}) {
-	return (
-		<button
-			type="button"
-			disabled={disabled}
-			onClick={onClick}
-			aria-label={label}
-			className={[
-				"inline-flex h-9 w-9 items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2",
-				tone === "danger"
-					? "text-coralpink hover:bg-coralpink/10 focus-visible:ring-coralpink/30"
-					: "text-darknavy/55 hover:bg-skyblue/10 hover:text-darknavy focus-visible:ring-skyblue/30",
-				"disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent",
-			].join(" ")}
-		>
-			{children}
-		</button>
 	);
 }
 

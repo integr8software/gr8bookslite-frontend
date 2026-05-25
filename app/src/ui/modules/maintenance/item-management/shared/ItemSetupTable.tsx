@@ -25,25 +25,23 @@ export function ItemSetupTable({
 	table,
 }: ItemSetupTableProps) {
 	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<ModuleTable
-				emptyDescription="Add a setup record to start classifying items."
-				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No setup records found"
-				isLoading={isLoading}
-				minWidthClassName="min-w-[50rem]"
-				paginationStorageKey={ItemSetupTablePaginationStorageKeys[kind]}
-				table={table}
-				renderRow={({ id, original }) => (
-					<ItemSetupTableRow
-						key={id}
-						expandedIds={expandedIds}
-						row={original}
-						onDeleteRecord={setPendingDeleteRecord}
-						onToggleExpanded={onToggleExpanded}
-					/>
-				)}
-			/>
-		</div>
+		<ModuleTable
+			emptyDescription="Add a setup record to start classifying items."
+			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+			emptyTitle="No setup records found"
+			isLoading={isLoading}
+			minWidthClassName="min-w-[50rem]"
+			paginationStorageKey={ItemSetupTablePaginationStorageKeys[kind]}
+			table={table}
+			renderRow={({ id, original }) => (
+				<ItemSetupTableRow
+					key={id}
+					expandedIds={expandedIds}
+					row={original}
+					onDeleteRecord={setPendingDeleteRecord}
+					onToggleExpanded={onToggleExpanded}
+				/>
+			)}
+		/>
 	);
 }

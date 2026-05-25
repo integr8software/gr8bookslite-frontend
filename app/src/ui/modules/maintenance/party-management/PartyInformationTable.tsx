@@ -29,6 +29,7 @@ export function PartyInformationTable({
 				onResetFilters={partyTable.resetFilters}
 			/>
 			<ModuleTable
+				variant="embedded"
 				emptyDescription="Try adjusting the search or filters, or add a new party record."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No party records found"

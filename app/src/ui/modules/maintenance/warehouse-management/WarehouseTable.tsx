@@ -17,23 +17,21 @@ export function WarehouseTable({
 	table,
 }: WarehouseTableProps) {
 	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<ModuleTable
-				emptyDescription="Add a warehouse to start tracking access and item counts."
-				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No warehouses found"
-				isLoading={isLoading}
-				minWidthClassName="min-w-[68rem]"
-				paginationStorageKey={WarehouseManagementTablePaginationStorageKey}
-				table={table}
-				renderRow={({ id, original }) => (
-					<WarehouseTableRow
-						key={id}
-						warehouse={original}
-						onDeleteWarehouse={setPendingDeleteWarehouse}
-					/>
-				)}
-			/>
-		</div>
+		<ModuleTable
+			emptyDescription="Add a warehouse to start tracking access and item counts."
+			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+			emptyTitle="No warehouses found"
+			isLoading={isLoading}
+			minWidthClassName="min-w-[68rem]"
+			paginationStorageKey={WarehouseManagementTablePaginationStorageKey}
+			table={table}
+			renderRow={({ id, original }) => (
+				<WarehouseTableRow
+					key={id}
+					warehouse={original}
+					onDeleteWarehouse={setPendingDeleteWarehouse}
+				/>
+			)}
+		/>
 	);
 }

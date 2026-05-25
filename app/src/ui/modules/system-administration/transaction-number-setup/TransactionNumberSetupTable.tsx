@@ -40,6 +40,7 @@ export function TransactionNumberSetupTable({
 				onScopeFilterChange={handleScopeFilterChange}
 			/>
 			<ModuleTable
+				variant="embedded"
 				emptyDescription="Add a numbering setup to reserve document numbers."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No numbering setups found"

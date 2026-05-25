@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
 	WarehouseAccessLevelOptions,
 	WarehouseAccessPermissionOptions,
@@ -11,6 +11,7 @@ import type {
 	WarehouseAccessRecord,
 	WarehouseStatus,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
+import { ModuleTableActionButton } from "@/app/src/ui/shared/module/ModuleTableActions";
 
 type WarehouseAccessTableProps = {
 	accessRecords: WarehouseAccessRecord[];
@@ -161,14 +162,11 @@ export function WarehouseAccessTable({
 										</select>
 									</td>
 									<td className="px-4 py-4 text-right align-top">
-										<button
-											type="button"
+										<ModuleTableActionButton
+											variant="delete"
 											onClick={() => onRemoveAccess(access.id)}
-											aria-label={`Remove ${access.userName || "access row"}`}
-											className="inline-flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
-										>
-											<Trash2 className="h-4 w-4" aria-hidden="true" />
-										</button>
+											label={`Remove ${access.userName || "access row"}`}
+										/>
 									</td>
 								</tr>
 							))

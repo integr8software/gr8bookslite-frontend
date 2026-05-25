@@ -49,6 +49,7 @@ export function AuditTrailTable({
 				onSeverityFilterChange={handleSeverityFilterChange}
 			/>
 			<ModuleTable
+				variant="embedded"
 				emptyDescription="Adjust filters to review activity across sidebar modules."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No audit trail records found"

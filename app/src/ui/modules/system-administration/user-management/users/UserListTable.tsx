@@ -35,6 +35,7 @@ export function UserListTable({
 			/>
 
 			<ModuleTable
+				variant="embedded"
 				emptyDescription="Try adjusting your filters or search query."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No users found"

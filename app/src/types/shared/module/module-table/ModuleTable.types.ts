@@ -15,6 +15,7 @@ export type ModuleTableProps<TData> = {
 	renderRow: (row: Row<TData>) => ReactNode;
 	skeletonRowCount?: number;
 	table: Table<TData>;
+	variant?: "embedded" | "standalone";
 };
 
 export type ModuleTableBodyProps<TData> = {
@@ -29,10 +30,14 @@ export type ModuleTableBodyProps<TData> = {
 };
 
 export type ModuleTablePaginationProps = {
+	firstRow: number;
+	label: string;
+	lastRow: number;
 	page: number;
 	pageLimit: number;
 	pageSize: number;
 	pageSizeOptions: number[];
+	totalRows: number;
 	totalPages: number;
 	onPageChange: (page: number) => void;
 	onPageSizeChange: (pageSize: number) => void;

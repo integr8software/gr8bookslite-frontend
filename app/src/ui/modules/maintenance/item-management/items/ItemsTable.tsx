@@ -17,23 +17,21 @@ export function ItemsTable({
 	table,
 }: ItemsTableProps) {
 	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<ModuleTable
-				emptyDescription="Add an item master record to start classifying stock and bundles."
-				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No items found"
-				isLoading={isLoading}
-				minWidthClassName="min-w-[92rem]"
-				paginationStorageKey={ItemsTablePaginationStorageKey}
-				table={table}
-				renderRow={({ id, original }) => (
-					<ItemsTableRow
-						key={id}
-						item={original}
-						onDeleteItem={setPendingDeleteItem}
-					/>
-				)}
-			/>
-		</div>
+		<ModuleTable
+			emptyDescription="Add an item master record to start classifying stock and bundles."
+			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+			emptyTitle="No items found"
+			isLoading={isLoading}
+			minWidthClassName="min-w-[92rem]"
+			paginationStorageKey={ItemsTablePaginationStorageKey}
+			table={table}
+			renderRow={({ id, original }) => (
+				<ItemsTableRow
+					key={id}
+					item={original}
+					onDeleteItem={setPendingDeleteItem}
+				/>
+			)}
+		/>
 	);
 }

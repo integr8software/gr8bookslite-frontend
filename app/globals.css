@@ -267,6 +267,13 @@ button {
 	background-color: #f8fafc;
 }
 
+.module-table-header th {
+	color: color-mix(in srgb, var(--foreground) 75%, transparent);
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1rem;
+}
+
 .module-table-sticky-header {
 	background-color: #f8fafc;
 }
@@ -276,6 +283,12 @@ button {
 	transition:
 		background-color 160ms ease,
 		color 160ms ease;
+}
+
+.module-table-row > td {
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+	padding: 1rem 1.25rem;
 }
 
 .module-table-row:hover {

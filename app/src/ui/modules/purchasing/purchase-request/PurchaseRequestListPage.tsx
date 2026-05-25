@@ -50,24 +50,24 @@ export function PurchaseRequestListPage() {
         }
       />
 
-      <div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm">
-        <label className="relative block">
-          <span className="sr-only">Search purchase requests</span>
-          <Search
-            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/45"
-            aria-hidden="true"
-          />
-          <input
-            value={query}
-            onChange={(event) => handleQueryChange(event.target.value)}
-            placeholder="Search by PR no., supplier, project, or status"
-            className="h-12 w-full rounded-lg border border-darknavy/10 bg-offwhite/65 pl-11 pr-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15"
-          />
-        </label>
-      </div>
-
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+        <div className="border-b border-darknavy/10 p-4">
+          <label className="relative block">
+            <span className="sr-only">Search purchase requests</span>
+            <Search
+              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/45"
+              aria-hidden="true"
+            />
+            <input
+              value={query}
+              onChange={(event) => handleQueryChange(event.target.value)}
+              placeholder="Search by PR no., supplier, project, or status"
+              className="h-10 w-full rounded-md border border-darknavy/10 bg-white pl-11 pr-4 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/15"
+            />
+          </label>
+        </div>
         <ModuleTable
+          variant="embedded"
           emptyDescription="Try another PR no., supplier, project, or status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
           emptyTitle="No purchase requests found"

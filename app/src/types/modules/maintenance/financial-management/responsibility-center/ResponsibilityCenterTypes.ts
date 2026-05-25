@@ -34,3 +34,10 @@ export type ResponsibilityCenterFormValues = {
 export type ResponsibilityCenterFormErrors = Partial<
 	Record<keyof ResponsibilityCenterFormValues, string>
 >;
+
+export type ResponsibilityCenterTableColumnKey =
+	| "code"
+	| "name"
+	| "type"
+	| "manager"
+	| "status";

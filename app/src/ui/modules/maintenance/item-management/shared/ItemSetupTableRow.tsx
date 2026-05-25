@@ -28,10 +28,29 @@ export function ItemSetupTableRow({
 		<tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
 			<td className="px-4 py-4 font-semibold">{record.code}</td>
 			<td className="px-4 py-4">
-				<div
-					className="flex items-center gap-2"
-					style={{ paddingLeft: `${row.level * 1.25}rem` }}
-				>
+				<div className="flex items-center gap-2">
+					{row.level > 0 ? (
+						<div className="flex self-stretch" aria-hidden="true">
+							{Array.from({ length: row.level }).map((_, index) => {
+								const isCurrentLevel = index === row.level - 1;
+
+								return (
+									<span
+										key={index}
+										className="relative block w-7 shrink-0"
+									>
+										<span className="absolute bottom-[-1rem] left-1/2 top-[-1rem] border-l border-dashed border-slate-300" />
+										{isCurrentLevel ? (
+											<>
+												<span className="absolute left-1/2 top-1/2 h-px w-5 border-t border-dashed border-slate-300" />
+												<span className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-slate-300" />
+											</>
+										) : null}
+									</span>
+								);
+							})}
+						</div>
+					) : null}
 					<button
 						type="button"
 						disabled={!row.hasChildren}

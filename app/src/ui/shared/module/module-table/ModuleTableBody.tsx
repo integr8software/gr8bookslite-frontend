@@ -14,7 +14,7 @@ export function ModuleTableBody<TData>({
 }: ModuleTableBodyProps<TData>) {
 	if (isLoading) {
 		return (
-			<tbody className="divide-y divide-darknavy/10 bg-white">
+			<tbody className="divide-y divide-darknavy/10 bg-white text-sm text-darknavy/75">
 				<ModuleTableSkeletonRows
 					columnCount={visibleColumnCount}
 					rowCount={skeletonRowCount}
@@ -25,7 +25,7 @@ export function ModuleTableBody<TData>({
 
 	if (rows.length === 0) {
 		return (
-			<tbody className="divide-y divide-darknavy/10 bg-white">
+			<tbody className="divide-y divide-darknavy/10 bg-white text-sm text-darknavy/75">
 				<ModuleTableEmptyRow
 					colSpan={visibleColumnCount}
 					description={emptyDescription}
@@ -37,7 +37,7 @@ export function ModuleTableBody<TData>({
 	}
 
 	return (
-		<tbody className="divide-y divide-darknavy/10 bg-white">
+		<tbody className="divide-y divide-darknavy/10 bg-white text-sm text-darknavy/75">
 			{rows.map((row) => renderRow(row))}
 		</tbody>
 	);
@@ -53,7 +53,7 @@ function ModuleTableSkeletonRows({
 	return Array.from({ length: rowCount }).map((_, index) => (
 		<tr key={index} className="animate-pulse">
 			{Array.from({ length: columnCount }).map((__, cellIndex) => (
-				<td key={cellIndex} className="px-4 py-4">
+				<td key={cellIndex} className="px-5 py-4">
 					<div className="h-4 rounded bg-darknavy/10" />
 				</td>
 			))}
@@ -74,9 +74,9 @@ function ModuleTableEmptyRow({
 }) {
 	return (
 		<tr>
-			<td colSpan={colSpan} className="px-4 py-16 text-center">
+			<td colSpan={colSpan} className="px-5 py-16 text-center">
 				<div className="mx-auto flex max-w-sm flex-col items-center">
-					<span className="flex h-12 w-12 items-center justify-center rounded-xl bg-darknavy/8 text-darknavy/55">
+					<span className="flex h-12 w-12 items-center justify-center rounded-lg bg-darknavy/8 text-darknavy/55">
 						{icon ?? (
 							<Search className="h-5 w-5" aria-hidden="true" />
 						)}

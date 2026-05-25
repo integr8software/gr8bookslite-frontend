@@ -38,6 +38,7 @@ export function ApprovalManagementTable({
 				onStatusFilterChange={handleStatusFilterChange}
 			/>
 			<ModuleTable
+				variant="embedded"
 				emptyDescription="Add an approval workflow to control module approvals."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No approval workflows found"

@@ -1,14 +1,14 @@
-import Link from "next/link";
 import {
   Building2,
-  Edit3,
-  Eye,
   GitBranch,
-  Trash2,
-  type LucideIcon,
 } from "lucide-react";
 import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
+import {
+  ModuleTableActionButton,
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/ModuleTableActions";
 
 type BranchManagementTableProps = {
   branches: MainBranch[];
@@ -41,9 +41,8 @@ export function BranchManagementTable({
         ))}
       </div>
     </div>
-  );
+	);
 }
-
 function BranchManagementRow({
   branch,
   onDeleteBranch,
@@ -64,7 +63,6 @@ function BranchManagementRow({
     </article>
   );
 }
-
 function BranchIdentity({ branch }: { branch: MainBranch }) {
   const Icon = (branch.kind ?? "branch") === "satellite" ? GitBranch : Building2;
 
@@ -94,29 +92,23 @@ function BranchRowActions({
   onDeleteBranch: (branchId: string, branchName: string) => void;
 }) {
   return (
-    <div
-      className="flex items-center gap-1 lg:justify-end"
-      data-spotlight-id="branch-management-actions"
-    >
-      <IconLink
+    <ModuleTableActions data-spotlight-id="branch-management-actions">
+      <ModuleTableActionLink
+        variant="view"
         href={`${BranchManagementHref}/view/${branch.id}`}
-        label="View"
-        icon={Eye}
+        label={`View ${branch.name}`}
       />
-      <IconLink
+      <ModuleTableActionLink
+        variant="edit"
         href={`${BranchManagementHref}/edit/${branch.id}`}
-        label="Edit"
-        icon={Edit3}
+        label={`Edit ${branch.name}`}
       />
-      <button
-        type="button"
+      <ModuleTableActionButton
+        variant="delete"
         onClick={() => onDeleteBranch(branch.id, branch.name)}
-        aria-label={`Delete ${branch.name}`}
-        className="flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
-      >
-        <Trash2 className="h-4 w-4" aria-hidden="true" />
-      </button>
-    </div>
+        label={`Delete ${branch.name}`}
+      />
+    </ModuleTableActions>
   );
 }
 
@@ -130,25 +122,5 @@ function Detail({ label, value }: { label: string; value?: string }) {
         {value || "-"}
       </p>
     </div>
-  );
-}
-
-function IconLink({
-  href,
-  icon: Icon,
-  label,
-}: {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-md text-darknavy/65 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-    >
-      <Icon className="h-4 w-4" aria-hidden="true" />
-    </Link>
   );
 }

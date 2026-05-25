@@ -59,6 +59,7 @@ export function useTransactionTypeListPage() {
 		pendingDeleteTransactionType,
 		searchTerm,
 		statusFilter,
+		transactionTypes,
 		handleConfirmDelete,
 		setPendingDeleteTransactionType,
 		setSearchTerm,

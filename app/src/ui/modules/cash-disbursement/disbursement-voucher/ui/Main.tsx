@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { RotateCcw, Search } from "lucide-react";
 import {
   useDisbursementVoucherPreviewTable,
@@ -42,10 +42,6 @@ export function DisbursementVoucherMain() {
     useState<DisbursementVoucherPreviewRow | null>(null);
   const [drawerState, setDrawerState] = useState<DrawerState>(null);
   const previewTable = useDisbursementVoucherPreviewTable(previewRows);
-  const visibleRows = useMemo(
-    () => previewTable.table.getRowModel().rows.map((row) => row.original),
-    [previewTable.table],
-  );
 
   function handleConfirmDelete() {
     if (!pendingDeleteRow?.voucher) {
@@ -146,10 +142,9 @@ export function DisbursementVoucherMain() {
           </div>
 
           <div className="mt-6">
-            <DisbursementVoucherTable
+              <DisbursementVoucherTable
               onCreateVoucher={(row) => setDrawerState({ mode: "add", row })}
               onEditVoucher={(row) => setDrawerState({ mode: "edit", row })}
-              rows={visibleRows}
               table={previewTable.table}
               onDeleteVoucher={setPendingDeleteRow}
             />

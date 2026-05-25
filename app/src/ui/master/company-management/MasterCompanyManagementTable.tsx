@@ -110,6 +110,7 @@ export function MasterCompanyManagementTable({
 				</button>
 			</div>
 			<ModuleTable<MasterCompanyManagementRecord>
+				variant="embedded"
 				emptyDescription="Try a different company, plan, status, or billing cycle."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No subscribed companies found"

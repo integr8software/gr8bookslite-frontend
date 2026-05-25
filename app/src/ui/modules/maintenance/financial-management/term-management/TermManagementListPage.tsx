@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CalendarDays, Download, Plus, Upload } from "lucide-react";
+import {
+	CalendarDays,
+	Download,
+	Hash,
+	Plus,
+	Upload,
+} from "lucide-react";
 import { TermManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
@@ -10,6 +16,7 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { TermManagementTable } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementTable";
 
@@ -44,6 +51,31 @@ export function TermManagementListPage() {
           </>
         }
         actions={<TermManagementHeaderActions />}
+      />
+
+      <ModuleMetrics
+        metrics={[
+          {
+            helper: "All term definitions",
+            icon: CalendarDays,
+            label: "Total Terms",
+            value: terms.length,
+          },
+          {
+            helper: "Uses day-based periods",
+            icon: Hash,
+            label: "Day Mode",
+            tone: "emerald",
+            value: terms.filter((term) => term.datemode === "Day").length,
+          },
+          {
+            helper: "Uses month-based periods",
+            icon: CalendarDays,
+            label: "Month Mode",
+            tone: "violet",
+            value: terms.filter((term) => term.datemode === "Month").length,
+          },
+        ]}
       />
 
       <TermManagementTable

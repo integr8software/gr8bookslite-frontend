@@ -115,6 +115,7 @@ export function useWarehouseListPage() {
 		query,
 		setPendingDeleteWarehouse,
 		table,
+		warehouses,
 	};
 }
 

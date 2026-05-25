@@ -1,10 +1,4 @@
-import {
-	CheckCircle2,
-	CircleOff,
-	Edit3,
-	Eye,
-	Search,
-} from "lucide-react";
+import { Search } from "lucide-react";
 import {
 	WorkspaceBranchUsersTablePaginationStorageKey,
 } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
@@ -18,6 +12,11 @@ import type {
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
+	ModuleTableActionButton,
+	ModuleTableActionLink,
+	ModuleTableActions,
+} from "@/app/src/ui/shared/module/ModuleTableActions";
+import {
 	WorkspaceStatusBadge,
 	WorkspaceTextBadge,
 	WorkspaceUserAvatar,
@@ -25,7 +24,6 @@ import {
 import {
 	WorkspaceCompaniesFilterBar,
 	WorkspaceCompaniesFilterSelect,
-	WorkspaceCompaniesIconLink,
 	WorkspaceCompaniesResetButton,
 	WorkspaceCompaniesSearchInput,
 	WorkspaceCompaniesTableCell,
@@ -58,6 +56,7 @@ export function BranchUsersTable({
 				onStatusFilterChange={userList.setStatusFilter}
 			/>
 			<ModuleTable
+				variant="embedded"
 				emptyDescription="Try adjusting your search, branch role, or status filters."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No branch users found"
@@ -175,44 +174,24 @@ function BranchUserRecordActions({
 	onStatusChange: () => void;
 }) {
 	const nextStatus = getNextWorkspaceCompanyStatus(user.status);
-	const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
 
 	return (
-		<div className="flex items-center justify-center gap-1.5">
-			<IconLink href={`${baseHref}/view/${user.id}`} label={`View ${user.name}`}>
-				<Eye className="h-4 w-4" aria-hidden="true" />
-			</IconLink>
-			<IconLink href={`${baseHref}/edit/${user.id}`} label={`Edit ${user.name}`}>
-				<Edit3 className="h-4 w-4" aria-hidden="true" />
-			</IconLink>
-			<button
-				type="button"
+		<ModuleTableActions className="justify-center">
+			<ModuleTableActionLink
+				variant="view"
+				href={`${baseHref}/view/${user.id}`}
+				label={`View ${user.name}`}
+			/>
+			<ModuleTableActionLink
+				variant="edit"
+				href={`${baseHref}/edit/${user.id}`}
+				label={`Edit ${user.name}`}
+			/>
+			<ModuleTableActionButton
+				variant={nextStatus === "Inactive" ? "inactive" : "active"}
 				onClick={onStatusChange}
-				aria-label={`Set ${user.name} as ${nextStatus.toLowerCase()}`}
-				className={
-					nextStatus === "Inactive"
-						? "flex h-10 w-10 items-center justify-center rounded-lg text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coralpink/15"
-						: "flex h-10 w-10 items-center justify-center rounded-lg text-emerald-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/15"
-				}
-			>
-				<StatusIcon className="h-4 w-4" aria-hidden="true" />
-			</button>
-		</div>
-	);
-}
-
-function IconLink({
-	children,
-	href,
-	label,
-}: {
-	children: React.ReactNode;
-	href: string;
-	label: string;
-}) {
-	return (
-		<WorkspaceCompaniesIconLink href={href} label={label}>
-			{children}
-		</WorkspaceCompaniesIconLink>
+				label={`Set ${user.name} as ${nextStatus.toLowerCase()}`}
+			/>
+		</ModuleTableActions>
 	);
 }

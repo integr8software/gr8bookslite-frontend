@@ -7,14 +7,14 @@ import {
 
 export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 	return (
-		<thead className="module-table-header sticky top-0 z-10 bg-slate-50 text-sm font-semibold text-darknavy/60">
+		<thead className="module-table-header sticky top-0 z-10 bg-slate-50 text-xs font-semibold text-darknavy/75">
 			{table.getHeaderGroups().map((headerGroup) => (
 				<tr key={headerGroup.id} className="border-b border-darknavy/10">
 					{headerGroup.headers.map((header) => (
 						<th
 							key={header.id}
 							className={joinClasses(
-								"px-4 py-3.5",
+								"px-5 py-4",
 								getColumnClassName(header),
 							)}
 						>
@@ -45,7 +45,7 @@ function ModuleTableSortButton<TData>({
 		<button
 			type="button"
 			onClick={header.column.getToggleSortingHandler()}
-			className="flex items-center gap-1 rounded text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+			className="flex items-center gap-1.5 rounded text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
 		>
 			{flexRender(header.column.columnDef.header, header.getContext())}
 			<ChevronsUpDown

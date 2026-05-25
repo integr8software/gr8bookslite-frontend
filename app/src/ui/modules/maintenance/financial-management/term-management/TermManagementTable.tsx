@@ -21,23 +21,21 @@ export function TermManagementTable({
 	const table = useTermManagementTable(terms);
 
 	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<ModuleTable
-				emptyDescription="Add a term definition to start managing reporting and payment cycles."
-				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No term records found"
-				isLoading={isLoading}
-				minWidthClassName="min-w-[48rem]"
-				paginationStorageKey={TermManagementTablePaginationStorageKey}
-				table={table}
-				renderRow={({ id, original }) => (
-					<TermManagementTableRow
-						key={id}
-						term={original}
-						onDeleteTerm={onDeleteTerm}
-					/>
-				)}
-			/>
-		</div>
+		<ModuleTable
+			emptyDescription="Add a term definition to start managing reporting and payment cycles."
+			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+			emptyTitle="No term records found"
+			isLoading={isLoading}
+			minWidthClassName="min-w-[48rem]"
+			paginationStorageKey={TermManagementTablePaginationStorageKey}
+			table={table}
+			renderRow={({ id, original }) => (
+				<TermManagementTableRow
+					key={id}
+					term={original}
+					onDeleteTerm={onDeleteTerm}
+				/>
+			)}
+		/>
 	);
 }

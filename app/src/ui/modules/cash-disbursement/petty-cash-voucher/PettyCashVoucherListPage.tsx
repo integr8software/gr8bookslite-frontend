@@ -36,27 +36,26 @@ export function PettyCashVoucherListPage() {
           actions={<PettyCashVoucherHeaderActions />}
         />
 
-        <div className="rounded-xl border border-darknavy/10 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
           <PettyCashVoucherListFilters page={page} />
 
-          <div className="p-4 sm:p-5">
-            <ModuleTable
-              emptyDescription="Adjust the filters or add a new voucher to view petty cash records."
-              emptyTitle="No vouchers found"
-              emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-              isLoading={page.isLoading}
-              paginationLabel="vouchers"
-              paginationStorageKey={PettyCashVoucherPaginationStorageKey}
-              table={page.table}
-              renderRow={({ id, original }) => (
-                <PettyCashVoucherTableRow
-                  key={id}
-                  row={original}
-                  onDelete={page.setPendingDelete}
-                />
-              )}
-            />
-          </div>
+          <ModuleTable
+            variant="embedded"
+            emptyDescription="Adjust the filters or add a new voucher to view petty cash records."
+            emptyTitle="No vouchers found"
+            emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+            isLoading={page.isLoading}
+            paginationLabel="vouchers"
+            paginationStorageKey={PettyCashVoucherPaginationStorageKey}
+            table={page.table}
+            renderRow={({ id, original }) => (
+              <PettyCashVoucherTableRow
+                key={id}
+                row={original}
+                onDelete={page.setPendingDelete}
+              />
+            )}
+          />
         </div>
 
         <AppDialog

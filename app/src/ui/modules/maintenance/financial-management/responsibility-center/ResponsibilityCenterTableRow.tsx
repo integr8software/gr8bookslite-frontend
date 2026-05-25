@@ -1,14 +1,11 @@
-import Link from "next/link";
-import {
-	Building2,
-	CheckCircle2,
-	CircleOff,
-	Edit3,
-	Eye,
-	type LucideIcon,
-} from "lucide-react";
+import { Building2 } from "lucide-react";
 import { ResponsibilityCenterHref } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
+import {
+	ModuleTableActionButton,
+	ModuleTableActionLink,
+	ModuleTableActions,
+} from "@/app/src/ui/shared/module/ModuleTableActions";
 
 type ResponsibilityCenterTableRowProps = {
 	center: ResponsibilityCenter;
@@ -22,17 +19,25 @@ export function ResponsibilityCenterTableRow({
 	onStatusChangeCenter,
 }: ResponsibilityCenterTableRowProps) {
 	return (
-		<article className="grid gap-3 px-4 py-4 lg:grid-cols-[0.65fr_1.15fr_0.8fr_0.85fr_0.7fr_8rem] lg:items-center lg:gap-4">
-			<Detail label="Code" value={center.code} />
-			<CenterIdentity center={center} parentName={parentName} />
-			<Detail label="Type" value={center.type} />
-			<Detail label="Manager" value={center.manager} />
-			<StatusBadge status={center.status} />
-			<RowActions center={center} onStatusChangeCenter={onStatusChangeCenter} />
-		</article>
+		<tr className="module-table-row">
+			<td className="px-4 py-4 font-medium text-darknavy">{center.code}</td>
+			<td className="px-4 py-4">
+				<CenterIdentity center={center} parentName={parentName} />
+			</td>
+			<td className="px-4 py-4 text-darknavy">{center.type}</td>
+			<td className="px-4 py-4 text-darknavy">{center.manager || "-"}</td>
+			<td className="px-4 py-4">
+				<StatusBadge status={center.status} />
+			</td>
+			<td className="px-4 py-4">
+				<RowActions
+					center={center}
+					onStatusChangeCenter={onStatusChangeCenter}
+				/>
+			</td>
+		</tr>
 	);
 }
-
 function CenterIdentity({
 	center,
 	parentName,
@@ -56,7 +61,6 @@ function CenterIdentity({
 		</div>
 	);
 }
-
 function RowActions({
 	center,
 	onStatusChangeCenter,
@@ -65,42 +69,25 @@ function RowActions({
 	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
 }) {
 	const nextStatus = center.status === "Active" ? "Inactive" : "Active";
-	const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
 
 	return (
-		<div className="flex items-center gap-1 lg:justify-end">
-			<IconLink
+		<ModuleTableActions>
+			<ModuleTableActionLink
+				variant="view"
 				href={`${ResponsibilityCenterHref}/view/${center.id}`}
 				label={`View ${center.name}`}
-				icon={Eye}
 			/>
-			<IconLink
+			<ModuleTableActionLink
+				variant="edit"
 				href={`${ResponsibilityCenterHref}/edit/${center.id}`}
 				label={`Edit ${center.name}`}
-				icon={Edit3}
 			/>
-			<button
-				type="button"
+			<ModuleTableActionButton
+				variant={nextStatus === "Inactive" ? "inactive" : "active"}
 				onClick={() => onStatusChangeCenter(center)}
-				aria-label={`Set ${center.name} as ${nextStatus.toLowerCase()}`}
-				className="flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
-			>
-				<StatusIcon className="h-4 w-4" aria-hidden="true" />
-			</button>
-		</div>
-	);
-}
-
-function Detail({ label, value }: { label: string; value?: string }) {
-	return (
-		<div className="min-w-0">
-			<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/40 lg:hidden">
-				{label}
-			</p>
-			<p className="mt-1 truncate text-sm font-medium text-darknavy lg:mt-0">
-				{value || "-"}
-			</p>
-		</div>
+				label={`Set ${center.name} as ${nextStatus.toLowerCase()}`}
+			/>
+		</ModuleTableActions>
 	);
 }
 
@@ -111,34 +98,10 @@ function StatusBadge({ status }: { status: ResponsibilityCenter["status"] }) {
 			: "bg-darknavy/8 text-darknavy/55";
 
 	return (
-		<div>
-			<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/40 lg:hidden">
-				Status
-			</p>
-			<span
-				className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold lg:mt-0 ${statusClass}`}
-			>
-				{status}
-			</span>
-		</div>
+		<span
+			className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}
+		>
+			{status}
+		</span>
 	);
 }
-
-function IconLink({
-	href,
-	icon: Icon,
-	label,
-}: {
-	href: string;
-	icon: LucideIcon;
-	label: string;
-}) {
-	return (
-		<Link href={href} aria-label={label} className={iconButtonClassName}>
-			<Icon className="h-4 w-4" aria-hidden="true" />
-		</Link>
-	);
-}
-
-const iconButtonClassName =
-	"flex h-9 w-9 items-center justify-center rounded-md text-darknavy/65 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35";

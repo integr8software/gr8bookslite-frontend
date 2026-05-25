@@ -27,6 +27,7 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
 			isLoading={props.isLoading}
 			paginationLabel="accounts"
 			table={props.table}
+			variant="embedded"
 			renderRow={({ id, original }) => (
 				<ChartsOfAccountsTableRow
 					key={id}

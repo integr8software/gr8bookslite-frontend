@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Download, Percent, Plus, Upload } from "lucide-react";
+import { Download, Link2, Percent, Plus, Tags, Upload } from "lucide-react";
 import { DiscountManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
 import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagement";
 import type { DiscountManagementTableRecord } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
@@ -10,6 +10,7 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { DiscountManagementTable } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementTable";
 
@@ -46,6 +47,39 @@ export function DiscountManagementListPage() {
           </>
         }
         actions={<DiscountManagementHeaderActions />}
+      />
+
+      <ModuleMetrics
+        metrics={[
+          {
+            helper: "All discount definitions",
+            icon: Percent,
+            label: "Total Discounts",
+            value: discounts.length,
+          },
+          {
+            helper: "Mapped to chart accounts",
+            icon: Link2,
+            label: "Mapped Discounts",
+            tone: "emerald",
+            value: discounts.filter((discount) => Boolean(discount.accountId)).length,
+          },
+          {
+            helper: "Average discount rate",
+            icon: Tags,
+            label: "Average Discount",
+            tone: "amber",
+            value:
+              discounts.length === 0
+                ? "0%"
+                : `${Math.round(
+                    discounts.reduce(
+                      (total, discount) => total + discount.percentage,
+                      0,
+                    ) / discounts.length,
+                  )}%`,
+          },
+        ]}
       />
 
       <DiscountManagementTable

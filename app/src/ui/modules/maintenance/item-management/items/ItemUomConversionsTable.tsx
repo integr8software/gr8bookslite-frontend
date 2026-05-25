@@ -1,7 +1,8 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { ItemUomOptions } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import type { ItemUomConversion } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleTableActionButton } from "@/app/src/ui/shared/module/ModuleTableActions";
 
 type ItemUomConversionsTableProps = {
 	conversions: ItemUomConversion[];
@@ -104,14 +105,11 @@ export function ItemUomConversionsTable({
 								</td>
 								<td className="px-3 py-3 text-right">
 									{!isReadonly ? (
-										<button
-											type="button"
+										<ModuleTableActionButton
+											variant="delete"
 											onClick={() => onRemoveConversion(conversion.id)}
-											aria-label="Remove conversion"
-											className="inline-flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
-										>
-											<Trash2 className="h-4 w-4" aria-hidden="true" />
-										</button>
+											label="Remove conversion"
+										/>
 									) : null}
 								</td>
 							</tr>

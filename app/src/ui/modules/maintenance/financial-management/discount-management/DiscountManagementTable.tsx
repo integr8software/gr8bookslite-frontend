@@ -24,23 +24,21 @@ export function DiscountManagementTable({
 	const table = useDiscountManagementTable(discounts);
 
 	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<ModuleTable
-				emptyDescription="Add a discount to start mapping promotions to accounts."
-				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No discounts yet"
-				isLoading={isLoading}
-				minWidthClassName="min-w-[52rem]"
-				paginationStorageKey={DiscountManagementTablePaginationStorageKey}
-				table={table}
-				renderRow={({ id, original }) => (
-					<DiscountManagementTableRow
-						key={id}
-						discount={original}
-						onDeleteDiscount={onDeleteDiscount}
-					/>
-				)}
-			/>
-		</div>
+		<ModuleTable
+			emptyDescription="Add a discount to start mapping promotions to accounts."
+			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+			emptyTitle="No discounts yet"
+			isLoading={isLoading}
+			minWidthClassName="min-w-[52rem]"
+			paginationStorageKey={DiscountManagementTablePaginationStorageKey}
+			table={table}
+			renderRow={({ id, original }) => (
+				<DiscountManagementTableRow
+					key={id}
+					discount={original}
+					onDeleteDiscount={onDeleteDiscount}
+				/>
+			)}
+		/>
 	);
 }

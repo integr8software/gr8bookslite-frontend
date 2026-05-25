@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Search, Warehouse } from "lucide-react";
+import { CheckCircle2, CirclePause, Package, Plus, Search, Warehouse } from "lucide-react";
 import { WarehouseManagementHref } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import { useWarehouseListPage } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseListPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -9,6 +9,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import { WarehouseTable } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseTable";
 
 export function WarehouseListPage() {
@@ -36,6 +37,45 @@ export function WarehouseListPage() {
 						Add Warehouse
 					</Link>
 				}
+			/>
+
+			<ModuleMetrics
+				metrics={[
+					{
+						helper: "All warehouse records",
+						icon: Warehouse,
+						label: "Total Warehouses",
+						value: page.warehouses.length,
+					},
+					{
+						helper: "Available locations",
+						icon: CheckCircle2,
+						label: "Active Warehouses",
+						tone: "emerald",
+						value: page.warehouses.filter(
+							(warehouse) => warehouse.status === "Active",
+						).length,
+					},
+					{
+						helper: "Currently inactive",
+						icon: CirclePause,
+						label: "Inactive Warehouses",
+						tone: "amber",
+						value: page.warehouses.filter(
+							(warehouse) => warehouse.status === "Inactive",
+						).length,
+					},
+					{
+						helper: "Assigned stock lines",
+						icon: Package,
+						label: "Tracked Items",
+						tone: "violet",
+						value: page.warehouses.reduce(
+							(total, warehouse) => total + warehouse.items.length,
+							0,
+						),
+					},
+				]}
 			/>
 
 			<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm">

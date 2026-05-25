@@ -1,10 +1,13 @@
-import Link from "next/link";
-import { Edit3, Eye, Trash2 } from "lucide-react";
 import { ItemSetupConfigByKind } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import type {
 	ItemSetupKind,
 	ItemSetupRecord,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
+import {
+	ModuleTableActionButton,
+	ModuleTableActionLink,
+	ModuleTableActions,
+} from "@/app/src/ui/shared/module/ModuleTableActions";
 
 type ItemSetupRecordActionsProps = {
 	kind: ItemSetupKind;
@@ -20,33 +23,22 @@ export function ItemSetupRecordActions({
 	const href = ItemSetupConfigByKind[kind].href;
 
 	return (
-		<div className="flex items-center gap-2">
-			<Link
+		<ModuleTableActions>
+			<ModuleTableActionLink
+				variant="view"
 				href={`${href}/view/${record.id}`}
-				aria-label={`View ${record.name}`}
-				className={tableActionClassName}
-			>
-				<Eye className="h-4 w-4" aria-hidden="true" />
-			</Link>
-			<Link
+				label={`View ${record.name}`}
+			/>
+			<ModuleTableActionLink
+				variant="edit"
 				href={`${href}/edit/${record.id}`}
-				aria-label={`Edit ${record.name}`}
-				className={tableActionClassName}
-			>
-				<Edit3 className="h-4 w-4" aria-hidden="true" />
-			</Link>
-			<button
-				type="button"
+				label={`Edit ${record.name}`}
+			/>
+			<ModuleTableActionButton
+				variant="delete"
 				onClick={() => onDeleteRecord(record)}
-				aria-label={`Delete ${record.name}`}
-				className="inline-flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
-			>
-				<Trash2 className="h-4 w-4" aria-hidden="true" />
-			</button>
-		</div>
+				label={`Delete ${record.name}`}
+			/>
+		</ModuleTableActions>
 	);
 }
-
-const tableActionClassName =
-	"inline-flex h-9 w-9 items-center justify-center rounded-md text-darknavy transition hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35";
-

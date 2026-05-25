@@ -26,6 +26,7 @@ import {
 import type {
 	AccountStatus,
 	AccountType,
+	ChartAccountStructureFilter,
 	ChartAccount,
 	ChartAccountFormValues,
 	ChartsOfAccountsTableColumnKey,
@@ -47,6 +48,8 @@ export function useChartsOfAccounts() {
 		useState<FilterValue<AccountType>>("All");
 	const [statusFilter, setStatusFilter] =
 		useState<FilterValue<AccountStatus>>("All");
+	const [structureFilter, setStructureFilter] =
+		useState<ChartAccountStructureFilter>("All");
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "accountNumber", desc: false },
 	]);
@@ -93,6 +96,11 @@ export function useChartsOfAccounts() {
 				account.accountType === accountTypeFilter;
 			const matchesStatus =
 				statusFilter === "All" || account.status === statusFilter;
+			const hasSubmodules = Boolean(account.children?.length);
+			const matchesStructure =
+				structureFilter === "All" ||
+				(structureFilter === "With Submodules" && hasSubmodules) ||
+				(structureFilter === "Without Submodules" && !hasSubmodules);
 			const matchesTab =
 				activeTab === "All Accounts" ||
 				(activeTab === "Inactive Accounts" &&
@@ -103,6 +111,7 @@ export function useChartsOfAccounts() {
 				matchesQuery &&
 				matchesType &&
 				matchesStatus &&
+				matchesStructure &&
 				matchesTab
 			);
 		});
@@ -113,6 +122,7 @@ export function useChartsOfAccounts() {
 		flatAccounts,
 		searchQuery,
 		statusFilter,
+		structureFilter,
 	]);
 
 	const columns = useMemo<ColumnDef<FlattenedChartAccount>[]>(
@@ -184,6 +194,11 @@ export function useChartsOfAccounts() {
 		table.setPageIndex(0);
 	}
 
+	function changeStructureFilter(nextFilter: ChartAccountStructureFilter) {
+		setStructureFilter(nextFilter);
+		table.setPageIndex(0);
+	}
+
 	function openAddDrawer() {
 		setDrawerAccount(null);
 		setIsDrawerOpen(true);
@@ -236,6 +251,7 @@ export function useChartsOfAccounts() {
 		isLoading,
 		searchQuery,
 		statusFilter,
+		structureFilter,
 		table,
 		visibleAccounts,
 		closeDrawer,
@@ -247,6 +263,7 @@ export function useChartsOfAccounts() {
 		setActiveTab: changeActiveTab,
 		setSearchQuery: changeSearchQuery,
 		setStatusFilter: changeStatusFilter,
+		setStructureFilter: changeStructureFilter,
 		toggleExpanded,
 	};
 }

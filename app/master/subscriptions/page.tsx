@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { MasterPreviewPage } from "@/app/src/ui/master/MasterPreviewPage";
+import { MasterSubscriptionsPage as MasterSubscriptionsModulePage } from "@/app/src/ui/master/subscriptions/MasterSubscriptionsPage";
 
 export const metadata: Metadata = {
-	title: `Subscriptions | ${AppName}`,
-	description: `Master subscriptions for ${AppName}.`,
+	title: `Plans & Packages | ${AppName}`,
+	description: `Master plans and packages for ${AppName}.`,
 };
 
 export default function MasterSubscriptionsPage() {
-	return <MasterPreviewPage pageKey="subscriptions" />;
+	return <MasterSubscriptionsModulePage />;
 }

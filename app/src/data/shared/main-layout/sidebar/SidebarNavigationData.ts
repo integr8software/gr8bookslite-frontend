@@ -208,6 +208,9 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
   },
 ];
 
+export const MainMasterNavigationSections =
+  createMasterNavigationSections(MainWorkspaceNavigationSections);
+
 const RegisteredMainCompanyNavigationSections = SidebarModuleNavigationSections;
 
 export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
@@ -929,6 +932,7 @@ export const MainCompanySearchItems = flattenSections(
   MainCompanyNavigationSections,
 );
 export const MainSearchItems = MainCompanySearchItems;
+export const MainMasterSearchItems = flattenSections(MainMasterNavigationSections);
 
 function item(
   key: string,
@@ -1007,4 +1011,54 @@ function navGroup(
     productKeys,
     children,
   };
+}
+
+function createMasterNavigationSections(sections: MainNavigationSection[]) {
+  return sections.map((section) => ({
+    ...section,
+    href: section.href ? toMasterHref(section.href) : section.href,
+    key: toMasterNavigationKey(section.key),
+    items: section.items.map(toMasterNavigationItem),
+    title: toMasterNavigationLabel(section.title),
+  }));
+}
+
+function toMasterNavigationItem(item: MainNavigationItem): MainNavigationItem {
+  return {
+    ...item,
+    children: item.children?.map(toMasterNavigationItem),
+    href: toMasterHref(item.href),
+    key: toMasterNavigationKey(item.key),
+    label: toMasterNavigationLabel(item.label),
+  };
+}
+
+function toMasterHref(href: string) {
+  if (!href.startsWith("/workspace")) {
+    return href;
+  }
+
+  return href
+    .replace(/^\/workspace/, "/master")
+    .replace("/plans-packages", "/plan-and-packages")
+    .replace("/coupons-promotions", "/promotions");
+}
+
+function toMasterNavigationKey(key: string) {
+  return key
+    .replace(/^workspace/, "master")
+    .replace(/plans-packages/g, "plan-and-packages")
+    .replace(/coupons-promotions/g, "promotions");
+}
+
+function toMasterNavigationLabel(label: string) {
+  if (label === "Plans & Packages") {
+    return "Plan & Packages";
+  }
+
+  if (label === "Coupons & Promotions") {
+    return "Promotions";
+  }
+
+  return label;
 }

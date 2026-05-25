@@ -21,6 +21,8 @@ import {
 import {
   MainCompanyNavigationSections,
   MainCompanySearchItems,
+  MainMasterNavigationSections,
+  MainMasterSearchItems,
   MainWorkspaceNavigationSections,
   MainWorkspaceSearchItems,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarNavigationData";
@@ -52,6 +54,14 @@ const DefaultExpandedKeys = [
   "workspace-support-maintenance",
   "workspace-settings-section",
   "workspace-admin",
+  "master-overview-section",
+  "master-tenant-management",
+  "master-subscription-billing",
+  "master-platform-configuration",
+  "master-monitoring-security",
+  "master-support-maintenance",
+  "master-settings-section",
+  "master-admin",
   "dashboard",
   "maintenance",
   "maintenance-financial",
@@ -176,9 +186,11 @@ export function useMainLayout() {
 
   const navigationSections = useMemo(() => {
     const sourceSections =
-      activeNavigationScope !== "company"
-        ? MainWorkspaceNavigationSections
-        : MainCompanyNavigationSections;
+      activeNavigationScope === "master"
+        ? MainMasterNavigationSections
+        : activeNavigationScope === "workspace"
+          ? MainWorkspaceNavigationSections
+          : MainCompanyNavigationSections;
 
     return filterMainNavigationSections(
       sourceSections,
@@ -204,9 +216,11 @@ export function useMainLayout() {
 
   const availableSearchItems = useMemo(() => {
     const sourceItems =
-      activeNavigationScope !== "company"
-        ? MainWorkspaceSearchItems
-        : MainCompanySearchItems;
+      activeNavigationScope === "master"
+        ? MainMasterSearchItems
+        : activeNavigationScope === "workspace"
+          ? MainWorkspaceSearchItems
+          : MainCompanySearchItems;
 
     return filterMainSearchItems(
       sourceItems,

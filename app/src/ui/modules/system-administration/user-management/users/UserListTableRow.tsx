@@ -47,7 +47,7 @@ export function UserListTableRow({
 					aria-label={`Change role for ${user.name}`}
 					value={user.userRoleId}
 					onChange={(event) => onRoleChange(user, event.target.value)}
-					className="h-8 rounded border border-blue-100 bg-blue-50 px-2.5 text-xs font-semibold text-blue-700 outline-none transition hover:border-skyblue/45 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
+					className="h-8 w-full min-w-[9rem] rounded border border-blue-100 bg-blue-50 px-2.5 text-xs font-semibold text-blue-700 outline-none transition hover:border-skyblue/45 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
 				>
 					{userRoles.map((role) => (
 						<option key={role.id} value={role.id}>

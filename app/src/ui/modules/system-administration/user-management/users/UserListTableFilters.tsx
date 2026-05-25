@@ -19,7 +19,7 @@ export function UserListTableFilters({
 }: UserListTableFiltersProps) {
 	return (
 		<div
-			className="flex flex-wrap items-center gap-3 border-b border-darknavy/10 px-4 py-3"
+			className="flex flex-col gap-3 border-b border-darknavy/10 px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center"
 			data-spotlight-id="users-filters"
 		>
 			<div className="relative w-full sm:w-72">
@@ -35,7 +35,7 @@ export function UserListTableFilters({
 					className="h-9 w-full rounded border border-darknavy/10 bg-white pl-9 pr-3 text-xs text-darknavy outline-none transition placeholder:text-darknavy/38 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
 				/>
 			</div>
-			<div className="grid min-w-full flex-1 gap-3 sm:min-w-0 sm:grid-cols-1">
+			<div className="grid w-full min-w-0 flex-1 gap-3 sm:w-auto sm:min-w-[14rem] sm:grid-cols-1">
 				<ToolbarSelect
 					label="User Role"
 					value={typeFilter}
@@ -46,7 +46,7 @@ export function UserListTableFilters({
 			<button
 				type="button"
 				onClick={onResetFilters}
-				className="inline-flex h-9 items-center justify-center rounded border border-darknavy/10 bg-white px-4 text-xs font-semibold text-darknavy/50 transition hover:border-skyblue/45 hover:text-darknavy"
+				className="inline-flex h-9 w-full items-center justify-center rounded border border-darknavy/10 bg-white px-4 text-xs font-semibold text-darknavy/50 transition hover:border-skyblue/45 hover:text-darknavy sm:w-auto"
 			>
 				Reset
 			</button>
@@ -66,12 +66,12 @@ function ToolbarSelect({
 	value: string;
 }) {
 	return (
-		<label className="flex min-w-0 items-center gap-2 text-xs font-semibold text-darknavy/48">
+		<label className="flex min-w-0 flex-col items-start gap-2 text-xs font-semibold text-darknavy/48 sm:flex-row sm:items-center">
 			<span className="whitespace-nowrap">{label}</span>
 			<select
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
-				className="h-9 min-w-0 flex-1 rounded border border-darknavy/10 bg-white px-3 text-xs font-semibold text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
+				className="h-9 w-full min-w-0 flex-1 rounded border border-darknavy/10 bg-white px-3 text-xs font-semibold text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
 			>
 				{options.map((option) => (
 					<option key={option} value={option}>

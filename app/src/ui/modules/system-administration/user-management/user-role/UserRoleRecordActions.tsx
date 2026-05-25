@@ -24,7 +24,7 @@ export function UserRoleRecordActions({
     nextStatus === "Inactive" ? inactiveButtonClassName : activeButtonClassName;
 
   return (
-    <div className="flex items-center gap-1 lg:justify-end">
+    <div className="flex flex-wrap items-center gap-1 sm:gap-2 lg:justify-end">
       <Link href={`${baseHref}/view/${id}`} aria-label={`View ${name}`} className={linkClassName}>
         <Eye className="h-4 w-4" aria-hidden="true" />
       </Link>

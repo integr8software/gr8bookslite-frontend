@@ -78,20 +78,16 @@ export function useUserRoleFormPage() {
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
-	function toggleAccessRole(role: string) {
-		const nextRoles = values.accessRoles.includes(role)
-			? values.accessRoles.filter((item) => item !== role)
-			: [...values.accessRoles, role];
-
-		updateField("accessRoles", nextRoles);
-	}
-
 	function updateAccessRoles(accessRoles: string[]) {
 		updateField("accessRoles", accessRoles);
 	}
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
+		submitForm();
+	}
+
+	function submitForm() {
 		const nextErrors = validateUserRoleForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
@@ -131,7 +127,7 @@ export function useUserRoleFormPage() {
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
-		toggleAccessRole,
+		submitForm,
 		updateAccessRoles,
 		updateField,
 		values,

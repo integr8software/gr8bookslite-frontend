@@ -9,7 +9,6 @@ export function UserRoleForm({
 	values,
 	onSubmit,
 	onUpdateAccessRoles,
-	onToggleAccessRole,
 	onUpdateField,
 }: {
 	errors: UserRoleFormErrors;
@@ -17,7 +16,6 @@ export function UserRoleForm({
 	values: UserRoleFormValues;
 	onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 	onUpdateAccessRoles: (accessRoles: string[]) => void;
-	onToggleAccessRole: (role: string) => void;
 	onUpdateField: (
 		field: keyof UserRoleFormValues,
 		value: string | string[],
@@ -25,7 +23,7 @@ export function UserRoleForm({
 }) {
 	return (
 		<form id="user-role-form" onSubmit={onSubmit} className="grid gap-5">
-			<div className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
+			<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
 				<div className="grid gap-4 lg:grid-cols-2">
 					<UserRoleField label="Name" error={errors.name} required>
 						<input
@@ -70,7 +68,6 @@ export function UserRoleForm({
 							isReadonly={isReadonly}
 							values={values.accessRoles}
 							onUpdateAccessRoles={onUpdateAccessRoles}
-							onToggleAccessRole={onToggleAccessRole}
 						/>
 					</div>
 				</div>

@@ -1,15 +1,17 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { CirclePlus, FileText, Paperclip, Plus, Trash2 } from "lucide-react";
+import { FileText, Paperclip, Plus } from "lucide-react";
 import {
   DisbursementVoucherInitialEntryDraft,
   createAttachmentPlaceholders,
   createAutoDisbursementLineEntries,
   createDisbursementLineEntry,
   createDisbursementVoucherFormValues,
+  formatTaxRateSummary,
   formatCurrency,
   formatDateLabel,
+  syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
   validateDisbursementEntryDraft,
@@ -21,10 +23,25 @@ import {
   AppPaymentTypeDialog,
   InitialAppPaymentTypeRecords,
   type AppPaymentTypeRecord,
-} from "@/app/src/ui/shared/app/AppPaymentTypeDialog";
+} from "@/app/src/ui/shared/transaction-setup/AppPaymentTypeDialog";
+import {
+  AppVceDialog,
+  mapPartyRecordToVceValue,
+} from "@/app/src/ui/shared/transaction-setup/AppVceDialog";
+import {
+  AppDisbursementTypeDialog,
+  InitialAppDisbursementTypeRecords,
+  type AppDisbursementTypeRecord,
+} from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
+import {
+  AppTaxRateDialog,
+  type AppTaxRateDialogValue,
+} from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
+import { AccountingEntriesDialog as ReusableAccountingEntriesDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/AccountingEntriesDialog";
 import type {
   DisbursementLineEntry,
   DisbursementPaymentMethod,
+  DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementType,
   DisbursementVoucherEntryDraft,
@@ -34,9 +51,13 @@ import type {
   VoucherCurrency,
   WorkflowStep,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { PartyType } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 
 type DrawerMode = "add" | "edit";
-type DrawerTab = "cash-disbursement" | "file-attachment";
+type DrawerTab =
+  | "cash-disbursement"
+  | "payment-details"
+  | "file-attachment";
 
 type DisbursementVoucherDrawerProps = {
   isOpen: boolean;
@@ -83,9 +104,16 @@ function DrawerPanel({
   const [activeTab, setActiveTab] = useState<DrawerTab>("cash-disbursement");
   const [step, setStep] = useState<WorkflowStep>("details");
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
+  const [isVceDialogOpen, setIsVceDialogOpen] = useState(false);
+  const [isVoucherTaxDialogOpen, setIsVoucherTaxDialogOpen] = useState(false);
+  const [isDisbursementTypeDialogOpen, setIsDisbursementTypeDialogOpen] =
+    useState(false);
   const [paymentTypeRecords, setPaymentTypeRecords] = useState<
     AppPaymentTypeRecord[]
   >(InitialAppPaymentTypeRecords);
+  const [disbursementTypeRecords, setDisbursementTypeRecords] = useState<
+    AppDisbursementTypeRecord[]
+  >(InitialAppDisbursementTypeRecords);
   const [values, setValues] = useState<DisbursementVoucherFormValues>(() =>
     createDisbursementVoucherFormValues(transaction, voucher),
   );
@@ -93,19 +121,10 @@ function DrawerPanel({
   const [entryDraft, setEntryDraft] = useState<DisbursementVoucherEntryDraft>(
     DisbursementVoucherInitialEntryDraft,
   );
-  const [transactionNumber, setTransactionNumber] = useState(
-    transaction?.transactionNo ?? "",
-  );
+  const transactionNumber = transaction?.transactionNo ?? "";
   const isEditing = mode === "edit";
-  const matchedTransaction = useMemo(
-    () =>
-      transactions.find(
-        (currentTransaction) =>
-          currentTransaction.transactionNo === transactionNumber.trim(),
-      ),
-    [transactionNumber, transactions],
-  );
-  const selectedTransaction = matchedTransaction ?? transaction;
+  const matchedTransaction = transaction;
+  const selectedTransaction = transaction;
   const activePaymentTypeOptions = useMemo(
     () =>
       paymentTypeRecords
@@ -113,6 +132,18 @@ function DrawerPanel({
         .map((record) => record.paymentType),
     [paymentTypeRecords],
   );
+  const selectedPaymentTypeRecord = useMemo(
+    () =>
+      paymentTypeRecords.find(
+        (record) => record.paymentType === values.paymentMethod,
+      ) ?? null,
+    [paymentTypeRecords, values.paymentMethod],
+  );
+  const requiresPaymentDetailsTab = Boolean(selectedPaymentTypeRecord?.withBank);
+  const resolvedActiveTab =
+    !requiresPaymentDetailsTab && activeTab === "payment-details"
+      ? "cash-disbursement"
+      : activeTab;
   const totalDebit = useMemo(
     () => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0),
     [values.lineEntries],
@@ -132,57 +163,12 @@ function DrawerPanel({
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  function syncTransaction(nextTransaction?: DisbursementTransactionRecord) {
-    if (!nextTransaction) {
-      setValues((current) => ({
-        ...current,
-        transactionId: "",
-      }));
-      return;
-    }
-
-    const nextDefaults = createDisbursementVoucherFormValues(
-      nextTransaction,
-      isEditing ? voucher : undefined,
-    );
-
-    setValues((current) => ({
-      ...current,
-      transactionId: nextTransaction.id,
-      paymentMethod: nextDefaults.paymentMethod,
-      disbursementType: nextDefaults.disbursementType,
-      currency: nextDefaults.currency,
-      amount: nextDefaults.amount,
-      remarks: nextDefaults.remarks,
-      costCenter: nextDefaults.costCenter,
-      vceName: current.vceName.trim() ? current.vceName : nextDefaults.vceName,
-      lineEntries: isEditing
-        ? current.lineEntries
-        : createAutoDisbursementLineEntries(nextTransaction),
-      attachments:
-        current.attachments.length > 0
-          ? current.attachments
-          : createAttachmentPlaceholders(nextTransaction),
-    }));
-    setErrors((current) => ({ ...current, transactionId: undefined }));
-  }
-
-  function handleTransactionNumberChange(value: string) {
-    setTransactionNumber(value);
-
-    if (isEditing) {
-      return;
-    }
-
-    const nextTransaction = transactions.find(
-      (currentTransaction) => currentTransaction.transactionNo === value.trim(),
-    );
-
-    syncTransaction(nextTransaction);
-  }
-
   function handleProceedFromDetails() {
     const nextErrors = validateDisbursementVoucherDetails(values);
+    const selectedDisbursementTypeRecord = findDisbursementTypeRecord(
+      disbursementTypeRecords,
+      values.disbursementType,
+    );
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
@@ -200,7 +186,19 @@ function DrawerPanel({
     if (values.lineEntries.length === 0 && selectedTransaction) {
       updateField(
         "lineEntries",
-        createAutoDisbursementLineEntries(selectedTransaction),
+        applyDisbursementTypeRecordToLineEntries(
+          createAutoDisbursementLineEntries(selectedTransaction),
+          selectedDisbursementTypeRecord,
+        ),
+      );
+    }
+
+    if (selectedDisbursementTypeRecord) {
+      setEntryDraft((current) =>
+        applyDisbursementTypeRecordToEntryDraft(
+          current,
+          selectedDisbursementTypeRecord,
+        ),
       );
     }
 
@@ -245,14 +243,41 @@ function DrawerPanel({
     );
   }
 
+  function handleUpdateEntryTax(
+    entryId: string,
+    taxRate: string,
+    taxDetails: DisbursementTaxDetails,
+  ) {
+    updateField(
+      "lineEntries",
+      values.lineEntries.map((entry) =>
+        entry.id === entryId
+          ? {
+              ...entry,
+              taxRate,
+              taxDetails,
+            }
+          : entry,
+      ),
+    );
+  }
+
   function handleApplyAutoEntries() {
     if (!selectedTransaction) {
       return;
     }
 
+    const selectedDisbursementTypeRecord = findDisbursementTypeRecord(
+      disbursementTypeRecords,
+      values.disbursementType,
+    );
+
     updateField(
       "lineEntries",
-      createAutoDisbursementLineEntries(selectedTransaction),
+      applyDisbursementTypeRecordToLineEntries(
+        createAutoDisbursementLineEntries(selectedTransaction),
+        selectedDisbursementTypeRecord,
+      ),
     );
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
@@ -276,6 +301,28 @@ function DrawerPanel({
     onClose();
   }
 
+  function openVoucherTaxDialog() {
+    setIsVoucherTaxDialogOpen(true);
+  }
+
+  function handleSaveVoucherTax(nextValue: AppTaxRateDialogValue) {
+    updateField("taxRate", nextValue.taxRate);
+    updateField("taxDetails", nextValue.taxDetails);
+    setIsVoucherTaxDialogOpen(false);
+  }
+
+  function handleAmountChange(nextAmount: string) {
+    updateField("amount", nextAmount);
+    updateField(
+      "taxDetails",
+      syncTaxDetailsAmount(
+        values.taxDetails,
+        Number(nextAmount || 0),
+        values.taxRate,
+      ),
+    );
+  }
+
   return (
     <ModuleDrawer
       isOpen={isOpen}
@@ -287,78 +334,79 @@ function DrawerPanel({
       description="Create the voucher details, continue to accounting entries, then review everything before saving."
       onClose={onClose}
       footer={
-        <DrawerFooter
-          isEditing={isEditing}
-          step={step}
-          onBack={
-            step === "entries"
-              ? () => setStep("details")
-              : step === "review"
+        step === "entries" ? undefined : (
+          <DrawerFooter
+            isEditing={isEditing}
+            step={step}
+            onBack={
+              step === "review"
                 ? () => setStep("entries")
                 : undefined
-          }
-          onClose={onClose}
-          onProceed={
-            step === "details"
-              ? handleProceedFromDetails
-              : step === "entries"
-                ? handleProceedFromEntries
-                : handleFinalSave
-          }
-        />
+            }
+            onClose={onClose}
+            onProceed={
+              step === "details" ? handleProceedFromDetails : handleFinalSave
+            }
+          />
+        )
       }
     >
-      <DrawerStepper step={step} />
-
       {step === "details" ? (
         <>
           <div className="border-b border-darknavy/10 px-6 pt-4">
             <div className="flex items-end gap-1">
               <DrawerTabButton
-                isActive={activeTab === "cash-disbursement"}
+                isActive={resolvedActiveTab === "cash-disbursement"}
                 label="Cash Disbursement"
                 onClick={() => setActiveTab("cash-disbursement")}
               />
+              {requiresPaymentDetailsTab ? (
+                <DrawerTabButton
+                  isActive={resolvedActiveTab === "payment-details"}
+                  label="Payment Details"
+                  onClick={() => setActiveTab("payment-details")}
+                />
+              ) : null}
               <DrawerTabButton
-                isActive={activeTab === "file-attachment"}
+                isActive={resolvedActiveTab === "file-attachment"}
                 label="File Attachment"
                 onClick={() => setActiveTab("file-attachment")}
               />
             </div>
           </div>
 
-          {activeTab === "cash-disbursement" ? (
+          {resolvedActiveTab === "cash-disbursement" ? (
             <DetailsTab
               errors={errors}
               isEditing={isEditing}
               matchedTransaction={matchedTransaction}
               paymentTypeOptions={activePaymentTypeOptions}
+              disbursementTypeOptions={getActiveDisbursementTypeOptions(
+                disbursementTypeRecords,
+              )}
               transactionNumber={transactionNumber}
               transactions={transactions}
               values={values}
+              onAmountChange={handleAmountChange}
+              onOpenDisbursementTypeDialog={() =>
+                setIsDisbursementTypeDialogOpen(true)
+              }
               onOpenPaymentTypeDialog={() => setIsPaymentTypeDialogOpen(true)}
-              onTransactionNumberChange={handleTransactionNumberChange}
+              onOpenVoucherTaxDialog={openVoucherTaxDialog}
+              onOpenVceDialog={() => setIsVceDialogOpen(true)}
+              onUpdateField={updateField}
+            />
+          ) : resolvedActiveTab === "payment-details" ? (
+            <PaymentDetailsTab
+              paymentMethod={values.paymentMethod}
+              paymentDetails={values.paymentDetails}
+              withBank={selectedPaymentTypeRecord?.withBank ?? false}
               onUpdateField={updateField}
             />
           ) : (
             <AttachmentsTab values={values} />
           )}
         </>
-      ) : null}
-
-      {step === "entries" ? (
-        <EntriesStep
-          entryDraft={entryDraft}
-          entries={values.lineEntries}
-          errors={errors}
-          isBalanced={isBalanced}
-          totalCredit={totalCredit}
-          totalDebit={totalDebit}
-          onAddEntry={handleAddEntry}
-          onApplyAutoEntries={handleApplyAutoEntries}
-          onDraftChange={setEntryDraft}
-          onRemoveEntry={handleRemoveEntry}
-        />
       ) : null}
 
       {step === "review" ? (
@@ -381,49 +429,63 @@ function DrawerPanel({
           setIsPaymentTypeDialogOpen(false);
         }}
       />
+
+      <AppVceDialog
+        isOpen={isVceDialogOpen}
+        suggestedPartyType={getSuggestedPartyType(values.disbursementType)}
+        onClose={() => setIsVceDialogOpen(false)}
+        onSelect={(record) => {
+          const nextVce = mapPartyRecordToVceValue(record);
+          updateField("vceCode", nextVce.vceCode);
+          updateField("vceName", nextVce.vceName);
+          setIsVceDialogOpen(false);
+        }}
+      />
+
+      <AppTaxRateDialog
+        isOpen={isVoucherTaxDialogOpen}
+        title="Voucher Tax"
+        value={{
+          taxRate: values.taxRate,
+          taxDetails: syncTaxDetailsAmount(
+            values.taxDetails,
+            Number(values.amount || 0),
+            values.taxRate,
+          ),
+        }}
+        onClose={() => setIsVoucherTaxDialogOpen(false)}
+        onSave={handleSaveVoucherTax}
+      />
+
+      <AppDisbursementTypeDialog
+        isOpen={isDisbursementTypeDialogOpen}
+        records={disbursementTypeRecords}
+        onClose={() => setIsDisbursementTypeDialogOpen(false)}
+        onRecordsChange={setDisbursementTypeRecords}
+        onSelect={(value) => {
+          updateField("disbursementType", value);
+          setIsDisbursementTypeDialogOpen(false);
+        }}
+      />
+
+      <ReusableAccountingEntriesDialog
+        isOpen={step === "entries"}
+        entryDraft={entryDraft}
+        entries={values.lineEntries}
+        errors={errors}
+        isBalanced={isBalanced}
+        totalCredit={totalCredit}
+        totalDebit={totalDebit}
+        onAddEntry={handleAddEntry}
+        onApplyAutoEntries={handleApplyAutoEntries}
+        onBack={() => setStep("details")}
+        onClose={() => setStep("details")}
+        onDraftChange={setEntryDraft}
+        onProceed={handleProceedFromEntries}
+        onRemoveEntry={handleRemoveEntry}
+        onUpdateEntryTax={handleUpdateEntryTax}
+      />
     </ModuleDrawer>
-  );
-}
-
-function DrawerStepper({ step }: { step: WorkflowStep }) {
-  const steps: Array<{ id: WorkflowStep; label: string }> = [
-    { id: "details", label: "New Voucher" },
-    { id: "entries", label: "Accounting Entries" },
-    { id: "review", label: "Preview" },
-  ];
-
-  return (
-    <div className="border-b border-darknavy/10 px-6 py-4">
-      <div className="flex flex-wrap items-center gap-3">
-        {steps.map((currentStep, index) => {
-          const isActive = currentStep.id === step;
-          const isComplete =
-            steps.findIndex((item) => item.id === step) > index;
-
-          return (
-            <div key={currentStep.id} className="flex items-center gap-3">
-              <div
-                className={`inline-flex h-8 min-w-8 items-center justify-center rounded-full px-3 text-xs font-semibold ${
-                  isActive
-                    ? "bg-darknavy text-white"
-                    : isComplete
-                      ? "bg-citron/35 text-darknavy"
-                      : "bg-darknavy/8 text-darknavy/55"
-                }`}
-              >
-                {index + 1}
-              </div>
-              <span className="text-sm font-medium text-darknavy/72">
-                {currentStep.label}
-              </span>
-              {index < steps.length - 1 ? (
-                <div className="h-px w-8 bg-darknavy/12" />
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
-    </div>
   );
 }
 
@@ -431,23 +493,31 @@ function DetailsTab({
   errors,
   isEditing,
   matchedTransaction,
+  disbursementTypeOptions,
   paymentTypeOptions,
   transactionNumber,
   transactions,
   values,
+  onAmountChange,
+  onOpenDisbursementTypeDialog,
   onOpenPaymentTypeDialog,
-  onTransactionNumberChange,
+  onOpenVoucherTaxDialog,
+  onOpenVceDialog,
   onUpdateField,
 }: {
   errors: DisbursementVoucherFormErrors;
   isEditing: boolean;
   matchedTransaction?: DisbursementTransactionRecord;
+  disbursementTypeOptions: DisbursementType[];
   paymentTypeOptions: DisbursementPaymentMethod[];
   transactionNumber: string;
   transactions: DisbursementTransactionRecord[];
   values: DisbursementVoucherFormValues;
+  onAmountChange: (value: string) => void;
+  onOpenDisbursementTypeDialog: () => void;
   onOpenPaymentTypeDialog: () => void;
-  onTransactionNumberChange: (value: string) => void;
+  onOpenVoucherTaxDialog: () => void;
+  onOpenVceDialog: () => void;
   onUpdateField: <TKey extends keyof DisbursementVoucherFormValues>(
     field: TKey,
     value: DisbursementVoucherFormValues[TKey],
@@ -509,7 +579,7 @@ function DetailsTab({
         <FieldShell error={errors.vceName} label="VCEName : *">
           <ActionField
             actionLabel="Add"
-            onAction={() => undefined}
+            onAction={onOpenVceDialog}
             control={
               <input
                 value={values.vceName}
@@ -547,18 +617,19 @@ function DetailsTab({
         <FieldShell error={errors.amount} label="Amount :">
           <ActionField
             actionLabel="Tax"
-            onAction={() => undefined}
+            onAction={onOpenVoucherTaxDialog}
             control={
               <input
                 value={values.amount}
-                onChange={(event) =>
-                  onUpdateField("amount", event.target.value)
-                }
+                onChange={(event) => onAmountChange(event.target.value)}
                 className={`${FieldClassName} text-right`}
               />
             }
           />
         </FieldShell>
+        <p className="-mt-2 text-xs font-medium text-darknavy/55">
+          {formatTaxRateSummary(values.taxDetails)}
+        </p>
 
         <FieldShell label="Remarks :">
           <textarea
@@ -571,7 +642,7 @@ function DetailsTab({
         <FieldShell error={errors.disbursementType} label="Disbursement Type :">
           <ActionField
             actionLabel="Add"
-            onAction={() => undefined}
+            onAction={onOpenDisbursementTypeDialog}
             control={
               <select
                 value={values.disbursementType}
@@ -584,10 +655,11 @@ function DetailsTab({
                 className={FieldClassName}
               >
                 <option value="">--Select Disbursement Type--</option>
-                <option value="Vendor Payment">Vendor Payment</option>
-                <option value="Operating Expense">Operating Expense</option>
-                <option value="Reimbursement">Reimbursement</option>
-                <option value="Capital Expenditure">Capital Expenditure</option>
+                {disbursementTypeOptions.map((disbursementType) => (
+                  <option key={disbursementType} value={disbursementType}>
+                    {disbursementType}
+                  </option>
+                ))}
               </select>
             }
           />
@@ -716,229 +788,158 @@ function AttachmentsTab({ values }: { values: DisbursementVoucherFormValues }) {
   );
 }
 
-function EntriesStep({
-  entryDraft,
-  entries,
-  errors,
-  isBalanced,
-  totalCredit,
-  totalDebit,
-  onAddEntry,
-  onApplyAutoEntries,
-  onDraftChange,
-  onRemoveEntry,
+function PaymentDetailsTab({
+  paymentDetails,
+  paymentMethod,
+  withBank,
+  onUpdateField,
 }: {
-  entryDraft: DisbursementVoucherEntryDraft;
-  entries: DisbursementLineEntry[];
-  errors: DisbursementVoucherFormErrors;
-  isBalanced: boolean;
-  totalCredit: number;
-  totalDebit: number;
-  onAddEntry: () => void;
-  onApplyAutoEntries: () => void;
-  onDraftChange: (draft: DisbursementVoucherEntryDraft) => void;
-  onRemoveEntry: (entryId: string) => void;
+  paymentDetails: DisbursementVoucherFormValues["paymentDetails"];
+  paymentMethod: DisbursementVoucherFormValues["paymentMethod"];
+  withBank: boolean;
+  onUpdateField: <TKey extends keyof DisbursementVoucherFormValues>(
+    field: TKey,
+    value: DisbursementVoucherFormValues[TKey],
+  ) => void;
 }) {
+  const isCheckPayment = paymentMethod === "Check" || paymentMethod === "Manager's Check";
+
+  function updatePaymentDetailField(
+    field: keyof DisbursementVoucherFormValues["paymentDetails"],
+    value: string,
+  ) {
+    onUpdateField("paymentDetails", {
+      ...paymentDetails,
+      [field]: value,
+    });
+  }
+
   return (
-    <section className="p-6">
-      <div className="rounded-[24px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.08)]">
-        <div className="border-b border-darknavy/8 px-5 py-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
-                Accounting Entries
-              </p>
-              <h3 className="mt-2 text-2xl font-semibold text-darknavy">
-                Encode journal lines before saving
-              </h3>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-darknavy/58">
-                After the voucher details, continue directly into journal lines,
-                then move to the final preview once the entries are balanced.
-              </p>
-            </div>
-            <span
-              className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                isBalanced
-                  ? "bg-citron/25 text-darknavy"
-                  : "bg-coralpink/12 text-coralpink"
-              }`}
-            >
-              {isBalanced ? "Balanced" : "Needs adjustment"}
-            </span>
-          </div>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={onApplyAutoEntries}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:border-skyblue/40 hover:bg-skyblue/8"
-            >
-              <CirclePlus className="h-4 w-4" aria-hidden="true" />
-              Auto Entries
-            </button>
-            <p className="text-sm text-darknavy/55">
-              Load the default debit and credit entries from the selected
-              transaction.
+    <div className="grid gap-6 px-6 py-6 xl:grid-cols-[1fr_0.72fr]">
+      <section className="rounded-[24px] border border-darknavy/10 bg-white p-5 shadow-sm">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
+            Bank-Linked Payment
+          </p>
+          <h3 className="mt-2 text-xl font-semibold text-darknavy">
+            {paymentMethod || "Payment"} details
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-darknavy/58">
+            Because this payment type is marked as bank-linked, you can capture the bank and release details here before moving to accounting entries.
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <FieldShell label="Bank Name :">
+            <input
+              value={paymentDetails.bankName}
+              onChange={(event) =>
+                updatePaymentDetailField("bankName", event.target.value)
+              }
+              className={FieldClassName}
+              placeholder="e.g. BDO Unibank"
+            />
+          </FieldShell>
+          <FieldShell label="Bank Branch :">
+            <input
+              value={paymentDetails.bankBranch}
+              onChange={(event) =>
+                updatePaymentDetailField("bankBranch", event.target.value)
+              }
+              className={FieldClassName}
+              placeholder="e.g. Makati Corporate Branch"
+            />
+          </FieldShell>
+          <FieldShell label="Account Name :">
+            <input
+              value={paymentDetails.bankAccountName}
+              onChange={(event) =>
+                updatePaymentDetailField("bankAccountName", event.target.value)
+              }
+              className={FieldClassName}
+              placeholder="Account holder name"
+            />
+          </FieldShell>
+          <FieldShell label="Account No. :">
+            <input
+              value={paymentDetails.bankAccountNo}
+              onChange={(event) =>
+                updatePaymentDetailField("bankAccountNo", event.target.value)
+              }
+              className={FieldClassName}
+              placeholder="Account number"
+            />
+          </FieldShell>
+        </div>
+      </section>
+
+      <section className="rounded-[24px] border border-darknavy/10 bg-white p-5 shadow-sm">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
+            Release Details
+          </p>
+          <h3 className="mt-2 text-xl font-semibold text-darknavy">
+            Payment reference
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-darknavy/58">
+            {isCheckPayment
+              ? "Capture the check information and release schedule for this bank-backed payment."
+              : "Capture the transfer or payment reference used by the bank-linked payment method."}
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-4">
+          {isCheckPayment ? (
+            <>
+              <FieldShell label="Check No. :">
+                <input
+                  value={paymentDetails.checkNo}
+                  onChange={(event) =>
+                    updatePaymentDetailField("checkNo", event.target.value)
+                  }
+                  className={FieldClassName}
+                  placeholder="Check number"
+                />
+              </FieldShell>
+              <FieldShell label="Check Date :">
+                <input
+                  type="date"
+                  value={paymentDetails.checkDate}
+                  onChange={(event) =>
+                    updatePaymentDetailField("checkDate", event.target.value)
+                  }
+                  className={FieldClassName}
+                />
+              </FieldShell>
+            </>
+          ) : null}
+
+          <FieldShell label={isCheckPayment ? "Reference No. :" : "Payment Reference :"}>
+            <input
+              value={paymentDetails.paymentReferenceNo}
+              onChange={(event) =>
+                updatePaymentDetailField("paymentReferenceNo", event.target.value)
+              }
+              className={FieldClassName}
+              placeholder={
+                isCheckPayment
+                  ? "Optional bank or clearing reference"
+                  : "Transfer or payment reference"
+              }
+            />
+          </FieldShell>
+
+          <div className="rounded-[18px] border border-darknavy/10 bg-offwhite/55 px-4 py-4 text-sm text-darknavy/62">
+            <p className="font-semibold text-darknavy">
+              {withBank ? "Bank setup enabled" : "No bank setup"}
+            </p>
+            <p className="mt-1">
+              Payment types marked with bank can store account and release details here. Non-bank methods such as cash will not show this tab.
             </p>
           </div>
         </div>
-
-        <div className="p-5">
-          <div className="overflow-hidden rounded-[20px] border border-darknavy/10">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[980px] border-collapse text-left">
-                <thead className="bg-darknavy/[0.03] text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">
-                  <tr>
-                    <th className="px-4 py-3">Account Code</th>
-                    <th className="px-4 py-3">Account Name</th>
-                    <th className="px-4 py-3">Particulars</th>
-                    <th className="px-4 py-3">Debit</th>
-                    <th className="px-4 py-3">Credit</th>
-                    <th className="px-4 py-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-t border-darknavy/8 bg-skyblue/6 align-top">
-                    <td className="px-4 py-4">
-                      <input
-                        value={entryDraft.accountCode}
-                        onChange={(event) =>
-                          onDraftChange({
-                            ...entryDraft,
-                            accountCode: event.target.value,
-                          })
-                        }
-                        className={`${EntryFieldClassName} bg-white`}
-                        placeholder="e.g. 5010-001"
-                      />
-                    </td>
-                    <td className="px-4 py-4">
-                      <input
-                        value={entryDraft.accountName}
-                        onChange={(event) =>
-                          onDraftChange({
-                            ...entryDraft,
-                            accountName: event.target.value,
-                          })
-                        }
-                        className={`${EntryFieldClassName} bg-white`}
-                        placeholder="Office Supplies Expense"
-                      />
-                    </td>
-                    <td className="px-4 py-4">
-                      <input
-                        value={entryDraft.particulars}
-                        onChange={(event) =>
-                          onDraftChange({
-                            ...entryDraft,
-                            particulars: event.target.value,
-                          })
-                        }
-                        className={`${EntryFieldClassName} bg-white`}
-                        placeholder="Describe the accounting line"
-                      />
-                    </td>
-                    <td className="px-4 py-4">
-                      <input
-                        value={entryDraft.debit}
-                        onChange={(event) =>
-                          onDraftChange({
-                            ...entryDraft,
-                            debit: event.target.value,
-                          })
-                        }
-                        className={`${EntryFieldClassName} bg-white text-right`}
-                        placeholder="0.00"
-                      />
-                    </td>
-                    <td className="px-4 py-4">
-                      <input
-                        value={entryDraft.credit}
-                        onChange={(event) =>
-                          onDraftChange({
-                            ...entryDraft,
-                            credit: event.target.value,
-                          })
-                        }
-                        className={`${EntryFieldClassName} bg-white text-right`}
-                        placeholder="0.00"
-                      />
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={onAddEntry}
-                        className="inline-flex h-11 items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
-                      >
-                        Add Line
-                      </button>
-                    </td>
-                  </tr>
-
-                  {entries.map((entry) => (
-                    <tr
-                      key={entry.id}
-                      className="border-t border-darknavy/8 align-top"
-                    >
-                      <td className="px-4 py-4 text-sm font-semibold text-darknavy">
-                        {entry.accountCode}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-darknavy/72">
-                        {entry.accountName}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-darknavy/72">
-                        {entry.particulars}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-right text-darknavy/72">
-                        {entry.debit > 0 ? formatCurrency(entry.debit) : "-"}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-right text-darknavy/72">
-                        {entry.credit > 0 ? formatCurrency(entry.credit) : "-"}
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => onRemoveEntry(entry.id)}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-coralpink transition hover:bg-coralpink/12"
-                        >
-                          <Trash2 className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {errors.entryDraft ? (
-            <p className="mt-4 text-sm font-medium text-coralpink">
-              {errors.entryDraft}
-            </p>
-          ) : null}
-
-          {errors.lineEntries ? (
-            <p className="mt-4 text-sm font-medium text-coralpink">
-              {errors.lineEntries}
-            </p>
-          ) : null}
-
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <SummaryCard
-              label="Total Debit"
-              value={formatCurrency(totalDebit)}
-            />
-            <SummaryCard
-              label="Total Credit"
-              value={formatCurrency(totalCredit)}
-            />
-            <SummaryCard
-              label="Variance"
-              value={formatCurrency(Math.abs(totalDebit - totalCredit))}
-            />
-          </div>
-        </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
 
@@ -988,6 +989,7 @@ function ReviewStep({
             label="Amount"
             value={formatCurrency(Number(values.amount || 0))}
           />
+          <InfoLine label="Tax Rate" value={formatTaxRateSummary(values.taxDetails)} />
           <InfoLine label="Remarks" value={values.remarks || "-"} />
         </div>
       </ReviewCardShell>
@@ -1105,9 +1107,7 @@ function DrawerFooter({
   const primaryLabel =
     step === "details"
       ? "Proceed to Accounting Entries"
-      : step === "entries"
-        ? "Proceed to Preview"
-        : isEditing
+      : isEditing
           ? "Save Changes"
           : "Save Voucher";
 
@@ -1212,17 +1212,6 @@ function FieldShell({
   );
 }
 
-function SummaryCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[18px] border border-darknavy/10 bg-offwhite/55 px-4 py-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/40">
-        {label}
-      </p>
-      <p className="mt-2 text-lg font-semibold text-darknavy">{value}</p>
-    </div>
-  );
-}
-
 function ReviewCardShell({
   children,
   description,
@@ -1263,5 +1252,74 @@ const FieldClassName =
 const ReadOnlyFieldClassName =
   "h-11 w-full rounded-md border border-darknavy/12 bg-darknavy/[0.04] px-3 text-sm text-darknavy/70 outline-none";
 
-const EntryFieldClassName =
-  "h-11 w-full rounded-xl border border-darknavy/12 px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/40";
+function getSuggestedPartyType(
+  disbursementType: DisbursementType | "",
+): PartyType {
+  if (disbursementType === "Reimbursement") {
+    return "Employee";
+  }
+
+  if (disbursementType === "Operating Expense") {
+    return "Vendor";
+  }
+
+  if (disbursementType === "Capital Expenditure") {
+    return "Vendor";
+  }
+
+  return "Vendor";
+}
+
+function getActiveDisbursementTypeOptions(
+  records: AppDisbursementTypeRecord[],
+): DisbursementType[] {
+  return records
+    .filter((record) => record.status === "Active")
+    .map((record) => record.description);
+}
+
+function findDisbursementTypeRecord(
+  records: AppDisbursementTypeRecord[],
+  disbursementType: DisbursementType | "",
+) {
+  if (!disbursementType) {
+    return undefined;
+  }
+
+  return records.find((record) => record.description === disbursementType);
+}
+
+function applyDisbursementTypeRecordToEntryDraft(
+  draft: DisbursementVoucherEntryDraft,
+  record?: AppDisbursementTypeRecord,
+) {
+  if (!record?.accountCode && !record?.accountTitle) {
+    return draft;
+  }
+
+  return {
+    ...draft,
+    accountCode: record.accountCode || draft.accountCode,
+    accountName: record.accountTitle || draft.accountName,
+  };
+}
+
+function applyDisbursementTypeRecordToLineEntries(
+  entries: DisbursementLineEntry[],
+  record?: AppDisbursementTypeRecord,
+) {
+  if (entries.length === 0 || (!record?.accountCode && !record?.accountTitle)) {
+    return entries;
+  }
+
+  return entries.map((entry, index) =>
+    index === 0
+      ? {
+          ...entry,
+          accountCode: record.accountCode || entry.accountCode,
+          accountName: record.accountTitle || entry.accountName,
+        }
+      : entry,
+  );
+}
+

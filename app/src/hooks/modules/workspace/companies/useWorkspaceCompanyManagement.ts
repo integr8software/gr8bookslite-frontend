@@ -24,7 +24,7 @@ import {
 	WorkspaceCompanyTypeOptions,
 	WorkspaceCompanyUserTableColumns,
 } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
-import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { GetWorkspaceCompanies } from "@/app/src/services/modules/workspace/companies/WorkspaceCompanyApi";
 import { WorkspaceCompanyQueryKeys } from "@/app/src/services/modules/workspace/companies/WorkspaceCompanyQueryKeys";

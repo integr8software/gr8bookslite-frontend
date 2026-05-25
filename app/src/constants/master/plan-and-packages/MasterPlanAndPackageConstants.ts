@@ -7,6 +7,7 @@ import type {
 	MasterPlanAndPackageScaleUnit,
 	MasterPlanAndPackageStatus,
 	MasterPlanAndPackageTableColumnKey,
+	MasterPlanAndPackageTransactionReset,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
 export const MasterPlanAndPackagesHref = "/master/plan-and-packages";
@@ -39,10 +40,17 @@ export const MasterPlanAndPackagePricingKindOptions = [
 ] as const satisfies readonly MasterPlanAndPackagePricingKind[];
 
 export const MasterPlanAndPackageScaleKindOptions = [
-	"Fixed",
 	"Range",
 	"Add-on",
+	"Reduction",
 ] as const satisfies readonly MasterPlanAndPackageScaleKind[];
+
+export const MasterPlanAndPackageTransactionResetOptions = [
+	"Daily",
+	"Monthly",
+	"Yearly",
+	"When Consumed",
+] as const satisfies readonly MasterPlanAndPackageTransactionReset[];
 
 export const MasterPlanAndPackageScaleUnits = [
 	"company",

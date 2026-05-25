@@ -2,21 +2,25 @@ import { z } from "zod";
 import type {
 	MasterPlanAndPackageFormErrors,
 	MasterPlanAndPackageFormValues,
+	MasterPlanAndPackageReductionTier,
 	MasterPlanAndPackageRecord,
 	MasterPlanAndPackageScaleKind,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
-const ScaleKindSchema = z.enum(["Fixed", "Range", "Add-on"]);
+const ScaleKindSchema = z.enum(["Range", "Add-on", "Reduction"]);
+const ReductionTierSchema = z.object({
+	reductionPercent: z
+		.number()
+		.min(0, "Reduction cannot be negative.")
+		.max(100, "Reduction cannot exceed 100."),
+	thresholdCount: z.number().int().min(1, "Count must be at least 1."),
+});
 
 const MasterPlanAndPackageFormSchema = z
 	.object({
 		amount: z.number().min(0, "Amount cannot be negative."),
 		baseAmount: z.number().min(0, "Base amount cannot be negative."),
 		branchAddOnPrice: z.number().min(0, "Branch add-on price cannot be negative."),
-		branchAddOnStart: z
-			.number()
-			.int()
-			.min(1, "Branch add-on start must be at least 1."),
 		branchIncludedFree: z
 			.number()
 			.int()
@@ -24,11 +28,10 @@ const MasterPlanAndPackageFormSchema = z
 		branchLimitKind: ScaleKindSchema,
 		branchMax: z.number().int().min(1, "Maximum branches must be at least 1."),
 		branchMin: z.number().int().min(1, "Minimum branches must be at least 1."),
+		branchReductionTiers: z
+			.array(ReductionTierSchema)
+			.min(1, "Add at least one branch reduction tier."),
 		companyAddOnPrice: z.number().min(0, "Company add-on price cannot be negative."),
-		companyAddOnStart: z
-			.number()
-			.int()
-			.min(1, "Company add-on start must be at least 1."),
 		companyIncludedFree: z
 			.number()
 			.int()
@@ -36,6 +39,9 @@ const MasterPlanAndPackageFormSchema = z
 		companyLimitKind: ScaleKindSchema,
 		companyMax: z.number().int().min(1, "Maximum companies must be at least 1."),
 		companyMin: z.number().int().min(1, "Minimum companies must be at least 1."),
+		companyReductionTiers: z
+			.array(ReductionTierSchema)
+			.min(1, "Add at least one company reduction tier."),
 		description: z
 			.string()
 			.trim()
@@ -43,11 +49,11 @@ const MasterPlanAndPackageFormSchema = z
 		discountAppliesFrom: z
 			.number()
 			.int()
-			.min(1, "Discount range must start at 1 or higher."),
+			.min(1, "First discounted billing cycle must be 1 or higher."),
 		discountAppliesTo: z
 			.number()
 			.int()
-			.min(1, "Discount range must end at 1 or higher."),
+			.min(1, "Last discounted billing cycle must be 1 or higher."),
 		featureIds: z.array(z.string()).min(1, "Select at least one module feature."),
 		id: z.string().optional(),
 		intervalMonths: z
@@ -67,11 +73,12 @@ const MasterPlanAndPackageFormSchema = z
 			"Percent Off",
 		]),
 		status: z.enum(["Active", "Draft", "Inactive"]),
-		userAddOnPrice: z.number().min(0, "User add-on price cannot be negative."),
-		userAddOnStart: z
+		transactionLimit: z
 			.number()
 			.int()
-			.min(1, "User add-on start must be at least 1."),
+			.min(1, "Transaction amount must be at least 1."),
+		transactionReset: z.enum(["Daily", "Monthly", "Yearly", "When Consumed"]),
+		userAddOnPrice: z.number().min(0, "User add-on price cannot be negative."),
 		userIncludedFree: z
 			.number()
 			.int()
@@ -79,6 +86,9 @@ const MasterPlanAndPackageFormSchema = z
 		userLimitKind: ScaleKindSchema,
 		userMax: z.number().int().min(1, "Maximum users must be at least 1."),
 		userMin: z.number().int().min(1, "Minimum users must be at least 1."),
+		userReductionTiers: z
+			.array(ReductionTierSchema)
+			.min(1, "Add at least one user reduction tier."),
 	})
 	.superRefine((values, context) => {
 		if (values.pricingKind !== "Percent Off" && values.amount <= 0) {
@@ -109,43 +119,49 @@ const MasterPlanAndPackageFormSchema = z
 			if (values.discountAppliesTo < values.discountAppliesFrom) {
 				context.addIssue({
 					code: "custom",
-					message: "Discount range end must be greater than or equal to start.",
+					message:
+						"Last discounted billing cycle must be greater than or equal to the first discounted cycle.",
 					path: ["discountAppliesTo"],
 				});
 			}
 		}
 
+		if (values.pricingKind === "Transactional" && values.transactionLimit <= 0) {
+			context.addIssue({
+				code: "custom",
+				message: "Transaction amount must be greater than 0.",
+				path: ["transactionLimit"],
+			});
+		}
+
 		validateScaleRule({
-			addOnStart: values.companyAddOnStart,
-			includedFree: values.companyIncludedFree,
 			kind: values.companyLimitKind,
 			max: values.companyMax,
 			maxPath: "companyMax",
 			min: values.companyMin,
 			name: "Company",
-			path: "companyAddOnStart",
+			reductionTiers: values.companyReductionTiers,
+			reductionTiersPath: "companyReductionTiers",
 			context,
 		});
 		validateScaleRule({
-			addOnStart: values.branchAddOnStart,
-			includedFree: values.branchIncludedFree,
 			kind: values.branchLimitKind,
 			max: values.branchMax,
 			maxPath: "branchMax",
 			min: values.branchMin,
 			name: "Branch",
-			path: "branchAddOnStart",
+			reductionTiers: values.branchReductionTiers,
+			reductionTiersPath: "branchReductionTiers",
 			context,
 		});
 		validateScaleRule({
-			addOnStart: values.userAddOnStart,
-			includedFree: values.userIncludedFree,
 			kind: values.userLimitKind,
 			max: values.userMax,
 			maxPath: "userMax",
 			min: values.userMin,
 			name: "User",
-			path: "userAddOnStart",
+			reductionTiers: values.userReductionTiers,
+			reductionTiersPath: "userReductionTiers",
 			context,
 		});
 	});
@@ -178,25 +194,23 @@ export function validateMasterPlanAndPackageForm({
 }
 
 function validateScaleRule({
-	addOnStart,
 	context,
-	includedFree,
 	kind,
 	max,
 	maxPath,
 	min,
 	name,
-	path,
+	reductionTiers,
+	reductionTiersPath,
 }: {
-	addOnStart: number;
 	context: z.RefinementCtx;
-	includedFree: number;
 	kind: MasterPlanAndPackageScaleKind;
 	max: number;
 	maxPath: keyof MasterPlanAndPackageFormValues;
 	min: number;
 	name: string;
-	path: keyof MasterPlanAndPackageFormValues;
+	reductionTiers: MasterPlanAndPackageReductionTier[];
+	reductionTiersPath: keyof MasterPlanAndPackageFormValues;
 }) {
 	if (kind === "Range" && max < min) {
 		context.addIssue({
@@ -206,13 +220,49 @@ function validateScaleRule({
 		});
 	}
 
-	if (kind === "Add-on" && addOnStart <= includedFree) {
+	if (kind !== "Reduction") {
+		return;
+	}
+
+	if (reductionTiers.length === 0) {
 		context.addIssue({
 			code: "custom",
-			message: `${name} add-ons must start after the free count.`,
-			path: [path],
+			message: `Add at least one ${name.toLowerCase()} reduction tier.`,
+			path: [reductionTiersPath],
 		});
 	}
+
+	reductionTiers.forEach((tier, index) => {
+		if (tier.reductionPercent <= 0) {
+			context.addIssue({
+				code: "custom",
+				message: `${name} reduction percent must be greater than 0.`,
+				path: [reductionTiersPath],
+			});
+		}
+
+		const previousTier = reductionTiers[index - 1];
+
+		if (!previousTier) {
+			return;
+		}
+
+		if (tier.thresholdCount <= previousTier.thresholdCount) {
+			context.addIssue({
+				code: "custom",
+				message: `${name} reduction tiers must be ordered from lowest count to highest count.`,
+				path: [reductionTiersPath],
+			});
+		}
+
+		if (tier.reductionPercent < previousTier.reductionPercent) {
+			context.addIssue({
+				code: "custom",
+				message: `${name} reduction percent should not decrease in later tiers.`,
+				path: [reductionTiersPath],
+			});
+		}
+	});
 }
 
 function zodIssuesToErrors<TErrorShape>(issues: z.ZodIssue[]) {

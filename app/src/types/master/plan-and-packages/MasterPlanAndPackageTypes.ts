@@ -9,7 +9,18 @@ export type MasterPlanAndPackagePricingKind =
 
 export type MasterPlanAndPackageScaleUnit = "company" | "branch" | "user";
 
-export type MasterPlanAndPackageScaleKind = "Fixed" | "Range" | "Add-on";
+export type MasterPlanAndPackageScaleKind = "Range" | "Add-on" | "Reduction";
+
+export type MasterPlanAndPackageTransactionReset =
+	| "Daily"
+	| "Monthly"
+	| "Yearly"
+	| "When Consumed";
+
+export type MasterPlanAndPackageReductionTier = {
+	reductionPercent: number;
+	thresholdCount: number;
+};
 
 export type MasterPlanAndPackagePricing =
 	| {
@@ -28,6 +39,8 @@ export type MasterPlanAndPackagePricing =
 	| {
 			amount: number;
 			kind: "Transactional";
+			reset: MasterPlanAndPackageTransactionReset;
+			transactionLimit: number;
 	  }
 	| {
 			appliesFrom: number;
@@ -39,19 +52,18 @@ export type MasterPlanAndPackagePricing =
 
 export type MasterPlanAndPackageScaleRule =
 	| {
-			includedCount: number;
-			kind: "Fixed";
-	  }
-	| {
 			kind: "Range";
 			maxCount: number;
 			minCount: number;
 	  }
 	| {
 			addOnPrice: number;
-			addOnStart: number;
 			includedFreeCount: number;
 			kind: "Add-on";
+	  }
+	| {
+			kind: "Reduction";
+			tiers: MasterPlanAndPackageReductionTier[];
 	  };
 
 export type MasterPlanAndPackageScalePricing = Record<
@@ -80,17 +92,17 @@ export type MasterPlanAndPackageFormValues = {
 	amount: number;
 	baseAmount: number;
 	branchAddOnPrice: number;
-	branchAddOnStart: number;
 	branchIncludedFree: number;
 	branchLimitKind: MasterPlanAndPackageScaleKind;
 	branchMax: number;
 	branchMin: number;
+	branchReductionTiers: MasterPlanAndPackageReductionTier[];
 	companyAddOnPrice: number;
-	companyAddOnStart: number;
 	companyIncludedFree: number;
 	companyLimitKind: MasterPlanAndPackageScaleKind;
 	companyMax: number;
 	companyMin: number;
+	companyReductionTiers: MasterPlanAndPackageReductionTier[];
 	description: string;
 	discountAppliesFrom: number;
 	discountAppliesTo: number;
@@ -101,12 +113,14 @@ export type MasterPlanAndPackageFormValues = {
 	percentOff: number;
 	pricingKind: MasterPlanAndPackagePricingKind;
 	status: MasterPlanAndPackageStatus;
+	transactionLimit: number;
+	transactionReset: MasterPlanAndPackageTransactionReset;
 	userAddOnPrice: number;
-	userAddOnStart: number;
 	userIncludedFree: number;
 	userLimitKind: MasterPlanAndPackageScaleKind;
 	userMax: number;
 	userMin: number;
+	userReductionTiers: MasterPlanAndPackageReductionTier[];
 };
 
 export type MasterPlanAndPackageFormErrors = Partial<

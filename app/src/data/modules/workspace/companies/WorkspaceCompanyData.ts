@@ -61,7 +61,6 @@ export const InitialWorkspaceCompanyBranchFormValues: WorkspaceCompanyBranchForm
 		address: "",
 		branchType: "Branch",
 		contactNumber: "",
-		description: "",
 		email: "",
 		isMain: false,
 		linkedMainBranchId: "",
@@ -234,7 +233,6 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "main@gr8books.test",
 		contactNumber: "+63 2 8123 4567",
 		address: "Makati City, Metro Manila",
-		description: "Primary operating branch for the company.",
 		isMain: true,
 	},
 	{
@@ -248,7 +246,6 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "north@gr8books.test",
 		contactNumber: "+63 2 8123 8899",
 		address: "Quezon City, Metro Manila",
-		description: "Northern Metro Manila branch.",
 		isMain: false,
 	},
 	{
@@ -262,7 +259,6 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "cebu@gr8books.test",
 		contactNumber: "+63 32 412 7788",
 		address: "Cebu City, Cebu",
-		description: "Satellite site linked to Main Branch.",
 		isMain: false,
 		linkedMainBranchId: "br-gr8-main",
 	},
@@ -277,7 +273,6 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "hq@demotrading.test",
 		contactNumber: "+63 2 8899 1000",
 		address: "Pasig City, Metro Manila",
-		description: "Main trading office.",
 		isMain: true,
 	},
 	{
@@ -291,7 +286,6 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "central@ceburetail.test",
 		contactNumber: "+63 32 410 1200",
 		address: "Cebu City, Cebu",
-		description: "Primary Cebu operating branch.",
 		isMain: true,
 	},
 ];
@@ -558,7 +552,6 @@ export function createWorkspaceCompanyBranchFormValues(
 		address: branch.address,
 		branchType: branch.branchType,
 		contactNumber: branch.contactNumber,
-		description: branch.description,
 		email: branch.email,
 		isMain: branch.isMain,
 		linkedMainBranchId: branch.linkedMainBranchId ?? "",
@@ -909,7 +902,6 @@ function trimBranchValues(
 		...values,
 		address: values.address.trim(),
 		contactNumber: values.contactNumber.trim(),
-		description: values.description.trim(),
 		email: values.email.trim(),
 		linkedMainBranchId: values.linkedMainBranchId.trim(),
 		name: values.name.trim(),

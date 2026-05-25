@@ -201,18 +201,6 @@ function CompanyBranchFields({
 							placeholder="Street, city, province"
 						/>
 					</BranchField>
-
-					<BranchField label="Description" className="lg:col-span-2">
-						<textarea
-							name="description"
-							value={values.description}
-							onChange={onInputChange}
-							readOnly={isReadonly}
-							rows={4}
-							className={WorkspaceBranchFieldClassName}
-							placeholder="Optional notes for this branch or satellite."
-						/>
-					</BranchField>
 				</div>
 			</div>
 		</form>

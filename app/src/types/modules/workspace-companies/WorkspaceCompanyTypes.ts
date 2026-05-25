@@ -39,6 +39,8 @@ export type WorkspaceCompanyRecord = {
   reportStartDate?: string;
   taxpayerType?: "individual" | "non-individual";
   tin?: string;
+  totalBranches?: number;
+  totalUsers?: number;
   website?: string;
   billingCardBrand?: string;
   billingCardLast4?: string;
@@ -121,7 +123,6 @@ export type WorkspaceCompanyBranchRecord = {
   email: string;
   contactNumber: string;
   address: string;
-  description: string;
   isMain: boolean;
   linkedMainBranchId?: string;
 };
@@ -131,7 +132,6 @@ export type WorkspaceCompanyBranchFormValues = {
   name: string;
   contactNumber: string;
   email: string;
-  description: string;
   tin: string;
   linkedMainBranchId: string;
   address: string;

@@ -1,13 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { getNextWorkspaceCompanyStatus } from "@/app/src/data/modules/workspace/companies/WorkspaceCompanyData";
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyManagement";
 import type { WorkspaceCompanyRecord } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { CompanyHeader } from "@/app/src/ui/modules/workspace/companies/ui/CompanyHeader";
 import { CompanySummaryCards } from "@/app/src/ui/modules/workspace/companies/ui/CompanySummaryCards";
 import { CompanyTable } from "@/app/src/ui/modules/workspace/companies/ui/CompanyTable";
+
+function getNextWorkspaceCompanyStatus(status: WorkspaceCompanyRecord["status"]) {
+  return status === "Active" ? "Inactive" : "Active";
+}
 
 export function WorkspaceCompaniesMain() {
   const companyManagement = useWorkspaceCompanyManagementStore((state) => ({
@@ -27,6 +30,14 @@ export function WorkspaceCompaniesMain() {
   const activeCompanies = companyManagement.companies.filter(
     (company) => company.status === "Active",
   ).length;
+  const totalBranches = companyManagement.companies.reduce(
+    (total, company) => total + (company.totalBranches ?? 0),
+    0,
+  );
+  const totalUsers = companyManagement.companies.reduce(
+    (total, company) => total + (company.totalUsers ?? 0),
+    0,
+  );
 
   function handleConfirmStatusChange() {
     if (!pendingStatusCompany) {
@@ -45,9 +56,10 @@ export function WorkspaceCompaniesMain() {
       <CompanyHeader />
       <CompanySummaryCards
         activeCompanies={activeCompanies}
-        totalBranches={companyManagement.branches.length}
+        isLoading={companyManagement.isLoading}
+        totalBranches={totalBranches}
         totalCompanies={companyManagement.companies.length}
-        totalUsers={companyManagement.users.length}
+        totalUsers={totalUsers}
       />
       <CompanyTable
         branches={companyManagement.branches}

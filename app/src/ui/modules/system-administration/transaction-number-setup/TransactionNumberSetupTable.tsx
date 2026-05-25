@@ -33,12 +33,6 @@ export function TransactionNumberSetupTable({
 }: TransactionNumberSetupTableProps) {
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<TransactionNumberSetupTableFilters
-				query={query}
-				scopeFilter={scopeFilter}
-				onQueryChange={handleQueryChange}
-				onScopeFilterChange={handleScopeFilterChange}
-			/>
 			<ModuleTable
 				variant="embedded"
 				emptyDescription="Add a numbering setup to reserve document numbers."
@@ -48,6 +42,14 @@ export function TransactionNumberSetupTable({
 				minWidthClassName="min-w-[92rem]"
 				paginationStorageKey={TransactionNumberSetupPaginationStorageKey}
 				table={table}
+				toolbar={
+					<TransactionNumberSetupTableFilters
+						query={query}
+						scopeFilter={scopeFilter}
+						onQueryChange={handleQueryChange}
+						onScopeFilterChange={handleScopeFilterChange}
+					/>
+				}
 				renderRow={({ id, original }) => (
 					<TransactionNumberSetupTableRow
 						key={id}

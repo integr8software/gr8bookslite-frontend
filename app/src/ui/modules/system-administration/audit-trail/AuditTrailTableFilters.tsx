@@ -1,4 +1,3 @@
-import { Search, X } from "lucide-react";
 import {
 	AuditTrailActionOptions,
 	AuditTrailSeverityOptions,
@@ -8,6 +7,12 @@ import type {
 	AuditTrailModuleOption,
 	AuditTrailSeverity,
 } from "@/app/src/types/modules/system-administration/audit-trail/AuditTrailTypes";
+import {
+	ModuleTableFilterButton,
+	ModuleTableFilterSelect,
+	ModuleTableSearch,
+	ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/ModuleTableToolbar";
 
 type AuditTrailTableFiltersProps = {
 	actionFilter: AuditTrailAction | "all";
@@ -33,83 +38,63 @@ export function AuditTrailTableFilters({
 	severityFilter,
 }: AuditTrailTableFiltersProps) {
 	return (
-		<div className="grid gap-3 border-b border-darknavy/10 bg-white p-4 xl:grid-cols-[minmax(16rem,1fr)_minmax(12rem,18rem)_auto] xl:items-center">
-			<label className="relative min-w-0">
-				<span className="sr-only">Search audit trail records</span>
-				<Search
-					className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/35"
-					aria-hidden="true"
-				/>
-				<input
-					value={query}
-					onChange={(event) => onQueryChange(event.target.value)}
-					placeholder="Search activity, user, module, record, or IP"
-					className="h-11 w-full rounded-md border border-darknavy/10 bg-offwhite/55 pl-9 pr-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
-				/>
-			</label>
-			<select
+		<ModuleTableToolbar className="rounded-none border-x-0 border-t-0 shadow-none xl:grid-cols-[minmax(24rem,2.5fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(11rem,1fr)]">
+			<ModuleTableSearch
+				label="Search audit trail records"
+				value={query}
+				onChange={onQueryChange}
+				placeholder="Search activity, user, module, record, or IP"
+			/>
+			<ModuleTableFilterSelect
+				label="Module"
 				value={moduleFilter}
-				onChange={(event) => onModuleFilterChange(event.target.value)}
-				className={filterClassName}
-				aria-label="Filter by module"
+				options={[
+					{ label: "All sidebar modules", value: "all" },
+					...moduleOptions.map((module) => ({
+						label: `${module.section} / ${module.label}`,
+						value: module.key,
+					})),
+				]}
+				onChange={onModuleFilterChange}
+			/>
+			<ModuleTableFilterSelect
+				label="Action"
+				value={actionFilter}
+				options={[
+					{ label: "All actions", value: "all" },
+					...AuditTrailActionOptions.map((action) => ({
+						label: action,
+						value: action,
+					})),
+				]}
+				onChange={(value) =>
+					onActionFilterChange(value as AuditTrailAction | "all")
+				}
+			/>
+			<ModuleTableFilterSelect
+				label="Severity"
+				value={severityFilter}
+				options={[
+					{ label: "All severity", value: "all" },
+					...AuditTrailSeverityOptions.map((severity) => ({
+						label: severity,
+						value: severity,
+					})),
+				]}
+				onChange={(value) =>
+					onSeverityFilterChange(value as AuditTrailSeverity | "all")
+				}
+			/>
+			<ModuleTableFilterButton
+				onClick={() => {
+					onQueryChange("");
+					onModuleFilterChange("all");
+					onActionFilterChange("all");
+					onSeverityFilterChange("all");
+				}}
 			>
-				<option value="all">All sidebar modules</option>
-				{moduleOptions.map((module) => (
-					<option key={module.key} value={module.key}>
-						{module.section} / {module.label}
-					</option>
-				))}
-			</select>
-			<div className="flex flex-wrap gap-2">
-				<select
-					value={actionFilter}
-					onChange={(event) =>
-						onActionFilterChange(event.target.value as AuditTrailAction | "all")
-					}
-					className={filterClassName}
-					aria-label="Filter by action"
-				>
-					<option value="all">All actions</option>
-					{AuditTrailActionOptions.map((action) => (
-						<option key={action} value={action}>
-							{action}
-						</option>
-					))}
-				</select>
-				<select
-					value={severityFilter}
-					onChange={(event) =>
-						onSeverityFilterChange(
-							event.target.value as AuditTrailSeverity | "all",
-						)
-					}
-					className={filterClassName}
-					aria-label="Filter by severity"
-				>
-					<option value="all">All severity</option>
-					{AuditTrailSeverityOptions.map((severity) => (
-						<option key={severity} value={severity}>
-							{severity}
-						</option>
-					))}
-				</select>
-				<button
-					type="button"
-					onClick={() => {
-						onQueryChange("");
-						onModuleFilterChange("all");
-						onActionFilterChange("all");
-						onSeverityFilterChange("all");
-					}}
-					className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy/65 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/30"
-				>
-					<X className="h-4 w-4" aria-hidden="true" />
-					Reset
-				</button>
-			</div>
-		</div>
+				Reset
+			</ModuleTableFilterButton>
+		</ModuleTableToolbar>
 	);
 }
-
-const filterClassName =
-	"h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20";

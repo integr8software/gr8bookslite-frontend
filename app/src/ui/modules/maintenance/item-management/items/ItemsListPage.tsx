@@ -1,14 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { Package, Plus, Search } from "lucide-react";
-import { ItemsHref } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
+import {
+	CheckCircle2,
+	CirclePause,
+	Layers,
+	Package,
+	Plus,
+} from "lucide-react";
+import {
+	ItemsHref,
+	ItemStatusOptions,
+} from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import { useItemsListPage } from "@/app/src/hooks/modules/maintenance/item-management/useItemsListPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import {
+	ModuleTableFilterButton,
+	ModuleTableFilterSelect,
+	ModuleTableSearch,
+	ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/ModuleTableToolbar";
 import { ItemsTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemsTable";
 
 export function ItemsListPage() {
@@ -38,26 +54,79 @@ export function ItemsListPage() {
 				}
 			/>
 
-			<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm">
-				<label className="relative block">
-					<span className="sr-only">Search items</span>
-					<Search
-						className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/45"
-						aria-hidden="true"
-					/>
-					<input
-						value={page.query}
-						onChange={(event) => page.handleQueryChange(event.target.value)}
-						placeholder="Search by item, code, category, type, or status"
-						className="h-12 w-full rounded-lg border border-darknavy/10 bg-offwhite/65 pl-11 pr-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15"
-					/>
-				</label>
-			</div>
+			<ModuleMetrics
+				metrics={[
+					{
+						helper: "All item master records",
+						icon: Package,
+						label: "Total Items",
+						value: page.items.length,
+					},
+					{
+						helper: "Available for use",
+						icon: CheckCircle2,
+						label: "Active Items",
+						tone: "emerald",
+						value: page.items.filter((item) => item.status === "Active").length,
+					},
+					{
+						helper: "Currently inactive",
+						icon: CirclePause,
+						label: "Inactive Items",
+						tone: "amber",
+						value: page.items.filter((item) => item.status === "Inactive").length,
+					},
+					{
+						helper: "Items with bundle components",
+						icon: Layers,
+						label: "Bundle Items",
+						tone: "violet",
+						value: page.items.filter((item) => item.supportsBundle).length,
+					},
+				]}
+			/>
 
 			<ItemsTable
 				isLoading={page.isLoading}
 				setPendingDeleteItem={page.setPendingDeleteItem}
 				table={page.table}
+				toolbar={
+					<ModuleTableToolbar>
+						<ModuleTableSearch
+							label="Search items"
+							value={page.query}
+							onChange={page.handleQueryChange}
+							placeholder="Search by item, code, category, type, or status"
+						/>
+						<ModuleTableFilterSelect
+							label="Category"
+							value={page.categoryFilter}
+							options={[
+								{ label: "All Categories", value: "All" },
+								...page.categoryFilterOptions.map((category) => ({
+									label: category,
+									value: category,
+								})),
+							]}
+							onChange={page.setCategoryFilter}
+						/>
+						<ModuleTableFilterSelect
+							label="Status"
+							value={page.statusFilter}
+							options={[
+								{ label: "All Status", value: "All" },
+								...ItemStatusOptions.map((status) => ({
+									label: status,
+									value: status,
+								})),
+							]}
+							onChange={page.setStatusFilter}
+						/>
+						<ModuleTableFilterButton onClick={page.resetFilters}>
+							Reset
+						</ModuleTableFilterButton>
+					</ModuleTableToolbar>
+				}
 			/>
 
 			<AppDialog

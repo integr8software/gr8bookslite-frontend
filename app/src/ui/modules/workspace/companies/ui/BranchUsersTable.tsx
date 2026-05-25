@@ -44,17 +44,6 @@ export function BranchUsersTable({
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<BranchUsersTableFilters
-				query={userList.query}
-				roleFilter={userList.roleFilter}
-				roleOptions={userList.roleOptions}
-				statusFilter={userList.statusFilter}
-				statusOptions={userList.statusOptions}
-				onQueryChange={userList.setQuery}
-				onResetFilters={userList.resetFilters}
-				onRoleFilterChange={userList.setRoleFilter}
-				onStatusFilterChange={userList.setStatusFilter}
-			/>
 			<ModuleTable
 				variant="embedded"
 				emptyDescription="Try adjusting your search, branch role, or status filters."
@@ -64,6 +53,19 @@ export function BranchUsersTable({
 				minWidthClassName="min-w-[66rem]"
 				paginationStorageKey={WorkspaceBranchUsersTablePaginationStorageKey}
 				table={userList.table}
+				toolbar={
+					<BranchUsersTableFilters
+						query={userList.query}
+						roleFilter={userList.roleFilter}
+						roleOptions={userList.roleOptions}
+						statusFilter={userList.statusFilter}
+						statusOptions={userList.statusOptions}
+						onQueryChange={userList.setQuery}
+						onResetFilters={userList.resetFilters}
+						onRoleFilterChange={userList.setRoleFilter}
+						onStatusFilterChange={userList.setStatusFilter}
+					/>
+				}
 				renderRow={({ id, original }) => (
 					<BranchUsersTableRow
 						key={id}
@@ -99,7 +101,7 @@ function BranchUsersTableFilters({
 	onStatusFilterChange: (value: WorkspaceCompanyStatus | "All") => void;
 }) {
 	return (
-		<WorkspaceCompaniesFilterBar className="md:grid-cols-[1fr_13rem_10rem_auto]">
+		<WorkspaceCompaniesFilterBar className="md:grid-cols-[minmax(24rem,2.5fr)_minmax(13rem,1fr)_minmax(10rem,1fr)_minmax(11rem,1fr)]">
 			<WorkspaceCompaniesSearchInput
 				value={query}
 				onChange={onQueryChange}

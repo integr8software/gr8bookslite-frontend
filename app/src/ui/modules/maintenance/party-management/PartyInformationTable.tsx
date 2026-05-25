@@ -17,17 +17,6 @@ export function PartyInformationTable({
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<PartyInformationTableFilters
-				classificationFilter={partyTable.classificationFilter}
-				classificationOptions={partyTable.classificationOptions}
-				partyTypeFilter={partyTable.partyTypeFilter}
-				partyTypeOptions={partyTable.partyTypeOptions}
-				query={partyTable.query}
-				onClassificationFilterChange={partyTable.setClassificationFilter}
-				onPartyTypeFilterChange={partyTable.setPartyTypeFilter}
-				onQueryChange={partyTable.setQuery}
-				onResetFilters={partyTable.resetFilters}
-			/>
 			<ModuleTable
 				variant="embedded"
 				emptyDescription="Try adjusting the search or filters, or add a new party record."
@@ -37,6 +26,19 @@ export function PartyInformationTable({
 				minWidthClassName="min-w-[52rem]"
 				paginationStorageKey={PartyManagementTablePaginationStorageKey}
 				table={partyTable.table}
+				toolbar={
+					<PartyInformationTableFilters
+						classificationFilter={partyTable.classificationFilter}
+						classificationOptions={partyTable.classificationOptions}
+						partyTypeFilter={partyTable.partyTypeFilter}
+						partyTypeOptions={partyTable.partyTypeOptions}
+						query={partyTable.query}
+						onClassificationFilterChange={partyTable.setClassificationFilter}
+						onPartyTypeFilterChange={partyTable.setPartyTypeFilter}
+						onQueryChange={partyTable.setQuery}
+						onResetFilters={partyTable.resetFilters}
+					/>
+				}
 				renderRow={({ id, original }) => (
 					<PartyInformationTableRow key={id} record={original} />
 				)}

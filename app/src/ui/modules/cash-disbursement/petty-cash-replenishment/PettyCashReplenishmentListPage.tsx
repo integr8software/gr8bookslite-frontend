@@ -61,8 +61,6 @@ export function PettyCashReplenishmentListPage() {
         />
 
         <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-          <PettyCashReplenishmentListFilters page={page} />
-
           <ModuleTable
             variant="embedded"
             emptyDescription="Adjust the filters or create a new replenishment record to view petty cash activity."
@@ -72,6 +70,7 @@ export function PettyCashReplenishmentListPage() {
             paginationLabel="replenishments"
             paginationStorageKey={PettyCashReplenishmentPaginationStorageKey}
             table={page.table}
+            toolbar={<PettyCashReplenishmentListFilters page={page} />}
             renderRow={({ id, original }) => (
               <PettyCashReplenishmentTableRow
                 key={id}

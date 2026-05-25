@@ -57,16 +57,17 @@ export function TransactionTypeListPage() {
 				]}
 			/>
 
-			<TransactionTypeFilters
-				searchTerm={page.searchTerm}
-				statusFilter={page.statusFilter}
-				onSearchTermChange={page.setSearchTerm}
-				onStatusFilterChange={page.setStatusFilter}
-			/>
-
 			<TransactionTypeTable
 				isLoading={page.isLoading}
 				transactionTypes={page.filteredTransactionTypes}
+				toolbar={
+					<TransactionTypeFilters
+						searchTerm={page.searchTerm}
+						statusFilter={page.statusFilter}
+						onSearchTermChange={page.setSearchTerm}
+						onStatusFilterChange={page.setStatusFilter}
+					/>
+				}
 				onDelete={page.setPendingDeleteTransactionType}
 			/>
 

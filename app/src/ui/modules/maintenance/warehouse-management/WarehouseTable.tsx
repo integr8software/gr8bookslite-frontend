@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { WarehouseManagementTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import type { useWarehouseListPage } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseListPage";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
@@ -9,12 +10,15 @@ import { WarehouseTableRow } from "@/app/src/ui/modules/maintenance/warehouse-ma
 type WarehouseTableProps = Pick<
 	ReturnType<typeof useWarehouseListPage>,
 	"isLoading" | "setPendingDeleteWarehouse" | "table"
->;
+> & {
+	toolbar?: ReactNode;
+};
 
 export function WarehouseTable({
 	isLoading,
 	setPendingDeleteWarehouse,
 	table,
+	toolbar,
 }: WarehouseTableProps) {
 	return (
 		<ModuleTable
@@ -25,6 +29,7 @@ export function WarehouseTable({
 			minWidthClassName="min-w-[68rem]"
 			paginationStorageKey={WarehouseManagementTablePaginationStorageKey}
 			table={table}
+			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<WarehouseTableRow
 					key={id}

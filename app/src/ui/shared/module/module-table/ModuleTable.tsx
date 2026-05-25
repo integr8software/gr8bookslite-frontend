@@ -24,6 +24,7 @@ export function ModuleTable<TData>({
 	renderRow,
 	skeletonRowCount = 5,
 	table,
+	toolbar,
 	variant = "standalone",
 }: ModuleTableProps<TData>) {
 	const pathname = usePathname();
@@ -131,6 +132,7 @@ export function ModuleTable<TData>({
 					"rounded-lg border border-darknavy/10 shadow-sm shadow-darknavy/5",
 			)}
 		>
+			{toolbar ? <div className="border-b border-darknavy/10">{toolbar}</div> : null}
 			<div className={joinClasses(maxHeightClassName, "overflow-auto")}>
 				<table
 					className={joinClasses(

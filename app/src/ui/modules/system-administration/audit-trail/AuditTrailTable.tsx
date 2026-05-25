@@ -37,17 +37,6 @@ export function AuditTrailTable({
 }: AuditTrailTableProps) {
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<AuditTrailTableFilters
-				actionFilter={actionFilter}
-				moduleFilter={moduleFilter}
-				moduleOptions={moduleOptions}
-				query={query}
-				severityFilter={severityFilter}
-				onActionFilterChange={handleActionFilterChange}
-				onModuleFilterChange={handleModuleFilterChange}
-				onQueryChange={handleQueryChange}
-				onSeverityFilterChange={handleSeverityFilterChange}
-			/>
 			<ModuleTable
 				variant="embedded"
 				emptyDescription="Adjust filters to review activity across sidebar modules."
@@ -58,6 +47,19 @@ export function AuditTrailTable({
 				pageSizeOptions={[10, 20, 50]}
 				paginationStorageKey={AuditTrailPaginationStorageKey}
 				table={table}
+				toolbar={
+					<AuditTrailTableFilters
+						actionFilter={actionFilter}
+						moduleFilter={moduleFilter}
+						moduleOptions={moduleOptions}
+						query={query}
+						severityFilter={severityFilter}
+						onActionFilterChange={handleActionFilterChange}
+						onModuleFilterChange={handleModuleFilterChange}
+						onQueryChange={handleQueryChange}
+						onSeverityFilterChange={handleSeverityFilterChange}
+					/>
+				}
 				renderRow={({ id, original }) => (
 					<AuditTrailTableRow key={id} record={original} />
 				)}

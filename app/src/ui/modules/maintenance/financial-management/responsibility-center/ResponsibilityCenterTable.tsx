@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { ResponsibilityCenterTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import { useResponsibilityCenterTable } from "@/app/src/hooks/modules/maintenance/financial-management/responsibility-center/useResponsibilityCenterTable";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
@@ -9,11 +10,13 @@ import { ResponsibilityCenterTableRow } from "@/app/src/ui/modules/maintenance/f
 
 type ResponsibilityCenterTableProps = {
 	centers: ResponsibilityCenter[];
+	toolbar?: ReactNode;
 	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
 };
 
 export function ResponsibilityCenterTable({
 	centers,
+	toolbar,
 	onStatusChangeCenter,
 }: ResponsibilityCenterTableProps) {
 	const centerById = new Map(centers.map((center) => [center.id, center]));
@@ -27,6 +30,7 @@ export function ResponsibilityCenterTable({
 			minWidthClassName="min-w-[64rem]"
 			paginationStorageKey={ResponsibilityCenterTablePaginationStorageKey}
 			table={table}
+			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<ResponsibilityCenterTableRow
 					key={id}

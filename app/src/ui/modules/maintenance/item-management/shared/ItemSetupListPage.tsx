@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Tags } from "lucide-react";
-import { ItemSetupConfigByKind } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
+import { CheckCircle2, CirclePause, Layers, Plus, Tags } from "lucide-react";
+import {
+	ItemSetupConfigByKind,
+	ItemStatusOptions,
+} from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import { useItemSetupListPage } from "@/app/src/hooks/modules/maintenance/item-management/useItemSetupListPage";
 import type { ItemSetupKind } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -10,6 +13,16 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import {
+	type ModuleMetricItem,
+	ModuleMetrics,
+} from "@/app/src/ui/shared/module/ModuleMetrics";
+import {
+	ModuleTableFilterButton,
+	ModuleTableFilterSelect,
+	ModuleTableSearch,
+	ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/ModuleTableToolbar";
 import { ItemSetupTable } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupTable";
 
 export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
@@ -18,6 +31,42 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 	const childConfig = page.childKind
 		? ItemSetupConfigByKind[page.childKind]
 		: null;
+	const setupRecords = [...page.records, ...page.childRecords];
+	const metrics: ModuleMetricItem[] = [
+		{
+			helper: childConfig
+				? `Includes ${childConfig.title.toLowerCase()} records`
+				: "All setup records",
+			icon: Tags,
+			label: "Total Records",
+			value: setupRecords.length,
+		},
+		{
+			helper: "Available for selection",
+			icon: CheckCircle2,
+			label: "Active Records",
+			tone: "emerald",
+			value: setupRecords.filter((record) => record.status === "Active").length,
+		},
+		{
+			helper: "Currently inactive",
+			icon: CirclePause,
+			label: "Inactive Records",
+			tone: "amber",
+			value: setupRecords.filter((record) => record.status === "Inactive")
+				.length,
+		},
+	];
+
+	if (childConfig) {
+		metrics.push({
+			helper: `${childConfig.title} under this setup`,
+			icon: Layers,
+			label: childConfig.title,
+			tone: "violet",
+			value: page.childRecords.length,
+		});
+	}
 
 	return (
 		<section className="grid gap-5">
@@ -53,12 +102,55 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 					</>
 				}
 			/>
+			<ModuleMetrics metrics={metrics} />
 			<ItemSetupTable
 				expandedIds={page.expandedIds}
 				isLoading={page.isLoading}
 				kind={kind}
 				setPendingDeleteRecord={page.setPendingDeleteRecord}
 				table={page.table}
+				toolbar={
+					<ModuleTableToolbar>
+						<ModuleTableSearch
+							label={`Search ${config.title.toLowerCase()} records`}
+							value={page.query}
+							onChange={page.handleQueryChange}
+							placeholder={`Search ${config.title.toLowerCase()} records`}
+						/>
+						<ModuleTableFilterSelect
+							label="Level"
+							value={page.levelFilter}
+							options={[
+								{ label: "All Levels", value: "All" },
+								{ label: config.singularTitle, value: kind },
+								...(childConfig
+									? [
+											{
+												label: childConfig.singularTitle,
+												value: page.childKind ?? "",
+											},
+										]
+									: []),
+							]}
+							onChange={page.handleLevelFilterChange}
+						/>
+						<ModuleTableFilterSelect
+							label="Status"
+							value={page.statusFilter}
+							options={[
+								{ label: "All Status", value: "All" },
+								...ItemStatusOptions.map((status) => ({
+									label: status,
+									value: status,
+								})),
+							]}
+							onChange={page.handleStatusFilterChange}
+						/>
+						<ModuleTableFilterButton onClick={page.resetFilters}>
+							Reset
+						</ModuleTableFilterButton>
+					</ModuleTableToolbar>
+				}
 				onToggleExpanded={page.toggleExpanded}
 			/>
 			<AppDialog

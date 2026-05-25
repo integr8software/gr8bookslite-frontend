@@ -15,6 +15,7 @@ export type ModuleTableProps<TData> = {
 	renderRow: (row: Row<TData>) => ReactNode;
 	skeletonRowCount?: number;
 	table: Table<TData>;
+	toolbar?: ReactNode;
 	variant?: "embedded" | "standalone";
 };
 

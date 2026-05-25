@@ -1,4 +1,9 @@
-import { Search } from "lucide-react";
+import {
+	ModuleTableFilterButton,
+	ModuleTableFilterSelect,
+	ModuleTableSearch,
+	ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/ModuleTableToolbar";
 
 type UserListTableFiltersProps = {
 	query: string;
@@ -18,67 +23,28 @@ export function UserListTableFilters({
 	onTypeFilterChange,
 }: UserListTableFiltersProps) {
 	return (
-		<div
-			className="flex flex-col gap-3 border-b border-darknavy/10 px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center"
+		<ModuleTableToolbar
+			className="rounded-none border-x-0 border-t-0 shadow-none lg:grid-cols-[minmax(24rem,2.5fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]"
 			data-spotlight-id="users-filters"
 		>
-			<div className="relative w-full sm:w-72">
-				<Search
-					className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/38"
-					aria-hidden="true"
-				/>
-				<input
-					type="search"
-					value={query}
-					onChange={(event) => onQueryChange(event.target.value)}
-					placeholder="Search users..."
-					className="h-9 w-full rounded border border-darknavy/10 bg-white pl-9 pr-3 text-xs text-darknavy outline-none transition placeholder:text-darknavy/38 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
-				/>
-			</div>
-			<div className="grid w-full min-w-0 flex-1 gap-3 sm:w-auto sm:min-w-[14rem] sm:grid-cols-1">
-				<ToolbarSelect
-					label="User Role"
-					value={typeFilter}
-					options={["All", ...typeOptions]}
-					onChange={onTypeFilterChange}
-				/>
-			</div>
-			<button
-				type="button"
-				onClick={onResetFilters}
-				className="inline-flex h-9 w-full items-center justify-center rounded border border-darknavy/10 bg-white px-4 text-xs font-semibold text-darknavy/50 transition hover:border-skyblue/45 hover:text-darknavy sm:w-auto"
-			>
+			<ModuleTableSearch
+				label="Search users"
+				value={query}
+				onChange={onQueryChange}
+				placeholder="Search users..."
+			/>
+			<ModuleTableFilterSelect
+				label="User Role"
+				value={typeFilter}
+				options={["All", ...typeOptions].map((option) => ({
+					label: option,
+					value: option,
+				}))}
+				onChange={onTypeFilterChange}
+			/>
+			<ModuleTableFilterButton onClick={onResetFilters}>
 				Reset
-			</button>
-		</div>
-	);
-}
-
-function ToolbarSelect({
-	label,
-	onChange,
-	options,
-	value,
-}: {
-	label: string;
-	onChange: (value: string) => void;
-	options: readonly string[];
-	value: string;
-}) {
-	return (
-		<label className="flex min-w-0 flex-col items-start gap-2 text-xs font-semibold text-darknavy/48 sm:flex-row sm:items-center">
-			<span className="whitespace-nowrap">{label}</span>
-			<select
-				value={value}
-				onChange={(event) => onChange(event.target.value)}
-				className="h-9 w-full min-w-0 flex-1 rounded border border-darknavy/10 bg-white px-3 text-xs font-semibold text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
-			>
-				{options.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
-		</label>
+			</ModuleTableFilterButton>
+		</ModuleTableToolbar>
 	);
 }

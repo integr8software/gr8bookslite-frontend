@@ -130,23 +130,24 @@ export function ChartsOfAccountsMain() {
         />
 
         <Card className="overflow-hidden rounded-lg">
-          <ChartsOfAccountsFilters
-            accountTypeFilter={coa.accountTypeFilter}
-            activeTab={coa.activeTab}
-            searchQuery={coa.searchQuery}
-            statusFilter={coa.statusFilter}
-            structureFilter={coa.structureFilter}
-            onAccountTypeChange={coa.setAccountTypeFilter}
-            onSearchChange={coa.setSearchQuery}
-            onStatusChange={coa.setStatusFilter}
-            onStructureChange={coa.setStructureFilter}
-            onTabChange={coa.setActiveTab}
-          />
-
           <ChartsOfAccountsTable
             expandedIds={coa.expandedIds}
             isLoading={coa.isLoading}
             table={coa.table}
+            toolbar={
+              <ChartsOfAccountsFilters
+                accountTypeFilter={coa.accountTypeFilter}
+                activeTab={coa.activeTab}
+                searchQuery={coa.searchQuery}
+                statusFilter={coa.statusFilter}
+                structureFilter={coa.structureFilter}
+                onAccountTypeChange={coa.setAccountTypeFilter}
+                onSearchChange={coa.setSearchQuery}
+                onStatusChange={coa.setStatusFilter}
+                onStructureChange={coa.setStructureFilter}
+                onTabChange={coa.setActiveTab}
+              />
+            }
             onDelete={setPendingDeleteAccount}
             onEdit={coa.openEditDrawer}
             onToggleExpanded={coa.toggleExpanded}

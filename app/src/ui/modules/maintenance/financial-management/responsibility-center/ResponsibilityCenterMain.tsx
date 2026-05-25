@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Home, Plus } from "lucide-react";
-import { ResponsibilityCenterHref } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+import {
+	ResponsibilityCenterHref,
+	ResponsibilityCenterStatusOptions,
+	ResponsibilityCenterTypeOptions,
+} from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/financial-management/responsibility-center/useResponsibilityCenter";
 import type {
 	ResponsibilityCenter,
@@ -13,6 +17,12 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import {
+	ModuleTableFilterButton,
+	ModuleTableFilterSelect,
+	ModuleTableSearch,
+	ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/ModuleTableToolbar";
 import { ResponsibilityCenterSetStatusDialog } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterSetStatusDialog";
 import { ResponsibilityCenterTable } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTable";
 
@@ -24,6 +34,44 @@ export function ResponsibilityCenterMain() {
 	const isMutating = useResponsibilityCenterStore((state) => state.isMutating);
 	const [pendingStatusCenter, setPendingStatusCenter] =
 		useState<ResponsibilityCenter | null>(null);
+	const [query, setQuery] = useState("");
+	const [statusFilter, setStatusFilter] = useState("All");
+	const [typeFilter, setTypeFilter] = useState("All");
+	const filteredCenters = useMemo(() => {
+		const normalizedQuery = query.trim().toLowerCase();
+
+		return centers.filter((center) => {
+			const parentName = center.parentId
+				? centers.find((parentCenter) => parentCenter.id === center.parentId)
+						?.name
+				: "";
+
+			if (statusFilter !== "All" && center.status !== statusFilter) {
+				return false;
+			}
+
+			if (typeFilter !== "All" && center.type !== typeFilter) {
+				return false;
+			}
+
+			if (!normalizedQuery) {
+				return true;
+			}
+
+			return [
+				center.code,
+				center.name,
+				center.type,
+				center.manager,
+				parentName,
+				center.status,
+				center.description,
+			]
+				.join(" ")
+				.toLowerCase()
+				.includes(normalizedQuery);
+		});
+	}, [centers, query, statusFilter, typeFilter]);
 
 	function handleConfirmStatusChange() {
 		if (!pendingStatusCenter) {
@@ -39,6 +87,12 @@ export function ResponsibilityCenterMain() {
 			updatedAt: new Date().toISOString(),
 		});
 		setPendingStatusCenter(null);
+	}
+
+	function resetFilters() {
+		setQuery("");
+		setStatusFilter("All");
+		setTypeFilter("All");
 	}
 
 	return (
@@ -65,7 +119,44 @@ export function ResponsibilityCenterMain() {
 				}
 			/>
 			<ResponsibilityCenterTable
-				centers={centers}
+				centers={filteredCenters}
+				toolbar={
+					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(15rem,1fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
+						<ModuleTableSearch
+							label="Search responsibility centers"
+							value={query}
+							onChange={setQuery}
+							placeholder="Search by code, name, type, manager, or status"
+						/>
+						<ModuleTableFilterSelect
+							label="Type"
+							value={typeFilter}
+							options={[
+								{ label: "All types", value: "All" },
+								...ResponsibilityCenterTypeOptions.map((type) => ({
+									label: type,
+									value: type,
+								})),
+							]}
+							onChange={setTypeFilter}
+						/>
+						<ModuleTableFilterSelect
+							label="Status"
+							value={statusFilter}
+							options={[
+								{ label: "All statuses", value: "All" },
+								...ResponsibilityCenterStatusOptions.map((status) => ({
+									label: status,
+									value: status,
+								})),
+							]}
+							onChange={setStatusFilter}
+						/>
+						<ModuleTableFilterButton onClick={resetFilters}>
+							Reset
+						</ModuleTableFilterButton>
+					</ModuleTableToolbar>
+				}
 				onStatusChangeCenter={setPendingStatusCenter}
 			/>
 			<ResponsibilityCenterSetStatusDialog

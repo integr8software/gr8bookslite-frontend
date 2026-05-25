@@ -31,12 +31,6 @@ export function ApprovalManagementTable({
 }: ApprovalManagementTableProps) {
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<ApprovalManagementTableFilters
-				query={query}
-				statusFilter={statusFilter}
-				onQueryChange={handleQueryChange}
-				onStatusFilterChange={handleStatusFilterChange}
-			/>
 			<ModuleTable
 				variant="embedded"
 				emptyDescription="Add an approval workflow to control module approvals."
@@ -46,6 +40,14 @@ export function ApprovalManagementTable({
 				minWidthClassName="min-w-[92rem]"
 				paginationStorageKey={ApprovalManagementPaginationStorageKey}
 				table={table}
+				toolbar={
+					<ApprovalManagementTableFilters
+						query={query}
+						statusFilter={statusFilter}
+						onQueryChange={handleQueryChange}
+						onStatusFilterChange={handleStatusFilterChange}
+					/>
+				}
 				renderRow={({ id, original }) => (
 					<ApprovalManagementTableRow
 						key={id}

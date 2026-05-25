@@ -1,33 +1,15 @@
-import { Filter, Search } from "lucide-react";
 import { PettyCashVoucherStatusOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { usePettyCashVoucherListPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherListPage";
+import {
+	ModuleTableFilterButton,
+	ModuleTableFilterSelect,
+	ModuleTableSearch,
+	ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/ModuleTableToolbar";
 
 type PettyCashVoucherListPageState = ReturnType<
 	typeof usePettyCashVoucherListPage
 >;
-
-const searchIconClassName = [
-	"pointer-events-none absolute left-3 top-1/2 h-4 w-4",
-	"-translate-y-1/2 text-darknavy/40",
-].join(" ");
-
-const fieldClassName = [
-	"h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3",
-	"text-sm text-darknavy outline-none transition focus:border-skyblue",
-	"focus:ring-2 focus:ring-skyblue/20",
-].join(" ");
-
-const selectClassName = [
-	"h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3",
-	"pr-9 text-sm font-medium text-darknavy outline-none transition",
-	"focus:border-skyblue focus:ring-2 focus:ring-skyblue/20",
-].join(" ");
-
-const filterButtonClassName = [
-	"inline-flex h-10 items-center justify-center gap-2 rounded-lg border",
-	"border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy",
-	"transition hover:bg-skyblue/10",
-].join(" ");
 
 export function PettyCashVoucherListFilters({
 	page,
@@ -35,42 +17,23 @@ export function PettyCashVoucherListFilters({
 	page: PettyCashVoucherListPageState;
 }) {
 	return (
-		<div className="border-b border-darknavy/10 p-4 sm:p-5">
-			<div className="grid gap-3 lg:grid-cols-[minmax(16rem,1fr)_auto]">
-				<div className="relative">
-					<Search className={searchIconClassName} />
-					<input
-						type="text"
-						value={page.searchQuery}
-						onChange={(event) =>
-							page.setSearchQuery(event.target.value)
-						}
-						placeholder="Search voucher number, VCE, or account code"
-						className={`${fieldClassName} pl-9`}
-					/>
-				</div>
-
-				<div className="grid gap-3 sm:grid-cols-[12rem_12rem] lg:justify-end">
-					<select
-						value={page.statusFilter}
-						onChange={(event) =>
-							page.setStatusFilter(event.target.value)
-						}
-						className={selectClassName}
-					>
-						{PettyCashVoucherStatusOptions.map((status) => (
-							<option key={status} value={status}>
-								{status === "All" ? "Status" : status}
-							</option>
-						))}
-					</select>
-
-					<button type="button" className={filterButtonClassName}>
-						<Filter className="h-4 w-4" />
-						Filter
-					</button>
-				</div>
-			</div>
-		</div>
+		<ModuleTableToolbar className="rounded-none border-x-0 border-t-0 shadow-none lg:grid-cols-[minmax(24rem,2.5fr)_minmax(12rem,1fr)_minmax(12rem,1fr)]">
+			<ModuleTableSearch
+				label="Search petty cash vouchers"
+				value={page.searchQuery}
+				onChange={page.setSearchQuery}
+				placeholder="Search voucher number, VCE, or account code"
+			/>
+			<ModuleTableFilterSelect
+				label="Status"
+				value={page.statusFilter}
+				options={PettyCashVoucherStatusOptions.map((status) => ({
+					label: status === "All" ? "Status" : status,
+					value: status,
+				}))}
+				onChange={page.setStatusFilter}
+			/>
+			<ModuleTableFilterButton />
+		</ModuleTableToolbar>
 	);
 }

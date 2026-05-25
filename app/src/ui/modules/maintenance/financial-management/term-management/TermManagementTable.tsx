@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { TermManagementTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import { useTermManagementTable } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagementTable";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
@@ -10,12 +11,14 @@ import { TermManagementTableRow } from "@/app/src/ui/modules/maintenance/financi
 type TermManagementTableProps = {
 	isLoading: boolean;
 	terms: TermManagement[];
+	toolbar?: ReactNode;
 	onDeleteTerm: (term: TermManagement) => void;
 };
 
 export function TermManagementTable({
 	isLoading,
 	terms,
+	toolbar,
 	onDeleteTerm,
 }: TermManagementTableProps) {
 	const table = useTermManagementTable(terms);
@@ -29,6 +32,7 @@ export function TermManagementTable({
 			minWidthClassName="min-w-[48rem]"
 			paginationStorageKey={TermManagementTablePaginationStorageKey}
 			table={table}
+			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<TermManagementTableRow
 					key={id}

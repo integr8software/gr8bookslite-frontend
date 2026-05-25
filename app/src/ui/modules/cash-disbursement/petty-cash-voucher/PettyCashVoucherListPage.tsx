@@ -37,8 +37,6 @@ export function PettyCashVoucherListPage() {
         />
 
         <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-          <PettyCashVoucherListFilters page={page} />
-
           <ModuleTable
             variant="embedded"
             emptyDescription="Adjust the filters or add a new voucher to view petty cash records."
@@ -48,6 +46,7 @@ export function PettyCashVoucherListPage() {
             paginationLabel="vouchers"
             paginationStorageKey={PettyCashVoucherPaginationStorageKey}
             table={page.table}
+            toolbar={<PettyCashVoucherListFilters page={page} />}
             renderRow={({ id, original }) => (
               <PettyCashVoucherTableRow
                 key={id}

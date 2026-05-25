@@ -43,17 +43,6 @@ export function CompanyBranchesTable({
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<CompanyBranchesTableFilters
-				kindFilter={branchList.kindFilter}
-				kindOptions={branchList.kindOptions}
-				query={branchList.query}
-				statusFilter={branchList.statusFilter}
-				statusOptions={branchList.statusOptions}
-				onKindFilterChange={branchList.setKindFilter}
-				onQueryChange={branchList.setQuery}
-				onResetFilters={branchList.resetFilters}
-				onStatusFilterChange={branchList.setStatusFilter}
-			/>
 			<ModuleTable
 				variant="embedded"
 				emptyDescription="Try adjusting search, type, or status filters."
@@ -63,6 +52,19 @@ export function CompanyBranchesTable({
 				minWidthClassName="min-w-[63rem]"
 				paginationStorageKey={WorkspaceCompanyBranchesTablePaginationStorageKey}
 				table={branchList.table}
+				toolbar={
+					<CompanyBranchesTableFilters
+						kindFilter={branchList.kindFilter}
+						kindOptions={branchList.kindOptions}
+						query={branchList.query}
+						statusFilter={branchList.statusFilter}
+						statusOptions={branchList.statusOptions}
+						onKindFilterChange={branchList.setKindFilter}
+						onQueryChange={branchList.setQuery}
+						onResetFilters={branchList.resetFilters}
+						onStatusFilterChange={branchList.setStatusFilter}
+					/>
+				}
 				renderRow={({ id, original }) => (
 					<CompanyBranchesTableRow
 						key={id}
@@ -98,7 +100,7 @@ function CompanyBranchesTableFilters({
 	onStatusFilterChange: (value: WorkspaceCompanyStatus | "All") => void;
 }) {
 	return (
-		<WorkspaceCompaniesFilterBar className="md:grid-cols-[1fr_12rem_10rem_auto]">
+		<WorkspaceCompaniesFilterBar className="md:grid-cols-[minmax(24rem,2.5fr)_minmax(12rem,1fr)_minmax(10rem,1fr)_minmax(11rem,1fr)]">
 			<WorkspaceCompaniesSearchInput
 				value={query}
 				onChange={onQueryChange}

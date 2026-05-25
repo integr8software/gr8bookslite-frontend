@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { ItemSetupTablePaginationStorageKeys } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import type { useItemSetupListPage } from "@/app/src/hooks/modules/maintenance/item-management/useItemSetupListPage";
 import type { ItemSetupKind } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
@@ -13,6 +14,7 @@ type ItemSetupTableProps = Pick<
 > & {
 	expandedIds: Set<string>;
 	kind: ItemSetupKind;
+	toolbar?: ReactNode;
 	onToggleExpanded: (recordId: string) => void;
 };
 
@@ -23,6 +25,7 @@ export function ItemSetupTable({
 	onToggleExpanded,
 	setPendingDeleteRecord,
 	table,
+	toolbar,
 }: ItemSetupTableProps) {
 	return (
 		<ModuleTable
@@ -33,6 +36,7 @@ export function ItemSetupTable({
 			minWidthClassName="min-w-[50rem]"
 			paginationStorageKey={ItemSetupTablePaginationStorageKeys[kind]}
 			table={table}
+			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<ItemSetupTableRow
 					key={id}

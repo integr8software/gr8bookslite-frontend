@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { DisbursementVoucherTablePaginationStorageKey } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
 	formatCurrency,
@@ -12,6 +13,7 @@ export function DisbursementVoucherTable({
   onCreateVoucher,
   onEditVoucher,
 	table,
+	toolbar,
 	onDeleteVoucher,
 }: {
 	onCreateVoucher: (row: DisbursementVoucherPreviewRow) => void;
@@ -19,6 +21,7 @@ export function DisbursementVoucherTable({
 	table: ReturnType<
 		typeof import("@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher").useDisbursementVoucherPreviewTable
 	>["table"];
+	toolbar?: ReactNode;
 	onDeleteVoucher: (row: DisbursementVoucherPreviewRow) => void;
 }) {
 	return (
@@ -29,6 +32,7 @@ export function DisbursementVoucherTable({
 			minWidthClassName="min-w-[74rem]"
 			paginationStorageKey={DisbursementVoucherTablePaginationStorageKey}
 			table={table}
+			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<tr key={id} className="module-table-row">
 					<td className="px-4 py-4 align-top">

@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { DiscountManagementTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
 import { useDiscountManagementTable } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagementTable";
 import type {
@@ -13,12 +14,14 @@ import { DiscountManagementTableRow } from "@/app/src/ui/modules/maintenance/fin
 type DiscountManagementTableProps = {
 	discounts: Discount[];
 	isLoading: boolean;
+	toolbar?: ReactNode;
 	onDeleteDiscount: (discount: DiscountManagementTableRecord) => void;
 };
 
 export function DiscountManagementTable({
 	discounts,
 	isLoading,
+	toolbar,
 	onDeleteDiscount,
 }: DiscountManagementTableProps) {
 	const table = useDiscountManagementTable(discounts);
@@ -32,6 +35,7 @@ export function DiscountManagementTable({
 			minWidthClassName="min-w-[52rem]"
 			paginationStorageKey={DiscountManagementTablePaginationStorageKey}
 			table={table}
+			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<DiscountManagementTableRow
 					key={id}

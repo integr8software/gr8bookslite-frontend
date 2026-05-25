@@ -63,21 +63,6 @@ export function CompanyTable({
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<CompanyTableFilters
-				planFilter={companyList.planFilter}
-				planOptions={companyList.planOptions}
-				query={companyList.query}
-				statusFilter={companyList.statusFilter}
-				statusOptions={companyList.statusOptions}
-				typeFilter={companyList.typeFilter}
-				typeOptions={companyList.typeOptions}
-				onPlanFilterChange={companyList.setPlanFilter}
-				onQueryChange={companyList.setQuery}
-				onResetFilters={companyList.resetFilters}
-				onStatusFilterChange={companyList.setStatusFilter}
-				onTypeFilterChange={companyList.setTypeFilter}
-			/>
-
 			<ModuleTable
 				variant="embedded"
 				emptyDescription="Try adjusting search, status, type, or plan filters."
@@ -87,6 +72,22 @@ export function CompanyTable({
 				minWidthClassName="min-w-[72rem]"
 				paginationStorageKey={WorkspaceCompaniesTablePaginationStorageKey}
 				table={companyList.table}
+				toolbar={
+					<CompanyTableFilters
+						planFilter={companyList.planFilter}
+						planOptions={companyList.planOptions}
+						query={companyList.query}
+						statusFilter={companyList.statusFilter}
+						statusOptions={companyList.statusOptions}
+						typeFilter={companyList.typeFilter}
+						typeOptions={companyList.typeOptions}
+						onPlanFilterChange={companyList.setPlanFilter}
+						onQueryChange={companyList.setQuery}
+						onResetFilters={companyList.resetFilters}
+						onStatusFilterChange={companyList.setStatusFilter}
+						onTypeFilterChange={companyList.setTypeFilter}
+					/>
+				}
 				renderRow={({ id, original }) => (
 					<CompanyTableRow
 						key={id}
@@ -127,7 +128,7 @@ function CompanyTableFilters({
 	onTypeFilterChange: (value: WorkspaceCompanyType | "All") => void;
 }) {
 	return (
-		<WorkspaceCompaniesFilterBar className="lg:grid-cols-[1fr_11rem_11rem_15rem_auto]">
+		<WorkspaceCompaniesFilterBar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
 			<WorkspaceCompaniesSearchInput
 				value={query}
 				onChange={onQueryChange}

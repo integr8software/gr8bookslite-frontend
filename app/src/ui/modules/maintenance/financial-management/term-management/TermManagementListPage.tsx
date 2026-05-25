@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
 	CalendarDays,
@@ -9,7 +9,10 @@ import {
 	Plus,
 	Upload,
 } from "lucide-react";
-import { TermManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+import {
+  TermManagementDatemodeOptions,
+  TermManagementHref,
+} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 import {
@@ -17,6 +20,12 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import {
+  ModuleTableFilterButton,
+  ModuleTableFilterSelect,
+  ModuleTableSearch,
+  ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/ModuleTableToolbar";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { TermManagementTable } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementTable";
 
@@ -27,6 +36,26 @@ export function TermManagementListPage() {
   const isMutating = useTermManagementStore((state) => state.isMutating);
   const [pendingDeleteTerm, setPendingDeleteTerm] =
     useState<TermManagement | null>(null);
+  const [datemodeFilter, setDatemodeFilter] = useState("All");
+  const [query, setQuery] = useState("");
+  const filteredTerms = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return terms.filter((term) => {
+      if (datemodeFilter !== "All" && term.datemode !== datemodeFilter) {
+        return false;
+      }
+
+      if (!normalizedQuery) {
+        return true;
+      }
+
+      return [term.description, term.datemode, term.period]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery);
+    });
+  }, [datemodeFilter, query, terms]);
 
   function handleConfirmDelete() {
     if (!pendingDeleteTerm) {
@@ -35,6 +64,11 @@ export function TermManagementListPage() {
 
     deleteTerm(pendingDeleteTerm.id);
     setPendingDeleteTerm(null);
+  }
+
+  function resetFilters() {
+    setDatemodeFilter("All");
+    setQuery("");
   }
 
   return (
@@ -80,7 +114,32 @@ export function TermManagementListPage() {
 
       <TermManagementTable
         isLoading={isLoading}
-        terms={terms}
+        terms={filteredTerms}
+        toolbar={
+          <ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
+            <ModuleTableSearch
+              label="Search terms"
+              value={query}
+              onChange={setQuery}
+              placeholder="Search by description, datemode, or period"
+            />
+            <ModuleTableFilterSelect
+              label="Datemode"
+              value={datemodeFilter}
+              options={[
+                { label: "All datemodes", value: "All" },
+                ...TermManagementDatemodeOptions.map((datemode) => ({
+                  label: datemode,
+                  value: datemode,
+                })),
+              ]}
+              onChange={setDatemodeFilter}
+            />
+            <ModuleTableFilterButton onClick={resetFilters}>
+              Reset
+            </ModuleTableFilterButton>
+          </ModuleTableToolbar>
+        }
         onDeleteTerm={setPendingDeleteTerm}
       />
 

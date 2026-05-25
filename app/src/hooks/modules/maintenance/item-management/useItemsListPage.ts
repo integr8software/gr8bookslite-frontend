@@ -13,13 +13,23 @@ import {
 import { ItemsTableColumns } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import type {
 	ItemRecord,
+	ItemStatus,
 	ItemTableColumnKey,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item-management/useItemManagement";
 
+const AllItemCategoriesFilter = "All";
+const AllItemStatusesFilter = "All";
+
 export function useItemsListPage() {
 	const { deleteItem, isLoading, isMutating, items } = useItemManagementStore();
+	const [categoryFilter, setCategoryFilterState] = useState(
+		AllItemCategoriesFilter,
+	);
 	const [query, setQuery] = useState("");
+	const [statusFilter, setStatusFilterState] = useState<
+		ItemStatus | typeof AllItemStatusesFilter
+	>(AllItemStatusesFilter);
 	const [pendingDeleteItem, setPendingDeleteItem] =
 		useState<ItemRecord | null>(null);
 	const [pagination, setPagination] = useState<PaginationState>({
@@ -32,30 +42,42 @@ export function useItemsListPage() {
 	const filteredItems = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
-		if (!normalizedQuery) {
-			return items;
-		}
-
 		return items.filter((item) =>
-			[
-				item.code,
-				item.skuCode,
-				item.name,
-				item.category,
-				item.subcategory,
-				item.type,
-				item.subtype,
-				item.brand,
-				item.barcode,
-				item.supplier,
-				...(item.suppliers ?? []).map((supplier) => supplier.supplier),
-				item.status,
-			]
-				.join(" ")
-				.toLowerCase()
-				.includes(normalizedQuery),
+			(categoryFilter === AllItemCategoriesFilter ||
+				item.category === categoryFilter) &&
+			(statusFilter === AllItemStatusesFilter ||
+				item.status === statusFilter) &&
+			(!normalizedQuery ||
+				[
+					item.code,
+					item.skuCode,
+					item.name,
+					item.category,
+					item.subcategory,
+					item.type,
+					item.subtype,
+					item.brand,
+					item.barcode,
+					item.supplier,
+					...(item.suppliers ?? []).map((supplier) => supplier.supplier),
+					item.status,
+				]
+					.join(" ")
+					.toLowerCase()
+					.includes(normalizedQuery)),
 		);
-	}, [items, query]);
+	}, [categoryFilter, items, query, statusFilter]);
+	const categoryFilterOptions = useMemo(
+		() =>
+			Array.from(
+				new Set(
+					items
+						.map((item) => item.category)
+						.filter((category) => category.trim().length > 0),
+				),
+			).sort((first, second) => first.localeCompare(second)),
+		[items],
+	);
 	const columns = useMemo<ColumnDef<ItemRecord>[]>(
 		() =>
 			ItemsTableColumns.map((column) => {
@@ -93,6 +115,23 @@ export function useItemsListPage() {
 		table.setPageIndex(0);
 	}
 
+	function resetFilters() {
+		setCategoryFilterState(AllItemCategoriesFilter);
+		setQuery("");
+		setStatusFilterState(AllItemStatusesFilter);
+		table.setPageIndex(0);
+	}
+
+	function setCategoryFilter(value: string) {
+		setCategoryFilterState(value);
+		table.setPageIndex(0);
+	}
+
+	function setStatusFilter(value: string) {
+		setStatusFilterState(value as ItemStatus | typeof AllItemStatusesFilter);
+		table.setPageIndex(0);
+	}
+
 	function handleConfirmDelete() {
 		if (!pendingDeleteItem) {
 			return;
@@ -103,13 +142,20 @@ export function useItemsListPage() {
 	}
 
 	return {
+		categoryFilter,
+		categoryFilterOptions,
 		handleConfirmDelete,
 		handleQueryChange,
+		items,
 		isLoading,
 		isMutating,
 		pendingDeleteItem,
 		query,
+		resetFilters,
+		setCategoryFilter,
 		setPendingDeleteItem,
+		setStatusFilter,
+		statusFilter,
 		table,
 	};
 }

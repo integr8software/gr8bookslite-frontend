@@ -19,10 +19,13 @@ import type {
 	ItemSetupRecord,
 	ItemSetupTableColumnKey,
 	ItemSetupTableRowData,
+	ItemStatus,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item-management/useItemManagement";
 
 const EmptyItemSetupRecords: ItemSetupRecord[] = [];
+const AllItemSetupLevelsFilter = "All";
+const AllItemSetupStatusesFilter = "All";
 
 export function useItemSetupListPage(kind: ItemSetupKind) {
 	const store = useItemManagementStore();
@@ -42,10 +45,17 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 		kind: ItemSetupKind;
 		record: ItemSetupRecord;
 	} | null>(null);
+	const [levelFilter, setLevelFilterState] = useState<
+		ItemSetupKind | typeof AllItemSetupLevelsFilter
+	>(AllItemSetupLevelsFilter);
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
 		pageSize: 5,
 	});
+	const [query, setQuery] = useState("");
+	const [statusFilter, setStatusFilterState] = useState<
+		ItemStatus | typeof AllItemSetupStatusesFilter
+	>(AllItemSetupStatusesFilter);
 	const tableRows = useMemo(
 		() =>
 			createItemSetupTableRows({
@@ -57,6 +67,41 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 			}),
 		[childKind, childRecords, expandedIds, kind, records],
 	);
+	const filteredTableRows = useMemo(() => {
+		const normalizedQuery = query.trim().toLowerCase();
+
+		return tableRows.filter((row) => {
+			if (
+				levelFilter !== AllItemSetupLevelsFilter &&
+				row.recordKind !== levelFilter
+			) {
+				return false;
+			}
+
+			if (
+				statusFilter !== AllItemSetupStatusesFilter &&
+				row.record.status !== statusFilter
+			) {
+				return false;
+			}
+
+			if (!normalizedQuery) {
+				return true;
+			}
+
+			return [
+				row.record.code,
+				row.record.name,
+				row.record.description,
+				row.recordKindLabel,
+				row.appliesToLabel,
+				row.record.status,
+			]
+				.join(" ")
+				.toLowerCase()
+				.includes(normalizedQuery);
+		});
+	}, [levelFilter, query, statusFilter, tableRows]);
 	const columns = useMemo<ColumnDef<ItemSetupTableRowData>[]>(
 		() =>
 			ItemSetupTableColumns.map((column) => {
@@ -80,7 +125,7 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 
 	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
 	const table = useReactTable({
-		data: tableRows,
+		data: filteredTableRows,
 		columns,
 		state: {
 			pagination,
@@ -89,6 +134,21 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 	});
+
+	function handleLevelFilterChange(value: string) {
+		setLevelFilterState(value as ItemSetupKind | typeof AllItemSetupLevelsFilter);
+		table.setPageIndex(0);
+	}
+
+	function handleQueryChange(value: string) {
+		setQuery(value);
+		table.setPageIndex(0);
+	}
+
+	function handleStatusFilterChange(value: string) {
+		setStatusFilterState(value as ItemStatus | typeof AllItemSetupStatusesFilter);
+		table.setPageIndex(0);
+	}
 
 	function handleConfirmDelete() {
 		if (!pendingDeleteRecord) {
@@ -116,14 +176,30 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 		});
 	}
 
+	function resetFilters() {
+		setLevelFilterState(AllItemSetupLevelsFilter);
+		setQuery("");
+		setStatusFilterState(AllItemSetupStatusesFilter);
+		table.setPageIndex(0);
+	}
+
 	return {
 		childKind,
+		childRecords,
 		expandedIds,
+		handleLevelFilterChange,
 		handleConfirmDelete,
+		handleQueryChange,
+		handleStatusFilterChange,
 		isLoading: store.isLoading,
 		isMutating: store.isMutating,
+		levelFilter,
 		pendingDeleteRecord,
+		query,
+		records,
+		resetFilters,
 		setPendingDeleteRecord,
+		statusFilter,
 		table,
 		toggleExpanded,
 	};

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Filter, ListTree, Network, Search } from "lucide-react";
+import { ListTree, Network } from "lucide-react";
 import {
 	AccountStatuses,
 	AccountTypes,
@@ -15,11 +15,14 @@ import type {
 	FilterValue,
 } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 import {
-	Button,
-	Input,
-	Select,
 	Tabs,
 } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
+import {
+	ModuleTableFilterButton,
+	ModuleTableFilterSelect,
+	ModuleTableSearch,
+	ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/ModuleTableToolbar";
 
 export type ChartsOfAccountsFiltersProps = {
 	accountTypeFilter: FilterValue<AccountType>;
@@ -86,67 +89,46 @@ export function ChartsOfAccountsFilters({
 				</div>
 			</div>
 
-			<div
-				className="grid gap-3 border-b border-darknavy/10 bg-white p-4 xl:grid-cols-[minmax(18rem,1fr)_15rem_15rem_11rem]"
+			<ModuleTableToolbar
+				className="rounded-none border-x-0 border-t-0 shadow-none xl:grid-cols-[minmax(24rem,2.5fr)_minmax(15rem,1fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]"
 				data-spotlight-id="charts-of-accounts-filters"
 			>
-				<div className="relative">
-					<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/40" />
-					<Input
-						value={searchQuery}
-						onChange={(event) => onSearchChange(event.target.value)}
-						placeholder="Search account number or name..."
-						className="pl-9"
-					/>
-				</div>
-
-				<div className="relative">
-					<span className="absolute -top-2 left-3 z-10 bg-white px-1 text-xs font-medium text-darknavy/70">
-						Account Type
-					</span>
-					<Select
-						value={accountTypeFilter}
-						onChange={(event) =>
-							onAccountTypeChange(
-								event.target.value as FilterValue<AccountType>,
-							)
-						}
-					>
-						<option value="All">All Types</option>
-						{AccountTypes.map((type) => (
-							<option key={type} value={type}>
-								{type}
-							</option>
-						))}
-					</Select>
-				</div>
-
-				<div className="relative">
-					<span className="absolute -top-2 left-3 z-10 bg-white px-1 text-xs font-medium text-darknavy/70">
-						Status
-					</span>
-					<Select
-						value={statusFilter}
-						onChange={(event) =>
-							onStatusChange(
-								event.target.value as FilterValue<AccountStatus>,
-							)
-						}
-					>
-						<option value="All">All Status</option>
-						{AccountStatuses.map((status) => (
-							<option key={status} value={status}>
-								{status}
-							</option>
-						))}
-					</Select>
-				</div>
-
-				<Button variant="secondary">
-					<Filter className="h-4 w-4" aria-hidden="true" />
-					Filter
-				</Button>
-			</div>
+				<ModuleTableSearch
+					label="Search accounts"
+					value={searchQuery}
+					onChange={onSearchChange}
+					placeholder="Search account number or name..."
+				/>
+				<ModuleTableFilterSelect
+					label="Account Type"
+					value={accountTypeFilter}
+					options={[
+						{ label: "All Types", value: "All" },
+						...AccountTypes.map((type) => ({
+							label: type,
+							value: type,
+						})),
+					]}
+					onChange={(value) =>
+						onAccountTypeChange(value as FilterValue<AccountType>)
+					}
+				/>
+				<ModuleTableFilterSelect
+					label="Status"
+					value={statusFilter}
+					options={[
+						{ label: "All Status", value: "All" },
+						...AccountStatuses.map((status) => ({
+							label: status,
+							value: status,
+						})),
+					]}
+					onChange={(value) =>
+						onStatusChange(value as FilterValue<AccountStatus>)
+					}
+				/>
+				<ModuleTableFilterButton />
+			</ModuleTableToolbar>
 		</div>
 	);
 }

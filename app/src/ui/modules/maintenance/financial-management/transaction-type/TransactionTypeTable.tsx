@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { TransactionTypePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
 import { useTransactionTypeTable } from "@/app/src/hooks/modules/maintenance/financial-management/transaction-type/useTransactionTypeTable";
 import type { TransactionType } from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
@@ -10,12 +11,14 @@ import { TransactionTypeTableRow } from "@/app/src/ui/modules/maintenance/financ
 type TransactionTypeTableProps = {
 	isLoading: boolean;
 	transactionTypes: TransactionType[];
+	toolbar?: ReactNode;
 	onDelete: (transactionType: TransactionType) => void;
 };
 
 export function TransactionTypeTable({
 	isLoading,
 	transactionTypes,
+	toolbar,
 	onDelete,
 }: TransactionTypeTableProps) {
 	const table = useTransactionTypeTable(transactionTypes);
@@ -29,6 +32,7 @@ export function TransactionTypeTable({
 			minWidthClassName="min-w-[64rem]"
 			paginationStorageKey={TransactionTypePaginationStorageKey}
 			table={table}
+			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<TransactionTypeTableRow
 					key={id}

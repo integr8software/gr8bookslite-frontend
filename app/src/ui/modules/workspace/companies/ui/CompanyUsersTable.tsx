@@ -38,14 +38,6 @@ export function CompanyUsersTable({
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<CompanyUsersTableFilters
-				query={userList.query}
-				statusFilter={userList.statusFilter}
-				statusOptions={userList.statusOptions}
-				onQueryChange={userList.setQuery}
-				onResetFilters={userList.resetFilters}
-				onStatusFilterChange={userList.setStatusFilter}
-			/>
 			<ModuleTable
 				variant="embedded"
 				emptyDescription="Try adjusting your search or status filter."
@@ -55,6 +47,16 @@ export function CompanyUsersTable({
 				minWidthClassName="min-w-[66rem]"
 				paginationStorageKey={WorkspaceCompanyUsersTablePaginationStorageKey}
 				table={userList.table}
+				toolbar={
+					<CompanyUsersTableFilters
+						query={userList.query}
+						statusFilter={userList.statusFilter}
+						statusOptions={userList.statusOptions}
+						onQueryChange={userList.setQuery}
+						onResetFilters={userList.resetFilters}
+						onStatusFilterChange={userList.setStatusFilter}
+					/>
+				}
 				renderRow={({ id, original }) => (
 					<CompanyUsersTableRow
 						key={id}
@@ -83,7 +85,7 @@ function CompanyUsersTableFilters({
 	onStatusFilterChange: (value: WorkspaceCompanyStatus | "All") => void;
 }) {
 	return (
-		<WorkspaceCompaniesFilterBar className="md:grid-cols-[1fr_10rem_auto]">
+		<WorkspaceCompaniesFilterBar className="md:grid-cols-[minmax(24rem,2.5fr)_minmax(10rem,1fr)_minmax(11rem,1fr)]">
 			<WorkspaceCompaniesSearchInput
 				value={query}
 				onChange={onQueryChange}

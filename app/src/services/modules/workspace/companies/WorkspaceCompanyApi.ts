@@ -1,10 +1,16 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
-  WorkspaceCompanyRecord,
-  WorkspaceCompanyStatus,
-  WorkspaceCompanyType,
+	WorkspaceCompanyRecord,
+	WorkspaceCompanyFormValues,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
-import type { WorkspaceCompanyApiRecord } from "./WorkspaceCompanyApiTypes";
+import {
+	MapWorkspaceCompanyApiRecord,
+	MapWorkspaceCompanyFormToCreateRequest,
+} from "./WorkspaceCompanyApiMappers";
+import type {
+	CreateWorkspaceCompanyApiRequest,
+	WorkspaceCompanyApiRecord,
+} from "./WorkspaceCompanyApiTypes";
 
 function GetAuthorizationHeaders(accessToken: string) {
   return {
@@ -20,128 +26,57 @@ export async function GetWorkspaceCompanies(accessToken: string) {
     },
   );
 
-  return response.data.map(MapWorkspaceCompanyApiRecord);
+	return response.data.map(MapWorkspaceCompanyApiRecord);
 }
 
-function MapWorkspaceCompanyApiRecord(
-  company: WorkspaceCompanyApiRecord,
-): WorkspaceCompanyRecord {
-  return {
-    address: company.address ?? "",
-    companyType: GetWorkspaceCompanyType(company),
-    contactNumber: company.contactNumber ?? "",
-    createdAt: FormatDate(company.createdAt),
-    email: company.email ?? "",
-    firstName: company.ownerFirstName ?? undefined,
-    id: String(company.id),
-    initials: GetInitials(company.name),
-    lastName: company.ownerLastName ?? undefined,
-    logoUrl: company.logoPublicUrl ?? undefined,
-    middleName: company.ownerMiddleName ?? undefined,
-    name: company.name,
-    nonIndividualType: company.organizationType ?? undefined,
-    nonIndividualTypeOther: company.organizationTypeOther ?? undefined,
-    plan: "Accounting + Inventory",
-    primaryContact: GetPrimaryContact(company),
-    reportEndDate: GetDateInputValue(company.reportEndDate),
-    reportStartDate: GetDateInputValue(company.reportStartDate),
-    status: GetWorkspaceCompanyStatus(company),
-    taxpayerType:
-      company.taxpayerType === "INDIVIDUAL" ? "individual" : "non-individual",
-    tin: company.tin ?? undefined,
-    totalBranches: company.totalUnits ?? 0,
-    totalUsers: company.totalUsers ?? 0,
-    website: company.website ?? undefined,
-  };
+export async function CreateWorkspaceCompany(
+	accessToken: string,
+	values: WorkspaceCompanyFormValues,
+): Promise<WorkspaceCompanyRecord> {
+	const company = await CreateWorkspaceCompanyFromRequest(
+		accessToken,
+		MapWorkspaceCompanyFormToCreateRequest(values),
+	);
+
+	if (!values.logoFile) {
+		return company;
+	}
+
+	return UploadWorkspaceCompanyLogo(accessToken, company.id, values.logoFile);
 }
 
-function GetWorkspaceCompanyStatus(
-  company: WorkspaceCompanyApiRecord,
-): WorkspaceCompanyStatus {
-  if (!company.isActive || company.status === "SUSPENDED") {
-    return "Inactive";
-  }
+export async function CreateWorkspaceCompanyFromRequest(
+	accessToken: string,
+	payload: CreateWorkspaceCompanyApiRequest,
+): Promise<WorkspaceCompanyRecord> {
+	const response = await ApiClient.post<WorkspaceCompanyApiRecord>(
+		"/workspace/companies",
+		payload,
+		{
+			headers: GetAuthorizationHeaders(accessToken),
+		},
+	);
 
-  if (company.status === "ACTIVE") {
-    return "Active";
-  }
-
-  return "Pending";
+	return MapWorkspaceCompanyApiRecord(response.data);
 }
 
-function GetWorkspaceCompanyType(
-  company: WorkspaceCompanyApiRecord,
-): WorkspaceCompanyType {
-  if (company.taxpayerType === "INDIVIDUAL") {
-    return "Individual";
-  }
+export async function UploadWorkspaceCompanyLogo(
+	accessToken: string,
+	companyId: string,
+	file: File,
+): Promise<WorkspaceCompanyRecord> {
+	const formData = new FormData();
+	formData.append("logo", file);
 
-  const type = company.organizationType;
+	const response = await ApiClient.post<{
+		message: string;
+		company: WorkspaceCompanyApiRecord;
+	}>(`/workspace/companies/${companyId}/logo`, formData, {
+		headers: {
+			...GetAuthorizationHeaders(accessToken),
+			"Content-Type": "multipart/form-data",
+		},
+	});
 
-  if (
-    type === "Corporation" ||
-    type === "Partnership" ||
-    type === "Association" ||
-    type === "Non Stock" ||
-    type === "Non Profit Organization" ||
-    type === "Others"
-  ) {
-    return type;
-  }
-
-  return "Corporation";
-}
-
-function GetPrimaryContact(company: WorkspaceCompanyApiRecord) {
-  if (company.taxpayerType === "INDIVIDUAL") {
-    return [
-      company.ownerFirstName,
-      company.ownerMiddleName,
-      company.ownerLastName,
-    ]
-      .filter(Boolean)
-      .join(" ");
-  }
-
-  return company.name;
-}
-
-function GetInitials(value: string) {
-  const initials = value
-    .split(/\s+/)
-    .map((part) => part[0])
-    .filter(Boolean)
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
-  return initials || "CO";
-}
-
-function FormatDate(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
-
-function GetDateInputValue(value: string | null) {
-  if (!value) {
-    return undefined;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return undefined;
-  }
-
-  return date.toISOString().slice(0, 10);
+	return MapWorkspaceCompanyApiRecord(response.data.company);
 }

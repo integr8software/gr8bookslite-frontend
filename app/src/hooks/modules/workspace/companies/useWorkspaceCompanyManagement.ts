@@ -26,7 +26,10 @@ import {
 } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
-import { GetWorkspaceCompanies } from "@/app/src/services/modules/workspace/companies/WorkspaceCompanyApi";
+import {
+	CreateWorkspaceCompany,
+	GetWorkspaceCompanies,
+} from "@/app/src/services/modules/workspace/companies/WorkspaceCompanyApi";
 import { WorkspaceCompanyQueryKeys } from "@/app/src/services/modules/workspace/companies/WorkspaceCompanyQueryKeys";
 import type {
 	WorkspaceBranchUserRecord,
@@ -37,6 +40,7 @@ import type {
 	WorkspaceCompanyBranchRecord,
 	WorkspaceCompanyBranchTableColumnKey,
 	WorkspaceCompanyBranchTableRecord,
+	WorkspaceCompanyFormValues,
 	WorkspaceCompanyPlan,
 	WorkspaceCompanyRecord,
 	WorkspaceCompanyStatus,
@@ -57,7 +61,7 @@ type WorkspaceCompanyManagementStoreState = {
 	users: WorkspaceCompanyUserRecord[];
 	addBranch: (branch: WorkspaceCompanyBranchRecord) => void;
 	addBranchUser: (user: WorkspaceBranchUserRecord) => void;
-	addCompany: (company: WorkspaceCompanyRecord) => void;
+	addCompany: (values: WorkspaceCompanyFormValues) => Promise<WorkspaceCompanyRecord>;
 	addCompanyUser: (user: WorkspaceCompanyUserRecord) => void;
 	updateBranch: (branch: WorkspaceCompanyBranchRecord) => void;
 	updateBranchUser: (user: WorkspaceBranchUserRecord) => void;
@@ -146,13 +150,26 @@ export function useWorkspaceCompanyManagementStore<
 	}
 
 	const addCompanyMutation = useMutation({
-		mutationFn: async (company: WorkspaceCompanyRecord) => company,
+		mutationFn: async (values: WorkspaceCompanyFormValues) => {
+			if (!accessToken) {
+				throw new Error("Sign in again before creating a company.");
+			}
+
+			return CreateWorkspaceCompany(accessToken, values);
+		},
 		onSuccess: (company) => {
-			setCompanies((companies) => [...companies, company]);
+			setCompanies((companies) => [company, ...companies]);
+			void queryClient.invalidateQueries({
+				queryKey: WorkspaceCompanyQueryKeys.companies(),
+			});
 			toast.success("Company created.");
 		},
-		onError: () => {
-			toast.error("Could not create company. Please try again.");
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not create company. Please try again.",
+			);
 		},
 	});
 	const updateCompanyMutation = useMutation({
@@ -241,7 +258,7 @@ export function useWorkspaceCompanyManagementStore<
 		() => ({
 			addBranch: (branch) => addBranchMutation.mutate(branch),
 			addBranchUser: (user) => addBranchUserMutation.mutate(user),
-			addCompany: (company) => addCompanyMutation.mutate(company),
+			addCompany: (values) => addCompanyMutation.mutateAsync(values),
 			addCompanyUser: (user) => addCompanyUserMutation.mutate(user),
 			branchUsers: branchUsersQuery.data ?? EmptyWorkspaceBranchUsers,
 			branches: branchesQuery.data ?? EmptyWorkspaceCompanyBranches,

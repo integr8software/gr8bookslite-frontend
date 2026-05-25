@@ -1,9 +1,6 @@
 export type WorkspaceCompanyStatus = "Active" | "Inactive" | "Pending";
 
-export type WorkspaceCompanyPlan =
-  | "Accounting"
-  | "Inventory"
-  | "Accounting + Inventory";
+export type WorkspaceCompanyPlan = string;
 
 export type WorkspaceCompanyType =
   | "Individual"
@@ -58,6 +55,8 @@ export type WorkspaceCompanyFormValues = {
   billingExpiryMonth: string;
   billingExpiryYear: string;
   billingPaymentMethodId: string;
+  billingPlanCode: string;
+  billingCycle: "MONTHLY" | "YEARLY";
   companyName: string;
   contactNumber: string;
   email: string;

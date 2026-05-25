@@ -23,7 +23,7 @@ export function OnboardingPricingHero({
 
       <div className="relative flex max-w-4xl flex-col items-center justify-center text-center">
         <h2 className="max-w-5xl text-balance text-[2.55rem] font-semibold leading-[0.98] tracking-[-0.06em] text-offwhite sm:text-6xl lg:text-[4rem]">
-          Start with a 15-days free trial after choosing your plan.
+          Start -with a 15days free trial after choosing your plan.
         </h2>
         <p className="mt-7 max-w-3xl text-center text-sm leading-7 text-offwhite/60 sm:text-lg sm:leading-8">
           Explore the available plans below. Every option begins with a free

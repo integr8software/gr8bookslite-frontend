@@ -26,7 +26,6 @@ import {
 	createWorkspaceCompanyBranchFormValues,
 	createWorkspaceCompanyBranchFromForm,
 	createWorkspaceCompanyFormValues,
-	createWorkspaceCompanyFromForm,
 	createWorkspaceCompanyUserFormValues,
 	createWorkspaceCompanyUserFromForm,
 	getNextWorkspaceCompanyStatus,
@@ -136,6 +135,11 @@ export function useWorkspaceCompanyAction() {
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
+	function updateLogoFile(file: File | null) {
+		setValues((current) => ({ ...current, logoFile: file }));
+		setErrors((current) => ({ ...current, logoName: undefined }));
+	}
+
 	function handleInputChange(
 		event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
 	) {
@@ -154,7 +158,7 @@ export function useWorkspaceCompanyAction() {
 			return;
 		}
 
-		saveCompany();
+		void saveCompany();
 	}
 
 	function validateCompany() {
@@ -168,15 +172,19 @@ export function useWorkspaceCompanyAction() {
 		return true;
 	}
 
-	function saveCompany() {
+	async function saveCompany() {
 		if (mode === "edit" && existingCompany) {
 			updateCompany(updateWorkspaceCompanyFromForm(existingCompany, values));
 			router.push(companyHref);
 			return;
 		}
 
-		addCompany(createWorkspaceCompanyFromForm(values));
-		router.push(WorkspaceCompaniesHref);
+		try {
+			await addCompany(values);
+			router.push(WorkspaceCompaniesHref);
+		} catch {
+			// The mutation owns the toast message; keep the user on the form.
+		}
 	}
 
 	return {
@@ -190,6 +198,7 @@ export function useWorkspaceCompanyAction() {
 		needsRecord: mode === "edit",
 		saveCompany,
 		updateField,
+		updateLogoFile,
 		validateCompany,
 		values,
 	};

@@ -27,7 +27,9 @@ export const InitialWorkspaceCompanyFormValues: WorkspaceCompanyFormValues = {
 	billingEmail: "",
 	billingExpiryMonth: "",
 	billingExpiryYear: "",
-	billingPaymentMethodId: "current-card",
+	billingPaymentMethodId: "setup-later",
+	billingPlanCode: "",
+	billingCycle: "MONTHLY",
 	companyName: "",
 	contactNumber: "",
 	email: "",
@@ -351,7 +353,9 @@ export function createWorkspaceCompanyFormValues(
 		billingEmail: company.email,
 		billingExpiryMonth: "",
 		billingExpiryYear: "",
-		billingPaymentMethodId: company.billingPaymentMethodId ?? "current-card",
+		billingPaymentMethodId: company.billingPaymentMethodId ?? "setup-later",
+		billingPlanCode: "",
+		billingCycle: "MONTHLY",
 		companyName: taxpayerType === "non-individual" ? company.name : "",
 		contactNumber: company.contactNumber,
 		email: company.email,
@@ -478,6 +482,9 @@ export function validateWorkspaceCompanyForm(
 	if (!values.tin.trim()) errors.tin = "TIN is required.";
 	if (!values.logoName.trim() && !values.logoUrl.trim()) {
 		errors.logoName = "Upload a logo image.";
+	}
+	if (!values.billingPlanCode.trim()) {
+		errors.billingPlanCode = "Select a company plan.";
 	}
 	if (!values.reportStartDate) {
 		errors.reportStartDate = "Report start date is required.";
@@ -688,6 +695,7 @@ function trimCompanyValues(
 		billingExpiryMonth: values.billingExpiryMonth.trim(),
 		billingExpiryYear: values.billingExpiryYear.trim(),
 		billingPaymentMethodId: values.billingPaymentMethodId.trim(),
+		billingPlanCode: values.billingPlanCode.trim(),
 		companyName: values.companyName.trim(),
 		contactNumber: values.contactNumber.trim(),
 		email: values.email.trim(),

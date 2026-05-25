@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Building2, CreditCard, ImageUp, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Building2, CreditCard, ImageUp, LoaderCircle, X } from "lucide-react";
 import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
+import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { OnboardingNonIndividualTypeOptions } from "@/app/src/data/onboarding/OnboardingData";
+import { useBillingPaymentMethodsQuery } from "@/app/src/hooks/billing/useBillingPaymentMethodsQuery";
+import { useBillingPlansQuery } from "@/app/src/hooks/billing/useBillingPlansQuery";
 import { useWorkspaceCompanyAction } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyAction";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import type {
+	BillingPaymentMethod,
+	BillingPlan,
+} from "@/app/src/data/billing/BillingTypes";
 import type {
 	WorkspaceCompanyFormErrors,
 	WorkspaceCompanyFormValues,
@@ -21,32 +29,38 @@ import {
 	WorkspaceCompanyFieldClassName,
 	WorkspaceCompanySection,
 } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyFormPrimitives";
+import {
+	WorkspaceCompanyAvatar,
+	WorkspacePlanBadge,
+	WorkspaceStatusBadge,
+	WorkspaceTextBadge,
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyBadges";
 import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
-import { WorkspaceBillingImpactConfirmDialog } from "@/app/src/ui/modules/workspace/shared/WorkspaceBillingImpactConfirmDialog";
 
 const CompanyFormId = "workspace-company-form";
-const WorkspaceBillingPaymentMethods = [
-	{
-		id: "current-card",
-		label: "Use current PayMongo card - Visa ending 4242",
-	},
-	{
-		id: "card-visa-1881",
-		label: "PayMongo Visa ending 1881",
-	},
-	{
-		id: "card-mastercard-5820",
-		label: "PayMongo Mastercard ending 5820",
-	},
-	{
-		id: "new-paymongo-card",
-		label: "Add new PayMongo card",
-	},
-] as const;
+const SetupLaterPaymentMethod = {
+	id: "setup-later",
+	label: "Set up billing after creating company",
+};
+const NewPayMongoCardPaymentMethod = {
+	id: "new-paymongo-card",
+	label: "Add new PayMongo card",
+};
 
 export function WorkspaceCompanyAction() {
 	const action = useWorkspaceCompanyAction();
 	const [isBillingConfirmOpen, setIsBillingConfirmOpen] = useState(false);
+	const storedAccessToken = useAppStore((state) => state.accessToken);
+	const accessToken = storedAccessToken ?? GetAccessToken();
+	const plansQuery = useBillingPlansQuery({
+		accessToken,
+		scope: "ADDITIONAL_COMPANY",
+	});
+	const paymentMethodsQuery = useBillingPaymentMethodsQuery({ accessToken });
+	const paymentMethodOptions = useMemo(
+		() => getPaymentMethodOptions(paymentMethodsQuery.data?.paymentMethods ?? []),
+		[paymentMethodsQuery.data?.paymentMethods],
+	);
 
 	if (action.needsRecord && !action.existingCompany) {
 		return (
@@ -70,12 +84,20 @@ export function WorkspaceCompanyAction() {
 				eyebrowLabel="Workspace directory"
 				formId={CompanyFormId}
 				isReadonly={false}
+				isPending={action.isMutating}
 				mode={action.mode}
 				saveLabel="Save Company"
 				title={action.mode === "edit" ? "Edit Company" : "Add Company"}
 			/>
+			{action.mode === "edit" && action.existingCompany ? (
+				<EditCompanyOverview company={action.existingCompany} />
+			) : null}
 			<CompanyDetailsFields
 				errors={action.errors}
+				isLoadingPaymentMethods={paymentMethodsQuery.isLoading}
+				isLoadingPlans={plansQuery.isLoading}
+				paymentMethodOptions={paymentMethodOptions}
+				plans={plansQuery.data?.plans ?? []}
 				showBillingDetails={action.mode === "add"}
 				values={action.values}
 				onInputChange={action.handleInputChange}
@@ -92,32 +114,117 @@ export function WorkspaceCompanyAction() {
 					}
 				}}
 				onUpdateField={action.updateField}
+				onUpdateLogoFile={action.updateLogoFile}
 			/>
-			<WorkspaceBillingImpactConfirmDialog
+			<CompanyCreateConfirmDialog
 				isOpen={isBillingConfirmOpen}
 				isPending={action.isMutating}
-				title="Create company?"
 				resourceName={action.values.companyName || "this company"}
-				description="Creating this company may affect workspace billing, including company access costs, payments, or deductions. Confirm before saving the company."
 				onCancel={() => setIsBillingConfirmOpen(false)}
-				onConfirm={() => {
-					setIsBillingConfirmOpen(false);
-					action.saveCompany();
+				onConfirm={async () => {
+					await action.saveCompany();
 				}}
 			/>
 		</section>
 	);
 }
 
+function EditCompanyOverview({
+	company,
+}: {
+	company: NonNullable<ReturnType<typeof useWorkspaceCompanyAction>["existingCompany"]>;
+}) {
+	return (
+		<section className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm sm:p-6">
+			<div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+				<div className="flex min-w-0 items-start gap-4">
+					<WorkspaceCompanyAvatar
+						initials={company.initials}
+						logoUrl={company.logoUrl}
+						name={company.name}
+					/>
+					<div className="min-w-0">
+						<div className="flex flex-wrap items-center gap-2">
+							<WorkspaceStatusBadge status={company.status} />
+							<WorkspacePlanBadge plan={company.plan} />
+							<WorkspaceTextBadge>{company.companyType}</WorkspaceTextBadge>
+						</div>
+						<h2 className="mt-3 break-words text-xl font-semibold text-darknavy">
+							{company.name}
+						</h2>
+						<p className="mt-1 break-words text-sm leading-6 text-darknavy/58">
+							{company.address || "No address yet"}
+						</p>
+					</div>
+				</div>
+				<div className="grid grid-cols-2 gap-3 sm:min-w-72">
+					<OverviewMetric label="Branches" value={company.totalBranches ?? 0} />
+					<OverviewMetric label="Users" value={company.totalUsers ?? 0} />
+				</div>
+			</div>
+
+			<div className="mt-6 grid gap-x-6 gap-y-4 border-t border-darknavy/10 pt-5 sm:grid-cols-2 xl:grid-cols-4">
+				<OverviewDetail label="Primary Contact" value={company.primaryContact} />
+				<OverviewDetail label="Email" value={company.email} />
+				<OverviewDetail label="Contact No." value={company.contactNumber} />
+				<OverviewDetail label="TIN" value={company.tin} />
+				<OverviewDetail label="Report Start" value={company.reportStartDate} />
+				<OverviewDetail label="Report End" value={company.reportEndDate} />
+				<OverviewDetail label="Website" value={company.website} />
+				<OverviewDetail label="Created" value={company.createdAt} />
+			</div>
+		</section>
+	);
+}
+
+function OverviewMetric({ label, value }: { label: string; value: number }) {
+	return (
+		<div className="rounded-lg border border-darknavy/10 bg-offwhite/60 p-4">
+			<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">
+				{label}
+			</p>
+			<p className="mt-2 text-2xl font-semibold text-darknavy">{value}</p>
+		</div>
+	);
+}
+
+function OverviewDetail({
+	label,
+	value,
+}: {
+	label: string;
+	value?: string;
+}) {
+	return (
+		<div className="min-w-0">
+			<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">
+				{label}
+			</p>
+			<p className="mt-1 break-words text-sm font-semibold text-darknavy">
+				{value?.trim() || "-"}
+			</p>
+		</div>
+	);
+}
+
 function CompanyDetailsFields({
 	errors,
+	isLoadingPaymentMethods,
+	isLoadingPlans,
+	paymentMethodOptions,
+	plans,
 	showBillingDetails,
 	values,
 	onInputChange,
 	onSubmit,
 	onUpdateField,
+	onUpdateLogoFile,
 }: {
 	errors: WorkspaceCompanyFormErrors;
+	isLoadingPaymentMethods: boolean;
+	isLoadingPlans: boolean;
+	paymentMethodOptions: { id: string; label: string }[];
+	plans: BillingPlan[];
 	showBillingDetails: boolean;
 	values: WorkspaceCompanyFormValues;
 	onInputChange: (
@@ -128,6 +235,7 @@ function CompanyDetailsFields({
 		field: keyof WorkspaceCompanyFormValues,
 		value: string,
 	) => void;
+	onUpdateLogoFile: (file: File | null) => void;
 }) {
 	const logoInputRef = useRef<HTMLInputElement | null>(null);
 	const [logoInputKey, setLogoInputKey] = useState(0);
@@ -164,6 +272,7 @@ function CompanyDetailsFields({
 		}
 
 		onUpdateField("logoName", file.name);
+		onUpdateLogoFile(file);
 		const nextPreviewUrl = URL.createObjectURL(file);
 		onUpdateField("logoUrl", nextPreviewUrl);
 		updateLogoPreviewUrl(nextPreviewUrl);
@@ -172,6 +281,7 @@ function CompanyDetailsFields({
 	function handleLogoRemove() {
 		onUpdateField("logoName", "");
 		onUpdateField("logoUrl", "");
+		onUpdateLogoFile(null);
 		updateLogoPreviewUrl("");
 		setLogoInputKey((current) => current + 1);
 	}
@@ -350,6 +460,16 @@ function CompanyDetailsFields({
 				</div>
 			</WorkspaceCompanySection>
 
+			{showBillingDetails ? (
+				<CompanyPlanSection
+					error={errors.billingPlanCode}
+					isLoading={isLoadingPlans}
+					plans={plans}
+					values={values}
+					onInputChange={onInputChange}
+				/>
+			) : null}
+
 			<WorkspaceCompanySection
 				title="Contact"
 				description="Workspace admins use these fields to identify the company owner and billing contact."
@@ -461,7 +581,7 @@ function CompanyDetailsFields({
 			{showBillingDetails ? (
 				<WorkspaceCompanySection
 					title="Billing Details"
-					description="Choose a saved PayMongo payment method or add card details for the new company."
+					description="Billing can be attached after the company is created, or connected with a PayMongo payment method when tokenization is available."
 					className="mt-5"
 				>
 					<div className="grid gap-4">
@@ -478,8 +598,8 @@ function CompanyDetailsFields({
 										PayMongo payment method
 									</p>
 									<p className="mt-1 text-sm leading-6 text-darknavy/60">
-										Use the selected card for this company
-										workspace billing.
+										Choose how billing should be handled
+										for this new company.
 									</p>
 								</div>
 							</div>
@@ -497,18 +617,21 @@ function CompanyDetailsFields({
 											WorkspaceCompanyFieldClassName
 										}
 									>
-										{WorkspaceBillingPaymentMethods.map(
-											(method) => (
-												<option
-													key={method.id}
-													value={method.id}
-												>
-													{method.label}
-												</option>
-											),
-										)}
+										{paymentMethodOptions.map((method) => (
+											<option
+												key={method.id}
+												value={method.id}
+											>
+												{method.label}
+											</option>
+										))}
 									</select>
 								</WorkspaceCompanyField>
+								<p className="self-end text-sm leading-6 text-darknavy/55">
+									{isLoadingPaymentMethods
+										? "Loading saved PayMongo cards..."
+										: "Saved cards from previous company billing setup are available here."}
+								</p>
 							</div>
 						</div>
 
@@ -648,6 +771,99 @@ function CompanyDetailsFields({
 	);
 }
 
+function CompanyPlanSection({
+	error,
+	isLoading,
+	plans,
+	values,
+	onInputChange,
+}: {
+	error?: string;
+	isLoading: boolean;
+	plans: BillingPlan[];
+	values: WorkspaceCompanyFormValues;
+	onInputChange: (
+		event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+	) => void;
+}) {
+	const selectedPlan = plans.find((plan) => plan.code === values.billingPlanCode);
+	const price =
+		selectedPlan?.pricing[
+			values.billingCycle === "YEARLY" ? "yearly" : "monthly"
+		];
+
+	return (
+		<WorkspaceCompanySection
+			title="Plan"
+			description="Choose the plan and billing cycle that should be attached to this company subscription."
+			className="mt-5"
+		>
+			<div className="grid gap-4 lg:grid-cols-3">
+				<div className="lg:col-span-2">
+					<WorkspaceCompanyField
+						label="Company Plan"
+						error={error}
+						required
+					>
+						<select
+							name="billingPlanCode"
+							value={values.billingPlanCode}
+							onChange={onInputChange}
+							className={WorkspaceCompanyFieldClassName}
+						>
+							{isLoading ? (
+								<option value="">
+									Loading plans...
+								</option>
+							) : null}
+							<option value="" disabled>
+								Select plan
+							</option>
+							{plans.map((plan) => (
+								<option key={plan.code} value={plan.code}>
+									{plan.name}
+								</option>
+							))}
+							{!isLoading && values.billingPlanCode && !selectedPlan ? (
+								<option value={values.billingPlanCode}>
+									{values.billingPlanCode}
+								</option>
+							) : null}
+						</select>
+					</WorkspaceCompanyField>
+				</div>
+				<WorkspaceCompanyField label="Billing Cycle">
+					<select
+						name="billingCycle"
+						value={values.billingCycle}
+						onChange={onInputChange}
+						className={WorkspaceCompanyFieldClassName}
+					>
+						<option value="MONTHLY">Monthly</option>
+						<option value="YEARLY">Annual</option>
+					</select>
+				</WorkspaceCompanyField>
+				<div className="rounded-xl border border-skyblue/25 bg-skyblue/10 p-4 lg:col-span-3">
+					<p className="text-sm font-semibold text-darknavy">
+						{selectedPlan?.name ?? "No plan selected"}
+					</p>
+					<p className="mt-1 text-2xl font-bold text-darknavy">
+						{formatPlanPrice(price?.amountInCents ?? null, selectedPlan)}
+						<span className="ml-2 text-sm font-medium text-darknavy/55">
+							/{values.billingCycle === "YEARLY" ? "year" : "month"}
+						</span>
+					</p>
+					{selectedPlan?.description ? (
+						<p className="mt-2 text-sm leading-6 text-darknavy/60">
+							{selectedPlan.description}
+						</p>
+					) : null}
+				</div>
+			</div>
+		</WorkspaceCompanySection>
+	);
+}
+
 function CompanyLogoField({
 	error,
 	fileName,
@@ -724,4 +940,149 @@ function CompanyLogoField({
 			) : null}
 		</div>
 	);
+}
+
+function CompanyCreateConfirmDialog({
+	isOpen,
+	isPending,
+	resourceName,
+	onCancel,
+	onConfirm,
+}: {
+	isOpen: boolean;
+	isPending: boolean;
+	resourceName: string;
+	onCancel: () => void;
+	onConfirm: () => Promise<void> | void;
+	}) {
+		const [confirmText, setConfirmText] = useState("");
+		const [isSaving, setIsSaving] = useState(false);
+		const canConfirm = confirmText.trim().toLowerCase() === "confirm company";
+		const isConfirmPending = isPending || isSaving;
+
+	if (!isOpen) {
+		return null;
+	}
+
+	function handleCancel() {
+		setConfirmText("");
+		onCancel();
+	}
+
+	async function handleConfirm() {
+		if (!canConfirm || isConfirmPending) {
+			return;
+		}
+
+		setIsSaving(true);
+
+		try {
+			await onConfirm();
+		} finally {
+			setIsSaving(false);
+		}
+	}
+
+	return (
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-darknavy/45 px-4 backdrop-blur-sm">
+			<div className="w-full max-w-lg rounded-2xl border border-darknavy/10 bg-white p-6 shadow-2xl">
+				<p className="text-lg font-bold text-darknavy">
+					Create company?
+				</p>
+				<p className="mt-2 text-sm leading-6 text-darknavy/65">
+					Creating {resourceName} may affect workspace billing, payments,
+					or deductions. Type{" "}
+					<span className="font-semibold text-darknavy">
+						confirm company
+					</span>{" "}
+					before saving.
+				</p>
+				<div className="mt-5">
+					<label
+						htmlFor="confirm-company"
+						className="mb-2 block text-sm font-semibold text-darknavy"
+					>
+						Confirmation
+					</label>
+					<input
+						id="confirm-company"
+						value={confirmText}
+						onChange={(event) => setConfirmText(event.target.value)}
+						className={WorkspaceCompanyFieldClassName}
+						placeholder="confirm company"
+						autoFocus
+					/>
+				</div>
+				<div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+					<button
+							type="button"
+							onClick={handleCancel}
+							disabled={isConfirmPending}
+							className="inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white px-5 text-sm font-semibold text-darknavy/70 transition hover:bg-offwhite disabled:cursor-not-allowed disabled:opacity-60"
+						>
+							Cancel
+					</button>
+					<button
+							type="button"
+							onClick={handleConfirm}
+							disabled={!canConfirm || isConfirmPending}
+							className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-skyblue px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-skyblue/90 disabled:cursor-not-allowed disabled:bg-darknavy/25"
+						>
+							{isConfirmPending ? (
+								<LoaderCircle
+									className="h-4 w-4 animate-spin"
+									aria-hidden="true"
+								/>
+							) : null}
+							{isConfirmPending ? "Saving..." : "Save Company"}
+						</button>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function getPaymentMethodOptions(paymentMethods: BillingPaymentMethod[]) {
+	const savedMethods = paymentMethods
+		.filter((method) => method.externalPaymentMethodId)
+		.map((method) => ({
+			id: method.externalPaymentMethodId,
+			label: formatPaymentMethodLabel(method),
+		}));
+
+	return [
+		SetupLaterPaymentMethod,
+		...savedMethods,
+		NewPayMongoCardPaymentMethod,
+	];
+}
+
+function formatPaymentMethodLabel(method: BillingPaymentMethod) {
+	const brand = method.brand ? titleCase(method.brand) : "PayMongo card";
+	const last4 = method.last4 ? `ending ${method.last4}` : "saved card";
+	const suffix =
+		method.expMonth && method.expYear
+			? ` · Expires ${String(method.expMonth).padStart(2, "0")}/${method.expYear}`
+			: "";
+
+	return `${brand} ${last4}${suffix}`;
+}
+
+function formatPlanPrice(amountInCents: number | null, plan?: BillingPlan) {
+	if (amountInCents === null) {
+		return "Price pending";
+	}
+
+	return new Intl.NumberFormat("en-PH", {
+		currency: plan?.currency ?? "PHP",
+		style: "currency",
+	}).format(amountInCents / 100);
+}
+
+function titleCase(value: string) {
+	return value
+		.toLowerCase()
+		.split(/[\s_-]+/)
+		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+		.join(" ");
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
 	getCoreRowModel,
 	getPaginationRowModel,
@@ -10,12 +11,15 @@ import {
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import { MasterPlanAndPackageTableColumns } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
+import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
-	MasterPlanAndPackageRecords,
 	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackagePricing,
+	formatMasterPlanAndPackageScope,
 	getMasterPlanAndPackageFeatureLabels,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
+import { getMasterPlanAndPackages } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageApi";
+import { MasterPlanAndPackageQueryKeys } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageQueryKeys";
 import type {
 	MasterPlanAndPackageRecord,
 	MasterPlanAndPackageTableColumnKey,
@@ -27,10 +31,16 @@ const InitialPagination: PaginationState = {
 };
 
 export function useMasterPlanAndPackageListPage() {
-	const [records, setRecords] = useState(MasterPlanAndPackageRecords);
+	const [accessToken] = useState(() => GetAccessToken());
 	const [query, setQuery] = useState("");
 	const [pagination, setPagination] =
 		useState<PaginationState>(InitialPagination);
+	const plansQuery = useQuery({
+		queryKey: MasterPlanAndPackageQueryKeys.lists(),
+		queryFn: async () => getMasterPlanAndPackages(accessToken as string),
+		enabled: Boolean(accessToken),
+	});
+	const records = useMemo(() => plansQuery.data?.plans ?? [], [plansQuery.data]);
 	const filteredRecords = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
@@ -44,6 +54,7 @@ export function useMasterPlanAndPackageListPage() {
 				record.code,
 				record.description,
 				record.status,
+				formatMasterPlanAndPackageScope(record.scope),
 				`${record.trialDays} trial days`,
 				formatMasterPlanAndPackagePricing(record.pricing),
 				formatMasterPlanAndPackageScalePricing(record.scalePricing),
@@ -93,10 +104,7 @@ export function useMasterPlanAndPackageListPage() {
 		).length;
 		const addOnScalePlans = records.filter((record) =>
 			Object.values(record.scalePricing).some(
-				(scaleRules) =>
-					Object.values(scaleRules).some(
-						(scaleRule) => scaleRule.addOnPrice > 0,
-					),
+				(scaleRule) => scaleRule.addOnPrice > 0,
 			),
 		).length;
 		const enabledModules = new Set(
@@ -120,19 +128,7 @@ export function useMasterPlanAndPackageListPage() {
 			return;
 		}
 
-		const nextStatus =
-			record.status === "Active" ? "Inactive" : "Active";
-
-		setRecords((current) =>
-			current.map((candidate) =>
-				candidate.id === recordId
-					? { ...candidate, status: nextStatus }
-					: candidate,
-			),
-		);
-		toast.success(
-			nextStatus === "Active" ? "Plan activated." : "Plan inactivated.",
-		);
+		toast("Status update is not connected yet. Open Edit for plan changes.");
 	}
 
 	function resetFilters() {
@@ -141,6 +137,7 @@ export function useMasterPlanAndPackageListPage() {
 	}
 
 	return {
+		isLoading: plansQuery.isLoading,
 		query,
 		resetFilters,
 		setQuery,

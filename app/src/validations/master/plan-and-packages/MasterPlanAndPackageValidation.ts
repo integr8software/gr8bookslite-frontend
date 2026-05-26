@@ -31,59 +31,44 @@ const MasterPlanAndPackageFormSchema = z
 			.min(10, "Description must be at least 10 characters."),
 		featureIds: z.array(z.string()).min(1, "Select at least one module feature."),
 		id: z.string().optional(),
+		branchAddOnPrice: z
+			.number()
+			.min(0, "Branch add-on price cannot be negative."),
+		branchIncludedFree: z
+			.number()
+			.int()
+			.min(1, "Included branches must be at least 1."),
+		branchReductionTiers: z.array(ReductionTierSchema),
 		monthlyBasePrice: z
 			.number()
 			.min(0, "Monthly base price cannot be negative."),
-		monthlyBranchAddOnPrice: z
-			.number()
-			.min(0, "Monthly branch add-on price cannot be negative."),
-		monthlyBranchIncludedFree: z
-			.number()
-			.int()
-			.min(1, "Monthly included branches must be at least 1."),
-		monthlyBranchReductionTiers: z.array(ReductionTierSchema),
 		monthlyPercentOff: z
 			.number()
 			.min(0, "Monthly percent off cannot be negative.")
 			.max(100, "Monthly percent off cannot exceed 100."),
-		monthlyUserAddOnPrice: z
-			.number()
-			.min(0, "Monthly user add-on price cannot be negative."),
-		monthlyUserIncludedFree: z
-			.number()
-			.int()
-			.min(1, "Monthly included users must be at least 1."),
-		monthlyUserReductionTiers: z.array(ReductionTierSchema),
 		name: z.string().trim().min(3, "Name must be at least 3 characters."),
+		scope: z.enum(["ONBOARDING", "ADDITIONAL_COMPANY"]),
 		status: z.enum(["Active", "Draft", "Inactive"]),
 		trialDays: z
 			.number()
 			.int()
 			.min(0, "Trial days cannot be negative.")
 			.max(365, "Trial days cannot exceed 365."),
+		userAddOnPrice: z
+			.number()
+			.min(0, "User add-on price cannot be negative."),
+		userIncludedFree: z
+			.number()
+			.int()
+			.min(1, "Included users must be at least 1."),
+		userReductionTiers: z.array(ReductionTierSchema),
 		yearlyBasePrice: z
 			.number()
 			.min(0, "Yearly base price cannot be negative."),
-		yearlyBranchAddOnPrice: z
-			.number()
-			.min(0, "Yearly branch add-on price cannot be negative."),
-		yearlyBranchIncludedFree: z
-			.number()
-			.int()
-			.min(1, "Yearly included branches must be at least 1."),
-		yearlyBranchReductionTiers: z.array(ReductionTierSchema),
 		yearlyPercentOff: z
 			.number()
 			.min(0, "Yearly percent off cannot be negative.")
 			.max(100, "Yearly percent off cannot exceed 100."),
-		yearlyUserAddOnPrice: z
-			.number()
-			.min(0, "Yearly user add-on price cannot be negative."),
-		yearlyUserIncludedFree: z
-			.number()
-			.int()
-			.min(1, "Yearly included users must be at least 1."),
-		yearlyUserReductionTiers: z.array(ReductionTierSchema),
 	})
 	.superRefine((values, context) => {
 		if (values.monthlyBasePrice <= 0) {
@@ -104,27 +89,15 @@ const MasterPlanAndPackageFormSchema = z
 
 		validateReductionTiers({
 			context,
-			name: "Monthly branch",
-			reductionTiers: values.monthlyBranchReductionTiers,
-			reductionTiersPath: "monthlyBranchReductionTiers",
+			name: "Branch",
+			reductionTiers: values.branchReductionTiers,
+			reductionTiersPath: "branchReductionTiers",
 		});
 		validateReductionTiers({
 			context,
-			name: "Monthly user",
-			reductionTiers: values.monthlyUserReductionTiers,
-			reductionTiersPath: "monthlyUserReductionTiers",
-		});
-		validateReductionTiers({
-			context,
-			name: "Yearly branch",
-			reductionTiers: values.yearlyBranchReductionTiers,
-			reductionTiersPath: "yearlyBranchReductionTiers",
-		});
-		validateReductionTiers({
-			context,
-			name: "Yearly user",
-			reductionTiers: values.yearlyUserReductionTiers,
-			reductionTiersPath: "yearlyUserReductionTiers",
+			name: "User",
+			reductionTiers: values.userReductionTiers,
+			reductionTiersPath: "userReductionTiers",
 		});
 	});
 

@@ -2,15 +2,19 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { MasterPlanAndPackagesHref } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
+import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
 	InitialMasterPlanAndPackageFormValues,
-	MasterPlanAndPackageRecords,
 	createMasterPlanAndPackageFormValues,
-	createMasterPlanAndPackageRecord,
-	getMasterPlanAndPackageById,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
+import {
+	createMasterPlanAndPackage,
+	getMasterPlanAndPackages,
+} from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageApi";
+import { MasterPlanAndPackageQueryKeys } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageQueryKeys";
 import type {
 	MasterPlanAndPackageFormErrors,
 	MasterPlanAndPackageFormValues,
@@ -27,26 +31,60 @@ export function useMasterPlanAndPackageFormPage({
 	recordId,
 }: UseMasterPlanAndPackageFormPageParams) {
 	const router = useRouter();
+	const queryClient = useQueryClient();
+	const [accessToken] = useState(() => GetAccessToken());
+	const plansQuery = useQuery({
+		queryKey: MasterPlanAndPackageQueryKeys.lists(),
+		queryFn: async () => getMasterPlanAndPackages(accessToken as string),
+		enabled: Boolean(accessToken) && mode === "edit",
+	});
+	const records = useMemo(() => plansQuery.data?.plans ?? [], [plansQuery.data]);
 	const record = useMemo(
-		() => (recordId ? getMasterPlanAndPackageById(recordId) : undefined),
-		[recordId],
+		() =>
+			recordId
+				? records.find((candidate) => candidate.id === recordId)
+				: undefined,
+		[recordId, records],
 	);
 	const [values, setValues] = useState<MasterPlanAndPackageFormValues>(() =>
-		mode === "edit" && record
-			? createMasterPlanAndPackageFormValues(record)
-			: InitialMasterPlanAndPackageFormValues,
+		InitialMasterPlanAndPackageFormValues,
 	);
 	const [errors, setErrors] = useState<MasterPlanAndPackageFormErrors>({});
-	const isMissingRecord = mode === "edit" && !record;
+	const [hasLocalChanges, setHasLocalChanges] = useState(false);
+	const createMutation = useMutation({
+		mutationFn: async (nextValues: MasterPlanAndPackageFormValues) =>
+			createMasterPlanAndPackage(accessToken as string, {
+				formValues: nextValues,
+			}),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: MasterPlanAndPackageQueryKeys.lists(),
+			});
+			toast.success("Plan created.");
+			router.push(MasterPlanAndPackagesHref);
+		},
+		onError: (error: Error) => {
+			toast.error(error.message || "Unable to save plan.");
+		},
+	});
+	const isMissingRecord = mode === "edit" && !plansQuery.isLoading && !record;
+	const activeValues = useMemo(() => {
+		if (mode === "edit" && record && !hasLocalChanges) {
+			return createMasterPlanAndPackageFormValues(record);
+		}
+
+		return values;
+	}, [hasLocalChanges, mode, record, values]);
 
 	function updateValues(nextValues: Partial<MasterPlanAndPackageFormValues>) {
+		setHasLocalChanges(true);
 		setValues((current) => ({ ...current, ...nextValues }));
 	}
 
 	function saveRecord() {
 		const nextErrors = validateMasterPlanAndPackageForm({
-			records: MasterPlanAndPackageRecords,
-			values,
+			records,
+			values: activeValues,
 		});
 
 		setErrors(nextErrors);
@@ -55,18 +93,28 @@ export function useMasterPlanAndPackageFormPage({
 			return;
 		}
 
-		createMasterPlanAndPackageRecord(values);
-		toast.success(mode === "edit" ? "Plan updated." : "Plan created.");
-		router.push(MasterPlanAndPackagesHref);
+		if (!accessToken) {
+			toast.error("Please sign in again before saving.");
+			return;
+		}
+
+		if (mode === "edit") {
+			toast("Editing plans is next. Create is connected first.");
+			return;
+		}
+
+		createMutation.mutate(activeValues);
 	}
 
 	return {
 		errors,
 		isMissingRecord,
+		isSaving: createMutation.isPending,
+		isLoadingRecord: plansQuery.isLoading,
 		mode,
 		record,
 		saveRecord,
 		updateValues,
-		values,
+		values: activeValues,
 	};
 }

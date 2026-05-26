@@ -1,18 +1,24 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Edit3, Package } from "lucide-react";
 import {
 	MasterPlanAndPackagesHref,
 	getMasterPlanAndPackageEditHref,
 } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
+import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
 	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackagePricing,
+	formatMasterPlanAndPackageScope,
 	getMasterPlanAndPackageFeatureLabels,
-	getMasterPlanAndPackageById,
 	getMasterPlanAndPackagePricingSupportingText,
 	getMasterPlanAndPackageScaleSupportingText,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
+import { getMasterPlanAndPackages } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageApi";
+import { MasterPlanAndPackageQueryKeys } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageQueryKeys";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -27,7 +33,29 @@ type MasterPlanAndPackageDetailsPageProps = {
 export function MasterPlanAndPackageDetailsPage({
 	recordId,
 }: MasterPlanAndPackageDetailsPageProps) {
-	const record = getMasterPlanAndPackageById(recordId);
+	const [accessToken] = useState(() => GetAccessToken());
+	const plansQuery = useQuery({
+		queryKey: MasterPlanAndPackageQueryKeys.lists(),
+		queryFn: async () => getMasterPlanAndPackages(accessToken as string),
+		enabled: Boolean(accessToken),
+	});
+	const record = useMemo(
+		() =>
+			plansQuery.data?.plans.find((candidate) => candidate.id === recordId),
+		[plansQuery.data, recordId],
+	);
+
+	if (plansQuery.isLoading) {
+		return (
+			<section className="grid gap-5">
+				<div className="h-36 animate-pulse rounded-lg border border-darknavy/10 bg-darknavy/[0.04]" />
+				<div className="grid gap-5 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+					<div className="h-80 animate-pulse rounded-lg border border-darknavy/10 bg-darknavy/[0.04]" />
+					<div className="h-80 animate-pulse rounded-lg border border-darknavy/10 bg-darknavy/[0.04]" />
+				</div>
+			</section>
+		);
+	}
 
 	if (!record) {
 		return (
@@ -71,6 +99,10 @@ export function MasterPlanAndPackageDetailsPage({
 				<div className="grid content-start gap-4">
 					<DetailPanel title="Plan Details">
 						<DetailLine label="Plan code" value={record.code} />
+						<DetailLine
+							label="Plan scope"
+							value={formatMasterPlanAndPackageScope(record.scope)}
+						/>
 						<DetailLine
 							label="Trial period"
 							value={`${record.trialDays} trial days`}

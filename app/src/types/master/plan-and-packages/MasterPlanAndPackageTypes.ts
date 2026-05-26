@@ -4,6 +4,8 @@ export type MasterPlanAndPackageScalePeriod = "monthly" | "yearly";
 
 export type MasterPlanAndPackageScaleUnit = "branch" | "user";
 
+export type MasterPlanAndPackageScope = "ONBOARDING" | "ADDITIONAL_COMPANY";
+
 export type MasterPlanAndPackageReductionTier = {
 	reductionPercent: number;
 	thresholdCount: number;
@@ -27,10 +29,7 @@ export type MasterPlanAndPackageScaleRules = Record<
 	MasterPlanAndPackageScaleRule
 >;
 
-export type MasterPlanAndPackageScalePricing = Record<
-	MasterPlanAndPackageScalePeriod,
-	MasterPlanAndPackageScaleRules
->;
+export type MasterPlanAndPackageScalePricing = MasterPlanAndPackageScaleRules;
 
 export type MasterPlanAndPackageFeatureOption = {
 	description: string;
@@ -47,6 +46,7 @@ export type MasterPlanAndPackageRecord = {
 	name: string;
 	pricing: MasterPlanAndPackagePricing;
 	scalePricing: MasterPlanAndPackageScalePricing;
+	scope: MasterPlanAndPackageScope;
 	status: MasterPlanAndPackageStatus;
 	trialDays: number;
 };
@@ -56,25 +56,20 @@ export type MasterPlanAndPackageFormValues = {
 	description: string;
 	featureIds: string[];
 	id?: string;
+	branchAddOnPrice: number;
+	branchIncludedFree: number;
+	branchReductionTiers: MasterPlanAndPackageReductionTier[];
 	monthlyBasePrice: number;
-	monthlyBranchAddOnPrice: number;
-	monthlyBranchIncludedFree: number;
-	monthlyBranchReductionTiers: MasterPlanAndPackageReductionTier[];
 	monthlyPercentOff: number;
-	monthlyUserAddOnPrice: number;
-	monthlyUserIncludedFree: number;
-	monthlyUserReductionTiers: MasterPlanAndPackageReductionTier[];
 	name: string;
+	scope: MasterPlanAndPackageScope;
 	status: MasterPlanAndPackageStatus;
 	trialDays: number;
+	userAddOnPrice: number;
+	userIncludedFree: number;
+	userReductionTiers: MasterPlanAndPackageReductionTier[];
 	yearlyBasePrice: number;
-	yearlyBranchAddOnPrice: number;
-	yearlyBranchIncludedFree: number;
-	yearlyBranchReductionTiers: MasterPlanAndPackageReductionTier[];
 	yearlyPercentOff: number;
-	yearlyUserAddOnPrice: number;
-	yearlyUserIncludedFree: number;
-	yearlyUserReductionTiers: MasterPlanAndPackageReductionTier[];
 };
 
 export type MasterPlanAndPackageFormErrors = Partial<

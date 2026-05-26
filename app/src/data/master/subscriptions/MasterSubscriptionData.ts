@@ -356,16 +356,16 @@ function getDiscountPercentForCount({
 function createMasterSubscriptionPlanFromPackage(
 	record: MasterPlanAndPackageRecord,
 ): MasterSubscriptionPlanRecord {
-	const monthlyScalePricing = record.scalePricing.monthly;
+	const scalePricing = record.scalePricing;
 
 	return {
 		billingCycle: "Monthly",
 		code: record.code,
 		description: record.description,
 		id: record.id,
-		includedBranches: monthlyScalePricing.branch.includedFreeCount,
+		includedBranches: scalePricing.branch.includedFreeCount,
 		includedCompanies: 1,
-		includedUsers: monthlyScalePricing.user.includedFreeCount,
+		includedUsers: scalePricing.user.includedFreeCount,
 		moduleIds: [...record.featureIds],
 		monthlyBasePrice: calculateMasterPlanAndPackageDiscountedPrice({
 			basePrice: record.pricing.monthlyBasePrice,
@@ -373,9 +373,9 @@ function createMasterSubscriptionPlanFromPackage(
 		}),
 		name: record.name,
 		pricing: {
-			branch: monthlyScalePricing.branch.addOnPrice,
+			branch: scalePricing.branch.addOnPrice,
 			company: 0,
-			user: monthlyScalePricing.user.addOnPrice,
+			user: scalePricing.user.addOnPrice,
 		},
 		status: record.status,
 	};
@@ -384,11 +384,11 @@ function createMasterSubscriptionPlanFromPackage(
 function createVolumeRulesFromPackage(
 	record: MasterPlanAndPackageRecord,
 ): MasterSubscriptionVolumeRuleRecord[] {
-	const monthlyScalePricing = record.scalePricing.monthly;
+	const scalePricing = record.scalePricing;
 
-	return (Object.keys(monthlyScalePricing) as MasterPlanAndPackageScaleUnit[])
+	return (Object.keys(scalePricing) as MasterPlanAndPackageScaleUnit[])
 		.flatMap((unit) =>
-			monthlyScalePricing[unit].reductionTiers.map((tier, index, tiers) => ({
+			scalePricing[unit].reductionTiers.map((tier, index, tiers) => ({
 				discountPercent: tier.reductionPercent,
 				endsAt: tiers[index + 1]?.thresholdCount
 					? tiers[index + 1].thresholdCount - 1

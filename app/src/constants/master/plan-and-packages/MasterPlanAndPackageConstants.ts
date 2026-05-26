@@ -2,6 +2,7 @@ import type { MainNavigationItem } from "@/app/src/data/shared/main-layout/MainL
 import { SidebarModuleNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarModuleRegistry";
 import type {
 	MasterPlanAndPackageFeatureOption,
+	MasterPlanAndPackageScope,
 	MasterPlanAndPackageScalePeriod,
 	MasterPlanAndPackageScaleUnit,
 	MasterPlanAndPackageStatus,
@@ -28,6 +29,16 @@ export const MasterPlanAndPackageStatusOptions = [
 	"Draft",
 	"Inactive",
 ] as const satisfies readonly MasterPlanAndPackageStatus[];
+
+export const MasterPlanAndPackageScopeOptions = [
+	"ONBOARDING",
+	"ADDITIONAL_COMPANY",
+] as const satisfies readonly MasterPlanAndPackageScope[];
+
+export const MasterPlanAndPackageScopeLabels = {
+	ONBOARDING: "New user onboarding",
+	ADDITIONAL_COMPANY: "Additional company",
+} as const satisfies Record<MasterPlanAndPackageScope, string>;
 
 export const MasterPlanAndPackageScaleUnits = [
 	"branch",

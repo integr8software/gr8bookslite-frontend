@@ -1,9 +1,8 @@
 import {
 	MasterPlanAndPackageFeatureOptions,
-	MasterPlanAndPackageScalePeriodLabels,
-	MasterPlanAndPackageScalePeriods,
 	MasterPlanAndPackageScaleUnitLabels,
 	MasterPlanAndPackageScaleUnits,
+	MasterPlanAndPackageScopeLabels,
 } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import type {
 	MasterPlanAndPackageFormValues,
@@ -12,7 +11,6 @@ import type {
 	MasterPlanAndPackageRecord,
 	MasterPlanAndPackageScalePricing,
 	MasterPlanAndPackageScaleRule,
-	MasterPlanAndPackageScaleRules,
 	MasterPlanAndPackageScaleUnit,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
@@ -44,7 +42,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			yearlyBasePrice: 4788,
 			yearlyPercentOff: 10,
 		},
-		scalePricing: createScalePricing({
+		scalePricing: {
 			branch: createScaleRule({
 				addOnPrice: 150,
 				includedFreeCount: 1,
@@ -58,7 +56,8 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 					{ reductionPercent: 10, thresholdCount: 25 },
 				],
 			}),
-		}),
+		},
+		scope: "ONBOARDING",
 		status: "Active",
 		trialDays: 14,
 	},
@@ -84,7 +83,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			yearlyBasePrice: 5040,
 			yearlyPercentOff: 12,
 		},
-		scalePricing: createScalePricing({
+		scalePricing: {
 			branch: createScaleRule({
 				addOnPrice: 120,
 				includedFreeCount: 8,
@@ -101,7 +100,8 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 					{ reductionPercent: 10, thresholdCount: 50 },
 				],
 			}),
-		}),
+		},
+		scope: "ONBOARDING",
 		status: "Active",
 		trialDays: 14,
 	},
@@ -129,7 +129,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			yearlyBasePrice: 7080,
 			yearlyPercentOff: 15,
 		},
-		scalePricing: createScalePricing({
+		scalePricing: {
 			branch: createScaleRule({
 				addOnPrice: 250,
 				includedFreeCount: 5,
@@ -146,7 +146,8 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 					{ reductionPercent: 15, thresholdCount: 50 },
 				],
 			}),
-		}),
+		},
+		scope: "ONBOARDING",
 		status: "Draft",
 		trialDays: 30,
 	},
@@ -169,7 +170,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			yearlyBasePrice: 3588,
 			yearlyPercentOff: 8,
 		},
-		scalePricing: createScalePricing({
+		scalePricing: {
 			branch: createScaleRule({
 				addOnPrice: 100,
 				includedFreeCount: 1,
@@ -183,7 +184,8 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 					{ reductionPercent: 10, thresholdCount: 20 },
 				],
 			}),
-		}),
+		},
+		scope: "ADDITIONAL_COMPANY",
 		status: "Inactive",
 		trialDays: 7,
 	},
@@ -208,7 +210,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			yearlyBasePrice: 5988,
 			yearlyPercentOff: 25,
 		},
-		scalePricing: createScalePricing({
+		scalePricing: {
 			branch: createScaleRule({
 				addOnPrice: 180,
 				includedFreeCount: 6,
@@ -227,7 +229,8 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 					{ reductionPercent: 25, thresholdCount: 100 },
 				],
 			}),
-		}),
+		},
+		scope: "ADDITIONAL_COMPANY",
 		status: "Active",
 		trialDays: 30,
 	},
@@ -238,25 +241,20 @@ export const InitialMasterPlanAndPackageFormValues: MasterPlanAndPackageFormValu
 		code: "",
 		description: "",
 		featureIds: MasterPlanAndPackageFeatureOptions.map((feature) => feature.id),
+		branchAddOnPrice: 0,
+		branchIncludedFree: 1,
+		branchReductionTiers: createEmptyReductionTiers(),
 		monthlyBasePrice: 0,
-		monthlyBranchAddOnPrice: 0,
-		monthlyBranchIncludedFree: 1,
-		monthlyBranchReductionTiers: createEmptyReductionTiers(),
 		monthlyPercentOff: 0,
-		monthlyUserAddOnPrice: 0,
-		monthlyUserIncludedFree: 1,
-		monthlyUserReductionTiers: createEmptyReductionTiers(),
 		name: "",
+		scope: "ONBOARDING",
 		status: "Active",
 		trialDays: 0,
+		userAddOnPrice: 0,
+		userIncludedFree: 1,
+		userReductionTiers: createEmptyReductionTiers(),
 		yearlyBasePrice: 0,
-		yearlyBranchAddOnPrice: 0,
-		yearlyBranchIncludedFree: 1,
-		yearlyBranchReductionTiers: createEmptyReductionTiers(),
 		yearlyPercentOff: 0,
-		yearlyUserAddOnPrice: 0,
-		yearlyUserIncludedFree: 1,
-		yearlyUserReductionTiers: createEmptyReductionTiers(),
 	};
 
 export function getMasterPlanAndPackageById(recordId: string) {
@@ -277,6 +275,7 @@ export function createMasterPlanAndPackageFormValues(
 		featureIds: [...record.featureIds],
 		id: record.id,
 		name: record.name,
+		scope: record.scope,
 		status: record.status,
 	};
 }
@@ -294,6 +293,7 @@ export function createMasterPlanAndPackageRecord(
 		name: trimmedName,
 		pricing: createPricingFromFormValues(values),
 		scalePricing: createScalePricingFromFormValues(values),
+		scope: values.scope,
 		status: values.status,
 		trialDays: values.trialDays,
 	};
@@ -336,23 +336,15 @@ export function formatMasterPlanAndPackagePricing(
 export function formatMasterPlanAndPackageScalePricing(
 	scalePricing: MasterPlanAndPackageScalePricing,
 ) {
-	return MasterPlanAndPackageScalePeriods.map((period) => {
-		const periodLabel = MasterPlanAndPackageScalePeriodLabels[period];
-		const rules = scalePricing[period];
-		const intervalLabel = period === "monthly" ? "month" : "year";
-		const ruleLabel = MasterPlanAndPackageScaleUnits.map((unit) => {
+	return MasterPlanAndPackageScaleUnits.map((unit) => {
 			const unitLabel = MasterPlanAndPackageScaleUnitLabels[unit];
 
-			return `${unitLabel}: ${formatScaleRule({
-				intervalLabel,
-				rule: rules[unit],
-				unit,
-			})}`;
-		}).join("; ");
-
-		return `${periodLabel}: ${ruleLabel}`;
+		return `${unitLabel}: ${formatScaleRule({
+			rule: scalePricing[unit],
+			unit,
+		})}`;
 	})
-		.join(" | ");
+		.join("; ");
 }
 
 export function getMasterPlanAndPackagePricingSupportingText(
@@ -373,17 +365,18 @@ export function getMasterPlanAndPackagePricingSupportingText(
 export function getMasterPlanAndPackageScaleSupportingText(
 	scalePricing: MasterPlanAndPackageScalePricing,
 ) {
-	const tierCount = MasterPlanAndPackageScalePeriods.reduce(
-		(total, period) =>
-			total +
-			Object.values(scalePricing[period]).reduce(
-				(periodTotal, rule) => periodTotal + rule.reductionTiers.length,
-				0,
-			),
+	const tierCount = Object.values(scalePricing).reduce(
+		(total, rule) => total + rule.reductionTiers.length,
 		0,
 	);
 
-	return `${tierCount} reduction tiers across monthly and yearly add-ons`;
+	return `${tierCount} reduction tiers for shared branch and user rules`;
+}
+
+export function formatMasterPlanAndPackageScope(
+	scope: MasterPlanAndPackageRecord["scope"],
+) {
+	return MasterPlanAndPackageScopeLabels[scope];
 }
 
 export function getMasterPlanAndPackageFeatureLabel(featureId: string) {
@@ -392,18 +385,6 @@ export function getMasterPlanAndPackageFeatureLabel(featureId: string) {
 
 export function getMasterPlanAndPackageFeatureLabels(featureIds: string[]) {
 	return featureIds.map(getMasterPlanAndPackageFeatureLabel);
-}
-
-function createScalePricing(
-	monthlyScalePricing: MasterPlanAndPackageScaleRules,
-): MasterPlanAndPackageScalePricing {
-	return {
-		monthly: monthlyScalePricing,
-		yearly: {
-			branch: createYearlyScaleRule(monthlyScalePricing.branch),
-			user: createYearlyScaleRule(monthlyScalePricing.user),
-		},
-	};
 }
 
 function createScaleRule(
@@ -416,15 +397,13 @@ function createScalePricingFormValues(
 	scalePricing: MasterPlanAndPackageScalePricing,
 ): Partial<MasterPlanAndPackageFormValues> {
 	return {
-		...createScaleRuleFormValues("monthlyBranch", scalePricing.monthly.branch),
-		...createScaleRuleFormValues("monthlyUser", scalePricing.monthly.user),
-		...createScaleRuleFormValues("yearlyBranch", scalePricing.yearly.branch),
-		...createScaleRuleFormValues("yearlyUser", scalePricing.yearly.user),
+		...createScaleRuleFormValues("branch", scalePricing.branch),
+		...createScaleRuleFormValues("user", scalePricing.user),
 	};
 }
 
 function createScaleRuleFormValues(
-	prefix: "monthlyBranch" | "monthlyUser" | "yearlyBranch" | "yearlyUser",
+	prefix: "branch" | "user",
 	rule: MasterPlanAndPackageScaleRule,
 ): Partial<MasterPlanAndPackageFormValues> {
 	return {
@@ -451,51 +430,20 @@ function createScalePricingFromFormValues(
 	values: MasterPlanAndPackageFormValues,
 ): MasterPlanAndPackageScalePricing {
 	return {
-		monthly: {
-			branch: {
-				addOnPrice: values.monthlyBranchAddOnPrice,
-				includedFreeCount: values.monthlyBranchIncludedFree,
-				reductionTiers: values.monthlyBranchReductionTiers.map((tier) => ({
-					...tier,
-				})),
-			},
-			user: {
-				addOnPrice: values.monthlyUserAddOnPrice,
-				includedFreeCount: values.monthlyUserIncludedFree,
-				reductionTiers: values.monthlyUserReductionTiers.map((tier) => ({
-					...tier,
-				})),
-			},
+		branch: {
+			addOnPrice: values.branchAddOnPrice,
+			includedFreeCount: values.branchIncludedFree,
+			reductionTiers: values.branchReductionTiers.map((tier) => ({
+				...tier,
+			})),
 		},
-		yearly: {
-			branch: {
-				addOnPrice: values.yearlyBranchAddOnPrice,
-				includedFreeCount: values.yearlyBranchIncludedFree,
-				reductionTiers: values.yearlyBranchReductionTiers.map((tier) => ({
-					...tier,
-				})),
-			},
-			user: {
-				addOnPrice: values.yearlyUserAddOnPrice,
-				includedFreeCount: values.yearlyUserIncludedFree,
-				reductionTiers: values.yearlyUserReductionTiers.map((tier) => ({
-					...tier,
-				})),
-			},
+		user: {
+			addOnPrice: values.userAddOnPrice,
+			includedFreeCount: values.userIncludedFree,
+			reductionTiers: values.userReductionTiers.map((tier) => ({
+				...tier,
+			})),
 		},
-	};
-}
-
-function createYearlyScaleRule(
-	rule: MasterPlanAndPackageScaleRule,
-): MasterPlanAndPackageScaleRule {
-	return {
-		addOnPrice: rule.addOnPrice * 10,
-		includedFreeCount: rule.includedFreeCount,
-		reductionTiers: rule.reductionTiers.map((tier) => ({
-			reductionPercent: Math.min(tier.reductionPercent + 5, 100),
-			thresholdCount: tier.thresholdCount,
-		})),
 	};
 }
 
@@ -526,11 +474,9 @@ function formatPriceWithDiscount({
 }
 
 function formatScaleRule({
-	intervalLabel,
 	rule,
 	unit,
 }: {
-	intervalLabel: "month" | "year";
 	rule: MasterPlanAndPackageScaleRule;
 	unit: MasterPlanAndPackageScaleUnit;
 }) {
@@ -552,7 +498,7 @@ function formatScaleRule({
 		rule.includedFreeCount,
 	)}; ${formatMasterPlanAndPackageCurrency(
 		rule.addOnPrice,
-	)} per additional ${label} / ${intervalLabel}; ${reductionLabel}`;
+	)} per additional ${label}; ${reductionLabel}`;
 }
 
 function createEmptyReductionTiers(): MasterPlanAndPackageReductionTier[] {

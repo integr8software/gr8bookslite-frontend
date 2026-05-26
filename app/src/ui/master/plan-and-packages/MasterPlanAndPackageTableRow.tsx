@@ -3,6 +3,7 @@ import { getMasterPlanAndPackageViewHref } from "@/app/src/constants/master/plan
 import {
 	formatMasterPlanAndPackagePricing,
 	formatMasterPlanAndPackageScalePricing,
+	formatMasterPlanAndPackageScope,
 	getMasterPlanAndPackagePricingSupportingText,
 	getMasterPlanAndPackageScaleSupportingText,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
@@ -35,6 +36,9 @@ export function MasterPlanAndPackageTableRow({
 						</span>
 						<span className="rounded-md bg-offwhite px-2 py-1 text-xs font-bold text-darknavy/48">
 							{record.trialDays} trial days
+						</span>
+						<span className="rounded-md bg-citron/35 px-2 py-1 text-xs font-bold text-darknavy/58">
+							{formatMasterPlanAndPackageScope(record.scope)}
 						</span>
 					</div>
 					<p className="mt-1 line-clamp-2 text-sm leading-5 text-darknavy/52">

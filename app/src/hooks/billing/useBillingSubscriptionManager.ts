@@ -41,7 +41,8 @@ export function useBillingSubscriptionManager() {
     {},
   );
 
-  const plansQuery = useBillingPlansQuery({ accessToken });
+  const planScope = "ONBOARDING";
+  const plansQuery = useBillingPlansQuery({ accessToken, scope: planScope });
   const currentSubscriptionQuery = useCurrentBillingSubscriptionQuery({
     accessToken,
   });
@@ -96,7 +97,7 @@ export function useBillingSubscriptionManager() {
           queryKey: BillingQueryKeys.currentSubscription(),
         }),
         queryClient.invalidateQueries({
-          queryKey: BillingQueryKeys.plans(),
+          queryKey: BillingQueryKeys.plans(planScope),
         }),
       ]);
 

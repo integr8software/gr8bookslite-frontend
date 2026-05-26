@@ -1,3 +1,9 @@
+import { MasterPlanAndPackageRecords } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
+import type {
+	MasterPlanAndPackagePricing,
+	MasterPlanAndPackageRecord,
+	MasterPlanAndPackageScaleRule,
+} from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 import type {
 	MasterSubscriptionBillingCycle,
 	MasterSubscriptionCompanyRecord,
@@ -50,109 +56,55 @@ export const MasterSubscriptionModules: MasterSubscriptionModuleOption[] = [
 	},
 ];
 
-export const MasterSubscriptionPlans: MasterSubscriptionPlanRecord[] = [
-	{
-		billingCycle: "Monthly",
-		code: "CORE",
-		description:
-			"Entry plan for small teams that need accounting, billing, and core controls.",
-		id: "core-books",
-		includedBranches: 1,
-		includedCompanies: 1,
-		includedUsers: 3,
-		moduleIds: ["accounting-core", "sales-billing", "admin-security"],
-		monthlyBasePrice: 2900,
-		name: "Core Books",
-		pricing: {
-			branch: 450,
-			company: 900,
-			user: 250,
-		},
-		status: "Active",
-	},
-	{
-		billingCycle: "Monthly",
-		code: "GROWTH",
-		description:
-			"Operational plan for growing companies with purchasing, payables, and branch expansion.",
-		id: "growth-suite",
-		includedBranches: 3,
-		includedCompanies: 5,
-		includedUsers: 12,
-		moduleIds: [
-			"accounting-core",
-			"sales-billing",
-			"purchase-payables",
-			"multi-entity",
-			"admin-security",
-		],
-		monthlyBasePrice: 7900,
-		name: "Growth Suite",
-		pricing: {
-			branch: 380,
-			company: 700,
-			user: 220,
-		},
-		status: "Active",
-	},
-	{
-		billingCycle: "Monthly",
-		code: "ENTERPRISE",
-		description:
-			"Full platform plan for multi-company groups that need accounting, inventory, controls, and volume pricing.",
-		id: "enterprise-ops",
-		includedBranches: 10,
-		includedCompanies: 10,
-		includedUsers: 30,
-		moduleIds: MasterSubscriptionModules.map((moduleOption) => moduleOption.id),
-		monthlyBasePrice: 15900,
-		name: "Enterprise Ops",
-		pricing: {
-			branch: 300,
-			company: 520,
-			user: 180,
-		},
-		status: "Active",
-	},
-];
+export const MasterSubscriptionPlans: MasterSubscriptionPlanRecord[] =
+	MasterPlanAndPackageRecords.map(createMasterSubscriptionPlanFromPackage);
 
 export const MasterSubscriptionVolumeRules: MasterSubscriptionVolumeRuleRecord[] =
 	[
 		{
-			discountPercent: 12,
-			endsAt: 20,
-			id: "rule-enterprise-company-11",
-			label: "Company scale 11 to 20",
-			planId: "enterprise-ops",
-			startsAt: 11,
+			discountPercent: 8,
+			endsAt: 10,
+			id: "rule-full-suite-company-2",
+			label: "Company add-on 2 to 10",
+			planId: "plan-full-suite-annual",
+			startsAt: 2,
 			unit: "company",
 		},
 		{
-			discountPercent: 20,
+			discountPercent: 15,
 			endsAt: null,
-			id: "rule-enterprise-company-21",
-			label: "Company scale 21+",
-			planId: "enterprise-ops",
-			startsAt: 21,
+			id: "rule-full-suite-company-11",
+			label: "Company add-on 11+",
+			planId: "plan-full-suite-annual",
+			startsAt: 11,
 			unit: "company",
 		},
 		{
 			discountPercent: 10,
 			endsAt: null,
-			id: "rule-enterprise-branch-16",
-			label: "Satellite branch scale 16+",
-			planId: "enterprise-ops",
-			startsAt: 16,
-			unit: "branch",
+			id: "rule-launch-company-2",
+			label: "Launch company add-on 2+",
+			planId: "plan-launch-upgrade",
+			startsAt: 2,
+			unit: "company",
 		},
 		{
-			discountPercent: 8,
-			endsAt: 25,
-			id: "rule-growth-company-6",
-			label: "Company scale 6 to 25",
-			planId: "growth-suite",
-			startsAt: 6,
-			unit: "company",
+			discountPercent: 5,
+			endsAt: 24,
+			id: "rule-launch-user-10",
+			label: "Launch user reduction 10 to 24",
+			planId: "plan-launch-upgrade",
+			startsAt: 10,
+			unit: "user",
+		},
+		{
+			discountPercent: 10,
+			endsAt: null,
+			id: "rule-launch-user-25",
+			label: "Launch user reduction 25+",
+			planId: "plan-launch-upgrade",
+			startsAt: 25,
+			unit: "user",
 		},
 	];
 
@@ -165,20 +117,20 @@ export const MasterSubscriptionCompanies: MasterSubscriptionCompanyRecord[] = [
 		id: "sub-gr8books",
 		name: "Gr8Books HQ",
 		ownerName: "John Dela Cruz",
-		planId: "growth-suite",
+		planId: "plan-launch-upgrade",
 		renewalDate: "2026-06-01",
 		status: "Active",
 		userCount: 15,
 	},
 	{
-		billingCycle: "Per transaction",
+		billingCycle: "Monthly",
 		branchCount: 1,
 		companyCount: 1,
 		durationMonths: 1,
 		id: "sub-demo-trading",
 		name: "Demo Trading Corp.",
 		ownerName: "Jane Santos",
-		planId: "core-books",
+		planId: "plan-accounting-monthly",
 		renewalDate: "2026-06-05",
 		status: "Trial",
 		userCount: 4,
@@ -191,7 +143,7 @@ export const MasterSubscriptionCompanies: MasterSubscriptionCompanyRecord[] = [
 		id: "sub-laguna-manufacturing",
 		name: "Laguna Manufacturing Inc.",
 		ownerName: "Emily Lim",
-		planId: "enterprise-ops",
+		planId: "plan-full-suite-annual",
 		renewalDate: "2027-05-10",
 		status: "Active",
 		userCount: 42,
@@ -204,10 +156,23 @@ export const MasterSubscriptionCompanies: MasterSubscriptionCompanyRecord[] = [
 		id: "sub-visayas-retail",
 		name: "Visayas Retail Group",
 		ownerName: "Miguel Reyes",
-		planId: "enterprise-ops",
+		planId: "plan-inventory-quarter",
 		renewalDate: "2026-05-10",
 		status: "Past Due",
 		userCount: 65,
+	},
+	{
+		billingCycle: "Per transaction",
+		branchCount: 1,
+		companyCount: 1,
+		durationMonths: 2,
+		id: "sub-cebu-service-studio",
+		name: "Cebu Service Studio",
+		ownerName: "Angela Uy",
+		planId: "plan-transaction-lite",
+		renewalDate: "2026-06-12",
+		status: "Scheduled",
+		userCount: 2,
 	},
 ];
 
@@ -252,6 +217,20 @@ export function createMasterSubscriptionPlanRecord({
 		name: values.name.trim(),
 		pricing: { ...values.pricing },
 	};
+}
+
+export function getMasterSubscriptionPlanById(planId: string) {
+	return MasterSubscriptionPlans.find((plan) => plan.id === planId);
+}
+
+export function getMasterSubscriptionPlanName(planId: string) {
+	return getMasterSubscriptionPlanById(planId)?.name ?? "Unknown plan";
+}
+
+export function getMasterSubscriptionCompanyById(subscriberId: string) {
+	return MasterSubscriptionCompanies.find(
+		(subscriber) => subscriber.id === subscriberId,
+	);
 }
 
 export function calculateMasterSubscriptionQuote({
@@ -415,5 +394,96 @@ function getDiscountPercentForCount({
 			(highestDiscount, rule) =>
 				Math.max(highestDiscount, rule.discountPercent),
 			0,
-		);
+	);
+}
+
+function createMasterSubscriptionPlanFromPackage(
+	record: MasterPlanAndPackageRecord,
+): MasterSubscriptionPlanRecord {
+	return {
+		billingCycle: getBillingCycleFromPricing(record.pricing),
+		code: createPlanCode(record.name),
+		description: record.description,
+		id: record.id,
+		includedBranches: getIncludedCountFromScaleRule(record.scalePricing.branch),
+		includedCompanies: getIncludedCountFromScaleRule(
+			record.scalePricing.company,
+		),
+		includedUsers: getIncludedCountFromScaleRule(record.scalePricing.user),
+		moduleIds: [...record.featureIds],
+		monthlyBasePrice: getMonthlyBasePrice(record.pricing),
+		name: record.name,
+		pricing: {
+			branch: getUnitPriceFromScaleRule(record.scalePricing.branch),
+			company: getUnitPriceFromScaleRule(record.scalePricing.company),
+			user: getUnitPriceFromScaleRule(record.scalePricing.user),
+		},
+		status: record.status,
+	};
+}
+
+function getBillingCycleFromPricing(
+	pricing: MasterPlanAndPackagePricing,
+): MasterSubscriptionBillingCycle {
+	switch (pricing.kind) {
+		case "Interval":
+			return pricing.intervalMonths === 3 ? "Every 3 months" : "Monthly";
+		case "Yearly":
+			return "Annual";
+		case "Transactional":
+			return "Per transaction";
+		case "Monthly":
+		case "Percent Off":
+			return "Monthly";
+	}
+}
+
+function getMonthlyBasePrice(pricing: MasterPlanAndPackagePricing) {
+	switch (pricing.kind) {
+		case "Interval":
+			return pricing.amount / pricing.intervalMonths;
+		case "Monthly":
+		case "Transactional":
+			return pricing.amount;
+		case "Percent Off":
+			return pricing.baseAmount * (1 - pricing.percentOff / 100);
+		case "Yearly":
+			return pricing.amount / 12;
+	}
+}
+
+function getIncludedCountFromScaleRule(rule: MasterPlanAndPackageScaleRule) {
+	switch (rule.kind) {
+		case "Add-on":
+			return rule.includedFreeCount;
+		case "Range":
+			return rule.maxCount;
+		case "Reduction": {
+			const firstThreshold = Math.min(
+				...rule.tiers.map((tier) => tier.thresholdCount),
+			);
+
+			return Number.isFinite(firstThreshold)
+				? Math.max(0, firstThreshold - 1)
+				: 0;
+		}
+	}
+}
+
+function getUnitPriceFromScaleRule(rule: MasterPlanAndPackageScaleRule) {
+	if (rule.kind === "Add-on") {
+		return rule.addOnPrice;
+	}
+
+	return 0;
+}
+
+function createPlanCode(name: string) {
+	const code = name
+		.split(/\s+/)
+		.map((part) => part.charAt(0))
+		.join("")
+		.toUpperCase();
+
+	return code.slice(0, 16) || "PLAN";
 }

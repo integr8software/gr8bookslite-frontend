@@ -1,100 +1,109 @@
+import {
+	MasterSubscriptionVolumeRules,
+	calculateMasterSubscriptionAmountLeft,
+	calculateMasterSubscriptionQuote,
+	getMasterSubscriptionCompanyById,
+	getMasterSubscriptionPlanById,
+} from "@/app/src/data/master/subscriptions/MasterSubscriptionData";
 import type {
 	MasterInvoicePaymentMethod,
 	MasterInvoiceRecord,
 } from "@/app/src/types/master/invoices/MasterInvoiceTypes";
+import type {
+	MasterSubscriptionCompanyRecord,
+	MasterSubscriptionPlanRecord,
+} from "@/app/src/types/master/subscriptions/MasterSubscriptionTypes";
 
-export const MasterInvoiceRecords: MasterInvoiceRecord[] = [
+type MasterInvoiceSeed = Omit<
+	MasterInvoiceRecord,
+	"amount" | "ownerName" | "planId" | "planName" | "subscriberName"
+> & {
+	amount?: number;
+};
+
+const MasterInvoiceSeeds: MasterInvoiceSeed[] = [
 	{
-		amount: 9300,
-		availedItem: "Growth Suite monthly renewal with 3 extra users",
+		availedItem: "Launch Upgrade monthly renewal with extra companies",
 		billingPeriod: "May 2026",
 		id: "inv-gr8books-2026-05",
 		invoiceNo: "INV-2026-0501",
-		ownerName: "John Dela Cruz",
 		paymentMethod: "Card",
-		planName: "Growth Suite",
 		referenceNo: "PAY-8J2K91",
 		status: "Paid",
 		subscriberId: "sub-gr8books",
-		subscriberName: "Gr8Books HQ",
 		transactionDate: "2026-05-01",
 	},
 	{
-		amount: 2900,
-		availedItem: "Core Books trial conversion",
+		availedItem: "Accounting Monthly trial conversion",
 		billingPeriod: "May 2026",
 		id: "inv-demo-trading-2026-05",
 		invoiceNo: "INV-2026-0502",
-		ownerName: "Jane Santos",
 		paymentMethod: "GCash",
-		planName: "Core Books",
 		referenceNo: "GC-199382",
 		status: "Pending",
 		subscriberId: "sub-demo-trading",
-		subscriberName: "Demo Trading Corp.",
 		transactionDate: "2026-05-05",
 	},
 	{
-		amount: 18820,
-		availedItem: "Enterprise Ops annual subscription balance",
+		availedItem: "Full Suite Annual subscription balance",
 		billingPeriod: "May 2026 - Apr 2027",
 		id: "inv-laguna-2026-05",
 		invoiceNo: "INV-2026-0503",
-		ownerName: "Emily Lim",
 		paymentMethod: "Bank Transfer",
-		planName: "Enterprise Ops",
 		referenceNo: "BT-771204",
 		status: "Paid",
 		subscriberId: "sub-laguna-manufacturing",
-		subscriberName: "Laguna Manufacturing Inc.",
 		transactionDate: "2026-05-10",
 	},
 	{
-		amount: 25240,
-		availedItem: "Enterprise Ops quarterly subscription renewal",
+		availedItem: "Inventory Quarterly subscription renewal",
 		billingPeriod: "May 2026 - Jul 2026",
 		id: "inv-visayas-2026-05",
 		invoiceNo: "INV-2026-0504",
-		ownerName: "Miguel Reyes",
 		paymentMethod: "Maya",
-		planName: "Enterprise Ops",
 		referenceNo: "MY-440912",
 		status: "Failed",
 		subscriberId: "sub-visayas-retail",
-		subscriberName: "Visayas Retail Group",
 		transactionDate: "2026-05-10",
 	},
 	{
 		amount: 1500,
-		availedItem: "Additional branch access for Growth Suite",
+		availedItem: "Additional company access for Launch Upgrade",
 		billingPeriod: "Apr 2026",
 		id: "inv-gr8books-addon-2026-04",
 		invoiceNo: "INV-2026-0417",
-		ownerName: "John Dela Cruz",
 		paymentMethod: "Manual Payment",
-		planName: "Growth Suite",
 		referenceNo: "OR-004992",
 		status: "Paid",
 		subscriberId: "sub-gr8books",
-		subscriberName: "Gr8Books HQ",
 		transactionDate: "2026-04-17",
 	},
 	{
-		amount: 7900,
-		availedItem: "Growth Suite renewal reversed after duplicate charge",
+		availedItem: "Launch Upgrade renewal reversed after duplicate charge",
 		billingPeriod: "Mar 2026",
 		id: "inv-gr8books-refund-2026-03",
 		invoiceNo: "INV-2026-0312",
-		ownerName: "John Dela Cruz",
 		paymentMethod: "Card",
-		planName: "Growth Suite",
 		referenceNo: "RF-231908",
 		status: "Refunded",
 		subscriberId: "sub-gr8books",
-		subscriberName: "Gr8Books HQ",
 		transactionDate: "2026-03-12",
 	},
+	{
+		availedItem: "Transaction Lite transaction credit top-up",
+		billingPeriod: "May 2026",
+		id: "inv-cebu-service-studio-2026-05",
+		invoiceNo: "INV-2026-0505",
+		paymentMethod: "GCash",
+		referenceNo: "GC-772810",
+		status: "Paid",
+		subscriberId: "sub-cebu-service-studio",
+		transactionDate: "2026-05-18",
+	},
 ];
+
+export const MasterInvoiceRecords: MasterInvoiceRecord[] =
+	MasterInvoiceSeeds.map(createMasterInvoiceRecord);
 
 export function formatMasterInvoiceCurrency(value: number) {
 	return new Intl.NumberFormat("en-PH", {
@@ -116,4 +125,50 @@ export function getMasterInvoicePaymentMethodLabel(
 	paymentMethod: MasterInvoicePaymentMethod,
 ) {
 	return paymentMethod;
+}
+
+function createMasterInvoiceRecord(
+	seed: MasterInvoiceSeed,
+): MasterInvoiceRecord {
+	const subscriber = getMasterSubscriptionCompanyById(seed.subscriberId);
+	const plan = subscriber
+		? getMasterSubscriptionPlanById(subscriber.planId)
+		: undefined;
+
+	return {
+		...seed,
+		amount: seed.amount ?? getMasterInvoiceAmount(subscriber, plan),
+		ownerName: subscriber?.ownerName ?? "Unknown owner",
+		planId: plan?.id ?? "",
+		planName: plan?.name ?? "Unknown plan",
+		subscriberName: subscriber?.name ?? "Unknown subscriber",
+	};
+}
+
+function getMasterInvoiceAmount(
+	subscriber: MasterSubscriptionCompanyRecord | undefined,
+	plan: MasterSubscriptionPlanRecord | undefined,
+) {
+	if (!subscriber || !plan) {
+		return 0;
+	}
+
+	const quote = calculateMasterSubscriptionQuote({
+		plan,
+		rules: MasterSubscriptionVolumeRules.filter(
+			(rule) => rule.planId === plan.id,
+		),
+		values: {
+			branches: subscriber.branchCount,
+			companies: subscriber.companyCount,
+			users: subscriber.userCount,
+		},
+	});
+
+	return Math.round(
+		calculateMasterSubscriptionAmountLeft({
+			billingCycle: subscriber.billingCycle,
+			monthlyTotal: quote.total,
+		}),
+	);
 }

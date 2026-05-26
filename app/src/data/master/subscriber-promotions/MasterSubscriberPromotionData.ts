@@ -1,7 +1,12 @@
-import { MasterPromotionRecords } from "@/app/src/data/master/promotions/MasterPromotionData";
+import {
+	MasterPromotionRecords,
+	getMasterPromotionById,
+} from "@/app/src/data/master/promotions/MasterPromotionData";
 import {
 	MasterSubscriptionCompanies,
 	MasterSubscriptionPlans,
+	getMasterSubscriptionCompanyById,
+	getMasterSubscriptionPlanName,
 } from "@/app/src/data/master/subscriptions/MasterSubscriptionData";
 import type {
 	MasterSubscriptionBillingCycle,
@@ -13,99 +18,97 @@ import type {
 	MasterSubscriberPromotionRecord,
 } from "@/app/src/types/master/subscriber-promotions/MasterSubscriberPromotionTypes";
 
+type MasterSubscriberPromotionSeed = Omit<
+	MasterSubscriberPromotionRecord,
+	| "expiresAt"
+	| "ownerName"
+	| "planId"
+	| "planName"
+	| "promotionCode"
+	| "promotionName"
+	| "subscriberName"
+> & {
+	expiresAt?: string | null;
+};
+
+const MasterSubscriberPromotionSeeds: MasterSubscriberPromotionSeed[] = [
+	{
+		assignedAt: "2026-04-25",
+		assignmentMode: "Condition based",
+		grantedBy: "Super Admin",
+		id: "subpromo-gr8books-welcome20",
+		invoiceNo: "INV-2026-0501",
+		notes: "Granted to active paid subscribers during launch campaign.",
+		promotionId: "promo-welcome20",
+		status: "Used",
+		subscriberId: "sub-gr8books",
+		usedAt: "2026-05-01",
+	},
+	{
+		assignedAt: "2026-05-02",
+		assignmentMode: "Chosen subscriber",
+		grantedBy: "Billing Admin",
+		id: "subpromo-demo-accounting100",
+		invoiceNo: null,
+		notes: "Manual starter coupon for trial conversion follow-up.",
+		promotionId: "coupon-accounting100",
+		status: "Available",
+		subscriberId: "sub-demo-trading",
+		usedAt: null,
+	},
+	{
+		assignedAt: "2026-03-15",
+		assignmentMode: "Multiple selected",
+		grantedBy: "Super Admin",
+		id: "subpromo-laguna-addon-credit",
+		invoiceNo: "INV-2026-0503",
+		notes: "Voucher credit for high-volume branch rollout.",
+		promotionId: "voucher-addon-credit",
+		status: "Used",
+		subscriberId: "sub-laguna-manufacturing",
+		usedAt: "2026-05-10",
+	},
+	{
+		assignedAt: "2026-02-20",
+		assignmentMode: "Random pick",
+		expiresAt: "2026-05-15",
+		grantedBy: "Campaign Ops",
+		id: "subpromo-visayas-summit25",
+		invoiceNo: null,
+		notes: "Random retention offer for summit waitlist subscribers.",
+		promotionId: "event-summit25",
+		status: "Expired",
+		subscriberId: "sub-visayas-retail",
+		usedAt: null,
+	},
+	{
+		assignedAt: "2026-05-18",
+		assignmentMode: "Multiple selected",
+		grantedBy: "Super Admin",
+		id: "subpromo-laguna-welcome20",
+		invoiceNo: null,
+		notes: "Multi-subscriber renewal promotion for active enterprise tenants.",
+		promotionId: "promo-welcome20",
+		status: "Available",
+		subscriberId: "sub-laguna-manufacturing",
+		usedAt: null,
+	},
+	{
+		assignedAt: "2026-05-20",
+		assignmentMode: "Random pick",
+		grantedBy: "Campaign Ops",
+		id: "subpromo-cebu-welcome20",
+		invoiceNo: null,
+		notes: "Launch code reserved for the scheduled transaction-lite subscriber.",
+		promotionId: "promo-welcome20",
+		status: "Available",
+		subscriberId: "sub-cebu-service-studio",
+		usedAt: null,
+	},
+];
+
 export const MasterSubscriberPromotionRecords: MasterSubscriberPromotionRecord[] =
-	[
-		{
-			assignedAt: "2026-04-25",
-			assignmentMode: "Condition based",
-			expiresAt: "2026-12-31",
-			grantedBy: "Super Admin",
-			id: "subpromo-gr8books-welcome20",
-			invoiceNo: "INV-2026-0501",
-			notes: "Granted to active paid subscribers during launch campaign.",
-			ownerName: "John Dela Cruz",
-			planName: "Growth Suite",
-			promotionCode: "WELCOME20",
-			promotionId: "promo-welcome20",
-			promotionName: "Welcome Launch",
-			status: "Used",
-			subscriberId: "sub-gr8books",
-			subscriberName: "Gr8Books HQ",
-			usedAt: "2026-05-01",
-		},
-		{
-			assignedAt: "2026-05-02",
-			assignmentMode: "Chosen subscriber",
-			expiresAt: "2026-08-31",
-			grantedBy: "Billing Admin",
-			id: "subpromo-demo-accounting100",
-			invoiceNo: null,
-			notes: "Manual starter coupon for trial conversion follow-up.",
-			ownerName: "Jane Santos",
-			planName: "Core Books",
-			promotionCode: "ACCOUNTING100",
-			promotionId: "coupon-accounting100",
-			promotionName: "Accounting Starter",
-			status: "Available",
-			subscriberId: "sub-demo-trading",
-			subscriberName: "Demo Trading Corp.",
-			usedAt: null,
-		},
-		{
-			assignedAt: "2026-03-15",
-			assignmentMode: "Multiple selected",
-			expiresAt: null,
-			grantedBy: "Super Admin",
-			id: "subpromo-laguna-addon-credit",
-			invoiceNo: "INV-2026-0503",
-			notes: "Voucher credit for high-volume branch rollout.",
-			ownerName: "Emily Lim",
-			planName: "Enterprise Ops",
-			promotionCode: "ADDON-VCHR",
-			promotionId: "voucher-addon-credit",
-			promotionName: "Add-on Credit",
-			status: "Used",
-			subscriberId: "sub-laguna-manufacturing",
-			subscriberName: "Laguna Manufacturing Inc.",
-			usedAt: "2026-05-10",
-		},
-		{
-			assignedAt: "2026-02-20",
-			assignmentMode: "Random pick",
-			expiresAt: "2026-05-15",
-			grantedBy: "Campaign Ops",
-			id: "subpromo-visayas-summit25",
-			invoiceNo: null,
-			notes: "Random retention offer for summit waitlist subscribers.",
-			ownerName: "Miguel Reyes",
-			planName: "Enterprise Ops",
-			promotionCode: "SUMMIT25",
-			promotionId: "event-summit25",
-			promotionName: "Summit Attendee",
-			status: "Expired",
-			subscriberId: "sub-visayas-retail",
-			subscriberName: "Visayas Retail Group",
-			usedAt: null,
-		},
-		{
-			assignedAt: "2026-05-18",
-			assignmentMode: "Multiple selected",
-			expiresAt: "2026-12-31",
-			grantedBy: "Super Admin",
-			id: "subpromo-laguna-welcome20",
-			invoiceNo: null,
-			notes: "Multi-subscriber renewal promotion for active enterprise tenants.",
-			ownerName: "Emily Lim",
-			planName: "Enterprise Ops",
-			promotionCode: "WELCOME20",
-			promotionId: "promo-welcome20",
-			promotionName: "Welcome Launch",
-			status: "Available",
-			subscriberId: "sub-laguna-manufacturing",
-			subscriberName: "Laguna Manufacturing Inc.",
-			usedAt: null,
-		},
-	];
+	MasterSubscriberPromotionSeeds.map(createMasterSubscriberPromotionRecord);
 
 export const MasterSubscriberPromotionSubscriberOptions =
 	MasterSubscriptionCompanies.map((subscriber) => ({
@@ -206,10 +209,7 @@ export function getMasterSubscriberPromotionAudience(
 }
 
 export function getMasterSubscriberPromotionPlanName(planId: string) {
-	return (
-		MasterSubscriptionPlans.find((plan) => plan.id === planId)?.name ??
-		"Unknown plan"
-	);
+	return getMasterSubscriptionPlanName(planId);
 }
 
 export function getMasterSubscriberPromotionSummaryLabel(
@@ -223,6 +223,29 @@ export function getMasterSubscriberPromotionSummaryLabel(
 		promotionCount === 1 ? "promotion" : "promotions";
 
 	return `${promotionCount} ${promotionLabel} to ${audience.length} ${subscriberLabel}`;
+}
+
+function createMasterSubscriberPromotionRecord(
+	seed: MasterSubscriberPromotionSeed,
+): MasterSubscriberPromotionRecord {
+	const subscriber = getMasterSubscriptionCompanyById(seed.subscriberId);
+	const promotion = getMasterPromotionById(seed.promotionId);
+
+	return {
+		...seed,
+		expiresAt:
+			seed.expiresAt === undefined
+				? promotion?.expiresAt ?? null
+				: seed.expiresAt,
+		ownerName: subscriber?.ownerName ?? "Unknown owner",
+		planId: subscriber?.planId ?? "",
+		planName: subscriber
+			? getMasterSubscriberPromotionPlanName(subscriber.planId)
+			: "Unknown plan",
+		promotionCode: promotion?.code ?? "Unknown code",
+		promotionName: promotion?.name ?? "Unknown promotion",
+		subscriberName: subscriber?.name ?? "Unknown subscriber",
+	};
 }
 
 function findSubscribersByIds(subscriberIds: string[]) {

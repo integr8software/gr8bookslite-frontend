@@ -35,6 +35,25 @@ export function getModuleActionState(
   };
 }
 
+export function getModulePermissionState(
+  accessModule: AccessModule,
+  values: string[],
+) {
+  const modulePermissions = accessModule.children.flatMap((child) =>
+    UserPermissionActions.map((action) => `${child.value}.${action.value}`),
+  );
+  const allowedCount = modulePermissions.filter((permission) =>
+    values.includes(permission),
+  ).length;
+
+  return {
+    checked:
+      modulePermissions.length > 0 && allowedCount === modulePermissions.length,
+    enabledCount: allowedCount,
+    isPartial: allowedCount > 0 && allowedCount < modulePermissions.length,
+  };
+}
+
 export function getSubmoduleState(submoduleValue: string, values: string[]) {
   const permissions = UserPermissionActions.map(
     (action) => `${submoduleValue}.${action.value}`,
@@ -81,4 +100,26 @@ export function toggleSubmodulePermissions(
   return shouldAllow
     ? Array.from(new Set([...values, ...submodulePermissions]))
     : values.filter((permission) => !submodulePermissions.includes(permission));
+}
+
+export function togglePermission(permission: string, values: string[]) {
+  return values.includes(permission)
+    ? values.filter((currentPermission) => currentPermission !== permission)
+    : [...values, permission];
+}
+
+export function toggleModulePermissions(
+  accessModule: AccessModule,
+  values: string[],
+) {
+  const modulePermissions = accessModule.children.flatMap((child) =>
+    UserPermissionActions.map((action) => `${child.value}.${action.value}`),
+  );
+  const shouldAllow = modulePermissions.some(
+    (permission) => !values.includes(permission),
+  );
+
+  return shouldAllow
+    ? Array.from(new Set([...values, ...modulePermissions]))
+    : values.filter((permission) => !modulePermissions.includes(permission));
 }

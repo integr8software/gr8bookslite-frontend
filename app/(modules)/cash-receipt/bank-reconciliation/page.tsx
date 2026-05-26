@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { BankReconciliationMain } from "@/app/src/ui/modules/cash-receipt/bank-reconciliation/Main";
 
 const PageTitle = "Bank Reconciliation";

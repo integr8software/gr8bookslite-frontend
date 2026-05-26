@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { SalesJournalAction } from "@/app/src/ui/modules/sales/sales-journal/Action";
 
 const PageTitle = "Add Sales Journal";

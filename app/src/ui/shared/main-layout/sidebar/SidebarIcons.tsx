@@ -24,7 +24,6 @@ import {
 	Package,
 	Receipt,
 	ReceiptText,
-	Ruler,
 	Settings,
 	ShieldCheck,
 	ShoppingCart,
@@ -38,27 +37,34 @@ import {
 import type {
 	MainIconName,
 	MainNavigationItem,
-} from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { joinClasses } from "./utils";
 
 export const MainIcons: Record<MainIconName, LucideIcon> = {
 	approval: ShieldCheck,
+	announcement: Mail,
 	asset: Building2,
 	branch: GitBranch,
 	billing: CreditCard,
 	cashIn: ReceiptText,
 	cashOut: WalletCards,
+	company: Building2,
 	dashboard: LayoutDashboard,
 	inventory: Boxes,
+	invoice: FileText,
 	journal: BookOpen,
 	maintenance: Settings,
 	payable: CreditCard,
 	profile: UserCircle,
+	promotion: BadgePercent,
 	purchasing: ShoppingCart,
 	reports: BarChart3,
 	sales: BadgeDollarSign,
 	security: ShieldCheck,
 	settings: Settings,
+	subscription: WalletCards,
+	support: Users,
+	user: UserCog,
 };
 
 const SidebarItemIcons: Record<string, LucideIcon> = {
@@ -85,7 +91,6 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"workspace-support-tickets": FileText,
 	"workspace-maintenance": Settings,
 	"workspace-company-settings": Building2,
-	"workspace-payment-methods": CreditCard,
 	"workspace-module-financial-management": Landmark,
 	"workspace-module-sales-management": BadgeDollarSign,
 	"workspace-module-purchasing": ShoppingCart,
@@ -94,6 +99,8 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"workspace-module-human-resources": Users,
 	"workspace-module-reports-analytics": FileBarChart,
 	"maintenance-financial": Landmark,
+	"maintenance-item-management": Package,
+	"maintenance-warehouse-management": Warehouse,
 	"maintenance-charts-of-accounts": ListTree,
 	"maintenance-currency": Coins,
 	"maintenance-discount": BadgePercent,
@@ -106,7 +113,7 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"maintenance-item-sub-category": Tags,
 	"maintenance-item-type": Package,
 	"maintenance-item-sub-type": Package,
-	"maintenance-item-unit": Ruler,
+	"maintenance-items": Package,
 	"maintenance-party-management": Users,
 	"maintenance-party": Users,
 	"cash-disbursement-voucher": FileCheck2,

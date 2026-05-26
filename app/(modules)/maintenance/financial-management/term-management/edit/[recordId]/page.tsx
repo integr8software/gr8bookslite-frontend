@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { TermManagementFormPage } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementFormPage";
 
 const PageTitle = "Edit Term Management";

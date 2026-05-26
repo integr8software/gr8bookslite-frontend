@@ -3,8 +3,8 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import type { MainBranch } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
-import { MainLayoutMockData } from "@/app/src/data/shared/MainLayout/MainShellMockData";
+import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import { MainLayoutMockData } from "@/app/src/data/shared/main-layout/MainLayoutMockData";
 import { BranchManagementQueryKeys } from "@/app/src/services/modules/system-administration/branch-management/BranchManagementQueryKeys";
 
 type BranchManagementStoreState = {

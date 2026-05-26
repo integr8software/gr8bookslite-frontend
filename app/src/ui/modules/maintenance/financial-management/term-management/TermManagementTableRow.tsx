@@ -1,7 +1,10 @@
-import Link from "next/link";
-import { Edit3, Eye, Trash2 } from "lucide-react";
 import { TermManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
+import {
+	ModuleTableActionButton,
+	ModuleTableActionLink,
+	ModuleTableActions,
+} from "@/app/src/ui/shared/module/ModuleTableActions";
 
 type TermManagementTableRowProps = {
 	term: TermManagement;
@@ -20,34 +23,24 @@ export function TermManagementTableRow({
 			<td className="px-4 py-4 text-darknavy">{term.datemode}</td>
 			<td className="px-4 py-4 text-darknavy">{term.period}</td>
 			<td className="px-4 py-4">
-				<div className="flex items-center justify-end gap-1">
-					<Link
+				<ModuleTableActions>
+					<ModuleTableActionLink
+						variant="view"
 						href={`${TermManagementHref}/view/${term.id}`}
-						aria-label={`View ${term.description}`}
-						className={tableActionClassName}
-					>
-						<Eye className="h-4 w-4" aria-hidden="true" />
-					</Link>
-					<Link
+						label={`View ${term.description}`}
+					/>
+					<ModuleTableActionLink
+						variant="edit"
 						href={`${TermManagementHref}/edit/${term.id}`}
-						aria-label={`Edit ${term.description}`}
-						className={tableActionClassName}
-					>
-						<Edit3 className="h-4 w-4" aria-hidden="true" />
-					</Link>
-					<button
-						type="button"
+						label={`Edit ${term.description}`}
+					/>
+					<ModuleTableActionButton
+						variant="delete"
 						onClick={() => onDeleteTerm(term)}
-						aria-label={`Delete ${term.description}`}
-						className="inline-flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
-					>
-						<Trash2 className="h-4 w-4" aria-hidden="true" />
-					</button>
-				</div>
+						label={`Delete ${term.description}`}
+					/>
+				</ModuleTableActions>
 			</td>
 		</tr>
 	);
 }
-
-const tableActionClassName =
-	"inline-flex h-9 w-9 items-center justify-center rounded-md text-darknavy transition hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35";

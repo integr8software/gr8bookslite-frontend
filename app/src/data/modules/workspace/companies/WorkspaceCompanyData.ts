@@ -27,7 +27,9 @@ export const InitialWorkspaceCompanyFormValues: WorkspaceCompanyFormValues = {
 	billingEmail: "",
 	billingExpiryMonth: "",
 	billingExpiryYear: "",
-	billingPaymentMethodId: "current-card",
+	billingPaymentMethodId: "setup-later",
+	billingPlanCode: "",
+	billingCycle: "MONTHLY",
 	companyName: "",
 	contactNumber: "",
 	email: "",
@@ -61,7 +63,6 @@ export const InitialWorkspaceCompanyBranchFormValues: WorkspaceCompanyBranchForm
 		address: "",
 		branchType: "Branch",
 		contactNumber: "",
-		description: "",
 		email: "",
 		isMain: false,
 		linkedMainBranchId: "",
@@ -234,7 +235,6 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "main@gr8books.test",
 		contactNumber: "+63 2 8123 4567",
 		address: "Makati City, Metro Manila",
-		description: "Primary operating branch for the company.",
 		isMain: true,
 	},
 	{
@@ -248,7 +248,6 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "north@gr8books.test",
 		contactNumber: "+63 2 8123 8899",
 		address: "Quezon City, Metro Manila",
-		description: "Northern Metro Manila branch.",
 		isMain: false,
 	},
 	{
@@ -262,7 +261,6 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "cebu@gr8books.test",
 		contactNumber: "+63 32 412 7788",
 		address: "Cebu City, Cebu",
-		description: "Satellite site linked to Main Branch.",
 		isMain: false,
 		linkedMainBranchId: "br-gr8-main",
 	},
@@ -277,7 +275,6 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "hq@demotrading.test",
 		contactNumber: "+63 2 8899 1000",
 		address: "Pasig City, Metro Manila",
-		description: "Main trading office.",
 		isMain: true,
 	},
 	{
@@ -291,7 +288,6 @@ export const MockWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [
 		email: "central@ceburetail.test",
 		contactNumber: "+63 32 410 1200",
 		address: "Cebu City, Cebu",
-		description: "Primary Cebu operating branch.",
 		isMain: true,
 	},
 ];
@@ -357,7 +353,9 @@ export function createWorkspaceCompanyFormValues(
 		billingEmail: company.email,
 		billingExpiryMonth: "",
 		billingExpiryYear: "",
-		billingPaymentMethodId: company.billingPaymentMethodId ?? "current-card",
+		billingPaymentMethodId: company.billingPaymentMethodId ?? "setup-later",
+		billingPlanCode: "",
+		billingCycle: "MONTHLY",
 		companyName: taxpayerType === "non-individual" ? company.name : "",
 		contactNumber: company.contactNumber,
 		email: company.email,
@@ -485,6 +483,9 @@ export function validateWorkspaceCompanyForm(
 	if (!values.logoName.trim() && !values.logoUrl.trim()) {
 		errors.logoName = "Upload a logo image.";
 	}
+	if (!values.billingPlanCode.trim()) {
+		errors.billingPlanCode = "Select a company plan.";
+	}
 	if (!values.reportStartDate) {
 		errors.reportStartDate = "Report start date is required.";
 	}
@@ -558,7 +559,6 @@ export function createWorkspaceCompanyBranchFormValues(
 		address: branch.address,
 		branchType: branch.branchType,
 		contactNumber: branch.contactNumber,
-		description: branch.description,
 		email: branch.email,
 		isMain: branch.isMain,
 		linkedMainBranchId: branch.linkedMainBranchId ?? "",
@@ -695,6 +695,7 @@ function trimCompanyValues(
 		billingExpiryMonth: values.billingExpiryMonth.trim(),
 		billingExpiryYear: values.billingExpiryYear.trim(),
 		billingPaymentMethodId: values.billingPaymentMethodId.trim(),
+		billingPlanCode: values.billingPlanCode.trim(),
 		companyName: values.companyName.trim(),
 		contactNumber: values.contactNumber.trim(),
 		email: values.email.trim(),
@@ -909,7 +910,6 @@ function trimBranchValues(
 		...values,
 		address: values.address.trim(),
 		contactNumber: values.contactNumber.trim(),
-		description: values.description.trim(),
 		email: values.email.trim(),
 		linkedMainBranchId: values.linkedMainBranchId.trim(),
 		name: values.name.trim(),

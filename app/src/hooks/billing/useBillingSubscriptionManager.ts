@@ -12,7 +12,7 @@ import {
 } from "@/app/src/data/billing/BillingTypes";
 import { validateBillingPaymentForm } from "@/app/src/validations/billing/BillingValidation";
 import { GetBillingCycleApiValue } from "@/app/src/data/billing/BillingUtils";
-import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
   AttachCompanySubscriptionPaymentMethod,
   CancelCompanySubscription,
@@ -20,8 +20,8 @@ import {
 } from "@/app/src/services/billing/BillingApi";
 import { BillingQueryKeys } from "@/app/src/services/billing/BillingQueryKeys";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
-import { useBillingPlansQuery } from "./useBillingPlansQuery";
-import { useCurrentBillingSubscriptionQuery } from "./useCurrentBillingSubscriptionQuery";
+import { useBillingPlansQuery } from "@/app/src/hooks/billing/useBillingPlansQuery";
+import { useCurrentBillingSubscriptionQuery } from "@/app/src/hooks/billing/useCurrentBillingSubscriptionQuery";
 
 function GetBlockingSubscriptionStatuses() {
   return new Set(["INCOMPLETE", "TRIALING", "ACTIVE", "PAST_DUE", "UNPAID"]);

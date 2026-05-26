@@ -3,9 +3,9 @@
 import type {
   OnboardingBillingStepProps,
 } from "@/app/src/data/onboarding/OnboardingTypes";
-import { OnboardingActionRow } from "./OnboardingActionRow";
-import { OnboardingBillingSummaryCard } from "./OnboardingBillingSummaryCard";
-import { OnboardingField } from "./OnboardingField";
+import { OnboardingActionRow } from "@/app/src/ui/onboarding/OnboardingActionRow";
+import { OnboardingBillingSummaryCard } from "@/app/src/ui/onboarding/OnboardingBillingSummaryCard";
+import { OnboardingField } from "@/app/src/ui/onboarding/OnboardingField";
 
 export function OnboardingBillingStep({
   values,

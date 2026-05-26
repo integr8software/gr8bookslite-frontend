@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ClearAccessToken, GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { ClearPendingVerificationEmail } from "@/app/src/data/auth/AuthVerificationStorage";
-import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
   BuildAuthApiUrl,
   GetAuthApiBaseUrl,

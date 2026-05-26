@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import TermsOfServiceForm from "@/app/src/ui/auth/TermsOfServiceForm";
-import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 
 export const metadata: Metadata = {
   title: `Terms of Service | ${AppName}`,

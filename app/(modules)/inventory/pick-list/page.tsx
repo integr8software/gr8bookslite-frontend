@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { PickListMain } from "@/app/src/ui/modules/inventory/pick-list/Main";
 
 const PageTitle = "Pick List";

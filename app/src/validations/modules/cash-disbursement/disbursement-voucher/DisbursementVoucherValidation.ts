@@ -18,11 +18,11 @@ export function validateDisbursementVoucherDetails(
 	}
 
 	if (!values.vceCode.trim()) {
-		errors.vceCode = "VCE code is required.";
+		errors.vceCode = "Party code is required.";
 	}
 
 	if (!values.vceName.trim()) {
-		errors.vceName = "Payee name is required.";
+		errors.vceName = "Party name is required.";
 	}
 
 	return errors;

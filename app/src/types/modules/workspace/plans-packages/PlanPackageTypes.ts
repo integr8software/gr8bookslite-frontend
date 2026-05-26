@@ -1,11 +1,11 @@
-import type { MainProductKey } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+import type { MainProductKey } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 
 export type PlanPackagePlanCode =
   | "ACCOUNTING"
   | "INVENTORY"
   | "ACCOUNTING_INVENTORY";
 
-export type PlanPackageStatus = "Active" | "Draft" | "Archived";
+export type PlanPackageStatus = "Active" | "Draft" | "Inactive";
 
 export type PlanPackageAddOnCode =
   | "ADDITIONAL_COMPANY"
@@ -13,19 +13,10 @@ export type PlanPackageAddOnCode =
   | "ADDITIONAL_SATELLITE"
   | "ADDITIONAL_USER";
 
-export type PlanPackageDiscountType = "Promo" | "Coupon" | "Voucher";
-
-export type PlanPackageDiscountKind = "Percent" | "Fixed";
-
 export type PlanPackagePlanName =
   | "Accounting"
   | "Inventory"
   | "Accounting + Inventory";
-
-export type PlanPackageDiscountTarget =
-  | "All Plans"
-  | PlanPackagePlanName
-  | "Add-ons";
 
 export type PlanPackageModuleOption = {
   groupLabel: string;
@@ -83,37 +74,9 @@ export type PlanPackagePricingFormErrors = Partial<
   Record<PlanPackageAddOnCode, string>
 >;
 
-export type PlanPackageDiscountRecord = {
-  code: string;
-  discountKind: PlanPackageDiscountKind;
-  expiresAt: string;
-  id: string;
-  name: string;
-  status: PlanPackageStatus;
-  target: PlanPackageDiscountTarget;
-  type: PlanPackageDiscountType;
-  value: number;
-};
-
-export type PlanPackageDiscountFormValues = {
-  code: string;
-  discountKind: PlanPackageDiscountKind;
-  expiresAt: string;
-  name: string;
-  status: PlanPackageStatus;
-  target: PlanPackageDiscountTarget;
-  type: PlanPackageDiscountType;
-  value: number;
-};
-
-export type PlanPackageDiscountFormErrors = Partial<
-  Record<keyof PlanPackageDiscountFormValues, string>
->;
-
 export type PlanPackageBillingPreviewValues = {
   branches: number;
   companies: number;
-  discountId: string;
   satellites: number;
   users: number;
 };
@@ -121,7 +84,6 @@ export type PlanPackageBillingPreviewValues = {
 export type PlanPackageBillingPreviewResult = {
   addOnTotal: number;
   basePrice: number;
-  discountAmount: number;
   lineItems: {
     label: string;
     quantity: number;

@@ -7,7 +7,7 @@ import type {
 import {
   DefaultPhilippineContactNumber,
   PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
+} from "@/app/src/data/shared/contact/ContactData";
 import type { UserFormErrors } from "@/app/src/types/modules/user-management/UserManagementTypes";
 
 export function UserListForm({
@@ -29,7 +29,7 @@ export function UserListForm({
 }) {
   return (
     <form id="users-form" onSubmit={onSubmit} className="grid gap-5">
-      <div className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
+      <div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
         <div className="grid gap-4 lg:grid-cols-2">
           <UserListField label="Full Name" error={errors.name} required>
             <input

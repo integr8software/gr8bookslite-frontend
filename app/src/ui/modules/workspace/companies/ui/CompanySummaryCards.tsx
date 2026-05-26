@@ -1,12 +1,15 @@
 import { Building2, GitBranch, ShieldCheck, Users } from "lucide-react";
+import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 
 export function CompanySummaryCards({
 	activeCompanies,
+	isLoading = false,
 	totalBranches,
 	totalCompanies,
 	totalUsers,
 }: {
 	activeCompanies: number;
+	isLoading?: boolean;
 	totalBranches: number;
 	totalCompanies: number;
 	totalUsers: number;
@@ -52,19 +55,33 @@ export function CompanySummaryCards({
 							<span className="flex h-11 w-11 items-center justify-center rounded-lg bg-skyblue/15 text-darknavy">
 								<Icon className="h-5 w-5" aria-hidden="true" />
 							</span>
-							<span className="rounded-md bg-darknavy/5 px-3 py-1.5 text-sm font-semibold text-darknavy/55">
-								Workspace
-							</span>
+							{isLoading ? (
+								<AppSkeleton className="h-8 w-24 rounded-md" />
+							) : (
+								<span className="rounded-md bg-darknavy/5 px-3 py-1.5 text-sm font-semibold text-darknavy/55">
+									Workspace
+								</span>
+							)}
 						</div>
-						<p className="mt-4 text-sm font-medium text-darknavy/55">
-							{card.label}
-						</p>
-						<p className="mt-1 text-3xl font-semibold text-darknavy">
-							{card.value}
-						</p>
-						<p className="mt-2 text-sm text-darknavy/55">
-							{card.supportingText}
-						</p>
+						{isLoading ? (
+							<div className="mt-5 grid gap-3">
+								<AppSkeleton className="h-4 w-32 rounded-md" />
+								<AppSkeleton className="h-8 w-14 rounded-md" />
+								<AppSkeleton className="h-4 w-40 rounded-md" />
+							</div>
+						) : (
+							<>
+								<p className="mt-4 text-sm font-medium text-darknavy/55">
+									{card.label}
+								</p>
+								<p className="mt-1 text-3xl font-semibold text-darknavy">
+									{card.value}
+								</p>
+								<p className="mt-2 text-sm text-darknavy/55">
+									{card.supportingText}
+								</p>
+							</>
+						)}
 					</article>
 				);
 			})}

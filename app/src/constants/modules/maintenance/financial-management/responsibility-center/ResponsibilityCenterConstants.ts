@@ -6,6 +6,41 @@ import type {
 export const ResponsibilityCenterHref =
 	"/maintenance/financial-management/responsibility-center";
 
+export const ResponsibilityCenterTablePaginationStorageKey =
+	"maintenance:financial-management:responsibility-center";
+
+export const ResponsibilityCenterTableColumns = [
+	{
+		key: "code",
+		label: "Code",
+		className: "w-[14%]",
+	},
+	{
+		key: "name",
+		label: "Name",
+		className: "w-[26%]",
+	},
+	{
+		key: "type",
+		label: "Type",
+		className: "w-[18%]",
+	},
+	{
+		key: "manager",
+		label: "Manager",
+		className: "w-[20%]",
+	},
+	{
+		key: "status",
+		label: "Status",
+		className: "w-[12%]",
+	},
+	{
+		label: "Actions",
+		className: "w-[10%] text-right",
+	},
+] as const;
+
 export const ResponsibilityCenterTypeOptions: ResponsibilityCenterType[] = [
 	"Cost Center",
 	"Profit Center",

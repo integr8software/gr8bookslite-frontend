@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { MainNotificationTab } from "@/app/src/types/shared/MainLayoutTypes";
+import type { MainNotificationTab } from "@/app/src/types/shared/main-layout/MainLayoutTypes";
 
 export function joinClasses(...classes: Array<string | undefined | false>) {
   return classes.filter(Boolean).join(" ");

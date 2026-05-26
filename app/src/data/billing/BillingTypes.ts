@@ -2,6 +2,8 @@ export type BillingCycle = "monthly" | "yearly";
 
 export type BillingCycleApi = "MONTHLY" | "YEARLY";
 
+export type BillingPlanScope = "ONBOARDING" | "ADDITIONAL_COMPANY";
+
 export type BillingPlanPrice = {
   amountInCents: number | null;
   compareAtInCents: number | null;
@@ -13,6 +15,7 @@ export type BillingPlan = {
   name: string;
   description: string | null;
   currency: string;
+  scope: BillingPlanScope;
   trialDays: number;
   pricing: {
     monthly: BillingPlanPrice;
@@ -93,6 +96,10 @@ export type CompanySubscription = {
 
 export type BillingPlansResponse = {
   plans: BillingPlan[];
+};
+
+export type BillingPaymentMethodsResponse = {
+  paymentMethods: BillingPaymentMethod[];
 };
 
 export type CurrentSubscriptionResponse = {

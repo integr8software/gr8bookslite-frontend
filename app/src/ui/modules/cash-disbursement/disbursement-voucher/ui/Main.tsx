@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { RotateCcw, Search } from "lucide-react";
+import { useState } from "react";
 import {
   useDisbursementVoucherPreviewTable,
   useDisbursementVoucherStore,
@@ -15,9 +14,15 @@ import type {
   DisbursementVoucherFormValues,
   DisbursementVoucherPreviewRow,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import { DisbursementVoucherDrawer } from "./DisbursementVoucherDrawer";
-import { DisbursementVoucherHeader } from "./DisbursementVoucherHeader";
-import { DisbursementVoucherTable } from "./DisbursementVoucherTable";
+import { DisbursementVoucherDrawer } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherDrawer";
+import { DisbursementVoucherHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherHeader";
+import { DisbursementVoucherTable } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherTable";
+import {
+  ModuleTableResetButton,
+  ModuleTableFilterSelect,
+  ModuleTableSearch,
+  ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/ModuleTableToolbar";
 
 type DrawerState = {
   mode: "add" | "edit";
@@ -42,10 +47,6 @@ export function DisbursementVoucherMain() {
     useState<DisbursementVoucherPreviewRow | null>(null);
   const [drawerState, setDrawerState] = useState<DrawerState>(null);
   const previewTable = useDisbursementVoucherPreviewTable(previewRows);
-  const visibleRows = useMemo(
-    () => previewTable.table.getRowModel().rows.map((row) => row.original),
-    [previewTable.table],
-  );
 
   function handleConfirmDelete() {
     if (!pendingDeleteRow?.voucher) {
@@ -102,55 +103,39 @@ export function DisbursementVoucherMain() {
                 Delete.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {previewTable.statusOptions.map((status) => {
-                const isActive = previewTable.statusFilter === status;
-
-                return (
-                  <button
-                    key={status}
-                    type="button"
-                    onClick={() => previewTable.setStatusFilter(status)}
-                    className={`inline-flex h-10 items-center justify-center rounded-full px-4 text-sm font-semibold transition ${
-                      isActive
-                        ? "bg-darknavy text-white shadow-md shadow-darknavy/10"
-                        : "border border-darknavy/10 bg-white text-darknavy/65 hover:border-skyblue/40"
-                    }`}
-                  >
-                    {status}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mt-5 flex flex-col gap-3 lg:flex-row lg:items-center">
-            <label className="relative block flex-1">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/35" />
-              <input
-                type="search"
-                value={previewTable.query}
-                onChange={(event) => previewTable.setQuery(event.target.value)}
-                placeholder="Search by transaction number, payee, department, or remarks..."
-                className="h-12 w-full rounded-full border border-darknavy/12 bg-offwhite/60 pl-11 pr-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:bg-white"
-              />
-            </label>
-            <button
-              type="button"
-              onClick={previewTable.resetFilters}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy/70 transition hover:border-skyblue/40"
-            >
-              <RotateCcw className="h-4 w-4" aria-hidden="true" />
-              Reset Search
-            </button>
           </div>
 
           <div className="mt-6">
-            <DisbursementVoucherTable
+              <DisbursementVoucherTable
               onCreateVoucher={(row) => setDrawerState({ mode: "add", row })}
               onEditVoucher={(row) => setDrawerState({ mode: "edit", row })}
-              rows={visibleRows}
               table={previewTable.table}
+              toolbar={
+                <ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
+                  <ModuleTableSearch
+                    label="Search disbursement voucher transactions"
+                    value={previewTable.query}
+                    onChange={previewTable.setQuery}
+                    placeholder="Search by transaction number, payee, department, or remarks..."
+                  />
+                  <ModuleTableFilterSelect
+                    label="Status"
+                    value={previewTable.statusFilter}
+                    options={previewTable.statusOptions.map((status) => ({
+                      label: status,
+                      value: status,
+                    }))}
+                    onChange={(value) =>
+                      previewTable.setStatusFilter(
+                        value as (typeof previewTable.statusOptions)[number],
+                      )
+                    }
+                  />
+                  <ModuleTableResetButton onClick={previewTable.resetFilters}>
+                    Reset
+                  </ModuleTableResetButton>
+                </ModuleTableToolbar>
+              }
               onDeleteVoucher={setPendingDeleteRow}
             />
           </div>
@@ -179,3 +164,4 @@ export function DisbursementVoucherMain() {
     </>
   );
 }
+

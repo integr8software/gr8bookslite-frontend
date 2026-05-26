@@ -24,12 +24,12 @@ import {
 	WorkspaceCompanyTypeOptions,
 	WorkspaceCompanyUserTableColumns,
 } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
-	MockWorkspaceBranchUsers,
-	MockWorkspaceCompanies,
-	MockWorkspaceCompanyBranches,
-	MockWorkspaceCompanyUsers,
-} from "@/app/src/data/modules/workspace/companies/WorkspaceCompanyData";
+	CreateWorkspaceCompany,
+	GetWorkspaceCompanies,
+} from "@/app/src/services/modules/workspace/companies/WorkspaceCompanyApi";
 import { WorkspaceCompanyQueryKeys } from "@/app/src/services/modules/workspace/companies/WorkspaceCompanyQueryKeys";
 import type {
 	WorkspaceBranchUserRecord,
@@ -40,6 +40,7 @@ import type {
 	WorkspaceCompanyBranchRecord,
 	WorkspaceCompanyBranchTableColumnKey,
 	WorkspaceCompanyBranchTableRecord,
+	WorkspaceCompanyFormValues,
 	WorkspaceCompanyPlan,
 	WorkspaceCompanyRecord,
 	WorkspaceCompanyStatus,
@@ -60,7 +61,7 @@ type WorkspaceCompanyManagementStoreState = {
 	users: WorkspaceCompanyUserRecord[];
 	addBranch: (branch: WorkspaceCompanyBranchRecord) => void;
 	addBranchUser: (user: WorkspaceBranchUserRecord) => void;
-	addCompany: (company: WorkspaceCompanyRecord) => void;
+	addCompany: (values: WorkspaceCompanyFormValues) => Promise<WorkspaceCompanyRecord>;
 	addCompanyUser: (user: WorkspaceCompanyUserRecord) => void;
 	updateBranch: (branch: WorkspaceCompanyBranchRecord) => void;
 	updateBranchUser: (user: WorkspaceBranchUserRecord) => void;
@@ -68,29 +69,42 @@ type WorkspaceCompanyManagementStoreState = {
 	updateCompanyUser: (user: WorkspaceCompanyUserRecord) => void;
 };
 
+const EmptyWorkspaceCompanies: WorkspaceCompanyRecord[] = [];
+const EmptyWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [];
+const EmptyWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [];
+const EmptyWorkspaceBranchUsers: WorkspaceBranchUserRecord[] = [];
+
 export function useWorkspaceCompanyManagementStore<
 	TSelected = WorkspaceCompanyManagementStoreState,
 >(selector?: (state: WorkspaceCompanyManagementStoreState) => TSelected) {
 	const queryClient = useQueryClient();
+	const storedAccessToken = useAppStore((state) => state.accessToken);
+	const accessToken = storedAccessToken ?? GetAccessToken();
 	const companiesQuery = useQuery({
 		queryKey: WorkspaceCompanyQueryKeys.companies(),
-		queryFn: async () => MockWorkspaceCompanies,
-		initialData: MockWorkspaceCompanies,
+		queryFn: async () => {
+			if (!accessToken) {
+				return EmptyWorkspaceCompanies;
+			}
+
+			return GetWorkspaceCompanies(accessToken);
+		},
+		enabled: Boolean(accessToken),
 	});
 	const usersQuery = useQuery({
 		queryKey: WorkspaceCompanyQueryKeys.users(),
-		queryFn: async () => MockWorkspaceCompanyUsers,
-		initialData: MockWorkspaceCompanyUsers,
+		queryFn: async () => EmptyWorkspaceCompanyUsers,
+		initialData: EmptyWorkspaceCompanyUsers,
 	});
 	const branchesQuery = useQuery({
 		queryKey: WorkspaceCompanyQueryKeys.branches(),
-		queryFn: async () => MockWorkspaceCompanyBranches,
-		initialData: MockWorkspaceCompanyBranches,
+		queryFn: async () => EmptyWorkspaceCompanyBranches,
+		initialData: EmptyWorkspaceCompanyBranches,
 	});
 	const branchUsersQuery = useQuery({
 		queryKey: WorkspaceCompanyQueryKeys.branchUsers(),
-		queryFn: async () => MockWorkspaceBranchUsers,
-		initialData: MockWorkspaceBranchUsers,
+		queryFn: async () => EmptyWorkspaceBranchUsers,
+		initialData: EmptyWorkspaceBranchUsers,
 	});
 
 	function setCompanies(
@@ -98,7 +112,7 @@ export function useWorkspaceCompanyManagementStore<
 	) {
 		queryClient.setQueryData<WorkspaceCompanyRecord[]>(
 			WorkspaceCompanyQueryKeys.companies(),
-			(current = MockWorkspaceCompanies) => updater(current),
+			(current = EmptyWorkspaceCompanies) => updater(current),
 		);
 	}
 
@@ -109,7 +123,7 @@ export function useWorkspaceCompanyManagementStore<
 	) {
 		queryClient.setQueryData<WorkspaceCompanyUserRecord[]>(
 			WorkspaceCompanyQueryKeys.users(),
-			(current = MockWorkspaceCompanyUsers) => updater(current),
+			(current = EmptyWorkspaceCompanyUsers) => updater(current),
 		);
 	}
 
@@ -120,7 +134,7 @@ export function useWorkspaceCompanyManagementStore<
 	) {
 		queryClient.setQueryData<WorkspaceCompanyBranchRecord[]>(
 			WorkspaceCompanyQueryKeys.branches(),
-			(current = MockWorkspaceCompanyBranches) => updater(current),
+			(current = EmptyWorkspaceCompanyBranches) => updater(current),
 		);
 	}
 
@@ -131,18 +145,31 @@ export function useWorkspaceCompanyManagementStore<
 	) {
 		queryClient.setQueryData<WorkspaceBranchUserRecord[]>(
 			WorkspaceCompanyQueryKeys.branchUsers(),
-			(current = MockWorkspaceBranchUsers) => updater(current),
+			(current = EmptyWorkspaceBranchUsers) => updater(current),
 		);
 	}
 
 	const addCompanyMutation = useMutation({
-		mutationFn: async (company: WorkspaceCompanyRecord) => company,
+		mutationFn: async (values: WorkspaceCompanyFormValues) => {
+			if (!accessToken) {
+				throw new Error("Sign in again before creating a company.");
+			}
+
+			return CreateWorkspaceCompany(accessToken, values);
+		},
 		onSuccess: (company) => {
-			setCompanies((companies) => [...companies, company]);
+			setCompanies((companies) => [company, ...companies]);
+			void queryClient.invalidateQueries({
+				queryKey: WorkspaceCompanyQueryKeys.companies(),
+			});
 			toast.success("Company created.");
 		},
-		onError: () => {
-			toast.error("Could not create company. Please try again.");
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not create company. Please try again.",
+			);
 		},
 	});
 	const updateCompanyMutation = useMutation({
@@ -231,11 +258,11 @@ export function useWorkspaceCompanyManagementStore<
 		() => ({
 			addBranch: (branch) => addBranchMutation.mutate(branch),
 			addBranchUser: (user) => addBranchUserMutation.mutate(user),
-			addCompany: (company) => addCompanyMutation.mutate(company),
+			addCompany: (values) => addCompanyMutation.mutateAsync(values),
 			addCompanyUser: (user) => addCompanyUserMutation.mutate(user),
-			branchUsers: branchUsersQuery.data,
-			branches: branchesQuery.data,
-			companies: companiesQuery.data,
+			branchUsers: branchUsersQuery.data ?? EmptyWorkspaceBranchUsers,
+			branches: branchesQuery.data ?? EmptyWorkspaceCompanyBranches,
+			companies: companiesQuery.data ?? EmptyWorkspaceCompanies,
 			isLoading:
 				branchUsersQuery.isLoading ||
 				branchesQuery.isLoading ||
@@ -254,7 +281,7 @@ export function useWorkspaceCompanyManagementStore<
 			updateBranchUser: (user) => updateBranchUserMutation.mutate(user),
 			updateCompany: (company) => updateCompanyMutation.mutate(company),
 			updateCompanyUser: (user) => updateCompanyUserMutation.mutate(user),
-			users: usersQuery.data,
+			users: usersQuery.data ?? EmptyWorkspaceCompanyUsers,
 		}),
 		[
 			addBranchMutation,
@@ -350,14 +377,16 @@ export function useWorkspaceCompaniesTable({
 		() =>
 			companies.map((company) => ({
 				...company,
-				totalBranches: branches.filter(
-					(branch) => branch.companyId === company.id,
-				).length,
-				totalUsers: users.filter((user) =>
-					user.companyAssignments.some(
-						(assignment) => assignment.companyId === company.id,
-					),
-				).length,
+				totalBranches:
+					company.totalBranches ??
+					branches.filter((branch) => branch.companyId === company.id).length,
+				totalUsers:
+					company.totalUsers ??
+					users.filter((user) =>
+						user.companyAssignments.some(
+							(assignment) => assignment.companyId === company.id,
+						),
+					).length,
 			})),
 		[branches, companies, users],
 	);

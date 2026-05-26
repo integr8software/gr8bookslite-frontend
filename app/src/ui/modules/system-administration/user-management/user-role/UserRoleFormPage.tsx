@@ -35,6 +35,7 @@ export function UserRoleFormPage() {
 
 function UserRoleFormPageInner() {
   const page = useUserRoleFormPage();
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const nextStatus = page.existingUserRole
     ? getNextUserStatus(page.existingUserRole.status)
@@ -69,7 +70,7 @@ function UserRoleFormPageInner() {
             {page.mode === "view" ? (
               <Link
                 href={page.cancelHref}
-                className={moduleHeaderActionClassNames.secondary}
+                className={`${moduleHeaderActionClassNames.secondary} max-sm:w-full`}
               >
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                 Back
@@ -78,7 +79,7 @@ function UserRoleFormPageInner() {
             {page.mode === "view" && page.editHref ? (
               <Link
                 href={page.editHref}
-                className={moduleHeaderActionClassNames.secondary}
+                className={`${moduleHeaderActionClassNames.secondary} max-sm:w-full`}
               >
                 <Edit3 className="h-4 w-4" aria-hidden="true" />
                 Edit
@@ -87,7 +88,7 @@ function UserRoleFormPageInner() {
             {page.mode !== "view" ? (
               <Link
                 href={page.cancelHref}
-                className={moduleHeaderActionClassNames.secondary}
+                className={`${moduleHeaderActionClassNames.secondary} max-sm:w-full`}
               >
                 <X className="h-4 w-4" aria-hidden="true" />
                 Cancel
@@ -99,8 +100,8 @@ function UserRoleFormPageInner() {
                 onClick={() => setIsStatusDialogOpen(true)}
                 className={
                   nextStatus === "Inactive"
-                    ? moduleHeaderActionClassNames.danger
-                    : moduleHeaderActionClassNames.secondary
+                    ? `${moduleHeaderActionClassNames.danger} max-sm:w-full`
+                    : `${moduleHeaderActionClassNames.secondary} max-sm:w-full`
                 }
               >
                 <StatusIcon className="h-4 w-4" aria-hidden="true" />
@@ -109,9 +110,9 @@ function UserRoleFormPageInner() {
             ) : null}
             {!page.isReadonly ? (
               <button
-                type="submit"
-                form="user-role-form"
-                className={moduleHeaderActionClassNames.primary}
+                type="button"
+                onClick={() => setIsSaveDialogOpen(true)}
+                className={`${moduleHeaderActionClassNames.primary} max-sm:w-full`}
               >
                 <Save className="h-4 w-4" aria-hidden="true" />
                 Save
@@ -126,8 +127,18 @@ function UserRoleFormPageInner() {
         values={page.values}
         onSubmit={page.handleSubmit}
         onUpdateAccessRoles={page.updateAccessRoles}
-        onToggleAccessRole={page.toggleAccessRole}
         onUpdateField={page.updateField}
+      />
+      <SaveConfirmDialog
+        isOpen={isSaveDialogOpen}
+        isPending={page.isMutating}
+        mode={page.mode}
+        noun="user role"
+        onCancel={() => setIsSaveDialogOpen(false)}
+        onConfirm={() => {
+          page.submitForm();
+          setIsSaveDialogOpen(false);
+        }}
       />
       <StatusConfirmDialog
         entityName={page.existingUserRole?.name}
@@ -139,6 +150,41 @@ function UserRoleFormPageInner() {
         onConfirm={page.handleStatusChange}
       />
     </section>
+  );
+}
+
+function SaveConfirmDialog({
+  isOpen,
+  isPending,
+  mode,
+  noun,
+  onCancel,
+  onConfirm,
+}: {
+  isOpen: boolean;
+  isPending: boolean;
+  mode: "add" | "edit" | "view";
+  noun: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const isEditMode = mode === "edit";
+
+  return (
+    <AppDialog
+      isOpen={isOpen}
+      isPending={isPending}
+      title={isEditMode ? `Save changes to this ${noun}?` : `Save this ${noun}?`}
+      description={
+        isEditMode
+          ? `This will update the selected ${noun} with your latest changes.`
+          : `This will create a new ${noun} using the details you entered.`
+      }
+      confirmLabel={isEditMode ? "Save Changes" : "Save"}
+      tone="success"
+      onCancel={onCancel}
+      onConfirm={onConfirm}
+    />
   );
 }
 

@@ -8,7 +8,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import type { SpotlightTourStep } from "@/app/src/types/shared/SpotlightTourTypes";
+import type { SpotlightTourStep } from "@/app/src/types/shared/tour/SpotlightTourTypes";
 
 const SpotlightPadding = 12;
 const SpotlightCardWidth = 360;

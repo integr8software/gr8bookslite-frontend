@@ -11,7 +11,7 @@ import {
 	type SortingState,
 } from "@tanstack/react-table";
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
-import { usePurchaseRequestStore } from "./usePurchaseRequest";
+import { usePurchaseRequestStore } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequest";
 
 export function usePurchaseRequestListPage() {
 	const { deleteRequest, isMutating, requests } = usePurchaseRequestStore();

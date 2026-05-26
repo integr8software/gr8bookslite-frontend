@@ -1,2 +1,2 @@
-export * from "./Main";
-export * from "./Action";
+export * from "@/app/src/ui/modules/inventory/pick-list/Main";
+export * from "@/app/src/ui/modules/inventory/pick-list/Action";

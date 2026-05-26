@@ -8,7 +8,7 @@ import {
   WorkspaceSpotlightTutorialStorageVersion,
 } from "@/app/src/data/modules/dashboard/WorkspaceSpotlightTutorialData";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
-import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 const SpotlightStoragePrefix = "gr8booksneo.workspaceSpotlightTutorial";
 

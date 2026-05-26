@@ -1,4 +1,4 @@
-import { ApiClient } from "@/app/src/services/shared/ApiClient";
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   AuthProfileResponse,
   ChangeAuthenticatedPasswordRequest,
@@ -7,7 +7,7 @@ import type {
   VerifyPasswordChangeOtpRequest,
   VerifyPasswordChangeOtpResponse,
 } from "@/app/src/services/auth/AuthApiTypes";
-import { BuildApiUrl, GetApiBaseUrl } from "@/app/src/services/shared/ApiUrl";
+import { BuildApiUrl, GetApiBaseUrl } from "@/app/src/services/shared/api/ApiUrl";
 
 export function BuildAuthApiUrl(path: string) {
   try {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import type { ReactNode } from "react";
 import type { Table } from "@tanstack/react-table";
 import type {
 	ChartAccount,
@@ -13,6 +14,7 @@ type ChartsOfAccountsTableProps = {
 	expandedIds: Set<string>;
 	isLoading: boolean;
 	table: Table<FlattenedChartAccount>;
+	toolbar?: ReactNode;
 	onDelete: (account: ChartAccount) => void;
 	onEdit: (account: ChartAccount) => void;
 	onToggleExpanded: (accountId: string) => void;
@@ -27,6 +29,8 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
 			isLoading={props.isLoading}
 			paginationLabel="accounts"
 			table={props.table}
+			toolbar={props.toolbar}
+			variant="embedded"
 			renderRow={({ id, original }) => (
 				<ChartsOfAccountsTableRow
 					key={id}

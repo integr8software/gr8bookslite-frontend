@@ -1,8 +1,10 @@
-import { ApiClient } from "@/app/src/services/shared/ApiClient";
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   AttachPaymentMethodRequest,
   AttachPaymentMethodResponse,
+  BillingPaymentMethodsResponse,
   BillingPlansResponse,
+  BillingPlanScope,
   CancelSubscriptionRequest,
   CancelSubscriptionResponse,
   CurrentSubscriptionResponse,
@@ -16,10 +18,25 @@ function GetAuthorizationHeaders(accessToken: string) {
   };
 }
 
-export async function GetBillingPlans(accessToken: string) {
+export async function GetBillingPlans(
+  accessToken: string,
+  scope?: BillingPlanScope,
+) {
   const response = await ApiClient.get<BillingPlansResponse>("/billing/plans", {
     headers: GetAuthorizationHeaders(accessToken),
+    params: scope ? { scope } : undefined,
   });
+
+  return response.data;
+}
+
+export async function GetBillingPaymentMethods(accessToken: string) {
+  const response = await ApiClient.get<BillingPaymentMethodsResponse>(
+    "/billing/payment-methods",
+    {
+      headers: GetAuthorizationHeaders(accessToken),
+    },
+  );
 
   return response.data;
 }

@@ -53,19 +53,28 @@ export function UserListFormHeader({
       actions={
         <>
           {mode === "view" ? (
-            <Link href={cancelHref} className={moduleHeaderActionClassNames.secondary}>
+            <Link
+              href={cancelHref}
+              className={`${moduleHeaderActionClassNames.secondary} max-sm:w-full`}
+            >
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back
             </Link>
           ) : null}
           {mode === "view" && editHref ? (
-            <Link href={editHref} className={moduleHeaderActionClassNames.secondary}>
+            <Link
+              href={editHref}
+              className={`${moduleHeaderActionClassNames.secondary} max-sm:w-full`}
+            >
               <Edit3 className="h-4 w-4" aria-hidden="true" />
               Edit
             </Link>
           ) : null}
           {mode !== "view" ? (
-            <Link href={cancelHref} className={moduleHeaderActionClassNames.secondary}>
+            <Link
+              href={cancelHref}
+              className={`${moduleHeaderActionClassNames.secondary} max-sm:w-full`}
+            >
               <X className="h-4 w-4" aria-hidden="true" />
               Cancel
             </Link>
@@ -76,8 +85,8 @@ export function UserListFormHeader({
               onClick={onStatusChange}
               className={
                 nextStatus === "Inactive"
-                  ? moduleHeaderActionClassNames.danger
-                  : moduleHeaderActionClassNames.secondary
+                  ? `${moduleHeaderActionClassNames.danger} max-sm:w-full`
+                  : `${moduleHeaderActionClassNames.secondary} max-sm:w-full`
               }
             >
               <StatusIcon className="h-4 w-4" aria-hidden="true" />
@@ -97,4 +106,4 @@ export function UserListFormHeader({
 }
 
 const saveClassName =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold text-white";
+  "inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold text-white sm:w-auto";

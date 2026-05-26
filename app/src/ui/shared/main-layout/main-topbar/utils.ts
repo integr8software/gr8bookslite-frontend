@@ -1,11 +1,11 @@
 import type {
   MainBranch,
   MainCompany,
-} from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import type {
   MainTopbarUser,
   SwitcherVariant,
-} from "@/app/src/types/shared/MainTopbarTypes";
+} from "@/app/src/types/shared/main-layout/MainTopbarTypes";
 
 export function joinClasses(...classes: Array<string | undefined | false>) {
   return classes.filter(Boolean).join(" ");

@@ -3,14 +3,15 @@ import { ChevronRight } from "lucide-react";
 import type {
 	MainNavigationItem,
 	MainNavigationSection,
-} from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { MainIcons, renderSidebarItemIcon } from "./SidebarIcons";
 import {
 	getVisibleCountToActiveItem,
+	itemMatchesActiveHref,
 	joinClasses,
 	pathMatches,
 	useIncrementalVisibleCount,
-} from "./utils";
+} from "@/app/src/ui/shared/main-layout/sidebar/utils";
 
 const SectionInitialCount = 8;
 const SectionBatchSize = 8;
@@ -28,6 +29,40 @@ type SidebarSectionProps = {
 	onToggleExpandedKey: (key: string) => void;
 };
 
+export function SidebarCategorySection({
+	activeHref,
+	expandedKeys,
+	section,
+	onInteract,
+	onNavigateFromSidebar,
+	onToggleExpandedKey,
+}: SidebarSectionProps) {
+	const Icon = MainIcons[section.icon];
+
+	return (
+		<section className="space-y-1.5">
+			<div className="flex min-h-8 items-center gap-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-darknavy/42">
+				<Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+				<span className="min-w-0 truncate">{section.title}</span>
+			</div>
+			<div className="space-y-1">
+				{section.items.map((item) => (
+					<SidebarItem
+						key={item.key}
+						activeHref={activeHref}
+						expandedKeys={expandedKeys}
+						item={item}
+						depth={0}
+						onInteract={onInteract}
+						onNavigateFromSidebar={onNavigateFromSidebar}
+						onToggleExpandedKey={onToggleExpandedKey}
+					/>
+				))}
+			</div>
+		</section>
+	);
+}
+
 export function SidebarSection({
 	activeHref,
 	expandedKeys,
@@ -37,6 +72,15 @@ export function SidebarSection({
 	onToggleExpandedKey,
 }: SidebarSectionProps) {
 	const Icon = MainIcons[section.icon];
+	const directItem =
+		section.href &&
+		section.items.length === 1 &&
+		section.items[0]?.href === section.href
+			? section.items[0]
+			: null;
+	const isDirectActive = directItem
+		? pathMatches(directItem.href, activeHref)
+		: false;
 	const isExpanded = expandedKeys.includes(section.key);
 	const sectionInitialCount =
 		section.key === "dashboard"
@@ -56,6 +100,39 @@ export function SidebarSection({
 			isExpanded,
 		);
 	const visibleSectionItems = section.items.slice(0, sectionVisibleCount);
+
+	if (directItem) {
+		return (
+			<section>
+				<Link
+					href={directItem.href}
+					onClick={onNavigateFromSidebar(directItem.href)}
+					data-main-sidebar-active-item={
+						isDirectActive ? "true" : undefined
+					}
+					className={joinClasses(
+						"group relative flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+						isDirectActive
+							? "rounded-2xl bg-skyblue/14 text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] ring-1 ring-skyblue/22 hover:bg-skyblue/18"
+							: "text-darknavy hover:bg-darknavy/5",
+					)}
+				>
+					<Icon
+						className={joinClasses(
+							"h-4 w-4 shrink-0",
+							isDirectActive
+								? "text-skyblue"
+								: "text-darknavy/65",
+						)}
+						aria-hidden="true"
+					/>
+					<span className="min-w-0 flex-1 truncate">
+						{section.title}
+					</span>
+				</Link>
+			</section>
+		);
+	}
 
 	return (
 		<section>
@@ -138,16 +215,25 @@ export function SidebarItem({
 	onToggleExpandedKey,
 }: SidebarItemProps) {
 	const hasChildren = Boolean(item.children?.length);
-	const shouldShowIcon = hasChildren || item.accessKey === "maintenance.party";
+	const shouldShowIcon =
+		hasChildren ||
+		item.accessKey === "maintenance.party" ||
+		item.accessKey === "maintenance.warehouse";
 	const shouldShowModuleDot = !shouldShowIcon;
 	const childItems = item.children ?? [];
 	const isExpanded = expandedKeys.includes(item.key);
 	const isExactActive = activeHref === item.href;
 	const isDescendantActive =
 		!isExactActive && activeHref.startsWith(`${item.href}/`);
-	const isAncestorActive = hasChildren && isDescendantActive;
+	const hasActiveChild =
+		hasChildren &&
+		childItems.some((childItem) =>
+			itemMatchesActiveHref(childItem, activeHref),
+		);
+	const isAncestorActive =
+		hasChildren && !isExactActive && (isDescendantActive || hasActiveChild);
 	const isActive = hasChildren
-		? isExactActive || isDescendantActive
+		? isExactActive || isDescendantActive || hasActiveChild
 		: pathMatches(item.href, activeHref);
 	const paddingClass =
 		depth < 0

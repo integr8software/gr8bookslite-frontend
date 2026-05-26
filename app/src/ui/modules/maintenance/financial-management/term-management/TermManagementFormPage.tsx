@@ -5,9 +5,9 @@ import { TermManagementActionCopy } from "@/app/src/constants/modules/maintenanc
 import { useTermManagementFormPage } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagementFormPage";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { TermManagementActionButtons } from "./TermManagementActionButtons";
-import { TermManagementFields } from "./TermManagementFields";
-import { TermManagementNotFound } from "./TermManagementNotFound";
+import { TermManagementActionButtons } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementActionButtons";
+import { TermManagementFields } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementFields";
+import { TermManagementNotFound } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementNotFound";
 
 export function TermManagementFormPage() {
   const page = useTermManagementFormPage();

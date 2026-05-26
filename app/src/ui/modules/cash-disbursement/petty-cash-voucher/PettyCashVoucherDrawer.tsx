@@ -7,11 +7,11 @@ import {
 	primaryButtonClassName,
 	secondaryButtonClassName,
 	type PettyCashVoucherFormPageState,
-} from "./PettyCashVoucherFormControls";
+} from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherFormControls";
 import {
 	PettyCashVoucherDetailsFields,
 	PettyCashVoucherSidePanel,
-} from "./PettyCashVoucherFormSections";
+} from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherFormSections";
 
 type PettyCashVoucherDrawerProps = {
 	isOpen: boolean;

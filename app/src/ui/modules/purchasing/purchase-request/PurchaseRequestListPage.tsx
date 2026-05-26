@@ -12,8 +12,12 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
+import {
+  ModuleTableSearch,
+  ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/ModuleTableToolbar";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { PurchaseRequestTableRow } from "./PurchaseRequestTableRow";
+import { PurchaseRequestTableRow } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestTableRow";
 
 export function PurchaseRequestListPage() {
   const {
@@ -50,30 +54,25 @@ export function PurchaseRequestListPage() {
         }
       />
 
-      <div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm">
-        <label className="relative block">
-          <span className="sr-only">Search purchase requests</span>
-          <Search
-            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/45"
-            aria-hidden="true"
-          />
-          <input
-            value={query}
-            onChange={(event) => handleQueryChange(event.target.value)}
-            placeholder="Search by PR no., supplier, project, or status"
-            className="h-12 w-full rounded-lg border border-darknavy/10 bg-offwhite/65 pl-11 pr-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15"
-          />
-        </label>
-      </div>
-
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
         <ModuleTable
+          variant="embedded"
           emptyDescription="Try another PR no., supplier, project, or status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
           emptyTitle="No purchase requests found"
           minWidthClassName="min-w-[74rem]"
           paginationStorageKey={PurchaseRequestTablePaginationStorageKey}
           table={table}
+          toolbar={
+            <ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,1fr)]">
+              <ModuleTableSearch
+                label="Search purchase requests"
+                value={query}
+                onChange={handleQueryChange}
+                placeholder="Search by PR no., supplier, project, or status"
+              />
+            </ModuleTableToolbar>
+          }
           renderRow={({ id, original }) => (
             <PurchaseRequestTableRow
               key={id}

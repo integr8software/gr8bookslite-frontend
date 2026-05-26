@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Edit3, Eye, FileText, Trash2 } from "lucide-react";
+import { FileText } from "lucide-react";
 import { PurchaseRequestHref } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import {
 	formatPurchaseRequestCurrency,
@@ -7,6 +6,11 @@ import {
 	getPurchaseRequestTotal,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import {
+	ModuleTableActionButton,
+	ModuleTableActionLink,
+	ModuleTableActions,
+} from "@/app/src/ui/shared/module/ModuleTableActions";
 
 type PurchaseRequestTableRowProps = {
 	request: PurchaseRequestRecord;
@@ -35,41 +39,29 @@ export function PurchaseRequestTableRow({
 				{formatPurchaseRequestCurrency(getPurchaseRequestTotal(request))}
 			</td>
 			<td className="px-4 py-4">
-				<div className="flex items-center gap-2">
-					<Link
+				<ModuleTableActions>
+					<ModuleTableActionLink
+						variant="view"
 						href={`${PurchaseRequestHref}/view/${request.id}`}
-						aria-label={`View purchase request ${request.transNo}`}
-						className={tableActionClassName}
-					>
-						<Eye className="h-4 w-4" aria-hidden="true" />
-					</Link>
-					<Link
+						label={`View purchase request ${request.transNo}`}
+					/>
+					<ModuleTableActionLink
+						variant="edit"
 						href={`${PurchaseRequestHref}/edit/${request.id}`}
-						aria-label={`Edit purchase request ${request.transNo}`}
-						className={tableActionClassName}
-					>
-						<Edit3 className="h-4 w-4" aria-hidden="true" />
-					</Link>
-					<Link
+						label={`Edit purchase request ${request.transNo}`}
+					/>
+					<ModuleTableActionLink
+						icon={FileText}
 						href={`${PurchaseRequestHref}/view/${request.id}?preview=1`}
-						aria-label={`Preview purchase request ${request.transNo}`}
-						className={tableActionClassName}
-					>
-						<FileText className="h-4 w-4" aria-hidden="true" />
-					</Link>
-					<button
-						type="button"
+						label={`Preview purchase request ${request.transNo}`}
+					/>
+					<ModuleTableActionButton
+						variant="delete"
 						onClick={() => onDeleteRequest(request)}
-						aria-label={`Delete purchase request ${request.transNo}`}
-						className="inline-flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
-					>
-						<Trash2 className="h-4 w-4" aria-hidden="true" />
-					</button>
-				</div>
+						label={`Delete purchase request ${request.transNo}`}
+					/>
+				</ModuleTableActions>
 			</td>
 		</tr>
 	);
 }
-
-const tableActionClassName =
-	"inline-flex h-9 w-9 items-center justify-center rounded-md text-darknavy transition hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35";

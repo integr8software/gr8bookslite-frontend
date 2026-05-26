@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { OtpFormClientOnly } from "@/app/src/ui/auth/OtpFormClientOnly";
 import { GradientBlurBackground } from "@/app/src/ui/shared/layout/GradientBlurBackground";
-import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 
 export const metadata: Metadata = {
 	title: `Verify email | ${AppName}`,

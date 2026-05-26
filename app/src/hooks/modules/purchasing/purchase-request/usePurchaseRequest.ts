@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	loadPurchaseRequests,
 	savePurchaseRequests,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
+import { PurchaseRequestQueryKeys } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestQueryKeys";
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 
 type PurchaseRequestStoreState = {
@@ -19,48 +21,59 @@ type PurchaseRequestStoreState = {
 export function usePurchaseRequestStore<
 	TSelected = PurchaseRequestStoreState,
 >(selector?: (state: PurchaseRequestStoreState) => TSelected) {
-	const [requests, setRequests] =
-		useState<PurchaseRequestRecord[]>(loadPurchaseRequests);
-	const [isMutating, setIsMutating] = useState(false);
+	const queryClient = useQueryClient();
+	const requestsQuery = useQuery({
+		queryKey: PurchaseRequestQueryKeys.requests(),
+		queryFn: async () => loadPurchaseRequests(),
+		initialData: loadPurchaseRequests,
+	});
 
-	const commitRequests = useCallback(
-		(
+	const saveRequestsMutation = useMutation({
+		mutationFn: async (
 			updater: (
 				currentRequests: PurchaseRequestRecord[],
 			) => PurchaseRequestRecord[],
 		) => {
-			setIsMutating(true);
-			setRequests((currentRequests) => {
-				const nextRequests = updater(currentRequests);
+			const currentRequests =
+				queryClient.getQueryData<PurchaseRequestRecord[]>(
+					PurchaseRequestQueryKeys.requests(),
+				) ?? loadPurchaseRequests();
+			const nextRequests = updater(currentRequests);
 
-				savePurchaseRequests(nextRequests);
+			savePurchaseRequests(nextRequests);
 
-				return nextRequests;
-			});
-			setIsMutating(false);
+			return nextRequests;
 		},
-		[],
-	);
+		onSuccess: (nextRequests) => {
+			queryClient.setQueryData(
+				PurchaseRequestQueryKeys.requests(),
+				nextRequests,
+			);
+		},
+	});
 
 	const state = useMemo<PurchaseRequestStoreState>(
 		() => ({
-			requests,
+			requests: requestsQuery.data,
 			addRequest: (request) =>
-				commitRequests((currentRequests) => [request, ...currentRequests]),
+				saveRequestsMutation.mutate((currentRequests) => [
+					request,
+					...currentRequests,
+				]),
 			updateRequest: (request) =>
-				commitRequests((currentRequests) =>
+				saveRequestsMutation.mutate((currentRequests) =>
 					currentRequests.map((currentRequest) =>
 						currentRequest.id === request.id ? request : currentRequest,
 					),
 				),
 			deleteRequest: (requestId) =>
-				commitRequests((currentRequests) =>
+				saveRequestsMutation.mutate((currentRequests) =>
 					currentRequests.filter((request) => request.id !== requestId),
 				),
-			isLoading: false,
-			isMutating,
+			isLoading: requestsQuery.isLoading,
+			isMutating: saveRequestsMutation.isPending,
 		}),
-		[commitRequests, requests, isMutating],
+		[requestsQuery.data, requestsQuery.isLoading, saveRequestsMutation],
 	);
 
 	return selector ? selector(state) : (state as TSelected);

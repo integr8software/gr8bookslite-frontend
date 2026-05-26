@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppStore } from "@/app/src/hooks/shared/useAppStore";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { useOnboardingDraft } from "./useOnboardingDraft";
 import { useOnboardingFormState } from "./useOnboardingFormState";
 import { useOnboardingSubmission } from "./useOnboardingSubmission";

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
-import { AuditTrailMain } from "@/app/src/ui/modules/system-administration/audit-trail/Main";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
+import { AuditTrailListPage } from "@/app/src/ui/modules/system-administration/audit-trail/AuditTrailListPage";
 
 const PageTitle = "Audit Trail";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function SystemAdministrationAuditTrailPage() {
-  return <AuditTrailMain />;
+	return <AuditTrailListPage />;
 }
 
 

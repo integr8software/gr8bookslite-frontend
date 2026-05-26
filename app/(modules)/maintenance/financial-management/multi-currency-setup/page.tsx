@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { FinancialManagementMultiCurrencySetupMain } from "@/app/src/ui/modules/maintenance/financial-management/multi-currency-setup/Main";
 
 const PageTitle = "Multi Currency Setup";

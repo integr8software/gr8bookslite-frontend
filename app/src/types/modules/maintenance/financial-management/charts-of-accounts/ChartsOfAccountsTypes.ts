@@ -69,6 +69,11 @@ export type FlattenedChartAccount = {
 
 export type FilterValue<TValue> = TValue | "All";
 
+export type ChartAccountStructureFilter =
+	| "All"
+	| "With Submodules"
+	| "Without Submodules";
+
 export type ChartsOfAccountsActionMode = "add" | "edit" | "view";
 
 export type ChartsOfAccountsFormTab = "Account Information" | "Bank Details";

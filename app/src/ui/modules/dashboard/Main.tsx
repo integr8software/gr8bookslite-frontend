@@ -13,9 +13,9 @@ import {
   Users,
 } from "lucide-react";
 import { BranchDashboardSpotlightTutorialOpenEvent } from "@/app/src/data/modules/dashboard/BranchDashboardSpotlightTutorialData";
-import type { MainDashboardWidget } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
-import { hasAccess } from "@/app/src/data/shared/MainLayout/ModuleShellUtils";
-import { ModuleShellMockData } from "@/app/src/data/shared/MainLayout/ModuleShellMockData";
+import type { MainDashboardWidget } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import { hasAccess } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
+import { MainLayoutData } from "@/app/src/data/shared/main-layout/MainLayoutData";
 import { BranchDashboardSpotlightTutorial } from "@/app/src/ui/modules/dashboard/BranchDashboardSpotlightTutorial";
 
 const DashboardLibrary = [
@@ -35,7 +35,7 @@ const ActivityItems = [
 
 export function ManagementMain() {
   const canAddDashboard = hasAccess(
-    ModuleShellMockData.currentUser,
+    MainLayoutData.currentUser,
     "dashboard",
     ["add"],
   );
@@ -85,7 +85,7 @@ export function ManagementMain() {
         className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
         data-spotlight-id="branch-dashboard-summary"
       >
-        {ModuleShellMockData.dashboardWidgets.map((widget) => (
+        {MainLayoutData.dashboardWidgets.map((widget) => (
           <WidgetCard key={widget.id} widget={widget} />
         ))}
       </section>

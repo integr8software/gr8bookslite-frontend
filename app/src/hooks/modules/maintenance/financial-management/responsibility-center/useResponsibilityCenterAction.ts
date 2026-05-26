@@ -14,7 +14,7 @@ import type {
 	ResponsibilityCenterStatus,
 } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
 import { validateResponsibilityCenterForm } from "@/app/src/validations/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterValidation";
-import { useResponsibilityCenterStore } from "./useResponsibilityCenter";
+import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/financial-management/responsibility-center/useResponsibilityCenter";
 
 export function useResponsibilityCenterAction() {
 	const router = useRouter();

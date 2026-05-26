@@ -1,1 +1,1 @@
-export * from "./Main";
+export * from "@/app/src/ui/modules/reports/inventory/Main";

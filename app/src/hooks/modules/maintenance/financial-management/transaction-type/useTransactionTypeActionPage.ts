@@ -16,7 +16,7 @@ import type {
 	TransactionTypeFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
 import { validateTransactionTypeForm } from "@/app/src/validations/modules/maintenance/financial-management/transaction-type/TransactionTypeValidation";
-import { useTransactionTypeStore } from "./useTransactionType";
+import { useTransactionTypeStore } from "@/app/src/hooks/modules/maintenance/financial-management/transaction-type/useTransactionType";
 
 export function useTransactionTypeActionPage() {
 	const router = useRouter();

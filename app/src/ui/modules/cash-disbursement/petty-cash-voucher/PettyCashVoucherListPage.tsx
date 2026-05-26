@@ -13,8 +13,8 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { PettyCashVoucherListFilters } from "./PettyCashVoucherListFilters";
-import { PettyCashVoucherTableRow } from "./PettyCashVoucherTableRow";
+import { PettyCashVoucherListFilters } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherListFilters";
+import { PettyCashVoucherTableRow } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTableRow";
 
 export function PettyCashVoucherListPage() {
   const page = usePettyCashVoucherListPage();
@@ -36,27 +36,25 @@ export function PettyCashVoucherListPage() {
           actions={<PettyCashVoucherHeaderActions />}
         />
 
-        <div className="rounded-xl border border-darknavy/10 bg-white shadow-sm">
-          <PettyCashVoucherListFilters page={page} />
-
-          <div className="p-4 sm:p-5">
-            <ModuleTable
-              emptyDescription="Adjust the filters or add a new voucher to view petty cash records."
-              emptyTitle="No vouchers found"
-              emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-              isLoading={false}
-              paginationLabel="vouchers"
-              paginationStorageKey={PettyCashVoucherPaginationStorageKey}
-              table={page.table}
-              renderRow={({ id, original }) => (
-                <PettyCashVoucherTableRow
-                  key={id}
-                  row={original}
-                  onDelete={page.setPendingDelete}
-                />
-              )}
-            />
-          </div>
+        <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+          <ModuleTable
+            variant="embedded"
+            emptyDescription="Adjust the filters or add a new voucher to view petty cash records."
+            emptyTitle="No vouchers found"
+            emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+            isLoading={page.isLoading}
+            paginationLabel="vouchers"
+            paginationStorageKey={PettyCashVoucherPaginationStorageKey}
+            table={page.table}
+            toolbar={<PettyCashVoucherListFilters page={page} />}
+            renderRow={({ id, original }) => (
+              <PettyCashVoucherTableRow
+                key={id}
+                row={original}
+                onDelete={page.setPendingDelete}
+              />
+            )}
+          />
         </div>
 
         <AppDialog

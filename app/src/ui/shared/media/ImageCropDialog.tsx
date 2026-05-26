@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { LoaderCircle, RotateCw, Search } from "lucide-react";
-import { CreateCroppedImageFile } from "@/app/src/services/shared/ImageCropper";
+import { CreateCroppedImageFile } from "@/app/src/services/shared/media/ImageCropper";
 
 type ImageCropDialogProps = {
   aspect: number;

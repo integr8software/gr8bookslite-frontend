@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { WorkspaceOverviewPage } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewPage";
-import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 
 export const metadata: Metadata = {
   title: `Dashboard | ${AppName}`,

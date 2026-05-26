@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
+import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import type {
   OnboardingFieldErrors,
   OnboardingValues,

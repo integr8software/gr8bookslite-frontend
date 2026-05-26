@@ -11,7 +11,7 @@ import type {
 import {
 	ResponsibilityCenterFormField as Field,
 	responsibilityCenterFieldClassName as fieldClassName,
-} from "./ResponsibilityCenterFormField";
+} from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterFormField";
 
 type ResponsibilityCenterDetailsFieldsProps = {
 	errors: ResponsibilityCenterFormErrors;

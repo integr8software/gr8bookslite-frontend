@@ -19,9 +19,9 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ResponsibilityCenterSetStatusDialog } from "./ResponsibilityCenterSetStatusDialog";
-import { ResponsibilityCenterDetailsFields } from "./ResponsibilityCenterDetailsFields";
-import { ResponsibilityCenterNotFound } from "./ResponsibilityCenterNotFound";
+import { ResponsibilityCenterSetStatusDialog } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterSetStatusDialog";
+import { ResponsibilityCenterDetailsFields } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterDetailsFields";
+import { ResponsibilityCenterNotFound } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterNotFound";
 
 export function ResponsibilityCenterAction() {
 	const action = useResponsibilityCenterAction();

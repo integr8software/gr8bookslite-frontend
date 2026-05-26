@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ModuleTableBody } from "@/app/src/ui/shared/module/module-table/ModuleTableBody";
 import { ModuleTableHeader } from "@/app/src/ui/shared/module/module-table/ModuleTableHeader";
 import { ModuleTablePagination } from "@/app/src/ui/shared/module/module-table/ModuleTablePagination";
-import type { ModuleTableProps } from "@/app/src/types/shared/ModuleTable.types";
+import type { ModuleTableProps } from "@/app/src/types/shared/module/module-table/ModuleTable.types";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 const DefaultPageSizeOptions = [5, 10, 15, 20, 25, 50];
@@ -17,12 +17,15 @@ export function ModuleTable<TData>({
 	isLoading = false,
 	maxHeightClassName = "max-h-[58vh]",
 	minWidthClassName = "min-w-[78rem]",
+	paginationLabel = "records",
 	paginationPageLimit = 3,
 	paginationStorageKey,
 	pageSizeOptions = DefaultPageSizeOptions,
 	renderRow,
 	skeletonRowCount = 5,
 	table,
+	toolbar,
+	variant = "standalone",
 }: ModuleTableProps<TData>) {
 	const pathname = usePathname();
 	const [hasLoadedPagination, setHasLoadedPagination] = useState(false);
@@ -32,6 +35,11 @@ export function ModuleTable<TData>({
 	const fallbackPageSize = pageSizeOptions[0];
 	const totalPages = table.getPageCount();
 	const safeTotalPages = Math.max(1, totalPages);
+	const totalRows = table.getPrePaginationRowModel().rows.length;
+	const firstRow =
+		totalRows === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
+	const lastRow =
+		totalRows === 0 ? 0 : Math.min(firstRow + rows.length - 1, totalRows);
 	const pageSizeOptionsKey = pageSizeOptions.join(",");
 	const storageKey = useMemo(
 		() =>
@@ -117,11 +125,18 @@ export function ModuleTable<TData>({
 	}, [pagination.pageIndex, safeTotalPages, table]);
 
 	return (
-		<div>
+		<div
+			className={joinClasses(
+				"overflow-hidden bg-white",
+				variant === "standalone" &&
+					"rounded-lg border border-darknavy/10 shadow-sm shadow-darknavy/5",
+			)}
+		>
+			{toolbar ? <div className="border-b border-darknavy/10">{toolbar}</div> : null}
 			<div className={joinClasses(maxHeightClassName, "overflow-auto")}>
 				<table
 					className={joinClasses(
-						"w-full border-collapse text-left",
+						"w-full border-collapse text-left text-sm text-darknavy",
 						minWidthClassName,
 					)}
 				>
@@ -140,10 +155,14 @@ export function ModuleTable<TData>({
 			</div>
 
 			<ModuleTablePagination
+				firstRow={firstRow}
+				label={paginationLabel}
+				lastRow={lastRow}
 				page={pagination.pageIndex + 1}
 				pageLimit={paginationPageLimit}
 				pageSize={pagination.pageSize}
 				pageSizeOptions={pageSizeOptions}
+				totalRows={totalRows}
 				totalPages={totalPages}
 				onPageChange={(page) => table.setPageIndex(page - 1)}
 				onPageSizeChange={(pageSize) => table.setPageSize(pageSize)}

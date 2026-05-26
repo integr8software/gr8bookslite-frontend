@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 
 const PageTitle = "User Management";

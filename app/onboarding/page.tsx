@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LogOut } from "lucide-react";
 import { LogoutButton } from "@/app/src/ui/auth/LogoutButton";
 import { OnboardingFlow } from "@/app/src/ui/onboarding/OnboardingFlow";
-import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 
 export const metadata: Metadata = {

@@ -1,2 +1,2 @@
-export * from "./Main";
-export * from "./Action";
+export * from "@/app/src/ui/modules/general-journal/journal-voucher/Main";
+export * from "@/app/src/ui/modules/general-journal/journal-voucher/Action";

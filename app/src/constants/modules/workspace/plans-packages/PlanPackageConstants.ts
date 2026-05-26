@@ -1,7 +1,4 @@
 import type {
-  PlanPackageDiscountKind,
-  PlanPackageDiscountTarget,
-  PlanPackageDiscountType,
   PlanPackagePlanCode,
   PlanPackageStatus,
 } from "@/app/src/types/modules/workspace/plans-packages/PlanPackageTypes";
@@ -17,27 +14,8 @@ export const PlanPackagePlanCodeOptions = [
 export const PlanPackageStatusOptions = [
   "Active",
   "Draft",
-  "Archived",
+  "Inactive",
 ] as const satisfies readonly PlanPackageStatus[];
-
-export const PlanPackageDiscountTypeOptions = [
-  "Promo",
-  "Coupon",
-  "Voucher",
-] as const satisfies readonly PlanPackageDiscountType[];
-
-export const PlanPackageDiscountKindOptions = [
-  "Percent",
-  "Fixed",
-] as const satisfies readonly PlanPackageDiscountKind[];
-
-export const PlanPackageDiscountTargetOptions = [
-  "All Plans",
-  "Accounting",
-  "Inventory",
-  "Accounting + Inventory",
-  "Add-ons",
-] as const satisfies readonly PlanPackageDiscountTarget[];
 
 export const PlanPackageBillingCycleOptions = [
   { label: "Monthly", value: "monthly" },

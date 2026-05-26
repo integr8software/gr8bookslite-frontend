@@ -2,8 +2,8 @@
 
 import type { ReactNode } from "react";
 import { Camera, Mail, Phone, Save, ShieldCheck, X } from "lucide-react";
-import { PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/ContactData";
-import { useAccountProfile } from "@/app/src/hooks/shared/useAccountProfile";
+import { PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/contact/ContactData";
+import { useAccountProfile } from "@/app/src/hooks/shared/account/useAccountProfile";
 import { ImageCropDialog } from "@/app/src/ui/shared/media/ImageCropDialog";
 import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import { GradientBlurBackground } from "@/app/src/ui/shared/layout/GradientBlurBackground";

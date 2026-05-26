@@ -1,6 +1,9 @@
 import type {
   DisbursementAttachment,
+  DisbursementVoucherCopyFromRecord,
+  DisbursementVoucherCopySource,
   DisbursementLineEntry,
+  DisbursementVoucherPaymentDetails,
   DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementVoucherEntryDraft,
@@ -132,10 +135,21 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     vceCode: "VCE-OD-204",
     vceName: "North Harbor Office Depot",
     amount: 18450,
+    taxRate: "0%",
+    taxDetails: createTaxDetails(18450, "0%"),
     remarks: "Rush replenishment approved for Q2 workspace consumables.",
     voucherReferenceNo: "DVR-2026-0094",
     invoiceReferenceNo: "INV-OFF-5521",
     paymentDueDate: "2026-05-21",
+    paymentDetails: {
+      bankAccountName: "North Harbor Office Depot",
+      bankAccountNo: "1000-2201-44",
+      bankBranch: "Makati Corporate Branch",
+      bankName: "BDO Unibank",
+      checkDate: "",
+      checkNo: "",
+      paymentReferenceNo: "BT-2026-0518-094",
+    },
     preparedBy: "Marvin Torres",
     lineEntries: [
       {
@@ -180,10 +194,21 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     vceCode: "VCE-LAW-108",
     vceName: "Santos and Velasco Legal",
     amount: 25000,
+    taxRate: "5%",
+    taxDetails: createTaxDetails(25000, "5%"),
     remarks: "Monthly legal retainer for regulatory and contract support.",
     voucherReferenceNo: "DVR-2026-0081",
     invoiceReferenceNo: "RET-0503-24",
     paymentDueDate: "2026-05-17",
+    paymentDetails: {
+      bankAccountName: "Santos and Velasco Legal",
+      bankAccountNo: "0028-4511-90",
+      bankBranch: "BGC Finance Center",
+      bankName: "Metrobank",
+      checkDate: "2026-05-05",
+      checkNo: "CHK-009812",
+      paymentReferenceNo: "",
+    },
     preparedBy: "Clarisse Yap",
     lineEntries: [
       {
@@ -227,10 +252,13 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     vceCode: "EMP-044",
     vceName: "Juan dela Cruz",
     amount: 3200,
+    taxRate: "0%",
+    taxDetails: createTaxDetails(3200, "0%"),
     remarks: "Travel reimbursement for client branch roadshow.",
     voucherReferenceNo: "DVR-2026-0067",
     invoiceReferenceNo: "TRV-APR-778",
     paymentDueDate: "2026-04-29",
+    paymentDetails: createEmptyPaymentDetails(),
     preparedBy: "Angela Go",
     lineEntries: [
       {
@@ -263,6 +291,64 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
   },
 ];
 
+export const DisbursementVoucherCopySources: DisbursementVoucherCopySource[] = [
+  "Loan",
+  "Accounts Payable Voucher",
+  "Advances to Supplier",
+  "Cash Advance",
+  "Petty Cash Replenishment",
+  "Purchase Order",
+];
+
+export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromRecord[] =
+  [
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1001",
+      "Accounts Payable Voucher",
+      "APV-2026-0041",
+      "VCE-OD-204",
+      MockDisbursementTransactions[0],
+      MockDisbursementVouchers[0],
+    ),
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1002",
+      "Advances to Supplier",
+      "ATS-2026-0017",
+      "VCE-MUS-118",
+      MockDisbursementTransactions[1],
+    ),
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1003",
+      "Purchase Order",
+      "PO-2026-0322",
+      "VCE-LAW-108",
+      MockDisbursementTransactions[2],
+      MockDisbursementVouchers[1],
+    ),
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1004",
+      "Loan",
+      "LOAN-2026-0008",
+      "VCE-GFM-077",
+      MockDisbursementTransactions[3],
+    ),
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1005",
+      "Cash Advance",
+      "CA-2026-0021",
+      "EMP-044",
+      MockDisbursementTransactions[4],
+      MockDisbursementVouchers[2],
+    ),
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1006",
+      "Petty Cash Replenishment",
+      "PCR-2026-0012",
+      "VCE-TPI-611",
+      MockDisbursementTransactions[5],
+    ),
+  ];
+
 export function buildDisbursementVoucherPreviewRows(
   transactions: DisbursementTransactionRecord[],
   vouchers: DisbursementVoucherRecord[],
@@ -294,10 +380,13 @@ export function createDisbursementVoucherFormValues(
       vceCode: voucher.vceCode,
       vceName: voucher.vceName,
       amount: voucher.amount.toFixed(2),
+      taxRate: voucher.taxRate,
+      taxDetails: voucher.taxDetails,
       remarks: voucher.remarks,
       voucherReferenceNo: voucher.voucherReferenceNo,
       invoiceReferenceNo: voucher.invoiceReferenceNo,
       paymentDueDate: voucher.paymentDueDate,
+      paymentDetails: voucher.paymentDetails,
       preparedBy: voucher.preparedBy,
       status: voucher.status,
       lineEntries: voucher.lineEntries,
@@ -306,6 +395,11 @@ export function createDisbursementVoucherFormValues(
   }
 
   return {
+    taxRate: transaction ? getDefaultTaxRate(transaction) : "0%",
+    taxDetails: createTaxDetails(
+      transaction?.amount ?? 0,
+      transaction ? getDefaultTaxRate(transaction) : "0%",
+    ),
     transactionId: transaction?.id ?? "",
     voucherNo: createNextVoucherNumber(),
     voucherDate: todayDateValue(),
@@ -321,6 +415,7 @@ export function createDisbursementVoucherFormValues(
     voucherReferenceNo: createVoucherReferenceNumber(),
     invoiceReferenceNo: "",
     paymentDueDate: transaction?.paymentDueDate ?? todayDateValue(),
+    paymentDetails: createEmptyPaymentDetails(),
     preparedBy: "Finance Shared Services",
     status: "Draft",
     lineEntries: transaction
@@ -347,14 +442,48 @@ export function createDisbursementVoucherFromForm(
     vceCode: values.vceCode.trim(),
     vceName: values.vceName.trim(),
     amount: Number(values.amount || 0),
+    taxRate: values.taxRate,
+    taxDetails: syncTaxDetailsAmount(
+      values.taxDetails,
+      Number(values.amount || 0),
+      values.taxRate,
+    ),
     remarks: values.remarks.trim(),
     voucherReferenceNo: values.voucherReferenceNo.trim(),
     invoiceReferenceNo: values.invoiceReferenceNo.trim(),
     paymentDueDate: values.paymentDueDate,
+    paymentDetails: normalizePaymentDetails(values.paymentDetails),
     preparedBy: values.preparedBy.trim(),
     status: values.status,
     lineEntries: values.lineEntries,
     attachments: values.attachments,
+  };
+}
+
+export function applyCopyFromRecordToDisbursementVoucherForm(
+  currentValues: DisbursementVoucherFormValues,
+  record: DisbursementVoucherCopyFromRecord,
+) {
+  return {
+    ...currentValues,
+    transactionId: record.transactionId,
+    paymentMethod: record.templateValues.paymentMethod,
+    disbursementType: record.templateValues.disbursementType,
+    currency: record.templateValues.currency,
+    fxRate: record.templateValues.fxRate,
+    costCenter: record.templateValues.costCenter,
+    vceCode: record.templateValues.vceCode,
+    vceName: record.templateValues.vceName,
+    amount: record.templateValues.amount,
+    taxRate: record.templateValues.taxRate,
+    taxDetails: record.templateValues.taxDetails,
+    remarks: record.templateValues.remarks,
+    voucherReferenceNo: record.templateValues.voucherReferenceNo,
+    invoiceReferenceNo: record.templateValues.invoiceReferenceNo,
+    paymentDueDate: record.templateValues.paymentDueDate,
+    paymentDetails: record.templateValues.paymentDetails,
+    lineEntries: record.templateValues.lineEntries,
+    attachments: record.templateValues.attachments,
   };
 }
 
@@ -529,6 +658,42 @@ function createVoucherReferenceNumber() {
   return `DVR-${new Date().getFullYear()}-${serial}`;
 }
 
+function createDisbursementVoucherCopyFromRecord(
+  id: string,
+  source: DisbursementVoucherCopySource,
+  sourceNo: string,
+  partyCode: string,
+  transaction: DisbursementTransactionRecord,
+  voucher?: DisbursementVoucherRecord,
+): DisbursementVoucherCopyFromRecord {
+  const templateValues = createDisbursementVoucherFormValues(transaction, voucher);
+
+  return {
+    id,
+    source,
+    sourceNo,
+    documentDate: voucher?.voucherDate ?? transaction.transactionDate,
+    transactionId: transaction.id,
+    partyCode,
+    partyName: transaction.payee,
+    amount: templateValues.amount,
+    templateValues: {
+      ...templateValues,
+      vceCode: voucher?.vceCode ?? partyCode,
+      vceName: voucher?.vceName ?? transaction.payee,
+      remarks:
+        voucher?.remarks ??
+        `${transaction.purpose} Copied from ${sourceNo}.`,
+      invoiceReferenceNo:
+        voucher?.invoiceReferenceNo ?? `${sourceNo}-REF`,
+      attachments:
+        voucher?.attachments ?? createAttachmentPlaceholders(transaction),
+      lineEntries:
+        voucher?.lineEntries ?? createAutoDisbursementLineEntries(transaction),
+    },
+  };
+}
+
 function getDebitAccountTemplate(transaction: DisbursementTransactionRecord) {
   if (transaction.disbursementType === "Vendor Payment") {
     return {
@@ -605,4 +770,30 @@ function parseTaxPercent(taxRate: string) {
 
 function roundCurrency(value: number) {
   return Number(value.toFixed(2));
+}
+
+function createEmptyPaymentDetails(): DisbursementVoucherPaymentDetails {
+  return {
+    bankAccountName: "",
+    bankAccountNo: "",
+    bankBranch: "",
+    bankName: "",
+    checkDate: "",
+    checkNo: "",
+    paymentReferenceNo: "",
+  };
+}
+
+function normalizePaymentDetails(
+  paymentDetails: DisbursementVoucherPaymentDetails,
+): DisbursementVoucherPaymentDetails {
+  return {
+    bankAccountName: paymentDetails.bankAccountName.trim(),
+    bankAccountNo: paymentDetails.bankAccountNo.trim(),
+    bankBranch: paymentDetails.bankBranch.trim(),
+    bankName: paymentDetails.bankName.trim(),
+    checkDate: paymentDetails.checkDate,
+    checkNo: paymentDetails.checkNo.trim(),
+    paymentReferenceNo: paymentDetails.paymentReferenceNo.trim(),
+  };
 }

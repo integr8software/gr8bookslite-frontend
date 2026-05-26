@@ -1,10 +1,11 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { PurchaseRequestUomOptions } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import {
 	formatPurchaseRequestCurrency,
 	getPurchaseRequestItemAmount,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import type { PurchaseRequestItem } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import { ModuleTableActionButton } from "@/app/src/ui/shared/module/ModuleTableActions";
 
 type PurchaseRequestItemsTableProps = {
 	error?: string;
@@ -156,19 +157,14 @@ export function PurchaseRequestItemsTable({
 									)}
 								</td>
 								<td className="px-3 py-3">
-									<button
-										type="button"
+									<ModuleTableActionButton
+										variant="delete"
 										disabled={
 											isReadonly || items.length === 1
 										}
 										onClick={() => onRemoveItem(item.id)}
-										className="inline-flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10 disabled:cursor-not-allowed disabled:opacity-40"
-									>
-										<Trash2
-											className="h-4 w-4"
-											aria-hidden="true"
-										/>
-									</button>
+										label={`Remove item ${index + 1}`}
+									/>
 								</td>
 							</tr>
 						))}

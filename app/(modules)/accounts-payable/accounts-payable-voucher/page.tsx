@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { AccountsPayableVoucherMain } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/Main";
 
 const PageTitle = "Accounts Payable Voucher";

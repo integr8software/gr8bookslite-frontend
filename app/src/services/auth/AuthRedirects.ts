@@ -18,6 +18,7 @@ const SystemRedirectPathPrefixes = [
   "/dashboard",
   "/general-journal",
   "/inventory",
+  "/master",
   "/maintenance",
   "/others",
   "/profile",
@@ -96,10 +97,11 @@ export function GetFallbackPostAuthRedirectPath(
     return "/onboarding";
   }
 
-  if (
-    payload.systemRole === "SUPER_ADMIN" ||
-    payload.membershipRole === "ADMIN"
-  ) {
+  if (payload.systemRole === "SUPER_ADMIN") {
+    return "/master/dashboard";
+  }
+
+  if (payload.membershipRole === "ADMIN") {
     return "/workspace/dashboard";
   }
 
@@ -119,7 +121,11 @@ export function GetPostAuthRedirectPathFromProfile(
 
   const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
 
-  if (effectiveRole === "SUPER_ADMIN" || effectiveRole === "ADMIN") {
+  if (effectiveRole === "SUPER_ADMIN") {
+    return "/master/dashboard";
+  }
+
+  if (effectiveRole === "ADMIN") {
     return "/workspace/dashboard";
   }
 

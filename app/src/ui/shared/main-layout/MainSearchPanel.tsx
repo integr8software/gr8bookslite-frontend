@@ -8,7 +8,7 @@ import {
   type KeyboardEvent,
   type RefObject,
 } from "react";
-import type { MainSearchItem } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+import type { MainSearchItem } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 
 type MainSearchPanelProps = {
   query: string;

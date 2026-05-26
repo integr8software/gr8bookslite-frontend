@@ -18,7 +18,7 @@ export function UserRoleList({
 			{items.map((item) => (
 				<article
 					key={item.id}
-					className="grid gap-3 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm lg:grid-cols-[1fr_1fr_7rem] lg:items-center"
+					className="grid gap-3 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center"
 				>
 					<div className="flex min-w-0 items-start gap-3">
 						<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-skyblue/15 text-darknavy">
@@ -33,10 +33,13 @@ export function UserRoleList({
 							</p>
 						</div>
 					</div>
-					<p className="text-sm text-darknavy/65">
+					<p className="text-sm text-darknavy/65 lg:text-right">
 						{item.accessRoles.length} access roles
 					</p>
-					<div data-spotlight-id="user-role-actions">
+					<div
+						data-spotlight-id="user-role-actions"
+						className="lg:justify-self-end"
+					>
 						<UserRoleRecordActions
 							baseHref={baseHref}
 							id={item.id}

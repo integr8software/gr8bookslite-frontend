@@ -2,12 +2,12 @@
 
 import { OnboardingSteps } from "@/app/src/data/onboarding/OnboardingData";
 import { useOnboardingFlow } from "@/app/src/hooks/onboarding/useOnboardingFlow";
-import { OnboardingBillingStep } from "./OnboardingBillingStep";
-import { OnboardingFreeTrialStep } from "./OnboardingFreeTrialStep";
-import { OnboardingProgressHeader } from "./OnboardingProgressHeader";
-import { OnboardingReviewStep } from "./OnboardingReviewStep";
-import { OnboardingStepOne } from "./OnboardingStepOne";
-import { OnboardingDraftLoadingScreen } from "./OnboardingDraftLoadingScreen";
+import { OnboardingBillingStep } from "@/app/src/ui/onboarding/OnboardingBillingStep";
+import { OnboardingFreeTrialStep } from "@/app/src/ui/onboarding/OnboardingFreeTrialStep";
+import { OnboardingProgressHeader } from "@/app/src/ui/onboarding/OnboardingProgressHeader";
+import { OnboardingReviewStep } from "@/app/src/ui/onboarding/OnboardingReviewStep";
+import { OnboardingStepOne } from "@/app/src/ui/onboarding/OnboardingStepOne";
+import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
 
 export function OnboardingFlow() {
   const {

@@ -20,13 +20,13 @@ import {
 	updateUserRecord,
 	type UserFormValues,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
-import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
+import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import type {
 	UserFormErrors,
 	UserManagementActionMode,
 } from "@/app/src/types/modules/user-management/UserManagementTypes";
 import { validateUserForm } from "@/app/src/validations/modules/system-administration/user-management/users/UserListValidation";
-import { useUserManagementStore } from "../useUserManagement";
+import { useUserManagementStore } from "@/app/src/hooks/modules/system-administration/user-management/useUserManagement";
 
 export function useUserListFormPage() {
 	const router = useRouter();

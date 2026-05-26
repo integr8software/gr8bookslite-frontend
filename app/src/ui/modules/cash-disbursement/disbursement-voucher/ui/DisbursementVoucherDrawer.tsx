@@ -1,9 +1,12 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { FileText, Paperclip, Plus } from "lucide-react";
+import { ChevronDown, FileText, Paperclip, Plus } from "lucide-react";
 import {
   DisbursementVoucherInitialEntryDraft,
+  DisbursementVoucherCopyFromRecords,
+  DisbursementVoucherCopySources,
+  applyCopyFromRecordToDisbursementVoucherForm,
   createAttachmentPlaceholders,
   createAutoDisbursementLineEntries,
   createDisbursementLineEntry,
@@ -38,12 +41,14 @@ import {
   type AppTaxRateDialogValue,
 } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import { AccountingEntriesDialog as ReusableAccountingEntriesDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/AccountingEntriesDialog";
+import { DisbursementVoucherCopyFromDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherCopyFromDialog";
 import type {
   DisbursementLineEntry,
   DisbursementPaymentMethod,
   DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementType,
+  DisbursementVoucherCopySource,
   DisbursementVoucherEntryDraft,
   DisbursementVoucherFormErrors,
   DisbursementVoucherFormValues,
@@ -108,6 +113,10 @@ function DrawerPanel({
   const [isVoucherTaxDialogOpen, setIsVoucherTaxDialogOpen] = useState(false);
   const [isDisbursementTypeDialogOpen, setIsDisbursementTypeDialogOpen] =
     useState(false);
+  const [isCopyFromMenuOpen, setIsCopyFromMenuOpen] = useState(false);
+  const [isCopyFromDialogOpen, setIsCopyFromDialogOpen] = useState(false);
+  const [copyFromSource, setCopyFromSource] =
+    useState<DisbursementVoucherCopySource>("Accounts Payable Voucher");
   const [paymentTypeRecords, setPaymentTypeRecords] = useState<
     AppPaymentTypeRecord[]
   >(InitialAppPaymentTypeRecords);
@@ -121,10 +130,16 @@ function DrawerPanel({
   const [entryDraft, setEntryDraft] = useState<DisbursementVoucherEntryDraft>(
     DisbursementVoucherInitialEntryDraft,
   );
-  const transactionNumber = transaction?.transactionNo ?? "";
   const isEditing = mode === "edit";
-  const matchedTransaction = transaction;
-  const selectedTransaction = transaction;
+  const selectedTransaction = useMemo(
+    () =>
+      transactions.find(
+        (currentTransaction) => currentTransaction.id === values.transactionId,
+      ),
+    [transactions, values.transactionId],
+  );
+  const transactionNumber = selectedTransaction?.transactionNo ?? "";
+  const matchedTransaction = selectedTransaction;
   const activePaymentTypeOptions = useMemo(
     () =>
       paymentTypeRecords
@@ -305,6 +320,22 @@ function DrawerPanel({
     setIsVoucherTaxDialogOpen(true);
   }
 
+  function handleOpenCopyFrom(source: DisbursementVoucherCopySource) {
+    setCopyFromSource(source);
+    setIsCopyFromDialogOpen(true);
+    setIsCopyFromMenuOpen(false);
+  }
+
+  function handleSelectCopyFromRecord(
+    record: (typeof DisbursementVoucherCopyFromRecords)[number],
+  ) {
+    setValues((current) =>
+      applyCopyFromRecordToDisbursementVoucherForm(current, record),
+    );
+    setErrors({});
+    setActiveTab("cash-disbursement");
+  }
+
   function handleSaveVoucherTax(nextValue: AppTaxRateDialogValue) {
     updateField("taxRate", nextValue.taxRate);
     updateField("taxDetails", nextValue.taxDetails);
@@ -332,6 +363,13 @@ function DrawerPanel({
       }
       title={isEditing ? values.voucherNo : "Disbursement Voucher"}
       description="Create the voucher details, continue to accounting entries, then review everything before saving."
+      actions={
+        <CopyFromMenu
+          isOpen={isCopyFromMenuOpen}
+          onOpenSource={handleOpenCopyFrom}
+          onToggle={() => setIsCopyFromMenuOpen((current) => !current)}
+        />
+      }
       onClose={onClose}
       footer={
         step === "entries" ? undefined : (
@@ -485,7 +523,55 @@ function DrawerPanel({
         onRemoveEntry={handleRemoveEntry}
         onUpdateEntryTax={handleUpdateEntryTax}
       />
+      <DisbursementVoucherCopyFromDialog
+        isOpen={isCopyFromDialogOpen}
+        records={DisbursementVoucherCopyFromRecords}
+        source={copyFromSource}
+        onClose={() => setIsCopyFromDialogOpen(false)}
+        onSelect={handleSelectCopyFromRecord}
+      />
     </ModuleDrawer>
+  );
+}
+
+function CopyFromMenu({
+  isOpen,
+  onOpenSource,
+  onToggle,
+}: {
+  isOpen: boolean;
+  onOpenSource: (source: DisbursementVoucherCopySource) => void;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
+      >
+        Copy From
+        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+      </button>
+      {isOpen ? (
+        <div className="absolute right-0 z-10 mt-2 w-64 overflow-hidden rounded-xl border border-darknavy/10 bg-white shadow-[0_18px_40px_rgba(33,39,56,0.12)]">
+          {DisbursementVoucherCopySources.map((source, index) => (
+            <button
+              key={source}
+              type="button"
+              onClick={() => onOpenSource(source)}
+              className={`w-full px-4 py-3 text-left text-sm text-darknavy transition hover:bg-skyblue/10 ${
+                index < DisbursementVoucherCopySources.length - 1
+                  ? "border-b border-darknavy/8"
+                  : ""
+              }`}
+            >
+              {source}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -1053,7 +1139,7 @@ function ReviewStep({
             <span>Total credit</span>
             <span>{formatCurrency(totalCredit)}</span>
           </div>
-          <div className="mt-3 flex items-center justify-between rounded-[16px] bg-darknavy px-4 py-3 text-white">
+          <div className="theme-accent-contrast-text mt-3 flex items-center justify-between rounded-[16px] bg-skyblue px-4 py-3 shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.2)]">
             <span className="font-semibold">Voucher amount</span>
             <span className="text-lg font-semibold">
               {formatCurrency(Number(values.amount || 0))}
@@ -1135,7 +1221,7 @@ function DrawerFooter({
         <button
           type="button"
           onClick={onProceed}
-          className="inline-flex h-11 items-center justify-center rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700"
+          className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
         >
           {primaryLabel}
         </button>
@@ -1160,7 +1246,7 @@ function DrawerTabButton({
       className={`rounded-t-lg border border-b-0 px-4 py-2 text-sm transition ${
         isActive
           ? "border-darknavy/12 bg-white font-medium text-darknavy"
-          : "border-transparent bg-transparent text-blue-600 hover:text-blue-700"
+          : "border-transparent bg-transparent text-skyblue hover:text-skyblue/80"
       }`}
     >
       {label}
@@ -1183,7 +1269,7 @@ function ActionField({
       <button
         type="button"
         onClick={onAction}
-        className="inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-md bg-blue-500 px-3 text-sm font-medium text-white transition hover:bg-blue-600"
+        className="theme-accent-contrast-text inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-md bg-skyblue px-3 text-sm font-medium shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)] transition hover:bg-skyblue/85"
       >
         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
         {actionLabel}

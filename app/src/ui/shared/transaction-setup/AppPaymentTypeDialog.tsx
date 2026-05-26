@@ -118,6 +118,9 @@ export const InitialAppPaymentTypeRecords: PaymentTypeRecord[] = [
 const fieldClassName =
   "h-11 w-full rounded-xl border border-darknavy/12 bg-white px-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/20";
 
+const accentPrimaryButtonClassName =
+  "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85";
+
 export function AppPaymentTypeDialog({
   isOpen,
   records,
@@ -397,7 +400,7 @@ function PaymentTypeListView({
               <button
                 type="button"
                 onClick={onAdd}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-darknavy px-4 text-sm font-semibold text-white transition hover:bg-darknavy/92 sm:w-auto"
+                className={`${accentPrimaryButtonClassName} h-11 w-full sm:w-auto`}
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 Add Payment Type
@@ -491,7 +494,7 @@ function PaymentTypeListView({
                       <button
                         type="button"
                         onClick={() => onUse(record.paymentType)}
-                        className="col-span-2 inline-flex h-10 items-center justify-center rounded-lg bg-darknavy px-3 text-xs font-semibold text-white transition hover:bg-darknavy/92"
+                        className="theme-accent-contrast-text col-span-2 inline-flex h-10 items-center justify-center rounded-lg bg-skyblue px-3 text-xs font-semibold shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)] transition hover:bg-skyblue/85"
                       >
                         Use Payment Type
                       </button>
@@ -587,7 +590,7 @@ function PaymentTypeListView({
                               <button
                                 type="button"
                                 onClick={() => onUse(record.paymentType)}
-                                className="inline-flex h-9 items-center justify-center rounded-lg bg-darknavy px-3 text-xs font-semibold text-white transition hover:bg-darknavy/92"
+                                className="theme-accent-contrast-text inline-flex h-9 items-center justify-center rounded-lg bg-skyblue px-3 text-xs font-semibold shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)] transition hover:bg-skyblue/85"
                               >
                                 Use
                               </button>
@@ -767,7 +770,7 @@ function PaymentTypeFormView({
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-darknavy px-5 text-sm font-semibold text-white transition hover:bg-darknavy/92 sm:w-auto"
+              className={`${accentPrimaryButtonClassName} h-11 w-full sm:w-auto`}
             >
               Back to List
             </button>
@@ -776,7 +779,7 @@ function PaymentTypeFormView({
               <button
                 type="button"
                 onClick={onSave}
-                className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-darknavy px-5 text-sm font-semibold text-white transition hover:bg-darknavy/92 sm:w-auto"
+                className={`${accentPrimaryButtonClassName} h-11 w-full sm:w-auto`}
               >
                 Save
               </button>

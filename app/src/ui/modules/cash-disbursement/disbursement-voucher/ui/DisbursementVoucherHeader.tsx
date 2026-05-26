@@ -2,7 +2,6 @@ import { ArrowRight, FileCheck2, NotebookPen, ReceiptText } from "lucide-react";
 import type { DisbursementVoucherPreviewRow } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import {
   ModuleHeader,
-  moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import {
   ModuleMetrics,
@@ -16,6 +15,8 @@ export function DisbursementVoucherHeader({
   previewRows: DisbursementVoucherPreviewRow[];
   onStartVoucher: () => void;
 }) {
+  const accentPrimaryActionClassName =
+    "theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
   const linkedVoucherCount = previewRows.filter((row) => row.voucher).length;
   const pendingVoucherCount = previewRows.length - linkedVoucherCount;
   const metrics: ModuleMetricItem[] = [
@@ -53,7 +54,7 @@ export function DisbursementVoucherHeader({
             <button
               type="button"
               onClick={onStartVoucher}
-              className={moduleHeaderActionClassNames.primary}
+              className={accentPrimaryActionClassName}
             >
               Start New Voucher
               <ArrowRight className="h-4 w-4" aria-hidden="true" />

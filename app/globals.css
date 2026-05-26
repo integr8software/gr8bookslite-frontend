@@ -232,6 +232,14 @@ button {
 	cursor: pointer;
 }
 
+.theme-accent-contrast-text {
+	color: #f8fafc !important;
+}
+
+:root[data-app-theme="midnight-dark"] .theme-accent-contrast-text {
+	color: #0f1724 !important;
+}
+
 .brand-accent-text {
 	@apply bg-gradient-to-r from-[#216dff] via-[#4937f2] to-[#8b00ff] bg-clip-text text-transparent;
 }

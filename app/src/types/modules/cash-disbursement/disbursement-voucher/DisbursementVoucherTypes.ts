@@ -24,6 +24,14 @@ export type WorkflowStep = "details" | "entries" | "review";
 
 export type DisbursementVoucherActionMode = "add" | "edit" | "view";
 
+export type DisbursementVoucherCopySource =
+  | "Loan"
+  | "Accounts Payable Voucher"
+  | "Advances to Supplier"
+  | "Cash Advance"
+  | "Petty Cash Replenishment"
+  | "Purchase Order";
+
 export type DisbursementVoucherPaymentDetails = {
   bankAccountName: string;
   bankAccountNo: string;
@@ -162,3 +170,15 @@ export type DisbursementVoucherFormErrors = Partial<
     string
   >
 >;
+
+export type DisbursementVoucherCopyFromRecord = {
+  id: string;
+  source: DisbursementVoucherCopySource;
+  sourceNo: string;
+  documentDate: string;
+  transactionId: string;
+  partyCode: string;
+  partyName: string;
+  amount: string;
+  templateValues: DisbursementVoucherFormValues;
+};

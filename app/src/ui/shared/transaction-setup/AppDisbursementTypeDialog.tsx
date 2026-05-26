@@ -95,6 +95,9 @@ export const InitialAppDisbursementTypeRecords: DisbursementTypeRecord[] = [
 const fieldClassName =
   "h-11 w-full rounded-xl border border-darknavy/12 bg-white px-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/20";
 
+const accentPrimaryButtonClassName =
+  "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85";
+
 const DisbursementTypeTablePaginationStorageKey =
   "cash-disbursement-disbursement-type-dialog";
 
@@ -395,7 +398,7 @@ function DisbursementTypeListView({
             <button
               type="button"
               onClick={onAdd}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
+              className={`${accentPrimaryButtonClassName} h-11`}
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               Add Type
@@ -560,7 +563,7 @@ function DisbursementTypeRecordView({
             <button
               type="button"
               onClick={onSave}
-              className="inline-flex h-11 items-center justify-center rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700"
+              className={`${accentPrimaryButtonClassName} h-11 px-5`}
             >
               {mode === "edit" ? "Save Changes" : "Create Type"}
             </button>

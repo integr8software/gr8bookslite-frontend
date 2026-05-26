@@ -337,7 +337,7 @@ function AppVceDialogContent({
       >
         <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 bg-white px-6 py-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
               VCE Name Setup
             </p>
             <h2 id="vce-dialog-title" className="mt-1 text-2xl font-semibold text-darknavy">
@@ -348,7 +348,7 @@ function AppVceDialogContent({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-darknavy/60 transition hover:bg-blue-50 hover:text-darknavy"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-darknavy/60 transition hover:bg-skyblue/10 hover:text-darknavy"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -358,7 +358,7 @@ function AppVceDialogContent({
           <div className="grid gap-5">
             <section className="rounded-[24px] border border-darknavy/10 bg-white p-4 shadow-sm">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-skyblue/12 text-skyblue">
                   <Users className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -376,8 +376,8 @@ function AppVceDialogContent({
                     onClick={() => handlePartyTypeChange(currentType)}
                     className={`inline-flex items-center rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                       partyType === currentType
-                        ? "border-blue-600 bg-blue-600 text-white shadow-sm"
-                        : "border-darknavy/12 bg-white text-darknavy hover:border-blue-300 hover:bg-blue-50"
+                        ? "theme-accent-contrast-text border-skyblue bg-skyblue shadow-sm shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)]"
+                        : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/40 hover:bg-skyblue/8"
                     }`}
                   >
                     {currentType}
@@ -418,7 +418,7 @@ function AppVceDialogContent({
           <button
             type="button"
             onClick={handleSave}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700"
+            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center gap-2 rounded-md bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
             Save VCE Information

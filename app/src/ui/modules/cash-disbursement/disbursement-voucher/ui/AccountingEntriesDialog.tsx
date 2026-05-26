@@ -63,6 +63,8 @@ export function AccountingEntriesDialog({
   onRemoveEntry,
   onUpdateEntryTax,
 }: AccountingEntriesDialogProps) {
+  const accentPrimaryButtonClassName =
+    "theme-accent-contrast-text inline-flex items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85";
   const [isTaxDialogOpen, setIsTaxDialogOpen] = useState(false);
   const [taxTargetEntryId, setTaxTargetEntryId] = useState<string | null>(null);
   const [taxRateDraft, setTaxRateDraft] = useState(entryDraft.taxRate);
@@ -427,7 +429,7 @@ export function AccountingEntriesDialog({
                     <button
                       type="button"
                       onClick={onAddEntry}
-                      className="inline-flex h-11 min-w-32 items-center justify-center rounded-xl bg-darknavy px-5 text-sm font-semibold text-white transition hover:bg-darknavy/92"
+                      className={`${accentPrimaryButtonClassName} h-11 min-w-32`}
                     >
                       Add Line
                     </button>
@@ -460,7 +462,7 @@ export function AccountingEntriesDialog({
                             <button
                               type="button"
                               onClick={() => openEntryTaxDialog(entry)}
-                              className="text-sm font-semibold text-skyblue transition hover:text-blue-700"
+                              className="text-sm font-semibold text-skyblue transition hover:text-skyblue/80"
                             >
                               {entry.taxRate || "0%"}
                             </button>
@@ -534,7 +536,7 @@ export function AccountingEntriesDialog({
                         <button
                           type="button"
                           onClick={() => openEntryTaxDialog(original)}
-                          className="font-semibold text-skyblue transition hover:text-blue-700"
+                          className="font-semibold text-skyblue transition hover:text-skyblue/80"
                         >
                           {original.taxRate || "0%"}
                         </button>
@@ -582,7 +584,7 @@ export function AccountingEntriesDialog({
               <button
                 type="button"
                 onClick={onProceed}
-                className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-darknavy px-5 text-sm font-semibold text-white transition hover:bg-darknavy/92 sm:w-auto"
+                className={`${accentPrimaryButtonClassName} h-11 w-full sm:w-auto`}
               >
                 Proceed to Preview
               </button>
@@ -773,7 +775,7 @@ function TaxDetailsDialog({
           <button
             type="button"
             onClick={onSave}
-            className="inline-flex h-11 w-full items-center justify-center rounded bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
+            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
           >
             Save
           </button>

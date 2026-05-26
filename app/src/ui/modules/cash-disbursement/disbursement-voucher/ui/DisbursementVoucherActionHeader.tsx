@@ -31,6 +31,8 @@ export function DisbursementVoucherActionHeader({
   onDeleteVoucher,
   onSubmit,
 }: DisbursementVoucherActionHeaderProps) {
+  const accentPrimaryActionClassName =
+    "theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
   const title =
     mode === "view"
       ? "Voucher Preview"
@@ -79,7 +81,7 @@ export function DisbursementVoucherActionHeader({
               {voucher ? (
                 <Link
                   href={`${DisbursementVoucherHref}/edit/${transaction?.id ?? ""}`}
-                  className={moduleHeaderActionClassNames.primary}
+                  className={accentPrimaryActionClassName}
                 >
                   <Edit3 className="h-4 w-4" aria-hidden="true" />
                   Edit Voucher
@@ -104,7 +106,7 @@ export function DisbursementVoucherActionHeader({
             <button
               type="button"
               onClick={onSubmit}
-              className={moduleHeaderActionClassNames.primary}
+              className={accentPrimaryActionClassName}
             >
               <Save className="h-4 w-4" aria-hidden="true" />
               Save Voucher

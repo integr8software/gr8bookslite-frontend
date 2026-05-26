@@ -54,6 +54,9 @@ import { DisbursementVoucherNotFound } from "@/app/src/ui/modules/cash-disbursem
 const FieldInputClassName =
   "h-12 w-full rounded-2xl border border-darknavy/12 bg-white px-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:bg-skyblue/6";
 
+const AccentPrimaryButtonClassName =
+  "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
+
 export function DisbursementVoucherAction() {
   return (
     <Suspense fallback={<VoucherWorkflowSkeleton />}>
@@ -658,7 +661,7 @@ function VoucherEntriesStep({
                     <button
                       type="button"
                       onClick={onAddEntry}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-darknavy px-4 text-sm font-semibold text-white transition hover:bg-darknavy/92"
+                      className={`${AccentPrimaryButtonClassName} h-11`}
                     >
                       <CirclePlus className="h-4 w-4" aria-hidden="true" />
                       Add
@@ -764,7 +767,7 @@ function VoucherEntriesStep({
           <button
             type="button"
             onClick={onProceed}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-darknavy px-5 text-sm font-semibold text-white"
+            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-full bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
           >
             Continue to Review
           </button>
@@ -971,7 +974,7 @@ function TaxDetailsDialogEditor({
           <button
             type="button"
             onClick={() => onSave(draftValues)}
-            className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700"
+            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
           >
             Save
           </button>
@@ -1144,7 +1147,7 @@ function VoucherReviewStep({
               <span>Total credit</span>
               <span>{formatCurrency(totalCredit)}</span>
             </div>
-            <div className="mt-3 flex items-center justify-between rounded-[16px] bg-darknavy px-4 py-3 text-white">
+            <div className="theme-accent-contrast-text mt-3 flex items-center justify-between rounded-[16px] bg-skyblue px-4 py-3 shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.2)]">
               <span className="font-semibold">Total disbursement</span>
               <span className="text-lg font-semibold">
                 {formatCurrency(Number(values.amount))}
@@ -1228,8 +1231,8 @@ function VoucherPreviewPanel({
               <InfoLine label="Status" value={voucher.status} />
               <InfoLine label="Remarks" value={voucher.remarks} />
             </div>
-            <div className="mt-5 rounded-[18px] bg-darknavy p-4 text-white">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+            <div className="theme-accent-contrast-text mt-5 rounded-[18px] bg-skyblue p-4 shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.2)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] opacity-70">
                 Linked voucher amount
               </p>
               <p className="mt-2 text-2xl font-semibold">

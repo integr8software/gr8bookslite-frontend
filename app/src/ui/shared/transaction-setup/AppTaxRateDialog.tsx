@@ -217,7 +217,7 @@ function AppTaxRateDialogEditor({
           <button
             type="button"
             onClick={() => onSave(draftValue)}
-            className="inline-flex h-11 w-full items-center justify-center rounded bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
+            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
           >
             Save
           </button>

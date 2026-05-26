@@ -1,5 +1,7 @@
 import type {
   DisbursementAttachment,
+  DisbursementVoucherCopyFromRecord,
+  DisbursementVoucherCopySource,
   DisbursementLineEntry,
   DisbursementVoucherPaymentDetails,
   DisbursementTaxDetails,
@@ -289,6 +291,64 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
   },
 ];
 
+export const DisbursementVoucherCopySources: DisbursementVoucherCopySource[] = [
+  "Loan",
+  "Accounts Payable Voucher",
+  "Advances to Supplier",
+  "Cash Advance",
+  "Petty Cash Replenishment",
+  "Purchase Order",
+];
+
+export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromRecord[] =
+  [
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1001",
+      "Accounts Payable Voucher",
+      "APV-2026-0041",
+      "VCE-OD-204",
+      MockDisbursementTransactions[0],
+      MockDisbursementVouchers[0],
+    ),
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1002",
+      "Advances to Supplier",
+      "ATS-2026-0017",
+      "VCE-MUS-118",
+      MockDisbursementTransactions[1],
+    ),
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1003",
+      "Purchase Order",
+      "PO-2026-0322",
+      "VCE-LAW-108",
+      MockDisbursementTransactions[2],
+      MockDisbursementVouchers[1],
+    ),
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1004",
+      "Loan",
+      "LOAN-2026-0008",
+      "VCE-GFM-077",
+      MockDisbursementTransactions[3],
+    ),
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1005",
+      "Cash Advance",
+      "CA-2026-0021",
+      "EMP-044",
+      MockDisbursementTransactions[4],
+      MockDisbursementVouchers[2],
+    ),
+    createDisbursementVoucherCopyFromRecord(
+      "copy-dv-1006",
+      "Petty Cash Replenishment",
+      "PCR-2026-0012",
+      "VCE-TPI-611",
+      MockDisbursementTransactions[5],
+    ),
+  ];
+
 export function buildDisbursementVoucherPreviewRows(
   transactions: DisbursementTransactionRecord[],
   vouchers: DisbursementVoucherRecord[],
@@ -397,6 +457,33 @@ export function createDisbursementVoucherFromForm(
     status: values.status,
     lineEntries: values.lineEntries,
     attachments: values.attachments,
+  };
+}
+
+export function applyCopyFromRecordToDisbursementVoucherForm(
+  currentValues: DisbursementVoucherFormValues,
+  record: DisbursementVoucherCopyFromRecord,
+) {
+  return {
+    ...currentValues,
+    transactionId: record.transactionId,
+    paymentMethod: record.templateValues.paymentMethod,
+    disbursementType: record.templateValues.disbursementType,
+    currency: record.templateValues.currency,
+    fxRate: record.templateValues.fxRate,
+    costCenter: record.templateValues.costCenter,
+    vceCode: record.templateValues.vceCode,
+    vceName: record.templateValues.vceName,
+    amount: record.templateValues.amount,
+    taxRate: record.templateValues.taxRate,
+    taxDetails: record.templateValues.taxDetails,
+    remarks: record.templateValues.remarks,
+    voucherReferenceNo: record.templateValues.voucherReferenceNo,
+    invoiceReferenceNo: record.templateValues.invoiceReferenceNo,
+    paymentDueDate: record.templateValues.paymentDueDate,
+    paymentDetails: record.templateValues.paymentDetails,
+    lineEntries: record.templateValues.lineEntries,
+    attachments: record.templateValues.attachments,
   };
 }
 
@@ -569,6 +656,42 @@ function createVoucherReferenceNumber() {
   const serial = String(new Date().getTime()).slice(-4);
 
   return `DVR-${new Date().getFullYear()}-${serial}`;
+}
+
+function createDisbursementVoucherCopyFromRecord(
+  id: string,
+  source: DisbursementVoucherCopySource,
+  sourceNo: string,
+  partyCode: string,
+  transaction: DisbursementTransactionRecord,
+  voucher?: DisbursementVoucherRecord,
+): DisbursementVoucherCopyFromRecord {
+  const templateValues = createDisbursementVoucherFormValues(transaction, voucher);
+
+  return {
+    id,
+    source,
+    sourceNo,
+    documentDate: voucher?.voucherDate ?? transaction.transactionDate,
+    transactionId: transaction.id,
+    partyCode,
+    partyName: transaction.payee,
+    amount: templateValues.amount,
+    templateValues: {
+      ...templateValues,
+      vceCode: voucher?.vceCode ?? partyCode,
+      vceName: voucher?.vceName ?? transaction.payee,
+      remarks:
+        voucher?.remarks ??
+        `${transaction.purpose} Copied from ${sourceNo}.`,
+      invoiceReferenceNo:
+        voucher?.invoiceReferenceNo ?? `${sourceNo}-REF`,
+      attachments:
+        voucher?.attachments ?? createAttachmentPlaceholders(transaction),
+      lineEntries:
+        voucher?.lineEntries ?? createAutoDisbursementLineEntries(transaction),
+    },
+  };
 }
 
 function getDebitAccountTemplate(transaction: DisbursementTransactionRecord) {

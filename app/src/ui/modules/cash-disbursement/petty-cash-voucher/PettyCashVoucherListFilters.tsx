@@ -1,7 +1,7 @@
 import { PettyCashVoucherStatusOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { usePettyCashVoucherListPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherListPage";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -33,7 +33,8 @@ export function PettyCashVoucherListFilters({
 				}))}
 				onChange={page.setStatusFilter}
 			/>
-			<ModuleTableFilterButton />
+			<ModuleTableResetButton onClick={page.resetFilters} />
 		</ModuleTableToolbar>
 	);
 }
+

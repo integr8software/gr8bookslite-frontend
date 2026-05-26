@@ -1,5 +1,5 @@
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -42,9 +42,10 @@ export function UserListTableFilters({
 				}))}
 				onChange={onTypeFilterChange}
 			/>
-			<ModuleTableFilterButton onClick={onResetFilters}>
+			<ModuleTableResetButton onClick={onResetFilters}>
 				Reset
-			</ModuleTableFilterButton>
+			</ModuleTableResetButton>
 		</ModuleTableToolbar>
 	);
 }
+

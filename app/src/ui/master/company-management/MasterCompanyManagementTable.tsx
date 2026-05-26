@@ -13,7 +13,7 @@ import type {
 import type { useMasterCompanyManagementPage } from "@/app/src/hooks/master/company-management/useMasterCompanyManagementPage";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -108,9 +108,9 @@ export function MasterCompanyManagementTable({
 								setSortBy(value as MasterCompanyManagementSortBy)
 							}
 						/>
-						<ModuleTableFilterButton onClick={resetFilters}>
+						<ModuleTableResetButton onClick={resetFilters}>
 							Reset
-						</ModuleTableFilterButton>
+						</ModuleTableResetButton>
 					</ModuleTableToolbar>
 				}
 				renderRow={(row) => {
@@ -158,3 +158,4 @@ function getMasterCompanyGroupValue(
 ) {
 	return String(company[groupBy]);
 }
+

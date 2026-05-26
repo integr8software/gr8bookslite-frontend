@@ -18,7 +18,7 @@ import { DisbursementVoucherDrawer } from "@/app/src/ui/modules/cash-disbursemen
 import { DisbursementVoucherHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherHeader";
 import { DisbursementVoucherTable } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherTable";
 import {
-  ModuleTableFilterButton,
+  ModuleTableResetButton,
   ModuleTableFilterSelect,
   ModuleTableSearch,
   ModuleTableToolbar,
@@ -131,9 +131,9 @@ export function DisbursementVoucherMain() {
                       )
                     }
                   />
-                  <ModuleTableFilterButton onClick={previewTable.resetFilters}>
+                  <ModuleTableResetButton onClick={previewTable.resetFilters}>
                     Reset
-                  </ModuleTableFilterButton>
+                  </ModuleTableResetButton>
                 </ModuleTableToolbar>
               }
               onDeleteVoucher={setPendingDeleteRow}
@@ -164,3 +164,4 @@ export function DisbursementVoucherMain() {
     </>
   );
 }
+

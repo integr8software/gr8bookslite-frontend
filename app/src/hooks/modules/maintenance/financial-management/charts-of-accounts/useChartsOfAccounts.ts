@@ -199,6 +199,15 @@ export function useChartsOfAccounts() {
 		table.setPageIndex(0);
 	}
 
+	function resetFilters() {
+		setActiveTab(ChartsOfAccountsNavs[0]);
+		setSearchQuery("");
+		setAccountTypeFilter("All");
+		setStatusFilter("All");
+		setStructureFilter("All");
+		table.setPageIndex(0);
+	}
+
 	function openAddDrawer() {
 		setDrawerAccount(null);
 		setIsDrawerOpen(true);
@@ -259,6 +268,7 @@ export function useChartsOfAccounts() {
 		openAddDrawer,
 		openEditDrawer,
 		saveAccount,
+		resetFilters,
 		setAccountTypeFilter: changeAccountTypeFilter,
 		setActiveTab: changeActiveTab,
 		setSearchQuery: changeSearchQuery,

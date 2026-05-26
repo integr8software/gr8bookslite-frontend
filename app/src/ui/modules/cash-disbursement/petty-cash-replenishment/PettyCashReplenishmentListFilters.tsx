@@ -1,7 +1,7 @@
 import { PettyCashReplenishmentStatusOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
 import { usePettyCashReplenishmentListPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-replenishment/usePettyCashReplenishmentListPage";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -33,7 +33,8 @@ export function PettyCashReplenishmentListFilters({
 				}))}
 				onChange={page.setStatusFilter}
 			/>
-			<ModuleTableFilterButton />
+			<ModuleTableResetButton onClick={page.resetFilters} />
 		</ModuleTableToolbar>
 	);
 }
+

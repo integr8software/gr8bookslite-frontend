@@ -103,12 +103,18 @@ export function usePettyCashVoucherListPage() {
     setPendingDelete(null);
   }
 
+  function resetFilters() {
+    setSearchQuery("");
+    setStatusFilter("All");
+  }
+
   return {
     handleConfirmDelete,
     isLoading: vouchersQuery.isLoading,
     isMutating: deleteVoucherMutation.isPending,
     pendingDelete,
     searchQuery,
+    resetFilters,
     setPendingDelete,
     setSearchQuery,
     setStatusFilter,

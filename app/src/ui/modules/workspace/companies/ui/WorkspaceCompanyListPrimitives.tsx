@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -81,9 +81,9 @@ export function WorkspaceCompaniesResetButton({
 	onClick: () => void;
 }) {
 	return (
-		<ModuleTableFilterButton onClick={onClick}>
+		<ModuleTableResetButton onClick={onClick}>
 			Reset
-		</ModuleTableFilterButton>
+		</ModuleTableResetButton>
 	);
 }
 
@@ -125,3 +125,4 @@ export function WorkspaceCompaniesIconLink({
 		</Link>
 	);
 }
+

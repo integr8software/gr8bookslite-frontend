@@ -5,7 +5,7 @@ import { MasterSubscriptionPaginationStorageKey } from "@/app/src/constants/mast
 import type { useMasterSubscriptionsPage } from "@/app/src/hooks/master/subscriptions/useMasterSubscriptionsPage";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/ModuleTableToolbar";
@@ -46,9 +46,9 @@ export function MasterSubscriptionCompanyTable({
 							onChange={setQuery}
 							placeholder="Search companies, owners, plans, or status"
 						/>
-						<ModuleTableFilterButton onClick={resetSubscriptionFilters}>
+						<ModuleTableResetButton onClick={resetSubscriptionFilters}>
 							Reset
-						</ModuleTableFilterButton>
+						</ModuleTableResetButton>
 					</ModuleTableToolbar>
 				}
 				renderRow={(row) => (
@@ -63,3 +63,4 @@ export function MasterSubscriptionCompanyTable({
 		</div>
 	);
 }
+

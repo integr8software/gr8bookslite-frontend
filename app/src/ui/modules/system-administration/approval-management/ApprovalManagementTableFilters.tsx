@@ -1,6 +1,6 @@
 import type { ApprovalManagementStatus } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -39,14 +39,15 @@ export function ApprovalManagementTableFilters({
 					onStatusFilterChange(value as ApprovalManagementStatus | "any")
 				}
 			/>
-			<ModuleTableFilterButton
+			<ModuleTableResetButton
 				onClick={() => {
 					onQueryChange("");
 					onStatusFilterChange("any");
 				}}
 			>
 				Reset
-			</ModuleTableFilterButton>
+			</ModuleTableResetButton>
 		</ModuleTableToolbar>
 	);
 }
+

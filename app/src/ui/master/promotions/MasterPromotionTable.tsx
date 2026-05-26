@@ -6,7 +6,7 @@ import type { useMasterPromotionListPage } from "@/app/src/hooks/master/promotio
 import type { MasterPromotionRecord } from "@/app/src/types/master/promotions/MasterPromotionTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/ModuleTableToolbar";
@@ -41,9 +41,9 @@ export function MasterPromotionTable({
 							onChange={setQuery}
 							placeholder="Search promo codes, coupons, vouchers, events, or targets"
 						/>
-						<ModuleTableFilterButton onClick={resetFilters}>
+						<ModuleTableResetButton onClick={resetFilters}>
 							Reset
-						</ModuleTableFilterButton>
+						</ModuleTableResetButton>
 					</ModuleTableToolbar>
 				}
 				renderRow={(row) => (
@@ -57,3 +57,4 @@ export function MasterPromotionTable({
 		</div>
 	);
 }
+

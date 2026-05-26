@@ -18,7 +18,7 @@ import {
 	Tabs,
 } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -32,6 +32,7 @@ export type ChartsOfAccountsFiltersProps = {
 	structureFilter: ChartAccountStructureFilter;
 	onAccountTypeChange: (value: FilterValue<AccountType>) => void;
 	onSearchChange: (value: string) => void;
+	onResetFilters: () => void;
 	onStatusChange: (value: FilterValue<AccountStatus>) => void;
 	onStructureChange: (value: ChartAccountStructureFilter) => void;
 	onTabChange: (value: ChartsOfAccountsNav) => void;
@@ -45,6 +46,7 @@ export function ChartsOfAccountsFilters({
 	structureFilter,
 	onAccountTypeChange,
 	onSearchChange,
+	onResetFilters,
 	onStatusChange,
 	onStructureChange,
 	onTabChange,
@@ -127,7 +129,7 @@ export function ChartsOfAccountsFilters({
 						onStatusChange(value as FilterValue<AccountStatus>)
 					}
 				/>
-				<ModuleTableFilterButton />
+				<ModuleTableResetButton onClick={onResetFilters} />
 			</ModuleTableToolbar>
 		</div>
 	);
@@ -160,3 +162,4 @@ function StructureButton({
 		</button>
 	);
 }
+

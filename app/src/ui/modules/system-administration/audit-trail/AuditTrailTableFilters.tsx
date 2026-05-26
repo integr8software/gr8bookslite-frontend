@@ -8,7 +8,7 @@ import type {
 	AuditTrailSeverity,
 } from "@/app/src/types/modules/system-administration/audit-trail/AuditTrailTypes";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -85,7 +85,7 @@ export function AuditTrailTableFilters({
 					onSeverityFilterChange(value as AuditTrailSeverity | "all")
 				}
 			/>
-			<ModuleTableFilterButton
+			<ModuleTableResetButton
 				onClick={() => {
 					onQueryChange("");
 					onModuleFilterChange("all");
@@ -94,7 +94,8 @@ export function AuditTrailTableFilters({
 				}}
 			>
 				Reset
-			</ModuleTableFilterButton>
+			</ModuleTableResetButton>
 		</ModuleTableToolbar>
 	);
 }
+

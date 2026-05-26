@@ -142,6 +142,7 @@ export function ChartsOfAccountsMain() {
                 statusFilter={coa.statusFilter}
                 structureFilter={coa.structureFilter}
                 onAccountTypeChange={coa.setAccountTypeFilter}
+                onResetFilters={coa.resetFilters}
                 onSearchChange={coa.setSearchQuery}
                 onStatusChange={coa.setStatusFilter}
                 onStructureChange={coa.setStructureFilter}

@@ -12,7 +12,7 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import {
-  ModuleTableFilterButton,
+  ModuleTableResetButton,
   ModuleTableFilterSelect,
   ModuleTableSearch,
   ModuleTableToolbar,
@@ -144,9 +144,9 @@ export function DiscountManagementListPage() {
               ]}
               onChange={setMappingFilter}
             />
-            <ModuleTableFilterButton onClick={resetFilters}>
+            <ModuleTableResetButton onClick={resetFilters}>
               Reset
-            </ModuleTableFilterButton>
+            </ModuleTableResetButton>
           </ModuleTableToolbar>
         }
         onDeleteDiscount={setPendingDelete}
@@ -187,3 +187,4 @@ function DiscountManagementHeaderActions() {
     </>
   );
 }
+

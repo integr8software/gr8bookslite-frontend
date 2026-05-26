@@ -1,5 +1,5 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
-import { Filter, Search } from "lucide-react";
+import { RotateCcw, Search } from "lucide-react";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export type ModuleTableFilterOption = {
@@ -30,7 +30,7 @@ type ModuleTableFilterSelectProps = Omit<
 	value: string;
 };
 
-type ModuleTableFilterButtonProps = ComponentPropsWithoutRef<"button"> & {
+type ModuleTableResetButtonProps = ComponentPropsWithoutRef<"button"> & {
 	children?: ReactNode;
 };
 
@@ -114,12 +114,12 @@ export function ModuleTableFilterSelect({
 	);
 }
 
-export function ModuleTableFilterButton({
-	children = "Filter",
+export function ModuleTableResetButton({
+	children = "Reset",
 	className,
 	type = "button",
 	...props
-}: ModuleTableFilterButtonProps) {
+}: ModuleTableResetButtonProps) {
 	return (
 		<button
 			type={type}
@@ -129,8 +129,9 @@ export function ModuleTableFilterButton({
 			)}
 			{...props}
 		>
-			<Filter className="h-4 w-4" aria-hidden="true" />
+			<RotateCcw className="h-4 w-4" aria-hidden="true" />
 			{children}
 		</button>
 	);
 }
+

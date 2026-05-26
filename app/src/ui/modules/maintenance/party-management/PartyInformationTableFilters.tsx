@@ -3,7 +3,7 @@ import type {
 	PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -60,9 +60,10 @@ export function PartyInformationTableFilters({
 				}))}
 				onChange={(value) => onPartyTypeFilterChange(value as PartyType | "All")}
 			/>
-			<ModuleTableFilterButton onClick={onResetFilters}>
+			<ModuleTableResetButton onClick={onResetFilters}>
 				Reset
-			</ModuleTableFilterButton>
+			</ModuleTableResetButton>
 		</ModuleTableToolbar>
 	);
 }
+

@@ -99,12 +99,18 @@ export function usePettyCashReplenishmentListPage() {
     setPendingDelete(null);
   }
 
+  function resetFilters() {
+    setSearchQuery("");
+    setStatusFilter("All");
+  }
+
   return {
     handleConfirmDelete,
     isLoading: recordsQuery.isLoading,
     isMutating: deleteRecordMutation.isPending,
     pendingDelete,
     searchQuery,
+    resetFilters,
     setPendingDelete,
     setSearchQuery,
     setStatusFilter,

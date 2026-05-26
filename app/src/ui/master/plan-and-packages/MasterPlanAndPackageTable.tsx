@@ -7,7 +7,7 @@ import type { MasterPlanAndPackageRecord } from "@/app/src/types/master/plan-and
 import { MasterPlanAndPackageTableRow } from "@/app/src/ui/master/plan-and-packages/MasterPlanAndPackageTableRow";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/ModuleTableToolbar";
@@ -41,9 +41,9 @@ export function MasterPlanAndPackageTable({
 							onChange={setQuery}
 							placeholder="Search plans, pricing, users, or status"
 						/>
-						<ModuleTableFilterButton onClick={resetFilters}>
+						<ModuleTableResetButton onClick={resetFilters}>
 							Reset
-						</ModuleTableFilterButton>
+						</ModuleTableResetButton>
 					</ModuleTableToolbar>
 				}
 				renderRow={(row) => (
@@ -57,3 +57,4 @@ export function MasterPlanAndPackageTable({
 		</div>
 	);
 }
+

@@ -1,5 +1,5 @@
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -39,14 +39,15 @@ export function TransactionNumberSetupTableFilters({
 					onScopeFilterChange(value as "all" | "any" | "branch" | "shared")
 				}
 			/>
-			<ModuleTableFilterButton
+			<ModuleTableResetButton
 				onClick={() => {
 					onQueryChange("");
 					onScopeFilterChange("any");
 				}}
 			>
 				Reset
-			</ModuleTableFilterButton>
+			</ModuleTableResetButton>
 		</ModuleTableToolbar>
 	);
 }
+

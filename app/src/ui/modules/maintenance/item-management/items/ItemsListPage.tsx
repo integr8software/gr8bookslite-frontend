@@ -20,7 +20,7 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import {
-	ModuleTableFilterButton,
+	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -122,9 +122,9 @@ export function ItemsListPage() {
 							]}
 							onChange={page.setStatusFilter}
 						/>
-						<ModuleTableFilterButton onClick={page.resetFilters}>
+						<ModuleTableResetButton onClick={page.resetFilters}>
 							Reset
-						</ModuleTableFilterButton>
+						</ModuleTableResetButton>
 					</ModuleTableToolbar>
 				}
 			/>
@@ -142,4 +142,5 @@ export function ItemsListPage() {
 		</section>
 	);
 }
+
 

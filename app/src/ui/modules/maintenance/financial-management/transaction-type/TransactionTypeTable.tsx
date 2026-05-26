@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { TransactionTypePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
 import { useTransactionTypeTable } from "@/app/src/hooks/modules/maintenance/financial-management/transaction-type/useTransactionTypeTable";
 import type { TransactionType } from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
@@ -10,34 +11,35 @@ import { TransactionTypeTableRow } from "@/app/src/ui/modules/maintenance/financ
 type TransactionTypeTableProps = {
 	isLoading: boolean;
 	transactionTypes: TransactionType[];
+	toolbar?: ReactNode;
 	onDelete: (transactionType: TransactionType) => void;
 };
 
 export function TransactionTypeTable({
 	isLoading,
 	transactionTypes,
+	toolbar,
 	onDelete,
 }: TransactionTypeTableProps) {
 	const table = useTransactionTypeTable(transactionTypes);
 
 	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<ModuleTable
-				emptyDescription="Add a transaction type to start mapping posting behaviors."
-				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No transaction types found"
-				isLoading={isLoading}
-				minWidthClassName="min-w-[64rem]"
-				paginationStorageKey={TransactionTypePaginationStorageKey}
-				table={table}
-				renderRow={({ id, original }) => (
-					<TransactionTypeTableRow
-						key={id}
-						transactionType={original}
-						onDelete={onDelete}
-					/>
-				)}
-			/>
-		</div>
+		<ModuleTable
+			emptyDescription="Add a transaction type to start mapping posting behaviors."
+			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+			emptyTitle="No transaction types found"
+			isLoading={isLoading}
+			minWidthClassName="min-w-[64rem]"
+			paginationStorageKey={TransactionTypePaginationStorageKey}
+			table={table}
+			toolbar={toolbar}
+			renderRow={({ id, original }) => (
+				<TransactionTypeTableRow
+					key={id}
+					transactionType={original}
+					onDelete={onDelete}
+				/>
+			)}
+		/>
 	);
 }

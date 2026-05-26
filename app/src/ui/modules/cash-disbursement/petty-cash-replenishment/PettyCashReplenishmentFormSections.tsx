@@ -15,7 +15,7 @@ import {
 	ReadOnlyTotal,
 	secondaryButtonClassName,
 	type PettyCashReplenishmentFormPageState,
-} from "./PettyCashReplenishmentFormControls";
+} from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentFormControls";
 
 const tableHeaderClassName = "border-b border-darknavy/10 px-3 py-3";
 const tableCellClassName = "px-3 py-3";

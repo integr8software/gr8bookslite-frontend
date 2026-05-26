@@ -25,22 +25,24 @@ export function UserListTable({
 			className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm"
 			data-spotlight-id="users-table"
 		>
-			<UserListTableFilters
-				query={userList.query}
-				typeFilter={userList.roleFilter}
-				typeOptions={userList.roleOptions}
-				onQueryChange={userList.setQuery}
-				onResetFilters={userList.resetFilters}
-				onTypeFilterChange={userList.setRoleFilter}
-			/>
-
 			<ModuleTable
+				variant="embedded"
 				emptyDescription="Try adjusting your filters or search query."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No users found"
-				minWidthClassName="min-w-[50rem]"
+				minWidthClassName="min-w-[40rem] sm:min-w-[44rem] lg:min-w-[50rem]"
 				paginationStorageKey={UserListTablePaginationStorageKey}
 				table={userList.table}
+				toolbar={
+					<UserListTableFilters
+						query={userList.query}
+						typeFilter={userList.roleFilter}
+						typeOptions={userList.roleOptions}
+						onQueryChange={userList.setQuery}
+						onResetFilters={userList.resetFilters}
+						onTypeFilterChange={userList.setRoleFilter}
+					/>
+				}
 				renderRow={({ id, original }) => (
 					<UserListTableRow
 						key={id}

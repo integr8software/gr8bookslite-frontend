@@ -3,7 +3,7 @@ import type {
   BillingCycleApi,
   BillingPlan,
   BillingPlanPrice,
-} from "./BillingTypes";
+} from "@/app/src/data/billing/BillingTypes";
 
 export function GetBillingCycleApiValue(
   billingCycle: BillingCycle,

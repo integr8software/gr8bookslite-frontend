@@ -19,8 +19,8 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
-import { BranchUsersTable } from "./BranchUsersTable";
+import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
+import { BranchUsersTable } from "@/app/src/ui/modules/workspace/companies/ui/BranchUsersTable";
 
 export function WorkspaceBranchUsersMain() {
   const { branch, company, isLoading, selectedBranchUsers } =

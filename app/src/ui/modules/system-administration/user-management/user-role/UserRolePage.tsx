@@ -66,7 +66,7 @@ export function UserRolePage() {
             <button
               type="button"
               onClick={openSpotlightTutorial}
-              className={moduleHeaderActionClassNames.secondary}
+              className={`${moduleHeaderActionClassNames.secondary} max-sm:w-full`}
             >
               <Sparkles className="h-4 w-4" aria-hidden="true" />
               Quick Tour
@@ -74,7 +74,7 @@ export function UserRolePage() {
             <Link
               href={`${UserRoleHref}/add`}
               data-spotlight-id="user-role-add"
-              className={moduleHeaderActionClassNames.primary}
+              className={`${moduleHeaderActionClassNames.primary} max-sm:w-full`}
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               Add Type

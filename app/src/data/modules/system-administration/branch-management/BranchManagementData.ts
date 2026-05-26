@@ -1,4 +1,4 @@
-import type { MainBranch } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 
 export type BranchManagementClassification = "branch" | "satellite";
 

@@ -20,7 +20,7 @@ import {
 	InitialWorkspaceCompanyUserFormValues,
 	validateWorkspaceCompanyUserForm,
 } from "@/app/src/data/modules/workspace/companies/WorkspaceCompanyData";
-import { FormatPhilippineContactNumber, PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/ContactData";
+import { FormatPhilippineContactNumber, PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/contact/ContactData";
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyManagement";
 import type {
 	WorkspaceCompanyBranchRecord,

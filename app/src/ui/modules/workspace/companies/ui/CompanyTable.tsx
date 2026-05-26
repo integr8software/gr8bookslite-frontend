@@ -1,9 +1,5 @@
 import Link from "next/link";
 import {
-	CheckCircle2,
-	CircleOff,
-	Edit3,
-	Eye,
 	Search,
 } from "lucide-react";
 import {
@@ -28,19 +24,23 @@ import type {
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
+	ModuleTableActionButton,
+	ModuleTableActionLink,
+	ModuleTableActions,
+} from "@/app/src/ui/shared/module/ModuleTableActions";
+import {
 	WorkspaceCompanyAvatar,
 	WorkspacePlanBadge,
 	WorkspaceStatusBadge,
 	WorkspaceTextBadge,
-} from "./WorkspaceCompanyBadges";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyBadges";
 import {
 	WorkspaceCompaniesFilterBar,
 	WorkspaceCompaniesFilterSelect,
-	WorkspaceCompaniesIconLink,
 	WorkspaceCompaniesResetButton,
 	WorkspaceCompaniesSearchInput,
 	WorkspaceCompaniesTableCell,
-} from "./WorkspaceCompanyListPrimitives";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyListPrimitives";
 
 export function CompanyTable({
 	branches,
@@ -63,22 +63,8 @@ export function CompanyTable({
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<CompanyTableFilters
-				planFilter={companyList.planFilter}
-				planOptions={companyList.planOptions}
-				query={companyList.query}
-				statusFilter={companyList.statusFilter}
-				statusOptions={companyList.statusOptions}
-				typeFilter={companyList.typeFilter}
-				typeOptions={companyList.typeOptions}
-				onPlanFilterChange={companyList.setPlanFilter}
-				onQueryChange={companyList.setQuery}
-				onResetFilters={companyList.resetFilters}
-				onStatusFilterChange={companyList.setStatusFilter}
-				onTypeFilterChange={companyList.setTypeFilter}
-			/>
-
 			<ModuleTable
+				variant="embedded"
 				emptyDescription="Try adjusting search, status, type, or plan filters."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No companies found"
@@ -86,6 +72,22 @@ export function CompanyTable({
 				minWidthClassName="min-w-[72rem]"
 				paginationStorageKey={WorkspaceCompaniesTablePaginationStorageKey}
 				table={companyList.table}
+				toolbar={
+					<CompanyTableFilters
+						planFilter={companyList.planFilter}
+						planOptions={companyList.planOptions}
+						query={companyList.query}
+						statusFilter={companyList.statusFilter}
+						statusOptions={companyList.statusOptions}
+						typeFilter={companyList.typeFilter}
+						typeOptions={companyList.typeOptions}
+						onPlanFilterChange={companyList.setPlanFilter}
+						onQueryChange={companyList.setQuery}
+						onResetFilters={companyList.resetFilters}
+						onStatusFilterChange={companyList.setStatusFilter}
+						onTypeFilterChange={companyList.setTypeFilter}
+					/>
+				}
 				renderRow={({ id, original }) => (
 					<CompanyTableRow
 						key={id}
@@ -126,7 +128,7 @@ function CompanyTableFilters({
 	onTypeFilterChange: (value: WorkspaceCompanyType | "All") => void;
 }) {
 	return (
-		<WorkspaceCompaniesFilterBar className="lg:grid-cols-[1fr_11rem_11rem_15rem_auto]">
+		<WorkspaceCompaniesFilterBar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
 			<WorkspaceCompaniesSearchInput
 				value={query}
 				onChange={onQueryChange}
@@ -221,44 +223,24 @@ function CompanyRecordActions({
 	onStatusChange: () => void;
 }) {
 	const nextStatus = getNextWorkspaceCompanyStatus(company.status);
-	const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
 
 	return (
-		<div className="flex items-center justify-center gap-1.5">
-			<IconLink href={getWorkspaceCompanyHref(company.id)} label={`Open ${company.name}`}>
-				<Eye className="h-4 w-4" aria-hidden="true" />
-			</IconLink>
-			<IconLink href={getWorkspaceCompanyEditHref(company.id)} label={`Edit ${company.name}`}>
-				<Edit3 className="h-4 w-4" aria-hidden="true" />
-			</IconLink>
-			<button
-				type="button"
+		<ModuleTableActions className="justify-center">
+			<ModuleTableActionLink
+				variant="view"
+				href={getWorkspaceCompanyHref(company.id)}
+				label={`Open ${company.name}`}
+			/>
+			<ModuleTableActionLink
+				variant="edit"
+				href={getWorkspaceCompanyEditHref(company.id)}
+				label={`Edit ${company.name}`}
+			/>
+			<ModuleTableActionButton
+				variant={nextStatus === "Inactive" ? "inactive" : "active"}
 				onClick={onStatusChange}
-				aria-label={`Set ${company.name} as ${nextStatus.toLowerCase()}`}
-				className={
-					nextStatus === "Inactive"
-						? "flex h-10 w-10 items-center justify-center rounded-lg text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-coralpink/15"
-						: "flex h-10 w-10 items-center justify-center rounded-lg text-emerald-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/15"
-				}
-			>
-				<StatusIcon className="h-4 w-4" aria-hidden="true" />
-			</button>
-		</div>
-	);
-}
-
-function IconLink({
-	children,
-	href,
-	label,
-}: {
-	children: React.ReactNode;
-	href: string;
-	label: string;
-}) {
-	return (
-		<WorkspaceCompaniesIconLink href={href} label={label}>
-			{children}
-		</WorkspaceCompaniesIconLink>
+				label={`Set ${company.name} as ${nextStatus.toLowerCase()}`}
+			/>
+		</ModuleTableActions>
 	);
 }

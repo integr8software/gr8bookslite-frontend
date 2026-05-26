@@ -1,5 +1,5 @@
 import { PurchaseRequestStorageKey } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
-import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
+import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
 	PurchaseRequestFormValues,
 	PurchaseRequestItem,

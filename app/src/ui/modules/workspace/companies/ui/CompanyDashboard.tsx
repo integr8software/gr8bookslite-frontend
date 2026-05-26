@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, Edit3, GitBranch, Plus, type LucideIcon } from "lucide-react";
+import { Building2, Edit3, GitBranch, Plus } from "lucide-react";
 import {
 	WorkspaceCompaniesHref,
 	getWorkspaceCompanyBranchesHref,
@@ -19,8 +19,8 @@ import {
 	WorkspacePlanBadge,
 	WorkspaceStatusBadge,
 	WorkspaceTextBadge,
-} from "./WorkspaceCompanyBadges";
-import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyBadges";
+import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
 
 export function WorkspaceCompanyDashboard() {
 	const {
@@ -72,9 +72,9 @@ export function WorkspaceCompanyDashboard() {
 				}
 			/>
 
-			<section className="grid gap-4 xl:grid-cols-[1fr_1.2fr]">
-				<article className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
-					<div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+			<article className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
+				<div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+					<div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start">
 						<WorkspaceCompanyAvatar
 							initials={company.initials}
 							logoUrl={company.logoUrl}
@@ -92,90 +92,77 @@ export function WorkspaceCompanyDashboard() {
 							<p className="mt-1 text-sm text-darknavy/58">
 								{company.address}
 							</p>
-							<div className="mt-4 grid gap-3 sm:grid-cols-2">
+							<div className="mt-5 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
 								<Detail label="Primary Contact" value={company.primaryContact} />
 								<Detail label="Email" value={company.email} />
 								<Detail label="Contact No." value={company.contactNumber} />
+								<Detail label="TIN" value={company.tin} />
+								<Detail label="Taxpayer Type" value={formatTaxpayerType(company.taxpayerType)} />
+								<Detail label="Organization Type" value={company.nonIndividualType ?? company.companyType} />
+								<Detail label="Website" value={company.website} />
+								<Detail label="Report Start" value={company.reportStartDate} />
+								<Detail label="Report End" value={company.reportEndDate} />
+								<Detail label="Created By" value={company.createdByUser?.name} />
+								<Detail label="Creator Email" value={company.createdByUser?.email} />
 								<Detail label="Created" value={company.createdAt} />
 							</div>
 						</div>
 					</div>
-				</article>
-
-				<section className="grid gap-3">
-					<MetricCard label="Branches" value={companyBranches.length} />
-				</section>
-			</section>
-
-			<section className="grid gap-4">
-				<ModuleLinkCard
-					description="Branches and satellites live inside the company. User access is assigned from Workspace Users Management."
-					href={branchesHref}
-					icon={GitBranch}
-					label="Branch Management"
-					primaryAction="Open Branches"
-					secondaryText={`${companyBranches.length} branches`}
-				/>
-			</section>
+					<div className="rounded-lg border border-darknavy/10 bg-offwhite/50 p-4">
+						<div className="flex items-start gap-3">
+							<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-skyblue/15 text-darknavy">
+								<GitBranch className="h-5 w-5" aria-hidden="true" />
+							</span>
+							<div className="min-w-0">
+								<p className="text-sm font-semibold text-darknavy">
+									Branch Management
+								</p>
+								<p className="mt-1 text-sm leading-6 text-darknavy/58">
+									Branches and satellites live inside this company. User access is assigned from Workspace Users Management.
+								</p>
+							</div>
+						</div>
+						<div className="mt-5 grid grid-cols-2 gap-3">
+							<Detail label="Branches" value={String(companyBranches.length)} />
+							<Detail label="Users" value={String(company.totalUsers ?? 0)} />
+						</div>
+						<Link
+							href={branchesHref}
+							className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-skyblue px-4 text-sm font-semibold text-white shadow-sm shadow-skyblue/20 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+						>
+							<GitBranch className="h-4 w-4" aria-hidden="true" />
+							Open Branches
+						</Link>
+					</div>
+				</div>
+			</article>
 		</section>
 	);
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
+function Detail({ label, value }: { label: string; value?: string }) {
+	const displayValue = value?.trim() || "-";
+
 	return (
-		<div>
+		<div className="min-w-0">
 			<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">
 				{label}
 			</p>
-			<p className="mt-1 truncate text-sm font-semibold text-darknavy">
-				{value}
+			<p className="mt-1 break-words text-sm font-semibold text-darknavy">
+				{displayValue}
 			</p>
 		</div>
 	);
 }
 
-function MetricCard({ label, value }: { label: string; value: number }) {
-	return (
-		<article className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm">
-			<p className="text-sm font-medium text-darknavy/55">{label}</p>
-			<p className="mt-3 text-3xl font-semibold text-darknavy">{value}</p>
-		</article>
-	);
-}
+function formatTaxpayerType(value?: "individual" | "non-individual") {
+	if (value === "individual") {
+		return "Individual";
+	}
 
-function ModuleLinkCard({
-	description,
-	href,
-	icon: Icon,
-	label,
-	primaryAction,
-	secondaryText,
-}: {
-	description: string;
-	href: string;
-	icon: LucideIcon;
-	label: string;
-	primaryAction: string;
-	secondaryText: string;
-}) {
-	return (
-		<Link
-			href={href}
-			className="group rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm transition hover:border-skyblue/45 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-		>
-			<div className="flex items-start justify-between gap-4">
-				<span className="flex h-11 w-11 items-center justify-center rounded-lg bg-skyblue/15 text-darknavy">
-					<Icon className="h-5 w-5" aria-hidden="true" />
-				</span>
-				<span className="rounded bg-darknavy/5 px-2 py-1 text-xs font-semibold text-darknavy/55">
-					{secondaryText}
-				</span>
-			</div>
-			<h2 className="mt-5 text-lg font-semibold text-darknavy">{label}</h2>
-			<p className="mt-2 text-sm leading-6 text-darknavy/58">{description}</p>
-			<p className="mt-5 text-sm font-semibold text-skyblue group-hover:text-darknavy">
-				{primaryAction}
-			</p>
-		</Link>
-	);
+	if (value === "non-individual") {
+		return "Non-Individual";
+	}
+
+	return undefined;
 }

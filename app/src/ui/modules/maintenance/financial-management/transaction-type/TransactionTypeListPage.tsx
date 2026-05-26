@@ -1,9 +1,10 @@
 "use client";
 
-import { Receipt } from "lucide-react";
+import { CheckCircle2, CirclePause, Receipt } from "lucide-react";
 import { useTransactionTypeListPage } from "@/app/src/hooks/modules/maintenance/financial-management/transaction-type/useTransactionTypeListPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import { TransactionTypeFilters } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeFilters";
 import { TransactionTypeHeaderActions } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeHeaderActions";
 import { TransactionTypeTable } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeTable";
@@ -27,16 +28,46 @@ export function TransactionTypeListPage() {
 				actions={<TransactionTypeHeaderActions />}
 			/>
 
-			<TransactionTypeFilters
-				searchTerm={page.searchTerm}
-				statusFilter={page.statusFilter}
-				onSearchTermChange={page.setSearchTerm}
-				onStatusFilterChange={page.setStatusFilter}
+			<ModuleMetrics
+				metrics={[
+					{
+						helper: "All transaction types",
+						icon: Receipt,
+						label: "Total Types",
+						value: page.transactionTypes.length,
+					},
+					{
+						helper: "Available for posting",
+						icon: CheckCircle2,
+						label: "Active Types",
+						tone: "emerald",
+						value: page.transactionTypes.filter(
+							(type) => type.status === "Active",
+						).length,
+					},
+					{
+						helper: "Currently inactive",
+						icon: CirclePause,
+						label: "Inactive Types",
+						tone: "amber",
+						value: page.transactionTypes.filter(
+							(type) => type.status === "Inactive",
+						).length,
+					},
+				]}
 			/>
 
 			<TransactionTypeTable
 				isLoading={page.isLoading}
 				transactionTypes={page.filteredTransactionTypes}
+				toolbar={
+					<TransactionTypeFilters
+						searchTerm={page.searchTerm}
+						statusFilter={page.statusFilter}
+						onSearchTermChange={page.setSearchTerm}
+						onStatusFilterChange={page.setStatusFilter}
+					/>
+				}
 				onDelete={page.setPendingDeleteTransactionType}
 			/>
 

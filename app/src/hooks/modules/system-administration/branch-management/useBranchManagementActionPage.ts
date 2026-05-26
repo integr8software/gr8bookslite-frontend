@@ -11,8 +11,8 @@ import {
 	updateBranchFromForm,
 	type BranchManagementFormValues,
 } from "@/app/src/data/modules/system-administration/branch-management/BranchManagementData";
-import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
-import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
+import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
+import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
 	BranchActionMode,
 	BranchFormErrors,

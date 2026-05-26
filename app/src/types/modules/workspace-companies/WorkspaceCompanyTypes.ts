@@ -1,9 +1,6 @@
 export type WorkspaceCompanyStatus = "Active" | "Inactive" | "Pending";
 
-export type WorkspaceCompanyPlan =
-  | "Accounting"
-  | "Inventory"
-  | "Accounting + Inventory";
+export type WorkspaceCompanyPlan = string;
 
 export type WorkspaceCompanyType =
   | "Individual"
@@ -28,6 +25,11 @@ export type WorkspaceCompanyRecord = {
   contactNumber: string;
   address: string;
   primaryContact: string;
+  createdByUser?: {
+    id: string;
+    name: string;
+    email: string;
+  };
   createdAt: string;
   contactPerson?: string;
   firstName?: string;
@@ -39,6 +41,8 @@ export type WorkspaceCompanyRecord = {
   reportStartDate?: string;
   taxpayerType?: "individual" | "non-individual";
   tin?: string;
+  totalBranches?: number;
+  totalUsers?: number;
   website?: string;
   billingCardBrand?: string;
   billingCardLast4?: string;
@@ -56,6 +60,8 @@ export type WorkspaceCompanyFormValues = {
   billingExpiryMonth: string;
   billingExpiryYear: string;
   billingPaymentMethodId: string;
+  billingPlanCode: string;
+  billingCycle: "MONTHLY" | "YEARLY";
   companyName: string;
   contactNumber: string;
   email: string;
@@ -121,7 +127,6 @@ export type WorkspaceCompanyBranchRecord = {
   email: string;
   contactNumber: string;
   address: string;
-  description: string;
   isMain: boolean;
   linkedMainBranchId?: string;
 };
@@ -131,7 +136,6 @@ export type WorkspaceCompanyBranchFormValues = {
   name: string;
   contactNumber: string;
   email: string;
-  description: string;
   tin: string;
   linkedMainBranchId: string;
   address: string;

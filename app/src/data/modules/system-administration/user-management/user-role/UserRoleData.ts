@@ -1,8 +1,8 @@
-import { MainCompanyNavigationSections } from "@/app/src/data/shared/MainLayout/MainNavigationData";
+import { MainCompanyNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarNavigationData";
 import type {
   MainNavigationItem,
   MainNavigationSection,
-} from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import type { UserStatus } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 
 export type UserRoleRecord = {

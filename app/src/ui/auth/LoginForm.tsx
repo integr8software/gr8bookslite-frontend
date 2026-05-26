@@ -8,7 +8,7 @@ import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
 import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
 import { MainLoadingScreen } from "@/app/src/ui/shared/app/MainLoadingScreen";
 import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
-import { AuthField } from "./AuthField";
+import { AuthField } from "@/app/src/ui/auth/AuthField";
 
 export function LoginForm() {
   const {

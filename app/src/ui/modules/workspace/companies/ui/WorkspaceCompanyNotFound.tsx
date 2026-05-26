@@ -3,7 +3,7 @@ import { ArrowLeft, SearchX } from "lucide-react";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function WorkspaceCompanyNotFound({
-	description = "The record may have been moved, set inactive, or removed from the mock workspace data.",
+	description = "The record may have been moved, set inactive, or removed from the workspace data.",
 	href,
 	title,
 }: {

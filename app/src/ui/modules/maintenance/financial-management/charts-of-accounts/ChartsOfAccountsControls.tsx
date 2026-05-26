@@ -1,7 +1,6 @@
 "use client";
 
 import type { ComponentProps, ReactNode } from "react";
-import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import {
 	AccountTypeBadgeVariants,
@@ -19,7 +18,7 @@ export function Card({
 	return (
 		<div
 			className={joinClasses(
-				"rounded-xl border border-darknavy/10 bg-white shadow-sm shadow-darknavy/8",
+				"rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5",
 				className,
 			)}
 		>
@@ -42,12 +41,12 @@ export function Button({
 		<button
 			type="button"
 			className={joinClasses(
-				"inline-flex items-center justify-center gap-2 rounded-lg text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-45",
+				"inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-45",
 				size === "icon" ? "h-9 w-9" : "h-10 px-4",
 				variant === "primary" &&
-					"bg-skyblue text-white shadow-sm shadow-skyblue/20 hover:opacity-90 focus-visible:ring-skyblue/20",
+					"bg-blue-600 text-white shadow-sm shadow-blue-600/20 hover:bg-blue-700 focus-visible:ring-blue-600/20",
 				variant === "secondary" &&
-					"border border-darknavy/10 bg-white text-darknavy/70 hover:bg-skyblue/10 hover:text-darknavy focus-visible:ring-skyblue/15",
+					"border border-darknavy/10 bg-white text-darknavy/75 shadow-sm shadow-darknavy/5 hover:border-skyblue/40 hover:bg-skyblue/10 hover:text-darknavy focus-visible:ring-skyblue/15",
 				variant === "ghost" &&
 					"text-darknavy/60 hover:bg-skyblue/10 hover:text-darknavy focus-visible:ring-skyblue/15",
 				variant === "danger" &&
@@ -64,8 +63,8 @@ export function Button({
 export function Input({ className, ...props }: ComponentProps<"input">) {
 	return (
 		<input
-			className={joinClasses(
-				"h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20",
+				className={joinClasses(
+					"h-10 w-full rounded-md border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20",
 				className,
 			)}
 			{...props}
@@ -82,7 +81,7 @@ export function Select({
 		<div className="relative">
 			<select
 				className={joinClasses(
-					"h-10 w-full appearance-none rounded-lg border border-darknavy/10 bg-white px-3 pr-9 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20",
+					"h-10 w-full appearance-none rounded-md border border-darknavy/10 bg-white px-3 pr-9 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20",
 					className,
 				)}
 				{...props}
@@ -152,26 +151,19 @@ export function Tabs<TValue extends string>({
 	value: TValue;
 }) {
 	return (
-		<div className="flex gap-1 overflow-x-auto rounded-lg bg-darknavy/5 p-1">
+		<div className="flex gap-0 overflow-x-auto">
 			{options.map((option) => (
 				<button
 					key={option}
 					type="button"
 					onClick={() => onChange(option)}
 					className={joinClasses(
-						"relative whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold transition",
+						"relative h-12 whitespace-nowrap border-b-2 px-4 text-sm font-semibold transition",
 						value === option
-							? "text-skyblue"
-							: "text-darknavy/55 hover:text-darknavy",
+							? "border-blue-600 text-blue-600"
+							: "border-transparent text-darknavy/65 hover:text-darknavy",
 					)}
 				>
-					{value === option ? (
-						<motion.span
-							layoutId={`tab-indicator-${options.join("-")}`}
-							className="absolute inset-0 rounded-md bg-white shadow-sm"
-							transition={{ type: "spring", damping: 28, stiffness: 320 }}
-						/>
-					) : null}
 					<span className="relative">{option}</span>
 				</button>
 			))}

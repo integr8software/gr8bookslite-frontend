@@ -19,8 +19,8 @@ import {
 	PartyManagementHref,
 	PartyTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
-import { FormatPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
-import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
+import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
+import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import {
 	PartyInformationInitialFormValues,
 	createPartyInformationFormValues,
@@ -37,7 +37,7 @@ import type {
 	PartyInformationFormValues,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
-import { usePartyManagementStore } from "./usePartyManagement";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 
 export function usePartyManagementAction() {
 	const router = useRouter();

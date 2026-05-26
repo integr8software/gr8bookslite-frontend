@@ -5,8 +5,8 @@ import {
 	VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import { getPartyAtcCodeOptionsByClassification } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
-import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
-import { normalizePhilippineAtcCode } from "@/app/src/data/shared/PhilippineAtcData";
+import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
+import { normalizePhilippineAtcCode } from "@/app/src/data/shared/tax/PhilippineAtcData";
 import type {
 	PartyInformationFormErrors,
 	PartyInformationFormValues,

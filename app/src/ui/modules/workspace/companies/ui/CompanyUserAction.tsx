@@ -3,19 +3,19 @@
 import { Suspense } from "react";
 import { Users } from "lucide-react";
 import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
-import { PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/ContactData";
+import { PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/contact/ContactData";
 import { useWorkspaceCompanyUserAction } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyAction";
 import type {
 	WorkspaceCompanyUserFormErrors,
 	WorkspaceCompanyUserFormValues,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
-import { WorkspaceCompanyActionHeader } from "./WorkspaceCompanyActionHeader";
+import { WorkspaceCompanyActionHeader } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyActionHeader";
 import {
 	WorkspaceCompanyField,
 	WorkspaceCompanyFieldClassName,
 	WorkspaceCompanySection,
-} from "./WorkspaceCompanyFormPrimitives";
-import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
+} from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyFormPrimitives";
+import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
 
 const CompanyUserFormId = "workspace-company-user-form";
 

@@ -1,4 +1,4 @@
-import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 
 type MainLoadingScreenProps = {

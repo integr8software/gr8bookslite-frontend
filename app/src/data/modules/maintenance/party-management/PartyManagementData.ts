@@ -7,8 +7,8 @@ import {
 	getPhilippineAtcPartyClassification,
 	normalizePhilippineAtcCode,
 	type PhilippineTaxCodeRow,
-} from "@/app/src/data/shared/PhilippineAtcData";
-import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/ContactData";
+} from "@/app/src/data/shared/tax/PhilippineAtcData";
+import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import type {
 	PartyAddress,
 	PartyAtcCodeOption,

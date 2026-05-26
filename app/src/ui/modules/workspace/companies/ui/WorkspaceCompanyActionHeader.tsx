@@ -4,6 +4,7 @@ import {
 	CheckCircle2,
 	CircleOff,
 	Edit3,
+	LoaderCircle,
 	Save,
 	X,
 	type LucideIcon,
@@ -32,6 +33,7 @@ export function WorkspaceCompanyActionHeader({
 	extraActions,
 	formId,
 	isReadonly,
+	isPending = false,
 	mode,
 	saveLabel,
 	status,
@@ -46,6 +48,7 @@ export function WorkspaceCompanyActionHeader({
 	extraActions?: React.ReactNode;
 	formId: string;
 	isReadonly: boolean;
+	isPending?: boolean;
 	mode: WorkspaceCompanyActionMode;
 	saveLabel: string;
 	status?: WorkspaceCompanyStatus;
@@ -110,10 +113,19 @@ export function WorkspaceCompanyActionHeader({
 						<button
 							type="submit"
 							form={formId}
-							className={moduleHeaderActionClassNames.primary}
+							disabled={isPending}
+							aria-busy={isPending}
+							className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-70`}
 						>
-							<Save className="h-4 w-4" aria-hidden="true" />
-							{saveLabel}
+							{isPending ? (
+								<LoaderCircle
+									className="h-4 w-4 animate-spin"
+									aria-hidden="true"
+								/>
+							) : (
+								<Save className="h-4 w-4" aria-hidden="true" />
+							)}
+							{isPending ? "Saving..." : saveLabel}
 						</button>
 					) : null}
 				</>

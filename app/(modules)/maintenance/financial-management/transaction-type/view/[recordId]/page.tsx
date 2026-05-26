@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { TransactionTypeFormPage } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeFormPage";
 
 const PageTitle = "View Transaction Type";

@@ -4,19 +4,19 @@ import {
   DefaultPhilippineContactNumber,
   FormatPhilippineContactNumber,
   PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
-import { FormatTinNumber } from "@/app/src/data/shared/TaxData";
+} from "@/app/src/data/shared/contact/ContactData";
+import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { OnboardingNonIndividualTypeOptions } from "@/app/src/data/onboarding/OnboardingData";
 import type {
   OnboardingFieldErrors,
   OnboardingTaxpayerType,
   OnboardingValues,
 } from "@/app/src/data/onboarding/OnboardingTypes";
-import { OnboardingActionRow } from "./OnboardingActionRow";
-import { OnboardingField } from "./OnboardingField";
-import { OnboardingFileField } from "./OnboardingFileField";
-import { OnboardingReportYearField } from "./OnboardingReportYearField";
-import { OnboardingSelectField } from "./OnboardingSelectField";
+import { OnboardingActionRow } from "@/app/src/ui/onboarding/OnboardingActionRow";
+import { OnboardingField } from "@/app/src/ui/onboarding/OnboardingField";
+import { OnboardingFileField } from "@/app/src/ui/onboarding/OnboardingFileField";
+import { OnboardingReportYearField } from "@/app/src/ui/onboarding/OnboardingReportYearField";
+import { OnboardingSelectField } from "@/app/src/ui/onboarding/OnboardingSelectField";
 
 type OnboardingStepOneProps = {
   values: OnboardingValues;

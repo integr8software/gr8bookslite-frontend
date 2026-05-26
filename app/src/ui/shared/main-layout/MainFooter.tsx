@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AppName } from "@/app/src/constants/shared/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 
 export function MainFooter() {
   return (

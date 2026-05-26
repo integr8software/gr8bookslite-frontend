@@ -15,13 +15,32 @@ export type DisbursementType =
   | "Vendor Payment"
   | "Operating Expense"
   | "Reimbursement"
-  | "Capital Expenditure";
+  | "Capital Expenditure"
+  | (string & {});
 
 export type VoucherCurrency = "PHP" | "USD";
 
 export type WorkflowStep = "details" | "entries" | "review";
 
 export type DisbursementVoucherActionMode = "add" | "edit" | "view";
+
+export type DisbursementVoucherCopySource =
+  | "Loan"
+  | "Accounts Payable Voucher"
+  | "Advances to Supplier"
+  | "Cash Advance"
+  | "Petty Cash Replenishment"
+  | "Purchase Order";
+
+export type DisbursementVoucherPaymentDetails = {
+  bankAccountName: string;
+  bankAccountNo: string;
+  bankBranch: string;
+  bankName: string;
+  checkDate: string;
+  checkNo: string;
+  paymentReferenceNo: string;
+};
 
 export type DisbursementTransactionRecord = {
   id: string;
@@ -38,6 +57,7 @@ export type DisbursementTransactionRecord = {
   disbursementType: DisbursementType;
   status: DisbursementVoucherStatus;
   costCenter: string;
+  accountingEntries?: DisbursementLineEntry[];
 };
 
 export type DisbursementLineEntry = {
@@ -89,10 +109,13 @@ export type DisbursementVoucherRecord = {
   vceCode: string;
   vceName: string;
   amount: number;
+  taxRate: string;
+  taxDetails: DisbursementTaxDetails;
   remarks: string;
   voucherReferenceNo: string;
   invoiceReferenceNo: string;
   paymentDueDate: string;
+  paymentDetails: DisbursementVoucherPaymentDetails;
   preparedBy: string;
   lineEntries: DisbursementLineEntry[];
   attachments: DisbursementAttachment[];
@@ -116,10 +139,13 @@ export type DisbursementVoucherFormValues = {
   vceCode: string;
   vceName: string;
   amount: string;
+  taxRate: string;
+  taxDetails: DisbursementTaxDetails;
   remarks: string;
   voucherReferenceNo: string;
   invoiceReferenceNo: string;
   paymentDueDate: string;
+  paymentDetails: DisbursementVoucherPaymentDetails;
   preparedBy: string;
   status: DisbursementVoucherStatus;
   lineEntries: DisbursementLineEntry[];
@@ -144,3 +170,15 @@ export type DisbursementVoucherFormErrors = Partial<
     string
   >
 >;
+
+export type DisbursementVoucherCopyFromRecord = {
+  id: string;
+  source: DisbursementVoucherCopySource;
+  sourceNo: string;
+  documentDate: string;
+  transactionId: string;
+  partyCode: string;
+  partyName: string;
+  amount: string;
+  templateValues: DisbursementVoucherFormValues;
+};

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { InventoryAccountAction } from "@/app/src/ui/modules/inventory/inventory-account/Action";
 
 const PageTitle = "View Inventory Account";

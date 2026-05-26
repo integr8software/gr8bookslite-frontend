@@ -1,15 +1,13 @@
-import { MainCompanyNavigationSections } from "@/app/src/data/shared/MainLayout/MainNavigationData";
+import { MainCompanyNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarNavigationData";
 import type {
   MainNavigationItem,
   MainNavigationSection,
   MainProductKey,
-} from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import type {
   PlanPackageAddOnPricingRecord,
   PlanPackageBillingPreviewResult,
   PlanPackageBillingPreviewValues,
-  PlanPackageDiscountFormValues,
-  PlanPackageDiscountRecord,
   PlanPackageModuleGroup,
   PlanPackageModuleOption,
   PlanPackagePlanFormValues,
@@ -109,59 +107,10 @@ export const InitialPlanPackageAddOns: PlanPackageAddOnPricingRecord[] = [
   },
 ];
 
-export const InitialPlanPackageDiscounts: PlanPackageDiscountRecord[] = [
-  {
-    id: "discount-welcome20",
-    type: "Promo",
-    name: "Welcome Launch",
-    code: "WELCOME20",
-    target: "All Plans",
-    discountKind: "Percent",
-    value: 20,
-    status: "Active",
-    expiresAt: "2026-12-31",
-  },
-  {
-    id: "discount-accounting100",
-    type: "Coupon",
-    name: "Accounting Starter",
-    code: "ACCOUNTING100",
-    target: "Accounting",
-    discountKind: "Fixed",
-    value: 100,
-    status: "Active",
-    expiresAt: "2026-08-31",
-  },
-  {
-    id: "discount-voucher-addon",
-    type: "Voucher",
-    name: "Add-on Credit",
-    code: "ADDON-VCHR",
-    target: "Add-ons",
-    discountKind: "Fixed",
-    value: 150,
-    status: "Draft",
-    expiresAt: "2026-09-30",
-  },
-];
-
-export const InitialPlanPackageDiscountFormValues: PlanPackageDiscountFormValues =
-  {
-    code: "",
-    discountKind: "Percent",
-    expiresAt: "",
-    name: "",
-    status: "Active",
-    target: "All Plans",
-    type: "Promo",
-    value: 0,
-  };
-
 export const InitialPlanPackageBillingPreviewValues: PlanPackageBillingPreviewValues =
   {
     branches: 2,
     companies: 1,
-    discountId: "discount-welcome20",
     satellites: 1,
     users: 3,
   };
@@ -194,42 +143,6 @@ export function updatePlanPackagePlanFromForm(
   };
 }
 
-export function createPlanPackageDiscountFormValues(
-  discount: PlanPackageDiscountRecord,
-): PlanPackageDiscountFormValues {
-  return {
-    code: discount.code,
-    discountKind: discount.discountKind,
-    expiresAt: discount.expiresAt,
-    name: discount.name,
-    status: discount.status,
-    target: discount.target,
-    type: discount.type,
-    value: discount.value,
-  };
-}
-
-export function createPlanPackageDiscountFromForm(
-  values: PlanPackageDiscountFormValues,
-): PlanPackageDiscountRecord {
-  return {
-    ...trimDiscountValues(values),
-    id: `discount-${Date.now()}`,
-    code: values.code.trim().toUpperCase(),
-  };
-}
-
-export function updatePlanPackageDiscountFromForm(
-  discount: PlanPackageDiscountRecord,
-  values: PlanPackageDiscountFormValues,
-): PlanPackageDiscountRecord {
-  return {
-    ...discount,
-    ...trimDiscountValues(values),
-    code: values.code.trim().toUpperCase(),
-  };
-}
-
 export function formatPlanPackageCurrency(value: number) {
   return `PHP ${value.toLocaleString("en-PH", {
     maximumFractionDigits: 2,
@@ -239,12 +152,10 @@ export function formatPlanPackageCurrency(value: number) {
 
 export function calculateBillingPreview({
   addOns,
-  discount,
   plan,
   values,
 }: {
   addOns: PlanPackageAddOnPricingRecord[];
-  discount: PlanPackageDiscountRecord | null;
   plan: PlanPackagePlanRecord;
   values: PlanPackageBillingPreviewValues;
 }): PlanPackageBillingPreviewResult {
@@ -275,20 +186,12 @@ export function calculateBillingPreview({
     (total, lineItem) => total + lineItem.total,
     0,
   );
-  const subtotal = plan.monthlyPrice + addOnTotal;
-  const discountAmount =
-    discount?.status === "Active"
-      ? discount.discountKind === "Percent"
-        ? subtotal * (discount.value / 100)
-        : discount.value
-      : 0;
 
   return {
     addOnTotal,
     basePrice: plan.monthlyPrice,
-    discountAmount: Math.min(discountAmount, subtotal),
     lineItems,
-    total: Math.max(0, subtotal - discountAmount),
+    total: plan.monthlyPrice + addOnTotal,
   };
 }
 
@@ -356,16 +259,5 @@ function createPreviewLineItem(
     quantity,
     total: quantity * unitPrice,
     unitPrice,
-  };
-}
-
-function trimDiscountValues(
-  values: PlanPackageDiscountFormValues,
-): PlanPackageDiscountFormValues {
-  return {
-    ...values,
-    code: values.code.trim(),
-    expiresAt: values.expiresAt.trim(),
-    name: values.name.trim(),
   };
 }

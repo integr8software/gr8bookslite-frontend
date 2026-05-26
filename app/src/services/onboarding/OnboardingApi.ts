@@ -1,6 +1,6 @@
 "use client";
 
-import { ApiClient } from "@/app/src/services/shared/ApiClient";
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   CompleteOnboardingResponse,
   GetOnboardingDraftResponse,
@@ -9,7 +9,7 @@ import type {
   SaveOnboardingCompanyDetailsRequest,
   SelectOnboardingPlanRequest,
   UploadOnboardingCompanyLogoResponse,
-} from "./OnboardingApiTypes";
+} from "@/app/src/services/onboarding/OnboardingApiTypes";
 
 function GetAuthorizationHeaders(accessToken: string | null) {
   if (!accessToken) {

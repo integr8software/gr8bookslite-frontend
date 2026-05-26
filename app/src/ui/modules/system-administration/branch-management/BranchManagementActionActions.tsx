@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Edit3, Save, Trash2, X } from "lucide-react";
 import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
-import type { MainBranch } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import type { BranchActionMode } from "@/app/src/types/modules/branch-manager/BranchActionTypes";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 

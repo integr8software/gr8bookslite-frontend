@@ -38,7 +38,7 @@ export function UserListHeader({
               <button
                 type="button"
                 onClick={onStartSpotlightTutorial}
-                className={moduleHeaderActionClassNames.secondary}
+                className={`${moduleHeaderActionClassNames.secondary} max-sm:w-full`}
               >
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
                 Quick Tour
@@ -48,7 +48,7 @@ export function UserListHeader({
             <Link
               href={addHref}
               data-spotlight-id="users-add-user"
-              className={moduleHeaderActionClassNames.primary}
+              className={`${moduleHeaderActionClassNames.primary} max-sm:w-full`}
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               Add User

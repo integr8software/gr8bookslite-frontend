@@ -3,9 +3,9 @@
 import { Building2 } from "lucide-react";
 import { useBranchManagementActionPage } from "@/app/src/hooks/modules/system-administration/branch-management/useBranchManagementActionPage";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { BranchDetailsFields } from "./BranchDetailsFields";
-import { BranchManagementActionActions } from "./BranchManagementActionActions";
-import { BranchNotFound } from "./BranchNotFound";
+import { BranchDetailsFields } from "@/app/src/ui/modules/system-administration/branch-management/BranchDetailsFields";
+import { BranchManagementActionActions } from "@/app/src/ui/modules/system-administration/branch-management/BranchManagementActionActions";
+import { BranchNotFound } from "@/app/src/ui/modules/system-administration/branch-management/BranchNotFound";
 
 export function BranchManagementActionPage() {
 	const action = useBranchManagementActionPage();

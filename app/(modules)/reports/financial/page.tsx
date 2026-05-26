@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { FinancialMain } from "@/app/src/ui/modules/reports/financial/Main";
 
 const PageTitle = "Financial";

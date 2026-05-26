@@ -4,8 +4,8 @@ import { ChevronDown, Printer } from "lucide-react";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
-import { openPurchaseRequestPdf } from "./PurchaseRequestPdf";
-import { PurchaseRequestPrintPreview } from "./PurchaseRequestPrintPreview";
+import { openPurchaseRequestPdf } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestPdf";
+import { PurchaseRequestPrintPreview } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestPrintPreview";
 
 type PurchaseRequestPreviewDrawerProps = {
 	isOpen: boolean;

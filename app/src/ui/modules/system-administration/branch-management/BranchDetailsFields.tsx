@@ -3,8 +3,8 @@ import { Building2, GitBranch, type LucideIcon } from "lucide-react";
 import {
   DefaultPhilippineContactNumber,
   PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
-import type { MainBranch } from "@/app/src/data/shared/MainLayout/ModuleShellTypes";
+} from "@/app/src/data/shared/contact/ContactData";
+import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import type {
   BranchManagementClassification,
   BranchManagementFormValues,

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { PettyCashVoucherListPage } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherListPage";
 
 const PageTitle = "Petty Cash Voucher";

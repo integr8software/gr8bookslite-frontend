@@ -5,9 +5,9 @@ import { DiscountManagementActionCopy } from "@/app/src/constants/modules/mainte
 import { useDiscountManagementFormPage } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagementFormPage";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { DiscountManagementActionButtons } from "./DiscountManagementActionButtons";
-import { DiscountManagementFields } from "./DiscountManagementFields";
-import { DiscountManagementNotFound } from "./DiscountManagementNotFound";
+import { DiscountManagementActionButtons } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementActionButtons";
+import { DiscountManagementFields } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementFields";
+import { DiscountManagementNotFound } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementNotFound";
 
 export function DiscountManagementFormPage() {
   const page = useDiscountManagementFormPage();

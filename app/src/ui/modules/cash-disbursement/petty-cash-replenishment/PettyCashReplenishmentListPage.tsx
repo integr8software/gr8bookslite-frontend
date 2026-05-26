@@ -13,8 +13,8 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { PettyCashReplenishmentListFilters } from "./PettyCashReplenishmentListFilters";
-import { PettyCashReplenishmentTableRow } from "./PettyCashReplenishmentTableRow";
+import { PettyCashReplenishmentListFilters } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentListFilters";
+import { PettyCashReplenishmentTableRow } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTableRow";
 
 export function PettyCashReplenishmentListPage() {
   const page = usePettyCashReplenishmentListPage();
@@ -60,27 +60,25 @@ export function PettyCashReplenishmentListPage() {
           }
         />
 
-        <div className="rounded-xl border border-darknavy/10 bg-white shadow-sm">
-          <PettyCashReplenishmentListFilters page={page} />
-
-          <div className="p-4 sm:p-5">
-            <ModuleTable
-              emptyDescription="Adjust the filters or create a new replenishment record to view petty cash activity."
-              emptyTitle="No replenishments found"
-              emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-              isLoading={false}
-              paginationLabel="replenishments"
-              paginationStorageKey={PettyCashReplenishmentPaginationStorageKey}
-              table={page.table}
-              renderRow={({ id, original }) => (
-                <PettyCashReplenishmentTableRow
-                  key={id}
-                  row={original}
-                  onDelete={page.setPendingDelete}
-                />
-              )}
-            />
-          </div>
+        <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+          <ModuleTable
+            variant="embedded"
+            emptyDescription="Adjust the filters or create a new replenishment record to view petty cash activity."
+            emptyTitle="No replenishments found"
+            emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+            isLoading={page.isLoading}
+            paginationLabel="replenishments"
+            paginationStorageKey={PettyCashReplenishmentPaginationStorageKey}
+            table={page.table}
+            toolbar={<PettyCashReplenishmentListFilters page={page} />}
+            renderRow={({ id, original }) => (
+              <PettyCashReplenishmentTableRow
+                key={id}
+                row={original}
+                onDelete={page.setPendingDelete}
+              />
+            )}
+          />
         </div>
 
         <AppDialog

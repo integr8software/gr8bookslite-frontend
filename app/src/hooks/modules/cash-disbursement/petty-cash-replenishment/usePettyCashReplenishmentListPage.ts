@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -8,19 +9,39 @@ import {
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import { PettyCashReplenishmentRecords } from "@/app/src/data/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentData";
+import { PettyCashReplenishmentQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentQueryKeys";
 import type { PettyCashReplenishmentRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
 
 const columnHelper = createColumnHelper<PettyCashReplenishmentRecord>();
 
 export function usePettyCashReplenishmentListPage() {
-  const [records, setRecords] = useState(PettyCashReplenishmentRecords);
+  const queryClient = useQueryClient();
+  const recordsQuery = useQuery({
+    queryKey: PettyCashReplenishmentQueryKeys.records(),
+    queryFn: async () => PettyCashReplenishmentRecords,
+    initialData: PettyCashReplenishmentRecords,
+  });
   const [pendingDelete, setPendingDelete] =
     useState<PettyCashReplenishmentRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const deleteRecordMutation = useMutation({
+    mutationFn: async (recordId: string) => recordId,
+    onSuccess: (recordId) => {
+      queryClient.setQueryData<PettyCashReplenishmentRecord[]>(
+        PettyCashReplenishmentQueryKeys.records(),
+        (current = PettyCashReplenishmentRecords) =>
+          current.filter((record) => record.id !== recordId),
+      );
+      toast.success("Petty cash replenishment deleted.");
+    },
+    onError: () => {
+      toast.error("Could not delete the replenishment. Please try again.");
+    },
+  });
 
   const filteredRecords = useMemo(() => {
-    return records.filter((record) => {
+    return recordsQuery.data.filter((record) => {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         record.replenishmentNo.toLowerCase().includes(query) ||
@@ -32,7 +53,7 @@ export function usePettyCashReplenishmentListPage() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [records, searchQuery, statusFilter]);
+  }, [recordsQuery.data, searchQuery, statusFilter]);
 
   const columns = useMemo(
     () => [
@@ -74,17 +95,22 @@ export function usePettyCashReplenishmentListPage() {
       return;
     }
 
-    setRecords((current) =>
-      current.filter((record) => record.id !== pendingDelete.id),
-    );
-    toast.success("Petty cash replenishment deleted.");
+    deleteRecordMutation.mutate(pendingDelete.id);
     setPendingDelete(null);
+  }
+
+  function resetFilters() {
+    setSearchQuery("");
+    setStatusFilter("All");
   }
 
   return {
     handleConfirmDelete,
+    isLoading: recordsQuery.isLoading,
+    isMutating: deleteRecordMutation.isPending,
     pendingDelete,
     searchQuery,
+    resetFilters,
     setPendingDelete,
     setSearchQuery,
     setStatusFilter,

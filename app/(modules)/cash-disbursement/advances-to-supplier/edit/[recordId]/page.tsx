@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { AdvancesToSupplierAction } from "@/app/src/ui/modules/cash-disbursement/advances-to-supplier/Action";
 
 const PageTitle = "Edit Advances To Supplier";

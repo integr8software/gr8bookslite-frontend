@@ -8,13 +8,13 @@ import {
 	DefaultPhilippineContactNumber,
 	FormatPhilippineContactNumber,
 	PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
+} from "@/app/src/data/shared/contact/ContactData";
 import type { AuthFormValues } from "@/app/src/data/auth/AuthTypes";
 import { useSignUpForm } from "@/app/src/hooks/auth/useSignUpForm";
 import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
 import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
-import { AuthField } from "./AuthField";
-import { AuthPasswordRequirements } from "./AuthPasswordRequirements";
+import { AuthField } from "@/app/src/ui/auth/AuthField";
+import { AuthPasswordRequirements } from "@/app/src/ui/auth/AuthPasswordRequirements";
 import { ArrowRight, Check, LoaderCircle } from "lucide-react";
 
 type SignUpFormValues = Required<

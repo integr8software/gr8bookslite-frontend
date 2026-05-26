@@ -6,19 +6,14 @@ import {
   Check,
   CreditCard,
   Edit3,
+  Eye,
   Package,
-  Percent,
-  Plus,
-  RotateCcw,
   Save,
   Search,
   ToggleLeft,
   ToggleRight,
 } from "lucide-react";
 import {
-  PlanPackageDiscountKindOptions,
-  PlanPackageDiscountTargetOptions,
-  PlanPackageDiscountTypeOptions,
   PlanPackageModuleSearchPlaceholder,
   PlanPackageStatusOptions,
 } from "@/app/src/constants/modules/workspace/plans-packages/PlanPackageConstants";
@@ -32,10 +27,6 @@ import type {
   PlanPackageAddOnPricingRecord,
   PlanPackageBillingPreviewResult,
   PlanPackageBillingPreviewValues,
-  PlanPackageDiscountFormErrors,
-  PlanPackageDiscountFormValues,
-  PlanPackageDiscountRecord,
-  PlanPackageDiscountTarget,
   PlanPackagePlanFormErrors,
   PlanPackagePlanFormValues,
   PlanPackagePlanRecord,
@@ -58,9 +49,9 @@ export function PlansPackagesPage() {
     <section className="grid gap-5">
       <ModuleHeader
         variant="panel"
-        eyebrow="Super Admin Billing"
+        eyebrow="Subscription & Billing"
         title="Plans & Packages"
-        description="Accounting, Inventory, package pricing, add-ons, and discounts."
+        description="Manage package availability, module access, included seats, and add-on pricing."
         actions={
           <button
             type="button"
@@ -75,10 +66,11 @@ export function PlansPackagesPage() {
 
       <PlanPackageSummaryCards summary={page.summary} />
 
-      <PlanCards
+      <PlanList
         plans={page.plans}
         selectedPlanId={page.selectedPlan.id}
         onSelectPlan={page.selectPlan}
+        onToggleStatus={page.togglePlanStatus}
       />
 
       <div className="grid gap-5 2xl:grid-cols-[minmax(0,1.35fr)_minmax(24rem,0.65fr)]">
@@ -93,7 +85,6 @@ export function PlansPackagesPage() {
 
         <BillingPreview
           addOns={page.addOns}
-          discounts={page.discounts}
           preview={page.billingPreview}
           selectedPlan={page.selectedPlan}
           values={page.billingPreviewValues}
@@ -107,18 +98,6 @@ export function PlansPackagesPage() {
         onSave={page.savePricing}
         onUpdate={page.updateAddOnPricing}
       />
-
-      <DiscountsPanel
-        discounts={page.discounts}
-        editingDiscountId={page.editingDiscountId}
-        errors={page.discountErrors}
-        values={page.discountDraft}
-        onEdit={page.editDiscount}
-        onReset={page.resetDiscountDraft}
-        onSave={page.saveDiscount}
-        onToggleStatus={page.toggleDiscountStatus}
-        onUpdate={page.updateDiscountDraft}
-      />
     </section>
   );
 }
@@ -128,9 +107,9 @@ function PlanPackageSummaryCards({
 }: {
   summary: {
     activeAddOns: number;
-    activeDiscounts: number;
     activePlans: number;
     enabledModules: number;
+    inactivePlans: number;
   };
 }) {
   const metrics = [
@@ -153,9 +132,9 @@ function PlanPackageSummaryCards({
       tone: "bg-offwhite text-darknavy",
     },
     {
-      icon: Percent,
-      label: "Active Discounts",
-      value: summary.activeDiscounts,
+      icon: ToggleLeft,
+      label: "Inactive Plans",
+      value: summary.inactivePlans,
       tone: "bg-coralpink/12 text-coralpink",
     },
   ];
@@ -190,53 +169,97 @@ function PlanPackageSummaryCards({
   );
 }
 
-function PlanCards({
+function PlanList({
   plans,
   selectedPlanId,
   onSelectPlan,
+  onToggleStatus,
 }: {
   plans: PlanPackagePlanRecord[];
   selectedPlanId: string;
   onSelectPlan: (planId: string) => void;
+  onToggleStatus: (planId: string) => void;
 }) {
   return (
-    <div className="grid gap-3 xl:grid-cols-3">
-      {plans.map((plan) => {
-        const isSelected = plan.id === selectedPlanId;
+    <article className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+      <div className="flex flex-col gap-2 border-b border-darknavy/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-skyblue">
+            Plan List
+          </p>
+          <h2 className="mt-2 text-xl font-semibold text-darknavy">
+            Package Records
+          </h2>
+        </div>
+        <span className="rounded-md bg-offwhite px-3 py-1.5 text-xs font-semibold text-darknavy/58 ring-1 ring-darknavy/10">
+          {plans.length} plans
+        </span>
+      </div>
+      <div className="divide-y divide-darknavy/8">
+        {plans.map((plan) => {
+          const isSelected = plan.id === selectedPlanId;
+          const isActive = plan.status === "Active";
 
-        return (
-          <button
-            key={plan.id}
-            type="button"
-            onClick={() => onSelectPlan(plan.id)}
-            className={`rounded-lg border bg-white p-5 text-left shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 ${
-              isSelected
-                ? "border-skyblue ring-2 ring-skyblue/18"
-                : "border-darknavy/10 hover:border-skyblue/45"
-            }`}
-          >
-            <div className="flex items-start justify-between gap-4">
+          return (
+            <div
+              key={plan.id}
+              className={`grid gap-4 p-4 transition md:grid-cols-[minmax(0,1.2fr)_8rem_8rem_8rem_auto] md:items-center ${
+                isSelected ? "bg-skyblue/8" : "bg-white"
+              }`}
+            >
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">
                   {plan.code.replace(/_/g, " ")}
                 </p>
-                <h3 className="mt-2 text-lg font-semibold text-darknavy">
+                <h3 className="mt-2 text-base font-semibold text-darknavy">
                   {plan.name}
                 </h3>
+                <p className="mt-1 line-clamp-2 text-sm text-darknavy/55">
+                  {plan.description}
+                </p>
               </div>
               <StatusBadge status={plan.status} />
+              <p className="text-sm font-semibold text-darknavy">
+                {formatPlanPackageCurrency(plan.monthlyPrice)}
+              </p>
+              <p className="text-sm text-darknavy/60">
+                {plan.includedUsers} user, {plan.enabledModuleKeys.length} modules
+              </p>
+              <div className="flex flex-wrap justify-start gap-2 md:justify-end">
+                <button
+                  type="button"
+                  onClick={() => onSelectPlan(plan.id)}
+                  className={planActionClassName}
+                >
+                  <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                  View
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectPlan(plan.id)}
+                  className={planActionClassName}
+                >
+                  <Edit3 className="h-3.5 w-3.5" aria-hidden="true" />
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onToggleStatus(plan.id)}
+                  className={planActionClassName}
+                >
+                  {isActive ? (
+                    <ToggleRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  ) : (
+                    <ToggleLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                  )}
+                  {isActive ? "Inactivate" : "Activate"}
+                </button>
+              </div>
             </div>
-            <p className="mt-4 text-2xl font-semibold text-darknavy">
-              {formatPlanPackageCurrency(plan.monthlyPrice)}
-            </p>
-            <p className="mt-1 text-sm text-darknavy/55">
-              {plan.includedUsers} user included ·{" "}
-              {plan.enabledModuleKeys.length} modules
-            </p>
-          </button>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+    </article>
   );
 }
 
@@ -528,205 +551,14 @@ function PricingEditor({
   );
 }
 
-function DiscountsPanel({
-  discounts,
-  editingDiscountId,
-  errors,
-  values,
-  onEdit,
-  onReset,
-  onSave,
-  onToggleStatus,
-  onUpdate,
-}: {
-  discounts: PlanPackageDiscountRecord[];
-  editingDiscountId: string | null;
-  errors: PlanPackageDiscountFormErrors;
-  values: PlanPackageDiscountFormValues;
-  onEdit: (discount: PlanPackageDiscountRecord) => void;
-  onReset: () => void;
-  onSave: () => void;
-  onToggleStatus: (discountId: string) => void;
-  onUpdate: (values: Partial<PlanPackageDiscountFormValues>) => void;
-}) {
-  return (
-    <article className="rounded-lg border border-darknavy/10 bg-white shadow-sm">
-      <div className="border-b border-darknavy/10 p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-skyblue">
-          Discounts
-        </p>
-        <h3 className="mt-2 text-xl font-semibold text-darknavy">
-          Promo, Coupon, Voucher
-        </h3>
-      </div>
-
-      <div className="grid gap-5 p-5 2xl:grid-cols-[minmax(25rem,0.85fr)_minmax(0,1.15fr)]">
-        <div className="grid content-start gap-4 rounded-lg border border-darknavy/10 bg-offwhite/45 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <h4 className="font-semibold text-darknavy">
-              {editingDiscountId ? "Edit Discount" : "New Discount"}
-            </h4>
-            <button
-              type="button"
-              onClick={onReset}
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy/68 transition hover:bg-skyblue/10 hover:text-darknavy"
-            >
-              <RotateCcw className="h-4 w-4" aria-hidden="true" />
-              Reset
-            </button>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <TextField
-              error={errors.name}
-              label="Name"
-              value={values.name}
-              onChange={(name) => onUpdate({ name })}
-            />
-            <TextField
-              error={errors.code}
-              label="Code"
-              value={values.code}
-              onChange={(code) => onUpdate({ code })}
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <SelectField
-              label="Type"
-              value={values.type}
-              options={PlanPackageDiscountTypeOptions}
-              onChange={(type) => onUpdate({ type })}
-            />
-            <SelectField
-              label="Target"
-              value={values.target}
-              options={PlanPackageDiscountTargetOptions}
-              onChange={(target) =>
-                onUpdate({ target: target as PlanPackageDiscountTarget })
-              }
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <SelectField
-              label="Discount"
-              value={values.discountKind}
-              options={PlanPackageDiscountKindOptions}
-              onChange={(discountKind) => onUpdate({ discountKind })}
-            />
-            <NumericField
-              error={errors.value}
-              label="Value"
-              value={values.value}
-              onChange={(value) => onUpdate({ value })}
-            />
-            <label className="grid gap-2">
-              <span className="text-sm font-medium text-darknavy/72">
-                Expires
-              </span>
-              <input
-                type="date"
-                value={values.expiresAt}
-                onChange={(event) => onUpdate({ expiresAt: event.target.value })}
-                className={inputClassName}
-              />
-              <FieldError message={errors.expiresAt} />
-            </label>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
-            <SelectField
-              label="Status"
-              value={values.status}
-              options={PlanPackageStatusOptions}
-              onChange={(status) =>
-                onUpdate({ status: status as PlanPackageStatus })
-              }
-            />
-            <button
-              type="button"
-              onClick={onSave}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-darknavy px-4 text-sm font-semibold text-offwhite transition hover:bg-darknavy/92"
-            >
-              {editingDiscountId ? (
-                <Save className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <Plus className="h-4 w-4" aria-hidden="true" />
-              )}
-              {editingDiscountId ? "Update" : "Create"}
-            </button>
-          </div>
-        </div>
-
-        <div className="overflow-hidden rounded-lg border border-darknavy/10">
-          <div className="grid grid-cols-[1.2fr_0.8fr_0.75fr_0.75fr_auto] gap-3 bg-offwhite px-4 py-3 text-xs font-semibold uppercase tracking-wide text-darknavy/52">
-            <span>Discount</span>
-            <span>Target</span>
-            <span>Value</span>
-            <span>Status</span>
-            <span className="text-right">Actions</span>
-          </div>
-          <div className="divide-y divide-darknavy/8">
-            {discounts.map((discount) => (
-              <div
-                key={discount.id}
-                className="grid grid-cols-1 gap-3 px-4 py-4 text-sm md:grid-cols-[1.2fr_0.8fr_0.75fr_0.75fr_auto] md:items-center"
-              >
-                <div>
-                  <p className="font-semibold text-darknavy">{discount.name}</p>
-                  <p className="mt-1 text-xs text-darknavy/48">
-                    {discount.type} · {discount.code}
-                  </p>
-                </div>
-                <p className="text-darknavy/65">{discount.target}</p>
-                <p className="font-semibold text-darknavy">
-                  {discount.discountKind === "Percent"
-                    ? `${discount.value}%`
-                    : formatPlanPackageCurrency(discount.value)}
-                </p>
-                <StatusBadge status={discount.status} />
-                <div className="flex flex-wrap justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onEdit(discount)}
-                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-3 text-xs font-semibold text-darknavy/70 transition hover:bg-skyblue/10 hover:text-darknavy"
-                  >
-                    <Edit3 className="h-3.5 w-3.5" aria-hidden="true" />
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onToggleStatus(discount.id)}
-                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-3 text-xs font-semibold text-darknavy/70 transition hover:bg-citron/25 hover:text-darknavy"
-                  >
-                    {discount.status === "Active" ? (
-                      <ToggleRight className="h-3.5 w-3.5" aria-hidden="true" />
-                    ) : (
-                      <ToggleLeft className="h-3.5 w-3.5" aria-hidden="true" />
-                    )}
-                    {discount.status === "Active" ? "Archive" : "Activate"}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
-
 function BillingPreview({
   addOns,
-  discounts,
   preview,
   selectedPlan,
   values,
   onUpdate,
 }: {
   addOns: PlanPackageAddOnPricingRecord[];
-  discounts: PlanPackageDiscountRecord[];
   preview: PlanPackageBillingPreviewResult;
   selectedPlan: PlanPackagePlanRecord;
   values: PlanPackageBillingPreviewValues;
@@ -769,22 +601,6 @@ function BillingPreview({
         />
       </div>
 
-      <label className="mt-4 grid gap-2">
-        <span className="text-sm font-medium text-offwhite/72">Discount</span>
-        <select
-          value={values.discountId}
-          onChange={(event) => onUpdate({ discountId: event.target.value })}
-          className="h-11 rounded-lg border border-white/12 bg-white/8 px-3 text-sm text-offwhite outline-none transition focus:border-skyblue/45"
-        >
-          <option value="">No discount</option>
-          {discounts.map((discount) => (
-            <option key={discount.id} value={discount.id}>
-              {discount.code}
-            </option>
-          ))}
-        </select>
-      </label>
-
       <div className="mt-5 space-y-3 rounded-lg border border-white/10 bg-white/6 p-4">
         <PreviewLine label="Base plan" value={preview.basePrice} />
         {preview.lineItems.map((lineItem) => (
@@ -794,7 +610,6 @@ function BillingPreview({
             value={lineItem.total}
           />
         ))}
-        <PreviewLine label="Discount" value={-preview.discountAmount} />
         <div className="border-t border-white/10 pt-3">
           <PreviewLine label="Monthly total" value={preview.total} strong />
         </div>
@@ -866,59 +681,6 @@ function PreviewNumberField({
   );
 }
 
-function TextField({
-  error,
-  label,
-  value,
-  onChange,
-}: {
-  error?: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="grid gap-2">
-      <span className="text-sm font-medium text-darknavy/72">{label}</span>
-      <input
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className={inputClassName}
-      />
-      <FieldError message={error} />
-    </label>
-  );
-}
-
-function SelectField<TValue extends string>({
-  label,
-  options,
-  value,
-  onChange,
-}: {
-  label: string;
-  options: readonly TValue[];
-  value: TValue;
-  onChange: (value: TValue) => void;
-}) {
-  return (
-    <label className="grid gap-2">
-      <span className="text-sm font-medium text-darknavy/72">{label}</span>
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value as TValue)}
-        className={inputClassName}
-      >
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
 function PreviewLine({
   label,
   strong = false,
@@ -976,3 +738,6 @@ const inputClassName =
 
 const fieldClassName =
   "min-h-28 rounded-lg border border-darknavy/12 bg-white px-3 py-3 text-sm leading-6 text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/15";
+
+const planActionClassName =
+  "inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-3 text-xs font-semibold text-darknavy/70 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/25";

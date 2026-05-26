@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/AppConstants";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
 import { PartyManagementAction } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementAction";
 
 const PageTitle = "Edit Party Management";

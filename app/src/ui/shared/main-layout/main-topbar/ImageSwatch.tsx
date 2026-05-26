@@ -1,4 +1,4 @@
-import { joinClasses } from "./utils";
+import { joinClasses } from "@/app/src/ui/shared/main-layout/main-topbar/utils";
 
 type ImageSwatchProps = {
   imageUrl: string;

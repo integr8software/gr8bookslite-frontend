@@ -10,15 +10,15 @@ import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-co
 import {
 	DefaultPhilippineContactNumber,
 	PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/ContactData";
+} from "@/app/src/data/shared/contact/ContactData";
 import { useWorkspaceCompanyBranchAction } from "@/app/src/hooks/modules/workspace/companies/useWorkspaceCompanyAction";
 import type {
 	WorkspaceCompanyBranchFormErrors,
 	WorkspaceCompanyBranchFormValues,
 	WorkspaceCompanyBranchKind,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
-import { WorkspaceCompanyActionHeader } from "./WorkspaceCompanyActionHeader";
-import { WorkspaceCompanyNotFound } from "./WorkspaceCompanyNotFound";
+import { WorkspaceCompanyActionHeader } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyActionHeader";
+import { WorkspaceCompanyNotFound } from "@/app/src/ui/modules/workspace/companies/ui/WorkspaceCompanyNotFound";
 
 const CompanyBranchFormId = "workspace-company-branch-form";
 
@@ -199,18 +199,6 @@ function CompanyBranchFields({
 							readOnly={isReadonly}
 							className={WorkspaceBranchFieldClassName}
 							placeholder="Street, city, province"
-						/>
-					</BranchField>
-
-					<BranchField label="Description" className="lg:col-span-2">
-						<textarea
-							name="description"
-							value={values.description}
-							onChange={onInputChange}
-							readOnly={isReadonly}
-							rows={4}
-							className={WorkspaceBranchFieldClassName}
-							placeholder="Optional notes for this branch or satellite."
 						/>
 					</BranchField>
 				</div>

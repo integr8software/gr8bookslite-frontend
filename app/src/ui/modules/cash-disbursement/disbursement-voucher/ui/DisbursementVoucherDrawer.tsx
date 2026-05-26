@@ -641,7 +641,7 @@ function DetailsTab({
                     event.target.value as DisbursementPaymentMethod | "",
                   )
                 }
-                className={FieldClassName}
+                className={`${FieldClassName} app-select-control`}
               >
                 <option value="">--Select Payment Type--</option>
                 {availablePaymentTypeOptions.map((paymentType) => (
@@ -685,7 +685,7 @@ function DetailsTab({
               onChange={(event) =>
                 onUpdateField("currency", event.target.value as VoucherCurrency)
               }
-              className={FieldClassName}
+              className={`${FieldClassName} app-select-control`}
             >
               <option value="PHP">PHP</option>
               <option value="USD">USD</option>
@@ -738,7 +738,7 @@ function DetailsTab({
                     event.target.value as DisbursementType | "",
                   )
                 }
-                className={FieldClassName}
+                className={`${FieldClassName} app-select-control`}
               >
                 <option value="">--Select Disbursement Type--</option>
                 {disbursementTypeOptions.map((disbursementType) => (
@@ -1333,10 +1333,10 @@ function InfoLine({ label, value }: { label: string; value: string }) {
 }
 
 const FieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-offwhite/80 px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/40 focus:bg-white";
+  "app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/40";
 
 const ReadOnlyFieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-darknavy/[0.04] px-3 text-sm text-darknavy/70 outline-none";
+  "app-theme-field-readonly h-11 w-full rounded-md border px-3 text-sm outline-none";
 
 function getSuggestedPartyType(
   disbursementType: DisbursementType | "",

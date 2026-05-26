@@ -1,6 +1,12 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   type ColumnDef,
   type PaginationState,
@@ -10,11 +16,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  Plus,
-  Search,
-  X,
-} from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import type { DisbursementType } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import {
   ModuleTableActionButton,
@@ -109,7 +111,9 @@ export function AppDisbursementTypeDialog({
   onSelect,
 }: AppDisbursementTypeDialogProps) {
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"All" | DisbursementTypeStatus>("Active");
+  const [statusFilter, setStatusFilter] = useState<
+    "All" | DisbursementTypeStatus
+  >("Active");
   const [mode, setMode] = useState<DisbursementTypeDialogMode>("list");
   const [activeRecordId, setActiveRecordId] = useState<string | null>(null);
   const [draft, setDraft] = useState<DisbursementTypeDraft>({
@@ -197,7 +201,7 @@ export function AppDisbursementTypeDialog({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-80 flex items-center justify-center bg-darknavy/45 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-80 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -276,7 +280,9 @@ export function AppDisbursementTypeDialog({
                     ? {
                         ...currentRecord,
                         status:
-                          currentRecord.status === "Active" ? "Inactive" : "Active",
+                          currentRecord.status === "Active"
+                            ? "Inactive"
+                            : "Active",
                       }
                     : currentRecord,
                 ),
@@ -305,7 +311,8 @@ export function AppDisbursementTypeDialog({
                     record.id === activeRecord.id
                       ? {
                           ...record,
-                          description: draft.description.trim() as DisbursementType,
+                          description:
+                            draft.description.trim() as DisbursementType,
                           accountCode: draft.accountCode.trim(),
                           accountTitle: draft.accountTitle.trim(),
                           amount: draft.amount.trim() || "0.00",
@@ -385,7 +392,9 @@ function DisbursementTypeListView({
             <select
               value={statusFilter}
               onChange={(event) =>
-                onSetStatusFilter(event.target.value as "All" | DisbursementTypeStatus)
+                onSetStatusFilter(
+                  event.target.value as "All" | DisbursementTypeStatus,
+                )
               }
               className="h-11 min-w-44 rounded-xl border border-darknavy/12 bg-white px-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/20"
             >
@@ -474,7 +483,11 @@ function DisbursementTypeRecordView({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
-              {mode === "add" ? "New Setup" : mode === "edit" ? "Edit Setup" : "Preview Setup"}
+              {mode === "add"
+                ? "New Setup"
+                : mode === "edit"
+                  ? "Edit Setup"
+                  : "Preview Setup"}
             </p>
             <h3 className="mt-1 text-2xl font-semibold text-darknavy">
               {mode === "add"
@@ -548,7 +561,10 @@ function DisbursementTypeRecordView({
                   value={currentValues.accountTitle}
                   readOnly={isReadonly}
                   onChange={(event) =>
-                    onChangeDraft({ ...draft, accountTitle: event.target.value })
+                    onChangeDraft({
+                      ...draft,
+                      accountTitle: event.target.value,
+                    })
                   }
                   className={fieldClassName}
                   placeholder="Accounts Payable"
@@ -589,10 +605,14 @@ function DisbursementTypeTableRow({
 }) {
   return (
     <tr className="module-table-row">
-      <td className="px-4 py-4 font-semibold text-darknavy">{record.description}</td>
+      <td className="px-4 py-4 font-semibold text-darknavy">
+        {record.description}
+      </td>
       <td className="px-4 py-4 text-darknavy">{record.accountCode || "-"}</td>
       <td className="px-4 py-4 text-darknavy">{record.accountTitle || "-"}</td>
-      <td className="px-4 py-4 text-right text-darknavy">{record.amount || "0.00"}</td>
+      <td className="px-4 py-4 text-right text-darknavy">
+        {record.amount || "0.00"}
+      </td>
       <td className="px-4 py-4 text-darknavy">{record.module || "All"}</td>
       <td className="px-4 py-4 text-darknavy">{record.status}</td>
       <td className="px-4 py-4">
@@ -636,7 +656,11 @@ function useDisbursementTypeTable(records: DisbursementTypeRecord[]) {
     () => [
       createDisbursementTypeColumn("description", "Description", "w-[18rem]"),
       createDisbursementTypeColumn("accountCode", "Account Code", "w-[10rem]"),
-      createDisbursementTypeColumn("accountTitle", "Account Title", "w-[18rem]"),
+      createDisbursementTypeColumn(
+        "accountTitle",
+        "Account Title",
+        "w-[18rem]",
+      ),
       createDisbursementTypeColumn("amount", "Amount", "w-[10rem] text-right"),
       createDisbursementTypeColumn("module", "Module", "w-[10rem]"),
       createDisbursementTypeColumn("status", "Status", "w-[8rem]"),
@@ -669,19 +693,22 @@ function useDisbursementTypeTable(records: DisbursementTypeRecord[]) {
 function createDisbursementTypeColumn(
   key: keyof Pick<
     DisbursementTypeRecord,
-    "description" | "accountCode" | "accountTitle" | "amount" | "module" | "status"
+    | "description"
+    | "accountCode"
+    | "accountTitle"
+    | "amount"
+    | "module"
+    | "status"
   >,
   header: string,
   className: string,
 ): ColumnDef<DisbursementTypeRecord> {
-  return (
-    {
-      accessorKey: key,
-      header,
-      sortingFn: key === "amount" ? "alphanumeric" : "alphanumeric",
-      meta: { className },
-    }
-  );
+  return {
+    accessorKey: key,
+    header,
+    sortingFn: key === "amount" ? "alphanumeric" : "alphanumeric",
+    meta: { className },
+  };
 }
 
 function FieldBlock({

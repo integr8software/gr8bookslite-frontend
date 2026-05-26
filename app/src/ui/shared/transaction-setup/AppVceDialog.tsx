@@ -176,7 +176,10 @@ function AppVceDialogContent({
   }
 
   function handleAddressInputChange(event: ChangeEvent<HTMLInputElement>) {
-    updateAddressField(event.target.name as keyof PartyAddress, event.target.value);
+    updateAddressField(
+      event.target.name as keyof PartyAddress,
+      event.target.value,
+    );
   }
 
   function handlePartyTypesChange(value: string | string[]) {
@@ -322,7 +325,7 @@ function AppVceDialogContent({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-80 flex items-center justify-center bg-darknavy/45 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-80 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -333,17 +336,22 @@ function AppVceDialogContent({
         role="dialog"
         aria-modal="true"
         aria-labelledby="vce-dialog-title"
-        className="flex max-h-[calc(100dvh-2rem)] w-full max-w-7xl flex-col overflow-hidden rounded-[28px] border border-white/20 bg-slate-50 shadow-[0_28px_90px_rgba(33,39,56,0.28)]"
+        className="flex max-h-[calc(100dvh-2rem)] w-full max-w-7xl flex-col overflow-hidden rounded-[28px] border border-white/20 bg-white shadow-[0_28px_90px_rgba(33,39,56,0.28)]"
       >
         <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 bg-white px-6 py-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
               VCE Name Setup
             </p>
-            <h2 id="vce-dialog-title" className="mt-1 text-2xl font-semibold text-darknavy">
+            <h2
+              id="vce-dialog-title"
+              className="mt-1 text-2xl font-semibold text-darknavy"
+            >
               {dialogCopy.title}
             </h2>
-            <p className="mt-1 text-sm text-darknavy/55">{dialogCopy.description}</p>
+            <p className="mt-1 text-sm text-darknavy/55">
+              {dialogCopy.description}
+            </p>
           </div>
           <button
             type="button"
@@ -362,27 +370,32 @@ function AppVceDialogContent({
                   <Users className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-darknavy">VCE type</p>
+                  <p className="text-sm font-semibold text-darknavy">
+                    VCE type
+                  </p>
                   <p className="text-sm text-darknavy/55">
-                    Pick the profile type first, then complete the information below.
+                    Pick the profile type first, then complete the information
+                    below.
                   </p>
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
-                {(["Vendor", "Customer", "Employee"] as const).map((currentType) => (
-                  <button
-                    key={currentType}
-                    type="button"
-                    onClick={() => handlePartyTypeChange(currentType)}
-                    className={`inline-flex items-center rounded-xl border px-4 py-2 text-sm font-semibold transition ${
-                      partyType === currentType
-                        ? "theme-accent-contrast-text border-skyblue bg-skyblue shadow-sm shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)]"
-                        : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/40 hover:bg-skyblue/8"
-                    }`}
-                  >
-                    {currentType}
-                  </button>
-                ))}
+                {(["Vendor", "Customer", "Employee"] as const).map(
+                  (currentType) => (
+                    <button
+                      key={currentType}
+                      type="button"
+                      onClick={() => handlePartyTypeChange(currentType)}
+                      className={`inline-flex items-center rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                        partyType === currentType
+                          ? "theme-accent-contrast-text border-skyblue bg-skyblue shadow-sm shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)]"
+                          : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/40 hover:bg-skyblue/8"
+                      }`}
+                    >
+                      {currentType}
+                    </button>
+                  ),
+                )}
               </div>
             </section>
 

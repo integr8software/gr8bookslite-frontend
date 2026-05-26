@@ -46,13 +46,15 @@ import type {
   DisbursementVoucherFormErrors,
   DisbursementVoucherFormValues,
   DisbursementVoucherRecord,
+  DisbursementVoucherPreviewRow,
   WorkflowStep,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherActionHeader";
+import { DisbursementVoucherDrawer } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherDrawer";
 import { DisbursementVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherNotFound";
 
 const FieldInputClassName =
-  "h-12 w-full rounded-2xl border border-darknavy/12 bg-white px-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:bg-skyblue/6";
+  "app-theme-field h-12 w-full rounded-2xl border px-4 text-sm outline-none transition focus:border-skyblue/45";
 
 const AccentPrimaryButtonClassName =
   "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
@@ -69,6 +71,11 @@ type TaxEditorTarget =
   | { kind: "draft" }
   | { kind: "entry"; entryId: string }
   | null;
+
+type DrawerState = {
+  mode: "add" | "edit";
+  row?: DisbursementVoucherPreviewRow;
+} | null;
 
 function DisbursementVoucherActionInner() {
   const router = useRouter();
@@ -112,6 +119,7 @@ function DisbursementVoucherActionInner() {
   const [taxEditorTarget, setTaxEditorTarget] = useState<TaxEditorTarget>(null);
   const [taxEditorValues, setTaxEditorValues] =
     useState<DisbursementTaxDetails | null>(null);
+  const [drawerState, setDrawerState] = useState<DrawerState>(null);
   const isReadonly = mode === "view";
   const totalDebit = useMemo(
     () => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0),
@@ -350,6 +358,34 @@ function DisbursementVoucherActionInner() {
     router.push(DisbursementVoucherHref);
   }
 
+  function handleOpenDrawer(nextMode: "add" | "edit") {
+    if (!selectedTransaction) {
+      return;
+    }
+
+    setDrawerState({
+      mode: nextMode,
+      row: {
+        transaction: selectedTransaction,
+        voucher: existingVoucher,
+      },
+    });
+  }
+
+  function handleCloseDrawer() {
+    setDrawerState(null);
+  }
+
+  function handleSaveDrawer(nextValues: DisbursementVoucherFormValues) {
+    if (drawerState?.mode === "edit" && existingVoucher) {
+      updateVoucher(updateDisbursementVoucherFromForm(existingVoucher, nextValues));
+    } else {
+      addVoucher(createDisbursementVoucherFromForm(nextValues));
+    }
+
+    setDrawerState(null);
+  }
+
   if (isReadonly) {
     return (
       <>
@@ -359,6 +395,10 @@ function DisbursementVoucherActionInner() {
             mode={mode}
             transaction={selectedTransaction}
             voucher={existingVoucher}
+            onCreateVoucher={() => handleOpenDrawer("add")}
+            onEditVoucher={
+              existingVoucher ? () => handleOpenDrawer("edit") : undefined
+            }
             onDeleteVoucher={
               existingVoucher ? () => setIsDeleteDialogOpen(true) : undefined
             }
@@ -377,6 +417,15 @@ function DisbursementVoucherActionInner() {
           tone="danger"
           onCancel={() => setIsDeleteDialogOpen(false)}
           onConfirm={handleConfirmDelete}
+        />
+        <DisbursementVoucherDrawer
+          isOpen={Boolean(drawerState)}
+          mode={drawerState?.mode ?? "add"}
+          transaction={selectedTransaction}
+          transactions={transactions}
+          voucher={existingVoucher}
+          onClose={handleCloseDrawer}
+          onSave={handleSaveDrawer}
         />
       </>
     );
@@ -589,7 +638,7 @@ function VoucherEntriesStep({
                           accountCode: event.target.value,
                         })
                       }
-                      className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
+                      className={`${FieldInputClassName} h-11 rounded-xl`}
                       placeholder="e.g. 5010-001"
                     />
                   </td>
@@ -602,7 +651,7 @@ function VoucherEntriesStep({
                           accountName: event.target.value,
                         })
                       }
-                      className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
+                      className={`${FieldInputClassName} h-11 rounded-xl`}
                       placeholder="Office Supplies Expense"
                     />
                   </td>
@@ -615,7 +664,7 @@ function VoucherEntriesStep({
                           particulars: event.target.value,
                         })
                       }
-                      className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
+                      className={`${FieldInputClassName} h-11 rounded-xl`}
                       placeholder="Describe the transaction line"
                     />
                   </td>
@@ -628,7 +677,7 @@ function VoucherEntriesStep({
                           debit: event.target.value,
                         })
                       }
-                      className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
+                      className={`${FieldInputClassName} h-11 rounded-xl`}
                       placeholder="0.00"
                     />
                   </td>
@@ -641,7 +690,7 @@ function VoucherEntriesStep({
                           credit: event.target.value,
                         })
                       }
-                      className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
+                      className={`${FieldInputClassName} h-11 rounded-xl`}
                       placeholder="0.00"
                     />
                   </td>
@@ -649,7 +698,7 @@ function VoucherEntriesStep({
                     <button
                       type="button"
                       onClick={onOpenDraftTaxEditor}
-                      className="flex h-11 w-full items-center justify-between rounded-xl border border-darknavy/12 bg-white px-3 text-sm text-darknavy transition hover:border-skyblue/40"
+                      className="app-theme-field flex h-11 w-full items-center justify-between rounded-xl border px-3 text-sm transition hover:border-skyblue/40"
                     >
                       <span className="truncate">
                         {formatTaxRateSummary(entryDraft.taxDetails)}
@@ -896,7 +945,7 @@ function TaxDetailsDialogEditor({
               onChange={(event) =>
                 updateTaxValue("vatCode", event.target.value)
               }
-              className={ModalFieldClassName}
+              className={`${ModalFieldClassName} app-select-control`}
             >
               <option value="">--Select VAT Rate--</option>
               <option value="VAT-0">Zero Rated</option>
@@ -914,7 +963,7 @@ function TaxDetailsDialogEditor({
                   Number.parseFloat(event.target.value) || 0,
                 )
               }
-              className={ModalFieldClassName}
+              className={`${ModalFieldClassName} app-select-control`}
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-[10rem_1fr] sm:items-center">
@@ -985,10 +1034,10 @@ function TaxDetailsDialogEditor({
 }
 
 const ModalFieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-white px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45";
+  "app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/45";
 
 const DisabledFieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-darknavy/[0.04] px-3 text-right text-sm text-darknavy/75 outline-none";
+  "app-theme-field-readonly h-11 w-full rounded-md border px-3 text-right text-sm outline-none";
 
 function formatNumberInput(value: number) {
   return value.toLocaleString("en-US", {

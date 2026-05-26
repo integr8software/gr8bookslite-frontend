@@ -18,6 +18,8 @@ type DisbursementVoucherActionHeaderProps = {
   mode: DisbursementVoucherActionMode;
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
+  onCreateVoucher?: () => void;
+  onEditVoucher?: () => void;
   onDeleteVoucher?: () => void;
   onSubmit?: () => void;
 };
@@ -28,6 +30,8 @@ export function DisbursementVoucherActionHeader({
   mode,
   transaction,
   voucher,
+  onCreateVoucher,
+  onEditVoucher,
   onDeleteVoucher,
   onSubmit,
 }: DisbursementVoucherActionHeaderProps) {
@@ -67,8 +71,23 @@ export function DisbursementVoucherActionHeader({
           {mode === "view" ? (
             <>
               <Link
-                href={`${DisbursementVoucherHref}/add?transactionId=${transaction?.id ?? ""}`}
+                href={
+                  canCreateAnother
+                    ? `${DisbursementVoucherHref}/add?transactionId=${transaction?.id ?? ""}`
+                    : "#"
+                }
                 aria-disabled={!canCreateAnother}
+                onClick={(event) => {
+                  if (!canCreateAnother) {
+                    event.preventDefault();
+                    return;
+                  }
+
+                  if (onCreateVoucher) {
+                    event.preventDefault();
+                    onCreateVoucher();
+                  }
+                }}
                 className={
                   canCreateAnother
                     ? moduleHeaderActionClassNames.secondary
@@ -79,13 +98,14 @@ export function DisbursementVoucherActionHeader({
                 New Voucher
               </Link>
               {voucher ? (
-                <Link
-                  href={`${DisbursementVoucherHref}/edit/${transaction?.id ?? ""}`}
+                <button
+                  type="button"
+                  onClick={onEditVoucher}
                   className={accentPrimaryActionClassName}
                 >
                   <Edit3 className="h-4 w-4" aria-hidden="true" />
                   Edit Voucher
-                </Link>
+                </button>
               ) : (
                 <span className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 px-4 text-sm font-semibold text-darknavy/35">
                   Edit Voucher

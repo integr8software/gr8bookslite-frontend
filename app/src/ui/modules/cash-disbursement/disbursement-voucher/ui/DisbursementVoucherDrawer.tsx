@@ -568,7 +568,7 @@ function DetailsTab({
           />
         </FieldShell>
 
-        <FieldShell error={errors.vceCode} label="VCECode : *">
+        <FieldShell error={errors.vceCode} label="Party Code : *">
           <input
             value={values.vceCode}
             readOnly
@@ -576,7 +576,7 @@ function DetailsTab({
           />
         </FieldShell>
 
-        <FieldShell error={errors.vceName} label="VCEName : *">
+        <FieldShell error={errors.vceName} label="Party Name : *">
           <ActionField
             actionLabel="Add"
             onAction={onOpenVceDialog}
@@ -978,8 +978,8 @@ function ReviewStep({
             label="Disbursement Type"
             value={values.disbursementType || "-"}
           />
-          <InfoLine label="VCE Code" value={values.vceCode} />
-          <InfoLine label="VCE Name" value={values.vceName} />
+          <InfoLine label="Party Code" value={values.vceCode} />
+          <InfoLine label="Party Name" value={values.vceName} />
           <InfoLine label="ProjectRef" value={values.costCenter} />
           <InfoLine
             label="Importation Ref No."

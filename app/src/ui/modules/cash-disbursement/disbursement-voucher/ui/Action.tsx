@@ -1081,9 +1081,9 @@ function VoucherReviewStep({
               value={selectedTransaction?.purpose ?? values.remarks}
             />
           </ReviewCard>
-          <ReviewCard title="Payee and Amount">
-            <InfoLine label="Payee" value={values.vceName} />
-            <InfoLine label="VCE code" value={values.vceCode} />
+          <ReviewCard title="Party and Amount">
+            <InfoLine label="Party Name" value={values.vceName} />
+            <InfoLine label="Party Code" value={values.vceCode} />
             <InfoLine
               label="Total amount"
               value={formatCurrency(Number(values.amount))}

@@ -18,13 +18,6 @@ import {
 type WorkspaceOverviewPanelsProps = {
   approvals: WorkspaceApprovalItem[];
   companies: WorkspaceCompanyRecord[];
-  graphData?: WorkspaceDashboardGraphPoint[];
-  grossIncomeGraphType?: WorkspaceDashboardGraphType;
-  monthlyGraphType?: WorkspaceDashboardGraphType;
-  totalIncomeGraphType?: WorkspaceDashboardGraphType;
-  yearGraphData?: WorkspaceDashboardGraphPoint[];
-  yearMetrics?: WorkspaceDashboardYearMetric[];
-  yearlyGraphType?: WorkspaceDashboardGraphType;
   recentActivity: WorkspaceTimelineItem[];
   showApprovals: boolean;
   showPerformance: boolean;
@@ -36,13 +29,6 @@ type WorkspaceOverviewPanelsProps = {
 export function WorkspaceOverviewPanels({
   approvals,
   companies,
-  graphData = [],
-  grossIncomeGraphType = "bar",
-  monthlyGraphType = "bar",
-  totalIncomeGraphType = "bar",
-  yearGraphData = [],
-  yearMetrics = [],
-  yearlyGraphType = "bar",
   recentActivity,
   showApprovals,
   showPerformance,
@@ -75,31 +61,6 @@ export function WorkspaceOverviewPanels({
                   </p>
                 </div>
               </div>
-
-              <DashboardAccountingGraph
-                data={graphData}
-                graphDataKey="monthlyAccounting"
-                graphType={monthlyGraphType}
-              />
-              <DashboardAccountingGraph
-                data={yearGraphData}
-                graphDataKey="yearlyIncome"
-                graphType={yearlyGraphType}
-              />
-              <DashboardYearMetricGraph
-                data={yearMetrics}
-                description="Total income and net income comparison by fiscal year."
-                graphType={totalIncomeGraphType}
-                series={TotalIncomeChartSeries}
-                title="Total Income by Year"
-              />
-              <DashboardYearMetricGraph
-                data={yearMetrics}
-                description="Gross earnings compared with operating expenses by fiscal year."
-                graphType={grossIncomeGraphType}
-                series={GrossIncomeChartSeries}
-                title="Gross Income by Year"
-              />
 
               <div className="overflow-x-auto">
                 <table className="w-full min-w-190 border-separate border-spacing-0 text-left">
@@ -206,6 +167,74 @@ export function WorkspaceOverviewPanels({
         </section>
       ) : null}
     </>
+  );
+}
+
+export function WorkspaceDashboardMonthlyAccountingGraph({
+  data,
+  graphType,
+}: {
+  data: WorkspaceDashboardGraphPoint[];
+  graphType: WorkspaceDashboardGraphType;
+}) {
+  return (
+    <DashboardAccountingGraph
+      data={data}
+      graphDataKey="monthlyAccounting"
+      graphType={graphType}
+    />
+  );
+}
+
+export function WorkspaceDashboardYearlyIncomeGraph({
+  data,
+  graphType,
+}: {
+  data: WorkspaceDashboardGraphPoint[];
+  graphType: WorkspaceDashboardGraphType;
+}) {
+  return (
+    <DashboardAccountingGraph
+      data={data}
+      graphDataKey="yearlyIncome"
+      graphType={graphType}
+    />
+  );
+}
+
+export function WorkspaceDashboardTotalIncomeGraph({
+  data,
+  graphType,
+}: {
+  data: WorkspaceDashboardYearMetric[];
+  graphType: WorkspaceDashboardGraphType;
+}) {
+  return (
+    <DashboardYearMetricGraph
+      data={data}
+      description="Total income and net income comparison by fiscal year."
+      graphType={graphType}
+      series={TotalIncomeChartSeries}
+      title="Total Income by Year"
+    />
+  );
+}
+
+export function WorkspaceDashboardGrossIncomeGraph({
+  data,
+  graphType,
+}: {
+  data: WorkspaceDashboardYearMetric[];
+  graphType: WorkspaceDashboardGraphType;
+}) {
+  return (
+    <DashboardYearMetricGraph
+      data={data}
+      description="Gross earnings compared with operating expenses by fiscal year."
+      graphType={graphType}
+      series={GrossIncomeChartSeries}
+      title="Gross Income by Year"
+    />
   );
 }
 

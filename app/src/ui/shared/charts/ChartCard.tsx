@@ -46,101 +46,99 @@ export function ChartCard<TData extends Record<string, string | number>>({
 	valueFormatter = (value) => String(value),
 }: ChartCardProps<TData>) {
 	return (
-		<div className="border-b border-darknavy/8 px-6 py-5">
-			<div className="rounded-3xl border border-darknavy/8 bg-offwhite p-5">
-				<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-					<div>
-						<p className="text-sm font-semibold text-darknavy">{title}</p>
-						<p className="mt-1 text-sm text-darknavy/50">{description}</p>
-					</div>
-				</div>
-
-				<div className="mt-5 h-72">
-					<ResponsiveContainer width="100%" height="100%">
-						{type === "bar" ? (
-							<BarChart data={data} margin={ChartMargin}>
-								<ChartScaffold
-									indexKey={indexKey}
-									valueFormatter={valueFormatter}
-								/>
-								{series.map((item) => (
-									<Bar
-										key={item.key}
-										dataKey={item.key}
-										fill={item.color}
-										name={item.label}
-										radius={[6, 6, 0, 0]}
-									/>
-								))}
-							</BarChart>
-						) : type === "line" ? (
-							<LineChart data={data} margin={ChartMargin}>
-								<ChartScaffold
-									indexKey={indexKey}
-									valueFormatter={valueFormatter}
-								/>
-								{series.map((item) => (
-									<Line
-										key={item.key}
-										type="monotone"
-										dataKey={item.key}
-										name={item.label}
-										stroke={item.color}
-										strokeWidth={3}
-										dot={{ fill: item.color, r: 4, strokeWidth: 2 }}
-										activeDot={{ r: 6, strokeWidth: 0 }}
-									/>
-								))}
-							</LineChart>
-						) : type === "area" ? (
-							<AreaChart data={data} margin={ChartMargin}>
-								<ChartScaffold
-									indexKey={indexKey}
-									valueFormatter={valueFormatter}
-								/>
-								{series.map((item) => (
-									<Area
-										key={item.key}
-										type="monotone"
-										dataKey={item.key}
-										name={item.label}
-										stroke={item.color}
-										strokeWidth={3}
-										fill={item.color}
-										fillOpacity={0.16}
-										dot={{ fill: item.color, r: 4, strokeWidth: 2 }}
-										activeDot={{ r: 6, strokeWidth: 0 }}
-									/>
-								))}
-							</AreaChart>
-						) : (
-							<PieChart margin={ChartMargin}>
-								<Tooltip
-									content={<ChartTooltip valueFormatter={valueFormatter} />}
-									{...TooltipProps}
-								/>
-								<Legend
-									iconType="circle"
-									wrapperStyle={{ fontSize: 12, fontWeight: 600 }}
-								/>
-								<Pie
-									data={createDonutData(data, series)}
-									dataKey="value"
-									nameKey="name"
-									innerRadius={type === "donut" ? "58%" : 0}
-									outerRadius="82%"
-									paddingAngle={3}
-								>
-									{series.map((item) => (
-										<Cell key={item.key} fill={item.color} />
-									))}
-								</Pie>
-							</PieChart>
-						)}
-					</ResponsiveContainer>
+		<article className="rounded-[1.75rem] border border-darknavy/10 bg-white p-5 shadow-[0_20px_60px_rgba(33,39,56,0.08)]">
+			<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+				<div>
+					<p className="text-sm font-semibold text-darknavy">{title}</p>
+					<p className="mt-1 text-sm text-darknavy/50">{description}</p>
 				</div>
 			</div>
-		</div>
+
+			<div className="mt-5 h-72 rounded-3xl bg-offwhite p-4">
+				<ResponsiveContainer width="100%" height="100%">
+					{type === "bar" ? (
+						<BarChart data={data} margin={ChartMargin}>
+							<ChartScaffold
+								indexKey={indexKey}
+								valueFormatter={valueFormatter}
+							/>
+							{series.map((item) => (
+								<Bar
+									key={item.key}
+									dataKey={item.key}
+									fill={item.color}
+									name={item.label}
+									radius={[6, 6, 0, 0]}
+								/>
+							))}
+						</BarChart>
+					) : type === "line" ? (
+						<LineChart data={data} margin={ChartMargin}>
+							<ChartScaffold
+								indexKey={indexKey}
+								valueFormatter={valueFormatter}
+							/>
+							{series.map((item) => (
+								<Line
+									key={item.key}
+									type="monotone"
+									dataKey={item.key}
+									name={item.label}
+									stroke={item.color}
+									strokeWidth={3}
+									dot={{ fill: item.color, r: 4, strokeWidth: 2 }}
+									activeDot={{ r: 6, strokeWidth: 0 }}
+								/>
+							))}
+						</LineChart>
+					) : type === "area" ? (
+						<AreaChart data={data} margin={ChartMargin}>
+							<ChartScaffold
+								indexKey={indexKey}
+								valueFormatter={valueFormatter}
+							/>
+							{series.map((item) => (
+								<Area
+									key={item.key}
+									type="monotone"
+									dataKey={item.key}
+									name={item.label}
+									stroke={item.color}
+									strokeWidth={3}
+									fill={item.color}
+									fillOpacity={0.16}
+									dot={{ fill: item.color, r: 4, strokeWidth: 2 }}
+									activeDot={{ r: 6, strokeWidth: 0 }}
+								/>
+							))}
+						</AreaChart>
+					) : (
+						<PieChart margin={ChartMargin}>
+							<Tooltip
+								content={<ChartTooltip valueFormatter={valueFormatter} />}
+								{...TooltipProps}
+							/>
+							<Legend
+								iconType="circle"
+								wrapperStyle={{ fontSize: 12, fontWeight: 600 }}
+							/>
+							<Pie
+								data={createDonutData(data, series)}
+								dataKey="value"
+								nameKey="name"
+								innerRadius={type === "donut" ? "58%" : 0}
+								outerRadius="82%"
+								paddingAngle={3}
+							>
+								{series.map((item) => (
+									<Cell key={item.key} fill={item.color} />
+								))}
+							</Pie>
+						</PieChart>
+					)}
+				</ResponsiveContainer>
+			</div>
+		</article>
 	);
 }
 

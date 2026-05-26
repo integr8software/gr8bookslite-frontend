@@ -7,6 +7,10 @@ import type { WorkspaceDashboardGraphType } from "@/app/src/data/modules/dashboa
 export type WorkspaceDashboardSectionKey =
   | "companies"
   | "summary"
+  | "monthlyGraph"
+  | "yearlyIncomeGraph"
+  | "totalIncomeGraph"
+  | "grossIncomeGraph"
   | "performance"
   | "approvals"
   | "activity"

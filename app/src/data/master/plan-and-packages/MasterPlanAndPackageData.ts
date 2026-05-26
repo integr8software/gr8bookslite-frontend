@@ -1,6 +1,9 @@
 import {
 	MasterPlanAndPackageFeatureOptions,
+	MasterPlanAndPackageScalePeriodLabels,
+	MasterPlanAndPackageScalePeriods,
 	MasterPlanAndPackageScaleUnitLabels,
+	MasterPlanAndPackageScaleUnits,
 } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import type {
 	MasterPlanAndPackageFormValues,
@@ -9,6 +12,7 @@ import type {
 	MasterPlanAndPackageRecord,
 	MasterPlanAndPackageScalePricing,
 	MasterPlanAndPackageScaleRule,
+	MasterPlanAndPackageScaleRules,
 	MasterPlanAndPackageScaleUnit,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
@@ -32,27 +36,27 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			"sales-service-invoice",
 		],
 		id: "plan-accounting-monthly",
-		name: "Accounting Monthly",
+		name: "Accounting Essentials",
 		pricing: {
-			amount: 399,
-			kind: "Monthly",
+			monthlyBasePrice: 399,
+			monthlyPercentOff: 0,
+			yearlyBasePrice: 4788,
+			yearlyPercentOff: 10,
 		},
 		scalePricing: createScalePricing({
-			branch: {
+			branch: createScaleRule({
 				addOnPrice: 150,
 				includedFreeCount: 1,
-				kind: "Add-on",
-			},
-			company: {
-				addOnPrice: 0,
-				includedFreeCount: 1,
-				kind: "Add-on",
-			},
-			user: {
+				reductionTiers: [{ reductionPercent: 5, thresholdCount: 6 }],
+			}),
+			user: createScaleRule({
 				addOnPrice: 100,
 				includedFreeCount: 1,
-				kind: "Add-on",
-			},
+				reductionTiers: [
+					{ reductionPercent: 5, thresholdCount: 10 },
+					{ reductionPercent: 10, thresholdCount: 25 },
+				],
+			}),
 		}),
 		status: "Active",
 	},
@@ -70,28 +74,30 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			"purchasing-purchase-order",
 		],
 		id: "plan-inventory-quarter",
-		name: "Inventory Quarterly",
+		name: "Inventory Operations",
 		pricing: {
-			amount: 1050,
-			intervalMonths: 3,
-			kind: "Interval",
+			monthlyBasePrice: 420,
+			monthlyPercentOff: 0,
+			yearlyBasePrice: 5040,
+			yearlyPercentOff: 12,
 		},
 		scalePricing: createScalePricing({
-			branch: {
-				kind: "Range",
-				maxCount: 8,
-				minCount: 1,
-			},
-			company: {
-				kind: "Range",
-				maxCount: 1,
-				minCount: 1,
-			},
-			user: {
-				kind: "Range",
-				maxCount: 10,
-				minCount: 3,
-			},
+			branch: createScaleRule({
+				addOnPrice: 120,
+				includedFreeCount: 8,
+				reductionTiers: [
+					{ reductionPercent: 5, thresholdCount: 12 },
+					{ reductionPercent: 10, thresholdCount: 25 },
+				],
+			}),
+			user: createScaleRule({
+				addOnPrice: 80,
+				includedFreeCount: 10,
+				reductionTiers: [
+					{ reductionPercent: 5, thresholdCount: 25 },
+					{ reductionPercent: 10, thresholdCount: 50 },
+				],
+			}),
 		}),
 		status: "Active",
 	},
@@ -111,33 +117,36 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			"maintenance-users",
 		],
 		id: "plan-full-suite-annual",
-		name: "Full Suite Annual",
+		name: "Full Suite",
 		pricing: {
-			amount: 4990,
-			kind: "Yearly",
+			monthlyBasePrice: 590,
+			monthlyPercentOff: 0,
+			yearlyBasePrice: 7080,
+			yearlyPercentOff: 15,
 		},
 		scalePricing: createScalePricing({
-			branch: {
+			branch: createScaleRule({
 				addOnPrice: 250,
 				includedFreeCount: 5,
-				kind: "Add-on",
-			},
-			company: {
-				addOnPrice: 650,
-				includedFreeCount: 1,
-				kind: "Add-on",
-			},
-			user: {
+				reductionTiers: [
+					{ reductionPercent: 8, thresholdCount: 10 },
+					{ reductionPercent: 12, thresholdCount: 20 },
+				],
+			}),
+			user: createScaleRule({
 				addOnPrice: 100,
 				includedFreeCount: 5,
-				kind: "Add-on",
-			},
+				reductionTiers: [
+					{ reductionPercent: 5, thresholdCount: 25 },
+					{ reductionPercent: 15, thresholdCount: 50 },
+				],
+			}),
 		}),
 		status: "Draft",
 	},
 	{
 		description:
-			"Usage-priced package for low-volume subscribers billed from actual posted transactions instead of a transactional unit label.",
+			"Light operating package for low-volume subscribers that need a simple base plan with predictable add-ons.",
 		featureIds: [
 			"dashboard-overview",
 			"cash-receipt-provisional-receipt",
@@ -148,33 +157,31 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		id: "plan-transaction-lite",
 		name: "Transaction Lite",
 		pricing: {
-			amount: 8,
-			kind: "Transactional",
-			reset: "When Consumed",
-			transactionLimit: 100,
+			monthlyBasePrice: 299,
+			monthlyPercentOff: 0,
+			yearlyBasePrice: 3588,
+			yearlyPercentOff: 8,
 		},
 		scalePricing: createScalePricing({
-			branch: {
-				kind: "Range",
-				maxCount: 1,
-				minCount: 1,
-			},
-			company: {
-				kind: "Range",
-				maxCount: 1,
-				minCount: 1,
-			},
-			user: {
+			branch: createScaleRule({
+				addOnPrice: 100,
+				includedFreeCount: 1,
+				reductionTiers: [{ reductionPercent: 5, thresholdCount: 5 }],
+			}),
+			user: createScaleRule({
 				addOnPrice: 80,
 				includedFreeCount: 1,
-				kind: "Add-on",
-			},
+				reductionTiers: [
+					{ reductionPercent: 5, thresholdCount: 10 },
+					{ reductionPercent: 10, thresholdCount: 20 },
+				],
+			}),
 		}),
 		status: "Inactive",
 	},
 	{
 		description:
-			"Promotional upgrade package that discounts the opening billing cycles before standard renewal pricing applies.",
+			"Promotional upgrade package that discounts base subscription pricing while retaining standard module access and scale rules.",
 		featureIds: [
 			"dashboard-overview",
 			"maintenance-financial-management-discount-management",
@@ -187,32 +194,30 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		id: "plan-launch-upgrade",
 		name: "Launch Upgrade",
 		pricing: {
-			appliesFrom: 1,
-			appliesTo: 12,
-			baseAmount: 4990,
-			kind: "Percent Off",
-			percentOff: 20,
+			monthlyBasePrice: 499,
+			monthlyPercentOff: 20,
+			yearlyBasePrice: 5988,
+			yearlyPercentOff: 25,
 		},
 		scalePricing: createScalePricing({
-			branch: {
-				kind: "Range",
-				maxCount: 6,
-				minCount: 1,
-			},
-			company: {
-				addOnPrice: 700,
-				includedFreeCount: 1,
-				kind: "Add-on",
-			},
-			user: {
-				kind: "Reduction",
-				tiers: [
+			branch: createScaleRule({
+				addOnPrice: 180,
+				includedFreeCount: 6,
+				reductionTiers: [
+					{ reductionPercent: 5, thresholdCount: 12 },
+					{ reductionPercent: 10, thresholdCount: 25 },
+				],
+			}),
+			user: createScaleRule({
+				addOnPrice: 100,
+				includedFreeCount: 9,
+				reductionTiers: [
 					{ reductionPercent: 5, thresholdCount: 10 },
 					{ reductionPercent: 10, thresholdCount: 25 },
 					{ reductionPercent: 20, thresholdCount: 50 },
 					{ reductionPercent: 25, thresholdCount: 100 },
 				],
-			},
+			}),
 		}),
 		status: "Active",
 	},
@@ -220,37 +225,26 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 
 export const InitialMasterPlanAndPackageFormValues: MasterPlanAndPackageFormValues =
 	{
-		amount: 0,
-		baseAmount: 0,
-		branchAddOnPrice: 0,
-		branchIncludedFree: 1,
-		branchLimitKind: "Add-on",
-		branchMax: 5,
-		branchMin: 1,
-		branchReductionTiers: createDefaultReductionTiers(),
-		companyAddOnPrice: 0,
-		companyIncludedFree: 1,
-		companyLimitKind: "Add-on",
-		companyMax: 1,
-		companyMin: 1,
-		companyReductionTiers: createDefaultReductionTiers(),
 		description: "",
-		discountAppliesFrom: 1,
-		discountAppliesTo: 12,
 		featureIds: MasterPlanAndPackageFeatureOptions.map((feature) => feature.id),
-		intervalMonths: 3,
+		monthlyBasePrice: 0,
+		monthlyBranchAddOnPrice: 0,
+		monthlyBranchIncludedFree: 1,
+		monthlyBranchReductionTiers: createEmptyReductionTiers(),
+		monthlyPercentOff: 0,
+		monthlyUserAddOnPrice: 0,
+		monthlyUserIncludedFree: 1,
+		monthlyUserReductionTiers: createEmptyReductionTiers(),
 		name: "",
-		percentOff: 0,
-		pricingKind: "Monthly",
 		status: "Active",
-		transactionLimit: 100,
-		transactionReset: "When Consumed",
-		userAddOnPrice: 0,
-		userIncludedFree: 1,
-		userLimitKind: "Add-on",
-		userMax: 5,
-		userMin: 1,
-		userReductionTiers: createDefaultReductionTiers(),
+		yearlyBasePrice: 0,
+		yearlyBranchAddOnPrice: 0,
+		yearlyBranchIncludedFree: 1,
+		yearlyBranchReductionTiers: createEmptyReductionTiers(),
+		yearlyPercentOff: 0,
+		yearlyUserAddOnPrice: 0,
+		yearlyUserIncludedFree: 1,
+		yearlyUserReductionTiers: createEmptyReductionTiers(),
 	};
 
 export function getMasterPlanAndPackageById(recordId: string) {
@@ -260,12 +254,11 @@ export function getMasterPlanAndPackageById(recordId: string) {
 export function createMasterPlanAndPackageFormValues(
 	record: MasterPlanAndPackageRecord,
 ): MasterPlanAndPackageFormValues {
-	const pricingValues = createPricingFormValues(record.pricing);
 	const scaleValues = createScalePricingFormValues(record.scalePricing);
 
 	return {
 		...InitialMasterPlanAndPackageFormValues,
-		...pricingValues,
+		...record.pricing,
 		...scaleValues,
 		description: record.description,
 		featureIds: [...record.featureIds],
@@ -298,87 +291,84 @@ export function formatMasterPlanAndPackageCurrency(value: number) {
 	})}`;
 }
 
+export function calculateMasterPlanAndPackageDiscountedPrice({
+	basePrice,
+	percentOff,
+}: {
+	basePrice: number;
+	percentOff: number;
+}) {
+	return basePrice * (1 - percentOff / 100);
+}
+
 export function formatMasterPlanAndPackagePricing(
 	pricing: MasterPlanAndPackagePricing,
 ) {
-	switch (pricing.kind) {
-		case "Monthly":
-			return `${formatMasterPlanAndPackageCurrency(pricing.amount)} / month`;
-		case "Interval":
-			return `${formatMasterPlanAndPackageCurrency(pricing.amount)} every ${
-				pricing.intervalMonths
-			} months`;
-		case "Yearly":
-			return `${formatMasterPlanAndPackageCurrency(pricing.amount)} / year`;
-		case "Transactional":
-			return `${formatMasterPlanAndPackageCurrency(
-				pricing.amount,
-			)} for ${pricing.transactionLimit.toLocaleString("en-US")} transactions`;
-		case "Percent Off":
-			return `${pricing.percentOff}% off ${formatMasterPlanAndPackageCurrency(
-				pricing.baseAmount,
-			)} for billing cycles ${pricing.appliesFrom}-${pricing.appliesTo}`;
-	}
+	return [
+		formatPriceWithDiscount({
+			basePrice: pricing.monthlyBasePrice,
+			intervalLabel: "month",
+			percentOff: pricing.monthlyPercentOff,
+		}),
+		formatPriceWithDiscount({
+			basePrice: pricing.yearlyBasePrice,
+			intervalLabel: "year",
+			percentOff: pricing.yearlyPercentOff,
+		}),
+	].join(" | ");
 }
 
 export function formatMasterPlanAndPackageScalePricing(
 	scalePricing: MasterPlanAndPackageScalePricing,
 ) {
-	return (Object.keys(MasterPlanAndPackageScaleUnitLabels) as MasterPlanAndPackageScaleUnit[])
-		.map((unit) => {
-			const label = MasterPlanAndPackageScaleUnitLabels[unit];
+	return MasterPlanAndPackageScalePeriods.map((period) => {
+		const periodLabel = MasterPlanAndPackageScalePeriodLabels[period];
+		const rules = scalePricing[period];
+		const intervalLabel = period === "monthly" ? "month" : "year";
+		const ruleLabel = MasterPlanAndPackageScaleUnits.map((unit) => {
+			const unitLabel = MasterPlanAndPackageScaleUnitLabels[unit];
 
-			return `${label}: ${formatScaleRule(scalePricing[unit], unit)}`;
-		})
+			return `${unitLabel}: ${formatScaleRule({
+				intervalLabel,
+				rule: rules[unit],
+				unit,
+			})}`;
+		}).join("; ");
+
+		return `${periodLabel}: ${ruleLabel}`;
+	})
 		.join(" | ");
 }
 
 export function getMasterPlanAndPackagePricingSupportingText(
 	pricing: MasterPlanAndPackagePricing,
 ) {
-	switch (pricing.kind) {
-		case "Monthly":
-			return "Recurring monthly";
-		case "Interval":
-			return `Recurring ${pricing.intervalMonths}-month cycle`;
-		case "Yearly":
-			return "Recurring annual";
-		case "Transactional":
-			return `Resets ${pricing.reset.toLowerCase()}`;
-		case "Percent Off":
-			return "Discounted opening billing cycles";
+	const discounts = [
+		pricing.monthlyPercentOff,
+		pricing.yearlyPercentOff,
+	].filter((percentOff) => percentOff > 0);
+
+	if (discounts.length === 0) {
+		return "Monthly and yearly base prices";
 	}
+
+	return `${Math.max(...discounts)}% max discount`;
 }
 
 export function getMasterPlanAndPackageScaleSupportingText(
 	scalePricing: MasterPlanAndPackageScalePricing,
 ) {
-	const addOnUnits = (
-		Object.keys(scalePricing) as MasterPlanAndPackageScaleUnit[]
-	).filter((unit) => scalePricing[unit].kind === "Add-on");
+	const tierCount = MasterPlanAndPackageScalePeriods.reduce(
+		(total, period) =>
+			total +
+			Object.values(scalePricing[period]).reduce(
+				(periodTotal, rule) => periodTotal + rule.reductionTiers.length,
+				0,
+			),
+		0,
+	);
 
-	const reductionUnits = (
-		Object.keys(scalePricing) as MasterPlanAndPackageScaleUnit[]
-	).filter((unit) => scalePricing[unit].kind === "Reduction");
-
-	if (addOnUnits.length === 0 && reductionUnits.length === 0) {
-		return "Ranged allowances";
-	}
-
-	return [
-		addOnUnits.length
-			? `${addOnUnits
-					.map((unit) => MasterPlanAndPackageScaleUnitLabels[unit].toLowerCase())
-					.join(", ")} add-ons`
-			: "",
-		reductionUnits.length
-			? `${reductionUnits
-					.map((unit) => MasterPlanAndPackageScaleUnitLabels[unit].toLowerCase())
-					.join(", ")} reductions`
-			: "",
-	]
-		.filter(Boolean)
-		.join("; ");
+	return `${tierCount} reduction tiers across monthly and yearly add-ons`;
 }
 
 export function getMasterPlanAndPackageFeatureLabel(featureId: string) {
@@ -390,242 +380,174 @@ export function getMasterPlanAndPackageFeatureLabels(featureIds: string[]) {
 }
 
 function createScalePricing(
-	scalePricing: MasterPlanAndPackageScalePricing,
+	monthlyScalePricing: MasterPlanAndPackageScaleRules,
 ): MasterPlanAndPackageScalePricing {
-	return scalePricing;
+	return {
+		monthly: monthlyScalePricing,
+		yearly: {
+			branch: createYearlyScaleRule(monthlyScalePricing.branch),
+			user: createYearlyScaleRule(monthlyScalePricing.user),
+		},
+	};
 }
 
-function createPricingFormValues(
-	pricing: MasterPlanAndPackagePricing,
-): Partial<MasterPlanAndPackageFormValues> {
-	switch (pricing.kind) {
-		case "Monthly":
-		case "Yearly":
-			return {
-				amount: pricing.amount,
-				pricingKind: pricing.kind,
-			};
-		case "Transactional":
-			return {
-				amount: pricing.amount,
-				pricingKind: pricing.kind,
-				transactionLimit: pricing.transactionLimit,
-				transactionReset: pricing.reset,
-			};
-		case "Interval":
-			return {
-				amount: pricing.amount,
-				intervalMonths: pricing.intervalMonths,
-				pricingKind: pricing.kind,
-			};
-		case "Percent Off":
-			return {
-				baseAmount: pricing.baseAmount,
-				discountAppliesFrom: pricing.appliesFrom,
-				discountAppliesTo: pricing.appliesTo,
-				percentOff: pricing.percentOff,
-				pricingKind: pricing.kind,
-			};
-	}
+function createScaleRule(
+	rule: MasterPlanAndPackageScaleRule,
+): MasterPlanAndPackageScaleRule {
+	return rule;
 }
 
 function createScalePricingFormValues(
 	scalePricing: MasterPlanAndPackageScalePricing,
 ): Partial<MasterPlanAndPackageFormValues> {
 	return {
-		...createScaleRuleFormValues("company", scalePricing.company),
-		...createScaleRuleFormValues("branch", scalePricing.branch),
-		...createScaleRuleFormValues("user", scalePricing.user),
+		...createScaleRuleFormValues("monthlyBranch", scalePricing.monthly.branch),
+		...createScaleRuleFormValues("monthlyUser", scalePricing.monthly.user),
+		...createScaleRuleFormValues("yearlyBranch", scalePricing.yearly.branch),
+		...createScaleRuleFormValues("yearlyUser", scalePricing.yearly.user),
 	};
 }
 
 function createScaleRuleFormValues(
-	unit: MasterPlanAndPackageScaleUnit,
+	prefix: "monthlyBranch" | "monthlyUser" | "yearlyBranch" | "yearlyUser",
 	rule: MasterPlanAndPackageScaleRule,
 ): Partial<MasterPlanAndPackageFormValues> {
-	const prefix = unit;
-
-	switch (rule.kind) {
-		case "Range":
-			return {
-				[`${prefix}LimitKind`]: rule.kind,
-				[`${prefix}Max`]: rule.maxCount,
-				[`${prefix}Min`]: rule.minCount,
-			} as Partial<MasterPlanAndPackageFormValues>;
-		case "Add-on":
-			return {
-				[`${prefix}AddOnPrice`]: rule.addOnPrice,
-				[`${prefix}IncludedFree`]: rule.includedFreeCount,
-				[`${prefix}LimitKind`]: rule.kind,
-			} as Partial<MasterPlanAndPackageFormValues>;
-		case "Reduction":
-			return {
-				[`${prefix}LimitKind`]: rule.kind,
-				[`${prefix}ReductionTiers`]: rule.tiers.map((tier) => ({ ...tier })),
-			} as Partial<MasterPlanAndPackageFormValues>;
-	}
+	return {
+		[`${prefix}AddOnPrice`]: rule.addOnPrice,
+		[`${prefix}IncludedFree`]: rule.includedFreeCount,
+		[`${prefix}ReductionTiers`]: rule.reductionTiers.map((tier) => ({
+			...tier,
+		})),
+	} as Partial<MasterPlanAndPackageFormValues>;
 }
 
 function createPricingFromFormValues(
 	values: MasterPlanAndPackageFormValues,
 ): MasterPlanAndPackagePricing {
-	switch (values.pricingKind) {
-		case "Monthly":
-			return { amount: values.amount, kind: values.pricingKind };
-		case "Interval":
-			return {
-				amount: values.amount,
-				intervalMonths: values.intervalMonths,
-				kind: values.pricingKind,
-			};
-		case "Yearly":
-			return { amount: values.amount, kind: values.pricingKind };
-		case "Transactional":
-			return {
-				amount: values.amount,
-				kind: values.pricingKind,
-				reset: values.transactionReset,
-				transactionLimit: values.transactionLimit,
-			};
-		case "Percent Off":
-			return {
-				appliesFrom: values.discountAppliesFrom,
-				appliesTo: values.discountAppliesTo,
-				baseAmount: values.baseAmount,
-				kind: values.pricingKind,
-				percentOff: values.percentOff,
-			};
-	}
+	return {
+		monthlyBasePrice: values.monthlyBasePrice,
+		monthlyPercentOff: values.monthlyPercentOff,
+		yearlyBasePrice: values.yearlyBasePrice,
+		yearlyPercentOff: values.yearlyPercentOff,
+	};
 }
 
 function createScalePricingFromFormValues(
 	values: MasterPlanAndPackageFormValues,
 ): MasterPlanAndPackageScalePricing {
 	return {
-		branch: createScaleRuleFromFormValues("branch", values),
-		company: createScaleRuleFromFormValues("company", values),
-		user: createScaleRuleFromFormValues("user", values),
+		monthly: {
+			branch: {
+				addOnPrice: values.monthlyBranchAddOnPrice,
+				includedFreeCount: values.monthlyBranchIncludedFree,
+				reductionTiers: values.monthlyBranchReductionTiers.map((tier) => ({
+					...tier,
+				})),
+			},
+			user: {
+				addOnPrice: values.monthlyUserAddOnPrice,
+				includedFreeCount: values.monthlyUserIncludedFree,
+				reductionTiers: values.monthlyUserReductionTiers.map((tier) => ({
+					...tier,
+				})),
+			},
+		},
+		yearly: {
+			branch: {
+				addOnPrice: values.yearlyBranchAddOnPrice,
+				includedFreeCount: values.yearlyBranchIncludedFree,
+				reductionTiers: values.yearlyBranchReductionTiers.map((tier) => ({
+					...tier,
+				})),
+			},
+			user: {
+				addOnPrice: values.yearlyUserAddOnPrice,
+				includedFreeCount: values.yearlyUserIncludedFree,
+				reductionTiers: values.yearlyUserReductionTiers.map((tier) => ({
+					...tier,
+				})),
+			},
+		},
 	};
 }
 
-function createScaleRuleFromFormValues(
-	unit: MasterPlanAndPackageScaleUnit,
-	values: MasterPlanAndPackageFormValues,
-): MasterPlanAndPackageScaleRule {
-	switch (unit) {
-		case "branch":
-			return createScaleRuleFromParts({
-				addOnPrice: values.branchAddOnPrice,
-				includedFree: values.branchIncludedFree,
-				limitKind: values.branchLimitKind,
-				max: values.branchMax,
-				min: values.branchMin,
-				reductionTiers: values.branchReductionTiers,
-			});
-		case "company":
-			return createScaleRuleFromParts({
-				addOnPrice: values.companyAddOnPrice,
-				includedFree: values.companyIncludedFree,
-				limitKind: values.companyLimitKind,
-				max: values.companyMax,
-				min: values.companyMin,
-				reductionTiers: values.companyReductionTiers,
-			});
-		case "user":
-			return createScaleRuleFromParts({
-				addOnPrice: values.userAddOnPrice,
-				includedFree: values.userIncludedFree,
-				limitKind: values.userLimitKind,
-				max: values.userMax,
-				min: values.userMin,
-				reductionTiers: values.userReductionTiers,
-			});
-	}
-}
-
-function createScaleRuleFromParts({
-	addOnPrice,
-	includedFree,
-	limitKind,
-	max,
-	min,
-	reductionTiers,
-}: {
-	addOnPrice: number;
-	includedFree: number;
-	limitKind: MasterPlanAndPackageScaleRule["kind"];
-	max: number;
-	min: number;
-	reductionTiers: MasterPlanAndPackageReductionTier[];
-}): MasterPlanAndPackageScaleRule {
-	switch (limitKind) {
-		case "Range":
-			return {
-				kind: limitKind,
-				maxCount: max,
-				minCount: min,
-			};
-		case "Add-on":
-			return {
-				addOnPrice,
-				includedFreeCount: includedFree,
-				kind: limitKind,
-			};
-		case "Reduction":
-			return {
-				kind: limitKind,
-				tiers: reductionTiers.map((tier) => ({ ...tier })),
-			};
-	}
-}
-
-function formatScaleRule(
+function createYearlyScaleRule(
 	rule: MasterPlanAndPackageScaleRule,
-	unit: MasterPlanAndPackageScaleUnit,
-) {
-	const label = MasterPlanAndPackageScaleUnitLabels[unit].toLowerCase();
-
-	switch (rule.kind) {
-		case "Range":
-			if (rule.minCount === rule.maxCount) {
-				return `${rule.minCount} ${getScaleUnitCountLabel(
-					unit,
-					rule.minCount,
-				)}`;
-			}
-
-			return `${rule.minCount}-${rule.maxCount} ${getScaleUnitPluralLabel(
-				unit,
-			)}`;
-		case "Add-on":
-			return `${rule.includedFreeCount} free ${getScaleUnitCountLabel(
-				unit,
-				rule.includedFreeCount,
-			)}; ${formatMasterPlanAndPackageCurrency(
-				rule.addOnPrice,
-			)} per additional ${label}`;
-		case "Reduction":
-			return rule.tiers
-				.map(
-					(tier) =>
-						`${tier.thresholdCount}+ ${getScaleUnitPluralLabel(
-							unit,
-						)}: ${tier.reductionPercent}% off`,
-				)
-				.join(", ");
-	}
+): MasterPlanAndPackageScaleRule {
+	return {
+		addOnPrice: rule.addOnPrice * 10,
+		includedFreeCount: rule.includedFreeCount,
+		reductionTiers: rule.reductionTiers.map((tier) => ({
+			reductionPercent: Math.min(tier.reductionPercent + 5, 100),
+			thresholdCount: tier.thresholdCount,
+		})),
+	};
 }
 
-function createDefaultReductionTiers() {
-	return [{ reductionPercent: 5, thresholdCount: 10 }];
+function formatPriceWithDiscount({
+	basePrice,
+	intervalLabel,
+	percentOff,
+}: {
+	basePrice: number;
+	intervalLabel: "month" | "year";
+	percentOff: number;
+}) {
+	const discountedPrice = calculateMasterPlanAndPackageDiscountedPrice({
+		basePrice,
+		percentOff,
+	});
+	const priceLabel = `${formatMasterPlanAndPackageCurrency(
+		discountedPrice,
+	)} / ${intervalLabel}`;
+
+	if (percentOff <= 0) {
+		return priceLabel;
+	}
+
+	return `${priceLabel} (${percentOff}% off ${formatMasterPlanAndPackageCurrency(
+		basePrice,
+	)})`;
+}
+
+function formatScaleRule({
+	intervalLabel,
+	rule,
+	unit,
+}: {
+	intervalLabel: "month" | "year";
+	rule: MasterPlanAndPackageScaleRule;
+	unit: MasterPlanAndPackageScaleUnit;
+}) {
+	const label = MasterPlanAndPackageScaleUnitLabels[unit].toLowerCase();
+	const reductionLabel =
+		rule.reductionTiers.length > 0
+			? rule.reductionTiers
+					.map(
+						(tier) =>
+							`${tier.thresholdCount}+ ${getScaleUnitPluralLabel(
+								unit,
+							)}: ${tier.reductionPercent}% off`,
+					)
+					.join(", ")
+			: "no reduction tiers";
+
+	return `${rule.includedFreeCount} included ${getScaleUnitCountLabel(
+		unit,
+		rule.includedFreeCount,
+	)}; ${formatMasterPlanAndPackageCurrency(
+		rule.addOnPrice,
+	)} per additional ${label} / ${intervalLabel}; ${reductionLabel}`;
+}
+
+function createEmptyReductionTiers(): MasterPlanAndPackageReductionTier[] {
+	return [];
 }
 
 function getScaleUnitPluralLabel(unit: MasterPlanAndPackageScaleUnit) {
 	switch (unit) {
 		case "branch":
 			return "branches";
-		case "company":
-			return "companies";
 		case "user":
 			return "users";
 	}

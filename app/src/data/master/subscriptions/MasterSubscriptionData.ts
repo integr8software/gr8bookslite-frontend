@@ -1,8 +1,10 @@
-import { MasterPlanAndPackageRecords } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
+import {
+	MasterPlanAndPackageRecords,
+	calculateMasterPlanAndPackageDiscountedPrice,
+} from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
 import type {
-	MasterPlanAndPackagePricing,
 	MasterPlanAndPackageRecord,
-	MasterPlanAndPackageScaleRule,
+	MasterPlanAndPackageScaleUnit,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 import type {
 	MasterSubscriptionBillingCycle,
@@ -60,53 +62,7 @@ export const MasterSubscriptionPlans: MasterSubscriptionPlanRecord[] =
 	MasterPlanAndPackageRecords.map(createMasterSubscriptionPlanFromPackage);
 
 export const MasterSubscriptionVolumeRules: MasterSubscriptionVolumeRuleRecord[] =
-	[
-		{
-			discountPercent: 8,
-			endsAt: 10,
-			id: "rule-full-suite-company-2",
-			label: "Company add-on 2 to 10",
-			planId: "plan-full-suite-annual",
-			startsAt: 2,
-			unit: "company",
-		},
-		{
-			discountPercent: 15,
-			endsAt: null,
-			id: "rule-full-suite-company-11",
-			label: "Company add-on 11+",
-			planId: "plan-full-suite-annual",
-			startsAt: 11,
-			unit: "company",
-		},
-		{
-			discountPercent: 10,
-			endsAt: null,
-			id: "rule-launch-company-2",
-			label: "Launch company add-on 2+",
-			planId: "plan-launch-upgrade",
-			startsAt: 2,
-			unit: "company",
-		},
-		{
-			discountPercent: 5,
-			endsAt: 24,
-			id: "rule-launch-user-10",
-			label: "Launch user reduction 10 to 24",
-			planId: "plan-launch-upgrade",
-			startsAt: 10,
-			unit: "user",
-		},
-		{
-			discountPercent: 10,
-			endsAt: null,
-			id: "rule-launch-user-25",
-			label: "Launch user reduction 25+",
-			planId: "plan-launch-upgrade",
-			startsAt: 25,
-			unit: "user",
-		},
-	];
+	MasterPlanAndPackageRecords.flatMap(createVolumeRulesFromPackage);
 
 export const MasterSubscriptionCompanies: MasterSubscriptionCompanyRecord[] = [
 	{
@@ -400,82 +356,29 @@ function getDiscountPercentForCount({
 function createMasterSubscriptionPlanFromPackage(
 	record: MasterPlanAndPackageRecord,
 ): MasterSubscriptionPlanRecord {
+	const monthlyScalePricing = record.scalePricing.monthly;
+
 	return {
-		billingCycle: getBillingCycleFromPricing(record.pricing),
+		billingCycle: "Monthly",
 		code: createPlanCode(record.name),
 		description: record.description,
 		id: record.id,
-		includedBranches: getIncludedCountFromScaleRule(record.scalePricing.branch),
-		includedCompanies: getIncludedCountFromScaleRule(
-			record.scalePricing.company,
-		),
-		includedUsers: getIncludedCountFromScaleRule(record.scalePricing.user),
+		includedBranches: monthlyScalePricing.branch.includedFreeCount,
+		includedCompanies: 1,
+		includedUsers: monthlyScalePricing.user.includedFreeCount,
 		moduleIds: [...record.featureIds],
-		monthlyBasePrice: getMonthlyBasePrice(record.pricing),
+		monthlyBasePrice: calculateMasterPlanAndPackageDiscountedPrice({
+			basePrice: record.pricing.monthlyBasePrice,
+			percentOff: record.pricing.monthlyPercentOff,
+		}),
 		name: record.name,
 		pricing: {
-			branch: getUnitPriceFromScaleRule(record.scalePricing.branch),
-			company: getUnitPriceFromScaleRule(record.scalePricing.company),
-			user: getUnitPriceFromScaleRule(record.scalePricing.user),
+			branch: monthlyScalePricing.branch.addOnPrice,
+			company: 0,
+			user: monthlyScalePricing.user.addOnPrice,
 		},
 		status: record.status,
 	};
-}
-
-function getBillingCycleFromPricing(
-	pricing: MasterPlanAndPackagePricing,
-): MasterSubscriptionBillingCycle {
-	switch (pricing.kind) {
-		case "Interval":
-			return pricing.intervalMonths === 3 ? "Every 3 months" : "Monthly";
-		case "Yearly":
-			return "Annual";
-		case "Transactional":
-			return "Per transaction";
-		case "Monthly":
-		case "Percent Off":
-			return "Monthly";
-	}
-}
-
-function getMonthlyBasePrice(pricing: MasterPlanAndPackagePricing) {
-	switch (pricing.kind) {
-		case "Interval":
-			return pricing.amount / pricing.intervalMonths;
-		case "Monthly":
-		case "Transactional":
-			return pricing.amount;
-		case "Percent Off":
-			return pricing.baseAmount * (1 - pricing.percentOff / 100);
-		case "Yearly":
-			return pricing.amount / 12;
-	}
-}
-
-function getIncludedCountFromScaleRule(rule: MasterPlanAndPackageScaleRule) {
-	switch (rule.kind) {
-		case "Add-on":
-			return rule.includedFreeCount;
-		case "Range":
-			return rule.maxCount;
-		case "Reduction": {
-			const firstThreshold = Math.min(
-				...rule.tiers.map((tier) => tier.thresholdCount),
-			);
-
-			return Number.isFinite(firstThreshold)
-				? Math.max(0, firstThreshold - 1)
-				: 0;
-		}
-	}
-}
-
-function getUnitPriceFromScaleRule(rule: MasterPlanAndPackageScaleRule) {
-	if (rule.kind === "Add-on") {
-		return rule.addOnPrice;
-	}
-
-	return 0;
 }
 
 function createPlanCode(name: string) {
@@ -486,4 +389,34 @@ function createPlanCode(name: string) {
 		.toUpperCase();
 
 	return code.slice(0, 16) || "PLAN";
+}
+
+function createVolumeRulesFromPackage(
+	record: MasterPlanAndPackageRecord,
+): MasterSubscriptionVolumeRuleRecord[] {
+	const monthlyScalePricing = record.scalePricing.monthly;
+
+	return (Object.keys(monthlyScalePricing) as MasterPlanAndPackageScaleUnit[])
+		.flatMap((unit) =>
+			monthlyScalePricing[unit].reductionTiers.map((tier, index, tiers) => ({
+				discountPercent: tier.reductionPercent,
+				endsAt: tiers[index + 1]?.thresholdCount
+					? tiers[index + 1].thresholdCount - 1
+					: null,
+				id: `rule-${record.id}-${unit}-${tier.thresholdCount}`,
+				label: `${createUnitLabel(unit)} reduction ${tier.thresholdCount}+`,
+				planId: record.id,
+				startsAt: tier.thresholdCount,
+				unit,
+			})),
+		);
+}
+
+function createUnitLabel(unit: MasterPlanAndPackageScaleUnit) {
+	switch (unit) {
+		case "branch":
+			return "Branch";
+		case "user":
+			return "User";
+	}
 }

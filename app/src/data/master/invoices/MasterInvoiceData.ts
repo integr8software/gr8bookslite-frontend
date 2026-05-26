@@ -34,7 +34,7 @@ const MasterInvoiceSeeds: MasterInvoiceSeed[] = [
 		transactionDate: "2026-05-01",
 	},
 	{
-		availedItem: "Accounting Monthly trial conversion",
+		availedItem: "Accounting Essentials trial conversion",
 		billingPeriod: "May 2026",
 		id: "inv-demo-trading-2026-05",
 		invoiceNo: "INV-2026-0502",
@@ -45,7 +45,7 @@ const MasterInvoiceSeeds: MasterInvoiceSeed[] = [
 		transactionDate: "2026-05-05",
 	},
 	{
-		availedItem: "Full Suite Annual subscription balance",
+		availedItem: "Full Suite subscription balance",
 		billingPeriod: "May 2026 - Apr 2027",
 		id: "inv-laguna-2026-05",
 		invoiceNo: "INV-2026-0503",
@@ -56,7 +56,7 @@ const MasterInvoiceSeeds: MasterInvoiceSeed[] = [
 		transactionDate: "2026-05-10",
 	},
 	{
-		availedItem: "Inventory Quarterly subscription renewal",
+		availedItem: "Inventory Operations subscription renewal",
 		billingPeriod: "May 2026 - Jul 2026",
 		id: "inv-visayas-2026-05",
 		invoiceNo: "INV-2026-0504",

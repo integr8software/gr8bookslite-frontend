@@ -1,74 +1,35 @@
 export type MasterPlanAndPackageStatus = "Active" | "Draft" | "Inactive";
 
-export type MasterPlanAndPackagePricingKind =
-	| "Monthly"
-	| "Interval"
-	| "Yearly"
-	| "Transactional"
-	| "Percent Off";
+export type MasterPlanAndPackageScalePeriod = "monthly" | "yearly";
 
-export type MasterPlanAndPackageScaleUnit = "company" | "branch" | "user";
-
-export type MasterPlanAndPackageScaleKind = "Range" | "Add-on" | "Reduction";
-
-export type MasterPlanAndPackageTransactionReset =
-	| "Daily"
-	| "Monthly"
-	| "Yearly"
-	| "When Consumed";
+export type MasterPlanAndPackageScaleUnit = "branch" | "user";
 
 export type MasterPlanAndPackageReductionTier = {
 	reductionPercent: number;
 	thresholdCount: number;
 };
 
-export type MasterPlanAndPackagePricing =
-	| {
-			amount: number;
-			kind: "Monthly";
-	  }
-	| {
-			amount: number;
-			intervalMonths: number;
-			kind: "Interval";
-	  }
-	| {
-			amount: number;
-			kind: "Yearly";
-	  }
-	| {
-			amount: number;
-			kind: "Transactional";
-			reset: MasterPlanAndPackageTransactionReset;
-			transactionLimit: number;
-	  }
-	| {
-			appliesFrom: number;
-			appliesTo: number;
-			baseAmount: number;
-			kind: "Percent Off";
-			percentOff: number;
-	  };
+export type MasterPlanAndPackagePricing = {
+	monthlyBasePrice: number;
+	monthlyPercentOff: number;
+	yearlyBasePrice: number;
+	yearlyPercentOff: number;
+};
 
-export type MasterPlanAndPackageScaleRule =
-	| {
-			kind: "Range";
-			maxCount: number;
-			minCount: number;
-	  }
-	| {
-			addOnPrice: number;
-			includedFreeCount: number;
-			kind: "Add-on";
-	  }
-	| {
-			kind: "Reduction";
-			tiers: MasterPlanAndPackageReductionTier[];
-	  };
+export type MasterPlanAndPackageScaleRule = {
+	addOnPrice: number;
+	includedFreeCount: number;
+	reductionTiers: MasterPlanAndPackageReductionTier[];
+};
 
-export type MasterPlanAndPackageScalePricing = Record<
+export type MasterPlanAndPackageScaleRules = Record<
 	MasterPlanAndPackageScaleUnit,
 	MasterPlanAndPackageScaleRule
+>;
+
+export type MasterPlanAndPackageScalePricing = Record<
+	MasterPlanAndPackageScalePeriod,
+	MasterPlanAndPackageScaleRules
 >;
 
 export type MasterPlanAndPackageFeatureOption = {
@@ -89,38 +50,27 @@ export type MasterPlanAndPackageRecord = {
 };
 
 export type MasterPlanAndPackageFormValues = {
-	amount: number;
-	baseAmount: number;
-	branchAddOnPrice: number;
-	branchIncludedFree: number;
-	branchLimitKind: MasterPlanAndPackageScaleKind;
-	branchMax: number;
-	branchMin: number;
-	branchReductionTiers: MasterPlanAndPackageReductionTier[];
-	companyAddOnPrice: number;
-	companyIncludedFree: number;
-	companyLimitKind: MasterPlanAndPackageScaleKind;
-	companyMax: number;
-	companyMin: number;
-	companyReductionTiers: MasterPlanAndPackageReductionTier[];
 	description: string;
-	discountAppliesFrom: number;
-	discountAppliesTo: number;
 	featureIds: string[];
 	id?: string;
-	intervalMonths: number;
+	monthlyBasePrice: number;
+	monthlyBranchAddOnPrice: number;
+	monthlyBranchIncludedFree: number;
+	monthlyBranchReductionTiers: MasterPlanAndPackageReductionTier[];
+	monthlyPercentOff: number;
+	monthlyUserAddOnPrice: number;
+	monthlyUserIncludedFree: number;
+	monthlyUserReductionTiers: MasterPlanAndPackageReductionTier[];
 	name: string;
-	percentOff: number;
-	pricingKind: MasterPlanAndPackagePricingKind;
 	status: MasterPlanAndPackageStatus;
-	transactionLimit: number;
-	transactionReset: MasterPlanAndPackageTransactionReset;
-	userAddOnPrice: number;
-	userIncludedFree: number;
-	userLimitKind: MasterPlanAndPackageScaleKind;
-	userMax: number;
-	userMin: number;
-	userReductionTiers: MasterPlanAndPackageReductionTier[];
+	yearlyBasePrice: number;
+	yearlyBranchAddOnPrice: number;
+	yearlyBranchIncludedFree: number;
+	yearlyBranchReductionTiers: MasterPlanAndPackageReductionTier[];
+	yearlyPercentOff: number;
+	yearlyUserAddOnPrice: number;
+	yearlyUserIncludedFree: number;
+	yearlyUserReductionTiers: MasterPlanAndPackageReductionTier[];
 };
 
 export type MasterPlanAndPackageFormErrors = Partial<

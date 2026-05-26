@@ -5,20 +5,15 @@ import Link from "next/link";
 import { ArrowLeft, Plus, Save, Search, Trash2 } from "lucide-react";
 import {
 	MasterPlanAndPackageFeatureOptions,
-	MasterPlanAndPackagePricingKindOptions,
 	MasterPlanAndPackagesHref,
-	MasterPlanAndPackageScaleKindOptions,
 	MasterPlanAndPackageScaleUnitLabels,
 	MasterPlanAndPackageStatusOptions,
-	MasterPlanAndPackageTransactionResetOptions,
 } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import { useMasterPlanAndPackageFormPage } from "@/app/src/hooks/master/plan-and-packages/useMasterPlanAndPackageFormPage";
 import type {
 	MasterPlanAndPackageFormErrors,
 	MasterPlanAndPackageFormValues,
-	MasterPlanAndPackagePricingKind,
 	MasterPlanAndPackageReductionTier,
-	MasterPlanAndPackageScaleKind,
 	MasterPlanAndPackageStatus,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 import {
@@ -109,13 +104,9 @@ function MasterPlanAndPackageForm({
 	onSave: () => void;
 	onUpdate: (values: Partial<MasterPlanAndPackageFormValues>) => void;
 }) {
-	const usesBasicAmount =
-		values.pricingKind !== "Percent Off" &&
-		values.pricingKind !== "Transactional";
-
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<div className="grid gap-5 p-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+			<div className="grid gap-5 p-5">
 				<div className="grid content-start gap-4">
 					<div className="grid gap-4 md:grid-cols-2">
 						<TextField
@@ -145,219 +136,128 @@ function MasterPlanAndPackageForm({
 						/>
 						<FieldError message={errors.description} />
 					</label>
-					<ModuleFeatureSelector
-						error={errors.featureIds}
-						selectedFeatureIds={values.featureIds}
-						onChange={(featureIds) => onUpdate({ featureIds })}
-					/>
 				</div>
 
-				<div className="grid content-start gap-4">
-					<section className="grid gap-4 rounded-lg border border-darknavy/10 bg-offwhite/35 p-4">
-						<div>
-							<h2 className="text-base font-semibold text-darknavy">
-								Pricing
-							</h2>
-							<p className="mt-1 text-sm text-darknavy/55">
-								Monthly, interval, yearly, transaction-based, and percent-off models.
-							</p>
-						</div>
-						<SelectField
-							label="Pricing type"
-							value={values.pricingKind}
-							options={MasterPlanAndPackagePricingKindOptions}
-							onChange={(pricingKind) =>
-								onUpdate({
-									pricingKind:
-										pricingKind as MasterPlanAndPackagePricingKind,
-								})
-							}
-						/>
-						{usesBasicAmount ? (
-							<NumberField
-								error={errors.amount}
-								label="Amount"
-								value={values.amount}
-								onChange={(amount) => onUpdate({ amount })}
-							/>
-						) : null}
-						{values.pricingKind === "Transactional" ? (
-							<div className="grid gap-4 md:grid-cols-3">
-								<NumberField
-									error={errors.amount}
-									label="Amount to be paid"
-									value={values.amount}
-									onChange={(amount) => onUpdate({ amount })}
-								/>
-								<NumberField
-									error={errors.transactionLimit}
-									label="Transaction amount"
-									value={values.transactionLimit}
-									onChange={(transactionLimit) =>
-										onUpdate({ transactionLimit })
-									}
-								/>
-								<SelectField
-									label="Transaction resets"
-									value={values.transactionReset}
-									options={MasterPlanAndPackageTransactionResetOptions}
-									onChange={(transactionReset) =>
-										onUpdate({
-											transactionReset:
-												transactionReset as MasterPlanAndPackageFormValues["transactionReset"],
-										})
-									}
-								/>
-							</div>
-						) : null}
-						{values.pricingKind === "Percent Off" ? (
-							<div className="grid gap-4 md:grid-cols-2">
-								<NumberField
-									error={errors.baseAmount}
-									label="Base amount"
-									value={values.baseAmount}
-									onChange={(baseAmount) => onUpdate({ baseAmount })}
-								/>
-								<NumberField
-									error={errors.percentOff}
-									label="Percent off"
-									value={values.percentOff}
-									onChange={(percentOff) => onUpdate({ percentOff })}
-								/>
-							</div>
-						) : null}
-						{values.pricingKind === "Interval" ? (
-							<NumberField
-								error={errors.intervalMonths}
-								label="Every x months"
-								value={values.intervalMonths}
-								onChange={(intervalMonths) => onUpdate({ intervalMonths })}
-							/>
-						) : null}
-						{values.pricingKind === "Percent Off" ? (
-							<div className="grid gap-4 md:grid-cols-2">
-								<NumberField
-									error={errors.discountAppliesFrom}
-									label="First discounted billing cycle"
-									value={values.discountAppliesFrom}
-									onChange={(discountAppliesFrom) =>
-										onUpdate({ discountAppliesFrom })
-									}
-								/>
-								<NumberField
-									error={errors.discountAppliesTo}
-									label="Last discounted billing cycle"
-									value={values.discountAppliesTo}
-									onChange={(discountAppliesTo) =>
-										onUpdate({ discountAppliesTo })
-									}
-								/>
-								<p className="text-xs font-medium leading-5 text-darknavy/50 md:col-span-2">
-									This starts counting from the subscription start date. Use Promotions for calendar-date campaigns.
-								</p>
-							</div>
-						) : null}
-					</section>
-
-					<section className="grid gap-4 rounded-lg border border-darknavy/10 bg-offwhite/35 p-4">
-						<div>
-							<h2 className="text-base font-semibold text-darknavy">
-								Scale Pricing
-							</h2>
-							<p className="mt-1 text-sm text-darknavy/55">
-								Company, branch, and user rules can be ranged, add-on priced, or reduced after a threshold.
-							</p>
-						</div>
-						<ScaleRuleSection
-							addOnPrice={values.companyAddOnPrice}
-							errors={{
-								addOnPrice: errors.companyAddOnPrice,
-								includedFree: errors.companyIncludedFree,
-								max: errors.companyMax,
-								min: errors.companyMin,
-								reductionTiers: errors.companyReductionTiers,
-							}}
-							includedFree={values.companyIncludedFree}
-							limitKind={values.companyLimitKind}
-							max={values.companyMax}
-							min={values.companyMin}
-							reductionTiers={values.companyReductionTiers}
-							unitLabel={MasterPlanAndPackageScaleUnitLabels.company}
-							onUpdate={({ addOnPrice, includedFree, limitKind, max, min, reductionTiers }) =>
-								onUpdate({
-									companyAddOnPrice: addOnPrice,
-									companyIncludedFree: includedFree,
-									companyLimitKind: limitKind,
-									companyMax: max,
-									companyMin: min,
-									companyReductionTiers: reductionTiers,
-								})
-							}
-						/>
-						<ScaleRuleSection
-							addOnPrice={values.branchAddOnPrice}
-							errors={{
-								addOnPrice: errors.branchAddOnPrice,
-								includedFree: errors.branchIncludedFree,
-								max: errors.branchMax,
-								min: errors.branchMin,
-								reductionTiers: errors.branchReductionTiers,
-							}}
-							includedFree={values.branchIncludedFree}
-							limitKind={values.branchLimitKind}
-							max={values.branchMax}
-							min={values.branchMin}
-							reductionTiers={values.branchReductionTiers}
-							unitLabel={MasterPlanAndPackageScaleUnitLabels.branch}
-							onUpdate={({ addOnPrice, includedFree, limitKind, max, min, reductionTiers }) =>
-								onUpdate({
-									branchAddOnPrice: addOnPrice,
-									branchIncludedFree: includedFree,
-									branchLimitKind: limitKind,
-									branchMax: max,
-									branchMin: min,
-									branchReductionTiers: reductionTiers,
-								})
-							}
-						/>
-						<ScaleRuleSection
-							addOnPrice={values.userAddOnPrice}
-							errors={{
-								addOnPrice: errors.userAddOnPrice,
-								includedFree: errors.userIncludedFree,
-								max: errors.userMax,
-								min: errors.userMin,
-								reductionTiers: errors.userReductionTiers,
-							}}
-							includedFree={values.userIncludedFree}
-							limitKind={values.userLimitKind}
-							max={values.userMax}
-							min={values.userMin}
-							reductionTiers={values.userReductionTiers}
-							unitLabel={MasterPlanAndPackageScaleUnitLabels.user}
-							onUpdate={({ addOnPrice, includedFree, limitKind, max, min, reductionTiers }) =>
-								onUpdate({
-									userAddOnPrice: addOnPrice,
-									userIncludedFree: includedFree,
-									userLimitKind: limitKind,
-									userMax: max,
-									userMin: min,
-									userReductionTiers: reductionTiers,
-								})
-							}
-						/>
-					</section>
-
-					<div className="flex justify-end">
-						<button
-							type="button"
-							onClick={onSave}
-							className={moduleHeaderActionClassNames.primary}
-						>
-							<Save className="h-4 w-4" aria-hidden="true" />
-							Save
-						</button>
+				<section className="grid gap-4 rounded-lg border border-darknavy/10 bg-offwhite/35 p-4">
+					<div>
+						<h2 className="text-base font-semibold text-darknavy">
+							Pricing & Scale Pricing
+						</h2>
 					</div>
+					<div className="grid gap-4 xl:grid-cols-2">
+						<BillingPeriodColumn
+							addOnIntervalLabel="month"
+							basePrice={{
+								error: errors.monthlyBasePrice,
+								value: values.monthlyBasePrice,
+								onChange: (monthlyBasePrice) =>
+									onUpdate({ monthlyBasePrice }),
+							}}
+							periodLabel="Monthly"
+							percentOff={{
+								error: errors.monthlyPercentOff,
+								value: values.monthlyPercentOff,
+								onChange: (monthlyPercentOff) =>
+									onUpdate({ monthlyPercentOff }),
+							}}
+							branch={{
+								addOnPrice: values.monthlyBranchAddOnPrice,
+								errors: {
+									addOnPrice: errors.monthlyBranchAddOnPrice,
+									includedFree: errors.monthlyBranchIncludedFree,
+									reductionTiers: errors.monthlyBranchReductionTiers,
+								},
+								includedFree: values.monthlyBranchIncludedFree,
+								reductionTiers: values.monthlyBranchReductionTiers,
+								onUpdate: ({ addOnPrice, includedFree, reductionTiers }) =>
+									onUpdate({
+										monthlyBranchAddOnPrice: addOnPrice,
+										monthlyBranchIncludedFree: includedFree,
+										monthlyBranchReductionTiers: reductionTiers,
+									}),
+							}}
+							user={{
+								addOnPrice: values.monthlyUserAddOnPrice,
+								errors: {
+									addOnPrice: errors.monthlyUserAddOnPrice,
+									includedFree: errors.monthlyUserIncludedFree,
+									reductionTiers: errors.monthlyUserReductionTiers,
+								},
+								includedFree: values.monthlyUserIncludedFree,
+								reductionTiers: values.monthlyUserReductionTiers,
+								onUpdate: ({ addOnPrice, includedFree, reductionTiers }) =>
+									onUpdate({
+										monthlyUserAddOnPrice: addOnPrice,
+										monthlyUserIncludedFree: includedFree,
+										monthlyUserReductionTiers: reductionTiers,
+									}),
+							}}
+						/>
+						<BillingPeriodColumn
+							addOnIntervalLabel="year"
+							basePrice={{
+								error: errors.yearlyBasePrice,
+								value: values.yearlyBasePrice,
+								onChange: (yearlyBasePrice) => onUpdate({ yearlyBasePrice }),
+							}}
+							periodLabel="Yearly"
+							percentOff={{
+								error: errors.yearlyPercentOff,
+								value: values.yearlyPercentOff,
+								onChange: (yearlyPercentOff) =>
+									onUpdate({ yearlyPercentOff }),
+							}}
+							branch={{
+								addOnPrice: values.yearlyBranchAddOnPrice,
+								errors: {
+									addOnPrice: errors.yearlyBranchAddOnPrice,
+									includedFree: errors.yearlyBranchIncludedFree,
+									reductionTiers: errors.yearlyBranchReductionTiers,
+								},
+								includedFree: values.yearlyBranchIncludedFree,
+								reductionTiers: values.yearlyBranchReductionTiers,
+								onUpdate: ({ addOnPrice, includedFree, reductionTiers }) =>
+									onUpdate({
+										yearlyBranchAddOnPrice: addOnPrice,
+										yearlyBranchIncludedFree: includedFree,
+										yearlyBranchReductionTiers: reductionTiers,
+									}),
+							}}
+							user={{
+								addOnPrice: values.yearlyUserAddOnPrice,
+								errors: {
+									addOnPrice: errors.yearlyUserAddOnPrice,
+									includedFree: errors.yearlyUserIncludedFree,
+									reductionTiers: errors.yearlyUserReductionTiers,
+								},
+								includedFree: values.yearlyUserIncludedFree,
+								reductionTiers: values.yearlyUserReductionTiers,
+								onUpdate: ({ addOnPrice, includedFree, reductionTiers }) =>
+									onUpdate({
+										yearlyUserAddOnPrice: addOnPrice,
+										yearlyUserIncludedFree: includedFree,
+										yearlyUserReductionTiers: reductionTiers,
+									}),
+							}}
+						/>
+					</div>
+				</section>
+
+				<ModuleFeatureSelector
+					error={errors.featureIds}
+					selectedFeatureIds={values.featureIds}
+					onChange={(featureIds) => onUpdate({ featureIds })}
+				/>
+
+				<div className="flex justify-end">
+					<button
+						type="button"
+						onClick={onSave}
+						className={moduleHeaderActionClassNames.primary}
+					>
+						<Save className="h-4 w-4" aria-hidden="true" />
+						Save
+					</button>
 				</div>
 			</div>
 		</div>
@@ -367,34 +267,83 @@ function MasterPlanAndPackageForm({
 type ScaleRuleValues = {
 	addOnPrice: number;
 	includedFree: number;
-	limitKind: MasterPlanAndPackageScaleKind;
-	max: number;
-	min: number;
 	reductionTiers: MasterPlanAndPackageReductionTier[];
 };
 
+type ScaleRuleSectionProps = ScaleRuleValues & {
+	addOnIntervalLabel: "month" | "year";
+	errors: Partial<Record<keyof ScaleRuleValues, string>>;
+	unitLabel: string;
+	onUpdate: (values: ScaleRuleValues) => void;
+};
+
+type NumberFieldConfig = {
+	error?: string;
+	value: number;
+	onChange: (value: number) => void;
+};
+
+function BillingPeriodColumn({
+	addOnIntervalLabel,
+	basePrice,
+	branch,
+	periodLabel,
+	percentOff,
+	user,
+}: {
+	addOnIntervalLabel: "month" | "year";
+	basePrice: NumberFieldConfig;
+	branch: Omit<ScaleRuleSectionProps, "addOnIntervalLabel" | "unitLabel">;
+	periodLabel: string;
+	percentOff: NumberFieldConfig;
+	user: Omit<ScaleRuleSectionProps, "addOnIntervalLabel" | "unitLabel">;
+}) {
+	return (
+		<div className="grid content-start gap-4 rounded-lg border border-darknavy/10 bg-white p-4">
+			<h3 className="text-sm font-bold text-darknavy">{periodLabel}</h3>
+			<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+				<NumberField
+					error={basePrice.error}
+					label={`Base price / ${addOnIntervalLabel}`}
+					value={basePrice.value}
+					onChange={basePrice.onChange}
+				/>
+				<NumberField
+					error={percentOff.error}
+					label="Percent off"
+					value={percentOff.value}
+					onChange={percentOff.onChange}
+				/>
+			</div>
+			<div className="grid gap-3">
+				<ScaleRuleSection
+					{...branch}
+					addOnIntervalLabel={addOnIntervalLabel}
+					unitLabel={MasterPlanAndPackageScaleUnitLabels.branch}
+				/>
+				<ScaleRuleSection
+					{...user}
+					addOnIntervalLabel={addOnIntervalLabel}
+					unitLabel={MasterPlanAndPackageScaleUnitLabels.user}
+				/>
+			</div>
+		</div>
+	);
+}
+
 function ScaleRuleSection({
 	addOnPrice,
+	addOnIntervalLabel,
 	errors,
 	includedFree,
-	limitKind,
-	max,
-	min,
 	reductionTiers,
 	unitLabel,
 	onUpdate,
-}: ScaleRuleValues & {
-	errors: Partial<Record<keyof Omit<ScaleRuleValues, "limitKind">, string>>;
-	unitLabel: string;
-	onUpdate: (values: ScaleRuleValues) => void;
-}) {
+}: ScaleRuleSectionProps) {
 	function update(nextValues: Partial<ScaleRuleValues>) {
 		onUpdate({
 			addOnPrice,
 			includedFree,
-			limitKind,
-			max,
-			min,
 			reductionTiers,
 			...nextValues,
 		});
@@ -433,10 +382,6 @@ function ScaleRuleSection({
 	}
 
 	function removeReductionTier(tierIndex: number) {
-		if (reductionTiers.length === 1) {
-			return;
-		}
-
 		update({
 			reductionTiers: reductionTiers.filter((_, index) => index !== tierIndex),
 		});
@@ -444,109 +389,79 @@ function ScaleRuleSection({
 
 	return (
 		<div className="grid gap-3 rounded-lg border border-darknavy/10 bg-white p-3">
-			<div className="grid gap-3 md:grid-cols-[minmax(10rem,0.7fr)_minmax(0,1fr)]">
-				<SelectField
-					label={`${unitLabel} rule`}
-					value={limitKind}
-					options={MasterPlanAndPackageScaleKindOptions}
-					onChange={(nextLimitKind) =>
-						update({
-							limitKind: nextLimitKind as MasterPlanAndPackageScaleKind,
-						})
+			<div className="grid gap-3 md:grid-cols-2">
+				<NumberField
+					error={errors.includedFree}
+					label={`${unitLabel} included`}
+					value={includedFree}
+					onChange={(nextIncludedFree) =>
+						update({ includedFree: nextIncludedFree })
 					}
 				/>
-				{limitKind === "Range" ? (
-					<div className="grid gap-3 md:grid-cols-2">
-						<NumberField
-							error={errors.min}
-							label="Minimum"
-							value={min}
-							onChange={(nextMin) => update({ min: nextMin })}
-						/>
-						<NumberField
-							error={errors.max}
-							label="Maximum"
-							value={max}
-							onChange={(nextMax) => update({ max: nextMax })}
-						/>
-					</div>
-				) : null}
-				{limitKind === "Add-on" ? (
-					<div className="grid gap-3 md:grid-cols-2">
-						<NumberField
-							error={errors.includedFree}
-							label="Free count"
-							value={includedFree}
-							onChange={(nextIncludedFree) =>
-								update({ includedFree: nextIncludedFree })
-							}
-						/>
-						<NumberField
-							error={errors.addOnPrice}
-							label="Add-on price"
-							value={addOnPrice}
-							onChange={(nextAddOnPrice) =>
-								update({ addOnPrice: nextAddOnPrice })
-							}
-						/>
-					</div>
-				) : null}
-				{limitKind === "Reduction" ? (
-					<div className="grid gap-3">
-						<div className="grid gap-2">
-							{reductionTiers.map((tier, index) => (
-								<div
-									key={`${tier.thresholdCount}-${index}`}
-									className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.75rem]"
-								>
-									<NumberField
-										label="Count reaches"
-										value={tier.thresholdCount}
-										onChange={(nextThresholdCount) =>
-											updateReductionTier(
-												index,
-												"thresholdCount",
-												nextThresholdCount,
-											)
-										}
-									/>
-									<NumberField
-										label="Reduction percent"
-										value={tier.reductionPercent}
-										onChange={(nextReductionPercent) =>
-											updateReductionTier(
-												index,
-												"reductionPercent",
-												nextReductionPercent,
-											)
-										}
-									/>
-									<button
-										type="button"
-										title="Remove reduction tier"
-										aria-label="Remove reduction tier"
-										disabled={reductionTiers.length === 1}
-										onClick={() => removeReductionTier(index)}
-										className="mt-[1.625rem] inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white text-darknavy/55 transition hover:border-coralpink/45 hover:text-coralpink disabled:cursor-not-allowed disabled:opacity-40"
-									>
-										<Trash2 className="h-4 w-4" aria-hidden="true" />
-									</button>
-								</div>
-							))}
-						</div>
-						<div className="flex items-center justify-between gap-3">
-							<FieldError message={errors.reductionTiers} />
+				<NumberField
+					error={errors.addOnPrice}
+					label={`${unitLabel} add-on / ${addOnIntervalLabel}`}
+					value={addOnPrice}
+					onChange={(nextAddOnPrice) =>
+						update({ addOnPrice: nextAddOnPrice })
+					}
+				/>
+			</div>
+			<div className="grid gap-3">
+				<p className="text-sm font-bold text-darknavy/65">
+					{unitLabel} reduction tiers
+				</p>
+				<div className="grid gap-2">
+					{reductionTiers.map((tier, index) => (
+						<div
+							key={`${tier.thresholdCount}-${index}`}
+							className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.75rem]"
+						>
+							<NumberField
+								label="Count reaches"
+								value={tier.thresholdCount}
+								onChange={(nextThresholdCount) =>
+									updateReductionTier(
+										index,
+										"thresholdCount",
+										nextThresholdCount,
+									)
+								}
+							/>
+							<NumberField
+								label="Reduction percent"
+								value={tier.reductionPercent}
+								onChange={(nextReductionPercent) =>
+									updateReductionTier(
+										index,
+										"reductionPercent",
+										nextReductionPercent,
+									)
+								}
+							/>
 							<button
 								type="button"
-								onClick={addReductionTier}
-								className="inline-flex h-9 items-center gap-2 rounded-lg border border-skyblue/35 bg-skyblue/10 px-3 text-xs font-bold text-darknavy transition hover:border-skyblue hover:bg-skyblue/18"
+								title="Remove reduction tier"
+								aria-label="Remove reduction tier"
+								onClick={() => removeReductionTier(index)}
+								className="mt-[1.625rem] inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white text-darknavy/55 transition hover:border-coralpink/45 hover:text-coralpink"
 							>
-								<Plus className="h-3.5 w-3.5" aria-hidden="true" />
-								Add tier
+								<Trash2 className="h-4 w-4" aria-hidden="true" />
 							</button>
 						</div>
-					</div>
-				) : null}
+					))}
+				</div>
+				<div className="flex items-center justify-between gap-3">
+					<FieldError message={errors.reductionTiers} />
+					<button
+						type="button"
+						onClick={addReductionTier}
+						className="inline-flex h-9 items-center gap-2 rounded-lg border border-skyblue/35 bg-skyblue/10 px-3 text-xs font-bold text-darknavy transition hover:border-skyblue hover:bg-skyblue/18"
+					>
+						<Plus className="h-3.5 w-3.5" aria-hidden="true" />
+						Add tier
+					</button>
+				</div>
 			</div>
 		</div>
 	);

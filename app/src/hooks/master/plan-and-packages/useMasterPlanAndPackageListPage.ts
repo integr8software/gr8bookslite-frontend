@@ -91,7 +91,10 @@ export function useMasterPlanAndPackageListPage() {
 		).length;
 		const addOnScalePlans = records.filter((record) =>
 			Object.values(record.scalePricing).some(
-				(scaleRule) => scaleRule.kind === "Add-on",
+				(scaleRules) =>
+					Object.values(scaleRules).some(
+						(scaleRule) => scaleRule.addOnPrice > 0,
+					),
 			),
 		).length;
 		const enabledModules = new Set(

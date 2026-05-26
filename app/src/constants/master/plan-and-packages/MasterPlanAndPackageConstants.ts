@@ -2,12 +2,10 @@ import type { MainNavigationItem } from "@/app/src/data/shared/main-layout/MainL
 import { SidebarModuleNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarModuleRegistry";
 import type {
 	MasterPlanAndPackageFeatureOption,
-	MasterPlanAndPackagePricingKind,
-	MasterPlanAndPackageScaleKind,
+	MasterPlanAndPackageScalePeriod,
 	MasterPlanAndPackageScaleUnit,
 	MasterPlanAndPackageStatus,
 	MasterPlanAndPackageTableColumnKey,
-	MasterPlanAndPackageTransactionReset,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
 export const MasterPlanAndPackagesHref = "/master/plan-and-packages";
@@ -31,36 +29,23 @@ export const MasterPlanAndPackageStatusOptions = [
 	"Inactive",
 ] as const satisfies readonly MasterPlanAndPackageStatus[];
 
-export const MasterPlanAndPackagePricingKindOptions = [
-	"Monthly",
-	"Interval",
-	"Yearly",
-	"Transactional",
-	"Percent Off",
-] as const satisfies readonly MasterPlanAndPackagePricingKind[];
-
-export const MasterPlanAndPackageScaleKindOptions = [
-	"Range",
-	"Add-on",
-	"Reduction",
-] as const satisfies readonly MasterPlanAndPackageScaleKind[];
-
-export const MasterPlanAndPackageTransactionResetOptions = [
-	"Daily",
-	"Monthly",
-	"Yearly",
-	"When Consumed",
-] as const satisfies readonly MasterPlanAndPackageTransactionReset[];
-
 export const MasterPlanAndPackageScaleUnits = [
-	"company",
 	"branch",
 	"user",
 ] as const satisfies readonly MasterPlanAndPackageScaleUnit[];
 
+export const MasterPlanAndPackageScalePeriods = [
+	"monthly",
+	"yearly",
+] as const satisfies readonly MasterPlanAndPackageScalePeriod[];
+
+export const MasterPlanAndPackageScalePeriodLabels = {
+	monthly: "Monthly",
+	yearly: "Yearly",
+} as const satisfies Record<MasterPlanAndPackageScalePeriod, string>;
+
 export const MasterPlanAndPackageScaleUnitLabels = {
 	branch: "Branch",
-	company: "Company",
 	user: "User",
 } as const satisfies Record<MasterPlanAndPackageScaleUnit, string>;
 

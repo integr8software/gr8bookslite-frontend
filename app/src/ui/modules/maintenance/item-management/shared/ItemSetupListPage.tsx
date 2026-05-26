@@ -1,7 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, CirclePause, Layers, Plus, Tags } from "lucide-react";
+import {
+	CheckCircle2,
+	CirclePause,
+	Layers,
+	ListTree,
+	Network,
+	Plus,
+	Tags,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import {
 	ItemSetupConfigByKind,
 	ItemStatusOptions,
@@ -110,46 +119,68 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 				setPendingDeleteRecord={page.setPendingDeleteRecord}
 				table={page.table}
 				toolbar={
-					<ModuleTableToolbar>
-						<ModuleTableSearch
-							label={`Search ${config.title.toLowerCase()} records`}
-							value={page.query}
-							onChange={page.handleQueryChange}
-							placeholder={`Search ${config.title.toLowerCase()} records`}
-						/>
-						<ModuleTableFilterSelect
-							label="Level"
-							value={page.levelFilter}
-							options={[
-								{ label: "All Levels", value: "All" },
-								{ label: config.singularTitle, value: kind },
-								...(childConfig
-									? [
-											{
-												label: childConfig.singularTitle,
-												value: page.childKind ?? "",
-											},
-										]
-									: []),
-							]}
-							onChange={page.handleLevelFilterChange}
-						/>
-						<ModuleTableFilterSelect
-							label="Status"
-							value={page.statusFilter}
-							options={[
-								{ label: "All Status", value: "All" },
-								...ItemStatusOptions.map((status) => ({
-									label: status,
-									value: status,
-								})),
-							]}
-							onChange={page.handleStatusFilterChange}
-						/>
-						<ModuleTableFilterButton onClick={page.resetFilters}>
-							Reset
-						</ModuleTableFilterButton>
-					</ModuleTableToolbar>
+					<div>
+						{childConfig ? (
+							<div className="flex flex-col gap-3 border-b border-darknavy/10 px-5 py-4 sm:flex-row sm:justify-end">
+								<ItemSetupStructureButton
+									active={page.structureFilter === "With Submodules"}
+									icon={<Network className="h-4 w-4" aria-hidden="true" />}
+									label="With Submodules"
+									onClick={() =>
+										page.handleStructureFilterChange("With Submodules")
+									}
+								/>
+								<ItemSetupStructureButton
+									active={page.structureFilter === "Without Submodules"}
+									icon={<ListTree className="h-4 w-4" aria-hidden="true" />}
+									label="Without Submodules"
+									onClick={() =>
+										page.handleStructureFilterChange("Without Submodules")
+									}
+								/>
+							</div>
+						) : null}
+						<ModuleTableToolbar>
+							<ModuleTableSearch
+								label={`Search ${config.title.toLowerCase()} records`}
+								value={page.query}
+								onChange={page.handleQueryChange}
+								placeholder={`Search ${config.title.toLowerCase()} records`}
+							/>
+							<ModuleTableFilterSelect
+								label="Level"
+								value={page.levelFilter}
+								options={[
+									{ label: "All Levels", value: "All" },
+									{ label: config.singularTitle, value: kind },
+									...(childConfig
+										? [
+												{
+													label: childConfig.singularTitle,
+													value: page.childKind ?? "",
+												},
+											]
+										: []),
+								]}
+								onChange={page.handleLevelFilterChange}
+							/>
+							<ModuleTableFilterSelect
+								label="Status"
+								value={page.statusFilter}
+								options={[
+									{ label: "All Status", value: "All" },
+									...ItemStatusOptions.map((status) => ({
+										label: status,
+										value: status,
+									})),
+								]}
+								onChange={page.handleStatusFilterChange}
+							/>
+							<ModuleTableFilterButton onClick={page.resetFilters}>
+								Reset
+							</ModuleTableFilterButton>
+						</ModuleTableToolbar>
+					</div>
 				}
 				onToggleExpanded={page.toggleExpanded}
 			/>
@@ -170,5 +201,33 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 				onConfirm={page.handleConfirmDelete}
 			/>
 		</section>
+	);
+}
+
+function ItemSetupStructureButton({
+	active,
+	icon,
+	label,
+	onClick,
+}: {
+	active: boolean;
+	icon: ReactNode;
+	label: "With Submodules" | "Without Submodules";
+	onClick: () => void;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			className={[
+				"inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20",
+				active
+					? "border-blue-600 bg-blue-50 text-blue-700"
+					: "border-darknavy/10 bg-white text-darknavy/75 hover:border-skyblue/40 hover:bg-skyblue/10",
+			].join(" ")}
+		>
+			{icon}
+			{label}
+		</button>
 	);
 }

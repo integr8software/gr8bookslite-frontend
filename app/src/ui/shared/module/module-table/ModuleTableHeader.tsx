@@ -7,14 +7,14 @@ import {
 
 export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 	return (
-		<thead className="module-table-header sticky top-0 z-10 bg-slate-50 text-xs font-semibold text-darknavy/75">
+		<thead className="module-table-header sticky top-0 z-10 bg-slate-50 text-xs font-bold text-darknavy/80">
 			{table.getHeaderGroups().map((headerGroup) => (
 				<tr key={headerGroup.id} className="border-b border-darknavy/10">
 					{headerGroup.headers.map((header) => (
 						<th
 							key={header.id}
 							className={joinClasses(
-								"px-5 py-4",
+								"px-5 py-5 first:pl-6 last:pr-6",
 								getColumnClassName(header),
 							)}
 						>
@@ -45,13 +45,13 @@ function ModuleTableSortButton<TData>({
 		<button
 			type="button"
 			onClick={header.column.getToggleSortingHandler()}
-			className="flex items-center gap-1.5 rounded text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+			className="inline-flex items-center gap-2 rounded-md text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
 		>
 			{flexRender(header.column.columnDef.header, header.getContext())}
 			<ChevronsUpDown
 				className={joinClasses(
 					"h-3.5 w-3.5",
-					sortDirection && "text-skyblue",
+					sortDirection ? "text-skyblue" : "text-darknavy/45",
 					sortDirection === "desc" && "rotate-180",
 				)}
 				aria-hidden="true"

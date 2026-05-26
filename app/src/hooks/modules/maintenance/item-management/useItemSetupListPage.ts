@@ -4,8 +4,10 @@ import { useMemo, useState } from "react";
 import {
 	type ColumnDef,
 	type PaginationState,
+	type SortingState,
 	getCoreRowModel,
 	getPaginationRowModel,
+	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -26,6 +28,7 @@ import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item
 const EmptyItemSetupRecords: ItemSetupRecord[] = [];
 const AllItemSetupLevelsFilter = "All";
 const AllItemSetupStatusesFilter = "All";
+type ItemSetupStructureFilter = "All" | "With Submodules" | "Without Submodules";
 
 export function useItemSetupListPage(kind: ItemSetupKind) {
 	const store = useItemManagementStore();
@@ -53,9 +56,12 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 		pageSize: 5,
 	});
 	const [query, setQuery] = useState("");
+	const [sorting, setSorting] = useState<SortingState>([]);
 	const [statusFilter, setStatusFilterState] = useState<
 		ItemStatus | typeof AllItemSetupStatusesFilter
 	>(AllItemSetupStatusesFilter);
+	const [structureFilter, setStructureFilter] =
+		useState<ItemSetupStructureFilter>("All");
 	const tableRows = useMemo(
 		() =>
 			createItemSetupTableRows({
@@ -71,6 +77,17 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 		const normalizedQuery = query.trim().toLowerCase();
 
 		return tableRows.filter((row) => {
+			if (childKind && structureFilter !== "All") {
+				const matchesStructure =
+					structureFilter === "With Submodules"
+						? row.level > 0 || row.hasChildren
+						: row.level === 0 && !row.hasChildren;
+
+				if (!matchesStructure) {
+					return false;
+				}
+			}
+
 			if (
 				levelFilter !== AllItemSetupLevelsFilter &&
 				row.recordKind !== levelFilter
@@ -101,7 +118,7 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 				.toLowerCase()
 				.includes(normalizedQuery);
 		});
-	}, [levelFilter, query, statusFilter, tableRows]);
+	}, [childKind, levelFilter, query, statusFilter, structureFilter, tableRows]);
 	const columns = useMemo<ColumnDef<ItemSetupTableRowData>[]>(
 		() =>
 			ItemSetupTableColumns.map((column) => {
@@ -129,10 +146,13 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 		columns,
 		state: {
 			pagination,
+			sorting,
 		},
 		onPaginationChange: setPagination,
+		onSortingChange: setSorting,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel(),
 	});
 
 	function handleLevelFilterChange(value: string) {
@@ -147,6 +167,11 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 
 	function handleStatusFilterChange(value: string) {
 		setStatusFilterState(value as ItemStatus | typeof AllItemSetupStatusesFilter);
+		table.setPageIndex(0);
+	}
+
+	function handleStructureFilterChange(value: ItemSetupStructureFilter) {
+		setStructureFilter((current) => (current === value ? "All" : value));
 		table.setPageIndex(0);
 	}
 
@@ -180,6 +205,7 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 		setLevelFilterState(AllItemSetupLevelsFilter);
 		setQuery("");
 		setStatusFilterState(AllItemSetupStatusesFilter);
+		setStructureFilter("All");
 		table.setPageIndex(0);
 	}
 
@@ -191,6 +217,7 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 		handleConfirmDelete,
 		handleQueryChange,
 		handleStatusFilterChange,
+		handleStructureFilterChange,
 		isLoading: store.isLoading,
 		isMutating: store.isMutating,
 		levelFilter,
@@ -200,6 +227,7 @@ export function useItemSetupListPage(kind: ItemSetupKind) {
 		resetFilters,
 		setPendingDeleteRecord,
 		statusFilter,
+		structureFilter,
 		table,
 		toggleExpanded,
 	};
@@ -214,7 +242,6 @@ function createItemSetupColumn(
 		return {
 			id: key,
 			accessorFn: (row) => row.record[key],
-			enableSorting: false,
 			header,
 			meta: { className },
 		};
@@ -222,7 +249,6 @@ function createItemSetupColumn(
 
 	return {
 		accessorKey: key,
-		enableSorting: false,
 		header,
 		meta: { className },
 	};

@@ -33,8 +33,8 @@ export function ModuleTablePagination({
 	);
 
 	return (
-		<div className="grid gap-3 border-t border-darknavy/10 bg-white px-4 py-4 text-sm text-darknavy/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-			<p className="text-center sm:text-left">
+		<div className="grid gap-3 border-t border-darknavy/10 bg-white px-6 py-5 text-sm text-darknavy/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+			<p className="text-center font-medium sm:text-left">
 				Showing {firstRow} to {lastRow} of {totalRows} {label}
 			</p>
 
@@ -95,7 +95,7 @@ export function ModuleTablePagination({
 						onChange={(event) =>
 							onPageSizeChange(Number(event.target.value))
 						}
-						className="h-10 appearance-none rounded-md border border-darknavy/10 bg-white px-4 pr-9 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition hover:border-skyblue/40 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
+						className="h-11 appearance-none rounded-lg border border-darknavy/10 bg-white px-4 pr-9 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition hover:border-skyblue/40 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
 					>
 						{pageSizeOptions.map((option) => (
 							<option key={option} value={option}>
@@ -126,8 +126,8 @@ function ModuleTablePageButton({
 		<button
 			type="button"
 			className={joinClasses(
-				"inline-flex h-10 items-center justify-center gap-2 rounded-md border text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:bg-white disabled:text-darknavy/35 disabled:opacity-70 disabled:shadow-none",
-				size === "icon" && "w-10 px-0",
+				"inline-flex h-11 items-center justify-center gap-2 rounded-lg border text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:bg-white disabled:text-darknavy/35 disabled:opacity-70 disabled:shadow-none",
+				size === "icon" && "w-11 px-0",
 				size === "compact" && "px-3",
 				size === "default" && "px-4",
 				active

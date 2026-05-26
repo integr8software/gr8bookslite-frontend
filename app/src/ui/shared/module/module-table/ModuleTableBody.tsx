@@ -37,7 +37,7 @@ export function ModuleTableBody<TData>({
 	}
 
 	return (
-		<tbody className="divide-y divide-darknavy/10 bg-white text-sm text-darknavy/75">
+		<tbody className="divide-y divide-darknavy/10 bg-white text-sm text-darknavy/75 [&_tr]:transition-colors [&_tr:hover]:bg-skyblue/[0.035] [&_td]:px-5 [&_td]:py-6 [&_td:first-child]:pl-6 [&_td:last-child]:pr-6">
 			{rows.map((row) => renderRow(row))}
 		</tbody>
 	);
@@ -53,8 +53,8 @@ function ModuleTableSkeletonRows({
 	return Array.from({ length: rowCount }).map((_, index) => (
 		<tr key={index} className="animate-pulse">
 			{Array.from({ length: columnCount }).map((__, cellIndex) => (
-				<td key={cellIndex} className="px-5 py-4">
-					<div className="h-4 rounded bg-darknavy/10" />
+				<td key={cellIndex} className="px-5 py-6 first:pl-6 last:pr-6">
+					<div className="h-4 rounded-full bg-darknavy/10" />
 				</td>
 			))}
 		</tr>

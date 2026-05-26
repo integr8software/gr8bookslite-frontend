@@ -36,12 +36,11 @@ export function ModuleMetrics({
 	return (
 		<div
 			className={joinClasses(
-				"grid gap-4",
+				"grid overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5",
 				className,
 			)}
 			style={{
-				gridTemplateColumns:
-					"repeat(auto-fit, minmax(min(100%, 18rem), 1fr))",
+				gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 14rem), 1fr))",
 				...style,
 			}}
 			{...props}
@@ -54,39 +53,41 @@ export function ModuleMetrics({
 }
 
 function ModuleMetricCard({ metric }: { metric: ModuleMetricItem }) {
-	const Icon = metric.icon;
-
 	return (
-		<div className="flex min-h-24 items-center gap-4 rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5">
+		<div className="relative min-h-24 border-darknavy/10 bg-white px-6 py-5 not-first:border-l">
 			<span
 				className={joinClasses(
-					"flex h-14 w-14 shrink-0 items-center justify-center rounded-lg",
-					metric.iconClassName ??
-						moduleMetricToneClassNames[metric.tone ?? "blue"],
+					"absolute bottom-6 left-6 top-6 w-0.5 rounded-full",
+					moduleMetricAccentClassNames[metric.tone ?? "blue"],
+					metric.iconClassName,
 				)}
-			>
-				<Icon className="h-7 w-7" aria-hidden="true" />
-			</span>
-			<div className="min-w-0">
-				<p className="text-sm font-medium text-darknavy/70">
-					{metric.label}
-				</p>
-				<p className="text-2xl font-semibold leading-tight text-darknavy">
+				aria-hidden="true"
+			/>
+			<div className="min-w-0 pl-5">
+				<p className="text-xs font-bold text-darknavy/70">{metric.label}</p>
+				<p className="mt-2 text-2xl font-bold leading-none text-darknavy">
 					{metric.value}
 				</p>
 				{metric.helper ? (
-					<p className="text-sm text-darknavy/65">{metric.helper}</p>
+					<p
+						className={joinClasses(
+							"mt-2 text-sm font-medium text-darknavy/60",
+							metric.tone === "emerald" && "text-emerald-600",
+						)}
+					>
+						{metric.helper}
+					</p>
 				) : null}
 			</div>
 		</div>
 	);
 }
 
-const moduleMetricToneClassNames: Record<ModuleMetricTone, string> = {
-	amber: "bg-amber-50 text-amber-500",
-	blue: "bg-blue-50 text-blue-600",
-	cyan: "bg-cyan-50 text-cyan-600",
-	emerald: "bg-emerald-50 text-emerald-600",
-	slate: "bg-slate-100 text-slate-600",
-	violet: "bg-violet-50 text-violet-600",
+const moduleMetricAccentClassNames: Record<ModuleMetricTone, string> = {
+	amber: "bg-amber-500",
+	blue: "bg-blue-600",
+	cyan: "bg-cyan-500",
+	emerald: "bg-emerald-500",
+	slate: "bg-slate-500",
+	violet: "bg-violet-600",
 };

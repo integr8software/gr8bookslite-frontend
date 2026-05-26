@@ -13,6 +13,10 @@ import {
 import {
   WorkspaceApprovalQueue,
   WorkspaceCompanies,
+  WorkspaceDashboardGraphData,
+  WorkspaceDashboardYearGraphData,
+  WorkspaceDashboardYearMetrics,
+  type WorkspaceDashboardGraphType,
   WorkspaceRecentActivity,
   WorkspaceSummaryCards,
   WorkspaceSystemNotifications,
@@ -21,13 +25,13 @@ import {
   WorkspaceDashboardCustomizer,
   type WorkspaceDashboardSectionKey,
   type WorkspaceDashboardSectionOption,
-} from "@/app/src/ui/workspace/dashboard/WorkspaceDashboardCustomizer";
+} from "@/app/src/ui/modules/workspace/dashboard/WorkspaceDashboardCustomizer";
 import { WorkspaceSpotlightTutorialOpenEvent } from "@/app/src/data/modules/dashboard/WorkspaceSpotlightTutorialData";
-import { WorkspaceOverviewCompaniesPanel } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewCompaniesPanel";
-import { WorkspaceOverviewHero } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewHero";
-import { WorkspaceOverviewPanels } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewPanels";
-import { WorkspaceSpotlightTutorial } from "@/app/src/ui/workspace/dashboard/WorkspaceSpotlightTutorial";
-import { WorkspaceOverviewStatsGrid } from "@/app/src/ui/workspace/dashboard/WorkspaceOverviewStatsGrid";
+import { WorkspaceOverviewCompaniesPanel } from "@/app/src/ui/modules/workspace/dashboard/WorkspaceOverviewCompaniesPanel";
+import { WorkspaceOverviewHero } from "@/app/src/ui/modules/workspace/dashboard/WorkspaceOverviewHero";
+import { WorkspaceOverviewPanels } from "@/app/src/ui/modules/workspace/dashboard/WorkspaceOverviewPanels";
+import { WorkspaceSpotlightTutorial } from "@/app/src/ui/modules/workspace/dashboard/WorkspaceSpotlightTutorial";
+import { WorkspaceOverviewStatsGrid } from "@/app/src/ui/modules/workspace/dashboard/WorkspaceOverviewStatsGrid";
 
 const WorkspaceDashboardStorageKey =
   "gr8booksneo.workspaceDashboard.visibleSections";
@@ -223,6 +227,14 @@ export function WorkspaceOverviewPage() {
   const [autoArrangePresetIndex, setAutoArrangePresetIndex] = useState(0);
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isEditingLayout, setIsEditingLayout] = useState(false);
+  const [monthlyChartType, setMonthlyChartType] =
+    useState<WorkspaceDashboardGraphType>("bar");
+  const [yearlyChartType, setYearlyChartType] =
+    useState<WorkspaceDashboardGraphType>("bar");
+  const [totalIncomeChartType, setTotalIncomeChartType] =
+    useState<WorkspaceDashboardGraphType>("bar");
+  const [grossIncomeChartType, setGrossIncomeChartType] =
+    useState<WorkspaceDashboardGraphType>("bar");
   const [hasLoadedPreferences, setHasLoadedPreferences] = useState(false);
   const [sectionRowSpans, setSectionRowSpans] = useState<
     Partial<Record<WorkspaceDashboardSectionKey, number>>
@@ -264,6 +276,10 @@ export function WorkspaceOverviewPage() {
           queueMicrotask(() => {
             setVisibleSections(parsedPreferences.sections);
             setSectionWidths(parsedPreferences.widths);
+            setMonthlyChartType(parsedPreferences.monthlyChartType);
+            setYearlyChartType(parsedPreferences.yearlyChartType);
+            setTotalIncomeChartType(parsedPreferences.totalIncomeChartType);
+            setGrossIncomeChartType(parsedPreferences.grossIncomeChartType);
           });
         }
       }
@@ -284,9 +300,21 @@ export function WorkspaceOverviewPage() {
       JSON.stringify({
         sections: visibleSections,
         widths: sectionWidths,
+        grossIncomeChartType,
+        monthlyChartType,
+        totalIncomeChartType,
+        yearlyChartType,
       }),
     );
-  }, [hasLoadedPreferences, sectionWidths, visibleSections]);
+  }, [
+    grossIncomeChartType,
+    hasLoadedPreferences,
+    monthlyChartType,
+    sectionWidths,
+    totalIncomeChartType,
+    visibleSections,
+    yearlyChartType,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -406,6 +434,10 @@ export function WorkspaceOverviewPage() {
   function resetSections() {
     setVisibleSections(DefaultVisibleSections);
     setSectionWidths(DefaultSectionWidths);
+    setMonthlyChartType("bar");
+    setYearlyChartType("bar");
+    setTotalIncomeChartType("bar");
+    setGrossIncomeChartType("bar");
   }
 
   function toggleLayoutEditing() {
@@ -720,7 +752,11 @@ export function WorkspaceOverviewPage() {
 
                   <WorkspaceDashboardSection
                     activeCompanies={activeCompanies}
+                    grossIncomeChartType={grossIncomeChartType}
+                    monthlyChartType={monthlyChartType}
                     sectionKey={sectionKey}
+                    totalIncomeChartType={totalIncomeChartType}
+                    yearlyChartType={yearlyChartType}
                   />
                 </div>
 
@@ -754,14 +790,22 @@ export function WorkspaceOverviewPage() {
       </div>
 
       <WorkspaceDashboardCustomizer
+        grossIncomeChartType={grossIncomeChartType}
         isOpen={isCustomizerOpen}
+        monthlyChartType={monthlyChartType}
         options={WorkspaceDashboardSectionOptions}
+        totalIncomeChartType={totalIncomeChartType}
         visibleSections={visibleSections}
         onClose={() => setIsCustomizerOpen(false)}
+        onGrossIncomeChartTypeChange={setGrossIncomeChartType}
+        onMonthlyChartTypeChange={setMonthlyChartType}
         onMoveSection={moveSection}
         onReorderSection={reorderSection}
         onReset={resetSections}
+        onTotalIncomeChartTypeChange={setTotalIncomeChartType}
         onToggleSection={toggleSection}
+        onYearlyChartTypeChange={setYearlyChartType}
+        yearlyChartType={yearlyChartType}
       />
 
       {dragPreview ? (
@@ -786,7 +830,11 @@ export function WorkspaceOverviewPage() {
             <div className="max-h-96 overflow-hidden">
               <WorkspaceDashboardSection
                 activeCompanies={activeCompanies}
+                grossIncomeChartType={grossIncomeChartType}
+                monthlyChartType={monthlyChartType}
                 sectionKey={dragPreview.key}
+                totalIncomeChartType={totalIncomeChartType}
+                yearlyChartType={yearlyChartType}
               />
             </div>
           </div>
@@ -798,12 +846,20 @@ export function WorkspaceOverviewPage() {
 
 type WorkspaceDashboardSectionProps = {
   activeCompanies: number;
+  grossIncomeChartType: WorkspaceDashboardGraphType;
+  monthlyChartType: WorkspaceDashboardGraphType;
   sectionKey: WorkspaceDashboardSectionKey;
+  totalIncomeChartType: WorkspaceDashboardGraphType;
+  yearlyChartType: WorkspaceDashboardGraphType;
 };
 
 function WorkspaceDashboardSection({
   activeCompanies,
+  grossIncomeChartType,
+  monthlyChartType,
   sectionKey,
+  totalIncomeChartType,
+  yearlyChartType,
 }: WorkspaceDashboardSectionProps) {
   switch (sectionKey) {
     case "companies":
@@ -821,6 +877,13 @@ function WorkspaceDashboardSection({
         <WorkspaceOverviewPanels
           approvals={[]}
           companies={WorkspaceCompanies}
+          graphData={WorkspaceDashboardGraphData}
+          grossIncomeGraphType={grossIncomeChartType}
+          monthlyGraphType={monthlyChartType}
+          totalIncomeGraphType={totalIncomeChartType}
+          yearGraphData={WorkspaceDashboardYearGraphData}
+          yearMetrics={WorkspaceDashboardYearMetrics}
+          yearlyGraphType={yearlyChartType}
           recentActivity={[]}
           showApprovals={false}
           showPerformance
@@ -900,8 +963,13 @@ function ParseDashboardPreferences(value: unknown) {
   }
 
   const candidate = value as {
+    chartType?: unknown;
+    grossIncomeChartType?: unknown;
+    monthlyChartType?: unknown;
     sections?: unknown;
+    totalIncomeChartType?: unknown;
     widths?: Partial<Record<WorkspaceDashboardSectionKey, unknown>>;
+    yearlyChartType?: unknown;
   };
 
   if (!Array.isArray(candidate.sections)) {
@@ -922,6 +990,34 @@ function ParseDashboardPreferences(value: unknown) {
   }
 
   return {
+    monthlyChartType: IsWorkspaceDashboardGraphType(candidate.monthlyChartType)
+      ? candidate.monthlyChartType
+      : IsWorkspaceDashboardGraphType(candidate.chartType)
+        ? candidate.chartType
+        : "bar",
+    yearlyChartType: IsWorkspaceDashboardGraphType(candidate.yearlyChartType)
+      ? candidate.yearlyChartType
+      : IsWorkspaceDashboardGraphType(candidate.chartType)
+        ? candidate.chartType
+        : "bar",
+    totalIncomeChartType: IsWorkspaceDashboardGraphType(
+      candidate.totalIncomeChartType,
+    )
+      ? candidate.totalIncomeChartType
+      : IsWorkspaceDashboardGraphType(candidate.yearlyChartType)
+        ? candidate.yearlyChartType
+        : IsWorkspaceDashboardGraphType(candidate.chartType)
+          ? candidate.chartType
+          : "bar",
+    grossIncomeChartType: IsWorkspaceDashboardGraphType(
+      candidate.grossIncomeChartType,
+    )
+      ? candidate.grossIncomeChartType
+      : IsWorkspaceDashboardGraphType(candidate.yearlyChartType)
+        ? candidate.yearlyChartType
+        : IsWorkspaceDashboardGraphType(candidate.chartType)
+          ? candidate.chartType
+          : "bar",
     sections,
     widths,
   };
@@ -932,3 +1028,17 @@ function IsWorkspaceDashboardSectionKey(
 ): value is WorkspaceDashboardSectionKey {
   return WorkspaceDashboardSectionOptions.some((option) => option.key === value);
 }
+
+function IsWorkspaceDashboardGraphType(
+  value: unknown,
+): value is WorkspaceDashboardGraphType {
+  return (
+    value === "area" ||
+    value === "bar" ||
+    value === "donut" ||
+    value === "line" ||
+    value === "pie"
+  );
+}
+
+

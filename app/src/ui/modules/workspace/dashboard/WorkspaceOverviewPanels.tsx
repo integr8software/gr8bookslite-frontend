@@ -1,13 +1,30 @@
+"use client";
+
 import { ArrowRight, GitBranch, MoreVertical } from "lucide-react";
 import type {
   WorkspaceApprovalItem,
   WorkspaceCompanyRecord,
+  WorkspaceDashboardGraphDataKey,
+  WorkspaceDashboardGraphPoint,
+  WorkspaceDashboardGraphType,
+  WorkspaceDashboardYearMetric,
   WorkspaceTimelineItem,
 } from "@/app/src/data/modules/dashboard/WorkspaceOverviewData";
+import {
+  ChartCard,
+  type SharedChartSeries,
+} from "@/app/src/ui/shared/charts/ChartCard";
 
 type WorkspaceOverviewPanelsProps = {
   approvals: WorkspaceApprovalItem[];
   companies: WorkspaceCompanyRecord[];
+  graphData?: WorkspaceDashboardGraphPoint[];
+  grossIncomeGraphType?: WorkspaceDashboardGraphType;
+  monthlyGraphType?: WorkspaceDashboardGraphType;
+  totalIncomeGraphType?: WorkspaceDashboardGraphType;
+  yearGraphData?: WorkspaceDashboardGraphPoint[];
+  yearMetrics?: WorkspaceDashboardYearMetric[];
+  yearlyGraphType?: WorkspaceDashboardGraphType;
   recentActivity: WorkspaceTimelineItem[];
   showApprovals: boolean;
   showPerformance: boolean;
@@ -19,6 +36,13 @@ type WorkspaceOverviewPanelsProps = {
 export function WorkspaceOverviewPanels({
   approvals,
   companies,
+  graphData = [],
+  grossIncomeGraphType = "bar",
+  monthlyGraphType = "bar",
+  totalIncomeGraphType = "bar",
+  yearGraphData = [],
+  yearMetrics = [],
+  yearlyGraphType = "bar",
   recentActivity,
   showApprovals,
   showPerformance,
@@ -51,6 +75,31 @@ export function WorkspaceOverviewPanels({
                   </p>
                 </div>
               </div>
+
+              <DashboardAccountingGraph
+                data={graphData}
+                graphDataKey="monthlyAccounting"
+                graphType={monthlyGraphType}
+              />
+              <DashboardAccountingGraph
+                data={yearGraphData}
+                graphDataKey="yearlyIncome"
+                graphType={yearlyGraphType}
+              />
+              <DashboardYearMetricGraph
+                data={yearMetrics}
+                description="Total income and net income comparison by fiscal year."
+                graphType={totalIncomeGraphType}
+                series={TotalIncomeChartSeries}
+                title="Total Income by Year"
+              />
+              <DashboardYearMetricGraph
+                data={yearMetrics}
+                description="Gross earnings compared with operating expenses by fiscal year."
+                graphType={grossIncomeGraphType}
+                series={GrossIncomeChartSeries}
+                title="Gross Income by Year"
+              />
 
               <div className="overflow-x-auto">
                 <table className="w-full min-w-190 border-separate border-spacing-0 text-left">
@@ -157,6 +206,65 @@ export function WorkspaceOverviewPanels({
         </section>
       ) : null}
     </>
+  );
+}
+
+function DashboardAccountingGraph({
+  data,
+  graphDataKey,
+  graphType,
+}: {
+  data: WorkspaceDashboardGraphPoint[];
+  graphDataKey: WorkspaceDashboardGraphDataKey;
+  graphType: WorkspaceDashboardGraphType;
+}) {
+  if (data.length === 0) {
+    return null;
+  }
+
+  return (
+    <ChartCard
+      data={data}
+      description={GetGraphDescription(graphDataKey)}
+      indexKey="label"
+      series={AccountingChartSeries}
+      title={GetGraphTitle(graphDataKey, graphType)}
+      type={graphType}
+      valueFormatter={FormatCurrency}
+    />
+  );
+}
+
+function DashboardYearMetricGraph({
+  data,
+  description,
+  graphType,
+  series,
+  title,
+}: {
+  data: WorkspaceDashboardYearMetric[];
+  description: string;
+  graphType: WorkspaceDashboardGraphType;
+  series: SharedChartSeries[];
+  title: string;
+}) {
+  if (data.length === 0) {
+    return null;
+  }
+
+  return (
+    <ChartCard
+      data={data.map((metric) => ({
+        ...metric,
+        label: String(metric.year),
+      }))}
+      description={description}
+      indexKey="label"
+      series={series}
+      title={GetGraphTitleLabel(title, graphType)}
+      type={graphType}
+      valueFormatter={FormatCurrency}
+    />
   );
 }
 
@@ -328,6 +436,74 @@ function TrendSparkline({ points }: { points: number[] }) {
   );
 }
 
+const AccountingChartSeries: SharedChartSeries[] = [
+  { color: "#57c4e5", key: "grossRevenue", label: "Gross Revenue" },
+  { color: "#fb7185", key: "operatingExpenses", label: "Operating Expenses" },
+  { color: "#10b981", key: "netProfit", label: "Net Profit" },
+];
+
+const TotalIncomeChartSeries: SharedChartSeries[] = [
+  { color: "#57c4e5", key: "totalIncome", label: "Total Income" },
+  { color: "#10b981", key: "netIncome", label: "Net Income" },
+];
+
+const GrossIncomeChartSeries: SharedChartSeries[] = [
+  { color: "#2563eb", key: "grossEarnings", label: "Gross Earnings" },
+  { color: "#fb7185", key: "operatingExpenses", label: "Operating Expenses" },
+];
+
+function FormatCurrency(value: number) {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(2)}M`;
+  }
+
+  return `$${Math.round(value / 1000)}K`;
+}
+
+function GetGraphTitle(
+  graphDataKey: WorkspaceDashboardGraphDataKey,
+  graphType: WorkspaceDashboardGraphType,
+) {
+  const dataLabel =
+    graphDataKey === "yearlyIncome"
+      ? "Yearly Income Comparison"
+      : "Monthly Accounting Trend";
+
+  switch (graphType) {
+    case "area":
+      return `${dataLabel} Area Graph`;
+    case "donut":
+      return `${dataLabel} Donut Graph`;
+    case "line":
+      return `${dataLabel} Line Graph`;
+    case "pie":
+      return `${dataLabel} Pie Graph`;
+    default:
+      return `${dataLabel} Bar Graph`;
+  }
+}
+
+function GetGraphTitleLabel(title: string, graphType: WorkspaceDashboardGraphType) {
+  switch (graphType) {
+    case "area":
+      return `${title} Area Graph`;
+    case "donut":
+      return `${title} Donut Graph`;
+    case "line":
+      return `${title} Line Graph`;
+    case "pie":
+      return `${title} Pie Graph`;
+    default:
+      return `${title} Bar Graph`;
+  }
+}
+
+function GetGraphDescription(graphDataKey: WorkspaceDashboardGraphDataKey) {
+  return graphDataKey === "yearlyIncome"
+    ? "Yearly mock data for gross earnings, income, expenses, net income, and active users."
+    : "Monthly mock data for gross revenue, expenses, profit, and users.";
+}
+
 function companyTone(tone: WorkspaceCompanyRecord["tone"]) {
   switch (tone) {
     case "citron":
@@ -378,3 +554,4 @@ function priorityTone(priority: WorkspaceApprovalItem["priority"]) {
       return "inline-flex min-h-7 items-center rounded-full bg-skyblue/14 px-3 text-xs font-semibold text-skyblue";
   }
 }
+

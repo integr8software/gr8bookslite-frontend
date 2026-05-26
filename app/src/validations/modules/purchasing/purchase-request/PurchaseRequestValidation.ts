@@ -22,7 +22,7 @@ export const PurchaseRequestItemValidationSchema = z.object({
 
 export const PurchaseRequestFormValidationSchema = z
 	.object({
-		approvedBy: requiredText("Enter the approver name."),
+		approvedBy: z.string(),
 		bomNo: z.string(),
 		companyAddress: requiredText("Enter the company address."),
 		companyName: requiredText("Enter the company name."),
@@ -36,22 +36,22 @@ export const PurchaseRequestFormValidationSchema = z
 		logoFileName: requiredText("Upload a logo image."),
 		logoImageUrl: requiredText("Upload a logo image."),
 		prDate: requiredText("Select a PR date."),
-		preparedBy: requiredText("Enter the preparer name."),
-		preparedBySignatureFileName: requiredText("Upload the preparer signature."),
-		preparedBySignatureImageUrl: requiredText("Upload the preparer signature."),
+		preparedBy: z.string(),
+		preparedBySignatureFileName: z.string(),
+		preparedBySignatureImageUrl: z.string(),
 		projectCode: z.string(),
 		projectName: z.string(),
 		purchaseType: z.string(),
 		remarks: z.string(),
-		status: z.enum(["Draft", "Open", "Closed", "Cancelled"]),
+		status: z.enum(["Draft", "Open", "Approved", "Closed", "Cancelled"]),
 		telephoneNo: requiredText("Enter the telephone number."),
 		transNo: requiredText("Enter a transaction number."),
 		vatRegTin: requiredText("Enter the VAT Reg TIN."),
 		vceCode: z.string(),
 		vceName: requiredText("Enter a VCE name."),
 		vendorAddress: z.string(),
-		approvedBySignatureFileName: requiredText("Upload the approver signature."),
-		approvedBySignatureImageUrl: requiredText("Upload the approver signature."),
+		approvedBySignatureFileName: z.string(),
+		approvedBySignatureImageUrl: z.string(),
 	})
 	.superRefine((values, context) => {
 		const hasValidItem = values.items.some(

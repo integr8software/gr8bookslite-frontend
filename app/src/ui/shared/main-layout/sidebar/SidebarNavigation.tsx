@@ -217,6 +217,7 @@ export function SidebarItem({
 	const hasChildren = Boolean(item.children?.length);
 	const shouldShowIcon =
 		hasChildren ||
+		item.key === "maintenance-form-signatory" ||
 		item.accessKey === "maintenance.party" ||
 		item.accessKey === "maintenance.warehouse";
 	const shouldShowModuleDot = !shouldShowIcon;

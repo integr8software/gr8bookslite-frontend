@@ -9,6 +9,7 @@ import {
 	createPurchaseRequestId,
 	createPurchaseRequestRecord,
 	emptyPurchaseRequestItem,
+	applyPurchaseRequestSignatoryValues,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
@@ -53,7 +54,15 @@ export function usePurchaseRequestFormPage() {
 				? FormatTinNumber(value)
 				: value;
 
-		setValues((current) => ({ ...current, [field]: nextValue }));
+		setValues((current) => {
+			const nextValues = { ...current, [field]: nextValue };
+
+			if (field === "status") {
+				return applyPurchaseRequestSignatoryValues(nextValues);
+			}
+
+			return nextValues;
+		});
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 

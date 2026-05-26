@@ -84,6 +84,13 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
           ),
         ],
       ),
+      moduleItem(
+        "maintenance-form-signatory",
+        "Form Signatory",
+        "/maintenance/form-signatory",
+        "settings",
+        "accounting",
+      ),
       group(
         "maintenance-item-management",
         "Item Management",

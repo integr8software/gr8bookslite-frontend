@@ -10,9 +10,9 @@ import type {
 	WorkspaceCompanyUserTableColumnKey,
 } from "@/app/src/types/modules/workspace-companies/WorkspaceCompanyTypes";
 
-export const WorkspaceCompaniesHref = "/workspace/companies";
+export const WorkspaceCompaniesHref = "/workspace/company-management";
 
-export const WorkspaceUsersManagementHref = "/workspace/users-roles";
+export const WorkspaceUsersManagementHref = "/workspace/users-management";
 
 export const WorkspaceCompanyEditFromParam = "from";
 

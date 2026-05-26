@@ -4,10 +4,10 @@ import { ModulePreviewPages } from "@/app/src/data/shared/workspace/workspace-pl
 import { ModulePreviewPage } from "@/app/src/ui/shared/workspace/workspace-placeholder/WorkspacePlaceholderPage";
 
 export const metadata: Metadata = {
-	title: `Support Tickets | ${AppName}`,
-	description: `Workspace support tickets mockup for ${AppName}.`,
+  title: `Voucher, Coupon, Promotion | ${AppName}`,
+  description: `Workspace voucher, coupon, and promotion mockup for ${AppName}.`,
 };
 
-export default function SupportTicketsPage() {
-	return <ModulePreviewPage data={ModulePreviewPages.supportTickets} />;
+export default function VoucherCouponPromotionPage() {
+  return <ModulePreviewPage data={ModulePreviewPages.couponsPromotions} />;
 }

@@ -4,10 +4,10 @@ import { ModulePreviewPages } from "@/app/src/data/shared/workspace/workspace-pl
 import { ModulePreviewPage } from "@/app/src/ui/shared/workspace/workspace-placeholder/WorkspacePlaceholderPage";
 
 export const metadata: Metadata = {
-	title: `Branches | ${AppName}`,
-	description: `Workspace branches mockup for ${AppName}.`,
+  title: `Billing & Subscription | ${AppName}`,
+  description: `Workspace billing and subscription mockup for ${AppName}.`,
 };
 
-export default function BranchesPage() {
-	return <ModulePreviewPage data={ModulePreviewPages.branches} />;
+export default function BillingAndSubscriptionPage() {
+  return <ModulePreviewPage data={ModulePreviewPages.subscriptions} />;
 }

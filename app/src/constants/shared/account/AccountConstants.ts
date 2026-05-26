@@ -7,7 +7,7 @@ import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 
 export const ProfileHref = "/profile";
 export const SettingsHref = "/settings";
-export const WorkspaceSettingsHref = "/workspace/settings";
+export const WorkspaceSettingsHref = "/workspace/system-settings";
 
 export const AccountThemeOptions: Array<{
   value: AccountTheme;

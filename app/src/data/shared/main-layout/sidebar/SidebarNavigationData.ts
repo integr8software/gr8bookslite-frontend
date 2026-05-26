@@ -20,26 +20,42 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
   directSection(
     "workspace-company-management-section",
     "Company Management",
-    "/workspace/companies",
+    "/workspace/company-management",
     "company",
     "workspace.companies",
-    "workspace-companies",
+    "workspace-company-management",
   ),
   directSection(
     "workspace-user-management-section",
     "User Management",
-    "/workspace/users-roles",
+    "/workspace/users-management",
     "user",
     "workspace.users",
-    "workspace-users-roles",
+    "workspace-users-management",
   ),
   directSection(
-    "workspace-billing-subscription-section",
+    "workspace-billing-and-subscription-section",
     "Billing & Subscription",
-    "/workspace/subscriptions",
+    "/workspace/billing-and-subscription",
     "billing",
     "workspace.billing.subscriptions",
-    "workspace-subscriptions",
+    "workspace-billing-and-subscription",
+  ),
+  directSection(
+    "workspace-voucher-coupon-promotion-section",
+    "Voucher, Coupon, Promotion",
+    "/workspace/voucher-coupon-promotion",
+    "promotion",
+    "workspace.billing.promotions",
+    "workspace-voucher-coupon-promotion",
+  ),
+  directSection(
+    "workspace-reports-analytics-section",
+    "Reports & Analytics",
+    "/workspace/reports-analytics",
+    "reports",
+    "reports.accounting",
+    "workspace-reports-analytics",
   ),
   directSection(
     "workspace-audit-logs-section",
@@ -48,113 +64,6 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
     "security",
     "workspace.audit",
     "workspace-audit",
-  ),
-  directSection(
-    "workspace-company-settings-section",
-    "Company Settings",
-    "/workspace/company-settings",
-    "settings",
-    "workspace.admin.companySettings",
-    "workspace-company-settings",
-  ),
-];
-
-const MasterControlSourceNavigationSections: MainNavigationSection[] = [
-  directSection(
-    "workspace-dashboard-section",
-    "Dashboard",
-    "/workspace/dashboard",
-    "dashboard",
-    "workspace.dashboard",
-    "workspace-dashboard",
-  ),
-  directSection(
-    "workspace-announcement-section",
-    "Announcement",
-    "/workspace/announcements",
-    "announcement",
-    "workspace.support.announcements",
-    "workspace-announcements",
-  ),
-  directSection(
-    "workspace-company-management-section",
-    "Company Management",
-    "/workspace/companies",
-    "company",
-    "workspace.companies",
-    "workspace-companies",
-  ),
-  directSection(
-    "workspace-branch-management-section",
-    "Branch Management",
-    "/workspace/branches",
-    "branch",
-    "workspace.branches",
-    "workspace-branches",
-  ),
-  directSection(
-    "workspace-user-management-section",
-    "User Management",
-    "/workspace/users-roles",
-    "user",
-    "workspace.users",
-    "workspace-users-roles",
-  ),
-  directSection(
-    "workspace-plan-and-packages-section",
-    "Plan and Packages",
-    "/workspace/plans-packages",
-    "billing",
-    "workspace.billing.plans",
-    "workspace-plans-packages",
-  ),
-  directSection(
-    "workspace-subscription-section",
-    "Subscription",
-    "/workspace/subscriptions",
-    "subscription",
-    "workspace.billing.subscriptions",
-    "workspace-subscriptions",
-  ),
-  directSection(
-    "workspace-invoices-section",
-    "Invoices",
-    "/workspace/invoices",
-    "invoice",
-    "workspace.billing.invoices",
-    "workspace-invoices",
-  ),
-  directSection(
-    "workspace-promotions-section",
-    "Promotions",
-    "/workspace/coupons-promotions",
-    "promotion",
-    "workspace.billing.promotions",
-    "workspace-coupons-promotions",
-  ),
-  directSection(
-    "workspace-subscriber-promotions-section",
-    "Subscriber Promotions",
-    "/workspace/subscriber-promotions",
-    "promotion",
-    "workspace.billing.promotions",
-    "workspace-subscriber-promotions",
-  ),
-  directSection(
-    "workspace-audit-system-logs-section",
-    "Audit/System Logs",
-    "/workspace/audit-system-logs",
-    "security",
-    "workspace.audit",
-    "workspace-audit-system-logs",
-  ),
-  directSection(
-    "workspace-support-tickets-section",
-    "Support Tickets",
-    "/workspace/support-tickets",
-    "support",
-    "workspace.support.tickets",
-    "workspace-support-tickets",
   ),
   directSection(
     "workspace-system-settings-section",
@@ -166,8 +75,120 @@ const MasterControlSourceNavigationSections: MainNavigationSection[] = [
   ),
 ];
 
-export const MainMasterNavigationSections =
-  createMasterNavigationSections(MasterControlSourceNavigationSections);
+export const MainMasterNavigationSections: MainNavigationSection[] = [
+  directSection(
+    "master-dashboard-section",
+    "Dashboard",
+    "/master/dashboard",
+    "dashboard",
+    "workspace.dashboard",
+    "master-dashboard",
+  ),
+  directSection(
+    "master-announcement-section",
+    "Announcement",
+    "/master/announcements",
+    "announcement",
+    "workspace.support.announcements",
+    "master-announcements",
+  ),
+  directSection(
+    "master-subscriber-management-section",
+    "Subscriber Management",
+    "/master/subscriber-management",
+    "subscription",
+    "workspace.billing.subscriptions",
+    "master-subscriber-management",
+  ),
+  directSection(
+    "master-company-management-section",
+    "Company Management",
+    "/master/company-management",
+    "company",
+    "workspace.companies",
+    "master-company-management",
+  ),
+  directSection(
+    "master-branch-management-section",
+    "Branch Management",
+    "/master/branch-management",
+    "branch",
+    "workspace.branches",
+    "master-branch-management",
+  ),
+  directSection(
+    "master-user-management-section",
+    "User Management",
+    "/master/users-management",
+    "user",
+    "workspace.users",
+    "master-users-management",
+  ),
+  directSection(
+    "master-plan-and-packages-section",
+    "Plan and Packages",
+    "/master/plan-and-packages",
+    "billing",
+    "workspace.billing.plans",
+    "master-plan-and-packages",
+  ),
+  directSection(
+    "master-subscription-section",
+    "Subscription",
+    "/master/subscriptions",
+    "subscription",
+    "workspace.billing.subscriptions",
+    "master-subscriptions",
+  ),
+  directSection(
+    "master-invoices-section",
+    "Invoices",
+    "/master/invoices",
+    "invoice",
+    "workspace.billing.invoices",
+    "master-invoices",
+  ),
+  directSection(
+    "master-promotions-section",
+    "Promotions",
+    "/master/promotions",
+    "promotion",
+    "workspace.billing.promotions",
+    "master-promotions",
+  ),
+  directSection(
+    "master-subscriber-promotions-section",
+    "Subscriber Promotions",
+    "/master/subscriber-promotions",
+    "promotion",
+    "workspace.billing.promotions",
+    "master-subscriber-promotions",
+  ),
+  directSection(
+    "master-logs-section",
+    "Logs",
+    "/master/logs",
+    "security",
+    "workspace.monitoring.logs",
+    "master-logs",
+  ),
+  directSection(
+    "master-support-tickets-section",
+    "Support Tickets",
+    "/master/support-tickets",
+    "support",
+    "workspace.support.tickets",
+    "master-support-tickets",
+  ),
+  directSection(
+    "master-system-settings-section",
+    "System Settings",
+    "/master/system-settings",
+    "settings",
+    "workspace.platform.settings",
+    "master-system-settings",
+  ),
+];
 
 const RegisteredMainCompanyNavigationSections = SidebarModuleNavigationSections;
 
@@ -991,52 +1012,3 @@ function navGroup(
   };
 }
 
-function createMasterNavigationSections(sections: MainNavigationSection[]) {
-  return sections.map((section) => ({
-    ...section,
-    href: section.href ? toMasterHref(section.href) : section.href,
-    key: toMasterNavigationKey(section.key),
-    items: section.items.map(toMasterNavigationItem),
-    title: toMasterNavigationLabel(section.title),
-  }));
-}
-
-function toMasterNavigationItem(item: MainNavigationItem): MainNavigationItem {
-  return {
-    ...item,
-    children: item.children?.map(toMasterNavigationItem),
-    href: toMasterHref(item.href),
-    key: toMasterNavigationKey(item.key),
-    label: toMasterNavigationLabel(item.label),
-  };
-}
-
-function toMasterHref(href: string) {
-  if (!href.startsWith("/workspace")) {
-    return href;
-  }
-
-  return href
-    .replace(/^\/workspace/, "/master")
-    .replace("/plans-packages", "/plan-and-packages")
-    .replace("/coupons-promotions", "/promotions");
-}
-
-function toMasterNavigationKey(key: string) {
-  return key
-    .replace(/^workspace/, "master")
-    .replace(/plans-packages/g, "plan-and-packages")
-    .replace(/coupons-promotions/g, "promotions");
-}
-
-function toMasterNavigationLabel(label: string) {
-  if (label === "Plans & Packages") {
-    return "Plan & Packages";
-  }
-
-  if (label === "Coupons & Promotions") {
-    return "Promotions";
-  }
-
-  return label;
-}

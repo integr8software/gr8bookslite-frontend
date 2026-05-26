@@ -4,7 +4,7 @@ import type {
 	MasterCompanyManagementTableColumnKey,
 } from "@/app/src/types/master/company-management/MasterCompanyManagementTypes";
 
-export const MasterCompaniesHref = "/master/companies";
+export const MasterCompaniesHref = "/master/company-management";
 
 export const MasterCompanyManagementPaginationStorageKey =
 	"master-company-management";

@@ -95,9 +95,9 @@ export function MainTopbar({
 	const userDescriptor = getTopbarUserDescriptor(currentUser);
 	const settingsHref =
 		activeNavigationScope === "master"
-			? "/master/settings"
+			? "/master/system-settings"
 			: activeNavigationScope === "workspace"
-				? "/workspace/settings"
+				? "/workspace/system-settings"
 				: "/settings";
 	const canShowCompanySwitcher =
 		canAccessMaster || canAccessWorkspace || canSwitchCompany;

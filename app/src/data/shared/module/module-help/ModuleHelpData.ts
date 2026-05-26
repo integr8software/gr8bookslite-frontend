@@ -27,8 +27,8 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-workspace-companies",
-    "Companies",
-    "/workspace/companies",
+    "Company Management",
+    "/workspace/company-management",
     "Create and maintain company records available to the workspace.",
     [
       "Company records define the business entities users can access from the topbar switcher.",
@@ -38,8 +38,8 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-workspace-users",
-    "Users & Roles",
-    "/workspace/users-roles",
+    "User Management",
+    "/workspace/users-management",
     "Administer users who can access workspace and company modules.",
     [
       "Workspace user management controls user identity, role assignment, and access to administrative capabilities.",
@@ -49,9 +49,9 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-workspace-approval",
-    "Permissions",
-    "/workspace/permissions",
-    "Maintain permission controls for administrative workflows.",
+    "System Settings",
+    "/workspace/system-settings",
+    "Maintain system settings and administrative workflow controls.",
     [
       "Approval management defines how requests are reviewed before sensitive actions are completed.",
       "Use approval rules to separate routine entry work from review and authorization responsibilities.",
@@ -60,8 +60,8 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-workspace-mail",
-    "Settings",
-    "/workspace/settings",
+    "System Settings",
+    "/workspace/system-settings",
     "Maintain reusable workspace settings for notifications and system behavior.",
     [
       "Mail maintenance stores templates and delivery settings used by system notifications.",

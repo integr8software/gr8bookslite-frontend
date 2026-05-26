@@ -40,6 +40,7 @@ export type MasterPlanAndPackageFeatureOption = {
 };
 
 export type MasterPlanAndPackageRecord = {
+	code: string;
 	description: string;
 	featureIds: string[];
 	id: string;
@@ -47,9 +48,11 @@ export type MasterPlanAndPackageRecord = {
 	pricing: MasterPlanAndPackagePricing;
 	scalePricing: MasterPlanAndPackageScalePricing;
 	status: MasterPlanAndPackageStatus;
+	trialDays: number;
 };
 
 export type MasterPlanAndPackageFormValues = {
+	code: string;
 	description: string;
 	featureIds: string[];
 	id?: string;
@@ -63,6 +66,7 @@ export type MasterPlanAndPackageFormValues = {
 	monthlyUserReductionTiers: MasterPlanAndPackageReductionTier[];
 	name: string;
 	status: MasterPlanAndPackageStatus;
+	trialDays: number;
 	yearlyBasePrice: number;
 	yearlyBranchAddOnPrice: number;
 	yearlyBranchIncludedFree: number;

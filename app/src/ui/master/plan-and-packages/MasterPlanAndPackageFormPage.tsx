@@ -2,7 +2,17 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Save, Search, Trash2 } from "lucide-react";
+import {
+	ArrowLeft,
+	CalendarDays,
+	GitBranch,
+	Plus,
+	Save,
+	Search,
+	Trash2,
+	Users,
+	type LucideIcon,
+} from "lucide-react";
 import {
 	MasterPlanAndPackageFeatureOptions,
 	MasterPlanAndPackagesHref,
@@ -108,12 +118,24 @@ function MasterPlanAndPackageForm({
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
 			<div className="grid gap-5 p-5">
 				<div className="grid content-start gap-4">
-					<div className="grid gap-4 md:grid-cols-2">
+					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.35fr)_minmax(8rem,0.55fr)_minmax(10rem,0.55fr)]">
+						<TextField
+							error={errors.code}
+							label="Plan code"
+							value={values.code}
+							onChange={(code) => onUpdate({ code: code.toUpperCase() })}
+						/>
 						<TextField
 							error={errors.name}
 							label="Plan name"
 							value={values.name}
 							onChange={(name) => onUpdate({ name })}
+						/>
+						<NumberField
+							error={errors.trialDays}
+							label="Trial days"
+							value={values.trialDays}
+							onChange={(trialDays) => onUpdate({ trialDays })}
 						/>
 						<SelectField
 							label="Status"
@@ -138,11 +160,22 @@ function MasterPlanAndPackageForm({
 					</label>
 				</div>
 
-				<section className="grid gap-4 rounded-lg border border-darknavy/10 bg-offwhite/35 p-4">
-					<div>
-						<h2 className="text-base font-semibold text-darknavy">
-							Pricing & Scale Pricing
-						</h2>
+				<section className="-mx-5 grid gap-5 border-y border-darknavy/10 bg-offwhite/45 px-5 py-5">
+					<div className="flex flex-wrap items-center justify-between gap-3">
+						<div className="flex items-center gap-3">
+							<span className="flex h-9 w-9 items-center justify-center rounded-lg bg-skyblue/12 text-darknavy">
+								<CalendarDays className="h-4 w-4" aria-hidden="true" />
+							</span>
+							<h2 className="text-base font-semibold text-darknavy">
+								Pricing & Scale Pricing
+							</h2>
+						</div>
+						<div className="inline-grid grid-cols-2 overflow-hidden rounded-lg border border-darknavy/10 bg-white text-xs font-bold text-darknavy/62">
+							<span className="border-r border-darknavy/10 px-3 py-2">
+								Monthly
+							</span>
+							<span className="px-3 py-2">Yearly</span>
+						</div>
 					</div>
 					<div className="grid gap-4 xl:grid-cols-2">
 						<BillingPeriodColumn
@@ -176,6 +209,7 @@ function MasterPlanAndPackageForm({
 										monthlyBranchReductionTiers: reductionTiers,
 									}),
 							}}
+							accentClassName="border-t-skyblue/55"
 							user={{
 								addOnPrice: values.monthlyUserAddOnPrice,
 								errors: {
@@ -223,6 +257,7 @@ function MasterPlanAndPackageForm({
 										yearlyBranchReductionTiers: reductionTiers,
 									}),
 							}}
+							accentClassName="border-t-citron"
 							user={{
 								addOnPrice: values.yearlyUserAddOnPrice,
 								errors: {
@@ -273,6 +308,7 @@ type ScaleRuleValues = {
 type ScaleRuleSectionProps = ScaleRuleValues & {
 	addOnIntervalLabel: "month" | "year";
 	errors: Partial<Record<keyof ScaleRuleValues, string>>;
+	icon: LucideIcon;
 	unitLabel: string;
 	onUpdate: (values: ScaleRuleValues) => void;
 };
@@ -285,6 +321,7 @@ type NumberFieldConfig = {
 
 function BillingPeriodColumn({
 	addOnIntervalLabel,
+	accentClassName,
 	basePrice,
 	branch,
 	periodLabel,
@@ -292,16 +329,27 @@ function BillingPeriodColumn({
 	user,
 }: {
 	addOnIntervalLabel: "month" | "year";
+	accentClassName: string;
 	basePrice: NumberFieldConfig;
-	branch: Omit<ScaleRuleSectionProps, "addOnIntervalLabel" | "unitLabel">;
+	branch: Omit<ScaleRuleSectionProps, "addOnIntervalLabel" | "icon" | "unitLabel">;
 	periodLabel: string;
 	percentOff: NumberFieldConfig;
-	user: Omit<ScaleRuleSectionProps, "addOnIntervalLabel" | "unitLabel">;
+	user: Omit<ScaleRuleSectionProps, "addOnIntervalLabel" | "icon" | "unitLabel">;
 }) {
 	return (
-		<div className="grid content-start gap-4 rounded-lg border border-darknavy/10 bg-white p-4">
-			<h3 className="text-sm font-bold text-darknavy">{periodLabel}</h3>
-			<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+		<div
+			className={joinClasses(
+				"grid content-start gap-4 rounded-lg border border-t-4 border-darknavy/10 bg-white p-4 shadow-sm",
+				accentClassName,
+			)}
+		>
+			<div className="flex items-center justify-between gap-3">
+				<h3 className="text-base font-bold text-darknavy">{periodLabel}</h3>
+				<span className="rounded-md bg-offwhite px-2.5 py-1 text-xs font-bold uppercase text-darknavy/52">
+					/{addOnIntervalLabel}
+				</span>
+			</div>
+			<div className="grid gap-3 border-b border-darknavy/10 pb-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
 				<NumberField
 					error={basePrice.error}
 					label={`Base price / ${addOnIntervalLabel}`}
@@ -319,11 +367,13 @@ function BillingPeriodColumn({
 				<ScaleRuleSection
 					{...branch}
 					addOnIntervalLabel={addOnIntervalLabel}
+					icon={GitBranch}
 					unitLabel={MasterPlanAndPackageScaleUnitLabels.branch}
 				/>
 				<ScaleRuleSection
 					{...user}
 					addOnIntervalLabel={addOnIntervalLabel}
+					icon={Users}
 					unitLabel={MasterPlanAndPackageScaleUnitLabels.user}
 				/>
 			</div>
@@ -335,6 +385,7 @@ function ScaleRuleSection({
 	addOnPrice,
 	addOnIntervalLabel,
 	errors,
+	icon: UnitIcon,
 	includedFree,
 	reductionTiers,
 	unitLabel,
@@ -371,12 +422,12 @@ function ScaleRuleSection({
 				suggestedTier
 					? { ...suggestedTier }
 					: {
-							reductionPercent: Math.min(
-								(lastTier?.reductionPercent ?? 0) + 5,
-								100,
-							),
-							thresholdCount: (lastTier?.thresholdCount ?? 0) + 10,
-						},
+						reductionPercent: Math.min(
+							(lastTier?.reductionPercent ?? 0) + 5,
+							100,
+						),
+						thresholdCount: (lastTier?.thresholdCount ?? 0) + 10,
+					},
 			],
 		});
 	}
@@ -388,11 +439,17 @@ function ScaleRuleSection({
 	}
 
 	return (
-		<div className="grid gap-3 rounded-lg border border-darknavy/10 bg-white p-3">
+		<div className="grid gap-3 border-b border-darknavy/10 pb-4 last:border-b-0 last:pb-0">
+			<div className="flex items-center gap-2">
+				<span className="flex h-8 w-8 items-center justify-center rounded-lg bg-darknavy/4 text-darknavy/72">
+					<UnitIcon className="h-4 w-4" aria-hidden="true" />
+				</span>
+				<h4 className="text-sm font-bold text-darknavy">{unitLabel}</h4>
+			</div>
 			<div className="grid gap-3 md:grid-cols-2">
 				<NumberField
 					error={errors.includedFree}
-					label={`${unitLabel} included`}
+					label="Included"
 					value={includedFree}
 					onChange={(nextIncludedFree) =>
 						update({ includedFree: nextIncludedFree })
@@ -400,7 +457,7 @@ function ScaleRuleSection({
 				/>
 				<NumberField
 					error={errors.addOnPrice}
-					label={`${unitLabel} add-on / ${addOnIntervalLabel}`}
+					label={`Add-on / ${addOnIntervalLabel}`}
 					value={addOnPrice}
 					onChange={(nextAddOnPrice) =>
 						update({ addOnPrice: nextAddOnPrice })
@@ -408,51 +465,10 @@ function ScaleRuleSection({
 				/>
 			</div>
 			<div className="grid gap-3">
-				<p className="text-sm font-bold text-darknavy/65">
-					{unitLabel} reduction tiers
-				</p>
-				<div className="grid gap-2">
-					{reductionTiers.map((tier, index) => (
-						<div
-							key={`${tier.thresholdCount}-${index}`}
-							className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.75rem]"
-						>
-							<NumberField
-								label="Count reaches"
-								value={tier.thresholdCount}
-								onChange={(nextThresholdCount) =>
-									updateReductionTier(
-										index,
-										"thresholdCount",
-										nextThresholdCount,
-									)
-								}
-							/>
-							<NumberField
-								label="Reduction percent"
-								value={tier.reductionPercent}
-								onChange={(nextReductionPercent) =>
-									updateReductionTier(
-										index,
-										"reductionPercent",
-										nextReductionPercent,
-									)
-								}
-							/>
-							<button
-								type="button"
-								title="Remove reduction tier"
-								aria-label="Remove reduction tier"
-								onClick={() => removeReductionTier(index)}
-								className="mt-[1.625rem] inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white text-darknavy/55 transition hover:border-coralpink/45 hover:text-coralpink"
-							>
-								<Trash2 className="h-4 w-4" aria-hidden="true" />
-							</button>
-						</div>
-					))}
-				</div>
-				<div className="flex items-center justify-between gap-3">
-					<FieldError message={errors.reductionTiers} />
+				<div className="flex flex-wrap items-center justify-between gap-3">
+					<p className="text-sm font-bold text-darknavy/65">
+						Reduction tiers
+					</p>
 					<button
 						type="button"
 						onClick={addReductionTier}
@@ -462,6 +478,53 @@ function ScaleRuleSection({
 						Add tier
 					</button>
 				</div>
+				{reductionTiers.length > 0 ? (
+					<div className="grid gap-2">
+						{reductionTiers.map((tier, index) => (
+							<div
+								key={`${tier.thresholdCount}-${index}`}
+								className="grid gap-2 rounded-lg bg-offwhite/55 p-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.75rem]"
+							>
+								<NumberField
+									label="Count reaches"
+									value={tier.thresholdCount}
+									onChange={(nextThresholdCount) =>
+										updateReductionTier(
+											index,
+											"thresholdCount",
+											nextThresholdCount,
+										)
+									}
+								/>
+								<NumberField
+									label="Reduction percent"
+									value={tier.reductionPercent}
+									onChange={(nextReductionPercent) =>
+										updateReductionTier(
+											index,
+											"reductionPercent",
+											nextReductionPercent,
+										)
+									}
+								/>
+								<button
+									type="button"
+									title="Remove reduction tier"
+									aria-label="Remove reduction tier"
+									onClick={() => removeReductionTier(index)}
+									className="mt-6.5 inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white text-darknavy/55 transition hover:border-coralpink/45 hover:text-coralpink"
+								>
+									<Trash2 className="h-4 w-4" aria-hidden="true" />
+								</button>
+							</div>
+						))}
+					</div>
+				) : (
+					<div className="rounded-lg border border-dashed border-darknavy/16 bg-offwhite/55 px-3 py-4 text-sm font-semibold text-darknavy/48">
+						No reduction tiers
+					</div>
+				)}
+				<FieldError message={errors.reductionTiers} />
 			</div>
 		</div>
 	);
@@ -533,13 +596,18 @@ function ModuleFeatureSelector({
 	}
 
 	return (
-		<section className="grid gap-3">
-			<div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(16rem,0.85fr)] md:items-start">
-				<div>
-					<h2 className="text-sm font-bold text-darknavy">Modules</h2>
-					<p className="mt-1 text-xs font-medium text-darknavy/50">
-						{selectedFeatureIds.length} selected
-					</p>
+		<section className="-mx-5 grid gap-4 px-5">
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<div className="flex items-center gap-3">
+					<span className="flex h-9 w-9 items-center justify-center rounded-lg bg-citron/35 text-darknavy">
+						<Users className="h-4 w-4" aria-hidden="true" />
+					</span>
+					<div>
+						<h2 className="text-base font-semibold text-darknavy">Modules</h2>
+						<p className="mt-1 text-xs font-bold uppercase tracking-wide text-darknavy/42">
+							{selectedFeatureIds.length} selected
+						</p>
+					</div>
 				</div>
 				<label className="relative block">
 					<span className="sr-only">Search modules</span>
@@ -555,14 +623,14 @@ function ModuleFeatureSelector({
 					/>
 				</label>
 			</div>
-			<div className="max-h-96 overflow-y-auto rounded-lg border border-darknavy/10 bg-white">
+			<div className="max-h-120 overflow-y-auto rounded-lg border border-darknavy/10 bg-white shadow-sm">
 				{groupedFeatures.length > 0 ? (
 					groupedFeatures.map((group) => (
 						<div key={group.section}>
 							<div className="sticky top-0 z-10 border-b border-darknavy/10 bg-offwhite px-4 py-2 text-xs font-bold uppercase tracking-wide text-darknavy/55">
 								{group.section}
 							</div>
-							<div className="divide-y divide-darknavy/[0.06]">
+							<div className="grid divide-y divide-darknavy/6 md:grid-cols-2 md:divide-x md:divide-y-0 xl:grid-cols-3">
 								{group.features.map((feature) => (
 									<label
 										key={feature.id}

@@ -70,6 +70,11 @@ export function MasterPlanAndPackageDetailsPage({
 			<div className="grid gap-5 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
 				<div className="grid content-start gap-4">
 					<DetailPanel title="Plan Details">
+						<DetailLine label="Plan code" value={record.code} />
+						<DetailLine
+							label="Trial period"
+							value={`${record.trialDays} trial days`}
+						/>
 						<div className="grid gap-2">
 							<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/42">
 								Status

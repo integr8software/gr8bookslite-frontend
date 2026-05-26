@@ -41,8 +41,10 @@ export function useMasterPlanAndPackageListPage() {
 		return records.filter((record) =>
 			[
 				record.name,
+				record.code,
 				record.description,
 				record.status,
+				`${record.trialDays} trial days`,
 				formatMasterPlanAndPackagePricing(record.pricing),
 				formatMasterPlanAndPackageScalePricing(record.scalePricing),
 				...getMasterPlanAndPackageFeatureLabels(record.featureIds),

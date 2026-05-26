@@ -16,6 +16,15 @@ const ReductionTierSchema = z.object({
 
 const MasterPlanAndPackageFormSchema = z
 	.object({
+		code: z
+			.string()
+			.trim()
+			.min(2, "Plan code must be at least 2 characters.")
+			.max(24, "Plan code cannot exceed 24 characters.")
+			.regex(
+				/^[A-Za-z0-9_-]+$/,
+				"Use only letters, numbers, hyphens, or underscores.",
+			),
 		description: z
 			.string()
 			.trim()
@@ -47,6 +56,11 @@ const MasterPlanAndPackageFormSchema = z
 		monthlyUserReductionTiers: z.array(ReductionTierSchema),
 		name: z.string().trim().min(3, "Name must be at least 3 characters."),
 		status: z.enum(["Active", "Draft", "Inactive"]),
+		trialDays: z
+			.number()
+			.int()
+			.min(0, "Trial days cannot be negative.")
+			.max(365, "Trial days cannot exceed 365."),
 		yearlyBasePrice: z
 			.number()
 			.min(0, "Yearly base price cannot be negative."),
@@ -128,14 +142,24 @@ export function validateMasterPlanAndPackageForm({
 				result.error.issues,
 			);
 	const normalizedName = values.name.trim().toLowerCase();
+	const normalizedCode = values.code.trim().toUpperCase();
 	const hasDuplicateName = records.some(
 		(record) =>
 			record.id !== values.id &&
 			record.name.trim().toLowerCase() === normalizedName,
 	);
+	const hasDuplicateCode = records.some(
+		(record) =>
+			record.id !== values.id &&
+			record.code.trim().toUpperCase() === normalizedCode,
+	);
 
 	if (hasDuplicateName) {
 		errors.name = "A plan with this name already exists.";
+	}
+
+	if (hasDuplicateCode) {
+		errors.code = "A plan with this code already exists.";
 	}
 
 	return errors;

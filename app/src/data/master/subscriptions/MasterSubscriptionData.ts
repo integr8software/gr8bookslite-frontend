@@ -360,7 +360,7 @@ function createMasterSubscriptionPlanFromPackage(
 
 	return {
 		billingCycle: "Monthly",
-		code: createPlanCode(record.name),
+		code: record.code,
 		description: record.description,
 		id: record.id,
 		includedBranches: monthlyScalePricing.branch.includedFreeCount,
@@ -379,16 +379,6 @@ function createMasterSubscriptionPlanFromPackage(
 		},
 		status: record.status,
 	};
-}
-
-function createPlanCode(name: string) {
-	const code = name
-		.split(/\s+/)
-		.map((part) => part.charAt(0))
-		.join("")
-		.toUpperCase();
-
-	return code.slice(0, 16) || "PLAN";
 }
 
 function createVolumeRulesFromPackage(

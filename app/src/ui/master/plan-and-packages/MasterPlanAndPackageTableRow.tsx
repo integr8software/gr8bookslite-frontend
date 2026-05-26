@@ -29,6 +29,14 @@ export function MasterPlanAndPackageTableRow({
 					>
 						{record.name}
 					</Link>
+					<div className="mt-2 flex flex-wrap items-center gap-2">
+						<span className="rounded-md bg-skyblue/10 px-2 py-1 text-xs font-bold uppercase tracking-wide text-darknavy/60">
+							{record.code}
+						</span>
+						<span className="rounded-md bg-offwhite px-2 py-1 text-xs font-bold text-darknavy/48">
+							{record.trialDays} trial days
+						</span>
+					</div>
 					<p className="mt-1 line-clamp-2 text-sm leading-5 text-darknavy/52">
 						{record.description}
 					</p>

@@ -25,6 +25,7 @@ const FeatureLabelById = new Map(
 
 export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 	{
+		code: "ACC-ESS",
 		description:
 			"Entry accounting package with dashboard, financial maintenance, cash receipts, disbursements, journals, and reporting modules.",
 		featureIds: [
@@ -59,8 +60,10 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			}),
 		}),
 		status: "Active",
+		trialDays: 14,
 	},
 	{
+		code: "INV-OPS",
 		description:
 			"Inventory and purchasing package for item maintenance, warehouse control, receiving, material requests, pick lists, and purchase workflows.",
 		featureIds: [
@@ -100,8 +103,10 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			}),
 		}),
 		status: "Active",
+		trialDays: 14,
 	},
 	{
+		code: "FULL-SUITE",
 		description:
 			"Full operating package with accounting, inventory, purchasing, reports, administration, and shared maintenance modules.",
 		featureIds: [
@@ -143,8 +148,10 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			}),
 		}),
 		status: "Draft",
+		trialDays: 30,
 	},
 	{
+		code: "TRANS-LITE",
 		description:
 			"Light operating package for low-volume subscribers that need a simple base plan with predictable add-ons.",
 		featureIds: [
@@ -178,8 +185,10 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			}),
 		}),
 		status: "Inactive",
+		trialDays: 7,
 	},
 	{
+		code: "LAUNCH-UPGRADE",
 		description:
 			"Promotional upgrade package that discounts base subscription pricing while retaining standard module access and scale rules.",
 		featureIds: [
@@ -220,11 +229,13 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			}),
 		}),
 		status: "Active",
+		trialDays: 30,
 	},
 ];
 
 export const InitialMasterPlanAndPackageFormValues: MasterPlanAndPackageFormValues =
 	{
+		code: "",
 		description: "",
 		featureIds: MasterPlanAndPackageFeatureOptions.map((feature) => feature.id),
 		monthlyBasePrice: 0,
@@ -237,6 +248,7 @@ export const InitialMasterPlanAndPackageFormValues: MasterPlanAndPackageFormValu
 		monthlyUserReductionTiers: createEmptyReductionTiers(),
 		name: "",
 		status: "Active",
+		trialDays: 0,
 		yearlyBasePrice: 0,
 		yearlyBranchAddOnPrice: 0,
 		yearlyBranchIncludedFree: 1,
@@ -258,6 +270,7 @@ export function createMasterPlanAndPackageFormValues(
 
 	return {
 		...InitialMasterPlanAndPackageFormValues,
+		code: record.code,
 		...record.pricing,
 		...scaleValues,
 		description: record.description,
@@ -274,13 +287,15 @@ export function createMasterPlanAndPackageRecord(
 	const trimmedName = values.name.trim();
 
 	return {
+		code: values.code.trim().toUpperCase(),
 		description: values.description.trim(),
 		featureIds: [...values.featureIds],
-		id: values.id ?? `plan-${slugify(trimmedName)}`,
+		id: values.id ?? `plan-${slugify(values.code.trim() || trimmedName)}`,
 		name: trimmedName,
 		pricing: createPricingFromFormValues(values),
 		scalePricing: createScalePricingFromFormValues(values),
 		status: values.status,
+		trialDays: values.trialDays,
 	};
 }
 

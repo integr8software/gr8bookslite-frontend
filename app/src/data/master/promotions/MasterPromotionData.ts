@@ -144,6 +144,20 @@ export function createMasterPromotionRecord(
 	};
 }
 
+export function generateMasterPromotionCode(
+	values: Pick<MasterPromotionFormValues, "name" | "type">,
+) {
+	const source = values.name.trim() || values.type;
+	const prefix =
+		source
+			.replace(/[^a-z0-9]+/gi, "")
+			.slice(0, 8)
+			.toUpperCase() || "PROMO";
+	const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+
+	return `${prefix}${suffix}`;
+}
+
 export function formatMasterPromotionValue(
 	record: Pick<MasterPromotionRecord, "discountKind" | "value">,
 ) {

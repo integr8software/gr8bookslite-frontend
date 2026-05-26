@@ -125,14 +125,6 @@ const MasterControlSourceNavigationSections: MainNavigationSection[] = [
     "workspace-invoices",
   ),
   directSection(
-    "workspace-payment-methods-section",
-    "Payment Methods",
-    "/workspace/payment-methods",
-    "payment",
-    "workspace.admin.paymentMethods",
-    "workspace-payment-methods",
-  ),
-  directSection(
     "workspace-promotions-section",
     "Promotions",
     "/workspace/coupons-promotions",

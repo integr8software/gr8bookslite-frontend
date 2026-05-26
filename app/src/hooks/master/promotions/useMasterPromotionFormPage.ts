@@ -9,6 +9,7 @@ import {
 	MasterPromotionRecords,
 	createMasterPromotionFormValues,
 	createMasterPromotionRecord,
+	generateMasterPromotionCode,
 	getMasterPromotionById,
 } from "@/app/src/data/master/promotions/MasterPromotionData";
 import type {
@@ -62,8 +63,17 @@ export function useMasterPromotionFormPage({
 		router.push(MasterPromotionsHref);
 	}
 
+	function generatePromotionCode() {
+		setValues((current) => ({
+			...current,
+			code: generateMasterPromotionCode(current),
+		}));
+		toast.success("Promotion code generated.");
+	}
+
 	return {
 		errors,
+		generatePromotionCode,
 		isMissingRecord,
 		mode,
 		record,

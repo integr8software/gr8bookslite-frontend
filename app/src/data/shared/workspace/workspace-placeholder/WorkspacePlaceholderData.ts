@@ -5,7 +5,6 @@ import {
   BarChart3,
   Briefcase,
   Building2,
-  CreditCard,
   FileText,
   FolderKanban,
   GitBranch,
@@ -466,24 +465,6 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
       "Combines tenant audit trails with platform-level system logs.",
       "Filters should support company, branch, module, user, severity, and source.",
       "Useful for support escalation, compliance review, and incident triage.",
-    ],
-  },
-  paymentMethods: {
-    eyebrow: "Admin",
-    title: "Payment Methods",
-    description:
-      "A billing admin area for cards, payment defaults, renewal readiness, and company-level billing ownership.",
-    icon: CreditCard,
-    tone: "violet",
-    metrics: [
-      { label: "Methods", value: "02" },
-      { label: "Default", value: "Card" },
-      { label: "Renewal", value: "Ready" },
-    ],
-    highlights: [
-      "Belongs in Admin because company owners need direct billing control.",
-      "Works beside subscriptions and invoices without changing plan rules.",
-      "Should be scoped to the active company for non-Super Admin users.",
     ],
   },
   financialManagement: {

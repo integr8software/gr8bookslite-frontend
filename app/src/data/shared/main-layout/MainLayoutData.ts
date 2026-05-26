@@ -52,7 +52,6 @@ const CurrentUserRoleDetails = {
     "workspace.support.tickets": { view: true, add: true },
     "workspace.settings": { view: true, edit: true },
     "workspace.admin.companySettings": { view: true, edit: true },
-    "workspace.admin.paymentMethods": { view: true, add: true, edit: true },
     dashboard: { view: true, add: true, edit: true },
     cashReceipt: { view: true, add: true, edit: true, cancel: true },
     cashDisbursement: { view: true, add: true, edit: true },

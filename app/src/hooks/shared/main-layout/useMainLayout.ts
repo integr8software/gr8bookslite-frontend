@@ -60,7 +60,6 @@ const DefaultExpandedKeys = [
   "master-plan-and-packages-section",
   "master-subscription-section",
   "master-invoices-section",
-  "master-payment-methods-section",
   "master-promotions-section",
   "master-subscriber-promotions-section",
   "master-audit-system-logs-section",

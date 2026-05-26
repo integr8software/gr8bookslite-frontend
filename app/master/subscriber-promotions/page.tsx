@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { MasterPreviewPage } from "@/app/src/ui/master/MasterPreviewPage";
+import { MasterSubscriberPromotionListPage } from "@/app/src/ui/master/subscriber-promotions/MasterSubscriberPromotionListPage";
 
 export const metadata: Metadata = {
 	title: `Subscriber Promotions | ${AppName}`,
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function MasterSubscriberPromotionsPage() {
-	return <MasterPreviewPage pageKey="subscriberPromotions" />;
+	return <MasterSubscriberPromotionListPage />;
 }

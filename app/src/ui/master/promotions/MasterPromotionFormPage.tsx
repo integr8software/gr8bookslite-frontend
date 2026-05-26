@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowLeft, Check, Save, Search } from "lucide-react";
+import { ArrowLeft, Check, RefreshCw, Save, Search } from "lucide-react";
 import {
 	MasterPromotionDiscountKindOptions,
 	MasterPromotionExpirationModeOptions,
@@ -87,6 +87,7 @@ export function MasterPromotionFormPage({
 			<MasterPromotionForm
 				errors={page.errors}
 				values={page.values}
+				onGenerateCode={page.generatePromotionCode}
 				onSave={page.saveRecord}
 				onUpdate={page.updateValues}
 			/>
@@ -97,11 +98,13 @@ export function MasterPromotionFormPage({
 function MasterPromotionForm({
 	errors,
 	values,
+	onGenerateCode,
 	onSave,
 	onUpdate,
 }: {
 	errors: MasterPromotionFormErrors;
 	values: MasterPromotionFormValues;
+	onGenerateCode: () => void;
 	onSave: () => void;
 	onUpdate: (values: Partial<MasterPromotionFormValues>) => void;
 }) {
@@ -116,10 +119,11 @@ function MasterPromotionForm({
 							value={values.name}
 							onChange={(name) => onUpdate({ name })}
 						/>
-						<TextField
+						<CodeField
 							error={errors.code}
 							label="Code"
 							value={values.code}
+							onGenerate={onGenerateCode}
 							onChange={(code) => onUpdate({ code: code.toUpperCase() })}
 						/>
 					</div>
@@ -239,6 +243,42 @@ function MasterPromotionForm({
 				</div>
 			</div>
 		</div>
+	);
+}
+
+function CodeField({
+	error,
+	label,
+	value,
+	onChange,
+	onGenerate,
+}: {
+	error?: string;
+	label: string;
+	value: string;
+	onChange: (value: string) => void;
+	onGenerate: () => void;
+}) {
+	return (
+		<label className={FieldLabelClassName}>
+			{label}
+			<span className="flex gap-2">
+				<input
+					value={value}
+					onChange={(event) => onChange(event.target.value)}
+					className={ControlClassName}
+				/>
+				<button
+					type="button"
+					onClick={onGenerate}
+					className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy/70 shadow-sm transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
+				>
+					<RefreshCw className="h-4 w-4" aria-hidden="true" />
+					Generate
+				</button>
+			</span>
+			<FieldError message={error} />
+		</label>
 	);
 }
 

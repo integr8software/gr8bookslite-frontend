@@ -14,8 +14,8 @@ import type {
 import type { MasterSubscriberPromotionRecord } from "@/app/src/types/master/subscriber-promotions/MasterSubscriberPromotionTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
-	ModuleTableFilterButton,
 	ModuleTableFilterSelect,
+	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/ModuleTableToolbar";
@@ -87,9 +87,9 @@ export function MasterSubscriberPromotionTable({
 								setModeFilter(value as MasterSubscriberPromotionModeFilter)
 							}
 						/>
-						<ModuleTableFilterButton onClick={resetFilters}>
+						<ModuleTableResetButton onClick={resetFilters}>
 							Reset
-						</ModuleTableFilterButton>
+						</ModuleTableResetButton>
 					</ModuleTableToolbar>
 				}
 				renderRow={(row) => (

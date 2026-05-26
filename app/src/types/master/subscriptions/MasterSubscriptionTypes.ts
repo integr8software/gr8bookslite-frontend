@@ -1,6 +1,10 @@
 export type MasterSubscriptionPlanStatus = "Active" | "Draft" | "Inactive";
 
-export type MasterSubscriptionBillingCycle = "Monthly" | "Annual";
+export type MasterSubscriptionBillingCycle =
+	| "Monthly"
+	| "Every 3 months"
+	| "Annual"
+	| "Per transaction";
 
 export type MasterSubscriptionUnit = "company" | "branch" | "user";
 
@@ -67,12 +71,6 @@ export type MasterSubscriptionCompanyStatus =
 	| "Past Due"
 	| "Scheduled";
 
-export type MasterSubscriptionCompanyRating =
-	| "Excellent"
-	| "Good"
-	| "Watch"
-	| "At Risk";
-
 export type MasterSubscriptionCompanyRecord = {
 	billingCycle: MasterSubscriptionBillingCycle;
 	branchCount: number;
@@ -82,7 +80,6 @@ export type MasterSubscriptionCompanyRecord = {
 	name: string;
 	ownerName: string;
 	planId: string;
-	rating: MasterSubscriptionCompanyRating;
 	renewalDate: string;
 	status: MasterSubscriptionCompanyStatus;
 	userCount: number;
@@ -120,6 +117,5 @@ export type MasterSubscriptionTableColumnKey = keyof Pick<
 	| "branchCount"
 	| "userCount"
 	| "durationMonths"
-	| "rating"
 	| "renewalDate"
 >;

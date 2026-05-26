@@ -1,4 +1,5 @@
 import type {
+	MasterSubscriptionBillingCycle,
 	MasterSubscriptionCompanyRecord,
 	MasterSubscriptionModuleOption,
 	MasterSubscriptionPlanFormValues,
@@ -165,13 +166,12 @@ export const MasterSubscriptionCompanies: MasterSubscriptionCompanyRecord[] = [
 		name: "Gr8Books HQ",
 		ownerName: "John Dela Cruz",
 		planId: "growth-suite",
-		rating: "Excellent",
 		renewalDate: "2026-06-01",
 		status: "Active",
 		userCount: 15,
 	},
 	{
-		billingCycle: "Monthly",
+		billingCycle: "Per transaction",
 		branchCount: 1,
 		companyCount: 1,
 		durationMonths: 1,
@@ -179,7 +179,6 @@ export const MasterSubscriptionCompanies: MasterSubscriptionCompanyRecord[] = [
 		name: "Demo Trading Corp.",
 		ownerName: "Jane Santos",
 		planId: "core-books",
-		rating: "Good",
 		renewalDate: "2026-06-05",
 		status: "Trial",
 		userCount: 4,
@@ -193,13 +192,12 @@ export const MasterSubscriptionCompanies: MasterSubscriptionCompanyRecord[] = [
 		name: "Laguna Manufacturing Inc.",
 		ownerName: "Emily Lim",
 		planId: "enterprise-ops",
-		rating: "Excellent",
 		renewalDate: "2027-05-10",
 		status: "Active",
 		userCount: 42,
 	},
 	{
-		billingCycle: "Monthly",
+		billingCycle: "Every 3 months",
 		branchCount: 18,
 		companyCount: 24,
 		durationMonths: 9,
@@ -207,8 +205,7 @@ export const MasterSubscriptionCompanies: MasterSubscriptionCompanyRecord[] = [
 		name: "Visayas Retail Group",
 		ownerName: "Miguel Reyes",
 		planId: "enterprise-ops",
-		rating: "At Risk",
-		renewalDate: "2026-05-28",
+		renewalDate: "2026-05-10",
 		status: "Past Due",
 		userCount: 65,
 	},
@@ -327,6 +324,18 @@ export function formatMasterSubscriptionDate(value: string) {
 	}).format(new Date(`${value}T00:00:00`));
 }
 
+export function calculateMasterSubscriptionAmountLeft({
+	billingCycle,
+	monthlyTotal,
+}: {
+	billingCycle: MasterSubscriptionBillingCycle;
+	monthlyTotal: number;
+}) {
+	return monthlyTotal * getMasterSubscriptionBillingCycleMonthMultiplier(
+		billingCycle,
+	);
+}
+
 function calculateUnitQuote({
 	actualCount,
 	includedCount,
@@ -367,6 +376,20 @@ function calculateUnitQuote({
 		rate,
 		unit,
 	};
+}
+
+function getMasterSubscriptionBillingCycleMonthMultiplier(
+	billingCycle: MasterSubscriptionBillingCycle,
+) {
+	switch (billingCycle) {
+		case "Annual":
+			return 12;
+		case "Every 3 months":
+			return 3;
+		case "Monthly":
+		case "Per transaction":
+			return 1;
+	}
 }
 
 function getDiscountPercentForCount({

@@ -14,6 +14,7 @@ import {
 	MasterSubscriptionCompanies,
 	MasterSubscriptionPlans,
 	MasterSubscriptionVolumeRules,
+	calculateMasterSubscriptionAmountLeft,
 	calculateMasterSubscriptionQuote,
 	createMasterSubscriptionPlanDraft,
 	createMasterSubscriptionPlanRecord,
@@ -126,7 +127,6 @@ export function useMasterSubscriptionsPage() {
 				subscription.name,
 				subscription.ownerName,
 				subscription.status,
-				subscription.rating,
 				subscription.billingCycle,
 				`${subscription.durationMonths} months`,
 				plan?.name,
@@ -175,12 +175,20 @@ export function useMasterSubscriptionsPage() {
 			(total, quote) => total + quote.total,
 			0,
 		);
+		const totalAmountLeft = MasterSubscriptionCompanies.reduce(
+			(total, subscription) =>
+				total +
+				calculateMasterSubscriptionAmountLeft({
+					billingCycle: subscription.billingCycle,
+					monthlyTotal: subscriptionQuotes[subscription.id]?.total ?? 0,
+				}),
+			0,
+		);
 		const activeSubscriptions = MasterSubscriptionCompanies.filter(
 			(subscription) => subscription.status === "Active",
 		).length;
 		const atRiskSubscriptions = MasterSubscriptionCompanies.filter(
-			(subscription) =>
-				subscription.status === "Past Due" || subscription.rating === "At Risk",
+			(subscription) => subscription.status === "Past Due",
 		).length;
 		const averageDurationMonths = Math.round(
 			MasterSubscriptionCompanies.reduce(
@@ -199,6 +207,7 @@ export function useMasterSubscriptionsPage() {
 			inactivePlans: inactivePlans.length,
 			monthlyRevenue,
 			subscribedCompanies: MasterSubscriptionCompanies.length,
+			totalAmountLeft,
 		};
 	}, [plans, subscriptionQuotes]);
 

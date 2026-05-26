@@ -11,11 +11,13 @@ import {
 import toast from "react-hot-toast";
 import {
 	MasterPromotionTableColumns,
-	getMasterPromotionTargetLabel,
+	getMasterPromotionTargetSummary,
 } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 import {
 	MasterPromotionRecords,
 	formatMasterPromotionDate,
+	formatMasterPromotionLimit,
+	formatMasterPromotionUsage,
 	formatMasterPromotionValue,
 } from "@/app/src/data/master/promotions/MasterPromotionData";
 import type {
@@ -46,9 +48,11 @@ export function useMasterPromotionListPage() {
 				record.code,
 				record.description,
 				record.type,
-				getMasterPromotionTargetLabel(record.target),
+				getMasterPromotionTargetSummary(record.targetPlanIds),
 				record.status,
 				formatMasterPromotionValue(record),
+				formatMasterPromotionLimit(record),
+				formatMasterPromotionUsage(record),
 				formatMasterPromotionDate(record.expiresAt),
 			]
 				.join(" ")
@@ -160,10 +164,11 @@ function createColumn(
 		};
 	}
 
-	if (key === "target") {
+	if (key === "targetPlanIds") {
 		return {
 			id: key,
-			accessorFn: (record) => getMasterPromotionTargetLabel(record.target),
+			accessorFn: (record) =>
+				getMasterPromotionTargetSummary(record.targetPlanIds),
 			header: label,
 			enableSorting: false,
 			meta: { className },

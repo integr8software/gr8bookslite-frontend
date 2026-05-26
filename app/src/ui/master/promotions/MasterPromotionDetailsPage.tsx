@@ -3,11 +3,13 @@ import Link from "next/link";
 import { ArrowLeft, Edit3, Tags } from "lucide-react";
 import {
 	MasterPromotionsHref,
-	getMasterPromotionTargetLabel,
+	getMasterPromotionTargetLabels,
 	getMasterPromotionEditHref,
 } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 import {
 	formatMasterPromotionDate,
+	formatMasterPromotionLimit,
+	formatMasterPromotionUsage,
 	formatMasterPromotionValue,
 	getMasterPromotionById,
 } from "@/app/src/data/master/promotions/MasterPromotionData";
@@ -69,9 +71,8 @@ export function MasterPromotionDetailsPage({
 				<DetailPanel title="Promotion Details">
 					<DetailLine label="Code" value={record.code} />
 					<DetailLine label="Type" value={record.type} />
-					<DetailLine
-						label="Target"
-						value={getMasterPromotionTargetLabel(record.target)}
+					<DetailPlanList
+						labels={getMasterPromotionTargetLabels(record.targetPlanIds)}
 					/>
 					<div className="grid gap-2">
 						<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/42">
@@ -81,18 +82,22 @@ export function MasterPromotionDetailsPage({
 					</div>
 				</DetailPanel>
 				<DetailPanel title="Discount">
-					<div className="grid gap-4 md:grid-cols-3">
+					<div className="grid gap-4 md:grid-cols-4">
 						<DetailLine
 							label={record.discountKind}
 							value={formatMasterPromotionValue(record)}
 						/>
 						<DetailLine
-							label="Expires"
+							label="Expiration"
 							value={formatMasterPromotionDate(record.expiresAt)}
 						/>
 						<DetailLine
 							label="Redemptions"
-							value={record.redemptions.toLocaleString("en-US")}
+							value={formatMasterPromotionUsage(record)}
+						/>
+						<DetailLine
+							label="Limit"
+							value={formatMasterPromotionLimit(record)}
 						/>
 					</div>
 					<div className="mt-5 flex items-start gap-3 rounded-lg border border-darknavy/10 bg-offwhite/45 px-3 py-3">
@@ -131,6 +136,28 @@ function DetailLine({ label, value }: { label: string; value: string }) {
 				{label}
 			</p>
 			<p className="text-sm font-semibold text-darknavy">{value}</p>
+		</div>
+	);
+}
+
+function DetailPlanList({ labels }: { labels: string[] }) {
+	const displayLabels = labels.length > 0 ? labels : ["No target plans"];
+
+	return (
+		<div className="grid gap-2">
+			<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/42">
+				Target plans
+			</p>
+			<div className="flex flex-wrap gap-2">
+				{displayLabels.map((label) => (
+					<span
+						key={label}
+						className="rounded-md bg-skyblue/12 px-2.5 py-1 text-xs font-semibold text-darknavy ring-1 ring-skyblue/22"
+					>
+						{label}
+					</span>
+				))}
+			</div>
 		</div>
 	);
 }

@@ -1,14 +1,15 @@
 import { Edit3 } from "lucide-react";
 import {
+	MasterSubscriptionBillingCycleAmountLeftLabels,
 	MasterSubscriptionUnitShortLabels,
 } from "@/app/src/constants/master/subscriptions/MasterSubscriptionConstants";
 import {
+	calculateMasterSubscriptionAmountLeft,
 	formatMasterSubscriptionCurrency,
 	formatMasterSubscriptionDate,
 } from "@/app/src/data/master/subscriptions/MasterSubscriptionData";
 import type {
 	MasterSubscriptionCompanyRecord,
-	MasterSubscriptionCompanyRating,
 	MasterSubscriptionCompanyStatus,
 	MasterSubscriptionPlanRecord,
 	MasterSubscriptionQuote,
@@ -26,6 +27,12 @@ export function MasterSubscriptionTableRow({
 	quote,
 	subscription,
 }: MasterSubscriptionTableRowProps) {
+	const monthlyTotal = quote?.total ?? 0;
+	const amountLeft = calculateMasterSubscriptionAmountLeft({
+		billingCycle: subscription.billingCycle,
+		monthlyTotal,
+	});
+
 	return (
 		<tr className="module-table-row">
 			<td className="px-4 py-4">
@@ -40,9 +47,6 @@ export function MasterSubscriptionTableRow({
 			</td>
 			<td className="px-4 py-4">
 				<MasterSubscriptionStatusBadge status={subscription.status} />
-			</td>
-			<td className="px-4 py-4">
-				<MasterSubscriptionRatingBadge rating={subscription.rating} />
 			</td>
 			<td className="px-4 py-4">
 				<div className="min-w-0">
@@ -71,7 +75,7 @@ export function MasterSubscriptionTableRow({
 			<td className="px-4 py-4">
 				<div className="min-w-0">
 					<p className="text-sm font-semibold text-darknavy">
-						{formatMasterSubscriptionCurrency(quote?.total ?? 0)}
+						{formatMasterSubscriptionCurrency(monthlyTotal)}
 					</p>
 					<p className="mt-1 text-xs text-darknavy/45">
 						{quote?.unitQuotes
@@ -81,6 +85,20 @@ export function MasterSubscriptionTableRow({
 									`${unitQuote.extraCount} ${MasterSubscriptionUnitShortLabels[unitQuote.unit].toLowerCase()}`,
 							)
 							.join(", ") || "No overage"}
+					</p>
+				</div>
+			</td>
+			<td className="px-4 py-4">
+				<div className="min-w-0">
+					<p className="text-sm font-semibold text-darknavy">
+						{formatMasterSubscriptionCurrency(amountLeft)}
+					</p>
+					<p className="mt-1 text-xs text-darknavy/45">
+						{
+							MasterSubscriptionBillingCycleAmountLeftLabels[
+								subscription.billingCycle
+							]
+						}
 					</p>
 				</div>
 			</td>
@@ -99,30 +117,6 @@ export function MasterSubscriptionTableRow({
 				</div>
 			</td>
 		</tr>
-	);
-}
-
-function MasterSubscriptionRatingBadge({
-	rating,
-}: {
-	rating: MasterSubscriptionCompanyRating;
-}) {
-	const classes = {
-		"At Risk": "bg-coralpink/12 text-coralpink ring-coralpink/20",
-		Excellent: "bg-citron/30 text-darknavy ring-citron/45",
-		Good: "bg-skyblue/12 text-darknavy ring-skyblue/22",
-		Watch: "bg-offwhite text-darknavy/70 ring-darknavy/10",
-	} satisfies Record<MasterSubscriptionCompanyRating, string>;
-
-	return (
-		<span
-			className={joinClasses(
-				"inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ring-1",
-				classes[rating],
-			)}
-		>
-			{rating}
-		</span>
 	);
 }
 

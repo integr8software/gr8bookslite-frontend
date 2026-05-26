@@ -24,7 +24,7 @@ export function MasterSubscriptionsPage() {
 				variant="card"
 				titleAs="h1"
 				title="Subscription"
-				description="Review each company subscription rating, duration, renewal timing, computed charges, and current billing status."
+				description="Review each company subscription duration, billing cycle, renewal timing, computed charges, and current billing status."
 				eyebrow={
 					<>
 						<CircleDollarSign className="h-3.5 w-3.5" aria-hidden="true" />
@@ -56,6 +56,7 @@ function MasterSubscriptionSummaryCards({
 		averageDurationMonths: number;
 		monthlyRevenue: number;
 		subscribedCompanies: number;
+		totalAmountLeft: number;
 	};
 }) {
 	const metrics = [
@@ -114,12 +115,20 @@ function MasterSubscriptionSummaryCards({
 					</article>
 				);
 			})}
-			<article className="rounded-lg border border-darknavy/10 bg-darknavy p-4 text-white shadow-sm md:col-span-2 xl:col-span-4">
+			<article className="rounded-lg border border-darknavy/10 bg-darknavy p-4 text-white shadow-sm md:col-span-1 xl:col-span-2">
 				<p className="text-sm font-semibold text-white/65">
 					Computed Monthly Revenue
 				</p>
 				<p className="mt-2 text-2xl font-semibold">
 					{formatMasterSubscriptionCurrency(summary.monthlyRevenue)}
+				</p>
+			</article>
+			<article className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm md:col-span-1 xl:col-span-2">
+				<p className="text-sm font-semibold text-darknavy/58">
+					Total Amount Left
+				</p>
+				<p className="mt-2 text-2xl font-semibold text-darknavy">
+					{formatMasterSubscriptionCurrency(summary.totalAmountLeft)}
 				</p>
 			</article>
 		</div>

@@ -4,7 +4,7 @@ import { MasterSubscriptionsPage as MasterSubscriptionsModulePage } from "@/app/
 
 export const metadata: Metadata = {
 	title: `Subscription | ${AppName}`,
-	description: `Master subscriber rating and duration review for ${AppName}.`,
+	description: `Master subscriber duration and billing review for ${AppName}.`,
 };
 
 export default function MasterSubscriptionsPage() {

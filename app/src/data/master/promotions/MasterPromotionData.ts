@@ -2,6 +2,7 @@ import type {
 	MasterPromotionFormValues,
 	MasterPromotionRecord,
 } from "@/app/src/types/master/promotions/MasterPromotionTypes";
+import { normalizeMasterPromotionTargetPlanIds } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 
 export const MasterPromotionRecords: MasterPromotionRecord[] = [
 	{
@@ -13,8 +14,9 @@ export const MasterPromotionRecords: MasterPromotionRecord[] = [
 		id: "promo-welcome20",
 		name: "Welcome Launch",
 		redemptions: 184,
+		redemptionLimit: null,
 		status: "Active",
-		target: "all-plans",
+		targetPlanIds: ["all-plans"],
 		type: "Promo Code",
 		value: 20,
 	},
@@ -27,8 +29,9 @@ export const MasterPromotionRecords: MasterPromotionRecord[] = [
 		id: "coupon-accounting100",
 		name: "Accounting Starter",
 		redemptions: 92,
+		redemptionLimit: 500,
 		status: "Active",
-		target: "plan-accounting-monthly",
+		targetPlanIds: ["plan-accounting-monthly"],
 		type: "Coupon",
 		value: 100,
 	},
@@ -37,12 +40,13 @@ export const MasterPromotionRecords: MasterPromotionRecord[] = [
 		description:
 			"Voucher credit for additional users, branches, satellites, or company add-ons.",
 		discountKind: "Fixed",
-		expiresAt: "2026-09-30",
+		expiresAt: null,
 		id: "voucher-addon-credit",
 		name: "Add-on Credit",
 		redemptions: 42,
+		redemptionLimit: 150,
 		status: "Draft",
-		target: "plan-full-suite-annual",
+		targetPlanIds: ["plan-full-suite-annual", "plan-launch-upgrade"],
 		type: "Voucher",
 		value: 150,
 	},
@@ -55,8 +59,13 @@ export const MasterPromotionRecords: MasterPromotionRecord[] = [
 		id: "event-summit25",
 		name: "Summit Attendee",
 		redemptions: 67,
+		redemptionLimit: 250,
 		status: "Inactive",
-		target: "plan-launch-upgrade",
+		targetPlanIds: [
+			"plan-accounting-monthly",
+			"plan-inventory-quarter",
+			"plan-launch-upgrade",
+		],
 		type: "Event Promo",
 		value: 25,
 	},
@@ -66,10 +75,13 @@ export const InitialMasterPromotionFormValues: MasterPromotionFormValues = {
 	code: "",
 	description: "",
 	discountKind: "Percent",
+	expirationMode: "With expiration",
 	expiresAt: "",
+	limitMode: "Unlimited",
 	name: "",
+	redemptionLimit: 0,
 	status: "Active",
-	target: "all-plans",
+	targetPlanIds: ["all-plans"],
 	type: "Promo Code",
 	value: 0,
 };
@@ -85,11 +97,14 @@ export function createMasterPromotionFormValues(
 		code: record.code,
 		description: record.description,
 		discountKind: record.discountKind,
-		expiresAt: record.expiresAt,
+		expirationMode: record.expiresAt ? "With expiration" : "No expiration",
+		expiresAt: record.expiresAt ?? "",
 		id: record.id,
+		limitMode: record.redemptionLimit === null ? "Unlimited" : "Limited",
 		name: record.name,
+		redemptionLimit: record.redemptionLimit ?? 0,
 		status: record.status,
-		target: record.target,
+		targetPlanIds: [...record.targetPlanIds],
 		type: record.type,
 		value: record.value,
 	};
@@ -99,16 +114,33 @@ export function createMasterPromotionRecord(
 	values: MasterPromotionFormValues,
 ): MasterPromotionRecord {
 	const trimmedValues = trimMasterPromotionValues(values);
+	const id =
+		trimmedValues.id ??
+		`${trimmedValues.type.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${
+			Date.now()
+		}`;
 
 	return {
-		...trimmedValues,
 		code: trimmedValues.code.toUpperCase(),
-		id:
-			trimmedValues.id ??
-			`${trimmedValues.type.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${
-				Date.now()
-			}`,
+		description: trimmedValues.description,
+		discountKind: trimmedValues.discountKind,
+		expiresAt:
+			trimmedValues.expirationMode === "With expiration"
+				? trimmedValues.expiresAt
+				: null,
+		id,
+		name: trimmedValues.name,
 		redemptions: 0,
+		redemptionLimit:
+			trimmedValues.limitMode === "Limited"
+				? Math.floor(trimmedValues.redemptionLimit)
+				: null,
+		status: trimmedValues.status,
+		targetPlanIds: normalizeMasterPromotionTargetPlanIds(
+			trimmedValues.targetPlanIds,
+		),
+		type: trimmedValues.type,
+		value: trimmedValues.value,
 	};
 }
 
@@ -125,12 +157,36 @@ export function formatMasterPromotionValue(
 	})}`;
 }
 
-export function formatMasterPromotionDate(value: string) {
+export function formatMasterPromotionDate(value: string | null) {
+	if (!value) {
+		return "No expiration";
+	}
+
 	return new Intl.DateTimeFormat("en-US", {
 		day: "2-digit",
 		month: "short",
 		year: "numeric",
 	}).format(new Date(`${value}T00:00:00`));
+}
+
+export function formatMasterPromotionLimit(
+	record: Pick<MasterPromotionRecord, "redemptionLimit">,
+) {
+	return record.redemptionLimit === null
+		? "Unlimited"
+		: record.redemptionLimit.toLocaleString("en-US");
+}
+
+export function formatMasterPromotionUsage(
+	record: Pick<MasterPromotionRecord, "redemptions" | "redemptionLimit">,
+) {
+	const usedCount = record.redemptions.toLocaleString("en-US");
+
+	if (record.redemptionLimit === null) {
+		return `${usedCount} used`;
+	}
+
+	return `${usedCount} / ${record.redemptionLimit.toLocaleString("en-US")}`;
 }
 
 function trimMasterPromotionValues(
@@ -142,5 +198,8 @@ function trimMasterPromotionValues(
 		description: values.description.trim(),
 		expiresAt: values.expiresAt.trim(),
 		name: values.name.trim(),
+		targetPlanIds: normalizeMasterPromotionTargetPlanIds(
+			values.targetPlanIds.map((targetPlanId) => targetPlanId.trim()),
+		),
 	};
 }

@@ -30,7 +30,7 @@ export function MasterPromotionTable({
 				emptyDescription="Try a different code, promotion type, target, value, or status."
 				emptyIcon={<Tags className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No promotions found"
-				minWidthClassName="min-w-[84rem]"
+				minWidthClassName="min-w-[92rem]"
 				paginationStorageKey={MasterPromotionPaginationStorageKey}
 				table={table}
 				toolbar={

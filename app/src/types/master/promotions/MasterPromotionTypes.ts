@@ -6,37 +6,45 @@ export type MasterPromotionType =
 
 export type MasterPromotionDiscountKind = "Percent" | "Fixed";
 
+export type MasterPromotionExpirationMode =
+	| "With expiration"
+	| "No expiration";
+
+export type MasterPromotionLimitMode = "Limited" | "Unlimited";
+
 export type MasterPromotionStatus = "Active" | "Draft" | "Inactive";
 
-export type MasterPromotionTarget = string;
+export type MasterPromotionTargetPlanId = string;
 
 export type MasterPromotionRecord = {
 	code: string;
 	description: string;
 	discountKind: MasterPromotionDiscountKind;
-	expiresAt: string;
+	expiresAt: string | null;
 	id: string;
 	name: string;
 	redemptions: number;
+	redemptionLimit: number | null;
 	status: MasterPromotionStatus;
-	target: MasterPromotionTarget;
+	targetPlanIds: MasterPromotionTargetPlanId[];
 	type: MasterPromotionType;
 	value: number;
 };
 
-export type MasterPromotionFormValues = Pick<
-	MasterPromotionRecord,
-	| "code"
-	| "description"
-	| "discountKind"
-	| "expiresAt"
-	| "name"
-	| "status"
-	| "target"
-	| "type"
-	| "value"
-> & {
+export type MasterPromotionFormValues = {
+	code: string;
+	description: string;
+	discountKind: MasterPromotionDiscountKind;
+	expirationMode: MasterPromotionExpirationMode;
+	expiresAt: string;
 	id?: string;
+	limitMode: MasterPromotionLimitMode;
+	name: string;
+	redemptionLimit: number;
+	status: MasterPromotionStatus;
+	targetPlanIds: MasterPromotionTargetPlanId[];
+	type: MasterPromotionType;
+	value: number;
 };
 
 export type MasterPromotionFormErrors = Partial<
@@ -45,7 +53,7 @@ export type MasterPromotionFormErrors = Partial<
 
 export type MasterPromotionTableColumnKey =
 	| "name"
-	| "target"
+	| "targetPlanIds"
 	| "value"
 	| "status"
 	| "redemptions";

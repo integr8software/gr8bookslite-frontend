@@ -35,7 +35,7 @@ export function MasterSubscriptionCompanyTable({
 				emptyDescription="Try a different company, owner, plan, or subscription status."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No subscriptions found"
-				minWidthClassName="min-w-[99rem]"
+				minWidthClassName="min-w-[101rem]"
 				paginationStorageKey={MasterSubscriptionPaginationStorageKey}
 				table={table}
 				toolbar={

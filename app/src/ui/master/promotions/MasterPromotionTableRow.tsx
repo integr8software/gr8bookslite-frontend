@@ -1,10 +1,13 @@
 import Link from "next/link";
 import {
-	getMasterPromotionTargetLabel,
+	getMasterPromotionTargetLabels,
+	getMasterPromotionTargetSummary,
 	getMasterPromotionViewHref,
 } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 import {
 	formatMasterPromotionDate,
+	formatMasterPromotionLimit,
+	formatMasterPromotionUsage,
 	formatMasterPromotionValue,
 } from "@/app/src/data/master/promotions/MasterPromotionData";
 import type { MasterPromotionRecord } from "@/app/src/types/master/promotions/MasterPromotionTypes";
@@ -20,6 +23,8 @@ export function MasterPromotionTableRow({
 	record,
 	onToggleStatus,
 }: MasterPromotionTableRowProps) {
+	const targetLabels = getMasterPromotionTargetLabels(record.targetPlanIds);
+
 	return (
 		<tr className="module-table-row">
 			<td className="px-4 py-4">
@@ -38,22 +43,36 @@ export function MasterPromotionTableRow({
 					</p>
 				</div>
 			</td>
-			<td className="px-4 py-4 text-sm font-medium text-darknavy/65">
-				{getMasterPromotionTargetLabel(record.target)}
+			<td className="px-4 py-4">
+				<p className="line-clamp-2 text-sm font-semibold text-darknavy">
+					{getMasterPromotionTargetSummary(record.targetPlanIds)}
+				</p>
+				<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/38">
+					{targetLabels.length === 1
+						? "1 target"
+						: `${targetLabels.length} targets`}
+				</p>
 			</td>
 			<td className="px-4 py-4">
 				<p className="text-sm font-semibold text-darknavy">
 					{formatMasterPromotionValue(record)}
 				</p>
 				<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/38">
-					Expires {formatMasterPromotionDate(record.expiresAt)}
+					{record.expiresAt
+						? `Expires ${formatMasterPromotionDate(record.expiresAt)}`
+						: "No expiration"}
 				</p>
 			</td>
 			<td className="px-4 py-4">
 				<MasterPromotionStatusBadge status={record.status} />
 			</td>
-			<td className="px-4 py-4 text-sm font-semibold text-darknavy">
-				{record.redemptions}
+			<td className="px-4 py-4">
+				<p className="text-sm font-semibold text-darknavy">
+					{formatMasterPromotionUsage(record)}
+				</p>
+				<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/38">
+					{formatMasterPromotionLimit(record)}
+				</p>
 			</td>
 			<td className="px-4 py-4">
 				<MasterPromotionRecordActions

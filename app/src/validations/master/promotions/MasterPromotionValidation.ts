@@ -17,11 +17,16 @@ const MasterPromotionFormSchema = z
 			.trim()
 			.min(10, "Description must be at least 10 characters."),
 		discountKind: z.enum(["Percent", "Fixed"]),
-		expiresAt: z.string().trim().min(1, "Expiry date is required."),
+		expirationMode: z.enum(["With expiration", "No expiration"]),
+		expiresAt: z.string().trim(),
 		id: z.string().optional(),
+		limitMode: z.enum(["Limited", "Unlimited"]),
 		name: z.string().trim().min(3, "Name must be at least 3 characters."),
+		redemptionLimit: z.number().min(0, "Limit cannot be negative."),
 		status: z.enum(["Active", "Draft", "Inactive"]),
-		target: z.string().trim().min(1, "Target plan is required."),
+		targetPlanIds: z
+			.array(z.string().trim().min(1))
+			.min(1, "Select at least one target plan."),
 		type: z.enum(["Promo Code", "Coupon", "Voucher", "Event Promo"]),
 		value: z.number().positive("Discount value must be greater than 0."),
 	})
@@ -31,6 +36,25 @@ const MasterPromotionFormSchema = z
 				code: "custom",
 				message: "Percent discounts cannot exceed 100.",
 				path: ["value"],
+			});
+		}
+
+		if (
+			values.expirationMode === "With expiration" &&
+			values.expiresAt.trim().length === 0
+		) {
+			context.addIssue({
+				code: "custom",
+				message: "Expiry date is required.",
+				path: ["expiresAt"],
+			});
+		}
+
+		if (values.limitMode === "Limited" && values.redemptionLimit <= 0) {
+			context.addIssue({
+				code: "custom",
+				message: "Limit must be greater than 0.",
+				path: ["redemptionLimit"],
 			});
 		}
 	});

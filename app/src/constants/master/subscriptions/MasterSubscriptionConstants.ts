@@ -18,7 +18,9 @@ export const MasterSubscriptionStatusOptions = [
 
 export const MasterSubscriptionBillingCycleOptions = [
 	"Monthly",
+	"Every 3 months",
 	"Annual",
+	"Per transaction",
 ] as const satisfies readonly MasterSubscriptionBillingCycle[];
 
 export const MasterSubscriptionUnitOptions = [
@@ -39,17 +41,24 @@ export const MasterSubscriptionUnitShortLabels = {
 	user: "Users",
 } as const satisfies Record<MasterSubscriptionUnit, string>;
 
+export const MasterSubscriptionBillingCycleAmountLeftLabels = {
+	Annual: "12-month balance",
+	"Every 3 months": "3-month balance",
+	Monthly: "1-month balance",
+	"Per transaction": "Transaction balance",
+} as const satisfies Record<MasterSubscriptionBillingCycle, string>;
+
 export const MasterSubscriptionTableColumns = [
 	{ key: "name", label: "Company", className: "w-[19rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
-	{ key: "rating", label: "Rating", className: "w-[9rem]" },
 	{ label: "Plan", className: "w-[13rem]" },
-	{ key: "billingCycle", label: "Cycle", className: "w-[8rem]" },
+	{ key: "billingCycle", label: "Cycle", className: "w-[11rem]" },
 	{ key: "durationMonths", label: "Duration", className: "w-[8rem]" },
 	{ key: "companyCount", label: "Companies", className: "w-[8rem]" },
 	{ key: "branchCount", label: "Branches", className: "w-[8rem]" },
 	{ key: "userCount", label: "Users", className: "w-[7rem]" },
 	{ label: "Monthly total", className: "w-[10rem]" },
+	{ label: "Amount left", className: "w-[11rem]" },
 	{ key: "renewalDate", label: "Renewal", className: "w-[10rem]" },
 	{ label: "Actions", className: "w-[7rem] text-center" },
 ] as const satisfies readonly (

@@ -5,7 +5,12 @@ import type {
 } from "@/app/src/types/master/subscriptions/MasterSubscriptionTypes";
 
 const MasterSubscriptionPlanFormSchema = z.object({
-	billingCycle: z.enum(["Monthly", "Annual"]),
+	billingCycle: z.enum([
+		"Monthly",
+		"Every 3 months",
+		"Annual",
+		"Per transaction",
+	]),
 	code: z
 		.string()
 		.trim()

@@ -21,7 +21,7 @@ export function MasterPromotionListPage() {
 				titleAs="h1"
 				eyebrow="Discounts"
 				title="Promotions"
-				description="Manage promo codes, coupons, vouchers, event promos, eligibility, expiry, and activation status."
+				description="Manage promo codes, coupons, vouchers, event promos, plan eligibility, limits, expiration, and activation status."
 				actions={
 					<Link
 						href={MasterPromotionAddHref}

@@ -1,19 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Save } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowLeft, Check, Save, Search } from "lucide-react";
 import {
 	MasterPromotionDiscountKindOptions,
+	MasterPromotionExpirationModeOptions,
+	MasterPromotionLimitModeOptions,
 	MasterPromotionStatusOptions,
 	MasterPromotionTargetOptions,
 	MasterPromotionTypeOptions,
 	MasterPromotionsHref,
+	normalizeMasterPromotionTargetPlanIds,
 } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 import { useMasterPromotionFormPage } from "@/app/src/hooks/master/promotions/useMasterPromotionFormPage";
 import type {
 	MasterPromotionDiscountKind,
+	MasterPromotionExpirationMode,
 	MasterPromotionFormErrors,
 	MasterPromotionFormValues,
+	MasterPromotionLimitMode,
 	MasterPromotionStatus,
 	MasterPromotionType,
 } from "@/app/src/types/master/promotions/MasterPromotionTypes";
@@ -22,7 +28,6 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
-import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 const ControlClassName =
@@ -58,7 +63,7 @@ export function MasterPromotionFormPage({
 				titleAs="h1"
 				eyebrow="Discounts"
 				title={mode === "edit" ? "Edit Promotion" : "Add Promotion"}
-				description="Set the campaign identity, target, value, expiry date, and status."
+				description="Set the campaign identity, target plans, value, limit, expiration, and status."
 				actions={
 					<>
 						<Link
@@ -140,35 +145,19 @@ function MasterPromotionForm({
 					/>
 				</div>
 				<div className="grid content-start gap-4">
-					<div className="grid gap-4 md:grid-cols-2">
-						<SelectField
-							label="Type"
-							value={values.type}
-							options={MasterPromotionTypeOptions}
-							onChange={(type) =>
-								onUpdate({ type: type as MasterPromotionType })
-							}
-						/>
-						<label className={FieldLabelClassName}>
-							Target plan
-							<AppAdvancedDropdown
-								menuPortal
-								options={MasterPromotionTargetOptions}
-								placeholder="Select target plan"
-								searchPlaceholder="Search plans"
-								showSelectedDetails
-								value={values.target}
-								onChange={(target) =>
-									onUpdate({
-										target: Array.isArray(target)
-											? target[0] ?? ""
-											: target,
-									})
-								}
-							/>
-							<FieldError message={errors.target} />
-						</label>
-					</div>
+					<SelectField
+						label="Type"
+						value={values.type}
+						options={MasterPromotionTypeOptions}
+						onChange={(type) =>
+							onUpdate({ type: type as MasterPromotionType })
+						}
+					/>
+					<TargetPlanListField
+						error={errors.targetPlanIds}
+						value={values.targetPlanIds}
+						onChange={(targetPlanIds) => onUpdate({ targetPlanIds })}
+					/>
 					<div className="grid gap-4 md:grid-cols-2">
 						<SelectField
 							label="Discount"
@@ -188,18 +177,55 @@ function MasterPromotionForm({
 							onChange={(value) => onUpdate({ value })}
 						/>
 					</div>
-					<label className={FieldLabelClassName}>
-						Expires
-						<input
-							type="date"
-							value={values.expiresAt}
-							onChange={(event) =>
-								onUpdate({ expiresAt: event.target.value })
+					<div className="grid gap-4 md:grid-cols-2">
+						<SelectField
+							label="Usage limit"
+							value={values.limitMode}
+							options={MasterPromotionLimitModeOptions}
+							onChange={(limitMode) =>
+								onUpdate({
+									limitMode: limitMode as MasterPromotionLimitMode,
+								})
 							}
-							className={ControlClassName}
 						/>
-						<FieldError message={errors.expiresAt} />
-					</label>
+						{values.limitMode === "Limited" ? (
+							<NumberField
+								error={errors.redemptionLimit}
+								label="Limit"
+								value={values.redemptionLimit}
+								onChange={(redemptionLimit) =>
+									onUpdate({ redemptionLimit })
+								}
+							/>
+						) : null}
+					</div>
+					<div className="grid gap-4 md:grid-cols-2">
+						<SelectField
+							label="Expiration"
+							value={values.expirationMode}
+							options={MasterPromotionExpirationModeOptions}
+							onChange={(expirationMode) =>
+								onUpdate({
+									expirationMode:
+										expirationMode as MasterPromotionExpirationMode,
+								})
+							}
+						/>
+						{values.expirationMode === "With expiration" ? (
+							<label className={FieldLabelClassName}>
+								Expires
+								<input
+									type="date"
+									value={values.expiresAt}
+									onChange={(event) =>
+										onUpdate({ expiresAt: event.target.value })
+									}
+									className={ControlClassName}
+								/>
+								<FieldError message={errors.expiresAt} />
+							</label>
+						) : null}
+					</div>
 					<div className="flex justify-end">
 						<button
 							type="button"
@@ -212,6 +238,117 @@ function MasterPromotionForm({
 					</div>
 				</div>
 			</div>
+		</div>
+	);
+}
+
+function TargetPlanListField({
+	error,
+	value,
+	onChange,
+}: {
+	error?: string;
+	value: string[];
+	onChange: (value: string[]) => void;
+}) {
+	const [query, setQuery] = useState("");
+	const selectedValues = useMemo(() => new Set(value), [value]);
+	const filteredOptions = useMemo(() => {
+		const normalizedQuery = query.trim().toLowerCase();
+
+		if (!normalizedQuery) {
+			return MasterPromotionTargetOptions;
+		}
+
+		return MasterPromotionTargetOptions.filter((option) =>
+			[option.name, option.label, option.description, option.value]
+				.filter(Boolean)
+				.join(" ")
+				.toLowerCase()
+				.includes(normalizedQuery),
+		);
+	}, [query]);
+
+	function toggleTargetPlan(targetPlanId: string) {
+		const nextValues = selectedValues.has(targetPlanId)
+			? value.filter((selectedValue) => selectedValue !== targetPlanId)
+			: [...value, targetPlanId];
+
+		onChange(normalizeMasterPromotionTargetPlanIds(nextValues, value));
+	}
+
+	return (
+		<div className={FieldLabelClassName}>
+			<div className="flex items-center justify-between gap-3">
+				<span>Target plans</span>
+				<span className="text-xs font-semibold text-darknavy/42">
+					{value.length.toLocaleString("en-US")} selected
+				</span>
+			</div>
+			<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+				<label className="relative block border-b border-darknavy/10 p-2">
+					<span className="sr-only">Search target plans</span>
+					<Search
+						className="pointer-events-none absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/35"
+						aria-hidden="true"
+					/>
+					<input
+						value={query}
+						onChange={(event) => setQuery(event.target.value)}
+						placeholder="Search plans"
+						className="h-10 w-full rounded-md border border-darknavy/10 bg-white pl-10 pr-3 text-sm font-semibold text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/10"
+					/>
+				</label>
+				<div className="grid max-h-72 gap-1 overflow-y-auto p-2">
+					{filteredOptions.length > 0 ? (
+						filteredOptions.map((option) => {
+							const isSelected = selectedValues.has(option.value);
+
+							return (
+								<button
+									key={option.value}
+									type="button"
+									aria-pressed={isSelected}
+									onClick={() => toggleTargetPlan(option.value)}
+									className={joinClasses(
+										"flex min-h-14 w-full items-start gap-3 rounded-md px-3 py-2 text-left transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15",
+										isSelected
+											? "bg-skyblue/12 text-darknavy"
+											: "text-darknavy hover:bg-skyblue/10",
+									)}
+								>
+									<span
+										className={joinClasses(
+											"mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border",
+											isSelected
+												? "border-skyblue bg-skyblue text-white"
+												: "border-darknavy/18 bg-white text-transparent",
+										)}
+									>
+										<Check className="h-3.5 w-3.5" aria-hidden="true" />
+									</span>
+									<span className="grid min-w-0 gap-0.5">
+										<span className="truncate text-sm font-semibold">
+											{option.name}
+										</span>
+										<span className="text-xs font-semibold text-darknavy/48">
+											{option.label}
+										</span>
+										<span className="line-clamp-2 text-xs font-medium leading-4 text-darknavy/45">
+											{option.description}
+										</span>
+									</span>
+								</button>
+							);
+						})
+					) : (
+						<p className="px-3 py-6 text-center text-sm font-medium text-darknavy/45">
+							No plans found.
+						</p>
+					)}
+				</div>
+			</div>
+			<FieldError message={error} />
 		</div>
 	);
 }

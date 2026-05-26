@@ -24,6 +24,7 @@ export type MasterSubscriberPromotionRecord = {
 	invoiceNo: string | null;
 	notes: string;
 	ownerName: string;
+	planId: string;
 	planName: string;
 	promotionCode: string;
 	promotionId: string;

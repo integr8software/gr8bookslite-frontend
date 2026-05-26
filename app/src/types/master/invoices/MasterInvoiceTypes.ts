@@ -19,6 +19,7 @@ export type MasterInvoiceRecord = {
 	invoiceNo: string;
 	ownerName: string;
 	paymentMethod: MasterInvoicePaymentMethod;
+	planId: string;
 	planName: string;
 	referenceNo: string;
 	status: MasterInvoiceStatus;

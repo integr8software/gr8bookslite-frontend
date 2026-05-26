@@ -16,6 +16,13 @@ export function MapWorkspaceCompanyApiRecord(
 		address: company.address ?? "",
 		companyType: GetWorkspaceCompanyType(company),
 		contactNumber: company.contactNumber ?? "",
+		createdByUser: company.createdByUser
+			? {
+					email: company.createdByUser.email,
+					id: String(company.createdByUser.id),
+					name: company.createdByUser.name,
+				}
+			: undefined,
 		createdAt: FormatDate(company.createdAt),
 		email: company.email ?? "",
 		firstName: company.ownerFirstName ?? undefined,

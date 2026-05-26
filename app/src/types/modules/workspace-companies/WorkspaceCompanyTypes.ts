@@ -25,6 +25,11 @@ export type WorkspaceCompanyRecord = {
   contactNumber: string;
   address: string;
   primaryContact: string;
+  createdByUser?: {
+    id: string;
+    name: string;
+    email: string;
+  };
   createdAt: string;
   contactPerson?: string;
   firstName?: string;

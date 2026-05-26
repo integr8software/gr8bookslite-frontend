@@ -33,6 +33,12 @@ export type WorkspaceCompanyApiRecord = {
 	contactNumber: string | null;
 	reportStartDate: string | null;
 	reportEndDate: string | null;
+	createdByUserId: number | null;
+	createdByUser: {
+		id: number;
+		name: string;
+		email: string;
+	} | null;
 	isActive: boolean;
 	status: WorkspaceCompanyApiStatus;
 	subscriptionPlan: {

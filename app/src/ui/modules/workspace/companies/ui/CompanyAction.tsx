@@ -170,6 +170,8 @@ function EditCompanyOverview({
 				<OverviewDetail label="TIN" value={company.tin} />
 				<OverviewDetail label="Report Start" value={company.reportStartDate} />
 				<OverviewDetail label="Report End" value={company.reportEndDate} />
+				<OverviewDetail label="Created By" value={company.createdByUser?.name} />
+				<OverviewDetail label="Creator Email" value={company.createdByUser?.email} />
 				<OverviewDetail label="Website" value={company.website} />
 				<OverviewDetail label="Created" value={company.createdAt} />
 			</div>

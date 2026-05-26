@@ -102,6 +102,8 @@ export function WorkspaceCompanyDashboard() {
 								<Detail label="Website" value={company.website} />
 								<Detail label="Report Start" value={company.reportStartDate} />
 								<Detail label="Report End" value={company.reportEndDate} />
+								<Detail label="Created By" value={company.createdByUser?.name} />
+								<Detail label="Creator Email" value={company.createdByUser?.email} />
 								<Detail label="Created" value={company.createdAt} />
 							</div>
 						</div>

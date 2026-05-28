@@ -90,9 +90,9 @@ const moduleHeaderVariantClassNames = {
 };
 
 const moduleHeaderTitleClassNames = {
-	card: "text-3xl font-semibold leading-tight text-darknavy",
-	panel: "text-3xl font-semibold leading-tight text-darknavy",
-	plain: "text-3xl font-semibold leading-tight text-darknavy",
+	card: "text-[1.9rem] font-semibold leading-tight text-darknavy sm:text-3xl",
+	panel: "text-[1.9rem] font-semibold leading-tight text-darknavy sm:text-3xl",
+	plain: "text-[1.9rem] font-semibold leading-tight text-darknavy sm:text-3xl",
 };
 
 const moduleHeaderDescriptionClassNames = {

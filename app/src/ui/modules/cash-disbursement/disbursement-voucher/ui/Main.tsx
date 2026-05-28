@@ -118,36 +118,38 @@ export function DisbursementVoucherMain() {
 
   return (
     <>
-      <section className="grid gap-6">
-        <DisbursementVoucherHeader
-          previewRows={previewRows}
-          onStartVoucher={() => setDrawerState({ mode: "add" })}
-        />
+      <section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] bg-white text-darknavy sm:-mx-5 lg:-mx-6">
+        <main className="grid min-h-[calc(100dvh-5rem)] content-start gap-5 p-4 sm:p-6">
+          <DisbursementVoucherHeader
+            previewRows={previewRows}
+            onStartVoucher={() => setDrawerState({ mode: "add" })}
+          />
 
-        <div className="rounded-[28px] border border-darknavy/10 bg-white p-5 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
-                Search Transaction
-              </p>
-              <h3 className="mt-2 text-2xl font-semibold text-darknavy">
-                Preview the transaction set before creating a voucher
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-darknavy/58">
-                Search by payee, voucher number, remarks, or transaction number,
-                then move directly into Preview, New Voucher, Edit Voucher, or
-                Delete.
-              </p>
+          <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
+            <div className="border-b border-darknavy/10 px-4 py-4 sm:px-5 sm:py-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-2xl min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
+                    Search Transaction
+                  </p>
+                  <h3 className="mt-2 text-xl font-semibold leading-tight text-darknavy sm:text-2xl">
+                    Preview the transaction set before creating a voucher
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-darknavy/58">
+                    Search by payee, voucher number, remarks, or transaction
+                    number, then move directly into Preview, New Voucher, Edit
+                    Voucher, or Delete.
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="mt-6">
-              <DisbursementVoucherTable
+            <DisbursementVoucherTable
               onCreateVoucher={(row) => setDrawerState({ mode: "add", row })}
               onEditVoucher={(row) => setDrawerState({ mode: "edit", row })}
               table={previewTable.table}
               toolbar={
-                <ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
+                <ModuleTableToolbar className="rounded-none border-x-0 border-t-0 shadow-none sm:grid-cols-2 xl:grid-cols-[minmax(24rem,2.5fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
                   <ModuleTableSearch
                     label="Search disbursement voucher transactions"
                     value={previewTable.query}
@@ -175,7 +177,7 @@ export function DisbursementVoucherMain() {
               onDeleteVoucher={setPendingDeleteRow}
             />
           </div>
-        </div>
+        </main>
       </section>
 
       <AppDialog

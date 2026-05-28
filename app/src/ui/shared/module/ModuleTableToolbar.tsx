@@ -42,7 +42,7 @@ export function ModuleTableToolbar({
 	return (
 		<div
 			className={joinClasses(
-				"grid gap-5 bg-white p-5 lg:grid-cols-[minmax(24rem,2.5fr)_repeat(auto-fit,minmax(11rem,1fr))]",
+				"grid gap-4 bg-white p-4 sm:gap-5 sm:p-5 lg:grid-cols-[minmax(24rem,2.5fr)_repeat(auto-fit,minmax(11rem,1fr))]",
 				className,
 			)}
 			{...props}

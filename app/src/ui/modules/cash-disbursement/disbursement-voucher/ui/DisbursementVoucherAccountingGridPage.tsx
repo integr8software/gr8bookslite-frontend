@@ -266,39 +266,44 @@ export function DisbursementVoucherAccountingGridPage() {
 
   if (!session) {
     return (
-      <section className="grid gap-6">
-        <div className="rounded-[28px] border border-darknavy/10 bg-white p-8 shadow-[0_18px_60px_rgba(33,39,56,0.08)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
-            Cash Disbursement Setup
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold text-darknavy">
-            Accounting Grid View
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-darknavy/58">
-            No voucher draft is available yet. Open a disbursement voucher
-            first, then click Data Grid View from Accounting Entries.
-          </p>
-          <button
-            type="button"
-            onClick={() => router.push("/cash-disbursement/disbursement-voucher")}
-            className="mt-6 inline-flex h-11 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35"
-          >
-            Back to Disbursement Voucher
-          </button>
-        </div>
+      <section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] bg-white text-darknavy sm:-mx-5 lg:-mx-6">
+        <main className="grid min-h-[calc(100dvh-5rem)] content-start gap-5 p-4 sm:p-6">
+          <div className="rounded-xl border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5 sm:p-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
+              Cash Disbursement Setup
+            </p>
+            <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">
+              Accounting Grid View
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-darknavy/58">
+              No voucher draft is available yet. Open a disbursement voucher
+              first, then click Data Grid View from Accounting Entries.
+            </p>
+            <button
+              type="button"
+              onClick={() =>
+                router.push("/cash-disbursement/disbursement-voucher")
+              }
+              className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 sm:w-auto"
+            >
+              Back to Disbursement Voucher
+            </button>
+          </div>
+        </main>
       </section>
     );
   }
 
   return (
-    <section className="grid gap-6">
-      <div className="rounded-[28px] border border-darknavy/10 bg-white p-6 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-8">
+    <section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] bg-white text-darknavy sm:-mx-5 lg:-mx-6">
+      <main className="grid min-h-[calc(100dvh-5rem)] content-start gap-5 p-4 sm:p-6">
+      <div className="rounded-xl border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-6 lg:p-8">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
               Cash Disbursement Setup
             </p>
-            <h1 className="mt-2 text-3xl font-semibold text-darknavy">
+            <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">
               Accounting Grid View
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-darknavy/58">
@@ -306,7 +311,7 @@ export function DisbursementVoucherAccountingGridPage() {
               return to the voucher preview for final checking before saving.
             </p>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-4 py-2 text-sm font-semibold text-skyblue">
+          <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-4 py-2 text-sm font-semibold text-skyblue sm:w-auto sm:justify-start">
             <LayoutGrid className="h-4 w-4" aria-hidden="true" />
             Data Grid Encoding
           </div>
@@ -329,7 +334,7 @@ export function DisbursementVoucherAccountingGridPage() {
           />
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <QuickActionButton
             icon={<CirclePlus className="h-4 w-4" aria-hidden="true" />}
             label="Add Row"
@@ -353,7 +358,133 @@ export function DisbursementVoucherAccountingGridPage() {
           />
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-[24px] border border-darknavy/10">
+        <div className="mt-6 grid gap-4 md:hidden">
+          {rows.map((row, index) => (
+            <section
+              key={row.id}
+              data-grid-row-id={row.id}
+              className="rounded-xl border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-darknavy">
+                  Row {index + 1}
+                </p>
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/40">
+                  {row.taxRate || "0%"}
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-3">
+                <MobileGridField label="Account Code">
+                  <input
+                    data-grid-row-input-id={row.id}
+                    value={row.accountCode}
+                    onFocus={() => keepRowInView(row.id)}
+                    onChange={(event) =>
+                      updateRow(row.id, "accountCode", event.target.value)
+                    }
+                    className={GridInputClassName}
+                    placeholder="Select or encode"
+                  />
+                </MobileGridField>
+                <MobileGridField label="Account Name">
+                  <input
+                    value={row.accountName}
+                    onFocus={() => keepRowInView(row.id)}
+                    onChange={(event) =>
+                      updateRow(row.id, "accountName", event.target.value)
+                    }
+                    className={GridInputClassName}
+                    placeholder="Account name"
+                  />
+                </MobileGridField>
+                <MobileGridField label="Particulars">
+                  <input
+                    value={row.particulars}
+                    onFocus={() => keepRowInView(row.id)}
+                    onChange={(event) =>
+                      updateRow(row.id, "particulars", event.target.value)
+                    }
+                    className={GridInputClassName}
+                    placeholder="Enter particulars"
+                  />
+                </MobileGridField>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <MobileGridField label="Tax Rate">
+                    <select
+                      value={row.taxRate}
+                      onFocus={() => keepRowInView(row.id)}
+                      onChange={(event) =>
+                        updateRow(row.id, "taxRate", event.target.value)
+                      }
+                      className={`${GridInputClassName} app-select-control`}
+                    >
+                      {TaxRateOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </MobileGridField>
+                  <MobileGridField label="Debit">
+                    <input
+                      value={row.debit}
+                      onFocus={() => keepRowInView(row.id)}
+                      onChange={(event) =>
+                        updateRow(row.id, "debit", event.target.value)
+                      }
+                      className={`${GridInputClassName} text-right`}
+                      placeholder="0.00"
+                    />
+                  </MobileGridField>
+                  <MobileGridField label="Credit">
+                    <input
+                      value={row.credit}
+                      onFocus={() => keepRowInView(row.id)}
+                      onChange={(event) =>
+                        updateRow(row.id, "credit", event.target.value)
+                      }
+                      className={`${GridInputClassName} text-right`}
+                      placeholder="0.00"
+                    />
+                  </MobileGridField>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <RowIconButton
+                  label="Add row"
+                  title="Add row"
+                  tone="sky"
+                  onClick={() => addBlankRows()}
+                >
+                  <CirclePlus className="h-4 w-4" aria-hidden="true" />
+                </RowIconButton>
+                <RowIconButton
+                  label="Duplicate"
+                  title="Duplicate row"
+                  onClick={() => {
+                    const nextRow = { ...row, id: createGridRowId() };
+                    pendingScrollRowIdRef.current = nextRow.id;
+                    setRows((currentRows) => [...currentRows, nextRow]);
+                  }}
+                >
+                  <Copy className="h-4 w-4" aria-hidden="true" />
+                </RowIconButton>
+                <RowIconButton
+                  label="Remove"
+                  title="Remove row"
+                  tone="danger"
+                  onClick={() => removeRow(row.id)}
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                </RowIconButton>
+              </div>
+            </section>
+          ))}
+        </div>
+
+        <div className="mt-6 hidden overflow-hidden rounded-xl border border-darknavy/10 md:block">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1080px] border-collapse text-left">
               <thead className="bg-offwhite/60 text-xs font-semibold uppercase tracking-[0.16em] text-darknavy/45">
@@ -488,7 +619,7 @@ export function DisbursementVoucherAccountingGridPage() {
         </div>
 
         <div className="mt-6 grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-          <div className="rounded-[22px] border border-darknavy/10 bg-offwhite/45 p-5">
+          <div className="rounded-xl border border-darknavy/10 bg-offwhite/45 p-4 sm:p-5">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-darknavy/45">
               Quick Encoding Tips
             </p>
@@ -511,7 +642,7 @@ export function DisbursementVoucherAccountingGridPage() {
             ) : null}
           </div>
 
-          <div className="rounded-[22px] border border-darknavy/10 bg-white p-5">
+          <div className="rounded-xl border border-darknavy/10 bg-white p-4 sm:p-5">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-darknavy/45">
               Balance Summary
             </p>
@@ -537,20 +668,21 @@ export function DisbursementVoucherAccountingGridPage() {
           <button
             type="button"
             onClick={handleBackToVoucher}
-            className="inline-flex h-11 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
+            className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8 sm:w-auto"
           >
             Back to Voucher
           </button>
           <button
             type="button"
             onClick={handleSaveAndContinue}
-            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85"
+            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85 sm:w-auto"
           >
             <Save className="h-4 w-4" aria-hidden="true" />
             Save & Preview
           </button>
         </div>
       </div>
+      </main>
 
       <GridPreviewDialog
         entries={previewEntries}
@@ -598,7 +730,7 @@ function GridPreviewDialog({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-[120] flex items-end justify-center bg-slate-950/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -609,15 +741,15 @@ function GridPreviewDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="grid-preview-title"
-        className="flex h-[min(86vh,980px)] w-full max-w-7xl flex-col overflow-hidden rounded-[28px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)]"
+        className="flex h-[min(100dvh-0.75rem,980px)] w-full max-w-7xl flex-col overflow-hidden rounded-[20px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)] sm:h-[min(86vh,980px)] sm:rounded-[28px]"
       >
-        <div className="border-b border-darknavy/10 px-6 py-5">
+        <div className="border-b border-darknavy/10 px-4 py-4 sm:px-6 sm:py-5">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
             Edit Disbursement Voucher
           </p>
           <h2
             id="grid-preview-title"
-            className="mt-2 text-2xl font-semibold text-darknavy"
+            className="mt-2 text-xl font-semibold text-darknavy sm:text-2xl"
           >
             {values.voucherNo}
           </h2>
@@ -627,7 +759,7 @@ function GridPreviewDialog({
           </p>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-6">
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="grid gap-5">
           <div className="grid items-stretch gap-5 xl:grid-cols-2">
             <PreviewShell
@@ -683,7 +815,7 @@ function GridPreviewDialog({
                 <PreviewInfoLine label="Status" value={values.status || "-"} />
                 <PreviewInfoLine label="Remarks" value={values.remarks || "-"} />
 
-                <div className="rounded-[18px] bg-coralpink px-5 py-5 text-darknavy shadow-[0_16px_36px_rgba(249,112,104,0.18)]">
+                <div className="rounded-[18px] bg-coralpink px-4 py-4 text-darknavy shadow-[0_16px_36px_rgba(249,112,104,0.18)] sm:px-5 sm:py-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-darknavy/72">
                     Linked Voucher Amount
                   </p>
@@ -772,7 +904,7 @@ function GridPreviewDialog({
                 {values.attachments.map((attachment) => (
                   <div
                     key={attachment.id}
-                    className="flex items-center justify-between rounded-xl border border-darknavy/10 px-3 py-3"
+                    className="flex flex-col gap-2 rounded-xl border border-darknavy/10 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex items-center gap-3">
                       <span className="flex h-8 w-8 items-center justify-center rounded-full bg-darknavy/8 text-darknavy">
@@ -793,18 +925,18 @@ function GridPreviewDialog({
         </div>
         </div>
 
-        <div className="flex flex-col-reverse gap-3 border-t border-darknavy/10 px-6 py-4 sm:flex-row sm:items-center sm:justify-end">
+        <div className="flex flex-col-reverse gap-3 border-t border-darknavy/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-11 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
+            className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8 sm:w-auto"
           >
             Back to Grid
           </button>
           <button
             type="button"
             onClick={onContinue}
-            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85"
+            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85 sm:w-auto"
           >
             Continue to Voucher Preview
           </button>
@@ -826,14 +958,31 @@ function PreviewShell({
   title: string;
 }) {
   return (
-    <section className="flex h-full flex-col rounded-[28px] border border-darknavy/10 bg-white p-5 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-6">
+    <section className="flex h-full flex-col rounded-xl border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5 lg:p-6">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
         {eyebrow}
       </p>
-      <h3 className="mt-2 text-2xl font-semibold text-darknavy">{title}</h3>
+      <h3 className="mt-2 text-xl font-semibold text-darknavy sm:text-2xl">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-darknavy/58">{description}</p>
       <div className="mt-5 flex-1">{children}</div>
     </section>
+  );
+}
+
+function MobileGridField({
+  children,
+  label,
+}: {
+  children: ReactNode;
+  label: string;
+}) {
+  return (
+    <label className="grid gap-2">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/42">
+        {label}
+      </span>
+      {children}
+    </label>
   );
 }
 
@@ -845,6 +994,39 @@ function PreviewInfoLine({ label, value }: { label: string; value: string }) {
       </dt>
       <dd className="text-sm font-medium text-darknavy">{value}</dd>
     </div>
+  );
+}
+
+function RowIconButton({
+  children,
+  label,
+  onClick,
+  title,
+  tone = "default",
+}: {
+  children: ReactNode;
+  label: string;
+  onClick: () => void;
+  title: string;
+  tone?: "danger" | "default" | "sky";
+}) {
+  const className =
+    tone === "danger"
+      ? "border-coralpink/18 bg-coralpink/10 text-coralpink hover:bg-coralpink/16"
+      : tone === "sky"
+        ? "border-skyblue/20 bg-skyblue/10 text-skyblue hover:bg-skyblue/16"
+        : "border-darknavy/10 bg-white text-darknavy/70 hover:border-skyblue/35 hover:bg-skyblue/8 hover:text-darknavy";
+
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border text-sm font-semibold transition ${className}`}
+    >
+      {children}
+      <span>{label}</span>
+    </button>
   );
 }
 
@@ -890,7 +1072,7 @@ function QuickActionButton({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold transition ${
+      className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold transition sm:w-auto ${
         tone === "danger"
           ? "border-coralpink/18 bg-coralpink/8 text-coralpink hover:bg-coralpink/14"
           : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/35 hover:bg-skyblue/8"

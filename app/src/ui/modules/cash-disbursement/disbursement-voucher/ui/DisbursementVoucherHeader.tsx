@@ -45,16 +45,18 @@ export function DisbursementVoucherHeader({
 
   return (
     <section className="grid gap-5">
-      <div className="rounded-[28px] border border-darknavy/10 bg-white p-6 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-8">
+      <div className="rounded-xl border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5 sm:p-6 lg:p-8">
         <ModuleHeader
           eyebrow="Cash Disbursement Desk"
           title="Disbursement voucher control center"
           description="Search source transactions, preview linked vouchers, and launch the shared drawer form for new or edit encoding when a transaction is ready."
+          actionsClassName="w-full sm:w-auto"
+          titleClassName="text-[1.9rem] sm:text-3xl"
           actions={
             <button
               type="button"
               onClick={onStartVoucher}
-              className={accentPrimaryActionClassName}
+              className={`${accentPrimaryActionClassName} w-full sm:w-auto`}
             >
               Start New Voucher
               <ArrowRight className="h-4 w-4" aria-hidden="true" />

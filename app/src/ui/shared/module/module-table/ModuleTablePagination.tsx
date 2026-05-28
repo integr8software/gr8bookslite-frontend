@@ -33,12 +33,12 @@ export function ModuleTablePagination({
 	);
 
 	return (
-		<div className="grid gap-3 border-t border-darknavy/10 bg-white px-6 py-5 text-sm text-darknavy/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+		<div className="grid gap-4 border-t border-darknavy/10 bg-white px-4 py-4 text-sm text-darknavy/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:px-6 sm:py-5">
 			<p className="text-center font-medium sm:text-left">
 				Showing {firstRow} to {lastRow} of {totalRows} {label}
 			</p>
 
-			<div className="flex items-center justify-center gap-2 sm:col-start-2">
+			<div className="flex flex-wrap items-center justify-center gap-2 sm:col-start-2">
 				<ModuleTablePageButton
 					aria-label="First page"
 					disabled={page === 1}
@@ -87,7 +87,7 @@ export function ModuleTablePagination({
 				</ModuleTablePageButton>
 			</div>
 
-			<label className="flex items-center justify-center gap-3 text-sm font-medium text-darknavy/65 sm:col-start-3 sm:justify-self-end">
+			<label className="flex flex-wrap items-center justify-center gap-3 text-sm font-medium text-darknavy/65 sm:col-start-3 sm:justify-self-end">
 				Rows per page
 				<span className="relative">
 					<select

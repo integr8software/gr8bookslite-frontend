@@ -65,16 +65,16 @@ function ModuleMetricCard({
 	metric: ModuleMetricItem;
 }) {
 	return (
-		<div className="relative min-h-24 bg-white px-6 py-5">
+		<div className="relative min-h-24 bg-white px-5 py-5 sm:px-6">
 			{hasDivider ? (
 				<span
-					className="absolute bottom-4 left-0 top-4 w-px bg-darknavy/10"
+					className="absolute left-5 right-5 top-0 h-px bg-darknavy/10 sm:bottom-4 sm:left-0 sm:right-auto sm:top-4 sm:h-auto sm:w-px"
 					aria-hidden="true"
 				/>
 			) : null}
 			<span
 				className={joinClasses(
-					"absolute bottom-6 left-6 top-6 w-0.5 rounded-full",
+					"absolute bottom-6 left-5 top-6 w-0.5 rounded-full sm:left-6",
 					moduleMetricAccentClassNames[metric.tone ?? "blue"],
 					metric.iconClassName,
 				)}

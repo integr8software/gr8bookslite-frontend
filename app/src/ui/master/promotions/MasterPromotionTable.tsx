@@ -14,23 +14,27 @@ import { MasterPromotionTableRow } from "@/app/src/ui/master/promotions/MasterPr
 
 type MasterPromotionTableProps = Pick<
 	ReturnType<typeof useMasterPromotionListPage>,
-	"query" | "resetFilters" | "setQuery" | "table" | "toggleRecordStatus"
+	| "query"
+	| "resetFilters"
+	| "setPendingDeleteRecord"
+	| "setQuery"
+	| "table"
 >;
 
 export function MasterPromotionTable({
 	query,
 	resetFilters,
+	setPendingDeleteRecord,
 	setQuery,
 	table,
-	toggleRecordStatus,
 }: MasterPromotionTableProps) {
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
 			<ModuleTable<MasterPromotionRecord>
-				emptyDescription="Try a different code, promotion type, target, value, or status."
+				emptyDescription="Try a different code, promotion type, cycle coverage, target, value, starting date, expiration, or status."
 				emptyIcon={<Tags className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No promotions found"
-				minWidthClassName="min-w-[92rem]"
+				minWidthClassName="min-w-[112rem]"
 				paginationStorageKey={MasterPromotionPaginationStorageKey}
 				table={table}
 				toolbar={
@@ -39,7 +43,7 @@ export function MasterPromotionTable({
 							label="Search promotions"
 							value={query}
 							onChange={setQuery}
-							placeholder="Search promo codes, coupons, vouchers, events, or targets"
+							placeholder="Search codes, types, cycles, targets, dates, values, or status"
 						/>
 						<ModuleTableResetButton onClick={resetFilters}>
 							Reset
@@ -50,7 +54,7 @@ export function MasterPromotionTable({
 					<MasterPromotionTableRow
 						key={row.id}
 						record={row.original}
-						onToggleStatus={toggleRecordStatus}
+						onDeleteRecord={setPendingDeleteRecord}
 					/>
 				)}
 			/>

@@ -1,15 +1,15 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft, Edit3, Tags } from "lucide-react";
+import { ArrowLeft, Edit3 } from "lucide-react";
 import {
 	MasterPromotionsHref,
 	getMasterPromotionTargetLabels,
-	getMasterPromotionEditHref,
+	getMasterPromotionEditFromViewHref,
 } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 import {
 	formatMasterPromotionDate,
 	formatMasterPromotionLimit,
-	formatMasterPromotionUsage,
+	formatMasterPromotionStartDate,
 	formatMasterPromotionValue,
 	getMasterPromotionById,
 } from "@/app/src/data/master/promotions/MasterPromotionData";
@@ -17,6 +17,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import type { MasterPromotionStatus } from "@/app/src/types/master/promotions/MasterPromotionTypes";
 import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
 import { MasterPromotionStatusBadge } from "@/app/src/ui/master/promotions/MasterPromotionBadges";
 
@@ -47,7 +48,7 @@ export function MasterPromotionDetailsPage({
 				titleAs="h1"
 				eyebrow="Discounts"
 				title={record.name}
-				description={record.description}
+				description="Review the promotion identity, cycle coverage, target plan, value, usage limit, expiration, and status."
 				actions={
 					<>
 						<Link
@@ -58,7 +59,7 @@ export function MasterPromotionDetailsPage({
 							Back
 						</Link>
 						<Link
-							href={getMasterPromotionEditHref(record.id)}
+							href={getMasterPromotionEditFromViewHref(record.id)}
 							className={moduleHeaderActionClassNames.primary}
 						>
 							<Edit3 className="h-4 w-4" aria-hidden="true" />
@@ -67,49 +68,57 @@ export function MasterPromotionDetailsPage({
 					</>
 				}
 			/>
-			<div className="grid gap-5 xl:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)]">
-				<DetailPanel title="Promotion Details">
+			<DetailPanel title="Promotion Details">
+				<div className="grid gap-4 md:grid-cols-2">
+					<DetailLine label="Name" value={record.name} />
 					<DetailLine label="Code" value={record.code} />
+				</div>
+				<div className="grid gap-4 md:grid-cols-2">
 					<DetailLine label="Type" value={record.type} />
-					<DetailPlanList
-						labels={getMasterPromotionTargetLabels(record.targetPlanIds)}
+					<DetailLine
+						label="Number of Billing Cycle covered"
+						value={record.billingCycle}
 					/>
-					<div className="grid gap-2">
-						<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/42">
-							Status
-						</p>
-						<MasterPromotionStatusBadge status={record.status} />
-					</div>
-				</DetailPanel>
-				<DetailPanel title="Discount">
-					<div className="grid gap-4 md:grid-cols-4">
-						<DetailLine
-							label={record.discountKind}
-							value={formatMasterPromotionValue(record)}
-						/>
-						<DetailLine
-							label="Expiration"
-							value={formatMasterPromotionDate(record.expiresAt)}
-						/>
-						<DetailLine
-							label="Redemptions"
-							value={formatMasterPromotionUsage(record)}
-						/>
-						<DetailLine
-							label="Limit"
-							value={formatMasterPromotionLimit(record)}
-						/>
-					</div>
-					<div className="mt-5 flex items-start gap-3 rounded-lg border border-darknavy/10 bg-offwhite/45 px-3 py-3">
-						<span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-skyblue/12 text-darknavy">
-							<Tags className="h-4 w-4" aria-hidden="true" />
-						</span>
-						<p className="text-sm font-medium leading-6 text-darknavy/70">
-							{record.description}
-						</p>
-					</div>
-				</DetailPanel>
-			</div>
+				</div>
+				<DetailLine label="Description" value={record.description} />
+				<DetailPlanList
+					labels={getMasterPromotionTargetLabels(record.targetPlanIds)}
+				/>
+				<div className="grid gap-4 md:grid-cols-2">
+					<DetailLine label="Discount" value={record.discountKind} />
+					<DetailLine
+						label="Value"
+						value={formatMasterPromotionValue(record)}
+					/>
+				</div>
+				<div className="grid gap-4 md:grid-cols-2">
+					<DetailLine
+						label="Usage Limit"
+						value={record.redemptionLimit === null ? "Unlimited" : "Limited"}
+					/>
+					<DetailLine
+						label="Limit"
+						value={formatMasterPromotionLimit(record)}
+					/>
+				</div>
+				<div className="grid gap-4 md:grid-cols-2">
+					<DetailLine
+						label="Expiration"
+						value={record.expiresAt ? "With expiration" : "No expiration"}
+					/>
+					<DetailLine
+						label="Expiration Date"
+						value={formatMasterPromotionDate(record.expiresAt)}
+					/>
+				</div>
+				<div className="grid gap-4 md:grid-cols-2">
+					<DetailLine
+						label="Starting date"
+						value={formatMasterPromotionStartDate(record.startsAt)}
+					/>
+					<DetailStatusLine status={record.status} />
+				</div>
+			</DetailPanel>
 		</section>
 	);
 }
@@ -140,13 +149,24 @@ function DetailLine({ label, value }: { label: string; value: string }) {
 	);
 }
 
+function DetailStatusLine({ status }: { status: MasterPromotionStatus }) {
+	return (
+		<div className="grid gap-2">
+			<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/42">
+				Status
+			</p>
+			<MasterPromotionStatusBadge status={status} />
+		</div>
+	);
+}
+
 function DetailPlanList({ labels }: { labels: string[] }) {
 	const displayLabels = labels.length > 0 ? labels : ["No target plans"];
 
 	return (
 		<div className="grid gap-2">
 			<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/42">
-				Target plans
+				Target Plan
 			</p>
 			<div className="flex flex-wrap gap-2">
 				{displayLabels.map((label) => (

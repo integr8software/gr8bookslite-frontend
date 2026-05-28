@@ -15,8 +15,10 @@ import {
 } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 import {
 	MasterPromotionRecords,
+	formatMasterPromotionAvailability,
 	formatMasterPromotionDate,
 	formatMasterPromotionLimit,
+	formatMasterPromotionStartDate,
 	formatMasterPromotionUsage,
 	formatMasterPromotionValue,
 } from "@/app/src/data/master/promotions/MasterPromotionData";
@@ -32,6 +34,8 @@ const InitialPagination: PaginationState = {
 
 export function useMasterPromotionListPage() {
 	const [records, setRecords] = useState(MasterPromotionRecords);
+	const [pendingDeleteRecord, setPendingDeleteRecord] =
+		useState<MasterPromotionRecord | null>(null);
 	const [query, setQuery] = useState("");
 	const [pagination, setPagination] =
 		useState<PaginationState>(InitialPagination);
@@ -48,12 +52,15 @@ export function useMasterPromotionListPage() {
 				record.code,
 				record.description,
 				record.type,
+				record.billingCycle,
 				getMasterPromotionTargetSummary(record.targetPlanIds),
 				record.status,
+				formatMasterPromotionStartDate(record.startsAt),
 				formatMasterPromotionValue(record),
 				formatMasterPromotionLimit(record),
 				formatMasterPromotionUsage(record),
 				formatMasterPromotionDate(record.expiresAt),
+				formatMasterPromotionAvailability(record),
 			]
 				.join(" ")
 				.toLowerCase()
@@ -134,14 +141,29 @@ export function useMasterPromotionListPage() {
 		);
 	}
 
+	function confirmDeleteRecord() {
+		if (!pendingDeleteRecord) {
+			return;
+		}
+
+		setRecords((current) =>
+			current.filter((record) => record.id !== pendingDeleteRecord.id),
+		);
+		toast.success("Promotion deleted.");
+		setPendingDeleteRecord(null);
+	}
+
 	function resetFilters() {
 		setQuery("");
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
 	return {
+		confirmDeleteRecord,
+		pendingDeleteRecord,
 		query,
 		resetFilters,
+		setPendingDeleteRecord,
 		setQuery,
 		summary,
 		table,
@@ -169,6 +191,17 @@ function createColumn(
 			id: key,
 			accessorFn: (record) =>
 				getMasterPromotionTargetSummary(record.targetPlanIds),
+			header: label,
+			enableSorting: false,
+			meta: { className },
+		};
+	}
+
+	if (key === "startsAt") {
+		return {
+			id: key,
+			accessorFn: (record) =>
+				formatMasterPromotionStartDate(record.startsAt),
 			header: label,
 			enableSorting: false,
 			meta: { className },

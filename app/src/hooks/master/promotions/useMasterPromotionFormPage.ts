@@ -3,7 +3,10 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { MasterPromotionsHref } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
+import {
+	MasterPromotionsHref,
+	getMasterPromotionViewHref,
+} from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 import {
 	InitialMasterPromotionFormValues,
 	MasterPromotionRecords,
@@ -21,11 +24,13 @@ import { validateMasterPromotionForm } from "@/app/src/validations/master/promot
 type UseMasterPromotionFormPageParams = {
 	mode: "add" | "edit";
 	recordId?: string;
+	returnSource?: "list" | "view";
 };
 
 export function useMasterPromotionFormPage({
 	mode,
 	recordId,
+	returnSource = "list",
 }: UseMasterPromotionFormPageParams) {
 	const router = useRouter();
 	const record = useMemo(
@@ -39,6 +44,10 @@ export function useMasterPromotionFormPage({
 	);
 	const [errors, setErrors] = useState<MasterPromotionFormErrors>({});
 	const isMissingRecord = mode === "edit" && !record;
+	const backHref =
+		returnSource === "view" && record
+			? getMasterPromotionViewHref(record.id)
+			: MasterPromotionsHref;
 
 	function updateValues(nextValues: Partial<MasterPromotionFormValues>) {
 		setValues((current) => ({ ...current, ...nextValues }));
@@ -60,18 +69,19 @@ export function useMasterPromotionFormPage({
 		toast.success(
 			mode === "edit" ? "Promotion updated." : "Promotion created.",
 		);
-		router.push(MasterPromotionsHref);
+		router.push(backHref);
 	}
 
 	function generatePromotionCode() {
 		setValues((current) => ({
 			...current,
-			code: generateMasterPromotionCode(current),
+			code: generateMasterPromotionCode(),
 		}));
 		toast.success("Promotion code generated.");
 	}
 
 	return {
+		backHref,
 		errors,
 		generatePromotionCode,
 		isMissingRecord,

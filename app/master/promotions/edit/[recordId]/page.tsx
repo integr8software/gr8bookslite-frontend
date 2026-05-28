@@ -9,10 +9,19 @@ export const metadata: Metadata = {
 
 type PageProps = {
 	params: Promise<{ recordId: string }>;
+	searchParams: Promise<{ from?: string | string[] }>;
 };
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params, searchParams }: PageProps) {
 	const { recordId } = await params;
+	const { from } = await searchParams;
+	const returnSource = from === "view" ? "view" : "list";
 
-	return <MasterPromotionFormPage mode="edit" recordId={recordId} />;
+	return (
+		<MasterPromotionFormPage
+			mode="edit"
+			recordId={recordId}
+			returnSource={returnSource}
+		/>
+	);
 }

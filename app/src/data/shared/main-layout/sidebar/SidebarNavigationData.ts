@@ -259,13 +259,6 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
           ),
         ],
       ),
-      child(
-        "maintenance-form-signatory",
-        "Form Signatory",
-        "/maintenance/form-signatory",
-        "settings",
-        "accounting",
-      ),
       navGroup(
         "maintenance-item-management",
         "Item Management",
@@ -309,6 +302,13 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
         "/maintenance/party-management",
         "maintenance.party",
         ["accounting", "inventory"],
+      ),
+      child(
+        "maintenance-form-signatory",
+        "Form Signatory",
+        "/maintenance/form-signatory",
+        "settings",
+        "accounting",
       ),
     ],
   },
@@ -1018,4 +1018,3 @@ function navGroup(
     children,
   };
 }
-

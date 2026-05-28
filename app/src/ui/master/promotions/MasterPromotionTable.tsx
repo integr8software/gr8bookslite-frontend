@@ -1,11 +1,18 @@
 "use client";
 
 import { Tags } from "lucide-react";
-import { MasterPromotionPaginationStorageKey } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
-import type { useMasterPromotionListPage } from "@/app/src/hooks/master/promotions/useMasterPromotionListPage";
+import {
+	MasterPromotionPaginationStorageKey,
+	MasterPromotionStatusFilterOptions,
+} from "@/app/src/constants/master/promotions/MasterPromotionConstants";
+import type {
+	MasterPromotionStatusFilter,
+	useMasterPromotionListPage,
+} from "@/app/src/hooks/master/promotions/useMasterPromotionListPage";
 import type { MasterPromotionRecord } from "@/app/src/types/master/promotions/MasterPromotionTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
+	ModuleTableFilterSelect,
 	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
@@ -18,6 +25,8 @@ type MasterPromotionTableProps = Pick<
 	| "resetFilters"
 	| "setPendingDeleteRecord"
 	| "setQuery"
+	| "setStatusFilter"
+	| "statusFilter"
 	| "table"
 >;
 
@@ -26,6 +35,8 @@ export function MasterPromotionTable({
 	resetFilters,
 	setPendingDeleteRecord,
 	setQuery,
+	setStatusFilter,
+	statusFilter,
 	table,
 }: MasterPromotionTableProps) {
 	return (
@@ -38,12 +49,23 @@ export function MasterPromotionTable({
 				paginationStorageKey={MasterPromotionPaginationStorageKey}
 				table={table}
 				toolbar={
-					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,3fr)_minmax(11rem,1fr)]">
+					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,3fr)_minmax(11rem,1fr)_minmax(11rem,1fr)]">
 						<ModuleTableSearch
 							label="Search promotions"
 							value={query}
 							onChange={setQuery}
 							placeholder="Search codes, types, cycles, targets, dates, values, or status"
+						/>
+						<ModuleTableFilterSelect
+							label="Status"
+							value={statusFilter}
+							options={MasterPromotionStatusFilterOptions.map((option) => ({
+								label: option,
+								value: option,
+							}))}
+							onChange={(value) =>
+								setStatusFilter(value as MasterPromotionStatusFilter)
+							}
 						/>
 						<ModuleTableResetButton onClick={resetFilters}>
 							Reset

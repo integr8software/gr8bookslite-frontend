@@ -24,6 +24,7 @@ import {
 } from "@/app/src/data/master/promotions/MasterPromotionData";
 import type {
 	MasterPromotionRecord,
+	MasterPromotionStatus,
 	MasterPromotionTableColumnKey,
 } from "@/app/src/types/master/promotions/MasterPromotionTypes";
 
@@ -32,41 +33,47 @@ const InitialPagination: PaginationState = {
 	pageSize: 5,
 };
 
+export type MasterPromotionStatusFilter = "All" | MasterPromotionStatus;
+
 export function useMasterPromotionListPage() {
 	const [records, setRecords] = useState(MasterPromotionRecords);
 	const [pendingDeleteRecord, setPendingDeleteRecord] =
 		useState<MasterPromotionRecord | null>(null);
 	const [query, setQuery] = useState("");
+	const [statusFilter, setStatusFilter] =
+		useState<MasterPromotionStatusFilter>("All");
 	const [pagination, setPagination] =
 		useState<PaginationState>(InitialPagination);
 	const filteredRecords = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
-		if (!normalizedQuery) {
-			return records;
-		}
+		return records.filter((record) => {
+			const matchesStatus =
+				statusFilter === "All" || record.status === statusFilter;
+			const matchesQuery =
+				!normalizedQuery ||
+				[
+					record.name,
+					record.code,
+					record.description,
+					record.type,
+					record.billingCycle,
+					getMasterPromotionTargetSummary(record.targetPlanIds),
+					record.status,
+					formatMasterPromotionStartDate(record.startsAt),
+					formatMasterPromotionValue(record),
+					formatMasterPromotionLimit(record),
+					formatMasterPromotionUsage(record),
+					formatMasterPromotionDate(record.expiresAt),
+					formatMasterPromotionAvailability(record),
+				]
+					.join(" ")
+					.toLowerCase()
+					.includes(normalizedQuery);
 
-		return records.filter((record) =>
-			[
-				record.name,
-				record.code,
-				record.description,
-				record.type,
-				record.billingCycle,
-				getMasterPromotionTargetSummary(record.targetPlanIds),
-				record.status,
-				formatMasterPromotionStartDate(record.startsAt),
-				formatMasterPromotionValue(record),
-				formatMasterPromotionLimit(record),
-				formatMasterPromotionUsage(record),
-				formatMasterPromotionDate(record.expiresAt),
-				formatMasterPromotionAvailability(record),
-			]
-				.join(" ")
-				.toLowerCase()
-				.includes(normalizedQuery),
-		);
-	}, [query, records]);
+			return matchesStatus && matchesQuery;
+		});
+	}, [query, records, statusFilter]);
 	const columns = useMemo<ColumnDef<MasterPromotionRecord>[]>(
 		() =>
 			MasterPromotionTableColumns.map((column) => {
@@ -155,6 +162,7 @@ export function useMasterPromotionListPage() {
 
 	function resetFilters() {
 		setQuery("");
+		setStatusFilter("All");
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
@@ -165,6 +173,8 @@ export function useMasterPromotionListPage() {
 		resetFilters,
 		setPendingDeleteRecord,
 		setQuery,
+		setStatusFilter,
+		statusFilter,
 		summary,
 		table,
 		toggleRecordStatus,

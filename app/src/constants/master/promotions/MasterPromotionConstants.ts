@@ -156,6 +156,11 @@ export const MasterPromotionStatusOptions = [
 	"Inactive",
 ] as const satisfies readonly MasterPromotionStatus[];
 
+export const MasterPromotionStatusFilterOptions = [
+	"All",
+	...MasterPromotionStatusOptions,
+] as const satisfies readonly ("All" | MasterPromotionStatus)[];
+
 export const MasterPromotionTableColumns = [
 	{ key: "name", label: "Promotion", className: "w-[24rem]" },
 	{ key: "billingCycle", label: "Coverage", className: "w-[15rem]" },

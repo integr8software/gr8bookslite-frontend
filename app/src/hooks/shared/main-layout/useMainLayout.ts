@@ -228,19 +228,11 @@ export function useMainLayout() {
           ? MainWorkspaceSearchItems
           : MainCompanySearchItems;
 
-    return filterMainSearchItems(
-      sourceItems,
-      displayUser,
-      subscription,
-    );
+    return filterMainSearchItems(sourceItems, displayUser, subscription);
   }, [activeNavigationScope, displayUser, subscription]);
   const companySearchItems = useMemo(
     () =>
-      filterMainSearchItems(
-        MainCompanySearchItems,
-        displayUser,
-        subscription,
-      ),
+      filterMainSearchItems(MainCompanySearchItems, displayUser, subscription),
     [displayUser, subscription],
   );
   const companyHomeHref = getCompanyHomeHref(
@@ -301,10 +293,7 @@ export function useMainLayout() {
     accessibleBranches.find((branch) => branch.id === activeBranchId) ??
     accessibleBranches[0] ??
     null;
-  const canManageBranches = hasAccess(
-    displayUser,
-    "branch.management",
-  );
+  const canManageBranches = hasAccess(displayUser, "branch.management");
 
   useEffect(() => {
     if (profileActiveCompanyId == null) {
@@ -713,8 +702,7 @@ function ProfileHasMasterAccess(profile: AuthProfileResponse) {
 function CreateWorkspaceCurrentUserFromProfile(
   profile: AuthProfileResponse,
 ): MainCurrentUser {
-  const fallbackUserRoleDetails =
-    MainLayoutData.currentUser.userRoleDetails;
+  const fallbackUserRoleDetails = MainLayoutData.currentUser.userRoleDetails;
   const [firstName, ...lastNameParts] = profile.user.name.trim().split(/\s+/);
   const lastName = lastNameParts.join(" ");
   const activeAccess = GetAuthProfileAccess(profile);
@@ -1191,6 +1179,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Maintain customers, suppliers, vendors, members, and employees.",
   "maintenance-party":
     "Maintain customers, suppliers, vendors, members, and employees.",
+  "maintenance-form-signatory":
+    "Manage authorized signatories for official documents.",
   "cash-receipt-official-receipt": "Record official customer payments.",
   "cash-receipt-collection-receipt":
     "Record collections received from customers.",

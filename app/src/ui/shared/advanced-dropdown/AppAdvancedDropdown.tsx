@@ -58,6 +58,11 @@ type AppAdvancedDropdownProps = {
 	onSelectOption?: (option: AppAdvancedDropdownOption) => void;
 };
 
+const DropdownMenuGap = 4;
+const DropdownMenuMaxHeight = 320;
+const DropdownMenuMinHeight = 96;
+const DropdownMenuViewportPadding = 8;
+
 export function AppAdvancedDropdown({
 	addAction,
 	className,
@@ -66,7 +71,7 @@ export function AppAdvancedDropdown({
 	id,
 	isClearable = true,
 	isSearchable = true,
-	menuPortal = false,
+	menuPortal = true,
 	name,
 	options,
 	placeholder = "Select option",
@@ -171,17 +176,11 @@ export function AppAdvancedDropdown({
 		}
 
 		function updatePortalStyle() {
-			const rect = rootRef.current?.getBoundingClientRect();
+			const nextStyle = getPortalStyle(rootRef.current);
 
-			if (!rect) {
-				return;
+			if (nextStyle) {
+				setPortalStyle(nextStyle);
 			}
-
-			setPortalStyle({
-				left: rect.left,
-				top: rect.bottom + 4,
-				width: rect.width,
-			});
 		}
 
 		updatePortalStyle();
@@ -227,6 +226,14 @@ export function AppAdvancedDropdown({
 	function showOptions(nextActiveValue?: string) {
 		if (isInteractionLocked) {
 			return;
+		}
+
+		if (menuPortal) {
+			const nextStyle = getPortalStyle(rootRef.current);
+
+			if (nextStyle) {
+				setPortalStyle(nextStyle);
+			}
 		}
 
 		setIsOpen(true);
@@ -367,8 +374,10 @@ export function AppAdvancedDropdown({
 			aria-multiselectable={selectionMode === "multiple"}
 			style={menuPortal ? portalStyle : undefined}
 			className={joinClasses(
-				menuPortal ? "fixed" : "absolute",
-				"z-40 mt-1 w-full overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.14)]",
+				menuPortal
+					? "fixed z-130"
+					: "absolute left-0 top-full z-40 mt-1 w-full",
+				"flex max-h-80 flex-col overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.14)]",
 			)}
 		>
 			{addAction ? (
@@ -405,7 +414,7 @@ export function AppAdvancedDropdown({
 					</div>
 				</div>
 			) : null}
-			<div className="grid max-h-64 gap-1 overflow-y-auto p-2">
+			<div className="grid min-h-0 gap-1 overflow-y-auto p-2">
 				{hasOptions ? (
 					filteredOptions.map((option) => (
 						<OptionRow
@@ -457,7 +466,7 @@ export function AppAdvancedDropdown({
 						? "pointer-events-none cursor-not-allowed border-darknavy/10 bg-darknavy/[0.035] text-darknavy/35 shadow-none"
 						: readOnly
 							? "pointer-events-none cursor-default border-darknavy/10 bg-offwhite/65 text-darknavy shadow-none"
-						: "cursor-pointer focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",
+							: "cursor-pointer focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",
 				)}
 			>
 				<div
@@ -504,8 +513,8 @@ export function AppAdvancedDropdown({
 						)}
 					</div>
 					{selectedValues.length > 0 &&
-					isClearable &&
-					!isInteractionLocked ? (
+						isClearable &&
+						!isInteractionLocked ? (
 						<button
 							type="button"
 							disabled={disabled}
@@ -724,6 +733,58 @@ function SelectedSingle({
 			) : null}
 		</span>
 	);
+}
+
+function getPortalStyle(root: HTMLDivElement | null): CSSProperties | undefined {
+	if (!root || typeof window === "undefined") {
+		return undefined;
+	}
+
+	const rect = root.getBoundingClientRect();
+	const viewportHeight = window.innerHeight;
+	const viewportWidth = window.innerWidth;
+	const availableWidth = Math.max(
+		0,
+		viewportWidth - DropdownMenuViewportPadding * 2,
+	);
+	const width = Math.min(rect.width, availableWidth);
+	const maxLeft = Math.max(
+		DropdownMenuViewportPadding,
+		viewportWidth - DropdownMenuViewportPadding - width,
+	);
+	const left = Math.min(
+		Math.max(rect.left, DropdownMenuViewportPadding),
+		maxLeft,
+	);
+	const spaceBelow =
+		viewportHeight - rect.bottom - DropdownMenuGap - DropdownMenuViewportPadding;
+	const spaceAbove = rect.top - DropdownMenuGap - DropdownMenuViewportPadding;
+	const shouldOpenAbove =
+		spaceBelow < DropdownMenuMaxHeight && spaceAbove > spaceBelow;
+	const availableHeight = Math.max(
+		0,
+		shouldOpenAbove ? spaceAbove : spaceBelow,
+	);
+	const maxHeight = Math.max(
+		DropdownMenuMinHeight,
+		Math.min(DropdownMenuMaxHeight, availableHeight),
+	);
+
+	if (shouldOpenAbove) {
+		return {
+			bottom: viewportHeight - rect.top + DropdownMenuGap,
+			left,
+			maxHeight,
+			width,
+		};
+	}
+
+	return {
+		left,
+		maxHeight,
+		top: rect.bottom + DropdownMenuGap,
+		width,
+	};
 }
 
 function flattenOptions(

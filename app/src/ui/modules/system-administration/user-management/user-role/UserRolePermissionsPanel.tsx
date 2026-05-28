@@ -189,7 +189,7 @@ export function UserRolePermissionsPanel({
                       >
                         <span
                           className={[
-                            "flex h-7 w-7 shrink-0 items-center justify-center rounded border",
+                            "flex h-7 w-7 shrink-0 items-center justify-center rounded border leading-none",
                             submoduleState.checked
                               ? "border-blue-200 bg-blue-50 text-blue-700"
                               : submoduleState.isPartial
@@ -198,9 +198,14 @@ export function UserRolePermissionsPanel({
                           ].join(" ")}
                           aria-hidden="true"
                         >
-                          {submoduleState.enabledCount ? (
-                            <Check className="h-4 w-4" />
-                          ) : null}
+                          <Check
+                            className={[
+                              "h-4 w-4 shrink-0",
+                              submoduleState.enabledCount
+                                ? "opacity-100"
+                                : "opacity-0",
+                            ].join(" ")}
+                          />
                         </span>
                         <span className="min-w-0">
                           <span className="block truncate text-sm font-semibold text-darknavy">
@@ -378,7 +383,7 @@ function PermissionCheckCell({
   return (
     <label
       className={[
-        "inline-flex h-9 w-9 items-center justify-center rounded-md border transition",
+        "relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border align-middle leading-none transition",
         checked
           ? "border-blue-200 bg-blue-50 text-blue-700"
           : isPartial
@@ -398,7 +403,12 @@ function PermissionCheckCell({
         aria-label={label}
         className="sr-only"
       />
-      {checked || isPartial ? <Check className="h-4 w-4" /> : null}
+      <Check
+        className={[
+          "h-4 w-4 shrink-0",
+          checked || isPartial ? "opacity-100" : "opacity-0",
+        ].join(" ")}
+      />
     </label>
   );
 }
@@ -422,7 +432,7 @@ function HeaderPermissionButton({
       disabled={disabled}
       onClick={onClick}
       className={[
-        "inline-flex min-h-8 items-center justify-center rounded-md border px-2 py-1 text-center text-[11px] font-semibold uppercase tracking-[0.18em] transition",
+        "inline-flex h-8 min-w-8 items-center justify-center rounded-md border px-2 text-center text-[11px] font-semibold uppercase leading-none tracking-[0.18em] transition",
         checked
           ? "border-blue-200 bg-blue-50 text-blue-700"
           : isPartial
@@ -435,7 +445,7 @@ function HeaderPermissionButton({
       aria-pressed={checked}
       title={label}
     >
-      <span className="truncate">{label}</span>
+      <span className="block max-w-full truncate">{label}</span>
     </button>
   );
 }

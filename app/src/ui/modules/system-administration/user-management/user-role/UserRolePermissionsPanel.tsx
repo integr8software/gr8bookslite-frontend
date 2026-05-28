@@ -64,8 +64,6 @@ export function UserRolePermissionsPanel({
     selectedModule,
     values,
   );
-  const isSelectedModuleLocked =
-    selectedModulePermissionState.enabledCount === 0;
 
   return (
     <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white">
@@ -84,7 +82,7 @@ export function UserRolePermissionsPanel({
       </div>
 
       <div className="grid lg:items-start lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="border-b border-darknavy/10 bg-darknavy/[0.015] p-3 lg:border-b-0 lg:border-r">
+        <aside className="border-b border-darknavy/10 bg-darknavy/1.5 p-3 lg:border-b-0 lg:border-r">
           <div className="grid gap-2">
             {moduleStats.map(({ accessModule, enabledCount, totalCount }) => {
               const isActive = accessModule.value === selectedModule.value;
@@ -152,17 +150,7 @@ export function UserRolePermissionsPanel({
                 {selectedModule.label}
               </h4>
               <p className="mt-1 text-xs font-medium text-darknavy/50">
-                Apply permissions by action or tune each submodule below.
-              </p>
-              <p
-                className={[
-                  "mt-2 min-h-4 text-xs font-semibold",
-                  isSelectedModuleLocked
-                    ? "text-amber-700"
-                    : "invisible",
-                ].join(" ")}
-              >
-                Enable this module first before changing its submodules.
+                Choose Read Only for view access, or tune each action below.
               </p>
             </div>
           </div>
@@ -184,7 +172,7 @@ export function UserRolePermissionsPanel({
                       <button
                         type="button"
                         onClick={() => updateSubmoduleAll(submodule.value)}
-                        disabled={isReadonly || isSelectedModuleLocked}
+                        disabled={isReadonly}
                         className="flex min-w-0 items-center gap-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         <span
@@ -194,7 +182,7 @@ export function UserRolePermissionsPanel({
                               ? "border-blue-200 bg-blue-50 text-blue-700"
                               : submoduleState.isPartial
                                 ? "border-amber-200 bg-amber-50 text-amber-700"
-                                : "border-darknavy/10 bg-darknavy/[0.02] text-darknavy/35",
+                                : "border-darknavy/10 bg-darknavy/2 text-darknavy/35",
                           ].join(" ")}
                           aria-hidden="true"
                         >
@@ -225,7 +213,7 @@ export function UserRolePermissionsPanel({
                             <UserRoleAccessToggle
                               key={permission}
                               checked={values.includes(permission)}
-                              disabled={isReadonly || isSelectedModuleLocked}
+                              disabled={isReadonly}
                               label={action.label}
                               onChange={() => updateSinglePermission(permission)}
                             />
@@ -240,8 +228,8 @@ export function UserRolePermissionsPanel({
 
             <div className="hidden overflow-hidden rounded border border-darknavy/10 xl:block">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[920px] border-collapse text-left">
-                  <thead className="bg-darknavy/[0.03] text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/45">
+                <table className="w-full min-w-230 border-collapse text-left">
+                  <thead className="bg-darknavy/3 text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/45">
                     <tr>
                       <th className="px-4 py-3">Submodule</th>
                       <th className="px-4 py-3 text-center">
@@ -266,7 +254,7 @@ export function UserRolePermissionsPanel({
                                 values,
                               ).checked
                             }
-                            disabled={isReadonly || isSelectedModuleLocked}
+                            disabled={isReadonly}
                             isPartial={
                               getModuleActionState(
                                 selectedModule,
@@ -309,7 +297,7 @@ export function UserRolePermissionsPanel({
                           <td className="px-4 py-3 text-center">
                             <PermissionCheckCell
                               checked={submoduleState.checked}
-                              disabled={isReadonly || isSelectedModuleLocked}
+                              disabled={isReadonly}
                               isPartial={submoduleState.isPartial}
                               label={`All permissions for ${submodule.label}`}
                               onChange={() => updateSubmoduleAll(submodule.value)}
@@ -325,7 +313,7 @@ export function UserRolePermissionsPanel({
                               >
                                 <PermissionCheckCell
                                   checked={values.includes(permission)}
-                                  disabled={isReadonly || isSelectedModuleLocked}
+                                  disabled={isReadonly}
                                   label={`${submodule.label} ${action.label}`}
                                   onChange={() => updateSinglePermission(permission)}
                                 />

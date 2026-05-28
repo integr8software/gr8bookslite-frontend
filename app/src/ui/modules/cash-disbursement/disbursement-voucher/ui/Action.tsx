@@ -19,7 +19,6 @@ import {
 import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
   DisbursementVoucherInitialEntryDraft,
-  createAttachmentPlaceholders,
   createAutoDisbursementLineEntries,
   createDisbursementLineEntry,
   createDisbursementVoucherFormValues,
@@ -99,8 +98,7 @@ function DisbursementVoucherActionInner() {
     mode === "add"
       ? (searchParams.get("transactionId") ?? "")
       : (params.recordId ?? "");
-  const [selectedTransactionId, setSelectedTransactionId] =
-    useState(initialTransactionId);
+  const selectedTransactionId = initialTransactionId;
   const selectedTransaction = transactions.find(
     (transaction) => transaction.id === selectedTransactionId,
   );
@@ -164,64 +162,6 @@ function DisbursementVoucherActionInner() {
         nextDraft.taxRate,
       ),
     });
-  }
-
-  function handleSelectTransaction(nextTransactionId: string) {
-    if (isReadonly) {
-      return;
-    }
-
-    const nextTransaction = transactions.find(
-      (transaction) => transaction.id === nextTransactionId,
-    );
-
-    setSelectedTransactionId(nextTransactionId);
-    setValues((current) => {
-      const nextValues = createDisbursementVoucherFormValues(nextTransaction);
-
-      return {
-        ...nextValues,
-        remarks: current.remarks || nextValues.remarks,
-        lineEntries:
-          current.lineEntries.length > 0
-            ? current.lineEntries
-            : nextTransaction
-              ? createAutoDisbursementLineEntries(nextTransaction)
-              : [],
-        attachments:
-          current.attachments.length > 0
-            ? current.attachments
-            : nextTransaction
-              ? createAttachmentPlaceholders(nextTransaction)
-              : [],
-      };
-    });
-    setErrors((current) => ({ ...current, transactionId: undefined }));
-  }
-
-  function handleProceedFromDetails() {
-    const nextErrors = validateDisbursementVoucherDetails(values);
-
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
-      return;
-    }
-
-    if (values.attachments.length === 0 && selectedTransaction) {
-      updateField(
-        "attachments",
-        createAttachmentPlaceholders(selectedTransaction),
-      );
-    }
-
-    if (values.lineEntries.length === 0 && selectedTransaction) {
-      updateField(
-        "lineEntries",
-        createAutoDisbursementLineEntries(selectedTransaction),
-      );
-    }
-
-    setStep("entries");
   }
 
   function handleProceedFromEntries() {
@@ -516,27 +456,6 @@ function VoucherWorkflowSkeleton() {
     </section>
   );
 }
-
-function VoucherDetailsStep({
-  errors,
-  selectedTransaction,
-  transactionOptions,
-  values,
-  onProceed,
-  onSelectTransaction,
-  onUpdateField,
-}: {
-  errors: DisbursementVoucherFormErrors;
-  selectedTransaction?: DisbursementTransactionRecord;
-  transactionOptions: DisbursementTransactionRecord[];
-  values: DisbursementVoucherFormValues;
-  onProceed: () => void;
-  onSelectTransaction: (transactionId: string) => void;
-  onUpdateField: <TKey extends keyof DisbursementVoucherFormValues>(
-    field: TKey,
-    value: DisbursementVoucherFormValues[TKey],
-  ) => void;
-}) {}
 
 function VoucherEntriesStep({
   entryDraft,
@@ -1306,13 +1225,11 @@ function CardShell({
   description,
   eyebrow,
   title,
-  tone = "white",
 }: {
   children: React.ReactNode;
   description: string;
   eyebrow: string;
   title: string;
-  tone?: "white" | "sky" | "citron" | "offwhite";
 }) {
   return (
     <section
@@ -1325,28 +1242,6 @@ function CardShell({
       <p className="mt-2 text-sm leading-6 text-darknavy/58">{description}</p>
       <div className="mt-5">{children}</div>
     </section>
-  );
-}
-
-function FieldBlock({
-  children,
-  error,
-  label,
-}: {
-  children: React.ReactNode;
-  error?: string;
-  label: string;
-}) {
-  return (
-    <label className="grid gap-2">
-      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/48">
-        {label}
-      </span>
-      {children}
-      {error ? (
-        <span className="text-sm font-medium text-coralpink">{error}</span>
-      ) : null}
-    </label>
   );
 }
 

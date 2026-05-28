@@ -31,8 +31,12 @@ export function DisbursementVoucherCopyFromDialog({
       return;
     }
 
-    setQuery("");
-    setSelectedId("");
+    const resetTimer = window.setTimeout(() => {
+      setQuery("");
+      setSelectedId("");
+    }, 0);
+
+    return () => window.clearTimeout(resetTimer);
   }, [isOpen, source]);
 
   const filteredRecords = useMemo(() => {

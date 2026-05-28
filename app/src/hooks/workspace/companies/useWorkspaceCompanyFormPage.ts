@@ -10,7 +10,6 @@ import {
 import {
 	InitialWorkspaceCompanyFormValues,
 	createWorkspaceCompanyFormValues,
-	validateWorkspaceCompanyForm,
 } from "@/app/src/data/workspace/companies/WorkspaceCompanyData";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
@@ -19,6 +18,7 @@ import {
 	useWorkspaceCompanyRecord,
 	useWorkspaceCompanyRouteParams,
 } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import { validateWorkspaceCompanyForm } from "@/app/src/validations/workspace/companies/WorkspaceCompanyValidation";
 import type {
 	WorkspaceCompanyFormErrors,
 	WorkspaceCompanyFormMode,

@@ -1,14 +1,12 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Edit3, Package } from "lucide-react";
 import {
 	MasterPlanAndPackagesHref,
 	getMasterPlanAndPackageEditHref,
 } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
 	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackagePricing,
@@ -17,8 +15,7 @@ import {
 	getMasterPlanAndPackagePricingSupportingText,
 	getMasterPlanAndPackageScaleSupportingText,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
-import { getMasterPlanAndPackages } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageApi";
-import { MasterPlanAndPackageQueryKeys } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageQueryKeys";
+import { useMasterPlanAndPackagesQuery } from "@/app/src/hooks/master/plan-and-packages/useMasterPlanAndPackagesQuery";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -33,12 +30,7 @@ type MasterPlanAndPackageDetailsPageProps = {
 export function MasterPlanAndPackageDetailsPage({
 	recordId,
 }: MasterPlanAndPackageDetailsPageProps) {
-	const [accessToken] = useState(() => GetAccessToken());
-	const plansQuery = useQuery({
-		queryKey: MasterPlanAndPackageQueryKeys.lists(),
-		queryFn: async () => getMasterPlanAndPackages(accessToken as string),
-		enabled: Boolean(accessToken),
-	});
+	const plansQuery = useMasterPlanAndPackagesQuery();
 	const record = useMemo(
 		() =>
 			plansQuery.data?.plans.find((candidate) => candidate.id === recordId),

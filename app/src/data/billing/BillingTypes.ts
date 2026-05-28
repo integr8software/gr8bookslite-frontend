@@ -40,6 +40,18 @@ export type BillingPaymentMethod = {
   expYear: number | null;
   isDefault: boolean;
   externalPaymentMethodId: string;
+  company?: {
+    id: number;
+    name: string;
+  };
+  subscription?: {
+    id: number;
+    status: string;
+    plan: {
+      code: string;
+      name: string;
+    };
+  } | null;
 };
 
 export type BillingInvoice = {

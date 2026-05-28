@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
+import toast from "react-hot-toast";
 import {
 	useParams,
 	usePathname,
@@ -38,6 +39,7 @@ import {
 	validateWorkspaceCompanyForm,
 	validateWorkspaceCompanyUserForm,
 } from "@/app/src/data/modules/workspace/companies/WorkspaceCompanyData";
+import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
@@ -179,10 +181,27 @@ export function useWorkspaceCompanyAction() {
 			return;
 		}
 
+		let didCreatePaymentMethod = false;
+
 		try {
-			await addCompany(values);
+			const valuesToSave = await createTokenizedCompanyValues(values);
+			didCreatePaymentMethod =
+				values.billingPaymentMethodId === "new-paymongo-card";
+
+			await addCompany(valuesToSave);
 			router.push(WorkspaceCompaniesHref);
-		} catch {
+		} catch (error) {
+			if (didCreatePaymentMethod) {
+				return;
+			}
+
+			if (values.billingPaymentMethodId === "new-paymongo-card") {
+				toast.error(
+					error instanceof Error
+						? error.message
+						: "We could not create the PayMongo payment method right now.",
+				);
+			}
 			// The mutation owns the toast message; keep the user on the form.
 		}
 	}
@@ -201,6 +220,30 @@ export function useWorkspaceCompanyAction() {
 		updateLogoFile,
 		validateCompany,
 		values,
+	};
+}
+
+async function createTokenizedCompanyValues(
+	values: WorkspaceCompanyFormValues,
+): Promise<WorkspaceCompanyFormValues> {
+	if (values.billingPaymentMethodId !== "new-paymongo-card") {
+		return values;
+	}
+
+	const paymentMethod = await CreatePaymongoCardPaymentMethod({
+		cardholderName: values.billingCardholderName.trim(),
+		billingEmail: (values.billingEmail || values.email).trim(),
+		cardNumber: values.billingCardNumber.trim(),
+		expiryMonth: values.billingExpiryMonth.trim(),
+		expiryYear: values.billingExpiryYear.trim(),
+		cvc: values.billingCvc.trim(),
+		billingAddress: values.billingAddress.trim(),
+		contactNumber: values.contactNumber.trim(),
+	});
+
+	return {
+		...values,
+		billingPaymentMethodId: paymentMethod.paymentMethodId,
 	};
 }
 

@@ -30,6 +30,7 @@ import {
 	CreateWorkspaceCompany,
 	GetWorkspaceCompanies,
 } from "@/app/src/services/modules/workspace/companies/WorkspaceCompanyApi";
+import { BillingQueryKeys } from "@/app/src/services/billing/BillingQueryKeys";
 import { WorkspaceCompanyQueryKeys } from "@/app/src/services/modules/workspace/companies/WorkspaceCompanyQueryKeys";
 import type {
 	WorkspaceBranchUserRecord,
@@ -161,6 +162,9 @@ export function useWorkspaceCompanyManagementStore<
 			setCompanies((companies) => [company, ...companies]);
 			void queryClient.invalidateQueries({
 				queryKey: WorkspaceCompanyQueryKeys.companies(),
+			});
+			void queryClient.invalidateQueries({
+				queryKey: BillingQueryKeys.paymentMethods(),
 			});
 			toast.success("Company created.");
 		},

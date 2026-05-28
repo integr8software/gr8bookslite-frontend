@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
 	getCoreRowModel,
 	getPaginationRowModel,
@@ -10,16 +9,18 @@ import {
 	type PaginationState,
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
-import { MasterPlanAndPackageTableColumns } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
+import {
+	MasterPlanAndPackageTableColumns,
+	type MasterPlanAndPackageScopeFilterValue,
+	type MasterPlanAndPackageStatusFilterValue,
+} from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import {
 	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackagePricing,
 	formatMasterPlanAndPackageScope,
 	getMasterPlanAndPackageFeatureLabels,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
-import { getMasterPlanAndPackages } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageApi";
-import { MasterPlanAndPackageQueryKeys } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageQueryKeys";
+import { useMasterPlanAndPackagesQuery } from "@/app/src/hooks/master/plan-and-packages/useMasterPlanAndPackagesQuery";
 import type {
 	MasterPlanAndPackageRecord,
 	MasterPlanAndPackageTableColumnKey,
@@ -31,25 +32,23 @@ const InitialPagination: PaginationState = {
 };
 
 export function useMasterPlanAndPackageListPage() {
-	const [accessToken] = useState(() => GetAccessToken());
 	const [query, setQuery] = useState("");
+	const [scopeFilter, setScopeFilter] =
+		useState<MasterPlanAndPackageScopeFilterValue>("ALL");
+	const [statusFilter, setStatusFilter] =
+		useState<MasterPlanAndPackageStatusFilterValue>("ALL");
 	const [pagination, setPagination] =
 		useState<PaginationState>(InitialPagination);
-	const plansQuery = useQuery({
-		queryKey: MasterPlanAndPackageQueryKeys.lists(),
-		queryFn: async () => getMasterPlanAndPackages(accessToken as string),
-		enabled: Boolean(accessToken),
-	});
+	const plansQuery = useMasterPlanAndPackagesQuery();
 	const records = useMemo(() => plansQuery.data?.plans ?? [], [plansQuery.data]);
 	const filteredRecords = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
-		if (!normalizedQuery) {
-			return records;
-		}
-
 		return records.filter((record) =>
-			[
+			(statusFilter === "ALL" || record.status === statusFilter) &&
+			(scopeFilter === "ALL" || record.scope === scopeFilter) &&
+			(!normalizedQuery ||
+				[
 				record.name,
 				record.code,
 				record.description,
@@ -62,9 +61,9 @@ export function useMasterPlanAndPackageListPage() {
 			]
 				.join(" ")
 				.toLowerCase()
-				.includes(normalizedQuery),
+					.includes(normalizedQuery)),
 		);
-	}, [query, records]);
+	}, [query, records, scopeFilter, statusFilter]);
 	const columns = useMemo<ColumnDef<MasterPlanAndPackageRecord>[]>(
 		() =>
 			MasterPlanAndPackageTableColumns.map((column) => {
@@ -133,6 +132,8 @@ export function useMasterPlanAndPackageListPage() {
 
 	function resetFilters() {
 		setQuery("");
+		setScopeFilter("ALL");
+		setStatusFilter("ALL");
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
@@ -140,7 +141,11 @@ export function useMasterPlanAndPackageListPage() {
 		isLoading: plansQuery.isLoading,
 		query,
 		resetFilters,
+		scopeFilter,
 		setQuery,
+		setScopeFilter,
+		setStatusFilter,
+		statusFilter,
 		summary,
 		table,
 		toggleRecordStatus,

@@ -46,6 +46,8 @@ const NewPayMongoCardPaymentMethod = {
 	id: "new-paymongo-card",
 	label: "Add new PayMongo card",
 };
+const WorkspaceCompanyConfirmActionClassName =
+	"theme-accent-contrast-text inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:bg-darknavy/25";
 
 export function WorkspaceCompanyAction() {
 	const action = useWorkspaceCompanyAction();
@@ -1017,27 +1019,27 @@ function CompanyCreateConfirmDialog({
 				</div>
 				<div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
 					<button
-							type="button"
-							onClick={handleCancel}
-							disabled={isConfirmPending}
-							className="inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white px-5 text-sm font-semibold text-darknavy/70 transition hover:bg-offwhite disabled:cursor-not-allowed disabled:opacity-60"
-						>
-							Cancel
+						type="button"
+						onClick={handleCancel}
+						disabled={isConfirmPending}
+						className="inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white px-5 text-sm font-semibold text-darknavy/70 transition hover:bg-offwhite disabled:cursor-not-allowed disabled:opacity-60"
+					>
+						Cancel
 					</button>
 					<button
-							type="button"
-							onClick={handleConfirm}
-							disabled={!canConfirm || isConfirmPending}
-							className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-skyblue px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-skyblue/90 disabled:cursor-not-allowed disabled:bg-darknavy/25"
-						>
-							{isConfirmPending ? (
-								<LoaderCircle
-									className="h-4 w-4 animate-spin"
-									aria-hidden="true"
-								/>
-							) : null}
-							{isConfirmPending ? "Saving..." : "Save Company"}
-						</button>
+						type="button"
+						onClick={handleConfirm}
+						disabled={!canConfirm || isConfirmPending}
+						className={WorkspaceCompanyConfirmActionClassName}
+					>
+						{isConfirmPending ? (
+							<LoaderCircle
+								className="h-4 w-4 animate-spin"
+								aria-hidden="true"
+							/>
+						) : null}
+						{isConfirmPending ? "Saving..." : "Save Company"}
+					</button>
 				</div>
 			</div>
 		</div>
@@ -1060,14 +1062,29 @@ function getPaymentMethodOptions(paymentMethods: BillingPaymentMethod[]) {
 }
 
 function formatPaymentMethodLabel(method: BillingPaymentMethod) {
-	const brand = method.brand ? titleCase(method.brand) : "PayMongo card";
-	const last4 = method.last4 ? `ending ${method.last4}` : "saved card";
-	const suffix =
+	const cardLabel = formatCardIdentity(method);
+	const expiryLabel =
 		method.expMonth && method.expYear
 			? ` · Expires ${String(method.expMonth).padStart(2, "0")}/${method.expYear}`
 			: "";
+	const companyLabel = method.company?.name
+		? ` · Used by ${method.company.name}`
+		: "";
+	const planLabel = method.subscription?.plan.name
+		? ` · ${method.subscription.plan.name}`
+		: "";
 
-	return `${brand} ${last4}${suffix}`;
+	return `${cardLabel}${expiryLabel}${companyLabel}${planLabel}`;
+}
+
+function formatCardIdentity(method: BillingPaymentMethod) {
+	const brand = method.brand ? titleCase(method.brand) : "PayMongo card";
+
+	if (!method.last4) {
+		return `${brand} · Saved card`;
+	}
+
+	return `${brand} •••• ${method.last4}`;
 }
 
 function formatPlanPrice(amountInCents: number | null, plan?: BillingPlan) {

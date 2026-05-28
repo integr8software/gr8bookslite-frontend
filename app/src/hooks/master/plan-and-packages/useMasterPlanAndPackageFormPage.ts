@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { MasterPlanAndPackagesHref } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
@@ -12,9 +12,9 @@ import {
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
 import {
 	createMasterPlanAndPackage,
-	getMasterPlanAndPackages,
 } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageApi";
 import { MasterPlanAndPackageQueryKeys } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageQueryKeys";
+import { useMasterPlanAndPackagesQuery } from "@/app/src/hooks/master/plan-and-packages/useMasterPlanAndPackagesQuery";
 import type {
 	MasterPlanAndPackageFormErrors,
 	MasterPlanAndPackageFormValues,
@@ -33,10 +33,8 @@ export function useMasterPlanAndPackageFormPage({
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const [accessToken] = useState(() => GetAccessToken());
-	const plansQuery = useQuery({
-		queryKey: MasterPlanAndPackageQueryKeys.lists(),
-		queryFn: async () => getMasterPlanAndPackages(accessToken as string),
-		enabled: Boolean(accessToken) && mode === "edit",
+	const plansQuery = useMasterPlanAndPackagesQuery({
+		enabled: mode === "edit",
 	});
 	const records = useMemo(() => plansQuery.data?.plans ?? [], [plansQuery.data]);
 	const record = useMemo(

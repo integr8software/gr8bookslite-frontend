@@ -35,6 +35,34 @@ export const MasterPlanAndPackageScopeOptions = [
 	"ADDITIONAL_COMPANY",
 ] as const satisfies readonly MasterPlanAndPackageScope[];
 
+export type MasterPlanAndPackageStatusFilterValue =
+	| "ALL"
+	| MasterPlanAndPackageStatus;
+
+export type MasterPlanAndPackageScopeFilterValue =
+	| "ALL"
+	| MasterPlanAndPackageScope;
+
+export const MasterPlanAndPackageStatusFilterOptions = [
+	{ label: "All", value: "ALL" },
+	...MasterPlanAndPackageStatusOptions.map((status) => ({
+		label: status,
+		value: status,
+	})),
+] as const satisfies readonly {
+	label: string;
+	value: MasterPlanAndPackageStatusFilterValue;
+}[];
+
+export const MasterPlanAndPackageScopeFilterOptions = [
+	{ label: "All", value: "ALL" },
+	{ label: "New user onboarding", value: "ONBOARDING" },
+	{ label: "Additional company", value: "ADDITIONAL_COMPANY" },
+] as const satisfies readonly {
+	label: string;
+	value: MasterPlanAndPackageScopeFilterValue;
+}[];
+
 export const MasterPlanAndPackageScopeLabels = {
 	ONBOARDING: "New user onboarding",
 	ADDITIONAL_COMPANY: "Additional company",

@@ -23,6 +23,10 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+
+const WorkspaceCompanySubmitActionClassName =
+	"theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-70";
 
 export function WorkspaceCompanyActionHeader({
 	cancelHref,
@@ -115,7 +119,7 @@ export function WorkspaceCompanyActionHeader({
 							form={formId}
 							disabled={isPending}
 							aria-busy={isPending}
-							className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-70`}
+							className={joinClasses(WorkspaceCompanySubmitActionClassName)}
 						>
 							{isPending ? (
 								<LoaderCircle

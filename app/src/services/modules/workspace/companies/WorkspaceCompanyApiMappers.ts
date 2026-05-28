@@ -87,6 +87,10 @@ export function MapWorkspaceCompanyFormToCreateRequest(
 	request.billing = {
 		billingCycle: trimmedValues.billingCycle,
 		billingEmail,
+		cardBrand: getCardBrand(trimmedValues.billingCardNumber),
+		cardExpiryMonth: Number(trimmedValues.billingExpiryMonth) || undefined,
+		cardExpiryYear: Number(trimmedValues.billingExpiryYear) || undefined,
+		cardLast4: getCardLast4(trimmedValues.billingCardNumber),
 		planCode: trimmedValues.billingPlanCode || undefined,
 		paymentMethodId: paymentMethodId.startsWith("pm_")
 			? paymentMethodId
@@ -194,7 +198,10 @@ function GetDateInputValue(value: string | null) {
 function TrimCompanyFormValues(values: WorkspaceCompanyFormValues) {
 	return {
 		address: values.address.trim(),
+		billingCardNumber: values.billingCardNumber.trim(),
 		billingEmail: values.billingEmail.trim(),
+		billingExpiryMonth: values.billingExpiryMonth.trim(),
+		billingExpiryYear: values.billingExpiryYear.trim(),
 		billingPaymentMethodId: values.billingPaymentMethodId.trim(),
 		billingPlanCode: values.billingPlanCode.trim(),
 		billingCycle: values.billingCycle,
@@ -213,4 +220,24 @@ function TrimCompanyFormValues(values: WorkspaceCompanyFormValues) {
 		tin: values.tin.trim(),
 		website: values.website.trim(),
 	};
+}
+
+function getCardLast4(value: string) {
+	const digits = value.replace(/\D/g, "");
+
+	return digits.length >= 4 ? digits.slice(-4) : undefined;
+}
+
+function getCardBrand(value: string) {
+	const digits = value.replace(/\D/g, "");
+
+	if (!digits) return undefined;
+	if (/^4/.test(digits)) return "visa";
+	if (/^(5[1-5]|2[2-7])/.test(digits)) return "mastercard";
+	if (/^3[47]/.test(digits)) return "amex";
+	if (/^(6011|65|64[4-9])/.test(digits)) return "discover";
+	if (/^(35(2[89]|[3-8]))/.test(digits)) return "jcb";
+	if (/^(30[0-5]|36|38|39)/.test(digits)) return "diners";
+
+	return "card";
 }

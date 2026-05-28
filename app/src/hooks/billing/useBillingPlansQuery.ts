@@ -16,7 +16,6 @@ export function useBillingPlansQuery({
 }: UseBillingPlansQueryParams) {
   return useQuery({
     queryKey: BillingQueryKeys.plans(scope),
-    queryFn: async () => GetBillingPlans(accessToken as string, scope),
-    enabled: Boolean(accessToken),
+    queryFn: async () => GetBillingPlans(accessToken, scope),
   });
 }

@@ -12,13 +12,17 @@ import type {
 	WorkspaceCompanyApiRecord,
 } from "./WorkspaceCompanyApiTypes";
 
-function GetAuthorizationHeaders(accessToken: string) {
+function GetAuthorizationHeaders(accessToken: string | null) {
+  if (!accessToken) {
+    return undefined;
+  }
+
   return {
     Authorization: `Bearer ${accessToken}`,
   };
 }
 
-export async function GetWorkspaceCompanies(accessToken: string) {
+export async function GetWorkspaceCompanies(accessToken: string | null = null) {
   const response = await ApiClient.get<WorkspaceCompanyApiRecord[]>(
     "/workspace/companies",
     {
@@ -30,7 +34,7 @@ export async function GetWorkspaceCompanies(accessToken: string) {
 }
 
 export async function CreateWorkspaceCompany(
-	accessToken: string,
+	accessToken: string | null,
 	values: WorkspaceCompanyFormValues,
 ): Promise<WorkspaceCompanyRecord> {
 	const company = await CreateWorkspaceCompanyFromRequest(
@@ -46,7 +50,7 @@ export async function CreateWorkspaceCompany(
 }
 
 export async function CreateWorkspaceCompanyFromRequest(
-	accessToken: string,
+	accessToken: string | null,
 	payload: CreateWorkspaceCompanyApiRequest,
 ): Promise<WorkspaceCompanyRecord> {
 	const response = await ApiClient.post<WorkspaceCompanyApiRecord>(
@@ -61,7 +65,7 @@ export async function CreateWorkspaceCompanyFromRequest(
 }
 
 export async function UploadWorkspaceCompanyLogo(
-	accessToken: string,
+	accessToken: string | null,
 	companyId: string,
 	file: File,
 ): Promise<WorkspaceCompanyRecord> {

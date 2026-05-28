@@ -54,8 +54,13 @@ export function ChartCard<TData extends Record<string, string | number>>({
 				</div>
 			</div>
 
-			<div className="mt-5 h-72 rounded-3xl bg-offwhite p-4">
-				<ResponsiveContainer width="100%" height="100%">
+			<div className="mt-5 h-72 min-h-72 min-w-0 rounded-3xl bg-offwhite p-4">
+				<ResponsiveContainer
+					width="100%"
+					height="100%"
+					minWidth={ChartMinWidth}
+					minHeight={ChartMinHeight}
+				>
 					{type === "bar" ? (
 						<BarChart data={data} margin={ChartMargin}>
 							<ChartScaffold
@@ -242,6 +247,9 @@ const ChartMargin = {
 	right: 16,
 	top: 12,
 };
+
+const ChartMinHeight = 240;
+const ChartMinWidth = 240;
 
 const TooltipProps = {
 	animationDuration: 0,

@@ -5,14 +5,18 @@ export type UpdateUserAccountProfileRequest = {
   contactNumber: string;
 };
 
-function GetAuthorizationHeaders(accessToken: string) {
+function GetAuthorizationHeaders(accessToken: string | null) {
+  if (!accessToken) {
+    return undefined;
+  }
+
   return {
     Authorization: `Bearer ${accessToken}`,
   };
 }
 
 export async function UpdateUserAccountProfile(
-  accessToken: string,
+  accessToken: string | null,
   body: UpdateUserAccountProfileRequest,
 ) {
   const response = await ApiClient.patch("/users/me", body, {
@@ -23,7 +27,7 @@ export async function UpdateUserAccountProfile(
 }
 
 export async function UploadUserAccountAvatar(
-  accessToken: string,
+  accessToken: string | null,
   avatarFile: File,
 ) {
   const formData = new FormData();
@@ -39,7 +43,7 @@ export async function UploadUserAccountAvatar(
   return response.data;
 }
 
-export async function DeleteUserAccountAvatar(accessToken: string) {
+export async function DeleteUserAccountAvatar(accessToken: string | null) {
   const response = await ApiClient.delete("/users/me/avatar", {
     headers: GetAuthorizationHeaders(accessToken),
   });

@@ -25,7 +25,6 @@ import {
 	WorkspaceCompanyUserTableColumns,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
 	CreateWorkspaceCompany,
 	GetWorkspaceCompanies,
@@ -80,17 +79,10 @@ export function useWorkspaceCompanyManagementStore<
 >(selector?: (state: WorkspaceCompanyManagementStoreState) => TSelected) {
 	const queryClient = useQueryClient();
 	const storedAccessToken = useAppStore((state) => state.accessToken);
-	const accessToken = storedAccessToken ?? GetAccessToken();
+	const accessToken = storedAccessToken;
 	const companiesQuery = useQuery({
 		queryKey: WorkspaceCompanyQueryKeys.companies(),
-		queryFn: async () => {
-			if (!accessToken) {
-				return EmptyWorkspaceCompanies;
-			}
-
-			return GetWorkspaceCompanies(accessToken);
-		},
-		enabled: Boolean(accessToken),
+		queryFn: async () => GetWorkspaceCompanies(accessToken),
 	});
 	const usersQuery = useQuery({
 		queryKey: WorkspaceCompanyQueryKeys.users(),
@@ -151,13 +143,8 @@ export function useWorkspaceCompanyManagementStore<
 	}
 
 	const addCompanyMutation = useMutation({
-		mutationFn: async (values: WorkspaceCompanyFormValues) => {
-			if (!accessToken) {
-				throw new Error("Sign in again before creating a company.");
-			}
-
-			return CreateWorkspaceCompany(accessToken, values);
-		},
+		mutationFn: async (values: WorkspaceCompanyFormValues) =>
+			CreateWorkspaceCompany(accessToken, values),
 		onSuccess: (company) => {
 			setCompanies((companies) => [company, ...companies]);
 			void queryClient.invalidateQueries({

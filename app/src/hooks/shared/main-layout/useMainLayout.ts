@@ -113,9 +113,7 @@ export function useMainLayout() {
   const [notificationsOpenPath, setNotificationsOpenPath] = useState<
     string | null
   >(null);
-  const [timedOutProfileToken, setTimedOutProfileToken] = useState<
-    string | null
-  >(null);
+  const [hasProfileLoadTimedOut, setHasProfileLoadTimedOut] = useState(false);
   const [helpOpenPath, setHelpOpenPath] = useState<string | null>(null);
   const [quickListTab, setQuickListTab] = useState<MainQuickListTab>("recent");
   const [notificationTab, setNotificationTab] =
@@ -140,7 +138,6 @@ export function useMainLayout() {
   const accessToken = storedAccessToken;
   const { data: authProfile, isLoading: isAuthProfileLoading } =
     useAuthProfileQuery({ accessToken });
-  const hasProfileLoadTimedOut = timedOutProfileToken === accessToken;
   const isMasterRoute = isMasterPath(pathname);
   const isWorkspaceRoute = isWorkspacePath(pathname);
   const hasMasterAccess = authProfile
@@ -152,8 +149,7 @@ export function useMainLayout() {
   const displayUser = authProfile
     ? CreateWorkspaceCurrentUserFromProfile(authProfile)
     : MainLayoutData.currentUser;
-  const isProfileLoading =
-    Boolean(accessToken) && isAuthProfileLoading && !hasProfileLoadTimedOut;
+  const isProfileLoading = isAuthProfileLoading && !hasProfileLoadTimedOut;
   const activeNavigationScope: MainNavigationScope =
     hasMasterAccess && isMasterRoute
       ? "master"
@@ -448,18 +444,18 @@ export function useMainLayout() {
   }, [missingRecordActionRedirectHref, router]);
 
   useEffect(() => {
-    if (!accessToken || !isAuthProfileLoading || hasProfileLoadTimedOut) {
+    if (!isAuthProfileLoading || hasProfileLoadTimedOut) {
       return;
     }
 
     const timeout = window.setTimeout(() => {
-      setTimedOutProfileToken(accessToken);
+      setHasProfileLoadTimedOut(true);
     }, MaxBlockingProfileLoadMs);
 
     return () => {
       window.clearTimeout(timeout);
     };
-  }, [accessToken, hasProfileLoadTimedOut, isAuthProfileLoading]);
+  }, [hasProfileLoadTimedOut, isAuthProfileLoading]);
 
   useEffect(() => {
     if (typeof window === "undefined") {

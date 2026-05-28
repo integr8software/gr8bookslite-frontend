@@ -264,11 +264,6 @@ function ChangePasswordPanel({
   const maskedEmail = useMemo(() => MaskEmail(email), [email]);
 
   async function sendOtp() {
-    if (!accessToken) {
-      toast.error("Please sign in before changing your password.");
-      return;
-    }
-
     setIsSendingOtp(true);
 
     try {
@@ -289,11 +284,6 @@ function ChangePasswordPanel({
   }
 
   async function verifyOtp() {
-    if (!accessToken) {
-      toast.error("Please sign in before changing your password.");
-      return;
-    }
-
     const otpValidation = validateOtpValue(otp);
 
     if (otpValidation.error) {
@@ -327,11 +317,6 @@ function ChangePasswordPanel({
   }
 
   async function savePassword() {
-    if (!accessToken) {
-      toast.error("Please sign in before changing your password.");
-      return;
-    }
-
     if (!resetToken) {
       toast.error("Verify your OTP before changing your password.");
       setStep("verify-otp");

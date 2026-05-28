@@ -76,10 +76,6 @@ export function useAccountProfile() {
 
   const saveProfileMutation = useMutation({
     mutationFn: async () => {
-      if (!accessToken) {
-        throw new Error("Please sign in before saving profile changes.");
-      }
-
       if (!profile.fullName.trim()) {
         throw new Error("Full name is required.");
       }
@@ -121,12 +117,8 @@ export function useAccountProfile() {
     },
   });
   async function invalidateAuthProfile() {
-    if (!accessToken) {
-      return;
-    }
-
     await queryClient.invalidateQueries({
-      queryKey: AuthQueryKeys.profile(accessToken),
+      queryKey: AuthQueryKeys.profile(),
     });
   }
 
@@ -229,7 +221,7 @@ export function useAccountProfile() {
 
   return {
     hasPendingProfileChanges,
-    isLoading: Boolean(accessToken) && isLoading,
+    isLoading,
     isSavingProfile: saveProfileMutation.isPending,
     isUpdatingAvatar: saveProfileMutation.isPending,
     pendingAvatarCrop,

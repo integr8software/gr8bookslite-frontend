@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { InitialAuthActionState } from "@/app/src/data/auth/AuthTypes";
@@ -18,6 +19,7 @@ import {
   IsSystemRedirectPath,
   ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
+import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
@@ -35,6 +37,7 @@ function GetSubmittedValue(formData: FormData, key: string) {
 }
 
 export function useLoginForm() {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const accessToken = useAppStore((state) => state.accessToken);
   const setActiveCompanyId = useAppStore((state) => state.setActiveCompanyId);
@@ -102,6 +105,7 @@ export function useLoginForm() {
 
     if (state.status === "success") {
       ClearPendingVerificationEmail();
+      queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
       if (state.accessToken) {
         isResolvingPostAuthRef.current = true;
         SaveAccessToken(state.accessToken, state.rememberMe ?? false);
@@ -145,6 +149,7 @@ export function useLoginForm() {
     }
   }, [
     pending,
+    queryClient,
     router,
     state.accessToken,
     state.message,

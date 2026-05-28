@@ -11,13 +11,17 @@ import type {
 	MasterPlanAndPackagesResponse,
 } from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageApiTypes";
 
-function getAuthorizationHeaders(accessToken: string) {
+function getAuthorizationHeaders(accessToken: string | null) {
+	if (!accessToken) {
+		return undefined;
+	}
+
 	return {
 		Authorization: `Bearer ${accessToken}`,
 	};
 }
 
-export async function getMasterPlanAndPackages(accessToken: string) {
+export async function getMasterPlanAndPackages(accessToken: string | null = null) {
 	const response = await ApiClient.get<MasterPlanAndPackagesResponse>(
 		"/master/plan-and-packages",
 		{
@@ -31,7 +35,7 @@ export async function getMasterPlanAndPackages(accessToken: string) {
 }
 
 export async function createMasterPlanAndPackage(
-	accessToken: string,
+	accessToken: string | null,
 	model: MasterPlanAndPackageCreateModel,
 ) {
 	const response = await ApiClient.post<CreateMasterPlanAndPackageResponse>(

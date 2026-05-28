@@ -12,8 +12,8 @@ export function useAuthProfileQuery({
   accessToken,
 }: UseAuthProfileQueryParams) {
   return useQuery({
-    queryKey: AuthQueryKeys.profile(accessToken),
-    queryFn: async () => GetAuthProfile(accessToken as string),
-    enabled: Boolean(accessToken),
+    queryKey: AuthQueryKeys.profile(),
+    queryFn: async () => GetAuthProfile(accessToken),
+    retry: false,
   });
 }

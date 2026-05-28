@@ -3,6 +3,7 @@ import { GetApiBaseUrl } from "@/app/src/services/shared/api/ApiUrl";
 
 export const ApiClient = axios.create({
   baseURL: GetApiBaseUrl(),
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },

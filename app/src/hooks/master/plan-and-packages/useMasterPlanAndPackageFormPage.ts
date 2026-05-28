@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { MasterPlanAndPackagesHref } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
 	InitialMasterPlanAndPackageFormValues,
 	createMasterPlanAndPackageFormValues,
@@ -32,7 +31,6 @@ export function useMasterPlanAndPackageFormPage({
 }: UseMasterPlanAndPackageFormPageParams) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
-	const [accessToken] = useState(() => GetAccessToken());
 	const plansQuery = useMasterPlanAndPackagesQuery({
 		enabled: mode === "edit",
 	});
@@ -51,7 +49,7 @@ export function useMasterPlanAndPackageFormPage({
 	const [hasLocalChanges, setHasLocalChanges] = useState(false);
 	const createMutation = useMutation({
 		mutationFn: async (nextValues: MasterPlanAndPackageFormValues) =>
-			createMasterPlanAndPackage(accessToken as string, {
+			createMasterPlanAndPackage(null, {
 				formValues: nextValues,
 			}),
 		onSuccess: async () => {
@@ -88,11 +86,6 @@ export function useMasterPlanAndPackageFormPage({
 		setErrors(nextErrors);
 
 		if (Object.keys(nextErrors).length > 0) {
-			return;
-		}
-
-		if (!accessToken) {
-			toast.error("Please sign in again before saving.");
 			return;
 		}
 

@@ -13,7 +13,6 @@ export function useCurrentBillingSubscriptionQuery({
 }: UseCurrentBillingSubscriptionQueryParams) {
   return useQuery({
     queryKey: BillingQueryKeys.currentSubscription(),
-    queryFn: async () => GetCurrentBillingSubscription(accessToken as string),
-    enabled: Boolean(accessToken),
+    queryFn: async () => GetCurrentBillingSubscription(accessToken),
   });
 }

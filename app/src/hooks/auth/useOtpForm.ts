@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
@@ -30,6 +31,7 @@ import {
   GetFallbackPostAuthRedirectPath,
   ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
+import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
@@ -56,6 +58,7 @@ function ResolveHasResendCooldown(email: string) {
 export function useOtpForm({
   initialEmail = "",
 }: UseOtpFormOptions = {}) {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const setActiveCompanyId = useAppStore((state) => state.setActiveCompanyId);
   const setAccessToken = useAppStore((state) => state.setAccessToken);
@@ -138,6 +141,7 @@ export function useOtpForm({
 
     if (state.status === "success") {
       ClearPendingVerificationEmail();
+      queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
       if (state.accessToken) {
         SaveAccessToken(state.accessToken, false);
         setAccessToken(state.accessToken);
@@ -168,6 +172,7 @@ export function useOtpForm({
     }
   }, [
     pending,
+    queryClient,
     router,
     setAccessToken,
     setActiveCompanyId,

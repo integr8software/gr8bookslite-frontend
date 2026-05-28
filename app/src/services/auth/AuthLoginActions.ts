@@ -12,6 +12,7 @@ import {
   InvalidState,
 } from "@/app/src/services/auth/AuthActionUtils";
 import { GetFallbackPostAuthRedirectPath } from "@/app/src/services/auth/AuthRedirects";
+import { SetAuthAccessTokenCookie } from "@/app/src/services/auth/AuthCookieServer";
 
 const AccessStateLoginErrors = [
   "This company subscription",
@@ -52,8 +53,14 @@ export async function LoginAction(
       {
         email: parsed.data.email,
         password: parsed.data.password,
+        rememberMe,
       },
     );
+    if (!response.accessToken) {
+      throw new Error("We could not create your login session right now.");
+    }
+
+    await SetAuthAccessTokenCookie(response.accessToken, rememberMe);
 
     return {
       status: "success",

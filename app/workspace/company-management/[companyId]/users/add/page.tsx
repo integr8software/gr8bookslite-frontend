@@ -1,4 +1,4 @@
-import { WorkspaceCompanyUserAction } from "@/app/src/ui/modules/workspace/companies/ui/CompanyUserAction";
+import { WorkspaceCompanyUserAction } from "@/app/src/ui/workspace/companies/CompanyUserAction";
 
 export default function WorkspaceCompanyUserAddPage() {
 	return <WorkspaceCompanyUserAction />;

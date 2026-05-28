@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Eye } from "lucide-react";
-import { getWorkspaceCompanyHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
+import { getWorkspaceCompanyHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import {
 	formatMasterCompanyCurrency,
 	formatMasterCompanyDate,

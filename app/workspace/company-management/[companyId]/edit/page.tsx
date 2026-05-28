@@ -1,4 +1,4 @@
-import { WorkspaceCompanyAction } from "@/app/src/ui/modules/workspace/companies/ui/CompanyAction";
+import { WorkspaceCompanyAction } from "@/app/src/ui/workspace/companies/CompanyAction";
 
 export default function WorkspaceCompanyEditPage() {
 	return <WorkspaceCompanyAction />;

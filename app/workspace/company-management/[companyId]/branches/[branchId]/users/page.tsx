@@ -1,4 +1,4 @@
-import { WorkspaceBranchUsersMain } from "@/app/src/ui/modules/workspace/companies/ui/BranchUsersMain";
+import { WorkspaceBranchUsersMain } from "@/app/src/ui/workspace/companies/BranchUsersMain";
 
 export default function WorkspaceBranchUsersPage() {
 	return <WorkspaceBranchUsersMain />;

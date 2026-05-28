@@ -1,4 +1,4 @@
-import { WorkspaceCompanyBranchesMain } from "@/app/src/ui/modules/workspace/companies/ui/CompanyBranchesMain";
+import { WorkspaceCompanyBranchesMain } from "@/app/src/ui/workspace/companies/CompanyBranchesMain";
 
 export default function WorkspaceCompanyBranchesPage() {
 	return <WorkspaceCompanyBranchesMain />;

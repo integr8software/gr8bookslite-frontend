@@ -1,4 +1,4 @@
-import { WorkspaceBranchUserAction } from "@/app/src/ui/modules/workspace/companies/ui/BranchUserAction";
+import { WorkspaceBranchUserAction } from "@/app/src/ui/workspace/companies/BranchUserAction";
 
 export default function WorkspaceBranchUserViewPage() {
 	return <WorkspaceBranchUserAction />;

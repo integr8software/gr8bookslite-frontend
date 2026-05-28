@@ -40,21 +40,38 @@ export function ModuleMetrics({
 				className,
 			)}
 			style={{
-				gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 14rem), 1fr))",
+				gridTemplateColumns:
+					"repeat(auto-fit, minmax(min(100%, 14rem), 1fr))",
 				...style,
 			}}
 			{...props}
 		>
 			{metrics.map((metric, index) => (
-				<ModuleMetricCard key={index} metric={metric} />
+				<ModuleMetricCard
+					key={index}
+					metric={metric}
+					hasDivider={index > 0}
+				/>
 			))}
 		</div>
 	);
 }
 
-function ModuleMetricCard({ metric }: { metric: ModuleMetricItem }) {
+function ModuleMetricCard({
+	hasDivider,
+	metric,
+}: {
+	hasDivider: boolean;
+	metric: ModuleMetricItem;
+}) {
 	return (
-		<div className="relative min-h-24 border-darknavy/10 bg-white px-6 py-5 not-first:border-l">
+		<div className="relative min-h-24 bg-white px-6 py-5">
+			{hasDivider ? (
+				<span
+					className="absolute bottom-4 left-0 top-4 w-px bg-darknavy/10"
+					aria-hidden="true"
+				/>
+			) : null}
 			<span
 				className={joinClasses(
 					"absolute bottom-6 left-6 top-6 w-0.5 rounded-full",
@@ -64,7 +81,9 @@ function ModuleMetricCard({ metric }: { metric: ModuleMetricItem }) {
 				aria-hidden="true"
 			/>
 			<div className="min-w-0 pl-5">
-				<p className="text-xs font-bold text-darknavy/70">{metric.label}</p>
+				<p className="text-xs font-bold text-darknavy/70">
+					{metric.label}
+				</p>
 				<p className="mt-2 text-2xl font-bold leading-none text-darknavy">
 					{metric.value}
 				</p>

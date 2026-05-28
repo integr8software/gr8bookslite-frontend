@@ -10,7 +10,7 @@ import {
   type PaginationState,
   type SortingState,
 } from "@tanstack/react-table";
-import { CirclePlus, Trash2, X } from "lucide-react";
+import { CirclePlus, LayoutGrid, Trash2, X } from "lucide-react";
 import {
   createTaxDetails,
   formatCurrency,
@@ -37,6 +37,7 @@ type AccountingEntriesDialogProps = {
   onBack: () => void;
   onClose: () => void;
   onDraftChange: (draft: DisbursementVoucherEntryDraft) => void;
+  onOpenGridView: () => void;
   onProceed: () => void;
   onRemoveEntry: (entryId: string) => void;
   onUpdateEntryTax: (
@@ -59,12 +60,13 @@ export function AccountingEntriesDialog({
   onBack,
   onClose,
   onDraftChange,
+  onOpenGridView,
   onProceed,
   onRemoveEntry,
   onUpdateEntryTax,
 }: AccountingEntriesDialogProps) {
   const accentPrimaryButtonClassName =
-    "theme-accent-contrast-text inline-flex items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85";
+    "theme-accent-contrast-text inline-flex items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85";
   const [isTaxDialogOpen, setIsTaxDialogOpen] = useState(false);
   const [taxTargetEntryId, setTaxTargetEntryId] = useState<string | null>(null);
   const [taxRateDraft, setTaxRateDraft] = useState(entryDraft.taxRate);
@@ -152,6 +154,16 @@ export function AccountingEntriesDialog({
 
   function getEntryAmount() {
     return Number(entryDraft.debit || 0) || Number(entryDraft.credit || 0);
+  }
+
+  function updateDraftField(
+    field: keyof Omit<DisbursementVoucherEntryDraft, "taxRate" | "taxDetails">,
+    value: string,
+  ) {
+    onDraftChange({
+      ...entryDraft,
+      [field]: value,
+    });
   }
 
   function openTaxDialog() {
@@ -289,6 +301,14 @@ export function AccountingEntriesDialog({
                   <CirclePlus className="h-4 w-4" aria-hidden="true" />
                   Auto Entries
                 </button>
+                <button
+                  type="button"
+                  onClick={onOpenGridView}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-skyblue/20 bg-skyblue/8 px-4 text-sm font-semibold text-skyblue transition hover:bg-skyblue/12"
+                >
+                  <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+                  Data Grid View
+                </button>
               </div>
             </div>
 
@@ -335,10 +355,7 @@ export function AccountingEntriesDialog({
                     <input
                       value={entryDraft.accountCode}
                       onChange={(event) =>
-                        onDraftChange({
-                          ...entryDraft,
-                          accountCode: event.target.value,
-                        })
+                        updateDraftField("accountCode", event.target.value)
                       }
                       className={EntryFieldClassName}
                       placeholder="e.g. 5010-001"
@@ -348,10 +365,7 @@ export function AccountingEntriesDialog({
                     <input
                       value={entryDraft.accountName}
                       onChange={(event) =>
-                        onDraftChange({
-                          ...entryDraft,
-                          accountName: event.target.value,
-                        })
+                        updateDraftField("accountName", event.target.value)
                       }
                       className={EntryFieldClassName}
                       placeholder="Office Supplies Expense"
@@ -361,10 +375,7 @@ export function AccountingEntriesDialog({
                     <input
                       value={entryDraft.particulars}
                       onChange={(event) =>
-                        onDraftChange({
-                          ...entryDraft,
-                          particulars: event.target.value,
-                        })
+                        updateDraftField("particulars", event.target.value)
                       }
                       className={EntryFieldClassName}
                       placeholder="Describe the accounting line"
@@ -389,10 +400,7 @@ export function AccountingEntriesDialog({
                       <input
                         value={entryDraft.debit}
                         onChange={(event) =>
-                          onDraftChange({
-                            ...entryDraft,
-                            debit: event.target.value,
-                          })
+                          updateDraftField("debit", event.target.value)
                         }
                         className={`${EntryFieldClassName} text-right`}
                         placeholder="0.00"
@@ -402,10 +410,7 @@ export function AccountingEntriesDialog({
                       <input
                         value={entryDraft.credit}
                         onChange={(event) =>
-                          onDraftChange({
-                            ...entryDraft,
-                            credit: event.target.value,
-                          })
+                          updateDraftField("credit", event.target.value)
                         }
                         className={`${EntryFieldClassName} text-right`}
                         placeholder="0.00"
@@ -422,8 +427,8 @@ export function AccountingEntriesDialog({
                       </p>
                     ) : (
                       <p className="text-sm text-darknavy/55">
-                        Add the journal lines manually or use the default
-                        entries.
+                        Add the journal lines manually or open Data Grid View
+                        for spreadsheet-style encoding.
                       </p>
                     )}
                   </div>
@@ -784,7 +789,7 @@ function TaxDetailsDialog({
           <button
             type="button"
             onClick={onSave}
-            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
+            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85"
           >
             Save
           </button>

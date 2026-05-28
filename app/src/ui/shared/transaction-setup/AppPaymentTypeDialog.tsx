@@ -127,7 +127,7 @@ const fieldClassName =
   "h-11 w-full rounded-xl border border-darknavy/12 bg-white px-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/20";
 
 const accentPrimaryButtonClassName =
-  "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85";
+  "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85";
 
 export function AppPaymentTypeDialog({
   isOpen,
@@ -518,7 +518,7 @@ function PaymentTypeListView({
                       <button
                         type="button"
                         onClick={() => onUse(record.paymentType)}
-                        className="theme-accent-contrast-text col-span-2 inline-flex h-10 items-center justify-center rounded-lg bg-skyblue px-3 text-xs font-semibold shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)] transition hover:bg-skyblue/85"
+                        className="theme-accent-contrast-text col-span-2 inline-flex h-10 items-center justify-center rounded-lg bg-skyblue px-3 text-xs font-semibold transition hover:bg-skyblue/85"
                       >
                         Use Payment Type
                       </button>
@@ -622,7 +622,7 @@ function PaymentTypeListView({
                               <button
                                 type="button"
                                 onClick={() => onUse(record.paymentType)}
-                                className="theme-accent-contrast-text inline-flex h-9 items-center justify-center rounded-lg bg-skyblue px-3 text-xs font-semibold shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)] transition hover:bg-skyblue/85"
+                                className="theme-accent-contrast-text inline-flex h-9 items-center justify-center rounded-lg bg-skyblue px-3 text-xs font-semibold transition hover:bg-skyblue/85"
                               >
                                 Use
                               </button>

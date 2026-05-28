@@ -57,7 +57,7 @@ const FieldInputClassName =
   "app-theme-field h-12 w-full rounded-2xl border px-4 text-sm outline-none transition focus:border-skyblue/45";
 
 const AccentPrimaryButtonClassName =
-  "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
+  "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
 
 export function DisbursementVoucherAction() {
   return (
@@ -816,7 +816,7 @@ function VoucherEntriesStep({
           <button
             type="button"
             onClick={onProceed}
-            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-full bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
+            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-full bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85"
           >
             Continue to Review
           </button>
@@ -1023,7 +1023,7 @@ function TaxDetailsDialogEditor({
           <button
             type="button"
             onClick={() => onSave(draftValues)}
-            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
+            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85"
           >
             Save
           </button>

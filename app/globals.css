@@ -259,6 +259,8 @@ body {
 	background: rgba(3, 7, 18, 0.68);
 }
 
+
+
 :root[data-app-theme="midnight-dark"] .account-profile-cancel-action {
 	background-color: transparent !important;
 	border-color: rgba(236, 242, 239, 0.18) !important;

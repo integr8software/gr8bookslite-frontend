@@ -647,15 +647,41 @@ function todayDateValue() {
 }
 
 function createNextVoucherNumber() {
-  const serial = String(new Date().getTime()).slice(-4);
+  const currentYear = new Date().getFullYear();
+  const matchingSerials = MockDisbursementVouchers.map((voucher) => {
+    const matchedParts = voucher.voucherNo.match(/^DV-(\d{4})-(\d{4})$/);
 
-  return `DV-${new Date().getFullYear()}-${serial}`;
+    if (!matchedParts) {
+      return null;
+    }
+
+    const [, year, serial] = matchedParts;
+
+    return Number(year) === currentYear ? Number(serial) : null;
+  }).filter((value): value is number => value !== null);
+  const nextSerial = Math.max(0, ...matchingSerials) + 1;
+  const serial = String(nextSerial).padStart(4, "0");
+
+  return `DV-${currentYear}-${serial}`;
 }
 
 function createVoucherReferenceNumber() {
-  const serial = String(new Date().getTime()).slice(-4);
+  const currentYear = new Date().getFullYear();
+  const matchingSerials = MockDisbursementVouchers.map((voucher) => {
+    const matchedParts = voucher.voucherReferenceNo.match(/^DVR-(\d{4})-(\d{4})$/);
 
-  return `DVR-${new Date().getFullYear()}-${serial}`;
+    if (!matchedParts) {
+      return null;
+    }
+
+    const [, year, serial] = matchedParts;
+
+    return Number(year) === currentYear ? Number(serial) : null;
+  }).filter((value): value is number => value !== null);
+  const nextSerial = Math.max(0, ...matchingSerials) + 1;
+  const serial = String(nextSerial).padStart(4, "0");
+
+  return `DVR-${currentYear}-${serial}`;
 }
 
 function createDisbursementVoucherCopyFromRecord(

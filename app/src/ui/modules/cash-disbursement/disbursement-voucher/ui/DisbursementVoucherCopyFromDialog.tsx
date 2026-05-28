@@ -189,7 +189,7 @@ export function DisbursementVoucherCopyFromDialog({
               onSelect(selectedRecord);
               onClose();
             }}
-            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:bg-darknavy/18 disabled:text-darknavy/35 disabled:shadow-none"
+            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:bg-darknavy/18 disabled:text-darknavy/35"
           >
             Copy Selected
           </button>

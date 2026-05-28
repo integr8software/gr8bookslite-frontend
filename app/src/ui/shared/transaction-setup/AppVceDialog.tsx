@@ -388,7 +388,7 @@ function AppVceDialogContent({
                       onClick={() => handlePartyTypeChange(currentType)}
                       className={`inline-flex items-center rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                         partyType === currentType
-                          ? "theme-accent-contrast-text border-skyblue bg-skyblue shadow-sm shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)]"
+                          ? "theme-accent-contrast-text border-skyblue bg-skyblue"
                           : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/40 hover:bg-skyblue/8"
                       }`}
                     >
@@ -431,7 +431,7 @@ function AppVceDialogContent({
           <button
             type="button"
             onClick={handleSave}
-            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center gap-2 rounded-md bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
+            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center gap-2 rounded-md bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
             Save VCE Information

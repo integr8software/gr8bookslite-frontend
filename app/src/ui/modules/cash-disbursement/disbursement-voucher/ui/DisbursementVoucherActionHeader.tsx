@@ -36,7 +36,7 @@ export function DisbursementVoucherActionHeader({
   onSubmit,
 }: DisbursementVoucherActionHeaderProps) {
   const accentPrimaryActionClassName =
-    "theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
+    "theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
   const title =
     mode === "view"
       ? "Voucher Preview"

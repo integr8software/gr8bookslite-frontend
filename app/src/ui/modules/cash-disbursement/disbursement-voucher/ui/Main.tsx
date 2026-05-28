@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   useDisbursementVoucherPreviewTable,
   useDisbursementVoucherStore,
@@ -14,6 +15,11 @@ import type {
   DisbursementVoucherFormValues,
   DisbursementVoucherPreviewRow,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import {
+  clearAccountingGridSession,
+  readAccountingGridSession,
+  type DisbursementVoucherAccountingGridSession,
+} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/AccountingGridSession";
 import { DisbursementVoucherDrawer } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherDrawer";
 import { DisbursementVoucherHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherHeader";
 import { DisbursementVoucherTable } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherTable";
@@ -27,9 +33,12 @@ import {
 type DrawerState = {
   mode: "add" | "edit";
   row?: DisbursementVoucherPreviewRow;
+  resumeState?: DisbursementVoucherAccountingGridSession | null;
 } | null;
 
 export function DisbursementVoucherMain() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const transactions = useDisbursementVoucherStore(
     (state) => state.transactions,
   );
@@ -47,6 +56,31 @@ export function DisbursementVoucherMain() {
     useState<DisbursementVoucherPreviewRow | null>(null);
   const [drawerState, setDrawerState] = useState<DrawerState>(null);
   const previewTable = useDisbursementVoucherPreviewTable(previewRows);
+
+  useEffect(() => {
+    if (searchParams.get("grid") !== "resume") {
+      return;
+    }
+
+    const resumeState = readAccountingGridSession();
+
+    if (!resumeState) {
+      router.replace("/cash-disbursement/disbursement-voucher");
+      return;
+    }
+
+    const restoreTimer = window.setTimeout(() => {
+      setDrawerState({
+        mode: resumeState.mode,
+        resumeState,
+      });
+    }, 0);
+
+    clearAccountingGridSession();
+    router.replace("/cash-disbursement/disbursement-voucher");
+
+    return () => window.clearTimeout(restoreTimer);
+  }, [router, searchParams]);
 
   function handleConfirmDelete() {
     if (!pendingDeleteRow?.voucher) {
@@ -73,11 +107,13 @@ export function DisbursementVoucherMain() {
   }
 
   const drawerTransactionId = drawerState?.row?.transaction.id;
-  const drawerTransaction = drawerTransactionId
-    ? transactions.find((transaction) => transaction.id === drawerTransactionId)
+  const resumeTransactionId = drawerState?.resumeState?.values.transactionId;
+  const activeTransactionId = resumeTransactionId || drawerTransactionId;
+  const drawerTransaction = activeTransactionId
+    ? transactions.find((transaction) => transaction.id === activeTransactionId)
     : undefined;
-  const drawerVoucher = drawerTransactionId
-    ? vouchers.find((voucher) => voucher.transactionId === drawerTransactionId)
+  const drawerVoucher = activeTransactionId
+    ? vouchers.find((voucher) => voucher.transactionId === activeTransactionId)
     : undefined;
 
   return (
@@ -155,6 +191,7 @@ export function DisbursementVoucherMain() {
       <DisbursementVoucherDrawer
         isOpen={Boolean(drawerState)}
         mode={drawerState?.mode ?? "add"}
+        resumeState={drawerState?.resumeState}
         transaction={drawerTransaction}
         transactions={transactions}
         voucher={drawerVoucher}

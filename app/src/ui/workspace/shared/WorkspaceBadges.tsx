@@ -1,4 +1,5 @@
 import { Building2, UserCircle } from "lucide-react";
+import type { ReactNode } from "react";
 import type {
 	WorkspaceCompanyPlan,
 	WorkspaceCompanyStatus,
@@ -100,7 +101,7 @@ export function WorkspacePlanBadge({ plan }: { plan: WorkspaceCompanyPlan }) {
 	);
 }
 
-export function WorkspaceTextBadge({ children }: { children: React.ReactNode }) {
+export function WorkspaceTextBadge({ children }: { children: ReactNode }) {
 	return (
 		<span className="inline-flex min-h-7 items-center rounded-md bg-darknavy/5 px-3 text-sm font-semibold text-darknavy/70 ring-1 ring-darknavy/8">
 			{children}

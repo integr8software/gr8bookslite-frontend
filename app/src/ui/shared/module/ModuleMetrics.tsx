@@ -81,21 +81,21 @@ function ModuleMetricCard({
 				aria-hidden="true"
 			/>
 			<div className="min-w-0 pl-5">
-				<p className="text-xs font-bold text-darknavy/70">
+				<div className="text-xs font-bold text-darknavy/70">
 					{metric.label}
-				</p>
-				<p className="mt-2 text-2xl font-bold leading-none text-darknavy">
+				</div>
+				<div className="mt-2 text-2xl font-bold leading-none text-darknavy">
 					{metric.value}
-				</p>
+				</div>
 				{metric.helper ? (
-					<p
+					<div
 						className={joinClasses(
 							"mt-2 text-sm font-medium text-darknavy/60",
 							metric.tone === "emerald" && "text-emerald-600",
 						)}
 					>
 						{metric.helper}
-					</p>
+					</div>
 				) : null}
 			</div>
 		</div>

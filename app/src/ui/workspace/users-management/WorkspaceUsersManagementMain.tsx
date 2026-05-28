@@ -8,7 +8,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { CompanyUsersTable } from "@/app/src/ui/workspace/companies/CompanyUsersTable";
+import { WorkspaceUsersTable } from "@/app/src/ui/workspace/users-management/WorkspaceUsersTable";
 
 export function WorkspaceUsersManagementMain() {
 	const users = useWorkspaceCompanyManagementStore((state) => state.users);
@@ -39,7 +39,7 @@ export function WorkspaceUsersManagementMain() {
 					</Link>
 				}
 			/>
-			<CompanyUsersTable
+			<WorkspaceUsersTable
 				baseHref={WorkspaceUsersManagementHref}
 				isLoading={isLoading}
 				users={users}

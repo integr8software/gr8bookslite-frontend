@@ -1,13 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Building2, Edit3, GitBranch, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Building2, Edit3, GitBranch, Trash2 } from "lucide-react";
 import {
 	WorkspaceCompaniesHref,
-	getWorkspaceCompanyBranchesHref,
+	WorkspaceCompanyNotFoundDescription,
 	getWorkspaceCompanyEditHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
-import { useWorkspaceCompanyContext } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import {
+	useWorkspaceCompanyContext,
+	useWorkspaceCompanyManagementStore,
+} from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -17,22 +23,45 @@ import {
 	WorkspacePlanBadge,
 	WorkspaceStatusBadge,
 	WorkspaceTextBadge,
-} from "@/app/src/ui/workspace/companies/WorkspaceCompanyBadges";
-import { WorkspaceCompanyNotFound } from "@/app/src/ui/workspace/companies/WorkspaceCompanyNotFound";
+} from "@/app/src/ui/workspace/shared/WorkspaceBadges";
+import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
 
-export function WorkspaceCompanyDashboard() {
+export function CompanyInformationPage() {
+	const router = useRouter();
 	const { company, companyBranches } = useWorkspaceCompanyContext();
+	const deleteCompany = useWorkspaceCompanyManagementStore(
+		(state) => state.deleteCompany,
+	);
+	const isMutating = useWorkspaceCompanyManagementStore(
+		(state) => state.isMutating,
+	);
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
 	if (!company) {
 		return (
-			<WorkspaceCompanyNotFound
-				href={WorkspaceCompaniesHref}
+			<ModuleNotFound
+				actionHref={WorkspaceCompaniesHref}
+				actionLabel="Back"
+				align="center"
+				description={WorkspaceCompanyNotFoundDescription}
 				title="Company Not Found"
 			/>
 		);
 	}
 
-	const branchesHref = getWorkspaceCompanyBranchesHref(company.id);
+	async function handleDeleteCompany() {
+		if (!company) {
+			return;
+		}
+
+		try {
+			await deleteCompany(company.id);
+			setIsDeleteDialogOpen(false);
+			router.push(WorkspaceCompaniesHref);
+		} catch {
+			// The mutation owns the toast message; keep the dialog open.
+		}
+	}
 
 	return (
 		<section className="grid gap-5">
@@ -40,7 +69,7 @@ export function WorkspaceCompanyDashboard() {
 				variant="panel"
 				titleAs="h1"
 				title={company.name}
-				description="Review company details and manage branches or satellites."
+				description="Review company details, branch counts, and assigned users."
 				eyebrow={
 					<>
 						<Building2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -56,13 +85,14 @@ export function WorkspaceCompanyDashboard() {
 							<Edit3 className="h-4 w-4" aria-hidden="true" />
 							Edit Company
 						</Link>
-						<Link
-							href={`${branchesHref}/add`}
-							className={moduleHeaderActionClassNames.primary}
+						<button
+							type="button"
+							onClick={() => setIsDeleteDialogOpen(true)}
+							className={moduleHeaderActionClassNames.danger}
 						>
-							<Plus className="h-4 w-4" aria-hidden="true" />
-							Add Branch
-						</Link>
+							<Trash2 className="h-4 w-4" aria-hidden="true" />
+							Delete Company
+						</button>
 					</>
 				}
 			/>
@@ -169,16 +199,19 @@ export function WorkspaceCompanyDashboard() {
 								value={String(company.totalUsers ?? 0)}
 							/>
 						</div>
-						<Link
-							href={branchesHref}
-							className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-skyblue px-4 text-sm font-semibold text-white shadow-sm shadow-skyblue/20 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
-						>
-							<GitBranch className="h-4 w-4" aria-hidden="true" />
-							Open Branches
-						</Link>
 					</div>
 				</div>
 			</article>
+			<AppDialog
+				isOpen={isDeleteDialogOpen}
+				isPending={isMutating}
+				title="Delete company?"
+				description={`This will mark ${company.name} as inactive while keeping users and branch records available.`}
+				confirmLabel="Delete Company"
+				tone="danger"
+				onCancel={() => setIsDeleteDialogOpen(false)}
+				onConfirm={() => void handleDeleteCompany()}
+			/>
 		</section>
 	);
 }

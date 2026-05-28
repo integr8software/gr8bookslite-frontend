@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { WorkspaceCompaniesMain } from "@/app/src/ui/workspace/companies/Main";
+import { CompanyManagementPage } from "@/app/src/ui/workspace/companies/CompanyManagementPage";
 
 export const metadata: Metadata = {
 	title: `Companies | ${AppName}`,
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function CompaniesPage() {
-	return <WorkspaceCompaniesMain />;
+	return <CompanyManagementPage />;
 }

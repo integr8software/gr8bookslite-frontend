@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import {
 	ArrowLeft,
 	CheckCircle2,
@@ -16,7 +17,7 @@ import {
 	getNextWorkspaceCompanyStatus,
 } from "@/app/src/data/workspace/companies/WorkspaceCompanyData";
 import type {
-	WorkspaceCompanyActionMode,
+	WorkspaceCompanyFormMode,
 	WorkspaceCompanyStatus,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import {
@@ -28,7 +29,7 @@ import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 const WorkspaceCompanySubmitActionClassName =
 	"theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-70";
 
-export function WorkspaceCompanyActionHeader({
+export function CompanyActionHeader({
 	cancelHref,
 	description,
 	editHref,
@@ -49,11 +50,11 @@ export function WorkspaceCompanyActionHeader({
 	editHref?: string;
 	eyebrowIcon: LucideIcon;
 	eyebrowLabel: string;
-	extraActions?: React.ReactNode;
+	extraActions?: ReactNode;
 	formId: string;
 	isReadonly: boolean;
 	isPending?: boolean;
-	mode: WorkspaceCompanyActionMode;
+	mode: WorkspaceCompanyFormMode;
 	saveLabel: string;
 	status?: WorkspaceCompanyStatus;
 	title: string;

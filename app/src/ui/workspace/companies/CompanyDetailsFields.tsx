@@ -1,14 +1,6 @@
-"use client";
-
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Building2, CreditCard, ImageUp, LoaderCircle, X } from "lucide-react";
-import { WorkspaceCompaniesHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type RefObject } from "react";
+import { CreditCard, ImageUp, X } from "lucide-react";
 import { OnboardingNonIndividualTypeOptions } from "@/app/src/data/onboarding/OnboardingData";
-import { useBillingPaymentMethodsQuery } from "@/app/src/hooks/billing/useBillingPaymentMethodsQuery";
-import { useBillingPlansQuery } from "@/app/src/hooks/billing/useBillingPlansQuery";
-import { useWorkspaceCompanyAction } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyAction";
-import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import type {
 	BillingPaymentMethod,
 	BillingPlan,
@@ -23,21 +15,12 @@ import {
 	PhilippineContactNumberPlaceholder,
 } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
-import { WorkspaceCompanyActionHeader } from "@/app/src/ui/workspace/companies/WorkspaceCompanyActionHeader";
 import {
 	WorkspaceCompanyField,
 	WorkspaceCompanyFieldClassName,
 	WorkspaceCompanySection,
-} from "@/app/src/ui/workspace/companies/WorkspaceCompanyFormPrimitives";
-import {
-	WorkspaceCompanyAvatar,
-	WorkspacePlanBadge,
-	WorkspaceStatusBadge,
-	WorkspaceTextBadge,
-} from "@/app/src/ui/workspace/companies/WorkspaceCompanyBadges";
-import { WorkspaceCompanyNotFound } from "@/app/src/ui/workspace/companies/WorkspaceCompanyNotFound";
+} from "@/app/src/ui/workspace/shared/WorkspaceFormPrimitives";
 
-const CompanyFormId = "workspace-company-form";
 const SetupLaterPaymentMethod = {
 	id: "setup-later",
 	label: "Set up billing after creating company",
@@ -46,198 +29,9 @@ const NewPayMongoCardPaymentMethod = {
 	id: "new-paymongo-card",
 	label: "Add new PayMongo card",
 };
-const WorkspaceCompanyConfirmActionClassName =
-	"theme-accent-contrast-text inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:bg-darknavy/25";
-
-export function WorkspaceCompanyAction() {
-	const action = useWorkspaceCompanyAction();
-	const [isBillingConfirmOpen, setIsBillingConfirmOpen] = useState(false);
-	const storedAccessToken = useAppStore((state) => state.accessToken);
-	const accessToken = storedAccessToken ?? GetAccessToken();
-	const plansQuery = useBillingPlansQuery({
-		accessToken,
-		scope: "ADDITIONAL_COMPANY",
-	});
-	const paymentMethodsQuery = useBillingPaymentMethodsQuery({ accessToken });
-	const paymentMethodOptions = useMemo(
-		() =>
-			getPaymentMethodOptions(
-				paymentMethodsQuery.data?.paymentMethods ?? [],
-			),
-		[paymentMethodsQuery.data?.paymentMethods],
-	);
-
-	if (action.needsRecord && !action.existingCompany) {
-		return (
-			<WorkspaceCompanyNotFound
-				href={WorkspaceCompaniesHref}
-				title="Company Not Found"
-			/>
-		);
-	}
-
-	return (
-		<section className="grid gap-5">
-			<WorkspaceCompanyActionHeader
-				cancelHref={action.cancelHref}
-				description={
-					action.mode === "edit"
-						? "Update company identity, subscription plan, and workspace availability."
-						: "Create a company profile before adding company users and branches."
-				}
-				eyebrowIcon={Building2}
-				eyebrowLabel="Workspace directory"
-				formId={CompanyFormId}
-				isReadonly={false}
-				isPending={action.isMutating}
-				mode={action.mode}
-				saveLabel="Save Company"
-				title={action.mode === "edit" ? "Edit Company" : "Add Company"}
-			/>
-			{action.mode === "edit" && action.existingCompany ? (
-				<EditCompanyOverview company={action.existingCompany} />
-			) : null}
-			<CompanyDetailsFields
-				errors={action.errors}
-				isLoadingPaymentMethods={paymentMethodsQuery.isLoading}
-				isLoadingPlans={plansQuery.isLoading}
-				paymentMethodOptions={paymentMethodOptions}
-				plans={plansQuery.data?.plans ?? []}
-				showBillingDetails={action.mode === "add"}
-				values={action.values}
-				onInputChange={action.handleInputChange}
-				onSubmit={(event) => {
-					if (action.mode === "edit") {
-						action.handleSubmit(event);
-						return;
-					}
-
-					event.preventDefault();
-
-					if (action.validateCompany()) {
-						setIsBillingConfirmOpen(true);
-					}
-				}}
-				onUpdateField={action.updateField}
-				onUpdateLogoFile={action.updateLogoFile}
-			/>
-			<CompanyCreateConfirmDialog
-				isOpen={isBillingConfirmOpen}
-				isPending={action.isMutating}
-				resourceName={action.values.companyName || "this company"}
-				onCancel={() => setIsBillingConfirmOpen(false)}
-				onConfirm={async () => {
-					await action.saveCompany();
-				}}
-			/>
-		</section>
-	);
-}
-
-function EditCompanyOverview({
-	company,
-}: {
-	company: NonNullable<
-		ReturnType<typeof useWorkspaceCompanyAction>["existingCompany"]
-	>;
-}) {
-	return (
-		<section className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm sm:p-6">
-			<div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-				<div className="flex min-w-0 items-start gap-4">
-					<WorkspaceCompanyAvatar
-						initials={company.initials}
-						logoUrl={company.logoUrl}
-						name={company.name}
-					/>
-					<div className="min-w-0">
-						<div className="flex flex-wrap items-center gap-2">
-							<WorkspaceStatusBadge status={company.status} />
-							<WorkspacePlanBadge plan={company.plan} />
-							<WorkspaceTextBadge>
-								{company.companyType}
-							</WorkspaceTextBadge>
-						</div>
-						<h2 className="mt-3 break-words text-xl font-semibold text-darknavy">
-							{company.name}
-						</h2>
-						<p className="mt-1 break-words text-sm leading-6 text-darknavy/58">
-							{company.address || "No address yet"}
-						</p>
-					</div>
-				</div>
-				<div className="grid grid-cols-2 gap-3 sm:min-w-72">
-					<OverviewMetric
-						label="Branches"
-						value={company.totalBranches ?? 0}
-					/>
-					<OverviewMetric
-						label="Users"
-						value={company.totalUsers ?? 0}
-					/>
-				</div>
-			</div>
-
-			<div className="mt-6 grid gap-x-6 gap-y-4 border-t border-darknavy/10 pt-5 sm:grid-cols-2 xl:grid-cols-4">
-				<OverviewDetail
-					label="Primary Contact"
-					value={company.primaryContact}
-				/>
-				<OverviewDetail label="Email" value={company.email} />
-				<OverviewDetail
-					label="Contact No."
-					value={company.contactNumber}
-				/>
-				<OverviewDetail label="TIN" value={company.tin} />
-				<OverviewDetail
-					label="Report Start"
-					value={company.reportStartDate}
-				/>
-				<OverviewDetail
-					label="Report End"
-					value={company.reportEndDate}
-				/>
-				<OverviewDetail
-					label="Created By"
-					value={company.createdByUser?.name}
-				/>
-				<OverviewDetail
-					label="Creator Email"
-					value={company.createdByUser?.email}
-				/>
-				<OverviewDetail label="Website" value={company.website} />
-				<OverviewDetail label="Created" value={company.createdAt} />
-			</div>
-		</section>
-	);
-}
-
-function OverviewMetric({ label, value }: { label: string; value: number }) {
-	return (
-		<div className="rounded-lg border border-darknavy/10 bg-offwhite/60 p-4">
-			<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">
-				{label}
-			</p>
-			<p className="mt-2 text-2xl font-semibold text-darknavy">{value}</p>
-		</div>
-	);
-}
-
-function OverviewDetail({ label, value }: { label: string; value?: string }) {
-	return (
-		<div className="min-w-0">
-			<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">
-				{label}
-			</p>
-			<p className="mt-1 break-words text-sm font-semibold text-darknavy">
-				{value?.trim() || "-"}
-			</p>
-		</div>
-	);
-}
-
-function CompanyDetailsFields({
+export function CompanyDetailsFields({
 	errors,
+	formId,
 	isLoadingPaymentMethods,
 	isLoadingPlans,
 	paymentMethodOptions,
@@ -250,6 +44,7 @@ function CompanyDetailsFields({
 	onUpdateLogoFile,
 }: {
 	errors: WorkspaceCompanyFormErrors;
+	formId: string;
 	isLoadingPaymentMethods: boolean;
 	isLoadingPlans: boolean;
 	paymentMethodOptions: { id: string; label: string }[];
@@ -257,9 +52,9 @@ function CompanyDetailsFields({
 	showBillingDetails: boolean;
 	values: WorkspaceCompanyFormValues;
 	onInputChange: (
-		event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+		event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
 	) => void;
-	onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+	onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 	onUpdateField: (
 		field: keyof WorkspaceCompanyFormValues,
 		value: string,
@@ -268,27 +63,16 @@ function CompanyDetailsFields({
 }) {
 	const logoInputRef = useRef<HTMLInputElement | null>(null);
 	const [logoInputKey, setLogoInputKey] = useState(0);
-	const [logoPreviewUrl, setLogoPreviewUrl] = useState(values.logoUrl);
 	const isIndividual = values.taxpayerType === "individual";
 	const isOtherOrganizationType = values.nonIndividualType === "Others";
 
 	useEffect(() => {
 		return () => {
-			if (logoPreviewUrl.startsWith("blob:")) {
-				URL.revokeObjectURL(logoPreviewUrl);
+			if (values.logoUrl.startsWith("blob:")) {
+				URL.revokeObjectURL(values.logoUrl);
 			}
 		};
-	}, [logoPreviewUrl]);
-
-	function updateLogoPreviewUrl(nextPreviewUrl: string) {
-		setLogoPreviewUrl((current) => {
-			if (current.startsWith("blob:")) {
-				URL.revokeObjectURL(current);
-			}
-
-			return nextPreviewUrl;
-		});
-	}
+	}, [values.logoUrl]);
 
 	function handleLogoChange(file: File | undefined) {
 		if (!file) {
@@ -304,19 +88,17 @@ function CompanyDetailsFields({
 		onUpdateLogoFile(file);
 		const nextPreviewUrl = URL.createObjectURL(file);
 		onUpdateField("logoUrl", nextPreviewUrl);
-		updateLogoPreviewUrl(nextPreviewUrl);
 	}
 
 	function handleLogoRemove() {
 		onUpdateField("logoName", "");
 		onUpdateField("logoUrl", "");
 		onUpdateLogoFile(null);
-		updateLogoPreviewUrl("");
 		setLogoInputKey((current) => current + 1);
 	}
 
 	return (
-		<form id={CompanyFormId} onSubmit={onSubmit}>
+		<form id={formId} onSubmit={onSubmit}>
 			<input type="submit" hidden />
 			<WorkspaceCompanySection
 				title="Company Details"
@@ -459,7 +241,7 @@ function CompanyDetailsFields({
 						fileName={values.logoName}
 						inputKey={logoInputKey}
 						inputRef={logoInputRef}
-						previewUrl={logoPreviewUrl}
+						previewUrl={values.logoUrl}
 						onChange={handleLogoChange}
 						onRemove={handleLogoRemove}
 					/>
@@ -812,7 +594,7 @@ function CompanyPlanSection({
 	plans: BillingPlan[];
 	values: WorkspaceCompanyFormValues;
 	onInputChange: (
-		event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+		event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
 	) => void;
 }) {
 	const selectedPlan = plans.find(
@@ -913,7 +695,7 @@ function CompanyLogoField({
 	error?: string;
 	fileName: string;
 	inputKey: number;
-	inputRef: React.RefObject<HTMLInputElement | null>;
+	inputRef: RefObject<HTMLInputElement | null>;
 	previewUrl: string;
 	onChange: (file: File | undefined) => void;
 	onRemove: () => void;
@@ -979,107 +761,8 @@ function CompanyLogoField({
 	);
 }
 
-function CompanyCreateConfirmDialog({
-	isOpen,
-	isPending,
-	resourceName,
-	onCancel,
-	onConfirm,
-}: {
-	isOpen: boolean;
-	isPending: boolean;
-	resourceName: string;
-	onCancel: () => void;
-	onConfirm: () => Promise<void> | void;
-}) {
-	const [confirmText, setConfirmText] = useState("");
-	const [isSaving, setIsSaving] = useState(false);
-	const canConfirm = confirmText.trim().toLowerCase() === "confirm company";
-	const isConfirmPending = isPending || isSaving;
 
-	if (!isOpen) {
-		return null;
-	}
-
-	function handleCancel() {
-		setConfirmText("");
-		onCancel();
-	}
-
-	async function handleConfirm() {
-		if (!canConfirm || isConfirmPending) {
-			return;
-		}
-
-		setIsSaving(true);
-
-		try {
-			await onConfirm();
-		} finally {
-			setIsSaving(false);
-		}
-	}
-
-	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-darknavy/45 px-4 backdrop-blur-sm">
-			<div className="w-full max-w-lg rounded-2xl border border-darknavy/10 bg-white p-6 shadow-2xl">
-				<p className="text-lg font-bold text-darknavy">
-					Create company?
-				</p>
-				<p className="mt-2 text-sm leading-6 text-darknavy/65">
-					Creating {resourceName} may affect workspace billing,
-					payments, or deductions. Type{" "}
-					<span className="font-semibold text-darknavy">
-						confirm company
-					</span>{" "}
-					before saving.
-				</p>
-				<div className="mt-5">
-					<label
-						htmlFor="confirm-company"
-						className="mb-2 block text-sm font-semibold text-darknavy"
-					>
-						Confirmation
-					</label>
-					<input
-						id="confirm-company"
-						value={confirmText}
-						onChange={(event) => setConfirmText(event.target.value)}
-						className={WorkspaceCompanyFieldClassName}
-						placeholder="confirm company"
-						autoFocus
-					/>
-				</div>
-				<div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-					<button
-						type="button"
-						onClick={handleCancel}
-						disabled={isConfirmPending}
-						className="inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white px-5 text-sm font-semibold text-darknavy/70 transition hover:bg-offwhite disabled:cursor-not-allowed disabled:opacity-60"
-					>
-						Cancel
-					</button>
-					<button
-						type="button"
-						onClick={handleConfirm}
-						disabled={!canConfirm || isConfirmPending}
-						className={WorkspaceCompanyConfirmActionClassName}
-					>
-						{isConfirmPending ? (
-							<LoaderCircle
-								className="h-4 w-4 animate-spin"
-								aria-hidden="true"
-							/>
-						) : null}
-						{isConfirmPending ? "Saving..." : "Save Company"}
-					</button>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function getPaymentMethodOptions(paymentMethods: BillingPaymentMethod[]) {
+export function getPaymentMethodOptions(paymentMethods: BillingPaymentMethod[]) {
 	const savedMethods = paymentMethods
 		.filter((method) => method.externalPaymentMethodId)
 		.map((method) => ({
@@ -1098,13 +781,13 @@ function formatPaymentMethodLabel(method: BillingPaymentMethod) {
 	const cardLabel = formatCardIdentity(method);
 	const expiryLabel =
 		method.expMonth && method.expYear
-			? ` · Expires ${String(method.expMonth).padStart(2, "0")}/${method.expYear}`
+			? ` Â· Expires ${String(method.expMonth).padStart(2, "0")}/${method.expYear}`
 			: "";
 	const companyLabel = method.company?.name
-		? ` · Used by ${method.company.name}`
+		? ` Â· Used by ${method.company.name}`
 		: "";
 	const planLabel = method.subscription?.plan.name
-		? ` · ${method.subscription.plan.name}`
+		? ` Â· ${method.subscription.plan.name}`
 		: "";
 
 	return `${cardLabel}${expiryLabel}${companyLabel}${planLabel}`;
@@ -1114,10 +797,10 @@ function formatCardIdentity(method: BillingPaymentMethod) {
 	const brand = method.brand ? titleCase(method.brand) : "PayMongo card";
 
 	if (!method.last4) {
-		return `${brand} · Saved card`;
+		return `${brand} Â· Saved card`;
 	}
 
-	return `${brand} •••• ${method.last4}`;
+	return `${brand} â€¢â€¢â€¢â€¢ ${method.last4}`;
 }
 
 function formatPlanPrice(amountInCents: number | null, plan?: BillingPlan) {

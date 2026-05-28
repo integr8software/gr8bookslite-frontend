@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
 	getCoreRowModel,
 	getPaginationRowModel,
@@ -14,32 +14,24 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
-	WorkspaceBranchUserRoleOptions,
-	WorkspaceBranchUserTableColumns,
-	WorkspaceCompanyBranchKindOptions,
-	WorkspaceCompanyBranchTableColumns,
 	WorkspaceCompanyPlanOptions,
 	WorkspaceCompanyStatusOptions,
 	WorkspaceCompanyTableColumns,
 	WorkspaceCompanyTypeOptions,
-	WorkspaceCompanyUserTableColumns,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
+import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { BillingQueryKeys } from "@/app/src/services/billing/BillingQueryKeys";
 import {
 	CreateWorkspaceCompany,
+	DeactivateWorkspaceCompany,
 	GetWorkspaceCompanies,
+	GetWorkspaceCompany,
+	UpdateWorkspaceCompany,
 } from "@/app/src/services/workspace/companies/WorkspaceCompanyApi";
-import { BillingQueryKeys } from "@/app/src/services/billing/BillingQueryKeys";
 import { WorkspaceCompanyQueryKeys } from "@/app/src/services/workspace/companies/WorkspaceCompanyQueryKeys";
 import type {
-	WorkspaceBranchUserRecord,
-	WorkspaceBranchUserRole,
-	WorkspaceBranchUserTableColumnKey,
-	WorkspaceBranchUserTableRecord,
-	WorkspaceCompanyBranchKind,
 	WorkspaceCompanyBranchRecord,
-	WorkspaceCompanyBranchTableColumnKey,
-	WorkspaceCompanyBranchTableRecord,
 	WorkspaceCompanyFormValues,
 	WorkspaceCompanyPlan,
 	WorkspaceCompanyRecord,
@@ -48,31 +40,82 @@ import type {
 	WorkspaceCompanyTableRecord,
 	WorkspaceCompanyType,
 	WorkspaceCompanyUserRecord,
-	WorkspaceCompanyUserTableColumnKey,
-	WorkspaceCompanyUserTableRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
 type WorkspaceCompanyManagementStoreState = {
-	branchUsers: WorkspaceBranchUserRecord[];
 	branches: WorkspaceCompanyBranchRecord[];
 	companies: WorkspaceCompanyRecord[];
 	isLoading: boolean;
 	isMutating: boolean;
 	users: WorkspaceCompanyUserRecord[];
-	addBranch: (branch: WorkspaceCompanyBranchRecord) => void;
-	addBranchUser: (user: WorkspaceBranchUserRecord) => void;
 	addCompany: (values: WorkspaceCompanyFormValues) => Promise<WorkspaceCompanyRecord>;
 	addCompanyUser: (user: WorkspaceCompanyUserRecord) => void;
-	updateBranch: (branch: WorkspaceCompanyBranchRecord) => void;
-	updateBranchUser: (user: WorkspaceBranchUserRecord) => void;
-	updateCompany: (company: WorkspaceCompanyRecord) => void;
+	deleteCompany: (companyId: string) => Promise<WorkspaceCompanyRecord>;
+	updateCompany: (
+		companyId: string,
+		values: WorkspaceCompanyFormValues,
+	) => Promise<WorkspaceCompanyRecord>;
 	updateCompanyUser: (user: WorkspaceCompanyUserRecord) => void;
 };
 
 const EmptyWorkspaceCompanies: WorkspaceCompanyRecord[] = [];
 const EmptyWorkspaceCompanyUsers: WorkspaceCompanyUserRecord[] = [];
 const EmptyWorkspaceCompanyBranches: WorkspaceCompanyBranchRecord[] = [];
-const EmptyWorkspaceBranchUsers: WorkspaceBranchUserRecord[] = [];
+const WorkspaceCompanyManagementRoutePrefix = "/workspace/company-management";
+
+type WorkspaceCompanyRouteParams = {
+	companyId?: string;
+	segments: string[];
+};
+
+export function useWorkspaceCompanyRouteParams() {
+	return getWorkspaceCompanyRouteParams(usePathname());
+}
+
+function getWorkspaceCompanyRouteParams(
+	pathname: string,
+): WorkspaceCompanyRouteParams {
+	const routePath = pathname.startsWith(WorkspaceCompanyManagementRoutePrefix)
+		? pathname.slice(WorkspaceCompanyManagementRoutePrefix.length)
+		: pathname;
+	const segments = routePath
+		.split("/")
+		.filter(Boolean)
+		.map((segment) => decodeURIComponent(segment));
+	const companyId =
+		segments[0] === "edit" || segments[0] === "view"
+			? segments[1]
+			: undefined;
+
+	return {
+		companyId,
+		segments,
+	};
+}
+
+export function useWorkspaceCompanyRecord(companyId?: string) {
+	const queryClient = useQueryClient();
+	const storedAccessToken = useAppStore((state) => state.accessToken);
+	const accessToken = storedAccessToken ?? GetAccessToken();
+
+	return useQuery({
+		queryKey: WorkspaceCompanyQueryKeys.company(companyId ?? "missing"),
+		queryFn: async () => {
+			if (!accessToken || !companyId) {
+				throw new Error("Company record is not available.");
+			}
+
+			return GetWorkspaceCompany(accessToken, companyId);
+		},
+		enabled: Boolean(accessToken && companyId),
+		initialData: () =>
+			queryClient
+				.getQueryData<WorkspaceCompanyRecord[]>(
+					WorkspaceCompanyQueryKeys.companies(),
+				)
+				?.find((company) => company.id === companyId),
+	});
+}
 
 export function useWorkspaceCompanyManagementStore<
 	TSelected = WorkspaceCompanyManagementStoreState,
@@ -94,11 +137,6 @@ export function useWorkspaceCompanyManagementStore<
 		queryFn: async () => EmptyWorkspaceCompanyBranches,
 		initialData: EmptyWorkspaceCompanyBranches,
 	});
-	const branchUsersQuery = useQuery({
-		queryKey: WorkspaceCompanyQueryKeys.branchUsers(),
-		queryFn: async () => EmptyWorkspaceBranchUsers,
-		initialData: EmptyWorkspaceBranchUsers,
-	});
 
 	function setCompanies(
 		updater: (companies: WorkspaceCompanyRecord[]) => WorkspaceCompanyRecord[],
@@ -117,28 +155,6 @@ export function useWorkspaceCompanyManagementStore<
 		queryClient.setQueryData<WorkspaceCompanyUserRecord[]>(
 			WorkspaceCompanyQueryKeys.users(),
 			(current = EmptyWorkspaceCompanyUsers) => updater(current),
-		);
-	}
-
-	function setBranches(
-		updater: (
-			branches: WorkspaceCompanyBranchRecord[],
-		) => WorkspaceCompanyBranchRecord[],
-	) {
-		queryClient.setQueryData<WorkspaceCompanyBranchRecord[]>(
-			WorkspaceCompanyQueryKeys.branches(),
-			(current = EmptyWorkspaceCompanyBranches) => updater(current),
-		);
-	}
-
-	function setBranchUsers(
-		updater: (
-			users: WorkspaceBranchUserRecord[],
-		) => WorkspaceBranchUserRecord[],
-	) {
-		queryClient.setQueryData<WorkspaceBranchUserRecord[]>(
-			WorkspaceCompanyQueryKeys.branchUsers(),
-			(current = EmptyWorkspaceBranchUsers) => updater(current),
 		);
 	}
 
@@ -164,17 +180,71 @@ export function useWorkspaceCompanyManagementStore<
 		},
 	});
 	const updateCompanyMutation = useMutation({
-		mutationFn: async (company: WorkspaceCompanyRecord) => company,
+		mutationFn: async ({
+			companyId,
+			values,
+		}: {
+			companyId: string;
+			values: WorkspaceCompanyFormValues;
+		}) => {
+			if (!accessToken) {
+				throw new Error("Sign in again before updating this company.");
+			}
+
+			return UpdateWorkspaceCompany(accessToken, companyId, values);
+		},
 		onSuccess: (company) => {
 			setCompanies((companies) =>
 				companies.map((current) =>
 					current.id === company.id ? company : current,
 				),
 			);
+			queryClient.setQueryData(
+				WorkspaceCompanyQueryKeys.company(company.id),
+				company,
+			);
+			void queryClient.invalidateQueries({
+				queryKey: WorkspaceCompanyQueryKeys.companies(),
+			});
 			toast.success("Company updated.");
 		},
-		onError: () => {
-			toast.error("Could not update company. Please try again.");
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not update company. Please try again.",
+			);
+		},
+	});
+	const deleteCompanyMutation = useMutation({
+		mutationFn: async (companyId: string) => {
+			if (!accessToken) {
+				throw new Error("Sign in again before deleting this company.");
+			}
+
+			return DeactivateWorkspaceCompany(accessToken, companyId);
+		},
+		onSuccess: (company) => {
+			setCompanies((companies) =>
+				companies.map((current) =>
+					current.id === company.id ? company : current,
+				),
+			);
+			queryClient.setQueryData(
+				WorkspaceCompanyQueryKeys.company(company.id),
+				company,
+			);
+			void queryClient.invalidateQueries({
+				queryKey: WorkspaceCompanyQueryKeys.companies(),
+			});
+			toast.success("Company deleted.");
+		},
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not delete company. Please try again.",
+			);
 		},
 	});
 	const addCompanyUserMutation = useMutation({
@@ -199,94 +269,37 @@ export function useWorkspaceCompanyManagementStore<
 			toast.error("Could not update company user. Please try again.");
 		},
 	});
-	const addBranchMutation = useMutation({
-		mutationFn: async (branch: WorkspaceCompanyBranchRecord) => branch,
-		onSuccess: (branch) => {
-			setBranches((branches) => [...branches, branch]);
-			toast.success("Branch created.");
-		},
-		onError: () => {
-			toast.error("Could not create branch. Please try again.");
-		},
-	});
-	const updateBranchMutation = useMutation({
-		mutationFn: async (branch: WorkspaceCompanyBranchRecord) => branch,
-		onSuccess: (branch) => {
-			setBranches((branches) =>
-				branches.map((current) =>
-					current.id === branch.id ? branch : current,
-				),
-			);
-			toast.success("Branch updated.");
-		},
-		onError: () => {
-			toast.error("Could not update branch. Please try again.");
-		},
-	});
-	const addBranchUserMutation = useMutation({
-		mutationFn: async (user: WorkspaceBranchUserRecord) => user,
-		onSuccess: (user) => {
-			setBranchUsers((users) => [...users, user]);
-			toast.success("Branch user created.");
-		},
-		onError: () => {
-			toast.error("Could not create branch user. Please try again.");
-		},
-	});
-	const updateBranchUserMutation = useMutation({
-		mutationFn: async (user: WorkspaceBranchUserRecord) => user,
-		onSuccess: (user) => {
-			setBranchUsers((users) =>
-				users.map((current) => (current.id === user.id ? user : current)),
-			);
-			toast.success("Branch user updated.");
-		},
-		onError: () => {
-			toast.error("Could not update branch user. Please try again.");
-		},
-	});
 	const state = useMemo<WorkspaceCompanyManagementStoreState>(
 		() => ({
-			addBranch: (branch) => addBranchMutation.mutate(branch),
-			addBranchUser: (user) => addBranchUserMutation.mutate(user),
 			addCompany: (values) => addCompanyMutation.mutateAsync(values),
 			addCompanyUser: (user) => addCompanyUserMutation.mutate(user),
-			branchUsers: branchUsersQuery.data ?? EmptyWorkspaceBranchUsers,
 			branches: branchesQuery.data ?? EmptyWorkspaceCompanyBranches,
 			companies: companiesQuery.data ?? EmptyWorkspaceCompanies,
+			deleteCompany: (companyId) =>
+				deleteCompanyMutation.mutateAsync(companyId),
 			isLoading:
-				branchUsersQuery.isLoading ||
 				branchesQuery.isLoading ||
 				companiesQuery.isLoading ||
 				usersQuery.isLoading,
 			isMutating:
-				addBranchMutation.isPending ||
-				addBranchUserMutation.isPending ||
 				addCompanyMutation.isPending ||
 				addCompanyUserMutation.isPending ||
-				updateBranchMutation.isPending ||
-				updateBranchUserMutation.isPending ||
+				deleteCompanyMutation.isPending ||
 				updateCompanyMutation.isPending ||
 				updateCompanyUserMutation.isPending,
-			updateBranch: (branch) => updateBranchMutation.mutate(branch),
-			updateBranchUser: (user) => updateBranchUserMutation.mutate(user),
-			updateCompany: (company) => updateCompanyMutation.mutate(company),
+			updateCompany: (companyId, values) =>
+				updateCompanyMutation.mutateAsync({ companyId, values }),
 			updateCompanyUser: (user) => updateCompanyUserMutation.mutate(user),
 			users: usersQuery.data ?? EmptyWorkspaceCompanyUsers,
 		}),
 		[
-			addBranchMutation,
-			addBranchUserMutation,
 			addCompanyMutation,
 			addCompanyUserMutation,
-			branchUsersQuery.data,
-			branchUsersQuery.isLoading,
 			branchesQuery.data,
 			branchesQuery.isLoading,
 			companiesQuery.data,
 			companiesQuery.isLoading,
-			updateBranchMutation,
-			updateBranchUserMutation,
+			deleteCompanyMutation,
 			updateCompanyMutation,
 			updateCompanyUserMutation,
 			usersQuery.data,
@@ -298,17 +311,17 @@ export function useWorkspaceCompanyManagementStore<
 }
 
 export function useWorkspaceCompanyContext() {
-	const params = useParams<{ branchId?: string; companyId?: string }>();
+	const params = useWorkspaceCompanyRouteParams();
 	const companies = useWorkspaceCompanyManagementStore((state) => state.companies);
 	const users = useWorkspaceCompanyManagementStore((state) => state.users);
 	const branches = useWorkspaceCompanyManagementStore((state) => state.branches);
-	const branchUsers = useWorkspaceCompanyManagementStore(
-		(state) => state.branchUsers,
-	);
 	const isLoading = useWorkspaceCompanyManagementStore(
 		(state) => state.isLoading,
 	);
-	const company = companies.find((record) => record.id === params.companyId);
+	const companyQuery = useWorkspaceCompanyRecord(params.companyId);
+	const company =
+		companies.find((record) => record.id === params.companyId) ??
+		companyQuery.data;
 	const companyUsers = users.filter((user) =>
 		user.companyAssignments.some(
 			(assignment) => assignment.companyId === params.companyId,
@@ -317,24 +330,15 @@ export function useWorkspaceCompanyContext() {
 	const companyBranches = branches.filter(
 		(branch) => branch.companyId === params.companyId,
 	);
-	const companyBranchUsers = branchUsers.filter(
-		(user) => user.companyId === params.companyId,
-	);
-	const branch = companyBranches.find((record) => record.id === params.branchId);
-	const selectedBranchUsers = branchUsers.filter(
-		(user) =>
-			user.companyId === params.companyId && user.branchId === params.branchId,
-	);
 
 	return {
-		branch,
 		company,
 		companyBranches,
-		companyBranchUsers,
 		companyUsers,
-		isLoading,
+		isLoading:
+			isLoading ||
+			Boolean(params.companyId && !company && companyQuery.isLoading),
 		params,
-		selectedBranchUsers,
 	};
 }
 
@@ -412,7 +416,7 @@ export function useWorkspaceCompaniesTable({
 					return createActionColumn(column.label, column.className);
 				}
 
-				return createColumn<WorkspaceCompanyTableRecord>(
+				return createColumn(
 					column.key,
 					column.label,
 					column.className,
@@ -481,315 +485,6 @@ export function useWorkspaceCompaniesTable({
 	};
 }
 
-export function useWorkspaceCompanyUsersTable(
-	users: WorkspaceCompanyUserRecord[],
-) {
-	const [pagination, setPagination] = useState<PaginationState>({
-		pageIndex: 0,
-		pageSize: 5,
-	});
-	const [query, setQueryState] = useState("");
-	const [statusFilter, setStatusFilterState] = useState<
-		WorkspaceCompanyStatus | "All"
-	>("All");
-	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "name", desc: false },
-	]);
-	const filteredUsers = useMemo(
-		() =>
-			users.filter((user) => {
-				const searchable = [
-					user.name,
-					user.email,
-					user.contactNumber,
-					user.status,
-					user.lastLogin,
-				]
-					.filter(Boolean)
-					.join(" ")
-					.toLowerCase();
-
-				return (
-					searchable.includes(query.toLowerCase()) &&
-					(statusFilter === "All" || user.status === statusFilter)
-				);
-			}),
-		[query, statusFilter, users],
-	);
-	const columns = useMemo<ColumnDef<WorkspaceCompanyUserTableRecord>[]>(
-		() =>
-			WorkspaceCompanyUserTableColumns.map((column) => {
-				if (!("key" in column)) {
-					return createActionColumn(column.label, column.className);
-				}
-
-				return createColumn<WorkspaceCompanyUserTableRecord>(
-					column.key,
-					column.label,
-					column.className,
-				);
-			}),
-		[],
-	);
-
-	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
-	const table = useReactTable({
-		data: filteredUsers,
-		columns,
-		state: {
-			pagination,
-			sorting,
-		},
-		onPaginationChange: setPagination,
-		onSortingChange: setSorting,
-		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-	});
-
-	function resetFilters() {
-		setQueryState("");
-		setStatusFilterState("All");
-		table.setPageIndex(0);
-	}
-
-	function setQuery(value: string) {
-		setQueryState(value);
-		table.setPageIndex(0);
-	}
-
-	function setStatusFilter(value: WorkspaceCompanyStatus | "All") {
-		setStatusFilterState(value);
-		table.setPageIndex(0);
-	}
-
-	return {
-		query,
-		resetFilters,
-		setQuery,
-		setStatusFilter,
-		statusFilter,
-		statusOptions: WorkspaceCompanyStatusOptions,
-		table,
-	};
-}
-
-export function useWorkspaceCompanyBranchesTable({
-	branches,
-}: {
-	branches: WorkspaceCompanyBranchRecord[];
-}) {
-	const [pagination, setPagination] = useState<PaginationState>({
-		pageIndex: 0,
-		pageSize: 5,
-	});
-	const [query, setQueryState] = useState("");
-	const [kindFilter, setKindFilterState] = useState<
-		WorkspaceCompanyBranchKind | "All"
-	>("All");
-	const [statusFilter, setStatusFilterState] = useState<
-		WorkspaceCompanyStatus | "All"
-	>("All");
-	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "name", desc: false },
-	]);
-	const filteredBranches = useMemo(
-		() =>
-			branches.filter((branch) => {
-				const searchable = [
-					branch.code,
-					branch.name,
-					branch.branchType,
-					branch.status,
-					branch.tin,
-					branch.email,
-				]
-					.filter(Boolean)
-					.join(" ")
-					.toLowerCase();
-
-				return (
-					searchable.includes(query.toLowerCase()) &&
-					(kindFilter === "All" || branch.branchType === kindFilter) &&
-					(statusFilter === "All" || branch.status === statusFilter)
-				);
-			}),
-		[branches, kindFilter, query, statusFilter],
-	);
-	const columns = useMemo<ColumnDef<WorkspaceCompanyBranchTableRecord>[]>(
-		() =>
-			WorkspaceCompanyBranchTableColumns.map((column) => {
-				if (!("key" in column)) {
-					return createActionColumn(column.label, column.className);
-				}
-
-				return createColumn<WorkspaceCompanyBranchTableRecord>(
-					column.key,
-					column.label,
-					column.className,
-				);
-			}),
-		[],
-	);
-
-	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
-	const table = useReactTable({
-		data: filteredBranches,
-		columns,
-		state: {
-			pagination,
-			sorting,
-		},
-		onPaginationChange: setPagination,
-		onSortingChange: setSorting,
-		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-	});
-
-	function resetFilters() {
-		setQueryState("");
-		setKindFilterState("All");
-		setStatusFilterState("All");
-		table.setPageIndex(0);
-	}
-
-	function setKindFilter(value: WorkspaceCompanyBranchKind | "All") {
-		setKindFilterState(value);
-		table.setPageIndex(0);
-	}
-
-	function setQuery(value: string) {
-		setQueryState(value);
-		table.setPageIndex(0);
-	}
-
-	function setStatusFilter(value: WorkspaceCompanyStatus | "All") {
-		setStatusFilterState(value);
-		table.setPageIndex(0);
-	}
-
-	return {
-		kindFilter,
-		kindOptions: WorkspaceCompanyBranchKindOptions,
-		query,
-		resetFilters,
-		setKindFilter,
-		setQuery,
-		setStatusFilter,
-		statusFilter,
-		statusOptions: WorkspaceCompanyStatusOptions,
-		table,
-	};
-}
-
-export function useWorkspaceBranchUsersTable(
-	users: WorkspaceBranchUserRecord[],
-) {
-	const [pagination, setPagination] = useState<PaginationState>({
-		pageIndex: 0,
-		pageSize: 5,
-	});
-	const [query, setQueryState] = useState("");
-	const [roleFilter, setRoleFilterState] = useState<
-		WorkspaceBranchUserRole | "All"
-	>("All");
-	const [statusFilter, setStatusFilterState] = useState<
-		WorkspaceCompanyStatus | "All"
-	>("All");
-	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "name", desc: false },
-	]);
-	const filteredUsers = useMemo(
-		() =>
-			users.filter((user) => {
-				const searchable = [
-					user.name,
-					user.email,
-					user.contactNumber,
-					user.role,
-					user.status,
-					user.assignedAt,
-				]
-					.filter(Boolean)
-					.join(" ")
-					.toLowerCase();
-
-				return (
-					searchable.includes(query.toLowerCase()) &&
-					(roleFilter === "All" || user.role === roleFilter) &&
-					(statusFilter === "All" || user.status === statusFilter)
-				);
-			}),
-		[query, roleFilter, statusFilter, users],
-	);
-	const columns = useMemo<ColumnDef<WorkspaceBranchUserTableRecord>[]>(
-		() =>
-			WorkspaceBranchUserTableColumns.map((column) => {
-				if (!("key" in column)) {
-					return createActionColumn(column.label, column.className);
-				}
-
-				return createColumn<WorkspaceBranchUserTableRecord>(
-					column.key,
-					column.label,
-					column.className,
-				);
-			}),
-		[],
-	);
-
-	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
-	const table = useReactTable({
-		data: filteredUsers,
-		columns,
-		state: {
-			pagination,
-			sorting,
-		},
-		onPaginationChange: setPagination,
-		onSortingChange: setSorting,
-		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-	});
-
-	function resetFilters() {
-		setQueryState("");
-		setRoleFilterState("All");
-		setStatusFilterState("All");
-		table.setPageIndex(0);
-	}
-
-	function setQuery(value: string) {
-		setQueryState(value);
-		table.setPageIndex(0);
-	}
-
-	function setRoleFilter(value: WorkspaceBranchUserRole | "All") {
-		setRoleFilterState(value);
-		table.setPageIndex(0);
-	}
-
-	function setStatusFilter(value: WorkspaceCompanyStatus | "All") {
-		setStatusFilterState(value);
-		table.setPageIndex(0);
-	}
-
-	return {
-		query,
-		resetFilters,
-		roleFilter,
-		roleOptions: WorkspaceBranchUserRoleOptions,
-		setQuery,
-		setRoleFilter,
-		setStatusFilter,
-		statusFilter,
-		statusOptions: WorkspaceCompanyStatusOptions,
-		table,
-	};
-}
-
 function createActionColumn<TRecord>(
 	header: string,
 	className: string,
@@ -802,16 +497,11 @@ function createActionColumn<TRecord>(
 	};
 }
 
-function createColumn<TRecord>(
-	key:
-		| (keyof TRecord & string)
-		| WorkspaceCompanyTableColumnKey
-		| WorkspaceCompanyUserTableColumnKey
-		| WorkspaceCompanyBranchTableColumnKey
-		| WorkspaceBranchUserTableColumnKey,
+function createColumn(
+	key: WorkspaceCompanyTableColumnKey,
 	header: string,
 	className: string,
-): ColumnDef<TRecord> {
+): ColumnDef<WorkspaceCompanyTableRecord> {
 	return {
 		accessorKey: key,
 		header,

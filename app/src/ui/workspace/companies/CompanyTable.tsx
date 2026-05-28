@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import {
 	Search,
 } from "lucide-react";
@@ -7,9 +8,6 @@ import {
 	getWorkspaceCompanyEditHref,
 	getWorkspaceCompanyHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
-import {
-	getNextWorkspaceCompanyStatus,
-} from "@/app/src/data/workspace/companies/WorkspaceCompanyData";
 import {
 	useWorkspaceCompaniesTable,
 } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
@@ -29,31 +27,30 @@ import {
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/ModuleTableActions";
 import {
+	ModuleTableFilterSelect,
+	ModuleTableResetButton,
+	ModuleTableSearch,
+	ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+import {
 	WorkspaceCompanyAvatar,
 	WorkspacePlanBadge,
 	WorkspaceStatusBadge,
 	WorkspaceTextBadge,
-} from "@/app/src/ui/workspace/companies/WorkspaceCompanyBadges";
-import {
-	WorkspaceCompaniesFilterBar,
-	WorkspaceCompaniesFilterSelect,
-	WorkspaceCompaniesResetButton,
-	WorkspaceCompaniesSearchInput,
-	WorkspaceCompaniesTableCell,
-} from "@/app/src/ui/workspace/companies/WorkspaceCompanyListPrimitives";
+} from "@/app/src/ui/workspace/shared/WorkspaceBadges";
 
 export function CompanyTable({
 	branches,
 	companies,
 	isLoading,
 	users,
-	onStatusChange,
+	onDelete,
 }: {
 	branches: WorkspaceCompanyBranchRecord[];
 	companies: WorkspaceCompanyRecord[];
 	isLoading: boolean;
 	users: WorkspaceCompanyUserRecord[];
-	onStatusChange: (company: WorkspaceCompanyRecord) => void;
+	onDelete: (company: WorkspaceCompanyRecord) => void;
 }) {
 	const companyList = useWorkspaceCompaniesTable({
 		branches,
@@ -92,7 +89,7 @@ export function CompanyTable({
 					<CompanyTableRow
 						key={id}
 						company={original}
-						onStatusChange={onStatusChange}
+						onDelete={onDelete}
 					/>
 				)}
 			/>
@@ -128,47 +125,50 @@ function CompanyTableFilters({
 	onTypeFilterChange: (value: WorkspaceCompanyType | "All") => void;
 }) {
 	return (
-		<WorkspaceCompaniesFilterBar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
-			<WorkspaceCompaniesSearchInput
+		<ModuleTableToolbar className="rounded-none border-x-0 border-t-0 shadow-none lg:grid-cols-[minmax(24rem,2.5fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
+			<ModuleTableSearch
+				label="Search companies"
 				value={query}
 				onChange={onQueryChange}
 				placeholder="Search companies"
 			/>
-			<WorkspaceCompaniesFilterSelect
+			<ModuleTableFilterSelect
 				label="Status"
 				value={statusFilter}
-				options={statusOptions}
+				options={getFilterOptions(statusOptions)}
 				onChange={(value) =>
 					onStatusFilterChange(value as WorkspaceCompanyStatus | "All")
 				}
 			/>
-			<WorkspaceCompaniesFilterSelect
+			<ModuleTableFilterSelect
 				label="Type"
 				value={typeFilter}
-				options={typeOptions}
+				options={getFilterOptions(typeOptions)}
 				onChange={(value) =>
 					onTypeFilterChange(value as WorkspaceCompanyType | "All")
 				}
 			/>
-			<WorkspaceCompaniesFilterSelect
+			<ModuleTableFilterSelect
 				label="Plan"
 				value={planFilter}
-				options={planOptions}
+				options={getFilterOptions(planOptions)}
 				onChange={(value) =>
 					onPlanFilterChange(value as WorkspaceCompanyPlan | "All")
 				}
 			/>
-			<WorkspaceCompaniesResetButton onClick={onResetFilters} />
-		</WorkspaceCompaniesFilterBar>
+			<ModuleTableResetButton onClick={onResetFilters}>
+				Reset
+			</ModuleTableResetButton>
+		</ModuleTableToolbar>
 	);
 }
 
 function CompanyTableRow({
 	company,
-	onStatusChange,
+	onDelete,
 }: {
 	company: WorkspaceCompanyTableRecord;
-	onStatusChange: (company: WorkspaceCompanyRecord) => void;
+	onDelete: (company: WorkspaceCompanyRecord) => void;
 }) {
 	return (
 		<tr className="module-table-row">
@@ -192,38 +192,61 @@ function CompanyTableRow({
 					</span>
 				</Link>
 			</td>
-			<WorkspaceCompaniesTableCell>
+			<CompanyTableCell>
 				<WorkspaceTextBadge>{company.totalBranches}</WorkspaceTextBadge>
-			</WorkspaceCompaniesTableCell>
-			<WorkspaceCompaniesTableCell>
+			</CompanyTableCell>
+			<CompanyTableCell>
 				<WorkspaceTextBadge>{company.totalUsers}</WorkspaceTextBadge>
-			</WorkspaceCompaniesTableCell>
-			<WorkspaceCompaniesTableCell>{company.companyType}</WorkspaceCompaniesTableCell>
-			<WorkspaceCompaniesTableCell>
+			</CompanyTableCell>
+			<CompanyTableCell>{company.companyType}</CompanyTableCell>
+			<CompanyTableCell>
 				<WorkspacePlanBadge plan={company.plan} />
-			</WorkspaceCompaniesTableCell>
-			<WorkspaceCompaniesTableCell>
+			</CompanyTableCell>
+			<CompanyTableCell>
 				<WorkspaceStatusBadge status={company.status} />
-			</WorkspaceCompaniesTableCell>
-			<WorkspaceCompaniesTableCell align="center">
+			</CompanyTableCell>
+			<CompanyTableCell align="center">
 				<CompanyRecordActions
 					company={company}
-					onStatusChange={() => onStatusChange(company)}
+					onDelete={() => onDelete(company)}
 				/>
-			</WorkspaceCompaniesTableCell>
+			</CompanyTableCell>
 		</tr>
 	);
 }
 
+function CompanyTableCell({
+	align = "left",
+	children,
+}: {
+	align?: "center" | "left";
+	children: ReactNode;
+}) {
+	return (
+		<td
+			className={`px-4 py-4 align-middle text-sm text-darknavy first:pl-5 last:pr-5 ${
+				align === "center" ? "text-center" : "text-left"
+			}`}
+		>
+			{children}
+		</td>
+	);
+}
+
+function getFilterOptions(options: readonly string[]) {
+	return [
+		{ label: "All", value: "All" },
+		...options.map((option) => ({ label: option, value: option })),
+	];
+}
+
 function CompanyRecordActions({
 	company,
-	onStatusChange,
+	onDelete,
 }: {
 	company: WorkspaceCompanyTableRecord;
-	onStatusChange: () => void;
+	onDelete: () => void;
 }) {
-	const nextStatus = getNextWorkspaceCompanyStatus(company.status);
-
 	return (
 		<ModuleTableActions className="justify-center">
 			<ModuleTableActionLink
@@ -237,9 +260,9 @@ function CompanyRecordActions({
 				label={`Edit ${company.name}`}
 			/>
 			<ModuleTableActionButton
-				variant={nextStatus === "Inactive" ? "inactive" : "active"}
-				onClick={onStatusChange}
-				label={`Set ${company.name} as ${nextStatus.toLowerCase()}`}
+				variant="delete"
+				onClick={onDelete}
+				label={`Delete ${company.name}`}
 			/>
 		</ModuleTableActions>
 	);

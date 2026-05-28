@@ -1,0 +1,246 @@
+"use client";
+
+import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import {
+	WorkspaceCompaniesHref,
+	getWorkspaceCompanyHref,
+} from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
+import {
+	InitialWorkspaceCompanyFormValues,
+	createWorkspaceCompanyFormValues,
+	validateWorkspaceCompanyForm,
+} from "@/app/src/data/workspace/companies/WorkspaceCompanyData";
+import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
+import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
+import {
+	useWorkspaceCompanyManagementStore,
+	useWorkspaceCompanyRecord,
+	useWorkspaceCompanyRouteParams,
+} from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import type {
+	WorkspaceCompanyFormErrors,
+	WorkspaceCompanyFormMode,
+	WorkspaceCompanyFormValues,
+} from "@/app/src/types/workspace/WorkspaceCompanyTypes";
+
+function getDigitsOnly(value: string) {
+	return value.replace(/\D/g, "");
+}
+
+function formatCardNumber(value: string) {
+	return getDigitsOnly(value)
+		.slice(0, 19)
+		.replace(/(\d{4})(?=\d)/g, "$1 ");
+}
+
+export function useWorkspaceCompanyFormPage() {
+	const router = useRouter();
+	const pathname = usePathname();
+	const params = useWorkspaceCompanyRouteParams();
+	const companies = useWorkspaceCompanyManagementStore((state) => state.companies);
+	const addCompany = useWorkspaceCompanyManagementStore(
+		(state) => state.addCompany,
+	);
+	const updateCompany = useWorkspaceCompanyManagementStore(
+		(state) => state.updateCompany,
+	);
+	const isMutating = useWorkspaceCompanyManagementStore(
+		(state) => state.isMutating,
+	);
+	const isLoading = useWorkspaceCompanyManagementStore(
+		(state) => state.isLoading,
+	);
+	const companyQuery = useWorkspaceCompanyRecord(params.companyId);
+	const mode: WorkspaceCompanyFormMode = pathname.includes("/edit")
+		? "edit"
+		: "add";
+	const existingCompany =
+		companies.find((company) => company.id === params.companyId) ??
+		companyQuery.data;
+	const baseValues = useMemo(
+		() =>
+			mode === "edit" && existingCompany
+				? createWorkspaceCompanyFormValues(existingCompany)
+				: InitialWorkspaceCompanyFormValues,
+		[existingCompany, mode],
+	);
+	const [draftValues, setDraftValues] =
+		useState<WorkspaceCompanyFormValues | null>(null);
+	const values = draftValues ?? baseValues;
+	const [errors, setErrors] = useState<WorkspaceCompanyFormErrors>({});
+	const companyHref = existingCompany
+		? getWorkspaceCompanyHref(existingCompany.id)
+		: WorkspaceCompaniesHref;
+	const cancelHref = mode === "edit" ? companyHref : WorkspaceCompaniesHref;
+
+	function updateField(field: keyof WorkspaceCompanyFormValues, value: string) {
+		if (field === "billingCardNumber") {
+			setDraftValues((current) => ({
+				...(current ?? baseValues),
+				billingCardNumber: formatCardNumber(value),
+			}));
+			setErrors((current) => ({ ...current, billingCardNumber: undefined }));
+			return;
+		}
+
+		if (field === "billingExpiryMonth") {
+			setDraftValues((current) => ({
+				...(current ?? baseValues),
+				billingExpiryMonth: getDigitsOnly(value).slice(0, 2),
+			}));
+			setErrors((current) => ({ ...current, billingExpiryMonth: undefined }));
+			return;
+		}
+
+		if (field === "billingExpiryYear") {
+			setDraftValues((current) => ({
+				...(current ?? baseValues),
+				billingExpiryYear: getDigitsOnly(value).slice(0, 4),
+			}));
+			setErrors((current) => ({ ...current, billingExpiryYear: undefined }));
+			return;
+		}
+
+		if (field === "billingCvc") {
+			setDraftValues((current) => ({
+				...(current ?? baseValues),
+				billingCvc: getDigitsOnly(value).slice(0, 4),
+			}));
+			setErrors((current) => ({ ...current, billingCvc: undefined }));
+			return;
+		}
+
+		setDraftValues((current) => ({
+			...(current ?? baseValues),
+			[field]: value,
+		}));
+		setErrors((current) => ({ ...current, [field]: undefined }));
+	}
+
+	function updateLogoFile(file: File | null) {
+		setDraftValues((current) => ({
+			...(current ?? baseValues),
+			logoFile: file,
+		}));
+		setErrors((current) => ({ ...current, logoName: undefined }));
+	}
+
+	function handleInputChange(
+		event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+	) {
+		const value =
+			event.target.name === "contactNumber"
+				? FormatPhilippineContactNumber(event.target.value)
+				: event.target.value;
+
+		updateField(event.target.name as keyof WorkspaceCompanyFormValues, value);
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!validateCompany()) {
+			return;
+		}
+
+		void saveCompany();
+	}
+
+	function validateCompany() {
+		const nextErrors = validateWorkspaceCompanyForm(values, {
+			requireBillingPlan: mode === "add",
+		});
+
+		if (Object.keys(nextErrors).length > 0) {
+			setErrors(nextErrors);
+			return false;
+		}
+
+		return true;
+	}
+
+	async function saveCompany() {
+		if (mode === "edit" && existingCompany) {
+			try {
+				await updateCompany(existingCompany.id, values);
+				router.push(companyHref);
+			} catch {
+				// The mutation owns the toast message; keep the user on the form.
+			}
+			return;
+		}
+
+		let didCreatePaymentMethod = false;
+
+		try {
+			const valuesToSave = await createTokenizedCompanyValues(values);
+			didCreatePaymentMethod =
+				values.billingPaymentMethodId === "new-paymongo-card";
+
+			await addCompany(valuesToSave);
+			router.push(WorkspaceCompaniesHref);
+		} catch (error) {
+			if (didCreatePaymentMethod) {
+				return;
+			}
+
+			if (values.billingPaymentMethodId === "new-paymongo-card") {
+				toast.error(
+					error instanceof Error
+						? error.message
+						: "We could not create the PayMongo payment method right now.",
+				);
+			}
+		}
+	}
+
+	return {
+		cancelHref,
+		errors,
+		existingCompany,
+		handleInputChange,
+		handleSubmit,
+		isLoading:
+			isLoading ||
+			Boolean(
+				mode === "edit" &&
+					params.companyId &&
+					!existingCompany &&
+					(companyQuery.isLoading || companyQuery.isFetching),
+			),
+		isMutating,
+		mode,
+		needsRecord: mode === "edit",
+		saveCompany,
+		updateField,
+		updateLogoFile,
+		validateCompany,
+		values,
+	};
+}
+
+async function createTokenizedCompanyValues(
+	values: WorkspaceCompanyFormValues,
+): Promise<WorkspaceCompanyFormValues> {
+	if (values.billingPaymentMethodId !== "new-paymongo-card") {
+		return values;
+	}
+
+	const paymentMethod = await CreatePaymongoCardPaymentMethod({
+		cardholderName: values.billingCardholderName.trim(),
+		billingEmail: (values.billingEmail || values.email).trim(),
+		cardNumber: values.billingCardNumber.trim(),
+		expiryMonth: values.billingExpiryMonth.trim(),
+		expiryYear: values.billingExpiryYear.trim(),
+		cvc: values.billingCvc.trim(),
+		billingAddress: values.billingAddress.trim(),
+		contactNumber: values.contactNumber.trim(),
+	});
+
+	return {
+		...values,
+		billingPaymentMethodId: paymentMethod.paymentMethodId,
+	};
+}

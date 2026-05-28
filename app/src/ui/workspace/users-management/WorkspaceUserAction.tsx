@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import {
+	WorkspaceCompanyNotFoundDescription,
 	WorkspaceUsersManagementHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import {
@@ -32,12 +33,12 @@ import {
 	moduleHeaderActionClassNames,
 	ModuleHeader,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
 import {
 	WorkspaceCompanyField,
 	WorkspaceCompanyFieldClassName,
 	WorkspaceCompanySection,
-} from "@/app/src/ui/workspace/companies/WorkspaceCompanyFormPrimitives";
-import { WorkspaceCompanyNotFound } from "@/app/src/ui/workspace/companies/WorkspaceCompanyNotFound";
+} from "@/app/src/ui/workspace/shared/WorkspaceFormPrimitives";
 import { WorkspaceBillingImpactConfirmDialog } from "@/app/src/ui/workspace/shared/WorkspaceBillingImpactConfirmDialog";
 
 const WorkspaceUserFormId = "workspace-user-management-form";
@@ -103,8 +104,11 @@ function WorkspaceUserActionInner() {
 
 	if (mode !== "add" && !existingUser) {
 		return (
-			<WorkspaceCompanyNotFound
-				href={WorkspaceUsersManagementHref}
+			<ModuleNotFound
+				actionHref={WorkspaceUsersManagementHref}
+				actionLabel="Back"
+				align="center"
+				description={WorkspaceCompanyNotFoundDescription}
 				title="User Not Found"
 			/>
 		);

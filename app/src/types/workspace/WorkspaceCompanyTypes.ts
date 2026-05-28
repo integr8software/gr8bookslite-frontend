@@ -3,205 +3,234 @@ export type WorkspaceCompanyStatus = "Active" | "Inactive" | "Pending";
 export type WorkspaceCompanyPlan = string;
 
 export type WorkspaceCompanyType =
-  | "Individual"
-  | "Corporation"
-  | "Partnership"
-  | "Association"
-  | "Non Stock"
-  | "Non Profit Organization"
-  | "Others";
+	| "Individual"
+	| "Corporation"
+	| "Partnership"
+	| "Association"
+	| "Non Stock"
+	| "Non Profit Organization"
+	| "Others";
 
-export type WorkspaceCompanyActionMode = "add" | "edit" | "view";
+export type WorkspaceCompanyFormMode = "add" | "edit" | "view";
 
 export type WorkspaceCompanyRecord = {
-  id: string;
-  name: string;
-  initials: string;
-  logoUrl?: string;
-  companyType: WorkspaceCompanyType;
-  plan: WorkspaceCompanyPlan;
-  status: WorkspaceCompanyStatus;
-  email: string;
-  contactNumber: string;
-  address: string;
-  primaryContact: string;
-  createdByUser?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  createdAt: string;
-  contactPerson?: string;
-  firstName?: string;
-  lastName?: string;
-  middleName?: string;
-  nonIndividualType?: string;
-  nonIndividualTypeOther?: string;
-  reportEndDate?: string;
-  reportStartDate?: string;
-  taxpayerType?: "individual" | "non-individual";
-  tin?: string;
-  totalBranches?: number;
-  totalUsers?: number;
-  website?: string;
-  billingCardBrand?: string;
-  billingCardLast4?: string;
-  billingPaymentMethodId?: string;
-  billingPaymentMethodLabel?: string;
+	id: string;
+	name: string;
+	initials: string;
+	logoUrl?: string;
+	companyType: WorkspaceCompanyType;
+	plan: WorkspaceCompanyPlan;
+	status: WorkspaceCompanyStatus;
+	email: string;
+	contactNumber: string;
+	address: string;
+	primaryContact: string;
+	createdByUser?: {
+		id: string;
+		name: string;
+		email: string;
+	};
+	createdAt: string;
+	contactPerson?: string;
+	firstName?: string;
+	lastName?: string;
+	middleName?: string;
+	nonIndividualType?: string;
+	nonIndividualTypeOther?: string;
+	reportEndDate?: string;
+	reportStartDate?: string;
+	taxpayerType?: "individual" | "non-individual";
+	tin?: string;
+	totalBranches?: number;
+	totalUsers?: number;
+	website?: string;
+	billingCardBrand?: string;
+	billingCardLast4?: string;
+	billingPaymentMethodId?: string;
+	billingPaymentMethodLabel?: string;
 };
 
 export type WorkspaceCompanyFormValues = {
-  address: string;
-  billingAddress: string;
-  billingCardNumber: string;
-  billingCardholderName: string;
-  billingCvc: string;
-  billingEmail: string;
-  billingExpiryMonth: string;
-  billingExpiryYear: string;
-  billingPaymentMethodId: string;
-  billingPlanCode: string;
-  billingCycle: "MONTHLY" | "YEARLY";
-  companyName: string;
-  contactNumber: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  logoFile: File | null;
-  logoName: string;
-  logoUrl: string;
-  middleName: string;
-  nonIndividualType: string;
-  nonIndividualTypeOther: string;
-  plan: WorkspaceCompanyPlan;
-  reportEndDate: string;
-  reportStartDate: string;
-  status: WorkspaceCompanyStatus;
-  taxpayerType: "individual" | "non-individual";
-  tin: string;
-  website: string;
+	address: string;
+	billingAddress: string;
+	billingCardNumber: string;
+	billingCardholderName: string;
+	billingCvc: string;
+	billingEmail: string;
+	billingExpiryMonth: string;
+	billingExpiryYear: string;
+	billingPaymentMethodId: string;
+	billingPlanCode: string;
+	billingCycle: "MONTHLY" | "YEARLY";
+	companyName: string;
+	contactNumber: string;
+	email: string;
+	firstName: string;
+	lastName: string;
+	logoFile: File | null;
+	logoName: string;
+	logoUrl: string;
+	middleName: string;
+	nonIndividualType: string;
+	nonIndividualTypeOther: string;
+	plan: WorkspaceCompanyPlan;
+	reportEndDate: string;
+	reportStartDate: string;
+	status: WorkspaceCompanyStatus;
+	taxpayerType: "individual" | "non-individual";
+	tin: string;
+	website: string;
 };
 
 export type WorkspaceCompanyFormErrors = Partial<
-  Record<keyof WorkspaceCompanyFormValues, string>
+	Record<keyof WorkspaceCompanyFormValues, string>
 >;
 
-export type WorkspaceCompanyUserRecord = {
-  id: string;
-  companyId: string;
-  companyAssignments: WorkspaceUserCompanyAssignment[];
-  name: string;
-  email: string;
-  contactNumber: string;
-  status: WorkspaceCompanyStatus;
-  lastLogin?: string;
-  profileImageUrl?: string;
+export type WorkspaceUserCompanyAssignment = {
+	companyId: string;
+	branchIds: string[];
 };
 
-export type WorkspaceUserCompanyAssignment = {
-  companyId: string;
-  branchIds: string[];
+export type WorkspaceCompanyUserRecord = {
+	id: string;
+	companyId: string;
+	companyAssignments: WorkspaceUserCompanyAssignment[];
+	name: string;
+	email: string;
+	contactNumber: string;
+	status: WorkspaceCompanyStatus;
+	lastLogin?: string;
+	profileImageUrl?: string;
 };
 
 export type WorkspaceCompanyUserFormValues = {
-  companyAssignments: WorkspaceUserCompanyAssignment[];
-  contactNumber: string;
-  email: string;
-  name: string;
+	companyAssignments: WorkspaceUserCompanyAssignment[];
+	contactNumber: string;
+	email: string;
+	name: string;
 };
 
 export type WorkspaceCompanyUserFormErrors = Partial<
-  Record<keyof WorkspaceCompanyUserFormValues, string>
+	Record<keyof WorkspaceCompanyUserFormValues, string>
 >;
 
 export type WorkspaceCompanyBranchKind = "Branch" | "Satellite";
 
 export type WorkspaceCompanyBranchRecord = {
-  id: string;
-  companyId: string;
-  code: string;
-  name: string;
-  branchType: WorkspaceCompanyBranchKind;
-  status: WorkspaceCompanyStatus;
-  tin: string;
-  email: string;
-  contactNumber: string;
-  address: string;
-  isMain: boolean;
-  linkedMainBranchId?: string;
+	id: string;
+	companyId: string;
+	code: string;
+	name: string;
+	branchType: WorkspaceCompanyBranchKind;
+	status: WorkspaceCompanyStatus;
+	tin: string;
+	email: string;
+	contactNumber: string;
+	address: string;
+	isMain: boolean;
+	linkedMainBranchId?: string;
 };
-
-export type WorkspaceCompanyBranchFormValues = {
-  branchType: WorkspaceCompanyBranchKind;
-  name: string;
-  contactNumber: string;
-  email: string;
-  tin: string;
-  linkedMainBranchId: string;
-  address: string;
-  isMain: boolean;
-};
-
-export type WorkspaceCompanyBranchFormErrors = Partial<
-  Record<keyof WorkspaceCompanyBranchFormValues, string>
->;
-
-export type WorkspaceBranchUserRole =
-  | "Branch Admin"
-  | "Branch Accountant"
-  | "Cashier"
-  | "Encoder"
-  | "Approver"
-  | "Auditor";
-
-export type WorkspaceBranchUserRecord = {
-  id: string;
-  companyId: string;
-  branchId: string;
-  name: string;
-  email: string;
-  contactNumber: string;
-  role: WorkspaceBranchUserRole;
-  status: WorkspaceCompanyStatus;
-  assignedAt: string;
-};
-
-export type WorkspaceBranchUserFormValues = Omit<
-  WorkspaceBranchUserRecord,
-  "id" | "companyId" | "branchId" | "assignedAt"
->;
-
-export type WorkspaceBranchUserFormErrors = Partial<
-  Record<keyof WorkspaceBranchUserFormValues, string>
->;
 
 export type WorkspaceCompanyTableRecord = WorkspaceCompanyRecord & {
-  totalBranches: number;
-  totalUsers: number;
+	totalBranches: number;
+	totalUsers: number;
 };
 
-export type WorkspaceCompanyUserTableRecord = WorkspaceCompanyUserRecord;
-
-export type WorkspaceCompanyBranchTableRecord = WorkspaceCompanyBranchRecord;
-
-export type WorkspaceBranchUserTableRecord = WorkspaceBranchUserRecord;
-
 export type WorkspaceCompanyTableColumnKey = keyof Pick<
-  WorkspaceCompanyTableRecord,
-  "name" | "totalBranches" | "totalUsers" | "companyType" | "plan" | "status"
+	WorkspaceCompanyTableRecord,
+	"name" | "totalBranches" | "totalUsers" | "companyType" | "plan" | "status"
 >;
 
-export type WorkspaceCompanyUserTableColumnKey = keyof Pick<
-  WorkspaceCompanyUserTableRecord,
-  "name" | "email" | "status" | "lastLogin"
->;
+export type WorkspaceCompanyApiStatus =
+	| "ACTIVE"
+	| "FAILED"
+	| "PENDING"
+	| "PROVISIONING"
+	| "SUSPENDED";
 
-export type WorkspaceCompanyBranchTableColumnKey = keyof Pick<
-  WorkspaceCompanyBranchTableRecord,
-  "code" | "name" | "branchType" | "status"
->;
+export type WorkspaceCompanyApiTaxpayerType =
+	| "INDIVIDUAL"
+	| "NON_INDIVIDUAL"
+	| null;
 
-export type WorkspaceBranchUserTableColumnKey = keyof Pick<
-  WorkspaceBranchUserTableRecord,
-  "name" | "email" | "role" | "status" | "assignedAt"
+export type WorkspaceCompanyApiRecord = {
+	id: number;
+	name: string;
+	slug: string;
+	legalName: string | null;
+	companyCode: string | null;
+	taxpayerType: WorkspaceCompanyApiTaxpayerType;
+	ownerLastName: string | null;
+	ownerFirstName: string | null;
+	ownerMiddleName: string | null;
+	organizationType: string | null;
+	organizationTypeOther: string | null;
+	logoFileName: string | null;
+	logoMimeType: string | null;
+	logoStoragePath: string | null;
+	logoPublicUrl: string | null;
+	address: string | null;
+	tin: string | null;
+	email: string | null;
+	website: string | null;
+	contactNumber: string | null;
+	reportStartDate: string | null;
+	reportEndDate: string | null;
+	createdByUserId: number | null;
+	createdByUser: {
+		id: number;
+		name: string;
+		email: string;
+	} | null;
+	isActive: boolean;
+	status: WorkspaceCompanyApiStatus;
+	subscriptionPlan: {
+		code: string;
+		name: string;
+		currency: string;
+		billingCycle: "MONTHLY" | "YEARLY";
+		monthlyPriceInCents: number;
+		yearlyPriceInCents: number;
+	} | null;
+	totalUsers?: number;
+	totalUnits?: number;
+	createdAt: string;
+	updatedAt: string;
+};
+
+export type CreateWorkspaceCompanyBillingApiRequest = {
+	planCode?: string;
+	billingCycle?: "MONTHLY" | "YEARLY";
+	billingEmail?: string;
+	paymentMethodId?: string;
+	cardBrand?: string;
+	cardLast4?: string;
+	cardExpiryMonth?: number;
+	cardExpiryYear?: number;
+};
+
+export type CreateWorkspaceCompanyApiRequest = {
+	taxpayerType: "individual" | "non-individual";
+	lastName?: string;
+	firstName?: string;
+	middleName?: string;
+	companyName?: string;
+	nonIndividualType?: string;
+	nonIndividualTypeOther?: string;
+	logoFileName?: string;
+	logoMimeType?: string;
+	logoStoragePath?: string;
+	logoPublicUrl?: string;
+	address: string;
+	tin: string;
+	email: string;
+	contactNumber: string;
+	reportStartDate: string;
+	reportEndDate: string;
+	website?: string;
+	billing?: CreateWorkspaceCompanyBillingApiRequest;
+};
+
+export type UpdateWorkspaceCompanyApiRequest = Partial<
+	Omit<CreateWorkspaceCompanyApiRequest, "billing">
 >;

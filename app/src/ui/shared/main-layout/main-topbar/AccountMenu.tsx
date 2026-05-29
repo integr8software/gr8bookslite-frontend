@@ -5,6 +5,10 @@ import type {
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import type { MainTopbarUser } from "@/app/src/types/shared/main-layout/MainTopbarTypes";
 import {
+	ProfileHref,
+	SettingsHref,
+} from "@/app/src/constants/shared/account/AccountConstants";
+import {
 	MenuSeparator,
 	ProfileMenuButton,
 	ProfileMenuLink,
@@ -18,7 +22,6 @@ type AccountMenuProps = {
 	currentUser: MainTopbarUser;
 	isOpen: boolean;
 	isProfileLoading: boolean;
-	settingsHref: string;
 	userDescriptor?: string;
 	onClose: () => void;
 	onLogout: () => void;
@@ -31,7 +34,6 @@ export function AccountMenu({
 	currentUser,
 	isOpen,
 	isProfileLoading,
-	settingsHref,
 	userDescriptor,
 	onClose,
 	onLogout,
@@ -83,13 +85,13 @@ export function AccountMenu({
 					/>
 					<MenuSeparator />
 					<ProfileMenuLink
-						href="/profile"
+						href={ProfileHref}
 						icon={UserCircle}
 						label="Profile"
 						onClick={onClose}
 					/>
 					<ProfileMenuLink
-						href={settingsHref}
+						href={SettingsHref}
 						icon={Settings}
 						label="Settings"
 						onClick={onClose}

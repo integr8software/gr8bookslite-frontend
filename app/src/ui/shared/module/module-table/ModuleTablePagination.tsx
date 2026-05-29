@@ -131,8 +131,8 @@ function ModuleTablePageButton({
 				size === "compact" && "px-3",
 				size === "default" && "px-4",
 				active
-					? "border-blue-600 bg-blue-600 text-white shadow-blue-600/20 focus-visible:ring-blue-600/20"
-					: "border-darknavy/10 bg-white text-darknavy shadow-darknavy/5 hover:border-skyblue/40 hover:bg-skyblue/10 hover:text-darknavy focus-visible:ring-skyblue/15",
+					? "theme-accent-contrast-text border-skyblue bg-skyblue shadow-skyblue/20 focus-visible:ring-skyblue/20"
+					: "module-table-interactive-effect border-darknavy/10 bg-white text-darknavy shadow-darknavy/5 hover:border-skyblue/40 hover:bg-skyblue/10 hover:text-darknavy focus-visible:ring-skyblue/15",
 			)}
 			{...props}
 		>

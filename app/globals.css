@@ -362,7 +362,11 @@ button {
 }
 
 .module-table-row:hover {
-	background-color: rgb(239 246 255 / 0.42);
+	background-color: rgb(var(--skyblue-rgb) / 0.08);
+}
+
+.module-table-interactive-effect:hover {
+	background-color: rgb(var(--skyblue-rgb) / 0.1);
 }
 
 :root[data-app-theme="midnight-dark"] .module-table-header {
@@ -374,7 +378,11 @@ button {
 }
 
 :root[data-app-theme="midnight-dark"] .module-table-row:hover {
-	background-color: var(--surface-tertiary);
+	background-color: rgb(var(--skyblue-rgb) / 0.08);
+}
+
+:root[data-app-theme="midnight-dark"] .module-table-interactive-effect:hover {
+	background-color: rgb(var(--skyblue-rgb) / 0.1) !important;
 }
 
 .charts-account-actions-cell {
@@ -386,8 +394,8 @@ button {
 }
 
 .module-table-row:hover .charts-account-actions-cell {
-	background-color: #eff6ff;
-	box-shadow: -12px 0 20px rgba(239, 246, 255, 0.86);
+	background-color: rgb(var(--skyblue-rgb) / 0.08);
+	box-shadow: -12px 0 20px rgb(var(--skyblue-rgb) / 0.08);
 }
 
 :root[data-app-theme="midnight-dark"] .charts-account-actions-cell {
@@ -398,8 +406,8 @@ button {
 :root[data-app-theme="midnight-dark"]
 	.module-table-row:hover
 	.charts-account-actions-cell {
-	background-color: var(--surface-tertiary);
-	box-shadow: -12px 0 20px rgba(0, 0, 0, 0.22);
+	background-color: rgb(var(--skyblue-rgb) / 0.08);
+	box-shadow: -12px 0 20px rgb(var(--skyblue-rgb) / 0.08);
 }
 
 .workspace-dashboard-section {

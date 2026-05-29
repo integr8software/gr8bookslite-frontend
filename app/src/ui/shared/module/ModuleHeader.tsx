@@ -50,7 +50,7 @@ export function ModuleHeader<TTitleElement extends ElementType = "h2">({
 				>
 					{title}
 					<BadgeCheck
-						className="ml-2 inline h-5 w-5 align-middle text-blue-600"
+						className="ml-2 inline h-5 w-5 align-middle text-skyblue"
 						aria-hidden="true"
 					/>
 				</Title>
@@ -78,7 +78,7 @@ export const moduleHeaderActionClassNames = {
 	danger:
 		"inline-flex h-10 items-center justify-center gap-2 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-600 shadow-sm shadow-darknavy/5 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/15",
 	primary:
-		"inline-flex h-10 items-center justify-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-600/20",
+		"theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold shadow-sm shadow-skyblue/20 transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20",
 	secondary:
 		"inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/75 shadow-sm shadow-darknavy/5 transition hover:border-skyblue/35 hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15",
 };

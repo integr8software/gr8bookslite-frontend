@@ -93,12 +93,6 @@ export function MainTopbar({
 		openSwitcherState.href === activeHref ? openSwitcherState.key : null;
 	const isProfileMenuOpen = profileMenuOpenPath === activeHref;
 	const userDescriptor = getTopbarUserDescriptor(currentUser);
-	const settingsHref =
-		activeNavigationScope === "master"
-			? "/master/system-settings"
-			: activeNavigationScope === "workspace"
-				? "/workspace/system-settings"
-				: "/settings";
 	const canShowCompanySwitcher =
 		canAccessMaster || canAccessWorkspace || canSwitchCompany;
 	const canShowBranchSwitcher =
@@ -516,7 +510,6 @@ export function MainTopbar({
 						currentUser={currentUser}
 						isOpen={isProfileMenuOpen}
 						isProfileLoading={isProfileLoading}
-						settingsHref={settingsHref}
 						userDescriptor={userDescriptor}
 						onClose={() => setProfileMenuOpenPath(null)}
 						onLogout={() => void logout()}

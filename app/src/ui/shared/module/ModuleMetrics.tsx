@@ -104,7 +104,7 @@ function ModuleMetricCard({
 
 const moduleMetricAccentClassNames: Record<ModuleMetricTone, string> = {
 	amber: "bg-amber-500",
-	blue: "bg-blue-600",
+	blue: "bg-skyblue",
 	cyan: "bg-cyan-500",
 	emerald: "bg-emerald-500",
 	slate: "bg-slate-500",

@@ -222,7 +222,7 @@ function ItemSetupStructureButton({
 			className={[
 				"inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20",
 				active
-					? "border-blue-600 bg-blue-50 text-blue-700"
+					? "border-skyblue bg-skyblue/10 text-skyblue"
 					: "border-darknavy/10 bg-white text-darknavy/75 hover:border-skyblue/40 hover:bg-skyblue/10",
 			].join(" ")}
 		>

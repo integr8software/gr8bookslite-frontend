@@ -110,18 +110,23 @@ export async function deactivateWorkspaceCompanyUnit(
 function mapWorkspaceCompanyUnit(
 	unit: WorkspaceCompanyUnitApiRecord,
 ): WorkspaceCompanyBranchRecord {
+	const isHeadOffice = unit.type === "HEAD_OFFICE";
 	const isSatellite = unit.type === "SATELLITE";
 	const status: WorkspaceCompanyStatus = unit.isActive ? "Active" : "Inactive";
 
 	return {
 		address: unit.address ?? "",
-		branchType: isSatellite ? "Satellite" : "Branch",
+		branchType: isHeadOffice
+			? "Head Office"
+			: isSatellite
+				? "Satellite"
+				: "Branch",
 		code: unit.code ?? `UNIT-${unit.id}`,
 		companyId: String(unit.companyId),
 		contactNumber: unit.contactNumber ?? "",
 		email: unit.email ?? "",
 		id: String(unit.id),
-		isMain: unit.type === "HEAD_OFFICE",
+		isMain: isHeadOffice,
 		linkedMainBranchId: unit.parentUnitId
 			? String(unit.parentUnitId)
 			: undefined,

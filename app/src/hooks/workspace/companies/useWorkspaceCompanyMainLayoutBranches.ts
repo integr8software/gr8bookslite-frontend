@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
 	mapWorkspaceCompanyBranchesToMainBranches,
 } from "@/app/src/data/workspace/companies/WorkspaceCompanyMainLayoutBranchData";
@@ -18,10 +17,10 @@ export function useWorkspaceCompanyMainLayoutBranches({
 	company?: { id: string; initials?: string };
 }) {
 	const storedAccessToken = useAppStore((state) => state.accessToken);
-	const accessToken = storedAccessToken ?? GetAccessToken();
+	const accessToken = storedAccessToken;
 	const companyId = company?.id ?? "";
 	const companyBranchesQuery = useQuery({
-		enabled: Boolean(accessToken && companyId),
+		enabled: Boolean(companyId),
 		queryKey: WorkspaceCompanyQueryKeys.companyBranches(companyId),
 		queryFn: async () => getWorkspaceCompanyUnits(accessToken, companyId),
 	});

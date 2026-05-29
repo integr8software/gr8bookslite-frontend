@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export type AppDialogTone = "default" | "danger" | "success";
 
 export type AppDialogProps = {
   cancelLabel?: string;
   confirmLabel?: string;
+  confirmationLabel?: string;
+  confirmationPhrase?: string;
   description: string;
   isOpen: boolean;
   isPending?: boolean;
@@ -19,6 +21,8 @@ export type AppDialogProps = {
 export function AppDialog({
   cancelLabel = "Cancel",
   confirmLabel = "Confirm",
+  confirmationLabel = "Confirmation",
+  confirmationPhrase,
   description,
   isOpen,
   isPending = false,
@@ -27,6 +31,16 @@ export function AppDialog({
   onCancel,
   onConfirm,
 }: AppDialogProps) {
+  const [confirmationValue, setConfirmationValue] = useState("");
+  const canConfirm =
+    !confirmationPhrase ||
+    confirmationValue.trim().toLowerCase() === confirmationPhrase.toLowerCase();
+
+  const handleCancel = useCallback(() => {
+    setConfirmationValue("");
+    onCancel();
+  }, [onCancel]);
+
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -34,7 +48,7 @@ export function AppDialog({
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        onCancel();
+        handleCancel();
       }
     }
 
@@ -43,7 +57,7 @@ export function AppDialog({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, onCancel]);
+  }, [isOpen, handleCancel]);
 
   if (!isOpen) {
     return null;
@@ -55,7 +69,7 @@ export function AppDialog({
       className="app-dialog-backdrop fixed inset-0 z-80 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
-          onCancel();
+          handleCancel();
         }
       }}
     >
@@ -78,10 +92,24 @@ export function AppDialog({
         >
           {description}
         </p>
+        {confirmationPhrase ? (
+          <label className="mt-5 block">
+            <span className="text-sm font-semibold text-darknavy">
+              {confirmationLabel}
+            </span>
+            <input
+              value={confirmationValue}
+              onChange={(event) => setConfirmationValue(event.target.value)}
+              disabled={isPending}
+              placeholder={confirmationPhrase}
+              className="mt-2 h-11 w-full rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy shadow-sm outline-none transition placeholder:text-darknavy/28 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
+            />
+          </label>
+        ) : null}
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleCancel}
             disabled={isPending}
             className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
           >
@@ -89,8 +117,11 @@ export function AppDialog({
           </button>
           <button
             type="button"
-            onClick={onConfirm}
-            disabled={isPending}
+            onClick={() => {
+              setConfirmationValue("");
+              onConfirm();
+            }}
+            disabled={isPending || !canConfirm}
             className={getConfirmButtonClassName(tone)}
           >
             {isPending ? "Please wait..." : confirmLabel}

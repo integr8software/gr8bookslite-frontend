@@ -44,13 +44,13 @@ function GoogleAuthCallbackContent() {
 		const mode = searchParams.get("mode");
 
 		if (accessToken) {
-			SaveAccessToken(accessToken, false);
-			setAccessToken(accessToken);
-			toast.success("Google sign-in successful.");
-			void ResolvePostAuthDestination(accessToken)
+			void CreateFrontendAuthSession(accessToken)
 				.then(({ profile, redirectPath }) => {
+					SaveAccessToken(accessToken, false);
+					setAccessToken(accessToken);
 					setActiveCompanyId(GetAuthProfileCompanyId(profile));
 					setRedirectState(GetGoogleAuthRedirectState(redirectPath));
+					toast.success("Google sign-in successful.");
 					router.replace(redirectPath);
 				})
 				.catch(() => {
@@ -75,6 +75,23 @@ function GoogleAuthCallbackContent() {
 	}
 
 	return <GoogleAuthCallbackMessage />;
+}
+
+async function CreateFrontendAuthSession(accessToken: string) {
+	const sessionResponse = await fetch("/api/auth/session", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ accessToken, rememberMe: false }),
+		cache: "no-store",
+	});
+
+	if (!sessionResponse.ok) {
+		throw new Error("Unable to create frontend auth session.");
+	}
+
+	return ResolvePostAuthDestination(accessToken);
 }
 
 function GetGoogleAuthRedirectState(path: string): GoogleAuthRedirectState {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { ArrowLeft, Edit3, Save, UserCog, X } from "lucide-react";
 import {
 	WorkspaceCompanyNotFoundDescription,
@@ -29,6 +29,7 @@ export function WorkspaceUserAction() {
 
 function WorkspaceUserActionInner() {
 	const form = useWorkspaceUserActionForm();
+	const [isSaveUserConfirmOpen, setIsSaveUserConfirmOpen] = useState(false);
 
 	if (form.mode !== "add" && !form.existingUser) {
 		return (
@@ -100,6 +101,14 @@ function WorkspaceUserActionInner() {
 				id={WorkspaceUserFormId}
 				onSubmit={(event) => {
 					event.preventDefault();
+
+					if (form.mode === "add") {
+						if (form.validate()) {
+							setIsSaveUserConfirmOpen(true);
+						}
+						return;
+					}
+
 					form.submit();
 				}}
 			>
@@ -136,6 +145,21 @@ function WorkspaceUserActionInner() {
 				tone="default"
 				onCancel={form.closeCompanyAssignmentConfirm}
 				onConfirm={form.confirmCompanyAssignment}
+			/>
+			<AppDialog
+				isOpen={isSaveUserConfirmOpen}
+				isPending={false}
+				title="Create user?"
+				description={`Adding ${form.values.name || "this user"} may affect workspace billing, payments, or deductions. Type confirm add user before saving.`}
+				confirmationPhrase="confirm add user"
+				confirmLabel="Save User"
+				cancelLabel="Cancel"
+				tone="default"
+				onCancel={() => setIsSaveUserConfirmOpen(false)}
+				onConfirm={() => {
+					setIsSaveUserConfirmOpen(false);
+					form.submit();
+				}}
 			/>
 		</section>
 	);

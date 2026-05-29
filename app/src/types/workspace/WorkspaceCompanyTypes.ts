@@ -48,6 +48,7 @@ export type WorkspaceCompanyRecord = {
 	billingCardLast4?: string;
 	billingPaymentMethodId?: string;
 	billingPaymentMethodLabel?: string;
+	branches?: WorkspaceCompanyBranchRecord[];
 };
 
 export type WorkspaceCompanyFormValues = {
@@ -114,7 +115,7 @@ export type WorkspaceCompanyUserFormErrors = Partial<
 	Record<keyof WorkspaceCompanyUserFormValues, string>
 >;
 
-export type WorkspaceCompanyBranchKind = "Branch" | "Satellite";
+export type WorkspaceCompanyBranchKind = "Head Office" | "Branch" | "Satellite";
 
 export type WorkspaceCompanyBranchRecord = {
 	id: string;
@@ -129,6 +130,28 @@ export type WorkspaceCompanyBranchRecord = {
 	address: string;
 	isMain: boolean;
 	linkedMainBranchId?: string;
+};
+
+export type WorkspaceCompanyUnitApiType = "HEAD_OFFICE" | "BRANCH" | "SATELLITE";
+
+export type WorkspaceCompanyUnitApiRecord = {
+	id: number;
+	companyId: number;
+	parentUnitId: number | null;
+	type: WorkspaceCompanyUnitApiType;
+	code: string | null;
+	name: string;
+	displayName: string | null;
+	tin: string | null;
+	address: string | null;
+	contactNumber: string | null;
+	email: string | null;
+	isActive: boolean;
+	inheritsCompanyProfile: boolean;
+	canTransactSales: boolean;
+	canHoldInventory: boolean;
+	createdAt: string;
+	updatedAt: string;
 };
 
 export type WorkspaceCompanyTableRecord = WorkspaceCompanyRecord & {
@@ -194,6 +217,7 @@ export type WorkspaceCompanyApiRecord = {
 	} | null;
 	totalUsers?: number;
 	totalUnits?: number;
+	units?: WorkspaceCompanyUnitApiRecord[];
 	createdAt: string;
 	updatedAt: string;
 };

@@ -40,7 +40,7 @@ export function WorkspaceUserAssignmentsSection({
   return (
     <WorkspaceCompanySection
       title="Company & Branch Access"
-      description="Select a company first, then choose the branches or satellites where this user should appear."
+      description="Select a company first, then choose the head office, branches, or satellites where this user should appear."
     >
       <div className="flex flex-col gap-3 sm:flex-row">
         <select
@@ -104,6 +104,11 @@ export function WorkspaceUserAssignmentsSection({
                 </button>
               </div>
               <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                {companyBranches.length === 0 ? (
+                  <div className="rounded-md border border-darknavy/10 bg-white px-3 py-2 text-sm font-medium text-darknavy/50">
+                    No active company units available.
+                  </div>
+                ) : null}
                 {companyBranches.map((branch) => {
                   const branchCheckboxId = `workspace-user-${assignment.companyId}-${branch.id}`;
 
@@ -127,7 +132,6 @@ export function WorkspaceUserAssignmentsSection({
                         className="min-w-0 flex-1 cursor-pointer truncate"
                       >
                         {branch.name}
-                        {branch.isMain ? " (Head Office)" : ""}
                       </label>
                       <Link
                         href={getBranchScopedUsersHref({

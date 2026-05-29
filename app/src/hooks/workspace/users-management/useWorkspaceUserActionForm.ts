@@ -135,10 +135,7 @@ export function useWorkspaceUserActionForm() {
 	}
 
 	function submit() {
-		const nextErrors = validateWorkspaceCompanyUserForm(values);
-
-		if (Object.keys(nextErrors).length > 0) {
-			setErrors(nextErrors);
+		if (!validate()) {
 			return;
 		}
 
@@ -173,6 +170,14 @@ export function useWorkspaceUserActionForm() {
 		router.push(WorkspaceUsersManagementHref);
 	}
 
+	function validate() {
+		const nextErrors = validateWorkspaceCompanyUserForm(values);
+
+		setErrors(nextErrors);
+
+		return Object.keys(nextErrors).length === 0;
+	}
+
 	return {
 		availableCompanies,
 		branches,
@@ -188,6 +193,7 @@ export function useWorkspaceUserActionForm() {
 		selectedCompanyId,
 		setSelectedCompanyId,
 		submit,
+		validate,
 		toggleBranchAssignment,
 		updateField,
 		values,

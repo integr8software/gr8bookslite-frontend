@@ -3,10 +3,12 @@ import type {
 	CreateWorkspaceCompanyApiRequest,
 	UpdateWorkspaceCompanyApiRequest,
 	WorkspaceCompanyApiRecord,
+	WorkspaceCompanyBranchRecord,
 	WorkspaceCompanyFormValues,
 	WorkspaceCompanyRecord,
 	WorkspaceCompanyStatus,
 	WorkspaceCompanyType,
+	WorkspaceCompanyUnitApiRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
 function GetAuthorizationHeaders(accessToken: string | null) {
@@ -136,6 +138,7 @@ function MapWorkspaceCompanyApiRecord(
 ): WorkspaceCompanyRecord {
 	return {
 		address: company.address ?? "",
+		branches: company.units?.map(MapWorkspaceCompanyUnitApiRecord) ?? [],
 		companyType: GetWorkspaceCompanyType(company),
 		contactNumber: company.contactNumber ?? "",
 		createdByUser: company.createdByUser
@@ -168,6 +171,35 @@ function MapWorkspaceCompanyApiRecord(
 		totalUsers: company.totalUsers ?? 0,
 		website: company.website ?? undefined,
 	};
+}
+
+function MapWorkspaceCompanyUnitApiRecord(
+	unit: WorkspaceCompanyUnitApiRecord,
+): WorkspaceCompanyBranchRecord {
+	return {
+		address: unit.address ?? "",
+		branchType: GetWorkspaceCompanyBranchType(unit.type),
+		code: unit.code ?? "",
+		companyId: String(unit.companyId),
+		contactNumber: unit.contactNumber ?? "",
+		email: unit.email ?? "",
+		id: String(unit.id),
+		isMain: unit.type === "HEAD_OFFICE",
+		linkedMainBranchId: unit.parentUnitId ? String(unit.parentUnitId) : undefined,
+		name: unit.displayName ?? unit.name,
+		status: unit.isActive ? "Active" : "Inactive",
+		tin: unit.tin ?? "",
+	};
+}
+
+function GetWorkspaceCompanyBranchType(
+	type: WorkspaceCompanyUnitApiRecord["type"],
+): WorkspaceCompanyBranchRecord["branchType"] {
+	if (type === "HEAD_OFFICE") {
+		return "Head Office";
+	}
+
+	return type === "SATELLITE" ? "Satellite" : "Branch";
 }
 
 function MapWorkspaceCompanyFormToCreateRequest(

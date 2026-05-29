@@ -39,11 +39,13 @@ export function useWorkspaceCompanyManagementStore<
 		queryFn: async () => EmptyWorkspaceCompanyUsers,
 		initialData: EmptyWorkspaceCompanyUsers,
 	});
-	const branchesQuery = useQuery({
-		queryKey: WorkspaceCompanyQueryKeys.branches(),
-		queryFn: async () => EmptyWorkspaceCompanyBranches,
-		initialData: EmptyWorkspaceCompanyBranches,
-	});
+	const branches = useMemo(
+		() =>
+			(companiesQuery.data ?? EmptyWorkspaceCompanies).flatMap(
+				(company) => company.branches ?? EmptyWorkspaceCompanyBranches,
+			),
+		[companiesQuery.data],
+	);
 
 	function setCompanies(
 		updater: (companies: WorkspaceCompanyRecord[]) => WorkspaceCompanyRecord[],
@@ -185,14 +187,12 @@ export function useWorkspaceCompanyManagementStore<
 		() => ({
 			addCompany: (values) => addCompanyMutation.mutateAsync(values),
 			addCompanyUser: (user) => addCompanyUserMutation.mutate(user),
-			branches: branchesQuery.data ?? EmptyWorkspaceCompanyBranches,
+			branches,
 			companies: companiesQuery.data ?? EmptyWorkspaceCompanies,
 			deleteCompany: (companyId) =>
 				deleteCompanyMutation.mutateAsync(companyId),
 			isLoading:
-				branchesQuery.isLoading ||
-				companiesQuery.isLoading ||
-				usersQuery.isLoading,
+				companiesQuery.isLoading || usersQuery.isLoading,
 			isMutating:
 				addCompanyMutation.isPending ||
 				addCompanyUserMutation.isPending ||
@@ -207,8 +207,7 @@ export function useWorkspaceCompanyManagementStore<
 		[
 			addCompanyMutation,
 			addCompanyUserMutation,
-			branchesQuery.data,
-			branchesQuery.isLoading,
+			branches,
 			companiesQuery.data,
 			companiesQuery.isLoading,
 			deleteCompanyMutation,

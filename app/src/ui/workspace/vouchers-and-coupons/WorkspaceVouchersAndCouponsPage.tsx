@@ -1,13 +1,13 @@
 "use client";
 
 import { BadgePercent, CheckCircle2, Tags, Ticket, Users } from "lucide-react";
-import { useWorkspaceVoucherCouponPromotionPage } from "@/app/src/hooks/workspace/voucher-coupon-promotion/useWorkspaceVoucherCouponPromotionPage";
+import { useWorkspaceVouchersAndCouponsPage } from "@/app/src/hooks/workspace/vouchers-and-coupons/useWorkspaceVouchersAndCouponsPage";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
-import { WorkspaceVoucherCouponPromotionTable } from "@/app/src/ui/workspace/voucher-coupon-promotion/WorkspaceVoucherCouponPromotionTable";
+import { WorkspaceVouchersAndCouponsTable } from "@/app/src/ui/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsTable";
 
-export function WorkspaceVoucherCouponPromotionPage() {
-	const page = useWorkspaceVoucherCouponPromotionPage();
+export function WorkspaceVouchersAndCouponsPage() {
+	const page = useWorkspaceVouchersAndCouponsPage();
 
 	return (
 		<section className="grid gap-5">
@@ -15,8 +15,8 @@ export function WorkspaceVoucherCouponPromotionPage() {
 				variant="card"
 				titleAs="h1"
 				eyebrow="Workspace billing"
-				title="Voucher, Coupon, Promotion"
-				description="Subscriber promotion assignments based on the master promotion and subscriber promotion setup."
+				title="Vouchers and Coupons"
+				description="Subscriber voucher and coupon assignments based on the master subscriber setup."
 			/>
 			<ModuleMetrics
 				metrics={[
@@ -37,7 +37,7 @@ export function WorkspaceVoucherCouponPromotionPage() {
 					{
 						icon: CheckCircle2,
 						label: "Applicable",
-						helper: "Active master codes",
+						helper: "Active codes",
 						tone: "emerald",
 						value: page.summary.canApplyRecords,
 					},
@@ -57,8 +57,7 @@ export function WorkspaceVoucherCouponPromotionPage() {
 					},
 				]}
 			/>
-			<WorkspaceVoucherCouponPromotionTable {...page} />
+			<WorkspaceVouchersAndCouponsTable {...page} />
 		</section>
 	);
 }
-

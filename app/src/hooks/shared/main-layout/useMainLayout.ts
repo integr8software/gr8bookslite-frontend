@@ -61,7 +61,7 @@ const DefaultExpandedKeys = [
   "workspace-company-management-section",
   "workspace-user-management-section",
   "workspace-billing-and-subscription-section",
-  "workspace-voucher-coupon-promotion-section",
+  "workspace-vouchers-and-coupons-section",
   "workspace-reports-analytics-section",
   "workspace-audit-logs-section",
   "workspace-system-settings-section",

@@ -2,16 +2,16 @@
 
 import { Tags } from "lucide-react";
 import {
-	WorkspaceVoucherCouponPromotionPaginationStorageKey,
-	WorkspaceVoucherCouponPromotionStatusOptions,
-	WorkspaceVoucherCouponPromotionTypeOptions,
-} from "@/app/src/constants/workspace/voucher-coupon-promotion/WorkspaceVoucherCouponPromotionConstants";
-import type { useWorkspaceVoucherCouponPromotionPage } from "@/app/src/hooks/workspace/voucher-coupon-promotion/useWorkspaceVoucherCouponPromotionPage";
+	WorkspaceVouchersAndCouponsPaginationStorageKey,
+	WorkspaceVouchersAndCouponsStatusOptions,
+	WorkspaceVouchersAndCouponsTypeOptions,
+} from "@/app/src/constants/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsConstants";
+import type { useWorkspaceVouchersAndCouponsPage } from "@/app/src/hooks/workspace/vouchers-and-coupons/useWorkspaceVouchersAndCouponsPage";
 import type {
-	WorkspaceVoucherCouponPromotionRecord,
-	WorkspaceVoucherCouponPromotionStatusFilter,
-	WorkspaceVoucherCouponPromotionTypeFilter,
-} from "@/app/src/types/workspace/voucher-coupon-promotion/WorkspaceVoucherCouponPromotionTypes";
+	WorkspaceVouchersAndCouponsRecord,
+	WorkspaceVouchersAndCouponsStatusFilter,
+	WorkspaceVouchersAndCouponsTypeFilter,
+} from "@/app/src/types/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
 	ModuleTableFilterSelect,
@@ -19,10 +19,10 @@ import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/ModuleTableToolbar";
-import { WorkspaceVoucherCouponPromotionTableRow } from "@/app/src/ui/workspace/voucher-coupon-promotion/WorkspaceVoucherCouponPromotionTableRow";
+import { WorkspaceVouchersAndCouponsTableRow } from "@/app/src/ui/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsTableRow";
 
-type WorkspaceVoucherCouponPromotionTableProps = Pick<
-	ReturnType<typeof useWorkspaceVoucherCouponPromotionPage>,
+type WorkspaceVouchersAndCouponsTableProps = Pick<
+	ReturnType<typeof useWorkspaceVouchersAndCouponsPage>,
 	| "query"
 	| "resetFilters"
 	| "setQuery"
@@ -33,7 +33,7 @@ type WorkspaceVoucherCouponPromotionTableProps = Pick<
 	| "typeFilter"
 >;
 
-export function WorkspaceVoucherCouponPromotionTable({
+export function WorkspaceVouchersAndCouponsTable({
 	query,
 	resetFilters,
 	setQuery,
@@ -42,21 +42,21 @@ export function WorkspaceVoucherCouponPromotionTable({
 	statusFilter,
 	table,
 	typeFilter,
-}: WorkspaceVoucherCouponPromotionTableProps) {
+}: WorkspaceVouchersAndCouponsTableProps) {
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
-			<ModuleTable<WorkspaceVoucherCouponPromotionRecord>
+			<ModuleTable<WorkspaceVouchersAndCouponsRecord>
 				variant="embedded"
-				emptyDescription="Try a different subscriber, promotion code, type, status, invoice, or owner."
+				emptyDescription="Try a different subscriber, code, type, status, invoice, or owner."
 				emptyIcon={<Tags className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No subscriber promotions found"
+				emptyTitle="No vouchers or coupons found"
 				minWidthClassName="min-w-[92rem]"
-				paginationStorageKey={WorkspaceVoucherCouponPromotionPaginationStorageKey}
+				paginationStorageKey={WorkspaceVouchersAndCouponsPaginationStorageKey}
 				table={table}
 				toolbar={
 					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,1fr)]">
 						<ModuleTableSearch
-							label="Search voucher, coupon, and promotion assignments"
+							label="Search voucher and coupon assignments"
 							value={query}
 							onChange={setQuery}
 							placeholder="Search companies, codes, invoices, or owners"
@@ -64,7 +64,7 @@ export function WorkspaceVoucherCouponPromotionTable({
 						<ModuleTableFilterSelect
 							label="Status"
 							value={statusFilter}
-							options={WorkspaceVoucherCouponPromotionStatusOptions.map(
+							options={WorkspaceVouchersAndCouponsStatusOptions.map(
 								(option) => ({
 									label: option,
 									value: option,
@@ -72,21 +72,21 @@ export function WorkspaceVoucherCouponPromotionTable({
 							)}
 							onChange={(value) =>
 								setStatusFilter(
-									value as WorkspaceVoucherCouponPromotionStatusFilter,
+									value as WorkspaceVouchersAndCouponsStatusFilter,
 								)
 							}
 						/>
 						<ModuleTableFilterSelect
 							label="Type"
 							value={typeFilter}
-							options={WorkspaceVoucherCouponPromotionTypeOptions.map(
+							options={WorkspaceVouchersAndCouponsTypeOptions.map(
 								(option) => ({
 									label: option,
 									value: option,
 								}),
 							)}
 							onChange={(value) =>
-								setTypeFilter(value as WorkspaceVoucherCouponPromotionTypeFilter)
+								setTypeFilter(value as WorkspaceVouchersAndCouponsTypeFilter)
 							}
 						/>
 						<ModuleTableResetButton onClick={resetFilters}>
@@ -95,7 +95,7 @@ export function WorkspaceVoucherCouponPromotionTable({
 					</ModuleTableToolbar>
 				}
 				renderRow={(row) => (
-					<WorkspaceVoucherCouponPromotionTableRow
+					<WorkspaceVouchersAndCouponsTableRow
 						key={row.id}
 						record={row.original}
 					/>
@@ -104,4 +104,3 @@ export function WorkspaceVoucherCouponPromotionTable({
 		</div>
 	);
 }
-

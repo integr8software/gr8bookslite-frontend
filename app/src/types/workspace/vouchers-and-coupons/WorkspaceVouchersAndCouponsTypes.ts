@@ -8,7 +8,7 @@ import type {
 	MasterSubscriberPromotionStatus,
 } from "@/app/src/types/master/subscriber-promotions/MasterSubscriberPromotionTypes";
 
-export type WorkspaceVoucherCouponPromotionRecord = {
+export type WorkspaceVouchersAndCouponsRecord = {
 	assignedAt: string;
 	assignmentId: string;
 	assignmentMode: MasterSubscriberPromotionAssignmentMode;
@@ -33,15 +33,15 @@ export type WorkspaceVoucherCouponPromotionRecord = {
 	value: number;
 };
 
-export type WorkspaceVoucherCouponPromotionStatusFilter =
+export type WorkspaceVouchersAndCouponsStatusFilter =
 	| "All statuses"
 	| MasterSubscriberPromotionStatus;
 
-export type WorkspaceVoucherCouponPromotionTypeFilter =
+export type WorkspaceVouchersAndCouponsTypeFilter =
 	| "All types"
 	| MasterPromotionType;
 
-export type WorkspaceVoucherCouponPromotionTableColumnKey =
+export type WorkspaceVouchersAndCouponsTableColumnKey =
 	| "subscriberName"
 	| "promotionName"
 	| "type"
@@ -49,4 +49,3 @@ export type WorkspaceVoucherCouponPromotionTableColumnKey =
 	| "status"
 	| "masterStatus"
 	| "expiresAt";
-

@@ -42,12 +42,12 @@ export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
     "workspace-billing-and-subscription",
   ),
   directSection(
-    "workspace-voucher-coupon-promotion-section",
-    "Voucher, Coupon, Promotion",
-    "/workspace/voucher-coupon-promotion",
+    "workspace-vouchers-and-coupons-section",
+    "Vouchers and Coupons",
+    "/workspace/vouchers-and-coupons",
     "promotion",
     "workspace.billing.promotions",
-    "workspace-voucher-coupon-promotion",
+    "workspace-vouchers-and-coupons",
   ),
   directSection(
     "workspace-reports-analytics-section",

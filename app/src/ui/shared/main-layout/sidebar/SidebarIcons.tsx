@@ -81,7 +81,7 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"workspace-subscriptions": WalletCards,
 	"workspace-billing-and-subscription": WalletCards,
 	"workspace-invoices": FileText,
-	"workspace-voucher-coupon-promotion": BadgePercent,
+	"workspace-vouchers-and-coupons": BadgePercent,
 	"workspace-reports-analytics": FileBarChart,
 	"workspace-modules-features": ListTree,
 	"workspace-domains-ports": GitBranch,

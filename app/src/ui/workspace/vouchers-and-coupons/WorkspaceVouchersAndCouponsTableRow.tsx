@@ -1,20 +1,20 @@
 import {
-	formatWorkspaceVoucherCouponPromotionDate,
-	formatWorkspaceVoucherCouponPromotionExpiry,
-	formatWorkspaceVoucherCouponPromotionValue,
-} from "@/app/src/data/workspace/voucher-coupon-promotion/WorkspaceVoucherCouponPromotionData";
-import type { WorkspaceVoucherCouponPromotionRecord } from "@/app/src/types/workspace/voucher-coupon-promotion/WorkspaceVoucherCouponPromotionTypes";
+	formatWorkspaceVouchersAndCouponsDate,
+	formatWorkspaceVouchersAndCouponsExpiry,
+	formatWorkspaceVouchersAndCouponsValue,
+} from "@/app/src/data/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsData";
+import type { WorkspaceVouchersAndCouponsRecord } from "@/app/src/types/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsTypes";
 import { MasterPromotionStatusBadge } from "@/app/src/ui/master/promotions/MasterPromotionBadges";
 import { MasterSubscriberPromotionStatusBadge } from "@/app/src/ui/master/subscriber-promotions/MasterSubscriberPromotionBadges";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-type WorkspaceVoucherCouponPromotionTableRowProps = {
-	record: WorkspaceVoucherCouponPromotionRecord;
+type WorkspaceVouchersAndCouponsTableRowProps = {
+	record: WorkspaceVouchersAndCouponsRecord;
 };
 
-export function WorkspaceVoucherCouponPromotionTableRow({
+export function WorkspaceVouchersAndCouponsTableRow({
 	record,
-}: WorkspaceVoucherCouponPromotionTableRowProps) {
+}: WorkspaceVouchersAndCouponsTableRowProps) {
 	return (
 		<tr className="module-table-row">
 			<td className="px-4 py-4">
@@ -38,7 +38,7 @@ export function WorkspaceVoucherCouponPromotionTableRow({
 					{record.code}
 				</p>
 				<p className="mt-1 text-xs font-medium text-darknavy/45">
-					Assigned {formatWorkspaceVoucherCouponPromotionDate(record.assignedAt)}
+					Assigned {formatWorkspaceVouchersAndCouponsDate(record.assignedAt)}
 				</p>
 			</td>
 			<td className="px-4 py-4">
@@ -52,7 +52,7 @@ export function WorkspaceVoucherCouponPromotionTableRow({
 				</span>
 			</td>
 			<td className="px-4 py-4 text-sm font-semibold text-darknavy">
-				{formatWorkspaceVoucherCouponPromotionValue(record)}
+				{formatWorkspaceVouchersAndCouponsValue(record)}
 			</td>
 			<td className="px-4 py-4">
 				<div className="grid gap-2">
@@ -75,14 +75,14 @@ export function WorkspaceVoucherCouponPromotionTableRow({
 				</div>
 			</td>
 			<td className="px-4 py-4 text-sm font-semibold text-darknavy">
-				{formatWorkspaceVoucherCouponPromotionExpiry(record.expiresAt)}
+				{formatWorkspaceVouchersAndCouponsExpiry(record.expiresAt)}
 			</td>
 		</tr>
 	);
 }
 
 function getPromotionTypeClassName(
-	type: WorkspaceVoucherCouponPromotionRecord["type"],
+	type: WorkspaceVouchersAndCouponsRecord["type"],
 ) {
 	switch (type) {
 		case "Coupon":
@@ -95,4 +95,3 @@ function getPromotionTypeClassName(
 			return "bg-offwhite text-darknavy ring-darknavy/10";
 	}
 }
-

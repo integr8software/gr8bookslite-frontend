@@ -76,7 +76,6 @@ const DefaultExpandedKeys = [
   "master-invoices-section",
   "master-promotions-section",
   "master-subscriber-promotions-section",
-  "master-logs-section",
   "master-support-tickets-section",
   "master-system-settings-section",
   "dashboard",
@@ -954,7 +953,9 @@ function buildBreadcrumbs({
     fallbackTrail[0]?.label === "Workspace"
       ? fallbackTrail.slice(1)
       : fallbackTrail;
-  const completeTrail = appendPathSegmentBreadcrumbs(normalizedTrail, pathname);
+  const completeTrail = removeAdjacentDuplicateBreadcrumbs(
+    appendPathSegmentBreadcrumbs(normalizedTrail, pathname),
+  );
 
   return completeTrail.map((item) => ({
     key: item.key,
@@ -1038,6 +1039,20 @@ function appendPathSegmentBreadcrumbs(
       href: index === extraSegments.length - 1 ? pathname : undefined,
     })),
   ];
+}
+
+function removeAdjacentDuplicateBreadcrumbs(
+  trail: NavigationTrailNode[],
+): NavigationTrailNode[] {
+  return trail.filter((item, index) => {
+    const previous = trail[index - 1];
+
+    if (!previous) {
+      return true;
+    }
+
+    return previous.label !== item.label || previous.href !== item.href;
+  });
 }
 
 function getActionBreadcrumbs({

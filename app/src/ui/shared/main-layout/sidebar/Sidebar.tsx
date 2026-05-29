@@ -365,8 +365,9 @@ export function MainSidebar({
 
 function isAdminNavigationSection(section: MainNavigationSection) {
 	return (
-		section.key.startsWith("workspace-") ||
-		section.key.startsWith("master-")
+		!section.href &&
+		(section.key.startsWith("workspace-") ||
+			section.key.startsWith("master-"))
 	);
 }
 

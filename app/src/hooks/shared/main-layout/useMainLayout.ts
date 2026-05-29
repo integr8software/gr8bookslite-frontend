@@ -2,10 +2,19 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { WorkspaceCompaniesHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import {
+  getWorkspaceCompanyBranchesHref,
+} from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
+import {
+  getBranchDisplayLabel,
+  stripHeadOfficeLabel,
+} from "@/app/src/data/shared/branch/BranchDisplayData";
+import {
+  type MainAccessAction,
   type MainCurrentUser,
   type MainBranch,
+  type MainCompany,
+  type MainPermissionMap,
   type MainNavigationItem,
   type MainNavigationScope,
   type MainNavigationSection,
@@ -30,8 +39,10 @@ import { MainLayoutData } from "@/app/src/data/shared/main-layout/MainLayoutData
 import { ModuleHelpArticles } from "@/app/src/data/shared/module/module-help/ModuleHelpData";
 import { getHelpArticleForPath } from "@/app/src/data/shared/module/module-help/ModuleHelpUtils";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
-import { useBranchManagementStore } from "@/app/src/hooks/modules/system-administration/branch-management/useBranchManagement";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import {
+  useWorkspaceCompanyMainLayoutBranches,
+} from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyMainLayoutBranches";
 import {
   GetAuthProfileAccess,
   GetAuthProfileCompanyId,
@@ -90,6 +101,24 @@ const MaxBlockingProfileLoadMs = 4500;
 const BranchUsersContextParam = "workspaceBranchId";
 const CompanyUsersContextParam = "workspaceCompanyId";
 const BranchUsersNameParam = "branchName";
+const EmptyCompany: MainCompany = {
+  id: "",
+  name: "Company",
+  status: "Active",
+  branches: [],
+  totalBranches: 0,
+};
+const EmptyCurrentUser: MainCurrentUser = {
+  id: "",
+  activeCompanyId: undefined,
+  companyIds: [],
+  firstName: "",
+  lastName: "",
+  name: "Account",
+  shortName: "Account",
+  initials: "U",
+  userRole: "User",
+};
 
 type NavigationTrailNode = {
   key: string;
@@ -104,7 +133,6 @@ export function useMainLayout() {
   const searchParams = useSearchParams();
   const storedAccessToken = useAppStore((state) => state.accessToken);
   const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
-  const branchLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sidebarTransitionFrameRef = useRef<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarTransitionEnabled, setIsSidebarTransitionEnabled] =
@@ -142,13 +170,13 @@ export function useMainLayout() {
   const isWorkspaceRoute = isWorkspacePath(pathname);
   const hasMasterAccess = authProfile
     ? ProfileHasMasterAccess(authProfile)
-    : MainLayoutData.currentUser.userRole === "Super Admin";
+    : false;
   const hasWorkspaceAccess = authProfile
     ? ProfileHasWorkspaceAccess(authProfile)
-    : MainLayoutData.currentUser.userRole === "Super Admin";
+    : false;
   const displayUser = authProfile
     ? CreateWorkspaceCurrentUserFromProfile(authProfile)
-    : MainLayoutData.currentUser;
+    : EmptyCurrentUser;
   const isProfileLoading = isAuthProfileLoading && !hasProfileLoadTimedOut;
   const activeNavigationScope: MainNavigationScope =
     hasMasterAccess && isMasterRoute
@@ -158,33 +186,30 @@ export function useMainLayout() {
         : "company";
   const workspaceCompanies = authProfile
     ? MapProfileCompaniesToMainCompanies(authProfile)
-    : null;
+    : [];
   const profileActiveCompanyId = authProfile
     ? GetAuthProfileCompanyId(authProfile)
     : null;
-  const [activeCompanyId, setActiveCompanyId] = useState(
-    MainLayoutData.currentCompany.id,
-  );
-  const [lazyLoadedBranches, setLazyLoadedBranches] = useState<
-    MainBranch[] | null
-  >(null);
-  const [isBranchLoading, setIsBranchLoading] = useState(false);
+  const [activeCompanyId, setActiveCompanyId] = useState("");
   const [notifications, setNotifications] = useState<MainNotification[]>(
     MainLayoutData.notifications,
   );
-  const branches = useBranchManagementStore((state) => state.branches);
   const query = queryState.pathname === pathname ? queryState.value : "";
   const isSearchOpen = searchOpenPath === pathname;
   const isNotificationsOpen = notificationsOpenPath === pathname;
   const isHelpOpen = helpOpenPath === pathname;
 
   const subscription = MainLayoutData.activeSubscription;
-  const availableCompanies =
-    workspaceCompanies ?? MainLayoutData.availableCompanies;
+  const availableCompanies = workspaceCompanies;
   const currentCompany =
     availableCompanies.find((company) => company.id === activeCompanyId) ??
     availableCompanies[0] ??
-    MainLayoutData.currentCompany;
+    EmptyCompany;
+  const { branches, isLoading: isBranchLoading } =
+    useWorkspaceCompanyMainLayoutBranches({
+      company:
+        activeNavigationScope === "company" ? currentCompany : undefined,
+    });
 
   const navigationSections = useMemo(() => {
     const sourceSections =
@@ -351,16 +376,15 @@ export function useMainLayout() {
       return [];
     }
 
-    const branchItems =
-      lazyLoadedBranches
-        ?.filter((branch) => branch.kind)
-        .map((branch) => ({
-          key: branch.id,
-          label: getBranchSwitcherLabel(branch),
-          href: companyHomeHref,
-          branchId: branch.id,
-          kind: branch.kind,
-        })) ?? [];
+    const branchItems = accessibleBranches
+      .filter((branch) => branch.kind)
+      .map((branch) => ({
+        key: branch.id,
+        label: getBranchSwitcherLabel(branch),
+        href: companyHomeHref,
+        branchId: branch.id,
+        kind: branch.kind,
+      }));
 
     if (!canManageBranches) {
       return branchItems;
@@ -371,15 +395,16 @@ export function useMainLayout() {
       {
         key: "branch-management",
         label: "Branch Management",
-        href: WorkspaceCompaniesHref,
+        href: getWorkspaceCompanyBranchesHref(currentCompany.id),
         helperText: "Manage workspace companies, branches, and satellites",
         isManagementAction: true,
       },
     ];
   }, [
+    accessibleBranches,
     canManageBranches,
     companyHomeHref,
-    lazyLoadedBranches,
+    currentCompany.id,
     shouldShowBranchSwitcher,
   ]);
 
@@ -424,10 +449,6 @@ export function useMainLayout() {
 
   useEffect(
     () => () => {
-      if (branchLoadTimerRef.current) {
-        clearTimeout(branchLoadTimerRef.current);
-      }
-
       if (sidebarTransitionFrameRef.current !== null) {
         cancelAnimationFrame(sidebarTransitionFrameRef.current);
       }
@@ -541,15 +562,8 @@ export function useMainLayout() {
   }
 
   function loadBranchOptions() {
-    if (lazyLoadedBranches || isBranchLoading) {
-      return;
-    }
-
-    setIsBranchLoading(true);
-    branchLoadTimerRef.current = setTimeout(() => {
-      setLazyLoadedBranches(accessibleBranches);
-      setIsBranchLoading(false);
-    }, 280);
+    // Branches are loaded from the active workspace company unit API.
+    return undefined;
   }
 
   function selectBranch(branchId: string) {
@@ -558,8 +572,7 @@ export function useMainLayout() {
 
   function selectCompany(companyId: string) {
     setActiveCompanyId(companyId);
-    setActiveBranchId(getDefaultAccessibleBranchId(branches));
-    setLazyLoadedBranches(null);
+    setActiveBranchId("");
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
     router.push(companyHomeHref);
@@ -698,7 +711,6 @@ function ProfileHasMasterAccess(profile: AuthProfileResponse) {
 function CreateWorkspaceCurrentUserFromProfile(
   profile: AuthProfileResponse,
 ): MainCurrentUser {
-  const fallbackUserRoleDetails = MainLayoutData.currentUser.userRoleDetails;
   const [firstName, ...lastNameParts] = profile.user.name.trim().split(/\s+/);
   const lastName = lastNameParts.join(" ");
   const activeAccess = GetAuthProfileAccess(profile);
@@ -717,50 +729,161 @@ function CreateWorkspaceCurrentUserFromProfile(
       : effectiveRole === "ADMIN"
         ? "Admin"
         : "User";
+  const profilePermissionMap = CreateProfilePermissionMap(
+    activeAccess?.permissions,
+  );
+  const adminPermissionMap = HasPermissionEntries(profilePermissionMap)
+    ? profilePermissionMap
+    : CreateNavigationPermissionMap();
   const userRoleDetails = companyRoleName
     ? {
-        ...(fallbackUserRoleDetails ?? {
-          id: "user-role-workspace",
-          name: "Workspace User",
-          permissions: {},
-        }),
         id:
           activeAccess?.companyRoleCode ??
           activeCompanyMembership?.companyRoleCode ??
-          fallbackUserRoleDetails?.id ??
           "user-role-workspace",
         name: companyRoleName,
+        permissions:
+          effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN"
+            ? adminPermissionMap
+            : profilePermissionMap,
       }
     : effectiveRole === "ADMIN"
-      ? fallbackUserRoleDetails
+      ? {
+          id: "user-role-admin",
+          name: "Admin",
+          permissions: adminPermissionMap,
+        }
       : undefined;
 
   return {
-    ...MainLayoutData.currentUser,
+    id: String(profile.user.id),
+    activeCompanyId:
+      activeCompanyId == null ? undefined : String(activeCompanyId),
+    companyIds: (profile.companies ?? []).map((company) =>
+      String(company.companyId),
+    ),
     firstName: firstName || profile.user.name,
     lastName,
     name: profile.user.name,
     shortName: BuildShortName(profile.user.name),
     initials: BuildInitials(profile.user.name),
+    profileImageUrl: profile.user.avatarPublicUrl ?? undefined,
     userRole,
     userRoleDetails,
   };
 }
 
 function MapProfileCompaniesToMainCompanies(profile: AuthProfileResponse) {
-  return (profile.companies ?? []).map((company) => ({
-    id: String(company.companyId),
-    name: company.companyName,
-    logoUrl: undefined,
-    status: "Active" as const,
-    businessKind: undefined,
-    subscriptionPackage: undefined,
-    branches: [],
-    totalBranches: 0,
-    branchCode: undefined,
-    branchName: undefined,
-    helperText: company.role === "ADMIN" ? "Admin access" : "User access",
-  }));
+  return (profile.companies ?? [])
+    .filter((company) => company.membershipStatus === "ACTIVE")
+    .map((company) => ({
+      id: String(company.companyId),
+      name: company.companyName,
+      logoUrl: undefined,
+      status: "Active" as const,
+      businessKind: undefined,
+      subscriptionPackage: undefined,
+      branches: [],
+      totalBranches: 0,
+      branchCode: undefined,
+      branchName: undefined,
+      helperText: company.role === "ADMIN" ? "Admin access" : "User access",
+    }));
+}
+
+function CreateProfilePermissionMap(permissions: unknown[] | undefined) {
+  const permissionMap: MainPermissionMap = {};
+
+  for (const permission of permissions ?? []) {
+    if (typeof permission !== "string") {
+      continue;
+    }
+
+    const [accessKey, backendAction] = permission.split(":");
+    const action = MapBackendPermissionAction(backendAction);
+
+    if (!accessKey || !action) {
+      continue;
+    }
+
+    const currentAccess = permissionMap[accessKey as keyof MainPermissionMap] ?? {};
+    permissionMap[accessKey as keyof MainPermissionMap] = {
+      ...currentAccess,
+      [action]: true,
+    };
+  }
+
+  return permissionMap;
+}
+
+function HasPermissionEntries(permissionMap: MainPermissionMap) {
+  return Object.keys(permissionMap).length > 0;
+}
+
+function CreateNavigationPermissionMap() {
+  const permissionMap: MainPermissionMap = {};
+  const sections = [
+    ...MainMasterNavigationSections,
+    ...MainWorkspaceNavigationSections,
+    ...MainCompanyNavigationSections,
+  ];
+
+  for (const section of sections) {
+    GrantNavigationAccess(permissionMap, section.accessKey);
+
+    for (const item of section.items) {
+      AddNavigationItemPermissions(permissionMap, item);
+    }
+  }
+
+  return permissionMap;
+}
+
+function AddNavigationItemPermissions(
+  permissionMap: MainPermissionMap,
+  item: MainNavigationItem,
+) {
+  GrantNavigationAccess(permissionMap, item.accessKey);
+
+  for (const child of item.children ?? []) {
+    AddNavigationItemPermissions(permissionMap, child);
+  }
+}
+
+function GrantNavigationAccess(
+  permissionMap: MainPermissionMap,
+  accessKey: MainNavigationItem["accessKey"],
+) {
+  permissionMap[accessKey] = {
+    add: true,
+    cancel: true,
+    delete: true,
+    edit: true,
+    uncancel: true,
+    view: true,
+  };
+}
+
+function MapBackendPermissionAction(
+  action: string | undefined,
+): MainAccessAction | undefined {
+  if (action === "view") {
+    return "view";
+  }
+
+  if (action === "create") {
+    return "add";
+  }
+
+  if (action === "update") {
+    return "edit";
+  }
+
+  if (action === "delete" || action === "cancel" || action === "uncancel") {
+    return action;
+  }
+
+  return undefined;
 }
 
 function FormatCompanyRoleName(companyRoleCode: string | null | undefined) {
@@ -1315,13 +1438,6 @@ function getCompanyHomeHref(items: MainSearchItem[], recentKeys: string[]) {
   );
 }
 
-function getDefaultAccessibleBranchId(branches: MainBranch[] | undefined) {
-  const accessibleBranches = getAccessibleBranches(branches ?? []);
-  const mainBranch = accessibleBranches.find((branch) => branch.isMain);
-
-  return mainBranch?.id ?? accessibleBranches.at(-1)?.id ?? "";
-}
-
 function sortBranchesByPriority(branches: MainBranch[]) {
   return [...branches].sort((first, second) => {
     const priorityDelta = getBranchPriority(first) - getBranchPriority(second);
@@ -1343,14 +1459,11 @@ function getBranchPriority(branch: MainBranch) {
 }
 
 function getBranchSwitcherLabel(branch: MainBranch) {
-  return `${branch.name}${branch.isMain ? " (Head Office)" : ""}`;
+  return getBranchDisplayLabel(branch);
 }
 
 function normalizeBranchRouteToken(value: string) {
-  return value
-    .replace(/\s*\(head office\)\s*/i, "")
-    .trim()
-    .toLowerCase();
+  return stripHeadOfficeLabel(value).toLowerCase();
 }
 
 function matchesSearchQuery(item: MainSearchItem, query: string) {

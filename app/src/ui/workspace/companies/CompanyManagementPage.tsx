@@ -19,12 +19,12 @@ export function CompanyManagementPage() {
   const companyManagement = useWorkspaceCompanyManagementStore((state) => ({
     branches: state.branches,
     companies: state.companies,
-    deleteCompany: state.deleteCompany,
+    deactivateCompany: state.deactivateCompany,
     isLoading: state.isLoading,
     isMutating: state.isMutating,
     users: state.users,
   }));
-  const [pendingDeleteCompany, setPendingDeleteCompany] =
+  const [pendingDeactivateCompany, setPendingDeactivateCompany] =
     useState<WorkspaceCompanyRecord | null>(null);
   const activeCompanies = companyManagement.companies.filter(
     (company) => company.status === "Active",
@@ -38,14 +38,14 @@ export function CompanyManagementPage() {
     0,
   );
 
-  async function handleConfirmDelete() {
-    if (!pendingDeleteCompany) {
+  async function handleConfirmDeactivate() {
+    if (!pendingDeactivateCompany) {
       return;
     }
 
     try {
-      await companyManagement.deleteCompany(pendingDeleteCompany.id);
-      setPendingDeleteCompany(null);
+      await companyManagement.deactivateCompany(pendingDeactivateCompany.id);
+      setPendingDeactivateCompany(null);
     } catch {
       // The mutation owns the toast message; keep the dialog open.
     }
@@ -127,19 +127,19 @@ export function CompanyManagementPage() {
         companies={companyManagement.companies}
         isLoading={companyManagement.isLoading}
         users={companyManagement.users}
-        onDelete={setPendingDeleteCompany}
+        onDeactivate={setPendingDeactivateCompany}
       />
       <AppDialog
-        isOpen={Boolean(pendingDeleteCompany)}
+        isOpen={Boolean(pendingDeactivateCompany)}
         isPending={companyManagement.isMutating}
-        title="Delete company?"
+        title="Deactivate company?"
         description={`This will mark ${
-          pendingDeleteCompany?.name ?? "the selected company"
+          pendingDeactivateCompany?.name ?? "the selected company"
         } as inactive while keeping users and branch records available.`}
-        confirmLabel="Delete Company"
+        confirmLabel="Deactivate Company"
         tone="danger"
-        onCancel={() => setPendingDeleteCompany(null)}
-        onConfirm={() => void handleConfirmDelete()}
+        onCancel={() => setPendingDeactivateCompany(null)}
+        onConfirm={() => void handleConfirmDeactivate()}
       />
     </section>
   );

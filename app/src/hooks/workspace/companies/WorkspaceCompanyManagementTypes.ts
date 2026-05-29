@@ -13,6 +13,7 @@ export type WorkspaceCompanyManagementStoreState = {
 	users: WorkspaceCompanyUserRecord[];
 	addCompany: (values: WorkspaceCompanyFormValues) => Promise<WorkspaceCompanyRecord>;
 	addCompanyUser: (user: WorkspaceCompanyUserRecord) => void;
+	deactivateCompany: (companyId: string) => Promise<WorkspaceCompanyRecord>;
 	deleteCompany: (companyId: string) => Promise<WorkspaceCompanyRecord>;
 	updateCompany: (
 		companyId: string,

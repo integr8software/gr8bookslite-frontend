@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-export const WorkspaceCompanyFieldClassName =
+export const WorkspaceManagementFieldClassName =
 	"h-12 w-full rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-offwhite/70 disabled:text-darknavy/45 read-only:bg-offwhite/70";
 
-export function WorkspaceCompanyField({
+export function WorkspaceManagementField({
 	children,
 	error,
 	label,
@@ -29,7 +29,7 @@ export function WorkspaceCompanyField({
 	);
 }
 
-export function WorkspaceCompanySection({
+export function WorkspaceManagementSection({
 	children,
 	className,
 	description,

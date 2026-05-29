@@ -26,9 +26,9 @@ import {
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/ModuleTableToolbar";
 import {
-	WorkspaceStatusBadge,
-	WorkspaceUserAvatar,
-} from "@/app/src/ui/workspace/shared/WorkspaceBadges";
+	WorkspaceManagementStatusBadge,
+	WorkspaceManagementUserAvatar,
+} from "@/app/src/ui/workspace/WorkspaceManagementBadges";
 
 type WorkspaceUsersTableColumnKey = keyof Pick<
 	WorkspaceCompanyUserRecord,
@@ -232,7 +232,7 @@ function WorkspaceUsersTableRow({
 		<tr className="module-table-row">
 			<td className="px-4 py-4">
 				<div className="flex min-w-0 items-center gap-3">
-					<WorkspaceUserAvatar imageUrl={user.profileImageUrl} name={user.name} />
+					<WorkspaceManagementUserAvatar imageUrl={user.profileImageUrl} name={user.name} />
 					<span className="truncate text-sm font-semibold text-darknavy">
 						{user.name}
 					</span>
@@ -240,7 +240,7 @@ function WorkspaceUsersTableRow({
 			</td>
 			<WorkspaceUsersTableCell>{user.email}</WorkspaceUsersTableCell>
 			<WorkspaceUsersTableCell>
-				<WorkspaceStatusBadge status={user.status} />
+				<WorkspaceManagementStatusBadge status={user.status} />
 			</WorkspaceUsersTableCell>
 			<WorkspaceUsersTableCell>{user.lastLogin ?? "-"}</WorkspaceUsersTableCell>
 			<WorkspaceUsersTableCell align="center">

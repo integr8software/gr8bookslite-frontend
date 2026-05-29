@@ -2,6 +2,9 @@ import {
   Building2,
   GitBranch,
 } from "lucide-react";
+import {
+  getBranchDisplayLabel,
+} from "@/app/src/data/shared/branch/BranchDisplayData";
 import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
 import {
@@ -65,6 +68,7 @@ function BranchManagementRow({
 }
 function BranchIdentity({ branch }: { branch: MainBranch }) {
   const Icon = (branch.kind ?? "branch") === "satellite" ? GitBranch : Building2;
+  const branchDisplayName = getBranchDisplayLabel(branch);
 
   return (
     <div className="flex min-w-0 items-start gap-3">
@@ -73,8 +77,7 @@ function BranchIdentity({ branch }: { branch: MainBranch }) {
       </span>
       <div className="min-w-0">
         <h3 className="truncate text-sm font-semibold text-darknavy">
-          {branch.name}
-          {branch.isMain ? " (Head Office)" : ""}
+          {branchDisplayName}
         </h3>
         <p className="mt-1 truncate text-xs text-darknavy/50">
           {branch.address || "No address set"}
@@ -91,22 +94,24 @@ function BranchRowActions({
   branch: MainBranch;
   onDeleteBranch: (branchId: string, branchName: string) => void;
 }) {
+  const branchDisplayName = getBranchDisplayLabel(branch);
+
   return (
     <ModuleTableActions data-spotlight-id="branch-management-actions">
       <ModuleTableActionLink
         variant="view"
         href={`${BranchManagementHref}/view/${branch.id}`}
-        label={`View ${branch.name}`}
+        label={`View ${branchDisplayName}`}
       />
       <ModuleTableActionLink
         variant="edit"
         href={`${BranchManagementHref}/edit/${branch.id}`}
-        label={`Edit ${branch.name}`}
+        label={`Edit ${branchDisplayName}`}
       />
       <ModuleTableActionButton
         variant="delete"
         onClick={() => onDeleteBranch(branch.id, branch.name)}
-        label={`Delete ${branch.name}`}
+        label={`Delete ${branchDisplayName}`}
       />
     </ModuleTableActions>
   );

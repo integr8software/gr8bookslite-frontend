@@ -67,3 +67,7 @@ export function getWorkspaceCompanyHref(companyId: string) {
 export function getWorkspaceCompanyEditHref(companyId: string) {
 	return `${WorkspaceCompaniesHref}/edit/${companyId}`;
 }
+
+export function getWorkspaceCompanyBranchesHref(companyId: string) {
+	return `${getWorkspaceCompanyHref(companyId)}/branches`;
+}

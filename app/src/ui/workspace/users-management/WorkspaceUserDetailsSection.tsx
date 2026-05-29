@@ -7,10 +7,10 @@ import type {
 	WorkspaceCompanyUserFormValues,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import {
-	WorkspaceCompanyField,
-	WorkspaceCompanyFieldClassName,
-	WorkspaceCompanySection,
-} from "@/app/src/ui/workspace/shared/WorkspaceFormPrimitives";
+	WorkspaceManagementField,
+	WorkspaceManagementFieldClassName,
+	WorkspaceManagementSection,
+} from "@/app/src/ui/workspace/WorkspaceManagementForm";
 
 export function WorkspaceUserDetailsSection({
 	errors,
@@ -26,29 +26,29 @@ export function WorkspaceUserDetailsSection({
 	onUpdateField: (field: keyof WorkspaceCompanyUserFormValues, value: string) => void;
 }) {
 	return (
-		<WorkspaceCompanySection
+		<WorkspaceManagementSection
 			title="User Details"
 			description="Admins can update the user's name and contact number. Email stays readonly after creation."
 		>
 			<div className="grid gap-4 lg:grid-cols-2">
-				<WorkspaceCompanyField label="Full Name" error={errors.name} required>
+				<WorkspaceManagementField label="Full Name" error={errors.name} required>
 					<input
 						value={values.name}
 						onChange={(event) => onUpdateField("name", event.target.value)}
 						readOnly={isReadonly}
-						className={WorkspaceCompanyFieldClassName}
+						className={WorkspaceManagementFieldClassName}
 					/>
-				</WorkspaceCompanyField>
-				<WorkspaceCompanyField label="Email" error={errors.email} required>
+				</WorkspaceManagementField>
+				<WorkspaceManagementField label="Email" error={errors.email} required>
 					<input
 						type="email"
 						value={values.email}
 						onChange={(event) => onUpdateField("email", event.target.value)}
 						readOnly={isReadonly || isEmailReadonly}
-						className={WorkspaceCompanyFieldClassName}
+						className={WorkspaceManagementFieldClassName}
 					/>
-				</WorkspaceCompanyField>
-				<WorkspaceCompanyField label="Contact No." error={errors.contactNumber}>
+				</WorkspaceManagementField>
+				<WorkspaceManagementField label="Contact No." error={errors.contactNumber}>
 					<input
 						type="tel"
 						inputMode="numeric"
@@ -61,11 +61,11 @@ export function WorkspaceUserDetailsSection({
 							)
 						}
 						readOnly={isReadonly}
-						className={WorkspaceCompanyFieldClassName}
+						className={WorkspaceManagementFieldClassName}
 						placeholder={PhilippineContactNumberPlaceholder}
 					/>
-				</WorkspaceCompanyField>
+				</WorkspaceManagementField>
 			</div>
-		</WorkspaceCompanySection>
+		</WorkspaceManagementSection>
 	);
 }

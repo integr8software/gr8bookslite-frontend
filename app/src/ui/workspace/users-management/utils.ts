@@ -1,4 +1,7 @@
 import { UserListHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
+import {
+	getBranchDisplayLabel,
+} from "@/app/src/data/shared/branch/BranchDisplayData";
 import type {
 	WorkspaceCompanyBranchRecord,
 	WorkspaceCompanyRecord,
@@ -29,5 +32,5 @@ export function getBranchScopedUsersHref({
 }
 
 export function getBranchDisplayName(branch: WorkspaceCompanyBranchRecord) {
-	return `${branch.name}${branch.isMain ? " (Head Office)" : ""}`;
+	return getBranchDisplayLabel(branch);
 }

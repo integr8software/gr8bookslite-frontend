@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Building2, Edit3, GitBranch, Trash2 } from "lucide-react";
+import { Building2, CircleOff, Edit3 } from "lucide-react";
 import {
 	WorkspaceCompaniesHref,
 	WorkspaceCompanyNotFoundDescription,
@@ -18,24 +18,25 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import {
-	WorkspaceCompanyAvatar,
-	WorkspacePlanBadge,
-	WorkspaceStatusBadge,
-	WorkspaceTextBadge,
-} from "@/app/src/ui/workspace/shared/WorkspaceBadges";
 import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
+import {
+	WorkspaceManagementCompanyAvatar,
+	WorkspaceManagementPlanBadge,
+	WorkspaceManagementStatusBadge,
+	WorkspaceManagementSummaryBadge,
+} from "@/app/src/ui/workspace/WorkspaceManagementBadges";
+import { CompanyBranchManagementPanel } from "@/app/src/ui/workspace/companies/CompanyBranchManagementPanel";
 
 export function CompanyInformationPage() {
 	const router = useRouter();
 	const { company, companyBranches } = useWorkspaceCompanyContext();
-	const deleteCompany = useWorkspaceCompanyManagementStore(
-		(state) => state.deleteCompany,
+	const deactivateCompany = useWorkspaceCompanyManagementStore(
+		(state) => state.deactivateCompany,
 	);
 	const isMutating = useWorkspaceCompanyManagementStore(
 		(state) => state.isMutating,
 	);
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+	const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
 
 	if (!company) {
 		return (
@@ -49,14 +50,14 @@ export function CompanyInformationPage() {
 		);
 	}
 
-	async function handleDeleteCompany() {
+	async function handleDeactivateCompany() {
 		if (!company) {
 			return;
 		}
 
 		try {
-			await deleteCompany(company.id);
-			setIsDeleteDialogOpen(false);
+			await deactivateCompany(company.id);
+			setIsDeactivateDialogOpen(false);
 			router.push(WorkspaceCompaniesHref);
 		} catch {
 			// The mutation owns the toast message; keep the dialog open.
@@ -87,11 +88,11 @@ export function CompanyInformationPage() {
 						</Link>
 						<button
 							type="button"
-							onClick={() => setIsDeleteDialogOpen(true)}
+							onClick={() => setIsDeactivateDialogOpen(true)}
 							className={moduleHeaderActionClassNames.danger}
 						>
-							<Trash2 className="h-4 w-4" aria-hidden="true" />
-							Delete Company
+							<CircleOff className="h-4 w-4" aria-hidden="true" />
+							Deactivate Company
 						</button>
 					</>
 				}
@@ -100,18 +101,18 @@ export function CompanyInformationPage() {
 			<article className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
 				<div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
 					<div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start">
-						<WorkspaceCompanyAvatar
+						<WorkspaceManagementCompanyAvatar
 							initials={company.initials}
 							logoUrl={company.logoUrl}
 							name={company.name}
 						/>
 						<div className="min-w-0 flex-1">
 							<div className="flex flex-wrap items-center gap-2">
-								<WorkspaceStatusBadge status={company.status} />
-								<WorkspacePlanBadge plan={company.plan} />
-								<WorkspaceTextBadge>
+								<WorkspaceManagementStatusBadge status={company.status} />
+								<WorkspaceManagementPlanBadge plan={company.plan} />
+								<WorkspaceManagementSummaryBadge>
 									{company.companyType}
-								</WorkspaceTextBadge>
+								</WorkspaceManagementSummaryBadge>
 							</div>
 							<h2 className="mt-4 text-lg font-semibold text-darknavy">
 								{company.name}
@@ -170,47 +171,22 @@ export function CompanyInformationPage() {
 							</div>
 						</div>
 					</div>
-					<div className="rounded-lg border border-darknavy/10 bg-offwhite/50 p-4">
-						<div className="flex items-start gap-3">
-							<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-skyblue/15 text-darknavy">
-								<GitBranch
-									className="h-5 w-5"
-									aria-hidden="true"
-								/>
-							</span>
-							<div className="min-w-0">
-								<p className="text-sm font-semibold text-darknavy">
-									Branch Management
-								</p>
-								<p className="mt-1 text-sm leading-6 text-darknavy/58">
-									Branches and satellites live inside this
-									company. User access is assigned from
-									Workspace Users Management.
-								</p>
-							</div>
-						</div>
-						<div className="mt-5 grid grid-cols-2 gap-3">
-							<Detail
-								label="Branches"
-								value={String(companyBranches.length)}
-							/>
-							<Detail
-								label="Users"
-								value={String(company.totalUsers ?? 0)}
-							/>
-						</div>
-					</div>
+					<CompanyBranchManagementPanel
+						cachedBranches={companyBranches}
+						company={company}
+						userCount={company.totalUsers ?? 0}
+					/>
 				</div>
 			</article>
 			<AppDialog
-				isOpen={isDeleteDialogOpen}
+				isOpen={isDeactivateDialogOpen}
 				isPending={isMutating}
-				title="Delete company?"
+				title="Deactivate company?"
 				description={`This will mark ${company.name} as inactive while keeping users and branch records available.`}
-				confirmLabel="Delete Company"
+				confirmLabel="Deactivate Company"
 				tone="danger"
-				onCancel={() => setIsDeleteDialogOpen(false)}
-				onConfirm={() => void handleDeleteCompany()}
+				onCancel={() => setIsDeactivateDialogOpen(false)}
+				onConfirm={() => void handleDeactivateCompany()}
 			/>
 		</section>
 	);

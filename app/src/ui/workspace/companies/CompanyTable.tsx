@@ -33,24 +33,24 @@ import {
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/ModuleTableToolbar";
 import {
-	WorkspaceCompanyAvatar,
-	WorkspacePlanBadge,
-	WorkspaceStatusBadge,
-	WorkspaceTextBadge,
-} from "@/app/src/ui/workspace/shared/WorkspaceBadges";
+	WorkspaceManagementCompanyAvatar,
+	WorkspaceManagementPlanBadge,
+	WorkspaceManagementStatusBadge,
+	WorkspaceManagementSummaryBadge,
+} from "@/app/src/ui/workspace/WorkspaceManagementBadges";
 
 export function CompanyTable({
 	branches,
 	companies,
 	isLoading,
 	users,
-	onDelete,
+	onDeactivate,
 }: {
 	branches: WorkspaceCompanyBranchRecord[];
 	companies: WorkspaceCompanyRecord[];
 	isLoading: boolean;
 	users: WorkspaceCompanyUserRecord[];
-	onDelete: (company: WorkspaceCompanyRecord) => void;
+	onDeactivate: (company: WorkspaceCompanyRecord) => void;
 }) {
 	const companyList = useWorkspaceCompaniesTable({
 		branches,
@@ -89,7 +89,7 @@ export function CompanyTable({
 					<CompanyTableRow
 						key={id}
 						company={original}
-						onDelete={onDelete}
+						onDeactivate={onDeactivate}
 					/>
 				)}
 			/>
@@ -165,10 +165,10 @@ function CompanyTableFilters({
 
 function CompanyTableRow({
 	company,
-	onDelete,
+	onDeactivate,
 }: {
 	company: WorkspaceCompanyTableRecord;
-	onDelete: (company: WorkspaceCompanyRecord) => void;
+	onDeactivate: (company: WorkspaceCompanyRecord) => void;
 }) {
 	return (
 		<tr className="module-table-row">
@@ -177,7 +177,7 @@ function CompanyTableRow({
 					href={getWorkspaceCompanyHref(company.id)}
 					className="flex min-w-0 items-center gap-3 rounded-lg transition hover:text-skyblue focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 				>
-					<WorkspaceCompanyAvatar
+					<WorkspaceManagementCompanyAvatar
 						initials={company.initials}
 						logoUrl={company.logoUrl}
 						name={company.name}
@@ -193,22 +193,22 @@ function CompanyTableRow({
 				</Link>
 			</td>
 			<CompanyTableCell>
-				<WorkspaceTextBadge>{company.totalBranches}</WorkspaceTextBadge>
+				<WorkspaceManagementSummaryBadge>{company.totalBranches}</WorkspaceManagementSummaryBadge>
 			</CompanyTableCell>
 			<CompanyTableCell>
-				<WorkspaceTextBadge>{company.totalUsers}</WorkspaceTextBadge>
+				<WorkspaceManagementSummaryBadge>{company.totalUsers}</WorkspaceManagementSummaryBadge>
 			</CompanyTableCell>
 			<CompanyTableCell>{company.companyType}</CompanyTableCell>
 			<CompanyTableCell>
-				<WorkspacePlanBadge plan={company.plan} />
+				<WorkspaceManagementPlanBadge plan={company.plan} />
 			</CompanyTableCell>
 			<CompanyTableCell>
-				<WorkspaceStatusBadge status={company.status} />
+				<WorkspaceManagementStatusBadge status={company.status} />
 			</CompanyTableCell>
 			<CompanyTableCell align="center">
 				<CompanyRecordActions
 					company={company}
-					onDelete={() => onDelete(company)}
+					onDeactivate={() => onDeactivate(company)}
 				/>
 			</CompanyTableCell>
 		</tr>
@@ -242,10 +242,10 @@ function getFilterOptions(options: readonly string[]) {
 
 function CompanyRecordActions({
 	company,
-	onDelete,
+	onDeactivate,
 }: {
 	company: WorkspaceCompanyTableRecord;
-	onDelete: () => void;
+	onDeactivate: () => void;
 }) {
 	return (
 		<ModuleTableActions className="justify-center">
@@ -260,9 +260,9 @@ function CompanyRecordActions({
 				label={`Edit ${company.name}`}
 			/>
 			<ModuleTableActionButton
-				variant="delete"
-				onClick={onDelete}
-				label={`Delete ${company.name}`}
+				variant="inactive"
+				onClick={onDeactivate}
+				label={`Deactivate ${company.name}`}
 			/>
 		</ModuleTableActions>
 	);

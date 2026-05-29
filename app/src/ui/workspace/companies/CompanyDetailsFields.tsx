@@ -16,10 +16,10 @@ import {
 } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import {
-	WorkspaceCompanyField,
-	WorkspaceCompanyFieldClassName,
-	WorkspaceCompanySection,
-} from "@/app/src/ui/workspace/shared/WorkspaceFormPrimitives";
+	WorkspaceManagementField,
+	WorkspaceManagementFieldClassName,
+	WorkspaceManagementSection,
+} from "@/app/src/ui/workspace/WorkspaceManagementForm";
 
 const SetupLaterPaymentMethod = {
 	id: "setup-later",
@@ -100,7 +100,7 @@ export function CompanyDetailsFields({
 	return (
 		<form id={formId} onSubmit={onSubmit}>
 			<input type="submit" hidden />
-			<WorkspaceCompanySection
+			<WorkspaceManagementSection
 				title="Company Details"
 				description="These details appear in the workspace company list and company switcher surfaces."
 			>
@@ -144,7 +144,7 @@ export function CompanyDetailsFields({
 
 					{isIndividual ? (
 						<div className="grid gap-4 lg:grid-cols-3">
-							<WorkspaceCompanyField
+							<WorkspaceManagementField
 								label="Last Name"
 								error={errors.lastName}
 								required
@@ -153,10 +153,10 @@ export function CompanyDetailsFields({
 									name="lastName"
 									value={values.lastName}
 									onChange={onInputChange}
-									className={WorkspaceCompanyFieldClassName}
+									className={WorkspaceManagementFieldClassName}
 								/>
-							</WorkspaceCompanyField>
-							<WorkspaceCompanyField
+							</WorkspaceManagementField>
+							<WorkspaceManagementField
 								label="First Name"
 								error={errors.firstName}
 								required
@@ -165,10 +165,10 @@ export function CompanyDetailsFields({
 									name="firstName"
 									value={values.firstName}
 									onChange={onInputChange}
-									className={WorkspaceCompanyFieldClassName}
+									className={WorkspaceManagementFieldClassName}
 								/>
-							</WorkspaceCompanyField>
-							<WorkspaceCompanyField
+							</WorkspaceManagementField>
+							<WorkspaceManagementField
 								label="Middle Name"
 								error={errors.middleName}
 							>
@@ -176,13 +176,13 @@ export function CompanyDetailsFields({
 									name="middleName"
 									value={values.middleName}
 									onChange={onInputChange}
-									className={WorkspaceCompanyFieldClassName}
+									className={WorkspaceManagementFieldClassName}
 								/>
-							</WorkspaceCompanyField>
+							</WorkspaceManagementField>
 						</div>
 					) : (
 						<div className="grid gap-4 lg:grid-cols-2">
-							<WorkspaceCompanyField
+							<WorkspaceManagementField
 								label="Company / Organization Name"
 								error={errors.companyName}
 								required
@@ -191,10 +191,10 @@ export function CompanyDetailsFields({
 									name="companyName"
 									value={values.companyName}
 									onChange={onInputChange}
-									className={WorkspaceCompanyFieldClassName}
+									className={WorkspaceManagementFieldClassName}
 								/>
-							</WorkspaceCompanyField>
-							<WorkspaceCompanyField
+							</WorkspaceManagementField>
+							<WorkspaceManagementField
 								label="Organization Type"
 								error={errors.nonIndividualType}
 								required
@@ -203,7 +203,7 @@ export function CompanyDetailsFields({
 									name="nonIndividualType"
 									value={values.nonIndividualType}
 									onChange={onInputChange}
-									className={WorkspaceCompanyFieldClassName}
+									className={WorkspaceManagementFieldClassName}
 								>
 									<option value="">
 										Select organization type
@@ -216,9 +216,9 @@ export function CompanyDetailsFields({
 										),
 									)}
 								</select>
-							</WorkspaceCompanyField>
+							</WorkspaceManagementField>
 							{isOtherOrganizationType ? (
-								<WorkspaceCompanyField
+								<WorkspaceManagementField
 									label="Please Specify"
 									error={errors.nonIndividualTypeOther}
 									required
@@ -228,10 +228,10 @@ export function CompanyDetailsFields({
 										value={values.nonIndividualTypeOther}
 										onChange={onInputChange}
 										className={
-											WorkspaceCompanyFieldClassName
+											WorkspaceManagementFieldClassName
 										}
 									/>
-								</WorkspaceCompanyField>
+								</WorkspaceManagementField>
 							) : null}
 						</div>
 					)}
@@ -247,7 +247,7 @@ export function CompanyDetailsFields({
 					/>
 
 					<div className="grid gap-4 lg:grid-cols-2">
-						<WorkspaceCompanyField
+						<WorkspaceManagementField
 							label="TIN"
 							error={errors.tin}
 							required
@@ -263,13 +263,13 @@ export function CompanyDetailsFields({
 								}
 								inputMode="numeric"
 								maxLength={15}
-								className={WorkspaceCompanyFieldClassName}
+								className={WorkspaceManagementFieldClassName}
 								placeholder="123-456-789-000"
 							/>
-						</WorkspaceCompanyField>
+						</WorkspaceManagementField>
 					</div>
 				</div>
-			</WorkspaceCompanySection>
+			</WorkspaceManagementSection>
 
 			{showBillingDetails ? (
 				<CompanyPlanSection
@@ -281,13 +281,13 @@ export function CompanyDetailsFields({
 				/>
 			) : null}
 
-			<WorkspaceCompanySection
+			<WorkspaceManagementSection
 				title="Contact"
 				description="Workspace admins use these fields to identify the company owner and billing contact."
 				className="mt-5"
 			>
 				<div className="grid gap-4 lg:grid-cols-2">
-					<WorkspaceCompanyField
+					<WorkspaceManagementField
 						label="Email"
 						error={errors.email}
 						required
@@ -297,10 +297,10 @@ export function CompanyDetailsFields({
 							type="email"
 							value={values.email}
 							onChange={onInputChange}
-							className={WorkspaceCompanyFieldClassName}
+							className={WorkspaceManagementFieldClassName}
 						/>
-					</WorkspaceCompanyField>
-					<WorkspaceCompanyField
+					</WorkspaceManagementField>
+					<WorkspaceManagementField
 						label="Contact No."
 						error={errors.contactNumber}
 						required
@@ -327,12 +327,12 @@ export function CompanyDetailsFields({
 									);
 								}
 							}}
-							className={WorkspaceCompanyFieldClassName}
+							className={WorkspaceManagementFieldClassName}
 							placeholder={PhilippineContactNumberPlaceholder}
 						/>
-					</WorkspaceCompanyField>
+					</WorkspaceManagementField>
 					<div className="lg:col-span-2">
-						<WorkspaceCompanyField
+						<WorkspaceManagementField
 							label="Address"
 							error={errors.address}
 							required
@@ -341,11 +341,11 @@ export function CompanyDetailsFields({
 								name="address"
 								value={values.address}
 								onChange={onInputChange}
-								className={WorkspaceCompanyFieldClassName}
+								className={WorkspaceManagementFieldClassName}
 							/>
-						</WorkspaceCompanyField>
+						</WorkspaceManagementField>
 					</div>
-					<WorkspaceCompanyField
+					<WorkspaceManagementField
 						label="Report Start Date"
 						error={errors.reportStartDate}
 						required
@@ -355,10 +355,10 @@ export function CompanyDetailsFields({
 							type="date"
 							value={values.reportStartDate}
 							onChange={onInputChange}
-							className={WorkspaceCompanyFieldClassName}
+							className={WorkspaceManagementFieldClassName}
 						/>
-					</WorkspaceCompanyField>
-					<WorkspaceCompanyField
+					</WorkspaceManagementField>
+					<WorkspaceManagementField
 						label="Report End Date"
 						error={errors.reportEndDate}
 						required
@@ -368,11 +368,11 @@ export function CompanyDetailsFields({
 							type="date"
 							value={values.reportEndDate}
 							onChange={onInputChange}
-							className={WorkspaceCompanyFieldClassName}
+							className={WorkspaceManagementFieldClassName}
 						/>
-					</WorkspaceCompanyField>
+					</WorkspaceManagementField>
 					<div className="lg:col-span-2">
-						<WorkspaceCompanyField
+						<WorkspaceManagementField
 							label="Company Website (Optional)"
 							error={errors.website}
 						>
@@ -381,16 +381,16 @@ export function CompanyDetailsFields({
 								type="url"
 								value={values.website}
 								onChange={onInputChange}
-								className={WorkspaceCompanyFieldClassName}
+								className={WorkspaceManagementFieldClassName}
 								placeholder="https://acmecorp.com"
 							/>
-						</WorkspaceCompanyField>
+						</WorkspaceManagementField>
 					</div>
 				</div>
-			</WorkspaceCompanySection>
+			</WorkspaceManagementSection>
 
 			{showBillingDetails ? (
-				<WorkspaceCompanySection
+				<WorkspaceManagementSection
 					title="Billing Details"
 					description="Billing can be attached after the company is created, or connected with a PayMongo payment method when tokenization is available."
 					className="mt-5"
@@ -415,7 +415,7 @@ export function CompanyDetailsFields({
 								</div>
 							</div>
 							<div className="grid gap-4 lg:grid-cols-2">
-								<WorkspaceCompanyField
+								<WorkspaceManagementField
 									label="Payment Method"
 									error={errors.billingPaymentMethodId}
 									required
@@ -425,7 +425,7 @@ export function CompanyDetailsFields({
 										value={values.billingPaymentMethodId}
 										onChange={onInputChange}
 										className={
-											WorkspaceCompanyFieldClassName
+											WorkspaceManagementFieldClassName
 										}
 									>
 										{paymentMethodOptions.map((method) => (
@@ -437,7 +437,7 @@ export function CompanyDetailsFields({
 											</option>
 										))}
 									</select>
-								</WorkspaceCompanyField>
+								</WorkspaceManagementField>
 								<p className="self-end text-sm leading-6 text-darknavy/55">
 									{isLoadingPaymentMethods
 										? "Loading saved PayMongo cards..."
@@ -449,7 +449,7 @@ export function CompanyDetailsFields({
 						{values.billingPaymentMethodId ===
 						"new-paymongo-card" ? (
 							<div className="grid gap-4 rounded-xl border border-darknavy/10 bg-white p-4 lg:grid-cols-2">
-								<WorkspaceCompanyField
+								<WorkspaceManagementField
 									label="Cardholder Name"
 									error={errors.billingCardholderName}
 									required
@@ -460,12 +460,12 @@ export function CompanyDetailsFields({
 										onChange={onInputChange}
 										autoComplete="cc-name"
 										className={
-											WorkspaceCompanyFieldClassName
+											WorkspaceManagementFieldClassName
 										}
 										placeholder="John Doe"
 									/>
-								</WorkspaceCompanyField>
-								<WorkspaceCompanyField
+								</WorkspaceManagementField>
+								<WorkspaceManagementField
 									label="Billing Email"
 									error={errors.billingEmail}
 									required
@@ -477,13 +477,13 @@ export function CompanyDetailsFields({
 										onChange={onInputChange}
 										autoComplete="email"
 										className={
-											WorkspaceCompanyFieldClassName
+											WorkspaceManagementFieldClassName
 										}
 										placeholder="billing@company.com"
 									/>
-								</WorkspaceCompanyField>
+								</WorkspaceManagementField>
 								<div className="lg:col-span-2">
-									<WorkspaceCompanyField
+									<WorkspaceManagementField
 										label="Card Number"
 										error={errors.billingCardNumber}
 										required
@@ -496,13 +496,13 @@ export function CompanyDetailsFields({
 											maxLength={23}
 											autoComplete="cc-number"
 											className={
-												WorkspaceCompanyFieldClassName
+												WorkspaceManagementFieldClassName
 											}
 											placeholder="1234 5678 9012 3456"
 										/>
-									</WorkspaceCompanyField>
+									</WorkspaceManagementField>
 								</div>
-								<WorkspaceCompanyField
+								<WorkspaceManagementField
 									label="Expiry Month"
 									error={errors.billingExpiryMonth}
 									required
@@ -515,12 +515,12 @@ export function CompanyDetailsFields({
 										maxLength={2}
 										autoComplete="cc-exp-month"
 										className={
-											WorkspaceCompanyFieldClassName
+											WorkspaceManagementFieldClassName
 										}
 										placeholder="MM"
 									/>
-								</WorkspaceCompanyField>
-								<WorkspaceCompanyField
+								</WorkspaceManagementField>
+								<WorkspaceManagementField
 									label="Expiry Year"
 									error={errors.billingExpiryYear}
 									required
@@ -533,12 +533,12 @@ export function CompanyDetailsFields({
 										maxLength={4}
 										autoComplete="cc-exp-year"
 										className={
-											WorkspaceCompanyFieldClassName
+											WorkspaceManagementFieldClassName
 										}
 										placeholder="YYYY"
 									/>
-								</WorkspaceCompanyField>
-								<WorkspaceCompanyField
+								</WorkspaceManagementField>
+								<WorkspaceManagementField
 									label="CVC"
 									error={errors.billingCvc}
 									required
@@ -551,13 +551,13 @@ export function CompanyDetailsFields({
 										maxLength={4}
 										autoComplete="cc-csc"
 										className={
-											WorkspaceCompanyFieldClassName
+											WorkspaceManagementFieldClassName
 										}
 										placeholder="123"
 									/>
-								</WorkspaceCompanyField>
+								</WorkspaceManagementField>
 								<div className="lg:col-span-2">
-									<WorkspaceCompanyField
+									<WorkspaceManagementField
 										label="Billing Address"
 										error={errors.billingAddress}
 										required
@@ -567,16 +567,16 @@ export function CompanyDetailsFields({
 											value={values.billingAddress}
 											onChange={onInputChange}
 											className={
-												WorkspaceCompanyFieldClassName
+												WorkspaceManagementFieldClassName
 											}
 											placeholder="123 Main St, City, Province"
 										/>
-									</WorkspaceCompanyField>
+									</WorkspaceManagementField>
 								</div>
 							</div>
 						) : null}
 					</div>
-				</WorkspaceCompanySection>
+				</WorkspaceManagementSection>
 			) : null}
 		</form>
 	);
@@ -606,14 +606,14 @@ function CompanyPlanSection({
 		];
 
 	return (
-		<WorkspaceCompanySection
+		<WorkspaceManagementSection
 			title="Plan"
 			description="Choose the plan and billing cycle that should be attached to this company subscription."
 			className="mt-5"
 		>
 			<div className="grid gap-4 lg:grid-cols-3">
 				<div className="lg:col-span-2">
-					<WorkspaceCompanyField
+					<WorkspaceManagementField
 						label="Company Plan"
 						error={error}
 						required
@@ -622,7 +622,7 @@ function CompanyPlanSection({
 							name="billingPlanCode"
 							value={values.billingPlanCode}
 							onChange={onInputChange}
-							className={WorkspaceCompanyFieldClassName}
+							className={WorkspaceManagementFieldClassName}
 						>
 							{isLoading ? (
 								<option value="">Loading plans...</option>
@@ -643,19 +643,19 @@ function CompanyPlanSection({
 								</option>
 							) : null}
 						</select>
-					</WorkspaceCompanyField>
+					</WorkspaceManagementField>
 				</div>
-				<WorkspaceCompanyField label="Billing Cycle">
+				<WorkspaceManagementField label="Billing Cycle">
 					<select
 						name="billingCycle"
 						value={values.billingCycle}
 						onChange={onInputChange}
-						className={WorkspaceCompanyFieldClassName}
+						className={WorkspaceManagementFieldClassName}
 					>
 						<option value="MONTHLY">Monthly</option>
 						<option value="YEARLY">Annual</option>
 					</select>
-				</WorkspaceCompanyField>
+				</WorkspaceManagementField>
 				<div className="rounded-xl border border-skyblue/25 bg-skyblue/10 p-4 lg:col-span-3">
 					<p className="text-sm font-semibold text-darknavy">
 						{selectedPlan?.name ?? "No plan selected"}
@@ -679,7 +679,7 @@ function CompanyPlanSection({
 					) : null}
 				</div>
 			</div>
-		</WorkspaceCompanySection>
+		</WorkspaceManagementSection>
 	);
 }
 

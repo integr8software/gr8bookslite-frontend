@@ -127,10 +127,10 @@ export function useWorkspaceCompanyManagementStore<
 		},
 	});
 
-	const deleteCompanyMutation = useMutation({
+	const deactivateCompanyMutation = useMutation({
 		mutationFn: async (companyId: string) => {
 			if (!accessToken) {
-				throw new Error("Sign in again before deleting this company.");
+				throw new Error("Sign in again before deactivating this company.");
 			}
 
 			return DeactivateWorkspaceCompany(accessToken, companyId);
@@ -148,13 +148,13 @@ export function useWorkspaceCompanyManagementStore<
 			void queryClient.invalidateQueries({
 				queryKey: WorkspaceCompanyQueryKeys.companies(),
 			});
-			toast.success("Company deleted.");
+			toast.success("Company deactivated.");
 		},
 		onError: (error) => {
 			toast.error(
 				error instanceof Error
 					? error.message
-					: "Could not delete company. Please try again.",
+					: "Could not deactivate company. Please try again.",
 			);
 		},
 	});
@@ -189,14 +189,16 @@ export function useWorkspaceCompanyManagementStore<
 			addCompanyUser: (user) => addCompanyUserMutation.mutate(user),
 			branches,
 			companies: companiesQuery.data ?? EmptyWorkspaceCompanies,
+			deactivateCompany: (companyId) =>
+				deactivateCompanyMutation.mutateAsync(companyId),
 			deleteCompany: (companyId) =>
-				deleteCompanyMutation.mutateAsync(companyId),
+				deactivateCompanyMutation.mutateAsync(companyId),
 			isLoading:
 				companiesQuery.isLoading || usersQuery.isLoading,
 			isMutating:
 				addCompanyMutation.isPending ||
 				addCompanyUserMutation.isPending ||
-				deleteCompanyMutation.isPending ||
+				deactivateCompanyMutation.isPending ||
 				updateCompanyMutation.isPending ||
 				updateCompanyUserMutation.isPending,
 			updateCompany: (companyId, values) =>
@@ -210,7 +212,7 @@ export function useWorkspaceCompanyManagementStore<
 			branches,
 			companiesQuery.data,
 			companiesQuery.isLoading,
-			deleteCompanyMutation,
+			deactivateCompanyMutation,
 			updateCompanyMutation,
 			updateCompanyUserMutation,
 			usersQuery.data,

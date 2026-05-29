@@ -12,9 +12,9 @@ import type {
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
 function GetAuthorizationHeaders(accessToken: string | null) {
-  if (!accessToken) {
-    return undefined;
-  }
+	if (!accessToken) {
+		return undefined;
+	}
 
 	return {
 		Authorization: `Bearer ${accessToken}`,

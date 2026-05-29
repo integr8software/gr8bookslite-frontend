@@ -111,7 +111,7 @@ export function CompanyActionHeader({
 							}
 						>
 							<StatusIcon className="h-4 w-4" aria-hidden="true" />
-							{nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active"}
+							{nextStatus === "Inactive" ? "Deactivate" : "Reactivate"}
 						</button>
 					) : null}
 					{!isReadonly ? (

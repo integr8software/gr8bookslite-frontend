@@ -6,7 +6,7 @@ import type {
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-export function WorkspaceCompanyAvatar({
+export function WorkspaceManagementCompanyAvatar({
 	initials,
 	logoUrl,
 	name,
@@ -32,7 +32,7 @@ export function WorkspaceCompanyAvatar({
 	);
 }
 
-export function WorkspaceUserAvatar({
+export function WorkspaceManagementUserAvatar({
 	imageUrl,
 	name,
 }: {
@@ -56,7 +56,7 @@ export function WorkspaceUserAvatar({
 	);
 }
 
-export function WorkspaceStatusBadge({
+export function WorkspaceManagementStatusBadge({
 	status,
 }: {
 	status: WorkspaceCompanyStatus;
@@ -79,7 +79,11 @@ export function WorkspaceStatusBadge({
 	);
 }
 
-export function WorkspacePlanBadge({ plan }: { plan: WorkspaceCompanyPlan }) {
+export function WorkspaceManagementPlanBadge({
+	plan,
+}: {
+	plan: WorkspaceCompanyPlan;
+}) {
 	const classes: Record<string, string> = {
 		Accounting: "bg-skyblue/15 text-darknavy ring-skyblue/25",
 		Inventory: "bg-citron/25 text-darknavy ring-citron/35",
@@ -101,7 +105,11 @@ export function WorkspacePlanBadge({ plan }: { plan: WorkspaceCompanyPlan }) {
 	);
 }
 
-export function WorkspaceTextBadge({ children }: { children: ReactNode }) {
+export function WorkspaceManagementSummaryBadge({
+	children,
+}: {
+	children: ReactNode;
+}) {
 	return (
 		<span className="inline-flex min-h-7 items-center rounded-md bg-darknavy/5 px-3 text-sm font-semibold text-darknavy/70 ring-1 ring-darknavy/8">
 			{children}

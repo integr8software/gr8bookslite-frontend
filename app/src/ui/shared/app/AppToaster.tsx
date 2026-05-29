@@ -55,7 +55,7 @@ function AppToastLimiter({ toasterId }: { toasterId?: string }) {
 	useEffect(() => {
 		const visibleToasts = toasts
 			.filter((candidate) => !candidate.dismissed)
-			.toSorted((current, next) => next.createdAt - current.createdAt);
+			.sort((current, next) => next.createdAt - current.createdAt);
 
 		if (visibleToasts.length <= VisibleToastLimit) {
 			return;

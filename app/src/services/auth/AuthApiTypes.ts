@@ -132,6 +132,17 @@ export type ResetPasswordResponse = {
   message: string;
 };
 
+export type ActivateWorkspaceInvitationRequest = {
+  email: string;
+  token: string;
+  newPassword: string;
+  confirmNewPassword: string;
+};
+
+export type ActivateWorkspaceInvitationResponse = {
+  message: string;
+};
+
 export type RequestPasswordChangeOtpResponse = {
   message: string;
   maskedEmail: string;

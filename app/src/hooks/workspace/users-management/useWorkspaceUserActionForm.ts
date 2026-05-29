@@ -18,6 +18,8 @@ export function useWorkspaceUserActionForm() {
 	const companies = useWorkspaceCompanyManagementStore((state) => state.companies);
 	const branches = useWorkspaceCompanyManagementStore((state) => state.branches);
 	const users = useWorkspaceCompanyManagementStore((state) => state.users);
+	const isLoading = useWorkspaceCompanyManagementStore((state) => state.isLoading);
+	const isSaving = useWorkspaceCompanyManagementStore((state) => state.isMutating);
 	const addCompanyUser = useWorkspaceCompanyManagementStore(
 		(state) => state.addCompanyUser,
 	);
@@ -31,16 +33,22 @@ export function useWorkspaceUserActionForm() {
 			: "add";
 	const isReadonly = mode === "view";
 	const existingUser = users.find((user) => user.id === params.userId);
-	const [values, setValues] = useState<WorkspaceCompanyUserFormValues>(() =>
-		existingUser
-			? {
-					companyAssignments: existingUser.companyAssignments,
-					contactNumber: existingUser.contactNumber,
-					email: existingUser.email,
-					name: existingUser.name,
-				}
-			: InitialWorkspaceCompanyUserFormValues,
+	const existingUserValues = useMemo<WorkspaceCompanyUserFormValues | null>(
+		() =>
+			existingUser
+				? {
+						companyAssignments: existingUser.companyAssignments,
+						contactNumber: existingUser.contactNumber,
+						email: existingUser.email,
+						name: existingUser.name,
+					}
+				: null,
+		[existingUser],
 	);
+	const [draftValues, setDraftValues] =
+		useState<WorkspaceCompanyUserFormValues | null>(null);
+	const values =
+		draftValues ?? existingUserValues ?? InitialWorkspaceCompanyUserFormValues;
 	const [errors, setErrors] = useState<WorkspaceCompanyUserFormErrors>({});
 	const [pendingCompanyId, setPendingCompanyId] = useState<string | null>(null);
 	const availableCompanies = useMemo(
@@ -53,16 +61,16 @@ export function useWorkspaceUserActionForm() {
 			),
 		[companies, values.companyAssignments],
 	);
-	const [selectedCompanyId, setSelectedCompanyId] = useState(
-		availableCompanies[0]?.id ?? "",
-	);
+	const [selectedCompanyId, setSelectedCompanyId] = useState("");
+	const effectiveSelectedCompanyId =
+		selectedCompanyId || availableCompanies[0]?.id || "";
 
 	function updateField(field: keyof WorkspaceCompanyUserFormValues, value: string) {
 		if (isReadonly) {
 			return;
 		}
 
-		setValues((current) => ({ ...current, [field]: value }));
+		setDraftValues((current) => ({ ...(current ?? values), [field]: value }));
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
@@ -71,10 +79,10 @@ export function useWorkspaceUserActionForm() {
 			return;
 		}
 
-		setValues((current) => ({
-			...current,
+		setDraftValues((current) => ({
+			...(current ?? values),
 			companyAssignments: [
-				...current.companyAssignments,
+				...(current ?? values).companyAssignments,
 				{ companyId: pendingCompanyId, branchIds: [] },
 			],
 		}));
@@ -91,9 +99,9 @@ export function useWorkspaceUserActionForm() {
 			return;
 		}
 
-		setValues((current) => ({
-			...current,
-			companyAssignments: current.companyAssignments.filter(
+		setDraftValues((current) => ({
+			...(current ?? values),
+			companyAssignments: (current ?? values).companyAssignments.filter(
 				(assignment) => assignment.companyId !== companyId,
 			),
 		}));
@@ -104,9 +112,9 @@ export function useWorkspaceUserActionForm() {
 			return;
 		}
 
-		setValues((current) => ({
-			...current,
-			companyAssignments: current.companyAssignments.map((assignment) => {
+		setDraftValues((current) => ({
+			...(current ?? values),
+			companyAssignments: (current ?? values).companyAssignments.map((assignment) => {
 				if (assignment.companyId !== companyId) {
 					return assignment;
 				}
@@ -123,18 +131,18 @@ export function useWorkspaceUserActionForm() {
 	}
 
 	function openCompanyAssignmentConfirm() {
-		if (!selectedCompanyId) {
+		if (!effectiveSelectedCompanyId) {
 			return;
 		}
 
-		setPendingCompanyId(selectedCompanyId);
+		setPendingCompanyId(effectiveSelectedCompanyId);
 	}
 
 	function closeCompanyAssignmentConfirm() {
 		setPendingCompanyId(null);
 	}
 
-	function submit() {
+	async function submit() {
 		if (!validate()) {
 			return;
 		}
@@ -146,8 +154,7 @@ export function useWorkspaceUserActionForm() {
 		}
 
 		if (mode === "edit" && existingUser) {
-			updateCompanyUser({
-				...existingUser,
+			await updateCompanyUser(existingUser.id, {
 				companyAssignments: values.companyAssignments,
 				contactNumber: values.contactNumber.trim(),
 				email: existingUser.email,
@@ -157,15 +164,11 @@ export function useWorkspaceUserActionForm() {
 			return;
 		}
 
-		addCompanyUser({
+		await addCompanyUser({
 			companyAssignments: values.companyAssignments,
-			companyId: primaryCompanyId,
 			contactNumber: values.contactNumber.trim(),
 			email: values.email.trim(),
-			id: `cu-${Date.now()}`,
-			lastLogin: "Invitation sent",
 			name: values.name.trim(),
-			status: "Pending",
 		});
 		router.push(WorkspaceUsersManagementHref);
 	}
@@ -185,12 +188,14 @@ export function useWorkspaceUserActionForm() {
 		companies,
 		errors,
 		existingUser,
+		isLoading,
 		isReadonly,
+		isSaving,
 		mode,
 		openCompanyAssignmentConfirm,
 		pendingCompanyId,
 		removeCompanyAssignment,
-		selectedCompanyId,
+		selectedCompanyId: effectiveSelectedCompanyId,
 		setSelectedCompanyId,
 		submit,
 		validate,

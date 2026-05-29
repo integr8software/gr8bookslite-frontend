@@ -31,6 +31,10 @@ function WorkspaceUserActionInner() {
 	const form = useWorkspaceUserActionForm();
 	const [isSaveUserConfirmOpen, setIsSaveUserConfirmOpen] = useState(false);
 
+	if (form.mode !== "add" && form.isLoading) {
+		return null;
+	}
+
 	if (form.mode !== "add" && !form.existingUser) {
 		return (
 			<ModuleNotFound
@@ -88,10 +92,11 @@ function WorkspaceUserActionInner() {
 							<button
 								type="submit"
 								form={WorkspaceUserFormId}
+								disabled={form.isSaving}
 								className={moduleHeaderActionClassNames.primary}
 							>
 								<Save className="h-4 w-4" aria-hidden="true" />
-								Save User
+								{form.isSaving ? "Saving..." : "Save User"}
 							</button>
 						) : null}
 					</>
@@ -109,7 +114,7 @@ function WorkspaceUserActionInner() {
 						return;
 					}
 
-					form.submit();
+					void form.submit();
 				}}
 			>
 				<div className="grid gap-5">
@@ -148,7 +153,7 @@ function WorkspaceUserActionInner() {
 			/>
 			<AppDialog
 				isOpen={isSaveUserConfirmOpen}
-				isPending={false}
+				isPending={form.isSaving}
 				title="Create user?"
 				description={`Adding ${form.values.name || "this user"} may affect workspace billing, payments, or deductions. Type confirm add user before saving.`}
 				confirmationPhrase="confirm add user"
@@ -156,9 +161,9 @@ function WorkspaceUserActionInner() {
 				cancelLabel="Cancel"
 				tone="default"
 				onCancel={() => setIsSaveUserConfirmOpen(false)}
-				onConfirm={() => {
+				onConfirm={async () => {
 					setIsSaveUserConfirmOpen(false);
-					form.submit();
+					await form.submit();
 				}}
 			/>
 		</section>

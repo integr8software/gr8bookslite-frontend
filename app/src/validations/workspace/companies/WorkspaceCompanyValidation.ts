@@ -350,7 +350,9 @@ const WorkspaceCompanyUserSchema = z.object({
 	companyAssignments: z
 		.array(
 			z.object({
-				branchIds: z.array(z.string()),
+				branchIds: z
+					.array(z.string())
+					.min(1, "Select at least one head office, branch, or satellite for each company."),
 				companyId: z.string().trim().min(1),
 			}),
 		)
@@ -400,7 +402,10 @@ export function validateWorkspaceCompanyUserForm(
 	for (const issue of parsed.error.issues) {
 		const field = issue.path[issue.path.length - 1];
 
-		if (field === "companyAssignments" && !errors.companyAssignments) {
+		if (
+			(field === "companyAssignments" || field === "branchIds") &&
+			!errors.companyAssignments
+		) {
 			errors.companyAssignments = issue.message;
 		} else if (field === "email" && !errors.email) {
 			errors.email = issue.message;

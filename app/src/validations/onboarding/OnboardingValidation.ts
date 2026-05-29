@@ -109,6 +109,12 @@ const ContactNumberSchema = z
     "Enter a valid contact number in the format.",
   );
 
+const CompanyEmailSchema = z
+  .string()
+  .trim()
+  .min(1, "Company email is required.")
+  .email("Enter a valid company email.");
+
 const LogoSchema = z
   .instanceof(File, { message: "Upload a logo image." })
   .refine((file) => file.size > 0, "Upload a logo image.")
@@ -128,6 +134,7 @@ const ReportDateSchema = z
 const SharedStepOneFields = {
   address: z.string().trim().min(5, "Address must be at least 5 characters."),
   tin: TINSchema,
+  companyEmail: CompanyEmailSchema,
   website: z
     .string()
     .trim()
@@ -297,6 +304,7 @@ export function validateOnboardingStepOneValues(
     ...getOnboardingIdentityPayload(values),
     address: values.address,
     tin: values.tin,
+    companyEmail: values.companyEmail,
     website: values.website,
     contactNumber: values.contactNumber,
     logo: values.logoFile,

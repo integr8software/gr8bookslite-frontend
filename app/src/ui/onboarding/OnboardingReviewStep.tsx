@@ -112,6 +112,7 @@ export function OnboardingReviewStep({
           />
           <ReviewRow label="Address" value={values.address} />
           <ReviewRow label="TIN" value={values.tin} />
+          <ReviewRow label="Company Email" value={values.companyEmail} />
           <ReviewRow label="Contact Number" value={values.contactNumber} />
           <ReviewRow label="Website" value={values.website} />
           <ReviewRow

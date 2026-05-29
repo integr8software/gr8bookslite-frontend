@@ -123,6 +123,7 @@ export function useOnboardingDraft({
             draftCompanyDetails.nonIndividualTypeOther ?? "",
           address: draftCompanyDetails.address ?? "",
           tin: draftCompanyDetails.tin ?? "",
+          companyEmail: draftCompanyDetails.companyEmail ?? "",
           website: draftCompanyDetails.website ?? "",
           contactNumber:
             draftCompanyDetails.contactNumber ?? current.contactNumber,

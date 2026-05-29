@@ -40,6 +40,7 @@ export type OnboardingDraftCompanyDetails = {
   logoPublicUrl: string | null;
   address: string | null;
   tin: string | null;
+  companyEmail: string | null;
   website: string | null;
   contactNumber: string | null;
   reportStartDate: string | null;
@@ -108,6 +109,7 @@ export type SaveOnboardingCompanyDetailsRequest = {
   logoPublicUrl?: string;
   address: string;
   tin: string;
+  companyEmail: string;
   website?: string;
   contactNumber: string;
   reportStartDate: string;

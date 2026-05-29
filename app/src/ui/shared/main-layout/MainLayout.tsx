@@ -100,8 +100,12 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		switchToMaster,
 		switchToWorkspace,
 	} = useMainLayout();
+	const isCompanyBranchAccessLoading =
+		activeNavigationScope === "company" && isBranchLoading && !hasBranchAccess;
 	const shouldShowBranchContent =
-		activeNavigationScope !== "company" || hasBranchAccess;
+		activeNavigationScope !== "company" ||
+		hasBranchAccess ||
+		isCompanyBranchAccessLoading;
 	const isAdministrationScope = activeNavigationScope !== "company";
 	const administrationSidebarName =
 		activeNavigationScope === "master" ? "Master" : "Workspace";
@@ -219,7 +223,9 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 				>
 					<MainPageHeader breadcrumbs={breadcrumbs} />
 					<div className="w-full flex-1">
-						{shouldShowBranchContent ? (
+						{isCompanyBranchAccessLoading ? (
+							<BranchAccessLoading />
+						) : shouldShowBranchContent ? (
 							children
 						) : (
 							<NoBranchAccess companyName={currentCompany.name} />
@@ -461,6 +467,23 @@ function HelpModalLoading() {
 				</p>
 			</div>
 		</div>
+	);
+}
+
+function BranchAccessLoading() {
+	return (
+		<section
+			className="flex min-h-[calc(100vh-8rem)] w-full items-center justify-center px-4 py-10"
+			aria-busy="true"
+			aria-live="polite"
+		>
+			<div className="w-full max-w-sm text-center">
+				<div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-darknavy/12 border-t-skyblue" />
+				<p className="mt-4 text-sm font-semibold text-darknavy">
+					Loading branch access...
+				</p>
+			</div>
+		</section>
 	);
 }
 

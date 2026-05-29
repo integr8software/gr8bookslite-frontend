@@ -32,6 +32,7 @@ export function useAccountProfile() {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
   const profileDrafts = useAccountPreferences((state) => state.profileDrafts);
+  const clearProfileDraft = useAccountPreferences((state) => state.clearProfileDraft);
   const updateProfileDraft = useAccountPreferences(
     (state) => state.updateProfileDraft,
   );
@@ -43,7 +44,8 @@ export function useAccountProfile() {
   const [pendingAvatarAction, setPendingAvatarAction] = useState<
     "replace" | "remove" | null
   >(null);
-  const draft = profileDrafts[String(authProfile?.user.id ?? "local-account-user")];
+  const profileUserId = String(authProfile?.user.id ?? "local-account-user");
+  const draft = profileDrafts[profileUserId];
   const profile = useMemo(
     () => BuildAccountProfileViewModel(authProfile, draft),
     [authProfile, draft],
@@ -99,13 +101,7 @@ export function useAccountProfile() {
     },
     onSuccess: async () => {
       await invalidateAuthProfile();
-      updateProfileDraft(profile.userId, {
-        fullName: undefined,
-        contactNumber: undefined,
-        avatarDataUrl: undefined,
-      });
-      setPendingAvatarFile(null);
-      setPendingAvatarAction(null);
+      resetPendingChanges();
       toast.success("Profile changes saved.");
     },
     onError: (error) => {
@@ -166,6 +162,7 @@ export function useAccountProfile() {
       return;
     }
 
+    dismissAvatarCropper();
     setPendingAvatarCrop({
       fileName: file.name,
       mimeType: file.type || "image/png",
@@ -201,6 +198,10 @@ export function useAccountProfile() {
   }
 
   function saveProfileChanges() {
+    if (!hasPendingProfileChanges || saveProfileMutation.isPending) {
+      return;
+    }
+
     saveProfileMutation.mutate();
   }
 
@@ -209,11 +210,11 @@ export function useAccountProfile() {
       return;
     }
 
-    updateProfileDraft(profile.userId, {
-      fullName: undefined,
-      contactNumber: undefined,
-      avatarDataUrl: undefined,
-    });
+    resetPendingChanges();
+  }
+
+  function resetPendingChanges() {
+    clearProfileDraft(profile.userId);
     setPendingAvatarFile(null);
     setPendingAvatarAction(null);
     dismissAvatarCropper();

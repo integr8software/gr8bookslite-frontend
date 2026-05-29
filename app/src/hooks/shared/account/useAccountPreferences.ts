@@ -24,6 +24,7 @@ type AccountPreferencesState = {
   setNotificationPreference: (
     notificationPreference: AccountNotificationPreference,
   ) => void;
+  clearProfileDraft: (userId: string) => void;
   updateProfileDraft: (
     userId: string,
     updates: Partial<AccountProfileDraft>,
@@ -43,6 +44,15 @@ export const useAccountPreferences = create<AccountPreferencesState>()(
       setAccentColor: (accentColor) => set({ accentColor }),
       setNotificationPreference: (notificationPreference) =>
         set({ notificationPreference }),
+      clearProfileDraft: (userId) =>
+        set((state) => {
+          const nextProfileDrafts = { ...state.profileDrafts };
+          delete nextProfileDrafts[userId];
+
+          return {
+            profileDrafts: nextProfileDrafts,
+          };
+        }),
       updateProfileDraft: (userId, updates) =>
         set((state) => ({
           profileDrafts: {
@@ -56,12 +66,20 @@ export const useAccountPreferences = create<AccountPreferencesState>()(
     }),
     {
       name: AccountPreferencesStorageKey,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
+      migrate: (persistedState) => {
+        const state = persistedState as Partial<AccountPreferencesState>;
+
+        return {
+          ...state,
+          profileDrafts: {},
+        };
+      },
       partialize: (state) => ({
         theme: state.theme,
         accentColor: state.accentColor,
         notificationPreference: state.notificationPreference,
-        profileDrafts: state.profileDrafts,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);

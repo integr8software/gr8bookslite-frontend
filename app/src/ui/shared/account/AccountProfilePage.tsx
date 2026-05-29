@@ -124,8 +124,8 @@ export function AccountProfilePage() {
                 </>
               ) : null}
               <p className="max-w-xs text-xs leading-5 text-darknavy/50">
-                Avatar images are cropped before upload and stored in your
-                Supabase user avatar folder.
+                Avatar images are cropped first, then only uploaded after you
+                save your profile changes.
               </p>
             </div>
           </section>

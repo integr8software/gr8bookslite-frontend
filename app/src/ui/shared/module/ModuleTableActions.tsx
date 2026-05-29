@@ -14,7 +14,10 @@ import {
 	Trash2,
 	type LucideIcon,
 } from "lucide-react";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	joinClasses,
+	moduleAccentClassNames,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 export type ModuleTableActionVariant =
 	| "active"
@@ -135,6 +138,11 @@ function getActionClassName(variant: ModuleTableActionVariant) {
 		case "neutral":
 		case "view":
 		default:
-			return `${baseClassName} border-darknavy/10 text-darknavy/70 hover:bg-skyblue/10 hover:text-skyblue focus-visible:ring-skyblue/35`;
+			return joinClasses(
+				`${baseClassName} border-darknavy/10 text-darknavy/70`,
+				moduleAccentClassNames.hoverSoftBackground,
+				moduleAccentClassNames.hoverText,
+				moduleAccentClassNames.focusRing,
+			);
 	}
 }

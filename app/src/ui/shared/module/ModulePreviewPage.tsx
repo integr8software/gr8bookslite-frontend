@@ -1,6 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import type { ModulePreviewData } from "@/app/src/data/shared/module/ModulePreviewData";
+import {
+	joinClasses,
+	moduleAccentClassNames,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 type ModulePreviewPageProps = {
   data: ModulePreviewData;
@@ -17,7 +21,7 @@ export function ModulePreviewPage({ data }: ModulePreviewPageProps) {
             <div className="max-w-3xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-darknavy/10 bg-offwhite px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/55">
                 <Sparkles
-                  className="h-3.5 w-3.5 text-skyblue"
+                  className={joinClasses("h-3.5 w-3.5", moduleAccentClassNames.iconText)}
                   aria-hidden="true"
                 />
                 {data.eyebrow}
@@ -41,7 +45,10 @@ export function ModulePreviewPage({ data }: ModulePreviewPageProps) {
 
             <button
               type="button"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-darknavy px-5 text-sm font-semibold text-offwhite transition hover:bg-darknavy/92 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+              className={joinClasses(
+                "inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2",
+                moduleAccentClassNames.button,
+              )}
             >
               Continue Mock Review
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -81,7 +88,12 @@ export function ModulePreviewPage({ data }: ModulePreviewPageProps) {
                 module actions.
               </p>
             </div>
-            <span className="rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">
+            <span
+              className={joinClasses(
+                "rounded-full px-3 py-1 text-xs font-semibold text-darknavy",
+                moduleAccentClassNames.softBackground,
+              )}
+            >
               Mockup Only
             </span>
           </div>
@@ -132,7 +144,12 @@ function PreviewSurface({
   title,
 }: PreviewSurfaceProps) {
   return (
-    <div className="rounded-3xl border border-dashed border-darknavy/15 bg-[linear-gradient(180deg,rgba(87,196,229,0.08),rgba(255,255,255,0.9))] p-5">
+    <div
+      className={joinClasses(
+        "rounded-3xl border border-dashed border-darknavy/15 p-5",
+        moduleAccentClassNames.surfaceGradient,
+      )}
+    >
       <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-darknavy shadow-sm">
         <Icon className="h-5 w-5" aria-hidden="true" />
       </span>
@@ -153,6 +170,6 @@ function toneClasses(tone: ModulePreviewData["tone"]) {
     case "violet":
       return "bg-violet-100 text-violet-700";
     default:
-      return "bg-skyblue/18 text-darknavy";
+      return "bg-[rgb(var(--skyblue-rgb)/0.18)] text-darknavy";
   }
 }

@@ -10,6 +10,7 @@ import type { ModuleTablePaginationProps } from "@/app/src/types/shared/module/m
 import {
 	getVisiblePaginationPages,
 	joinClasses,
+	moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ModuleTablePagination({
@@ -95,7 +96,12 @@ export function ModuleTablePagination({
 						onChange={(event) =>
 							onPageSizeChange(Number(event.target.value))
 						}
-						className="h-11 appearance-none rounded-lg border border-darknavy/10 bg-white px-4 pr-9 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition hover:border-skyblue/40 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
+						className={joinClasses(
+							"h-11 appearance-none rounded-lg border border-darknavy/10 bg-white px-4 pr-9 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition focus:ring-2",
+							moduleAccentClassNames.hoverBorder,
+							"focus:border-[var(--skyblue)]",
+							moduleAccentClassNames.focusRing,
+						)}
 					>
 						{pageSizeOptions.map((option) => (
 							<option key={option} value={option}>
@@ -131,8 +137,13 @@ function ModuleTablePageButton({
 				size === "compact" && "px-3",
 				size === "default" && "px-4",
 				active
-					? "theme-accent-contrast-text border-skyblue bg-skyblue shadow-skyblue/20 focus-visible:ring-skyblue/20"
-					: "module-table-interactive-effect border-darknavy/10 bg-white text-darknavy shadow-darknavy/5 hover:border-skyblue/40 hover:bg-skyblue/10 hover:text-darknavy focus-visible:ring-skyblue/15",
+					? moduleAccentClassNames.button
+					: joinClasses(
+						"module-table-interactive-effect border-darknavy/10 bg-white text-darknavy shadow-darknavy/5 hover:text-darknavy",
+						moduleAccentClassNames.hoverBorder,
+						moduleAccentClassNames.hoverSoftBackground,
+						moduleAccentClassNames.focusRing,
+					),
 			)}
 			{...props}
 		>

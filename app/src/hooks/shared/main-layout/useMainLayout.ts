@@ -779,7 +779,7 @@ function MapProfileCompaniesToMainCompanies(profile: AuthProfileResponse) {
     .map((company) => ({
       id: String(company.companyId),
       name: company.companyName,
-      logoUrl: undefined,
+      logoUrl: company.logoPublicUrl ?? undefined,
       status: "Active" as const,
       businessKind: undefined,
       subscriptionPackage: undefined,

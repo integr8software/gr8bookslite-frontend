@@ -11,7 +11,10 @@ import {
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { MoreHorizontal, type LucideIcon } from "lucide-react";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	joinClasses,
+	moduleAccentClassNames,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 type ModuleActionMenuTone = "default" | "danger";
 
@@ -136,7 +139,11 @@ export function ModuleActionMenu({
 				aria-haspopup="menu"
 				aria-label={label}
 				onClick={() => setIsOpen((current) => !current)}
-				className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-darknavy/10 bg-white text-darknavy/70 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+				className={joinClasses(
+					"inline-flex h-9 w-9 items-center justify-center rounded-md border border-darknavy/10 bg-white text-darknavy/70 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2",
+					moduleAccentClassNames.hoverSoftBackground,
+					moduleAccentClassNames.focusRing,
+				)}
 			>
 				<MoreHorizontal className="h-4 w-4" aria-hidden="true" />
 			</button>
@@ -172,10 +179,14 @@ function ModuleActionMenuItemView({
 }) {
 	const Icon = item.icon;
 	const itemClassName = joinClasses(
-		"flex min-h-10 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+		"flex min-h-10 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2",
+		moduleAccentClassNames.focusRing,
 		item.tone === "danger"
 			? "text-coralpink hover:bg-coralpink/10"
-			: "text-darknavy/72 hover:bg-skyblue/10 hover:text-darknavy",
+			: joinClasses(
+				"text-darknavy/72 hover:text-darknavy",
+				moduleAccentClassNames.hoverSoftBackground,
+			),
 		item.type === "button" &&
 		item.disabled &&
 		"cursor-not-allowed opacity-45 hover:bg-transparent",

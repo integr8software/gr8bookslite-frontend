@@ -1,6 +1,9 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { RotateCcw, Search } from "lucide-react";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	joinClasses,
+	moduleAccentClassNames,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 export type ModuleTableFilterOption = {
 	label: ReactNode;
@@ -73,7 +76,10 @@ export function ModuleTableSearch({
 				onChange={(event) => onChange(event.target.value)}
 				placeholder={placeholder}
 				className={joinClasses(
-					"h-12 w-full rounded-lg border border-darknavy/10 bg-white pl-11 pr-4 text-sm text-darknavy shadow-sm shadow-darknavy/5 outline-none transition placeholder:text-darknavy/35 hover:border-skyblue/30 focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15",
+					"h-12 w-full rounded-lg border border-darknavy/10 bg-white pl-11 pr-4 text-sm text-darknavy shadow-sm shadow-darknavy/5 outline-none transition placeholder:text-darknavy/35 focus:ring-4",
+					moduleAccentClassNames.hoverBorder,
+					"focus:border-[rgb(var(--skyblue-rgb)/0.45)]",
+					moduleAccentClassNames.focusRing,
 					className,
 				)}
 				{...props}
@@ -99,7 +105,10 @@ export function ModuleTableFilterSelect({
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
 				className={joinClasses(
-					"h-12 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition hover:border-skyblue/30 focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15",
+					"h-12 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition focus:ring-4",
+					moduleAccentClassNames.hoverBorder,
+					"focus:border-[rgb(var(--skyblue-rgb)/0.45)]",
+					moduleAccentClassNames.focusRing,
 					className,
 				)}
 				{...props}
@@ -124,7 +133,10 @@ export function ModuleTableResetButton({
 		<button
 			type={type}
 			className={joinClasses(
-				"inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:border-skyblue/30 hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15",
+				"inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-4",
+				moduleAccentClassNames.hoverBorder,
+				moduleAccentClassNames.hoverSoftBackground,
+				moduleAccentClassNames.focusRing,
 				className,
 			)}
 			{...props}

@@ -151,6 +151,7 @@ export function ChartsOfAccountsMain() {
             }
             onDelete={setPendingDeleteAccount}
             onEdit={coa.openEditDrawer}
+            onReorderAccount={coa.reorderAccount}
             onToggleExpanded={coa.toggleExpanded}
           />
         </Card>

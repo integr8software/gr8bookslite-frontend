@@ -1,7 +1,10 @@
 "use client";
 
+import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, GripVertical } from "lucide-react";
+import type { CSSProperties } from "react";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 import {
 	Badge,
@@ -15,6 +18,11 @@ import {
 
 type ChartsOfAccountsTableRowProps = {
 	account: ChartAccount;
+	activeDragAccount?: {
+		id: string;
+		isSpecific: boolean;
+		parentId: string | null;
+	};
 	expandedIds: Set<string>;
 	level: number;
 	onDelete: (account: ChartAccount) => void;
@@ -24,18 +32,53 @@ type ChartsOfAccountsTableRowProps = {
 
 export function ChartsOfAccountsTableRow({
 	account,
+	activeDragAccount,
 	expandedIds,
 	level,
 	onDelete,
 	onEdit,
 	onToggleExpanded,
 }: ChartsOfAccountsTableRowProps) {
+	const {
+		attributes,
+		isDragging,
+		listeners,
+		setNodeRef: setDraggableNodeRef,
+		transform,
+	} = useDraggable({ id: account.id });
+	const { isOver, setNodeRef: setDroppableNodeRef } = useDroppable({
+		id: account.id,
+	});
+	const targetIsSpecific = isSpecificAccountNumber(account.accountNumber);
+	const canDropOnAccount = getCanDropOnAccount({
+		activeDragAccount,
+		targetAccount: account,
+		targetIsSpecific,
+	});
+	const rowStyle: CSSProperties = {
+		transform: CSS.Translate.toString(transform),
+	};
+
+	function setRowNodeRef(node: HTMLTableRowElement | null) {
+		setDraggableNodeRef(node);
+		setDroppableNodeRef(node);
+	}
+
 	return (
 		<motion.tr
+			ref={setRowNodeRef}
+			style={rowStyle}
 			initial={{ opacity: 0, y: 8 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.18 }}
-			className="module-table-row group text-darknavy"
+			className={joinClasses(
+				"module-table-row group text-darknavy",
+				isDragging && "relative z-10 bg-skyblue/5 opacity-70 shadow-sm",
+				isOver &&
+					canDropOnAccount &&
+					!isDragging &&
+					"bg-skyblue/10 ring-1 ring-inset ring-skyblue/25",
+			)}
 		>
 			<td className="px-5 py-4 font-semibold text-darknavy">
 				{account.accountNumber}
@@ -44,6 +87,8 @@ export function ChartsOfAccountsTableRow({
 				<AccountNameCell
 					account={account}
 					expandedIds={expandedIds}
+					dragAttributes={attributes}
+					dragListeners={listeners}
 					level={level}
 					onToggleExpanded={onToggleExpanded}
 				/>
@@ -82,11 +127,15 @@ export function ChartsOfAccountsTableRow({
 function AccountNameCell({
 	account,
 	expandedIds,
+	dragAttributes,
+	dragListeners,
 	level,
 	onToggleExpanded,
 }: {
 	account: ChartAccount;
 	expandedIds: Set<string>;
+	dragAttributes: ReturnType<typeof useDraggable>["attributes"];
+	dragListeners: ReturnType<typeof useDraggable>["listeners"];
 	level: number;
 	onToggleExpanded: (accountId: string) => void;
 }) {
@@ -114,6 +163,15 @@ function AccountNameCell({
 					})}
 				</div>
 			) : null}
+			<button
+				type="button"
+				aria-label={`Drag ${account.accountName}`}
+				className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-darknavy/40 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/30"
+				{...dragAttributes}
+				{...dragListeners}
+			>
+				<GripVertical className="h-4 w-4" aria-hidden="true" />
+			</button>
 			<button
 				type="button"
 				disabled={!account.children?.length}
@@ -144,6 +202,36 @@ function AccountNameCell({
 			</div>
 		</div>
 	);
+}
+
+function getCanDropOnAccount({
+	activeDragAccount,
+	targetAccount,
+	targetIsSpecific,
+}: {
+	activeDragAccount?: {
+		id: string;
+		isSpecific: boolean;
+		parentId: string | null;
+	};
+	targetAccount: ChartAccount;
+	targetIsSpecific: boolean;
+}) {
+	if (!activeDragAccount || activeDragAccount.id === targetAccount.id) {
+		return false;
+	}
+
+	if (activeDragAccount.isSpecific) {
+		return true;
+	}
+
+	return (
+		!targetIsSpecific && activeDragAccount.parentId === targetAccount.parentId
+	);
+}
+
+function isSpecificAccountNumber(accountNumber: string) {
+	return !accountNumber.endsWith("000");
 }
 
 function RowActions({

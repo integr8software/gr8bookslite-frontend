@@ -18,12 +18,12 @@ import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/financi
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsFilters";
 import { ChartsOfAccountsTable } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTable";
 import { ChartsOfAccountsSpotlightTutorial } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorial";
-import {
-  Button,
-  Card,
-} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
+import { Card } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
-import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
+import {
+	ModuleHeader,
+	moduleHeaderActionClassNames,
+} from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
@@ -67,25 +67,37 @@ export function ChartsOfAccountsMain() {
           description="Manage all company accounts and financial statement mapping."
           actions={
             <>
-              <Button variant="secondary" onClick={openSpotlightTutorial}>
+              <button
+                type="button"
+                className={moduleHeaderActionClassNames.secondary}
+                onClick={openSpotlightTutorial}
+              >
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
                 Quick Tour
-              </Button>
-              <Button variant="secondary">
+              </button>
+              <button
+                type="button"
+                className={moduleHeaderActionClassNames.secondary}
+              >
                 <Upload className="h-4 w-4" aria-hidden="true" />
                 Import
-              </Button>
-              <Button variant="secondary">
+              </button>
+              <button
+                type="button"
+                className={moduleHeaderActionClassNames.secondary}
+              >
                 <Download className="h-4 w-4" aria-hidden="true" />
                 Export
-              </Button>
-              <Button
+              </button>
+              <button
+                type="button"
+                className={moduleHeaderActionClassNames.primary}
                 onClick={coa.openAddDrawer}
                 data-spotlight-id="charts-of-accounts-add-account"
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 Add Account
-              </Button>
+              </button>
             </>
           }
         />

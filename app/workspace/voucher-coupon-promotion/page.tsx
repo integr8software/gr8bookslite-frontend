@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { ModulePreviewPages } from "@/app/src/data/shared/module/ModulePreviewData";
-import { ModulePreviewPage } from "@/app/src/ui/shared/module/ModulePreviewPage";
+import { WorkspaceVoucherCouponPromotionPage } from "@/app/src/ui/workspace/voucher-coupon-promotion/WorkspaceVoucherCouponPromotionPage";
 
 export const metadata: Metadata = {
   title: `Voucher, Coupon, Promotion | ${AppName}`,
-  description: `Workspace voucher, coupon, and promotion mockup for ${AppName}.`,
+  description: `Workspace vouchers, coupons, and promotions assigned from subscriber master data for ${AppName}.`,
 };
 
 export default function VoucherCouponPromotionPage() {
-  return <ModulePreviewPage data={ModulePreviewPages.couponsPromotions} />;
+  return <WorkspaceVoucherCouponPromotionPage />;
 }

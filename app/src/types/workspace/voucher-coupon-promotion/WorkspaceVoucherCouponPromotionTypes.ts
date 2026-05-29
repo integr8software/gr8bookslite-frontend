@@ -1,0 +1,52 @@
+import type {
+	MasterPromotionDiscountKind,
+	MasterPromotionStatus,
+	MasterPromotionType,
+} from "@/app/src/types/master/promotions/MasterPromotionTypes";
+import type {
+	MasterSubscriberPromotionAssignmentMode,
+	MasterSubscriberPromotionStatus,
+} from "@/app/src/types/master/subscriber-promotions/MasterSubscriberPromotionTypes";
+
+export type WorkspaceVoucherCouponPromotionRecord = {
+	assignedAt: string;
+	assignmentId: string;
+	assignmentMode: MasterSubscriberPromotionAssignmentMode;
+	canApply: boolean;
+	code: string;
+	description: string;
+	discountKind: MasterPromotionDiscountKind;
+	expiresAt: string | null;
+	grantedBy: string;
+	invoiceNo: string | null;
+	masterStatus: MasterPromotionStatus;
+	notes: string;
+	ownerName: string;
+	planName: string;
+	promotionId: string;
+	promotionName: string;
+	status: MasterSubscriberPromotionStatus;
+	subscriberId: string;
+	subscriberName: string;
+	type: MasterPromotionType;
+	usedAt: string | null;
+	value: number;
+};
+
+export type WorkspaceVoucherCouponPromotionStatusFilter =
+	| "All statuses"
+	| MasterSubscriberPromotionStatus;
+
+export type WorkspaceVoucherCouponPromotionTypeFilter =
+	| "All types"
+	| MasterPromotionType;
+
+export type WorkspaceVoucherCouponPromotionTableColumnKey =
+	| "subscriberName"
+	| "promotionName"
+	| "type"
+	| "value"
+	| "status"
+	| "masterStatus"
+	| "expiresAt";
+

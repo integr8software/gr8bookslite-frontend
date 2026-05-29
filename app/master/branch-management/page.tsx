@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { MasterPreviewPage } from "@/app/src/ui/master/MasterPreviewPage";
+import { MasterTenantAccessListPage } from "@/app/src/ui/master/tenant-access/MasterTenantAccessListPage";
 
 export const metadata: Metadata = {
 	title: `Branch Management | ${AppName}`,
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function MasterBranchesPage() {
-	return <MasterPreviewPage pageKey="branches" />;
+	return <MasterTenantAccessListPage entity="branch" />;
 }

@@ -299,7 +299,7 @@ button {
 }
 
 :root[data-app-theme="midnight-dark"] .theme-accent-contrast-text {
-	color: #0f1724 !important;
+	color: #ffffff !important;
 }
 
 .brand-accent-text {

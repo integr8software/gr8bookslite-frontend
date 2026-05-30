@@ -15,7 +15,11 @@ import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
 import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 import { AuthField } from "@/app/src/ui/auth/AuthField";
 import { AuthPasswordRequirements } from "@/app/src/ui/auth/AuthPasswordRequirements";
-import { ArrowRight, Check, LoaderCircle } from "lucide-react";
+import {
+	ArrowRight,
+	Check,
+	LoaderCircle,
+} from "lucide-react";
 
 type SignUpFormValues = Required<
 	Pick<
@@ -80,21 +84,9 @@ export function SignUpForm() {
 	}
 
 	return (
-		<main className="min-h-screen bg-white text-darknavy">
-			<section className="flex min-h-screen flex-col bg-white lg:flex-row">
-				<div className="sticky top-0 hidden h-screen lg:block lg:basis-1/2 lg:flex-none">
-					<Image
-						src="/img/signup-bg.png"
-						alt="Office illustration with people collaborating at workstations."
-						fill
-						preload
-						sizes="(max-width: 1024px) 0vw, 75vw"
-						className="object-cover object-left"
-					/>
-				</div>
-
-				<div className="flex min-h-screen w-full items-center justify-center px-5 py-8 sm:px-8 sm:py-10 lg:basis-1/2 lg:px-10 xl:px-14">
-					<div className="w-full max-w-107.5">
+		<main className="min-h-screen bg-[#f6f9fc] text-slate-950">
+			<section className="flex min-h-screen items-center justify-center px-5 py-8 sm:px-8">
+				<div className="w-full max-w-2xl rounded-lg bg-white p-6 ring-1 ring-slate-200 sm:p-8">
 						<Link
 							href="/"
 							className="inline-flex text-xl font-semibold sm:text-2xl"
@@ -102,12 +94,15 @@ export function SignUpForm() {
 							<LogoText brandSuffixClassName="text-sm" />
 						</Link>
 
-						<div className="mt-10 text-center sm:mt-12">
-							<h1 className="text-3xl font-semibold tracking-tight text-darknavy sm:text-5xl">
-								Sign Up
+						<div className="mt-8 lg:mt-0">
+							<p className="text-sm font-bold uppercase text-sky-700">
+								Create workspace
+							</p>
+							<h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 sm:text-4xl">
+								Sign up
 							</h1>
-							<p className="mx-auto mt-3 max-w-xs text-base leading-6 text-darknavy/60">
-								Create an account, quick, easy, and secure.
+							<p className="mt-3 max-w-lg text-sm leading-6 text-slate-600">
+								Start your accounting and inventory workspace with a secure account.
 							</p>
 						</div>
 
@@ -115,73 +110,83 @@ export function SignUpForm() {
 							action={formAction}
 							onSubmit={handleSubmit}
 							noValidate
-							className="mt-10 space-y-4"
+							className="mt-8 grid gap-4 sm:grid-cols-2"
 						>
-							<AuthField
-								label="Full Name"
-								name="name"
-								type="text"
-								autoComplete="name"
-								placeholder="John Doe"
-								value={values.name}
-								onChange={(event) =>
-									updateValues({ name: event.target.value })
-								}
-								errors={state.errors?.name}
-							/>
-							<AuthField
-								label="Email"
-								name="email"
-								type="email"
-								autoComplete="email"
-								placeholder="johndoe@example.com"
-								value={values.email}
-								onChange={(event) =>
-									updateValues({ email: event.target.value })
-								}
-								errors={state.errors?.email}
-							/>
+							<div>
+								<AuthField
+									label="Full Name"
+									name="name"
+									type="text"
+									autoComplete="name"
+									placeholder="John Doe"
+									value={values.name}
+									onChange={(event) =>
+										updateValues({ name: event.target.value })
+									}
+									errors={state.errors?.name}
+								/>
+							</div>
+							<div>
+								<AuthField
+									label="Email"
+									name="email"
+									type="email"
+									autoComplete="email"
+									placeholder="johndoe@example.com"
+									value={values.email}
+									onChange={(event) =>
+										updateValues({ email: event.target.value })
+									}
+									errors={state.errors?.email}
+								/>
+							</div>
 
-							<AuthField
-								label="Contact Number"
-								name="contactNumber"
-								type="tel"
-								autoComplete="tel"
-								placeholder={PhilippineContactNumberPlaceholder}
-								value={values.contactNumber}
-								onChange={handleContactNumberChange}
-								errors={state.errors?.contactNumber}
-							/>
+							<div className="sm:col-span-2">
+								<AuthField
+									label="Contact Number"
+									name="contactNumber"
+									type="tel"
+									autoComplete="tel"
+									placeholder={PhilippineContactNumberPlaceholder}
+									value={values.contactNumber}
+									onChange={handleContactNumberChange}
+									errors={state.errors?.contactNumber}
+								/>
+							</div>
 
-							<AuthField
-								label="Password"
-								name="password"
-								type="password"
-								autoComplete="new-password"
-								placeholder="Enter your password..."
-								value={values.password}
-								onChange={(event) =>
-									updateValues({ password: event.target.value })
-								}
-								errors={state.errors?.password}
-							/>
-							<AuthPasswordRequirements password={values.password} />
-							<AuthField
-								label="Confirm Password"
-								name="confirmPassword"
-								type="password"
-								autoComplete="new-password"
-								placeholder="Please re-enter your password for confirmation..."
-								value={values.confirmPassword}
-								onChange={(event) =>
-									updateValues({
-										confirmPassword: event.target.value,
-									})
-								}
-								errors={state.errors?.confirmPassword}
-							/>
+							<div>
+								<AuthField
+									label="Password"
+									name="password"
+									type="password"
+									autoComplete="new-password"
+									placeholder="Enter your password..."
+									value={values.password}
+									onChange={(event) =>
+										updateValues({ password: event.target.value })
+									}
+									errors={state.errors?.password}
+								/>
+								<AuthPasswordRequirements password={values.password} />
+							</div>
+							<div>
+								<AuthField
+									label="Confirm Password"
+									name="confirmPassword"
+									type="password"
+									autoComplete="new-password"
+									placeholder="Confirm your password..."
+									value={values.confirmPassword}
+									onChange={(event) =>
+										updateValues({
+											confirmPassword: event.target.value,
+										})
+									}
+									errors={state.errors?.confirmPassword}
+								/>
+							</div>
 
-							<label className="flex items-start gap-3 pt-2 text-xs leading-4 text-darknavy/75">
+							<label className="flex items-start gap-3 pt-1 text-xs leading-5 text-slate-600 sm:col-span-2">
 								<input
 									type="hidden"
 									name="termsAccepted"
@@ -205,10 +210,10 @@ export function SignUpForm() {
 								<span
 									aria-hidden="true"
 									className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition peer-focus-visible:ring-2 peer-focus-visible:ring-skyblue/30 ${values.termsAccepted
-										? "border-darknavy bg-darknavy text-offwhite"
+										? "border-slate-950 bg-slate-950 text-white"
 										: state.errors?.termsAccepted?.length
 											? "border-coralpink bg-white"
-											: "border-darknavy/30 bg-white"
+											: "border-slate-300 bg-white"
 										}`}
 								>
 									{values.termsAccepted ? (
@@ -220,7 +225,7 @@ export function SignUpForm() {
 									<Link
 										href="/terms-of-service"
 										target="blank"
-										className="font-medium text-skyblue underline underline-offset-2 hover:text-skyblue/80 transition"
+										className="font-semibold text-sky-700 underline underline-offset-2 transition hover:text-sky-900"
 									>
 										Terms of Service
 									</Link>{" "}
@@ -228,7 +233,7 @@ export function SignUpForm() {
 									<Link
 										href="/privacy-policy"
 										target="blank"
-										className="font-medium text-skyblue underline underline-offset-2 hover:text-skyblue/80 transition"
+										className="font-semibold text-sky-700 underline underline-offset-2 transition hover:text-sky-900"
 									>
 										Privacy Policy
 									</Link>
@@ -237,12 +242,12 @@ export function SignUpForm() {
 								</span>
 							</label>
 							{state.errors?.termsAccepted?.length ? (
-								<p className="text-sm text-coralpink">
+								<p className="text-sm font-medium text-coralpink sm:col-span-2">
 									{state.errors.termsAccepted[0]}
 								</p>
 							) : null}
 
-							<div className="flex justify-center pt-4">
+							<div className="flex justify-center pt-2 sm:col-span-2">
 								<button
 									type="submit"
 									disabled={pending}
@@ -251,7 +256,7 @@ export function SignUpForm() {
 											? "Creating account"
 											: "Create account"
 									}
-									className="flex h-12 w-12 items-center justify-center rounded-full bg-darknavy text-offwhite transition hover:bg-darknavy/90 disabled:cursor-not-allowed disabled:bg-darknavy/50"
+									className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-950 text-white shadow-[0_14px_34px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-400"
 								>
 									{pending ? (
 										<LoaderCircle
@@ -264,15 +269,15 @@ export function SignUpForm() {
 								</button>
 							</div>
 
-							<div className="flex items-center gap-4 pt-2 text-sm text-darknavy/70">
-								<div className="h-px flex-1 bg-darknavy/30" />
+							<div className="flex items-center gap-4 pt-1 text-sm text-slate-500 sm:col-span-2">
+								<div className="h-px flex-1 bg-slate-200" />
 								<span>or</span>
-								<div className="h-px flex-1 bg-darknavy/30" />
+								<div className="h-px flex-1 bg-slate-200" />
 							</div>
 
 							<a
 								href={googleAuthUrl}
-								className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-darknavy/30 bg-white px-4 text-sm font-medium text-darknavy transition hover:border-darknavy/50 hover:bg-offwhite"
+								className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:border-sky-200 hover:bg-white sm:col-span-2"
 							>
 								<span>Continue with Google</span>
 								<Image
@@ -284,18 +289,17 @@ export function SignUpForm() {
 							</a>
 						</form>
 
-						<p className="mt-5 text-center text-darknavy/70">
+						<p className="mt-5 text-center text-slate-600">
 							Already have an account?{" "}
 							<Link
 								href="/login"
 								transitionTypes={["auth-back"]}
-								className="font-medium text-coralpink"
+								className="font-semibold text-sky-700 hover:text-sky-900"
 							>
 								Sign In
 							</Link>
 						</p>
 					</div>
-				</div>
 			</section>
 		</main>
 	);

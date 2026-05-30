@@ -58,7 +58,11 @@ export async function proxy(request: NextRequest) {
   const isProtectedPath = isProtectedRoute(pathname);
   const isOnboardingPath = isPathPrefix(pathname, ONBOARDING_PATH);
 
-  if (!isPublicPath && !isProtectedPath && pathname !== "/") {
+  if (pathname === "/") {
+    return NextResponse.next();
+  }
+
+  if (!isPublicPath && !isProtectedPath) {
     return NextResponse.next();
   }
 
@@ -94,10 +98,6 @@ export async function proxy(request: NextRequest) {
 
   if (profile.onboarding.requiresCompanySetup) {
     return redirectToOnboarding(request);
-  }
-
-  if (pathname === "/") {
-    return redirectToPostAuthHome(request, profile);
   }
 
   if (pathname.startsWith(CompanyManagementPath)) {

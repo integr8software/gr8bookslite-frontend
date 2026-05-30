@@ -10,8 +10,8 @@ import {
 } from "@tanstack/react-table";
 import { useShallow } from "zustand/react/shallow";
 import {
-	MasterTenantAccessStatusOptions,
 	MasterTenantAccessTableColumns,
+	getMasterTenantAccessStatusOptions,
 } from "@/app/src/constants/master/tenant-access/MasterTenantAccessConstants";
 import {
 	createMasterTenantAccessListRecords,
@@ -33,6 +33,7 @@ type MasterTenantAccessColumnKey = keyof Pick<
 	| "primaryText"
 	| "relationName"
 	| "relationText"
+	| "secondaryText"
 	| "status"
 >;
 
@@ -146,7 +147,7 @@ export function useMasterTenantAccessListPage(
 		setQuery,
 		setStatusFilter,
 		statusFilter,
-		statusOptions: MasterTenantAccessStatusOptions,
+		statusOptions: getMasterTenantAccessStatusOptions(entity),
 		table,
 	};
 }

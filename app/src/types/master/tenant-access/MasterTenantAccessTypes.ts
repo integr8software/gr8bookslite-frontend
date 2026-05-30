@@ -14,12 +14,10 @@ export type MasterTenantAccessStatus =
 	| "Inactive"
 	| "Pending Setup";
 
-export type MasterTenantAccessBillingStatus =
-	| "Current"
-	| "Trial"
-	| "Payment Due"
-	| "Paused"
-	| "Setup";
+export type MasterTenantAccessSubscriberStatus = Exclude<
+	MasterTenantAccessStatus,
+	"Trial" | "Past Due"
+>;
 
 export type MasterTenantAccessBranchType =
 	| "Head Office"
@@ -40,19 +38,15 @@ export type MasterTenantAccessUserAssignment = {
 };
 
 export type MasterSubscriberRecord = {
-	billingStatus: MasterTenantAccessBillingStatus;
 	code: string;
 	contactNumber: string;
 	createdAt: string;
 	id: string;
 	name: string;
-	nextRenewalDate: string;
 	notes: string;
 	ownerEmail: string;
 	ownerName: string;
-	planName: string;
-	primaryCompanyId: string;
-	status: MasterTenantAccessStatus;
+	status: MasterTenantAccessSubscriberStatus;
 };
 
 export type MasterCompanyRecord = {
@@ -99,15 +93,11 @@ export type MasterUserRecord = {
 
 export type MasterSubscriberFormValues = {
 	contactNumber: string;
-	initialCompanyEmail: string;
-	initialCompanyName: string;
-	initialCompanyTin: string;
 	name: string;
 	notes: string;
 	ownerEmail: string;
 	ownerName: string;
-	planName: string;
-	status: MasterTenantAccessStatus;
+	status: MasterTenantAccessSubscriberStatus;
 };
 
 export type MasterCompanyFormValues = {

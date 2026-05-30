@@ -9,5 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default function AuditLogsPage() {
+	// throw new Error("Testing error page");
+
 	return <ModulePreviewPage data={ModulePreviewPages.auditLogs} />;
 }

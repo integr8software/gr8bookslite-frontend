@@ -1,5 +1,4 @@
 import type {
-	MasterTenantAccessBillingStatus,
 	MasterTenantAccessBranchType,
 	MasterTenantAccessStatus,
 	MasterTenantAccessUserRole,
@@ -16,27 +15,6 @@ export function MasterTenantAccessStatusBadge({
 			className={joinClasses(
 				"inline-flex rounded-md border px-2.5 py-1 text-xs font-semibold",
 				getStatusClassName(status),
-			)}
-		>
-			{status}
-		</span>
-	);
-}
-
-export function MasterTenantAccessBillingBadge({
-	status,
-}: {
-	status: MasterTenantAccessBillingStatus;
-}) {
-	return (
-		<span
-			className={joinClasses(
-				"inline-flex rounded-md border px-2.5 py-1 text-xs font-semibold",
-				status === "Current"
-					? "border-emerald-200 bg-emerald-50 text-emerald-700"
-					: status === "Payment Due"
-						? "border-coralpink/25 bg-coralpink/10 text-coralpink"
-						: "border-darknavy/10 bg-offwhite text-darknavy/65",
 			)}
 		>
 			{status}

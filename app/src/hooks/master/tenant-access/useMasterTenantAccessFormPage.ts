@@ -41,11 +41,8 @@ import {
 } from "@/app/src/validations/master/tenant-access/MasterTenantAccessValidation";
 
 type MasterTenantAccessFormUpdate = Partial<
-	MasterSubscriberFormValues &
-		MasterCompanyFormValues &
-		MasterBranchFormValues &
-		MasterUserFormValues
->;
+	MasterSubscriberFormValues
+> | Partial<MasterCompanyFormValues> | Partial<MasterBranchFormValues> | Partial<MasterUserFormValues>;
 
 type UseMasterTenantAccessFormPageOptions = {
 	entity: MasterTenantAccessEntity;
@@ -109,6 +106,68 @@ export function useMasterTenantAccessFormPage({
 			(company) => company.subscriberId === userValues.subscriberId,
 		);
 	}, [entity, store.companies, values]);
+	const activeSubscriberId =
+		entity === "subscriber"
+			? (existingRecord as MasterSubscriberRecord | undefined)?.id ?? ""
+			: "";
+	const subscriberCompanies = useMemo(
+		() =>
+			activeSubscriberId
+				? store.companies.filter(
+						(company) => company.subscriberId === activeSubscriberId,
+					)
+				: [],
+		[activeSubscriberId, store.companies],
+	);
+	const subscriberCompanyIds = useMemo(
+		() => new Set(subscriberCompanies.map((company) => company.id)),
+		[subscriberCompanies],
+	);
+	const subscriberBranches = useMemo(
+		() =>
+			store.branches.filter((branch) =>
+				subscriberCompanyIds.has(branch.companyId),
+			),
+		[store.branches, subscriberCompanyIds],
+	);
+	const subscriberUsers = useMemo(
+		() =>
+			activeSubscriberId
+				? store.users.filter((user) => user.subscriberId === activeSubscriberId)
+				: [],
+		[activeSubscriberId, store.users],
+	);
+	const [subscriberCompanyDraft, setSubscriberCompanyDraft] =
+		useState<MasterCompanyFormValues>(() => ({
+			...InitialMasterCompanyFormValues,
+			subscriberId: activeSubscriberId,
+		}));
+	const [subscriberCompanyErrors, setSubscriberCompanyErrors] =
+		useState<MasterTenantAccessFormErrors>({});
+	const [subscriberBranchDrafts, setSubscriberBranchDrafts] = useState<
+		Record<string, MasterBranchFormValues>
+	>({});
+	const [subscriberBranchErrors, setSubscriberBranchErrors] = useState<
+		Record<string, MasterTenantAccessFormErrors>
+	>({});
+	const [subscriberUserDraft, setSubscriberUserDraft] =
+		useState<MasterUserFormValues>(() => ({
+			...InitialMasterUserFormValues,
+			subscriberId: activeSubscriberId,
+		}));
+	const [subscriberUserErrors, setSubscriberUserErrors] =
+		useState<MasterTenantAccessFormErrors>({});
+	const subscriberUserCompanyId =
+		subscriberUserDraft.assignments[0]?.companyId ??
+		subscriberCompanies[0]?.id ??
+		"";
+	const subscriberUserBranches = useMemo(
+		() =>
+			store.branches.filter(
+				(branch) => branch.companyId === subscriberUserCompanyId,
+			),
+		[store.branches, subscriberUserCompanyId],
+	);
 
 	function updateValues(updates: MasterTenantAccessFormUpdate) {
 		if (isReadonly) {
@@ -271,7 +330,250 @@ export function useMasterTenantAccessFormPage({
 		});
 	}
 
+	function updateSubscriberCompanyDraft(
+		updates: Partial<MasterCompanyFormValues>,
+	) {
+		if (entity !== "subscriber" || isReadonly) {
+			return;
+		}
+
+		setSubscriberCompanyDraft((current) => ({
+			...current,
+			...updates,
+			subscriberId: activeSubscriberId,
+		}));
+		setSubscriberCompanyErrors((current) =>
+			removeErrorKeys(current, Object.keys(updates)),
+		);
+	}
+
+	function addSubscriberCompany() {
+		if (entity !== "subscriber" || isReadonly || !activeSubscriberId) {
+			return;
+		}
+
+		const nextValues = {
+			...subscriberCompanyDraft,
+			subscriberId: activeSubscriberId,
+		};
+		const nextErrors = validateMasterCompanyForm(nextValues);
+
+		setSubscriberCompanyErrors(nextErrors);
+
+		if (Object.keys(nextErrors).length > 0) {
+			return;
+		}
+
+		store.createCompany(nextValues);
+		setSubscriberCompanyDraft({
+			...InitialMasterCompanyFormValues,
+			subscriberId: activeSubscriberId,
+		});
+		setSubscriberCompanyErrors({});
+		toast.success("Company added.");
+	}
+
+	function getSubscriberBranchDraft(companyId: string) {
+		return (
+			subscriberBranchDrafts[companyId] ?? {
+				...InitialMasterBranchFormValues,
+				companyId,
+				status: getCompanyStatus(companyId, store.companies),
+			}
+		);
+	}
+
+	function updateSubscriberBranchDraft(
+		companyId: string,
+		updates: Partial<MasterBranchFormValues>,
+	) {
+		if (entity !== "subscriber" || isReadonly) {
+			return;
+		}
+
+		setSubscriberBranchDrafts((current) => ({
+			...current,
+			[companyId]: {
+				...getSubscriberBranchDraft(companyId),
+				...updates,
+				companyId,
+			},
+		}));
+		setSubscriberBranchErrors((current) => ({
+			...current,
+			[companyId]: removeErrorKeys(
+				current[companyId] ?? {},
+				Object.keys(updates),
+			),
+		}));
+	}
+
+	function addSubscriberBranch(companyId: string) {
+		if (entity !== "subscriber" || isReadonly) {
+			return;
+		}
+
+		const nextValues = {
+			...getSubscriberBranchDraft(companyId),
+			companyId,
+		};
+		const nextErrors = validateMasterBranchForm(nextValues);
+
+		setSubscriberBranchErrors((current) => ({
+			...current,
+			[companyId]: nextErrors,
+		}));
+
+		if (Object.keys(nextErrors).length > 0) {
+			return;
+		}
+
+		store.createBranch(nextValues);
+		setSubscriberBranchDrafts((current) => ({
+			...current,
+			[companyId]: {
+				...InitialMasterBranchFormValues,
+				companyId,
+				status: getCompanyStatus(companyId, store.companies),
+			},
+		}));
+		toast.success("Branch added.");
+	}
+
+	function updateSubscriberUserDraft(updates: Partial<MasterUserFormValues>) {
+		if (entity !== "subscriber" || isReadonly) {
+			return;
+		}
+
+		setSubscriberUserDraft((current) => ({
+			...current,
+			...updates,
+			subscriberId: activeSubscriberId,
+		}));
+		setSubscriberUserErrors((current) =>
+			removeErrorKeys(current, Object.keys(updates)),
+		);
+	}
+
+	function updateSubscriberUserCompany(companyId: string) {
+		const firstBranch = store.branches.find(
+			(branch) => branch.companyId === companyId,
+		);
+
+		updateSubscriberUserDraft({
+			assignments: companyId
+				? [
+						{
+							branchIds: firstBranch ? [firstBranch.id] : [],
+							companyId,
+							role: "Company Admin",
+						},
+					]
+				: [],
+		});
+	}
+
+	function updateSubscriberUserRole(role: MasterTenantAccessUserRole) {
+		const assignment = createSubscriberUserAssignment();
+
+		updateSubscriberUserDraft({
+			assignments: assignment
+				? [
+						{
+							...assignment,
+							role,
+						},
+					]
+				: [],
+		});
+	}
+
+	function toggleSubscriberUserBranch(branchId: string) {
+		if (entity !== "subscriber" || isReadonly) {
+			return;
+		}
+
+		const assignment = createSubscriberUserAssignment();
+
+		if (!assignment) {
+			return;
+		}
+
+		const hasBranch = assignment.branchIds.includes(branchId);
+
+		setSubscriberUserDraft((current) => ({
+			...current,
+			assignments: [
+				{
+					...assignment,
+					branchIds: hasBranch
+						? assignment.branchIds.filter(
+								(currentBranchId) => currentBranchId !== branchId,
+							)
+						: [...assignment.branchIds, branchId],
+				},
+			],
+			subscriberId: activeSubscriberId,
+		}));
+		setSubscriberUserErrors((current) =>
+			removeErrorKeys(current, ["assignments"]),
+		);
+	}
+
+	function addSubscriberUser() {
+		if (entity !== "subscriber" || isReadonly || !activeSubscriberId) {
+			return;
+		}
+
+		const assignment = createSubscriberUserAssignment();
+		const nextValues = {
+			...subscriberUserDraft,
+			assignments: assignment ? [assignment] : [],
+			subscriberId: activeSubscriberId,
+		};
+		const nextErrors = validateMasterUserForm(nextValues);
+
+		setSubscriberUserErrors(nextErrors);
+
+		if (Object.keys(nextErrors).length > 0) {
+			return;
+		}
+
+		store.createUser(nextValues);
+		setSubscriberUserDraft({
+			...InitialMasterUserFormValues,
+			subscriberId: activeSubscriberId,
+		});
+		setSubscriberUserErrors({});
+		toast.success("User added.");
+	}
+
+	function createSubscriberUserAssignment() {
+		const existingAssignment = subscriberUserDraft.assignments[0];
+
+		if (existingAssignment) {
+			return existingAssignment;
+		}
+
+		if (!subscriberUserCompanyId) {
+			return null;
+		}
+
+		const firstBranch = store.branches.find(
+			(branch) => branch.companyId === subscriberUserCompanyId,
+		);
+
+		return {
+			branchIds: firstBranch ? [firstBranch.id] : [],
+			companyId: subscriberUserCompanyId,
+			role: "Company Admin" as const,
+		};
+	}
+
 	return {
+		addSubscriberBranch,
+		addSubscriberCompany,
+		addSubscriberUser,
 		addUserAssignment,
 		backHref,
 		branches: store.branches,
@@ -280,6 +582,7 @@ export function useMasterTenantAccessFormPage({
 		entity,
 		errors,
 		existingRecord,
+		getSubscriberBranchDraft,
 		isMissingRecord: mode !== "add" && !existingRecord,
 		isReadonly,
 		listHref,
@@ -287,8 +590,24 @@ export function useMasterTenantAccessFormPage({
 		removeUserAssignment,
 		saveRecord,
 		setUserSubscriber,
+		subscriberBranchErrors,
+		subscriberBranches,
+		subscriberCompanies,
+		subscriberCompanyDraft,
+		subscriberCompanyErrors,
+		subscriberUserBranches,
+		subscriberUserCompanyId,
+		subscriberUserDraft,
+		subscriberUserErrors,
+		subscriberUsers,
 		subscribers: store.subscribers,
+		toggleSubscriberUserBranch,
 		toggleUserAssignmentBranch,
+		updateSubscriberBranchDraft,
+		updateSubscriberCompanyDraft,
+		updateSubscriberUserCompany,
+		updateSubscriberUserDraft,
+		updateSubscriberUserRole,
 		updateUserAssignmentRole,
 		updateValues,
 		values,
@@ -379,7 +698,6 @@ function createInitialFormValues({
 			return existingRecord
 				? createMasterSubscriberFormValues(
 						existingRecord as MasterSubscriberRecord,
-						companies,
 					)
 				: InitialMasterSubscriberFormValues;
 		case "company":
@@ -431,4 +749,27 @@ function findMasterTenantAccessRecord({
 		case "user":
 			return users.find((user) => user.id === recordId);
 	}
+}
+
+function removeErrorKeys(
+	errors: MasterTenantAccessFormErrors,
+	fields: string[],
+) {
+	const nextErrors = { ...errors };
+
+	for (const field of fields) {
+		delete nextErrors[field];
+	}
+
+	return nextErrors;
+}
+
+function getCompanyStatus(
+	companyId: string,
+	companies: MasterCompanyRecord[],
+) {
+	return (
+		companies.find((company) => company.id === companyId)?.status ??
+		InitialMasterBranchFormValues.status
+	);
 }

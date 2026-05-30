@@ -6,12 +6,10 @@ import type { ReactNode } from "react";
 import type {
 	MasterBranchRecord,
 	MasterCompanyRecord,
-	MasterSubscriberRecord,
 	MasterTenantAccessListRecord,
 	MasterUserRecord,
 } from "@/app/src/types/master/tenant-access/MasterTenantAccessTypes";
 import {
-	MasterTenantAccessBillingBadge,
 	MasterTenantAccessBranchTypeBadge,
 	MasterTenantAccessRoleBadge,
 	MasterTenantAccessStatusBadge,
@@ -41,21 +39,16 @@ export function MasterTenantAccessTableRow({
 }
 
 function SubscriberRow({ record }: MasterTenantAccessTableRowProps) {
-	const subscriber = record.record as MasterSubscriberRecord;
-
 	return (
 		<tr className="module-table-row">
-			<PrimaryCell title={subscriber.name} supporting={subscriber.ownerEmail} />
-			<TextCell title={record.relationName} supporting={record.relationText} />
-			<BadgeCell>
-				<MasterTenantAccessStatusBadge status={subscriber.status} />
-			</BadgeCell>
+			<PrimaryCell title={record.primaryText} />
+			<TextCell title={record.secondaryText} />
 			<NumberCell value={record.countA} />
 			<NumberCell value={record.countB} />
+			<NumberCell value={record.detailText} />
 			<BadgeCell>
-				<MasterTenantAccessBillingBadge status={subscriber.billingStatus} />
+				<MasterTenantAccessStatusBadge status={record.status} />
 			</BadgeCell>
-			<TextCell title={record.dateText} />
 			<ActionCell record={record} />
 		</tr>
 	);

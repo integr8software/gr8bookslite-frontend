@@ -19,8 +19,6 @@ import type {
 	MasterCompanyRecord,
 	MasterSubscriberFormValues,
 	MasterSubscriberRecord,
-	MasterTenantAccessBillingStatus,
-	MasterTenantAccessStatus,
 	MasterUserFormValues,
 	MasterUserRecord,
 } from "@/app/src/types/master/tenant-access/MasterTenantAccessTypes";
@@ -116,82 +114,20 @@ export const useMasterTenantAccessStore =
 		createSubscriber: (values) => {
 			const state = get();
 			const subscriberId = createMasterTenantAccessRecordId("sub", values.name);
-			const companyId = createMasterTenantAccessRecordId(
-				"cmp",
-				values.initialCompanyName,
-			);
-			const branchId = createMasterTenantAccessRecordId(
-				"br",
-				values.initialCompanyName,
-			);
-			const userId = createMasterTenantAccessRecordId("usr", values.ownerName);
 			const subscriber: MasterSubscriberRecord = {
-				billingStatus: createBillingStatus(values.status),
 				code: createNextCode("SUB", state.subscribers.length + 1),
 				contactNumber: values.contactNumber.trim(),
 				createdAt: getToday(),
 				id: subscriberId,
 				name: values.name.trim(),
-				nextRenewalDate: getNextMonthDate(),
 				notes: values.notes.trim(),
 				ownerEmail: values.ownerEmail.trim(),
 				ownerName: values.ownerName.trim(),
-				planName: values.planName,
-				primaryCompanyId: companyId,
 				status: values.status,
-			};
-			const company: MasterCompanyRecord = {
-				address: "",
-				code: createNextCode("CMP", state.companies.length + 1),
-				contactNumber: values.contactNumber.trim(),
-				createdAt: getToday(),
-				defaultBranchName: "Head Office",
-				email: values.initialCompanyEmail.trim() || values.ownerEmail.trim(),
-				id: companyId,
-				legalName: values.initialCompanyName.trim(),
-				planName: values.planName,
-				status: values.status,
-				subscriberId,
-				taxId: values.initialCompanyTin.trim(),
-				tradeName: values.initialCompanyName.trim(),
-			};
-			const branch = createBranchRecord({
-				branchId,
-				code: createNextCode("BR", state.branches.length + 1),
-				values: {
-					...InitialMasterBranchFormValues,
-					branchType: "Head Office",
-					companyId,
-					contactNumber: values.contactNumber,
-					email: company.email,
-					isMain: true,
-					name: "Head Office",
-					status: values.status,
-					tin: values.initialCompanyTin,
-				},
-			});
-			const ownerUser: MasterUserRecord = {
-				assignments: [
-					{
-						branchIds: [branchId],
-						companyId,
-						role: "Owner",
-					},
-				],
-				contactNumber: values.contactNumber.trim(),
-				email: values.ownerEmail.trim(),
-				id: userId,
-				lastLogin: "",
-				name: values.ownerName.trim(),
-				status: values.status,
-				subscriberId,
 			};
 
 			set({
-				branches: [branch, ...state.branches],
-				companies: [company, ...state.companies],
 				subscribers: [subscriber, ...state.subscribers],
-				users: [ownerUser, ...state.users],
 			});
 
 			return subscriberId;
@@ -254,46 +190,21 @@ export const useMasterTenantAccessStore =
 			}));
 		},
 		updateSubscriber: (recordId, values) => {
-			set((state) => {
-				const subscriber = state.subscribers.find(
-					(current) => current.id === recordId,
-				);
-
-				return {
-					companies: subscriber
-						? state.companies.map((company) =>
-								company.id === subscriber.primaryCompanyId
-									? {
-											...company,
-											email:
-												values.initialCompanyEmail.trim() ||
-												values.ownerEmail.trim(),
-											legalName: values.initialCompanyName.trim(),
-											planName: values.planName,
-											status: values.status,
-											taxId: values.initialCompanyTin.trim(),
-											tradeName: values.initialCompanyName.trim(),
-										}
-									: company,
-							)
-						: state.companies,
-					subscribers: state.subscribers.map((current) =>
-						current.id === recordId
-							? {
-									...current,
-									billingStatus: createBillingStatus(values.status),
-									contactNumber: values.contactNumber.trim(),
-									name: values.name.trim(),
-									notes: values.notes.trim(),
-									ownerEmail: values.ownerEmail.trim(),
-									ownerName: values.ownerName.trim(),
-									planName: values.planName,
-									status: values.status,
-								}
-							: current,
-					),
-				};
-			});
+			set((state) => ({
+				subscribers: state.subscribers.map((current) =>
+					current.id === recordId
+						? {
+								...current,
+								contactNumber: values.contactNumber.trim(),
+								name: values.name.trim(),
+								notes: values.notes.trim(),
+								ownerEmail: values.ownerEmail.trim(),
+								ownerName: values.ownerName.trim(),
+								status: values.status,
+							}
+						: current,
+				),
+			}));
 		},
 		updateUser: (recordId, values) => {
 			set((state) => ({
@@ -351,36 +262,10 @@ function createBranchRecord({
 	};
 }
 
-function createBillingStatus(
-	status: MasterTenantAccessStatus,
-): MasterTenantAccessBillingStatus {
-	switch (status) {
-		case "Trial":
-			return "Trial";
-		case "Past Due":
-			return "Payment Due";
-		case "Suspended":
-		case "Inactive":
-			return "Paused";
-		case "Pending Setup":
-			return "Setup";
-		case "Active":
-			return "Current";
-	}
-}
-
 function createNextCode(prefix: string, nextNumber: number) {
 	return `${prefix}-${String(nextNumber).padStart(4, "0")}`;
 }
 
 function getToday() {
 	return new Date().toISOString().slice(0, 10);
-}
-
-function getNextMonthDate() {
-	const date = new Date();
-
-	date.setMonth(date.getMonth() + 1);
-
-	return date.toISOString().slice(0, 10);
 }

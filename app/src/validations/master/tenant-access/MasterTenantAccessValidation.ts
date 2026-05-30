@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MasterTenantAccessSubscriberStatusOptions } from "@/app/src/constants/master/tenant-access/MasterTenantAccessConstants";
 import type {
 	MasterBranchFormValues,
 	MasterCompanyFormValues,
@@ -13,15 +14,13 @@ const Email = z.string().trim().email("Enter a valid email.");
 
 const MasterSubscriberSchema = z.object({
 	contactNumber: RequiredText,
-	initialCompanyEmail: Email,
-	initialCompanyName: RequiredText.min(2, "Company name is too short."),
-	initialCompanyTin: RequiredText,
 	name: RequiredText.min(2, "Subscriber name is too short."),
 	notes: OptionalText,
 	ownerEmail: Email,
 	ownerName: RequiredText.min(2, "Owner name is too short."),
-	planName: RequiredText,
-	status: RequiredText,
+	status: z.enum(MasterTenantAccessSubscriberStatusOptions, {
+		error: "Select a subscriber account status.",
+	}),
 });
 
 const MasterCompanySchema = z.object({

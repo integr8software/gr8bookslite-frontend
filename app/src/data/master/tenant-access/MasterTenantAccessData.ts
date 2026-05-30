@@ -16,63 +16,47 @@ import type {
 
 export const MasterTenantAccessSubscribers: MasterSubscriberRecord[] = [
 	{
-		billingStatus: "Current",
 		code: "SUB-0001",
 		contactNumber: "+63 917 100 0001",
 		createdAt: "2026-05-01",
 		id: "sub-gr8books",
 		name: "Gr8Books HQ",
-		nextRenewalDate: "2027-05-01",
 		notes: "Launch subscriber with Accounting and Inventory enabled.",
 		ownerEmail: "admin@gr8books.test",
 		ownerName: "John Dela Cruz",
-		planName: "Accounting + Inventory",
-		primaryCompanyId: "cmp-gr8books",
 		status: "Active",
 	},
 	{
-		billingStatus: "Trial",
 		code: "SUB-0002",
 		contactNumber: "+63 917 100 0002",
 		createdAt: "2026-05-05",
 		id: "sub-demo-trading",
 		name: "Demo Trading Corp.",
-		nextRenewalDate: "2026-06-05",
-		notes: "Trial account used for implementation demos.",
+		notes: "Subscriber used for implementation demos.",
 		ownerEmail: "finance@demotrading.test",
 		ownerName: "Jane Santos",
-		planName: "Accounting",
-		primaryCompanyId: "cmp-demo-trading",
-		status: "Trial",
+		status: "Active",
 	},
 	{
-		billingStatus: "Payment Due",
 		code: "SUB-0003",
 		contactNumber: "+63 917 100 0003",
 		createdAt: "2026-05-10",
 		id: "sub-laguna-manufacturing",
 		name: "Laguna Manufacturing Inc.",
-		nextRenewalDate: "2026-05-28",
-		notes: "Needs payment follow-up before enabling extra users.",
+		notes: "One company needs payment follow-up before enabling extra users.",
 		ownerEmail: "control@lagunamfg.test",
 		ownerName: "Emily Lim",
-		planName: "Full Suite Annual",
-		primaryCompanyId: "cmp-laguna-manufacturing",
-		status: "Past Due",
+		status: "Active",
 	},
 	{
-		billingStatus: "Setup",
 		code: "SUB-0004",
 		contactNumber: "+63 917 100 0004",
 		createdAt: "2026-05-18",
 		id: "sub-visayas-retail",
 		name: "Visayas Retail Group",
-		nextRenewalDate: "2026-06-18",
 		notes: "New subscriber waiting for branch rollout.",
 		ownerEmail: "ops@visayasretail.test",
 		ownerName: "Miguel Reyes",
-		planName: "Inventory",
-		primaryCompanyId: "cmp-visayas-retail",
 		status: "Pending Setup",
 	},
 ];
@@ -255,14 +239,10 @@ export const MasterTenantAccessUsers: MasterUserRecord[] = [
 
 export const InitialMasterSubscriberFormValues: MasterSubscriberFormValues = {
 	contactNumber: "",
-	initialCompanyEmail: "",
-	initialCompanyName: "",
-	initialCompanyTin: "",
 	name: "",
 	notes: "",
 	ownerEmail: "",
 	ownerName: "",
-	planName: "Accounting + Inventory",
 	status: "Active",
 };
 
@@ -303,22 +283,13 @@ export const InitialMasterUserFormValues: MasterUserFormValues = {
 
 export function createMasterSubscriberFormValues(
 	record: MasterSubscriberRecord,
-	companies: MasterCompanyRecord[],
 ): MasterSubscriberFormValues {
-	const initialCompany = companies.find(
-		(company) => company.id === record.primaryCompanyId,
-	);
-
 	return {
 		contactNumber: record.contactNumber,
-		initialCompanyEmail: initialCompany?.email ?? "",
-		initialCompanyName: initialCompany?.legalName ?? "",
-		initialCompanyTin: initialCompany?.taxId ?? "",
 		name: record.name,
 		notes: record.notes,
 		ownerEmail: record.ownerEmail,
 		ownerName: record.ownerName,
-		planName: record.planName,
 		status: record.status,
 	};
 }
@@ -420,7 +391,7 @@ export function createMasterTenantAccessMetrics({
 	users: MasterUserRecord[];
 }): MasterTenantAccessMetric[] {
 	const activeSubscribers = subscribers.filter(
-		(subscriber) => subscriber.status === "Active" || subscriber.status === "Trial",
+		(subscriber) => subscriber.status === "Active",
 	).length;
 	const activeCompanies = companies.filter(
 		(company) => company.status === "Active" || company.status === "Trial",
@@ -431,18 +402,13 @@ export function createMasterTenantAccessMetrics({
 	const activeUsers = users.filter(
 		(user) => user.status === "Active" || user.status === "Trial",
 	).length;
-	const riskCount = subscribers.filter(
-		(subscriber) =>
-			subscriber.status === "Past Due" || subscriber.status === "Suspended",
-	).length;
-
 	switch (entity) {
 		case "subscriber":
 			return [
-				{ helper: `${activeSubscribers} active or trial`, label: "Subscribers", value: subscribers.length },
-				{ helper: "Created by subscriber or Master", label: "Companies", value: companies.length },
-				{ helper: "Across all companies", label: "Users", value: users.length },
-				{ helper: "Past due or suspended", label: "Needs Review", value: riskCount },
+				{ helper: `${activeSubscribers} active accounts`, label: "Subscribers", value: subscribers.length },
+				{ helper: "Attached under subscribers", label: "Companies", value: companies.length },
+				{ helper: "Across subscriber companies", label: "Branches", value: branches.length },
+				{ helper: "Over-the-counter seats", label: "Users", value: users.length },
 			];
 		case "company":
 			return [
@@ -541,21 +507,18 @@ function createSubscriberListRecord(
 		subscriberCompanyIds.has(branch.companyId),
 	);
 	const subscriberUsers = users.filter((user) => user.subscriberId === subscriber.id);
-	const primaryCompany =
-		companies.find((company) => company.id === subscriber.primaryCompanyId) ??
-		subscriberCompanies[0];
 
 	return {
 		countA: subscriberCompanies.length,
-		countB: subscriberUsers.length,
-		dateText: formatMasterTenantAccessDate(subscriber.nextRenewalDate),
-		detailText: subscriber.billingStatus,
+		countB: subscriberBranches.length,
+		dateText: "",
+		detailText: String(subscriberUsers.length),
 		entity: "subscriber",
 		id: subscriber.id,
 		primaryText: subscriber.name,
 		record: subscriber,
-		relationName: primaryCompany?.legalName ?? "No company",
-		relationText: `${subscriberBranches.length} branches`,
+		relationName: "",
+		relationText: "",
 		secondaryText: subscriber.ownerEmail,
 		status: subscriber.status,
 	};

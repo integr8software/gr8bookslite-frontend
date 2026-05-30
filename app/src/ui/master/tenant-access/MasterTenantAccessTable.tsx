@@ -95,7 +95,7 @@ export function MasterTenantAccessTable({
 function getMinWidthClassName(entity: MasterTenantAccessEntity) {
 	switch (entity) {
 		case "subscriber":
-			return "min-w-[96rem]";
+			return "min-w-[82rem]";
 		case "company":
 			return "min-w-[84rem]";
 		case "branch":

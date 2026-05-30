@@ -35,6 +35,10 @@ const PublicPathPrefixes = [
   "/signup",
   "/terms-of-service",
 ] as const;
+const UnrestrictedPublicPathPrefixes = [
+  "/privacy-policy",
+  "/terms-of-service",
+] as const;
 
 type AuthProfileGuardResponse = {
   activeCompanyId: number | null;
@@ -57,8 +61,13 @@ export async function proxy(request: NextRequest) {
   const isPublicPath = isPublicRoute(pathname);
   const isProtectedPath = isProtectedRoute(pathname);
   const isOnboardingPath = isPathPrefix(pathname, ONBOARDING_PATH);
+  const isUnrestrictedPublicPath = isUnrestrictedPublicRoute(pathname);
 
   if (!isPublicPath && !isProtectedPath && pathname !== "/") {
+    return NextResponse.next();
+  }
+
+  if (isUnrestrictedPublicPath) {
     return NextResponse.next();
   }
 
@@ -170,6 +179,12 @@ function getPostAuthHomePath(profile: AuthProfileGuardResponse) {
 
 function isPublicRoute(pathname: string) {
   return PublicPathPrefixes.some((prefix) => isPathPrefix(pathname, prefix));
+}
+
+function isUnrestrictedPublicRoute(pathname: string) {
+  return UnrestrictedPublicPathPrefixes.some((prefix) =>
+    isPathPrefix(pathname, prefix),
+  );
 }
 
 function isProtectedRoute(pathname: string) {

@@ -172,82 +172,86 @@ body {
 
 .app-disabled-control:disabled,
 .app-disabled-control[aria-disabled="true"] {
-  background-color: color-mix(
-    in srgb,
-    var(--darknavy) 3.5%,
-    var(--background)
-  ) !important;
-  border-color: color-mix(in srgb, var(--darknavy) 10%, transparent) !important;
-  color: color-mix(in srgb, var(--darknavy) 35%, transparent) !important;
-  box-shadow: none !important;
+	background-color: color-mix(
+		in srgb,
+		var(--darknavy) 3.5%,
+		var(--background)
+	) !important;
+	border-color: color-mix(
+		in srgb,
+		var(--darknavy) 10%,
+		transparent
+	) !important;
+	color: color-mix(in srgb, var(--darknavy) 35%, transparent) !important;
+	box-shadow: none !important;
 }
 
 .app-disabled-control:disabled::placeholder,
 .app-disabled-control[aria-disabled="true"] * {
-  color: color-mix(in srgb, var(--darknavy) 35%, transparent) !important;
+	color: color-mix(in srgb, var(--darknavy) 35%, transparent) !important;
 }
 
 :root[data-app-theme="midnight-dark"] .app-disabled-control:disabled,
 :root[data-app-theme="midnight-dark"]
-  .app-disabled-control[aria-disabled="true"] {
-  background-color: rgba(236, 242, 239, 0.06) !important;
-  border-color: rgba(236, 242, 239, 0.1) !important;
-  color: rgba(236, 242, 239, 0.38) !important;
+	.app-disabled-control[aria-disabled="true"] {
+	background-color: rgba(236, 242, 239, 0.06) !important;
+	border-color: rgba(236, 242, 239, 0.1) !important;
+	color: rgba(236, 242, 239, 0.38) !important;
 }
 
 :root[data-app-theme="midnight-dark"]
-  .app-disabled-control:disabled::placeholder,
+	.app-disabled-control:disabled::placeholder,
 :root[data-app-theme="midnight-dark"]
-  .app-disabled-control[aria-disabled="true"]
-  * {
-  color: rgba(236, 242, 239, 0.38) !important;
+	.app-disabled-control[aria-disabled="true"]
+	* {
+	color: rgba(236, 242, 239, 0.38) !important;
 }
 
 .app-select-control {
-  appearance: none;
-  color-scheme: light;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23637083' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-position: right 0.75rem center;
-  background-repeat: no-repeat;
-  background-size: 1rem 1rem;
-  padding-right: 2.5rem !important;
+	appearance: none;
+	color-scheme: light;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23637083' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-position: right 0.75rem center;
+	background-repeat: no-repeat;
+	background-size: 1rem 1rem;
+	padding-right: 2.5rem !important;
 }
 
 .app-select-control option {
-  background-color: #ffffff;
-  color: #212738;
+	background-color: #ffffff;
+	color: #212738;
 }
 
 .app-select-control option:checked,
 .app-select-control option:hover,
 .app-select-control option:focus {
-  background-color: #bfdbfe;
-  color: #0f1724;
+	background-color: #bfdbfe;
+	color: #0f1724;
 }
 
 .app-select-control:disabled {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%2394A3B8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%2394A3B8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 :root[data-app-theme="midnight-dark"] .app-select-control {
-  color-scheme: dark;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23C7D0CC' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	color-scheme: dark;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23C7D0CC' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 :root[data-app-theme="midnight-dark"] .app-select-control option {
-  background-color: #0f1724;
-  color: #ecf2ef;
+	background-color: #0f1724;
+	color: #ecf2ef;
 }
 
 :root[data-app-theme="midnight-dark"] .app-select-control option:checked,
 :root[data-app-theme="midnight-dark"] .app-select-control option:hover,
 :root[data-app-theme="midnight-dark"] .app-select-control option:focus {
-  background-color: #1d4ed8;
-  color: #f8fafc;
+	background-color: #1d4ed8;
+	color: #f8fafc;
 }
 
 :root[data-app-theme="midnight-dark"] .app-select-control:disabled {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%237B8582' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%237B8582' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 .app-confirm-dialog-backdrop {
@@ -258,8 +262,6 @@ body {
 :root[data-app-theme="midnight-dark"] .app-confirm-dialog-backdrop {
 	background: rgba(3, 7, 18, 0.68);
 }
-
-
 
 :root[data-app-theme="midnight-dark"] .account-profile-cancel-action {
 	background-color: transparent !important;
@@ -897,128 +899,3 @@ button {
 		transform: none;
 	}
 }
-
-/* Start of Book 404 Animation Styles */
-
-.button-shadow {
-	position: absolute;
-	left: 50%;
-	bottom: 12px;
-	width: 72%;
-	height: 12px;
-	border-radius: 999px;
-	transform: translateX(-50%);
-	z-index: 0;
-}
-
-.button-img img {
-	transition:
-		transform 0.25s ease,
-		filter 0.25s ease;
-}
-
-.button-img:hover img {
-	transform: translateY(-3px) scale(1.03);
-}
-
-.stars-ring {
-	position: absolute;
-	top: -31px;
-	left: 32%;
-	width: 95px;
-	height: 95px;
-	transform: translateX(-50%);
-	pointer-events: none;
-	z-index: 30;
-}
-
-.star {
-	position: absolute;
-	font-size: 24px;
-	color: #ffb400;
-	text-shadow:
-		0 0 8px rgba(255, 180, 0, 0.8),
-		0 0 14px rgba(255, 180, 0, 0.4);
-	animation: starPulse 0.8s ease-in-out infinite alternate;
-	top: 50%;
-	left: 50%;
-}
-
-/* Each star orbits independently with an offset delay */
-.star-1 {
-	animation:
-		orbitStar 2.6s linear infinite,
-		starPulse 0.8s ease-in-out infinite alternate;
-	--offset: 0deg;
-}
-.star-2 {
-	animation:
-		orbitStar 2.6s linear infinite,
-		starPulse 0.8s ease-in-out infinite alternate;
-	--offset: 72deg;
-	animation-delay: -0.52s, 0.15s;
-}
-.star-3 {
-	animation:
-		orbitStar 2.6s linear infinite,
-		starPulse 0.8s ease-in-out infinite alternate;
-	--offset: 144deg;
-	animation-delay: -1.04s, 0.3s;
-}
-.star-4 {
-	animation:
-		orbitStar 2.6s linear infinite,
-		starPulse 0.8s ease-in-out infinite alternate;
-	--offset: 216deg;
-	animation-delay: -1.56s, 0.45s;
-}
-.star-5 {
-	animation:
-		orbitStar 2.6s linear infinite,
-		starPulse 0.8s ease-in-out infinite alternate;
-	--offset: 288deg;
-	animation-delay: -2.08s, 0.6s;
-}
-
-@keyframes spinStars {
-	from {
-		transform: translateX(-50%) scaleY(0.35) rotate(0deg);
-	}
-	to {
-		transform: translateX(-50%) scaleY(0.35) rotate(360deg);
-	}
-}
-
-@keyframes starPulse {
-	from {
-		opacity: 0.55;
-		transform: scale(0.85);
-	}
-	to {
-		opacity: 1;
-		transform: scale(1.15);
-	}
-}
-
-@keyframes penguinFloat {
-	0%,
-	100% {
-		transform: translateY(0);
-	}
-	50% {
-		transform: translateY(-10px);
-	}
-}
-
-@keyframes shadowPulse {
-	0%,
-	100% {
-		transform: translateX(-50%) scale(1);
-		opacity: 0.2;
-	}
-	50% {
-		transform: translateX(-50%) scale(0.88);
-		opacity: 0.12;
-	}
-}
-/* End of Sketch Library 404 Styles */

@@ -132,7 +132,7 @@ export function ResponsibilityCenterMain() {
 							label="Type"
 							value={typeFilter}
 							options={[
-								{ label: "All types", value: "All" },
+								{ label: "All", value: "All" },
 								...ResponsibilityCenterTypeOptions.map((type) => ({
 									label: type,
 									value: type,
@@ -144,7 +144,7 @@ export function ResponsibilityCenterMain() {
 							label="Status"
 							value={statusFilter}
 							options={[
-								{ label: "All statuses", value: "All" },
+								{ label: "All", value: "All" },
 								...ResponsibilityCenterStatusOptions.map((status) => ({
 									label: status,
 									value: status,

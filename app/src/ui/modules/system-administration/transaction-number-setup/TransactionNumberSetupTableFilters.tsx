@@ -30,8 +30,8 @@ export function TransactionNumberSetupTableFilters({
 				label="Mode"
 				value={scopeFilter}
 				options={[
-					{ label: "All modes", value: "any" },
-					{ label: "All branches", value: "all" },
+					{ label: "All", value: "any" },
+					{ label: "All", value: "all" },
 					{ label: "Per branch", value: "branch" },
 					{ label: "Shared selected", value: "shared" },
 				]}

@@ -28,7 +28,7 @@ export function PettyCashVoucherListFilters({
 				label="Status"
 				value={page.statusFilter}
 				options={PettyCashVoucherStatusOptions.map((status) => ({
-					label: status === "All" ? "Status" : status,
+					label: status,
 					value: status,
 				}))}
 				onChange={page.setStatusFilter}

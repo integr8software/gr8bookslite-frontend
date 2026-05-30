@@ -7,6 +7,7 @@ import type { WorkspaceVouchersAndCouponsRecord } from "@/app/src/types/workspac
 import { MasterPromotionStatusBadge } from "@/app/src/ui/master/promotions/MasterPromotionBadges";
 import { MasterSubscriberPromotionStatusBadge } from "@/app/src/ui/master/subscriber-promotions/MasterSubscriberPromotionBadges";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { WorkspaceVouchersAndCouponsRecordActions } from "@/app/src/ui/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsRecordActions";
 
 type WorkspaceVouchersAndCouponsTableRowProps = {
 	record: WorkspaceVouchersAndCouponsRecord;
@@ -77,6 +78,9 @@ export function WorkspaceVouchersAndCouponsTableRow({
 			<td className="px-4 py-4 text-sm font-semibold text-darknavy">
 				{formatWorkspaceVouchersAndCouponsExpiry(record.expiresAt)}
 			</td>
+			<td className="px-4 py-4">
+				<WorkspaceVouchersAndCouponsRecordActions record={record} />
+			</td>
 		</tr>
 	);
 }
@@ -89,9 +93,5 @@ function getPromotionTypeClassName(
 			return "bg-skyblue/12 text-darknavy ring-skyblue/25";
 		case "Voucher":
 			return "bg-citron/35 text-darknavy ring-citron/50";
-		case "Event Promo":
-			return "bg-coralpink/12 text-coralpink ring-coralpink/20";
-		case "Promo Code":
-			return "bg-offwhite text-darknavy ring-darknavy/10";
 	}
 }

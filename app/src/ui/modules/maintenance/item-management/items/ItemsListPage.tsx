@@ -102,7 +102,7 @@ export function ItemsListPage() {
 							label="Category"
 							value={page.categoryFilter}
 							options={[
-								{ label: "All Categories", value: "All" },
+								{ label: "All", value: "All" },
 								...page.categoryFilterOptions.map((category) => ({
 									label: category,
 									value: category,
@@ -114,7 +114,7 @@ export function ItemsListPage() {
 							label="Status"
 							value={page.statusFilter}
 							options={[
-								{ label: "All Status", value: "All" },
+								{ label: "All", value: "All" },
 								...ItemStatusOptions.map((status) => ({
 									label: status,
 									value: status,

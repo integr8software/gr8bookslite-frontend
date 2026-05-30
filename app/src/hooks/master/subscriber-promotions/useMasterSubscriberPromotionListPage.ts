@@ -27,19 +27,19 @@ const InitialPagination: PaginationState = {
 };
 
 export type MasterSubscriberPromotionStatusFilter =
-	| "All statuses"
+	| "All"
 	| MasterSubscriberPromotionStatus;
 
 export type MasterSubscriberPromotionModeFilter =
-	| "All modes"
+	| "All"
 	| MasterSubscriberPromotionAssignmentMode;
 
 export function useMasterSubscriberPromotionListPage() {
 	const [query, setQuery] = useState("");
 	const [statusFilter, setStatusFilter] =
-		useState<MasterSubscriberPromotionStatusFilter>("All statuses");
+		useState<MasterSubscriberPromotionStatusFilter>("All");
 	const [modeFilter, setModeFilter] =
-		useState<MasterSubscriberPromotionModeFilter>("All modes");
+		useState<MasterSubscriberPromotionModeFilter>("All");
 	const [pagination, setPagination] =
 		useState<PaginationState>(InitialPagination);
 	const filteredRecords = useMemo(() => {
@@ -47,9 +47,9 @@ export function useMasterSubscriberPromotionListPage() {
 
 		return MasterSubscriberPromotionRecords.filter((record) => {
 			const matchesStatus =
-				statusFilter === "All statuses" || record.status === statusFilter;
+				statusFilter === "All" || record.status === statusFilter;
 			const matchesMode =
-				modeFilter === "All modes" || record.assignmentMode === modeFilter;
+				modeFilter === "All" || record.assignmentMode === modeFilter;
 			const matchesQuery =
 				!normalizedQuery ||
 				[
@@ -117,8 +117,8 @@ export function useMasterSubscriberPromotionListPage() {
 
 	function resetFilters() {
 		setQuery("");
-		setStatusFilter("All statuses");
-		setModeFilter("All modes");
+		setStatusFilter("All");
+		setModeFilter("All");
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 

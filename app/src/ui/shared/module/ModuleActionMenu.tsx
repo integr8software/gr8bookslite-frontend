@@ -42,7 +42,7 @@ type ModuleActionMenuProps = {
 	className?: string;
 };
 
-const MenuWidth = 160;
+const MenuWidth = 176;
 const ViewportPadding = 8;
 const MenuGap = 6;
 
@@ -153,7 +153,7 @@ export function ModuleActionMenu({
 							ref={menuRef}
 							role="menu"
 							style={menuStyle}
-							className="fixed z-[80] grid w-40 gap-1 rounded-lg border border-darknavy/10 bg-white p-1.5 text-left shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
+							className="fixed z-[80] grid w-44 gap-1 rounded-lg border border-darknavy/10 bg-white p-1.5 text-left shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
 						>
 							{items.map((item) => (
 								<ModuleActionMenuItemView
@@ -179,7 +179,7 @@ function ModuleActionMenuItemView({
 }) {
 	const Icon = item.icon;
 	const itemClassName = joinClasses(
-		"flex min-h-10 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2",
+		"flex min-h-10 w-full items-center gap-3 whitespace-nowrap rounded-md px-3 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2",
 		moduleAccentClassNames.focusRing,
 		item.tone === "danger"
 			? "text-coralpink hover:bg-coralpink/10"

@@ -6,7 +6,17 @@ import type {
 	MasterSubscriptionBillingCycle,
 	MasterSubscriptionCompanyStatus,
 	MasterSubscriptionQuote,
+	MasterSubscriptionUnit,
 } from "@/app/src/types/master/subscriptions/MasterSubscriptionTypes";
+
+export type WorkspaceBillingPromotionType = Extract<
+	MasterPromotionType,
+	"Coupon" | "Voucher" | "Promo Code"
+>;
+
+export type WorkspaceBillingPromotionApplicationMode =
+	| "Possession"
+	| "Typed code";
 
 export type WorkspaceBillingPaymentMethodRecord = {
 	brand: string;
@@ -18,7 +28,16 @@ export type WorkspaceBillingPaymentMethodRecord = {
 	last4: string;
 };
 
+export type WorkspaceBillingPlanPriceBreakdown = {
+	discountAmount: number;
+	discountPercent: number;
+	listAmount: number;
+	netAmount: number;
+	tooltip: string;
+};
+
 export type WorkspaceBillingPromotionOption = {
+	applicationMode: WorkspaceBillingPromotionApplicationMode;
 	assignmentId: string;
 	code: string;
 	description: string;
@@ -27,11 +46,45 @@ export type WorkspaceBillingPromotionOption = {
 	expiresAt: string | null;
 	id: string;
 	name: string;
-	type: MasterPromotionType;
+	type: WorkspaceBillingPromotionType;
 	value: number;
 };
 
+export type WorkspaceBillingAddOnQuote = {
+	actualCount: number;
+	billingAmount: number;
+	extraCount: number;
+	grossBillingAmount: number;
+	grossMonthlyAmount: number;
+	includedCount: number;
+	key: MasterSubscriptionUnit;
+	label: string;
+	monthlyAmount: number;
+	monthlyRate: number;
+	reductionAmount: number;
+	reductionPercent: number;
+	reductionTooltip: string;
+};
+
+export type WorkspaceBillingRenewalState =
+	| "Overdue"
+	| "Due today"
+	| "Due soon"
+	| "Scheduled";
+
+export type WorkspaceBillingSubscriberAccount = {
+	billingCycle: MasterSubscriptionBillingCycle;
+	id: string;
+	name: string;
+	ownerName: string;
+	planName: string;
+	renewalDate: string;
+	status: MasterSubscriptionCompanyStatus;
+};
+
 export type WorkspaceBillingCompanyAccount = {
+	addOnTotal: number;
+	addOns: WorkspaceBillingAddOnQuote[];
 	appliedPromotion: WorkspaceBillingPromotionOption | null;
 	baseAmount: number;
 	billingCycle: MasterSubscriptionBillingCycle;
@@ -44,13 +97,24 @@ export type WorkspaceBillingCompanyAccount = {
 	name: string;
 	ownerName: string;
 	overageAmount: number;
+	paymentActionLabel: "Pay" | "Pay ahead";
 	planId: string;
+	planListAmount: number;
 	planName: string;
+	planPrice: WorkspaceBillingPlanPriceBreakdown;
+	possessedPromotions: WorkspaceBillingPromotionOption[];
 	quote: MasterSubscriptionQuote | null;
 	renewalDate: string;
+	renewalState: WorkspaceBillingRenewalState;
+	renewalStatusLabel: string;
 	status: MasterSubscriptionCompanyStatus;
+	subscriberId: string;
+	subscriberName: string;
 	subtotal: number;
 	totalDue: number;
+	trialDaysRemaining: number | null;
+	trialEndsAt: string | null;
+	trialStatusLabel: string | null;
 	userCount: number;
 };
 
@@ -61,4 +125,3 @@ export type WorkspacePromotionCodeFormValues = {
 export type WorkspacePromotionCodeFormErrors = Partial<
 	Record<keyof WorkspacePromotionCodeFormValues, string>
 >;
-

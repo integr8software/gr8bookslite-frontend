@@ -26,18 +26,18 @@ const InitialPagination: PaginationState = {
 	pageSize: 5,
 };
 
-export type MasterInvoiceStatusFilter = "All statuses" | MasterInvoiceStatus;
+export type MasterInvoiceStatusFilter = "All" | MasterInvoiceStatus;
 
 export type MasterInvoicePaymentMethodFilter =
-	| "All methods"
+	| "All"
 	| MasterInvoicePaymentMethod;
 
 export function useMasterInvoiceListPage() {
 	const [query, setQuery] = useState("");
 	const [statusFilter, setStatusFilter] =
-		useState<MasterInvoiceStatusFilter>("All statuses");
+		useState<MasterInvoiceStatusFilter>("All");
 	const [paymentMethodFilter, setPaymentMethodFilter] =
-		useState<MasterInvoicePaymentMethodFilter>("All methods");
+		useState<MasterInvoicePaymentMethodFilter>("All");
 	const [pagination, setPagination] =
 		useState<PaginationState>(InitialPagination);
 	const filteredRecords = useMemo(() => {
@@ -45,9 +45,9 @@ export function useMasterInvoiceListPage() {
 
 		return MasterInvoiceRecords.filter((record) => {
 			const matchesStatus =
-				statusFilter === "All statuses" || record.status === statusFilter;
+				statusFilter === "All" || record.status === statusFilter;
 			const matchesPaymentMethod =
-				paymentMethodFilter === "All methods" ||
+				paymentMethodFilter === "All" ||
 				record.paymentMethod === paymentMethodFilter;
 			const matchesQuery =
 				!normalizedQuery ||
@@ -119,8 +119,8 @@ export function useMasterInvoiceListPage() {
 
 	function resetFilters() {
 		setQuery("");
-		setStatusFilter("All statuses");
-		setPaymentMethodFilter("All methods");
+		setStatusFilter("All");
+		setPaymentMethodFilter("All");
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 

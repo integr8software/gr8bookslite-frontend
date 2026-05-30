@@ -451,7 +451,7 @@ function PaymentTypeListView({
               }
               className="h-12 rounded-full border border-darknavy/12 bg-white px-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45"
             >
-              <option value="All">All Status</option>
+              <option value="All">All</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
             </select>

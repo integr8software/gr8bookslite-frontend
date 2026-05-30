@@ -105,7 +105,7 @@ export function ChartsOfAccountsFilters({
 					label="Account Type"
 					value={accountTypeFilter}
 					options={[
-						{ label: "All Types", value: "All" },
+						{ label: "All", value: "All" },
 						...AccountTypes.map((type) => ({
 							label: type,
 							value: type,
@@ -119,7 +119,7 @@ export function ChartsOfAccountsFilters({
 					label="Status"
 					value={statusFilter}
 					options={[
-						{ label: "All Status", value: "All" },
+						{ label: "All", value: "All" },
 						...AccountStatuses.map((status) => ({
 							label: status,
 							value: status,

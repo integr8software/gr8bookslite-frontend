@@ -31,9 +31,9 @@ const InitialPagination: PaginationState = {
 export function useWorkspaceVouchersAndCouponsPage() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] =
-    useState<WorkspaceVouchersAndCouponsStatusFilter>("All statuses");
+    useState<WorkspaceVouchersAndCouponsStatusFilter>("All");
   const [typeFilter, setTypeFilter] =
-    useState<WorkspaceVouchersAndCouponsTypeFilter>("All types");
+    useState<WorkspaceVouchersAndCouponsTypeFilter>("All");
   const [pagination, setPagination] =
     useState<PaginationState>(InitialPagination);
   const filteredRecords = useMemo(() => {
@@ -41,9 +41,8 @@ export function useWorkspaceVouchersAndCouponsPage() {
 
     return WorkspaceVouchersAndCouponsRecords.filter((record) => {
       const matchesStatus =
-        statusFilter === "All statuses" || record.status === statusFilter;
-      const matchesType =
-        typeFilter === "All types" || record.type === typeFilter;
+        statusFilter === "All" || record.status === statusFilter;
+      const matchesType = typeFilter === "All" || record.type === typeFilter;
       const matchesQuery =
         !normalizedQuery ||
         [
@@ -69,9 +68,18 @@ export function useWorkspaceVouchersAndCouponsPage() {
   }, [query, statusFilter, typeFilter]);
   const columns = useMemo<ColumnDef<WorkspaceVouchersAndCouponsRecord>[]>(
     () =>
-      WorkspaceVouchersAndCouponsTableColumns.map((column) =>
-        createColumn(column.key, column.label, column.className),
-      ),
+      WorkspaceVouchersAndCouponsTableColumns.map((column) => {
+        if ("key" in column) {
+          return createColumn(column.key, column.label, column.className);
+        }
+
+        return {
+          id: "actions",
+          enableSorting: false,
+          header: column.label,
+          meta: { className: column.className },
+        };
+      }),
     [],
   );
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
@@ -92,8 +100,8 @@ export function useWorkspaceVouchersAndCouponsPage() {
 
   function resetFilters() {
     setQuery("");
-    setStatusFilter("All statuses");
-    setTypeFilter("All types");
+    setStatusFilter("All");
+    setTypeFilter("All");
     setPagination((current) => ({ ...current, pageIndex: 0 }));
   }
 

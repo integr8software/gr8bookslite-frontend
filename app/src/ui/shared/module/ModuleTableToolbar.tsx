@@ -115,12 +115,20 @@ export function ModuleTableFilterSelect({
 			>
 				{options.map((option) => (
 					<option key={String(option.value)} value={option.value}>
-						{option.label}
+						{formatFilterOptionLabel(option.label)}
 					</option>
 				))}
 			</select>
 		</label>
 	);
+}
+
+function formatFilterOptionLabel(label: ReactNode) {
+	if (typeof label === "string" && /^All\s+\S/.test(label)) {
+		return "All";
+	}
+
+	return label;
 }
 
 export function ModuleTableResetButton({

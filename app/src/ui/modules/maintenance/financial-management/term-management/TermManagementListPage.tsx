@@ -127,7 +127,7 @@ export function TermManagementListPage() {
               label="Datemode"
               value={datemodeFilter}
               options={[
-                { label: "All datemodes", value: "All" },
+                { label: "All", value: "All" },
                 ...TermManagementDatemodeOptions.map((datemode) => ({
                   label: datemode,
                   value: datemode,

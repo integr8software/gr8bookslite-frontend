@@ -50,7 +50,7 @@ export function WorkspaceVouchersAndCouponsTable({
 				emptyDescription="Try a different subscriber, code, type, status, invoice, or owner."
 				emptyIcon={<Tags className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No vouchers or coupons found"
-				minWidthClassName="min-w-[92rem]"
+				minWidthClassName="min-w-[98rem]"
 				paginationStorageKey={WorkspaceVouchersAndCouponsPaginationStorageKey}
 				table={table}
 				toolbar={

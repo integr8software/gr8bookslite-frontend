@@ -31,7 +31,7 @@ export function ApprovalManagementTableFilters({
 				label="Status"
 				value={statusFilter}
 				options={[
-					{ label: "All statuses", value: "any" },
+					{ label: "All", value: "any" },
 					{ label: "Active", value: "Active" },
 					{ label: "Inactive", value: "Inactive" },
 				]}

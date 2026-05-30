@@ -49,7 +49,7 @@ export function AuditTrailTableFilters({
 				label="Module"
 				value={moduleFilter}
 				options={[
-					{ label: "All sidebar modules", value: "all" },
+					{ label: "All", value: "all" },
 					...moduleOptions.map((module) => ({
 						label: `${module.section} / ${module.label}`,
 						value: module.key,
@@ -61,7 +61,7 @@ export function AuditTrailTableFilters({
 				label="Action"
 				value={actionFilter}
 				options={[
-					{ label: "All actions", value: "all" },
+					{ label: "All", value: "all" },
 					...AuditTrailActionOptions.map((action) => ({
 						label: action,
 						value: action,
@@ -75,7 +75,7 @@ export function AuditTrailTableFilters({
 				label="Severity"
 				value={severityFilter}
 				options={[
-					{ label: "All severity", value: "all" },
+					{ label: "All", value: "all" },
 					...AuditTrailSeverityOptions.map((severity) => ({
 						label: severity,
 						value: severity,

@@ -32,7 +32,7 @@ export function TransactionTypeFilters({
 				label="Status"
 				value={statusFilter}
 				options={[
-					{ label: "All statuses", value: "" },
+					{ label: "All", value: "" },
 					...TransactionTypeStatusOptions.map((statusOption) => ({
 						label: statusOption,
 						value: statusOption,

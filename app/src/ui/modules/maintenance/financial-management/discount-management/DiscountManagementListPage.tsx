@@ -138,7 +138,7 @@ export function DiscountManagementListPage() {
               label="Account Mapping"
               value={mappingFilter}
               options={[
-                { label: "All mappings", value: "All" },
+                { label: "All", value: "All" },
                 { label: "Mapped", value: "Mapped" },
                 { label: "Unmapped", value: "Unmapped" },
               ]}

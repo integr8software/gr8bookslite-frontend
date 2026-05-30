@@ -11,7 +11,7 @@ export const WorkspaceVouchersAndCouponsPaginationStorageKey =
   "workspace-vouchers-and-coupons";
 
 export const WorkspaceVouchersAndCouponsStatusOptions = [
-  "All statuses",
+  "All",
   "Available",
   "Used",
   "Expired",
@@ -19,11 +19,9 @@ export const WorkspaceVouchersAndCouponsStatusOptions = [
 ] as const satisfies readonly WorkspaceVouchersAndCouponsStatusFilter[];
 
 export const WorkspaceVouchersAndCouponsTypeOptions = [
-  "All types",
-  "Promo Code",
+  "All",
   "Coupon",
   "Voucher",
-  "Event Promo",
 ] as const satisfies readonly WorkspaceVouchersAndCouponsTypeFilter[];
 
 export const WorkspaceVouchersAndCouponsTableColumns = [
@@ -34,8 +32,12 @@ export const WorkspaceVouchersAndCouponsTableColumns = [
   { key: "status", label: "Subscriber Status", className: "w-[12rem]" },
   { key: "masterStatus", label: "Master Status", className: "w-[11rem]" },
   { key: "expiresAt", label: "Expires", className: "w-[11rem]" },
-] as const satisfies readonly {
-  key: WorkspaceVouchersAndCouponsTableColumnKey;
-  label: string;
-  className: string;
-}[];
+  { label: "Actions", className: "w-[6rem] text-right" },
+] as const satisfies readonly (
+  | {
+      key: WorkspaceVouchersAndCouponsTableColumnKey;
+      label: string;
+      className: string;
+    }
+  | { label: string; className: string }
+)[];

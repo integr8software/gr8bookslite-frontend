@@ -8,7 +8,7 @@ export const WorkspacePromotionCodeSchema = z.object({
 	code: z
 		.string()
 		.trim()
-		.min(2, "Enter a coupon, voucher, or promotion code.")
+		.min(2, "Enter a promo code.")
 		.max(32, "Codes must be 32 characters or fewer."),
 });
 
@@ -35,4 +35,3 @@ export function validateWorkspacePromotionCode(
 		},
 	};
 }
-

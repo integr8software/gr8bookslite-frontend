@@ -151,7 +151,7 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 								label="Level"
 								value={page.levelFilter}
 								options={[
-									{ label: "All Levels", value: "All" },
+									{ label: "All", value: "All" },
 									{ label: config.singularTitle, value: kind },
 									...(childConfig
 										? [
@@ -168,7 +168,7 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 								label="Status"
 								value={page.statusFilter}
 								options={[
-									{ label: "All Status", value: "All" },
+									{ label: "All", value: "All" },
 									...ItemStatusOptions.map((status) => ({
 										label: status,
 										value: status,

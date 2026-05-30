@@ -28,7 +28,7 @@ export function PettyCashReplenishmentListFilters({
 				label="Status"
 				value={page.statusFilter}
 				options={PettyCashReplenishmentStatusOptions.map((status) => ({
-					label: status === "All" ? "All statuses" : status,
+					label: status,
 					value: status,
 				}))}
 				onChange={page.setStatusFilter}

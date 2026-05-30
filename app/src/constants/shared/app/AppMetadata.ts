@@ -7,6 +7,7 @@ const AppMetadataBase = new URL(
 
 const AppDescription = `${AppName} frontend`;
 const AppMetaLogoPath = "/logo.png";
+const AppIconVersion = "robot-transparent-20260530";
 
 export const AppMetadata: Metadata = {
 	metadataBase: AppMetadataBase,
@@ -16,39 +17,39 @@ export const AppMetadata: Metadata = {
 	icons: {
 		icon: [
 			{
-				url: "/favicon.ico",
+				url: `/favicon.ico?v=${AppIconVersion}`,
 				sizes: "16x16 32x32 48x48 64x64 128x128",
 				type: "image/x-icon",
 			},
 			{
-				url: "/logo/logo-16x16.png",
+				url: `/logo/logo-16x16.png?v=${AppIconVersion}`,
 				sizes: "16x16",
 				type: "image/png",
 			},
 			{
-				url: "/logo/logo-32x32.png",
+				url: `/logo/logo-32x32.png?v=${AppIconVersion}`,
 				sizes: "32x32",
 				type: "image/png",
 			},
 			{
-				url: "/logo/logo-48x48.png",
+				url: `/logo/logo-48x48.png?v=${AppIconVersion}`,
 				sizes: "48x48",
 				type: "image/png",
 			},
 			{
-				url: "/logo/logo-64x64.png",
+				url: `/logo/logo-64x64.png?v=${AppIconVersion}`,
 				sizes: "64x64",
 				type: "image/png",
 			},
 			{
-				url: "/logo/logo-128x128.png",
+				url: `/logo/logo-128x128.png?v=${AppIconVersion}`,
 				sizes: "128x128",
 				type: "image/png",
 			},
 		],
 		apple: [
 			{
-				url: "/apple-touch-icon.png",
+				url: `/apple-touch-icon.png?v=${AppIconVersion}`,
 				sizes: "180x180",
 				type: "image/png",
 			},

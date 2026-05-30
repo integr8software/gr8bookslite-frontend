@@ -4,6 +4,26 @@ const ACCESS_TOKEN_COOKIE = "gr8booksneo.accessToken";
 const ONBOARDING_PATH = "/onboarding";
 const CompanyManagementPath = "/workspace/company-management";
 const ReservedCompanyRouteSegments = new Set(["add", "edit", "view"]);
+const ProtectedPathPrefixes = [
+  "/accounts-payable",
+  "/beginning-balance-uploader",
+  "/cash-disbursement",
+  "/cash-receipt",
+  "/dashboard",
+  "/general-journal",
+  "/inventory",
+  "/maintenance",
+  "/master",
+  "/onboarding",
+  "/others",
+  "/profile",
+  "/purchasing",
+  "/reports",
+  "/sales",
+  "/settings",
+  "/system-administration",
+  "/workspace",
+] as const;
 const PublicPathPrefixes = [
   "/activate-account",
   "/auth",
@@ -35,7 +55,12 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
   const isPublicPath = isPublicRoute(pathname);
+  const isProtectedPath = isProtectedRoute(pathname);
   const isOnboardingPath = isPathPrefix(pathname, ONBOARDING_PATH);
+
+  if (!isPublicPath && !isProtectedPath && pathname !== "/") {
+    return NextResponse.next();
+  }
 
   if (!accessToken) {
     if (isPublicPath) {
@@ -84,10 +109,13 @@ export async function proxy(request: NextRequest) {
 
 function redirectToLogin(request: NextRequest, clearCookie = false) {
   const loginUrl = new URL("/login", request.url);
-  loginUrl.searchParams.set(
-    "redirect",
-    `${request.nextUrl.pathname}${request.nextUrl.search}`,
-  );
+
+  if (request.nextUrl.pathname !== "/") {
+    loginUrl.searchParams.set(
+      "redirect",
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    );
+  }
 
   const response = NextResponse.redirect(loginUrl);
 
@@ -142,6 +170,10 @@ function getPostAuthHomePath(profile: AuthProfileGuardResponse) {
 
 function isPublicRoute(pathname: string) {
   return PublicPathPrefixes.some((prefix) => isPathPrefix(pathname, prefix));
+}
+
+function isProtectedRoute(pathname: string) {
+  return ProtectedPathPrefixes.some((prefix) => isPathPrefix(pathname, prefix));
 }
 
 function isPathPrefix(pathname: string, prefix: string) {

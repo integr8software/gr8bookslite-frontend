@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { LoaderCircle } from "lucide-react";
 
 export type AppDialogTone = "default" | "danger" | "success";
 
@@ -12,6 +13,7 @@ export type AppDialogProps = {
   description: string;
   isOpen: boolean;
   isPending?: boolean;
+  pendingLabel?: string;
   title: string;
   tone?: AppDialogTone;
   onCancel: () => void;
@@ -26,6 +28,7 @@ export function AppDialog({
   description,
   isOpen,
   isPending = false,
+  pendingLabel = "Please wait...",
   title,
   tone = "default",
   onCancel,
@@ -37,9 +40,13 @@ export function AppDialog({
     confirmationValue.trim().toLowerCase() === confirmationPhrase.toLowerCase();
 
   const handleCancel = useCallback(() => {
+    if (isPending) {
+      return;
+    }
+
     setConfirmationValue("");
     onCancel();
-  }, [onCancel]);
+  }, [isPending, onCancel]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -47,7 +54,7 @@ export function AppDialog({
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && !isPending) {
         handleCancel();
       }
     }
@@ -57,7 +64,7 @@ export function AppDialog({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, handleCancel]);
+  }, [isOpen, isPending, handleCancel]);
 
   if (!isOpen) {
     return null;
@@ -68,7 +75,7 @@ export function AppDialog({
       role="presentation"
       className="app-dialog-backdrop fixed inset-0 z-80 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
+        if (event.target === event.currentTarget && !isPending) {
           handleCancel();
         }
       }}
@@ -124,7 +131,14 @@ export function AppDialog({
             disabled={isPending || !canConfirm}
             className={getConfirmButtonClassName(tone)}
           >
-            {isPending ? "Please wait..." : confirmLabel}
+            {isPending ? (
+              <>
+                <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                {pendingLabel}
+              </>
+            ) : (
+              confirmLabel
+            )}
           </button>
         </div>
       </section>
@@ -134,7 +148,7 @@ export function AppDialog({
 
 function getConfirmButtonClassName(tone: AppDialogTone) {
   const baseClassName =
-    "inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2";
+    "inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2";
 
   if (tone === "danger") {
     return `${baseClassName} bg-coralpink hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;

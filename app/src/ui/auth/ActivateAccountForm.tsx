@@ -82,7 +82,7 @@ export function ActivateAccountForm({
 
         <div className="pt-6 text-center">
           <Link
-            href="/login"
+            href="/login?force=true"
             className="text-sm font-semibold text-darknavy/65 transition hover:text-darknavy"
           >
             Back to log in
@@ -127,7 +127,7 @@ function ActivatePasswordContent({
         </div>
 
         <Link
-          href="/login"
+          href="/login?force=true"
           className="flex h-12 w-full items-center justify-center rounded-full bg-[#3d76ea] px-5 text-sm font-semibold text-white transition hover:bg-[#2f67d8]"
         >
           Continue to Login

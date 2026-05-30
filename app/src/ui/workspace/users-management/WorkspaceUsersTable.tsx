@@ -330,6 +330,7 @@ function UserRecordActions({
       {canResendInvitation ? (
         <ModuleTableActionButton
           icon={Send}
+          isLoading={isPendingResend}
           label={
             isPendingResend
               ? `Resending invitation to ${user.name}`

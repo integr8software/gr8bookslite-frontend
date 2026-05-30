@@ -7,6 +7,7 @@ import {
   LoaderCircle,
 } from "lucide-react";
 import { useLoginForm } from "@/app/src/hooks/auth/useLoginForm";
+import { useGoogleAuthSessionRedirect } from "@/app/src/hooks/auth/useGoogleAuthSessionRedirect";
 import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
 import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
 import { MainLoadingScreen } from "@/app/src/ui/shared/app/MainLoadingScreen";
@@ -24,13 +25,14 @@ export function LoginForm() {
     handleEmailChange,
     handleSubmit,
   } = useLoginForm();
+  const { redirectState: googleRedirectState } = useGoogleAuthSessionRedirect();
   const googleAuthUrl = BuildGoogleAuthUrl("login");
 
-  if (isOnboardingRedirecting) {
+  if (isOnboardingRedirecting || googleRedirectState === "onboarding") {
     return <OnboardingDraftLoadingScreen isFullScreen />;
   }
 
-  if (isSystemRedirecting) {
+  if (isSystemRedirecting || googleRedirectState === "system") {
     return <MainLoadingScreen />;
   }
 

@@ -158,12 +158,15 @@ function WorkspaceUserActionInner() {
 				description={`Adding ${form.values.name || "this user"} may affect workspace billing, payments, or deductions. Type confirm add user before saving.`}
 				confirmationPhrase="confirm add user"
 				confirmLabel="Save User"
+				pendingLabel="Saving..."
 				cancelLabel="Cancel"
 				tone="default"
 				onCancel={() => setIsSaveUserConfirmOpen(false)}
-				onConfirm={async () => {
-					setIsSaveUserConfirmOpen(false);
-					await form.submit();
+				onConfirm={() => {
+					void form
+						.submit()
+						.catch(() => undefined)
+						.finally(() => setIsSaveUserConfirmOpen(false));
 				}}
 			/>
 		</section>

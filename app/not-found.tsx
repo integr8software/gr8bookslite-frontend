@@ -7,7 +7,7 @@ export default function NotFound() {
 	const animationRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
-		let cleanup404 = () => {};
+		let cleanup404 = () => { };
 
 		async function loadAnimations() {
 			const lottieModule = await import("lottie-web");
@@ -36,10 +36,10 @@ export default function NotFound() {
 
 	return (
 		<main className="fixed inset-0 isolate flex h-dvh w-screen items-center justify-center overflow-hidden bg-[#f7fbff] px-6 py-8 text-[#132d35]">
-			<div className="absolute inset-0 -z-20 bg-[linear-gradient(rgba(0,124,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(0,124,255,0.06)_1px,transparent_1px)] bg-[size:44px_44px]" />
+			<div className="absolute inset-0 -z-20 bg-[linear-gradient(rgba(0,124,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(0,124,255,0.06)_1px,transparent_1px)] bg-size-[44px_44px]" />
 			<div className="absolute inset-x-0 top-0 -z-10 h-44 bg-[linear-gradient(180deg,rgba(0,124,255,0.13),rgba(247,251,255,0))]" />
-			<div className="absolute -left-20 top-16 -z-10 h-48 w-48 rotate-12 border-[28px] border-[#007CFF]/10" />
-			<div className="absolute -right-16 bottom-10 -z-10 h-56 w-56 -rotate-12 border-[32px] border-[#13b981]/10" />
+			<div className="absolute -left-20 top-16 -z-10 h-48 w-48 rotate-12 border-28 border-[#007CFF]/10" />
+			<div className="absolute -right-16 bottom-10 -z-10 h-56 w-56 -rotate-12 border-32 border-[#13b981]/10" />
 			<div className="absolute left-8 top-8 hidden h-18 w-18 border-l-4 border-t-4 border-[#007CFF]/35 md:block" />
 			<div className="absolute bottom-8 right-8 hidden h-18 w-18 border-b-4 border-r-4 border-[#ffb400]/45 md:block" />
 
@@ -47,7 +47,7 @@ export default function NotFound() {
 				<div
 					ref={animationRef}
 					aria-label="404 error animation"
-					className="mt-2 h-[min(52dvh,500px)] w-[min(84vw,560px)] drop-shadow-[0_22px_45px_rgba(19,45,53,0.12)] [&>svg]:!h-full [&>svg]:!w-full"
+					className="mt-2 h-[min(52dvh,500px)] w-[min(84vw,560px)] drop-shadow-[0_22px_45px_rgba(19,45,53,0.12)] [&>svg]:h-full! [&>svg]:w-full!"
 				/>
 
 				<h1 className="text-3xl font-bold text-[#132d35] sm:text-4xl">
@@ -86,7 +86,7 @@ export default function NotFound() {
 					</span>
 					{/* Antenna — top left, tilted left */}
 					{/* Antenna — top right, tilted right */}
-					<span className="absolute -top-5 right-3 flex flex-col items-center rotate-[25deg] origin-bottom">
+					<span className="absolute -top-5 right-3 flex flex-col items-center rotate-25 origin-bottom">
 						<span className="h-2.5 w-2.5 rounded-full bg-[#ff3b3b] shadow-[0_0_6px_2px_rgba(255,59,59,0.5)] group-hover:animate-ping" />
 						<span className="mt-0.5 h-5 w-[2.5px] rounded-full bg-white/80" />
 					</span>

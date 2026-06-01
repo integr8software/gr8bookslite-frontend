@@ -1,8 +1,4 @@
 import { ChevronDown, LogOut, Settings, UserCircle } from "lucide-react";
-import type {
-	MainCompany,
-	MainNavigationScope,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import type { MainTopbarUser } from "@/app/src/types/shared/main-layout/MainTopbarTypes";
 import {
 	ProfileHref,
@@ -17,8 +13,6 @@ import { TopbarProfileSkeleton } from "@/app/src/ui/shared/main-layout/main-topb
 import { UserAvatar } from "@/app/src/ui/shared/main-layout/main-topbar/UserAvatar";
 
 type AccountMenuProps = {
-	activeNavigationScope: MainNavigationScope;
-	currentCompany: MainCompany;
 	currentUser: MainTopbarUser;
 	isOpen: boolean;
 	isProfileLoading: boolean;
@@ -29,8 +23,6 @@ type AccountMenuProps = {
 };
 
 export function AccountMenu({
-	activeNavigationScope,
-	currentCompany,
 	currentUser,
 	isOpen,
 	isProfileLoading,
@@ -74,16 +66,8 @@ export function AccountMenu({
 			{isOpen ? (
 				<div className="fixed right-3 top-14 z-50 w-[calc(100vw-1.5rem)] max-w-72 overflow-hidden rounded-lg border border-darknavy/10 bg-white p-1 shadow-[0_24px_70px_rgba(33,39,56,0.18)] md:absolute md:right-0 md:top-12 md:w-72">
 					<AccountDetails
-						companyName={
-							activeNavigationScope === "master"
-								? "Master"
-								: activeNavigationScope === "workspace"
-									? "Workspace"
-									: activeNavigationScope === "account"
-										? "Account"
-										: currentCompany.name
-						}
 						currentUser={currentUser}
+						userDescriptor={userDescriptor}
 					/>
 					<MenuSeparator />
 					<ProfileMenuLink
@@ -113,14 +97,14 @@ export function AccountMenu({
 }
 
 type AccountDetailsProps = {
-	companyName: string;
 	currentUser: MainTopbarUser;
+	userDescriptor?: string;
 };
 
-function AccountDetails({ companyName, currentUser }: AccountDetailsProps) {
-	const userRoleDetailsName = currentUser.userRoleDetails?.name;
-	const shouldShowRole = currentUser.userRole !== "User";
-
+function AccountDetails({
+	currentUser,
+	userDescriptor,
+}: AccountDetailsProps) {
 	return (
 		<div className="px-3 py-3">
 			<p className="text-xs font-semibold uppercase text-darknavy/45">
@@ -136,15 +120,11 @@ function AccountDetails({ companyName, currentUser }: AccountDetailsProps) {
 						{currentUser.name}
 					</p>
 
-					<p className="mt-0.5 truncate text-xs text-darknavy/45">
-						{shouldShowRole && userRoleDetailsName
-							? currentUser.userRole
-							: userRoleDetailsName}
-					</p>
-
-					<p className="mt-1 truncate text-xs text-darknavy/45">
-						{companyName}
-					</p>
+					{userDescriptor ? (
+						<p className="mt-0.5 truncate text-xs text-darknavy/45">
+							{userDescriptor}
+						</p>
+					) : null}
 				</div>
 			</div>
 		</div>

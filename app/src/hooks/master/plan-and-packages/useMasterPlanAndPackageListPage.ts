@@ -49,18 +49,18 @@ export function useMasterPlanAndPackageListPage() {
 			(scopeFilter === "ALL" || record.scope === scopeFilter) &&
 			(!normalizedQuery ||
 				[
-				record.name,
-				record.code,
-				record.description,
-				record.status,
-				formatMasterPlanAndPackageScope(record.scope),
-				`${record.trialDays} trial days`,
-				formatMasterPlanAndPackagePricing(record.pricing),
-				formatMasterPlanAndPackageScalePricing(record.scalePricing),
-				...getMasterPlanAndPackageFeatureLabels(record.featureIds),
-			]
-				.join(" ")
-				.toLowerCase()
+					record.name,
+					record.code,
+					record.description,
+					record.status,
+					formatMasterPlanAndPackageScope(record.scope),
+					record.trialDays > 0 ? `${record.trialDays} trial days` : "",
+					formatMasterPlanAndPackagePricing(record.pricing),
+					formatMasterPlanAndPackageScalePricing(record.scalePricing),
+					...getMasterPlanAndPackageFeatureLabels(record.featureIds),
+				]
+					.join(" ")
+					.toLowerCase()
 					.includes(normalizedQuery)),
 		);
 	}, [query, records, scopeFilter, statusFilter]);

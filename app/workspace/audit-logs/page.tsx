@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { ModulePreviewPages } from "@/app/src/data/shared/module/ModulePreviewData";
-import { ModulePreviewPage } from "@/app/src/ui/shared/module/ModulePreviewPage";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { WorkspaceAuditLogListPage } from "@/app/src/ui/workspace/audit-logs/WorkspaceAuditLogListPage";
 
 export const metadata: Metadata = {
 	title: `Audit Logs | ${AppName}`,
@@ -9,7 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function AuditLogsPage() {
-	// throw new Error("Testing error page");
-
-	return <ModulePreviewPage data={ModulePreviewPages.auditLogs} />;
+	return <WorkspaceAuditLogListPage />;
 }

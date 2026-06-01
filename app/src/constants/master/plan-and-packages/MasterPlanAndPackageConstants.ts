@@ -98,7 +98,7 @@ export const MasterPlanAndPackageTableColumns = [
 	{ key: "status", label: "Status", className: "w-[9rem]" },
 	{ key: "pricing", label: "Pricing", className: "w-[18rem]" },
 	{ key: "scalePricing", label: "Scale Pricing", className: "w-[22rem]" },
-	{ label: "Actions", className: "w-[17rem] text-right" },
+	{ label: "Actions", className: "w-[6rem] text-right" },
 ] as const satisfies readonly (
 	| {
 			key: MasterPlanAndPackageTableColumnKey;

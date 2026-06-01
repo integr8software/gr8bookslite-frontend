@@ -93,8 +93,10 @@ export function MainTopbar({
 		openSwitcherState.href === activeHref ? openSwitcherState.key : null;
 	const isProfileMenuOpen = profileMenuOpenPath === activeHref;
 	const userDescriptor = getTopbarUserDescriptor(currentUser);
+	const isSuperAdmin = currentUser.userRole === "Super Admin";
 	const canShowCompanySwitcher =
-		canAccessMaster || canAccessWorkspace || canSwitchCompany;
+		!isSuperAdmin &&
+		(canAccessMaster || canAccessWorkspace || canSwitchCompany);
 	const canShowBranchSwitcher =
 		activeNavigationScope === "company" && branchDropdownItems.length > 0;
 	const hasBothMobileWorkspaceControls =
@@ -505,8 +507,6 @@ export function MainTopbar({
 					</button>
 
 					<AccountMenu
-						activeNavigationScope={activeNavigationScope}
-						currentCompany={currentCompany}
 						currentUser={currentUser}
 						isOpen={isProfileMenuOpen}
 						isProfileLoading={isProfileLoading}

@@ -5,7 +5,6 @@ import {
 	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackageScope,
 	getMasterPlanAndPackagePricingSupportingText,
-	getMasterPlanAndPackageScaleSupportingText,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
 import type { MasterPlanAndPackageRecord } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 import { MasterPlanAndPackageStatusBadge } from "@/app/src/ui/master/plan-and-packages/MasterPlanAndPackageBadges";
@@ -34,9 +33,11 @@ export function MasterPlanAndPackageTableRow({
 						<span className="rounded-md bg-skyblue/10 px-2 py-1 text-xs font-bold uppercase tracking-wide text-darknavy/60">
 							{record.code}
 						</span>
-						<span className="rounded-md bg-offwhite px-2 py-1 text-xs font-bold text-darknavy/48">
-							{record.trialDays} trial days
-						</span>
+						{record.trialDays > 0 ? (
+							<span className="rounded-md bg-offwhite px-2 py-1 text-xs font-bold text-darknavy/48">
+								{record.trialDays} trial days
+							</span>
+						) : null}
 						<span className="rounded-md bg-citron/35 px-2 py-1 text-xs font-bold text-darknavy/58">
 							{formatMasterPlanAndPackageScope(record.scope)}
 						</span>
@@ -60,9 +61,6 @@ export function MasterPlanAndPackageTableRow({
 			<td className="px-4 py-4">
 				<p className="text-sm font-semibold text-darknavy">
 					{formatMasterPlanAndPackageScalePricing(record.scalePricing)}
-				</p>
-				<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/38">
-					{getMasterPlanAndPackageScaleSupportingText(record.scalePricing)}
 				</p>
 			</td>
 			<td className="px-4 py-4">

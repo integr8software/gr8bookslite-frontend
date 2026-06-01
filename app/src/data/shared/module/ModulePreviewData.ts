@@ -305,24 +305,6 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
       "Creates a stable home for future global configuration forms.",
     ],
   },
-  systemLogs: {
-    eyebrow: "Monitoring & Security",
-    title: "System Logs",
-    description:
-      "A technical log review area for platform events, jobs, API failures, and background processing.",
-    icon: FileText,
-    tone: "violet",
-    metrics: [
-      { label: "Log Lines", value: "32K" },
-      { label: "Errors", value: "18" },
-      { label: "Jobs", value: "74" },
-    ],
-    highlights: [
-      "Keeps technical monitoring separate from user-facing audit trails.",
-      "Useful for support escalation and maintenance review.",
-      "Should remain limited to platform administrators.",
-    ],
-  },
   securityCenter: {
     eyebrow: "Monitoring & Security",
     title: "Security Center",
@@ -337,7 +319,7 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
     ],
     highlights: [
       "Separates security posture from ordinary settings.",
-      "Works well beside audit logs, system logs, and backups.",
+      "Works well beside audit logs, backups, and account protection.",
       "Can later include company-scoped views for tenant admins.",
     ],
   },
@@ -447,24 +429,6 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
       "Promotion maintenance stays separate from subscriber assignment.",
       "Audience rules can target all subscribers or a selected company list.",
       "Assignment history can later connect to invoices and renewal credits.",
-    ],
-  },
-  auditSystemLogs: {
-    eyebrow: "Monitoring & Security",
-    title: "Audit/System Logs",
-    description:
-      "A Super Admin log center for all company audit events, system jobs, API failures, and user activity.",
-    icon: FileText,
-    tone: "violet",
-    metrics: [
-      { label: "Events Today", value: "8.2K" },
-      { label: "System Errors", value: "18" },
-      { label: "Companies", value: "42" },
-    ],
-    highlights: [
-      "Combines tenant audit trails with platform-level system logs.",
-      "Filters should support company, branch, module, user, severity, and source.",
-      "Useful for support escalation, compliance review, and incident triage.",
     ],
   },
   financialManagement: {

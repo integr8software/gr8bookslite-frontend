@@ -336,15 +336,22 @@ export function formatMasterPlanAndPackagePricing(
 export function formatMasterPlanAndPackageScalePricing(
 	scalePricing: MasterPlanAndPackageScalePricing,
 ) {
-	return MasterPlanAndPackageScaleUnits.map((unit) => {
-			const unitLabel = MasterPlanAndPackageScaleUnitLabels[unit];
-
-		return `${unitLabel}: ${formatScaleRule({
+	const scaleLabels = MasterPlanAndPackageScaleUnits.map((unit) => {
+		const unitLabel = MasterPlanAndPackageScaleUnitLabels[unit];
+		const ruleLabel = formatScaleRule({
 			rule: scalePricing[unit],
 			unit,
-		})}`;
+		});
+
+		return ruleLabel ? `${unitLabel}: ${ruleLabel}` : null;
 	})
-		.join("; ");
+		.filter((label): label is string => Boolean(label));
+
+	if (scaleLabels.length === 0) {
+		return "No scale add-ons";
+	}
+
+	return scaleLabels.join("; ");
 }
 
 export function getMasterPlanAndPackagePricingSupportingText(
@@ -359,18 +366,21 @@ export function getMasterPlanAndPackagePricingSupportingText(
 		return "Monthly and yearly base prices";
 	}
 
-	return `${Math.max(...discounts)}% max discount`;
+	return `${Math.max(...discounts)}% Discount`;
 }
 
 export function getMasterPlanAndPackageScaleSupportingText(
 	scalePricing: MasterPlanAndPackageScalePricing,
 ) {
-	const tierCount = Object.values(scalePricing).reduce(
-		(total, rule) => total + rule.reductionTiers.length,
-		0,
-	);
+	const scaleUnits = MasterPlanAndPackageScaleUnits.filter((unit) =>
+		shouldShowScaleRule(scalePricing[unit]),
+	).map((unit) => MasterPlanAndPackageScaleUnitLabels[unit]);
 
-	return `${tierCount} reduction tiers for shared branch and user rules`;
+	if (scaleUnits.length === 0) {
+		return "No scale add-ons";
+	}
+
+	return `${scaleUnits.join(" and ")} pricing`;
 }
 
 export function formatMasterPlanAndPackageScope(
@@ -464,13 +474,7 @@ function formatPriceWithDiscount({
 		discountedPrice,
 	)} / ${intervalLabel}`;
 
-	if (percentOff <= 0) {
-		return priceLabel;
-	}
-
-	return `${priceLabel} (${percentOff}% off ${formatMasterPlanAndPackageCurrency(
-		basePrice,
-	)})`;
+	return priceLabel;
 }
 
 function formatScaleRule({
@@ -480,25 +484,48 @@ function formatScaleRule({
 	rule: MasterPlanAndPackageScaleRule;
 	unit: MasterPlanAndPackageScaleUnit;
 }) {
-	const label = MasterPlanAndPackageScaleUnitLabels[unit].toLowerCase();
-	const reductionLabel =
-		rule.reductionTiers.length > 0
-			? rule.reductionTiers
-					.map(
-						(tier) =>
-							`${tier.thresholdCount}+ ${getScaleUnitPluralLabel(
-								unit,
-							)}: ${tier.reductionPercent}% off`,
-					)
-					.join(", ")
-			: "no reduction tiers";
+	if (!shouldShowScaleRule(rule)) {
+		return null;
+	}
 
-	return `${rule.includedFreeCount} included ${getScaleUnitCountLabel(
-		unit,
-		rule.includedFreeCount,
-	)}; ${formatMasterPlanAndPackageCurrency(
-		rule.addOnPrice,
-	)} per additional ${label}; ${reductionLabel}`;
+	const label = MasterPlanAndPackageScaleUnitLabels[unit].toLowerCase();
+	const ruleParts: string[] = [];
+
+	if (rule.includedFreeCount > 0) {
+		ruleParts.push(
+			`${rule.includedFreeCount} included ${getScaleUnitCountLabel(
+				unit,
+				rule.includedFreeCount,
+			)}`,
+		);
+	}
+
+	if (rule.addOnPrice > 0) {
+		ruleParts.push(
+			`${formatMasterPlanAndPackageCurrency(rule.addOnPrice)} per ${
+				rule.includedFreeCount > 0 ? `additional ${label}` : label
+			}`,
+		);
+	}
+
+	if (rule.addOnPrice > 0 && rule.reductionTiers.length > 0) {
+		ruleParts.push(
+			rule.reductionTiers
+				.map(
+					(tier) =>
+						`${tier.thresholdCount}+ ${getScaleUnitPluralLabel(
+							unit,
+						)}: ${tier.reductionPercent}% off`,
+				)
+				.join(", "),
+		);
+	}
+
+	return ruleParts.join("; ");
+}
+
+function shouldShowScaleRule(rule: MasterPlanAndPackageScaleRule) {
+	return rule.includedFreeCount > 0 || rule.addOnPrice > 0;
 }
 
 function createEmptyReductionTiers(): MasterPlanAndPackageReductionTier[] {

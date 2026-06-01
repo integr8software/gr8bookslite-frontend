@@ -164,27 +164,14 @@ export const MainMasterNavigationSections: MainNavigationSection[] = [
     "workspace.billing.promotions",
     "master-subscriber-promotions",
   ),
-  {
-    key: "master-logs-section",
-    title: "Logs",
-    href: "/master/logs",
-    icon: "security",
-    accessKey: "workspace.monitoring.logs",
-    items: [
-      item(
-        "master-audit-logs",
-        "Audit Logs",
-        "/master/logs/audit-logs",
-        "workspace.monitoring.logs",
-      ),
-      item(
-        "master-system-logs",
-        "System Logs",
-        "/master/logs/system-logs",
-        "workspace.monitoring.logs",
-      ),
-    ],
-  },
+  directSection(
+    "master-audit-logs-section",
+    "Audit Logs",
+    "/master/audit-logs",
+    "security",
+    "workspace.monitoring.logs",
+    "master-audit-logs",
+  ),
   directSection(
     "master-support-tickets-section",
     "Support Tickets",

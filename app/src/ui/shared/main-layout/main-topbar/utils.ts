@@ -49,7 +49,7 @@ export function getBranchLabel(branch: MainBranch) {
 }
 
 export function getTopbarUserDescriptor(currentUser: MainTopbarUser) {
-  return currentUser.userRoleDetails?.name ?? getVisibleUserRole(currentUser);
+  return getVisibleUserRole(currentUser);
 }
 
 export function isLargeNotificationPanel() {
@@ -57,5 +57,5 @@ export function isLargeNotificationPanel() {
 }
 
 function getVisibleUserRole(currentUser: MainTopbarUser) {
-  return currentUser.userRole === "User" ? undefined : currentUser.userRole;
+  return currentUser.userRole;
 }

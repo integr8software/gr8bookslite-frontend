@@ -23,6 +23,7 @@ type MainSidebarProps = {
 	companyBadgeLabel?: string;
 	companyName: string;
 	companyLogoUrl?: string;
+	companyLogoVariant?: "company" | "master-control";
 	typeOfCompany: string;
 	enabledQuickListTabs: Array<"recent">;
 	expandedKeys: string[];
@@ -43,6 +44,7 @@ export function MainSidebar({
 	companyBadgeLabel,
 	companyName,
 	companyLogoUrl,
+	companyLogoVariant,
 	typeOfCompany,
 	enabledQuickListTabs,
 	expandedKeys,
@@ -215,6 +217,7 @@ export function MainSidebar({
 									companyBadgeLabel={companyBadgeLabel}
 									companyLogoUrl={companyLogoUrl}
 									companyName={companyName}
+									variant={companyLogoVariant}
 								/>
 								<span className="min-w-0">
 									<span className="block truncate text-base font-semibold leading-5 text-darknavy">

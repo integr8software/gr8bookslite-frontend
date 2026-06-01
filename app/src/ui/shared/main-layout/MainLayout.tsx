@@ -109,18 +109,21 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		hasBranchAccess ||
 		isCompanyBranchAccessLoading;
 	const isAdministrationScope = activeNavigationScope !== "company";
-	const administrationSidebarName =
-		activeNavigationScope === "master"
-			? "Master"
-			: activeNavigationScope === "account"
-				? "Account"
-				: "Workspace";
-	const administrationSidebarType =
-		activeNavigationScope === "master"
-			? "Platform Administration"
-			: activeNavigationScope === "account"
-				? "Account Settings"
-				: "Company Administration";
+	const isSuperAdminSidebarIdentity =
+		currentUser.userRole === "Super Admin";
+	let administrationSidebarName = "Workspace";
+	let administrationSidebarType = "Company Administration";
+
+	if (isSuperAdminSidebarIdentity) {
+		administrationSidebarName = "Integr8 Software Solutions Inc.";
+		administrationSidebarType = "Master Control";
+	} else if (activeNavigationScope === "master") {
+		administrationSidebarName = "Master";
+		administrationSidebarType = "Platform Administration";
+	} else if (activeNavigationScope === "account") {
+		administrationSidebarName = "Account";
+		administrationSidebarType = "Account Settings";
+	}
 
 	if (isShellLoading) {
 		return <MainLoadingScreen message="Loading your workspace data..." />;
@@ -196,7 +199,9 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 				<MainSidebar
 					activeHref={activeHref}
 					companyBadgeLabel={
-						isAdministrationScope ? currentUser.initials : undefined
+						isAdministrationScope && !isSuperAdminSidebarIdentity
+							? currentUser.initials
+							: undefined
 					}
 					companyName={
 						isAdministrationScope
@@ -207,6 +212,11 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 						isAdministrationScope
 							? undefined
 							: currentCompany.logoUrl
+					}
+					companyLogoVariant={
+						isSuperAdminSidebarIdentity
+							? "master-control"
+							: undefined
 					}
 					typeOfCompany={
 						isAdministrationScope

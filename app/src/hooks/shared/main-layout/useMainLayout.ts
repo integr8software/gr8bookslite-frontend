@@ -83,6 +83,7 @@ const DefaultExpandedKeys = [
   "master-invoices-section",
   "master-promotions-section",
   "master-subscriber-promotions-section",
+  "master-audit-logs-section",
   "master-support-tickets-section",
   "master-system-settings-section",
   "dashboard",
@@ -190,15 +191,18 @@ export function useMainLayout() {
       accessToken,
       enabled: isAuthSessionReady,
     });
+  const effectiveRole = authProfile
+    ? ResolveAuthProfileEffectiveRole(authProfile)
+    : null;
+  const isSuperAdmin = effectiveRole === "SUPER_ADMIN";
   const isMasterRoute = isMasterPath(pathname);
   const isWorkspaceRoute = isWorkspacePath(pathname);
   const isAccountRoute = isAccountPath(pathname);
-  const hasMasterAccess = authProfile
-    ? ProfileHasMasterAccess(authProfile)
-    : false;
-  const hasWorkspaceAccess = authProfile
-    ? ProfileHasWorkspaceAccess(authProfile)
-    : false;
+  const hasMasterAccess = effectiveRole === "SUPER_ADMIN";
+  const hasWorkspaceAccess =
+    authProfile && effectiveRole !== "SUPER_ADMIN"
+      ? ProfileHasWorkspaceAccess(authProfile)
+      : false;
   const displayUser = authProfile
     ? CreateWorkspaceCurrentUserFromProfile(authProfile)
     : EmptyCurrentUser;
@@ -206,14 +210,15 @@ export function useMainLayout() {
   const activeNavigationScope: MainNavigationScope =
     isAccountRoute
       ? "account"
-      : hasMasterAccess && isMasterRoute
-      ? "master"
-      : hasWorkspaceAccess && isWorkspaceRoute
-        ? "workspace"
-        : "company";
-  const workspaceCompanies = authProfile
-    ? MapProfileCompaniesToMainCompanies(authProfile)
-    : [];
+      : hasMasterAccess
+        ? "master"
+        : hasWorkspaceAccess && isWorkspaceRoute
+          ? "workspace"
+          : "company";
+  const workspaceCompanies =
+    authProfile && !isSuperAdmin
+      ? MapProfileCompaniesToMainCompanies(authProfile)
+      : [];
   const profileActiveCompanyId = authProfile
     ? GetAuthProfileCompanyId(authProfile)
     : null;
@@ -703,6 +708,10 @@ export function useMainLayout() {
   }
 
   function selectCompany(companyId: string) {
+    if (isSuperAdmin) {
+      return;
+    }
+
     if (activeNavigationScope === "company" && companyId === activeCompanyId) {
       router.push(companyHomeHref);
       return;
@@ -726,7 +735,7 @@ export function useMainLayout() {
   }
 
   function switchToWorkspace() {
-    if (!hasWorkspaceAccess) {
+    if (isSuperAdmin || !hasWorkspaceAccess) {
       return;
     }
 
@@ -775,7 +784,7 @@ export function useMainLayout() {
     breadcrumbs,
     canAccessMaster: hasMasterAccess,
     canAccessWorkspace: hasWorkspaceAccess,
-    canSwitchCompany: availableCompanies.length > 1,
+    canSwitchCompany: !isSuperAdmin && availableCompanies.length > 1,
     currentBranch,
     currentCompany,
     currentHelpArticle,
@@ -859,17 +868,17 @@ function shouldShowBranchControls(branches: MainBranch[]) {
 function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
   const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
 
-  if (effectiveRole === "SUPER_ADMIN" || effectiveRole === "ADMIN") {
+  if (effectiveRole === "SUPER_ADMIN") {
+    return false;
+  }
+
+  if (effectiveRole === "ADMIN") {
     return true;
   }
 
   return (
     profile.companies?.some((company) => company.role === "ADMIN") ?? false
   );
-}
-
-function ProfileHasMasterAccess(profile: AuthProfileResponse) {
-  return ResolveAuthProfileEffectiveRole(profile) === "SUPER_ADMIN";
 }
 
 function CreateWorkspaceCurrentUserFromProfile(

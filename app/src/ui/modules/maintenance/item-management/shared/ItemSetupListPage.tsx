@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
 	CheckCircle2,
 	CirclePause,
@@ -10,7 +9,7 @@ import {
 	Plus,
 	Tags,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
 	ItemSetupConfigByKind,
 	ItemStatusOptions,
@@ -33,10 +32,19 @@ import {
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { ItemSetupTable } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupTable";
+import { ItemSetupDrawer } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupDrawer";
+import type { ItemSetupRecord } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
+
+type DrawerState = {
+	kind: ItemSetupKind;
+	mode: "add" | "edit";
+	record?: ItemSetupRecord;
+} | null;
 
 export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 	const config = ItemSetupConfigByKind[kind];
 	const page = useItemSetupListPage(kind);
+	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	const childConfig = page.childKind
 		? ItemSetupConfigByKind[page.childKind]
 		: null;
@@ -94,23 +102,25 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 				actions={
 					<>
 						{childConfig ? (
-							<Link
-								href={`${childConfig.href}/add`}
+							<button
+								type="button"
+								onClick={() => setDrawerState({ kind: page.childKind!, mode: "add" })}
 								className={
 									moduleHeaderActionClassNames.secondary
 								}
 							>
 								<Plus className="h-4 w-4" aria-hidden="true" />
 								Add {childConfig.singularTitle}
-							</Link>
+							</button>
 						) : null}
-						<Link
-							href={`${config.href}/add`}
+						<button
+							type="button"
+							onClick={() => setDrawerState({ kind, mode: "add" })}
 							className={moduleHeaderActionClassNames.primary}
 						>
 							<Plus className="h-4 w-4" aria-hidden="true" />
 							Add {config.singularTitle}
-						</Link>
+						</button>
 					</>
 				}
 			/>
@@ -209,7 +219,9 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 					</div>
 				}
 				onToggleExpanded={page.toggleExpanded}
+				onEditRecord={(recordKind, record) => setDrawerState({ kind: recordKind, mode: "edit", record })}
 			/>
+			<ItemSetupDrawer isOpen={Boolean(drawerState)} kind={drawerState?.kind ?? kind} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} record={drawerState?.record} />
 			<AppDialog
 				isOpen={Boolean(page.pendingDeleteRecord)}
 				isPending={page.isMutating}

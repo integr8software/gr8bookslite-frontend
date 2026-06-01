@@ -19,11 +19,21 @@ import type {
 	ItemSetupFormErrors,
 	ItemSetupFormValues,
 	ItemSetupKind,
+	ItemSetupRecord,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { validateItemSetupForm } from "@/app/src/validations/modules/maintenance/item-management/ItemManagementValidation";
 import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item-management/useItemManagement";
 
-export function useItemSetupFormPage(kind: ItemSetupKind) {
+type ItemSetupFormPageOptions = {
+	existingRecord?: ItemSetupRecord;
+	mode?: ItemActionMode;
+	onSaved?: () => void;
+};
+
+export function useItemSetupFormPage(
+	kind: ItemSetupKind,
+	options: ItemSetupFormPageOptions = {},
+) {
 	const params = useParams<{ recordId?: string }>();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -35,8 +45,9 @@ export function useItemSetupFormPage(kind: ItemSetupKind) {
 		: config.href;
 	const records = store.getSetupRecords(kind);
 	const parentRecords = parentKind ? store.getSetupRecords(parentKind) : [];
-	const mode = getActionMode(pathname);
-	const existingRecord = records.find((record) => record.id === params.recordId);
+	const mode = options.mode ?? getActionMode(pathname);
+	const existingRecord =
+		options.existingRecord ?? records.find((record) => record.id === params.recordId);
 	const isReadonly = mode === "view";
 	const [values, setValues] = useState<ItemSetupFormValues>(() =>
 		existingRecord
@@ -89,9 +100,12 @@ export function useItemSetupFormPage(kind: ItemSetupKind) {
 				kind,
 				updateItemSetupRecord(existingRecord, values),
 			);
-			router.push(
-				parentKind ? listHref : `${config.href}/view/${existingRecord.id}`,
-			);
+			options.onSaved?.();
+			if (!options.onSaved) {
+				router.push(
+					parentKind ? listHref : `${config.href}/view/${existingRecord.id}`,
+				);
+			}
 			return;
 		}
 
@@ -101,7 +115,8 @@ export function useItemSetupFormPage(kind: ItemSetupKind) {
 		}
 
 		store.addSetupRecord(kind, createItemSetupRecord(values));
-		router.push(listHref);
+		options.onSaved?.();
+		if (!options.onSaved) router.push(listHref);
 	}
 
 	function handleConfirmDelete() {

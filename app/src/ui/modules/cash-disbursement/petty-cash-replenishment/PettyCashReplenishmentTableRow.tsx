@@ -10,11 +10,13 @@ const tableCellClassName = "px-4 py-3 text-sm text-darknavy/70";
 
 type PettyCashReplenishmentTableRowProps = {
 	onDelete: (row: PettyCashReplenishmentRecord) => void;
+	onEdit: (row: PettyCashReplenishmentRecord) => void;
 	row: PettyCashReplenishmentRecord;
 };
 
 export function PettyCashReplenishmentTableRow({
 	onDelete,
+	onEdit,
 	row,
 }: PettyCashReplenishmentTableRowProps) {
 	return (
@@ -36,9 +38,9 @@ export function PettyCashReplenishmentTableRow({
 						href={`${PettyCashReplenishmentHref}/view/${row.id}`}
 						label={`View ${row.replenishmentNo}`}
 					/>
-					<ModuleTableActionLink
+					<ModuleTableActionButton
 						variant="edit"
-						href={`${PettyCashReplenishmentHref}/edit/${row.id}`}
+						onClick={() => onEdit(row)}
 						label={`Edit ${row.replenishmentNo}`}
 					/>
 					<ModuleTableActionButton

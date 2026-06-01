@@ -13,11 +13,13 @@ type ItemSetupRecordActionsProps = {
 	kind: ItemSetupKind;
 	record: ItemSetupRecord;
 	onDeleteRecord: (record: ItemSetupRecord) => void;
+	onEditRecord: () => void;
 };
 
 export function ItemSetupRecordActions({
 	kind,
 	onDeleteRecord,
+	onEditRecord,
 	record,
 }: ItemSetupRecordActionsProps) {
 	const href = ItemSetupConfigByKind[kind].href;
@@ -29,9 +31,9 @@ export function ItemSetupRecordActions({
 				href={`${href}/view/${record.id}`}
 				label={`View ${record.name}`}
 			/>
-			<ModuleTableActionLink
+			<ModuleTableActionButton
 				variant="edit"
-				href={`${href}/edit/${record.id}`}
+				onClick={onEditRecord}
 				label={`Edit ${record.name}`}
 			/>
 			<ModuleTableActionButton

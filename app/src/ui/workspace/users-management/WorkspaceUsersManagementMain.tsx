@@ -1,16 +1,23 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { Plus, UserCog } from "lucide-react";
-import { WorkspaceUsersManagementHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import type { WorkspaceCompanyUserRecord } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { WorkspaceUsersTable } from "@/app/src/ui/workspace/users-management/WorkspaceUsersTable";
+import { WorkspaceUserDrawer } from "@/app/src/ui/workspace/users-management/WorkspaceUserDrawer";
+
+type DrawerState = {
+  mode: "add" | "edit";
+  user?: WorkspaceCompanyUserRecord;
+} | null;
 
 export function WorkspaceUsersManagementMain() {
+  const [drawerState, setDrawerState] = useState<DrawerState>(null);
   const users = useWorkspaceCompanyManagementStore((state) => state.users);
   const isLoading = useWorkspaceCompanyManagementStore(
     (state) => state.isLoading,
@@ -36,21 +43,28 @@ export function WorkspaceUsersManagementMain() {
           </>
         }
         actions={
-          <Link
-            href={`${WorkspaceUsersManagementHref}/add`}
+          <button
+            type="button"
+            onClick={() => setDrawerState({ mode: "add" })}
             className={moduleHeaderActionClassNames.primary}
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
             Add User
-          </Link>
+          </button>
         }
       />
       <WorkspaceUsersTable
-        baseHref={WorkspaceUsersManagementHref}
         isLoading={isLoading}
         isResendingInvitation={isMutating}
+        onEdit={(user) => setDrawerState({ mode: "edit", user })}
         onResendInvitation={resendInvitation}
         users={users}
+      />
+      <WorkspaceUserDrawer
+        isOpen={Boolean(drawerState)}
+        mode={drawerState?.mode ?? "add"}
+        onClose={() => setDrawerState(null)}
+        user={drawerState?.user}
       />
     </section>
   );

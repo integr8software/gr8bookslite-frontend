@@ -5,11 +5,13 @@ import { WarehouseRecordActions } from "@/app/src/ui/modules/maintenance/warehou
 type WarehouseTableRowProps = {
 	warehouse: WarehouseRecord;
 	onDeleteWarehouse: (warehouse: WarehouseRecord) => void;
+	onEditWarehouse: (warehouse: WarehouseRecord) => void;
 };
 
 export function WarehouseTableRow({
 	warehouse,
 	onDeleteWarehouse,
+	onEditWarehouse,
 }: WarehouseTableRowProps) {
 	return (
 		<tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
@@ -34,6 +36,7 @@ export function WarehouseTableRow({
 				<WarehouseRecordActions
 					warehouse={warehouse}
 					onDeleteWarehouse={onDeleteWarehouse}
+					onEditWarehouse={onEditWarehouse}
 				/>
 			</td>
 		</tr>

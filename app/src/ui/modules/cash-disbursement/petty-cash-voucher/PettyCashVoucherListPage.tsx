@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { Download, Home, Plus, Search, Sparkles, Upload } from "lucide-react";
 import {
-  PettyCashVoucherHref,
   PettyCashVoucherPaginationStorageKey,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { usePettyCashVoucherListPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherListPage";
@@ -15,9 +14,15 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { PettyCashVoucherListFilters } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherListFilters";
 import { PettyCashVoucherTableRow } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTableRow";
+import { PettyCashVoucherDrawer } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherDrawer";
+import { usePettyCashVoucherFormPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherFormPage";
+import type { PettyCashVoucherFormMode, PettyCashVoucherRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
+
+type DrawerState = { mode: Exclude<PettyCashVoucherFormMode, "view">; voucher?: PettyCashVoucherRecord } | null;
 
 export function PettyCashVoucherListPage() {
   const page = usePettyCashVoucherListPage();
+  const [drawerState, setDrawerState] = useState<DrawerState>(null);
 
   return (
     <section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] text-darknavy sm:-mx-5 lg:-mx-6">
@@ -33,7 +38,7 @@ export function PettyCashVoucherListPage() {
               Cash disbursement
             </>
           }
-          actions={<PettyCashVoucherHeaderActions />}
+          actions={<PettyCashVoucherHeaderActions onAdd={() => setDrawerState({ mode: "add" })} />}
         />
 
         <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
@@ -52,6 +57,7 @@ export function PettyCashVoucherListPage() {
                 key={id}
                 row={original}
                 onDelete={page.setPendingDelete}
+                onEdit={(voucher) => setDrawerState({ mode: "edit", voucher })}
               />
             )}
           />
@@ -66,12 +72,13 @@ export function PettyCashVoucherListPage() {
           onCancel={() => page.setPendingDelete(null)}
           onConfirm={page.handleConfirmDelete}
         />
+        <PettyCashVoucherListDrawer drawerState={drawerState} onClose={() => setDrawerState(null)} />
       </main>
     </section>
   );
 }
 
-function PettyCashVoucherHeaderActions() {
+function PettyCashVoucherHeaderActions({ onAdd }: { onAdd: () => void }) {
   return (
     <>
       <button type="button" className={moduleHeaderActionClassNames.secondary}>
@@ -86,13 +93,23 @@ function PettyCashVoucherHeaderActions() {
         <Download className="h-4 w-4" aria-hidden="true" />
         Export
       </button>
-      <Link
-        href={`${PettyCashVoucherHref}/add`}
+      <button
+        type="button"
+        onClick={onAdd}
         className={moduleHeaderActionClassNames.primary}
       >
         <Plus className="h-4 w-4" aria-hidden="true" />
         Add Voucher
-      </Link>
+      </button>
     </>
   );
+}
+
+function PettyCashVoucherListDrawer({ drawerState, onClose }: { drawerState: DrawerState; onClose: () => void }) {
+  return drawerState ? <PettyCashVoucherListDrawerPanel key={`${drawerState.mode}-${drawerState.voucher?.id ?? "new"}`} drawerState={drawerState} onClose={onClose} /> : null;
+}
+
+function PettyCashVoucherListDrawerPanel({ drawerState, onClose }: { drawerState: NonNullable<DrawerState>; onClose: () => void }) {
+  const page = usePettyCashVoucherFormPage({ existingVoucher: drawerState.voucher, mode: drawerState.mode, onSaved: onClose });
+  return <PettyCashVoucherDrawer isOpen onClose={onClose} page={page} />;
 }

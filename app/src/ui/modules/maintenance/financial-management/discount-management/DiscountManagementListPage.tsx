@@ -1,9 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { Download, Link2, Percent, Plus, Tags, Upload } from "lucide-react";
-import { DiscountManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
 import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagement";
 import type { DiscountManagementTableRecord } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
 import {
@@ -19,6 +17,10 @@ import {
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { DiscountManagementTable } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementTable";
+import { DiscountManagementDrawer } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementDrawer";
+import type { Discount } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
+
+type DrawerState = { mode: "add" | "edit"; discount?: Discount } | null;
 
 export function DiscountManagementListPage() {
 	const discounts = useDiscountManagementStore((state) => state.discounts);
@@ -29,6 +31,7 @@ export function DiscountManagementListPage() {
 	const isMutating = useDiscountManagementStore((state) => state.isMutating);
 	const [pendingDelete, setPendingDelete] =
 		useState<DiscountManagementTableRecord | null>(null);
+	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	const [query, setQuery] = useState("");
 	const [mappingFilter, setMappingFilter] = useState("All");
 	const filteredDiscounts = useMemo(() => {
@@ -87,7 +90,7 @@ export function DiscountManagementListPage() {
 						Accounting master data
 					</>
 				}
-				actions={<DiscountManagementHeaderActions />}
+				actions={<DiscountManagementHeaderActions onAdd={() => setDrawerState({ mode: "add" })} />}
 			/>
 
 			<ModuleMetrics
@@ -153,7 +156,9 @@ export function DiscountManagementListPage() {
 					</ModuleTableToolbar>
 				}
 				onDeleteDiscount={setPendingDelete}
+				onEditDiscount={(discount) => setDrawerState({ mode: "edit", discount })}
 			/>
+			<DiscountManagementDrawer discount={drawerState?.discount} isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} />
 
 			<AppDialog
 				isOpen={Boolean(pendingDelete)}
@@ -169,7 +174,7 @@ export function DiscountManagementListPage() {
 	);
 }
 
-function DiscountManagementHeaderActions() {
+function DiscountManagementHeaderActions({ onAdd }: { onAdd: () => void }) {
 	return (
 		<>
 			<button
@@ -186,13 +191,14 @@ function DiscountManagementHeaderActions() {
 				<Download className="h-4 w-4" aria-hidden="true" />
 				Export
 			</button>
-			<Link
-				href={`${DiscountManagementHref}/add`}
+			<button
+				type="button"
+				onClick={onAdd}
 				className={moduleHeaderActionClassNames.primary}
 			>
 				<Plus className="h-4 w-4" aria-hidden="true" />
 				Add Discount
-			</Link>
+			</button>
 		</>
 	);
 }

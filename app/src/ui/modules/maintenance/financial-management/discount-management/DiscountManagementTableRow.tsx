@@ -9,11 +9,13 @@ import {
 type DiscountManagementTableRowProps = {
 	discount: DiscountManagementTableRecord;
 	onDeleteDiscount: (discount: DiscountManagementTableRecord) => void;
+	onEditDiscount: (discount: DiscountManagementTableRecord) => void;
 };
 
 export function DiscountManagementTableRow({
 	discount,
 	onDeleteDiscount,
+	onEditDiscount,
 }: DiscountManagementTableRowProps) {
 	return (
 		<tr className="module-table-row">
@@ -29,9 +31,9 @@ export function DiscountManagementTableRow({
 						href={`${DiscountManagementHref}/view/${discount.id}`}
 						label={`View ${discount.description}`}
 					/>
-					<ModuleTableActionLink
+					<ModuleTableActionButton
 						variant="edit"
-						href={`${DiscountManagementHref}/edit/${discount.id}`}
+						onClick={() => onEditDiscount(discount)}
 						label={`Edit ${discount.description}`}
 					/>
 					<ModuleTableActionButton

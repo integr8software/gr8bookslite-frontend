@@ -10,11 +10,13 @@ const tableCellClassName = "px-4 py-3 text-sm text-darknavy/70";
 
 type PettyCashVoucherTableRowProps = {
 	onDelete: (row: PettyCashVoucherRecord) => void;
+	onEdit: (row: PettyCashVoucherRecord) => void;
 	row: PettyCashVoucherRecord;
 };
 
 export function PettyCashVoucherTableRow({
 	onDelete,
+	onEdit,
 	row,
 }: PettyCashVoucherTableRowProps) {
 	return (
@@ -37,9 +39,9 @@ export function PettyCashVoucherTableRow({
 						href={`${PettyCashVoucherHref}/view/${row.id}`}
 						label={`View ${row.voucherNo}`}
 					/>
-					<ModuleTableActionLink
+					<ModuleTableActionButton
 						variant="edit"
-						href={`${PettyCashVoucherHref}/edit/${row.id}`}
+						onClick={() => onEdit(row)}
 						label={`Edit ${row.voucherNo}`}
 					/>
 					<ModuleTableActionButton

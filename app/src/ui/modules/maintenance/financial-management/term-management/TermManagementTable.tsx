@@ -13,6 +13,7 @@ type TermManagementTableProps = {
 	terms: TermManagement[];
 	toolbar?: ReactNode;
 	onDeleteTerm: (term: TermManagement) => void;
+	onEditTerm: (term: TermManagement) => void;
 };
 
 export function TermManagementTable({
@@ -20,6 +21,7 @@ export function TermManagementTable({
 	terms,
 	toolbar,
 	onDeleteTerm,
+	onEditTerm,
 }: TermManagementTableProps) {
 	const table = useTermManagementTable(terms);
 
@@ -38,6 +40,7 @@ export function TermManagementTable({
 					key={id}
 					term={original}
 					onDeleteTerm={onDeleteTerm}
+					onEditTerm={onEditTerm}
 				/>
 			)}
 		/>

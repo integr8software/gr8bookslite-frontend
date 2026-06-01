@@ -8,10 +8,21 @@ import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/co
 import type {
 	WorkspaceCompanyUserFormErrors,
 	WorkspaceCompanyUserFormValues,
+	WorkspaceCompanyUserRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import { validateWorkspaceCompanyUserForm } from "@/app/src/validations/workspace/companies/WorkspaceCompanyValidation";
 
-export function useWorkspaceUserActionForm() {
+export type WorkspaceUserActionMode = "add" | "edit" | "view";
+
+type WorkspaceUserActionFormOptions = {
+	existingUser?: WorkspaceCompanyUserRecord;
+	mode?: WorkspaceUserActionMode;
+	onSaved?: () => void;
+};
+
+export function useWorkspaceUserActionForm(
+	options: WorkspaceUserActionFormOptions = {},
+) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ userId?: string }>();
@@ -26,13 +37,15 @@ export function useWorkspaceUserActionForm() {
 	const updateCompanyUser = useWorkspaceCompanyManagementStore(
 		(state) => state.updateCompanyUser,
 	);
-	const mode = pathname.includes("/view/")
+	const routeMode = pathname.includes("/view/")
 		? "view"
 		: pathname.includes("/edit/")
 			? "edit"
 			: "add";
+	const mode = options.mode ?? routeMode;
 	const isReadonly = mode === "view";
-	const existingUser = users.find((user) => user.id === params.userId);
+	const existingUser =
+		options.existingUser ?? users.find((user) => user.id === params.userId);
 	const existingUserValues = useMemo<WorkspaceCompanyUserFormValues | null>(
 		() =>
 			existingUser
@@ -160,7 +173,11 @@ export function useWorkspaceUserActionForm() {
 				email: existingUser.email,
 				name: values.name.trim(),
 			});
-			router.push(WorkspaceUsersManagementHref);
+			options.onSaved?.();
+
+			if (!options.onSaved) {
+				router.push(WorkspaceUsersManagementHref);
+			}
 			return;
 		}
 
@@ -170,7 +187,11 @@ export function useWorkspaceUserActionForm() {
 			email: values.email.trim(),
 			name: values.name.trim(),
 		});
-		router.push(WorkspaceUsersManagementHref);
+		options.onSaved?.();
+
+		if (!options.onSaved) {
+			router.push(WorkspaceUsersManagementHref);
+		}
 	}
 
 	function validate() {

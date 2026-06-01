@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
 	CheckCircle2,
 	CirclePause,
@@ -8,7 +7,6 @@ import {
 	Plus,
 	Warehouse,
 } from "lucide-react";
-import { WarehouseManagementHref } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import { useWarehouseListPage } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseListPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
@@ -21,9 +19,15 @@ import {
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { WarehouseTable } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseTable";
+import { WarehouseDrawer } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseDrawer";
+import { useState } from "react";
+import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
+
+type DrawerState = { mode: "add" | "edit"; warehouse?: WarehouseRecord } | null;
 
 export function WarehouseListPage() {
 	const page = useWarehouseListPage();
+	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 
 	return (
 		<section className="grid gap-5">
@@ -39,13 +43,14 @@ export function WarehouseListPage() {
 					</>
 				}
 				actions={
-					<Link
-						href={`${WarehouseManagementHref}/add`}
+					<button
+						type="button"
+						onClick={() => setDrawerState({ mode: "add" })}
 						className={moduleHeaderActionClassNames.primary}
 					>
 						<Plus className="h-4 w-4" aria-hidden="true" />
 						Add Warehouse
-					</Link>
+					</button>
 				}
 			/>
 
@@ -92,6 +97,7 @@ export function WarehouseListPage() {
 			<WarehouseTable
 				isLoading={page.isLoading}
 				setPendingDeleteWarehouse={page.setPendingDeleteWarehouse}
+				onEditWarehouse={(warehouse) => setDrawerState({ mode: "edit", warehouse })}
 				table={page.table}
 				toolbar={
 					<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,1fr)]">
@@ -104,6 +110,7 @@ export function WarehouseListPage() {
 					</ModuleTableToolbar>
 				}
 			/>
+			<WarehouseDrawer isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} warehouse={drawerState?.warehouse} />
 
 			<AppDialog
 				isOpen={Boolean(page.pendingDeleteWarehouse)}

@@ -19,13 +19,22 @@ import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financi
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 import type {
 	DiscountManagementActionMode,
+	Discount,
 	DiscountManagementFormErrors,
 	DiscountManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
 import { validateDiscountManagementForm } from "@/app/src/validations/modules/maintenance/financial-management/discount-management/DiscountManagementValidation";
 import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagement";
 
-export function useDiscountManagementFormPage() {
+type DiscountManagementFormPageOptions = {
+	existingDiscount?: Discount;
+	mode?: DiscountManagementActionMode;
+	onSaved?: () => void;
+};
+
+export function useDiscountManagementFormPage(
+	options: DiscountManagementFormPageOptions = {},
+) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
@@ -39,8 +48,8 @@ export function useDiscountManagementFormPage() {
 		(state) => state.deleteDiscount,
 	);
 	const isMutating = useDiscountManagementStore((state) => state.isMutating);
-	const mode = getActionMode(pathname);
-	const existingDiscount = discounts.find(
+	const mode = options.mode ?? getActionMode(pathname);
+	const existingDiscount = options.existingDiscount ?? discounts.find(
 		(discount) => discount.id === params.recordId,
 	);
 	const accountOptions = useMemo(
@@ -141,7 +150,8 @@ export function useDiscountManagementFormPage() {
 			addDiscount(createDiscountFromForm(values, selectedAccount));
 		}
 
-		router.push(DiscountManagementHref);
+		options.onSaved?.();
+		if (!options.onSaved) router.push(DiscountManagementHref);
 	}
 
 	function handleConfirmDelete() {

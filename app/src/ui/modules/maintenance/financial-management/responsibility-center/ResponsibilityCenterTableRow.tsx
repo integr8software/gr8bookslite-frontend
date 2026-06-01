@@ -11,12 +11,14 @@ type ResponsibilityCenterTableRowProps = {
 	center: ResponsibilityCenter;
 	parentName?: string;
 	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
+	onEditCenter: (center: ResponsibilityCenter) => void;
 };
 
 export function ResponsibilityCenterTableRow({
 	center,
 	parentName,
 	onStatusChangeCenter,
+	onEditCenter,
 }: ResponsibilityCenterTableRowProps) {
 	return (
 		<tr className="module-table-row">
@@ -35,6 +37,7 @@ export function ResponsibilityCenterTableRow({
 				<RowActions
 					center={center}
 					onStatusChangeCenter={onStatusChangeCenter}
+					onEditCenter={() => onEditCenter(center)}
 				/>
 			</td>
 		</tr>
@@ -68,9 +71,11 @@ function CenterIdentity({
 function RowActions({
 	center,
 	onStatusChangeCenter,
+	onEditCenter,
 }: {
 	center: ResponsibilityCenter;
 	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
+	onEditCenter: () => void;
 }) {
 	const nextStatus = center.status === "Active" ? "Inactive" : "Active";
 
@@ -81,9 +86,9 @@ function RowActions({
 				href={`${ResponsibilityCenterHref}/view/${center.id}`}
 				label={`View ${center.name}`}
 			/>
-			<ModuleTableActionLink
+			<ModuleTableActionButton
 				variant="edit"
-				href={`${ResponsibilityCenterHref}/edit/${center.id}`}
+				onClick={onEditCenter}
 				label={`Edit ${center.name}`}
 			/>
 			<ModuleTableActionButton

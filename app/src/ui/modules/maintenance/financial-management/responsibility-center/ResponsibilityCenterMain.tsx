@@ -1,10 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { Home, Plus } from "lucide-react";
 import {
-	ResponsibilityCenterHref,
 	ResponsibilityCenterStatusOptions,
 	ResponsibilityCenterTypeOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
@@ -25,6 +23,12 @@ import {
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { ResponsibilityCenterSetStatusDialog } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterSetStatusDialog";
 import { ResponsibilityCenterTable } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTable";
+import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterDrawer";
+
+type DrawerState = {
+	center?: ResponsibilityCenter;
+	mode: "add" | "edit";
+} | null;
 
 export function ResponsibilityCenterMain() {
 	const centers = useResponsibilityCenterStore((state) => state.centers);
@@ -36,6 +40,7 @@ export function ResponsibilityCenterMain() {
 	);
 	const [pendingStatusCenter, setPendingStatusCenter] =
 		useState<ResponsibilityCenter | null>(null);
+	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	const [query, setQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState("All");
 	const [typeFilter, setTypeFilter] = useState("All");
@@ -112,13 +117,14 @@ export function ResponsibilityCenterMain() {
 					</>
 				}
 				actions={
-					<Link
-						href={`${ResponsibilityCenterHref}/add`}
+					<button
+						type="button"
+						onClick={() => setDrawerState({ mode: "add" })}
 						className={moduleHeaderActionClassNames.primary}
 					>
 						<Plus className="h-4 w-4" aria-hidden="true" />
 						Add Center
-					</Link>
+					</button>
 				}
 			/>
 			<ResponsibilityCenterTable
@@ -165,6 +171,13 @@ export function ResponsibilityCenterMain() {
 					</ModuleTableToolbar>
 				}
 				onStatusChangeCenter={setPendingStatusCenter}
+				onEditCenter={(center) => setDrawerState({ center, mode: "edit" })}
+			/>
+			<ResponsibilityCenterDrawer
+				center={drawerState?.center}
+				isOpen={Boolean(drawerState)}
+				mode={drawerState?.mode ?? "add"}
+				onClose={() => setDrawerState(null)}
 			/>
 			<ResponsibilityCenterSetStatusDialog
 				center={pendingStatusCenter}

@@ -13,6 +13,7 @@ type TransactionTypeTableProps = {
 	transactionTypes: TransactionType[];
 	toolbar?: ReactNode;
 	onDelete: (transactionType: TransactionType) => void;
+	onEdit: (transactionType: TransactionType) => void;
 };
 
 export function TransactionTypeTable({
@@ -20,6 +21,7 @@ export function TransactionTypeTable({
 	transactionTypes,
 	toolbar,
 	onDelete,
+	onEdit,
 }: TransactionTypeTableProps) {
 	const table = useTransactionTypeTable(transactionTypes);
 
@@ -38,6 +40,7 @@ export function TransactionTypeTable({
 					key={id}
 					transactionType={original}
 					onDelete={onDelete}
+					onEdit={onEdit}
 				/>
 			)}
 		/>

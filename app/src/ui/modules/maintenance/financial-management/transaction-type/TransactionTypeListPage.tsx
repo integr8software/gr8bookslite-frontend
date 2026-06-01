@@ -8,9 +8,15 @@ import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import { TransactionTypeFilters } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeFilters";
 import { TransactionTypeHeaderActions } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeHeaderActions";
 import { TransactionTypeTable } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeTable";
+import { TransactionTypeDrawer } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeDrawer";
+import { useState } from "react";
+import type { TransactionType } from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
+
+type DrawerState = { mode: "add" | "edit"; transactionType?: TransactionType } | null;
 
 export function TransactionTypeListPage() {
 	const page = useTransactionTypeListPage();
+	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 
 	return (
 		<section className="grid gap-5">
@@ -25,7 +31,7 @@ export function TransactionTypeListPage() {
 						Accounting master data
 					</>
 				}
-				actions={<TransactionTypeHeaderActions />}
+				actions={<TransactionTypeHeaderActions onAdd={() => setDrawerState({ mode: "add" })} />}
 			/>
 
 			<ModuleMetrics
@@ -69,7 +75,9 @@ export function TransactionTypeListPage() {
 					/>
 				}
 				onDelete={page.setPendingDeleteTransactionType}
+				onEdit={(transactionType) => setDrawerState({ mode: "edit", transactionType })}
 			/>
+			<TransactionTypeDrawer isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} transactionType={drawerState?.transactionType} />
 
 			<AppDialog
 				isOpen={Boolean(page.pendingDeleteTransactionType)}

@@ -30,6 +30,7 @@ import {
 	WorkspaceManagementStatusBadge,
 	WorkspaceManagementUserAvatar,
 } from "@/app/src/ui/workspace/WorkspaceManagementBadges";
+import { WorkspaceUsersManagementHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 
 type WorkspaceUsersTableColumnKey = keyof Pick<
 	WorkspaceCompanyUserRecord,
@@ -54,15 +55,15 @@ const WorkspaceUsersTableColumns = [
 )[];
 
 export function WorkspaceUsersTable({
-	baseHref,
 	isLoading,
 	isResendingInvitation,
+	onEdit,
 	onResendInvitation,
 	users,
 }: {
-	baseHref: string;
 	isLoading: boolean;
 	isResendingInvitation: boolean;
+	onEdit: (user: WorkspaceCompanyUserRecord) => void;
 	onResendInvitation: (userId: string) => Promise<unknown>;
 	users: WorkspaceCompanyUserRecord[];
 }) {
@@ -92,8 +93,8 @@ export function WorkspaceUsersTable({
 				renderRow={({ id, original }) => (
 					<WorkspaceUsersTableRow
 						key={id}
-						baseHref={baseHref}
 						isResendingInvitation={isResendingInvitation}
+						onEdit={onEdit}
 						onResendInvitation={onResendInvitation}
 						user={original}
 					/>
@@ -231,13 +232,13 @@ function WorkspaceUsersTableFilters({
 }
 
 function WorkspaceUsersTableRow({
-	baseHref,
 	isResendingInvitation,
+	onEdit,
 	onResendInvitation,
 	user,
 }: {
-	baseHref: string;
 	isResendingInvitation: boolean;
+	onEdit: (user: WorkspaceCompanyUserRecord) => void;
 	onResendInvitation: (userId: string) => Promise<unknown>;
 	user: WorkspaceCompanyUserRecord;
 }) {
@@ -278,9 +279,9 @@ function WorkspaceUsersTableRow({
 			</WorkspaceUsersTableCell>
 			<WorkspaceUsersTableCell align="center">
 				<UserRecordActions
-					baseHref={baseHref}
 					isPendingResend={isPendingResend}
 					isResendingInvitation={isResendingInvitation}
+					onEdit={() => onEdit(user)}
 					onResendInvitation={handleResendInvitation}
 					user={user}
 				/>
@@ -315,15 +316,15 @@ function getFilterOptions(options: readonly string[]) {
 }
 
 function UserRecordActions({
-	baseHref,
 	isPendingResend,
 	isResendingInvitation,
+	onEdit,
 	onResendInvitation,
 	user,
 }: {
-	baseHref: string;
 	isPendingResend: boolean;
 	isResendingInvitation: boolean;
+	onEdit: () => void;
 	onResendInvitation: () => void;
 	user: WorkspaceCompanyUserRecord;
 }) {
@@ -347,13 +348,13 @@ function UserRecordActions({
 			) : null}
 			<ModuleTableActionLink
 				variant="view"
-				href={`${baseHref}/view/${user.id}`}
+				href={`${WorkspaceUsersManagementHref}/view/${user.id}`}
 				label={`View ${user.name}`}
 			/>
-			<ModuleTableActionLink
+			<ModuleTableActionButton
 				variant="edit"
-				href={`${baseHref}/edit/${user.id}`}
 				label={`Edit ${user.name}`}
+				onClick={onEdit}
 			/>
 		</ModuleTableActions>
 	);

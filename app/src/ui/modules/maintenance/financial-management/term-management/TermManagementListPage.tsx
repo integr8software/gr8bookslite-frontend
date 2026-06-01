@@ -1,11 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { CalendarDays, Download, Hash, Plus, Upload } from "lucide-react";
 import {
 	TermManagementDatemodeOptions,
-	TermManagementHref,
 } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
@@ -22,6 +20,9 @@ import {
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { TermManagementTable } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementTable";
+import { TermManagementDrawer } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementDrawer";
+
+type DrawerState = { mode: "add" | "edit"; term?: TermManagement } | null;
 
 export function TermManagementListPage() {
 	const terms = useTermManagementStore((state) => state.terms);
@@ -30,6 +31,7 @@ export function TermManagementListPage() {
 	const isMutating = useTermManagementStore((state) => state.isMutating);
 	const [pendingDeleteTerm, setPendingDeleteTerm] =
 		useState<TermManagement | null>(null);
+	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	const [datemodeFilter, setDatemodeFilter] = useState("All");
 	const [query, setQuery] = useState("");
 	const filteredTerms = useMemo(() => {
@@ -81,7 +83,7 @@ export function TermManagementListPage() {
 						Accounting master data
 					</>
 				}
-				actions={<TermManagementHeaderActions />}
+				actions={<TermManagementHeaderActions onAdd={() => setDrawerState({ mode: "add" })} />}
 			/>
 
 			<ModuleMetrics
@@ -142,7 +144,9 @@ export function TermManagementListPage() {
 					</ModuleTableToolbar>
 				}
 				onDeleteTerm={setPendingDeleteTerm}
+				onEditTerm={(term) => setDrawerState({ mode: "edit", term })}
 			/>
+			<TermManagementDrawer isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} term={drawerState?.term} />
 
 			<AppDialog
 				isOpen={Boolean(pendingDeleteTerm)}
@@ -158,7 +162,7 @@ export function TermManagementListPage() {
 	);
 }
 
-function TermManagementHeaderActions() {
+function TermManagementHeaderActions({ onAdd }: { onAdd: () => void }) {
 	return (
 		<>
 			<button
@@ -175,13 +179,14 @@ function TermManagementHeaderActions() {
 				<Download className="h-4 w-4" aria-hidden="true" />
 				Export
 			</button>
-			<Link
-				href={`${TermManagementHref}/add`}
+			<button
+				type="button"
+				onClick={onAdd}
 				className={moduleHeaderActionClassNames.primary}
 			>
 				<Plus className="h-4 w-4" aria-hidden="true" />
 				Add Term
-			</Link>
+			</button>
 		</>
 	);
 }

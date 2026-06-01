@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
 	AiAssistantFallbackErrorMessage,
@@ -22,15 +22,14 @@ export function useAiAssistantChat() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const inputRef = useRef<HTMLInputElement | null>(null);
+	const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+	const savedScrollTopRef = useRef(0);
+	const shouldStickToBottomRef = useRef(true);
 	const [isOpen, setIsOpen] = useState(() => LoadAiAssistantChatOpenState());
 	const [input, setInput] = useState("");
 	const [isSending, setIsSending] = useState(false);
 	const [messages, setMessages] = useState<AiAssistantChatMessage[]>(() =>
 		LoadAiAssistantChatMessages(),
-	);
-	const latestAssistantMessage = useMemo(
-		() => messages.findLast((message) => message.role === "assistant"),
-		[messages],
 	);
 
 	useEffect(() => {
@@ -41,13 +40,60 @@ export function useAiAssistantChat() {
 		SaveAiAssistantChatOpenState(isOpen);
 	}, [isOpen]);
 
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		window.requestAnimationFrame(() => {
+			const messagesContainer = messagesContainerRef.current;
+
+			if (!messagesContainer) {
+				return;
+			}
+
+			messagesContainer.scrollTop = Math.min(
+				savedScrollTopRef.current,
+				getMaxScrollTop(messagesContainer),
+			);
+		});
+	}, [isOpen]);
+
+	useEffect(() => {
+		if (!isOpen || !shouldStickToBottomRef.current) {
+			return;
+		}
+
+		window.requestAnimationFrame(() => {
+			const messagesContainer = messagesContainerRef.current;
+
+			if (!messagesContainer) {
+				return;
+			}
+
+			messagesContainer.scrollTop = messagesContainer.scrollHeight;
+			saveMessagesScroll(messagesContainer);
+		});
+	}, [isOpen, isSending, messages.length]);
+
 	function openChat() {
 		setIsOpen(true);
 		window.setTimeout(() => inputRef.current?.focus(), 50);
 	}
 
 	function closeChat() {
+		const messagesContainer = messagesContainerRef.current;
+
+		if (messagesContainer) {
+			saveMessagesScroll(messagesContainer);
+		}
+
 		setIsOpen(false);
+	}
+
+	function saveMessagesScroll(messagesContainer: HTMLDivElement) {
+		savedScrollTopRef.current = messagesContainer.scrollTop;
+		shouldStickToBottomRef.current = isScrolledNearBottom(messagesContainer);
 	}
 
 	async function submitMessage(event: FormEvent<HTMLFormElement>) {
@@ -127,10 +173,19 @@ export function useAiAssistantChat() {
 		inputRef,
 		isOpen,
 		isSending,
-		latestAssistantMessage,
 		messages,
+		messagesContainerRef,
 		openChat,
+		saveMessagesScroll,
 		setInput,
 		submitMessage,
 	};
+}
+
+function getMaxScrollTop(element: HTMLDivElement) {
+	return Math.max(0, element.scrollHeight - element.clientHeight);
+}
+
+function isScrolledNearBottom(element: HTMLDivElement) {
+	return getMaxScrollTop(element) - element.scrollTop <= 24;
 }

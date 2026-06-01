@@ -74,7 +74,10 @@ export function useMasterPlanAndPackageFormPage({
 
 	function updateValues(nextValues: Partial<MasterPlanAndPackageFormValues>) {
 		setHasLocalChanges(true);
-		setValues((current) => ({ ...current, ...nextValues }));
+		setValues((current) => ({
+			...(hasLocalChanges ? current : activeValues),
+			...nextValues,
+		}));
 	}
 
 	function saveRecord() {

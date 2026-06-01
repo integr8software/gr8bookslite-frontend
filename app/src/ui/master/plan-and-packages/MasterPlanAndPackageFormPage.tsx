@@ -252,7 +252,7 @@ function MasterPlanAndPackageForm({
               </p>
             </div>
           </div>
-          <div className="grid gap-5 xl:grid-cols-2">
+          <div className="grid gap-5 xl:grid-cols-2 xl:items-start">
             <ScaleRuleSection
               addOnPrice={values.branchAddOnPrice}
               errors={{
@@ -436,7 +436,7 @@ function ScaleRuleSection({
   }
 
   return (
-    <div className="grid gap-3 border-b border-darknavy/10 pb-4 last:border-b-0 last:pb-0">
+    <div className="grid content-start gap-3 border-b border-darknavy/10 pb-4 last:border-b-0 last:pb-0 xl:border-b-0 xl:pb-0">
       <div className="flex items-center gap-2">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-darknavy/4 text-darknavy/72">
           <UnitIcon className="h-4 w-4" aria-hidden="true" />
@@ -476,7 +476,7 @@ function ScaleRuleSection({
             {reductionTiers.map((tier, index) => (
               <div
                 key={`${tier.thresholdCount}-${index}`}
-                className="grid gap-2 rounded-lg bg-offwhite/55 p-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.75rem]"
+                className="grid gap-2 rounded-lg bg-offwhite/55 p-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.75rem] md:items-end"
               >
                 <NumberField
                   label="Count reaches"
@@ -505,7 +505,7 @@ function ScaleRuleSection({
                   title="Remove reduction tier"
                   aria-label="Remove reduction tier"
                   onClick={() => removeReductionTier(index)}
-                  className="mt-6.5 inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white text-darknavy/55 transition hover:border-coralpink/45 hover:text-coralpink"
+                  className="inline-flex h-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white text-darknavy/55 transition hover:border-coralpink/45 hover:text-coralpink"
                 >
                   <Trash2 className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -537,6 +537,11 @@ function ModuleFeatureSelector({
     () => new Set(selectedFeatureIds),
     [selectedFeatureIds],
   );
+  const allFeatureIds = useMemo(
+    () => MasterPlanAndPackageFeatureOptions.map((feature) => feature.id),
+    [],
+  );
+  const globalSelectionState = getSelectionState(allFeatureIds, selectedSet);
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
   const groupedFeatures = useMemo(() => {
     const filteredFeatures = MasterPlanAndPackageFeatureOptions.filter(
@@ -588,6 +593,26 @@ function ModuleFeatureSelector({
     onChange([...selectedFeatureIds, featureId]);
   }
 
+  function setFeatureSelection(featureIds: string[], isSelected: boolean) {
+    const nextSelectedSet = new Set(selectedFeatureIds);
+
+    featureIds.forEach((featureId) => {
+      if (isSelected) {
+        nextSelectedSet.add(featureId);
+
+        return;
+      }
+
+      nextSelectedSet.delete(featureId);
+    });
+
+    onChange(
+      MasterPlanAndPackageFeatureOptions.filter((feature) =>
+        nextSelectedSet.has(feature.id),
+      ).map((feature) => feature.id),
+    );
+  }
+
   return (
     <section className="-mx-5 grid gap-4 px-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -602,27 +627,65 @@ function ModuleFeatureSelector({
             </p>
           </div>
         </div>
-        <label className="relative block">
-          <span className="sr-only">Search modules</span>
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/38"
-            aria-hidden="true"
+        <div className="flex flex-wrap items-center gap-3">
+          <ModuleSelectionCheckbox
+            checked={globalSelectionState === "all"}
+            isIndeterminate={globalSelectionState === "partial"}
+            label="All modules"
+            selectedCount={selectedFeatureIds.length}
+            totalCount={allFeatureIds.length}
+            onChange={() =>
+              setFeatureSelection(allFeatureIds, globalSelectionState !== "all")
+            }
           />
-          <input
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Search modules"
-            className={joinClasses(ControlClassName, "pl-9")}
-          />
-        </label>
+          <label className="relative block">
+            <span className="sr-only">Search modules</span>
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/38"
+              aria-hidden="true"
+            />
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search modules"
+              className={joinClasses(ControlClassName, "pl-9")}
+            />
+          </label>
+        </div>
       </div>
       <div className="max-h-120 overflow-y-auto rounded-lg border border-darknavy/10 bg-white shadow-sm">
         {groupedFeatures.length > 0 ? (
-          groupedFeatures.map((group) => (
-            <div key={group.section}>
-              <div className="sticky top-0 z-10 border-b border-darknavy/10 bg-offwhite px-4 py-2 text-xs font-bold uppercase tracking-wide text-darknavy/55">
-                {group.section}
-              </div>
+          groupedFeatures.map((group) => {
+            const groupFeatureIds = group.features.map((feature) => feature.id);
+            const groupSelectionState = getSelectionState(
+              groupFeatureIds,
+              selectedSet,
+            );
+
+            return (
+              <div key={group.section}>
+                <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-darknavy/10 bg-offwhite px-4 py-2">
+                  <p className="text-xs font-bold uppercase tracking-wide text-darknavy/55">
+                    {group.section}
+                  </p>
+                  <ModuleSelectionCheckbox
+                    checked={groupSelectionState === "all"}
+                    isIndeterminate={groupSelectionState === "partial"}
+                    label="Section"
+                    selectedCount={
+                      groupFeatureIds.filter((featureId) =>
+                        selectedSet.has(featureId),
+                      ).length
+                    }
+                    totalCount={groupFeatureIds.length}
+                    onChange={() =>
+                      setFeatureSelection(
+                        groupFeatureIds,
+                        groupSelectionState !== "all",
+                      )
+                    }
+                  />
+                </div>
               <div className="grid divide-y divide-darknavy/6 md:grid-cols-2 md:divide-x md:divide-y-0 xl:grid-cols-3">
                 {group.features.map((feature) => (
                   <label
@@ -647,7 +710,8 @@ function ModuleFeatureSelector({
                 ))}
               </div>
             </div>
-          ))
+            );
+          })
         ) : (
           <p className="px-4 py-6 text-sm font-medium text-darknavy/55">
             No modules match your search.
@@ -657,6 +721,58 @@ function ModuleFeatureSelector({
       <FieldError message={error} />
     </section>
   );
+}
+
+function ModuleSelectionCheckbox({
+  checked,
+  isIndeterminate,
+  label,
+  selectedCount,
+  totalCount,
+  onChange,
+}: {
+  checked: boolean;
+  isIndeterminate: boolean;
+  label: string;
+  selectedCount: number;
+  totalCount: number;
+  onChange: () => void;
+}) {
+  return (
+    <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-darknavy/10 bg-white px-3 text-xs font-bold text-darknavy/65 shadow-sm transition hover:border-skyblue/45 hover:bg-skyblue/8">
+      <span>{label}</span>
+      <span className="text-darknavy/38">
+        {selectedCount}/{totalCount}
+      </span>
+      <input
+        type="checkbox"
+        checked={checked}
+        ref={(element) => {
+          if (element) {
+            element.indeterminate = isIndeterminate;
+          }
+        }}
+        onChange={onChange}
+        className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+      />
+    </label>
+  );
+}
+
+function getSelectionState(featureIds: string[], selectedSet: Set<string>) {
+  const selectedCount = featureIds.filter((featureId) =>
+    selectedSet.has(featureId),
+  ).length;
+
+  if (selectedCount === 0) {
+    return "none";
+  }
+
+  if (selectedCount === featureIds.length) {
+    return "all";
+  }
+
+  return "partial";
 }
 
 function TextField({
@@ -694,14 +810,41 @@ function NumberField({
   value: number;
   onChange: (value: number) => void;
 }) {
+  const [draftValue, setDraftValue] = useState(() => String(value));
+  const [isFocused, setIsFocused] = useState(false);
+
+  function handleChange(nextValue: string) {
+    setDraftValue(nextValue);
+
+    if (nextValue.trim() === "") {
+      return;
+    }
+
+    onChange(toNumber(nextValue));
+  }
+
+  function handleBlur() {
+    setIsFocused(false);
+
+    if (draftValue.trim() === "") {
+      onChange(0);
+      setDraftValue("0");
+    }
+  }
+
   return (
     <label className={FieldLabelClassName}>
       {label}
       <input
         type="number"
         min={0}
-        value={value}
-        onChange={(event) => onChange(toNumber(event.target.value))}
+        value={isFocused ? draftValue : String(value)}
+        onBlur={handleBlur}
+        onChange={(event) => handleChange(event.target.value)}
+        onFocus={() => {
+          setIsFocused(true);
+          setDraftValue(String(value));
+        }}
         className={ControlClassName}
       />
       <FieldError message={error} />

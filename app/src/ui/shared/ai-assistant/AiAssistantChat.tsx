@@ -18,7 +18,9 @@ export function AiAssistantChat() {
 		isOpen,
 		isSending,
 		messages,
+		messagesContainerRef,
 		openChat,
+		saveMessagesScroll,
 		setInput,
 		submitMessage,
 	} = useAiAssistantChat();
@@ -65,7 +67,11 @@ export function AiAssistantChat() {
 						</button>
 					</header>
 
-					<div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+					<div
+						ref={messagesContainerRef}
+						onScroll={(event) => saveMessagesScroll(event.currentTarget)}
+						className="flex-1 space-y-3 overflow-y-auto px-4 py-4"
+					>
 						{messages.map((message, index) => (
 							<div
 								key={`${message.role}-${index}`}
@@ -107,9 +113,7 @@ export function AiAssistantChat() {
 							<input
 								ref={inputRef}
 								value={input}
-								onChange={(event) =>
-									setInput(event.target.value)
-								}
+								onChange={(event) => setInput(event.target.value)}
 								placeholder={AiAssistantInputPlaceholder}
 								className="min-h-10 min-w-0 flex-1 rounded-md border border-skyblue/35 px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
 							/>
@@ -119,10 +123,7 @@ export function AiAssistantChat() {
 								aria-label="Send message"
 								className="theme-accent-contrast-text inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-skyblue transition hover:bg-skyblue/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 disabled:cursor-not-allowed disabled:opacity-45"
 							>
-								<Send
-									className="h-4.5 w-4.5"
-									aria-hidden="true"
-								/>
+								<Send className="h-4.5 w-4.5" aria-hidden="true" />
 							</button>
 						</div>
 					</form>

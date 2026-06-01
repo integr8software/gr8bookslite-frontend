@@ -164,7 +164,10 @@ export function useMainLayout() {
   const routedBranchName = searchParams.get(BranchUsersNameParam);
   const accessToken = storedAccessToken;
   const { data: authProfile, isLoading: isAuthProfileLoading } =
-    useAuthProfileQuery({ accessToken });
+    useAuthProfileQuery({
+      accessToken,
+      enabled: isAuthSessionReady,
+    });
   const isMasterRoute = isMasterPath(pathname);
   const isWorkspaceRoute = isWorkspacePath(pathname);
   const hasMasterAccess = authProfile

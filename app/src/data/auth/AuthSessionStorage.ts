@@ -9,6 +9,12 @@ function ReadBoolean(value: string | null) {
   return value === "true";
 }
 
+function ReadAccessToken(value: string | null) {
+  const token = value?.trim();
+
+  return token ? token : null;
+}
+
 function ClearLegacyReadableAccessTokenCookie() {
   if (!CanUseBrowserStorage()) {
     return;
@@ -22,10 +28,16 @@ export function SaveAccessToken(accessToken: string, rememberMe: boolean) {
     return;
   }
 
-  void accessToken;
   window.localStorage.setItem(REMEMBER_ME_KEY, String(rememberMe));
-  window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-  window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+
+  if (rememberMe) {
+    window.localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+  } else {
+    window.sessionStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+  }
+
   ClearLegacyReadableAccessTokenCookie();
 }
 
@@ -34,11 +46,13 @@ export function GetAccessToken() {
     return null;
   }
 
-  window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-  window.localStorage.removeItem(ACCESS_TOKEN_KEY);
   ClearLegacyReadableAccessTokenCookie();
 
-  return null;
+  if (GetRememberMePreference()) {
+    return ReadAccessToken(window.localStorage.getItem(ACCESS_TOKEN_KEY));
+  }
+
+  return ReadAccessToken(window.sessionStorage.getItem(ACCESS_TOKEN_KEY));
 }
 
 export function GetRememberMePreference() {

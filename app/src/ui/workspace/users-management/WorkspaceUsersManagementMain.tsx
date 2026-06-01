@@ -28,6 +28,9 @@ export function WorkspaceUsersManagementMain() {
   const resendInvitation = useWorkspaceCompanyManagementStore(
     (state) => state.resendCompanyUserInvitation,
   );
+  const cancelInvitation = useWorkspaceCompanyManagementStore(
+    (state) => state.cancelCompanyUserInvitation,
+  );
 
   return (
     <section className="grid gap-5">
@@ -56,6 +59,7 @@ export function WorkspaceUsersManagementMain() {
       <WorkspaceUsersTable
         isLoading={isLoading}
         isResendingInvitation={isMutating}
+        onCancelInvitation={cancelInvitation}
         onEdit={(user) => setDrawerState({ mode: "edit", user })}
         onResendInvitation={resendInvitation}
         users={users}

@@ -19,6 +19,7 @@ import {
 } from "@/app/src/services/workspace/companies/WorkspaceCompanyApi";
 import { WorkspaceCompanyQueryKeys } from "@/app/src/services/workspace/companies/WorkspaceCompanyQueryKeys";
 import {
+  CancelWorkspaceUserInvitation,
   CreateWorkspaceUser,
   GetWorkspaceUsers,
   ResendWorkspaceUserInvitation,
@@ -229,11 +230,39 @@ export function useWorkspaceCompanyManagementStore<
     },
   });
 
+  const cancelCompanyUserInvitationMutation = useMutation({
+    mutationFn: async (userId: string) =>
+      CancelWorkspaceUserInvitation(accessToken, userId),
+    onSuccess: (response) => {
+      queryClient.setQueryData<WorkspaceCompanyUserRecord[]>(
+        WorkspaceUserQueryKeys.users(),
+        (current = EmptyWorkspaceCompanyUsers) =>
+          current.filter((record) => record.id !== String(response.id)),
+      );
+      void queryClient.invalidateQueries({
+        queryKey: WorkspaceUserQueryKeys.users(),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: WorkspaceCompanyQueryKeys.companies(),
+      });
+      toast.success(response.message || "Invitation cancelled.");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not cancel the invitation. Please try again.",
+      );
+    },
+  });
+
   const state = useMemo<WorkspaceCompanyManagementStoreState>(
     () => ({
       addCompany: (values) => addCompanyMutation.mutateAsync(values),
       addCompanyUser: (values) => addCompanyUserMutation.mutateAsync(values),
       branches,
+      cancelCompanyUserInvitation: (userId) =>
+        cancelCompanyUserInvitationMutation.mutateAsync(userId),
       companies: companiesQuery.data ?? EmptyWorkspaceCompanies,
       deactivateCompany: (companyId) =>
         deactivateCompanyMutation.mutateAsync(companyId),
@@ -243,6 +272,7 @@ export function useWorkspaceCompanyManagementStore<
       isMutating:
         addCompanyMutation.isPending ||
         addCompanyUserMutation.isPending ||
+        cancelCompanyUserInvitationMutation.isPending ||
         deactivateCompanyMutation.isPending ||
         resendCompanyUserInvitationMutation.isPending ||
         updateCompanyMutation.isPending ||
@@ -259,6 +289,7 @@ export function useWorkspaceCompanyManagementStore<
       addCompanyMutation,
       addCompanyUserMutation,
       branches,
+      cancelCompanyUserInvitationMutation,
       companiesQuery.data,
       companiesQuery.isLoading,
       deactivateCompanyMutation,

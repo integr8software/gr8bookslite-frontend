@@ -46,6 +46,7 @@ export function useWorkspaceUserActionForm(
 	const isReadonly = mode === "view";
 	const existingUser =
 		options.existingUser ?? users.find((user) => user.id === params.userId);
+	const canEditEmail = mode === "add" || existingUser?.status === "Pending";
 	const existingUserValues = useMemo<WorkspaceCompanyUserFormValues | null>(
 		() =>
 			existingUser
@@ -170,7 +171,7 @@ export function useWorkspaceUserActionForm(
 			await updateCompanyUser(existingUser.id, {
 				companyAssignments: values.companyAssignments,
 				contactNumber: values.contactNumber.trim(),
-				email: existingUser.email,
+				email: canEditEmail ? values.email.trim() : existingUser.email,
 				name: values.name.trim(),
 			});
 			options.onSaved?.();
@@ -205,6 +206,7 @@ export function useWorkspaceUserActionForm(
 	return {
 		availableCompanies,
 		branches,
+		canEditEmail,
 		closeCompanyAssignmentConfirm,
 		companies,
 		errors,

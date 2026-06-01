@@ -18,6 +18,9 @@ export type WorkspaceCompanyManagementStoreState = {
   addCompanyUser: (
     values: WorkspaceCompanyUserFormValues,
   ) => Promise<WorkspaceCompanyUserRecord>;
+  cancelCompanyUserInvitation: (
+    userId: string,
+  ) => Promise<{ id: number; message: string }>;
   deactivateCompany: (companyId: string) => Promise<WorkspaceCompanyRecord>;
   deleteCompany: (companyId: string) => Promise<WorkspaceCompanyRecord>;
   resendCompanyUserInvitation: (userId: string) => Promise<{ message: string }>;

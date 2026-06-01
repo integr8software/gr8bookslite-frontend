@@ -9,7 +9,10 @@ import {
 	type SortingState,
 } from "@tanstack/react-table";
 import { Search, Send } from "lucide-react";
-import { WorkspaceCompanyStatusOptions } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
+import {
+	WorkspaceCompanyStatusOptions,
+	WorkspaceUsersManagementHref,
+} from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import type {
 	WorkspaceCompanyStatus,
 	WorkspaceCompanyUserRecord,
@@ -26,11 +29,11 @@ import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
 	WorkspaceManagementStatusBadge,
 	WorkspaceManagementUserAvatar,
 } from "@/app/src/ui/workspace/WorkspaceManagementBadges";
-import { WorkspaceUsersManagementHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 
 type WorkspaceUsersTableColumnKey = keyof Pick<
 	WorkspaceCompanyUserRecord,
@@ -44,7 +47,7 @@ const WorkspaceUsersTableColumns = [
 	{ key: "email", label: "Email", className: "w-[20rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
 	{ key: "lastLogin", label: "Last Login", className: "w-[13rem]" },
-	{ label: "Actions", className: "w-[10rem] text-center" },
+	{ label: "Actions", className: "w-[13rem] text-center" },
 ] as const satisfies readonly (
 	| {
 			key: WorkspaceUsersTableColumnKey;
@@ -57,17 +60,21 @@ const WorkspaceUsersTableColumns = [
 export function WorkspaceUsersTable({
 	isLoading,
 	isResendingInvitation,
+	onCancelInvitation,
 	onEdit,
 	onResendInvitation,
 	users,
 }: {
 	isLoading: boolean;
 	isResendingInvitation: boolean;
+	onCancelInvitation: (userId: string) => Promise<unknown>;
 	onEdit: (user: WorkspaceCompanyUserRecord) => void;
 	onResendInvitation: (userId: string) => Promise<unknown>;
 	users: WorkspaceCompanyUserRecord[];
 }) {
 	const userList = useWorkspaceUsersTable(users);
+	const [pendingCancelUser, setPendingCancelUser] =
+		useState<WorkspaceCompanyUserRecord | null>(null);
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
@@ -94,11 +101,35 @@ export function WorkspaceUsersTable({
 					<WorkspaceUsersTableRow
 						key={id}
 						isResendingInvitation={isResendingInvitation}
+						onCancelInvitation={setPendingCancelUser}
 						onEdit={onEdit}
 						onResendInvitation={onResendInvitation}
 						user={original}
 					/>
 				)}
+			/>
+			<AppDialog
+				isOpen={Boolean(pendingCancelUser)}
+				isPending={isResendingInvitation}
+				title="Cancel invitation?"
+				description={`This will remove the pending invitation for ${
+					pendingCancelUser?.email ?? "this user"
+				} and stop setup links from working. No billing charge will be applied.`}
+				confirmationPhrase="cancel invite"
+				confirmLabel="Cancel Invite"
+				pendingLabel="Cancelling..."
+				cancelLabel="Keep Invite"
+				tone="danger"
+				onCancel={() => setPendingCancelUser(null)}
+				onConfirm={() => {
+					if (!pendingCancelUser) {
+						return;
+					}
+
+					void onCancelInvitation(pendingCancelUser.id).finally(() =>
+						setPendingCancelUser(null),
+					);
+				}}
 			/>
 		</div>
 	);
@@ -233,11 +264,13 @@ function WorkspaceUsersTableFilters({
 
 function WorkspaceUsersTableRow({
 	isResendingInvitation,
+	onCancelInvitation,
 	onEdit,
 	onResendInvitation,
 	user,
 }: {
 	isResendingInvitation: boolean;
+	onCancelInvitation: (user: WorkspaceCompanyUserRecord) => void;
 	onEdit: (user: WorkspaceCompanyUserRecord) => void;
 	onResendInvitation: (userId: string) => Promise<unknown>;
 	user: WorkspaceCompanyUserRecord;
@@ -281,6 +314,7 @@ function WorkspaceUsersTableRow({
 				<UserRecordActions
 					isPendingResend={isPendingResend}
 					isResendingInvitation={isResendingInvitation}
+					onCancelInvitation={() => onCancelInvitation(user)}
 					onEdit={() => onEdit(user)}
 					onResendInvitation={handleResendInvitation}
 					user={user}
@@ -318,12 +352,14 @@ function getFilterOptions(options: readonly string[]) {
 function UserRecordActions({
 	isPendingResend,
 	isResendingInvitation,
+	onCancelInvitation,
 	onEdit,
 	onResendInvitation,
 	user,
 }: {
 	isPendingResend: boolean;
 	isResendingInvitation: boolean;
+	onCancelInvitation: () => void;
 	onEdit: () => void;
 	onResendInvitation: () => void;
 	user: WorkspaceCompanyUserRecord;
@@ -344,6 +380,14 @@ function UserRecordActions({
 					variant="neutral"
 					disabled={isResendingInvitation}
 					onClick={onResendInvitation}
+				/>
+			) : null}
+			{canResendInvitation ? (
+				<ModuleTableActionButton
+					variant="delete"
+					label={`Cancel invitation for ${user.name}`}
+					disabled={isResendingInvitation}
+					onClick={onCancelInvitation}
 				/>
 			) : null}
 			<ModuleTableActionLink

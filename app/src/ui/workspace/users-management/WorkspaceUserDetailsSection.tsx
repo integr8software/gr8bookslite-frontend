@@ -28,7 +28,7 @@ export function WorkspaceUserDetailsSection({
 	return (
 		<WorkspaceManagementSection
 			title="User Details"
-			description="Admins can update the user's name and contact number. Email stays readonly after creation."
+			description="Admins can update the user's name and contact number. Pending invite emails can be corrected before activation."
 		>
 			<div className="grid gap-4 lg:grid-cols-2">
 				<WorkspaceManagementField label="Full Name" error={errors.name} required>

@@ -2,6 +2,7 @@ import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   WorkspaceCompanyUserApiRecord,
   WorkspaceCompanyUserApiRequest,
+  WorkspaceCompanyUserCancelInvitationResponse,
   WorkspaceCompanyUserResendInvitationResponse,
   WorkspaceCompanyUserFormValues,
   WorkspaceCompanyUserRecord,
@@ -68,6 +69,21 @@ export async function ResendWorkspaceUserInvitation(
     await ApiClient.post<WorkspaceCompanyUserResendInvitationResponse>(
       `/workspace/users/${userId}/resend-invitation`,
       undefined,
+      {
+        headers: GetAuthorizationHeaders(accessToken),
+      },
+    );
+
+  return response.data;
+}
+
+export async function CancelWorkspaceUserInvitation(
+  accessToken: string | null,
+  userId: string,
+) {
+  const response =
+    await ApiClient.delete<WorkspaceCompanyUserCancelInvitationResponse>(
+      `/workspace/users/${userId}/invitation`,
       {
         headers: GetAuthorizationHeaders(accessToken),
       },

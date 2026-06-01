@@ -149,6 +149,11 @@ export type WorkspaceCompanyUserResendInvitationResponse = {
   message: string;
 };
 
+export type WorkspaceCompanyUserCancelInvitationResponse = {
+  id: number;
+  message: string;
+};
+
 export type WorkspaceCompanyBranchKind = "Head Office" | "Branch" | "Satellite";
 
 export type WorkspaceCompanyBranchRecord = {

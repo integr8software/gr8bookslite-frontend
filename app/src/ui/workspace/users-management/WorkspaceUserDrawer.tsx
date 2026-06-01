@@ -122,7 +122,7 @@ function WorkspaceUserDrawerPanel({
 				>
 					<WorkspaceUserDetailsSection
 						errors={form.errors}
-						isEmailReadonly={form.mode !== "add"}
+						isEmailReadonly={!form.canEditEmail}
 						isReadonly={form.isReadonly}
 						values={form.values}
 						onUpdateField={form.updateField}

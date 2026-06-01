@@ -79,7 +79,9 @@ export function AccountMenu({
 								? "Master"
 								: activeNavigationScope === "workspace"
 									? "Workspace"
-									: currentCompany.name
+									: activeNavigationScope === "account"
+										? "Account"
+										: currentCompany.name
 						}
 						currentUser={currentUser}
 					/>

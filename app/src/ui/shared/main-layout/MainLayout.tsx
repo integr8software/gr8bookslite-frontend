@@ -108,11 +108,17 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		isCompanyBranchAccessLoading;
 	const isAdministrationScope = activeNavigationScope !== "company";
 	const administrationSidebarName =
-		activeNavigationScope === "master" ? "Master" : "Workspace";
+		activeNavigationScope === "master"
+			? "Master"
+			: activeNavigationScope === "account"
+				? "Account"
+				: "Workspace";
 	const administrationSidebarType =
 		activeNavigationScope === "master"
 			? "Platform Administration"
-			: "Company Administration";
+			: activeNavigationScope === "account"
+				? "Account Settings"
+				: "Company Administration";
 
 	if (isShellLoading) {
 		return <MainLoadingScreen message="Loading your workspace data..." />;

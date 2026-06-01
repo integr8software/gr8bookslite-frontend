@@ -1,12 +1,6 @@
-import type { Metadata } from "next";
-import { AccountProfilePage } from "@/app/src/ui/shared/account/AccountProfilePage";
-import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-
-export const metadata: Metadata = {
-  title: `Profile | ${AppName}`,
-  description: `Manage your profile details in ${AppName}.`,
-};
+import { redirect } from "next/navigation";
+import { ProfileHref } from "@/app/src/constants/shared/account/AccountConstants";
 
 export default function Page() {
-  return <AccountProfilePage />;
+  redirect(ProfileHref);
 }

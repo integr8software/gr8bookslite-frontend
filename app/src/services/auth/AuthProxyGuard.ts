@@ -8,6 +8,12 @@ const CompanyManagementPath = "/workspace/company-management";
 const ReservedCompanyRouteSegments = new Set(["add", "edit", "view"]);
 const MasterPathPrefixes = ["/master"] as const;
 const WorkspacePathPrefixes = ["/workspace"] as const;
+const AdminCompanyPathPrefixes = ["/system-administration"] as const;
+const AuthenticatedAccountPathPrefixes = [
+  "/account",
+  "/profile",
+  "/settings",
+] as const;
 const CompanyPathPrefixes = [
   "/accounts-payable",
   "/beginning-balance-uploader",
@@ -18,11 +24,9 @@ const CompanyPathPrefixes = [
   "/inventory",
   "/maintenance",
   "/others",
-  "/profile",
   "/purchasing",
   "/reports",
   "/sales",
-  "/settings",
   "/system-administration",
 ] as const;
 const PublicPathPrefixes = [
@@ -50,7 +54,9 @@ type AuthProfileGuardResponse = {
     systemRole: "SUPER_ADMIN" | "STANDARD";
   };
   activeAccess: {
+    accessScope: "BRANCH" | "COMPANY" | "SATELLITE" | null;
     membershipRole: "ADMIN" | "USER" | null;
+    membershipStatus: "ACTIVE" | "INVITED" | "REMOVED" | "SUSPENDED" | null;
   } | null;
   onboarding: {
     hasActiveCompanyContext?: boolean;
@@ -202,7 +208,7 @@ function getPostAuthHomePath(profile: AuthProfileGuardResponse) {
     return "/workspace/dashboard";
   }
 
-  if (profile.activeCompanyId ?? profile.companyId) {
+  if (hasActiveBranchAccess(profile)) {
     return "/dashboard";
   }
 
@@ -210,6 +216,14 @@ function getPostAuthHomePath(profile: AuthProfileGuardResponse) {
 }
 
 function canAccessPath(pathname: string, profile: AuthProfileGuardResponse) {
+  if (
+    AuthenticatedAccountPathPrefixes.some((prefix) =>
+      isPathPrefix(pathname, prefix),
+    )
+  ) {
+    return true;
+  }
+
   if (MasterPathPrefixes.some((prefix) => isPathPrefix(pathname, prefix))) {
     return profile.user.systemRole === "SUPER_ADMIN";
   }
@@ -218,19 +232,28 @@ function canAccessPath(pathname: string, profile: AuthProfileGuardResponse) {
     return hasWorkspaceAdminAccess(profile);
   }
 
-  if (CompanyPathPrefixes.some((prefix) => isPathPrefix(pathname, prefix))) {
-    return Boolean(profile.activeCompanyId ?? profile.companyId);
+  if (
+    AdminCompanyPathPrefixes.some((prefix) => isPathPrefix(pathname, prefix))
+  ) {
+    return hasActiveBranchAdminAccess(profile);
   }
 
-  return true;
+  if (CompanyPathPrefixes.some((prefix) => isPathPrefix(pathname, prefix))) {
+    return hasActiveBranchAccess(profile);
+  }
+
+  return false;
 }
 
 function hasWorkspaceAdminAccess(profile: AuthProfileGuardResponse) {
   if (profile.user.systemRole === "SUPER_ADMIN") {
-    return true;
+    return false;
   }
 
-  if (profile.activeAccess?.membershipRole === "ADMIN") {
+  if (
+    profile.activeAccess?.membershipStatus === "ACTIVE" &&
+    profile.activeAccess.membershipRole === "ADMIN"
+  ) {
     return true;
   }
 
@@ -239,6 +262,31 @@ function hasWorkspaceAdminAccess(profile: AuthProfileGuardResponse) {
       (company) =>
         company.role === "ADMIN" && company.membershipStatus === "ACTIVE",
     ) ?? false
+  );
+}
+
+function hasActiveBranchAdminAccess(profile: AuthProfileGuardResponse) {
+  return (
+    profile.activeAccess?.membershipStatus === "ACTIVE" &&
+    profile.activeAccess.membershipRole === "ADMIN" &&
+    Boolean(profile.activeCompanyId ?? profile.companyId)
+  );
+}
+
+function hasActiveBranchAccess(profile: AuthProfileGuardResponse) {
+  if (profile.user.systemRole === "SUPER_ADMIN") {
+    return false;
+  }
+
+  if (hasActiveBranchAdminAccess(profile)) {
+    return true;
+  }
+
+  return (
+    profile.activeAccess?.membershipStatus === "ACTIVE" &&
+    profile.activeAccess.membershipRole === "USER" &&
+    profile.activeAccess.accessScope != null &&
+    Boolean(profile.activeCompanyId ?? profile.companyId)
   );
 }
 

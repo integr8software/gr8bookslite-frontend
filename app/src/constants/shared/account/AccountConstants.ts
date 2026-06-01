@@ -5,8 +5,8 @@ import type {
 } from "@/app/src/types/shared/account/AccountTypes";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 
-export const ProfileHref = "/profile";
-export const SettingsHref = "/settings";
+export const ProfileHref = "/account/profile";
+export const SettingsHref = "/account/settings";
 export const WorkspaceSettingsHref = "/workspace/system-settings";
 
 export const AccountThemeOptions: Array<{

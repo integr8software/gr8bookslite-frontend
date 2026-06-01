@@ -18,6 +18,7 @@ import type {
 
 const ModuleRoutePrefixes = [
   "/accounts-payable",
+  "/account",
   "/cash-disbursement",
   "/cash-receipt",
   "/dashboard",

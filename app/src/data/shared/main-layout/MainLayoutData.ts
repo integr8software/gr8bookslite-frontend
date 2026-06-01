@@ -166,7 +166,7 @@ export const MainLayoutData = {
       id: "notif-002",
       title: "Company access checked",
       body: "Your company and Accounting + Inventory package are active.",
-      href: "/settings",
+      href: "/account/settings",
       time: "18m ago",
       isRead: false,
     },

@@ -89,9 +89,32 @@ export type AuthProfileResponse = {
     logoPublicUrl: string | null;
     role: "ADMIN" | "USER";
     membershipStatus: string;
+    accessScope?: string | null;
     companyRoleId?: number | null;
     companyRoleCode?: string | null;
+    accessibleUnitIds?: number[];
+    units?: {
+      id: number;
+      code: string;
+      name: string;
+      type: string;
+      isActive: boolean;
+      isMain: boolean;
+    }[];
   }[];
+};
+
+export type SwitchCompanyContextRequest = {
+  companyId: number;
+};
+
+export type SwitchCompanyContextResponse = {
+  accessToken: string;
+  companyId: number | null;
+  role: "ADMIN" | "USER" | "SUPER_ADMIN";
+  access: AuthProfileAccess | null;
+  onboarding: AuthProfileResponse["onboarding"];
+  companies: NonNullable<AuthProfileResponse["companies"]>;
 };
 
 export type ResendVerificationRequest = {

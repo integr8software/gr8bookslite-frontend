@@ -500,7 +500,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-notifications",
     "Notifications",
-    "/settings/notifications",
+    "/account/settings/notifications",
     "Review and maintain notification behavior for users and workflows.",
     [
       "Notifications alert users about workflow changes, approvals, branch access, subscriptions, and other important updates.",
@@ -511,7 +511,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-profile",
     "Profile Menu",
-    "/profile",
+    "/account/profile",
     "Open profile tools, settings, and logout.",
     [
       "The profile menu gives users direct access to their account profile, settings, and logout action.",

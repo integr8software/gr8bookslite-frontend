@@ -78,7 +78,7 @@ export type ModuleSubscriptionPlanId =
   | "INVENTORY"
   | "ACCOUNTING_INVENTORY";
 
-export type MainNavigationScope = "master" | "workspace" | "company";
+export type MainNavigationScope = "master" | "workspace" | "company" | "account";
 
 export type MainPermissionMap = Partial<
   Record<MainAccessKey, Partial<Record<MainAccessAction, boolean>>>

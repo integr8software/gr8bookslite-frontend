@@ -13,6 +13,7 @@ type AuthJwtPayload = {
 
 const SystemRedirectPathPrefixes = [
   "/accounts-payable",
+  "/account",
   "/cash-disbursement",
   "/cash-receipt",
   "/dashboard",

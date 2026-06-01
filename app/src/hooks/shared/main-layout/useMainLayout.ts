@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getWorkspaceCompanyBranchesHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
@@ -48,6 +49,11 @@ import {
   GetAuthProfileCompanyId,
   ResolveAuthProfileEffectiveRole,
 } from "@/app/src/services/auth/AuthProfileAccess";
+import {
+  CreateFrontendAuthSession,
+  SwitchCompanyContext,
+} from "@/app/src/services/auth/AuthApi";
+import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 import type {
   MainBreadcrumb,
@@ -93,9 +99,10 @@ const DefaultExpandedKeys = [
 
 const WorkspaceRoutePrefix = "/workspace";
 const MasterRoutePrefix = "/master";
+const AccountRoutePrefix = "/account";
 const WorkspaceHomeHref = "/workspace/dashboard";
 const MasterHomeHref = "/master/dashboard";
-const CompanyFallbackHomeHref = "/profile";
+const CompanyFallbackHomeHref = "/account/profile";
 const MaxBlockingProfileLoadMs = 4500;
 const BranchUsersContextParam = "workspaceBranchId";
 const CompanyUsersContextParam = "workspaceCompanyId";
@@ -131,7 +138,12 @@ export function useMainLayout() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const storedAccessToken = useAppStore((state) => state.accessToken);
+  const setStoredAccessToken = useAppStore((state) => state.setAccessToken);
+  const setStoredActiveCompanyId = useAppStore(
+    (state) => state.setActiveCompanyId,
+  );
   const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
+  const queryClient = useQueryClient();
   const sidebarTransitionFrameRef = useRef<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarTransitionEnabled, setIsSidebarTransitionEnabled] =
@@ -170,6 +182,7 @@ export function useMainLayout() {
     });
   const isMasterRoute = isMasterPath(pathname);
   const isWorkspaceRoute = isWorkspacePath(pathname);
+  const isAccountRoute = isAccountPath(pathname);
   const hasMasterAccess = authProfile
     ? ProfileHasMasterAccess(authProfile)
     : false;
@@ -181,7 +194,9 @@ export function useMainLayout() {
     : EmptyCurrentUser;
   const isProfileLoading = isAuthProfileLoading && !hasProfileLoadTimedOut;
   const activeNavigationScope: MainNavigationScope =
-    hasMasterAccess && isMasterRoute
+    isAccountRoute
+      ? "account"
+      : hasMasterAccess && isMasterRoute
       ? "master"
       : hasWorkspaceAccess && isWorkspaceRoute
         ? "workspace"
@@ -215,7 +230,9 @@ export function useMainLayout() {
 
   const navigationSections = useMemo(() => {
     const sourceSections =
-      activeNavigationScope === "master"
+      activeNavigationScope === "account"
+        ? []
+        : activeNavigationScope === "master"
         ? MainMasterNavigationSections
         : activeNavigationScope === "workspace"
           ? MainWorkspaceNavigationSections
@@ -245,7 +262,9 @@ export function useMainLayout() {
 
   const availableSearchItems = useMemo(() => {
     const sourceItems =
-      activeNavigationScope === "master"
+      activeNavigationScope === "account"
+        ? []
+        : activeNavigationScope === "master"
         ? MainMasterSearchItems
         : activeNavigationScope === "workspace"
           ? MainWorkspaceSearchItems
@@ -263,11 +282,41 @@ export function useMainLayout() {
     MainLayoutData.recentNavigationKeys,
   );
   const homeHref =
-    activeNavigationScope === "master"
+    activeNavigationScope === "account" && hasMasterAccess
+      ? MasterHomeHref
+      : activeNavigationScope === "account" && hasWorkspaceAccess
+        ? WorkspaceHomeHref
+        : activeNavigationScope === "master"
       ? MasterHomeHref
       : activeNavigationScope === "workspace"
         ? WorkspaceHomeHref
         : companyHomeHref;
+  const switchCompanyMutation = useMutation({
+    mutationFn: async (companyId: string) => {
+      const numericCompanyId = Number(companyId);
+
+      if (!Number.isInteger(numericCompanyId) || numericCompanyId <= 0) {
+        throw new Error("Invalid company selection.");
+      }
+
+      const result = await SwitchCompanyContext(accessToken, numericCompanyId);
+      await CreateFrontendAuthSession(result.accessToken);
+
+      return result;
+    },
+    onSuccess: (result) => {
+      if (result.companyId != null) {
+        setActiveCompanyId(String(result.companyId));
+      }
+
+      setStoredAccessToken(result.accessToken);
+      setStoredActiveCompanyId(result.companyId);
+      void queryClient.invalidateQueries({
+        queryKey: AuthQueryKeys.profile(),
+      });
+      router.push(companyHomeHref);
+    },
+  });
 
   const recentlyVisitedModules = useMemo(() => {
     if (activeNavigationScope !== "company") {
@@ -573,11 +622,10 @@ export function useMainLayout() {
   }
 
   function selectCompany(companyId: string) {
-    setActiveCompanyId(companyId);
     setActiveBranchId("");
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
-    router.push(companyHomeHref);
+    switchCompanyMutation.mutate(companyId);
   }
 
   function switchToWorkspace() {
@@ -1215,6 +1263,13 @@ function isMasterPath(pathname: string) {
   return (
     pathname === MasterRoutePrefix ||
     pathname.startsWith(`${MasterRoutePrefix}/`)
+  );
+}
+
+function isAccountPath(pathname: string) {
+  return (
+    pathname === AccountRoutePrefix ||
+    pathname.startsWith(`${AccountRoutePrefix}/`)
   );
 }
 

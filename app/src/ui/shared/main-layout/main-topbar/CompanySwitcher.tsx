@@ -48,7 +48,9 @@ export function CompanySwitcher({
 			? "Master Control"
 			: activeNavigationScope === "workspace"
 				? "Workspace"
-				: currentCompany.name;
+				: activeNavigationScope === "account"
+					? "Account"
+					: currentCompany.name;
 	const hasAdministrationOptions = canAccessMaster || canAccessWorkspace;
 
 	return (

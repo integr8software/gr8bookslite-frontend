@@ -4,6 +4,7 @@ import type {
   ChangeAuthenticatedPasswordRequest,
   ChangeAuthenticatedPasswordResponse,
   RequestPasswordChangeOtpResponse,
+  SwitchCompanyContextResponse,
   VerifyPasswordChangeOtpRequest,
   VerifyPasswordChangeOtpResponse,
 } from "@/app/src/services/auth/AuthApiTypes";
@@ -88,6 +89,39 @@ export async function GetAuthProfile(accessToken: string | null = null) {
   const response = await ApiClient.get<AuthProfileResponse>("/auth/me", {
     headers: GetOptionalAuthorizationHeaders(accessToken),
   });
+
+  return response.data;
+}
+
+export async function CreateFrontendAuthSession(
+  accessToken: string,
+  rememberMe = false,
+) {
+  const response = await fetch("/api/auth/session", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ accessToken, rememberMe }),
+  });
+
+  if (!response.ok) {
+    throw new AuthApiError("Could not update the browser session.");
+  }
+}
+
+export async function SwitchCompanyContext(
+  accessToken: string | null,
+  companyId: number,
+) {
+  const response = await ApiClient.post<SwitchCompanyContextResponse>(
+    "/auth/context/company",
+    { companyId },
+    {
+      headers: GetOptionalAuthorizationHeaders(accessToken),
+    },
+  );
 
   return response.data;
 }

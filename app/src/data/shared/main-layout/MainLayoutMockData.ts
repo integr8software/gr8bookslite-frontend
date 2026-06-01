@@ -221,7 +221,7 @@ export const MainLayoutMockData = {
       id: "notif-002",
       title: "Branch access updated",
       body: "North Branch view access is now available for your role.",
-      href: "/settings",
+      href: "/account/settings",
       time: "18m ago",
       isRead: false,
     },

@@ -20,9 +20,10 @@ export function useWorkspaceCompanyMainLayoutBranches({
 	const accessToken = storedAccessToken;
 	const companyId = company?.id ?? "";
 	const companyBranchesQuery = useQuery({
-		enabled: Boolean(companyId),
+		enabled: Boolean(companyId && accessToken),
 		queryKey: WorkspaceCompanyQueryKeys.companyBranches(companyId),
 		queryFn: async () => getWorkspaceCompanyUnits(accessToken, companyId),
+		staleTime: 1000 * 60 * 5,
 	});
 	const branches = useMemo(
 		() =>

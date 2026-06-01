@@ -51,6 +51,7 @@ import {
 } from "@/app/src/services/auth/AuthProfileAccess";
 import {
   CreateFrontendAuthSession,
+  GetAuthProfile,
   SwitchCompanyContext,
 } from "@/app/src/services/auth/AuthApi";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
@@ -145,6 +146,7 @@ export function useMainLayout() {
   const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const queryClient = useQueryClient();
   const sidebarTransitionFrameRef = useRef<number | null>(null);
+  const latestCompanySwitchRequestRef = useRef(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarTransitionEnabled, setIsSidebarTransitionEnabled] =
     useState(false);
@@ -169,6 +171,14 @@ export function useMainLayout() {
   const [activeBranchId, setActiveBranchId] = useState(
     MainLayoutData.activeBranchId,
   );
+  const [switchingCompanyName, setSwitchingCompanyName] = useState<
+    string | null
+  >(null);
+  const [switchingCompanyId, setSwitchingCompanyId] = useState<string | null>(
+    null,
+  );
+  const [switchingAdministrationScope, setSwitchingAdministrationScope] =
+    useState<"master" | "workspace" | null>(null);
   const missingRecordActionRedirectHref =
     getMissingRecordActionRedirectHref(pathname);
   const routedCompanyId = searchParams.get(CompanyUsersContextParam);
@@ -292,7 +302,13 @@ export function useMainLayout() {
         ? WorkspaceHomeHref
         : companyHomeHref;
   const switchCompanyMutation = useMutation({
-    mutationFn: async (companyId: string) => {
+    mutationFn: async ({
+      companyId,
+      requestId,
+    }: {
+      companyId: string;
+      requestId: number;
+    }) => {
       const numericCompanyId = Number(companyId);
 
       if (!Number.isInteger(numericCompanyId) || numericCompanyId <= 0) {
@@ -300,21 +316,43 @@ export function useMainLayout() {
       }
 
       const result = await SwitchCompanyContext(accessToken, numericCompanyId);
-      await CreateFrontendAuthSession(result.accessToken);
 
-      return result;
+      if (requestId !== latestCompanySwitchRequestRef.current) {
+        return { result, profile: null, requestId };
+      }
+
+      await CreateFrontendAuthSession(result.accessToken);
+      const profile = await GetAuthProfile(result.accessToken);
+
+      return { result, profile, requestId };
     },
-    onSuccess: (result) => {
+    onMutate: async ({ companyId }) => {
+      await queryClient.cancelQueries({
+        queryKey: AuthQueryKeys.profile(),
+      });
+      setActiveCompanyId(companyId);
+    },
+    onSuccess: ({ result, profile, requestId }) => {
+      if (requestId !== latestCompanySwitchRequestRef.current || !profile) {
+        return;
+      }
+
       if (result.companyId != null) {
         setActiveCompanyId(String(result.companyId));
       }
 
       setStoredAccessToken(result.accessToken);
       setStoredActiveCompanyId(result.companyId);
-      void queryClient.invalidateQueries({
-        queryKey: AuthQueryKeys.profile(),
-      });
+      queryClient.setQueryData(AuthQueryKeys.profile(), profile);
       router.push(companyHomeHref);
+    },
+    onError: (_error, variables) => {
+      if (variables?.requestId !== latestCompanySwitchRequestRef.current) {
+        return;
+      }
+
+      setSwitchingCompanyName(null);
+      setSwitchingCompanyId(null);
     },
   });
 
@@ -368,13 +406,56 @@ export function useMainLayout() {
   const canManageBranches = hasAccess(displayUser, "branch.management");
 
   useEffect(() => {
-    if (profileActiveCompanyId == null) {
+    if (!switchingCompanyId) {
+      return;
+    }
+
+    if (activeNavigationScope !== "company") {
+      return;
+    }
+
+    if (activeCompanyId !== switchingCompanyId) {
+      return;
+    }
+
+    if (isBranchLoading) {
+      return;
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- company switching should stay on the main loader until the target branch context is ready.
+    setSwitchingCompanyName(null);
+    setSwitchingCompanyId(null);
+  }, [
+    activeCompanyId,
+    activeNavigationScope,
+    isBranchLoading,
+    switchingCompanyId,
+  ]);
+
+  useEffect(() => {
+    if (!switchingAdministrationScope) {
+      return;
+    }
+
+    if (switchingAdministrationScope === "workspace" && isWorkspaceRoute) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clear the transition only after the workspace route is active.
+      setSwitchingAdministrationScope(null);
+      return;
+    }
+
+    if (switchingAdministrationScope === "master" && isMasterRoute) {
+      setSwitchingAdministrationScope(null);
+    }
+  }, [isMasterRoute, isWorkspaceRoute, switchingAdministrationScope]);
+
+  useEffect(() => {
+    if (profileActiveCompanyId == null || switchingCompanyId) {
       return;
     }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect -- keep the layout company switcher synced with the loaded profile.
     setActiveCompanyId(String(profileActiveCompanyId));
-  }, [profileActiveCompanyId]);
+  }, [profileActiveCompanyId, switchingCompanyId]);
 
   useEffect(() => {
     if (!routedCompanyId) {
@@ -622,10 +703,26 @@ export function useMainLayout() {
   }
 
   function selectCompany(companyId: string) {
+    if (activeNavigationScope === "company" && companyId === activeCompanyId) {
+      router.push(companyHomeHref);
+      return;
+    }
+
+    const selectedCompany = availableCompanies.find(
+      (company) => company.id === companyId,
+    );
+
+    const requestId = latestCompanySwitchRequestRef.current + 1;
+
+    latestCompanySwitchRequestRef.current = requestId;
+    setSwitchingCompanyName(selectedCompany?.name ?? "company");
+    setSwitchingCompanyId(companyId);
+    setSwitchingAdministrationScope(null);
+    setActiveCompanyId(companyId);
     setActiveBranchId("");
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
-    switchCompanyMutation.mutate(companyId);
+    switchCompanyMutation.mutate({ companyId, requestId });
   }
 
   function switchToWorkspace() {
@@ -633,6 +730,9 @@ export function useMainLayout() {
       return;
     }
 
+    setSwitchingCompanyName(null);
+    setSwitchingCompanyId(null);
+    setSwitchingAdministrationScope("workspace");
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
     router.push(WorkspaceHomeHref);
@@ -643,6 +743,9 @@ export function useMainLayout() {
       return;
     }
 
+    setSwitchingCompanyName(null);
+    setSwitchingCompanyId(null);
+    setSwitchingAdministrationScope("master");
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
     router.push(MasterHomeHref);
@@ -682,6 +785,17 @@ export function useMainLayout() {
     hasBranchAccess,
     helpArticles: ModuleHelpArticles,
     homeHref,
+    isCompanySwitching: Boolean(
+      switchingCompanyId || switchingAdministrationScope,
+    ),
+    companySwitchMessage:
+      switchingAdministrationScope === "workspace"
+        ? "Switching to workspace..."
+        : switchingAdministrationScope === "master"
+          ? "Switching to master control..."
+          : switchingCompanyName
+            ? `Switching to ${switchingCompanyName}...`
+            : "Switching company...",
     isShellLoading: !isAuthSessionReady || isProfileLoading,
     isProfileLoading,
     isBranchLoading,

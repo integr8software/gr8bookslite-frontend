@@ -62,6 +62,8 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		hasBranchAccess,
 		helpArticles,
 		homeHref,
+		isCompanySwitching,
+		companySwitchMessage,
 		isShellLoading,
 		isProfileLoading,
 		isBranchLoading,
@@ -122,6 +124,14 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 
 	if (isShellLoading) {
 		return <MainLoadingScreen message="Loading your workspace data..." />;
+	}
+
+	if (isCompanySwitching) {
+		return <MainLoadingScreen message={companySwitchMessage} />;
+	}
+
+	if (isCompanyBranchAccessLoading) {
+		return <MainLoadingScreen message="Loading company branches..." />;
 	}
 
 	return (
@@ -229,9 +239,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 				>
 					<MainPageHeader breadcrumbs={breadcrumbs} />
 					<div className="w-full flex-1">
-						{isCompanyBranchAccessLoading ? (
-							<BranchAccessLoading />
-						) : shouldShowBranchContent ? (
+						{shouldShowBranchContent ? (
 							children
 						) : (
 							<NoBranchAccess companyName={currentCompany.name} />
@@ -473,23 +481,6 @@ function HelpModalLoading() {
 				</p>
 			</div>
 		</div>
-	);
-}
-
-function BranchAccessLoading() {
-	return (
-		<section
-			className="flex min-h-[calc(100vh-8rem)] w-full items-center justify-center px-4 py-10"
-			aria-busy="true"
-			aria-live="polite"
-		>
-			<div className="w-full max-w-sm text-center">
-				<div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-darknavy/12 border-t-skyblue" />
-				<p className="mt-4 text-sm font-semibold text-darknavy">
-					Loading branch access...
-				</p>
-			</div>
-		</section>
 	);
 }
 

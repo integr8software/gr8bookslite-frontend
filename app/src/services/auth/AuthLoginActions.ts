@@ -23,6 +23,9 @@ const AccessStateLoginErrors = [
   "User account is suspended.",
 ];
 
+const GooglePasswordLoginMessage =
+  "This account uses Google sign-in. Continue with Google to sign in.";
+
 function IsAccessStateLoginError(message: string) {
   return AccessStateLoginErrors.some((prefix) => message.startsWith(prefix));
 }
@@ -93,6 +96,15 @@ export async function LoginAction(
         errors: {
           email: [message],
         },
+        formValues,
+        rememberMe,
+      };
+    }
+
+    if (message === GooglePasswordLoginMessage) {
+      return {
+        status: "error",
+        message,
         formValues,
         rememberMe,
       };

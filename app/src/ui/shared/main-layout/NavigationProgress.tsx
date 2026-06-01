@@ -129,10 +129,15 @@ export function MainNavigationProgress() {
 
     window.addEventListener("click", handleClick, true);
     window.addEventListener("popstate", requestProgressStart);
+    window.addEventListener("gr8books:navigation-start", requestProgressStart);
 
     return () => {
       window.removeEventListener("click", handleClick, true);
       window.removeEventListener("popstate", requestProgressStart);
+      window.removeEventListener(
+        "gr8books:navigation-start",
+        requestProgressStart,
+      );
       window.history.pushState = originalPushState;
       window.history.replaceState = originalReplaceState;
       clearTimers();

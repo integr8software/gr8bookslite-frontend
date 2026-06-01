@@ -16,6 +16,7 @@ import { MainNotificationsPanel } from "./notifications-panel/NotificationsPanel
 import { MainSidebar } from "./sidebar/Sidebar";
 import { MainTopbar } from "./main-topbar/MainTopbar";
 import { NoBranchAccess } from "./NoBranchAccess";
+import { AiAssistantChat } from "@/app/src/ui/shared/ai-assistant/AiAssistantChat";
 
 const MainHelpModal = dynamic(
 	() =>
@@ -296,6 +297,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 					onSelectArticle={setSelectedHelpArticleKey}
 				/>
 			) : null}
+			<AiAssistantChat />
 		</div>
 	);
 }

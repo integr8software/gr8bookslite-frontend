@@ -29,6 +29,8 @@ import {
   hasAccess,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 import {
+  MainAccountNavigationSections,
+  MainAccountSearchItems,
   MainCompanyNavigationSections,
   MainCompanySearchItems,
   MainMasterNavigationSections,
@@ -246,7 +248,7 @@ export function useMainLayout() {
   const navigationSections = useMemo(() => {
     const sourceSections =
       activeNavigationScope === "account"
-        ? []
+        ? MainAccountNavigationSections
         : activeNavigationScope === "master"
         ? MainMasterNavigationSections
         : activeNavigationScope === "workspace"
@@ -278,7 +280,7 @@ export function useMainLayout() {
   const availableSearchItems = useMemo(() => {
     const sourceItems =
       activeNavigationScope === "account"
-        ? []
+        ? MainAccountSearchItems
         : activeNavigationScope === "master"
         ? MainMasterSearchItems
         : activeNavigationScope === "workspace"
@@ -1469,8 +1471,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Maintain financial setup records used by accounting workflows.",
   "maintenance-financial-management-charts-of-accounts":
     "Maintain account codes used by transactions and reports.",
-  "maintenance-financial-management-multi-currency-setup":
-    "Configure currencies and exchange settings.",
+  "system-administration-multi-currency-setup":
+    "Configure currencies, exchange rates, preferences, and rounding rules.",
   "maintenance-financial-management-discount-management":
     "Maintain discount rules for sales and purchasing.",
   "maintenance-financial-management-term-management":

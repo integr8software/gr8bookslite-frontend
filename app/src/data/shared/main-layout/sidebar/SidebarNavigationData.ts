@@ -190,6 +190,25 @@ export const MainMasterNavigationSections: MainNavigationSection[] = [
   ),
 ];
 
+export const MainAccountNavigationSections: MainNavigationSection[] = [
+  directSection(
+    "account-profile-section",
+    "Profile",
+    "/account/profile",
+    "profile",
+    "profile",
+    "account-profile",
+  ),
+  directSection(
+    "account-settings-section",
+    "Settings",
+    "/account/settings",
+    "settings",
+    "profile",
+    "account-settings",
+  ),
+];
+
 const RegisteredMainCompanyNavigationSections = SidebarModuleNavigationSections;
 
 export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
@@ -231,8 +250,8 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
           ),
           child(
             "maintenance-currency",
-            "Multi Currency Setup",
-            "/maintenance/multi-currency-setup",
+            "Multi-Currency Setup",
+            "/system-administration/multi-currency-setup",
             "maintenance.currency",
             "accounting",
           ),
@@ -894,6 +913,14 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
         "settings",
       ),
       item(
+        "system-administration-multi-currency-setup",
+        "Multi-Currency Setup",
+        "/system-administration/multi-currency-setup",
+        "maintenance.currency",
+        "accounting",
+        ["view"],
+      ),
+      item(
         "maintenance-mail",
         "Mail Maintenance",
         "/system-administration/mail-maintenance",
@@ -913,6 +940,9 @@ export const MainCompanyNavigationSections: MainNavigationSection[] = [
 export const MainNavigationSections = MainCompanyNavigationSections;
 export const MainWorkspaceSearchItems = flattenSections(
   MainWorkspaceNavigationSections,
+);
+export const MainAccountSearchItems = flattenSections(
+  MainAccountNavigationSections,
 );
 export const MainCompanySearchItems = flattenSections(
   MainCompanyNavigationSections,

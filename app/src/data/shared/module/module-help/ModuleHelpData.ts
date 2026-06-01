@@ -141,12 +141,12 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-currency",
-    "Multi Currency Setup",
-    "/maintenance/multi-currency-setup",
-    "Configure currencies used by multi-currency transactions.",
+    "Multi-Currency Setup",
+    "/system-administration/multi-currency-setup",
+    "Configure currencies, exchange rates, preferences, and rounding rules.",
     [
-      "Multi Currency Setup stores currency records and exchange-related details for transactions that involve foreign currencies.",
-      "Use consistent currency setup before recording invoices, receipts, payables, or journals that require conversion.",
+      "Multi-Currency Setup stores currency records, fetched exchange rates, manual overrides, and rate history.",
+      "Use consistent preferences before recording invoices, receipts, payables, or journals that require conversion.",
     ],
     ["help-sales", "help-accounts-payable"],
   ),

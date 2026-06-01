@@ -14,6 +14,10 @@ export function hasAccess(
   accessKey: Parameters<typeof readAccess>[1],
   requiredActions?: MainAccessAction[],
 ) {
+  if (accessKey === "profile") {
+    return true;
+  }
+
   if (accessContext.userRole === "Super Admin") {
     return true;
   }

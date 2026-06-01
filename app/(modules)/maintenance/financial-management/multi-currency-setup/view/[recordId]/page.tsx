@@ -1,16 +1,13 @@
-import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { FinancialManagementMultiCurrencySetupAction } from "@/app/src/ui/modules/maintenance/financial-management/multi-currency-setup/Action";
+import { redirect } from "next/navigation";
+import { MultiCurrencySetupHref } from "@/app/src/constants/modules/system-administration/multi-currency-setup/MultiCurrencySetupConstants";
 
-const PageTitle = "View Multi Currency Setup";
+export default async function MaintenanceFinancialManagementMultiCurrencySetupViewPage({
+	params,
+}: {
+	params: Promise<{ recordId: string }>;
+}) {
+	const { recordId } = await params;
 
-export const metadata: Metadata = {
-  title: `${PageTitle} | ${AppName}`,
-  description: `${PageTitle} page for ${AppName}.`,
-};
-
-export default function MaintenanceFinancialManagementMultiCurrencySetupViewPage() {
-  return <FinancialManagementMultiCurrencySetupAction />;
+	redirect(`${MultiCurrencySetupHref}/view/${recordId}`);
 }
-
 

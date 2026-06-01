@@ -47,13 +47,6 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
             "accounting",
           ),
           moduleItem(
-            "maintenance-financial-management-multi-currency-setup",
-            "Multi Currency Setup",
-            "/maintenance/financial-management/multi-currency-setup",
-            "maintenance.currency",
-            "accounting",
-          ),
-          moduleItem(
             "maintenance-financial-management-discount-management",
             "Discount Management",
             "/maintenance/financial-management/discount-management",

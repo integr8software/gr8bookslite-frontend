@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { MasterTenantAccessActionPage } from "@/app/src/ui/master/tenant-access/MasterTenantAccessActionPage";
+import { MasterSubscriberManagementDetailsPage } from "@/app/src/ui/master/subscriber-management/MasterSubscriberManagementDetailsPage";
 
 export const metadata: Metadata = {
 	title: `View Subscriber | ${AppName}`,
@@ -14,11 +14,5 @@ type PageProps = {
 export default async function Page({ params }: PageProps) {
 	const { recordId } = await params;
 
-	return (
-		<MasterTenantAccessActionPage
-			entity="subscriber"
-			mode="view"
-			recordId={recordId}
-		/>
-	);
+	return <MasterSubscriberManagementDetailsPage recordId={recordId} />;
 }

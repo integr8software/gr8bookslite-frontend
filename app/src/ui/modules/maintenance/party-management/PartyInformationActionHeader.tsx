@@ -1,11 +1,22 @@
 import Link from "next/link";
-import { ArrowLeft, Building2, Edit3, Save, X } from "lucide-react";
+import {
+	ArrowLeft,
+	Building2,
+	CheckCircle2,
+	CircleOff,
+	Edit3,
+	Save,
+	X,
+} from "lucide-react";
 import {
 	PartyManagementActionCopy,
 	PartyManagementHref,
 	PartyManagementParentLabel,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
-import type { PartyInformationActionMode } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import type {
+	PartyInformationActionMode,
+	PartyInformationStatus,
+} from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -16,13 +27,20 @@ export function PartyInformationActionHeader({
 	editHref,
 	isReadonly,
 	mode,
+	nextStatus,
+	onStatusChange,
 }: {
 	cancelHref: string;
 	editHref?: string;
 	isReadonly: boolean;
 	mode: PartyInformationActionMode;
+	nextStatus?: PartyInformationStatus;
+	onStatusChange?: () => void;
 }) {
 	const copy = PartyManagementActionCopy[mode];
+	const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
+	const statusLabel =
+		nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active";
 
 	return (
 		<ModuleHeader
@@ -57,6 +75,20 @@ export function PartyInformationActionHeader({
 							<Edit3 className="h-4 w-4" aria-hidden="true" />
 							Edit
 						</Link>
+					) : null}
+					{nextStatus && onStatusChange ? (
+						<button
+							type="button"
+							onClick={onStatusChange}
+							className={
+								nextStatus === "Inactive"
+									? moduleHeaderActionClassNames.danger
+									: moduleHeaderActionClassNames.secondary
+							}
+						>
+							<StatusIcon className="h-4 w-4" aria-hidden="true" />
+							{statusLabel}
+						</button>
 					) : null}
 					{mode !== "view" ? (
 						<Link

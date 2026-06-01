@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
 	PartyClassificationOptions,
+	PartyInformationStatusOptions,
 	PartyTypeOptions,
 	VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
@@ -40,6 +41,9 @@ export const PartyInformationFormSchema = z
 		partyTypes: z
 			.array(z.enum(PartyTypeOptions))
 			.min(1, "Select at least one party type."),
+		status: z.enum(PartyInformationStatusOptions, {
+			error: "Select a status.",
+		}),
 		partyName: z.string().trim(),
 		tradingName: z.string().trim(),
 		firstName: z.string().trim(),
@@ -145,6 +149,8 @@ export function validatePartyInformationForm(
 			errors.partyName = issue.message;
 		} else if (field === "partyTypes" && !errors.partyTypes) {
 			errors.partyTypes = issue.message;
+		} else if (field === "status" && !errors.status) {
+			errors.status = issue.message;
 		} else if (field === "regionCode" && !errors.regionCode) {
 			errors.regionCode = issue.message;
 		} else if (field === "provinceCode" && !errors.provinceCode) {

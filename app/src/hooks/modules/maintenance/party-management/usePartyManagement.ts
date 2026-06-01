@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	getCoreRowModel,
 	getPaginationRowModel,
@@ -14,6 +14,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
 	PartyClassificationOptions,
+	PartyInformationStatusOptions,
 	PartyManagementTableColumns,
 	PartyTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
@@ -24,6 +25,7 @@ import {
 import { PartyManagementQueryKeys } from "@/app/src/services/modules/maintenance/party-management/PartyManagementQueryKeys";
 import type {
 	PartyClassification,
+	PartyInformationStatus,
 	PartyInformationRecord,
 	PartyInformationTableColumnKey,
 	PartyInformationTableRecord,
@@ -48,16 +50,21 @@ export function usePartyManagementStore<
 		initialData: PartyInformationInitialRecords,
 	});
 
-	function updateCachedRecords(
-		updater: (records: PartyInformationRecord[]) => PartyInformationRecord[],
-	) {
-		queryClient.setQueryData<PartyInformationRecord[]>(
-			PartyManagementQueryKeys.records(),
-			(current = PartyInformationInitialRecords) => updater(current),
-		);
-	}
+	const updateCachedRecords = useCallback(
+		(
+			updater: (
+				records: PartyInformationRecord[],
+			) => PartyInformationRecord[],
+		) => {
+			queryClient.setQueryData<PartyInformationRecord[]>(
+				PartyManagementQueryKeys.records(),
+				(current = PartyInformationInitialRecords) => updater(current),
+			);
+		},
+		[queryClient],
+	);
 
-	const addRecordMutation = useMutation({
+	const { isPending: isAddingRecord, mutate: mutateAddRecord } = useMutation({
 		mutationFn: async (record: PartyInformationRecord) => record,
 		onSuccess: (record) => {
 			updateCachedRecords((records) => [...records, record]);
@@ -68,34 +75,45 @@ export function usePartyManagementStore<
 		},
 	});
 
-	const updateRecordMutation = useMutation({
-		mutationFn: async (record: PartyInformationRecord) => record,
-		onSuccess: (record) => {
-			updateCachedRecords((records) =>
-				records.map((currentRecord) =>
-					currentRecord.id === record.id ? record : currentRecord,
-				),
-			);
-			toast.success("Party information updated.");
-		},
-		onError: () => {
-			toast.error("Could not update party information. Please try again.");
-		},
-	});
+	const { isPending: isUpdatingRecord, mutate: mutateUpdateRecord } =
+		useMutation({
+			mutationFn: async (record: PartyInformationRecord) => record,
+			onSuccess: (record) => {
+				updateCachedRecords((records) =>
+					records.map((currentRecord) =>
+						currentRecord.id === record.id ? record : currentRecord,
+					),
+				);
+				toast.success("Party information updated.");
+			},
+			onError: () => {
+				toast.error("Could not update party information. Please try again.");
+			},
+		});
+	const addRecord = useCallback(
+		(record: PartyInformationRecord) => mutateAddRecord(record),
+		[mutateAddRecord],
+	);
+	const updateRecord = useCallback(
+		(record: PartyInformationRecord) => mutateUpdateRecord(record),
+		[mutateUpdateRecord],
+	);
 
 	const state = useMemo<PartyManagementStoreState>(
 		() => ({
-			addRecord: (record) => addRecordMutation.mutate(record),
+			addRecord,
 			isLoading: recordsQuery.isLoading,
-			isMutating: addRecordMutation.isPending || updateRecordMutation.isPending,
+			isMutating: isAddingRecord || isUpdatingRecord,
 			records: recordsQuery.data,
-			updateRecord: (record) => updateRecordMutation.mutate(record),
+			updateRecord,
 		}),
 		[
-			addRecordMutation,
+			addRecord,
+			isAddingRecord,
+			isUpdatingRecord,
 			recordsQuery.data,
 			recordsQuery.isLoading,
-			updateRecordMutation,
+			updateRecord,
 		],
 	);
 
@@ -113,6 +131,9 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	>("All");
 	const [partyTypeFilter, setPartyTypeFilterState] = useState<
 		PartyType | "All"
+	>("All");
+	const [statusFilter, setStatusFilterState] = useState<
+		PartyInformationStatus | "All"
 	>("All");
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
@@ -135,6 +156,7 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 					record.name,
 					record.classification,
 					record.partyTypesLabel,
+					record.status,
 					record.addressLabel,
 				]
 					.filter(Boolean)
@@ -146,10 +168,11 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 					(classificationFilter === "All" ||
 						record.classification === classificationFilter) &&
 					(partyTypeFilter === "All" ||
-						record.partyTypes.includes(partyTypeFilter))
+						record.partyTypes.includes(partyTypeFilter)) &&
+					(statusFilter === "All" || record.status === statusFilter)
 				);
 			}),
-		[classificationFilter, partyTypeFilter, query, tableData],
+		[classificationFilter, partyTypeFilter, query, statusFilter, tableData],
 	);
 	const columns = useMemo<ColumnDef<PartyInformationTableRecord>[]>(
 		() =>
@@ -171,6 +194,18 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 			}),
 		[],
 	);
+	const resetPageIndex = useCallback(() => {
+		setPagination((current) => {
+			if (current.pageIndex === 0) {
+				return current;
+			}
+
+			return {
+				...current,
+				pageIndex: 0,
+			};
+		});
+	}, []);
 
 	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
 	const table = useReactTable({
@@ -187,27 +222,39 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		getSortedRowModel: getSortedRowModel(),
 	});
 
-	function resetFilters() {
+	const resetFilters = useCallback(() => {
 		setQueryState("");
 		setClassificationFilterState("All");
 		setPartyTypeFilterState("All");
-		table.setPageIndex(0);
-	}
+		setStatusFilterState("All");
+		resetPageIndex();
+	}, [resetPageIndex]);
 
-	function setQuery(value: string) {
+	const setQuery = useCallback((value: string) => {
 		setQueryState(value);
-		table.setPageIndex(0);
-	}
+		resetPageIndex();
+	}, [resetPageIndex]);
 
-	function setClassificationFilter(value: PartyClassification | "All") {
-		setClassificationFilterState(value);
-		table.setPageIndex(0);
-	}
+	const setClassificationFilter = useCallback(
+		(value: PartyClassification | "All") => {
+			setClassificationFilterState(value);
+			resetPageIndex();
+		},
+		[resetPageIndex],
+	);
 
-	function setPartyTypeFilter(value: PartyType | "All") {
+	const setPartyTypeFilter = useCallback((value: PartyType | "All") => {
 		setPartyTypeFilterState(value);
-		table.setPageIndex(0);
-	}
+		resetPageIndex();
+	}, [resetPageIndex]);
+
+	const setStatusFilter = useCallback(
+		(value: PartyInformationStatus | "All") => {
+			setStatusFilterState(value);
+			resetPageIndex();
+		},
+		[resetPageIndex],
+	);
 
 	return {
 		classificationFilter,
@@ -219,6 +266,9 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		setClassificationFilter,
 		setPartyTypeFilter,
 		setQuery,
+		setStatusFilter,
+		statusFilter,
+		statusOptions: PartyInformationStatusOptions,
 		table,
 	};
 }

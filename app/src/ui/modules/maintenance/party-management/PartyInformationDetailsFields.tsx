@@ -5,6 +5,7 @@ import type {
 } from "react";
 import {
 	PartyClassificationOptions,
+	PartyInformationStatusOptions,
 	VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
@@ -91,7 +92,7 @@ export function PartyInformationDetailsFields({
 			<div className="grid gap-6">
 				<div className="grid gap-4">
 					<SectionHeading title="Basic Information" />
-					<div className="grid gap-4 lg:grid-cols-3">
+					<div className="grid gap-4 lg:grid-cols-4">
 						<Field label="Party Code" error={errors.partyCodeNo} required>
 							<input
 								name="partyCodeNo"
@@ -131,6 +132,21 @@ export function PartyInformationDetailsFields({
 								value={values.partyTypes}
 								onChange={onPartyTypesChange}
 							/>
+						</Field>
+						<Field label="Status" error={errors.status} required>
+							<select
+								name="status"
+								disabled={isReadonly}
+								value={values.status}
+								onChange={onInputChange}
+								className={selectClassName}
+							>
+								{PartyInformationStatusOptions.map((status) => (
+									<option key={status} value={status}>
+										{status}
+									</option>
+								))}
+							</select>
 						</Field>
 					</div>
 				</div>

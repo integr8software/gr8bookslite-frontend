@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { MasterTenantAccessListPage } from "@/app/src/ui/master/tenant-access/MasterTenantAccessListPage";
+import { MasterSubscriberManagementListPage } from "@/app/src/ui/master/subscriber-management/MasterSubscriberManagementListPage";
 
 export const metadata: Metadata = {
   title: `Subscriber Management | ${AppName}`,
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function MasterSubscriberManagementPage() {
-  return <MasterTenantAccessListPage entity="subscriber" />;
+  return <MasterSubscriberManagementListPage />;
 }

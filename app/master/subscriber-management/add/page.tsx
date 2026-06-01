@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { MasterTenantAccessActionPage } from "@/app/src/ui/master/tenant-access/MasterTenantAccessActionPage";
+import { MasterSubscriberManagementFormPage } from "@/app/src/ui/master/subscriber-management/MasterSubscriberManagementFormPage";
 
 export const metadata: Metadata = {
 	title: `Add Subscriber | ${AppName}`,
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-	return <MasterTenantAccessActionPage entity="subscriber" mode="add" />;
+	return <MasterSubscriberManagementFormPage mode="add" />;
 }

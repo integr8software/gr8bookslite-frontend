@@ -23,7 +23,7 @@ export function PartyInformationTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No party records found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[52rem]"
+				minWidthClassName="min-w-[64rem]"
 				paginationStorageKey={PartyManagementTablePaginationStorageKey}
 				table={partyTable.table}
 				toolbar={
@@ -33,10 +33,13 @@ export function PartyInformationTable({
 						partyTypeFilter={partyTable.partyTypeFilter}
 						partyTypeOptions={partyTable.partyTypeOptions}
 						query={partyTable.query}
+						statusFilter={partyTable.statusFilter}
+						statusOptions={partyTable.statusOptions}
 						onClassificationFilterChange={partyTable.setClassificationFilter}
 						onPartyTypeFilterChange={partyTable.setPartyTypeFilter}
 						onQueryChange={partyTable.setQuery}
 						onResetFilters={partyTable.resetFilters}
+						onStatusFilterChange={partyTable.setStatusFilter}
 					/>
 				}
 				renderRow={({ id, original }) => (

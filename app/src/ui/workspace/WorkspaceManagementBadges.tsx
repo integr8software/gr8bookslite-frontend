@@ -85,19 +85,22 @@ export function WorkspaceManagementPlanBadge({
 	plan: WorkspaceCompanyPlan;
 }) {
 	const classes: Record<string, string> = {
-		Accounting: "bg-skyblue/15 text-darknavy ring-skyblue/25",
-		Inventory: "bg-citron/25 text-darknavy ring-citron/35",
+		Accounting:
+			"border-l-skyblue bg-white text-darknavy ring-darknavy/10",
+		Inventory:
+			"border-l-citron bg-white text-darknavy ring-darknavy/10",
 		"Accounting + Inventory":
-			"bg-darknavy text-offwhite ring-darknavy/20",
+			"border-l-skyblue bg-white text-darknavy ring-darknavy/10",
 		"Accounting & Inventory":
-			"bg-darknavy text-offwhite ring-darknavy/20",
+			"border-l-skyblue bg-white text-darknavy ring-darknavy/10",
 	};
 
 	return (
 		<span
 			className={joinClasses(
-				"inline-flex min-h-7 items-center rounded-md px-3 text-sm font-semibold ring-1",
-				classes[plan] ?? "bg-offwhite text-darknavy ring-darknavy/10",
+				"inline-flex min-h-8 items-center rounded-md border-l-4 px-3 text-sm font-semibold shadow-sm ring-1",
+				classes[plan] ??
+					"border-l-darknavy/30 bg-white text-darknavy ring-darknavy/10",
 			)}
 		>
 			{plan}

@@ -44,6 +44,7 @@ export async function ForgotPasswordAction(
 
     return {
       status: "success",
+      code: response.code,
       message: response.message,
     };
   } catch (error) {
@@ -139,6 +140,7 @@ export async function ResendForgotPasswordAction(
 
     return {
       status: "success",
+      code: response.code,
       message: response.message,
     };
   } catch (error) {

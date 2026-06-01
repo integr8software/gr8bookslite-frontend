@@ -131,6 +131,7 @@ export type ForgotPasswordRequest = {
 };
 
 export type ForgotPasswordResponse = {
+  code?: string;
   message: string;
   maskedEmail?: string;
 };

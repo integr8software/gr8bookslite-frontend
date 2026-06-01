@@ -28,6 +28,7 @@ import { AccountMenu } from "./AccountMenu";
 import { BranchSwitcher } from "./BranchSwitcher";
 import { CompanySwitcher } from "./CompanySwitcher";
 import { TopbarWorkspaceSkeleton } from "./TopbarSkeletons";
+import { SpotlightTutorialButton } from "@/app/src/ui/shared/tour/SpotlightTutorialButton";
 import {
 	getTopbarUserDescriptor,
 	isLargeNotificationPanel,
@@ -496,6 +497,8 @@ export function MainTopbar({
 							/>
 						</div>
 					</div>
+
+					<SpotlightTutorialButton activeHref={activeHref} />
 
 					<button
 						type="button"

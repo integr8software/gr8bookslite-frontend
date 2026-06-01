@@ -14,6 +14,7 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import { CompanyTable } from "@/app/src/ui/workspace/companies/CompanyTable";
+import { WorkspaceCompanySpotlightTutorial } from "@/app/src/ui/workspace/companies/WorkspaceCompanySpotlightTutorial";
 
 export function CompanyManagementPage() {
   const companyManagement = useWorkspaceCompanyManagementStore((state) => ({
@@ -53,7 +54,9 @@ export function CompanyManagementPage() {
 
   return (
     <section className="grid gap-5">
+      <WorkspaceCompanySpotlightTutorial />
       <ModuleHeader
+        data-spotlight-id="workspace-company-header"
         variant="card"
         titleAs="h1"
         title="Companies"
@@ -67,6 +70,7 @@ export function CompanyManagementPage() {
         actions={
           <Link
             href={`${WorkspaceCompaniesHref}/add`}
+            data-spotlight-id="workspace-company-add"
             className={moduleHeaderActionClassNames.primary}
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
@@ -74,8 +78,9 @@ export function CompanyManagementPage() {
           </Link>
         }
       />
-      <ModuleMetrics
-        metrics={[
+      <div data-spotlight-id="workspace-company-metrics">
+        <ModuleMetrics
+          metrics={[
           {
             icon: Building2,
             label: "Total Companies",
@@ -120,8 +125,9 @@ export function CompanyManagementPage() {
               "Admin"
             ),
           },
-        ]}
-      />
+          ]}
+        />
+      </div>
       <CompanyTable
         branches={companyManagement.branches}
         companies={companyManagement.companies}

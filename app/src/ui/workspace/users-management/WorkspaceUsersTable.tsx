@@ -77,7 +77,10 @@ export function WorkspaceUsersTable({
 		useState<WorkspaceCompanyUserRecord | null>(null);
 
 	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+		<div
+			data-spotlight-id="workspace-users-table"
+			className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm"
+		>
 			<ModuleTable
 				variant="embedded"
 				emptyDescription="Try adjusting your search or status filter."
@@ -238,7 +241,10 @@ function WorkspaceUsersTableFilters({
 	onStatusFilterChange: (value: WorkspaceCompanyStatus | "All") => void;
 }) {
 	return (
-		<ModuleTableToolbar className="rounded-none border-x-0 border-t-0 shadow-none md:grid-cols-[minmax(24rem,2.5fr)_minmax(10rem,1fr)_minmax(11rem,1fr)]">
+		<ModuleTableToolbar
+			data-spotlight-id="workspace-users-filters"
+			className="rounded-none border-x-0 border-t-0 shadow-none md:grid-cols-[minmax(24rem,2.5fr)_minmax(10rem,1fr)_minmax(11rem,1fr)]"
+		>
 			<ModuleTableSearch
 				label="Search users"
 				value={query}

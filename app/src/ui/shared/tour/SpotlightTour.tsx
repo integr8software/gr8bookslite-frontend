@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Sparkles, X } from "lucide-react";
+import Image from "next/image";
 import {
   useEffect,
   useMemo,
@@ -16,6 +17,14 @@ const SpotlightViewportGap = 20;
 const SpotlightMobileViewportGap = 16;
 const SpotlightDesktopCardHeight = 332;
 const SpotlightMobileCardHeight = 420;
+const SpotlightMascotImagePaths = [
+  "/img/spotlight-tutorial/neo-gesture-1.png",
+  "/img/spotlight-tutorial/neo-gesture-2.png",
+  "/img/spotlight-tutorial/neo-gesture-3.png",
+  "/img/spotlight-tutorial/neo-gesture-4.png",
+  "/img/spotlight-tutorial/neo-gesture-5.png",
+  "/img/spotlight-tutorial/neo-gesture-6.png",
+] as const;
 
 type SpotlightRect = {
   top: number;
@@ -88,6 +97,11 @@ function SpotlightTourContent({
   const totalSteps = steps.length;
   const canGoBack = activeStepIndex > 0;
   const isMobileViewport = viewportSize.width < 640;
+  const mascotImagePath =
+    SpotlightMascotImagePaths[
+      activeStepIndex % SpotlightMascotImagePaths.length
+    ];
+  const mascotPosition = getMascotPosition(cardPosition, viewportSize);
 
   useEffect(() => {
     function updateViewportSize() {
@@ -248,6 +262,18 @@ function SpotlightTourContent({
       ) : (
         <div className="fixed inset-0 bg-transparent backdrop-blur-sm" />
       )}
+
+      <Image
+        src={mascotImagePath}
+        alt=""
+        width={512}
+        height={640}
+        quality={95}
+        sizes="(min-width: 640px) 256px, 142px"
+        aria-hidden="true"
+        className="pointer-events-none fixed h-44 w-auto select-none object-contain drop-shadow-[0_16px_18px_rgba(15,23,42,0.2)] sm:h-80"
+        style={mascotPosition}
+      />
 
       <section
         role="dialog"
@@ -454,6 +480,52 @@ function getCardPosition(rect: SpotlightRect): SpotlightCardPosition {
   return {
     top,
     left: clampedLeft,
+  };
+}
+
+function getMascotPosition(
+  cardPosition: SpotlightCardPosition,
+  viewportSize: { height: number; width: number },
+): CSSProperties {
+  const mascotWidth = viewportSize.width < 640 ? 142 : 256;
+  const mascotHeight = viewportSize.width < 640 ? 176 : 320;
+  const mascotCardOverlap = viewportSize.width < 640 ? 28 : 42;
+  const cardWidth = Math.min(
+    SpotlightCardWidth,
+    viewportSize.width - getViewportGap(viewportSize.width) * 2,
+  );
+  const cardRight = cardPosition.left + cardWidth;
+  const viewportGap = getViewportGap(viewportSize.width);
+  const canFitOnRight =
+    viewportSize.width - cardRight >= mascotWidth - mascotCardOverlap;
+  const canFitOnLeft =
+    cardPosition.left >= mascotWidth - mascotCardOverlap;
+
+  if (canFitOnRight) {
+    return {
+      left: cardRight - mascotCardOverlap,
+      top: cardPosition.top + 4,
+    };
+  }
+
+  if (canFitOnLeft) {
+    return {
+      left: cardPosition.left - mascotWidth + mascotCardOverlap,
+      top: cardPosition.top + 4,
+    };
+  }
+
+  return {
+    left: clamp(
+      cardRight - mascotWidth - 12,
+      viewportGap,
+      viewportSize.width - mascotWidth - viewportGap,
+    ),
+    top: clamp(
+      cardPosition.top - mascotHeight + 42,
+      viewportGap,
+      Math.max(viewportGap, viewportSize.height - mascotHeight - viewportGap),
+    ),
   };
 }
 

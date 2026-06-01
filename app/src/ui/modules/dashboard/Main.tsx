@@ -9,10 +9,8 @@ import {
   Plus,
   Share2,
   SlidersHorizontal,
-  Sparkles,
   Users,
 } from "lucide-react";
-import { BranchDashboardSpotlightTutorialOpenEvent } from "@/app/src/data/modules/dashboard/BranchDashboardSpotlightTutorialData";
 import type { MainDashboardWidget } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { hasAccess } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 import { MainLayoutData } from "@/app/src/data/shared/main-layout/MainLayoutData";
@@ -40,10 +38,6 @@ export function ManagementMain() {
     ["add"],
   );
 
-  function openSpotlightTutorial() {
-    window.dispatchEvent(new Event(BranchDashboardSpotlightTutorialOpenEvent));
-  }
-
   return (
     <div className="mx-auto flex w-full max-w-[94rem] flex-col gap-4">
       <BranchDashboardSpotlightTutorial />
@@ -63,11 +57,6 @@ export function ManagementMain() {
           </div>
 
           <div className="grid grid-cols-2 gap-2 sm:flex">
-            <ActionButton
-              icon={Sparkles}
-              label="Quick Tour"
-              onClick={openSpotlightTutorial}
-            />
             {canAddDashboard ? (
               <ActionButton
                 dataSpotlightId="branch-dashboard-add"

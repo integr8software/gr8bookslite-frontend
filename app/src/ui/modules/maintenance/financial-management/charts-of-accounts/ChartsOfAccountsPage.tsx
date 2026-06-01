@@ -9,10 +9,8 @@ import {
 	ListTree,
 	Network,
 	Plus,
-	Sparkles,
 	Upload,
 } from "lucide-react";
-import { ChartsOfAccountsSpotlightTutorialOpenEvent } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsDrawer";
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsFilters";
@@ -42,10 +40,6 @@ export function ChartsOfAccountsMain() {
   const [pendingDeleteAccount, setPendingDeleteAccount] =
     useState<ChartAccount | null>(null);
 
-  function openSpotlightTutorial() {
-    window.dispatchEvent(new Event(ChartsOfAccountsSpotlightTutorialOpenEvent));
-  }
-
   function handleConfirmDelete() {
     if (!pendingDeleteAccount) {
       return;
@@ -67,14 +61,6 @@ export function ChartsOfAccountsMain() {
           description="Manage all company accounts and financial statement mapping."
           actions={
             <>
-              <button
-                type="button"
-                className={moduleHeaderActionClassNames.secondary}
-                onClick={openSpotlightTutorial}
-              >
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                Quick Tour
-              </button>
               <button
                 type="button"
                 className={moduleHeaderActionClassNames.secondary}

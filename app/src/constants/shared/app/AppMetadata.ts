@@ -7,7 +7,7 @@ const AppMetadataBase = new URL(
 
 const AppDescription = `${AppName} frontend`;
 const AppMetaLogoPath = "/logo.png";
-const AppIconVersion = "robot-transparent-20260530";
+const AppIconVersion = "robot-large-20260601";
 
 export const AppMetadata: Metadata = {
 	metadataBase: AppMetadataBase,
@@ -22,27 +22,27 @@ export const AppMetadata: Metadata = {
 				type: "image/x-icon",
 			},
 			{
-				url: `/logo/logo-16x16.png?v=${AppIconVersion}`,
+				url: `/favicon-16x16.png?v=${AppIconVersion}`,
 				sizes: "16x16",
 				type: "image/png",
 			},
 			{
-				url: `/logo/logo-32x32.png?v=${AppIconVersion}`,
+				url: `/favicon-32x32.png?v=${AppIconVersion}`,
 				sizes: "32x32",
 				type: "image/png",
 			},
 			{
-				url: `/logo/logo-48x48.png?v=${AppIconVersion}`,
+				url: `/favicon-48x48.png?v=${AppIconVersion}`,
 				sizes: "48x48",
 				type: "image/png",
 			},
 			{
-				url: `/logo/logo-64x64.png?v=${AppIconVersion}`,
+				url: `/favicon-64x64.png?v=${AppIconVersion}`,
 				sizes: "64x64",
 				type: "image/png",
 			},
 			{
-				url: `/logo/logo-128x128.png?v=${AppIconVersion}`,
+				url: `/favicon-128x128.png?v=${AppIconVersion}`,
 				sizes: "128x128",
 				type: "image/png",
 			},

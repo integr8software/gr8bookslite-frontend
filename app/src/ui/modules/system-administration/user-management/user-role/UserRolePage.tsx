@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, ShieldCheck, Sparkles } from "lucide-react";
+import { Plus, ShieldCheck } from "lucide-react";
 import { UserRoleHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import {
   getNextUserStatus,
   type UserRoleRecord,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
-import { UserRoleSpotlightTutorialOpenEvent } from "@/app/src/data/modules/system-administration/user-management/user-role/UserRoleSpotlightTutorialData";
 import { useUserRoleStore } from "@/app/src/hooks/modules/system-administration/user-management/user-role/useUserRole";
 import { UserRoleList } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleList";
 import { UserRoleSpotlightTutorial } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleSpotlightTutorial";
@@ -42,10 +41,6 @@ export function UserRolePage() {
     setPendingStatusRole(null);
   }
 
-  function openSpotlightTutorial() {
-    window.dispatchEvent(new Event(UserRoleSpotlightTutorialOpenEvent));
-  }
-
   return (
     <section className="grid gap-5">
       <UserRoleSpotlightTutorial />
@@ -63,14 +58,6 @@ export function UserRolePage() {
         }
         actions={
           <>
-            <button
-              type="button"
-              onClick={openSpotlightTutorial}
-              className={`${moduleHeaderActionClassNames.secondary} max-sm:w-full`}
-            >
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
-              Quick Tour
-            </button>
             <Link
               href={`${UserRoleHref}/add`}
               data-spotlight-id="user-role-add"

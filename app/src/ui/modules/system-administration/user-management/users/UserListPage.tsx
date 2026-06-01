@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useUserManagementStore } from "@/app/src/hooks/modules/system-administration/user-management/useUserManagement";
 import { UserListHeader } from "@/app/src/ui/modules/system-administration/user-management/users/UserListHeader";
 import { UserListTable } from "@/app/src/ui/modules/system-administration/user-management/users/UserListTable";
+import { UserListSpotlightTutorial } from "@/app/src/ui/modules/system-administration/user-management/users/UserListSpotlightTutorial";
 
 const BranchUsersNameParam = "branchName";
 const CompanyUsersNameParam = "companyName";
@@ -22,6 +23,7 @@ export function UserListPage() {
 
   return (
     <section className="grid gap-5">
+      <UserListSpotlightTutorial />
       <UserListHeader
         description={description}
         title="Users"

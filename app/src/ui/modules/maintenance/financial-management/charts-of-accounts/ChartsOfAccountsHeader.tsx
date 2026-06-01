@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Home, Plus, Sparkles, Upload } from "lucide-react";
+import { Download, Home, Plus, Upload } from "lucide-react";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -8,10 +8,8 @@ import {
 
 export function ChartsOfAccountsHeader({
 	onAddAccount,
-	onStartSpotlightTutorial,
 }: {
 	onAddAccount: () => void;
-	onStartSpotlightTutorial: () => void;
 }) {
 	return (
 		<ModuleHeader
@@ -28,14 +26,6 @@ export function ChartsOfAccountsHeader({
 			}
 			actions={
 				<>
-					<button
-						type="button"
-						className={moduleHeaderActionClassNames.secondary}
-						onClick={onStartSpotlightTutorial}
-					>
-						<Sparkles className="h-4 w-4" aria-hidden="true" />
-						Quick Tour
-					</button>
 					<button
 						type="button"
 						className={moduleHeaderActionClassNames.secondary}

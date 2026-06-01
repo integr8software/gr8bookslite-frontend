@@ -36,21 +36,25 @@ import { ModuleInfoTooltip as InfoTooltip } from "@/app/src/ui/shared/module/Mod
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { WorkspaceBillingSubscriptionRecordActions } from "@/app/src/ui/workspace/billing-and-subscription/WorkspaceBillingSubscriptionRecordActions";
+import { WorkspaceBillingSpotlightTutorial } from "@/app/src/ui/workspace/billing-and-subscription/WorkspaceBillingSpotlightTutorial";
 
 export function WorkspaceBillingSubscriptionPage() {
 	const page = useWorkspaceBillingSubscriptionPage();
 
 	return (
 		<section className="grid gap-5">
+			<WorkspaceBillingSpotlightTutorial />
 			<ModuleHeader
+				data-spotlight-id="workspace-billing-header"
 				variant="card"
 				titleAs="h1"
 				eyebrow="Workspace billing"
 				title="Billing & Subscription"
 				description={`${page.subscriber.name} subscription billing, company pricing, renewal checks, cards, and promotions.`}
 			/>
-			<ModuleMetrics
-				metrics={[
+			<div data-spotlight-id="workspace-billing-metrics">
+				<ModuleMetrics
+					metrics={[
 					{
 						icon: Building2,
 						label: "Companies",
@@ -79,11 +83,18 @@ export function WorkspaceBillingSubscriptionPage() {
 						tone: "cyan",
 						value: formatWorkspaceBillingCurrency(page.summary.dueTotal),
 					},
-				]}
-			/>
+					]}
+				/>
+			</div>
 
-			<section className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
-				<div className="grid gap-3 border-b border-darknavy/10 p-4 lg:grid-cols-[minmax(18rem,1fr)_13rem]">
+			<section
+				data-spotlight-id="workspace-billing-table"
+				className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5"
+			>
+				<div
+					data-spotlight-id="workspace-billing-filters"
+					className="grid gap-3 border-b border-darknavy/10 p-4 lg:grid-cols-[minmax(18rem,1fr)_13rem]"
+				>
 					<label className="relative block min-w-0">
 						<span className="sr-only">Search companies</span>
 						<Search

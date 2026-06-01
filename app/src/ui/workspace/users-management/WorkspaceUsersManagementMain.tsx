@@ -10,6 +10,7 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { WorkspaceUsersTable } from "@/app/src/ui/workspace/users-management/WorkspaceUsersTable";
 import { WorkspaceUserDrawer } from "@/app/src/ui/workspace/users-management/WorkspaceUserDrawer";
+import { WorkspaceUsersSpotlightTutorial } from "@/app/src/ui/workspace/users-management/WorkspaceUsersSpotlightTutorial";
 
 type DrawerState = {
   mode: "add" | "edit";
@@ -34,7 +35,9 @@ export function WorkspaceUsersManagementMain() {
 
   return (
     <section className="grid gap-5">
+      <WorkspaceUsersSpotlightTutorial />
       <ModuleHeader
+        data-spotlight-id="workspace-users-header"
         variant="panel"
         titleAs="h1"
         title="Users Management"
@@ -48,6 +51,7 @@ export function WorkspaceUsersManagementMain() {
         actions={
           <button
             type="button"
+            data-spotlight-id="workspace-users-add"
             onClick={() => setDrawerState({ mode: "add" })}
             className={moduleHeaderActionClassNames.primary}
           >

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Sparkles, UserCog } from "lucide-react";
+import { Plus, UserCog } from "lucide-react";
 import {
   ModuleHeader,
   moduleHeaderActionClassNames,
@@ -9,15 +9,11 @@ export function UserListHeader({
   addHref,
   description,
   title,
-  onStartSpotlightTutorial,
 }: {
   addHref?: string;
   description: string;
   title: string;
-  onStartSpotlightTutorial?: () => void;
 }) {
-  const hasActions = Boolean(addHref || onStartSpotlightTutorial);
-
   return (
     <ModuleHeader
       variant="panel"
@@ -32,19 +28,7 @@ export function UserListHeader({
         </>
       }
       actions={
-        hasActions ? (
-          <>
-            {onStartSpotlightTutorial ? (
-              <button
-                type="button"
-                onClick={onStartSpotlightTutorial}
-                className={`${moduleHeaderActionClassNames.secondary} max-sm:w-full`}
-              >
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                Quick Tour
-              </button>
-            ) : null}
-            {addHref ? (
+        addHref ? (
             <Link
               href={addHref}
               data-spotlight-id="users-add-user"
@@ -53,8 +37,6 @@ export function UserListHeader({
               <Plus className="h-4 w-4" aria-hidden="true" />
               Add User
             </Link>
-            ) : null}
-          </>
         ) : null
       }
     />

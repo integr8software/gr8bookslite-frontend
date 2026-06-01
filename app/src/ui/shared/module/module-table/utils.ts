@@ -25,7 +25,7 @@ export function joinClasses(...classes: Array<string | undefined | false>) {
 
 export const moduleAccentClassNames = {
 	button:
-		"theme-accent-contrast-text border-[var(--skyblue)] bg-[var(--skyblue)] shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.2)] hover:opacity-90 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)]",
+		"theme-accent-contrast-text border-[var(--skyblue)] bg-[var(--skyblue)] !text-[var(--skyblue-contrast)] shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.2)] hover:opacity-90 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)]",
 	focusRing: "focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)]",
 	hoverBorder: "hover:border-[rgb(var(--skyblue-rgb)/0.35)]",
 	hoverSoftBackground: "hover:bg-[rgb(var(--skyblue-rgb)/0.1)]",
@@ -34,6 +34,8 @@ export const moduleAccentClassNames = {
 	rowHover: "[&_tr:hover]:bg-[rgb(var(--skyblue-rgb)/0.035)]",
 	softBackground: "bg-[rgb(var(--skyblue-rgb)/0.12)]",
 	softBorder: "border-[rgb(var(--skyblue-rgb)/0.35)]",
+	solidBackground: "bg-[var(--skyblue)]",
+	solidContrastText: "theme-accent-contrast-text !text-[var(--skyblue-contrast)]",
 	surfaceGradient:
 		"bg-[linear-gradient(180deg,rgb(var(--skyblue-rgb)/0.08),rgba(255,255,255,0.9))]",
 };

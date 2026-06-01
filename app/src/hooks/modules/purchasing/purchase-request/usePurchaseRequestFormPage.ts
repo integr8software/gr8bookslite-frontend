@@ -54,7 +54,6 @@ export function usePurchaseRequestFormPage() {
 		}
 
 		clearAssistantPurchaseRequestPrefill();
-		toast.success("Neo prefilled the purchase request. Please review before saving.");
 	}, [assistantPrefill]);
 
 	const previewRecord = useMemo(

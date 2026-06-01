@@ -2,7 +2,10 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AiAssistantFallbackErrorMessage } from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
+import {
+	AiAssistantFallbackErrorMessage,
+	AiAssistantPurchaseRequestPrefillStorageKey,
+} from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
 import {
 	LoadAiAssistantChatMessages,
 	LoadAiAssistantChatOpenState,
@@ -99,6 +102,19 @@ export function useAiAssistantChat() {
 		}
 
 		if (action.type === "navigate") {
+			window.dispatchEvent(new Event("gr8books:navigation-start"));
+			router.push(action.route);
+			return;
+		}
+
+		if (action.type === "open_form") {
+			if (action.target === "purchase_request" && action.prefill) {
+				window.localStorage.setItem(
+					AiAssistantPurchaseRequestPrefillStorageKey,
+					JSON.stringify(action.prefill),
+				);
+			}
+
 			window.dispatchEvent(new Event("gr8books:navigation-start"));
 			router.push(action.route);
 			return;

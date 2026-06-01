@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Loader2, Maximize2, Send, X } from "lucide-react";
+import { Loader2, Send, X } from "lucide-react";
 import {
 	AiAssistantInputPlaceholder,
 	AiAssistantLogoSrc,
@@ -17,7 +17,6 @@ export function AiAssistantChat() {
 		inputRef,
 		isOpen,
 		isSending,
-		latestAssistantMessage,
 		messages,
 		openChat,
 		setInput,
@@ -79,7 +78,7 @@ export function AiAssistantChat() {
 								<p
 									className={
 										message.role === "user"
-											? "max-w-[85%] rounded-lg bg-skyblue px-3 py-2 text-sm leading-5 text-darknavy shadow-[0_8px_22px_rgba(87,196,229,0.22)]"
+											? "theme-accent-contrast-text max-w-[85%] rounded-lg bg-skyblue px-3 py-2 text-sm leading-5 shadow-[0_8px_22px_rgba(87,196,229,0.22)]"
 											: "max-w-[85%] rounded-lg border border-skyblue/20 bg-skyblue/10 px-3 py-2 text-sm leading-5 text-darknavy"
 									}
 								>
@@ -118,7 +117,7 @@ export function AiAssistantChat() {
 								type="submit"
 								disabled={isSending || !input.trim()}
 								aria-label="Send message"
-								className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-skyblue text-darknavy transition hover:bg-skyblue/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 disabled:cursor-not-allowed disabled:opacity-45"
+								className="theme-accent-contrast-text inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-skyblue transition hover:bg-skyblue/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 disabled:cursor-not-allowed disabled:opacity-45"
 							>
 								<Send
 									className="h-4.5 w-4.5"
@@ -140,9 +139,9 @@ function AiAssistantLauncherButton({ onClick }: { onClick: () => void }) {
 			type="button"
 			onClick={onClick}
 			aria-label={`Open ${AiAssistantName}`}
-			className="fixed bottom-4 right-4 z-60 inline-flex h-13 w-13 items-center justify-center overflow-hidden rounded-full border-2 border-skyblue bg-white shadow-[0_18px_45px_rgba(33,39,56,0.22)] transition hover:border-skyblue/70 hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50"
+			className="neo-ai-launcher fixed bottom-4 right-4 z-60 inline-flex h-13 w-13 items-center justify-center overflow-hidden rounded-full border-2 border-skyblue bg-white shadow-[0_18px_45px_rgba(33,39,56,0.22)] transition hover:border-skyblue/70 hover:bg-skyblue/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50"
 		>
-			<span className="neo-ai-launcher inline-flex h-9 w-9 items-center justify-center rounded-full">
+			<span className="inline-flex h-9 w-9 items-center justify-center rounded-full">
 				<Image
 					src={AiAssistantLogoSrc}
 					alt=""

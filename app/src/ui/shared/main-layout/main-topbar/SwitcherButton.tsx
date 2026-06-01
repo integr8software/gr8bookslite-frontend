@@ -61,7 +61,7 @@ export function SwitcherButton({
 				) : null}
 			</span>
 			{isActive ? (
-				<span className="mt-1 inline-flex min-h-6 items-center rounded-full bg-skyblue px-3 text-xs font-semibold text-darknavy">
+				<span className="theme-accent-contrast-text mt-1 inline-flex min-h-6 items-center rounded-full bg-skyblue px-3 text-xs font-semibold">
 					Current
 				</span>
 			) : status ? (

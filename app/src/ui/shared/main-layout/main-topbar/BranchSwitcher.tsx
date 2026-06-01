@@ -225,7 +225,7 @@ function BranchSwitcherGroup({
 								className={joinClasses(
 									"flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
 									isCurrentBranch
-										? "bg-skyblue text-darknavy shadow-[0_0_10px_rgb(var(--skyblue-rgb)/0.26)]"
+										? "theme-accent-contrast-text bg-skyblue shadow-[0_0_10px_rgb(var(--skyblue-rgb)/0.26)]"
 										: "bg-darknavy/8 text-darknavy",
 								)}
 							>

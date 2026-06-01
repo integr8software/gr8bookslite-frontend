@@ -8,6 +8,7 @@
 	--offwhite: #f8fafc;
 	--skyblue: #57c4e5;
 	--skyblue-rgb: 87 196 229;
+	--skyblue-contrast: #ffffff;
 	--background-rgb: 248 250 252;
 	--background: var(--offwhite);
 	--foreground: var(--darknavy);
@@ -28,6 +29,7 @@
 	--offwhite: #f8fafc;
 	--skyblue: #57c4e5;
 	--skyblue-rgb: 87 196 229;
+	--skyblue-contrast: #ffffff;
 	--background-rgb: 248 250 252;
 	--background: #f8fafc;
 	--foreground: #212738;
@@ -40,6 +42,7 @@
 	--offwhite: #f4fbff;
 	--skyblue: #67c9ee;
 	--skyblue-rgb: 103 201 238;
+	--skyblue-contrast: #ffffff;
 	--background-rgb: 244 251 255;
 	--background: #f4fbff;
 	--foreground: #1f2d3d;
@@ -52,6 +55,7 @@
 	--offwhite: #f4f8f6;
 	--skyblue: #57c4e5;
 	--skyblue-rgb: 87 196 229;
+	--skyblue-contrast: #ffffff;
 	--background-rgb: 15 23 36;
 	--background: #0f1724;
 	--foreground: #ecf2ef;
@@ -297,11 +301,11 @@ button {
 }
 
 .theme-accent-contrast-text {
-	color: #f8fafc !important;
+	color: var(--skyblue-contrast) !important;
 }
 
 :root[data-app-theme="midnight-dark"] .theme-accent-contrast-text {
-	color: #ffffff !important;
+	color: var(--skyblue-contrast) !important;
 }
 
 .brand-accent-text {
@@ -726,7 +730,7 @@ button {
 
 .neo-ai-launcher {
 	will-change: transform;
-	animation: neo-ai-jump 2.8s ease-in-out infinite;
+	animation: neo-ai-jump 5s ease-in-out infinite;
 }
 
 .neo-ai-panel {
@@ -763,17 +767,17 @@ button {
 
 @keyframes neo-ai-jump {
 	0%,
-	58%,
+	74%,
 	100% {
 		transform: translateY(0) scale(1);
 	}
-	68% {
+	80% {
 		transform: translateY(-8px) scale(1.03);
 	}
-	78% {
+	86% {
 		transform: translateY(0) scale(1);
 	}
-	86% {
+	91% {
 		transform: translateY(-4px) scale(1.015);
 	}
 }

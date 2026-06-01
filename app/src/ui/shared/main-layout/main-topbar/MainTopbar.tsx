@@ -471,7 +471,7 @@ export function MainTopbar({
 						>
 							<Bell className="h-5 w-5" aria-hidden="true" />
 							{unreadNotificationCount > 0 ? (
-								<span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-coralpink ring-2 ring-white" />
+								<span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-skyblue shadow-[0_0_10px_rgb(var(--skyblue-rgb)/0.45)] ring-2 ring-white" />
 							) : null}
 						</button>
 

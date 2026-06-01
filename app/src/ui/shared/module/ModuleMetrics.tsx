@@ -1,6 +1,9 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	joinClasses,
+	moduleAccentClassNames,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 type ModuleMetricTone =
 	| "amber"
@@ -104,7 +107,7 @@ function ModuleMetricCard({
 
 const moduleMetricAccentClassNames: Record<ModuleMetricTone, string> = {
 	amber: "bg-amber-500",
-	blue: "bg-[var(--skyblue)]",
+	blue: moduleAccentClassNames.solidBackground,
 	cyan: "bg-cyan-500",
 	emerald: "bg-emerald-500",
 	slate: "bg-slate-500",

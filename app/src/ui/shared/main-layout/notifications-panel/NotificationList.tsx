@@ -33,7 +33,10 @@ export function NotificationList({
 								onMarkAsRead(notification.id);
 								onClose?.();
 							}}
-							className="block rounded-md px-3 py-3 transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+							className={joinClasses(
+								"block rounded-md px-3 py-3 transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+								!notification.isRead && "bg-skyblue/10",
+							)}
 						>
 							<div className="flex items-start gap-3">
 								<span
@@ -41,7 +44,7 @@ export function NotificationList({
 										"mt-1 h-2.5 w-2.5 shrink-0 rounded-full",
 										notification.isRead
 											? "bg-darknavy/20"
-											: "bg-coralpink",
+											: "bg-skyblue shadow-[0_0_10px_rgb(var(--skyblue-rgb)/0.28)]",
 									)}
 								/>
 								<span className="min-w-0 flex-1">

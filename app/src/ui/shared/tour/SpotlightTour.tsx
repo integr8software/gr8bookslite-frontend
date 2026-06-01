@@ -352,7 +352,7 @@ function SpotlightTourContent({
               className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 sm:min-w-24 ${
                 isLightAppearance
                   ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-skyblue text-darknavy hover:bg-skyblue/90"
+                  : "theme-accent-contrast-text bg-skyblue hover:bg-skyblue/90"
               }`}
             >
               {activeStepIndex === totalSteps - 1 ? "Finish" : "Next"}

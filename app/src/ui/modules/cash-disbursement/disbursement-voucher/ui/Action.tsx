@@ -1224,16 +1224,25 @@ function CardShell({
   children,
   description,
   eyebrow,
+  tone = "white",
   title,
 }: {
   children: React.ReactNode;
   description: string;
   eyebrow: string;
+  tone?: "citron" | "offwhite" | "white";
   title: string;
 }) {
+  const toneClassName =
+    tone === "citron"
+      ? "bg-citron/18"
+      : tone === "offwhite"
+        ? "bg-offwhite/80"
+        : "bg-white";
+
   return (
     <section
-      className={`rounded-[28px] border border-darknavy/10 p-5 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-6`}
+      className={`${toneClassName} rounded-[28px] border border-darknavy/10 p-5 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-6`}
     >
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
         {eyebrow}

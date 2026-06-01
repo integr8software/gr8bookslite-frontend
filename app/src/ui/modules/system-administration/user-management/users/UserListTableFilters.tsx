@@ -3,7 +3,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type UserListTableFiltersProps = {
 	query: string;
@@ -48,4 +48,3 @@ export function UserListTableFilters({
 		</ModuleTableToolbar>
 	);
 }
-

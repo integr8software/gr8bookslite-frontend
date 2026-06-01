@@ -31,7 +31,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { ItemSetupTable } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupTable";
 
 export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
@@ -55,7 +55,8 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 			icon: CheckCircle2,
 			label: "Active Records",
 			tone: "emerald",
-			value: setupRecords.filter((record) => record.status === "Active").length,
+			value: setupRecords.filter((record) => record.status === "Active")
+				.length,
 		},
 		{
 			helper: "Currently inactive",
@@ -95,7 +96,9 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 						{childConfig ? (
 							<Link
 								href={`${childConfig.href}/add`}
-								className={moduleHeaderActionClassNames.secondary}
+								className={
+									moduleHeaderActionClassNames.secondary
+								}
 							>
 								<Plus className="h-4 w-4" aria-hidden="true" />
 								Add {childConfig.singularTitle}
@@ -123,19 +126,39 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 						{childConfig ? (
 							<div className="flex flex-col gap-3 border-b border-darknavy/10 px-5 py-4 sm:flex-row sm:justify-end">
 								<ItemSetupStructureButton
-									active={page.structureFilter === "With Submodules"}
-									icon={<Network className="h-4 w-4" aria-hidden="true" />}
+									active={
+										page.structureFilter ===
+										"With Submodules"
+									}
+									icon={
+										<Network
+											className="h-4 w-4"
+											aria-hidden="true"
+										/>
+									}
 									label="With Submodules"
 									onClick={() =>
-										page.handleStructureFilterChange("With Submodules")
+										page.handleStructureFilterChange(
+											"With Submodules",
+										)
 									}
 								/>
 								<ItemSetupStructureButton
-									active={page.structureFilter === "Without Submodules"}
-									icon={<ListTree className="h-4 w-4" aria-hidden="true" />}
+									active={
+										page.structureFilter ===
+										"Without Submodules"
+									}
+									icon={
+										<ListTree
+											className="h-4 w-4"
+											aria-hidden="true"
+										/>
+									}
 									label="Without Submodules"
 									onClick={() =>
-										page.handleStructureFilterChange("Without Submodules")
+										page.handleStructureFilterChange(
+											"Without Submodules",
+										)
 									}
 								/>
 							</div>
@@ -152,7 +175,10 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 								value={page.levelFilter}
 								options={[
 									{ label: "All", value: "All" },
-									{ label: config.singularTitle, value: kind },
+									{
+										label: config.singularTitle,
+										value: kind,
+									},
 									...(childConfig
 										? [
 												{
@@ -231,4 +257,3 @@ function ItemSetupStructureButton({
 		</button>
 	);
 }
-

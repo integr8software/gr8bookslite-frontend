@@ -3,7 +3,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type TransactionNumberSetupTableFiltersProps = {
 	query: string;
@@ -36,7 +36,9 @@ export function TransactionNumberSetupTableFilters({
 					{ label: "Shared selected", value: "shared" },
 				]}
 				onChange={(value) =>
-					onScopeFilterChange(value as "all" | "any" | "branch" | "shared")
+					onScopeFilterChange(
+						value as "all" | "any" | "branch" | "shared",
+					)
 				}
 			/>
 			<ModuleTableResetButton
@@ -50,4 +52,3 @@ export function TransactionNumberSetupTableFilters({
 		</ModuleTableToolbar>
 	);
 }
-

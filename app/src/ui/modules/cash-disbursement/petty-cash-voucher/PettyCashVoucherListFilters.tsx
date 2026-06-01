@@ -5,7 +5,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type PettyCashVoucherListPageState = ReturnType<
 	typeof usePettyCashVoucherListPage
@@ -37,4 +37,3 @@ export function PettyCashVoucherListFilters({
 		</ModuleTableToolbar>
 	);
 }
-

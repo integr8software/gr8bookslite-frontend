@@ -2,7 +2,7 @@ import { Plus } from "lucide-react";
 import { ItemUomOptions } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import type { ItemUomConversion } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleTableActionButton } from "@/app/src/ui/shared/module/ModuleTableActions";
+import { ModuleTableActionButton } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type ItemUomConversionsTableProps = {
 	conversions: ItemUomConversion[];
@@ -73,7 +73,11 @@ export function ItemUomConversionsTable({
 										isReadonly={isReadonly}
 										value={conversion.fromUom}
 										onChange={(value) =>
-											onUpdateConversion(conversion.id, "fromUom", value)
+											onUpdateConversion(
+												conversion.id,
+												"fromUom",
+												value,
+											)
 										}
 									/>
 								</td>
@@ -99,7 +103,11 @@ export function ItemUomConversionsTable({
 										isReadonly={isReadonly}
 										value={conversion.toUom}
 										onChange={(value) =>
-											onUpdateConversion(conversion.id, "toUom", value)
+											onUpdateConversion(
+												conversion.id,
+												"toUom",
+												value,
+											)
 										}
 									/>
 								</td>
@@ -107,7 +115,11 @@ export function ItemUomConversionsTable({
 									{!isReadonly ? (
 										<ModuleTableActionButton
 											variant="delete"
-											onClick={() => onRemoveConversion(conversion.id)}
+											onClick={() =>
+												onRemoveConversion(
+													conversion.id,
+												)
+											}
 											label="Remove conversion"
 										/>
 									) : null}

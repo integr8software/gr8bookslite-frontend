@@ -16,7 +16,7 @@ import {
 	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { MasterPromotionTableRow } from "@/app/src/ui/master/promotions/MasterPromotionTableRow";
 
 type MasterPromotionTableProps = Pick<
@@ -59,12 +59,16 @@ export function MasterPromotionTable({
 						<ModuleTableFilterSelect
 							label="Status"
 							value={statusFilter}
-							options={MasterPromotionStatusFilterOptions.map((option) => ({
-								label: option,
-								value: option,
-							}))}
+							options={MasterPromotionStatusFilterOptions.map(
+								(option) => ({
+									label: option,
+									value: option,
+								}),
+							)}
 							onChange={(value) =>
-								setStatusFilter(value as MasterPromotionStatusFilter)
+								setStatusFilter(
+									value as MasterPromotionStatusFilter,
+								)
 							}
 						/>
 						<ModuleTableResetButton onClick={resetFilters}>
@@ -83,4 +87,3 @@ export function MasterPromotionTable({
 		</div>
 	);
 }
-

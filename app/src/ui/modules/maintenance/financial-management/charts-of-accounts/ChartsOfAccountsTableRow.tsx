@@ -14,7 +14,7 @@ import {
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type ChartsOfAccountsTableRowProps = {
 	account: ChartAccount;
@@ -226,7 +226,8 @@ function getCanDropOnAccount({
 	}
 
 	return (
-		!targetIsSpecific && activeDragAccount.parentId === targetAccount.parentId
+		!targetIsSpecific &&
+		activeDragAccount.parentId === targetAccount.parentId
 	);
 }
 

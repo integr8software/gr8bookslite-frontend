@@ -18,7 +18,7 @@ import {
 	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { WorkspaceVouchersAndCouponsTableRow } from "@/app/src/ui/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsTableRow";
 
 type WorkspaceVouchersAndCouponsTableProps = Pick<
@@ -51,7 +51,9 @@ export function WorkspaceVouchersAndCouponsTable({
 				emptyIcon={<Tags className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No vouchers or coupons found"
 				minWidthClassName="min-w-[98rem]"
-				paginationStorageKey={WorkspaceVouchersAndCouponsPaginationStorageKey}
+				paginationStorageKey={
+					WorkspaceVouchersAndCouponsPaginationStorageKey
+				}
 				table={table}
 				toolbar={
 					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,1fr)]">
@@ -86,7 +88,9 @@ export function WorkspaceVouchersAndCouponsTable({
 								}),
 							)}
 							onChange={(value) =>
-								setTypeFilter(value as WorkspaceVouchersAndCouponsTypeFilter)
+								setTypeFilter(
+									value as WorkspaceVouchersAndCouponsTypeFilter,
+								)
 							}
 						/>
 						<ModuleTableResetButton onClick={resetFilters}>

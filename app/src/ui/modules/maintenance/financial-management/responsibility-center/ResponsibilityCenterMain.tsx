@@ -22,7 +22,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { ResponsibilityCenterSetStatusDialog } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterSetStatusDialog";
 import { ResponsibilityCenterTable } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTable";
 
@@ -31,7 +31,9 @@ export function ResponsibilityCenterMain() {
 	const updateCenter = useResponsibilityCenterStore(
 		(state) => state.updateCenter,
 	);
-	const isMutating = useResponsibilityCenterStore((state) => state.isMutating);
+	const isMutating = useResponsibilityCenterStore(
+		(state) => state.isMutating,
+	);
 	const [pendingStatusCenter, setPendingStatusCenter] =
 		useState<ResponsibilityCenter | null>(null);
 	const [query, setQuery] = useState("");
@@ -42,8 +44,9 @@ export function ResponsibilityCenterMain() {
 
 		return centers.filter((center) => {
 			const parentName = center.parentId
-				? centers.find((parentCenter) => parentCenter.id === center.parentId)
-						?.name
+				? centers.find(
+						(parentCenter) => parentCenter.id === center.parentId,
+					)?.name
 				: "";
 
 			if (statusFilter !== "All" && center.status !== statusFilter) {
@@ -133,10 +136,12 @@ export function ResponsibilityCenterMain() {
 							value={typeFilter}
 							options={[
 								{ label: "All", value: "All" },
-								...ResponsibilityCenterTypeOptions.map((type) => ({
-									label: type,
-									value: type,
-								})),
+								...ResponsibilityCenterTypeOptions.map(
+									(type) => ({
+										label: type,
+										value: type,
+									}),
+								),
 							]}
 							onChange={setTypeFilter}
 						/>
@@ -145,10 +150,12 @@ export function ResponsibilityCenterMain() {
 							value={statusFilter}
 							options={[
 								{ label: "All", value: "All" },
-								...ResponsibilityCenterStatusOptions.map((status) => ({
-									label: status,
-									value: status,
-								})),
+								...ResponsibilityCenterStatusOptions.map(
+									(status) => ({
+										label: status,
+										value: status,
+									}),
+								),
 							]}
 							onChange={setStatusFilter}
 						/>
@@ -169,4 +176,3 @@ export function ResponsibilityCenterMain() {
 		</section>
 	);
 }
-

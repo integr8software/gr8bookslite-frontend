@@ -17,7 +17,7 @@ import {
 import {
 	ModuleTableActionLink,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type MasterTenantAccessTableRowProps = {
 	record: MasterTenantAccessListRecord;
@@ -60,7 +60,10 @@ function CompanyRow({ record }: MasterTenantAccessTableRowProps) {
 	return (
 		<tr className="module-table-row">
 			<PrimaryCell title={company.legalName} supporting={company.email} />
-			<TextCell title={record.relationName} supporting={company.tradeName} />
+			<TextCell
+				title={record.relationName}
+				supporting={company.tradeName}
+			/>
 			<BadgeCell>
 				<MasterTenantAccessStatusBadge status={company.status} />
 			</BadgeCell>
@@ -85,7 +88,9 @@ function BranchRow({ record }: MasterTenantAccessTableRowProps) {
 			</BadgeCell>
 			<BadgeCell>
 				<div className="flex flex-wrap items-center gap-2">
-					<MasterTenantAccessBranchTypeBadge branchType={branch.branchType} />
+					<MasterTenantAccessBranchTypeBadge
+						branchType={branch.branchType}
+					/>
 					<span className="text-xs font-semibold text-darknavy/45">
 						{branch.tin}
 					</span>
@@ -103,7 +108,10 @@ function UserRow({ record }: MasterTenantAccessTableRowProps) {
 	return (
 		<tr className="module-table-row">
 			<PrimaryCell title={user.name} supporting={user.email} />
-			<TextCell title={record.relationName} supporting={user.contactNumber} />
+			<TextCell
+				title={record.relationName}
+				supporting={user.contactNumber}
+			/>
 			<BadgeCell>
 				<MasterTenantAccessStatusBadge status={user.status} />
 			</BadgeCell>
@@ -128,7 +136,9 @@ function PrimaryCell({
 	return (
 		<td className="px-4 py-4">
 			<div className="min-w-0">
-				<p className="truncate text-sm font-semibold text-darknavy">{title}</p>
+				<p className="truncate text-sm font-semibold text-darknavy">
+					{title}
+				</p>
 				{supporting ? (
 					<p className="mt-1 truncate text-sm text-darknavy/50">
 						{supporting}
@@ -148,9 +158,13 @@ function TextCell({
 }) {
 	return (
 		<td className="px-4 py-4">
-			<p className="truncate text-sm font-semibold text-darknavy">{title}</p>
+			<p className="truncate text-sm font-semibold text-darknavy">
+				{title}
+			</p>
 			{supporting ? (
-				<p className="mt-1 truncate text-sm text-darknavy/48">{supporting}</p>
+				<p className="mt-1 truncate text-sm text-darknavy/48">
+					{supporting}
+				</p>
 			) : null}
 		</td>
 	);
@@ -173,12 +187,18 @@ function ActionCell({ record }: MasterTenantAccessTableRowProps) {
 		<td className="px-4 py-4">
 			<ModuleTableActions className="justify-center">
 				<ModuleTableActionLink
-					href={getMasterTenantAccessViewHref(record.entity, record.id)}
+					href={getMasterTenantAccessViewHref(
+						record.entity,
+						record.id,
+					)}
 					label={`View ${record.primaryText}`}
 					variant="view"
 				/>
 				<ModuleTableActionLink
-					href={getMasterTenantAccessEditHref(record.entity, record.id)}
+					href={getMasterTenantAccessEditHref(
+						record.entity,
+						record.id,
+					)}
 					label={`Edit ${record.primaryText}`}
 					variant="edit"
 				/>

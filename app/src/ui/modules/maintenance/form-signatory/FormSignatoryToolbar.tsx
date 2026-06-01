@@ -8,7 +8,7 @@ import {
 import {
 	ModuleTableFilterSelect,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 type FormSignatoryToolbarProps = {

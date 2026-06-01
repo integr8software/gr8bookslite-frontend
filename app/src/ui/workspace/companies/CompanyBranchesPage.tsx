@@ -8,18 +8,10 @@ import {
 	WorkspaceCompanyNotFoundDescription,
 	getWorkspaceCompanyHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
-import {
-	WorkspaceCompanyBranchFormId,
-} from "@/app/src/data/workspace/companies/WorkspaceCompanyBranchData";
-import {
-	getBranchDisplayLabel,
-} from "@/app/src/data/shared/branch/BranchDisplayData";
-import {
-	useWorkspaceCompanyBranchesPage,
-} from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyBranchesPage";
-import type {
-	WorkspaceCompanyBranchRecord,
-} from "@/app/src/types/workspace/WorkspaceCompanyTypes";
+import { WorkspaceCompanyBranchFormId } from "@/app/src/data/workspace/companies/WorkspaceCompanyBranchData";
+import { getBranchDisplayLabel } from "@/app/src/data/shared/branch/BranchDisplayData";
+import { useWorkspaceCompanyBranchesPage } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyBranchesPage";
+import type { WorkspaceCompanyBranchRecord } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import {
@@ -31,7 +23,7 @@ import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { BranchDetailsFields } from "@/app/src/ui/modules/system-administration/branch-management/BranchDetailsFields";
 import {
 	WorkspaceManagementStatusBadge,
@@ -73,7 +65,9 @@ export function CompanyBranchesPage() {
 				actions={
 					branchPage.company ? (
 						<Link
-							href={getWorkspaceCompanyHref(branchPage.company.id)}
+							href={getWorkspaceCompanyHref(
+								branchPage.company.id,
+							)}
 							className={moduleHeaderActionClassNames.secondary}
 						>
 							<ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -147,7 +141,8 @@ export function CompanyBranchesPage() {
 				isPending={branchPage.isDeactivatingBranch}
 				title="Deactivate branch?"
 				description={`This will mark ${
-					branchPage.pendingInactiveBranch?.name ?? "the selected branch"
+					branchPage.pendingInactiveBranch?.name ??
+					"the selected branch"
 				} as inactive while keeping its history available.`}
 				confirmLabel="Deactivate Branch"
 				tone="danger"
@@ -250,7 +245,9 @@ function CompanyBranchTableRow({
 					{branchTypeLabel}
 				</WorkspaceManagementSummaryBadge>
 			</BranchTableDetail>
-			<BranchTableDetail label="TIN">{branch.tin || "-"}</BranchTableDetail>
+			<BranchTableDetail label="TIN">
+				{branch.tin || "-"}
+			</BranchTableDetail>
 			<BranchTableDetail label="Status">
 				<WorkspaceManagementStatusBadge status={branch.status} />
 			</BranchTableDetail>

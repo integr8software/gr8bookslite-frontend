@@ -17,7 +17,7 @@ import {
 	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type MasterPlanAndPackageTableProps = Pick<
 	ReturnType<typeof useMasterPlanAndPackageListPage>,
@@ -67,7 +67,9 @@ export function MasterPlanAndPackageTable({
 						options={MasterPlanAndPackageStatusFilterOptions}
 						value={statusFilter}
 						onChange={(value) =>
-							setStatusFilter(value as MasterPlanAndPackageStatusFilterValue)
+							setStatusFilter(
+								value as MasterPlanAndPackageStatusFilterValue,
+							)
 						}
 					/>
 					<ModuleTableFilterSelect
@@ -75,7 +77,9 @@ export function MasterPlanAndPackageTable({
 						options={MasterPlanAndPackageScopeFilterOptions}
 						value={scopeFilter}
 						onChange={(value) =>
-							setScopeFilter(value as MasterPlanAndPackageScopeFilterValue)
+							setScopeFilter(
+								value as MasterPlanAndPackageScopeFilterValue,
+							)
 						}
 					/>
 					<ModuleTableResetButton onClick={resetFilters}>

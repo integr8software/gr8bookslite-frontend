@@ -5,7 +5,7 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type ResponsibilityCenterTableRowProps = {
 	center: ResponsibilityCenter;
@@ -20,7 +20,9 @@ export function ResponsibilityCenterTableRow({
 }: ResponsibilityCenterTableRowProps) {
 	return (
 		<tr className="module-table-row">
-			<td className="px-4 py-4 font-medium text-darknavy">{center.code}</td>
+			<td className="px-4 py-4 font-medium text-darknavy">
+				{center.code}
+			</td>
 			<td className="px-4 py-4">
 				<CenterIdentity center={center} parentName={parentName} />
 			</td>
@@ -55,7 +57,9 @@ function CenterIdentity({
 					{center.name}
 				</h3>
 				<p className="mt-1 truncate text-xs text-darknavy/50">
-					{parentName ? `Reports to ${parentName}` : "Top-level center"}
+					{parentName
+						? `Reports to ${parentName}`
+						: "Top-level center"}
 				</p>
 			</div>
 		</div>

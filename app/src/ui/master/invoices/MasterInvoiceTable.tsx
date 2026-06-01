@@ -18,7 +18,7 @@ import {
 	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { MasterInvoiceTableRow } from "@/app/src/ui/master/invoices/MasterInvoiceTableRow";
 
 type MasterInvoiceTableProps = Pick<
@@ -48,7 +48,9 @@ export function MasterInvoiceTable({
 			<ModuleTable<MasterInvoiceRecord>
 				variant="embedded"
 				emptyDescription="Try a different subscriber, invoice number, payment method, date, or status."
-				emptyIcon={<ReceiptText className="h-5 w-5" aria-hidden="true" />}
+				emptyIcon={
+					<ReceiptText className="h-5 w-5" aria-hidden="true" />
+				}
 				emptyTitle="No invoices found"
 				minWidthClassName="min-w-[95rem]"
 				paginationStorageKey={MasterInvoicePaginationStorageKey}
@@ -64,21 +66,27 @@ export function MasterInvoiceTable({
 						<ModuleTableFilterSelect
 							label="Status"
 							value={statusFilter}
-							options={MasterInvoiceStatusOptions.map((option) => ({
-								label: option,
-								value: option,
-							}))}
+							options={MasterInvoiceStatusOptions.map(
+								(option) => ({
+									label: option,
+									value: option,
+								}),
+							)}
 							onChange={(value) =>
-								setStatusFilter(value as MasterInvoiceStatusFilter)
+								setStatusFilter(
+									value as MasterInvoiceStatusFilter,
+								)
 							}
 						/>
 						<ModuleTableFilterSelect
 							label="Payment"
 							value={paymentMethodFilter}
-							options={MasterInvoicePaymentMethodOptions.map((option) => ({
-								label: option,
-								value: option,
-							}))}
+							options={MasterInvoicePaymentMethodOptions.map(
+								(option) => ({
+									label: option,
+									value: option,
+								}),
+							)}
 							onChange={(value) =>
 								setPaymentMethodFilter(
 									value as MasterInvoicePaymentMethodFilter,

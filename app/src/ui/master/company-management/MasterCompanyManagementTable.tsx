@@ -2,9 +2,7 @@
 
 import { Fragment } from "react";
 import { Search } from "lucide-react";
-import {
-	MasterCompanyManagementPaginationStorageKey,
-} from "@/app/src/constants/master/company-management/MasterCompanyManagementConstants";
+import { MasterCompanyManagementPaginationStorageKey } from "@/app/src/constants/master/company-management/MasterCompanyManagementConstants";
 import type {
 	MasterCompanyManagementGroupBy,
 	MasterCompanyManagementRecord,
@@ -17,7 +15,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import {
 	MasterCompanyManagementGroupRow,
 	MasterCompanyManagementTableRow,
@@ -56,13 +54,19 @@ export function MasterCompanyManagementTable({
 
 	if (groupBy !== "none") {
 		table.getPrePaginationRowModel().rows.forEach((row) => {
-			const groupValue = getMasterCompanyGroupValue(row.original, groupBy);
+			const groupValue = getMasterCompanyGroupValue(
+				row.original,
+				groupBy,
+			);
 
 			groupCounts.set(groupValue, (groupCounts.get(groupValue) ?? 0) + 1);
 		});
 
 		pageRows.forEach((row, index) => {
-			const groupValue = getMasterCompanyGroupValue(row.original, groupBy);
+			const groupValue = getMasterCompanyGroupValue(
+				row.original,
+				groupBy,
+			);
 			const previousRow = pageRows[index - 1];
 			const previousGroupValue = previousRow
 				? getMasterCompanyGroupValue(previousRow.original, groupBy)
@@ -82,7 +86,9 @@ export function MasterCompanyManagementTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No subscribed companies found"
 				minWidthClassName="min-w-[88rem]"
-				paginationStorageKey={MasterCompanyManagementPaginationStorageKey}
+				paginationStorageKey={
+					MasterCompanyManagementPaginationStorageKey
+				}
 				table={table}
 				toolbar={
 					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,1fr)]">
@@ -97,7 +103,9 @@ export function MasterCompanyManagementTable({
 							value={groupBy}
 							options={groupOptions}
 							onChange={(value) =>
-								setGroupBy(value as MasterCompanyManagementGroupBy)
+								setGroupBy(
+									value as MasterCompanyManagementGroupBy,
+								)
 							}
 						/>
 						<ModuleTableFilterSelect
@@ -105,7 +113,9 @@ export function MasterCompanyManagementTable({
 							value={sortBy}
 							options={sortOptions}
 							onChange={(value) =>
-								setSortBy(value as MasterCompanyManagementSortBy)
+								setSortBy(
+									value as MasterCompanyManagementSortBy,
+								)
 							}
 						/>
 						<ModuleTableResetButton onClick={resetFilters}>
@@ -158,4 +168,3 @@ function getMasterCompanyGroupValue(
 ) {
 	return String(company[groupBy]);
 }
-

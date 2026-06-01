@@ -12,7 +12,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type AuditTrailTableFiltersProps = {
 	actionFilter: AuditTrailAction | "all";
@@ -98,4 +98,3 @@ export function AuditTrailTableFilters({
 		</ModuleTableToolbar>
 	);
 }
-

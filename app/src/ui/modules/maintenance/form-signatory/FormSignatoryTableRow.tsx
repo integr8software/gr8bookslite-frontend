@@ -7,7 +7,7 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { FormSignatoryDefaultLabels } from "@/app/src/data/modules/maintenance/form-signatory/FormSignatoryData";
 import type { FormSignatoryRow } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
 
@@ -45,7 +45,9 @@ export function FormSignatoryTableRow({
 
 	return (
 		<tr className="align-middle">
-			<td className="align-middle font-semibold text-darknavy">{rowNumber}</td>
+			<td className="align-middle font-semibold text-darknavy">
+				{rowNumber}
+			</td>
 			<td className="align-middle">
 				<select
 					value={row.label}

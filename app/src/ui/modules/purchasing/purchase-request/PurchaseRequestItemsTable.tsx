@@ -5,7 +5,7 @@ import {
 	getPurchaseRequestItemAmount,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import type { PurchaseRequestItem } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
-import { ModuleTableActionButton } from "@/app/src/ui/shared/module/ModuleTableActions";
+import { ModuleTableActionButton } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type PurchaseRequestItemsTableProps = {
 	error?: string;

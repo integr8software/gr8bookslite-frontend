@@ -4,7 +4,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type ApprovalManagementTableFiltersProps = {
 	query: string;
@@ -36,7 +36,9 @@ export function ApprovalManagementTableFilters({
 					{ label: "Inactive", value: "Inactive" },
 				]}
 				onChange={(value) =>
-					onStatusFilterChange(value as ApprovalManagementStatus | "any")
+					onStatusFilterChange(
+						value as ApprovalManagementStatus | "any",
+					)
 				}
 			/>
 			<ModuleTableResetButton
@@ -50,4 +52,3 @@ export function ApprovalManagementTableFilters({
 		</ModuleTableToolbar>
 	);
 }
-

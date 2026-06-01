@@ -17,7 +17,7 @@ import {
 	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type MasterTenantAccessTableProps = Pick<
 	ReturnType<typeof useMasterTenantAccessListPage>,
@@ -52,7 +52,9 @@ export function MasterTenantAccessTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle={labels.emptyTitle}
 				minWidthClassName={getMinWidthClassName(entity)}
-				paginationStorageKey={MasterTenantAccessPaginationStorageKey[entity]}
+				paginationStorageKey={
+					MasterTenantAccessPaginationStorageKey[entity]
+				}
 				table={table}
 				toolbar={
 					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(11rem,1fr)_minmax(11rem,1fr)]">
@@ -65,7 +67,9 @@ export function MasterTenantAccessTable({
 						<ModuleTableFilterSelect
 							label="Status"
 							onChange={(value) =>
-								setStatusFilter(value as MasterTenantAccessStatus | "All")
+								setStatusFilter(
+									value as MasterTenantAccessStatus | "All",
+								)
 							}
 							options={[
 								{ label: "All", value: "All" },

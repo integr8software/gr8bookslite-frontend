@@ -8,7 +8,7 @@ import {
 	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { MasterSubscriptionTableRow } from "@/app/src/ui/master/subscriptions/MasterSubscriptionTableRow";
 
 type MasterSubscriptionCompanyTableProps = Pick<
@@ -46,7 +46,9 @@ export function MasterSubscriptionCompanyTable({
 							onChange={setQuery}
 							placeholder="Search companies, owners, plans, or status"
 						/>
-						<ModuleTableResetButton onClick={resetSubscriptionFilters}>
+						<ModuleTableResetButton
+							onClick={resetSubscriptionFilters}
+						>
 							Reset
 						</ModuleTableResetButton>
 					</ModuleTableToolbar>
@@ -63,4 +65,3 @@ export function MasterSubscriptionCompanyTable({
 		</div>
 	);
 }
-

@@ -11,7 +11,7 @@ import type {
 	WarehouseAccessRecord,
 	WarehouseStatus,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
-import { ModuleTableActionButton } from "@/app/src/ui/shared/module/ModuleTableActions";
+import { ModuleTableActionButton } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type WarehouseAccessTableProps = {
 	accessRecords: WarehouseAccessRecord[];
@@ -47,7 +47,8 @@ export function WarehouseAccessTable({
 						Warehouse Access
 					</h2>
 					<p className="mt-1 text-sm text-darknavy/55">
-						Edit who can use this warehouse and what actions they can perform.
+						Edit who can use this warehouse and what actions they
+						can perform.
 					</p>
 				</div>
 				<button
@@ -89,18 +90,28 @@ export function WarehouseAccessTable({
 											className={fieldClassName}
 											placeholder="Person name"
 										/>
-										<FieldError message={errors[access.id]?.userName} />
+										<FieldError
+											message={
+												errors[access.id]?.userName
+											}
+										/>
 									</td>
 									<td className="px-4 py-4 align-top">
 										<input
 											value={access.role}
 											onChange={(event) =>
-												onUpdateAccess(access.id, "role", event.target.value)
+												onUpdateAccess(
+													access.id,
+													"role",
+													event.target.value,
+												)
 											}
 											className={fieldClassName}
 											placeholder="Warehouse role"
 										/>
-										<FieldError message={errors[access.id]?.role} />
+										<FieldError
+											message={errors[access.id]?.role}
+										/>
 									</td>
 									<td className="px-4 py-4 align-top">
 										<select
@@ -109,38 +120,55 @@ export function WarehouseAccessTable({
 												onUpdateAccess(
 													access.id,
 													"accessLevel",
-													event.target.value as WarehouseAccessLevel,
+													event.target
+														.value as WarehouseAccessLevel,
 												)
 											}
 											className={fieldClassName}
 										>
-											{WarehouseAccessLevelOptions.map((level) => (
-												<option key={level} value={level}>
-													{level}
-												</option>
-											))}
+											{WarehouseAccessLevelOptions.map(
+												(level) => (
+													<option
+														key={level}
+														value={level}
+													>
+														{level}
+													</option>
+												),
+											)}
 										</select>
 									</td>
 									<td className="px-4 py-4 align-top">
 										<div className="grid gap-2 sm:grid-cols-2">
-											{WarehouseAccessPermissionOptions.map((permission) => (
-												<label
-													key={permission}
-													className="flex min-h-9 items-center gap-2 rounded-md border border-darknavy/10 bg-offwhite/55 px-2.5 text-xs font-semibold text-darknavy"
-												>
-													<input
-														type="checkbox"
-														checked={access.permissions.includes(permission)}
-														onChange={() =>
-															onTogglePermission(access.id, permission)
-														}
-														className="h-4 w-4 accent-skyblue"
-													/>
-													{permission}
-												</label>
-											))}
+											{WarehouseAccessPermissionOptions.map(
+												(permission) => (
+													<label
+														key={permission}
+														className="flex min-h-9 items-center gap-2 rounded-md border border-darknavy/10 bg-offwhite/55 px-2.5 text-xs font-semibold text-darknavy"
+													>
+														<input
+															type="checkbox"
+															checked={access.permissions.includes(
+																permission,
+															)}
+															onChange={() =>
+																onTogglePermission(
+																	access.id,
+																	permission,
+																)
+															}
+															className="h-4 w-4 accent-skyblue"
+														/>
+														{permission}
+													</label>
+												),
+											)}
 										</div>
-										<FieldError message={errors[access.id]?.permissions} />
+										<FieldError
+											message={
+												errors[access.id]?.permissions
+											}
+										/>
 									</td>
 									<td className="px-4 py-4 align-top">
 										<select
@@ -149,22 +177,30 @@ export function WarehouseAccessTable({
 												onUpdateAccess(
 													access.id,
 													"status",
-													event.target.value as WarehouseStatus,
+													event.target
+														.value as WarehouseStatus,
 												)
 											}
 											className={fieldClassName}
 										>
-											{WarehouseStatusOptions.map((status) => (
-												<option key={status} value={status}>
-													{status}
-												</option>
-											))}
+											{WarehouseStatusOptions.map(
+												(status) => (
+													<option
+														key={status}
+														value={status}
+													>
+														{status}
+													</option>
+												),
+											)}
 										</select>
 									</td>
 									<td className="px-4 py-4 text-right align-top">
 										<ModuleTableActionButton
 											variant="delete"
-											onClick={() => onRemoveAccess(access.id)}
+											onClick={() =>
+												onRemoveAccess(access.id)
+											}
 											label={`Remove ${access.userName || "access row"}`}
 										/>
 									</td>

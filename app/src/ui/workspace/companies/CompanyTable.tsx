@@ -1,16 +1,12 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import {
-	Search,
-} from "lucide-react";
+import { Search } from "lucide-react";
 import {
 	WorkspaceCompaniesTablePaginationStorageKey,
 	getWorkspaceCompanyEditHref,
 	getWorkspaceCompanyHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
-import {
-	useWorkspaceCompaniesTable,
-} from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import { useWorkspaceCompaniesTable } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
 import type {
 	WorkspaceCompanyBranchRecord,
 	WorkspaceCompanyPlan,
@@ -25,13 +21,13 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import {
 	ModuleTableFilterSelect,
 	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import {
 	WorkspaceManagementCompanyAvatar,
 	WorkspaceManagementPlanBadge,
@@ -67,7 +63,9 @@ export function CompanyTable({
 				emptyTitle="No companies found"
 				isLoading={isLoading}
 				minWidthClassName="min-w-[72rem]"
-				paginationStorageKey={WorkspaceCompaniesTablePaginationStorageKey}
+				paginationStorageKey={
+					WorkspaceCompaniesTablePaginationStorageKey
+				}
 				table={companyList.table}
 				toolbar={
 					<CompanyTableFilters
@@ -137,7 +135,9 @@ function CompanyTableFilters({
 				value={statusFilter}
 				options={getFilterOptions(statusOptions)}
 				onChange={(value) =>
-					onStatusFilterChange(value as WorkspaceCompanyStatus | "All")
+					onStatusFilterChange(
+						value as WorkspaceCompanyStatus | "All",
+					)
 				}
 			/>
 			<ModuleTableFilterSelect
@@ -193,10 +193,14 @@ function CompanyTableRow({
 				</Link>
 			</td>
 			<CompanyTableCell>
-				<WorkspaceManagementSummaryBadge>{company.totalBranches}</WorkspaceManagementSummaryBadge>
+				<WorkspaceManagementSummaryBadge>
+					{company.totalBranches}
+				</WorkspaceManagementSummaryBadge>
 			</CompanyTableCell>
 			<CompanyTableCell>
-				<WorkspaceManagementSummaryBadge>{company.totalUsers}</WorkspaceManagementSummaryBadge>
+				<WorkspaceManagementSummaryBadge>
+					{company.totalUsers}
+				</WorkspaceManagementSummaryBadge>
 			</CompanyTableCell>
 			<CompanyTableCell>{company.companyType}</CompanyTableCell>
 			<CompanyTableCell>

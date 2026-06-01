@@ -133,7 +133,10 @@ function GetWorkspaceUserStatus(
 function FormatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
     day: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
     month: "short",
+    hour12: true,
     year: "numeric",
   }).format(new Date(value));
 }

@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, CirclePause, Package, Plus, Warehouse } from "lucide-react";
+import {
+	CheckCircle2,
+	CirclePause,
+	Package,
+	Plus,
+	Warehouse,
+} from "lucide-react";
 import { WarehouseManagementHref } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import { useWarehouseListPage } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseListPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -13,7 +19,7 @@ import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { WarehouseTable } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseTable";
 
 export function WarehouseListPage() {
@@ -75,7 +81,8 @@ export function WarehouseListPage() {
 						label: "Tracked Items",
 						tone: "violet",
 						value: page.warehouses.reduce(
-							(total, warehouse) => total + warehouse.items.length,
+							(total, warehouse) =>
+								total + warehouse.items.length,
 							0,
 						),
 					},

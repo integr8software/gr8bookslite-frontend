@@ -14,15 +14,13 @@ import type {
 	ChartAccountStructureFilter,
 	FilterValue,
 } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
-import {
-	Tabs,
-} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
+import { Tabs } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 import {
 	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 export type ChartsOfAccountsFiltersProps = {
 	accountTypeFilter: FilterValue<AccountType>;
@@ -66,7 +64,9 @@ export function ChartsOfAccountsFilters({
 				<div className="flex gap-2 overflow-x-auto pb-2">
 					<StructureButton
 						active={structureFilter === "With Submodules"}
-						icon={<Network className="h-4 w-4" aria-hidden="true" />}
+						icon={
+							<Network className="h-4 w-4" aria-hidden="true" />
+						}
 						label="With Submodules"
 						onClick={() =>
 							onStructureChange(
@@ -78,7 +78,9 @@ export function ChartsOfAccountsFilters({
 					/>
 					<StructureButton
 						active={structureFilter === "Without Submodules"}
-						icon={<ListTree className="h-4 w-4" aria-hidden="true" />}
+						icon={
+							<ListTree className="h-4 w-4" aria-hidden="true" />
+						}
 						label="Without Submodules"
 						onClick={() =>
 							onStructureChange(
@@ -162,4 +164,3 @@ function StructureButton({
 		</button>
 	);
 }
-

@@ -7,7 +7,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type PartyInformationTableFiltersProps = {
 	classificationFilter: PartyClassification | "All";
@@ -48,7 +48,9 @@ export function PartyInformationTableFilters({
 					value: option,
 				}))}
 				onChange={(value) =>
-					onClassificationFilterChange(value as PartyClassification | "All")
+					onClassificationFilterChange(
+						value as PartyClassification | "All",
+					)
 				}
 			/>
 			<ModuleTableFilterSelect
@@ -58,7 +60,9 @@ export function PartyInformationTableFilters({
 					label: option,
 					value: option,
 				}))}
-				onChange={(value) => onPartyTypeFilterChange(value as PartyType | "All")}
+				onChange={(value) =>
+					onPartyTypeFilterChange(value as PartyType | "All")
+				}
 			/>
 			<ModuleTableResetButton onClick={onResetFilters}>
 				Reset
@@ -66,4 +70,3 @@ export function PartyInformationTableFilters({
 		</ModuleTableToolbar>
 	);
 }
-

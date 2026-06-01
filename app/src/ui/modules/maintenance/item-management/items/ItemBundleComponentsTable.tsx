@@ -25,7 +25,7 @@ import {
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleTableActionButton } from "@/app/src/ui/shared/module/ModuleTableActions";
+import { ModuleTableActionButton } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type ItemBundleComponentsTableProps = {
 	components: ItemBundleComponent[];
@@ -82,7 +82,8 @@ export function ItemBundleComponentsTable({
 						Bundle Components
 					</h2>
 					<p className="mt-1 text-sm text-darknavy/55">
-						Add the component items included when this item is used as a bundle.
+						Add the component items included when this item is used
+						as a bundle.
 					</p>
 				</div>
 				{!isReadonly ? (
@@ -97,7 +98,9 @@ export function ItemBundleComponentsTable({
 				) : null}
 			</div>
 			{error ? (
-				<p className="mt-3 text-sm font-medium text-coralpink">{error}</p>
+				<p className="mt-3 text-sm font-medium text-coralpink">
+					{error}
+				</p>
 			) : null}
 			<div className="mt-4 overflow-auto">
 				<DndContext
@@ -113,9 +116,13 @@ export function ItemBundleComponentsTable({
 								</th>
 								<th className="px-3 py-3">Code</th>
 								<th className="px-3 py-3">Item</th>
-								<th className="px-3 py-3 text-right">Quantity</th>
+								<th className="px-3 py-3 text-right">
+									Quantity
+								</th>
 								<th className="px-3 py-3">UOM</th>
-								<th className="px-3 py-3 text-right">Actions</th>
+								<th className="px-3 py-3 text-right">
+									Actions
+								</th>
 							</tr>
 						</thead>
 						<SortableContext
@@ -196,7 +203,9 @@ function BundleComponentRow({
 		<tr
 			ref={setNodeRef}
 			style={style}
-			className={isDragging ? "relative z-10 bg-skyblue/5 shadow-sm" : undefined}
+			className={
+				isDragging ? "relative z-10 bg-skyblue/5 shadow-sm" : undefined
+			}
 		>
 			<td className="px-3 py-3">
 				<button
@@ -246,7 +255,11 @@ function BundleComponentRow({
 					min={0}
 					value={component.quantity}
 					onChange={(event) =>
-						onUpdateComponent(component.id, "quantity", event.target.value)
+						onUpdateComponent(
+							component.id,
+							"quantity",
+							event.target.value,
+						)
 					}
 					readOnly={isReadonly}
 					className={`${fieldClassName} text-right`}
@@ -256,7 +269,11 @@ function BundleComponentRow({
 				<select
 					value={component.uom}
 					onChange={(event) =>
-						onUpdateComponent(component.id, "uom", event.target.value)
+						onUpdateComponent(
+							component.id,
+							"uom",
+							event.target.value,
+						)
 					}
 					disabled={isReadonly || uomOptions.length === 0}
 					className={fieldClassName}
@@ -312,7 +329,9 @@ function getComponentUomOptions(
 	component: ItemBundleComponent,
 	itemOptions: ItemBundleComponentItemOption[],
 ) {
-	const selectedItem = itemOptions.find((item) => item.id === component.itemId);
+	const selectedItem = itemOptions.find(
+		(item) => item.id === component.itemId,
+	);
 	const uomOptions = selectedItem?.uomOptions ?? [];
 
 	if (!component.uom || uomOptions.includes(component.uom)) {

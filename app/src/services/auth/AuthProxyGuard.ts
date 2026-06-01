@@ -26,6 +26,7 @@ const CompanyPathPrefixes = [
   "/system-administration",
 ] as const;
 const PublicPathPrefixes = [
+  "/",
   INVITATION_ACTIVATION_PATH,
   "/auth",
   "/error",

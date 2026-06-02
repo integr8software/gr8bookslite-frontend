@@ -86,6 +86,8 @@ export type AuthProfileResponse = {
   companies?: {
     companyId: number;
     companyName: string;
+    companyStatus?: string;
+    isCompanyActive?: boolean;
     logoPublicUrl: string | null;
     role: "ADMIN" | "USER";
     membershipStatus: string;

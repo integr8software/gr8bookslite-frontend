@@ -950,7 +950,12 @@ function CreateWorkspaceCurrentUserFromProfile(
 
 function MapProfileCompaniesToMainCompanies(profile: AuthProfileResponse) {
   return (profile.companies ?? [])
-    .filter((company) => company.membershipStatus === "ACTIVE")
+    .filter(
+      (company) =>
+        company.membershipStatus === "ACTIVE" &&
+        company.isCompanyActive !== false &&
+        (!company.companyStatus || company.companyStatus === "ACTIVE"),
+    )
     .map((company) => ({
       id: String(company.companyId),
       name: company.companyName,

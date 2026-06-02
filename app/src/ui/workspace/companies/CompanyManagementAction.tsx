@@ -64,8 +64,8 @@ export function CompanyManagementAction() {
 		);
 	}
 
-	function handleSaveNewCompany() {
-		void form.saveCompany();
+	async function handleSaveNewCompany() {
+		await form.saveCompany();
 		setIsBillingConfirmOpen(false);
 	}
 
@@ -140,6 +140,7 @@ export function CompanyManagementAction() {
 				isPending={form.isMutating}
 				title="Create company?"
 				description={`Creating ${form.values.companyName || "this company"} may affect workspace billing, payments, or deductions.`}
+				confirmationPhrase="confirm company"
 				confirmLabel="Save Company"
 				pendingLabel="Saving..."
 				onCancel={() => setIsBillingConfirmOpen(false)}

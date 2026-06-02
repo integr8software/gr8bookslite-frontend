@@ -17,7 +17,7 @@ export type AppDialogProps = {
   title: string;
   tone?: AppDialogTone;
   onCancel: () => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void> | void;
 };
 
 export function AppDialog({
@@ -35,18 +35,35 @@ export function AppDialog({
   onConfirm,
 }: AppDialogProps) {
   const [confirmationValue, setConfirmationValue] = useState("");
+  const [isConfirming, setIsConfirming] = useState(false);
+  const isConfirmPending = isPending || isConfirming;
   const canConfirm =
     !confirmationPhrase ||
     confirmationValue.trim().toLowerCase() === confirmationPhrase.toLowerCase();
 
   const handleCancel = useCallback(() => {
-    if (isPending) {
+    if (isConfirmPending) {
       return;
     }
 
     setConfirmationValue("");
     onCancel();
-  }, [isPending, onCancel]);
+  }, [isConfirmPending, onCancel]);
+
+  const handleConfirm = useCallback(async () => {
+    if (isConfirmPending || !canConfirm) {
+      return;
+    }
+
+    setConfirmationValue("");
+    setIsConfirming(true);
+
+    try {
+      await onConfirm();
+    } finally {
+      setIsConfirming(false);
+    }
+  }, [canConfirm, isConfirmPending, onConfirm]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -54,7 +71,7 @@ export function AppDialog({
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !isPending) {
+      if (event.key === "Escape" && !isConfirmPending) {
         handleCancel();
       }
     }
@@ -64,7 +81,7 @@ export function AppDialog({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, isPending, handleCancel]);
+  }, [isOpen, isConfirmPending, handleCancel]);
 
   if (!isOpen) {
     return null;
@@ -75,7 +92,7 @@ export function AppDialog({
       role="presentation"
       className="app-dialog-backdrop fixed inset-0 z-80 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget && !isPending) {
+        if (event.target === event.currentTarget && !isConfirmPending) {
           handleCancel();
         }
       }}
@@ -107,7 +124,7 @@ export function AppDialog({
             <input
               value={confirmationValue}
               onChange={(event) => setConfirmationValue(event.target.value)}
-              disabled={isPending}
+              disabled={isConfirmPending}
               placeholder={confirmationPhrase}
               className="mt-2 h-11 w-full rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy shadow-sm outline-none transition placeholder:text-darknavy/28 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
             />
@@ -117,21 +134,23 @@ export function AppDialog({
           <button
             type="button"
             onClick={handleCancel}
-            disabled={isPending}
+            disabled={isConfirmPending}
             className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
-            onClick={() => {
-              setConfirmationValue("");
-              onConfirm();
-            }}
-            disabled={isPending || !canConfirm}
-            className={getConfirmButtonClassName(tone)}
+            onClick={() => void handleConfirm()}
+            disabled={isConfirmPending || !canConfirm}
+            aria-busy={isConfirmPending}
+            className={getConfirmButtonClassName({
+              isDisabled: !canConfirm,
+              isPending: isConfirmPending,
+              tone,
+            })}
           >
-            {isPending ? (
+            {isConfirmPending ? (
               <>
                 <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                 {pendingLabel}
@@ -146,17 +165,28 @@ export function AppDialog({
   );
 }
 
-function getConfirmButtonClassName(tone: AppDialogTone) {
+function getConfirmButtonClassName({
+  isDisabled,
+  isPending,
+  tone,
+}: {
+  isDisabled: boolean;
+  isPending: boolean;
+  tone: AppDialogTone;
+}) {
   const baseClassName =
-    "inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2";
+    "inline-flex h-10 min-w-32 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold text-white transition focus-visible:outline-none focus-visible:ring-2";
+  const disabledClassName =
+    isDisabled && !isPending ? "cursor-not-allowed opacity-55" : "";
+  const pendingClassName = isPending ? "cursor-wait opacity-100" : "";
 
   if (tone === "danger") {
-    return `${baseClassName} bg-coralpink hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;
+    return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-coralpink hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;
   }
 
   if (tone === "success") {
-    return `${baseClassName} bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-500/35`;
+    return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-500/35`;
   }
 
-  return `${baseClassName} bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500/35`;
+  return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500/35`;
 }

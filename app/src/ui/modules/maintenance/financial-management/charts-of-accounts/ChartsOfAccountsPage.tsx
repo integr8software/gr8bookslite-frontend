@@ -18,6 +18,7 @@ import { ChartsOfAccountsTable } from "@/app/src/ui/modules/maintenance/financia
 import { ChartsOfAccountsSpotlightTutorial } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorial";
 import { Card } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -39,6 +40,7 @@ export function ChartsOfAccountsMain() {
   const withoutSubmodules = totalAccounts - withSubmodules;
   const [pendingDeleteAccount, setPendingDeleteAccount] =
     useState<ChartAccount | null>(null);
+  useMaintenanceAddDrawerSpotlight(coa.openAddDrawer);
 
   function handleConfirmDelete() {
     if (!pendingDeleteAccount) {

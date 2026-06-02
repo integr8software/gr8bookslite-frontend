@@ -8,6 +8,7 @@ import {
 	Warehouse,
 } from "lucide-react";
 import { useWarehouseListPage } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseListPage";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
 	ModuleHeader,
@@ -28,6 +29,7 @@ type DrawerState = { mode: "add" | "edit"; warehouse?: WarehouseRecord } | null;
 export function WarehouseListPage() {
 	const page = useWarehouseListPage();
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	useMaintenanceAddDrawerSpotlight(() => setDrawerState({ mode: "add" }));
 
 	return (
 		<section className="grid gap-5">

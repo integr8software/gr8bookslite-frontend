@@ -7,6 +7,7 @@ import {
 	ResponsibilityCenterTypeOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/financial-management/responsibility-center/useResponsibilityCenter";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type {
 	ResponsibilityCenter,
 	ResponsibilityCenterStatus,
@@ -44,6 +45,7 @@ export function ResponsibilityCenterMain() {
 	const [query, setQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState("All");
 	const [typeFilter, setTypeFilter] = useState("All");
+	useMaintenanceAddDrawerSpotlight(() => setDrawerState({ mode: "add" }));
 	const filteredCenters = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 

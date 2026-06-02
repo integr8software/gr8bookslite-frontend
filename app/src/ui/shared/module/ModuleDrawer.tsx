@@ -22,6 +22,7 @@ type ModuleDrawerProps = {
 	onClose: () => void;
 	position?: ModuleDrawerPosition;
 	showCloseButton?: boolean;
+	spotlightId?: string;
 	title: ReactNode;
 };
 
@@ -67,6 +68,7 @@ export function ModuleDrawer({
 	onClose,
 	position = "right",
 	showCloseButton = true,
+	spotlightId,
 	title,
 }: ModuleDrawerProps) {
 	const positionStyles = drawerPositionStyles[position];
@@ -89,6 +91,7 @@ export function ModuleDrawer({
 					<motion.aside
 						role="dialog"
 						aria-modal="true"
+						data-spotlight-id={spotlightId}
 						aria-label={
 							typeof title === "string" ? title : "Module drawer"
 						}

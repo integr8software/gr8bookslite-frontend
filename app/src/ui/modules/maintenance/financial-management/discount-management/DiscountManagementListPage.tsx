@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Download, Link2, Percent, Plus, Tags, Upload } from "lucide-react";
 import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagement";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type { DiscountManagementTableRecord } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
 import {
 	ModuleHeader,
@@ -34,6 +35,7 @@ export function DiscountManagementListPage() {
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	const [query, setQuery] = useState("");
 	const [mappingFilter, setMappingFilter] = useState("All");
+	useMaintenanceAddDrawerSpotlight(() => setDrawerState({ mode: "add" }));
 	const filteredDiscounts = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 

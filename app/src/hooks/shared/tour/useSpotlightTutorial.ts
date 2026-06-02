@@ -10,17 +10,25 @@ type SpotlightStorageValue = {
 
 type UseSpotlightTutorialOptions = {
   href: string;
+  isEnabled?: boolean;
   openEvent: string;
+  pathnamePrefixes?: readonly string[];
   storageKey: string;
 };
 
 export function useSpotlightTutorial({
   href,
+  isEnabled = true,
   openEvent,
+  pathnamePrefixes = [],
   storageKey,
 }: UseSpotlightTutorialOptions) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const isActivePathname =
+    pathname === href ||
+    pathnamePrefixes.some((pathnamePrefix) => pathname.startsWith(pathnamePrefix));
+  const isActive = isEnabled && isActivePathname;
 
   useEffect(() => {
     let frameId: number | null = null;
@@ -31,7 +39,7 @@ export function useSpotlightTutorial({
       });
     }
 
-    if (pathname !== href) {
+    if (!isActive) {
       scheduleVisibilityChange(false);
       return () => cancelScheduledFrame(frameId);
     }
@@ -55,10 +63,10 @@ export function useSpotlightTutorial({
     }
 
     return () => cancelScheduledFrame(frameId);
-  }, [href, pathname, storageKey]);
+  }, [isActive, storageKey]);
 
   useEffect(() => {
-    if (pathname !== href) {
+    if (!isActive) {
       return;
     }
 
@@ -71,7 +79,7 @@ export function useSpotlightTutorial({
     return () => {
       window.removeEventListener(openEvent, handleOpenTutorial);
     };
-  }, [href, openEvent, pathname]);
+  }, [isActive, openEvent]);
 
   function persistStatus(status: SpotlightStorageValue["status"]) {
     const value: SpotlightStorageValue = {

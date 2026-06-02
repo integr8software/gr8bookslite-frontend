@@ -43,6 +43,7 @@ type SpotlightTourProps = {
   ariaLabel: string;
   badge?: ReactNode;
   isOpen: boolean;
+  onStepEnter?: (step: SpotlightTourStep, index: number) => void;
   steps: readonly SpotlightTourStep[];
   onComplete: () => void;
   onSkip: () => void;
@@ -53,6 +54,7 @@ export function SpotlightTour({
   ariaLabel,
   badge,
   isOpen,
+  onStepEnter,
   steps,
   onComplete,
   onSkip,
@@ -67,6 +69,7 @@ export function SpotlightTour({
       ariaLabel={ariaLabel}
       badge={badge}
       onComplete={onComplete}
+      onStepEnter={onStepEnter}
       onSkip={onSkip}
       steps={steps}
     />
@@ -80,6 +83,7 @@ function SpotlightTourContent({
   ariaLabel,
   badge,
   onComplete,
+  onStepEnter,
   onSkip,
   steps,
 }: SpotlightTourContentProps) {
@@ -155,6 +159,8 @@ function SpotlightTourContent({
       return;
     }
 
+    onStepEnter?.(activeStep, activeStepIndex);
+
     const targetElement = getSpotlightTarget(activeStep);
 
     targetElement?.scrollIntoView({
@@ -162,32 +168,27 @@ function SpotlightTourContent({
       block: "center",
       inline: "nearest",
     });
-  }, [activeStep]);
+  }, [activeStep, activeStepIndex, onStepEnter]);
 
   useEffect(() => {
     if (!activeStep) {
       return;
     }
 
-    const targetElement = getSpotlightTarget(activeStep);
-
-    if (!targetElement) {
-      return;
-    }
+    let frameId: number | null = null;
+    let observedTargetElement: HTMLElement | null = null;
 
     function updateMeasurements() {
       const currentTargetElement = getSpotlightTarget(activeStep);
 
       if (!currentTargetElement) {
-        setSpotlightRect(null);
-        setCardPosition({
-          top: Math.max(getViewportGap(window.innerWidth), window.innerHeight / 2 - 160),
-          left: Math.max(
-            getViewportGap(window.innerWidth),
-            window.innerWidth / 2 - SpotlightCardWidth / 2,
-          ),
-        });
+        frameId = window.requestAnimationFrame(updateMeasurements);
         return;
+      }
+
+      if (observedTargetElement !== currentTargetElement) {
+        observedTargetElement = currentTargetElement;
+        resizeObserver.observe(currentTargetElement);
       }
 
       const nextRect = getMeasuredSpotlightRect(currentTargetElement);
@@ -196,15 +197,17 @@ function SpotlightTourContent({
       setCardPosition(getCardPosition(nextRect));
     }
 
-    updateMeasurements();
     window.addEventListener("resize", updateMeasurements);
     window.addEventListener("scroll", updateMeasurements, true);
 
     const resizeObserver = new ResizeObserver(updateMeasurements);
-    resizeObserver.observe(targetElement);
     resizeObserver.observe(document.documentElement);
+    frameId = window.requestAnimationFrame(updateMeasurements);
 
     return () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
       window.removeEventListener("resize", updateMeasurements);
       window.removeEventListener("scroll", updateMeasurements, true);
       resizeObserver.disconnect();
@@ -501,16 +504,16 @@ function getMascotPosition(
   const canFitOnLeft =
     cardPosition.left >= mascotWidth - mascotCardOverlap;
 
-  if (canFitOnRight) {
+  if (canFitOnLeft) {
     return {
-      left: cardRight - mascotCardOverlap,
+      left: cardPosition.left - mascotWidth + mascotCardOverlap,
       top: cardPosition.top + 4,
     };
   }
 
-  if (canFitOnLeft) {
+  if (canFitOnRight) {
     return {
-      left: cardPosition.left - mascotWidth + mascotCardOverlap,
+      left: cardRight - mascotCardOverlap,
       top: cardPosition.top + 4,
     };
   }

@@ -15,6 +15,7 @@ import {
 	ItemStatusOptions,
 } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import { useItemSetupListPage } from "@/app/src/hooks/modules/maintenance/item-management/useItemSetupListPage";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type { ItemSetupKind } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
@@ -45,6 +46,9 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 	const config = ItemSetupConfigByKind[kind];
 	const page = useItemSetupListPage(kind);
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	useMaintenanceAddDrawerSpotlight(() =>
+		setDrawerState({ kind, mode: "add" }),
+	);
 	const childConfig = page.childKind
 		? ItemSetupConfigByKind[page.childKind]
 		: null;

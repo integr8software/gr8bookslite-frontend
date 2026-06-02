@@ -13,6 +13,7 @@ import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { WorkspaceUserAssignmentsSection } from "@/app/src/ui/workspace/users-management/WorkspaceUserAssignmentsSection";
+import { WorkspaceUserDrawerSpotlightTutorial } from "@/app/src/ui/workspace/users-management/WorkspaceUserDrawerSpotlightTutorial";
 import { WorkspaceUserDetailsSection } from "@/app/src/ui/workspace/users-management/WorkspaceUserDetailsSection";
 
 const WorkspaceUserFormId = "workspace-user-management-form";
@@ -69,6 +70,7 @@ function WorkspaceUserDrawerPanel({
 				eyebrow="Users management"
 				maxWidthClassName="max-w-5xl"
 				onClose={onClose}
+				spotlightId="workspace-user-drawer"
 				actions={
 					form.mode === "view" && form.existingUser ? (
 						<Link
@@ -94,6 +96,7 @@ function WorkspaceUserDrawerPanel({
 							<button
 								type="submit"
 								form={WorkspaceUserFormId}
+								data-spotlight-id="workspace-user-drawer-save"
 								disabled={form.isSaving}
 								className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
 							>
@@ -120,28 +123,38 @@ function WorkspaceUserDrawerPanel({
 					}}
 					className="grid gap-5 px-6 py-5"
 				>
-					<WorkspaceUserDetailsSection
-						errors={form.errors}
-						isEmailReadonly={!form.canEditEmail}
-						isReadonly={form.isReadonly}
-						values={form.values}
-						onUpdateField={form.updateField}
-					/>
-					<WorkspaceUserAssignmentsSection
-						availableCompanies={form.availableCompanies}
-						branches={form.branches}
-						companies={form.companies}
-						errors={form.errors}
-						isReadonly={form.isReadonly}
-						selectedCompanyId={form.selectedCompanyId}
-						values={form.values}
-						onAddCompany={form.openCompanyAssignmentConfirm}
-						onRemoveCompany={form.removeCompanyAssignment}
-						onSelectedCompanyChange={form.setSelectedCompanyId}
-						onToggleBranch={form.toggleBranchAssignment}
-					/>
+					<div data-spotlight-id="workspace-user-drawer-details">
+						<WorkspaceUserDetailsSection
+							errors={form.errors}
+							isEmailReadonly={!form.canEditEmail}
+							isReadonly={form.isReadonly}
+							values={form.values}
+							onUpdateField={form.updateField}
+						/>
+					</div>
+					<div data-spotlight-id="workspace-user-drawer-assignments">
+						<WorkspaceUserAssignmentsSection
+							availableCompanies={form.availableCompanies}
+							branches={form.branches}
+							companies={form.companies}
+							errors={form.errors}
+							isReadonly={form.isReadonly}
+							selectedCompanyId={form.selectedCompanyId}
+							values={form.values}
+							onAddCompany={form.openCompanyAssignmentConfirm}
+							onRemoveCompany={form.removeCompanyAssignment}
+							onSelectedCompanyChange={form.setSelectedCompanyId}
+							onToggleBranch={form.toggleBranchAssignment}
+						/>
+					</div>
 				</form>
 			</ModuleDrawer>
+			{form.mode === "add" || form.mode === "edit" ? (
+				<WorkspaceUserDrawerSpotlightTutorial
+					isOpen={isOpen}
+					mode={form.mode}
+				/>
+			) : null}
 			<AppDialog
 				isOpen={Boolean(form.pendingCompanyId)}
 				isPending={false}

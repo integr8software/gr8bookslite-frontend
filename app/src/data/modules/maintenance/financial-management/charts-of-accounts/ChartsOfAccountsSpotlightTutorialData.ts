@@ -1,5 +1,6 @@
 import { ChartsOfAccountsHref } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import type { SpotlightTourStep } from "@/app/src/types/shared/tour/SpotlightTourTypes";
+import { createMaintenanceAddDrawerSpotlightTutorialSteps } from "@/app/src/data/modules/maintenance/MaintenanceSpotlightTutorialData";
 
 export const ChartsOfAccountsSpotlightTutorialStorageVersion = "v1";
 export const ChartsOfAccountsSpotlightTutorialOpenEvent =
@@ -43,4 +44,5 @@ export const ChartsOfAccountsSpotlightTutorialSteps = [
       "This table is where you sort, expand, edit, and review account relationships across the chart of accounts.",
     selectors: ["[data-spotlight-id='charts-of-accounts-table']"],
   },
+  ...createMaintenanceAddDrawerSpotlightTutorialSteps("chart of accounts"),
 ] satisfies readonly SpotlightTourStep[];

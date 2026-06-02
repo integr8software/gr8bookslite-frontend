@@ -16,6 +16,12 @@ import { WorkspaceBillingSpotlightTutorialOpenEvent } from "@/app/src/data/works
 import { WorkspaceCompanySpotlightTutorialOpenEvent } from "@/app/src/data/workspace/companies/WorkspaceCompanySpotlightTutorialData";
 import { WorkspaceUsersSpotlightTutorialOpenEvent } from "@/app/src/data/workspace/users-management/WorkspaceUsersSpotlightTutorialData";
 import {
+  WorkspaceUserDrawerSpotlightTutorialOpenEvent,
+  WorkspaceUserDrawerSpotlightTutorialPathnamePrefixes,
+} from "@/app/src/data/workspace/users-management/WorkspaceUserDrawerSpotlightTutorialData";
+import {
+  MaintenanceAddSpotlightTutorialOpenEvent,
+  MaintenanceAddSpotlightTutorialConfigs,
   MaintenanceSpotlightTutorialConfigs,
   MaintenanceSpotlightTutorialOpenEvent,
 } from "@/app/src/data/modules/maintenance/MaintenanceSpotlightTutorialData";
@@ -41,6 +47,17 @@ const SpotlightTutorialEventsByHref: Readonly<Record<string, string>> = {
 
 export function getSpotlightTutorialOpenEvent(href: string) {
   const normalizedHref = href.split(/[?#]/, 1)[0].replace(/\/+$/, "") || "/";
+  const maintenanceAddConfig = MaintenanceAddSpotlightTutorialConfigs.find(
+    (config) => normalizedHref === `${config.href}/add`,
+  );
 
-  return SpotlightTutorialEventsByHref[normalizedHref] ?? null;
+  return (
+    SpotlightTutorialEventsByHref[normalizedHref] ??
+    (maintenanceAddConfig ? MaintenanceAddSpotlightTutorialOpenEvent : null) ??
+    (WorkspaceUserDrawerSpotlightTutorialPathnamePrefixes.some(
+      (pathnamePrefix) => normalizedHref.startsWith(pathnamePrefix),
+    )
+      ? WorkspaceUserDrawerSpotlightTutorialOpenEvent
+      : null)
+  );
 }

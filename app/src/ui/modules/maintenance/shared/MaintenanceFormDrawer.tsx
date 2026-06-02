@@ -34,6 +34,7 @@ export function MaintenanceFormDrawer({
 			eyebrow={eyebrow}
 			maxWidthClassName="max-w-4xl"
 			onClose={onClose}
+			spotlightId="maintenance-add-drawer"
 			footer={
 				<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 					<button
@@ -47,6 +48,7 @@ export function MaintenanceFormDrawer({
 					<button
 						type="submit"
 						form={formId}
+						data-spotlight-id="maintenance-add-drawer-save"
 						disabled={isSaving}
 						className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
 					>
@@ -56,7 +58,9 @@ export function MaintenanceFormDrawer({
 				</div>
 			}
 		>
-			{children}
+			<div data-spotlight-id="maintenance-add-drawer-fields">
+				{children}
+			</div>
 		</ModuleDrawer>
 	);
 }

@@ -6,6 +6,7 @@ import {
 	TermManagementDatemodeOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 import {
 	ModuleHeader,
@@ -34,6 +35,7 @@ export function TermManagementListPage() {
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	const [datemodeFilter, setDatemodeFilter] = useState("All");
 	const [query, setQuery] = useState("");
+	useMaintenanceAddDrawerSpotlight(() => setDrawerState({ mode: "add" }));
 	const filteredTerms = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 

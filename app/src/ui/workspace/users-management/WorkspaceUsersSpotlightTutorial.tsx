@@ -12,9 +12,16 @@ import {
   SpotlightTourBadge,
 } from "@/app/src/ui/shared/tour/SpotlightTour";
 
-export function WorkspaceUsersSpotlightTutorial() {
+export function WorkspaceUsersSpotlightTutorial({
+  isEnabled = true,
+  onComplete,
+}: {
+  isEnabled?: boolean;
+  onComplete?: () => void;
+}) {
   const { completeTutorial, isOpen, skipTutorial } = useSpotlightTutorial({
     href: WorkspaceUsersManagementHref,
+    isEnabled,
     openEvent: WorkspaceUsersSpotlightTutorialOpenEvent,
     storageKey: WorkspaceUsersSpotlightTutorialStorageKey,
   });
@@ -25,7 +32,10 @@ export function WorkspaceUsersSpotlightTutorial() {
       badge={<SpotlightTourBadge>Workspace users guide</SpotlightTourBadge>}
       isOpen={isOpen}
       steps={WorkspaceUsersSpotlightTutorialSteps}
-      onComplete={completeTutorial}
+      onComplete={() => {
+        completeTutorial();
+        onComplete?.();
+      }}
       onSkip={skipTutorial}
     />
   );

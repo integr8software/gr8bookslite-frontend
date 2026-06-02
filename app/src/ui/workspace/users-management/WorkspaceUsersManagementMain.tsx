@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, UserCog } from "lucide-react";
+import { WorkspaceUserDrawerSpotlightTutorialOpenEvent } from "@/app/src/data/workspace/users-management/WorkspaceUserDrawerSpotlightTutorialData";
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
 import type { WorkspaceCompanyUserRecord } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import {
@@ -35,7 +36,13 @@ export function WorkspaceUsersManagementMain() {
 
   return (
     <section className="grid gap-5">
-      <WorkspaceUsersSpotlightTutorial />
+      <WorkspaceUsersSpotlightTutorial
+        isEnabled={!drawerState}
+        onComplete={() => {
+          setDrawerState({ mode: "add" });
+          openAddUserDrawerTutorial();
+        }}
+      />
       <ModuleHeader
         data-spotlight-id="workspace-users-header"
         variant="panel"
@@ -76,4 +83,14 @@ export function WorkspaceUsersManagementMain() {
       />
     </section>
   );
+}
+
+function openAddUserDrawerTutorial() {
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      window.dispatchEvent(
+        new Event(WorkspaceUserDrawerSpotlightTutorialOpenEvent),
+      );
+    });
+  });
 }

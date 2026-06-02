@@ -2,6 +2,7 @@
 
 import { CheckCircle2, CirclePause, Receipt } from "lucide-react";
 import { useTransactionTypeListPage } from "@/app/src/hooks/modules/maintenance/financial-management/transaction-type/useTransactionTypeListPage";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
@@ -17,6 +18,7 @@ type DrawerState = { mode: "add" | "edit"; transactionType?: TransactionType } |
 export function TransactionTypeListPage() {
 	const page = useTransactionTypeListPage();
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	useMaintenanceAddDrawerSpotlight(() => setDrawerState({ mode: "add" }));
 
 	return (
 		<section className="grid gap-5">

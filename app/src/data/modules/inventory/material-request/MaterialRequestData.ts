@@ -13,14 +13,15 @@ export const materialRequestSeedRecords: MaterialRequestRecord[] = [
 		requiredDate: "2024-06-03",
 		fromWarehouse: "Main Warehouse",
 		toWarehouse: "Site Warehouse 1",
-		requestedBy: "John Doe",
 		department: "Warehouse Operations",
-		vceCode: "REQ-001",
-		vceName: "John Doe",
+		vceCode: "PTY-0001",
+		vceName: "Pacific Office Supplies Inc.",
 		projectRef: "PRJ-WH-001",
 		projectName: "Site Warehouse Replenishment",
+		referenceModule: "Pick List",
 		referenceNo: "JOB-2405-018",
 		purpose: "Warehouse to warehouse replenishment",
+		requiresApproval: true,
 		remarks: "Priority release for active site materials.",
 		status: "Pending",
 		items: [
@@ -38,14 +39,15 @@ export const materialRequestSeedRecords: MaterialRequestRecord[] = [
 		requiredDate: "2024-06-02",
 		fromWarehouse: "Main Warehouse",
 		toWarehouse: "Site Warehouse 2",
-		requestedBy: "Jane Smith",
 		department: "Finishing",
-		vceCode: "REQ-002",
-		vceName: "Jane Smith",
+		vceCode: "PTY-0002",
+		vceName: "Mara Santos Reyes",
 		projectRef: "PRJ-FIN-002",
 		projectName: "Finishing Works",
+		referenceModule: "Job Order",
 		referenceNo: "JOB-2405-017",
 		purpose: "Painting materials for site works",
+		requiresApproval: true,
 		remarks: "Release after warehouse supervisor approval.",
 		status: "Approved",
 		items: [
@@ -61,16 +63,17 @@ export const materialRequestSeedRecords: MaterialRequestRecord[] = [
 		requiredDate: "2024-06-01",
 		fromWarehouse: "Central Warehouse",
 		toWarehouse: "Site Warehouse 1",
-		requestedBy: "Mike Johnson",
 		department: "Structural",
-		vceCode: "REQ-003",
-		vceName: "Mike Johnson",
+		vceCode: "PTY-0003",
+		vceName: "Northfield Logistics Corporation",
 		projectRef: "PRJ-STR-001",
 		projectName: "Structural Reinforcement",
+		referenceModule: "Project",
 		referenceNo: "JOB-2405-016",
 		purpose: "Structural reinforcement release",
+		requiresApproval: false,
 		remarks: "Completed by warehouse issue team.",
-		status: "Completed",
+		status: "Active",
 		items: [
 			createSeedItem("steel-rod", "MAT-021", "Steel Rod", "Pc", 40),
 			createSeedItem("wire-mesh", "MAT-022", "Wire Mesh", "Roll", 10),
@@ -83,14 +86,15 @@ export const materialRequestSeedRecords: MaterialRequestRecord[] = [
 		requiredDate: "2024-05-31",
 		fromWarehouse: "Main Warehouse",
 		toWarehouse: "Site Warehouse 3",
-		requestedBy: "Robert Brown",
 		department: "Electrical",
-		vceCode: "REQ-004",
-		vceName: "Robert Brown",
+		vceCode: "PTY-0004",
+		vceName: "Luis Garcia Dela Cruz Jr.",
 		projectRef: "PRJ-ELE-003",
 		projectName: "Electrical Roughing",
+		referenceModule: "Job Order",
 		referenceNo: "JOB-2405-015",
 		purpose: "Electrical roughing materials",
+		requiresApproval: true,
 		remarks: "Coordinate release with site electrician.",
 		status: "Pending",
 		items: [
@@ -107,14 +111,15 @@ export const materialRequestSeedRecords: MaterialRequestRecord[] = [
 		requiredDate: "2024-05-30",
 		fromWarehouse: "Central Warehouse",
 		toWarehouse: "Site Warehouse 2",
-		requestedBy: "Emily Davis",
 		department: "Plumbing",
-		vceCode: "REQ-005",
-		vceName: "Emily Davis",
+		vceCode: "PTY-0001",
+		vceName: "Pacific Office Supplies Inc.",
 		projectRef: "PRJ-PLB-002",
 		projectName: "Plumbing Installation",
+		referenceModule: "Project",
 		referenceNo: "JOB-2405-014",
 		purpose: "Plumbing installation materials",
+		requiresApproval: true,
 		remarks: "Approved for afternoon delivery.",
 		status: "Approved",
 		items: [
@@ -130,14 +135,15 @@ export const materialRequestSeedRecords: MaterialRequestRecord[] = [
 		requiredDate: "2024-05-29",
 		fromWarehouse: "Main Warehouse",
 		toWarehouse: "Site Warehouse 4",
-		requestedBy: "David Wilson",
 		department: "Carpentry",
-		vceCode: "REQ-006",
-		vceName: "David Wilson",
+		vceCode: "PTY-0002",
+		vceName: "Mara Santos Reyes",
 		projectRef: "PRJ-CAR-004",
 		projectName: "Carpentry Works",
+		referenceModule: "Job Order",
 		referenceNo: "JOB-2405-013",
 		purpose: "Carpentry materials",
+		requiresApproval: true,
 		remarks: "Rejected due to incomplete stock validation.",
 		status: "Rejected",
 		items: [
@@ -154,16 +160,17 @@ export const materialRequestSeedRecords: MaterialRequestRecord[] = [
 		requiredDate: "2024-05-28",
 		fromWarehouse: "Central Warehouse",
 		toWarehouse: "Site Warehouse 1",
-		requestedBy: "Chris Martin",
 		department: "Civil",
-		vceCode: "REQ-007",
-		vceName: "Chris Martin",
+		vceCode: "PTY-0003",
+		vceName: "Northfield Logistics Corporation",
 		projectRef: "PRJ-CIV-001",
 		projectName: "Civil Works",
+		referenceModule: "Project",
 		referenceNo: "JOB-2405-012",
 		purpose: "Civil works replenishment",
+		requiresApproval: false,
 		remarks: "Completed request.",
-		status: "Completed",
+		status: "Active",
 		items: [
 			createSeedItem("sand", "MAT-002", "Sand", "Kg", 200),
 			createSeedItem("aggregate", "MAT-061", "Aggregate", "Kg", 300),
@@ -201,16 +208,17 @@ export function createMaterialRequestFormValues(
 		requiredDate: new Date().toISOString().slice(0, 10),
 		fromWarehouse: "Main Warehouse",
 		toWarehouse: "Site Warehouse 1",
-		requestedBy: "John Doe",
 		department: "Warehouse Operations",
 		vceCode: "",
 		vceName: "",
 		projectRef: "",
 		projectName: "",
+		referenceModule: "",
 		referenceNo: "",
 		purpose: "",
+		requiresApproval: true,
 		remarks: "",
-		status: "Pending",
+		status: "Draft",
 		items: [
 			{
 				...emptyMaterialRequestItem,
@@ -227,6 +235,10 @@ export function createMaterialRequestRecord(
 	return {
 		id,
 		...values,
+		status: normalizeMaterialRequestStatus(
+			values.status,
+			values.requiresApproval,
+		),
 		items: values.items.map((item) => ({
 			...item,
 			id: item.id || createMaterialRequestId("item"),
@@ -343,10 +355,16 @@ function normalizeMaterialRequestRecord(
 	return {
 		...record,
 		vceCode: record.vceCode ?? "",
-		vceName: record.vceName ?? record.requestedBy ?? "",
+		vceName: record.vceName ?? "",
 		projectRef: record.projectRef ?? record.referenceNo ?? "",
 		projectName: record.projectName ?? "",
+		referenceModule: record.referenceModule ?? "",
+		requiresApproval: record.requiresApproval ?? true,
 		remarks: record.remarks ?? "",
+		status: normalizeMaterialRequestStatus(
+			record.status,
+			record.requiresApproval ?? true,
+		),
 		items: record.items.map((item) => ({
 			...emptyMaterialRequestItem,
 			...item,
@@ -358,6 +376,21 @@ function normalizeMaterialRequestRecord(
 			stockQuantity: Number(item.stockQuantity) || 0,
 		})),
 	};
+}
+
+function normalizeMaterialRequestStatus(
+	status: MaterialRequestRecord["status"],
+	requiresApproval: boolean,
+): MaterialRequestRecord["status"] {
+	if (status === "Completed") {
+		return requiresApproval ? "Approved" : "Active";
+	}
+
+	if (!requiresApproval && ["Pending", "Approved", "Rejected"].includes(status)) {
+		return "Active";
+	}
+
+	return status;
 }
 
 function inferMaterialCategory(itemName: string) {

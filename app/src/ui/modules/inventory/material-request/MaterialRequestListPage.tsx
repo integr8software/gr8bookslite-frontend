@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ClipboardList, Download, Plus, Search } from "lucide-react";
+import { ClipboardList, Download, Plus, Search, Upload } from "lucide-react";
 import {
 	MaterialRequestHref,
 	MaterialRequestStatusFilterOptions,
@@ -46,6 +46,13 @@ export function MaterialRequestListPage() {
 							type="button"
 							className={moduleHeaderActionClassNames.secondary}
 						>
+							<Upload className="h-4 w-4" aria-hidden="true" />
+							Upload
+						</button>
+						<button
+							type="button"
+							className={moduleHeaderActionClassNames.secondary}
+						>
 							<Download className="h-4 w-4" aria-hidden="true" />
 							Export
 						</button>
@@ -70,7 +77,7 @@ export function MaterialRequestListPage() {
 				minWidthClassName="min-w-[82rem]"
 				paginationLabel="entries"
 				paginationStorageKey={MaterialRequestTablePaginationStorageKey}
-				pageSizeOptions={[7, 14, 21, 28]}
+				pageSizeOptions={[5, 10, 15, 20, 25, 50]}
 				table={page.table}
 				toolbar={
 					<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,2fr)_repeat(4,minmax(10rem,1fr))]">
@@ -106,6 +113,7 @@ export function MaterialRequestListPage() {
 						key={id}
 						request={original}
 						onDeleteRequest={page.setPendingDeleteRequest}
+						onUpdateRequestStatus={page.updateRequestStatus}
 					/>
 				)}
 			/>

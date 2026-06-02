@@ -1,8 +1,11 @@
 export type MaterialRequestStatus =
+	| "Draft"
+	| "Active"
 	| "Pending"
 	| "Approved"
 	| "Rejected"
-	| "Completed";
+	| "Completed"
+	| "Cancelled";
 
 export type MaterialRequestItem = {
 	id: string;
@@ -17,6 +20,12 @@ export type MaterialRequestItem = {
 	remarks: string;
 };
 
+export type MaterialRequestItemClearMode =
+	| "all"
+	| "with-data"
+	| "incomplete"
+	| "no-data";
+
 export type MaterialRequestRecord = {
 	id: string;
 	requestNo: string;
@@ -24,14 +33,15 @@ export type MaterialRequestRecord = {
 	requiredDate: string;
 	fromWarehouse: string;
 	toWarehouse: string;
-	requestedBy: string;
 	department: string;
 	vceCode: string;
 	vceName: string;
 	projectRef: string;
 	projectName: string;
+	referenceModule: string;
 	referenceNo: string;
 	purpose: string;
+	requiresApproval: boolean;
 	remarks: string;
 	status: MaterialRequestStatus;
 	items: MaterialRequestItem[];

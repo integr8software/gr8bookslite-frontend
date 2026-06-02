@@ -2,18 +2,15 @@
 
 import Link from "next/link";
 import {
-	ArrowLeft,
-	ArrowRight,
+	Ban,
+	CheckCircle2,
 	ClipboardList,
 	Copy,
-	Download,
 	Edit3,
-	Eye,
-	FileDown,
-	Plus,
+	Printer,
 	Save,
-	Search,
-	Upload,
+	ThumbsDown,
+	Undo2,
 	X,
 } from "lucide-react";
 import {
@@ -25,11 +22,14 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import {
+	ModuleActionMenu,
+	type ModuleActionMenuItem,
+} from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { MaterialRequestDetailsPanel } from "@/app/src/ui/modules/inventory/material-request/MaterialRequestDetailsPanel";
 import { MaterialRequestItemsTable } from "@/app/src/ui/modules/inventory/material-request/MaterialRequestItemsTable";
 import { MaterialRequestNotFound } from "@/app/src/ui/modules/inventory/material-request/MaterialRequestNotFound";
 import { MaterialRequestStatusBadge } from "@/app/src/ui/modules/inventory/material-request/MaterialRequestStatusBadge";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function MaterialRequestActionPage() {
 	const page = useMaterialRequestFormPage();
@@ -59,15 +59,13 @@ export function MaterialRequestActionPage() {
 				actions={<MaterialRequestHeaderActions page={page} />}
 			/>
 
-			<MaterialRequestCommandBar page={page} />
-
 			{page.mode === "view" ? (
 				<div className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5">
 					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
 						<ReadOnlyStat label="MR No." value={page.values.requestNo} />
 						<ReadOnlyStat label="Warehouse" value={page.values.fromWarehouse} />
-						<ReadOnlyStat label="Requestor" value={page.values.requestedBy} />
-						<ReadOnlyStat label="Project" value={page.values.projectName || "-"} />
+						<ReadOnlyStat label="Reference No." value={page.values.referenceNo || "-"} />
+						<ReadOnlyStat label="Module" value={page.values.referenceModule || "-"} />
 						<div>
 							<p className="text-xs font-semibold uppercase text-darknavy/55">
 								Status
@@ -91,7 +89,11 @@ export function MaterialRequestActionPage() {
 				error={page.errors.items}
 				isReadonly={page.isReadonly}
 				items={page.values.items}
-				onAddItem={page.addItem}
+				onAddItems={page.addItems}
+				onClearItems={page.clearItems}
+				onDuplicateItem={page.duplicateItem}
+				onInsertItem={page.insertItem}
+				onMoveItem={page.moveItem}
 				onRemoveItem={page.removeItem}
 				onUpdateItem={page.updateItem}
 			/>
@@ -106,169 +108,155 @@ function MaterialRequestHeaderActions({
 }: {
 	page: MaterialRequestActionPageState;
 }) {
+	if (page.mode === "view") {
+		return <MaterialRequestViewActions page={page} />;
+	}
+
 	return (
 		<>
 			<Link
-				href={MaterialRequestHref}
+				href={page.backHref}
 				className={moduleHeaderActionClassNames.secondary}
 			>
-				<ArrowLeft className="h-4 w-4" aria-hidden="true" />
-				List
+				<X className="h-4 w-4" aria-hidden="true" />
+				Cancel
 			</Link>
-			{page.mode === "view" ? (
-				<Link
-					href={`${MaterialRequestHref}/edit/${page.existingRequest?.id ?? ""}`}
-					className={moduleHeaderActionClassNames.primary}
-				>
-					<Edit3 className="h-4 w-4" aria-hidden="true" />
-					Edit
-				</Link>
-			) : (
-				<button
-					type="button"
-					onClick={page.handleSubmit}
-					className={moduleHeaderActionClassNames.primary}
-				>
-					<Save className="h-4 w-4" aria-hidden="true" />
-					Save
-				</button>
-			)}
+			<button
+				type="button"
+				onClick={page.handleCopyFrom}
+				className={moduleHeaderActionClassNames.secondary}
+			>
+				<Copy className="h-4 w-4" aria-hidden="true" />
+				Copy From
+			</button>
+			<button
+				type="button"
+				onClick={page.handleSubmit}
+				className={moduleHeaderActionClassNames.primary}
+			>
+				<Save className="h-4 w-4" aria-hidden="true" />
+				Save
+			</button>
 		</>
 	);
 }
 
-function MaterialRequestCommandBar({
+function MaterialRequestViewActions({
 	page,
 }: {
 	page: MaterialRequestActionPageState;
 }) {
+	const actions = createViewActionItems(page);
+
 	return (
-		<div className="flex flex-col gap-3 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 xl:flex-row xl:items-center xl:justify-between">
-			<div className="flex flex-wrap gap-2">
-				<ActionLink href={MaterialRequestHref} icon={Search} label="Search" />
-				<ActionLink href={`${MaterialRequestHref}/add`} icon={Plus} label="New" />
-				<ActionLink
-					href={
-						page.existingRequest
-							? `${MaterialRequestHref}/edit/${page.existingRequest.id}`
-							: `${MaterialRequestHref}/add`
-					}
-					icon={Edit3}
-					label="Edit"
-					isDisabled={!page.existingRequest || page.mode === "edit"}
-				/>
-				<ActionButton
-					icon={Save}
-					label="Save"
-					isDisabled={page.isReadonly}
-					onClick={page.handleSubmit}
-				/>
-				<ActionLink href={MaterialRequestHref} icon={X} label="Close" />
-				<ActionButton icon={Copy} label="Copy From" isDisabled />
-				<ActionLink
-					href={
-						page.previousRequest
-							? `${MaterialRequestHref}/view/${page.previousRequest.id}`
-							: "#"
-					}
-					icon={ArrowLeft}
-					label="Prev"
-					isDisabled={!page.previousRequest}
-				/>
-				<ActionLink
-					href={
-						page.nextRequest
-							? `${MaterialRequestHref}/view/${page.nextRequest.id}`
-							: "#"
-					}
-					icon={ArrowRight}
-					label="Next"
-					isDisabled={!page.nextRequest}
-				/>
-				<ActionLink
-					href={
-						page.existingRequest
-							? `${MaterialRequestHref}/view/${page.existingRequest.id}`
-							: "#"
-					}
-					icon={Eye}
-					label="Preview"
-					isDisabled={!page.existingRequest}
+		<>
+			<div className="flex lg:hidden">
+				<ModuleActionMenu
+					items={actions}
+					label="Material request actions"
 				/>
 			</div>
-			<div className="flex flex-wrap gap-2">
-				<ActionButton icon={Upload} label="Upload" variant="success" isDisabled />
-				<ActionButton icon={Download} label="Download" variant="success" />
-				<ActionLink href={MaterialRequestHref} icon={FileDown} label="Cancel" variant="danger" />
+			<div className="hidden flex-wrap gap-2 lg:flex">
+				{actions.map((action) => {
+					if (action.type === "button") {
+						return <HeaderActionButton key={action.label} action={action} />;
+					}
+
+					const Icon = action.icon;
+
+					return (
+						<Link
+							key={action.label}
+							href={action.href}
+							className={moduleHeaderActionClassNames.secondary}
+						>
+							<Icon className="h-4 w-4" aria-hidden="true" />
+							{action.label}
+						</Link>
+					);
+				})}
 			</div>
-		</div>
+		</>
 	);
 }
 
-type ActionControlProps = {
-	icon: typeof Search;
-	isDisabled?: boolean;
-	label: string;
-	variant?: "default" | "danger" | "success";
-};
+function createViewActionItems(
+	page: MaterialRequestActionPageState,
+): ModuleActionMenuItem[] {
+	const isCancelled = page.values.status === "Cancelled";
+	const cancelStatus = isCancelled
+		? page.values.requiresApproval
+			? "Draft"
+			: "Active"
+		: "Cancelled";
+	const canApprove =
+		page.values.requiresApproval &&
+		!isCancelled &&
+		page.values.status !== "Approved";
+	const canDisapprove =
+		page.values.requiresApproval &&
+		!isCancelled &&
+		page.values.status !== "Rejected";
 
-function ActionLink({
-	href,
-	icon: Icon,
-	isDisabled = false,
-	label,
-	variant = "default",
-}: ActionControlProps & { href: string }) {
-	if (isDisabled) {
-		return (
-			<span className={actionClassName(variant, true)}>
-				<Icon className="h-4 w-4" aria-hidden="true" />
-				{label}
-			</span>
-		);
-	}
-
-	return (
-		<Link href={href} className={actionClassName(variant)}>
-			<Icon className="h-4 w-4" aria-hidden="true" />
-			{label}
-		</Link>
-	);
+	return [
+		{
+			href: `${MaterialRequestHref}/edit/${page.existingRequest?.id ?? ""}?from=view`,
+			icon: Edit3,
+			label: "Edit",
+			type: "link",
+		},
+		{
+			disabled: !canApprove,
+			icon: CheckCircle2,
+			label: "Approve",
+			onSelect: () => page.updateRequestStatus("Approved"),
+			type: "button",
+		},
+		{
+			disabled: !canDisapprove,
+			icon: ThumbsDown,
+			label: "Disapprove",
+			onSelect: () => page.updateRequestStatus("Rejected"),
+			tone: "danger",
+			type: "button",
+		},
+		{
+			icon: isCancelled ? Undo2 : Ban,
+			label: isCancelled ? "Uncancel" : "Cancel",
+			onSelect: () => page.updateRequestStatus(cancelStatus),
+			tone: isCancelled ? "default" : "danger",
+			type: "button",
+		},
+		{
+			icon: Printer,
+			label: "Print Preview",
+			onSelect: () => window.print(),
+			type: "button",
+		},
+	];
 }
 
-function ActionButton({
-	icon: Icon,
-	isDisabled = false,
-	label,
-	onClick,
-	variant = "default",
-}: ActionControlProps & { onClick?: () => void }) {
+function HeaderActionButton({
+	action,
+}: {
+	action: Extract<ModuleActionMenuItem, { type: "button" }>;
+}) {
+	const Icon = action.icon;
+	const className =
+		action.tone === "danger"
+			? moduleHeaderActionClassNames.danger
+			: moduleHeaderActionClassNames.secondary;
+
 	return (
 		<button
 			type="button"
-			disabled={isDisabled}
-			onClick={onClick}
-			className={actionClassName(variant, isDisabled)}
+			disabled={action.disabled}
+			onClick={action.onSelect}
+			className={`${className} disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white`}
 		>
 			<Icon className="h-4 w-4" aria-hidden="true" />
-			{label}
+			{action.label}
 		</button>
-	);
-}
-
-function actionClassName(
-	variant: "default" | "danger" | "success",
-	isDisabled = false,
-) {
-	return joinClasses(
-		"inline-flex h-10 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-4",
-		variant === "default" &&
-			"bg-skyblue text-white hover:bg-skyblue/90 focus-visible:ring-skyblue/20",
-		variant === "success" &&
-			"bg-citron text-darknavy hover:bg-citron/85 focus-visible:ring-citron/30",
-		variant === "danger" &&
-			"bg-coralpink text-white hover:bg-coralpink/90 focus-visible:ring-coralpink/25",
-		isDisabled && "pointer-events-none cursor-not-allowed opacity-45",
 	);
 }
 

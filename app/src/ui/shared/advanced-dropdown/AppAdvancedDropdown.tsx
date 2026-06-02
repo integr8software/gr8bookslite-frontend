@@ -146,6 +146,8 @@ export function AppAdvancedDropdown({
 	const activeOptionId = effectiveActiveOptionValue
 		? optionIdByValue.get(effectiveActiveOptionValue)
 		: undefined;
+	const canClearSelection =
+		selectedValues.length > 0 && isClearable && !isInteractionLocked;
 
 	useEffect(() => {
 		if (!isOpen) {
@@ -471,7 +473,8 @@ export function AppAdvancedDropdown({
 			>
 				<div
 					className={joinClasses(
-						"flex items-center gap-2 pr-8",
+						"flex items-center gap-2",
+						canClearSelection ? "pr-14" : "pr-8",
 						isMultiple ? "min-h-7" : "h-full",
 					)}
 				>
@@ -512,31 +515,31 @@ export function AppAdvancedDropdown({
 							</span>
 						)}
 					</div>
-					{selectedValues.length > 0 &&
-						isClearable &&
-						!isInteractionLocked ? (
-						<button
-							type="button"
-							disabled={disabled}
-							onClick={(event) => {
-								event.preventDefault();
-								event.stopPropagation();
-								clearSelection();
-							}}
-							className="rounded-md p-1 text-darknavy/38 transition hover:bg-darknavy/5 hover:text-darknavy disabled:pointer-events-none"
-							aria-label="Clear selection"
-						>
-							<X className="h-3.5 w-3.5" aria-hidden="true" />
-						</button>
-					) : null}
-					<ChevronDown
-						className={joinClasses(
-							"pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/40 transition",
-							isOpen && "rotate-180",
-							disabled && "text-darknavy/35",
-						)}
-						aria-hidden="true"
-					/>
+					<div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+						{canClearSelection ? (
+							<button
+								type="button"
+								disabled={disabled}
+								onClick={(event) => {
+									event.preventDefault();
+									event.stopPropagation();
+									clearSelection();
+								}}
+								className="rounded-md p-1 text-darknavy/38 transition hover:bg-darknavy/5 hover:text-darknavy disabled:pointer-events-none"
+								aria-label="Clear selection"
+							>
+								<X className="h-3.5 w-3.5" aria-hidden="true" />
+							</button>
+						) : null}
+						<ChevronDown
+							className={joinClasses(
+								"pointer-events-none h-4 w-4 text-darknavy/40 transition",
+								isOpen && "rotate-180",
+								disabled && "text-darknavy/35",
+							)}
+							aria-hidden="true"
+						/>
+					</div>
 				</div>
 			</div>
 

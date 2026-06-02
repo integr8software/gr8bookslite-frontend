@@ -8,10 +8,23 @@ export const MaterialRequestStorageKey = "gr8books.materialRequests";
 export const MaterialRequestTablePaginationStorageKey =
 	"inventory.material-request";
 
-export const MaterialRequestStatusOptions: MaterialRequestStatus[] = [
+export const MaterialRequestApprovalStatusOptions: MaterialRequestStatus[] = [
+	"Draft",
 	"Pending",
 	"Approved",
 	"Rejected",
+	"Cancelled",
+];
+
+export const MaterialRequestDirectStatusOptions: MaterialRequestStatus[] = [
+	"Draft",
+	"Active",
+	"Cancelled",
+];
+
+export const MaterialRequestStatusOptions: MaterialRequestStatus[] = [
+	...MaterialRequestApprovalStatusOptions,
+	"Active",
 	"Completed",
 ];
 

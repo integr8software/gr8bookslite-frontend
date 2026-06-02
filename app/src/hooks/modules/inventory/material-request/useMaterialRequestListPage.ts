@@ -18,11 +18,11 @@ import type {
 import { useMaterialRequestStore } from "@/app/src/hooks/modules/inventory/material-request/useMaterialRequest";
 
 export function useMaterialRequestListPage() {
-	const { deleteRequest, isLoading, isMutating, requests } =
+	const { deleteRequest, isLoading, isMutating, requests, updateRequest } =
 		useMaterialRequestStore();
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
-		pageSize: 7,
+		pageSize: 5,
 	});
 	const [query, setQuery] = useState("");
 	const [fromWarehouseFilter, setFromWarehouseFilter] = useState("all");
@@ -43,9 +43,9 @@ export function useMaterialRequestListPage() {
 				[
 					request.requestNo,
 					request.referenceNo,
+					request.referenceModule,
 					request.fromWarehouse,
 					request.toWarehouse,
-					request.requestedBy,
 					request.department,
 					request.purpose,
 					request.projectName,
@@ -94,19 +94,11 @@ export function useMaterialRequestListPage() {
 			createColumn("documentDate", "Document Date", "w-[10rem]"),
 			createColumn("fromWarehouse", "From Warehouse", "w-[13rem]"),
 			createColumn("toWarehouse", "To Warehouse", "w-[13rem]"),
-			createColumn("requestedBy", "Requested By", "w-[12rem]"),
 			{
 				id: "materialSummary",
 				header: "Material Summary",
 				enableSorting: false,
 				meta: { className: "w-[18rem]" },
-			},
-			{
-				id: "quantity",
-				header: "Qty (Items)",
-				accessorFn: (request) => request.items.length,
-				sortingFn: "basic",
-				meta: { className: "w-[9rem] text-center" },
 			},
 			createColumn("status", "Status", "w-[9rem]"),
 			{
@@ -157,6 +149,13 @@ export function useMaterialRequestListPage() {
 		setPendingDeleteRequest(null);
 	}
 
+	function updateRequestStatus(
+		request: MaterialRequestRecord,
+		status: MaterialRequestStatus,
+	) {
+		updateRequest({ ...request, status });
+	}
+
 	return {
 		filteredRequests,
 		fromWarehouseFilter,
@@ -181,6 +180,7 @@ export function useMaterialRequestListPage() {
 		statusFilter,
 		table,
 		toWarehouseFilter,
+		updateRequestStatus,
 	};
 }
 

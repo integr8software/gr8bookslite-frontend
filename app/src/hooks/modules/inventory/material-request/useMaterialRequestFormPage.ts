@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { MaterialRequestHref } from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
 import {
@@ -16,17 +16,24 @@ import type {
 	MaterialRequestFormMode,
 	MaterialRequestFormValues,
 	MaterialRequestItem,
+	MaterialRequestItemClearMode,
+	MaterialRequestStatus,
 } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
 import { validateMaterialRequestForm } from "@/app/src/validations/modules/inventory/material-request/MaterialRequestValidation";
 
 export function useMaterialRequestFormPage() {
 	const router = useRouter();
 	const pathname = usePathname();
+	const searchParams = useSearchParams();
 	const params = useParams<{ recordId?: string }>();
 	const { addRequest, requests, updateRequest } = useMaterialRequestStore();
 	const mode = getMaterialRequestFormMode(pathname);
 	const isReadonly = mode === "view";
 	const existingRequest = requests.find((request) => request.id === params.recordId);
+	const backHref =
+		mode === "edit" && searchParams.get("from") === "view" && params.recordId
+			? `${MaterialRequestHref}/view/${params.recordId}`
+			: MaterialRequestHref;
 	const sortedRequests = useMemo(
 		() =>
 			[...requests].sort((first, second) =>
@@ -83,7 +90,14 @@ export function useMaterialRequestFormPage() {
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
 
-	function addItem() {
+	function createEmptyItem() {
+		return {
+			...emptyMaterialRequestItem,
+			id: createMaterialRequestId("item"),
+		};
+	}
+
+	function addItems(count = 1) {
 		if (isReadonly) {
 			return;
 		}
@@ -92,12 +106,86 @@ export function useMaterialRequestFormPage() {
 			...current,
 			items: [
 				...current.items,
-				{
-					...emptyMaterialRequestItem,
-					id: createMaterialRequestId("item"),
-				},
+				...Array.from({ length: count }, createEmptyItem),
 			],
 		}));
+		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
+	function insertItem(itemId: string, position: "above" | "below") {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => {
+			const rowIndex = current.items.findIndex((item) => item.id === itemId);
+			const insertIndex =
+				rowIndex === -1
+					? current.items.length
+					: rowIndex + (position === "below" ? 1 : 0);
+			const nextItems = [...current.items];
+
+			nextItems.splice(insertIndex, 0, createEmptyItem());
+
+			return {
+				...current,
+				items: nextItems,
+			};
+		});
+		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
+	function duplicateItem(itemId: string) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => {
+			const rowIndex = current.items.findIndex((item) => item.id === itemId);
+			const sourceItem = current.items[rowIndex];
+
+			if (!sourceItem) {
+				return current;
+			}
+
+			const nextItems = [...current.items];
+
+			nextItems.splice(rowIndex + 1, 0, {
+				...sourceItem,
+				id: createMaterialRequestId("item"),
+			});
+
+			return {
+				...current,
+				items: nextItems,
+			};
+		});
+		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
+	function moveItem(fromItemId: string, toItemId: string) {
+		if (isReadonly || fromItemId === toItemId) {
+			return;
+		}
+
+		setValues((current) => {
+			const fromIndex = current.items.findIndex((item) => item.id === fromItemId);
+			const toIndex = current.items.findIndex((item) => item.id === toItemId);
+
+			if (fromIndex === -1 || toIndex === -1) {
+				return current;
+			}
+
+			const nextItems = [...current.items];
+			const [movedItem] = nextItems.splice(fromIndex, 1);
+
+			nextItems.splice(toIndex, 0, movedItem);
+
+			return {
+				...current,
+				items: nextItems,
+			};
+		});
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
 
@@ -113,6 +201,25 @@ export function useMaterialRequestFormPage() {
 					? current.items.filter((item) => item.id !== itemId)
 					: current.items,
 		}));
+		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
+	function clearItems(mode: MaterialRequestItemClearMode) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => {
+			const nextItems =
+				mode === "all"
+					? []
+					: current.items.filter((item) => !shouldClearItem(item, mode));
+
+			return {
+				...current,
+				items: nextItems.length > 0 ? nextItems : [createEmptyItem()],
+			};
+		});
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
 
@@ -142,10 +249,69 @@ export function useMaterialRequestFormPage() {
 		router.push(`${MaterialRequestHref}/view/${nextRequest.id}`);
 	}
 
+	function handleCopyFrom() {
+		if (isReadonly) {
+			return;
+		}
+
+		const sourceRequest = sortedRequests.find(
+			(request) => request.id !== existingRequest?.id,
+		);
+
+		if (!sourceRequest) {
+			toast.error("No material request is available to copy from.");
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			fromWarehouse: sourceRequest.fromWarehouse,
+			toWarehouse: sourceRequest.toWarehouse,
+			department: sourceRequest.department,
+			vceCode: sourceRequest.vceCode,
+			vceName: sourceRequest.vceName,
+			projectRef: sourceRequest.projectRef,
+			projectName: sourceRequest.projectName,
+			referenceModule: sourceRequest.referenceModule,
+			referenceNo: sourceRequest.referenceNo,
+			purpose: sourceRequest.purpose,
+			requiresApproval: sourceRequest.requiresApproval,
+			remarks: sourceRequest.remarks,
+			items: sourceRequest.items.map((item) => ({
+				...item,
+				id: createMaterialRequestId("item"),
+			})),
+		}));
+		setErrors({});
+		toast.success(`Copied from ${sourceRequest.requestNo}.`);
+	}
+
+	function updateRequestStatus(status: MaterialRequestStatus) {
+		if (!existingRequest) {
+			return;
+		}
+
+		const nextRequest = createMaterialRequestRecord(
+			{
+				...values,
+				status,
+			},
+			existingRequest.id,
+		);
+
+		updateRequest(nextRequest);
+		setValues(createMaterialRequestFormValues(nextRequest));
+		toast.success(`Material request ${status.toLowerCase()}.`);
+	}
+
 	return {
-		addItem,
+		addItems,
+		backHref,
+		clearItems,
+		duplicateItem,
 		errors,
 		existingRequest,
+		handleCopyFrom,
 		handleSubmit,
 		isReadonly,
 		mode,
@@ -153,7 +319,10 @@ export function useMaterialRequestFormPage() {
 		nextRequest,
 		previousRequest,
 		previewRecord,
+		insertItem,
+		moveItem,
 		removeItem,
+		updateRequestStatus,
 		updateField,
 		updateItem,
 		values,
@@ -170,4 +339,46 @@ function getMaterialRequestFormMode(pathname: string): MaterialRequestFormMode {
 	}
 
 	return "add";
+}
+
+function shouldClearItem(
+	item: MaterialRequestItem,
+	mode: Exclude<MaterialRequestItemClearMode, "all">,
+) {
+	if (mode === "with-data") {
+		return materialRequestItemHasData(item);
+	}
+
+	if (mode === "incomplete") {
+		return (
+			materialRequestItemHasData(item) && !materialRequestItemIsComplete(item)
+		);
+	}
+
+	return !materialRequestItemHasData(item);
+}
+
+function materialRequestItemHasData(item: MaterialRequestItem) {
+	return (
+		item.barcode.trim() !== "" ||
+		item.category.trim() !== "" ||
+		item.itemCode.trim() !== "" ||
+		item.itemName.trim() !== "" ||
+		item.lotNo.trim() !== "" ||
+		item.remarks.trim() !== "" ||
+		item.requestQuantity !== emptyMaterialRequestItem.requestQuantity ||
+		item.stockQuantity !== emptyMaterialRequestItem.stockQuantity ||
+		item.uom !== emptyMaterialRequestItem.uom
+	);
+}
+
+function materialRequestItemIsComplete(item: MaterialRequestItem) {
+	return (
+		item.category.trim() !== "" &&
+		item.itemCode.trim() !== "" &&
+		item.itemName.trim() !== "" &&
+		item.uom.trim() !== "" &&
+		Number(item.requestQuantity) > 0 &&
+		Number(item.stockQuantity) >= 0
+	);
 }

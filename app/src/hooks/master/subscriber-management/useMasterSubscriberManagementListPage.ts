@@ -11,7 +11,6 @@ import {
 	type SortingState,
 } from "@tanstack/react-table";
 import {
-	MasterSubscriberManagementDateFilterOptions,
 	MasterSubscriberManagementStatusOptions,
 	MasterSubscriberManagementTableColumns,
 } from "@/app/src/constants/master/subscriber-management/MasterSubscriberManagementConstants";
@@ -24,50 +23,52 @@ import type {
 	MasterSubscriberManagementStatus,
 	MasterSubscriberManagementTableColumnKey,
 } from "@/app/src/types/master/subscriber-management/MasterSubscriberManagementTypes";
+import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
 const InitialPagination: PaginationState = {
 	pageIndex: 0,
-	pageSize: 8,
+	pageSize: 5,
 };
+
+const EmptyRegisteredDateRange: DateRangeValue = { from: "", to: "" };
+const RegisteredDateRangeReferenceDate =
+	getLatestRegisteredDate(MasterSubscriberManagementSubscribers);
 
 export function useMasterSubscriberManagementListPage() {
 	const [query, setQueryState] = useState("");
-	const [contactQuery, setContactQueryState] = useState("");
 	const [statusFilter, setStatusFilterState] = useState<
 		MasterSubscriberManagementStatus | "All"
 	>("All");
-	const [dateFilter, setDateFilterState] =
-		useState<(typeof MasterSubscriberManagementDateFilterOptions)[number]>(
-			"All Time",
-		);
+	const [registeredDateRange, setRegisteredDateRangeState] =
+		useState<DateRangeValue>(EmptyRegisteredDateRange);
 	const [pagination, setPagination] =
 		useState<PaginationState>(InitialPagination);
 	const [sorting, setSorting] = useState<SortingState>([]);
 
 	const filteredSubscribers = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
-		const normalizedContactQuery = contactQuery.trim().toLowerCase();
 
 		return MasterSubscriberManagementSubscribers.filter((subscriber) => {
 			const searchable = [
 				subscriber.name,
 				subscriber.email,
+				subscriber.contactNumber,
 				subscriber.subscriberId,
 				subscriber.status,
 			]
 				.join(" ")
 				.toLowerCase();
-			const contactSearchable = subscriber.contactNumber.toLowerCase();
 
 			return (
 				(!normalizedQuery || searchable.includes(normalizedQuery)) &&
-				(!normalizedContactQuery ||
-					contactSearchable.includes(normalizedContactQuery)) &&
 				(statusFilter === "All" || subscriber.status === statusFilter) &&
-				matchesDateFilter(subscriber.dateRegistered, dateFilter)
+				matchesRegisteredDateRange(
+					subscriber.dateRegistered,
+					registeredDateRange,
+				)
 			);
 		});
-	}, [contactQuery, dateFilter, query, statusFilter]);
+	}, [query, registeredDateRange, statusFilter]);
 
 	const columns = useMemo<
 		ColumnDef<MasterSubscriberManagementListRecord>[]
@@ -115,40 +116,30 @@ export function useMasterSubscriberManagementListPage() {
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
-	function setContactQuery(value: string) {
-		setContactQueryState(value);
-		setPagination((current) => ({ ...current, pageIndex: 0 }));
-	}
-
 	function setStatusFilter(value: MasterSubscriberManagementStatus | "All") {
 		setStatusFilterState(value);
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
-	function setDateFilter(
-		value: (typeof MasterSubscriberManagementDateFilterOptions)[number],
-	) {
-		setDateFilterState(value);
+	function setRegisteredDateRange(value: DateRangeValue) {
+		setRegisteredDateRangeState(value);
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
 	function resetFilters() {
 		setQuery("");
-		setContactQuery("");
 		setStatusFilter("All");
-		setDateFilter("All Time");
+		setRegisteredDateRange(EmptyRegisteredDateRange);
 	}
 
 	return {
-		contactQuery,
-		dateFilter,
-		dateOptions: MasterSubscriberManagementDateFilterOptions,
 		metrics,
 		query,
+		registeredDateRange,
+		registeredDateRangeReferenceDate: RegisteredDateRangeReferenceDate,
 		resetFilters,
-		setContactQuery,
-		setDateFilter,
 		setQuery,
+		setRegisteredDateRange,
 		setStatusFilter,
 		statusFilter,
 		statusOptions: MasterSubscriberManagementStatusOptions,
@@ -170,24 +161,25 @@ function createColumn(
 	};
 }
 
-function matchesDateFilter(
+function matchesRegisteredDateRange(
 	dateRegistered: string,
-	dateFilter: (typeof MasterSubscriberManagementDateFilterOptions)[number],
+	range: DateRangeValue,
 ) {
-	if (dateFilter === "All Time") {
-		return true;
+	if (range.from && dateRegistered < range.from) {
+		return false;
 	}
 
-	const registeredAt = new Date(`${dateRegistered}T00:00:00`).getTime();
-	const maxDate = new Date("2024-05-15T00:00:00").getTime();
-
-	if (dateFilter === "Last 7 Days") {
-		return registeredAt >= maxDate - 7 * 24 * 60 * 60 * 1000;
+	if (range.to && dateRegistered > range.to) {
+		return false;
 	}
 
-	if (dateFilter === "Last 30 Days") {
-		return registeredAt >= maxDate - 30 * 24 * 60 * 60 * 1000;
-	}
+	return true;
+}
 
-	return new Date(`${dateRegistered}T00:00:00`).getFullYear() === 2024;
+function getLatestRegisteredDate(records: MasterSubscriberManagementListRecord[]) {
+	return records.reduce(
+		(latestDate, record) =>
+			record.dateRegistered > latestDate ? record.dateRegistered : latestDate,
+		records[0]?.dateRegistered ?? "",
+	);
 }

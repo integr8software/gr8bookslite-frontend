@@ -1,13 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Download, Filter, Search } from "lucide-react";
+import { Download, Search } from "lucide-react";
 import {
 	MasterSubscriberManagementPaginationStorageKey,
 } from "@/app/src/constants/master/subscriber-management/MasterSubscriberManagementConstants";
 import type { useMasterSubscriberManagementListPage } from "@/app/src/hooks/master/subscriber-management/useMasterSubscriberManagementListPage";
 import type { MasterSubscriberManagementStatus } from "@/app/src/types/master/subscriber-management/MasterSubscriberManagementTypes";
 import { MasterSubscriberManagementTableRow } from "@/app/src/ui/master/subscriber-management/MasterSubscriberManagementTableRow";
+import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
 	ModuleTableFilterSelect,
@@ -21,14 +22,11 @@ type MasterSubscriberManagementTableProps = ReturnType<
 >;
 
 export function MasterSubscriberManagementTable({
-	contactQuery,
-	dateFilter,
-	dateOptions,
 	query,
-	resetFilters,
-	setContactQuery,
-	setDateFilter,
+	registeredDateRange,
+	registeredDateRangeReferenceDate,
 	setQuery,
+	setRegisteredDateRange,
 	setStatusFilter,
 	statusFilter,
 	statusOptions,
@@ -46,21 +44,23 @@ export function MasterSubscriberManagementTable({
 				paginationStorageKey={
 					MasterSubscriberManagementPaginationStorageKey
 				}
-				pageSizeOptions={[8, 10, 20, 24]}
+				pageSizeOptions={[5, 10, 15, 20, 25, 50]}
 				table={table}
 				toolbar={
-					<ModuleTableToolbar className="items-end lg:grid-cols-[minmax(18rem,2fr)_minmax(13rem,1.2fr)_minmax(10rem,0.8fr)_minmax(11rem,0.9fr)_minmax(8rem,0.7fr)_minmax(8rem,0.7fr)]">
+					<ModuleTableToolbar className="items-end lg:grid-cols-[minmax(18rem,2fr)_minmax(11rem,0.9fr)_minmax(10rem,0.75fr)_minmax(8rem,0.65fr)]">
 						<ModuleTableSearch
 							label="Search subscribers"
 							onChange={setQuery}
-							placeholder="Search by subscriber name or email..."
+							placeholder="Search by subscriber, email, or contact no..."
 							value={query}
 						/>
-						<ModuleTableSearch
-							label="Search contact number"
-							onChange={setContactQuery}
-							placeholder="Search contact no..."
-							value={contactQuery}
+						<DateRangePicker
+							label="Date Registered"
+							onChange={setRegisteredDateRange}
+							placeholder="Date range"
+							referenceDate={registeredDateRangeReferenceDate}
+							startMonth={registeredDateRangeReferenceDate}
+							value={registeredDateRange}
 						/>
 						<ModuleTableFilterSelect
 							label="Status"
@@ -78,21 +78,6 @@ export function MasterSubscriberManagementTable({
 							]}
 							value={statusFilter}
 						/>
-						<ModuleTableFilterSelect
-							label="Date Registered"
-							onChange={(value) =>
-								setDateFilter(value as typeof dateOptions[number])
-							}
-							options={dateOptions.map((option) => ({
-								label: option,
-								value: option,
-							}))}
-							value={dateFilter}
-						/>
-						<ToolbarButton onClick={resetFilters}>
-							<Filter className="h-4 w-4" aria-hidden="true" />
-							Filters
-						</ToolbarButton>
 						<ToolbarButton>
 							<Download className="h-4 w-4" aria-hidden="true" />
 							Export

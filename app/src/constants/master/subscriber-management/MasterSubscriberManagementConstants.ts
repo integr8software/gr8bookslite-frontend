@@ -29,13 +29,6 @@ export const MasterSubscriberManagementStatusOptions = [
 	"Inactive",
 ] as const satisfies readonly MasterSubscriberManagementStatus[];
 
-export const MasterSubscriberManagementDateFilterOptions = [
-	"All Time",
-	"Last 7 Days",
-	"Last 30 Days",
-	"This Year",
-] as const;
-
 export const MasterSubscriberManagementTableColumns = [
 	{
 		className: "w-[16rem]",
@@ -47,37 +40,31 @@ export const MasterSubscriberManagementTableColumns = [
 		className: "w-[16rem]",
 		key: "email",
 		label: "Contact Email",
-		sortable: false,
+		sortable: true,
 	},
 	{
 		className: "w-[14rem]",
 		key: "contactNumber",
 		label: "Contact No.",
-		sortable: false,
-	},
-	{
-		className: "w-[9rem]",
-		key: "status",
-		label: "Status",
-		sortable: false,
+		sortable: true,
 	},
 	{
 		className: "w-[8rem] text-center",
 		key: "companies",
 		label: "Companies",
-		sortable: false,
+		sortable: true,
 	},
 	{
 		className: "w-[8rem] text-center",
 		key: "branches",
 		label: "Branches",
-		sortable: false,
+		sortable: true,
 	},
 	{
 		className: "w-[7rem] text-center",
 		key: "users",
 		label: "Users",
-		sortable: false,
+		sortable: true,
 	},
 	{
 		className: "w-[12rem]",
@@ -86,10 +73,16 @@ export const MasterSubscriberManagementTableColumns = [
 		sortable: true,
 	},
 	{
+		className: "w-[9rem]",
+		key: "status",
+		label: "Status",
+		sortable: true,
+	},
+	{
 		className: "w-[12rem]",
 		key: "lastLoginDate",
 		label: "Last Login",
-		sortable: false,
+		sortable: true,
 	},
 	{
 		className: "w-[7rem] text-center",

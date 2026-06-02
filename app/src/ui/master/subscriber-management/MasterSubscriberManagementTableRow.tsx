@@ -45,14 +45,14 @@ export function MasterSubscriberManagementTableRow({
 			<td className="px-4 py-4 text-sm font-medium text-darknavy">
 				{subscriber.contactNumber}
 			</td>
-			<td className="px-4 py-4">
-				<MasterSubscriberStatusBadge status={subscriber.status} />
-			</td>
 			<CenteredNumberCell value={subscriber.companies} />
 			<CenteredNumberCell value={subscriber.branches} />
 			<CenteredNumberCell value={subscriber.users} />
 			<td className="px-4 py-4 text-sm font-medium text-darknavy">
 				{subscriber.dateRegisteredLabel}
+			</td>
+			<td className="px-4 py-4">
+				<MasterSubscriberStatusBadge status={subscriber.status} />
 			</td>
 			<td className="px-4 py-4 text-sm font-medium text-darknavy">
 				<span className="block">{subscriber.lastLoginDate}</span>

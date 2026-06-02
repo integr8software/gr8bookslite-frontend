@@ -12,7 +12,7 @@ export type MainModuleAction = Extract<
 >;
 
 const CrudActions: MainModuleAction[] = ["view", "add", "edit"];
-const MockRecordIds = ["1001", "1002", "1003"];
+const ModuleRecordIds = ["1001", "1002", "1003"];
 
 export const SidebarModuleNavigationSections: MainNavigationSection[] = [
   section("dashboard", "Dashboard", "/dashboard", "dashboard", "dashboard", [
@@ -516,7 +516,7 @@ function moduleItem(
     requiredActions: ["view"],
     module: {
       actions,
-      mockRecordIds: MockRecordIds,
+      recordIds: ModuleRecordIds,
     },
   };
 }

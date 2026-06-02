@@ -4,8 +4,8 @@ import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
-	MockTransactionNumberSetups,
-	MockTransactionNumberUsageLogs,
+	TransactionNumberSetups,
+	TransactionNumberUsageLogs,
 } from "@/app/src/data/modules/system-administration/transaction-number-setup/TransactionNumberSetupData";
 import { generateNextTransactionNumber } from "@/app/src/services/modules/system-administration/transaction-number-setup/TransactionNumberGenerationService";
 import { TransactionNumberSetupQueryKeys } from "@/app/src/services/modules/system-administration/transaction-number-setup/TransactionNumberSetupQueryKeys";
@@ -31,13 +31,13 @@ export function useTransactionNumberSetupStore<
 	const queryClient = useQueryClient();
 	const setupsQuery = useQuery({
 		queryKey: TransactionNumberSetupQueryKeys.setups(),
-		queryFn: async () => MockTransactionNumberSetups,
-		initialData: MockTransactionNumberSetups,
+		queryFn: async () => TransactionNumberSetups,
+		initialData: TransactionNumberSetups,
 	});
 	const usageLogsQuery = useQuery({
 		queryKey: TransactionNumberSetupQueryKeys.usageLogs(),
-		queryFn: async () => MockTransactionNumberUsageLogs,
-		initialData: MockTransactionNumberUsageLogs,
+		queryFn: async () => TransactionNumberUsageLogs,
+		initialData: TransactionNumberUsageLogs,
 	});
 
 	function setSetups(
@@ -47,7 +47,7 @@ export function useTransactionNumberSetupStore<
 	) {
 		queryClient.setQueryData<TransactionNumberSetupRecord[]>(
 			TransactionNumberSetupQueryKeys.setups(),
-			(current = MockTransactionNumberSetups) => updater(current),
+			(current = TransactionNumberSetups) => updater(current),
 		);
 	}
 
@@ -58,7 +58,7 @@ export function useTransactionNumberSetupStore<
 	) {
 		queryClient.setQueryData<TransactionNumberUsageLog[]>(
 			TransactionNumberSetupQueryKeys.usageLogs(),
-			(current = MockTransactionNumberUsageLogs) => updater(current),
+			(current = TransactionNumberUsageLogs) => updater(current),
 		);
 	}
 
@@ -103,11 +103,11 @@ export function useTransactionNumberSetupStore<
 			const setups =
 				queryClient.getQueryData<TransactionNumberSetupRecord[]>(
 					TransactionNumberSetupQueryKeys.setups(),
-				) ?? MockTransactionNumberSetups;
+				) ?? TransactionNumberSetups;
 			const usageLogs =
 				queryClient.getQueryData<TransactionNumberUsageLog[]>(
 					TransactionNumberSetupQueryKeys.usageLogs(),
-				) ?? MockTransactionNumberUsageLogs;
+				) ?? TransactionNumberUsageLogs;
 			const setup = setups.find((current) => current.id === setupId);
 
 			if (!setup || setup.status !== "Active") {

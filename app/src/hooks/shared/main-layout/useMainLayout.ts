@@ -38,7 +38,11 @@ import {
   MainWorkspaceNavigationSections,
   MainWorkspaceSearchItems,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarNavigationData";
-import { MainLayoutData } from "@/app/src/data/shared/main-layout/MainLayoutData";
+import {
+  MainLayoutDefaultSubscription,
+  MainLayoutInitialNotifications,
+  MainLayoutRecentNavigationKeys,
+} from "@/app/src/data/shared/main-layout/MainLayoutDefaults";
 import { ModuleHelpArticles } from "@/app/src/data/shared/module/module-help/ModuleHelpData";
 import { getHelpArticleForPath } from "@/app/src/data/shared/module/module-help/ModuleHelpUtils";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
@@ -171,9 +175,7 @@ export function useMainLayout() {
     pathname,
     value: "",
   });
-  const [activeBranchId, setActiveBranchId] = useState(
-    MainLayoutData.activeBranchId,
-  );
+  const [activeBranchId, setActiveBranchId] = useState("");
   const [switchingCompanyName, setSwitchingCompanyName] = useState<
     string | null
   >(null);
@@ -226,19 +228,20 @@ export function useMainLayout() {
     : null;
   const [activeCompanyId, setActiveCompanyId] = useState("");
   const [notifications, setNotifications] = useState<MainNotification[]>(
-    MainLayoutData.notifications,
+    MainLayoutInitialNotifications,
   );
   const query = queryState.pathname === pathname ? queryState.value : "";
   const isSearchOpen = searchOpenPath === pathname;
   const isNotificationsOpen = notificationsOpenPath === pathname;
   const isHelpOpen = helpOpenPath === pathname;
 
-  const subscription = MainLayoutData.activeSubscription;
   const availableCompanies = workspaceCompanies;
   const currentCompany =
     availableCompanies.find((company) => company.id === activeCompanyId) ??
     availableCompanies[0] ??
     EmptyCompany;
+  const subscription =
+    currentCompany.subscriptionPackage ?? MainLayoutDefaultSubscription;
   const { branches, isLoading: isBranchLoading } =
     useWorkspaceCompanyMainLayoutBranches({
       company:
@@ -296,7 +299,7 @@ export function useMainLayout() {
   );
   const companyHomeHref = getCompanyHomeHref(
     companySearchItems,
-    MainLayoutData.recentNavigationKeys,
+    MainLayoutRecentNavigationKeys,
   );
   const homeHref =
     activeNavigationScope === "account" && hasMasterAccess
@@ -370,7 +373,7 @@ export function useMainLayout() {
 
     return findSearchItemsByKeys(
       availableSearchItems,
-      MainLayoutData.recentNavigationKeys,
+      MainLayoutRecentNavigationKeys,
     );
   }, [activeNavigationScope, availableSearchItems]);
 

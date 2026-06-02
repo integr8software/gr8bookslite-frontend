@@ -1,4 +1,3 @@
-import { MainLayoutMockData } from "@/app/src/data/shared/main-layout/MainLayoutMockData";
 import type {
 	WorkspaceAuditLogAction,
 	WorkspaceAuditLogDateRange,
@@ -9,11 +8,7 @@ import type {
 
 const BaseTimestamp = Date.UTC(2026, 5, 1, 7, 45, 0);
 const QueryResultLimit = 500;
-
-const Branches = MainLayoutMockData.branches.map((branch) => ({
-	id: branch.id,
-	name: branch.name,
-}));
+const WorkspaceScope = { id: "workspace", name: "Workspace" };
 
 const Modules = [
 	"Company Settings",
@@ -53,10 +48,6 @@ const Actors = [
 export const WorkspaceAuditLogRecords: WorkspaceAuditLogRecord[] = Array.from(
 	{ length: 96 },
 	(_, index) => {
-		const branch = Branches[index % Branches.length] ?? {
-			id: "workspace",
-			name: MainLayoutMockData.currentCompany.name,
-		};
 		const action = Actions[index % Actions.length];
 		const actor = Actors[index % Actors.length];
 		const moduleName = Modules[index % Modules.length];
@@ -71,8 +62,8 @@ export const WorkspaceAuditLogRecords: WorkspaceAuditLogRecord[] = Array.from(
 			action,
 			actorName: actor.name,
 			actorRole: actor.role,
-			branchId: branch.id,
-			branchName: branch.name,
+			branchId: WorkspaceScope.id,
+			branchName: WorkspaceScope.name,
 			createdAt: new Date(
 				BaseTimestamp - index * 23 * 60 * 1000,
 			).toISOString(),
@@ -109,8 +100,17 @@ export function formatWorkspaceAuditLogCreatedAt(createdAt: string) {
 	}).format(new Date(createdAt));
 }
 
-export function getWorkspaceAuditLogBranchOptions() {
-	return Branches;
+export function getWorkspaceAuditLogBranchOptions(
+	records = WorkspaceAuditLogRecords,
+) {
+	return Array.from(
+		new Map(
+			records.map((record) => [
+				record.branchId,
+				{ id: record.branchId, name: record.branchName },
+			]),
+		).values(),
+	).sort((first, second) => first.name.localeCompare(second.name));
 }
 
 export function getWorkspaceAuditLogModuleOptions(

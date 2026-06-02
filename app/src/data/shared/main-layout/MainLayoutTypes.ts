@@ -120,7 +120,7 @@ export type MainNavigationItem = {
   requiredActions?: MainAccessAction[];
   module?: {
     actions: Extract<MainAccessAction, "view" | "add" | "edit">[];
-    mockRecordIds?: string[];
+    recordIds?: string[];
   };
   children?: MainNavigationItem[];
 };

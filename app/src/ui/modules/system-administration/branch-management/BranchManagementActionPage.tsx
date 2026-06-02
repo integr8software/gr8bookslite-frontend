@@ -52,7 +52,7 @@ const BranchManagementActionCopy = {
 	add: {
 		title: "Add Branch",
 		description:
-			"New records are added to the shared branch mock data used by the topbar switcher.",
+			"New records are added to the branch list used by the topbar switcher.",
 	},
 	edit: {
 		title: "Edit Branch",

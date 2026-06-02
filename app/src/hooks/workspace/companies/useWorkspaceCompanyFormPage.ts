@@ -11,6 +11,10 @@ import {
 	InitialWorkspaceCompanyFormValues,
 	createWorkspaceCompanyFormValues,
 } from "@/app/src/data/workspace/companies/WorkspaceCompanyData";
+import {
+	GetSyncedReportEndDate,
+	GetSyncedReportStartDate,
+} from "@/app/src/data/onboarding/OnboardingData";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
 import {
@@ -76,6 +80,34 @@ export function useWorkspaceCompanyFormPage() {
 	const cancelHref = mode === "edit" ? companyHref : WorkspaceCompaniesHref;
 
 	function updateField(field: keyof WorkspaceCompanyFormValues, value: string) {
+		if (field === "reportStartDate") {
+			setDraftValues((current) => ({
+				...(current ?? baseValues),
+				reportStartDate: value,
+				reportEndDate: GetSyncedReportEndDate(value),
+			}));
+			setErrors((current) => ({
+				...current,
+				reportStartDate: undefined,
+				reportEndDate: undefined,
+			}));
+			return;
+		}
+
+		if (field === "reportEndDate") {
+			setDraftValues((current) => ({
+				...(current ?? baseValues),
+				reportStartDate: GetSyncedReportStartDate(value),
+				reportEndDate: value,
+			}));
+			setErrors((current) => ({
+				...current,
+				reportStartDate: undefined,
+				reportEndDate: undefined,
+			}));
+			return;
+		}
+
 		if (field === "billingCardNumber") {
 			setDraftValues((current) => ({
 				...(current ?? baseValues),

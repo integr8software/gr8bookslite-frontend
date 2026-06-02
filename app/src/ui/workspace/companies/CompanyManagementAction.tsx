@@ -25,6 +25,7 @@ const CompanyFormId = "workspace-company-form";
 export function CompanyManagementAction() {
 	const form = useWorkspaceCompanyFormPage();
 	const [isBillingConfirmOpen, setIsBillingConfirmOpen] = useState(false);
+	const [isEditConfirmOpen, setIsEditConfirmOpen] = useState(false);
 	const storedAccessToken = useAppStore((state) => state.accessToken);
 	const accessToken = storedAccessToken ?? GetAccessToken();
 	const plansQuery = useBillingPlansQuery({
@@ -68,6 +69,11 @@ export function CompanyManagementAction() {
 		setIsBillingConfirmOpen(false);
 	}
 
+	async function handleSaveExistingCompany() {
+		await form.saveCompany();
+		setIsEditConfirmOpen(false);
+	}
+
 	return (
 		<section className="grid gap-5">
 			<CompanyActionHeader
@@ -98,7 +104,12 @@ export function CompanyManagementAction() {
 				onInputChange={form.handleInputChange}
 				onSubmit={(event) => {
 					if (form.mode === "edit") {
-						form.handleSubmit(event);
+						event.preventDefault();
+
+						if (form.validateCompany()) {
+							setIsEditConfirmOpen(true);
+						}
+
 						return;
 					}
 
@@ -112,11 +123,25 @@ export function CompanyManagementAction() {
 				onUpdateLogoFile={form.updateLogoFile}
 			/>
 			<AppDialog
+				isOpen={isEditConfirmOpen}
+				isPending={form.isMutating}
+				title="Save company changes?"
+				description={`This will update ${
+					form.values.companyName || "this company"
+				}'s company profile and workspace details.`}
+				confirmationPhrase="confirm company"
+				confirmLabel="Save Company"
+				pendingLabel="Saving..."
+				onCancel={() => setIsEditConfirmOpen(false)}
+				onConfirm={() => void handleSaveExistingCompany()}
+			/>
+			<AppDialog
 				isOpen={isBillingConfirmOpen}
 				isPending={form.isMutating}
 				title="Create company?"
 				description={`Creating ${form.values.companyName || "this company"} may affect workspace billing, payments, or deductions.`}
 				confirmLabel="Save Company"
+				pendingLabel="Saving..."
 				onCancel={() => setIsBillingConfirmOpen(false)}
 				onConfirm={handleSaveNewCompany}
 			/>

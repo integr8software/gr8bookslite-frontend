@@ -35,10 +35,14 @@ export function WorkspaceUsersManagementMain() {
   const openAddDrawer = useCallback(() => {
     setDrawerState({ mode: "add" });
   }, []);
+  const closeDrawer = useCallback(() => {
+    setDrawerState(null);
+  }, []);
 
   return (
     <section className="grid gap-5">
       <WorkspaceUsersSpotlightTutorial
+        onCloseAddDrawer={closeDrawer}
         onOpenAddDrawer={openAddDrawer}
       />
       <ModuleHeader
@@ -76,7 +80,7 @@ export function WorkspaceUsersManagementMain() {
       <WorkspaceUserDrawer
         isOpen={Boolean(drawerState)}
         mode={drawerState?.mode ?? "add"}
-        onClose={() => setDrawerState(null)}
+        onClose={closeDrawer}
         showSpotlightTutorial={false}
         user={drawerState?.user}
       />

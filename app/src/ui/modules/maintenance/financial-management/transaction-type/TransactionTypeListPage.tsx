@@ -18,7 +18,10 @@ type DrawerState = { mode: "add" | "edit"; transactionType?: TransactionType } |
 export function TransactionTypeListPage() {
 	const page = useTransactionTypeListPage();
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
-	useMaintenanceAddDrawerSpotlight(() => setDrawerState({ mode: "add" }));
+	useMaintenanceAddDrawerSpotlight(
+		() => setDrawerState({ mode: "add" }),
+		() => setDrawerState(null),
+	);
 
 	return (
 		<section className="grid gap-5">

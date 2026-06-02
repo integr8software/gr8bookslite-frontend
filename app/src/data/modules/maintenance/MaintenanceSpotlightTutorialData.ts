@@ -8,6 +8,8 @@ export const MaintenanceAddSpotlightTutorialOpenEvent =
   "gr8booksneo:maintenance-add-spotlight-open";
 export const MaintenanceAddDrawerSpotlightTutorialOpenEvent =
   "gr8booksneo:maintenance-add-drawer-spotlight-open";
+export const MaintenanceAddDrawerSpotlightTutorialCloseEvent =
+  "gr8booksneo:maintenance-add-drawer-spotlight-close";
 
 type MaintenanceSpotlightTutorialConfig = {
   addMode: "drawer" | "route";

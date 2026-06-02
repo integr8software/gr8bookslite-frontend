@@ -45,7 +45,10 @@ export function ResponsibilityCenterMain() {
 	const [query, setQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState("All");
 	const [typeFilter, setTypeFilter] = useState("All");
-	useMaintenanceAddDrawerSpotlight(() => setDrawerState({ mode: "add" }));
+	useMaintenanceAddDrawerSpotlight(
+		() => setDrawerState({ mode: "add" }),
+		() => setDrawerState(null),
+	);
 	const filteredCenters = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 

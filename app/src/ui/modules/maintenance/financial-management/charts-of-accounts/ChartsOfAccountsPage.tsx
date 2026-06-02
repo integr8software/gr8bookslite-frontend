@@ -40,7 +40,7 @@ export function ChartsOfAccountsMain() {
   const withoutSubmodules = totalAccounts - withSubmodules;
   const [pendingDeleteAccount, setPendingDeleteAccount] =
     useState<ChartAccount | null>(null);
-  useMaintenanceAddDrawerSpotlight(coa.openAddDrawer);
+  useMaintenanceAddDrawerSpotlight(coa.openAddDrawer, coa.closeDrawer);
 
   function handleConfirmDelete() {
     if (!pendingDeleteAccount) {
@@ -129,7 +129,10 @@ export function ChartsOfAccountsMain() {
           ]}
         />
 
-        <Card className="overflow-hidden rounded-lg">
+        <Card
+          className="overflow-hidden rounded-lg"
+          data-spotlight-id="charts-of-accounts-table"
+        >
           <ChartsOfAccountsTable
             expandedIds={coa.expandedIds}
             isLoading={coa.isLoading}

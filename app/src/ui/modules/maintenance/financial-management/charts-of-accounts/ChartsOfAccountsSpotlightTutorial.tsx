@@ -1,7 +1,10 @@
 "use client";
 
 import { useCallback } from "react";
-import { MaintenanceAddDrawerSpotlightTutorialOpenEvent } from "@/app/src/data/modules/maintenance/MaintenanceSpotlightTutorialData";
+import {
+  MaintenanceAddDrawerSpotlightTutorialCloseEvent,
+  MaintenanceAddDrawerSpotlightTutorialOpenEvent,
+} from "@/app/src/data/modules/maintenance/MaintenanceSpotlightTutorialData";
 import {
   ChartsOfAccountsSpotlightTutorialSteps,
 } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
@@ -20,6 +23,10 @@ export function ChartsOfAccountsSpotlightTutorial() {
         new Event(MaintenanceAddDrawerSpotlightTutorialOpenEvent),
       );
     }
+
+    if (index === 4) {
+      closeMaintenanceAddDrawer();
+    }
   }, []);
 
   return (
@@ -32,9 +39,21 @@ export function ChartsOfAccountsSpotlightTutorial() {
       }
       isOpen={isOpen}
       steps={ChartsOfAccountsSpotlightTutorialSteps}
-      onComplete={completeTutorial}
+      onComplete={() => {
+        closeMaintenanceAddDrawer();
+        completeTutorial();
+      }}
       onStepEnter={handleStepEnter}
-      onSkip={skipTutorial}
+      onSkip={() => {
+        closeMaintenanceAddDrawer();
+        skipTutorial();
+      }}
     />
+  );
+}
+
+function closeMaintenanceAddDrawer() {
+  window.dispatchEvent(
+    new Event(MaintenanceAddDrawerSpotlightTutorialCloseEvent),
   );
 }

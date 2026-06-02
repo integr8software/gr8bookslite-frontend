@@ -48,6 +48,7 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	useMaintenanceAddDrawerSpotlight(() =>
 		setDrawerState({ kind, mode: "add" }),
+		() => setDrawerState(null),
 	);
 	const childConfig = page.childKind
 		? ItemSetupConfigByKind[page.childKind]

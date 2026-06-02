@@ -10,6 +10,7 @@ import {
   getMaintenanceAddSpotlightTutorialConfig,
   getMaintenanceSpotlightTutorialConfig,
   MaintenanceAddSpotlightTutorialOpenEvent,
+  MaintenanceAddDrawerSpotlightTutorialCloseEvent,
   MaintenanceAddDrawerSpotlightTutorialOpenEvent,
   MaintenanceSpotlightTutorialOpenEvent,
 } from "@/app/src/data/modules/maintenance/MaintenanceSpotlightTutorialData";
@@ -36,13 +37,21 @@ export function MaintenanceSpotlightTutorial() {
   });
   const handleStepEnter = useCallback(
     (_: unknown, index: number) => {
+      const listStepCount = createMaintenanceSpotlightTutorialSteps(
+        config?.label ?? "",
+      ).length;
+
       if (
         listConfig?.addMode === "drawer" &&
-        index === createMaintenanceSpotlightTutorialSteps(config?.label ?? "").length
+        index === listStepCount
       ) {
         window.dispatchEvent(
           new Event(MaintenanceAddDrawerSpotlightTutorialOpenEvent),
         );
+      }
+
+      if (listConfig?.addMode === "drawer" && index === listStepCount - 1) {
+        closeMaintenanceAddDrawer();
       }
     },
     [config?.label, listConfig?.addMode],
@@ -66,13 +75,23 @@ export function MaintenanceSpotlightTutorial() {
       }
       onStepEnter={handleStepEnter}
       onComplete={() => {
+        closeMaintenanceAddDrawer();
         completeTutorial();
 
         if (listConfig?.addMode === "route") {
           router.push(`${listConfig.href}/add`);
         }
       }}
-      onSkip={skipTutorial}
+      onSkip={() => {
+        closeMaintenanceAddDrawer();
+        skipTutorial();
+      }}
     />
+  );
+}
+
+function closeMaintenanceAddDrawer() {
+  window.dispatchEvent(
+    new Event(MaintenanceAddDrawerSpotlightTutorialCloseEvent),
   );
 }

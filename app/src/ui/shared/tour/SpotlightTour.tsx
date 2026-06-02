@@ -17,6 +17,7 @@ const SpotlightViewportGap = 20;
 const SpotlightMobileViewportGap = 16;
 const SpotlightDesktopCardHeight = 332;
 const SpotlightMobileCardHeight = 420;
+const SpotlightTargetTrackingFrames = 60;
 const SpotlightMascotImagePaths = [
   "/img/spotlight-tutorial/neo-gesture-1.png",
   "/img/spotlight-tutorial/neo-gesture-2.png",
@@ -181,12 +182,24 @@ function SpotlightTourContent({
 
     let frameId: number | null = null;
     let observedTargetElement: HTMLElement | null = null;
+    let remainingTrackingFrames = SpotlightTargetTrackingFrames;
+
+    function scheduleMeasurement() {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        updateMeasurements();
+      });
+    }
 
     function updateMeasurements() {
       const currentTargetElement = getSpotlightTarget(activeStep);
 
       if (!currentTargetElement) {
-        frameId = window.requestAnimationFrame(updateMeasurements);
+        scheduleMeasurement();
         return;
       }
 
@@ -199,21 +212,31 @@ function SpotlightTourContent({
 
       setSpotlightRect(nextRect);
       setCardPosition(getCardPosition(nextRect));
+
+      if (remainingTrackingFrames > 0) {
+        remainingTrackingFrames -= 1;
+        scheduleMeasurement();
+      }
     }
 
-    window.addEventListener("resize", updateMeasurements);
-    window.addEventListener("scroll", updateMeasurements, true);
+    function restartMeasurements() {
+      remainingTrackingFrames = SpotlightTargetTrackingFrames;
+      scheduleMeasurement();
+    }
 
-    const resizeObserver = new ResizeObserver(updateMeasurements);
+    window.addEventListener("resize", restartMeasurements);
+    window.addEventListener("scroll", restartMeasurements, true);
+
+    const resizeObserver = new ResizeObserver(restartMeasurements);
     resizeObserver.observe(document.documentElement);
-    frameId = window.requestAnimationFrame(updateMeasurements);
+    scheduleMeasurement();
 
     return () => {
       if (frameId !== null) {
         window.cancelAnimationFrame(frameId);
       }
-      window.removeEventListener("resize", updateMeasurements);
-      window.removeEventListener("scroll", updateMeasurements, true);
+      window.removeEventListener("resize", restartMeasurements);
+      window.removeEventListener("scroll", restartMeasurements, true);
       resizeObserver.disconnect();
     };
   }, [activeStep]);
@@ -246,7 +269,7 @@ function SpotlightTourContent({
   const isLightAppearance = resolvedAppearance === "light";
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-120" aria-live="polite">
+    <div className="pointer-events-auto fixed inset-0 z-120" aria-live="polite">
       {overlayStyles ? (
         <>
           <div

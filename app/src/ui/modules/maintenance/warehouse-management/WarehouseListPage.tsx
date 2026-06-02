@@ -29,7 +29,10 @@ type DrawerState = { mode: "add" | "edit"; warehouse?: WarehouseRecord } | null;
 export function WarehouseListPage() {
 	const page = useWarehouseListPage();
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
-	useMaintenanceAddDrawerSpotlight(() => setDrawerState({ mode: "add" }));
+	useMaintenanceAddDrawerSpotlight(
+		() => setDrawerState({ mode: "add" }),
+		() => setDrawerState(null),
+	);
 
 	return (
 		<section className="grid gap-5">

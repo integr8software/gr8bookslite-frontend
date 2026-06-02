@@ -15,8 +15,10 @@ import {
 } from "@/app/src/ui/shared/tour/SpotlightTour";
 
 export function WorkspaceUsersSpotlightTutorial({
+  onCloseAddDrawer,
   onOpenAddDrawer,
 }: {
+  onCloseAddDrawer: () => void;
   onOpenAddDrawer: () => void;
 }) {
   const { completeTutorial, isOpen, skipTutorial } = useSpotlightTutorial({
@@ -29,8 +31,12 @@ export function WorkspaceUsersSpotlightTutorial({
       if (index === WorkspaceUsersListSpotlightTutorialStepCount) {
         onOpenAddDrawer();
       }
+
+      if (index === WorkspaceUsersListSpotlightTutorialStepCount - 1) {
+        onCloseAddDrawer();
+      }
     },
-    [onOpenAddDrawer],
+    [onCloseAddDrawer, onOpenAddDrawer],
   );
 
   return (
@@ -39,9 +45,15 @@ export function WorkspaceUsersSpotlightTutorial({
       badge={<SpotlightTourBadge>Workspace users guide</SpotlightTourBadge>}
       isOpen={isOpen}
       steps={WorkspaceUsersSpotlightTutorialSteps}
-      onComplete={completeTutorial}
+      onComplete={() => {
+        onCloseAddDrawer();
+        completeTutorial();
+      }}
       onStepEnter={handleStepEnter}
-      onSkip={skipTutorial}
+      onSkip={() => {
+        onCloseAddDrawer();
+        skipTutorial();
+      }}
     />
   );
 }

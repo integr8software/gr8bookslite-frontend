@@ -35,7 +35,10 @@ export function TermManagementListPage() {
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	const [datemodeFilter, setDatemodeFilter] = useState("All");
 	const [query, setQuery] = useState("");
-	useMaintenanceAddDrawerSpotlight(() => setDrawerState({ mode: "add" }));
+	useMaintenanceAddDrawerSpotlight(
+		() => setDrawerState({ mode: "add" }),
+		() => setDrawerState(null),
+	);
 	const filteredTerms = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 

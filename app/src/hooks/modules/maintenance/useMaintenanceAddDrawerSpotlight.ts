@@ -1,13 +1,23 @@
 "use client";
 
 import { useEffect } from "react";
-import { MaintenanceAddDrawerSpotlightTutorialOpenEvent } from "@/app/src/data/modules/maintenance/MaintenanceSpotlightTutorialData";
+import {
+  MaintenanceAddDrawerSpotlightTutorialCloseEvent,
+  MaintenanceAddDrawerSpotlightTutorialOpenEvent,
+} from "@/app/src/data/modules/maintenance/MaintenanceSpotlightTutorialData";
 
-export function useMaintenanceAddDrawerSpotlight(onOpen: () => void) {
+export function useMaintenanceAddDrawerSpotlight(
+  onOpen: () => void,
+  onClose: () => void,
+) {
   useEffect(() => {
     window.addEventListener(
       MaintenanceAddDrawerSpotlightTutorialOpenEvent,
       onOpen,
+    );
+    window.addEventListener(
+      MaintenanceAddDrawerSpotlightTutorialCloseEvent,
+      onClose,
     );
 
     return () => {
@@ -15,6 +25,10 @@ export function useMaintenanceAddDrawerSpotlight(onOpen: () => void) {
         MaintenanceAddDrawerSpotlightTutorialOpenEvent,
         onOpen,
       );
+      window.removeEventListener(
+        MaintenanceAddDrawerSpotlightTutorialCloseEvent,
+        onClose,
+      );
     };
-  }, [onOpen]);
+  }, [onClose, onOpen]);
 }

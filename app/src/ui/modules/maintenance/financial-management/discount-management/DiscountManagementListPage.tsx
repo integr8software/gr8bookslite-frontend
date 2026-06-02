@@ -35,7 +35,10 @@ export function DiscountManagementListPage() {
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	const [query, setQuery] = useState("");
 	const [mappingFilter, setMappingFilter] = useState("All");
-	useMaintenanceAddDrawerSpotlight(() => setDrawerState({ mode: "add" }));
+	useMaintenanceAddDrawerSpotlight(
+		() => setDrawerState({ mode: "add" }),
+		() => setDrawerState(null),
+	);
 	const filteredDiscounts = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 

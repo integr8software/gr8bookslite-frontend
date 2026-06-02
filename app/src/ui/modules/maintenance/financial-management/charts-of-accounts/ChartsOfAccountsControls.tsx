@@ -11,16 +11,15 @@ import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial
 export function Card({
 	children,
 	className,
-}: {
-	children: ReactNode;
-	className?: string;
-}) {
+	...props
+}: ComponentProps<"div">) {
 	return (
 		<div
 			className={joinClasses(
 				"rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5",
 				className,
 			)}
+			{...props}
 		>
 			{children}
 		</div>

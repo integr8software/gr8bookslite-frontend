@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { ClearAccessToken, GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { ClearPendingVerificationEmail } from "@/app/src/data/auth/AuthVerificationStorage";
+import { ClearAiAssistantStorage } from "@/app/src/data/shared/ai-assistant/AiAssistantData";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { BuildAuthApiUrl } from "@/app/src/services/auth/AuthApi";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
@@ -45,6 +46,7 @@ export function useLogout() {
     } finally {
       ClearAccessToken();
       ClearPendingVerificationEmail();
+      ClearAiAssistantStorage();
       queryClient.clear();
       queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
       resetAppStore();

@@ -17,10 +17,9 @@ import {
   GetFallbackPostAuthRedirectPath,
   IsOnboardingRedirectPath,
   IsSystemRedirectPath,
-  ResolvePostAuthDestination,
+  ReadAuthJwtPayload,
 } from "@/app/src/services/auth/AuthRedirects";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
-import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 type LoginFormValues = {
@@ -47,10 +46,6 @@ export function useLoginForm() {
     InitialAuthActionState,
   );
   const [formValues, setFormValues] = useState<Partial<LoginFormValues>>({});
-  const [isSystemRedirecting, setIsSystemRedirecting] = useState(false);
-  const [postAuthRedirectPath, setPostAuthRedirectPath] = useState<
-    string | null
-  >(null);
   const values: LoginFormValues = {
     ...InitialLoginFormValues,
     ...state.formValues,
@@ -66,8 +61,6 @@ export function useLoginForm() {
     state.status === "success" && state.accessToken
       ? state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken)
       : null;
-  const activePostAuthRedirectPath =
-    postAuthRedirectPath ?? successfulAuthRedirectPath;
   const wasPendingRef = useRef(false);
   const isResolvingPostAuthRef = useRef(false);
 
@@ -113,22 +106,12 @@ export function useLoginForm() {
       }
       toast.success(state.message);
       if (state.accessToken) {
-        void ResolvePostAuthDestination(state.accessToken)
-          .then(({ profile, redirectPath }) => {
-            setActiveCompanyId(GetAuthProfileCompanyId(profile));
-            setPostAuthRedirectPath(redirectPath);
-            setIsSystemRedirecting(IsSystemRedirectPath(redirectPath));
-            router.push(redirectPath);
-          })
-          .catch(() => {
-            const fallbackPath =
-              state.redirectTo ??
-              GetFallbackPostAuthRedirectPath(state.accessToken);
+        const fallbackPath =
+          state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken);
+        const payload = ReadAuthJwtPayload(state.accessToken);
 
-            setPostAuthRedirectPath(fallbackPath);
-            setIsSystemRedirecting(IsSystemRedirectPath(fallbackPath));
-            router.push(fallbackPath);
-          });
+        setActiveCompanyId(payload?.companyId ?? null);
+        router.push(fallbackPath);
         return;
       }
       if (state.redirectTo) {
@@ -165,8 +148,8 @@ export function useLoginForm() {
     state,
     formAction,
     pending,
-    isSystemRedirecting: isSystemRedirecting || shouldShowImmediateSystemLoader,
-    isOnboardingRedirecting: IsOnboardingRedirectPath(activePostAuthRedirectPath),
+    isSystemRedirecting: shouldShowImmediateSystemLoader,
+    isOnboardingRedirecting: IsOnboardingRedirectPath(successfulAuthRedirectPath),
     values,
     handleEmailChange,
     handleSubmit,

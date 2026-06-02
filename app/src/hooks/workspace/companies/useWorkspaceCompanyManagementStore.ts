@@ -35,10 +35,14 @@ import type {
 
 export function useWorkspaceCompanyManagementStore<
   TSelected = WorkspaceCompanyManagementStoreState,
->(selector?: (state: WorkspaceCompanyManagementStoreState) => TSelected) {
+>(
+  selector?: (state: WorkspaceCompanyManagementStoreState) => TSelected,
+  options: { includeUsers?: boolean } = {},
+) {
   const queryClient = useQueryClient();
   const storedAccessToken = useAppStore((state) => state.accessToken);
   const accessToken = storedAccessToken;
+  const includeUsers = options.includeUsers ?? true;
   const companiesQuery = useQuery({
     queryKey: WorkspaceCompanyQueryKeys.companies(),
     queryFn: async () => GetWorkspaceCompanies(accessToken),
@@ -46,6 +50,7 @@ export function useWorkspaceCompanyManagementStore<
   const usersQuery = useQuery({
     queryKey: WorkspaceUserQueryKeys.users(),
     queryFn: async () => GetWorkspaceUsers(accessToken),
+    enabled: includeUsers,
   });
   const branches = useMemo(
     () =>
@@ -268,7 +273,8 @@ export function useWorkspaceCompanyManagementStore<
         deactivateCompanyMutation.mutateAsync(companyId),
       deleteCompany: (companyId) =>
         deactivateCompanyMutation.mutateAsync(companyId),
-      isLoading: companiesQuery.isLoading || usersQuery.isLoading,
+      isLoading:
+        companiesQuery.isLoading || (includeUsers && usersQuery.isLoading),
       isMutating:
         addCompanyMutation.isPending ||
         addCompanyUserMutation.isPending ||
@@ -283,7 +289,9 @@ export function useWorkspaceCompanyManagementStore<
         updateCompanyMutation.mutateAsync({ companyId, values }),
       updateCompanyUser: (userId, values) =>
         updateCompanyUserMutation.mutateAsync({ userId, values }),
-      users: usersQuery.data ?? EmptyWorkspaceCompanyUsers,
+      users: includeUsers
+        ? (usersQuery.data ?? EmptyWorkspaceCompanyUsers)
+        : EmptyWorkspaceCompanyUsers,
     }),
     [
       addCompanyMutation,
@@ -293,6 +301,7 @@ export function useWorkspaceCompanyManagementStore<
       companiesQuery.data,
       companiesQuery.isLoading,
       deactivateCompanyMutation,
+      includeUsers,
       resendCompanyUserInvitationMutation,
       updateCompanyMutation,
       updateCompanyUserMutation,

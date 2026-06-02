@@ -23,18 +23,15 @@ import type {
 	WorkspaceCompanyTableColumnKey,
 	WorkspaceCompanyTableRecord,
 	WorkspaceCompanyType,
-	WorkspaceCompanyUserRecord,
 	WorkspaceCompanyRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
 export function useWorkspaceCompaniesTable({
 	branches,
 	companies,
-	users,
 }: {
 	branches: WorkspaceCompanyBranchRecord[];
 	companies: WorkspaceCompanyRecord[];
-	users: WorkspaceCompanyUserRecord[];
 }) {
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
@@ -60,15 +57,9 @@ export function useWorkspaceCompaniesTable({
 				totalBranches:
 					company.totalBranches ??
 					branches.filter((branch) => branch.companyId === company.id).length,
-				totalUsers:
-					company.totalUsers ??
-					users.filter((user) =>
-						user.companyAssignments.some(
-							(assignment) => assignment.companyId === company.id,
-						),
-					).length,
+				totalUsers: company.totalUsers ?? 0,
 			})),
-		[branches, companies, users],
+		[branches, companies],
 	);
 	const filteredCompanies = useMemo(
 		() =>

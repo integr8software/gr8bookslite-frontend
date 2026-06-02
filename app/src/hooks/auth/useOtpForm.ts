@@ -29,10 +29,9 @@ import {
 } from "@/app/src/services/auth/AuthActions";
 import {
   GetFallbackPostAuthRedirectPath,
-  ResolvePostAuthDestination,
+  ReadAuthJwtPayload,
 } from "@/app/src/services/auth/AuthRedirects";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
-import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 type UseOtpFormOptions = {
@@ -148,17 +147,12 @@ export function useOtpForm({
       }
       toast.success(state.message);
       if (state.accessToken) {
-        void ResolvePostAuthDestination(state.accessToken)
-          .then(({ profile, redirectPath }) => {
-            setActiveCompanyId(GetAuthProfileCompanyId(profile));
-            router.push(redirectPath);
-          })
-          .catch(() => {
-            router.push(
-              state.redirectTo ??
-                GetFallbackPostAuthRedirectPath(state.accessToken),
-            );
-          });
+        const fallbackPath =
+          state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken);
+        const payload = ReadAuthJwtPayload(state.accessToken);
+
+        setActiveCompanyId(payload?.companyId ?? null);
+        router.push(fallbackPath);
         return;
       }
       if (state.redirectTo) {

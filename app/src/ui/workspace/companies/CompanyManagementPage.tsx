@@ -23,8 +23,7 @@ export function CompanyManagementPage() {
     deactivateCompany: state.deactivateCompany,
     isLoading: state.isLoading,
     isMutating: state.isMutating,
-    users: state.users,
-  }));
+  }), { includeUsers: false });
   const [pendingDeactivateCompany, setPendingDeactivateCompany] =
     useState<WorkspaceCompanyRecord | null>(null);
   const activeCompanies = companyManagement.companies.filter(
@@ -132,7 +131,6 @@ export function CompanyManagementPage() {
         branches={companyManagement.branches}
         companies={companyManagement.companies}
         isLoading={companyManagement.isLoading}
-        users={companyManagement.users}
         onDeactivate={setPendingDeactivateCompany}
       />
       <AppDialog

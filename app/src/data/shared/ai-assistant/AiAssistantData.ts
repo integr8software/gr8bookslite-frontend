@@ -96,6 +96,17 @@ export function SaveAiAssistantPurchaseRequestPrefill(
 	);
 }
 
+export function ClearAiAssistantStorage() {
+	if (typeof window === "undefined") {
+		return;
+	}
+
+	window.localStorage.removeItem(AiAssistantChatMessagesStorageKey);
+	window.localStorage.removeItem(AiAssistantChatOpenStorageKey);
+	window.localStorage.removeItem(AiAssistantChatStorageVersionKey);
+	window.localStorage.removeItem(AiAssistantPurchaseRequestPrefillStorageKey);
+}
+
 function IsValidAiAssistantMessage(
 	message: AiAssistantChatMessage,
 ): message is AiAssistantChatMessage {

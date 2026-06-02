@@ -14,7 +14,6 @@ import type {
 	WorkspaceCompanyStatus,
 	WorkspaceCompanyTableRecord,
 	WorkspaceCompanyType,
-	WorkspaceCompanyUserRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
@@ -39,19 +38,16 @@ export function CompanyTable({
 	branches,
 	companies,
 	isLoading,
-	users,
 	onDeactivate,
 }: {
 	branches: WorkspaceCompanyBranchRecord[];
 	companies: WorkspaceCompanyRecord[];
 	isLoading: boolean;
-	users: WorkspaceCompanyUserRecord[];
 	onDeactivate: (company: WorkspaceCompanyRecord) => void;
 }) {
 	const companyList = useWorkspaceCompaniesTable({
 		branches,
 		companies,
-		users,
 	});
 
 	return (

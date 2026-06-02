@@ -160,8 +160,14 @@ export function useMainLayout() {
   const searchParams = useSearchParams();
   const storedAccessToken = useAppStore((state) => state.accessToken);
   const setStoredAccessToken = useAppStore((state) => state.setAccessToken);
+  const setStoredActiveBranchContext = useAppStore(
+    (state) => state.setActiveBranchContext,
+  );
   const setStoredActiveCompanyId = useAppStore(
     (state) => state.setActiveCompanyId,
+  );
+  const setStoredActiveCompanyName = useAppStore(
+    (state) => state.setActiveCompanyName,
   );
   const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const queryClient = useQueryClient();
@@ -425,7 +431,12 @@ export function useMainLayout() {
     () => sortBranchesByPriority(getAccessibleBranches(branches)),
     [branches],
   );
-  const hasBranchAccess = accessibleBranches.length > 0;
+  const hasCompanyAdministrationAccess = hasCurrentCompanyAdministrationAccess(
+    authProfile,
+    currentCompany.id,
+  );
+  const hasBranchAccess =
+    hasCompanyAdministrationAccess || accessibleBranches.length > 0;
   const shouldShowBranchSwitcher = shouldShowBranchControls(accessibleBranches);
   const currentBranch =
     accessibleBranches.find((branch) => branch.id === activeBranchId) ??
@@ -530,6 +541,33 @@ export function useMainLayout() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- route context shortcuts should sync the topbar branch when available.
     setActiveBranchId(routedBranch.id);
   }, [accessibleBranches, routedBranchId, routedBranchName]);
+
+  useEffect(() => {
+    const numericCompanyId = Number(currentCompany.id);
+
+    setStoredActiveCompanyId(
+      Number.isInteger(numericCompanyId) && numericCompanyId > 0
+        ? numericCompanyId
+        : null,
+    );
+    setStoredActiveCompanyName(currentCompany.name || null);
+  }, [
+    currentCompany.id,
+    currentCompany.name,
+    setStoredActiveCompanyId,
+    setStoredActiveCompanyName,
+  ]);
+
+  useEffect(() => {
+    const numericBranchId = Number(currentBranch?.id);
+
+    setStoredActiveBranchContext(
+      Number.isInteger(numericBranchId) && numericBranchId > 0
+        ? numericBranchId
+        : null,
+      currentBranch ? getBranchSwitcherLabel(currentBranch) : null,
+    );
+  }, [currentBranch, setStoredActiveBranchContext]);
 
   const branchDropdownItems = useMemo(() => {
     if (!shouldShowBranchSwitcher) {
@@ -907,6 +945,36 @@ function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
 
   return (
     profile.companies?.some((company) => company.role === "ADMIN") ?? false
+  );
+}
+
+function hasCurrentCompanyAdministrationAccess(
+  profile: AuthProfileResponse | undefined,
+  companyId: string,
+) {
+  if (!profile || !companyId) {
+    return false;
+  }
+
+  if (profile.user.systemRole === "SUPER_ADMIN") {
+    return true;
+  }
+
+  const numericCompanyId = Number(companyId);
+
+  if (!Number.isInteger(numericCompanyId) || numericCompanyId <= 0) {
+    return false;
+  }
+
+  return (
+    profile.companies?.some(
+      (company) =>
+        company.companyId === numericCompanyId &&
+        company.role === "ADMIN" &&
+        company.membershipStatus === "ACTIVE" &&
+        company.isCompanyActive !== false &&
+        (!company.companyStatus || company.companyStatus === "ACTIVE"),
+    ) ?? false
   );
 }
 

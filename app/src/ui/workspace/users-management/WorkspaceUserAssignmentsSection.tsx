@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState, type MouseEvent } from "react";
 import { Building2, ExternalLink } from "lucide-react";
 import type {
 	WorkspaceCompanyBranchRecord,
@@ -14,6 +17,7 @@ import {
 	getBranchDisplayName,
 	getBranchScopedUsersHref,
 } from "@/app/src/ui/workspace/users-management/utils";
+import { MainLoadingScreen } from "@/app/src/ui/shared/app/MainLoadingScreen";
 
 export function WorkspaceUserAssignmentsSection({
 	availableCompanies,
@@ -40,11 +44,33 @@ export function WorkspaceUserAssignmentsSection({
 	onSelectedCompanyChange: (companyId: string) => void;
 	onToggleBranch: (companyId: string, branchId: string) => void;
 }) {
+	const [isOpeningBranchUsers, setIsOpeningBranchUsers] = useState(false);
+
+	function handleBranchUsersClick(event: MouseEvent<HTMLAnchorElement>) {
+		if (
+			event.defaultPrevented ||
+			event.button !== 0 ||
+			event.metaKey ||
+			event.ctrlKey ||
+			event.shiftKey ||
+			event.altKey
+		) {
+			return;
+		}
+
+		setIsOpeningBranchUsers(true);
+	}
+
 	return (
 		<WorkspaceManagementSection
 			title="Company & Branch Access"
 			description="Select a company first, then choose the head office, branches, or satellites where this user should appear."
 		>
+			{isOpeningBranchUsers ? (
+				<div className="fixed inset-0 z-[9999]">
+					<MainLoadingScreen message="Opening branch user management..." />
+				</div>
+			) : null}
 			<div className="flex flex-col gap-3 sm:flex-row">
 				<select
 					value={selectedCompanyId}
@@ -155,6 +181,7 @@ export function WorkspaceUserAssignmentsSection({
 													companyId:
 														assignment.companyId,
 												})}
+												onClick={handleBranchUsersClick}
 												aria-label={`Open user management for ${branchDisplayName}`}
 												className="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-md px-2 text-xs font-semibold text-darknavy/55 transition hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
 											>

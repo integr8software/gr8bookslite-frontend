@@ -235,7 +235,7 @@ function canAccessPath(pathname: string, profile: AuthProfileGuardResponse) {
   if (
     AdminCompanyPathPrefixes.some((prefix) => isPathPrefix(pathname, prefix))
   ) {
-    return hasActiveBranchAdminAccess(profile);
+    return hasActiveBranchAdminAccess(profile) || hasWorkspaceAdminAccess(profile);
   }
 
   if (CompanyPathPrefixes.some((prefix) => isPathPrefix(pathname, prefix))) {

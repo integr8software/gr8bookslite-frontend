@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Edit3, Save } from "lucide-react";
+import { Edit3, LoaderCircle, Save } from "lucide-react";
 import { WorkspaceUsersManagementHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import {
 	useWorkspaceUserActionForm,
@@ -65,6 +65,11 @@ function WorkspaceUserDrawerPanel({
 				? "Edit User"
 				: "Add User";
 
+	async function handleConfirmSaveUser() {
+		await form.submit();
+		setIsSaveUserConfirmOpen(false);
+	}
+
 	return (
 		<>
 			<ModuleDrawer
@@ -102,9 +107,17 @@ function WorkspaceUserDrawerPanel({
 								form={WorkspaceUserFormId}
 								data-spotlight-id="workspace-user-drawer-save"
 								disabled={form.isSaving}
+								aria-busy={form.isSaving}
 								className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
 							>
-								<Save className="h-4 w-4" aria-hidden="true" />
+								{form.isSaving ? (
+									<LoaderCircle
+										className="h-4 w-4 animate-spin"
+										aria-hidden="true"
+									/>
+								) : (
+									<Save className="h-4 w-4" aria-hidden="true" />
+								)}
 								{form.isSaving ? "Saving..." : "Save User"}
 							</button>
 						) : null}
@@ -181,12 +194,7 @@ function WorkspaceUserDrawerPanel({
 				cancelLabel="Cancel"
 				tone="default"
 				onCancel={() => setIsSaveUserConfirmOpen(false)}
-				onConfirm={() => {
-					void form
-						.submit()
-						.catch(() => undefined)
-						.finally(() => setIsSaveUserConfirmOpen(false));
-				}}
+				onConfirm={handleConfirmSaveUser}
 			/>
 		</>
 	);

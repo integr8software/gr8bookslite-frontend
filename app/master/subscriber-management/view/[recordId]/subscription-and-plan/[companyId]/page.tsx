@@ -8,18 +8,15 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-	params: Promise<{ recordId: string }>;
-	searchParams: Promise<{ companyId?: string | string[] }>;
+	params: Promise<{ companyId: string; recordId: string }>;
 };
 
-export default async function Page({ params, searchParams }: PageProps) {
-	const { recordId } = await params;
-	const { companyId } = await searchParams;
-	const selectedCompanyId = Array.isArray(companyId) ? companyId[0] : companyId;
+export default async function Page({ params }: PageProps) {
+	const { companyId, recordId } = await params;
 
 	return (
 		<MasterSubscriberManagementCompanyPage
-			companyId={selectedCompanyId}
+			companyId={companyId}
 			recordId={recordId}
 			section="subscription-and-plan"
 		/>

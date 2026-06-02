@@ -71,6 +71,9 @@ export type MasterSubscriberManagementCompanyRecord = {
 	planDescription: string;
 	planName: string;
 	planStartDate: string;
+	reportEndDate: string;
+	reportStartDate: string;
+	reportYearBasis: "Calendar Year";
 	status: MasterSubscriberManagementCompanyStatus;
 	storageAvailableGb: number;
 	storageTotalGb: number;

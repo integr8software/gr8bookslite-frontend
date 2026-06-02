@@ -7,6 +7,19 @@ import {
   getWorkspaceCompanyBranchesHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import {
+  MasterSubscriberManagementHref,
+  getMasterSubscriberManagementSectionHref,
+  getMasterSubscriberManagementSectionPageTitle,
+  getMasterSubscriberManagementViewHref,
+} from "@/app/src/constants/master/subscriber-management/MasterSubscriberManagementConstants";
+import {
+  getMasterSubscriberManagementCompany,
+  getMasterSubscriberManagementSubscriber,
+} from "@/app/src/data/master/subscriber-management/MasterSubscriberManagementData";
+import type {
+  MasterSubscriberManagementCompanySection,
+} from "@/app/src/types/master/subscriber-management/MasterSubscriberManagementTypes";
+import {
   getBranchDisplayLabel,
   stripHeadOfficeLabel,
 } from "@/app/src/data/shared/branch/BranchDisplayData";
@@ -189,6 +202,11 @@ export function useMainLayout() {
   const routedCompanyId = searchParams.get(CompanyUsersContextParam);
   const routedBranchId = searchParams.get(BranchUsersContextParam);
   const routedBranchName = searchParams.get(BranchUsersNameParam);
+  const subscriberManagementCompanyId = pathname.startsWith(
+    MasterSubscriberManagementHref,
+  )
+    ? searchParams.get("companyId") ?? undefined
+    : undefined;
   const accessToken = storedAccessToken;
   const { data: authProfile, isLoading: isAuthProfileLoading } =
     useAuthProfileQuery({
@@ -556,8 +574,14 @@ export function useMainLayout() {
         pathname,
         navigationSections,
         activeNavigationScope,
+        subscriberManagementCompanyId,
       }),
-    [activeNavigationScope, navigationSections, pathname],
+    [
+      activeNavigationScope,
+      navigationSections,
+      pathname,
+      subscriberManagementCompanyId,
+    ],
   );
   const moduleTitle = breadcrumbs[breadcrumbs.length - 1]?.label ?? "Module";
 
@@ -1109,13 +1133,15 @@ function BuildShortName(name: string) {
 }
 
 function buildBreadcrumbs({
-  pathname,
-  navigationSections,
   activeNavigationScope,
+  navigationSections,
+  pathname,
+  subscriberManagementCompanyId,
 }: {
-  pathname: string;
-  navigationSections: MainNavigationSection[];
   activeNavigationScope: MainNavigationScope;
+  navigationSections: MainNavigationSection[];
+  pathname: string;
+  subscriberManagementCompanyId?: string;
 }): MainBreadcrumb[] {
   const trail = findNavigationTrail(navigationSections, pathname);
   const fallbackLabel =
@@ -1137,8 +1163,14 @@ function buildBreadcrumbs({
     fallbackTrail[0]?.label === "Workspace"
       ? fallbackTrail.slice(1)
       : fallbackTrail;
+  const masterSubscriberTrail = buildMasterSubscriberManagementBreadcrumbs({
+    companyId: subscriberManagementCompanyId,
+    pathname,
+    trail: normalizedTrail,
+  });
   const completeTrail = removeAdjacentDuplicateBreadcrumbs(
-    appendPathSegmentBreadcrumbs(normalizedTrail, pathname),
+    masterSubscriberTrail ??
+      appendPathSegmentBreadcrumbs(normalizedTrail, pathname),
   );
 
   return completeTrail.map((item) => ({
@@ -1185,6 +1217,135 @@ function findNavigationTrail(
   }
 
   return [];
+}
+
+function buildMasterSubscriberManagementBreadcrumbs({
+  companyId,
+  pathname,
+  trail,
+}: {
+  companyId?: string;
+  pathname: string;
+  trail: NavigationTrailNode[];
+}): NavigationTrailNode[] | null {
+  const viewPrefix = `${MasterSubscriberManagementHref}/view/`;
+
+  if (!pathname.startsWith(viewPrefix)) {
+    return null;
+  }
+
+  const [recordId, sectionSegment, companyIdSegment, editSegment] = pathname
+    .slice(viewPrefix.length)
+    .split("/")
+    .filter(Boolean);
+
+  if (!recordId) {
+    return null;
+  }
+
+  const subscriber = getMasterSubscriberManagementSubscriber(recordId);
+  const baseTrail =
+    trail.length > 0
+      ? trail
+      : [
+          {
+            key: "master-subscriber-management",
+            label: "Subscriber Management",
+            href: MasterSubscriberManagementHref,
+          },
+        ];
+  const subscriberTrail: NavigationTrailNode[] = [
+    ...baseTrail,
+    {
+      key: `subscriber-${recordId}`,
+      label: subscriber.name,
+      href: getMasterSubscriberManagementViewHref(recordId),
+    },
+  ];
+
+  if (!sectionSegment) {
+    return [
+      ...subscriberTrail,
+      {
+        key: `subscriber-${recordId}-account-information`,
+        label: "Account Information",
+        href: pathname,
+      },
+    ];
+  }
+
+  if (!isMasterSubscriberManagementCompanySection(sectionSegment)) {
+    return null;
+  }
+
+  const selectedCompanyId = companyIdSegment
+    ? decodeURIComponent(companyIdSegment)
+    : companyId;
+  const company = getMasterSubscriberManagementCompany(
+    recordId,
+    selectedCompanyId,
+  );
+  const sectionTitle = getMasterSubscriberManagementSectionPageTitle(sectionSegment);
+
+  if (editSegment === "edit") {
+    return [
+      ...subscriberTrail,
+      {
+        key: `subscriber-${recordId}-company`,
+        label: company.name,
+        href: getMasterSubscriberManagementSectionHref(
+          recordId,
+          "company-information",
+          company.id,
+        ),
+      },
+      {
+        key: `subscriber-${recordId}-${sectionSegment}`,
+        label: sectionTitle,
+        href: getMasterSubscriberManagementSectionHref(
+          recordId,
+          sectionSegment,
+          company.id,
+        ),
+      },
+      {
+        key: `subscriber-${recordId}-${sectionSegment}-edit`,
+        label: "Edit Company Information",
+        href: pathname,
+      },
+    ];
+  }
+
+  return [
+    ...subscriberTrail,
+    {
+      key: `subscriber-${recordId}-company`,
+      label: company.name,
+      href: getMasterSubscriberManagementSectionHref(
+        recordId,
+        "company-information",
+        company.id,
+      ),
+    },
+    {
+      key: `subscriber-${recordId}-${sectionSegment}`,
+      label: sectionTitle,
+      href: pathname,
+    },
+  ];
+}
+
+function isMasterSubscriberManagementCompanySection(
+  section: string,
+): section is MasterSubscriberManagementCompanySection {
+  return (
+    section === "company-information" ||
+    section === "subscription-and-plan" ||
+    section === "branches" ||
+    section === "users" ||
+    section === "storage" ||
+    section === "billing-and-invoices"
+  );
 }
 
 function appendPathSegmentBreadcrumbs(
@@ -1288,9 +1449,28 @@ function getMissingRecordActionRedirectHref(pathname: string) {
     return null;
   }
 
+  if (isMasterSubscriberManagementCompanyInformationEditPath(segments)) {
+    return null;
+  }
+
   const parentSegments = segments.slice(0, -1);
 
   return parentSegments.length > 0 ? `/${parentSegments.join("/")}` : "/";
+}
+
+function isMasterSubscriberManagementCompanyInformationEditPath(
+  segments: string[],
+) {
+  return (
+    segments[0] === "master" &&
+    segments[1] === "subscriber-management" &&
+    segments[2] === "view" &&
+    Boolean(segments[3]) &&
+    segments[4] === "company-information" &&
+    Boolean(segments[5]) &&
+    segments[6] === "edit" &&
+    segments.length === 7
+  );
 }
 
 function findItemTrail(

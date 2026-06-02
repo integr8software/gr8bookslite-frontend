@@ -7,13 +7,10 @@ import {
 	Building2,
 	Edit3,
 	type LucideIcon,
-	Mail,
-	Phone,
 	ShieldCheck,
 	Users,
 } from "lucide-react";
 import {
-	MasterSubscriberAccountTabs,
 	getMasterSubscriberManagementEditHref,
 	getMasterSubscriberManagementSectionHref,
 } from "@/app/src/constants/master/subscriber-management/MasterSubscriberManagementConstants";
@@ -21,7 +18,8 @@ import {
 	getMasterSubscriberManagementSubscriber,
 } from "@/app/src/data/master/subscriber-management/MasterSubscriberManagementData";
 import type { MasterSubscriberManagementListRecord } from "@/app/src/types/master/subscriber-management/MasterSubscriberManagementTypes";
-import { MasterSubscriberManagementMoreActions } from "@/app/src/ui/master/subscriber-management/MasterSubscriberManagementActions";
+import { MasterSubscriberAccountTabBar } from "@/app/src/ui/master/subscriber-management/MasterSubscriberAccountTabBar";
+import { MasterSubscriberProfileHeader } from "@/app/src/ui/master/subscriber-management/MasterSubscriberProfileHeader";
 import {
 	MasterSubscriberStatusBadge,
 } from "@/app/src/ui/master/subscriber-management/MasterSubscriberManagementBadges";
@@ -36,9 +34,12 @@ export function MasterSubscriberManagementDetailsPage({
 
 	return (
 		<section className="grid gap-5">
-			<SubscriberProfileHeader subscriber={subscriber} />
+			<MasterSubscriberProfileHeader subscriber={subscriber} />
 			<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
-				<AccountTabBar recordId={subscriber.id} />
+				<MasterSubscriberAccountTabBar
+					activeTab="account-information"
+					recordId={subscriber.id}
+				/>
 				<div className="grid gap-5 p-4 xl:grid-cols-[minmax(0,1fr)_24rem] xl:p-5">
 					<div className="grid gap-5">
 						<SubscriberProfileCard subscriber={subscriber} />
@@ -48,89 +49,6 @@ export function MasterSubscriberManagementDetailsPage({
 				</div>
 			</div>
 		</section>
-	);
-}
-
-function SubscriberProfileHeader({
-	subscriber,
-}: {
-	subscriber: MasterSubscriberManagementListRecord;
-}) {
-	return (
-		<header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-			<div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
-				<div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-[var(--skyblue)] text-2xl font-bold text-white shadow-[0_18px_50px_rgb(var(--skyblue-rgb)/0.25)]">
-					{subscriber.initials}
-				</div>
-				<div className="min-w-0">
-					<div className="flex flex-wrap items-center gap-3">
-						<h1 className="text-3xl font-semibold leading-tight text-darknavy">
-							{subscriber.name}
-						</h1>
-						<MasterSubscriberStatusBadge
-							status={subscriber.status}
-						/>
-					</div>
-					<div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-darknavy/65">
-						<span className="inline-flex items-center gap-2">
-							<Mail className="h-4 w-4" aria-hidden="true" />
-							{subscriber.email}
-						</span>
-						<span className="inline-flex items-center gap-2">
-							<Phone className="h-4 w-4" aria-hidden="true" />
-							{subscriber.contactNumber}
-						</span>
-					</div>
-					<div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-darknavy/70">
-						<span>Subscriber ID: {subscriber.subscriberId}</span>
-						<span>Registered on: {subscriber.dateRegisteredLabel}</span>
-					</div>
-				</div>
-			</div>
-			<MasterSubscriberManagementMoreActions recordId={subscriber.id} />
-		</header>
-	);
-}
-
-function AccountTabBar({ recordId }: { recordId: string }) {
-	return (
-		<nav className="flex overflow-x-auto border-b border-darknavy/10 px-4 pt-3 xl:px-5">
-			{MasterSubscriberAccountTabs.map((tab) => {
-				const Icon = tab.icon;
-				const href =
-					tab.key === "account-information"
-						? `/master/subscriber-management/view/${recordId}`
-						: tab.key === "company-information"
-							? getMasterSubscriberManagementSectionHref(
-									recordId,
-									"company-information",
-								)
-							: getMasterSubscriberManagementSectionHref(
-									recordId,
-									"users",
-								);
-				const isActive = tab.key === "account-information";
-
-				return (
-					<Link
-						key={tab.key}
-						href={href}
-						className={joinClasses(
-							"relative inline-flex h-14 min-w-max items-center gap-2 px-5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)]",
-							isActive
-								? "text-[var(--skyblue)]"
-								: "text-darknavy/68 hover:text-darknavy",
-						)}
-					>
-						<Icon className="h-4 w-4" aria-hidden="true" />
-						{tab.label}
-						{isActive ? (
-							<span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[var(--skyblue)]" />
-						) : null}
-					</Link>
-				);
-			})}
-		</nav>
 	);
 }
 

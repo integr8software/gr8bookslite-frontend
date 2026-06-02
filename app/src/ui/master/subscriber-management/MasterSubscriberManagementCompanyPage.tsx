@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
 	ArrowRight,
@@ -21,36 +21,40 @@ import {
 	Mail,
 	MapPin,
 	MoreVertical,
-	Plus,
+	Save,
 	Search,
 	Trash2,
 	Upload,
 	Users,
+	X,
 	type LucideIcon,
 } from "lucide-react";
 import {
 	MasterSubscriberManagementCompanySections,
+	getMasterSubscriberManagementCompanyInformationEditHref,
 	getMasterSubscriberManagementSectionHref,
-	getMasterSubscriberManagementSectionPageTitle,
-	getMasterSubscriberManagementViewHref,
 } from "@/app/src/constants/master/subscriber-management/MasterSubscriberManagementConstants";
 import {
+	FormatOnboardingReportDateLabel,
+	GetSyncedReportEndDate,
+	GetSyncedReportStartDate,
+} from "@/app/src/data/onboarding/OnboardingData";
+import {
 	MasterSubscriberManagementActivities,
-	MasterSubscriberManagementBranches,
 	MasterSubscriberManagementInvoices,
 	MasterSubscriberManagementStorageBranches,
 	MasterSubscriberManagementStorageBreakdown,
-	MasterSubscriberManagementUsers,
 	getMasterSubscriberManagementCompaniesForSubscriber,
 	getMasterSubscriberManagementCompany,
 	getMasterSubscriberManagementSubscriber,
 } from "@/app/src/data/master/subscriber-management/MasterSubscriberManagementData";
 import type {
+	MasterSubscriberManagementBranchRecord,
 	MasterSubscriberManagementCompanyRecord,
 	MasterSubscriberManagementCompanySection,
-	MasterSubscriberManagementListRecord,
+	MasterSubscriberManagementUserRecord,
+	MasterSubscriberManagementUserStatus,
 } from "@/app/src/types/master/subscriber-management/MasterSubscriberManagementTypes";
-import { MasterSubscriberManagementMoreActions } from "@/app/src/ui/master/subscriber-management/MasterSubscriberManagementActions";
 import {
 	MasterBranchTypeBadge,
 	MasterCompanyStatusBadge,
@@ -58,29 +62,37 @@ import {
 	MasterSubscriberInitialsAvatar,
 	MasterUserStatusBadge,
 } from "@/app/src/ui/master/subscriber-management/MasterSubscriberManagementBadges";
+import { MasterSubscriberAccountTabBar } from "@/app/src/ui/master/subscriber-management/MasterSubscriberAccountTabBar";
+import { MasterSubscriberProfileHeader } from "@/app/src/ui/master/subscriber-management/MasterSubscriberProfileHeader";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function MasterSubscriberManagementCompanyPage({
+	companyId,
+	isEditingCompanyInformation = false,
 	recordId,
 	section,
 }: {
+	companyId?: string;
+	isEditingCompanyInformation?: boolean;
 	recordId: string;
 	section: MasterSubscriberManagementCompanySection;
 }) {
 	const subscriber = getMasterSubscriberManagementSubscriber(recordId);
 	const companies =
 		getMasterSubscriberManagementCompaniesForSubscriber(recordId);
-	const company = getMasterSubscriberManagementCompany(recordId);
-	const pageTitle = getMasterSubscriberManagementSectionPageTitle(section);
+	const company = getMasterSubscriberManagementCompany(recordId, companyId);
 
 	return (
 		<section className="grid gap-5">
-			<CompanyPageHeader
-				company={company}
-				pageTitle={pageTitle}
-				section={section}
-				subscriber={subscriber}
-			/>
+			<MasterSubscriberProfileHeader subscriber={subscriber} />
+			<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
+				<MasterSubscriberAccountTabBar
+					activeTab={section === "users" ? "users" : "company-information"}
+					companyId={company.id}
+					recordId={subscriber.id}
+					showBottomBorder={false}
+				/>
+			</div>
 			<div className="grid gap-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
 				<SubscriberCompanySidebar
 					companies={companies}
@@ -90,15 +102,24 @@ export function MasterSubscriberManagementCompanyPage({
 				<div className="min-w-0 rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
 					<CompanyPanelHeader
 						company={company}
+						isEditingCompanyInformation={isEditingCompanyInformation}
 						recordId={subscriber.id}
 						section={section}
 					/>
 					<CompanySectionTabs
 						activeSection={section}
+						company={company}
 						recordId={subscriber.id}
 					/>
 					<div className="p-4 xl:p-5">
-						{section === "company-information" ? (
+						{section === "company-information" && isEditingCompanyInformation ? (
+							<CompanyInformationEditSection
+								key={company.id}
+								company={company}
+								recordId={subscriber.id}
+							/>
+						) : null}
+						{section === "company-information" && !isEditingCompanyInformation ? (
 							<CompanyInformationSection company={company} />
 						) : null}
 						{section === "subscription-and-plan" ? (
@@ -107,7 +128,7 @@ export function MasterSubscriberManagementCompanyPage({
 						{section === "branches" ? (
 							<BranchesSection company={company} />
 						) : null}
-						{section === "users" ? <UsersSection /> : null}
+						{section === "users" ? <UsersSection company={company} /> : null}
 						{section === "storage" ? (
 							<StorageSection company={company} />
 						) : null}
@@ -121,62 +142,6 @@ export function MasterSubscriberManagementCompanyPage({
 	);
 }
 
-function CompanyPageHeader({
-	company,
-	pageTitle,
-	section,
-	subscriber,
-}: {
-	company: MasterSubscriberManagementCompanyRecord;
-	pageTitle: string;
-	section: MasterSubscriberManagementCompanySection;
-	subscriber: MasterSubscriberManagementListRecord;
-}) {
-	const action =
-		section === "branches"
-			? "Add Branch"
-			: section === "users"
-				? "Add User"
-				: "";
-
-	return (
-		<header className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
-			<div>
-				<div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-darknavy/65">
-					<Link
-						href={getMasterSubscriberManagementViewHref(subscriber.id)}
-						className="transition hover:text-darknavy"
-					>
-						Subscribers
-					</Link>
-					<span>/</span>
-					<span>{company.name}</span>
-					<span>/</span>
-					<span className="text-darknavy">{pageTitle}</span>
-				</div>
-				<h1 className="mt-5 text-3xl font-semibold leading-tight text-darknavy">
-					{pageTitle}
-				</h1>
-				<p className="mt-2 text-sm font-medium leading-6 text-darknavy/65">
-					{getPageDescription(section)}
-				</p>
-			</div>
-			<div className="flex flex-wrap gap-2 lg:justify-end">
-				<MasterSubscriberManagementMoreActions recordId={subscriber.id} />
-				{action ? (
-					<button
-						type="button"
-						className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-semibold text-white shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.18)] transition hover:opacity-90"
-					>
-						<Plus className="h-4 w-4" aria-hidden="true" />
-						{action}
-					</button>
-				) : null}
-			</div>
-		</header>
-	);
-}
-
 function SubscriberCompanySidebar({
 	companies,
 	recordId,
@@ -186,70 +151,89 @@ function SubscriberCompanySidebar({
 	recordId: string;
 	selectedCompanyId: string;
 }) {
+	const [companySearch, setCompanySearch] = useState("");
 	const tones = ["blue", "orange", "cyan", "orange", "purple"] as const;
+	const filteredCompanies = useMemo(() => {
+		const query = companySearch.trim().toLowerCase();
+
+		if (!query) {
+			return companies;
+		}
+
+		return companies.filter((company) =>
+			company.name.toLowerCase().includes(query),
+		);
+	}, [companies, companySearch]);
+	const showingFrom = filteredCompanies.length > 0 ? 1 : 0;
 
 	return (
-		<aside className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5">
-			<h2 className="text-lg font-semibold text-darknavy">Companies</h2>
-			<div className="mt-4 grid grid-cols-[1fr_auto] gap-3">
-				<label className="relative">
+		<aside className="flex max-h-[calc(100vh-12rem)] min-h-[34rem] flex-col overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
+			<div className="shrink-0 p-4 pb-3">
+				<h2 className="text-lg font-semibold text-darknavy">Companies</h2>
+				<label className="relative mt-4 block">
 					<span className="sr-only">Search company name</span>
 					<Search
-						className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/45"
+						className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/45"
 						aria-hidden="true"
 					/>
 					<input
-						className="h-11 w-full rounded-lg border border-darknavy/10 bg-white pl-10 pr-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-[rgb(var(--skyblue-rgb)/0.45)] focus:ring-4 focus:ring-[rgb(var(--skyblue-rgb)/0.16)]"
+						className="h-11 w-full rounded-lg border border-darknavy/10 bg-white pl-11 pr-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-[rgb(var(--skyblue-rgb)/0.45)] focus:ring-4 focus:ring-[rgb(var(--skyblue-rgb)/0.16)]"
+						onChange={(event) => setCompanySearch(event.target.value)}
 						placeholder="Search company name..."
+						value={companySearch}
 					/>
 				</label>
-				<button
-					type="button"
-					className="flex h-11 w-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white text-darknavy transition hover:bg-skyblue/10"
-					aria-label="Filter companies"
-				>
-					<Filter className="h-4 w-4" aria-hidden="true" />
-				</button>
 			</div>
-			<div className="mt-4 grid gap-3">
-				{companies.map((company, index) => (
-					<Link
-						key={company.id}
-						href={getMasterSubscriberManagementSectionHref(
-							recordId,
-							"company-information",
-						)}
-						className={joinClasses(
-							"flex items-center gap-3 rounded-lg border p-3 transition",
-							company.id === selectedCompanyId
-								? "border-[var(--skyblue)] bg-skyblue/10"
-								: "border-darknavy/10 bg-white hover:bg-skyblue/10",
-						)}
-					>
-						<MasterSubscriberIcon
-							tone={tones[index] ?? "blue"}
-							className="h-11 w-11"
-						/>
-						<span className="min-w-0 flex-1">
-							<span className="block truncate text-sm font-bold text-darknavy">
-								{company.name}
+			<div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+				<div className="grid gap-3">
+					{filteredCompanies.map((company, index) => (
+						<Link
+							key={company.id}
+							href={getMasterSubscriberManagementSectionHref(
+								recordId,
+								"company-information",
+								company.id,
+							)}
+							className={joinClasses(
+								"flex items-center gap-3 rounded-lg border p-3 transition",
+								company.id === selectedCompanyId
+									? "border-[var(--skyblue)] bg-skyblue/10"
+									: "border-darknavy/10 bg-white hover:bg-skyblue/10",
+							)}
+						>
+							<MasterSubscriberIcon
+								tone={tones[index] ?? "blue"}
+								className="h-11 w-11"
+							/>
+							<span className="min-w-0 flex-1">
+								<span className="block truncate text-sm font-bold text-darknavy">
+									{company.name}
+								</span>
+								<span className="mt-1 block text-xs font-semibold text-darknavy/65">
+									{company.branchCount} Branches
+									<span className="px-1.5 text-darknavy/35">.</span>
+									{company.userCount} Users
+								</span>
 							</span>
-							<span className="mt-1 block text-xs font-semibold text-darknavy/65">
-								{company.branchCount} Branches
-								<span className="px-1.5 text-darknavy/35">.</span>
-								{company.userCount} Users
-							</span>
-						</span>
-						{company.id === selectedCompanyId ? (
-							<span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--skyblue)] text-white">
-								<Check className="h-3.5 w-3.5" aria-hidden="true" />
-							</span>
-						) : null}
-					</Link>
-				))}
+							{company.id === selectedCompanyId ? (
+								<span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--skyblue)] text-white">
+									<Check className="h-3.5 w-3.5" aria-hidden="true" />
+								</span>
+							) : null}
+						</Link>
+					))}
+					{filteredCompanies.length === 0 ? (
+						<div className="rounded-lg border border-dashed border-darknavy/15 p-4 text-sm font-semibold text-darknavy/55">
+							No companies found.
+						</div>
+					) : null}
+				</div>
 			</div>
-			<div className="mt-36 flex items-center justify-between gap-3 text-xs font-semibold text-darknavy/65 xl:mt-64">
-				<span>Showing 1 to {companies.length} of {companies.length} companies</span>
+			<div className="flex shrink-0 items-center justify-between gap-3 border-t border-darknavy/10 p-4 text-xs font-semibold text-darknavy/65">
+				<span>
+					Showing {showingFrom} to {filteredCompanies.length} of{" "}
+					{companies.length} companies
+				</span>
 				<div className="flex gap-2">
 					<PaginationSquare label="<" />
 					<PaginationSquare active label="1" />
@@ -262,19 +246,36 @@ function SubscriberCompanySidebar({
 
 function CompanyPanelHeader({
 	company,
+	isEditingCompanyInformation,
 	recordId,
 	section,
 }: {
 	company: MasterSubscriberManagementCompanyRecord;
+	isEditingCompanyInformation: boolean;
 	recordId: string;
 	section: MasterSubscriberManagementCompanySection;
 }) {
+	const companyInformationHref = getMasterSubscriberManagementSectionHref(
+		recordId,
+		"company-information",
+		company.id,
+	);
 	const buttonLabel =
-		section === "company-information"
+		isEditingCompanyInformation
+			? "Cancel"
+			: section === "company-information"
 			? "Edit Company"
 			: section === "subscription-and-plan"
 				? "Edit Subscription"
 				: "View Company";
+	const buttonHref = isEditingCompanyInformation
+		? companyInformationHref
+		: section === "company-information"
+			? getMasterSubscriberManagementCompanyInformationEditHref(
+					recordId,
+					company.id,
+				)
+			: companyInformationHref;
 
 	return (
 		<div className="flex flex-col gap-4 border-b border-darknavy/10 p-4 lg:flex-row lg:items-center lg:justify-between xl:p-5">
@@ -295,10 +296,12 @@ function CompanyPanelHeader({
 				</div>
 			</div>
 			<Link
-				href={getMasterSubscriberManagementViewHref(recordId)}
+				href={buttonHref}
 				className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-[var(--skyblue)] shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10"
 			>
-				{buttonLabel === "View Company" ? (
+				{buttonLabel === "Cancel" ? (
+					<X className="h-4 w-4" aria-hidden="true" />
+				) : buttonLabel === "View Company" ? (
 					<ExternalLink className="h-4 w-4" aria-hidden="true" />
 				) : (
 					<Edit3 className="h-4 w-4" aria-hidden="true" />
@@ -311,9 +314,11 @@ function CompanyPanelHeader({
 
 function CompanySectionTabs({
 	activeSection,
+	company,
 	recordId,
 }: {
 	activeSection: MasterSubscriberManagementCompanySection;
+	company: MasterSubscriberManagementCompanyRecord;
 	recordId: string;
 }) {
 	return (
@@ -321,6 +326,12 @@ function CompanySectionTabs({
 			{MasterSubscriberManagementCompanySections.map((section) => {
 				const Icon = section.icon;
 				const isActive = section.key === activeSection;
+				const label =
+					section.key === "branches"
+						? `Branches (${company.branchCount})`
+						: section.key === "users"
+							? `Users (${company.userCount})`
+							: section.label;
 
 				return (
 					<Link
@@ -328,6 +339,7 @@ function CompanySectionTabs({
 						href={getMasterSubscriberManagementSectionHref(
 							recordId,
 							section.key,
+							company.id,
 						)}
 						className={joinClasses(
 							"relative inline-flex h-14 min-w-max items-center gap-2 px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)]",
@@ -337,7 +349,7 @@ function CompanySectionTabs({
 						)}
 					>
 						<Icon className="h-4 w-4" aria-hidden="true" />
-						{section.label}
+						{label}
 						{isActive ? (
 							<span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[var(--skyblue)]" />
 						) : null}
@@ -353,22 +365,29 @@ function CompanyInformationSection({
 }: {
 	company: MasterSubscriberManagementCompanyRecord;
 }) {
+	const satelliteBranchCount = Math.max(company.branchCount - 1, 0);
+
 	return (
 		<div className="grid gap-4">
 			<div className="grid gap-4 xl:grid-cols-3">
 				<CompactMetric
-					icon={Building2}
-					label="Total Companies"
-					value="5"
+					icon={MapPin}
+					label="Total Branches"
+					value={String(company.branchCount)}
+					tone="emerald"
+				/>
+				<CompactMetric
+					icon={GitBranch}
+					label="Satellite Branches"
+					value={String(satelliteBranchCount)}
 					tone="blue"
 				/>
 				<CompactMetric
-					icon={MapPin}
-					label="Total Branches"
-					value="18"
-					tone="emerald"
+					icon={Users}
+					label="Total Users"
+					value={String(company.userCount)}
+					tone="purple"
 				/>
-				<CompactMetric icon={Users} label="Total Users" value="125" tone="purple" />
 			</div>
 			<Panel title="Company Information">
 				<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)]">
@@ -397,6 +416,19 @@ function CompanyInformationSection({
 					</div>
 				</div>
 			</Panel>
+			<Panel title="Reporting Period" icon={CalendarDays}>
+				<div className="grid gap-4 md:grid-cols-3">
+					<DetailRow label="Report Year Basis" value={company.reportYearBasis} />
+					<DetailRow
+						label="Report Start Date"
+						value={formatCompanyReportDate(company.reportStartDate)}
+					/>
+					<DetailRow
+						label="Report End Date"
+						value={formatCompanyReportDate(company.reportEndDate)}
+					/>
+				</div>
+			</Panel>
 			<Panel title="Current Plan" icon={CreditCard}>
 				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 					<DetailRow label="Plan Name" value={company.planName} />
@@ -421,6 +453,9 @@ function SubscriptionPlanSection({
 }: {
 	company: MasterSubscriberManagementCompanyRecord;
 }) {
+	const branchLimit = 25;
+	const userLimit = 150;
+
 	return (
 		<div className="grid gap-4">
 			<Panel title="Current Plan">
@@ -471,15 +506,15 @@ function SubscriptionPlanSection({
 						colorClassName="bg-emerald-500"
 						icon={MapPin}
 						label="Branches"
-						percent={72}
-						value="18 / 25"
+						percent={getUsagePercent(company.branchCount, branchLimit)}
+						value={`${company.branchCount} / ${branchLimit}`}
 					/>
 					<UsageMeter
 						colorClassName="bg-purple-500"
 						icon={Users}
 						label="Users"
-						percent={83}
-						value="125 / 150"
+						percent={getUsagePercent(company.userCount, userLimit)}
+						value={`${company.userCount} / ${userLimit}`}
 					/>
 					<UsageMeter
 						colorClassName="bg-orange-500"
@@ -510,12 +545,18 @@ function BranchesSection({
 }: {
 	company: MasterSubscriberManagementCompanyRecord;
 }) {
+	const branches = createCompanyBranchRows(company);
+	const activeBranches = branches.filter(
+		(branch) => branch.status === "Active",
+	).length;
+	const inactiveBranches = branches.length - activeBranches;
+
 	return (
 		<div className="grid gap-4">
 			<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
 				<CompactMetric icon={Building2} label="Total Branches" value={String(company.branchCount)} tone="blue" />
-				<CompactMetric icon={CheckCircle2} label="Active Branches" value="4" tone="emerald" />
-				<CompactMetric icon={Building2} label="Inactive Branches" value="1" tone="orange" />
+				<CompactMetric icon={CheckCircle2} label="Active Branches" value={String(activeBranches)} tone="emerald" />
+				<CompactMetric icon={Building2} label="Inactive Branches" value={String(inactiveBranches)} tone="orange" />
 				<CompactMetric icon={Users} label="Total Users Across Branches" value={String(company.userCount)} tone="purple" />
 			</div>
 			<div className="grid gap-3 md:grid-cols-[minmax(0,1.4fr)_minmax(12rem,0.8fr)_minmax(12rem,0.8fr)_auto]">
@@ -537,7 +578,7 @@ function BranchesSection({
 						</tr>
 					</thead>
 					<tbody className="divide-y divide-darknavy/10">
-						{MasterSubscriberManagementBranches.map((branch) => (
+						{branches.map((branch) => (
 							<tr key={branch.id} className="transition hover:bg-skyblue/10">
 								<td className="px-4 py-4">
 									<div className="flex items-center gap-3">
@@ -578,19 +619,292 @@ function BranchesSection({
 					</tbody>
 				</table>
 			</div>
-			<TableFooter label="branches" total={5} />
+			<TableFooter label="branches" total={branches.length} />
 		</div>
 	);
 }
 
-function UsersSection() {
+type CompanyInformationEditValues = {
+	address: string;
+	contactEmail: string;
+	contactNumber: string;
+	industry: string;
+	name: string;
+	reportEndDate: string;
+	reportStartDate: string;
+	reportYearBasis: "Calendar Year";
+	status: MasterSubscriberManagementCompanyRecord["status"];
+	tin: string;
+	website: string;
+};
+
+function CompanyInformationEditSection({
+	company,
+	recordId,
+}: {
+	company: MasterSubscriberManagementCompanyRecord;
+	recordId: string;
+}) {
+	const [values, setValues] = useState<CompanyInformationEditValues>(() =>
+		createCompanyInformationEditValues(company),
+	);
+	const satelliteBranchCount = Math.max(company.branchCount - 1, 0);
+	const viewHref = getMasterSubscriberManagementSectionHref(
+		recordId,
+		"company-information",
+		company.id,
+	);
+	const reportRangeLabel =
+		values.reportStartDate && values.reportEndDate
+			? `${formatCompanyReportDate(values.reportStartDate)} to ${formatCompanyReportDate(
+					values.reportEndDate,
+				)}`
+			: "";
+
+	function updateField<Key extends keyof CompanyInformationEditValues>(
+		field: Key,
+		value: CompanyInformationEditValues[Key],
+	) {
+		setValues((current) => ({
+			...current,
+			[field]: value,
+		}));
+	}
+
+	function updateReportStartDate(value: string) {
+		setValues((current) => ({
+			...current,
+			reportEndDate: GetSyncedReportEndDate(value) || current.reportEndDate,
+			reportStartDate: value,
+		}));
+	}
+
+	function updateReportEndDate(value: string) {
+		setValues((current) => ({
+			...current,
+			reportEndDate: value,
+			reportStartDate: GetSyncedReportStartDate(value) || current.reportStartDate,
+		}));
+	}
+
+	return (
+		<form
+			className="grid gap-4"
+			onSubmit={(event) => event.preventDefault()}
+		>
+			<div className="grid gap-4 xl:grid-cols-3">
+				<CompactMetric
+					icon={MapPin}
+					label="Total Branches"
+					value={String(company.branchCount)}
+					tone="emerald"
+				/>
+				<CompactMetric
+					icon={GitBranch}
+					label="Satellite Branches"
+					value={String(satelliteBranchCount)}
+					tone="blue"
+				/>
+				<CompactMetric
+					icon={Users}
+					label="Total Users"
+					value={String(company.userCount)}
+					tone="purple"
+				/>
+			</div>
+			<Panel title="Edit Company Information">
+				<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)]">
+					<div className="grid gap-4 md:grid-cols-2">
+						<CompanyEditField label="Company Name">
+							<input
+								className={CompanyEditInputClassName}
+								name="name"
+								onChange={(event) => updateField("name", event.target.value)}
+								value={values.name}
+							/>
+						</CompanyEditField>
+						<CompanyEditField label="Contact Email">
+							<input
+								className={CompanyEditInputClassName}
+								name="contactEmail"
+								onChange={(event) =>
+									updateField("contactEmail", event.target.value)
+								}
+								type="email"
+								value={values.contactEmail}
+							/>
+						</CompanyEditField>
+						<CompanyEditField label="Contact No.">
+							<input
+								className={CompanyEditInputClassName}
+								name="contactNumber"
+								onChange={(event) =>
+									updateField("contactNumber", event.target.value)
+								}
+								type="tel"
+								value={values.contactNumber}
+							/>
+						</CompanyEditField>
+						<CompanyEditField label="Website">
+							<input
+								className={CompanyEditInputClassName}
+								name="website"
+								onChange={(event) => updateField("website", event.target.value)}
+								type="url"
+								value={values.website}
+							/>
+						</CompanyEditField>
+						<CompanyEditField label="Industry">
+							<input
+								className={CompanyEditInputClassName}
+								name="industry"
+								onChange={(event) => updateField("industry", event.target.value)}
+								value={values.industry}
+							/>
+						</CompanyEditField>
+						<CompanyEditField label="TIN">
+							<input
+								className={CompanyEditInputClassName}
+								name="tin"
+								onChange={(event) => updateField("tin", event.target.value)}
+								value={values.tin}
+							/>
+						</CompanyEditField>
+						<CompanyEditField label="Status">
+							<select
+								className={CompanyEditInputClassName}
+								name="status"
+								onChange={(event) =>
+									updateField(
+										"status",
+										event.target
+											.value as MasterSubscriberManagementCompanyRecord["status"],
+									)
+								}
+								value={values.status}
+							>
+								<option value="Active">Active</option>
+								<option value="Inactive">Inactive</option>
+							</select>
+						</CompanyEditField>
+					</div>
+					<div className="border-darknavy/10 lg:border-l lg:pl-6">
+						<CompanyEditField label="Address">
+							<textarea
+								className={CompanyEditTextAreaClassName}
+								name="address"
+								onChange={(event) => updateField("address", event.target.value)}
+								rows={7}
+								value={values.address}
+							/>
+						</CompanyEditField>
+						<div className="mt-6 border-t border-darknavy/10 pt-5">
+							<DetailRow label="Date Added" value={company.dateAdded} />
+						</div>
+					</div>
+				</div>
+			</Panel>
+			<Panel title="Reporting Period" icon={CalendarDays}>
+				<input
+					name="reportYearBasis"
+					type="hidden"
+					value={values.reportYearBasis}
+				/>
+				<div className="grid gap-4 md:grid-cols-3">
+					<CompanyEditField label="Report Year Basis">
+						<select
+							className={CompanyEditInputClassName}
+							name="reportYearBasisDisplay"
+							onChange={(event) =>
+								updateField(
+									"reportYearBasis",
+									event.target.value as CompanyInformationEditValues["reportYearBasis"],
+								)
+							}
+							value={values.reportYearBasis}
+						>
+							<option value="Calendar Year">Calendar Year</option>
+						</select>
+					</CompanyEditField>
+					<CompanyEditField label="Reporting Year Start Date">
+						<input
+							className={CompanyEditInputClassName}
+							name="reportStartDate"
+							onChange={(event) => updateReportStartDate(event.target.value)}
+							type="date"
+							value={values.reportStartDate}
+						/>
+					</CompanyEditField>
+					<CompanyEditField label="Reporting Year End Date">
+						<input
+							className={CompanyEditInputClassName}
+							name="reportEndDate"
+							onChange={(event) => updateReportEndDate(event.target.value)}
+							type="date"
+							value={values.reportEndDate}
+						/>
+					</CompanyEditField>
+				</div>
+				{reportRangeLabel ? (
+					<p className="mt-3 text-sm font-semibold text-darknavy/65">
+						{reportRangeLabel}
+					</p>
+				) : null}
+			</Panel>
+			<Panel title="Current Plan" icon={CreditCard}>
+				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+					<DetailRow label="Plan Name" value={company.planName} />
+					<DetailRow label="Billing Cycle" value={company.billingCycle} />
+					<DetailRow
+						label="Status"
+						value={<MasterCompanyStatusBadge status={company.status} />}
+					/>
+					<DetailRow label="Payment Status" value={<PaidBadge />} />
+					<DetailRow label="Plan Start Date" value={company.planStartDate} />
+					<DetailRow
+						label="Next Renewal Date"
+						value={`${company.nextRenewalDate} (${company.nextRenewalHelper})`}
+					/>
+					<DetailRow label="Amount" value={company.amount} />
+				</div>
+			</Panel>
+			<div className="flex flex-col justify-end gap-3 sm:flex-row">
+				<Link
+					href={viewHref}
+					className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10"
+				>
+					<X className="h-4 w-4" aria-hidden="true" />
+					Cancel
+				</Link>
+				<button
+					type="submit"
+					className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-semibold text-white shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.18)] transition hover:opacity-90"
+				>
+					<Save className="h-4 w-4" aria-hidden="true" />
+					Save Changes
+				</button>
+			</div>
+		</form>
+	);
+}
+
+function UsersSection({
+	company,
+}: {
+	company: MasterSubscriberManagementCompanyRecord;
+}) {
+	const users = createCompanyUserRows(company);
+	const activeUsers = users.filter((user) => user.status === "Active").length;
+	const inactiveUsers = users.filter((user) => user.status === "Inactive").length;
+	const invitedUsers = users.filter((user) => user.status === "Invited").length;
+
 	return (
 		<div className="grid gap-4">
 			<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-				<CompactMetric icon={Users} label="Total Users" value="35" tone="purple" />
-				<CompactMetric icon={Users} label="Active Users" value="30" helper="85.7%" tone="emerald" />
-				<CompactMetric icon={Users} label="Inactive Users" value="3" helper="8.6%" tone="orange" />
-				<CompactMetric icon={Mail} label="Invited Users" value="2" helper="5.7%" tone="blue" />
+				<CompactMetric icon={Users} label="Total Users" value={String(users.length)} tone="purple" />
+				<CompactMetric icon={Users} label="Active Users" value={String(activeUsers)} helper={getStatusPercent(activeUsers, users.length)} tone="emerald" />
+				<CompactMetric icon={Users} label="Inactive Users" value={String(inactiveUsers)} helper={getStatusPercent(inactiveUsers, users.length)} tone="orange" />
+				<CompactMetric icon={Mail} label="Invited Users" value={String(invitedUsers)} helper={getStatusPercent(invitedUsers, users.length)} tone="blue" />
 			</div>
 			<div className="grid gap-3 md:grid-cols-[minmax(0,1.5fr)_minmax(12rem,0.8fr)_minmax(12rem,0.8fr)_auto_auto]">
 				<SearchInput placeholder="Search by name, email or phone..." />
@@ -613,7 +927,7 @@ function UsersSection() {
 						</tr>
 					</thead>
 					<tbody className="divide-y divide-darknavy/10">
-						{MasterSubscriberManagementUsers.map((user) => (
+						{users.map((user) => (
 							<tr key={user.id} className="transition hover:bg-skyblue/10">
 								<td className="px-4 py-4">
 									<div className="flex items-center gap-3">
@@ -664,7 +978,11 @@ function UsersSection() {
 					</tbody>
 				</table>
 			</div>
-			<TableFooter label="users" total={35} pages={7} />
+			<TableFooter
+				label="users"
+				total={users.length}
+				pages={Math.ceil(users.length / 5)}
+			/>
 		</div>
 	);
 }
@@ -1201,6 +1519,27 @@ function CompactMetric({
 	);
 }
 
+const CompanyEditInputClassName =
+	"h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition placeholder:text-darknavy/35 focus:border-[rgb(var(--skyblue-rgb)/0.45)] focus:ring-4 focus:ring-[rgb(var(--skyblue-rgb)/0.16)]";
+
+const CompanyEditTextAreaClassName =
+	"min-h-32 w-full resize-y rounded-lg border border-darknavy/10 bg-white px-3 py-3 text-sm font-semibold leading-6 text-darknavy shadow-sm shadow-darknavy/5 outline-none transition placeholder:text-darknavy/35 focus:border-[rgb(var(--skyblue-rgb)/0.45)] focus:ring-4 focus:ring-[rgb(var(--skyblue-rgb)/0.16)]";
+
+function CompanyEditField({
+	children,
+	label,
+}: {
+	children: ReactNode;
+	label: string;
+}) {
+	return (
+		<label className="grid gap-2">
+			<span className="text-sm font-semibold text-darknavy/62">{label}</span>
+			{children}
+		</label>
+	);
+}
+
 function DetailRow({
 	label,
 	link = false,
@@ -1527,21 +1866,105 @@ function InfoIcon() {
 	return <Info className="h-4 w-4 text-[var(--skyblue)]" aria-hidden="true" />;
 }
 
-function getPageDescription(section: MasterSubscriberManagementCompanySection) {
-	switch (section) {
-		case "company-information":
-			return "View and manage all companies under this subscriber.";
-		case "subscription-and-plan":
-			return "View and manage the subscription plan details for this company.";
-		case "branches":
-			return "View and manage all branches under this company.";
-		case "users":
-			return "View and manage all users under this company.";
-		case "storage":
-			return "View and manage storage usage for this company.";
-		case "billing-and-invoices":
-			return "View and manage billing information and invoices for this company.";
+function createCompanyInformationEditValues(
+	company: MasterSubscriberManagementCompanyRecord,
+): CompanyInformationEditValues {
+	return {
+		address: company.addressLines.join("\n"),
+		contactEmail: company.contactEmail,
+		contactNumber: company.contactNumber,
+		industry: company.industry,
+		name: company.name,
+		reportEndDate: company.reportEndDate,
+		reportStartDate: company.reportStartDate,
+		reportYearBasis: company.reportYearBasis,
+		status: company.status,
+		tin: company.tin,
+		website: company.website,
+	};
+}
+
+function formatCompanyReportDate(value: string) {
+	return FormatOnboardingReportDateLabel(value) || value;
+}
+
+function createCompanyBranchRows(
+	company: MasterSubscriberManagementCompanyRecord,
+): MasterSubscriberManagementBranchRecord[] {
+	const branchTones = ["blue", "cyan", "purple"] as const;
+	const baseUsers = Math.floor(company.userCount / company.branchCount);
+	const extraUsers = company.userCount % company.branchCount;
+
+	return Array.from({ length: company.branchCount }, (_, index) => ({
+		addedOn: company.dateAdded,
+		address: `${100 + index * 25} Test Avenue, Suite ${index + 1}00, New York, NY 1000${index + 1}, USA`,
+		id: `${company.id}-branch-${index + 1}`,
+		name:
+			index === 0
+				? `${company.name} Head Office`
+				: `${company.name} Branch ${index + 1}`,
+		status:
+			company.branchCount === 3 && index === company.branchCount - 1
+				? "Inactive"
+				: "Active",
+		tone: branchTones[index] ?? "blue",
+		type: index === 0 ? "Head Office" : "Satellite Branch",
+		users: baseUsers + (index < extraUsers ? 1 : 0),
+	}));
+}
+
+function createCompanyUserRows(
+	company: MasterSubscriberManagementCompanyRecord,
+): MasterSubscriberManagementUserRecord[] {
+	const avatarTones = ["blue", "orange", "purple", "rose", "slate"] as const;
+	const branches = createCompanyBranchRows(company);
+	const companySlug = slugifyName(company.name);
+
+	return Array.from({ length: company.userCount }, (_, index) => {
+		const userNumber = index + 1;
+		const status: MasterSubscriberManagementUserStatus =
+			userNumber === company.userCount && company.userCount >= 8
+				? "Invited"
+				: userNumber % 7 === 0
+					? "Inactive"
+					: "Active";
+
+		return {
+			addedOn: company.dateAdded,
+			avatarTone: avatarTones[index % avatarTones.length] ?? "blue",
+			branchAccess: [
+				branches[index % branches.length]?.name ?? `${company.name} Head Office`,
+			],
+			email: `user${String(userNumber).padStart(2, "0")}@${companySlug}.com`,
+			id: `${company.id}-user-${userNumber}`,
+			initials: `T${userNumber}`,
+			lastActiveDate: status === "Invited" ? "-" : "May 24, 2024",
+			lastActiveTime: status === "Invited" ? "" : "10:00 AM",
+			name: `Test User ${String(userNumber).padStart(2, "0")}`,
+			phone: `+1 555-90${String(userNumber).padStart(2, "0")}`,
+			status,
+		};
+	});
+}
+
+function getStatusPercent(count: number, total: number) {
+	if (total === 0) {
+		return "0%";
 	}
+
+	return `${Math.round((count / total) * 100)}%`;
+}
+
+function getUsagePercent(value: number, limit: number) {
+	if (limit === 0) {
+		return 0;
+	}
+
+	return Math.min(100, Math.round((value / limit) * 100));
+}
+
+function slugifyName(value: string) {
+	return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
 function getToneClassName(tone: "blue" | "emerald" | "orange" | "purple") {

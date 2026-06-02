@@ -109,12 +109,6 @@ export const MasterSubscriberManagementCompanySections = [
 		pageTitle: "Company Information",
 	},
 	{
-		icon: CreditCard,
-		key: "subscription-and-plan",
-		label: "Subscription & Plan",
-		pageTitle: "Subscription & Plan",
-	},
-	{
 		icon: GitBranch,
 		key: "branches",
 		label: "Branches (5)",
@@ -131,6 +125,12 @@ export const MasterSubscriberManagementCompanySections = [
 		key: "storage",
 		label: "Storage",
 		pageTitle: "Storage",
+	},
+	{
+		icon: CreditCard,
+		key: "subscription-and-plan",
+		label: "Subscription & Plan",
+		pageTitle: "Subscription & Plan",
 	},
 	{
 		icon: Building2,
@@ -180,8 +180,22 @@ export function getMasterSubscriberManagementEditHref(recordId: string) {
 export function getMasterSubscriberManagementSectionHref(
 	recordId: string,
 	section: MasterSubscriberManagementCompanySection,
+	companyId?: string,
 ) {
-	return `${getMasterSubscriberManagementViewHref(recordId)}/${section}`;
+	const href = `${getMasterSubscriberManagementViewHref(recordId)}/${section}`;
+
+	return companyId ? `${href}/${encodeURIComponent(companyId)}` : href;
+}
+
+export function getMasterSubscriberManagementCompanyInformationEditHref(
+	recordId: string,
+	companyId: string,
+) {
+	return `${getMasterSubscriberManagementSectionHref(
+		recordId,
+		"company-information",
+		companyId,
+	)}/edit`;
 }
 
 export function getMasterSubscriberManagementSectionPageTitle(

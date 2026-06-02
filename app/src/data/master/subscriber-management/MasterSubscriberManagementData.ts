@@ -364,21 +364,21 @@ export const MasterSubscriberManagementSubscribers: MasterSubscriberManagementLi
 			users: 49,
 		}),
 		createSubscriber({
-			branches: 13,
-			companies: 4,
-			contactNumber: "+1 555-902-3120",
+			branches: 6,
+			companies: 3,
+			contactNumber: "+1 555-900-0145",
 			dateRegistered: "2024-03-29",
-			email: "admin@harborstone.com",
+			email: "admin@testsubscriber.com",
 			iconTone: "rose",
 			id: "sub-harborstone",
-			initials: "HS",
+			initials: "TS",
 			lastLoginDate: "Apr 27, 2024",
 			lastLoginTime: "12:12 PM",
-			name: "HarborStone",
+			name: "Test Subscriber",
 			registeredAt: "Mar 29, 2024 12:40 PM",
 			status: "Active",
 			subscriberId: "SUB-000145",
-			users: 86,
+			users: 25,
 		}),
 		createSubscriber({
 			branches: 7,
@@ -458,6 +458,9 @@ export const MasterSubscriberManagementCompanies: MasterSubscriberManagementComp
 				"Best for growing businesses with advanced features and reporting.",
 			planName: "Professional Plan",
 			planStartDate: "May 12, 2024",
+			reportEndDate: "2024-12-31",
+			reportStartDate: "2024-01-01",
+			reportYearBasis: "Calendar Year",
 			status: "Active",
 			storageAvailableGb: 55,
 			storageTotalGb: 100,
@@ -471,6 +474,27 @@ export const MasterSubscriberManagementCompanies: MasterSubscriberManagementComp
 		createCompany("cmp-globaltech", "GlobalTech Industries", 4, 28),
 		createCompany("cmp-nextgen", "NextGen Systems", 2, 15),
 		createCompany("cmp-innovatech", "Innovatech Enterprises", 4, 25),
+		createCompany(
+			"cmp-test-subscriber-one",
+			"Test Company One",
+			1,
+			5,
+			"sub-harborstone",
+		),
+		createCompany(
+			"cmp-test-subscriber-two",
+			"Test Company Two",
+			2,
+			8,
+			"sub-harborstone",
+		),
+		createCompany(
+			"cmp-test-subscriber-three",
+			"Test Company Three",
+			3,
+			12,
+			"sub-harborstone",
+		),
 	];
 
 export const MasterSubscriberManagementBranches: MasterSubscriberManagementBranchRecord[] =
@@ -817,8 +841,16 @@ export function getMasterSubscriberManagementCompaniesForSubscriber(
 		: [createFallbackCompany(subscriber)];
 }
 
-export function getMasterSubscriberManagementCompany(recordId?: string) {
-	return getMasterSubscriberManagementCompaniesForSubscriber(recordId)[0];
+export function getMasterSubscriberManagementCompany(
+	recordId?: string,
+	companyId?: string,
+) {
+	const companies = getMasterSubscriberManagementCompaniesForSubscriber(recordId);
+
+	return (
+		companies.find((company) => company.id === companyId) ??
+		companies[0]
+	);
 }
 
 export function getStatusIcon(status: MasterSubscriberManagementStatus) {
@@ -856,7 +888,10 @@ function createCompany(
 	name: string,
 	branchCount: number,
 	userCount: number,
+	subscriberId = "sub-abc-corporation",
 ): MasterSubscriberManagementCompanyRecord {
+	const companySlug = name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+
 	return {
 		addressLines: [
 			"100 Commerce Street,",
@@ -867,7 +902,7 @@ function createCompany(
 		billingCycle: "Annual",
 		branchCount,
 		code: id.replace("cmp-", "CMP-").toUpperCase(),
-		contactEmail: `info@${name.toLowerCase().replace(/[^a-z0-9]+/g, "")}.com`,
+		contactEmail: `info@${companySlug}.com`,
 		contactNumber: "+1 555-123-4567",
 		dateAdded: "May 12, 2024",
 		id,
@@ -876,17 +911,20 @@ function createCompany(
 		nextRenewalDate: "May 12, 2025",
 		nextRenewalHelper: "in 348 days",
 		paymentStatus: "Paid",
-		planDescription: "A managed company under ABC Corporation.",
+		planDescription: "A managed company under the subscriber account.",
 		planName: "Professional Plan",
 		planStartDate: "May 12, 2024",
+		reportEndDate: "2024-12-31",
+		reportStartDate: "2024-01-01",
+		reportYearBasis: "Calendar Year",
 		status: "Active",
 		storageAvailableGb: 55,
 		storageTotalGb: 100,
 		storageUsedGb: 45,
-		subscriberId: "sub-abc-corporation",
+		subscriberId,
 		tin: "12-345-678-000",
 		userCount,
-		website: "www.abcretail.com",
+		website: `www.${companySlug}.com`,
 	};
 }
 
@@ -915,6 +953,9 @@ function createFallbackCompany(
 		planDescription: "Company profile generated for subscriber review.",
 		planName: "Professional Plan",
 		planStartDate: subscriber.dateRegisteredLabel,
+		reportEndDate: "2024-12-31",
+		reportStartDate: "2024-01-01",
+		reportYearBasis: "Calendar Year",
 		status: subscriber.status === "Inactive" ? "Inactive" : "Active",
 		storageAvailableGb: 55,
 		storageTotalGb: 100,

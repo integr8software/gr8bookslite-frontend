@@ -7,14 +7,27 @@ export type MasterSubscriberManagementStatus =
 
 export type MasterSubscriberManagementCompanyStatus = "Active" | "Inactive";
 
+export type MasterSubscriberManagementTaxpayerType =
+	| "individual"
+	| "non-individual";
+
 export type MasterSubscriberManagementUserStatus =
 	| "Active"
 	| "Inactive"
 	| "Invited";
 
+export type MasterSubscriberManagementBranchStatus =
+	| "Active"
+	| "Trial"
+	| "Past Due"
+	| "Suspended"
+	| "Inactive"
+	| "Pending Setup";
+
 export type MasterSubscriberManagementBranchType =
 	| "Head Office"
-	| "Satellite Branch";
+	| "Branch"
+	| "Satellite";
 
 export type MasterSubscriberManagementCompanySection =
 	| "company-information"
@@ -62,8 +75,12 @@ export type MasterSubscriberManagementCompanyRecord = {
 	contactEmail: string;
 	contactNumber: string;
 	dateAdded: string;
+	firstName?: string;
 	id: string;
 	industry: string;
+	industryOther?: string;
+	lastName?: string;
+	middleName?: string;
 	name: string;
 	nextRenewalDate: string;
 	nextRenewalHelper: string;
@@ -73,12 +90,12 @@ export type MasterSubscriberManagementCompanyRecord = {
 	planStartDate: string;
 	reportEndDate: string;
 	reportStartDate: string;
-	reportYearBasis: "Calendar Year";
 	status: MasterSubscriberManagementCompanyStatus;
 	storageAvailableGb: number;
 	storageTotalGb: number;
 	storageUsedGb: number;
 	subscriberId: string;
+	taxpayerType?: MasterSubscriberManagementTaxpayerType;
 	tin: string;
 	userCount: number;
 	website: string;
@@ -87,13 +104,34 @@ export type MasterSubscriberManagementCompanyRecord = {
 export type MasterSubscriberManagementBranchRecord = {
 	addedOn: string;
 	address: string;
+	contactNumber: string;
+	email: string;
 	id: string;
+	isMain: boolean;
+	linkedMainBranchId: string;
 	name: string;
-	status: MasterSubscriberManagementCompanyStatus;
+	status: MasterSubscriberManagementBranchStatus;
+	tin: string;
 	tone: "blue" | "cyan" | "orange" | "purple" | "rose";
 	type: MasterSubscriberManagementBranchType;
 	users: number;
 };
+
+export type MasterSubscriberManagementBranchFormValues = {
+	address: string;
+	contactNumber: string;
+	email: string;
+	isMain: boolean;
+	linkedMainBranchId: string;
+	name: string;
+	status: MasterSubscriberManagementBranchStatus;
+	tin: string;
+	type: MasterSubscriberManagementBranchType;
+};
+
+export type MasterSubscriberManagementBranchFormErrors = Partial<
+	Record<keyof MasterSubscriberManagementBranchFormValues | "form", string>
+>;
 
 export type MasterSubscriberManagementUserRecord = {
 	addedOn: string;

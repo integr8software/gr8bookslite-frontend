@@ -5,8 +5,10 @@ import {
 	CircleX,
 	type LucideIcon,
 } from "lucide-react";
+import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
 	MasterSubscriberManagementActivityRecord,
+	MasterSubscriberManagementBranchFormValues,
 	MasterSubscriberManagementBranchRecord,
 	MasterSubscriberManagementCompanyRecord,
 	MasterSubscriberManagementFormValues,
@@ -18,6 +20,12 @@ import type {
 	MasterSubscriberManagementSummaryMetric,
 	MasterSubscriberManagementUserRecord,
 } from "@/app/src/types/master/subscriber-management/MasterSubscriberManagementTypes";
+
+const MasterSubscriberManagementCompanyStorageTotalGb = 2;
+const MasterSubscriberManagementCompanyStorageUsedGb = 0.9;
+const MasterSubscriberManagementCompanyStorageAvailableGb =
+	MasterSubscriberManagementCompanyStorageTotalGb -
+	MasterSubscriberManagementCompanyStorageUsedGb;
 
 export const MasterSubscriberManagementSubscribers: MasterSubscriberManagementListRecord[] =
 	[
@@ -441,12 +449,12 @@ export const MasterSubscriberManagementCompanies: MasterSubscriberManagementComp
 				"Midtown District, New York, NY 10001,",
 				"United States",
 			],
-			amount: "$2,499.00 / year",
-			billingCycle: "Annual",
+			amount: "$499.00 / month",
+			billingCycle: "Monthly",
 			branchCount: 5,
 			code: "CMP-00001",
 			contactEmail: "info@abcretail.com",
-			contactNumber: "+1 555-123-4567",
+			contactNumber: "+63 917 123 4567",
 			dateAdded: "May 12, 2024",
 			id: "cmp-abc-retail",
 			industry: "Retail",
@@ -455,18 +463,18 @@ export const MasterSubscriberManagementCompanies: MasterSubscriberManagementComp
 			nextRenewalHelper: "in 348 days",
 			paymentStatus: "Paid",
 			planDescription:
-				"Best for growing businesses with advanced features and reporting.",
-			planName: "Professional Plan",
+				"Combined accounting and inventory coverage for companies that need full operational workflows.",
+			planName: "Accounting + Inventory",
 			planStartDate: "May 12, 2024",
 			reportEndDate: "2024-12-31",
 			reportStartDate: "2024-01-01",
-			reportYearBasis: "Calendar Year",
 			status: "Active",
-			storageAvailableGb: 55,
-			storageTotalGb: 100,
-			storageUsedGb: 45,
+			storageAvailableGb: MasterSubscriberManagementCompanyStorageAvailableGb,
+			storageTotalGb: MasterSubscriberManagementCompanyStorageTotalGb,
+			storageUsedGb: MasterSubscriberManagementCompanyStorageUsedGb,
 			subscriberId: "sub-abc-corporation",
-			tin: "12-345-678-000",
+			taxpayerType: "non-individual",
+			tin: "123-456-789-000",
 			userCount: 35,
 			website: "www.abcretail.com",
 		},
@@ -502,9 +510,14 @@ export const MasterSubscriberManagementBranches: MasterSubscriberManagementBranc
 		{
 			addedOn: "May 20, 2024",
 			address: "123 Main Street, Suite 100, New York, NY 10001, USA",
+			contactNumber: "+63 917 123 4501",
+			email: "head.office@abcretail.com",
 			id: "br-abc-retail-head-office",
+			isMain: true,
+			linkedMainBranchId: "",
 			name: "ABC Retail Inc.",
 			status: "Active",
+			tin: "123-456-789-000",
 			tone: "blue",
 			type: "Head Office",
 			users: 10,
@@ -512,41 +525,61 @@ export const MasterSubscriberManagementBranches: MasterSubscriberManagementBranc
 		{
 			addedOn: "May 21, 2024",
 			address: "456 Market Avenue, Floor 2, New York, NY 10016, USA",
+			contactNumber: "+63 917 123 4502",
+			email: "downtown@abcretail.com",
 			id: "br-abc-downtown",
+			isMain: false,
+			linkedMainBranchId: "br-abc-retail-head-office",
 			name: "ABC Downtown",
 			status: "Active",
+			tin: "123-456-789-001",
 			tone: "cyan",
-			type: "Satellite Branch",
+			type: "Satellite",
 			users: 8,
 		},
 		{
 			addedOn: "May 22, 2024",
 			address: "789 5th Avenue, Suite 300, New York, NY 10022, USA",
+			contactNumber: "+63 917 123 4503",
+			email: "midtown@abcretail.com",
 			id: "br-abc-midtown",
+			isMain: false,
+			linkedMainBranchId: "br-abc-retail-head-office",
 			name: "ABC Midtown",
 			status: "Active",
+			tin: "123-456-789-002",
 			tone: "cyan",
-			type: "Satellite Branch",
+			type: "Satellite",
 			users: 6,
 		},
 		{
 			addedOn: "May 23, 2024",
 			address: "321 Atlantic Avenue, Brooklyn, NY 11201, USA",
+			contactNumber: "+63 917 123 4504",
+			email: "brooklyn@abcretail.com",
 			id: "br-abc-brooklyn",
+			isMain: false,
+			linkedMainBranchId: "br-abc-retail-head-office",
 			name: "ABC Brooklyn",
 			status: "Inactive",
+			tin: "123-456-789-003",
 			tone: "rose",
-			type: "Satellite Branch",
+			type: "Satellite",
 			users: 7,
 		},
 		{
 			addedOn: "May 24, 2024",
 			address: "654 Queens Blvd, Suite 200, Queens, NY 11377, USA",
+			contactNumber: "+63 917 123 4505",
+			email: "queens@abcretail.com",
 			id: "br-abc-queens",
+			isMain: false,
+			linkedMainBranchId: "br-abc-retail-head-office",
 			name: "ABC Queens",
 			status: "Active",
+			tin: "123-456-789-004",
 			tone: "purple",
-			type: "Satellite Branch",
+			type: "Satellite",
 			users: 4,
 		},
 	];
@@ -647,7 +680,7 @@ export const MasterSubscriberManagementActivities: MasterSubscriberManagementAct
 		{
 			date: "May 12, 2024 09:00 AM",
 			id: "activity-plan",
-			label: "Plan changed to Professional Plan",
+			label: "Plan changed to Accounting + Inventory",
 			tone: "orange",
 		},
 		{
@@ -665,35 +698,35 @@ export const MasterSubscriberManagementStorageBreakdown: MasterSubscriberManagem
 			colorClassName: "bg-skyblue",
 			iconClassName: "text-skyblue",
 			percentage: 41.3,
-			used: "18.6 GB",
+			used: "0.37 GB",
 		},
 		{
 			category: "Images",
 			colorClassName: "bg-emerald-500",
 			iconClassName: "text-emerald-500",
 			percentage: 27.6,
-			used: "12.4 GB",
+			used: "0.25 GB",
 		},
 		{
 			category: "Reports",
 			colorClassName: "bg-purple-500",
 			iconClassName: "text-purple-500",
 			percentage: 15.1,
-			used: "6.8 GB",
+			used: "0.14 GB",
 		},
 		{
 			category: "Backups",
 			colorClassName: "bg-orange-500",
 			iconClassName: "text-orange-500",
 			percentage: 10.2,
-			used: "4.6 GB",
+			used: "0.09 GB",
 		},
 		{
 			category: "Other",
 			colorClassName: "bg-slate-400",
 			iconClassName: "text-slate-400",
 			percentage: 5.8,
-			used: "2.6 GB",
+			used: "0.05 GB",
 		},
 	];
 
@@ -707,7 +740,7 @@ export const MasterSubscriberManagementStorageBranches: MasterSubscriberManageme
 			lastActivity: "May 20, 2024 10:24 AM",
 			percentage: 40.4,
 			tone: "blue",
-			used: "18.2 GB",
+			used: "0.36 GB",
 		},
 		{
 			address: "456 Market Ave., New York, NY",
@@ -717,7 +750,7 @@ export const MasterSubscriberManagementStorageBranches: MasterSubscriberManageme
 			lastActivity: "May 21, 2024 09:15 AM",
 			percentage: 28.2,
 			tone: "emerald",
-			used: "12.7 GB",
+			used: "0.25 GB",
 		},
 		{
 			address: "789 5th Ave., New York, NY",
@@ -727,7 +760,7 @@ export const MasterSubscriberManagementStorageBranches: MasterSubscriberManageme
 			lastActivity: "May 22, 2024 02:35 PM",
 			percentage: 16.9,
 			tone: "purple",
-			used: "7.6 GB",
+			used: "0.15 GB",
 		},
 		{
 			address: "321 Atlantic Ave., Brooklyn, NY",
@@ -737,7 +770,7 @@ export const MasterSubscriberManagementStorageBranches: MasterSubscriberManageme
 			lastActivity: "May 10, 2024 11:20 AM",
 			percentage: 10,
 			tone: "orange",
-			used: "4.5 GB",
+			used: "0.09 GB",
 		},
 		{
 			address: "654 Queens Blvd., Queens, NY",
@@ -747,7 +780,7 @@ export const MasterSubscriberManagementStorageBranches: MasterSubscriberManageme
 			lastActivity: "May 24, 2024 08:45 AM",
 			percentage: 4.5,
 			tone: "slate",
-			used: "2.0 GB",
+			used: "0.04 GB",
 		},
 	];
 
@@ -757,6 +790,19 @@ export const InitialMasterSubscriberManagementFormValues: MasterSubscriberManage
 		email: "",
 		name: "",
 		status: "Active",
+	};
+
+export const InitialMasterSubscriberManagementBranchFormValues: MasterSubscriberManagementBranchFormValues =
+	{
+		address: "",
+		contactNumber: "",
+		email: "",
+		isMain: true,
+		linkedMainBranchId: "",
+		name: "",
+		status: "Active",
+		tin: "",
+		type: "Head Office",
 	};
 
 export function createMasterSubscriberManagementSummaryMetrics(): MasterSubscriberManagementSummaryMetric[] {
@@ -817,6 +863,34 @@ export function createMasterSubscriberManagementFormValues(
 		email: record.email,
 		name: record.name,
 		status: record.status,
+	};
+}
+
+export function createMasterSubscriberManagementBranchFormValues(
+	company: MasterSubscriberManagementCompanyRecord,
+	branches: MasterSubscriberManagementBranchRecord[],
+	branch?: MasterSubscriberManagementBranchRecord,
+): MasterSubscriberManagementBranchFormValues {
+	if (branch) {
+		return {
+			address: branch.address,
+			contactNumber: branch.contactNumber,
+			email: branch.email,
+			isMain: branch.isMain,
+			linkedMainBranchId: branch.linkedMainBranchId,
+			name: branch.name,
+			status: branch.status,
+			tin: FormatTinNumber(branch.tin),
+			type: branch.type,
+		};
+	}
+
+	const firstMainBranch = branches.find((currentBranch) => currentBranch.isMain);
+
+	return {
+		...InitialMasterSubscriberManagementBranchFormValues,
+		linkedMainBranchId: firstMainBranch?.id ?? "",
+		tin: FormatTinNumber(company.tin),
 	};
 }
 
@@ -898,12 +972,12 @@ function createCompany(
 			"New York, NY 10001,",
 			"United States",
 		],
-		amount: "$1,499.00 / year",
-		billingCycle: "Annual",
+		amount: "$499.00 / month",
+		billingCycle: "Monthly",
 		branchCount,
 		code: id.replace("cmp-", "CMP-").toUpperCase(),
 		contactEmail: `info@${companySlug}.com`,
-		contactNumber: "+1 555-123-4567",
+		contactNumber: "+63 917 123 4567",
 		dateAdded: "May 12, 2024",
 		id,
 		industry: "Services",
@@ -911,18 +985,19 @@ function createCompany(
 		nextRenewalDate: "May 12, 2025",
 		nextRenewalHelper: "in 348 days",
 		paymentStatus: "Paid",
-		planDescription: "A managed company under the subscriber account.",
-		planName: "Professional Plan",
+		planDescription:
+			"Combined accounting and inventory coverage for companies that need full operational workflows.",
+		planName: "Accounting + Inventory",
 		planStartDate: "May 12, 2024",
 		reportEndDate: "2024-12-31",
 		reportStartDate: "2024-01-01",
-		reportYearBasis: "Calendar Year",
 		status: "Active",
-		storageAvailableGb: 55,
-		storageTotalGb: 100,
-		storageUsedGb: 45,
+		storageAvailableGb: MasterSubscriberManagementCompanyStorageAvailableGb,
+		storageTotalGb: MasterSubscriberManagementCompanyStorageTotalGb,
+		storageUsedGb: MasterSubscriberManagementCompanyStorageUsedGb,
 		subscriberId,
-		tin: "12-345-678-000",
+		taxpayerType: "non-individual",
+		tin: "123-456-789-000",
 		userCount,
 		website: `www.${companySlug}.com`,
 	};
@@ -937,12 +1012,12 @@ function createFallbackCompany(
 			"New York, NY 10001,",
 			"United States",
 		],
-		amount: "$999.00 / year",
-		billingCycle: "Annual",
+		amount: "$499.00 / month",
+		billingCycle: "Monthly",
 		branchCount: subscriber.branches,
 		code: "CMP-00001",
 		contactEmail: subscriber.email,
-		contactNumber: subscriber.contactNumber,
+		contactNumber: "+63 917 123 4567",
 		dateAdded: subscriber.dateRegisteredLabel,
 		id: `${subscriber.id}-company`,
 		industry: "Business Services",
@@ -950,18 +1025,19 @@ function createFallbackCompany(
 		nextRenewalDate: "May 12, 2025",
 		nextRenewalHelper: "in 348 days",
 		paymentStatus: "Paid",
-		planDescription: "Company profile generated for subscriber review.",
-		planName: "Professional Plan",
+		planDescription:
+			"Combined accounting and inventory coverage for companies that need full operational workflows.",
+		planName: "Accounting + Inventory",
 		planStartDate: subscriber.dateRegisteredLabel,
 		reportEndDate: "2024-12-31",
 		reportStartDate: "2024-01-01",
-		reportYearBasis: "Calendar Year",
 		status: subscriber.status === "Inactive" ? "Inactive" : "Active",
-		storageAvailableGb: 55,
-		storageTotalGb: 100,
-		storageUsedGb: 45,
+		storageAvailableGb: MasterSubscriberManagementCompanyStorageAvailableGb,
+		storageTotalGb: MasterSubscriberManagementCompanyStorageTotalGb,
+		storageUsedGb: MasterSubscriberManagementCompanyStorageUsedGb,
 		subscriberId: subscriber.id,
-		tin: "12-345-678-000",
+		taxpayerType: "non-individual",
+		tin: "123-456-789-000",
 		userCount: subscriber.users,
 		website: "www.example.com",
 	};

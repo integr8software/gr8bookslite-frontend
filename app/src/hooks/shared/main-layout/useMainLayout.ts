@@ -182,6 +182,10 @@ export function useMainLayout() {
   >(null);
   const [hasProfileLoadTimedOut, setHasProfileLoadTimedOut] = useState(false);
   const [helpOpenPath, setHelpOpenPath] = useState<string | null>(null);
+  const [selectedHelpArticleState, setSelectedHelpArticleState] = useState({
+    pathname: "",
+    key: "",
+  });
   const [quickListTab, setQuickListTab] = useState<MainQuickListTab>("recent");
   const [notificationTab, setNotificationTab] =
     useState<MainNotificationTab>("all");
@@ -272,6 +276,7 @@ export function useMainLayout() {
         activeNavigationScope === "company" ? currentCompany : undefined,
     });
 
+  /* eslint-disable react-hooks/preserve-manual-memoization */
   const navigationSections = useMemo(() => {
     const sourceSections =
       activeNavigationScope === "account"
@@ -431,6 +436,7 @@ export function useMainLayout() {
     () => sortBranchesByPriority(getAccessibleBranches(branches)),
     [branches],
   );
+  /* eslint-enable react-hooks/preserve-manual-memoization */
   const hasCompanyAdministrationAccess = hasCurrentCompanyAdministrationAccess(
     authProfile,
     currentCompany.id,
@@ -629,10 +635,6 @@ export function useMainLayout() {
       ModuleHelpArticles[0],
     [pathname],
   );
-  const [selectedHelpArticleState, setSelectedHelpArticleState] = useState({
-    pathname,
-    key: currentHelpArticle.key,
-  });
   const selectedHelpArticleKey =
     selectedHelpArticleState.pathname === pathname
       ? selectedHelpArticleState.key

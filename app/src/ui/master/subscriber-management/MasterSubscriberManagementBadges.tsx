@@ -1,5 +1,6 @@
 import { Building2 } from "lucide-react";
 import type {
+	MasterSubscriberManagementBranchStatus,
 	MasterSubscriberManagementBranchType,
 	MasterSubscriberManagementCompanyStatus,
 	MasterSubscriberManagementStatus,
@@ -65,6 +66,24 @@ export function MasterUserStatusBadge({
 	);
 }
 
+export function MasterBranchStatusBadge({
+	status,
+}: {
+	status: MasterSubscriberManagementBranchStatus;
+}) {
+	return (
+		<span
+			className={joinClasses(
+				"inline-flex h-6 items-center gap-1.5 rounded-md px-2 text-xs font-semibold",
+				getBranchStatusClassName(status),
+			)}
+		>
+			<span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+			{status}
+		</span>
+	);
+}
+
 export function MasterBranchTypeBadge({
 	type,
 }: {
@@ -74,9 +93,9 @@ export function MasterBranchTypeBadge({
 		<span
 			className={joinClasses(
 				"inline-flex h-6 items-center rounded-md px-2 text-xs font-semibold",
-				type === "Head Office"
-					? "bg-skyblue/16 text-blue-700"
-					: "bg-emerald-500/14 text-emerald-700",
+				type === "Head Office" && "bg-skyblue/16 text-blue-700",
+				type === "Branch" && "bg-purple-500/14 text-purple-700",
+				type === "Satellite" && "bg-emerald-500/14 text-emerald-700",
 			)}
 		>
 			{type}
@@ -131,6 +150,22 @@ function getStatusClassName(status: MasterSubscriberManagementStatus) {
 			return "bg-orange-500/14 text-orange-600";
 		case "Inactive":
 			return "bg-coralpink/14 text-coralpink";
+	}
+}
+
+function getBranchStatusClassName(status: MasterSubscriberManagementBranchStatus) {
+	switch (status) {
+		case "Active":
+			return "bg-emerald-500/14 text-emerald-700";
+		case "Trial":
+			return "bg-skyblue/14 text-blue-700";
+		case "Past Due":
+			return "bg-coralpink/12 text-coralpink";
+		case "Pending Setup":
+			return "bg-amber-500/14 text-amber-700";
+		case "Suspended":
+		case "Inactive":
+			return "bg-darknavy/8 text-darknavy/55";
 	}
 }
 

@@ -1,7 +1,25 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import {
+	useMemo,
+	useState,
+	type ChangeEvent,
+	type ComponentPropsWithoutRef,
+	type FormEvent,
+	type InputHTMLAttributes,
+	type ReactNode,
+} from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+	getCoreRowModel,
+	getPaginationRowModel,
+	getSortedRowModel,
+	useReactTable,
+	type ColumnDef,
+	type PaginationState,
+	type SortingState,
+} from "@tanstack/react-table";
 import {
 	ArrowRight,
 	Building2,
@@ -21,25 +39,48 @@ import {
 	Mail,
 	MapPin,
 	MoreVertical,
+	Plus,
 	Save,
 	Search,
+	Send,
 	Trash2,
+	ToggleLeft,
+	ToggleRight,
 	Upload,
 	Users,
 	X,
 	type LucideIcon,
 } from "lucide-react";
 import {
+	MasterSubscriberManagementBranchStatusOptions,
+	MasterSubscriberManagementBranchTypeOptions,
 	MasterSubscriberManagementCompanySections,
+	MasterSubscriberManagementSubscriptionPlanOptions,
+	MasterSubscriberManagementUserStatusOptions,
+	type MasterSubscriberManagementSubscriptionBillingCycle,
+	type MasterSubscriberManagementSubscriptionPlanOption,
+	getMasterSubscriberManagementBranchAddHref,
+	getMasterSubscriberManagementBranchEditHref,
 	getMasterSubscriberManagementCompanyInformationEditHref,
 	getMasterSubscriberManagementSectionHref,
+	getMasterSubscriberManagementUserAddHref,
+	getMasterSubscriberManagementUserEditHref,
+	getMasterSubscriberManagementUserViewHref,
 } from "@/app/src/constants/master/subscriber-management/MasterSubscriberManagementConstants";
 import {
 	FormatOnboardingReportDateLabel,
 	GetSyncedReportEndDate,
 	GetSyncedReportStartDate,
+	OnboardingNonIndividualTypeOptions,
 } from "@/app/src/data/onboarding/OnboardingData";
 import {
+	DefaultPhilippineContactNumber,
+	FormatPhilippineContactNumber,
+	PhilippineContactNumberPlaceholder,
+} from "@/app/src/data/shared/contact/ContactData";
+import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
+import {
+	createMasterSubscriberManagementBranchFormValues,
 	MasterSubscriberManagementActivities,
 	MasterSubscriberManagementInvoices,
 	MasterSubscriberManagementStorageBranches,
@@ -49,13 +90,20 @@ import {
 	getMasterSubscriberManagementSubscriber,
 } from "@/app/src/data/master/subscriber-management/MasterSubscriberManagementData";
 import type {
+	MasterSubscriberManagementBranchFormErrors,
+	MasterSubscriberManagementBranchFormValues,
 	MasterSubscriberManagementBranchRecord,
+	MasterSubscriberManagementBranchStatus,
+	MasterSubscriberManagementBranchType,
 	MasterSubscriberManagementCompanyRecord,
 	MasterSubscriberManagementCompanySection,
+	MasterSubscriberManagementTaxpayerType,
 	MasterSubscriberManagementUserRecord,
 	MasterSubscriberManagementUserStatus,
 } from "@/app/src/types/master/subscriber-management/MasterSubscriberManagementTypes";
+import { validateMasterSubscriberManagementBranchForm } from "@/app/src/validations/master/subscriber-management/MasterSubscriberManagementValidation";
 import {
+	MasterBranchStatusBadge,
 	MasterBranchTypeBadge,
 	MasterCompanyStatusBadge,
 	MasterSubscriberIcon,
@@ -64,18 +112,105 @@ import {
 } from "@/app/src/ui/master/subscriber-management/MasterSubscriberManagementBadges";
 import { MasterSubscriberAccountTabBar } from "@/app/src/ui/master/subscriber-management/MasterSubscriberAccountTabBar";
 import { MasterSubscriberProfileHeader } from "@/app/src/ui/master/subscriber-management/MasterSubscriberProfileHeader";
+import {
+	ModuleTableActionButton,
+	ModuleTableActionLink,
+	ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+	ModuleTableFilterSelect,
+	ModuleTableResetButton,
+	ModuleTableSearch,
+	ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
+import { ModuleActionMenu } from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
+type MasterSubscriberBranchTableColumnKey = keyof Pick<
+	MasterSubscriberManagementBranchRecord,
+	"addedOn" | "address" | "name" | "status" | "users"
+>;
+
+type MasterSubscriberUserTableColumnKey =
+	| keyof Pick<
+		MasterSubscriberManagementUserRecord,
+		"addedOn" | "email" | "name" | "status"
+	>
+	| "branchAccess"
+	| "lastActive";
+
+type MasterSubscriberSubscriptionPlanDisplay =
+	MasterSubscriberManagementSubscriptionPlanOption & {
+		amount: string;
+		billingCycle: MasterSubscriberManagementSubscriptionBillingCycle;
+	};
+
+type MasterSubscriberSubscriptionPlanState = {
+	companyId: string;
+	currentPlan: MasterSubscriberSubscriptionPlanDisplay;
+	isChangePlanDrawerOpen: boolean;
+	pendingBillingCycle: MasterSubscriberManagementSubscriptionBillingCycle;
+	pendingPlanId: string;
+};
+
+const MasterSubscriberBranchPaginationStorageKey =
+	"master-subscriber-management-branches";
+const MasterSubscriberUserPaginationStorageKey =
+	"master-subscriber-management-users";
+
+const MasterSubscriberBranchTableColumns = [
+	{ key: "name", label: "Branch Name", className: "w-[18rem]" },
+	{ key: "address", label: "Address", className: "w-[28rem]" },
+	{ key: "users", label: "Users", className: "w-[8rem]" },
+	{ key: "status", label: "Status", className: "w-[10rem]" },
+	{ key: "addedOn", label: "Added On", className: "w-[12rem]" },
+	{ label: "Actions", className: "w-[9rem] text-center" },
+] as const satisfies readonly (
+	| {
+		className: string;
+		key: MasterSubscriberBranchTableColumnKey;
+		label: string;
+	}
+	| { className: string; label: string }
+)[];
+
+const MasterSubscriberUserTableColumns = [
+	{ key: "name", label: "User", className: "w-[18rem]" },
+	{ key: "email", label: "Email", className: "w-[18rem]" },
+	{ key: "branchAccess", label: "Branch Access", className: "w-[18rem]" },
+	{ key: "status", label: "Status", className: "w-[10rem]" },
+	{ key: "lastActive", label: "Last Active", className: "w-[12rem]" },
+	{ key: "addedOn", label: "Added On", className: "w-[12rem]" },
+	{ label: "Actions", className: "w-[13rem] text-center" },
+] as const satisfies readonly (
+	| {
+		className: string;
+		key: MasterSubscriberUserTableColumnKey;
+		label: string;
+	}
+	| { className: string; label: string }
+)[];
+
 export function MasterSubscriberManagementCompanyPage({
+	branchDrawerMode,
+	branchId,
 	companyId,
 	isEditingCompanyInformation = false,
 	recordId,
 	section,
+	userDrawerMode,
+	userId,
 }: {
+	branchDrawerMode?: "add" | "edit";
+	branchId?: string;
 	companyId?: string;
 	isEditingCompanyInformation?: boolean;
 	recordId: string;
 	section: MasterSubscriberManagementCompanySection;
+	userDrawerMode?: "add" | "edit" | "view";
+	userId?: string;
 }) {
 	const subscriber = getMasterSubscriberManagementSubscriber(recordId);
 	const companies =
@@ -126,9 +261,21 @@ export function MasterSubscriberManagementCompanyPage({
 							<SubscriptionPlanSection company={company} />
 						) : null}
 						{section === "branches" ? (
-							<BranchesSection company={company} />
+							<BranchesSection
+								branchDrawerMode={branchDrawerMode}
+								branchId={branchId}
+								company={company}
+								recordId={subscriber.id}
+							/>
 						) : null}
-						{section === "users" ? <UsersSection company={company} /> : null}
+						{section === "users" ? (
+							<UsersSection
+								company={company}
+								recordId={subscriber.id}
+								userDrawerMode={userDrawerMode}
+								userId={userId}
+							/>
+						) : null}
 						{section === "storage" ? (
 							<StorageSection company={company} />
 						) : null}
@@ -264,17 +411,17 @@ function CompanyPanelHeader({
 		isEditingCompanyInformation
 			? "Cancel"
 			: section === "company-information"
-			? "Edit Company"
-			: section === "subscription-and-plan"
-				? "Edit Subscription"
-				: "View Company";
+				? "Edit Company"
+				: section === "subscription-and-plan"
+					? "Edit Subscription"
+					: "View Company";
 	const buttonHref = isEditingCompanyInformation
 		? companyInformationHref
 		: section === "company-information"
 			? getMasterSubscriberManagementCompanyInformationEditHref(
-					recordId,
-					company.id,
-				)
+				recordId,
+				company.id,
+			)
 			: companyInformationHref;
 
 	return (
@@ -295,19 +442,31 @@ function CompanyPanelHeader({
 					</div>
 				</div>
 			</div>
-			<Link
-				href={buttonHref}
-				className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-[var(--skyblue)] shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10"
-			>
-				{buttonLabel === "Cancel" ? (
-					<X className="h-4 w-4" aria-hidden="true" />
-				) : buttonLabel === "View Company" ? (
-					<ExternalLink className="h-4 w-4" aria-hidden="true" />
-				) : (
-					<Edit3 className="h-4 w-4" aria-hidden="true" />
-				)}
-				{buttonLabel}
-			</Link>
+			<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+				<Link
+					href={buttonHref}
+					className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-[var(--skyblue)] shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10"
+				>
+					{buttonLabel === "Cancel" ? (
+						<X className="h-4 w-4" aria-hidden="true" />
+					) : buttonLabel === "View Company" ? (
+						<ExternalLink className="h-4 w-4" aria-hidden="true" />
+					) : (
+						<Edit3 className="h-4 w-4" aria-hidden="true" />
+					)}
+					{buttonLabel}
+				</Link>
+				{isEditingCompanyInformation ? (
+					<button
+						type="submit"
+						form={getCompanyInformationEditFormId(company.id)}
+						className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-semibold text-white shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.18)] transition hover:opacity-90"
+					>
+						<Save className="h-4 w-4" aria-hidden="true" />
+						Save Changes
+					</button>
+				) : null}
+			</div>
 		</div>
 	);
 }
@@ -366,6 +525,8 @@ function CompanyInformationSection({
 	company: MasterSubscriberManagementCompanyRecord;
 }) {
 	const satelliteBranchCount = Math.max(company.branchCount - 1, 0);
+	const taxpayerType = getCompanyTaxpayerType(company);
+	const isIndividual = taxpayerType === "individual";
 
 	return (
 		<div className="grid gap-4">
@@ -390,35 +551,43 @@ function CompanyInformationSection({
 				/>
 			</div>
 			<Panel title="Company Information">
-				<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)]">
-					<div className="grid gap-3">
+				<div className="grid gap-3">
+					<DetailRow
+						label="Taxpayer Type"
+						value={formatCompanyTaxpayerType(taxpayerType)}
+					/>
+					{isIndividual ? (
+						<>
+							<DetailRow label="Last Name" value={company.lastName || "-"} />
+							<DetailRow label="First Name" value={company.firstName || "-"} />
+							<DetailRow
+								label="Middle Name"
+								value={company.middleName || "-"}
+							/>
+						</>
+					) : (
 						<DetailRow label="Company Name" value={company.name} />
-						<DetailRow label="Contact Email" value={company.contactEmail} />
-						<DetailRow label="Contact No." value={company.contactNumber} />
-						<DetailRow label="Website" value={company.website} link />
-						<DetailRow label="Industry" value={company.industry} />
-						<DetailRow label="TIN" value={company.tin} />
+					)}
+					{isIndividual ? null : (
 						<DetailRow
-							label="Status"
-							value={<MasterCompanyStatusBadge status={company.status} />}
+							label="Industry"
+							value={formatCompanyIndustry(company)}
 						/>
-					</div>
-					<div className="border-darknavy/10 lg:border-l lg:pl-6">
-						<h3 className="text-sm font-bold text-darknavy">Address</h3>
-						<div className="mt-4 grid gap-2 text-sm font-semibold leading-6 text-darknavy/72">
-							{company.addressLines.map((line) => (
-								<p key={line}>{line}</p>
-							))}
-						</div>
-						<div className="mt-6 border-t border-darknavy/10 pt-5">
-							<DetailRow label="Date Added" value={company.dateAdded} />
-						</div>
-					</div>
+					)}
+					<DetailRow label="Contact Email" value={company.contactEmail} />
+					<DetailRow label="Contact No." value={company.contactNumber} />
+					<DetailRow label="TIN" value={company.tin} />
+					<DetailRow label="Address" value={formatCompanyAddress(company)} />
+					<DetailRow label="Website" value={company.website} link />
+					<DetailRow label="Date Added" value={company.dateAdded} />
+					<DetailRow
+						label="Status"
+						value={<MasterCompanyStatusBadge status={company.status} />}
+					/>
 				</div>
 			</Panel>
 			<Panel title="Reporting Period" icon={CalendarDays}>
-				<div className="grid gap-4 md:grid-cols-3">
-					<DetailRow label="Report Year Basis" value={company.reportYearBasis} />
+				<div className="grid gap-4 md:grid-cols-2">
 					<DetailRow
 						label="Report Start Date"
 						value={formatCompanyReportDate(company.reportStartDate)}
@@ -453,8 +622,105 @@ function SubscriptionPlanSection({
 }: {
 	company: MasterSubscriberManagementCompanyRecord;
 }) {
-	const branchLimit = 25;
-	const userLimit = 150;
+	const fallbackPlan = createSubscriptionPlanDisplay(company);
+	const [planState, setPlanState] =
+		useState<MasterSubscriberSubscriptionPlanState>(() => ({
+			companyId: company.id,
+			currentPlan: fallbackPlan,
+			isChangePlanDrawerOpen: false,
+			pendingBillingCycle: fallbackPlan.billingCycle,
+			pendingPlanId: getSelectableSubscriptionPlanId(fallbackPlan.id),
+		}));
+	const isPlanStateCurrent = planState.companyId === company.id;
+	const currentPlan = isPlanStateCurrent
+		? planState.currentPlan
+		: fallbackPlan;
+	const pendingPlanId = isPlanStateCurrent
+		? planState.pendingPlanId
+		: getSelectableSubscriptionPlanId(fallbackPlan.id);
+	const pendingBillingCycle = isPlanStateCurrent
+		? planState.pendingBillingCycle
+		: fallbackPlan.billingCycle;
+	const isChangePlanDrawerOpen =
+		isPlanStateCurrent && planState.isChangePlanDrawerOpen;
+	const storageUsagePercent = getUsagePercent(
+		company.storageUsedGb,
+		company.storageTotalGb,
+	);
+	const pendingPlanOption =
+		getSubscriptionPlanOptionById(pendingPlanId) ??
+		MasterSubscriberManagementSubscriptionPlanOptions[0];
+	const pendingPlan = createSubscriptionPlanDisplayFromOption(
+		pendingPlanOption,
+		pendingBillingCycle,
+	);
+
+	function openChangePlanDrawer() {
+		setPlanState({
+			companyId: company.id,
+			currentPlan,
+			isChangePlanDrawerOpen: true,
+			pendingBillingCycle: currentPlan.billingCycle,
+			pendingPlanId: getSelectableSubscriptionPlanId(currentPlan.id),
+		});
+	}
+
+	function applyPendingPlan() {
+		setPlanState({
+			companyId: company.id,
+			currentPlan: pendingPlan,
+			isChangePlanDrawerOpen: false,
+			pendingBillingCycle,
+			pendingPlanId: pendingPlan.id,
+		});
+	}
+
+	function closeChangePlanDrawer() {
+		setPlanState((current) =>
+			current.companyId === company.id
+				? {
+					...current,
+					isChangePlanDrawerOpen: false,
+				}
+				: current,
+		);
+	}
+
+	function selectPendingPlan(planId: string) {
+		setPlanState((current) =>
+			current.companyId === company.id
+				? {
+					...current,
+					pendingPlanId: planId,
+				}
+				: {
+					companyId: company.id,
+					currentPlan,
+					isChangePlanDrawerOpen: true,
+					pendingBillingCycle,
+					pendingPlanId: planId,
+				},
+		);
+	}
+
+	function selectPendingBillingCycle(
+		billingCycle: MasterSubscriberManagementSubscriptionBillingCycle,
+	) {
+		setPlanState((current) =>
+			current.companyId === company.id
+				? {
+					...current,
+					pendingBillingCycle: billingCycle,
+				}
+				: {
+					companyId: company.id,
+					currentPlan,
+					isChangePlanDrawerOpen: true,
+					pendingBillingCycle: billingCycle,
+					pendingPlanId,
+				},
+		);
+	}
 
 	return (
 		<div className="grid gap-4">
@@ -467,19 +733,19 @@ function SubscriptionPlanSection({
 						<div>
 							<div className="flex flex-wrap items-center gap-2">
 								<h3 className="text-base font-bold text-darknavy">
-									{company.planName}
+									{currentPlan.name}
 								</h3>
 								<span className="rounded-md bg-purple-500/12 px-2 py-1 text-xs font-bold text-purple-700">
 									Current Plan
 								</span>
 							</div>
 							<p className="mt-3 max-w-sm text-sm font-medium leading-6 text-darknavy/65">
-								{company.planDescription}
+								{currentPlan.description}
 							</p>
 						</div>
 					</div>
 					<div className="grid gap-4 md:grid-cols-2">
-						<IconDetail icon={GitBranch} label="Billing Cycle" value={company.billingCycle} />
+						<IconDetail icon={GitBranch} label="Billing Cycle" value={currentPlan.billingCycle} />
 						<IconDetail
 							icon={Edit3}
 							label="Status"
@@ -492,36 +758,38 @@ function SubscriptionPlanSection({
 							value={`${company.nextRenewalDate} (${company.nextRenewalHelper})`}
 						/>
 						<IconDetail icon={CreditCard} label="Payment Status" value={<PaidBadge />} />
-						<IconDetail icon={Database} label="Amount" value={company.amount} />
+						<IconDetail icon={Database} label="Amount" value={currentPlan.amount} />
 					</div>
 				</div>
 			</Panel>
 			<Panel
 				title="Plan Usage"
 				actions={<SmallButton>View Usage Details</SmallButton>}
-				description="Your usage and limits for the current plan."
+				description="Current branch, employee, and storage usage for this company."
 			>
 				<div className="grid gap-5 lg:grid-cols-3">
-					<UsageMeter
-						colorClassName="bg-emerald-500"
+					<UsageCount
 						icon={MapPin}
 						label="Branches"
-						percent={getUsagePercent(company.branchCount, branchLimit)}
-						value={`${company.branchCount} / ${branchLimit}`}
+						helper="Current branches"
+						tone="emerald"
+						value={String(company.branchCount)}
 					/>
-					<UsageMeter
-						colorClassName="bg-purple-500"
+					<UsageCount
 						icon={Users}
-						label="Users"
-						percent={getUsagePercent(company.userCount, userLimit)}
-						value={`${company.userCount} / ${userLimit}`}
+						label="Employees"
+						helper="Current employees"
+						tone="purple"
+						value={String(company.userCount)}
 					/>
 					<UsageMeter
 						colorClassName="bg-orange-500"
 						icon={Database}
 						label="Storage"
-						percent={45}
-						value="45 GB / 100 GB"
+						percent={storageUsagePercent}
+						value={`${formatStorageGb(
+							company.storageUsedGb,
+						)} / ${formatStorageGb(company.storageTotalGb)}`}
 					/>
 				</div>
 			</Panel>
@@ -534,93 +802,444 @@ function SubscriptionPlanSection({
 					<Info className="h-4 w-4 text-[var(--skyblue)]" aria-hidden="true" />
 					Need to change your plan? You can upgrade, downgrade, or cancel your subscription anytime.
 				</span>
-				<SmallButton>Change Plan</SmallButton>
+				<SmallButton onClick={openChangePlanDrawer}>Change Plan</SmallButton>
 			</div>
+			<ChangeSubscriptionPlanDrawer
+				currentBillingCycle={currentPlan.billingCycle}
+				currentPlanId={currentPlan.id}
+				isOpen={isChangePlanDrawerOpen}
+				onApply={applyPendingPlan}
+				onClose={closeChangePlanDrawer}
+				onSelectBillingCycle={selectPendingBillingCycle}
+				onSelectPlan={selectPendingPlan}
+				pendingBillingCycle={pendingBillingCycle}
+				pendingPlanId={pendingPlanId}
+			/>
 		</div>
 	);
 }
 
-function BranchesSection({
-	company,
+function ChangeSubscriptionPlanDrawer({
+	currentBillingCycle,
+	currentPlanId,
+	isOpen,
+	onApply,
+	onClose,
+	onSelectBillingCycle,
+	onSelectPlan,
+	pendingBillingCycle,
+	pendingPlanId,
 }: {
-	company: MasterSubscriberManagementCompanyRecord;
+	currentBillingCycle: MasterSubscriberManagementSubscriptionBillingCycle;
+	currentPlanId: string;
+	isOpen: boolean;
+	onApply: () => void;
+	onClose: () => void;
+	onSelectBillingCycle: (
+		billingCycle: MasterSubscriberManagementSubscriptionBillingCycle,
+	) => void;
+	onSelectPlan: (planId: string) => void;
+	pendingBillingCycle: MasterSubscriberManagementSubscriptionBillingCycle;
+	pendingPlanId: string;
 }) {
-	const branches = createCompanyBranchRows(company);
+	const isCurrentSelection =
+		currentPlanId === pendingPlanId && currentBillingCycle === pendingBillingCycle;
+
+	return (
+		<ModuleDrawer
+			description="Select the subscription plan and billing cycle to apply to this company."
+			eyebrow="Subscription plan"
+			footer={
+				<div className="flex flex-col justify-end gap-2 sm:flex-row">
+					<button
+						type="button"
+						onClick={onClose}
+						className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-bold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10"
+					>
+						<X className="h-4 w-4" aria-hidden="true" />
+						Cancel
+					</button>
+					<button
+						type="button"
+						disabled={isCurrentSelection}
+						onClick={onApply}
+						className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-bold text-white shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.18)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+					>
+						<Check className="h-4 w-4" aria-hidden="true" />
+						Apply Plan
+					</button>
+				</div>
+			}
+			isOpen={isOpen}
+			maxWidthClassName="max-w-2xl"
+			onClose={onClose}
+			title="Change Plan"
+		>
+			<div className="grid gap-3 p-6">
+				<div>
+					<p className="mb-2 text-sm font-semibold text-darknavy/62">
+						Billing Cycle
+					</p>
+					<div className="grid grid-cols-2 overflow-hidden rounded-lg border border-darknavy/10 bg-white">
+						{(["Monthly", "Yearly"] as const).map((billingCycle) => {
+							const isSelected = pendingBillingCycle === billingCycle;
+
+							return (
+								<button
+									key={billingCycle}
+									type="button"
+									aria-pressed={isSelected}
+									onClick={() => onSelectBillingCycle(billingCycle)}
+									className={joinClasses(
+										"h-11 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.16)]",
+										billingCycle === "Yearly" && "border-l border-darknavy/10",
+										isSelected
+											? "bg-[var(--skyblue)] text-white"
+											: "bg-white text-darknavy/70 hover:bg-skyblue/10",
+									)}
+								>
+									{billingCycle}
+								</button>
+							);
+						})}
+					</div>
+				</div>
+				{MasterSubscriberManagementSubscriptionPlanOptions.map((plan) => {
+					const isSelected = pendingPlanId === plan.id;
+					const isCurrent = currentPlanId === plan.id;
+					const displayedAmount = getSubscriptionPlanAmount(
+						plan,
+						pendingBillingCycle,
+					);
+
+					return (
+						<button
+							key={plan.id}
+							type="button"
+							aria-pressed={isSelected}
+							onClick={() => onSelectPlan(plan.id)}
+							className={joinClasses(
+								"rounded-lg border p-4 text-left shadow-sm transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.16)]",
+								isSelected
+									? "border-[var(--skyblue)] bg-skyblue/10"
+									: "border-darknavy/10 bg-white hover:bg-offwhite",
+							)}
+						>
+							<span className="flex flex-wrap items-start justify-between gap-3">
+								<span className="min-w-0">
+									<span className="block text-base font-bold text-darknavy">
+										{plan.name}
+									</span>
+									<span className="mt-1 block text-sm font-semibold text-darknavy/62">
+										{plan.description}
+									</span>
+								</span>
+								<span className="text-right">
+									<span className="block text-sm font-bold text-darknavy">
+										{displayedAmount}
+									</span>
+									<span className="mt-1 block text-xs font-semibold uppercase text-darknavy/45">
+										{pendingBillingCycle}
+									</span>
+								</span>
+							</span>
+							<span className="mt-3 grid gap-1 text-xs font-semibold text-darknavy/55 sm:grid-cols-2">
+								<span>Monthly: {plan.monthlyAmount}</span>
+								<span>Yearly: {plan.yearlyAmount}</span>
+							</span>
+							<span className="mt-4 flex flex-wrap gap-2">
+								{isCurrent && currentBillingCycle === pendingBillingCycle ? (
+									<span className="rounded-md bg-emerald-500/14 px-2 py-1 text-xs font-bold text-emerald-700">
+										Current
+									</span>
+								) : null}
+								{isSelected ? (
+									<span className="rounded-md bg-skyblue/14 px-2 py-1 text-xs font-bold text-blue-700">
+										Selected
+									</span>
+								) : null}
+							</span>
+						</button>
+					);
+				})}
+			</div>
+		</ModuleDrawer>
+	);
+}
+
+function BranchesSection({
+	branchDrawerMode,
+	branchId,
+	company,
+	recordId,
+}: {
+	branchDrawerMode?: "add" | "edit";
+	branchId?: string;
+	company: MasterSubscriberManagementCompanyRecord;
+	recordId: string;
+}) {
+	const [branchSearch, setBranchSearch] = useState("");
+	const [statusFilter, setStatusFilter] = useState<
+		MasterSubscriberManagementBranchStatus | "All"
+	>("All");
+	const [typeFilter, setTypeFilter] = useState<
+		MasterSubscriberManagementBranchType | "All"
+	>("All");
+	const [branchStatusOverrides, setBranchStatusOverrides] = useState<
+		Record<string, MasterSubscriberManagementBranchStatus>
+	>({});
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 5,
+	});
+	const [sorting, setSorting] = useState<SortingState>([
+		{ id: "name", desc: false },
+	]);
+	const branches = useMemo(
+		() =>
+			createCompanyBranchRows(company).map((branch) => ({
+				...branch,
+				status: branchStatusOverrides[branch.id] ?? branch.status,
+			})),
+		[branchStatusOverrides, company],
+	);
 	const activeBranches = branches.filter(
 		(branch) => branch.status === "Active",
 	).length;
 	const inactiveBranches = branches.length - activeBranches;
+	const satelliteBranches = branches.filter(
+		(branch) => branch.type === "Satellite",
+	).length;
+	const filteredBranches = useMemo(() => {
+		const query = branchSearch.trim().toLowerCase();
+
+		return branches.filter((branch) => {
+			const matchesSearch =
+				!query ||
+				branch.name.toLowerCase().includes(query) ||
+				branch.address.toLowerCase().includes(query);
+			const matchesStatus =
+				statusFilter === "All" || branch.status === statusFilter;
+			const matchesType = typeFilter === "All" || branch.type === typeFilter;
+
+			return matchesSearch && matchesStatus && matchesType;
+		});
+	}, [branches, branchSearch, statusFilter, typeFilter]);
+	const columns = useMemo<ColumnDef<MasterSubscriberManagementBranchRecord>[]>(
+		() =>
+			MasterSubscriberBranchTableColumns.map((column) => {
+				if (!("key" in column)) {
+					return createActionColumn(column.label, column.className);
+				}
+
+				return createBranchColumn(column.key, column.label, column.className);
+			}),
+		[],
+	);
+	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
+	const table = useReactTable({
+		data: filteredBranches,
+		columns,
+		state: {
+			pagination,
+			sorting,
+		},
+		onPaginationChange: setPagination,
+		onSortingChange: setSorting,
+		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+	});
+	const selectedBranch = branchId
+		? branches.find((branch) => branch.id === branchId)
+		: undefined;
+
+	function resetFilters() {
+		setBranchSearch("");
+		setStatusFilter("All");
+		setTypeFilter("All");
+		table.setPageIndex(0);
+	}
+
+	function updateBranchSearch(value: string) {
+		setBranchSearch(value);
+		table.setPageIndex(0);
+	}
+
+	function updateBranchStatusFilter(
+		status: MasterSubscriberManagementBranchStatus | "All",
+	) {
+		setStatusFilter(status);
+		table.setPageIndex(0);
+	}
+
+	function updateBranchTypeFilter(
+		type: MasterSubscriberManagementBranchType | "All",
+	) {
+		setTypeFilter(type);
+		table.setPageIndex(0);
+	}
+
+	function updateBranchStatus(
+		branch: MasterSubscriberManagementBranchRecord,
+		status: MasterSubscriberManagementBranchStatus,
+	) {
+		setBranchStatusOverrides((current) => ({
+			...current,
+			[branch.id]: status,
+		}));
+	}
 
 	return (
 		<div className="grid gap-4">
-			<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+			<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
 				<CompactMetric icon={Building2} label="Total Branches" value={String(company.branchCount)} tone="blue" />
+				<CompactMetric icon={GitBranch} label="Satellite Branches" value={String(satelliteBranches)} tone="purple" />
 				<CompactMetric icon={CheckCircle2} label="Active Branches" value={String(activeBranches)} tone="emerald" />
 				<CompactMetric icon={Building2} label="Inactive Branches" value={String(inactiveBranches)} tone="orange" />
 				<CompactMetric icon={Users} label="Total Users Across Branches" value={String(company.userCount)} tone="purple" />
 			</div>
-			<div className="grid gap-3 md:grid-cols-[minmax(0,1.4fr)_minmax(12rem,0.8fr)_minmax(12rem,0.8fr)_auto]">
-				<SearchInput placeholder="Search branch name, address..." />
-				<SelectControl label="Status" />
-				<SelectControl label="Branch Type" />
-				<SmallButton icon={Filter}>Filters</SmallButton>
+			<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
+				<ModuleTable
+					emptyDescription="Try a different branch name, status, or type."
+					emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+					emptyTitle="No branches found"
+					minWidthClassName="min-w-[64rem]"
+					paginationLabel="branches"
+					paginationStorageKey={MasterSubscriberBranchPaginationStorageKey}
+					table={table}
+					toolbar={
+						<ModuleTableToolbar className="rounded-none border-x-0 border-t-0 shadow-none md:grid-cols-[minmax(20rem,1.6fr)_minmax(10rem,0.8fr)_minmax(10rem,0.8fr)_auto_auto]">
+							<ModuleTableSearch
+								label="Search branches"
+								onChange={updateBranchSearch}
+								placeholder="Search branch name, address..."
+								value={branchSearch}
+							/>
+							<ModuleTableFilterSelect
+								label="Status"
+								onChange={(value) =>
+									updateBranchStatusFilter(
+										value as MasterSubscriberManagementBranchStatus | "All",
+									)
+								}
+								options={createFilterOptions(
+									MasterSubscriberManagementBranchStatusOptions,
+								)}
+								value={statusFilter}
+							/>
+							<ModuleTableFilterSelect
+								label="Branch Type"
+								onChange={(value) =>
+									updateBranchTypeFilter(
+										value as MasterSubscriberManagementBranchType | "All",
+									)
+								}
+								options={createFilterOptions(
+									MasterSubscriberManagementBranchTypeOptions,
+								)}
+								value={typeFilter}
+							/>
+							<ModuleTableResetButton onClick={resetFilters}>
+								Reset
+							</ModuleTableResetButton>
+							<Link
+								href={getMasterSubscriberManagementBranchAddHref(
+									recordId,
+									company.id,
+								)}
+								className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-semibold text-white shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.18)] transition hover:opacity-90"
+							>
+								<Plus className="h-4 w-4" aria-hidden="true" />
+								Add Branch
+							</Link>
+						</ModuleTableToolbar>
+					}
+					variant="embedded"
+					renderRow={({ id, original }) => (
+						<BranchTableRow
+							key={id}
+							branch={original}
+							editHref={getMasterSubscriberManagementBranchEditHref(
+								recordId,
+								company.id,
+								original.id,
+							)}
+							onUpdateStatus={updateBranchStatus}
+						/>
+					)}
+				/>
 			</div>
-			<div className="overflow-x-auto rounded-lg border border-darknavy/10">
-				<table className="w-full min-w-[58rem] border-collapse text-left text-sm">
-					<thead className="bg-offwhite text-xs font-bold text-darknavy/70">
-						<tr>
-							<th className="px-4 py-4">Branch Name</th>
-							<th className="px-4 py-4">Address</th>
-							<th className="px-4 py-4">Users</th>
-							<th className="px-4 py-4">Status</th>
-							<th className="px-4 py-4">Added On</th>
-							<th className="px-4 py-4 text-center">Actions</th>
-						</tr>
-					</thead>
-					<tbody className="divide-y divide-darknavy/10">
-						{branches.map((branch) => (
-							<tr key={branch.id} className="transition hover:bg-skyblue/10">
-								<td className="px-4 py-4">
-									<div className="flex items-center gap-3">
-										<MasterSubscriberIcon
-											tone={branch.tone}
-											className="h-10 w-10"
-										/>
-										<span>
-											<span className="block font-bold text-darknavy">
-												{branch.name}
-											</span>
-											<span className="mt-1 block">
-												<MasterBranchTypeBadge type={branch.type} />
-											</span>
-										</span>
-									</div>
-								</td>
-								<td className="px-4 py-4 font-semibold leading-6 text-darknavy/72">
-									{branch.address}
-								</td>
-								<td className="px-4 py-4 font-bold text-darknavy">
-									<span className="inline-flex items-center gap-2">
-										<Users className="h-4 w-4 text-purple-600" aria-hidden="true" />
-										{branch.users}
-									</span>
-								</td>
-								<td className="px-4 py-4">
-									<MasterCompanyStatusBadge status={branch.status} />
-								</td>
-								<td className="px-4 py-4 font-semibold text-darknavy/72">
-									{branch.addedOn}
-								</td>
-								<td className="px-4 py-4">
-									<TableActions />
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
-			<TableFooter label="branches" total={branches.length} />
+			<MasterSubscriberBranchDrawer
+				key={`${branchDrawerMode ?? "closed"}-${branchId ?? "add"}`}
+				branch={selectedBranch}
+				branches={branches}
+				company={company}
+				isOpen={Boolean(branchDrawerMode)}
+				mode={branchDrawerMode ?? "add"}
+				recordId={recordId}
+			/>
 		</div>
+	);
+}
+
+function BranchTableRow({
+	branch,
+	editHref,
+	onUpdateStatus,
+}: {
+	branch: MasterSubscriberManagementBranchRecord;
+	editHref: string;
+	onUpdateStatus: (
+		branch: MasterSubscriberManagementBranchRecord,
+		status: MasterSubscriberManagementBranchStatus,
+	) => void;
+}) {
+	const nextStatus = branch.status === "Active" ? "Inactive" : "Active";
+
+	return (
+		<tr className="module-table-row">
+			<td>
+				<div className="flex items-center gap-3">
+					<MasterSubscriberIcon tone={branch.tone} className="h-10 w-10" />
+					<span>
+						<span className="block font-bold text-darknavy">
+							{branch.name}
+						</span>
+						<span className="mt-1 block">
+							<MasterBranchTypeBadge type={branch.type} />
+						</span>
+					</span>
+				</div>
+			</td>
+			<td className="font-semibold leading-6 text-darknavy/72">
+				{branch.address}
+			</td>
+			<td className="font-bold text-darknavy">
+				<span className="inline-flex items-center gap-2">
+					<Users className="h-4 w-4 text-purple-600" aria-hidden="true" />
+					{branch.users}
+				</span>
+			</td>
+			<td>
+				<MasterBranchStatusBadge status={branch.status} />
+			</td>
+			<td className="font-semibold text-darknavy/72">{branch.addedOn}</td>
+			<td>
+				<ModuleTableActions className="justify-center">
+					<ModuleTableActionLink
+						variant="edit"
+						href={editHref}
+						label={`Edit ${branch.name}`}
+					/>
+					<ModuleTableActionButton
+						variant={nextStatus === "Inactive" ? "inactive" : "active"}
+						label={`Set as ${nextStatus}`}
+						onClick={() => onUpdateStatus(branch, nextStatus)}
+					/>
+				</ModuleTableActions>
+			</td>
+		</tr>
 	);
 }
 
@@ -628,15 +1247,25 @@ type CompanyInformationEditValues = {
 	address: string;
 	contactEmail: string;
 	contactNumber: string;
+	firstName: string;
 	industry: string;
+	industryOther: string;
+	lastName: string;
+	middleName: string;
 	name: string;
 	reportEndDate: string;
 	reportStartDate: string;
-	reportYearBasis: "Calendar Year";
 	status: MasterSubscriberManagementCompanyRecord["status"];
+	taxpayerType: MasterSubscriberManagementTaxpayerType;
 	tin: string;
 	website: string;
 };
+
+type CompanyIndustryOption = (typeof OnboardingNonIndividualTypeOptions)[number];
+
+function getCompanyInformationEditFormId(companyId: string) {
+	return `master-subscriber-company-information-${companyId}-form`;
+}
 
 function CompanyInformationEditSection({
 	company,
@@ -654,12 +1283,8 @@ function CompanyInformationEditSection({
 		"company-information",
 		company.id,
 	);
-	const reportRangeLabel =
-		values.reportStartDate && values.reportEndDate
-			? `${formatCompanyReportDate(values.reportStartDate)} to ${formatCompanyReportDate(
-					values.reportEndDate,
-				)}`
-			: "";
+	const isIndividual = values.taxpayerType === "individual";
+	const isOtherIndustry = values.industry === "Others";
 
 	function updateField<Key extends keyof CompanyInformationEditValues>(
 		field: Key,
@@ -668,6 +1293,14 @@ function CompanyInformationEditSection({
 		setValues((current) => ({
 			...current,
 			[field]: value,
+		}));
+	}
+
+	function updateIndustry(value: string) {
+		setValues((current) => ({
+			...current,
+			industry: value,
+			industryOther: value === "Others" ? current.industryOther : "",
 		}));
 	}
 
@@ -690,6 +1323,7 @@ function CompanyInformationEditSection({
 	return (
 		<form
 			className="grid gap-4"
+			id={getCompanyInformationEditFormId(company.id)}
 			onSubmit={(event) => event.preventDefault()}
 		>
 			<div className="grid gap-4 xl:grid-cols-3">
@@ -713,119 +1347,199 @@ function CompanyInformationEditSection({
 				/>
 			</div>
 			<Panel title="Edit Company Information">
-				<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)]">
-					<div className="grid gap-4 md:grid-cols-2">
-						<CompanyEditField label="Company Name">
-							<input
-								className={CompanyEditInputClassName}
-								name="name"
-								onChange={(event) => updateField("name", event.target.value)}
-								value={values.name}
-							/>
-						</CompanyEditField>
-						<CompanyEditField label="Contact Email">
-							<input
-								className={CompanyEditInputClassName}
-								name="contactEmail"
-								onChange={(event) =>
-									updateField("contactEmail", event.target.value)
-								}
-								type="email"
-								value={values.contactEmail}
-							/>
-						</CompanyEditField>
-						<CompanyEditField label="Contact No.">
-							<input
-								className={CompanyEditInputClassName}
-								name="contactNumber"
-								onChange={(event) =>
-									updateField("contactNumber", event.target.value)
-								}
-								type="tel"
-								value={values.contactNumber}
-							/>
-						</CompanyEditField>
-						<CompanyEditField label="Website">
-							<input
-								className={CompanyEditInputClassName}
-								name="website"
-								onChange={(event) => updateField("website", event.target.value)}
-								type="url"
-								value={values.website}
-							/>
-						</CompanyEditField>
-						<CompanyEditField label="Industry">
-							<input
-								className={CompanyEditInputClassName}
-								name="industry"
-								onChange={(event) => updateField("industry", event.target.value)}
-								value={values.industry}
-							/>
-						</CompanyEditField>
-						<CompanyEditField label="TIN">
-							<input
-								className={CompanyEditInputClassName}
-								name="tin"
-								onChange={(event) => updateField("tin", event.target.value)}
-								value={values.tin}
-							/>
-						</CompanyEditField>
-						<CompanyEditField label="Status">
-							<select
-								className={CompanyEditInputClassName}
-								name="status"
-								onChange={(event) =>
-									updateField(
-										"status",
-										event.target
-											.value as MasterSubscriberManagementCompanyRecord["status"],
-									)
-								}
-								value={values.status}
-							>
-								<option value="Active">Active</option>
-								<option value="Inactive">Inactive</option>
-							</select>
-						</CompanyEditField>
-					</div>
-					<div className="border-darknavy/10 lg:border-l lg:pl-6">
+				<div className="grid gap-6">
+					<div className="grid gap-4">
+						<CompanyEditTaxpayerTypeToggle
+							value={values.taxpayerType}
+							onChange={(taxpayerType) =>
+								updateField("taxpayerType", taxpayerType)
+							}
+						/>
+						{isIndividual ? (
+							<div className="grid gap-4 lg:grid-cols-3">
+								<CompanyEditField label="Last Name">
+									<input
+										className={CompanyEditInputClassName}
+										name="lastName"
+										onChange={(event) =>
+											updateField("lastName", event.target.value)
+										}
+										value={values.lastName ?? ""}
+									/>
+								</CompanyEditField>
+								<CompanyEditField label="First Name">
+									<input
+										className={CompanyEditInputClassName}
+										name="firstName"
+										onChange={(event) =>
+											updateField("firstName", event.target.value)
+										}
+										value={values.firstName ?? ""}
+									/>
+								</CompanyEditField>
+								<CompanyEditField label="Middle Name">
+									<input
+										className={CompanyEditInputClassName}
+										name="middleName"
+										onChange={(event) =>
+											updateField("middleName", event.target.value)
+										}
+										value={values.middleName ?? ""}
+									/>
+								</CompanyEditField>
+							</div>
+						) : (
+							<div className="grid gap-4">
+								<CompanyEditField label="Company Name">
+									<input
+										className={CompanyEditInputClassName}
+										name="name"
+										onChange={(event) =>
+											updateField("name", event.target.value)
+										}
+										value={values.name ?? ""}
+									/>
+								</CompanyEditField>
+								<div
+									className={joinClasses(
+										"grid gap-4",
+										isOtherIndustry ? "md:grid-cols-2" : "md:grid-cols-1",
+									)}
+								>
+									<CompanyEditField label="Industry">
+										<select
+											className={CompanyEditInputClassName}
+											name="industry"
+											onChange={(event) =>
+												updateIndustry(event.target.value)
+											}
+											value={values.industry ?? ""}
+										>
+											<option value="">Select...</option>
+											{OnboardingNonIndividualTypeOptions.map((option) => (
+												<option key={option} value={option}>
+													{option}
+												</option>
+											))}
+										</select>
+									</CompanyEditField>
+									{isOtherIndustry ? (
+										<CompanyEditField label="Please Specify">
+											<input
+												className={CompanyEditInputClassName}
+												name="industryOther"
+												onChange={(event) =>
+													updateField(
+														"industryOther",
+														event.target.value,
+													)
+												}
+												placeholder="Specify industry"
+												value={values.industryOther ?? ""}
+											/>
+										</CompanyEditField>
+									) : null}
+								</div>
+							</div>
+						)}
+						<div className="grid gap-4 lg:grid-cols-3">
+							<CompanyEditField label="Contact Email">
+								<input
+									className={CompanyEditInputClassName}
+									name="contactEmail"
+									onChange={(event) =>
+										updateField("contactEmail", event.target.value)
+									}
+									type="email"
+									value={values.contactEmail ?? ""}
+								/>
+							</CompanyEditField>
+							<CompanyEditField label="Contact No.">
+								<input
+									className={CompanyEditInputClassName}
+									inputMode="numeric"
+									maxLength={16}
+									name="contactNumber"
+									onChange={(event) =>
+										updateField(
+											"contactNumber",
+											FormatPhilippineContactNumber(
+												event.target.value,
+											),
+										)
+									}
+									onFocus={() => {
+										if (!values.contactNumber) {
+											updateField(
+												"contactNumber",
+												DefaultPhilippineContactNumber,
+											);
+										}
+									}}
+									placeholder={PhilippineContactNumberPlaceholder}
+									type="tel"
+									value={values.contactNumber ?? ""}
+								/>
+							</CompanyEditField>
+							<CompanyEditField label="TIN">
+								<input
+									className={CompanyEditInputClassName}
+									inputMode="numeric"
+									maxLength={15}
+									name="tin"
+									onChange={(event) =>
+										updateField("tin", FormatTinNumber(event.target.value))
+									}
+									placeholder="123-456-789-000"
+									value={values.tin ?? ""}
+								/>
+							</CompanyEditField>
+						</div>
 						<CompanyEditField label="Address">
 							<textarea
 								className={CompanyEditTextAreaClassName}
 								name="address"
 								onChange={(event) => updateField("address", event.target.value)}
-								rows={7}
-								value={values.address}
+								rows={5}
+								value={values.address ?? ""}
 							/>
 						</CompanyEditField>
-						<div className="mt-6 border-t border-darknavy/10 pt-5">
-							<DetailRow label="Date Added" value={company.dateAdded} />
+						<div className="grid gap-4 md:grid-cols-2">
+							<CompanyEditField label="Website">
+								<input
+									className={CompanyEditInputClassName}
+									name="website"
+									onChange={(event) =>
+										updateField("website", event.target.value)
+									}
+									type="url"
+									value={values.website ?? ""}
+								/>
+							</CompanyEditField>
+							<CompanyEditField label="Status">
+								<select
+									className={CompanyEditInputClassName}
+									name="status"
+									onChange={(event) =>
+										updateField(
+											"status",
+											event.target
+												.value as MasterSubscriberManagementCompanyRecord["status"],
+										)
+									}
+									value={values.status ?? "Active"}
+								>
+									<option value="Active">Active</option>
+									<option value="Inactive">Inactive</option>
+								</select>
+							</CompanyEditField>
 						</div>
+						<DetailRow label="Date Added" value={company.dateAdded} />
 					</div>
 				</div>
 			</Panel>
 			<Panel title="Reporting Period" icon={CalendarDays}>
-				<input
-					name="reportYearBasis"
-					type="hidden"
-					value={values.reportYearBasis}
-				/>
-				<div className="grid gap-4 md:grid-cols-3">
-					<CompanyEditField label="Report Year Basis">
-						<select
-							className={CompanyEditInputClassName}
-							name="reportYearBasisDisplay"
-							onChange={(event) =>
-								updateField(
-									"reportYearBasis",
-									event.target.value as CompanyInformationEditValues["reportYearBasis"],
-								)
-							}
-							value={values.reportYearBasis}
-						>
-							<option value="Calendar Year">Calendar Year</option>
-						</select>
-					</CompanyEditField>
+				<div className="grid gap-4 md:grid-cols-2">
 					<CompanyEditField label="Reporting Year Start Date">
 						<input
 							className={CompanyEditInputClassName}
@@ -845,11 +1559,6 @@ function CompanyInformationEditSection({
 						/>
 					</CompanyEditField>
 				</div>
-				{reportRangeLabel ? (
-					<p className="mt-3 text-sm font-semibold text-darknavy/65">
-						{reportRangeLabel}
-					</p>
-				) : null}
 			</Panel>
 			<Panel title="Current Plan" icon={CreditCard}>
 				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -888,15 +1597,580 @@ function CompanyInformationEditSection({
 	);
 }
 
+function MasterSubscriberBranchDrawer({
+	branch,
+	branches,
+	company,
+	isOpen,
+	mode,
+	recordId,
+}: {
+	branch?: MasterSubscriberManagementBranchRecord;
+	branches: MasterSubscriberManagementBranchRecord[];
+	company: MasterSubscriberManagementCompanyRecord;
+	isOpen: boolean;
+	mode: "add" | "edit";
+	recordId: string;
+}) {
+	const router = useRouter();
+	const backHref = getMasterSubscriberManagementSectionHref(
+		recordId,
+		"branches",
+		company.id,
+	);
+	const formId = `master-subscriber-${company.id}-branch-${mode}-form`;
+	const [values, setValues] =
+		useState<MasterSubscriberManagementBranchFormValues>(() =>
+			createMasterSubscriberManagementBranchFormValues(
+				company,
+				branches,
+				branch,
+			),
+		);
+	const [errors, setErrors] =
+		useState<MasterSubscriberManagementBranchFormErrors>({});
+	const mainBranchOptions = branches.filter(
+		(currentBranch) => currentBranch.isMain && currentBranch.id !== branch?.id,
+	);
+	const isMissingEditBranch = mode === "edit" && !branch;
+	const drawerTitle =
+		mode === "edit"
+			? branch
+				? `Edit ${branch.name}`
+				: "Edit Branch"
+			: "Add Branch";
+
+	function closeDrawer() {
+		router.push(backHref);
+	}
+
+	function updateField<
+		Key extends keyof MasterSubscriberManagementBranchFormValues,
+	>(
+		field: Key,
+		value: MasterSubscriberManagementBranchFormValues[Key],
+	) {
+		setValues((current) => {
+			const nextValues = {
+				...current,
+				[field]: value,
+			};
+
+			if (field === "type") {
+				const nextType = value as MasterSubscriberManagementBranchType;
+
+				nextValues.isMain = nextType === "Head Office";
+				nextValues.linkedMainBranchId =
+					nextType === "Satellite"
+						? current.linkedMainBranchId || mainBranchOptions[0]?.id || ""
+						: "";
+			}
+
+			return nextValues;
+		});
+		setErrors((current) => ({ ...current, [field]: undefined }));
+	}
+
+	function handleInputChange(
+		event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+	) {
+		const field =
+			event.target.name as keyof MasterSubscriberManagementBranchFormValues;
+		const value =
+			field === "tin"
+				? FormatTinNumber(event.target.value)
+				: field === "contactNumber"
+					? FormatPhilippineContactNumber(event.target.value)
+					: event.target.value;
+
+		updateField(
+			field,
+			value as MasterSubscriberManagementBranchFormValues[typeof field],
+		);
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		const nextErrors = validateMasterSubscriberManagementBranchForm(values);
+
+		setErrors(nextErrors);
+
+		if (Object.keys(nextErrors).length > 0) {
+			return;
+		}
+
+		closeDrawer();
+	}
+
+	return (
+		<ModuleDrawer
+			description={`${company.name} / ${mode === "edit" ? "Update branch details" : "Create a branch record"}`}
+			eyebrow="Subscriber branch management"
+			footer={
+				<div className="flex flex-col justify-end gap-2 sm:flex-row">
+					<button
+						type="button"
+						onClick={closeDrawer}
+						className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-bold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10"
+					>
+						<X className="h-4 w-4" aria-hidden="true" />
+						Cancel
+					</button>
+					<button
+						type="submit"
+						form={formId}
+						disabled={isMissingEditBranch}
+						className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-bold text-white shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.18)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+					>
+						<Save className="h-4 w-4" aria-hidden="true" />
+						{mode === "edit" ? "Save Changes" : "Save Branch"}
+					</button>
+				</div>
+			}
+			isOpen={isOpen}
+			maxWidthClassName="max-w-3xl"
+			onClose={closeDrawer}
+			title={drawerTitle}
+		>
+			{isMissingEditBranch ? (
+				<div className="p-6">
+					<div className="rounded-lg border border-dashed border-darknavy/15 bg-offwhite/60 p-5 text-sm font-semibold text-darknavy/60">
+						The selected branch is not available for this company.
+					</div>
+				</div>
+			) : (
+				<form
+					id={formId}
+					onSubmit={handleSubmit}
+					className="grid gap-6 p-6"
+				>
+					<SubscriberBranchFormSection title="Company">
+						<SubscriberBranchTextField
+							isReadonly
+							label="Company"
+							value={company.name}
+						/>
+						<SubscriberBranchSelectField
+							label="Status"
+							name="status"
+							options={MasterSubscriberManagementBranchStatusOptions}
+							value={values.status}
+							onChange={(value) =>
+								updateField(
+									"status",
+									value as MasterSubscriberManagementBranchStatus,
+								)
+							}
+						/>
+					</SubscriberBranchFormSection>
+					<SubscriberBranchFormSection title="Branch">
+						<SubscriberBranchSelectField
+							label="Branch Type"
+							name="type"
+							options={MasterSubscriberManagementBranchTypeOptions}
+							value={values.type}
+							onChange={(value) =>
+								updateField(
+									"type",
+									value as MasterSubscriberManagementBranchType,
+								)
+							}
+						/>
+						<SubscriberBranchTextField
+							error={errors.name}
+							label="Name"
+							name="name"
+							required
+							value={values.name}
+							onChange={handleInputChange}
+						/>
+						<SubscriberBranchTextField
+							error={errors.tin}
+							inputMode="numeric"
+							label="TIN"
+							maxLength={15}
+							name="tin"
+							required
+							value={values.tin}
+							onChange={handleInputChange}
+						/>
+						<SubscriberBranchSelectField
+							error={errors.linkedMainBranchId}
+							isReadonly={values.type !== "Satellite"}
+							label="Linked Main Branch"
+							name="linkedMainBranchId"
+							options={[
+								{ label: "No linked branch", value: "" },
+								...mainBranchOptions.map((currentBranch) => ({
+									label: currentBranch.name,
+									value: currentBranch.id,
+								})),
+							]}
+							value={values.linkedMainBranchId}
+							onChange={(value) =>
+								updateField("linkedMainBranchId", value)
+							}
+						/>
+						<label className="flex min-h-11 items-center gap-3 rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy/70 shadow-sm">
+							<input
+								type="checkbox"
+								checked={values.isMain}
+								disabled={values.type === "Satellite"}
+								onChange={(event) =>
+									updateField("isMain", event.target.checked)
+								}
+								className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+							/>
+							Main branch
+						</label>
+					</SubscriberBranchFormSection>
+					<SubscriberBranchFormSection title="Contact">
+						<SubscriberBranchTextField
+							error={errors.email}
+							label="Email"
+							name="email"
+							required
+							type="email"
+							value={values.email}
+							onChange={handleInputChange}
+						/>
+						<SubscriberBranchTextField
+							error={errors.contactNumber}
+							inputMode="numeric"
+							label="Contact Number"
+							maxLength={16}
+							name="contactNumber"
+							required
+							type="tel"
+							value={values.contactNumber}
+							onChange={handleInputChange}
+							onFocus={() => {
+								if (!values.contactNumber) {
+									updateField(
+										"contactNumber",
+										DefaultPhilippineContactNumber,
+									);
+								}
+							}}
+							placeholder={PhilippineContactNumberPlaceholder}
+						/>
+					</SubscriberBranchFormSection>
+					<SubscriberBranchTextAreaField
+						error={errors.address}
+						label="Address"
+						name="address"
+						required
+						value={values.address}
+						onChange={handleInputChange}
+					/>
+				</form>
+			)}
+		</ModuleDrawer>
+	);
+}
+
+const SubscriberBranchControlClassName =
+	"h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition placeholder:text-darknavy/35 focus:border-[rgb(var(--skyblue-rgb)/0.45)] focus:ring-4 focus:ring-[rgb(var(--skyblue-rgb)/0.16)] disabled:cursor-not-allowed disabled:bg-offwhite disabled:text-darknavy/45";
+
+function SubscriberBranchFormSection({
+	children,
+	title,
+}: {
+	children: ReactNode;
+	title: string;
+}) {
+	return (
+		<section className="grid gap-4 border-b border-darknavy/10 pb-6 last:border-b-0 last:pb-0">
+			<h2 className="text-sm font-semibold uppercase text-darknavy/45">
+				{title}
+			</h2>
+			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+				{children}
+			</div>
+		</section>
+	);
+}
+
+function SubscriberBranchTextField({
+	error,
+	inputMode,
+	isReadonly = false,
+	label,
+	maxLength,
+	name,
+	placeholder,
+	required = false,
+	type = "text",
+	value,
+	onChange,
+	onFocus,
+}: {
+	error?: string;
+	inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
+	isReadonly?: boolean;
+	label: string;
+	maxLength?: number;
+	name?: keyof MasterSubscriberManagementBranchFormValues;
+	placeholder?: string;
+	required?: boolean;
+	type?: InputHTMLAttributes<HTMLInputElement>["type"];
+	value: string;
+	onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+	onFocus?: () => void;
+}) {
+	return (
+		<label className="grid gap-2">
+			<span className="text-sm font-semibold text-darknavy/62">
+				{label}
+			</span>
+			<input
+				aria-invalid={Boolean(error)}
+				disabled={isReadonly}
+				inputMode={inputMode}
+				maxLength={maxLength}
+				name={name}
+				onChange={onChange}
+				onFocus={onFocus}
+				placeholder={placeholder}
+				required={required}
+				type={type}
+				value={value}
+				className={SubscriberBranchControlClassName}
+			/>
+			<FieldError message={error} />
+		</label>
+	);
+}
+
+function SubscriberBranchSelectField({
+	error,
+	isReadonly = false,
+	label,
+	name,
+	options,
+	value,
+	onChange,
+}: {
+	error?: string;
+	isReadonly?: boolean;
+	label: string;
+	name?: keyof MasterSubscriberManagementBranchFormValues;
+	options: readonly (string | { label: string; value: string })[];
+	value: string;
+	onChange?: (value: string) => void;
+}) {
+	const resolvedOptions = options.map((option) =>
+		typeof option === "string" ? { label: option, value: option } : option,
+	);
+
+	return (
+		<label className="grid gap-2">
+			<span className="text-sm font-semibold text-darknavy/62">
+				{label}
+			</span>
+			<select
+				aria-invalid={Boolean(error)}
+				disabled={isReadonly || resolvedOptions.length === 0}
+				name={name}
+				onChange={(event) => onChange?.(event.target.value)}
+				value={value}
+				className={joinClasses(
+					SubscriberBranchControlClassName,
+					"app-select-control",
+				)}
+			>
+				{resolvedOptions.length === 0 ? (
+					<option value="">No options</option>
+				) : null}
+				{resolvedOptions.map((option) => (
+					<option key={option.value} value={option.value}>
+						{option.label}
+					</option>
+				))}
+			</select>
+			<FieldError message={error} />
+		</label>
+	);
+}
+
+function SubscriberBranchTextAreaField({
+	error,
+	label,
+	name,
+	required = false,
+	value,
+	onChange,
+}: {
+	error?: string;
+	label: string;
+	name?: keyof MasterSubscriberManagementBranchFormValues;
+	required?: boolean;
+	value: string;
+	onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void;
+}) {
+	return (
+		<label className="grid gap-2">
+			<span className="text-sm font-semibold text-darknavy/62">
+				{label}
+			</span>
+			<textarea
+				aria-invalid={Boolean(error)}
+				className={joinClasses(SubscriberBranchControlClassName, "min-h-28 py-3")}
+				name={name}
+				onChange={onChange}
+				required={required}
+				rows={4}
+				value={value}
+			/>
+			<FieldError message={error} />
+		</label>
+	);
+}
+
+function FieldError({ message }: { message?: string }) {
+	if (!message) {
+		return null;
+	}
+
+	return <span className="text-xs font-semibold text-coralpink">{message}</span>;
+}
+
 function UsersSection({
 	company,
+	recordId,
+	userDrawerMode,
+	userId,
 }: {
 	company: MasterSubscriberManagementCompanyRecord;
+	recordId: string;
+	userDrawerMode?: "add" | "edit" | "view";
+	userId?: string;
 }) {
-	const users = createCompanyUserRows(company);
+	const [query, setQueryState] = useState("");
+	const [statusFilter, setStatusFilterState] = useState<
+		MasterSubscriberManagementUserStatus | "All"
+	>("All");
+	const [branchFilter, setBranchFilterState] = useState("All");
+	const [userStatusOverrides, setUserStatusOverrides] = useState<
+		Record<string, MasterSubscriberManagementUserStatus>
+	>({});
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 5,
+	});
+	const [sorting, setSorting] = useState<SortingState>([
+		{ id: "name", desc: false },
+	]);
+	const users = useMemo(
+		() =>
+			createCompanyUserRows(company).map((user) => ({
+				...user,
+				status: userStatusOverrides[user.id] ?? user.status,
+			})),
+		[company, userStatusOverrides],
+	);
+	const branchOptions = useMemo(
+		() =>
+			Array.from(new Set(users.flatMap((user) => user.branchAccess))).sort(),
+		[users],
+	);
 	const activeUsers = users.filter((user) => user.status === "Active").length;
 	const inactiveUsers = users.filter((user) => user.status === "Inactive").length;
 	const invitedUsers = users.filter((user) => user.status === "Invited").length;
+	const filteredUsers = useMemo(() => {
+		const normalizedQuery = query.trim().toLowerCase();
+
+		return users.filter((user) => {
+			const searchable = [
+				user.name,
+				user.email,
+				user.phone,
+				user.status,
+				user.branchAccess.join(" "),
+			]
+				.join(" ")
+				.toLowerCase();
+			const matchesSearch =
+				!normalizedQuery || searchable.includes(normalizedQuery);
+			const matchesStatus =
+				statusFilter === "All" || user.status === statusFilter;
+			const matchesBranch =
+				branchFilter === "All" || user.branchAccess.includes(branchFilter);
+
+			return matchesSearch && matchesStatus && matchesBranch;
+		});
+	}, [branchFilter, query, statusFilter, users]);
+	const columns = useMemo<ColumnDef<MasterSubscriberManagementUserRecord>[]>(
+		() =>
+			MasterSubscriberUserTableColumns.map((column) => {
+				if (!("key" in column)) {
+					return createActionColumn(column.label, column.className);
+				}
+
+				return createUserColumn(column.key, column.label, column.className);
+			}),
+		[],
+	);
+	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
+	const table = useReactTable({
+		data: filteredUsers,
+		columns,
+		state: {
+			pagination,
+			sorting,
+		},
+		onPaginationChange: setPagination,
+		onSortingChange: setSorting,
+		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+	});
+	const selectedUser = userId
+		? users.find((user) => user.id === userId)
+		: undefined;
+	const availableBranches = useMemo(
+		() => createCompanyBranchRows(company),
+		[company],
+	);
+
+	function resetFilters() {
+		setQueryState("");
+		setStatusFilterState("All");
+		setBranchFilterState("All");
+		table.setPageIndex(0);
+	}
+
+	function updateQuery(value: string) {
+		setQueryState(value);
+		table.setPageIndex(0);
+	}
+
+	function updateStatusFilter(
+		status: MasterSubscriberManagementUserStatus | "All",
+	) {
+		setStatusFilterState(status);
+		table.setPageIndex(0);
+	}
+
+	function updateBranchFilter(branch: string) {
+		setBranchFilterState(branch);
+		table.setPageIndex(0);
+	}
+
+	function sendInvitation(user: MasterSubscriberManagementUserRecord) {
+		setUserStatusOverrides((current) => ({
+			...current,
+			[user.id]: "Invited",
+		}));
+	}
+
+	function toggleUserStatus(user: MasterSubscriberManagementUserRecord) {
+		setUserStatusOverrides((current) => ({
+			...current,
+			[user.id]: user.status === "Active" ? "Inactive" : "Active",
+		}));
+	}
 
 	return (
 		<div className="grid gap-4">
@@ -906,85 +2180,518 @@ function UsersSection({
 				<CompactMetric icon={Users} label="Inactive Users" value={String(inactiveUsers)} helper={getStatusPercent(inactiveUsers, users.length)} tone="orange" />
 				<CompactMetric icon={Mail} label="Invited Users" value={String(invitedUsers)} helper={getStatusPercent(invitedUsers, users.length)} tone="blue" />
 			</div>
-			<div className="grid gap-3 md:grid-cols-[minmax(0,1.5fr)_minmax(12rem,0.8fr)_minmax(12rem,0.8fr)_auto_auto]">
-				<SearchInput placeholder="Search by name, email or phone..." />
-				<SelectControl label="Status" />
-				<SelectControl label="Branch Access" value="All Branches" />
-				<SmallButton icon={Filter}>Filters</SmallButton>
-				<SmallButton>Clear</SmallButton>
+			<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
+				<ModuleTable
+					emptyDescription="Try a different name, email, status, or branch."
+					emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+					emptyTitle="No users found"
+					minWidthClassName="min-w-[72rem]"
+					paginationLabel="users"
+					paginationStorageKey={MasterSubscriberUserPaginationStorageKey}
+					table={table}
+					toolbar={
+						<ModuleTableToolbar className="rounded-none border-x-0 border-t-0 shadow-none md:grid-cols-[minmax(22rem,1.5fr)_minmax(10rem,0.8fr)_minmax(12rem,0.8fr)_auto_auto]">
+							<ModuleTableSearch
+								label="Search users"
+								onChange={updateQuery}
+								placeholder="Search by name, email or phone..."
+								value={query}
+							/>
+							<ModuleTableFilterSelect
+								label="Status"
+								onChange={(value) =>
+									updateStatusFilter(
+										value as MasterSubscriberManagementUserStatus | "All",
+									)
+								}
+								options={createFilterOptions(
+									MasterSubscriberManagementUserStatusOptions,
+								)}
+								value={statusFilter}
+							/>
+							<ModuleTableFilterSelect
+								label="Branch Access"
+								onChange={updateBranchFilter}
+								options={createFilterOptions(branchOptions)}
+								value={branchFilter}
+							/>
+							<ModuleTableResetButton onClick={resetFilters}>
+								Reset
+							</ModuleTableResetButton>
+							<Link
+								href={getMasterSubscriberManagementUserAddHref(
+									recordId,
+									company.id,
+								)}
+								className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-semibold text-white shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.18)] transition hover:opacity-90"
+							>
+								<Plus className="h-4 w-4" aria-hidden="true" />
+								Add User
+							</Link>
+						</ModuleTableToolbar>
+					}
+					variant="embedded"
+					renderRow={({ id, original }) => (
+						<UserTableRow
+							key={id}
+							onSendInvitation={sendInvitation}
+							onToggleStatus={toggleUserStatus}
+							user={original}
+							editHref={getMasterSubscriberManagementUserEditHref(
+								recordId,
+								company.id,
+								original.id,
+							)}
+							viewHref={getMasterSubscriberManagementUserViewHref(
+								recordId,
+								company.id,
+								original.id,
+							)}
+						/>
+					)}
+				/>
 			</div>
-			<div className="overflow-x-auto rounded-lg border border-darknavy/10">
-				<table className="w-full min-w-[64rem] border-collapse text-left text-sm">
-					<thead className="bg-offwhite text-xs font-bold text-darknavy/70">
-						<tr>
-							<th className="px-4 py-4">User</th>
-							<th className="px-4 py-4">Email</th>
-							<th className="px-4 py-4">Branch Access</th>
-							<th className="px-4 py-4">Status</th>
-							<th className="px-4 py-4">Last Active</th>
-							<th className="px-4 py-4">Added On</th>
-							<th className="px-4 py-4 text-center">Actions</th>
-						</tr>
-					</thead>
-					<tbody className="divide-y divide-darknavy/10">
-						{users.map((user) => (
-							<tr key={user.id} className="transition hover:bg-skyblue/10">
-								<td className="px-4 py-4">
-									<div className="flex items-center gap-3">
-										<MasterSubscriberInitialsAvatar
-											initials={user.initials}
-											tone={user.avatarTone}
-										/>
-										<span>
-											<span className="block font-bold text-darknavy">
-												{user.name}
-											</span>
-											<span className="mt-1 block text-xs font-semibold text-darknavy/60">
-												{user.phone}
-											</span>
-										</span>
-									</div>
-								</td>
-								<td className="px-4 py-4 font-medium text-darknavy/72">
-									{user.email}
-								</td>
-								<td className="px-4 py-4">
-									<div className="flex flex-wrap gap-1.5">
-										{user.branchAccess.map((branch) => (
-											<span
-												key={branch}
-												className="rounded-md bg-skyblue/12 px-2 py-1 text-xs font-bold text-blue-700"
-											>
-												{branch}
-											</span>
-										))}
-									</div>
-								</td>
-								<td className="px-4 py-4">
-									<MasterUserStatusBadge status={user.status} />
-								</td>
-								<td className="px-4 py-4 font-semibold text-darknavy/72">
-									<span className="block">{user.lastActiveDate}</span>
-									<span className="block">{user.lastActiveTime}</span>
-								</td>
-								<td className="px-4 py-4 font-semibold text-darknavy/72">
-									{user.addedOn}
-								</td>
-								<td className="px-4 py-4">
-									<TableActions />
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
-			<TableFooter
-				label="users"
-				total={users.length}
-				pages={Math.ceil(users.length / 5)}
+			<MasterSubscriberUserDrawer
+				key={`${userDrawerMode ?? "closed"}-${userId ?? "add"}`}
+				availableBranches={availableBranches}
+				company={company}
+				isOpen={Boolean(userDrawerMode)}
+				mode={userDrawerMode ?? "add"}
+				recordId={recordId}
+				user={selectedUser}
 			/>
 		</div>
 	);
+}
+
+function UserTableRow({
+	editHref,
+	onSendInvitation,
+	onToggleStatus,
+	user,
+	viewHref,
+}: {
+	editHref: string;
+	onSendInvitation: (user: MasterSubscriberManagementUserRecord) => void;
+	onToggleStatus: (user: MasterSubscriberManagementUserRecord) => void;
+	user: MasterSubscriberManagementUserRecord;
+	viewHref: string;
+}) {
+	return (
+		<tr className="module-table-row">
+			<td>
+				<div className="flex items-center gap-3">
+					<MasterSubscriberInitialsAvatar
+						initials={user.initials}
+						tone={user.avatarTone}
+					/>
+					<span>
+						<span className="block font-bold text-darknavy">
+							{user.name}
+						</span>
+						<span className="mt-1 block text-xs font-semibold text-darknavy/60">
+							{user.phone}
+						</span>
+					</span>
+				</div>
+			</td>
+			<td className="font-medium text-darknavy/72">{user.email}</td>
+			<td>
+				<div className="flex flex-wrap gap-1.5">
+					{user.branchAccess.map((branch) => (
+						<span
+							key={branch}
+							className="rounded-md bg-skyblue/12 px-2 py-1 text-xs font-bold text-blue-700"
+						>
+							{branch}
+						</span>
+					))}
+				</div>
+			</td>
+			<td>
+				<MasterUserStatusBadge status={user.status} />
+			</td>
+			<td className="font-semibold text-darknavy/72">
+				<span className="block">{user.lastActiveDate}</span>
+				<span className="block">{user.lastActiveTime}</span>
+			</td>
+			<td className="font-semibold text-darknavy/72">{user.addedOn}</td>
+			<td>
+				<UserRecordActions
+					editHref={editHref}
+					onSendInvitation={() => onSendInvitation(user)}
+					onToggleStatus={() => onToggleStatus(user)}
+					user={user}
+					viewHref={viewHref}
+				/>
+			</td>
+		</tr>
+	);
+}
+
+function UserRecordActions({
+	editHref,
+	onSendInvitation,
+	onToggleStatus,
+	user,
+	viewHref,
+}: {
+	editHref: string;
+	onSendInvitation: () => void;
+	onToggleStatus: () => void;
+	user: MasterSubscriberManagementUserRecord;
+	viewHref: string;
+}) {
+	const isActive = user.status === "Active";
+	const ToggleIcon = isActive ? ToggleLeft : ToggleRight;
+	const nextStatus = isActive ? "Inactive" : "Active";
+
+	return (
+		<ModuleTableActions className="justify-center">
+			<ModuleTableActionLink
+				variant="view"
+				href={viewHref}
+				label={`View ${user.name}`}
+			/>
+			<ModuleTableActionLink
+				variant="edit"
+				href={editHref}
+				label={`Edit ${user.name}`}
+			/>
+			<ModuleActionMenu
+				icon={MoreVertical}
+				label={`Open user options for ${user.name}`}
+				items={[
+					{
+						icon: Send,
+						label: "Send invitation",
+						onSelect: onSendInvitation,
+						type: "button",
+					},
+					{
+						icon: ToggleIcon,
+						label: `Set as ${nextStatus}`,
+						onSelect: onToggleStatus,
+						tone: isActive ? "danger" : "default",
+						type: "button",
+					},
+				]}
+			/>
+		</ModuleTableActions>
+	);
+}
+
+type MasterSubscriberUserDrawerFormValues = {
+	branchAccess: string[];
+	email: string;
+	name: string;
+	phone: string;
+	status: MasterSubscriberManagementUserStatus;
+};
+
+function MasterSubscriberUserDrawer({
+	availableBranches,
+	company,
+	isOpen,
+	mode,
+	recordId,
+	user,
+}: {
+	availableBranches: MasterSubscriberManagementBranchRecord[];
+	company: MasterSubscriberManagementCompanyRecord;
+	isOpen: boolean;
+	mode: "add" | "edit" | "view";
+	recordId: string;
+	user?: MasterSubscriberManagementUserRecord;
+}) {
+	const router = useRouter();
+	const backHref = getMasterSubscriberManagementSectionHref(
+		recordId,
+		"users",
+		company.id,
+	);
+	const formId = `master-subscriber-${company.id}-user-${mode}-form`;
+	const isReadonly = mode === "view";
+	const isMissingUser = (mode === "edit" || mode === "view") && !user;
+	const [values, setValues] = useState<MasterSubscriberUserDrawerFormValues>(
+		() => createMasterSubscriberUserDrawerValues(user, availableBranches),
+	);
+	const drawerTitle =
+		mode === "add"
+			? "Add User"
+			: user
+				? `${mode === "edit" ? "Edit" : "View"} ${user.name}`
+				: mode === "edit"
+					? "Edit User"
+					: "View User";
+
+	function closeDrawer() {
+		router.push(backHref);
+	}
+
+	function updateField<Key extends keyof MasterSubscriberUserDrawerFormValues>(
+		field: Key,
+		value: MasterSubscriberUserDrawerFormValues[Key],
+	) {
+		setValues((current) => ({
+			...current,
+			[field]: value,
+		}));
+	}
+
+	function toggleBranchAccess(branchName: string) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => {
+			const nextBranchAccess = current.branchAccess.includes(branchName)
+				? current.branchAccess.filter((branch) => branch !== branchName)
+				: [...current.branchAccess, branchName];
+
+			return {
+				...current,
+				branchAccess: nextBranchAccess,
+			};
+		});
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		closeDrawer();
+	}
+
+	return (
+		<ModuleDrawer
+			description={`${company.name} / ${mode === "add"
+				? "Create a user record"
+				: mode === "edit"
+					? "Update user access"
+					: "Review user access"
+				}`}
+			eyebrow="Subscriber user management"
+			footer={
+				<div className="flex flex-col justify-end gap-2 sm:flex-row">
+					<button
+						type="button"
+						onClick={closeDrawer}
+						className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-bold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10"
+					>
+						<X className="h-4 w-4" aria-hidden="true" />
+						{isReadonly ? "Close" : "Cancel"}
+					</button>
+					{isReadonly && user ? (
+						<Link
+							href={getMasterSubscriberManagementUserEditHref(
+								recordId,
+								company.id,
+								user.id,
+							)}
+							className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-bold text-white shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.18)] transition hover:opacity-90"
+						>
+							<Edit3 className="h-4 w-4" aria-hidden="true" />
+							Edit User
+						</Link>
+					) : (
+						<button
+							type="submit"
+							form={formId}
+							disabled={isMissingUser}
+							className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-bold text-white shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.18)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							<Save className="h-4 w-4" aria-hidden="true" />
+							{mode === "edit" ? "Save Changes" : "Save User"}
+						</button>
+					)}
+				</div>
+			}
+			isOpen={isOpen}
+			maxWidthClassName="max-w-3xl"
+			onClose={closeDrawer}
+			title={drawerTitle}
+		>
+			{isMissingUser ? (
+				<div className="p-6">
+					<div className="rounded-lg border border-dashed border-darknavy/15 bg-offwhite/60 p-5 text-sm font-semibold text-darknavy/60">
+						The selected user is not available for this company.
+					</div>
+				</div>
+			) : (
+				<form
+					id={formId}
+					onSubmit={handleSubmit}
+					className="grid gap-6 p-6"
+				>
+					<SubscriberUserFormSection title="User">
+						<SubscriberUserTextField
+							isReadonly={isReadonly}
+							label="Full Name"
+							value={values.name}
+							onChange={(value) => updateField("name", value)}
+						/>
+						<SubscriberUserTextField
+							isReadonly={isReadonly}
+							label="Email"
+							type="email"
+							value={values.email}
+							onChange={(value) => updateField("email", value)}
+						/>
+						<SubscriberUserTextField
+							isReadonly={isReadonly}
+							label="Phone"
+							type="tel"
+							value={values.phone}
+							onChange={(value) => updateField("phone", value)}
+						/>
+						<SubscriberUserSelectField
+							isReadonly={isReadonly}
+							label="Status"
+							options={MasterSubscriberManagementUserStatusOptions}
+							value={values.status}
+							onChange={(value) =>
+								updateField(
+									"status",
+									value as MasterSubscriberManagementUserStatus,
+								)
+							}
+						/>
+					</SubscriberUserFormSection>
+					<SubscriberUserFormSection title="Branch Access">
+						<div className="grid gap-2 md:col-span-2 xl:col-span-3">
+							{availableBranches.map((branch) => (
+								<label
+									key={branch.id}
+									className="flex min-h-11 items-center gap-3 rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy/70 shadow-sm"
+								>
+									<input
+										type="checkbox"
+										checked={values.branchAccess.includes(branch.name)}
+										disabled={isReadonly}
+										onChange={() => toggleBranchAccess(branch.name)}
+										className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+									/>
+									<span className="min-w-0 flex-1">
+										<span className="block truncate">{branch.name}</span>
+										<span className="mt-0.5 block text-xs font-semibold text-darknavy/45">
+											{branch.type}
+										</span>
+									</span>
+								</label>
+							))}
+						</div>
+					</SubscriberUserFormSection>
+				</form>
+			)}
+		</ModuleDrawer>
+	);
+}
+
+function SubscriberUserFormSection({
+	children,
+	title,
+}: {
+	children: ReactNode;
+	title: string;
+}) {
+	return (
+		<section className="grid gap-4 border-b border-darknavy/10 pb-6 last:border-b-0 last:pb-0">
+			<h2 className="text-sm font-semibold uppercase text-darknavy/45">
+				{title}
+			</h2>
+			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+				{children}
+			</div>
+		</section>
+	);
+}
+
+function SubscriberUserTextField({
+	isReadonly,
+	label,
+	type = "text",
+	value,
+	onChange,
+}: {
+	isReadonly: boolean;
+	label: string;
+	type?: InputHTMLAttributes<HTMLInputElement>["type"];
+	value: string;
+	onChange: (value: string) => void;
+}) {
+	return (
+		<label className="grid gap-2">
+			<span className="text-sm font-semibold text-darknavy/62">
+				{label}
+			</span>
+			<input
+				disabled={isReadonly}
+				type={type}
+				value={value}
+				onChange={(event) => onChange(event.target.value)}
+				className={SubscriberBranchControlClassName}
+			/>
+		</label>
+	);
+}
+
+function SubscriberUserSelectField({
+	isReadonly,
+	label,
+	options,
+	value,
+	onChange,
+}: {
+	isReadonly: boolean;
+	label: string;
+	options: readonly string[];
+	value: string;
+	onChange: (value: string) => void;
+}) {
+	return (
+		<label className="grid gap-2">
+			<span className="text-sm font-semibold text-darknavy/62">
+				{label}
+			</span>
+			<select
+				disabled={isReadonly}
+				value={value}
+				onChange={(event) => onChange(event.target.value)}
+				className={joinClasses(
+					SubscriberBranchControlClassName,
+					"app-select-control",
+				)}
+			>
+				{options.map((option) => (
+					<option key={option} value={option}>
+						{option}
+					</option>
+				))}
+			</select>
+		</label>
+	);
+}
+
+function createMasterSubscriberUserDrawerValues(
+	user: MasterSubscriberManagementUserRecord | undefined,
+	availableBranches: MasterSubscriberManagementBranchRecord[],
+): MasterSubscriberUserDrawerFormValues {
+	if (user) {
+		return {
+			branchAccess: user.branchAccess,
+			email: user.email,
+			name: user.name,
+			phone: user.phone,
+			status: user.status,
+		};
+	}
+
+	return {
+		branchAccess: availableBranches[0]?.name ? [availableBranches[0].name] : [],
+		email: "",
+		name: "",
+		phone: "",
+		status: "Invited",
+	};
 }
 
 function StorageSection({
@@ -992,8 +2699,12 @@ function StorageSection({
 }: {
 	company: MasterSubscriberManagementCompanyRecord;
 }) {
-	const usedPercent = Math.round(
-		(company.storageUsedGb / company.storageTotalGb) * 100,
+	const usedPercent = getUsagePercent(
+		company.storageUsedGb,
+		company.storageTotalGb,
+	);
+	const storageBreakdownRows = createStorageBreakdownRows(
+		company.storageUsedGb,
 	);
 
 	return (
@@ -1004,11 +2715,9 @@ function StorageSection({
 						<div
 							className="grid h-32 w-32 shrink-0 place-items-center rounded-full"
 							style={{
-								background: `conic-gradient(rgb(var(--skyblue-rgb)) 0deg ${
-									usedPercent * 3.6
-								}deg, rgba(33,39,56,0.1) ${
-									usedPercent * 3.6
-								}deg 360deg)`,
+								background: `conic-gradient(rgb(var(--skyblue-rgb)) 0deg ${usedPercent * 3.6
+									}deg, rgba(33,39,56,0.1) ${usedPercent * 3.6
+									}deg 360deg)`,
 							}}
 						>
 							<div className="grid h-24 w-24 place-items-center rounded-full bg-white text-center">
@@ -1023,22 +2732,26 @@ function StorageSection({
 						<div className="grid gap-3 text-sm font-semibold text-darknavy">
 							<p>
 								<span className="text-xl font-bold">
-									{company.storageUsedGb} GB
+									{formatStorageGb(company.storageUsedGb)}
 								</span>{" "}
-								/ {company.storageTotalGb} GB
+								/ {formatStorageGb(company.storageTotalGb)}
 							</p>
 							<p className="text-darknavy/62">Total Storage</p>
-							<p className="text-darknavy/70">Used {company.storageUsedGb} GB</p>
-							<p className="text-darknavy/70">Available {company.storageAvailableGb} GB</p>
+							<p className="text-darknavy/70">
+								Used {formatStorageGb(company.storageUsedGb)}
+							</p>
+							<p className="text-darknavy/70">
+								Available {formatStorageGb(company.storageAvailableGb)}
+							</p>
 						</div>
 					</div>
 					<div className="mt-6 rounded-lg bg-emerald-500/12 p-3 text-sm font-semibold text-emerald-700">
-						You have {company.storageAvailableGb} GB of storage available.
+						You have {formatStorageGb(company.storageAvailableGb)} of storage available.
 					</div>
 				</Panel>
 				<Panel title="Storage Breakdown" titleAddon={<InfoIcon />}>
 					<div className="grid gap-4">
-						{MasterSubscriberManagementStorageBreakdown.map((item) => (
+						{storageBreakdownRows.map((item) => (
 							<div
 								key={item.category}
 								className="grid grid-cols-[7rem_1fr_5rem_4rem] items-center gap-3 text-sm"
@@ -1064,7 +2777,7 @@ function StorageSection({
 						<div className="grid grid-cols-[7rem_1fr_5rem_4rem] border-t border-darknavy/10 pt-3 text-sm font-bold text-darknavy">
 							<span>Total</span>
 							<span />
-							<span>45 GB</span>
+							<span>{formatStorageGb(company.storageUsedGb)}</span>
 							<span className="text-right">100%</span>
 						</div>
 					</div>
@@ -1072,8 +2785,8 @@ function StorageSection({
 				<StorageActionsPanel />
 			</div>
 			<div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
-				<TopBranchUsagePanel />
-				<StorageDetailsPanel />
+				<TopBranchUsagePanel storageUsedGb={company.storageUsedGb} />
+				<StorageDetailsPanel company={company} />
 			</div>
 		</div>
 	);
@@ -1189,9 +2902,9 @@ function PlanFeaturesPanel() {
 
 function PlanHistoryPanel() {
 	const rows = [
-		["Professional Plan", "Annual", "$2,499.00", "May 12, 2024", "May 12, 2025", "Active"],
-		["Professional Plan", "Annual", "$2,499.00", "May 12, 2023", "May 12, 2024", "Completed"],
-		["Basic Plan", "Annual", "$1,499.00", "May 12, 2022", "May 12, 2023", "Completed"],
+		["Accounting + Inventory", "Monthly", "$499.00", "May 12, 2024", "Jun 12, 2024", "Active"],
+		["Inventory", "Monthly", "$399.00", "Apr 12, 2024", "May 12, 2024", "Completed"],
+		["Accounting", "Monthly", "$399.00", "Mar 12, 2024", "Apr 12, 2024", "Completed"],
 	];
 
 	return (
@@ -1258,14 +2971,20 @@ function StorageActionsPanel() {
 			<div className="mt-5 flex items-center justify-between text-xs font-semibold text-darknavy/65">
 				<span>Last cleanup: May 12, 2024</span>
 				<span className="rounded-md bg-emerald-500/14 px-2 py-1 text-emerald-700">
-					2.4 GB freed
+					0.1 GB freed
 				</span>
 			</div>
 		</Panel>
 	);
 }
 
-function TopBranchUsagePanel() {
+function TopBranchUsagePanel({
+	storageUsedGb,
+}: {
+	storageUsedGb: number;
+}) {
+	const branchStorageRows = createStorageBranchRows(storageUsedGb);
+
 	return (
 		<Panel title="Top Branch Usage" titleAddon={<InfoIcon />}>
 			<div className="overflow-x-auto">
@@ -1281,7 +3000,7 @@ function TopBranchUsagePanel() {
 						</tr>
 					</thead>
 					<tbody className="divide-y divide-darknavy/10">
-						{MasterSubscriberManagementStorageBranches.map((branch) => (
+						{branchStorageRows.map((branch) => (
 							<tr key={branch.id}>
 								<td className="px-3 py-3">
 									<span className="block font-bold text-darknavy">
@@ -1324,13 +3043,26 @@ function TopBranchUsagePanel() {
 	);
 }
 
-function StorageDetailsPanel() {
+function StorageDetailsPanel({
+	company,
+}: {
+	company: MasterSubscriberManagementCompanyRecord;
+}) {
 	return (
 		<Panel title="Storage Details">
 			<div className="grid gap-4 text-sm">
-				<InlineStat label="Total Storage" value="100 GB" />
-				<InlineStat label="Used Storage" value="45 GB" />
-				<InlineStat label="Available Storage" value="55 GB" />
+				<InlineStat
+					label="Total Storage"
+					value={formatStorageGb(company.storageTotalGb)}
+				/>
+				<InlineStat
+					label="Used Storage"
+					value={formatStorageGb(company.storageUsedGb)}
+				/>
+				<InlineStat
+					label="Available Storage"
+					value={formatStorageGb(company.storageAvailableGb)}
+				/>
 				<div className="border-t border-darknavy/10 pt-4" />
 				<InlineStat label="Auto Cleanup" value={<EnabledBadge />} />
 				<InlineStat label="Next Cleanup" value="May 26, 2024" />
@@ -1540,6 +3272,52 @@ function CompanyEditField({
 	);
 }
 
+function CompanyEditTaxpayerTypeToggle({
+	onChange,
+	value,
+}: {
+	onChange: (value: MasterSubscriberManagementTaxpayerType) => void;
+	value: MasterSubscriberManagementTaxpayerType;
+}) {
+	const isIndividual = value === "individual";
+
+	return (
+		<div>
+			<p className="mb-2 block text-sm font-semibold text-darknavy/62">
+				Taxpayer Type
+			</p>
+			<div className="flex overflow-hidden rounded-lg border border-darknavy/10">
+				<button
+					type="button"
+					aria-pressed={isIndividual}
+					onClick={() => onChange("individual")}
+					className={joinClasses(
+						"flex-1 py-3 text-sm font-semibold transition",
+						isIndividual
+							? "bg-darknavy text-white"
+							: "bg-white text-darknavy hover:bg-offwhite",
+					)}
+				>
+					Individual
+				</button>
+				<button
+					type="button"
+					aria-pressed={!isIndividual}
+					onClick={() => onChange("non-individual")}
+					className={joinClasses(
+						"flex-1 border-l border-darknavy/10 py-3 text-sm font-semibold transition",
+						!isIndividual
+							? "bg-darknavy text-white"
+							: "bg-white text-darknavy hover:bg-offwhite",
+					)}
+				>
+					Non-Individual
+				</button>
+			</div>
+		</div>
+	);
+}
+
 function DetailRow({
 	label,
 	link = false,
@@ -1590,6 +3368,42 @@ function IconDetail({
 	);
 }
 
+function UsageCount({
+	helper,
+	icon: Icon,
+	label,
+	tone,
+	value,
+}: {
+	helper: string;
+	icon: LucideIcon;
+	label: string;
+	tone: "blue" | "emerald" | "orange" | "purple";
+	value: string;
+}) {
+	return (
+		<div className="grid grid-cols-[3rem_1fr] gap-4">
+			<span
+				className={joinClasses(
+					"flex h-12 w-12 items-center justify-center rounded-full",
+					getToneClassName(tone),
+				)}
+			>
+				<Icon className="h-5 w-5" aria-hidden="true" />
+			</span>
+			<div>
+				<div className="flex items-center justify-between gap-3 text-sm font-bold text-darknavy">
+					<span>{label}</span>
+					<span className="text-xl leading-none">{value}</span>
+				</div>
+				<p className="mt-2 text-xs font-semibold text-darknavy/58">
+					{helper}
+				</p>
+			</div>
+		</div>
+	);
+}
+
 function UsageMeter({
 	colorClassName,
 	icon: Icon,
@@ -1622,57 +3436,19 @@ function UsageMeter({
 	);
 }
 
-function SearchInput({ placeholder }: { placeholder: string }) {
-	return (
-		<label className="relative">
-			<span className="sr-only">{placeholder}</span>
-			<Search
-				className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/45"
-				aria-hidden="true"
-			/>
-			<input
-				className="h-12 w-full rounded-lg border border-darknavy/10 bg-white pl-11 pr-4 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition placeholder:text-darknavy/35 focus:border-[rgb(var(--skyblue-rgb)/0.45)] focus:ring-4 focus:ring-[rgb(var(--skyblue-rgb)/0.16)]"
-				placeholder={placeholder}
-			/>
-		</label>
-	);
-}
-
-function SelectControl({
-	label,
-	value = "All",
-}: {
-	label: string;
-	value?: string;
-}) {
-	return (
-		<label className="relative">
-			<span className="absolute -top-2 left-3 z-10 bg-white px-1 text-xs font-semibold text-darknavy/70">
-				{label}
-			</span>
-			<select
-				className="h-12 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition focus:border-[rgb(var(--skyblue-rgb)/0.45)] focus:ring-4 focus:ring-[rgb(var(--skyblue-rgb)/0.16)]"
-				value={value}
-				onChange={() => undefined}
-			>
-				<option>{value}</option>
-			</select>
-		</label>
-	);
-}
-
 function SmallButton({
 	children,
 	className,
 	icon: Icon,
+	type = "button",
+	...props
 }: {
-	children: ReactNode;
-	className?: string;
 	icon?: LucideIcon;
-}) {
+} & ComponentPropsWithoutRef<"button">) {
 	return (
 		<button
-			type="button"
+			{...props}
+			type={type}
 			className={joinClasses(
 				"inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-bold text-[var(--skyblue)] shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10",
 				className,
@@ -1681,15 +3457,6 @@ function SmallButton({
 			{Icon ? <Icon className="h-4 w-4" aria-hidden="true" /> : null}
 			{children}
 		</button>
-	);
-}
-
-function TableActions() {
-	return (
-		<div className="flex justify-center gap-2">
-			<IconButton icon={Edit3} label="Edit record" />
-			<IconButton icon={MoreVertical} label="More actions" />
-		</div>
 	);
 }
 
@@ -1866,22 +3633,146 @@ function InfoIcon() {
 	return <Info className="h-4 w-4 text-[var(--skyblue)]" aria-hidden="true" />;
 }
 
+function createActionColumn<TRecord>(
+	header: string,
+	className: string,
+): ColumnDef<TRecord> {
+	return {
+		id: "actions",
+		header,
+		enableSorting: false,
+		meta: { className },
+	};
+}
+
+function createBranchColumn(
+	key: MasterSubscriberBranchTableColumnKey,
+	header: string,
+	className: string,
+): ColumnDef<MasterSubscriberManagementBranchRecord> {
+	return {
+		accessorKey: key,
+		header,
+		sortingFn: "alphanumeric",
+		meta: { className },
+	};
+}
+
+function createUserColumn(
+	key: MasterSubscriberUserTableColumnKey,
+	header: string,
+	className: string,
+): ColumnDef<MasterSubscriberManagementUserRecord> {
+	if (key === "branchAccess") {
+		return {
+			id: key,
+			accessorFn: (user) => user.branchAccess.join(", "),
+			header,
+			sortingFn: "alphanumeric",
+			meta: { className },
+		};
+	}
+
+	if (key === "lastActive") {
+		return {
+			id: key,
+			accessorFn: (user) =>
+				`${user.lastActiveDate} ${user.lastActiveTime}`.trim(),
+			header,
+			sortingFn: "alphanumeric",
+			meta: { className },
+		};
+	}
+
+	return {
+		accessorKey: key,
+		header,
+		sortingFn: "alphanumeric",
+		meta: { className },
+	};
+}
+
+function createFilterOptions(options: readonly string[]) {
+	return [
+		{ label: "All", value: "All" },
+		...options.map((option) => ({ label: option, value: option })),
+	];
+}
+
 function createCompanyInformationEditValues(
 	company: MasterSubscriberManagementCompanyRecord,
 ): CompanyInformationEditValues {
+	const industryValues = getCompanyEditIndustryValues(company);
+
 	return {
 		address: company.addressLines.join("\n"),
 		contactEmail: company.contactEmail,
 		contactNumber: company.contactNumber,
-		industry: company.industry,
+		firstName: company.firstName ?? "",
+		industry: industryValues.industry,
+		industryOther: industryValues.industryOther,
+		lastName: company.lastName ?? "",
+		middleName: company.middleName ?? "",
 		name: company.name,
 		reportEndDate: company.reportEndDate,
 		reportStartDate: company.reportStartDate,
-		reportYearBasis: company.reportYearBasis,
 		status: company.status,
-		tin: company.tin,
+		taxpayerType: getCompanyTaxpayerType(company),
+		tin: FormatTinNumber(company.tin),
 		website: company.website,
 	};
+}
+
+function getCompanyTaxpayerType(
+	company: MasterSubscriberManagementCompanyRecord,
+): MasterSubscriberManagementTaxpayerType {
+	return company.taxpayerType ?? "non-individual";
+}
+
+function getCompanyEditIndustryValues(
+	company: MasterSubscriberManagementCompanyRecord,
+) {
+	const industry = company.industry.trim();
+
+	if (!industry) {
+		return { industry: "", industryOther: "" };
+	}
+
+	if (isCompanyIndustryOption(industry)) {
+		return {
+			industry,
+			industryOther: company.industryOther ?? "",
+		};
+	}
+
+	return {
+		industry: "Others",
+		industryOther: company.industryOther ?? industry,
+	};
+}
+
+function isCompanyIndustryOption(value: string): value is CompanyIndustryOption {
+	return OnboardingNonIndividualTypeOptions.includes(
+		value as CompanyIndustryOption,
+	);
+}
+
+function formatCompanyTaxpayerType(
+	value: MasterSubscriberManagementTaxpayerType,
+) {
+	return value === "individual" ? "Individual" : "Non-Individual";
+}
+
+function formatCompanyIndustry(company: MasterSubscriberManagementCompanyRecord) {
+	if (company.industry === "Others") {
+		return company.industryOther || "Others";
+	}
+
+	return company.industry;
+}
+
+function formatCompanyAddress(company: MasterSubscriberManagementCompanyRecord) {
+	return company.addressLines.filter(Boolean).join(", ");
 }
 
 function formatCompanyReportDate(value: string) {
@@ -1898,7 +3789,15 @@ function createCompanyBranchRows(
 	return Array.from({ length: company.branchCount }, (_, index) => ({
 		addedOn: company.dateAdded,
 		address: `${100 + index * 25} Test Avenue, Suite ${index + 1}00, New York, NY 1000${index + 1}, USA`,
+		contactNumber: company.contactNumber,
+		email:
+			index === 0
+				? company.contactEmail
+				: `branch${index + 1}@${slugifyName(company.name)}.com`,
 		id: `${company.id}-branch-${index + 1}`,
+		isMain: index === 0,
+		linkedMainBranchId:
+			index === 0 ? "" : `${company.id}-branch-1`,
 		name:
 			index === 0
 				? `${company.name} Head Office`
@@ -1907,8 +3806,12 @@ function createCompanyBranchRows(
 			company.branchCount === 3 && index === company.branchCount - 1
 				? "Inactive"
 				: "Active",
+		tin:
+			index === 0
+				? FormatTinNumber(company.tin)
+				: createBranchTin(company.tin, index),
 		tone: branchTones[index] ?? "blue",
-		type: index === 0 ? "Head Office" : "Satellite Branch",
+		type: index === 0 ? "Head Office" : "Satellite",
 		users: baseUsers + (index < extraUsers ? 1 : 0),
 	}));
 }
@@ -1963,8 +3866,103 @@ function getUsagePercent(value: number, limit: number) {
 	return Math.min(100, Math.round((value / limit) * 100));
 }
 
+function createSubscriptionPlanDisplay(
+	company: MasterSubscriberManagementCompanyRecord,
+): MasterSubscriberSubscriptionPlanDisplay {
+	const planOption = getSubscriptionPlanOptionByName(company.planName);
+	const billingCycle = normalizeSubscriptionBillingCycle(company.billingCycle);
+
+	if (planOption) {
+		return createSubscriptionPlanDisplayFromOption(planOption, billingCycle);
+	}
+
+	return {
+		amount: company.amount,
+		billingCycle,
+		description:
+			company.planDescription ||
+			"Custom subscription plan.",
+		id: `custom-${company.id}`,
+		monthlyAmount: billingCycle === "Monthly" ? company.amount : "",
+		name: company.planName,
+		yearlyAmount: billingCycle === "Yearly" ? company.amount : "",
+	};
+}
+
+function createSubscriptionPlanDisplayFromOption(
+	plan: MasterSubscriberManagementSubscriptionPlanOption,
+	billingCycle: MasterSubscriberManagementSubscriptionBillingCycle,
+): MasterSubscriberSubscriptionPlanDisplay {
+	return {
+		...plan,
+		amount: getSubscriptionPlanAmount(plan, billingCycle),
+		billingCycle,
+	};
+}
+
+function getSubscriptionPlanAmount(
+	plan: MasterSubscriberManagementSubscriptionPlanOption,
+	billingCycle: MasterSubscriberManagementSubscriptionBillingCycle,
+) {
+	return billingCycle === "Yearly" ? plan.yearlyAmount : plan.monthlyAmount;
+}
+
+function normalizeSubscriptionBillingCycle(
+	billingCycle: string,
+): MasterSubscriberManagementSubscriptionBillingCycle {
+	return billingCycle === "Yearly" || billingCycle === "Annual"
+		? "Yearly"
+		: "Monthly";
+}
+
+function getSelectableSubscriptionPlanId(planId: string) {
+	return (
+		getSubscriptionPlanOptionById(planId)?.id ??
+		MasterSubscriberManagementSubscriptionPlanOptions[0].id
+	);
+}
+
+function getSubscriptionPlanOptionById(planId: string) {
+	return MasterSubscriberManagementSubscriptionPlanOptions.find(
+		(plan) => plan.id === planId,
+	);
+}
+
+function getSubscriptionPlanOptionByName(planName: string) {
+	return MasterSubscriberManagementSubscriptionPlanOptions.find(
+		(plan) => plan.name === planName,
+	);
+}
+
+function formatStorageGb(value: number) {
+	const roundedValue = Number(value.toFixed(2));
+
+	return `${Number.isInteger(roundedValue) ? roundedValue.toFixed(0) : roundedValue} GB`;
+}
+
+function createStorageBreakdownRows(storageUsedGb: number) {
+	return MasterSubscriberManagementStorageBreakdown.map((item) => ({
+		...item,
+		used: formatStorageGb((storageUsedGb * item.percentage) / 100),
+	}));
+}
+
+function createStorageBranchRows(storageUsedGb: number) {
+	return MasterSubscriberManagementStorageBranches.map((branch) => ({
+		...branch,
+		used: formatStorageGb((storageUsedGb * branch.percentage) / 100),
+	}));
+}
+
 function slugifyName(value: string) {
 	return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function createBranchTin(companyTin: string, branchIndex: number) {
+	const digits = companyTin.replace(/\D/g, "").padEnd(12, "0").slice(0, 9);
+	const branchSuffix = String(branchIndex).padStart(3, "0");
+
+	return FormatTinNumber(`${digits}${branchSuffix}`);
 }
 
 function getToneClassName(tone: "blue" | "emerald" | "orange" | "purple") {

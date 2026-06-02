@@ -40,6 +40,7 @@ type ModuleActionMenuProps = {
 	items: ModuleActionMenuItem[];
 	label: string;
 	className?: string;
+	icon?: LucideIcon;
 };
 
 const MenuWidth = 176;
@@ -48,6 +49,7 @@ const MenuGap = 6;
 
 export function ModuleActionMenu({
 	className,
+	icon: TriggerIcon = MoreHorizontal,
 	items,
 	label,
 }: ModuleActionMenuProps) {
@@ -145,7 +147,7 @@ export function ModuleActionMenu({
 					moduleAccentClassNames.focusRing,
 				)}
 			>
-				<MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+				<TriggerIcon className="h-4 w-4" aria-hidden="true" />
 			</button>
 			{isOpen && typeof document !== "undefined"
 				? createPortal(

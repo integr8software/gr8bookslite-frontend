@@ -27,6 +27,7 @@ export type UserListTableColumnKey =
 export type BranchUserRolePermissionApiResponse = {
   permissionId: number;
   permissionCode: string;
+  permissionName?: string;
   moduleCode: string;
   moduleName: string;
   canView: boolean;
@@ -45,6 +46,7 @@ export type BranchUserRoleApiResponse = {
   roleType: string;
   scopeLevel: string;
   isSystem: boolean;
+  isActive?: boolean;
   permissions: BranchUserRolePermissionApiResponse[];
 };
 

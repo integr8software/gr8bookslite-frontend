@@ -92,7 +92,7 @@ function MapBranchUserRoleApiRecord(
 		description: role.description ?? "",
 		id: String(role.id),
 		name: role.name,
-		status: "Active",
+		status: role.isActive === false ? "Inactive" : "Active",
 	};
 }
 

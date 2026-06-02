@@ -19,10 +19,9 @@ export const UserPermissionActions = [
   { value: "read", label: "Read Only" },
   { value: "create", label: "Create" },
   { value: "update", label: "Update" },
-  { value: "delete", label: "Inactive" },
+  { value: "delete", label: "Delete" },
+  { value: "approve", label: "Approve" },
   { value: "print-export", label: "Print/Export" },
-  { value: "cancel", label: "Cancel" },
-  { value: "uncancel", label: "Uncancel" },
 ] as const;
 
 export const UserAccessRoleOptions = createUserAccessRoleOptions(

@@ -2,13 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, ShieldCheck } from "lucide-react";
+import toast from "react-hot-toast";
 import { UserRoleHref } from "@/app/src/constants/modules/user-management/UserManagementConstants";
 import {
   getNextUserStatus,
   type UserRoleRecord,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
-import { useUserRoleStore } from "@/app/src/hooks/modules/system-administration/user-management/user-role/useUserRole";
+import { useBranchUserRoleContext } from "@/app/src/hooks/modules/system-administration/user-management/user-role/useBranchUserRoleContext";
+import {
+  GetBranchRoles,
+  UpdateBranchRoleStatus,
+} from "@/app/src/services/modules/system-administration/user-management/user-role/BranchUserRoleApi";
+import { UserRoleQueryKeys } from "@/app/src/services/modules/system-administration/user-management/user-role/UserRoleQueryKeys";
+import { UserListQueryKeys } from "@/app/src/services/modules/system-administration/user-management/users/UserListQueryKeys";
 import { UserRoleList } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleList";
 import { UserRoleSpotlightTutorial } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleSpotlightTutorial";
 import {
@@ -18,11 +26,62 @@ import {
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
 export function UserRolePage() {
-  const userRoles = useUserRoleStore((state) => state.userRoles);
-  const updateUserRole = useUserRoleStore((state) => state.updateUserRole);
-  const isMutating = useUserRoleStore((state) => state.isMutating);
+  const queryClient = useQueryClient();
+  const { accessToken, branchId, isLoadingBranchContext } =
+    useBranchUserRoleContext();
   const [pendingStatusRole, setPendingStatusRole] =
     useState<UserRoleRecord | null>(null);
+  const userRolesQuery = useQuery({
+    enabled: Boolean(accessToken && branchId),
+    queryKey: branchId
+      ? UserRoleQueryKeys.branchRoles(branchId)
+      : UserRoleQueryKeys.branchRoles(""),
+    queryFn: async () => GetBranchRoles(accessToken, branchId ?? ""),
+  });
+  const statusMutation = useMutation({
+    mutationFn: async ({
+      role,
+      nextStatus,
+    }: {
+      role: UserRoleRecord;
+      nextStatus: UserRoleRecord["status"];
+    }) => {
+      if (!branchId) {
+        throw new Error("Select a branch before changing user roles.");
+      }
+
+      return UpdateBranchRoleStatus(
+        accessToken,
+        branchId,
+        role.id,
+        nextStatus === "Active",
+      );
+    },
+    onSuccess: (updatedRole) => {
+      if (branchId) {
+        queryClient.setQueryData<UserRoleRecord[]>(
+          UserRoleQueryKeys.branchRoles(branchId),
+          (current = []) =>
+            current.map((role) =>
+              role.id === updatedRole.id ? updatedRole : role,
+            ),
+        );
+        queryClient.invalidateQueries({
+          queryKey: UserListQueryKeys.branchRoles(branchId),
+        });
+      }
+
+      toast.success("User role status updated.");
+      setPendingStatusRole(null);
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not update user role status.",
+      );
+    },
+  });
   const pendingNextStatus = pendingStatusRole
     ? getNextUserStatus(pendingStatusRole.status)
     : "Inactive";
@@ -34,12 +93,14 @@ export function UserRolePage() {
       return;
     }
 
-    updateUserRole({
-      ...pendingStatusRole,
-      status: pendingNextStatus,
+    statusMutation.mutate({
+      role: pendingStatusRole,
+      nextStatus: pendingNextStatus,
     });
-    setPendingStatusRole(null);
   }
+
+  const userRoles = userRolesQuery.data ?? [];
+  const isMutating = statusMutation.isPending;
 
   return (
     <section className="grid gap-5">
@@ -72,7 +133,7 @@ export function UserRolePage() {
       <UserRoleList
         baseHref={UserRoleHref}
         icon={ShieldCheck}
-        items={userRoles}
+        items={isLoadingBranchContext || userRolesQuery.isLoading ? [] : userRoles}
         onStatusChange={setPendingStatusRole}
       />
       <AppDialog

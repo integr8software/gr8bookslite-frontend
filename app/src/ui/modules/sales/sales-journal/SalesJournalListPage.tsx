@@ -15,7 +15,7 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { SalesJournalTableRow } from "@/app/src/ui/modules/sales/sales-journal/SalesJournalTableRow";
 

@@ -1,5 +1,6 @@
 import { WorkspaceUsersManagementHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import type { SpotlightTourStep } from "@/app/src/types/shared/tour/SpotlightTourTypes";
+import { getWorkspaceUserDrawerSpotlightTutorialSteps } from "@/app/src/data/workspace/users-management/WorkspaceUserDrawerSpotlightTutorialData";
 
 export const WorkspaceUsersSpotlightTutorialOpenEvent =
   "gr8booksneo:workspace-users-spotlight-open";
@@ -35,4 +36,7 @@ export const WorkspaceUsersSpotlightTutorialSteps = [
       "Use the directory to inspect status, resend pending invitations, view profiles, or edit assignments.",
     selectors: ["[data-spotlight-id='workspace-users-table']"],
   },
+  ...getWorkspaceUserDrawerSpotlightTutorialSteps("add"),
 ] satisfies readonly SpotlightTourStep[];
+
+export const WorkspaceUsersListSpotlightTutorialStepCount = 4;

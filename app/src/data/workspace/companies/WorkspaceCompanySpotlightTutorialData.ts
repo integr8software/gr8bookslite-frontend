@@ -5,6 +5,7 @@ export const WorkspaceCompanySpotlightTutorialOpenEvent =
   "gr8booksneo:workspace-company-spotlight-open";
 export const WorkspaceCompanySpotlightTutorialStorageKey =
   `gr8booksneo.spotlightTutorial.v1.${WorkspaceCompaniesHref}`;
+export const WorkspaceCompanyAddHref = `${WorkspaceCompaniesHref}/add`;
 
 export const WorkspaceCompanySpotlightTutorialSteps = [
   {
@@ -42,4 +43,27 @@ export const WorkspaceCompanySpotlightTutorialSteps = [
       "Open, edit, or deactivate companies from this directory as your workspace changes.",
     selectors: ["[data-spotlight-id='workspace-company-table']"],
   },
+  {
+    key: "add-company-header",
+    title: "Set up the new company",
+    description:
+      "The Add Company page keeps the company profile, billing details, and workspace availability together.",
+    selectors: ["[data-spotlight-id='workspace-company-add-header']"],
+  },
+  {
+    key: "add-company-form",
+    title: "Complete the company details",
+    description:
+      "Enter the company identity, contact information, plan, and billing details needed for the new workspace company.",
+    selectors: ["[data-spotlight-id='workspace-company-add-form']"],
+  },
+  {
+    key: "add-company-save",
+    title: "Save the company record",
+    description:
+      "Save the form when the company details are ready. You may be asked to confirm billing-related changes.",
+    selectors: ["[data-spotlight-id='workspace-company-add-save']"],
+  },
 ] satisfies readonly SpotlightTourStep[];
+
+export const WorkspaceCompanyListSpotlightTutorialStepCount = 5;

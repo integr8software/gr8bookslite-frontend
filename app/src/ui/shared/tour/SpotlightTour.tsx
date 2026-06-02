@@ -42,6 +42,7 @@ type SpotlightTourProps = {
   appearance?: "auto" | "dark" | "light";
   ariaLabel: string;
   badge?: ReactNode;
+  initialStepIndex?: number;
   isOpen: boolean;
   onStepEnter?: (step: SpotlightTourStep, index: number) => void;
   steps: readonly SpotlightTourStep[];
@@ -53,6 +54,7 @@ export function SpotlightTour({
   appearance = "auto",
   ariaLabel,
   badge,
+  initialStepIndex = 0,
   isOpen,
   onStepEnter,
   steps,
@@ -68,6 +70,7 @@ export function SpotlightTour({
       appearance={appearance}
       ariaLabel={ariaLabel}
       badge={badge}
+      initialStepIndex={initialStepIndex}
       onComplete={onComplete}
       onStepEnter={onStepEnter}
       onSkip={onSkip}
@@ -82,12 +85,13 @@ function SpotlightTourContent({
   appearance = "auto",
   ariaLabel,
   badge,
+  initialStepIndex = 0,
   onComplete,
   onStepEnter,
   onSkip,
   steps,
 }: SpotlightTourContentProps) {
-  const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [activeStepIndex, setActiveStepIndex] = useState(initialStepIndex);
   const [resolvedAppearance, setResolvedAppearance] = useState<"dark" | "light">(
     () => getResolvedAppearance(appearance),
   );

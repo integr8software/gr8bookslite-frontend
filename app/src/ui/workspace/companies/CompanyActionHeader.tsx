@@ -118,6 +118,7 @@ export function CompanyActionHeader({
 						<button
 							type="submit"
 							form={formId}
+							data-spotlight-id="workspace-company-add-save"
 							disabled={isPending}
 							aria-busy={isPending}
 							className={joinClasses(WorkspaceCompanySubmitActionClassName)}

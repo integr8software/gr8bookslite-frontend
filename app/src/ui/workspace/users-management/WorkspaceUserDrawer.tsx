@@ -22,6 +22,7 @@ type WorkspaceUserDrawerProps = {
 	isOpen: boolean;
 	mode: WorkspaceUserActionMode;
 	onClose: () => void;
+	showSpotlightTutorial?: boolean;
 	user?: WorkspaceCompanyUserRecord;
 };
 
@@ -29,6 +30,7 @@ export function WorkspaceUserDrawer({
 	isOpen,
 	mode,
 	onClose,
+	showSpotlightTutorial = true,
 	user,
 }: WorkspaceUserDrawerProps) {
 	return (
@@ -37,6 +39,7 @@ export function WorkspaceUserDrawer({
 			isOpen={isOpen}
 			mode={mode}
 			onClose={onClose}
+			showSpotlightTutorial={showSpotlightTutorial}
 			user={user}
 		/>
 	);
@@ -46,6 +49,7 @@ function WorkspaceUserDrawerPanel({
 	isOpen,
 	mode,
 	onClose,
+	showSpotlightTutorial = true,
 	user,
 }: WorkspaceUserDrawerProps) {
 	const form = useWorkspaceUserActionForm({
@@ -149,7 +153,7 @@ function WorkspaceUserDrawerPanel({
 					</div>
 				</form>
 			</ModuleDrawer>
-			{form.mode === "add" || form.mode === "edit" ? (
+			{showSpotlightTutorial && (form.mode === "add" || form.mode === "edit") ? (
 				<WorkspaceUserDrawerSpotlightTutorial
 					isOpen={isOpen}
 					mode={form.mode}

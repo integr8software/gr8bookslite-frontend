@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Plus, UserCog } from "lucide-react";
-import { WorkspaceUserDrawerSpotlightTutorialOpenEvent } from "@/app/src/data/workspace/users-management/WorkspaceUserDrawerSpotlightTutorialData";
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
 import type { WorkspaceCompanyUserRecord } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import {
@@ -33,15 +32,14 @@ export function WorkspaceUsersManagementMain() {
   const cancelInvitation = useWorkspaceCompanyManagementStore(
     (state) => state.cancelCompanyUserInvitation,
   );
+  const openAddDrawer = useCallback(() => {
+    setDrawerState({ mode: "add" });
+  }, []);
 
   return (
     <section className="grid gap-5">
       <WorkspaceUsersSpotlightTutorial
-        isEnabled={!drawerState}
-        onComplete={() => {
-          setDrawerState({ mode: "add" });
-          openAddUserDrawerTutorial();
-        }}
+        onOpenAddDrawer={openAddDrawer}
       />
       <ModuleHeader
         data-spotlight-id="workspace-users-header"
@@ -59,7 +57,7 @@ export function WorkspaceUsersManagementMain() {
           <button
             type="button"
             data-spotlight-id="workspace-users-add"
-            onClick={() => setDrawerState({ mode: "add" })}
+            onClick={openAddDrawer}
             className={moduleHeaderActionClassNames.primary}
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
@@ -79,18 +77,9 @@ export function WorkspaceUsersManagementMain() {
         isOpen={Boolean(drawerState)}
         mode={drawerState?.mode ?? "add"}
         onClose={() => setDrawerState(null)}
+        showSpotlightTutorial={false}
         user={drawerState?.user}
       />
     </section>
   );
-}
-
-function openAddUserDrawerTutorial() {
-  window.requestAnimationFrame(() => {
-    window.requestAnimationFrame(() => {
-      window.dispatchEvent(
-        new Event(WorkspaceUserDrawerSpotlightTutorialOpenEvent),
-      );
-    });
-  });
 }

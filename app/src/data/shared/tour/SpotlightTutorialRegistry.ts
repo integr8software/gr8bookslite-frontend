@@ -13,7 +13,7 @@ import { UserListSpotlightTutorialOpenEvent } from "@/app/src/data/modules/syste
 import { WorkspaceCompaniesHref, WorkspaceUsersManagementHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import { WorkspaceBillingSubscriptionHref } from "@/app/src/constants/workspace/billing-and-subscription/WorkspaceBillingSubscriptionConstants";
 import { WorkspaceBillingSpotlightTutorialOpenEvent } from "@/app/src/data/workspace/billing-and-subscription/WorkspaceBillingSpotlightTutorialData";
-import { WorkspaceCompanySpotlightTutorialOpenEvent } from "@/app/src/data/workspace/companies/WorkspaceCompanySpotlightTutorialData";
+import { WorkspaceCompanyAddHref, WorkspaceCompanySpotlightTutorialOpenEvent } from "@/app/src/data/workspace/companies/WorkspaceCompanySpotlightTutorialData";
 import { WorkspaceUsersSpotlightTutorialOpenEvent } from "@/app/src/data/workspace/users-management/WorkspaceUsersSpotlightTutorialData";
 import {
   WorkspaceUserDrawerSpotlightTutorialOpenEvent,
@@ -38,6 +38,7 @@ const SpotlightTutorialEventsByHref: Readonly<Record<string, string>> = {
   "/workspace/dashboard": WorkspaceSpotlightTutorialOpenEvent,
   [WorkspaceBillingSubscriptionHref]: WorkspaceBillingSpotlightTutorialOpenEvent,
   [WorkspaceCompaniesHref]: WorkspaceCompanySpotlightTutorialOpenEvent,
+  [WorkspaceCompanyAddHref]: WorkspaceCompanySpotlightTutorialOpenEvent,
   [WorkspaceUsersManagementHref]: WorkspaceUsersSpotlightTutorialOpenEvent,
   [BranchManagementHref]: BranchManagementSpotlightTutorialOpenEvent,
   [ChartsOfAccountsHref]: ChartsOfAccountsSpotlightTutorialOpenEvent,

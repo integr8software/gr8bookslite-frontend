@@ -1,8 +1,10 @@
 "use client";
 
+import { useCallback } from "react";
 import { WorkspaceUsersManagementHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import {
   WorkspaceUsersSpotlightTutorialOpenEvent,
+  WorkspaceUsersListSpotlightTutorialStepCount,
   WorkspaceUsersSpotlightTutorialSteps,
   WorkspaceUsersSpotlightTutorialStorageKey,
 } from "@/app/src/data/workspace/users-management/WorkspaceUsersSpotlightTutorialData";
@@ -13,18 +15,23 @@ import {
 } from "@/app/src/ui/shared/tour/SpotlightTour";
 
 export function WorkspaceUsersSpotlightTutorial({
-  isEnabled = true,
-  onComplete,
+  onOpenAddDrawer,
 }: {
-  isEnabled?: boolean;
-  onComplete?: () => void;
+  onOpenAddDrawer: () => void;
 }) {
   const { completeTutorial, isOpen, skipTutorial } = useSpotlightTutorial({
     href: WorkspaceUsersManagementHref,
-    isEnabled,
     openEvent: WorkspaceUsersSpotlightTutorialOpenEvent,
     storageKey: WorkspaceUsersSpotlightTutorialStorageKey,
   });
+  const handleStepEnter = useCallback(
+    (_: unknown, index: number) => {
+      if (index === WorkspaceUsersListSpotlightTutorialStepCount) {
+        onOpenAddDrawer();
+      }
+    },
+    [onOpenAddDrawer],
+  );
 
   return (
     <SpotlightTour
@@ -32,10 +39,8 @@ export function WorkspaceUsersSpotlightTutorial({
       badge={<SpotlightTourBadge>Workspace users guide</SpotlightTourBadge>}
       isOpen={isOpen}
       steps={WorkspaceUsersSpotlightTutorialSteps}
-      onComplete={() => {
-        completeTutorial();
-        onComplete?.();
-      }}
+      onComplete={completeTutorial}
+      onStepEnter={handleStepEnter}
       onSkip={skipTutorial}
     />
   );

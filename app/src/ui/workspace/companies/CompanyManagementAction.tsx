@@ -19,6 +19,7 @@ import {
 } from "@/app/src/ui/workspace/companies/CompanyDetailsFields";
 import { CompanyActionHeader } from "@/app/src/ui/workspace/companies/CompanyActionHeader";
 import { ModuleNotFound } from "@/app/src/ui/shared/module/ModuleNotFound";
+import { WorkspaceCompanySpotlightTutorial } from "@/app/src/ui/workspace/companies/WorkspaceCompanySpotlightTutorial";
 
 const CompanyFormId = "workspace-company-form";
 
@@ -76,33 +77,37 @@ export function CompanyManagementAction() {
 
 	return (
 		<section className="grid gap-5">
-			<CompanyActionHeader
-				cancelHref={form.cancelHref}
-				description={
-					form.mode === "edit"
-						? "Update company identity, subscription plan, and workspace availability."
-						: "Create a company profile before adding company users and branches."
-				}
-				eyebrowIcon={Building2}
-				eyebrowLabel="Workspace directory"
-				formId={CompanyFormId}
-				isReadonly={false}
-				isPending={form.isMutating}
-				mode={form.mode}
-				saveLabel="Save Company"
-				title={form.mode === "edit" ? "Edit Company" : "Add Company"}
-			/>
-			<CompanyDetailsFields
-				errors={form.errors}
-				formId={CompanyFormId}
-				isLoadingPaymentMethods={paymentMethodsQuery.isLoading}
-				isLoadingPlans={plansQuery.isLoading}
-				paymentMethodOptions={paymentMethodOptions}
-				plans={plansQuery.data?.plans ?? []}
-				showBillingDetails={form.mode === "add"}
-				values={form.values}
-				onInputChange={form.handleInputChange}
-				onSubmit={(event) => {
+			{form.mode === "add" ? <WorkspaceCompanySpotlightTutorial /> : null}
+			<div data-spotlight-id="workspace-company-add-header">
+				<CompanyActionHeader
+					cancelHref={form.cancelHref}
+					description={
+						form.mode === "edit"
+							? "Update company identity, subscription plan, and workspace availability."
+							: "Create a company profile before adding company users and branches."
+					}
+					eyebrowIcon={Building2}
+					eyebrowLabel="Workspace directory"
+					formId={CompanyFormId}
+					isReadonly={false}
+					isPending={form.isMutating}
+					mode={form.mode}
+					saveLabel="Save Company"
+					title={form.mode === "edit" ? "Edit Company" : "Add Company"}
+				/>
+			</div>
+			<div data-spotlight-id="workspace-company-add-form">
+				<CompanyDetailsFields
+					errors={form.errors}
+					formId={CompanyFormId}
+					isLoadingPaymentMethods={paymentMethodsQuery.isLoading}
+					isLoadingPlans={plansQuery.isLoading}
+					paymentMethodOptions={paymentMethodOptions}
+					plans={plansQuery.data?.plans ?? []}
+					showBillingDetails={form.mode === "add"}
+					values={form.values}
+					onInputChange={form.handleInputChange}
+					onSubmit={(event) => {
 					if (form.mode === "edit") {
 						event.preventDefault();
 
@@ -118,10 +123,11 @@ export function CompanyManagementAction() {
 					if (form.validateCompany()) {
 						setIsBillingConfirmOpen(true);
 					}
-				}}
-				onUpdateField={form.updateField}
-				onUpdateLogoFile={form.updateLogoFile}
-			/>
+					}}
+					onUpdateField={form.updateField}
+					onUpdateLogoFile={form.updateLogoFile}
+				/>
+			</div>
 			<AppDialog
 				isOpen={isEditConfirmOpen}
 				isPending={form.isMutating}

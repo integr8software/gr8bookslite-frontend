@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ClearAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   getWorkspaceCompanyBranchesHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
@@ -195,6 +196,7 @@ export function useMainLayout() {
   const shellContextSwitchFallbackRef = useRef<number | null>(null);
   const shellContextSettlingRef = useRef<number | null>(null);
   const latestCompanySwitchRequestRef = useRef(0);
+  const hasHandledAuthProfileErrorRef = useRef(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarTransitionEnabled, setIsSidebarTransitionEnabled] =
     useState(false);
@@ -239,7 +241,11 @@ export function useMainLayout() {
     ? searchParams.get("companyId") ?? undefined
     : undefined;
   const accessToken = storedAccessToken;
-  const { data: authProfile } = useAuthProfileQuery({
+  const {
+    data: authProfile,
+    isError: isAuthProfileError,
+    isFetching: isAuthProfileFetching,
+  } = useAuthProfileQuery({
     accessToken,
     enabled: isAuthSessionReady,
   });
@@ -258,7 +264,38 @@ export function useMainLayout() {
   const displayUser = authProfile
     ? CreateWorkspaceCurrentUserFromProfile(authProfile)
     : EmptyCurrentUser;
-  const isProfileLoading = Boolean(accessToken) && !authProfile;
+  const isProfileLoading =
+    Boolean(accessToken) && !authProfile && isAuthProfileFetching;
+
+  useEffect(() => {
+    if (!isAuthProfileError || hasHandledAuthProfileErrorRef.current) {
+      return;
+    }
+
+    hasHandledAuthProfileErrorRef.current = true;
+    ClearAccessToken();
+    setStoredAccessToken(null);
+    setStoredActiveCompanyId(null);
+    setStoredActiveCompanyName(null);
+    setStoredActiveBranchContext(null);
+    queryClient.clear();
+
+    void fetch("/api/auth/logout", {
+      method: "POST",
+      cache: "no-store",
+    }).finally(() => {
+      router.replace("/login?force=true");
+      router.refresh();
+    });
+  }, [
+    isAuthProfileError,
+    queryClient,
+    router,
+    setStoredAccessToken,
+    setStoredActiveBranchContext,
+    setStoredActiveCompanyId,
+    setStoredActiveCompanyName,
+  ]);
   const activeNavigationScope: MainNavigationScope =
     isAccountRoute
       ? "account"

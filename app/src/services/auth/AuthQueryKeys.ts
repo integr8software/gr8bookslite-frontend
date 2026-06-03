@@ -1,4 +1,5 @@
 export const AuthQueryKeys = {
   all: ["auth"] as const,
-  profile: () => [...AuthQueryKeys.all, "profile"] as const,
+  profile: (tokenScope: string | null = null) =>
+    [...AuthQueryKeys.all, "profile", tokenScope] as const,
 };

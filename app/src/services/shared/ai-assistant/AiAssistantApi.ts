@@ -1,4 +1,5 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import type {
 	AiAssistantChatMessage,
 	AiAssistantChatResponse,
@@ -15,12 +16,20 @@ export async function SendAiAssistantMessage({
 	history,
 	message,
 }: SendAiAssistantMessageParams) {
+	const accessToken = GetAccessToken();
 	const response = await ApiClient.post<AiAssistantChatResponse>(
 		"/ai-assistant/chat",
 		{
 			currentPath,
 			history,
 			message,
+		},
+		{
+			headers: accessToken
+				? {
+						Authorization: `Bearer ${accessToken}`,
+					}
+				: undefined,
 		},
 	);
 

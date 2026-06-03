@@ -6,6 +6,9 @@ import type {
 const ThemeAttributeName = "data-app-theme";
 const AccentColorVariableName = "--skyblue";
 const AccentColorRgbVariableName = "--skyblue-rgb";
+const AccentContrastVariableName = "--skyblue-contrast";
+
+const DarkTextAccentColors = new Set(["#f59e0b"]);
 
 export function ApplyAccountTheme(theme: AccountTheme) {
   if (typeof document === "undefined") {
@@ -25,6 +28,10 @@ export function ApplyAccountAccentColor(accentColor: AccountAccentColor) {
     AccentColorRgbVariableName,
     HexToRgb(accentColor),
   );
+  document.documentElement.style.setProperty(
+    AccentContrastVariableName,
+    GetAccentContrastColor(accentColor),
+  );
 }
 
 function HexToRgb(hexColor: string) {
@@ -34,4 +41,8 @@ function HexToRgb(hexColor: string) {
   const blue = parseInt(normalizedHex.slice(4, 6), 16);
 
   return `${red} ${green} ${blue}`;
+}
+
+function GetAccentContrastColor(accentColor: AccountAccentColor) {
+  return DarkTextAccentColors.has(accentColor.toLowerCase()) ? "#212738" : "#ffffff";
 }

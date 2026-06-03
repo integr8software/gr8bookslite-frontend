@@ -1,4 +1,9 @@
-export type PurchaseRequestStatus = "Draft" | "Open" | "Closed" | "Cancelled";
+export type PurchaseRequestStatus =
+	| "Draft"
+	| "Open"
+	| "Approved"
+	| "Closed"
+	| "Cancelled";
 
 export type PurchaseRequestItem = {
 	id: string;

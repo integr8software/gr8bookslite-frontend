@@ -12,7 +12,7 @@ export type MainModuleAction = Extract<
 >;
 
 const CrudActions: MainModuleAction[] = ["view", "add", "edit"];
-const MockRecordIds = ["1001", "1002", "1003"];
+const ModuleRecordIds = ["1001", "1002", "1003"];
 
 export const SidebarModuleNavigationSections: MainNavigationSection[] = [
   section("dashboard", "Dashboard", "/dashboard", "dashboard", "dashboard", [
@@ -44,13 +44,6 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
             "Charts of Accounts",
             "/maintenance/financial-management/charts-of-accounts",
             "maintenance.chartOfAccounts",
-            "accounting",
-          ),
-          moduleItem(
-            "maintenance-financial-management-multi-currency-setup",
-            "Multi Currency Setup",
-            "/maintenance/financial-management/multi-currency-setup",
-            "maintenance.currency",
             "accounting",
           ),
           moduleItem(
@@ -127,6 +120,13 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
         "maintenance.party",
         "accounting",
         ["accounting", "inventory"],
+      ),
+      moduleItem(
+        "maintenance-form-signatory",
+        "Form Signatory",
+        "/maintenance/form-signatory",
+        "settings",
+        "accounting",
       ),
     ],
   ),
@@ -516,7 +516,7 @@ function moduleItem(
     requiredActions: ["view"],
     module: {
       actions,
-      mockRecordIds: MockRecordIds,
+      recordIds: ModuleRecordIds,
     },
   };
 }

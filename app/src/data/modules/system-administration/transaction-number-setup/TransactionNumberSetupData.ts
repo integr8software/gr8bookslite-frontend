@@ -7,6 +7,7 @@ import type {
 	TransactionNumberSetupRecord,
 	TransactionNumberUsageLog,
 } from "@/app/src/types/modules/system-administration/transaction-number-setup/TransactionNumberSetupTypes";
+import type { WorkspaceCompanyRecord } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
 export const TransactionNumberSetupInitialFormValues: TransactionNumberSetupFormValues =
 	{
@@ -21,7 +22,13 @@ export const TransactionNumberSetupInitialFormValues: TransactionNumberSetupForm
 		description: "",
 	};
 
-export const MockTransactionNumberSetups: TransactionNumberSetupRecord[] = [
+export type TransactionNumberSetupBranchOption = {
+	id: string;
+	code: string;
+	name: string;
+};
+
+export const TransactionNumberSetups: TransactionNumberSetupRecord[] = [
 	{
 		id: "txn-setup-dv-main",
 		moduleCode: "DV",
@@ -30,8 +37,8 @@ export const MockTransactionNumberSetups: TransactionNumberSetupRecord[] = [
 		padding: 8,
 		startingNumber: 1,
 		currentNumber: 101,
-		scope: "branch",
-		branchIds: ["branch-main"],
+		scope: "all",
+		branchIds: [],
 		status: "Active",
 		description: "Main branch disbursement voucher sequence.",
 		lastGeneratedNumber: "MAIN-DV-00000100",
@@ -45,8 +52,8 @@ export const MockTransactionNumberSetups: TransactionNumberSetupRecord[] = [
 		padding: 8,
 		startingNumber: 1,
 		currentNumber: 1,
-		scope: "branch",
-		branchIds: ["branch-north"],
+		scope: "all",
+		branchIds: [],
 		status: "Active",
 		description: "Branch-specific disbursement sequence.",
 	},
@@ -88,8 +95,8 @@ export const MockTransactionNumberSetups: TransactionNumberSetupRecord[] = [
 		padding: 6,
 		startingNumber: 1,
 		currentNumber: 72,
-		scope: "shared",
-		branchIds: ["branch-main", "branch-south"],
+		scope: "all",
+		branchIds: [],
 		status: "Active",
 		description: "Purchase requests shared by head office and satellite.",
 		lastGeneratedNumber: "MAIN-PR-000071",
@@ -97,14 +104,14 @@ export const MockTransactionNumberSetups: TransactionNumberSetupRecord[] = [
 	},
 ];
 
-export const MockTransactionNumberUsageLogs: TransactionNumberUsageLog[] = [
+export const TransactionNumberUsageLogs: TransactionNumberUsageLog[] = [
 	{
 		id: "txn-log-dv-main-100",
 		setupId: "txn-setup-dv-main",
 		moduleCode: "DV",
 		transactionNumber: "MAIN-DV-00000100",
 		runningNumber: 100,
-		branchId: "branch-main",
+		branchId: "workspace",
 		status: "Committed",
 		createdAt: "2026-05-22T09:18:00.000Z",
 	},
@@ -114,7 +121,7 @@ export const MockTransactionNumberUsageLogs: TransactionNumberUsageLog[] = [
 		moduleCode: "CR",
 		transactionNumber: "MAIN-CR-00000041",
 		runningNumber: 41,
-		branchId: "branch-main",
+		branchId: "workspace",
 		status: "Committed",
 		createdAt: "2026-05-22T10:02:00.000Z",
 	},
@@ -124,7 +131,7 @@ export const MockTransactionNumberUsageLogs: TransactionNumberUsageLog[] = [
 		moduleCode: "JV",
 		transactionNumber: "MAIN-JV-00000314",
 		runningNumber: 314,
-		branchId: "branch-south",
+		branchId: "workspace",
 		status: "Committed",
 		createdAt: "2026-05-21T16:40:00.000Z",
 	},
@@ -215,6 +222,20 @@ export function createTransactionNumberSetupFormValues(
 		status: record.status,
 		description: record.description,
 	};
+}
+
+export function getTransactionNumberSetupBranchOptions(
+	companies: WorkspaceCompanyRecord[],
+): TransactionNumberSetupBranchOption[] {
+	return companies
+		.flatMap((company) => company.branches ?? [])
+		.filter((branch) => branch.status === "Active")
+		.map((branch) => ({
+			code: branch.code,
+			id: branch.id,
+			name: branch.name,
+		}))
+		.sort((first, second) => first.name.localeCompare(second.name));
 }
 
 export function createTransactionNumberSetupRecord(

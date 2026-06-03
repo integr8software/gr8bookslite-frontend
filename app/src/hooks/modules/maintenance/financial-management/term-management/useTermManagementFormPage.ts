@@ -12,13 +12,22 @@ import {
 } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
 import type {
 	TermManagementActionMode,
+	TermManagement,
 	TermManagementFormErrors,
 	TermManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 import { validateTermManagementForm } from "@/app/src/validations/modules/maintenance/financial-management/term-management/TermManagementValidation";
 import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
 
-export function useTermManagementFormPage() {
+type TermManagementFormPageOptions = {
+	existingTerm?: TermManagement;
+	mode?: TermManagementActionMode;
+	onSaved?: () => void;
+};
+
+export function useTermManagementFormPage(
+	options: TermManagementFormPageOptions = {},
+) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
@@ -27,8 +36,9 @@ export function useTermManagementFormPage() {
 	const updateTerm = useTermManagementStore((state) => state.updateTerm);
 	const deleteTerm = useTermManagementStore((state) => state.deleteTerm);
 	const isMutating = useTermManagementStore((state) => state.isMutating);
-	const mode = getActionMode(pathname);
-	const existingTerm = terms.find((term) => term.id === params.recordId);
+	const mode = options.mode ?? getActionMode(pathname);
+	const existingTerm =
+		options.existingTerm ?? terms.find((term) => term.id === params.recordId);
 	const isReadonly = mode === "view";
 	const [values, setValues] = useState<TermManagementFormValues>(() =>
 		existingTerm
@@ -84,7 +94,8 @@ export function useTermManagementFormPage() {
 			addTerm(createTermManagementFromForm(values));
 		}
 
-		router.push(TermManagementHref);
+		options.onSaved?.();
+		if (!options.onSaved) router.push(TermManagementHref);
 	}
 
 	function handleConfirmDelete() {

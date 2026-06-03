@@ -15,6 +15,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { MasterPlanAndPackageTable } from "@/app/src/ui/master/plan-and-packages/MasterPlanAndPackageTable";
 
@@ -39,15 +40,20 @@ export function MasterPlanAndPackageListPage() {
 					</Link>
 				}
 			/>
-			<MasterPlanAndPackageSummaryCards summary={page.summary} />
+			<MasterPlanAndPackageSummaryCards
+				isLoading={page.isLoading}
+				summary={page.summary}
+			/>
 			<MasterPlanAndPackageTable {...page} />
 		</section>
 	);
 }
 
 function MasterPlanAndPackageSummaryCards({
+	isLoading,
 	summary,
 }: {
+	isLoading: boolean;
 	summary: {
 		activePlans: number;
 		addOnScalePlans: number;
@@ -100,6 +106,11 @@ function MasterPlanAndPackageSummaryCards({
 		<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
 			{metrics.map((metric) => {
 				const Icon = metric.icon;
+				const value = isLoading ? (
+					<AppSkeleton className="h-7 w-14 rounded-md" />
+				) : (
+					metric.value
+				);
 
 				return (
 					<article
@@ -119,9 +130,9 @@ function MasterPlanAndPackageSummaryCards({
 								<Icon className="h-4 w-4" aria-hidden="true" />
 							</span>
 						</div>
-						<p className="mt-3 text-2xl font-semibold text-darknavy">
-							{metric.value}
-						</p>
+						<div className="mt-3 text-2xl font-semibold text-darknavy">
+							{value}
+						</div>
 					</article>
 				);
 			})}

@@ -1,6 +1,9 @@
 import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react";
 import { BadgeCheck } from "lucide-react";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	joinClasses,
+	moduleAccentClassNames,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 type ModuleHeaderVariant = "plain" | "card" | "panel";
 
@@ -50,7 +53,10 @@ export function ModuleHeader<TTitleElement extends ElementType = "h2">({
 				>
 					{title}
 					<BadgeCheck
-						className="ml-2 inline h-5 w-5 align-middle text-blue-600"
+						className={joinClasses(
+							"ml-2 inline h-5 w-5 align-middle",
+							moduleAccentClassNames.iconText,
+						)}
 						aria-hidden="true"
 					/>
 				</Title>
@@ -78,9 +84,17 @@ export const moduleHeaderActionClassNames = {
 	danger:
 		"inline-flex h-10 items-center justify-center gap-2 rounded-md border border-red-200 bg-white px-4 text-sm font-semibold text-red-600 shadow-sm shadow-darknavy/5 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/15",
 	primary:
-		"inline-flex h-10 items-center justify-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-600/20",
+		joinClasses(
+			"inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold !text-[var(--skyblue-contrast)] shadow-sm transition focus-visible:outline-none focus-visible:ring-4",
+			moduleAccentClassNames.button,
+		),
 	secondary:
-		"inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/75 shadow-sm shadow-darknavy/5 transition hover:border-skyblue/35 hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15",
+		joinClasses(
+			"inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/75 shadow-sm shadow-darknavy/5 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-4",
+			moduleAccentClassNames.hoverBorder,
+			moduleAccentClassNames.hoverSoftBackground,
+			moduleAccentClassNames.focusRing,
+		),
 };
 
 const moduleHeaderVariantClassNames = {
@@ -90,9 +104,9 @@ const moduleHeaderVariantClassNames = {
 };
 
 const moduleHeaderTitleClassNames = {
-	card: "text-3xl font-semibold leading-tight text-darknavy",
-	panel: "text-3xl font-semibold leading-tight text-darknavy",
-	plain: "text-3xl font-semibold leading-tight text-darknavy",
+	card: "text-[1.9rem] font-semibold leading-tight text-darknavy sm:text-3xl",
+	panel: "text-[1.9rem] font-semibold leading-tight text-darknavy sm:text-3xl",
+	plain: "text-[1.9rem] font-semibold leading-tight text-darknavy sm:text-3xl",
 };
 
 const moduleHeaderDescriptionClassNames = {

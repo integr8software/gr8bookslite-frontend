@@ -3,7 +3,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type TransactionTypeFiltersProps = {
 	searchTerm: string;
@@ -32,7 +32,7 @@ export function TransactionTypeFilters({
 				label="Status"
 				value={statusFilter}
 				options={[
-					{ label: "All statuses", value: "" },
+					{ label: "All", value: "" },
 					...TransactionTypeStatusOptions.map((statusOption) => ({
 						label: statusOption,
 						value: statusOption,
@@ -40,7 +40,9 @@ export function TransactionTypeFilters({
 				]}
 				onChange={(value) =>
 					onStatusFilterChange(
-						value as "" | (typeof TransactionTypeStatusOptions)[number],
+						value as
+							| ""
+							| (typeof TransactionTypeStatusOptions)[number],
 					)
 				}
 			/>

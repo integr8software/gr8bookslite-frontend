@@ -1,4 +1,7 @@
 import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type {
+  WorkspaceCompanyRecord,
+} from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
 export type BranchManagementClassification = "branch" | "satellite";
 
@@ -98,6 +101,30 @@ export function createBranchFormValues(
 export function getMainBranchTinOptions(branches: MainBranch[]) {
   return branches.filter(
     (branch) => (branch.kind ?? "branch") === "branch" && Boolean(branch.tin),
+  );
+}
+
+export function mapWorkspaceCompaniesToBranchManagementBranches(
+  companies: WorkspaceCompanyRecord[],
+): MainBranch[] {
+  return companies.flatMap((company) =>
+    (company.branches ?? [])
+      .filter((branch) => branch.status === "Active")
+      .map((branch) => ({
+        access: { edit: true, view: true },
+        address: branch.address,
+        code: branch.code,
+        companyCode: company.initials,
+        contactNo: branch.contactNumber,
+        email: branch.email,
+        href: "/dashboard",
+        id: branch.id,
+        isMain: branch.isMain,
+        kind: branch.branchType === "Satellite" ? "satellite" : "branch",
+        linkedMainBranchId: branch.linkedMainBranchId,
+        name: branch.name,
+        tin: branch.tin,
+      })),
   );
 }
 

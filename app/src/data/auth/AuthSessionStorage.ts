@@ -1,6 +1,5 @@
 const ACCESS_TOKEN_KEY = "gr8booksneo.accessToken";
 const REMEMBER_ME_KEY = "gr8booksneo.rememberMe";
-const THIRTY_DAYS_IN_SECONDS = 60 * 60 * 24 * 30;
 
 function CanUseBrowserStorage() {
   return typeof window !== "undefined";
@@ -10,17 +9,13 @@ function ReadBoolean(value: string | null) {
   return value === "true";
 }
 
-function WriteAccessTokenCookie(accessToken: string, rememberMe: boolean) {
-  if (!CanUseBrowserStorage()) {
-    return;
-  }
+function ReadAccessToken(value: string | null) {
+  const token = value?.trim();
 
-  const encodedToken = encodeURIComponent(accessToken);
-  const maxAge = rememberMe ? `; Max-Age=${THIRTY_DAYS_IN_SECONDS}` : "";
-  document.cookie = `${ACCESS_TOKEN_KEY}=${encodedToken}; Path=/; SameSite=Lax${maxAge}`;
+  return token ? token : null;
 }
 
-function ClearAccessTokenCookie() {
+function ClearLegacyReadableAccessTokenCookie() {
   if (!CanUseBrowserStorage()) {
     return;
   }
@@ -33,16 +28,17 @@ export function SaveAccessToken(accessToken: string, rememberMe: boolean) {
     return;
   }
 
-  window.sessionStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
   window.localStorage.setItem(REMEMBER_ME_KEY, String(rememberMe));
 
   if (rememberMe) {
     window.localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
   } else {
+    window.sessionStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
     window.localStorage.removeItem(ACCESS_TOKEN_KEY);
   }
 
-  WriteAccessTokenCookie(accessToken, rememberMe);
+  ClearLegacyReadableAccessTokenCookie();
 }
 
 export function GetAccessToken() {
@@ -50,13 +46,13 @@ export function GetAccessToken() {
     return null;
   }
 
-  const persistentToken = window.localStorage.getItem(ACCESS_TOKEN_KEY);
+  ClearLegacyReadableAccessTokenCookie();
 
-  if (persistentToken) {
-    return persistentToken;
+  if (GetRememberMePreference()) {
+    return ReadAccessToken(window.localStorage.getItem(ACCESS_TOKEN_KEY));
   }
 
-  return window.sessionStorage.getItem(ACCESS_TOKEN_KEY);
+  return ReadAccessToken(window.sessionStorage.getItem(ACCESS_TOKEN_KEY));
 }
 
 export function GetRememberMePreference() {
@@ -75,5 +71,5 @@ export function ClearAccessToken() {
   window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
   window.localStorage.removeItem(ACCESS_TOKEN_KEY);
   window.localStorage.removeItem(REMEMBER_ME_KEY);
-  ClearAccessTokenCookie();
+  ClearLegacyReadableAccessTokenCookie();
 }

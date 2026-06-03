@@ -16,13 +16,20 @@ import {
 } from "@/app/src/data/modules/maintenance/warehouse-management/WarehouseManagementData";
 import type {
 	WarehouseActionMode,
+	WarehouseRecord,
 	WarehouseFormErrors,
 	WarehouseFormValues,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 import { validateWarehouseForm } from "@/app/src/validations/modules/maintenance/warehouse-management/WarehouseManagementValidation";
 import { useWarehouseManagementStore } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseManagement";
 
-export function useWarehouseFormPage() {
+type WarehouseFormPageOptions = {
+	existingWarehouse?: WarehouseRecord;
+	mode?: WarehouseActionMode;
+	onSaved?: () => void;
+};
+
+export function useWarehouseFormPage(options: WarehouseFormPageOptions = {}) {
 	const params = useParams<{ recordId?: string }>();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -33,8 +40,8 @@ export function useWarehouseFormPage() {
 		updateWarehouse,
 		warehouses,
 	} = useWarehouseManagementStore();
-	const mode = getActionMode(pathname);
-	const existingWarehouse = warehouses.find(
+	const mode = options.mode ?? getActionMode(pathname);
+	const existingWarehouse = options.existingWarehouse ?? warehouses.find(
 		(warehouse) => warehouse.id === params.recordId,
 	);
 	const isReadonly = mode === "view";
@@ -101,7 +108,10 @@ export function useWarehouseFormPage() {
 
 		if (mode === "edit" && existingWarehouse) {
 			updateWarehouse(updateWarehouseRecord(existingWarehouse, values));
-			router.push(`${WarehouseManagementHref}/view/${existingWarehouse.id}`);
+			options.onSaved?.();
+			if (!options.onSaved) {
+				router.push(`${WarehouseManagementHref}/view/${existingWarehouse.id}`);
+			}
 			return;
 		}
 
@@ -111,7 +121,8 @@ export function useWarehouseFormPage() {
 		}
 
 		addWarehouse(createWarehouseRecord(values));
-		router.push(WarehouseManagementHref);
+		options.onSaved?.();
+		if (!options.onSaved) router.push(WarehouseManagementHref);
 	}
 
 	function handleConfirmDelete() {

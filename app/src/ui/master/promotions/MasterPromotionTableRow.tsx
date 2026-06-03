@@ -7,6 +7,7 @@ import {
 import {
 	formatMasterPromotionDate,
 	formatMasterPromotionLimit,
+	formatMasterPromotionStartDate,
 	formatMasterPromotionUsage,
 	formatMasterPromotionValue,
 } from "@/app/src/data/master/promotions/MasterPromotionData";
@@ -16,12 +17,12 @@ import { MasterPromotionRecordActions } from "@/app/src/ui/master/promotions/Mas
 
 type MasterPromotionTableRowProps = {
 	record: MasterPromotionRecord;
-	onToggleStatus: (recordId: string) => void;
+	onDeleteRecord: (record: MasterPromotionRecord) => void;
 };
 
 export function MasterPromotionTableRow({
+	onDeleteRecord,
 	record,
-	onToggleStatus,
 }: MasterPromotionTableRowProps) {
 	const targetLabels = getMasterPromotionTargetLabels(record.targetPlanIds);
 
@@ -44,6 +45,14 @@ export function MasterPromotionTableRow({
 				</div>
 			</td>
 			<td className="px-4 py-4">
+				<p className="text-sm font-semibold text-darknavy">
+					{record.billingCycle}
+				</p>
+				<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/38">
+					{record.type}
+				</p>
+			</td>
+			<td className="px-4 py-4">
 				<p className="line-clamp-2 text-sm font-semibold text-darknavy">
 					{getMasterPromotionTargetSummary(record.targetPlanIds)}
 				</p>
@@ -55,12 +64,20 @@ export function MasterPromotionTableRow({
 			</td>
 			<td className="px-4 py-4">
 				<p className="text-sm font-semibold text-darknavy">
-					{formatMasterPromotionValue(record)}
+					{formatMasterPromotionStartDate(record.startsAt)}
 				</p>
 				<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/38">
 					{record.expiresAt
 						? `Expires ${formatMasterPromotionDate(record.expiresAt)}`
 						: "No expiration"}
+				</p>
+			</td>
+			<td className="px-4 py-4">
+				<p className="text-sm font-semibold text-darknavy">
+					{formatMasterPromotionValue(record)}
+				</p>
+				<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/38">
+					{record.discountKind}
 				</p>
 			</td>
 			<td className="px-4 py-4">
@@ -77,7 +94,7 @@ export function MasterPromotionTableRow({
 			<td className="px-4 py-4">
 				<MasterPromotionRecordActions
 					record={record}
-					onToggleStatus={onToggleStatus}
+					onDeleteRecord={onDeleteRecord}
 				/>
 			</td>
 		</tr>

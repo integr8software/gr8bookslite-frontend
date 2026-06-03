@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, Plus, Sparkles } from "lucide-react";
+import { Building2, Plus } from "lucide-react";
 import { BranchManagementHref } from "@/app/src/constants/modules/branch-manager/BranchManagementConstants";
-import { BranchManagementSpotlightTutorialOpenEvent } from "@/app/src/data/modules/system-administration/branch-management/BranchManagementSpotlightTutorialData";
 import { useBranchManagementStore } from "@/app/src/hooks/modules/system-administration/branch-management/useBranchManagement";
 import {
 	ModuleHeader,
@@ -26,10 +25,6 @@ export function BranchManagementMain() {
 		deleteBranch(branchId);
 	}
 
-	function openSpotlightTutorial() {
-		window.dispatchEvent(new Event(BranchManagementSpotlightTutorialOpenEvent));
-	}
-
 	return (
 		<section className="grid gap-5">
 			<BranchManagementSpotlightTutorial />
@@ -47,14 +42,6 @@ export function BranchManagementMain() {
 				}
 				actions={
 					<>
-						<button
-							type="button"
-							onClick={openSpotlightTutorial}
-							className={moduleHeaderActionClassNames.secondary}
-						>
-							<Sparkles className="h-4 w-4" aria-hidden="true" />
-							Quick Tour
-						</button>
 						<Link
 							href={`${BranchManagementHref}/add`}
 							data-spotlight-id="branch-management-add"

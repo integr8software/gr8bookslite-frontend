@@ -1,16 +1,7 @@
-import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { FinancialManagementMultiCurrencySetupAction } from "@/app/src/ui/modules/maintenance/financial-management/multi-currency-setup/Action";
-
-const PageTitle = "Add Multi Currency Setup";
-
-export const metadata: Metadata = {
-  title: `${PageTitle} | ${AppName}`,
-  description: `${PageTitle} page for ${AppName}.`,
-};
+import { redirect } from "next/navigation";
+import { MultiCurrencySetupHref } from "@/app/src/constants/modules/system-administration/multi-currency-setup/MultiCurrencySetupConstants";
 
 export default function MaintenanceFinancialManagementMultiCurrencySetupAddPage() {
-  return <FinancialManagementMultiCurrencySetupAction />;
+	redirect(`${MultiCurrencySetupHref}/add`);
 }
-
 

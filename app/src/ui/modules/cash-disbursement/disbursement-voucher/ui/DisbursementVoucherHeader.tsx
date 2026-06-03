@@ -16,7 +16,7 @@ export function DisbursementVoucherHeader({
   onStartVoucher: () => void;
 }) {
   const accentPrimaryActionClassName =
-    "theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold shadow-sm shadow-[rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
+    "theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
   const linkedVoucherCount = previewRows.filter((row) => row.voucher).length;
   const pendingVoucherCount = previewRows.length - linkedVoucherCount;
   const metrics: ModuleMetricItem[] = [
@@ -45,16 +45,18 @@ export function DisbursementVoucherHeader({
 
   return (
     <section className="grid gap-5">
-      <div className="rounded-[28px] border border-darknavy/10 bg-white p-6 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-8">
+      <div className="rounded-xl border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5 sm:p-6 lg:p-8">
         <ModuleHeader
           eyebrow="Cash Disbursement Desk"
           title="Disbursement voucher control center"
           description="Search source transactions, preview linked vouchers, and launch the shared drawer form for new or edit encoding when a transaction is ready."
+          actionsClassName="w-full sm:w-auto"
+          titleClassName="text-[1.9rem] sm:text-3xl"
           actions={
             <button
               type="button"
               onClick={onStartVoucher}
-              className={accentPrimaryActionClassName}
+              className={`${accentPrimaryActionClassName} w-full sm:w-auto`}
             >
               Start New Voucher
               <ArrowRight className="h-4 w-4" aria-hidden="true" />

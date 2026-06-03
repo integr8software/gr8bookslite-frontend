@@ -5,22 +5,26 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type ResponsibilityCenterTableRowProps = {
 	center: ResponsibilityCenter;
 	parentName?: string;
 	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
+	onEditCenter: (center: ResponsibilityCenter) => void;
 };
 
 export function ResponsibilityCenterTableRow({
 	center,
 	parentName,
 	onStatusChangeCenter,
+	onEditCenter,
 }: ResponsibilityCenterTableRowProps) {
 	return (
 		<tr className="module-table-row">
-			<td className="px-4 py-4 font-medium text-darknavy">{center.code}</td>
+			<td className="px-4 py-4 font-medium text-darknavy">
+				{center.code}
+			</td>
 			<td className="px-4 py-4">
 				<CenterIdentity center={center} parentName={parentName} />
 			</td>
@@ -33,6 +37,7 @@ export function ResponsibilityCenterTableRow({
 				<RowActions
 					center={center}
 					onStatusChangeCenter={onStatusChangeCenter}
+					onEditCenter={() => onEditCenter(center)}
 				/>
 			</td>
 		</tr>
@@ -55,7 +60,9 @@ function CenterIdentity({
 					{center.name}
 				</h3>
 				<p className="mt-1 truncate text-xs text-darknavy/50">
-					{parentName ? `Reports to ${parentName}` : "Top-level center"}
+					{parentName
+						? `Reports to ${parentName}`
+						: "Top-level center"}
 				</p>
 			</div>
 		</div>
@@ -64,9 +71,11 @@ function CenterIdentity({
 function RowActions({
 	center,
 	onStatusChangeCenter,
+	onEditCenter,
 }: {
 	center: ResponsibilityCenter;
 	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
+	onEditCenter: () => void;
 }) {
 	const nextStatus = center.status === "Active" ? "Inactive" : "Active";
 
@@ -77,9 +86,9 @@ function RowActions({
 				href={`${ResponsibilityCenterHref}/view/${center.id}`}
 				label={`View ${center.name}`}
 			/>
-			<ModuleTableActionLink
+			<ModuleTableActionButton
 				variant="edit"
-				href={`${ResponsibilityCenterHref}/edit/${center.id}`}
+				onClick={onEditCenter}
 				label={`Edit ${center.name}`}
 			/>
 			<ModuleTableActionButton

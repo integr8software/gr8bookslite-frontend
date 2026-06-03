@@ -10,10 +10,14 @@ import { UserListTableRow } from "@/app/src/ui/modules/system-administration/use
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 
 export function UserListTable({
+	isLoading = false,
+	isRoleUpdating = false,
 	users,
 	userRoles,
 	onRoleChange,
 }: {
+	isLoading?: boolean;
+	isRoleUpdating?: boolean;
 	users: UserManagementRecord[];
 	userRoles: UserRoleRecord[];
 	onRoleChange: (user: UserManagementRecord, userRoleId: string) => void;
@@ -30,6 +34,7 @@ export function UserListTable({
 				emptyDescription="Try adjusting your filters or search query."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No users found"
+				isLoading={isLoading}
 				minWidthClassName="min-w-[40rem] sm:min-w-[44rem] lg:min-w-[50rem]"
 				paginationStorageKey={UserListTablePaginationStorageKey}
 				table={userList.table}
@@ -48,6 +53,7 @@ export function UserListTable({
 						key={id}
 						user={original}
 						userRoles={userRoles}
+						isRoleUpdating={isRoleUpdating}
 						onRoleChange={onRoleChange}
 					/>
 				)}

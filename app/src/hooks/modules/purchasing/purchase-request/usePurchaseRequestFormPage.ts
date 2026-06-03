@@ -1,14 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { PurchaseRequestHref } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
+import { AiAssistantPurchaseRequestPrefillStorageKey } from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
 import {
 	createPurchaseRequestFormValues,
 	createPurchaseRequestId,
 	createPurchaseRequestRecord,
 	emptyPurchaseRequestItem,
+	applyPurchaseRequestSignatoryValues,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
@@ -17,6 +19,7 @@ import type {
 	PurchaseRequestItem,
 	PurchaseRequestFormMode,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import type { AiAssistantPurchaseRequestPrefill } from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
 import { validatePurchaseRequestForm } from "@/app/src/validations/modules/purchasing/purchase-request/PurchaseRequestValidation";
 import { usePurchaseRequestStore } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequest";
 
@@ -29,11 +32,29 @@ export function usePurchaseRequestFormPage() {
 	const mode = getPurchaseRequestFormMode(pathname);
 	const isReadonly = mode === "view";
 	const existingRequest = requests.find((request) => request.id === params.recordId);
-	const [values, setValues] = useState<PurchaseRequestFormValues>(() =>
-		createPurchaseRequestFormValues(existingRequest),
-	);
+	const assistantPrefill =
+		mode === "add" && searchParams.get("assistant") === "1"
+			? loadAssistantPurchaseRequestPrefill()
+			: null;
+	const [values, setValues] = useState<PurchaseRequestFormValues>(() => {
+		const initialValues = createPurchaseRequestFormValues(existingRequest);
+
+		if (!assistantPrefill) {
+			return initialValues;
+		}
+
+		return applyAssistantPurchaseRequestPrefill(initialValues, assistantPrefill);
+	});
 	const [errors, setErrors] = useState<PurchaseRequestFormErrors>({});
 	const [showPreview, setShowPreview] = useState(searchParams.get("preview") === "1");
+
+	useEffect(() => {
+		if (!assistantPrefill) {
+			return;
+		}
+
+		clearAssistantPurchaseRequestPrefill();
+	}, [assistantPrefill]);
 
 	const previewRecord = useMemo(
 		() => createPurchaseRequestRecord(values, params.recordId ?? "preview"),
@@ -53,7 +74,15 @@ export function usePurchaseRequestFormPage() {
 				? FormatTinNumber(value)
 				: value;
 
-		setValues((current) => ({ ...current, [field]: nextValue }));
+		setValues((current) => {
+			const nextValues = { ...current, [field]: nextValue };
+
+			if (field === "status") {
+				return applyPurchaseRequestSignatoryValues(nextValues);
+			}
+
+			return nextValues;
+		});
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
@@ -163,4 +192,58 @@ function getPurchaseRequestFormMode(pathname: string): PurchaseRequestFormMode {
 	}
 
 	return "add";
+}
+
+function loadAssistantPurchaseRequestPrefill() {
+	if (typeof window === "undefined") {
+		return null;
+	}
+
+	try {
+		const stored = window.localStorage.getItem(
+			AiAssistantPurchaseRequestPrefillStorageKey,
+		);
+
+		if (!stored) {
+			return null;
+		}
+
+		return JSON.parse(stored) as AiAssistantPurchaseRequestPrefill;
+	} catch {
+		return null;
+	}
+}
+
+function clearAssistantPurchaseRequestPrefill() {
+	if (typeof window === "undefined") {
+		return;
+	}
+
+	window.localStorage.removeItem(AiAssistantPurchaseRequestPrefillStorageKey);
+}
+
+function applyAssistantPurchaseRequestPrefill(
+	values: PurchaseRequestFormValues,
+	prefill: AiAssistantPurchaseRequestPrefill,
+): PurchaseRequestFormValues {
+	const items =
+		prefill.items && prefill.items.length > 0
+			? prefill.items.map((item) => ({
+					...emptyPurchaseRequestItem,
+					id: createPurchaseRequestId("item"),
+					description: item.description ?? "",
+					quantity: Number(item.quantity) || 1,
+					uom: item.uom || "PC",
+					cost: Number(item.cost) || 0,
+				}))
+			: values.items;
+
+	return {
+		...values,
+		purchaseType: prefill.purchaseType || values.purchaseType,
+		vceName: prefill.supplierName || values.vceName,
+		forDepartment: prefill.department || values.forDepartment,
+		remarks: prefill.remarks || values.remarks,
+		items,
+	};
 }

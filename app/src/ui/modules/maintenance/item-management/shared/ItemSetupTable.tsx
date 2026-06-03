@@ -16,6 +16,7 @@ type ItemSetupTableProps = Pick<
 	kind: ItemSetupKind;
 	toolbar?: ReactNode;
 	onToggleExpanded: (recordId: string) => void;
+	onEditRecord: (kind: ItemSetupKind, record: ReturnType<typeof useItemSetupListPage>["records"][number]) => void;
 };
 
 export function ItemSetupTable({
@@ -23,6 +24,7 @@ export function ItemSetupTable({
 	isLoading,
 	kind,
 	onToggleExpanded,
+	onEditRecord,
 	setPendingDeleteRecord,
 	table,
 	toolbar,
@@ -44,6 +46,7 @@ export function ItemSetupTable({
 					row={original}
 					onDeleteRecord={setPendingDeleteRecord}
 					onToggleExpanded={onToggleExpanded}
+					onEditRecord={onEditRecord}
 				/>
 			)}
 		/>

@@ -1,14 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { Home, Plus } from "lucide-react";
 import {
-	ResponsibilityCenterHref,
 	ResponsibilityCenterStatusOptions,
 	ResponsibilityCenterTypeOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/financial-management/responsibility-center/useResponsibilityCenter";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type {
 	ResponsibilityCenter,
 	ResponsibilityCenterStatus,
@@ -22,28 +21,42 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { ResponsibilityCenterSetStatusDialog } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterSetStatusDialog";
 import { ResponsibilityCenterTable } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTable";
+import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterDrawer";
+
+type DrawerState = {
+	center?: ResponsibilityCenter;
+	mode: "add" | "edit";
+} | null;
 
 export function ResponsibilityCenterMain() {
 	const centers = useResponsibilityCenterStore((state) => state.centers);
 	const updateCenter = useResponsibilityCenterStore(
 		(state) => state.updateCenter,
 	);
-	const isMutating = useResponsibilityCenterStore((state) => state.isMutating);
+	const isMutating = useResponsibilityCenterStore(
+		(state) => state.isMutating,
+	);
 	const [pendingStatusCenter, setPendingStatusCenter] =
 		useState<ResponsibilityCenter | null>(null);
+	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	const [query, setQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState("All");
 	const [typeFilter, setTypeFilter] = useState("All");
+	useMaintenanceAddDrawerSpotlight(
+		() => setDrawerState({ mode: "add" }),
+		() => setDrawerState(null),
+	);
 	const filteredCenters = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
 		return centers.filter((center) => {
 			const parentName = center.parentId
-				? centers.find((parentCenter) => parentCenter.id === center.parentId)
-						?.name
+				? centers.find(
+						(parentCenter) => parentCenter.id === center.parentId,
+					)?.name
 				: "";
 
 			if (statusFilter !== "All" && center.status !== statusFilter) {
@@ -109,13 +122,14 @@ export function ResponsibilityCenterMain() {
 					</>
 				}
 				actions={
-					<Link
-						href={`${ResponsibilityCenterHref}/add`}
+					<button
+						type="button"
+						onClick={() => setDrawerState({ mode: "add" })}
 						className={moduleHeaderActionClassNames.primary}
 					>
 						<Plus className="h-4 w-4" aria-hidden="true" />
 						Add Center
-					</Link>
+					</button>
 				}
 			/>
 			<ResponsibilityCenterTable
@@ -132,11 +146,13 @@ export function ResponsibilityCenterMain() {
 							label="Type"
 							value={typeFilter}
 							options={[
-								{ label: "All types", value: "All" },
-								...ResponsibilityCenterTypeOptions.map((type) => ({
-									label: type,
-									value: type,
-								})),
+								{ label: "All", value: "All" },
+								...ResponsibilityCenterTypeOptions.map(
+									(type) => ({
+										label: type,
+										value: type,
+									}),
+								),
 							]}
 							onChange={setTypeFilter}
 						/>
@@ -144,11 +160,13 @@ export function ResponsibilityCenterMain() {
 							label="Status"
 							value={statusFilter}
 							options={[
-								{ label: "All statuses", value: "All" },
-								...ResponsibilityCenterStatusOptions.map((status) => ({
-									label: status,
-									value: status,
-								})),
+								{ label: "All", value: "All" },
+								...ResponsibilityCenterStatusOptions.map(
+									(status) => ({
+										label: status,
+										value: status,
+									}),
+								),
 							]}
 							onChange={setStatusFilter}
 						/>
@@ -158,6 +176,13 @@ export function ResponsibilityCenterMain() {
 					</ModuleTableToolbar>
 				}
 				onStatusChangeCenter={setPendingStatusCenter}
+				onEditCenter={(center) => setDrawerState({ center, mode: "edit" })}
+			/>
+			<ResponsibilityCenterDrawer
+				center={drawerState?.center}
+				isOpen={Boolean(drawerState)}
+				mode={drawerState?.mode ?? "add"}
+				onClose={() => setDrawerState(null)}
 			/>
 			<ResponsibilityCenterSetStatusDialog
 				center={pendingStatusCenter}
@@ -169,4 +194,3 @@ export function ResponsibilityCenterMain() {
 		</section>
 	);
 }
-

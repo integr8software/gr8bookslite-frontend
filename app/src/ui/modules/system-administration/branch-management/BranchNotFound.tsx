@@ -6,7 +6,7 @@ export function BranchNotFound() {
     <section className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
       <h2 className="text-xl font-semibold text-darknavy">Branch Not Found</h2>
       <p className="mt-2 text-sm text-darknavy/55">
-        The selected branch record is not available in the mock branch store.
+        The selected branch record is not available in the branch list.
       </p>
       <Link
         href={BranchManagementHref}

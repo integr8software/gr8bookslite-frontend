@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Building2, ExternalLink } from "lucide-react";
-import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
+import { WorkspaceCompaniesHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import { useMasterCompanyManagementPage } from "@/app/src/hooks/master/company-management/useMasterCompanyManagementPage";
 import {
 	ModuleHeader,

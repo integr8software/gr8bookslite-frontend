@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   InitialBillingPaymentFormValues,
   type BillingCycle,
@@ -30,7 +29,7 @@ function GetBlockingSubscriptionStatuses() {
 export function useBillingSubscriptionManager() {
   const queryClient = useQueryClient();
   const storedAccessToken = useAppStore((state) => state.accessToken);
-  const accessToken = storedAccessToken ?? GetAccessToken();
+  const accessToken = storedAccessToken;
   const [selectedPlanCode, setSelectedPlanCode] = useState<string>("");
   const [selectedBillingCycle, setSelectedBillingCycle] =
     useState<BillingCycle>("monthly");
@@ -41,7 +40,8 @@ export function useBillingSubscriptionManager() {
     {},
   );
 
-  const plansQuery = useBillingPlansQuery({ accessToken });
+  const planScope = "ONBOARDING";
+  const plansQuery = useBillingPlansQuery({ accessToken, scope: planScope });
   const currentSubscriptionQuery = useCurrentBillingSubscriptionQuery({
     accessToken,
   });
@@ -54,10 +54,6 @@ export function useBillingSubscriptionManager() {
 
   const subscribeMutation = useMutation({
     mutationFn: async () => {
-      if (!accessToken) {
-        throw new Error("You need to sign in before managing billing.");
-      }
-
       const paymentValidation = validateBillingPaymentForm(paymentValues);
 
       if (!resolvedSelectedPlanCode) {
@@ -96,7 +92,7 @@ export function useBillingSubscriptionManager() {
           queryKey: BillingQueryKeys.currentSubscription(),
         }),
         queryClient.invalidateQueries({
-          queryKey: BillingQueryKeys.plans(),
+          queryKey: BillingQueryKeys.plans(planScope),
         }),
       ]);
 
@@ -123,10 +119,6 @@ export function useBillingSubscriptionManager() {
 
   const cancelSubscriptionMutation = useMutation({
     mutationFn: async (cancelAtPeriodEnd: boolean) => {
-      if (!accessToken) {
-        throw new Error("You need to sign in before managing billing.");
-      }
-
       if (!currentSubscription) {
         throw new Error("There is no current subscription to cancel.");
       }

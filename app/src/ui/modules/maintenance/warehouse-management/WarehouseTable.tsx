@@ -12,6 +12,7 @@ type WarehouseTableProps = Pick<
 	"isLoading" | "setPendingDeleteWarehouse" | "table"
 > & {
 	toolbar?: ReactNode;
+	onEditWarehouse: (warehouse: ReturnType<typeof useWarehouseListPage>["warehouses"][number]) => void;
 };
 
 export function WarehouseTable({
@@ -19,6 +20,7 @@ export function WarehouseTable({
 	setPendingDeleteWarehouse,
 	table,
 	toolbar,
+	onEditWarehouse,
 }: WarehouseTableProps) {
 	return (
 		<ModuleTable
@@ -35,6 +37,7 @@ export function WarehouseTable({
 					key={id}
 					warehouse={original}
 					onDeleteWarehouse={setPendingDeleteWarehouse}
+					onEditWarehouse={onEditWarehouse}
 				/>
 			)}
 		/>

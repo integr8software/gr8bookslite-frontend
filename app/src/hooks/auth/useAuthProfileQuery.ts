@@ -6,14 +6,17 @@ import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 
 type UseAuthProfileQueryParams = {
   accessToken: string | null;
+  enabled?: boolean;
 };
 
 export function useAuthProfileQuery({
   accessToken,
+  enabled = true,
 }: UseAuthProfileQueryParams) {
   return useQuery({
-    queryKey: AuthQueryKeys.profile(accessToken),
-    queryFn: async () => GetAuthProfile(accessToken as string),
-    enabled: Boolean(accessToken),
+    enabled,
+    queryKey: AuthQueryKeys.profile(),
+    queryFn: async () => GetAuthProfile(accessToken),
+    retry: false,
   });
 }

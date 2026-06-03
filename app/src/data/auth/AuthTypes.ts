@@ -25,6 +25,7 @@ export type AuthFormValues = {
 export type AuthActionState = {
   status: "idle" | "error" | "success";
   message: string;
+  code?: string;
   errors?: AuthFieldErrors;
   formValues?: AuthFormValues;
   redirectTo?: string;

@@ -10,7 +10,7 @@ import {
   type PaginationState,
   type SortingState,
 } from "@tanstack/react-table";
-import { CirclePlus, Trash2, X } from "lucide-react";
+import { CirclePlus, LayoutGrid, Trash2, X } from "lucide-react";
 import {
   createTaxDetails,
   formatCurrency,
@@ -37,6 +37,7 @@ type AccountingEntriesDialogProps = {
   onBack: () => void;
   onClose: () => void;
   onDraftChange: (draft: DisbursementVoucherEntryDraft) => void;
+  onOpenGridView: () => void;
   onProceed: () => void;
   onRemoveEntry: (entryId: string) => void;
   onUpdateEntryTax: (
@@ -59,12 +60,13 @@ export function AccountingEntriesDialog({
   onBack,
   onClose,
   onDraftChange,
+  onOpenGridView,
   onProceed,
   onRemoveEntry,
   onUpdateEntryTax,
 }: AccountingEntriesDialogProps) {
   const accentPrimaryButtonClassName =
-    "theme-accent-contrast-text inline-flex items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85";
+    "theme-accent-contrast-text inline-flex items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85";
   const [isTaxDialogOpen, setIsTaxDialogOpen] = useState(false);
   const [taxTargetEntryId, setTaxTargetEntryId] = useState<string | null>(null);
   const [taxRateDraft, setTaxRateDraft] = useState(entryDraft.taxRate);
@@ -154,6 +156,16 @@ export function AccountingEntriesDialog({
     return Number(entryDraft.debit || 0) || Number(entryDraft.credit || 0);
   }
 
+  function updateDraftField(
+    field: keyof Omit<DisbursementVoucherEntryDraft, "taxRate" | "taxDetails">,
+    value: string,
+  ) {
+    onDraftChange({
+      ...entryDraft,
+      [field]: value,
+    });
+  }
+
   function openTaxDialog() {
     const amount = getEntryAmount();
     setTaxTargetEntryId(null);
@@ -195,7 +207,9 @@ export function AccountingEntriesDialog({
 
   function handleTaxSave() {
     if (taxTargetEntryId) {
-      const matchedEntry = entries.find((entry) => entry.id === taxTargetEntryId);
+      const matchedEntry = entries.find(
+        (entry) => entry.id === taxTargetEntryId,
+      );
 
       if (matchedEntry) {
         const amount = matchedEntry.debit || matchedEntry.credit || 0;
@@ -229,7 +243,7 @@ export function AccountingEntriesDialog({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-80 flex items-center justify-center bg-darknavy/45 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-80 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -287,6 +301,14 @@ export function AccountingEntriesDialog({
                   <CirclePlus className="h-4 w-4" aria-hidden="true" />
                   Auto Entries
                 </button>
+                <button
+                  type="button"
+                  onClick={onOpenGridView}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-skyblue/20 bg-skyblue/8 px-4 text-sm font-semibold text-skyblue transition hover:bg-skyblue/12"
+                >
+                  <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+                  Data Grid View
+                </button>
               </div>
             </div>
 
@@ -333,10 +355,7 @@ export function AccountingEntriesDialog({
                     <input
                       value={entryDraft.accountCode}
                       onChange={(event) =>
-                        onDraftChange({
-                          ...entryDraft,
-                          accountCode: event.target.value,
-                        })
+                        updateDraftField("accountCode", event.target.value)
                       }
                       className={EntryFieldClassName}
                       placeholder="e.g. 5010-001"
@@ -346,10 +365,7 @@ export function AccountingEntriesDialog({
                     <input
                       value={entryDraft.accountName}
                       onChange={(event) =>
-                        onDraftChange({
-                          ...entryDraft,
-                          accountName: event.target.value,
-                        })
+                        updateDraftField("accountName", event.target.value)
                       }
                       className={EntryFieldClassName}
                       placeholder="Office Supplies Expense"
@@ -359,10 +375,7 @@ export function AccountingEntriesDialog({
                     <input
                       value={entryDraft.particulars}
                       onChange={(event) =>
-                        onDraftChange({
-                          ...entryDraft,
-                          particulars: event.target.value,
-                        })
+                        updateDraftField("particulars", event.target.value)
                       }
                       className={EntryFieldClassName}
                       placeholder="Describe the accounting line"
@@ -387,10 +400,7 @@ export function AccountingEntriesDialog({
                       <input
                         value={entryDraft.debit}
                         onChange={(event) =>
-                          onDraftChange({
-                            ...entryDraft,
-                            debit: event.target.value,
-                          })
+                          updateDraftField("debit", event.target.value)
                         }
                         className={`${EntryFieldClassName} text-right`}
                         placeholder="0.00"
@@ -400,10 +410,7 @@ export function AccountingEntriesDialog({
                       <input
                         value={entryDraft.credit}
                         onChange={(event) =>
-                          onDraftChange({
-                            ...entryDraft,
-                            credit: event.target.value,
-                          })
+                          updateDraftField("credit", event.target.value)
                         }
                         className={`${EntryFieldClassName} text-right`}
                         placeholder="0.00"
@@ -420,8 +427,8 @@ export function AccountingEntriesDialog({
                       </p>
                     ) : (
                       <p className="text-sm text-darknavy/55">
-                        Add the journal lines manually or use the default
-                        entries.
+                        Add the journal lines manually or open Data Grid View
+                        for spreadsheet-style encoding.
                       </p>
                     )}
                   </div>
@@ -473,7 +480,9 @@ export function AccountingEntriesDialog({
                             Debit
                           </p>
                           <p className="mt-2 text-sm font-semibold text-darknavy">
-                            {entry.debit > 0 ? formatCurrency(entry.debit) : "-"}
+                            {entry.debit > 0
+                              ? formatCurrency(entry.debit)
+                              : "-"}
                           </p>
                         </div>
                         <div className="border border-darknavy/10 bg-offwhite/40 px-3 py-3">
@@ -519,10 +528,7 @@ export function AccountingEntriesDialog({
                   pageSizeOptions={[5, 10, 15]}
                   table={entryTable}
                   renderRow={({ id, original }) => (
-                    <tr
-                      key={id}
-                      className="transition hover:bg-skyblue/5"
-                    >
+                    <tr key={id} className="transition hover:bg-skyblue/5">
                       <td className="px-5 py-4 text-sm font-semibold text-darknavy">
                         {original.accountCode}
                       </td>
@@ -542,7 +548,9 @@ export function AccountingEntriesDialog({
                         </button>
                       </td>
                       <td className="px-5 py-4 text-right text-sm text-darknavy/72">
-                        {original.debit > 0 ? formatCurrency(original.debit) : "-"}
+                        {original.debit > 0
+                          ? formatCurrency(original.debit)
+                          : "-"}
                       </td>
                       <td className="px-5 py-4 text-right text-sm text-darknavy/72">
                         {original.credit > 0
@@ -556,7 +564,10 @@ export function AccountingEntriesDialog({
                             onClick={() => onRemoveEntry(original.id)}
                             className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-coralpink/12 px-3 text-xs font-semibold text-coralpink transition hover:bg-coralpink/18"
                           >
-                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                            <Trash2
+                              className="h-3.5 w-3.5"
+                              aria-hidden="true"
+                            />
                             Remove
                           </button>
                         </div>
@@ -621,7 +632,10 @@ function TaxDetailsDialog({
   onClose: () => void;
   onSave: () => void;
   onTaxDetailsChange: (value: DisbursementTaxDetails) => void;
-  onTaxRateChange: (value: string, nextTaxDetails?: DisbursementTaxDetails) => void;
+  onTaxRateChange: (
+    value: string,
+    nextTaxDetails?: DisbursementTaxDetails,
+  ) => void;
 }) {
   if (!isOpen) {
     return null;
@@ -630,7 +644,7 @@ function TaxDetailsDialog({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-darknavy/45 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -775,7 +789,7 @@ function TaxDetailsDialog({
           <button
             type="button"
             onClick={onSave}
-            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
+            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85"
           >
             Save
           </button>

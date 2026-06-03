@@ -10,7 +10,7 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type PurchaseRequestTableRowProps = {
 	request: PurchaseRequestRecord;
@@ -26,9 +26,13 @@ export function PurchaseRequestTableRow({
 			<td className="px-4 py-4 font-semibold">{request.transNo}</td>
 			<td className="px-4 py-4">
 				<div className="font-medium">{request.vceName}</div>
-				<div className="text-xs text-darknavy/55">{request.vceCode}</div>
+				<div className="text-xs text-darknavy/55">
+					{request.vceCode}
+				</div>
 			</td>
-			<td className="px-4 py-4">{formatPurchaseRequestDate(request.prDate)}</td>
+			<td className="px-4 py-4">
+				{formatPurchaseRequestDate(request.prDate)}
+			</td>
 			<td className="px-4 py-4">{request.purchaseType}</td>
 			<td className="px-4 py-4">
 				<span className="inline-flex rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">
@@ -36,7 +40,9 @@ export function PurchaseRequestTableRow({
 				</span>
 			</td>
 			<td className="px-4 py-4 text-right font-semibold">
-				{formatPurchaseRequestCurrency(getPurchaseRequestTotal(request))}
+				{formatPurchaseRequestCurrency(
+					getPurchaseRequestTotal(request),
+				)}
 			</td>
 			<td className="px-4 py-4">
 				<ModuleTableActions>

@@ -12,14 +12,23 @@ import type {
   PettyCashVoucherFormMode,
   PettyCashVoucherFormErrors,
   PettyCashVoucherFormValues,
+  PettyCashVoucherRecord,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { validatePettyCashVoucherForm } from "@/app/src/validations/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherValidation";
 
-export function usePettyCashVoucherFormPage() {
+type PettyCashVoucherFormPageOptions = {
+  existingVoucher?: PettyCashVoucherRecord;
+  mode?: PettyCashVoucherFormMode;
+  onSaved?: () => void;
+};
+
+export function usePettyCashVoucherFormPage(
+  options: PettyCashVoucherFormPageOptions = {},
+) {
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const mode = getPettyCashVoucherFormMode(pathname);
-  const existingVoucher = PettyCashVoucherRecords.find(
+  const mode = options.mode ?? getPettyCashVoucherFormMode(pathname);
+  const existingVoucher = options.existingVoucher ?? PettyCashVoucherRecords.find(
     (record) => record.id === params.recordId,
   );
   const isReadonly = mode === "view";
@@ -61,6 +70,7 @@ export function usePettyCashVoucherFormPage() {
         ? "Petty cash voucher updated."
         : "Petty cash voucher created.",
     );
+    options.onSaved?.();
     return true;
   }
 

@@ -1,4 +1,7 @@
-import { PurchaseRequestCurrencyOptions } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
+import {
+	PurchaseRequestCurrencyOptions,
+	PurchaseRequestStatusOptions,
+} from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import type {
 	PurchaseRequestFormErrors,
 	PurchaseRequestFormValues,
@@ -96,6 +99,26 @@ export function PurchaseRequestDetailsPanel({
 						className={PurchaseRequestFieldClassName}
 					>
 						{PurchaseRequestCurrencyOptions.map((option) => (
+							<option key={option} value={option}>
+								{option}
+							</option>
+						))}
+					</select>
+				</PurchaseRequestFormField>
+				<PurchaseRequestFormField
+					label="Status"
+					required
+					error={errors.status}
+				>
+					<select
+						value={values.status}
+						disabled={isReadonly}
+						onChange={(event) =>
+							updateField("status", event.target.value as typeof values.status)
+						}
+						className={PurchaseRequestFieldClassName}
+					>
+						{PurchaseRequestStatusOptions.map((option) => (
 							<option key={option} value={option}>
 								{option}
 							</option>

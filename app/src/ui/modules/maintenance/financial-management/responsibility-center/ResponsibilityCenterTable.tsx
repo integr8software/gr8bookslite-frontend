@@ -12,12 +12,14 @@ type ResponsibilityCenterTableProps = {
 	centers: ResponsibilityCenter[];
 	toolbar?: ReactNode;
 	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
+	onEditCenter: (center: ResponsibilityCenter) => void;
 };
 
 export function ResponsibilityCenterTable({
 	centers,
 	toolbar,
 	onStatusChangeCenter,
+	onEditCenter,
 }: ResponsibilityCenterTableProps) {
 	const centerById = new Map(centers.map((center) => [center.id, center]));
 	const table = useResponsibilityCenterTable(centers);
@@ -41,6 +43,7 @@ export function ResponsibilityCenterTable({
 							: undefined
 					}
 					onStatusChangeCenter={onStatusChangeCenter}
+					onEditCenter={onEditCenter}
 				/>
 			)}
 		/>

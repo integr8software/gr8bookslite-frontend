@@ -1,5 +1,6 @@
 import type {
   PartyClassification,
+  PartyInformationStatus,
   PartyType,
   VatRegistrationType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
@@ -32,6 +33,11 @@ export const PartyTypeOptions = [
   "Customer",
   "Employee",
 ] as const satisfies readonly PartyType[];
+
+export const PartyInformationStatusOptions = [
+  "Active",
+  "Inactive",
+] as const satisfies readonly PartyInformationStatus[];
 
 export const VatRegistrationTypeOptions = [
   "VAT Registered",
@@ -70,6 +76,7 @@ export const PartyManagementTableColumns = [
     className: "w-[11rem]",
   },
   { key: "partyTypesLabel", label: "Type", className: "w-[12rem]" },
+  { key: "status", label: "Status", className: "w-[9rem]" },
   { key: "addressLabel", label: "Address", className: "w-[28rem]" },
   {
     label: "Actions",

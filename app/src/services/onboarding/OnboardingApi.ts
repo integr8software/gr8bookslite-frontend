@@ -13,7 +13,7 @@ import type {
 
 function GetAuthorizationHeaders(accessToken: string | null) {
   if (!accessToken) {
-    throw new Error("Your session has expired. Please sign in again.");
+    return undefined;
   }
 
   return {

@@ -212,6 +212,7 @@ export function useOnboardingSubmission({
           logoPublicUrl: logoPublicUrl || undefined,
           address: values.address.trim(),
           tin: values.tin.trim(),
+          companyEmail: values.companyEmail.trim(),
           website: values.website.trim() || undefined,
           contactNumber: values.contactNumber.trim(),
           reportStartDate: values.reportStartDate,

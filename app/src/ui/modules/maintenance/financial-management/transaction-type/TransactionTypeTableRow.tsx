@@ -4,16 +4,18 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type TransactionTypeTableRowProps = {
 	transactionType: TransactionType;
 	onDelete: (transactionType: TransactionType) => void;
+	onEdit: (transactionType: TransactionType) => void;
 };
 
 export function TransactionTypeTableRow({
 	transactionType,
 	onDelete,
+	onEdit,
 }: TransactionTypeTableRowProps) {
 	return (
 		<tr className="module-table-row">
@@ -39,9 +41,9 @@ export function TransactionTypeTableRow({
 						href={`${TransactionTypeHref}/view/${transactionType.id}`}
 						label={`View ${transactionType.description}`}
 					/>
-					<ModuleTableActionLink
+					<ModuleTableActionButton
 						variant="edit"
-						href={`${TransactionTypeHref}/edit/${transactionType.id}`}
+						onClick={() => onEdit(transactionType)}
 						label={`Edit ${transactionType.description}`}
 					/>
 					<ModuleTableActionButton

@@ -63,7 +63,7 @@ export function MainNotificationsPanel({
 						Notifications
 					</h2>
 					{unreadCount > 0 ? (
-						<span className="rounded bg-coralpink/10 px-2 py-0.5 text-xs font-semibold text-coralpink">
+						<span className="theme-accent-contrast-text rounded bg-skyblue px-2 py-0.5 text-xs font-semibold !text-[var(--skyblue-contrast)]">
 							{unreadCount}
 						</span>
 					) : null}

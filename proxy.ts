@@ -1,24 +1,12 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
-const ACCESS_TOKEN_COOKIE = "gr8booksneo.accessToken";
+import { ResolveAuthProxyResponse } from "@/app/src/services/auth/AuthProxyGuard";
 
 export function proxy(request: NextRequest) {
-  const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
-
-  if (accessToken) {
-    return NextResponse.next();
-  }
-
-  const loginUrl = new URL("/login", request.url);
-  loginUrl.searchParams.set(
-    "redirect",
-    `${request.nextUrl.pathname}${request.nextUrl.search}`,
-  );
-
-  return NextResponse.redirect(loginUrl);
+  return ResolveAuthProxyResponse(request);
 }
 
 export const config = {
-  matcher: ["/onboarding/:path*"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\..*).*)",
+  ],
 };

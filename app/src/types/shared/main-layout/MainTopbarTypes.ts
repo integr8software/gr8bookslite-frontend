@@ -36,6 +36,7 @@ export type MainTopbarProps = {
   isHelpOpen: boolean;
   isNotificationsOpen: boolean;
   isProfileLoading?: boolean;
+  isTopbarContextLoading?: boolean;
   isSearchOpen: boolean;
   isSidebarOpen: boolean;
   notificationTab: MainNotificationTab;

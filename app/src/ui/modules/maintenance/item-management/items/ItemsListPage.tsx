@@ -1,13 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-	CheckCircle2,
-	CirclePause,
-	Layers,
-	Package,
-	Plus,
-} from "lucide-react";
+import { CheckCircle2, CirclePause, Layers, Package, Plus } from "lucide-react";
 import {
 	ItemsHref,
 	ItemStatusOptions,
@@ -24,7 +18,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { ItemsTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemsTable";
 
 export function ItemsListPage() {
@@ -67,21 +61,26 @@ export function ItemsListPage() {
 						icon: CheckCircle2,
 						label: "Active Items",
 						tone: "emerald",
-						value: page.items.filter((item) => item.status === "Active").length,
+						value: page.items.filter(
+							(item) => item.status === "Active",
+						).length,
 					},
 					{
 						helper: "Currently inactive",
 						icon: CirclePause,
 						label: "Inactive Items",
 						tone: "amber",
-						value: page.items.filter((item) => item.status === "Inactive").length,
+						value: page.items.filter(
+							(item) => item.status === "Inactive",
+						).length,
 					},
 					{
 						helper: "Items with bundle components",
 						icon: Layers,
 						label: "Bundle Items",
 						tone: "violet",
-						value: page.items.filter((item) => item.supportsBundle).length,
+						value: page.items.filter((item) => item.supportsBundle)
+							.length,
 					},
 				]}
 			/>
@@ -102,11 +101,13 @@ export function ItemsListPage() {
 							label="Category"
 							value={page.categoryFilter}
 							options={[
-								{ label: "All Categories", value: "All" },
-								...page.categoryFilterOptions.map((category) => ({
-									label: category,
-									value: category,
-								})),
+								{ label: "All", value: "All" },
+								...page.categoryFilterOptions.map(
+									(category) => ({
+										label: category,
+										value: category,
+									}),
+								),
 							]}
 							onChange={page.setCategoryFilter}
 						/>
@@ -114,7 +115,7 @@ export function ItemsListPage() {
 							label="Status"
 							value={page.statusFilter}
 							options={[
-								{ label: "All Status", value: "All" },
+								{ label: "All", value: "All" },
 								...ItemStatusOptions.map((status) => ({
 									label: status,
 									value: status,
@@ -142,5 +143,3 @@ export function ItemsListPage() {
 		</section>
 	);
 }
-
-

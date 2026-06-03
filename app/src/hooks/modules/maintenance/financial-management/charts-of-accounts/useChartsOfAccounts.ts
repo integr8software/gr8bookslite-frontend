@@ -20,6 +20,8 @@ import {
 	createAccountFromForm,
 	flattenAccounts,
 	insertAccount,
+	isSpecificAccount,
+	moveOrReorderAccount,
 	removeAccount,
 	updateAccountTree,
 } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
@@ -34,12 +36,20 @@ import type {
 	FlattenedChartAccount,
 } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 
-const PageSize = 8;
+const PageSize = 20;
 
 export function useChartsOfAccounts() {
 	const [accounts, setAccounts] = useState<ChartAccount[]>(MockChartAccounts);
 	const [expandedIds, setExpandedIds] = useState<Set<string>>(
-		() => new Set(["assets", "cash-equivalents", "liabilities", "revenue", "expenses"]),
+		() =>
+			new Set([
+				"asset",
+				"current-assets",
+				"cash-and-cash-equivalents",
+				"cash-on-hand",
+				"receivables",
+				"advances",
+			]),
 	);
 	const [activeTab, setActiveTab] =
 		useState<ChartsOfAccountsNav>(ChartsOfAccountsNavs[0]);
@@ -50,9 +60,7 @@ export function useChartsOfAccounts() {
 		useState<FilterValue<AccountStatus>>("All");
 	const [structureFilter, setStructureFilter] =
 		useState<ChartAccountStructureFilter>("All");
-	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "accountNumber", desc: false },
-	]);
+	const [sorting, setSorting] = useState<SortingState>([]);
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
 		pageSize: PageSize,
@@ -249,6 +257,21 @@ export function useChartsOfAccounts() {
 		setAccounts((current) => removeAccount(current, accountId));
 	}
 
+	function reorderAccount(accountId: string, overAccountId: string) {
+		const overAccount = flatAccounts.find(
+			({ account }) => account.id === overAccountId,
+		)?.account;
+
+		setAccounts((current) =>
+			moveOrReorderAccount(current, accountId, overAccountId),
+		);
+		setSorting([]);
+
+		if (overAccount && !isSpecificAccount(overAccount)) {
+			setExpandedIds((current) => new Set([...current, overAccount.id]));
+		}
+	}
+
 	return {
 		accountTypeFilter,
 		accounts,
@@ -267,6 +290,7 @@ export function useChartsOfAccounts() {
 		deleteAccount,
 		openAddDrawer,
 		openEditDrawer,
+		reorderAccount,
 		saveAccount,
 		resetFilters,
 		setAccountTypeFilter: changeAccountTypeFilter,

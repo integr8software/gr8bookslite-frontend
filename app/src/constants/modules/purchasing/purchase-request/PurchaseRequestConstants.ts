@@ -12,6 +12,7 @@ export const PurchaseRequestTypeOptions = ["Goods", "Services", "Assets"] as con
 export const PurchaseRequestStatusOptions: PurchaseRequestStatus[] = [
 	"Draft",
 	"Open",
+	"Approved",
 	"Closed",
 	"Cancelled",
 ];

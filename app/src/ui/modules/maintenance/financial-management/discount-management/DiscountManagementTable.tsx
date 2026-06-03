@@ -16,6 +16,7 @@ type DiscountManagementTableProps = {
 	isLoading: boolean;
 	toolbar?: ReactNode;
 	onDeleteDiscount: (discount: DiscountManagementTableRecord) => void;
+	onEditDiscount: (discount: DiscountManagementTableRecord) => void;
 };
 
 export function DiscountManagementTable({
@@ -23,6 +24,7 @@ export function DiscountManagementTable({
 	isLoading,
 	toolbar,
 	onDeleteDiscount,
+	onEditDiscount,
 }: DiscountManagementTableProps) {
 	const table = useDiscountManagementTable(discounts);
 
@@ -41,6 +43,7 @@ export function DiscountManagementTable({
 					key={id}
 					discount={original}
 					onDeleteDiscount={onDeleteDiscount}
+					onEditDiscount={onEditDiscount}
 				/>
 			)}
 		/>

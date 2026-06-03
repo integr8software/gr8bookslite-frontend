@@ -10,7 +10,7 @@ function RequirementItem({
   label: string;
 }) {
   return (
-    <li className={`text-xs ${met ? "text-green-600" : "text-darknavy/60"}`}>
+    <li className={`text-xs ${met ? "text-sky-700" : "text-slate-500"}`}>
       {label}
     </li>
   );

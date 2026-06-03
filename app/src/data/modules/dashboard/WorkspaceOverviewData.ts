@@ -53,6 +53,31 @@ export type WorkspaceTimelineItem = {
   tone: "sky" | "mint" | "violet";
 };
 
+export type WorkspaceDashboardGraphType =
+  | "area"
+  | "bar"
+  | "donut"
+  | "line"
+  | "pie";
+export type WorkspaceDashboardGraphDataKey = "monthlyAccounting" | "yearlyIncome";
+
+export type WorkspaceDashboardGraphPoint = {
+  label: string;
+  grossRevenue: number;
+  operatingExpenses: number;
+  netProfit: number;
+  totalUsers: number;
+};
+
+export type WorkspaceDashboardYearMetric = {
+  year: number;
+  grossEarnings: number;
+  totalIncome: number;
+  operatingExpenses: number;
+  netIncome: number;
+  activeUsers: number;
+};
+
 export const WorkspaceCompanies: WorkspaceCompanyRecord[] = [
   {
     id: "company-gr8-construction",
@@ -237,3 +262,84 @@ export const WorkspaceSystemNotifications: WorkspaceTimelineItem[] = [
     tone: "sky",
   },
 ];
+
+export const WorkspaceDashboardGraphData: WorkspaceDashboardGraphPoint[] = [
+  {
+    label: "Jan",
+    grossRevenue: 820000,
+    operatingExpenses: 520000,
+    netProfit: 300000,
+    totalUsers: 116,
+  },
+  {
+    label: "Feb",
+    grossRevenue: 940000,
+    operatingExpenses: 590000,
+    netProfit: 350000,
+    totalUsers: 121,
+  },
+  {
+    label: "Mar",
+    grossRevenue: 1120000,
+    operatingExpenses: 690000,
+    netProfit: 430000,
+    totalUsers: 129,
+  },
+  {
+    label: "Apr",
+    grossRevenue: 1080000,
+    operatingExpenses: 650000,
+    netProfit: 430000,
+    totalUsers: 135,
+  },
+  {
+    label: "May",
+    grossRevenue: 1245000,
+    operatingExpenses: 760000,
+    netProfit: 485000,
+    totalUsers: 142,
+  },
+  {
+    label: "Jun",
+    grossRevenue: 1360000,
+    operatingExpenses: 810000,
+    netProfit: 550000,
+    totalUsers: 151,
+  },
+];
+
+export const WorkspaceDashboardYearMetrics: WorkspaceDashboardYearMetric[] = [
+  {
+    year: 2024,
+    grossEarnings: 10250000,
+    totalIncome: 8950000,
+    operatingExpenses: 6120000,
+    netIncome: 2830000,
+    activeUsers: 118,
+  },
+  {
+    year: 2025,
+    grossEarnings: 12480000,
+    totalIncome: 10920000,
+    operatingExpenses: 7380000,
+    netIncome: 3540000,
+    activeUsers: 142,
+  },
+  {
+    year: 2026,
+    grossEarnings: 15160000,
+    totalIncome: 13250000,
+    operatingExpenses: 8420000,
+    netIncome: 4830000,
+    activeUsers: 168,
+  },
+];
+
+export const WorkspaceDashboardYearGraphData: WorkspaceDashboardGraphPoint[] =
+  WorkspaceDashboardYearMetrics.map((metric) => ({
+    label: String(metric.year),
+    grossRevenue: metric.grossEarnings,
+    operatingExpenses: metric.operatingExpenses,
+    netProfit: metric.netIncome,
+    totalUsers: metric.activeUsers,
+  }));

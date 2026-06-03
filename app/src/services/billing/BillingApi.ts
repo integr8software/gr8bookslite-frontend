@@ -12,14 +12,18 @@ import type {
   SubscribeCompanyResponse,
 } from "@/app/src/data/billing/BillingTypes";
 
-function GetAuthorizationHeaders(accessToken: string) {
+function GetAuthorizationHeaders(accessToken: string | null) {
+  if (!accessToken) {
+    return undefined;
+  }
+
   return {
     Authorization: `Bearer ${accessToken}`,
   };
 }
 
 export async function GetBillingPlans(
-  accessToken: string,
+  accessToken: string | null = null,
   scope?: BillingPlanScope,
 ) {
   const response = await ApiClient.get<BillingPlansResponse>("/billing/plans", {
@@ -30,7 +34,7 @@ export async function GetBillingPlans(
   return response.data;
 }
 
-export async function GetBillingPaymentMethods(accessToken: string) {
+export async function GetBillingPaymentMethods(accessToken: string | null = null) {
   const response = await ApiClient.get<BillingPaymentMethodsResponse>(
     "/billing/payment-methods",
     {
@@ -41,7 +45,9 @@ export async function GetBillingPaymentMethods(accessToken: string) {
   return response.data;
 }
 
-export async function GetCurrentBillingSubscription(accessToken: string) {
+export async function GetCurrentBillingSubscription(
+  accessToken: string | null = null,
+) {
   const response = await ApiClient.get<CurrentSubscriptionResponse>(
     "/billing/subscriptions/current",
     {
@@ -53,7 +59,7 @@ export async function GetCurrentBillingSubscription(accessToken: string) {
 }
 
 export async function SubscribeCompanyToPlan(
-  accessToken: string,
+  accessToken: string | null,
   payload: SubscribeCompanyRequest,
 ) {
   const response = await ApiClient.post<SubscribeCompanyResponse>(
@@ -68,7 +74,7 @@ export async function SubscribeCompanyToPlan(
 }
 
 export async function AttachCompanySubscriptionPaymentMethod(
-  accessToken: string,
+  accessToken: string | null,
   subscriptionId: number,
   payload: AttachPaymentMethodRequest,
 ) {
@@ -84,7 +90,7 @@ export async function AttachCompanySubscriptionPaymentMethod(
 }
 
 export async function CancelCompanySubscription(
-  accessToken: string,
+  accessToken: string | null,
   subscriptionId: number,
   payload: CancelSubscriptionRequest,
 ) {

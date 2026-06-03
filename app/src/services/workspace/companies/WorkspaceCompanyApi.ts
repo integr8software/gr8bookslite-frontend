@@ -1,0 +1,444 @@
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import type {
+	CreateWorkspaceCompanyApiRequest,
+	UpdateWorkspaceCompanyApiRequest,
+	WorkspaceCompanyApiRecord,
+	WorkspaceCompanyBranchRecord,
+	WorkspaceCompanyFormValues,
+	WorkspaceCompanyRecord,
+	WorkspaceCompanyStatus,
+	WorkspaceCompanyType,
+	WorkspaceCompanyUnitApiRecord,
+} from "@/app/src/types/workspace/WorkspaceCompanyTypes";
+
+function GetAuthorizationHeaders(accessToken: string | null) {
+	if (!accessToken) {
+		return undefined;
+	}
+
+	return {
+		Authorization: `Bearer ${accessToken}`,
+	};
+}
+
+export async function GetWorkspaceCompanies(accessToken: string | null = null) {
+	const response = await ApiClient.get<WorkspaceCompanyApiRecord[]>(
+		"/workspace/companies",
+		{
+			headers: GetAuthorizationHeaders(accessToken),
+		},
+	);
+
+	return response.data.map(MapWorkspaceCompanyApiRecord);
+}
+
+export async function GetWorkspaceCompany(
+	accessToken: string,
+	companyId: string,
+) {
+	const response = await ApiClient.get<WorkspaceCompanyApiRecord>(
+		`/workspace/companies/${companyId}`,
+		{
+			headers: GetAuthorizationHeaders(accessToken),
+		},
+	);
+
+	return MapWorkspaceCompanyApiRecord(response.data);
+}
+
+export async function CreateWorkspaceCompany(
+	accessToken: string | null,
+	values: WorkspaceCompanyFormValues,
+): Promise<WorkspaceCompanyRecord> {
+	const company = await CreateWorkspaceCompanyFromRequest(
+		accessToken,
+		MapWorkspaceCompanyFormToCreateRequest(values),
+	);
+
+	if (!values.logoFile) {
+		return company;
+	}
+
+	return UploadWorkspaceCompanyLogo(accessToken, company.id, values.logoFile);
+}
+
+export async function UpdateWorkspaceCompany(
+	accessToken: string,
+	companyId: string,
+	values: WorkspaceCompanyFormValues,
+): Promise<WorkspaceCompanyRecord> {
+	const response = await ApiClient.patch<WorkspaceCompanyApiRecord>(
+		`/workspace/companies/${companyId}`,
+		MapWorkspaceCompanyFormToUpdateRequest(values),
+		{
+			headers: GetAuthorizationHeaders(accessToken),
+		},
+	);
+	const company = MapWorkspaceCompanyApiRecord(response.data);
+
+	if (!values.logoFile) {
+		return company;
+	}
+
+	return UploadWorkspaceCompanyLogo(accessToken, company.id, values.logoFile);
+}
+
+export async function DeactivateWorkspaceCompany(
+	accessToken: string,
+	companyId: string,
+): Promise<WorkspaceCompanyRecord> {
+	const response = await ApiClient.delete<WorkspaceCompanyApiRecord>(
+		`/workspace/companies/${companyId}`,
+		{
+			headers: GetAuthorizationHeaders(accessToken),
+		},
+	);
+
+	return MapWorkspaceCompanyApiRecord(response.data);
+}
+
+export async function CreateWorkspaceCompanyFromRequest(
+	accessToken: string | null,
+	payload: CreateWorkspaceCompanyApiRequest,
+): Promise<WorkspaceCompanyRecord> {
+	const response = await ApiClient.post<WorkspaceCompanyApiRecord>(
+		"/workspace/companies",
+		payload,
+		{
+			headers: GetAuthorizationHeaders(accessToken),
+		},
+	);
+
+	return MapWorkspaceCompanyApiRecord(response.data);
+}
+
+export async function UploadWorkspaceCompanyLogo(
+	accessToken: string | null,
+	companyId: string,
+	file: File,
+): Promise<WorkspaceCompanyRecord> {
+	const formData = new FormData();
+	formData.append("logo", file);
+
+	const response = await ApiClient.post<{
+		message: string;
+		company: WorkspaceCompanyApiRecord;
+	}>(`/workspace/companies/${companyId}/logo`, formData, {
+		headers: {
+			...GetAuthorizationHeaders(accessToken),
+			"Content-Type": "multipart/form-data",
+		},
+	});
+
+	return MapWorkspaceCompanyApiRecord(response.data.company);
+}
+
+function MapWorkspaceCompanyApiRecord(
+	company: WorkspaceCompanyApiRecord,
+): WorkspaceCompanyRecord {
+	return {
+		address: company.address ?? "",
+		branches: company.units?.map(MapWorkspaceCompanyUnitApiRecord) ?? [],
+		companyType: GetWorkspaceCompanyType(company),
+		contactNumber: company.contactNumber ?? "",
+		createdByUser: company.createdByUser
+			? {
+					email: company.createdByUser.email,
+					id: String(company.createdByUser.id),
+					name: company.createdByUser.name,
+				}
+			: undefined,
+		createdAt: FormatDate(company.createdAt),
+		email: company.email ?? "",
+		firstName: company.ownerFirstName ?? undefined,
+		id: String(company.id),
+		initials: GetInitials(company.name),
+		lastName: company.ownerLastName ?? undefined,
+		logoUrl: company.logoPublicUrl ?? undefined,
+		middleName: company.ownerMiddleName ?? undefined,
+		name: company.name,
+		nonIndividualType: company.organizationType ?? undefined,
+		nonIndividualTypeOther: company.organizationTypeOther ?? undefined,
+		plan: GetWorkspaceCompanyPlan(company),
+		primaryContact: GetPrimaryContact(company),
+		reportEndDate: GetDateInputValue(company.reportEndDate),
+		reportStartDate: GetDateInputValue(company.reportStartDate),
+		status: GetWorkspaceCompanyStatus(company),
+		taxpayerType:
+			company.taxpayerType === "INDIVIDUAL" ? "individual" : "non-individual",
+		tin: company.tin ?? undefined,
+		totalBranches: company.totalUnits ?? 0,
+		totalUsers: company.totalUsers ?? 0,
+		website: company.website ?? undefined,
+	};
+}
+
+function MapWorkspaceCompanyUnitApiRecord(
+	unit: WorkspaceCompanyUnitApiRecord,
+): WorkspaceCompanyBranchRecord {
+	return {
+		address: unit.address ?? "",
+		branchType: GetWorkspaceCompanyBranchType(unit.type),
+		code: unit.code ?? "",
+		companyId: String(unit.companyId),
+		contactNumber: unit.contactNumber ?? "",
+		email: unit.email ?? "",
+		id: String(unit.id),
+		isMain: unit.type === "HEAD_OFFICE",
+		linkedMainBranchId: unit.parentUnitId ? String(unit.parentUnitId) : undefined,
+		name: unit.displayName ?? unit.name,
+		status: unit.isActive ? "Active" : "Inactive",
+		tin: unit.tin ?? "",
+	};
+}
+
+function GetWorkspaceCompanyBranchType(
+	type: WorkspaceCompanyUnitApiRecord["type"],
+): WorkspaceCompanyBranchRecord["branchType"] {
+	if (type === "HEAD_OFFICE") {
+		return "Head Office";
+	}
+
+	return type === "SATELLITE" ? "Satellite" : "Branch";
+}
+
+function MapWorkspaceCompanyFormToCreateRequest(
+	values: WorkspaceCompanyFormValues,
+): CreateWorkspaceCompanyApiRequest {
+	const trimmedValues = TrimCompanyFormValues(values);
+	const request: CreateWorkspaceCompanyApiRequest = {
+		address: trimmedValues.address,
+		contactNumber: trimmedValues.contactNumber,
+		email: trimmedValues.email.toLowerCase(),
+		reportEndDate: trimmedValues.reportEndDate,
+		reportStartDate: trimmedValues.reportStartDate,
+		taxpayerType: trimmedValues.taxpayerType,
+		tin: trimmedValues.tin,
+		website: trimmedValues.website || undefined,
+	};
+
+	if (trimmedValues.taxpayerType === "individual") {
+		request.firstName = trimmedValues.firstName;
+		request.lastName = trimmedValues.lastName;
+		request.middleName = trimmedValues.middleName || undefined;
+	} else {
+		request.companyName = trimmedValues.companyName;
+		request.nonIndividualType = trimmedValues.nonIndividualType;
+		request.nonIndividualTypeOther =
+			trimmedValues.nonIndividualType === "Others"
+				? trimmedValues.nonIndividualTypeOther
+				: undefined;
+	}
+
+	if (trimmedValues.logoName && trimmedValues.logoName !== "Current logo") {
+		request.logoFileName = trimmedValues.logoName;
+		request.logoMimeType = values.logoFile?.type || undefined;
+	}
+
+	const billingEmail = trimmedValues.billingEmail || trimmedValues.email;
+	const paymentMethodId = trimmedValues.billingPaymentMethodId;
+
+	request.billing = {
+		billingCycle: trimmedValues.billingCycle,
+		billingEmail,
+		cardBrand: getCardBrand(trimmedValues.billingCardNumber),
+		cardExpiryMonth: Number(trimmedValues.billingExpiryMonth) || undefined,
+		cardExpiryYear: Number(trimmedValues.billingExpiryYear) || undefined,
+		cardLast4: getCardLast4(trimmedValues.billingCardNumber),
+		planCode: trimmedValues.billingPlanCode || undefined,
+		paymentMethodId: paymentMethodId.startsWith("pm_")
+			? paymentMethodId
+			: undefined,
+	};
+
+	return request;
+}
+
+function MapWorkspaceCompanyFormToUpdateRequest(
+	values: WorkspaceCompanyFormValues,
+): UpdateWorkspaceCompanyApiRequest {
+	const trimmedValues = TrimCompanyFormValues(values);
+	const request: UpdateWorkspaceCompanyApiRequest = {
+		address: trimmedValues.address,
+		contactNumber: trimmedValues.contactNumber,
+		email: trimmedValues.email.toLowerCase(),
+		reportEndDate: trimmedValues.reportEndDate,
+		reportStartDate: trimmedValues.reportStartDate,
+		taxpayerType: trimmedValues.taxpayerType,
+		tin: trimmedValues.tin,
+		website: trimmedValues.website || undefined,
+	};
+
+	if (trimmedValues.taxpayerType === "individual") {
+		request.firstName = trimmedValues.firstName;
+		request.lastName = trimmedValues.lastName;
+		request.middleName = trimmedValues.middleName || undefined;
+		request.companyName = undefined;
+		request.nonIndividualType = undefined;
+		request.nonIndividualTypeOther = undefined;
+	} else {
+		request.companyName = trimmedValues.companyName;
+		request.nonIndividualType = trimmedValues.nonIndividualType;
+		request.nonIndividualTypeOther =
+			trimmedValues.nonIndividualType === "Others"
+				? trimmedValues.nonIndividualTypeOther
+				: undefined;
+		request.firstName = undefined;
+		request.lastName = undefined;
+		request.middleName = undefined;
+	}
+
+	if (!trimmedValues.logoName && !values.logoFile) {
+		request.logoFileName = "";
+		request.logoMimeType = "";
+		request.logoPublicUrl = "";
+		request.logoStoragePath = "";
+	} else if (trimmedValues.logoName !== "Current logo") {
+		request.logoFileName = trimmedValues.logoName || undefined;
+		request.logoMimeType = values.logoFile?.type || undefined;
+	}
+
+	return request;
+}
+
+function GetWorkspaceCompanyPlan(company: WorkspaceCompanyApiRecord) {
+	return company.subscriptionPlan?.name ?? "Unassigned";
+}
+
+function GetWorkspaceCompanyStatus(
+	company: WorkspaceCompanyApiRecord,
+): WorkspaceCompanyStatus {
+	if (!company.isActive || company.status === "SUSPENDED") {
+		return "Inactive";
+	}
+
+	if (company.status === "ACTIVE") {
+		return "Active";
+	}
+
+	return "Pending";
+}
+
+function GetWorkspaceCompanyType(
+	company: WorkspaceCompanyApiRecord,
+): WorkspaceCompanyType {
+	if (company.taxpayerType === "INDIVIDUAL") {
+		return "Individual";
+	}
+
+	const type = company.organizationType;
+
+	if (
+		type === "Corporation" ||
+		type === "Partnership" ||
+		type === "Association" ||
+		type === "Non Stock" ||
+		type === "Non Profit Organization" ||
+		type === "Others"
+	) {
+		return type;
+	}
+
+	return "Corporation";
+}
+
+function GetPrimaryContact(company: WorkspaceCompanyApiRecord) {
+	if (company.taxpayerType === "INDIVIDUAL") {
+		return [
+			company.ownerFirstName,
+			company.ownerMiddleName,
+			company.ownerLastName,
+		]
+			.filter(Boolean)
+			.join(" ");
+	}
+
+	return company.name;
+}
+
+function GetInitials(value: string) {
+	const initials = value
+		.split(/\s+/)
+		.map((part) => part[0])
+		.filter(Boolean)
+		.join("")
+		.slice(0, 2)
+		.toUpperCase();
+
+	return initials || "CO";
+}
+
+function FormatDate(value: string) {
+	const date = new Date(value);
+
+	if (Number.isNaN(date.getTime())) {
+		return value;
+	}
+
+	return new Intl.DateTimeFormat("en-US", {
+		day: "2-digit",
+		month: "short",
+		year: "numeric",
+	}).format(date);
+}
+
+function GetDateInputValue(value: string | null) {
+	if (!value) {
+		return undefined;
+	}
+
+	const date = new Date(value);
+
+	if (Number.isNaN(date.getTime())) {
+		return undefined;
+	}
+
+	return date.toISOString().slice(0, 10);
+}
+
+function TrimCompanyFormValues(values: WorkspaceCompanyFormValues) {
+	return {
+		address: values.address.trim(),
+		billingCardNumber: values.billingCardNumber.trim(),
+		billingEmail: values.billingEmail.trim(),
+		billingExpiryMonth: values.billingExpiryMonth.trim(),
+		billingExpiryYear: values.billingExpiryYear.trim(),
+		billingPaymentMethodId: values.billingPaymentMethodId.trim(),
+		billingPlanCode: values.billingPlanCode.trim(),
+		billingCycle: values.billingCycle,
+		companyName: values.companyName.trim(),
+		contactNumber: values.contactNumber.trim(),
+		email: values.email.trim(),
+		firstName: values.firstName.trim(),
+		lastName: values.lastName.trim(),
+		logoName: values.logoName.trim(),
+		middleName: values.middleName.trim(),
+		nonIndividualType: values.nonIndividualType.trim(),
+		nonIndividualTypeOther: values.nonIndividualTypeOther.trim(),
+		reportEndDate: values.reportEndDate.trim(),
+		reportStartDate: values.reportStartDate.trim(),
+		taxpayerType: values.taxpayerType,
+		tin: values.tin.trim(),
+		website: values.website.trim(),
+	};
+}
+
+function getCardLast4(value: string) {
+	const digits = value.replace(/\D/g, "");
+
+	return digits.length >= 4 ? digits.slice(-4) : undefined;
+}
+
+function getCardBrand(value: string) {
+	const digits = value.replace(/\D/g, "");
+
+	if (!digits) return undefined;
+	if (/^4/.test(digits)) return "visa";
+	if (/^(5[1-5]|2[2-7])/.test(digits)) return "mastercard";
+	if (/^3[47]/.test(digits)) return "amex";
+	if (/^(6011|65|64[4-9])/.test(digits)) return "discover";
+	if (/^(35(2[89]|[3-8]))/.test(digits)) return "jcb";
+	if (/^(30[0-5]|36|38|39)/.test(digits)) return "diners";
+
+	return "card";
+}

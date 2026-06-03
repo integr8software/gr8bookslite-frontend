@@ -6,6 +6,7 @@ export {
   SignUpAction,
 } from "@/app/src/services/auth/AuthRegistrationActions";
 export {
+  ActivateWorkspaceInvitationAction,
   ForgotPasswordAction,
   ForgotPasswordOtpAction,
   ResendForgotPasswordAction,

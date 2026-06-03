@@ -5,7 +5,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type PettyCashReplenishmentListPageState = ReturnType<
 	typeof usePettyCashReplenishmentListPage
@@ -28,7 +28,7 @@ export function PettyCashReplenishmentListFilters({
 				label="Status"
 				value={page.statusFilter}
 				options={PettyCashReplenishmentStatusOptions.map((status) => ({
-					label: status === "All" ? "All statuses" : status,
+					label: status,
 					value: status,
 				}))}
 				onChange={page.setStatusFilter}
@@ -37,4 +37,3 @@ export function PettyCashReplenishmentListFilters({
 		</ModuleTableToolbar>
 	);
 }
-

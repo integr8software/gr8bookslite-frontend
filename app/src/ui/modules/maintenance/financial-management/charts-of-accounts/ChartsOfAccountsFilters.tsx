@@ -14,15 +14,13 @@ import type {
 	ChartAccountStructureFilter,
 	FilterValue,
 } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
-import {
-	Tabs,
-} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
+import { Tabs } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 import {
 	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 export type ChartsOfAccountsFiltersProps = {
 	accountTypeFilter: FilterValue<AccountType>;
@@ -66,7 +64,9 @@ export function ChartsOfAccountsFilters({
 				<div className="flex gap-2 overflow-x-auto pb-2">
 					<StructureButton
 						active={structureFilter === "With Submodules"}
-						icon={<Network className="h-4 w-4" aria-hidden="true" />}
+						icon={
+							<Network className="h-4 w-4" aria-hidden="true" />
+						}
 						label="With Submodules"
 						onClick={() =>
 							onStructureChange(
@@ -78,7 +78,9 @@ export function ChartsOfAccountsFilters({
 					/>
 					<StructureButton
 						active={structureFilter === "Without Submodules"}
-						icon={<ListTree className="h-4 w-4" aria-hidden="true" />}
+						icon={
+							<ListTree className="h-4 w-4" aria-hidden="true" />
+						}
 						label="Without Submodules"
 						onClick={() =>
 							onStructureChange(
@@ -105,7 +107,7 @@ export function ChartsOfAccountsFilters({
 					label="Account Type"
 					value={accountTypeFilter}
 					options={[
-						{ label: "All Types", value: "All" },
+						{ label: "All", value: "All" },
 						...AccountTypes.map((type) => ({
 							label: type,
 							value: type,
@@ -119,7 +121,7 @@ export function ChartsOfAccountsFilters({
 					label="Status"
 					value={statusFilter}
 					options={[
-						{ label: "All Status", value: "All" },
+						{ label: "All", value: "All" },
 						...AccountStatuses.map((status) => ({
 							label: status,
 							value: status,
@@ -153,7 +155,7 @@ function StructureButton({
 			className={[
 				"inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20",
 				active
-					? "border-blue-600 bg-blue-50 text-blue-700"
+					? "border-skyblue bg-skyblue/10 text-skyblue"
 					: "border-darknavy/10 bg-white text-darknavy/75 hover:border-skyblue/40 hover:bg-skyblue/10",
 			].join(" ")}
 		>
@@ -162,4 +164,3 @@ function StructureButton({
 		</button>
 	);
 }
-

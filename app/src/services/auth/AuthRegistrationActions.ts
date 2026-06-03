@@ -23,6 +23,7 @@ import {
   InvalidState,
 } from "@/app/src/services/auth/AuthActionUtils";
 import { GetFallbackPostAuthRedirectPath } from "@/app/src/services/auth/AuthRedirects";
+import { SetAuthAccessTokenCookie } from "@/app/src/services/auth/AuthCookieServer";
 
 export async function SignUpAction(
   _previousState: AuthActionState,
@@ -105,6 +106,7 @@ export async function OtpAction(
         code: parsed.data.otp,
       },
     );
+    await SetAuthAccessTokenCookie(response.accessToken, false);
 
     return {
       status: "success",

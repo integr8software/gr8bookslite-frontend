@@ -117,6 +117,7 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
 	partyCodeNo: "",
 	classification: "",
 	partyTypes: [],
+	status: "Active",
 	partyName: "",
 	tradingName: "",
 	firstName: "",
@@ -137,6 +138,7 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
 		partyCodeNo: "PTY-0001",
 		classification: "Non-Individual",
 		partyTypes: ["Vendor", "Customer"],
+		status: "Active",
 		partyName: "Pacific Office Supplies Inc.",
 		tradingName: "Pacific Supplies",
 		firstName: "",
@@ -168,6 +170,7 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
 		partyCodeNo: "PTY-0002",
 		classification: "Individual",
 		partyTypes: ["Employee"],
+		status: "Active",
 		partyName: "",
 		tradingName: "",
 		firstName: "Mara",
@@ -199,6 +202,7 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
 		partyCodeNo: "PTY-0003",
 		classification: "Non-Individual",
 		partyTypes: ["Vendor"],
+		status: "Inactive",
 		partyName: "Northfield Logistics Corporation",
 		tradingName: "Northfield Logistics",
 		firstName: "",
@@ -230,6 +234,7 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
 		partyCodeNo: "PTY-0004",
 		classification: "Individual",
 		partyTypes: ["Customer"],
+		status: "Active",
 		partyName: "",
 		tradingName: "",
 		firstName: "Luis",
@@ -265,6 +270,7 @@ export function createPartyInformationFormValues(
 		partyCodeNo: record.partyCodeNo,
 		classification: record.classification,
 		partyTypes: [...record.partyTypes],
+		status: record.status,
 		partyName: record.partyName,
 		tradingName: record.tradingName ?? "",
 		firstName: record.firstName,
@@ -293,6 +299,7 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
 		partyCodeNo: values.partyCodeNo.trim(),
 		classification: values.classification,
 		partyTypes: values.partyTypes,
+		status: values.status,
 		name,
 		tradingName:
 			values.classification === "Non-Individual"
@@ -378,6 +385,7 @@ function normalizePartyRecordValues(
 			values.classification === "Non-Individual"
 				? values.partyName.trim()
 				: "",
+		status: values.status,
 		tradingName:
 			values.classification === "Non-Individual"
 				? values.tradingName.trim()
@@ -401,7 +409,7 @@ function normalizePartyRecordValues(
 function normalizePartyContactNo(value: string) {
 	const contactNo = value.trim();
 
-	return contactNo === DefaultPhilippineContactNumber ? "" : contactNo;
+	return contactNo === DefaultPhilippineContactNumber.trim() ? "" : contactNo;
 }
 
 function createEmptyPartyAddress(): PartyAddress {

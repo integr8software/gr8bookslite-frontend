@@ -41,4 +41,10 @@ yarn-error.log*
 next-env.d.ts
 
 # codex
+.codex
 *.log
+
+# temporary files
+*.tmp
+*.temp
+tmp

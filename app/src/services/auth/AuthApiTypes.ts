@@ -22,6 +22,7 @@ export type VerifyEmailRequest = {
 export type LoginRequest = {
   email: string;
   password: string;
+  rememberMe?: boolean;
 };
 
 export type LoginResponse = {
@@ -85,11 +86,38 @@ export type AuthProfileResponse = {
   companies?: {
     companyId: number;
     companyName: string;
+    companyStatus?: string;
+    isCompanyActive?: boolean;
+    logoPublicUrl: string | null;
     role: "ADMIN" | "USER";
     membershipStatus: string;
+    accessScope?: string | null;
     companyRoleId?: number | null;
     companyRoleCode?: string | null;
+    accessibleUnitIds?: number[];
+    units?: {
+      id: number;
+      code: string;
+      name: string;
+      type: string;
+      isActive: boolean;
+      isMain: boolean;
+    }[];
   }[];
+};
+
+export type SwitchCompanyContextRequest = {
+  companyId: number;
+};
+
+export type SwitchCompanyContextResponse = {
+  accessToken: string;
+  user: AuthProfileResponse["user"];
+  companyId: number | null;
+  role: "ADMIN" | "USER" | "SUPER_ADMIN";
+  access: AuthProfileAccess | null;
+  onboarding: AuthProfileResponse["onboarding"];
+  companies: NonNullable<AuthProfileResponse["companies"]>;
 };
 
 export type ResendVerificationRequest = {
@@ -106,6 +134,7 @@ export type ForgotPasswordRequest = {
 };
 
 export type ForgotPasswordResponse = {
+  code?: string;
   message: string;
   maskedEmail?: string;
 };
@@ -127,6 +156,17 @@ export type ResetPasswordRequest = {
 };
 
 export type ResetPasswordResponse = {
+  message: string;
+};
+
+export type ActivateWorkspaceInvitationRequest = {
+  email: string;
+  token: string;
+  newPassword: string;
+  confirmNewPassword: string;
+};
+
+export type ActivateWorkspaceInvitationResponse = {
   message: string;
 };
 

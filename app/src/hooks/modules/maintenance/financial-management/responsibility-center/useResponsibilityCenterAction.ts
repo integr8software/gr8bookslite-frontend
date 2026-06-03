@@ -9,6 +9,7 @@ import {
 } from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
 import type {
 	ResponsibilityCenterActionMode,
+	ResponsibilityCenter,
 	ResponsibilityCenterFormErrors,
 	ResponsibilityCenterFormValues,
 	ResponsibilityCenterStatus,
@@ -16,13 +17,22 @@ import type {
 import { validateResponsibilityCenterForm } from "@/app/src/validations/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterValidation";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/financial-management/responsibility-center/useResponsibilityCenter";
 
-export function useResponsibilityCenterAction() {
+type ResponsibilityCenterActionOptions = {
+	center?: ResponsibilityCenter;
+	mode?: ResponsibilityCenterActionMode;
+	onSaved?: () => void;
+};
+
+export function useResponsibilityCenterAction(
+	options: ResponsibilityCenterActionOptions = {},
+) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
 	const store = useResponsibilityCenterStore();
-	const mode = getActionMode(pathname);
-	const center = store.centers.find(({ id }) => id === params.recordId);
+	const mode = options.mode ?? getActionMode(pathname);
+	const center =
+		options.center ?? store.centers.find(({ id }) => id === params.recordId);
 	const isReadonly = mode === "view";
 	const nextStatus: ResponsibilityCenterStatus =
 		center?.status === "Active" ? "Inactive" : "Active";
@@ -75,7 +85,8 @@ export function useResponsibilityCenterAction() {
 			store.addCenter(createResponsibilityCenterFromForm(values));
 		}
 
-		router.push(ResponsibilityCenterHref);
+		options.onSaved?.();
+		if (!options.onSaved) router.push(ResponsibilityCenterHref);
 	}
 
 	function onConfirmStatusChange() {

@@ -1,11 +1,34 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { WorkspaceCompaniesHref } from "@/app/src/constants/modules/workspace-companies/WorkspaceCompanyConstants";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  getWorkspaceCompanyBranchesHref,
+} from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
+import {
+  MasterSubscriberManagementHref,
+  getMasterSubscriberManagementSectionHref,
+  getMasterSubscriberManagementSectionPageTitle,
+  getMasterSubscriberManagementViewHref,
+} from "@/app/src/constants/master/subscriber-management/MasterSubscriberManagementConstants";
+import {
+  getMasterSubscriberManagementCompany,
+  getMasterSubscriberManagementSubscriber,
+} from "@/app/src/data/master/subscriber-management/MasterSubscriberManagementData";
+import type {
+  MasterSubscriberManagementCompanySection,
+} from "@/app/src/types/master/subscriber-management/MasterSubscriberManagementTypes";
+import {
+  getBranchDisplayLabel,
+  stripHeadOfficeLabel,
+} from "@/app/src/data/shared/branch/BranchDisplayData";
+import {
+  type MainAccessAction,
   type MainCurrentUser,
   type MainBranch,
+  type MainCompany,
+  type MainPermissionMap,
   type MainNavigationItem,
   type MainNavigationScope,
   type MainNavigationSection,
@@ -19,6 +42,8 @@ import {
   hasAccess,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 import {
+  MainAccountNavigationSections,
+  MainAccountSearchItems,
   MainCompanyNavigationSections,
   MainCompanySearchItems,
   MainMasterNavigationSections,
@@ -26,17 +51,32 @@ import {
   MainWorkspaceNavigationSections,
   MainWorkspaceSearchItems,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarNavigationData";
-import { MainLayoutData } from "@/app/src/data/shared/main-layout/MainLayoutData";
+import {
+  MainLayoutDefaultSubscription,
+  MainLayoutInitialNotifications,
+  MainLayoutRecentNavigationKeys,
+} from "@/app/src/data/shared/main-layout/MainLayoutDefaults";
 import { ModuleHelpArticles } from "@/app/src/data/shared/module/module-help/ModuleHelpData";
 import { getHelpArticleForPath } from "@/app/src/data/shared/module/module-help/ModuleHelpUtils";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
-import { useBranchManagementStore } from "@/app/src/hooks/modules/system-administration/branch-management/useBranchManagement";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import {
+  useWorkspaceCompanyMainLayoutBranches,
+} from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyMainLayoutBranches";
 import {
   GetAuthProfileAccess,
   GetAuthProfileCompanyId,
   ResolveAuthProfileEffectiveRole,
 } from "@/app/src/services/auth/AuthProfileAccess";
+import {
+  CreateFrontendAuthSession,
+  SwitchCompanyContext,
+} from "@/app/src/services/auth/AuthApi";
+import {
+  BuildAuthProfileFromSwitchResponse,
+  PrepareQueryCacheForContextSwitch,
+} from "@/app/src/services/auth/AuthContextCache";
+import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 import type {
   MainBreadcrumb,
@@ -49,11 +89,14 @@ const DefaultExpandedKeys = [
   "workspace-dashboard-section",
   "workspace-company-management-section",
   "workspace-user-management-section",
-  "workspace-billing-subscription-section",
+  "workspace-billing-and-subscription-section",
+  "workspace-vouchers-and-coupons-section",
+  "workspace-reports-analytics-section",
   "workspace-audit-logs-section",
-  "workspace-company-settings-section",
+  "workspace-system-settings-section",
   "master-dashboard-section",
   "master-announcement-section",
+  "master-subscriber-management-section",
   "master-company-management-section",
   "master-branch-management-section",
   "master-user-management-section",
@@ -62,7 +105,7 @@ const DefaultExpandedKeys = [
   "master-invoices-section",
   "master-promotions-section",
   "master-subscriber-promotions-section",
-  "master-audit-system-logs-section",
+  "master-audit-logs-section",
   "master-support-tickets-section",
   "master-system-settings-section",
   "dashboard",
@@ -80,13 +123,34 @@ const DefaultExpandedKeys = [
 
 const WorkspaceRoutePrefix = "/workspace";
 const MasterRoutePrefix = "/master";
+const AccountRoutePrefix = "/account";
 const WorkspaceHomeHref = "/workspace/dashboard";
 const MasterHomeHref = "/master/dashboard";
-const CompanyFallbackHomeHref = "/profile";
-const MaxBlockingProfileLoadMs = 4500;
+const CompanyFallbackHomeHref = "/account/profile";
+const ShellContextSwitchFallbackMs = 8000;
+const BranchContextSwitchMinimumMs = 650;
+const TopbarContextSkeletonMs = 700;
 const BranchUsersContextParam = "workspaceBranchId";
 const CompanyUsersContextParam = "workspaceCompanyId";
 const BranchUsersNameParam = "branchName";
+const EmptyCompany: MainCompany = {
+  id: "",
+  name: "Company",
+  status: "Active",
+  branches: [],
+  totalBranches: 0,
+};
+const EmptyCurrentUser: MainCurrentUser = {
+  id: "",
+  activeCompanyId: undefined,
+  companyIds: [],
+  firstName: "",
+  lastName: "",
+  name: "Account",
+  shortName: "Account",
+  initials: "U",
+  userRole: "User",
+};
 
 type NavigationTrailNode = {
   key: string;
@@ -100,9 +164,37 @@ export function useMainLayout() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const storedAccessToken = useAppStore((state) => state.accessToken);
+  const setStoredAccessToken = useAppStore((state) => state.setAccessToken);
+  const setStoredActiveBranchContext = useAppStore(
+    (state) => state.setActiveBranchContext,
+  );
+  const setStoredActiveCompanyId = useAppStore(
+    (state) => state.setActiveCompanyId,
+  );
+  const setStoredActiveCompanyName = useAppStore(
+    (state) => state.setActiveCompanyName,
+  );
+  const shellContextSwitchMessage = useAppStore(
+    (state) => state.shellContextSwitchMessage,
+  );
+  const isShellContextSettling = useAppStore(
+    (state) => state.isShellContextSettling,
+  );
+  const beginShellContextSwitch = useAppStore(
+    (state) => state.beginShellContextSwitch,
+  );
+  const endShellContextSwitch = useAppStore(
+    (state) => state.endShellContextSwitch,
+  );
+  const finishShellContextSettling = useAppStore(
+    (state) => state.finishShellContextSettling,
+  );
   const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
-  const branchLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const queryClient = useQueryClient();
   const sidebarTransitionFrameRef = useRef<number | null>(null);
+  const shellContextSwitchFallbackRef = useRef<number | null>(null);
+  const shellContextSettlingRef = useRef<number | null>(null);
+  const latestCompanySwitchRequestRef = useRef(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarTransitionEnabled, setIsSidebarTransitionEnabled] =
     useState(false);
@@ -110,10 +202,11 @@ export function useMainLayout() {
   const [notificationsOpenPath, setNotificationsOpenPath] = useState<
     string | null
   >(null);
-  const [timedOutProfileToken, setTimedOutProfileToken] = useState<
-    string | null
-  >(null);
   const [helpOpenPath, setHelpOpenPath] = useState<string | null>(null);
+  const [selectedHelpArticleState, setSelectedHelpArticleState] = useState({
+    pathname: "",
+    key: "",
+  });
   const [quickListTab, setQuickListTab] = useState<MainQuickListTab>("recent");
   const [notificationTab, setNotificationTab] =
     useState<MainNotificationTab>("all");
@@ -126,70 +219,89 @@ export function useMainLayout() {
     pathname,
     value: "",
   });
-  const [activeBranchId, setActiveBranchId] = useState(
-    MainLayoutData.activeBranchId,
+  const [activeBranchId, setActiveBranchId] = useState("");
+  const [switchingCompanyName, setSwitchingCompanyName] = useState<
+    string | null
+  >(null);
+  const [switchingCompanyId, setSwitchingCompanyId] = useState<string | null>(
+    null,
   );
+  const [switchingAdministrationScope, setSwitchingAdministrationScope] =
+    useState<"master" | "workspace" | null>(null);
   const missingRecordActionRedirectHref =
     getMissingRecordActionRedirectHref(pathname);
   const routedCompanyId = searchParams.get(CompanyUsersContextParam);
   const routedBranchId = searchParams.get(BranchUsersContextParam);
   const routedBranchName = searchParams.get(BranchUsersNameParam);
+  const subscriberManagementCompanyId = pathname.startsWith(
+    MasterSubscriberManagementHref,
+  )
+    ? searchParams.get("companyId") ?? undefined
+    : undefined;
   const accessToken = storedAccessToken;
-  const { data: authProfile, isLoading: isAuthProfileLoading } =
-    useAuthProfileQuery({ accessToken });
-  const hasProfileLoadTimedOut = timedOutProfileToken === accessToken;
+  const { data: authProfile } = useAuthProfileQuery({
+    accessToken,
+    enabled: isAuthSessionReady,
+  });
+  const effectiveRole = authProfile
+    ? ResolveAuthProfileEffectiveRole(authProfile)
+    : null;
+  const isSuperAdmin = effectiveRole === "SUPER_ADMIN";
   const isMasterRoute = isMasterPath(pathname);
   const isWorkspaceRoute = isWorkspacePath(pathname);
-  const hasMasterAccess = authProfile
-    ? ProfileHasMasterAccess(authProfile)
-    : MainLayoutData.currentUser.userRole === "Super Admin";
-  const hasWorkspaceAccess = authProfile
-    ? ProfileHasWorkspaceAccess(authProfile)
-    : MainLayoutData.currentUser.userRole === "Super Admin";
+  const isAccountRoute = isAccountPath(pathname);
+  const hasMasterAccess = effectiveRole === "SUPER_ADMIN";
+  const hasWorkspaceAccess =
+    authProfile && effectiveRole !== "SUPER_ADMIN"
+      ? ProfileHasWorkspaceAccess(authProfile)
+      : false;
   const displayUser = authProfile
     ? CreateWorkspaceCurrentUserFromProfile(authProfile)
-    : MainLayoutData.currentUser;
-  const isProfileLoading =
-    Boolean(accessToken) && isAuthProfileLoading && !hasProfileLoadTimedOut;
+    : EmptyCurrentUser;
+  const isProfileLoading = Boolean(accessToken) && !authProfile;
   const activeNavigationScope: MainNavigationScope =
-    hasMasterAccess && isMasterRoute
-      ? "master"
-      : hasWorkspaceAccess && isWorkspaceRoute
-        ? "workspace"
-        : "company";
-  const workspaceCompanies = authProfile
-    ? MapProfileCompaniesToMainCompanies(authProfile)
-    : null;
+    isAccountRoute
+      ? "account"
+      : hasMasterAccess
+        ? "master"
+        : hasWorkspaceAccess && isWorkspaceRoute
+          ? "workspace"
+          : "company";
+  const workspaceCompanies =
+    authProfile && !isSuperAdmin
+      ? MapProfileCompaniesToMainCompanies(authProfile)
+      : [];
   const profileActiveCompanyId = authProfile
     ? GetAuthProfileCompanyId(authProfile)
     : null;
-  const [activeCompanyId, setActiveCompanyId] = useState(
-    MainLayoutData.currentCompany.id,
-  );
-  const [lazyLoadedBranches, setLazyLoadedBranches] = useState<
-    MainBranch[] | null
-  >(null);
-  const [isBranchLoading, setIsBranchLoading] = useState(false);
+  const [activeCompanyId, setActiveCompanyId] = useState("");
   const [notifications, setNotifications] = useState<MainNotification[]>(
-    MainLayoutData.notifications,
+    MainLayoutInitialNotifications,
   );
-  const branches = useBranchManagementStore((state) => state.branches);
   const query = queryState.pathname === pathname ? queryState.value : "";
   const isSearchOpen = searchOpenPath === pathname;
   const isNotificationsOpen = notificationsOpenPath === pathname;
   const isHelpOpen = helpOpenPath === pathname;
 
-  const subscription = MainLayoutData.activeSubscription;
-  const availableCompanies =
-    workspaceCompanies ?? MainLayoutData.availableCompanies;
+  const availableCompanies = workspaceCompanies;
   const currentCompany =
     availableCompanies.find((company) => company.id === activeCompanyId) ??
     availableCompanies[0] ??
-    MainLayoutData.currentCompany;
+    EmptyCompany;
+  const subscription =
+    currentCompany.subscriptionPackage ?? MainLayoutDefaultSubscription;
+  const { branches, isLoading: isBranchLoading } =
+    useWorkspaceCompanyMainLayoutBranches({
+      company:
+        activeNavigationScope === "company" ? currentCompany : undefined,
+    });
 
+  /* eslint-disable react-hooks/preserve-manual-memoization */
   const navigationSections = useMemo(() => {
     const sourceSections =
-      activeNavigationScope === "master"
+      activeNavigationScope === "account"
+        ? MainAccountNavigationSections
+        : activeNavigationScope === "master"
         ? MainMasterNavigationSections
         : activeNavigationScope === "workspace"
           ? MainWorkspaceNavigationSections
@@ -219,37 +331,92 @@ export function useMainLayout() {
 
   const availableSearchItems = useMemo(() => {
     const sourceItems =
-      activeNavigationScope === "master"
+      activeNavigationScope === "account"
+        ? MainAccountSearchItems
+        : activeNavigationScope === "master"
         ? MainMasterSearchItems
         : activeNavigationScope === "workspace"
           ? MainWorkspaceSearchItems
           : MainCompanySearchItems;
 
-    return filterMainSearchItems(
-      sourceItems,
-      displayUser,
-      subscription,
-    );
+    return filterMainSearchItems(sourceItems, displayUser, subscription);
   }, [activeNavigationScope, displayUser, subscription]);
   const companySearchItems = useMemo(
     () =>
-      filterMainSearchItems(
-        MainCompanySearchItems,
-        displayUser,
-        subscription,
-      ),
+      filterMainSearchItems(MainCompanySearchItems, displayUser, subscription),
     [displayUser, subscription],
   );
   const companyHomeHref = getCompanyHomeHref(
     companySearchItems,
-    MainLayoutData.recentNavigationKeys,
+    MainLayoutRecentNavigationKeys,
   );
   const homeHref =
-    activeNavigationScope === "master"
+    activeNavigationScope === "account" && hasMasterAccess
+      ? MasterHomeHref
+      : activeNavigationScope === "account" && hasWorkspaceAccess
+        ? WorkspaceHomeHref
+        : activeNavigationScope === "master"
       ? MasterHomeHref
       : activeNavigationScope === "workspace"
         ? WorkspaceHomeHref
         : companyHomeHref;
+  const switchCompanyMutation = useMutation({
+    mutationFn: async ({
+      companyId,
+      requestId,
+    }: {
+      companyId: string;
+      requestId: number;
+    }) => {
+      const numericCompanyId = Number(companyId);
+
+      if (!Number.isInteger(numericCompanyId) || numericCompanyId <= 0) {
+        throw new Error("Invalid company selection.");
+      }
+
+      await PrepareQueryCacheForContextSwitch(queryClient);
+      const result = await SwitchCompanyContext(accessToken, numericCompanyId);
+
+      if (requestId !== latestCompanySwitchRequestRef.current) {
+        return { result, profile: null, requestId };
+      }
+
+      await CreateFrontendAuthSession(result.accessToken);
+      const profile = BuildAuthProfileFromSwitchResponse(result);
+
+      return { result, profile, requestId };
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({
+        queryKey: AuthQueryKeys.profile(),
+      });
+    },
+    onSuccess: ({ result, profile, requestId }) => {
+      if (requestId !== latestCompanySwitchRequestRef.current || !profile) {
+        return;
+      }
+
+      if (result.companyId != null) {
+        setActiveCompanyId(String(result.companyId));
+        setStoredActiveCompanyId(result.companyId);
+      }
+
+      setStoredAccessToken(result.accessToken);
+      setStoredActiveBranchContext(null, null);
+      queryClient.setQueryData(AuthQueryKeys.profile(), profile);
+      router.push(companyHomeHref);
+      releaseShellContextSwitchAfterFrame();
+    },
+    onError: (_error, variables) => {
+      if (variables?.requestId !== latestCompanySwitchRequestRef.current) {
+        return;
+      }
+
+      setSwitchingCompanyName(null);
+      setSwitchingCompanyId(null);
+      clearShellContextSwitch(false);
+    },
+  });
 
   const recentlyVisitedModules = useMemo(() => {
     if (activeNavigationScope !== "company") {
@@ -258,7 +425,7 @@ export function useMainLayout() {
 
     return findSearchItemsByKeys(
       availableSearchItems,
-      MainLayoutData.recentNavigationKeys,
+      MainLayoutRecentNavigationKeys,
     );
   }, [activeNavigationScope, availableSearchItems]);
 
@@ -292,25 +459,135 @@ export function useMainLayout() {
     () => sortBranchesByPriority(getAccessibleBranches(branches)),
     [branches],
   );
-  const hasBranchAccess = accessibleBranches.length > 0;
+  const hasCompanyAdministrationAccess = hasCurrentCompanyAdministrationAccess(
+    authProfile,
+    currentCompany.id,
+  );
+  const hasBranchAccess =
+    hasCompanyAdministrationAccess || accessibleBranches.length > 0;
   const shouldShowBranchSwitcher = shouldShowBranchControls(accessibleBranches);
   const currentBranch =
     accessibleBranches.find((branch) => branch.id === activeBranchId) ??
     accessibleBranches[0] ??
     null;
-  const canManageBranches = hasAccess(
-    displayUser,
-    "branch.management",
+  const canManageBranches = hasAccess(displayUser, "branch.management");
+  const clearShellContextSwitch = useCallback(
+    (keepTopbarSkeleton = true) => {
+      if (shellContextSettlingRef.current !== null) {
+        window.clearTimeout(shellContextSettlingRef.current);
+        shellContextSettlingRef.current = null;
+      }
+
+      if (shellContextSwitchFallbackRef.current !== null) {
+        window.clearTimeout(shellContextSwitchFallbackRef.current);
+        shellContextSwitchFallbackRef.current = null;
+      }
+
+      endShellContextSwitch();
+
+      if (!keepTopbarSkeleton) {
+        finishShellContextSettling();
+        return;
+      }
+
+      shellContextSettlingRef.current = window.setTimeout(() => {
+        shellContextSettlingRef.current = null;
+        finishShellContextSettling();
+      }, TopbarContextSkeletonMs);
+    },
+    [endShellContextSwitch, finishShellContextSettling],
   );
+  const releaseShellContextSwitchAfterFrame = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        clearShellContextSwitch();
+      });
+    });
+  }, [clearShellContextSwitch]);
+  const releaseShellContextSwitchAfterMinimumDelay = useCallback(() => {
+    window.setTimeout(() => {
+      releaseShellContextSwitchAfterFrame();
+    }, BranchContextSwitchMinimumMs);
+  }, [releaseShellContextSwitchAfterFrame]);
+  const beginShellContextSwitchWithFallback = useCallback(
+    (message: string) => {
+      beginShellContextSwitch(message);
+
+      if (shellContextSwitchFallbackRef.current !== null) {
+        window.clearTimeout(shellContextSwitchFallbackRef.current);
+      }
+
+      shellContextSwitchFallbackRef.current = window.setTimeout(() => {
+        setSwitchingCompanyName(null);
+        setSwitchingCompanyId(null);
+        setSwitchingAdministrationScope(null);
+        clearShellContextSwitch(false);
+      }, ShellContextSwitchFallbackMs);
+    },
+    [beginShellContextSwitch, clearShellContextSwitch],
+  );
+  /* eslint-enable react-hooks/preserve-manual-memoization */
 
   useEffect(() => {
-    if (profileActiveCompanyId == null) {
+    if (!switchingCompanyId) {
+      return;
+    }
+
+    if (activeNavigationScope !== "company") {
+      return;
+    }
+
+    if (activeCompanyId !== switchingCompanyId) {
+      return;
+    }
+
+    if (isBranchLoading) {
+      return;
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- company switching should stay on the main loader until the target branch context is ready.
+    setSwitchingCompanyName(null);
+    setSwitchingCompanyId(null);
+    clearShellContextSwitch();
+  }, [
+    activeCompanyId,
+    activeNavigationScope,
+    clearShellContextSwitch,
+    isBranchLoading,
+    switchingCompanyId,
+  ]);
+
+  useEffect(() => {
+    if (!switchingAdministrationScope) {
+      return;
+    }
+
+    if (switchingAdministrationScope === "workspace" && isWorkspaceRoute) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clear the transition only after the workspace route is active.
+      setSwitchingAdministrationScope(null);
+      clearShellContextSwitch();
+      return;
+    }
+
+    if (switchingAdministrationScope === "master" && isMasterRoute) {
+      setSwitchingAdministrationScope(null);
+      clearShellContextSwitch();
+    }
+  }, [
+    clearShellContextSwitch,
+    isMasterRoute,
+    isWorkspaceRoute,
+    switchingAdministrationScope,
+  ]);
+
+  useEffect(() => {
+    if (profileActiveCompanyId == null || switchingCompanyId) {
       return;
     }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect -- keep the layout company switcher synced with the loaded profile.
     setActiveCompanyId(String(profileActiveCompanyId));
-  }, [profileActiveCompanyId]);
+  }, [profileActiveCompanyId, switchingCompanyId]);
 
   useEffect(() => {
     if (!routedCompanyId) {
@@ -358,21 +635,47 @@ export function useMainLayout() {
     setActiveBranchId(routedBranch.id);
   }, [accessibleBranches, routedBranchId, routedBranchName]);
 
+  useEffect(() => {
+    const numericCompanyId = Number(currentCompany.id);
+
+    setStoredActiveCompanyId(
+      Number.isInteger(numericCompanyId) && numericCompanyId > 0
+        ? numericCompanyId
+        : null,
+    );
+    setStoredActiveCompanyName(currentCompany.name || null);
+  }, [
+    currentCompany.id,
+    currentCompany.name,
+    setStoredActiveCompanyId,
+    setStoredActiveCompanyName,
+  ]);
+
+  useEffect(() => {
+    const numericBranchId = Number(currentBranch?.id);
+
+    setStoredActiveBranchContext(
+      Number.isInteger(numericBranchId) && numericBranchId > 0
+        ? numericBranchId
+        : null,
+      currentBranch ? getBranchSwitcherLabel(currentBranch) : null,
+    );
+  }, [currentBranch, setStoredActiveBranchContext]);
+
   const branchDropdownItems = useMemo(() => {
     if (!shouldShowBranchSwitcher) {
       return [];
     }
 
-    const branchItems =
-      lazyLoadedBranches
-        ?.filter((branch) => branch.kind)
-        .map((branch) => ({
-          key: branch.id,
-          label: getBranchSwitcherLabel(branch),
-          href: companyHomeHref,
-          branchId: branch.id,
-          kind: branch.kind,
-        })) ?? [];
+    const branchItems = accessibleBranches
+      .filter((branch) => branch.kind)
+      .map((branch) => ({
+        key: branch.id,
+        label: getBranchSwitcherLabel(branch),
+        href: companyHomeHref,
+        branchId: branch.id,
+        kind: branch.kind,
+      }));
 
     if (!canManageBranches) {
       return branchItems;
@@ -383,15 +686,16 @@ export function useMainLayout() {
       {
         key: "branch-management",
         label: "Branch Management",
-        href: WorkspaceCompaniesHref,
+        href: getWorkspaceCompanyBranchesHref(currentCompany.id),
         helperText: "Manage workspace companies, branches, and satellites",
         isManagementAction: true,
       },
     ];
   }, [
+    accessibleBranches,
     canManageBranches,
     companyHomeHref,
-    lazyLoadedBranches,
+    currentCompany.id,
     shouldShowBranchSwitcher,
   ]);
 
@@ -401,8 +705,14 @@ export function useMainLayout() {
         pathname,
         navigationSections,
         activeNavigationScope,
+        subscriberManagementCompanyId,
       }),
-    [activeNavigationScope, navigationSections, pathname],
+    [
+      activeNavigationScope,
+      navigationSections,
+      pathname,
+      subscriberManagementCompanyId,
+    ],
   );
   const moduleTitle = breadcrumbs[breadcrumbs.length - 1]?.label ?? "Module";
 
@@ -412,10 +722,6 @@ export function useMainLayout() {
       ModuleHelpArticles[0],
     [pathname],
   );
-  const [selectedHelpArticleState, setSelectedHelpArticleState] = useState({
-    pathname,
-    key: currentHelpArticle.key,
-  });
   const selectedHelpArticleKey =
     selectedHelpArticleState.pathname === pathname
       ? selectedHelpArticleState.key
@@ -436,12 +742,14 @@ export function useMainLayout() {
 
   useEffect(
     () => () => {
-      if (branchLoadTimerRef.current) {
-        clearTimeout(branchLoadTimerRef.current);
-      }
-
       if (sidebarTransitionFrameRef.current !== null) {
         cancelAnimationFrame(sidebarTransitionFrameRef.current);
+      }
+      if (shellContextSwitchFallbackRef.current !== null) {
+        window.clearTimeout(shellContextSwitchFallbackRef.current);
+      }
+      if (shellContextSettlingRef.current !== null) {
+        window.clearTimeout(shellContextSettlingRef.current);
       }
     },
     [],
@@ -454,20 +762,6 @@ export function useMainLayout() {
 
     router.replace(missingRecordActionRedirectHref);
   }, [missingRecordActionRedirectHref, router]);
-
-  useEffect(() => {
-    if (!accessToken || !isAuthProfileLoading || hasProfileLoadTimedOut) {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      setTimedOutProfileToken(accessToken);
-    }, MaxBlockingProfileLoadMs);
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [accessToken, hasProfileLoadTimedOut, isAuthProfileLoading]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -553,37 +847,78 @@ export function useMainLayout() {
   }
 
   function loadBranchOptions() {
-    if (lazyLoadedBranches || isBranchLoading) {
-      return;
-    }
-
-    setIsBranchLoading(true);
-    branchLoadTimerRef.current = setTimeout(() => {
-      setLazyLoadedBranches(accessibleBranches);
-      setIsBranchLoading(false);
-    }, 280);
+    // Branches are loaded from the active workspace company unit API.
+    return undefined;
   }
 
   function selectBranch(branchId: string) {
+    const selectedBranch = accessibleBranches.find(
+      (branch) => branch.id === branchId,
+    );
+
+    beginShellContextSwitchWithFallback(
+      selectedBranch
+        ? `Switching to ${getBranchSwitcherLabel(selectedBranch)}...`
+        : "Switching branch...",
+    );
+    void PrepareQueryCacheForContextSwitch(queryClient);
     setActiveBranchId(branchId);
+    setStoredActiveBranchContext(
+      Number.isInteger(Number(branchId)) && Number(branchId) > 0
+        ? Number(branchId)
+        : null,
+      selectedBranch ? getBranchSwitcherLabel(selectedBranch) : null,
+    );
+    releaseShellContextSwitchAfterMinimumDelay();
   }
 
   function selectCompany(companyId: string) {
-    setActiveCompanyId(companyId);
-    setActiveBranchId(getDefaultAccessibleBranchId(branches));
-    setLazyLoadedBranches(null);
-    setSearchOpenPath(null);
-    setNotificationsOpenPath(null);
-    router.push(companyHomeHref);
-  }
-
-  function switchToWorkspace() {
-    if (!hasWorkspaceAccess) {
+    if (isSuperAdmin) {
       return;
     }
 
+    if (activeNavigationScope === "company" && companyId === activeCompanyId) {
+      router.push(companyHomeHref);
+      return;
+    }
+
+    const selectedCompany = availableCompanies.find(
+      (company) => company.id === companyId,
+    );
+
+    const requestId = latestCompanySwitchRequestRef.current + 1;
+
+    latestCompanySwitchRequestRef.current = requestId;
+    beginShellContextSwitchWithFallback(
+      selectedCompany
+        ? `Switching to ${selectedCompany.name}...`
+        : "Switching company...",
+    );
+    setSwitchingCompanyName(selectedCompany?.name ?? "company");
+    setSwitchingCompanyId(companyId);
+    setSwitchingAdministrationScope(null);
+    setActiveBranchId("");
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
+    switchCompanyMutation.mutate({ companyId, requestId });
+  }
+
+  function switchToWorkspace() {
+    if (isSuperAdmin || !hasWorkspaceAccess) {
+      return;
+    }
+
+    setSwitchingCompanyName(null);
+    setSwitchingCompanyId(null);
+    setSwitchingAdministrationScope("workspace");
+    beginShellContextSwitchWithFallback("Switching to workspace...");
+    setActiveBranchId("");
+    setStoredActiveBranchContext(null, null);
+    setStoredActiveCompanyId(null);
+    setStoredActiveCompanyName(null);
+    setSearchOpenPath(null);
+    setNotificationsOpenPath(null);
+    void PrepareQueryCacheForContextSwitch(queryClient);
     router.push(WorkspaceHomeHref);
   }
 
@@ -592,8 +927,17 @@ export function useMainLayout() {
       return;
     }
 
+    setSwitchingCompanyName(null);
+    setSwitchingCompanyId(null);
+    setSwitchingAdministrationScope("master");
+    beginShellContextSwitchWithFallback("Switching to master control...");
+    setActiveBranchId("");
+    setStoredActiveBranchContext(null, null);
+    setStoredActiveCompanyId(null);
+    setStoredActiveCompanyName(null);
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
+    void PrepareQueryCacheForContextSwitch(queryClient);
     router.push(MasterHomeHref);
   }
 
@@ -621,7 +965,7 @@ export function useMainLayout() {
     breadcrumbs,
     canAccessMaster: hasMasterAccess,
     canAccessWorkspace: hasWorkspaceAccess,
-    canSwitchCompany: availableCompanies.length > 1,
+    canSwitchCompany: !isSuperAdmin && availableCompanies.length > 1,
     currentBranch,
     currentCompany,
     currentHelpArticle,
@@ -631,6 +975,21 @@ export function useMainLayout() {
     hasBranchAccess,
     helpArticles: ModuleHelpArticles,
     homeHref,
+    isCompanySwitching: Boolean(
+      shellContextSwitchMessage ||
+        switchingCompanyId ||
+        switchingAdministrationScope,
+    ),
+    companySwitchMessage:
+      shellContextSwitchMessage ??
+      (switchingAdministrationScope === "workspace"
+        ? "Switching to workspace..."
+        : switchingAdministrationScope === "master"
+          ? "Switching to master control..."
+          : switchingCompanyName
+            ? `Switching to ${switchingCompanyName}...`
+            : "Switching company..."),
+    isTopbarContextLoading: isShellContextSettling,
     isShellLoading: !isAuthSessionReady || isProfileLoading,
     isProfileLoading,
     isBranchLoading,
@@ -694,7 +1053,11 @@ function shouldShowBranchControls(branches: MainBranch[]) {
 function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
   const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
 
-  if (effectiveRole === "SUPER_ADMIN" || effectiveRole === "ADMIN") {
+  if (effectiveRole === "SUPER_ADMIN") {
+    return false;
+  }
+
+  if (effectiveRole === "ADMIN") {
     return true;
   }
 
@@ -703,15 +1066,39 @@ function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
   );
 }
 
-function ProfileHasMasterAccess(profile: AuthProfileResponse) {
-  return ResolveAuthProfileEffectiveRole(profile) === "SUPER_ADMIN";
+function hasCurrentCompanyAdministrationAccess(
+  profile: AuthProfileResponse | undefined,
+  companyId: string,
+) {
+  if (!profile || !companyId) {
+    return false;
+  }
+
+  if (profile.user.systemRole === "SUPER_ADMIN") {
+    return true;
+  }
+
+  const numericCompanyId = Number(companyId);
+
+  if (!Number.isInteger(numericCompanyId) || numericCompanyId <= 0) {
+    return false;
+  }
+
+  return (
+    profile.companies?.some(
+      (company) =>
+        company.companyId === numericCompanyId &&
+        company.role === "ADMIN" &&
+        company.membershipStatus === "ACTIVE" &&
+        company.isCompanyActive !== false &&
+        (!company.companyStatus || company.companyStatus === "ACTIVE"),
+    ) ?? false
+  );
 }
 
 function CreateWorkspaceCurrentUserFromProfile(
   profile: AuthProfileResponse,
 ): MainCurrentUser {
-  const fallbackUserRoleDetails =
-    MainLayoutData.currentUser.userRoleDetails;
   const [firstName, ...lastNameParts] = profile.user.name.trim().split(/\s+/);
   const lastName = lastNameParts.join(" ");
   const activeAccess = GetAuthProfileAccess(profile);
@@ -730,50 +1117,166 @@ function CreateWorkspaceCurrentUserFromProfile(
       : effectiveRole === "ADMIN"
         ? "Admin"
         : "User";
+  const profilePermissionMap = CreateProfilePermissionMap(
+    activeAccess?.permissions,
+  );
+  const adminPermissionMap = HasPermissionEntries(profilePermissionMap)
+    ? profilePermissionMap
+    : CreateNavigationPermissionMap();
   const userRoleDetails = companyRoleName
     ? {
-        ...(fallbackUserRoleDetails ?? {
-          id: "user-role-workspace",
-          name: "Workspace User",
-          permissions: {},
-        }),
         id:
           activeAccess?.companyRoleCode ??
           activeCompanyMembership?.companyRoleCode ??
-          fallbackUserRoleDetails?.id ??
           "user-role-workspace",
         name: companyRoleName,
+        permissions:
+          effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN"
+            ? adminPermissionMap
+            : profilePermissionMap,
       }
     : effectiveRole === "ADMIN"
-      ? fallbackUserRoleDetails
+      ? {
+          id: "user-role-admin",
+          name: "Admin",
+          permissions: adminPermissionMap,
+        }
       : undefined;
 
   return {
-    ...MainLayoutData.currentUser,
+    id: String(profile.user.id),
+    activeCompanyId:
+      activeCompanyId == null ? undefined : String(activeCompanyId),
+    companyIds: (profile.companies ?? []).map((company) =>
+      String(company.companyId),
+    ),
     firstName: firstName || profile.user.name,
     lastName,
     name: profile.user.name,
     shortName: BuildShortName(profile.user.name),
     initials: BuildInitials(profile.user.name),
+    profileImageUrl: profile.user.avatarPublicUrl ?? undefined,
     userRole,
     userRoleDetails,
   };
 }
 
 function MapProfileCompaniesToMainCompanies(profile: AuthProfileResponse) {
-  return (profile.companies ?? []).map((company) => ({
-    id: String(company.companyId),
-    name: company.companyName,
-    logoUrl: undefined,
-    status: "Active" as const,
-    businessKind: undefined,
-    subscriptionPackage: undefined,
-    branches: [],
-    totalBranches: 0,
-    branchCode: undefined,
-    branchName: undefined,
-    helperText: company.role === "ADMIN" ? "Admin access" : "User access",
-  }));
+  return (profile.companies ?? [])
+    .filter(
+      (company) =>
+        company.membershipStatus === "ACTIVE" &&
+        company.isCompanyActive !== false &&
+        (!company.companyStatus || company.companyStatus === "ACTIVE"),
+    )
+    .map((company) => ({
+      id: String(company.companyId),
+      name: company.companyName,
+      logoUrl: company.logoPublicUrl ?? undefined,
+      status: "Active" as const,
+      businessKind: undefined,
+      subscriptionPackage: undefined,
+      branches: [],
+      totalBranches: 0,
+      branchCode: undefined,
+      branchName: undefined,
+      helperText: company.role === "ADMIN" ? "Admin access" : "User access",
+    }));
+}
+
+function CreateProfilePermissionMap(permissions: unknown[] | undefined) {
+  const permissionMap: MainPermissionMap = {};
+
+  for (const permission of permissions ?? []) {
+    if (typeof permission !== "string") {
+      continue;
+    }
+
+    const [accessKey, backendAction] = permission.split(":");
+    const action = MapBackendPermissionAction(backendAction);
+
+    if (!accessKey || !action) {
+      continue;
+    }
+
+    const currentAccess = permissionMap[accessKey as keyof MainPermissionMap] ?? {};
+    permissionMap[accessKey as keyof MainPermissionMap] = {
+      ...currentAccess,
+      [action]: true,
+    };
+  }
+
+  return permissionMap;
+}
+
+function HasPermissionEntries(permissionMap: MainPermissionMap) {
+  return Object.keys(permissionMap).length > 0;
+}
+
+function CreateNavigationPermissionMap() {
+  const permissionMap: MainPermissionMap = {};
+  const sections = [
+    ...MainMasterNavigationSections,
+    ...MainWorkspaceNavigationSections,
+    ...MainCompanyNavigationSections,
+  ];
+
+  for (const section of sections) {
+    GrantNavigationAccess(permissionMap, section.accessKey);
+
+    for (const item of section.items) {
+      AddNavigationItemPermissions(permissionMap, item);
+    }
+  }
+
+  return permissionMap;
+}
+
+function AddNavigationItemPermissions(
+  permissionMap: MainPermissionMap,
+  item: MainNavigationItem,
+) {
+  GrantNavigationAccess(permissionMap, item.accessKey);
+
+  for (const child of item.children ?? []) {
+    AddNavigationItemPermissions(permissionMap, child);
+  }
+}
+
+function GrantNavigationAccess(
+  permissionMap: MainPermissionMap,
+  accessKey: MainNavigationItem["accessKey"],
+) {
+  permissionMap[accessKey] = {
+    add: true,
+    cancel: true,
+    delete: true,
+    edit: true,
+    uncancel: true,
+    view: true,
+  };
+}
+
+function MapBackendPermissionAction(
+  action: string | undefined,
+): MainAccessAction | undefined {
+  if (action === "view") {
+    return "view";
+  }
+
+  if (action === "create") {
+    return "add";
+  }
+
+  if (action === "update") {
+    return "edit";
+  }
+
+  if (action === "delete" || action === "cancel" || action === "uncancel") {
+    return action;
+  }
+
+  return undefined;
 }
 
 function FormatCompanyRoleName(companyRoleCode: string | null | undefined) {
@@ -816,13 +1319,15 @@ function BuildShortName(name: string) {
 }
 
 function buildBreadcrumbs({
-  pathname,
-  navigationSections,
   activeNavigationScope,
+  navigationSections,
+  pathname,
+  subscriberManagementCompanyId,
 }: {
-  pathname: string;
-  navigationSections: MainNavigationSection[];
   activeNavigationScope: MainNavigationScope;
+  navigationSections: MainNavigationSection[];
+  pathname: string;
+  subscriberManagementCompanyId?: string;
 }): MainBreadcrumb[] {
   const trail = findNavigationTrail(navigationSections, pathname);
   const fallbackLabel =
@@ -844,7 +1349,15 @@ function buildBreadcrumbs({
     fallbackTrail[0]?.label === "Workspace"
       ? fallbackTrail.slice(1)
       : fallbackTrail;
-  const completeTrail = appendPathSegmentBreadcrumbs(normalizedTrail, pathname);
+  const masterSubscriberTrail = buildMasterSubscriberManagementBreadcrumbs({
+    companyId: subscriberManagementCompanyId,
+    pathname,
+    trail: normalizedTrail,
+  });
+  const completeTrail = removeAdjacentDuplicateBreadcrumbs(
+    masterSubscriberTrail ??
+      appendPathSegmentBreadcrumbs(normalizedTrail, pathname),
+  );
 
   return completeTrail.map((item) => ({
     key: item.key,
@@ -892,6 +1405,135 @@ function findNavigationTrail(
   return [];
 }
 
+function buildMasterSubscriberManagementBreadcrumbs({
+  companyId,
+  pathname,
+  trail,
+}: {
+  companyId?: string;
+  pathname: string;
+  trail: NavigationTrailNode[];
+}): NavigationTrailNode[] | null {
+  const viewPrefix = `${MasterSubscriberManagementHref}/view/`;
+
+  if (!pathname.startsWith(viewPrefix)) {
+    return null;
+  }
+
+  const [recordId, sectionSegment, companyIdSegment, editSegment] = pathname
+    .slice(viewPrefix.length)
+    .split("/")
+    .filter(Boolean);
+
+  if (!recordId) {
+    return null;
+  }
+
+  const subscriber = getMasterSubscriberManagementSubscriber(recordId);
+  const baseTrail =
+    trail.length > 0
+      ? trail
+      : [
+          {
+            key: "master-subscriber-management",
+            label: "Subscriber Management",
+            href: MasterSubscriberManagementHref,
+          },
+        ];
+  const subscriberTrail: NavigationTrailNode[] = [
+    ...baseTrail,
+    {
+      key: `subscriber-${recordId}`,
+      label: subscriber.name,
+      href: getMasterSubscriberManagementViewHref(recordId),
+    },
+  ];
+
+  if (!sectionSegment) {
+    return [
+      ...subscriberTrail,
+      {
+        key: `subscriber-${recordId}-account-information`,
+        label: "Account Information",
+        href: pathname,
+      },
+    ];
+  }
+
+  if (!isMasterSubscriberManagementCompanySection(sectionSegment)) {
+    return null;
+  }
+
+  const selectedCompanyId = companyIdSegment
+    ? decodeURIComponent(companyIdSegment)
+    : companyId;
+  const company = getMasterSubscriberManagementCompany(
+    recordId,
+    selectedCompanyId,
+  );
+  const sectionTitle = getMasterSubscriberManagementSectionPageTitle(sectionSegment);
+
+  if (editSegment === "edit") {
+    return [
+      ...subscriberTrail,
+      {
+        key: `subscriber-${recordId}-company`,
+        label: company.name,
+        href: getMasterSubscriberManagementSectionHref(
+          recordId,
+          "company-information",
+          company.id,
+        ),
+      },
+      {
+        key: `subscriber-${recordId}-${sectionSegment}`,
+        label: sectionTitle,
+        href: getMasterSubscriberManagementSectionHref(
+          recordId,
+          sectionSegment,
+          company.id,
+        ),
+      },
+      {
+        key: `subscriber-${recordId}-${sectionSegment}-edit`,
+        label: "Edit Company Information",
+        href: pathname,
+      },
+    ];
+  }
+
+  return [
+    ...subscriberTrail,
+    {
+      key: `subscriber-${recordId}-company`,
+      label: company.name,
+      href: getMasterSubscriberManagementSectionHref(
+        recordId,
+        "company-information",
+        company.id,
+      ),
+    },
+    {
+      key: `subscriber-${recordId}-${sectionSegment}`,
+      label: sectionTitle,
+      href: pathname,
+    },
+  ];
+}
+
+function isMasterSubscriberManagementCompanySection(
+  section: string,
+): section is MasterSubscriberManagementCompanySection {
+  return (
+    section === "company-information" ||
+    section === "subscription-and-plan" ||
+    section === "branches" ||
+    section === "users" ||
+    section === "storage" ||
+    section === "billing-and-invoices"
+  );
+}
+
 function appendPathSegmentBreadcrumbs(
   trail: NavigationTrailNode[],
   pathname: string,
@@ -928,6 +1570,20 @@ function appendPathSegmentBreadcrumbs(
       href: index === extraSegments.length - 1 ? pathname : undefined,
     })),
   ];
+}
+
+function removeAdjacentDuplicateBreadcrumbs(
+  trail: NavigationTrailNode[],
+): NavigationTrailNode[] {
+  return trail.filter((item, index) => {
+    const previous = trail[index - 1];
+
+    if (!previous) {
+      return true;
+    }
+
+    return previous.label !== item.label || previous.href !== item.href;
+  });
 }
 
 function getActionBreadcrumbs({
@@ -979,9 +1635,28 @@ function getMissingRecordActionRedirectHref(pathname: string) {
     return null;
   }
 
+  if (isMasterSubscriberManagementCompanyInformationEditPath(segments)) {
+    return null;
+  }
+
   const parentSegments = segments.slice(0, -1);
 
   return parentSegments.length > 0 ? `/${parentSegments.join("/")}` : "/";
+}
+
+function isMasterSubscriberManagementCompanyInformationEditPath(
+  segments: string[],
+) {
+  return (
+    segments[0] === "master" &&
+    segments[1] === "subscriber-management" &&
+    segments[2] === "view" &&
+    Boolean(segments[3]) &&
+    segments[4] === "company-information" &&
+    Boolean(segments[5]) &&
+    segments[6] === "edit" &&
+    segments.length === 7
+  );
 }
 
 function findItemTrail(
@@ -1090,6 +1765,13 @@ function isMasterPath(pathname: string) {
   );
 }
 
+function isAccountPath(pathname: string) {
+  return (
+    pathname === AccountRoutePrefix ||
+    pathname.startsWith(`${AccountRoutePrefix}/`)
+  );
+}
+
 function getPathFallbackTitle(pathname: string) {
   const lastSegment = pathname.split("/").filter(Boolean).pop();
 
@@ -1163,8 +1845,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Maintain financial setup records used by accounting workflows.",
   "maintenance-financial-management-charts-of-accounts":
     "Maintain account codes used by transactions and reports.",
-  "maintenance-financial-management-multi-currency-setup":
-    "Configure currencies and exchange settings.",
+  "system-administration-multi-currency-setup":
+    "Configure currencies, exchange rates, preferences, and rounding rules.",
   "maintenance-financial-management-discount-management":
     "Maintain discount rules for sales and purchasing.",
   "maintenance-financial-management-term-management":
@@ -1188,6 +1870,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Maintain customers, suppliers, vendors, members, and employees.",
   "maintenance-party":
     "Maintain customers, suppliers, vendors, members, and employees.",
+  "maintenance-form-signatory":
+    "Manage authorized signatories for official documents.",
   "cash-receipt-official-receipt": "Record official customer payments.",
   "cash-receipt-collection-receipt":
     "Record collections received from customers.",
@@ -1326,13 +2010,6 @@ function getCompanyHomeHref(items: MainSearchItem[], recentKeys: string[]) {
   );
 }
 
-function getDefaultAccessibleBranchId(branches: MainBranch[] | undefined) {
-  const accessibleBranches = getAccessibleBranches(branches ?? []);
-  const mainBranch = accessibleBranches.find((branch) => branch.isMain);
-
-  return mainBranch?.id ?? accessibleBranches.at(-1)?.id ?? "";
-}
-
 function sortBranchesByPriority(branches: MainBranch[]) {
   return [...branches].sort((first, second) => {
     const priorityDelta = getBranchPriority(first) - getBranchPriority(second);
@@ -1354,14 +2031,11 @@ function getBranchPriority(branch: MainBranch) {
 }
 
 function getBranchSwitcherLabel(branch: MainBranch) {
-  return `${branch.name}${branch.isMain ? " (Head Office)" : ""}`;
+  return getBranchDisplayLabel(branch);
 }
 
 function normalizeBranchRouteToken(value: string) {
-  return value
-    .replace(/\s*\(head office\)\s*/i, "")
-    .trim()
-    .toLowerCase();
+  return stripHeadOfficeLabel(value).toLowerCase();
 }
 
 function matchesSearchQuery(item: MainSearchItem, query: string) {

@@ -46,7 +46,7 @@ function TabButton({ isActive, label, onClick }: TabButtonProps) {
 			className={joinClasses(
 				"min-h-9 rounded px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
 				isActive
-					? "bg-white text-darknavy shadow-sm"
+					? "theme-accent-contrast-text bg-skyblue !text-[var(--skyblue-contrast)] shadow-sm shadow-skyblue/20"
 					: "text-darknavy/55 hover:bg-white/75 hover:text-darknavy",
 			)}
 		>

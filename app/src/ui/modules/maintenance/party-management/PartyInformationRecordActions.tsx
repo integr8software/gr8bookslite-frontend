@@ -2,7 +2,7 @@ import { PartyManagementHref } from "@/app/src/constants/modules/maintenance/par
 import {
 	ModuleTableActionLink,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function PartyInformationRecordActions({
 	id,

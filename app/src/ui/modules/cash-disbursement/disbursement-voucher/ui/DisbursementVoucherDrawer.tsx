@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronDown, FileText, Paperclip, Plus } from "lucide-react";
 import {
   DisbursementVoucherInitialEntryDraft,
@@ -41,6 +42,10 @@ import {
   type AppTaxRateDialogValue,
 } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import { AccountingEntriesDialog as ReusableAccountingEntriesDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/AccountingEntriesDialog";
+import {
+  writeAccountingGridSession,
+  type DisbursementVoucherAccountingGridSession,
+} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/AccountingGridSession";
 import { DisbursementVoucherCopyFromDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherCopyFromDialog";
 import type {
   DisbursementLineEntry,
@@ -67,6 +72,7 @@ type DrawerTab =
 type DisbursementVoucherDrawerProps = {
   isOpen: boolean;
   mode: DrawerMode;
+  resumeState?: DisbursementVoucherAccountingGridSession | null;
   transaction?: DisbursementTransactionRecord;
   transactions: DisbursementTransactionRecord[];
   voucher?: DisbursementVoucherRecord;
@@ -77,6 +83,7 @@ type DisbursementVoucherDrawerProps = {
 export function DisbursementVoucherDrawer({
   isOpen,
   mode,
+  resumeState,
   transaction,
   transactions,
   voucher,
@@ -85,9 +92,10 @@ export function DisbursementVoucherDrawer({
 }: DisbursementVoucherDrawerProps) {
   return (
     <DrawerPanel
-      key={`${mode}-${transaction?.id ?? "blank"}-${voucher?.id ?? "new"}`}
+      key={`${mode}-${resumeState?.values.transactionId ?? transaction?.id ?? "blank"}-${resumeState?.values.voucherNo ?? voucher?.id ?? "new"}`}
       isOpen={isOpen}
       mode={mode}
+      resumeState={resumeState}
       transaction={transaction}
       transactions={transactions}
       voucher={voucher}
@@ -100,14 +108,18 @@ export function DisbursementVoucherDrawer({
 function DrawerPanel({
   isOpen,
   mode,
+  resumeState,
   transaction,
   transactions,
   voucher,
   onClose,
   onSave,
 }: DisbursementVoucherDrawerProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<DrawerTab>("cash-disbursement");
-  const [step, setStep] = useState<WorkflowStep>("details");
+  const [step, setStep] = useState<WorkflowStep>(
+    resumeState?.returnStep ?? "details",
+  );
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
   const [isVceDialogOpen, setIsVceDialogOpen] = useState(false);
   const [isVoucherTaxDialogOpen, setIsVoucherTaxDialogOpen] = useState(false);
@@ -124,11 +136,12 @@ function DrawerPanel({
     AppDisbursementTypeRecord[]
   >(InitialAppDisbursementTypeRecords);
   const [values, setValues] = useState<DisbursementVoucherFormValues>(() =>
-    createDisbursementVoucherFormValues(transaction, voucher),
+    resumeState?.values ??
+      createDisbursementVoucherFormValues(transaction, voucher),
   );
   const [errors, setErrors] = useState<DisbursementVoucherFormErrors>({});
   const [entryDraft, setEntryDraft] = useState<DisbursementVoucherEntryDraft>(
-    DisbursementVoucherInitialEntryDraft,
+    resumeState?.entryDraft ?? DisbursementVoucherInitialEntryDraft,
   );
   const isEditing = mode === "edit";
   const selectedTransaction = useMemo(
@@ -354,6 +367,16 @@ function DrawerPanel({
     );
   }
 
+  function handleOpenGridView() {
+    writeAccountingGridSession({
+      entryDraft,
+      mode,
+      returnStep: "entries",
+      values,
+    });
+    router.push("/cash-disbursement/disbursement-voucher/accounting-grid");
+  }
+
   return (
     <ModuleDrawer
       isOpen={isOpen}
@@ -519,6 +542,7 @@ function DrawerPanel({
         onBack={() => setStep("details")}
         onClose={() => setStep("details")}
         onDraftChange={setEntryDraft}
+        onOpenGridView={handleOpenGridView}
         onProceed={handleProceedFromEntries}
         onRemoveEntry={handleRemoveEntry}
         onUpdateEntryTax={handleUpdateEntryTax}
@@ -641,7 +665,7 @@ function DetailsTab({
                     event.target.value as DisbursementPaymentMethod | "",
                   )
                 }
-                className={FieldClassName}
+                className={`${FieldClassName} app-select-control`}
               >
                 <option value="">--Select Payment Type--</option>
                 {availablePaymentTypeOptions.map((paymentType) => (
@@ -685,7 +709,7 @@ function DetailsTab({
               onChange={(event) =>
                 onUpdateField("currency", event.target.value as VoucherCurrency)
               }
-              className={FieldClassName}
+              className={`${FieldClassName} app-select-control`}
             >
               <option value="PHP">PHP</option>
               <option value="USD">USD</option>
@@ -738,7 +762,7 @@ function DetailsTab({
                     event.target.value as DisbursementType | "",
                   )
                 }
-                className={FieldClassName}
+                className={`${FieldClassName} app-select-control`}
               >
                 <option value="">--Select Disbursement Type--</option>
                 {disbursementTypeOptions.map((disbursementType) => (
@@ -775,6 +799,14 @@ function DetailsTab({
               </span>
             ) : null}
           </>
+        </FieldShell>
+
+        <FieldShell label="Voucher No. :">
+          <input
+            value={values.voucherNo}
+            readOnly
+            className={ReadOnlyFieldClassName}
+          />
         </FieldShell>
 
         <FieldShell error={errors.voucherDate} label="Document Date :">
@@ -1043,56 +1075,77 @@ function ReviewStep({
   onEditEntries: () => void;
 }) {
   return (
-    <section className="grid gap-5 p-6 xl:grid-cols-[0.82fr_1.18fr]">
-      <ReviewCardShell
-        eyebrow="Voucher Preview"
-        title="New voucher summary"
-        description="Review the encoded disbursement details before the final save."
-      >
-        <div className="grid gap-3">
-          <InfoLine
-            label="Trans No."
-            value={selectedTransaction?.transactionNo ?? "-"}
-          />
-          <InfoLine label="Voucher No." value={values.voucherNo} />
-          <InfoLine
-            label="Document Date"
-            value={formatDateLabel(values.voucherDate)}
-          />
-          <InfoLine label="Payment Type" value={values.paymentMethod || "-"} />
-          <InfoLine
-            label="Disbursement Type"
-            value={values.disbursementType || "-"}
-          />
-          <InfoLine label="Party Code" value={values.vceCode} />
-          <InfoLine label="Party Name" value={values.vceName} />
-          <InfoLine label="ProjectRef" value={values.costCenter} />
-          <InfoLine
-            label="Importation Ref No."
-            value={values.invoiceReferenceNo || "-"}
-          />
-          <InfoLine
-            label="Amount"
-            value={formatCurrency(Number(values.amount || 0))}
-          />
-          <InfoLine label="Tax Rate" value={formatTaxRateSummary(values.taxDetails)} />
-          <InfoLine label="Remarks" value={values.remarks || "-"} />
-        </div>
-      </ReviewCardShell>
+    <section className="grid gap-5 p-6">
+      <div className="grid gap-5 xl:grid-cols-2">
+        <ReviewCardShell
+          eyebrow="Transaction Preview"
+          title={selectedTransaction?.payee ?? (values.vceName || "Voucher Preview")}
+          description="This panel shows the source transaction that the voucher workflow will use."
+        >
+          <div className="grid gap-5">
+            <InfoLine
+              label="Transaction No."
+              value={selectedTransaction?.transactionNo ?? "-"}
+            />
+            <InfoLine
+              label="Department"
+              value={selectedTransaction?.department ?? "-"}
+            />
+            <InfoLine
+              label="Requested By"
+              value={selectedTransaction?.requestedBy ?? "-"}
+            />
+            <InfoLine
+              label="Amount"
+              value={formatCurrency(Number(values.amount || 0))}
+            />
+            <InfoLine
+              label="Purpose"
+              value={selectedTransaction?.purpose ?? (values.remarks || "-")}
+            />
+          </div>
+        </ReviewCardShell>
+
+        <ReviewCardShell
+          eyebrow="Voucher Status"
+          title={values.voucherNo}
+          description="A linked voucher exists for this transaction and can be reviewed or edited."
+        >
+          <div className="grid gap-5">
+            <InfoLine
+              label="Voucher Date"
+              value={formatDateLabel(values.voucherDate)}
+            />
+            <InfoLine label="Payment Method" value={values.paymentMethod || "-"} />
+            <InfoLine label="Prepared By" value={values.preparedBy || "-"} />
+            <InfoLine label="Status" value={values.status || "-"} />
+            <InfoLine label="Remarks" value={values.remarks || "-"} />
+
+            <div className="rounded-[18px] bg-coralpink px-5 py-5 text-darknavy shadow-[0_16px_36px_rgba(249,112,104,0.18)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-darknavy/72">
+                Linked Voucher Amount
+              </p>
+              <p className="mt-2 text-3xl font-semibold">
+                {formatCurrency(Number(values.amount || 0))}
+              </p>
+            </div>
+          </div>
+        </ReviewCardShell>
+      </div>
 
       <ReviewCardShell
         eyebrow="Accounting Preview"
         title="Accounting entries review"
-        description="Confirm the journal lines and totals before posting this new voucher."
+        description="Confirm the journal lines, totals, and attachments before the final save."
       >
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <p className="text-sm text-darknavy/58">
             {values.lineEntries.length} accounting entries prepared.
           </p>
           <button
             type="button"
             onClick={onEditEntries}
-            className="text-sm font-semibold text-skyblue"
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
           >
             Edit Entries
           </button>
@@ -1112,6 +1165,9 @@ function ReviewStep({
                   <p className="mt-1 text-sm text-darknavy/58">
                     {entry.particulars}
                   </p>
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/40">
+                    {entry.taxRate || "0%"}
+                  </p>
                 </div>
                 <div className="text-right text-sm font-semibold text-darknavy">
                   <p>
@@ -1119,7 +1175,7 @@ function ReviewStep({
                       ? `DR ${formatCurrency(entry.debit)}`
                       : "-"}
                   </p>
-                  <p>
+                  <p className="mt-1">
                     {entry.credit > 0
                       ? `CR ${formatCurrency(entry.credit)}`
                       : "-"}
@@ -1130,21 +1186,20 @@ function ReviewStep({
           ))}
         </div>
 
-        <div className="mt-4 border-t border-darknavy/10 pt-4 text-sm text-darknavy/65">
-          <div className="flex items-center justify-between">
-            <span>Total debit</span>
-            <span>{formatCurrency(totalDebit)}</span>
-          </div>
-          <div className="mt-2 flex items-center justify-between">
-            <span>Total credit</span>
-            <span>{formatCurrency(totalCredit)}</span>
-          </div>
-          <div className="theme-accent-contrast-text mt-3 flex items-center justify-between rounded-[16px] bg-skyblue px-4 py-3 shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.2)]">
-            <span className="font-semibold">Voucher amount</span>
-            <span className="text-lg font-semibold">
-              {formatCurrency(Number(values.amount || 0))}
-            </span>
-          </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <SummaryPreviewCard
+            label="Total Debit"
+            value={formatCurrency(totalDebit)}
+          />
+          <SummaryPreviewCard
+            label="Total Credit"
+            value={formatCurrency(totalCredit)}
+          />
+          <SummaryPreviewCard
+            label="Variance"
+            tone={Math.abs(totalDebit - totalCredit) < 0.001 ? "balanced" : "warning"}
+            value={formatCurrency(Math.abs(totalDebit - totalCredit))}
+          />
         </div>
 
         <div className="mt-5 rounded-[18px] border border-darknavy/10 bg-white p-4">
@@ -1174,6 +1229,33 @@ function ReviewStep({
         </div>
       </ReviewCardShell>
     </section>
+  );
+}
+
+function SummaryPreviewCard({
+  label,
+  tone = "default",
+  value,
+}: {
+  label: string;
+  tone?: "balanced" | "default" | "warning";
+  value: string;
+}) {
+  return (
+    <div
+      className={`rounded-[18px] border px-4 py-4 ${
+        tone === "balanced"
+          ? "border-citron/35 bg-citron/15"
+          : tone === "warning"
+            ? "border-coralpink/18 bg-coralpink/8"
+            : "border-darknavy/10 bg-offwhite/35"
+      }`}
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/45">
+        {label}
+      </p>
+      <p className="mt-2 text-lg font-semibold text-darknavy">{value}</p>
+    </div>
   );
 }
 
@@ -1221,7 +1303,7 @@ function DrawerFooter({
         <button
           type="button"
           onClick={onProceed}
-          className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
+          className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85"
         >
           {primaryLabel}
         </button>
@@ -1269,7 +1351,7 @@ function ActionField({
       <button
         type="button"
         onClick={onAction}
-        className="theme-accent-contrast-text inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-md bg-skyblue px-3 text-sm font-medium shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)] transition hover:bg-skyblue/85"
+        className="theme-accent-contrast-text inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-md bg-skyblue px-3 text-sm font-medium transition hover:bg-skyblue/85"
       >
         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
         {actionLabel}
@@ -1333,10 +1415,10 @@ function InfoLine({ label, value }: { label: string; value: string }) {
 }
 
 const FieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-offwhite/80 px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/40 focus:bg-white";
+  "app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/40";
 
 const ReadOnlyFieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-darknavy/[0.04] px-3 text-sm text-darknavy/70 outline-none";
+  "app-theme-field-readonly h-11 w-full rounded-md border px-3 text-sm outline-none";
 
 function getSuggestedPartyType(
   disbursementType: DisbursementType | "",

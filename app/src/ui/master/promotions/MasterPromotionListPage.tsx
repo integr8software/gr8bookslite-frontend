@@ -8,6 +8,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { MasterPromotionTable } from "@/app/src/ui/master/promotions/MasterPromotionTable";
 
@@ -21,7 +22,7 @@ export function MasterPromotionListPage() {
 				titleAs="h1"
 				eyebrow="Discounts"
 				title="Promotions"
-				description="Manage promo codes, coupons, vouchers, event promos, plan eligibility, limits, expiration, and activation status."
+				description="Manage promo codes, coupons, vouchers, event promos, billing-cycle coverage, target plans, limits, expiration, starting dates, and status."
 				actions={
 					<Link
 						href={MasterPromotionAddHref}
@@ -34,6 +35,15 @@ export function MasterPromotionListPage() {
 			/>
 			<MasterPromotionSummaryCards summary={page.summary} />
 			<MasterPromotionTable {...page} />
+			<AppDialog
+				isOpen={Boolean(page.pendingDeleteRecord)}
+				title="Delete promotion?"
+				description={`This will remove ${page.pendingDeleteRecord?.name ?? "the selected promotion"}.`}
+				confirmLabel="Delete"
+				tone="danger"
+				onCancel={() => page.setPendingDeleteRecord(null)}
+				onConfirm={page.confirmDeleteRecord}
+			/>
 		</section>
 	);
 }

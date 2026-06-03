@@ -3,6 +3,7 @@ import { ChevronsUpDown } from "lucide-react";
 import {
 	getColumnClassName,
 	joinClasses,
+	moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
@@ -45,13 +46,18 @@ function ModuleTableSortButton<TData>({
 		<button
 			type="button"
 			onClick={header.column.getToggleSortingHandler()}
-			className="inline-flex items-center gap-2 rounded-md text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+			className={joinClasses(
+				"inline-flex items-center gap-2 rounded-md text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2",
+				moduleAccentClassNames.focusRing,
+			)}
 		>
 			{flexRender(header.column.columnDef.header, header.getContext())}
 			<ChevronsUpDown
 				className={joinClasses(
 					"h-3.5 w-3.5",
-					sortDirection ? "text-skyblue" : "text-darknavy/45",
+					sortDirection
+						? moduleAccentClassNames.iconText
+						: "text-darknavy/45",
 					sortDirection === "desc" && "rotate-180",
 				)}
 				aria-hidden="true"

@@ -1,7 +1,10 @@
 import type {
+	MasterPromotionAvailabilityMode,
+	MasterPromotionBillingCycle,
 	MasterPromotionDiscountKind,
 	MasterPromotionExpirationMode,
 	MasterPromotionLimitMode,
+	MasterPromotionRecurringAvailability,
 	MasterPromotionStatus,
 	MasterPromotionTableColumnKey,
 	MasterPromotionType,
@@ -18,6 +21,10 @@ export function getMasterPromotionViewHref(recordId: string) {
 
 export function getMasterPromotionEditHref(recordId: string) {
 	return `${MasterPromotionsHref}/edit/${recordId}`;
+}
+
+export function getMasterPromotionEditFromViewHref(recordId: string) {
+	return `${getMasterPromotionEditHref(recordId)}?from=view`;
 }
 
 export const MasterPromotionPaginationStorageKey = "master-promotions";
@@ -43,6 +50,33 @@ export const MasterPromotionLimitModeOptions = [
 	"Unlimited",
 	"Limited",
 ] as const satisfies readonly MasterPromotionLimitMode[];
+
+export const MasterPromotionAvailabilityModeOptions = [
+	"One-time",
+	"Recurring",
+] as const satisfies readonly MasterPromotionAvailabilityMode[];
+
+export const MasterPromotionRecurringAvailabilityOptions = [
+	"First day of billing cycle",
+	"First day of month",
+	"First month of year",
+] as const satisfies readonly MasterPromotionRecurringAvailability[];
+
+export const MasterPromotionBillingCycleOptions = [
+	"Whole plan",
+	"1 billing cycle",
+	"2 billing cycles",
+	"3 billing cycles",
+	"4 billing cycles",
+	"5 billing cycles",
+	"6 billing cycles",
+	"7 billing cycles",
+	"8 billing cycles",
+	"9 billing cycles",
+	"10 billing cycles",
+	"11 billing cycles",
+	"12 billing cycles",
+] as const satisfies readonly MasterPromotionBillingCycle[];
 
 export const MasterPromotionAllPlansTarget = "all-plans";
 
@@ -122,13 +156,20 @@ export const MasterPromotionStatusOptions = [
 	"Inactive",
 ] as const satisfies readonly MasterPromotionStatus[];
 
+export const MasterPromotionStatusFilterOptions = [
+	"All",
+	...MasterPromotionStatusOptions,
+] as const satisfies readonly ("All" | MasterPromotionStatus)[];
+
 export const MasterPromotionTableColumns = [
 	{ key: "name", label: "Promotion", className: "w-[24rem]" },
-	{ key: "targetPlanIds", label: "Target plans", className: "w-[20rem]" },
-	{ key: "value", label: "Value", className: "w-[10rem]" },
+	{ key: "billingCycle", label: "Coverage", className: "w-[15rem]" },
+	{ key: "targetPlanIds", label: "Target plan", className: "w-[20rem]" },
+	{ key: "startsAt", label: "Schedule", className: "w-[13rem]" },
+	{ key: "value", label: "Discount", className: "w-[11rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
-	{ key: "redemptions", label: "Uses", className: "w-[10rem]" },
-	{ label: "Actions", className: "w-[15rem] text-right" },
+	{ key: "redemptions", label: "Usage limit", className: "w-[11rem]" },
+	{ label: "Actions", className: "w-[6rem] text-right" },
 ] as const satisfies readonly (
 	| {
 			key: MasterPromotionTableColumnKey;

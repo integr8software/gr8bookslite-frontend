@@ -12,6 +12,7 @@ import {
   InvalidState,
 } from "@/app/src/services/auth/AuthActionUtils";
 import { GetFallbackPostAuthRedirectPath } from "@/app/src/services/auth/AuthRedirects";
+import { SetAuthAccessTokenCookie } from "@/app/src/services/auth/AuthCookieServer";
 
 const AccessStateLoginErrors = [
   "This company subscription",
@@ -21,6 +22,9 @@ const AccessStateLoginErrors = [
   "You do not belong to this company.",
   "User account is suspended.",
 ];
+
+const GooglePasswordLoginMessage =
+  "This account uses Google sign-in. Continue with Google to sign in.";
 
 function IsAccessStateLoginError(message: string) {
   return AccessStateLoginErrors.some((prefix) => message.startsWith(prefix));
@@ -52,8 +56,14 @@ export async function LoginAction(
       {
         email: parsed.data.email,
         password: parsed.data.password,
+        rememberMe,
       },
     );
+    if (!response.accessToken) {
+      throw new Error("We could not create your login session right now.");
+    }
+
+    await SetAuthAccessTokenCookie(response.accessToken, rememberMe);
 
     return {
       status: "success",
@@ -86,6 +96,15 @@ export async function LoginAction(
         errors: {
           email: [message],
         },
+        formValues,
+        rememberMe,
+      };
+    }
+
+    if (message === GooglePasswordLoginMessage) {
+      return {
+        status: "error",
+        message,
         formValues,
         rememberMe,
       };

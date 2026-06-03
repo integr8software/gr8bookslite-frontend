@@ -4,16 +4,18 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type TermManagementTableRowProps = {
 	term: TermManagement;
 	onDeleteTerm: (term: TermManagement) => void;
+	onEditTerm: (term: TermManagement) => void;
 };
 
 export function TermManagementTableRow({
 	term,
 	onDeleteTerm,
+	onEditTerm,
 }: TermManagementTableRowProps) {
 	return (
 		<tr className="module-table-row">
@@ -29,9 +31,9 @@ export function TermManagementTableRow({
 						href={`${TermManagementHref}/view/${term.id}`}
 						label={`View ${term.description}`}
 					/>
-					<ModuleTableActionLink
+					<ModuleTableActionButton
 						variant="edit"
-						href={`${TermManagementHref}/edit/${term.id}`}
+						onClick={() => onEditTerm(term)}
 						label={`Edit ${term.description}`}
 					/>
 					<ModuleTableActionButton

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
 	CheckCircle2,
 	CirclePause,
@@ -10,12 +9,13 @@ import {
 	Plus,
 	Tags,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
 	ItemSetupConfigByKind,
 	ItemStatusOptions,
 } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import { useItemSetupListPage } from "@/app/src/hooks/modules/maintenance/item-management/useItemSetupListPage";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type { ItemSetupKind } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
@@ -31,12 +31,25 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { ItemSetupTable } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupTable";
+import { ItemSetupDrawer } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupDrawer";
+import type { ItemSetupRecord } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
+
+type DrawerState = {
+	kind: ItemSetupKind;
+	mode: "add" | "edit";
+	record?: ItemSetupRecord;
+} | null;
 
 export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 	const config = ItemSetupConfigByKind[kind];
 	const page = useItemSetupListPage(kind);
+	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	useMaintenanceAddDrawerSpotlight(() =>
+		setDrawerState({ kind, mode: "add" }),
+		() => setDrawerState(null),
+	);
 	const childConfig = page.childKind
 		? ItemSetupConfigByKind[page.childKind]
 		: null;
@@ -55,7 +68,8 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 			icon: CheckCircle2,
 			label: "Active Records",
 			tone: "emerald",
-			value: setupRecords.filter((record) => record.status === "Active").length,
+			value: setupRecords.filter((record) => record.status === "Active")
+				.length,
 		},
 		{
 			helper: "Currently inactive",
@@ -93,21 +107,25 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 				actions={
 					<>
 						{childConfig ? (
-							<Link
-								href={`${childConfig.href}/add`}
-								className={moduleHeaderActionClassNames.secondary}
+							<button
+								type="button"
+								onClick={() => setDrawerState({ kind: page.childKind!, mode: "add" })}
+								className={
+									moduleHeaderActionClassNames.secondary
+								}
 							>
 								<Plus className="h-4 w-4" aria-hidden="true" />
 								Add {childConfig.singularTitle}
-							</Link>
+							</button>
 						) : null}
-						<Link
-							href={`${config.href}/add`}
+						<button
+							type="button"
+							onClick={() => setDrawerState({ kind, mode: "add" })}
 							className={moduleHeaderActionClassNames.primary}
 						>
 							<Plus className="h-4 w-4" aria-hidden="true" />
 							Add {config.singularTitle}
-						</Link>
+						</button>
 					</>
 				}
 			/>
@@ -123,19 +141,39 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 						{childConfig ? (
 							<div className="flex flex-col gap-3 border-b border-darknavy/10 px-5 py-4 sm:flex-row sm:justify-end">
 								<ItemSetupStructureButton
-									active={page.structureFilter === "With Submodules"}
-									icon={<Network className="h-4 w-4" aria-hidden="true" />}
+									active={
+										page.structureFilter ===
+										"With Submodules"
+									}
+									icon={
+										<Network
+											className="h-4 w-4"
+											aria-hidden="true"
+										/>
+									}
 									label="With Submodules"
 									onClick={() =>
-										page.handleStructureFilterChange("With Submodules")
+										page.handleStructureFilterChange(
+											"With Submodules",
+										)
 									}
 								/>
 								<ItemSetupStructureButton
-									active={page.structureFilter === "Without Submodules"}
-									icon={<ListTree className="h-4 w-4" aria-hidden="true" />}
+									active={
+										page.structureFilter ===
+										"Without Submodules"
+									}
+									icon={
+										<ListTree
+											className="h-4 w-4"
+											aria-hidden="true"
+										/>
+									}
 									label="Without Submodules"
 									onClick={() =>
-										page.handleStructureFilterChange("Without Submodules")
+										page.handleStructureFilterChange(
+											"Without Submodules",
+										)
 									}
 								/>
 							</div>
@@ -151,8 +189,11 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 								label="Level"
 								value={page.levelFilter}
 								options={[
-									{ label: "All Levels", value: "All" },
-									{ label: config.singularTitle, value: kind },
+									{ label: "All", value: "All" },
+									{
+										label: config.singularTitle,
+										value: kind,
+									},
 									...(childConfig
 										? [
 												{
@@ -168,7 +209,7 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 								label="Status"
 								value={page.statusFilter}
 								options={[
-									{ label: "All Status", value: "All" },
+									{ label: "All", value: "All" },
 									...ItemStatusOptions.map((status) => ({
 										label: status,
 										value: status,
@@ -183,7 +224,9 @@ export function ItemSetupListPage({ kind }: { kind: ItemSetupKind }) {
 					</div>
 				}
 				onToggleExpanded={page.toggleExpanded}
+				onEditRecord={(recordKind, record) => setDrawerState({ kind: recordKind, mode: "edit", record })}
 			/>
+			<ItemSetupDrawer isOpen={Boolean(drawerState)} kind={drawerState?.kind ?? kind} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} record={drawerState?.record} />
 			<AppDialog
 				isOpen={Boolean(page.pendingDeleteRecord)}
 				isPending={page.isMutating}
@@ -222,7 +265,7 @@ function ItemSetupStructureButton({
 			className={[
 				"inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20",
 				active
-					? "border-blue-600 bg-blue-50 text-blue-700"
+					? "border-skyblue bg-skyblue/10 text-skyblue"
 					: "border-darknavy/10 bg-white text-darknavy/75 hover:border-skyblue/40 hover:bg-skyblue/10",
 			].join(" ")}
 		>
@@ -231,4 +274,3 @@ function ItemSetupStructureButton({
 		</button>
 	);
 }
-

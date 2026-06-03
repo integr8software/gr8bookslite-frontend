@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { PartyManagementAction } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementAction";
+import { PartyManagementFormPage } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementFormPage";
 
 const PageTitle = "View Party Management";
 
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function MaintenancePartyManagementViewPage() {
-  return <PartyManagementAction />;
+  return <PartyManagementFormPage />;
 }

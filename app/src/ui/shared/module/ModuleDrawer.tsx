@@ -3,7 +3,10 @@
 import type { ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	joinClasses,
+	moduleAccentClassNames,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 export type ModuleDrawerPosition = "bottom" | "left" | "right" | "top";
 
@@ -19,6 +22,7 @@ type ModuleDrawerProps = {
 	onClose: () => void;
 	position?: ModuleDrawerPosition;
 	showCloseButton?: boolean;
+	spotlightId?: string;
 	title: ReactNode;
 };
 
@@ -64,6 +68,7 @@ export function ModuleDrawer({
 	onClose,
 	position = "right",
 	showCloseButton = true,
+	spotlightId,
 	title,
 }: ModuleDrawerProps) {
 	const positionStyles = drawerPositionStyles[position];
@@ -86,6 +91,7 @@ export function ModuleDrawer({
 					<motion.aside
 						role="dialog"
 						aria-modal="true"
+						data-spotlight-id={spotlightId}
 						aria-label={
 							typeof title === "string" ? title : "Module drawer"
 						}
@@ -148,7 +154,12 @@ function ModuleDrawerHeader({
 		<div className="flex flex-col gap-4 border-b border-darknavy/10 px-6 py-5 sm:flex-row sm:items-start sm:justify-between">
 			<div>
 				{eyebrow ? (
-					<p className="text-xs font-semibold uppercase tracking-wide text-skyblue">
+					<p
+						className={joinClasses(
+							"text-xs font-semibold uppercase tracking-wide",
+							moduleAccentClassNames.iconText,
+						)}
+					>
 						{eyebrow}
 					</p>
 				) : null}
@@ -168,7 +179,11 @@ function ModuleDrawerHeader({
 						type="button"
 						aria-label="Close drawer"
 						onClick={onClose}
-						className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
+						className={joinClasses(
+							"inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-4",
+							moduleAccentClassNames.hoverSoftBackground,
+							moduleAccentClassNames.focusRing,
+						)}
 					>
 						<X className="h-5 w-5" aria-hidden="true" />
 					</button>

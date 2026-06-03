@@ -18,14 +18,23 @@ import type {
   PettyCashReplenishmentEntry,
   PettyCashReplenishmentFormErrors,
   PettyCashReplenishmentFormValues,
+  PettyCashReplenishmentRecord,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
 import { validatePettyCashReplenishmentForm } from "@/app/src/validations/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentValidation";
 
-export function usePettyCashReplenishmentFormPage() {
+type PettyCashReplenishmentFormPageOptions = {
+  existingReplenishment?: PettyCashReplenishmentRecord;
+  mode?: PettyCashReplenishmentFormMode;
+  onSaved?: () => void;
+};
+
+export function usePettyCashReplenishmentFormPage(
+  options: PettyCashReplenishmentFormPageOptions = {},
+) {
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
-  const mode = getPettyCashReplenishmentFormMode(pathname);
-  const existingReplenishment = PettyCashReplenishmentRecords.find(
+  const mode = options.mode ?? getPettyCashReplenishmentFormMode(pathname);
+  const existingReplenishment = options.existingReplenishment ?? PettyCashReplenishmentRecords.find(
     (record) => record.id === params.recordId,
   );
   const isReadonly = mode === "view";
@@ -138,6 +147,7 @@ export function usePettyCashReplenishmentFormPage() {
         ? "Petty cash replenishment updated."
         : "Petty cash replenishment created.",
     );
+    options.onSaved?.();
     return true;
   }
 

@@ -12,13 +12,22 @@ import {
 } from "@/app/src/data/modules/maintenance/financial-management/transaction-type/TransactionTypeData";
 import type {
 	TransactionTypeActionMode,
+	TransactionType,
 	TransactionTypeFormErrors,
 	TransactionTypeFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
 import { validateTransactionTypeForm } from "@/app/src/validations/modules/maintenance/financial-management/transaction-type/TransactionTypeValidation";
 import { useTransactionTypeStore } from "@/app/src/hooks/modules/maintenance/financial-management/transaction-type/useTransactionType";
 
-export function useTransactionTypeActionPage() {
+type TransactionTypeActionPageOptions = {
+	existingTransactionType?: TransactionType;
+	mode?: TransactionTypeActionMode;
+	onSaved?: () => void;
+};
+
+export function useTransactionTypeActionPage(
+	options: TransactionTypeActionPageOptions = {},
+) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
@@ -33,8 +42,8 @@ export function useTransactionTypeActionPage() {
 		(state) => state.deleteTransactionType,
 	);
 	const isMutating = useTransactionTypeStore((state) => state.isMutating);
-	const mode = getActionMode(pathname);
-	const existingTransactionType = transactionTypes.find(
+	const mode = options.mode ?? getActionMode(pathname);
+	const existingTransactionType = options.existingTransactionType ?? transactionTypes.find(
 		(transactionType) => transactionType.id === params.recordId,
 	);
 	const isReadonly = mode === "view";
@@ -91,7 +100,8 @@ export function useTransactionTypeActionPage() {
 			addTransactionType(createTransactionTypeFromForm(values));
 		}
 
-		router.push(TransactionTypeHref);
+		options.onSaved?.();
+		if (!options.onSaved) router.push(TransactionTypeHref);
 	}
 
 	function handleConfirmDelete() {

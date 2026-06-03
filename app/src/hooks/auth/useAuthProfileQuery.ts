@@ -9,13 +9,27 @@ type UseAuthProfileQueryParams = {
   enabled?: boolean;
 };
 
+function CreateAccessTokenQueryScope(accessToken: string | null) {
+  if (!accessToken) {
+    return null;
+  }
+
+  let hash = 0;
+
+  for (let index = 0; index < accessToken.length; index += 1) {
+    hash = (hash * 31 + accessToken.charCodeAt(index)) >>> 0;
+  }
+
+  return hash.toString(36);
+}
+
 export function useAuthProfileQuery({
   accessToken,
   enabled = true,
 }: UseAuthProfileQueryParams) {
   return useQuery({
-    enabled,
-    queryKey: AuthQueryKeys.profile(),
+    enabled: enabled && Boolean(accessToken),
+    queryKey: AuthQueryKeys.profile(CreateAccessTokenQueryScope(accessToken)),
     queryFn: async () => GetAuthProfile(accessToken),
     retry: false,
   });

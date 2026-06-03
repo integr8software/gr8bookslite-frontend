@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Check, ChevronDown, GitBranch, Settings } from "lucide-react";
 import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
@@ -9,6 +10,9 @@ import {
 	getSwitcherMenuClassName,
 	joinClasses,
 } from "@/app/src/ui/shared/main-layout/main-topbar/utils";
+import { TopbarWorkspaceSkeleton } from "./TopbarSkeletons";
+
+const BranchButtonPendingSkeletonMs = 700;
 
 type BranchSwitcherProps = {
 	branchDropdownItems: MainBreadcrumbDropdownItem[];
@@ -33,6 +37,32 @@ export function BranchSwitcher({
 	onSelectBranch,
 	onToggle,
 }: BranchSwitcherProps) {
+	const pendingTimeoutRef = useRef<number | null>(null);
+	const [pendingBranchId, setPendingBranchId] = useState<string | null>(null);
+	const isButtonLoading = isLoading || pendingBranchId !== null;
+
+	useEffect(() => {
+		if (!pendingBranchId || currentBranch?.id !== pendingBranchId) {
+			return;
+		}
+
+		if (pendingTimeoutRef.current !== null) {
+			window.clearTimeout(pendingTimeoutRef.current);
+		}
+
+		pendingTimeoutRef.current = window.setTimeout(() => {
+			pendingTimeoutRef.current = null;
+			setPendingBranchId(null);
+		}, BranchButtonPendingSkeletonMs);
+
+		return () => {
+			if (pendingTimeoutRef.current !== null) {
+				window.clearTimeout(pendingTimeoutRef.current);
+				pendingTimeoutRef.current = null;
+			}
+		};
+	}, [currentBranch?.id, pendingBranchId]);
+
 	return (
 		<div
 			className={joinClasses(
@@ -43,30 +73,34 @@ export function BranchSwitcher({
 			)}
 			data-main-switcher-root
 		>
-			<button
-				type="button"
-				onClick={onToggle}
-				aria-label="Switch branch"
-				aria-expanded={isOpen}
-				className={joinClasses(
-					"flex h-10 w-full min-w-0 items-center gap-2 border border-darknavy/10 bg-white px-3 text-left text-sm shadow-sm transition-all duration-200 ease-out hover:border-skyblue/45 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 motion-reduce:transition-none motion-reduce:active:scale-100",
-					variant === "mobile" ? "rounded-full" : "rounded-md",
-				)}
-			>
-				<GitBranch
-					className="h-4 w-4 shrink-0 text-darknavy/55"
-					aria-hidden="true"
-				/>
-				<span className="min-w-0 flex-1 truncate font-semibold text-darknavy">
-					{currentBranch
-						? getBranchLabel(currentBranch)
-						: "No Branch Access"}
-				</span>
-				<ChevronDown
-					className="h-4 w-4 shrink-0 text-darknavy/45"
-					aria-hidden="true"
-				/>
-			</button>
+			{isButtonLoading ? (
+				<TopbarWorkspaceSkeleton variant={variant} />
+			) : (
+				<button
+					type="button"
+					onClick={onToggle}
+					aria-label="Switch branch"
+					aria-expanded={isOpen}
+					className={joinClasses(
+						"flex h-10 w-full min-w-0 items-center gap-2 border border-darknavy/10 bg-white px-3 text-left text-sm shadow-sm transition-all duration-200 ease-out hover:border-skyblue/45 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 motion-reduce:transition-none motion-reduce:active:scale-100",
+						variant === "mobile" ? "rounded-full" : "rounded-md",
+					)}
+				>
+					<GitBranch
+						className="h-4 w-4 shrink-0 text-darknavy/55"
+						aria-hidden="true"
+					/>
+					<span className="min-w-0 flex-1 truncate font-semibold text-darknavy">
+						{currentBranch
+							? getBranchLabel(currentBranch)
+							: "No Branch Access"}
+					</span>
+					<ChevronDown
+						className="h-4 w-4 shrink-0 text-darknavy/45"
+						aria-hidden="true"
+					/>
+				</button>
+			)}
 
 			{isOpen ? (
 				<div
@@ -89,6 +123,7 @@ export function BranchSwitcher({
 							branchDropdownItems={branchDropdownItems}
 							currentBranchId={currentBranch?.id}
 							onClose={onClose}
+							onBranchSelectionStart={setPendingBranchId}
 							onSelectBranch={onSelectBranch}
 						/>
 					) : (
@@ -106,6 +141,7 @@ type BranchSwitcherGroupsProps = {
 	branchDropdownItems: MainBreadcrumbDropdownItem[];
 	currentBranchId?: string;
 	onClose: () => void;
+	onBranchSelectionStart: (branchId: string) => void;
 	onSelectBranch: (branchId: string) => void;
 };
 
@@ -113,6 +149,7 @@ function BranchSwitcherGroups({
 	branchDropdownItems,
 	currentBranchId,
 	onClose,
+	onBranchSelectionStart,
 	onSelectBranch,
 }: BranchSwitcherGroupsProps) {
 	const selectionItems = branchDropdownItems.filter(
@@ -139,6 +176,7 @@ function BranchSwitcherGroups({
 						items={branchItems}
 						label="Branch"
 						onClose={onClose}
+						onBranchSelectionStart={onBranchSelectionStart}
 						onSelectBranch={onSelectBranch}
 					/>
 				) : null}
@@ -149,6 +187,7 @@ function BranchSwitcherGroups({
 						items={satelliteItems}
 						label="Satellite"
 						onClose={onClose}
+						onBranchSelectionStart={onBranchSelectionStart}
 						onSelectBranch={onSelectBranch}
 					/>
 				) : null}
@@ -185,6 +224,7 @@ type BranchSwitcherGroupProps = {
 	items: MainBreadcrumbDropdownItem[];
 	label: string;
 	onClose: () => void;
+	onBranchSelectionStart: (branchId: string) => void;
 	onSelectBranch: (branchId: string) => void;
 };
 
@@ -193,6 +233,7 @@ function BranchSwitcherGroup({
 	items,
 	label,
 	onClose,
+	onBranchSelectionStart,
 	onSelectBranch,
 }: BranchSwitcherGroupProps) {
 	return (
@@ -210,6 +251,7 @@ function BranchSwitcherGroup({
 							href={item.href}
 							onClick={() => {
 								if (item.branchId) {
+									onBranchSelectionStart(item.branchId);
 									onSelectBranch(item.branchId);
 								}
 								onClose();

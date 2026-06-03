@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -70,9 +70,12 @@ import {
 } from "@/app/src/services/auth/AuthProfileAccess";
 import {
   CreateFrontendAuthSession,
-  GetAuthProfile,
   SwitchCompanyContext,
 } from "@/app/src/services/auth/AuthApi";
+import {
+  BuildAuthProfileFromSwitchResponse,
+  PrepareQueryCacheForContextSwitch,
+} from "@/app/src/services/auth/AuthContextCache";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 import type {
@@ -124,7 +127,9 @@ const AccountRoutePrefix = "/account";
 const WorkspaceHomeHref = "/workspace/dashboard";
 const MasterHomeHref = "/master/dashboard";
 const CompanyFallbackHomeHref = "/account/profile";
-const MaxBlockingProfileLoadMs = 4500;
+const ShellContextSwitchFallbackMs = 8000;
+const BranchContextSwitchMinimumMs = 650;
+const TopbarContextSkeletonMs = 700;
 const BranchUsersContextParam = "workspaceBranchId";
 const CompanyUsersContextParam = "workspaceCompanyId";
 const BranchUsersNameParam = "branchName";
@@ -169,9 +174,26 @@ export function useMainLayout() {
   const setStoredActiveCompanyName = useAppStore(
     (state) => state.setActiveCompanyName,
   );
+  const shellContextSwitchMessage = useAppStore(
+    (state) => state.shellContextSwitchMessage,
+  );
+  const isShellContextSettling = useAppStore(
+    (state) => state.isShellContextSettling,
+  );
+  const beginShellContextSwitch = useAppStore(
+    (state) => state.beginShellContextSwitch,
+  );
+  const endShellContextSwitch = useAppStore(
+    (state) => state.endShellContextSwitch,
+  );
+  const finishShellContextSettling = useAppStore(
+    (state) => state.finishShellContextSettling,
+  );
   const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const queryClient = useQueryClient();
   const sidebarTransitionFrameRef = useRef<number | null>(null);
+  const shellContextSwitchFallbackRef = useRef<number | null>(null);
+  const shellContextSettlingRef = useRef<number | null>(null);
   const latestCompanySwitchRequestRef = useRef(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarTransitionEnabled, setIsSidebarTransitionEnabled] =
@@ -180,7 +202,6 @@ export function useMainLayout() {
   const [notificationsOpenPath, setNotificationsOpenPath] = useState<
     string | null
   >(null);
-  const [hasProfileLoadTimedOut, setHasProfileLoadTimedOut] = useState(false);
   const [helpOpenPath, setHelpOpenPath] = useState<string | null>(null);
   const [selectedHelpArticleState, setSelectedHelpArticleState] = useState({
     pathname: "",
@@ -218,11 +239,10 @@ export function useMainLayout() {
     ? searchParams.get("companyId") ?? undefined
     : undefined;
   const accessToken = storedAccessToken;
-  const { data: authProfile, isLoading: isAuthProfileLoading } =
-    useAuthProfileQuery({
-      accessToken,
-      enabled: isAuthSessionReady,
-    });
+  const { data: authProfile } = useAuthProfileQuery({
+    accessToken,
+    enabled: isAuthSessionReady,
+  });
   const effectiveRole = authProfile
     ? ResolveAuthProfileEffectiveRole(authProfile)
     : null;
@@ -238,7 +258,7 @@ export function useMainLayout() {
   const displayUser = authProfile
     ? CreateWorkspaceCurrentUserFromProfile(authProfile)
     : EmptyCurrentUser;
-  const isProfileLoading = isAuthProfileLoading && !hasProfileLoadTimedOut;
+  const isProfileLoading = Boolean(accessToken) && !authProfile;
   const activeNavigationScope: MainNavigationScope =
     isAccountRoute
       ? "account"
@@ -354,6 +374,7 @@ export function useMainLayout() {
         throw new Error("Invalid company selection.");
       }
 
+      await PrepareQueryCacheForContextSwitch(queryClient);
       const result = await SwitchCompanyContext(accessToken, numericCompanyId);
 
       if (requestId !== latestCompanySwitchRequestRef.current) {
@@ -361,15 +382,14 @@ export function useMainLayout() {
       }
 
       await CreateFrontendAuthSession(result.accessToken);
-      const profile = await GetAuthProfile(result.accessToken);
+      const profile = BuildAuthProfileFromSwitchResponse(result);
 
       return { result, profile, requestId };
     },
-    onMutate: async ({ companyId }) => {
+    onMutate: async () => {
       await queryClient.cancelQueries({
         queryKey: AuthQueryKeys.profile(),
       });
-      setActiveCompanyId(companyId);
     },
     onSuccess: ({ result, profile, requestId }) => {
       if (requestId !== latestCompanySwitchRequestRef.current || !profile) {
@@ -378,12 +398,14 @@ export function useMainLayout() {
 
       if (result.companyId != null) {
         setActiveCompanyId(String(result.companyId));
+        setStoredActiveCompanyId(result.companyId);
       }
 
       setStoredAccessToken(result.accessToken);
-      setStoredActiveCompanyId(result.companyId);
+      setStoredActiveBranchContext(null, null);
       queryClient.setQueryData(AuthQueryKeys.profile(), profile);
       router.push(companyHomeHref);
+      releaseShellContextSwitchAfterFrame();
     },
     onError: (_error, variables) => {
       if (variables?.requestId !== latestCompanySwitchRequestRef.current) {
@@ -392,6 +414,7 @@ export function useMainLayout() {
 
       setSwitchingCompanyName(null);
       setSwitchingCompanyId(null);
+      clearShellContextSwitch(false);
     },
   });
 
@@ -436,7 +459,6 @@ export function useMainLayout() {
     () => sortBranchesByPriority(getAccessibleBranches(branches)),
     [branches],
   );
-  /* eslint-enable react-hooks/preserve-manual-memoization */
   const hasCompanyAdministrationAccess = hasCurrentCompanyAdministrationAccess(
     authProfile,
     currentCompany.id,
@@ -449,6 +471,62 @@ export function useMainLayout() {
     accessibleBranches[0] ??
     null;
   const canManageBranches = hasAccess(displayUser, "branch.management");
+  const clearShellContextSwitch = useCallback(
+    (keepTopbarSkeleton = true) => {
+      if (shellContextSettlingRef.current !== null) {
+        window.clearTimeout(shellContextSettlingRef.current);
+        shellContextSettlingRef.current = null;
+      }
+
+      if (shellContextSwitchFallbackRef.current !== null) {
+        window.clearTimeout(shellContextSwitchFallbackRef.current);
+        shellContextSwitchFallbackRef.current = null;
+      }
+
+      endShellContextSwitch();
+
+      if (!keepTopbarSkeleton) {
+        finishShellContextSettling();
+        return;
+      }
+
+      shellContextSettlingRef.current = window.setTimeout(() => {
+        shellContextSettlingRef.current = null;
+        finishShellContextSettling();
+      }, TopbarContextSkeletonMs);
+    },
+    [endShellContextSwitch, finishShellContextSettling],
+  );
+  const releaseShellContextSwitchAfterFrame = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        clearShellContextSwitch();
+      });
+    });
+  }, [clearShellContextSwitch]);
+  const releaseShellContextSwitchAfterMinimumDelay = useCallback(() => {
+    window.setTimeout(() => {
+      releaseShellContextSwitchAfterFrame();
+    }, BranchContextSwitchMinimumMs);
+  }, [releaseShellContextSwitchAfterFrame]);
+  const beginShellContextSwitchWithFallback = useCallback(
+    (message: string) => {
+      beginShellContextSwitch(message);
+
+      if (shellContextSwitchFallbackRef.current !== null) {
+        window.clearTimeout(shellContextSwitchFallbackRef.current);
+      }
+
+      shellContextSwitchFallbackRef.current = window.setTimeout(() => {
+        setSwitchingCompanyName(null);
+        setSwitchingCompanyId(null);
+        setSwitchingAdministrationScope(null);
+        clearShellContextSwitch(false);
+      }, ShellContextSwitchFallbackMs);
+    },
+    [beginShellContextSwitch, clearShellContextSwitch],
+  );
+  /* eslint-enable react-hooks/preserve-manual-memoization */
 
   useEffect(() => {
     if (!switchingCompanyId) {
@@ -470,9 +548,11 @@ export function useMainLayout() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- company switching should stay on the main loader until the target branch context is ready.
     setSwitchingCompanyName(null);
     setSwitchingCompanyId(null);
+    clearShellContextSwitch();
   }, [
     activeCompanyId,
     activeNavigationScope,
+    clearShellContextSwitch,
     isBranchLoading,
     switchingCompanyId,
   ]);
@@ -485,13 +565,20 @@ export function useMainLayout() {
     if (switchingAdministrationScope === "workspace" && isWorkspaceRoute) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- clear the transition only after the workspace route is active.
       setSwitchingAdministrationScope(null);
+      clearShellContextSwitch();
       return;
     }
 
     if (switchingAdministrationScope === "master" && isMasterRoute) {
       setSwitchingAdministrationScope(null);
+      clearShellContextSwitch();
     }
-  }, [isMasterRoute, isWorkspaceRoute, switchingAdministrationScope]);
+  }, [
+    clearShellContextSwitch,
+    isMasterRoute,
+    isWorkspaceRoute,
+    switchingAdministrationScope,
+  ]);
 
   useEffect(() => {
     if (profileActiveCompanyId == null || switchingCompanyId) {
@@ -658,6 +745,12 @@ export function useMainLayout() {
       if (sidebarTransitionFrameRef.current !== null) {
         cancelAnimationFrame(sidebarTransitionFrameRef.current);
       }
+      if (shellContextSwitchFallbackRef.current !== null) {
+        window.clearTimeout(shellContextSwitchFallbackRef.current);
+      }
+      if (shellContextSettlingRef.current !== null) {
+        window.clearTimeout(shellContextSettlingRef.current);
+      }
     },
     [],
   );
@@ -669,20 +762,6 @@ export function useMainLayout() {
 
     router.replace(missingRecordActionRedirectHref);
   }, [missingRecordActionRedirectHref, router]);
-
-  useEffect(() => {
-    if (!isAuthProfileLoading || hasProfileLoadTimedOut) {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      setHasProfileLoadTimedOut(true);
-    }, MaxBlockingProfileLoadMs);
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [hasProfileLoadTimedOut, isAuthProfileLoading]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -773,7 +852,24 @@ export function useMainLayout() {
   }
 
   function selectBranch(branchId: string) {
+    const selectedBranch = accessibleBranches.find(
+      (branch) => branch.id === branchId,
+    );
+
+    beginShellContextSwitchWithFallback(
+      selectedBranch
+        ? `Switching to ${getBranchSwitcherLabel(selectedBranch)}...`
+        : "Switching branch...",
+    );
+    void PrepareQueryCacheForContextSwitch(queryClient);
     setActiveBranchId(branchId);
+    setStoredActiveBranchContext(
+      Number.isInteger(Number(branchId)) && Number(branchId) > 0
+        ? Number(branchId)
+        : null,
+      selectedBranch ? getBranchSwitcherLabel(selectedBranch) : null,
+    );
+    releaseShellContextSwitchAfterMinimumDelay();
   }
 
   function selectCompany(companyId: string) {
@@ -793,10 +889,14 @@ export function useMainLayout() {
     const requestId = latestCompanySwitchRequestRef.current + 1;
 
     latestCompanySwitchRequestRef.current = requestId;
+    beginShellContextSwitchWithFallback(
+      selectedCompany
+        ? `Switching to ${selectedCompany.name}...`
+        : "Switching company...",
+    );
     setSwitchingCompanyName(selectedCompany?.name ?? "company");
     setSwitchingCompanyId(companyId);
     setSwitchingAdministrationScope(null);
-    setActiveCompanyId(companyId);
     setActiveBranchId("");
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
@@ -811,8 +911,14 @@ export function useMainLayout() {
     setSwitchingCompanyName(null);
     setSwitchingCompanyId(null);
     setSwitchingAdministrationScope("workspace");
+    beginShellContextSwitchWithFallback("Switching to workspace...");
+    setActiveBranchId("");
+    setStoredActiveBranchContext(null, null);
+    setStoredActiveCompanyId(null);
+    setStoredActiveCompanyName(null);
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
+    void PrepareQueryCacheForContextSwitch(queryClient);
     router.push(WorkspaceHomeHref);
   }
 
@@ -824,8 +930,14 @@ export function useMainLayout() {
     setSwitchingCompanyName(null);
     setSwitchingCompanyId(null);
     setSwitchingAdministrationScope("master");
+    beginShellContextSwitchWithFallback("Switching to master control...");
+    setActiveBranchId("");
+    setStoredActiveBranchContext(null, null);
+    setStoredActiveCompanyId(null);
+    setStoredActiveCompanyName(null);
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
+    void PrepareQueryCacheForContextSwitch(queryClient);
     router.push(MasterHomeHref);
   }
 
@@ -864,16 +976,20 @@ export function useMainLayout() {
     helpArticles: ModuleHelpArticles,
     homeHref,
     isCompanySwitching: Boolean(
-      switchingCompanyId || switchingAdministrationScope,
+      shellContextSwitchMessage ||
+        switchingCompanyId ||
+        switchingAdministrationScope,
     ),
     companySwitchMessage:
-      switchingAdministrationScope === "workspace"
+      shellContextSwitchMessage ??
+      (switchingAdministrationScope === "workspace"
         ? "Switching to workspace..."
         : switchingAdministrationScope === "master"
           ? "Switching to master control..."
           : switchingCompanyName
             ? `Switching to ${switchingCompanyName}...`
-            : "Switching company...",
+            : "Switching company..."),
+    isTopbarContextLoading: isShellContextSettling,
     isShellLoading: !isAuthSessionReady || isProfileLoading,
     isProfileLoading,
     isBranchLoading,

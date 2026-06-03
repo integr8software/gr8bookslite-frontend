@@ -51,6 +51,7 @@ export function MainTopbar({
 	isHelpOpen,
 	isNotificationsOpen,
 	isProfileLoading = false,
+	isTopbarContextLoading = false,
 	isSearchOpen,
 	isSidebarOpen,
 	notificationTab,
@@ -100,10 +101,14 @@ export function MainTopbar({
 		(canAccessMaster || canAccessWorkspace || canSwitchCompany);
 	const canShowBranchSwitcher =
 		activeNavigationScope === "company" && branchDropdownItems.length > 0;
+	const shouldShowWorkspaceSkeleton =
+		isProfileLoading || isTopbarContextLoading;
+	const canShowBranchSkeleton =
+		activeNavigationScope === "company" && shouldShowWorkspaceSkeleton;
 	const hasBothMobileWorkspaceControls =
-		canShowCompanySwitcher && canShowBranchSwitcher;
+		canShowCompanySwitcher && (canShowBranchSwitcher || canShowBranchSkeleton);
 	const hasMobileWorkspaceControls =
-		canShowCompanySwitcher || canShowBranchSwitcher;
+		canShowCompanySwitcher || canShowBranchSwitcher || canShowBranchSkeleton;
 	const topbarFloatingPanelTopClass = "top-14";
 
 	const closeMobileSidebar = useCallback(() => {
@@ -378,7 +383,7 @@ export function MainTopbar({
 					aria-label="Workspace controls"
 					className="hidden min-w-0 flex-1 items-center gap-2 md:flex md:max-w-92 lg:max-w-md xl:max-w-lg"
 				>
-					{isProfileLoading ? (
+					{shouldShowWorkspaceSkeleton && canShowCompanySwitcher ? (
 						<TopbarWorkspaceSkeleton />
 					) : canShowCompanySwitcher ? (
 						<div data-spotlight-id="workspace-company-switcher">
@@ -398,7 +403,9 @@ export function MainTopbar({
 						</div>
 					) : null}
 
-					{canShowBranchSwitcher ? (
+					{canShowBranchSkeleton ? (
+						<TopbarWorkspaceSkeleton />
+					) : canShowBranchSwitcher ? (
 						<BranchSwitcher
 							branchDropdownItems={branchDropdownItems}
 							currentBranch={currentBranch}
@@ -529,7 +536,9 @@ export function MainTopbar({
 						hasBothMobileWorkspaceControls && "sm:grid-cols-2",
 					)}
 				>
-					{canShowCompanySwitcher ? (
+					{shouldShowWorkspaceSkeleton && canShowCompanySwitcher ? (
+						<TopbarWorkspaceSkeleton variant="mobile" />
+					) : canShowCompanySwitcher ? (
 						<CompanySwitcher
 							activeNavigationScope={activeNavigationScope}
 							availableCompanies={availableCompanies}
@@ -546,7 +555,9 @@ export function MainTopbar({
 						/>
 					) : null}
 
-					{canShowBranchSwitcher ? (
+					{canShowBranchSkeleton ? (
+						<TopbarWorkspaceSkeleton variant="mobile" />
+					) : canShowBranchSwitcher ? (
 						<BranchSwitcher
 							branchDropdownItems={branchDropdownItems}
 							currentBranch={currentBranch}

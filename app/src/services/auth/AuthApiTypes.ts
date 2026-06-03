@@ -112,6 +112,7 @@ export type SwitchCompanyContextRequest = {
 
 export type SwitchCompanyContextResponse = {
   accessToken: string;
+  user: AuthProfileResponse["user"];
   companyId: number | null;
   role: "ADMIN" | "USER" | "SUPER_ADMIN";
   access: AuthProfileAccess | null;

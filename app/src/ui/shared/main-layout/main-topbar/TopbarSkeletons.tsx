@@ -1,9 +1,24 @@
 import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import { GradientBlurBackground } from "@/app/src/ui/shared/layout/GradientBlurBackground";
+import type { SwitcherVariant } from "@/app/src/types/shared/main-layout/MainTopbarTypes";
+import { joinClasses } from "./utils";
 
-export function TopbarWorkspaceSkeleton() {
+type TopbarWorkspaceSkeletonProps = {
+  variant?: SwitcherVariant;
+};
+
+export function TopbarWorkspaceSkeleton({
+  variant = "desktop",
+}: TopbarWorkspaceSkeletonProps) {
   return (
-    <div className="relative h-10 min-w-36 max-w-52 flex-1 basis-0 overflow-hidden rounded-md border border-darknavy/10 bg-white px-3 lg:max-w-56 xl:max-w-60">
+    <div
+      className={joinClasses(
+        "relative h-10 overflow-hidden border border-darknavy/10 bg-white px-3 shadow-sm",
+        variant === "desktop"
+          ? "min-w-36 max-w-52 flex-1 basis-0 rounded-md lg:max-w-56 xl:max-w-60"
+          : "w-full rounded-full",
+      )}
+    >
       <GradientBlurBackground
         fixed={false}
         height="h-full"

@@ -65,6 +65,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		companySwitchMessage,
 		isShellLoading,
 		isProfileLoading,
+		isTopbarContextLoading,
 		isBranchLoading,
 		isHelpOpen,
 		isNotificationsOpen,
@@ -155,6 +156,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 				isBranchLoading={isBranchLoading}
 				isHelpOpen={isHelpOpen}
 				isProfileLoading={isProfileLoading}
+				isTopbarContextLoading={isTopbarContextLoading}
 				isNotificationsOpen={isNotificationsOpen}
 				isSearchOpen={isSearchOpen}
 				isSidebarOpen={isSidebarOpen}

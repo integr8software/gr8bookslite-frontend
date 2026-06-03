@@ -409,7 +409,7 @@ function normalizePartyRecordValues(
 function normalizePartyContactNo(value: string) {
 	const contactNo = value.trim();
 
-	return contactNo === DefaultPhilippineContactNumber ? "" : contactNo;
+	return contactNo === DefaultPhilippineContactNumber.trim() ? "" : contactNo;
 }
 
 function createEmptyPartyAddress(): PartyAddress {

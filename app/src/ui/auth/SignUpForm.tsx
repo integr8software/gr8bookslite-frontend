@@ -146,6 +146,8 @@ export function SignUpForm() {
 									label="Contact Number"
 									name="contactNumber"
 									type="tel"
+									inputMode="numeric"
+									maxLength={16}
 									autoComplete="tel"
 									placeholder={PhilippineContactNumberPlaceholder}
 									value={values.contactNumber}

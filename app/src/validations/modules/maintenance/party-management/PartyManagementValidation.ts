@@ -189,7 +189,7 @@ function isValidContactNo(value: string) {
 	const contactNo = value.trim();
 
 	return (
-		contactNo === DefaultPhilippineContactNumber ||
+		contactNo === DefaultPhilippineContactNumber.trim() ||
 		PhilippineContactNumberPattern.test(contactNo)
 	);
 }

@@ -243,5 +243,7 @@ export function useAccountProfile() {
 function GetSubmittedContactNumber(value: string) {
   const trimmedValue = value.trim();
 
-  return trimmedValue === DefaultPhilippineContactNumber ? "" : trimmedValue;
+  return trimmedValue === DefaultPhilippineContactNumber.trim()
+    ? ""
+    : trimmedValue;
 }

@@ -95,7 +95,7 @@ const ContactNumberSchema = z
 	.min(1, "Contact number is required.")
 	.refine(
 		(value) =>
-			value === DefaultPhilippineContactNumber ||
+			value === DefaultPhilippineContactNumber.trim() ||
 			/^\+63 \d{3} \d{3} \d{4}$/.test(value),
 		"Enter a valid contact number in the format.",
 	);

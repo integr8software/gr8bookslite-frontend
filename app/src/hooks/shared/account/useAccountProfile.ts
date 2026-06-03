@@ -82,7 +82,7 @@ export function useAccountProfile() {
         throw new Error("Full name is required.");
       }
 
-      await UpdateUserAccountProfile(accessToken, {
+      await UpdateUserAccountProfile({
         fullName: profile.fullName,
         contactNumber: GetSubmittedContactNumber(profile.contactNumber),
       });
@@ -92,11 +92,11 @@ export function useAccountProfile() {
           throw new Error("Please choose an avatar image again.");
         }
 
-        await UploadUserAccountAvatar(accessToken, pendingAvatarFile);
+        await UploadUserAccountAvatar(pendingAvatarFile);
       }
 
       if (pendingAvatarAction === "remove") {
-        await DeleteUserAccountAvatar(accessToken);
+        await DeleteUserAccountAvatar();
       }
     },
     onSuccess: async () => {

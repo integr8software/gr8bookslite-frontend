@@ -11,47 +11,26 @@ import type {
 	WorkspaceCompanyUnitApiRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
-function GetAuthorizationHeaders(accessToken: string | null) {
-	if (!accessToken) {
-		return undefined;
-	}
-
-	return {
-		Authorization: `Bearer ${accessToken}`,
-	};
-}
-
-export async function GetWorkspaceCompanies(accessToken: string | null = null) {
+export async function GetWorkspaceCompanies() {
 	const response = await ApiClient.get<WorkspaceCompanyApiRecord[]>(
 		"/workspace/companies",
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return response.data.map(MapWorkspaceCompanyApiRecord);
 }
 
-export async function GetWorkspaceCompany(
-	accessToken: string,
-	companyId: string,
-) {
+export async function GetWorkspaceCompany(companyId: string) {
 	const response = await ApiClient.get<WorkspaceCompanyApiRecord>(
 		`/workspace/companies/${companyId}`,
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return MapWorkspaceCompanyApiRecord(response.data);
 }
 
 export async function CreateWorkspaceCompany(
-	accessToken: string | null,
 	values: WorkspaceCompanyFormValues,
 ): Promise<WorkspaceCompanyRecord> {
 	const company = await CreateWorkspaceCompanyFromRequest(
-		accessToken,
 		MapWorkspaceCompanyFormToCreateRequest(values),
 	);
 
@@ -59,20 +38,16 @@ export async function CreateWorkspaceCompany(
 		return company;
 	}
 
-	return UploadWorkspaceCompanyLogo(accessToken, company.id, values.logoFile);
+	return UploadWorkspaceCompanyLogo(company.id, values.logoFile);
 }
 
 export async function UpdateWorkspaceCompany(
-	accessToken: string,
 	companyId: string,
 	values: WorkspaceCompanyFormValues,
 ): Promise<WorkspaceCompanyRecord> {
 	const response = await ApiClient.patch<WorkspaceCompanyApiRecord>(
 		`/workspace/companies/${companyId}`,
 		MapWorkspaceCompanyFormToUpdateRequest(values),
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 	const company = MapWorkspaceCompanyApiRecord(response.data);
 
@@ -80,40 +55,31 @@ export async function UpdateWorkspaceCompany(
 		return company;
 	}
 
-	return UploadWorkspaceCompanyLogo(accessToken, company.id, values.logoFile);
+	return UploadWorkspaceCompanyLogo(company.id, values.logoFile);
 }
 
 export async function DeactivateWorkspaceCompany(
-	accessToken: string,
 	companyId: string,
 ): Promise<WorkspaceCompanyRecord> {
 	const response = await ApiClient.delete<WorkspaceCompanyApiRecord>(
 		`/workspace/companies/${companyId}`,
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return MapWorkspaceCompanyApiRecord(response.data);
 }
 
 export async function CreateWorkspaceCompanyFromRequest(
-	accessToken: string | null,
 	payload: CreateWorkspaceCompanyApiRequest,
 ): Promise<WorkspaceCompanyRecord> {
 	const response = await ApiClient.post<WorkspaceCompanyApiRecord>(
 		"/workspace/companies",
 		payload,
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return MapWorkspaceCompanyApiRecord(response.data);
 }
 
 export async function UploadWorkspaceCompanyLogo(
-	accessToken: string | null,
 	companyId: string,
 	file: File,
 ): Promise<WorkspaceCompanyRecord> {
@@ -125,7 +91,6 @@ export async function UploadWorkspaceCompanyLogo(
 		company: WorkspaceCompanyApiRecord;
 	}>(`/workspace/companies/${companyId}/logo`, formData, {
 		headers: {
-			...GetAuthorizationHeaders(accessToken),
 			"Content-Type": "multipart/form-data",
 		},
 	});

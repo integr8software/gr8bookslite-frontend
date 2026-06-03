@@ -49,7 +49,7 @@ export function useMasterPlanAndPackageFormPage({
 	const [hasLocalChanges, setHasLocalChanges] = useState(false);
 	const createMutation = useMutation({
 		mutationFn: async (nextValues: MasterPlanAndPackageFormValues) =>
-			createMasterPlanAndPackage(null, {
+			createMasterPlanAndPackage({
 				formValues: nextValues,
 			}),
 		onSuccess: async () => {

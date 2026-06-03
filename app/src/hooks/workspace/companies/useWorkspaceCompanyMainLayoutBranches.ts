@@ -22,7 +22,7 @@ export function useWorkspaceCompanyMainLayoutBranches({
 	const companyBranchesQuery = useQuery({
 		enabled: Boolean(companyId && accessToken),
 		queryKey: WorkspaceCompanyQueryKeys.companyBranches(companyId),
-		queryFn: async () => getWorkspaceCompanyUnits(accessToken, companyId),
+		queryFn: async () => getWorkspaceCompanyUnits(companyId),
 		staleTime: 1000 * 60 * 5,
 	});
 	const branches = useMemo(

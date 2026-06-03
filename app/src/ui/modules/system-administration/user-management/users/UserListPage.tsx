@@ -56,14 +56,14 @@ export function UserListPage() {
 		queryKey: branchId
 			? UserListQueryKeys.branchUsers(branchId)
 			: UserListQueryKeys.branchUsers(""),
-		queryFn: async () => GetBranchUsers(accessToken, branchId ?? ""),
+		queryFn: async () => GetBranchUsers(branchId ?? ""),
 	});
 	const branchRolesQuery = useQuery({
 		enabled: Boolean(accessToken && branchId),
 		queryKey: branchId
 			? UserListQueryKeys.branchRoles(branchId)
 			: UserListQueryKeys.branchRoles(""),
-		queryFn: async () => GetBranchUserRoles(accessToken, branchId ?? ""),
+		queryFn: async () => GetBranchUserRoles(branchId ?? ""),
 	});
 	const updateBranchRoleMutation = useMutation({
 		mutationFn: async ({
@@ -77,7 +77,7 @@ export function UserListPage() {
 				throw new Error("Select a branch before changing user roles.");
 			}
 
-			return UpdateBranchUserRole(accessToken, branchId, user.id, userRoleId);
+			return UpdateBranchUserRole(branchId, user.id, userRoleId);
 		},
 		onSuccess: (updatedUser) => {
 			if (branchId) {

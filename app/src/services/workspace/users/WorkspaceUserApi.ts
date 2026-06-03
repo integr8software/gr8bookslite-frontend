@@ -9,84 +9,50 @@ import type {
   WorkspaceCompanyStatus,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
-function GetAuthorizationHeaders(accessToken: string | null) {
-  if (!accessToken) {
-    return undefined;
-  }
-
-  return {
-    Authorization: `Bearer ${accessToken}`,
-  };
-}
-
-export async function GetWorkspaceUsers(accessToken: string | null = null) {
+export async function GetWorkspaceUsers() {
   const response = await ApiClient.get<WorkspaceCompanyUserApiRecord[]>(
     "/workspace/users",
-    {
-      headers: GetAuthorizationHeaders(accessToken),
-    },
   );
 
   return response.data.map(MapWorkspaceUserApiRecord);
 }
 
 export async function CreateWorkspaceUser(
-  accessToken: string | null,
   values: WorkspaceCompanyUserFormValues,
 ) {
   const response = await ApiClient.post<WorkspaceCompanyUserApiRecord>(
     "/workspace/users",
     MapWorkspaceUserFormToRequest(values),
-    {
-      headers: GetAuthorizationHeaders(accessToken),
-    },
   );
 
   return MapWorkspaceUserApiRecord(response.data);
 }
 
 export async function UpdateWorkspaceUser(
-  accessToken: string | null,
   userId: string,
   values: WorkspaceCompanyUserFormValues,
 ) {
   const response = await ApiClient.patch<WorkspaceCompanyUserApiRecord>(
     `/workspace/users/${userId}`,
     MapWorkspaceUserFormToRequest(values),
-    {
-      headers: GetAuthorizationHeaders(accessToken),
-    },
   );
 
   return MapWorkspaceUserApiRecord(response.data);
 }
 
-export async function ResendWorkspaceUserInvitation(
-  accessToken: string | null,
-  userId: string,
-) {
+export async function ResendWorkspaceUserInvitation(userId: string) {
   const response =
     await ApiClient.post<WorkspaceCompanyUserResendInvitationResponse>(
       `/workspace/users/${userId}/resend-invitation`,
-      undefined,
-      {
-        headers: GetAuthorizationHeaders(accessToken),
-      },
     );
 
   return response.data;
 }
 
-export async function CancelWorkspaceUserInvitation(
-  accessToken: string | null,
-  userId: string,
-) {
+export async function CancelWorkspaceUserInvitation(userId: string) {
   const response =
     await ApiClient.delete<WorkspaceCompanyUserCancelInvitationResponse>(
       `/workspace/users/${userId}/invitation`,
-      {
-        headers: GetAuthorizationHeaders(accessToken),
-      },
     );
 
   return response.data;

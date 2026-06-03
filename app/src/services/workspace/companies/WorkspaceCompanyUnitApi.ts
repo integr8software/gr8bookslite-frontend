@@ -35,48 +35,27 @@ export type CreateWorkspaceCompanyUnitRequest = {
 export type UpdateWorkspaceCompanyUnitRequest =
 	Partial<CreateWorkspaceCompanyUnitRequest>;
 
-function getAuthorizationHeaders(accessToken: string | null) {
-	if (!accessToken) {
-		return undefined;
-	}
-
-	return {
-		Authorization: `Bearer ${accessToken}`,
-	};
-}
-
-export async function getWorkspaceCompanyUnits(
-	accessToken: string | null,
-	companyId: string,
-) {
+export async function getWorkspaceCompanyUnits(companyId: string) {
 	const response = await ApiClient.get<WorkspaceCompanyUnitApiRecord[]>(
 		`/workspace/companies/${companyId}/units`,
-		{
-			headers: getAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return response.data.map(mapWorkspaceCompanyUnit);
 }
 
 export async function createWorkspaceCompanyUnit(
-	accessToken: string | null,
 	companyId: string,
 	payload: CreateWorkspaceCompanyUnitRequest,
 ) {
 	const response = await ApiClient.post<WorkspaceCompanyUnitApiRecord>(
 		`/workspace/companies/${companyId}/units`,
 		payload,
-		{
-			headers: getAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return mapWorkspaceCompanyUnit(response.data);
 }
 
 export async function updateWorkspaceCompanyUnit(
-	accessToken: string | null,
 	companyId: string,
 	unitId: string,
 	payload: UpdateWorkspaceCompanyUnitRequest,
@@ -84,24 +63,17 @@ export async function updateWorkspaceCompanyUnit(
 	const response = await ApiClient.patch<WorkspaceCompanyUnitApiRecord>(
 		`/workspace/companies/${companyId}/units/${unitId}`,
 		payload,
-		{
-			headers: getAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return mapWorkspaceCompanyUnit(response.data);
 }
 
 export async function deactivateWorkspaceCompanyUnit(
-	accessToken: string | null,
 	companyId: string,
 	unitId: string,
 ) {
 	const response = await ApiClient.delete<WorkspaceCompanyUnitApiRecord>(
 		`/workspace/companies/${companyId}/units/${unitId}`,
-		{
-			headers: getAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return mapWorkspaceCompanyUnit(response.data);

@@ -55,7 +55,7 @@ export function useUserRoleFormPage() {
 				? UserRoleQueryKeys.branchRole(branchId, params.recordId)
 				: UserRoleQueryKeys.branchRole("", ""),
 		queryFn: async () =>
-			GetBranchRole(accessToken, branchId ?? "", params.recordId ?? ""),
+			GetBranchRole(branchId ?? "", params.recordId ?? ""),
 	});
 	const existingUserRole = existingUserRoleQuery.data;
 	const isReadonly = mode === "view";
@@ -86,7 +86,7 @@ export function useUserRoleFormPage() {
 				throw new Error("Select a branch before creating a user role.");
 			}
 
-			return CreateBranchRole(accessToken, branchId, nextValues);
+			return CreateBranchRole(branchId, nextValues);
 		},
 		onSuccess: (createdRole) => {
 			if (branchId) {
@@ -114,12 +114,7 @@ export function useUserRoleFormPage() {
 				throw new Error("Select a branch before updating a user role.");
 			}
 
-			return UpdateBranchRole(
-				accessToken,
-				branchId,
-				existingUserRole.id,
-				nextValues,
-			);
+			return UpdateBranchRole(branchId, existingUserRole.id, nextValues);
 		},
 		onSuccess: (updatedRole) => {
 			if (branchId) {
@@ -160,12 +155,7 @@ export function useUserRoleFormPage() {
 				throw new Error("Select a branch before updating a user role.");
 			}
 
-			return UpdateBranchRoleStatus(
-				accessToken,
-				branchId,
-				role.id,
-				nextStatus === "Active",
-			);
+			return UpdateBranchRoleStatus(branchId, role.id, nextStatus === "Active");
 		},
 		onSuccess: (updatedRole) => {
 			if (branchId) {

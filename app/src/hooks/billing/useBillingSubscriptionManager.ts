@@ -70,7 +70,7 @@ export function useBillingSubscriptionManager() {
 
       setPaymentErrors({});
 
-      const subscriptionResponse = await SubscribeCompanyToPlan(accessToken, {
+      const subscriptionResponse = await SubscribeCompanyToPlan({
         planCode: resolvedSelectedPlanCode,
         billingCycle: GetBillingCycleApiValue(selectedBillingCycle),
       });
@@ -79,7 +79,6 @@ export function useBillingSubscriptionManager() {
       );
 
       return AttachCompanySubscriptionPaymentMethod(
-        accessToken,
         subscriptionResponse.subscription.id,
         {
           paymentMethodId: paymentMethod.paymentMethodId,
@@ -123,7 +122,7 @@ export function useBillingSubscriptionManager() {
         throw new Error("There is no current subscription to cancel.");
       }
 
-      return CancelCompanySubscription(accessToken, currentSubscription.id, {
+      return CancelCompanySubscription(currentSubscription.id, {
         cancelAtPeriodEnd,
       });
     },

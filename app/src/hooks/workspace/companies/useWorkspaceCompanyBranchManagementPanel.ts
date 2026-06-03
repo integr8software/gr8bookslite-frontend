@@ -59,7 +59,7 @@ export function useWorkspaceCompanyBranchManagementPanel({
 	const companyBranchesQuery = useQuery({
 		enabled: Boolean(company.id && accessToken),
 		queryKey: WorkspaceCompanyQueryKeys.companyBranches(company.id),
-		queryFn: async () => getWorkspaceCompanyUnits(accessToken, company.id),
+		queryFn: async () => getWorkspaceCompanyUnits(company.id),
 	});
 	const branches = companyBranchesQuery.data ?? cachedBranches;
 	const branchCount = companyBranchesQuery.isSuccess
@@ -79,7 +79,7 @@ export function useWorkspaceCompanyBranchManagementPanel({
 				throw new Error("Sign in again before adding a branch.");
 			}
 
-			return createWorkspaceCompanyUnit(accessToken, company.id, payload);
+			return createWorkspaceCompanyUnit(company.id, payload);
 		},
 		onSuccess: (branch) => {
 			queryClient.setQueryData<WorkspaceCompanyBranchRecord[]>(

@@ -25,63 +25,38 @@ type BranchRolePayload = {
 	permissions: BranchRolePermissionPayload[];
 };
 
-function GetAuthorizationHeaders(accessToken: string | null) {
-	if (!accessToken) {
-		return undefined;
-	}
-
-	return {
-		Authorization: `Bearer ${accessToken}`,
-	};
-}
-
-export async function GetBranchRoles(
-	accessToken: string | null,
-	unitId: string,
-) {
+export async function GetBranchRoles(unitId: string) {
 	const response = await ApiClient.get<{ roles: BranchUserRoleApiResponse[] }>(
 		`/company/units/${unitId}/roles`,
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return response.data.roles.map(MapBranchRoleApiRecord);
 }
 
 export async function GetBranchRole(
-	accessToken: string | null,
 	unitId: string,
 	roleId: string,
 ) {
 	const response = await ApiClient.get<{ role: BranchUserRoleApiResponse }>(
 		`/company/units/${unitId}/roles/${roleId}`,
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return MapBranchRoleApiRecord(response.data.role);
 }
 
 export async function CreateBranchRole(
-	accessToken: string | null,
 	unitId: string,
 	values: UserRoleFormValues,
 ) {
 	const response = await ApiClient.post<{ role: BranchUserRoleApiResponse }>(
 		`/company/units/${unitId}/roles`,
 		MapUserRoleFormValuesToPayload(values),
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return MapBranchRoleApiRecord(response.data.role);
 }
 
 export async function UpdateBranchRole(
-	accessToken: string | null,
 	unitId: string,
 	roleId: string,
 	values: UserRoleFormValues,
@@ -89,16 +64,12 @@ export async function UpdateBranchRole(
 	const response = await ApiClient.patch<{ role: BranchUserRoleApiResponse }>(
 		`/company/units/${unitId}/roles/${roleId}`,
 		MapUserRoleFormValuesToPayload(values),
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return MapBranchRoleApiRecord(response.data.role);
 }
 
 export async function UpdateBranchRoleStatus(
-	accessToken: string | null,
 	unitId: string,
 	roleId: string,
 	isActive: boolean,
@@ -106,9 +77,6 @@ export async function UpdateBranchRoleStatus(
 	const response = await ApiClient.patch<{ role: BranchUserRoleApiResponse }>(
 		`/company/units/${unitId}/roles/${roleId}/status`,
 		{ isActive },
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return MapBranchRoleApiRecord(response.data.role);

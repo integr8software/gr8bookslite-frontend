@@ -19,7 +19,7 @@ export function useWorkspaceCompanyRecord(companyId?: string) {
 				throw new Error("Company record is not available.");
 			}
 
-			return GetWorkspaceCompany(accessToken, companyId);
+			return GetWorkspaceCompany(companyId);
 		},
 		enabled: Boolean(accessToken && companyId),
 		initialData: () =>

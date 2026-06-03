@@ -36,7 +36,7 @@ export function UserRolePage() {
     queryKey: branchId
       ? UserRoleQueryKeys.branchRoles(branchId)
       : UserRoleQueryKeys.branchRoles(""),
-    queryFn: async () => GetBranchRoles(accessToken, branchId ?? ""),
+    queryFn: async () => GetBranchRoles(branchId ?? ""),
   });
   const statusMutation = useMutation({
     mutationFn: async ({
@@ -50,12 +50,7 @@ export function UserRolePage() {
         throw new Error("Select a branch before changing user roles.");
       }
 
-      return UpdateBranchRoleStatus(
-        accessToken,
-        branchId,
-        role.id,
-        nextStatus === "Active",
-      );
+      return UpdateBranchRoleStatus(branchId, role.id, nextStatus === "Active");
     },
     onSuccess: (updatedRole) => {
       if (branchId) {

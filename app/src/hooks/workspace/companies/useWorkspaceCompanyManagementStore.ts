@@ -45,11 +45,11 @@ export function useWorkspaceCompanyManagementStore<
   const includeUsers = options.includeUsers ?? true;
   const companiesQuery = useQuery({
     queryKey: WorkspaceCompanyQueryKeys.companies(),
-    queryFn: async () => GetWorkspaceCompanies(accessToken),
+    queryFn: async () => GetWorkspaceCompanies(),
   });
   const usersQuery = useQuery({
     queryKey: WorkspaceUserQueryKeys.users(),
-    queryFn: async () => GetWorkspaceUsers(accessToken),
+    queryFn: async () => GetWorkspaceUsers(),
     enabled: includeUsers,
   });
   const branches = useMemo(
@@ -71,7 +71,7 @@ export function useWorkspaceCompanyManagementStore<
 
   const addCompanyMutation = useMutation({
     mutationFn: async (values: WorkspaceCompanyFormValues) =>
-      CreateWorkspaceCompany(accessToken, values),
+      CreateWorkspaceCompany(values),
     onSuccess: (company) => {
       setCompanies((companies) => [company, ...companies]);
       void queryClient.invalidateQueries({
@@ -103,7 +103,7 @@ export function useWorkspaceCompanyManagementStore<
         throw new Error("Sign in again before updating this company.");
       }
 
-      return UpdateWorkspaceCompany(accessToken, companyId, values);
+      return UpdateWorkspaceCompany(companyId, values);
     },
     onSuccess: (company) => {
       setCompanies((companies) =>
@@ -135,7 +135,7 @@ export function useWorkspaceCompanyManagementStore<
         throw new Error("Sign in again before deactivating this company.");
       }
 
-      return DeactivateWorkspaceCompany(accessToken, companyId);
+      return DeactivateWorkspaceCompany(companyId);
     },
     onSuccess: (company) => {
       setCompanies((companies) =>
@@ -163,7 +163,7 @@ export function useWorkspaceCompanyManagementStore<
 
   const addCompanyUserMutation = useMutation({
     mutationFn: async (values: WorkspaceCompanyUserFormValues) =>
-      CreateWorkspaceUser(accessToken, values),
+      CreateWorkspaceUser(values),
     onSuccess: (user) => {
       queryClient.setQueryData<WorkspaceCompanyUserRecord[]>(
         WorkspaceUserQueryKeys.users(),
@@ -193,7 +193,7 @@ export function useWorkspaceCompanyManagementStore<
     }: {
       userId: string;
       values: WorkspaceCompanyUserFormValues;
-    }) => UpdateWorkspaceUser(accessToken, userId, values),
+    }) => UpdateWorkspaceUser(userId, values),
     onSuccess: (user) => {
       queryClient.setQueryData<WorkspaceCompanyUserRecord[]>(
         WorkspaceUserQueryKeys.users(),
@@ -219,7 +219,7 @@ export function useWorkspaceCompanyManagementStore<
 
   const resendCompanyUserInvitationMutation = useMutation({
     mutationFn: async (userId: string) =>
-      ResendWorkspaceUserInvitation(accessToken, userId),
+      ResendWorkspaceUserInvitation(userId),
     onSuccess: (response) => {
       void queryClient.invalidateQueries({
         queryKey: WorkspaceUserQueryKeys.users(),
@@ -237,7 +237,7 @@ export function useWorkspaceCompanyManagementStore<
 
   const cancelCompanyUserInvitationMutation = useMutation({
     mutationFn: async (userId: string) =>
-      CancelWorkspaceUserInvitation(accessToken, userId),
+      CancelWorkspaceUserInvitation(userId),
     onSuccess: (response) => {
       queryClient.setQueryData<WorkspaceCompanyUserRecord[]>(
         WorkspaceUserQueryKeys.users(),

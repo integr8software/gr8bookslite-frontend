@@ -16,7 +16,7 @@ export function MasterSubscriberManagementListPage() {
 	const page = useMasterSubscriberManagementListPage();
 
 	return (
-		<section className="grid gap-5">
+		<section className="grid min-w-0 gap-5">
 			<ModuleHeader
 				titleAs="h1"
 				title="Subscribers"

@@ -43,6 +43,7 @@ export function MasterSubscriberAccountTabBar({
 					<Link
 						key={tab.key}
 						href={href}
+						scroll={false}
 						className={joinClasses(
 							"relative inline-flex h-14 min-w-max items-center gap-2 px-5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)]",
 							isActive
@@ -79,5 +80,5 @@ function getAccountTabHref(
 		);
 	}
 
-	return getMasterSubscriberManagementSectionHref(recordId, "users", companyId);
+	return getMasterSubscriberManagementSectionHref(recordId, "users");
 }

@@ -33,7 +33,7 @@ export function MasterSubscriberManagementDetailsPage({
 	const subscriber = getMasterSubscriberManagementSubscriber(recordId);
 
 	return (
-		<section className="grid gap-5">
+		<section className="grid min-w-0 gap-5">
 			<MasterSubscriberProfileHeader subscriber={subscriber} />
 			<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
 				<MasterSubscriberAccountTabBar
@@ -229,7 +229,9 @@ function InfoRow({
 			)}
 		>
 			<span className="text-sm font-semibold text-darknavy/62">{label}</span>
-			<span className="text-sm font-bold text-darknavy">{value}</span>
+			<span className="min-w-0 break-words text-sm font-bold text-darknavy">
+				{value}
+			</span>
 		</div>
 	);
 }

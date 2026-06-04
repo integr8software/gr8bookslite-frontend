@@ -40,7 +40,6 @@ import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
 import { WarehouseDrawer } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseDrawer";
-import { MaterialRequestStatusBadge } from "@/app/src/ui/modules/inventory/material-request/MaterialRequestStatusBadge";
 
 type MaterialRequestDetailsPanelProps = {
 	errors: MaterialRequestFormErrors;
@@ -679,9 +678,13 @@ function StatusField({
 		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
 			<FieldLabel isRequired={false}>Status</FieldLabel>
 			<div>
-				<div className="flex h-11 items-center rounded-lg border border-darknavy/10 bg-offwhite/60 px-3">
-					<MaterialRequestStatusBadge status={status} />
-				</div>
+				<input
+					type="text"
+					value={status}
+					readOnly
+					className={fieldClassName()}
+					aria-label="Status"
+				/>
 				{error ? <ErrorText message={error} /> : null}
 			</div>
 		</div>
@@ -731,7 +734,7 @@ function FieldLabel({
 
 function fieldClassName(extraClassName?: string) {
 	return joinClasses(
-		"app-material-request-field h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy",
+		"app-data-entry-field h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy",
 		extraClassName,
 	);
 }

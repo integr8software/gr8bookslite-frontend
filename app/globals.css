@@ -344,22 +344,22 @@ body {
   color: #f8fafc !important;
 }
 
-.app-material-request-field:read-only,
-.app-material-request-field:disabled {
+.app-data-entry-field:read-only,
+.app-data-entry-field:disabled {
   background-color: #ffffff !important;
   color: #212738 !important;
   opacity: 1 !important;
   -webkit-text-fill-color: #212738 !important;
 }
 
-:root[data-app-theme="midnight-dark"] .app-material-request-field {
+:root[data-app-theme="midnight-dark"] .app-data-entry-field {
   background-color: var(--surface-primary) !important;
   border-color: rgba(236, 242, 239, 0.1) !important;
   color: #ecf2ef !important;
 }
 
-:root[data-app-theme="midnight-dark"] .app-material-request-field:read-only,
-:root[data-app-theme="midnight-dark"] .app-material-request-field:disabled {
+:root[data-app-theme="midnight-dark"] .app-data-entry-field:read-only,
+:root[data-app-theme="midnight-dark"] .app-data-entry-field:disabled {
   background-color: var(--surface-primary) !important;
   border-color: rgba(236, 242, 239, 0.1) !important;
   color: #ecf2ef !important;

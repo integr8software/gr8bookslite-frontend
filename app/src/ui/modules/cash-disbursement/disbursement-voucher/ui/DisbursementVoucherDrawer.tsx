@@ -1442,10 +1442,10 @@ function InfoLine({ label, value }: { label: string; value: string }) {
 }
 
 const FieldClassName =
-  "app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/40";
+  "app-data-entry-field app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/40";
 
 const ReadOnlyFieldClassName =
-  "app-theme-field-readonly h-11 w-full rounded-md border px-3 text-sm outline-none";
+  "app-data-entry-field app-theme-field-readonly h-11 w-full rounded-md border px-3 text-sm outline-none";
 
 function getSuggestedPartyType(
   disbursementType: DisbursementType | "",

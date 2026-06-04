@@ -3,9 +3,13 @@
 import {
 	ChevronDown,
 	Copy,
+	Download,
+	GripVertical,
 	MoreVertical,
 	Plus,
+	Settings2,
 	Trash2,
+	Upload,
 	X,
 } from "lucide-react";
 import {
@@ -14,6 +18,7 @@ import {
 	useRef,
 	useState,
 	type CSSProperties,
+	type FormEvent,
 	type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -22,13 +27,29 @@ import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 export type ModuleDataEntryColumn<TRow> = {
 	header: string;
 	id: string;
+	isRemovable?: boolean;
 	widthClassName: string;
 	renderCell: (row: TRow, index: number) => ReactNode;
+};
+
+export type ModuleDataEntryColumnOption = {
+	id: string;
+	isHideable?: boolean;
+	isRequired?: boolean;
+	isRequirementConfigurable?: boolean;
+	isVisible: boolean;
+	label: string;
 };
 
 export type ModuleDataEntryAddColumnOption = {
 	id: string;
 	label: string;
+};
+
+export type ModuleDataEntryExportOption = {
+	id: string;
+	label: string;
+	onSelect: () => void;
 };
 
 export type ModuleDataEntryClearAction =
@@ -42,20 +63,26 @@ type ModuleDataEntryProps<TRow extends { id: string }> = {
 	description: string;
 	emptyRowLabel?: string;
 	error?: string;
+	exportOptions?: ModuleDataEntryExportOption[];
 	isDraggable?: boolean;
 	isReadonly: boolean;
 	rows: TRow[];
 	title: string;
 	addColumnOptions?: ModuleDataEntryAddColumnOption[];
+	columnOptions?: ModuleDataEntryColumnOption[];
 	onAddColumn?: (columnId: string) => void;
 	onAddRows: (count: number) => void;
 	onClearRows?: (action: ModuleDataEntryClearAction) => void;
 	onDuplicateRow: (rowId: string) => void;
+	onExport?: () => void;
+	onImport?: () => void;
 	onInsertRow: (rowId: string, position: "above" | "below") => void;
 	onMoveColumn?: (fromColumnId: string, toColumnId: string) => void;
 	onMoveRow: (fromRowId: string, toRowId: string) => void;
 	onRemoveColumn?: (columnId: string) => void;
 	onRemoveRow: (rowId: string) => void;
+	onToggleColumnRequired?: (columnId: string, isRequired: boolean) => void;
+	onToggleColumnVisibility?: (columnId: string, isVisible: boolean) => void;
 	onUpdateColumnHeader?: (columnId: string, header: string) => void;
 };
 
@@ -80,12 +107,28 @@ type ModuleDataEntryAddColumnButtonProps = {
 	onAddColumn: (columnId: string) => void;
 };
 
+type ModuleDataEntryColumnSettingsButtonProps = {
+	align?: "left" | "right";
+	columns: ModuleDataEntryColumnOption[];
+	onMoveColumn?: (fromColumnId: string, toColumnId: string) => void;
+	onToggleColumnRequired?: (columnId: string, isRequired: boolean) => void;
+	onToggleColumnVisibility?: (columnId: string, isVisible: boolean) => void;
+	onUpdateColumnHeader?: (columnId: string, header: string) => void;
+};
+
+type ModuleDataEntryExportButtonProps = {
+	align?: "left" | "right";
+	options: ModuleDataEntryExportOption[];
+};
+
 export function ModuleDataEntry<TRow extends { id: string }>({
 	addColumnOptions = [],
+	columnOptions = [],
 	columns,
 	description,
 	emptyRowLabel = "line",
 	error,
+	exportOptions = [],
 	isDraggable = false,
 	isReadonly,
 	rows,
@@ -94,11 +137,15 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 	onAddRows,
 	onClearRows,
 	onDuplicateRow,
+	onExport,
+	onImport,
 	onInsertRow,
 	onMoveColumn,
 	onMoveRow,
 	onRemoveColumn,
 	onRemoveRow,
+	onToggleColumnRequired,
+	onToggleColumnVisibility,
 	onUpdateColumnHeader,
 }: ModuleDataEntryProps<TRow>) {
 	const [openMenuRowId, setOpenMenuRowId] = useState<string | null>(null);
@@ -118,6 +165,17 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 	const canEditColumns =
 		canEditRows &&
 		Boolean(onMoveColumn || onRemoveColumn || onUpdateColumnHeader);
+	const canConfigureColumns =
+		canEditRows &&
+		columnOptions.length > 0 &&
+		Boolean(
+			onMoveColumn ||
+				onToggleColumnRequired ||
+				onToggleColumnVisibility ||
+				onUpdateColumnHeader,
+		);
+	const hasHeaderActions = canEditRows || Boolean(onExport);
+	const hasExportActions = Boolean(onExport) || exportOptions.length > 0;
 
 	function updateRowMenuPosition(rowId: string) {
 		const trigger = rowMenuTriggerRefs.current.get(rowId);
@@ -238,15 +296,39 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 					<h2 className="text-base font-semibold text-darknavy">{title}</h2>
 					<p className="mt-1 text-sm text-darknavy/60">{description}</p>
 				</div>
-				{canEditRows ? (
+				{hasHeaderActions || hasExportActions ? (
 					<div className="flex flex-wrap items-center gap-2">
-						{onAddColumn && addColumnOptions.length > 0 ? (
+						{canEditRows && onImport ? (
+							<ModuleDataEntryToolbarButton
+								icon={Upload}
+								label="Import"
+								onClick={onImport}
+							/>
+						) : null}
+						{exportOptions.length > 0 ? (
+							<ModuleDataEntryExportButton options={exportOptions} />
+						) : onExport ? (
+							<ModuleDataEntryToolbarButton
+								icon={Download}
+								label="Export"
+								onClick={onExport}
+							/>
+						) : null}
+						{canConfigureColumns ? (
+							<ModuleDataEntryColumnSettingsButton
+								columns={columnOptions}
+								onMoveColumn={onMoveColumn}
+								onToggleColumnRequired={onToggleColumnRequired}
+								onToggleColumnVisibility={onToggleColumnVisibility}
+								onUpdateColumnHeader={onUpdateColumnHeader}
+							/>
+						) : canEditRows && onAddColumn && addColumnOptions.length > 0 ? (
 							<ModuleDataEntryAddColumnButton
 								options={addColumnOptions}
 								onAddColumn={onAddColumn}
 							/>
 						) : null}
-						{onClearRows ? (
+						{canEditRows && onClearRows ? (
 							<ModuleDataEntryClearButton
 								isOpen={openClearMenu === "header"}
 								onClearRows={onClearRows}
@@ -258,16 +340,18 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 								}}
 							/>
 						) : null}
-						<ModuleDataEntryAddButton
-							isOpen={openAddMenu === "header"}
-							onAddRows={handleAddRows}
-							onOpenChange={(isOpen) => {
-								setOpenAddMenu(isOpen ? "header" : null);
-								if (isOpen) {
-									setOpenClearMenu(null);
-								}
-							}}
-						/>
+						{canEditRows ? (
+							<ModuleDataEntryAddButton
+								isOpen={openAddMenu === "header"}
+								onAddRows={handleAddRows}
+								onOpenChange={(isOpen) => {
+									setOpenAddMenu(isOpen ? "header" : null);
+									if (isOpen) {
+										setOpenClearMenu(null);
+									}
+								}}
+							/>
+						) : null}
 					</div>
 				) : null}
 			</div>
@@ -306,7 +390,9 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 								>
 									{canEditColumns ? (
 										<EditableColumnHeader
-											canRemove={columns.length > 1}
+											canRemove={
+												columns.length > 1 && column.isRemovable !== false
+											}
 											column={column}
 											onMoveColumn={onMoveColumn}
 											onRemoveColumn={onRemoveColumn}
@@ -415,16 +501,44 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 				<p className="text-sm font-medium text-darknavy/60">
 					{rows.length} {rows.length === 1 ? "line" : "lines"}
 				</p>
-				{canEditRows ? (
+				{hasHeaderActions || hasExportActions ? (
 					<div className="flex flex-wrap items-center gap-2 sm:justify-end">
-						{onAddColumn && addColumnOptions.length > 0 ? (
+						{canEditRows && onImport ? (
+							<ModuleDataEntryToolbarButton
+								icon={Upload}
+								label="Import"
+								onClick={onImport}
+							/>
+						) : null}
+						{exportOptions.length > 0 ? (
+							<ModuleDataEntryExportButton
+								align="right"
+								options={exportOptions}
+							/>
+						) : onExport ? (
+							<ModuleDataEntryToolbarButton
+								icon={Download}
+								label="Export"
+								onClick={onExport}
+							/>
+						) : null}
+						{canConfigureColumns ? (
+							<ModuleDataEntryColumnSettingsButton
+								align="right"
+								columns={columnOptions}
+								onMoveColumn={onMoveColumn}
+								onToggleColumnRequired={onToggleColumnRequired}
+								onToggleColumnVisibility={onToggleColumnVisibility}
+								onUpdateColumnHeader={onUpdateColumnHeader}
+							/>
+						) : canEditRows && onAddColumn && addColumnOptions.length > 0 ? (
 							<ModuleDataEntryAddColumnButton
 								align="right"
 								options={addColumnOptions}
 								onAddColumn={onAddColumn}
 							/>
 						) : null}
-						{onClearRows ? (
+						{canEditRows && onClearRows ? (
 							<ModuleDataEntryClearButton
 								align="right"
 								isOpen={openClearMenu === "footer"}
@@ -437,17 +551,19 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 								}}
 							/>
 						) : null}
-						<ModuleDataEntryAddButton
-							align="right"
-							isOpen={openAddMenu === "footer"}
-							onAddRows={handleAddRows}
-							onOpenChange={(isOpen) => {
-								setOpenAddMenu(isOpen ? "footer" : null);
-								if (isOpen) {
-									setOpenClearMenu(null);
-								}
-							}}
-						/>
+						{canEditRows ? (
+							<ModuleDataEntryAddButton
+								align="right"
+								isOpen={openAddMenu === "footer"}
+								onAddRows={handleAddRows}
+								onOpenChange={(isOpen) => {
+									setOpenAddMenu(isOpen ? "footer" : null);
+									if (isOpen) {
+										setOpenClearMenu(null);
+									}
+								}}
+							/>
+						) : null}
 					</div>
 				) : null}
 			</div>
@@ -457,6 +573,407 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 				</p>
 			) : null}
 		</section>
+	);
+}
+
+function ModuleDataEntryToolbarButton({
+	icon: Icon,
+	label,
+	onClick,
+}: {
+	icon: typeof Upload;
+	label: string;
+	onClick: () => void;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-skyblue/20 bg-white px-4 text-sm font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+		>
+			<Icon className="h-4 w-4" aria-hidden="true" />
+			{label}
+		</button>
+	);
+}
+
+function ModuleDataEntryExportButton({
+	align = "left",
+	options,
+}: ModuleDataEntryExportButtonProps) {
+	const triggerRef = useRef<HTMLDivElement>(null);
+	const [isOpen, setIsOpen] = useState(false);
+	const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+
+	useLayoutEffect(() => {
+		if (!isOpen || !triggerRef.current) {
+			return;
+		}
+
+		const rect = triggerRef.current.getBoundingClientRect();
+		const menuWidth = 176;
+		const menuHeight = Math.min(220, 24 + options.length * 38);
+		const viewportPadding = 8;
+		const left =
+			align === "right"
+				? Math.min(
+						Math.max(viewportPadding, rect.right - menuWidth),
+						window.innerWidth - menuWidth - viewportPadding,
+					)
+				: Math.min(
+						Math.max(viewportPadding, rect.left),
+						window.innerWidth - menuWidth - viewportPadding,
+					);
+		const belowTop = rect.bottom + 6;
+		const top =
+			belowTop + menuHeight <= window.innerHeight - viewportPadding
+				? belowTop
+				: Math.max(viewportPadding, rect.top - menuHeight - 6);
+
+		setMenuStyle({ left, top });
+	}, [align, isOpen, options.length]);
+
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		function closeMenu() {
+			setIsOpen(false);
+		}
+
+		function handlePointerDown(event: PointerEvent) {
+			const target = event.target as Node;
+
+			if (
+				triggerRef.current?.contains(target) ||
+				(target instanceof Element && target.closest("[data-export-menu]"))
+			) {
+				return;
+			}
+
+			closeMenu();
+		}
+
+		function handleKeyDown(event: KeyboardEvent) {
+			if (event.key === "Escape") {
+				closeMenu();
+			}
+		}
+
+		document.addEventListener("pointerdown", handlePointerDown);
+		document.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("resize", closeMenu);
+		window.addEventListener("scroll", closeMenu, true);
+
+		return () => {
+			document.removeEventListener("pointerdown", handlePointerDown);
+			document.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("resize", closeMenu);
+			window.removeEventListener("scroll", closeMenu, true);
+		};
+	}, [isOpen]);
+
+	return (
+		<div ref={triggerRef} className="relative inline-flex">
+			<button
+				type="button"
+				onClick={() => setIsOpen((current) => !current)}
+				className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-skyblue/20 bg-white px-4 text-sm font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+				aria-expanded={isOpen}
+				aria-haspopup="menu"
+			>
+				<Download className="h-4 w-4" aria-hidden="true" />
+				Export
+				<ChevronDown
+					className={joinClasses("h-4 w-4 transition", isOpen && "rotate-180")}
+					aria-hidden="true"
+				/>
+			</button>
+			{isOpen && typeof document !== "undefined"
+				? createPortal(
+						<div
+							data-export-menu
+							role="menu"
+							style={menuStyle}
+							className="fixed z-130 grid w-44 gap-1 rounded-lg border border-darknavy/10 bg-white p-1.5 text-left shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
+						>
+							{options.map((option) => (
+								<button
+									key={option.id}
+									type="button"
+									role="menuitem"
+									onClick={() => {
+										option.onSelect();
+										setIsOpen(false);
+									}}
+									className="flex min-h-9 w-full items-center rounded-md px-3 text-sm font-semibold text-darknavy/72 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20"
+								>
+									{option.label}
+								</button>
+							))}
+						</div>,
+						document.body,
+					)
+				: null}
+		</div>
+	);
+}
+
+function ModuleDataEntryColumnSettingsButton({
+	align = "left",
+	columns,
+	onMoveColumn,
+	onToggleColumnRequired,
+	onToggleColumnVisibility,
+	onUpdateColumnHeader,
+}: ModuleDataEntryColumnSettingsButtonProps) {
+	const triggerRef = useRef<HTMLDivElement>(null);
+	const [isOpen, setIsOpen] = useState(false);
+	const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
+	const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+	const visibleColumnCount = columns.filter((column) => column.isVisible).length;
+
+	useLayoutEffect(() => {
+		if (!isOpen || !triggerRef.current) {
+			return;
+		}
+
+		const rect = triggerRef.current.getBoundingClientRect();
+		const menuWidth = 360;
+		const viewportPadding = 8;
+		const preferredHeight = Math.min(440, 84 + columns.length * 58);
+		const left =
+			align === "right"
+				? Math.min(
+						Math.max(viewportPadding, rect.right - menuWidth),
+						window.innerWidth - menuWidth - viewportPadding,
+					)
+				: Math.min(
+						Math.max(viewportPadding, rect.left),
+						window.innerWidth - menuWidth - viewportPadding,
+					);
+		const belowTop = rect.bottom + 6;
+		const availableBelow = window.innerHeight - belowTop - viewportPadding;
+		const availableAbove = rect.top - viewportPadding - 6;
+		const opensBelow = availableBelow >= 260 || availableBelow >= availableAbove;
+		const availableHeight = Math.max(
+			160,
+			opensBelow ? availableBelow : availableAbove,
+		);
+		const maxHeight = Math.min(preferredHeight, availableHeight);
+		const top = opensBelow
+			? belowTop
+			: Math.max(viewportPadding, rect.top - maxHeight - 6);
+
+		setMenuStyle({ left, maxHeight, top });
+	}, [align, columns.length, isOpen]);
+
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		function closeMenu() {
+			setIsOpen(false);
+		}
+
+		function handlePointerDown(event: PointerEvent) {
+			const target = event.target as Node;
+
+			if (
+				triggerRef.current?.contains(target) ||
+				(target instanceof Element &&
+					target.closest("[data-column-settings-menu]"))
+			) {
+				return;
+			}
+
+			closeMenu();
+		}
+
+		function handleKeyDown(event: KeyboardEvent) {
+			if (event.key === "Escape") {
+				closeMenu();
+			}
+		}
+
+		function handleScroll(event: Event) {
+			const target = event.target as Node;
+
+			if (
+				triggerRef.current?.contains(target) ||
+				(target instanceof Element &&
+					target.closest("[data-column-settings-menu]"))
+			) {
+				return;
+			}
+
+			closeMenu();
+		}
+
+		document.addEventListener("pointerdown", handlePointerDown);
+		document.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("resize", closeMenu);
+		window.addEventListener("scroll", handleScroll, true);
+
+		return () => {
+			document.removeEventListener("pointerdown", handlePointerDown);
+			document.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("resize", closeMenu);
+			window.removeEventListener("scroll", handleScroll, true);
+		};
+	}, [isOpen]);
+
+	return (
+		<div ref={triggerRef} className="relative inline-flex">
+			<button
+				type="button"
+				onClick={() => setIsOpen((current) => !current)}
+				className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-skyblue/20 bg-white px-4 text-sm font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+				aria-expanded={isOpen}
+				aria-haspopup="menu"
+			>
+				<Settings2 className="h-4 w-4" aria-hidden="true" />
+				Columns
+				<ChevronDown
+					className={joinClasses("h-4 w-4 transition", isOpen && "rotate-180")}
+					aria-hidden="true"
+				/>
+			</button>
+			{isOpen && typeof document !== "undefined"
+				? createPortal(
+						<div
+							data-column-settings-menu
+							role="menu"
+							style={menuStyle}
+							className="fixed z-130 flex w-[22.5rem] flex-col overflow-hidden rounded-lg border border-darknavy/10 bg-white p-2 text-left shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
+						>
+							<div className="shrink-0 px-2 pb-2 pt-1">
+								<p className="text-xs font-semibold uppercase tracking-[0.16em] text-darknavy/45">
+									Column Settings
+								</p>
+								<p className="mt-1 text-xs leading-5 text-darknavy/55">
+									Show, rename, and drag columns into the order you need.
+								</p>
+							</div>
+							<div className="grid min-h-0 gap-2 overflow-y-auto pr-1">
+								{columns.map((column) => {
+									const canHide =
+										Boolean(onToggleColumnVisibility) &&
+										column.isHideable !== false &&
+										(!column.isVisible || visibleColumnCount > 1);
+									const isRequiredColumn = Boolean(
+										column.isRequired && column.isVisible,
+									);
+									const canToggleRequired =
+										Boolean(onToggleColumnRequired) &&
+										column.isVisible &&
+										column.isRequirementConfigurable !== false;
+									const shouldShowRequiredControl =
+										isRequiredColumn || canToggleRequired;
+
+									return (
+										<div
+											key={column.id}
+											onDragEnd={() => setDraggedColumnId(null)}
+											onDragOver={(event) => {
+												if (draggedColumnId) {
+													event.preventDefault();
+												}
+											}}
+											onDrop={() => {
+												if (
+													draggedColumnId &&
+													draggedColumnId !== column.id &&
+													onMoveColumn
+												) {
+													onMoveColumn(draggedColumnId, column.id);
+												}
+
+												setDraggedColumnId(null);
+											}}
+											className={joinClasses(
+												"app-theme-field-readonly grid items-center gap-2 rounded-md border px-2 py-2",
+												shouldShowRequiredControl
+													? "grid-cols-[auto_auto_minmax(0,1fr)_auto]"
+													: "grid-cols-[auto_auto_minmax(0,1fr)]",
+												draggedColumnId === column.id && "opacity-60",
+											)}
+										>
+											<span
+												draggable={Boolean(onMoveColumn)}
+												onDragStart={() => setDraggedColumnId(column.id)}
+												title={`Drag ${column.label} column`}
+												className={joinClasses(
+													"inline-flex h-8 w-5 items-center justify-center text-darknavy/45",
+													onMoveColumn &&
+														"cursor-grab transition hover:text-darknavy active:cursor-grabbing",
+												)}
+											>
+												<GripVertical className="h-4 w-4" aria-hidden="true" />
+											</span>
+											<input
+												type="checkbox"
+												checked={column.isVisible}
+												disabled={!canHide}
+												onChange={(event) =>
+													onToggleColumnVisibility?.(
+														column.id,
+														event.target.checked,
+													)
+												}
+												className="h-4 w-4 rounded border-darknavy/20 text-skyblue accent-skyblue focus:ring-skyblue/25 disabled:cursor-not-allowed disabled:opacity-45"
+												aria-label={`Toggle ${column.label} column`}
+											/>
+											{onUpdateColumnHeader ? (
+												<input
+													type="text"
+													value={column.label}
+													onChange={(event) =>
+														onUpdateColumnHeader(
+															column.id,
+															event.target.value,
+														)
+													}
+													className="app-theme-field h-9 min-w-0 rounded-md border px-2 text-sm font-semibold outline-none transition focus:border-skyblue/40 focus:ring-2 focus:ring-skyblue/15"
+													aria-label={`Rename ${column.label} column`}
+												/>
+											) : (
+												<span className="min-w-0 truncate text-sm font-semibold text-darknavy">
+													{column.label}
+												</span>
+											)}
+											{canToggleRequired ? (
+												<label className="inline-flex items-center gap-1.5 rounded-full border border-skyblue/20 bg-skyblue/8 px-2 py-1 text-[11px] font-semibold text-skyblue">
+													<input
+														type="checkbox"
+														checked={isRequiredColumn}
+														onChange={(event) =>
+															onToggleColumnRequired?.(
+																column.id,
+																event.target.checked,
+															)
+														}
+														className="h-3.5 w-3.5 rounded border-skyblue/30 text-skyblue accent-skyblue focus:ring-skyblue/25"
+														aria-label={`Make ${column.label} required`}
+													/>
+													Required
+												</label>
+											) : isRequiredColumn ? (
+												<span className="rounded-full border border-skyblue/20 bg-skyblue/8 px-2 py-1 text-[11px] font-semibold text-skyblue">
+													Required
+												</span>
+											) : null}
+										</div>
+									);
+								})}
+							</div>
+						</div>,
+						document.body,
+					)
+				: null}
+		</div>
 	);
 }
 
@@ -546,14 +1063,14 @@ export function ModuleDataEntryClearButton({
 					onClearRows("no-data");
 					onOpenChange(false);
 				}}
-				className="inline-flex h-10 items-center justify-center rounded-l-md rounded-r-none bg-skyblue px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+				className="inline-flex h-10 items-center justify-center rounded-l-md rounded-r-none border border-r-0 border-skyblue/20 bg-white px-4 text-sm font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 			>
 				Clear
 			</button>
 			<button
 				type="button"
 				onClick={() => onOpenChange(!isOpen)}
-				className="inline-flex h-10 w-10 items-center justify-center rounded-l-none rounded-r-md border-l border-white/25 bg-skyblue text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+				className="inline-flex h-10 w-10 items-center justify-center rounded-l-none rounded-r-md border border-skyblue/20 bg-white text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 				aria-expanded={isOpen}
 				aria-haspopup="menu"
 				aria-label="Choose clear option"
@@ -601,6 +1118,7 @@ export function ModuleDataEntryAddButton({
 	onOpenChange,
 }: ModuleDataEntryAddButtonProps) {
 	const triggerRef = useRef<HTMLDivElement>(null);
+	const [isCustomAddDialogOpen, setIsCustomAddDialogOpen] = useState(false);
 	const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
 
 	useLayoutEffect(() => {
@@ -609,8 +1127,8 @@ export function ModuleDataEntryAddButton({
 		}
 
 		const rect = triggerRef.current.getBoundingClientRect();
-		const menuWidth = 144;
-		const menuHeight = 236;
+		const menuWidth = 152;
+		const menuHeight = 188;
 		const viewportPadding = 8;
 		const left =
 			align === "right"
@@ -672,6 +1190,11 @@ export function ModuleDataEntryAddButton({
 		};
 	}, [isOpen, onOpenChange]);
 
+	function openCustomAddDialog() {
+		onOpenChange(false);
+		setIsCustomAddDialogOpen(true);
+	}
+
 	return (
 		<div ref={triggerRef} className="relative inline-flex">
 			<button
@@ -700,30 +1223,141 @@ export function ModuleDataEntryAddButton({
 			</button>
 			{isOpen && typeof document !== "undefined" ? (
 				createPortal(
-				<div
-					data-add-rows-menu
-					role="menu"
-					style={menuStyle}
-					className="fixed z-130 grid w-36 gap-1 rounded-lg border border-darknavy/10 bg-white p-1.5 text-left shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
-				>
-					{AddLineCounts.map((count) => (
+					<div
+						data-add-rows-menu
+						role="menu"
+						style={menuStyle}
+						className="fixed z-130 grid w-[9.5rem] gap-1 rounded-lg border border-darknavy/10 bg-white p-1.5 text-left shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
+					>
+						{AddLineCounts.map((count) => (
+							<button
+								key={count}
+								type="button"
+								role="menuitem"
+								onClick={() => {
+									onAddRows(count);
+									onOpenChange(false);
+								}}
+								className="flex min-h-9 w-full items-center rounded-md px-3 text-sm font-semibold text-darknavy/72 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20"
+							>
+								Add {count}
+							</button>
+						))}
 						<button
-							key={count}
 							type="button"
 							role="menuitem"
-							onClick={() => {
-								onAddRows(count);
-								onOpenChange(false);
-							}}
-							className="flex min-h-9 w-full items-center rounded-md px-3 text-sm font-semibold text-darknavy/72 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20"
+							onClick={openCustomAddDialog}
+							className="flex min-h-9 w-full items-center gap-2 rounded-md px-3 text-sm font-semibold text-skyblue transition hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20"
 						>
-							Add {count}
+							<Plus className="h-4 w-4" aria-hidden="true" />
+							Add
 						</button>
-					))}
-				</div>,
-				document.body,
+					</div>,
+					document.body,
 				)
 			) : null}
+			{isCustomAddDialogOpen && typeof document !== "undefined"
+				? createPortal(
+						<CustomAddRowsDialog
+							onAddRows={(count) => {
+								onAddRows(count);
+								setIsCustomAddDialogOpen(false);
+							}}
+							onClose={() => setIsCustomAddDialogOpen(false)}
+						/>,
+						document.body,
+					)
+				: null}
+		</div>
+	);
+}
+
+function CustomAddRowsDialog({
+	onAddRows,
+	onClose,
+}: {
+	onAddRows: (count: number) => void;
+	onClose: () => void;
+}) {
+	const [rowCount, setRowCount] = useState("10");
+	const parsedCount = Number(rowCount);
+	const rowsToAdd =
+		Number.isFinite(parsedCount) && parsedCount > 0
+			? Math.floor(parsedCount)
+			: 0;
+	const canAddRows = rowsToAdd >= 1 && rowsToAdd <= 100;
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!canAddRows) {
+			return;
+		}
+
+		onAddRows(rowsToAdd);
+	}
+
+	return (
+		<div
+			role="presentation"
+			className="fixed inset-0 z-[140] flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm"
+			onMouseDown={(event) => {
+				if (event.target === event.currentTarget) {
+					onClose();
+				}
+			}}
+		>
+			<form
+				onSubmit={handleSubmit}
+				className="w-full max-w-sm rounded-lg border border-darknavy/10 bg-white p-5 shadow-[0_18px_60px_rgba(33,39,56,0.18)]"
+			>
+				<div className="flex items-start justify-between gap-4">
+					<div>
+						<h2 className="text-base font-semibold text-darknavy">
+							Add Rows
+						</h2>
+						<p className="mt-1 text-sm text-darknavy/58">
+							Maximum of 100 rows.
+						</p>
+					</div>
+					<button
+						type="button"
+						onClick={onClose}
+						className="inline-flex h-8 w-8 items-center justify-center rounded-md text-darknavy/55 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20"
+						aria-label="Close add rows dialog"
+					>
+						<X className="h-4 w-4" aria-hidden="true" />
+					</button>
+				</div>
+				<label className="mt-5 grid gap-2 text-sm font-semibold text-darknavy">
+					Rows
+					<input
+						type="number"
+						min="1"
+						max="100"
+						step="1"
+						value={rowCount}
+						onChange={(event) => setRowCount(event.target.value)}
+						className="app-theme-field h-11 rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/40 focus:ring-2 focus:ring-skyblue/15"
+					/>
+				</label>
+				<div className="mt-5 flex justify-end gap-2">
+					<button
+						type="button"
+						onClick={onClose}
+						className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 transition hover:bg-skyblue/8 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+					>
+						Cancel
+					</button>
+					<button
+						type="submit"
+						disabled={!canAddRows}
+						className="inline-flex h-10 items-center justify-center rounded-md bg-skyblue px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45"
+					>
+						Add Rows
+					</button>
+				</div>
+			</form>
 		</div>
 	);
 }
@@ -912,10 +1546,10 @@ function EditableColumnHeader<TRow>({
 					draggable
 					onDragStart={() => onStartColumnDrag(column.id)}
 					title={`Drag ${column.header} column`}
-					className="inline-flex h-8 w-6 shrink-0 cursor-grab items-center justify-center rounded border border-white/20 bg-white/10 text-white transition hover:bg-white/20 active:cursor-grabbing"
+					className="inline-flex h-8 w-5 shrink-0 cursor-grab items-center justify-center text-white/80 transition hover:text-white active:cursor-grabbing"
 					aria-label={`Drag ${column.header} column`}
 				>
-					<MoreVertical className="h-4 w-4" aria-hidden="true" />
+					<GripVertical className="h-4 w-4" aria-hidden="true" />
 				</span>
 			) : null}
 			{onUpdateColumnHeader ? (
@@ -1011,16 +1645,16 @@ function RowMenuButton({
 	);
 }
 
-const AddLineCounts = [5, 10, 15, 20, 25, 50] as const;
+const AddLineCounts = [10, 25, 50] as const;
 
 const ClearRowActions: {
 	label: string;
 	value: ModuleDataEntryClearAction;
 }[] = [
-	{ label: "Clear All", value: "all" },
-	{ label: "Clear With Data", value: "with-data" },
-	{ label: "Clear Incomplete", value: "incomplete" },
-	{ label: "Clear No Data", value: "no-data" },
+	{ label: "All rows", value: "all" },
+	{ label: "Rows with data", value: "with-data" },
+	{ label: "Incomplete rows", value: "incomplete" },
+	{ label: "Empty rows", value: "no-data" },
 ];
 
 const rowHeaderClassName =

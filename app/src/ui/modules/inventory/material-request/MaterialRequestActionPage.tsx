@@ -74,6 +74,7 @@ export function MaterialRequestActionPage() {
 				onAddItems={page.addItems}
 				onClearItems={page.clearItems}
 				onDuplicateItem={page.duplicateItem}
+				onImportItems={page.importItems}
 				onInsertItem={page.insertItem}
 				onMoveItem={page.moveItem}
 				onRemoveItem={page.removeItem}

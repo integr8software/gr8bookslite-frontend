@@ -8,7 +8,7 @@ const requiredText = (message: string) => z.string().trim().min(1, message);
 
 export const MaterialRequestItemValidationSchema = z.object({
 	barcode: z.string(),
-	category: requiredText("Enter an item category."),
+	category: z.string(),
 	id: z.string(),
 	itemCode: requiredText("Enter an item code."),
 	itemName: requiredText("Enter an item name."),
@@ -32,7 +32,7 @@ export const MaterialRequestFormValidationSchema = z
 		referenceNo: z.string(),
 		remarks: z.string().max(500, "Remarks must be 500 characters or fewer."),
 		requiresApproval: z.boolean(),
-		requestNo: requiredText("Enter a request number."),
+		requestNo: requiredText("Enter a Material Request No."),
 		requiredDate: requiredText("Select a required date."),
 		status: z.enum([
 			"Draft",
@@ -44,8 +44,8 @@ export const MaterialRequestFormValidationSchema = z
 			"Cancelled",
 		]),
 		toWarehouse: requiredText("Select a destination warehouse."),
-		vceCode: requiredText("Enter a VCE code."),
-		vceName: requiredText("Enter a VCE name."),
+		vceCode: requiredText("Select a Party Member."),
+		vceName: z.string(),
 	})
 	.superRefine((values, context) => {
 		if (values.fromWarehouse === values.toWarehouse) {

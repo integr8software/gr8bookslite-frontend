@@ -37,6 +37,7 @@ import {
   ModuleDataEntry,
   type ModuleDataEntryClearAction,
   type ModuleDataEntryColumn,
+  type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
@@ -69,6 +70,13 @@ const DefaultGridColumnOrder: GridColumnId[] = [
   "debit",
   "credit",
 ];
+
+const ProtectedGridColumnIds = new Set<GridColumnId>([
+  "accountCode",
+  "accountName",
+  "debit",
+  "credit",
+]);
 
 const DefaultGridColumnLabels: Record<GridColumnId, string> = {
   accountCode: "Account Code",
@@ -134,10 +142,13 @@ export function DisbursementVoucherAccountingGridPage() {
   const [rows, setRows] = useState<EditableGridRow[]>([]);
   const [columnOrder, setColumnOrder] =
     useState<GridColumnId[]>(DefaultGridColumnOrder);
+  const [visibleColumnIds, setVisibleColumnIds] =
+    useState<GridColumnId[]>(DefaultGridColumnOrder);
   const [columnLabels, setColumnLabels] = useState(DefaultGridColumnLabels);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [pasteText, setPasteText] = useState("");
   const [pendingImportAttachment, setPendingImportAttachment] = useState<
@@ -194,20 +205,25 @@ export function DisbursementVoucherAccountingGridPage() {
         : undefined,
     [session, transactions],
   );
-  const columns: ModuleDataEntryColumn<EditableGridRow>[] = columnOrder.map(
-    (columnId) => ({
+  const visibleColumnOrder = columnOrder.filter((columnId) =>
+    visibleColumnIds.includes(columnId),
+  );
+  const columns: ModuleDataEntryColumn<EditableGridRow>[] =
+    visibleColumnOrder.map((columnId) => ({
       header: columnLabels[columnId],
       id: columnId,
+      isRemovable: !ProtectedGridColumnIds.has(columnId),
       renderCell: (row) => renderGridCell(row, columnId),
       widthClassName: GridColumnWidthClassNames[columnId],
+    }));
+  const columnOptions: ModuleDataEntryColumnOption[] = columnOrder.map(
+    (columnId) => ({
+      id: columnId,
+      isHideable: !ProtectedGridColumnIds.has(columnId),
+      isVisible: visibleColumnIds.includes(columnId),
+      label: columnLabels[columnId] || DefaultGridColumnLabels[columnId],
     }),
   );
-  const addColumnOptions = DefaultGridColumnOrder.filter(
-    (columnId) => !columnOrder.includes(columnId),
-  ).map((columnId) => ({
-    id: columnId,
-    label: columnLabels[columnId] || DefaultGridColumnLabels[columnId],
-  }));
   const previewValues = session
     ? withAccountingImportAttachment(
         {
@@ -338,16 +354,6 @@ export function DisbursementVoucherAccountingGridPage() {
     }));
   }
 
-  function addColumn(columnId: string) {
-    if (!isGridColumnId(columnId)) {
-      return;
-    }
-
-    setColumnOrder((currentOrder) =>
-      currentOrder.includes(columnId) ? currentOrder : [...currentOrder, columnId],
-    );
-  }
-
   function moveColumn(fromColumnId: string, toColumnId: string) {
     setColumnOrder((currentOrder) => {
       const currentIndex = currentOrder.indexOf(fromColumnId as GridColumnId);
@@ -366,11 +372,45 @@ export function DisbursementVoucherAccountingGridPage() {
   }
 
   function removeColumn(columnId: string) {
-    setColumnOrder((currentOrder) =>
-      currentOrder.length <= 1
-        ? currentOrder
-        : currentOrder.filter((currentColumnId) => currentColumnId !== columnId),
+    if (!isGridColumnId(columnId) || ProtectedGridColumnIds.has(columnId)) {
+      return;
+    }
+
+    setVisibleColumnIds((currentVisibleIds) =>
+      currentVisibleIds.length <= 1
+        ? currentVisibleIds
+        : currentVisibleIds.filter(
+            (currentColumnId) => currentColumnId !== columnId,
+          ),
     );
+  }
+
+  function toggleColumnVisibility(columnId: string, isVisible: boolean) {
+    if (!isGridColumnId(columnId)) {
+      return;
+    }
+
+    if (!isVisible && ProtectedGridColumnIds.has(columnId)) {
+      return;
+    }
+
+    setVisibleColumnIds((currentVisibleIds) => {
+      if (isVisible) {
+        const nextVisibleIds = new Set([...currentVisibleIds, columnId]);
+
+        return columnOrder.filter((currentColumnId) =>
+          nextVisibleIds.has(currentColumnId),
+        );
+      }
+
+      if (currentVisibleIds.length <= 1) {
+        return currentVisibleIds;
+      }
+
+      return currentVisibleIds.filter(
+        (currentColumnId) => currentColumnId !== columnId,
+      );
+    });
   }
 
   function renderGridCell(row: EditableGridRow, columnId: GridColumnId) {
@@ -466,6 +506,7 @@ export function DisbursementVoucherAccountingGridPage() {
       setImportedImportAttachment(sourceAttachment);
       setPendingImportAttachment(null);
       setPasteText("");
+      setIsImportDialogOpen(false);
       setErrorMessage(null);
     } catch (error) {
       setErrorMessage(
@@ -488,6 +529,28 @@ export function DisbursementVoucherAccountingGridPage() {
         ? [...populatedRows, ...importedRows]
         : importedRows;
     });
+  }
+
+  function handleExportRows() {
+    const exportColumnIds = visibleColumnOrder;
+    const exportRows = rows.filter(hasRowData);
+    const csvRows = [
+      exportColumnIds.map(
+        (columnId) => columnLabels[columnId] || DefaultGridColumnLabels[columnId],
+      ),
+      ...exportRows.map((row) =>
+        exportColumnIds.map((columnId) => getExportCellValue(row, columnId)),
+      ),
+    ];
+    const csvContent = csvRows
+      .map((row) => row.map(escapeCsvCell).join(","))
+      .join("\r\n");
+
+    downloadTextFile(
+      "disbursement-voucher-accounting-entries.csv",
+      csvContent,
+      "text/csv;charset=utf-8",
+    );
   }
 
   function handleBackToVoucherForm() {
@@ -629,42 +692,9 @@ export function DisbursementVoucherAccountingGridPage() {
             </div>
 
             <div className="mt-6">
-              <AccountingImportPanel
-                canClearTable={Boolean(pasteText.trim() || pendingImportAttachment)}
-                importAttachment={
-                  pendingImportAttachment ?? importedImportAttachment
-                }
-                isDragActive={isDragActive}
-                pasteText={pasteText}
-                onDropFile={handleImportFile}
-                onDragActiveChange={setIsDragActive}
-                onClearTable={(action) => {
-                  const nextPasteText = clearImportPreviewText(pasteText, action);
-
-                  setPasteText(nextPasteText);
-                  if (!nextPasteText.trim()) {
-                    setPendingImportAttachment(null);
-                  }
-                  setErrorMessage(null);
-                }}
-                onImportPastedRows={handleImportPastedRows}
-                onPasteTextChange={(value) => {
-                  setPasteText(value);
-                  if (value.trim() && !pendingImportAttachment) {
-                    setPendingImportAttachment(
-                      createImportSourceAttachment(
-                        "pasted-accounting-entries.tsv",
-                        new Blob([value]).size,
-                      ),
-                    );
-                  }
-                }}
-              />
-            </div>
-
-            <div className="mt-4">
               <ModuleDataEntry
                 columns={columns}
+                columnOptions={columnOptions}
                 description="Add accounting entry lines, adjust debit and credit amounts, reorder rows, and manage duplicate journal entries."
                 emptyRowLabel="entry"
                 error={errorMessage ?? undefined}
@@ -672,16 +702,17 @@ export function DisbursementVoucherAccountingGridPage() {
                 isReadonly={false}
                 rows={rows}
                 title="Data Entry"
-                addColumnOptions={addColumnOptions}
-                onAddColumn={addColumn}
                 onAddRows={addBlankRows}
                 onClearRows={clearRows}
                 onDuplicateRow={duplicateRow}
+                onExport={handleExportRows}
+                onImport={() => setIsImportDialogOpen(true)}
                 onInsertRow={insertRow}
                 onMoveColumn={moveColumn}
                 onMoveRow={moveRow}
                 onRemoveColumn={removeColumn}
                 onRemoveRow={removeRow}
+                onToggleColumnVisibility={toggleColumnVisibility}
                 onUpdateColumnHeader={updateColumnHeader}
               />
             </div>
@@ -762,6 +793,37 @@ export function DisbursementVoucherAccountingGridPage() {
           onContinue={handleContinueToVoucherPreview}
         />
       ) : null}
+      <AccountingImportDialog
+        canClearTable={Boolean(pasteText.trim() || pendingImportAttachment)}
+        importAttachment={pendingImportAttachment ?? importedImportAttachment}
+        isDragActive={isDragActive}
+        isOpen={isImportDialogOpen}
+        pasteText={pasteText}
+        onClose={() => setIsImportDialogOpen(false)}
+        onDragActiveChange={setIsDragActive}
+        onDropFile={handleImportFile}
+        onClearTable={(action) => {
+          const nextPasteText = clearImportPreviewText(pasteText, action);
+
+          setPasteText(nextPasteText);
+          if (!nextPasteText.trim()) {
+            setPendingImportAttachment(null);
+          }
+          setErrorMessage(null);
+        }}
+        onImportPastedRows={handleImportPastedRows}
+        onPasteTextChange={(value) => {
+          setPasteText(value);
+          if (value.trim() && !pendingImportAttachment) {
+            setPendingImportAttachment(
+              createImportSourceAttachment(
+                "pasted-accounting-entries.tsv",
+                new Blob([value]).size,
+              ),
+            );
+          }
+        }}
+      />
       <ParticularsViewDialog
         viewedParticulars={viewedParticulars}
         onClose={() => setViewedParticulars(null)}
@@ -1186,6 +1248,102 @@ function AccountingImportPreviewDialog({
             maxHeightClassName="h-full"
             rows={rows}
             onCellChange={onCellChange}
+          />
+        </div>
+        <div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
+          >
+            Close
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function AccountingImportDialog({
+  canClearTable,
+  importAttachment,
+  isDragActive,
+  isOpen,
+  pasteText,
+  onClose,
+  onDragActiveChange,
+  onDropFile,
+  onClearTable,
+  onImportPastedRows,
+  onPasteTextChange,
+}: {
+  canClearTable: boolean;
+  importAttachment: DisbursementVoucherFormValues["attachments"][number] | null;
+  isDragActive: boolean;
+  isOpen: boolean;
+  pasteText: string;
+  onClose: () => void;
+  onDragActiveChange: (isActive: boolean) => void;
+  onDropFile: (file: File) => void;
+  onClearTable: (action: ModuleDataEntryClearAction) => void;
+  onImportPastedRows: () => void;
+  onPasteTextChange: (value: string) => void;
+}) {
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div
+      role="presentation"
+      className="fixed inset-0 z-[130] flex items-end justify-center bg-slate-950/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="accounting-import-title"
+        className="flex max-h-[min(88vh,680px)] w-full max-w-5xl flex-col overflow-hidden rounded-[20px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)]"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">
+              Accounting Entries
+            </p>
+            <h2
+              id="accounting-import-title"
+              className="mt-1 text-xl font-semibold text-darknavy"
+            >
+              Import Data Entry Rows
+            </h2>
+            <p className="mt-1 text-sm text-darknavy/58">
+              Upload a spreadsheet or paste copied rows into the data entry grid.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-darknavy/6 hover:text-darknavy"
+            aria-label="Close import dialog"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="min-h-0 overflow-y-auto px-5 py-5">
+          <AccountingImportPanel
+            canClearTable={canClearTable}
+            importAttachment={importAttachment}
+            isDragActive={isDragActive}
+            pasteText={pasteText}
+            onDragActiveChange={onDragActiveChange}
+            onDropFile={onDropFile}
+            onClearTable={onClearTable}
+            onImportPastedRows={onImportPastedRows}
+            onPasteTextChange={onPasteTextChange}
           />
         </div>
         <div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
@@ -2575,6 +2733,29 @@ function isCompleteRow(row: EditableGridRow) {
 
 function normalizeAmount(value: string) {
   return Number(value || 0) || 0;
+}
+
+function getExportCellValue(row: EditableGridRow, columnId: GridColumnId) {
+  return row[columnId];
+}
+
+function escapeCsvCell(value: string) {
+  if (/[",\r\n]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+
+  return value;
+}
+
+function downloadTextFile(fileName: string, content: string, type: string) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 function buildLineEntries(rows: EditableGridRow[]): DisbursementLineEntry[] {

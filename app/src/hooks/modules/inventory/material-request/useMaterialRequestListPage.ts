@@ -91,7 +91,7 @@ export function useMaterialRequestListPage() {
 
 	const columns = useMemo<ColumnDef<MaterialRequestRecord>[]>(
 		() => [
-			createColumn("requestNo", "Request No.", "w-[10rem]"),
+			createColumn("requestNo", "Material Request No.", "w-[12rem]"),
 			createColumn("documentDate", "Document Date", "w-[10rem]"),
 			createColumn("fromWarehouse", "From Warehouse", "w-[13rem]"),
 			createColumn("toWarehouse", "To Warehouse", "w-[13rem]"),

@@ -1075,10 +1075,10 @@ function TaxDetailsDialogEditor({
 }
 
 const ModalFieldClassName =
-  "app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/45";
+  "app-data-entry-field app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/45";
 
 const DisabledFieldClassName =
-  "app-theme-field-readonly h-11 w-full rounded-md border px-3 text-right text-sm outline-none";
+  "app-data-entry-field app-theme-field-readonly h-11 w-full rounded-md border px-3 text-right text-sm outline-none";
 
 function formatNumberInput(value: number) {
   return value.toLocaleString("en-US", {

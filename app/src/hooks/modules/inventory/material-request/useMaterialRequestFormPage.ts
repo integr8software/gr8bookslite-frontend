@@ -224,6 +224,30 @@ export function useMaterialRequestFormPage() {
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
 
+	function importItems(importedItems: MaterialRequestItem[]) {
+		if (isReadonly || importedItems.length === 0) {
+			return;
+		}
+
+		setValues((current) => {
+			const populatedItems = current.items.filter(materialRequestItemHasData);
+			const nextImportedItems = importedItems.map((item) => ({
+				...item,
+				id: createMaterialRequestId("item"),
+			}));
+
+			return {
+				...current,
+				items:
+					populatedItems.length > 0
+						? [...populatedItems, ...nextImportedItems]
+						: nextImportedItems,
+			};
+		});
+		setErrors((current) => ({ ...current, items: undefined }));
+		toast.success(`${importedItems.length} material request items imported.`);
+	}
+
 	function handleSubmit() {
 		if (isReadonly) {
 			return;
@@ -329,6 +353,7 @@ export function useMaterialRequestFormPage() {
 		existingRequest,
 		handleCopyFrom,
 		handleSubmit,
+		importItems,
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",

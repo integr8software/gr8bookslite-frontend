@@ -141,7 +141,7 @@ export function PettyCashReplenishmentSummaryFields({
 						onChange={(event) =>
 							page.updateField("transNo", event.target.value)
 						}
-						className={inputClassName}
+						className={`${inputClassName} app-select-control`}
 						placeholder="Enter transaction number"
 					/>
 				</Field>

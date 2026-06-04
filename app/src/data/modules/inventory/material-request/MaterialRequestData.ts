@@ -1,11 +1,18 @@
 import { MaterialRequestStorageKey } from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
 import type {
 	MaterialRequestFormValues,
+	MaterialRequestHistoryEntry,
 	MaterialRequestItem,
 	MaterialRequestRecord,
+	MaterialRequestStatus,
 } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
 
-export const materialRequestSeedRecords: MaterialRequestRecord[] = [
+type LegacyMaterialRequestStatus = MaterialRequestStatus | "Rejected";
+
+const materialRequestSeedRecordFixtures: Omit<
+	MaterialRequestRecord,
+	"history"
+>[] = [
 	{
 		id: "mr-2024-128",
 		requestNo: "MR-2024-128",
@@ -144,8 +151,8 @@ export const materialRequestSeedRecords: MaterialRequestRecord[] = [
 		referenceNo: "JOB-2405-013",
 		purpose: "Carpentry materials",
 		requiresApproval: true,
-		remarks: "Rejected due to incomplete stock validation.",
-		status: "Rejected",
+		remarks: "Disapproved due to incomplete stock validation.",
+		status: "Disapproved",
 		items: [
 			createSeedItem("plywood", "MAT-051", "Plywood", "Pc", 20),
 			createSeedItem("nails", "MAT-052", "Nails", "Box", 4),
@@ -179,6 +186,12 @@ export const materialRequestSeedRecords: MaterialRequestRecord[] = [
 	},
 ];
 
+export const materialRequestSeedRecords: MaterialRequestRecord[] =
+	materialRequestSeedRecordFixtures.map((record) => ({
+		...record,
+		history: createInitialMaterialRequestHistory(record),
+	}));
+
 export const emptyMaterialRequestItem: MaterialRequestItem = {
 	id: "draft-item",
 	barcode: "",
@@ -197,7 +210,22 @@ export function createMaterialRequestFormValues(
 ): MaterialRequestFormValues {
 	if (record) {
 		return {
-			...record,
+			requestNo: record.requestNo,
+			documentDate: record.documentDate,
+			requiredDate: record.requiredDate,
+			fromWarehouse: record.fromWarehouse,
+			toWarehouse: record.toWarehouse,
+			department: record.department,
+			vceCode: record.vceCode,
+			vceName: record.vceName,
+			projectRef: record.projectRef,
+			projectName: record.projectName,
+			referenceModule: record.referenceModule,
+			referenceNo: record.referenceNo,
+			purpose: record.purpose,
+			requiresApproval: record.requiresApproval,
+			remarks: record.remarks,
+			status: record.status,
 			items: record.items.map((item) => ({ ...item })),
 		};
 	}
@@ -231,20 +259,30 @@ export function createMaterialRequestFormValues(
 export function createMaterialRequestRecord(
 	values: MaterialRequestFormValues,
 	id = createMaterialRequestId("mr"),
+	history: MaterialRequestHistoryEntry[] = [],
 ): MaterialRequestRecord {
-	return {
+	const status = normalizeMaterialRequestStatus(
+		values.status,
+		values.requiresApproval,
+	);
+	const record = {
 		id,
 		...values,
-		status: normalizeMaterialRequestStatus(
-			values.status,
-			values.requiresApproval,
-		),
+		status,
 		items: values.items.map((item) => ({
 			...item,
 			id: item.id || createMaterialRequestId("item"),
 			requestQuantity: Number(item.requestQuantity) || 0,
 			stockQuantity: Number(item.stockQuantity) || 0,
 		})),
+	};
+
+	return {
+		...record,
+		history:
+			history.length > 0
+				? history.map(normalizeMaterialRequestHistoryEntry)
+				: createInitialMaterialRequestHistory(record),
 	};
 }
 
@@ -328,6 +366,147 @@ export function createMaterialRequestId(prefix: string) {
 		.slice(2, 8)}`;
 }
 
+export function createMaterialRequestStatusHistoryEntry(
+	status: MaterialRequestStatus,
+	requestNo: string,
+	createdAt = new Date().toISOString(),
+): MaterialRequestHistoryEntry {
+	return {
+		id: createMaterialRequestId("history"),
+		action: getMaterialRequestHistoryAction(status),
+		actor: "Current User",
+		createdAt,
+		description: getMaterialRequestHistoryDescription(status, requestNo),
+		status,
+	};
+}
+
+export function getMaterialRequestUncancelStatus(
+	record: Pick<MaterialRequestRecord, "history" | "requiresApproval">,
+): MaterialRequestStatus {
+	const lastNonCancelledStatus = [...record.history]
+		.reverse()
+		.find((entry) => entry.status !== "Cancelled")?.status;
+
+	return lastNonCancelledStatus ?? (record.requiresApproval ? "Draft" : "Active");
+}
+
+function createInitialMaterialRequestHistory(
+	record: Omit<MaterialRequestRecord, "history">,
+): MaterialRequestHistoryEntry[] {
+	const createdStatus =
+		record.status === "Draft"
+			? "Draft"
+			: record.requiresApproval
+				? "Pending"
+				: "Active";
+	const createdAt = createMaterialRequestHistoryDate(record.documentDate, 8);
+	const history: MaterialRequestHistoryEntry[] = [
+		{
+			id: createMaterialRequestId("history"),
+			action: "Created",
+			actor: "System",
+			createdAt,
+			description: `Material request ${record.requestNo} was created.`,
+			status: createdStatus,
+		},
+	];
+
+	if (record.status !== createdStatus) {
+		history.push(
+			createMaterialRequestStatusHistoryEntry(
+				record.status,
+				record.requestNo,
+				createMaterialRequestHistoryDate(record.documentDate, 9),
+			),
+		);
+	}
+
+	return history;
+}
+
+function normalizeMaterialRequestHistoryEntry(
+	entry: MaterialRequestHistoryEntry,
+): MaterialRequestHistoryEntry {
+	const status = normalizeMaterialRequestStatus(entry.status, true);
+
+	return {
+		id: entry.id || createMaterialRequestId("history"),
+		action: entry.action || getMaterialRequestHistoryAction(status),
+		actor: entry.actor || "System",
+		createdAt: entry.createdAt || new Date().toISOString(),
+		description:
+			entry.description ||
+			getMaterialRequestHistoryDescription(status, "this material request"),
+		status,
+	};
+}
+
+function createMaterialRequestHistoryDate(documentDate: string, hour: number) {
+	const date = documentDate || new Date().toISOString().slice(0, 10);
+
+	return `${date}T${hour.toString().padStart(2, "0")}:00:00.000Z`;
+}
+
+function getMaterialRequestHistoryAction(status: MaterialRequestStatus) {
+	if (status === "Approved") {
+		return "Approved";
+	}
+
+	if (status === "Disapproved") {
+		return "Disapproved";
+	}
+
+	if (status === "Cancelled") {
+		return "Cancelled";
+	}
+
+	if (status === "Active") {
+		return "Activated";
+	}
+
+	if (status === "Completed") {
+		return "Completed";
+	}
+
+	if (status === "Pending") {
+		return "Reopened";
+	}
+
+	return "Updated";
+}
+
+function getMaterialRequestHistoryDescription(
+	status: MaterialRequestStatus,
+	requestNo: string,
+) {
+	if (status === "Approved") {
+		return `${requestNo} was approved for warehouse processing.`;
+	}
+
+	if (status === "Disapproved") {
+		return `${requestNo} was disapproved and returned for review.`;
+	}
+
+	if (status === "Cancelled") {
+		return `${requestNo} was cancelled.`;
+	}
+
+	if (status === "Active") {
+		return `${requestNo} was restored to active processing.`;
+	}
+
+	if (status === "Completed") {
+		return `${requestNo} was completed.`;
+	}
+
+	if (status === "Draft") {
+		return `${requestNo} was restored to draft.`;
+	}
+
+	return `${requestNo} was returned to pending approval.`;
+}
+
 function createSeedItem(
 	id: string,
 	itemCode: string,
@@ -352,7 +531,11 @@ function createSeedItem(
 function normalizeMaterialRequestRecord(
 	record: MaterialRequestRecord,
 ): MaterialRequestRecord {
-	return {
+	const status = normalizeMaterialRequestStatus(
+		record.status,
+		record.requiresApproval ?? true,
+	);
+	const normalizedRecord = {
 		...record,
 		vceCode: record.vceCode ?? "",
 		vceName: record.vceName ?? "",
@@ -361,10 +544,7 @@ function normalizeMaterialRequestRecord(
 		referenceModule: record.referenceModule ?? "",
 		requiresApproval: record.requiresApproval ?? true,
 		remarks: record.remarks ?? "",
-		status: normalizeMaterialRequestStatus(
-			record.status,
-			record.requiresApproval ?? true,
-		),
+		status,
 		items: record.items.map((item) => ({
 			...emptyMaterialRequestItem,
 			...item,
@@ -376,21 +556,34 @@ function normalizeMaterialRequestRecord(
 			stockQuantity: Number(item.stockQuantity) || 0,
 		})),
 	};
+
+	return {
+		...normalizedRecord,
+		history:
+			record.history?.length > 0
+				? record.history.map(normalizeMaterialRequestHistoryEntry)
+				: createInitialMaterialRequestHistory(normalizedRecord),
+	};
 }
 
 function normalizeMaterialRequestStatus(
-	status: MaterialRequestRecord["status"],
+	status: LegacyMaterialRequestStatus,
 	requiresApproval: boolean,
-): MaterialRequestRecord["status"] {
+): MaterialRequestStatus {
+	const nextStatus = status === "Rejected" ? "Disapproved" : status;
+
 	if (status === "Completed") {
 		return requiresApproval ? "Approved" : "Active";
 	}
 
-	if (!requiresApproval && ["Pending", "Approved", "Rejected"].includes(status)) {
+	if (
+		!requiresApproval &&
+		["Pending", "Approved", "Disapproved"].includes(nextStatus)
+	) {
 		return "Active";
 	}
 
-	return status;
+	return nextStatus;
 }
 
 function inferMaterialCategory(itemName: string) {

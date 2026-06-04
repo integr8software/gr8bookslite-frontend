@@ -88,6 +88,7 @@ function GetOptionalAuthorizationHeaders(accessToken: string | null) {
 export async function GetAuthProfile(accessToken: string | null = null) {
   const response = await ApiClient.get<AuthProfileResponse>("/auth/me", {
     headers: GetOptionalAuthorizationHeaders(accessToken),
+    timeout: 10000,
   });
 
   return response.data;
@@ -109,6 +110,39 @@ export async function CreateFrontendAuthSession(
   if (!response.ok) {
     throw new AuthApiError("Could not update the browser session.");
   }
+}
+
+export async function GetFrontendAuthSession(timeoutMs = 3000) {
+  const abortController = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => {
+    abortController.abort();
+  }, timeoutMs);
+
+  let response: Response;
+
+  try {
+    response = await fetch("/api/auth/session", {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+      signal: abortController.signal,
+    });
+  } catch {
+    return null;
+  } finally {
+    globalThis.clearTimeout(timeoutId);
+  }
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json().catch(() => null)) as {
+    accessToken?: string;
+  } | null;
+  const accessToken = payload?.accessToken?.trim();
+
+  return accessToken || null;
 }
 
 export async function SwitchCompanyContext(

@@ -1,5 +1,6 @@
 import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
 import { MaterialRequestHref } from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
+import { getMaterialRequestUncancelStatus } from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
 import type {
 	MaterialRequestRecord,
 	MaterialRequestStatus,
@@ -24,11 +25,12 @@ export function MaterialRequestRecordActions({
 	onUpdateRequestStatus,
 }: MaterialRequestRecordActionsProps) {
 	const isCancelled = request.status === "Cancelled";
+	const isApproved = request.status === "Approved";
+	const isDisapproved = request.status === "Disapproved";
 	const cancelStatus = isCancelled
-		? request.requiresApproval
-			? "Draft"
-			: "Active"
+		? getMaterialRequestUncancelStatus(request)
 		: "Cancelled";
+	const approvalRevertStatus = request.requiresApproval ? "Pending" : "Active";
 	const items: ModuleActionMenuItem[] = [
 		{
 			href: `${MaterialRequestHref}/view/${request.id}`,
@@ -46,21 +48,29 @@ export function MaterialRequestRecordActions({
 			disabled:
 				!request.requiresApproval ||
 				isCancelled ||
-				request.status === "Approved",
-			icon: CheckCircle2,
-			label: "Approve",
-			onSelect: () => onUpdateRequestStatus(request, "Approved"),
+				isDisapproved,
+			icon: isApproved ? Undo2 : CheckCircle2,
+			label: isApproved ? "Unapprove" : "Approve",
+			onSelect: () =>
+				onUpdateRequestStatus(
+					request,
+					isApproved ? approvalRevertStatus : "Approved",
+				),
 			type: "button",
 		},
 		{
 			disabled:
 				!request.requiresApproval ||
 				isCancelled ||
-				request.status === "Rejected",
-			icon: ThumbsDown,
-			label: "Disapprove",
-			onSelect: () => onUpdateRequestStatus(request, "Rejected"),
-			tone: "danger",
+				isApproved,
+			icon: isDisapproved ? Undo2 : ThumbsDown,
+			label: isDisapproved ? "Undo Disapprove" : "Disapprove",
+			onSelect: () =>
+				onUpdateRequestStatus(
+					request,
+					isDisapproved ? approvalRevertStatus : "Disapproved",
+				),
+			tone: isDisapproved ? "default" : "danger",
 			type: "button",
 		},
 		{

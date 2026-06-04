@@ -103,7 +103,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		switchToWorkspace,
 	} = useMainLayout();
 	const isCompanyBranchAccessLoading =
-		activeNavigationScope === "company" && isBranchLoading && !hasBranchAccess;
+		activeNavigationScope === "company" && isBranchLoading;
 	const shouldShowBranchContent =
 		activeNavigationScope !== "company" ||
 		hasBranchAccess ||

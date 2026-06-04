@@ -8,6 +8,7 @@ import {
 	createMaterialRequestFormValues,
 	createMaterialRequestId,
 	createMaterialRequestRecord,
+	createMaterialRequestStatusHistoryEntry,
 	emptyMaterialRequestItem,
 } from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
 import { useMaterialRequestStore } from "@/app/src/hooks/modules/inventory/material-request/useMaterialRequest";
@@ -236,7 +237,11 @@ export function useMaterialRequestFormPage() {
 			return;
 		}
 
-		const nextRequest = createMaterialRequestRecord(values, params.recordId);
+		const nextRequest = createMaterialRequestRecord(
+			values,
+			params.recordId,
+			existingRequest?.history,
+		);
 
 		if (mode === "edit") {
 			updateRequest(nextRequest);
@@ -291,12 +296,23 @@ export function useMaterialRequestFormPage() {
 			return;
 		}
 
+		if (status === values.status) {
+			return;
+		}
+
 		const nextRequest = createMaterialRequestRecord(
 			{
 				...values,
 				status,
 			},
 			existingRequest.id,
+			[
+				...existingRequest.history,
+				createMaterialRequestStatusHistoryEntry(
+					status,
+					existingRequest.requestNo,
+				),
+			],
 		);
 
 		updateRequest(nextRequest);

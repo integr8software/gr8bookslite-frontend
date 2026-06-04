@@ -39,7 +39,7 @@ export const MaterialRequestFormValidationSchema = z
 			"Active",
 			"Pending",
 			"Approved",
-			"Rejected",
+			"Disapproved",
 			"Completed",
 			"Cancelled",
 		]),

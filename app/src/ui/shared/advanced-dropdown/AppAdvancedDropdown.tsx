@@ -379,7 +379,7 @@ export function AppAdvancedDropdown({
 				menuPortal
 					? "fixed z-130"
 					: "absolute left-0 top-full z-40 mt-1 w-full",
-				"flex max-h-80 flex-col overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.14)]",
+				"app-advanced-dropdown-menu flex max-h-80 flex-col overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.14)]",
 			)}
 		>
 			{addAction ? (
@@ -390,7 +390,7 @@ export function AppAdvancedDropdown({
 						addAction.onClick();
 						setIsOpen(false);
 					}}
-					className="flex w-full items-center gap-2 border-b border-darknavy/10 px-3 py-2.5 text-left text-sm font-semibold text-skyblue transition hover:bg-skyblue/10 disabled:cursor-not-allowed disabled:opacity-45"
+					className="app-advanced-dropdown-add-action flex w-full items-center gap-2 border-b border-darknavy/10 px-3 py-2.5 text-left text-sm font-semibold text-skyblue transition hover:bg-skyblue/10 disabled:cursor-not-allowed disabled:opacity-45"
 				>
 					<Plus className="h-4 w-4" aria-hidden="true" />
 					{addAction.label}
@@ -398,7 +398,7 @@ export function AppAdvancedDropdown({
 			) : null}
 			{isSearchable ? (
 				<div className="border-b border-darknavy/10 p-2">
-					<div className="flex h-10 items-center gap-2 rounded-md border border-darknavy/10 px-2.5">
+					<div className="app-advanced-dropdown-search-control flex h-10 items-center gap-2 rounded-md border border-darknavy/10 px-2.5">
 						<Search
 							className="h-4 w-4 text-darknavy/35"
 							aria-hidden="true"
@@ -409,7 +409,7 @@ export function AppAdvancedDropdown({
 							onKeyDown={handleComboboxKeyDown}
 							aria-controls={listboxId}
 							aria-activedescendant={activeOptionId}
-							className="h-full min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none placeholder:text-darknavy/35"
+							className="app-advanced-dropdown-search-input h-full min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none placeholder:text-darknavy/35"
 							placeholder={searchPlaceholder}
 							autoFocus
 						/>
@@ -462,12 +462,12 @@ export function AppAdvancedDropdown({
 				onClick={handleControlClick}
 				onKeyDown={handleComboboxKeyDown}
 				className={joinClasses(
-					"app-disabled-control w-full rounded-lg border border-darknavy/10 bg-white text-sm text-darknavy outline-none transition",
+					"app-advanced-dropdown-control w-full rounded-lg border border-darknavy/10 bg-white text-sm text-darknavy outline-none transition",
 					isMultiple ? "min-h-11 px-2 py-1.5" : "h-11 px-3",
 					disabled
-						? "pointer-events-none cursor-not-allowed border-darknavy/10 bg-darknavy/[0.035] text-darknavy/35 shadow-none"
+						? "pointer-events-none cursor-not-allowed shadow-none"
 						: readOnly
-							? "pointer-events-none cursor-default border-darknavy/10 bg-offwhite/65 text-darknavy shadow-none"
+							? "pointer-events-none cursor-default shadow-none"
 							: "cursor-pointer focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",
 				)}
 			>
@@ -506,7 +506,7 @@ export function AppAdvancedDropdown({
 						) : (
 							<span
 								className={joinClasses(
-									"px-0.5 text-darknavy/35",
+									"app-advanced-dropdown-placeholder px-0.5 text-darknavy/35",
 									isMultiple ? "py-1.5" : "py-1",
 									disabled && "text-darknavy/35",
 								)}
@@ -606,6 +606,8 @@ function OptionRow({
 					role="option"
 					aria-selected={isSelected}
 					aria-disabled={option.disabled}
+					data-active={isActive ? "true" : undefined}
+					data-selected={isSelected ? "true" : undefined}
 					className={getOptionClassName(
 						isSelected,
 						option.disabled,
@@ -633,6 +635,8 @@ function OptionRow({
 					role="option"
 					aria-selected={isSelected}
 					disabled={option.disabled}
+					data-active={isActive ? "true" : undefined}
+					data-selected={isSelected ? "true" : undefined}
 					onClick={(event) => {
 						event.preventDefault();
 						event.stopPropagation();
@@ -851,7 +855,7 @@ function getOptionClassName(
 	isActive?: boolean,
 ) {
 	return joinClasses(
-		"flex min-h-9 w-full items-center gap-2.5 rounded-md py-1.5 pr-3 text-left transition",
+		"app-advanced-dropdown-option flex min-h-9 w-full items-center gap-2.5 rounded-md py-1.5 pr-3 text-left transition",
 		isSelected && "bg-skyblue/10 text-darknavy",
 		!isSelected && "text-darknavy hover:bg-skyblue/10",
 		isActive && !isDisabled && "bg-skyblue/15 ring-1 ring-inset ring-skyblue/25",

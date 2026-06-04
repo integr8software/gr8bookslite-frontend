@@ -3,9 +3,18 @@ export type MaterialRequestStatus =
 	| "Active"
 	| "Pending"
 	| "Approved"
-	| "Rejected"
+	| "Disapproved"
 	| "Completed"
 	| "Cancelled";
+
+export type MaterialRequestHistoryEntry = {
+	id: string;
+	action: string;
+	actor: string;
+	createdAt: string;
+	description: string;
+	status: MaterialRequestStatus;
+};
 
 export type MaterialRequestItem = {
 	id: string;
@@ -44,10 +53,14 @@ export type MaterialRequestRecord = {
 	requiresApproval: boolean;
 	remarks: string;
 	status: MaterialRequestStatus;
+	history: MaterialRequestHistoryEntry[];
 	items: MaterialRequestItem[];
 };
 
-export type MaterialRequestFormValues = Omit<MaterialRequestRecord, "id">;
+export type MaterialRequestFormValues = Omit<
+	MaterialRequestRecord,
+	"id" | "history"
+>;
 
 export type MaterialRequestFormMode = "add" | "edit" | "view";
 

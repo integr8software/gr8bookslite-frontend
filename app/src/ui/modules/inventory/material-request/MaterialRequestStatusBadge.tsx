@@ -29,9 +29,9 @@ const statusIconByStatus = {
 	Approved: CheckCircle2,
 	Cancelled: Ban,
 	Completed: PackageCheck,
+	Disapproved: XCircle,
 	Draft: Clock3,
 	Pending: Clock3,
-	Rejected: XCircle,
 } satisfies Record<MaterialRequestStatus, typeof CheckCircle2>;
 
 const statusClassNameByStatus = {
@@ -39,7 +39,7 @@ const statusClassNameByStatus = {
 	Approved: "bg-citron/25 text-darknavy",
 	Cancelled: "bg-darknavy/10 text-darknavy/70",
 	Completed: "bg-skyblue/20 text-darknavy",
+	Disapproved: "bg-coralpink/15 text-coralpink",
 	Draft: "bg-offwhite text-darknavy/70",
 	Pending: "bg-offwhite text-darknavy",
-	Rejected: "bg-coralpink/15 text-coralpink",
 } satisfies Record<MaterialRequestStatus, string>;

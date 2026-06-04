@@ -114,7 +114,7 @@ export function useAccountProfile() {
   });
   async function invalidateAuthProfile() {
     await queryClient.invalidateQueries({
-      queryKey: AuthQueryKeys.profile(),
+      queryKey: AuthQueryKeys.profiles(),
     });
   }
 

@@ -41,6 +41,15 @@ export function SaveAccessToken(accessToken: string, rememberMe: boolean) {
   ClearLegacyReadableAccessTokenCookie();
 }
 
+export function SaveAccessTokenForCurrentTab(accessToken: string) {
+  if (!CanUseBrowserStorage()) {
+    return;
+  }
+
+  window.sessionStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  ClearLegacyReadableAccessTokenCookie();
+}
+
 export function GetAccessToken() {
   if (!CanUseBrowserStorage()) {
     return null;

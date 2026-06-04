@@ -57,6 +57,7 @@ import {
   MainLayoutInitialNotifications,
   MainLayoutRecentNavigationKeys,
 } from "@/app/src/data/shared/main-layout/MainLayoutDefaults";
+import { mapProfileCompanyUnitsToMainBranches } from "@/app/src/data/workspace/companies/WorkspaceCompanyMainLayoutBranchData";
 import { ModuleHelpArticles } from "@/app/src/data/shared/module/module-help/ModuleHelpData";
 import { getHelpArticleForPath } from "@/app/src/data/shared/module/module-help/ModuleHelpUtils";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
@@ -77,7 +78,11 @@ import {
   BuildAuthProfileFromSwitchResponse,
   PrepareQueryCacheForContextSwitch,
 } from "@/app/src/services/auth/AuthContextCache";
-import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
+import {
+  AuthQueryKeys,
+  CreateAuthAccessTokenQueryScope,
+} from "@/app/src/services/auth/AuthQueryKeys";
+import { IsUnauthorizedApiError } from "@/app/src/services/shared/api/ApiClient";
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 import type {
   MainBreadcrumb,
@@ -243,6 +248,7 @@ export function useMainLayout() {
   const accessToken = storedAccessToken;
   const {
     data: authProfile,
+    error: authProfileError,
     isError: isAuthProfileError,
     isFetching: isAuthProfileFetching,
   } = useAuthProfileQuery({
@@ -268,7 +274,11 @@ export function useMainLayout() {
     Boolean(accessToken) && !authProfile && isAuthProfileFetching;
 
   useEffect(() => {
-    if (!isAuthProfileError || hasHandledAuthProfileErrorRef.current) {
+    if (
+      !isAuthProfileError ||
+      hasHandledAuthProfileErrorRef.current ||
+      !IsUnauthorizedApiError(authProfileError)
+    ) {
       return;
     }
 
@@ -288,6 +298,7 @@ export function useMainLayout() {
       router.refresh();
     });
   }, [
+    authProfileError,
     isAuthProfileError,
     queryClient,
     router,
@@ -304,10 +315,13 @@ export function useMainLayout() {
         : hasWorkspaceAccess && isWorkspaceRoute
           ? "workspace"
           : "company";
-  const workspaceCompanies =
-    authProfile && !isSuperAdmin
-      ? MapProfileCompaniesToMainCompanies(authProfile)
-      : [];
+  const workspaceCompanies = useMemo(
+    () =>
+      authProfile && !isSuperAdmin
+        ? MapProfileCompaniesToMainCompanies(authProfile)
+        : [],
+    [authProfile, isSuperAdmin],
+  );
   const profileActiveCompanyId = authProfile
     ? GetAuthProfileCompanyId(authProfile)
     : null;
@@ -425,7 +439,7 @@ export function useMainLayout() {
     },
     onMutate: async () => {
       await queryClient.cancelQueries({
-        queryKey: AuthQueryKeys.profile(),
+        queryKey: AuthQueryKeys.profiles(),
       });
     },
     onSuccess: ({ result, profile, requestId }) => {
@@ -440,7 +454,12 @@ export function useMainLayout() {
 
       setStoredAccessToken(result.accessToken);
       setStoredActiveBranchContext(null, null);
-      queryClient.setQueryData(AuthQueryKeys.profile(), profile);
+      queryClient.setQueryData(
+        AuthQueryKeys.profile(
+          CreateAuthAccessTokenQueryScope(result.accessToken),
+        ),
+        profile,
+      );
       router.push(companyHomeHref);
       releaseShellContextSwitchAfterFrame();
     },
@@ -500,8 +519,14 @@ export function useMainLayout() {
     authProfile,
     currentCompany.id,
   );
+  const hasProfileBranchAccess = hasCurrentCompanyBranchAccess(
+    authProfile,
+    currentCompany.id,
+  );
   const hasBranchAccess =
-    hasCompanyAdministrationAccess || accessibleBranches.length > 0;
+    hasCompanyAdministrationAccess ||
+    hasProfileBranchAccess ||
+    accessibleBranches.length > 0;
   const shouldShowBranchSwitcher = shouldShowBranchControls(accessibleBranches);
   const currentBranch =
     accessibleBranches.find((branch) => branch.id === activeBranchId) ??
@@ -788,8 +813,11 @@ export function useMainLayout() {
       if (shellContextSettlingRef.current !== null) {
         window.clearTimeout(shellContextSettlingRef.current);
       }
+
+      endShellContextSwitch();
+      finishShellContextSettling();
     },
-    [],
+    [endShellContextSwitch, finishShellContextSettling],
   );
 
   useEffect(() => {
@@ -1133,6 +1161,50 @@ function hasCurrentCompanyAdministrationAccess(
   );
 }
 
+function hasCurrentCompanyBranchAccess(
+  profile: AuthProfileResponse | undefined,
+  companyId: string,
+) {
+  if (!profile || !companyId) {
+    return false;
+  }
+
+  const numericCompanyId = Number(companyId);
+
+  if (!Number.isInteger(numericCompanyId) || numericCompanyId <= 0) {
+    return false;
+  }
+
+  const activeProfileCompanyId = GetAuthProfileCompanyId(profile);
+  const activeAccess = GetAuthProfileAccess(profile);
+
+  if (
+    activeProfileCompanyId === numericCompanyId &&
+    activeAccess?.membershipStatus === "ACTIVE" &&
+    activeAccess.membershipRole === "USER" &&
+    activeAccess.accessScope != null
+  ) {
+    return true;
+  }
+
+  const companyMembership = profile.companies?.find(
+    (company) => company.companyId === numericCompanyId,
+  );
+
+  if (
+    companyMembership?.membershipStatus !== "ACTIVE" ||
+    companyMembership.role !== "USER"
+  ) {
+    return false;
+  }
+
+  return (
+    companyMembership.accessScope != null ||
+    Boolean(companyMembership.accessibleUnitIds?.length) ||
+    Boolean(companyMembership.units?.some((unit) => unit.isActive))
+  );
+}
+
 function CreateWorkspaceCurrentUserFromProfile(
   profile: AuthProfileResponse,
 ): MainCurrentUser {
@@ -1206,19 +1278,23 @@ function MapProfileCompaniesToMainCompanies(profile: AuthProfileResponse) {
         company.isCompanyActive !== false &&
         (!company.companyStatus || company.companyStatus === "ACTIVE"),
     )
-    .map((company) => ({
-      id: String(company.companyId),
-      name: company.companyName,
-      logoUrl: company.logoPublicUrl ?? undefined,
-      status: "Active" as const,
-      businessKind: undefined,
-      subscriptionPackage: undefined,
-      branches: [],
-      totalBranches: 0,
-      branchCode: undefined,
-      branchName: undefined,
-      helperText: company.role === "ADMIN" ? "Admin access" : "User access",
-    }));
+    .map((company) => {
+      const branches = mapProfileCompanyUnitsToMainBranches({ company });
+
+      return {
+        id: String(company.companyId),
+        name: company.companyName,
+        logoUrl: company.logoPublicUrl ?? undefined,
+        status: "Active" as const,
+        businessKind: undefined,
+        subscriptionPackage: undefined,
+        branches,
+        totalBranches: branches.length,
+        branchCode: branches[0]?.code,
+        branchName: branches[0]?.name,
+        helperText: company.role === "ADMIN" ? "Admin access" : "User access",
+      };
+    });
 }
 
 function CreateProfilePermissionMap(permissions: unknown[] | undefined) {

@@ -6,8 +6,28 @@ import {
 } from "@/app/src/services/shared/api/ApiRequestTrace";
 import { GetApiBaseUrl } from "@/app/src/services/shared/api/ApiUrl";
 
+export class ApiClientError extends Error {
+  code?: string;
+  status?: number;
+
+  constructor(message: string, options: { code?: string; status?: number } = {}) {
+    super(message);
+    this.name = "ApiClientError";
+    this.code = options.code;
+    this.status = options.status;
+  }
+}
+
+export function IsUnauthorizedApiError(error: unknown) {
+  return (
+    error instanceof ApiClientError &&
+    (error.status === 401 || error.status === 403)
+  );
+}
+
 export const ApiClient = axios.create({
   baseURL: GetApiBaseUrl(),
+  timeout: 15000,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -44,16 +64,41 @@ ApiClient.interceptors.response.use(
     }
 
     FinishApiRequestTrace(error.config, error.response?.status);
+    const status = error.response?.status;
     const message = error.response?.data?.message;
 
     if (Array.isArray(message)) {
-      return Promise.reject(new Error(message.join(" ")));
+      return Promise.reject(
+        new ApiClientError(message.join(" "), {
+          code: error.code,
+          status,
+        }),
+      );
     }
 
     if (typeof message === "string") {
-      return Promise.reject(new Error(message));
+      return Promise.reject(
+        new ApiClientError(message, {
+          code: error.code,
+          status,
+        }),
+      );
     }
 
-    return Promise.reject(new Error(error.message || "Request failed."));
+    if (error.code === "ECONNABORTED") {
+      return Promise.reject(
+        new ApiClientError("The request timed out.", {
+          code: error.code,
+          status,
+        }),
+      );
+    }
+
+    return Promise.reject(
+      new ApiClientError(error.message || "Request failed.", {
+        code: error.code,
+        status,
+      }),
+    );
   },
 );

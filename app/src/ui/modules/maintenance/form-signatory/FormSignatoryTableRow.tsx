@@ -2,46 +2,51 @@
 
 import Image from "next/image";
 import { type ChangeEvent } from "react";
-import { ImageIcon, PenLine } from "lucide-react";
+import { ImageIcon, Signature } from "lucide-react";
 import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-import { FormSignatoryDefaultLabels } from "@/app/src/data/modules/maintenance/form-signatory/FormSignatoryData";
+import {
+	FormSignatoryLabelOptions,
+	FormSignatoryTemporarySignatureLabel,
+} from "@/app/src/constants/modules/maintenance/form-signatory/FormSignatoryConstants";
 import type { FormSignatoryRow } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
 
 type FormSignatoryTableRowProps = {
 	editHref: string;
+	isDeleting: boolean;
 	isEditing: boolean;
 	row: FormSignatoryRow;
 	rowNumber: number;
+	showSignatureValidity: boolean;
 	onClearSignature: (row: FormSignatoryRow) => void;
+	onDeleteRow: (row: FormSignatoryRow) => void;
 	onMakeSignature: (row: FormSignatoryRow) => void;
-	onRemoveRow: (rowId: string) => void;
 	onSignatureFileChange: (rowId: string, file: File | undefined) => void;
 	onUpdateRow: (rowId: string, updates: Partial<FormSignatoryRow>) => void;
 };
 
 export function FormSignatoryTableRow({
 	editHref,
+	isDeleting,
 	isEditing,
 	row,
 	rowNumber,
+	showSignatureValidity,
 	onClearSignature,
+	onDeleteRow,
 	onMakeSignature,
-	onRemoveRow,
 	onSignatureFileChange,
 	onUpdateRow,
 }: FormSignatoryTableRowProps) {
-	const labelOptions = FormSignatoryDefaultLabels.includes(row.label)
-		? FormSignatoryDefaultLabels
-		: [row.label, ...FormSignatoryDefaultLabels];
-
 	function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
 		onSignatureFileChange(row.id, event.target.files?.[0]);
 		event.target.value = "";
 	}
+	const isTemporarySignature =
+		row.label === FormSignatoryTemporarySignatureLabel;
 
 	return (
 		<tr className="align-middle">
@@ -52,14 +57,22 @@ export function FormSignatoryTableRow({
 				<select
 					value={row.label}
 					disabled={!isEditing}
-					onChange={(event) =>
-						onUpdateRow(row.id, { label: event.target.value })
-					}
+					onChange={(event) => {
+						const nextLabel = event.target.value;
+
+						onUpdateRow(row.id, {
+							label: nextLabel,
+							signatureValidUntil:
+								nextLabel === FormSignatoryTemporarySignatureLabel
+									? row.signatureValidUntil
+									: "",
+						});
+					}}
 					className={inputClassNames}
 				>
-					{labelOptions.map((label) => (
-						<option key={label} value={label}>
-							{label}
+					{getLabelOptions(row.label).map((option) => (
+						<option key={option.value} value={option.value}>
+							{option.label}
 						</option>
 					))}
 				</select>
@@ -91,13 +104,13 @@ export function FormSignatoryTableRow({
 					className={`flex h-11 items-center overflow-hidden rounded-lg border border-darknavy/12 bg-white text-sm text-darknavy shadow-sm transition ${
 						isEditing
 							? "cursor-pointer hover:border-skyblue/45"
-							: "cursor-not-allowed opacity-65"
+							: "cursor-default"
 					}`}
 				>
 					<span className="flex h-full w-11 shrink-0 items-center justify-center border-r border-darknavy/10 bg-offwhite text-darknavy/45">
 						<ImageIcon className="h-4 w-4" aria-hidden="true" />
 					</span>
-					<span className="min-w-0 flex-1 truncate px-3 text-darknavy/65">
+					<span className="min-w-0 flex-1 truncate px-3 text-darknavy/75">
 						{row.signatureName || "No file chosen"}
 					</span>
 					{row.signaturePreview && isEditing ? (
@@ -121,6 +134,35 @@ export function FormSignatoryTableRow({
 					/>
 				</label>
 			</td>
+			{showSignatureValidity ? (
+				<td className="align-middle">
+					{isTemporarySignature ? (
+						<>
+							<input
+								type="date"
+								value={toDateInputValue(row.signatureValidUntil)}
+								disabled={!isEditing || !row.signaturePreview}
+								onChange={(event) =>
+									onUpdateRow(row.id, {
+										signatureValidUntil: event.target.value,
+									})
+								}
+								className={inputClassNames}
+								title={
+									row.signaturePreview
+										? "Set the last date this temporary signature can be used"
+										: "Upload or make a signature first"
+								}
+							/>
+							{isSignatureExpired(row.signatureValidUntil) ? (
+								<span className="mt-1 block text-xs font-semibold text-coralpink">
+									Expired
+								</span>
+							) : null}
+						</>
+					) : null}
+				</td>
+			) : null}
 			<td className="align-middle">
 				<div className="mx-auto flex h-18 items-center justify-center rounded-lg border border-dashed border-darknavy/14 bg-offwhite">
 					{row.signaturePreview ? (
@@ -139,33 +181,38 @@ export function FormSignatoryTableRow({
 					)}
 				</div>
 			</td>
-			<td className="align-middle">
+			<td className="sticky right-0 z-10 bg-white align-middle shadow-[-10px_0_18px_-18px_rgba(15,23,42,0.65)]">
 				<ModuleTableActions>
 					{isEditing ? (
 						<>
 							<ModuleTableActionButton
-								icon={PenLine}
+								icon={Signature}
 								label={`Make signature for ${row.label}`}
 								onClick={() => onMakeSignature(row)}
 							/>
 							<ModuleTableActionButton
-								label={`Clear signature for ${row.label}`}
 								variant="delete"
-								disabled={!row.signaturePreview}
-								onClick={() => onClearSignature(row)}
-							/>
-							<ModuleTableActionButton
-								label={`Remove ${row.label}`}
-								variant="inactive"
-								onClick={() => onRemoveRow(row.id)}
+								label={`Delete row ${rowNumber}`}
+								disabled={isDeleting}
+								isLoading={isDeleting}
+								onClick={() => onDeleteRow(row)}
 							/>
 						</>
 					) : (
-						<ModuleTableActionLink
-							variant="edit"
-							href={editHref}
-							label={`Edit ${row.label}`}
-						/>
+						<>
+							<ModuleTableActionLink
+								variant="edit"
+								href={editHref}
+								label={`Edit ${row.label}`}
+							/>
+							<ModuleTableActionButton
+								variant="delete"
+								label={`Delete row ${rowNumber}`}
+								disabled={isDeleting}
+								isLoading={isDeleting}
+								onClick={() => onDeleteRow(row)}
+							/>
+						</>
 					)}
 				</ModuleTableActions>
 			</td>
@@ -174,4 +221,38 @@ export function FormSignatoryTableRow({
 }
 
 const inputClassNames =
-	"h-11 w-full rounded-lg border border-darknavy/12 bg-white px-3 text-sm font-medium text-darknavy shadow-sm outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15 disabled:bg-darknavy/5 disabled:text-darknavy/45";
+	"h-11 w-full rounded-lg border border-darknavy/12 bg-white px-3 text-sm font-medium text-darknavy shadow-sm outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15 disabled:cursor-default disabled:bg-white disabled:text-darknavy/75 disabled:opacity-100";
+
+function getLabelOptions(currentLabel: string) {
+	if (
+		currentLabel &&
+		!FormSignatoryLabelOptions.some(
+			(option) => option.value === currentLabel,
+		)
+	) {
+		return [
+			{ label: currentLabel, value: currentLabel },
+			...FormSignatoryLabelOptions,
+		];
+	}
+
+	return FormSignatoryLabelOptions;
+}
+
+function toDateInputValue(value: string) {
+	if (!value) {
+		return "";
+	}
+
+	return value.slice(0, 10);
+}
+
+function isSignatureExpired(value: string) {
+	if (!value) {
+		return false;
+	}
+
+	const validUntil = new Date(`${value.slice(0, 10)}T23:59:59`);
+
+	return !Number.isNaN(validUntil.getTime()) && validUntil < new Date();
+}

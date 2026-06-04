@@ -1,73 +1,67 @@
 "use client";
 
 import { Plus, RotateCcw } from "lucide-react";
-import {
-	FormSignatoryBranchOptions,
-	FormSignatoryModuleOptions,
-} from "@/app/src/data/modules/maintenance/form-signatory/FormSignatoryData";
+import type { FormSignatoryToolbarProps } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
+import { FormSignatoryFilterOptions } from "@/app/src/constants/modules/maintenance/form-signatory/FormSignatoryConstants";
 import {
 	ModuleTableFilterSelect,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
-type FormSignatoryToolbarProps = {
-	branch: string;
-	isEditing: boolean;
-	maxRows: number;
-	mode: "create" | "edit" | "view";
-	module: string;
-	signatoryCount: number;
-	onAddRow: () => void;
-	onBranchChange: (value: string) => void;
-	onModuleChange: (value: string) => void;
-	onReset: () => void;
-};
-
 export function FormSignatoryToolbar({
 	branch,
+	branchOptions,
 	isEditing,
+	isLoading,
+	isScopedRowEdit,
 	maxRows,
-	mode,
 	module,
+	moduleOptions,
+	signatoryFilterLabel,
 	signatoryCount,
 	onAddRow,
 	onBranchChange,
 	onModuleChange,
 	onReset,
+	onSignatoryFilterChange,
 }: FormSignatoryToolbarProps) {
 	return (
 		<ModuleTableToolbar className="lg:grid-cols-[minmax(15rem,1fr)_minmax(15rem,1fr)_minmax(9rem,0.45fr)_minmax(9rem,0.45fr)]">
 			<ModuleTableFilterSelect
 				label="Branch"
 				value={branch}
-				options={FormSignatoryBranchOptions}
-				disabled={mode === "edit"}
+				options={branchOptions}
+				disabled={isLoading}
 				onChange={onBranchChange}
 			/>
 			<ModuleTableFilterSelect
 				label="Module"
 				value={module}
-				options={FormSignatoryModuleOptions}
-				disabled={mode === "edit"}
+				options={moduleOptions}
+				disabled={isLoading}
 				onChange={onModuleChange}
 			/>
 			{isEditing ? (
 				<>
-					<button
-						type="button"
-						onClick={onAddRow}
-						aria-disabled={signatoryCount >= maxRows}
-						className={`${moduleHeaderActionClassNames.primary} h-12 self-end ${
-							signatoryCount >= maxRows ? "opacity-70" : ""
-						}`}
-					>
-						<Plus className="h-4 w-4" aria-hidden="true" />
-						Add Row
-					</button>
+					{isScopedRowEdit ? null : (
+						<button
+							type="button"
+							onClick={onAddRow}
+							aria-disabled={isLoading || signatoryCount >= maxRows}
+							disabled={isLoading || signatoryCount >= maxRows}
+							className={`${moduleHeaderActionClassNames.primary} h-12 self-end ${
+								isLoading || signatoryCount >= maxRows ? "opacity-70" : ""
+							}`}
+						>
+							<Plus className="h-4 w-4" aria-hidden="true" />
+							Add Row
+						</button>
+					)}
 					<button
 						type="button"
 						onClick={onReset}
+						disabled={isLoading}
 						className={`${moduleHeaderActionClassNames.secondary} h-12 self-end`}
 					>
 						<RotateCcw className="h-4 w-4" aria-hidden="true" />
@@ -75,13 +69,13 @@ export function FormSignatoryToolbar({
 					</button>
 				</>
 			) : (
-				<div className="relative flex h-12 items-center rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5">
-					<span className="absolute -top-2 left-3 bg-white px-1 text-xs font-semibold text-darknavy/70">
-						No. of Signatories
-					</span>
-					{signatoryCount}{" "}
-					{signatoryCount === 1 ? "Signatory" : "Signatories"}
-				</div>
+				<ModuleTableFilterSelect
+					label="Show"
+					value={signatoryFilterLabel}
+					options={FormSignatoryFilterOptions}
+					disabled={isLoading}
+					onChange={onSignatoryFilterChange}
+				/>
 			)}
 		</ModuleTableToolbar>
 	);

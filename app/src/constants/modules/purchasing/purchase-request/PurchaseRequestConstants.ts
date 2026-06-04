@@ -21,6 +21,12 @@ export const PurchaseRequestCurrencyOptions = ["PHP", "USD", "JPY", "EUR"] as co
 
 export const PurchaseRequestUomOptions = ["PC", "BOX", "LOT", "SET", "KG"] as const;
 
+export const PurchaseRequestFormSignatoryModuleCodes = [
+	"purchasing-purchase-request",
+	"purchase-request",
+	"purchasing",
+] as const;
+
 export const PurchaseRequestFormPageCopy = {
 	add: {
 		title: "New Purchase Request",

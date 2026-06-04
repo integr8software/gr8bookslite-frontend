@@ -1,28 +1,41 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+	useParams,
+	usePathname,
+	useRouter,
+	useSearchParams,
+} from "next/navigation";
 import {
 	type PaginationState,
 	getCoreRowModel,
 	getPaginationRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
 	FormSignatoryMaxRows,
-	FormSignatoryTableColumns,
+	FormSignatoryTemporarySignatureLabel,
+	getFormSignatoryTableColumns,
 } from "@/app/src/constants/modules/maintenance/form-signatory/FormSignatoryConstants";
 import {
 	createEmptyFormSignatoryRow,
-	createDefaultFormSignatoryRows,
-	findFormSignatorySetupById,
-	loadFormSignatorySetups,
-	saveFormSignatorySetups,
+	getFallbackFormSignatoryModuleOptions,
 } from "@/app/src/data/modules/maintenance/form-signatory/FormSignatoryData";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import {
+	GetFormSignatoryOptions,
+	GetFormSignatorySetups,
+	SaveFormSignatorySetup,
+} from "@/app/src/services/modules/maintenance/form-signatory/FormSignatoryApi";
+import { FormSignatoryQueryKeys } from "@/app/src/services/modules/maintenance/form-signatory/FormSignatoryQueryKeys";
 import type {
 	FormSignatoryActionMode,
+	FormSignatoryModuleOption,
 	FormSignatoryRow,
+	FormSignatorySetupRecord,
 } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
 import { FormSignatorySchema } from "@/app/src/validations/modules/maintenance/form-signatory/FormSignatoryValidation";
 
@@ -30,21 +43,16 @@ export function useFormSignatoryMaintenancePage() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
+	const searchParams = useSearchParams();
+	const queryClient = useQueryClient();
+	const accessToken = useAppStore((state) => state.accessToken);
+	const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
 	const actionMode = getActionMode(pathname);
-	const recordSetup =
-		actionMode === "edit" && params.recordId
-			? findFormSignatorySetupById(params.recordId)
-			: undefined;
-	const initialSetupRef = useRef(
-		actionMode === "add" ? undefined : (recordSetup ?? loadFormSignatorySetups()[0]),
-	);
-	const initialSetup = initialSetupRef.current;
-	const [branch, setBranchState] = useState(
-		actionMode === "add" ? "" : (initialSetup?.branch ?? "head-office"),
-	);
-	const [module, setModuleState] = useState(
-		actionMode === "add" ? "" : (initialSetup?.module ?? "purchase-request"),
-	);
+	const scopedEditRowId =
+		actionMode === "edit" ? searchParams.get("rowId") ?? "" : "";
+	const [branch, setBranchState] = useState("");
+	const [module, setModuleState] = useState("");
+	const [signatoryFilterLabel, setSignatoryFilterLabelState] = useState("");
 	const [mode, setMode] = useState<"create" | "edit" | "view">(
 		actionMode === "add" ? "create" : actionMode === "edit" ? "edit" : "view",
 	);
@@ -52,23 +60,191 @@ export function useFormSignatoryMaintenancePage() {
 		useState<FormSignatoryRow | null>(null);
 	const [pendingClearSignatureRow, setPendingClearSignatureRow] =
 		useState<FormSignatoryRow | null>(null);
+	const [pendingDeleteRow, setPendingDeleteRow] =
+		useState<FormSignatoryRow | null>(null);
+	const [deletingRowId, setDeletingRowId] = useState("");
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
 		pageSize: 5,
 	});
 	const [rows, setRows] = useState<FormSignatoryRow[]>(() =>
-		getInitialRows(actionMode, initialSetup?.rows),
+		actionMode === "add" ? [createEmptyFormSignatoryRow(0)] : [],
+	);
+	const [cancelableRowIds, setCancelableRowIds] = useState<string[]>(() =>
+		actionMode === "add" ? [] : [],
 	);
 	const closeSnapshotRef = useRef({
-		branch: actionMode === "add" ? "" : (initialSetup?.branch ?? "head-office"),
-		module: actionMode === "add" ? "" : (initialSetup?.module ?? "purchase-request"),
-		rows: getInitialRows(actionMode, initialSetup?.rows),
+		branch: "",
+		module: "",
+		rows: [] as FormSignatoryRow[],
 	});
+	const hasHydratedInitialStateRef = useRef(false);
 	const isEditing = mode !== "view";
+	const queriesEnabled = isAuthSessionReady && Boolean(accessToken);
+	const optionsQuery = useQuery({
+		queryKey: FormSignatoryQueryKeys.options(),
+		queryFn: () => GetFormSignatoryOptions(accessToken),
+		enabled: queriesEnabled,
+	});
+	const setupsQuery = useQuery({
+		queryKey: FormSignatoryQueryKeys.setups(),
+		queryFn: () => GetFormSignatorySetups(accessToken),
+		enabled: queriesEnabled,
+	});
+	const branchOptions = useMemo(() => {
+		const options = optionsQuery.data?.branches ?? [
+			{ label: "Select Branch", value: "" },
+		];
+
+		return actionMode === "list" ? withAllOption(options) : options;
+	}, [actionMode, optionsQuery.data?.branches]);
+	const moduleOptions = useMemo<FormSignatoryModuleOption[]>(() => {
+		if (!optionsQuery.data) {
+			return actionMode === "list"
+				? [{ label: "All", value: "" }]
+				: [{ label: "Loading modules...", value: "" }];
+		}
+
+		const apiOptions = optionsQuery.data.modules;
+		const options =
+			apiOptions.length > 1
+				? apiOptions
+				: [
+						{ label: "Select Module", value: "" },
+						...getFallbackFormSignatoryModuleOptions(),
+					];
+
+		return actionMode === "list" ? withAllOption(options) : options;
+	}, [actionMode, optionsQuery.data]);
+	const recordSetup =
+		actionMode === "edit" && params.recordId
+			? setupsQuery.data?.find((setup) => setup.id === params.recordId)
+			: undefined;
+	const selectedSetup = findSetup(setupsQuery.data ?? [], branch, module);
+	const currentSetupId = selectedSetup?.id ?? recordSetup?.id ?? "";
+	const visibleRows = useMemo(() => {
+		const scopedRows = scopedEditRowId
+			? rows.filter((row) => row.id === scopedEditRowId)
+			: rows;
+
+		return filterRowsBySignatoryLabel(scopedRows, signatoryFilterLabel);
+	}, [rows, scopedEditRowId, signatoryFilterLabel]);
+	const showSignatureValidityColumn = visibleRows.some(
+		(row) => row.label === FormSignatoryTemporarySignatureLabel,
+	);
+	const tableColumns = useMemo(
+		() => getFormSignatoryTableColumns(showSignatureValidityColumn),
+		[showSignatureValidityColumn],
+	);
+	const saveMutation = useMutation({
+		mutationFn: () =>
+			SaveFormSignatorySetup(
+				accessToken,
+				{
+					moduleCode: module,
+					moduleName: getSelectedModuleName(module, moduleOptions),
+					rows: mapRowsForSave(rows),
+					unitId: Number(branch),
+				},
+				actionMode === "edit" ? params.recordId : undefined,
+			),
+		onSuccess: (setup) => {
+			const previousSetupId =
+				actionMode === "edit" ? params.recordId : selectedSetup?.id;
+
+			queryClient.setQueryData<FormSignatorySetupRecord[]>(
+				FormSignatoryQueryKeys.setups(),
+				(current = []) => [
+					setup,
+					...current.filter(
+						(record) =>
+							record.id !== setup.id && record.id !== previousSetupId,
+					),
+				],
+			);
+			closeSnapshotRef.current = {
+				branch: setup.branch,
+				module: setup.module,
+				rows: cloneRows(setup.rows),
+			};
+			setBranchState(setup.branch);
+			setModuleState(setup.module);
+			setRows(cloneRows(setup.rows));
+			setCancelableRowIds([]);
+			setMode("view");
+			toast.success("Form signatory setup saved.");
+			router.push("/maintenance/form-signatory");
+		},
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not save form signatory setup.",
+			);
+		},
+	});
+	const deleteRowMutation = useMutation({
+		mutationFn: (rowToDelete: FormSignatoryRow) => {
+			const setup = setupsQuery.data?.find(
+				(record) => record.id === rowToDelete.setupId,
+			);
+
+			if (!setup) {
+				throw new Error("Could not find the signatory setup for this row.");
+			}
+
+			const nextRows = setup.rows.filter((row) => row.id !== rowToDelete.id);
+
+			if (nextRows.length === 0) {
+				throw new Error("At least one signatory is required.");
+			}
+
+			return SaveFormSignatorySetup(
+				accessToken,
+				{
+					moduleCode: setup.module,
+					moduleName: setup.moduleName,
+					rows: mapRowsForSave(nextRows),
+					unitId: Number(setup.branch),
+				},
+				setup.id,
+			);
+		},
+		onSuccess: (setup, deletedRow) => {
+			queryClient.setQueryData<FormSignatorySetupRecord[]>(
+				FormSignatoryQueryKeys.setups(),
+				(current = []) =>
+					current.map((record) => (record.id === setup.id ? setup : record)),
+			);
+			setRows((currentRows) =>
+				currentRows.filter((row) => row.id !== deletedRow.id),
+			);
+			closeSnapshotRef.current = {
+				branch: closeSnapshotRef.current.branch,
+				module: closeSnapshotRef.current.module,
+				rows: closeSnapshotRef.current.rows.filter(
+					(row) => row.id !== deletedRow.id,
+				),
+			};
+			setPendingDeleteRow(null);
+			toast.success("Signatory row deleted.");
+		},
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not delete signatory row.",
+			);
+		},
+		onSettled: () => {
+			setDeletingRowId("");
+		},
+	});
+
 	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
 	const table = useReactTable({
-		data: rows,
-		columns: FormSignatoryTableColumns,
+		data: visibleRows,
+		columns: tableColumns,
 		state: { pagination },
 		onPaginationChange: setPagination,
 		getCoreRowModel: getCoreRowModel(),
@@ -76,19 +252,77 @@ export function useFormSignatoryMaintenancePage() {
 	});
 
 	useEffect(() => {
-		if (isEditing) {
+		if (hasHydratedInitialStateRef.current || setupsQuery.isLoading) {
 			return;
 		}
 
-		if (!module) {
-			setRows(createDefaultFormSignatoryRows());
-			setPagination((current) => ({ ...current, pageIndex: 0 }));
+		if (actionMode === "add") {
+			hasHydratedInitialStateRef.current = true;
 			return;
 		}
 
-		setRows(getSetupRows(branch, module));
+		if (actionMode === "list") {
+			const nextRows = getRowsForFilters(setupsQuery.data ?? [], "", "");
+
+			closeSnapshotRef.current = {
+				branch: "",
+				module: "",
+				rows: cloneRows(nextRows),
+			};
+			setRows(nextRows);
+			hasHydratedInitialStateRef.current = true;
+			return;
+		}
+
+		const initialSetup =
+			actionMode === "edit" ? recordSetup : setupsQuery.data?.[0];
+
+		if (!initialSetup) {
+			hasHydratedInitialStateRef.current = true;
+			setRows([]);
+			return;
+		}
+
+		hydrateFromSetup(initialSetup);
+		hasHydratedInitialStateRef.current = true;
+	}, [
+		actionMode,
+		queriesEnabled,
+		recordSetup,
+		setupsQuery.data,
+		setupsQuery.isLoading,
+	]);
+
+	useEffect(() => {
+		if (isEditing || !hasHydratedInitialStateRef.current || actionMode !== "list") {
+			return;
+		}
+
+		const nextRows = getRowsForFilters(setupsQuery.data ?? [], branch, module);
+
+		setRows(nextRows);
+		setCancelableRowIds([]);
+		closeSnapshotRef.current = {
+			branch,
+			module,
+			rows: cloneRows(nextRows),
+		};
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
-	}, [branch, isEditing, module]);
+	}, [actionMode, branch, isEditing, module, setupsQuery.data]);
+
+	function hydrateFromSetup(setup: FormSignatorySetupRecord) {
+		const nextRows = cloneRows(setup.rows);
+
+		setBranchState(setup.branch);
+		setModuleState(setup.module);
+		setRows(nextRows);
+		closeSnapshotRef.current = {
+			branch: setup.branch,
+			module: setup.module,
+			rows: cloneRows(nextRows),
+		};
+		setPagination((current) => ({ ...current, pageIndex: 0 }));
+	}
 
 	function handleNew() {
 		router.push("/maintenance/form-signatory/add");
@@ -102,15 +336,7 @@ export function useFormSignatoryMaintenancePage() {
 			return;
 		}
 
-		saveCurrentSetup(rows);
-		closeSnapshotRef.current = {
-			branch,
-			module,
-			rows: rows.map((row) => ({ ...row })),
-		};
-		setMode("view");
-		toast.success("Form signatory setup saved.");
-		router.push("/maintenance/form-signatory");
+		saveMutation.mutate();
 	}
 
 	function handleClose() {
@@ -123,12 +349,14 @@ export function useFormSignatoryMaintenancePage() {
 
 		setBranchState(snapshot.branch);
 		setModuleState(snapshot.module);
-		setRows(snapshot.rows.map((row) => ({ ...row })));
+		setRows(cloneRows(snapshot.rows));
+		setCancelableRowIds([]);
 		setMode("view");
 		setPendingClearSignatureRow(null);
+		setPendingDeleteRow(null);
 		setSignatureMakerRow(null);
+		setDeletingRowId("");
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
-		toast.success("Form signatory setup closed.");
 	}
 
 	function setBranch(value: string) {
@@ -141,16 +369,21 @@ export function useFormSignatoryMaintenancePage() {
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
+	function setSignatoryFilterLabel(value: string) {
+		setSignatoryFilterLabelState(value);
+		setPagination((current) => ({ ...current, pageIndex: 0 }));
+	}
+
 	function handleAddRow() {
 		if (rows.length >= FormSignatoryMaxRows) {
 			toast.error(`A setup can only have up to ${FormSignatoryMaxRows} signatories.`);
 			return;
 		}
 
-		setRows((currentRows) => [
-			...currentRows,
-			createEmptyFormSignatoryRow(currentRows.length),
-		]);
+		const nextRow = createEmptyFormSignatoryRow(rows.length);
+
+		setCancelableRowIds((currentIds) => [...currentIds, nextRow.id]);
+		setRows((currentRows) => [...currentRows, nextRow]);
 	}
 
 	function handleReset() {
@@ -158,9 +391,18 @@ export function useFormSignatoryMaintenancePage() {
 
 		setBranchState(snapshot.branch);
 		setModuleState(snapshot.module);
-		setRows(snapshot.rows.map((row) => ({ ...row })));
+		setRows(
+			snapshot.rows.length > 0
+				? cloneRows(snapshot.rows)
+				: actionMode === "add"
+					? [createEmptyFormSignatoryRow(0)]
+					: [],
+		);
+		setCancelableRowIds([]);
 		setPendingClearSignatureRow(null);
+		setPendingDeleteRow(null);
 		setSignatureMakerRow(null);
+		setDeletingRowId("");
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
@@ -171,8 +413,32 @@ export function useFormSignatoryMaintenancePage() {
 				return currentRows;
 			}
 
+			setCancelableRowIds((currentIds) =>
+				currentIds.filter((id) => id !== rowId),
+			);
+
 			return currentRows.filter((row) => row.id !== rowId);
 		});
+	}
+
+	function handleDeleteRow(row: FormSignatoryRow) {
+		setPendingDeleteRow(row);
+	}
+
+	function confirmDeleteRow() {
+		if (!pendingDeleteRow) {
+			toast.error("Could not find the signatory row to delete.");
+			return;
+		}
+
+		if (isEditing) {
+			handleRemoveRow(pendingDeleteRow.id);
+			setPendingDeleteRow(null);
+			return;
+		}
+
+		setDeletingRowId(pendingDeleteRow.id);
+		deleteRowMutation.mutate(pendingDeleteRow);
 	}
 
 	function updateRow(rowId: string, updates: Partial<FormSignatoryRow>) {
@@ -204,6 +470,7 @@ export function useFormSignatoryMaintenancePage() {
 				signatureName: file.name,
 				signaturePreview:
 					typeof reader.result === "string" ? reader.result : "",
+				signatureValidUntil: "",
 			});
 			toast.success("Signature image uploaded.");
 		};
@@ -211,9 +478,13 @@ export function useFormSignatoryMaintenancePage() {
 	}
 
 	function handleSignatureMade(rowId: string, signatureImageUrl: string) {
+		const rowIndex = rows.findIndex((row) => row.id === rowId);
+		const row = rows[rowIndex];
+
 		updateRow(rowId, {
-			signatureName: `${rows.find((row) => row.id === rowId)?.label ?? "Signature"}.png`,
+			signatureName: createESignatureFileName(row, rowIndex),
 			signaturePreview: signatureImageUrl,
+			signatureValidUntil: "",
 		});
 		setSignatureMakerRow(null);
 		toast.success("Signature created.");
@@ -223,6 +494,7 @@ export function useFormSignatoryMaintenancePage() {
 		updateRow(rowId, {
 			signatureName: "",
 			signaturePreview: "",
+			signatureValidUntil: "",
 		});
 	}
 
@@ -232,86 +504,146 @@ export function useFormSignatoryMaintenancePage() {
 			return;
 		}
 
-		const nextRows = rows.map((row) =>
-			row.id === pendingClearSignatureRow.id
-				? {
-						...row,
-						signatureName: "",
-						signaturePreview: "",
-					}
-				: row,
+		setRows((currentRows) =>
+			currentRows.map((row) =>
+				row.id === pendingClearSignatureRow.id
+					? {
+							...row,
+							signatureName: "",
+							signaturePreview: "",
+							signatureValidUntil: "",
+						}
+					: row,
+			),
 		);
-
-		setRows(nextRows);
 		setPendingClearSignatureRow(null);
 		toast.success("Signature image cleared.");
 	}
 
-	function saveCurrentSetup(nextRows: FormSignatoryRow[]) {
-		const currentSetups = loadFormSignatorySetups();
-		const nextSetup = {
-			id: getFormSignatorySetupId(branch, module),
-			branch,
-			module,
-			rows: nextRows,
-		};
-		const nextSetups = [
-			nextSetup,
-			...currentSetups.filter(
-				(setup) => !(setup.branch === branch && setup.module === module),
-			),
-		];
-
-		saveFormSignatorySetups(nextSetups);
-	}
-
 	return {
 		branch,
-		currentSetupId: getFormSignatorySetupId(branch, module),
+		branchOptions,
+		cancelableRowIds,
+		currentSetupId,
 		handleClose,
 		handleAddRow,
 		handleNew,
 		handleRemoveRow,
+		handleDeleteRow,
+		deletingRowId,
 		handleReset,
 		handleSave,
 		handleSignatureFile,
 		isEditing,
-		isRecordMissing: actionMode === "edit" && !recordSetup,
+		isLoading:
+			!isAuthSessionReady || optionsQuery.isLoading || setupsQuery.isLoading,
+		isRecordMissing:
+			actionMode === "edit" &&
+			!setupsQuery.isLoading &&
+			Boolean(params.recordId) &&
+			(!recordSetup ||
+				(Boolean(scopedEditRowId) &&
+					rows.length > 0 &&
+					!rows.some((row) => row.id === scopedEditRowId))),
+		isSaving: saveMutation.isPending,
+		isScopedRowEdit: Boolean(scopedEditRowId),
 		maxRows: FormSignatoryMaxRows,
 		mode,
 		module,
+		moduleOptions,
 		pendingClearSignatureRow,
+		pendingDeleteRow,
 		rows,
 		setBranch,
 		setModule,
+		setSignatoryFilterLabel,
 		setPendingClearSignatureRow,
+		setPendingDeleteRow,
 		setSignatureMakerRow,
+		showSignatureValidityColumn,
+		signatoryFilterLabel,
+		eSignatureCount: rows.filter((row) => isSignatureMakerOutput(row))
+			.length,
+		visibleESignatureCount: visibleRows.filter((row) =>
+			isSignatureMakerOutput(row),
+		).length,
 		signatureImageCount: rows.filter((row) => row.signaturePreview).length,
+		visibleSignatureImageCount: visibleRows.filter((row) => row.signaturePreview)
+			.length,
+		visibleSignatoryCount: visibleRows.length,
 		signatureMakerRow,
 		table,
 		updateRow,
 		confirmClearSignature,
+		confirmDeleteRow,
 		handleSignatureMade,
 	};
 }
 
-function getFormSignatorySetupId(branch: string, module: string) {
-	return `form-signatory-${module}-${branch}`;
+function filterRowsBySignatoryLabel(
+	rows: FormSignatoryRow[],
+	signatoryFilterLabel: string,
+) {
+	if (!signatoryFilterLabel) {
+		return rows;
+	}
+
+	return rows.filter((row) => row.label === signatoryFilterLabel);
 }
 
-function getInitialRows(
-	actionMode: FormSignatoryActionMode,
-	rows: FormSignatoryRow[] | undefined,
+function getRowsForFilters(
+	setups: FormSignatorySetupRecord[],
+	branch: string,
+	module: string,
 ) {
-	if (rows) {
-		return rows.map((row) => ({ ...row }));
-	}
+	return setups
+		.filter(
+			(setup) =>
+				(!branch || setup.branch === branch) &&
+				(!module || setup.module === module),
+		)
+		.flatMap((setup) =>
+			setup.rows.map((row) => ({
+				...row,
+				setupId: setup.id,
+			})),
+		);
+}
 
-	if (actionMode === "add") {
-		return [createEmptyFormSignatoryRow(0)];
-	}
+function withAllOption<TOption extends { label: string; value: string }>(
+	options: TOption[],
+) {
+	const concreteOptions = options.filter((option) => option.value);
 
-	return createDefaultFormSignatoryRows();
+	return [{ label: "All", value: "" }, ...concreteOptions] as TOption[];
+}
+
+function isSignatureMakerOutput(row: FormSignatoryRow) {
+	return (
+		Boolean(row.signaturePreview) &&
+		row.signaturePreview.startsWith("data:image/png") &&
+		row.signatureName.startsWith("e-signature-")
+	);
+}
+
+function createESignatureFileName(
+	row: FormSignatoryRow | undefined,
+	rowIndex: number,
+) {
+	const signerName = row?.name.trim();
+	const fallbackName =
+		rowIndex >= 0 ? `signatory-${rowIndex + 1}` : "signatory";
+	const slug = slugifyFileName(signerName || fallbackName);
+
+	return `e-signature-${slug}.png`;
+}
+
+function slugifyFileName(value: string) {
+	return value
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
 }
 
 function getActionMode(pathname: string): FormSignatoryActionMode {
@@ -326,12 +658,35 @@ function getActionMode(pathname: string): FormSignatoryActionMode {
 	return "list";
 }
 
-function getSetupRows(branch: string, module: string) {
-	const setup = loadFormSignatorySetups().find(
-		(record) => record.branch === branch && record.module === module,
-	);
+function findSetup(
+	setups: FormSignatorySetupRecord[],
+	branch: string,
+	module: string,
+) {
+	return setups.find((setup) => setup.branch === branch && setup.module === module);
+}
 
-	return (
-		setup?.rows.map((row) => ({ ...row })) ?? createDefaultFormSignatoryRows()
-	);
+function cloneRows(rows: FormSignatoryRow[]) {
+	return rows.map((row) => ({ ...row }));
+}
+
+function mapRowsForSave(rows: FormSignatoryRow[]) {
+	return rows.map((row) => ({
+		label: row.label,
+		name: row.name,
+		position: row.position || undefined,
+		signatureImage: row.signaturePreview || undefined,
+		signatureName: row.signatureName || undefined,
+		signatureValidUntil:
+			row.label === FormSignatoryTemporarySignatureLabel
+				? row.signatureValidUntil || undefined
+				: undefined,
+	}));
+}
+
+function getSelectedModuleName(
+	moduleCode: string,
+	moduleOptions: FormSignatoryModuleOption[],
+) {
+	return moduleOptions.find((option) => option.value === moduleCode)?.label ?? moduleCode;
 }

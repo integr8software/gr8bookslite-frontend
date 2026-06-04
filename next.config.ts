@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
 	allowedDevOrigins: ["192.168.18.190"],
 	experimental: {
 		viewTransition: true,
+		staleTimes: {
+			dynamic: 30,
+			static: 300,
+		},
 	},
 	async headers() {
 		return [

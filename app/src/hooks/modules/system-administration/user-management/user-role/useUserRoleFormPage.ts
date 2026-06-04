@@ -70,6 +70,7 @@ export function useUserRoleFormPage() {
 	const [draftValues, setDraftValues] = useState<UserRoleFormValues | null>(null);
 	const values = draftValues ?? existingFormValues;
 	const [errors, setErrors] = useState<UserRoleFormErrors>({});
+	const [isRedirectingAfterSave, setIsRedirectingAfterSave] = useState(false);
 	const viewHref = existingUserRole
 		? `${UserRoleHref}/view/${existingUserRole.id}`
 		: UserRoleHref;
@@ -99,6 +100,7 @@ export function useUserRoleFormPage() {
 				});
 			}
 
+			setIsRedirectingAfterSave(true);
 			toast.success("User role created.");
 			router.push(submitHref);
 		},
@@ -134,6 +136,7 @@ export function useUserRoleFormPage() {
 				});
 			}
 
+			setIsRedirectingAfterSave(true);
 			toast.success("User role updated.");
 			router.push(submitHref);
 		},
@@ -189,7 +192,8 @@ export function useUserRoleFormPage() {
 	const isMutating =
 		createMutation.isPending ||
 		updateMutation.isPending ||
-		statusMutation.isPending;
+		statusMutation.isPending ||
+		isRedirectingAfterSave;
 
 	function updateField(
 		field: keyof UserRoleFormValues,
@@ -209,21 +213,27 @@ export function useUserRoleFormPage() {
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-		submitForm();
+		void submitForm();
 	}
 
-	function submitForm() {
+	async function submitForm() {
 		const nextErrors = validateUserRoleForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
-			return;
+			return "invalid";
 		}
 
-		if (mode === "edit" && existingUserRole) {
-			updateMutation.mutate(values);
-		} else {
-			createMutation.mutate(values);
+		try {
+			if (mode === "edit" && existingUserRole) {
+				await updateMutation.mutateAsync(values);
+			} else {
+				await createMutation.mutateAsync(values);
+			}
+
+			return "saved";
+		} catch {
+			return "failed";
 		}
 	}
 
@@ -245,6 +255,7 @@ export function useUserRoleFormPage() {
 		existingUserRole,
 		handleStatusChange,
 		handleSubmit,
+		isRedirectingAfterSave,
 		isMutating,
 		isReadonly,
 		mode,

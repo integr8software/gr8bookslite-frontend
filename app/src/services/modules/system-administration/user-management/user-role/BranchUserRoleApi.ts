@@ -25,6 +25,8 @@ type BranchRolePayload = {
 	permissions: BranchRolePermissionPayload[];
 };
 
+const BranchRoleWriteTimeoutMs = 60000;
+
 export async function GetBranchRoles(unitId: string) {
 	const response = await ApiClient.get<{ roles: BranchUserRoleApiResponse[] }>(
 		`/company/units/${unitId}/roles`,
@@ -51,6 +53,7 @@ export async function CreateBranchRole(
 	const response = await ApiClient.post<{ role: BranchUserRoleApiResponse }>(
 		`/company/units/${unitId}/roles`,
 		MapUserRoleFormValuesToPayload(values),
+		{ timeout: BranchRoleWriteTimeoutMs },
 	);
 
 	return MapBranchRoleApiRecord(response.data.role);
@@ -64,6 +67,7 @@ export async function UpdateBranchRole(
 	const response = await ApiClient.patch<{ role: BranchUserRoleApiResponse }>(
 		`/company/units/${unitId}/roles/${roleId}`,
 		MapUserRoleFormValuesToPayload(values),
+		{ timeout: BranchRoleWriteTimeoutMs },
 	);
 
 	return MapBranchRoleApiRecord(response.data.role);
@@ -77,6 +81,7 @@ export async function UpdateBranchRoleStatus(
 	const response = await ApiClient.patch<{ role: BranchUserRoleApiResponse }>(
 		`/company/units/${unitId}/roles/${roleId}/status`,
 		{ isActive },
+		{ timeout: BranchRoleWriteTimeoutMs },
 	);
 
 	return MapBranchRoleApiRecord(response.data.role);

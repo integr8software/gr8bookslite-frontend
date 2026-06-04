@@ -76,6 +76,7 @@ export function MaterialRequestItemsTable({
 		MaterialRequestItemColumnId[]
 	>(DefaultRequiredItemColumnOrder);
 	const [columnLabels, setColumnLabels] = useState(DefaultItemColumnLabels);
+	const [columnWidths, setColumnWidths] = useState(DefaultItemColumnWidths);
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const visibleColumnOrder = columnOrder.filter((columnId) =>
 		visibleColumnIds.includes(columnId),
@@ -86,7 +87,8 @@ export function MaterialRequestItemsTable({
 				header: columnLabels[columnId],
 				id: columnId,
 				isRemovable: !ProtectedItemColumnIds.has(columnId),
-				widthClassName: ItemColumnWidthClassNames[columnId],
+				width: columnWidths[columnId],
+				widthClassName: "",
 				renderCell: (item) =>
 					renderItemCell({
 						columnId,
@@ -95,7 +97,7 @@ export function MaterialRequestItemsTable({
 						onUpdateItem,
 					}),
 			})),
-		[columnLabels, isReadonly, onUpdateItem, visibleColumnOrder],
+		[columnLabels, columnWidths, isReadonly, onUpdateItem, visibleColumnOrder],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
 		() =>
@@ -107,8 +109,15 @@ export function MaterialRequestItemsTable({
 					!DefaultRequiredItemColumnIds.has(columnId),
 				isVisible: visibleColumnIds.includes(columnId),
 				label: columnLabels[columnId],
+				width: columnWidths[columnId],
 			})),
-		[columnLabels, columnOrder, requiredColumnIds, visibleColumnIds],
+		[
+			columnLabels,
+			columnOrder,
+			columnWidths,
+			requiredColumnIds,
+			visibleColumnIds,
+		],
 	);
 
 	function updateColumnHeader(columnId: string, header: string) {
@@ -120,6 +129,38 @@ export function MaterialRequestItemsTable({
 			...currentLabels,
 			[columnId]: header,
 		}));
+	}
+
+	function updateColumnWidth(
+		columnId: string,
+		width: number,
+	) {
+		if (!isItemColumnId(columnId)) {
+			return;
+		}
+
+		setColumnWidths((currentWidths) => ({
+			...currentWidths,
+			[columnId]: Math.min(800, Math.max(50, Math.round(width))),
+		}));
+	}
+
+	function autoSizeColumn(columnId: string) {
+		if (!isItemColumnId(columnId)) {
+			return;
+		}
+
+		const headerWidth = estimateTextWidth(columnLabels[columnId], 96);
+		const contentWidth = items.reduce(
+			(currentWidth, item) =>
+				Math.max(
+					currentWidth,
+					estimateTextWidth(String(item[columnId] ?? ""), 32),
+				),
+			50,
+		);
+
+		updateColumnWidth(columnId, Math.max(headerWidth, contentWidth));
 	}
 
 	function moveColumn(fromColumnId: string, toColumnId: string) {
@@ -283,6 +324,7 @@ export function MaterialRequestItemsTable({
 				title="Data Entry"
 				exportOptions={exportOptions}
 				onAddRows={onAddItems}
+				onAutoColumnWidth={autoSizeColumn}
 				onClearRows={onClearItems}
 				onDuplicateRow={onDuplicateItem}
 				onImport={() => setIsImportDialogOpen(true)}
@@ -294,6 +336,7 @@ export function MaterialRequestItemsTable({
 				onToggleColumnRequired={toggleColumnRequired}
 				onToggleColumnVisibility={toggleColumnVisibility}
 				onUpdateColumnHeader={updateColumnHeader}
+				onUpdateColumnWidth={updateColumnWidth}
 			/>
 
 			<MaterialRequestItemImportDialog
@@ -1767,16 +1810,16 @@ const DefaultItemColumnLabels: Record<MaterialRequestItemColumnId, string> = {
 	uom: "UOM",
 };
 
-const ItemColumnWidthClassNames: Record<MaterialRequestItemColumnId, string> = {
-	barcode: "w-[11rem]",
-	category: "w-[15rem]",
-	itemCode: "w-[11rem]",
-	itemName: "w-[17rem]",
-	lotNo: "w-[11rem]",
-	remarks: "w-[16rem]",
-	requestQuantity: "w-[10rem]",
-	stockQuantity: "w-[10rem]",
-	uom: "w-[10rem]",
+const DefaultItemColumnWidths: Record<MaterialRequestItemColumnId, number> = {
+	barcode: 150,
+	category: 190,
+	itemCode: 150,
+	itemName: 220,
+	lotNo: 145,
+	remarks: 260,
+	requestQuantity: 145,
+	stockQuantity: 135,
+	uom: 120,
 };
 
 const DefaultImportIndexes: Partial<Record<MaterialRequestItemColumnId, number>> = {
@@ -1790,6 +1833,13 @@ const DefaultImportIndexes: Partial<Record<MaterialRequestItemColumnId, number>>
 	stockQuantity: 6,
 	uom: 4,
 };
+
+function estimateTextWidth(value: string, horizontalPadding: number) {
+	return Math.min(
+		800,
+		Math.max(50, Math.ceil(Array.from(value).length * 8.25 + horizontalPadding)),
+	);
+}
 
 const MaterialRequestImportTemplateRows = [
 	[

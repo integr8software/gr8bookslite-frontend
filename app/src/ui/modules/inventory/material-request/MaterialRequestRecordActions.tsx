@@ -74,6 +74,7 @@ export function MaterialRequestRecordActions({
 			type: "button",
 		},
 		{
+			disabled: isApproved || isDisapproved,
 			icon: isCancelled ? Undo2 : Ban,
 			label: isCancelled ? "Uncancel" : "Cancel",
 			onSelect: () => onUpdateRequestStatus(request, cancelStatus),

@@ -4,10 +4,14 @@ import {
 	ChevronDown,
 	Copy,
 	Download,
+	Eye,
+	EyeOff,
 	GripVertical,
 	MoreVertical,
+	Pencil,
 	Plus,
 	Settings2,
+	Sparkles,
 	Trash2,
 	Upload,
 	X,
@@ -28,6 +32,7 @@ export type ModuleDataEntryColumn<TRow> = {
 	header: string;
 	id: string;
 	isRemovable?: boolean;
+	width?: number;
 	widthClassName: string;
 	renderCell: (row: TRow, index: number) => ReactNode;
 };
@@ -39,6 +44,7 @@ export type ModuleDataEntryColumnOption = {
 	isRequirementConfigurable?: boolean;
 	isVisible: boolean;
 	label: string;
+	width?: number;
 };
 
 export type ModuleDataEntryAddColumnOption = {
@@ -72,6 +78,7 @@ type ModuleDataEntryProps<TRow extends { id: string }> = {
 	columnOptions?: ModuleDataEntryColumnOption[];
 	onAddColumn?: (columnId: string) => void;
 	onAddRows: (count: number) => void;
+	onAutoColumnWidth?: (columnId: string) => void;
 	onClearRows?: (action: ModuleDataEntryClearAction) => void;
 	onDuplicateRow: (rowId: string) => void;
 	onExport?: () => void;
@@ -84,6 +91,7 @@ type ModuleDataEntryProps<TRow extends { id: string }> = {
 	onToggleColumnRequired?: (columnId: string, isRequired: boolean) => void;
 	onToggleColumnVisibility?: (columnId: string, isVisible: boolean) => void;
 	onUpdateColumnHeader?: (columnId: string, header: string) => void;
+	onUpdateColumnWidth?: (columnId: string, width: number) => void;
 };
 
 export type ModuleDataEntryAddButtonProps = {
@@ -111,9 +119,11 @@ type ModuleDataEntryColumnSettingsButtonProps = {
 	align?: "left" | "right";
 	columns: ModuleDataEntryColumnOption[];
 	onMoveColumn?: (fromColumnId: string, toColumnId: string) => void;
+	onAutoColumnWidth?: (columnId: string) => void;
 	onToggleColumnRequired?: (columnId: string, isRequired: boolean) => void;
 	onToggleColumnVisibility?: (columnId: string, isVisible: boolean) => void;
 	onUpdateColumnHeader?: (columnId: string, header: string) => void;
+	onUpdateColumnWidth?: (columnId: string, width: number) => void;
 };
 
 type ModuleDataEntryExportButtonProps = {
@@ -135,6 +145,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 	title,
 	onAddColumn,
 	onAddRows,
+	onAutoColumnWidth,
 	onClearRows,
 	onDuplicateRow,
 	onExport,
@@ -147,6 +158,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 	onToggleColumnRequired,
 	onToggleColumnVisibility,
 	onUpdateColumnHeader,
+	onUpdateColumnWidth,
 }: ModuleDataEntryProps<TRow>) {
 	const [openMenuRowId, setOpenMenuRowId] = useState<string | null>(null);
 	const [openAddMenu, setOpenAddMenu] = useState<"footer" | "header" | null>(
@@ -157,6 +169,10 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 	>(null);
 	const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
 	const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
+	const [rowDropTargetId, setRowDropTargetId] = useState<string | null>(null);
+	const [columnDropTargetId, setColumnDropTargetId] = useState<string | null>(
+		null,
+	);
 	const [rowMenuStyle, setRowMenuStyle] = useState<CSSProperties>({});
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const rowMenuTriggerRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -172,7 +188,9 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 			onMoveColumn ||
 				onToggleColumnRequired ||
 				onToggleColumnVisibility ||
-				onUpdateColumnHeader,
+				onUpdateColumnHeader ||
+				onUpdateColumnWidth ||
+				onAutoColumnWidth,
 		);
 	const hasHeaderActions = canEditRows || Boolean(onExport);
 	const hasExportActions = Boolean(onExport) || exportOptions.length > 0;
@@ -291,13 +309,13 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 
 	return (
 		<section className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
-			<div className="relative z-50 flex shrink-0 flex-col gap-3 rounded-t-lg border-b border-darknavy/10 bg-white px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+			<div className="relative z-50 flex shrink-0 flex-col gap-3 rounded-t-lg border-b border-darknavy/10 bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between">
 				<div>
 					<h2 className="text-base font-semibold text-darknavy">{title}</h2>
 					<p className="mt-1 text-sm text-darknavy/60">{description}</p>
 				</div>
 				{hasHeaderActions || hasExportActions ? (
-					<div className="flex flex-wrap items-center gap-2">
+					<div className="flex w-full flex-wrap items-center gap-1.5 xl:w-auto xl:justify-end">
 						{canEditRows && onImport ? (
 							<ModuleDataEntryToolbarButton
 								icon={Upload}
@@ -317,10 +335,12 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 						{canConfigureColumns ? (
 							<ModuleDataEntryColumnSettingsButton
 								columns={columnOptions}
+								onAutoColumnWidth={onAutoColumnWidth}
 								onMoveColumn={onMoveColumn}
 								onToggleColumnRequired={onToggleColumnRequired}
 								onToggleColumnVisibility={onToggleColumnVisibility}
 								onUpdateColumnHeader={onUpdateColumnHeader}
+								onUpdateColumnWidth={onUpdateColumnWidth}
 							/>
 						) : canEditRows && onAddColumn && addColumnOptions.length > 0 ? (
 							<ModuleDataEntryAddColumnButton
@@ -356,7 +376,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 				) : null}
 			</div>
 			<div ref={scrollContainerRef} className="max-h-[30rem] overflow-auto">
-				<table className="w-max min-w-[96rem] table-fixed border-separate border-spacing-0 text-left text-sm text-darknavy">
+				<table className="w-max table-fixed border-separate border-spacing-0 text-left text-sm text-darknavy">
 					<thead>
 						<tr className="bg-skyblue text-xs font-semibold text-white">
 							<th className="sticky top-0 z-40 w-[4.5rem] border border-skyblue/70 bg-skyblue px-2 py-2 text-center shadow-sm">
@@ -365,10 +385,14 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 							{columns.map((column) => (
 								<th
 									key={column.id}
-									onDragEnd={() => setDraggedColumnId(null)}
+									onDragEnd={() => {
+										setDraggedColumnId(null);
+										setColumnDropTargetId(null);
+									}}
 									onDragOver={(event) => {
-										if (draggedColumnId) {
+										if (draggedColumnId && draggedColumnId !== column.id) {
 											event.preventDefault();
+											setColumnDropTargetId(column.id);
 										}
 									}}
 									onDrop={() => {
@@ -381,12 +405,22 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 										}
 
 										setDraggedColumnId(null);
+										setColumnDropTargetId(null);
 									}}
 									className={joinClasses(
 										column.widthClassName,
-										"sticky top-0 z-40 border border-skyblue/70 bg-skyblue px-3 py-2 shadow-sm",
+										"sticky top-0 z-40 border border-skyblue/70 bg-skyblue px-3 py-2 shadow-sm transition",
 										draggedColumnId === column.id && "opacity-60",
+										columnDropTargetId === column.id &&
+											(isDropAfter(
+												draggedColumnId,
+												column.id,
+												columns.map((item) => item.id),
+											)
+												? "border-r-4 border-r-citron"
+												: "border-l-4 border-l-citron"),
 									)}
+									style={createColumnWidthStyle(column.width)}
 								>
 									{canEditColumns ? (
 										<EditableColumnHeader
@@ -395,9 +429,11 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 											}
 											column={column}
 											onMoveColumn={onMoveColumn}
+											onAutoColumnWidth={onAutoColumnWidth}
 											onRemoveColumn={onRemoveColumn}
 											onStartColumnDrag={setDraggedColumnId}
 											onUpdateColumnHeader={onUpdateColumnHeader}
+											onUpdateColumnWidth={onUpdateColumnWidth}
 										/>
 									) : (
 										column.header
@@ -410,21 +446,43 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 						{rows.map((row, index) => (
 							<tr
 								key={row.id}
-								onDragEnd={() => setDraggedRowId(null)}
-								onDragOver={(event) => event.preventDefault()}
+								onDragEnd={() => {
+									setDraggedRowId(null);
+									setRowDropTargetId(null);
+								}}
+								onDragOver={(event) => {
+									if (draggedRowId && draggedRowId !== row.id) {
+										event.preventDefault();
+										setRowDropTargetId(row.id);
+									}
+								}}
 								onDrop={() => {
 									if (draggedRowId && draggedRowId !== row.id) {
 										onMoveRow(draggedRowId, row.id);
 									}
 
 									setDraggedRowId(null);
+									setRowDropTargetId(null);
 								}}
 								className={joinClasses(
 									"bg-white",
 									draggedRowId === row.id && "opacity-50",
 								)}
 							>
-								<td className={joinClasses(rowHeaderClassName, "relative")}>
+								<td
+									className={joinClasses(
+										rowHeaderClassName,
+										"relative transition",
+										rowDropTargetId === row.id &&
+											(isDropAfter(
+												draggedRowId,
+												row.id,
+												rows.map((item) => item.id),
+											)
+												? "border-b-4 border-b-skyblue"
+												: "border-t-4 border-t-skyblue"),
+									)}
+								>
 									<button
 										ref={(node) => {
 											if (node) {
@@ -488,7 +546,31 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 										: null}
 								</td>
 								{columns.map((column) => (
-									<td key={column.id} className={cellClassName}>
+									<td
+										key={column.id}
+										className={joinClasses(
+											cellClassName,
+											"transition",
+											rowDropTargetId === row.id &&
+												(isDropAfter(
+													draggedRowId,
+													row.id,
+													rows.map((item) => item.id),
+												)
+													? "border-b-4 border-b-skyblue"
+													: "border-t-4 border-t-skyblue"),
+											draggedColumnId === column.id && "opacity-60",
+											columnDropTargetId === column.id &&
+												(isDropAfter(
+													draggedColumnId,
+													column.id,
+													columns.map((item) => item.id),
+												)
+													? "border-r-4 border-r-citron"
+													: "border-l-4 border-l-citron"),
+										)}
+										style={createColumnWidthStyle(column.width)}
+									>
 										{column.renderCell(row, index)}
 									</td>
 								))}
@@ -499,10 +581,10 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 			</div>
 			<div className="relative z-50 flex shrink-0 flex-col gap-3 rounded-b-lg border-t border-darknavy/10 bg-offwhite/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
 				<p className="text-sm font-medium text-darknavy/60">
-					{rows.length} {rows.length === 1 ? "line" : "lines"}
+					{rows.length} {rows.length === 1 ? "Row" : "Rows"}
 				</p>
 				{hasHeaderActions || hasExportActions ? (
-					<div className="flex flex-wrap items-center gap-2 sm:justify-end">
+					<div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
 						{canEditRows && onImport ? (
 							<ModuleDataEntryToolbarButton
 								icon={Upload}
@@ -526,10 +608,12 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 							<ModuleDataEntryColumnSettingsButton
 								align="right"
 								columns={columnOptions}
+								onAutoColumnWidth={onAutoColumnWidth}
 								onMoveColumn={onMoveColumn}
 								onToggleColumnRequired={onToggleColumnRequired}
 								onToggleColumnVisibility={onToggleColumnVisibility}
 								onUpdateColumnHeader={onUpdateColumnHeader}
+								onUpdateColumnWidth={onUpdateColumnWidth}
 							/>
 						) : canEditRows && onAddColumn && addColumnOptions.length > 0 ? (
 							<ModuleDataEntryAddColumnButton
@@ -589,7 +673,7 @@ function ModuleDataEntryToolbarButton({
 		<button
 			type="button"
 			onClick={onClick}
-			className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-skyblue/20 bg-white px-4 text-sm font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+			className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-skyblue/20 bg-white px-3 text-xs font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 		>
 			<Icon className="h-4 w-4" aria-hidden="true" />
 			{label}
@@ -679,7 +763,7 @@ function ModuleDataEntryExportButton({
 			<button
 				type="button"
 				onClick={() => setIsOpen((current) => !current)}
-				className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-skyblue/20 bg-white px-4 text-sm font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+				className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-skyblue/20 bg-white px-3 text-xs font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 				aria-expanded={isOpen}
 				aria-haspopup="menu"
 			>
@@ -723,14 +807,19 @@ function ModuleDataEntryExportButton({
 function ModuleDataEntryColumnSettingsButton({
 	align = "left",
 	columns,
+	onAutoColumnWidth,
 	onMoveColumn,
 	onToggleColumnRequired,
 	onToggleColumnVisibility,
 	onUpdateColumnHeader,
+	onUpdateColumnWidth,
 }: ModuleDataEntryColumnSettingsButtonProps) {
 	const triggerRef = useRef<HTMLDivElement>(null);
 	const [isOpen, setIsOpen] = useState(false);
 	const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
+	const [dropTargetColumnId, setDropTargetColumnId] = useState<string | null>(
+		null,
+	);
 	const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
 	const visibleColumnCount = columns.filter((column) => column.isVisible).length;
 
@@ -830,7 +919,7 @@ function ModuleDataEntryColumnSettingsButton({
 			<button
 				type="button"
 				onClick={() => setIsOpen((current) => !current)}
-				className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-skyblue/20 bg-white px-4 text-sm font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+				className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-skyblue/20 bg-white px-3 text-xs font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 				aria-expanded={isOpen}
 				aria-haspopup="menu"
 			>
@@ -870,16 +959,20 @@ function ModuleDataEntryColumnSettingsButton({
 										Boolean(onToggleColumnRequired) &&
 										column.isVisible &&
 										column.isRequirementConfigurable !== false;
-									const shouldShowRequiredControl =
-										isRequiredColumn || canToggleRequired;
-
 									return (
 										<div
 											key={column.id}
-											onDragEnd={() => setDraggedColumnId(null)}
+											onDragEnd={() => {
+												setDraggedColumnId(null);
+												setDropTargetColumnId(null);
+											}}
 											onDragOver={(event) => {
-												if (draggedColumnId) {
+												if (
+													draggedColumnId &&
+													draggedColumnId !== column.id
+												) {
 													event.preventDefault();
+													setDropTargetColumnId(column.id);
 												}
 											}}
 											onDrop={() => {
@@ -892,13 +985,19 @@ function ModuleDataEntryColumnSettingsButton({
 												}
 
 												setDraggedColumnId(null);
+												setDropTargetColumnId(null);
 											}}
 											className={joinClasses(
-												"app-theme-field-readonly grid items-center gap-2 rounded-md border px-2 py-2",
-												shouldShowRequiredControl
-													? "grid-cols-[auto_auto_minmax(0,1fr)_auto]"
-													: "grid-cols-[auto_auto_minmax(0,1fr)]",
+												"app-theme-field-readonly grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border px-2 py-2 transition",
 												draggedColumnId === column.id && "opacity-60",
+												dropTargetColumnId === column.id &&
+													(isDropAfter(
+														draggedColumnId,
+														column.id,
+														columns.map((item) => item.id),
+													)
+														? "border-b-4 border-b-skyblue"
+														: "border-t-4 border-t-skyblue"),
 											)}
 										>
 											<span
@@ -913,57 +1012,105 @@ function ModuleDataEntryColumnSettingsButton({
 											>
 												<GripVertical className="h-4 w-4" aria-hidden="true" />
 											</span>
-											<input
-												type="checkbox"
-												checked={column.isVisible}
-												disabled={!canHide}
-												onChange={(event) =>
-													onToggleColumnVisibility?.(
-														column.id,
-														event.target.checked,
-													)
+											<InlineColumnName
+												label={column.label}
+												onRename={
+													onUpdateColumnHeader
+														? (nextLabel) =>
+																onUpdateColumnHeader(column.id, nextLabel)
+														: undefined
 												}
-												className="h-4 w-4 rounded border-darknavy/20 text-skyblue accent-skyblue focus:ring-skyblue/25 disabled:cursor-not-allowed disabled:opacity-45"
-												aria-label={`Toggle ${column.label} column`}
 											/>
-											{onUpdateColumnHeader ? (
-												<input
-													type="text"
-													value={column.label}
-													onChange={(event) =>
-														onUpdateColumnHeader(
+											<div className="flex items-center gap-1">
+												<button
+													type="button"
+													disabled={!canHide}
+													onClick={() =>
+														onToggleColumnVisibility?.(
 															column.id,
-															event.target.value,
+															!column.isVisible,
 														)
 													}
-													className="app-theme-field h-9 min-w-0 rounded-md border px-2 text-sm font-semibold outline-none transition focus:border-skyblue/40 focus:ring-2 focus:ring-skyblue/15"
-													aria-label={`Rename ${column.label} column`}
-												/>
-											) : (
-												<span className="min-w-0 truncate text-sm font-semibold text-darknavy">
-													{column.label}
-												</span>
-											)}
-											{canToggleRequired ? (
-												<label className="inline-flex items-center gap-1.5 rounded-full border border-skyblue/20 bg-skyblue/8 px-2 py-1 text-[11px] font-semibold text-skyblue">
-													<input
-														type="checkbox"
-														checked={isRequiredColumn}
-														onChange={(event) =>
+													className={joinClasses(
+														"inline-flex h-8 w-8 items-center justify-center rounded-md border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-40",
+														column.isVisible
+															? "border-skyblue/25 bg-skyblue/10 text-skyblue"
+															: "border-darknavy/10 bg-white text-darknavy/55 hover:bg-offwhite",
+													)}
+													aria-pressed={column.isVisible}
+													aria-label={`Toggle ${column.label} column visibility`}
+													title={column.isVisible ? "Hide column" : "Show column"}
+												>
+													{column.isVisible ? (
+														<Eye className="h-3.5 w-3.5" aria-hidden="true" />
+													) : (
+														<EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
+													)}
+												</button>
+												{canToggleRequired ? (
+													<button
+														type="button"
+														onClick={() =>
 															onToggleColumnRequired?.(
 																column.id,
-																event.target.checked,
+																!isRequiredColumn,
 															)
 														}
-														className="h-3.5 w-3.5 rounded border-skyblue/30 text-skyblue accent-skyblue focus:ring-skyblue/25"
-														aria-label={`Make ${column.label} required`}
+														className={joinClasses(
+															"inline-flex h-8 w-8 items-center justify-center rounded-md border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20",
+															isRequiredColumn
+																? "border-skyblue/25 bg-skyblue/10 text-skyblue"
+																: "border-darknavy/10 bg-white text-darknavy/55 hover:bg-offwhite",
+														)}
+														aria-pressed={isRequiredColumn}
+														aria-label={`Toggle ${column.label} required`}
+														title={
+															isRequiredColumn
+																? "Make optional"
+																: "Make required"
+														}
+													>
+														<Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+													</button>
+												) : null}
+											</div>
+											{onUpdateColumnWidth ? (
+												<label className="col-span-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 border-t border-darknavy/8 pt-2 text-[11px] font-semibold text-darknavy/50">
+													Width
+													<div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1">
+													<div className="relative">
+													<input
+														type="number"
+														min="50"
+														max="800"
+														step="1"
+														value={column.width ?? 160}
+														onChange={(event) =>
+															onUpdateColumnWidth(
+																column.id,
+																clampColumnWidth(Number(event.target.value)),
+															)
+														}
+														className="app-theme-field h-8 w-full min-w-0 rounded-md border px-2 pr-7 text-xs font-semibold text-darknavy outline-none transition focus:border-skyblue/40 focus:ring-2 focus:ring-skyblue/15"
+														aria-label={`Set ${column.label} column width`}
 													/>
-													Required
+													<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-darknavy/40">
+														px
+													</span>
+													</div>
+													{onAutoColumnWidth ? (
+														<button
+															type="button"
+															onClick={() => onAutoColumnWidth(column.id)}
+															className="inline-flex h-8 items-center gap-1 rounded-md border border-darknavy/10 bg-white px-2 text-[11px] font-semibold text-darknavy/60 transition hover:border-skyblue/25 hover:bg-skyblue/10 hover:text-skyblue"
+															title="Fit width to the longest header or cell value"
+														>
+															<Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+															Auto
+														</button>
+													) : null}
+													</div>
 												</label>
-											) : isRequiredColumn ? (
-												<span className="rounded-full border border-skyblue/20 bg-skyblue/8 px-2 py-1 text-[11px] font-semibold text-skyblue">
-													Required
-												</span>
 											) : null}
 										</div>
 									);
@@ -1063,14 +1210,14 @@ export function ModuleDataEntryClearButton({
 					onClearRows("no-data");
 					onOpenChange(false);
 				}}
-				className="inline-flex h-10 items-center justify-center rounded-l-md rounded-r-none border border-r-0 border-skyblue/20 bg-white px-4 text-sm font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+				className="inline-flex h-9 items-center justify-center rounded-l-md rounded-r-none border border-r-0 border-skyblue/20 bg-white px-3 text-xs font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 			>
 				Clear
 			</button>
 			<button
 				type="button"
 				onClick={() => onOpenChange(!isOpen)}
-				className="inline-flex h-10 w-10 items-center justify-center rounded-l-none rounded-r-md border border-skyblue/20 bg-white text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+				className="inline-flex h-9 w-9 items-center justify-center rounded-l-none rounded-r-md border border-skyblue/20 bg-white text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 				aria-expanded={isOpen}
 				aria-haspopup="menu"
 				aria-label="Choose clear option"
@@ -1203,7 +1350,7 @@ export function ModuleDataEntryAddButton({
 					onAddRows(1);
 					onOpenChange(false);
 				}}
-				className="inline-flex h-10 items-center justify-center gap-2 rounded-l-md rounded-r-none bg-skyblue px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+				className="inline-flex h-9 items-center justify-center gap-1.5 rounded-l-md rounded-r-none bg-skyblue px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 			>
 				<Plus className="h-4 w-4" aria-hidden="true" />
 				{label}
@@ -1211,7 +1358,7 @@ export function ModuleDataEntryAddButton({
 			<button
 				type="button"
 				onClick={() => onOpenChange(!isOpen)}
-				className="inline-flex h-10 w-10 items-center justify-center rounded-l-none rounded-r-md border-l border-white/25 bg-skyblue text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+				className="inline-flex h-9 w-9 items-center justify-center rounded-l-none rounded-r-md border-l border-white/25 bg-skyblue text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 				aria-expanded={isOpen}
 				aria-haspopup="menu"
 				aria-label="Choose number of lines to add"
@@ -1445,7 +1592,7 @@ function ModuleDataEntryAddColumnButton({
 			<button
 				type="button"
 				onClick={() => setIsOpen((current) => !current)}
-				className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+				className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-skyblue px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 				aria-expanded={isOpen}
 				aria-haspopup="menu"
 			>
@@ -1527,20 +1674,51 @@ function RowActionMenu({
 function EditableColumnHeader<TRow>({
 	canRemove,
 	column,
+	onAutoColumnWidth,
 	onMoveColumn,
 	onRemoveColumn,
 	onStartColumnDrag,
 	onUpdateColumnHeader,
+	onUpdateColumnWidth,
 }: {
 	canRemove: boolean;
 	column: ModuleDataEntryColumn<TRow>;
+	onAutoColumnWidth?: (columnId: string) => void;
 	onMoveColumn?: (fromColumnId: string, toColumnId: string) => void;
 	onRemoveColumn?: (columnId: string) => void;
 	onStartColumnDrag: (columnId: string) => void;
 	onUpdateColumnHeader?: (columnId: string, header: string) => void;
+	onUpdateColumnWidth?: (columnId: string, width: number) => void;
 }) {
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const [isRenaming, setIsRenaming] = useState(false);
+	const menuTriggerRef = useRef<HTMLButtonElement>(null);
+	const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+
+	useLayoutEffect(() => {
+		if (!isMenuOpen || !menuTriggerRef.current) {
+			return;
+		}
+
+		const rect = menuTriggerRef.current.getBoundingClientRect();
+		const menuWidth = 144;
+		const menuHeight = 112;
+		const viewportPadding = 8;
+		const left = Math.min(
+			Math.max(viewportPadding, rect.right - menuWidth),
+			window.innerWidth - menuWidth - viewportPadding,
+		);
+		const belowTop = rect.bottom + 6;
+		const top =
+			belowTop + menuHeight <= window.innerHeight - viewportPadding
+				? belowTop
+				: Math.max(viewportPadding, rect.top - menuHeight - 6);
+
+		setMenuStyle({ left, top });
+	}, [isMenuOpen]);
+
 	return (
-		<div className="flex min-h-9 items-center gap-2">
+		<div className="relative flex min-h-9 items-center gap-1.5">
 			{onMoveColumn ? (
 				<span
 					draggable
@@ -1552,62 +1730,192 @@ function EditableColumnHeader<TRow>({
 					<GripVertical className="h-4 w-4" aria-hidden="true" />
 				</span>
 			) : null}
-			{onUpdateColumnHeader ? (
-				<input
-					type="text"
-					value={column.header}
-					onChange={(event) =>
-						onUpdateColumnHeader(column.id, event.target.value)
-					}
-					className="h-8 min-w-0 flex-1 rounded border border-white/20 bg-white/10 px-2 text-xs font-semibold text-white outline-none transition placeholder:text-white/55 focus:border-white/60 focus:bg-white/18"
-					aria-label={`Edit ${column.header} column title`}
+			{isRenaming && onUpdateColumnHeader ? (
+				<InlineRenameInput
+					label={column.header}
+					onCancel={() => setIsRenaming(false)}
+					onRename={(nextHeader) => {
+						onUpdateColumnHeader(column.id, nextHeader);
+						setIsRenaming(false);
+					}}
 				/>
 			) : (
 				<span className="min-w-0 flex-1 truncate">{column.header}</span>
 			)}
-			<div className="flex shrink-0 items-center gap-1">
-				{onRemoveColumn ? (
-					<ColumnHeaderButton
-						disabled={!canRemove}
-						label={`Remove ${column.header} column`}
-						onClick={() => onRemoveColumn(column.id)}
-						tone="danger"
-					>
-						<X className="h-3.5 w-3.5" aria-hidden="true" />
-					</ColumnHeaderButton>
-				) : null}
-			</div>
+			<button
+				ref={menuTriggerRef}
+				type="button"
+				onClick={() => setIsMenuOpen((current) => !current)}
+				className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded border border-white/20 bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+				aria-label={`Open ${column.header} column options`}
+				aria-expanded={isMenuOpen}
+			>
+				<MoreVertical className="h-3.5 w-3.5" aria-hidden="true" />
+			</button>
+			{isMenuOpen && typeof document !== "undefined"
+				? createPortal(
+				<div
+					style={menuStyle}
+					className="fixed z-130 grid w-36 gap-1 rounded-md border border-darknavy/10 bg-white p-1 text-darknavy shadow-lg"
+				>
+					{onUpdateColumnHeader ? (
+						<button
+							type="button"
+							onClick={() => {
+								setIsRenaming(true);
+								setIsMenuOpen(false);
+							}}
+							className="flex h-8 w-full items-center gap-2 rounded px-2 text-xs font-semibold text-darknavy/70 transition hover:bg-skyblue/10 hover:text-darknavy"
+						>
+							<Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+							Rename
+						</button>
+					) : null}
+					{onAutoColumnWidth ? (
+						<button
+							type="button"
+							onClick={() => {
+								onAutoColumnWidth(column.id);
+								setIsMenuOpen(false);
+							}}
+							className="flex h-8 items-center gap-2 rounded px-2 text-xs font-semibold text-darknavy/70 transition hover:bg-skyblue/10 hover:text-darknavy"
+						>
+							<Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+							Auto Width
+						</button>
+					) : null}
+					{onRemoveColumn ? (
+						<button
+							type="button"
+							disabled={!canRemove}
+							onClick={() => {
+								onRemoveColumn(column.id);
+								setIsMenuOpen(false);
+							}}
+							className="flex h-8 items-center gap-2 rounded px-2 text-xs font-semibold text-coralpink transition hover:bg-coralpink/10 disabled:cursor-not-allowed disabled:opacity-40"
+						>
+							<Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+							Remove
+						</button>
+					) : null}
+				</div>,
+				document.body,
+			)
+				: null}
+			{onUpdateColumnWidth ? (
+				<span
+					role="separator"
+					aria-orientation="vertical"
+					aria-label={`Resize ${column.header} column`}
+					title={`Drag to resize ${column.header}`}
+					onPointerDown={(event) => {
+						event.preventDefault();
+						event.stopPropagation();
+						const startX = event.clientX;
+						const startWidth =
+							event.currentTarget.closest("th")?.getBoundingClientRect()
+								.width ??
+							column.width ??
+							160;
+
+						function handlePointerMove(moveEvent: PointerEvent) {
+							onUpdateColumnWidth?.(
+								column.id,
+								clampColumnWidth(startWidth + moveEvent.clientX - startX),
+							);
+						}
+
+						function handlePointerUp() {
+							document.removeEventListener("pointermove", handlePointerMove);
+							document.removeEventListener("pointerup", handlePointerUp);
+						}
+
+						document.addEventListener("pointermove", handlePointerMove);
+						document.addEventListener("pointerup", handlePointerUp);
+					}}
+					className="absolute -right-3 inset-y-[-0.5rem] z-70 w-2 cursor-col-resize touch-none transition hover:bg-citron/80"
+				/>
+			) : null}
 		</div>
 	);
 }
 
-function ColumnHeaderButton({
-	children,
-	disabled = false,
+function InlineColumnName({
 	label,
-	onClick,
-	tone = "default",
+	onRename,
 }: {
-	children: ReactNode;
-	disabled?: boolean;
 	label: string;
-	onClick: () => void;
-	tone?: "danger" | "default";
+	onRename?: (label: string) => void;
 }) {
+	const [isRenaming, setIsRenaming] = useState(false);
+
 	return (
-		<button
-			type="button"
-			disabled={disabled}
-			onClick={onClick}
-			title={label}
-			aria-label={label}
-			className={joinClasses(
-				"inline-flex h-7 w-7 items-center justify-center rounded border border-white/20 bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:cursor-not-allowed disabled:opacity-35",
-				tone === "danger" && "hover:bg-coralpink/35",
+		<div className="flex min-w-0 items-center gap-1">
+			{isRenaming && onRename ? (
+				<InlineRenameInput
+					label={label}
+					onCancel={() => setIsRenaming(false)}
+					onRename={(nextLabel) => {
+						onRename(nextLabel);
+						setIsRenaming(false);
+					}}
+				/>
+			) : (
+				<span className="min-w-0 flex-1 truncate text-sm font-semibold text-darknavy">
+					{label}
+				</span>
 			)}
-		>
-			{children}
-		</button>
+			{onRename && !isRenaming ? (
+			<button
+				type="button"
+				onClick={() => setIsRenaming(true)}
+				className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-darknavy/10 bg-white text-darknavy/55 transition hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20"
+				aria-label={`Rename ${label} column`}
+				title={`Rename ${label} column`}
+			>
+				<Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+			</button>
+			) : null}
+		</div>
+	);
+}
+
+function InlineRenameInput({
+	label,
+	onCancel,
+	onRename,
+}: {
+	label: string;
+	onCancel: () => void;
+	onRename: (label: string) => void;
+}) {
+	const [value, setValue] = useState(label);
+
+	return (
+		<input
+			autoFocus
+			type="text"
+			value={value}
+			onBlur={() => {
+				const nextLabel = value.trim();
+				if (nextLabel) {
+					onRename(nextLabel);
+				} else {
+					onCancel();
+				}
+			}}
+			onChange={(event) => setValue(event.target.value)}
+			onKeyDown={(event) => {
+				if (event.key === "Enter") {
+					event.currentTarget.blur();
+				}
+				if (event.key === "Escape") {
+					onCancel();
+				}
+			}}
+			className="app-theme-field h-8 min-w-0 flex-1 rounded-md border px-2 text-xs font-semibold text-darknavy outline-none focus:border-skyblue/40 focus:ring-2 focus:ring-skyblue/15"
+			aria-label={`Rename ${label} column`}
+		/>
 	);
 }
 
@@ -1661,3 +1969,28 @@ const rowHeaderClassName =
 	"border border-darknavy/10 bg-offwhite/70 px-2 py-1 text-center text-xs font-semibold text-darknavy/65";
 
 const cellClassName = "border border-darknavy/10 bg-white p-0 align-middle";
+
+function clampColumnWidth(width: number) {
+	return Math.min(800, Math.max(50, Math.round(width || 50)));
+}
+
+function createColumnWidthStyle(width?: number): CSSProperties | undefined {
+	if (!width) {
+		return undefined;
+	}
+
+	const pixelWidth = `${clampColumnWidth(width)}px`;
+	return { maxWidth: pixelWidth, minWidth: pixelWidth, width: pixelWidth };
+}
+
+function isDropAfter(
+	draggedId: string | null,
+	targetId: string,
+	orderedIds: string[],
+) {
+	if (!draggedId) {
+		return false;
+	}
+
+	return orderedIds.indexOf(draggedId) < orderedIds.indexOf(targetId);
+}

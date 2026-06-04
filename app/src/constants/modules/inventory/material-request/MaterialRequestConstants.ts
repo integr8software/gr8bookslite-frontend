@@ -23,8 +23,12 @@ export const MaterialRequestDirectStatusOptions: MaterialRequestStatus[] = [
 ];
 
 export const MaterialRequestStatusOptions: MaterialRequestStatus[] = [
-	...MaterialRequestApprovalStatusOptions,
 	"Active",
+	"Draft",
+	"Pending",
+	"Approved",
+	"Disapproved",
+	"Cancelled",
 	"Completed",
 ];
 

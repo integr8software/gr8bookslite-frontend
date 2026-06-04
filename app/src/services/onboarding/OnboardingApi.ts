@@ -50,6 +50,7 @@ export async function SaveOnboardingBilling(
     body,
     {
       headers: GetAuthorizationHeaders(accessToken),
+      timeout: 30000,
     },
   );
 

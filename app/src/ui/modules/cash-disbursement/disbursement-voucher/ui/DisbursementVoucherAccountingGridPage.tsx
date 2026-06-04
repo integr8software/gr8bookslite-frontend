@@ -1,16 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import {
-  CirclePlus,
-  Copy,
-  FileText,
-  LayoutGrid,
-  RotateCcw,
-  Save,
-  Trash2,
-} from "lucide-react";
+import { ClipboardPaste, FileText, LayoutGrid, Save, Upload, X } from "lucide-react";
 import {
   DisbursementVoucherInitialEntryDraft,
   createTaxDetails,
@@ -18,8 +10,8 @@ import {
   formatDateLabel,
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import { validateDisbursementVoucherEntries } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
+import { validateDisbursementVoucherEntries } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import type {
   DisbursementLineEntry,
   DisbursementTaxDetails,
@@ -31,6 +23,12 @@ import {
   writeAccountingGridSession,
   type DisbursementVoucherAccountingGridSession,
 } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/AccountingGridSession";
+import {
+  ModuleDataEntry,
+  type ModuleDataEntryClearAction,
+  type ModuleDataEntryColumn,
+} from "@/app/src/ui/shared/module/data-entry/ModuleDataEntry";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type EditableGridRow = {
   accountCode: string;
@@ -43,20 +41,61 @@ type EditableGridRow = {
   taxRate: string;
 };
 
+type GridColumnId =
+  | "accountCode"
+  | "accountName"
+  | "particulars"
+  | "taxRate"
+  | "debit"
+  | "credit";
+
 const TaxRateOptions = ["0%", "1%", "2%", "5%", "12%"];
+
+const DefaultGridColumnOrder: GridColumnId[] = [
+  "accountCode",
+  "accountName",
+  "particulars",
+  "taxRate",
+  "debit",
+  "credit",
+];
+
+const DefaultGridColumnLabels: Record<GridColumnId, string> = {
+  accountCode: "Account Code",
+  accountName: "Account Name",
+  credit: "Credit",
+  debit: "Debit",
+  particulars: "Particulars",
+  taxRate: "Tax Rate",
+};
+
+const GridColumnWidthClassNames: Record<GridColumnId, string> = {
+  accountCode: "w-[12rem]",
+  accountName: "w-[16rem]",
+  credit: "w-[11rem]",
+  debit: "w-[11rem]",
+  particulars: "w-[22rem]",
+  taxRate: "w-[10rem]",
+};
 
 export function DisbursementVoucherAccountingGridPage() {
   const router = useRouter();
-  const transactions = useDisbursementVoucherStore(
-    (state) => state.transactions,
-  );
-  const pendingScrollRowIdRef = useRef<string | null>(null);
+  const transactions = useDisbursementVoucherStore((state) => state.transactions);
   const [session, setSession] =
     useState<DisbursementVoucherAccountingGridSession | null>(null);
   const [rows, setRows] = useState<EditableGridRow[]>([]);
+  const [columnOrder, setColumnOrder] =
+    useState<GridColumnId[]>(DefaultGridColumnOrder);
+  const [columnLabels, setColumnLabels] = useState(DefaultGridColumnLabels);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isDragActive, setIsDragActive] = useState(false);
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const [viewedParticulars, setViewedParticulars] = useState<{
+    rowNo: number;
+    value: string;
+  } | null>(null);
 
   useEffect(() => {
     const nextSession = readAccountingGridSession();
@@ -73,32 +112,6 @@ export function DisbursementVoucherAccountingGridPage() {
 
     return () => window.clearTimeout(restoreTimer);
   }, []);
-
-  useEffect(() => {
-    if (!pendingScrollRowIdRef.current || rows.length === 0) {
-      return;
-    }
-
-    const targetRowId = pendingScrollRowIdRef.current;
-    pendingScrollRowIdRef.current = null;
-
-    const scrollTimer = window.setTimeout(() => {
-      const rowElement = document.querySelector<HTMLElement>(
-        `[data-grid-row-id="${targetRowId}"]`,
-      );
-      const firstInput = document.querySelector<HTMLInputElement>(
-        `[data-grid-row-input-id="${targetRowId}"]`,
-      );
-
-      rowElement?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-      firstInput?.focus({ preventScroll: true });
-    }, 0);
-
-    return () => window.clearTimeout(scrollTimer);
-  }, [rows]);
 
   const totals = useMemo(() => {
     const totalDebit = rows.reduce(
@@ -127,6 +140,20 @@ export function DisbursementVoucherAccountingGridPage() {
         : undefined,
     [session, transactions],
   );
+  const columns: ModuleDataEntryColumn<EditableGridRow>[] = columnOrder.map(
+    (columnId) => ({
+      header: columnLabels[columnId],
+      id: columnId,
+      renderCell: (row) => renderGridCell(row, columnId),
+      widthClassName: GridColumnWidthClassNames[columnId],
+    }),
+  );
+  const addColumnOptions = DefaultGridColumnOrder.filter(
+    (columnId) => !columnOrder.includes(columnId),
+  ).map((columnId) => ({
+    id: columnId,
+    label: columnLabels[columnId] || DefaultGridColumnLabels[columnId],
+  }));
 
   function updateRow(
     rowId: string,
@@ -139,13 +166,11 @@ export function DisbursementVoucherAccountingGridPage() {
           return row;
         }
 
-        const nextRow = {
-          ...row,
-          [field]: value,
-        };
+        const nextRow = { ...row, [field]: value };
 
         if (field === "debit" || field === "credit" || field === "taxRate") {
           const amount = normalizeAmount(nextRow.debit || nextRow.credit);
+
           nextRow.taxDetails = syncTaxDetailsAmount(
             nextRow.taxDetails,
             amount,
@@ -159,23 +184,12 @@ export function DisbursementVoucherAccountingGridPage() {
     setErrorMessage(null);
   }
 
-  function keepRowInView(rowId: string) {
-    const rowElement = document.querySelector<HTMLElement>(
-      `[data-grid-row-id="${rowId}"]`,
-    );
-
-    rowElement?.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-    });
-  }
-
   function addBlankRows(count = 1) {
-    const nextRows = Array.from({ length: count }, () =>
-      createBlankEditableRow(),
-    );
-    pendingScrollRowIdRef.current = nextRows[nextRows.length - 1]?.id ?? null;
-    setRows((currentRows) => [...currentRows, ...nextRows]);
+    setRows((currentRows) => [
+      ...currentRows,
+      ...Array.from({ length: count }, createBlankEditableRow),
+    ]);
+    setErrorMessage(null);
   }
 
   function removeRow(rowId: string) {
@@ -183,27 +197,221 @@ export function DisbursementVoucherAccountingGridPage() {
       const nextRows = currentRows.filter((row) => row.id !== rowId);
       return nextRows.length > 0 ? nextRows : [createBlankEditableRow()];
     });
+    setErrorMessage(null);
   }
 
-  function duplicateLastFilledRow() {
-    const sourceRow = [...rows].reverse().find((row) => hasRowValue(row));
+  function insertRow(rowId: string, position: "above" | "below") {
+    setRows((currentRows) => {
+      const rowIndex = currentRows.findIndex((row) => row.id === rowId);
+      const insertIndex =
+        rowIndex === -1
+          ? currentRows.length
+          : rowIndex + (position === "below" ? 1 : 0);
+      const nextRows = [...currentRows];
 
-    if (!sourceRow) {
-      addBlankRows();
+      nextRows.splice(insertIndex, 0, createBlankEditableRow());
+      return nextRows;
+    });
+    setErrorMessage(null);
+  }
+
+  function duplicateRow(rowId: string) {
+    setRows((currentRows) => {
+      const rowIndex = currentRows.findIndex((row) => row.id === rowId);
+      const sourceRow = currentRows[rowIndex];
+
+      if (!sourceRow) {
+        return currentRows;
+      }
+
+      const nextRows = [...currentRows];
+      nextRows.splice(rowIndex + 1, 0, {
+        ...sourceRow,
+        id: createGridRowId(),
+      });
+      return nextRows;
+    });
+    setErrorMessage(null);
+  }
+
+  function moveRow(fromRowId: string, toRowId: string) {
+    if (fromRowId === toRowId) {
       return;
     }
 
-    const nextRow = {
-      ...sourceRow,
-      id: createGridRowId(),
-    };
-    pendingScrollRowIdRef.current = nextRow.id;
-    setRows((currentRows) => [...currentRows, nextRow]);
+    setRows((currentRows) => {
+      const fromIndex = currentRows.findIndex((row) => row.id === fromRowId);
+      const toIndex = currentRows.findIndex((row) => row.id === toRowId);
+
+      if (fromIndex === -1 || toIndex === -1) {
+        return currentRows;
+      }
+
+      const nextRows = [...currentRows];
+      const [movedRow] = nextRows.splice(fromIndex, 1);
+
+      nextRows.splice(toIndex, 0, movedRow);
+      return nextRows;
+    });
+    setErrorMessage(null);
   }
 
-  function clearAllRows() {
-    setRows(Array.from({ length: 6 }, () => createBlankEditableRow()));
+  function clearRows(action: ModuleDataEntryClearAction) {
+    setRows((currentRows) => {
+      const nextRows =
+        action === "all"
+          ? []
+          : currentRows.filter((row) => !shouldClearRow(row, action));
+
+      return nextRows.length > 0 ? nextRows : [createBlankEditableRow()];
+    });
     setErrorMessage(null);
+  }
+
+  function updateColumnHeader(columnId: string, header: string) {
+    setColumnLabels((currentLabels) => ({
+      ...currentLabels,
+      [columnId]: header,
+    }));
+  }
+
+  function addColumn(columnId: string) {
+    if (!isGridColumnId(columnId)) {
+      return;
+    }
+
+    setColumnOrder((currentOrder) =>
+      currentOrder.includes(columnId) ? currentOrder : [...currentOrder, columnId],
+    );
+  }
+
+  function moveColumn(fromColumnId: string, toColumnId: string) {
+    setColumnOrder((currentOrder) => {
+      const currentIndex = currentOrder.indexOf(fromColumnId as GridColumnId);
+      const nextIndex = currentOrder.indexOf(toColumnId as GridColumnId);
+
+      if (currentIndex === -1 || nextIndex === -1 || currentIndex === nextIndex) {
+        return currentOrder;
+      }
+
+      const nextOrder = [...currentOrder];
+      const [movedColumn] = nextOrder.splice(currentIndex, 1);
+
+      nextOrder.splice(nextIndex, 0, movedColumn);
+      return nextOrder;
+    });
+  }
+
+  function removeColumn(columnId: string) {
+    setColumnOrder((currentOrder) =>
+      currentOrder.length <= 1
+        ? currentOrder
+        : currentOrder.filter((currentColumnId) => currentColumnId !== columnId),
+    );
+  }
+
+  function renderGridCell(row: EditableGridRow, columnId: GridColumnId) {
+    if (columnId === "taxRate") {
+      return (
+        <select
+          value={row.taxRate}
+          onChange={(event) => updateRow(row.id, "taxRate", event.target.value)}
+          className={gridCellControlClassName()}
+        >
+          {TaxRateOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (columnId === "debit" || columnId === "credit") {
+      return (
+        <GridEntryInput
+          value={row[columnId]}
+          onChange={(value) => updateRow(row.id, columnId, value)}
+          type="number"
+          extraClassName="text-right"
+        />
+      );
+    }
+
+    if (columnId === "particulars") {
+      const rowNo = rows.findIndex((currentRow) => currentRow.id === row.id) + 1;
+
+      return (
+        <div className="flex items-center gap-2">
+          <GridEntryInput
+            value={row.particulars}
+            onChange={(value) => updateRow(row.id, "particulars", value)}
+          />
+          <button
+            type="button"
+            onClick={() =>
+              setViewedParticulars({
+                rowNo: rowNo > 0 ? rowNo : 1,
+                value: row.particulars,
+              })
+            }
+            className="mr-2 inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-skyblue/25 bg-skyblue/8 px-3 text-xs font-semibold text-skyblue transition hover:bg-skyblue/14"
+          >
+            View
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <GridEntryInput
+        value={row[columnId]}
+        onChange={(value) => updateRow(row.id, columnId, value)}
+      />
+    );
+  }
+
+  async function handleImportFile(file: File) {
+    try {
+      const importedRows = await parseAccountingImportFile(file);
+      applyImportedRows(importedRows);
+      setErrorMessage(null);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not import the selected accounting entries file.",
+      );
+    }
+  }
+
+  function handleImportPastedRows() {
+    try {
+      const importedRows = parseTabularText(pasteText);
+      applyImportedRows(importedRows);
+      setPasteText("");
+      setErrorMessage(null);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not import the pasted accounting entries.",
+      );
+    }
+  }
+
+  function applyImportedRows(importedRows: EditableGridRow[]) {
+    if (importedRows.length === 0) {
+      throw new Error("No accounting rows were found to import.");
+    }
+
+    setRows((currentRows) => {
+      const populatedRows = currentRows.filter(hasRowData);
+
+      return populatedRows.length > 0
+        ? [...populatedRows, ...importedRows]
+        : importedRows;
+    });
   }
 
   function handleBackToVoucher() {
@@ -247,16 +455,14 @@ export function DisbursementVoucherAccountingGridPage() {
       return;
     }
 
-    const nextValues = {
-      ...session.values,
-      lineEntries: previewEntries,
-    };
-
     writeAccountingGridSession({
       ...session,
       entryDraft: DisbursementVoucherInitialEntryDraft,
       returnStep: "review",
-      values: nextValues,
+      values: {
+        ...session.values,
+        lineEntries: previewEntries,
+      },
     });
     router.push("/cash-disbursement/disbursement-voucher?grid=resume");
   }
@@ -300,292 +506,140 @@ export function DisbursementVoucherAccountingGridPage() {
       <main className="grid min-h-[calc(100dvh-5rem)] min-w-0 content-start gap-5 p-4 sm:p-6">
         <div className="min-w-0 overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
           <div className="min-w-0 p-4 sm:p-6 lg:p-8">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
-                Cash Disbursement Setup
-              </p>
-              <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">
-                Accounting Grid View
-              </h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-darknavy/58">
-                Encode accounting entries in a dedicated grid page, then save
-                and return to the voucher preview for final checking before
-                saving.
-              </p>
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
+                  Cash Disbursement Setup
+                </p>
+                <h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">
+                  Accounting Grid View
+                </h1>
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-darknavy/58">
+                  Encode accounting entries in a dedicated grid page, then save
+                  and return to the voucher preview for final checking before
+                  saving.
+                </p>
+              </div>
+              <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-4 py-2 text-sm font-semibold text-skyblue sm:w-auto sm:justify-start">
+                <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+                Data Grid Encoding
+              </div>
             </div>
-            <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-4 py-2 text-sm font-semibold text-skyblue sm:w-auto sm:justify-start">
-              <LayoutGrid className="h-4 w-4" aria-hidden="true" />
-              Data Grid Encoding
-            </div>
-          </div>
 
-          <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <SummaryCard
-              label="Records"
-              value={String(buildLineEntries(rows).length)}
-            />
-            <SummaryCard
-              label="Debit Total"
-              value={formatCurrency(totals.totalDebit)}
-            />
-            <SummaryCard
-              label="Credit Total"
-              value={formatCurrency(totals.totalCredit)}
-            />
-            <SummaryCard
-              label="Status"
-              tone={totals.isBalanced ? "balanced" : "warning"}
-              value={totals.isBalanced ? "Balanced" : "Needs adjustment"}
-            />
-          </div>
-
-          <div className="mt-6">
-            <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
-              <QuickActionButton
-                icon={<CirclePlus className="h-4 w-4" aria-hidden="true" />}
-                label="Add Row"
-                onClick={() => addBlankRows()}
+            <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <SummaryCard
+                label="Records"
+                value={String(buildLineEntries(rows).length)}
               />
-              <QuickActionButton
-                icon={<Copy className="h-4 w-4" aria-hidden="true" />}
-                label="Duplicate Last Entry"
-                onClick={duplicateLastFilledRow}
+              <SummaryCard
+                label="Debit Total"
+                value={formatCurrency(totals.totalDebit)}
               />
-              <QuickActionButton
-                icon={<RotateCcw className="h-4 w-4" aria-hidden="true" />}
-                label="Add 5 Blank Rows"
-                onClick={() => addBlankRows(5)}
+              <SummaryCard
+                label="Credit Total"
+                value={formatCurrency(totals.totalCredit)}
               />
-              <QuickActionButton
-                icon={<Trash2 className="h-4 w-4" aria-hidden="true" />}
-                label="Clear All Lines"
-                onClick={clearAllRows}
-                tone="danger"
+              <SummaryCard
+                label="Status"
+                tone={totals.isBalanced ? "balanced" : "warning"}
+                value={totals.isBalanced ? "Balanced" : "Needs adjustment"}
               />
             </div>
-          </div>
 
-          <div className="mt-6 overflow-hidden rounded-lg border border-darknavy/10 bg-white">
-            <div className="border-b border-darknavy/10 px-4 py-4 sm:px-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
-                    Data Grid
+            <div className="mt-6">
+              <AccountingImportPanel
+                isDragActive={isDragActive}
+                pasteText={pasteText}
+                onDropFile={handleImportFile}
+                onDragActiveChange={setIsDragActive}
+                onImportPastedRows={handleImportPastedRows}
+                onPasteTextChange={setPasteText}
+              />
+            </div>
+
+            <div className="mt-4">
+              <ModuleDataEntry
+                columns={columns}
+                description="Add accounting entry lines, adjust debit and credit amounts, reorder rows, and manage duplicate journal entries."
+                emptyRowLabel="entry"
+                error={errorMessage ?? undefined}
+                isDraggable
+                isReadonly={false}
+                rows={rows}
+                title="Data Entry"
+                addColumnOptions={addColumnOptions}
+                onAddColumn={addColumn}
+                onAddRows={addBlankRows}
+                onClearRows={clearRows}
+                onDuplicateRow={duplicateRow}
+                onInsertRow={insertRow}
+                onMoveColumn={moveColumn}
+                onMoveRow={moveRow}
+                onRemoveColumn={removeColumn}
+                onRemoveRow={removeRow}
+                onUpdateColumnHeader={updateColumnHeader}
+              />
+            </div>
+
+            <div className="mt-6 grid gap-4 xl:grid-cols-[1.2fr_1fr]">
+              <div className="rounded-xl border border-darknavy/10 bg-offwhite/45 p-4 sm:p-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-darknavy/45">
+                  Quick Encoding Tips
+                </p>
+                <div className="mt-4 grid gap-3 text-sm text-darknavy/62">
+                  <p>Encode one journal line per row for easier balancing.</p>
+                  <p>Enter the amount in debit or credit only for each line.</p>
+                  <p>
+                    Leave extra blank rows if you are still preparing the next
+                    line. Blank rows will not be saved.
                   </p>
-                  <p className="mt-1 text-sm leading-6 text-darknavy/58">
-                    Use the same grid on mobile, tablet, and desktop. On smaller
-                    screens, swipe horizontally to review all accounting columns.
+                  <p>
+                    After Save & Preview, the flow returns to the voucher
+                    preview so you can still review everything before final save.
                   </p>
                 </div>
-                <span className="inline-flex w-full items-center justify-center rounded-full bg-darknavy/6 px-3 py-1.5 text-xs font-semibold text-darknavy/60 sm:w-auto">
-                  Scroll sideways on small screens
-                </span>
+              </div>
+
+              <div className="rounded-xl border border-darknavy/10 bg-white p-4 sm:p-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-darknavy/45">
+                  Balance Summary
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <SummaryCard
+                    label="Total Debit"
+                    value={formatCurrency(totals.totalDebit)}
+                  />
+                  <SummaryCard
+                    label="Total Credit"
+                    value={formatCurrency(totals.totalCredit)}
+                  />
+                  <SummaryCard
+                    label="Variance"
+                    tone={totals.isBalanced ? "balanced" : "warning"}
+                    value={formatCurrency(totals.variance)}
+                  />
+                </div>
               </div>
             </div>
-            <div className="max-h-[58vh] min-w-0 overflow-x-auto overflow-y-auto">
-              <table className="w-full min-w-[980px] border-collapse text-left text-sm text-darknavy">
-                <thead className="bg-offwhite/60 text-xs font-semibold uppercase tracking-[0.16em] text-darknavy/45">
-                  <tr>
-                    <th className="w-14 px-3 py-3 text-center">#</th>
-                    <th className="px-3 py-3">Account Code</th>
-                    <th className="px-3 py-3">Account Name</th>
-                    <th className="px-3 py-3">Particulars</th>
-                    <th className="px-3 py-3">Tax Rate</th>
-                    <th className="px-3 py-3 text-right">Debit</th>
-                    <th className="px-3 py-3 text-right">Credit</th>
-                    <th className="w-36 px-3 py-3 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, index) => (
-                    <tr
-                      key={row.id}
-                      data-grid-row-id={row.id}
-                      className="border-t border-darknavy/8 align-top transition hover:bg-skyblue/5"
-                    >
-                      <td className="px-3 py-3 text-center text-sm font-semibold text-darknavy/60">
-                        {index + 1}
-                      </td>
-                      <td className="px-3 py-3">
-                        <input
-                          data-grid-row-input-id={row.id}
-                          value={row.accountCode}
-                          onFocus={() => keepRowInView(row.id)}
-                          onChange={(event) =>
-                            updateRow(row.id, "accountCode", event.target.value)
-                          }
-                          className={GridInputClassName}
-                          placeholder="Select or encode"
-                        />
-                      </td>
-                      <td className="px-3 py-3">
-                        <input
-                          value={row.accountName}
-                          onFocus={() => keepRowInView(row.id)}
-                          onChange={(event) =>
-                            updateRow(row.id, "accountName", event.target.value)
-                          }
-                          className={GridInputClassName}
-                          placeholder="Account name"
-                        />
-                      </td>
-                      <td className="px-3 py-3">
-                        <input
-                          value={row.particulars}
-                          onFocus={() => keepRowInView(row.id)}
-                          onChange={(event) =>
-                            updateRow(row.id, "particulars", event.target.value)
-                          }
-                          className={GridInputClassName}
-                          placeholder="Enter particulars"
-                        />
-                      </td>
-                      <td className="px-3 py-3">
-                        <select
-                          value={row.taxRate}
-                          onFocus={() => keepRowInView(row.id)}
-                          onChange={(event) =>
-                            updateRow(row.id, "taxRate", event.target.value)
-                          }
-                          className={`${GridInputClassName} app-select-control`}
-                        >
-                          {TaxRateOptions.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-3 py-3">
-                        <input
-                          value={row.debit}
-                          onFocus={() => keepRowInView(row.id)}
-                          onChange={(event) =>
-                            updateRow(row.id, "debit", event.target.value)
-                          }
-                          className={`${GridInputClassName} text-right`}
-                          placeholder="0.00"
-                        />
-                      </td>
-                      <td className="px-3 py-3">
-                        <input
-                          value={row.credit}
-                          onFocus={() => keepRowInView(row.id)}
-                          onChange={(event) =>
-                            updateRow(row.id, "credit", event.target.value)
-                          }
-                          className={`${GridInputClassName} text-right`}
-                          placeholder="0.00"
-                        />
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => addBlankRows()}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-skyblue/20 bg-skyblue/10 text-skyblue transition hover:bg-skyblue/16"
-                            title="Add row"
-                          >
-                            <CirclePlus
-                              className="h-4 w-4"
-                              aria-hidden="true"
-                            />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const nextRow = { ...row, id: createGridRowId() };
-                              pendingScrollRowIdRef.current = nextRow.id;
-                              setRows((currentRows) => [
-                                ...currentRows,
-                                nextRow,
-                              ]);
-                            }}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-darknavy/10 bg-white text-darknavy/70 transition hover:border-skyblue/35 hover:bg-skyblue/8 hover:text-darknavy"
-                          >
-                            <Copy className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeRow(row.id)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-coralpink/12 text-coralpink transition hover:bg-coralpink/18"
-                          >
-                            <Trash2 className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+              <button
+                type="button"
+                onClick={handleBackToVoucher}
+                className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8 sm:w-auto"
+              >
+                Back to Voucher
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveAndContinue}
+                className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85 sm:w-auto"
+              >
+                <Save className="h-4 w-4" aria-hidden="true" />
+                Save & Preview
+              </button>
             </div>
           </div>
-
-          <div className="mt-6 grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-            <div className="rounded-xl border border-darknavy/10 bg-offwhite/45 p-4 sm:p-5">
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-darknavy/45">
-                Quick Encoding Tips
-              </p>
-              <div className="mt-4 grid gap-3 text-sm text-darknavy/62">
-                <p>Encode one journal line per row for easier balancing.</p>
-                <p>Enter the amount in debit or credit only for each line.</p>
-                <p>
-                  Leave extra blank rows if you are still preparing the next
-                  line. Blank rows will not be saved.
-                </p>
-                <p>
-                  After Save & Preview, the flow returns to the voucher preview
-                  so you can still review everything before final save.
-                </p>
-              </div>
-              {errorMessage ? (
-                <p className="mt-4 text-sm font-medium text-coralpink">
-                  {errorMessage}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="rounded-xl border border-darknavy/10 bg-white p-4 sm:p-5">
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-darknavy/45">
-                Balance Summary
-              </p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <SummaryCard
-                  label="Total Debit"
-                  value={formatCurrency(totals.totalDebit)}
-                />
-                <SummaryCard
-                  label="Total Credit"
-                  value={formatCurrency(totals.totalCredit)}
-                />
-                <SummaryCard
-                  label="Variance"
-                  tone={totals.isBalanced ? "balanced" : "warning"}
-                  value={formatCurrency(totals.variance)}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
-            <button
-              type="button"
-              onClick={handleBackToVoucher}
-              className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8 sm:w-auto"
-            >
-              Back to Voucher
-            </button>
-            <button
-              type="button"
-              onClick={handleSaveAndContinue}
-              className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85 sm:w-auto"
-            >
-              <Save className="h-4 w-4" aria-hidden="true" />
-              Save & Preview
-            </button>
-          </div>
-        </div>
         </div>
       </main>
 
@@ -601,7 +655,181 @@ export function DisbursementVoucherAccountingGridPage() {
         onClose={() => setIsPreviewDialogOpen(false)}
         onContinue={handleContinueToVoucherPreview}
       />
+      <ParticularsViewDialog
+        viewedParticulars={viewedParticulars}
+        onClose={() => setViewedParticulars(null)}
+      />
     </section>
+  );
+}
+
+function AccountingImportPanel({
+  isDragActive,
+  pasteText,
+  onDragActiveChange,
+  onDropFile,
+  onImportPastedRows,
+  onPasteTextChange,
+}: {
+  isDragActive: boolean;
+  pasteText: string;
+  onDragActiveChange: (isActive: boolean) => void;
+  onDropFile: (file: File) => void;
+  onImportPastedRows: () => void;
+  onPasteTextChange: (value: string) => void;
+}) {
+  const [fileInputKey, setFileInputKey] = useState(0);
+
+  function handleFiles(fileList: FileList | null) {
+    const file = fileList?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    onDropFile(file);
+    setFileInputKey((current) => current + 1);
+  }
+
+  return (
+    <section className="grid gap-4 rounded-lg border border-dashed border-skyblue/35 bg-skyblue/6 p-4 lg:grid-cols-[0.9fr_1.1fr]">
+      <label
+        className={joinClasses(
+          "flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed bg-white/70 px-4 py-5 text-center transition",
+          isDragActive
+            ? "border-skyblue bg-skyblue/12"
+            : "border-darknavy/14 hover:border-skyblue/45 hover:bg-white",
+        )}
+        onDragEnter={(event) => {
+          event.preventDefault();
+          onDragActiveChange(true);
+        }}
+        onDragOver={(event) => {
+          event.preventDefault();
+          onDragActiveChange(true);
+        }}
+        onDragLeave={(event) => {
+          if (event.currentTarget === event.target) {
+            onDragActiveChange(false);
+          }
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          onDragActiveChange(false);
+          handleFiles(event.dataTransfer.files);
+        }}
+      >
+        <Upload className="h-6 w-6 text-skyblue" aria-hidden="true" />
+        <span className="mt-3 text-sm font-semibold text-darknavy">
+          Drop Excel or CSV here
+        </span>
+        <span className="mt-1 max-w-md text-xs leading-5 text-darknavy/55">
+          Supports .xlsx, .csv, .tsv, and text copied from spreadsheets.
+        </span>
+        <input
+          key={fileInputKey}
+          type="file"
+          accept=".xlsx,.csv,.tsv,.txt"
+          onChange={(event) => handleFiles(event.target.files)}
+          className="sr-only"
+        />
+      </label>
+
+      <div className="grid gap-3">
+        <div className="flex items-center gap-2 text-sm font-semibold text-darknavy">
+          <ClipboardPaste className="h-4 w-4 text-skyblue" aria-hidden="true" />
+          Paste from Excel
+        </div>
+        <textarea
+          value={pasteText}
+          onChange={(event) => onPasteTextChange(event.target.value)}
+          className="min-h-24 resize-y rounded-lg border border-darknavy/12 bg-white px-3 py-2 text-sm text-darknavy outline-none transition focus:border-skyblue/45"
+          placeholder={"Account Code\tAccount Name\tParticulars\tTax Rate\tDebit\tCredit"}
+        />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs leading-5 text-darknavy/55">
+            First row may be headers. Columns can be named Account Code, Account
+            Name, Particulars, Tax Rate, Debit, and Credit.
+          </p>
+          <button
+            type="button"
+            disabled={!pasteText.trim()}
+            onClick={onImportPastedRows}
+            className="theme-accent-contrast-text inline-flex h-10 items-center justify-center rounded-xl bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            Import Pasted Rows
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ParticularsViewDialog({
+  viewedParticulars,
+  onClose,
+}: {
+  viewedParticulars: { rowNo: number; value: string } | null;
+  onClose: () => void;
+}) {
+  if (!viewedParticulars) {
+    return null;
+  }
+
+  const text = viewedParticulars.value.trim();
+
+  return (
+    <div
+      role="presentation"
+      className="fixed inset-0 z-[130] flex items-end justify-center bg-slate-950/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="particulars-view-title"
+        className="flex max-h-[min(80vh,620px)] w-full max-w-3xl flex-col overflow-hidden rounded-[20px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)]"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">
+              Particulars
+            </p>
+            <h2
+              id="particulars-view-title"
+              className="mt-1 text-xl font-semibold text-darknavy"
+            >
+              Row {viewedParticulars.rowNo}
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-darknavy/6 hover:text-darknavy"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="min-h-0 overflow-y-auto px-5 py-5">
+          <p className="whitespace-pre-wrap break-words rounded-lg border border-darknavy/10 bg-offwhite/55 p-4 text-sm leading-7 text-darknavy">
+            {text || "No particulars entered yet."}
+          </p>
+        </div>
+        <div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
+          >
+            Close
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -719,14 +947,8 @@ function GridPreviewDialog({
                     label="Prepared By"
                     value={values.preparedBy || "-"}
                   />
-                  <PreviewInfoLine
-                    label="Status"
-                    value={values.status || "-"}
-                  />
-                  <PreviewInfoLine
-                    label="Remarks"
-                    value={values.remarks || "-"}
-                  />
+                  <PreviewInfoLine label="Status" value={values.status || "-"} />
+                  <PreviewInfoLine label="Remarks" value={values.remarks || "-"} />
 
                   <div className="rounded-[18px] bg-coralpink px-4 py-4 text-darknavy shadow-[0_16px_36px_rgba(249,112,104,0.18)] sm:px-5 sm:py-5">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-darknavy/72">
@@ -922,30 +1144,32 @@ function SummaryCard({
   );
 }
 
-function QuickActionButton({
-  icon,
-  label,
-  onClick,
-  tone = "default",
+function GridEntryInput({
+  extraClassName,
+  onChange,
+  type = "text",
+  value,
 }: {
-  icon: ReactNode;
-  label: string;
-  onClick: () => void;
-  tone?: "danger" | "default";
+  extraClassName?: string;
+  onChange: (value: string) => void;
+  type?: "number" | "text";
+  value: string;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`inline-flex h-10 min-w-max shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border px-4 text-sm font-semibold transition sm:w-auto ${
-        tone === "danger"
-          ? "border-coralpink/18 bg-coralpink/8 text-coralpink hover:bg-coralpink/14"
-          : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/35 hover:bg-skyblue/8"
-      }`}
-    >
-      {icon}
-      {label}
-    </button>
+    <input
+      type={type}
+      min={type === "number" ? "0" : undefined}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className={gridCellControlClassName(extraClassName)}
+    />
+  );
+}
+
+function gridCellControlClassName(extraClassName?: string) {
+  return joinClasses(
+    "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35",
+    extraClassName,
   );
 }
 
@@ -958,9 +1182,7 @@ function createInitialRows(entries: DisbursementLineEntry[]) {
 
   return [
     ...mappedRows,
-    ...Array.from({ length: 6 - mappedRows.length }, () =>
-      createBlankEditableRow(),
-    ),
+    ...Array.from({ length: 6 - mappedRows.length }, createBlankEditableRow),
   ];
 }
 
@@ -994,13 +1216,411 @@ function createGridRowId() {
   return `grid-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function isGridColumnId(columnId: string): columnId is GridColumnId {
+  return DefaultGridColumnOrder.includes(columnId as GridColumnId);
+}
+
+async function parseAccountingImportFile(file: File) {
+  const fileName = file.name.toLowerCase();
+
+  if (fileName.endsWith(".xlsx")) {
+    return parseXlsxAccountingRows(await file.arrayBuffer());
+  }
+
+  if (
+    fileName.endsWith(".csv") ||
+    fileName.endsWith(".tsv") ||
+    fileName.endsWith(".txt")
+  ) {
+    return parseTabularText(await file.text());
+  }
+
+  throw new Error("Please upload an .xlsx, .csv, .tsv, or .txt file.");
+}
+
+function parseTabularText(text: string) {
+  const trimmedText = text.trim();
+
+  if (!trimmedText) {
+    throw new Error("No pasted accounting rows were found.");
+  }
+
+  const delimiter = trimmedText.includes("\t") ? "\t" : ",";
+  const rawRows =
+    delimiter === "\t"
+      ? trimmedText
+          .split(/\r?\n/)
+          .map((line) => line.split("\t").map((cell) => cell.trim()))
+      : parseCsvRows(trimmedText);
+
+  return mapImportedRows(rawRows);
+}
+
+async function parseXlsxAccountingRows(buffer: ArrayBuffer) {
+  const entries = await readZipEntries(buffer);
+  const sharedStrings = parseSharedStrings(entries.get("xl/sharedStrings.xml"));
+  const sheetPath = findFirstWorksheetPath(entries);
+  const sheetXml = entries.get(sheetPath);
+
+  if (!sheetXml) {
+    throw new Error("No worksheet was found in the Excel file.");
+  }
+
+  const documentNode = new DOMParser().parseFromString(sheetXml, "text/xml");
+  const rows = Array.from(documentNode.getElementsByTagName("row")).map((row) => {
+    const cells: string[] = [];
+
+    Array.from(row.getElementsByTagName("c")).forEach((cell) => {
+      const reference = cell.getAttribute("r") ?? "";
+      const columnIndex = getExcelColumnIndex(reference);
+      const cellType = cell.getAttribute("t");
+      const rawValue =
+        cellType === "inlineStr"
+          ? Array.from(cell.getElementsByTagName("t"))
+              .map((node) => node.textContent ?? "")
+              .join("")
+          : (cell.getElementsByTagName("v")[0]?.textContent ?? "");
+      const value =
+        cellType === "s" ? (sharedStrings[Number(rawValue)] ?? "") : rawValue;
+
+      if (columnIndex >= 0) {
+        cells[columnIndex] = value.trim();
+      }
+    });
+
+    return cells;
+  });
+
+  return mapImportedRows(rows);
+}
+
+function parseCsvRows(text: string) {
+  const rows: string[][] = [];
+  let cell = "";
+  let row: string[] = [];
+  let isQuoted = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const nextChar = text[index + 1];
+
+    if (char === '"' && isQuoted && nextChar === '"') {
+      cell += '"';
+      index += 1;
+      continue;
+    }
+
+    if (char === '"') {
+      isQuoted = !isQuoted;
+      continue;
+    }
+
+    if (char === "," && !isQuoted) {
+      row.push(cell.trim());
+      cell = "";
+      continue;
+    }
+
+    if ((char === "\n" || char === "\r") && !isQuoted) {
+      if (char === "\r" && nextChar === "\n") {
+        index += 1;
+      }
+
+      row.push(cell.trim());
+      rows.push(row);
+      row = [];
+      cell = "";
+      continue;
+    }
+
+    cell += char;
+  }
+
+  row.push(cell.trim());
+  rows.push(row);
+
+  return rows;
+}
+
+function mapImportedRows(rawRows: string[][]) {
+  const rows = rawRows.filter((row) =>
+    row.some((cell) => String(cell ?? "").trim() !== ""),
+  );
+
+  if (rows.length === 0) {
+    throw new Error("No accounting rows were found to import.");
+  }
+
+  const headerIndexes = getImportHeaderIndexes(rows[0]);
+  const dataRows = headerIndexes ? rows.slice(1) : rows;
+  const indexes = headerIndexes ?? {
+    accountCode: 0,
+    accountName: 1,
+    particulars: 2,
+    taxRate: 3,
+    debit: 4,
+    credit: 5,
+  };
+  const importedRows = dataRows
+    .map((row) => createImportedGridRow(row, indexes))
+    .filter(hasRowData);
+
+  if (importedRows.length === 0) {
+    throw new Error("The imported file did not contain usable accounting rows.");
+  }
+
+  return importedRows;
+}
+
+function getImportHeaderIndexes(row: string[]) {
+  const indexes: Partial<Record<GridColumnId, number>> = {};
+
+  row.forEach((cell, index) => {
+    const key = normalizeImportHeader(cell);
+
+    if (key) {
+      indexes[key] = index;
+    }
+  });
+
+  return Object.keys(indexes).length >= 2
+    ? (indexes as Partial<Record<GridColumnId, number>>)
+    : null;
+}
+
+function normalizeImportHeader(value: string): GridColumnId | null {
+  const normalized = value.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  if (["accountcode", "acctcode", "code", "glcode"].includes(normalized)) {
+    return "accountCode";
+  }
+
+  if (["accountname", "acctname", "name", "glname"].includes(normalized)) {
+    return "accountName";
+  }
+
+  if (
+    ["particulars", "particular", "description", "remarks", "memo"].includes(
+      normalized,
+    )
+  ) {
+    return "particulars";
+  }
+
+  if (["taxrate", "tax", "vat", "vatrate"].includes(normalized)) {
+    return "taxRate";
+  }
+
+  if (["debit", "dr"].includes(normalized)) {
+    return "debit";
+  }
+
+  if (["credit", "cr"].includes(normalized)) {
+    return "credit";
+  }
+
+  return null;
+}
+
+function createImportedGridRow(
+  row: string[],
+  indexes: Partial<Record<GridColumnId, number>>,
+): EditableGridRow {
+  const taxRate = normalizeTaxRate(getImportedValue(row, indexes.taxRate));
+  const debit = normalizeImportedAmount(getImportedValue(row, indexes.debit));
+  const credit = normalizeImportedAmount(getImportedValue(row, indexes.credit));
+  const amount = normalizeAmount(debit) || normalizeAmount(credit);
+
+  return {
+    accountCode: getImportedValue(row, indexes.accountCode),
+    accountName: getImportedValue(row, indexes.accountName),
+    credit,
+    debit,
+    id: createGridRowId(),
+    particulars: getImportedValue(row, indexes.particulars),
+    taxDetails: createTaxDetails(amount, taxRate),
+    taxRate,
+  };
+}
+
+function getImportedValue(row: string[], index?: number) {
+  return typeof index === "number" ? String(row[index] ?? "").trim() : "";
+}
+
+function normalizeImportedAmount(value: string) {
+  const normalized = value.replace(/[₱,$\s]/g, "").replace(/,/g, "");
+  const amount = Number(normalized || 0);
+
+  return Number.isFinite(amount) && amount > 0 ? amount.toFixed(2) : "";
+}
+
+function normalizeTaxRate(value: string) {
+  if (!value.trim()) {
+    return "0%";
+  }
+
+  const percent = Number.parseFloat(value.replace(/[^0-9.]/g, ""));
+
+  return Number.isFinite(percent) ? `${percent}%` : value.trim();
+}
+
+async function readZipEntries(buffer: ArrayBuffer) {
+  const view = new DataView(buffer);
+  const entries = new Map<string, string>();
+  const eocdOffset = findEndOfCentralDirectory(view);
+  const entryCount = view.getUint16(eocdOffset + 10, true);
+  let centralDirectoryOffset = view.getUint32(eocdOffset + 16, true);
+  const decoder = new TextDecoder();
+
+  for (let index = 0; index < entryCount; index += 1) {
+    if (view.getUint32(centralDirectoryOffset, true) !== 0x02014b50) {
+      break;
+    }
+
+    const compressionMethod = view.getUint16(centralDirectoryOffset + 10, true);
+    const compressedSize = view.getUint32(centralDirectoryOffset + 20, true);
+    const fileNameLength = view.getUint16(centralDirectoryOffset + 28, true);
+    const extraLength = view.getUint16(centralDirectoryOffset + 30, true);
+    const commentLength = view.getUint16(centralDirectoryOffset + 32, true);
+    const localHeaderOffset = view.getUint32(centralDirectoryOffset + 42, true);
+    const fileNameBytes = new Uint8Array(
+      buffer,
+      centralDirectoryOffset + 46,
+      fileNameLength,
+    );
+    const fileName = decoder.decode(fileNameBytes);
+    const localFileNameLength = view.getUint16(localHeaderOffset + 26, true);
+    const localExtraLength = view.getUint16(localHeaderOffset + 28, true);
+    const dataOffset =
+      localHeaderOffset + 30 + localFileNameLength + localExtraLength;
+    const compressedBytes = buffer.slice(dataOffset, dataOffset + compressedSize);
+    const fileText =
+      compressionMethod === 0
+        ? decoder.decode(compressedBytes)
+        : compressionMethod === 8
+          ? decoder.decode(await inflateRaw(compressedBytes))
+          : "";
+
+    if (fileText) {
+      entries.set(fileName, fileText);
+    }
+
+    centralDirectoryOffset += 46 + fileNameLength + extraLength + commentLength;
+  }
+
+  return entries;
+}
+
+function findEndOfCentralDirectory(view: DataView) {
+  const minimumOffset = Math.max(0, view.byteLength - 66000);
+
+  for (let offset = view.byteLength - 22; offset >= minimumOffset; offset -= 1) {
+    if (view.getUint32(offset, true) === 0x06054b50) {
+      return offset;
+    }
+  }
+
+  throw new Error("The Excel file could not be read.");
+}
+
+async function inflateRaw(compressedBytes: ArrayBuffer) {
+  if (typeof DecompressionStream === "undefined") {
+    throw new Error("This browser cannot read compressed Excel files.");
+  }
+
+  const stream = new Blob([compressedBytes])
+    .stream()
+    .pipeThrough(new DecompressionStream("deflate-raw"));
+
+  return new Response(stream).arrayBuffer();
+}
+
+function parseSharedStrings(xml?: string) {
+  if (!xml) {
+    return [];
+  }
+
+  const documentNode = new DOMParser().parseFromString(xml, "text/xml");
+
+  return Array.from(documentNode.getElementsByTagName("si")).map((item) =>
+    Array.from(item.getElementsByTagName("t"))
+      .map((node) => node.textContent ?? "")
+      .join(""),
+  );
+}
+
+function findFirstWorksheetPath(entries: Map<string, string>) {
+  if (entries.has("xl/worksheets/sheet1.xml")) {
+    return "xl/worksheets/sheet1.xml";
+  }
+
+  const worksheetPath = Array.from(entries.keys()).find(
+    (path) => path.startsWith("xl/worksheets/") && path.endsWith(".xml"),
+  );
+
+  if (!worksheetPath) {
+    throw new Error("No worksheet was found in the Excel file.");
+  }
+
+  return worksheetPath;
+}
+
+function getExcelColumnIndex(reference: string) {
+  const columnLetters = reference.match(/[A-Z]+/i)?.[0]?.toUpperCase() ?? "";
+
+  if (!columnLetters) {
+    return -1;
+  }
+
+  return (
+    columnLetters.split("").reduce((sum, letter) => {
+      return sum * 26 + letter.charCodeAt(0) - 64;
+    }, 0) - 1
+  );
+}
+
 function hasRowValue(row: EditableGridRow) {
   return Boolean(
     row.accountCode.trim() ||
-    row.accountName.trim() ||
-    row.particulars.trim() ||
+      row.accountName.trim() ||
+      row.particulars.trim() ||
+      normalizeAmount(row.debit) > 0 ||
+      normalizeAmount(row.credit) > 0,
+  );
+}
+
+function shouldClearRow(
+  row: EditableGridRow,
+  action: Exclude<ModuleDataEntryClearAction, "all">,
+) {
+  if (action === "with-data") {
+    return hasRowData(row);
+  }
+
+  if (action === "incomplete") {
+    return hasRowData(row) && !isCompleteRow(row);
+  }
+
+  return !hasRowData(row);
+}
+
+function hasRowData(row: EditableGridRow) {
+  return (
+    row.accountCode.trim() !== "" ||
+    row.accountName.trim() !== "" ||
+    row.particulars.trim() !== "" ||
     normalizeAmount(row.debit) > 0 ||
-    normalizeAmount(row.credit) > 0,
+    normalizeAmount(row.credit) > 0 ||
+    row.taxRate !== "0%"
+  );
+}
+
+function isCompleteRow(row: EditableGridRow) {
+  return (
+    row.accountCode.trim() !== "" &&
+    row.accountName.trim() !== "" &&
+    row.particulars.trim() !== "" &&
+    (normalizeAmount(row.debit) > 0 || normalizeAmount(row.credit) > 0)
   );
 }
 
@@ -1027,6 +1647,3 @@ function buildLineEntries(rows: EditableGridRow[]): DisbursementLineEntry[] {
     };
   });
 }
-
-const GridInputClassName =
-  "app-theme-field h-11 w-full rounded-xl border px-3 text-sm outline-none transition focus:border-skyblue/45";

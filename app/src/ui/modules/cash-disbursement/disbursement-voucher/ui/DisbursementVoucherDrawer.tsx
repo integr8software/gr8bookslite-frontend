@@ -10,15 +10,13 @@ import {
   applyCopyFromRecordToDisbursementVoucherForm,
   createAttachmentPlaceholders,
   createAutoDisbursementLineEntries,
-  createDisbursementLineEntry,
   createDisbursementVoucherFormValues,
-  formatTaxRateSummary,
   formatCurrency,
   formatDateLabel,
+  formatTaxRateSummary,
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
-  validateDisbursementEntryDraft,
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
@@ -41,7 +39,6 @@ import {
   AppTaxRateDialog,
   type AppTaxRateDialogValue,
 } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
-import { AccountingEntriesDialog as ReusableAccountingEntriesDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/AccountingEntriesDialog";
 import {
   writeAccountingGridSession,
   type DisbursementVoucherAccountingGridSession,
@@ -50,7 +47,6 @@ import { DisbursementVoucherCopyFromDialog } from "@/app/src/ui/modules/cash-dis
 import type {
   DisbursementLineEntry,
   DisbursementPaymentMethod,
-  DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementType,
   DisbursementVoucherCopySource,
@@ -118,7 +114,9 @@ function DrawerPanel({
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<DrawerTab>("cash-disbursement");
   const [step, setStep] = useState<WorkflowStep>(
-    resumeState?.returnStep ?? "details",
+    resumeState?.returnStep === "entries"
+      ? "details"
+      : (resumeState?.returnStep ?? "details"),
   );
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
   const [isVceDialogOpen, setIsVceDialogOpen] = useState(false);
@@ -180,9 +178,6 @@ function DrawerPanel({
     () => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0),
     [values.lineEntries],
   );
-  const isBalanced =
-    values.lineEntries.length > 1 && Math.abs(totalDebit - totalCredit) < 0.001;
-
   function updateField<TKey extends keyof DisbursementVoucherFormValues>(
     field: TKey,
     value: DisbursementVoucherFormValues[TKey],
@@ -230,84 +225,7 @@ function DrawerPanel({
       );
     }
 
-    setStep("entries");
-  }
-
-  function handleProceedFromEntries() {
-    const nextErrors = validateDisbursementVoucherEntries(values);
-
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
-      return;
-    }
-
-    setStep("review");
-  }
-
-  function handleAddEntry() {
-    const nextError = validateDisbursementEntryDraft(entryDraft);
-
-    if (nextError) {
-      setErrors((current) => ({ ...current, entryDraft: nextError }));
-      return;
-    }
-
-    updateField("lineEntries", [
-      ...values.lineEntries,
-      createDisbursementLineEntry(entryDraft),
-    ]);
-    setEntryDraft(DisbursementVoucherInitialEntryDraft);
-    setErrors((current) => ({
-      ...current,
-      entryDraft: undefined,
-      lineEntries: undefined,
-    }));
-  }
-
-  function handleRemoveEntry(entryId: string) {
-    updateField(
-      "lineEntries",
-      values.lineEntries.filter((entry) => entry.id !== entryId),
-    );
-  }
-
-  function handleUpdateEntryTax(
-    entryId: string,
-    taxRate: string,
-    taxDetails: DisbursementTaxDetails,
-  ) {
-    updateField(
-      "lineEntries",
-      values.lineEntries.map((entry) =>
-        entry.id === entryId
-          ? {
-              ...entry,
-              taxRate,
-              taxDetails,
-            }
-          : entry,
-      ),
-    );
-  }
-
-  function handleApplyAutoEntries() {
-    if (!selectedTransaction) {
-      return;
-    }
-
-    const selectedDisbursementTypeRecord = findDisbursementTypeRecord(
-      disbursementTypeRecords,
-      values.disbursementType,
-    );
-
-    updateField(
-      "lineEntries",
-      applyDisbursementTypeRecordToLineEntries(
-        createAutoDisbursementLineEntries(selectedTransaction),
-        selectedDisbursementTypeRecord,
-      ),
-    );
-    setErrors((current) => ({ ...current, lineEntries: undefined }));
+    handleOpenGridView();
   }
 
   function handleFinalSave() {
@@ -476,7 +394,7 @@ function DrawerPanel({
           totalCredit={totalCredit}
           totalDebit={totalDebit}
           values={values}
-          onEditEntries={() => setStep("entries")}
+          onEditEntries={handleOpenGridView}
         />
       ) : null}
 
@@ -529,24 +447,6 @@ function DrawerPanel({
         }}
       />
 
-      <ReusableAccountingEntriesDialog
-        isOpen={step === "entries"}
-        entryDraft={entryDraft}
-        entries={values.lineEntries}
-        errors={errors}
-        isBalanced={isBalanced}
-        totalCredit={totalCredit}
-        totalDebit={totalDebit}
-        onAddEntry={handleAddEntry}
-        onApplyAutoEntries={handleApplyAutoEntries}
-        onBack={() => setStep("details")}
-        onClose={() => setStep("details")}
-        onDraftChange={setEntryDraft}
-        onOpenGridView={handleOpenGridView}
-        onProceed={handleProceedFromEntries}
-        onRemoveEntry={handleRemoveEntry}
-        onUpdateEntryTax={handleUpdateEntryTax}
-      />
       <DisbursementVoucherCopyFromDialog
         isOpen={isCopyFromDialogOpen}
         records={DisbursementVoucherCopyFromRecords}

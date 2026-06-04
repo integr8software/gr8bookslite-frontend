@@ -22,9 +22,9 @@ export function NotificationList({
 	onMarkAsRead,
 }: NotificationListProps) {
 	return (
-		<div className="min-h-0 flex-1 overflow-y-auto p-2">
+		<div className="min-h-0 flex-1 overflow-y-auto p-2.5">
 			{notifications.length ? (
-				<>
+				<div className="grid gap-1.5">
 					{notifications.map((notification) => (
 						<Link
 							key={notification.id}
@@ -34,27 +34,28 @@ export function NotificationList({
 								onClose?.();
 							}}
 							className={joinClasses(
-								"block rounded-md px-3 py-3 transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
-								!notification.isRead && "bg-skyblue/10",
+								"block rounded-md border border-transparent px-2.5 py-2.5 transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+								!notification.isRead &&
+									"border-skyblue/10 bg-skyblue/10",
 							)}
 						>
-							<div className="flex items-start gap-3">
+							<div className="flex items-start gap-2.5">
 								<span
 									className={joinClasses(
-										"mt-1 h-2.5 w-2.5 shrink-0 rounded-full",
+										"mt-1 h-2 w-2 shrink-0 rounded-full",
 										notification.isRead
 											? "bg-darknavy/20"
 											: "bg-skyblue shadow-[0_0_10px_rgb(var(--skyblue-rgb)/0.28)]",
 									)}
 								/>
 								<span className="min-w-0 flex-1">
-									<span className="block text-sm font-semibold leading-5 text-darknavy">
+									<span className="block text-[13px] font-semibold leading-[1.2rem] text-darknavy">
 										{notification.title}
 									</span>
-									<span className="mt-1 block text-sm leading-5 text-darknavy/62">
+									<span className="mt-0.5 block text-xs leading-[1.15rem] text-darknavy/62">
 										{notification.body}
 									</span>
-									<span className="mt-2 block text-xs font-medium text-darknavy/45">
+									<span className="mt-1.5 block text-[11px] font-medium text-darknavy/45">
 										{notification.time}
 									</span>
 								</span>
@@ -68,7 +69,7 @@ export function NotificationList({
 							aria-hidden="true"
 						/>
 					) : null}
-				</>
+				</div>
 			) : (
 				<div className="flex min-h-48 flex-col items-center justify-center px-6 text-center">
 					<CheckCheck

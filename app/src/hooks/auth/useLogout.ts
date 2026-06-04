@@ -12,6 +12,9 @@ import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 export function useLogout() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const beginShellContextSwitch = useAppStore(
+    (state) => state.beginShellContextSwitch,
+  );
   const resetAppStore = useAppStore((state) => state.resetAppStore);
 
   return async function logout() {
@@ -25,6 +28,8 @@ export function useLogout() {
       headers.Authorization = `Bearer ${accessToken}`;
     }
 
+    beginShellContextSwitch("Logging out...");
+
     try {
       await fetch(BuildAuthApiUrl("/auth/logout"), {
         method: "POST",
@@ -33,7 +38,7 @@ export function useLogout() {
         cache: "no-store",
       });
     } catch {
-      // Logout should still clear the frontend session even if the backend request fails.
+      // Local logout should still complete when the backend is unavailable.
     }
 
     try {
@@ -42,7 +47,7 @@ export function useLogout() {
         cache: "no-store",
       });
     } catch {
-      // Local logout should still complete even if the cookie clear route fails.
+      // Local logout should still complete when cookie clearing fails.
     } finally {
       ClearAccessToken();
       ClearPendingVerificationEmail();

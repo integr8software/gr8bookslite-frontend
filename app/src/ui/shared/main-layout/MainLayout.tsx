@@ -14,6 +14,7 @@ import { MainTopbar } from "./main-topbar/MainTopbar";
 import { NoBranchAccess } from "./NoBranchAccess";
 import { joinClasses } from "./utils";
 import { AiAssistantChat } from "@/app/src/ui/shared/ai-assistant/AiAssistantChat";
+import { LogoutLoadingScreen } from "@/app/src/ui/auth/LogoutLoadingScreen";
 import { MaintenanceSpotlightTutorial } from "@/app/src/ui/modules/maintenance/MaintenanceSpotlightTutorial";
 
 const MainHelpModal = dynamic(
@@ -58,11 +59,13 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		currentUser,
 		enabledQuickListTabs,
 		expandedKeys,
+		hasAuthSession,
 		hasBranchAccess,
 		helpArticles,
 		homeHref,
 		isCompanySwitching,
 		companySwitchMessage,
+		isLoggingOut,
 		isShellLoading,
 		isProfileLoading,
 		isTopbarContextLoading,
@@ -127,6 +130,10 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 
 	if (isShellLoading) {
 		return <MainLoadingScreen message="Loading your workspace data..." />;
+	}
+
+	if (isLoggingOut || !hasAuthSession) {
+		return <LogoutLoadingScreen />;
 	}
 
 	if (isCompanySwitching) {

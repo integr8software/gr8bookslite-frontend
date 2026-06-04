@@ -1034,6 +1034,7 @@ export function useMainLayout() {
     currentUser: displayUser,
     enabledQuickListTabs,
     expandedKeys,
+    hasAuthSession: Boolean(accessToken),
     hasBranchAccess,
     helpArticles: ModuleHelpArticles,
     homeHref,
@@ -1042,6 +1043,7 @@ export function useMainLayout() {
         switchingCompanyId ||
         switchingAdministrationScope,
     ),
+    isLoggingOut: shellContextSwitchMessage === "Logging out...",
     companySwitchMessage:
       shellContextSwitchMessage ??
       (switchingAdministrationScope === "workspace"

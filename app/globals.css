@@ -928,6 +928,15 @@ button {
   }
 }
 
+@keyframes gr8-logout-progress {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(210%);
+  }
+}
+
 @keyframes draft-stack-front {
   0% {
     transform: translate(-50%, -50%) translateY(0) rotate(0deg);
@@ -1055,6 +1064,7 @@ button {
   .animate-\[skeleton-shimmer_1\.55s_ease-out_infinite\],
   .animate-\[gr8-page-turn_1\.45s_ease-in-out_infinite\],
   .animate-\[gr8-page-turn_1\.45s_ease-in-out_0\.32s_infinite\],
+  .animate-\[gr8-logout-progress_1\.1s_ease-in-out_infinite\],
   .neo-ai-launcher,
   .landing-chart-bar,
   .landing-step,

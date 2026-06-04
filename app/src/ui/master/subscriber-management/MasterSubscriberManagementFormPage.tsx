@@ -31,7 +31,7 @@ export function MasterSubscriberManagementFormPage({
 		mode === "add" ? "Add Subscriber" : `Edit ${page.subscriber?.name}`;
 
 	return (
-		<section className="grid gap-5">
+		<section className="grid min-w-0 gap-5">
 			<ModuleHeader
 				titleAs="h1"
 				title={title}

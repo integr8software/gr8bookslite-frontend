@@ -11,6 +11,7 @@ import type {
 	MasterSubscriberManagementBranchFormValues,
 	MasterSubscriberManagementBranchRecord,
 	MasterSubscriberManagementCompanyRecord,
+	MasterSubscriberManagementPromotionUsageRecord,
 	MasterSubscriberManagementFormValues,
 	MasterSubscriberManagementInvoiceRecord,
 	MasterSubscriberManagementListRecord,
@@ -19,6 +20,7 @@ import type {
 	MasterSubscriberManagementStorageBreakdownRecord,
 	MasterSubscriberManagementSummaryMetric,
 	MasterSubscriberManagementUserRecord,
+	MasterSubscriberManagementUserStatus,
 } from "@/app/src/types/master/subscriber-management/MasterSubscriberManagementTypes";
 
 const MasterSubscriberManagementCompanyStorageTotalGb = 2;
@@ -653,15 +655,99 @@ export const MasterSubscriberManagementUsers: MasterSubscriberManagementUserReco
 		},
 	];
 
+export function createMasterSubscriberManagementCompanyUsers(
+	company: MasterSubscriberManagementCompanyRecord,
+): MasterSubscriberManagementUserRecord[] {
+	const avatarTones = ["blue", "orange", "purple", "rose", "slate"] as const;
+	const companySlug = company.name
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
+
+	return Array.from({ length: company.userCount }, (_, index) => {
+		const userNumber = index + 1;
+		const status: MasterSubscriberManagementUserStatus =
+			userNumber === company.userCount && company.userCount >= 8
+				? "Invited"
+				: userNumber % 7 === 0
+					? "Inactive"
+					: "Active";
+		const branchNumber = (index % Math.max(1, company.branchCount)) + 1;
+
+		return {
+			addedOn: company.dateAdded,
+			avatarTone: avatarTones[index % avatarTones.length] ?? "blue",
+			branchAccess: [
+				branchNumber === 1
+					? `${company.name} Head Office`
+					: `${company.name} Branch ${branchNumber}`,
+			],
+			email: `user${String(userNumber).padStart(2, "0")}@${companySlug}.com`,
+			id: `${company.id}-user-${userNumber}`,
+			initials: `T${userNumber}`,
+			lastActiveDate: status === "Invited" ? "-" : "May 24, 2024",
+			lastActiveTime: status === "Invited" ? "" : "10:00 AM",
+			name: `Test User ${String(userNumber).padStart(2, "0")}`,
+			phone: `+1 555-90${String(userNumber).padStart(2, "0")}`,
+			status,
+		};
+	});
+}
+
 export const MasterSubscriberManagementInvoices: MasterSubscriberManagementInvoiceRecord[] =
 	[
-		createInvoice("INV-2024-00045", "May 12, 2024", "May 12, 2024 - Jun 12, 2024"),
+		createInvoice(
+			"INV-2024-00045",
+			"May 12, 2024",
+			"May 12, 2024 - Jun 12, 2024",
+			"Due",
+		),
 		createInvoice("INV-2024-00044", "Apr 12, 2024", "Apr 12, 2024 - May 12, 2024"),
 		createInvoice("INV-2024-00043", "Mar 12, 2024", "Mar 12, 2024 - Apr 12, 2024"),
 		createInvoice("INV-2024-00042", "Feb 12, 2024", "Feb 12, 2024 - Mar 12, 2024"),
 		createInvoice("INV-2024-00041", "Jan 12, 2024", "Jan 12, 2024 - Feb 12, 2024"),
 		createInvoice("INV-2023-00040", "Dec 12, 2023", "Dec 12, 2023 - Jan 12, 2024"),
 	];
+
+export function getMasterSubscriberManagementPromotionUsage(
+	company: Pick<MasterSubscriberManagementCompanyRecord, "id" | "subscriberId">,
+): MasterSubscriberManagementPromotionUsageRecord[] {
+	const sampleIndex = Array.from(company.id).reduce(
+		(total, character) => total + character.charCodeAt(0),
+		0,
+	);
+	const promotionSamples = [
+		{
+			deductionAmount: 99.8,
+			invoiceNo: "INV-2024-00045",
+			promotionId: "promo-welcome20",
+			usedAt: "2024-05-12",
+		},
+		{
+			deductionAmount: 150,
+			invoiceNo: "INV-2024-00043",
+			promotionId: "voucher-addon-credit",
+			usedAt: "2024-03-12",
+		},
+		{
+			deductionAmount: 100,
+			invoiceNo: "INV-2024-00044",
+			promotionId: "coupon-accounting100",
+			usedAt: "2024-04-12",
+		},
+	] as const;
+	const firstPromotion = promotionSamples[sampleIndex % promotionSamples.length];
+	const secondPromotion =
+		promotionSamples[(sampleIndex + 1) % promotionSamples.length];
+
+	return [firstPromotion, secondPromotion].map((sample, index) => ({
+		...sample,
+		companyId: company.id,
+		id: `promotion-usage-${company.id}-${index + 1}`,
+		subscriberId: company.subscriberId,
+	}));
+}
 
 export const MasterSubscriberManagementActivities: MasterSubscriberManagementActivityRecord[] =
 	[
@@ -1047,14 +1133,15 @@ function createInvoice(
 	id: string,
 	date: string,
 	billingPeriod: string,
+	status: MasterSubscriberManagementInvoiceRecord["status"] = "Paid",
 ): MasterSubscriberManagementInvoiceRecord {
 	return {
-		amount: "$299.00",
 		billingPeriod,
 		date,
 		description: "Business Plan - Monthly",
 		id,
-		status: "Paid",
+		originalAmount: 299,
+		status,
 	};
 }
 

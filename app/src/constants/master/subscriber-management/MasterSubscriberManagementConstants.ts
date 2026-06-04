@@ -6,6 +6,8 @@ import {
 	CreditCard,
 	Database,
 	GitBranch,
+	ReceiptText,
+	UserRoundCog,
 	Users,
 	type LucideIcon,
 } from "lucide-react";
@@ -196,7 +198,7 @@ export const MasterSubscriberManagementCompanySections = [
 		pageTitle: "Subscription & Plan",
 	},
 	{
-		icon: Building2,
+		icon: ReceiptText,
 		key: "billing-and-invoices",
 		label: "Billing & Invoices",
 		pageTitle: "Billing & Invoices",
@@ -210,7 +212,7 @@ export const MasterSubscriberManagementCompanySections = [
 
 export const MasterSubscriberAccountTabs = [
 	{
-		icon: Users,
+		icon: UserRoundCog,
 		key: "account-information",
 		label: "Account Information",
 	},

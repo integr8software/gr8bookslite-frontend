@@ -101,6 +101,16 @@ export type MasterSubscriberManagementCompanyRecord = {
 	website: string;
 };
 
+export type MasterSubscriberManagementPromotionUsageRecord = {
+	companyId: string;
+	deductionAmount: number;
+	id: string;
+	invoiceNo: string;
+	promotionId: string;
+	subscriberId: string;
+	usedAt: string;
+};
+
 export type MasterSubscriberManagementBranchRecord = {
 	addedOn: string;
 	address: string;
@@ -148,11 +158,11 @@ export type MasterSubscriberManagementUserRecord = {
 };
 
 export type MasterSubscriberManagementInvoiceRecord = {
-	amount: string;
 	billingPeriod: string;
 	date: string;
 	description: string;
 	id: string;
+	originalAmount: number;
 	status: "Paid" | "Due";
 };
 

@@ -1,8 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ClipboardPaste, FileText, LayoutGrid, Save, Upload, X } from "lucide-react";
+import {
+  ChevronDown,
+  ClipboardPaste,
+  Download,
+  Eye,
+  FileText,
+  LayoutGrid,
+  Save,
+  Upload,
+  X,
+} from "lucide-react";
 import {
   DisbursementVoucherInitialEntryDraft,
   createTaxDetails,
@@ -78,6 +88,44 @@ const GridColumnWidthClassNames: Record<GridColumnId, string> = {
   taxRate: "w-[10rem]",
 };
 
+const AccountingImportTemplateHeaders = [
+  "Account Code",
+  "Account Name",
+  "Particulars",
+  "Tax Rate",
+  "Debit",
+  "Credit",
+];
+
+const AccountingImportTemplateRows = [
+  [
+    "2010-003",
+    "Accounts Payable",
+    "Settlement of approved office depot payable",
+    "0%",
+    "",
+    "18450.00",
+  ],
+  [
+    "5010-001",
+    "Office Supplies Expense",
+    "Replenishment of paper, toner, and pantry labels",
+    "0%",
+    "18450.00",
+    "",
+  ],
+];
+
+const ImportClearActions: {
+  label: string;
+  value: ModuleDataEntryClearAction;
+}[] = [
+  { label: "Clear All", value: "all" },
+  { label: "Clear With Data", value: "with-data" },
+  { label: "Clear Incomplete", value: "incomplete" },
+  { label: "Clear No Data", value: "no-data" },
+];
+
 export function DisbursementVoucherAccountingGridPage() {
   const router = useRouter();
   const transactions = useDisbursementVoucherStore((state) => state.transactions);
@@ -92,6 +140,12 @@ export function DisbursementVoucherAccountingGridPage() {
   const [isDragActive, setIsDragActive] = useState(false);
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [pasteText, setPasteText] = useState("");
+  const [pendingImportAttachment, setPendingImportAttachment] = useState<
+    DisbursementVoucherFormValues["attachments"][number] | null
+  >(null);
+  const [importedImportAttachment, setImportedImportAttachment] = useState<
+    DisbursementVoucherFormValues["attachments"][number] | null
+  >(null);
   const [viewedParticulars, setViewedParticulars] = useState<{
     rowNo: number;
     value: string;
@@ -154,6 +208,15 @@ export function DisbursementVoucherAccountingGridPage() {
     id: columnId,
     label: columnLabels[columnId] || DefaultGridColumnLabels[columnId],
   }));
+  const previewValues = session
+    ? withAccountingImportAttachment(
+        {
+          ...session.values,
+          lineEntries: previewEntries,
+        },
+        importedImportAttachment,
+      )
+    : null;
 
   function updateRow(
     rowId: string,
@@ -373,14 +436,18 @@ export function DisbursementVoucherAccountingGridPage() {
 
   async function handleImportFile(file: File) {
     try {
-      const importedRows = await parseAccountingImportFile(file);
-      applyImportedRows(importedRows);
+      const previewText = await readAccountingImportFilePreviewText(file);
+
+      setPasteText(previewText);
+      setPendingImportAttachment(
+        createImportSourceAttachment(file.name, file.size),
+      );
       setErrorMessage(null);
     } catch (error) {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Could not import the selected accounting entries file.",
+          : "Could not preview the selected accounting entries file.",
       );
     }
   }
@@ -388,7 +455,16 @@ export function DisbursementVoucherAccountingGridPage() {
   function handleImportPastedRows() {
     try {
       const importedRows = parseTabularText(pasteText);
+      const sourceAttachment =
+        pendingImportAttachment ??
+        createImportSourceAttachment(
+          "pasted-accounting-entries.tsv",
+          new Blob([pasteText]).size,
+        );
+
       applyImportedRows(importedRows);
+      setImportedImportAttachment(sourceAttachment);
+      setPendingImportAttachment(null);
       setPasteText("");
       setErrorMessage(null);
     } catch (error) {
@@ -414,7 +490,7 @@ export function DisbursementVoucherAccountingGridPage() {
     });
   }
 
-  function handleBackToVoucher() {
+  function handleBackToVoucherForm() {
     if (!session) {
       router.push("/cash-disbursement/disbursement-voucher");
       return;
@@ -422,11 +498,14 @@ export function DisbursementVoucherAccountingGridPage() {
 
     writeAccountingGridSession({
       ...session,
-      returnStep: "entries",
-      values: {
-        ...session.values,
-        lineEntries: buildLineEntries(rows),
-      },
+      returnStep: "details",
+      values: withAccountingImportAttachment(
+        {
+          ...session.values,
+          lineEntries: buildLineEntries(rows),
+        },
+        importedImportAttachment,
+      ),
     });
     router.push("/cash-disbursement/disbursement-voucher?grid=resume");
   }
@@ -459,10 +538,13 @@ export function DisbursementVoucherAccountingGridPage() {
       ...session,
       entryDraft: DisbursementVoucherInitialEntryDraft,
       returnStep: "review",
-      values: {
-        ...session.values,
-        lineEntries: previewEntries,
-      },
+      values: withAccountingImportAttachment(
+        {
+          ...session.values,
+          lineEntries: previewEntries,
+        },
+        importedImportAttachment,
+      ),
     });
     router.push("/cash-disbursement/disbursement-voucher?grid=resume");
   }
@@ -548,12 +630,35 @@ export function DisbursementVoucherAccountingGridPage() {
 
             <div className="mt-6">
               <AccountingImportPanel
+                canClearTable={Boolean(pasteText.trim() || pendingImportAttachment)}
+                importAttachment={
+                  pendingImportAttachment ?? importedImportAttachment
+                }
                 isDragActive={isDragActive}
                 pasteText={pasteText}
                 onDropFile={handleImportFile}
                 onDragActiveChange={setIsDragActive}
+                onClearTable={(action) => {
+                  const nextPasteText = clearImportPreviewText(pasteText, action);
+
+                  setPasteText(nextPasteText);
+                  if (!nextPasteText.trim()) {
+                    setPendingImportAttachment(null);
+                  }
+                  setErrorMessage(null);
+                }}
                 onImportPastedRows={handleImportPastedRows}
-                onPasteTextChange={setPasteText}
+                onPasteTextChange={(value) => {
+                  setPasteText(value);
+                  if (value.trim() && !pendingImportAttachment) {
+                    setPendingImportAttachment(
+                      createImportSourceAttachment(
+                        "pasted-accounting-entries.tsv",
+                        new Blob([value]).size,
+                      ),
+                    );
+                  }
+                }}
               />
             </div>
 
@@ -625,10 +730,10 @@ export function DisbursementVoucherAccountingGridPage() {
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
               <button
                 type="button"
-                onClick={handleBackToVoucher}
+                onClick={handleBackToVoucherForm}
                 className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8 sm:w-auto"
               >
-                Back to Voucher
+                Back to Voucher Form
               </button>
               <button
                 type="button"
@@ -643,18 +748,20 @@ export function DisbursementVoucherAccountingGridPage() {
         </div>
       </main>
 
-      <GridPreviewDialog
-        entries={previewEntries}
-        isBalanced={totals.isBalanced}
-        isOpen={isPreviewDialogOpen}
-        selectedTransaction={selectedTransaction}
-        totalCredit={totals.totalCredit}
-        totalDebit={totals.totalDebit}
-        values={session.values}
-        variance={totals.variance}
-        onClose={() => setIsPreviewDialogOpen(false)}
-        onContinue={handleContinueToVoucherPreview}
-      />
+      {previewValues ? (
+        <GridPreviewDialog
+          entries={previewEntries}
+          isBalanced={totals.isBalanced}
+          isOpen={isPreviewDialogOpen}
+          selectedTransaction={selectedTransaction}
+          totalCredit={totals.totalCredit}
+          totalDebit={totals.totalDebit}
+          values={previewValues}
+          variance={totals.variance}
+          onClose={() => setIsPreviewDialogOpen(false)}
+          onContinue={handleContinueToVoucherPreview}
+        />
+      ) : null}
       <ParticularsViewDialog
         viewedParticulars={viewedParticulars}
         onClose={() => setViewedParticulars(null)}
@@ -664,21 +771,33 @@ export function DisbursementVoucherAccountingGridPage() {
 }
 
 function AccountingImportPanel({
+  canClearTable,
+  importAttachment,
   isDragActive,
   pasteText,
   onDragActiveChange,
   onDropFile,
+  onClearTable,
   onImportPastedRows,
   onPasteTextChange,
 }: {
+  canClearTable: boolean;
+  importAttachment: DisbursementVoucherFormValues["attachments"][number] | null;
   isDragActive: boolean;
   pasteText: string;
   onDragActiveChange: (isActive: boolean) => void;
   onDropFile: (file: File) => void;
+  onClearTable: (action: ModuleDataEntryClearAction) => void;
   onImportPastedRows: () => void;
   onPasteTextChange: (value: string) => void;
 }) {
   const [fileInputKey, setFileInputKey] = useState(0);
+  const [isUploadFormOpen, setIsUploadFormOpen] = useState(false);
+  const [isClearMenuOpen, setIsClearMenuOpen] = useState(false);
+  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
+  const clearMenuRef = useRef<HTMLDivElement>(null);
+  const previewRows = useMemo(() => parseImportPreviewRows(pasteText), [pasteText]);
+  const hasPreviewRows = previewRows.length > 0;
 
   function handleFiles(fileList: FileList | null) {
     const file = fileList?.[0];
@@ -691,77 +810,395 @@ function AccountingImportPanel({
     setFileInputKey((current) => current + 1);
   }
 
-  return (
-    <section className="grid gap-4 rounded-lg border border-dashed border-skyblue/35 bg-skyblue/6 p-4 lg:grid-cols-[0.9fr_1.1fr]">
-      <label
-        className={joinClasses(
-          "flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed bg-white/70 px-4 py-5 text-center transition",
-          isDragActive
-            ? "border-skyblue bg-skyblue/12"
-            : "border-darknavy/14 hover:border-skyblue/45 hover:bg-white",
-        )}
-        onDragEnter={(event) => {
-          event.preventDefault();
-          onDragActiveChange(true);
-        }}
-        onDragOver={(event) => {
-          event.preventDefault();
-          onDragActiveChange(true);
-        }}
-        onDragLeave={(event) => {
-          if (event.currentTarget === event.target) {
-            onDragActiveChange(false);
-          }
-        }}
-        onDrop={(event) => {
-          event.preventDefault();
-          onDragActiveChange(false);
-          handleFiles(event.dataTransfer.files);
-        }}
-      >
-        <Upload className="h-6 w-6 text-skyblue" aria-hidden="true" />
-        <span className="mt-3 text-sm font-semibold text-darknavy">
-          Drop Excel or CSV here
-        </span>
-        <span className="mt-1 max-w-md text-xs leading-5 text-darknavy/55">
-          Supports .xlsx, .csv, .tsv, and text copied from spreadsheets.
-        </span>
-        <input
-          key={fileInputKey}
-          type="file"
-          accept=".xlsx,.csv,.tsv,.txt"
-          onChange={(event) => handleFiles(event.target.files)}
-          className="sr-only"
-        />
-      </label>
+  function handlePreviewCellChange(
+    rowIndex: number,
+    columnIndex: number,
+    value: string,
+  ) {
+    const nextRows = previewRows.map((row) => [...row]);
 
-      <div className="grid gap-3">
-        <div className="flex items-center gap-2 text-sm font-semibold text-darknavy">
-          <ClipboardPaste className="h-4 w-4 text-skyblue" aria-hidden="true" />
-          Paste from Excel
-        </div>
-        <textarea
-          value={pasteText}
-          onChange={(event) => onPasteTextChange(event.target.value)}
-          className="min-h-24 resize-y rounded-lg border border-darknavy/12 bg-white px-3 py-2 text-sm text-darknavy outline-none transition focus:border-skyblue/45"
-          placeholder={"Account Code\tAccount Name\tParticulars\tTax Rate\tDebit\tCredit"}
-        />
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs leading-5 text-darknavy/55">
-            First row may be headers. Columns can be named Account Code, Account
-            Name, Particulars, Tax Rate, Debit, and Credit.
-          </p>
+    nextRows[rowIndex] = nextRows[rowIndex] ?? [];
+    nextRows[rowIndex][columnIndex] = value;
+    onPasteTextChange(formatRowsAsTabularText(nextRows));
+  }
+
+  function handleClearTable(action: ModuleDataEntryClearAction) {
+    onClearTable(action);
+    setFileInputKey((current) => current + 1);
+    setIsClearMenuOpen(false);
+  }
+
+  useEffect(() => {
+    if (!isClearMenuOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (clearMenuRef.current?.contains(event.target as Node)) {
+        return;
+      }
+
+      setIsClearMenuOpen(false);
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsClearMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isClearMenuOpen]);
+
+  return (
+    <>
+      <section className="rounded-lg border border-dashed border-skyblue/35 bg-skyblue/6 p-4">
+        {!isUploadFormOpen ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-darknavy">
+                Import accounting entries
+              </p>
+              <p className="mt-1 text-xs leading-5 text-darknavy/55">
+                Upload Excel/CSV or paste rows when you are ready to import.
+              </p>
+              {importAttachment ? (
+                <p className="mt-2 inline-flex items-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-3 py-1 text-xs font-semibold text-skyblue">
+                  <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+                  {importAttachment.name}
+                </p>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsUploadFormOpen(true)}
+                className="theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85"
+              >
+                <Upload className="h-4 w-4" aria-hidden="true" />
+                Upload
+              </button>
+              <button
+                type="button"
+                onClick={downloadAccountingImportTemplate}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-skyblue/25 bg-skyblue/8 px-4 text-sm font-semibold text-skyblue transition hover:bg-skyblue/14"
+              >
+                <Download className="h-4 w-4" aria-hidden="true" />
+                Download Template
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+            <label
+              className={joinClasses(
+                "app-theme-field-readonly flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-5 text-center transition",
+                isDragActive
+                  ? "border-skyblue bg-skyblue/12"
+                  : "hover:border-skyblue/45 hover:bg-skyblue/8",
+              )}
+              onDragEnter={(event) => {
+                event.preventDefault();
+                onDragActiveChange(true);
+              }}
+              onDragOver={(event) => {
+                event.preventDefault();
+                onDragActiveChange(true);
+              }}
+              onDragLeave={(event) => {
+                if (event.currentTarget === event.target) {
+                  onDragActiveChange(false);
+                }
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                onDragActiveChange(false);
+                handleFiles(event.dataTransfer.files);
+              }}
+            >
+              <Upload className="h-6 w-6 text-skyblue" aria-hidden="true" />
+              <span className="mt-3 text-sm font-semibold text-darknavy">
+                Drop Excel or CSV here
+              </span>
+              <span className="mt-1 max-w-md text-xs leading-5 text-darknavy/55">
+                Supports .xlsx, .csv, .tsv, and text copied from spreadsheets.
+              </span>
+              <input
+                key={fileInputKey}
+                type="file"
+                accept=".xlsx,.csv,.tsv,.txt"
+                onChange={(event) => handleFiles(event.target.files)}
+                className="sr-only"
+              />
+            </label>
+
+            <div className="grid min-w-0 gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-sm font-semibold text-darknavy">
+                  <ClipboardPaste className="h-4 w-4 text-skyblue" aria-hidden="true" />
+                  Paste from Excel
+                </div>
+                {importAttachment ? (
+                  <div className="flex min-w-0 items-center gap-2 rounded-full border border-darknavy/10 bg-offwhite/45 px-3 py-1 text-xs font-semibold text-darknavy/60">
+                    <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{importAttachment.name}</span>
+                    <span className="shrink-0 text-darknavy/40">
+                      {importAttachment.sizeLabel}
+                    </span>
+                  </div>
+                ) : null}
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={!hasPreviewRows}
+                    onClick={() => setIsPreviewDialogOpen(true)}
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-skyblue/25 bg-skyblue/8 px-3 text-xs font-semibold text-skyblue transition hover:bg-skyblue/14 disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+                    View Table
+                  </button>
+                  <div ref={clearMenuRef} className="relative inline-flex">
+                    <button
+                      type="button"
+                      disabled={!canClearTable}
+                      onClick={() => handleClearTable("all")}
+                      className="inline-flex h-9 items-center justify-center rounded-l-lg rounded-r-none border border-r-0 border-darknavy/12 bg-white px-3 text-xs font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      Clear Table
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!canClearTable}
+                      onClick={() =>
+                        setIsClearMenuOpen((current) => !current)
+                      }
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-l-none rounded-r-lg border border-darknavy/12 bg-white text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
+                      aria-expanded={isClearMenuOpen}
+                      aria-haspopup="menu"
+                      aria-label="Choose upload clear option"
+                    >
+                      <ChevronDown
+                        className={joinClasses(
+                          "h-4 w-4 transition",
+                          isClearMenuOpen && "rotate-180",
+                        )}
+                        aria-hidden="true"
+                      />
+                    </button>
+                    {isClearMenuOpen ? (
+                      <div
+                        role="menu"
+                        className="absolute right-0 top-[calc(100%+0.35rem)] z-[80] w-48 overflow-hidden rounded-lg border border-darknavy/10 bg-white p-1 shadow-[0_18px_45px_rgba(33,39,56,0.16)]"
+                      >
+                        {ImportClearActions.map((action) => (
+                          <button
+                            key={action.value}
+                            type="button"
+                            role="menuitem"
+                            onClick={() => handleClearTable(action.value)}
+                            className="flex w-full items-center rounded-md px-3 py-2 text-left text-xs font-semibold text-darknavy transition hover:bg-skyblue/10"
+                          >
+                            {action.label}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={downloadAccountingImportTemplate}
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-skyblue/25 bg-skyblue/8 px-3 text-xs font-semibold text-skyblue transition hover:bg-skyblue/14"
+                  >
+                    <Download className="h-4 w-4" aria-hidden="true" />
+                    Download Template
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsUploadFormOpen(false)}
+                    className="inline-flex h-9 items-center justify-center rounded-lg border border-darknavy/12 bg-white px-3 text-xs font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
+                  >
+                    Hide
+                  </button>
+                </div>
+              </div>
+              {hasPreviewRows ? (
+                <AccountingImportPreviewTable
+                  maxHeightClassName="max-h-40"
+                  rows={previewRows}
+                  onCellChange={handlePreviewCellChange}
+                />
+              ) : (
+                <textarea
+                  value={pasteText}
+                  onChange={(event) => onPasteTextChange(event.target.value)}
+                  className="app-theme-field min-h-24 resize-y rounded-lg border px-3 py-2 text-sm outline-none transition focus:border-skyblue/45"
+                  placeholder={"Account Code\tAccount Name\tParticulars\tTax Rate\tDebit\tCredit"}
+                />
+              )}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs leading-5 text-darknavy/55">
+                  First row may be headers. Columns can be named Account Code, Account
+                  Name, Particulars, Tax Rate, Debit, and Credit.
+                </p>
+                <button
+                  type="button"
+                  disabled={!pasteText.trim()}
+                  onClick={onImportPastedRows}
+                  className="theme-accent-contrast-text inline-flex h-10 items-center justify-center rounded-xl bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  Import Pasted Rows
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      <AccountingImportPreviewDialog
+        isOpen={isPreviewDialogOpen}
+        rows={previewRows}
+        onCellChange={handlePreviewCellChange}
+        onClose={() => setIsPreviewDialogOpen(false)}
+      />
+    </>
+  );
+}
+
+function AccountingImportPreviewTable({
+  maxHeightClassName,
+  rows,
+  onCellChange,
+}: {
+  maxHeightClassName: string;
+  rows: string[][];
+  onCellChange: (rowIndex: number, columnIndex: number, value: string) => void;
+}) {
+  return (
+    <div
+      className={joinClasses(
+        "app-theme-field overflow-auto rounded-lg border",
+        maxHeightClassName,
+      )}
+    >
+      <table className="min-w-[780px] table-fixed border-collapse text-left text-xs text-darknavy">
+        <colgroup>
+          <col className="w-[9rem]" />
+          <col className="w-[13rem]" />
+          <col className="w-[20rem]" />
+          <col className="w-[7rem]" />
+          <col className="w-[9rem]" />
+          <col className="w-[9rem]" />
+        </colgroup>
+        <tbody>
+          {rows.map((row, rowIndex) => (
+            <tr
+              key={`preview-row-${rowIndex}`}
+              className={joinClasses(
+                "border-b border-darknavy/10 last:border-b-0",
+                rowIndex === 0 ? "bg-skyblue/8 font-semibold" : "",
+              )}
+            >
+              {AccountingImportTemplateHeaders.map((header, columnIndex) => (
+                <td
+                  key={`${header}-${columnIndex}`}
+                  className="border-r border-darknavy/10 last:border-r-0"
+                >
+                  <input
+                    value={row[columnIndex] ?? ""}
+                    onChange={(event) =>
+                      onCellChange(rowIndex, columnIndex, event.target.value)
+                    }
+                    className={joinClasses(
+                      "h-9 w-full min-w-0 bg-transparent px-2 text-xs outline-none transition focus:bg-skyblue/10",
+                      columnIndex >= 4 ? "text-right" : "text-left",
+                    )}
+                    aria-label={`${header} row ${rowIndex + 1}`}
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function AccountingImportPreviewDialog({
+  isOpen,
+  rows,
+  onCellChange,
+  onClose,
+}: {
+  isOpen: boolean;
+  rows: string[][];
+  onCellChange: (rowIndex: number, columnIndex: number, value: string) => void;
+  onClose: () => void;
+}) {
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div
+      role="presentation"
+      className="fixed inset-0 z-[130] flex items-end justify-center bg-slate-950/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="accounting-import-preview-title"
+        className="flex h-[min(86vh,760px)] w-full max-w-6xl flex-col overflow-hidden rounded-[20px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)]"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">
+              Import Preview
+            </p>
+            <h2
+              id="accounting-import-preview-title"
+              className="mt-1 text-xl font-semibold text-darknavy"
+            >
+              Accounting Entries Table
+            </h2>
+          </div>
           <button
             type="button"
-            disabled={!pasteText.trim()}
-            onClick={onImportPastedRows}
-            className="theme-accent-contrast-text inline-flex h-10 items-center justify-center rounded-xl bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-45"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-darknavy/6 hover:text-darknavy"
           >
-            Import Pasted Rows
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
-      </div>
-    </section>
+        <div className="min-h-0 flex-1 px-5 py-5">
+          <AccountingImportPreviewTable
+            maxHeightClassName="h-full"
+            rows={rows}
+            onCellChange={onCellChange}
+          />
+        </div>
+        <div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
+          >
+            Close
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -815,7 +1252,7 @@ function ParticularsViewDialog({
           </button>
         </div>
         <div className="min-h-0 overflow-y-auto px-5 py-5">
-          <p className="whitespace-pre-wrap break-words rounded-lg border border-darknavy/10 bg-offwhite/55 p-4 text-sm leading-7 text-darknavy">
+          <p className="app-theme-field-readonly whitespace-pre-wrap break-words rounded-lg border p-4 text-sm leading-7">
             {text || "No particulars entered yet."}
           </p>
         </div>
@@ -950,11 +1387,11 @@ function GridPreviewDialog({
                   <PreviewInfoLine label="Status" value={values.status || "-"} />
                   <PreviewInfoLine label="Remarks" value={values.remarks || "-"} />
 
-                  <div className="rounded-[18px] bg-coralpink px-4 py-4 text-darknavy shadow-[0_16px_36px_rgba(249,112,104,0.18)] sm:px-5 sm:py-5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-darknavy/72">
+                  <div className="rounded-[18px] border border-darknavy/10 bg-offwhite/45 px-4 py-4 sm:px-5 sm:py-5">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-darknavy/45">
                       Linked Voucher Amount
                     </p>
-                    <p className="mt-2 text-3xl font-semibold">
+                    <p className="mt-2 text-3xl font-semibold text-darknavy">
                       {formatCurrency(Number(values.amount || 0))}
                     </p>
                   </div>
@@ -1031,31 +1468,7 @@ function GridPreviewDialog({
                 />
               </div>
 
-              <div className="mt-5 rounded-[18px] border border-darknavy/10 bg-white p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/42">
-                  Attachments
-                </p>
-                <div className="mt-3 grid gap-3">
-                  {values.attachments.map((attachment) => (
-                    <div
-                      key={attachment.id}
-                      className="flex flex-col gap-2 rounded-xl border border-darknavy/10 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-darknavy/8 text-darknavy">
-                          <FileText className="h-4 w-4" aria-hidden="true" />
-                        </span>
-                        <span className="text-sm font-medium text-darknavy">
-                          {attachment.name}
-                        </span>
-                      </div>
-                      <span className="text-xs text-darknavy/50">
-                        {attachment.sizeLabel}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <AttachmentPreviewList attachments={values.attachments} />
             </PreviewShell>
           </div>
         </div>
@@ -1113,6 +1526,159 @@ function PreviewInfoLine({ label, value }: { label: string; value: string }) {
         {label}
       </dt>
       <dd className="text-sm font-medium text-darknavy">{value}</dd>
+    </div>
+  );
+}
+
+function AttachmentPreviewList({
+  attachments,
+}: {
+  attachments: DisbursementVoucherFormValues["attachments"];
+}) {
+  const [selectedAttachment, setSelectedAttachment] = useState<
+    DisbursementVoucherFormValues["attachments"][number] | null
+  >(null);
+
+  return (
+    <>
+      <div className="mt-5 rounded-[18px] border border-darknavy/10 bg-white p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/42">
+              Attachments
+            </p>
+            <p className="mt-1 text-xs text-darknavy/50">
+              Review supporting files before continuing to voucher preview.
+            </p>
+          </div>
+          <span className="rounded-full border border-darknavy/10 bg-offwhite/45 px-3 py-1 text-xs font-semibold text-darknavy/55">
+            {attachments.length} file{attachments.length === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        <div className="mt-3 grid gap-3">
+          {attachments.length > 0 ? (
+            attachments.map((attachment) => (
+              <div
+                key={attachment.id}
+                className="flex flex-col gap-3 rounded-xl border border-darknavy/10 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-darknavy/8 text-darknavy">
+                    <FileText className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-darknavy">
+                      {attachment.name}
+                    </p>
+                    <p className="mt-1 text-xs text-darknavy/50">
+                      {attachment.sizeLabel}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAttachment(attachment)}
+                  className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-skyblue/25 bg-skyblue/8 px-3 text-xs font-semibold text-skyblue transition hover:bg-skyblue/14"
+                >
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                  View
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="rounded-xl border border-dashed border-darknavy/16 bg-offwhite/45 px-4 py-8 text-center text-sm text-darknavy/55">
+              No attachments are linked to this voucher yet.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <AttachmentDetailsDialog
+        attachment={selectedAttachment}
+        onClose={() => setSelectedAttachment(null)}
+      />
+    </>
+  );
+}
+
+function AttachmentDetailsDialog({
+  attachment,
+  onClose,
+}: {
+  attachment: DisbursementVoucherFormValues["attachments"][number] | null;
+  onClose: () => void;
+}) {
+  if (!attachment) {
+    return null;
+  }
+
+  return (
+    <div
+      role="presentation"
+      className="fixed inset-0 z-[150] flex items-end justify-center bg-slate-950/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="attachment-details-title"
+        className="flex w-full max-w-xl flex-col overflow-hidden rounded-[20px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)]"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">
+              Attachment
+            </p>
+            <h2
+              id="attachment-details-title"
+              className="mt-1 text-xl font-semibold text-darknavy"
+            >
+              File Details
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-darknavy/6 hover:text-darknavy"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="grid gap-4 px-5 py-5">
+          <div className="flex items-center gap-3 rounded-xl border border-darknavy/10 bg-offwhite/45 px-4 py-4">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-darknavy/8 text-darknavy">
+              <FileText className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-darknavy">
+                {attachment.name}
+              </p>
+              <p className="mt-1 text-xs text-darknavy/55">
+                {attachment.sizeLabel}
+              </p>
+            </div>
+          </div>
+          <p className="rounded-xl border border-darknavy/10 bg-white px-4 py-3 text-sm leading-6 text-darknavy/60">
+            This preview shows the attachment record linked to the voucher. File
+            opening/downloading can be connected once real attachment storage is
+            available.
+          </p>
+        </div>
+        <div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
+          >
+            Close
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
@@ -1220,11 +1786,306 @@ function isGridColumnId(columnId: string): columnId is GridColumnId {
   return DefaultGridColumnOrder.includes(columnId as GridColumnId);
 }
 
-async function parseAccountingImportFile(file: File) {
+function createImportSourceAttachment(name: string, size: number) {
+  return {
+    id: `accounting-import-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+    name,
+    sizeLabel: formatImportSourceSize(size),
+  };
+}
+
+function withAccountingImportAttachment(
+  values: DisbursementVoucherFormValues,
+  attachment: DisbursementVoucherFormValues["attachments"][number] | null,
+) {
+  if (!attachment) {
+    return values;
+  }
+
+  const existingAttachments = values.attachments.filter(
+    (currentAttachment) =>
+      currentAttachment.id !== attachment.id &&
+      currentAttachment.name !== attachment.name,
+  );
+
+  return {
+    ...values,
+    attachments: [...existingAttachments, attachment],
+  };
+}
+
+function formatImportSourceSize(size: number) {
+  if (size < 1024) {
+    return `${Math.max(size, 1)} B`;
+  }
+
+  if (size < 1024 * 1024) {
+    return `${Math.round(size / 1024)} KB`;
+  }
+
+  return `${(size / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function downloadAccountingImportTemplate() {
+  const workbookBytes = createAccountingImportTemplateWorkbook();
+  const templateBlob = new Blob([workbookBytes], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  const downloadUrl = URL.createObjectURL(templateBlob);
+  const anchor = document.createElement("a");
+
+  anchor.href = downloadUrl;
+  anchor.download = "disbursement-voucher-accounting-template.xlsx";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
+}
+
+function createAccountingImportTemplateWorkbook() {
+  const rows = [AccountingImportTemplateHeaders, ...AccountingImportTemplateRows];
+  const worksheetXml = createAccountingTemplateWorksheetXml(rows);
+
+  return createStoredZipArchive([
+    {
+      name: "[Content_Types].xml",
+      text:
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+        '<Default Extension="xml" ContentType="application/xml"/>' +
+        '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+        '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+        "</Types>",
+    },
+    {
+      name: "_rels/.rels",
+      text:
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+        '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+        "</Relationships>",
+    },
+    {
+      name: "xl/workbook.xml",
+      text:
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
+        'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+        "<sheets><sheet name=\"Accounting Entries\" sheetId=\"1\" r:id=\"rId1\"/></sheets>" +
+        "</workbook>",
+    },
+    {
+      name: "xl/_rels/workbook.xml.rels",
+      text:
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+        '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
+        "</Relationships>",
+    },
+    {
+      name: "xl/worksheets/sheet1.xml",
+      text: worksheetXml,
+    },
+  ]);
+}
+
+function createAccountingTemplateWorksheetXml(rows: string[][]) {
+  const rowXml = rows
+    .map((row, rowIndex) => {
+      const rowNumber = rowIndex + 1;
+      const cellXml = row
+        .map((cell, columnIndex) => {
+          const reference = `${getExcelColumnLetters(columnIndex)}${rowNumber}`;
+
+          return (
+            `<c r="${reference}" t="inlineStr">` +
+            `<is><t>${escapeXmlText(cell)}</t></is>` +
+            "</c>"
+          );
+        })
+        .join("");
+
+      return `<row r="${rowNumber}">${cellXml}</row>`;
+    })
+    .join("");
+
+  return (
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    "<sheetData>" +
+    rowXml +
+    "</sheetData>" +
+    "</worksheet>"
+  );
+}
+
+function getExcelColumnLetters(columnIndex: number) {
+  let columnNumber = columnIndex + 1;
+  let letters = "";
+
+  while (columnNumber > 0) {
+    const remainder = (columnNumber - 1) % 26;
+    letters = String.fromCharCode(65 + remainder) + letters;
+    columnNumber = Math.floor((columnNumber - 1) / 26);
+  }
+
+  return letters;
+}
+
+function escapeXmlText(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function createStoredZipArchive(files: { name: string; text: string }[]) {
+  const encoder = new TextEncoder();
+  const localParts: Uint8Array[] = [];
+  const centralParts: Uint8Array[] = [];
+  let offset = 0;
+
+  files.forEach((file) => {
+    const nameBytes = encoder.encode(file.name);
+    const dataBytes = encoder.encode(file.text);
+    const crc = calculateCrc32(dataBytes);
+    const localHeader = createZipLocalHeader(nameBytes, dataBytes, crc);
+    const centralHeader = createZipCentralHeader(
+      nameBytes,
+      dataBytes,
+      crc,
+      offset,
+    );
+
+    localParts.push(localHeader, dataBytes);
+    centralParts.push(centralHeader);
+    offset += localHeader.byteLength + dataBytes.byteLength;
+  });
+
+  const centralDirectoryOffset = offset;
+  const centralDirectorySize = centralParts.reduce(
+    (sum, part) => sum + part.byteLength,
+    0,
+  );
+  const endRecord = createZipEndRecord(
+    files.length,
+    centralDirectorySize,
+    centralDirectoryOffset,
+  );
+
+  return concatBytes([...localParts, ...centralParts, endRecord]);
+}
+
+function createZipLocalHeader(
+  nameBytes: Uint8Array,
+  dataBytes: Uint8Array,
+  crc: number,
+) {
+  const header = new Uint8Array(30 + nameBytes.byteLength);
+  const view = new DataView(header.buffer);
+
+  view.setUint32(0, 0x04034b50, true);
+  view.setUint16(4, 20, true);
+  view.setUint16(6, 0, true);
+  view.setUint16(8, 0, true);
+  view.setUint16(10, 0, true);
+  view.setUint16(12, 0, true);
+  view.setUint32(14, crc, true);
+  view.setUint32(18, dataBytes.byteLength, true);
+  view.setUint32(22, dataBytes.byteLength, true);
+  view.setUint16(26, nameBytes.byteLength, true);
+  view.setUint16(28, 0, true);
+  header.set(nameBytes, 30);
+
+  return header;
+}
+
+function createZipCentralHeader(
+  nameBytes: Uint8Array,
+  dataBytes: Uint8Array,
+  crc: number,
+  localHeaderOffset: number,
+) {
+  const header = new Uint8Array(46 + nameBytes.byteLength);
+  const view = new DataView(header.buffer);
+
+  view.setUint32(0, 0x02014b50, true);
+  view.setUint16(4, 20, true);
+  view.setUint16(6, 20, true);
+  view.setUint16(8, 0, true);
+  view.setUint16(10, 0, true);
+  view.setUint16(12, 0, true);
+  view.setUint16(14, 0, true);
+  view.setUint32(16, crc, true);
+  view.setUint32(20, dataBytes.byteLength, true);
+  view.setUint32(24, dataBytes.byteLength, true);
+  view.setUint16(28, nameBytes.byteLength, true);
+  view.setUint16(30, 0, true);
+  view.setUint16(32, 0, true);
+  view.setUint16(34, 0, true);
+  view.setUint16(36, 0, true);
+  view.setUint32(38, 0, true);
+  view.setUint32(42, localHeaderOffset, true);
+  header.set(nameBytes, 46);
+
+  return header;
+}
+
+function createZipEndRecord(
+  fileCount: number,
+  centralDirectorySize: number,
+  centralDirectoryOffset: number,
+) {
+  const header = new Uint8Array(22);
+  const view = new DataView(header.buffer);
+
+  view.setUint32(0, 0x06054b50, true);
+  view.setUint16(4, 0, true);
+  view.setUint16(6, 0, true);
+  view.setUint16(8, fileCount, true);
+  view.setUint16(10, fileCount, true);
+  view.setUint32(12, centralDirectorySize, true);
+  view.setUint32(16, centralDirectoryOffset, true);
+  view.setUint16(20, 0, true);
+
+  return header;
+}
+
+function concatBytes(parts: Uint8Array[]) {
+  const totalLength = parts.reduce((sum, part) => sum + part.byteLength, 0);
+  const output = new Uint8Array(totalLength);
+  let offset = 0;
+
+  parts.forEach((part) => {
+    output.set(part, offset);
+    offset += part.byteLength;
+  });
+
+  return output;
+}
+
+function calculateCrc32(bytes: Uint8Array) {
+  let crc = 0xffffffff;
+
+  bytes.forEach((byte) => {
+    crc ^= byte;
+
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = crc & 1 ? (crc >>> 1) ^ 0xedb88320 : crc >>> 1;
+    }
+  });
+
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+async function readAccountingImportFilePreviewText(file: File) {
   const fileName = file.name.toLowerCase();
 
   if (fileName.endsWith(".xlsx")) {
-    return parseXlsxAccountingRows(await file.arrayBuffer());
+    const rows = await readXlsxAccountingRawRows(await file.arrayBuffer());
+
+    return formatRowsAsTabularText(rows);
   }
 
   if (
@@ -1232,10 +2093,85 @@ async function parseAccountingImportFile(file: File) {
     fileName.endsWith(".tsv") ||
     fileName.endsWith(".txt")
   ) {
-    return parseTabularText(await file.text());
+    return (await file.text()).trim();
   }
 
   throw new Error("Please upload an .xlsx, .csv, .tsv, or .txt file.");
+}
+
+function parseImportPreviewRows(text: string) {
+  const trimmedText = text.trim();
+
+  if (!trimmedText) {
+    return [];
+  }
+
+  const delimiter = trimmedText.includes("\t") ? "\t" : ",";
+  const rows =
+    delimiter === "\t"
+      ? trimmedText
+          .split(/\r?\n/)
+          .map((line) => line.split("\t").map((cell) => cell.trim()))
+      : parseCsvRows(trimmedText);
+
+  return rows
+    .filter((row) => row.some((cell) => String(cell ?? "").trim() !== ""))
+    .map((row) =>
+      AccountingImportTemplateHeaders.map((_, index) =>
+        String(row[index] ?? "").trim(),
+      ),
+    );
+}
+
+function clearImportPreviewText(
+  text: string,
+  action: ModuleDataEntryClearAction,
+) {
+  if (action === "all") {
+    return "";
+  }
+
+  const rows = parseImportPreviewRows(text);
+  const hasHeader = rows[0] ? Boolean(getImportHeaderIndexes(rows[0])) : false;
+  const headerRows = hasHeader ? rows.slice(0, 1) : [];
+  const dataRows = hasHeader ? rows.slice(1) : rows;
+  const remainingRows = dataRows.filter((row) => {
+    const hasData = hasImportPreviewRowData(row);
+    const isIncomplete = hasData && !isCompleteImportPreviewRow(row);
+
+    if (action === "with-data") {
+      return !hasData;
+    }
+
+    if (action === "incomplete") {
+      return !isIncomplete;
+    }
+
+    return hasData;
+  });
+  const nextRows = [...headerRows, ...remainingRows];
+
+  if (nextRows.length === 0 || (hasHeader && nextRows.length === 1)) {
+    return "";
+  }
+
+  return formatRowsAsTabularText(nextRows);
+}
+
+function hasImportPreviewRowData(row: string[]) {
+  return row.some((cell) => String(cell ?? "").trim() !== "");
+}
+
+function isCompleteImportPreviewRow(row: string[]) {
+  const debit = normalizeImportedAmount(row[4] ?? "");
+  const credit = normalizeImportedAmount(row[5] ?? "");
+
+  return Boolean(
+    String(row[0] ?? "").trim() &&
+      String(row[1] ?? "").trim() &&
+      String(row[2] ?? "").trim() &&
+      (debit || credit),
+  );
 }
 
 function parseTabularText(text: string) {
@@ -1256,7 +2192,7 @@ function parseTabularText(text: string) {
   return mapImportedRows(rawRows);
 }
 
-async function parseXlsxAccountingRows(buffer: ArrayBuffer) {
+async function readXlsxAccountingRawRows(buffer: ArrayBuffer) {
   const entries = await readZipEntries(buffer);
   const sharedStrings = parseSharedStrings(entries.get("xl/sharedStrings.xml"));
   const sheetPath = findFirstWorksheetPath(entries);
@@ -1291,7 +2227,20 @@ async function parseXlsxAccountingRows(buffer: ArrayBuffer) {
     return cells;
   });
 
-  return mapImportedRows(rows);
+  return rows;
+}
+
+function formatRowsAsTabularText(rows: string[][]) {
+  return rows
+    .filter((row) => row.some((cell) => String(cell ?? "").trim() !== ""))
+    .map((row) => row.map(formatTabularCell).join("\t"))
+    .join("\n");
+}
+
+function formatTabularCell(value: string) {
+  return String(value ?? "")
+    .replace(/\r?\n/g, " ")
+    .trim();
 }
 
 function parseCsvRows(text: string) {

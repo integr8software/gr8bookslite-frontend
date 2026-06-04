@@ -1116,7 +1116,6 @@ function VoucherReviewStep({
         eyebrow="Attachments"
         title="Supporting files"
         description="This mock flow uses generated placeholders so the review layout stays realistic."
-        tone="offwhite"
       >
         <div className="rounded-[22px] border border-dashed border-darknavy/14 bg-white p-5">
           <div className="flex h-28 items-center justify-center rounded-[18px] border border-dashed border-skyblue/35 bg-skyblue/8">
@@ -1159,7 +1158,6 @@ function VoucherReviewStep({
         eyebrow="Final Review"
         title="Confirm every detail before saving"
         description="This review consolidates the transaction origin, voucher setup, and ledger entries into one approval-ready view."
-        tone="citron"
       >
         <div className="grid gap-4 xl:grid-cols-2">
           <ReviewCard title="Voucher Details">
@@ -1271,12 +1269,11 @@ function VoucherPreviewPanel({
   voucher?: DisbursementVoucherRecord;
 }) {
   return (
-    <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+    <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
       <CardShell
         eyebrow="Transaction Preview"
         title={transaction?.payee ?? "Transaction"}
         description="This panel shows the source transaction that the voucher workflow will use."
-        tone="offwhite"
       >
         <div className="grid gap-3">
           <InfoLine
@@ -1307,7 +1304,6 @@ function VoucherPreviewPanel({
             ? "A linked voucher exists for this transaction and can be reviewed or edited."
             : "This transaction is ready for voucher creation. Use New Voucher to begin the multi-step workflow."
         }
-        tone="citron"
       >
         {voucher ? (
           <>
@@ -1331,7 +1327,7 @@ function VoucherPreviewPanel({
             </div>
           </>
         ) : (
-          <div className="rounded-[22px] border border-dashed border-darknavy/14 bg-white p-6 text-sm leading-6 text-darknavy/58">
+          <div className="rounded-[18px] border border-dashed border-darknavy/14 bg-offwhite/45 p-5 text-sm leading-6 text-darknavy/62">
             No voucher has been created for this transaction yet. The New
             Voucher action will prefill the transaction details so finance can
             proceed through the guided workflow.
@@ -1346,30 +1342,23 @@ function CardShell({
   children,
   description,
   eyebrow,
-  tone = "white",
   title,
 }: {
   children: React.ReactNode;
   description: string;
   eyebrow: string;
-  tone?: "citron" | "offwhite" | "white";
   title: string;
 }) {
-  const toneClassName =
-    tone === "citron"
-      ? "bg-citron/18"
-      : tone === "offwhite"
-        ? "bg-offwhite/80"
-        : "bg-white";
-
   return (
     <section
-      className={`${toneClassName} rounded-[28px] border border-darknavy/10 p-5 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-6`}
+      className="min-h-[18rem] rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5 lg:p-6"
     >
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
         {eyebrow}
       </p>
-      <h3 className="mt-2 text-2xl font-semibold text-darknavy">{title}</h3>
+      <h3 className="mt-2 text-2xl font-semibold leading-tight text-darknavy">
+        {title}
+      </h3>
       <p className="mt-2 text-sm leading-6 text-darknavy/58">{description}</p>
       <div className="mt-5">{children}</div>
     </section>

@@ -35,14 +35,14 @@ export const AccountThemeOptions: Array<{
   },
   {
     value: "midnight-dark",
-    label: "Midnight Dark",
-    description: "A darker workspace with brighter text and cooler highlights for late-hour focus.",
+    label: "GitHub Dark",
+    description: "A neutral dark workspace with GitHub-style surfaces, borders, and blue highlights.",
     preview: {
-      surface: "#0f1724",
-      panel: "#182233",
-      accent: "#ecf2ef",
-      highlight: "#57c4e5",
-      text: "#ecf2ef",
+      surface: "#0d1117",
+      panel: "#161b22",
+      accent: "#c9d1d9",
+      highlight: "#58a6ff",
+      text: "#c9d1d9",
     },
   },
 ];

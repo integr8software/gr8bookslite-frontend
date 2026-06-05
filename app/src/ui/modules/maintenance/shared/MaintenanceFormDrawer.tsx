@@ -11,6 +11,7 @@ type MaintenanceFormDrawerProps = {
 	eyebrow: string;
 	formId: string;
 	isOpen: boolean;
+	isReadonly?: boolean;
 	isSaving: boolean;
 	onClose: () => void;
 	title: string;
@@ -22,6 +23,7 @@ export function MaintenanceFormDrawer({
 	eyebrow,
 	formId,
 	isOpen,
+	isReadonly = false,
 	isSaving,
 	onClose,
 	title,
@@ -43,18 +45,20 @@ export function MaintenanceFormDrawer({
 						disabled={isSaving}
 						className={`${moduleHeaderActionClassNames.secondary} disabled:cursor-not-allowed disabled:opacity-60`}
 					>
-						Cancel
+						{isReadonly ? "Close" : "Cancel"}
 					</button>
-					<button
-						type="submit"
-						form={formId}
-						data-spotlight-id="maintenance-add-drawer-save"
-						disabled={isSaving}
-						className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
-					>
-						<Save className="h-4 w-4" aria-hidden="true" />
-						{isSaving ? "Saving..." : "Save"}
-					</button>
+					{isReadonly ? null : (
+						<button
+							type="submit"
+							form={formId}
+							data-spotlight-id="maintenance-add-drawer-save"
+							disabled={isSaving}
+							className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
+						>
+							<Save className="h-4 w-4" aria-hidden="true" />
+							{isSaving ? "Saving..." : "Save"}
+						</button>
+					)}
 				</div>
 			}
 		>

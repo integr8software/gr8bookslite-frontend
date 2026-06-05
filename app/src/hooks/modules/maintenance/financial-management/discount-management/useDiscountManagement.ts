@@ -14,7 +14,6 @@ type DiscountStoreState = {
 	discounts: Discount[];
 	addDiscount: (discount: Discount) => void;
 	updateDiscount: (discount: Discount) => void;
-	deleteDiscount: (id: string) => void;
 	isLoading: boolean;
 	isMutating: boolean;
 };
@@ -64,34 +63,18 @@ export function useDiscountManagementStore<TSelected = DiscountStoreState>(
 		},
 	});
 
-	const deleteDiscountMutation = useMutation({
-		mutationFn: async (id: string) => id,
-		onSuccess: (id) => {
-			updateCachedDiscounts((discounts) =>
-				discounts.filter((discount) => discount.id !== id),
-			);
-			toast.success("Discount deleted.");
-		},
-		onError: () => {
-			toast.error("Could not delete discount. Please try again.");
-		},
-	});
-
 	const state = useMemo<DiscountStoreState>(
 		() => ({
 			discounts: discountsQuery.data,
 			addDiscount: (discount) => addDiscountMutation.mutate(discount),
 			updateDiscount: (discount) => updateDiscountMutation.mutate(discount),
-			deleteDiscount: (id) => deleteDiscountMutation.mutate(id),
 			isLoading: discountsQuery.isLoading,
 			isMutating:
 				addDiscountMutation.isPending ||
-				updateDiscountMutation.isPending ||
-				deleteDiscountMutation.isPending,
+				updateDiscountMutation.isPending,
 		}),
 		[
 			addDiscountMutation,
-			deleteDiscountMutation,
 			discountsQuery.data,
 			discountsQuery.isLoading,
 			updateDiscountMutation,

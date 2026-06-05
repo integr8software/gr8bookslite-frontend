@@ -6,23 +6,38 @@ export const DiscountManagementTablePaginationStorageKey =
 
 export const DiscountManagementTableColumns = [
 	{
-		key: "description",
-		label: "Description",
-		className: "w-[34%]",
-	},
-	{
-		key: "percentage",
-		label: "Discount %",
+		key: "name",
+		label: "Name",
 		className: "w-[18%]",
 	},
 	{
+		key: "description",
+		label: "Description",
+		className: "w-[24%]",
+	},
+	{
+		key: "amountLabel",
+		label: "Value",
+		className: "w-[16%]",
+	},
+	{
 		key: "accountLabel",
-		label: "Account",
-		className: "w-[34%]",
+		label: "Account Title",
+		className: "w-[18%]",
+	},
+	{
+		key: "moduleLabel",
+		label: "Module",
+		className: "w-[14%]",
+	},
+	{
+		key: "status",
+		label: "Status",
+		className: "w-[10%]",
 	},
 	{
 		label: "Actions",
-		className: "w-[14%] text-right",
+		className: "w-[8%] text-center",
 	},
 ] as const;
 
@@ -33,7 +48,7 @@ export const DiscountManagementActionCopy = {
 	},
 	edit: {
 		title: "Edit Discount",
-		description: "Update the discount percentage and account mapping.",
+		description: "Update the discount value, module availability, and account mapping.",
 	},
 	view: {
 		title: "View Discount",

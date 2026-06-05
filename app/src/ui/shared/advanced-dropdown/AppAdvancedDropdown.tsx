@@ -37,7 +37,7 @@ export type AppAdvancedDropdownAddAction = {
 	onClick: () => void;
 };
 
-type AppAdvancedDropdownProps = {
+export type AppAdvancedDropdownProps = {
 	addAction?: AppAdvancedDropdownAddAction;
 	className?: string;
 	disabled?: boolean;

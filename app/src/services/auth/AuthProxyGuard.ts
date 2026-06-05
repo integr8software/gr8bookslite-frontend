@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const ACCESS_TOKEN_COOKIE = "gr8booksneo.accessToken";
+const AUTH_PROFILE_TIMEOUT_MS = 60000;
 const INVITATION_ACTIVATION_PATH = "/activate-account";
 const LOGIN_PATH = "/login";
 const ONBOARDING_PATH = "/onboarding";
@@ -321,6 +322,7 @@ async function getAuthProfile(accessToken: string) {
         Authorization: `Bearer ${accessToken}`,
       },
       cache: "no-store",
+      signal: AbortSignal.timeout(AUTH_PROFILE_TIMEOUT_MS),
     });
 
     if (!response.ok) {

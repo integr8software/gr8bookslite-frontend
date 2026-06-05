@@ -25,6 +25,7 @@ export function BuildAuthApiUrl(path: string) {
 }
 
 export const GetAuthApiBaseUrl = GetApiBaseUrl;
+const AuthRequestTimeoutMs = 60000;
 
 export function BuildGoogleAuthUrl(mode: "login" | "signup") {
   return BuildAuthApiUrl(`/auth/google?mode=${mode}`);
@@ -42,7 +43,9 @@ export async function PostAuthJson<TRequest, TResponse>(
   body: TRequest,
 ): Promise<TResponse> {
   try {
-    const response = await ApiClient.post<TResponse>(path, body);
+    const response = await ApiClient.post<TResponse>(path, body, {
+      timeout: AuthRequestTimeoutMs,
+    });
 
     return response.data;
   } catch (error) {
@@ -69,7 +72,7 @@ function GetOptionalAuthorizationHeaders(accessToken: string | null) {
 export async function GetAuthProfile(accessToken: string | null = null) {
   const response = await ApiClient.get<AuthProfileResponse>("/auth/me", {
     headers: GetOptionalAuthorizationHeaders(accessToken),
-    timeout: 10000,
+    timeout: AuthRequestTimeoutMs,
   });
 
   return response.data;

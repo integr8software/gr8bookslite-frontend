@@ -781,13 +781,13 @@ function formatPaymentMethodLabel(method: BillingPaymentMethod) {
 	const cardLabel = formatCardIdentity(method);
 	const expiryLabel =
 		method.expMonth && method.expYear
-			? ` Â· Expires ${String(method.expMonth).padStart(2, "0")}/${method.expYear}`
+			? ` - Expires ${String(method.expMonth).padStart(2, "0")}/${method.expYear}`
 			: "";
 	const companyLabel = method.company?.name
-		? ` Â· Used by ${method.company.name}`
+		? ` - Used by ${method.company.name}`
 		: "";
 	const planLabel = method.subscription?.plan.name
-		? ` Â· ${method.subscription.plan.name}`
+		? ` - ${method.subscription.plan.name}`
 		: "";
 
 	return `${cardLabel}${expiryLabel}${companyLabel}${planLabel}`;
@@ -797,10 +797,10 @@ function formatCardIdentity(method: BillingPaymentMethod) {
 	const brand = method.brand ? titleCase(method.brand) : "PayMongo card";
 
 	if (!method.last4) {
-		return `${brand} Â· Saved card`;
+		return `${brand} saved card`;
 	}
 
-	return `${brand} â€¢â€¢â€¢â€¢ ${method.last4}`;
+	return `${brand} ending ${method.last4}`;
 }
 
 function formatPlanPrice(amountInCents: number | null, plan?: BillingPlan) {

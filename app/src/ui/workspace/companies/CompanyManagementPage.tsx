@@ -104,7 +104,7 @@ export function CompanyManagementPage() {
           },
           {
             icon: GitBranch,
-            label: "Branches",
+            label: "Additional Branches",
             helper: "Across all companies",
             tone: "emerald",
             value: companyManagement.isLoading ? (

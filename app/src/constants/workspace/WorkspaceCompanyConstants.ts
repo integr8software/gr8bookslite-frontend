@@ -53,7 +53,11 @@ export const WorkspaceCompaniesTablePaginationStorageKey =
 
 export const WorkspaceCompanyTableColumns = [
 	{ key: "name", label: "Company", className: "w-[20rem]" },
-	{ key: "totalBranches", label: "Branches", className: "w-[7rem]" },
+	{
+		key: "totalBranches",
+		label: "Additional Branches",
+		className: "w-[10rem]",
+	},
 	{ key: "totalUsers", label: "Users", className: "w-[6rem]" },
 	{ key: "companyType", label: "Type", className: "w-[12rem]" },
 	{ key: "plan", label: "Plan", className: "w-[13rem]" },

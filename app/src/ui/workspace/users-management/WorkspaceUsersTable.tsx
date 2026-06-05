@@ -42,7 +42,6 @@ type WorkspaceUsersTableRecord = WorkspaceCompanyUserRecord & {
 	accessSummary: string;
 	branchNames: string;
 	companyNames: string;
-	mainOfficeNames: string;
 	satelliteNames: string;
 	userType: "Regular";
 };
@@ -57,7 +56,6 @@ type WorkspaceUsersTableColumnKey = keyof Pick<
 	| "name"
 	| "email"
 	| "companyNames"
-	| "mainOfficeNames"
 	| "accessSummary"
 	| "status"
 	| "lastLogin"
@@ -72,7 +70,6 @@ const WorkspaceUsersTableColumns = [
 	{ key: "name", label: "User", className: "w-[18rem]" },
 	{ key: "email", label: "Email", className: "w-[20rem]" },
 	{ key: "companyNames", label: "Company", className: "w-[18rem]" },
-	{ key: "mainOfficeNames", label: "Main Office", className: "w-[16rem]" },
 	{ key: "accessSummary", label: "Branches / Satellites", className: "w-[28rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
 	{ key: "lastLogin", label: "Last Login", className: "w-[13rem]" },
@@ -119,7 +116,7 @@ export function WorkspaceUsersTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No workspace users found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[118rem]"
+				minWidthClassName="min-w-[102rem]"
 				paginationStorageKey={WorkspaceUsersTablePaginationStorageKey}
 				table={userList.table}
 				toolbar={
@@ -210,7 +207,6 @@ function useWorkspaceUsersTable(
 					user.email,
 					user.contactNumber,
 					user.companyNames,
-					user.mainOfficeNames,
 					user.branchNames,
 					user.satelliteNames,
 					user.status,
@@ -450,14 +446,6 @@ function WorkspaceUsersTableRow({
 				/>
 			</WorkspaceUsersTableCell>
 			<WorkspaceUsersTableCell>
-				<AssignmentSummary
-					emptyLabel="-"
-					showAllLabel="Show all main offices"
-					showLessLabel="Show fewer main offices"
-					value={user.mainOfficeNames}
-				/>
-			</WorkspaceUsersTableCell>
-			<WorkspaceUsersTableCell>
 				<WorkspaceUsersAccessSummary items={user.accessItems} />
 			</WorkspaceUsersTableCell>
 			<WorkspaceUsersTableCell>
@@ -643,10 +631,12 @@ function getBranchFilterOptions(companies: WorkspaceCompanyRecord[]) {
 	return [
 		{ label: "All", value: AllFilterValue },
 		...companies.flatMap((company) =>
-			(company.branches ?? []).map((branch) => ({
-				label: `${branch.name} (${branch.isMain ? "Main Office" : branch.branchType})`,
-				value: branch.id,
-			})),
+			(company.branches ?? [])
+				.filter((branch) => !branch.isMain)
+				.map((branch) => ({
+					label: `${branch.name} (${branch.branchType})`,
+					value: branch.id,
+				})),
 		),
 	];
 }
@@ -684,7 +674,6 @@ function createWorkspaceUsersTableRecords(
 				),
 			),
 			companyNames: formatNames(assignedCompanies),
-			mainOfficeNames: formatNames(assignedBranches.filter((branch) => branch.isMain)),
 			satelliteNames: formatNames(
 				assignedBranches.filter((branch) => branch.branchType === "Satellite"),
 			),

@@ -16,6 +16,8 @@ export type MaterialRequestHistoryEntry = {
 	status: MaterialRequestStatus;
 };
 
+export type MaterialRequestNumberValue = number | "";
+
 export type MaterialRequestItem = {
 	id: string;
 	barcode: string;
@@ -23,8 +25,8 @@ export type MaterialRequestItem = {
 	itemCode: string;
 	itemName: string;
 	lotNo: string;
-	requestQuantity: number;
-	stockQuantity: number;
+	requestQuantity: MaterialRequestNumberValue;
+	stockQuantity: MaterialRequestNumberValue;
 	uom: string;
 	remarks: string;
 };

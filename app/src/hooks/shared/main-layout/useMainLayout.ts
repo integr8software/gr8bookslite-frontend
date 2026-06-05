@@ -1126,7 +1126,11 @@ function ProfileHasWorkspaceAccess(profile: AuthProfileResponse) {
   }
 
   return (
-    profile.companies?.some((company) => company.role === "ADMIN") ?? false
+    profile.companies?.some(
+      (company) =>
+        company.role === "ADMIN" &&
+        isOptionalActiveStatus(company.membershipStatus),
+    ) ?? false
   );
 }
 
@@ -1134,7 +1138,7 @@ function hasCurrentCompanyAdministrationAccess(
   profile: AuthProfileResponse | undefined,
   companyId: string,
 ) {
-  if (!profile || !companyId) {
+  if (!profile) {
     return false;
   }
 
@@ -1142,9 +1146,30 @@ function hasCurrentCompanyAdministrationAccess(
     return true;
   }
 
-  const numericCompanyId = Number(companyId);
+  const numericCompanyId = parsePositiveInteger(companyId);
+  const activeProfileCompanyId = GetAuthProfileCompanyId(profile);
+  const activeAccess = GetAuthProfileAccess(profile);
+  const activeAccessRole = activeAccess?.membershipRole ?? activeAccess?.role;
 
-  if (!Number.isInteger(numericCompanyId) || numericCompanyId <= 0) {
+  if (
+    isOptionalActiveStatus(activeAccess?.membershipStatus) &&
+    activeAccessRole === "ADMIN" &&
+    (!numericCompanyId ||
+      activeProfileCompanyId === numericCompanyId ||
+      activeAccess?.companyId === numericCompanyId)
+  ) {
+    return true;
+  }
+
+  if (
+    isOptionalActiveStatus(activeAccess?.membershipStatus) &&
+    ResolveAuthProfileEffectiveRole(profile) === "ADMIN" &&
+    (!numericCompanyId || activeProfileCompanyId === numericCompanyId)
+  ) {
+    return true;
+  }
+
+  if (!numericCompanyId) {
     return false;
   }
 
@@ -1153,9 +1178,9 @@ function hasCurrentCompanyAdministrationAccess(
       (company) =>
         company.companyId === numericCompanyId &&
         company.role === "ADMIN" &&
-        company.membershipStatus === "ACTIVE" &&
+        isOptionalActiveStatus(company.membershipStatus) &&
         company.isCompanyActive !== false &&
-        (!company.companyStatus || company.companyStatus === "ACTIVE"),
+        isOptionalActiveStatus(company.companyStatus),
     ) ?? false
   );
 }
@@ -1168,20 +1193,21 @@ function hasCurrentCompanyBranchAccess(
     return false;
   }
 
-  const numericCompanyId = Number(companyId);
+  const numericCompanyId = parsePositiveInteger(companyId);
 
-  if (!Number.isInteger(numericCompanyId) || numericCompanyId <= 0) {
+  if (!numericCompanyId) {
     return false;
   }
 
   const activeProfileCompanyId = GetAuthProfileCompanyId(profile);
   const activeAccess = GetAuthProfileAccess(profile);
+  const activeAccessRole = activeAccess?.membershipRole ?? activeAccess?.role;
 
   if (
     activeProfileCompanyId === numericCompanyId &&
-    activeAccess?.membershipStatus === "ACTIVE" &&
-    activeAccess.membershipRole === "USER" &&
-    activeAccess.accessScope != null
+    isOptionalActiveStatus(activeAccess?.membershipStatus) &&
+    activeAccessRole === "USER" &&
+    activeAccess?.accessScope != null
   ) {
     return true;
   }
@@ -1191,8 +1217,8 @@ function hasCurrentCompanyBranchAccess(
   );
 
   if (
-    companyMembership?.membershipStatus !== "ACTIVE" ||
-    companyMembership.role !== "USER"
+    !isOptionalActiveStatus(companyMembership?.membershipStatus) ||
+    companyMembership?.role !== "USER"
   ) {
     return false;
   }
@@ -1273,9 +1299,9 @@ function MapProfileCompaniesToMainCompanies(profile: AuthProfileResponse) {
   return (profile.companies ?? [])
     .filter(
       (company) =>
-        company.membershipStatus === "ACTIVE" &&
+        isOptionalActiveStatus(company.membershipStatus) &&
         company.isCompanyActive !== false &&
-        (!company.companyStatus || company.companyStatus === "ACTIVE"),
+        isOptionalActiveStatus(company.companyStatus),
     )
     .map((company) => {
       const branches = mapProfileCompanyUnitsToMainBranches({ company });
@@ -1294,6 +1320,20 @@ function MapProfileCompaniesToMainCompanies(profile: AuthProfileResponse) {
         helperText: company.role === "ADMIN" ? "Admin access" : "User access",
       };
     });
+}
+
+function parsePositiveInteger(value: string | number | null | undefined) {
+  const numberValue = Number(value);
+
+  return Number.isInteger(numberValue) && numberValue > 0 ? numberValue : null;
+}
+
+function isOptionalActiveStatus(status: string | null | undefined) {
+  return !status || normalizeStatus(status) === "ACTIVE";
+}
+
+function normalizeStatus(status: string | null | undefined) {
+  return status?.trim().toUpperCase() ?? "";
 }
 
 function CreateProfilePermissionMap(permissions: unknown[] | undefined) {

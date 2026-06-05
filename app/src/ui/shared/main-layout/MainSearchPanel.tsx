@@ -41,6 +41,15 @@ export function MainSearchPanel({
     });
   }, [selectedResultIndex]);
 
+  function openSelectedResult() {
+    if (!selectedResult) {
+      return;
+    }
+
+    router.push(selectedResult.href);
+    onClose();
+  }
+
   function handleInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (!results.length) {
       if (event.key === "Escape") {
@@ -67,8 +76,7 @@ export function MainSearchPanel({
 
     if (event.key === "Enter" && selectedResult) {
       event.preventDefault();
-      onClose();
-      router.push(selectedResult.href);
+      openSelectedResult();
       return;
     }
 
@@ -85,7 +93,13 @@ export function MainSearchPanel({
         className,
       )}
     >
-      <div className="flex items-center gap-3 border-b border-darknavy/10 px-4 py-3">
+      <form
+        className="flex items-center gap-3 border-b border-darknavy/10 px-4 py-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          openSelectedResult();
+        }}
+      >
         <Search className="h-4 w-4 shrink-0 text-darknavy/45" aria-hidden="true" />
         <input
           autoFocus
@@ -115,7 +129,7 @@ export function MainSearchPanel({
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>
-      </div>
+      </form>
 
       <div
         id="main-search-results"

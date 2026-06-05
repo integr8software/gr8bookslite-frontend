@@ -16,7 +16,10 @@ import {
 	createMaterialRequestId,
 	emptyMaterialRequestItem,
 } from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
-import type { MaterialRequestItem } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
+import type {
+	MaterialRequestItem,
+	MaterialRequestNumberValue,
+} from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
 import { MaterialRequestItemValidationSchema } from "@/app/src/validations/modules/inventory/material-request/MaterialRequestValidation";
 import {
 	ModuleDataEntry,
@@ -43,7 +46,7 @@ type MaterialRequestItemsTableProps = {
 	onUpdateItem: (
 		itemId: string,
 		field: keyof MaterialRequestItem,
-		value: string | number,
+		value: MaterialRequestItem[keyof MaterialRequestItem],
 	) => void;
 };
 
@@ -77,18 +80,43 @@ export function MaterialRequestItemsTable({
 	>(DefaultRequiredItemColumnOrder);
 	const [columnLabels, setColumnLabels] = useState(DefaultItemColumnLabels);
 	const [columnWidths, setColumnWidths] = useState(DefaultItemColumnWidths);
+	const [autoWidthColumnIds, setAutoWidthColumnIds] = useState<
+		MaterialRequestItemColumnId[]
+	>([]);
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const visibleColumnOrder = columnOrder.filter((columnId) =>
 		visibleColumnIds.includes(columnId),
 	);
+	const resolvedColumnWidths = useMemo<
+		Record<MaterialRequestItemColumnId, number>
+	>(() => {
+		const nextWidths = { ...columnWidths };
+
+		autoWidthColumnIds.forEach((columnId) => {
+			const headerWidth = estimateTextWidth(columnLabels[columnId], 76);
+			const contentWidth = items.reduce(
+				(currentWidth, item) =>
+					Math.max(
+						currentWidth,
+						estimateTextWidth(String(item[columnId] ?? ""), 24),
+					),
+				50,
+			);
+
+			nextWidths[columnId] = Math.max(headerWidth, contentWidth);
+		});
+
+		return nextWidths;
+	}, [autoWidthColumnIds, columnLabels, columnWidths, items]);
 	const columns = useMemo<ModuleDataEntryColumn<MaterialRequestItem>[]>(
 		() =>
 			visibleColumnOrder.map((columnId) => ({
 				header: columnLabels[columnId],
 				id: columnId,
 				isRemovable: !ProtectedItemColumnIds.has(columnId),
-				width: columnWidths[columnId],
+				width: resolvedColumnWidths[columnId],
 				widthClassName: "",
+				widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
 				renderCell: (item) =>
 					renderItemCell({
 						columnId,
@@ -97,7 +125,14 @@ export function MaterialRequestItemsTable({
 						onUpdateItem,
 					}),
 			})),
-		[columnLabels, columnWidths, isReadonly, onUpdateItem, visibleColumnOrder],
+		[
+			autoWidthColumnIds,
+			columnLabels,
+			isReadonly,
+			onUpdateItem,
+			resolvedColumnWidths,
+			visibleColumnOrder,
+		],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
 		() =>
@@ -109,12 +144,14 @@ export function MaterialRequestItemsTable({
 					!DefaultRequiredItemColumnIds.has(columnId),
 				isVisible: visibleColumnIds.includes(columnId),
 				label: columnLabels[columnId],
-				width: columnWidths[columnId],
+				width: resolvedColumnWidths[columnId],
+				widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
 			})),
 		[
+			autoWidthColumnIds,
 			columnLabels,
 			columnOrder,
-			columnWidths,
+			resolvedColumnWidths,
 			requiredColumnIds,
 			visibleColumnIds,
 		],
@@ -139,6 +176,9 @@ export function MaterialRequestItemsTable({
 			return;
 		}
 
+		setAutoWidthColumnIds((currentColumnIds) =>
+			currentColumnIds.filter((currentColumnId) => currentColumnId !== columnId),
+		);
 		setColumnWidths((currentWidths) => ({
 			...currentWidths,
 			[columnId]: Math.min(800, Math.max(50, Math.round(width))),
@@ -150,17 +190,11 @@ export function MaterialRequestItemsTable({
 			return;
 		}
 
-		const headerWidth = estimateTextWidth(columnLabels[columnId], 96);
-		const contentWidth = items.reduce(
-			(currentWidth, item) =>
-				Math.max(
-					currentWidth,
-					estimateTextWidth(String(item[columnId] ?? ""), 32),
-				),
-			50,
+		setAutoWidthColumnIds((currentColumnIds) =>
+			currentColumnIds.includes(columnId)
+				? currentColumnIds
+				: [...currentColumnIds, columnId],
 		);
-
-		updateColumnWidth(columnId, Math.max(headerWidth, contentWidth));
 	}
 
 	function moveColumn(fromColumnId: string, toColumnId: string) {
@@ -189,6 +223,9 @@ export function MaterialRequestItemsTable({
 			return;
 		}
 
+		setAutoWidthColumnIds((currentColumnIds) =>
+			currentColumnIds.filter((currentColumnId) => currentColumnId !== columnId),
+		);
 		setRequiredColumnIds((currentRequiredIds) =>
 			currentRequiredIds.filter(
 				(currentColumnId) => currentColumnId !== columnId,
@@ -364,7 +401,7 @@ function renderItemCell({
 	onUpdateItem: (
 		itemId: string,
 		field: keyof MaterialRequestItem,
-		value: string | number,
+		value: MaterialRequestItem[keyof MaterialRequestItem],
 	) => void;
 }) {
 	if (columnId === "uom") {
@@ -388,7 +425,7 @@ function renderItemCell({
 		return (
 			<NumberInput
 				readOnly={isReadonly}
-				value={Number(item[columnId])}
+				value={item[columnId]}
 				onChange={(value) => onUpdateItem(item.id, columnId, value)}
 			/>
 		);
@@ -487,7 +524,7 @@ function MaterialRequestItemImportDialog({
 	function updatePreviewItem(
 		rowId: string,
 		field: MaterialRequestItemColumnId,
-		value: string | number,
+		value: MaterialRequestItem[keyof MaterialRequestItem],
 	) {
 		setPreviewRows((currentRows) =>
 			currentRows.map((row) => {
@@ -777,7 +814,7 @@ function MaterialRequestImportPreviewTable({
 	onUpdateItem: (
 		rowId: string,
 		field: MaterialRequestItemColumnId,
-		value: string | number,
+		value: MaterialRequestItem[keyof MaterialRequestItem],
 	) => void;
 }) {
 	return (
@@ -796,14 +833,26 @@ function MaterialRequestImportPreviewTable({
 								{DefaultItemColumnLabels[columnId]}
 							</th>
 						))}
-						<th className="w-[15rem] border border-darknavy/10 px-2 py-2 font-semibold">
-							Validation
+						<th className="w-24 border border-darknavy/10 px-2 py-2 text-center font-semibold">
+							is-valid
+						</th>
+						<th className="w-[18rem] border border-darknavy/10 px-2 py-2 font-semibold">
+							Reason
 						</th>
 					</tr>
 				</thead>
 				<tbody>
-					{rows.map((row, index) => (
-						<tr key={row.id} className="border-b border-darknavy/10">
+					{rows.map((row, index) => {
+						const isValid = row.errors.length === 0;
+
+						return (
+							<tr
+							key={row.id}
+							className={joinClasses(
+								"border-b border-darknavy/10",
+								!isValid && "bg-coralpink/5",
+							)}
+						>
 							<td className="border border-darknavy/10 px-2 py-2 text-center font-semibold">
 								{rowOffset + index + 1}
 							</td>
@@ -831,12 +880,12 @@ function MaterialRequestImportPreviewTable({
 										<input
 											type="number"
 											min="0"
-											value={Number(row.item[columnId])}
+											value={formatNumberInputValue(row.item[columnId])}
 											onChange={(event) =>
 												onUpdateItem(
 													row.id,
 													columnId,
-													Number(event.target.value),
+													parseNumberInputValue(event.target.value),
 												)
 											}
 											className={previewCellClassName("text-right")}
@@ -853,13 +902,25 @@ function MaterialRequestImportPreviewTable({
 									)}
 								</td>
 							))}
-							<td className="border border-darknavy/10 px-2 py-2">
-								{row.errors.length === 0 ? (
+							<td className="border border-darknavy/10 px-2 py-2 text-center">
+								{isValid ? (
 									<span className="inline-flex items-center gap-1.5 rounded-full border border-citron/30 bg-citron/12 px-2 py-1 text-[11px] font-semibold text-darknavy">
 										<CheckCircle2
 											className="h-3.5 w-3.5 text-citron"
 											aria-hidden="true"
 										/>
+										true
+									</span>
+								) : (
+									<span className="inline-flex items-center gap-1.5 rounded-full border border-coralpink/30 bg-coralpink/10 px-2 py-1 text-[11px] font-semibold text-coralpink">
+										<AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
+										false
+									</span>
+								)}
+							</td>
+							<td className="border border-darknavy/10 px-2 py-2">
+								{isValid ? (
+									<span className="text-[11px] font-semibold text-darknavy/50">
 										Ready
 									</span>
 								) : (
@@ -870,8 +931,9 @@ function MaterialRequestImportPreviewTable({
 									</ul>
 								)}
 							</td>
-						</tr>
-					))}
+							</tr>
+						);
+					})}
 				</tbody>
 			</table>
 		</div>
@@ -903,20 +965,34 @@ function NumberInput({
 	readOnly,
 	value,
 }: {
-	onChange: (value: number) => void;
+	onChange: (value: MaterialRequestNumberValue) => void;
 	readOnly: boolean;
-	value: number;
+	value: MaterialRequestNumberValue;
 }) {
 	return (
 		<input
 			type="number"
 			min="0"
-			value={value}
+			value={formatNumberInputValue(value)}
 			readOnly={readOnly}
-			onChange={(event) => onChange(Number(event.target.value))}
+			onChange={(event) => onChange(parseNumberInputValue(event.target.value))}
 			className={cellControlClassName("text-right")}
 		/>
 	);
+}
+
+function parseNumberInputValue(value: string): MaterialRequestNumberValue {
+	if (value.trim() === "") {
+		return "";
+	}
+
+	const numberValue = Number(value);
+
+	return Number.isFinite(numberValue) ? numberValue : "";
+}
+
+function formatNumberInputValue(value: MaterialRequestNumberValue) {
+	return value === "" ? "" : String(value);
 }
 
 function parseMaterialRequestImportText(
@@ -1123,9 +1199,15 @@ function getImportedValue(row: string[], index?: number) {
 }
 
 function normalizeImportedNumber(value: string) {
-	const amount = Number(value.replace(/[,$\s]/g, ""));
+	const normalizedValue = value.replace(/[,$\s]/g, "");
 
-	return Number.isFinite(amount) && amount > 0 ? amount : 0;
+	if (!normalizedValue) {
+		return "";
+	}
+
+	const amount = Number(normalizedValue);
+
+	return Number.isFinite(amount) ? amount : "";
 }
 
 function itemColumnHasRequiredValue(
@@ -1133,7 +1215,13 @@ function itemColumnHasRequiredValue(
 	columnId: MaterialRequestItemColumnId,
 ) {
 	if (columnId === "requestQuantity" || columnId === "stockQuantity") {
-		return Number(item[columnId]) > 0;
+		const value = item[columnId];
+
+		if (value === "") {
+			return false;
+		}
+
+		return columnId === "requestQuantity" ? Number(value) > 0 : Number(value) >= 0;
 	}
 
 	return String(item[columnId] ?? "").trim() !== "";
@@ -1834,11 +1922,72 @@ const DefaultImportIndexes: Partial<Record<MaterialRequestItemColumnId, number>>
 	uom: 4,
 };
 
+let materialRequestTextMeasureContext:
+	| CanvasRenderingContext2D
+	| null
+	| undefined;
+
 function estimateTextWidth(value: string, horizontalPadding: number) {
+	const textWidth = measureTextWidth(value);
+
 	return Math.min(
 		800,
-		Math.max(50, Math.ceil(Array.from(value).length * 8.25 + horizontalPadding)),
+		Math.max(50, Math.ceil(textWidth + horizontalPadding)),
 	);
+}
+
+function measureTextWidth(value: string) {
+	const fallbackWidth = estimateFallbackTextWidth(value);
+
+	if (typeof document === "undefined") {
+		return fallbackWidth;
+	}
+
+	if (materialRequestTextMeasureContext === undefined) {
+		materialRequestTextMeasureContext = document
+			.createElement("canvas")
+			.getContext("2d");
+	}
+
+	if (!materialRequestTextMeasureContext) {
+		return fallbackWidth;
+	}
+
+	materialRequestTextMeasureContext.font =
+		"500 14px Inter, Arial, Helvetica, sans-serif";
+
+	return materialRequestTextMeasureContext.measureText(value).width;
+}
+
+function estimateFallbackTextWidth(value: string) {
+	return Array.from(value).reduce(
+		(width, character) => width + getEstimatedCharacterWidth(character),
+		0,
+	);
+}
+
+function getEstimatedCharacterWidth(character: string) {
+	if (character === " ") {
+		return 4;
+	}
+
+	if ("ilI.,:;!'`|".includes(character)) {
+		return 4.2;
+	}
+
+	if ("mwMW@#%&".includes(character)) {
+		return 9.2;
+	}
+
+	if (/[0-9]/.test(character)) {
+		return 7.4;
+	}
+
+	if (/[A-Z]/.test(character)) {
+		return 7.6;
+	}
+
+	return character.charCodeAt(0) > 127 ? 7.8 : 6.8;
 }
 
 const MaterialRequestImportTemplateRows = [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type KeyboardEvent, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
@@ -18,6 +18,7 @@ type ModuleSearchCardListProps<TItem> = {
 	itemsClassName?: string;
 	pageSize?: number;
 	selectedItemKey?: string;
+	onSelectItem?: (item: TItem) => void;
 };
 
 export function ModuleSearchCardList<TItem>({
@@ -34,6 +35,7 @@ export function ModuleSearchCardList<TItem>({
 	searchPlaceholder,
 	selectedItemKey,
 	title,
+	onSelectItem,
 }: ModuleSearchCardListProps<TItem>) {
 	const [pageIndex, setPageIndex] = useState(0);
 	const [query, setQuery] = useState("");
@@ -57,6 +59,16 @@ export function ModuleSearchCardList<TItem>({
 	);
 	const showingFrom = filteredItems.length > 0 ? firstItemIndex + 1 : 0;
 	const showingTo = firstItemIndex + visibleItems.length;
+	const firstVisibleItem = visibleItems[0];
+
+	function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+		if (event.key !== "Enter" || !firstVisibleItem || !onSelectItem) {
+			return;
+		}
+
+		event.preventDefault();
+		onSelectItem(firstVisibleItem);
+	}
 
 	return (
 		<aside
@@ -80,6 +92,7 @@ export function ModuleSearchCardList<TItem>({
 							setQuery(event.target.value);
 							setPageIndex(0);
 						}}
+						onKeyDown={handleSearchKeyDown}
 						placeholder={searchPlaceholder}
 						value={query}
 					/>

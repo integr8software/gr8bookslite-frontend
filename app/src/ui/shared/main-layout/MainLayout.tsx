@@ -59,7 +59,6 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		currentUser,
 		enabledQuickListTabs,
 		expandedKeys,
-		hasAuthSession,
 		hasBranchAccess,
 		helpArticles,
 		homeHref,
@@ -132,7 +131,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		return <MainLoadingScreen message="Loading your workspace data..." />;
 	}
 
-	if (isLoggingOut || !hasAuthSession) {
+	if (isLoggingOut) {
 		return <LogoutLoadingScreen />;
 	}
 
@@ -249,9 +248,9 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 					className={joinClasses(
 						"flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-3 py-4 motion-reduce:transition-none sm:px-5 lg:px-6",
 						isSidebarTransitionEnabled &&
-							"transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+						"transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
 						(isSidebarOpen || !isSidebarTransitionEnabled) &&
-							"lg:ml-78",
+						"lg:ml-78",
 						isNotificationsOpen && "xl:mr-88",
 					)}
 				>

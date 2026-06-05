@@ -6,6 +6,37 @@ import type {
 
 const requiredText = (message: string) => z.string().trim().min(1, message);
 
+const requiredNumber = ({
+	invalidMessage,
+	isValid,
+	requiredMessage,
+}: {
+	invalidMessage: string;
+	isValid: (value: number) => boolean;
+	requiredMessage: string;
+}) =>
+	z
+		.any()
+		.superRefine((value, context) => {
+			if (value === "" || value == null) {
+				context.addIssue({
+					code: "custom",
+					message: requiredMessage,
+				});
+				return;
+			}
+
+			const numberValue = Number(value);
+
+			if (!Number.isFinite(numberValue) || !isValid(numberValue)) {
+				context.addIssue({
+					code: "custom",
+					message: invalidMessage,
+				});
+			}
+		})
+		.transform((value) => Number(value));
+
 export const MaterialRequestItemValidationSchema = z.object({
 	barcode: z.string(),
 	category: z.string(),
@@ -13,9 +44,17 @@ export const MaterialRequestItemValidationSchema = z.object({
 	itemCode: requiredText("Enter an item code."),
 	itemName: requiredText("Enter an item name."),
 	lotNo: z.string(),
-	requestQuantity: z.coerce.number().positive("Enter a valid request quantity."),
+	requestQuantity: requiredNumber({
+		invalidMessage: "Enter a valid request quantity.",
+		isValid: (value) => value > 0,
+		requiredMessage: "Enter a request quantity.",
+	}),
 	remarks: z.string(),
-	stockQuantity: z.coerce.number().min(0, "Enter a valid stock quantity."),
+	stockQuantity: requiredNumber({
+		invalidMessage: "Enter a valid stock quantity.",
+		isValid: (value) => value >= 0,
+		requiredMessage: "Enter a stock quantity.",
+	}),
 	uom: requiredText("Select a UOM."),
 });
 

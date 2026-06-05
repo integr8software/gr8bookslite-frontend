@@ -928,12 +928,141 @@ button {
   }
 }
 
-@keyframes gr8-logout-progress {
-  0% {
-    transform: translateX(-110%);
+.logout-shutdown-screen {
+  transform-origin: center;
+  animation: gr8-logout-screen-dim 2.4s ease-in-out infinite;
+}
+
+.logout-shutdown-glow {
+  background: radial-gradient(
+    circle at center,
+    rgb(var(--skyblue-rgb) / 0.42) 0%,
+    rgb(var(--skyblue-rgb) / 0.18) 36%,
+    transparent 68%
+  );
+  animation: gr8-logout-glow 2.4s ease-in-out infinite;
+}
+
+.logout-shutdown-scanline {
+  top: -2.5rem;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(var(--skyblue-rgb) / 0.5),
+    transparent
+  );
+  animation: gr8-logout-scanline 2.4s ease-in-out infinite;
+}
+
+.logout-shutdown-collapse {
+  opacity: 0;
+  transform: translate(-50%, -50%) scaleX(0.16);
+  box-shadow: 0 0 18px rgb(var(--skyblue-rgb) / 0.8);
+  animation: gr8-logout-collapse 2.4s ease-in-out infinite;
+}
+
+.logout-shutdown-power {
+  transform: translate(-50%, -50%) scale(1);
+  filter: drop-shadow(0 0 12px rgb(var(--skyblue-rgb) / 0.45));
+  animation: gr8-logout-power 2.4s ease-in-out infinite;
+}
+
+@keyframes gr8-logout-screen-dim {
+  0%,
+  46% {
+    opacity: 1;
+    transform: scaleY(1);
+    filter: saturate(1);
+  }
+  70% {
+    opacity: 0.62;
+    transform: scaleY(0.86);
+    filter: saturate(0.72);
+  }
+  84% {
+    opacity: 0.2;
+    transform: scaleY(0.08);
+    filter: saturate(0.35);
   }
   100% {
-    transform: translateX(210%);
+    opacity: 1;
+    transform: scaleY(1);
+    filter: saturate(1);
+  }
+}
+
+@keyframes gr8-logout-glow {
+  0%,
+  44% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 0.28;
+  }
+  86% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes gr8-logout-scanline {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  18%,
+  54% {
+    opacity: 0.9;
+  }
+  72% {
+    opacity: 0;
+    transform: translateY(7rem);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(7rem);
+  }
+}
+
+@keyframes gr8-logout-collapse {
+  0%,
+  56% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scaleX(0.16);
+  }
+  72% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scaleX(1);
+  }
+  86% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scaleX(0.22);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scaleX(0.08);
+  }
+}
+
+@keyframes gr8-logout-power {
+  0%,
+  42% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  64% {
+    opacity: 0.45;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  82% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.84);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -1064,7 +1193,11 @@ button {
   .animate-\[skeleton-shimmer_1\.55s_ease-out_infinite\],
   .animate-\[gr8-page-turn_1\.45s_ease-in-out_infinite\],
   .animate-\[gr8-page-turn_1\.45s_ease-in-out_0\.32s_infinite\],
-  .animate-\[gr8-logout-progress_1\.1s_ease-in-out_infinite\],
+  .logout-shutdown-screen,
+  .logout-shutdown-glow,
+  .logout-shutdown-scanline,
+  .logout-shutdown-collapse,
+  .logout-shutdown-power,
   .neo-ai-launcher,
   .landing-chart-bar,
   .landing-step,

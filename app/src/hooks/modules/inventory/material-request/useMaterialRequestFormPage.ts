@@ -419,7 +419,13 @@ function materialRequestItemIsComplete(item: MaterialRequestItem) {
 		item.itemCode.trim() !== "" &&
 		item.itemName.trim() !== "" &&
 		item.uom.trim() !== "" &&
+		hasMaterialRequestNumberValue(item.requestQuantity) &&
 		Number(item.requestQuantity) > 0 &&
+		hasMaterialRequestNumberValue(item.stockQuantity) &&
 		Number(item.stockQuantity) >= 0
 	);
+}
+
+function hasMaterialRequestNumberValue(value: MaterialRequestItem["requestQuantity"]) {
+	return value !== "";
 }

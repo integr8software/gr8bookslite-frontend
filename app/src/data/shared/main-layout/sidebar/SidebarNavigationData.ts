@@ -254,6 +254,13 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
           ),
         ],
       ),
+      multiProductItem(
+        "maintenance-party-management",
+        "Party Management",
+        "/maintenance/party-management",
+        "maintenance.party",
+        ["accounting", "inventory"],
+      ),
       navGroup(
         "maintenance-item-management",
         "Item Management",
@@ -290,13 +297,6 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
         "/maintenance/warehouse-management",
         "maintenance.warehouse",
         "inventory",
-      ),
-      multiProductItem(
-        "maintenance-party-management",
-        "Party Management",
-        "/maintenance/party-management",
-        "maintenance.party",
-        ["accounting", "inventory"],
       ),
       child(
         "maintenance-form-signatory",

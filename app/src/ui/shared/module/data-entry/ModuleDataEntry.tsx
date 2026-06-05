@@ -1,6 +1,8 @@
 "use client";
 
 import {
+	AlertCircle,
+	Asterisk,
 	ChevronDown,
 	Copy,
 	Download,
@@ -10,8 +12,9 @@ import {
 	MoreVertical,
 	Pencil,
 	Plus,
+	Ruler,
 	Settings2,
-	Sparkles,
+	StretchHorizontal,
 	Trash2,
 	Upload,
 	X,
@@ -34,6 +37,7 @@ export type ModuleDataEntryColumn<TRow> = {
 	isRemovable?: boolean;
 	width?: number;
 	widthClassName: string;
+	widthMode?: "auto" | "fixed";
 	renderCell: (row: TRow, index: number) => ReactNode;
 };
 
@@ -45,6 +49,7 @@ export type ModuleDataEntryColumnOption = {
 	isVisible: boolean;
 	label: string;
 	width?: number;
+	widthMode?: "auto" | "fixed";
 };
 
 export type ModuleDataEntryAddColumnOption = {
@@ -307,11 +312,18 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 		shouldScrollToBottomAfterAddRef.current = false;
 	}, [rows.length]);
 
+	const entryCountLabel = formatEntryCountLabel(rows.length, emptyRowLabel);
+
 	return (
 		<section className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
 			<div className="relative z-50 flex shrink-0 flex-col gap-3 rounded-t-lg border-b border-darknavy/10 bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between">
 				<div>
-					<h2 className="text-base font-semibold text-darknavy">{title}</h2>
+					<div className="flex flex-wrap items-center gap-2">
+						<h2 className="text-base font-semibold text-darknavy">{title}</h2>
+						<span className="inline-flex h-6 items-center rounded-full border border-darknavy/10 bg-offwhite px-2.5 text-[11px] font-semibold text-darknavy/60">
+							{entryCountLabel}
+						</span>
+					</div>
 					<p className="mt-1 text-sm text-darknavy/60">{description}</p>
 				</div>
 				{hasHeaderActions || hasExportActions ? (
@@ -417,8 +429,8 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 												column.id,
 												columns.map((item) => item.id),
 											)
-												? "border-r-4 border-r-citron"
-												: "border-l-4 border-l-citron"),
+												? "border-r-4 border-r-coralpink"
+												: "border-l-4 border-l-coralpink"),
 									)}
 									style={createColumnWidthStyle(column.width)}
 								>
@@ -566,8 +578,8 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 													column.id,
 													columns.map((item) => item.id),
 												)
-													? "border-r-4 border-r-citron"
-													: "border-l-4 border-l-citron"),
+													? "border-r-4 border-r-coralpink"
+													: "border-l-4 border-l-coralpink"),
 										)}
 										style={createColumnWidthStyle(column.width)}
 									>
@@ -581,7 +593,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 			</div>
 			<div className="relative z-50 flex shrink-0 flex-col gap-3 rounded-b-lg border-t border-darknavy/10 bg-offwhite/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
 				<p className="text-sm font-medium text-darknavy/60">
-					{rows.length} {rows.length === 1 ? "Row" : "Rows"}
+					{entryCountLabel}
 				</p>
 				{hasHeaderActions || hasExportActions ? (
 					<div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
@@ -652,9 +664,15 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 				) : null}
 			</div>
 			{error ? (
-				<p className="border-t border-darknavy/10 px-5 py-3 text-sm font-semibold text-coralpink">
-					{error}
-				</p>
+				<div className="border-t border-coralpink/20 bg-coralpink/8 px-5 py-3 text-sm font-semibold text-coralpink">
+					<div className="flex items-start gap-2">
+						<AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+						<div className="grid gap-0.5">
+							<span>is-valid: false</span>
+							<span>Reason: {error}</span>
+						</div>
+					</div>
+				</div>
 			) : null}
 		</section>
 	);
@@ -679,6 +697,30 @@ function ModuleDataEntryToolbarButton({
 			{label}
 		</button>
 	);
+}
+
+function formatEntryCountLabel(count: number, label: string) {
+	const normalizedLabel = label.trim() || "row";
+	const displayLabel =
+		count === 1 ? normalizedLabel : pluralizeEntryLabel(normalizedLabel);
+
+	return `${count} ${toTitleCase(displayLabel)}`;
+}
+
+function pluralizeEntryLabel(label: string) {
+	if (label.endsWith("y")) {
+		return `${label.slice(0, -1)}ies`;
+	}
+
+	if (label.endsWith("s")) {
+		return label;
+	}
+
+	return `${label}s`;
+}
+
+function toTitleCase(value: string) {
+	return value.slice(0, 1).toUpperCase() + value.slice(1);
 }
 
 function ModuleDataEntryExportButton({
@@ -959,6 +1001,9 @@ function ModuleDataEntryColumnSettingsButton({
 										Boolean(onToggleColumnRequired) &&
 										column.isVisible &&
 										column.isRequirementConfigurable !== false;
+									const isAutoWidth = column.widthMode === "auto";
+									const canEditWidth =
+										Boolean(onUpdateColumnWidth) && !isAutoWidth;
 									return (
 										<div
 											key={column.id}
@@ -996,8 +1041,8 @@ function ModuleDataEntryColumnSettingsButton({
 														column.id,
 														columns.map((item) => item.id),
 													)
-														? "border-b-4 border-b-skyblue"
-														: "border-t-4 border-t-skyblue"),
+														? "border-b-4 border-b-coralpink"
+														: "border-t-4 border-t-coralpink"),
 											)}
 										>
 											<span
@@ -1070,11 +1115,11 @@ function ModuleDataEntryColumnSettingsButton({
 																: "Make required"
 														}
 													>
-														<Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+														<Asterisk className="h-3.5 w-3.5" aria-hidden="true" />
 													</button>
 												) : null}
 											</div>
-											{onUpdateColumnWidth ? (
+											{onUpdateColumnWidth || onAutoColumnWidth ? (
 												<label className="col-span-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 border-t border-darknavy/8 pt-2 text-[11px] font-semibold text-darknavy/50">
 													Width
 													<div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1">
@@ -1085,27 +1130,43 @@ function ModuleDataEntryColumnSettingsButton({
 														max="800"
 														step="1"
 														value={column.width ?? 160}
+														disabled={!canEditWidth}
 														onChange={(event) =>
-															onUpdateColumnWidth(
+															onUpdateColumnWidth?.(
 																column.id,
 																clampColumnWidth(Number(event.target.value)),
 															)
 														}
-														className="app-theme-field h-8 w-full min-w-0 rounded-md border px-2 pr-7 text-xs font-semibold text-darknavy outline-none transition focus:border-skyblue/40 focus:ring-2 focus:ring-skyblue/15"
+														className="app-theme-field app-disabled-control h-8 w-full min-w-0 rounded-md border px-2 pr-7 text-xs font-semibold text-darknavy outline-none transition focus:border-skyblue/40 focus:ring-2 focus:ring-skyblue/15 disabled:cursor-not-allowed"
 														aria-label={`Set ${column.label} column width`}
 													/>
 													<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-darknavy/40">
 														px
 													</span>
 													</div>
-													{onAutoColumnWidth ? (
+													{isAutoWidth && onUpdateColumnWidth ? (
+														<button
+															type="button"
+															onClick={() =>
+																onUpdateColumnWidth(
+																	column.id,
+																	clampColumnWidth(column.width ?? 160),
+																)
+															}
+															className="inline-flex h-8 items-center gap-1 rounded-md border border-darknavy/10 bg-white px-2 text-[11px] font-semibold text-darknavy/60 transition hover:border-skyblue/25 hover:bg-skyblue/10 hover:text-skyblue"
+															title="Switch back to manual width"
+														>
+															<Ruler className="h-3.5 w-3.5" aria-hidden="true" />
+															Manual
+														</button>
+													) : onAutoColumnWidth ? (
 														<button
 															type="button"
 															onClick={() => onAutoColumnWidth(column.id)}
 															className="inline-flex h-8 items-center gap-1 rounded-md border border-darknavy/10 bg-white px-2 text-[11px] font-semibold text-darknavy/60 transition hover:border-skyblue/25 hover:bg-skyblue/10 hover:text-skyblue"
-															title="Fit width to the longest header or cell value"
+															title="Fit width automatically from the header and cell values"
 														>
-															<Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+															<StretchHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
 															Auto
 														</button>
 													) : null}
@@ -1693,7 +1754,9 @@ function EditableColumnHeader<TRow>({
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [isRenaming, setIsRenaming] = useState(false);
 	const menuTriggerRef = useRef<HTMLButtonElement>(null);
+	const menuRef = useRef<HTMLDivElement>(null);
 	const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+	const isAutoWidth = column.widthMode === "auto";
 
 	useLayoutEffect(() => {
 		if (!isMenuOpen || !menuTriggerRef.current) {
@@ -1717,9 +1780,55 @@ function EditableColumnHeader<TRow>({
 		setMenuStyle({ left, top });
 	}, [isMenuOpen]);
 
+	useEffect(() => {
+		if (!isMenuOpen) {
+			return;
+		}
+
+		function closeMenu() {
+			setIsMenuOpen(false);
+		}
+
+		function handlePointerDown(event: PointerEvent) {
+			const target = event.target as Node;
+
+			if (
+				menuTriggerRef.current?.contains(target) ||
+				menuRef.current?.contains(target)
+			) {
+				return;
+			}
+
+			closeMenu();
+		}
+
+		function handleKeyDown(event: KeyboardEvent) {
+			if (event.key === "Escape") {
+				closeMenu();
+			}
+		}
+
+		document.addEventListener("pointerdown", handlePointerDown);
+		document.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("resize", closeMenu);
+		window.addEventListener("scroll", closeMenu, true);
+
+		return () => {
+			document.removeEventListener("pointerdown", handlePointerDown);
+			document.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("resize", closeMenu);
+			window.removeEventListener("scroll", closeMenu, true);
+		};
+	}, [isMenuOpen]);
+
 	return (
-		<div className="relative flex min-h-9 items-center gap-1.5">
-			{onMoveColumn ? (
+		<div
+			className={joinClasses(
+				"relative flex min-h-9 w-full items-center",
+				isRenaming ? "gap-0" : "gap-1.5",
+			)}
+		>
+			{onMoveColumn && !isRenaming ? (
 				<span
 					draggable
 					onDragStart={() => onStartColumnDrag(column.id)}
@@ -1733,6 +1842,7 @@ function EditableColumnHeader<TRow>({
 			{isRenaming && onUpdateColumnHeader ? (
 				<InlineRenameInput
 					label={column.header}
+					variant="header"
 					onCancel={() => setIsRenaming(false)}
 					onRename={(nextHeader) => {
 						onUpdateColumnHeader(column.id, nextHeader);
@@ -1742,19 +1852,22 @@ function EditableColumnHeader<TRow>({
 			) : (
 				<span className="min-w-0 flex-1 truncate">{column.header}</span>
 			)}
-			<button
-				ref={menuTriggerRef}
-				type="button"
-				onClick={() => setIsMenuOpen((current) => !current)}
-				className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded border border-white/20 bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-				aria-label={`Open ${column.header} column options`}
-				aria-expanded={isMenuOpen}
-			>
-				<MoreVertical className="h-3.5 w-3.5" aria-hidden="true" />
-			</button>
-			{isMenuOpen && typeof document !== "undefined"
+			{isRenaming ? null : (
+				<button
+					ref={menuTriggerRef}
+					type="button"
+					onClick={() => setIsMenuOpen((current) => !current)}
+					className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded border border-white/20 bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+					aria-label={`Open ${column.header} column options`}
+					aria-expanded={isMenuOpen}
+				>
+					<MoreVertical className="h-3.5 w-3.5" aria-hidden="true" />
+				</button>
+			)}
+			{!isRenaming && isMenuOpen && typeof document !== "undefined"
 				? createPortal(
 				<div
+					ref={menuRef}
 					style={menuStyle}
 					className="fixed z-130 grid w-36 gap-1 rounded-md border border-darknavy/10 bg-white p-1 text-darknavy shadow-lg"
 				>
@@ -1771,7 +1884,22 @@ function EditableColumnHeader<TRow>({
 							Rename
 						</button>
 					) : null}
-					{onAutoColumnWidth ? (
+					{isAutoWidth && onUpdateColumnWidth ? (
+						<button
+							type="button"
+							onClick={() => {
+								onUpdateColumnWidth(
+									column.id,
+									clampColumnWidth(column.width ?? 160),
+								);
+								setIsMenuOpen(false);
+							}}
+							className="flex h-8 items-center gap-2 rounded px-2 text-xs font-semibold text-darknavy/70 transition hover:bg-skyblue/10 hover:text-darknavy"
+						>
+							<Ruler className="h-3.5 w-3.5" aria-hidden="true" />
+							Manual Width
+						</button>
+					) : onAutoColumnWidth ? (
 						<button
 							type="button"
 							onClick={() => {
@@ -1780,7 +1908,7 @@ function EditableColumnHeader<TRow>({
 							}}
 							className="flex h-8 items-center gap-2 rounded px-2 text-xs font-semibold text-darknavy/70 transition hover:bg-skyblue/10 hover:text-darknavy"
 						>
-							<Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+							<StretchHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
 							Auto Width
 						</button>
 					) : null}
@@ -1802,7 +1930,7 @@ function EditableColumnHeader<TRow>({
 				document.body,
 			)
 				: null}
-			{onUpdateColumnWidth ? (
+			{!isRenaming && onUpdateColumnWidth && !isAutoWidth ? (
 				<span
 					role="separator"
 					aria-orientation="vertical"
@@ -1884,36 +2012,50 @@ function InlineRenameInput({
 	label,
 	onCancel,
 	onRename,
+	variant = "default",
 }: {
 	label: string;
 	onCancel: () => void;
 	onRename: (label: string) => void;
+	variant?: "default" | "header";
 }) {
 	const [value, setValue] = useState(label);
+
+	function handleSave() {
+		const nextLabel = value.trim();
+
+		if (nextLabel) {
+			onRename(nextLabel);
+			return;
+		}
+
+		onCancel();
+	}
 
 	return (
 		<input
 			autoFocus
 			type="text"
 			value={value}
-			onBlur={() => {
-				const nextLabel = value.trim();
-				if (nextLabel) {
-					onRename(nextLabel);
-				} else {
-					onCancel();
-				}
-			}}
+			onBlur={onCancel}
 			onChange={(event) => setValue(event.target.value)}
 			onKeyDown={(event) => {
 				if (event.key === "Enter") {
-					event.currentTarget.blur();
+					event.preventDefault();
+					handleSave();
 				}
+
 				if (event.key === "Escape") {
+					event.preventDefault();
 					onCancel();
 				}
 			}}
-			className="app-theme-field h-8 min-w-0 flex-1 rounded-md border px-2 text-xs font-semibold text-darknavy outline-none focus:border-skyblue/40 focus:ring-2 focus:ring-skyblue/15"
+			className={joinClasses(
+				"app-theme-field min-w-0 flex-1 border text-xs font-semibold text-darknavy outline-none transition focus:border-skyblue/40 focus:ring-2 focus:ring-skyblue/15",
+				variant === "header"
+					? "-mx-2 h-9 w-[calc(100%+1rem)] rounded-none px-2"
+					: "h-8 rounded-md px-2",
+			)}
 			aria-label={`Rename ${label} column`}
 		/>
 	);

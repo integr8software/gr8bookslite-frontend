@@ -77,6 +77,14 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
           ),
         ],
       ),
+      moduleItem(
+        "maintenance-party-management",
+        "Party Management",
+        "/maintenance/party-management",
+        "maintenance.party",
+        "accounting",
+        ["accounting", "inventory"],
+      ),
       group(
         "maintenance-item-management",
         "Item Management",
@@ -112,14 +120,6 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
         "/maintenance/warehouse-management",
         "maintenance.warehouse",
         "inventory",
-      ),
-      moduleItem(
-        "maintenance-party-management",
-        "Party Management",
-        "/maintenance/party-management",
-        "maintenance.party",
-        "accounting",
-        ["accounting", "inventory"],
       ),
       moduleItem(
         "maintenance-form-signatory",

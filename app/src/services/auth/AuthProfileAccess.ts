@@ -23,10 +23,15 @@ export function GetAuthProfileCompanyId(
 export function GetAuthProfileMembershipRole(
   profile: AuthProfileResponse | undefined,
 ): AuthMembershipRole {
-  const accessMembershipRole = GetAuthProfileAccess(profile)?.membershipRole;
+  const access = GetAuthProfileAccess(profile);
+  const accessMembershipRole = access?.membershipRole ?? access?.role;
 
   if (accessMembershipRole) {
     return accessMembershipRole;
+  }
+
+  if (profile?.role) {
+    return profile.role;
   }
 
   const activeCompanyId = GetAuthProfileCompanyId(profile);

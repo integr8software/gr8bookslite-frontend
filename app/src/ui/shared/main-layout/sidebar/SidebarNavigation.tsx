@@ -113,7 +113,7 @@ export function SidebarSection({
 					className={joinClasses(
 						"group relative flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
 						isDirectActive
-							? "rounded-2xl bg-skyblue/14 text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] ring-1 ring-skyblue/22 hover:bg-skyblue/18"
+							? "bg-skyblue/14 text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] outline outline-1 -outline-offset-1 outline-skyblue/30 hover:bg-skyblue/18"
 							: "text-darknavy hover:bg-darknavy/5",
 					)}
 				>
@@ -160,6 +160,7 @@ export function SidebarSection({
 			</button>
 
 			<div
+				aria-hidden={!isExpanded}
 				className={joinClasses(
 					"grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none",
 					isExpanded
@@ -176,6 +177,7 @@ export function SidebarSection({
 								expandedKeys={expandedKeys}
 								item={item}
 								depth={0}
+								isInteractive={isExpanded}
 								onInteract={onInteract}
 								onNavigateFromSidebar={onNavigateFromSidebar}
 								onToggleExpandedKey={onToggleExpandedKey}
@@ -199,6 +201,7 @@ type SidebarItemProps = {
 	activeHref: string;
 	depth: number;
 	expandedKeys: string[];
+	isInteractive?: boolean;
 	item: MainNavigationItem;
 	onInteract: () => void;
 	onNavigateFromSidebar: (href: string) => () => void;
@@ -209,6 +212,7 @@ export function SidebarItem({
 	activeHref,
 	depth,
 	expandedKeys,
+	isInteractive = true,
 	item,
 	onInteract,
 	onNavigateFromSidebar,
@@ -261,6 +265,7 @@ export function SidebarItem({
 			<div>
 				<button
 					type="button"
+					tabIndex={isInteractive ? undefined : -1}
 					onClick={() => {
 						onInteract();
 						onToggleExpandedKey(item.key);
@@ -275,7 +280,7 @@ export function SidebarItem({
 						isAncestorActive
 							? "font-semibold text-darknavy hover:bg-skyblue/10"
 							: isExactActive
-								? "rounded-2xl bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] ring-1 ring-skyblue/22 hover:bg-skyblue/18"
+								? "bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] outline outline-1 -outline-offset-1 outline-skyblue/30 hover:bg-skyblue/18"
 								: "text-darknavy/70 hover:bg-skyblue/10 hover:text-darknavy",
 					)}
 				>
@@ -304,6 +309,7 @@ export function SidebarItem({
 				</button>
 
 				<div
+					aria-hidden={!isExpanded}
 					className={joinClasses(
 						"grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none",
 						isExpanded
@@ -320,6 +326,7 @@ export function SidebarItem({
 									expandedKeys={expandedKeys}
 									item={childItem}
 									depth={depth + 1}
+									isInteractive={isInteractive && isExpanded}
 									onInteract={onInteract}
 									onNavigateFromSidebar={
 										onNavigateFromSidebar
@@ -344,6 +351,7 @@ export function SidebarItem({
 	return (
 		<Link
 			href={item.href}
+			tabIndex={isInteractive ? undefined : -1}
 			onClick={onNavigateFromSidebar(item.href)}
 			data-main-sidebar-active-item={isActive ? "true" : undefined}
 			className={joinClasses(
@@ -351,7 +359,7 @@ export function SidebarItem({
 				paddingClass,
 				depth < 0 && "font-semibold",
 				isActive
-					? "rounded-2xl bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] ring-1 ring-skyblue/22 hover:bg-skyblue/18"
+					? "bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] outline outline-1 -outline-offset-1 outline-skyblue/30 hover:bg-skyblue/18"
 					: "text-darknavy/65 hover:bg-skyblue/10 hover:text-darknavy",
 			)}
 		>

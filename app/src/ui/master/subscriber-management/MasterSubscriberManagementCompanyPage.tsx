@@ -333,6 +333,7 @@ function SubscriberCompanySidebar({
 	recordId: string;
 	selectedCompanyId: string;
 }) {
+	const router = useRouter();
 	const tones = ["blue", "orange", "cyan", "orange", "purple"] as const;
 
 	return (
@@ -347,6 +348,16 @@ function SubscriberCompanySidebar({
 			itemLabel="companies"
 			items={companies}
 			itemsClassName="grid-flow-col auto-cols-[minmax(16rem,1fr)] xl:grid-flow-row xl:auto-cols-auto"
+			onSelectItem={(company) =>
+				router.push(
+					getMasterSubscriberManagementSectionHref(
+						recordId,
+						"company-information",
+						company.id,
+					),
+					{ scroll: false },
+				)
+			}
 			renderCard={(company, index, isSelected) => (
 				<Link
 					key={company.id}

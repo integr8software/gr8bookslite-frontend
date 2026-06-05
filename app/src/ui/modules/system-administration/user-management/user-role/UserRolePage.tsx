@@ -18,6 +18,7 @@ import {
 import { UserRoleQueryKeys } from "@/app/src/services/modules/system-administration/user-management/user-role/UserRoleQueryKeys";
 import { UserListQueryKeys } from "@/app/src/services/modules/system-administration/user-management/users/UserListQueryKeys";
 import { UserRoleList } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleList";
+import { UserRoleLoading } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleLoading";
 import { UserRoleSpotlightTutorial } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleSpotlightTutorial";
 import {
   ModuleHeader,
@@ -95,6 +96,7 @@ export function UserRolePage() {
   }
 
   const userRoles = userRolesQuery.data ?? [];
+  const isLoading = isLoadingBranchContext || userRolesQuery.isLoading;
   const isMutating = statusMutation.isPending;
 
   return (
@@ -125,12 +127,16 @@ export function UserRolePage() {
           </>
         }
       />
-      <UserRoleList
-        baseHref={UserRoleHref}
-        icon={ShieldCheck}
-        items={isLoadingBranchContext || userRolesQuery.isLoading ? [] : userRoles}
-        onStatusChange={setPendingStatusRole}
-      />
+      {isLoading ? (
+        <UserRoleLoading />
+      ) : (
+        <UserRoleList
+          baseHref={UserRoleHref}
+          icon={ShieldCheck}
+          items={userRoles}
+          onStatusChange={setPendingStatusRole}
+        />
+      )}
       <AppDialog
         isOpen={Boolean(pendingStatusRole)}
         isPending={isMutating}

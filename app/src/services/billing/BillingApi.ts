@@ -1,10 +1,19 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  billingControllerAttachPaymentMethodV1,
+  billingControllerCancelSubscriptionV1,
+  billingControllerGetCurrentSubscriptionV1,
+  billingControllerGetSubscriptionSetupV1,
+  billingControllerListPaymentMethodsV1,
+  billingControllerListPlansV1,
+  billingControllerSubscribeCompanyV1,
+} from "@/app/src/generated/api/billing/billing";
 import type {
   AttachPaymentMethodRequest,
   AttachPaymentMethodResponse,
   BillingPaymentMethodsResponse,
   BillingPlansResponse,
   BillingPlanScope,
+  BillingSubscriptionSetupResponse,
   CancelSubscriptionRequest,
   CancelSubscriptionResponse,
   CurrentSubscriptionResponse,
@@ -13,60 +22,47 @@ import type {
 } from "@/app/src/data/billing/BillingTypes";
 
 export async function GetBillingPlans(scope?: BillingPlanScope) {
-  const response = await ApiClient.get<BillingPlansResponse>("/billing/plans", {
-    params: scope ? { scope } : undefined,
-  });
+  return billingControllerListPlansV1(
+    scope ? { scope } : undefined,
+  ) as Promise<BillingPlansResponse>;
+}
 
-  return response.data;
+export async function GetBillingSubscriptionSetup(scope?: BillingPlanScope) {
+  return billingControllerGetSubscriptionSetupV1(
+    scope ? { scope } : undefined,
+  ) as Promise<BillingSubscriptionSetupResponse>;
 }
 
 export async function GetBillingPaymentMethods() {
-  const response = await ApiClient.get<BillingPaymentMethodsResponse>(
-    "/billing/payment-methods",
-  );
-
-  return response.data;
+  return billingControllerListPaymentMethodsV1() as Promise<BillingPaymentMethodsResponse>;
 }
 
 export async function GetCurrentBillingSubscription() {
-  const response = await ApiClient.get<CurrentSubscriptionResponse>(
-    "/billing/subscriptions/current",
-  );
-
-  return response.data;
+  return billingControllerGetCurrentSubscriptionV1() as Promise<CurrentSubscriptionResponse>;
 }
 
 export async function SubscribeCompanyToPlan(
   payload: SubscribeCompanyRequest,
 ) {
-  const response = await ApiClient.post<SubscribeCompanyResponse>(
-    "/billing/subscriptions",
-    payload,
-  );
-
-  return response.data;
+  return billingControllerSubscribeCompanyV1(payload) as Promise<SubscribeCompanyResponse>;
 }
 
 export async function AttachCompanySubscriptionPaymentMethod(
   subscriptionId: number,
   payload: AttachPaymentMethodRequest,
 ) {
-  const response = await ApiClient.post<AttachPaymentMethodResponse>(
-    `/billing/subscriptions/${subscriptionId}/attach-payment-method`,
+  return billingControllerAttachPaymentMethodV1(
+    subscriptionId,
     payload,
-  );
-
-  return response.data;
+  ) as Promise<AttachPaymentMethodResponse>;
 }
 
 export async function CancelCompanySubscription(
   subscriptionId: number,
   payload: CancelSubscriptionRequest,
 ) {
-  const response = await ApiClient.post<CancelSubscriptionResponse>(
-    `/billing/subscriptions/${subscriptionId}/cancel`,
+  return billingControllerCancelSubscriptionV1(
+    subscriptionId,
     payload,
-  );
-
-  return response.data;
+  ) as Promise<CancelSubscriptionResponse>;
 }

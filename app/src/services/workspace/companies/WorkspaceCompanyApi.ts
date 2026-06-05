@@ -1,4 +1,16 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+	workspaceCompaniesControllerCreateV1,
+	workspaceCompaniesControllerDeactivateV1,
+	workspaceCompaniesControllerFindAllV1,
+	workspaceCompaniesControllerFindOneV1,
+	workspaceCompaniesControllerGetManagementSummaryV1,
+	workspaceCompaniesControllerUpdateV1,
+} from "@/app/src/generated/api/workspace-companies/workspace-companies";
+import type {
+	WorkspaceCompanyResponseDto,
+	WorkspaceCompanyUnitResponseDto,
+} from "@/app/src/generated/api/gR8BooksLiteAPI.schemas";
 import type {
 	CreateWorkspaceCompanyApiRequest,
 	UpdateWorkspaceCompanyApiRequest,
@@ -9,22 +21,44 @@ import type {
 	WorkspaceCompanyStatus,
 	WorkspaceCompanyType,
 	WorkspaceCompanyUnitApiRecord,
+	WorkspaceCompanyUserRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
+import { MapWorkspaceUserApiRecord } from "@/app/src/services/workspace/users/WorkspaceUserApi";
+
+type WorkspaceCompanyApiLike =
+	| WorkspaceCompanyApiRecord
+	| WorkspaceCompanyResponseDto;
+
+type WorkspaceCompanyUnitApiLike =
+	| WorkspaceCompanyUnitApiRecord
+	| WorkspaceCompanyUnitResponseDto;
 
 export async function GetWorkspaceCompanies() {
-	const response = await ApiClient.get<WorkspaceCompanyApiRecord[]>(
-		"/workspace/companies",
-	);
+	const response = await workspaceCompaniesControllerFindAllV1();
 
-	return response.data.map(MapWorkspaceCompanyApiRecord);
+	return response.map(MapWorkspaceCompanyApiRecord);
+}
+
+export async function GetWorkspaceCompanyManagementSummary(
+	includeUsers = true,
+): Promise<{
+	companies: WorkspaceCompanyRecord[];
+	users: WorkspaceCompanyUserRecord[];
+}> {
+	const response = await workspaceCompaniesControllerGetManagementSummaryV1({
+		includeUsers: String(includeUsers),
+	});
+
+	return {
+		companies: response.companies.map(MapWorkspaceCompanyApiRecord),
+		users: response.users.map(MapWorkspaceUserApiRecord),
+	};
 }
 
 export async function GetWorkspaceCompany(companyId: string) {
-	const response = await ApiClient.get<WorkspaceCompanyApiRecord>(
-		`/workspace/companies/${companyId}`,
-	);
+	const response = await workspaceCompaniesControllerFindOneV1(Number(companyId));
 
-	return MapWorkspaceCompanyApiRecord(response.data);
+	return MapWorkspaceCompanyApiRecord(response);
 }
 
 export async function CreateWorkspaceCompany(
@@ -45,11 +79,11 @@ export async function UpdateWorkspaceCompany(
 	companyId: string,
 	values: WorkspaceCompanyFormValues,
 ): Promise<WorkspaceCompanyRecord> {
-	const response = await ApiClient.patch<WorkspaceCompanyApiRecord>(
-		`/workspace/companies/${companyId}`,
+	const response = await workspaceCompaniesControllerUpdateV1(
+		Number(companyId),
 		MapWorkspaceCompanyFormToUpdateRequest(values),
 	);
-	const company = MapWorkspaceCompanyApiRecord(response.data);
+	const company = MapWorkspaceCompanyApiRecord(response);
 
 	if (!values.logoFile) {
 		return company;
@@ -61,22 +95,19 @@ export async function UpdateWorkspaceCompany(
 export async function DeactivateWorkspaceCompany(
 	companyId: string,
 ): Promise<WorkspaceCompanyRecord> {
-	const response = await ApiClient.delete<WorkspaceCompanyApiRecord>(
-		`/workspace/companies/${companyId}`,
+	const response = await workspaceCompaniesControllerDeactivateV1(
+		Number(companyId),
 	);
 
-	return MapWorkspaceCompanyApiRecord(response.data);
+	return MapWorkspaceCompanyApiRecord(response);
 }
 
 export async function CreateWorkspaceCompanyFromRequest(
 	payload: CreateWorkspaceCompanyApiRequest,
 ): Promise<WorkspaceCompanyRecord> {
-	const response = await ApiClient.post<WorkspaceCompanyApiRecord>(
-		"/workspace/companies",
-		payload,
-	);
+	const response = await workspaceCompaniesControllerCreateV1(payload);
 
-	return MapWorkspaceCompanyApiRecord(response.data);
+	return MapWorkspaceCompanyApiRecord(response);
 }
 
 export async function UploadWorkspaceCompanyLogo(
@@ -99,7 +130,7 @@ export async function UploadWorkspaceCompanyLogo(
 }
 
 function MapWorkspaceCompanyApiRecord(
-	company: WorkspaceCompanyApiRecord,
+	company: WorkspaceCompanyApiLike,
 ): WorkspaceCompanyRecord {
 	return {
 		address: company.address ?? "",
@@ -139,7 +170,7 @@ function MapWorkspaceCompanyApiRecord(
 }
 
 function MapWorkspaceCompanyUnitApiRecord(
-	unit: WorkspaceCompanyUnitApiRecord,
+	unit: WorkspaceCompanyUnitApiLike,
 ): WorkspaceCompanyBranchRecord {
 	return {
 		address: unit.address ?? "",
@@ -158,7 +189,7 @@ function MapWorkspaceCompanyUnitApiRecord(
 }
 
 function GetWorkspaceCompanyBranchType(
-	type: WorkspaceCompanyUnitApiRecord["type"],
+	type: WorkspaceCompanyUnitApiLike["type"],
 ): WorkspaceCompanyBranchRecord["branchType"] {
 	if (type === "HEAD_OFFICE") {
 		return "Head Office";
@@ -266,12 +297,12 @@ function MapWorkspaceCompanyFormToUpdateRequest(
 	return request;
 }
 
-function GetWorkspaceCompanyPlan(company: WorkspaceCompanyApiRecord) {
+function GetWorkspaceCompanyPlan(company: WorkspaceCompanyApiLike) {
 	return company.subscriptionPlan?.name ?? "Unassigned";
 }
 
 function GetWorkspaceCompanyStatus(
-	company: WorkspaceCompanyApiRecord,
+	company: WorkspaceCompanyApiLike,
 ): WorkspaceCompanyStatus {
 	if (!company.isActive || company.status === "SUSPENDED") {
 		return "Inactive";
@@ -285,7 +316,7 @@ function GetWorkspaceCompanyStatus(
 }
 
 function GetWorkspaceCompanyType(
-	company: WorkspaceCompanyApiRecord,
+	company: WorkspaceCompanyApiLike,
 ): WorkspaceCompanyType {
 	if (company.taxpayerType === "INDIVIDUAL") {
 		return "Individual";
@@ -307,7 +338,7 @@ function GetWorkspaceCompanyType(
 	return "Corporation";
 }
 
-function GetPrimaryContact(company: WorkspaceCompanyApiRecord) {
+function GetPrimaryContact(company: WorkspaceCompanyApiLike) {
 	if (company.taxpayerType === "INDIVIDUAL") {
 		return [
 			company.ownerFirstName,

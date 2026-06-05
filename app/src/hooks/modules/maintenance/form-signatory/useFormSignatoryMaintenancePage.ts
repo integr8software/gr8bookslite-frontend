@@ -26,13 +26,14 @@ import {
 } from "@/app/src/data/modules/maintenance/form-signatory/FormSignatoryData";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
-	GetFormSignatoryOptions,
-	GetFormSignatorySetups,
+	GetFormSignatoryBootstrap,
 	SaveFormSignatorySetup,
 } from "@/app/src/services/modules/maintenance/form-signatory/FormSignatoryApi";
 import { FormSignatoryQueryKeys } from "@/app/src/services/modules/maintenance/form-signatory/FormSignatoryQueryKeys";
+import { CreateSessionQueryOptions } from "@/app/src/services/shared/query/QueryProfiles";
 import type {
 	FormSignatoryActionMode,
+	FormSignatoryBootstrap,
 	FormSignatoryModuleOption,
 	FormSignatoryRow,
 	FormSignatorySetupRecord,
@@ -81,31 +82,31 @@ export function useFormSignatoryMaintenancePage() {
 	const hasHydratedInitialStateRef = useRef(false);
 	const isEditing = mode !== "view";
 	const queriesEnabled = isAuthSessionReady && Boolean(accessToken);
-	const optionsQuery = useQuery({
-		queryKey: FormSignatoryQueryKeys.options(),
-		queryFn: () => GetFormSignatoryOptions(accessToken),
+	const bootstrapQuery = useQuery({
+		...CreateSessionQueryOptions(FormSignatoryQueryKeys.bootstrap(), () =>
+			GetFormSignatoryBootstrap(accessToken),
+		),
 		enabled: queriesEnabled,
 	});
-	const setupsQuery = useQuery({
-		queryKey: FormSignatoryQueryKeys.setups(),
-		queryFn: () => GetFormSignatorySetups(accessToken),
-		enabled: queriesEnabled,
-	});
+	const setups = useMemo(
+		() => bootstrapQuery.data?.setups ?? [],
+		[bootstrapQuery.data?.setups],
+	);
 	const branchOptions = useMemo(() => {
-		const options = optionsQuery.data?.branches ?? [
+		const options = bootstrapQuery.data?.branches ?? [
 			{ label: "Select Branch", value: "" },
 		];
 
 		return actionMode === "list" ? withAllOption(options) : options;
-	}, [actionMode, optionsQuery.data?.branches]);
+	}, [actionMode, bootstrapQuery.data?.branches]);
 	const moduleOptions = useMemo<FormSignatoryModuleOption[]>(() => {
-		if (!optionsQuery.data) {
+		if (!bootstrapQuery.data) {
 			return actionMode === "list"
 				? [{ label: "All", value: "" }]
 				: [{ label: "Loading modules...", value: "" }];
 		}
 
-		const apiOptions = optionsQuery.data.modules;
+		const apiOptions = bootstrapQuery.data.modules;
 		const options =
 			apiOptions.length > 1
 				? apiOptions
@@ -115,12 +116,12 @@ export function useFormSignatoryMaintenancePage() {
 					];
 
 		return actionMode === "list" ? withAllOption(options) : options;
-	}, [actionMode, optionsQuery.data]);
+	}, [actionMode, bootstrapQuery.data]);
 	const recordSetup =
 		actionMode === "edit" && params.recordId
-			? setupsQuery.data?.find((setup) => setup.id === params.recordId)
+			? setups.find((setup) => setup.id === params.recordId)
 			: undefined;
-	const selectedSetup = findSetup(setupsQuery.data ?? [], branch, module);
+	const selectedSetup = findSetup(setups, branch, module);
 	const currentSetupId = selectedSetup?.id ?? recordSetup?.id ?? "";
 	const visibleRows = useMemo(() => {
 		const scopedRows = scopedEditRowId
@@ -136,6 +137,28 @@ export function useFormSignatoryMaintenancePage() {
 		() => getFormSignatoryTableColumns(showSignatureValidityColumn),
 		[showSignatureValidityColumn],
 	);
+
+	function updateSetupsCache(
+		updater: (
+			setups: FormSignatorySetupRecord[],
+		) => FormSignatorySetupRecord[],
+	) {
+		queryClient.setQueryData<FormSignatoryBootstrap>(
+			FormSignatoryQueryKeys.bootstrap(),
+			(current) =>
+				current
+					? {
+							...current,
+							setups: updater(current.setups),
+						}
+					: current,
+		);
+		queryClient.setQueryData<FormSignatorySetupRecord[]>(
+			FormSignatoryQueryKeys.setups(),
+			(current = []) => updater(current),
+		);
+	}
+
 	const saveMutation = useMutation({
 		mutationFn: () =>
 			SaveFormSignatorySetup(
@@ -152,16 +175,13 @@ export function useFormSignatoryMaintenancePage() {
 			const previousSetupId =
 				actionMode === "edit" ? params.recordId : selectedSetup?.id;
 
-			queryClient.setQueryData<FormSignatorySetupRecord[]>(
-				FormSignatoryQueryKeys.setups(),
-				(current = []) => [
+			updateSetupsCache((current) => [
 					setup,
 					...current.filter(
 						(record) =>
 							record.id !== setup.id && record.id !== previousSetupId,
 					),
-				],
-			);
+				]);
 			closeSnapshotRef.current = {
 				branch: setup.branch,
 				module: setup.module,
@@ -185,7 +205,7 @@ export function useFormSignatoryMaintenancePage() {
 	});
 	const deleteRowMutation = useMutation({
 		mutationFn: (rowToDelete: FormSignatoryRow) => {
-			const setup = setupsQuery.data?.find(
+			const setup = setups.find(
 				(record) => record.id === rowToDelete.setupId,
 			);
 
@@ -211,10 +231,8 @@ export function useFormSignatoryMaintenancePage() {
 			);
 		},
 		onSuccess: (setup, deletedRow) => {
-			queryClient.setQueryData<FormSignatorySetupRecord[]>(
-				FormSignatoryQueryKeys.setups(),
-				(current = []) =>
-					current.map((record) => (record.id === setup.id ? setup : record)),
+			updateSetupsCache((current) =>
+				current.map((record) => (record.id === setup.id ? setup : record)),
 			);
 			setRows((currentRows) =>
 				currentRows.filter((row) => row.id !== deletedRow.id),
@@ -252,7 +270,7 @@ export function useFormSignatoryMaintenancePage() {
 	});
 
 	useEffect(() => {
-		if (hasHydratedInitialStateRef.current || setupsQuery.isLoading) {
+		if (hasHydratedInitialStateRef.current || bootstrapQuery.isLoading) {
 			return;
 		}
 
@@ -262,7 +280,7 @@ export function useFormSignatoryMaintenancePage() {
 		}
 
 		if (actionMode === "list") {
-			const nextRows = getRowsForFilters(setupsQuery.data ?? [], "", "");
+			const nextRows = getRowsForFilters(setups, "", "");
 
 			closeSnapshotRef.current = {
 				branch: "",
@@ -275,7 +293,7 @@ export function useFormSignatoryMaintenancePage() {
 		}
 
 		const initialSetup =
-			actionMode === "edit" ? recordSetup : setupsQuery.data?.[0];
+			actionMode === "edit" ? recordSetup : setups[0];
 
 		if (!initialSetup) {
 			hasHydratedInitialStateRef.current = true;
@@ -287,10 +305,10 @@ export function useFormSignatoryMaintenancePage() {
 		hasHydratedInitialStateRef.current = true;
 	}, [
 		actionMode,
+		bootstrapQuery.isLoading,
 		queriesEnabled,
 		recordSetup,
-		setupsQuery.data,
-		setupsQuery.isLoading,
+		setups,
 	]);
 
 	useEffect(() => {
@@ -298,7 +316,7 @@ export function useFormSignatoryMaintenancePage() {
 			return;
 		}
 
-		const nextRows = getRowsForFilters(setupsQuery.data ?? [], branch, module);
+		const nextRows = getRowsForFilters(setups, branch, module);
 
 		setRows(nextRows);
 		setCancelableRowIds([]);
@@ -308,7 +326,7 @@ export function useFormSignatoryMaintenancePage() {
 			rows: cloneRows(nextRows),
 		};
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
-	}, [actionMode, branch, isEditing, module, setupsQuery.data]);
+	}, [actionMode, branch, isEditing, module, setups]);
 
 	function hydrateFromSetup(setup: FormSignatorySetupRecord) {
 		const nextRows = cloneRows(setup.rows);
@@ -536,10 +554,10 @@ export function useFormSignatoryMaintenancePage() {
 		handleSignatureFile,
 		isEditing,
 		isLoading:
-			!isAuthSessionReady || optionsQuery.isLoading || setupsQuery.isLoading,
+			!isAuthSessionReady || bootstrapQuery.isLoading,
 		isRecordMissing:
 			actionMode === "edit" &&
-			!setupsQuery.isLoading &&
+			!bootstrapQuery.isLoading &&
 			Boolean(params.recordId) &&
 			(!recordSetup ||
 				(Boolean(scopedEditRowId) &&

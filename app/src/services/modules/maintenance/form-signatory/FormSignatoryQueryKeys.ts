@@ -1,4 +1,5 @@
 export const FormSignatoryQueryKeys = {
+	bootstrap: () => ["maintenance", "form-signatory", "bootstrap"] as const,
 	options: () => ["maintenance", "form-signatory", "options"] as const,
 	resolve: (unitId: number | null, moduleCodes: readonly string[]) =>
 		[

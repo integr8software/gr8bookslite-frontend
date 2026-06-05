@@ -1,4 +1,11 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  workspaceUsersControllerCancelInvitationV1,
+  workspaceUsersControllerCreateV1,
+  workspaceUsersControllerFindAllV1,
+  workspaceUsersControllerResendInvitationV1,
+  workspaceUsersControllerUpdateV1,
+} from "@/app/src/generated/api/workspace-users/workspace-users";
+import type { WorkspaceUserResponseDto } from "@/app/src/generated/api/gR8BooksLiteAPI.schemas";
 import type {
   WorkspaceCompanyUserApiRecord,
   WorkspaceCompanyUserApiRequest,
@@ -9,53 +16,48 @@ import type {
   WorkspaceCompanyStatus,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
-export async function GetWorkspaceUsers() {
-  const response = await ApiClient.get<WorkspaceCompanyUserApiRecord[]>(
-    "/workspace/users",
-  );
+type WorkspaceCompanyUserApiLike =
+  | WorkspaceCompanyUserApiRecord
+  | WorkspaceUserResponseDto;
 
-  return response.data.map(MapWorkspaceUserApiRecord);
+export async function GetWorkspaceUsers() {
+  const response = await workspaceUsersControllerFindAllV1();
+
+  return response.map(MapWorkspaceUserApiRecord);
 }
 
 export async function CreateWorkspaceUser(
   values: WorkspaceCompanyUserFormValues,
 ) {
-  const response = await ApiClient.post<WorkspaceCompanyUserApiRecord>(
-    "/workspace/users",
+  const response = await workspaceUsersControllerCreateV1(
     MapWorkspaceUserFormToRequest(values),
   );
 
-  return MapWorkspaceUserApiRecord(response.data);
+  return MapWorkspaceUserApiRecord(response);
 }
 
 export async function UpdateWorkspaceUser(
   userId: string,
   values: WorkspaceCompanyUserFormValues,
 ) {
-  const response = await ApiClient.patch<WorkspaceCompanyUserApiRecord>(
-    `/workspace/users/${userId}`,
+  const response = await workspaceUsersControllerUpdateV1(
+    Number(userId),
     MapWorkspaceUserFormToRequest(values),
   );
 
-  return MapWorkspaceUserApiRecord(response.data);
+  return MapWorkspaceUserApiRecord(response);
 }
 
 export async function ResendWorkspaceUserInvitation(userId: string) {
-  const response =
-    await ApiClient.post<WorkspaceCompanyUserResendInvitationResponse>(
-      `/workspace/users/${userId}/resend-invitation`,
-    );
-
-  return response.data;
+  return workspaceUsersControllerResendInvitationV1(
+    Number(userId),
+  ) as Promise<WorkspaceCompanyUserResendInvitationResponse>;
 }
 
 export async function CancelWorkspaceUserInvitation(userId: string) {
-  const response =
-    await ApiClient.delete<WorkspaceCompanyUserCancelInvitationResponse>(
-      `/workspace/users/${userId}/invitation`,
-    );
-
-  return response.data;
+  return workspaceUsersControllerCancelInvitationV1(
+    Number(userId),
+  ) as Promise<WorkspaceCompanyUserCancelInvitationResponse>;
 }
 
 function MapWorkspaceUserFormToRequest(
@@ -75,8 +77,8 @@ function MapWorkspaceUserFormToRequest(
   };
 }
 
-function MapWorkspaceUserApiRecord(
-  user: WorkspaceCompanyUserApiRecord,
+export function MapWorkspaceUserApiRecord(
+  user: WorkspaceCompanyUserApiLike,
 ): WorkspaceCompanyUserRecord {
   const primaryCompanyId = user.companyAssignments[0]?.companyId;
 
@@ -99,7 +101,7 @@ function MapWorkspaceUserApiRecord(
 }
 
 function GetWorkspaceUserStatus(
-  status: WorkspaceCompanyUserApiRecord["status"],
+  status: string,
 ): WorkspaceCompanyStatus {
   if (status === "ACTIVE") {
     return "Active";

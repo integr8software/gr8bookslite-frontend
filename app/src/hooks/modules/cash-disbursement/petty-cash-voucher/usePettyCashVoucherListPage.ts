@@ -87,6 +87,7 @@ export function usePettyCashVoucherListPage() {
     [],
   );
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
   const table = useReactTable({
     columns,
     data: filteredVouchers,

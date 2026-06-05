@@ -1,4 +1,10 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+	workspaceCompaniesControllerCreateUnitV1,
+	workspaceCompaniesControllerDeactivateUnitV1,
+	workspaceCompaniesControllerFindUnitsV1,
+	workspaceCompaniesControllerUpdateUnitV1,
+} from "@/app/src/generated/api/workspace-companies/workspace-companies";
+import type { WorkspaceCompanyUnitResponseDto } from "@/app/src/generated/api/gR8BooksLiteAPI.schemas";
 import type {
 	WorkspaceCompanyBranchRecord,
 	WorkspaceCompanyStatus,
@@ -21,6 +27,10 @@ type WorkspaceCompanyUnitApiRecord = {
 	isActive: boolean;
 };
 
+type WorkspaceCompanyUnitApiLike =
+	| WorkspaceCompanyUnitApiRecord
+	| WorkspaceCompanyUnitResponseDto;
+
 export type CreateWorkspaceCompanyUnitRequest = {
 	type: Exclude<WorkspaceCompanyUnitApiType, "HEAD_OFFICE">;
 	name: string;
@@ -36,23 +46,23 @@ export type UpdateWorkspaceCompanyUnitRequest =
 	Partial<CreateWorkspaceCompanyUnitRequest>;
 
 export async function getWorkspaceCompanyUnits(companyId: string) {
-	const response = await ApiClient.get<WorkspaceCompanyUnitApiRecord[]>(
-		`/workspace/companies/${companyId}/units`,
+	const response = await workspaceCompaniesControllerFindUnitsV1(
+		Number(companyId),
 	);
 
-	return response.data.map(mapWorkspaceCompanyUnit);
+	return response.map(mapWorkspaceCompanyUnit);
 }
 
 export async function createWorkspaceCompanyUnit(
 	companyId: string,
 	payload: CreateWorkspaceCompanyUnitRequest,
 ) {
-	const response = await ApiClient.post<WorkspaceCompanyUnitApiRecord>(
-		`/workspace/companies/${companyId}/units`,
+	const response = await workspaceCompaniesControllerCreateUnitV1(
+		Number(companyId),
 		payload,
 	);
 
-	return mapWorkspaceCompanyUnit(response.data);
+	return mapWorkspaceCompanyUnit(response);
 }
 
 export async function updateWorkspaceCompanyUnit(
@@ -60,27 +70,29 @@ export async function updateWorkspaceCompanyUnit(
 	unitId: string,
 	payload: UpdateWorkspaceCompanyUnitRequest,
 ) {
-	const response = await ApiClient.patch<WorkspaceCompanyUnitApiRecord>(
-		`/workspace/companies/${companyId}/units/${unitId}`,
+	void companyId;
+	const response = await workspaceCompaniesControllerUpdateUnitV1(
+		Number(unitId),
 		payload,
 	);
 
-	return mapWorkspaceCompanyUnit(response.data);
+	return mapWorkspaceCompanyUnit(response);
 }
 
 export async function deactivateWorkspaceCompanyUnit(
 	companyId: string,
 	unitId: string,
 ) {
-	const response = await ApiClient.delete<WorkspaceCompanyUnitApiRecord>(
-		`/workspace/companies/${companyId}/units/${unitId}`,
+	void companyId;
+	const response = await workspaceCompaniesControllerDeactivateUnitV1(
+		Number(unitId),
 	);
 
-	return mapWorkspaceCompanyUnit(response.data);
+	return mapWorkspaceCompanyUnit(response);
 }
 
 function mapWorkspaceCompanyUnit(
-	unit: WorkspaceCompanyUnitApiRecord,
+	unit: WorkspaceCompanyUnitApiLike,
 ): WorkspaceCompanyBranchRecord {
 	const isHeadOffice = unit.type === "HEAD_OFFICE";
 	const isSatellite = unit.type === "SATELLITE";

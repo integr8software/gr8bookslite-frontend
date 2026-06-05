@@ -118,6 +118,9 @@ export type CurrentSubscriptionResponse = {
   subscription: CompanySubscription | null;
 };
 
+export type BillingSubscriptionSetupResponse = BillingPlansResponse &
+  CurrentSubscriptionResponse;
+
 export type SubscribeCompanyRequest = {
   planCode: string;
   billingCycle: BillingCycleApi;

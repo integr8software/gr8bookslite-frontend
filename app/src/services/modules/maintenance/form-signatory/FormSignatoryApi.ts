@@ -1,8 +1,17 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+	formSignatoriesControllerFindAllV1,
+	formSignatoriesControllerFindBootstrapV1,
+	formSignatoriesControllerFindOptionsV1,
+	formSignatoriesControllerResolveV1,
+	formSignatoriesControllerSaveV1,
+	formSignatoriesControllerUpdateV1,
+} from "@/app/src/generated/api/form-signatories/form-signatories";
 import type {
 	FormSignatoryApiSetup,
+	FormSignatoryBootstrap,
 	FormSignatoryBranchOption,
 	FormSignatoryModuleOption,
+	FormSignatoryOptions,
 	FormSignatoryOptionsApiResponse,
 	FormSignatoryRow,
 	FormSignatorySetupRecord,
@@ -20,28 +29,41 @@ function GetAuthorizationHeaders(accessToken: string | null) {
 }
 
 export async function GetFormSignatorySetups(accessToken: string | null) {
-	const response = await ApiClient.get<{ setups: FormSignatoryApiSetup[] }>(
-		"/maintenance/form-signatories",
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
-	);
+	const response = await formSignatoriesControllerFindAllV1({
+		headers: GetAuthorizationHeaders(accessToken),
+	});
 
-	return response.data.setups.map(MapFormSignatorySetup);
+	return response.setups.map(MapFormSignatorySetup);
 }
 
 export async function GetFormSignatoryOptions(accessToken: string | null) {
-	const response = await ApiClient.get<FormSignatoryOptionsApiResponse>(
-		"/maintenance/form-signatories/options",
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
-	);
+	const response = await formSignatoriesControllerFindOptionsV1({
+		headers: GetAuthorizationHeaders(accessToken),
+	});
 
+	return MapFormSignatoryOptions(response);
+}
+
+export async function GetFormSignatoryBootstrap(
+	accessToken: string | null,
+): Promise<FormSignatoryBootstrap> {
+	const response = await formSignatoriesControllerFindBootstrapV1({
+		headers: GetAuthorizationHeaders(accessToken),
+	});
+
+	return {
+		...MapFormSignatoryOptions(response),
+		setups: response.setups.map(MapFormSignatorySetup),
+	};
+}
+
+function MapFormSignatoryOptions(
+	options: FormSignatoryOptionsApiResponse,
+): FormSignatoryOptions {
 	return {
 		branches: [
 			{ label: "Select Branch", value: "" },
-			...response.data.branches.map<FormSignatoryBranchOption>((branch) => ({
+			...options.branches.map<FormSignatoryBranchOption>((branch) => ({
 				code: branch.code,
 				label: branch.displayName ?? branch.name,
 				type: branch.type,
@@ -50,7 +72,7 @@ export async function GetFormSignatoryOptions(accessToken: string | null) {
 		],
 		modules: [
 			{ label: "Select Module", value: "" },
-			...response.data.modules.map<FormSignatoryModuleOption>((module) => ({
+			...options.modules.map<FormSignatoryModuleOption>((module) => ({
 				id: String(module.id),
 				label: module.name,
 				value: module.code,
@@ -64,18 +86,17 @@ export async function ResolveFormSignatorySetup(
 	unitId: number,
 	moduleCodes: readonly string[],
 ) {
-	const response = await ApiClient.get<{ setup: FormSignatoryApiSetup | null }>(
-		"/maintenance/form-signatories/resolve",
+	const response = await formSignatoriesControllerResolveV1(
+		{
+			moduleCodes: moduleCodes.join(","),
+			unitId,
+		},
 		{
 			headers: GetAuthorizationHeaders(accessToken),
-			params: {
-				moduleCodes: moduleCodes.join(","),
-				unitId,
-			},
 		},
 	);
 
-	return response.data.setup ? MapFormSignatorySetup(response.data.setup) : null;
+	return response.setup ? MapFormSignatorySetup(response.setup) : null;
 }
 
 export async function SaveFormSignatorySetup(
@@ -84,22 +105,21 @@ export async function SaveFormSignatorySetup(
 	setupId?: string,
 ) {
 	const response = setupId
-		? await ApiClient.patch<{ setup: FormSignatoryApiSetup }>(
-				`/maintenance/form-signatories/${setupId}`,
+		? await formSignatoriesControllerUpdateV1(
+				Number(setupId),
 				payload,
 				{
 					headers: GetAuthorizationHeaders(accessToken),
 				},
 			)
-		: await ApiClient.post<{ setup: FormSignatoryApiSetup }>(
-				"/maintenance/form-signatories",
+		: await formSignatoriesControllerSaveV1(
 				payload,
 				{
 					headers: GetAuthorizationHeaders(accessToken),
 				},
 			);
 
-	return MapFormSignatorySetup(response.data.setup);
+	return MapFormSignatorySetup(response.setup);
 }
 
 function MapFormSignatorySetup(

@@ -34,6 +34,15 @@ export type FormSignatoryModuleOption = FormSignatorySelectOption & {
 	id?: string;
 };
 
+export type FormSignatoryOptions = {
+	branches: FormSignatoryBranchOption[];
+	modules: FormSignatoryModuleOption[];
+};
+
+export type FormSignatoryBootstrap = FormSignatoryOptions & {
+	setups: FormSignatorySetupRecord[];
+};
+
 export type FormSignatoryToolbarProps = {
 	branch: string;
 	branchOptions: FormSignatoryBranchOption[];

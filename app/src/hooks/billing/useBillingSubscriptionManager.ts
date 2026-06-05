@@ -19,8 +19,7 @@ import {
 } from "@/app/src/services/billing/BillingApi";
 import { BillingQueryKeys } from "@/app/src/services/billing/BillingQueryKeys";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
-import { useBillingPlansQuery } from "@/app/src/hooks/billing/useBillingPlansQuery";
-import { useCurrentBillingSubscriptionQuery } from "@/app/src/hooks/billing/useCurrentBillingSubscriptionQuery";
+import { useBillingSubscriptionSetupQuery } from "@/app/src/hooks/billing/useBillingSubscriptionSetupQuery";
 
 function GetBlockingSubscriptionStatuses() {
   return new Set(["INCOMPLETE", "TRIALING", "ACTIVE", "PAST_DUE", "UNPAID"]);
@@ -41,13 +40,14 @@ export function useBillingSubscriptionManager() {
   );
 
   const planScope = "ONBOARDING";
-  const plansQuery = useBillingPlansQuery({ accessToken, scope: planScope });
-  const currentSubscriptionQuery = useCurrentBillingSubscriptionQuery({
+  const subscriptionSetupQuery = useBillingSubscriptionSetupQuery({
     accessToken,
+    scope: planScope,
   });
   const resolvedSelectedPlanCode =
-    selectedPlanCode || plansQuery.data?.plans[0]?.code || "";
-  const currentSubscription = currentSubscriptionQuery.data?.subscription ?? null;
+    selectedPlanCode || subscriptionSetupQuery.data?.plans[0]?.code || "";
+  const currentSubscription =
+    subscriptionSetupQuery.data?.subscription ?? null;
   const hasBlockingSubscription = currentSubscription
     ? GetBlockingSubscriptionStatuses().has(currentSubscription.status)
     : false;
@@ -88,6 +88,9 @@ export function useBillingSubscriptionManager() {
     onSuccess: async (response) => {
       await Promise.all([
         queryClient.invalidateQueries({
+          queryKey: BillingQueryKeys.subscriptionSetup(planScope),
+        }),
+        queryClient.invalidateQueries({
           queryKey: BillingQueryKeys.currentSubscription(),
         }),
         queryClient.invalidateQueries({
@@ -127,9 +130,14 @@ export function useBillingSubscriptionManager() {
       });
     },
     onSuccess: async (response) => {
-      await queryClient.invalidateQueries({
-        queryKey: BillingQueryKeys.currentSubscription(),
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: BillingQueryKeys.subscriptionSetup(planScope),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: BillingQueryKeys.currentSubscription(),
+        }),
+      ]);
       toast.success(response.message);
     },
     onError: (error) => {
@@ -143,19 +151,18 @@ export function useBillingSubscriptionManager() {
 
   return {
     accessToken,
-    plans: plansQuery.data?.plans ?? [],
+    plans: subscriptionSetupQuery.data?.plans ?? [],
     selectedPlanCode: resolvedSelectedPlanCode,
     selectedBillingCycle,
     paymentValues,
     paymentErrors,
     currentSubscription,
     isLoading:
-      plansQuery.isLoading ||
-      currentSubscriptionQuery.isLoading ||
+      subscriptionSetupQuery.isLoading ||
       subscribeMutation.isPending ||
       cancelSubscriptionMutation.isPending,
-    isPlansLoading: plansQuery.isLoading,
-    isSubscriptionLoading: currentSubscriptionQuery.isLoading,
+    isPlansLoading: subscriptionSetupQuery.isLoading,
+    isSubscriptionLoading: subscriptionSetupQuery.isLoading,
     isSubmitting: subscribeMutation.isPending,
     isCancelling: cancelSubscriptionMutation.isPending,
     hasBlockingSubscription,
@@ -175,10 +182,7 @@ export function useBillingSubscriptionManager() {
       }));
     },
     retryQueries: async () => {
-      await Promise.all([
-        plansQuery.refetch(),
-        currentSubscriptionQuery.refetch(),
-      ]);
+      await subscriptionSetupQuery.refetch();
     },
     startSubscriptionSetup: () => {
       subscribeMutation.mutate();

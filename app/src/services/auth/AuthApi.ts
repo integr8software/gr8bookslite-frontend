@@ -1,4 +1,8 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import axios from "axios";
+import {
+  ApiClient,
+  ApiClientError,
+} from "@/app/src/services/shared/api/ApiClient";
 import type {
   AuthProfileResponse,
   ChangeAuthenticatedPasswordRequest,
@@ -26,10 +30,6 @@ export function BuildGoogleAuthUrl(mode: "login" | "signup") {
   return BuildAuthApiUrl(`/auth/google?mode=${mode}`);
 }
 
-type ApiErrorPayload = {
-  message?: string | string[];
-};
-
 export class AuthApiError extends Error {
   constructor(message: string) {
     super(message);
@@ -37,42 +37,23 @@ export class AuthApiError extends Error {
   }
 }
 
-function ReadApiErrorMessage(payload: ApiErrorPayload | null, fallback: string) {
-  if (!payload?.message) {
-    return fallback;
-  }
-
-  return Array.isArray(payload.message)
-    ? payload.message.join(" ")
-    : payload.message;
-}
-
 export async function PostAuthJson<TRequest, TResponse>(
   path: string,
   body: TRequest,
 ): Promise<TResponse> {
-  const response = await fetch(BuildAuthApiUrl(path), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(body),
-    cache: "no-store",
-  });
+  try {
+    const response = await ApiClient.post<TResponse>(path, body);
 
-  const payload = (await response.json().catch(() => null)) as
-    | TResponse
-    | ApiErrorPayload
-    | null;
+    return response.data;
+  } catch (error) {
+    if (error instanceof ApiClientError) {
+      throw new AuthApiError(error.message);
+    }
 
-  if (!response.ok) {
     throw new AuthApiError(
-      ReadApiErrorMessage(payload as ApiErrorPayload | null, "Request failed."),
+      error instanceof Error ? error.message : "Request failed.",
     );
   }
-
-  return payload as TResponse;
 }
 
 function GetOptionalAuthorizationHeaders(accessToken: string | null) {
@@ -98,51 +79,34 @@ export async function CreateFrontendAuthSession(
   accessToken: string,
   rememberMe = false,
 ) {
-  const response = await fetch("/api/auth/session", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({ accessToken, rememberMe }),
-  });
-
-  if (!response.ok) {
+  try {
+    await axios.post(
+      "/api/auth/session",
+      { accessToken, rememberMe },
+      {
+        withCredentials: true,
+      },
+    );
+  } catch {
     throw new AuthApiError("Could not update the browser session.");
   }
 }
 
 export async function GetFrontendAuthSession(timeoutMs = 3000) {
-  const abortController = new AbortController();
-  const timeoutId = globalThis.setTimeout(() => {
-    abortController.abort();
-  }, timeoutMs);
-
-  let response: Response;
-
   try {
-    response = await fetch("/api/auth/session", {
-      method: "GET",
-      credentials: "include",
-      cache: "no-store",
-      signal: abortController.signal,
-    });
+    const response = await axios.get<{ accessToken?: string }>(
+      "/api/auth/session",
+      {
+        timeout: timeoutMs,
+        withCredentials: true,
+      },
+    );
+    const accessToken = response.data.accessToken?.trim();
+
+    return accessToken || null;
   } catch {
     return null;
-  } finally {
-    globalThis.clearTimeout(timeoutId);
   }
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const payload = (await response.json().catch(() => null)) as {
-    accessToken?: string;
-  } | null;
-  const accessToken = payload?.accessToken?.trim();
-
-  return accessToken || null;
 }
 
 export async function SwitchCompanyContext(

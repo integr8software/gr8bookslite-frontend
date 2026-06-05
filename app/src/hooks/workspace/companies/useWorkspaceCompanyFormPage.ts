@@ -22,6 +22,7 @@ import {
 	useWorkspaceCompanyRecord,
 	useWorkspaceCompanyRouteParams,
 } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
 import { validateWorkspaceCompanyForm } from "@/app/src/validations/workspace/companies/WorkspaceCompanyValidation";
 import type {
 	WorkspaceCompanyFormErrors,
@@ -37,6 +38,31 @@ function formatCardNumber(value: string) {
 	return getDigitsOnly(value)
 		.slice(0, 19)
 		.replace(/(\d{4})(?=\d)/g, "$1 ");
+}
+
+const CompanyNameTakenMessage = "Company name is already taken.";
+
+function normalizeCompanyName(value: string) {
+	return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function getCompanyDisplayName(values: WorkspaceCompanyFormValues) {
+	if (values.taxpayerType === "individual") {
+		return [values.firstName, values.middleName, values.lastName]
+			.map((value) => value.trim())
+			.filter(Boolean)
+			.join(" ");
+	}
+
+	return values.companyName;
+}
+
+function isCompanyNameTakenError(error: unknown) {
+	return (
+		error instanceof ApiClientError &&
+		error.status === 409 &&
+		error.message === CompanyNameTakenMessage
+	);
 }
 
 export function useWorkspaceCompanyFormPage() {
@@ -184,6 +210,20 @@ export function useWorkspaceCompanyFormPage() {
 		const nextErrors = validateWorkspaceCompanyForm(values, {
 			requireBillingPlan: mode === "add",
 		});
+		const submittedName = normalizeCompanyName(getCompanyDisplayName(values));
+		const existingCompanyWithName = companies.find(
+			(company) =>
+				normalizeCompanyName(company.name) === submittedName &&
+				company.id !== existingCompany?.id,
+		);
+
+		if (
+			submittedName &&
+			values.taxpayerType === "non-individual" &&
+			existingCompanyWithName
+		) {
+			nextErrors.companyName = CompanyNameTakenMessage;
+		}
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
@@ -198,7 +238,13 @@ export function useWorkspaceCompanyFormPage() {
 			try {
 				await updateCompany(existingCompany.id, values);
 				router.push(companyHref);
-			} catch {
+			} catch (error) {
+				if (isCompanyNameTakenError(error)) {
+					setErrors((current) => ({
+						...current,
+						companyName: CompanyNameTakenMessage,
+					}));
+				}
 				// The mutation owns the toast message; keep the user on the form.
 			}
 			return;
@@ -214,6 +260,14 @@ export function useWorkspaceCompanyFormPage() {
 			await addCompany(valuesToSave);
 			router.push(WorkspaceCompaniesHref);
 		} catch (error) {
+			if (isCompanyNameTakenError(error)) {
+				setErrors((current) => ({
+					...current,
+					companyName: CompanyNameTakenMessage,
+				}));
+				return;
+			}
+
 			if (didCreatePaymentMethod) {
 				return;
 			}

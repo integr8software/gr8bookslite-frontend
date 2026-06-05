@@ -31,6 +31,9 @@ import {
   ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
 import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
+import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
+
+const CompanyNameTakenMessage = "Company name is already taken.";
 
 function GetOnboardingApiBillingCycle(value: BillingCycle) {
   return value === "yearly" ? "YEARLY" : "MONTHLY";
@@ -79,6 +82,14 @@ function IsRequestTimeout(error: unknown) {
   return (
     error instanceof Error &&
     error.message.trim().toLowerCase() === "the request timed out."
+  );
+}
+
+function IsCompanyNameTakenError(error: unknown) {
+  return (
+    error instanceof ApiClientError &&
+    error.status === 409 &&
+    error.message === CompanyNameTakenMessage
   );
 }
 
@@ -335,6 +346,15 @@ export function useOnboardingSubmission({
 
       setStepIndex((current) => current + 1);
     } catch (error) {
+      if (stepIndex === 1 && IsCompanyNameTakenError(error)) {
+        setErrors((current) => ({
+          ...current,
+          companyName: [CompanyNameTakenMessage],
+        }));
+        toast.error(CompanyNameTakenMessage);
+        return;
+      }
+
       if (stepIndex === 2 && IsRequestTimeout(error)) {
         const token = resolvedAccessToken ?? GetAccessToken();
 

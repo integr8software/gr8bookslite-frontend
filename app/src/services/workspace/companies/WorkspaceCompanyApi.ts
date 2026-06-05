@@ -1,4 +1,7 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+	ApiClient,
+	ApiClientError,
+} from "@/app/src/services/shared/api/ApiClient";
 import {
 	workspaceCompaniesControllerCreateV1,
 	workspaceCompaniesControllerDeactivateV1,
@@ -33,6 +36,9 @@ type WorkspaceCompanyUnitApiLike =
 	| WorkspaceCompanyUnitApiRecord
 	| WorkspaceCompanyUnitResponseDto;
 
+const CompanyCreateTimeoutMs = 60000;
+const CompanyLogoUploadTimeoutMs = 60000;
+
 export async function GetWorkspaceCompanies() {
 	const response = await workspaceCompaniesControllerFindAllV1();
 
@@ -64,9 +70,18 @@ export async function GetWorkspaceCompany(companyId: string) {
 export async function CreateWorkspaceCompany(
 	values: WorkspaceCompanyFormValues,
 ): Promise<WorkspaceCompanyRecord> {
-	const company = await CreateWorkspaceCompanyFromRequest(
-		MapWorkspaceCompanyFormToCreateRequest(values),
-	);
+	const payload = MapWorkspaceCompanyFormToCreateRequest(values);
+	let company: WorkspaceCompanyRecord;
+
+	try {
+		company = await CreateWorkspaceCompanyFromRequest(payload);
+	} catch (error) {
+		if (!IsRequestTimeout(error)) {
+			throw error;
+		}
+
+		company = await RecoverCreatedCompanyAfterTimeout(payload);
+	}
 
 	if (!values.logoFile) {
 		return company;
@@ -105,7 +120,9 @@ export async function DeactivateWorkspaceCompany(
 export async function CreateWorkspaceCompanyFromRequest(
 	payload: CreateWorkspaceCompanyApiRequest,
 ): Promise<WorkspaceCompanyRecord> {
-	const response = await workspaceCompaniesControllerCreateV1(payload);
+	const response = await workspaceCompaniesControllerCreateV1(payload, {
+		timeout: CompanyCreateTimeoutMs,
+	});
 
 	return MapWorkspaceCompanyApiRecord(response);
 }
@@ -124,6 +141,7 @@ export async function UploadWorkspaceCompanyLogo(
 		headers: {
 			"Content-Type": "multipart/form-data",
 		},
+		timeout: CompanyLogoUploadTimeoutMs,
 	});
 
 	return MapWorkspaceCompanyApiRecord(response.data.company);
@@ -186,6 +204,69 @@ function MapWorkspaceCompanyUnitApiRecord(
 		status: unit.isActive ? "Active" : "Inactive",
 		tin: unit.tin ?? "",
 	};
+}
+
+async function RecoverCreatedCompanyAfterTimeout(
+	payload: CreateWorkspaceCompanyApiRequest,
+) {
+	for (let attempt = 0; attempt < 8; attempt += 1) {
+		if (attempt > 0) {
+			await Wait(1500);
+		}
+
+		const companies = await GetWorkspaceCompanies();
+		const company = companies.find((record) =>
+			IsMatchingCreatedCompany(record, payload),
+		);
+
+		if (company) {
+			return company;
+		}
+	}
+
+	throw new ApiClientError(
+		"The company may still be creating. Refresh the company list before trying again.",
+		{ code: "ECONNABORTED" },
+	);
+}
+
+function IsRequestTimeout(error: unknown) {
+	return (
+		error instanceof ApiClientError &&
+		(error.code === "ECONNABORTED" ||
+			error.message.trim().toLowerCase() === "the request timed out.")
+	);
+}
+
+function IsMatchingCreatedCompany(
+	company: WorkspaceCompanyRecord,
+	payload: CreateWorkspaceCompanyApiRequest,
+) {
+	return (
+		NormalizeText(company.name) === NormalizeText(GetCreateRequestName(payload)) &&
+		NormalizeText(company.email) === NormalizeText(payload.email) &&
+		NormalizeText(company.tin ?? "") === NormalizeText(payload.tin)
+	);
+}
+
+function GetCreateRequestName(payload: CreateWorkspaceCompanyApiRequest) {
+	if (payload.taxpayerType === "individual") {
+		return [payload.firstName, payload.middleName, payload.lastName]
+			.filter(Boolean)
+			.join(" ");
+	}
+
+	return payload.companyName ?? "";
+}
+
+function NormalizeText(value: string) {
+	return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function Wait(milliseconds: number) {
+	return new Promise((resolve) => {
+		window.setTimeout(resolve, milliseconds);
+	});
 }
 
 function GetWorkspaceCompanyBranchType(

@@ -60,12 +60,22 @@ ApiClient.interceptors.response.use(
   },
   (error: unknown) => {
     if (!axios.isAxiosError(error)) {
+      console.log("[api:error] unexpected client error", error);
       return Promise.reject(error);
     }
 
     FinishApiRequestTrace(error.config, error.response?.status);
     const status = error.response?.status;
     const message = error.response?.data?.message;
+    const method = error.config?.method?.toUpperCase() ?? "REQUEST";
+    const url = error.config?.url ?? "unknown URL";
+
+    console.log(`[api:error] ${method} ${url} failed`, {
+      status,
+      code: error.code,
+      message,
+      response: error.response?.data,
+    });
 
     if (Array.isArray(message)) {
       return Promise.reject(

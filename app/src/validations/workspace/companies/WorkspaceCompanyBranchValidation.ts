@@ -9,11 +9,5 @@ import type {
 export function validateWorkspaceCompanyBranchForm(
 	values: WorkspaceCompanyBranchFormValues,
 ): WorkspaceCompanyBranchFormErrors {
-	const errors = validateBranchForm(values);
-
-	if (values.classification === "satellite") {
-		delete errors.linkedMainBranchId;
-	}
-
-	return errors;
+	return validateBranchForm(values);
 }

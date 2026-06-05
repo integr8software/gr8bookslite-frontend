@@ -231,7 +231,7 @@ function BranchTaxField({
 
     return (
       <BranchField
-        label="Main Branch TIN"
+        label="Linked Main Branch"
         error={errors.linkedMainBranchId}
         required
       >
@@ -242,7 +242,7 @@ function BranchTaxField({
           disabled={isReadonly}
           className={branchFieldClassName}
         >
-          <option value="">Select main branch TIN</option>
+          <option value="">Select linked main branch</option>
           {mainBranchOptions.map((branch) => (
             <option key={branch.id} value={branch.id}>
               {branch.name} - {branch.tin}

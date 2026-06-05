@@ -84,7 +84,6 @@ export function CompanyBranchManagementPanel({
 					<BranchDetailsFields
 						errors={branchManagement.branchErrors}
 						hideMainBranchField
-						hideSatelliteTaxField
 						isReadonly={branchManagement.isCreatingBranch}
 						mainBranchOptions={branchManagement.mainBranchOptions}
 						values={branchManagement.branchValues}

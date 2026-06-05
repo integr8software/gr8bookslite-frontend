@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Plus, UserCog } from "lucide-react";
+import { AlertCircle, Plus, UserCog } from "lucide-react";
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
 import type { WorkspaceCompanyUserRecord } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import {
@@ -19,19 +19,23 @@ type DrawerState = {
 
 export function WorkspaceUsersManagementMain() {
   const [drawerState, setDrawerState] = useState<DrawerState>(null);
-  const users = useWorkspaceCompanyManagementStore((state) => state.users);
-  const isLoading = useWorkspaceCompanyManagementStore(
-    (state) => state.isLoading,
-  );
-  const isMutating = useWorkspaceCompanyManagementStore(
-    (state) => state.isMutating,
-  );
-  const resendInvitation = useWorkspaceCompanyManagementStore(
-    (state) => state.resendCompanyUserInvitation,
-  );
-  const cancelInvitation = useWorkspaceCompanyManagementStore(
-    (state) => state.cancelCompanyUserInvitation,
-  );
+  const {
+    cancelInvitation,
+    companies,
+    errorMessage,
+    isLoading,
+    isMutating,
+    resendInvitation,
+    users,
+  } = useWorkspaceCompanyManagementStore((state) => ({
+    cancelInvitation: state.cancelCompanyUserInvitation,
+    companies: state.companies,
+    errorMessage: state.errorMessage,
+    isLoading: state.isLoading,
+    isMutating: state.isMutating,
+    resendInvitation: state.resendCompanyUserInvitation,
+    users: state.users,
+  }));
   const openAddDrawer = useCallback(() => {
     setDrawerState({ mode: "add" });
   }, []);
@@ -69,7 +73,14 @@ export function WorkspaceUsersManagementMain() {
           </button>
         }
       />
+      {errorMessage ? (
+        <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <AlertCircle className="mt-0.5 h-4 w-4 flex-none" aria-hidden="true" />
+          <p>{errorMessage}</p>
+        </div>
+      ) : null}
       <WorkspaceUsersTable
+        companies={companies}
         isLoading={isLoading}
         isResendingInvitation={isMutating}
         onCancelInvitation={cancelInvitation}

@@ -126,7 +126,6 @@ export function CompanyBranchesPage() {
 						<BranchDetailsFields
 							errors={branchPage.branchErrors}
 							hideMainBranchField
-							hideSatelliteTaxField
 							isReadonly={isDrawerReadonly}
 							mainBranchOptions={branchPage.mainBranchOptions}
 							values={branchPage.selectedBranchValues}

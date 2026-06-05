@@ -62,6 +62,9 @@ export function useWorkspaceCompanyManagementStore<
       ),
     [managementSummaryQuery.data?.companies],
   );
+  const errorMessage = getWorkspaceManagementErrorMessage(
+    managementSummaryQuery.error,
+  );
 
   function setCompanies(
     updater: (companies: WorkspaceCompanyRecord[]) => WorkspaceCompanyRecord[],
@@ -308,6 +311,7 @@ export function useWorkspaceCompanyManagementStore<
         deactivateCompanyMutation.mutateAsync(companyId),
       deleteCompany: (companyId) =>
         deactivateCompanyMutation.mutateAsync(companyId),
+      errorMessage,
       isLoading: managementSummaryQuery.isLoading,
       isMutating:
         addCompanyMutation.isPending ||
@@ -333,6 +337,7 @@ export function useWorkspaceCompanyManagementStore<
       branches,
       cancelCompanyUserInvitationMutation,
       deactivateCompanyMutation,
+      errorMessage,
       includeUsers,
       managementSummaryQuery.data?.companies,
       managementSummaryQuery.data?.users,
@@ -344,4 +349,14 @@ export function useWorkspaceCompanyManagementStore<
   );
 
   return selector ? selector(state) : (state as TSelected);
+}
+
+function getWorkspaceManagementErrorMessage(error: unknown) {
+  if (!error) {
+    return null;
+  }
+
+  return error instanceof Error
+    ? error.message
+    : "Could not load workspace management data.";
 }

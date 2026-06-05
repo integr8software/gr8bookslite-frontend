@@ -13,7 +13,7 @@ import type {
   WorkspaceCompanyUserResendInvitationResponse,
   WorkspaceCompanyUserFormValues,
   WorkspaceCompanyUserRecord,
-  WorkspaceCompanyStatus,
+  WorkspaceUserStatus,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
 type WorkspaceCompanyUserApiLike =
@@ -91,8 +91,9 @@ export function MapWorkspaceUserApiRecord(
     contactNumber: user.contactNumber ?? "",
     email: user.email,
     id: String(user.id),
+    createdAt: FormatDate(user.createdAt),
     lastLogin: user.lastLogin
-      ? FormatDate(user.lastLogin)
+      ? FormatDateTime(user.lastLogin)
       : "Not yet signed in",
     name: user.name,
     profileImageUrl: user.profileImageUrl ?? undefined,
@@ -101,20 +102,28 @@ export function MapWorkspaceUserApiRecord(
 }
 
 function GetWorkspaceUserStatus(
-  status: string,
-): WorkspaceCompanyStatus {
+  status: WorkspaceCompanyUserApiLike["status"],
+): WorkspaceUserStatus {
   if (status === "ACTIVE") {
     return "Active";
   }
 
   if (status === "SUSPENDED") {
-    return "Inactive";
+    return "Suspended";
   }
 
   return "Pending";
 }
 
 function FormatDate(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function FormatDateTime(value: string) {
   return new Intl.DateTimeFormat("en", {
     day: "2-digit",
     hour: "numeric",

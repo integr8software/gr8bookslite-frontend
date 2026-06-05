@@ -3,6 +3,7 @@ import type {
 	WorkspaceCompanyStatus,
 	WorkspaceCompanyTableColumnKey,
 	WorkspaceCompanyType,
+	WorkspaceUserStatus,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
 export const WorkspaceCompaniesHref = "/workspace/company-management";
@@ -23,6 +24,13 @@ export const WorkspaceCompanyStatusOptions = [
 	"Pending",
 	"Inactive",
 ] as const satisfies readonly WorkspaceCompanyStatus[];
+
+export const WorkspaceUserStatusOptions = [
+	"Active",
+	"Pending",
+	"Inactive",
+	"Suspended",
+] as const satisfies readonly WorkspaceUserStatus[];
 
 export const WorkspaceCompanyTypeOptions = [
 	"Individual",

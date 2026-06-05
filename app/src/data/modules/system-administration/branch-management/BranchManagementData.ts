@@ -40,7 +40,7 @@ export function createBranchFromForm(
   const code = createBranchCode(resolvedCompanyCode, normalizedName);
   const tin =
     values.classification === "satellite"
-      ? (mainBranch?.tin ?? values.tin).trim()
+      ? (mainBranch?.tin ?? "").trim()
       : values.tin.trim();
 
   return {

@@ -26,17 +26,23 @@ export function useWorkspaceUserActionForm(
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ userId?: string }>();
-	const companies = useWorkspaceCompanyManagementStore((state) => state.companies);
-	const branches = useWorkspaceCompanyManagementStore((state) => state.branches);
-	const users = useWorkspaceCompanyManagementStore((state) => state.users);
-	const isLoading = useWorkspaceCompanyManagementStore((state) => state.isLoading);
-	const isSaving = useWorkspaceCompanyManagementStore((state) => state.isMutating);
-	const addCompanyUser = useWorkspaceCompanyManagementStore(
-		(state) => state.addCompanyUser,
-	);
-	const updateCompanyUser = useWorkspaceCompanyManagementStore(
-		(state) => state.updateCompanyUser,
-	);
+	const {
+		addCompanyUser,
+		branches,
+		companies,
+		isLoading,
+		isSaving,
+		updateCompanyUser,
+		users,
+	} = useWorkspaceCompanyManagementStore((state) => ({
+		addCompanyUser: state.addCompanyUser,
+		branches: state.branches,
+		companies: state.companies,
+		isLoading: state.isLoading,
+		isSaving: state.isMutating,
+		updateCompanyUser: state.updateCompanyUser,
+		users: state.users,
+	}));
 	const routeMode = pathname.includes("/view/")
 		? "view"
 		: pathname.includes("/edit/")

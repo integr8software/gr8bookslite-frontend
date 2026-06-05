@@ -50,7 +50,11 @@ export function getWorkspaceCompanyMainBranchOptions(
 	branches: WorkspaceCompanyBranchRecord[],
 ): MainBranch[] {
 	return branches
-		.filter((branch) => branch.branchType === "Branch" && Boolean(branch.tin))
+		.filter(
+			(branch) =>
+				(branch.branchType === "Head Office" || branch.branchType === "Branch") &&
+				Boolean(branch.tin),
+		)
 		.map((branch) => ({
 			access: { edit: true, view: true },
 			address: branch.address,
@@ -73,12 +77,12 @@ export function getWorkspaceCompanyHeadOfficeBranch(
 	return (
 		branches.find(
 			(branch) =>
-				branch.isMain &&
-				branch.branchType === "Branch" &&
-				Boolean(branch.tin),
+				branch.isMain && Boolean(branch.tin),
 		) ??
 		branches.find(
-			(branch) => branch.branchType === "Branch" && Boolean(branch.tin),
+			(branch) =>
+				(branch.branchType === "Head Office" || branch.branchType === "Branch") &&
+				Boolean(branch.tin),
 		)
 	);
 }
@@ -89,7 +93,7 @@ export function createWorkspaceCompanyUnitPayload(
 ): CreateWorkspaceCompanyUnitRequest {
 	const isSatellite = values.classification === "satellite";
 	const linkedMainBranchId =
-		headOfficeBranch?.id ?? values.linkedMainBranchId;
+		values.linkedMainBranchId || headOfficeBranch?.id;
 	const parentUnitId = Number(linkedMainBranchId);
 
 	return {
@@ -102,9 +106,7 @@ export function createWorkspaceCompanyUnitPayload(
 			isSatellite && Number.isFinite(parentUnitId)
 				? parentUnitId
 				: undefined,
-		tin: isSatellite
-			? optionalTrim(headOfficeBranch?.tin ?? "")
-			: values.tin.trim(),
+		tin: isSatellite ? undefined : values.tin.trim(),
 		type: isSatellite ? "SATELLITE" : "BRANCH",
 	};
 }

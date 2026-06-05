@@ -10,7 +10,7 @@ export function validateBranchForm(values: BranchManagementFormValues) {
 
 	if (values.classification === "satellite") {
 		if (!values.linkedMainBranchId) {
-			errors.linkedMainBranchId = "Select the main branch TIN.";
+			errors.linkedMainBranchId = "Select the linked main branch.";
 		}
 	} else if (!values.tin.trim()) {
 		errors.tin = "TIN is required for a branch.";

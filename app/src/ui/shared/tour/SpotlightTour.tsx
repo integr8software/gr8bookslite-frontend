@@ -17,6 +17,10 @@ const SpotlightViewportGap = 20;
 const SpotlightMobileViewportGap = 16;
 const SpotlightDesktopCardHeight = 390;
 const SpotlightMobileCardHeight = 436;
+const SpotlightMobileMascotWidth = 142;
+const SpotlightCompactMobileMascotWidth = 112;
+const SpotlightDesktopMascotWidth = 256;
+const SpotlightMascotAspectRatio = 640 / 512;
 const SpotlightTargetTrackingFrames = 60;
 const SpotlightHologramTexturePath =
   "/img/spotlight-tutorial/hologram-panel-texture.png";
@@ -114,7 +118,12 @@ function SpotlightTourContent({
     SpotlightMascotImagePaths[
       activeStepIndex % SpotlightMascotImagePaths.length
     ];
-  const mascotPosition = getMascotPosition(cardPosition, viewportSize);
+  const mascotSize = getMascotSize(viewportSize.width);
+  const mascotPosition = getMascotPosition(
+    cardPosition,
+    viewportSize,
+    mascotSize,
+  );
 
   useEffect(() => {
     function updateViewportSize() {
@@ -358,17 +367,20 @@ function SpotlightTourContent({
         width={512}
         height={640}
         quality={95}
-        sizes="(min-width: 640px) 256px, 142px"
+        sizes="(min-width: 640px) 256px, (min-width: 380px) 142px, 112px"
         aria-hidden="true"
-        className="pointer-events-none fixed h-44 w-auto select-none object-contain drop-shadow-[0_18px_22px_rgba(14,165,233,0.26)] sm:h-80"
-        style={mascotPosition}
+        className="pointer-events-none fixed h-auto select-none object-contain drop-shadow-[0_18px_22px_rgba(14,165,233,0.26)]"
+        style={{
+          ...mascotPosition,
+          width: mascotSize.width,
+        }}
       />
 
       <section
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
-        className={`pointer-events-auto fixed w-[calc(100vw-2rem)] max-w-[480px] overflow-hidden rounded-[1.85rem] p-px ${
+        className={`pointer-events-auto fixed w-[min(calc(100vw-2rem),480px)] overflow-hidden rounded-[1.35rem] p-px sm:rounded-[1.85rem] ${
           isLightAppearance
             ? "bg-[linear-gradient(135deg,rgba(103,232,249,0.48),rgba(167,139,250,0.24),rgba(34,211,238,0.38))] text-white shadow-[0_24px_64px_rgba(15,23,42,0.34),0_0_22px_rgba(103,232,249,0.12)]"
             : "bg-[linear-gradient(135deg,rgba(103,232,249,0.46),rgba(167,139,250,0.22),rgba(34,211,238,0.38))] text-offwhite shadow-[0_24px_64px_rgba(15,23,42,0.42),0_0_24px_rgba(103,232,249,0.14)]"
@@ -382,14 +394,14 @@ function SpotlightTourContent({
         }}
       >
         <div
-          className={`relative max-h-full overflow-x-hidden overflow-y-auto rounded-[1.8rem] border p-5 backdrop-blur-xl [contain:paint] sm:p-6 ${
+          className={`relative max-h-full overflow-x-hidden overflow-y-auto rounded-[1.3rem] border p-4 backdrop-blur-xl [contain:paint] sm:rounded-[1.8rem] sm:p-6 ${
             isLightAppearance
               ? "border-white/[0.24] bg-slate-950/[0.82] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),inset_0_0_34px_rgba(56,189,248,0.08)]"
               : "border-white/[0.14] bg-slate-950/[0.8] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_34px_rgba(56,189,248,0.1)]"
           }`}
         >
           <div
-            className={`pointer-events-none absolute inset-0 rounded-[1.8rem] bg-cover bg-center ${
+            className={`pointer-events-none absolute inset-0 rounded-[1.3rem] bg-cover bg-center sm:rounded-[1.8rem] ${
               isLightAppearance
                 ? "opacity-24 mix-blend-screen"
                 : "opacity-26 mix-blend-screen"
@@ -405,12 +417,12 @@ function SpotlightTourContent({
                 : "bg-[linear-gradient(180deg,rgba(2,6,23,0.42),rgba(2,6,23,0.64)),radial-gradient(circle_at_22%_18%,rgba(125,211,252,0.08),transparent_34%),radial-gradient(circle_at_78%_78%,rgba(216,180,254,0.06),transparent_38%)]"
             }`}
           />
-          <div className="pointer-events-none absolute inset-0 rounded-[1.8rem] bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.18)_42%,transparent_49%),repeating-linear-gradient(0deg,rgba(125,211,252,0.1)_0px,rgba(125,211,252,0.1)_1px,transparent_3px,transparent_8px)] opacity-48" />
-          <div className="pointer-events-none absolute inset-0 rounded-[1.8rem] bg-[linear-gradient(rgba(125,211,252,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(125,211,252,0.05)_1px,transparent_1px)] bg-[length:28px_28px] opacity-45" />
-          <div className="spotlight-hologram-animated pointer-events-none absolute inset-0 rounded-[1.8rem] bg-[linear-gradient(90deg,rgba(34,211,238,0.16),transparent_24%,rgba(216,180,254,0.14)_54%,transparent_72%,rgba(125,211,252,0.12))] mix-blend-screen blur-[0.5px] [animation:spotlight-hologram-flicker_4.8s_ease-in-out_infinite]" />
-          <div className="spotlight-hologram-animated pointer-events-none absolute inset-x-0 top-0 h-16 rounded-t-[1.8rem] bg-[linear-gradient(180deg,transparent,rgba(103,232,249,0.34),transparent)] mix-blend-screen [animation:spotlight-hologram-scan_3.8s_linear_infinite]" />
-          <div className="spotlight-hologram-animated pointer-events-none absolute inset-0 rounded-[1.8rem] bg-[linear-gradient(90deg,rgba(34,211,238,0.42),transparent_38%,rgba(216,180,254,0.28))] mix-blend-screen [animation:spotlight-hologram-glitch_5.6s_steps(1,end)_infinite]" />
-          <div className="spotlight-hologram-animated pointer-events-none absolute inset-0 rounded-[1.8rem] bg-[linear-gradient(90deg,rgba(248,113,113,0.18),transparent_34%,rgba(59,130,246,0.22))] mix-blend-screen [animation:spotlight-hologram-glitch_7.2s_steps(1,end)_infinite_reverse]" />
+          <div className="pointer-events-none absolute inset-0 rounded-[1.3rem] bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.18)_42%,transparent_49%),repeating-linear-gradient(0deg,rgba(125,211,252,0.1)_0px,rgba(125,211,252,0.1)_1px,transparent_3px,transparent_8px)] opacity-48 sm:rounded-[1.8rem]" />
+          <div className="pointer-events-none absolute inset-0 rounded-[1.3rem] bg-[linear-gradient(rgba(125,211,252,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(125,211,252,0.05)_1px,transparent_1px)] bg-[length:28px_28px] opacity-45 sm:rounded-[1.8rem]" />
+          <div className="spotlight-hologram-animated pointer-events-none absolute inset-0 rounded-[1.3rem] bg-[linear-gradient(90deg,rgba(34,211,238,0.16),transparent_24%,rgba(216,180,254,0.14)_54%,transparent_72%,rgba(125,211,252,0.12))] mix-blend-screen blur-[0.5px] [animation:spotlight-hologram-flicker_4.8s_ease-in-out_infinite] sm:rounded-[1.8rem]" />
+          <div className="spotlight-hologram-animated pointer-events-none absolute inset-x-0 top-0 h-16 rounded-t-[1.3rem] bg-[linear-gradient(180deg,transparent,rgba(103,232,249,0.34),transparent)] mix-blend-screen [animation:spotlight-hologram-scan_3.8s_linear_infinite] sm:rounded-t-[1.8rem]" />
+          <div className="spotlight-hologram-animated pointer-events-none absolute inset-0 rounded-[1.3rem] bg-[linear-gradient(90deg,rgba(34,211,238,0.42),transparent_38%,rgba(216,180,254,0.28))] mix-blend-screen [animation:spotlight-hologram-glitch_5.6s_steps(1,end)_infinite] sm:rounded-[1.8rem]" />
+          <div className="spotlight-hologram-animated pointer-events-none absolute inset-0 rounded-[1.3rem] bg-[linear-gradient(90deg,rgba(248,113,113,0.18),transparent_34%,rgba(59,130,246,0.22))] mix-blend-screen [animation:spotlight-hologram-glitch_7.2s_steps(1,end)_infinite_reverse] sm:rounded-[1.8rem]" />
           <div className="pointer-events-none absolute inset-x-7 top-0 h-px bg-cyan-200/55 shadow-[0_0_12px_rgba(103,232,249,0.62)]" />
           <div className="pointer-events-none absolute inset-x-10 bottom-4 h-px bg-cyan-200/30 shadow-[0_0_10px_rgba(103,232,249,0.44)]" />
           <div className="pointer-events-none absolute bottom-3 left-5 h-5 w-12 border-b border-l border-cyan-200/45" />
@@ -423,7 +435,7 @@ function SpotlightTourContent({
               <div>
                 {badge ? badge : null}
                 <h2
-                  className={`mt-5 text-2xl font-semibold leading-tight tracking-tight ${
+                  className={`mt-4 text-xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-2xl ${
                     isLightAppearance
                       ? "text-white drop-shadow-[0_0_12px_rgba(125,211,252,0.46)]"
                       : "text-white drop-shadow-[0_0_12px_rgba(125,211,252,0.4)]"
@@ -583,8 +595,14 @@ function getCardPosition(rect: SpotlightRect): SpotlightCardPosition {
     viewportWidth - viewportGap * 2,
   );
   const estimatedCardHeight = isMobileViewport
-    ? SpotlightMobileCardHeight
-    : SpotlightDesktopCardHeight;
+    ? Math.min(
+        SpotlightMobileCardHeight,
+        viewportHeight - SpotlightMobileViewportGap * 2,
+      )
+    : Math.min(
+        SpotlightDesktopCardHeight,
+        viewportHeight - SpotlightViewportGap * 2,
+      );
   const drawerAwareLeft =
     rect.avoidLeftOf && !isMobileViewport
       ? rect.avoidLeftOf - cardWidth - SpotlightViewportGap
@@ -629,9 +647,8 @@ function getCardPosition(rect: SpotlightRect): SpotlightCardPosition {
 function getMascotPosition(
   cardPosition: SpotlightCardPosition,
   viewportSize: { height: number; width: number },
+  mascotSize: { height: number; width: number },
 ): CSSProperties {
-  const mascotWidth = viewportSize.width < 640 ? 142 : 256;
-  const mascotHeight = viewportSize.width < 640 ? 176 : 320;
   const mascotCardOverlap = viewportSize.width < 640 ? 20 : -10;
   const cardWidth = Math.min(
     SpotlightCardWidth,
@@ -640,13 +657,13 @@ function getMascotPosition(
   const cardRight = cardPosition.left + cardWidth;
   const viewportGap = getViewportGap(viewportSize.width);
   const canFitOnRight =
-    viewportSize.width - cardRight >= mascotWidth - mascotCardOverlap;
+    viewportSize.width - cardRight >= mascotSize.width - mascotCardOverlap;
   const canFitOnLeft =
-    cardPosition.left >= mascotWidth - mascotCardOverlap;
+    cardPosition.left >= mascotSize.width - mascotCardOverlap;
 
   if (canFitOnLeft) {
     return {
-      left: cardPosition.left - mascotWidth + mascotCardOverlap,
+      left: cardPosition.left - mascotSize.width + mascotCardOverlap,
       top: cardPosition.top + (viewportSize.width < 640 ? 2 : 8),
     };
   }
@@ -660,15 +677,29 @@ function getMascotPosition(
 
   return {
     left: clamp(
-      cardRight - mascotWidth - 12,
+      cardRight - mascotSize.width - 12,
       viewportGap,
-      viewportSize.width - mascotWidth - viewportGap,
+      viewportSize.width - mascotSize.width - viewportGap,
     ),
     top: clamp(
-      cardPosition.top - mascotHeight + 42,
+      cardPosition.top - mascotSize.height + 42,
       viewportGap,
-      Math.max(viewportGap, viewportSize.height - mascotHeight - viewportGap),
+      Math.max(viewportGap, viewportSize.height - mascotSize.height - viewportGap),
     ),
+  };
+}
+
+function getMascotSize(viewportWidth: number) {
+  const width =
+    viewportWidth < 380
+      ? SpotlightCompactMobileMascotWidth
+      : viewportWidth < 640
+        ? SpotlightMobileMascotWidth
+        : SpotlightDesktopMascotWidth;
+
+  return {
+    width,
+    height: width * SpotlightMascotAspectRatio,
   };
 }
 

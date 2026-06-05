@@ -1,5 +1,4 @@
 import { PurchaseRequestStorageKey } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
-import { findFormSignatorySetup } from "@/app/src/data/modules/maintenance/form-signatory/FormSignatoryData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
 	PurchaseRequestFormValues,
@@ -145,7 +144,7 @@ export function createPurchaseRequestRecord(
 ): PurchaseRequestRecord {
 	return {
 		id,
-		...applyPurchaseRequestSignatoryValues(values),
+		...values,
 		vatRegTin: FormatTinNumber(values.vatRegTin),
 		items: values.items.map((item) => ({
 			...item,
@@ -153,41 +152,6 @@ export function createPurchaseRequestRecord(
 			quantity: Number(item.quantity) || 0,
 			cost: Number(item.cost) || 0,
 		})),
-	};
-}
-
-export function applyPurchaseRequestSignatories(
-	record: PurchaseRequestRecord,
-): PurchaseRequestRecord {
-	return applyPurchaseRequestSignatoryValues(record);
-}
-
-export function applyPurchaseRequestSignatoryValues<
-	TValues extends PurchaseRequestFormValues | PurchaseRequestRecord,
->(values: TValues): TValues {
-	if (values.status !== "Approved" && values.status !== "Closed") {
-		return values;
-	}
-
-	const setup = findFormSignatorySetup({
-		branch: "head-office",
-		module: "purchase-request",
-	});
-	const preparedBy = setup?.rows.find((row) => row.label === "Prepared By");
-	const approvedBy = setup?.rows.find((row) => row.label === "Approved By");
-
-	return {
-		...values,
-		preparedBy: preparedBy?.name || values.preparedBy,
-		preparedBySignatureFileName:
-			preparedBy?.signatureName || values.preparedBySignatureFileName,
-		preparedBySignatureImageUrl:
-			preparedBy?.signaturePreview || values.preparedBySignatureImageUrl,
-		approvedBy: approvedBy?.name || values.approvedBy,
-		approvedBySignatureFileName:
-			approvedBy?.signatureName || values.approvedBySignatureFileName,
-		approvedBySignatureImageUrl:
-			approvedBy?.signaturePreview || values.approvedBySignatureImageUrl,
 	};
 }
 
@@ -257,14 +221,14 @@ export function formatPurchaseRequestDate(value: string) {
 
 export function loadPurchaseRequests() {
 	if (typeof window === "undefined") {
-		return purchaseRequestSeedRecords.map(applyPurchaseRequestSignatories);
+		return purchaseRequestSeedRecords;
 	}
 
 	try {
 		const stored = window.localStorage.getItem(PurchaseRequestStorageKey);
 
 		if (!stored) {
-			return purchaseRequestSeedRecords.map(applyPurchaseRequestSignatories);
+			return purchaseRequestSeedRecords;
 		}
 
 		const parsed = JSON.parse(stored) as PurchaseRequestRecord[];
@@ -274,9 +238,9 @@ export function loadPurchaseRequests() {
 				? parsed
 				: purchaseRequestSeedRecords;
 
-		return records.map(applyPurchaseRequestSignatories);
+		return records;
 	} catch {
-		return purchaseRequestSeedRecords.map(applyPurchaseRequestSignatories);
+		return purchaseRequestSeedRecords;
 	}
 }
 

@@ -55,7 +55,7 @@ export function useUserRoleFormPage() {
 				? UserRoleQueryKeys.branchRole(branchId, params.recordId)
 				: UserRoleQueryKeys.branchRole("", ""),
 		queryFn: async () =>
-			GetBranchRole(accessToken, branchId ?? "", params.recordId ?? ""),
+			GetBranchRole(branchId ?? "", params.recordId ?? ""),
 	});
 	const existingUserRole = existingUserRoleQuery.data;
 	const isReadonly = mode === "view";
@@ -70,6 +70,7 @@ export function useUserRoleFormPage() {
 	const [draftValues, setDraftValues] = useState<UserRoleFormValues | null>(null);
 	const values = draftValues ?? existingFormValues;
 	const [errors, setErrors] = useState<UserRoleFormErrors>({});
+	const [isRedirectingAfterSave, setIsRedirectingAfterSave] = useState(false);
 	const viewHref = existingUserRole
 		? `${UserRoleHref}/view/${existingUserRole.id}`
 		: UserRoleHref;
@@ -86,7 +87,7 @@ export function useUserRoleFormPage() {
 				throw new Error("Select a branch before creating a user role.");
 			}
 
-			return CreateBranchRole(accessToken, branchId, nextValues);
+			return CreateBranchRole(branchId, nextValues);
 		},
 		onSuccess: (createdRole) => {
 			if (branchId) {
@@ -99,6 +100,7 @@ export function useUserRoleFormPage() {
 				});
 			}
 
+			setIsRedirectingAfterSave(true);
 			toast.success("User role created.");
 			router.push(submitHref);
 		},
@@ -114,12 +116,7 @@ export function useUserRoleFormPage() {
 				throw new Error("Select a branch before updating a user role.");
 			}
 
-			return UpdateBranchRole(
-				accessToken,
-				branchId,
-				existingUserRole.id,
-				nextValues,
-			);
+			return UpdateBranchRole(branchId, existingUserRole.id, nextValues);
 		},
 		onSuccess: (updatedRole) => {
 			if (branchId) {
@@ -139,6 +136,7 @@ export function useUserRoleFormPage() {
 				});
 			}
 
+			setIsRedirectingAfterSave(true);
 			toast.success("User role updated.");
 			router.push(submitHref);
 		},
@@ -160,12 +158,7 @@ export function useUserRoleFormPage() {
 				throw new Error("Select a branch before updating a user role.");
 			}
 
-			return UpdateBranchRoleStatus(
-				accessToken,
-				branchId,
-				role.id,
-				nextStatus === "Active",
-			);
+			return UpdateBranchRoleStatus(branchId, role.id, nextStatus === "Active");
 		},
 		onSuccess: (updatedRole) => {
 			if (branchId) {
@@ -199,7 +192,8 @@ export function useUserRoleFormPage() {
 	const isMutating =
 		createMutation.isPending ||
 		updateMutation.isPending ||
-		statusMutation.isPending;
+		statusMutation.isPending ||
+		isRedirectingAfterSave;
 
 	function updateField(
 		field: keyof UserRoleFormValues,
@@ -219,21 +213,27 @@ export function useUserRoleFormPage() {
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-		submitForm();
+		void submitForm();
 	}
 
-	function submitForm() {
+	async function submitForm() {
 		const nextErrors = validateUserRoleForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
-			return;
+			return "invalid";
 		}
 
-		if (mode === "edit" && existingUserRole) {
-			updateMutation.mutate(values);
-		} else {
-			createMutation.mutate(values);
+		try {
+			if (mode === "edit" && existingUserRole) {
+				await updateMutation.mutateAsync(values);
+			} else {
+				await createMutation.mutateAsync(values);
+			}
+
+			return "saved";
+		} catch {
+			return "failed";
 		}
 	}
 
@@ -255,6 +255,7 @@ export function useUserRoleFormPage() {
 		existingUserRole,
 		handleStatusChange,
 		handleSubmit,
+		isRedirectingAfterSave,
 		isMutating,
 		isReadonly,
 		mode,

@@ -8,46 +8,23 @@ import type {
 	UserRoleRecord,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 
-function GetAuthorizationHeaders(accessToken: string | null) {
-	if (!accessToken) {
-		return undefined;
-	}
-
-	return {
-		Authorization: `Bearer ${accessToken}`,
-	};
-}
-
-export async function GetBranchUsers(
-	accessToken: string | null,
-	unitId: string,
-) {
+export async function GetBranchUsers(unitId: string) {
 	const response = await ApiClient.get<BranchUserApiResponse>(
 		`/company/units/${unitId}/users`,
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return response.data.users.map(MapBranchUserApiRecord);
 }
 
-export async function GetBranchUserRoles(
-	accessToken: string | null,
-	unitId: string,
-) {
+export async function GetBranchUserRoles(unitId: string) {
 	const response = await ApiClient.get<{ roles: BranchUserRoleApiResponse[] }>(
 		`/company/units/${unitId}/users/roles`,
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
 
 	return response.data.roles.map(MapBranchUserRoleApiRecord);
 }
 
 export async function UpdateBranchUserRole(
-	accessToken: string | null,
 	unitId: string,
 	userId: string,
 	companyRoleId: string,
@@ -56,9 +33,6 @@ export async function UpdateBranchUserRole(
 		`/company/units/${unitId}/users/${userId}/role`,
 		{
 			companyRoleId: companyRoleId ? Number(companyRoleId) : null,
-		},
-		{
-			headers: GetAuthorizationHeaders(accessToken),
 		},
 	);
 

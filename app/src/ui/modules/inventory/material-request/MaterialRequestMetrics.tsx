@@ -6,7 +6,7 @@ type MaterialRequestMetricsProps = {
 		totalRequests: number;
 		pending: number;
 		approved: number;
-		rejected: number;
+		disapproved: number;
 		completed: number;
 	};
 };
@@ -35,9 +35,9 @@ export function MaterialRequestMetrics({ metrics }: MaterialRequestMetricsProps)
 			iconClassName: "bg-citron/25 text-darknavy",
 		},
 		{
-			label: "Rejected",
-			value: metrics.rejected,
-			summary: formatPercentage(metrics.rejected, metrics.totalRequests),
+			label: "Disapproved",
+			value: metrics.disapproved,
+			summary: formatPercentage(metrics.disapproved, metrics.totalRequests),
 			icon: XCircle,
 			iconClassName: "bg-coralpink/15 text-coralpink",
 		},

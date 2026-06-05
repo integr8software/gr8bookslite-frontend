@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, FileText, Paperclip, Plus } from "lucide-react";
+import { ChevronDown, Eye, FileText, Paperclip, Plus, X } from "lucide-react";
 import {
   DisbursementVoucherInitialEntryDraft,
   DisbursementVoucherCopyFromRecords,
@@ -10,15 +10,13 @@ import {
   applyCopyFromRecordToDisbursementVoucherForm,
   createAttachmentPlaceholders,
   createAutoDisbursementLineEntries,
-  createDisbursementLineEntry,
   createDisbursementVoucherFormValues,
-  formatTaxRateSummary,
   formatCurrency,
   formatDateLabel,
+  formatTaxRateSummary,
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
-  validateDisbursementEntryDraft,
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
@@ -41,7 +39,6 @@ import {
   AppTaxRateDialog,
   type AppTaxRateDialogValue,
 } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
-import { AccountingEntriesDialog as ReusableAccountingEntriesDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/AccountingEntriesDialog";
 import {
   writeAccountingGridSession,
   type DisbursementVoucherAccountingGridSession,
@@ -50,7 +47,6 @@ import { DisbursementVoucherCopyFromDialog } from "@/app/src/ui/modules/cash-dis
 import type {
   DisbursementLineEntry,
   DisbursementPaymentMethod,
-  DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementType,
   DisbursementVoucherCopySource,
@@ -118,7 +114,9 @@ function DrawerPanel({
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<DrawerTab>("cash-disbursement");
   const [step, setStep] = useState<WorkflowStep>(
-    resumeState?.returnStep ?? "details",
+    resumeState?.returnStep === "entries"
+      ? "details"
+      : (resumeState?.returnStep ?? "details"),
   );
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
   const [isVceDialogOpen, setIsVceDialogOpen] = useState(false);
@@ -180,9 +178,6 @@ function DrawerPanel({
     () => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0),
     [values.lineEntries],
   );
-  const isBalanced =
-    values.lineEntries.length > 1 && Math.abs(totalDebit - totalCredit) < 0.001;
-
   function updateField<TKey extends keyof DisbursementVoucherFormValues>(
     field: TKey,
     value: DisbursementVoucherFormValues[TKey],
@@ -204,11 +199,8 @@ function DrawerPanel({
       return;
     }
 
-    if (values.attachments.length === 0 && selectedTransaction) {
-      updateField(
-        "attachments",
-        createAttachmentPlaceholders(selectedTransaction),
-      );
+    if (values.attachments.length === 0) {
+      updateField("attachments", createAttachmentPlaceholders());
     }
 
     if (values.lineEntries.length === 0 && selectedTransaction) {
@@ -230,84 +222,7 @@ function DrawerPanel({
       );
     }
 
-    setStep("entries");
-  }
-
-  function handleProceedFromEntries() {
-    const nextErrors = validateDisbursementVoucherEntries(values);
-
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
-      return;
-    }
-
-    setStep("review");
-  }
-
-  function handleAddEntry() {
-    const nextError = validateDisbursementEntryDraft(entryDraft);
-
-    if (nextError) {
-      setErrors((current) => ({ ...current, entryDraft: nextError }));
-      return;
-    }
-
-    updateField("lineEntries", [
-      ...values.lineEntries,
-      createDisbursementLineEntry(entryDraft),
-    ]);
-    setEntryDraft(DisbursementVoucherInitialEntryDraft);
-    setErrors((current) => ({
-      ...current,
-      entryDraft: undefined,
-      lineEntries: undefined,
-    }));
-  }
-
-  function handleRemoveEntry(entryId: string) {
-    updateField(
-      "lineEntries",
-      values.lineEntries.filter((entry) => entry.id !== entryId),
-    );
-  }
-
-  function handleUpdateEntryTax(
-    entryId: string,
-    taxRate: string,
-    taxDetails: DisbursementTaxDetails,
-  ) {
-    updateField(
-      "lineEntries",
-      values.lineEntries.map((entry) =>
-        entry.id === entryId
-          ? {
-              ...entry,
-              taxRate,
-              taxDetails,
-            }
-          : entry,
-      ),
-    );
-  }
-
-  function handleApplyAutoEntries() {
-    if (!selectedTransaction) {
-      return;
-    }
-
-    const selectedDisbursementTypeRecord = findDisbursementTypeRecord(
-      disbursementTypeRecords,
-      values.disbursementType,
-    );
-
-    updateField(
-      "lineEntries",
-      applyDisbursementTypeRecordToLineEntries(
-        createAutoDisbursementLineEntries(selectedTransaction),
-        selectedDisbursementTypeRecord,
-      ),
-    );
-    setErrors((current) => ({ ...current, lineEntries: undefined }));
+    handleOpenGridView();
   }
 
   function handleFinalSave() {
@@ -476,7 +391,7 @@ function DrawerPanel({
           totalCredit={totalCredit}
           totalDebit={totalDebit}
           values={values}
-          onEditEntries={() => setStep("entries")}
+          onEditEntries={handleOpenGridView}
         />
       ) : null}
 
@@ -529,24 +444,6 @@ function DrawerPanel({
         }}
       />
 
-      <ReusableAccountingEntriesDialog
-        isOpen={step === "entries"}
-        entryDraft={entryDraft}
-        entries={values.lineEntries}
-        errors={errors}
-        isBalanced={isBalanced}
-        totalCredit={totalCredit}
-        totalDebit={totalDebit}
-        onAddEntry={handleAddEntry}
-        onApplyAutoEntries={handleApplyAutoEntries}
-        onBack={() => setStep("details")}
-        onClose={() => setStep("details")}
-        onDraftChange={setEntryDraft}
-        onOpenGridView={handleOpenGridView}
-        onProceed={handleProceedFromEntries}
-        onRemoveEntry={handleRemoveEntry}
-        onUpdateEntryTax={handleUpdateEntryTax}
-      />
       <DisbursementVoucherCopyFromDialog
         isOpen={isCopyFromDialogOpen}
         records={DisbursementVoucherCopyFromRecords}
@@ -648,6 +545,8 @@ function DetailsTab({
 
     return paymentTypeOptions;
   }, [paymentTypeOptions, values.paymentMethod]);
+  const displayedTransactionNumber =
+    transactionNumber || "Auto-generated on save";
 
   return (
     <div className="grid gap-6 px-6 py-6 xl:grid-cols-[1fr_0.72fr]">
@@ -781,7 +680,7 @@ function DetailsTab({
           <>
             <input
               list="disbursement-voucher-transaction-nos"
-              value={transactionNumber}
+              value={displayedTransactionNumber}
               readOnly
               className={ReadOnlyFieldClassName}
             />
@@ -879,28 +778,11 @@ function AttachmentsTab({ values }: { values: DisbursementVoucherFormValues }) {
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3">
-          {values.attachments.length > 0 ? (
-            values.attachments.map((attachment) => (
-              <div
-                key={attachment.id}
-                className="flex items-center justify-between rounded-xl border border-darknavy/10 bg-white px-4 py-3"
-              >
-                <span className="text-sm font-medium text-darknavy">
-                  {attachment.name}
-                </span>
-                <span className="text-xs text-darknavy/50">
-                  {attachment.sizeLabel}
-                </span>
-              </div>
-            ))
-          ) : (
-            <div className="rounded-xl border border-dashed border-darknavy/16 bg-white px-4 py-8 text-center text-sm text-darknavy/55">
-              No attachments yet. Attachments will follow the selected
-              transaction or can be added later.
-            </div>
-          )}
-        </div>
+        <VoucherAttachmentList
+          attachments={values.attachments}
+          emptyMessage="No attachments yet. Attachments will follow the selected transaction or can be added later."
+          variant="tab"
+        />
       </div>
     </div>
   );
@@ -1121,11 +1003,11 @@ function ReviewStep({
             <InfoLine label="Status" value={values.status || "-"} />
             <InfoLine label="Remarks" value={values.remarks || "-"} />
 
-            <div className="rounded-[18px] bg-coralpink px-5 py-5 text-darknavy shadow-[0_16px_36px_rgba(249,112,104,0.18)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-darknavy/72">
+            <div className="rounded-[18px] border border-darknavy/10 bg-offwhite/45 px-5 py-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-darknavy/45">
                 Linked Voucher Amount
               </p>
-              <p className="mt-2 text-3xl font-semibold">
+              <p className="mt-2 text-3xl font-semibold text-darknavy">
                 {formatCurrency(Number(values.amount || 0))}
               </p>
             </div>
@@ -1202,31 +1084,11 @@ function ReviewStep({
           />
         </div>
 
-        <div className="mt-5 rounded-[18px] border border-darknavy/10 bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/42">
-            Attachments
-          </p>
-          <div className="mt-3 grid gap-3">
-            {values.attachments.map((attachment) => (
-              <div
-                key={attachment.id}
-                className="flex items-center justify-between rounded-xl border border-darknavy/10 px-3 py-3"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-darknavy/8 text-darknavy">
-                    <FileText className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                  <span className="text-sm font-medium text-darknavy">
-                    {attachment.name}
-                  </span>
-                </div>
-                <span className="text-xs text-darknavy/50">
-                  {attachment.sizeLabel}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <VoucherAttachmentList
+          attachments={values.attachments}
+          emptyMessage="No attachments are linked to this voucher yet."
+          variant="preview"
+        />
       </ReviewCardShell>
     </section>
   );
@@ -1255,6 +1117,171 @@ function SummaryPreviewCard({
         {label}
       </p>
       <p className="mt-2 text-lg font-semibold text-darknavy">{value}</p>
+    </div>
+  );
+}
+
+function VoucherAttachmentList({
+  attachments,
+  emptyMessage,
+  variant,
+}: {
+  attachments: DisbursementVoucherFormValues["attachments"];
+  emptyMessage: string;
+  variant: "preview" | "tab";
+}) {
+  const [selectedAttachment, setSelectedAttachment] = useState<
+    DisbursementVoucherFormValues["attachments"][number] | null
+  >(null);
+
+  return (
+    <>
+      <div
+        className={
+          variant === "preview"
+            ? "mt-5 rounded-[18px] border border-darknavy/10 bg-white p-4"
+            : "mt-5"
+        }
+      >
+        {variant === "preview" ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/42">
+                Attachments
+              </p>
+              <p className="mt-1 text-xs text-darknavy/50">
+                Review supporting files before final save.
+              </p>
+            </div>
+            <span className="rounded-full border border-darknavy/10 bg-offwhite/45 px-3 py-1 text-xs font-semibold text-darknavy/55">
+              {attachments.length} file{attachments.length === 1 ? "" : "s"}
+            </span>
+          </div>
+        ) : null}
+
+        <div className={variant === "preview" ? "mt-3 grid gap-3" : "grid gap-3"}>
+          {attachments.length > 0 ? (
+            attachments.map((attachment) => (
+              <div
+                key={attachment.id}
+                className="flex flex-col gap-3 rounded-xl border border-darknavy/10 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-darknavy/8 text-darknavy">
+                    <FileText className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-darknavy">
+                      {attachment.name}
+                    </p>
+                    <p className="mt-1 text-xs text-darknavy/50">
+                      {attachment.sizeLabel}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAttachment(attachment)}
+                  className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-skyblue/25 bg-skyblue/8 px-3 text-xs font-semibold text-skyblue transition hover:bg-skyblue/14"
+                >
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                  View
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="rounded-xl border border-dashed border-darknavy/16 bg-white px-4 py-8 text-center text-sm text-darknavy/55">
+              {emptyMessage}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <VoucherAttachmentDetailsDialog
+        attachment={selectedAttachment}
+        onClose={() => setSelectedAttachment(null)}
+      />
+    </>
+  );
+}
+
+function VoucherAttachmentDetailsDialog({
+  attachment,
+  onClose,
+}: {
+  attachment: DisbursementVoucherFormValues["attachments"][number] | null;
+  onClose: () => void;
+}) {
+  if (!attachment) {
+    return null;
+  }
+
+  return (
+    <div
+      role="presentation"
+      className="fixed inset-0 z-[150] flex items-end justify-center bg-slate-950/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="voucher-attachment-details-title"
+        className="flex w-full max-w-xl flex-col overflow-hidden rounded-[20px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)]"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">
+              Attachment
+            </p>
+            <h2
+              id="voucher-attachment-details-title"
+              className="mt-1 text-xl font-semibold text-darknavy"
+            >
+              File Details
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-darknavy/6 hover:text-darknavy"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="grid gap-4 px-5 py-5">
+          <div className="flex items-center gap-3 rounded-xl border border-darknavy/10 bg-offwhite/45 px-4 py-4">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-darknavy/8 text-darknavy">
+              <FileText className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-darknavy">
+                {attachment.name}
+              </p>
+              <p className="mt-1 text-xs text-darknavy/55">
+                {attachment.sizeLabel}
+              </p>
+            </div>
+          </div>
+          <p className="rounded-xl border border-darknavy/10 bg-white px-4 py-3 text-sm leading-6 text-darknavy/60">
+            This preview shows the attachment record linked to the voucher. File
+            opening/downloading can be connected once real attachment storage is
+            available.
+          </p>
+        </div>
+        <div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
+          >
+            Close
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
@@ -1415,10 +1442,10 @@ function InfoLine({ label, value }: { label: string; value: string }) {
 }
 
 const FieldClassName =
-  "app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/40";
+  "app-data-entry-field app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/40";
 
 const ReadOnlyFieldClassName =
-  "app-theme-field-readonly h-11 w-full rounded-md border px-3 text-sm outline-none";
+  "app-data-entry-field app-theme-field-readonly h-11 w-full rounded-md border px-3 text-sm outline-none";
 
 function getSuggestedPartyType(
   disbursementType: DisbursementType | "",

@@ -4,96 +4,131 @@ import type {
 	DiscountManagementFormErrors,
 	DiscountManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
+import type { FormSignatoryModuleOption } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
+import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type DiscountManagementFieldsProps = {
-	accountQuery: string;
+	accountOptions: ChartAccount[];
 	errors: DiscountManagementFormErrors;
 	isReadonly: boolean;
-	matchedAccounts: ChartAccount[];
-	selectedAccount?: ChartAccount;
+	moduleOptions: FormSignatoryModuleOption[];
 	values: DiscountManagementFormValues;
-	onAccountQueryChange: ChangeEventHandler<HTMLInputElement>;
+	onAccountChange: (accountId: string) => void;
 	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
-	onSelectAccount: (account: ChartAccount) => void;
+	onModuleChange: (value: string | string[]) => void;
 };
 
 export function DiscountManagementFields({
-	accountQuery,
+	accountOptions,
 	errors,
 	isReadonly,
-	matchedAccounts,
-	selectedAccount,
+	moduleOptions,
 	values,
-	onAccountQueryChange,
+	onAccountChange,
 	onInputChange,
-	onSelectAccount,
+	onModuleChange,
 }: DiscountManagementFieldsProps) {
+	const moduleDropdownOptions = moduleOptions.map((option) => ({
+		name: option.label,
+		value: option.value,
+	}));
+
 	return (
 		<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
 			<div className="grid gap-4 lg:grid-cols-2">
-				<FormField label="Description" error={errors.description} required>
+				<FormField label="Name" error={errors.name} required>
+					<input
+						name="name"
+						value={values.name}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={fieldClassName}
+						placeholder="Enter discount name"
+					/>
+				</FormField>
+
+				<FormField label="Status" error={errors.status} required>
+					<select
+						name="status"
+						value={values.status}
+						onChange={onInputChange}
+						disabled={isReadonly}
+						className={fieldClassName}
+					>
+						<option value="Active">Active</option>
+						<option value="Inactive">Inactive</option>
+					</select>
+				</FormField>
+
+				<FormField
+					label="Description"
+					error={errors.description}
+					required
+					className="lg:col-span-2"
+				>
 					<input
 						name="description"
 						value={values.description}
 						onChange={onInputChange}
 						readOnly={isReadonly}
 						className={fieldClassName}
-						placeholder="Enter description"
+						placeholder="What is this discount for?"
 					/>
 				</FormField>
 
-				<FormField label="Discount Percentage" error={errors.percentage} required>
+				<FormField label="Discount Type" error={errors.discountType} required>
+					<select
+						name="discountType"
+						value={values.discountType}
+						onChange={onInputChange}
+						disabled={isReadonly}
+						className={fieldClassName}
+					>
+						<option value="Percentage">Percentage</option>
+						<option value="Fixed">Fixed</option>
+					</select>
+				</FormField>
+
+				<FormField label="Discount Value" error={errors.amount} required>
 					<input
-						name="percentage"
+						name="amount"
 						type="number"
 						min="0"
-						max="100"
+						max={values.discountType === "Percentage" ? "100" : undefined}
 						step="0.01"
-						value={values.percentage}
+						value={values.amount}
 						onChange={onInputChange}
 						readOnly={isReadonly}
 						className={fieldClassName}
-						placeholder="Enter percentage"
-					/>
-				</FormField>
-
-				<FormField label="Account Code">
-					<input
-						value={selectedAccount?.accountNumber ?? ""}
-						readOnly
-						className={fieldClassName}
-						placeholder="Select an account"
+						placeholder={
+							values.discountType === "Percentage"
+								? "Enter percentage"
+								: "Enter fixed amount"
+						}
 					/>
 				</FormField>
 
 				<FormField label="Account Title" error={errors.accountId} required>
-					<div className="relative">
-						<input
-							value={accountQuery}
-							onChange={onAccountQueryChange}
-							readOnly={isReadonly}
-							className={fieldClassName}
-							placeholder="Search account by name or number"
-						/>
-						{matchedAccounts.length > 0 ? (
-							<ul className="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-md border border-darknavy/10 bg-white text-sm shadow-md">
-								{matchedAccounts.map((account) => (
-									<li key={account.id}>
-										<button
-											type="button"
-											onClick={() => onSelectAccount(account)}
-											className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-darknavy transition hover:bg-skyblue/10"
-										>
-											<span>{account.accountName}</span>
-											<span className="text-xs text-darknavy/50">
-												{account.accountNumber}
-											</span>
-										</button>
-									</li>
-								))}
-							</ul>
-						) : null}
-					</div>
+					<ChartAccountDropdown
+						accounts={accountOptions}
+						placeholder="Search account by name or code"
+						readOnly={isReadonly}
+						value={values.accountId}
+						onChange={onAccountChange}
+					/>
+				</FormField>
+
+				<FormField label="Module" error={errors.moduleIds} required>
+					<AppAdvancedDropdown
+						disabled={isReadonly}
+						options={moduleDropdownOptions}
+						placeholder="Select available module"
+						searchPlaceholder="Search module"
+						selectionMode="multiple"
+						value={values.moduleIds}
+						onChange={onModuleChange}
+					/>
 				</FormField>
 			</div>
 		</div>
@@ -103,16 +138,18 @@ export function DiscountManagementFields({
 function FormField({
 	children,
 	error,
+	className,
 	label,
 	required,
 }: {
 	children: ReactNode;
+	className?: string;
 	error?: string;
 	label: string;
 	required?: boolean;
 }) {
 	return (
-		<label>
+		<label className={className}>
 			<span className="mb-2 block text-sm font-semibold text-darknavy">
 				{label}
 				{required ? <span className="text-coralpink"> *</span> : null}

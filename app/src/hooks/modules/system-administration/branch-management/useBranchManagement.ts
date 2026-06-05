@@ -7,7 +7,6 @@ import {
   mapWorkspaceCompaniesToBranchManagementBranches,
 } from "@/app/src/data/modules/system-administration/branch-management/BranchManagementData";
 import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
-import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { BranchManagementQueryKeys } from "@/app/src/services/modules/system-administration/branch-management/BranchManagementQueryKeys";
 import {
   GetWorkspaceCompanies,
@@ -26,12 +25,11 @@ export function useBranchManagementStore<TSelected = BranchManagementStoreState>
   selector?: (state: BranchManagementStoreState) => TSelected,
 ) {
   const queryClient = useQueryClient();
-  const accessToken = useAppStore((state) => state.accessToken);
   const branchesQuery = useQuery({
     queryKey: BranchManagementQueryKeys.branches(),
     queryFn: async () =>
       mapWorkspaceCompaniesToBranchManagementBranches(
-        await GetWorkspaceCompanies(accessToken),
+        await GetWorkspaceCompanies(),
       ),
   });
 

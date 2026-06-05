@@ -11,17 +11,17 @@ import {
   type WorkspaceCompanyManagementStoreState,
 } from "@/app/src/hooks/workspace/companies/WorkspaceCompanyManagementTypes";
 import { BillingQueryKeys } from "@/app/src/services/billing/BillingQueryKeys";
+import { CreateSessionQueryOptions } from "@/app/src/services/shared/query/QueryProfiles";
 import {
   CreateWorkspaceCompany,
   DeactivateWorkspaceCompany,
-  GetWorkspaceCompanies,
+  GetWorkspaceCompanyManagementSummary,
   UpdateWorkspaceCompany,
 } from "@/app/src/services/workspace/companies/WorkspaceCompanyApi";
 import { WorkspaceCompanyQueryKeys } from "@/app/src/services/workspace/companies/WorkspaceCompanyQueryKeys";
 import {
   CancelWorkspaceUserInvitation,
   CreateWorkspaceUser,
-  GetWorkspaceUsers,
   ResendWorkspaceUserInvitation,
   UpdateWorkspaceUser,
 } from "@/app/src/services/workspace/users/WorkspaceUserApi";
@@ -33,6 +33,11 @@ import type {
   WorkspaceCompanyUserRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
+type WorkspaceCompanyManagementSummary = {
+  companies: WorkspaceCompanyRecord[];
+  users: WorkspaceCompanyUserRecord[];
+};
+
 export function useWorkspaceCompanyManagementStore<
   TSelected = WorkspaceCompanyManagementStoreState,
 >(
@@ -43,40 +48,73 @@ export function useWorkspaceCompanyManagementStore<
   const storedAccessToken = useAppStore((state) => state.accessToken);
   const accessToken = storedAccessToken;
   const includeUsers = options.includeUsers ?? true;
-  const companiesQuery = useQuery({
-    queryKey: WorkspaceCompanyQueryKeys.companies(),
-    queryFn: async () => GetWorkspaceCompanies(accessToken),
-  });
-  const usersQuery = useQuery({
-    queryKey: WorkspaceUserQueryKeys.users(),
-    queryFn: async () => GetWorkspaceUsers(accessToken),
-    enabled: includeUsers,
+  const summaryQueryKey =
+    WorkspaceCompanyQueryKeys.managementSummary(includeUsers);
+  const managementSummaryQuery = useQuery({
+    ...CreateSessionQueryOptions(summaryQueryKey, async () =>
+      GetWorkspaceCompanyManagementSummary(includeUsers),
+    ),
   });
   const branches = useMemo(
     () =>
-      (companiesQuery.data ?? EmptyWorkspaceCompanies).flatMap(
+      (managementSummaryQuery.data?.companies ?? EmptyWorkspaceCompanies).flatMap(
         (company) => company.branches ?? EmptyWorkspaceCompanyBranches,
       ),
-    [companiesQuery.data],
+    [managementSummaryQuery.data?.companies],
+  );
+  const errorMessage = getWorkspaceManagementErrorMessage(
+    managementSummaryQuery.error,
   );
 
   function setCompanies(
     updater: (companies: WorkspaceCompanyRecord[]) => WorkspaceCompanyRecord[],
   ) {
+    queryClient.setQueryData<WorkspaceCompanyManagementSummary>(
+      summaryQueryKey,
+      (current) => ({
+        companies: updater(current?.companies ?? EmptyWorkspaceCompanies),
+        users: current?.users ?? EmptyWorkspaceCompanyUsers,
+      }),
+    );
     queryClient.setQueryData<WorkspaceCompanyRecord[]>(
       WorkspaceCompanyQueryKeys.companies(),
       (current = EmptyWorkspaceCompanies) => updater(current),
     );
   }
 
+  function setUsers(
+    updater: (
+      users: WorkspaceCompanyUserRecord[],
+    ) => WorkspaceCompanyUserRecord[],
+  ) {
+    queryClient.setQueryData<WorkspaceCompanyManagementSummary>(
+      summaryQueryKey,
+      (current) => ({
+        companies: current?.companies ?? EmptyWorkspaceCompanies,
+        users: updater(current?.users ?? EmptyWorkspaceCompanyUsers),
+      }),
+    );
+    queryClient.setQueryData<WorkspaceCompanyUserRecord[]>(
+      WorkspaceUserQueryKeys.users(),
+      (current = EmptyWorkspaceCompanyUsers) => updater(current),
+    );
+  }
+
+  function invalidateManagementSummary() {
+    void queryClient.invalidateQueries({
+      queryKey: WorkspaceCompanyQueryKeys.managementSummaries(),
+    });
+  }
+
   const addCompanyMutation = useMutation({
     mutationFn: async (values: WorkspaceCompanyFormValues) =>
-      CreateWorkspaceCompany(accessToken, values),
+      CreateWorkspaceCompany(values),
     onSuccess: (company) => {
       setCompanies((companies) => [company, ...companies]);
       void queryClient.invalidateQueries({
         queryKey: WorkspaceCompanyQueryKeys.companies(),
       });
+      invalidateManagementSummary();
       void queryClient.invalidateQueries({
         queryKey: BillingQueryKeys.paymentMethods(),
       });
@@ -103,7 +141,7 @@ export function useWorkspaceCompanyManagementStore<
         throw new Error("Sign in again before updating this company.");
       }
 
-      return UpdateWorkspaceCompany(accessToken, companyId, values);
+      return UpdateWorkspaceCompany(companyId, values);
     },
     onSuccess: (company) => {
       setCompanies((companies) =>
@@ -118,6 +156,7 @@ export function useWorkspaceCompanyManagementStore<
       void queryClient.invalidateQueries({
         queryKey: WorkspaceCompanyQueryKeys.companies(),
       });
+      invalidateManagementSummary();
       toast.success("Company updated.");
     },
     onError: (error) => {
@@ -135,7 +174,7 @@ export function useWorkspaceCompanyManagementStore<
         throw new Error("Sign in again before deactivating this company.");
       }
 
-      return DeactivateWorkspaceCompany(accessToken, companyId);
+      return DeactivateWorkspaceCompany(companyId);
     },
     onSuccess: (company) => {
       setCompanies((companies) =>
@@ -150,6 +189,7 @@ export function useWorkspaceCompanyManagementStore<
       void queryClient.invalidateQueries({
         queryKey: WorkspaceCompanyQueryKeys.companies(),
       });
+      invalidateManagementSummary();
       toast.success("Company deactivated.");
     },
     onError: (error) => {
@@ -163,18 +203,16 @@ export function useWorkspaceCompanyManagementStore<
 
   const addCompanyUserMutation = useMutation({
     mutationFn: async (values: WorkspaceCompanyUserFormValues) =>
-      CreateWorkspaceUser(accessToken, values),
+      CreateWorkspaceUser(values),
     onSuccess: (user) => {
-      queryClient.setQueryData<WorkspaceCompanyUserRecord[]>(
-        WorkspaceUserQueryKeys.users(),
-        (current = EmptyWorkspaceCompanyUsers) => [user, ...current],
-      );
+      setUsers((users) => [user, ...users]);
       void queryClient.invalidateQueries({
         queryKey: WorkspaceUserQueryKeys.users(),
       });
       void queryClient.invalidateQueries({
         queryKey: WorkspaceCompanyQueryKeys.companies(),
       });
+      invalidateManagementSummary();
       toast.success("Workspace user created.");
     },
     onError: (error) => {
@@ -193,12 +231,10 @@ export function useWorkspaceCompanyManagementStore<
     }: {
       userId: string;
       values: WorkspaceCompanyUserFormValues;
-    }) => UpdateWorkspaceUser(accessToken, userId, values),
+    }) => UpdateWorkspaceUser(userId, values),
     onSuccess: (user) => {
-      queryClient.setQueryData<WorkspaceCompanyUserRecord[]>(
-        WorkspaceUserQueryKeys.users(),
-        (current = EmptyWorkspaceCompanyUsers) =>
-          current.map((record) => (record.id === user.id ? user : record)),
+      setUsers((users) =>
+        users.map((record) => (record.id === user.id ? user : record)),
       );
       void queryClient.invalidateQueries({
         queryKey: WorkspaceUserQueryKeys.users(),
@@ -206,6 +242,7 @@ export function useWorkspaceCompanyManagementStore<
       void queryClient.invalidateQueries({
         queryKey: WorkspaceCompanyQueryKeys.companies(),
       });
+      invalidateManagementSummary();
       toast.success("Workspace user updated.");
     },
     onError: (error) => {
@@ -219,11 +256,12 @@ export function useWorkspaceCompanyManagementStore<
 
   const resendCompanyUserInvitationMutation = useMutation({
     mutationFn: async (userId: string) =>
-      ResendWorkspaceUserInvitation(accessToken, userId),
+      ResendWorkspaceUserInvitation(userId),
     onSuccess: (response) => {
       void queryClient.invalidateQueries({
         queryKey: WorkspaceUserQueryKeys.users(),
       });
+      invalidateManagementSummary();
       toast.success(response.message || "Invitation resent.");
     },
     onError: (error) => {
@@ -237,12 +275,10 @@ export function useWorkspaceCompanyManagementStore<
 
   const cancelCompanyUserInvitationMutation = useMutation({
     mutationFn: async (userId: string) =>
-      CancelWorkspaceUserInvitation(accessToken, userId),
+      CancelWorkspaceUserInvitation(userId),
     onSuccess: (response) => {
-      queryClient.setQueryData<WorkspaceCompanyUserRecord[]>(
-        WorkspaceUserQueryKeys.users(),
-        (current = EmptyWorkspaceCompanyUsers) =>
-          current.filter((record) => record.id !== String(response.id)),
+      setUsers((users) =>
+        users.filter((record) => record.id !== String(response.id)),
       );
       void queryClient.invalidateQueries({
         queryKey: WorkspaceUserQueryKeys.users(),
@@ -250,6 +286,7 @@ export function useWorkspaceCompanyManagementStore<
       void queryClient.invalidateQueries({
         queryKey: WorkspaceCompanyQueryKeys.companies(),
       });
+      invalidateManagementSummary();
       toast.success(response.message || "Invitation cancelled.");
     },
     onError: (error) => {
@@ -268,13 +305,14 @@ export function useWorkspaceCompanyManagementStore<
       branches,
       cancelCompanyUserInvitation: (userId) =>
         cancelCompanyUserInvitationMutation.mutateAsync(userId),
-      companies: companiesQuery.data ?? EmptyWorkspaceCompanies,
+      companies:
+        managementSummaryQuery.data?.companies ?? EmptyWorkspaceCompanies,
       deactivateCompany: (companyId) =>
         deactivateCompanyMutation.mutateAsync(companyId),
       deleteCompany: (companyId) =>
         deactivateCompanyMutation.mutateAsync(companyId),
-      isLoading:
-        companiesQuery.isLoading || (includeUsers && usersQuery.isLoading),
+      errorMessage,
+      isLoading: managementSummaryQuery.isLoading,
       isMutating:
         addCompanyMutation.isPending ||
         addCompanyUserMutation.isPending ||
@@ -290,7 +328,7 @@ export function useWorkspaceCompanyManagementStore<
       updateCompanyUser: (userId, values) =>
         updateCompanyUserMutation.mutateAsync({ userId, values }),
       users: includeUsers
-        ? (usersQuery.data ?? EmptyWorkspaceCompanyUsers)
+        ? (managementSummaryQuery.data?.users ?? EmptyWorkspaceCompanyUsers)
         : EmptyWorkspaceCompanyUsers,
     }),
     [
@@ -298,17 +336,27 @@ export function useWorkspaceCompanyManagementStore<
       addCompanyUserMutation,
       branches,
       cancelCompanyUserInvitationMutation,
-      companiesQuery.data,
-      companiesQuery.isLoading,
       deactivateCompanyMutation,
+      errorMessage,
       includeUsers,
+      managementSummaryQuery.data?.companies,
+      managementSummaryQuery.data?.users,
+      managementSummaryQuery.isLoading,
       resendCompanyUserInvitationMutation,
       updateCompanyMutation,
       updateCompanyUserMutation,
-      usersQuery.data,
-      usersQuery.isLoading,
     ],
   );
 
   return selector ? selector(state) : (state as TSelected);
+}
+
+function getWorkspaceManagementErrorMessage(error: unknown) {
+  if (!error) {
+    return null;
+  }
+
+  return error instanceof Error
+    ? error.message
+    : "Could not load workspace management data.";
 }

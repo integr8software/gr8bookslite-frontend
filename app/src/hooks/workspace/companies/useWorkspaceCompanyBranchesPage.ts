@@ -63,7 +63,7 @@ export function useWorkspaceCompanyBranchesPage() {
 	const companyBranchesQuery = useQuery({
 		enabled: Boolean(companyId && accessToken),
 		queryKey: WorkspaceCompanyQueryKeys.companyBranches(companyId),
-		queryFn: async () => getWorkspaceCompanyUnits(accessToken, companyId),
+		queryFn: async () => getWorkspaceCompanyUnits(companyId),
 	});
 	const branches = companyBranchesQuery.data ?? cachedBranches;
 	const mainBranchOptions = useMemo(
@@ -96,12 +96,7 @@ export function useWorkspaceCompanyBranchesPage() {
 				throw new Error("Sign in again before updating this branch.");
 			}
 
-			return updateWorkspaceCompanyUnit(
-				accessToken,
-				companyId,
-				branchId,
-				payload,
-			);
+			return updateWorkspaceCompanyUnit(companyId, branchId, payload);
 		},
 		onSuccess: (branch) => {
 			updateBranchQueryCache(branch);
@@ -132,7 +127,7 @@ export function useWorkspaceCompanyBranchesPage() {
 				throw new Error("Sign in again before deactivating this branch.");
 			}
 
-			return deactivateWorkspaceCompanyUnit(accessToken, companyId, branchId);
+			return deactivateWorkspaceCompanyUnit(companyId, branchId);
 		},
 		onSuccess: (branch) => {
 			updateBranchQueryCache(branch);

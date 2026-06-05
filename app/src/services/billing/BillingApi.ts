@@ -1,10 +1,19 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  billingControllerAttachPaymentMethodV1,
+  billingControllerCancelSubscriptionV1,
+  billingControllerGetCurrentSubscriptionV1,
+  billingControllerGetSubscriptionSetupV1,
+  billingControllerListPaymentMethodsV1,
+  billingControllerListPlansV1,
+  billingControllerSubscribeCompanyV1,
+} from "@/app/src/generated/api/billing/billing";
 import type {
   AttachPaymentMethodRequest,
   AttachPaymentMethodResponse,
   BillingPaymentMethodsResponse,
   BillingPlansResponse,
   BillingPlanScope,
+  BillingSubscriptionSetupResponse,
   CancelSubscriptionRequest,
   CancelSubscriptionResponse,
   CurrentSubscriptionResponse,
@@ -12,95 +21,48 @@ import type {
   SubscribeCompanyResponse,
 } from "@/app/src/data/billing/BillingTypes";
 
-function GetAuthorizationHeaders(accessToken: string | null) {
-  if (!accessToken) {
-    return undefined;
-  }
-
-  return {
-    Authorization: `Bearer ${accessToken}`,
-  };
+export async function GetBillingPlans(scope?: BillingPlanScope) {
+  return billingControllerListPlansV1(
+    scope ? { scope } : undefined,
+  ) as Promise<BillingPlansResponse>;
 }
 
-export async function GetBillingPlans(
-  accessToken: string | null = null,
-  scope?: BillingPlanScope,
-) {
-  const response = await ApiClient.get<BillingPlansResponse>("/billing/plans", {
-    headers: GetAuthorizationHeaders(accessToken),
-    params: scope ? { scope } : undefined,
-  });
-
-  return response.data;
+export async function GetBillingSubscriptionSetup(scope?: BillingPlanScope) {
+  return billingControllerGetSubscriptionSetupV1(
+    scope ? { scope } : undefined,
+  ) as Promise<BillingSubscriptionSetupResponse>;
 }
 
-export async function GetBillingPaymentMethods(accessToken: string | null = null) {
-  const response = await ApiClient.get<BillingPaymentMethodsResponse>(
-    "/billing/payment-methods",
-    {
-      headers: GetAuthorizationHeaders(accessToken),
-    },
-  );
-
-  return response.data;
+export async function GetBillingPaymentMethods() {
+  return billingControllerListPaymentMethodsV1() as Promise<BillingPaymentMethodsResponse>;
 }
 
-export async function GetCurrentBillingSubscription(
-  accessToken: string | null = null,
-) {
-  const response = await ApiClient.get<CurrentSubscriptionResponse>(
-    "/billing/subscriptions/current",
-    {
-      headers: GetAuthorizationHeaders(accessToken),
-    },
-  );
-
-  return response.data;
+export async function GetCurrentBillingSubscription() {
+  return billingControllerGetCurrentSubscriptionV1() as Promise<CurrentSubscriptionResponse>;
 }
 
 export async function SubscribeCompanyToPlan(
-  accessToken: string | null,
   payload: SubscribeCompanyRequest,
 ) {
-  const response = await ApiClient.post<SubscribeCompanyResponse>(
-    "/billing/subscriptions",
-    payload,
-    {
-      headers: GetAuthorizationHeaders(accessToken),
-    },
-  );
-
-  return response.data;
+  return billingControllerSubscribeCompanyV1(payload) as Promise<SubscribeCompanyResponse>;
 }
 
 export async function AttachCompanySubscriptionPaymentMethod(
-  accessToken: string | null,
   subscriptionId: number,
   payload: AttachPaymentMethodRequest,
 ) {
-  const response = await ApiClient.post<AttachPaymentMethodResponse>(
-    `/billing/subscriptions/${subscriptionId}/attach-payment-method`,
+  return billingControllerAttachPaymentMethodV1(
+    subscriptionId,
     payload,
-    {
-      headers: GetAuthorizationHeaders(accessToken),
-    },
-  );
-
-  return response.data;
+  ) as Promise<AttachPaymentMethodResponse>;
 }
 
 export async function CancelCompanySubscription(
-  accessToken: string | null,
   subscriptionId: number,
   payload: CancelSubscriptionRequest,
 ) {
-  const response = await ApiClient.post<CancelSubscriptionResponse>(
-    `/billing/subscriptions/${subscriptionId}/cancel`,
+  return billingControllerCancelSubscriptionV1(
+    subscriptionId,
     payload,
-    {
-      headers: GetAuthorizationHeaders(accessToken),
-    },
-  );
-
-  return response.data;
+  ) as Promise<CancelSubscriptionResponse>;
 }

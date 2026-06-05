@@ -4,7 +4,6 @@ import { Percent } from "lucide-react";
 import { DiscountManagementActionCopy } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
 import { useDiscountManagementFormPage } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagementFormPage";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { DiscountManagementActionButtons } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementActionButtons";
 import { DiscountManagementFields } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementFields";
 import { DiscountManagementNotFound } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementNotFound";
@@ -36,34 +35,22 @@ export function DiscountManagementFormPage() {
               discount={page.existingDiscount}
               isReadonly={page.isReadonly}
               mode={page.mode}
-              onDeleteDiscount={() => page.setIsDeleteDialogOpen(true)}
             />
           }
         />
 
         <DiscountManagementFields
-          accountQuery={page.accountQuery}
+          accountOptions={page.accountOptions}
           errors={page.errors}
           isReadonly={page.isReadonly}
-          matchedAccounts={page.matchedAccounts}
-          selectedAccount={page.selectedAccount}
+          moduleOptions={page.moduleOptions}
           values={page.values}
-          onAccountQueryChange={page.handleAccountQueryChange}
+          onAccountChange={page.handleAccountChange}
           onInputChange={page.handleInputChange}
-          onSelectAccount={page.handleSelectAccount}
+          onModuleChange={page.handleModuleChange}
         />
       </form>
 
-      <AppDialog
-        isOpen={page.isDeleteDialogOpen}
-        isPending={page.isMutating}
-        title="Delete discount?"
-        description={`This will remove ${page.existingDiscount?.description ?? "the selected discount"}.`}
-        confirmLabel="Delete"
-        tone="danger"
-        onCancel={() => page.setIsDeleteDialogOpen(false)}
-        onConfirm={page.handleConfirmDelete}
-      />
     </>
   );
 }

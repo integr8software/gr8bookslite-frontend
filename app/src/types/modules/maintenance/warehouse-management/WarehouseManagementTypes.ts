@@ -51,9 +51,8 @@ export type WarehouseRecord = {
 };
 
 export type WarehouseFormValues = {
+	code: string;
 	name: string;
-	branchName: string;
-	availability: WarehouseBranchAvailability;
 	availableBranches: string[];
 	managerName: string;
 	status: WarehouseStatus;
@@ -72,8 +71,12 @@ export type WarehouseAccessFormErrors = Record<
 export type WarehouseActionMode = "add" | "edit" | "view";
 
 export type WarehouseTableColumnKey =
+	| "code"
 	| "name"
-	| "branchName"
-	| "availability"
+	| "availableBranchLabel"
 	| "managerName"
 	| "status";
+
+export type WarehouseTableRecord = WarehouseRecord & {
+	availableBranchLabel: string;
+};

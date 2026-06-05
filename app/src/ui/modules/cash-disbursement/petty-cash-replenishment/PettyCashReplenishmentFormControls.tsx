@@ -6,14 +6,14 @@ export type PettyCashReplenishmentFormPageState = ReturnType<
 >;
 
 export const inputClassName = [
-  "h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3",
+  "app-data-entry-field h-10 w-full rounded-lg border border-darknavy/10 bg-white px-3",
   "text-sm text-darknavy outline-none transition focus:border-skyblue",
   "focus:ring-2 focus:ring-skyblue/20",
 ].join(" ");
 
 export const readOnlyClassName = [
-  "h-10 w-full rounded-lg border border-darknavy/10 bg-slate-100/80",
-  "px-3 text-sm text-darknavy/70 outline-none",
+  "app-data-entry-field h-10 w-full rounded-lg border border-darknavy/10 bg-white",
+  "px-3 text-sm text-darknavy outline-none",
 ].join(" ");
 
 export const buttonBaseClassName = [

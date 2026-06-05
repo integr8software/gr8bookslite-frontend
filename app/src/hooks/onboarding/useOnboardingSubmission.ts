@@ -19,6 +19,7 @@ import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingDa
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
   CompleteOnboarding,
+  GetOnboardingDraft,
   SaveOnboardingBilling,
   SaveOnboardingCompanyDetails,
   SelectOnboardingPlan,
@@ -30,6 +31,9 @@ import {
   ResolvePostAuthDestination,
 } from "@/app/src/services/auth/AuthRedirects";
 import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
+import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
+
+const CompanyNameTakenMessage = "Company name is already taken.";
 
 function GetOnboardingApiBillingCycle(value: BillingCycle) {
   return value === "yearly" ? "YEARLY" : "MONTHLY";
@@ -50,6 +54,43 @@ function GetCardBrand(value: string) {
   if (/^(30[0-5]|36|38|39)/.test(digits)) return "diners";
 
   return "card";
+}
+
+function Wait(milliseconds: number) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, milliseconds);
+  });
+}
+
+async function DidBillingPersist(accessToken: string | null) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await GetOnboardingDraft(accessToken);
+
+    if (response.draft?.hasBillingSetup) {
+      return true;
+    }
+
+    if (attempt < 2) {
+      await Wait(500);
+    }
+  }
+
+  return false;
+}
+
+function IsRequestTimeout(error: unknown) {
+  return (
+    error instanceof Error &&
+    error.message.trim().toLowerCase() === "the request timed out."
+  );
+}
+
+function IsCompanyNameTakenError(error: unknown) {
+  return (
+    error instanceof ApiClientError &&
+    error.status === 409 &&
+    error.message === CompanyNameTakenMessage
+  );
 }
 
 function GetOnboardingIdentityPayload(values: OnboardingValues) {
@@ -305,6 +346,29 @@ export function useOnboardingSubmission({
 
       setStepIndex((current) => current + 1);
     } catch (error) {
+      if (stepIndex === 1 && IsCompanyNameTakenError(error)) {
+        setErrors((current) => ({
+          ...current,
+          companyName: [CompanyNameTakenMessage],
+        }));
+        toast.error(CompanyNameTakenMessage);
+        return;
+      }
+
+      if (stepIndex === 2 && IsRequestTimeout(error)) {
+        const token = resolvedAccessToken ?? GetAccessToken();
+
+        try {
+          if (await DidBillingPersist(token)) {
+            setStepIndex(3);
+            toast.success("Billing details saved.");
+            return;
+          }
+        } catch {
+          // Fall through to the original timeout message when draft recovery fails.
+        }
+      }
+
       toast.error(
         error instanceof Error
           ? error.message

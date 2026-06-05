@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type {
 	WorkspaceCompanyPlan,
 	WorkspaceCompanyStatus,
+	WorkspaceUserStatus,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
@@ -59,13 +60,14 @@ export function WorkspaceManagementUserAvatar({
 export function WorkspaceManagementStatusBadge({
 	status,
 }: {
-	status: WorkspaceCompanyStatus;
+	status: WorkspaceCompanyStatus | WorkspaceUserStatus;
 }) {
 	const classes = {
 		Active: "bg-emerald-50 text-emerald-700 ring-emerald-100",
 		Inactive: "bg-orange-50 text-orange-700 ring-orange-100",
 		Pending: "bg-citron/25 text-darknavy ring-citron/40",
-	} satisfies Record<WorkspaceCompanyStatus, string>;
+		Suspended: "bg-rose-50 text-rose-700 ring-rose-100",
+	} satisfies Record<WorkspaceCompanyStatus | WorkspaceUserStatus, string>;
 
 	return (
 		<span

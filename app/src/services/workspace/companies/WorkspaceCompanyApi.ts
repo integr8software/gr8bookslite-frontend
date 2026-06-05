@@ -1,4 +1,19 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+	ApiClient,
+	ApiClientError,
+} from "@/app/src/services/shared/api/ApiClient";
+import {
+	workspaceCompaniesControllerCreateV1,
+	workspaceCompaniesControllerDeactivateV1,
+	workspaceCompaniesControllerFindAllV1,
+	workspaceCompaniesControllerFindOneV1,
+	workspaceCompaniesControllerGetManagementSummaryV1,
+	workspaceCompaniesControllerUpdateV1,
+} from "@/app/src/generated/api/workspace-companies/workspace-companies";
+import type {
+	WorkspaceCompanyResponseDto,
+	WorkspaceCompanyUnitResponseDto,
+} from "@/app/src/generated/api/gR8BooksLiteAPI.schemas";
 import type {
 	CreateWorkspaceCompanyApiRequest,
 	UpdateWorkspaceCompanyApiRequest,
@@ -9,111 +24,110 @@ import type {
 	WorkspaceCompanyStatus,
 	WorkspaceCompanyType,
 	WorkspaceCompanyUnitApiRecord,
+	WorkspaceCompanyUserRecord,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
+import { MapWorkspaceUserApiRecord } from "@/app/src/services/workspace/users/WorkspaceUserApi";
 
-function GetAuthorizationHeaders(accessToken: string | null) {
-	if (!accessToken) {
-		return undefined;
-	}
+type WorkspaceCompanyApiLike =
+	| WorkspaceCompanyApiRecord
+	| WorkspaceCompanyResponseDto;
+
+type WorkspaceCompanyUnitApiLike =
+	| WorkspaceCompanyUnitApiRecord
+	| WorkspaceCompanyUnitResponseDto;
+
+const CompanyCreateTimeoutMs = 60000;
+const CompanyLogoUploadTimeoutMs = 60000;
+
+export async function GetWorkspaceCompanies() {
+	const response = await workspaceCompaniesControllerFindAllV1();
+
+	return response.map(MapWorkspaceCompanyApiRecord);
+}
+
+export async function GetWorkspaceCompanyManagementSummary(
+	includeUsers = true,
+): Promise<{
+	companies: WorkspaceCompanyRecord[];
+	users: WorkspaceCompanyUserRecord[];
+}> {
+	const response = await workspaceCompaniesControllerGetManagementSummaryV1({
+		includeUsers: String(includeUsers),
+	});
 
 	return {
-		Authorization: `Bearer ${accessToken}`,
+		companies: response.companies.map(MapWorkspaceCompanyApiRecord),
+		users: response.users.map(MapWorkspaceUserApiRecord),
 	};
 }
 
-export async function GetWorkspaceCompanies(accessToken: string | null = null) {
-	const response = await ApiClient.get<WorkspaceCompanyApiRecord[]>(
-		"/workspace/companies",
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
-	);
+export async function GetWorkspaceCompany(companyId: string) {
+	const response = await workspaceCompaniesControllerFindOneV1(Number(companyId));
 
-	return response.data.map(MapWorkspaceCompanyApiRecord);
-}
-
-export async function GetWorkspaceCompany(
-	accessToken: string,
-	companyId: string,
-) {
-	const response = await ApiClient.get<WorkspaceCompanyApiRecord>(
-		`/workspace/companies/${companyId}`,
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
-	);
-
-	return MapWorkspaceCompanyApiRecord(response.data);
+	return MapWorkspaceCompanyApiRecord(response);
 }
 
 export async function CreateWorkspaceCompany(
-	accessToken: string | null,
 	values: WorkspaceCompanyFormValues,
 ): Promise<WorkspaceCompanyRecord> {
-	const company = await CreateWorkspaceCompanyFromRequest(
-		accessToken,
-		MapWorkspaceCompanyFormToCreateRequest(values),
-	);
+	const payload = MapWorkspaceCompanyFormToCreateRequest(values);
+	let company: WorkspaceCompanyRecord;
+
+	try {
+		company = await CreateWorkspaceCompanyFromRequest(payload);
+	} catch (error) {
+		if (!IsRequestTimeout(error)) {
+			throw error;
+		}
+
+		company = await RecoverCreatedCompanyAfterTimeout(payload);
+	}
 
 	if (!values.logoFile) {
 		return company;
 	}
 
-	return UploadWorkspaceCompanyLogo(accessToken, company.id, values.logoFile);
+	return UploadWorkspaceCompanyLogo(company.id, values.logoFile);
 }
 
 export async function UpdateWorkspaceCompany(
-	accessToken: string,
 	companyId: string,
 	values: WorkspaceCompanyFormValues,
 ): Promise<WorkspaceCompanyRecord> {
-	const response = await ApiClient.patch<WorkspaceCompanyApiRecord>(
-		`/workspace/companies/${companyId}`,
+	const response = await workspaceCompaniesControllerUpdateV1(
+		Number(companyId),
 		MapWorkspaceCompanyFormToUpdateRequest(values),
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
 	);
-	const company = MapWorkspaceCompanyApiRecord(response.data);
+	const company = MapWorkspaceCompanyApiRecord(response);
 
 	if (!values.logoFile) {
 		return company;
 	}
 
-	return UploadWorkspaceCompanyLogo(accessToken, company.id, values.logoFile);
+	return UploadWorkspaceCompanyLogo(company.id, values.logoFile);
 }
 
 export async function DeactivateWorkspaceCompany(
-	accessToken: string,
 	companyId: string,
 ): Promise<WorkspaceCompanyRecord> {
-	const response = await ApiClient.delete<WorkspaceCompanyApiRecord>(
-		`/workspace/companies/${companyId}`,
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
+	const response = await workspaceCompaniesControllerDeactivateV1(
+		Number(companyId),
 	);
 
-	return MapWorkspaceCompanyApiRecord(response.data);
+	return MapWorkspaceCompanyApiRecord(response);
 }
 
 export async function CreateWorkspaceCompanyFromRequest(
-	accessToken: string | null,
 	payload: CreateWorkspaceCompanyApiRequest,
 ): Promise<WorkspaceCompanyRecord> {
-	const response = await ApiClient.post<WorkspaceCompanyApiRecord>(
-		"/workspace/companies",
-		payload,
-		{
-			headers: GetAuthorizationHeaders(accessToken),
-		},
-	);
+	const response = await workspaceCompaniesControllerCreateV1(payload, {
+		timeout: CompanyCreateTimeoutMs,
+	});
 
-	return MapWorkspaceCompanyApiRecord(response.data);
+	return MapWorkspaceCompanyApiRecord(response);
 }
 
 export async function UploadWorkspaceCompanyLogo(
-	accessToken: string | null,
 	companyId: string,
 	file: File,
 ): Promise<WorkspaceCompanyRecord> {
@@ -125,16 +139,16 @@ export async function UploadWorkspaceCompanyLogo(
 		company: WorkspaceCompanyApiRecord;
 	}>(`/workspace/companies/${companyId}/logo`, formData, {
 		headers: {
-			...GetAuthorizationHeaders(accessToken),
 			"Content-Type": "multipart/form-data",
 		},
+		timeout: CompanyLogoUploadTimeoutMs,
 	});
 
 	return MapWorkspaceCompanyApiRecord(response.data.company);
 }
 
 function MapWorkspaceCompanyApiRecord(
-	company: WorkspaceCompanyApiRecord,
+	company: WorkspaceCompanyApiLike,
 ): WorkspaceCompanyRecord {
 	return {
 		address: company.address ?? "",
@@ -174,7 +188,7 @@ function MapWorkspaceCompanyApiRecord(
 }
 
 function MapWorkspaceCompanyUnitApiRecord(
-	unit: WorkspaceCompanyUnitApiRecord,
+	unit: WorkspaceCompanyUnitApiLike,
 ): WorkspaceCompanyBranchRecord {
 	return {
 		address: unit.address ?? "",
@@ -192,8 +206,71 @@ function MapWorkspaceCompanyUnitApiRecord(
 	};
 }
 
+async function RecoverCreatedCompanyAfterTimeout(
+	payload: CreateWorkspaceCompanyApiRequest,
+) {
+	for (let attempt = 0; attempt < 8; attempt += 1) {
+		if (attempt > 0) {
+			await Wait(1500);
+		}
+
+		const companies = await GetWorkspaceCompanies();
+		const company = companies.find((record) =>
+			IsMatchingCreatedCompany(record, payload),
+		);
+
+		if (company) {
+			return company;
+		}
+	}
+
+	throw new ApiClientError(
+		"The company may still be creating. Refresh the company list before trying again.",
+		{ code: "ECONNABORTED" },
+	);
+}
+
+function IsRequestTimeout(error: unknown) {
+	return (
+		error instanceof ApiClientError &&
+		(error.code === "ECONNABORTED" ||
+			error.message.trim().toLowerCase() === "the request timed out.")
+	);
+}
+
+function IsMatchingCreatedCompany(
+	company: WorkspaceCompanyRecord,
+	payload: CreateWorkspaceCompanyApiRequest,
+) {
+	return (
+		NormalizeText(company.name) === NormalizeText(GetCreateRequestName(payload)) &&
+		NormalizeText(company.email) === NormalizeText(payload.email) &&
+		NormalizeText(company.tin ?? "") === NormalizeText(payload.tin)
+	);
+}
+
+function GetCreateRequestName(payload: CreateWorkspaceCompanyApiRequest) {
+	if (payload.taxpayerType === "individual") {
+		return [payload.firstName, payload.middleName, payload.lastName]
+			.filter(Boolean)
+			.join(" ");
+	}
+
+	return payload.companyName ?? "";
+}
+
+function NormalizeText(value: string) {
+	return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function Wait(milliseconds: number) {
+	return new Promise((resolve) => {
+		window.setTimeout(resolve, milliseconds);
+	});
+}
+
 function GetWorkspaceCompanyBranchType(
-	type: WorkspaceCompanyUnitApiRecord["type"],
+	type: WorkspaceCompanyUnitApiLike["type"],
 ): WorkspaceCompanyBranchRecord["branchType"] {
 	if (type === "HEAD_OFFICE") {
 		return "Head Office";
@@ -301,12 +378,12 @@ function MapWorkspaceCompanyFormToUpdateRequest(
 	return request;
 }
 
-function GetWorkspaceCompanyPlan(company: WorkspaceCompanyApiRecord) {
+function GetWorkspaceCompanyPlan(company: WorkspaceCompanyApiLike) {
 	return company.subscriptionPlan?.name ?? "Unassigned";
 }
 
 function GetWorkspaceCompanyStatus(
-	company: WorkspaceCompanyApiRecord,
+	company: WorkspaceCompanyApiLike,
 ): WorkspaceCompanyStatus {
 	if (!company.isActive || company.status === "SUSPENDED") {
 		return "Inactive";
@@ -320,7 +397,7 @@ function GetWorkspaceCompanyStatus(
 }
 
 function GetWorkspaceCompanyType(
-	company: WorkspaceCompanyApiRecord,
+	company: WorkspaceCompanyApiLike,
 ): WorkspaceCompanyType {
 	if (company.taxpayerType === "INDIVIDUAL") {
 		return "Individual";
@@ -342,7 +419,7 @@ function GetWorkspaceCompanyType(
 	return "Corporation";
 }
 
-function GetPrimaryContact(company: WorkspaceCompanyApiRecord) {
+function GetPrimaryContact(company: WorkspaceCompanyApiLike) {
 	if (company.taxpayerType === "INDIVIDUAL") {
 		return [
 			company.ownerFirstName,

@@ -32,6 +32,12 @@ export async function SetAuthAccessTokenCookie(
   });
 }
 
+export async function GetAuthAccessTokenCookie() {
+  const cookieStore = await cookies();
+
+  return cookieStore.get(ACCESS_TOKEN_COOKIE_NAME)?.value?.trim() || null;
+}
+
 export async function ClearAuthAccessTokenCookie() {
   const cookieStore = await cookies();
 

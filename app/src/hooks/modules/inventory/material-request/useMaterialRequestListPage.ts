@@ -16,6 +16,7 @@ import type {
 	MaterialRequestStatus,
 } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
 import { useMaterialRequestStore } from "@/app/src/hooks/modules/inventory/material-request/useMaterialRequest";
+import { createMaterialRequestStatusHistoryEntry } from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
 
 export function useMaterialRequestListPage() {
 	const { deleteRequest, isLoading, isMutating, requests, updateRequest } =
@@ -83,14 +84,14 @@ export function useMaterialRequestListPage() {
 			totalRequests,
 			pending: countByStatus(requests, "Pending"),
 			approved: countByStatus(requests, "Approved"),
-			rejected: countByStatus(requests, "Rejected"),
+			disapproved: countByStatus(requests, "Disapproved"),
 			completed: countByStatus(requests, "Completed"),
 		};
 	}, [requests]);
 
 	const columns = useMemo<ColumnDef<MaterialRequestRecord>[]>(
 		() => [
-			createColumn("requestNo", "Request No.", "w-[10rem]"),
+			createColumn("requestNo", "Material Request No.", "w-[12rem]"),
 			createColumn("documentDate", "Document Date", "w-[10rem]"),
 			createColumn("fromWarehouse", "From Warehouse", "w-[13rem]"),
 			createColumn("toWarehouse", "To Warehouse", "w-[13rem]"),
@@ -153,7 +154,18 @@ export function useMaterialRequestListPage() {
 		request: MaterialRequestRecord,
 		status: MaterialRequestStatus,
 	) {
-		updateRequest({ ...request, status });
+		if (status === request.status) {
+			return;
+		}
+
+		updateRequest({
+			...request,
+			status,
+			history: [
+				...request.history,
+				createMaterialRequestStatusHistoryEntry(status, request.requestNo),
+			],
+		});
 	}
 
 	return {

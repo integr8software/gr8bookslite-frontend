@@ -1,4 +1,11 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  workspaceUsersControllerCancelInvitationV1,
+  workspaceUsersControllerCreateV1,
+  workspaceUsersControllerFindAllV1,
+  workspaceUsersControllerResendInvitationV1,
+  workspaceUsersControllerUpdateV1,
+} from "@/app/src/generated/api/workspace-users/workspace-users";
+import type { WorkspaceUserResponseDto } from "@/app/src/generated/api/gR8BooksLiteAPI.schemas";
 import type {
   WorkspaceCompanyUserApiRecord,
   WorkspaceCompanyUserApiRequest,
@@ -6,90 +13,51 @@ import type {
   WorkspaceCompanyUserResendInvitationResponse,
   WorkspaceCompanyUserFormValues,
   WorkspaceCompanyUserRecord,
-  WorkspaceCompanyStatus,
+  WorkspaceUserStatus,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
-function GetAuthorizationHeaders(accessToken: string | null) {
-  if (!accessToken) {
-    return undefined;
-  }
+type WorkspaceCompanyUserApiLike =
+  | WorkspaceCompanyUserApiRecord
+  | WorkspaceUserResponseDto;
 
-  return {
-    Authorization: `Bearer ${accessToken}`,
-  };
-}
+export async function GetWorkspaceUsers() {
+  const response = await workspaceUsersControllerFindAllV1();
 
-export async function GetWorkspaceUsers(accessToken: string | null = null) {
-  const response = await ApiClient.get<WorkspaceCompanyUserApiRecord[]>(
-    "/workspace/users",
-    {
-      headers: GetAuthorizationHeaders(accessToken),
-    },
-  );
-
-  return response.data.map(MapWorkspaceUserApiRecord);
+  return response.map(MapWorkspaceUserApiRecord);
 }
 
 export async function CreateWorkspaceUser(
-  accessToken: string | null,
   values: WorkspaceCompanyUserFormValues,
 ) {
-  const response = await ApiClient.post<WorkspaceCompanyUserApiRecord>(
-    "/workspace/users",
+  const response = await workspaceUsersControllerCreateV1(
     MapWorkspaceUserFormToRequest(values),
-    {
-      headers: GetAuthorizationHeaders(accessToken),
-    },
   );
 
-  return MapWorkspaceUserApiRecord(response.data);
+  return MapWorkspaceUserApiRecord(response);
 }
 
 export async function UpdateWorkspaceUser(
-  accessToken: string | null,
   userId: string,
   values: WorkspaceCompanyUserFormValues,
 ) {
-  const response = await ApiClient.patch<WorkspaceCompanyUserApiRecord>(
-    `/workspace/users/${userId}`,
+  const response = await workspaceUsersControllerUpdateV1(
+    Number(userId),
     MapWorkspaceUserFormToRequest(values),
-    {
-      headers: GetAuthorizationHeaders(accessToken),
-    },
   );
 
-  return MapWorkspaceUserApiRecord(response.data);
+  return MapWorkspaceUserApiRecord(response);
 }
 
-export async function ResendWorkspaceUserInvitation(
-  accessToken: string | null,
-  userId: string,
-) {
-  const response =
-    await ApiClient.post<WorkspaceCompanyUserResendInvitationResponse>(
-      `/workspace/users/${userId}/resend-invitation`,
-      undefined,
-      {
-        headers: GetAuthorizationHeaders(accessToken),
-      },
-    );
-
-  return response.data;
+export async function ResendWorkspaceUserInvitation(userId: string) {
+  return workspaceUsersControllerResendInvitationV1(
+    Number(userId),
+  ) as Promise<WorkspaceCompanyUserResendInvitationResponse>;
 }
 
-export async function CancelWorkspaceUserInvitation(
-  accessToken: string | null,
-  userId: string,
-) {
-  const response =
-    await ApiClient.delete<WorkspaceCompanyUserCancelInvitationResponse>(
-      `/workspace/users/${userId}/invitation`,
-      {
-        headers: GetAuthorizationHeaders(accessToken),
-      },
-    );
-
-  return response.data;
+export async function CancelWorkspaceUserInvitation(userId: string) {
+  return workspaceUsersControllerCancelInvitationV1(
+    Number(userId),
+  ) as Promise<WorkspaceCompanyUserCancelInvitationResponse>;
 }
 
 function MapWorkspaceUserFormToRequest(
@@ -109,8 +77,8 @@ function MapWorkspaceUserFormToRequest(
   };
 }
 
-function MapWorkspaceUserApiRecord(
-  user: WorkspaceCompanyUserApiRecord,
+export function MapWorkspaceUserApiRecord(
+  user: WorkspaceCompanyUserApiLike,
 ): WorkspaceCompanyUserRecord {
   const primaryCompanyId = user.companyAssignments[0]?.companyId;
 
@@ -123,8 +91,9 @@ function MapWorkspaceUserApiRecord(
     contactNumber: user.contactNumber ?? "",
     email: user.email,
     id: String(user.id),
+    createdAt: FormatDate(user.createdAt),
     lastLogin: user.lastLogin
-      ? FormatDate(user.lastLogin)
+      ? FormatDateTime(user.lastLogin)
       : "Not yet signed in",
     name: user.name,
     profileImageUrl: user.profileImageUrl ?? undefined,
@@ -133,20 +102,28 @@ function MapWorkspaceUserApiRecord(
 }
 
 function GetWorkspaceUserStatus(
-  status: WorkspaceCompanyUserApiRecord["status"],
-): WorkspaceCompanyStatus {
+  status: WorkspaceCompanyUserApiLike["status"],
+): WorkspaceUserStatus {
   if (status === "ACTIVE") {
     return "Active";
   }
 
   if (status === "SUSPENDED") {
-    return "Inactive";
+    return "Suspended";
   }
 
   return "Pending";
 }
 
 function FormatDate(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function FormatDateTime(value: string) {
   return new Intl.DateTimeFormat("en", {
     day: "2-digit",
     hour: "numeric",

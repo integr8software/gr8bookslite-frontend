@@ -26,13 +26,13 @@ import {
 	CalendarDays,
 	Check,
 	CheckCircle2,
+	CircleOff,
 	CreditCard,
 	Database,
 	Download,
 	Edit3,
 	ExternalLink,
 	FileText,
-	Filter,
 	Folder,
 	GitBranch,
 	Info,
@@ -43,6 +43,7 @@ import {
 	Save,
 	Search,
 	Send,
+	Tag,
 	Trash2,
 	ToggleLeft,
 	ToggleRight,
@@ -67,6 +68,12 @@ import {
 	getMasterSubscriberManagementUserEditHref,
 	getMasterSubscriberManagementUserViewHref,
 } from "@/app/src/constants/master/subscriber-management/MasterSubscriberManagementConstants";
+import { getMasterPromotionViewHref } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
+import {
+	formatMasterPromotionValue,
+	getMasterPromotionById,
+} from "@/app/src/data/master/promotions/MasterPromotionData";
+import { formatMasterSubscriberPromotionDate } from "@/app/src/data/master/subscriber-promotions/MasterSubscriberPromotionData";
 import {
 	FormatOnboardingReportDateLabel,
 	GetSyncedReportEndDate,
@@ -81,10 +88,12 @@ import {
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import {
 	createMasterSubscriberManagementBranchFormValues,
+	createMasterSubscriberManagementCompanyUsers,
 	MasterSubscriberManagementActivities,
 	MasterSubscriberManagementInvoices,
 	MasterSubscriberManagementStorageBranches,
 	MasterSubscriberManagementStorageBreakdown,
+	getMasterSubscriberManagementPromotionUsage,
 	getMasterSubscriberManagementCompaniesForSubscriber,
 	getMasterSubscriberManagementCompany,
 	getMasterSubscriberManagementSubscriber,
@@ -97,6 +106,8 @@ import type {
 	MasterSubscriberManagementBranchType,
 	MasterSubscriberManagementCompanyRecord,
 	MasterSubscriberManagementCompanySection,
+	MasterSubscriberManagementCompanyStatus,
+	MasterSubscriberManagementInvoiceRecord,
 	MasterSubscriberManagementTaxpayerType,
 	MasterSubscriberManagementUserRecord,
 	MasterSubscriberManagementUserStatus,
@@ -112,6 +123,7 @@ import {
 } from "@/app/src/ui/master/subscriber-management/MasterSubscriberManagementBadges";
 import { MasterSubscriberAccountTabBar } from "@/app/src/ui/master/subscriber-management/MasterSubscriberAccountTabBar";
 import { MasterSubscriberProfileHeader } from "@/app/src/ui/master/subscriber-management/MasterSubscriberProfileHeader";
+import { MasterSubscriberPromotionStatusBadge } from "@/app/src/ui/master/subscriber-promotions/MasterSubscriberPromotionBadges";
 import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
@@ -126,6 +138,12 @@ import {
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { ModuleActionMenu } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { ModuleSearchCardList } from "@/app/src/ui/shared/module/ModuleSearchCardList";
+import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
+import {
+	DateRangePicker,
+	type DateRangeValue,
+} from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type MasterSubscriberBranchTableColumnKey = keyof Pick<
@@ -216,13 +234,29 @@ export function MasterSubscriberManagementCompanyPage({
 	const companies =
 		getMasterSubscriberManagementCompaniesForSubscriber(recordId);
 	const company = getMasterSubscriberManagementCompany(recordId, companyId);
+	const [companyStatusOverrides, setCompanyStatusOverrides] = useState<
+		Record<string, MasterSubscriberManagementCompanyStatus>
+	>({});
+	const displayedCompanies = companies.map((item) => ({
+		...item,
+		status: companyStatusOverrides[item.id] ?? item.status,
+	}));
+	const displayedCompany =
+		displayedCompanies.find((item) => item.id === company.id) ?? company;
+
+	function updateCompanyStatus(status: MasterSubscriberManagementCompanyStatus) {
+		setCompanyStatusOverrides((current) => ({
+			...current,
+			[company.id]: status,
+		}));
+	}
 
 	return (
-		<section className="grid gap-5">
+		<section className="grid min-w-0 gap-5">
 			<MasterSubscriberProfileHeader subscriber={subscriber} />
 			<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
 				<MasterSubscriberAccountTabBar
-					activeTab={section === "users" ? "users" : "company-information"}
+					activeTab="company-information"
 					companyId={company.id}
 					recordId={subscriber.id}
 					showBottomBorder={false}
@@ -230,57 +264,58 @@ export function MasterSubscriberManagementCompanyPage({
 			</div>
 			<div className="grid gap-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
 				<SubscriberCompanySidebar
-					companies={companies}
+					companies={displayedCompanies}
 					recordId={subscriber.id}
-					selectedCompanyId={company.id}
+					selectedCompanyId={displayedCompany.id}
 				/>
 				<div className="min-w-0 rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
 					<CompanyPanelHeader
-						company={company}
+						company={displayedCompany}
 						isEditingCompanyInformation={isEditingCompanyInformation}
+						onStatusChange={updateCompanyStatus}
 						recordId={subscriber.id}
 						section={section}
 					/>
 					<CompanySectionTabs
 						activeSection={section}
-						company={company}
+						company={displayedCompany}
 						recordId={subscriber.id}
 					/>
 					<div className="p-4 xl:p-5">
 						{section === "company-information" && isEditingCompanyInformation ? (
 							<CompanyInformationEditSection
-								key={company.id}
-								company={company}
+								key={displayedCompany.id}
+								company={displayedCompany}
 								recordId={subscriber.id}
 							/>
 						) : null}
 						{section === "company-information" && !isEditingCompanyInformation ? (
-							<CompanyInformationSection company={company} />
+							<CompanyInformationSection company={displayedCompany} />
 						) : null}
 						{section === "subscription-and-plan" ? (
-							<SubscriptionPlanSection company={company} />
+							<SubscriptionPlanSection company={displayedCompany} />
 						) : null}
 						{section === "branches" ? (
 							<BranchesSection
 								branchDrawerMode={branchDrawerMode}
 								branchId={branchId}
-								company={company}
+								company={displayedCompany}
 								recordId={subscriber.id}
 							/>
 						) : null}
 						{section === "users" ? (
 							<UsersSection
-								company={company}
+								company={displayedCompany}
 								recordId={subscriber.id}
 								userDrawerMode={userDrawerMode}
 								userId={userId}
 							/>
 						) : null}
 						{section === "storage" ? (
-							<StorageSection company={company} />
+							<StorageSection company={displayedCompany} />
 						) : null}
 						{section === "billing-and-invoices" ? (
-							<BillingInvoicesSection />
+							<BillingInvoicesSection company={displayedCompany} />
 						) : null}
 					</div>
 				</div>
@@ -298,107 +333,85 @@ function SubscriberCompanySidebar({
 	recordId: string;
 	selectedCompanyId: string;
 }) {
-	const [companySearch, setCompanySearch] = useState("");
+	const router = useRouter();
 	const tones = ["blue", "orange", "cyan", "orange", "purple"] as const;
-	const filteredCompanies = useMemo(() => {
-		const query = companySearch.trim().toLowerCase();
-
-		if (!query) {
-			return companies;
-		}
-
-		return companies.filter((company) =>
-			company.name.toLowerCase().includes(query),
-		);
-	}, [companies, companySearch]);
-	const showingFrom = filteredCompanies.length > 0 ? 1 : 0;
 
 	return (
-		<aside className="flex max-h-[calc(100vh-12rem)] min-h-[34rem] flex-col overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
-			<div className="shrink-0 p-4 pb-3">
-				<h2 className="text-lg font-semibold text-darknavy">Companies</h2>
-				<label className="relative mt-4 block">
-					<span className="sr-only">Search company name</span>
-					<Search
-						className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/45"
-						aria-hidden="true"
+		<ModuleSearchCardList
+			bodyClassName="overflow-x-auto xl:overflow-x-hidden xl:overflow-y-auto"
+			className="xl:max-h-[calc(100vh-12rem)] xl:min-h-[34rem]"
+			emptyMessage="No companies found."
+			getItemKey={(company) => company.id}
+			getSearchText={(company) =>
+				`${company.name} ${company.code} ${company.status}`
+			}
+			itemLabel="companies"
+			items={companies}
+			itemsClassName="grid-flow-col auto-cols-[minmax(16rem,1fr)] xl:grid-flow-row xl:auto-cols-auto"
+			onSelectItem={(company) =>
+				router.push(
+					getMasterSubscriberManagementSectionHref(
+						recordId,
+						"company-information",
+						company.id,
+					),
+					{ scroll: false },
+				)
+			}
+			renderCard={(company, index, isSelected) => (
+				<Link
+					key={company.id}
+					scroll={false}
+					href={getMasterSubscriberManagementSectionHref(
+						recordId,
+						"company-information",
+						company.id,
+					)}
+					className={joinClasses(
+						"flex items-center gap-3 rounded-lg border p-3 transition",
+						isSelected
+							? "border-[var(--skyblue)] bg-skyblue/10"
+							: "border-darknavy/10 bg-white hover:bg-skyblue/10",
+					)}
+				>
+					<MasterSubscriberIcon
+						tone={tones[index % tones.length] ?? "blue"}
+						className="h-11 w-11"
 					/>
-					<input
-						className="h-11 w-full rounded-lg border border-darknavy/10 bg-white pl-11 pr-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-[rgb(var(--skyblue-rgb)/0.45)] focus:ring-4 focus:ring-[rgb(var(--skyblue-rgb)/0.16)]"
-						onChange={(event) => setCompanySearch(event.target.value)}
-						placeholder="Search company name..."
-						value={companySearch}
-					/>
-				</label>
-			</div>
-			<div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-				<div className="grid gap-3">
-					{filteredCompanies.map((company, index) => (
-						<Link
-							key={company.id}
-							href={getMasterSubscriberManagementSectionHref(
-								recordId,
-								"company-information",
-								company.id,
-							)}
-							className={joinClasses(
-								"flex items-center gap-3 rounded-lg border p-3 transition",
-								company.id === selectedCompanyId
-									? "border-[var(--skyblue)] bg-skyblue/10"
-									: "border-darknavy/10 bg-white hover:bg-skyblue/10",
-							)}
-						>
-							<MasterSubscriberIcon
-								tone={tones[index] ?? "blue"}
-								className="h-11 w-11"
-							/>
-							<span className="min-w-0 flex-1">
-								<span className="block truncate text-sm font-bold text-darknavy">
-									{company.name}
-								</span>
-								<span className="mt-1 block text-xs font-semibold text-darknavy/65">
-									{company.branchCount} Branches
-									<span className="px-1.5 text-darknavy/35">.</span>
-									{company.userCount} Users
-								</span>
-							</span>
-							{company.id === selectedCompanyId ? (
-								<span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--skyblue)] text-white">
-									<Check className="h-3.5 w-3.5" aria-hidden="true" />
-								</span>
-							) : null}
-						</Link>
-					))}
-					{filteredCompanies.length === 0 ? (
-						<div className="rounded-lg border border-dashed border-darknavy/15 p-4 text-sm font-semibold text-darknavy/55">
-							No companies found.
-						</div>
+					<span className="min-w-0 flex-1">
+						<span className="block truncate text-sm font-bold text-darknavy">
+							{company.name}
+						</span>
+						<span className="mt-1 block text-xs font-semibold text-darknavy/65">
+							{company.branchCount} Branches
+							<span className="px-1.5 text-darknavy/35">.</span>
+							{company.userCount} Users
+						</span>
+					</span>
+					{isSelected ? (
+						<span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--skyblue)] text-white">
+							<Check className="h-3.5 w-3.5" aria-hidden="true" />
+						</span>
 					) : null}
-				</div>
-			</div>
-			<div className="flex shrink-0 items-center justify-between gap-3 border-t border-darknavy/10 p-4 text-xs font-semibold text-darknavy/65">
-				<span>
-					Showing {showingFrom} to {filteredCompanies.length} of{" "}
-					{companies.length} companies
-				</span>
-				<div className="flex gap-2">
-					<PaginationSquare label="<" />
-					<PaginationSquare active label="1" />
-					<PaginationSquare label=">" />
-				</div>
-			</div>
-		</aside>
+				</Link>
+			)}
+			searchPlaceholder="Search company name..."
+			selectedItemKey={selectedCompanyId}
+			title="Companies"
+		/>
 	);
 }
 
 function CompanyPanelHeader({
 	company,
 	isEditingCompanyInformation,
+	onStatusChange,
 	recordId,
 	section,
 }: {
 	company: MasterSubscriberManagementCompanyRecord;
 	isEditingCompanyInformation: boolean;
+	onStatusChange: (status: MasterSubscriberManagementCompanyStatus) => void;
 	recordId: string;
 	section: MasterSubscriberManagementCompanySection;
 }) {
@@ -423,14 +436,17 @@ function CompanyPanelHeader({
 				company.id,
 			)
 			: companyInformationHref;
+	const nextStatus = company.status === "Active" ? "Inactive" : "Active";
+	const statusActionLabel =
+		nextStatus === "Active" ? "Activate company" : "Deactivate company";
 
 	return (
 		<div className="flex flex-col gap-4 border-b border-darknavy/10 p-4 lg:flex-row lg:items-center lg:justify-between xl:p-5">
-			<div className="flex min-w-0 items-center gap-4">
-				<MasterSubscriberIcon tone="blue" className="h-16 w-16" />
+			<div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
+				<MasterSubscriberIcon tone="blue" className="h-12 w-12 sm:h-16 sm:w-16" />
 				<div className="min-w-0">
 					<div className="flex flex-wrap items-center gap-3">
-						<h2 className="truncate text-2xl font-semibold text-darknavy">
+						<h2 className="min-w-0 break-words text-xl font-semibold text-darknavy sm:text-2xl">
 							{company.name}
 						</h2>
 						<MasterCompanyStatusBadge status={company.status} />
@@ -438,24 +454,57 @@ function CompanyPanelHeader({
 					<div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-semibold text-darknavy/65">
 						<span>Company ID: {company.code}</span>
 						<span>TIN: {company.tin}</span>
-						<span>Address: {company.addressLines[0]?.replace(",", "")}</span>
+						<span className="min-w-0 break-words">
+							Address: {company.addressLines[0]?.replace(",", "")}
+						</span>
 					</div>
 				</div>
 			</div>
-			<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-				<Link
-					href={buttonHref}
-					className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-[var(--skyblue)] shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10"
+			<div className="flex items-center gap-2">
+				{isEditingCompanyInformation ? null : (
+					<ModuleTooltip
+						align="end"
+						description={`Set ${company.name} as ${nextStatus.toLowerCase()}.`}
+						title={statusActionLabel}
+					>
+						<button
+							type="button"
+							aria-label={statusActionLabel}
+							onClick={() => onStatusChange(nextStatus)}
+							className={joinClasses(
+								"inline-flex h-11 w-11 items-center justify-center rounded-lg border bg-white shadow-sm shadow-darknavy/5 transition focus-visible:outline-none focus-visible:ring-4",
+								nextStatus === "Active"
+									? "border-emerald-500/20 text-emerald-700 hover:bg-emerald-500/10 focus-visible:ring-emerald-500/15"
+									: "border-coralpink/20 text-coralpink hover:bg-coralpink/10 focus-visible:ring-coralpink/15",
+							)}
+						>
+							{nextStatus === "Active" ? (
+								<CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+							) : (
+								<CircleOff className="h-4 w-4" aria-hidden="true" />
+							)}
+						</button>
+					</ModuleTooltip>
+				)}
+				<ModuleTooltip
+					align="end"
+					description={getCompanyHeaderActionDescription(buttonLabel)}
+					title={buttonLabel}
 				>
-					{buttonLabel === "Cancel" ? (
-						<X className="h-4 w-4" aria-hidden="true" />
-					) : buttonLabel === "View Company" ? (
-						<ExternalLink className="h-4 w-4" aria-hidden="true" />
-					) : (
-						<Edit3 className="h-4 w-4" aria-hidden="true" />
-					)}
-					{buttonLabel}
-				</Link>
+					<Link
+						href={buttonHref}
+						aria-label={buttonLabel}
+						className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-darknavy/10 bg-white text-[var(--skyblue)] shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15"
+					>
+						{buttonLabel === "Cancel" ? (
+							<X className="h-4 w-4" aria-hidden="true" />
+						) : buttonLabel === "View Company" ? (
+							<ExternalLink className="h-4 w-4" aria-hidden="true" />
+						) : (
+							<Edit3 className="h-4 w-4" aria-hidden="true" />
+						)}
+					</Link>
+				</ModuleTooltip>
 				{isEditingCompanyInformation ? (
 					<button
 						type="submit"
@@ -471,6 +520,19 @@ function CompanyPanelHeader({
 	);
 }
 
+function getCompanyHeaderActionDescription(label: string) {
+	switch (label) {
+		case "Cancel":
+			return "Return to company information without saving changes.";
+		case "Edit Company":
+			return "Update the selected company's information.";
+		case "Edit Subscription":
+			return "Open the selected company's subscription information.";
+		default:
+			return "Open the selected company's information.";
+	}
+}
+
 function CompanySectionTabs({
 	activeSection,
 	company,
@@ -481,7 +543,10 @@ function CompanySectionTabs({
 	recordId: string;
 }) {
 	return (
-		<nav className="flex overflow-x-auto border-b border-darknavy/10 px-4 xl:px-5">
+		<nav
+			aria-label="Company sections"
+			className="grid grid-cols-6 border-b border-darknavy/10 px-1 sm:px-2 2xl:flex 2xl:items-stretch 2xl:justify-between 2xl:px-4"
+		>
 			{MasterSubscriberManagementCompanySections.map((section) => {
 				const Icon = section.icon;
 				const isActive = section.key === activeSection;
@@ -493,26 +558,35 @@ function CompanySectionTabs({
 							: section.label;
 
 				return (
-					<Link
+					<ModuleTooltip
 						key={section.key}
-						href={getMasterSubscriberManagementSectionHref(
-							recordId,
-							section.key,
-							company.id,
-						)}
-						className={joinClasses(
-							"relative inline-flex h-14 min-w-max items-center gap-2 px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)]",
-							isActive
-								? "text-[var(--skyblue)]"
-								: "text-darknavy/70 hover:text-darknavy",
-						)}
+						className="min-w-0 justify-center 2xl:w-auto"
+						contentClassName="2xl:hidden"
+						title={label}
 					>
-						<Icon className="h-4 w-4" aria-hidden="true" />
-						{label}
-						{isActive ? (
-							<span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[var(--skyblue)]" />
-						) : null}
-					</Link>
+						<Link
+							scroll={false}
+							href={getMasterSubscriberManagementSectionHref(
+								recordId,
+								section.key,
+								company.id,
+							)}
+							aria-current={isActive ? "page" : undefined}
+							aria-label={label}
+							className={joinClasses(
+								"relative inline-flex h-14 w-full min-w-0 items-center justify-center gap-2 px-1 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)] 2xl:w-auto 2xl:px-2",
+								isActive
+									? "text-[var(--skyblue)]"
+									: "text-darknavy/70 hover:text-darknavy",
+							)}
+						>
+							<Icon className="h-5 w-5 shrink-0 2xl:h-4 2xl:w-4" aria-hidden="true" />
+							<span className="hidden whitespace-nowrap 2xl:inline">{label}</span>
+							{isActive ? (
+								<span className="absolute inset-x-1 bottom-0 h-0.5 rounded-full bg-[var(--skyblue)] 2xl:inset-x-0" />
+							) : null}
+						</Link>
+					</ModuleTooltip>
 				);
 			})}
 		</nav>
@@ -599,7 +673,7 @@ function CompanyInformationSection({
 				</div>
 			</Panel>
 			<Panel title="Current Plan" icon={CreditCard}>
-				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+				<div className="grid gap-4 md:grid-cols-2">
 					<DetailRow label="Plan Name" value={company.planName} />
 					<DetailRow label="Billing Cycle" value={company.billingCycle} />
 					<DetailRow label="Status" value={<MasterCompanyStatusBadge status="Active" />} />
@@ -724,7 +798,14 @@ function SubscriptionPlanSection({
 
 	return (
 		<div className="grid gap-4">
-			<Panel title="Current Plan">
+			<Panel
+				title="Current Plan"
+				actions={
+					<SmallButton onClick={openChangePlanDrawer}>
+						Change Plan
+					</SmallButton>
+				}
+			>
 				<div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
 					<div className="flex gap-4">
 						<span className="flex h-14 w-14 items-center justify-center rounded-lg bg-purple-500/12 text-purple-700">
@@ -796,13 +877,6 @@ function SubscriptionPlanSection({
 			<div className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
 				<PlanFeaturesPanel />
 				<PlanHistoryPanel />
-			</div>
-			<div className="flex flex-col gap-3 rounded-lg border border-skyblue/20 bg-skyblue/10 p-4 text-sm font-semibold text-darknavy/72 sm:flex-row sm:items-center sm:justify-between">
-				<span className="inline-flex items-center gap-2">
-					<Info className="h-4 w-4 text-[var(--skyblue)]" aria-hidden="true" />
-					Need to change your plan? You can upgrade, downgrade, or cancel your subscription anytime.
-				</span>
-				<SmallButton onClick={openChangePlanDrawer}>Change Plan</SmallButton>
 			</div>
 			<ChangeSubscriptionPlanDrawer
 				currentBillingCycle={currentPlan.billingCycle}
@@ -1561,7 +1635,7 @@ function CompanyInformationEditSection({
 				</div>
 			</Panel>
 			<Panel title="Current Plan" icon={CreditCard}>
-				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+				<div className="grid gap-4 md:grid-cols-2">
 					<DetailRow label="Plan Name" value={company.planName} />
 					<DetailRow label="Billing Cycle" value={company.billingCycle} />
 					<DetailRow
@@ -2064,7 +2138,7 @@ function UsersSection({
 	]);
 	const users = useMemo(
 		() =>
-			createCompanyUserRows(company).map((user) => ({
+			createMasterSubscriberManagementCompanyUsers(company).map((user) => ({
 				...user,
 				status: userStatusOverrides[user.id] ?? user.status,
 			})),
@@ -2750,35 +2824,37 @@ function StorageSection({
 					</div>
 				</Panel>
 				<Panel title="Storage Breakdown" titleAddon={<InfoIcon />}>
-					<div className="grid gap-4">
-						{storageBreakdownRows.map((item) => (
-							<div
-								key={item.category}
-								className="grid grid-cols-[7rem_1fr_5rem_4rem] items-center gap-3 text-sm"
-							>
-								<span className="font-semibold text-darknavy/72">
-									{item.category}
-								</span>
-								<span className="h-2 rounded-full bg-darknavy/10">
-									<span
-										className={joinClasses(
-											"block h-2 rounded-full",
-											item.colorClassName,
-										)}
-										style={{ width: `${item.percentage}%` }}
-									/>
-								</span>
-								<span className="font-bold text-darknavy">{item.used}</span>
-								<span className="text-right font-bold text-darknavy">
-									{item.percentage}%
-								</span>
+					<div className="overflow-x-auto">
+						<div className="grid min-w-[22rem] gap-4">
+							{storageBreakdownRows.map((item) => (
+								<div
+									key={item.category}
+									className="grid grid-cols-[7rem_1fr_5rem_4rem] items-center gap-3 text-sm"
+								>
+									<span className="font-semibold text-darknavy/72">
+										{item.category}
+									</span>
+									<span className="h-2 rounded-full bg-darknavy/10">
+										<span
+											className={joinClasses(
+												"block h-2 rounded-full",
+												item.colorClassName,
+											)}
+											style={{ width: `${item.percentage}%` }}
+										/>
+									</span>
+									<span className="font-bold text-darknavy">{item.used}</span>
+									<span className="text-right font-bold text-darknavy">
+										{item.percentage}%
+									</span>
+								</div>
+							))}
+							<div className="grid grid-cols-[7rem_1fr_5rem_4rem] border-t border-darknavy/10 pt-3 text-sm font-bold text-darknavy">
+								<span>Total</span>
+								<span />
+								<span>{formatStorageGb(company.storageUsedGb)}</span>
+								<span className="text-right">100%</span>
 							</div>
-						))}
-						<div className="grid grid-cols-[7rem_1fr_5rem_4rem] border-t border-darknavy/10 pt-3 text-sm font-bold text-darknavy">
-							<span>Total</span>
-							<span />
-							<span>{formatStorageGb(company.storageUsedGb)}</span>
-							<span className="text-right">100%</span>
 						</div>
 					</div>
 				</Panel>
@@ -2792,10 +2868,14 @@ function StorageSection({
 	);
 }
 
-function BillingInvoicesSection() {
+function BillingInvoicesSection({
+	company,
+}: {
+	company: MasterSubscriberManagementCompanyRecord;
+}) {
 	return (
 		<div className="grid gap-4">
-			<div className="grid gap-4 xl:grid-cols-4">
+			<div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
 				<BillingCard title="Current Plan" value="$299 / month" icon={CreditCard}>
 					<p className="mt-4 text-xs font-semibold text-darknavy/65">
 						Next renewal on
@@ -2824,12 +2904,108 @@ function BillingInvoicesSection() {
 					<SmallButton className="mt-7 w-full">Manage Payment Methods</SmallButton>
 				</BillingCard>
 			</div>
-			<div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
-				<InvoicesPanel />
-				<BillingSummaryPanel />
+			<PromotionsUsedPanel company={company} />
+			<div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_20rem]">
+				<InvoicesPanel company={company} />
+				<BillingSummaryPanel company={company} />
 			</div>
 		</div>
 	);
+}
+
+function PromotionsUsedPanel({
+	company,
+}: {
+	company: MasterSubscriberManagementCompanyRecord;
+}) {
+	const promotionsUsed = getMasterSubscriberManagementPromotionUsage(
+		company,
+	).flatMap((usage) => {
+		const promotion = getMasterPromotionById(usage.promotionId);
+
+		return promotion ? [{ promotion, usage }] : [];
+	});
+	const totalDeduction = promotionsUsed.reduce(
+		(total, item) => total + item.usage.deductionAmount,
+		0,
+	);
+
+	return (
+		<Panel
+			title="Promotions Used"
+			description="Promotions redeemed against this company's invoices."
+			icon={Tag}
+			actions={
+				<div className="flex flex-wrap items-center gap-2">
+					<span className="rounded-md bg-citron/35 px-2.5 py-1 text-xs font-bold text-darknavy ring-1 ring-citron/50">
+						{promotionsUsed.length} used
+					</span>
+					<span className="rounded-md bg-emerald-500/14 px-2.5 py-1 text-xs font-bold text-emerald-700">
+						Total deduction {formatBillingDeduction(totalDeduction)}
+					</span>
+				</div>
+			}
+		>
+			{promotionsUsed.length > 0 ? (
+				<div className="grid gap-3 lg:grid-cols-2">
+					{promotionsUsed.map(({ promotion, usage }) => (
+						<article
+							key={usage.id}
+							className="min-w-0 rounded-lg border border-darknavy/10 bg-offwhite/60 p-4"
+						>
+							<div className="flex flex-wrap items-start justify-between gap-3">
+								<div className="min-w-0">
+									<div className="flex flex-wrap items-center gap-2">
+										<Link
+											href={getMasterPromotionViewHref(promotion.id)}
+											className="truncate text-sm font-bold text-darknavy transition hover:text-[var(--skyblue)]"
+										>
+											{promotion.name}
+										</Link>
+										<MasterSubscriberPromotionStatusBadge status="Used" />
+									</div>
+									<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/45">
+										{promotion.type} · {promotion.code}
+									</p>
+								</div>
+								<span className="rounded-md bg-emerald-500/14 px-2.5 py-1 text-sm font-bold text-emerald-700">
+									{formatMasterPromotionValue(promotion)}
+								</span>
+							</div>
+							<p className="mt-3 text-sm font-medium leading-6 text-darknavy/62">
+								{promotion.description}
+							</p>
+							<div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-darknavy/10 pt-3 text-xs font-semibold text-darknavy/60">
+								<span>
+									Used {formatMasterSubscriberPromotionDate(usage.usedAt)}
+								</span>
+								<span>Invoice {usage.invoiceNo}</span>
+							</div>
+							<div className="mt-3 flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm">
+								<span className="font-semibold text-darknavy/65">
+									Invoice deduction
+								</span>
+								<span className="font-bold text-emerald-700">
+									-{formatBillingDeduction(usage.deductionAmount)}
+								</span>
+							</div>
+						</article>
+					))}
+				</div>
+			) : (
+				<div className="rounded-lg border border-dashed border-darknavy/15 p-5 text-sm font-semibold text-darknavy/55">
+					No promotions have been used for this company.
+				</div>
+			)}
+		</Panel>
+	);
+}
+
+function formatBillingDeduction(value: number) {
+	return new Intl.NumberFormat("en-US", {
+		currency: "USD",
+		style: "currency",
+	}).format(value);
 }
 
 function RecentActivityPanel() {
@@ -3074,31 +3250,190 @@ function StorageDetailsPanel({
 	);
 }
 
-function InvoicesPanel() {
+function InvoicesPanel({
+	company,
+}: {
+	company: MasterSubscriberManagementCompanyRecord;
+}) {
+	const [dateRange, setDateRange] = useState<DateRangeValue>({
+		from: "",
+		to: "",
+	});
+	const [statusFilter, setStatusFilter] = useState<
+		MasterSubscriberManagementInvoiceRecord["status"] | "All"
+	>("All");
+	const promotionUsageByInvoice = new Map(
+		getMasterSubscriberManagementPromotionUsage(company).map((usage) => [
+			usage.invoiceNo,
+			usage,
+		]),
+	);
+	const filteredInvoices = MasterSubscriberManagementInvoices.filter((invoice) => {
+		const invoiceDate = getInvoiceIsoDate(invoice.date);
+		const matchesStatus =
+			statusFilter === "All" || invoice.status === statusFilter;
+		const matchesFrom = !dateRange.from || invoiceDate >= dateRange.from;
+		const matchesTo = !dateRange.to || invoiceDate <= dateRange.to;
+
+		return matchesStatus && matchesFrom && matchesTo;
+	});
+	const invoiceRows = filteredInvoices.map((invoice) => {
+		const promotionUsage = promotionUsageByInvoice.get(invoice.id);
+		const promotion = promotionUsage
+			? getMasterPromotionById(promotionUsage.promotionId)
+			: undefined;
+		const deduction = promotionUsage?.deductionAmount ?? 0;
+
+		return {
+			deduction,
+			invoice,
+			promotion,
+			promotionUsage,
+			totalAmount: Math.max(0, invoice.originalAmount - deduction),
+		};
+	});
+	const hasFilters =
+		statusFilter !== "All" || Boolean(dateRange.from || dateRange.to);
+
+	function clearInvoiceFilters() {
+		setDateRange({ from: "", to: "" });
+		setStatusFilter("All");
+	}
+
 	return (
 		<Panel
 			title="Invoices"
 			description="View and download all invoices for this company."
+			stackHeader
 			actions={
-				<div className="flex flex-wrap gap-2">
-					<SmallButton>May 12, 2023 - May 12, 2024</SmallButton>
-					<SmallButton>All Status</SmallButton>
-					<SmallButton icon={Filter}>Filters</SmallButton>
+				<div className="grid w-full min-w-0 gap-3 sm:grid-cols-2">
+					<DateRangePicker
+						label="Invoice date"
+						onChange={setDateRange}
+						placeholder="All invoice dates"
+						referenceDate="2024-05-12"
+						startMonth="2024-05-12"
+						value={dateRange}
+					/>
+					<label className="relative block min-w-0">
+						<span className="absolute -top-2 left-3 z-10 bg-white px-1 text-xs font-semibold text-darknavy/70">
+							Status
+						</span>
+						<select
+							value={statusFilter}
+							onChange={(event) =>
+								setStatusFilter(
+									event.target.value as
+										| MasterSubscriberManagementInvoiceRecord["status"]
+										| "All",
+								)
+							}
+							className="h-12 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition focus:border-[rgb(var(--skyblue-rgb)/0.45)] focus:ring-4 focus:ring-[rgb(var(--skyblue-rgb)/0.16)]"
+						>
+							<option value="All">All</option>
+							<option value="Paid">Paid</option>
+							<option value="Due">Due</option>
+						</select>
+					</label>
+					<button
+						type="button"
+						disabled={!hasFilters}
+						onClick={clearInvoiceFilters}
+						className="inline-flex h-12 items-center justify-center rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10 disabled:cursor-not-allowed disabled:opacity-40 sm:col-span-2"
+					>
+						Clear
+					</button>
 				</div>
 			}
 		>
-			<div className="overflow-x-auto">
-				<table className="w-full min-w-[58rem] text-left text-sm">
+			<div className="grid gap-3 @min-[70rem]:hidden">
+				{invoiceRows.map(
+					({ deduction, invoice, promotion, promotionUsage, totalAmount }) => (
+						<article
+							key={invoice.id}
+							className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5"
+						>
+							<div className="flex min-w-0 items-start justify-between gap-3">
+								<div className="min-w-0">
+									<p className="truncate text-sm font-bold text-darknavy">
+										{invoice.id}
+									</p>
+									<p className="mt-1 text-xs font-semibold text-darknavy/55">
+										{invoice.date}
+									</p>
+								</div>
+								<InvoiceStatusBadge status={invoice.status} />
+							</div>
+							<div className="mt-4 grid gap-3 border-t border-darknavy/10 pt-4 sm:grid-cols-2">
+								<InvoiceCardDetail
+									label="Description"
+									value={invoice.description}
+								/>
+								<InvoiceCardDetail
+									label="Billing Period"
+									value={invoice.billingPeriod}
+								/>
+								<InvoiceCardDetail
+									label="Promotion Used"
+									value={
+										promotion && promotionUsage ? (
+											<span>
+												<span className="block">{promotion.name}</span>
+												<span className="mt-1 block text-xs text-darknavy/45">
+													{promotion.code}
+													<span className="px-1 text-darknavy/25">·</span>
+													<span className="text-emerald-700">
+														-{formatBillingDeduction(deduction)}
+													</span>
+												</span>
+											</span>
+										) : (
+											"None"
+										)
+									}
+								/>
+								<InvoiceCardDetail
+									label="Amount"
+									value={
+										<span>
+											{deduction > 0 ? (
+												<span className="block text-xs text-darknavy/45 line-through">
+													{formatBillingDeduction(invoice.originalAmount)}
+												</span>
+											) : null}
+											<span className="mt-1 block">
+												{formatBillingDeduction(totalAmount)}
+											</span>
+										</span>
+									}
+								/>
+							</div>
+							<div className="mt-4 flex justify-end gap-2 border-t border-darknavy/10 pt-4">
+								<IconButton icon={Download} label="Download invoice" />
+								<IconButton icon={FileText} label="View invoice" />
+							</div>
+						</article>
+					),
+				)}
+				{invoiceRows.length === 0 ? (
+					<div className="rounded-lg border border-dashed border-darknavy/15 px-4 py-10 text-center text-sm font-semibold text-darknavy/55">
+						No invoices match the selected date range and status.
+					</div>
+				) : null}
+			</div>
+			<div className="hidden overflow-x-auto @min-[70rem]:block">
+				<table className="w-full min-w-[66rem] text-left text-sm">
 					<thead className="bg-offwhite text-xs font-bold text-darknavy/70">
 						<tr>
-							{["Invoice #", "Date", "Description", "Billing Period", "Amount", "Status", "Actions"].map((heading) => (
+							{["Invoice #", "Date", "Description", "Billing Period", "Promotion Used", "Amount", "Status", "Actions"].map((heading) => (
 								<th key={heading} className="px-3 py-3">{heading}</th>
 							))}
 						</tr>
 					</thead>
 					<tbody className="divide-y divide-darknavy/10">
-						{MasterSubscriberManagementInvoices.map((invoice) => (
-							<tr key={invoice.id}>
+						{invoiceRows.map(
+							({ deduction, invoice, promotion, promotionUsage, totalAmount }) => (
+								<tr key={invoice.id}>
 								<td className="px-3 py-3 font-bold text-darknavy">
 									{invoice.id}
 								</td>
@@ -3111,11 +3446,40 @@ function InvoicesPanel() {
 								<td className="px-3 py-3 font-semibold text-darknavy/72">
 									{invoice.billingPeriod}
 								</td>
-								<td className="px-3 py-3 font-bold text-darknavy">
-									{invoice.amount}
+								<td className="px-3 py-3">
+									{promotion && promotionUsage ? (
+										<div className="min-w-40">
+											<p className="font-bold text-darknavy">
+												{promotion.name}
+											</p>
+											<p className="mt-1 text-xs font-semibold text-darknavy/45">
+												{promotion.code}
+												<span className="px-1 text-darknavy/25">·</span>
+												<span className="text-emerald-700">
+													-{formatBillingDeduction(deduction)}
+												</span>
+											</p>
+										</div>
+									) : (
+										<span className="text-sm font-semibold text-darknavy/45">
+											None
+										</span>
+									)}
 								</td>
 								<td className="px-3 py-3">
-									<PaidBadge />
+									<div className="min-w-24">
+										{deduction > 0 ? (
+											<p className="text-xs font-semibold text-darknavy/45 line-through">
+												{formatBillingDeduction(invoice.originalAmount)}
+											</p>
+										) : null}
+										<p className="mt-1 font-bold text-darknavy">
+											{formatBillingDeduction(totalAmount)}
+										</p>
+									</div>
+								</td>
+								<td className="px-3 py-3">
+									<InvoiceStatusBadge status={invoice.status} />
 								</td>
 								<td className="px-3 py-3">
 									<div className="flex gap-2">
@@ -3123,27 +3487,94 @@ function InvoicesPanel() {
 										<IconButton icon={FileText} label="View invoice" />
 									</div>
 								</td>
+								</tr>
+							),
+						)}
+						{invoiceRows.length === 0 ? (
+							<tr>
+								<td
+									colSpan={8}
+									className="px-4 py-10 text-center text-sm font-semibold text-darknavy/55"
+								>
+									No invoices match the selected date range and status.
+								</td>
 							</tr>
-						))}
+						) : null}
 					</tbody>
 				</table>
 			</div>
-			<TableFooter label="invoices" total={12} />
+			<div className="mt-4 border-t border-darknavy/10 pt-4 text-sm font-semibold text-darknavy/60">
+				Showing {filteredInvoices.length} of{" "}
+				{MasterSubscriberManagementInvoices.length} invoices
+			</div>
 		</Panel>
 	);
 }
 
-function BillingSummaryPanel() {
+function InvoiceCardDetail({
+	label,
+	value,
+}: {
+	label: string;
+	value: ReactNode;
+}) {
+	return (
+		<div className="min-w-0">
+			<p className="text-xs font-semibold text-darknavy/55">{label}</p>
+			<div className="mt-1 break-words text-sm font-bold text-darknavy">
+				{value}
+			</div>
+		</div>
+	);
+}
+
+function getInvoiceIsoDate(value: string) {
+	const parsedDate = new Date(value);
+
+	if (Number.isNaN(parsedDate.getTime())) {
+		return "";
+	}
+
+	return [
+		parsedDate.getFullYear(),
+		String(parsedDate.getMonth() + 1).padStart(2, "0"),
+		String(parsedDate.getDate()).padStart(2, "0"),
+	].join("-");
+}
+
+function BillingSummaryPanel({
+	company,
+}: {
+	company: MasterSubscriberManagementCompanyRecord;
+}) {
+	const subtotal = 299;
+	const discount = getMasterSubscriberManagementPromotionUsage(company).reduce(
+		(total, usage) => total + usage.deductionAmount,
+		0,
+	);
+	const total = Math.max(0, subtotal - discount);
+
 	return (
 		<Panel title="Billing Summary" description="Overview of your current billing.">
 			<div className="grid gap-4 text-sm">
-				<InlineStat label="Subtotal" value="$299.00" />
-				<InlineStat label="Discount" value="$0.00" />
+				<InlineStat label="Subtotal" value={formatBillingDeduction(subtotal)} />
+				<InlineStat
+					label="Promotion Deductions"
+					value={`-${formatBillingDeduction(discount)}`}
+					valueClassName="text-emerald-700"
+				/>
 				<InlineStat label="Tax (0%)" value="$0.00" />
 				<div className="border-t border-darknavy/10 pt-4">
-					<InlineStat label="Total" value="$299.00 USD" strong />
+					<InlineStat
+						label="Total"
+						value={`${formatBillingDeduction(total)} USD`}
+						strong
+					/>
 				</div>
-				<InlineStat label="Amount Paid" value="$299.00" />
+				<InlineStat
+					label="Amount Paid"
+					value={formatBillingDeduction(total)}
+				/>
 				<InlineStat label="Amount Due" value="$0.00" valueClassName="text-emerald-700" />
 			</div>
 			<div className="mt-6 rounded-lg border border-darknavy/10 bg-offwhite/70 p-4">
@@ -3164,6 +3595,7 @@ function Panel({
 	children,
 	description,
 	icon: Icon,
+	stackHeader = false,
 	title,
 	titleAddon,
 }: {
@@ -3171,13 +3603,19 @@ function Panel({
 	children: ReactNode;
 	description?: string;
 	icon?: LucideIcon;
+	stackHeader?: boolean;
 	title: string;
 	titleAddon?: ReactNode;
 }) {
 	return (
-		<section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 xl:p-5">
-			<div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-				<div>
+		<section className="@container min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 xl:p-5">
+			<div
+				className={joinClasses(
+					"mb-5 flex flex-col gap-3",
+					!stackHeader && "sm:flex-row sm:items-start sm:justify-between",
+				)}
+			>
+				<div className="min-w-0">
 					<div className="flex items-center gap-2">
 						{Icon ? (
 							<span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/12 text-emerald-700">
@@ -3195,7 +3633,11 @@ function Panel({
 						</p>
 					) : null}
 				</div>
-				{actions}
+				{actions ? (
+					<div className={joinClasses("min-w-0", stackHeader && "w-full")}>
+						{actions}
+					</div>
+				) : null}
 			</div>
 			{children}
 		</section>
@@ -3216,7 +3658,7 @@ function CompactMetric({
 	value: string;
 }) {
 	return (
-		<div className="flex items-center gap-4 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5">
+		<div className="flex min-w-0 items-center gap-4 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5">
 			<span
 				className={joinClasses(
 					"flex h-12 w-12 items-center justify-center rounded-lg",
@@ -3225,11 +3667,11 @@ function CompactMetric({
 			>
 				<Icon className="h-6 w-6" aria-hidden="true" />
 			</span>
-			<span>
+			<span className="min-w-0">
 				<span className="block text-sm font-semibold text-darknavy/65">
 					{label}
 				</span>
-				<span className="mt-1 inline-flex items-end gap-3 text-3xl font-bold leading-none text-darknavy">
+				<span className="mt-1 flex flex-wrap items-end gap-3 text-3xl font-bold leading-none text-darknavy">
 					{value}
 					{helper ? (
 						<span
@@ -3472,56 +3914,6 @@ function IconButton({ icon: Icon, label }: { icon: LucideIcon; label: string }) 
 	);
 }
 
-function PaginationSquare({
-	active = false,
-	label,
-}: {
-	active?: boolean;
-	label: string;
-}) {
-	return (
-		<button
-			type="button"
-			className={joinClasses(
-				"flex h-9 w-9 items-center justify-center rounded-md border text-sm font-bold",
-				active
-					? "border-[var(--skyblue)] bg-skyblue/10 text-[var(--skyblue)]"
-					: "border-darknavy/10 bg-white text-darknavy/55",
-			)}
-		>
-			{label}
-		</button>
-	);
-}
-
-function TableFooter({
-	label,
-	pages = 1,
-	total,
-}: {
-	label: string;
-	pages?: number;
-	total: number;
-}) {
-	return (
-		<div className="flex flex-col gap-3 text-sm font-semibold text-darknavy/65 sm:flex-row sm:items-center sm:justify-between">
-			<span>
-				Showing 1 to {Math.min(5, total)} of {total} {label}
-			</span>
-			<div className="flex gap-2">
-				<PaginationSquare label="<" />
-				<PaginationSquare active label="1" />
-				{pages > 1 ? <PaginationSquare label="2" /> : null}
-				{pages > 2 ? <PaginationSquare label="3" /> : null}
-				{pages > 4 ? <PaginationSquare label="4" /> : null}
-				{pages > 5 ? <PaginationSquare label="..." /> : null}
-				{pages > 6 ? <PaginationSquare label={String(pages)} /> : null}
-				<PaginationSquare label=">" />
-			</div>
-		</div>
-	);
-}
-
 function ProgressBar({
 	colorClassName,
 	percent,
@@ -3602,6 +3994,25 @@ function PaidBadge() {
 	return (
 		<span className="inline-flex rounded-md bg-emerald-500/14 px-2 py-1 text-xs font-bold text-emerald-700">
 			Paid
+		</span>
+	);
+}
+
+function InvoiceStatusBadge({
+	status,
+}: {
+	status: MasterSubscriberManagementInvoiceRecord["status"];
+}) {
+	return (
+		<span
+			className={joinClasses(
+				"inline-flex rounded-md px-2 py-1 text-xs font-bold",
+				status === "Paid"
+					? "bg-emerald-500/14 text-emerald-700"
+					: "bg-orange-500/14 text-orange-700",
+			)}
+		>
+			{status}
 		</span>
 	);
 }
@@ -3814,40 +4225,6 @@ function createCompanyBranchRows(
 		type: index === 0 ? "Head Office" : "Satellite",
 		users: baseUsers + (index < extraUsers ? 1 : 0),
 	}));
-}
-
-function createCompanyUserRows(
-	company: MasterSubscriberManagementCompanyRecord,
-): MasterSubscriberManagementUserRecord[] {
-	const avatarTones = ["blue", "orange", "purple", "rose", "slate"] as const;
-	const branches = createCompanyBranchRows(company);
-	const companySlug = slugifyName(company.name);
-
-	return Array.from({ length: company.userCount }, (_, index) => {
-		const userNumber = index + 1;
-		const status: MasterSubscriberManagementUserStatus =
-			userNumber === company.userCount && company.userCount >= 8
-				? "Invited"
-				: userNumber % 7 === 0
-					? "Inactive"
-					: "Active";
-
-		return {
-			addedOn: company.dateAdded,
-			avatarTone: avatarTones[index % avatarTones.length] ?? "blue",
-			branchAccess: [
-				branches[index % branches.length]?.name ?? `${company.name} Head Office`,
-			],
-			email: `user${String(userNumber).padStart(2, "0")}@${companySlug}.com`,
-			id: `${company.id}-user-${userNumber}`,
-			initials: `T${userNumber}`,
-			lastActiveDate: status === "Invited" ? "-" : "May 24, 2024",
-			lastActiveTime: status === "Invited" ? "" : "10:00 AM",
-			name: `Test User ${String(userNumber).padStart(2, "0")}`,
-			phone: `+1 555-90${String(userNumber).padStart(2, "0")}`,
-			status,
-		};
-	});
 }
 
 function getStatusPercent(count: number, total: number) {

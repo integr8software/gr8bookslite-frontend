@@ -19,30 +19,39 @@ export function FormSignatoryMaintenancePage() {
 		<section className="grid gap-5">
 			<FormSignatoryHeader
 				isEditing={page.isEditing}
+				isSaving={page.isSaving}
 				onClose={page.handleClose}
 				onNew={page.handleNew}
 				onSave={page.handleSave}
 			/>
 			<FormSignatoryMetrics
-				signatureImageCount={page.signatureImageCount}
-				signatoryCount={page.rows.length}
+				eSignatureCount={page.visibleESignatureCount}
+				signatoryCount={page.visibleSignatoryCount}
+				signatureImageCount={page.visibleSignatureImageCount}
 			/>
 			<FormSignatoryTable
 				branch={page.branch}
+				branchOptions={page.branchOptions}
 				currentSetupId={page.currentSetupId}
+				deletingRowId={page.deletingRowId}
 				handleAddRow={page.handleAddRow}
-				handleRemoveRow={page.handleRemoveRow}
+				handleDeleteRow={page.handleDeleteRow}
 				handleReset={page.handleReset}
 				handleSignatureFile={page.handleSignatureFile}
 				isEditing={page.isEditing}
+				isLoading={page.isLoading}
+				isScopedRowEdit={page.isScopedRowEdit}
 				maxRows={page.maxRows}
-				mode={page.mode}
 				module={page.module}
+				moduleOptions={page.moduleOptions}
 				rows={page.rows}
 				setBranch={page.setBranch}
 				setModule={page.setModule}
+				setSignatoryFilterLabel={page.setSignatoryFilterLabel}
 				setPendingClearSignatureRow={page.setPendingClearSignatureRow}
 				setSignatureMakerRow={page.setSignatureMakerRow}
+				showSignatureValidityColumn={page.showSignatureValidityColumn}
+				signatoryFilterLabel={page.signatoryFilterLabel}
 				table={page.table}
 				updateRow={page.updateRow}
 			/>
@@ -59,6 +68,17 @@ export function FormSignatoryMaintenancePage() {
 				tone="danger"
 				onCancel={() => page.setPendingClearSignatureRow(null)}
 				onConfirm={page.confirmClearSignature}
+			/>
+			<AppDialog
+				isOpen={Boolean(page.pendingDeleteRow)}
+				title="Delete signatory row?"
+				description={`This will delete ${page.pendingDeleteRow?.name || page.pendingDeleteRow?.label || "this signatory row"}.`}
+				confirmLabel="Delete Row"
+				pendingLabel="Deleting..."
+				isPending={Boolean(page.deletingRowId)}
+				tone="danger"
+				onCancel={() => page.setPendingDeleteRow(null)}
+				onConfirm={page.confirmDeleteRow}
 			/>
 		</section>
 	);

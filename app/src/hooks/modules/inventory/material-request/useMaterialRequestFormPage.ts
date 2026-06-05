@@ -8,6 +8,7 @@ import {
 	createMaterialRequestFormValues,
 	createMaterialRequestId,
 	createMaterialRequestRecord,
+	createMaterialRequestStatusHistoryEntry,
 	emptyMaterialRequestItem,
 } from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
 import { useMaterialRequestStore } from "@/app/src/hooks/modules/inventory/material-request/useMaterialRequest";
@@ -204,6 +205,25 @@ export function useMaterialRequestFormPage() {
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
 
+	function clearItem(itemId: string) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			items: current.items.map((item) =>
+				item.id === itemId
+					? {
+							...emptyMaterialRequestItem,
+							id: item.id,
+						}
+					: item,
+			),
+		}));
+		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
 	function clearItems(mode: MaterialRequestItemClearMode) {
 		if (isReadonly) {
 			return;
@@ -223,6 +243,65 @@ export function useMaterialRequestFormPage() {
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
 
+	function pasteItemCells(
+		startItemId: string,
+		updates: Partial<MaterialRequestItem>[],
+	) {
+		if (isReadonly || updates.length === 0) {
+			return;
+		}
+
+		setValues((current) => {
+			const startIndex = current.items.findIndex(
+				(item) => item.id === startItemId,
+			);
+			const resolvedStartIndex =
+				startIndex === -1 ? current.items.length : startIndex;
+			const nextItems = [...current.items];
+
+			updates.forEach((update, rowOffset) => {
+				const itemIndex = resolvedStartIndex + rowOffset;
+				const currentItem = nextItems[itemIndex] ?? createEmptyItem();
+
+				nextItems[itemIndex] = {
+					...currentItem,
+					...update,
+					id: currentItem.id,
+				};
+			});
+
+			return {
+				...current,
+				items: nextItems,
+			};
+		});
+		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
+	function importItems(importedItems: MaterialRequestItem[]) {
+		if (isReadonly || importedItems.length === 0) {
+			return;
+		}
+
+		setValues((current) => {
+			const populatedItems = current.items.filter(materialRequestItemHasData);
+			const nextImportedItems = importedItems.map((item) => ({
+				...item,
+				id: createMaterialRequestId("item"),
+			}));
+
+			return {
+				...current,
+				items:
+					populatedItems.length > 0
+						? [...populatedItems, ...nextImportedItems]
+						: nextImportedItems,
+			};
+		});
+		setErrors((current) => ({ ...current, items: undefined }));
+		toast.success(`${importedItems.length} material request items imported.`);
+	}
+
 	function handleSubmit() {
 		if (isReadonly) {
 			return;
@@ -236,7 +315,11 @@ export function useMaterialRequestFormPage() {
 			return;
 		}
 
-		const nextRequest = createMaterialRequestRecord(values, params.recordId);
+		const nextRequest = createMaterialRequestRecord(
+			values,
+			params.recordId,
+			existingRequest?.history,
+		);
 
 		if (mode === "edit") {
 			updateRequest(nextRequest);
@@ -291,12 +374,23 @@ export function useMaterialRequestFormPage() {
 			return;
 		}
 
+		if (status === values.status) {
+			return;
+		}
+
 		const nextRequest = createMaterialRequestRecord(
 			{
 				...values,
 				status,
 			},
 			existingRequest.id,
+			[
+				...existingRequest.history,
+				createMaterialRequestStatusHistoryEntry(
+					status,
+					existingRequest.requestNo,
+				),
+			],
 		);
 
 		updateRequest(nextRequest);
@@ -307,12 +401,14 @@ export function useMaterialRequestFormPage() {
 	return {
 		addItems,
 		backHref,
+		clearItem,
 		clearItems,
 		duplicateItem,
 		errors,
 		existingRequest,
 		handleCopyFrom,
 		handleSubmit,
+		importItems,
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
@@ -321,6 +417,7 @@ export function useMaterialRequestFormPage() {
 		previewRecord,
 		insertItem,
 		moveItem,
+		pasteItemCells,
 		removeItem,
 		updateRequestStatus,
 		updateField,
@@ -378,7 +475,13 @@ function materialRequestItemIsComplete(item: MaterialRequestItem) {
 		item.itemCode.trim() !== "" &&
 		item.itemName.trim() !== "" &&
 		item.uom.trim() !== "" &&
+		hasMaterialRequestNumberValue(item.requestQuantity) &&
 		Number(item.requestQuantity) > 0 &&
+		hasMaterialRequestNumberValue(item.stockQuantity) &&
 		Number(item.stockQuantity) >= 0
 	);
+}
+
+function hasMaterialRequestNumberValue(value: MaterialRequestItem["requestQuantity"]) {
+	return value !== "";
 }

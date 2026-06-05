@@ -19,9 +19,18 @@ function DiscountManagementDrawerPanel({ discount, isOpen, mode, onClose }: {
 }) {
 	const page = useDiscountManagementFormPage({ existingDiscount: discount, mode, onSaved: onClose });
 	const copy = DiscountManagementActionCopy[mode];
-	return <MaintenanceFormDrawer description={copy.description} eyebrow="Accounting master data" formId={formId} isOpen={isOpen} isSaving={page.isMutating} onClose={onClose} title={copy.title}>
+	return <MaintenanceFormDrawer description={copy.description} eyebrow="Accounting master data" formId={formId} isOpen={isOpen} isReadonly={page.isReadonly} isSaving={page.isMutating} onClose={onClose} title={copy.title}>
 		<form id={formId} onSubmit={page.handleSubmit} className="px-6 py-5">
-			<DiscountManagementFields accountQuery={page.accountQuery} errors={page.errors} isReadonly={false} matchedAccounts={page.matchedAccounts} selectedAccount={page.selectedAccount} values={page.values} onAccountQueryChange={page.handleAccountQueryChange} onInputChange={page.handleInputChange} onSelectAccount={page.handleSelectAccount} />
+			<DiscountManagementFields
+				accountOptions={page.accountOptions}
+				errors={page.errors}
+				isReadonly={page.isReadonly}
+				moduleOptions={page.moduleOptions}
+				values={page.values}
+				onAccountChange={page.handleAccountChange}
+				onInputChange={page.handleInputChange}
+				onModuleChange={page.handleModuleChange}
+			/>
 		</form>
 	</MaintenanceFormDrawer>;
 }

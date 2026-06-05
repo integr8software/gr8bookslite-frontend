@@ -1,4 +1,4 @@
-import { FileSignature, Plus, Save, X } from "lucide-react";
+import { FileSignature, LoaderCircle, Plus, Save, X } from "lucide-react";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -6,6 +6,7 @@ import {
 
 type FormSignatoryHeaderProps = {
 	isEditing: boolean;
+	isSaving: boolean;
 	onClose: () => void;
 	onNew: () => void;
 	onSave: () => void;
@@ -13,6 +14,7 @@ type FormSignatoryHeaderProps = {
 
 export function FormSignatoryHeader({
 	isEditing,
+	isSaving,
 	onClose,
 	onNew,
 	onSave,
@@ -35,16 +37,25 @@ export function FormSignatoryHeader({
 						<>
 							<button
 								type="button"
+								disabled={isSaving}
 								onClick={onSave}
-								className={moduleHeaderActionClassNames.primary}
+								className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-70`}
 							>
-								<Save className="h-4 w-4" aria-hidden="true" />
-								Save
+								{isSaving ? (
+									<LoaderCircle
+										className="h-4 w-4 animate-spin"
+										aria-hidden="true"
+									/>
+								) : (
+									<Save className="h-4 w-4" aria-hidden="true" />
+								)}
+								{isSaving ? "Saving..." : "Save"}
 							</button>
 							<button
 								type="button"
+								disabled={isSaving}
 								onClick={onClose}
-								className={moduleHeaderActionClassNames.secondary}
+								className={`${moduleHeaderActionClassNames.secondary} disabled:cursor-not-allowed disabled:opacity-60`}
 							>
 								<X className="h-4 w-4" aria-hidden="true" />
 								Close

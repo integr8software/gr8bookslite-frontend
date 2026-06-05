@@ -17,17 +17,21 @@ import {
   MockDisbursementTransactions,
   MockDisbursementVouchers,
   buildDisbursementVoucherPreviewRows,
+  sanitizeDisbursementVoucherRecord,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { DisbursementVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherQueryKeys";
 import type {
   DisbursementVoucherPreviewRow,
   DisbursementVoucherRecord,
+  DisbursementTransactionRecord,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
 type DisbursementVoucherStoreState = {
   previewRows: DisbursementVoucherPreviewRow[];
-  transactions: typeof MockDisbursementTransactions;
+  transactions: DisbursementTransactionRecord[];
   vouchers: DisbursementVoucherRecord[];
+  addTransaction: (transaction: DisbursementTransactionRecord) => void;
+  updateTransaction: (transaction: DisbursementTransactionRecord) => void;
   addVoucher: (voucher: DisbursementVoucherRecord) => void;
   updateVoucher: (voucher: DisbursementVoucherRecord) => void;
   deleteVoucher: (voucherId: string) => void;
@@ -35,19 +39,113 @@ type DisbursementVoucherStoreState = {
   isMutating: boolean;
 };
 
+const DisbursementTransactionStorageKey =
+  "gr8books.disbursement-voucher.transactions";
+const DisbursementVoucherStorageKey = "gr8books.disbursement-voucher.vouchers";
+
+function getSeedTransactions() {
+  return MockDisbursementTransactions;
+}
+
+function getSeedVouchers() {
+  return MockDisbursementVouchers.map(sanitizeDisbursementVoucherRecord);
+}
+
+function readStoredTransactions() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const storedTransactions = window.localStorage.getItem(
+    DisbursementTransactionStorageKey,
+  );
+
+  if (!storedTransactions) {
+    return null;
+  }
+
+  try {
+    const parsedTransactions = JSON.parse(
+      storedTransactions,
+    ) as DisbursementTransactionRecord[];
+
+    return Array.isArray(parsedTransactions) ? parsedTransactions : null;
+  } catch {
+    return null;
+  }
+}
+
+function readStoredVouchers() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const storedVouchers = window.localStorage.getItem(
+    DisbursementVoucherStorageKey,
+  );
+
+  if (!storedVouchers) {
+    return null;
+  }
+
+  try {
+    const parsedVouchers = JSON.parse(
+      storedVouchers,
+    ) as DisbursementVoucherRecord[];
+
+    if (!Array.isArray(parsedVouchers)) {
+      return null;
+    }
+
+    return parsedVouchers.map(sanitizeDisbursementVoucherRecord);
+  } catch {
+    return null;
+  }
+}
+
+function getInitialTransactions() {
+  return readStoredTransactions() ?? getSeedTransactions();
+}
+
+function getInitialVouchers() {
+  return readStoredVouchers() ?? getSeedVouchers();
+}
+
+function writeStoredTransactions(transactions: DisbursementTransactionRecord[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(
+    DisbursementTransactionStorageKey,
+    JSON.stringify(transactions),
+  );
+}
+
+function writeStoredVouchers(vouchers: DisbursementVoucherRecord[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(
+    DisbursementVoucherStorageKey,
+    JSON.stringify(vouchers.map(sanitizeDisbursementVoucherRecord)),
+  );
+}
+
 export function useDisbursementVoucherStore<
   TSelected = DisbursementVoucherStoreState,
 >(selector?: (state: DisbursementVoucherStoreState) => TSelected) {
   const queryClient = useQueryClient();
   const transactionsQuery = useQuery({
     queryKey: DisbursementVoucherQueryKeys.transactions(),
-    queryFn: async () => MockDisbursementTransactions,
-    initialData: MockDisbursementTransactions,
+    queryFn: async () => getInitialTransactions(),
+    initialData: getInitialTransactions,
   });
   const vouchersQuery = useQuery({
     queryKey: DisbursementVoucherQueryKeys.vouchers(),
-    queryFn: async () => MockDisbursementVouchers,
-    initialData: MockDisbursementVouchers,
+    queryFn: async () => getInitialVouchers(),
+    initialData: getInitialVouchers,
   });
 
   function updateCachedVouchers(
@@ -55,9 +153,76 @@ export function useDisbursementVoucherStore<
   ) {
     queryClient.setQueryData<DisbursementVoucherRecord[]>(
       DisbursementVoucherQueryKeys.vouchers(),
-      (currentVouchers = MockDisbursementVouchers) => updater(currentVouchers),
+      (currentVouchers = getInitialVouchers()) => {
+        const nextVouchers = updater(
+          currentVouchers.map(sanitizeDisbursementVoucherRecord),
+        ).map(sanitizeDisbursementVoucherRecord);
+
+        writeStoredVouchers(nextVouchers);
+
+        return nextVouchers;
+      },
     );
   }
+
+  function updateCachedTransactions(
+    updater: (
+      transactions: DisbursementTransactionRecord[],
+    ) => DisbursementTransactionRecord[],
+  ) {
+    queryClient.setQueryData<DisbursementTransactionRecord[]>(
+      DisbursementVoucherQueryKeys.transactions(),
+      (currentTransactions = getInitialTransactions()) => {
+        const nextTransactions = updater(currentTransactions);
+
+        writeStoredTransactions(nextTransactions);
+
+        return nextTransactions;
+      },
+    );
+  }
+
+  const addTransactionMutation = useMutation({
+    mutationFn: async (transaction: DisbursementTransactionRecord) =>
+      transaction,
+    onSuccess: (transaction) => {
+      updateCachedTransactions((transactions) => {
+        if (
+          transactions.some(
+            (currentTransaction) => currentTransaction.id === transaction.id,
+          )
+        ) {
+          return transactions.map((currentTransaction) =>
+            currentTransaction.id === transaction.id
+              ? transaction
+              : currentTransaction,
+          );
+        }
+
+        return [transaction, ...transactions];
+      });
+    },
+    onError: () => {
+      toast.error("Could not save disbursement transaction. Please try again.");
+    },
+  });
+
+  const updateTransactionMutation = useMutation({
+    mutationFn: async (transaction: DisbursementTransactionRecord) =>
+      transaction,
+    onSuccess: (transaction) => {
+      updateCachedTransactions((transactions) =>
+        transactions.map((currentTransaction) =>
+          currentTransaction.id === transaction.id
+            ? transaction
+            : currentTransaction,
+        ),
+      );
+    },
+    onError: () => {
+      toast.error("Could not update disbursement transaction. Please try again.");
+    },
+  });
 
   const addVoucherMutation = useMutation({
     mutationFn: async (voucher: DisbursementVoucherRecord) => voucher,
@@ -102,7 +267,7 @@ export function useDisbursementVoucherStore<
     () =>
       buildDisbursementVoucherPreviewRows(
         transactionsQuery.data,
-        vouchersQuery.data,
+        vouchersQuery.data.map(sanitizeDisbursementVoucherRecord),
       ),
     [transactionsQuery.data, vouchersQuery.data],
   );
@@ -111,22 +276,29 @@ export function useDisbursementVoucherStore<
     () => ({
       previewRows,
       transactions: transactionsQuery.data,
-      vouchers: vouchersQuery.data,
+      vouchers: vouchersQuery.data.map(sanitizeDisbursementVoucherRecord),
+      addTransaction: (transaction) => addTransactionMutation.mutate(transaction),
+      updateTransaction: (transaction) =>
+        updateTransactionMutation.mutate(transaction),
       addVoucher: (voucher) => addVoucherMutation.mutate(voucher),
       updateVoucher: (voucher) => updateVoucherMutation.mutate(voucher),
       deleteVoucher: (voucherId) => deleteVoucherMutation.mutate(voucherId),
       isLoading: transactionsQuery.isLoading || vouchersQuery.isLoading,
       isMutating:
+        addTransactionMutation.isPending ||
         addVoucherMutation.isPending ||
+        updateTransactionMutation.isPending ||
         updateVoucherMutation.isPending ||
         deleteVoucherMutation.isPending,
     }),
     [
       addVoucherMutation,
+      addTransactionMutation,
       deleteVoucherMutation,
       previewRows,
       transactionsQuery.data,
       transactionsQuery.isLoading,
+      updateTransactionMutation,
       updateVoucherMutation,
       vouchersQuery.data,
       vouchersQuery.isLoading,

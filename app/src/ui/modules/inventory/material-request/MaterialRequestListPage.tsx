@@ -70,7 +70,7 @@ export function MaterialRequestListPage() {
 			<MaterialRequestMetrics metrics={page.metrics} />
 
 			<ModuleTable
-				emptyDescription="Try another request no., material, warehouse, requester, or status."
+				emptyDescription="Try another Material Request No., material, warehouse, requester, or status."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No material requests found"
 				isLoading={page.isLoading}
@@ -85,7 +85,7 @@ export function MaterialRequestListPage() {
 							label="Search material requests"
 							value={page.query}
 							onChange={page.handleQueryChange}
-							placeholder="Search by Request No., Material, or Reference"
+							placeholder="Search by Material Request No., Material, or Reference"
 						/>
 						<ModuleTableFilterSelect
 							label="From Warehouse"

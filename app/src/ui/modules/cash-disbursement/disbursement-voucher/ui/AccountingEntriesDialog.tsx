@@ -854,10 +854,10 @@ function roundTaxAmount(value: number) {
 }
 
 const FieldClassName =
-  "h-11 rounded border border-darknavy/12 bg-white px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45";
+  "app-data-entry-field h-11 rounded border border-darknavy/12 bg-white px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45";
 
 const ReadOnlyFieldClassName =
-  "h-11 rounded border border-darknavy/12 bg-offwhite/55 px-3 text-sm text-darknavy/70 outline-none";
+  "app-data-entry-field h-11 rounded border border-darknavy/12 bg-white px-3 text-sm text-darknavy outline-none";
 
 const EntryFieldClassName =
-  "h-10 w-full rounded-lg border border-darknavy/12 bg-white px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45";
+  "app-data-entry-field h-10 w-full rounded-lg border border-darknavy/12 bg-white px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45";

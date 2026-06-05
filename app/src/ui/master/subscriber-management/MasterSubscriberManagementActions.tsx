@@ -17,17 +17,17 @@ export function MasterSubscriberManagementMoreActions({
 	recordId: string;
 }) {
 	return (
-		<details className="group relative">
+		<details className="group relative w-full sm:w-auto">
 			<summary
 				className={joinClasses(
-					"inline-flex h-11 list-none items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)]",
+					"inline-flex h-11 w-full list-none items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)] sm:w-auto",
 					"[&::-webkit-details-marker]:hidden",
 				)}
 			>
 				<MoreVertical className="h-4 w-4" aria-hidden="true" />
 				More Actions
 			</summary>
-			<div className="absolute right-0 z-30 mt-2 w-64 rounded-lg border border-darknavy/10 bg-white p-2 shadow-[0_24px_70px_rgba(33,39,56,0.16)]">
+			<div className="absolute left-0 z-30 mt-2 w-64 max-w-full rounded-lg border border-darknavy/10 bg-white p-2 shadow-[0_24px_70px_rgba(33,39,56,0.16)] sm:left-auto sm:right-0">
 				<ActionLink
 					href={`${getMasterSubscriberManagementEditHref(recordId)}?from=view`}
 					icon={Pencil}

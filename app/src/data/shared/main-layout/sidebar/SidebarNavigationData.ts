@@ -101,30 +101,6 @@ export const MainMasterNavigationSections: MainNavigationSection[] = [
     "master-subscriber-management",
   ),
   directSection(
-    "master-company-management-section",
-    "Company Management",
-    "/master/company-management",
-    "company",
-    "workspace.companies",
-    "master-company-management",
-  ),
-  directSection(
-    "master-branch-management-section",
-    "Branch Management",
-    "/master/branch-management",
-    "branch",
-    "workspace.branches",
-    "master-branch-management",
-  ),
-  directSection(
-    "master-user-management-section",
-    "User Management",
-    "/master/users-management",
-    "user",
-    "workspace.users",
-    "master-users-management",
-  ),
-  directSection(
     "master-plan-and-packages-section",
     "Plan and Packages",
     "/master/plan-and-packages",
@@ -278,6 +254,13 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
           ),
         ],
       ),
+      multiProductItem(
+        "maintenance-party-management",
+        "Party Management",
+        "/maintenance/party-management",
+        "maintenance.party",
+        ["accounting", "inventory"],
+      ),
       navGroup(
         "maintenance-item-management",
         "Item Management",
@@ -314,13 +297,6 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
         "/maintenance/warehouse-management",
         "maintenance.warehouse",
         "inventory",
-      ),
-      multiProductItem(
-        "maintenance-party-management",
-        "Party Management",
-        "/maintenance/party-management",
-        "maintenance.party",
-        ["accounting", "inventory"],
       ),
       child(
         "maintenance-form-signatory",

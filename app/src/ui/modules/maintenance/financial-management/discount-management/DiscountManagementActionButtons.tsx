@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Edit3, Save, Trash2, X } from "lucide-react";
+import { ArrowLeft, Edit3, Save, X } from "lucide-react";
 import { DiscountManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
 import type {
 	Discount,
@@ -11,14 +11,12 @@ type DiscountManagementActionButtonsProps = {
 	discount?: Discount;
 	isReadonly: boolean;
 	mode: DiscountManagementActionMode;
-	onDeleteDiscount: () => void;
 };
 
 export function DiscountManagementActionButtons({
 	discount,
 	isReadonly,
 	mode,
-	onDeleteDiscount,
 }: DiscountManagementActionButtonsProps) {
 	return (
 		<>
@@ -40,19 +38,9 @@ export function DiscountManagementActionButtons({
 					Edit
 				</Link>
 			) : null}
-			{discount ? (
-				<button
-					type="button"
-					onClick={onDeleteDiscount}
-					className={moduleHeaderActionClassNames.danger}
-				>
-					<Trash2 className="h-4 w-4" aria-hidden="true" />
-					Delete
-				</button>
-			) : null}
 			{mode === "edit" && discount ? (
 				<Link
-					href={`${DiscountManagementHref}/view/${discount.id}`}
+					href={DiscountManagementHref}
 					className={moduleHeaderActionClassNames.secondary}
 				>
 					<X className="h-4 w-4" aria-hidden="true" />

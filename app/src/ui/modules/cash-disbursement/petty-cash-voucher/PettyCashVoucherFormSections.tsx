@@ -60,7 +60,7 @@ export function PettyCashVoucherDetailsFields({
 								event.target.value as PettyCashVoucherFormValues["status"],
 							)
 						}
-						className={inputClassName}
+						className={`${inputClassName} app-select-control`}
 					>
 						<option>Pending</option>
 						<option>Approved</option>
@@ -95,7 +95,7 @@ export function PettyCashVoucherDetailsFields({
 								event.target.value as PettyCashVoucherFormValues["vatable"],
 							)
 						}
-						className={inputClassName}
+						className={`${inputClassName} app-select-control`}
 					>
 						<option>False</option>
 						<option>True</option>

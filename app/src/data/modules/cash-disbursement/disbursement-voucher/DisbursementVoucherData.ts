@@ -175,10 +175,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         status: "Balanced",
       },
     ],
-    attachments: [
-      { id: "file-1001", name: "invoice-office-depot.pdf", sizeLabel: "248 KB" },
-      { id: "file-1002", name: "approval-memo-q2.docx", sizeLabel: "118 KB" },
-    ],
+    attachments: [],
     status: "Approved",
   },
   {
@@ -234,9 +231,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         status: "Balanced",
       },
     ],
-    attachments: [
-      { id: "file-1003", name: "retainer-billing.pdf", sizeLabel: "192 KB" },
-    ],
+    attachments: [],
     status: "Approved",
   },
   {
@@ -284,12 +279,34 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
         status: "Balanced",
       },
     ],
-    attachments: [
-      { id: "file-1004", name: "travel-receipts.zip", sizeLabel: "612 KB" },
-    ],
+    attachments: [],
     status: "Approved",
   },
 ];
+
+const LegacyMockAttachmentNames = new Set([
+  "invoice-office-depot.pdf",
+  "approval-memo-q2.docx",
+  "retainer-billing.pdf",
+  "travel-receipts.zip",
+]);
+
+export function removeLegacyMockAttachments(
+  attachments: DisbursementAttachment[],
+) {
+  return attachments.filter(
+    (attachment) => !LegacyMockAttachmentNames.has(attachment.name),
+  );
+}
+
+export function sanitizeDisbursementVoucherRecord(
+  voucher: DisbursementVoucherRecord,
+): DisbursementVoucherRecord {
+  return {
+    ...voucher,
+    attachments: removeLegacyMockAttachments(voucher.attachments),
+  };
+}
 
 export const DisbursementVoucherCopySources: DisbursementVoucherCopySource[] = [
   "Loan",
@@ -390,7 +407,7 @@ export function createDisbursementVoucherFormValues(
       preparedBy: voucher.preparedBy,
       status: voucher.status,
       lineEntries: voucher.lineEntries,
-      attachments: voucher.attachments,
+      attachments: removeLegacyMockAttachments(voucher.attachments),
     };
   }
 
@@ -400,7 +417,7 @@ export function createDisbursementVoucherFormValues(
       transaction?.amount ?? 0,
       transaction ? getDefaultTaxRate(transaction) : "0%",
     ),
-    transactionId: transaction?.id ?? "",
+    transactionId: transaction?.id ?? `dv-tx-${Date.now()}`,
     voucherNo: createNextVoucherNumber(),
     voucherDate: todayDateValue(),
     paymentMethod: transaction?.paymentMethod ?? "",
@@ -456,7 +473,34 @@ export function createDisbursementVoucherFromForm(
     preparedBy: values.preparedBy.trim(),
     status: values.status,
     lineEntries: values.lineEntries,
-    attachments: values.attachments,
+    attachments: removeLegacyMockAttachments(values.attachments),
+  };
+}
+
+export function createDisbursementTransactionFromForm(
+  values: DisbursementVoucherFormValues,
+  transaction?: DisbursementTransactionRecord,
+): DisbursementTransactionRecord {
+  return {
+    id: transaction?.id ?? values.transactionId,
+    transactionNo: transaction?.transactionNo ?? createNextTransactionNumber(),
+    payee: values.vceName.trim() || transaction?.payee || "Unnamed Payee",
+    purpose: values.remarks.trim() || transaction?.purpose || "Disbursement voucher",
+    department: transaction?.department ?? "Finance Operations",
+    requestedBy:
+      transaction?.requestedBy ??
+      (values.preparedBy.trim() || "Finance Shared Services"),
+    transactionDate: transaction?.transactionDate ?? values.voucherDate,
+    paymentDueDate: values.paymentDueDate,
+    amount: Number(values.amount || 0),
+    currency: values.currency,
+    paymentMethod:
+      values.paymentMethod as DisbursementTransactionRecord["paymentMethod"],
+    disbursementType:
+      values.disbursementType as DisbursementTransactionRecord["disbursementType"],
+    status: values.status,
+    costCenter: values.costCenter.trim(),
+    accountingEntries: values.lineEntries,
   };
 }
 
@@ -483,7 +527,7 @@ export function applyCopyFromRecordToDisbursementVoucherForm(
     paymentDueDate: record.templateValues.paymentDueDate,
     paymentDetails: record.templateValues.paymentDetails,
     lineEntries: record.templateValues.lineEntries,
-    attachments: record.templateValues.attachments,
+    attachments: removeLegacyMockAttachments(record.templateValues.attachments),
   };
 }
 
@@ -609,21 +653,8 @@ export function formatTaxRateSummary(taxDetails: DisbursementTaxDetails) {
   return `${vatLabel}${ewtLabel}`;
 }
 
-export function createAttachmentPlaceholders(
-  transaction: DisbursementTransactionRecord,
-): DisbursementAttachment[] {
-  return [
-    {
-      id: `att-${transaction.id}-1`,
-      name: `${transaction.transactionNo.toLowerCase()}-source-doc.pdf`,
-      sizeLabel: "240 KB",
-    },
-    {
-      id: `att-${transaction.id}-2`,
-      name: `${transaction.department.toLowerCase().replace(/\s+/g, "-")}-approval-note.docx`,
-      sizeLabel: "96 KB",
-    },
-  ];
+export function createAttachmentPlaceholders(): DisbursementAttachment[] {
+  return [];
 }
 
 export function formatCurrency(amount: number) {
@@ -663,6 +694,13 @@ function createNextVoucherNumber() {
   const serial = String(nextSerial).padStart(4, "0");
 
   return `DV-${currentYear}-${serial}`;
+}
+
+function createNextTransactionNumber() {
+  const currentYear = new Date().getFullYear();
+  const serial = String(Date.now() % 100000).padStart(5, "0");
+
+  return `TXN-${currentYear}-${serial}`;
 }
 
 function createVoucherReferenceNumber() {
@@ -712,8 +750,7 @@ function createDisbursementVoucherCopyFromRecord(
         `${transaction.purpose} Copied from ${sourceNo}.`,
       invoiceReferenceNo:
         voucher?.invoiceReferenceNo ?? `${sourceNo}-REF`,
-      attachments:
-        voucher?.attachments ?? createAttachmentPlaceholders(transaction),
+      attachments: voucher?.attachments ?? createAttachmentPlaceholders(),
       lineEntries:
         voucher?.lineEntries ?? createAutoDisbursementLineEntries(transaction),
     },

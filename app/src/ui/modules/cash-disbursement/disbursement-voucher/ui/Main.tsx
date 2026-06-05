@@ -7,6 +7,7 @@ import {
 	useDisbursementVoucherStore,
 } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import {
+	createDisbursementTransactionFromForm,
 	createDisbursementVoucherFromForm,
 	updateDisbursementVoucherFromForm,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
@@ -46,6 +47,12 @@ export function DisbursementVoucherMain() {
 	const previewRows = useDisbursementVoucherStore(
 		(state) => state.previewRows,
 	);
+	const addTransaction = useDisbursementVoucherStore(
+		(state) => state.addTransaction,
+	);
+	const updateTransaction = useDisbursementVoucherStore(
+		(state) => state.updateTransaction,
+	);
 	const addVoucher = useDisbursementVoucherStore((state) => state.addVoucher);
 	const updateVoucher = useDisbursementVoucherStore(
 		(state) => state.updateVoucher,
@@ -76,10 +83,9 @@ export function DisbursementVoucherMain() {
 				mode: resumeState.mode,
 				resumeState,
 			});
+			clearAccountingGridSession();
+			router.replace("/cash-disbursement/disbursement-voucher");
 		}, 0);
-
-		clearAccountingGridSession();
-		router.replace("/cash-disbursement/disbursement-voucher");
 
 		return () => window.clearTimeout(restoreTimer);
 	}, [router, searchParams]);
@@ -98,17 +104,44 @@ export function DisbursementVoucherMain() {
 	}
 
 	function handleSaveDrawer(values: DisbursementVoucherFormValues) {
-		if (drawerState?.mode === "edit" && drawerState.row?.voucher) {
+		const existingTransaction = transactions.find(
+			(transaction) => transaction.id === values.transactionId,
+		);
+		const nextTransaction = createDisbursementTransactionFromForm(
+			values,
+			existingTransaction,
+		);
+		const nextValues = {
+			...values,
+			transactionId: nextTransaction.id,
+		};
+		const existingVoucher =
+			drawerVoucher ??
+			vouchers.find(
+				(voucher) => voucher.transactionId === nextTransaction.id,
+			);
+
+		if (existingTransaction) {
+			updateTransaction(nextTransaction);
+		} else {
+			addTransaction(nextTransaction);
+		}
+
+		if (drawerState?.mode === "edit" && existingVoucher) {
 			updateVoucher(
-				updateDisbursementVoucherFromForm(
-					drawerState.row.voucher,
-					values,
-				),
+				updateDisbursementVoucherFromForm(existingVoucher, nextValues),
 			);
 			return;
 		}
 
-		addVoucher(createDisbursementVoucherFromForm(values));
+		if (existingVoucher) {
+			updateVoucher(
+				updateDisbursementVoucherFromForm(existingVoucher, nextValues),
+			);
+			return;
+		}
+
+		addVoucher(createDisbursementVoucherFromForm(nextValues));
 	}
 
 	const drawerTransactionId = drawerState?.row?.transaction.id;

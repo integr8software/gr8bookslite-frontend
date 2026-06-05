@@ -9,6 +9,7 @@ import type {
 export type WorkspaceCompanyManagementStoreState = {
   branches: WorkspaceCompanyBranchRecord[];
   companies: WorkspaceCompanyRecord[];
+  errorMessage: string | null;
   isLoading: boolean;
   isMutating: boolean;
   users: WorkspaceCompanyUserRecord[];

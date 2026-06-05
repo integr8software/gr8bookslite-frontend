@@ -12,7 +12,7 @@ export const MaterialRequestApprovalStatusOptions: MaterialRequestStatus[] = [
 	"Draft",
 	"Pending",
 	"Approved",
-	"Rejected",
+	"Disapproved",
 	"Cancelled",
 ];
 
@@ -23,8 +23,12 @@ export const MaterialRequestDirectStatusOptions: MaterialRequestStatus[] = [
 ];
 
 export const MaterialRequestStatusOptions: MaterialRequestStatus[] = [
-	...MaterialRequestApprovalStatusOptions,
 	"Active",
+	"Draft",
+	"Pending",
+	"Approved",
+	"Disapproved",
+	"Cancelled",
 	"Completed",
 ];
 

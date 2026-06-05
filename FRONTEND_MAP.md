@@ -13,6 +13,7 @@ Use this file as the first stop before changing the frontend. It is a compact gr
 - Local dev server: `npm run dev`, served on `http://localhost:3001`.
 - Backend API base URL: `NEXT_PUBLIC_API_BASE_URL`, usually `http://localhost:3000/api/v1`.
 - Main frontend libraries: TanStack Query, Zustand, Axios, Zod, Tailwind CSS, lucide-react, Recharts, pdfmake.
+- Route navigation cache: `next.config.ts` enables `experimental.staleTimes` with 30 seconds for dynamic segments and 5 minutes for static/prefetched segments.
 
 ## Runtime Graph
 

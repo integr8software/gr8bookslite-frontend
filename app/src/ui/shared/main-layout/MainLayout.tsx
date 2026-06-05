@@ -14,6 +14,7 @@ import { MainTopbar } from "./main-topbar/MainTopbar";
 import { NoBranchAccess } from "./NoBranchAccess";
 import { joinClasses } from "./utils";
 import { AiAssistantChat } from "@/app/src/ui/shared/ai-assistant/AiAssistantChat";
+import { LogoutLoadingScreen } from "@/app/src/ui/auth/LogoutLoadingScreen";
 import { MaintenanceSpotlightTutorial } from "@/app/src/ui/modules/maintenance/MaintenanceSpotlightTutorial";
 
 const MainHelpModal = dynamic(
@@ -63,6 +64,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		homeHref,
 		isCompanySwitching,
 		companySwitchMessage,
+		isLoggingOut,
 		isShellLoading,
 		isProfileLoading,
 		isTopbarContextLoading,
@@ -103,7 +105,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		switchToWorkspace,
 	} = useMainLayout();
 	const isCompanyBranchAccessLoading =
-		activeNavigationScope === "company" && isBranchLoading && !hasBranchAccess;
+		activeNavigationScope === "company" && isBranchLoading;
 	const shouldShowBranchContent =
 		activeNavigationScope !== "company" ||
 		hasBranchAccess ||
@@ -127,6 +129,10 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 
 	if (isShellLoading) {
 		return <MainLoadingScreen message="Loading your workspace data..." />;
+	}
+
+	if (isLoggingOut) {
+		return <LogoutLoadingScreen />;
 	}
 
 	if (isCompanySwitching) {
@@ -242,9 +248,9 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 					className={joinClasses(
 						"flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-3 py-4 motion-reduce:transition-none sm:px-5 lg:px-6",
 						isSidebarTransitionEnabled &&
-							"transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+						"transition-[margin] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
 						(isSidebarOpen || !isSidebarTransitionEnabled) &&
-							"lg:ml-78",
+						"lg:ml-78",
 						isNotificationsOpen && "xl:mr-88",
 					)}
 				>

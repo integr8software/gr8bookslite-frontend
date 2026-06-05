@@ -1,5 +1,7 @@
 export type WorkspaceCompanyStatus = "Active" | "Inactive" | "Pending";
 
+export type WorkspaceUserStatus = WorkspaceCompanyStatus | "Suspended";
+
 export type WorkspaceCompanyPlan = string;
 
 export type WorkspaceCompanyType =
@@ -99,7 +101,8 @@ export type WorkspaceCompanyUserRecord = {
   name: string;
   email: string;
   contactNumber: string;
-  status: WorkspaceCompanyStatus;
+  status: WorkspaceUserStatus;
+  createdAt: string;
   lastLogin?: string;
   profileImageUrl?: string;
 };

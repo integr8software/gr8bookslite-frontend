@@ -10,6 +10,7 @@ import type { ModuleTablePaginationProps } from "@/app/src/types/shared/module/m
 import {
 	getVisiblePaginationPages,
 	joinClasses,
+	moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ModuleTablePagination({
@@ -33,12 +34,12 @@ export function ModuleTablePagination({
 	);
 
 	return (
-		<div className="grid gap-3 border-t border-darknavy/10 bg-white px-6 py-5 text-sm text-darknavy/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+		<div className="grid gap-4 border-t border-darknavy/10 bg-white px-4 py-4 text-sm text-darknavy/65 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:px-6 sm:py-5">
 			<p className="text-center font-medium sm:text-left">
 				Showing {firstRow} to {lastRow} of {totalRows} {label}
 			</p>
 
-			<div className="flex items-center justify-center gap-2 sm:col-start-2">
+			<div className="flex flex-wrap items-center justify-center gap-2 sm:col-start-2">
 				<ModuleTablePageButton
 					aria-label="First page"
 					disabled={page === 1}
@@ -87,7 +88,7 @@ export function ModuleTablePagination({
 				</ModuleTablePageButton>
 			</div>
 
-			<label className="flex items-center justify-center gap-3 text-sm font-medium text-darknavy/65 sm:col-start-3 sm:justify-self-end">
+			<label className="flex flex-wrap items-center justify-center gap-3 text-sm font-medium text-darknavy/65 sm:col-start-3 sm:justify-self-end">
 				Rows per page
 				<span className="relative">
 					<select
@@ -95,7 +96,12 @@ export function ModuleTablePagination({
 						onChange={(event) =>
 							onPageSizeChange(Number(event.target.value))
 						}
-						className="h-11 appearance-none rounded-lg border border-darknavy/10 bg-white px-4 pr-9 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition hover:border-skyblue/40 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
+						className={joinClasses(
+							"h-11 appearance-none rounded-lg border border-darknavy/10 bg-white px-4 pr-9 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition focus:ring-2",
+							moduleAccentClassNames.hoverBorder,
+							"focus:border-[var(--skyblue)]",
+							moduleAccentClassNames.focusRing,
+						)}
 					>
 						{pageSizeOptions.map((option) => (
 							<option key={option} value={option}>
@@ -131,8 +137,13 @@ function ModuleTablePageButton({
 				size === "compact" && "px-3",
 				size === "default" && "px-4",
 				active
-					? "border-blue-600 bg-blue-600 text-white shadow-blue-600/20 focus-visible:ring-blue-600/20"
-					: "border-darknavy/10 bg-white text-darknavy shadow-darknavy/5 hover:border-skyblue/40 hover:bg-skyblue/10 hover:text-darknavy focus-visible:ring-skyblue/15",
+					? moduleAccentClassNames.button
+					: joinClasses(
+						"module-table-interactive-effect border-darknavy/10 bg-white text-darknavy shadow-darknavy/5 hover:text-darknavy",
+						moduleAccentClassNames.hoverBorder,
+						moduleAccentClassNames.hoverSoftBackground,
+						moduleAccentClassNames.focusRing,
+					),
 			)}
 			{...props}
 		>

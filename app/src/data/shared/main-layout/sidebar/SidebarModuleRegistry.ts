@@ -12,7 +12,7 @@ export type MainModuleAction = Extract<
 >;
 
 const CrudActions: MainModuleAction[] = ["view", "add", "edit"];
-const MockRecordIds = ["1001", "1002", "1003"];
+const ModuleRecordIds = ["1001", "1002", "1003"];
 
 export const SidebarModuleNavigationSections: MainNavigationSection[] = [
   section("dashboard", "Dashboard", "/dashboard", "dashboard", "dashboard", [
@@ -47,13 +47,6 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
             "accounting",
           ),
           moduleItem(
-            "maintenance-financial-management-multi-currency-setup",
-            "Multi Currency Setup",
-            "/maintenance/financial-management/multi-currency-setup",
-            "maintenance.currency",
-            "accounting",
-          ),
-          moduleItem(
             "maintenance-financial-management-discount-management",
             "Discount Management",
             "/maintenance/financial-management/discount-management",
@@ -83,6 +76,14 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
             "accounting",
           ),
         ],
+      ),
+      moduleItem(
+        "maintenance-party-management",
+        "Party Management",
+        "/maintenance/party-management",
+        "maintenance.party",
+        "accounting",
+        ["accounting", "inventory"],
       ),
       group(
         "maintenance-item-management",
@@ -121,12 +122,11 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
         "inventory",
       ),
       moduleItem(
-        "maintenance-party-management",
-        "Party Management",
-        "/maintenance/party-management",
-        "maintenance.party",
+        "maintenance-form-signatory",
+        "Form Signatory",
+        "/maintenance/form-signatory",
+        "settings",
         "accounting",
-        ["accounting", "inventory"],
       ),
     ],
   ),
@@ -516,7 +516,7 @@ function moduleItem(
     requiredActions: ["view"],
     module: {
       actions,
-      mockRecordIds: MockRecordIds,
+      recordIds: ModuleRecordIds,
     },
   };
 }

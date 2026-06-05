@@ -2,12 +2,11 @@ import type { MainNavigationItem } from "@/app/src/data/shared/main-layout/MainL
 import { SidebarModuleNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarModuleRegistry";
 import type {
 	MasterPlanAndPackageFeatureOption,
-	MasterPlanAndPackagePricingKind,
-	MasterPlanAndPackageScaleKind,
+	MasterPlanAndPackageScope,
+	MasterPlanAndPackageScalePeriod,
 	MasterPlanAndPackageScaleUnit,
 	MasterPlanAndPackageStatus,
 	MasterPlanAndPackageTableColumnKey,
-	MasterPlanAndPackageTransactionReset,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
 export const MasterPlanAndPackagesHref = "/master/plan-and-packages";
@@ -31,36 +30,61 @@ export const MasterPlanAndPackageStatusOptions = [
 	"Inactive",
 ] as const satisfies readonly MasterPlanAndPackageStatus[];
 
-export const MasterPlanAndPackagePricingKindOptions = [
-	"Monthly",
-	"Interval",
-	"Yearly",
-	"Transactional",
-	"Percent Off",
-] as const satisfies readonly MasterPlanAndPackagePricingKind[];
+export const MasterPlanAndPackageScopeOptions = [
+	"ONBOARDING",
+	"ADDITIONAL_COMPANY",
+] as const satisfies readonly MasterPlanAndPackageScope[];
 
-export const MasterPlanAndPackageScaleKindOptions = [
-	"Range",
-	"Add-on",
-	"Reduction",
-] as const satisfies readonly MasterPlanAndPackageScaleKind[];
+export type MasterPlanAndPackageStatusFilterValue =
+	| "ALL"
+	| MasterPlanAndPackageStatus;
 
-export const MasterPlanAndPackageTransactionResetOptions = [
-	"Daily",
-	"Monthly",
-	"Yearly",
-	"When Consumed",
-] as const satisfies readonly MasterPlanAndPackageTransactionReset[];
+export type MasterPlanAndPackageScopeFilterValue =
+	| "ALL"
+	| MasterPlanAndPackageScope;
+
+export const MasterPlanAndPackageStatusFilterOptions = [
+	{ label: "All", value: "ALL" },
+	...MasterPlanAndPackageStatusOptions.map((status) => ({
+		label: status,
+		value: status,
+	})),
+] as const satisfies readonly {
+	label: string;
+	value: MasterPlanAndPackageStatusFilterValue;
+}[];
+
+export const MasterPlanAndPackageScopeFilterOptions = [
+	{ label: "All", value: "ALL" },
+	{ label: "New user onboarding", value: "ONBOARDING" },
+	{ label: "Additional company", value: "ADDITIONAL_COMPANY" },
+] as const satisfies readonly {
+	label: string;
+	value: MasterPlanAndPackageScopeFilterValue;
+}[];
+
+export const MasterPlanAndPackageScopeLabels = {
+	ONBOARDING: "New user onboarding",
+	ADDITIONAL_COMPANY: "Additional company",
+} as const satisfies Record<MasterPlanAndPackageScope, string>;
 
 export const MasterPlanAndPackageScaleUnits = [
-	"company",
 	"branch",
 	"user",
 ] as const satisfies readonly MasterPlanAndPackageScaleUnit[];
 
+export const MasterPlanAndPackageScalePeriods = [
+	"monthly",
+	"yearly",
+] as const satisfies readonly MasterPlanAndPackageScalePeriod[];
+
+export const MasterPlanAndPackageScalePeriodLabels = {
+	monthly: "Monthly",
+	yearly: "Yearly",
+} as const satisfies Record<MasterPlanAndPackageScalePeriod, string>;
+
 export const MasterPlanAndPackageScaleUnitLabels = {
 	branch: "Branch",
-	company: "Company",
 	user: "User",
 } as const satisfies Record<MasterPlanAndPackageScaleUnit, string>;
 
@@ -74,7 +98,7 @@ export const MasterPlanAndPackageTableColumns = [
 	{ key: "status", label: "Status", className: "w-[9rem]" },
 	{ key: "pricing", label: "Pricing", className: "w-[18rem]" },
 	{ key: "scalePricing", label: "Scale Pricing", className: "w-[22rem]" },
-	{ label: "Actions", className: "w-[17rem] text-right" },
+	{ label: "Actions", className: "w-[6rem] text-right" },
 ] as const satisfies readonly (
 	| {
 			key: MasterPlanAndPackageTableColumnKey;

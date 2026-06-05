@@ -190,19 +190,17 @@ export function OnboardingStepOne({
         errors={errors.address}
       />
 
-      {/* TIN + Contact Number */}
-      <div className="grid gap-6 md:grid-cols-2">
+      {/* TIN + Company Email + Contact Number */}
+      <div className="grid gap-6 lg:grid-cols-3">
         <OnboardingField
-          label="TIN"
-          id="tin"
-          name="tin"
-          type="text"
-          inputMode="numeric"
-          placeholder="123-456-789-000"
-          maxLength={15}
-          value={values.tin}
-          onChange={(e) => updateValue("tin", FormatTinNumber(e.target.value))}
-          errors={errors.tin}
+          label="Company Email"
+          id="companyEmail"
+          name="companyEmail"
+          type="email"
+          placeholder="hello@acmecorp.com"
+          value={values.companyEmail}
+          onChange={(e) => updateValue("companyEmail", e.target.value)}
+          errors={errors.companyEmail}
         />
         <OnboardingField
           label="Contact Number"
@@ -225,6 +223,18 @@ export function OnboardingStepOne({
             }
           }}
           errors={errors.contactNumber}
+        />
+        <OnboardingField
+          label="TIN"
+          id="tin"
+          name="tin"
+          type="text"
+          inputMode="numeric"
+          placeholder="123-456-789-000"
+          maxLength={15}
+          value={values.tin}
+          onChange={(e) => updateValue("tin", FormatTinNumber(e.target.value))}
+          errors={errors.tin}
         />
       </div>
 

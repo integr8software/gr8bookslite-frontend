@@ -18,9 +18,10 @@ import {
 	TransactionNumberSetupInitialFormValues,
 	createTransactionNumberSetupFormValues,
 	createTransactionNumberSetupRecord,
+	getTransactionNumberSetupBranchOptions,
 	updateTransactionNumberSetupRecord,
 } from "@/app/src/data/modules/system-administration/transaction-number-setup/TransactionNumberSetupData";
-import { MainLayoutMockData } from "@/app/src/data/shared/main-layout/MainLayoutMockData";
+import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagementStore";
 import { formatTransactionNumber } from "@/app/src/services/modules/system-administration/transaction-number-setup/TransactionNumberGenerationService";
 import type {
 	TransactionNumberModuleCode,
@@ -49,14 +50,14 @@ export function useTransactionNumberSetupFormPage() {
 		setups,
 		updateSetup,
 	} = useTransactionNumberSetupStore();
+	const companies = useWorkspaceCompanyManagementStore(
+		(state) => state.companies,
+		{ includeUsers: false },
+	);
 	const mode = getActionMode(pathname);
 	const existingSetup = setups.find((setup) => setup.id === params.recordId);
 	const isReadonly = mode === "view";
-	const branchOptions = MainLayoutMockData.branches.map((branch) => ({
-		id: branch.id,
-		code: branch.code,
-		name: branch.name,
-	}));
+	const branchOptions = getTransactionNumberSetupBranchOptions(companies);
 	const branchNameById = new Map(
 		branchOptions.map((branch) => [branch.id, branch.name]),
 	);

@@ -3,9 +3,14 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import {
+  mapWorkspaceCompaniesToBranchManagementBranches,
+} from "@/app/src/data/modules/system-administration/branch-management/BranchManagementData";
 import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
-import { MainLayoutMockData } from "@/app/src/data/shared/main-layout/MainLayoutMockData";
 import { BranchManagementQueryKeys } from "@/app/src/services/modules/system-administration/branch-management/BranchManagementQueryKeys";
+import {
+  GetWorkspaceCompanies,
+} from "@/app/src/services/workspace/companies/WorkspaceCompanyApi";
 
 type BranchManagementStoreState = {
   branches: MainBranch[];
@@ -22,8 +27,10 @@ export function useBranchManagementStore<TSelected = BranchManagementStoreState>
   const queryClient = useQueryClient();
   const branchesQuery = useQuery({
     queryKey: BranchManagementQueryKeys.branches(),
-    queryFn: async () => MainLayoutMockData.branches,
-    initialData: MainLayoutMockData.branches,
+    queryFn: async () =>
+      mapWorkspaceCompaniesToBranchManagementBranches(
+        await GetWorkspaceCompanies(),
+      ),
   });
 
   function updateCachedBranches(
@@ -31,8 +38,7 @@ export function useBranchManagementStore<TSelected = BranchManagementStoreState>
   ) {
     queryClient.setQueryData<MainBranch[]>(
       BranchManagementQueryKeys.branches(),
-      (currentBranches = MainLayoutMockData.branches) =>
-        updater(currentBranches),
+      (currentBranches = []) => updater(currentBranches),
     );
   }
 
@@ -77,7 +83,7 @@ export function useBranchManagementStore<TSelected = BranchManagementStoreState>
 
   const state = useMemo<BranchManagementStoreState>(
     () => ({
-      branches: branchesQuery.data,
+      branches: branchesQuery.data ?? [],
       addBranch: (branch) => addBranchMutation.mutate(branch),
       updateBranch: (branch) => updateBranchMutation.mutate(branch),
       deleteBranch: (branchId) => deleteBranchMutation.mutate(branchId),

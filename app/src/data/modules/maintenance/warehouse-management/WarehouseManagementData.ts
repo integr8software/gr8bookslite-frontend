@@ -1,4 +1,5 @@
 import type {
+	WarehouseBranchAvailability,
 	WarehouseFormValues,
 	WarehouseRecord,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
@@ -106,9 +107,8 @@ export const MockWarehouses: WarehouseRecord[] = [
 ];
 
 export const WarehouseInitialFormValues: WarehouseFormValues = {
+	code: "",
 	name: "",
-	branchName: "",
-	availability: "Home Branch Only",
 	availableBranches: [],
 	managerName: "",
 	status: "Active",
@@ -121,9 +121,8 @@ export function createWarehouseFormValues(
 	warehouse: WarehouseRecord,
 ): WarehouseFormValues {
 	return {
+		code: warehouse.code,
 		name: warehouse.name,
-		branchName: warehouse.branchName,
-		availability: warehouse.availability,
 		availableBranches: warehouse.availableBranches,
 		managerName: warehouse.managerName,
 		status: warehouse.status,
@@ -138,9 +137,8 @@ export function createWarehouseRecord(
 ): WarehouseRecord {
 	return {
 		id: `warehouse-${Date.now()}`,
-		code: createWarehouseCode(values.name),
-		...values,
-		availableBranches: normalizeWarehouseAvailableBranches(values),
+		code: values.code.trim() || createWarehouseCode(values.name),
+		...createWarehouseRecordFields(values),
 		access: [],
 		items: [],
 	};
@@ -152,8 +150,8 @@ export function updateWarehouseRecord(
 ): WarehouseRecord {
 	return {
 		...warehouse,
-		...values,
-		availableBranches: normalizeWarehouseAvailableBranches(values),
+		code: values.code.trim() || warehouse.code,
+		...createWarehouseRecordFields(values),
 	};
 }
 
@@ -165,9 +163,9 @@ export function getWarehouseAvailableStock(item: {
 }
 
 export function getWarehouseAvailableBranchLabel(warehouse: {
-	availability: WarehouseFormValues["availability"];
+	availability?: WarehouseBranchAvailability;
 	availableBranches: string[];
-	branchName: string;
+	branchName?: string;
 }) {
 	if (warehouse.availability === "All Branches") {
 		return "All branches";
@@ -182,14 +180,41 @@ export function getWarehouseAvailableBranchLabel(warehouse: {
 		: "No branches selected";
 }
 
-function normalizeWarehouseAvailableBranches(values: WarehouseFormValues) {
-	if (values.availability !== "Selected Branches") {
-		return [];
-	}
+function createWarehouseRecordFields(values: WarehouseFormValues) {
+	const availableBranches = normalizeWarehouseAvailableBranches(values);
+	const branchName = availableBranches[0] ?? "";
 
+	return {
+		name: values.name,
+		branchName,
+		availability: getWarehouseAvailability(availableBranches),
+		availableBranches,
+		managerName: values.managerName,
+		status: values.status,
+		address: values.address,
+		contactNo: values.contactNo,
+		description: values.description,
+	};
+}
+
+function normalizeWarehouseAvailableBranches(values: WarehouseFormValues) {
 	return Array.from(
 		new Set(values.availableBranches.filter((branchName) => branchName.trim())),
 	);
+}
+
+function getWarehouseAvailability(
+	availableBranches: string[],
+): WarehouseBranchAvailability {
+	if (availableBranches.length === 0) {
+		return "Selected Branches";
+	}
+
+	if (availableBranches.length === 1) {
+		return "Home Branch Only";
+	}
+
+	return "Selected Branches";
 }
 
 function createWarehouseCode(name: string) {

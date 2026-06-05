@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   GetSyncedReportEndDate,
   GetSyncedReportStartDate,
+  IsValidOnboardingDateValue,
   OnboardingMaxImageSizeBytes,
   OnboardingSteps,
 } from "@/app/src/data/onboarding/OnboardingData";
@@ -125,12 +126,19 @@ export function useOnboardingFormState() {
 
     if (key === "reportStartDate") {
       setValues((current) => {
+        if (!IsValidOnboardingDateValue(value)) {
+          return {
+            ...current,
+            reportYearBasis: "Calendar Year",
+          };
+        }
+
         const reportEndDate = GetSyncedReportEndDate(value);
 
         return {
           ...current,
           reportStartDate: value,
-          reportEndDate,
+          reportEndDate: reportEndDate || current.reportEndDate,
           reportYearBasis: "Calendar Year",
         };
       });
@@ -145,11 +153,18 @@ export function useOnboardingFormState() {
 
     if (key === "reportEndDate") {
       setValues((current) => {
+        if (!IsValidOnboardingDateValue(value)) {
+          return {
+            ...current,
+            reportYearBasis: "Calendar Year",
+          };
+        }
+
         const reportStartDate = GetSyncedReportStartDate(value);
 
         return {
           ...current,
-          reportStartDate,
+          reportStartDate: reportStartDate || current.reportStartDate,
           reportEndDate: value,
           reportYearBasis: "Calendar Year",
         };

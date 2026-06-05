@@ -5,7 +5,7 @@ import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type PettyCashVoucherListPageState = ReturnType<
 	typeof usePettyCashVoucherListPage
@@ -28,7 +28,7 @@ export function PettyCashVoucherListFilters({
 				label="Status"
 				value={page.statusFilter}
 				options={PettyCashVoucherStatusOptions.map((status) => ({
-					label: status === "All" ? "Status" : status,
+					label: status,
 					value: status,
 				}))}
 				onChange={page.setStatusFilter}
@@ -37,4 +37,3 @@ export function PettyCashVoucherListFilters({
 		</ModuleTableToolbar>
 	);
 }
-

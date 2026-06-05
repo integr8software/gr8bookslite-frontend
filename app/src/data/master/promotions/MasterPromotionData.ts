@@ -6,6 +6,8 @@ import { normalizeMasterPromotionTargetPlanIds } from "@/app/src/constants/maste
 
 export const MasterPromotionRecords: MasterPromotionRecord[] = [
 	{
+		availabilityMode: "Recurring",
+		billingCycle: "3 billing cycles",
 		code: "WELCOME20",
 		description:
 			"Launch promo code for new subscribers selecting any paid plan.",
@@ -15,12 +17,54 @@ export const MasterPromotionRecords: MasterPromotionRecord[] = [
 		name: "Welcome Launch",
 		redemptions: 184,
 		redemptionLimit: null,
+		recurringAvailability: "First day of billing cycle",
 		status: "Active",
+		startsAt: "2026-01-01",
 		targetPlanIds: ["all-plans"],
 		type: "Promo Code",
 		value: 20,
 	},
 	{
+		availabilityMode: "One-time",
+		billingCycle: "1 billing cycle",
+		code: "12345",
+		description:
+			"Open promo code for any subscriber who knows the code.",
+		discountKind: "Percent",
+		expiresAt: "2026-12-31",
+		id: "promo-code-12345",
+		name: "Known Code 50",
+		redemptions: 0,
+		redemptionLimit: null,
+		recurringAvailability: "First day of billing cycle",
+		status: "Active",
+		startsAt: "2026-01-01",
+		targetPlanIds: ["all-plans"],
+		type: "Promo Code",
+		value: 50,
+	},
+	{
+		availabilityMode: "One-time",
+		billingCycle: "1 billing cycle",
+		code: "67890",
+		description:
+			"Open promo code for a fixed PHP 100 billing discount.",
+		discountKind: "Fixed",
+		expiresAt: "2026-12-31",
+		id: "promo-code-67890",
+		name: "Known Code 100",
+		redemptions: 0,
+		redemptionLimit: null,
+		recurringAvailability: "First day of billing cycle",
+		status: "Active",
+		startsAt: "2026-01-01",
+		targetPlanIds: ["all-plans"],
+		type: "Promo Code",
+		value: 100,
+	},
+	{
+		availabilityMode: "One-time",
+		billingCycle: "1 billing cycle",
 		code: "ACCOUNTING100",
 		description:
 			"Coupon for accounting-first customers moving from trial to paid onboarding.",
@@ -30,12 +74,16 @@ export const MasterPromotionRecords: MasterPromotionRecord[] = [
 		name: "Accounting Starter",
 		redemptions: 92,
 		redemptionLimit: 500,
+		recurringAvailability: "First day of month",
 		status: "Active",
+		startsAt: "2026-03-01",
 		targetPlanIds: ["plan-accounting-monthly"],
 		type: "Coupon",
 		value: 100,
 	},
 	{
+		availabilityMode: "Recurring",
+		billingCycle: "Whole plan",
 		code: "ADDON-VCHR",
 		description:
 			"Voucher credit for additional users, branches, satellites, or company add-ons.",
@@ -45,12 +93,35 @@ export const MasterPromotionRecords: MasterPromotionRecord[] = [
 		name: "Add-on Credit",
 		redemptions: 42,
 		redemptionLimit: 150,
+		recurringAvailability: "First month of year",
 		status: "Draft",
+		startsAt: "2026-04-01",
 		targetPlanIds: ["plan-full-suite-annual", "plan-launch-upgrade"],
 		type: "Voucher",
 		value: 150,
 	},
 	{
+		availabilityMode: "One-time",
+		billingCycle: "1 billing cycle",
+		code: "LOYALTY25",
+		description:
+			"Percentage voucher for subscriber renewals and launch-upgrade billing.",
+		discountKind: "Percent",
+		expiresAt: "2026-09-30",
+		id: "voucher-loyalty25",
+		name: "Loyalty Saver",
+		redemptions: 18,
+		redemptionLimit: 200,
+		recurringAvailability: "First day of billing cycle",
+		status: "Active",
+		startsAt: "2026-05-01",
+		targetPlanIds: ["plan-launch-upgrade"],
+		type: "Voucher",
+		value: 25,
+	},
+	{
+		availabilityMode: "One-time",
+		billingCycle: "1 billing cycle",
 		code: "SUMMIT25",
 		description:
 			"Event promo for attendees who subscribed during the annual product summit.",
@@ -60,7 +131,9 @@ export const MasterPromotionRecords: MasterPromotionRecord[] = [
 		name: "Summit Attendee",
 		redemptions: 67,
 		redemptionLimit: 250,
+		recurringAvailability: "First day of billing cycle",
 		status: "Inactive",
+		startsAt: "2026-09-01",
 		targetPlanIds: [
 			"plan-accounting-monthly",
 			"plan-inventory-quarter",
@@ -72,6 +145,8 @@ export const MasterPromotionRecords: MasterPromotionRecord[] = [
 ];
 
 export const InitialMasterPromotionFormValues: MasterPromotionFormValues = {
+	availabilityMode: "One-time",
+	billingCycle: "Whole plan",
 	code: "",
 	description: "",
 	discountKind: "Percent",
@@ -80,7 +155,9 @@ export const InitialMasterPromotionFormValues: MasterPromotionFormValues = {
 	limitMode: "Unlimited",
 	name: "",
 	redemptionLimit: 0,
+	recurringAvailability: "First day of billing cycle",
 	status: "Active",
+	startsAt: getDefaultMasterPromotionStartDate(),
 	targetPlanIds: ["all-plans"],
 	type: "Promo Code",
 	value: 0,
@@ -94,6 +171,8 @@ export function createMasterPromotionFormValues(
 	record: MasterPromotionRecord,
 ): MasterPromotionFormValues {
 	return {
+		availabilityMode: record.availabilityMode,
+		billingCycle: record.billingCycle,
 		code: record.code,
 		description: record.description,
 		discountKind: record.discountKind,
@@ -103,7 +182,9 @@ export function createMasterPromotionFormValues(
 		limitMode: record.redemptionLimit === null ? "Unlimited" : "Limited",
 		name: record.name,
 		redemptionLimit: record.redemptionLimit ?? 0,
+		recurringAvailability: record.recurringAvailability,
 		status: record.status,
+		startsAt: record.startsAt,
 		targetPlanIds: [...record.targetPlanIds],
 		type: record.type,
 		value: record.value,
@@ -121,6 +202,8 @@ export function createMasterPromotionRecord(
 		}`;
 
 	return {
+		availabilityMode: trimmedValues.availabilityMode,
+		billingCycle: trimmedValues.billingCycle,
 		code: trimmedValues.code.toUpperCase(),
 		description: trimmedValues.description,
 		discountKind: trimmedValues.discountKind,
@@ -135,7 +218,9 @@ export function createMasterPromotionRecord(
 			trimmedValues.limitMode === "Limited"
 				? Math.floor(trimmedValues.redemptionLimit)
 				: null,
+		recurringAvailability: trimmedValues.recurringAvailability,
 		status: trimmedValues.status,
+		startsAt: trimmedValues.startsAt,
 		targetPlanIds: normalizeMasterPromotionTargetPlanIds(
 			trimmedValues.targetPlanIds,
 		),
@@ -144,18 +229,34 @@ export function createMasterPromotionRecord(
 	};
 }
 
-export function generateMasterPromotionCode(
-	values: Pick<MasterPromotionFormValues, "name" | "type">,
-) {
-	const source = values.name.trim() || values.type;
-	const prefix =
-		source
-			.replace(/[^a-z0-9]+/gi, "")
-			.slice(0, 8)
-			.toUpperCase() || "PROMO";
-	const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+export function generateMasterPromotionCode() {
+	const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	const codeLength = 12;
+	const createCode = () => {
+		const randomValues = new Uint32Array(codeLength);
 
-	return `${prefix}${suffix}`;
+		if (globalThis.crypto?.getRandomValues) {
+			globalThis.crypto.getRandomValues(randomValues);
+
+			return Array.from(
+				randomValues,
+				(value) => characters[value % characters.length],
+			).join("");
+		}
+
+		return Array.from(
+			{ length: codeLength },
+			() => characters[Math.floor(Math.random() * characters.length)],
+		).join("");
+	};
+
+	let code = createCode();
+
+	while (!/[A-Z]/.test(code) || !/\d/.test(code)) {
+		code = createCode();
+	}
+
+	return code;
 }
 
 export function formatMasterPromotionValue(
@@ -181,6 +282,36 @@ export function formatMasterPromotionDate(value: string | null) {
 		month: "short",
 		year: "numeric",
 	}).format(new Date(`${value}T00:00:00`));
+}
+
+export function formatMasterPromotionStartDate(value: string) {
+	if (!value) {
+		return "Not scheduled";
+	}
+
+	return new Intl.DateTimeFormat("en-US", {
+		day: "2-digit",
+		month: "short",
+		year: "numeric",
+	}).format(new Date(`${value}T00:00:00`));
+}
+
+export function formatMasterPromotionAvailability(
+	record: Pick<
+		MasterPromotionRecord,
+		| "availabilityMode"
+		| "billingCycle"
+		| "recurringAvailability"
+		| "startsAt"
+	>,
+) {
+	const startDate = formatMasterPromotionStartDate(record.startsAt);
+
+	if (record.availabilityMode === "Recurring") {
+		return `${startDate}; ${record.recurringAvailability}; ${record.billingCycle}`;
+	}
+
+	return `${startDate}; ${record.billingCycle}`;
 }
 
 export function formatMasterPromotionLimit(
@@ -212,8 +343,18 @@ function trimMasterPromotionValues(
 		description: values.description.trim(),
 		expiresAt: values.expiresAt.trim(),
 		name: values.name.trim(),
+		startsAt: values.startsAt.trim(),
 		targetPlanIds: normalizeMasterPromotionTargetPlanIds(
 			values.targetPlanIds.map((targetPlanId) => targetPlanId.trim()),
 		),
 	};
+}
+
+function getDefaultMasterPromotionStartDate() {
+	const today = new Date();
+	const year = today.getFullYear();
+	const month = String(today.getMonth() + 1).padStart(2, "0");
+	const day = String(today.getDate()).padStart(2, "0");
+
+	return `${year}-${month}-${day}`;
 }

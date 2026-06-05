@@ -78,7 +78,7 @@ export type ModuleSubscriptionPlanId =
   | "INVENTORY"
   | "ACCOUNTING_INVENTORY";
 
-export type MainNavigationScope = "master" | "workspace" | "company";
+export type MainNavigationScope = "master" | "workspace" | "company" | "account";
 
 export type MainPermissionMap = Partial<
   Record<MainAccessKey, Partial<Record<MainAccessAction, boolean>>>
@@ -120,7 +120,7 @@ export type MainNavigationItem = {
   requiredActions?: MainAccessAction[];
   module?: {
     actions: Extract<MainAccessAction, "view" | "add" | "edit">[];
-    mockRecordIds?: string[];
+    recordIds?: string[];
   };
   children?: MainNavigationItem[];
 };

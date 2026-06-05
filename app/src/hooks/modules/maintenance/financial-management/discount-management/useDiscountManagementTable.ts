@@ -23,17 +23,38 @@ export function useDiscountManagementTable(discounts: Discount[]) {
 		pageSize: 5,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "description", desc: false },
+		{ id: "name", desc: false },
 	]);
 	const tableData = useMemo<DiscountManagementTableRecord[]>(
 		() =>
-			discounts.map((discount) => ({
-				...discount,
-				accountLabel:
-					discount.accountCode && discount.accountTitle
-						? `${discount.accountCode} - ${discount.accountTitle}`
-						: "No account selected",
-			})),
+			discounts.map((discount) => {
+				const amount = getDiscountAmount(discount);
+				const discountType = discount.discountType ?? "Percentage";
+				const moduleNames = discount.moduleNames ?? [];
+				const name = getDiscountName(discount);
+
+				return {
+					...discount,
+					amount,
+					discountType,
+					moduleNames,
+					name,
+					status: discount.status ?? "Active",
+					amountLabel:
+						discountType === "Percentage"
+							? `${amount}%`
+							: formatFixedDiscount(amount),
+					accountLabel:
+						discount.accountTitle
+							? discount.accountTitle
+							: "No account selected",
+					moduleLabel:
+						moduleNames.length > 0
+							? moduleNames.join(", ")
+							: "No module selected",
+					valueLabel: discountType,
+				};
+			}),
 		[discounts],
 	);
 	const columns = useMemo<ColumnDef<DiscountManagementTableRecord>[]>(
@@ -84,4 +105,23 @@ function createDiscountManagementColumn(
 		sortingFn: "alphanumeric",
 		meta: { className },
 	};
+}
+
+function getDiscountAmount(discount: Discount) {
+	const legacyDiscount = discount as Discount & { percentage?: number };
+
+	return discount.amount ?? legacyDiscount.percentage ?? 0;
+}
+
+function getDiscountName(discount: Discount) {
+	const legacyDiscount = discount as Discount & { name?: string };
+
+	return legacyDiscount.name ?? discount.description;
+}
+
+function formatFixedDiscount(amount: number) {
+	return amount.toLocaleString("en-US", {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	});
 }

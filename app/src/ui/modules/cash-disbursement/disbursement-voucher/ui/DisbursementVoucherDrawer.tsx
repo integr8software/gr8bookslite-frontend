@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { ChevronDown, FileText, Paperclip, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronDown, Eye, FileText, Paperclip, Plus, X } from "lucide-react";
 import {
   DisbursementVoucherInitialEntryDraft,
   DisbursementVoucherCopyFromRecords,
@@ -9,15 +10,13 @@ import {
   applyCopyFromRecordToDisbursementVoucherForm,
   createAttachmentPlaceholders,
   createAutoDisbursementLineEntries,
-  createDisbursementLineEntry,
   createDisbursementVoucherFormValues,
-  formatTaxRateSummary,
   formatCurrency,
   formatDateLabel,
+  formatTaxRateSummary,
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
-  validateDisbursementEntryDraft,
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
@@ -40,12 +39,14 @@ import {
   AppTaxRateDialog,
   type AppTaxRateDialogValue,
 } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
-import { AccountingEntriesDialog as ReusableAccountingEntriesDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/AccountingEntriesDialog";
+import {
+  writeAccountingGridSession,
+  type DisbursementVoucherAccountingGridSession,
+} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/AccountingGridSession";
 import { DisbursementVoucherCopyFromDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherCopyFromDialog";
 import type {
   DisbursementLineEntry,
   DisbursementPaymentMethod,
-  DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementType,
   DisbursementVoucherCopySource,
@@ -67,6 +68,7 @@ type DrawerTab =
 type DisbursementVoucherDrawerProps = {
   isOpen: boolean;
   mode: DrawerMode;
+  resumeState?: DisbursementVoucherAccountingGridSession | null;
   transaction?: DisbursementTransactionRecord;
   transactions: DisbursementTransactionRecord[];
   voucher?: DisbursementVoucherRecord;
@@ -77,6 +79,7 @@ type DisbursementVoucherDrawerProps = {
 export function DisbursementVoucherDrawer({
   isOpen,
   mode,
+  resumeState,
   transaction,
   transactions,
   voucher,
@@ -85,9 +88,10 @@ export function DisbursementVoucherDrawer({
 }: DisbursementVoucherDrawerProps) {
   return (
     <DrawerPanel
-      key={`${mode}-${transaction?.id ?? "blank"}-${voucher?.id ?? "new"}`}
+      key={`${mode}-${resumeState?.values.transactionId ?? transaction?.id ?? "blank"}-${resumeState?.values.voucherNo ?? voucher?.id ?? "new"}`}
       isOpen={isOpen}
       mode={mode}
+      resumeState={resumeState}
       transaction={transaction}
       transactions={transactions}
       voucher={voucher}
@@ -100,14 +104,20 @@ export function DisbursementVoucherDrawer({
 function DrawerPanel({
   isOpen,
   mode,
+  resumeState,
   transaction,
   transactions,
   voucher,
   onClose,
   onSave,
 }: DisbursementVoucherDrawerProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<DrawerTab>("cash-disbursement");
-  const [step, setStep] = useState<WorkflowStep>("details");
+  const [step, setStep] = useState<WorkflowStep>(
+    resumeState?.returnStep === "entries"
+      ? "details"
+      : (resumeState?.returnStep ?? "details"),
+  );
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
   const [isVceDialogOpen, setIsVceDialogOpen] = useState(false);
   const [isVoucherTaxDialogOpen, setIsVoucherTaxDialogOpen] = useState(false);
@@ -124,11 +134,12 @@ function DrawerPanel({
     AppDisbursementTypeRecord[]
   >(InitialAppDisbursementTypeRecords);
   const [values, setValues] = useState<DisbursementVoucherFormValues>(() =>
-    createDisbursementVoucherFormValues(transaction, voucher),
+    resumeState?.values ??
+      createDisbursementVoucherFormValues(transaction, voucher),
   );
   const [errors, setErrors] = useState<DisbursementVoucherFormErrors>({});
   const [entryDraft, setEntryDraft] = useState<DisbursementVoucherEntryDraft>(
-    DisbursementVoucherInitialEntryDraft,
+    resumeState?.entryDraft ?? DisbursementVoucherInitialEntryDraft,
   );
   const isEditing = mode === "edit";
   const selectedTransaction = useMemo(
@@ -167,9 +178,6 @@ function DrawerPanel({
     () => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0),
     [values.lineEntries],
   );
-  const isBalanced =
-    values.lineEntries.length > 1 && Math.abs(totalDebit - totalCredit) < 0.001;
-
   function updateField<TKey extends keyof DisbursementVoucherFormValues>(
     field: TKey,
     value: DisbursementVoucherFormValues[TKey],
@@ -191,11 +199,8 @@ function DrawerPanel({
       return;
     }
 
-    if (values.attachments.length === 0 && selectedTransaction) {
-      updateField(
-        "attachments",
-        createAttachmentPlaceholders(selectedTransaction),
-      );
+    if (values.attachments.length === 0) {
+      updateField("attachments", createAttachmentPlaceholders());
     }
 
     if (values.lineEntries.length === 0 && selectedTransaction) {
@@ -217,84 +222,7 @@ function DrawerPanel({
       );
     }
 
-    setStep("entries");
-  }
-
-  function handleProceedFromEntries() {
-    const nextErrors = validateDisbursementVoucherEntries(values);
-
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
-      return;
-    }
-
-    setStep("review");
-  }
-
-  function handleAddEntry() {
-    const nextError = validateDisbursementEntryDraft(entryDraft);
-
-    if (nextError) {
-      setErrors((current) => ({ ...current, entryDraft: nextError }));
-      return;
-    }
-
-    updateField("lineEntries", [
-      ...values.lineEntries,
-      createDisbursementLineEntry(entryDraft),
-    ]);
-    setEntryDraft(DisbursementVoucherInitialEntryDraft);
-    setErrors((current) => ({
-      ...current,
-      entryDraft: undefined,
-      lineEntries: undefined,
-    }));
-  }
-
-  function handleRemoveEntry(entryId: string) {
-    updateField(
-      "lineEntries",
-      values.lineEntries.filter((entry) => entry.id !== entryId),
-    );
-  }
-
-  function handleUpdateEntryTax(
-    entryId: string,
-    taxRate: string,
-    taxDetails: DisbursementTaxDetails,
-  ) {
-    updateField(
-      "lineEntries",
-      values.lineEntries.map((entry) =>
-        entry.id === entryId
-          ? {
-              ...entry,
-              taxRate,
-              taxDetails,
-            }
-          : entry,
-      ),
-    );
-  }
-
-  function handleApplyAutoEntries() {
-    if (!selectedTransaction) {
-      return;
-    }
-
-    const selectedDisbursementTypeRecord = findDisbursementTypeRecord(
-      disbursementTypeRecords,
-      values.disbursementType,
-    );
-
-    updateField(
-      "lineEntries",
-      applyDisbursementTypeRecordToLineEntries(
-        createAutoDisbursementLineEntries(selectedTransaction),
-        selectedDisbursementTypeRecord,
-      ),
-    );
-    setErrors((current) => ({ ...current, lineEntries: undefined }));
+    handleOpenGridView();
   }
 
   function handleFinalSave() {
@@ -352,6 +280,16 @@ function DrawerPanel({
         values.taxRate,
       ),
     );
+  }
+
+  function handleOpenGridView() {
+    writeAccountingGridSession({
+      entryDraft,
+      mode,
+      returnStep: "entries",
+      values,
+    });
+    router.push("/cash-disbursement/disbursement-voucher/accounting-grid");
   }
 
   return (
@@ -453,7 +391,7 @@ function DrawerPanel({
           totalCredit={totalCredit}
           totalDebit={totalDebit}
           values={values}
-          onEditEntries={() => setStep("entries")}
+          onEditEntries={handleOpenGridView}
         />
       ) : null}
 
@@ -506,23 +444,6 @@ function DrawerPanel({
         }}
       />
 
-      <ReusableAccountingEntriesDialog
-        isOpen={step === "entries"}
-        entryDraft={entryDraft}
-        entries={values.lineEntries}
-        errors={errors}
-        isBalanced={isBalanced}
-        totalCredit={totalCredit}
-        totalDebit={totalDebit}
-        onAddEntry={handleAddEntry}
-        onApplyAutoEntries={handleApplyAutoEntries}
-        onBack={() => setStep("details")}
-        onClose={() => setStep("details")}
-        onDraftChange={setEntryDraft}
-        onProceed={handleProceedFromEntries}
-        onRemoveEntry={handleRemoveEntry}
-        onUpdateEntryTax={handleUpdateEntryTax}
-      />
       <DisbursementVoucherCopyFromDialog
         isOpen={isCopyFromDialogOpen}
         records={DisbursementVoucherCopyFromRecords}
@@ -624,6 +545,8 @@ function DetailsTab({
 
     return paymentTypeOptions;
   }, [paymentTypeOptions, values.paymentMethod]);
+  const displayedTransactionNumber =
+    transactionNumber || "Auto-generated on save";
 
   return (
     <div className="grid gap-6 px-6 py-6 xl:grid-cols-[1fr_0.72fr]">
@@ -641,7 +564,7 @@ function DetailsTab({
                     event.target.value as DisbursementPaymentMethod | "",
                   )
                 }
-                className={FieldClassName}
+                className={`${FieldClassName} app-select-control`}
               >
                 <option value="">--Select Payment Type--</option>
                 {availablePaymentTypeOptions.map((paymentType) => (
@@ -685,7 +608,7 @@ function DetailsTab({
               onChange={(event) =>
                 onUpdateField("currency", event.target.value as VoucherCurrency)
               }
-              className={FieldClassName}
+              className={`${FieldClassName} app-select-control`}
             >
               <option value="PHP">PHP</option>
               <option value="USD">USD</option>
@@ -738,7 +661,7 @@ function DetailsTab({
                     event.target.value as DisbursementType | "",
                   )
                 }
-                className={FieldClassName}
+                className={`${FieldClassName} app-select-control`}
               >
                 <option value="">--Select Disbursement Type--</option>
                 {disbursementTypeOptions.map((disbursementType) => (
@@ -757,7 +680,7 @@ function DetailsTab({
           <>
             <input
               list="disbursement-voucher-transaction-nos"
-              value={transactionNumber}
+              value={displayedTransactionNumber}
               readOnly
               className={ReadOnlyFieldClassName}
             />
@@ -775,6 +698,14 @@ function DetailsTab({
               </span>
             ) : null}
           </>
+        </FieldShell>
+
+        <FieldShell label="Voucher No. :">
+          <input
+            value={values.voucherNo}
+            readOnly
+            className={ReadOnlyFieldClassName}
+          />
         </FieldShell>
 
         <FieldShell error={errors.voucherDate} label="Document Date :">
@@ -847,28 +778,11 @@ function AttachmentsTab({ values }: { values: DisbursementVoucherFormValues }) {
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3">
-          {values.attachments.length > 0 ? (
-            values.attachments.map((attachment) => (
-              <div
-                key={attachment.id}
-                className="flex items-center justify-between rounded-xl border border-darknavy/10 bg-white px-4 py-3"
-              >
-                <span className="text-sm font-medium text-darknavy">
-                  {attachment.name}
-                </span>
-                <span className="text-xs text-darknavy/50">
-                  {attachment.sizeLabel}
-                </span>
-              </div>
-            ))
-          ) : (
-            <div className="rounded-xl border border-dashed border-darknavy/16 bg-white px-4 py-8 text-center text-sm text-darknavy/55">
-              No attachments yet. Attachments will follow the selected
-              transaction or can be added later.
-            </div>
-          )}
-        </div>
+        <VoucherAttachmentList
+          attachments={values.attachments}
+          emptyMessage="No attachments yet. Attachments will follow the selected transaction or can be added later."
+          variant="tab"
+        />
       </div>
     </div>
   );
@@ -1043,56 +957,77 @@ function ReviewStep({
   onEditEntries: () => void;
 }) {
   return (
-    <section className="grid gap-5 p-6 xl:grid-cols-[0.82fr_1.18fr]">
-      <ReviewCardShell
-        eyebrow="Voucher Preview"
-        title="New voucher summary"
-        description="Review the encoded disbursement details before the final save."
-      >
-        <div className="grid gap-3">
-          <InfoLine
-            label="Trans No."
-            value={selectedTransaction?.transactionNo ?? "-"}
-          />
-          <InfoLine label="Voucher No." value={values.voucherNo} />
-          <InfoLine
-            label="Document Date"
-            value={formatDateLabel(values.voucherDate)}
-          />
-          <InfoLine label="Payment Type" value={values.paymentMethod || "-"} />
-          <InfoLine
-            label="Disbursement Type"
-            value={values.disbursementType || "-"}
-          />
-          <InfoLine label="Party Code" value={values.vceCode} />
-          <InfoLine label="Party Name" value={values.vceName} />
-          <InfoLine label="ProjectRef" value={values.costCenter} />
-          <InfoLine
-            label="Importation Ref No."
-            value={values.invoiceReferenceNo || "-"}
-          />
-          <InfoLine
-            label="Amount"
-            value={formatCurrency(Number(values.amount || 0))}
-          />
-          <InfoLine label="Tax Rate" value={formatTaxRateSummary(values.taxDetails)} />
-          <InfoLine label="Remarks" value={values.remarks || "-"} />
-        </div>
-      </ReviewCardShell>
+    <section className="grid gap-5 p-6">
+      <div className="grid gap-5 xl:grid-cols-2">
+        <ReviewCardShell
+          eyebrow="Transaction Preview"
+          title={selectedTransaction?.payee ?? (values.vceName || "Voucher Preview")}
+          description="This panel shows the source transaction that the voucher workflow will use."
+        >
+          <div className="grid gap-5">
+            <InfoLine
+              label="Transaction No."
+              value={selectedTransaction?.transactionNo ?? "-"}
+            />
+            <InfoLine
+              label="Department"
+              value={selectedTransaction?.department ?? "-"}
+            />
+            <InfoLine
+              label="Requested By"
+              value={selectedTransaction?.requestedBy ?? "-"}
+            />
+            <InfoLine
+              label="Amount"
+              value={formatCurrency(Number(values.amount || 0))}
+            />
+            <InfoLine
+              label="Purpose"
+              value={selectedTransaction?.purpose ?? (values.remarks || "-")}
+            />
+          </div>
+        </ReviewCardShell>
+
+        <ReviewCardShell
+          eyebrow="Voucher Status"
+          title={values.voucherNo}
+          description="A linked voucher exists for this transaction and can be reviewed or edited."
+        >
+          <div className="grid gap-5">
+            <InfoLine
+              label="Voucher Date"
+              value={formatDateLabel(values.voucherDate)}
+            />
+            <InfoLine label="Payment Method" value={values.paymentMethod || "-"} />
+            <InfoLine label="Prepared By" value={values.preparedBy || "-"} />
+            <InfoLine label="Status" value={values.status || "-"} />
+            <InfoLine label="Remarks" value={values.remarks || "-"} />
+
+            <div className="rounded-[18px] border border-darknavy/10 bg-offwhite/45 px-5 py-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-darknavy/45">
+                Linked Voucher Amount
+              </p>
+              <p className="mt-2 text-3xl font-semibold text-darknavy">
+                {formatCurrency(Number(values.amount || 0))}
+              </p>
+            </div>
+          </div>
+        </ReviewCardShell>
+      </div>
 
       <ReviewCardShell
         eyebrow="Accounting Preview"
         title="Accounting entries review"
-        description="Confirm the journal lines and totals before posting this new voucher."
+        description="Confirm the journal lines, totals, and attachments before the final save."
       >
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <p className="text-sm text-darknavy/58">
             {values.lineEntries.length} accounting entries prepared.
           </p>
           <button
             type="button"
             onClick={onEditEntries}
-            className="text-sm font-semibold text-skyblue"
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
           >
             Edit Entries
           </button>
@@ -1112,6 +1047,9 @@ function ReviewStep({
                   <p className="mt-1 text-sm text-darknavy/58">
                     {entry.particulars}
                   </p>
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/40">
+                    {entry.taxRate || "0%"}
+                  </p>
                 </div>
                 <div className="text-right text-sm font-semibold text-darknavy">
                   <p>
@@ -1119,7 +1057,7 @@ function ReviewStep({
                       ? `DR ${formatCurrency(entry.debit)}`
                       : "-"}
                   </p>
-                  <p>
+                  <p className="mt-1">
                     {entry.credit > 0
                       ? `CR ${formatCurrency(entry.credit)}`
                       : "-"}
@@ -1130,50 +1068,221 @@ function ReviewStep({
           ))}
         </div>
 
-        <div className="mt-4 border-t border-darknavy/10 pt-4 text-sm text-darknavy/65">
-          <div className="flex items-center justify-between">
-            <span>Total debit</span>
-            <span>{formatCurrency(totalDebit)}</span>
-          </div>
-          <div className="mt-2 flex items-center justify-between">
-            <span>Total credit</span>
-            <span>{formatCurrency(totalCredit)}</span>
-          </div>
-          <div className="theme-accent-contrast-text mt-3 flex items-center justify-between rounded-[16px] bg-skyblue px-4 py-3 shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.2)]">
-            <span className="font-semibold">Voucher amount</span>
-            <span className="text-lg font-semibold">
-              {formatCurrency(Number(values.amount || 0))}
-            </span>
-          </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <SummaryPreviewCard
+            label="Total Debit"
+            value={formatCurrency(totalDebit)}
+          />
+          <SummaryPreviewCard
+            label="Total Credit"
+            value={formatCurrency(totalCredit)}
+          />
+          <SummaryPreviewCard
+            label="Variance"
+            tone={Math.abs(totalDebit - totalCredit) < 0.001 ? "balanced" : "warning"}
+            value={formatCurrency(Math.abs(totalDebit - totalCredit))}
+          />
         </div>
 
-        <div className="mt-5 rounded-[18px] border border-darknavy/10 bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/42">
-            Attachments
-          </p>
-          <div className="mt-3 grid gap-3">
-            {values.attachments.map((attachment) => (
-              <div
-                key={attachment.id}
-                className="flex items-center justify-between rounded-xl border border-darknavy/10 px-3 py-3"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-darknavy/8 text-darknavy">
-                    <FileText className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                  <span className="text-sm font-medium text-darknavy">
-                    {attachment.name}
-                  </span>
-                </div>
-                <span className="text-xs text-darknavy/50">
-                  {attachment.sizeLabel}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <VoucherAttachmentList
+          attachments={values.attachments}
+          emptyMessage="No attachments are linked to this voucher yet."
+          variant="preview"
+        />
       </ReviewCardShell>
     </section>
+  );
+}
+
+function SummaryPreviewCard({
+  label,
+  tone = "default",
+  value,
+}: {
+  label: string;
+  tone?: "balanced" | "default" | "warning";
+  value: string;
+}) {
+  return (
+    <div
+      className={`rounded-[18px] border px-4 py-4 ${
+        tone === "balanced"
+          ? "border-citron/35 bg-citron/15"
+          : tone === "warning"
+            ? "border-coralpink/18 bg-coralpink/8"
+            : "border-darknavy/10 bg-offwhite/35"
+      }`}
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/45">
+        {label}
+      </p>
+      <p className="mt-2 text-lg font-semibold text-darknavy">{value}</p>
+    </div>
+  );
+}
+
+function VoucherAttachmentList({
+  attachments,
+  emptyMessage,
+  variant,
+}: {
+  attachments: DisbursementVoucherFormValues["attachments"];
+  emptyMessage: string;
+  variant: "preview" | "tab";
+}) {
+  const [selectedAttachment, setSelectedAttachment] = useState<
+    DisbursementVoucherFormValues["attachments"][number] | null
+  >(null);
+
+  return (
+    <>
+      <div
+        className={
+          variant === "preview"
+            ? "mt-5 rounded-[18px] border border-darknavy/10 bg-white p-4"
+            : "mt-5"
+        }
+      >
+        {variant === "preview" ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/42">
+                Attachments
+              </p>
+              <p className="mt-1 text-xs text-darknavy/50">
+                Review supporting files before final save.
+              </p>
+            </div>
+            <span className="rounded-full border border-darknavy/10 bg-offwhite/45 px-3 py-1 text-xs font-semibold text-darknavy/55">
+              {attachments.length} file{attachments.length === 1 ? "" : "s"}
+            </span>
+          </div>
+        ) : null}
+
+        <div className={variant === "preview" ? "mt-3 grid gap-3" : "grid gap-3"}>
+          {attachments.length > 0 ? (
+            attachments.map((attachment) => (
+              <div
+                key={attachment.id}
+                className="flex flex-col gap-3 rounded-xl border border-darknavy/10 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-darknavy/8 text-darknavy">
+                    <FileText className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-darknavy">
+                      {attachment.name}
+                    </p>
+                    <p className="mt-1 text-xs text-darknavy/50">
+                      {attachment.sizeLabel}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAttachment(attachment)}
+                  className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-skyblue/25 bg-skyblue/8 px-3 text-xs font-semibold text-skyblue transition hover:bg-skyblue/14"
+                >
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                  View
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="rounded-xl border border-dashed border-darknavy/16 bg-white px-4 py-8 text-center text-sm text-darknavy/55">
+              {emptyMessage}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <VoucherAttachmentDetailsDialog
+        attachment={selectedAttachment}
+        onClose={() => setSelectedAttachment(null)}
+      />
+    </>
+  );
+}
+
+function VoucherAttachmentDetailsDialog({
+  attachment,
+  onClose,
+}: {
+  attachment: DisbursementVoucherFormValues["attachments"][number] | null;
+  onClose: () => void;
+}) {
+  if (!attachment) {
+    return null;
+  }
+
+  return (
+    <div
+      role="presentation"
+      className="fixed inset-0 z-[150] flex items-end justify-center bg-slate-950/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="voucher-attachment-details-title"
+        className="flex w-full max-w-xl flex-col overflow-hidden rounded-[20px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)]"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-skyblue">
+              Attachment
+            </p>
+            <h2
+              id="voucher-attachment-details-title"
+              className="mt-1 text-xl font-semibold text-darknavy"
+            >
+              File Details
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-darknavy/6 hover:text-darknavy"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="grid gap-4 px-5 py-5">
+          <div className="flex items-center gap-3 rounded-xl border border-darknavy/10 bg-offwhite/45 px-4 py-4">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-darknavy/8 text-darknavy">
+              <FileText className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-darknavy">
+                {attachment.name}
+              </p>
+              <p className="mt-1 text-xs text-darknavy/55">
+                {attachment.sizeLabel}
+              </p>
+            </div>
+          </div>
+          <p className="rounded-xl border border-darknavy/10 bg-white px-4 py-3 text-sm leading-6 text-darknavy/60">
+            This preview shows the attachment record linked to the voucher. File
+            opening/downloading can be connected once real attachment storage is
+            available.
+          </p>
+        </div>
+        <div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
+          >
+            Close
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -1221,7 +1330,7 @@ function DrawerFooter({
         <button
           type="button"
           onClick={onProceed}
-          className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
+          className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85"
         >
           {primaryLabel}
         </button>
@@ -1269,7 +1378,7 @@ function ActionField({
       <button
         type="button"
         onClick={onAction}
-        className="theme-accent-contrast-text inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-md bg-skyblue px-3 text-sm font-medium shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)] transition hover:bg-skyblue/85"
+        className="theme-accent-contrast-text inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-md bg-skyblue px-3 text-sm font-medium transition hover:bg-skyblue/85"
       >
         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
         {actionLabel}
@@ -1333,10 +1442,10 @@ function InfoLine({ label, value }: { label: string; value: string }) {
 }
 
 const FieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-offwhite/80 px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/40 focus:bg-white";
+  "app-data-entry-field app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/40";
 
 const ReadOnlyFieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-darknavy/[0.04] px-3 text-sm text-darknavy/70 outline-none";
+  "app-data-entry-field app-theme-field-readonly h-11 w-full rounded-md border px-3 text-sm outline-none";
 
 function getSuggestedPartyType(
   disbursementType: DisbursementType | "",

@@ -14,8 +14,10 @@ import { WarehouseManagementTableColumns } from "@/app/src/constants/modules/mai
 import type {
 	WarehouseRecord,
 	WarehouseTableColumnKey,
+	WarehouseTableRecord,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 import { useWarehouseManagementStore } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseManagement";
+import { getWarehouseAvailableBranchLabel } from "@/app/src/data/modules/maintenance/warehouse-management/WarehouseManagementData";
 
 export function useWarehouseListPage() {
 	const {
@@ -34,19 +36,26 @@ export function useWarehouseListPage() {
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
 	]);
+	const tableWarehouses = useMemo<WarehouseTableRecord[]>(
+		() =>
+			warehouses.map((warehouse) => ({
+				...warehouse,
+				availableBranchLabel: getWarehouseAvailableBranchLabel(warehouse),
+			})),
+		[warehouses],
+	);
 	const filteredWarehouses = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
 		if (!normalizedQuery) {
-			return warehouses;
+			return tableWarehouses;
 		}
 
-		return warehouses.filter((warehouse) =>
+		return tableWarehouses.filter((warehouse) =>
 			[
+				warehouse.code,
 				warehouse.name,
-				warehouse.branchName,
-				warehouse.availability,
-				warehouse.availableBranches.join(" "),
+				warehouse.availableBranchLabel,
 				warehouse.managerName,
 				warehouse.status,
 				warehouse.address,
@@ -55,8 +64,8 @@ export function useWarehouseListPage() {
 				.toLowerCase()
 				.includes(normalizedQuery),
 		);
-	}, [query, warehouses]);
-	const columns = useMemo<ColumnDef<WarehouseRecord>[]>(
+	}, [query, tableWarehouses]);
+	const columns = useMemo<ColumnDef<WarehouseTableRecord>[]>(
 		() =>
 			WarehouseManagementTableColumns.map((column) => {
 				if (!("key" in column)) {
@@ -123,7 +132,7 @@ function createWarehouseColumn(
 	key: WarehouseTableColumnKey,
 	header: string,
 	className: string,
-): ColumnDef<WarehouseRecord> {
+): ColumnDef<WarehouseTableRecord> {
 	return {
 		accessorKey: key,
 		header,

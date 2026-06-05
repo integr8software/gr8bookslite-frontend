@@ -9,21 +9,20 @@ import {
 	ListTree,
 	Network,
 	Plus,
-	Sparkles,
 	Upload,
 } from "lucide-react";
-import { ChartsOfAccountsSpotlightTutorialOpenEvent } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsDrawer";
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsFilters";
 import { ChartsOfAccountsTable } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTable";
 import { ChartsOfAccountsSpotlightTutorial } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorial";
-import {
-  Button,
-  Card,
-} from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
+import { Card } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
-import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
+import {
+	ModuleHeader,
+	moduleHeaderActionClassNames,
+} from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
@@ -41,10 +40,7 @@ export function ChartsOfAccountsMain() {
   const withoutSubmodules = totalAccounts - withSubmodules;
   const [pendingDeleteAccount, setPendingDeleteAccount] =
     useState<ChartAccount | null>(null);
-
-  function openSpotlightTutorial() {
-    window.dispatchEvent(new Event(ChartsOfAccountsSpotlightTutorialOpenEvent));
-  }
+  useMaintenanceAddDrawerSpotlight(coa.openAddDrawer, coa.closeDrawer);
 
   function handleConfirmDelete() {
     if (!pendingDeleteAccount) {
@@ -67,25 +63,29 @@ export function ChartsOfAccountsMain() {
           description="Manage all company accounts and financial statement mapping."
           actions={
             <>
-              <Button variant="secondary" onClick={openSpotlightTutorial}>
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                Quick Tour
-              </Button>
-              <Button variant="secondary">
+              <button
+                type="button"
+                className={moduleHeaderActionClassNames.secondary}
+              >
                 <Upload className="h-4 w-4" aria-hidden="true" />
                 Import
-              </Button>
-              <Button variant="secondary">
+              </button>
+              <button
+                type="button"
+                className={moduleHeaderActionClassNames.secondary}
+              >
                 <Download className="h-4 w-4" aria-hidden="true" />
                 Export
-              </Button>
-              <Button
+              </button>
+              <button
+                type="button"
+                className={moduleHeaderActionClassNames.primary}
                 onClick={coa.openAddDrawer}
                 data-spotlight-id="charts-of-accounts-add-account"
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 Add Account
-              </Button>
+              </button>
             </>
           }
         />
@@ -129,7 +129,10 @@ export function ChartsOfAccountsMain() {
           ]}
         />
 
-        <Card className="overflow-hidden rounded-lg">
+        <Card
+          className="overflow-hidden rounded-lg"
+          data-spotlight-id="charts-of-accounts-table"
+        >
           <ChartsOfAccountsTable
             expandedIds={coa.expandedIds}
             isLoading={coa.isLoading}
@@ -151,6 +154,7 @@ export function ChartsOfAccountsMain() {
             }
             onDelete={setPendingDeleteAccount}
             onEdit={coa.openEditDrawer}
+            onReorderAccount={coa.reorderAccount}
             onToggleExpanded={coa.toggleExpanded}
           />
         </Card>

@@ -2,6 +2,9 @@ import type {
   MainBranch,
   MainCompany,
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import {
+  getBranchDisplayLabel,
+} from "@/app/src/data/shared/branch/BranchDisplayData";
 import type {
   MainTopbarUser,
   SwitcherVariant,
@@ -42,11 +45,11 @@ export function getCompanySwitcherDescription(company: MainCompany) {
 }
 
 export function getBranchLabel(branch: MainBranch) {
-  return `${branch.name}${branch.isMain ? " (Head Office)" : ""}`;
+  return getBranchDisplayLabel(branch);
 }
 
 export function getTopbarUserDescriptor(currentUser: MainTopbarUser) {
-  return currentUser.userRoleDetails?.name ?? getVisibleUserRole(currentUser);
+  return getVisibleUserRole(currentUser);
 }
 
 export function isLargeNotificationPanel() {
@@ -54,5 +57,5 @@ export function isLargeNotificationPanel() {
 }
 
 function getVisibleUserRole(currentUser: MainTopbarUser) {
-  return currentUser.userRole === "User" ? undefined : currentUser.userRole;
+  return currentUser.userRole;
 }

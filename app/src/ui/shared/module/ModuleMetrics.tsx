@@ -1,6 +1,9 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	joinClasses,
+	moduleAccentClassNames,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 type ModuleMetricTone =
 	| "amber"
@@ -40,43 +43,62 @@ export function ModuleMetrics({
 				className,
 			)}
 			style={{
-				gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 14rem), 1fr))",
+				gridTemplateColumns:
+					"repeat(auto-fit, minmax(min(100%, 14rem), 1fr))",
 				...style,
 			}}
 			{...props}
 		>
 			{metrics.map((metric, index) => (
-				<ModuleMetricCard key={index} metric={metric} />
+				<ModuleMetricCard
+					key={index}
+					metric={metric}
+					hasDivider={index > 0}
+				/>
 			))}
 		</div>
 	);
 }
 
-function ModuleMetricCard({ metric }: { metric: ModuleMetricItem }) {
+function ModuleMetricCard({
+	hasDivider,
+	metric,
+}: {
+	hasDivider: boolean;
+	metric: ModuleMetricItem;
+}) {
 	return (
-		<div className="relative min-h-24 border-darknavy/10 bg-white px-6 py-5 not-first:border-l">
+		<div className="relative min-h-24 bg-white px-5 py-5 sm:px-6">
+			{hasDivider ? (
+				<span
+					className="absolute left-5 right-5 top-0 h-px bg-darknavy/10 sm:bottom-4 sm:left-0 sm:right-auto sm:top-4 sm:h-auto sm:w-px"
+					aria-hidden="true"
+				/>
+			) : null}
 			<span
 				className={joinClasses(
-					"absolute bottom-6 left-6 top-6 w-0.5 rounded-full",
+					"absolute bottom-6 left-5 top-6 w-0.5 rounded-full sm:left-6",
 					moduleMetricAccentClassNames[metric.tone ?? "blue"],
 					metric.iconClassName,
 				)}
 				aria-hidden="true"
 			/>
 			<div className="min-w-0 pl-5">
-				<p className="text-xs font-bold text-darknavy/70">{metric.label}</p>
-				<p className="mt-2 text-2xl font-bold leading-none text-darknavy">
+				<div className="text-xs font-bold text-darknavy/70">
+					{metric.label}
+				</div>
+				<div className="mt-2 text-2xl font-bold leading-none text-darknavy">
 					{metric.value}
-				</p>
+				</div>
 				{metric.helper ? (
-					<p
+					<div
 						className={joinClasses(
 							"mt-2 text-sm font-medium text-darknavy/60",
 							metric.tone === "emerald" && "text-emerald-600",
 						)}
 					>
 						{metric.helper}
-					</p>
+					</div>
 				) : null}
 			</div>
 		</div>
@@ -85,7 +107,7 @@ function ModuleMetricCard({ metric }: { metric: ModuleMetricItem }) {
 
 const moduleMetricAccentClassNames: Record<ModuleMetricTone, string> = {
 	amber: "bg-amber-500",
-	blue: "bg-blue-600",
+	blue: moduleAccentClassNames.solidBackground,
 	cyan: "bg-cyan-500",
 	emerald: "bg-emerald-500",
 	slate: "bg-slate-500",

@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { Download, Home, Plus, Search } from "lucide-react";
 import {
-  PettyCashReplenishmentHref,
   PettyCashReplenishmentPaginationStorageKey,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
 import { usePettyCashReplenishmentListPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-replenishment/usePettyCashReplenishmentListPage";
@@ -15,9 +14,15 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { PettyCashReplenishmentListFilters } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentListFilters";
 import { PettyCashReplenishmentTableRow } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTableRow";
+import { PettyCashReplenishmentDrawer } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentDrawer";
+import { usePettyCashReplenishmentFormPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-replenishment/usePettyCashReplenishmentFormPage";
+import type { PettyCashReplenishmentFormMode, PettyCashReplenishmentRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
+
+type DrawerState = { mode: Exclude<PettyCashReplenishmentFormMode, "view">; replenishment?: PettyCashReplenishmentRecord } | null;
 
 export function PettyCashReplenishmentListPage() {
   const page = usePettyCashReplenishmentListPage();
+  const [drawerState, setDrawerState] = useState<DrawerState>(null);
 
   return (
     <section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] text-darknavy sm:-mx-5 lg:-mx-6">
@@ -49,13 +54,14 @@ export function PettyCashReplenishmentListPage() {
                 <Download className="h-4 w-4" aria-hidden="true" />
                 Export
               </button>
-              <Link
-                href={`${PettyCashReplenishmentHref}/add`}
+              <button
+                type="button"
+                onClick={() => setDrawerState({ mode: "add" })}
                 className={moduleHeaderActionClassNames.primary}
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 New Replenishment
-              </Link>
+              </button>
             </>
           }
         />
@@ -76,6 +82,7 @@ export function PettyCashReplenishmentListPage() {
                 key={id}
                 row={original}
                 onDelete={page.setPendingDelete}
+                onEdit={(replenishment) => setDrawerState({ mode: "edit", replenishment })}
               />
             )}
           />
@@ -90,7 +97,17 @@ export function PettyCashReplenishmentListPage() {
           onCancel={() => page.setPendingDelete(null)}
           onConfirm={page.handleConfirmDelete}
         />
+        <PettyCashReplenishmentListDrawer drawerState={drawerState} onClose={() => setDrawerState(null)} />
       </main>
     </section>
   );
+}
+
+function PettyCashReplenishmentListDrawer({ drawerState, onClose }: { drawerState: DrawerState; onClose: () => void }) {
+  return drawerState ? <PettyCashReplenishmentListDrawerPanel key={`${drawerState.mode}-${drawerState.replenishment?.id ?? "new"}`} drawerState={drawerState} onClose={onClose} /> : null;
+}
+
+function PettyCashReplenishmentListDrawerPanel({ drawerState, onClose }: { drawerState: NonNullable<DrawerState>; onClose: () => void }) {
+  const page = usePettyCashReplenishmentFormPage({ existingReplenishment: drawerState.replenishment, mode: drawerState.mode, onSaved: onClose });
+  return <PettyCashReplenishmentDrawer isOpen onClose={onClose} page={page} />;
 }

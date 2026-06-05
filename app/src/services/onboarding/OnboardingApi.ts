@@ -13,7 +13,7 @@ import type {
 
 function GetAuthorizationHeaders(accessToken: string | null) {
   if (!accessToken) {
-    throw new Error("Your session has expired. Please sign in again.");
+    return undefined;
   }
 
   return {
@@ -50,6 +50,7 @@ export async function SaveOnboardingBilling(
     body,
     {
       headers: GetAuthorizationHeaders(accessToken),
+      timeout: 30000,
     },
   );
 

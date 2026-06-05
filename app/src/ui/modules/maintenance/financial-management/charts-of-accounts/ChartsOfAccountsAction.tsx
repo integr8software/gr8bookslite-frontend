@@ -35,7 +35,7 @@ export function ChartsOfAccountsAction() {
 					<div className="mt-6 flex justify-center">
 						<Link
 							href={ChartsOfAccountsHref}
-							className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-skyblue px-4 text-sm font-semibold text-white shadow-sm shadow-skyblue/20 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+							className="theme-accent-contrast-text inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-skyblue px-4 text-sm font-semibold shadow-sm shadow-skyblue/20 transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
 						>
 							<ArrowLeft className="h-4 w-4" aria-hidden="true" />
 							Back to Accounts

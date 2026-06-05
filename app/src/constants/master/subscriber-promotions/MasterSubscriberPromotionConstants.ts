@@ -13,13 +13,13 @@ export const MasterSubscriberPromotionPaginationStorageKey =
 	"master-subscriber-promotions";
 
 export const MasterSubscriberPromotionStatusOptions = [
-	"All statuses",
+	"All",
 	"Available",
 	"Used",
 	"Expired",
 	"Revoked",
 ] as const satisfies readonly (
-	| "All statuses"
+	| "All"
 	| MasterSubscriberPromotionStatus
 )[];
 
@@ -31,10 +31,10 @@ export const MasterSubscriberPromotionAssignmentModeOptions = [
 ] as const satisfies readonly MasterSubscriberPromotionAssignmentMode[];
 
 export const MasterSubscriberPromotionAssignmentModeFilterOptions = [
-	"All modes",
+	"All",
 	...MasterSubscriberPromotionAssignmentModeOptions,
 ] as const satisfies readonly (
-	| "All modes"
+	| "All"
 	| MasterSubscriberPromotionAssignmentMode
 )[];
 

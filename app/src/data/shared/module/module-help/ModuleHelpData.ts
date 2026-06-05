@@ -27,8 +27,8 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-workspace-companies",
-    "Companies",
-    "/workspace/companies",
+    "Company Management",
+    "/workspace/company-management",
     "Create and maintain company records available to the workspace.",
     [
       "Company records define the business entities users can access from the topbar switcher.",
@@ -38,8 +38,8 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-workspace-users",
-    "Users & Roles",
-    "/workspace/users-roles",
+    "User Management",
+    "/workspace/users-management",
     "Administer users who can access workspace and company modules.",
     [
       "Workspace user management controls user identity, role assignment, and access to administrative capabilities.",
@@ -49,9 +49,9 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-workspace-approval",
-    "Permissions",
-    "/workspace/permissions",
-    "Maintain permission controls for administrative workflows.",
+    "System Settings",
+    "/workspace/system-settings",
+    "Maintain system settings and administrative workflow controls.",
     [
       "Approval management defines how requests are reviewed before sensitive actions are completed.",
       "Use approval rules to separate routine entry work from review and authorization responsibilities.",
@@ -60,8 +60,8 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-workspace-mail",
-    "Settings",
-    "/workspace/settings",
+    "System Settings",
+    "/workspace/system-settings",
     "Maintain reusable workspace settings for notifications and system behavior.",
     [
       "Mail maintenance stores templates and delivery settings used by system notifications.",
@@ -141,12 +141,12 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-currency",
-    "Multi Currency Setup",
-    "/maintenance/multi-currency-setup",
-    "Configure currencies used by multi-currency transactions.",
+    "Multi-Currency Setup",
+    "/system-administration/multi-currency-setup",
+    "Configure currencies, exchange rates, preferences, and rounding rules.",
     [
-      "Multi Currency Setup stores currency records and exchange-related details for transactions that involve foreign currencies.",
-      "Use consistent currency setup before recording invoices, receipts, payables, or journals that require conversion.",
+      "Multi-Currency Setup stores currency records, fetched exchange rates, manual overrides, and rate history.",
+      "Use consistent preferences before recording invoices, receipts, payables, or journals that require conversion.",
     ],
     ["help-sales", "help-accounts-payable"],
   ),
@@ -500,7 +500,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-notifications",
     "Notifications",
-    "/settings/notifications",
+    "/account/settings/notifications",
     "Review and maintain notification behavior for users and workflows.",
     [
       "Notifications alert users about workflow changes, approvals, branch access, subscriptions, and other important updates.",
@@ -511,7 +511,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-profile",
     "Profile Menu",
-    "/profile",
+    "/account/profile",
     "Open profile tools, settings, and logout.",
     [
       "The profile menu gives users direct access to their account profile, settings, and logout action.",

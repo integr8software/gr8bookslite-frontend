@@ -23,6 +23,17 @@ export function PartyInformationTableRow({
 			<PartyInformationTableCell>
 				{record.partyTypesLabel}
 			</PartyInformationTableCell>
+			<PartyInformationTableCell>
+				<span
+					className={
+						record.status === "Active"
+							? "inline-flex rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700"
+							: "inline-flex rounded-md bg-darknavy/5 px-2 py-1 text-xs font-semibold text-darknavy/55"
+					}
+				>
+					{record.status}
+				</span>
+			</PartyInformationTableCell>
 			<PartyInformationTableCell>{record.addressLabel}</PartyInformationTableCell>
 			<PartyInformationTableCell align="center">
 				<PartyInformationRecordActions id={record.id} name={record.name} />

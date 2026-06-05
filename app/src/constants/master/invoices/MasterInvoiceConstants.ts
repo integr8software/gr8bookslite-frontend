@@ -9,22 +9,22 @@ export const MasterInvoicesHref = "/master/invoices";
 export const MasterInvoicePaginationStorageKey = "master-invoices";
 
 export const MasterInvoiceStatusOptions = [
-	"All statuses",
+	"All",
 	"Paid",
 	"Pending",
 	"Failed",
 	"Refunded",
-] as const satisfies readonly ("All statuses" | MasterInvoiceStatus)[];
+] as const satisfies readonly ("All" | MasterInvoiceStatus)[];
 
 export const MasterInvoicePaymentMethodOptions = [
-	"All methods",
+	"All",
 	"Card",
 	"GCash",
 	"Maya",
 	"Bank Transfer",
 	"Manual Payment",
 ] as const satisfies readonly (
-	| "All methods"
+	| "All"
 	| MasterInvoicePaymentMethod
 )[];
 

@@ -233,9 +233,12 @@ export function loadPurchaseRequests() {
 
 		const parsed = JSON.parse(stored) as PurchaseRequestRecord[];
 
-		return Array.isArray(parsed) && parsed.length > 0
-			? parsed
-			: purchaseRequestSeedRecords;
+		const records =
+			Array.isArray(parsed) && parsed.length > 0
+				? parsed
+				: purchaseRequestSeedRecords;
+
+		return records;
 	} catch {
 		return purchaseRequestSeedRecords;
 	}

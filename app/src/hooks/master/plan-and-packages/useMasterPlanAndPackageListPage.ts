@@ -9,13 +9,18 @@ import {
 	type PaginationState,
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
-import { MasterPlanAndPackageTableColumns } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import {
-	MasterPlanAndPackageRecords,
+	MasterPlanAndPackageTableColumns,
+	type MasterPlanAndPackageScopeFilterValue,
+	type MasterPlanAndPackageStatusFilterValue,
+} from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
+import {
 	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackagePricing,
+	formatMasterPlanAndPackageScope,
 	getMasterPlanAndPackageFeatureLabels,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
+import { useMasterPlanAndPackagesQuery } from "@/app/src/hooks/master/plan-and-packages/useMasterPlanAndPackagesQuery";
 import type {
 	MasterPlanAndPackageRecord,
 	MasterPlanAndPackageTableColumnKey,
@@ -27,31 +32,38 @@ const InitialPagination: PaginationState = {
 };
 
 export function useMasterPlanAndPackageListPage() {
-	const [records, setRecords] = useState(MasterPlanAndPackageRecords);
 	const [query, setQuery] = useState("");
+	const [scopeFilter, setScopeFilter] =
+		useState<MasterPlanAndPackageScopeFilterValue>("ALL");
+	const [statusFilter, setStatusFilter] =
+		useState<MasterPlanAndPackageStatusFilterValue>("ALL");
 	const [pagination, setPagination] =
 		useState<PaginationState>(InitialPagination);
+	const plansQuery = useMasterPlanAndPackagesQuery();
+	const records = useMemo(() => plansQuery.data?.plans ?? [], [plansQuery.data]);
 	const filteredRecords = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
-		if (!normalizedQuery) {
-			return records;
-		}
-
 		return records.filter((record) =>
-			[
-				record.name,
-				record.description,
-				record.status,
-				formatMasterPlanAndPackagePricing(record.pricing),
-				formatMasterPlanAndPackageScalePricing(record.scalePricing),
-				...getMasterPlanAndPackageFeatureLabels(record.featureIds),
-			]
-				.join(" ")
-				.toLowerCase()
-				.includes(normalizedQuery),
+			(statusFilter === "ALL" || record.status === statusFilter) &&
+			(scopeFilter === "ALL" || record.scope === scopeFilter) &&
+			(!normalizedQuery ||
+				[
+					record.name,
+					record.code,
+					record.description,
+					record.status,
+					formatMasterPlanAndPackageScope(record.scope),
+					record.trialDays > 0 ? `${record.trialDays} trial days` : "",
+					formatMasterPlanAndPackagePricing(record.pricing),
+					formatMasterPlanAndPackageScalePricing(record.scalePricing),
+					...getMasterPlanAndPackageFeatureLabels(record.featureIds),
+				]
+					.join(" ")
+					.toLowerCase()
+					.includes(normalizedQuery)),
 		);
-	}, [query, records]);
+	}, [query, records, scopeFilter, statusFilter]);
 	const columns = useMemo<ColumnDef<MasterPlanAndPackageRecord>[]>(
 		() =>
 			MasterPlanAndPackageTableColumns.map((column) => {
@@ -91,7 +103,7 @@ export function useMasterPlanAndPackageListPage() {
 		).length;
 		const addOnScalePlans = records.filter((record) =>
 			Object.values(record.scalePricing).some(
-				(scaleRule) => scaleRule.kind === "Add-on",
+				(scaleRule) => scaleRule.addOnPrice > 0,
 			),
 		).length;
 		const enabledModules = new Set(
@@ -115,30 +127,25 @@ export function useMasterPlanAndPackageListPage() {
 			return;
 		}
 
-		const nextStatus =
-			record.status === "Active" ? "Inactive" : "Active";
-
-		setRecords((current) =>
-			current.map((candidate) =>
-				candidate.id === recordId
-					? { ...candidate, status: nextStatus }
-					: candidate,
-			),
-		);
-		toast.success(
-			nextStatus === "Active" ? "Plan activated." : "Plan inactivated.",
-		);
+		toast("Status update is not connected yet. Open Edit for plan changes.");
 	}
 
 	function resetFilters() {
 		setQuery("");
+		setScopeFilter("ALL");
+		setStatusFilter("ALL");
 		setPagination((current) => ({ ...current, pageIndex: 0 }));
 	}
 
 	return {
+		isLoading: plansQuery.isLoading,
 		query,
 		resetFilters,
+		scopeFilter,
 		setQuery,
+		setScopeFilter,
+		setStatusFilter,
+		statusFilter,
 		summary,
 		table,
 		toggleRecordStatus,

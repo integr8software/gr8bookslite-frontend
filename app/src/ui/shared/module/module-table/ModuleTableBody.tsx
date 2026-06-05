@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import { Search } from "lucide-react";
 import type { ModuleTableBodyProps } from "@/app/src/types/shared/module/module-table/ModuleTable.types";
+import {
+	joinClasses,
+	moduleAccentClassNames,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ModuleTableBody<TData>({
 	emptyDescription,
@@ -37,7 +41,12 @@ export function ModuleTableBody<TData>({
 	}
 
 	return (
-		<tbody className="divide-y divide-darknavy/10 bg-white text-sm text-darknavy/75 [&_tr]:transition-colors [&_tr:hover]:bg-skyblue/[0.035] [&_td]:px-5 [&_td]:py-6 [&_td:first-child]:pl-6 [&_td:last-child]:pr-6">
+		<tbody
+			className={joinClasses(
+				"divide-y divide-darknavy/10 bg-white text-sm text-darknavy/75 [&_tr]:transition-colors [&_td]:px-5 [&_td]:py-6 [&_td:first-child]:pl-6 [&_td:last-child]:pr-6",
+				moduleAccentClassNames.rowHover,
+			)}
+		>
 			{rows.map((row) => renderRow(row))}
 		</tbody>
 	);

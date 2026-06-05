@@ -1,9 +1,7 @@
-import Link from "next/link";
 import { Download, Plus, Upload } from "lucide-react";
-import { TransactionTypeHref } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
-export function TransactionTypeHeaderActions() {
+export function TransactionTypeHeaderActions({ onAdd }: { onAdd: () => void }) {
 	return (
 		<>
 			<button
@@ -20,13 +18,14 @@ export function TransactionTypeHeaderActions() {
 				<Download className="h-4 w-4" aria-hidden="true" />
 				Export
 			</button>
-			<Link
-				href={`${TransactionTypeHref}/add`}
+			<button
+				type="button"
+				onClick={onAdd}
 				className={moduleHeaderActionClassNames.primary}
 			>
 				<Plus className="h-4 w-4" aria-hidden="true" />
 				Add Transaction Type
-			</Link>
+			</button>
 		</>
 	);
 }

@@ -4,7 +4,6 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
-	WarehouseBranchAvailabilityOptions,
 	WarehouseBranchOptions,
 	WarehouseManagementHref,
 } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
@@ -16,13 +15,20 @@ import {
 } from "@/app/src/data/modules/maintenance/warehouse-management/WarehouseManagementData";
 import type {
 	WarehouseActionMode,
+	WarehouseRecord,
 	WarehouseFormErrors,
 	WarehouseFormValues,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 import { validateWarehouseForm } from "@/app/src/validations/modules/maintenance/warehouse-management/WarehouseManagementValidation";
 import { useWarehouseManagementStore } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseManagement";
 
-export function useWarehouseFormPage() {
+type WarehouseFormPageOptions = {
+	existingWarehouse?: WarehouseRecord;
+	mode?: WarehouseActionMode;
+	onSaved?: () => void;
+};
+
+export function useWarehouseFormPage(options: WarehouseFormPageOptions = {}) {
 	const params = useParams<{ recordId?: string }>();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -33,8 +39,8 @@ export function useWarehouseFormPage() {
 		updateWarehouse,
 		warehouses,
 	} = useWarehouseManagementStore();
-	const mode = getActionMode(pathname);
-	const existingWarehouse = warehouses.find(
+	const mode = options.mode ?? getActionMode(pathname);
+	const existingWarehouse = options.existingWarehouse ?? warehouses.find(
 		(warehouse) => warehouse.id === params.recordId,
 	);
 	const isReadonly = mode === "view";
@@ -55,18 +61,11 @@ export function useWarehouseFormPage() {
 		}
 
 		setValues((current) => {
-			const nextValues = { ...current, [field]: value };
-
-			if (field === "availability" && value !== "Selected Branches") {
-				nextValues.availableBranches = [];
-			}
-
-			return nextValues;
+			return { ...current, [field]: value };
 		});
 		setErrors((current) => ({
 			...current,
 			[field]: undefined,
-			...(field === "availability" ? { availableBranches: undefined } : {}),
 		}));
 	}
 
@@ -101,7 +100,10 @@ export function useWarehouseFormPage() {
 
 		if (mode === "edit" && existingWarehouse) {
 			updateWarehouse(updateWarehouseRecord(existingWarehouse, values));
-			router.push(`${WarehouseManagementHref}/view/${existingWarehouse.id}`);
+			options.onSaved?.();
+			if (!options.onSaved) {
+				router.push(`${WarehouseManagementHref}/view/${existingWarehouse.id}`);
+			}
 			return;
 		}
 
@@ -111,7 +113,8 @@ export function useWarehouseFormPage() {
 		}
 
 		addWarehouse(createWarehouseRecord(values));
-		router.push(WarehouseManagementHref);
+		options.onSaved?.();
+		if (!options.onSaved) router.push(WarehouseManagementHref);
 	}
 
 	function handleConfirmDelete() {
@@ -126,7 +129,6 @@ export function useWarehouseFormPage() {
 	}
 
 	return {
-		availabilityOptions: WarehouseBranchAvailabilityOptions,
 		branchOptions: WarehouseBranchOptions,
 		errors,
 		existingWarehouse,
@@ -140,7 +142,6 @@ export function useWarehouseFormPage() {
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
 		setIsDeleteDialogOpen,
-		updateField,
 		values,
 	};
 }

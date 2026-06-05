@@ -9,6 +9,8 @@ import type { AuthActionState } from "@/app/src/data/auth/AuthTypes";
 import {
   type ForgotPasswordRequest,
   type ForgotPasswordResponse,
+  type ActivateWorkspaceInvitationRequest,
+  type ActivateWorkspaceInvitationResponse,
   type ResetPasswordRequest,
   type ResetPasswordResponse,
   type VerifyForgotPasswordCodeRequest,
@@ -42,6 +44,7 @@ export async function ForgotPasswordAction(
 
     return {
       status: "success",
+      code: response.code,
       message: response.message,
     };
   } catch (error) {
@@ -137,6 +140,7 @@ export async function ResendForgotPasswordAction(
 
     return {
       status: "success",
+      code: response.code,
       message: response.message,
     };
   } catch (error) {
@@ -206,6 +210,56 @@ export async function ResetPasswordAction(
             ? [message]
             : undefined,
       },
+    };
+  }
+}
+
+export async function ActivateWorkspaceInvitationAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const email = GetFormValue(formData, "email");
+  const token = GetFormValue(formData, "token");
+  const parsed = ResetPasswordSchema.safeParse({
+    password: GetFormValue(formData, "password"),
+    confirmPassword: GetFormValue(formData, "confirmPassword"),
+  });
+
+  if (!parsed.success) {
+    return InvalidState(parsed.error.flatten().fieldErrors);
+  }
+
+  if (!email || !token) {
+    return {
+      status: "error",
+      message:
+        "This invitation link is incomplete. Ask your administrator for a new invitation.",
+    };
+  }
+
+  try {
+    const response = await PostAuthJson<
+      ActivateWorkspaceInvitationRequest,
+      ActivateWorkspaceInvitationResponse
+    >("/auth/workspace-invitation/activate", {
+      email,
+      token,
+      newPassword: parsed.data.password,
+      confirmNewPassword: parsed.data.confirmPassword,
+    });
+
+    return {
+      status: "success",
+      message: response.message,
+      redirectTo: "/login",
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "We could not activate this invitation right now.",
     };
   }
 }

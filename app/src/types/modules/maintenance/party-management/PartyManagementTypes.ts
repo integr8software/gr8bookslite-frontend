@@ -1,5 +1,7 @@
 export type PartyClassification = "Individual" | "Non-Individual";
 
+export type PartyInformationStatus = "Active" | "Inactive";
+
 export type PartyType = "Vendor" | "Customer" | "Employee";
 
 export type VatRegistrationType =
@@ -29,6 +31,7 @@ export type PartyInformationRecord = {
 	partyCodeNo: string;
 	classification: PartyClassification;
 	partyTypes: PartyType[];
+	status: PartyInformationStatus;
 	partyName: string;
 	tradingName: string;
 	firstName: string;
@@ -49,6 +52,7 @@ export type PartyInformationFormValues = {
 	partyCodeNo: string;
 	classification: PartyClassification | "";
 	partyTypes: PartyType[];
+	status: PartyInformationStatus;
 	partyName: string;
 	tradingName: string;
 	firstName: string;
@@ -67,6 +71,7 @@ export type PartyInformationFormErrors = Partial<{
 	partyCodeNo: string;
 	classification: string;
 	partyTypes: string;
+	status: string;
 	partyName: string;
 	firstName: string;
 	lastName: string;
@@ -94,10 +99,19 @@ export type PartyInformationTableColumnKey =
 	| "addressLabel"
 	| "name"
 	| "classification"
-	| "partyTypesLabel";
+	| "partyTypesLabel"
+	| "status";
 
 export type PartyInformationTableRecord = PartyInformationRecord & {
 	addressLabel: string;
 	name: string;
 	partyTypesLabel: string;
+};
+
+export type PartyManagementAnalytics = {
+	activePartyMembers: number;
+	inactivePartyMembers: number;
+	individualPartyMembers: number;
+	organizationPartyMembers: number;
+	totalPartyMembers: number;
 };

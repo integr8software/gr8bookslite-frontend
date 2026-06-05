@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useMemo, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft, Edit3, Package } from "lucide-react";
 import {
@@ -8,11 +10,12 @@ import {
 import {
 	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackagePricing,
+	formatMasterPlanAndPackageScope,
 	getMasterPlanAndPackageFeatureLabels,
-	getMasterPlanAndPackageById,
 	getMasterPlanAndPackagePricingSupportingText,
 	getMasterPlanAndPackageScaleSupportingText,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
+import { useMasterPlanAndPackagesQuery } from "@/app/src/hooks/master/plan-and-packages/useMasterPlanAndPackagesQuery";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -27,7 +30,24 @@ type MasterPlanAndPackageDetailsPageProps = {
 export function MasterPlanAndPackageDetailsPage({
 	recordId,
 }: MasterPlanAndPackageDetailsPageProps) {
-	const record = getMasterPlanAndPackageById(recordId);
+	const plansQuery = useMasterPlanAndPackagesQuery();
+	const record = useMemo(
+		() =>
+			plansQuery.data?.plans.find((candidate) => candidate.id === recordId),
+		[plansQuery.data, recordId],
+	);
+
+	if (plansQuery.isLoading) {
+		return (
+			<section className="grid gap-5">
+				<div className="h-36 animate-pulse rounded-lg border border-darknavy/10 bg-darknavy/4" />
+				<div className="grid gap-5 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+					<div className="h-80 animate-pulse rounded-lg border border-darknavy/10 bg-darknavy/4" />
+					<div className="h-80 animate-pulse rounded-lg border border-darknavy/10 bg-darknavy/4" />
+				</div>
+			</section>
+		);
+	}
 
 	if (!record) {
 		return (
@@ -70,6 +90,17 @@ export function MasterPlanAndPackageDetailsPage({
 			<div className="grid gap-5 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
 				<div className="grid content-start gap-4">
 					<DetailPanel title="Plan Details">
+						<DetailLine label="Plan code" value={record.code} />
+						<DetailLine
+							label="Plan scope"
+							value={formatMasterPlanAndPackageScope(record.scope)}
+						/>
+						{record.trialDays > 0 ? (
+							<DetailLine
+								label="Trial period"
+								value={`${record.trialDays} trial days`}
+							/>
+						) : null}
 						<div className="grid gap-2">
 							<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/42">
 								Status

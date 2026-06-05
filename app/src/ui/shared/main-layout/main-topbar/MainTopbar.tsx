@@ -28,6 +28,7 @@ import { AccountMenu } from "./AccountMenu";
 import { BranchSwitcher } from "./BranchSwitcher";
 import { CompanySwitcher } from "./CompanySwitcher";
 import { TopbarWorkspaceSkeleton } from "./TopbarSkeletons";
+import { SpotlightTutorialButton } from "@/app/src/ui/shared/tour/SpotlightTutorialButton";
 import {
 	getTopbarUserDescriptor,
 	isLargeNotificationPanel,
@@ -50,6 +51,7 @@ export function MainTopbar({
 	isHelpOpen,
 	isNotificationsOpen,
 	isProfileLoading = false,
+	isTopbarContextLoading = false,
 	isSearchOpen,
 	isSidebarOpen,
 	notificationTab,
@@ -93,20 +95,20 @@ export function MainTopbar({
 		openSwitcherState.href === activeHref ? openSwitcherState.key : null;
 	const isProfileMenuOpen = profileMenuOpenPath === activeHref;
 	const userDescriptor = getTopbarUserDescriptor(currentUser);
-	const settingsHref =
-		activeNavigationScope === "master"
-			? "/master/settings"
-			: activeNavigationScope === "workspace"
-				? "/workspace/settings"
-				: "/settings";
+	const isSuperAdmin = currentUser.userRole === "Super Admin";
 	const canShowCompanySwitcher =
-		canAccessMaster || canAccessWorkspace || canSwitchCompany;
+		!isSuperAdmin &&
+		(canAccessMaster || canAccessWorkspace || canSwitchCompany);
 	const canShowBranchSwitcher =
 		activeNavigationScope === "company" && branchDropdownItems.length > 0;
+	const shouldShowWorkspaceSkeleton =
+		isProfileLoading || isTopbarContextLoading;
+	const canShowBranchSkeleton =
+		activeNavigationScope === "company" && shouldShowWorkspaceSkeleton;
 	const hasBothMobileWorkspaceControls =
-		canShowCompanySwitcher && canShowBranchSwitcher;
+		canShowCompanySwitcher && (canShowBranchSwitcher || canShowBranchSkeleton);
 	const hasMobileWorkspaceControls =
-		canShowCompanySwitcher || canShowBranchSwitcher;
+		canShowCompanySwitcher || canShowBranchSwitcher || canShowBranchSkeleton;
 	const topbarFloatingPanelTopClass = "top-14";
 
 	const closeMobileSidebar = useCallback(() => {
@@ -381,7 +383,7 @@ export function MainTopbar({
 					aria-label="Workspace controls"
 					className="hidden min-w-0 flex-1 items-center gap-2 md:flex md:max-w-92 lg:max-w-md xl:max-w-lg"
 				>
-					{isProfileLoading ? (
+					{shouldShowWorkspaceSkeleton && canShowCompanySwitcher ? (
 						<TopbarWorkspaceSkeleton />
 					) : canShowCompanySwitcher ? (
 						<div data-spotlight-id="workspace-company-switcher">
@@ -401,7 +403,9 @@ export function MainTopbar({
 						</div>
 					) : null}
 
-					{canShowBranchSwitcher ? (
+					{canShowBranchSkeleton ? (
+						<TopbarWorkspaceSkeleton />
+					) : canShowBranchSwitcher ? (
 						<BranchSwitcher
 							branchDropdownItems={branchDropdownItems}
 							currentBranch={currentBranch}
@@ -475,7 +479,7 @@ export function MainTopbar({
 						>
 							<Bell className="h-5 w-5" aria-hidden="true" />
 							{unreadNotificationCount > 0 ? (
-								<span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-coralpink ring-2 ring-white" />
+								<span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-skyblue shadow-[0_0_10px_rgb(var(--skyblue-rgb)/0.45)] ring-2 ring-white" />
 							) : null}
 						</button>
 
@@ -501,6 +505,8 @@ export function MainTopbar({
 						</div>
 					</div>
 
+					<SpotlightTutorialButton activeHref={activeHref} />
+
 					<button
 						type="button"
 						onClick={handleOpenHelp}
@@ -511,12 +517,9 @@ export function MainTopbar({
 					</button>
 
 					<AccountMenu
-						activeNavigationScope={activeNavigationScope}
-						currentCompany={currentCompany}
 						currentUser={currentUser}
 						isOpen={isProfileMenuOpen}
 						isProfileLoading={isProfileLoading}
-						settingsHref={settingsHref}
 						userDescriptor={userDescriptor}
 						onClose={() => setProfileMenuOpenPath(null)}
 						onLogout={() => void logout()}
@@ -533,7 +536,9 @@ export function MainTopbar({
 						hasBothMobileWorkspaceControls && "sm:grid-cols-2",
 					)}
 				>
-					{canShowCompanySwitcher ? (
+					{shouldShowWorkspaceSkeleton && canShowCompanySwitcher ? (
+						<TopbarWorkspaceSkeleton variant="mobile" />
+					) : canShowCompanySwitcher ? (
 						<CompanySwitcher
 							activeNavigationScope={activeNavigationScope}
 							availableCompanies={availableCompanies}
@@ -550,7 +555,9 @@ export function MainTopbar({
 						/>
 					) : null}
 
-					{canShowBranchSwitcher ? (
+					{canShowBranchSkeleton ? (
+						<TopbarWorkspaceSkeleton variant="mobile" />
+					) : canShowBranchSwitcher ? (
 						<BranchSwitcher
 							branchDropdownItems={branchDropdownItems}
 							currentBranch={currentBranch}

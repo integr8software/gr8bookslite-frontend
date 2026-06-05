@@ -61,7 +61,8 @@ function AppTaxRateDialogEditor({
       const nextTaxDetails = syncTaxDetailsAmount(
         {
           ...current.taxDetails,
-          vatCode: nextTaxRate !== "0%" ? `VAT-${nextTaxRate.replace("%", "")}` : "",
+          vatCode:
+            nextTaxRate !== "0%" ? `VAT-${nextTaxRate.replace("%", "")}` : "",
           vatPercent: getVatPercentFromRate(nextTaxRate),
         },
         current.taxDetails.grossAmount,
@@ -98,7 +99,7 @@ function AppTaxRateDialogEditor({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-darknavy/45 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -148,7 +149,7 @@ function AppTaxRateDialogEditor({
             <select
               value={draftValue.taxRate}
               onChange={(event) => updateTaxRate(event.target.value)}
-              className={FieldClassName}
+              className={`${FieldClassName} app-select-control`}
             >
               <option value="0%">--Select VAT Rate--</option>
               <option value="1%">VAT 1%</option>
@@ -179,7 +180,7 @@ function AppTaxRateDialogEditor({
             <select
               value={draftValue.taxDetails.ewtCode}
               onChange={(event) => updateEwtCode(event.target.value)}
-              className={FieldClassName}
+              className={`${FieldClassName} app-select-control`}
             >
               <option value="">--Select EWT Code--</option>
               <option value="EWT-1">EWT-1</option>
@@ -217,7 +218,7 @@ function AppTaxRateDialogEditor({
           <button
             type="button"
             onClick={() => onSave(draftValue)}
-            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
+            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85"
           >
             Save
           </button>
@@ -243,10 +244,10 @@ function TaxDialogRow({
 }
 
 const FieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-offwhite/80 px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/40 focus:bg-white";
+  "app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/40";
 
 const ReadOnlyFieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-darknavy/[0.04] px-3 text-sm text-darknavy/70 outline-none";
+  "app-theme-field-readonly h-11 w-full rounded-md border px-3 text-sm outline-none";
 
 function formatPercentField(value: number) {
   return `${value.toFixed(2)}%`;

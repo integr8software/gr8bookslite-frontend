@@ -15,6 +15,7 @@ export function MainNavigationProgress() {
   const [progress, setProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const hasPendingNavigationRef = useRef(false);
+  const hasQueuedStartRef = useRef(false);
   const timersRef = useRef<number[]>([]);
 
   const clearTimers = useCallback(() => {
@@ -28,7 +29,12 @@ export function MainNavigationProgress() {
   }, []);
 
   const startProgress = useCallback(() => {
+    if (hasPendingNavigationRef.current) {
+      return;
+    }
+
     clearTimers();
+    hasQueuedStartRef.current = false;
     hasPendingNavigationRef.current = true;
     setIsVisible(true);
     setProgress(ProgressStart);
@@ -47,6 +53,11 @@ export function MainNavigationProgress() {
   }, [clearTimers, queueTimer]);
 
   const requestProgressStart = useCallback(() => {
+    if (hasPendingNavigationRef.current || hasQueuedStartRef.current) {
+      return;
+    }
+
+    hasQueuedStartRef.current = true;
     window.requestAnimationFrame(() => {
       startProgress();
     });
@@ -58,6 +69,7 @@ export function MainNavigationProgress() {
     }
 
     clearTimers();
+    hasQueuedStartRef.current = false;
     hasPendingNavigationRef.current = false;
     setProgress(100);
     queueTimer(() => {
@@ -129,12 +141,19 @@ export function MainNavigationProgress() {
 
     window.addEventListener("click", handleClick, true);
     window.addEventListener("popstate", requestProgressStart);
+    window.addEventListener("gr8books:navigation-start", requestProgressStart);
 
     return () => {
       window.removeEventListener("click", handleClick, true);
       window.removeEventListener("popstate", requestProgressStart);
+      window.removeEventListener(
+        "gr8books:navigation-start",
+        requestProgressStart,
+      );
       window.history.pushState = originalPushState;
       window.history.replaceState = originalReplaceState;
+      hasQueuedStartRef.current = false;
+      hasPendingNavigationRef.current = false;
       clearTimers();
     };
   }, [clearTimers, requestProgressStart]);

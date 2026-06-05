@@ -10,6 +10,8 @@ export {
 export {
 	flattenAccounts,
 	insertAccount,
+	isSpecificAccount,
+	moveOrReorderAccount,
 	removeAccount,
 	updateAccountTree,
 } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTree";

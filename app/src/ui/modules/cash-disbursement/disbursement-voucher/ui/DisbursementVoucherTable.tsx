@@ -33,6 +33,7 @@ export function DisbursementVoucherTable({
 			paginationStorageKey={DisbursementVoucherTablePaginationStorageKey}
 			table={table}
 			toolbar={toolbar}
+			variant="embedded"
 			renderRow={({ id, original }) => (
 				<tr key={id} className="module-table-row">
 					<td className="px-4 py-4 align-top">

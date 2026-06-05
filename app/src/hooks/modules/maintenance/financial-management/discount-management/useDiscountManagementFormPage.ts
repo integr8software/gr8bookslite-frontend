@@ -15,69 +15,61 @@ import {
 	createDiscountManagementFormValues,
 	updateDiscountFromForm,
 } from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
+import { getFallbackFormSignatoryModuleOptions } from "@/app/src/data/modules/maintenance/form-signatory/FormSignatoryData";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
-import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 import type {
 	DiscountManagementActionMode,
+	Discount,
 	DiscountManagementFormErrors,
 	DiscountManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
 import { validateDiscountManagementForm } from "@/app/src/validations/modules/maintenance/financial-management/discount-management/DiscountManagementValidation";
 import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagement";
 
-export function useDiscountManagementFormPage() {
+type DiscountManagementFormPageOptions = {
+	existingDiscount?: Discount;
+	mode?: DiscountManagementActionMode;
+	onSaved?: () => void;
+};
+
+export function useDiscountManagementFormPage(
+	options: DiscountManagementFormPageOptions = {},
+) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
-	const { flatAccounts } = useChartsOfAccounts();
+	const { accounts, flatAccounts } = useChartsOfAccounts();
 	const discounts = useDiscountManagementStore((state) => state.discounts);
 	const addDiscount = useDiscountManagementStore((state) => state.addDiscount);
 	const updateDiscount = useDiscountManagementStore(
 		(state) => state.updateDiscount,
 	);
-	const deleteDiscount = useDiscountManagementStore(
-		(state) => state.deleteDiscount,
-	);
 	const isMutating = useDiscountManagementStore((state) => state.isMutating);
-	const mode = getActionMode(pathname);
-	const existingDiscount = discounts.find(
+	const mode = options.mode ?? getActionMode(pathname);
+	const existingDiscount = options.existingDiscount ?? discounts.find(
 		(discount) => discount.id === params.recordId,
 	);
 	const accountOptions = useMemo(
 		() => flatAccounts.map(({ account }) => account),
 		[flatAccounts],
 	);
+	const moduleOptions = useMemo(
+		() => getFallbackFormSignatoryModuleOptions(),
+		[],
+	);
 	const [values, setValues] = useState<DiscountManagementFormValues>(() =>
 		existingDiscount
 			? createDiscountManagementFormValues(existingDiscount)
 			: DiscountManagementInitialFormValues,
 	);
-	const [accountQuery, setAccountQuery] = useState(
-		() => existingDiscount?.accountTitle ?? "",
-	);
 	const [errors, setErrors] = useState<DiscountManagementFormErrors>({});
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const isReadonly = mode === "view";
 
 	const selectedAccount = accountOptions.find(
-		(account) => account.id === values.accountId,
+		(account) =>
+			account.id === values.accountId ||
+			account.accountNumber === values.accountId,
 	);
-
-	const matchedAccounts = useMemo(() => {
-		const query = accountQuery.trim().toLowerCase();
-
-		if (!query || selectedAccount?.accountName === accountQuery) {
-			return [];
-		}
-
-		return accountOptions
-			.filter(
-				(account) =>
-					account.accountName.toLowerCase().includes(query) ||
-					account.accountNumber.toLowerCase().includes(query),
-			)
-			.slice(0, 8);
-	}, [accountOptions, accountQuery, selectedAccount]);
 
 	function updateField(
 		field: keyof DiscountManagementFormValues,
@@ -103,22 +95,20 @@ export function useDiscountManagementFormPage() {
 		);
 	}
 
-	function handleAccountQueryChange(event: ChangeEvent<HTMLInputElement>) {
+	function handleAccountChange(accountId: string) {
 		if (isReadonly) {
 			return;
 		}
 
-		setAccountQuery(event.target.value);
-		updateField("accountId", "");
+		updateField("accountId", accountId);
 	}
 
-	function handleSelectAccount(account: ChartAccount) {
+	function handleModuleChange(nextValue: string | string[]) {
 		if (isReadonly) {
 			return;
 		}
 
-		setAccountQuery(account.accountName);
-		updateField("accountId", account.id);
+		updateField("moduleIds", Array.isArray(nextValue) ? nextValue : [nextValue]);
 	}
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -133,45 +123,39 @@ export function useDiscountManagementFormPage() {
 		}
 
 		if (mode === "edit" && existingDiscount) {
-			updateDiscount(updateDiscountFromForm(existingDiscount, values, selectedAccount));
+			updateDiscount(
+				updateDiscountFromForm(
+					existingDiscount,
+					values,
+					selectedAccount,
+					moduleOptions,
+				),
+			);
 		} else if (mode === "edit") {
 			toast.error("Could not find the discount to update.");
 			return;
 		} else {
-			addDiscount(createDiscountFromForm(values, selectedAccount));
+			addDiscount(createDiscountFromForm(values, selectedAccount, moduleOptions));
 		}
 
-		router.push(DiscountManagementHref);
-	}
-
-	function handleConfirmDelete() {
-		if (!existingDiscount) {
-			toast.error("Could not find the discount to delete.");
-			return;
-		}
-
-		deleteDiscount(existingDiscount.id);
-		setIsDeleteDialogOpen(false);
-		router.push(DiscountManagementHref);
+		options.onSaved?.();
+		if (!options.onSaved) router.push(DiscountManagementHref);
 	}
 
 	return {
-		accountQuery,
+		accountOptions: accounts,
 		errors,
 		existingDiscount,
-		handleAccountQueryChange,
-		handleConfirmDelete,
+		handleAccountChange,
 		handleInputChange,
-		handleSelectAccount,
+		handleModuleChange,
 		handleSubmit,
-		isDeleteDialogOpen,
 		isMutating,
 		isReadonly,
-		matchedAccounts,
 		mode,
+		moduleOptions,
 		needsRecord: mode === "edit" || mode === "view",
 		selectedAccount,
-		setIsDeleteDialogOpen,
 		values,
 	};
 }

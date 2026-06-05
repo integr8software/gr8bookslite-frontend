@@ -14,7 +14,7 @@ export function UserRoleAccessToggle({
   return (
     <label
       className={[
-        "flex min-h-8 items-center justify-center rounded border px-2 py-1 text-center text-xs font-semibold transition",
+        "relative flex h-8 min-w-0 items-center justify-center rounded border px-2 text-center text-xs font-semibold leading-none transition",
         checked
           ? "border-blue-200 bg-blue-50 text-blue-700"
           : isPartial
@@ -35,7 +35,7 @@ export function UserRoleAccessToggle({
         aria-label={label}
         className="sr-only"
       />
-      <span className="truncate">{label}</span>
+      <span className="block max-w-full truncate">{label}</span>
     </label>
   );
 }

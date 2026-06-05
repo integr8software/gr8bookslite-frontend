@@ -134,10 +134,14 @@ function UserRoleFormPageInner() {
         isPending={page.isMutating}
         mode={page.mode}
         noun="user role"
+        pendingLabel={page.isRedirectingAfterSave ? "Loading..." : "Saving..."}
         onCancel={() => setIsSaveDialogOpen(false)}
-        onConfirm={() => {
-          page.submitForm();
-          setIsSaveDialogOpen(false);
+        onConfirm={async () => {
+          const submitResult = await page.submitForm();
+
+          if (submitResult === "invalid") {
+            setIsSaveDialogOpen(false);
+          }
         }}
       />
       <StatusConfirmDialog
@@ -158,6 +162,7 @@ function SaveConfirmDialog({
   isPending,
   mode,
   noun,
+  pendingLabel,
   onCancel,
   onConfirm,
 }: {
@@ -165,8 +170,9 @@ function SaveConfirmDialog({
   isPending: boolean;
   mode: "add" | "edit" | "view";
   noun: string;
+  pendingLabel: string;
   onCancel: () => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void> | void;
 }) {
   const isEditMode = mode === "edit";
 
@@ -181,6 +187,7 @@ function SaveConfirmDialog({
           : `This will create a new ${noun} using the details you entered.`
       }
       confirmLabel={isEditMode ? "Save Changes" : "Save"}
+      pendingLabel={pendingLabel}
       tone="success"
       onCancel={onCancel}
       onConfirm={onConfirm}

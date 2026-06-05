@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
 import { PricingPlans, type BillingCycle, type PricingPlan } from "@/app/src/data/pricing/PricingData";
 import { GetOnboardingDraft } from "@/app/src/services/onboarding/OnboardingApi";
@@ -12,20 +11,6 @@ function Wait(milliseconds: number) {
   return new Promise((resolve) => {
     window.setTimeout(resolve, milliseconds);
   });
-}
-
-async function WaitForAccessToken() {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    const token = GetAccessToken();
-
-    if (token) {
-      return token;
-    }
-
-    await Wait(200);
-  }
-
-  return null;
 }
 
 function GetUiBillingCycle(
@@ -75,18 +60,14 @@ export function useOnboardingDraft({
   setValues,
   setPersistedLogoPreviewUrl,
 }: UseOnboardingDraftParams) {
-  const [browserAccessToken, setBrowserAccessToken] = useState<
-    string | null | undefined
-  >(undefined);
-  const hasMounted = browserAccessToken !== undefined;
-  const resolvedAccessToken = accessToken ?? browserAccessToken ?? null;
+  const [hasMounted, setHasMounted] = useState(false);
+  const resolvedAccessToken = accessToken;
   const [hasResolvedDraft, setHasResolvedDraft] = useState(false);
-  const isDraftLoading =
-    !hasMounted || (Boolean(resolvedAccessToken) && !hasResolvedDraft);
+  const isDraftLoading = !hasMounted || !hasResolvedDraft;
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      setBrowserAccessToken(GetAccessToken());
+      setHasMounted(true);
     }, 0);
 
     return () => {
@@ -95,7 +76,7 @@ export function useOnboardingDraft({
   }, []);
 
   useEffect(() => {
-    if (!resolvedAccessToken || hasResolvedDraft) {
+    if (!hasMounted || hasResolvedDraft) {
       return;
     }
 
@@ -103,16 +84,10 @@ export function useOnboardingDraft({
 
     async function loadDraft() {
       try {
-        const token = resolvedAccessToken ?? (await WaitForAccessToken());
-
-        if (!token) {
-          return;
-        }
-
         let draft: OnboardingDraft | null = null;
 
         for (let attempt = 0; attempt < 3; attempt += 1) {
-          const response = await GetOnboardingDraft(token);
+          const response = await GetOnboardingDraft(resolvedAccessToken);
           draft = response.draft;
 
           if (draft) {
@@ -148,6 +123,7 @@ export function useOnboardingDraft({
             draftCompanyDetails.nonIndividualTypeOther ?? "",
           address: draftCompanyDetails.address ?? "",
           tin: draftCompanyDetails.tin ?? "",
+          companyEmail: draftCompanyDetails.companyEmail ?? "",
           website: draftCompanyDetails.website ?? "",
           contactNumber:
             draftCompanyDetails.contactNumber ?? current.contactNumber,
@@ -192,6 +168,7 @@ export function useOnboardingDraft({
       isActive = false;
     };
   }, [
+    hasMounted,
     hasResolvedDraft,
     resolvedAccessToken,
     setSelectedBillingCycle,

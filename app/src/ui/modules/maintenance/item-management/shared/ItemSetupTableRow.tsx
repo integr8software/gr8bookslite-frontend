@@ -14,12 +14,14 @@ type ItemSetupTableRowProps = {
 		record: ItemSetupRecord;
 	}) => void;
 	onToggleExpanded: (recordId: string) => void;
+	onEditRecord: (kind: ItemSetupTableRowData["recordKind"], record: ItemSetupRecord) => void;
 };
 
 export function ItemSetupTableRow({
 	expandedIds,
 	onDeleteRecord,
 	onToggleExpanded,
+	onEditRecord,
 	row,
 }: ItemSetupTableRowProps) {
 	const { record } = row;
@@ -100,6 +102,7 @@ export function ItemSetupTableRow({
 						onDeleteRecord={() =>
 							onDeleteRecord({ kind: row.recordKind, record })
 						}
+						onEditRecord={() => onEditRecord(row.recordKind, record)}
 					/>
 				)}
 			</td>

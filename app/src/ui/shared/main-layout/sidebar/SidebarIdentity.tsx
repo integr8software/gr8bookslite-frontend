@@ -5,6 +5,7 @@ type SidebarLogoProps = {
   companyBadgeLabel?: string;
   companyLogoUrl?: string;
   companyName: string;
+  variant?: "company" | "master-control";
 };
 
 export function SidebarLogo({

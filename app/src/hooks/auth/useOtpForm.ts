@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
@@ -28,9 +29,9 @@ import {
 } from "@/app/src/services/auth/AuthActions";
 import {
   GetFallbackPostAuthRedirectPath,
-  ResolvePostAuthDestination,
+  ReadAuthJwtPayload,
 } from "@/app/src/services/auth/AuthRedirects";
-import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
+import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 type UseOtpFormOptions = {
@@ -56,6 +57,7 @@ function ResolveHasResendCooldown(email: string) {
 export function useOtpForm({
   initialEmail = "",
 }: UseOtpFormOptions = {}) {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const setActiveCompanyId = useAppStore((state) => state.setActiveCompanyId);
   const setAccessToken = useAppStore((state) => state.setAccessToken);
@@ -138,23 +140,19 @@ export function useOtpForm({
 
     if (state.status === "success") {
       ClearPendingVerificationEmail();
+      queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
       if (state.accessToken) {
         SaveAccessToken(state.accessToken, false);
         setAccessToken(state.accessToken);
       }
       toast.success(state.message);
       if (state.accessToken) {
-        void ResolvePostAuthDestination(state.accessToken)
-          .then(({ profile, redirectPath }) => {
-            setActiveCompanyId(GetAuthProfileCompanyId(profile));
-            router.push(redirectPath);
-          })
-          .catch(() => {
-            router.push(
-              state.redirectTo ??
-                GetFallbackPostAuthRedirectPath(state.accessToken),
-            );
-          });
+        const fallbackPath =
+          state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken);
+        const payload = ReadAuthJwtPayload(state.accessToken);
+
+        setActiveCompanyId(payload?.companyId ?? null);
+        router.push(fallbackPath);
         return;
       }
       if (state.redirectTo) {
@@ -168,6 +166,7 @@ export function useOtpForm({
     }
   }, [
     pending,
+    queryClient,
     router,
     setAccessToken,
     setActiveCompanyId,

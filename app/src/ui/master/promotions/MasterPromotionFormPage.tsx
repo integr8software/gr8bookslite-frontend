@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowLeft, Check, RefreshCw, Save, Search } from "lucide-react";
 import {
+	MasterPromotionBillingCycleOptions,
 	MasterPromotionDiscountKindOptions,
 	MasterPromotionExpirationModeOptions,
 	MasterPromotionLimitModeOptions,
@@ -15,6 +16,7 @@ import {
 } from "@/app/src/constants/master/promotions/MasterPromotionConstants";
 import { useMasterPromotionFormPage } from "@/app/src/hooks/master/promotions/useMasterPromotionFormPage";
 import type {
+	MasterPromotionBillingCycle,
 	MasterPromotionDiscountKind,
 	MasterPromotionExpirationMode,
 	MasterPromotionFormErrors,
@@ -37,13 +39,19 @@ const FieldLabelClassName = "grid gap-1.5 text-sm font-semibold text-darknavy/58
 type MasterPromotionFormPageProps = {
 	mode: "add" | "edit";
 	recordId?: string;
+	returnSource?: "list" | "view";
 };
 
 export function MasterPromotionFormPage({
 	mode,
 	recordId,
+	returnSource = "list",
 }: MasterPromotionFormPageProps) {
-	const page = useMasterPromotionFormPage({ mode, recordId });
+	const page = useMasterPromotionFormPage({
+		mode,
+		recordId,
+		returnSource,
+	});
 
 	if (page.isMissingRecord) {
 		return (
@@ -63,11 +71,11 @@ export function MasterPromotionFormPage({
 				titleAs="h1"
 				eyebrow="Discounts"
 				title={mode === "edit" ? "Edit Promotion" : "Add Promotion"}
-				description="Set the campaign identity, target plans, value, limit, expiration, and status."
+				description="Set the campaign identity, target plan, cycle coverage, value, limit, expiration, and status."
 				actions={
 					<>
 						<Link
-							href={MasterPromotionsHref}
+							href={page.backHref}
 							className={moduleHeaderActionClassNames.secondary}
 						>
 							<ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -110,139 +118,215 @@ function MasterPromotionForm({
 }) {
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<div className="grid gap-5 p-5 xl:grid-cols-2">
+			<div className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.64fr)]">
 				<div className="grid content-start gap-4">
-					<div className="grid gap-4 md:grid-cols-2">
-						<TextField
-							error={errors.name}
-							label="Name"
-							value={values.name}
-							onChange={(name) => onUpdate({ name })}
-						/>
-						<CodeField
-							error={errors.code}
-							label="Code"
-							value={values.code}
-							onGenerate={onGenerateCode}
-							onChange={(code) => onUpdate({ code: code.toUpperCase() })}
-						/>
-					</div>
-					<label className={FieldLabelClassName}>
-						Description
-						<textarea
-							value={values.description}
-							onChange={(event) =>
-								onUpdate({ description: event.target.value })
-							}
-							rows={5}
-							className="min-h-32 rounded-lg border border-darknavy/10 bg-white px-3 py-3 text-sm font-medium leading-6 text-darknavy shadow-sm transition placeholder:text-darknavy/35 focus:border-skyblue focus:outline-none focus:ring-4 focus:ring-skyblue/15"
-						/>
-						<FieldError message={errors.description} />
-					</label>
-					<SelectField
-						label="Status"
-						value={values.status}
-						options={MasterPromotionStatusOptions}
-						onChange={(status) =>
-							onUpdate({ status: status as MasterPromotionStatus })
-						}
+					<PromotionFieldRows
+						errors={errors}
+						values={values}
+						onGenerateCode={onGenerateCode}
+						onUpdate={onUpdate}
 					/>
 				</div>
 				<div className="grid content-start gap-4">
-					<SelectField
-						label="Type"
-						value={values.type}
-						options={MasterPromotionTypeOptions}
-						onChange={(type) =>
-							onUpdate({ type: type as MasterPromotionType })
-						}
-					/>
 					<TargetPlanListField
 						error={errors.targetPlanIds}
 						value={values.targetPlanIds}
 						onChange={(targetPlanIds) => onUpdate({ targetPlanIds })}
 					/>
-					<div className="grid gap-4 md:grid-cols-2">
-						<SelectField
-							label="Discount"
-							value={values.discountKind}
-							options={MasterPromotionDiscountKindOptions}
-							onChange={(discountKind) =>
-								onUpdate({
-									discountKind:
-										discountKind as MasterPromotionDiscountKind,
-								})
-							}
-						/>
-						<NumberField
-							error={errors.value}
-							label="Value"
-							value={values.value}
-							onChange={(value) => onUpdate({ value })}
-						/>
-					</div>
-					<div className="grid gap-4 md:grid-cols-2">
-						<SelectField
-							label="Usage limit"
-							value={values.limitMode}
-							options={MasterPromotionLimitModeOptions}
-							onChange={(limitMode) =>
-								onUpdate({
-									limitMode: limitMode as MasterPromotionLimitMode,
-								})
-							}
-						/>
-						{values.limitMode === "Limited" ? (
-							<NumberField
-								error={errors.redemptionLimit}
-								label="Limit"
-								value={values.redemptionLimit}
-								onChange={(redemptionLimit) =>
-									onUpdate({ redemptionLimit })
-								}
-							/>
-						) : null}
-					</div>
-					<div className="grid gap-4 md:grid-cols-2">
-						<SelectField
-							label="Expiration"
-							value={values.expirationMode}
-							options={MasterPromotionExpirationModeOptions}
-							onChange={(expirationMode) =>
-								onUpdate({
-									expirationMode:
-										expirationMode as MasterPromotionExpirationMode,
-								})
-							}
-						/>
-						{values.expirationMode === "With expiration" ? (
-							<label className={FieldLabelClassName}>
-								Expires
-								<input
-									type="date"
-									value={values.expiresAt}
-									onChange={(event) =>
-										onUpdate({ expiresAt: event.target.value })
-									}
-									className={ControlClassName}
-								/>
-								<FieldError message={errors.expiresAt} />
-							</label>
-						) : null}
-					</div>
-					<div className="flex justify-end">
-						<button
-							type="button"
-							onClick={onSave}
-							className={moduleHeaderActionClassNames.primary}
-						>
-							<Save className="h-4 w-4" aria-hidden="true" />
-							Save
-						</button>
-					</div>
 				</div>
 			</div>
+			<div className="flex justify-end border-t border-darknavy/10 bg-offwhite/35 px-5 py-4">
+				<SaveAction onSave={onSave} />
+			</div>
 		</div>
+	);
+}
+
+function PromotionFieldRows({
+	errors,
+	values,
+	onGenerateCode,
+	onUpdate,
+}: {
+	errors: MasterPromotionFormErrors;
+	values: MasterPromotionFormValues;
+	onGenerateCode: () => void;
+	onUpdate: (values: Partial<MasterPromotionFormValues>) => void;
+}) {
+	return (
+		<>
+			<div className="grid gap-4 md:grid-cols-2">
+				<TextField
+					error={errors.name}
+					label="Name"
+					value={values.name}
+					onChange={(name) => onUpdate({ name })}
+				/>
+				<CodeField
+					error={errors.code}
+					label="Code"
+					value={values.code}
+					onGenerate={onGenerateCode}
+					onChange={(code) => onUpdate({ code: code.toUpperCase() })}
+				/>
+			</div>
+			<div className="grid gap-4 md:grid-cols-2">
+				<SelectField
+					label="Type"
+					value={values.type}
+					options={MasterPromotionTypeOptions}
+					onChange={(type) =>
+						onUpdate({ type: type as MasterPromotionType })
+					}
+				/>
+				<SelectField
+					label="Number of Billing Cycle covered"
+					value={values.billingCycle}
+					options={MasterPromotionBillingCycleOptions}
+					onChange={(billingCycle) =>
+						onUpdate({
+							billingCycle: billingCycle as MasterPromotionBillingCycle,
+						})
+					}
+				/>
+			</div>
+			<label className={FieldLabelClassName}>
+				Description
+				<textarea
+					value={values.description}
+					onChange={(event) =>
+						onUpdate({ description: event.target.value })
+					}
+					rows={4}
+					className="min-h-28 rounded-lg border border-darknavy/10 bg-white px-3 py-3 text-sm font-medium leading-6 text-darknavy shadow-sm transition placeholder:text-darknavy/35 focus:border-skyblue focus:outline-none focus:ring-4 focus:ring-skyblue/15"
+				/>
+				<FieldError message={errors.description} />
+			</label>
+			<div className="grid gap-4 md:grid-cols-2">
+				<SelectField
+					label="Discount"
+					value={values.discountKind}
+					options={MasterPromotionDiscountKindOptions}
+					onChange={(discountKind) =>
+						onUpdate({
+							discountKind:
+								discountKind as MasterPromotionDiscountKind,
+						})
+					}
+				/>
+				<NumberField
+					error={errors.value}
+					label="Value"
+					value={values.value}
+					onChange={(value) => onUpdate({ value })}
+				/>
+			</div>
+			<div className="grid gap-4 md:grid-cols-2">
+				<SelectField
+					label="Usage Limit"
+					value={values.limitMode}
+					options={MasterPromotionLimitModeOptions}
+					onChange={(limitMode) =>
+						onUpdate({
+							limitMode: limitMode as MasterPromotionLimitMode,
+							redemptionLimit:
+								limitMode === "Unlimited"
+									? 0
+									: values.redemptionLimit,
+						})
+					}
+				/>
+				<NumberField
+					disabled={values.limitMode === "Unlimited"}
+					error={
+						values.limitMode === "Unlimited"
+							? undefined
+							: errors.redemptionLimit
+					}
+					label="Limit"
+					value={values.redemptionLimit}
+					onChange={(redemptionLimit) =>
+						onUpdate({ redemptionLimit })
+					}
+				/>
+			</div>
+			<div className="grid gap-4 md:grid-cols-2">
+				<SelectField
+					label="Expiration"
+					value={values.expirationMode}
+					options={MasterPromotionExpirationModeOptions}
+					onChange={(expirationMode) =>
+						onUpdate({
+							expirationMode:
+								expirationMode as MasterPromotionExpirationMode,
+							expiresAt:
+								expirationMode === "No expiration"
+									? ""
+									: values.expiresAt,
+						})
+					}
+				/>
+				<label className={FieldLabelClassName}>
+					Expiration Date
+					<input
+						disabled={values.expirationMode === "No expiration"}
+						type="date"
+						value={values.expiresAt}
+						onChange={(event) =>
+							onUpdate({ expiresAt: event.target.value })
+						}
+						className={joinClasses(
+							ControlClassName,
+							values.expirationMode === "No expiration"
+								? "cursor-not-allowed bg-offwhite text-darknavy/40"
+								: "",
+						)}
+					/>
+					<FieldError
+						message={
+							values.expirationMode === "No expiration"
+								? undefined
+								: errors.expiresAt
+						}
+					/>
+				</label>
+			</div>
+			<div className="grid gap-4 md:grid-cols-2">
+				<label className={FieldLabelClassName}>
+					Starting date
+					<input
+						type="date"
+						value={values.startsAt}
+						onChange={(event) =>
+							onUpdate({ startsAt: event.target.value })
+						}
+						className={ControlClassName}
+					/>
+					<FieldError message={errors.startsAt} />
+				</label>
+				<SelectField
+					label="Status"
+					value={values.status}
+					options={MasterPromotionStatusOptions}
+					onChange={(status) =>
+						onUpdate({ status: status as MasterPromotionStatus })
+					}
+				/>
+			</div>
+		</>
+	);
+}
+
+function SaveAction({ onSave }: { onSave: () => void }) {
+	return (
+		<button
+			type="button"
+			onClick={onSave}
+			className={moduleHeaderActionClassNames.primary}
+		>
+			<Save className="h-4 w-4" aria-hidden="true" />
+			Save
+		</button>
 	);
 }
 
@@ -320,7 +404,7 @@ function TargetPlanListField({
 	return (
 		<div className={FieldLabelClassName}>
 			<div className="flex items-center justify-between gap-3">
-				<span>Target plans</span>
+				<span>Target Plan</span>
 				<span className="text-xs font-semibold text-darknavy/42">
 					{value.length.toLocaleString("en-US")} selected
 				</span>
@@ -339,7 +423,7 @@ function TargetPlanListField({
 						className="h-10 w-full rounded-md border border-darknavy/10 bg-white pl-10 pr-3 text-sm font-semibold text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/10"
 					/>
 				</label>
-				<div className="grid max-h-72 gap-1 overflow-y-auto p-2">
+				<div className="grid max-h-144 gap-1 overflow-y-auto p-2">
 					{filteredOptions.length > 0 ? (
 						filteredOptions.map((option) => {
 							const isSelected = selectedValues.has(option.value);
@@ -418,11 +502,13 @@ function TextField({
 }
 
 function NumberField({
+	disabled = false,
 	error,
 	label,
 	value,
 	onChange,
 }: {
+	disabled?: boolean;
 	error?: string;
 	label: string;
 	value: number;
@@ -432,11 +518,15 @@ function NumberField({
 		<label className={FieldLabelClassName}>
 			{label}
 			<input
+				disabled={disabled}
 				type="number"
 				min={0}
 				value={value}
 				onChange={(event) => onChange(toNumber(event.target.value))}
-				className={ControlClassName}
+				className={joinClasses(
+					ControlClassName,
+					disabled ? "cursor-not-allowed bg-offwhite text-darknavy/40" : "",
+				)}
 			/>
 			<FieldError message={error} />
 		</label>

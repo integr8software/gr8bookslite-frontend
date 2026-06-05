@@ -15,14 +15,18 @@ type DiscountManagementTableProps = {
 	discounts: Discount[];
 	isLoading: boolean;
 	toolbar?: ReactNode;
-	onDeleteDiscount: (discount: DiscountManagementTableRecord) => void;
+	onEditDiscount: (discount: DiscountManagementTableRecord) => void;
+	onToggleStatus: (discount: DiscountManagementTableRecord) => void;
+	onViewDiscount: (discount: DiscountManagementTableRecord) => void;
 };
 
 export function DiscountManagementTable({
 	discounts,
 	isLoading,
 	toolbar,
-	onDeleteDiscount,
+	onEditDiscount,
+	onToggleStatus,
+	onViewDiscount,
 }: DiscountManagementTableProps) {
 	const table = useDiscountManagementTable(discounts);
 
@@ -32,7 +36,7 @@ export function DiscountManagementTable({
 			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 			emptyTitle="No discounts yet"
 			isLoading={isLoading}
-			minWidthClassName="min-w-[52rem]"
+			minWidthClassName="min-w-[68rem]"
 			paginationStorageKey={DiscountManagementTablePaginationStorageKey}
 			table={table}
 			toolbar={toolbar}
@@ -40,7 +44,9 @@ export function DiscountManagementTable({
 				<DiscountManagementTableRow
 					key={id}
 					discount={original}
-					onDeleteDiscount={onDeleteDiscount}
+					onEditDiscount={onEditDiscount}
+					onToggleStatus={onToggleStatus}
+					onViewDiscount={onViewDiscount}
 				/>
 			)}
 		/>

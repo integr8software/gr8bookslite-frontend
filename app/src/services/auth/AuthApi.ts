@@ -1,9 +1,14 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import axios from "axios";
+import {
+  ApiClient,
+  ApiClientError,
+} from "@/app/src/services/shared/api/ApiClient";
 import type {
   AuthProfileResponse,
   ChangeAuthenticatedPasswordRequest,
   ChangeAuthenticatedPasswordResponse,
   RequestPasswordChangeOtpResponse,
+  SwitchCompanyContextResponse,
   VerifyPasswordChangeOtpRequest,
   VerifyPasswordChangeOtpResponse,
 } from "@/app/src/services/auth/AuthApiTypes";
@@ -25,10 +30,6 @@ export function BuildGoogleAuthUrl(mode: "login" | "signup") {
   return BuildAuthApiUrl(`/auth/google?mode=${mode}`);
 }
 
-type ApiErrorPayload = {
-  message?: string | string[];
-};
-
 export class AuthApiError extends Error {
   constructor(message: string) {
     super(message);
@@ -36,65 +37,99 @@ export class AuthApiError extends Error {
   }
 }
 
-function ReadApiErrorMessage(payload: ApiErrorPayload | null, fallback: string) {
-  if (!payload?.message) {
-    return fallback;
-  }
-
-  return Array.isArray(payload.message)
-    ? payload.message.join(" ")
-    : payload.message;
-}
-
 export async function PostAuthJson<TRequest, TResponse>(
   path: string,
   body: TRequest,
 ): Promise<TResponse> {
-  const response = await fetch(BuildAuthApiUrl(path), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-    cache: "no-store",
-  });
+  try {
+    const response = await ApiClient.post<TResponse>(path, body);
 
-  const payload = (await response.json().catch(() => null)) as
-    | TResponse
-    | ApiErrorPayload
-    | null;
+    return response.data;
+  } catch (error) {
+    if (error instanceof ApiClientError) {
+      throw new AuthApiError(error.message);
+    }
 
-  if (!response.ok) {
     throw new AuthApiError(
-      ReadApiErrorMessage(payload as ApiErrorPayload | null, "Request failed."),
+      error instanceof Error ? error.message : "Request failed.",
     );
   }
-
-  return payload as TResponse;
 }
 
-export async function GetAuthProfile(accessToken: string) {
-  const response = await ApiClient.get<AuthProfileResponse>("/auth/me", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+function GetOptionalAuthorizationHeaders(accessToken: string | null) {
+  if (!accessToken) {
+    return undefined;
+  }
 
-  return response.data;
-}
-
-function GetAuthorizationHeaders(accessToken: string) {
   return {
     Authorization: `Bearer ${accessToken}`,
   };
 }
 
-export async function RequestPasswordChangeOtp(accessToken: string) {
+export async function GetAuthProfile(accessToken: string | null = null) {
+  const response = await ApiClient.get<AuthProfileResponse>("/auth/me", {
+    headers: GetOptionalAuthorizationHeaders(accessToken),
+    timeout: 10000,
+  });
+
+  return response.data;
+}
+
+export async function CreateFrontendAuthSession(
+  accessToken: string,
+  rememberMe = false,
+) {
+  try {
+    await axios.post(
+      "/api/auth/session",
+      { accessToken, rememberMe },
+      {
+        withCredentials: true,
+      },
+    );
+  } catch {
+    throw new AuthApiError("Could not update the browser session.");
+  }
+}
+
+export async function GetFrontendAuthSession(timeoutMs = 3000) {
+  try {
+    const response = await axios.get<{ accessToken?: string }>(
+      "/api/auth/session",
+      {
+        timeout: timeoutMs,
+        withCredentials: true,
+      },
+    );
+    const accessToken = response.data.accessToken?.trim();
+
+    return accessToken || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function SwitchCompanyContext(
+  accessToken: string | null,
+  companyId: number,
+) {
+  const response = await ApiClient.post<SwitchCompanyContextResponse>(
+    "/auth/context/company",
+    { companyId },
+    {
+      headers: GetOptionalAuthorizationHeaders(accessToken),
+    },
+  );
+
+  return response.data;
+}
+
+export async function RequestPasswordChangeOtp(accessToken: string | null = null) {
   const response = await ApiClient.post<RequestPasswordChangeOtpResponse>(
     "/auth/me/password/otp",
     undefined,
     {
-      headers: GetAuthorizationHeaders(accessToken),
+      headers: GetOptionalAuthorizationHeaders(accessToken),
     },
   );
 
@@ -102,14 +137,14 @@ export async function RequestPasswordChangeOtp(accessToken: string) {
 }
 
 export async function VerifyPasswordChangeOtp(
-  accessToken: string,
+  accessToken: string | null,
   body: VerifyPasswordChangeOtpRequest,
 ) {
   const response = await ApiClient.post<VerifyPasswordChangeOtpResponse>(
     "/auth/me/password/verify-otp",
     body,
     {
-      headers: GetAuthorizationHeaders(accessToken),
+      headers: GetOptionalAuthorizationHeaders(accessToken),
     },
   );
 
@@ -117,14 +152,14 @@ export async function VerifyPasswordChangeOtp(
 }
 
 export async function ChangeAuthenticatedPassword(
-  accessToken: string,
+  accessToken: string | null,
   body: ChangeAuthenticatedPasswordRequest,
 ) {
   const response = await ApiClient.patch<ChangeAuthenticatedPasswordResponse>(
     "/auth/me/password",
     body,
     {
-      headers: GetAuthorizationHeaders(accessToken),
+      headers: GetOptionalAuthorizationHeaders(accessToken),
     },
   );
 

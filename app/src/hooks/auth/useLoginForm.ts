@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { InitialAuthActionState } from "@/app/src/data/auth/AuthTypes";
@@ -16,9 +17,9 @@ import {
   GetFallbackPostAuthRedirectPath,
   IsOnboardingRedirectPath,
   IsSystemRedirectPath,
-  ResolvePostAuthDestination,
+  ReadAuthJwtPayload,
 } from "@/app/src/services/auth/AuthRedirects";
-import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
+import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 type LoginFormValues = {
@@ -35,6 +36,7 @@ function GetSubmittedValue(formData: FormData, key: string) {
 }
 
 export function useLoginForm() {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const accessToken = useAppStore((state) => state.accessToken);
   const setActiveCompanyId = useAppStore((state) => state.setActiveCompanyId);
@@ -44,10 +46,6 @@ export function useLoginForm() {
     InitialAuthActionState,
   );
   const [formValues, setFormValues] = useState<Partial<LoginFormValues>>({});
-  const [isSystemRedirecting, setIsSystemRedirecting] = useState(false);
-  const [postAuthRedirectPath, setPostAuthRedirectPath] = useState<
-    string | null
-  >(null);
   const values: LoginFormValues = {
     ...InitialLoginFormValues,
     ...state.formValues,
@@ -63,8 +61,6 @@ export function useLoginForm() {
     state.status === "success" && state.accessToken
       ? state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken)
       : null;
-  const activePostAuthRedirectPath =
-    postAuthRedirectPath ?? successfulAuthRedirectPath;
   const wasPendingRef = useRef(false);
   const isResolvingPostAuthRef = useRef(false);
 
@@ -102,6 +98,7 @@ export function useLoginForm() {
 
     if (state.status === "success") {
       ClearPendingVerificationEmail();
+      queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
       if (state.accessToken) {
         isResolvingPostAuthRef.current = true;
         SaveAccessToken(state.accessToken, state.rememberMe ?? false);
@@ -109,22 +106,12 @@ export function useLoginForm() {
       }
       toast.success(state.message);
       if (state.accessToken) {
-        void ResolvePostAuthDestination(state.accessToken)
-          .then(({ profile, redirectPath }) => {
-            setActiveCompanyId(GetAuthProfileCompanyId(profile));
-            setPostAuthRedirectPath(redirectPath);
-            setIsSystemRedirecting(IsSystemRedirectPath(redirectPath));
-            router.push(redirectPath);
-          })
-          .catch(() => {
-            const fallbackPath =
-              state.redirectTo ??
-              GetFallbackPostAuthRedirectPath(state.accessToken);
+        const fallbackPath =
+          state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken);
+        const payload = ReadAuthJwtPayload(state.accessToken);
 
-            setPostAuthRedirectPath(fallbackPath);
-            setIsSystemRedirecting(IsSystemRedirectPath(fallbackPath));
-            router.push(fallbackPath);
-          });
+        setActiveCompanyId(payload?.companyId ?? null);
+        router.push(fallbackPath);
         return;
       }
       if (state.redirectTo) {
@@ -145,6 +132,7 @@ export function useLoginForm() {
     }
   }, [
     pending,
+    queryClient,
     router,
     state.accessToken,
     state.message,
@@ -160,8 +148,8 @@ export function useLoginForm() {
     state,
     formAction,
     pending,
-    isSystemRedirecting: isSystemRedirecting || shouldShowImmediateSystemLoader,
-    isOnboardingRedirecting: IsOnboardingRedirectPath(activePostAuthRedirectPath),
+    isSystemRedirecting: shouldShowImmediateSystemLoader,
+    isOnboardingRedirecting: IsOnboardingRedirectPath(successfulAuthRedirectPath),
     values,
     handleEmailChange,
     handleSubmit,

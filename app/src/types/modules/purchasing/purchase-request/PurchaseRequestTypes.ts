@@ -1,4 +1,11 @@
-export type PurchaseRequestStatus = "Draft" | "Open" | "Closed" | "Cancelled";
+import type { FormSignatoryRow } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
+
+export type PurchaseRequestStatus =
+	| "Draft"
+	| "Open"
+	| "Approved"
+	| "Closed"
+	| "Cancelled";
 
 export type PurchaseRequestItem = {
 	id: string;
@@ -55,3 +62,15 @@ export type PurchaseRequestFormErrors = Partial<
 		string
 	>
 >;
+
+export type PurchaseRequestUpdateField = <
+	TKey extends keyof PurchaseRequestFormValues,
+>(
+	field: TKey,
+	value: PurchaseRequestFormValues[TKey],
+) => void;
+
+export type PurchaseRequestFormSignatoryOption = FormSignatoryRow & {
+	branch: string;
+	setupId: string;
+};

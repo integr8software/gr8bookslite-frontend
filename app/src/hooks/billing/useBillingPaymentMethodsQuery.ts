@@ -13,7 +13,7 @@ export function useBillingPaymentMethodsQuery({
 }: UseBillingPaymentMethodsQueryParams) {
 	return useQuery({
 		queryKey: BillingQueryKeys.paymentMethods(),
-		queryFn: async () => GetBillingPaymentMethods(accessToken as string),
+		queryFn: async () => GetBillingPaymentMethods(),
 		enabled: Boolean(accessToken),
 	});
 }

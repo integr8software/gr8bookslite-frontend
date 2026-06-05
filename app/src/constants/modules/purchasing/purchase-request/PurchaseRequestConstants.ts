@@ -12,6 +12,7 @@ export const PurchaseRequestTypeOptions = ["Goods", "Services", "Assets"] as con
 export const PurchaseRequestStatusOptions: PurchaseRequestStatus[] = [
 	"Draft",
 	"Open",
+	"Approved",
 	"Closed",
 	"Cancelled",
 ];
@@ -19,6 +20,12 @@ export const PurchaseRequestStatusOptions: PurchaseRequestStatus[] = [
 export const PurchaseRequestCurrencyOptions = ["PHP", "USD", "JPY", "EUR"] as const;
 
 export const PurchaseRequestUomOptions = ["PC", "BOX", "LOT", "SET", "KG"] as const;
+
+export const PurchaseRequestFormSignatoryModuleCodes = [
+	"purchasing-purchase-request",
+	"purchase-request",
+	"purchasing",
+] as const;
 
 export const PurchaseRequestFormPageCopy = {
 	add: {

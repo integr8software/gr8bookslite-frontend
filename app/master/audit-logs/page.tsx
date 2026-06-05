@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { MasterPreviewPage } from "@/app/src/ui/master/MasterPreviewPage";
+import { MasterAuditLogListPage } from "@/app/src/ui/master/audit-logs/MasterAuditLogListPage";
 
 export const metadata: Metadata = {
 	title: `Audit Logs | ${AppName}`,
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function MasterAuditLogsPage() {
-	return <MasterPreviewPage pageKey="auditLogs" />;
+	return <MasterAuditLogListPage />;
 }

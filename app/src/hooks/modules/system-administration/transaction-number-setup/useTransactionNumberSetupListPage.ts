@@ -11,7 +11,8 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { TransactionNumberSetupTableColumns } from "@/app/src/constants/modules/system-administration/transaction-number-setup/TransactionNumberSetupConstants";
-import { MainLayoutMockData } from "@/app/src/data/shared/main-layout/MainLayoutMockData";
+import { getTransactionNumberSetupBranchOptions } from "@/app/src/data/modules/system-administration/transaction-number-setup/TransactionNumberSetupData";
+import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagementStore";
 import { formatTransactionNumber } from "@/app/src/services/modules/system-administration/transaction-number-setup/TransactionNumberGenerationService";
 import { formatBranchScopeLabel } from "@/app/src/services/modules/system-administration/transaction-number-setup/TransactionNumberSetupFormatters";
 import type {
@@ -29,6 +30,10 @@ export function useTransactionNumberSetupListPage() {
 		setups,
 		usageLogs,
 	} = useTransactionNumberSetupStore();
+	const companies = useWorkspaceCompanyManagementStore(
+		(state) => state.companies,
+		{ includeUsers: false },
+	);
 	const [query, setQuery] = useState("");
 	const [scopeFilter, setScopeFilter] = useState<
 		"all" | "any" | "branch" | "shared"
@@ -47,9 +52,12 @@ export function useTransactionNumberSetupListPage() {
 	const branchNameById = useMemo(
 		() =>
 			new Map(
-				MainLayoutMockData.branches.map((branch) => [branch.id, branch.name]),
+				getTransactionNumberSetupBranchOptions(companies).map((branch) => [
+					branch.id,
+					branch.name,
+				]),
 			),
-		[],
+		[companies],
 	);
 	const filteredSetups = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();

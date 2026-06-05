@@ -133,7 +133,7 @@ export function ModuleTable<TData>({
 			)}
 		>
 			{toolbar ? <div className="border-b border-darknavy/10">{toolbar}</div> : null}
-			<div className={joinClasses(maxHeightClassName, "overflow-auto")}>
+			<div className={joinClasses(maxHeightClassName, "overflow-x-auto overflow-y-auto")}>
 				<table
 					className={joinClasses(
 						"w-full border-collapse text-left text-sm text-darknavy",

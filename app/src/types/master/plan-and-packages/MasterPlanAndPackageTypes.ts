@@ -1,75 +1,35 @@
 export type MasterPlanAndPackageStatus = "Active" | "Draft" | "Inactive";
 
-export type MasterPlanAndPackagePricingKind =
-	| "Monthly"
-	| "Interval"
-	| "Yearly"
-	| "Transactional"
-	| "Percent Off";
+export type MasterPlanAndPackageScalePeriod = "monthly" | "yearly";
 
-export type MasterPlanAndPackageScaleUnit = "company" | "branch" | "user";
+export type MasterPlanAndPackageScaleUnit = "branch" | "user";
 
-export type MasterPlanAndPackageScaleKind = "Range" | "Add-on" | "Reduction";
-
-export type MasterPlanAndPackageTransactionReset =
-	| "Daily"
-	| "Monthly"
-	| "Yearly"
-	| "When Consumed";
+export type MasterPlanAndPackageScope = "ONBOARDING" | "ADDITIONAL_COMPANY";
 
 export type MasterPlanAndPackageReductionTier = {
 	reductionPercent: number;
 	thresholdCount: number;
 };
 
-export type MasterPlanAndPackagePricing =
-	| {
-			amount: number;
-			kind: "Monthly";
-	  }
-	| {
-			amount: number;
-			intervalMonths: number;
-			kind: "Interval";
-	  }
-	| {
-			amount: number;
-			kind: "Yearly";
-	  }
-	| {
-			amount: number;
-			kind: "Transactional";
-			reset: MasterPlanAndPackageTransactionReset;
-			transactionLimit: number;
-	  }
-	| {
-			appliesFrom: number;
-			appliesTo: number;
-			baseAmount: number;
-			kind: "Percent Off";
-			percentOff: number;
-	  };
+export type MasterPlanAndPackagePricing = {
+	monthlyBasePrice: number;
+	monthlyPercentOff: number;
+	yearlyBasePrice: number;
+	yearlyPercentOff: number;
+};
 
-export type MasterPlanAndPackageScaleRule =
-	| {
-			kind: "Range";
-			maxCount: number;
-			minCount: number;
-	  }
-	| {
-			addOnPrice: number;
-			includedFreeCount: number;
-			kind: "Add-on";
-	  }
-	| {
-			kind: "Reduction";
-			tiers: MasterPlanAndPackageReductionTier[];
-	  };
+export type MasterPlanAndPackageScaleRule = {
+	addOnPrice: number;
+	includedFreeCount: number;
+	reductionTiers: MasterPlanAndPackageReductionTier[];
+};
 
-export type MasterPlanAndPackageScalePricing = Record<
+export type MasterPlanAndPackageScaleRules = Record<
 	MasterPlanAndPackageScaleUnit,
 	MasterPlanAndPackageScaleRule
 >;
+
+export type MasterPlanAndPackageScalePricing = MasterPlanAndPackageScaleRules;
 
 export type MasterPlanAndPackageFeatureOption = {
 	description: string;
@@ -79,48 +39,37 @@ export type MasterPlanAndPackageFeatureOption = {
 };
 
 export type MasterPlanAndPackageRecord = {
+	code: string;
 	description: string;
 	featureIds: string[];
 	id: string;
 	name: string;
 	pricing: MasterPlanAndPackagePricing;
 	scalePricing: MasterPlanAndPackageScalePricing;
+	scope: MasterPlanAndPackageScope;
 	status: MasterPlanAndPackageStatus;
+	trialDays: number;
 };
 
 export type MasterPlanAndPackageFormValues = {
-	amount: number;
-	baseAmount: number;
-	branchAddOnPrice: number;
-	branchIncludedFree: number;
-	branchLimitKind: MasterPlanAndPackageScaleKind;
-	branchMax: number;
-	branchMin: number;
-	branchReductionTiers: MasterPlanAndPackageReductionTier[];
-	companyAddOnPrice: number;
-	companyIncludedFree: number;
-	companyLimitKind: MasterPlanAndPackageScaleKind;
-	companyMax: number;
-	companyMin: number;
-	companyReductionTiers: MasterPlanAndPackageReductionTier[];
+	code: string;
 	description: string;
-	discountAppliesFrom: number;
-	discountAppliesTo: number;
 	featureIds: string[];
 	id?: string;
-	intervalMonths: number;
+	branchAddOnPrice: number;
+	branchIncludedFree: number;
+	branchReductionTiers: MasterPlanAndPackageReductionTier[];
+	monthlyBasePrice: number;
+	monthlyPercentOff: number;
 	name: string;
-	percentOff: number;
-	pricingKind: MasterPlanAndPackagePricingKind;
+	scope: MasterPlanAndPackageScope;
 	status: MasterPlanAndPackageStatus;
-	transactionLimit: number;
-	transactionReset: MasterPlanAndPackageTransactionReset;
+	trialDays: number;
 	userAddOnPrice: number;
 	userIncludedFree: number;
-	userLimitKind: MasterPlanAndPackageScaleKind;
-	userMax: number;
-	userMin: number;
 	userReductionTiers: MasterPlanAndPackageReductionTier[];
+	yearlyBasePrice: number;
+	yearlyPercentOff: number;
 };
 
 export type MasterPlanAndPackageFormErrors = Partial<

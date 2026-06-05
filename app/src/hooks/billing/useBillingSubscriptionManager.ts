@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   InitialBillingPaymentFormValues,
   type BillingCycle,
@@ -20,8 +19,7 @@ import {
 } from "@/app/src/services/billing/BillingApi";
 import { BillingQueryKeys } from "@/app/src/services/billing/BillingQueryKeys";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
-import { useBillingPlansQuery } from "@/app/src/hooks/billing/useBillingPlansQuery";
-import { useCurrentBillingSubscriptionQuery } from "@/app/src/hooks/billing/useCurrentBillingSubscriptionQuery";
+import { useBillingSubscriptionSetupQuery } from "@/app/src/hooks/billing/useBillingSubscriptionSetupQuery";
 
 function GetBlockingSubscriptionStatuses() {
   return new Set(["INCOMPLETE", "TRIALING", "ACTIVE", "PAST_DUE", "UNPAID"]);
@@ -30,7 +28,7 @@ function GetBlockingSubscriptionStatuses() {
 export function useBillingSubscriptionManager() {
   const queryClient = useQueryClient();
   const storedAccessToken = useAppStore((state) => state.accessToken);
-  const accessToken = storedAccessToken ?? GetAccessToken();
+  const accessToken = storedAccessToken;
   const [selectedPlanCode, setSelectedPlanCode] = useState<string>("");
   const [selectedBillingCycle, setSelectedBillingCycle] =
     useState<BillingCycle>("monthly");
@@ -41,23 +39,21 @@ export function useBillingSubscriptionManager() {
     {},
   );
 
-  const plansQuery = useBillingPlansQuery({ accessToken });
-  const currentSubscriptionQuery = useCurrentBillingSubscriptionQuery({
+  const planScope = "ONBOARDING";
+  const subscriptionSetupQuery = useBillingSubscriptionSetupQuery({
     accessToken,
+    scope: planScope,
   });
   const resolvedSelectedPlanCode =
-    selectedPlanCode || plansQuery.data?.plans[0]?.code || "";
-  const currentSubscription = currentSubscriptionQuery.data?.subscription ?? null;
+    selectedPlanCode || subscriptionSetupQuery.data?.plans[0]?.code || "";
+  const currentSubscription =
+    subscriptionSetupQuery.data?.subscription ?? null;
   const hasBlockingSubscription = currentSubscription
     ? GetBlockingSubscriptionStatuses().has(currentSubscription.status)
     : false;
 
   const subscribeMutation = useMutation({
     mutationFn: async () => {
-      if (!accessToken) {
-        throw new Error("You need to sign in before managing billing.");
-      }
-
       const paymentValidation = validateBillingPaymentForm(paymentValues);
 
       if (!resolvedSelectedPlanCode) {
@@ -74,7 +70,7 @@ export function useBillingSubscriptionManager() {
 
       setPaymentErrors({});
 
-      const subscriptionResponse = await SubscribeCompanyToPlan(accessToken, {
+      const subscriptionResponse = await SubscribeCompanyToPlan({
         planCode: resolvedSelectedPlanCode,
         billingCycle: GetBillingCycleApiValue(selectedBillingCycle),
       });
@@ -83,7 +79,6 @@ export function useBillingSubscriptionManager() {
       );
 
       return AttachCompanySubscriptionPaymentMethod(
-        accessToken,
         subscriptionResponse.subscription.id,
         {
           paymentMethodId: paymentMethod.paymentMethodId,
@@ -93,10 +88,13 @@ export function useBillingSubscriptionManager() {
     onSuccess: async (response) => {
       await Promise.all([
         queryClient.invalidateQueries({
+          queryKey: BillingQueryKeys.subscriptionSetup(planScope),
+        }),
+        queryClient.invalidateQueries({
           queryKey: BillingQueryKeys.currentSubscription(),
         }),
         queryClient.invalidateQueries({
-          queryKey: BillingQueryKeys.plans(),
+          queryKey: BillingQueryKeys.plans(planScope),
         }),
       ]);
 
@@ -123,22 +121,23 @@ export function useBillingSubscriptionManager() {
 
   const cancelSubscriptionMutation = useMutation({
     mutationFn: async (cancelAtPeriodEnd: boolean) => {
-      if (!accessToken) {
-        throw new Error("You need to sign in before managing billing.");
-      }
-
       if (!currentSubscription) {
         throw new Error("There is no current subscription to cancel.");
       }
 
-      return CancelCompanySubscription(accessToken, currentSubscription.id, {
+      return CancelCompanySubscription(currentSubscription.id, {
         cancelAtPeriodEnd,
       });
     },
     onSuccess: async (response) => {
-      await queryClient.invalidateQueries({
-        queryKey: BillingQueryKeys.currentSubscription(),
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: BillingQueryKeys.subscriptionSetup(planScope),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: BillingQueryKeys.currentSubscription(),
+        }),
+      ]);
       toast.success(response.message);
     },
     onError: (error) => {
@@ -152,19 +151,18 @@ export function useBillingSubscriptionManager() {
 
   return {
     accessToken,
-    plans: plansQuery.data?.plans ?? [],
+    plans: subscriptionSetupQuery.data?.plans ?? [],
     selectedPlanCode: resolvedSelectedPlanCode,
     selectedBillingCycle,
     paymentValues,
     paymentErrors,
     currentSubscription,
     isLoading:
-      plansQuery.isLoading ||
-      currentSubscriptionQuery.isLoading ||
+      subscriptionSetupQuery.isLoading ||
       subscribeMutation.isPending ||
       cancelSubscriptionMutation.isPending,
-    isPlansLoading: plansQuery.isLoading,
-    isSubscriptionLoading: currentSubscriptionQuery.isLoading,
+    isPlansLoading: subscriptionSetupQuery.isLoading,
+    isSubscriptionLoading: subscriptionSetupQuery.isLoading,
     isSubmitting: subscribeMutation.isPending,
     isCancelling: cancelSubscriptionMutation.isPending,
     hasBlockingSubscription,
@@ -184,10 +182,7 @@ export function useBillingSubscriptionManager() {
       }));
     },
     retryQueries: async () => {
-      await Promise.all([
-        plansQuery.refetch(),
-        currentSubscriptionQuery.refetch(),
-      ]);
+      await subscriptionSetupQuery.refetch();
     },
     startSubscriptionSetup: () => {
       subscribeMutation.mutate();

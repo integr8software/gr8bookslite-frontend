@@ -52,9 +52,13 @@ export const WarehouseManagementTableColumns: Array<
 			className: string;
 	  }
 > = [
+	{ key: "code", label: "Warehouse Code", className: "w-[12rem]" },
 	{ key: "name", label: "Warehouse", className: "w-[18rem]" },
-	{ key: "branchName", label: "Branch", className: "w-[14rem]" },
-	{ key: "availability", label: "Availability", className: "w-[14rem]" },
+	{
+		key: "availableBranchLabel",
+		label: "Available Branches",
+		className: "w-[18rem]",
+	},
 	{ key: "managerName", label: "Manager", className: "w-[14rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
 	{ id: "actions", label: "Actions", className: "w-[14rem]" },
@@ -64,7 +68,7 @@ export const WarehouseFormPageCopy = {
 	add: {
 		title: "Add Warehouse",
 		description:
-			"Create a warehouse location and assign its operating branch and manager.",
+			"Create a warehouse location and assign its available branches and manager.",
 	},
 	edit: {
 		title: "Edit Warehouse",
@@ -74,7 +78,7 @@ export const WarehouseFormPageCopy = {
 	view: {
 		title: "Warehouse Management",
 		description:
-			"Review warehouse information, branch availability, and access assignments.",
+			"Review warehouse information, available branches, and access assignments.",
 	},
 } as const;
 

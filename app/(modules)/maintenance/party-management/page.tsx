@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { PartyManagementMain } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementPage";
+import { PartyManagementListPage } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementListPage";
 
 const PageTitle = "Party Management";
 
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function MaintenancePartyManagementPage() {
-  return <PartyManagementMain />;
+  return <PartyManagementListPage />;
 }

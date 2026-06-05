@@ -1,13 +1,9 @@
-import type { Metadata } from "next";
 import { AppToaster } from "@/app/src/ui/shared/app/AppToaster";
 import { AppProviders } from "@/app/src/ui/shared/app/AppProviders";
-import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { AppMetadata } from "@/app/src/constants/shared/app/AppMetadata";
 import "./globals.css";
 
-export const metadata: Metadata = {
-	title: AppName,
-	description: `${AppName} frontend`,
-};
+export const metadata = AppMetadata;
 
 export default function RootLayout({
 	children,
@@ -15,7 +11,7 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" className="h-full antialiased">
+		<html lang="en" className="h-full antialiased" data-scroll-behavior="smooth">
 			<body className="min-h-full flex flex-col">
 				<AppProviders>
 					{children}

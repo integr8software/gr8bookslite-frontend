@@ -1,190 +1,185 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { Download, Link2, Percent, Plus, Tags, Upload } from "lucide-react";
-import { DiscountManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
+import { CheckCircle2, Download, Percent, Plus, Power, Upload } from "lucide-react";
 import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagement";
-import type { DiscountManagementTableRecord } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
+	ModuleHeader,
+	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import {
-  ModuleTableResetButton,
-  ModuleTableFilterSelect,
-  ModuleTableSearch,
-  ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+	ModuleTableResetButton,
+	ModuleTableFilterSelect,
+	ModuleTableSearch,
+	ModuleTableToolbar,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { DiscountManagementTable } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementTable";
+import { DiscountManagementDrawer } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementDrawer";
+import type { Discount } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
+
+type DrawerState = { mode: "add" | "edit" | "view"; discount?: Discount } | null;
 
 export function DiscountManagementListPage() {
-  const discounts = useDiscountManagementStore((state) => state.discounts);
-  const deleteDiscount = useDiscountManagementStore(
-    (state) => state.deleteDiscount,
-  );
-  const isLoading = useDiscountManagementStore((state) => state.isLoading);
-  const isMutating = useDiscountManagementStore((state) => state.isMutating);
-  const [pendingDelete, setPendingDelete] =
-    useState<DiscountManagementTableRecord | null>(null);
-  const [query, setQuery] = useState("");
-  const [mappingFilter, setMappingFilter] = useState("All");
-  const filteredDiscounts = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+	const discounts = useDiscountManagementStore((state) => state.discounts);
+	const updateDiscount = useDiscountManagementStore((state) => state.updateDiscount);
+	const isLoading = useDiscountManagementStore((state) => state.isLoading);
+	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	const [query, setQuery] = useState("");
+	const [statusFilter, setStatusFilter] = useState("All");
+	useMaintenanceAddDrawerSpotlight(
+		() => setDrawerState({ mode: "add" }),
+		() => setDrawerState(null),
+	);
+	const filteredDiscounts = useMemo(() => {
+		const normalizedQuery = query.trim().toLowerCase();
 
-    return discounts.filter((discount) => {
-      const matchesMapping =
-        mappingFilter === "All" ||
-        (mappingFilter === "Mapped" && Boolean(discount.accountId)) ||
-        (mappingFilter === "Unmapped" && !discount.accountId);
+		return discounts.filter((discount) => {
+			const matchesStatus =
+				statusFilter === "All" || discount.status === statusFilter;
 
-      if (!matchesMapping) {
-        return false;
-      }
+			if (!matchesStatus) {
+				return false;
+			}
 
-      if (!normalizedQuery) {
-        return true;
-      }
+			if (!normalizedQuery) {
+				return true;
+			}
 
-      return [
-        discount.description,
-        String(discount.percentage),
-        discount.accountCode,
-        discount.accountTitle,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedQuery);
-    });
-  }, [discounts, mappingFilter, query]);
+			return [
+				discount.name ?? discount.description,
+				discount.description,
+				discount.discountType,
+				String(discount.amount),
+				(discount.moduleNames ?? []).join(" "),
+				discount.status,
+				discount.accountCode,
+				discount.accountTitle,
+			]
+				.join(" ")
+				.toLowerCase()
+				.includes(normalizedQuery);
+		});
+	}, [discounts, statusFilter, query]);
 
-  function handleConfirmDelete() {
-    if (!pendingDelete) {
-      return;
-    }
+	function resetFilters() {
+		setStatusFilter("All");
+		setQuery("");
+	}
 
-    deleteDiscount(pendingDelete.id);
-    setPendingDelete(null);
-  }
+	function toggleDiscountStatus(discount: Discount) {
+		updateDiscount({
+			...discount,
+			status: discount.status === "Active" ? "Inactive" : "Active",
+		});
+	}
 
-  function resetFilters() {
-    setMappingFilter("All");
-    setQuery("");
-  }
+	return (
+		<section className="grid gap-5">
+			<ModuleHeader
+				variant="panel"
+				titleAs="h1"
+				title="Discount Management"
+				description="Maintain discount definitions and map them to chart of accounts."
+				eyebrow={
+					<>
+						<Percent className="h-3.5 w-3.5" aria-hidden="true" />
+						Accounting master data
+					</>
+				}
+				actions={<DiscountManagementHeaderActions onAdd={() => setDrawerState({ mode: "add" })} />}
+			/>
 
-  return (
-    <section className="grid gap-5">
-      <ModuleHeader
-        variant="panel"
-        titleAs="h1"
-        title="Discount Management"
-        description="Maintain discount definitions and map them to chart of accounts."
-        eyebrow={
-          <>
-            <Percent className="h-3.5 w-3.5" aria-hidden="true" />
-            Accounting master data
-          </>
-        }
-        actions={<DiscountManagementHeaderActions />}
-      />
+			<ModuleMetrics
+				metrics={[
+					{
+						helper: "All discount definitions",
+						icon: Percent,
+						label: "Total Discounts",
+						value: discounts.length,
+					},
+					{
+						helper: "Available for transactions",
+						icon: CheckCircle2,
+						label: "Active Discounts",
+						tone: "emerald",
+						value: discounts.filter((discount) =>
+							discount.status === "Active",
+						).length,
+					},
+					{
+						helper: "Hidden from new transactions",
+						icon: Power,
+						label: "Inactive Discounts",
+						tone: "amber",
+						value: discounts.filter((discount) =>
+							discount.status === "Inactive",
+						).length,
+					},
+				]}
+			/>
 
-      <ModuleMetrics
-        metrics={[
-          {
-            helper: "All discount definitions",
-            icon: Percent,
-            label: "Total Discounts",
-            value: discounts.length,
-          },
-          {
-            helper: "Mapped to chart accounts",
-            icon: Link2,
-            label: "Mapped Discounts",
-            tone: "emerald",
-            value: discounts.filter((discount) => Boolean(discount.accountId)).length,
-          },
-          {
-            helper: "Average discount rate",
-            icon: Tags,
-            label: "Average Discount",
-            tone: "amber",
-            value:
-              discounts.length === 0
-                ? "0%"
-                : `${Math.round(
-                    discounts.reduce(
-                      (total, discount) => total + discount.percentage,
-                      0,
-                    ) / discounts.length,
-                  )}%`,
-          },
-        ]}
-      />
-
-      <DiscountManagementTable
-        discounts={filteredDiscounts}
-        isLoading={isLoading}
-        toolbar={
-          <ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
-            <ModuleTableSearch
-              label="Search discounts"
-              value={query}
-              onChange={setQuery}
-              placeholder="Search by description, rate, or account"
-            />
-            <ModuleTableFilterSelect
-              label="Account Mapping"
-              value={mappingFilter}
-              options={[
-                { label: "All mappings", value: "All" },
-                { label: "Mapped", value: "Mapped" },
-                { label: "Unmapped", value: "Unmapped" },
-              ]}
-              onChange={setMappingFilter}
-            />
-            <ModuleTableResetButton onClick={resetFilters}>
-              Reset
-            </ModuleTableResetButton>
-          </ModuleTableToolbar>
-        }
-        onDeleteDiscount={setPendingDelete}
-      />
-
-      <AppDialog
-        isOpen={Boolean(pendingDelete)}
-        isPending={isMutating}
-        title="Delete discount?"
-        description={`This will remove ${pendingDelete?.description ?? "the selected discount"}.`}
-        confirmLabel="Delete"
-        tone="danger"
-        onCancel={() => setPendingDelete(null)}
-        onConfirm={handleConfirmDelete}
-      />
-    </section>
-  );
+			<DiscountManagementTable
+				discounts={filteredDiscounts}
+				isLoading={isLoading}
+				toolbar={
+					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
+						<ModuleTableSearch
+							label="Search discounts"
+							value={query}
+							onChange={setQuery}
+							placeholder="Search by name, description, value, module, or account"
+						/>
+						<ModuleTableFilterSelect
+							label="Status"
+							value={statusFilter}
+							options={[
+								{ label: "All", value: "All" },
+								{ label: "Active", value: "Active" },
+								{ label: "Inactive", value: "Inactive" },
+							]}
+							onChange={setStatusFilter}
+						/>
+						<ModuleTableResetButton onClick={resetFilters}>
+							Reset
+						</ModuleTableResetButton>
+					</ModuleTableToolbar>
+				}
+				onEditDiscount={(discount) => setDrawerState({ mode: "edit", discount })}
+				onToggleStatus={toggleDiscountStatus}
+				onViewDiscount={(discount) => setDrawerState({ mode: "view", discount })}
+			/>
+			<DiscountManagementDrawer discount={drawerState?.discount} isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} />
+		</section>
+	);
 }
 
-function DiscountManagementHeaderActions() {
-  return (
-    <>
-      <button type="button" className={moduleHeaderActionClassNames.secondary}>
-        <Upload className="h-4 w-4" aria-hidden="true" />
-        Import
-      </button>
-      <button type="button" className={moduleHeaderActionClassNames.secondary}>
-        <Download className="h-4 w-4" aria-hidden="true" />
-        Export
-      </button>
-      <Link
-        href={`${DiscountManagementHref}/add`}
-        className={moduleHeaderActionClassNames.primary}
-      >
-        <Plus className="h-4 w-4" aria-hidden="true" />
-        Add Discount
-      </Link>
-    </>
-  );
+function DiscountManagementHeaderActions({ onAdd }: { onAdd: () => void }) {
+	return (
+		<>
+			<button
+				type="button"
+				className={moduleHeaderActionClassNames.secondary}
+			>
+				<Upload className="h-4 w-4" aria-hidden="true" />
+				Import
+			</button>
+			<button
+				type="button"
+				className={moduleHeaderActionClassNames.secondary}
+			>
+				<Download className="h-4 w-4" aria-hidden="true" />
+				Export
+			</button>
+			<button
+				type="button"
+				onClick={onAdd}
+				className={moduleHeaderActionClassNames.primary}
+			>
+				<Plus className="h-4 w-4" aria-hidden="true" />
+				Add Discount
+			</button>
+		</>
+	);
 }
-

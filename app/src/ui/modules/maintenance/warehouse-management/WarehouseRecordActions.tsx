@@ -9,16 +9,18 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type WarehouseRecordActionsProps = {
 	warehouse: WarehouseRecord;
 	onDeleteWarehouse: (warehouse: WarehouseRecord) => void;
+	onEditWarehouse: (warehouse: WarehouseRecord) => void;
 };
 
 export function WarehouseRecordActions({
 	warehouse,
 	onDeleteWarehouse,
+	onEditWarehouse,
 }: WarehouseRecordActionsProps) {
 	return (
 		<ModuleTableActions>
@@ -27,9 +29,9 @@ export function WarehouseRecordActions({
 				href={`${WarehouseManagementHref}/view/${warehouse.id}`}
 				label={`View ${warehouse.name}`}
 			/>
-			<ModuleTableActionLink
+			<ModuleTableActionButton
 				variant="edit"
-				href={`${WarehouseManagementHref}/edit/${warehouse.id}`}
+				onClick={() => onEditWarehouse(warehouse)}
 				label={`Edit ${warehouse.name}`}
 			/>
 			<ModuleTableActionLink

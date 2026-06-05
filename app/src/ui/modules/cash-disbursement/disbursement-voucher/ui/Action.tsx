@@ -13,15 +13,12 @@ import {
   FileText,
   Paperclip,
   Percent,
-  Trash2,
   X,
 } from "lucide-react";
 import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
-  DisbursementVoucherInitialEntryDraft,
-  createAttachmentPlaceholders,
+  createTaxDetails,
   createAutoDisbursementLineEntries,
-  createDisbursementLineEntry,
   createDisbursementVoucherFormValues,
   createDisbursementVoucherFromForm,
   formatTaxRateSummary,
@@ -32,7 +29,6 @@ import {
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import {
-  validateDisbursementEntryDraft,
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
@@ -42,20 +38,21 @@ import type {
   DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementVoucherActionMode,
-  DisbursementVoucherEntryDraft,
   DisbursementVoucherFormErrors,
   DisbursementVoucherFormValues,
   DisbursementVoucherRecord,
+  DisbursementVoucherPreviewRow,
   WorkflowStep,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherActionHeader";
+import { DisbursementVoucherDrawer } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherDrawer";
 import { DisbursementVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherNotFound";
-
-const FieldInputClassName =
-  "h-12 w-full rounded-2xl border border-darknavy/12 bg-white px-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:bg-skyblue/6";
-
-const AccentPrimaryButtonClassName =
-  "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20";
+import {
+  ModuleDataEntry,
+  type ModuleDataEntryClearAction,
+  type ModuleDataEntryColumn,
+} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function DisbursementVoucherAction() {
   return (
@@ -66,9 +63,13 @@ export function DisbursementVoucherAction() {
 }
 
 type TaxEditorTarget =
-  | { kind: "draft" }
-  | { kind: "entry"; entryId: string }
+  { kind: "entry"; entryId: string }
   | null;
+
+type DrawerState = {
+  mode: "add" | "edit";
+  row?: DisbursementVoucherPreviewRow;
+} | null;
 
 function DisbursementVoucherActionInner() {
   const router = useRouter();
@@ -92,8 +93,7 @@ function DisbursementVoucherActionInner() {
     mode === "add"
       ? (searchParams.get("transactionId") ?? "")
       : (params.recordId ?? "");
-  const [selectedTransactionId, setSelectedTransactionId] =
-    useState(initialTransactionId);
+  const selectedTransactionId = initialTransactionId;
   const selectedTransaction = transactions.find(
     (transaction) => transaction.id === selectedTransactionId,
   );
@@ -104,14 +104,12 @@ function DisbursementVoucherActionInner() {
     createDisbursementVoucherFormValues(selectedTransaction, existingVoucher),
   );
   const [errors, setErrors] = useState<DisbursementVoucherFormErrors>({});
-  const [entryDraft, setEntryDraft] = useState<DisbursementVoucherEntryDraft>(
-    DisbursementVoucherInitialEntryDraft,
-  );
   const [step, setStep] = useState<WorkflowStep>("details");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [taxEditorTarget, setTaxEditorTarget] = useState<TaxEditorTarget>(null);
   const [taxEditorValues, setTaxEditorValues] =
     useState<DisbursementTaxDetails | null>(null);
+  const [drawerState, setDrawerState] = useState<DrawerState>(null);
   const isReadonly = mode === "view";
   const totalDebit = useMemo(
     () => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0),
@@ -144,78 +142,6 @@ function DisbursementVoucherActionInner() {
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  function handleDraftChange(nextDraft: DisbursementVoucherEntryDraft) {
-    const amount =
-      Number(nextDraft.debit || 0) || Number(nextDraft.credit || 0);
-
-    setEntryDraft({
-      ...nextDraft,
-      taxDetails: syncTaxDetailsAmount(
-        nextDraft.taxDetails,
-        amount,
-        nextDraft.taxRate,
-      ),
-    });
-  }
-
-  function handleSelectTransaction(nextTransactionId: string) {
-    if (isReadonly) {
-      return;
-    }
-
-    const nextTransaction = transactions.find(
-      (transaction) => transaction.id === nextTransactionId,
-    );
-
-    setSelectedTransactionId(nextTransactionId);
-    setValues((current) => {
-      const nextValues = createDisbursementVoucherFormValues(nextTransaction);
-
-      return {
-        ...nextValues,
-        remarks: current.remarks || nextValues.remarks,
-        lineEntries:
-          current.lineEntries.length > 0
-            ? current.lineEntries
-            : nextTransaction
-              ? createAutoDisbursementLineEntries(nextTransaction)
-              : [],
-        attachments:
-          current.attachments.length > 0
-            ? current.attachments
-            : nextTransaction
-              ? createAttachmentPlaceholders(nextTransaction)
-              : [],
-      };
-    });
-    setErrors((current) => ({ ...current, transactionId: undefined }));
-  }
-
-  function handleProceedFromDetails() {
-    const nextErrors = validateDisbursementVoucherDetails(values);
-
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
-      return;
-    }
-
-    if (values.attachments.length === 0 && selectedTransaction) {
-      updateField(
-        "attachments",
-        createAttachmentPlaceholders(selectedTransaction),
-      );
-    }
-
-    if (values.lineEntries.length === 0 && selectedTransaction) {
-      updateField(
-        "lineEntries",
-        createAutoDisbursementLineEntries(selectedTransaction),
-      );
-    }
-
-    setStep("entries");
-  }
-
   function handleProceedFromEntries() {
     const nextErrors = validateDisbursementVoucherEntries(values);
 
@@ -227,19 +153,32 @@ function DisbursementVoucherActionInner() {
     setStep("review");
   }
 
-  function handleAddEntry() {
-    const nextError = validateDisbursementEntryDraft(entryDraft);
+  function handleRemoveEntry(entryId: string) {
+    updateField(
+      "lineEntries",
+      values.lineEntries.filter((entry) => entry.id !== entryId),
+    );
+  }
 
-    if (nextError) {
-      setErrors((current) => ({ ...current, entryDraft: nextError }));
-      return;
-    }
+  function createBlankEntry(): DisbursementLineEntry {
+    return {
+      accountCode: "",
+      accountName: "",
+      credit: 0,
+      debit: 0,
+      id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      particulars: "",
+      status: "Pending",
+      taxDetails: createTaxDetails(0, "0%"),
+      taxRate: "0%",
+    };
+  }
 
+  function handleAddEntries(count = 1) {
     updateField("lineEntries", [
       ...values.lineEntries,
-      createDisbursementLineEntry(entryDraft),
+      ...Array.from({ length: count }, createBlankEntry),
     ]);
-    setEntryDraft(DisbursementVoucherInitialEntryDraft);
     setErrors((current) => ({
       ...current,
       entryDraft: undefined,
@@ -247,11 +186,101 @@ function DisbursementVoucherActionInner() {
     }));
   }
 
-  function handleRemoveEntry(entryId: string) {
+  function handleUpdateEntry(
+    entryId: string,
+    field: keyof DisbursementLineEntry,
+    value: string | number,
+  ) {
     updateField(
       "lineEntries",
-      values.lineEntries.filter((entry) => entry.id !== entryId),
+      values.lineEntries.map((entry) => {
+        if (entry.id !== entryId) {
+          return entry;
+        }
+
+        const nextEntry = { ...entry, [field]: value };
+
+        if (field === "debit" || field === "credit" || field === "taxRate") {
+          const amount = Number(nextEntry.debit || 0) || Number(nextEntry.credit || 0);
+
+          nextEntry.taxDetails = syncTaxDetailsAmount(
+            nextEntry.taxDetails,
+            amount,
+            String(nextEntry.taxRate || "0%"),
+          );
+        }
+
+        return nextEntry;
+      }),
     );
+    setErrors((current) => ({
+      ...current,
+      entryDraft: undefined,
+      lineEntries: undefined,
+    }));
+  }
+
+  function handleInsertEntry(entryId: string, position: "above" | "below") {
+    const rowIndex = values.lineEntries.findIndex((entry) => entry.id === entryId);
+    const insertIndex =
+      rowIndex === -1
+        ? values.lineEntries.length
+        : rowIndex + (position === "below" ? 1 : 0);
+    const nextEntries = [...values.lineEntries];
+
+    nextEntries.splice(insertIndex, 0, createBlankEntry());
+    updateField("lineEntries", nextEntries);
+    setErrors((current) => ({ ...current, lineEntries: undefined }));
+  }
+
+  function handleDuplicateEntry(entryId: string) {
+    const rowIndex = values.lineEntries.findIndex((entry) => entry.id === entryId);
+    const sourceEntry = values.lineEntries[rowIndex];
+
+    if (!sourceEntry) {
+      return;
+    }
+
+    const nextEntries = [...values.lineEntries];
+
+    nextEntries.splice(rowIndex + 1, 0, {
+      ...sourceEntry,
+      id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    });
+    updateField("lineEntries", nextEntries);
+    setErrors((current) => ({ ...current, lineEntries: undefined }));
+  }
+
+  function handleMoveEntry(fromEntryId: string, toEntryId: string) {
+    if (fromEntryId === toEntryId) {
+      return;
+    }
+
+    const fromIndex = values.lineEntries.findIndex(
+      (entry) => entry.id === fromEntryId,
+    );
+    const toIndex = values.lineEntries.findIndex((entry) => entry.id === toEntryId);
+
+    if (fromIndex === -1 || toIndex === -1) {
+      return;
+    }
+
+    const nextEntries = [...values.lineEntries];
+    const [movedEntry] = nextEntries.splice(fromIndex, 1);
+
+    nextEntries.splice(toIndex, 0, movedEntry);
+    updateField("lineEntries", nextEntries);
+    setErrors((current) => ({ ...current, lineEntries: undefined }));
+  }
+
+  function handleClearEntries(action: ModuleDataEntryClearAction) {
+    const nextEntries =
+      action === "all"
+        ? []
+        : values.lineEntries.filter((entry) => !shouldClearEntry(entry, action));
+
+    updateField("lineEntries", nextEntries.length > 0 ? nextEntries : [createBlankEntry()]);
+    setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
   function handleApplyAutoEntries() {
@@ -264,11 +293,6 @@ function DisbursementVoucherActionInner() {
       createAutoDisbursementLineEntries(selectedTransaction),
     );
     setErrors((current) => ({ ...current, lineEntries: undefined }));
-  }
-
-  function handleOpenDraftTaxEditor() {
-    setTaxEditorTarget({ kind: "draft" });
-    setTaxEditorValues(entryDraft.taxDetails);
   }
 
   function handleOpenEntryTaxEditor(entryId: string) {
@@ -289,26 +313,18 @@ function DisbursementVoucherActionInner() {
 
     const summary = formatTaxRateSummary(nextTaxDetails);
 
-    if (taxEditorTarget.kind === "draft") {
-      handleDraftChange({
-        ...entryDraft,
-        taxRate: summary,
-        taxDetails: nextTaxDetails,
-      });
-    } else {
-      updateField(
-        "lineEntries",
-        values.lineEntries.map((entry) =>
-          entry.id === taxEditorTarget.entryId
-            ? {
-                ...entry,
-                taxRate: summary,
-                taxDetails: nextTaxDetails,
-              }
-            : entry,
-        ),
-      );
-    }
+    updateField(
+      "lineEntries",
+      values.lineEntries.map((entry) =>
+        entry.id === taxEditorTarget.entryId
+          ? {
+              ...entry,
+              taxRate: summary,
+              taxDetails: nextTaxDetails,
+            }
+          : entry,
+      ),
+    );
 
     setTaxEditorTarget(null);
     setTaxEditorValues(null);
@@ -350,6 +366,34 @@ function DisbursementVoucherActionInner() {
     router.push(DisbursementVoucherHref);
   }
 
+  function handleOpenDrawer(nextMode: "add" | "edit") {
+    if (!selectedTransaction) {
+      return;
+    }
+
+    setDrawerState({
+      mode: nextMode,
+      row: {
+        transaction: selectedTransaction,
+        voucher: existingVoucher,
+      },
+    });
+  }
+
+  function handleCloseDrawer() {
+    setDrawerState(null);
+  }
+
+  function handleSaveDrawer(nextValues: DisbursementVoucherFormValues) {
+    if (drawerState?.mode === "edit" && existingVoucher) {
+      updateVoucher(updateDisbursementVoucherFromForm(existingVoucher, nextValues));
+    } else {
+      addVoucher(createDisbursementVoucherFromForm(nextValues));
+    }
+
+    setDrawerState(null);
+  }
+
   if (isReadonly) {
     return (
       <>
@@ -359,6 +403,10 @@ function DisbursementVoucherActionInner() {
             mode={mode}
             transaction={selectedTransaction}
             voucher={existingVoucher}
+            onCreateVoucher={() => handleOpenDrawer("add")}
+            onEditVoucher={
+              existingVoucher ? () => handleOpenDrawer("edit") : undefined
+            }
             onDeleteVoucher={
               existingVoucher ? () => setIsDeleteDialogOpen(true) : undefined
             }
@@ -378,6 +426,15 @@ function DisbursementVoucherActionInner() {
           onCancel={() => setIsDeleteDialogOpen(false)}
           onConfirm={handleConfirmDelete}
         />
+        <DisbursementVoucherDrawer
+          isOpen={Boolean(drawerState)}
+          mode={drawerState?.mode ?? "add"}
+          transaction={selectedTransaction}
+          transactions={transactions}
+          voucher={existingVoucher}
+          onClose={handleCloseDrawer}
+          onSave={handleSaveDrawer}
+        />
       </>
     );
   }
@@ -396,17 +453,19 @@ function DisbursementVoucherActionInner() {
         <div className="grid gap-6">
           {step === "entries" ? (
             <VoucherEntriesStep
-              entryDraft={entryDraft}
               errors={errors}
               entries={values.lineEntries}
               isBalanced={isBalanced}
               onApplyAutoEntries={handleApplyAutoEntries}
-              onDraftChange={handleDraftChange}
-              onOpenDraftTaxEditor={handleOpenDraftTaxEditor}
+              onAddEntries={handleAddEntries}
+              onClearEntries={handleClearEntries}
+              onDuplicateEntry={handleDuplicateEntry}
+              onInsertEntry={handleInsertEntry}
+              onMoveEntry={handleMoveEntry}
               onOpenEntryTaxEditor={handleOpenEntryTaxEditor}
+              onUpdateEntry={handleUpdateEntry}
               totalCredit={totalCredit}
               totalDebit={totalDebit}
-              onAddEntry={handleAddEntry}
               onBack={() => setStep("details")}
               onProceed={handleProceedFromEntries}
               onRemoveEntry={handleRemoveEntry}
@@ -468,58 +527,149 @@ function VoucherWorkflowSkeleton() {
   );
 }
 
-function VoucherDetailsStep({
-  errors,
-  selectedTransaction,
-  transactionOptions,
-  values,
-  onProceed,
-  onSelectTransaction,
-  onUpdateField,
-}: {
-  errors: DisbursementVoucherFormErrors;
-  selectedTransaction?: DisbursementTransactionRecord;
-  transactionOptions: DisbursementTransactionRecord[];
-  values: DisbursementVoucherFormValues;
-  onProceed: () => void;
-  onSelectTransaction: (transactionId: string) => void;
-  onUpdateField: <TKey extends keyof DisbursementVoucherFormValues>(
-    field: TKey,
-    value: DisbursementVoucherFormValues[TKey],
-  ) => void;
-}) {}
-
 function VoucherEntriesStep({
-  entryDraft,
   entries,
   errors,
   isBalanced,
+  onAddEntries,
   onApplyAutoEntries,
-  onDraftChange,
-  onOpenDraftTaxEditor,
+  onClearEntries,
+  onDuplicateEntry,
+  onInsertEntry,
+  onMoveEntry,
   onOpenEntryTaxEditor,
+  onUpdateEntry,
   totalCredit,
   totalDebit,
-  onAddEntry,
   onBack,
   onProceed,
   onRemoveEntry,
 }: {
-  entryDraft: DisbursementVoucherEntryDraft;
   entries: DisbursementLineEntry[];
   errors: DisbursementVoucherFormErrors;
   isBalanced: boolean;
+  onAddEntries: (count: number) => void;
   onApplyAutoEntries: () => void;
-  onDraftChange: (draft: DisbursementVoucherEntryDraft) => void;
-  onOpenDraftTaxEditor: () => void;
+  onClearEntries: (action: ModuleDataEntryClearAction) => void;
+  onDuplicateEntry: (entryId: string) => void;
+  onInsertEntry: (entryId: string, position: "above" | "below") => void;
+  onMoveEntry: (fromEntryId: string, toEntryId: string) => void;
   onOpenEntryTaxEditor: (entryId: string) => void;
+  onUpdateEntry: (
+    entryId: string,
+    field: keyof DisbursementLineEntry,
+    value: string | number,
+  ) => void;
   totalCredit: number;
   totalDebit: number;
-  onAddEntry: () => void;
   onBack: () => void;
   onProceed: () => void;
   onRemoveEntry: (entryId: string) => void;
 }) {
+  const columns = useMemo<ModuleDataEntryColumn<DisbursementLineEntry>[]>(
+    () => [
+      {
+        header: "Account Code",
+        id: "accountCode",
+        widthClassName: "w-[12rem]",
+        renderCell: (entry) => (
+          <EntryInput
+            value={entry.accountCode}
+            onChange={(value) =>
+              onUpdateEntry(entry.id, "accountCode", value)
+            }
+          />
+        ),
+      },
+      {
+        header: "Account Name",
+        id: "accountName",
+        widthClassName: "w-[16rem]",
+        renderCell: (entry) => (
+          <EntryInput
+            value={entry.accountName}
+            onChange={(value) =>
+              onUpdateEntry(entry.id, "accountName", value)
+            }
+          />
+        ),
+      },
+      {
+        header: "Particulars",
+        id: "particulars",
+        widthClassName: "w-[22rem]",
+        renderCell: (entry) => (
+          <EntryInput
+            value={entry.particulars}
+            onChange={(value) =>
+              onUpdateEntry(entry.id, "particulars", value)
+            }
+          />
+        ),
+      },
+      {
+        header: "Tax Rate",
+        id: "taxRate",
+        widthClassName: "w-[11rem]",
+        renderCell: (entry) => (
+          <button
+            type="button"
+            onClick={() => onOpenEntryTaxEditor(entry.id)}
+            className={joinClasses(
+              accountingCellControlClassName(),
+              "flex items-center justify-between gap-2 text-left",
+            )}
+          >
+            <span className="truncate">
+              {formatTaxRateSummary(entry.taxDetails)}
+            </span>
+            <Percent className="h-4 w-4 shrink-0 text-darknavy/45" />
+          </button>
+        ),
+      },
+      {
+        header: "Debit",
+        id: "debit",
+        widthClassName: "w-[11rem]",
+        renderCell: (entry) => (
+          <EntryNumberInput
+            value={entry.debit}
+            onChange={(value) => onUpdateEntry(entry.id, "debit", value)}
+          />
+        ),
+      },
+      {
+        header: "Credit",
+        id: "credit",
+        widthClassName: "w-[11rem]",
+        renderCell: (entry) => (
+          <EntryNumberInput
+            value={entry.credit}
+            onChange={(value) => onUpdateEntry(entry.id, "credit", value)}
+          />
+        ),
+      },
+      {
+        header: "Status",
+        id: "status",
+        widthClassName: "w-[10rem]",
+        renderCell: (entry) => (
+          <select
+            value={entry.status}
+            onChange={(event) =>
+              onUpdateEntry(entry.id, "status", event.target.value)
+            }
+            className={accountingCellControlClassName()}
+          >
+            <option value="Pending">Pending</option>
+            <option value="Balanced">Balanced</option>
+          </select>
+        ),
+      },
+    ],
+    [onOpenEntryTaxEditor, onUpdateEntry],
+  );
+
   return (
     <section className="rounded-[28px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.08)]">
       <div className="border-b border-darknavy/8 px-5 py-5 lg:px-6">
@@ -564,197 +714,60 @@ function VoucherEntriesStep({
       </div>
 
       <div className="p-5 lg:p-6">
-        <div className="overflow-hidden rounded-[22px] border border-darknavy/10">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] border-collapse text-left">
-              <thead className="bg-darknavy/[0.03] text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">
-                <tr>
-                  <th className="px-4 py-3">Account Code</th>
-                  <th className="px-4 py-3">Account Name</th>
-                  <th className="px-4 py-3">Particulars</th>
-                  <th className="px-4 py-3">Debit</th>
-                  <th className="px-4 py-3">Credit</th>
-                  <th className="px-4 py-3">Tax Rate</th>
-                  <th className="px-4 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t border-darknavy/8 bg-skyblue/6 align-top">
-                  <td className="px-4 py-4">
-                    <input
-                      value={entryDraft.accountCode}
-                      onChange={(event) =>
-                        onDraftChange({
-                          ...entryDraft,
-                          accountCode: event.target.value,
-                        })
-                      }
-                      className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
-                      placeholder="e.g. 5010-001"
-                    />
-                  </td>
-                  <td className="px-4 py-4">
-                    <input
-                      value={entryDraft.accountName}
-                      onChange={(event) =>
-                        onDraftChange({
-                          ...entryDraft,
-                          accountName: event.target.value,
-                        })
-                      }
-                      className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
-                      placeholder="Office Supplies Expense"
-                    />
-                  </td>
-                  <td className="px-4 py-4">
-                    <input
-                      value={entryDraft.particulars}
-                      onChange={(event) =>
-                        onDraftChange({
-                          ...entryDraft,
-                          particulars: event.target.value,
-                        })
-                      }
-                      className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
-                      placeholder="Describe the transaction line"
-                    />
-                  </td>
-                  <td className="px-4 py-4">
-                    <input
-                      value={entryDraft.debit}
-                      onChange={(event) =>
-                        onDraftChange({
-                          ...entryDraft,
-                          debit: event.target.value,
-                        })
-                      }
-                      className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
-                      placeholder="0.00"
-                    />
-                  </td>
-                  <td className="px-4 py-4">
-                    <input
-                      value={entryDraft.credit}
-                      onChange={(event) =>
-                        onDraftChange({
-                          ...entryDraft,
-                          credit: event.target.value,
-                        })
-                      }
-                      className={`${FieldInputClassName} h-11 rounded-xl bg-white`}
-                      placeholder="0.00"
-                    />
-                  </td>
-                  <td className="px-4 py-4">
-                    <button
-                      type="button"
-                      onClick={onOpenDraftTaxEditor}
-                      className="flex h-11 w-full items-center justify-between rounded-xl border border-darknavy/12 bg-white px-3 text-sm text-darknavy transition hover:border-skyblue/40"
-                    >
-                      <span className="truncate">
-                        {formatTaxRateSummary(entryDraft.taxDetails)}
-                      </span>
-                      <Percent className="h-4 w-4 shrink-0 text-darknavy/45" />
-                    </button>
-                  </td>
-                  <td className="px-4 py-4 text-right">
-                    <button
-                      type="button"
-                      onClick={onAddEntry}
-                      className={`${AccentPrimaryButtonClassName} h-11`}
-                    >
-                      <CirclePlus className="h-4 w-4" aria-hidden="true" />
-                      Add
-                    </button>
-                  </td>
-                </tr>
-                {errors.entryDraft ? (
-                  <tr className="border-t border-darknavy/8 bg-coralpink/8">
-                    <td
-                      colSpan={7}
-                      className="px-4 py-3 text-sm font-medium text-coralpink"
-                    >
-                      {errors.entryDraft}
-                    </td>
-                  </tr>
-                ) : null}
-                {entries.length > 0 ? (
-                  entries.map((entry) => (
-                    <tr key={entry.id} className="border-t border-darknavy/8">
-                      <td className="px-4 py-4 text-sm font-semibold text-darknavy">
-                        {entry.accountCode}
-                      </td>
-                      <td className="px-4 py-4">
-                        <p className="text-sm font-semibold text-darknavy">
-                          {entry.accountName}
-                        </p>
-                      </td>
-                      <td className="px-4 py-4 text-sm leading-6 text-darknavy/65">
-                        {entry.particulars}
-                      </td>
-                      <td className="px-4 py-4 text-sm font-semibold text-darknavy">
-                        {entry.debit > 0 ? formatCurrency(entry.debit) : "-"}
-                      </td>
-                      <td className="px-4 py-4 text-sm font-semibold text-darknavy">
-                        {entry.credit > 0 ? formatCurrency(entry.credit) : "-"}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-darknavy/65">
-                        <button
-                          type="button"
-                          onClick={() => onOpenEntryTaxEditor(entry.id)}
-                          className="inline-flex items-center gap-2 rounded-full border border-darknavy/12 bg-white px-3 py-1.5 text-xs font-semibold text-darknavy transition hover:border-skyblue/40"
-                        >
-                          <Percent className="h-3.5 w-3.5" aria-hidden="true" />
-                          {formatTaxRateSummary(entry.taxDetails)}
-                        </button>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => onRemoveEntry(entry.id)}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-coralpink transition hover:bg-coralpink/10"
-                        >
-                          <Trash2 className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="px-4 py-10 text-center text-sm text-darknavy/55"
-                    >
-                      No line entries yet. Start encoding in the first row
-                      above.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-              <tfoot className="border-t border-darknavy/8 bg-offwhite/60 text-sm font-semibold text-darknavy">
-                <tr>
-                  <td className="px-4 py-4">Totals</td>
-                  <td />
-                  <td />
-                  <td className="px-4 py-4">{formatCurrency(totalDebit)}</td>
-                  <td className="px-4 py-4">{formatCurrency(totalCredit)}</td>
-                  <td className="px-4 py-4">
-                    {entries.length} {entries.length === 1 ? "line" : "lines"}
-                  </td>
-                  <td className="px-4 py-4 text-right">
-                    {isBalanced ? "Balanced" : "Waiting for balance"}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+        <ModuleDataEntry
+          columns={columns}
+          description="Add accounting lines, adjust debit and credit amounts, reorder rows, and manage duplicate journal entries."
+          emptyRowLabel="entry"
+          error={errors.lineEntries}
+          isDraggable
+          isReadonly={false}
+          rows={entries}
+          title="Data Entry"
+          onAddRows={onAddEntries}
+          onClearRows={onClearEntries}
+          onDuplicateRow={onDuplicateEntry}
+          onInsertRow={onInsertEntry}
+          onMoveRow={onMoveEntry}
+          onRemoveRow={onRemoveEntry}
+        />
+
+        <div className="mt-4 grid gap-3 rounded-lg border border-darknavy/10 bg-offwhite/50 p-4 text-sm font-semibold text-darknavy sm:grid-cols-4">
+          <div>
+            <span className="block text-xs uppercase tracking-[0.16em] text-darknavy/45">
+              Debit
+            </span>
+            <span className="mt-1 block">{formatCurrency(totalDebit)}</span>
+          </div>
+          <div>
+            <span className="block text-xs uppercase tracking-[0.16em] text-darknavy/45">
+              Credit
+            </span>
+            <span className="mt-1 block">{formatCurrency(totalCredit)}</span>
+          </div>
+          <div>
+            <span className="block text-xs uppercase tracking-[0.16em] text-darknavy/45">
+              Variance
+            </span>
+            <span className="mt-1 block">
+              {formatCurrency(Math.abs(totalDebit - totalCredit))}
+            </span>
+          </div>
+          <div>
+            <span className="block text-xs uppercase tracking-[0.16em] text-darknavy/45">
+              Status
+            </span>
+            <span
+              className={joinClasses(
+                "mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold",
+                isBalanced
+                  ? "bg-citron/30 text-darknavy"
+                  : "bg-coralpink/12 text-coralpink",
+              )}
+            >
+              {isBalanced ? "Balanced" : "Waiting for balance"}
+            </span>
           </div>
         </div>
-
-        {errors.lineEntries ? (
-          <p className="mt-4 text-sm font-medium text-coralpink">
-            {errors.lineEntries}
-          </p>
-        ) : null}
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <button
@@ -767,13 +780,90 @@ function VoucherEntriesStep({
           <button
             type="button"
             onClick={onProceed}
-            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-full bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
+            className="theme-accent-contrast-text inline-flex h-11 items-center justify-center rounded-full bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85"
           >
             Continue to Review
           </button>
         </div>
       </div>
     </section>
+  );
+}
+
+function EntryInput({
+  onChange,
+  value,
+}: {
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  return (
+    <input
+      type="text"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className={accountingCellControlClassName()}
+    />
+  );
+}
+
+function EntryNumberInput({
+  onChange,
+  value,
+}: {
+  onChange: (value: number) => void;
+  value: number;
+}) {
+  return (
+    <input
+      type="number"
+      min="0"
+      value={value || ""}
+      onChange={(event) => onChange(Number(event.target.value))}
+      className={accountingCellControlClassName("text-right")}
+    />
+  );
+}
+
+function accountingCellControlClassName(extraClassName?: string) {
+  return joinClasses(
+    "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:bg-offwhite/45",
+    extraClassName,
+  );
+}
+
+function shouldClearEntry(
+  entry: DisbursementLineEntry,
+  action: Exclude<ModuleDataEntryClearAction, "all">,
+) {
+  if (action === "with-data") {
+    return disbursementEntryHasData(entry);
+  }
+
+  if (action === "incomplete") {
+    return disbursementEntryHasData(entry) && !disbursementEntryIsComplete(entry);
+  }
+
+  return !disbursementEntryHasData(entry);
+}
+
+function disbursementEntryHasData(entry: DisbursementLineEntry) {
+  return (
+    entry.accountCode.trim() !== "" ||
+    entry.accountName.trim() !== "" ||
+    entry.particulars.trim() !== "" ||
+    Number(entry.debit || 0) > 0 ||
+    Number(entry.credit || 0) > 0 ||
+    entry.taxRate !== "0%"
+  );
+}
+
+function disbursementEntryIsComplete(entry: DisbursementLineEntry) {
+  return (
+    entry.accountCode.trim() !== "" &&
+    entry.accountName.trim() !== "" &&
+    entry.particulars.trim() !== "" &&
+    (Number(entry.debit || 0) > 0 || Number(entry.credit || 0) > 0)
   );
 }
 
@@ -896,7 +986,7 @@ function TaxDetailsDialogEditor({
               onChange={(event) =>
                 updateTaxValue("vatCode", event.target.value)
               }
-              className={ModalFieldClassName}
+              className={`${ModalFieldClassName} app-select-control`}
             >
               <option value="">--Select VAT Rate--</option>
               <option value="VAT-0">Zero Rated</option>
@@ -914,7 +1004,7 @@ function TaxDetailsDialogEditor({
                   Number.parseFloat(event.target.value) || 0,
                 )
               }
-              className={ModalFieldClassName}
+              className={`${ModalFieldClassName} app-select-control`}
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-[10rem_1fr] sm:items-center">
@@ -974,7 +1064,7 @@ function TaxDetailsDialogEditor({
           <button
             type="button"
             onClick={() => onSave(draftValues)}
-            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85"
+            className="theme-accent-contrast-text inline-flex h-11 w-full items-center justify-center rounded-xl bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85"
           >
             Save
           </button>
@@ -985,10 +1075,10 @@ function TaxDetailsDialogEditor({
 }
 
 const ModalFieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-white px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45";
+  "app-data-entry-field app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/45";
 
 const DisabledFieldClassName =
-  "h-11 w-full rounded-md border border-darknavy/12 bg-darknavy/[0.04] px-3 text-right text-sm text-darknavy/75 outline-none";
+  "app-data-entry-field app-theme-field-readonly h-11 w-full rounded-md border px-3 text-right text-sm outline-none";
 
 function formatNumberInput(value: number) {
   return value.toLocaleString("en-US", {
@@ -1026,7 +1116,6 @@ function VoucherReviewStep({
         eyebrow="Attachments"
         title="Supporting files"
         description="This mock flow uses generated placeholders so the review layout stays realistic."
-        tone="offwhite"
       >
         <div className="rounded-[22px] border border-dashed border-darknavy/14 bg-white p-5">
           <div className="flex h-28 items-center justify-center rounded-[18px] border border-dashed border-skyblue/35 bg-skyblue/8">
@@ -1069,7 +1158,6 @@ function VoucherReviewStep({
         eyebrow="Final Review"
         title="Confirm every detail before saving"
         description="This review consolidates the transaction origin, voucher setup, and ledger entries into one approval-ready view."
-        tone="citron"
       >
         <div className="grid gap-4 xl:grid-cols-2">
           <ReviewCard title="Voucher Details">
@@ -1181,12 +1269,11 @@ function VoucherPreviewPanel({
   voucher?: DisbursementVoucherRecord;
 }) {
   return (
-    <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+    <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
       <CardShell
         eyebrow="Transaction Preview"
         title={transaction?.payee ?? "Transaction"}
         description="This panel shows the source transaction that the voucher workflow will use."
-        tone="offwhite"
       >
         <div className="grid gap-3">
           <InfoLine
@@ -1217,7 +1304,6 @@ function VoucherPreviewPanel({
             ? "A linked voucher exists for this transaction and can be reviewed or edited."
             : "This transaction is ready for voucher creation. Use New Voucher to begin the multi-step workflow."
         }
-        tone="citron"
       >
         {voucher ? (
           <>
@@ -1241,7 +1327,7 @@ function VoucherPreviewPanel({
             </div>
           </>
         ) : (
-          <div className="rounded-[22px] border border-dashed border-darknavy/14 bg-white p-6 text-sm leading-6 text-darknavy/58">
+          <div className="rounded-[18px] border border-dashed border-darknavy/14 bg-offwhite/45 p-5 text-sm leading-6 text-darknavy/62">
             No voucher has been created for this transaction yet. The New
             Voucher action will prefill the transaction details so finance can
             proceed through the guided workflow.
@@ -1257,47 +1343,25 @@ function CardShell({
   description,
   eyebrow,
   title,
-  tone = "white",
 }: {
   children: React.ReactNode;
   description: string;
   eyebrow: string;
   title: string;
-  tone?: "white" | "sky" | "citron" | "offwhite";
 }) {
   return (
     <section
-      className={`rounded-[28px] border border-darknavy/10 p-5 shadow-[0_18px_60px_rgba(33,39,56,0.08)] lg:p-6`}
+      className="min-h-[18rem] rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5 lg:p-6"
     >
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-darknavy/40">
         {eyebrow}
       </p>
-      <h3 className="mt-2 text-2xl font-semibold text-darknavy">{title}</h3>
+      <h3 className="mt-2 text-2xl font-semibold leading-tight text-darknavy">
+        {title}
+      </h3>
       <p className="mt-2 text-sm leading-6 text-darknavy/58">{description}</p>
       <div className="mt-5">{children}</div>
     </section>
-  );
-}
-
-function FieldBlock({
-  children,
-  error,
-  label,
-}: {
-  children: React.ReactNode;
-  error?: string;
-  label: string;
-}) {
-  return (
-    <label className="grid gap-2">
-      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/48">
-        {label}
-      </span>
-      {children}
-      {error ? (
-        <span className="text-sm font-medium text-coralpink">{error}</span>
-      ) : null}
-    </label>
   );
 }
 

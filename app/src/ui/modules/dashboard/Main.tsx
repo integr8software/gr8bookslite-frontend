@@ -9,13 +9,17 @@ import {
   Plus,
   Share2,
   SlidersHorizontal,
-  Sparkles,
   Users,
 } from "lucide-react";
-import { BranchDashboardSpotlightTutorialOpenEvent } from "@/app/src/data/modules/dashboard/BranchDashboardSpotlightTutorialData";
+import { MainDashboardWidgets } from "@/app/src/data/shared/main-layout/MainLayoutDefaults";
 import type { MainDashboardWidget } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
-import { hasAccess } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
-import { MainLayoutData } from "@/app/src/data/shared/main-layout/MainLayoutData";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import {
+  GetAuthProfileAccess,
+  ResolveAuthProfileEffectiveRole,
+} from "@/app/src/services/auth/AuthProfileAccess";
+import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 import { BranchDashboardSpotlightTutorial } from "@/app/src/ui/modules/dashboard/BranchDashboardSpotlightTutorial";
 
 const DashboardLibrary = [
@@ -34,15 +38,13 @@ const ActivityItems = [
 ];
 
 export function ManagementMain() {
-  const canAddDashboard = hasAccess(
-    MainLayoutData.currentUser,
-    "dashboard",
-    ["add"],
-  );
-
-  function openSpotlightTutorial() {
-    window.dispatchEvent(new Event(BranchDashboardSpotlightTutorialOpenEvent));
-  }
+  const accessToken = useAppStore((state) => state.accessToken);
+  const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
+  const { data: authProfile } = useAuthProfileQuery({
+    accessToken,
+    enabled: isAuthSessionReady,
+  });
+  const canAddDashboard = canAddDashboardFromProfile(authProfile);
 
   return (
     <div className="mx-auto flex w-full max-w-[94rem] flex-col gap-4">
@@ -63,11 +65,6 @@ export function ManagementMain() {
           </div>
 
           <div className="grid grid-cols-2 gap-2 sm:flex">
-            <ActionButton
-              icon={Sparkles}
-              label="Quick Tour"
-              onClick={openSpotlightTutorial}
-            />
             {canAddDashboard ? (
               <ActionButton
                 dataSpotlightId="branch-dashboard-add"
@@ -85,7 +82,7 @@ export function ManagementMain() {
         className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
         data-spotlight-id="branch-dashboard-summary"
       >
-        {MainLayoutData.dashboardWidgets.map((widget) => (
+        {MainDashboardWidgets.map((widget) => (
           <WidgetCard key={widget.id} widget={widget} />
         ))}
       </section>
@@ -187,6 +184,23 @@ export function ManagementMain() {
         </Panel>
       </section>
     </div>
+  );
+}
+
+function canAddDashboardFromProfile(profile: AuthProfileResponse | undefined) {
+  if (!profile) {
+    return false;
+  }
+
+  const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
+
+  if (effectiveRole === "SUPER_ADMIN" || effectiveRole === "ADMIN") {
+    return true;
+  }
+
+  return (
+    GetAuthProfileAccess(profile)?.permissions?.includes("dashboard:add") ??
+    false
   );
 }
 

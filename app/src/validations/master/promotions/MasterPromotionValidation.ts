@@ -7,6 +7,22 @@ import type {
 
 const MasterPromotionFormSchema = z
 	.object({
+		availabilityMode: z.enum(["One-time", "Recurring"]),
+		billingCycle: z.enum([
+			"Whole plan",
+			"1 billing cycle",
+			"2 billing cycles",
+			"3 billing cycles",
+			"4 billing cycles",
+			"5 billing cycles",
+			"6 billing cycles",
+			"7 billing cycles",
+			"8 billing cycles",
+			"9 billing cycles",
+			"10 billing cycles",
+			"11 billing cycles",
+			"12 billing cycles",
+		]),
 		code: z
 			.string()
 			.trim()
@@ -23,7 +39,13 @@ const MasterPromotionFormSchema = z
 		limitMode: z.enum(["Limited", "Unlimited"]),
 		name: z.string().trim().min(3, "Name must be at least 3 characters."),
 		redemptionLimit: z.number().min(0, "Limit cannot be negative."),
+		recurringAvailability: z.enum([
+			"First day of billing cycle",
+			"First day of month",
+			"First month of year",
+		]),
 		status: z.enum(["Active", "Draft", "Inactive"]),
+		startsAt: z.string().trim(),
 		targetPlanIds: z
 			.array(z.string().trim().min(1))
 			.min(1, "Select at least one target plan."),
@@ -46,6 +68,27 @@ const MasterPromotionFormSchema = z
 			context.addIssue({
 				code: "custom",
 				message: "Expiry date is required.",
+				path: ["expiresAt"],
+			});
+		}
+
+		if (values.startsAt.trim().length === 0) {
+			context.addIssue({
+				code: "custom",
+				message: "Starting date is required.",
+				path: ["startsAt"],
+			});
+		}
+
+		if (
+			values.startsAt.trim().length > 0 &&
+			values.expirationMode === "With expiration" &&
+			values.expiresAt.trim().length > 0 &&
+			values.expiresAt < values.startsAt
+		) {
+			context.addIssue({
+				code: "custom",
+				message: "Expiry date cannot be earlier than the starting date.",
 				path: ["expiresAt"],
 			});
 		}

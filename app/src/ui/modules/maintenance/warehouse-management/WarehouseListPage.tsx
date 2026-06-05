@@ -1,9 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { CheckCircle2, CirclePause, Package, Plus, Warehouse } from "lucide-react";
-import { WarehouseManagementHref } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
+import {
+	CheckCircle2,
+	CirclePause,
+	Package,
+	Plus,
+	Warehouse,
+} from "lucide-react";
 import { useWarehouseListPage } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseListPage";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
 	ModuleHeader,
@@ -13,11 +18,21 @@ import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { WarehouseTable } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseTable";
+import { WarehouseDrawer } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseDrawer";
+import { useState } from "react";
+import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
+
+type DrawerState = { mode: "add" | "edit"; warehouse?: WarehouseRecord } | null;
 
 export function WarehouseListPage() {
 	const page = useWarehouseListPage();
+	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	useMaintenanceAddDrawerSpotlight(
+		() => setDrawerState({ mode: "add" }),
+		() => setDrawerState(null),
+	);
 
 	return (
 		<section className="grid gap-5">
@@ -25,7 +40,7 @@ export function WarehouseListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Warehouse Management"
-				description="Maintain warehouses, branch availability, and access assignments by location."
+				description="Maintain warehouse codes, available branches, and access assignments by location."
 				eyebrow={
 					<>
 						<Warehouse className="h-3.5 w-3.5" aria-hidden="true" />
@@ -33,13 +48,14 @@ export function WarehouseListPage() {
 					</>
 				}
 				actions={
-					<Link
-						href={`${WarehouseManagementHref}/add`}
+					<button
+						type="button"
+						onClick={() => setDrawerState({ mode: "add" })}
 						className={moduleHeaderActionClassNames.primary}
 					>
 						<Plus className="h-4 w-4" aria-hidden="true" />
 						Add Warehouse
-					</Link>
+					</button>
 				}
 			/>
 
@@ -75,7 +91,8 @@ export function WarehouseListPage() {
 						label: "Tracked Items",
 						tone: "violet",
 						value: page.warehouses.reduce(
-							(total, warehouse) => total + warehouse.items.length,
+							(total, warehouse) =>
+								total + warehouse.items.length,
 							0,
 						),
 					},
@@ -85,6 +102,7 @@ export function WarehouseListPage() {
 			<WarehouseTable
 				isLoading={page.isLoading}
 				setPendingDeleteWarehouse={page.setPendingDeleteWarehouse}
+				onEditWarehouse={(warehouse) => setDrawerState({ mode: "edit", warehouse })}
 				table={page.table}
 				toolbar={
 					<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,1fr)]">
@@ -92,11 +110,12 @@ export function WarehouseListPage() {
 							label="Search warehouses"
 							value={page.query}
 							onChange={page.handleQueryChange}
-							placeholder="Search by warehouse, branch, availability, manager, or status"
+							placeholder="Search by code, warehouse, branch, manager, or status"
 						/>
 					</ModuleTableToolbar>
 				}
 			/>
+			<WarehouseDrawer isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} warehouse={drawerState?.warehouse} />
 
 			<AppDialog
 				isOpen={Boolean(page.pendingDeleteWarehouse)}

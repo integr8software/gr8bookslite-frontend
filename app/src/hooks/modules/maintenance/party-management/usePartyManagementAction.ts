@@ -35,6 +35,7 @@ import type {
 	PartyInformationActionMode,
 	PartyInformationFormErrors,
 	PartyInformationFormValues,
+	PartyInformationStatus,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
@@ -44,21 +45,22 @@ export function usePartyManagementAction() {
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
 	const searchParams = useSearchParams();
-	const records = usePartyManagementStore((state) => state.records);
-	const addRecord = usePartyManagementStore((state) => state.addRecord);
-	const updateRecord = usePartyManagementStore((state) => state.updateRecord);
+	const partyManagement = usePartyManagementStore();
 	const mode = getActionMode(pathname);
 	const openedFromView =
 		mode === "edit" &&
 		searchParams.get(PartyManagementEditFromParam) ===
 			PartyManagementEditFromViewValue;
-	const existingRecord = records.find((record) => record.id === params.recordId);
+	const existingRecord = partyManagement.records.find(
+		(record) => record.id === params.recordId,
+	);
 	const [values, setValues] = useState<PartyInformationFormValues>(() =>
 		existingRecord
 			? createPartyInformationFormValues(existingRecord)
 			: PartyInformationInitialFormValues,
 	);
 	const [errors, setErrors] = useState<PartyInformationFormErrors>({});
+	const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 	const addressOptions = usePhilippineAddressOptions({
 		cityMunicipalityCode: values.address.cityMunicipalityCode,
 		provinceCode: values.address.provinceCode,
@@ -66,6 +68,8 @@ export function usePartyManagementAction() {
 	});
 	const isReadonly = mode === "view";
 	const isClassificationSelected = Boolean(values.classification);
+	const nextStatus: PartyInformationStatus =
+		existingRecord?.status === "Active" ? "Inactive" : "Active";
 	const atcOptions = useMemo(
 		() => getPartyAtcCodeOptionsByClassification(values.classification),
 		[values.classification],
@@ -293,12 +297,28 @@ export function usePartyManagementAction() {
 		}
 
 		if (mode === "edit" && existingRecord) {
-			updateRecord(updatePartyInformationRecord(existingRecord, values));
+			partyManagement.updateRecord(
+				updatePartyInformationRecord(existingRecord, values),
+			);
 		} else {
-			addRecord(createPartyInformationRecord(values));
+			partyManagement.addRecord(createPartyInformationRecord(values));
 		}
 
 		router.push(mode === "edit" && openedFromView ? viewHref : PartyManagementHref);
+	}
+
+	function handleConfirmStatusChange() {
+		if (!existingRecord) {
+			return;
+		}
+
+		partyManagement.updateRecord({
+			...existingRecord,
+			status: nextStatus,
+			updatedAt: new Date().toISOString(),
+		});
+		setValues((current) => ({ ...current, status: nextStatus }));
+		setIsStatusDialogOpen(false);
 	}
 
 	return {
@@ -309,19 +329,24 @@ export function usePartyManagementAction() {
 		errors,
 		existingRecord,
 		handleAddressInputChange,
+		handleConfirmStatusChange,
 		handleInputChange,
 		handlePartyTypesChange,
 		handleSubmit,
 		isClassificationSelected,
+		isMutating: partyManagement.isMutating,
 		isReadonly,
+		isStatusDialogOpen,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
+		nextStatus,
 		partyTypeOptions: PartyTypeOptions,
 		selectBarangay,
 		selectCityMunicipality,
 		selectProvince,
 		selectRegion,
 		selectAtcCode,
+		setIsStatusDialogOpen,
 		updateField,
 		values,
 	};

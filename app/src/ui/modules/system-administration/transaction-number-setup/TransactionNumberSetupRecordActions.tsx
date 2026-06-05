@@ -5,7 +5,7 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
-} from "@/app/src/ui/shared/module/ModuleTableActions";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type TransactionNumberSetupRecordActionsProps = {
 	setup: TransactionNumberSetupRecord;

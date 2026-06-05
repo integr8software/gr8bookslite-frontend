@@ -1,7 +1,10 @@
 import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	joinClasses,
+	moduleAccentClassNames,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 type ModuleNotFoundProps<TTitleElement extends ElementType = "h2"> =
 	ComponentPropsWithoutRef<"section"> & {
@@ -50,7 +53,8 @@ export function ModuleNotFound<TTitleElement extends ElementType = "h2">({
 			{icon ? (
 				<div
 					className={joinClasses(
-						"mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-skyblue/15 text-darknavy",
+						"mb-3 flex h-10 w-10 items-center justify-center rounded-md text-darknavy",
+						moduleAccentClassNames.softBackground,
 						align === "center" ? "mx-auto" : "",
 						iconClassName,
 					)}
@@ -80,7 +84,8 @@ export function ModuleNotFound<TTitleElement extends ElementType = "h2">({
 				<Link
 					href={actionHref}
 					className={joinClasses(
-						"mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 transition hover:bg-skyblue/10 hover:text-darknavy",
+						"mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 transition hover:text-darknavy",
+						moduleAccentClassNames.hoverSoftBackground,
 						align === "center" ? "" : "",
 					)}
 				>

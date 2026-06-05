@@ -1,47 +1,42 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import { WarehouseStatusOptions } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import type {
-	WarehouseBranchAvailability,
 	WarehouseFormErrors,
 	WarehouseFormValues,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type WarehouseFieldsProps = {
-	availabilityOptions: readonly WarehouseBranchAvailability[];
 	branchOptions: readonly string[];
 	errors: WarehouseFormErrors;
 	values: WarehouseFormValues;
 	onAvailableBranchesChange: (value: string | string[]) => void;
-	onFieldChange: <TKey extends keyof WarehouseFormValues>(
-		field: TKey,
-		value: WarehouseFormValues[TKey],
-	) => void;
 	onInputChange: ChangeEventHandler<
 		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 	>;
 };
 
 export function WarehouseFields({
-	availabilityOptions,
 	branchOptions,
 	errors,
 	onAvailableBranchesChange,
-	onFieldChange,
 	onInputChange,
 	values,
 }: WarehouseFieldsProps) {
 	const branchDropdownOptions = createSimpleOptions([...branchOptions]);
-	const selectedBranchValues =
-		values.availability === "All Branches"
-			? [...branchOptions]
-			: values.availability === "Home Branch Only" && values.branchName
-				? [values.branchName]
-				: values.availableBranches;
 
 	return (
 		<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
 			<div className="grid gap-4 lg:grid-cols-2">
+				<FormField label="Warehouse Code" error={errors.code} required>
+					<input
+						name="code"
+						value={values.code}
+						onChange={onInputChange}
+						className={fieldClassName}
+						placeholder="WH-MAIN"
+					/>
+				</FormField>
 				<FormField label="Warehouse Name" error={errors.name} required>
 					<input
 						name="name"
@@ -51,42 +46,22 @@ export function WarehouseFields({
 						placeholder="Main Warehouse"
 					/>
 				</FormField>
-				<FormField label="Branch" error={errors.branchName} required>
-					<AppAdvancedDropdown
-						isClearable={false}
-						options={branchDropdownOptions}
-						placeholder="Select home branch"
-						value={values.branchName}
-						onChange={(value) => onFieldChange("branchName", String(value))}
+				<FormField label="Description" error={errors.description}>
+					<textarea
+						name="description"
+						value={values.description}
+						onChange={onInputChange}
+						className={`${fieldClassName} min-h-24 py-3`}
+						placeholder="Usage notes for this warehouse"
 					/>
 				</FormField>
-				<FormField label="Availability" error={errors.availability} required>
-					<select
-						name="availability"
-						value={values.availability}
+				<FormField label="Address" error={errors.address} required>
+					<textarea
+						name="address"
+						value={values.address}
 						onChange={onInputChange}
-						className={fieldClassName}
-					>
-						{availabilityOptions.map((availability) => (
-							<option key={availability} value={availability}>
-								{availability}
-							</option>
-						))}
-					</select>
-				</FormField>
-				<FormField
-					label="Available Branches"
-					error={errors.availableBranches}
-					required={values.availability === "Selected Branches"}
-				>
-					<AppAdvancedDropdown
-						isClearable={values.availability === "Selected Branches"}
-						options={branchDropdownOptions}
-						placeholder="Select branches"
-						readOnly={values.availability !== "Selected Branches"}
-						selectionMode="multiple"
-						value={selectedBranchValues}
-						onChange={onAvailableBranchesChange}
+						className={`${fieldClassName} min-h-24 py-3`}
+						placeholder="Warehouse address"
 					/>
 				</FormField>
 				<FormField label="Manager" error={errors.managerName} required>
@@ -107,6 +82,20 @@ export function WarehouseFields({
 						placeholder="+63 2 8123 4567"
 					/>
 				</FormField>
+				<FormField
+					label="Available Branches"
+					error={errors.availableBranches}
+					required
+				>
+					<AppAdvancedDropdown
+						isClearable
+						options={branchDropdownOptions}
+						placeholder="Select branches"
+						selectionMode="multiple"
+						value={values.availableBranches}
+						onChange={onAvailableBranchesChange}
+					/>
+				</FormField>
 				<FormField label="Status" error={errors.status} required>
 					<select
 						name="status"
@@ -120,24 +109,6 @@ export function WarehouseFields({
 							</option>
 						))}
 					</select>
-				</FormField>
-				<FormField label="Address" error={errors.address} required>
-					<textarea
-						name="address"
-						value={values.address}
-						onChange={onInputChange}
-						className={`${fieldClassName} min-h-24 py-3`}
-						placeholder="Warehouse address"
-					/>
-				</FormField>
-				<FormField label="Description" error={errors.description}>
-					<textarea
-						name="description"
-						value={values.description}
-						onChange={onInputChange}
-						className={`${fieldClassName} min-h-24 py-3`}
-						placeholder="Usage notes for this warehouse"
-					/>
 				</FormField>
 			</div>
 		</div>

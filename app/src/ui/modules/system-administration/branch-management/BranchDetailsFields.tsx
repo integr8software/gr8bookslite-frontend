@@ -13,6 +13,8 @@ import type { BranchFormErrors } from "@/app/src/types/modules/branch-manager/Br
 
 type BranchDetailsFieldsProps = {
   errors: BranchFormErrors;
+  hideMainBranchField?: boolean;
+  hideSatelliteTaxField?: boolean;
   isReadonly: boolean;
   mainBranchOptions: MainBranch[];
   values: BranchManagementFormValues;
@@ -29,6 +31,8 @@ type BranchDetailsFieldsProps = {
 
 export function BranchDetailsFields({
   errors,
+  hideMainBranchField = false,
+  hideSatelliteTaxField = false,
   isReadonly,
   mainBranchOptions,
   onInputChange,
@@ -68,6 +72,7 @@ export function BranchDetailsFields({
 
         <BranchTaxField
           errors={errors}
+          hideSatelliteTaxField={hideSatelliteTaxField}
           isReadonly={isReadonly}
           isSatellite={isSatellite}
           mainBranchOptions={mainBranchOptions}
@@ -86,18 +91,22 @@ export function BranchDetailsFields({
           />
         </BranchField>
 
-        <label className="flex min-h-11 items-center gap-3 rounded-md border border-darknavy/10 px-3">
-          <input
-            type="checkbox"
-            checked={values.isMain}
-            disabled={isSatellite || isReadonly}
-            onChange={(event) => onUpdateField("isMain", event.target.checked)}
-            className="h-4 w-4 rounded border-darknavy/20 text-skyblue"
-          />
-          <span className="text-sm font-semibold text-darknavy">
-            Mark as main branch
-          </span>
-        </label>
+        {hideMainBranchField ? null : (
+          <label className="flex min-h-11 items-center gap-3 rounded-md border border-darknavy/10 px-3">
+            <input
+              type="checkbox"
+              checked={values.isMain}
+              disabled={isSatellite || isReadonly}
+              onChange={(event) =>
+                onUpdateField("isMain", event.target.checked)
+              }
+              className="h-4 w-4 rounded border-darknavy/20 text-skyblue"
+            />
+            <span className="text-sm font-semibold text-darknavy">
+              Mark as main branch
+            </span>
+          </label>
+        )}
 
         <BranchField label="Description" className="lg:col-span-2">
           <textarea
@@ -198,6 +207,7 @@ function BranchContactFields({
 
 function BranchTaxField({
   errors,
+  hideSatelliteTaxField,
   isReadonly,
   isSatellite,
   mainBranchOptions,
@@ -205,6 +215,7 @@ function BranchTaxField({
   values,
 }: {
   errors: BranchFormErrors;
+  hideSatelliteTaxField: boolean;
   isReadonly: boolean;
   isSatellite: boolean;
   mainBranchOptions: MainBranch[];
@@ -214,9 +225,13 @@ function BranchTaxField({
   ) => void;
 }) {
   if (isSatellite) {
+    if (hideSatelliteTaxField) {
+      return null;
+    }
+
     return (
       <BranchField
-        label="Main Branch TIN"
+        label="Linked Main Branch"
         error={errors.linkedMainBranchId}
         required
       >
@@ -227,7 +242,7 @@ function BranchTaxField({
           disabled={isReadonly}
           className={branchFieldClassName}
         >
-          <option value="">Select main branch TIN</option>
+          <option value="">Select linked main branch</option>
           {mainBranchOptions.map((branch) => (
             <option key={branch.id} value={branch.id}>
               {branch.name} - {branch.tin}

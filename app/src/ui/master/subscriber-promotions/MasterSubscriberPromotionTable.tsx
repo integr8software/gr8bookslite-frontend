@@ -18,7 +18,7 @@ import {
 	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/ModuleTableToolbar";
+} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { MasterSubscriberPromotionTableRow } from "@/app/src/ui/master/subscriber-promotions/MasterSubscriberPromotionTableRow";
 
 type MasterSubscriberPromotionTableProps = Pick<
@@ -51,7 +51,9 @@ export function MasterSubscriberPromotionTable({
 				emptyIcon={<Tags className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No subscriber promotions found"
 				minWidthClassName="min-w-[96rem]"
-				paginationStorageKey={MasterSubscriberPromotionPaginationStorageKey}
+				paginationStorageKey={
+					MasterSubscriberPromotionPaginationStorageKey
+				}
 				table={table}
 				toolbar={
 					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,1fr)]">
@@ -64,10 +66,12 @@ export function MasterSubscriberPromotionTable({
 						<ModuleTableFilterSelect
 							label="Status"
 							value={statusFilter}
-							options={MasterSubscriberPromotionStatusOptions.map((option) => ({
-								label: option,
-								value: option,
-							}))}
+							options={MasterSubscriberPromotionStatusOptions.map(
+								(option) => ({
+									label: option,
+									value: option,
+								}),
+							)}
 							onChange={(value) =>
 								setStatusFilter(
 									value as MasterSubscriberPromotionStatusFilter,
@@ -84,7 +88,9 @@ export function MasterSubscriberPromotionTable({
 								}),
 							)}
 							onChange={(value) =>
-								setModeFilter(value as MasterSubscriberPromotionModeFilter)
+								setModeFilter(
+									value as MasterSubscriberPromotionModeFilter,
+								)
 							}
 						/>
 						<ModuleTableResetButton onClick={resetFilters}>

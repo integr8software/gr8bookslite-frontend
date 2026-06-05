@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Pencil, Plus, Search, ToggleLeft, ToggleRight, X } from "lucide-react";
+import {
+  Eye,
+  Pencil,
+  Plus,
+  Search,
+  ToggleLeft,
+  ToggleRight,
+  X,
+} from "lucide-react";
 import type { DisbursementPaymentMethod } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
 type PaymentTypeStatus = "Active" | "Inactive";
@@ -119,7 +127,7 @@ const fieldClassName =
   "h-11 w-full rounded-xl border border-darknavy/12 bg-white px-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/20";
 
 const accentPrimaryButtonClassName =
-  "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_30px_rgb(var(--skyblue-rgb)/0.24)] transition hover:bg-skyblue/85";
+  "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-xl bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85";
 
 export function AppPaymentTypeDialog({
   isOpen,
@@ -129,7 +137,9 @@ export function AppPaymentTypeDialog({
   onSelect,
 }: AppPaymentTypeDialogProps) {
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"All" | PaymentTypeStatus>("Active");
+  const [statusFilter, setStatusFilter] = useState<"All" | PaymentTypeStatus>(
+    "Active",
+  );
   const [mode, setMode] = useState<PaymentTypeDialogMode>("list");
   const [activeRecordId, setActiveRecordId] = useState<string | null>(null);
   const [draft, setDraft] = useState<PaymentTypeDraft>({
@@ -149,7 +159,12 @@ export function AppPaymentTypeDialog({
     setStatusFilter("Active");
     setMode("list");
     setActiveRecordId(null);
-    setDraft({ paymentType: "", withBank: "", accountCode: "", accountTitle: "" });
+    setDraft({
+      paymentType: "",
+      withBank: "",
+      accountCode: "",
+      accountTitle: "",
+    });
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [isOpen]);
 
@@ -202,7 +217,7 @@ export function AppPaymentTypeDialog({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-80 flex items-center justify-center bg-darknavy/45 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-80 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -224,7 +239,9 @@ export function AppPaymentTypeDialog({
               id="payment-type-dialog-title"
               className="mt-1 text-xl font-semibold text-darknavy"
             >
-              {mode === "list" ? "Payment Type List" : "Payment Type Management"}
+              {mode === "list"
+                ? "Payment Type List"
+                : "Payment Type Management"}
             </h2>
             <p className="mt-1 text-sm text-darknavy/55">
               {mode === "list"
@@ -276,8 +293,9 @@ export function AppPaymentTypeDialog({
                   record.id === recordId
                     ? {
                         ...record,
-                        status: record.status === "Active" ? "Inactive" : "Active",
-                    }
+                        status:
+                          record.status === "Active" ? "Inactive" : "Active",
+                      }
                     : record,
                 ),
               );
@@ -314,9 +332,13 @@ export function AppPaymentTypeDialog({
                           paymentType: draft.paymentType.trim(),
                           withBank: draft.withBank === "Yes",
                           accountCode:
-                            draft.withBank === "No" ? draft.accountCode.trim() : "",
+                            draft.withBank === "No"
+                              ? draft.accountCode.trim()
+                              : "",
                           accountTitle:
-                            draft.withBank === "No" ? draft.accountTitle.trim() : "",
+                            draft.withBank === "No"
+                              ? draft.accountTitle.trim()
+                              : "",
                         }
                       : record,
                   ),
@@ -423,11 +445,13 @@ function PaymentTypeListView({
             <select
               value={statusFilter}
               onChange={(event) =>
-                onStatusFilterChange(event.target.value as "All" | PaymentTypeStatus)
+                onStatusFilterChange(
+                  event.target.value as "All" | PaymentTypeStatus,
+                )
               }
               className="h-12 rounded-full border border-darknavy/12 bg-white px-4 text-sm text-darknavy outline-none transition focus:border-skyblue/45"
             >
-              <option value="All">All Status</option>
+              <option value="All">All</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
             </select>
@@ -494,7 +518,7 @@ function PaymentTypeListView({
                       <button
                         type="button"
                         onClick={() => onUse(record.paymentType)}
-                        className="theme-accent-contrast-text col-span-2 inline-flex h-10 items-center justify-center rounded-lg bg-skyblue px-3 text-xs font-semibold shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)] transition hover:bg-skyblue/85"
+                        className="theme-accent-contrast-text col-span-2 inline-flex h-10 items-center justify-center rounded-lg bg-skyblue px-3 text-xs font-semibold transition hover:bg-skyblue/85"
                       >
                         Use Payment Type
                       </button>
@@ -524,11 +548,19 @@ function PaymentTypeListView({
                         }`}
                       >
                         {record.status === "Active" ? (
-                          <ToggleRight className="h-3.5 w-3.5" aria-hidden="true" />
+                          <ToggleRight
+                            className="h-3.5 w-3.5"
+                            aria-hidden="true"
+                          />
                         ) : (
-                          <ToggleLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                          <ToggleLeft
+                            className="h-3.5 w-3.5"
+                            aria-hidden="true"
+                          />
                         )}
-                        {record.status === "Active" ? "Set Inactive" : "Set Active"}
+                        {record.status === "Active"
+                          ? "Set Inactive"
+                          : "Set Active"}
                       </button>
                     </div>
                   </div>
@@ -590,7 +622,7 @@ function PaymentTypeListView({
                               <button
                                 type="button"
                                 onClick={() => onUse(record.paymentType)}
-                                className="theme-accent-contrast-text inline-flex h-9 items-center justify-center rounded-lg bg-skyblue px-3 text-xs font-semibold shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.22)] transition hover:bg-skyblue/85"
+                                className="theme-accent-contrast-text inline-flex h-9 items-center justify-center rounded-lg bg-skyblue px-3 text-xs font-semibold transition hover:bg-skyblue/85"
                               >
                                 Use
                               </button>
@@ -599,7 +631,10 @@ function PaymentTypeListView({
                                 onClick={() => onView(record)}
                                 className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-darknavy/12 bg-white px-3 text-xs font-semibold text-darknavy transition hover:border-skyblue/40 hover:bg-skyblue/6"
                               >
-                                <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                                <Eye
+                                  className="h-3.5 w-3.5"
+                                  aria-hidden="true"
+                                />
                                 View
                               </button>
                               <button
@@ -607,7 +642,10 @@ function PaymentTypeListView({
                                 onClick={() => onEdit(record)}
                                 className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-darknavy/12 bg-white px-3 text-xs font-semibold text-darknavy transition hover:border-skyblue/40 hover:bg-skyblue/6"
                               >
-                                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                                <Pencil
+                                  className="h-3.5 w-3.5"
+                                  aria-hidden="true"
+                                />
                                 Edit
                               </button>
                               <button
@@ -620,11 +658,19 @@ function PaymentTypeListView({
                                 }`}
                               >
                                 {record.status === "Active" ? (
-                                  <ToggleRight className="h-3.5 w-3.5" aria-hidden="true" />
+                                  <ToggleRight
+                                    className="h-3.5 w-3.5"
+                                    aria-hidden="true"
+                                  />
                                 ) : (
-                                  <ToggleLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                                  <ToggleLeft
+                                    className="h-3.5 w-3.5"
+                                    aria-hidden="true"
+                                  />
                                 )}
-                                {record.status === "Active" ? "Set Inactive" : "Set Active"}
+                                {record.status === "Active"
+                                  ? "Set Inactive"
+                                  : "Set Active"}
                               </button>
                             </div>
                           </td>
@@ -637,7 +683,8 @@ function PaymentTypeListView({
                         colSpan={4}
                         className="px-4 py-12 text-center text-sm text-darknavy/55"
                       >
-                        No payment types matched the current search and status filter.
+                        No payment types matched the current search and status
+                        filter.
                       </td>
                     </tr>
                   )}
@@ -691,7 +738,8 @@ function PaymentTypeFormView({
                 : "View payment type"}
           </h3>
           <p className="mt-2 text-sm leading-6 text-darknavy/58">
-            Configure the payment type label and whether it requires bank handling.
+            Configure the payment type label and whether it requires bank
+            handling.
           </p>
         </div>
 

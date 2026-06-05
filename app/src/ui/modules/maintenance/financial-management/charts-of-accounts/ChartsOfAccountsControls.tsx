@@ -11,16 +11,15 @@ import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial
 export function Card({
 	children,
 	className,
-}: {
-	children: ReactNode;
-	className?: string;
-}) {
+	...props
+}: ComponentProps<"div">) {
 	return (
 		<div
 			className={joinClasses(
 				"rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5",
 				className,
 			)}
+			{...props}
 		>
 			{children}
 		</div>
@@ -44,7 +43,7 @@ export function Button({
 				"inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-45",
 				size === "icon" ? "h-9 w-9" : "h-10 px-4",
 				variant === "primary" &&
-					"bg-blue-600 text-white shadow-sm shadow-blue-600/20 hover:bg-blue-700 focus-visible:ring-blue-600/20",
+					"theme-accent-contrast-text bg-skyblue shadow-sm shadow-skyblue/20 hover:bg-skyblue/85 focus-visible:ring-skyblue/20",
 				variant === "secondary" &&
 					"border border-darknavy/10 bg-white text-darknavy/75 shadow-sm shadow-darknavy/5 hover:border-skyblue/40 hover:bg-skyblue/10 hover:text-darknavy focus-visible:ring-skyblue/15",
 				variant === "ghost" &&
@@ -160,7 +159,7 @@ export function Tabs<TValue extends string>({
 					className={joinClasses(
 						"relative h-12 whitespace-nowrap border-b-2 px-4 text-sm font-semibold transition",
 						value === option
-							? "border-blue-600 text-blue-600"
+							? "border-skyblue text-skyblue"
 							: "border-transparent text-darknavy/65 hover:text-darknavy",
 					)}
 				>

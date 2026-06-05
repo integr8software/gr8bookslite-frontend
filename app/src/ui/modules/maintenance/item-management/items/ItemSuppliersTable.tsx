@@ -22,7 +22,7 @@ import {
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleTableActionButton } from "@/app/src/ui/shared/module/ModuleTableActions";
+import { ModuleTableActionButton } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type ItemSuppliersTableProps = {
 	error?: string;
@@ -73,9 +73,12 @@ export function ItemSuppliersTable({
 		<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
 			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h2 className="text-base font-semibold text-darknavy">Suppliers</h2>
+					<h2 className="text-base font-semibold text-darknavy">
+						Suppliers
+					</h2>
 					<p className="mt-1 text-sm text-darknavy/55">
-						Maintain supplier order and the default supplier for this item.
+						Maintain supplier order and the default supplier for
+						this item.
 					</p>
 				</div>
 				{!isReadonly ? (
@@ -90,7 +93,9 @@ export function ItemSuppliersTable({
 				) : null}
 			</div>
 			{error ? (
-				<p className="mt-3 text-sm font-medium text-coralpink">{error}</p>
+				<p className="mt-3 text-sm font-medium text-coralpink">
+					{error}
+				</p>
 			) : null}
 			<div className="mt-4 overflow-auto">
 				<DndContext
@@ -105,8 +110,12 @@ export function ItemSuppliersTable({
 									<span className="sr-only">Order</span>
 								</th>
 								<th className="px-3 py-3">Supplier</th>
-								<th className="px-3 py-3 text-center">Default</th>
-								<th className="px-3 py-3 text-right">Actions</th>
+								<th className="px-3 py-3 text-center">
+									Default
+								</th>
+								<th className="px-3 py-3 text-right">
+									Actions
+								</th>
 							</tr>
 						</thead>
 						<SortableContext
@@ -180,7 +189,9 @@ function SupplierRow({
 		<tr
 			ref={setNodeRef}
 			style={style}
-			className={isDragging ? "relative z-10 bg-skyblue/5 shadow-sm" : undefined}
+			className={
+				isDragging ? "relative z-10 bg-skyblue/5 shadow-sm" : undefined
+			}
 		>
 			<td className="px-3 py-3">
 				<button
@@ -211,7 +222,9 @@ function SupplierRow({
 				<input
 					type="radio"
 					checked={supplier.isDefault}
-					onChange={() => onUpdateSupplier(supplier.id, "isDefault", true)}
+					onChange={() =>
+						onUpdateSupplier(supplier.id, "isDefault", true)
+					}
 					disabled={isReadonly}
 					aria-label={`Set ${supplier.supplier || "supplier"} as default`}
 					className="h-4 w-4 accent-skyblue disabled:cursor-default"

@@ -1,53 +1,56 @@
 "use client";
 
-import { Download, Home, Plus, Sparkles, Upload } from "lucide-react";
-import { Button } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
+import { Download, Home, Plus, Upload } from "lucide-react";
+import {
+	ModuleHeader,
+	moduleHeaderActionClassNames,
+} from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function ChartsOfAccountsHeader({
 	onAddAccount,
-	onStartSpotlightTutorial,
 }: {
 	onAddAccount: () => void;
-	onStartSpotlightTutorial: () => void;
 }) {
 	return (
-		<div
-			className="flex flex-col gap-4 self-start rounded-xl border border-darknavy/10 bg-white p-5 shadow-sm lg:h-36 lg:flex-row lg:items-center lg:justify-between"
+		<ModuleHeader
+			variant="panel"
 			data-spotlight-id="charts-of-accounts-header"
-		>
-			<div>
-				<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-skyblue">
+			titleAs="h1"
+			title="Chart of Accounts"
+			description="Manage all company accounts and financial statement mapping"
+			eyebrow={
+				<>
 					<Home className="h-3.5 w-3.5" aria-hidden="true" />
 					Accounting master data
-				</div>
-				<h1 className="mt-2 text-2xl font-semibold text-darknavy sm:text-3xl">
-					Chart of Accounts
-				</h1>
-				<p className="mt-2 max-w-2xl text-sm text-darknavy/55">
-					Manage all company accounts and financial statement mapping
-				</p>
-			</div>
-			<div className="flex flex-wrap gap-2">
-				<Button variant="secondary" onClick={onStartSpotlightTutorial}>
-					<Sparkles className="h-4 w-4" aria-hidden="true" />
-					Quick Tour
-				</Button>
-				<Button variant="secondary">
-					<Upload className="h-4 w-4" aria-hidden="true" />
-					Import
-				</Button>
-				<Button variant="secondary">
-					<Download className="h-4 w-4" aria-hidden="true" />
-					Export
-				</Button>
-				<Button
-					onClick={onAddAccount}
-					data-spotlight-id="charts-of-accounts-add-account"
-				>
-					<Plus className="h-4 w-4" aria-hidden="true" />
-					Add Account
-				</Button>
-			</div>
-		</div>
+				</>
+			}
+			actions={
+				<>
+					<button
+						type="button"
+						className={moduleHeaderActionClassNames.secondary}
+					>
+						<Upload className="h-4 w-4" aria-hidden="true" />
+						Import
+					</button>
+					<button
+						type="button"
+						className={moduleHeaderActionClassNames.secondary}
+					>
+						<Download className="h-4 w-4" aria-hidden="true" />
+						Export
+					</button>
+					<button
+						type="button"
+						className={moduleHeaderActionClassNames.primary}
+						onClick={onAddAccount}
+						data-spotlight-id="charts-of-accounts-add-account"
+					>
+						<Plus className="h-4 w-4" aria-hidden="true" />
+						Add Account
+					</button>
+				</>
+			}
+		/>
 	);
 }

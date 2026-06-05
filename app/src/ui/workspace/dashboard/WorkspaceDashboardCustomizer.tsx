@@ -2,10 +2,15 @@
 
 import { ArrowDown, ArrowUp, GripVertical, RotateCcw, X } from "lucide-react";
 import { useState } from "react";
+import type { WorkspaceDashboardGraphType } from "@/app/src/data/modules/dashboard/WorkspaceOverviewData";
 
 export type WorkspaceDashboardSectionKey =
   | "companies"
   | "summary"
+  | "monthlyGraph"
+  | "yearlyIncomeGraph"
+  | "totalIncomeGraph"
+  | "grossIncomeGraph"
   | "performance"
   | "approvals"
   | "activity"
@@ -21,6 +26,18 @@ type WorkspaceDashboardCustomizerProps = {
   isOpen: boolean;
   options: WorkspaceDashboardSectionOption[];
   visibleSections: WorkspaceDashboardSectionKey[];
+  grossIncomeChartType: WorkspaceDashboardGraphType;
+  monthlyChartType: WorkspaceDashboardGraphType;
+  totalIncomeChartType: WorkspaceDashboardGraphType;
+  yearlyChartType: WorkspaceDashboardGraphType;
+  onGrossIncomeChartTypeChange: (
+    chartType: WorkspaceDashboardGraphType,
+  ) => void;
+  onMonthlyChartTypeChange: (chartType: WorkspaceDashboardGraphType) => void;
+  onTotalIncomeChartTypeChange: (
+    chartType: WorkspaceDashboardGraphType,
+  ) => void;
+  onYearlyChartTypeChange: (chartType: WorkspaceDashboardGraphType) => void;
   onClose: () => void;
   onMoveSection: (
     sectionKey: WorkspaceDashboardSectionKey,
@@ -38,6 +55,14 @@ export function WorkspaceDashboardCustomizer({
   isOpen,
   options,
   visibleSections,
+  grossIncomeChartType,
+  monthlyChartType,
+  totalIncomeChartType,
+  yearlyChartType,
+  onGrossIncomeChartTypeChange,
+  onMonthlyChartTypeChange,
+  onTotalIncomeChartTypeChange,
+  onYearlyChartTypeChange,
   onClose,
   onMoveSection,
   onReorderSection,
@@ -94,6 +119,35 @@ export function WorkspaceDashboardCustomizer({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+          <section className="mb-5 rounded-2xl border border-darknavy/8 bg-offwhite p-4">
+            <label className="block text-sm font-semibold text-darknavy">
+              Performance Graph
+            </label>
+            <p className="mt-1 text-sm leading-5 text-darknavy/52">
+              Choose separate graph styles for each dashboard graph.
+            </p>
+            <GraphTypeSelect
+              label="Monthly Accounting Trend"
+              value={monthlyChartType}
+              onChange={onMonthlyChartTypeChange}
+            />
+            <GraphTypeSelect
+              label="Yearly Income Comparison"
+              value={yearlyChartType}
+              onChange={onYearlyChartTypeChange}
+            />
+            <GraphTypeSelect
+              label="Total Income by Year"
+              value={totalIncomeChartType}
+              onChange={onTotalIncomeChartTypeChange}
+            />
+            <GraphTypeSelect
+              label="Gross Income by Year"
+              value={grossIncomeChartType}
+              onChange={onGrossIncomeChartTypeChange}
+            />
+          </section>
+
           <div className="space-y-3">
             {orderedOptions.map((option) => {
               const isChecked = visibleSections.includes(option.key);
@@ -202,6 +256,37 @@ export function WorkspaceDashboardCustomizer({
           </button>
         </div>
       </aside>
+    </>
+  );
+}
+
+function GraphTypeSelect({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: WorkspaceDashboardGraphType;
+  onChange: (chartType: WorkspaceDashboardGraphType) => void;
+}) {
+  return (
+    <>
+      <label className="mt-4 block text-xs font-semibold text-darknavy/55 first:mt-3">
+        {label}
+      </label>
+      <select
+        value={value}
+        onChange={(event) =>
+          onChange(event.target.value as WorkspaceDashboardGraphType)
+        }
+        className="mt-2 h-11 w-full rounded-xl border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15"
+      >
+        <option value="bar">Bar Graph</option>
+        <option value="line">Line Graph</option>
+        <option value="area">Area Graph</option>
+        <option value="donut">Donut Graph</option>
+        <option value="pie">Pie Graph</option>
+      </select>
     </>
   );
 }

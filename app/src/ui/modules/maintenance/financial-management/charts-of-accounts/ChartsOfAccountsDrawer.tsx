@@ -99,14 +99,17 @@ function DrawerPanel({
 			title={account ? account.accountName : "Add Account"}
 			description="Configure reporting, hierarchy, and bank setup."
 			onClose={onClose}
+			spotlightId="maintenance-add-drawer"
 			footer={
 				<div className="flex items-center justify-end gap-2">
 					<Button variant="secondary" onClick={onClose}>
 						Cancel
 					</Button>
-					<Button onClick={handleSubmit}>
-						{account ? "Save Changes" : "Create Account"}
-					</Button>
+					<div data-spotlight-id="maintenance-add-drawer-save">
+						<Button onClick={handleSubmit}>
+							{account ? "Save Changes" : "Create Account"}
+						</Button>
+					</div>
 				</div>
 			}
 		>
@@ -114,15 +117,17 @@ function DrawerPanel({
 				<Tabs value={activeTab} options={tabs} onChange={setActiveTab} />
 			</div>
 
-			<ChartsOfAccountsForm
-				account={account}
-				accounts={accounts}
-				activeTab={activeTab}
-				submitted={submitted}
-				values={values}
-				onBankFieldChange={updateBankField}
-				onFieldChange={updateField}
-			/>
+			<div data-spotlight-id="maintenance-add-drawer-fields">
+				<ChartsOfAccountsForm
+					account={account}
+					accounts={accounts}
+					activeTab={activeTab}
+					submitted={submitted}
+					values={values}
+					onBankFieldChange={updateBankField}
+					onFieldChange={updateField}
+				/>
+			</div>
 		</ModuleDrawer>
 	);
 }

@@ -32,6 +32,7 @@ export function useAccountProfile() {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
   const profileDrafts = useAccountPreferences((state) => state.profileDrafts);
+  const clearProfileDraft = useAccountPreferences((state) => state.clearProfileDraft);
   const updateProfileDraft = useAccountPreferences(
     (state) => state.updateProfileDraft,
   );
@@ -43,7 +44,8 @@ export function useAccountProfile() {
   const [pendingAvatarAction, setPendingAvatarAction] = useState<
     "replace" | "remove" | null
   >(null);
-  const draft = profileDrafts[String(authProfile?.user.id ?? "local-account-user")];
+  const profileUserId = String(authProfile?.user.id ?? "local-account-user");
+  const draft = profileDrafts[profileUserId];
   const profile = useMemo(
     () => BuildAccountProfileViewModel(authProfile, draft),
     [authProfile, draft],
@@ -76,15 +78,11 @@ export function useAccountProfile() {
 
   const saveProfileMutation = useMutation({
     mutationFn: async () => {
-      if (!accessToken) {
-        throw new Error("Please sign in before saving profile changes.");
-      }
-
       if (!profile.fullName.trim()) {
         throw new Error("Full name is required.");
       }
 
-      await UpdateUserAccountProfile(accessToken, {
+      await UpdateUserAccountProfile({
         fullName: profile.fullName,
         contactNumber: GetSubmittedContactNumber(profile.contactNumber),
       });
@@ -94,22 +92,16 @@ export function useAccountProfile() {
           throw new Error("Please choose an avatar image again.");
         }
 
-        await UploadUserAccountAvatar(accessToken, pendingAvatarFile);
+        await UploadUserAccountAvatar(pendingAvatarFile);
       }
 
       if (pendingAvatarAction === "remove") {
-        await DeleteUserAccountAvatar(accessToken);
+        await DeleteUserAccountAvatar();
       }
     },
     onSuccess: async () => {
       await invalidateAuthProfile();
-      updateProfileDraft(profile.userId, {
-        fullName: undefined,
-        contactNumber: undefined,
-        avatarDataUrl: undefined,
-      });
-      setPendingAvatarFile(null);
-      setPendingAvatarAction(null);
+      resetPendingChanges();
       toast.success("Profile changes saved.");
     },
     onError: (error) => {
@@ -121,12 +113,8 @@ export function useAccountProfile() {
     },
   });
   async function invalidateAuthProfile() {
-    if (!accessToken) {
-      return;
-    }
-
     await queryClient.invalidateQueries({
-      queryKey: AuthQueryKeys.profile(accessToken),
+      queryKey: AuthQueryKeys.profiles(),
     });
   }
 
@@ -174,6 +162,7 @@ export function useAccountProfile() {
       return;
     }
 
+    dismissAvatarCropper();
     setPendingAvatarCrop({
       fileName: file.name,
       mimeType: file.type || "image/png",
@@ -209,6 +198,10 @@ export function useAccountProfile() {
   }
 
   function saveProfileChanges() {
+    if (!hasPendingProfileChanges || saveProfileMutation.isPending) {
+      return;
+    }
+
     saveProfileMutation.mutate();
   }
 
@@ -217,11 +210,11 @@ export function useAccountProfile() {
       return;
     }
 
-    updateProfileDraft(profile.userId, {
-      fullName: undefined,
-      contactNumber: undefined,
-      avatarDataUrl: undefined,
-    });
+    resetPendingChanges();
+  }
+
+  function resetPendingChanges() {
+    clearProfileDraft(profile.userId);
     setPendingAvatarFile(null);
     setPendingAvatarAction(null);
     dismissAvatarCropper();
@@ -229,7 +222,7 @@ export function useAccountProfile() {
 
   return {
     hasPendingProfileChanges,
-    isLoading: Boolean(accessToken) && isLoading,
+    isLoading,
     isSavingProfile: saveProfileMutation.isPending,
     isUpdatingAvatar: saveProfileMutation.isPending,
     pendingAvatarCrop,
@@ -250,5 +243,7 @@ export function useAccountProfile() {
 function GetSubmittedContactNumber(value: string) {
   const trimmedValue = value.trim();
 
-  return trimmedValue === DefaultPhilippineContactNumber ? "" : trimmedValue;
+  return trimmedValue === DefaultPhilippineContactNumber.trim()
+    ? ""
+    : trimmedValue;
 }

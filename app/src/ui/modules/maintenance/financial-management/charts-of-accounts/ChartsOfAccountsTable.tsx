@@ -1,7 +1,18 @@
 "use client";
 
+import {
+	DndContext,
+	KeyboardSensor,
+	PointerSensor,
+	closestCenter,
+	useSensor,
+	useSensors,
+	type DragEndEvent,
+	type DragStartEvent,
+} from "@dnd-kit/core";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { Search } from "lucide-react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { Table } from "@tanstack/react-table";
 import type {
 	ChartAccount,
@@ -17,31 +28,90 @@ type ChartsOfAccountsTableProps = {
 	toolbar?: ReactNode;
 	onDelete: (account: ChartAccount) => void;
 	onEdit: (account: ChartAccount) => void;
+	onReorderAccount: (accountId: string, overAccountId: string) => void;
 	onToggleExpanded: (accountId: string) => void;
 };
 
+type ActiveDragAccount = {
+	id: string;
+	isSpecific: boolean;
+	parentId: string | null;
+};
+
 export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
-	return (
-		<ModuleTable
-			emptyDescription="Adjust the filters or add a new ledger account."
-			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-			emptyTitle="No accounts found"
-			isLoading={props.isLoading}
-			paginationLabel="accounts"
-			table={props.table}
-			toolbar={props.toolbar}
-			variant="embedded"
-			renderRow={({ id, original }) => (
-				<ChartsOfAccountsTableRow
-					key={id}
-					account={original.account}
-					expandedIds={props.expandedIds}
-					level={original.level}
-					onDelete={props.onDelete}
-					onEdit={props.onEdit}
-					onToggleExpanded={props.onToggleExpanded}
-				/>
-			)}
-		/>
+	const [activeDragAccount, setActiveDragAccount] = useState<ActiveDragAccount>();
+	const sensors = useSensors(
+		useSensor(PointerSensor, {
+			activationConstraint: { distance: 6 },
+		}),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		}),
 	);
+
+	function handleDragStart(event: DragStartEvent) {
+		const activeAccount = props.table
+			.getPrePaginationRowModel()
+			.rows.find((row) => row.original.account.id === event.active.id)
+			?.original.account;
+
+		setActiveDragAccount(
+			activeAccount
+				? {
+						id: activeAccount.id,
+						isSpecific: isSpecificAccountNumber(activeAccount.accountNumber),
+						parentId: activeAccount.parentId,
+					}
+				: undefined,
+		);
+	}
+
+	function handleDragEnd(event: DragEndEvent) {
+		const { active, over } = event;
+
+		setActiveDragAccount(undefined);
+
+		if (!over || active.id === over.id) {
+			return;
+		}
+
+		props.onReorderAccount(String(active.id), String(over.id));
+	}
+
+	return (
+		<DndContext
+			collisionDetection={closestCenter}
+			sensors={sensors}
+			onDragCancel={() => setActiveDragAccount(undefined)}
+			onDragEnd={handleDragEnd}
+			onDragStart={handleDragStart}
+		>
+			<ModuleTable
+				emptyDescription="Adjust the filters or add a new ledger account."
+				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+				emptyTitle="No accounts found"
+				isLoading={props.isLoading}
+				paginationLabel="accounts"
+				table={props.table}
+				toolbar={props.toolbar}
+				variant="embedded"
+				renderRow={({ id, original }) => (
+					<ChartsOfAccountsTableRow
+						key={id}
+						account={original.account}
+						activeDragAccount={activeDragAccount}
+						expandedIds={props.expandedIds}
+						level={original.level}
+						onDelete={props.onDelete}
+						onEdit={props.onEdit}
+						onToggleExpanded={props.onToggleExpanded}
+					/>
+				)}
+			/>
+		</DndContext>
+	);
+}
+
+function isSpecificAccountNumber(accountNumber: string) {
+	return !accountNumber.endsWith("000");
 }

@@ -16,6 +16,6 @@ function WarehouseDrawerPanel({ isOpen, mode, onClose, warehouse }: { isOpen: bo
 	const page = useWarehouseFormPage({ existingWarehouse: warehouse, mode, onSaved: onClose });
 	const copy = WarehouseFormPageCopy[mode];
 	return <MaintenanceFormDrawer description={copy.description} eyebrow="Inventory maintenance" formId={formId} isOpen={isOpen} isSaving={page.isMutating} onClose={onClose} title={copy.title}>
-		<form id={formId} onSubmit={page.handleSubmit} className="px-6 py-5"><WarehouseFields availabilityOptions={page.availabilityOptions} branchOptions={page.branchOptions} errors={page.errors} values={page.values} onAvailableBranchesChange={page.handleAvailableBranchesChange} onFieldChange={page.updateField} onInputChange={page.handleInputChange} /></form>
+		<form id={formId} onSubmit={page.handleSubmit} className="px-6 py-5"><WarehouseFields branchOptions={page.branchOptions} errors={page.errors} values={page.values} onAvailableBranchesChange={page.handleAvailableBranchesChange} onInputChange={page.handleInputChange} /></form>
 	</MaintenanceFormDrawer>;
 }

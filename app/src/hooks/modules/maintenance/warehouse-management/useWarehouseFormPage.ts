@@ -4,7 +4,6 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
-	WarehouseBranchAvailabilityOptions,
 	WarehouseBranchOptions,
 	WarehouseManagementHref,
 } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
@@ -62,18 +61,11 @@ export function useWarehouseFormPage(options: WarehouseFormPageOptions = {}) {
 		}
 
 		setValues((current) => {
-			const nextValues = { ...current, [field]: value };
-
-			if (field === "availability" && value !== "Selected Branches") {
-				nextValues.availableBranches = [];
-			}
-
-			return nextValues;
+			return { ...current, [field]: value };
 		});
 		setErrors((current) => ({
 			...current,
 			[field]: undefined,
-			...(field === "availability" ? { availableBranches: undefined } : {}),
 		}));
 	}
 
@@ -137,7 +129,6 @@ export function useWarehouseFormPage(options: WarehouseFormPageOptions = {}) {
 	}
 
 	return {
-		availabilityOptions: WarehouseBranchAvailabilityOptions,
 		branchOptions: WarehouseBranchOptions,
 		errors,
 		existingWarehouse,
@@ -151,7 +142,6 @@ export function useWarehouseFormPage(options: WarehouseFormPageOptions = {}) {
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
 		setIsDeleteDialogOpen,
-		updateField,
 		values,
 	};
 }

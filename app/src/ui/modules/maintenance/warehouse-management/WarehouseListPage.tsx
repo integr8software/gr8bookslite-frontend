@@ -40,7 +40,7 @@ export function WarehouseListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Warehouse Management"
-				description="Maintain warehouses, branch availability, and access assignments by location."
+				description="Maintain warehouse codes, available branches, and access assignments by location."
 				eyebrow={
 					<>
 						<Warehouse className="h-3.5 w-3.5" aria-hidden="true" />
@@ -110,7 +110,7 @@ export function WarehouseListPage() {
 							label="Search warehouses"
 							value={page.query}
 							onChange={page.handleQueryChange}
-							placeholder="Search by warehouse, branch, availability, manager, or status"
+							placeholder="Search by code, warehouse, branch, manager, or status"
 						/>
 					</ModuleTableToolbar>
 				}

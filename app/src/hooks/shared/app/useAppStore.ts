@@ -52,7 +52,16 @@ const InitialAppStoreState = {
 
 export const useAppStore = create<AppStoreState>((set) => ({
   ...InitialAppStoreState,
-  setAccessToken: (accessToken) => set({ accessToken }),
+  setAccessToken: (accessToken) =>
+    set(
+      accessToken
+        ? {
+            accessToken,
+            isShellContextSettling: false,
+            shellContextSwitchMessage: null,
+          }
+        : { accessToken },
+    ),
   setActiveBranchContext: (activeBranchId, activeBranchName = null) =>
     set({ activeBranchId, activeBranchName }),
   setActiveCompanyId: (activeCompanyId) => set({ activeCompanyId }),

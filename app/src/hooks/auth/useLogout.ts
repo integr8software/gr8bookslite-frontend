@@ -55,6 +55,7 @@ export function useLogout() {
       queryClient.clear();
       queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
       resetAppStore();
+      beginShellContextSwitch("Logging out...");
       router.replace("/login");
       router.refresh();
     }

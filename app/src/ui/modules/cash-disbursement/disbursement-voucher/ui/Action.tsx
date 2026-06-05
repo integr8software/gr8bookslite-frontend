@@ -51,7 +51,7 @@ import {
   ModuleDataEntry,
   type ModuleDataEntryClearAction,
   type ModuleDataEntryColumn,
-} from "@/app/src/ui/shared/module/data-entry/ModuleDataEntry";
+} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function DisbursementVoucherAction() {

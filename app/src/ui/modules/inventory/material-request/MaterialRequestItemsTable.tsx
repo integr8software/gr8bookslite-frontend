@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
 	AlertCircle,
 	CheckCircle2,
@@ -23,11 +24,13 @@ import type {
 import { MaterialRequestItemValidationSchema } from "@/app/src/validations/modules/inventory/material-request/MaterialRequestValidation";
 import {
 	ModuleDataEntry,
+	type ModuleDataEntryCellContext,
+	type ModuleDataEntryCellTarget,
 	type ModuleDataEntryClearAction,
 	type ModuleDataEntryColumn,
 	type ModuleDataEntryColumnOption,
 	type ModuleDataEntryExportOption,
-} from "@/app/src/ui/shared/module/data-entry/ModuleDataEntry";
+} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type MaterialRequestItemColumnId = Exclude<keyof MaterialRequestItem, "id">;
@@ -37,11 +40,16 @@ type MaterialRequestItemsTableProps = {
 	isReadonly: boolean;
 	items: MaterialRequestItem[];
 	onAddItems: (count: number) => void;
+	onClearItem: (itemId: string) => void;
 	onClearItems: (action: ModuleDataEntryClearAction) => void;
 	onDuplicateItem: (itemId: string) => void;
 	onImportItems: (items: MaterialRequestItem[]) => void;
 	onInsertItem: (itemId: string, position: "above" | "below") => void;
 	onMoveItem: (fromItemId: string, toItemId: string) => void;
+	onPasteItemCells: (
+		startItemId: string,
+		updates: Partial<MaterialRequestItem>[],
+	) => void;
 	onRemoveItem: (itemId: string) => void;
 	onUpdateItem: (
 		itemId: string,
@@ -52,8 +60,18 @@ type MaterialRequestItemsTableProps = {
 
 type ImportPreviewRow = {
 	errors: string[];
+	fieldErrors: MaterialRequestItemValidationMessages;
 	id: string;
 	item: MaterialRequestItem;
+};
+
+type MaterialRequestItemValidationMessages = Partial<
+	Record<MaterialRequestItemColumnId, string>
+>;
+
+type MaterialRequestItemValidationResult = {
+	errors: string[];
+	fieldErrors: MaterialRequestItemValidationMessages;
 };
 
 export function MaterialRequestItemsTable({
@@ -61,11 +79,13 @@ export function MaterialRequestItemsTable({
 	isReadonly,
 	items,
 	onAddItems,
+	onClearItem,
 	onClearItems,
 	onDuplicateItem,
 	onImportItems,
 	onInsertItem,
 	onMoveItem,
+	onPasteItemCells,
 	onRemoveItem,
 	onUpdateItem,
 }: MaterialRequestItemsTableProps) {
@@ -84,8 +104,148 @@ export function MaterialRequestItemsTable({
 		MaterialRequestItemColumnId[]
 	>([]);
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+	const [touchedItemCellIds, setTouchedItemCellIds] = useState<Set<string>>(
+		() => new Set(),
+	);
 	const visibleColumnOrder = columnOrder.filter((columnId) =>
 		visibleColumnIds.includes(columnId),
+	);
+	const markItemCellTouched = useCallback(
+		(itemId: string, columnId: MaterialRequestItemColumnId) => {
+			setTouchedItemCellIds((currentIds) => {
+				const itemCellId = createItemCellId(itemId, columnId);
+
+				if (currentIds.has(itemCellId)) {
+					return currentIds;
+				}
+
+				const nextIds = new Set(currentIds);
+
+				nextIds.add(itemCellId);
+				return nextIds;
+			});
+		},
+		[],
+	);
+	const markItemRowTouched = useCallback((itemId: string) => {
+		setTouchedItemCellIds((currentIds) => {
+			const nextIds = new Set(currentIds);
+			let hasNewTouchedCell = false;
+
+			DefaultItemColumnOrder.forEach((columnId) => {
+				const itemCellId = createItemCellId(itemId, columnId);
+
+				if (!nextIds.has(itemCellId)) {
+					nextIds.add(itemCellId);
+					hasNewTouchedCell = true;
+				}
+			});
+
+			return hasNewTouchedCell ? nextIds : currentIds;
+		});
+	}, []);
+	const handleUpdateItem = useCallback(
+		(
+			itemId: string,
+			field: keyof MaterialRequestItem,
+			value: MaterialRequestItem[keyof MaterialRequestItem],
+		) => {
+			if (isItemColumnId(field)) {
+				markItemCellTouched(itemId, field);
+			}
+
+			onUpdateItem(itemId, field, value);
+		},
+		[markItemCellTouched, onUpdateItem],
+	);
+	const handleClearItem = useCallback(
+		(itemId: string) => {
+			markItemRowTouched(itemId);
+			onClearItem(itemId);
+		},
+		[markItemRowTouched, onClearItem],
+	);
+	const handleClearItemCell = useCallback(
+		(itemId: string, columnId: string) => {
+			if (!isItemColumnId(columnId)) {
+				return;
+			}
+
+			markItemCellTouched(itemId, columnId);
+			onUpdateItem(itemId, columnId, emptyMaterialRequestItem[columnId]);
+		},
+		[markItemCellTouched, onUpdateItem],
+	);
+	const getItemCellValue = useCallback(
+		(item: MaterialRequestItem, columnId: string) => {
+			return isItemColumnId(columnId) ? String(item[columnId] ?? "") : "";
+		},
+		[],
+	);
+	const handlePasteItemCells = useCallback(
+		(target: ModuleDataEntryCellTarget, pastedRows: string[][]) => {
+			if (!isItemColumnId(target.columnId) || pastedRows.length === 0) {
+				return;
+			}
+
+			const startColumnIndex = visibleColumnOrder.indexOf(target.columnId);
+
+			if (startColumnIndex === -1) {
+				return;
+			}
+
+			const targetColumnIds = visibleColumnOrder.slice(startColumnIndex);
+			const updates = pastedRows
+				.map((row, rowOffset) => {
+					const update: Partial<MaterialRequestItem> = {};
+					const currentItem = items[target.rowIndex + rowOffset];
+
+					row.forEach((cellValue, cellOffset) => {
+						const columnId = targetColumnIds[cellOffset];
+
+						if (!columnId) {
+							return;
+						}
+
+						Object.assign(update, {
+							[columnId]: parsePastedItemCellValue(columnId, cellValue),
+						});
+
+						if (currentItem) {
+							markItemCellTouched(currentItem.id, columnId);
+						}
+					});
+
+					return update;
+				})
+				.filter((update) => Object.keys(update).length > 0);
+
+			if (updates.length > 0) {
+				onPasteItemCells(target.rowId, updates);
+			}
+		},
+		[
+			items,
+			markItemCellTouched,
+			onPasteItemCells,
+			visibleColumnOrder,
+		],
+	);
+	const itemValidationMessages = useMemo(
+		() => {
+			const messagesById = createItemValidationMessagesById(
+				items,
+				requiredColumnIds,
+			);
+
+			return error
+				? messagesById
+				: filterItemValidationMessagesByTouchedCells(
+					messagesById,
+					touchedItemCellIds,
+				);
+		},
+		[error, items, requiredColumnIds, touchedItemCellIds],
 	);
 	const resolvedColumnWidths = useMemo<
 		Record<MaterialRequestItemColumnId, number>
@@ -93,17 +253,11 @@ export function MaterialRequestItemsTable({
 		const nextWidths = { ...columnWidths };
 
 		autoWidthColumnIds.forEach((columnId) => {
-			const headerWidth = estimateTextWidth(columnLabels[columnId], 76);
-			const contentWidth = items.reduce(
-				(currentWidth, item) =>
-					Math.max(
-						currentWidth,
-						estimateTextWidth(String(item[columnId] ?? ""), 24),
-					),
-				50,
-			);
-
-			nextWidths[columnId] = Math.max(headerWidth, contentWidth);
+			nextWidths[columnId] = calculateItemColumnFitWidth({
+				columnId,
+				columnLabels,
+				items,
+			});
 		});
 
 		return nextWidths;
@@ -117,19 +271,22 @@ export function MaterialRequestItemsTable({
 				width: resolvedColumnWidths[columnId],
 				widthClassName: "",
 				widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
-				renderCell: (item) =>
+				renderCell: (item, _index, cellContext) =>
 					renderItemCell({
+						cellContext,
 						columnId,
 						isReadonly,
 						item,
-						onUpdateItem,
+						onUpdateItem: handleUpdateItem,
+						validationMessage: itemValidationMessages.get(item.id)?.[columnId],
 					}),
 			})),
 		[
 			autoWidthColumnIds,
 			columnLabels,
+			handleUpdateItem,
+			itemValidationMessages,
 			isReadonly,
-			onUpdateItem,
 			resolvedColumnWidths,
 			visibleColumnOrder,
 		],
@@ -197,6 +354,21 @@ export function MaterialRequestItemsTable({
 		);
 	}
 
+	function fitColumnWidth(columnId: string) {
+		if (!isItemColumnId(columnId)) {
+			return;
+		}
+
+		updateColumnWidth(
+			columnId,
+			calculateItemColumnFitWidth({
+				columnId,
+				columnLabels,
+				items,
+			}),
+		);
+	}
+
 	function moveColumn(fromColumnId: string, toColumnId: string) {
 		setColumnOrder((currentOrder) => {
 			const fromIndex = currentOrder.indexOf(
@@ -235,8 +407,8 @@ export function MaterialRequestItemsTable({
 			currentVisibleIds.length <= 1
 				? currentVisibleIds
 				: currentVisibleIds.filter(
-						(currentColumnId) => currentColumnId !== columnId,
-					),
+					(currentColumnId) => currentColumnId !== columnId,
+				),
 		);
 	}
 
@@ -313,10 +485,10 @@ export function MaterialRequestItemsTable({
 		];
 	}
 
-	function exportItemsAsExcel() {
+	async function exportItemsAsExcel() {
 		downloadBytesFile(
 			"material-request-items.xlsx",
-			createXlsxWorkbook(createExportRows(), "Material Request Items"),
+			await createXlsxWorkbook(createExportRows(), "Material Request Items"),
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 		);
 	}
@@ -333,7 +505,7 @@ export function MaterialRequestItemsTable({
 		() => [
 			{
 				id: "excel",
-				label: "Excel (.xlsx)",
+				label: "Excel",
 				onSelect: exportItemsAsExcel,
 			},
 			{
@@ -354,20 +526,25 @@ export function MaterialRequestItemsTable({
 				columnOptions={columnOptions}
 				description="Add material request lines, adjust quantities, reorder rows, and manage duplicate item entries."
 				emptyRowLabel="item"
-				error={error}
 				isDraggable
 				isReadonly={isReadonly}
+				isRowNumberColumnFixed
 				rows={items}
 				title="Data Entry"
 				exportOptions={exportOptions}
+				getCellValue={getItemCellValue}
 				onAddRows={onAddItems}
 				onAutoColumnWidth={autoSizeColumn}
+				onClearCell={handleClearItemCell}
+				onClearRow={handleClearItem}
 				onClearRows={onClearItems}
 				onDuplicateRow={onDuplicateItem}
+				onFitColumnWidth={fitColumnWidth}
 				onImport={() => setIsImportDialogOpen(true)}
 				onInsertRow={onInsertItem}
 				onMoveColumn={moveColumn}
 				onMoveRow={onMoveItem}
+				onPasteCells={handlePasteItemCells}
 				onRemoveColumn={removeColumn}
 				onRemoveRow={onRemoveItem}
 				onToggleColumnRequired={toggleColumnRequired}
@@ -390,11 +567,14 @@ export function MaterialRequestItemsTable({
 }
 
 function renderItemCell({
+	cellContext,
 	columnId,
 	isReadonly,
 	item,
 	onUpdateItem,
+	validationMessage,
 }: {
+	cellContext: ModuleDataEntryCellContext;
 	columnId: MaterialRequestItemColumnId;
 	isReadonly: boolean;
 	item: MaterialRequestItem;
@@ -403,21 +583,27 @@ function renderItemCell({
 		field: keyof MaterialRequestItem,
 		value: MaterialRequestItem[keyof MaterialRequestItem],
 	) => void;
+	validationMessage?: string;
 }) {
 	if (columnId === "uom") {
 		return (
-			<select
-				value={item.uom}
-				disabled={isReadonly}
-				onChange={(event) => onUpdateItem(item.id, "uom", event.target.value)}
-				className={`${cellControlClassName()} app-select-control`}
-			>
-				{MaterialRequestUomOptions.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
+			<div className="relative h-10 w-full">
+				<select
+					value={item.uom}
+					disabled={isReadonly}
+					aria-invalid={Boolean(validationMessage)}
+					tabIndex={cellContext.focusableTabIndex}
+					onChange={(event) => onUpdateItem(item.id, "uom", event.target.value)}
+					className={`${cellControlClassName(undefined, validationMessage)} app-select-control`}
+				>
+					{MaterialRequestUomOptions.map((option) => (
+						<option key={option} value={option}>
+							{option}
+						</option>
+					))}
+				</select>
+				<CellValidationWarning message={validationMessage} />
+			</div>
 		);
 	}
 
@@ -425,6 +611,8 @@ function renderItemCell({
 		return (
 			<NumberInput
 				readOnly={isReadonly}
+				tabIndex={cellContext.focusableTabIndex}
+				validationMessage={validationMessage}
 				value={item[columnId]}
 				onChange={(value) => onUpdateItem(item.id, columnId, value)}
 			/>
@@ -434,6 +622,8 @@ function renderItemCell({
 	return (
 		<ItemInput
 			readOnly={isReadonly}
+			tabIndex={cellContext.focusableTabIndex}
+			validationMessage={validationMessage}
 			value={String(item[columnId] ?? "")}
 			onChange={(value) => onUpdateItem(item.id, columnId, value)}
 		/>
@@ -461,7 +651,7 @@ function MaterialRequestItemImportDialog({
 		() =>
 			previewRows.map((row) => ({
 				...row,
-				errors: validateImportItem(row.item, requiredColumnIds),
+				...validateImportItem(row.item, requiredColumnIds),
 			})),
 		[previewRows, requiredColumnIds],
 	);
@@ -536,7 +726,7 @@ function MaterialRequestItemImportDialog({
 
 				return {
 					...row,
-					errors: validateImportItem(nextItem, requiredColumnIds),
+					...validateImportItem(nextItem, requiredColumnIds),
 					item: nextItem,
 				};
 			}),
@@ -552,10 +742,10 @@ function MaterialRequestItemImportDialog({
 		setPreviewRows([]);
 	}
 
-	function downloadImportTemplate() {
+	async function downloadImportTemplate() {
 		downloadBytesFile(
 			"material-request-item-template.xlsx",
-			createXlsxWorkbook(
+			await createXlsxWorkbook(
 				[
 					DefaultItemColumnOrder.map((columnId) => DefaultItemColumnLabels[columnId]),
 					...MaterialRequestImportTemplateRows,
@@ -833,12 +1023,6 @@ function MaterialRequestImportPreviewTable({
 								{DefaultItemColumnLabels[columnId]}
 							</th>
 						))}
-						<th className="w-24 border border-darknavy/10 px-2 py-2 text-center font-semibold">
-							is-valid
-						</th>
-						<th className="w-[18rem] border border-darknavy/10 px-2 py-2 font-semibold">
-							Reason
-						</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -847,90 +1031,88 @@ function MaterialRequestImportPreviewTable({
 
 						return (
 							<tr
-							key={row.id}
-							className={joinClasses(
-								"border-b border-darknavy/10",
-								!isValid && "bg-coralpink/5",
-							)}
-						>
-							<td className="border border-darknavy/10 px-2 py-2 text-center font-semibold">
-								{rowOffset + index + 1}
-							</td>
-							{DefaultItemColumnOrder.map((columnId) => (
-								<td
-									key={`${row.id}-${columnId}`}
-									className="border border-darknavy/10 p-0"
-								>
-									{columnId === "uom" ? (
-										<select
-											value={row.item.uom}
-											onChange={(event) =>
-												onUpdateItem(row.id, "uom", event.target.value)
-											}
-											className={`${previewCellClassName()} app-select-control`}
-										>
-											{MaterialRequestUomOptions.map((option) => (
-												<option key={option} value={option}>
-													{option}
-												</option>
-											))}
-										</select>
-									) : columnId === "requestQuantity" ||
-										columnId === "stockQuantity" ? (
-										<input
-											type="number"
-											min="0"
-											value={formatNumberInputValue(row.item[columnId])}
-											onChange={(event) =>
-												onUpdateItem(
-													row.id,
-													columnId,
-													parseNumberInputValue(event.target.value),
-												)
-											}
-											className={previewCellClassName("text-right")}
-										/>
-									) : (
-										<input
-											type="text"
-											value={String(row.item[columnId] ?? "")}
-											onChange={(event) =>
-												onUpdateItem(row.id, columnId, event.target.value)
-											}
-											className={previewCellClassName()}
-										/>
-									)}
+								key={row.id}
+								className={joinClasses(
+									"border-b border-darknavy/10",
+									!isValid && "bg-coralpink/5",
+								)}
+							>
+								<td className="border border-darknavy/10 px-2 py-2 text-center font-semibold">
+									{rowOffset + index + 1}
 								</td>
-							))}
-							<td className="border border-darknavy/10 px-2 py-2 text-center">
-								{isValid ? (
-									<span className="inline-flex items-center gap-1.5 rounded-full border border-citron/30 bg-citron/12 px-2 py-1 text-[11px] font-semibold text-darknavy">
-										<CheckCircle2
-											className="h-3.5 w-3.5 text-citron"
-											aria-hidden="true"
-										/>
-										true
-									</span>
-								) : (
-									<span className="inline-flex items-center gap-1.5 rounded-full border border-coralpink/30 bg-coralpink/10 px-2 py-1 text-[11px] font-semibold text-coralpink">
-										<AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
-										false
-									</span>
-								)}
-							</td>
-							<td className="border border-darknavy/10 px-2 py-2">
-								{isValid ? (
-									<span className="text-[11px] font-semibold text-darknavy/50">
-										Ready
-									</span>
-								) : (
-									<ul className="grid gap-1 text-[11px] font-semibold text-coralpink">
-										{row.errors.map((error) => (
-											<li key={error}>{error}</li>
-										))}
-									</ul>
-								)}
-							</td>
+								{DefaultItemColumnOrder.map((columnId) => (
+									<td
+										key={`${row.id}-${columnId}`}
+										className="border border-darknavy/10 p-0"
+									>
+										{columnId === "uom" ? (
+											<div className="relative h-10 w-full">
+												<select
+													value={row.item.uom}
+													aria-invalid={Boolean(row.fieldErrors[columnId])}
+													onChange={(event) =>
+														onUpdateItem(row.id, "uom", event.target.value)
+													}
+													className={`${previewCellClassName(
+														undefined,
+														row.fieldErrors[columnId],
+													)} app-select-control`}
+												>
+													{MaterialRequestUomOptions.map((option) => (
+														<option key={option} value={option}>
+															{option}
+														</option>
+													))}
+												</select>
+												<CellValidationWarning
+													message={row.fieldErrors[columnId]}
+												/>
+											</div>
+										) : columnId === "requestQuantity" ||
+											columnId === "stockQuantity" ? (
+											<div className="relative h-10 w-full">
+												<input
+													type="number"
+													min="0"
+													value={formatNumberInputValue(row.item[columnId])}
+													aria-invalid={Boolean(row.fieldErrors[columnId])}
+													onChange={(event) =>
+														onUpdateItem(
+															row.id,
+															columnId,
+															parseNumberInputValue(event.target.value),
+														)
+													}
+													className={previewCellClassName(
+														"text-right",
+														row.fieldErrors[columnId],
+													)}
+												/>
+												<CellValidationWarning
+													message={row.fieldErrors[columnId]}
+												/>
+											</div>
+										) : (
+											<div className="relative h-10 w-full">
+												<input
+													type="text"
+													value={String(row.item[columnId] ?? "")}
+													aria-invalid={Boolean(row.fieldErrors[columnId])}
+													onChange={(event) =>
+														onUpdateItem(row.id, columnId, event.target.value)
+													}
+													className={previewCellClassName(
+														undefined,
+														row.fieldErrors[columnId],
+													)}
+												/>
+												<CellValidationWarning
+													message={row.fieldErrors[columnId]}
+												/>
+											</div>
+										)}
+									</td>
+								))}
 							</tr>
 						);
 					})}
@@ -943,41 +1125,122 @@ function MaterialRequestImportPreviewTable({
 function ItemInput({
 	onChange,
 	readOnly,
+	tabIndex,
+	validationMessage,
 	value,
 }: {
 	onChange: (value: string) => void;
 	readOnly: boolean;
+	tabIndex: number;
+	validationMessage?: string;
 	value: string;
 }) {
 	return (
-		<input
-			type="text"
-			value={value}
-			readOnly={readOnly}
-			onChange={(event) => onChange(event.target.value)}
-			className={cellControlClassName()}
-		/>
+		<div className="relative h-10 w-full">
+			<input
+				type="text"
+				value={value}
+				readOnly={readOnly}
+				aria-invalid={Boolean(validationMessage)}
+				tabIndex={tabIndex}
+				onChange={(event) => onChange(event.target.value)}
+				className={cellControlClassName(undefined, validationMessage)}
+			/>
+			<CellValidationWarning message={validationMessage} />
+		</div>
 	);
 }
 
 function NumberInput({
 	onChange,
 	readOnly,
+	tabIndex,
+	validationMessage,
 	value,
 }: {
 	onChange: (value: MaterialRequestNumberValue) => void;
 	readOnly: boolean;
+	tabIndex: number;
+	validationMessage?: string;
 	value: MaterialRequestNumberValue;
 }) {
 	return (
-		<input
-			type="number"
-			min="0"
-			value={formatNumberInputValue(value)}
-			readOnly={readOnly}
-			onChange={(event) => onChange(parseNumberInputValue(event.target.value))}
-			className={cellControlClassName("text-right")}
-		/>
+		<div className="relative h-10 w-full">
+			<input
+				type="number"
+				min="0"
+				value={formatNumberInputValue(value)}
+				readOnly={readOnly}
+				aria-invalid={Boolean(validationMessage)}
+				tabIndex={tabIndex}
+				onChange={(event) => onChange(parseNumberInputValue(event.target.value))}
+				className={cellControlClassName("text-right", validationMessage)}
+			/>
+			<CellValidationWarning message={validationMessage} />
+		</div>
+	);
+}
+
+function CellValidationWarning({ message }: { message?: string }) {
+	const triggerRef = useRef<HTMLSpanElement>(null);
+	const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+	const [tooltipStyle, setTooltipStyle] = useState({
+		left: 0,
+		top: 0,
+		transform: "translateY(-100%)",
+	});
+
+	useLayoutEffect(() => {
+		if (!isTooltipOpen || !triggerRef.current) {
+			return;
+		}
+
+		const rect = triggerRef.current.getBoundingClientRect();
+		const tooltipWidth = 224;
+		const viewportPadding = 8;
+		const left = Math.min(
+			Math.max(viewportPadding, rect.right - tooltipWidth),
+			window.innerWidth - tooltipWidth - viewportPadding,
+		);
+		const hasRoomAbove = rect.top > 56;
+		const top = hasRoomAbove ? rect.top - 8 : rect.bottom + 8;
+
+		setTooltipStyle({
+			left,
+			top,
+			transform: hasRoomAbove ? "translateY(-100%)" : "translateY(0)",
+		});
+	}, [isTooltipOpen, message]);
+
+	if (!message) {
+		return null;
+	}
+
+	return (
+		<span
+			ref={triggerRef}
+			tabIndex={-1}
+			aria-label={message}
+			onBlur={() => setIsTooltipOpen(false)}
+			onFocus={() => setIsTooltipOpen(true)}
+			onMouseEnter={() => setIsTooltipOpen(true)}
+			onMouseLeave={() => setIsTooltipOpen(false)}
+			className="group absolute right-2 top-1/2 z-20 inline-flex -translate-y-1/2 items-center justify-center rounded-full text-coralpink outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25"
+		>
+			<AlertCircle className="h-4 w-4" aria-hidden="true" />
+			{isTooltipOpen && typeof document !== "undefined"
+				? createPortal(
+					<span
+						role="tooltip"
+						style={tooltipStyle}
+						className="pointer-events-none fixed z-[220] w-56 rounded-md border border-coralpink/20 bg-white px-2.5 py-1.5 text-left text-xs font-semibold leading-5 text-coralpink shadow-[0_12px_30px_rgba(33,39,56,0.16)]"
+					>
+						{message}
+					</span>,
+					document.body,
+				)
+				: null}
+		</span>
 	);
 }
 
@@ -1009,8 +1272,8 @@ function parseMaterialRequestImportText(
 	const rows =
 		delimiter === "\t"
 			? trimmedText
-					.split(/\r?\n/)
-					.map((line) => line.split("\t").map((cell) => cell.trim()))
+				.split(/\r?\n/)
+				.map((line) => line.split("\t").map((cell) => cell.trim()))
 			: parseCsvRows(trimmedText);
 	const nonEmptyRows = rows.filter((row) =>
 		row.some((cell) => String(cell ?? "").trim() !== ""),
@@ -1058,7 +1321,7 @@ function createImportPreviewRow(
 	};
 
 	return {
-		errors: validateImportItem(item, requiredColumnIds),
+		...validateImportItem(item, requiredColumnIds),
 		id: createMaterialRequestId("import-row"),
 		item,
 	};
@@ -1067,11 +1330,81 @@ function createImportPreviewRow(
 function validateImportItem(
 	item: MaterialRequestItem,
 	requiredColumnIds: MaterialRequestItemColumnId[],
+): MaterialRequestItemValidationResult {
+	const fieldErrors = createItemValidationMessages(item, requiredColumnIds);
+	const errors = Object.values(fieldErrors);
+
+	return {
+		errors: Array.from(new Set(errors)),
+		fieldErrors,
+	};
+}
+
+function createItemValidationMessagesById(
+	items: MaterialRequestItem[],
+	requiredColumnIds: MaterialRequestItemColumnId[],
+) {
+	const messagesById = new Map<string, MaterialRequestItemValidationMessages>();
+
+	items.forEach((item) => {
+		const fieldErrors = createItemValidationMessages(item, requiredColumnIds);
+
+		if (Object.keys(fieldErrors).length > 0) {
+			messagesById.set(item.id, fieldErrors);
+		}
+	});
+
+	return messagesById;
+}
+
+function filterItemValidationMessagesByTouchedCells(
+	messagesById: Map<string, MaterialRequestItemValidationMessages>,
+	touchedItemCellIds: Set<string>,
+) {
+	const touchedMessagesById =
+		new Map<string, MaterialRequestItemValidationMessages>();
+
+	messagesById.forEach((fieldErrors, itemId) => {
+		const touchedFieldErrors: MaterialRequestItemValidationMessages = {};
+
+		Object.entries(fieldErrors).forEach(([columnId, message]) => {
+			if (
+				message &&
+				isItemColumnId(columnId) &&
+				touchedItemCellIds.has(createItemCellId(itemId, columnId))
+			) {
+				touchedFieldErrors[columnId] = message;
+			}
+		});
+
+		if (Object.keys(touchedFieldErrors).length > 0) {
+			touchedMessagesById.set(itemId, touchedFieldErrors);
+		}
+	});
+
+	return touchedMessagesById;
+}
+
+function createItemValidationMessages(
+	item: MaterialRequestItem,
+	requiredColumnIds: MaterialRequestItemColumnId[],
 ) {
 	const result = MaterialRequestItemValidationSchema.safeParse(item);
-	const errors = result.success
-		? []
-		: result.error.issues.map((issue) => issue.message);
+	const fieldErrors: MaterialRequestItemValidationMessages = {};
+
+	if (!result.success) {
+		result.error.issues.forEach((issue) => {
+			const columnId = issue.path[0];
+
+			if (
+				typeof columnId === "string" &&
+				isItemColumnId(columnId) &&
+				!fieldErrors[columnId]
+			) {
+				fieldErrors[columnId] = issue.message;
+			}
+		});
+	}
 
 	requiredColumnIds.forEach((columnId) => {
 		if (DefaultRequiredItemColumnIds.has(columnId)) {
@@ -1082,10 +1415,12 @@ function validateImportItem(
 			return;
 		}
 
-		errors.push(`Enter ${DefaultItemColumnLabels[columnId].toLowerCase()}.`);
+		fieldErrors[columnId] =
+			fieldErrors[columnId] ??
+			`Enter ${DefaultItemColumnLabels[columnId].toLowerCase()}.`;
 	});
 
-	return Array.from(new Set(errors));
+	return fieldErrors;
 }
 
 function getImportHeaderIndexes(row: string[]) {
@@ -1210,6 +1545,17 @@ function normalizeImportedNumber(value: string) {
 	return Number.isFinite(amount) ? amount : "";
 }
 
+function parsePastedItemCellValue(
+	columnId: MaterialRequestItemColumnId,
+	value: string,
+) {
+	if (columnId === "requestQuantity" || columnId === "stockQuantity") {
+		return normalizeImportedNumber(value);
+	}
+
+	return String(value ?? "").trim();
+}
+
 function itemColumnHasRequiredValue(
 	item: MaterialRequestItem,
 	columnId: MaterialRequestItemColumnId,
@@ -1248,40 +1594,30 @@ async function readMaterialRequestImportFileText(file: File) {
 }
 
 async function readMaterialRequestXlsxRawRows(buffer: ArrayBuffer) {
-	const entries = await readZipEntries(buffer);
-	const sharedStrings = parseSharedStrings(entries.get("xl/sharedStrings.xml"));
-	const sheetPath = findFirstWorksheetPath(entries);
-	const sheetXml = entries.get(sheetPath);
+	const ExcelJS = await loadExcelJs();
+	const workbook = new ExcelJS.Workbook();
 
-	if (!sheetXml) {
+	await workbook.xlsx.load(buffer);
+
+	const worksheet = workbook.worksheets[0];
+
+	if (!worksheet) {
 		throw new Error("No worksheet was found in the Excel file.");
 	}
 
-	const documentNode = new DOMParser().parseFromString(sheetXml, "text/xml");
+	const rows: string[][] = [];
 
-	return Array.from(documentNode.getElementsByTagName("row")).map((row) => {
+	worksheet.eachRow({ includeEmpty: false }, (row) => {
 		const cells: string[] = [];
 
-		Array.from(row.getElementsByTagName("c")).forEach((cell) => {
-			const reference = cell.getAttribute("r") ?? "";
-			const columnIndex = getExcelColumnIndex(reference);
-			const cellType = cell.getAttribute("t");
-			const rawValue =
-				cellType === "inlineStr"
-					? Array.from(cell.getElementsByTagName("t"))
-							.map((node) => node.textContent ?? "")
-							.join("")
-					: (cell.getElementsByTagName("v")[0]?.textContent ?? "");
-			const value =
-				cellType === "s" ? (sharedStrings[Number(rawValue)] ?? "") : rawValue;
-
-			if (columnIndex >= 0) {
-				cells[columnIndex] = value.trim();
-			}
+		row.eachCell({ includeEmpty: true }, (cell, columnNumber) => {
+			cells[columnNumber - 1] = formatExcelCellValue(cell.value, cell.text);
 		});
 
-		return cells;
+		rows.push(cells);
 	});
+
+	return rows;
 }
 
 function formatRowsAsTabularText(rows: string[][]) {
@@ -1317,16 +1653,33 @@ function isItemColumnId(columnId: string): columnId is MaterialRequestItemColumn
 	);
 }
 
-function cellControlClassName(extraClassName?: string) {
+function createItemCellId(
+	itemId: string,
+	columnId: MaterialRequestItemColumnId,
+) {
+	return `${itemId}:${columnId}`;
+}
+
+function cellControlClassName(
+	extraClassName?: string,
+	validationMessage?: string,
+) {
 	return joinClasses(
 		"app-data-entry-field h-10 w-full rounded-none border-0 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy",
+		validationMessage &&
+		"bg-coralpink/5 pr-9 ring-2 ring-inset ring-coralpink/50 focus:bg-coralpink/5 focus:ring-coralpink/70",
 		extraClassName,
 	);
 }
 
-function previewCellClassName(extraClassName?: string) {
+function previewCellClassName(
+	extraClassName?: string,
+	validationMessage?: string,
+) {
 	return joinClasses(
 		"app-data-entry-field h-10 w-full rounded-none border-0 bg-white px-2 text-xs font-medium text-darknavy outline-none transition focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35",
+		validationMessage &&
+		"bg-coralpink/5 pr-9 ring-2 ring-inset ring-coralpink/50 focus:bg-coralpink/5 focus:ring-coralpink/70",
 		extraClassName,
 	);
 }
@@ -1346,361 +1699,121 @@ function downloadBytesFile(
 	URL.revokeObjectURL(url);
 }
 
-function createXlsxWorkbook(rows: string[][], sheetName: string) {
-	const worksheetXml = createWorksheetXml(rows);
-	const workbookXml = createWorkbookXml(sheetName);
+async function loadExcelJs() {
+	const ExcelJS = await import("exceljs");
 
-	return createStoredZipArchive([
-		{
-			name: "[Content_Types].xml",
-			text:
-				'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-				'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
-				'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
-				'<Default Extension="xml" ContentType="application/xml"/>' +
-				'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
-				'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
-				"</Types>",
-		},
-		{
-			name: "_rels/.rels",
-			text:
-				'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-				'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-				'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
-				"</Relationships>",
-		},
-		{
-			name: "xl/workbook.xml",
-			text: workbookXml,
-		},
-		{
-			name: "xl/_rels/workbook.xml.rels",
-			text:
-				'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-				'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-				'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
-				"</Relationships>",
-		},
-		{
-			name: "xl/worksheets/sheet1.xml",
-			text: worksheetXml,
-		},
-	]);
+	return ExcelJS.default;
 }
 
-function createWorkbookXml(sheetName: string) {
-	return (
-		'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-		'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
-		'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
-		`<sheets><sheet name="${escapeXmlText(sheetName)}" sheetId="1" r:id="rId1"/></sheets>` +
-		"</workbook>"
-	);
-}
+async function createXlsxWorkbook(rows: string[][], sheetName: string) {
+	const ExcelJS = await loadExcelJs();
+	const workbook = new ExcelJS.Workbook();
+	const worksheet = workbook.addWorksheet(createExcelSheetName(sheetName));
 
-function createWorksheetXml(rows: string[][]) {
-	const rowXml = rows
-		.map((row, rowIndex) => {
-			const rowNumber = rowIndex + 1;
-			const cellXml = row
-				.map((cell, columnIndex) => {
-					const reference = `${getExcelColumnLetters(columnIndex)}${rowNumber}`;
-					const value = String(cell ?? "");
+	workbook.creator = "GR8Books";
+	workbook.created = new Date();
+	workbook.modified = new Date();
+	worksheet.views = [{ state: "frozen", ySplit: 1 }];
 
-					return (
-						`<c r="${reference}" t="inlineStr">` +
-						`<is><t>${escapeXmlText(value)}</t></is>` +
-						"</c>"
-					);
-				})
-				.join("");
-
-			return `<row r="${rowNumber}">${cellXml}</row>`;
-		})
-		.join("");
-
-	return (
-		'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-		'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
-		"<sheetData>" +
-		rowXml +
-		"</sheetData>" +
-		"</worksheet>"
-	);
-}
-
-function createStoredZipArchive(files: { name: string; text: string }[]) {
-	const encoder = new TextEncoder();
-	const localParts: Uint8Array[] = [];
-	const centralParts: Uint8Array[] = [];
-	let offset = 0;
-
-	files.forEach((file) => {
-		const nameBytes = encoder.encode(file.name);
-		const dataBytes = encoder.encode(file.text);
-		const crc = calculateCrc32(dataBytes);
-		const localHeader = createZipLocalHeader(nameBytes, dataBytes, crc);
-		const centralHeader = createZipCentralHeader(
-			nameBytes,
-			dataBytes,
-			crc,
-			offset,
-		);
-
-		localParts.push(localHeader, dataBytes);
-		centralParts.push(centralHeader);
-		offset += localHeader.byteLength + dataBytes.byteLength;
+	rows.forEach((row) => {
+		worksheet.addRow(row);
 	});
 
-	const centralDirectoryOffset = offset;
-	const centralDirectorySize = centralParts.reduce(
-		(sum, part) => sum + part.byteLength,
+	const headerRow = worksheet.getRow(1);
+
+	headerRow.height = 22;
+	headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+	headerRow.fill = {
+		fgColor: { argb: "FF22C55E" },
+		pattern: "solid",
+		type: "pattern",
+	};
+	headerRow.alignment = { vertical: "middle" };
+
+	const maxColumnCount = rows.reduce(
+		(currentCount, row) => Math.max(currentCount, row.length),
 		0,
 	);
-	const endRecord = createZipEndRecord(
-		files.length,
-		centralDirectorySize,
-		centralDirectoryOffset,
-	);
 
-	return concatBytes([...localParts, ...centralParts, endRecord]);
-}
+	Array.from({ length: maxColumnCount }).forEach((_, columnIndex) => {
+		const column = worksheet.getColumn(columnIndex + 1);
 
-function createZipLocalHeader(
-	nameBytes: Uint8Array,
-	dataBytes: Uint8Array,
-	crc: number,
-) {
-	const header = new Uint8Array(30 + nameBytes.byteLength);
-	const view = new DataView(header.buffer);
-
-	view.setUint32(0, 0x04034b50, true);
-	view.setUint16(4, 20, true);
-	view.setUint16(6, 0, true);
-	view.setUint16(8, 0, true);
-	view.setUint16(10, 0, true);
-	view.setUint16(12, 0, true);
-	view.setUint32(14, crc, true);
-	view.setUint32(18, dataBytes.byteLength, true);
-	view.setUint32(22, dataBytes.byteLength, true);
-	view.setUint16(26, nameBytes.byteLength, true);
-	view.setUint16(28, 0, true);
-	header.set(nameBytes, 30);
-
-	return header;
-}
-
-function createZipCentralHeader(
-	nameBytes: Uint8Array,
-	dataBytes: Uint8Array,
-	crc: number,
-	localHeaderOffset: number,
-) {
-	const header = new Uint8Array(46 + nameBytes.byteLength);
-	const view = new DataView(header.buffer);
-
-	view.setUint32(0, 0x02014b50, true);
-	view.setUint16(4, 20, true);
-	view.setUint16(6, 20, true);
-	view.setUint16(8, 0, true);
-	view.setUint16(10, 0, true);
-	view.setUint16(12, 0, true);
-	view.setUint16(14, 0, true);
-	view.setUint32(16, crc, true);
-	view.setUint32(20, dataBytes.byteLength, true);
-	view.setUint32(24, dataBytes.byteLength, true);
-	view.setUint16(28, nameBytes.byteLength, true);
-	view.setUint16(30, 0, true);
-	view.setUint16(32, 0, true);
-	view.setUint16(34, 0, true);
-	view.setUint16(36, 0, true);
-	view.setUint32(38, 0, true);
-	view.setUint32(42, localHeaderOffset, true);
-	header.set(nameBytes, 46);
-
-	return header;
-}
-
-function createZipEndRecord(
-	fileCount: number,
-	centralDirectorySize: number,
-	centralDirectoryOffset: number,
-) {
-	const header = new Uint8Array(22);
-	const view = new DataView(header.buffer);
-
-	view.setUint32(0, 0x06054b50, true);
-	view.setUint16(4, 0, true);
-	view.setUint16(6, 0, true);
-	view.setUint16(8, fileCount, true);
-	view.setUint16(10, fileCount, true);
-	view.setUint32(12, centralDirectorySize, true);
-	view.setUint32(16, centralDirectoryOffset, true);
-	view.setUint16(20, 0, true);
-
-	return header;
-}
-
-function concatBytes(parts: Uint8Array[]) {
-	const totalLength = parts.reduce((sum, part) => sum + part.byteLength, 0);
-	const output = new Uint8Array(totalLength);
-	let offset = 0;
-
-	parts.forEach((part) => {
-		output.set(part, offset);
-		offset += part.byteLength;
+		column.width = calculateExcelColumnWidth(rows, columnIndex);
+		column.alignment = { vertical: "middle" };
 	});
 
-	return output;
-}
-
-function calculateCrc32(bytes: Uint8Array) {
-	let crc = 0xffffffff;
-
-	bytes.forEach((byte) => {
-		crc ^= byte;
-
-		for (let bit = 0; bit < 8; bit += 1) {
-			crc = crc & 1 ? (crc >>> 1) ^ 0xedb88320 : crc >>> 1;
-		}
+	worksheet.eachRow((row) => {
+		row.eachCell({ includeEmpty: true }, (cell) => {
+			cell.border = {
+				bottom: { color: { argb: "FFE5E7EB" }, style: "thin" },
+				left: { color: { argb: "FFE5E7EB" }, style: "thin" },
+				right: { color: { argb: "FFE5E7EB" }, style: "thin" },
+				top: { color: { argb: "FFE5E7EB" }, style: "thin" },
+			};
+		});
 	});
 
-	return (crc ^ 0xffffffff) >>> 0;
+	return workbook.xlsx.writeBuffer();
 }
 
-async function readZipEntries(buffer: ArrayBuffer) {
-	const view = new DataView(buffer);
-	const entries = new Map<string, string>();
-	const endOfCentralDirectoryOffset = findEndOfCentralDirectory(view);
-	const entryCount = view.getUint16(endOfCentralDirectoryOffset + 10, true);
-	let centralDirectoryOffset = view.getUint32(
-		endOfCentralDirectoryOffset + 16,
-		true,
-	);
-	const decoder = new TextDecoder();
+function createExcelSheetName(sheetName: string) {
+	const safeSheetName = sheetName.replace(/[\\/*?:[\]]/g, " ").trim();
 
-	for (let index = 0; index < entryCount; index += 1) {
-		if (view.getUint32(centralDirectoryOffset, true) !== 0x02014b50) {
-			break;
-		}
+	return safeSheetName.slice(0, 31) || "Sheet1";
+}
 
-		const compressionMethod = view.getUint16(
-			centralDirectoryOffset + 10,
-			true,
-		);
-		const compressedSize = view.getUint32(centralDirectoryOffset + 20, true);
-		const fileNameLength = view.getUint16(centralDirectoryOffset + 28, true);
-		const extraLength = view.getUint16(centralDirectoryOffset + 30, true);
-		const commentLength = view.getUint16(centralDirectoryOffset + 32, true);
-		const localHeaderOffset = view.getUint32(centralDirectoryOffset + 42, true);
-		const fileNameBytes = new Uint8Array(
-			buffer,
-			centralDirectoryOffset + 46,
-			fileNameLength,
-		);
-		const fileName = decoder.decode(fileNameBytes);
-		const localFileNameLength = view.getUint16(localHeaderOffset + 26, true);
-		const localExtraLength = view.getUint16(localHeaderOffset + 28, true);
-		const dataOffset =
-			localHeaderOffset + 30 + localFileNameLength + localExtraLength;
-		const compressedBytes = buffer.slice(dataOffset, dataOffset + compressedSize);
-		const fileText =
-			compressionMethod === 0
-				? decoder.decode(compressedBytes)
-				: compressionMethod === 8
-					? decoder.decode(await inflateRaw(compressedBytes))
-					: "";
+function calculateExcelColumnWidth(rows: string[][], columnIndex: number) {
+	const maxLength = rows.reduce((currentLength, row) => {
+		return Math.max(currentLength, String(row[columnIndex] ?? "").length);
+	}, 0);
 
-		if (fileText) {
-			entries.set(fileName, fileText);
-		}
+	return Math.min(42, Math.max(12, maxLength + 2));
+}
 
-		centralDirectoryOffset += 46 + fileNameLength + extraLength + commentLength;
+function formatExcelCellValue(value: unknown, displayText?: string) {
+	const normalizedDisplayText = String(displayText ?? "")
+		.replace(/\r?\n/g, " ")
+		.trim();
+
+	if (normalizedDisplayText) {
+		return normalizedDisplayText;
 	}
 
-	return entries;
-}
+	if (value == null) {
+		return "";
+	}
 
-function findEndOfCentralDirectory(view: DataView) {
-	const minimumOffset = Math.max(0, view.byteLength - 66000);
+	if (value instanceof Date) {
+		return value.toISOString().slice(0, 10);
+	}
 
-	for (let offset = view.byteLength - 22; offset >= minimumOffset; offset -= 1) {
-		if (view.getUint32(offset, true) === 0x06054b50) {
-			return offset;
+	if (typeof value === "object" && isRecord(value)) {
+		if (Array.isArray(value.richText)) {
+			return value.richText
+				.map((part) =>
+					isRecord(part) ? String(part.text ?? "") : "",
+				)
+				.join("")
+				.replace(/\r?\n/g, " ")
+				.trim();
+		}
+
+		if ("text" in value) {
+			return String(value.text ?? "")
+				.replace(/\r?\n/g, " ")
+				.trim();
+		}
+
+		if ("result" in value) {
+			return formatExcelCellValue(value.result);
 		}
 	}
 
-	throw new Error("The Excel file could not be read.");
+	return String(value).replace(/\r?\n/g, " ").trim();
 }
 
-async function inflateRaw(compressedBytes: ArrayBuffer) {
-	if (typeof DecompressionStream === "undefined") {
-		throw new Error("This browser cannot read compressed Excel files.");
-	}
-
-	const stream = new Blob([compressedBytes])
-		.stream()
-		.pipeThrough(new DecompressionStream("deflate-raw"));
-
-	return new Response(stream).arrayBuffer();
-}
-
-function parseSharedStrings(xml?: string) {
-	if (!xml) {
-		return [];
-	}
-
-	const documentNode = new DOMParser().parseFromString(xml, "text/xml");
-
-	return Array.from(documentNode.getElementsByTagName("si")).map((item) =>
-		Array.from(item.getElementsByTagName("t"))
-			.map((node) => node.textContent ?? "")
-			.join(""),
-	);
-}
-
-function findFirstWorksheetPath(entries: Map<string, string>) {
-	if (entries.has("xl/worksheets/sheet1.xml")) {
-		return "xl/worksheets/sheet1.xml";
-	}
-
-	const worksheetPath = Array.from(entries.keys()).find(
-		(path) => path.startsWith("xl/worksheets/") && path.endsWith(".xml"),
-	);
-
-	if (!worksheetPath) {
-		throw new Error("No worksheet was found in the Excel file.");
-	}
-
-	return worksheetPath;
-}
-
-function getExcelColumnIndex(reference: string) {
-	const columnLetters = reference.match(/[A-Z]+/i)?.[0]?.toUpperCase() ?? "";
-
-	if (!columnLetters) {
-		return -1;
-	}
-
-	return (
-		columnLetters.split("").reduce((sum, letter) => {
-			return sum * 26 + letter.charCodeAt(0) - 64;
-		}, 0) - 1
-	);
-}
-
-function getExcelColumnLetters(columnIndex: number) {
-	let columnNumber = columnIndex + 1;
-	let letters = "";
-
-	while (columnNumber > 0) {
-		const remainder = (columnNumber - 1) % 26;
-		letters = String.fromCharCode(65 + remainder) + letters;
-		columnNumber = Math.floor((columnNumber - 1) / 26);
-	}
-
-	return letters;
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
 }
 
 function createSimplePdf(title: string, rows: string[][]) {
@@ -1853,14 +1966,6 @@ function escapePdfText(value: string) {
 	return value.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
 }
 
-function escapeXmlText(value: string) {
-	return value
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;");
-}
-
 const DefaultItemColumnOrder = [
 	"itemCode",
 	"barcode",
@@ -1926,6 +2031,28 @@ let materialRequestTextMeasureContext:
 	| CanvasRenderingContext2D
 	| null
 	| undefined;
+
+function calculateItemColumnFitWidth({
+	columnId,
+	columnLabels,
+	items,
+}: {
+	columnId: MaterialRequestItemColumnId;
+	columnLabels: Record<MaterialRequestItemColumnId, string>;
+	items: MaterialRequestItem[];
+}) {
+	const headerWidth = estimateTextWidth(columnLabels[columnId], 76);
+	const contentWidth = items.reduce(
+		(currentWidth, item) =>
+			Math.max(
+				currentWidth,
+				estimateTextWidth(String(item[columnId] ?? ""), 24),
+			),
+		50,
+	);
+
+	return Math.max(headerWidth, contentWidth);
+}
 
 function estimateTextWidth(value: string, horizontalPadding: number) {
 	const textWidth = measureTextWidth(value);

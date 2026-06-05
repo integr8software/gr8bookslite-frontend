@@ -82,7 +82,7 @@ export function ModuleDrawer({
 					<motion.button
 						type="button"
 						aria-label="Close drawer overlay"
-						className="fixed inset-0 z-50 bg-slate-950/35 backdrop-blur-sm"
+						className="fixed inset-0 z-60 bg-slate-950/35 backdrop-blur-sm"
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}

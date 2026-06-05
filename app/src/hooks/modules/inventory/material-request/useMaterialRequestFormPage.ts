@@ -205,6 +205,25 @@ export function useMaterialRequestFormPage() {
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
 
+	function clearItem(itemId: string) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			items: current.items.map((item) =>
+				item.id === itemId
+					? {
+							...emptyMaterialRequestItem,
+							id: item.id,
+						}
+					: item,
+			),
+		}));
+		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
 	function clearItems(mode: MaterialRequestItemClearMode) {
 		if (isReadonly) {
 			return;
@@ -219,6 +238,41 @@ export function useMaterialRequestFormPage() {
 			return {
 				...current,
 				items: nextItems.length > 0 ? nextItems : [createEmptyItem()],
+			};
+		});
+		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
+	function pasteItemCells(
+		startItemId: string,
+		updates: Partial<MaterialRequestItem>[],
+	) {
+		if (isReadonly || updates.length === 0) {
+			return;
+		}
+
+		setValues((current) => {
+			const startIndex = current.items.findIndex(
+				(item) => item.id === startItemId,
+			);
+			const resolvedStartIndex =
+				startIndex === -1 ? current.items.length : startIndex;
+			const nextItems = [...current.items];
+
+			updates.forEach((update, rowOffset) => {
+				const itemIndex = resolvedStartIndex + rowOffset;
+				const currentItem = nextItems[itemIndex] ?? createEmptyItem();
+
+				nextItems[itemIndex] = {
+					...currentItem,
+					...update,
+					id: currentItem.id,
+				};
+			});
+
+			return {
+				...current,
+				items: nextItems,
 			};
 		});
 		setErrors((current) => ({ ...current, items: undefined }));
@@ -347,6 +401,7 @@ export function useMaterialRequestFormPage() {
 	return {
 		addItems,
 		backHref,
+		clearItem,
 		clearItems,
 		duplicateItem,
 		errors,
@@ -362,6 +417,7 @@ export function useMaterialRequestFormPage() {
 		previewRecord,
 		insertItem,
 		moveItem,
+		pasteItemCells,
 		removeItem,
 		updateRequestStatus,
 		updateField,

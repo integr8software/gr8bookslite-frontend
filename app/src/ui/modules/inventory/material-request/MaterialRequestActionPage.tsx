@@ -72,11 +72,13 @@ export function MaterialRequestActionPage() {
 				isReadonly={page.isReadonly}
 				items={page.values.items}
 				onAddItems={page.addItems}
+				onClearItem={page.clearItem}
 				onClearItems={page.clearItems}
 				onDuplicateItem={page.duplicateItem}
 				onImportItems={page.importItems}
 				onInsertItem={page.insertItem}
 				onMoveItem={page.moveItem}
+				onPasteItemCells={page.pasteItemCells}
 				onRemoveItem={page.removeItem}
 				onUpdateItem={page.updateItem}
 			/>

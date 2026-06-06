@@ -63,12 +63,24 @@ export async function SignUpAction(
       pendingVerificationEmail: response.email,
     };
   } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "We could not create your account right now.";
+
     return {
       status: "error",
-      message:
-        error instanceof Error
-          ? error.message
-          : "We could not create your account right now.",
+      message,
+      errors:
+        message ===
+          "An account already uses this email. Sign in or reset your password." ||
+        message === "Email is already in use."
+          ? {
+              email: [
+                "An account already uses this email. Sign in or reset your password.",
+              ],
+            }
+          : undefined,
       formValues,
     };
   }

@@ -161,11 +161,16 @@ export function useLoginForm() {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Email or Password is incorrect.";
+      const passwordMessage = message.startsWith(
+        "This account does not have a password yet.",
+      )
+        ? message
+        : "Email or Password is incorrect.";
       const nextState: AuthActionState = {
         status: "error",
         message,
         errors: {
-          password: ["Email or Password is incorrect."],
+          password: [passwordMessage],
         },
         formValues: { email },
       };

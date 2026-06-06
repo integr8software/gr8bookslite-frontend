@@ -17,7 +17,6 @@ import { AuthField } from "@/app/src/ui/auth/AuthField";
 export function LoginForm() {
   const {
     state,
-    formAction,
     pending,
     isSystemRedirecting,
     isOnboardingRedirecting,
@@ -60,7 +59,6 @@ export function LoginForm() {
             </div>
 
             <form
-              action={formAction}
               onSubmit={handleSubmit}
               className="mt-10 w-full space-y-4"
               noValidate

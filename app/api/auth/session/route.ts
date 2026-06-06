@@ -11,6 +11,9 @@ type AuthSessionRequestBody = {
 
 export async function GET() {
   const accessToken = await GetAuthAccessTokenCookie();
+  console.log("[auth/session] cookie lookup", {
+    hasAccessToken: Boolean(accessToken),
+  });
 
   if (!accessToken) {
     return NextResponse.json(
@@ -39,6 +42,10 @@ export async function POST(request: Request) {
     | AuthSessionRequestBody
     | null;
   const accessToken = body?.accessToken?.trim();
+  console.log("[auth/session] create request", {
+    hasAccessToken: Boolean(accessToken),
+    rememberMe: Boolean(body?.rememberMe),
+  });
 
   if (!accessToken) {
     return NextResponse.json(

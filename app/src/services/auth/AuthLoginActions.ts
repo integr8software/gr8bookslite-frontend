@@ -68,7 +68,6 @@ export async function LoginAction(
     return {
       status: "success",
       message: response.message ?? "Login successful.",
-      accessToken: response.accessToken,
       rememberMe,
       redirectTo: GetFallbackPostAuthRedirectPath(response.accessToken),
     };

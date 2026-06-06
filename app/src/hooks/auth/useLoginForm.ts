@@ -11,13 +11,15 @@ import {
   ClearPendingVerificationEmail,
   SavePendingVerificationEmail,
 } from "@/app/src/data/auth/AuthVerificationStorage";
-import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
+import {
+  AuthenticatedSessionMarker,
+  SaveAccessToken,
+} from "@/app/src/data/auth/AuthSessionStorage";
 import { LoginAction } from "@/app/src/services/auth/AuthActions";
 import {
   GetFallbackPostAuthRedirectPath,
   IsOnboardingRedirectPath,
   IsSystemRedirectPath,
-  ReadAuthJwtPayload,
 } from "@/app/src/services/auth/AuthRedirects";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
@@ -39,7 +41,6 @@ export function useLoginForm() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const accessToken = useAppStore((state) => state.accessToken);
-  const setActiveCompanyId = useAppStore((state) => state.setActiveCompanyId);
   const setAccessToken = useAppStore((state) => state.setAccessToken);
   const [state, formAction, pending] = useActionState(
     LoginAction,
@@ -53,13 +54,13 @@ export function useLoginForm() {
   };
   const shouldShowImmediateSystemLoader =
     state.status === "success" &&
-    Boolean(state.accessToken) &&
+    Boolean(state.redirectTo) &&
     IsSystemRedirectPath(
-      state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken),
+      state.redirectTo ?? GetFallbackPostAuthRedirectPath(accessToken),
     );
   const successfulAuthRedirectPath =
-    state.status === "success" && state.accessToken
-      ? state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken)
+    state.status === "success"
+      ? state.redirectTo ?? GetFallbackPostAuthRedirectPath(accessToken)
       : null;
   const wasPendingRef = useRef(false);
   const isResolvingPostAuthRef = useRef(false);
@@ -99,24 +100,15 @@ export function useLoginForm() {
     if (state.status === "success") {
       ClearPendingVerificationEmail();
       queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
-      if (state.accessToken) {
-        isResolvingPostAuthRef.current = true;
-        SaveAccessToken(state.accessToken, state.rememberMe ?? false);
-        setAccessToken(state.accessToken);
-      }
+      isResolvingPostAuthRef.current = true;
+      SaveAccessToken(AuthenticatedSessionMarker, state.rememberMe ?? false);
+      setAccessToken(AuthenticatedSessionMarker);
       toast.success(state.message);
-      if (state.accessToken) {
-        const fallbackPath =
-          state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken);
-        const payload = ReadAuthJwtPayload(state.accessToken);
-
-        setActiveCompanyId(payload?.companyId ?? null);
-        router.push(fallbackPath);
-        return;
-      }
       if (state.redirectTo) {
         router.push(state.redirectTo);
+        return;
       }
+      router.push(GetFallbackPostAuthRedirectPath(null));
       return;
     }
 
@@ -134,13 +126,11 @@ export function useLoginForm() {
     pending,
     queryClient,
     router,
-    state.accessToken,
     state.message,
     state.rememberMe,
     state.pendingVerificationEmail,
     state.redirectTo,
     state.status,
-    setActiveCompanyId,
     setAccessToken,
   ]);
 

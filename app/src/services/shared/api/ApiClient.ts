@@ -1,5 +1,4 @@
-import axios, { AxiosHeaders } from "axios";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
+import axios from "axios";
 import {
   FinishApiRequestTrace,
   StartApiRequestTrace,
@@ -35,18 +34,6 @@ export const ApiClient = axios.create({
 });
 
 ApiClient.interceptors.request.use((config) => {
-  const accessToken = GetAccessToken();
-
-  if (accessToken) {
-    const headers = AxiosHeaders.from(config.headers);
-
-    if (!headers.has("Authorization")) {
-      headers.set("Authorization", `Bearer ${accessToken}`);
-    }
-
-    config.headers = headers;
-  }
-
   StartApiRequestTrace(config);
 
   return config;

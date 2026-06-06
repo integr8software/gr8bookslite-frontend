@@ -4,9 +4,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import {
   AuthenticatedSessionMarker,
-  ClearAccessToken,
-  GetAccessToken,
-  SaveAccessToken,
+  ClearLegacyAuthStorage,
 } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   type OnboardingFieldErrors,
@@ -195,7 +193,7 @@ export function useOnboardingSubmission({
     setSubmittingPlanCode(plan.code);
 
     try {
-      const token = resolvedAccessToken ?? GetAccessToken();
+      const token = resolvedAccessToken;
 
       await SelectOnboardingPlan(token, {
         planCode: plan.code,
@@ -230,7 +228,7 @@ export function useOnboardingSubmission({
     setIsSubmitting(true);
 
     try {
-      const token = resolvedAccessToken ?? GetAccessToken();
+      const token = resolvedAccessToken;
 
       if (stepIndex === 1) {
         let logoName = values.logoName.trim();
@@ -318,7 +316,6 @@ export function useOnboardingSubmission({
 
         if (response.accessToken) {
           await CreateFrontendAuthSession(response.accessToken, false);
-          SaveAccessToken(AuthenticatedSessionMarker, false);
           useAppStore.setState({ accessToken: AuthenticatedSessionMarker });
 
           try {
@@ -338,7 +335,7 @@ export function useOnboardingSubmission({
         }
 
         if (response.requiresReauthentication) {
-          ClearAccessToken();
+          ClearLegacyAuthStorage();
           resetAppStore();
           router.replace("/login");
           return;
@@ -360,7 +357,7 @@ export function useOnboardingSubmission({
       }
 
       if (stepIndex === 2 && IsRequestTimeout(error)) {
-        const token = resolvedAccessToken ?? GetAccessToken();
+        const token = resolvedAccessToken;
 
         try {
           if (await DidBillingPersist(token)) {

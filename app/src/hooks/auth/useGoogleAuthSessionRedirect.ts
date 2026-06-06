@@ -4,10 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import {
-  AuthenticatedSessionMarker,
-  SaveAccessToken,
-} from "@/app/src/data/auth/AuthSessionStorage";
+import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   GetFallbackPostAuthRedirectPath,
   IsOnboardingRedirectPath,
@@ -158,7 +155,6 @@ export function useGoogleAuthSessionRedirect({
         }
       })
       .then(({ profile, redirectPath }) => {
-        SaveAccessToken(AuthenticatedSessionMarker, false);
         setAccessToken(AuthenticatedSessionMarker);
         setActiveCompanyId(profile ? GetAuthProfileCompanyId(profile) : null);
         queryClient.removeQueries({ queryKey: AuthQueryKeys.all });

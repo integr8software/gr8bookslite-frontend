@@ -1,6 +1,5 @@
 "use client";
 
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
 	useWorkspaceCompanyMainLayoutBranches,
@@ -10,7 +9,7 @@ export function useBranchUserRoleContext() {
 	const storedAccessToken = useAppStore((state) => state.accessToken);
 	const storedActiveCompanyId = useAppStore((state) => state.activeCompanyId);
 	const storedActiveBranchId = useAppStore((state) => state.activeBranchId);
-	const accessToken = storedAccessToken ?? GetAccessToken();
+	const accessToken = storedAccessToken;
 	const fallbackCompanyId = storedActiveCompanyId
 		? String(storedActiveCompanyId)
 		: "";

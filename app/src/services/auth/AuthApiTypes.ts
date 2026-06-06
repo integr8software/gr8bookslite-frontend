@@ -28,6 +28,12 @@ export type LoginRequest = {
 export type LoginResponse = {
   message?: string;
   accessToken?: string;
+  user?: AuthProfileResponse["user"];
+  companyId?: number | null;
+  role?: "ADMIN" | "USER" | "SUPER_ADMIN";
+  access?: AuthProfileAccess | null;
+  onboarding?: AuthProfileResponse["onboarding"];
+  companies?: AuthProfileResponse["companies"];
 };
 
 export type VerifyEmailResponse = {

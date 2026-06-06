@@ -11,7 +11,7 @@ import type {
 
 export function hasAccess(
   accessContext: MainUserAccessContext,
-  accessKey: Parameters<typeof readAccess>[1],
+  accessKey: string,
   requiredActions?: MainAccessAction[],
 ) {
   if (accessKey === "profile") {
@@ -83,7 +83,7 @@ export function filterMainSearchItems(
 ) {
   return items.filter(
     (item) =>
-      hasAccess(accessContext, item.accessKey) &&
+      hasAccess(accessContext, item.permissionCode ?? item.accessKey) &&
       isProductEnabled(item.productKey, subscription, item.productKeys),
   );
 }
@@ -120,7 +120,7 @@ function filterMainNavigationItems(
       (navigationItem) =>
         (hasAccess(
           accessContext,
-          navigationItem.accessKey,
+          navigationItem.permissionCode ?? navigationItem.accessKey,
           navigationItem.requiredActions,
         ) &&
           isProductEnabled(
@@ -153,6 +153,7 @@ function flattenItems(
         label: navigationItem.label,
         href: navigationItem.href,
         accessKey: navigationItem.accessKey,
+        permissionCode: navigationItem.permissionCode,
         productKey: navigationItem.productKey ?? "core",
         productKeys: navigationItem.productKeys,
         section,
@@ -164,9 +165,7 @@ function flattenItems(
 
 function readAccess(
   accessContext: MainUserAccessContext,
-  accessKey: keyof NonNullable<
-    MainUserAccessContext["userRoleDetails"]
-  >["permissions"],
+  accessKey: string,
 ) {
   return accessContext.userRoleDetails?.permissions[accessKey];
 }

@@ -908,9 +908,6 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
 
 export const MainCompanyNavigationSections: MainNavigationSection[] = [
   ...RegisteredMainCompanyNavigationSections,
-  ...LegacyMainCompanyNavigationSections.filter((section) =>
-    ["reporting-analytics", "system-administration"].includes(section.key),
-  ),
 ];
 
 export const MainNavigationSections = MainCompanyNavigationSections;

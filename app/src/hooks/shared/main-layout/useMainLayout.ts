@@ -1242,9 +1242,11 @@ function CreateWorkspaceCurrentUserFromProfile(
     profile.companies?.find(
       (company) => company.companyId === activeCompanyId,
     ) ?? profile.companies?.[0];
-  const companyRoleName = FormatCompanyRoleName(
-    activeAccess?.companyRoleCode ?? activeCompanyMembership?.companyRoleCode,
-  );
+  const companyRoleName =
+    activeAccess?.companyRoleName ??
+    FormatCompanyRoleName(
+      activeAccess?.companyRoleCode ?? activeCompanyMembership?.companyRoleCode,
+    );
   const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
   const userRole =
     effectiveRole === "SUPER_ADMIN"
@@ -1276,7 +1278,13 @@ function CreateWorkspaceCurrentUserFromProfile(
           name: "Admin",
           permissions: adminPermissionMap,
         }
-      : undefined;
+      : HasPermissionEntries(profilePermissionMap)
+        ? {
+            id: activeAccess?.companyRoleCode ?? "user-role-assigned",
+            name: "Assigned Role",
+            permissions: profilePermissionMap,
+          }
+        : undefined;
 
   return {
     id: String(profile.user.id),
@@ -1352,8 +1360,8 @@ function CreateProfilePermissionMap(permissions: unknown[] | undefined) {
       continue;
     }
 
-    const currentAccess = permissionMap[accessKey as keyof MainPermissionMap] ?? {};
-    permissionMap[accessKey as keyof MainPermissionMap] = {
+    const currentAccess = permissionMap[accessKey] ?? {};
+    permissionMap[accessKey] = {
       ...currentAccess,
       [action]: true,
     };
@@ -1390,6 +1398,9 @@ function AddNavigationItemPermissions(
   item: MainNavigationItem,
 ) {
   GrantNavigationAccess(permissionMap, item.accessKey);
+  if (item.permissionCode) {
+    GrantNavigationAccess(permissionMap, item.permissionCode);
+  }
 
   for (const child of item.children ?? []) {
     AddNavigationItemPermissions(permissionMap, child);
@@ -1398,7 +1409,7 @@ function AddNavigationItemPermissions(
 
 function GrantNavigationAccess(
   permissionMap: MainPermissionMap,
-  accessKey: MainNavigationItem["accessKey"],
+  accessKey: string,
 ) {
   permissionMap[accessKey] = {
     add: true,

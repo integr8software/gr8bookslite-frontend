@@ -175,18 +175,14 @@ function getConfirmButtonClassName({
   tone: AppDialogTone;
 }) {
   const baseClassName =
-    "inline-flex h-10 min-w-32 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold text-white transition focus-visible:outline-none focus-visible:ring-2";
+    "inline-flex h-10 min-w-32 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2";
   const disabledClassName =
     isDisabled && !isPending ? "cursor-not-allowed opacity-55" : "";
   const pendingClassName = isPending ? "cursor-wait opacity-100" : "";
 
   if (tone === "danger") {
-    return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-coralpink hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;
+    return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-coralpink text-white hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;
   }
 
-  if (tone === "success") {
-    return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-500/35`;
-  }
-
-  return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500/35`;
+  return `${baseClassName} ${disabledClassName} ${pendingClassName} theme-accent-contrast-text bg-skyblue hover:bg-skyblue/85 focus-visible:ring-skyblue/35`;
 }

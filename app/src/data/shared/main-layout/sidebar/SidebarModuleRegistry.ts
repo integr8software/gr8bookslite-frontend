@@ -85,34 +85,12 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
         "accounting",
         ["accounting", "inventory"],
       ),
-      group(
+      moduleItem(
         "maintenance-item-management",
         "Item Management",
         "/maintenance/item-management/items",
         "maintenance.item",
-        [
-          moduleItem(
-            "maintenance-items",
-            "Items",
-            "/maintenance/item-management/items",
-            "maintenance.item",
-            "inventory",
-          ),
-          moduleItem(
-            "maintenance-item-category",
-            "Category",
-            "/maintenance/item-management/item-category",
-            "maintenance.item",
-            "inventory",
-          ),
-          moduleItem(
-            "maintenance-item-type",
-            "Item Type",
-            "/maintenance/item-management/item-type",
-            "maintenance.item",
-            "inventory",
-          ),
-        ],
+        "inventory",
       ),
       moduleItem(
         "maintenance-warehouse-management",
@@ -413,20 +391,6 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
       "inventory",
       "inventory",
     ),
-    moduleItem(
-      "inventory-goods-issue",
-      "Goods Issue",
-      "/inventory/goods-issue",
-      "inventory",
-      "inventory",
-    ),
-    moduleItem(
-      "inventory-delivery-receipt",
-      "Delivery Receipt",
-      "/inventory/delivery-receipt",
-      "inventory",
-      "inventory",
-    ),
   ]),
   section(
     "purchasing",
@@ -474,6 +438,102 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
       "accounting",
     ),
   ]),
+  section(
+    "reporting-analytics",
+    "Reporting & Analytics",
+    "/reports",
+    "reports",
+    "reports.accounting",
+    [
+      moduleItem(
+        "reports-maintenance",
+        "Report Maintenance",
+        "/reports/maintenance",
+        "maintenance.reports",
+      ),
+      moduleItem(
+        "reports-financial",
+        "Financial Reports",
+        "/reports/financial",
+        "reports.accounting",
+        "accounting",
+      ),
+      moduleItem(
+        "reports-inventory",
+        "Inventory Reports",
+        "/reports/inventory",
+        "reports.inventory",
+        "inventory",
+      ),
+      moduleItem(
+        "reports-bir",
+        "BIR Reports",
+        "/reports/bir",
+        "reports.accounting",
+        "accounting",
+      ),
+    ],
+  ),
+  section(
+    "system-administration",
+    "System Administration",
+    "/system-administration",
+    "settings",
+    "maintenance.users",
+    [
+      group(
+        "maintenance-user-management",
+        "User Management",
+        "/system-administration/user-management",
+        "maintenance.users",
+        [
+          moduleItem(
+            "maintenance-users",
+            "Users",
+            "/system-administration/user-management/users",
+            "maintenance.users",
+          ),
+          moduleItem(
+            "maintenance-user-role",
+            "User Role",
+            "/system-administration/user-management/user-role",
+            "maintenance.users",
+          ),
+        ],
+      ),
+      moduleItem(
+        "maintenance-approval",
+        "Approval Management",
+        "/system-administration/approval-management",
+        "maintenance.approval",
+      ),
+      moduleItem(
+        "maintenance-audit",
+        "Audit Trail",
+        "/system-administration/audit-trail",
+        "maintenance.audit",
+      ),
+      moduleItem(
+        "transaction-number-setup",
+        "Transaction Number Setup",
+        "/system-administration/transaction-number-setup",
+        "settings",
+      ),
+      moduleItem(
+        "system-administration-multi-currency-setup",
+        "Multi-Currency Setup",
+        "/system-administration/multi-currency-setup",
+        "maintenance.currency",
+        "accounting",
+      ),
+      moduleItem(
+        "maintenance-mail",
+        "Mail Maintenance",
+        "/system-administration/mail-maintenance",
+        "maintenance.mail",
+      ),
+    ],
+  ),
 ];
 
 function section(
@@ -511,6 +571,7 @@ function moduleItem(
     label,
     href,
     accessKey,
+    permissionCode: key,
     productKey,
     productKeys,
     requiredActions: ["view"],

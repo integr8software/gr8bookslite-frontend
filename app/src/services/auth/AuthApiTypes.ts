@@ -54,6 +54,7 @@ export type AuthProfileAccess = {
   membershipStatus?: string;
   companyRoleId?: number | null;
   companyRoleCode?: string | null;
+  companyRoleName?: string | null;
   accessScope?: string;
   enabledModules?: string[];
   permissions?: unknown[];

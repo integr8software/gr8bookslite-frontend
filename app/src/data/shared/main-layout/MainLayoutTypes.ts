@@ -81,7 +81,7 @@ export type ModuleSubscriptionPlanId =
 export type MainNavigationScope = "master" | "workspace" | "company" | "account";
 
 export type MainPermissionMap = Partial<
-  Record<MainAccessKey, Partial<Record<MainAccessAction, boolean>>>
+  Record<string, Partial<Record<MainAccessAction, boolean>>>
 >;
 
 export type MainIconName =
@@ -115,6 +115,7 @@ export type MainNavigationItem = {
   label: string;
   href: string;
   accessKey: MainAccessKey;
+  permissionCode?: string;
   productKey?: MainProductKey;
   productKeys?: MainProductKey[];
   requiredActions?: MainAccessAction[];
@@ -131,6 +132,7 @@ export type MainNavigationSection = {
   href?: string;
   icon: MainIconName;
   accessKey: MainAccessKey;
+  permissionCode?: string;
   productKey?: MainProductKey;
   productKeys?: MainProductKey[];
   items: MainNavigationItem[];

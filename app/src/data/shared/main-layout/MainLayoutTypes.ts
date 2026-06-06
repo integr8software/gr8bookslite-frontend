@@ -143,6 +143,7 @@ export type MainSearchItem = {
   label: string;
   href: string;
   accessKey: MainAccessKey;
+  permissionCode?: string;
   productKey: MainProductKey;
   productKeys?: MainProductKey[];
   section: string;

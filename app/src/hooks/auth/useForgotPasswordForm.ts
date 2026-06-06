@@ -26,7 +26,6 @@ import {
 } from "@/app/src/services/auth/AuthActions";
 
 type ForgotPasswordStep = "email" | "verify" | "reset";
-const GooglePasswordNotEnabledCode = "GOOGLE_ACCOUNT_PASSWORD_NOT_ENABLED";
 
 export function useForgotPasswordForm() {
   const [step, setStep] = useState<ForgotPasswordStep>("email");
@@ -73,10 +72,7 @@ export function useForgotPasswordForm() {
 
       const nextState = await ForgotPasswordAction(previousState, formData);
 
-      if (
-        nextState.status === "success" &&
-        nextState.code !== GooglePasswordNotEnabledCode
-      ) {
+      if (nextState.status === "success") {
         const submittedEmail = formData.get("email");
 
         if (typeof submittedEmail === "string") {
@@ -198,10 +194,7 @@ export function useForgotPasswordForm() {
 
       const nextState = await ResendForgotPasswordAction(state, formData);
 
-      if (
-        nextState.status === "success" &&
-        nextState.code !== GooglePasswordNotEnabledCode
-      ) {
+      if (nextState.status === "success") {
         setOtp("");
         setHasEditedOtpAfterError(false);
         setResetToken("");
@@ -210,12 +203,6 @@ export function useForgotPasswordForm() {
         window.requestAnimationFrame(() => {
           otpInputRef.current?.focus();
         });
-        return;
-      }
-
-      if (nextState.status === "success" && nextState.message) {
-        setStep("email");
-        toast.success(nextState.message);
         return;
       }
 

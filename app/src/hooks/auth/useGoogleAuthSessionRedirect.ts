@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import {
-  GetFallbackPostAuthRedirectPath,
   IsOnboardingRedirectPath,
   IsSystemRedirectPath,
   ResolvePostAuthDestination,
@@ -20,7 +19,7 @@ export type GoogleAuthRedirectState = "idle" | "resolving" | "system" | "onboard
 type GoogleAuthMode = "login" | "signup";
 
 type UseGoogleAuthSessionRedirectOptions = {
-  requireToken?: boolean;
+  requireSession?: boolean;
   defaultMode?: GoogleAuthMode;
 };
 
@@ -46,23 +45,22 @@ function readFallbackAuthPath(mode: string | null, defaultMode: GoogleAuthMode) 
 
 function readGoogleAuthCallbackParams() {
   const searchParams = new URLSearchParams(window.location.search);
-  const hashParams = new URLSearchParams(window.location.hash.slice(1));
 
   return {
-    accessToken: hashParams.get("accessToken")?.trim() ?? "",
+    handoffCode: searchParams.get("handoffCode")?.trim() ?? "",
     error: searchParams.get("error"),
     googleAuthError: searchParams.get("googleAuthError"),
     mode: searchParams.get("mode"),
   };
 }
 
-async function createFrontendAuthSession(accessToken: string) {
-  const sessionResponse = await fetch("/api/auth/session", {
+async function createFrontendAuthSession(handoffCode: string) {
+  const sessionResponse = await fetch("/api/auth/google/session", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ accessToken, rememberMe: false }),
+    body: JSON.stringify({ handoffCode }),
     cache: "no-store",
   });
 
@@ -90,7 +88,7 @@ function getGoogleAuthRedirectState(path: string): GoogleAuthRedirectState {
 }
 
 export function useGoogleAuthSessionRedirect({
-  requireToken = false,
+  requireSession = false,
   defaultMode = "login",
 }: UseGoogleAuthSessionRedirectOptions = {}) {
   const router = useRouter();
@@ -106,21 +104,21 @@ export function useGoogleAuthSessionRedirect({
       return;
     }
 
-    const { accessToken, error, googleAuthError, mode } =
+    const { handoffCode, error, googleAuthError, mode } =
       readGoogleAuthCallbackParams();
 
-    if (!accessToken && !error && !googleAuthError && !requireToken) {
+    if (!handoffCode && !error && !googleAuthError && !requireSession) {
       return;
     }
 
     hasHandledRef.current = true;
 
-    if (!accessToken) {
+    if (!handoffCode) {
       const message =
         googleAuthError ?? error ?? "Google sign-in could not be completed.";
 
       if (!googleAuthError) {
-        console.log("[Google OAuth] Missing access token.", {
+        console.log("[Google OAuth] Missing session handoff.", {
           error,
           mode,
           pathname: window.location.pathname,
@@ -139,20 +137,7 @@ export function useGoogleAuthSessionRedirect({
     void Promise.resolve()
       .then(async () => {
         setRedirectState("resolving");
-        try {
-          return await createFrontendAuthSession(accessToken);
-        } catch (error) {
-          console.log("[Google OAuth] Profile resolution fallback.", {
-            error,
-            pathname: window.location.pathname,
-            search: window.location.search,
-          });
-
-          return {
-            profile: null,
-            redirectPath: GetFallbackPostAuthRedirectPath(accessToken),
-          };
-        }
+        return createFrontendAuthSession(handoffCode);
       })
       .then(({ profile, redirectPath }) => {
         setAccessToken(AuthenticatedSessionMarker);
@@ -179,7 +164,7 @@ export function useGoogleAuthSessionRedirect({
   }, [
     defaultMode,
     queryClient,
-    requireToken,
+    requireSession,
     router,
     setAccessToken,
     setActiveCompanyId,

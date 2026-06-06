@@ -14,7 +14,9 @@ export default function GoogleAuthCallbackPage() {
 }
 
 function GoogleAuthCallbackContent() {
-	const { redirectState } = useGoogleAuthSessionRedirect({ requireToken: true });
+	const { redirectState } = useGoogleAuthSessionRedirect({
+		requireSession: true,
+	});
 
 	if (redirectState === "onboarding") {
 		return <OnboardingDraftLoadingScreen isFullScreen />;

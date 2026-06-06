@@ -25,7 +25,7 @@ export async function GET() {
   }
 
   return NextResponse.json(
-    { accessToken },
+    { authenticated: true },
     {
       headers: {
         "Cache-Control": "no-store",
@@ -49,5 +49,5 @@ export async function POST(request: Request) {
 
   await SetAuthAccessTokenCookie(accessToken, Boolean(body?.rememberMe));
 
-  return NextResponse.json({ message: "Session created." });
+  return NextResponse.json({ authenticated: true, message: "Session created." });
 }

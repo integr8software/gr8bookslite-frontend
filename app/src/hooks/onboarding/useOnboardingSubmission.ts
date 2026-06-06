@@ -3,6 +3,7 @@
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import {
+  AuthenticatedSessionMarker,
   ClearAccessToken,
   GetAccessToken,
   SaveAccessToken,
@@ -27,8 +28,12 @@ import {
 } from "@/app/src/services/onboarding/OnboardingApi";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
 import {
+  CreateFrontendAuthSession,
+  GetAuthProfile,
+} from "@/app/src/services/auth/AuthApi";
+import {
   GetFallbackPostAuthRedirectPath,
-  ResolvePostAuthDestination,
+  GetPostAuthRedirectPathFromProfile,
 } from "@/app/src/services/auth/AuthRedirects";
 import { GetAuthProfileCompanyId } from "@/app/src/services/auth/AuthProfileAccess";
 import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
@@ -312,19 +317,18 @@ export function useOnboardingSubmission({
         toast.success(response.message);
 
         if (response.accessToken) {
-          SaveAccessToken(response.accessToken, false);
-          useAppStore.setState({ accessToken: response.accessToken });
+          await CreateFrontendAuthSession(response.accessToken, false);
+          SaveAccessToken(AuthenticatedSessionMarker, false);
+          useAppStore.setState({ accessToken: AuthenticatedSessionMarker });
 
           try {
-            const { profile, redirectPath } = await ResolvePostAuthDestination(
-              response.accessToken,
-            );
+            const profile = await GetAuthProfile();
 
             useAppStore.setState({
-              accessToken: response.accessToken,
+              accessToken: AuthenticatedSessionMarker,
               activeCompanyId: GetAuthProfileCompanyId(profile),
             });
-            router.replace(redirectPath);
+            router.replace(GetPostAuthRedirectPathFromProfile(profile));
           } catch {
             router.replace(
               GetFallbackPostAuthRedirectPath(response.accessToken),

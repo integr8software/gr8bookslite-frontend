@@ -6,6 +6,7 @@ import {
 	formSignatoriesControllerSaveV1,
 	formSignatoriesControllerUpdateV1,
 } from "@/app/src/generated/api/form-signatories/form-signatories";
+import { IsClientAuthSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import type {
 	FormSignatoryApiSetup,
 	FormSignatoryBootstrap,
@@ -19,7 +20,7 @@ import type {
 } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
 
 function GetAuthorizationHeaders(accessToken: string | null) {
-	if (!accessToken) {
+	if (!accessToken || IsClientAuthSessionMarker(accessToken)) {
 		return undefined;
 	}
 

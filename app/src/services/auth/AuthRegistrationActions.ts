@@ -111,7 +111,6 @@ export async function OtpAction(
     return {
       status: "success",
       message: response.message ?? "Email verified successfully.",
-      accessToken: response.accessToken,
       redirectTo: GetFallbackPostAuthRedirectPath(response.accessToken),
     };
   } catch (error) {

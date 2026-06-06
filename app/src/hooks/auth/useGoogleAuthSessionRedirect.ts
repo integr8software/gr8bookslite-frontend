@@ -4,8 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
+  AuthenticatedSessionMarker,
+  SaveAccessToken,
+} from "@/app/src/data/auth/AuthSessionStorage";
+import {
+  GetFallbackPostAuthRedirectPath,
   IsOnboardingRedirectPath,
   IsSystemRedirectPath,
   ResolvePostAuthDestination,
@@ -73,7 +77,7 @@ async function createFrontendAuthSession(accessToken: string) {
     throw new Error(payload?.message ?? "Unable to create frontend auth session.");
   }
 
-  return ResolvePostAuthDestination(accessToken);
+  return ResolvePostAuthDestination();
 }
 
 function getGoogleAuthRedirectState(path: string): GoogleAuthRedirectState {
@@ -119,7 +123,7 @@ export function useGoogleAuthSessionRedirect({
         googleAuthError ?? error ?? "Google sign-in could not be completed.";
 
       if (!googleAuthError) {
-        console.error("[Google OAuth] Missing access token.", {
+        console.log("[Google OAuth] Missing access token.", {
           error,
           mode,
           pathname: window.location.pathname,
@@ -138,12 +142,25 @@ export function useGoogleAuthSessionRedirect({
     void Promise.resolve()
       .then(async () => {
         setRedirectState("resolving");
-        return createFrontendAuthSession(accessToken);
+        try {
+          return await createFrontendAuthSession(accessToken);
+        } catch (error) {
+          console.log("[Google OAuth] Profile resolution fallback.", {
+            error,
+            pathname: window.location.pathname,
+            search: window.location.search,
+          });
+
+          return {
+            profile: null,
+            redirectPath: GetFallbackPostAuthRedirectPath(accessToken),
+          };
+        }
       })
       .then(({ profile, redirectPath }) => {
-        SaveAccessToken(accessToken, false);
-        setAccessToken(accessToken);
-        setActiveCompanyId(GetAuthProfileCompanyId(profile));
+        SaveAccessToken(AuthenticatedSessionMarker, false);
+        setAccessToken(AuthenticatedSessionMarker);
+        setActiveCompanyId(profile ? GetAuthProfileCompanyId(profile) : null);
         queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
         setRedirectState(getGoogleAuthRedirectState(redirectPath));
         toast.success("Google sign-in successful.");
@@ -155,7 +172,7 @@ export function useGoogleAuthSessionRedirect({
           "Google sign-in could not create a valid session.",
         );
 
-        console.error("[Google OAuth] Session redirect failed.", {
+        console.log("[Google OAuth] Session redirect failed.", {
           error: googleAuthError,
           pathname: window.location.pathname,
           search: window.location.search,

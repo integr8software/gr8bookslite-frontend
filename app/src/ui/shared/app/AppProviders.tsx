@@ -1,12 +1,10 @@
 "use client";
 
 import { QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  AuthenticatedSessionMarker,
   GetAccessToken,
-  GetRememberMePreference,
-  SaveAccessToken,
-  SaveAccessTokenForCurrentTab,
 } from "@/app/src/data/auth/AuthSessionStorage";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { GetFrontendAuthSession } from "@/app/src/services/auth/AuthApi";
@@ -19,9 +17,6 @@ type AppProvidersProps = {
 
 export function AppProviders({ children }: AppProvidersProps) {
   const [queryClient] = useState(CreateQueryClient);
-  const skipNextAccessTokenPersistRef = useRef(false);
-  const accessToken = useAppStore((state) => state.accessToken);
-  const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const setAccessToken = useAppStore((state) => state.setAccessToken);
   const setIsAuthSessionReady = useAppStore(
     (state) => state.setIsAuthSessionReady,
@@ -44,11 +39,7 @@ export function AppProviders({ children }: AppProvidersProps) {
         }
 
         if (hydratedAccessToken) {
-          if (frontendSessionAccessToken) {
-            SaveAccessTokenForCurrentTab(frontendSessionAccessToken);
-            skipNextAccessTokenPersistRef.current = true;
-          }
-          setAccessToken(hydratedAccessToken);
+          setAccessToken(AuthenticatedSessionMarker);
         }
       } catch {
         // The protected page can still finish hydration and let route guards handle auth.
@@ -65,19 +56,6 @@ export function AppProviders({ children }: AppProvidersProps) {
       isActive = false;
     };
   }, [setAccessToken, setIsAuthSessionReady]);
-
-  useEffect(() => {
-    if (!isAuthSessionReady || !accessToken) {
-      return;
-    }
-
-    if (skipNextAccessTokenPersistRef.current) {
-      skipNextAccessTokenPersistRef.current = false;
-      return;
-    }
-
-    SaveAccessToken(accessToken, GetRememberMePreference());
-  }, [accessToken, isAuthSessionReady]);
 
   return (
     <QueryClientProvider client={queryClient}>

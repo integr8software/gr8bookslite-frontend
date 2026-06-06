@@ -11,10 +11,6 @@ import { GetFallbackPostAuthRedirectPath } from "@/app/src/services/auth/AuthRed
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as LoginRequest | null;
-  console.log("[auth/login] request received", {
-    hasEmail: Boolean(body?.email),
-    rememberMe: Boolean(body?.rememberMe),
-  });
   const response = await FetchBackend("/auth/login", {
     body: JSON.stringify(body),
     headers: {
@@ -28,10 +24,6 @@ export async function POST(request: Request) {
     | null;
 
   if (!response.ok) {
-    console.log("[auth/login] backend rejected login", {
-      status: response.status,
-      message: payload?.message,
-    });
     return NextResponse.json(
       payload ?? { message: "Login failed." },
       { status: response.status },
@@ -46,10 +38,6 @@ export async function POST(request: Request) {
   }
 
   await SetAuthAccessTokenCookie(payload.accessToken, Boolean(body?.rememberMe));
-  console.log("[auth/login] frontend cookie set", {
-    hasAccessToken: Boolean(payload.accessToken),
-    redirectTo: GetFallbackPostAuthRedirectPath(payload.accessToken),
-  });
 
   return NextResponse.json(
     {

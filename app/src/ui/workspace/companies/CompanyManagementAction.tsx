@@ -6,7 +6,6 @@ import {
 	WorkspaceCompaniesHref,
 	WorkspaceCompanyNotFoundDescription,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { useBillingPaymentMethodsQuery } from "@/app/src/hooks/billing/useBillingPaymentMethodsQuery";
 import { useBillingPlansQuery } from "@/app/src/hooks/billing/useBillingPlansQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
@@ -28,7 +27,7 @@ export function CompanyManagementAction() {
 	const [isBillingConfirmOpen, setIsBillingConfirmOpen] = useState(false);
 	const [isEditConfirmOpen, setIsEditConfirmOpen] = useState(false);
 	const storedAccessToken = useAppStore((state) => state.accessToken);
-	const accessToken = storedAccessToken ?? GetAccessToken();
+	const accessToken = storedAccessToken;
 	const plansQuery = useBillingPlansQuery({
 		accessToken: form.mode === "add" ? accessToken : null,
 		scope: "ADDITIONAL_COMPANY",

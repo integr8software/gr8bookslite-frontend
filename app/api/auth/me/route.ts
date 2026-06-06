@@ -8,9 +8,6 @@ export async function GET() {
   const response = await FetchBackend("/auth/me", {
     method: "GET",
   });
-  console.log("[auth/me] backend response", {
-    status: response.status,
-  });
   const payload = (await response.json().catch(() => null)) as
     | AuthProfileResponse
     | { message?: string }

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ClearAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
+import { ClearLegacyAuthStorage } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   getWorkspaceCompanyBranchesHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
@@ -281,7 +281,7 @@ export function useMainLayout() {
     }
 
     hasHandledAuthProfileErrorRef.current = true;
-    ClearAccessToken();
+    ClearLegacyAuthStorage();
     setStoredAccessToken(null);
     setStoredActiveCompanyId(null);
     setStoredActiveCompanyName(null);

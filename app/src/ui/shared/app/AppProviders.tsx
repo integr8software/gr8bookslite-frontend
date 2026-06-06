@@ -2,10 +2,7 @@
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import {
-  AuthenticatedSessionMarker,
-  GetAccessToken,
-} from "@/app/src/data/auth/AuthSessionStorage";
+import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { GetFrontendAuthSession } from "@/app/src/services/auth/AuthApi";
 import { CreateQueryClient } from "@/app/src/services/shared/app/QueryClient";
@@ -27,18 +24,13 @@ export function AppProviders({ children }: AppProvidersProps) {
 
     async function hydrateAuthSession() {
       try {
-        const storedAccessToken = GetAccessToken();
-        const frontendSessionAccessToken = storedAccessToken
-          ? null
-          : await GetFrontendAuthSession();
-        const hydratedAccessToken =
-          storedAccessToken ?? frontendSessionAccessToken;
+        const frontendSessionAccessToken = await GetFrontendAuthSession();
 
         if (!isActive) {
           return;
         }
 
-        if (hydratedAccessToken) {
+        if (frontendSessionAccessToken) {
           setAccessToken(AuthenticatedSessionMarker);
         }
       } catch {

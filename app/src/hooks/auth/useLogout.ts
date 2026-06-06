@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { ClearAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
+import { ClearLegacyAuthStorage } from "@/app/src/data/auth/AuthSessionStorage";
 import { ClearPendingVerificationEmail } from "@/app/src/data/auth/AuthVerificationStorage";
 import { ClearAiAssistantStorage } from "@/app/src/data/shared/ai-assistant/AiAssistantData";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
@@ -27,7 +27,7 @@ export function useLogout() {
     } catch {
       // Local logout should still complete when cookie clearing fails.
     } finally {
-      ClearAccessToken();
+      ClearLegacyAuthStorage();
       ClearPendingVerificationEmail();
       ClearAiAssistantStorage();
       queryClient.clear();

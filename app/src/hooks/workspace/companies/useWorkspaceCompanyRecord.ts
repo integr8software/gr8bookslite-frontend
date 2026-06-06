@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { GetWorkspaceCompany } from "@/app/src/services/workspace/companies/WorkspaceCompanyApi";
 import { WorkspaceCompanyQueryKeys } from "@/app/src/services/workspace/companies/WorkspaceCompanyQueryKeys";
@@ -10,7 +9,7 @@ import type { WorkspaceCompanyRecord } from "@/app/src/types/workspace/Workspace
 export function useWorkspaceCompanyRecord(companyId?: string) {
 	const queryClient = useQueryClient();
 	const storedAccessToken = useAppStore((state) => state.accessToken);
-	const accessToken = storedAccessToken ?? GetAccessToken();
+	const accessToken = storedAccessToken;
 
 	return useQuery({
 		queryKey: WorkspaceCompanyQueryKeys.company(companyId ?? "missing"),

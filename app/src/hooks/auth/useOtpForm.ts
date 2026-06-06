@@ -16,10 +16,7 @@ import {
   SavePendingVerificationEmail,
   SaveVerificationResendCooldown,
 } from "@/app/src/data/auth/AuthVerificationStorage";
-import {
-  AuthenticatedSessionMarker,
-  SaveAccessToken,
-} from "@/app/src/data/auth/AuthSessionStorage";
+import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   MaskEmailAddress,
   OTP_LENGTH,
@@ -140,7 +137,6 @@ export function useOtpForm({
     if (state.status === "success") {
       ClearPendingVerificationEmail();
       queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
-      SaveAccessToken(AuthenticatedSessionMarker, false);
       setAccessToken(AuthenticatedSessionMarker);
       toast.success(state.message);
       if (state.redirectTo) {

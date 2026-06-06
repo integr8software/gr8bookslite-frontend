@@ -59,18 +59,3 @@ export async function FetchBackend(
     cache: "no-store",
   });
 }
-
-export async function ReadBackendJson<T>(response: Response) {
-  const data = (await response.json().catch(() => null)) as T | null;
-
-  if (!response.ok) {
-    const message =
-      data && typeof data === "object" && "message" in data
-        ? String((data as { message?: unknown }).message)
-        : "Backend request failed.";
-
-    throw new Error(message);
-  }
-
-  return data as T;
-}

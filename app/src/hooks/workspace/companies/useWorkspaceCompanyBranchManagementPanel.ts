@@ -8,7 +8,6 @@ import {
 } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import {
 	FormatPhilippineContactNumber,
 } from "@/app/src/data/shared/contact/ContactData";
@@ -44,7 +43,7 @@ export function useWorkspaceCompanyBranchManagementPanel({
 }: WorkspaceCompanyBranchManagementPanelProps) {
 	const queryClient = useQueryClient();
 	const storedAccessToken = useAppStore((state) => state.accessToken);
-	const accessToken = storedAccessToken ?? GetAccessToken();
+	const accessToken = storedAccessToken;
 	const [isAddBranchOpen, setIsAddBranchOpen] = useState(false);
 	const [branchErrors, setBranchErrors] =
 		useState<WorkspaceCompanyBranchFormErrors>({});

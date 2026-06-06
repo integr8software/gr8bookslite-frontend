@@ -13,10 +13,7 @@ import {
   ClearPendingVerificationEmail,
   SavePendingVerificationEmail,
 } from "@/app/src/data/auth/AuthVerificationStorage";
-import {
-  AuthenticatedSessionMarker,
-  SaveAccessToken,
-} from "@/app/src/data/auth/AuthSessionStorage";
+import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   GetFallbackPostAuthRedirectPath,
   IsOnboardingRedirectPath,
@@ -154,7 +151,6 @@ export function useLoginForm() {
       ClearPendingVerificationEmail();
       queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
       isResolvingPostAuthRef.current = true;
-      SaveAccessToken(AuthenticatedSessionMarker, rememberMe);
       setAccessToken(AuthenticatedSessionMarker);
       toast.success(nextState.message);
       if (nextState.redirectTo) {

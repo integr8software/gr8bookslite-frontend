@@ -3,7 +3,6 @@
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { GetAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
 	useWorkspaceCompanyMainLayoutBranches,
@@ -31,7 +30,7 @@ export function UserListPage() {
 	const storedActiveBranchId = useAppStore((state) => state.activeBranchId);
 	const storedActiveBranchName = useAppStore((state) => state.activeBranchName);
 	const storedActiveCompanyName = useAppStore((state) => state.activeCompanyName);
-	const accessToken = storedAccessToken ?? GetAccessToken();
+	const accessToken = storedAccessToken;
 	const routedBranchId = searchParams.get(BranchUsersContextParam);
 	const fallbackCompanyId = storedActiveCompanyId
 		? String(storedActiveCompanyId)

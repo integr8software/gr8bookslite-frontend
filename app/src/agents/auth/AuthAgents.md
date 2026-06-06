@@ -51,7 +51,7 @@ Examples:
 - `AuthValidation.ts`
 - `AuthTypes.ts`
 - `AuthActions.ts`
-- `AuthLoginActions.ts`
+- `app/api/auth/login/route.ts`
 - `AuthRegistrationActions.ts`
 - `AuthPasswordActions.ts`
 - `OtpData.ts`
@@ -76,7 +76,6 @@ app/src/services/auth/
   AuthApi.ts
   AuthApiTypes.ts
   AuthActionUtils.ts
-  AuthLoginActions.ts
   AuthRegistrationActions.ts
   AuthPasswordActions.ts
 
@@ -144,7 +143,6 @@ This layer contains server-side auth operations.
   - acts as a thin barrel for auth actions
   - re-exports the flow-based action modules
 
-- `AuthLoginActions.ts`
   - contains login-only server actions
 
 - `AuthRegistrationActions.ts`
@@ -195,7 +193,8 @@ Quick mental model for these files:
 This layer contains client-side form state and interaction logic.
 
 - `useLoginForm.ts`
-  - connects the login form to `LoginAction` with `useActionState`
+  - submits credentials to the same-origin `/api/auth/login` BFF route
+  - confirms the httpOnly session cookie before updating client auth state
 
 - `useSignUpForm.ts`
   - connects the signup form to `SignUpAction`

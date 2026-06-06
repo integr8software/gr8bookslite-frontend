@@ -137,7 +137,7 @@ export function GetPostAuthRedirectPathFromProfile(
   return "/onboarding";
 }
 
-export async function ResolvePostAuthDestination(accessToken: string) {
+export async function ResolvePostAuthDestination(accessToken: string | null = null) {
   const profile = await GetAuthProfile(accessToken);
 
   return {

@@ -4,7 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
+import {
+  AuthenticatedSessionMarker,
+  SaveAccessToken,
+} from "@/app/src/data/auth/AuthSessionStorage";
 import {
   GetFallbackPostAuthRedirectPath,
   IsOnboardingRedirectPath,
@@ -74,7 +77,7 @@ async function createFrontendAuthSession(accessToken: string) {
     throw new Error(payload?.message ?? "Unable to create frontend auth session.");
   }
 
-  return ResolvePostAuthDestination(accessToken);
+  return ResolvePostAuthDestination();
 }
 
 function getGoogleAuthRedirectState(path: string): GoogleAuthRedirectState {
@@ -155,8 +158,8 @@ export function useGoogleAuthSessionRedirect({
         }
       })
       .then(({ profile, redirectPath }) => {
-        SaveAccessToken(accessToken, false);
-        setAccessToken(accessToken);
+        SaveAccessToken(AuthenticatedSessionMarker, false);
+        setAccessToken(AuthenticatedSessionMarker);
         setActiveCompanyId(profile ? GetAuthProfileCompanyId(profile) : null);
         queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
         setRedirectState(getGoogleAuthRedirectState(redirectPath));

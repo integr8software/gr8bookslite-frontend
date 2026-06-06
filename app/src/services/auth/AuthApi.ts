@@ -12,6 +12,10 @@ import type {
   VerifyPasswordChangeOtpRequest,
   VerifyPasswordChangeOtpResponse,
 } from "@/app/src/services/auth/AuthApiTypes";
+import {
+  AuthenticatedSessionMarker,
+  IsClientAuthSessionMarker,
+} from "@/app/src/data/auth/AuthSessionStorage";
 import { BuildApiUrl, GetApiBaseUrl } from "@/app/src/services/shared/api/ApiUrl";
 
 export function BuildAuthApiUrl(path: string) {
@@ -28,7 +32,7 @@ export const GetAuthApiBaseUrl = GetApiBaseUrl;
 const AuthRequestTimeoutMs = 60000;
 
 export function BuildGoogleAuthUrl(mode: "login" | "signup") {
-  return BuildAuthApiUrl(`/auth/google?mode=${mode}`);
+  return `/api/auth/google?mode=${mode}`;
 }
 
 export class AuthApiError extends Error {
@@ -60,7 +64,7 @@ export async function PostAuthJson<TRequest, TResponse>(
 }
 
 function GetOptionalAuthorizationHeaders(accessToken: string | null) {
-  if (!accessToken) {
+  if (!accessToken || IsClientAuthSessionMarker(accessToken)) {
     return undefined;
   }
 
@@ -97,16 +101,15 @@ export async function CreateFrontendAuthSession(
 
 export async function GetFrontendAuthSession(timeoutMs = 3000) {
   try {
-    const response = await axios.get<{ accessToken?: string }>(
+    const response = await axios.get<{ authenticated?: boolean }>(
       "/api/auth/session",
       {
         timeout: timeoutMs,
         withCredentials: true,
       },
     );
-    const accessToken = response.data.accessToken?.trim();
 
-    return accessToken || null;
+    return response.data.authenticated ? AuthenticatedSessionMarker : null;
   } catch {
     return null;
   }
@@ -116,11 +119,12 @@ export async function SwitchCompanyContext(
   accessToken: string | null,
   companyId: number,
 ) {
-  const response = await ApiClient.post<SwitchCompanyContextResponse>(
-    "/auth/context/company",
+  const response = await axios.post<SwitchCompanyContextResponse>(
+    "/api/auth/context/company",
     { companyId },
     {
       headers: GetOptionalAuthorizationHeaders(accessToken),
+      withCredentials: true,
     },
   );
 

@@ -74,6 +74,7 @@ import {
   CreateFrontendAuthSession,
   SwitchCompanyContext,
 } from "@/app/src/services/auth/AuthApi";
+import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   BuildAuthProfileFromSwitchResponse,
   PrepareQueryCacheForContextSwitch,
@@ -449,11 +450,11 @@ export function useMainLayout() {
         setStoredActiveCompanyId(result.companyId);
       }
 
-      setStoredAccessToken(result.accessToken);
+      setStoredAccessToken(AuthenticatedSessionMarker);
       setStoredActiveBranchContext(null, null);
       queryClient.setQueryData(
         AuthQueryKeys.profile(
-          CreateAuthAccessTokenQueryScope(result.accessToken),
+          CreateAuthAccessTokenQueryScope(AuthenticatedSessionMarker),
         ),
         profile,
       );

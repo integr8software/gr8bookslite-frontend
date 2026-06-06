@@ -1,6 +1,7 @@
 "use client";
 
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { IsClientAuthSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
 import type {
   CompleteOnboardingResponse,
   GetOnboardingDraftResponse,
@@ -12,7 +13,7 @@ import type {
 } from "@/app/src/services/onboarding/OnboardingApiTypes";
 
 function GetAuthorizationHeaders(accessToken: string | null) {
-  if (!accessToken) {
+  if (!accessToken || IsClientAuthSessionMarker(accessToken)) {
     return undefined;
   }
 

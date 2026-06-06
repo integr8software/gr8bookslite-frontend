@@ -16,7 +16,10 @@ import {
   SavePendingVerificationEmail,
   SaveVerificationResendCooldown,
 } from "@/app/src/data/auth/AuthVerificationStorage";
-import { SaveAccessToken } from "@/app/src/data/auth/AuthSessionStorage";
+import {
+  AuthenticatedSessionMarker,
+  SaveAccessToken,
+} from "@/app/src/data/auth/AuthSessionStorage";
 import {
   MaskEmailAddress,
   OTP_LENGTH,
@@ -27,10 +30,7 @@ import {
   OtpAction,
   ResendVerificationAction,
 } from "@/app/src/services/auth/AuthActions";
-import {
-  GetFallbackPostAuthRedirectPath,
-  ReadAuthJwtPayload,
-} from "@/app/src/services/auth/AuthRedirects";
+import { GetFallbackPostAuthRedirectPath } from "@/app/src/services/auth/AuthRedirects";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
@@ -59,7 +59,6 @@ export function useOtpForm({
 }: UseOtpFormOptions = {}) {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const setActiveCompanyId = useAppStore((state) => state.setActiveCompanyId);
   const setAccessToken = useAppStore((state) => state.setAccessToken);
   const initialVerificationEmail = ResolveInitialEmail(initialEmail);
   const [hasEditedOtpAfterError, setHasEditedOtpAfterError] = useState(false);
@@ -141,23 +140,14 @@ export function useOtpForm({
     if (state.status === "success") {
       ClearPendingVerificationEmail();
       queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
-      if (state.accessToken) {
-        SaveAccessToken(state.accessToken, false);
-        setAccessToken(state.accessToken);
-      }
+      SaveAccessToken(AuthenticatedSessionMarker, false);
+      setAccessToken(AuthenticatedSessionMarker);
       toast.success(state.message);
-      if (state.accessToken) {
-        const fallbackPath =
-          state.redirectTo ?? GetFallbackPostAuthRedirectPath(state.accessToken);
-        const payload = ReadAuthJwtPayload(state.accessToken);
-
-        setActiveCompanyId(payload?.companyId ?? null);
-        router.push(fallbackPath);
-        return;
-      }
       if (state.redirectTo) {
         router.push(state.redirectTo);
+        return;
       }
+      router.push(GetFallbackPostAuthRedirectPath(null));
       return;
     }
 
@@ -169,8 +159,6 @@ export function useOtpForm({
     queryClient,
     router,
     setAccessToken,
-    setActiveCompanyId,
-    state.accessToken,
     state.message,
     state.redirectTo,
     state.status,

@@ -16,14 +16,6 @@ function ReadAccessToken(value: string | null) {
   return token ? AuthenticatedSessionMarker : null;
 }
 
-function ClearLegacyReadableAccessTokenCookie() {
-  if (!CanUseBrowserStorage()) {
-    return;
-  }
-
-  document.cookie = `${ACCESS_TOKEN_KEY}=; Path=/; Max-Age=0; SameSite=Lax`;
-}
-
 export function SaveAccessToken(_accessToken: string, rememberMe: boolean) {
   if (!CanUseBrowserStorage()) {
     return;
@@ -40,7 +32,6 @@ export function SaveAccessToken(_accessToken: string, rememberMe: boolean) {
     window.localStorage.removeItem(ACCESS_TOKEN_KEY);
   }
 
-  ClearLegacyReadableAccessTokenCookie();
 }
 
 export function SaveAccessTokenForCurrentTab(_accessToken: string) {
@@ -50,15 +41,12 @@ export function SaveAccessTokenForCurrentTab(_accessToken: string) {
 
   void _accessToken;
   window.sessionStorage.setItem(ACCESS_TOKEN_KEY, AuthenticatedSessionMarker);
-  ClearLegacyReadableAccessTokenCookie();
 }
 
 export function GetAccessToken() {
   if (!CanUseBrowserStorage()) {
     return null;
   }
-
-  ClearLegacyReadableAccessTokenCookie();
 
   if (GetRememberMePreference()) {
     return ReadAccessToken(window.localStorage.getItem(ACCESS_TOKEN_KEY));
@@ -83,7 +71,6 @@ export function ClearAccessToken() {
   window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
   window.localStorage.removeItem(ACCESS_TOKEN_KEY);
   window.localStorage.removeItem(REMEMBER_ME_KEY);
-  ClearLegacyReadableAccessTokenCookie();
 }
 
 export function IsClientAuthSessionMarker(accessToken: string | null | undefined) {

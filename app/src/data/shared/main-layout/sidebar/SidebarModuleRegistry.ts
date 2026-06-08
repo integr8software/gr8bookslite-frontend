@@ -85,12 +85,34 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
         "accounting",
         ["accounting", "inventory"],
       ),
-      moduleItem(
+      group(
         "maintenance-item-management",
         "Item Management",
         "/maintenance/item-management/items",
         "maintenance.item",
-        "inventory",
+        [
+          moduleItem(
+            "maintenance-items",
+            "Items",
+            "/maintenance/item-management/items",
+            "maintenance.item",
+            "inventory",
+          ),
+          moduleItem(
+            "maintenance-item-category",
+            "Item Category",
+            "/maintenance/item-management/item-category",
+            "maintenance.item",
+            "inventory",
+          ),
+          moduleItem(
+            "maintenance-item-type",
+            "Item Type",
+            "/maintenance/item-management/item-type",
+            "maintenance.item",
+            "inventory",
+          ),
+        ],
       ),
       moduleItem(
         "maintenance-warehouse-management",
@@ -388,6 +410,20 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
       "inventory-pick-list",
       "Pick List",
       "/inventory/pick-list",
+      "inventory",
+      "inventory",
+    ),
+    moduleItem(
+      "inventory-goods-issue",
+      "Goods Issue",
+      "/inventory/goods-issue",
+      "inventory",
+      "inventory",
+    ),
+    moduleItem(
+      "inventory-delivery-receipt",
+      "Delivery Receipt",
+      "/inventory/delivery-receipt",
       "inventory",
       "inventory",
     ),

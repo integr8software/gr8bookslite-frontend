@@ -15,7 +15,8 @@ import { ApprovalApproverOptions } from "@/app/src/data/modules/system-administr
 import {
 	createApproverNameById,
 	formatApprovalApproverNames,
-	formatApprovalStageFlow,
+	formatApprovalRoutingFlow,
+	formatApprovalWorkflowFeatures,
 	formatApprovalWorkflowUpdatedAt,
 } from "@/app/src/services/modules/system-administration/approval-management/ApprovalManagementFormatters";
 import type {
@@ -66,7 +67,8 @@ export function useApprovalManagementListPage() {
 				workflow.moduleCode,
 				workflow.status,
 				workflow.description,
-				formatApprovalStageFlow(workflow),
+				formatApprovalRoutingFlow(workflow),
+				formatApprovalWorkflowFeatures(workflow.workflowFeatures),
 				workflow.stages
 					.map((stage) =>
 						formatApprovalApproverNames(stage.approverIds, approverNameById),
@@ -142,6 +144,9 @@ export function useApprovalManagementListPage() {
 			.flatMap((workflow) => workflow.stages)
 			.filter((stage) => stage.requirement === "all").length,
 		approverNameById,
+		conditionalRouteCount: workflows
+			.flatMap((workflow) => workflow.routingRules)
+			.filter((rule) => rule.basis !== "default").length,
 		handleConfirmInactive,
 		handleQueryChange,
 		handleStatusFilterChange,
@@ -174,7 +179,7 @@ function createApprovalManagementColumn({
 		return {
 			id: key,
 			header,
-			accessorFn: (workflow) => formatApprovalStageFlow(workflow),
+			accessorFn: (workflow) => formatApprovalRoutingFlow(workflow),
 			sortingFn: "alphanumeric",
 			meta: { className },
 		};

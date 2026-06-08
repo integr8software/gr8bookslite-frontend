@@ -40,7 +40,7 @@ function ApprovalManagementFormPageInner() {
 							? "Edit Approval Workflow"
 							: "Add Approval Workflow"
 				}
-				description="Set the module, approval stages, approvers, and stage completion rule."
+				description="Set the module, approval stages, amount limits, and workflow controls."
 				eyebrow={
 					<>
 						<ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
@@ -103,12 +103,17 @@ function ApprovalManagementFormPageInner() {
 			<ApprovalManagementForm
 				approverOptions={page.approverOptions}
 				errors={page.errors}
+				hasAmountCondition={page.hasAmountCondition}
 				isReadonly={page.isReadonly}
 				values={page.values}
+				onAmountConditionModeChange={page.updateAmountConditionMode}
 				onInputChange={page.handleInputChange}
 				onModuleCodeChange={page.handleModuleCodeChange}
+				onRoutingRuleFieldChange={page.updateRoutingRuleField}
+				onRoutingRuleStageToggle={page.toggleRoutingRuleStage}
 				onStageFieldChange={page.updateStageField}
 				onSubmit={page.handleSubmit}
+				onWorkflowFeatureChange={page.updateWorkflowFeature}
 			/>
 			<AppDialog
 				isOpen={isInactiveDialogOpen}

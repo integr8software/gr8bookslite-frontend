@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, ListChecks, Plus, ShieldCheck, Users } from "lucide-react";
+import {
+	CheckCircle2,
+	CircleDollarSign,
+	ListChecks,
+	Plus,
+	ShieldCheck,
+} from "lucide-react";
 import { ApprovalManagementHref } from "@/app/src/constants/modules/system-administration/approval-management/ApprovalManagementConstants";
 import { useApprovalManagementListPage } from "@/app/src/hooks/modules/system-administration/approval-management/useApprovalManagementListPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -20,7 +26,7 @@ export function ApprovalManagementListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Approval Management"
-				description="Maintain module approval workflows with staged approvers and proceed conditions."
+				description="Maintain approval matrices with amount limits and staged approvers."
 				eyebrow={
 					<>
 						<ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
@@ -49,9 +55,9 @@ export function ApprovalManagementListPage() {
 					value={String(page.totalStageCount)}
 				/>
 				<SummaryTile
-					icon={Users}
-					label="All-Approver Stages"
-					value={String(page.allApproverStageCount)}
+					icon={CircleDollarSign}
+					label="Amount Conditions"
+					value={String(page.conditionalRouteCount)}
 				/>
 			</div>
 			<ApprovalManagementTable

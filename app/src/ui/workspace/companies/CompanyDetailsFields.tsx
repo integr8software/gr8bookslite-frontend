@@ -98,7 +98,7 @@ export function CompanyDetailsFields({
 	}
 
 	return (
-		<form id={formId} onSubmit={onSubmit}>
+		<form id={formId} onSubmit={onSubmit} noValidate>
 			<input type="submit" hidden />
 			<WorkspaceManagementSection
 				title="Company Details"

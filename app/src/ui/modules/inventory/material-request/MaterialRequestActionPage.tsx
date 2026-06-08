@@ -5,7 +5,6 @@ import {
 	Ban,
 	CheckCircle2,
 	ClipboardList,
-	Copy,
 	Edit3,
 	Printer,
 	Save,
@@ -130,14 +129,6 @@ function MaterialRequestHeaderActions({
 				<X className="h-4 w-4" aria-hidden="true" />
 				Cancel
 			</Link>
-			<button
-				type="button"
-				onClick={page.handleCopyFrom}
-				className={moduleHeaderActionClassNames.secondary}
-			>
-				<Copy className="h-4 w-4" aria-hidden="true" />
-				Copy From
-			</button>
 			<button
 				type="button"
 				onClick={page.handleSubmit}

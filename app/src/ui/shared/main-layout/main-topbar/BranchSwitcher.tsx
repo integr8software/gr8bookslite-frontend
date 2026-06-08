@@ -242,54 +242,56 @@ function BranchSwitcherGroup({
 				{label}
 			</p>
 			{items.length ? (
-				items.map((item) => {
-					const isCurrentBranch = item.branchId === currentBranchId;
+				<div className="grid gap-1">
+					{items.map((item) => {
+						const isCurrentBranch = item.branchId === currentBranchId;
 
-					return (
-						<Link
-							key={item.key}
-							href={item.href}
-							onClick={() => {
-								if (item.branchId) {
-									onBranchSelectionStart(item.branchId);
-									onSelectBranch(item.branchId);
-								}
-								onClose();
-							}}
-							className={joinClasses(
-								"flex items-center gap-2 rounded-md px-3 py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
-								isCurrentBranch
-									? "bg-skyblue/12 ring-1 ring-skyblue/28 hover:bg-skyblue/18"
-									: "hover:bg-skyblue/10",
-							)}
-						>
-							<span
+						return (
+							<Link
+								key={item.key}
+								href={item.href}
+								onClick={() => {
+									if (item.branchId) {
+										onBranchSelectionStart(item.branchId);
+										onSelectBranch(item.branchId);
+									}
+									onClose();
+								}}
 								className={joinClasses(
-									"flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
+									"flex items-center gap-2 rounded-md px-3 py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
 									isCurrentBranch
-										? "theme-accent-contrast-text bg-skyblue shadow-[0_0_10px_rgb(var(--skyblue-rgb)/0.26)]"
-										: "bg-darknavy/8 text-darknavy",
+										? "bg-skyblue/12 ring-1 ring-skyblue/28 hover:bg-skyblue/18"
+										: "hover:bg-skyblue/10",
 								)}
 							>
-								<GitBranch
-									className="h-4 w-4"
-									aria-hidden="true"
-								/>
-							</span>
-							<span className="min-w-0 flex-1">
-								<span className="block truncate font-semibold text-darknavy">
-									{item.label}
+								<span
+									className={joinClasses(
+										"flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
+										isCurrentBranch
+											? "theme-accent-contrast-text bg-skyblue shadow-[0_0_10px_rgb(var(--skyblue-rgb)/0.26)]"
+											: "bg-darknavy/8 text-darknavy",
+									)}
+								>
+									<GitBranch
+										className="h-4 w-4"
+										aria-hidden="true"
+									/>
 								</span>
-							</span>
-							{isCurrentBranch ? (
-								<Check
-									className="h-4 w-4 shrink-0 text-skyblue"
-									aria-hidden="true"
-								/>
-							) : null}
-						</Link>
-					);
-				})
+								<span className="min-w-0 flex-1">
+									<span className="block truncate font-semibold text-darknavy">
+										{item.label}
+									</span>
+								</span>
+								{isCurrentBranch ? (
+									<Check
+										className="h-4 w-4 shrink-0 text-skyblue"
+										aria-hidden="true"
+									/>
+								) : null}
+							</Link>
+						);
+					})}
+				</div>
 			) : (
 				<p className="px-3 py-2 text-sm text-darknavy/45">
 					None available.

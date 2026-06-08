@@ -139,6 +139,12 @@ Use the shared module UI for list pages.
 Use `ModuleTable` for dense record lists with sorting, pagination, filtering,
 or scan-heavy data. Use cards/lists only when records are naturally low-density.
 
+# Form Fields
+
+- Use a real `<label>` element for form fields whenever the field has visible
+  label text.
+- Mark required fields with `*` in the label.
+
 # Validation
 
 Validation belongs in `app/src/validations/...`.

@@ -40,7 +40,6 @@ import {
   filterMainNavigationSections,
   filterMainSearchItems,
   getAccessibleBranches,
-  hasAccess,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 import {
   MainAccountNavigationSections,
@@ -530,7 +529,7 @@ export function useMainLayout() {
     accessibleBranches.find((branch) => branch.id === activeBranchId) ??
     accessibleBranches[0] ??
     null;
-  const canManageBranches = hasAccess(displayUser, "branch.management");
+  const canManageBranches = displayUser.userRole === "Admin";
   const clearShellContextSwitch = useCallback(
     (keepTopbarSkeleton = true) => {
       if (shellContextSettlingRef.current !== null) {

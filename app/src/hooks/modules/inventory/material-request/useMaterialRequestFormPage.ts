@@ -70,7 +70,14 @@ export function useMaterialRequestFormPage() {
 		}
 
 		setValues((current) => ({ ...current, [field]: value }));
-		setErrors((current) => ({ ...current, [field]: undefined }));
+		setErrors((current) =>
+			createMaterialRequestErrorsAfterFieldUpdate({
+				currentErrors: current,
+				currentValues: values,
+				field,
+				value,
+			}),
+		);
 	}
 
 	function updateItem(
@@ -332,43 +339,6 @@ export function useMaterialRequestFormPage() {
 		router.push(`${MaterialRequestHref}/view/${nextRequest.id}`);
 	}
 
-	function handleCopyFrom() {
-		if (isReadonly) {
-			return;
-		}
-
-		const sourceRequest = sortedRequests.find(
-			(request) => request.id !== existingRequest?.id,
-		);
-
-		if (!sourceRequest) {
-			toast.error("No material request is available to copy from.");
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			fromWarehouse: sourceRequest.fromWarehouse,
-			toWarehouse: sourceRequest.toWarehouse,
-			department: sourceRequest.department,
-			vceCode: sourceRequest.vceCode,
-			vceName: sourceRequest.vceName,
-			projectRef: sourceRequest.projectRef,
-			projectName: sourceRequest.projectName,
-			referenceModule: sourceRequest.referenceModule,
-			referenceNo: sourceRequest.referenceNo,
-			purpose: sourceRequest.purpose,
-			requiresApproval: sourceRequest.requiresApproval,
-			remarks: sourceRequest.remarks,
-			items: sourceRequest.items.map((item) => ({
-				...item,
-				id: createMaterialRequestId("item"),
-			})),
-		}));
-		setErrors({});
-		toast.success(`Copied from ${sourceRequest.requestNo}.`);
-	}
-
 	function updateRequestStatus(status: MaterialRequestStatus) {
 		if (!existingRequest) {
 			return;
@@ -406,7 +376,6 @@ export function useMaterialRequestFormPage() {
 		duplicateItem,
 		errors,
 		existingRequest,
-		handleCopyFrom,
 		handleSubmit,
 		importItems,
 		isReadonly,
@@ -436,6 +405,41 @@ function getMaterialRequestFormMode(pathname: string): MaterialRequestFormMode {
 	}
 
 	return "add";
+}
+
+function createMaterialRequestErrorsAfterFieldUpdate<TKey extends keyof MaterialRequestFormValues>({
+	currentErrors,
+	currentValues,
+	field,
+	value,
+}: {
+	currentErrors: MaterialRequestFormErrors;
+	currentValues: MaterialRequestFormValues;
+	field: TKey;
+	value: MaterialRequestFormValues[TKey];
+}) {
+	const nextErrors = {
+		...currentErrors,
+		[field]: undefined,
+	};
+
+	if (field !== "fromWarehouse" && field !== "toWarehouse") {
+		return nextErrors;
+	}
+
+	const nextFromWarehouse =
+		field === "fromWarehouse" ? String(value) : currentValues.fromWarehouse;
+	const nextToWarehouse =
+		field === "toWarehouse" ? String(value) : currentValues.toWarehouse;
+
+	nextErrors.toWarehouse =
+		nextFromWarehouse &&
+		nextToWarehouse &&
+		nextFromWarehouse === nextToWarehouse
+			? "Select a different To Warehouse."
+			: undefined;
+
+	return nextErrors;
 }
 
 function shouldClearItem(

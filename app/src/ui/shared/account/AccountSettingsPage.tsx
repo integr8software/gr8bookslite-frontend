@@ -48,7 +48,7 @@ const SettingsInputClassName =
 	"h-12 w-full rounded-2xl border border-darknavy/12 bg-white px-4 text-sm text-darknavy shadow-sm outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-2 focus:ring-skyblue/20";
 
 const PrimarySettingsButtonClassName =
-	"theme-accent-contrast-text inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-skyblue px-4 text-sm font-semibold shadow-[0_12px_28px_rgb(var(--skyblue-rgb)/0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-darknavy/18 disabled:text-darknavy/35 disabled:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.28)]";
+	"theme-accent-contrast-text inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-skyblue px-4 text-sm font-semibold transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-darknavy/18 disabled:text-darknavy/35 disabled:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.28)]";
 
 const SecondarySettingsButtonClassName =
 	"inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy shadow-sm transition hover:bg-offwhite disabled:cursor-not-allowed disabled:border-darknavy/8 disabled:text-darknavy/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35";
@@ -718,8 +718,8 @@ function ThemePreviewGrid({
 						disabled={disabled}
 							className={`group overflow-hidden rounded-[1.6rem] border text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-wait disabled:opacity-70 ${
 							isSelected
-								? "border-skyblue bg-white shadow-[0_22px_48px_rgb(var(--skyblue-rgb)/0.14)]"
-								: "border-darknavy/10 bg-white hover:border-skyblue/38 hover:shadow-[0_18px_40px_rgba(87,196,229,0.14)]"
+								? "border-darknavy/35 bg-white"
+								: "border-darknavy/10 bg-white hover:border-skyblue/38"
 						}`}
 					>
 						<div
@@ -876,7 +876,7 @@ function OptionGrid<TValue extends string>({
 						onClick={() => onSelect(option.value)}
 						className={`rounded-[1.5rem] border px-4 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 ${
 							isSelected
-								? "theme-accent-contrast-text border-skyblue bg-skyblue shadow-[0_18px_42px_rgb(var(--skyblue-rgb)/0.2)]"
+								? "theme-accent-contrast-text border-skyblue bg-skyblue"
 								: "border-darknavy/10 bg-offwhite/72 text-darknavy hover:border-skyblue/40 hover:bg-skyblue/10"
 						}`}
 					>

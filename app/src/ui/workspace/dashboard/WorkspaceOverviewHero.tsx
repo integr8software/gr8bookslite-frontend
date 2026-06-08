@@ -49,7 +49,7 @@ export function WorkspaceOverviewHero({
               onClick={onToggleLayoutEditing}
               className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 ${
                 isEditingLayout
-                  ? "bg-skyblue text-darknavy shadow-[0_18px_35px_rgba(87,196,229,0.28)] hover:bg-skyblue/90"
+                  ? "theme-accent-contrast-text bg-skyblue hover:bg-skyblue/90"
                   : "border border-darknavy/10 bg-white text-darknavy hover:border-skyblue/35 hover:bg-skyblue/10"
               }`}
             >
@@ -66,11 +66,7 @@ export function WorkspaceOverviewHero({
             </button>
             <button
               type="button"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-skyblue/18 px-4 text-sm font-semibold text-darknavy shadow-[0_14px_30px_rgb(var(--skyblue-rgb)/0.16)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgb(var(--skyblue-rgb)/0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgb(var(--skyblue-rgb) / 0.82), rgb(var(--skyblue-rgb) / 0.68))",
-              }}
+              className="theme-accent-contrast-text inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-skyblue px-4 text-sm font-semibold transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               Create New

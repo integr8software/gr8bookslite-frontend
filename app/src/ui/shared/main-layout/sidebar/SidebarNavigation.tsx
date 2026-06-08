@@ -113,7 +113,7 @@ export function SidebarSection({
 					className={joinClasses(
 						"group relative flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
 						isDirectActive
-							? "bg-skyblue/14 text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] outline outline-1 -outline-offset-1 outline-skyblue/30 hover:bg-skyblue/18"
+							? "bg-skyblue/14 text-darknavy hover:bg-skyblue/18"
 							: "text-darknavy hover:bg-darknavy/5",
 					)}
 				>
@@ -280,7 +280,7 @@ export function SidebarItem({
 						isAncestorActive
 							? "font-semibold text-darknavy hover:bg-skyblue/10"
 							: isExactActive
-								? "bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] outline outline-1 -outline-offset-1 outline-skyblue/30 hover:bg-skyblue/18"
+								? "bg-skyblue/14 font-semibold text-darknavy hover:bg-skyblue/18"
 								: "text-darknavy/70 hover:bg-skyblue/10 hover:text-darknavy",
 					)}
 				>
@@ -359,7 +359,7 @@ export function SidebarItem({
 				paddingClass,
 				depth < 0 && "font-semibold",
 				isActive
-					? "bg-skyblue/14 font-semibold text-darknavy shadow-[0_10px_24px_rgb(var(--skyblue-rgb)/0.12)] outline outline-1 -outline-offset-1 outline-skyblue/30 hover:bg-skyblue/18"
+					? "bg-skyblue/14 font-semibold text-darknavy hover:bg-skyblue/18"
 					: "text-darknavy/65 hover:bg-skyblue/10 hover:text-darknavy",
 			)}
 		>
@@ -369,9 +369,9 @@ export function SidebarItem({
 			{shouldShowModuleDot ? (
 				<span
 					className={joinClasses(
-						"h-1.5 w-1.5 shrink-0 rounded-full transition-[background-color,box-shadow] group-hover:bg-skyblue group-hover:shadow-[0_0_8px_rgb(var(--skyblue-rgb)/0.36)]",
+						"h-1.5 w-1.5 shrink-0 rounded-full transition-colors group-hover:bg-skyblue",
 						isActive
-							? "bg-skyblue shadow-[0_0_8px_rgb(var(--skyblue-rgb)/0.36)]"
+							? "bg-skyblue"
 							: "bg-darknavy/30",
 					)}
 					aria-hidden="true"

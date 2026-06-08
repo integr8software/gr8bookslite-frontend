@@ -842,6 +842,10 @@ button {
   animation: neo-ai-jump 5s ease-in-out infinite;
 }
 
+.neo-ai-launcher[data-state="open"] {
+  animation: none;
+}
+
 .neo-ai-panel {
   position: fixed;
 }
@@ -849,29 +853,27 @@ button {
 .neo-ai-panel::after {
   content: "";
   position: absolute;
-  right: 1.65rem;
-  bottom: -0.62rem;
-  width: 1.15rem;
-  height: 1.15rem;
-  background: #ffffff;
-  border-right: 1px solid rgb(var(--skyblue-rgb) / 0.35);
-  border-bottom: 1px solid rgb(var(--skyblue-rgb) / 0.35);
-  border-bottom-right-radius: 0.18rem;
+  right: 1.75rem;
+  bottom: -0.5rem;
+  width: 1rem;
+  height: 1rem;
+  background: var(--background);
+  border: 0;
   transform: rotate(45deg);
-  box-shadow: 6px 6px 14px rgba(33, 39, 56, 0.07);
+  transform-origin: center;
 }
 
 @media (min-width: 640px) {
   .neo-ai-panel::after {
-    right: -0.62rem;
-    bottom: 0.8125rem;
-    width: 1.15rem;
-    height: 1.15rem;
-    border-right: 1px solid rgb(var(--skyblue-rgb) / 0.35);
-    border-bottom: 1px solid rgb(var(--skyblue-rgb) / 0.35);
-    border-bottom-right-radius: 0.18rem;
-    transform: rotate(45deg);
+    right: -0.38rem;
+    bottom: 1.14rem;
+    width: 0.75rem;
+    height: 0.75rem;
   }
+}
+
+.neo-ai-panel-drawer::after {
+  display: none;
 }
 
 @keyframes neo-ai-jump {

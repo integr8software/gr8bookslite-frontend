@@ -4,6 +4,7 @@ import {
   StartApiRequestTrace,
 } from "@/app/src/services/shared/api/ApiRequestTrace";
 import { GetApiBaseUrl } from "@/app/src/services/shared/api/ApiUrl";
+import { NotifyAuthSessionExpired } from "@/app/src/services/auth/AuthSessionExpired";
 
 export class ApiClientError extends Error {
   code?: string;
@@ -63,6 +64,10 @@ ApiClient.interceptors.response.use(
       message,
       response: error.response?.data,
     });
+
+    if (status === 401) {
+      NotifyAuthSessionExpired();
+    }
 
     if (Array.isArray(message)) {
       return Promise.reject(

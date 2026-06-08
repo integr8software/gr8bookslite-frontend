@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ClearLegacyAuthStorage } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   getWorkspaceCompanyBranchesHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
@@ -74,6 +73,7 @@ import {
   SwitchCompanyContext,
 } from "@/app/src/services/auth/AuthApi";
 import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
+import { NotifyAuthSessionExpired } from "@/app/src/services/auth/AuthSessionExpired";
 import {
   BuildAuthProfileFromSwitchResponse,
   PrepareQueryCacheForContextSwitch,
@@ -280,29 +280,10 @@ export function useMainLayout() {
     }
 
     hasHandledAuthProfileErrorRef.current = true;
-    ClearLegacyAuthStorage();
-    setStoredAccessToken(null);
-    setStoredActiveCompanyId(null);
-    setStoredActiveCompanyName(null);
-    setStoredActiveBranchContext(null);
-    queryClient.clear();
-
-    void fetch("/api/auth/logout", {
-      method: "POST",
-      cache: "no-store",
-    }).finally(() => {
-      router.replace("/login?force=true");
-      router.refresh();
-    });
+    NotifyAuthSessionExpired();
   }, [
     authProfileError,
     isAuthProfileError,
-    queryClient,
-    router,
-    setStoredAccessToken,
-    setStoredActiveBranchContext,
-    setStoredActiveCompanyId,
-    setStoredActiveCompanyName,
   ]);
   const activeNavigationScope: MainNavigationScope =
     isAccountRoute

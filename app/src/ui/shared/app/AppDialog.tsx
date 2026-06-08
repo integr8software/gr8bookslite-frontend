@@ -14,6 +14,7 @@ export type AppDialogProps = {
   isOpen: boolean;
   isPending?: boolean;
   pendingLabel?: string;
+  showCancel?: boolean;
   title: string;
   tone?: AppDialogTone;
   onCancel: () => void;
@@ -29,6 +30,7 @@ export function AppDialog({
   isOpen,
   isPending = false,
   pendingLabel = "Please wait...",
+  showCancel = true,
   title,
   tone = "default",
   onCancel,
@@ -131,14 +133,16 @@ export function AppDialog({
           </label>
         ) : null}
         <div className="mt-5 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={handleCancel}
-            disabled={isConfirmPending}
-            className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-          >
-            {cancelLabel}
-          </button>
+          {showCancel ? (
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={isConfirmPending}
+              className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+            >
+              {cancelLabel}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => void handleConfirm()}

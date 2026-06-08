@@ -2,6 +2,7 @@ import type {
   AccountAccentColor,
   AccountTheme,
 } from "@/app/src/types/shared/account/AccountTypes";
+import { AccountThemeCookieName } from "@/app/src/constants/shared/account/AccountThemeRoutes";
 
 const ThemeAttributeName = "data-app-theme";
 const AccentColorVariableName = "--skyblue";
@@ -16,6 +17,7 @@ export function ApplyAccountTheme(theme: AccountTheme) {
   }
 
   document.documentElement.setAttribute(ThemeAttributeName, theme);
+  document.cookie = `${AccountThemeCookieName}=${theme}; path=/; max-age=31536000; samesite=lax`;
 }
 
 export function ApplyAccountAccentColor(accentColor: AccountAccentColor) {

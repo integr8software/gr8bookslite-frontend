@@ -9,8 +9,7 @@ import type {
   AccountTheme,
 } from "@/app/src/types/shared/account/AccountTypes";
 import { DefaultAccountAccentColor } from "@/app/src/constants/shared/account/AccountConstants";
-
-export const AccountPreferencesStorageKey = "gr8booksneo.accountPreferences";
+import { AccountPreferencesStorageKey } from "@/app/src/constants/shared/account/AccountThemeRoutes";
 
 type AccountPreferencesState = {
   hasHydrated: boolean;

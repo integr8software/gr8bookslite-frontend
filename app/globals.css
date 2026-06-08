@@ -842,7 +842,8 @@ button {
   animation: neo-ai-jump 5s ease-in-out infinite;
 }
 
-.neo-ai-launcher[data-state="open"] {
+.neo-ai-launcher[data-state="open"],
+.neo-ai-launcher[data-dragging="true"] {
   animation: none;
 }
 
@@ -853,22 +854,57 @@ button {
 .neo-ai-panel::after {
   content: "";
   position: absolute;
-  right: 1.75rem;
-  bottom: -0.5rem;
   width: 1rem;
   height: 1rem;
-  background: var(--background);
+  background: inherit;
   border: 0;
   transform: rotate(45deg);
   transform-origin: center;
 }
 
+.neo-ai-panel-bottom-right::after {
+  right: 1.75rem;
+  bottom: -0.5rem;
+}
+
+.neo-ai-panel-bottom-left::after {
+  left: 1.75rem;
+  bottom: -0.5rem;
+}
+
+.neo-ai-panel-top-right::after {
+  right: 1.75rem;
+  top: -0.5rem;
+}
+
+.neo-ai-panel-top-left::after {
+  left: 1.75rem;
+  top: -0.5rem;
+}
+
 @media (min-width: 640px) {
-  .neo-ai-panel::after {
+  .neo-ai-panel-bottom-right::after,
+  .neo-ai-panel-top-right::after {
     right: -0.38rem;
-    bottom: 1.14rem;
     width: 0.75rem;
     height: 0.75rem;
+  }
+
+  .neo-ai-panel-bottom-left::after,
+  .neo-ai-panel-top-left::after {
+    left: -0.38rem;
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .neo-ai-panel-bottom-right::after,
+  .neo-ai-panel-bottom-left::after {
+    bottom: 1.14rem;
+  }
+
+  .neo-ai-panel-top-right::after,
+  .neo-ai-panel-top-left::after {
+    top: 1.14rem;
   }
 }
 

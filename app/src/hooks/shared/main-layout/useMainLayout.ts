@@ -130,7 +130,7 @@ const MasterRoutePrefix = "/master";
 const AccountRoutePrefix = "/account";
 const WorkspaceHomeHref = "/workspace/dashboard";
 const MasterHomeHref = "/master/dashboard";
-const CompanyFallbackHomeHref = "/account/profile";
+const CompanyFallbackHomeHref = "/dashboard";
 const ShellContextSwitchFallbackMs = 8000;
 const BranchContextSwitchMinimumMs = 650;
 const TopbarContextSkeletonMs = 700;
@@ -458,7 +458,7 @@ export function useMainLayout() {
         ),
         profile,
       );
-      router.push(companyHomeHref);
+      router.push(getCompanyHomeHrefForProfile(profile));
       releaseShellContextSwitchAfterFrame();
     },
     onError: (_error, variables) => {
@@ -2172,6 +2172,24 @@ function getCompanyHomeHref(items: MainSearchItem[], recentKeys: string[]) {
     items[0]?.href ??
     CompanyFallbackHomeHref
   );
+}
+
+function getCompanyHomeHrefForProfile(profile: AuthProfileResponse) {
+  const currentUser = CreateWorkspaceCurrentUserFromProfile(profile);
+  const activeCompanyId = GetAuthProfileCompanyId(profile);
+  const companies = MapProfileCompaniesToMainCompanies(profile);
+  const currentCompany =
+    companies.find((company) => Number(company.id) === activeCompanyId) ??
+    companies[0];
+  const subscription =
+    currentCompany?.subscriptionPackage ?? MainLayoutDefaultSubscription;
+  const items = filterMainSearchItems(
+    MainCompanySearchItems,
+    currentUser,
+    subscription,
+  );
+
+  return getCompanyHomeHref(items, MainLayoutRecentNavigationKeys);
 }
 
 function sortBranchesByPriority(branches: MainBranch[]) {

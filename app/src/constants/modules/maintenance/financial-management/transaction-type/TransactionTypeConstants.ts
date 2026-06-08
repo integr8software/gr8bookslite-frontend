@@ -26,33 +26,33 @@ export const TransactionTypeTableColumns: Array<
 	  }
 > = [
 	{
-		key: "type",
-		label: "Type",
-		className: "w-[10rem]",
+		key: "name",
+		label: "Name",
+		className: "w-[18%]",
 	},
 	{
 		key: "description",
 		label: "Description",
-		className: "min-w-[16rem]",
+		className: "w-[28%]",
 	},
 	{
-		key: "accountCode",
-		label: "Account Code",
-		className: "w-[10rem]",
+		key: "moduleLabel",
+		label: "Module",
+		className: "w-[18%]",
 	},
 	{
-		key: "accountTitle",
+		key: "accountLabel",
 		label: "Account Title",
-		className: "min-w-[14rem]",
+		className: "w-[22%]",
 	},
 	{
 		key: "status",
 		label: "Status",
-		className: "w-[9rem]",
+		className: "w-[10%]",
 	},
 	{
 		label: "Actions",
-		className: "w-[10rem] text-right",
+		className: "w-[8%] text-right",
 	},
 ];
 
@@ -60,12 +60,12 @@ export const TransactionTypeActionCopy = {
 	add: {
 		title: "Add Transaction Type",
 		description:
-			"Create a new transaction type for financial posting and ledger mapping.",
+			"Create a transaction type and map it to the right module and chart account.",
 	},
 	edit: {
 		title: "Edit Transaction Type",
 		description:
-			"Update the transaction type details used for posting and reporting.",
+			"Update the transaction type details, module availability, and account mapping.",
 	},
 	view: {
 		title: "View Transaction Type",

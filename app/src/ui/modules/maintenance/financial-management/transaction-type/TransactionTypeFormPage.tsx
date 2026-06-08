@@ -3,7 +3,6 @@
 import { Edit3 } from "lucide-react";
 import { TransactionTypeActionCopy } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
 import { useTransactionTypeActionPage } from "@/app/src/hooks/modules/maintenance/financial-management/transaction-type/useTransactionTypeActionPage";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { TransactionTypeForm } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeForm";
 import { TransactionTypeFormActions } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeFormActions";
@@ -36,29 +35,21 @@ export function TransactionTypeFormPage() {
 							isReadonly={page.isReadonly}
 							mode={page.mode}
 							transactionType={page.existingTransactionType}
-							onDelete={() => page.setIsDeleteDialogOpen(true)}
 						/>
 					}
 				/>
 
 				<TransactionTypeForm
+					accountOptions={page.accountOptions}
 					errors={page.errors}
 					isReadonly={page.isReadonly}
+					moduleOptions={page.moduleOptions}
 					values={page.values}
+					onAccountChange={page.handleAccountChange}
 					onInputChange={page.handleInputChange}
+					onModuleChange={page.handleModuleChange}
 				/>
 			</form>
-
-			<AppDialog
-				isOpen={page.isDeleteDialogOpen}
-				isPending={page.isMutating}
-				title="Delete transaction type?"
-				description={`This will remove ${page.existingTransactionType?.description ?? "the selected transaction type"}.`}
-				confirmLabel="Delete Transaction Type"
-				tone="danger"
-				onCancel={() => page.setIsDeleteDialogOpen(false)}
-				onConfirm={page.handleConfirmDelete}
-			/>
 		</>
 	);
 }

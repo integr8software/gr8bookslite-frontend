@@ -26,7 +26,7 @@ export function TransactionTypeFilters({
 				label="Search transaction types"
 				value={searchTerm}
 				onChange={onSearchTermChange}
-				placeholder="Search by type, description, or account"
+				placeholder="Search by name, description, module, or account"
 			/>
 			<ModuleTableFilterSelect
 				label="Status"

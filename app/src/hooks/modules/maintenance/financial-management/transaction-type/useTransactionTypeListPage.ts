@@ -9,8 +9,8 @@ export function useTransactionTypeListPage() {
 	const transactionTypes = useTransactionTypeStore(
 		(state) => state.transactionTypes,
 	);
-	const deleteTransactionType = useTransactionTypeStore(
-		(state) => state.deleteTransactionType,
+	const updateTransactionType = useTransactionTypeStore(
+		(state) => state.updateTransactionType,
 	);
 	const isLoading = useTransactionTypeStore((state) => state.isLoading);
 	const isMutating = useTransactionTypeStore((state) => state.isMutating);
@@ -18,19 +18,20 @@ export function useTransactionTypeListPage() {
 	const [statusFilter, setStatusFilter] = useState<
 		"" | (typeof TransactionTypeStatusOptions)[number]
 	>("");
-	const [pendingDeleteTransactionType, setPendingDeleteTransactionType] =
-		useState<TransactionType | null>(null);
 
 	const filteredTransactionTypes = useMemo(() => {
 		const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
 		return transactionTypes.filter((transactionType) => {
+			const legacyTransactionType = transactionType as TransactionType & {
+				type?: string;
+			};
 			const matchesSearch =
 				!normalizedSearchTerm ||
 				[
-					transactionType.type,
+					transactionType.name ?? legacyTransactionType.type,
 					transactionType.description,
-					transactionType.accountCode,
+					transactionType.moduleName,
 					transactionType.accountTitle,
 				]
 					.join(" ")
@@ -43,27 +44,23 @@ export function useTransactionTypeListPage() {
 		});
 	}, [searchTerm, statusFilter, transactionTypes]);
 
-	function handleConfirmDelete() {
-		if (!pendingDeleteTransactionType) {
-			return;
-		}
-
-		deleteTransactionType(pendingDeleteTransactionType.id);
-		setPendingDeleteTransactionType(null);
+	function toggleTransactionTypeStatus(transactionType: TransactionType) {
+		updateTransactionType({
+			...transactionType,
+			status: transactionType.status === "Active" ? "Inactive" : "Active",
+		});
 	}
 
 	return {
 		filteredTransactionTypes,
 		isLoading,
 		isMutating,
-		pendingDeleteTransactionType,
 		searchTerm,
 		statusFilter,
 		transactionTypes,
-		handleConfirmDelete,
-		setPendingDeleteTransactionType,
 		setSearchTerm,
 		setStatusFilter,
+		toggleTransactionTypeStatus,
 	};
 }
 

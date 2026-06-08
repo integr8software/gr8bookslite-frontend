@@ -8,22 +8,24 @@ export function validateTransactionTypeForm(
 ): TransactionTypeFormErrors {
 	const errors: TransactionTypeFormErrors = {};
 
-	if (!values.type.trim()) {
-		errors.type = "Enter a transaction type code.";
+	if (!values.name.trim()) {
+		errors.name = "Enter a transaction type name.";
 	}
 
 	if (!values.description.trim()) {
 		errors.description = "Enter a description.";
 	}
 
-	if (!values.accountCode.trim()) {
-		errors.accountCode = "Enter an account code.";
-	} else if (!/^[0-9]+$/.test(values.accountCode.trim())) {
-		errors.accountCode = "Enter a valid numeric account code.";
+	if (!values.moduleId) {
+		errors.moduleId = "Select a module.";
 	}
 
-	if (!values.accountTitle.trim()) {
-		errors.accountTitle = "Enter an account title.";
+	if (!values.accountId) {
+		errors.accountId = "Select an account.";
+	}
+
+	if (!values.status) {
+		errors.status = "Select status.";
 	}
 
 	return errors;

@@ -3,7 +3,6 @@
 import { CheckCircle2, CirclePause, Receipt } from "lucide-react";
 import { useTransactionTypeListPage } from "@/app/src/hooks/modules/maintenance/financial-management/transaction-type/useTransactionTypeListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import { TransactionTypeFilters } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeFilters";
@@ -79,21 +78,10 @@ export function TransactionTypeListPage() {
 						onStatusFilterChange={page.setStatusFilter}
 					/>
 				}
-				onDelete={page.setPendingDeleteTransactionType}
 				onEdit={(transactionType) => setDrawerState({ mode: "edit", transactionType })}
+				onToggleStatus={page.toggleTransactionTypeStatus}
 			/>
 			<TransactionTypeDrawer isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} transactionType={drawerState?.transactionType} />
-
-			<AppDialog
-				isOpen={Boolean(page.pendingDeleteTransactionType)}
-				isPending={page.isMutating}
-				title="Delete transaction type?"
-				description={`This will remove ${page.pendingDeleteTransactionType?.description ?? "the selected transaction type"}.`}
-				confirmLabel="Delete Transaction Type"
-				tone="danger"
-				onCancel={() => page.setPendingDeleteTransactionType(null)}
-				onConfirm={page.handleConfirmDelete}
-			/>
 		</section>
 	);
 }

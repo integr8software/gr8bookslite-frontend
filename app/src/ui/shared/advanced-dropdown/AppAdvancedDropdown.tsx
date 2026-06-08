@@ -521,13 +521,13 @@ export function AppAdvancedDropdown({
 				onClick={handleControlClick}
 				onKeyDown={handleComboboxKeyDown}
 				className={joinClasses(
-					"app-advanced-dropdown-control w-full rounded-lg border border-darknavy/10 bg-white text-sm text-darknavy outline-none transition",
+					"app-advanced-dropdown-control w-full rounded-lg border border-darknavy/10 text-sm outline-none transition",
 					isMultiple ? "min-h-11 px-2 py-1.5" : "h-11 px-3",
 					disabled
-						? "pointer-events-none cursor-not-allowed shadow-none"
+						? "pointer-events-none cursor-not-allowed bg-darknavy/5 text-darknavy/35 shadow-none"
 						: readOnly
-							? "pointer-events-none cursor-default shadow-none"
-							: "cursor-pointer focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",
+							? "pointer-events-none cursor-default bg-darknavy/[0.03] text-darknavy shadow-none"
+							: "cursor-pointer bg-white text-darknavy focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",
 				)}
 			>
 				<div
@@ -551,6 +551,7 @@ export function AppAdvancedDropdown({
 									<SelectionChip
 										key={option.value}
 										disabled={disabled}
+										removable={!isInteractionLocked}
 										option={option}
 										onRemove={() => removeOption(option.value)}
 									/>
@@ -741,10 +742,12 @@ function OptionRow({
 
 function SelectionChip({
 	disabled,
+	removable,
 	option,
 	onRemove,
 }: {
 	disabled: boolean;
+	removable: boolean;
 	option: AppAdvancedDropdownOption;
 	onRemove: () => void;
 }) {
@@ -756,19 +759,21 @@ function SelectionChip({
 			)}
 		>
 			<span className="min-w-0 truncate">{option.name}</span>
-			<button
-				type="button"
-				disabled={disabled}
-				onClick={(event) => {
-					event.preventDefault();
-					event.stopPropagation();
-					onRemove();
-				}}
-				className="shrink-0 text-darknavy/55 transition hover:text-darknavy disabled:pointer-events-none"
-				aria-label={`Remove ${option.name}`}
-			>
-				<X className="h-3 w-3" aria-hidden="true" />
-			</button>
+			{removable ? (
+				<button
+					type="button"
+					disabled={disabled}
+					onClick={(event) => {
+						event.preventDefault();
+						event.stopPropagation();
+						onRemove();
+					}}
+					className="shrink-0 text-darknavy/55 transition hover:text-darknavy disabled:pointer-events-none"
+					aria-label={`Remove ${option.name}`}
+				>
+					<X className="h-3 w-3" aria-hidden="true" />
+				</button>
+			) : null}
 		</span>
 	);
 }

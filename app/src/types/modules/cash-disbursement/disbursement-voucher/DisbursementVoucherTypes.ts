@@ -29,7 +29,7 @@ export type DisbursementVoucherCopySource =
   | "Accounts Payable Voucher"
   | "Advances to Supplier"
   | "Cash Advance"
-  | "Petty Cash Replenishment"
+  | "Petty Cash Fund Replenishment"
   | "Purchase Order";
 
 export type DisbursementVoucherPaymentDetails = {

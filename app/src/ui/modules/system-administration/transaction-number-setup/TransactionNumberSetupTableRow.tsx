@@ -6,21 +6,21 @@ import { TransactionNumberSetupRecordActions } from "@/app/src/ui/modules/system
 type TransactionNumberSetupTableRowProps = {
 	branchNameById: Map<string, string>;
 	setup: TransactionNumberSetupRecord;
-	onGenerateNumber: (setupId: string) => void;
-	onSetInactive: (setup: TransactionNumberSetupRecord) => void;
 };
 
 export function TransactionNumberSetupTableRow({
 	branchNameById,
-	onGenerateNumber,
-	onSetInactive,
 	setup,
 }: TransactionNumberSetupTableRowProps) {
 	return (
 		<tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
 			<td className="px-4 py-4">
 				<div className="font-semibold text-darknavy">{setup.moduleName}</div>
-				<div className="text-xs text-darknavy/55">{setup.moduleCode}</div>
+			</td>
+			<td className="px-4 py-4">
+				<span className="inline-flex rounded-full bg-darknavy/8 px-3 py-1 text-xs font-semibold text-darknavy">
+					{setup.inputMode}
+				</span>
 			</td>
 			<td className="px-4 py-4">
 				<span className="inline-flex rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">
@@ -58,11 +58,7 @@ export function TransactionNumberSetupTableRow({
 				</span>
 			</td>
 			<td className="px-4 py-4">
-				<TransactionNumberSetupRecordActions
-					setup={setup}
-					onGenerateNumber={onGenerateNumber}
-					onSetInactive={onSetInactive}
-				/>
+				<TransactionNumberSetupRecordActions setup={setup} />
 			</td>
 		</tr>
 	);

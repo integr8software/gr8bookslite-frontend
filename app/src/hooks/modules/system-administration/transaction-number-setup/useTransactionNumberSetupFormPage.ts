@@ -108,10 +108,25 @@ export function useTransactionNumberSetupFormPage() {
 				const moduleOption = TransactionNumberModuleOptions.find(
 					(option) => option.code === value,
 				);
+				const previousModuleOption = TransactionNumberModuleOptions.find(
+					(option) => option.code === current.moduleCode,
+				);
 
-				if (!current.prefix && moduleOption) {
+				if (
+					moduleOption &&
+					(!current.prefix ||
+						current.prefix === previousModuleOption?.defaultPrefix)
+				) {
 					nextValues.prefix = moduleOption.defaultPrefix;
 				}
+			}
+
+			if (
+				field === "startingNumber" &&
+				typeof value === "number" &&
+				current.currentNumber < value
+			) {
+				nextValues.currentNumber = value;
 			}
 
 			if (field === "scope" && value === "all") {

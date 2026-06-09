@@ -313,7 +313,7 @@ export const DisbursementVoucherCopySources: DisbursementVoucherCopySource[] = [
   "Accounts Payable Voucher",
   "Advances to Supplier",
   "Cash Advance",
-  "Petty Cash Replenishment",
+  "Petty Cash Fund Replenishment",
   "Purchase Order",
 ];
 
@@ -359,8 +359,8 @@ export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromReco
     ),
     createDisbursementVoucherCopyFromRecord(
       "copy-dv-1006",
-      "Petty Cash Replenishment",
-      "PCR-2026-0012",
+      "Petty Cash Fund Replenishment",
+      "PCFR-2026-0012",
       "VCE-TPI-611",
       MockDisbursementTransactions[5],
     ),

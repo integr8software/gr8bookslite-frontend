@@ -106,6 +106,7 @@ app/src/ui/modules/<domain>/<feature>/
   FeatureTableRow.tsx
   FeatureRecordActions.tsx
   FeatureDetailsPanel.tsx
+  FeatureDataEntryTable.tsx
   FeatureItemsTable.tsx
   FeatureNotFound.tsx
 
@@ -132,6 +133,9 @@ app/src/validations/modules/<domain>/<feature>/
 Use the shared module UI for list pages.
 
 - Use `app/src/ui/shared/module/ModuleHeader.tsx` for module page headers.
+- Use `app/src/ui/shared/module/ModuleMetrics.tsx` for list-page metric
+  strips. For the standard pattern: a `ModuleHeader`, a `ModuleMetrics` block, then
+  the module table.
 - Use `app/src/ui/shared/module/module-table/ModuleTable.tsx` for table-based
   module lists.
 - Use the rest of `app/src/ui/shared/module/module-table/` instead of creating
@@ -142,9 +146,35 @@ Use the shared module UI for list pages.
 - Keep row cells in `FeatureTableRow.tsx`.
 - Keep row action buttons in `FeatureRecordActions.tsx` when actions are
   reused or non-trivial.
+- Prefer `ModuleMetrics` over custom summary cards for common counts, status
+  totals, and dashboard-style module facts. Keep metric labels short, values
+  derived from feature state, and helper text concise.
 
 Use `ModuleTable` for dense record lists with sorting, pagination, filtering,
 or scan-heavy data. Use cards/lists only when records are naturally low-density.
+
+# Transaction Data Entry Tables
+
+Some transaction modules have editable line, item, or accounting entry grids.
+For spreadsheet-like data entry, use the shared Data Entry UI instead of a
+custom table:
+
+- Use `app/src/ui/shared/module/module-data-entry/ModuleDataEntry.tsx` and its
+  exported types for editable transaction rows.
+- Keep feature-specific entry-table components in
+  `app/src/ui/modules/<domain>/<feature>/FeatureDataEntryTable.tsx` or
+  `FeatureItemsTable.tsx`.
+- Keep Data Entry column definitions, visible-column options, add-column
+  options, export options, and row default values outside the UI layer when they
+  are reusable. Constants belong in `app/src/constants/...`; defaults and pure
+  row mappers belong in `app/src/data/...`.
+- Keep Data Entry row state, add/insert/remove/duplicate/move/paste/clear
+  handlers, derived totals, and submit orchestration in feature hooks.
+- Keep item, line, debit/credit, required-row, and balancing validation in
+  `app/src/validations/...`.
+- Respect readonly modes in Data Entry tables and pass through validation errors
+  to the shared component when rows are incomplete or out of balance.
+- Use a custom simple table only when the rows are read-only or low-interaction.
 
 # Form Fields
 

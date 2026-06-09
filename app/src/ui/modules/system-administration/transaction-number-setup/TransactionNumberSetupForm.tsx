@@ -1,5 +1,6 @@
 import type { ChangeEventHandler, FormEvent, ReactNode } from "react";
 import {
+	TransactionNumberInputModeOptions,
 	TransactionNumberModuleOptions,
 	TransactionNumberScopeOptions,
 	TransactionNumberStatusOptions,
@@ -46,8 +47,14 @@ export function TransactionNumberSetupForm({
 			<section className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
 				<h2 className="text-base font-semibold text-darknavy">Number Format</h2>
 				<div className="mt-4 grid gap-4 lg:grid-cols-2">
-					<FormField label="Module" error={errors.moduleCode} required>
+					<FormField
+						label="Module"
+						fieldId="transaction-number-module-code"
+						error={errors.moduleCode}
+						required
+					>
 						<select
+							id="transaction-number-module-code"
 							name="moduleCode"
 							value={values.moduleCode}
 							onChange={(event) =>
@@ -61,23 +68,56 @@ export function TransactionNumberSetupForm({
 							<option value="">Select module</option>
 							{TransactionNumberModuleOptions.map((option) => (
 								<option key={option.code} value={option.code}>
-									{option.name} ({option.code})
+									{option.name} - {option.defaultPrefix}
 								</option>
 							))}
 						</select>
 					</FormField>
-					<FormField label="Prefix" error={errors.prefix} required>
+					<FormField
+						label="Transaction Number Mode"
+						fieldId="transaction-number-input-mode"
+						error={errors.inputMode}
+						required
+					>
+						<select
+							id="transaction-number-input-mode"
+							name="inputMode"
+							value={values.inputMode}
+							onChange={onInputChange}
+							disabled={isReadonly}
+							className={fieldClassName}
+						>
+							{TransactionNumberInputModeOptions.map((mode) => (
+								<option key={mode} value={mode}>
+									{mode}
+								</option>
+							))}
+						</select>
+					</FormField>
+					<FormField
+						label="Prefix"
+						fieldId="transaction-number-prefix"
+						error={errors.prefix}
+						required
+					>
 						<input
+							id="transaction-number-prefix"
 							name="prefix"
 							value={values.prefix}
 							onChange={onInputChange}
 							readOnly={isReadonly}
 							className={fieldClassName}
-							placeholder="MAIN-DV-"
+							placeholder="PTY"
 						/>
 					</FormField>
-					<FormField label="Number Padding" error={errors.padding} required>
+					<FormField
+						label="Number Padding"
+						fieldId="transaction-number-padding"
+						error={errors.padding}
+						required
+					>
 						<input
+							id="transaction-number-padding"
 							name="padding"
 							type="number"
 							min={1}
@@ -88,8 +128,14 @@ export function TransactionNumberSetupForm({
 							className={fieldClassName}
 						/>
 					</FormField>
-					<FormField label="Starting Number" error={errors.startingNumber} required>
+					<FormField
+						label="Starting Number"
+						fieldId="transaction-number-starting-number"
+						error={errors.startingNumber}
+						required
+					>
 						<input
+							id="transaction-number-starting-number"
 							name="startingNumber"
 							type="number"
 							min={0}
@@ -99,8 +145,14 @@ export function TransactionNumberSetupForm({
 							className={fieldClassName}
 						/>
 					</FormField>
-					<FormField label="Current Running Number" error={errors.currentNumber} required>
+					<FormField
+						label="Current Running Number"
+						fieldId="transaction-number-current-number"
+						error={errors.currentNumber}
+						required
+					>
 						<input
+							id="transaction-number-current-number"
 							name="currentNumber"
 							type="number"
 							min={0}
@@ -121,8 +173,14 @@ export function TransactionNumberSetupForm({
 			<section className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
 				<h2 className="text-base font-semibold text-darknavy">Branch Scope</h2>
 				<div className="mt-4 grid gap-4 lg:grid-cols-2">
-					<FormField label="Numbering Mode" error={errors.scope} required>
+					<FormField
+						label="Numbering Mode"
+						fieldId="transaction-number-scope"
+						error={errors.scope}
+						required
+					>
 						<select
+							id="transaction-number-scope"
 							name="scope"
 							value={values.scope}
 							onChange={onInputChange}
@@ -136,8 +194,14 @@ export function TransactionNumberSetupForm({
 							))}
 						</select>
 					</FormField>
-					<FormField label="Status" error={errors.status} required>
+					<FormField
+						label="Status"
+						fieldId="transaction-number-status"
+						error={errors.status}
+						required
+					>
 						<select
+							id="transaction-number-status"
 							name="status"
 							value={values.status}
 							onChange={onInputChange}
@@ -190,8 +254,14 @@ export function TransactionNumberSetupForm({
 							</span>
 						) : null}
 					</div>
-					<FormField label="Description" error={errors.description} wide>
+					<FormField
+						label="Description"
+						fieldId="transaction-number-description"
+						error={errors.description}
+						wide
+					>
 						<textarea
+							id="transaction-number-description"
 							name="description"
 							value={values.description}
 							onChange={onInputChange}
@@ -209,22 +279,34 @@ export function TransactionNumberSetupForm({
 function FormField({
 	children,
 	error,
+	fieldId,
 	label,
 	required,
 	wide,
 }: {
 	children: ReactNode;
 	error?: string;
+	fieldId?: string;
 	label: string;
 	required?: boolean;
 	wide?: boolean;
 }) {
 	return (
 		<div className={wide ? "lg:col-span-2" : undefined}>
-			<span className="mb-2 block text-sm font-semibold text-darknavy">
-				{label}
-				{required ? <span className="text-coralpink"> *</span> : null}
-			</span>
+			{fieldId ? (
+				<label
+					htmlFor={fieldId}
+					className="mb-2 block text-sm font-semibold text-darknavy"
+				>
+					{label}
+					{required ? <span className="text-coralpink"> *</span> : null}
+				</label>
+			) : (
+				<span className="mb-2 block text-sm font-semibold text-darknavy">
+					{label}
+					{required ? <span className="text-coralpink"> *</span> : null}
+				</span>
+			)}
 			{children}
 			{error ? (
 				<span className="mt-1 block text-xs font-medium text-coralpink">

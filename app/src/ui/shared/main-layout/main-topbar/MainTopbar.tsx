@@ -386,21 +386,20 @@ export function MainTopbar({
 					{shouldShowWorkspaceSkeleton && canShowCompanySwitcher ? (
 						<TopbarWorkspaceSkeleton />
 					) : canShowCompanySwitcher ? (
-						<div data-spotlight-id="workspace-company-switcher">
-							<CompanySwitcher
-								activeNavigationScope={activeNavigationScope}
-								availableCompanies={availableCompanies}
-								canAccessMaster={canAccessMaster}
-								canAccessWorkspace={canAccessWorkspace}
-								currentCompany={currentCompany}
-								isOpen={openSwitcherKey === "company"}
-								onClose={closeSwitcher}
-								onSelectCompany={onSelectCompany}
-								onSwitchToMaster={onSwitchToMaster}
-								onSwitchToWorkspace={onSwitchToWorkspace}
-								onToggle={() => toggleSwitcher("company")}
-							/>
-						</div>
+						<CompanySwitcher
+							activeNavigationScope={activeNavigationScope}
+							availableCompanies={availableCompanies}
+							canAccessMaster={canAccessMaster}
+							canAccessWorkspace={canAccessWorkspace}
+							currentCompany={currentCompany}
+							isOpen={openSwitcherKey === "company"}
+							spotlightId="workspace-company-switcher"
+							onClose={closeSwitcher}
+							onSelectCompany={onSelectCompany}
+							onSwitchToMaster={onSwitchToMaster}
+							onSwitchToWorkspace={onSwitchToWorkspace}
+							onToggle={() => toggleSwitcher("company")}
+						/>
 					) : null}
 
 					{canShowBranchSkeleton ? (

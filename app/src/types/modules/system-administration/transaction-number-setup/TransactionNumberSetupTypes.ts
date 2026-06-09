@@ -1,4 +1,49 @@
-export type TransactionNumberModuleCode = "DV" | "CR" | "JV" | "PR";
+export type TransactionNumberModuleCode =
+	| "party-management"
+	| "item-management"
+	| "official-receipt"
+	| "collection-receipt"
+	| "acknowledgement-receipt"
+	| "provisional-receipt"
+	| "bank-reconciliation"
+	| "product-distribution-center-warehouse"
+	| "disbursement-voucher"
+	| "cash-advance"
+	| "cash-advance-multiple-entry"
+	| "petty-cash-voucher"
+	| "petty-cash-fund"
+	| "petty-cash-fund-replenishment"
+	| "petty-cash-advance"
+	| "petty-cash-advance-replenishment"
+	| "request-for-payment"
+	| "advances-to-supplier"
+	| "account-payable-voucher"
+	| "journal-voucher"
+	| "debit-memo"
+	| "credit-memo"
+	| "sales-quotation"
+	| "sales-order"
+	| "sales-invoice"
+	| "billing"
+	| "billing-statement"
+	| "billing-invoice"
+	| "service-invoice"
+	| "cash-sales-invoice"
+	| "sales-journal"
+	| "statement-of-account"
+	| "material-request"
+	| "receiving-report"
+	| "goods-receipt"
+	| "goods-issue"
+	| "delivery-receipt"
+	| "pick-list"
+	| "purchasing-request"
+	| "canvass-form"
+	| "purchase-order"
+	| "purchase-journal"
+	| "fixed-assets";
+
+export type TransactionNumberInputMode = "Auto" | "Manual";
 
 export type TransactionNumberScope = "all" | "branch" | "shared";
 
@@ -8,6 +53,7 @@ export type TransactionNumberSetupRecord = {
 	id: string;
 	moduleCode: TransactionNumberModuleCode;
 	moduleName: string;
+	inputMode: TransactionNumberInputMode;
 	prefix: string;
 	padding: number;
 	startingNumber: number;
@@ -22,6 +68,7 @@ export type TransactionNumberSetupRecord = {
 
 export type TransactionNumberSetupFormValues = {
 	moduleCode: TransactionNumberModuleCode | "";
+	inputMode: TransactionNumberInputMode;
 	prefix: string;
 	padding: number;
 	startingNumber: number;
@@ -58,21 +105,10 @@ export type TransactionNumberSetupActionMode = "add" | "edit" | "view";
 
 export type TransactionNumberSetupTableColumnKey =
 	| "moduleName"
+	| "inputMode"
 	| "scope"
 	| "branchScope"
 	| "prefix"
 	| "currentNumber"
 	| "nextNumber"
 	| "status";
-
-export type TransactionNumberDatabaseTable = {
-	name: string;
-	purpose: string;
-	columns: string[];
-};
-
-export type TransactionNumberApiEndpoint = {
-	method: "GET" | "POST" | "PATCH";
-	path: string;
-	purpose: string;
-};

@@ -10,36 +10,32 @@ import { TransactionNumberSetupTableRow } from "@/app/src/ui/modules/system-admi
 type TransactionNumberSetupTableProps = Pick<
 	ReturnType<typeof useTransactionNumberSetupListPage>,
 	| "branchNameById"
-	| "generateNextNumber"
 	| "handleQueryChange"
 	| "handleScopeFilterChange"
 	| "isLoading"
 	| "query"
 	| "scopeFilter"
-	| "setPendingInactiveSetup"
 	| "table"
 >;
 
 export function TransactionNumberSetupTable({
 	branchNameById,
-	generateNextNumber,
 	handleQueryChange,
 	handleScopeFilterChange,
 	isLoading,
 	query,
 	scopeFilter,
-	setPendingInactiveSetup,
 	table,
 }: TransactionNumberSetupTableProps) {
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
 			<ModuleTable
 				variant="embedded"
-				emptyDescription="Add a numbering setup to reserve document numbers."
+				emptyDescription="No numbering setup matches the current filters."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No numbering setups found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[92rem]"
+				minWidthClassName="min-w-[96rem]"
 				paginationStorageKey={TransactionNumberSetupPaginationStorageKey}
 				table={table}
 				toolbar={
@@ -55,8 +51,6 @@ export function TransactionNumberSetupTable({
 						key={id}
 						branchNameById={branchNameById}
 						setup={original}
-						onGenerateNumber={generateNextNumber}
-						onSetInactive={setPendingInactiveSetup}
 					/>
 				)}
 			/>

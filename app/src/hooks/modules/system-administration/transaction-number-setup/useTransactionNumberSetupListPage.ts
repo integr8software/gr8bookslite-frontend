@@ -23,10 +23,7 @@ import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-a
 
 export function useTransactionNumberSetupListPage() {
 	const {
-		deleteSetup,
-		generateNextNumber,
 		isLoading,
-		isMutating,
 		setups,
 		usageLogs,
 	} = useTransactionNumberSetupStore();
@@ -40,8 +37,6 @@ export function useTransactionNumberSetupListPage() {
 	>(
 		"any",
 	);
-	const [pendingInactiveSetup, setPendingInactiveSetup] =
-		useState<TransactionNumberSetupRecord | null>(null);
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
 		pageSize: 5,
@@ -74,6 +69,7 @@ export function useTransactionNumberSetupListPage() {
 			return [
 				setup.moduleName,
 				setup.moduleCode,
+				setup.inputMode,
 				setup.prefix,
 				setup.status,
 				setup.description,
@@ -132,29 +128,15 @@ export function useTransactionNumberSetupListPage() {
 		table.setPageIndex(0);
 	}
 
-	function handleConfirmInactive() {
-		if (!pendingInactiveSetup) {
-			return;
-		}
-
-		deleteSetup(pendingInactiveSetup.id);
-		setPendingInactiveSetup(null);
-	}
-
 	return {
 		activeSetupCount: setups.filter((setup) => setup.status === "Active").length,
 		branchNameById,
-		generateNextNumber,
-		handleConfirmInactive,
 		handleQueryChange,
 		handleScopeFilterChange,
 		isLoading,
-		isMutating,
-		pendingInactiveSetup,
 		query,
 		recentUsageLogs: usageLogs.slice(-4).reverse(),
 		scopeFilter,
-		setPendingInactiveSetup,
 		sharedSetupCount: setups.filter((setup) => setup.scope !== "branch").length,
 		table,
 	};

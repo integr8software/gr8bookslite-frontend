@@ -59,10 +59,18 @@ export function MapWorkspaceAuditLogApiRecord(
 		createdAt: record.createdAt,
 		description: record.description,
 		ipAddress: record.ipAddress ?? "",
-		module: record.module,
+		module: NormalizeModule(record.module),
 		recordId: record.entityId ?? record.id,
 		severity: NormalizeSeverity(record.severity),
 	};
+}
+
+function NormalizeModule(value: string) {
+	if (value.startsWith("txn-setup-")) {
+		return "Transaction Number Setup";
+	}
+
+	return value;
 }
 
 function NormalizeAction(value: string): WorkspaceAuditLogAction {

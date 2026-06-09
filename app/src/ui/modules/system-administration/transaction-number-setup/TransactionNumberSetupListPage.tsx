@@ -4,12 +4,10 @@ import Link from "next/link";
 import { Hash, Plus, ReceiptText, Share2 } from "lucide-react";
 import { TransactionNumberSetupHref } from "@/app/src/constants/modules/system-administration/transaction-number-setup/TransactionNumberSetupConstants";
 import { useTransactionNumberSetupListPage } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetupListPage";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { TransactionNumberSetupBlueprintPanel } from "@/app/src/ui/modules/system-administration/transaction-number-setup/TransactionNumberSetupBlueprintPanel";
 import { TransactionNumberSetupTable } from "@/app/src/ui/modules/system-administration/transaction-number-setup/TransactionNumberSetupTable";
 
 export function TransactionNumberSetupListPage() {
@@ -34,7 +32,7 @@ export function TransactionNumberSetupListPage() {
 						className={moduleHeaderActionClassNames.primary}
 					>
 						<Plus className="h-4 w-4" aria-hidden="true" />
-						Add Setup
+						Add New
 					</Link>
 				}
 			/>
@@ -55,25 +53,12 @@ export function TransactionNumberSetupListPage() {
 			</div>
 			<TransactionNumberSetupTable
 				branchNameById={page.branchNameById}
-				generateNextNumber={page.generateNextNumber}
 				handleQueryChange={page.handleQueryChange}
 				handleScopeFilterChange={page.handleScopeFilterChange}
 				isLoading={page.isLoading}
 				query={page.query}
 				scopeFilter={page.scopeFilter}
-				setPendingInactiveSetup={page.setPendingInactiveSetup}
 				table={page.table}
-			/>
-			<TransactionNumberSetupBlueprintPanel />
-			<AppDialog
-				isOpen={Boolean(page.pendingInactiveSetup)}
-				isPending={page.isMutating}
-				title="Set setup as inactive?"
-				description={`This will stop ${page.pendingInactiveSetup?.moduleName ?? "the selected setup"} from generating new numbers.`}
-				confirmLabel="Set Inactive"
-				tone="danger"
-				onCancel={() => page.setPendingInactiveSetup(null)}
-				onConfirm={page.handleConfirmInactive}
 			/>
 		</section>
 	);

@@ -11,6 +11,7 @@ export const TransactionNumberSetupFormSchema = z
 		moduleCode: z.enum(TransactionNumberModuleCodes, {
 			error: "Select a module.",
 		}),
+		inputMode: z.enum(["Auto", "Manual"]),
 		prefix: z
 			.string()
 			.trim()

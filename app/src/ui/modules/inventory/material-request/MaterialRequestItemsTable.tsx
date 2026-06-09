@@ -1998,8 +1998,8 @@ const DefaultItemColumnLabels: Record<MaterialRequestItemColumnId, string> = {
 	itemName: "Item Name",
 	lotNo: "Lot No.",
 	remarks: "Remarks",
-	requestQuantity: "Request QTY",
-	stockQuantity: "Stock QTY",
+	requestQuantity: "Request Quantity",
+	stockQuantity: "Stock Quantity",
 	uom: "UOM",
 };
 
@@ -2010,8 +2010,8 @@ const DefaultItemColumnWidths: Record<MaterialRequestItemColumnId, number> = {
 	itemName: 220,
 	lotNo: 145,
 	remarks: 260,
-	requestQuantity: 145,
-	stockQuantity: 135,
+	requestQuantity: 190,
+	stockQuantity: 180,
 	uom: 120,
 };
 

@@ -108,7 +108,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     "/maintenance",
     "Maintain reusable company setup records used by transactions and reports.",
     [
-      "Maintenance stores master files such as accounts, banks, currencies, terms, items, warehouses, parties, approvals, users, and mail setup.",
+      "Maintenance stores master files such as accounts, banks, discounts, terms, items, warehouses, parties, approvals, users, and mail setup.",
       "Accurate maintenance data keeps transaction entry faster and makes reports more consistent.",
     ],
     [
@@ -120,13 +120,17 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-maintenance-financial",
     "Financial Management",
-    "/maintenance/financial-management",
+    "/maintenance",
     "Configure accounting master files used across financial transactions.",
     [
-      "Financial Management groups setup records such as charts of accounts, currencies, discounts, payment terms, and transaction types.",
+      "Financial Management groups setup records such as charts of accounts, discounts, payment terms, transaction types, and responsibility centers.",
       "These records support accounting documents, ledgers, receivables, payables, and financial reports.",
     ],
-    ["help-charts-of-accounts", "help-currency", "help-financial-reports"],
+    [
+      "help-charts-of-accounts",
+      "help-responsibility-center",
+      "help-financial-reports",
+    ],
   ),
   article(
     "help-charts-of-accounts",
@@ -182,6 +186,17 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Use clear transaction type names so transaction lists and reports can be filtered without ambiguity.",
     ],
     ["help-general-journal", "help-reports"],
+  ),
+  article(
+    "help-responsibility-center",
+    "Responsibility Center",
+    "/maintenance/responsibility-center",
+    "Maintain responsibility centers used for accountability and reporting.",
+    [
+      "Responsibility Center stores cost, profit, revenue, and investment centers used to assign accountability across financial records.",
+      "Keep center ownership and status current so transactions and reports can be grouped by the right operating responsibility.",
+    ],
+    ["help-charts-of-accounts", "help-financial-reports"],
   ),
   article(
     "help-maintenance-inventory",
@@ -315,7 +330,34 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "help-maintenance-inventory",
       "help-warehouse-management",
       "help-inventory-reports",
+      "help-material-request",
+      "help-data-entry-shortcuts",
     ],
+  ),
+  article(
+    "help-material-request",
+    "Material Request",
+    "/inventory/material-request",
+    "Create material requests and maintain itemized Data Entry rows.",
+    [
+      "Material Request records the items requested from inventory, including item codes, descriptions, units of measure, requested quantities, available stock, lot numbers, and remarks.",
+      "Use the Data Entry table to add item rows, reorder rows, configure visible columns, import item rows, export item rows, and validate required item details before saving the request.",
+      "Data Entry shortcuts are available while focus is inside the item table: Ctrl + Plus adds a row below the active row, Ctrl + Minus removes the active row, F2 edits the active cell, Escape exits editing or closes the row menu, Tab and Shift + Tab move across cells, and arrow keys move between cells when a cell is not being edited.",
+    ],
+    ["help-data-entry-shortcuts", "help-inventory", "help-item-management"],
+  ),
+  article(
+    "help-data-entry-shortcuts",
+    "Data Entry Shortcuts",
+    "/inventory/material-request",
+    "Use keyboard commands to move through Data Entry tables and manage rows faster.",
+    [
+      "Ctrl + Plus or Ctrl + Equals inserts a row below the active row. Ctrl + Minus removes the active row when more than one row exists. These commands are handled inside the Data Entry grid so the browser zoom command does not take over while the grid is focused.",
+      "F2 enters the active cell editor. Escape returns focus to the cell or closes the row action menu.",
+      "Tab and Shift + Tab move forward and backward across cells. Arrow keys move up, down, left, and right when the active cell is not being edited.",
+      "Ctrl + A selects all cells, Shift + Space selects the active row, Ctrl + Space selects the active column, and Ctrl + C copies the current selection.",
+    ],
+    ["help-material-request", "help-inventory", "help-purchasing"],
   ),
   article(
     "help-purchasing",

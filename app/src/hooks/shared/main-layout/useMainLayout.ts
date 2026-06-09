@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ClearLegacyAuthStorage } from "@/app/src/data/auth/AuthSessionStorage";
 import {
   getWorkspaceCompanyBranchesHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
@@ -40,7 +39,6 @@ import {
   filterMainNavigationSections,
   filterMainSearchItems,
   getAccessibleBranches,
-  hasAccess,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 import {
   MainAccountNavigationSections,
@@ -75,6 +73,7 @@ import {
   SwitchCompanyContext,
 } from "@/app/src/services/auth/AuthApi";
 import { AuthenticatedSessionMarker } from "@/app/src/data/auth/AuthSessionStorage";
+import { NotifyAuthSessionExpired } from "@/app/src/services/auth/AuthSessionExpired";
 import {
   BuildAuthProfileFromSwitchResponse,
   PrepareQueryCacheForContextSwitch,
@@ -114,7 +113,6 @@ const DefaultExpandedKeys = [
   "master-system-settings-section",
   "dashboard",
   "maintenance",
-  "maintenance-financial",
   "maintenance-item-management",
   "cash-receipt",
   "cash-disbursement",
@@ -130,7 +128,7 @@ const MasterRoutePrefix = "/master";
 const AccountRoutePrefix = "/account";
 const WorkspaceHomeHref = "/workspace/dashboard";
 const MasterHomeHref = "/master/dashboard";
-const CompanyFallbackHomeHref = "/account/profile";
+const CompanyFallbackHomeHref = "/dashboard";
 const ShellContextSwitchFallbackMs = 8000;
 const BranchContextSwitchMinimumMs = 650;
 const TopbarContextSkeletonMs = 700;
@@ -281,36 +279,17 @@ export function useMainLayout() {
     }
 
     hasHandledAuthProfileErrorRef.current = true;
-    ClearLegacyAuthStorage();
-    setStoredAccessToken(null);
-    setStoredActiveCompanyId(null);
-    setStoredActiveCompanyName(null);
-    setStoredActiveBranchContext(null);
-    queryClient.clear();
-
-    void fetch("/api/auth/logout", {
-      method: "POST",
-      cache: "no-store",
-    }).finally(() => {
-      router.replace("/login?force=true");
-      router.refresh();
-    });
+    NotifyAuthSessionExpired();
   }, [
     authProfileError,
     isAuthProfileError,
-    queryClient,
-    router,
-    setStoredAccessToken,
-    setStoredActiveBranchContext,
-    setStoredActiveCompanyId,
-    setStoredActiveCompanyName,
   ]);
   const activeNavigationScope: MainNavigationScope =
     isAccountRoute
       ? "account"
       : hasMasterAccess
         ? "master"
-        : hasWorkspaceAccess && isWorkspaceRoute
+        : authProfile && isWorkspaceRoute
           ? "workspace"
           : "company";
   const workspaceCompanies = useMemo(
@@ -458,7 +437,7 @@ export function useMainLayout() {
         ),
         profile,
       );
-      router.push(companyHomeHref);
+      router.push(getCompanyHomeHrefForProfile(profile));
       releaseShellContextSwitchAfterFrame();
     },
     onError: (_error, variables) => {
@@ -530,7 +509,7 @@ export function useMainLayout() {
     accessibleBranches.find((branch) => branch.id === activeBranchId) ??
     accessibleBranches[0] ??
     null;
-  const canManageBranches = hasAccess(displayUser, "branch.management");
+  const canManageBranches = displayUser.userRole === "Admin";
   const clearShellContextSwitch = useCallback(
     (keepTopbarSkeleton = true) => {
       if (shellContextSettlingRef.current !== null) {
@@ -2003,21 +1982,19 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "reporting-analytics":
     "Generate accounting, inventory, and compliance reports.",
   "system-administration":
-    "Manage users, approvals, audits, numbering, and mail setup.",
+    "Manage users, approvals, audits, numbering, currencies, and mail setup.",
   "dashboard-overview": "View company activity, approvals, and performance.",
-  "maintenance-financial-management":
-    "Maintain financial setup records used by accounting workflows.",
-  "maintenance-financial-management-charts-of-accounts":
+  "maintenance-charts-of-accounts":
     "Maintain account codes used by transactions and reports.",
   "system-administration-multi-currency-setup":
     "Configure currencies, exchange rates, preferences, and rounding rules.",
-  "maintenance-financial-management-discount-management":
+  "maintenance-discount-management":
     "Maintain discount rules for sales and purchasing.",
-  "maintenance-financial-management-term-management":
+  "maintenance-term-management":
     "Manage payment and collection terms.",
-  "maintenance-financial-management-transaction-type":
+  "maintenance-transaction-type":
     "Configure transaction classifications and numbering behavior.",
-  "maintenance-financial-management-responsibility-center":
+  "maintenance-responsibility-center":
     "Maintain accountability centers for financial reporting.",
   "maintenance-warehouse-management":
     "Maintain warehouse records and storage locations.",
@@ -2172,6 +2149,24 @@ function getCompanyHomeHref(items: MainSearchItem[], recentKeys: string[]) {
     items[0]?.href ??
     CompanyFallbackHomeHref
   );
+}
+
+function getCompanyHomeHrefForProfile(profile: AuthProfileResponse) {
+  const currentUser = CreateWorkspaceCurrentUserFromProfile(profile);
+  const activeCompanyId = GetAuthProfileCompanyId(profile);
+  const companies = MapProfileCompaniesToMainCompanies(profile);
+  const currentCompany =
+    companies.find((company) => Number(company.id) === activeCompanyId) ??
+    companies[0];
+  const subscription =
+    currentCompany?.subscriptionPackage ?? MainLayoutDefaultSubscription;
+  const items = filterMainSearchItems(
+    MainCompanySearchItems,
+    currentUser,
+    subscription,
+  );
+
+  return getCompanyHomeHref(items, MainLayoutRecentNavigationKeys);
 }
 
 function sortBranchesByPriority(branches: MainBranch[]) {

@@ -25,10 +25,12 @@ import {
 	Package,
 	Receipt,
 	ReceiptText,
+	Scale,
 	Settings,
 	ShieldCheck,
 	ShoppingCart,
 	Tags,
+	Target,
 	UserCog,
 	UserCircle,
 	Users,
@@ -113,25 +115,25 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"maintenance-financial": Landmark,
 	"maintenance-item-management": Package,
 	"maintenance-warehouse-management": Warehouse,
-	"maintenance-charts-of-accounts": ListTree,
-	"maintenance-currency": Coins,
+	"maintenance-charts-of-accounts": Scale,
+	"system-administration-multi-currency-setup": Coins,
+	"transaction-number-setup": ReceiptText,
 	"maintenance-discount": BadgePercent,
+	"maintenance-discount-management": BadgePercent,
 	"maintenance-term": CalendarClock,
+	"maintenance-term-management": CalendarClock,
 	"maintenance-transaction-type": Receipt,
+	"maintenance-responsibility-center": Target,
 	"maintenance-inventory-warehouse": Warehouse,
 	"maintenance-warehouse": Warehouse,
 	"maintenance-form-signatory": FileSignature,
 	"maintenance-item": Package,
-	"maintenance-item-category": Tags,
 	"maintenance-item-sub-category": Tags,
-	"maintenance-item-type": Package,
 	"maintenance-item-sub-type": Package,
-	"maintenance-items": Package,
 	"maintenance-party-management": Users,
 	"maintenance-party": Users,
 	"cash-disbursement-voucher": FileCheck2,
 	"cash-disbursement-request-payment": FileText,
-	"purchasing-canvass-form": ClipboardList,
 	"reports-maintenance": Settings,
 	"reports-financial": FileBarChart,
 	"reports-books-of-accounts": BookOpen,
@@ -161,6 +163,10 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"maintenance-mail": Mail,
 	"system-transaction-numbering": ReceiptText,
 };
+
+export function hasSidebarItemIcon(item: MainNavigationItem) {
+	return Boolean(SidebarItemIcons[item.key]);
+}
 
 export function renderSidebarItemIcon(
 	item: MainNavigationItem,
@@ -236,10 +242,18 @@ function getSidebarItemIcon(item: MainNavigationItem) {
 			return Warehouse;
 		case "maintenance.item":
 			return Package;
+		case "maintenance.chartOfAccounts":
+			return Scale;
 		case "maintenance.party":
 			return Users;
 		case "maintenance.discount":
 			return BadgePercent;
+		case "maintenance.term":
+			return CalendarClock;
+		case "maintenance.transactionType":
+			return Receipt;
+		case "maintenance.responsibilityCenter":
+			return Target;
 		case "reports.accounting":
 		case "reports.inventory":
 			return FileBarChart;

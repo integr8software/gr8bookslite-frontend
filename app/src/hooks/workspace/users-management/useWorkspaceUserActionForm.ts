@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { WorkspaceUsersManagementHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import { InitialWorkspaceCompanyUserFormValues } from "@/app/src/data/workspace/companies/WorkspaceCompanyData";
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
 import type {
 	WorkspaceCompanyUserFormErrors,
 	WorkspaceCompanyUserFormValues,
@@ -13,6 +14,8 @@ import type {
 import { validateWorkspaceCompanyUserForm } from "@/app/src/validations/workspace/companies/WorkspaceCompanyValidation";
 
 export type WorkspaceUserActionMode = "add" | "edit" | "view";
+
+const WorkspaceUserEmailTakenMessage = "Email is already in use.";
 
 type WorkspaceUserActionFormOptions = {
 	existingUser?: WorkspaceCompanyUserRecord;
@@ -67,6 +70,7 @@ export function useWorkspaceUserActionForm(
 	);
 	const [draftValues, setDraftValues] =
 		useState<WorkspaceCompanyUserFormValues | null>(null);
+	const isSubmittingRef = useRef(false);
 	const values =
 		draftValues ?? existingUserValues ?? InitialWorkspaceCompanyUserFormValues;
 	const [errors, setErrors] = useState<WorkspaceCompanyUserFormErrors>({});
@@ -163,21 +167,42 @@ export function useWorkspaceUserActionForm(
 	}
 
 	async function submit() {
+		if (isReadonly || isSaving || isSubmittingRef.current) {
+			return false;
+		}
+
 		if (!validate()) {
-			return;
+			return false;
 		}
 
 		const primaryCompanyId = values.companyAssignments[0]?.companyId;
 
 		if (!primaryCompanyId) {
-			return;
+			return false;
 		}
 
-		if (mode === "edit" && existingUser) {
-			await updateCompanyUser(existingUser.id, {
+		isSubmittingRef.current = true;
+
+		try {
+			if (mode === "edit" && existingUser) {
+				await updateCompanyUser(existingUser.id, {
+					companyAssignments: values.companyAssignments,
+					contactNumber: values.contactNumber.trim(),
+					email: canEditEmail ? values.email.trim() : existingUser.email,
+					name: values.name.trim(),
+				});
+				options.onSaved?.();
+
+				if (!options.onSaved) {
+					router.push(WorkspaceUsersManagementHref);
+				}
+				return true;
+			}
+
+			await addCompanyUser({
 				companyAssignments: values.companyAssignments,
 				contactNumber: values.contactNumber.trim(),
-				email: canEditEmail ? values.email.trim() : existingUser.email,
+				email: values.email.trim(),
 				name: values.name.trim(),
 			});
 			options.onSaved?.();
@@ -185,24 +210,33 @@ export function useWorkspaceUserActionForm(
 			if (!options.onSaved) {
 				router.push(WorkspaceUsersManagementHref);
 			}
-			return;
-		}
+			return true;
+		} catch (error) {
+			if (isWorkspaceUserEmailTakenError(error)) {
+				setErrors((current) => ({
+					...current,
+					email: WorkspaceUserEmailTakenMessage,
+				}));
+			}
 
-		await addCompanyUser({
-			companyAssignments: values.companyAssignments,
-			contactNumber: values.contactNumber.trim(),
-			email: values.email.trim(),
-			name: values.name.trim(),
-		});
-		options.onSaved?.();
-
-		if (!options.onSaved) {
-			router.push(WorkspaceUsersManagementHref);
+			return false;
+		} finally {
+			isSubmittingRef.current = false;
 		}
 	}
 
 	function validate() {
 		const nextErrors = validateWorkspaceCompanyUserForm(values);
+		const submittedEmail = normalizeEmail(values.email);
+		const userWithEmail = users.find(
+			(user) =>
+				normalizeEmail(user.email) === submittedEmail &&
+				user.id !== existingUser?.id,
+		);
+
+		if (submittedEmail && userWithEmail) {
+			nextErrors.email = WorkspaceUserEmailTakenMessage;
+		}
 
 		setErrors(nextErrors);
 
@@ -233,4 +267,15 @@ export function useWorkspaceUserActionForm(
 		values,
 		confirmCompanyAssignment: addCompanyAssignment,
 	};
+}
+
+function isWorkspaceUserEmailTakenError(error: unknown) {
+	return (
+		error instanceof ApiClientError &&
+		error.message.toLowerCase().includes("email is already in use")
+	);
+}
+
+function normalizeEmail(value: string) {
+	return value.trim().toLowerCase();
 }

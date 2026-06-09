@@ -210,49 +210,12 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
     icon: "maintenance",
     accessKey: "maintenance.chartOfAccounts",
     items: [
-      navGroup(
-        "maintenance-financial",
-        "Financial Management",
-        "/maintenance/financial-management",
+      child(
+        "maintenance-charts-of-accounts",
+        "Chart of Accounts",
+        "/maintenance/charts-of-accounts",
         "maintenance.chartOfAccounts",
         "accounting",
-        [
-          child(
-            "maintenance-charts-of-accounts",
-            "Charts of Accounts",
-            "/maintenance/charts-of-accounts",
-            "maintenance.chartOfAccounts",
-            "accounting",
-          ),
-          child(
-            "maintenance-currency",
-            "Multi-Currency Setup",
-            "/system-administration/multi-currency-setup",
-            "maintenance.currency",
-            "accounting",
-          ),
-          multiProductChild(
-            "maintenance-discount",
-            "Discount Management",
-            "/maintenance/discount-management",
-            "maintenance.discount",
-            ["accounting", "inventory"],
-          ),
-          child(
-            "maintenance-term",
-            "Term Management",
-            "/maintenance/term-management",
-            "maintenance.term",
-            "accounting",
-          ),
-          child(
-            "maintenance-transaction-type",
-            "Transaction Type",
-            "/maintenance/transaction-type",
-            "maintenance.transactionType",
-            "accounting",
-          ),
-        ],
       ),
       multiProductItem(
         "maintenance-party-management",
@@ -297,6 +260,34 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
         "/maintenance/warehouse-management",
         "maintenance.warehouse",
         "inventory",
+      ),
+      multiProductChild(
+        "maintenance-discount-management",
+        "Discount Management",
+        "/maintenance/discount-management",
+        "maintenance.discount",
+        ["accounting", "inventory"],
+      ),
+      child(
+        "maintenance-term-management",
+        "Term Management",
+        "/maintenance/term-management",
+        "maintenance.term",
+        "accounting",
+      ),
+      child(
+        "maintenance-transaction-type",
+        "Transaction Type",
+        "/maintenance/transaction-type",
+        "maintenance.transactionType",
+        "accounting",
+      ),
+      child(
+        "maintenance-responsibility-center",
+        "Responsibility Center",
+        "/maintenance/responsibility-center",
+        "maintenance.responsibilityCenter",
+        "accounting",
       ),
       child(
         "maintenance-form-signatory",

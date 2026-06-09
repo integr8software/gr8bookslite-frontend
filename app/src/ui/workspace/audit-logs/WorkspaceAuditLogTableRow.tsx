@@ -24,9 +24,6 @@ export function WorkspaceAuditLogTableRow({
 			</td>
 			<td className="px-4 py-4">
 				<p className="text-sm font-semibold text-darknavy">{record.module}</p>
-				<p className="mt-1 font-mono text-xs font-semibold text-darknavy/42">
-					{record.recordId}
-				</p>
 			</td>
 			<td className="px-4 py-4">
 				<span className={getActionClassName(record.action)}>
@@ -43,7 +40,6 @@ export function WorkspaceAuditLogTableRow({
 				<p className="line-clamp-2 text-sm leading-5 text-darknavy/72">
 					{record.description}
 				</p>
-				<p className="mt-1 text-xs text-darknavy/42">IP {record.ipAddress}</p>
 			</td>
 			<td className="px-4 py-4">
 				<span className={getSeverityClassName(record.severity)}>

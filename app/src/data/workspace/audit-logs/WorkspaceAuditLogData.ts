@@ -1,84 +1,15 @@
 import type {
-	WorkspaceAuditLogAction,
 	WorkspaceAuditLogDateRange,
 	WorkspaceAuditLogFilters,
 	WorkspaceAuditLogRecord,
-	WorkspaceAuditLogSeverity,
 } from "@/app/src/types/workspace/audit-logs/WorkspaceAuditLogTypes";
 
-const BaseTimestamp = Date.UTC(2026, 5, 1, 7, 45, 0);
 const QueryResultLimit = 500;
-const WorkspaceScope = { id: "workspace", name: "Workspace" };
-
-const Modules = [
-	"Company Settings",
-	"Branch Management",
-	"User Management",
-	"Billing Subscription",
-	"Voucher Configuration",
-	"Approval Setup",
-	"Security Settings",
-] as const;
-
-const Actions = [
-	"View",
-	"Create",
-	"Update",
-	"Approve",
-	"Export",
-	"Reject",
-	"Delete",
-] as const satisfies readonly WorkspaceAuditLogAction[];
-
-const Severities = [
-	"Info",
-	"Info",
-	"Info",
-	"Warning",
-	"Critical",
-] as const satisfies readonly WorkspaceAuditLogSeverity[];
-
-const Actors = [
-	{ name: "John Dela Cruz", role: "Workspace Admin" },
-	{ name: "Mia Santos", role: "Approver" },
-	{ name: "Paolo Garcia", role: "Accountant" },
-	{ name: "System", role: "Automation" },
-] as const;
-
-export const WorkspaceAuditLogRecords: WorkspaceAuditLogRecord[] = Array.from(
-	{ length: 96 },
-	(_, index) => {
-		const action = Actions[index % Actions.length];
-		const actor = Actors[index % Actors.length];
-		const moduleName = Modules[index % Modules.length];
-		const severity = Severities[index % Severities.length];
-		const recordId = `${moduleName
-			.toUpperCase()
-			.replace(/[^A-Z0-9]+/g, "-")
-			.slice(0, 12)}-${String(index + 1).padStart(5, "0")}`;
-
-		return {
-			id: `workspace-audit-${index + 1}`,
-			action,
-			actorName: actor.name,
-			actorRole: actor.role,
-			branchId: WorkspaceScope.id,
-			branchName: WorkspaceScope.name,
-			createdAt: new Date(
-				BaseTimestamp - index * 23 * 60 * 1000,
-			).toISOString(),
-			description: createWorkspaceAuditDescription(action, moduleName, recordId),
-			ipAddress: `10.1.${index % 16}.${18 + (index % 90)}`,
-			module: moduleName,
-			recordId,
-			severity,
-		};
-	},
-);
+const EmptyWorkspaceAuditLogRecords: WorkspaceAuditLogRecord[] = [];
 
 export function queryWorkspaceAuditLogRecords(
 	filters: WorkspaceAuditLogFilters,
-	records = WorkspaceAuditLogRecords,
+	records = EmptyWorkspaceAuditLogRecords,
 ) {
 	const filteredRecords = records.filter((record) =>
 		matchesWorkspaceAuditFilters(record, filters),
@@ -101,7 +32,7 @@ export function formatWorkspaceAuditLogCreatedAt(createdAt: string) {
 }
 
 export function getWorkspaceAuditLogBranchOptions(
-	records = WorkspaceAuditLogRecords,
+	records = EmptyWorkspaceAuditLogRecords,
 ) {
 	return Array.from(
 		new Map(
@@ -114,7 +45,7 @@ export function getWorkspaceAuditLogBranchOptions(
 }
 
 export function getWorkspaceAuditLogModuleOptions(
-	records = WorkspaceAuditLogRecords,
+	records = EmptyWorkspaceAuditLogRecords,
 ) {
 	return Array.from(new Set(records.map((record) => record.module))).sort();
 }
@@ -180,25 +111,8 @@ function isWithinDateRange(
 			"30d": 24 * 30,
 		};
 	const minimumTimestamp =
-		BaseTimestamp - rangeHours[dateRange] * 60 * 60 * 1000;
+		Date.now() - rangeHours[dateRange] * 60 * 60 * 1000;
 
 	return new Date(createdAt).getTime() >= minimumTimestamp;
 }
 
-function createWorkspaceAuditDescription(
-	action: WorkspaceAuditLogAction,
-	module: string,
-	recordId: string,
-) {
-	const pastTense: Record<WorkspaceAuditLogAction, string> = {
-		Approve: "approved",
-		Create: "created",
-		Delete: "deleted",
-		Export: "exported",
-		Reject: "rejected",
-		Update: "updated",
-		View: "viewed",
-	};
-
-	return `${module} record ${recordId} was ${pastTense[action]}.`;
-}

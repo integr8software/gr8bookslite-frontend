@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 import {
   ApplyAccountAccentColor,
@@ -9,32 +9,13 @@ import {
 import { DefaultAccountAccentColor } from "@/app/src/constants/shared/account/AccountConstants";
 import {
   AccountPreferencesStorageKey,
-  useAccountPreferences,
-} from "@/app/src/hooks/shared/account/useAccountPreferences";
+  AccountThemeRoutePrefixes,
+} from "@/app/src/constants/shared/account/AccountThemeRoutes";
+import { useAccountPreferences } from "@/app/src/hooks/shared/account/useAccountPreferences";
 import type {
   AccountAccentColor,
   AccountTheme,
 } from "@/app/src/types/shared/account/AccountTypes";
-
-const ModuleRoutePrefixes = [
-  "/accounts-payable",
-  "/account",
-  "/cash-disbursement",
-  "/cash-receipt",
-  "/dashboard",
-  "/general-journal",
-  "/inventory",
-  "/master",
-  "/maintenance",
-  "/others",
-  "/profile",
-  "/purchasing",
-  "/reports",
-  "/sales",
-  "/settings",
-  "/system-administration",
-  "/workspace"
-];
 
 function ResolveTheme(pathname: string | null, theme: AccountTheme): AccountTheme {
   if (!IsModuleRoute(pathname)) {
@@ -60,7 +41,7 @@ function IsModuleRoute(pathname: string | null) {
     return false;
   }
 
-  return ModuleRoutePrefixes.some(
+  return AccountThemeRoutePrefixes.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 }
@@ -72,11 +53,11 @@ export function AppThemeEffect() {
   const resolvedTheme = ResolveTheme(pathname, theme);
   const resolvedAccentColor = ResolveAccentColor(pathname, accentColor);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     ApplyAccountTheme(resolvedTheme);
   }, [resolvedTheme]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     ApplyAccountAccentColor(resolvedAccentColor);
   }, [resolvedAccentColor]);
 

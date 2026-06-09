@@ -1,6 +1,7 @@
 "use client";
 
 import {
+	useCallback,
 	useEffect,
 	useLayoutEffect,
 	useRef,
@@ -18,6 +19,7 @@ import {
 	focusModuleDataEntryCellEditor,
 	getModuleDataEntryCellTarget,
 	getModuleDataEntryEventCell,
+	startModuleDataEntryCellEditorWithText,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTableCommands";
 import { ModuleDataEntryTableHeader } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTableHeader";
 import {
@@ -97,12 +99,17 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 	);
 	const tableRef = useRef<HTMLDivElement>(null);
 	const rowMenuTriggerRefs = useRef(new Map<string, HTMLButtonElement>());
+	const pendingFocusTargetRef = useRef<{
+		columnIndex: number;
+		rowIndex: number;
+	} | null>(null);
 	const canEditRows = !isReadonly;
 	const canEditColumns =
 		canEditRows &&
 		Boolean(onMoveColumn || onRemoveColumn || onUpdateColumnHeader);
+	const hasClearRowAction = Boolean(onClearRow);
 
-	function updateRowMenuPosition(rowId: string) {
+	const updateRowMenuPosition = useCallback((rowId: string) => {
 		const trigger = rowMenuTriggerRefs.current.get(rowId);
 
 		if (!trigger) {
@@ -111,7 +118,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 
 		const rect = trigger.getBoundingClientRect();
 		const menuWidth = 176;
-		const menuHeight = onClearRow ? 220 : 180;
+		const menuHeight = hasClearRowAction ? 220 : 180;
 		const viewportPadding = 8;
 		const left = Math.min(
 			Math.max(viewportPadding, rect.left),
@@ -123,8 +130,14 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 				? belowTop
 				: Math.max(viewportPadding, rect.top - menuHeight - 6);
 
-		setRowMenuStyle({ left, top });
-	}
+		setRowMenuStyle((currentStyle) => {
+			if (currentStyle.left === left && currentStyle.top === top) {
+				return currentStyle;
+			}
+
+			return { left, top };
+		});
+	}, [hasClearRowAction]);
 
 	function getCellTarget(cell: HTMLElement): ModuleDataEntryCellTarget | null {
 		return getModuleDataEntryCellTarget(cell);
@@ -135,11 +148,17 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 	}
 
 	function focusCell(rowIndex: number, columnIndex: number) {
-		focusModuleDataEntryCell({
+		const nextCell = focusModuleDataEntryCell({
 			columnIndex,
 			rowIndex,
 			tableElement: tableRef.current,
 		});
+
+		if (nextCell) {
+			updateSelectionFromCell(nextCell);
+		}
+
+		return nextCell;
 	}
 
 	function focusRelativeCell(
@@ -176,7 +195,8 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 	}
 
 	function focusCellEditor(cell: HTMLElement) {
-		focusModuleDataEntryCellEditor(cell);
+		updateSelectionFromCell(cell);
+		focusModuleDataEntryCellEditor(cell, tableRef.current);
 	}
 
 	function exitCellEditor(target: EventTarget | null) {
@@ -242,6 +262,9 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 
 		if (event.key === "Escape") {
 			setOpenMenuRowId(null);
+			if (cell) {
+				updateSelectionFromCell(cell);
+			}
 			exitCellEditor(event.target);
 			return;
 		}
@@ -253,6 +276,11 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 		const cellTarget = getCellTarget(cell);
 
 		if (!cellTarget) {
+			return;
+		}
+
+		if (event.key === "Control") {
+			updateSelectionFromCell(cell);
 			return;
 		}
 
@@ -295,24 +323,34 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 			return;
 		}
 
-		if (event.ctrlKey && isPlusKey(event.key)) {
+		if (event.ctrlKey && isPlusKey(event.key, event.code)) {
+			event.preventDefault();
+
 			if (!canEditRows) {
 				return;
 			}
 
-			event.preventDefault();
 			exitCellEditor(event.target);
+			pendingFocusTargetRef.current = {
+				columnIndex: cellTarget.columnIndex,
+				rowIndex: cellTarget.rowIndex + 1,
+			};
 			onInsertRow(cellTarget.rowId, "below");
 			return;
 		}
 
-		if (event.ctrlKey && isMinusKey(event.key)) {
+		if (event.ctrlKey && isMinusKey(event.key, event.code)) {
+			event.preventDefault();
+
 			if (!canEditRows || rows.length <= 1) {
 				return;
 			}
 
-			event.preventDefault();
 			exitCellEditor(event.target);
+			pendingFocusTargetRef.current = {
+				columnIndex: cellTarget.columnIndex,
+				rowIndex: cellTarget.rowIndex,
+			};
 			onRemoveRow(cellTarget.rowId);
 			return;
 		}
@@ -328,6 +366,17 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 		}
 
 		if (!isEditing) {
+			if (isDataEntryTypingKey(event)) {
+				event.preventDefault();
+				updateSelectionFromCell(cell);
+				startModuleDataEntryCellEditorWithText({
+					cell,
+					tableElement: tableRef.current,
+					text: event.key,
+				});
+				return;
+			}
+
 			if (event.key === "ArrowUp") {
 				event.preventDefault();
 				focusRelativeCell(cell, -1, 0);
@@ -350,7 +399,41 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 		}
 
 		updateRowMenuPosition(openMenuRowId);
-	});
+	}, [openMenuRowId, updateRowMenuPosition]);
+
+	useLayoutEffect(() => {
+		const target = pendingFocusTargetRef.current;
+
+		if (!target) {
+			return;
+		}
+
+		pendingFocusTargetRef.current = null;
+		const rowIndex = clampIndex(target.rowIndex, rows.length);
+		const columnIndex = clampIndex(target.columnIndex, columns.length);
+		const row = rows[rowIndex];
+		const column = columns[columnIndex];
+
+		if (row && column) {
+			setSelection({
+				columnId: column.id,
+				rowId: row.id,
+				type: "cell",
+			});
+		}
+
+		const nextCell = focusModuleDataEntryCell({
+			columnIndex,
+			rowIndex,
+			tableElement: tableRef.current,
+		});
+
+		if (!nextCell) {
+			return;
+		}
+
+		focusModuleDataEntryCellEditor(nextCell, tableRef.current);
+	}, [columns, rows]);
 
 	useEffect(() => {
 		if (!openMenuRowId) {
@@ -478,5 +561,15 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 				/>
 			</table>
 		</div>
+	);
+}
+
+function isDataEntryTypingKey(event: ReactKeyboardEvent<HTMLElement>) {
+	return (
+		event.key.length === 1 &&
+		!event.altKey &&
+		!event.ctrlKey &&
+		!event.metaKey &&
+		!event.nativeEvent.isComposing
 	);
 }

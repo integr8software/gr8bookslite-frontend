@@ -1,9 +1,11 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # Next.js Note
 
 This project uses a newer Next.js version. Before changing framework APIs,
 routes, layouts, or server/client boundaries, check the relevant guide in
 `node_modules/next/dist/docs/`.
+
 <!-- END:nextjs-agent-rules -->
 
 # Project Structure
@@ -89,6 +91,11 @@ export default function Page() {
 }
 ```
 
+# Path Aliases
+
+- Use the `@/` path alias for app imports instead of deep relative paths when
+  importing across route, source, or shared module folders.
+
 # Recommended Module Files
 
 ```txt
@@ -138,6 +145,12 @@ Use the shared module UI for list pages.
 
 Use `ModuleTable` for dense record lists with sorting, pagination, filtering,
 or scan-heavy data. Use cards/lists only when records are naturally low-density.
+
+# Form Fields
+
+- Use a real `<label>` element for form fields whenever the field has visible
+  label text.
+- Mark required fields with `*` in the label.
 
 # Validation
 

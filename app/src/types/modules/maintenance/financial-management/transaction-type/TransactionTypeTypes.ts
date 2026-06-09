@@ -2,19 +2,22 @@ export type TransactionTypeStatus = "Active" | "Inactive";
 
 export type TransactionType = {
 	id: string;
-	type: string;
+	name: string;
 	description: string;
-	accountCode: string;
-	accountTitle: string;
+	moduleId: string;
+	moduleName: string;
 	status: TransactionTypeStatus;
+	accountId?: string;
+	accountCode?: string;
+	accountTitle?: string;
 };
 
 export type TransactionTypeFormValues = {
-	type: string;
+	name: string;
 	description: string;
-	accountCode: string;
-	accountTitle: string;
+	moduleId: string;
 	status: TransactionTypeStatus;
+	accountId: string;
 };
 
 export type TransactionTypeFormErrors = Partial<
@@ -24,8 +27,13 @@ export type TransactionTypeFormErrors = Partial<
 export type TransactionTypeActionMode = "add" | "edit" | "view";
 
 export type TransactionTypeTableColumnKey =
-	| "type"
+	| "name"
 	| "description"
-	| "accountCode"
-	| "accountTitle"
+	| "accountLabel"
+	| "moduleLabel"
 	| "status";
+
+export type TransactionTypeTableRecord = TransactionType & {
+	accountLabel: string;
+	moduleLabel: string;
+};

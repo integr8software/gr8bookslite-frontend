@@ -53,8 +53,9 @@ export function ModuleDataEntryTableHeader<TRow>({
 		<thead>
 			<tr className="bg-skyblue text-xs font-semibold text-white">
 				<th
+					data-row-number-header
 					className={joinClasses(
-						"sticky top-0 z-40 w-[5.25rem] min-w-[5.25rem] border border-skyblue/70 bg-skyblue px-2 py-2 text-center shadow-sm",
+						"sticky top-0 z-40 w-[5rem] min-w-[5rem] border border-skyblue/70 bg-skyblue px-2 py-2 text-center shadow-sm",
 						isRowNumberColumnFixed && "left-0 z-50",
 					)}
 				>

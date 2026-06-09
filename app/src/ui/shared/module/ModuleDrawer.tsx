@@ -91,6 +91,7 @@ export function ModuleDrawer({
 					<motion.aside
 						role="dialog"
 						aria-modal="true"
+						data-module-drawer="true"
 						data-spotlight-id={spotlightId}
 						aria-label={
 							typeof title === "string" ? title : "Module drawer"

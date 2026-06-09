@@ -4,7 +4,7 @@ import type {
 } from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
 
 export const TransactionTypeHref =
-	"/maintenance/financial-management/transaction-type";
+	"/maintenance/transaction-type";
 
 export const TransactionTypePaginationStorageKey =
 	"transaction-type-table-pagination";

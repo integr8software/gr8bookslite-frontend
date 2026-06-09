@@ -4,7 +4,7 @@ import type {
 } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
 
 export const ResponsibilityCenterHref =
-	"/maintenance/financial-management/responsibility-center";
+	"/maintenance/responsibility-center";
 
 export const ResponsibilityCenterTablePaginationStorageKey =
 	"maintenance:financial-management:responsibility-center";

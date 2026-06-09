@@ -4,7 +4,11 @@ import type {
 	MainNavigationItem,
 	MainNavigationSection,
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
-import { MainIcons, renderSidebarItemIcon } from "./SidebarIcons";
+import {
+	MainIcons,
+	hasSidebarItemIcon,
+	renderSidebarItemIcon,
+} from "./SidebarIcons";
 import {
 	getVisibleCountToActiveItem,
 	itemMatchesActiveHref,
@@ -221,6 +225,7 @@ export function SidebarItem({
 	const hasChildren = Boolean(item.children?.length);
 	const shouldShowIcon =
 		hasChildren ||
+		hasSidebarItemIcon(item) ||
 		item.key === "maintenance-form-signatory" ||
 		item.accessKey === "maintenance.party" ||
 		item.accessKey === "maintenance.warehouse";

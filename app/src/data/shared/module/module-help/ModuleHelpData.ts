@@ -108,7 +108,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     "/maintenance",
     "Maintain reusable company setup records used by transactions and reports.",
     [
-      "Maintenance stores master files such as accounts, banks, currencies, terms, items, warehouses, parties, approvals, users, and mail setup.",
+      "Maintenance stores master files such as accounts, banks, discounts, terms, items, warehouses, parties, approvals, users, and mail setup.",
       "Accurate maintenance data keeps transaction entry faster and makes reports more consistent.",
     ],
     [
@@ -120,13 +120,17 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-maintenance-financial",
     "Financial Management",
-    "/maintenance/financial-management",
+    "/maintenance",
     "Configure accounting master files used across financial transactions.",
     [
-      "Financial Management groups setup records such as charts of accounts, currencies, discounts, payment terms, and transaction types.",
+      "Financial Management groups setup records such as charts of accounts, discounts, payment terms, transaction types, and responsibility centers.",
       "These records support accounting documents, ledgers, receivables, payables, and financial reports.",
     ],
-    ["help-charts-of-accounts", "help-currency", "help-financial-reports"],
+    [
+      "help-charts-of-accounts",
+      "help-responsibility-center",
+      "help-financial-reports",
+    ],
   ),
   article(
     "help-charts-of-accounts",
@@ -182,6 +186,17 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Use clear transaction type names so transaction lists and reports can be filtered without ambiguity.",
     ],
     ["help-general-journal", "help-reports"],
+  ),
+  article(
+    "help-responsibility-center",
+    "Responsibility Center",
+    "/maintenance/responsibility-center",
+    "Maintain responsibility centers used for accountability and reporting.",
+    [
+      "Responsibility Center stores cost, profit, revenue, and investment centers used to assign accountability across financial records.",
+      "Keep center ownership and status current so transactions and reports can be grouped by the right operating responsibility.",
+    ],
+    ["help-charts-of-accounts", "help-financial-reports"],
   ),
   article(
     "help-maintenance-inventory",

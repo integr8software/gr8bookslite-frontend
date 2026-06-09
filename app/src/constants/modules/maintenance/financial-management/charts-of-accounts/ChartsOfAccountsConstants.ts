@@ -10,7 +10,7 @@ import type {
 } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 
 export const ChartsOfAccountsHref =
-	"/maintenance/financial-management/charts-of-accounts";
+	"/maintenance/charts-of-accounts";
 
 export const AccountTypes: AccountType[] = [
 	"Assets",

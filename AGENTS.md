@@ -1,9 +1,11 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # Next.js Note
 
 This project uses a newer Next.js version. Before changing framework APIs,
 routes, layouts, or server/client boundaries, check the relevant guide in
 `node_modules/next/dist/docs/`.
+
 <!-- END:nextjs-agent-rules -->
 
 # Project Structure
@@ -88,6 +90,11 @@ export default function Page() {
   return <FeatureFormPage />;
 }
 ```
+
+# Path Aliases
+
+- Use the `@/` path alias for app imports instead of deep relative paths when
+  importing across route, source, or shared module folders.
 
 # Recommended Module Files
 

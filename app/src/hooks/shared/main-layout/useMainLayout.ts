@@ -113,7 +113,6 @@ const DefaultExpandedKeys = [
   "master-system-settings-section",
   "dashboard",
   "maintenance",
-  "maintenance-financial",
   "maintenance-item-management",
   "cash-receipt",
   "cash-disbursement",
@@ -1983,21 +1982,19 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "reporting-analytics":
     "Generate accounting, inventory, and compliance reports.",
   "system-administration":
-    "Manage users, approvals, audits, numbering, and mail setup.",
+    "Manage users, approvals, audits, numbering, currencies, and mail setup.",
   "dashboard-overview": "View company activity, approvals, and performance.",
-  "maintenance-financial-management":
-    "Maintain financial setup records used by accounting workflows.",
-  "maintenance-financial-management-charts-of-accounts":
+  "maintenance-charts-of-accounts":
     "Maintain account codes used by transactions and reports.",
   "system-administration-multi-currency-setup":
     "Configure currencies, exchange rates, preferences, and rounding rules.",
-  "maintenance-financial-management-discount-management":
+  "maintenance-discount-management":
     "Maintain discount rules for sales and purchasing.",
-  "maintenance-financial-management-term-management":
+  "maintenance-term-management":
     "Manage payment and collection terms.",
-  "maintenance-financial-management-transaction-type":
+  "maintenance-transaction-type":
     "Configure transaction classifications and numbering behavior.",
-  "maintenance-financial-management-responsibility-center":
+  "maintenance-responsibility-center":
     "Maintain accountability centers for financial reporting.",
   "maintenance-warehouse-management":
     "Maintain warehouse records and storage locations.",

@@ -49,23 +49,27 @@ export function focusModuleDataEntryCell({
 	);
 
 	if (!nextCell) {
-		return;
+		return null;
 	}
 
 	nextCell.focus({ preventScroll: true });
-	nextCell.scrollIntoView({ block: "nearest", inline: "nearest" });
+	scrollModuleDataEntryCellIntoView(nextCell, tableElement);
+	return nextCell;
 }
 
-export function focusModuleDataEntryCellEditor(cell: HTMLElement) {
-	const editor = cell.querySelector<HTMLElement>(
-		"input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable='true']",
-	);
+export function focusModuleDataEntryCellEditor(
+	cell: HTMLElement,
+	tableElement?: HTMLDivElement | null,
+) {
+	const editor = getModuleDataEntryCellEditor(cell);
 
 	if (!editor) {
-		return;
+		return false;
 	}
 
 	editor.focus();
+	editor.scrollIntoView({ block: "nearest", inline: "nearest" });
+	scrollModuleDataEntryCellIntoView(cell, tableElement ?? null);
 
 	if (
 		editor instanceof HTMLInputElement ||
@@ -73,6 +77,192 @@ export function focusModuleDataEntryCellEditor(cell: HTMLElement) {
 	) {
 		editor.select();
 	}
+
+	return true;
+}
+
+export function startModuleDataEntryCellEditorWithText({
+	cell,
+	tableElement,
+	text,
+}: {
+	cell: HTMLElement;
+	tableElement: HTMLDivElement | null;
+	text: string;
+}) {
+	const editor = getModuleDataEntryCellEditor(cell);
+
+	if (!editor) {
+		return false;
+	}
+
+	editor.focus();
+	scrollModuleDataEntryCellIntoView(cell, tableElement);
+
+	if (editor instanceof HTMLInputElement) {
+		replaceInputValue(editor, text);
+		return true;
+	}
+
+	if (editor instanceof HTMLTextAreaElement) {
+		replaceTextAreaValue(editor, text);
+		return true;
+	}
+
+	if (editor instanceof HTMLSelectElement) {
+		selectOptionByTypedText(editor, text);
+		return true;
+	}
+
+	if (editor.isContentEditable) {
+		editor.textContent = text;
+		editor.dispatchEvent(createInputEvent(text));
+		return true;
+	}
+
+	return true;
+}
+
+function getModuleDataEntryCellEditor(cell: HTMLElement) {
+	return cell.querySelector<HTMLElement>(
+		"input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable='true']",
+	);
+}
+
+function replaceInputValue(input: HTMLInputElement, text: string) {
+	if (input.type === "number" && !isValidNumberInputStart(text)) {
+		input.select();
+		return;
+	}
+
+	const valueSetter = Object.getOwnPropertyDescriptor(
+		HTMLInputElement.prototype,
+		"value",
+	)?.set;
+
+	if (valueSetter) {
+		valueSetter.call(input, text);
+	} else {
+		input.value = text;
+	}
+
+	input.dispatchEvent(createInputEvent(text));
+
+	if (input.type !== "number") {
+		input.setSelectionRange(text.length, text.length);
+	}
+}
+
+function replaceTextAreaValue(textArea: HTMLTextAreaElement, text: string) {
+	const valueSetter = Object.getOwnPropertyDescriptor(
+		HTMLTextAreaElement.prototype,
+		"value",
+	)?.set;
+
+	if (valueSetter) {
+		valueSetter.call(textArea, text);
+	} else {
+		textArea.value = text;
+	}
+
+	textArea.dispatchEvent(createInputEvent(text));
+	textArea.setSelectionRange(text.length, text.length);
+}
+
+function selectOptionByTypedText(select: HTMLSelectElement, text: string) {
+	const normalizedText = text.trim().toLowerCase();
+
+	if (!normalizedText) {
+		select.focus();
+		return;
+	}
+
+	const matchingOption = Array.from(select.options).find((option) =>
+		option.text.trim().toLowerCase().startsWith(normalizedText),
+	);
+
+	if (!matchingOption) {
+		select.focus();
+		return;
+	}
+
+	const valueSetter = Object.getOwnPropertyDescriptor(
+		HTMLSelectElement.prototype,
+		"value",
+	)?.set;
+
+	if (valueSetter) {
+		valueSetter.call(select, matchingOption.value);
+	} else {
+		select.value = matchingOption.value;
+	}
+
+	select.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function createInputEvent(text: string) {
+	if (typeof InputEvent === "undefined") {
+		return new Event("input", { bubbles: true });
+	}
+
+	return new InputEvent("input", {
+		bubbles: true,
+		data: text,
+		inputType: "insertText",
+	});
+}
+
+function isValidNumberInputStart(text: string) {
+	return /^[0-9.+-]$/.test(text);
+}
+
+function scrollModuleDataEntryCellIntoView(
+	cell: HTMLElement,
+	tableElement: HTMLDivElement | null,
+) {
+	cell.scrollIntoView({ block: "nearest", inline: "nearest" });
+
+	if (!tableElement) {
+		return;
+	}
+
+	const stickyLeftOffset = getStickyRowNumberColumnWidth(tableElement);
+
+	if (stickyLeftOffset <= 0) {
+		return;
+	}
+
+	const containerRect = tableElement.getBoundingClientRect();
+	const cellRect = cell.getBoundingClientRect();
+	const visibleLeft = containerRect.left + stickyLeftOffset;
+	const visibleRight = containerRect.right;
+
+	if (cellRect.left < visibleLeft) {
+		tableElement.scrollLeft -= visibleLeft - cellRect.left;
+		return;
+	}
+
+	if (cellRect.right > visibleRight) {
+		tableElement.scrollLeft += cellRect.right - visibleRight;
+	}
+}
+
+function getStickyRowNumberColumnWidth(tableElement: HTMLDivElement) {
+	const header = tableElement.querySelector<HTMLElement>(
+		"[data-row-number-header]",
+	);
+
+	if (!header || typeof window === "undefined") {
+		return 0;
+	}
+
+	const style = window.getComputedStyle(header);
+
+	if (style.position !== "sticky" || style.left === "auto") {
+		return 0;
+	}
+
+	return header.getBoundingClientRect().width;
 }
 
 export function exitModuleDataEntryCellEditor(target: EventTarget | null) {

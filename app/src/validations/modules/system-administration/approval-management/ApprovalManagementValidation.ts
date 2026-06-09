@@ -3,6 +3,7 @@ import type {
 	ApprovalManagementFormErrors,
 	ApprovalManagementFormValues,
 	ApprovalManagementRecord,
+	ApprovalRoutingRuleFormErrors,
 	ApprovalStageFormErrors,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
 
@@ -12,6 +13,64 @@ const ApprovalStageSchema = z.object({
 	name: z.string().trim().min(1, "Stage name is required."),
 	approverIds: z.array(z.string()).min(1, "Select at least one approver."),
 	requirement: z.enum(["any", "all"]),
+});
+
+const ApprovalRoutingRuleSchema = z
+	.object({
+		id: z.string().min(1),
+		sequence: z.number().int().positive(),
+		name: z.string().trim().min(1, "Route name is required."),
+		basis: z.enum(["default", "amount"]),
+		amountOperator: z.enum([
+			"greaterThan",
+			"greaterThanOrEqual",
+			"lessThanOrEqual",
+			"between",
+		]),
+		amountValue: z.string(),
+		amountValueTo: z.string(),
+		stageIds: z.array(z.string()).min(1, "Choose at least one stage for this route."),
+	})
+	.superRefine((rule, context) => {
+		if (rule.basis === "amount") {
+			const amount = parseCurrencyAmount(rule.amountValue);
+
+			if (!amount || amount <= 0) {
+				context.addIssue({
+					code: "custom",
+					message: "Enter a transaction amount greater than zero.",
+					path: ["amountValue"],
+				});
+			}
+
+			if (rule.amountOperator === "between") {
+				const amountTo = parseCurrencyAmount(rule.amountValueTo);
+
+				if (!amountTo || amountTo <= 0) {
+					context.addIssue({
+						code: "custom",
+						message: "Enter an ending amount greater than zero.",
+						path: ["amountValueTo"],
+					});
+				}
+
+				if (amount && amountTo && amountTo <= amount) {
+					context.addIssue({
+						code: "custom",
+						message: "Ending amount must be greater than starting amount.",
+						path: ["amountValueTo"],
+					});
+				}
+			}
+		}
+	});
+
+const ApprovalWorkflowFeaturesSchema = z.object({
+	autoReminders: z.boolean(),
+	escalationRules: z.boolean(),
+	makerCheckerApproval: z.boolean(),
+	multiLevelApproval: z.boolean(),
+	slaMonitoring: z.boolean(),
 });
 
 export const ApprovalManagementFormSchema = z
@@ -26,6 +85,14 @@ export const ApprovalManagementFormSchema = z
 			.min(1, "Choose at least one approval stage.")
 			.max(5, "Approval stages cannot exceed five."),
 		stages: z.array(ApprovalStageSchema),
+		routingRules: z
+			.array(ApprovalRoutingRuleSchema)
+			.min(1, "Add at least one routing rule.")
+			.max(
+				2,
+				"Use only the standard path and one amount condition.",
+			),
+		workflowFeatures: ApprovalWorkflowFeaturesSchema,
 		status: z.enum(["Active", "Inactive"]),
 		description: z.string().trim().max(180, "Description is too long."),
 	})
@@ -46,6 +113,40 @@ export const ApprovalManagementFormSchema = z
 					code: "custom",
 					message: "Remove duplicate approvers in this stage.",
 					path: ["stages", index, "approverIds"],
+				});
+			}
+		});
+
+		const defaultRuleCount = values.routingRules.filter(
+			(rule) => rule.basis === "default",
+		).length;
+
+		if (defaultRuleCount !== 1) {
+			context.addIssue({
+				code: "custom",
+				message: "Keep exactly one default route for otherwise conditions.",
+				path: ["routingRules", 0, "basis"],
+			});
+		}
+
+		const stageIds = new Set(values.stages.map((stage) => stage.id));
+
+		values.routingRules.forEach((rule, index) => {
+			const uniqueStageIds = new Set(rule.stageIds);
+
+			if (uniqueStageIds.size !== rule.stageIds.length) {
+				context.addIssue({
+					code: "custom",
+					message: "Remove duplicate stages from this route.",
+					path: ["routingRules", index, "stageIds"],
+				});
+			}
+
+			if (rule.stageIds.some((stageId) => !stageIds.has(stageId))) {
+				context.addIssue({
+					code: "custom",
+					message: "Choose stages that still exist in this workflow.",
+					path: ["routingRules", index, "stageIds"],
 				});
 			}
 		});
@@ -92,17 +193,32 @@ function mapIssueToApprovalErrors(
 	issue: z.ZodIssue,
 	values: ApprovalManagementFormValues,
 ) {
-	const [field, stageIndex, stageField] = issue.path;
+	const [field, itemIndex, itemField] = issue.path;
 
-	if (field === "stages" && typeof stageIndex === "number") {
-		const stage = values.stages[stageIndex];
-		const stageId = stage?.id ?? String(stageIndex);
-		const key = stageField as keyof ApprovalStageFormErrors;
+	if (field === "stages" && typeof itemIndex === "number") {
+		const stage = values.stages[itemIndex];
+		const stageId = stage?.id ?? String(itemIndex);
+		const key = itemField as keyof ApprovalStageFormErrors;
 
 		errors.stages = {
 			...errors.stages,
 			[stageId]: {
 				...errors.stages?.[stageId],
+				[key]: issue.message,
+			},
+		};
+		return;
+	}
+
+	if (field === "routingRules" && typeof itemIndex === "number") {
+		const routingRule = values.routingRules[itemIndex];
+		const routingRuleId = routingRule?.id ?? String(itemIndex);
+		const key = itemField as keyof ApprovalRoutingRuleFormErrors;
+
+		errors.routingRules = {
+			...errors.routingRules,
+			[routingRuleId]: {
+				...errors.routingRules?.[routingRuleId],
 				[key]: issue.message,
 			},
 		};
@@ -117,4 +233,10 @@ function mapIssueToApprovalErrors(
 	) {
 		errors[field] = issue.message;
 	}
+}
+
+function parseCurrencyAmount(value: string) {
+	const amount = Number(value.replaceAll(",", "").trim());
+
+	return Number.isFinite(amount) ? amount : 0;
 }

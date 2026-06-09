@@ -20,6 +20,8 @@ type WorkspaceCompanyUserApiLike =
   | WorkspaceCompanyUserApiRecord
   | WorkspaceUserResponseDto;
 
+const WorkspaceUserMutationTimeoutMs = 60000;
+
 export async function GetWorkspaceUsers() {
   const response = await workspaceUsersControllerFindAllV1();
 
@@ -31,6 +33,9 @@ export async function CreateWorkspaceUser(
 ) {
   const response = await workspaceUsersControllerCreateV1(
     MapWorkspaceUserFormToRequest(values),
+    {
+      timeout: WorkspaceUserMutationTimeoutMs,
+    },
   );
 
   return MapWorkspaceUserApiRecord(response);
@@ -43,6 +48,9 @@ export async function UpdateWorkspaceUser(
   const response = await workspaceUsersControllerUpdateV1(
     Number(userId),
     MapWorkspaceUserFormToRequest(values),
+    {
+      timeout: WorkspaceUserMutationTimeoutMs,
+    },
   );
 
   return MapWorkspaceUserApiRecord(response);

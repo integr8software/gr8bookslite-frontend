@@ -235,7 +235,7 @@ export function createMaterialRequestFormValues(
 		documentDate: new Date().toISOString().slice(0, 10),
 		requiredDate: new Date().toISOString().slice(0, 10),
 		fromWarehouse: "Main Warehouse",
-		toWarehouse: "Site Warehouse 1",
+		toWarehouse: "",
 		department: "Warehouse Operations",
 		vceCode: "",
 		vceName: "",

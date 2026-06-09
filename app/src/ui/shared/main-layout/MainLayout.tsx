@@ -16,6 +16,7 @@ import { joinClasses } from "./utils";
 import { AiAssistantChat } from "@/app/src/ui/shared/ai-assistant/AiAssistantChat";
 import { LogoutLoadingScreen } from "@/app/src/ui/auth/LogoutLoadingScreen";
 import { MaintenanceSpotlightTutorial } from "@/app/src/ui/modules/maintenance/MaintenanceSpotlightTutorial";
+import { MainActivityLogger } from "./MainActivityLogger";
 
 const MainHelpModal = dynamic(
 	() =>
@@ -145,6 +146,10 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 
 	return (
 		<div className="flex h-dvh max-w-full flex-col overflow-hidden bg-white text-darknavy">
+			<MainActivityLogger
+				breadcrumbs={breadcrumbs}
+				currentBranch={currentBranch}
+			/>
 			<MainNavigationProgress />
 
 			<MainTopbar

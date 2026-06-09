@@ -29,6 +29,8 @@ type WorkspaceAuditLogTableProps = Pick<
 	| "branchFilter"
 	| "branchOptions"
 	| "dateRangeFilter"
+	| "isError"
+	| "isLoading"
 	| "moduleFilter"
 	| "moduleOptions"
 	| "query"
@@ -48,6 +50,8 @@ export function WorkspaceAuditLogTable({
 	branchFilter,
 	branchOptions,
 	dateRangeFilter,
+	isError,
+	isLoading,
 	moduleFilter,
 	moduleOptions,
 	query,
@@ -65,9 +69,16 @@ export function WorkspaceAuditLogTable({
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
 			<ModuleTable<WorkspaceAuditLogRecord>
 				variant="embedded"
-				emptyDescription="Adjust branch, date range, module, action, or severity."
+				emptyDescription={
+					isError
+						? "The audit log service could not be reached. Refresh the page or try again."
+						: "Adjust branch, date range, module, action, or severity."
+				}
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No audit logs found"
+				emptyTitle={
+					isError ? "Could not load audit logs" : "No audit logs found"
+				}
+				isLoading={isLoading}
 				minWidthClassName="min-w-[106rem]"
 				paginationLabel="logs"
 				paginationStorageKey={WorkspaceAuditLogPaginationStorageKey}
@@ -78,7 +89,7 @@ export function WorkspaceAuditLogTable({
 							label="Search workspace audit logs"
 							value={query}
 							onChange={setQuery}
-							placeholder="Search module, user, record, branch, or IP"
+							placeholder="Search module, user, record, or branch"
 						/>
 						<ModuleTableFilterSelect
 							label="Branch"

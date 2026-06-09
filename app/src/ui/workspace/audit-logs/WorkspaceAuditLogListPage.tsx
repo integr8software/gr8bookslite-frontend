@@ -2,12 +2,19 @@
 
 import { Activity, AlertTriangle, GitBranch, ListChecks } from "lucide-react";
 import { useWorkspaceAuditLogListPage } from "@/app/src/hooks/workspace/audit-logs/useWorkspaceAuditLogListPage";
+import type { WorkspaceAuditLogRecord } from "@/app/src/types/workspace/audit-logs/WorkspaceAuditLogTypes";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { WorkspaceAuditLogTable } from "@/app/src/ui/workspace/audit-logs/WorkspaceAuditLogTable";
 
-export function WorkspaceAuditLogListPage() {
-	const page = useWorkspaceAuditLogListPage();
+type WorkspaceAuditLogListPageProps = {
+	initialRecords?: WorkspaceAuditLogRecord[];
+};
+
+export function WorkspaceAuditLogListPage({
+	initialRecords,
+}: WorkspaceAuditLogListPageProps) {
+	const page = useWorkspaceAuditLogListPage({ initialRecords });
 
 	return (
 		<section className="grid gap-5">

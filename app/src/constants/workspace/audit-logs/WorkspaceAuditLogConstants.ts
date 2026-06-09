@@ -13,6 +13,8 @@ export const WorkspaceAuditLogActionOptions = [
 	"Create",
 	"Delete",
 	"Export",
+	"Login",
+	"Logout",
 	"Reject",
 	"Update",
 	"View",

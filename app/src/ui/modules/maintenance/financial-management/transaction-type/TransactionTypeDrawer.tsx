@@ -15,7 +15,18 @@ export function TransactionTypeDrawer({ isOpen, mode, onClose, transactionType }
 function TransactionTypeDrawerPanel({ isOpen, mode, onClose, transactionType }: { isOpen: boolean; mode: TransactionTypeActionMode; onClose: () => void; transactionType?: TransactionType }) {
 	const page = useTransactionTypeActionPage({ existingTransactionType: transactionType, mode, onSaved: onClose });
 	const copy = TransactionTypeActionCopy[mode];
-	return <MaintenanceFormDrawer description={copy.description} eyebrow="Accounting master data" formId={formId} isOpen={isOpen} isSaving={page.isMutating} onClose={onClose} title={copy.title}>
-		<form id={formId} onSubmit={page.handleSubmit} className="px-6 py-5"><TransactionTypeForm errors={page.errors} isReadonly={false} values={page.values} onInputChange={page.handleInputChange} /></form>
+	return <MaintenanceFormDrawer description={copy.description} eyebrow="Accounting master data" formId={formId} isOpen={isOpen} isReadonly={page.isReadonly} isSaving={page.isMutating} onClose={onClose} title={copy.title}>
+		<form id={formId} onSubmit={page.handleSubmit} className="px-6 py-5">
+			<TransactionTypeForm
+				accountOptions={page.accountOptions}
+				errors={page.errors}
+				isReadonly={page.isReadonly}
+				moduleOptions={page.moduleOptions}
+				values={page.values}
+				onAccountChange={page.handleAccountChange}
+				onInputChange={page.handleInputChange}
+				onModuleChange={page.handleModuleChange}
+			/>
+		</form>
 	</MaintenanceFormDrawer>;
 }

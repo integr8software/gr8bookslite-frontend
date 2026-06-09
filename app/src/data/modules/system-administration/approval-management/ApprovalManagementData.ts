@@ -5,7 +5,9 @@ import type {
 	ApprovalManagementFormValues,
 	ApprovalManagementModuleCode,
 	ApprovalManagementRecord,
+	ApprovalRoutingRuleFormValues,
 	ApprovalStageFormValues,
+	ApprovalWorkflowFeatures,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
 
 export const ApprovalApproverOptions: ApprovalApproverOption[] =
@@ -16,6 +18,14 @@ export const ApprovalApproverOptions: ApprovalApproverOption[] =
 		role: user.userRole,
 		status: user.status,
 	}));
+
+const DefaultApprovalWorkflowFeatures: ApprovalWorkflowFeatures = {
+	autoReminders: true,
+	escalationRules: false,
+	makerCheckerApproval: true,
+	multiLevelApproval: true,
+	slaMonitoring: false,
+};
 
 export const MockApprovalManagementWorkflows: ApprovalManagementRecord[] = [
 	{
@@ -39,8 +49,36 @@ export const MockApprovalManagementWorkflows: ApprovalManagementRecord[] = [
 				requirement: "all",
 			},
 		],
+		routingRules: [
+			{
+				id: "approval-dv-route-1",
+				sequence: 1,
+				name: "Standard vouchers",
+				basis: "default",
+				amountOperator: "greaterThan",
+				amountValue: "",
+				amountValueTo: "",
+				stageIds: ["approval-dv-stage-1"],
+			},
+			{
+				id: "approval-dv-route-2",
+				sequence: 2,
+				name: "High value vouchers",
+				basis: "amount",
+				amountOperator: "greaterThan",
+				amountValue: "100000",
+				amountValueTo: "",
+				stageIds: ["approval-dv-stage-1", "approval-dv-stage-2"],
+			},
+		],
+		workflowFeatures: {
+			...DefaultApprovalWorkflowFeatures,
+			escalationRules: true,
+			slaMonitoring: true,
+		},
 		status: "Active",
-		description: "Standard approval flow for disbursement vouchers.",
+		description:
+			"Disbursement vouchers use finance review by default and add management approval above the transaction limit.",
 		updatedAt: "2026-05-22T08:35:00.000Z",
 	},
 	{
@@ -71,8 +109,39 @@ export const MockApprovalManagementWorkflows: ApprovalManagementRecord[] = [
 				requirement: "all",
 			},
 		],
+		routingRules: [
+			{
+				id: "approval-pr-route-1",
+				sequence: 1,
+				name: "Standard purchase request",
+				basis: "default",
+				amountOperator: "greaterThan",
+				amountValue: "",
+				amountValueTo: "",
+				stageIds: ["approval-pr-stage-1", "approval-pr-stage-2"],
+			},
+			{
+				id: "approval-pr-route-2",
+				sequence: 2,
+				name: "PO over 100k",
+				basis: "amount",
+				amountOperator: "greaterThan",
+				amountValue: "100000",
+				amountValueTo: "",
+				stageIds: [
+					"approval-pr-stage-1",
+					"approval-pr-stage-2",
+					"approval-pr-stage-3",
+				],
+			},
+		],
+		workflowFeatures: {
+			...DefaultApprovalWorkflowFeatures,
+			escalationRules: true,
+		},
 		status: "Active",
-		description: "Purchase requests pass through department, budget, and final review.",
+		description:
+			"Purchase requests pass through request and budget review, with final approval for amounts over 100k.",
 		updatedAt: "2026-05-21T15:10:00.000Z",
 	},
 	{
@@ -89,6 +158,24 @@ export const MockApprovalManagementWorkflows: ApprovalManagementRecord[] = [
 				requirement: "any",
 			},
 		],
+		routingRules: [
+			{
+				id: "approval-jv-route-1",
+				sequence: 1,
+				name: "Standard journal voucher",
+				basis: "default",
+				amountOperator: "greaterThan",
+				amountValue: "",
+				amountValueTo: "",
+				stageIds: ["approval-jv-stage-1"],
+			},
+		],
+		workflowFeatures: {
+			...DefaultApprovalWorkflowFeatures,
+			escalationRules: false,
+			multiLevelApproval: false,
+			slaMonitoring: false,
+		},
 		status: "Inactive",
 		description: "Previous journal voucher approval rule.",
 		updatedAt: "2026-05-18T11:42:00.000Z",
@@ -97,11 +184,14 @@ export const MockApprovalManagementWorkflows: ApprovalManagementRecord[] = [
 
 export function createApprovalManagementInitialFormValues(): ApprovalManagementFormValues {
 	const stageCount = 2;
+	const stages = createApprovalStagesForCount([], stageCount);
 
 	return {
 		moduleCode: "",
 		stageCount,
-		stages: createApprovalStagesForCount([], stageCount),
+		stages,
+		routingRules: createDefaultApprovalRoutingRules(stages),
+		workflowFeatures: createDefaultApprovalWorkflowFeatures(),
 		status: "Active",
 		description: "",
 	};
@@ -110,10 +200,20 @@ export function createApprovalManagementInitialFormValues(): ApprovalManagementF
 export function createApprovalManagementFormValues(
 	record: ApprovalManagementRecord,
 ): ApprovalManagementFormValues {
+	const stages = record.stages.map((stage) => ({ ...stage }));
+
 	return {
 		moduleCode: record.moduleCode,
 		stageCount: record.stageCount,
-		stages: record.stages.map((stage) => ({ ...stage })),
+		stages,
+		routingRules: syncApprovalRoutingRulesForStages(
+			record.routingRules.map((rule) => ({ ...rule, stageIds: [...rule.stageIds] })),
+			stages,
+		),
+		workflowFeatures: {
+			...createDefaultApprovalWorkflowFeatures(),
+			...record.workflowFeatures,
+		},
 		status: record.status,
 		description: record.description,
 	};
@@ -138,17 +238,153 @@ export function createApprovalStagesForCount(
 	});
 }
 
+export function createApprovalRoutingRule(
+	sequence: number,
+	stages: ApprovalStageFormValues[],
+	overrides: Partial<ApprovalRoutingRuleFormValues> = {},
+): ApprovalRoutingRuleFormValues {
+	const basis = overrides.basis ?? (sequence === 1 ? "default" : "amount");
+	const isDefaultRoute = basis === "default";
+
+	return {
+		id: `approval-route-${Date.now()}-${sequence}`,
+		sequence,
+		name: isDefaultRoute ? "Standard Flow" : "Amount Condition",
+		basis,
+		amountOperator: "greaterThan",
+		amountValue: isDefaultRoute ? "" : "100000",
+		amountValueTo: "",
+		stageIds: stages.map((stage) => stage.id),
+		...overrides,
+	};
+}
+
+export function createDefaultApprovalRoutingRules(
+	stages: ApprovalStageFormValues[],
+) {
+	return [
+		createApprovalRoutingRule(1, stages, {
+			basis: "default",
+			name: "Standard Approval Path",
+		}),
+	];
+}
+
+export function createStandardApprovalRoutingRules(
+	routingRules: ApprovalRoutingRuleFormValues[],
+	stages: ApprovalStageFormValues[],
+) {
+	const defaultRule =
+		routingRules.find((rule) => rule.basis === "default") ??
+		createApprovalRoutingRule(1, stages, {
+			basis: "default",
+			name: "Standard Approval Path",
+		});
+
+	return syncApprovalRoutingRulesForStages(
+		[
+			{
+				...defaultRule,
+				amountValue: "",
+				amountValueTo: "",
+				basis: "default",
+				name: defaultRule.name || "Standard Approval Path",
+			},
+		],
+		stages,
+	);
+}
+
+export function createAmountConditionApprovalRoutingRules(
+	routingRules: ApprovalRoutingRuleFormValues[],
+	stages: ApprovalStageFormValues[],
+) {
+	const fallbackStageIds = stages.slice(0, 1).map((stage) => stage.id);
+	const amountRule =
+		routingRules.find((rule) => rule.basis === "amount") ??
+		createApprovalRoutingRule(1, stages, {
+			basis: "amount",
+			name: "Amount Condition",
+		});
+	const defaultRule =
+		routingRules.find((rule) => rule.basis === "default") ??
+		createApprovalRoutingRule(2, stages, {
+			basis: "default",
+			name: "Otherwise",
+			stageIds: fallbackStageIds,
+		});
+	const defaultStageIds = routingRules.some((rule) => rule.basis === "amount")
+		? defaultRule.stageIds
+		: fallbackStageIds;
+
+	return syncApprovalRoutingRulesForStages(
+		[
+			{
+				...amountRule,
+				basis: "amount",
+				name: amountRule.name || "Amount Condition",
+			},
+			{
+				...defaultRule,
+				amountValue: "",
+				amountValueTo: "",
+				basis: "default",
+				name: defaultRule.name || "Otherwise",
+				stageIds: defaultStageIds,
+			},
+		],
+		stages,
+	);
+}
+
+export function syncApprovalRoutingRulesForStages(
+	routingRules: ApprovalRoutingRuleFormValues[],
+	stages: ApprovalStageFormValues[],
+): ApprovalRoutingRuleFormValues[] {
+	const stageIdSet = new Set(stages.map((stage) => stage.id));
+	const fallbackStageIds = stages.slice(0, 1).map((stage) => stage.id);
+	const rules = routingRules.length
+		? routingRules
+		: createDefaultApprovalRoutingRules(stages);
+
+	return resequenceApprovalRoutingRules(
+		rules.map((rule) => {
+			const stageIds = rule.stageIds.filter((stageId) => stageIdSet.has(stageId));
+
+			return {
+				...rule,
+				stageIds: stageIds.length ? stageIds : fallbackStageIds,
+			};
+		}),
+	);
+}
+
+export function resequenceApprovalRoutingRules(
+	routingRules: ApprovalRoutingRuleFormValues[],
+) {
+	return routingRules.map((rule, index) => ({
+		...rule,
+		sequence: index + 1,
+		name:
+			rule.name.trim() ||
+			(rule.basis === "default" ? "Standard Approval Path" : "Amount Condition"),
+	}));
+}
+
 export function createApprovalManagementRecord(
 	values: ApprovalManagementFormValues,
 ): ApprovalManagementRecord {
 	const moduleCode = values.moduleCode || "DV";
+	const stages = normalizeApprovalStages(values.stages);
 
 	return {
 		id: `approval-${Date.now()}`,
 		moduleCode,
 		moduleName: getApprovalManagementModuleName(moduleCode),
 		stageCount: values.stageCount,
-		stages: normalizeApprovalStages(values.stages),
+		stages,
+		routingRules: normalizeApprovalRoutingRules(values.routingRules, stages),
+		workflowFeatures: normalizeApprovalWorkflowFeatures(values.workflowFeatures),
 		status: values.status,
 		description: values.description.trim(),
 		updatedAt: new Date().toISOString(),
@@ -160,13 +396,16 @@ export function updateApprovalManagementRecord(
 	values: ApprovalManagementFormValues,
 ): ApprovalManagementRecord {
 	const moduleCode = values.moduleCode || record.moduleCode;
+	const stages = normalizeApprovalStages(values.stages);
 
 	return {
 		...record,
 		moduleCode,
 		moduleName: getApprovalManagementModuleName(moduleCode),
 		stageCount: values.stageCount,
-		stages: normalizeApprovalStages(values.stages),
+		stages,
+		routingRules: normalizeApprovalRoutingRules(values.routingRules, stages),
+		workflowFeatures: normalizeApprovalWorkflowFeatures(values.workflowFeatures),
 		status: values.status,
 		description: values.description.trim(),
 		updatedAt: new Date().toISOString(),
@@ -180,6 +419,10 @@ export function getApprovalManagementModuleName(
 		ApprovalManagementModuleOptions.find((option) => option.code === moduleCode)
 			?.name ?? moduleCode
 	);
+}
+
+function createDefaultApprovalWorkflowFeatures(): ApprovalWorkflowFeatures {
+	return { ...DefaultApprovalWorkflowFeatures };
 }
 
 function createApprovalStage(sequence: number): ApprovalStageFormValues {
@@ -199,4 +442,30 @@ function normalizeApprovalStages(stages: ApprovalStageFormValues[]) {
 		name: stage.name.trim() || `Stage ${index + 1}`,
 		approverIds: Array.from(new Set(stage.approverIds)),
 	}));
+}
+
+function normalizeApprovalRoutingRules(
+	routingRules: ApprovalRoutingRuleFormValues[],
+	stages: ApprovalStageFormValues[],
+) {
+	const stageIdSet = new Set(stages.map((stage) => stage.id));
+
+	return resequenceApprovalRoutingRules(routingRules).map((rule) => ({
+		...rule,
+		name: rule.name.trim(),
+		amountValue: rule.amountValue.trim(),
+		amountValueTo: rule.amountValueTo.trim(),
+		stageIds: Array.from(new Set(rule.stageIds)).filter((stageId) =>
+			stageIdSet.has(stageId),
+		),
+	}));
+}
+
+function normalizeApprovalWorkflowFeatures(
+	workflowFeatures: ApprovalWorkflowFeatures,
+) {
+	return {
+		...createDefaultApprovalWorkflowFeatures(),
+		...workflowFeatures,
+	};
 }

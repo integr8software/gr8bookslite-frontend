@@ -54,7 +54,7 @@ export function DiscountManagementFields({
 						value={values.status}
 						onChange={onInputChange}
 						disabled={isReadonly}
-						className={fieldClassName}
+						className={selectClassName}
 					>
 						<option value="Active">Active</option>
 						<option value="Inactive">Inactive</option>
@@ -83,7 +83,7 @@ export function DiscountManagementFields({
 						value={values.discountType}
 						onChange={onInputChange}
 						disabled={isReadonly}
-						className={fieldClassName}
+						className={selectClassName}
 					>
 						<option value="Percentage">Percentage</option>
 						<option value="Fixed">Fixed</option>
@@ -96,7 +96,7 @@ export function DiscountManagementFields({
 						type="number"
 						min="0"
 						max={values.discountType === "Percentage" ? "100" : undefined}
-						step="0.01"
+						step="any"
 						value={values.amount}
 						onChange={onInputChange}
 						readOnly={isReadonly}
@@ -121,9 +121,9 @@ export function DiscountManagementFields({
 
 				<FormField label="Module" error={errors.moduleIds} required>
 					<AppAdvancedDropdown
-						disabled={isReadonly}
 						options={moduleDropdownOptions}
 						placeholder="Select available module"
+						readOnly={isReadonly}
 						searchPlaceholder="Search module"
 						selectionMode="multiple"
 						value={values.moduleIds}
@@ -166,3 +166,5 @@ function FormField({
 
 const fieldClassName =
 	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5 read-only:bg-darknavy/[0.03]";
+
+const selectClassName = `app-select-control ${fieldClassName}`;

@@ -79,7 +79,7 @@ export const InitialUserRoles: UserRoleRecord[] = [
         "create",
         "update",
       ]),
-      ...createAccessRoles(["maintenance-financial-management-charts-of-accounts"], [
+      ...createAccessRoles(["maintenance-charts-of-accounts"], [
         "read",
         "update",
       ]),

@@ -82,15 +82,19 @@ export const MaterialRequestFormValidationSchema = z
 			"Completed",
 			"Cancelled",
 		]),
-		toWarehouse: requiredText("Select a destination warehouse."),
+		toWarehouse: requiredText("Select To Warehouse."),
 		vceCode: requiredText("Select a Party Member."),
 		vceName: z.string(),
 	})
 	.superRefine((values, context) => {
-		if (values.fromWarehouse === values.toWarehouse) {
+		if (
+			values.fromWarehouse &&
+			values.toWarehouse &&
+			values.fromWarehouse === values.toWarehouse
+		) {
 			context.addIssue({
 				code: "custom",
-				message: "Select a different destination warehouse.",
+				message: "Select a different To Warehouse.",
 				path: ["toWarehouse"],
 			});
 		}

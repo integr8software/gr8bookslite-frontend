@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { TransactionTypeHref } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
@@ -10,6 +10,8 @@ import {
 	createTransactionTypeFromForm,
 	updateTransactionTypeFromForm,
 } from "@/app/src/data/modules/maintenance/financial-management/transaction-type/TransactionTypeData";
+import { getFallbackFormSignatoryModuleOptions } from "@/app/src/data/modules/maintenance/form-signatory/FormSignatoryData";
+import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
 import type {
 	TransactionTypeActionMode,
 	TransactionType,
@@ -31,6 +33,7 @@ export function useTransactionTypeActionPage(
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
+	const { accounts, flatAccounts } = useChartsOfAccounts();
 	const transactionTypes = useTransactionTypeStore((state) => state.transactionTypes);
 	const addTransactionType = useTransactionTypeStore(
 		(state) => state.addTransactionType,
@@ -38,13 +41,18 @@ export function useTransactionTypeActionPage(
 	const updateTransactionType = useTransactionTypeStore(
 		(state) => state.updateTransactionType,
 	);
-	const deleteTransactionType = useTransactionTypeStore(
-		(state) => state.deleteTransactionType,
-	);
 	const isMutating = useTransactionTypeStore((state) => state.isMutating);
 	const mode = options.mode ?? getActionMode(pathname);
 	const existingTransactionType = options.existingTransactionType ?? transactionTypes.find(
 		(transactionType) => transactionType.id === params.recordId,
+	);
+	const accountOptions = useMemo(
+		() => flatAccounts.map(({ account }) => account),
+		[flatAccounts],
+	);
+	const moduleOptions = useMemo(
+		() => getFallbackFormSignatoryModuleOptions(),
+		[],
 	);
 	const isReadonly = mode === "view";
 	const [values, setValues] = useState<TransactionTypeFormValues>(() =>
@@ -53,7 +61,11 @@ export function useTransactionTypeActionPage(
 			: TransactionTypeInitialFormValues,
 	);
 	const [errors, setErrors] = useState<TransactionTypeFormErrors>({});
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+	const selectedAccount = accountOptions.find(
+		(account) =>
+			account.id === values.accountId ||
+			account.accountNumber === values.accountId,
+	);
 
 	function updateField(
 		field: keyof TransactionTypeFormValues,
@@ -81,6 +93,22 @@ export function useTransactionTypeActionPage(
 		);
 	}
 
+	function handleAccountChange(accountId: string) {
+		if (isReadonly) {
+			return;
+		}
+
+		updateField("accountId", accountId);
+	}
+
+	function handleModuleChange(nextValue: string | string[]) {
+		if (isReadonly) {
+			return;
+		}
+
+		updateField("moduleId", Array.isArray(nextValue) ? nextValue[0] ?? "" : nextValue);
+	}
+
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
@@ -94,38 +122,37 @@ export function useTransactionTypeActionPage(
 
 		if (mode === "edit" && existingTransactionType) {
 			updateTransactionType(
-				updateTransactionTypeFromForm(existingTransactionType, values),
+				updateTransactionTypeFromForm(
+					existingTransactionType,
+					values,
+					selectedAccount,
+					moduleOptions,
+				),
 			);
 		} else {
-			addTransactionType(createTransactionTypeFromForm(values));
+			addTransactionType(
+				createTransactionTypeFromForm(values, selectedAccount, moduleOptions),
+			);
 		}
 
 		options.onSaved?.();
 		if (!options.onSaved) router.push(TransactionTypeHref);
 	}
 
-	function handleConfirmDelete() {
-		if (!existingTransactionType) {
-			return;
-		}
-
-		deleteTransactionType(existingTransactionType.id);
-		setIsDeleteDialogOpen(false);
-		router.push(TransactionTypeHref);
-	}
-
 	return {
+		accountOptions: accounts,
 		errors,
 		existingTransactionType,
-		handleConfirmDelete,
+		handleAccountChange,
 		handleInputChange,
+		handleModuleChange,
 		handleSubmit,
-		isDeleteDialogOpen,
 		isMutating,
 		isReadonly,
 		mode,
+		moduleOptions,
 		needsRecord: mode === "edit" || mode === "view",
-		setIsDeleteDialogOpen,
+		selectedAccount,
 		values,
 	};
 }

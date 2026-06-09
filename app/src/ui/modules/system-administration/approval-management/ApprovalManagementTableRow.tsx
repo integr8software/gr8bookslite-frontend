@@ -1,6 +1,7 @@
 import {
 	formatApprovalApproverNames,
-	formatApprovalStageRequirement,
+	formatApprovalRoutingCondition,
+	formatApprovalRoutingStagePath,
 	formatApprovalWorkflowUpdatedAt,
 } from "@/app/src/services/modules/system-administration/approval-management/ApprovalManagementFormatters";
 import type { ApprovalManagementRecord } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
@@ -34,15 +35,22 @@ export function ApprovalManagementTableRow({
 				</span>
 			</td>
 			<td className="px-4 py-4">
-				<div className="grid gap-1">
-					{workflow.stages.map((stage) => (
-						<span
-							key={stage.id}
-							className="text-xs font-medium text-darknavy/70"
-						>
-							Stage {stage.sequence}: {formatApprovalStageRequirement(stage)}
-						</span>
+				<div className="grid gap-2">
+					{workflow.routingRules.slice(0, 3).map((rule) => (
+						<div key={rule.id} className="grid gap-0.5">
+							<span className="text-xs font-semibold text-darknavy">
+								{formatApprovalRoutingCondition(rule)}
+							</span>
+							<span className="text-xs font-medium text-darknavy/60">
+								{formatApprovalRoutingStagePath(rule, workflow.stages)}
+							</span>
+						</div>
 					))}
+					{workflow.routingRules.length > 3 ? (
+						<span className="text-xs font-semibold text-darknavy/45">
+							+{workflow.routingRules.length - 3} more routes
+						</span>
+					) : null}
 				</div>
 			</td>
 			<td className="px-4 py-4">

@@ -10,14 +10,16 @@ import {
 	type PaginationState,
 	type SortingState,
 } from "@tanstack/react-table";
+import { useQuery } from "@tanstack/react-query";
 import { WorkspaceAuditLogTableColumns } from "@/app/src/constants/workspace/audit-logs/WorkspaceAuditLogConstants";
 import {
-	WorkspaceAuditLogRecords,
 	formatWorkspaceAuditLogCreatedAt,
 	getWorkspaceAuditLogBranchOptions,
 	getWorkspaceAuditLogModuleOptions,
 	queryWorkspaceAuditLogRecords,
 } from "@/app/src/data/workspace/audit-logs/WorkspaceAuditLogData";
+import { GetWorkspaceAuditLogs } from "@/app/src/services/workspace/audit-logs/WorkspaceAuditLogApi";
+import { WorkspaceAuditLogQueryKeys } from "@/app/src/services/workspace/audit-logs/WorkspaceAuditLogQueryKeys";
 import type {
 	WorkspaceAuditLogAction,
 	WorkspaceAuditLogDateRange,
@@ -40,8 +42,13 @@ const InitialFilters: WorkspaceAuditLogFilters = {
 	query: "",
 	severity: "all",
 };
+const EmptyWorkspaceAuditLogRecords: WorkspaceAuditLogRecord[] = [];
 
-export function useWorkspaceAuditLogListPage() {
+export function useWorkspaceAuditLogListPage({
+	initialRecords = EmptyWorkspaceAuditLogRecords,
+}: {
+	initialRecords?: WorkspaceAuditLogRecord[];
+} = {}) {
 	const [filters, setFilters] =
 		useState<WorkspaceAuditLogFilters>(InitialFilters);
 	const [pagination, setPagination] =
@@ -49,9 +56,15 @@ export function useWorkspaceAuditLogListPage() {
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "createdAt", desc: true },
 	]);
+	const recordsQuery = useQuery({
+		queryKey: WorkspaceAuditLogQueryKeys.records(),
+		queryFn: GetWorkspaceAuditLogs,
+		initialData: initialRecords,
+	});
+	const records = recordsQuery.data ?? EmptyWorkspaceAuditLogRecords;
 	const queryResult = useMemo(
-		() => queryWorkspaceAuditLogRecords(filters),
-		[filters],
+		() => queryWorkspaceAuditLogRecords(filters, records),
+		[filters, records],
 	);
 	const columns = useMemo<ColumnDef<WorkspaceAuditLogRecord>[]>(
 		() =>
@@ -99,15 +112,17 @@ export function useWorkspaceAuditLogListPage() {
 	return {
 		actionFilter: filters.action,
 		branchFilter: filters.branchId,
-		branchOptions: getWorkspaceAuditLogBranchOptions(),
+		branchOptions: getWorkspaceAuditLogBranchOptions(records),
 		branchCount,
 		criticalCount,
 		dateRangeFilter: filters.dateRange,
 		filteredCount: queryResult.totalMatched,
+		isError: recordsQuery.isError,
+		isLoading: recordsQuery.isLoading,
 		moduleFilter: filters.module,
-		moduleOptions: getWorkspaceAuditLogModuleOptions(),
+		moduleOptions: getWorkspaceAuditLogModuleOptions(records),
 		query: filters.query,
-		recordCount: WorkspaceAuditLogRecords.length,
+		recordCount: records.length,
 		resetFilters,
 		severityFilter: filters.severity,
 		table,

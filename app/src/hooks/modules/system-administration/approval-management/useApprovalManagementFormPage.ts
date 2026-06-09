@@ -15,10 +15,13 @@ import {
 } from "@/app/src/constants/modules/system-administration/approval-management/ApprovalManagementConstants";
 import {
 	ApprovalApproverOptions,
+	createAmountConditionApprovalRoutingRules,
 	createApprovalManagementFormValues,
 	createApprovalManagementInitialFormValues,
 	createApprovalManagementRecord,
 	createApprovalStagesForCount,
+	createStandardApprovalRoutingRules,
+	syncApprovalRoutingRulesForStages,
 	updateApprovalManagementRecord,
 } from "@/app/src/data/modules/system-administration/approval-management/ApprovalManagementData";
 import type {
@@ -26,7 +29,9 @@ import type {
 	ApprovalManagementFormErrors,
 	ApprovalManagementFormValues,
 	ApprovalManagementModuleCode,
+	ApprovalRoutingRuleFormValues,
 	ApprovalStageFormValues,
+	ApprovalWorkflowFeatureKey,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
 import { validateApprovalManagementForm } from "@/app/src/validations/modules/system-administration/approval-management/ApprovalManagementValidation";
 import { useApprovalManagementStore } from "@/app/src/hooks/modules/system-administration/approval-management/useApprovalManagement";
@@ -80,11 +85,16 @@ export function useApprovalManagementFormPage() {
 		setValues((current) => {
 			if (field === "stageCount") {
 				const stageCount = Number(value);
+				const stages = createApprovalStagesForCount(current.stages, stageCount);
 
 				return {
 					...current,
 					stageCount,
-					stages: createApprovalStagesForCount(current.stages, stageCount),
+					stages,
+					routingRules: syncApprovalRoutingRulesForStages(
+						current.routingRules,
+						stages,
+					),
 				};
 			}
 
@@ -133,6 +143,101 @@ export function useApprovalManagementFormPage() {
 		setErrors((current) => clearStageError(current, stageId, field));
 	}
 
+	function updateAmountConditionMode(hasAmountCondition: boolean) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			routingRules: hasAmountCondition
+				? createAmountConditionApprovalRoutingRules(
+						current.routingRules,
+						current.stages,
+					)
+				: createStandardApprovalRoutingRules(
+						current.routingRules,
+						current.stages,
+					),
+		}));
+		setErrors((current) => ({
+			...current,
+			routingRules: undefined,
+		}));
+	}
+
+	function updateRoutingRuleField<
+		TKey extends keyof ApprovalRoutingRuleFormValues,
+	>(
+		routingRuleId: string,
+		field: TKey,
+		value: ApprovalRoutingRuleFormValues[TKey],
+	) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			routingRules: current.routingRules.map((rule) => {
+				if (rule.id !== routingRuleId) {
+					return rule;
+				}
+
+				if (field === "basis" && value === "default") {
+					return rule;
+				}
+
+				return { ...rule, [field]: value };
+			}),
+		}));
+		setErrors((current) => clearRoutingRuleError(current, routingRuleId, field));
+	}
+
+	function toggleRoutingRuleStage(routingRuleId: string, stageId: string) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			routingRules: current.routingRules.map((rule) => {
+				if (rule.id !== routingRuleId) {
+					return rule;
+				}
+
+				const hasStage = rule.stageIds.includes(stageId);
+
+				return {
+					...rule,
+					stageIds: hasStage
+						? rule.stageIds.filter((currentStageId) => currentStageId !== stageId)
+						: [...rule.stageIds, stageId],
+				};
+			}),
+		}));
+		setErrors((current) =>
+			clearRoutingRuleError(current, routingRuleId, "stageIds"),
+		);
+	}
+
+	function updateWorkflowFeature(
+		feature: ApprovalWorkflowFeatureKey,
+		enabled: boolean,
+	) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			workflowFeatures: {
+				...current.workflowFeatures,
+				[feature]: enabled,
+			},
+		}));
+	}
+
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
@@ -172,6 +277,9 @@ export function useApprovalManagementFormPage() {
 		editHref,
 		errors,
 		existingWorkflow,
+		hasAmountCondition: values.routingRules.some(
+			(rule) => rule.basis === "amount",
+		),
 		handleInputChange,
 		handleModuleCodeChange,
 		handleStatusChange,
@@ -180,8 +288,12 @@ export function useApprovalManagementFormPage() {
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
+		toggleRoutingRuleStage,
+		updateAmountConditionMode,
 		updateField,
+		updateRoutingRuleField,
 		updateStageField,
+		updateWorkflowFeature,
 		values,
 	};
 }
@@ -205,6 +317,29 @@ function clearStageError<TKey extends keyof ApprovalStageFormValues>(
 		stages: {
 			...errors.stages,
 			[stageId]: nextStageErrors,
+		},
+	};
+}
+
+function clearRoutingRuleError<TKey extends keyof ApprovalRoutingRuleFormValues>(
+	errors: ApprovalManagementFormErrors,
+	routingRuleId: string,
+	field: TKey,
+): ApprovalManagementFormErrors {
+	if (!errors.routingRules?.[routingRuleId]) {
+		return errors;
+	}
+
+	const nextRoutingRuleErrors = {
+		...errors.routingRules[routingRuleId],
+		[field]: undefined,
+	};
+
+	return {
+		...errors,
+		routingRules: {
+			...errors.routingRules,
+			[routingRuleId]: nextRoutingRuleErrors,
 		},
 	};
 }

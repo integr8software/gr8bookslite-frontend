@@ -14,6 +14,7 @@ import { TransactionTypeTableColumns } from "@/app/src/constants/modules/mainten
 import type {
 	TransactionType,
 	TransactionTypeTableColumnKey,
+	TransactionTypeTableRecord,
 } from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
 
 export function useTransactionTypeTable(transactionTypes: TransactionType[]) {
@@ -22,9 +23,30 @@ export function useTransactionTypeTable(transactionTypes: TransactionType[]) {
 		pageSize: 5,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "type", desc: false },
+		{ id: "name", desc: false },
 	]);
-	const columns = useMemo<ColumnDef<TransactionType>[]>(
+	const tableData = useMemo<TransactionTypeTableRecord[]>(
+		() =>
+			transactionTypes.map((transactionType) => {
+				const legacyTransactionType = transactionType as TransactionType & {
+					type?: string;
+				};
+
+				return {
+					...transactionType,
+					name:
+						transactionType.name ??
+						legacyTransactionType.type ??
+						transactionType.description,
+					accountLabel:
+						transactionType.accountTitle || "No account selected",
+					moduleLabel:
+						transactionType.moduleName || "No module selected",
+				};
+			}),
+		[transactionTypes],
+	);
+	const columns = useMemo<ColumnDef<TransactionTypeTableRecord>[]>(
 		() =>
 			TransactionTypeTableColumns.map((column) => {
 				if (!("key" in column)) {
@@ -47,7 +69,7 @@ export function useTransactionTypeTable(transactionTypes: TransactionType[]) {
 
 	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
 	return useReactTable({
-		data: transactionTypes,
+		data: tableData,
 		columns,
 		state: {
 			pagination,
@@ -65,7 +87,7 @@ function createTransactionTypeColumn(
 	key: TransactionTypeTableColumnKey,
 	header: string,
 	className: string,
-): ColumnDef<TransactionType> {
+): ColumnDef<TransactionTypeTableRecord> {
 	return {
 		accessorKey: key,
 		header,

@@ -11,7 +11,6 @@ type TransactionTypeStoreState = {
 	transactionTypes: TransactionType[];
 	addTransactionType: (transactionType: TransactionType) => void;
 	updateTransactionType: (transactionType: TransactionType) => void;
-	deleteTransactionType: (transactionTypeId: string) => void;
 	isLoading: boolean;
 	isMutating: boolean;
 };
@@ -65,19 +64,6 @@ export function useTransactionTypeStore<
 		},
 	});
 
-	const deleteTransactionTypeMutation = useMutation({
-		mutationFn: async (transactionTypeId: string) => transactionTypeId,
-		onSuccess: (transactionTypeId) => {
-			updateCachedTransactionTypes((transactionTypes) =>
-				transactionTypes.filter((transactionType) => transactionType.id !== transactionTypeId),
-			);
-			toast.success("Transaction type deleted.");
-		},
-		onError: () => {
-			toast.error("Could not delete transaction type. Please try again.");
-		},
-	});
-
 	const state = useMemo<TransactionTypeStoreState>(
 		() => ({
 			transactionTypes: transactionTypesQuery.data,
@@ -85,17 +71,13 @@ export function useTransactionTypeStore<
 				addTransactionTypeMutation.mutate(transactionType),
 			updateTransactionType: (transactionType) =>
 				updateTransactionTypeMutation.mutate(transactionType),
-			deleteTransactionType: (transactionTypeId) =>
-				deleteTransactionTypeMutation.mutate(transactionTypeId),
 			isLoading: transactionTypesQuery.isLoading,
 			isMutating:
 				addTransactionTypeMutation.isPending ||
-				updateTransactionTypeMutation.isPending ||
-				deleteTransactionTypeMutation.isPending,
+				updateTransactionTypeMutation.isPending,
 		}),
 		[
 			addTransactionTypeMutation,
-			deleteTransactionTypeMutation,
 			transactionTypesQuery.data,
 			transactionTypesQuery.isLoading,
 			updateTransactionTypeMutation,

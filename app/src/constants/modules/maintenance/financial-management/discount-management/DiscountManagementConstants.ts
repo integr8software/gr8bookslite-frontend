@@ -1,5 +1,5 @@
 export const DiscountManagementHref =
-	"/maintenance/financial-management/discount-management";
+	"/maintenance/discount-management";
 
 export const DiscountManagementTablePaginationStorageKey =
 	"maintenance:financial-management:discount-management";

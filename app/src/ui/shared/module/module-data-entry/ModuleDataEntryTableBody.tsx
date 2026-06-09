@@ -97,7 +97,7 @@ export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 							isRowSelected(selection, row.id) &&
 								"bg-skyblue/10 ring-2 ring-inset ring-skyblue/35",
 							isRowNumberColumnFixed &&
-								"sticky left-0 z-40 w-[5.25rem] min-w-[5.25rem] bg-offwhite shadow-[6px_0_12px_rgba(33,39,56,0.08)]",
+								"sticky left-0 z-40 w-[5rem] min-w-[5rem] bg-offwhite shadow-[6px_0_12px_rgba(33,39,56,0.08)]",
 							rowDropTargetId === row.id &&
 								(isDropAfter(draggedRowId, row.id, orderedRowIds)
 									? "border-b-4 border-b-skyblue"
@@ -172,43 +172,63 @@ export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 								)
 							: null}
 					</td>
-					{columns.map((column, columnIndex) => (
-						<td
-							key={column.id}
-							data-column-id={column.id}
-							data-column-index={columnIndex}
-							data-entry-cell
-							data-row-id={row.id}
-							data-row-index={index}
-							onClick={(event) => {
-								onSelectionChange(event.currentTarget);
-							}}
-							onFocus={(event) => {
-								onSelectionChange(event.currentTarget);
-							}}
-							tabIndex={0}
-							className={joinClasses(
-								moduleDataEntryCellClassName,
-								"transition focus-visible:relative focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-skyblue/45",
-								isCellSelected(selection, row.id, column.id) &&
-									"relative z-10 bg-skyblue/8 ring-2 ring-inset ring-skyblue/35",
-								rowDropTargetId === row.id &&
-									(isDropAfter(draggedRowId, row.id, orderedRowIds)
-										? "border-b-4 border-b-skyblue"
-										: "border-t-4 border-t-skyblue"),
-								draggedColumnId === column.id && "opacity-60",
-								columnDropTargetId === column.id &&
-									(isDropAfter(draggedColumnId, column.id, orderedColumnIds)
-										? "border-r-4 border-r-coralpink"
-										: "border-l-4 border-l-coralpink"),
-							)}
-							style={createColumnWidthStyle(column.width)}
-						>
-							{column.renderCell(row, index, {
-								focusableTabIndex: -1,
-							})}
-						</td>
-					))}
+					{columns.map((column, columnIndex) => {
+						const isActiveCell =
+							selection?.type === "cell" &&
+							selection.rowId === row.id &&
+							selection.columnId === column.id;
+						const isSelectedCell = isCellSelected(selection, row.id, column.id);
+
+						return (
+							<td
+								key={column.id}
+								data-column-id={column.id}
+								data-column-index={columnIndex}
+								data-entry-cell
+								data-row-id={row.id}
+								data-row-index={index}
+								onClick={(event) => {
+									onSelectionChange(event.currentTarget);
+								}}
+								onFocus={(event) => {
+									onSelectionChange(event.currentTarget);
+								}}
+								tabIndex={0}
+								className={joinClasses(
+									moduleDataEntryCellClassName,
+									"transition focus-visible:relative focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-skyblue/45",
+									isActiveCell
+										? "relative z-30 bg-skyblue/18"
+										: isSelectedCell &&
+												"relative z-10 bg-skyblue/8 ring-2 ring-inset ring-skyblue/35",
+									rowDropTargetId === row.id &&
+										(isDropAfter(draggedRowId, row.id, orderedRowIds)
+											? "border-b-4 border-b-skyblue"
+											: "border-t-4 border-t-skyblue"),
+									draggedColumnId === column.id && "opacity-60",
+									columnDropTargetId === column.id &&
+										(isDropAfter(
+											draggedColumnId,
+											column.id,
+											orderedColumnIds,
+										)
+											? "border-r-4 border-r-coralpink"
+											: "border-l-4 border-l-coralpink"),
+								)}
+								style={createColumnWidthStyle(column.width)}
+							>
+								{isActiveCell ? (
+									<span
+										aria-hidden="true"
+										className="pointer-events-none absolute inset-0 z-30 rounded-[2px] outline outline-2 -outline-offset-2 outline-skyblue ring-2 ring-inset ring-skyblue shadow-[0_0_0_2px_rgb(var(--skyblue-rgb)/0.16)]"
+									/>
+								) : null}
+								{column.renderCell(row, index, {
+									focusableTabIndex: -1,
+								})}
+							</td>
+						);
+					})}
 				</tr>
 			))}
 		</tbody>

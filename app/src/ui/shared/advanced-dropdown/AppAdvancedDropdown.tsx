@@ -39,6 +39,12 @@ export type AppAdvancedDropdownAddAction = {
 
 export type AppAdvancedDropdownProps = {
 	addAction?: AppAdvancedDropdownAddAction;
+	"aria-describedby"?: string;
+	"aria-invalid"?: boolean;
+	"aria-labelledby"?: string;
+	ariaDescribedBy?: string;
+	ariaInvalid?: boolean;
+	ariaLabelledBy?: string;
 	className?: string;
 	disabled?: boolean;
 	emptyMessage?: string;
@@ -52,6 +58,7 @@ export type AppAdvancedDropdownProps = {
 	readOnly?: boolean;
 	searchPlaceholder?: string;
 	selectionMode?: "single" | "multiple";
+	showSelectionIndicator?: boolean;
 	showSelectedDetails?: boolean;
 	value: string | string[];
 	onChange: (value: string | string[]) => void;
@@ -65,6 +72,12 @@ const DropdownMenuViewportPadding = 8;
 
 export function AppAdvancedDropdown({
 	addAction,
+	"aria-describedby": ariaDescribedByAttribute,
+	"aria-invalid": ariaInvalidAttribute,
+	"aria-labelledby": ariaLabelledByAttribute,
+	ariaDescribedBy,
+	ariaInvalid,
+	ariaLabelledBy,
 	className,
 	disabled = false,
 	emptyMessage = "No options found.",
@@ -78,6 +91,7 @@ export function AppAdvancedDropdown({
 	readOnly = false,
 	searchPlaceholder = "Search options",
 	selectionMode = "single",
+	showSelectionIndicator = true,
 	showSelectedDetails = false,
 	value,
 	onChange,
@@ -148,6 +162,10 @@ export function AppAdvancedDropdown({
 		: undefined;
 	const canClearSelection =
 		selectedValues.length > 0 && isClearable && !isInteractionLocked;
+	const resolvedAriaDescribedBy =
+		ariaDescribedByAttribute ?? ariaDescribedBy;
+	const resolvedAriaInvalid = ariaInvalidAttribute ?? ariaInvalid;
+	const resolvedAriaLabelledBy = ariaLabelledByAttribute ?? ariaLabelledBy;
 
 	useEffect(() => {
 		if (!isOpen) {
@@ -171,6 +189,43 @@ export function AppAdvancedDropdown({
 			document.removeEventListener("mousedown", handlePointerDown);
 		};
 	}, [isOpen]);
+
+	useEffect(() => {
+		if (typeof document === "undefined") {
+			return;
+		}
+
+		const labels = Array.from(
+			document.querySelectorAll<HTMLLabelElement>(
+				`label[for="${escapeCssIdentifier(controlId)}"]`,
+			),
+		);
+
+		if (labels.length === 0) {
+			return;
+		}
+
+		function focusControl(event: MouseEvent) {
+			if (isInteractionLocked) {
+				return;
+			}
+
+			event.preventDefault();
+			rootRef.current
+				?.querySelector<HTMLElement>(".app-advanced-dropdown-control")
+				?.focus();
+		}
+
+		labels.forEach((label) => {
+			label.addEventListener("click", focusControl);
+		});
+
+		return () => {
+			labels.forEach((label) => {
+				label.removeEventListener("click", focusControl);
+			});
+		};
+	}, [controlId, isInteractionLocked]);
 
 	useEffect(() => {
 		if (!isOpen || !menuPortal) {
@@ -428,6 +483,7 @@ export function AppAdvancedDropdown({
 							level={0}
 							option={option}
 							selectedValues={selectedValueSet}
+							showSelectionIndicator={showSelectionIndicator}
 							onActive={setActiveOptionValue}
 							onSelect={selectOption}
 						/>
@@ -455,20 +511,23 @@ export function AppAdvancedDropdown({
 				role="combobox"
 				aria-controls={listboxId}
 				aria-activedescendant={isOpen ? activeOptionId : undefined}
+				aria-describedby={resolvedAriaDescribedBy}
 				aria-disabled={isInteractionLocked}
 				aria-expanded={isOpen}
 				aria-haspopup="listbox"
+				aria-invalid={resolvedAriaInvalid || undefined}
+				aria-labelledby={resolvedAriaLabelledBy}
 				tabIndex={isInteractionLocked ? -1 : 0}
 				onClick={handleControlClick}
 				onKeyDown={handleComboboxKeyDown}
 				className={joinClasses(
-					"app-advanced-dropdown-control w-full rounded-lg border border-darknavy/10 bg-white text-sm text-darknavy outline-none transition",
+					"app-advanced-dropdown-control w-full rounded-lg border border-darknavy/10 text-sm outline-none transition",
 					isMultiple ? "min-h-11 px-2 py-1.5" : "h-11 px-3",
 					disabled
-						? "pointer-events-none cursor-not-allowed shadow-none"
+						? "pointer-events-none cursor-not-allowed bg-darknavy/5 text-darknavy/35 shadow-none"
 						: readOnly
-							? "pointer-events-none cursor-default shadow-none"
-							: "cursor-pointer focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",
+							? "pointer-events-none cursor-default bg-darknavy/[0.03] text-darknavy shadow-none"
+							: "cursor-pointer bg-white text-darknavy focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",
 				)}
 			>
 				<div
@@ -492,6 +551,7 @@ export function AppAdvancedDropdown({
 									<SelectionChip
 										key={option.value}
 										disabled={disabled}
+										removable={!isInteractionLocked}
 										option={option}
 										onRemove={() => removeOption(option.value)}
 									/>
@@ -556,6 +616,7 @@ function OptionRow({
 	level,
 	option,
 	selectedValues,
+	showSelectionIndicator,
 	onActive,
 	onSelect,
 }: {
@@ -564,6 +625,7 @@ function OptionRow({
 	level: number;
 	option: AppAdvancedDropdownOption;
 	selectedValues: Set<string>;
+	showSelectionIndicator: boolean;
 	onActive: (value: string) => void;
 	onSelect: (option: AppAdvancedDropdownOption) => void;
 }) {
@@ -573,11 +635,13 @@ function OptionRow({
 	const optionId = getOptionId(option);
 	const content = (
 		<>
-			<span className="flex h-5 w-5 shrink-0 items-center justify-center">
-				{isSelected ? (
-					<Check className="h-4 w-4 text-skyblue" aria-hidden="true" />
-				) : null}
-			</span>
+			{showSelectionIndicator ? (
+				<span className="flex h-5 w-5 shrink-0 items-center justify-center">
+					{isSelected ? (
+						<Check className="h-4 w-4 text-skyblue" aria-hidden="true" />
+					) : null}
+				</span>
+			) : null}
 			<span className="grid min-w-0 flex-1 gap-0.5">
 				<span className="truncate text-sm font-semibold">{option.name}</span>
 				{option.label ? (
@@ -666,6 +730,7 @@ function OptionRow({
 						level={level + 1}
 						option={child}
 						selectedValues={selectedValues}
+						showSelectionIndicator={showSelectionIndicator}
 						onActive={onActive}
 						onSelect={onSelect}
 					/>
@@ -677,10 +742,12 @@ function OptionRow({
 
 function SelectionChip({
 	disabled,
+	removable,
 	option,
 	onRemove,
 }: {
 	disabled: boolean;
+	removable: boolean;
 	option: AppAdvancedDropdownOption;
 	onRemove: () => void;
 }) {
@@ -692,19 +759,21 @@ function SelectionChip({
 			)}
 		>
 			<span className="min-w-0 truncate">{option.name}</span>
-			<button
-				type="button"
-				disabled={disabled}
-				onClick={(event) => {
-					event.preventDefault();
-					event.stopPropagation();
-					onRemove();
-				}}
-				className="shrink-0 text-darknavy/55 transition hover:text-darknavy disabled:pointer-events-none"
-				aria-label={`Remove ${option.name}`}
-			>
-				<X className="h-3 w-3" aria-hidden="true" />
-			</button>
+			{removable ? (
+				<button
+					type="button"
+					disabled={disabled}
+					onClick={(event) => {
+						event.preventDefault();
+						event.stopPropagation();
+						onRemove();
+					}}
+					className="shrink-0 text-darknavy/55 transition hover:text-darknavy disabled:pointer-events-none"
+					aria-label={`Remove ${option.name}`}
+				>
+					<X className="h-3 w-3" aria-hidden="true" />
+				</button>
+			) : null}
 		</span>
 	);
 }
@@ -861,6 +930,14 @@ function getOptionClassName(
 		isActive && !isDisabled && "bg-skyblue/15 ring-1 ring-inset ring-skyblue/25",
 		isDisabled && "cursor-not-allowed opacity-45",
 	);
+}
+
+function escapeCssIdentifier(value: string) {
+	if (typeof CSS !== "undefined" && CSS.escape) {
+		return CSS.escape(value);
+	}
+
+	return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
 function joinClasses(...classes: Array<string | false | undefined>) {

@@ -1,7 +1,7 @@
 import type { TermManagementDatemode } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 
 export const TermManagementHref =
-	"/maintenance/financial-management/term-management";
+	"/maintenance/term-management";
 
 export const TermManagementTablePaginationStorageKey =
 	"maintenance:financial-management:term-management";

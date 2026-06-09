@@ -600,13 +600,13 @@ function AccessChip({ item }: { item: WorkspaceUsersAccessItem }) {
 		<span
 			className={`max-w-[12rem] truncate rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ${
 				isSatellite
-					? "bg-indigo-500/10 text-indigo-950/75 ring-indigo-400/20"
-					: "bg-darknavy/5 text-darknavy/75 ring-darknavy/8"
+					? "bg-[color-mix(in_srgb,var(--skyblue)_16%,var(--background))] text-[var(--foreground)] ring-[color-mix(in_srgb,var(--skyblue)_28%,transparent)]"
+					: "bg-[color-mix(in_srgb,var(--foreground)_8%,var(--background))] text-[color-mix(in_srgb,var(--foreground)_82%,transparent)] ring-[color-mix(in_srgb,var(--foreground)_12%,transparent)]"
 			}`}
 			title={`${item.type}: ${item.name}`}
 		>
 			{item.name}
-			<span className="ml-1 text-[0.65rem] uppercase text-darknavy/45">
+			<span className="ml-1 text-[0.65rem] uppercase text-[color-mix(in_srgb,var(--foreground)_56%,transparent)]">
 				{isSatellite ? "Sat" : "Br"}
 			</span>
 		</span>

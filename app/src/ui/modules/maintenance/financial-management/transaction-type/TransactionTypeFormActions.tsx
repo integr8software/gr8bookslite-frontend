@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Edit3, Save, Trash2, X } from "lucide-react";
+import { ArrowLeft, Edit3, Save, X } from "lucide-react";
 import { TransactionTypeHref } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
 import {
 	moduleHeaderActionClassNames,
@@ -13,14 +13,12 @@ type TransactionTypeFormActionsProps = {
 	isReadonly: boolean;
 	mode: TransactionTypeActionMode;
 	transactionType?: TransactionType;
-	onDelete: () => void;
 };
 
 export function TransactionTypeFormActions({
 	isReadonly,
 	mode,
 	transactionType,
-	onDelete,
 }: TransactionTypeFormActionsProps) {
 	return (
 		<>
@@ -41,16 +39,6 @@ export function TransactionTypeFormActions({
 					<Edit3 className="h-4 w-4" aria-hidden="true" />
 					Edit
 				</Link>
-			) : null}
-			{transactionType ? (
-				<button
-					type="button"
-					onClick={onDelete}
-					className={moduleHeaderActionClassNames.danger}
-				>
-					<Trash2 className="h-4 w-4" aria-hidden="true" />
-					Delete
-				</button>
 			) : null}
 			{mode === "edit" && transactionType ? (
 				<Link

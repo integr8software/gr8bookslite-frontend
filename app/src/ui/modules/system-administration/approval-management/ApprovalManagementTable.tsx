@@ -37,7 +37,7 @@ export function ApprovalManagementTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No approval workflows found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[92rem]"
+				minWidthClassName="min-w-[100rem]"
 				paginationStorageKey={ApprovalManagementPaginationStorageKey}
 				table={table}
 				toolbar={

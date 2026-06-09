@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import type { ModuleDataEntrySelection } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export const moduleDataEntryRowHeaderClassName =
-	"w-[5.25rem] min-w-[5.25rem] border border-darknavy/10 bg-offwhite px-2 py-1 text-center text-xs font-semibold text-darknavy/65";
+	"w-[5rem] min-w-[5rem] border border-darknavy/10 bg-offwhite px-2 py-1 text-center text-xs font-semibold text-darknavy/65";
 
 export const moduleDataEntryCellClassName =
 	"border border-darknavy/10 bg-white p-0 align-middle";
@@ -24,12 +24,17 @@ export function isCellEditorElement(target: HTMLElement) {
 	);
 }
 
-export function isPlusKey(key: string) {
-	return key === "+" || key === "=";
+export function isPlusKey(key: string, code?: string) {
+	return key === "+" || key === "=" || code === "NumpadAdd";
 }
 
-export function isMinusKey(key: string) {
-	return key === "-" || key === "_";
+export function isMinusKey(key: string, code?: string) {
+	return (
+		key === "-" ||
+		key === "_" ||
+		code === "Minus" ||
+		code === "NumpadSubtract"
+	);
 }
 
 export function isCellSelected(

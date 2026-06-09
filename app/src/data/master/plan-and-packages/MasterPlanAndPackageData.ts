@@ -28,7 +28,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			"Entry accounting package with dashboard, financial maintenance, cash receipts, disbursements, journals, and reporting modules.",
 		featureIds: [
 			"dashboard-overview",
-			"maintenance-financial-management-charts-of-accounts",
+			"maintenance-charts-of-accounts",
 			"cash-receipt-official-receipt",
 			"cash-disbursement-disbursement-voucher",
 			"general-journal-journal-voucher",
@@ -195,7 +195,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 			"Promotional upgrade package that discounts base subscription pricing while retaining standard module access and scale rules.",
 		featureIds: [
 			"dashboard-overview",
-			"maintenance-financial-management-discount-management",
+			"maintenance-discount-management",
 			"sales-sales-quotation",
 			"sales-sales-invoice",
 			"inventory-inventory-account",

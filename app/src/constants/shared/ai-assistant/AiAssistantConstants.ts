@@ -7,6 +7,9 @@ export const AiAssistantChatMessagesStorageKey =
 export const AiAssistantChatOpenStorageKey =
 	"gr8books.aiAssistant.isOpen";
 
+export const AiAssistantLauncherPositionStorageKey =
+	"gr8books.aiAssistant.launcherPosition";
+
 export const AiAssistantChatStorageVersionKey =
 	"gr8books.aiAssistant.chatStorageVersion";
 

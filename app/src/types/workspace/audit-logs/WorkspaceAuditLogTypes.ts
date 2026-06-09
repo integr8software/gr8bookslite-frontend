@@ -5,6 +5,8 @@ export type WorkspaceAuditLogAction =
 	| "Create"
 	| "Delete"
 	| "Export"
+	| "Login"
+	| "Logout"
 	| "Reject"
 	| "Update"
 	| "View";

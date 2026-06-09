@@ -986,6 +986,39 @@ export interface UpdateCompanyUnitDto {
   parentUnitId?: number;
 }
 
+export interface WorkspaceAuditLogResponseDto {
+  id: string;
+  /** @nullable */
+  companyId: number | null;
+  /** @nullable */
+  companyName: string | null;
+  /** @nullable */
+  actorUserId: number | null;
+  actorName: string;
+  actorRole: string;
+  action: string;
+  entityType: string;
+  /** @nullable */
+  entityId: string | null;
+  description: string;
+  /** @nullable */
+  ipAddress: string | null;
+  module: string;
+  branchId: string;
+  branchName: string;
+  severity: string;
+  createdAt: string;
+}
+
+export interface RecordWorkspaceActivityDto {
+  /** @minLength 1 */
+  path: string;
+  /** @minLength 1 */
+  module: string;
+  branchId?: string;
+  branchName?: string;
+}
+
 export interface WorkspaceUserAssignmentDto {
   /** @minimum 1 */
   companyId: number;
@@ -1274,4 +1307,3 @@ moduleCodes: string;
 };
 
 export type AiAssistantControllerChatV1201 = { [key: string]: unknown };
-

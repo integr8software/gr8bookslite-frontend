@@ -289,7 +289,7 @@ export function useMainLayout() {
       ? "account"
       : hasMasterAccess
         ? "master"
-        : hasWorkspaceAccess && isWorkspaceRoute
+        : authProfile && isWorkspaceRoute
           ? "workspace"
           : "company";
   const workspaceCompanies = useMemo(

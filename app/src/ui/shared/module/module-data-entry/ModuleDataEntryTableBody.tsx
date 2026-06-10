@@ -229,6 +229,10 @@ export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 							</td>
 						);
 					})}
+					<td
+						aria-hidden="true"
+						className="app-theme-field min-w-0 border p-0"
+					/>
 				</tr>
 			))}
 		</tbody>

@@ -174,6 +174,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 				isRowNumberColumnFixed={isRowNumberColumnFixed}
 				rows={rows}
 				scrollContainerRef={scrollContainerRef}
+				onAddRows={handleAddRows}
 				onAutoColumnWidth={onAutoColumnWidth}
 				onClearCell={onClearCell}
 				onClearRow={onClearRow}

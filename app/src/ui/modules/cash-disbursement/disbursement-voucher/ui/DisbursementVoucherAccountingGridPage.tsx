@@ -87,13 +87,13 @@ const DefaultGridColumnLabels: Record<GridColumnId, string> = {
   taxRate: "Tax Rate",
 };
 
-const GridColumnWidthClassNames: Record<GridColumnId, string> = {
-  accountCode: "w-[12rem]",
-  accountName: "w-[16rem]",
-  credit: "w-[11rem]",
-  debit: "w-[11rem]",
-  particulars: "w-[22rem]",
-  taxRate: "w-[10rem]",
+const DefaultGridColumnWidths: Record<GridColumnId, number> = {
+  accountCode: 190,
+  accountName: 240,
+  credit: 165,
+  debit: 165,
+  particulars: 330,
+  taxRate: 150,
 };
 
 const AccountingImportTemplateHeaders = [
@@ -145,6 +145,10 @@ export function DisbursementVoucherAccountingGridPage() {
   const [visibleColumnIds, setVisibleColumnIds] =
     useState<GridColumnId[]>(DefaultGridColumnOrder);
   const [columnLabels, setColumnLabels] = useState(DefaultGridColumnLabels);
+  const [columnWidths, setColumnWidths] = useState(DefaultGridColumnWidths);
+  const [autoWidthColumnIds, setAutoWidthColumnIds] = useState<GridColumnId[]>(
+    [],
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -208,13 +212,28 @@ export function DisbursementVoucherAccountingGridPage() {
   const visibleColumnOrder = columnOrder.filter((columnId) =>
     visibleColumnIds.includes(columnId),
   );
+  const resolvedColumnWidths = useMemo<Record<GridColumnId, number>>(() => {
+    const nextWidths = { ...columnWidths };
+
+    autoWidthColumnIds.forEach((columnId) => {
+      nextWidths[columnId] = calculateGridColumnFitWidth({
+        columnId,
+        columnLabels,
+        rows,
+      });
+    });
+
+    return nextWidths;
+  }, [autoWidthColumnIds, columnLabels, columnWidths, rows]);
   const columns: ModuleDataEntryColumn<EditableGridRow>[] =
     visibleColumnOrder.map((columnId) => ({
       header: columnLabels[columnId],
       id: columnId,
       isRemovable: !ProtectedGridColumnIds.has(columnId),
       renderCell: (row) => renderGridCell(row, columnId),
-      widthClassName: GridColumnWidthClassNames[columnId],
+      width: resolvedColumnWidths[columnId],
+      widthClassName: "",
+      widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
     }));
   const columnOptions: ModuleDataEntryColumnOption[] = columnOrder.map(
     (columnId) => ({
@@ -222,6 +241,8 @@ export function DisbursementVoucherAccountingGridPage() {
       isHideable: !ProtectedGridColumnIds.has(columnId),
       isVisible: visibleColumnIds.includes(columnId),
       label: columnLabels[columnId] || DefaultGridColumnLabels[columnId],
+      width: resolvedColumnWidths[columnId],
+      widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
     }),
   );
   const previewValues = session
@@ -239,13 +260,16 @@ export function DisbursementVoucherAccountingGridPage() {
     field: keyof Omit<EditableGridRow, "id" | "taxDetails">,
     value: string,
   ) {
+    const nextValue =
+      field === "debit" || field === "credit" ? formatAmountInput(value) : value;
+
     setRows((currentRows) =>
       currentRows.map((row) => {
         if (row.id !== rowId) {
           return row;
         }
 
-        const nextRow = { ...row, [field]: value };
+        const nextRow = { ...row, [field]: nextValue };
 
         if (field === "debit" || field === "credit" || field === "taxRate") {
           const amount = normalizeAmount(nextRow.debit || nextRow.credit);
@@ -354,6 +378,47 @@ export function DisbursementVoucherAccountingGridPage() {
     }));
   }
 
+  function updateColumnWidth(columnId: string, width: number) {
+    if (!isGridColumnId(columnId)) {
+      return;
+    }
+
+    setAutoWidthColumnIds((currentColumnIds) =>
+      currentColumnIds.filter((currentColumnId) => currentColumnId !== columnId),
+    );
+    setColumnWidths((currentWidths) => ({
+      ...currentWidths,
+      [columnId]: Math.min(800, Math.max(50, Math.round(width))),
+    }));
+  }
+
+  function autoSizeColumn(columnId: string) {
+    if (!isGridColumnId(columnId)) {
+      return;
+    }
+
+    setAutoWidthColumnIds((currentColumnIds) =>
+      currentColumnIds.includes(columnId)
+        ? currentColumnIds
+        : [...currentColumnIds, columnId],
+    );
+  }
+
+  function fitColumnWidth(columnId: string) {
+    if (!isGridColumnId(columnId)) {
+      return;
+    }
+
+    updateColumnWidth(
+      columnId,
+      calculateGridColumnFitWidth({
+        columnId,
+        columnLabels,
+        rows,
+      }),
+    );
+  }
+
   function moveColumn(fromColumnId: string, toColumnId: string) {
     setColumnOrder((currentOrder) => {
       const currentIndex = currentOrder.indexOf(fromColumnId as GridColumnId);
@@ -419,7 +484,7 @@ export function DisbursementVoucherAccountingGridPage() {
         <select
           value={row.taxRate}
           onChange={(event) => updateRow(row.id, "taxRate", event.target.value)}
-          className={gridCellControlClassName()}
+          className={gridCellControlClassName("app-select-control")}
         >
           {TaxRateOptions.map((option) => (
             <option key={option} value={option}>
@@ -435,7 +500,7 @@ export function DisbursementVoucherAccountingGridPage() {
         <GridEntryInput
           value={row[columnId]}
           onChange={(value) => updateRow(row.id, columnId, value)}
-          type="number"
+          inputMode="decimal"
           extraClassName="text-right"
         />
       );
@@ -671,6 +736,11 @@ export function DisbursementVoucherAccountingGridPage() {
               </div>
             </div>
 
+            <VoucherAccountingGridHeader
+              selectedTransaction={selectedTransaction}
+              values={session.values}
+            />
+
             <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <SummaryCard
                 label="Records"
@@ -703,9 +773,11 @@ export function DisbursementVoucherAccountingGridPage() {
                 rows={rows}
                 title="Data Entry"
                 onAddRows={addBlankRows}
+                onAutoColumnWidth={autoSizeColumn}
                 onClearRows={clearRows}
                 onDuplicateRow={duplicateRow}
                 onExport={handleExportRows}
+                onFitColumnWidth={fitColumnWidth}
                 onImport={() => setIsImportDialogOpen(true)}
                 onInsertRow={insertRow}
                 onMoveColumn={moveColumn}
@@ -714,6 +786,7 @@ export function DisbursementVoucherAccountingGridPage() {
                 onRemoveRow={removeRow}
                 onToggleColumnVisibility={toggleColumnVisibility}
                 onUpdateColumnHeader={updateColumnHeader}
+                onUpdateColumnWidth={updateColumnWidth}
               />
             </div>
 
@@ -1868,13 +1941,81 @@ function SummaryCard({
   );
 }
 
+function VoucherAccountingGridHeader({
+  selectedTransaction,
+  values,
+}: {
+  selectedTransaction?: DisbursementTransactionRecord;
+  values: DisbursementVoucherFormValues;
+}) {
+  const headerFields = [
+    {
+      label: "Voucher No.",
+      value: values.voucherNo || "Draft",
+    },
+    {
+      label: "Voucher Date",
+      value: values.voucherDate ? formatDateLabel(values.voucherDate) : "-",
+    },
+    {
+      label: "Payee",
+      value: values.vceName || selectedTransaction?.payee || "-",
+    },
+    {
+      label: "Reference",
+      value: values.voucherReferenceNo || selectedTransaction?.transactionNo || "-",
+    },
+    {
+      label: "Payment",
+      value: values.paymentMethod || selectedTransaction?.paymentMethod || "-",
+    },
+    {
+      label: "Amount",
+      value: formatCurrency(Number(values.amount || selectedTransaction?.amount || 0)),
+    },
+  ];
+
+  return (
+    <section className="mt-6 overflow-hidden rounded-lg border border-darknavy/10 bg-offwhite/45">
+      <div className="flex flex-col gap-3 border-b border-darknavy/10 bg-white px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">
+            Disbursement Voucher
+          </p>
+          <h2 className="mt-1 truncate text-xl font-semibold text-darknavy">
+            {values.voucherNo || "New Voucher"} Accounting Entries
+          </h2>
+        </div>
+        <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-4 py-2 text-sm font-semibold text-skyblue sm:w-auto">
+          <FileText className="h-4 w-4" aria-hidden="true" />
+          {values.status || selectedTransaction?.status || "Draft"}
+        </div>
+      </div>
+      <div className="grid gap-px bg-darknavy/10 sm:grid-cols-2 xl:grid-cols-3">
+        {headerFields.map((field) => (
+          <div key={field.label} className="bg-white px-4 py-3 sm:px-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-darknavy/42">
+              {field.label}
+            </p>
+            <p className="mt-1 min-h-6 truncate text-sm font-semibold text-darknavy">
+              {field.value}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function GridEntryInput({
   extraClassName,
+  inputMode,
   onChange,
   type = "text",
   value,
 }: {
   extraClassName?: string;
+  inputMode?: "decimal" | "numeric" | "text";
   onChange: (value: string) => void;
   type?: "number" | "text";
   value: string;
@@ -1882,6 +2023,7 @@ function GridEntryInput({
   return (
     <input
       type={type}
+      inputMode={inputMode}
       min={type === "number" ? "0" : undefined}
       value={value}
       onChange={(event) => onChange(event.target.value)}
@@ -1914,8 +2056,8 @@ function mapEntryToEditableRow(entry: DisbursementLineEntry): EditableGridRow {
   return {
     accountCode: entry.accountCode,
     accountName: entry.accountName,
-    credit: entry.credit > 0 ? entry.credit.toFixed(2) : "",
-    debit: entry.debit > 0 ? entry.debit.toFixed(2) : "",
+    credit: entry.credit > 0 ? formatAmountValue(entry.credit) : "",
+    debit: entry.debit > 0 ? formatAmountValue(entry.debit) : "",
     id: entry.id,
     particulars: entry.particulars,
     taxDetails: entry.taxDetails,
@@ -2558,7 +2700,7 @@ function normalizeImportedAmount(value: string) {
   const normalized = value.replace(/[₱,$\s]/g, "").replace(/,/g, "");
   const amount = Number(normalized || 0);
 
-  return Number.isFinite(amount) && amount > 0 ? amount.toFixed(2) : "";
+  return Number.isFinite(amount) && amount > 0 ? formatAmountValue(amount) : "";
 }
 
 function normalizeTaxRate(value: string) {
@@ -2732,11 +2874,128 @@ function isCompleteRow(row: EditableGridRow) {
 }
 
 function normalizeAmount(value: string) {
-  return Number(value || 0) || 0;
+  return Number(value.replace(/,/g, "") || 0) || 0;
+}
+
+function formatAmountInput(value: string) {
+  const normalized = value.replace(/,/g, "").replace(/[^\d.]/g, "");
+
+  if (!normalized) {
+    return "";
+  }
+
+  const hasDecimal = normalized.includes(".");
+  const [rawWholePart = "", ...decimalParts] = normalized.split(".");
+  const wholePart = rawWholePart.replace(/^0+(?=\d)/, "");
+  const decimalPart = decimalParts.join("").slice(0, 2);
+  const formattedWholePart = formatAmountWholePart(wholePart);
+
+  if (!hasDecimal) {
+    return formattedWholePart;
+  }
+
+  return `${formattedWholePart || "0"}.${decimalPart}`;
+}
+
+function formatAmountValue(value: number) {
+  return value.toLocaleString("en-US", {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+  });
+}
+
+function formatAmountWholePart(value: string) {
+  if (!value) {
+    return "";
+  }
+
+  return Number(value).toLocaleString("en-US", {
+    maximumFractionDigits: 0,
+  });
 }
 
 function getExportCellValue(row: EditableGridRow, columnId: GridColumnId) {
   return row[columnId];
+}
+
+let accountingGridTextMeasureContext:
+  | CanvasRenderingContext2D
+  | null
+  | undefined;
+
+function calculateGridColumnFitWidth({
+  columnId,
+  columnLabels,
+  rows,
+}: {
+  columnId: GridColumnId;
+  columnLabels: Record<GridColumnId, string>;
+  rows: EditableGridRow[];
+}) {
+  const headerWidth = estimateGridTextWidth(columnLabels[columnId], 76);
+  const contentWidth = rows.reduce(
+    (currentWidth, row) =>
+      Math.max(currentWidth, estimateGridTextWidth(row[columnId] ?? "", 24)),
+    50,
+  );
+
+  return Math.max(headerWidth, contentWidth);
+}
+
+function estimateGridTextWidth(value: string, horizontalPadding: number) {
+  const textWidth = measureGridTextWidth(value);
+
+  return Math.min(800, Math.max(50, Math.ceil(textWidth + horizontalPadding)));
+}
+
+function measureGridTextWidth(value: string) {
+  const fallbackWidth = estimateFallbackTextWidth(value);
+
+  if (typeof document === "undefined") {
+    return fallbackWidth;
+  }
+
+  if (accountingGridTextMeasureContext === undefined) {
+    accountingGridTextMeasureContext = document
+      .createElement("canvas")
+      .getContext("2d");
+  }
+
+  if (!accountingGridTextMeasureContext) {
+    return fallbackWidth;
+  }
+
+  accountingGridTextMeasureContext.font =
+    "500 14px Inter, Arial, Helvetica, sans-serif";
+
+  return accountingGridTextMeasureContext.measureText(value).width;
+}
+
+function estimateFallbackTextWidth(value: string) {
+  return Array.from(value).reduce(
+    (width, character) => width + getEstimatedCharacterWidth(character),
+    0,
+  );
+}
+
+function getEstimatedCharacterWidth(character: string) {
+  if (character === " ") {
+    return 4;
+  }
+
+  if ("ilI.,:;!'`|".includes(character)) {
+    return 4.2;
+  }
+
+  if ("mwMW@#%&".includes(character)) {
+    return 9.2;
+  }
+
+  if (/[0-9]/.test(character)) {
+    return 7.4;
+  }
+
+  return 7;
 }
 
 function escapeCsvCell(value: string) {

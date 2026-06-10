@@ -1,5 +1,8 @@
 import type { ChangeEventHandler, ReactNode } from "react";
-import { TermManagementDatemodeOptions } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+import {
+	TermManagementDatemodeOptions,
+	TermManagementStatusOptions,
+} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import type {
 	TermManagementFormErrors,
 	TermManagementFormValues,
@@ -22,15 +25,15 @@ export function TermManagementFields({
 }: TermManagementFieldsProps) {
 	return (
 		<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
-			<div className="grid gap-4 lg:grid-cols-3">
-				<FormField label="Description" error={errors.description} required>
+			<div className="grid gap-4 lg:grid-cols-2">
+				<FormField label="Name" error={errors.name} required>
 					<input
-						name="description"
-						value={values.description}
+						name="name"
+						value={values.name}
 						onChange={onInputChange}
 						readOnly={isReadonly}
 						className={fieldClassName}
-						placeholder="Enter description"
+						placeholder="Enter name"
 					/>
 				</FormField>
 
@@ -61,6 +64,22 @@ export function TermManagementFields({
 						className={fieldClassName}
 						placeholder="Enter period"
 					/>
+				</FormField>
+
+				<FormField label="Status" error={errors.status} required>
+					<select
+						name="status"
+						value={values.status}
+						onChange={onInputChange}
+						disabled={isReadonly}
+						className={fieldClassName}
+					>
+						{TermManagementStatusOptions.map((statusOption) => (
+							<option key={statusOption} value={statusOption}>
+								{statusOption}
+							</option>
+						))}
+					</select>
 				</FormField>
 			</div>
 		</div>

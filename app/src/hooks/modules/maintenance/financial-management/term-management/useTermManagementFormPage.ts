@@ -15,6 +15,7 @@ import type {
 	TermManagement,
 	TermManagementFormErrors,
 	TermManagementFormValues,
+	TermManagementStatus,
 } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 import { validateTermManagementForm } from "@/app/src/validations/modules/maintenance/financial-management/term-management/TermManagementValidation";
 import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
@@ -34,7 +35,6 @@ export function useTermManagementFormPage(
 	const terms = useTermManagementStore((state) => state.terms);
 	const addTerm = useTermManagementStore((state) => state.addTerm);
 	const updateTerm = useTermManagementStore((state) => state.updateTerm);
-	const deleteTerm = useTermManagementStore((state) => state.deleteTerm);
 	const isMutating = useTermManagementStore((state) => state.isMutating);
 	const mode = options.mode ?? getActionMode(pathname);
 	const existingTerm =
@@ -46,7 +46,9 @@ export function useTermManagementFormPage(
 			: TermManagementInitialFormValues,
 	);
 	const [errors, setErrors] = useState<TermManagementFormErrors>({});
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+	const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+	const nextStatus: TermManagementStatus =
+		existingTerm?.status === "Active" ? "Inactive" : "Active";
 
 	function updateField(
 		field: keyof TermManagementFormValues,
@@ -98,29 +100,32 @@ export function useTermManagementFormPage(
 		if (!options.onSaved) router.push(TermManagementHref);
 	}
 
-	function handleConfirmDelete() {
+	function handleConfirmStatusChange() {
 		if (!existingTerm) {
-			toast.error("Could not find the term definition to delete.");
+			toast.error("Could not find the term definition to update.");
 			return;
 		}
 
-		deleteTerm(existingTerm.id);
-		setIsDeleteDialogOpen(false);
-		router.push(TermManagementHref);
+		updateTerm({
+			...existingTerm,
+			status: nextStatus,
+		});
+		setIsStatusDialogOpen(false);
 	}
 
 	return {
 		errors,
 		existingTerm,
-		handleConfirmDelete,
+		handleConfirmStatusChange,
 		handleInputChange,
 		handleSubmit,
-		isDeleteDialogOpen,
+		isStatusDialogOpen,
 		isMutating,
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
-		setIsDeleteDialogOpen,
+		nextStatus,
+		setIsStatusDialogOpen,
 		values,
 	};
 }

@@ -35,8 +35,9 @@ export function TermManagementFormPage() {
             <TermManagementActionButtons
               isReadonly={page.isReadonly}
               mode={page.mode}
+              nextStatus={page.existingTerm ? page.nextStatus : undefined}
               term={page.existingTerm}
-              onDeleteTerm={() => page.setIsDeleteDialogOpen(true)}
+              onStatusChange={() => page.setIsStatusDialogOpen(true)}
             />
           }
         />
@@ -50,14 +51,16 @@ export function TermManagementFormPage() {
       </form>
 
       <AppDialog
-        isOpen={page.isDeleteDialogOpen}
+        isOpen={page.isStatusDialogOpen}
         isPending={page.isMutating}
-        title="Delete term definition?"
-        description={`This will remove ${page.existingTerm?.description ?? "the selected term"}.`}
-        confirmLabel="Delete Term"
-        tone="danger"
-        onCancel={() => page.setIsDeleteDialogOpen(false)}
-        onConfirm={page.handleConfirmDelete}
+        title={`Set term as ${page.nextStatus.toLowerCase()}?`}
+        description={`This will mark ${page.existingTerm?.name ?? "the selected term"} as ${page.nextStatus.toLowerCase()} while keeping its record available for reference.`}
+        confirmLabel={
+          page.nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active"
+        }
+        tone={page.nextStatus === "Inactive" ? "danger" : "success"}
+        onCancel={() => page.setIsStatusDialogOpen(false)}
+        onConfirm={page.handleConfirmStatusChange}
       />
     </>
   );

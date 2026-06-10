@@ -1,9 +1,17 @@
 import Link from "next/link";
-import { ArrowLeft, Edit3, Save, Trash2, X } from "lucide-react";
+import {
+	ArrowLeft,
+	CheckCircle2,
+	CircleOff,
+	Edit3,
+	Save,
+	X,
+} from "lucide-react";
 import { TermManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import type {
 	TermManagement,
 	TermManagementActionMode,
+	TermManagementStatus,
 } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
@@ -11,15 +19,21 @@ type TermManagementActionButtonsProps = {
 	term?: TermManagement;
 	isReadonly: boolean;
 	mode: TermManagementActionMode;
-	onDeleteTerm: () => void;
+	nextStatus?: TermManagementStatus;
+	onStatusChange: () => void;
 };
 
 export function TermManagementActionButtons({
 	term,
 	isReadonly,
 	mode,
-	onDeleteTerm,
+	nextStatus,
+	onStatusChange,
 }: TermManagementActionButtonsProps) {
+	const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
+	const statusLabel =
+		nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active";
+
 	return (
 		<>
 			{mode === "view" ? (
@@ -40,14 +54,18 @@ export function TermManagementActionButtons({
 					Edit
 				</Link>
 			) : null}
-			{term ? (
+			{term && nextStatus ? (
 				<button
 					type="button"
-					onClick={onDeleteTerm}
-					className={moduleHeaderActionClassNames.danger}
+					onClick={onStatusChange}
+					className={
+						nextStatus === "Inactive"
+							? moduleHeaderActionClassNames.danger
+							: moduleHeaderActionClassNames.secondary
+					}
 				>
-					<Trash2 className="h-4 w-4" aria-hidden="true" />
-					Delete
+					<StatusIcon className="h-4 w-4" aria-hidden="true" />
+					{statusLabel}
 				</button>
 			) : null}
 			{mode === "edit" && term ? (

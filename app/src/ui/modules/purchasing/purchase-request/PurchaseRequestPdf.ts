@@ -244,12 +244,12 @@ function createApprovalTable(record: PurchaseRequestRecord): TableCell {
 			body: [
 				[
 					approvalCell(
-						"Prepared by:",
+						`${record.preparedByLabel || "Prepared by"}:`,
 						record.preparedBy,
 						record.preparedBySignatureImageUrl,
 					),
 					approvalCell(
-						"Approved by:",
+						`${record.approvedByLabel || "Approved by"}:`,
 						record.approvedBy,
 						record.approvedBySignatureImageUrl,
 					),

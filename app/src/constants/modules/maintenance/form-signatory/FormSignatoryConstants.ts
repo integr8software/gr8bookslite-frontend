@@ -4,14 +4,16 @@ import type { FormSignatoryRow } from "@/app/src/types/modules/maintenance/form-
 export const FormSignatoryHref = "/maintenance/form-signatory";
 export const FormSignatoryPaginationStorageKey = "maintenance-form-signatory";
 export const FormSignatoryMaxRows = 5;
+// TODO: Handle existing rows with label = "Temporary Signature" through a manual cleanup path.
 export const FormSignatoryTemporarySignatureLabel = "Temporary Signature";
 export const FormSignatoryLabelOptions = [
 	{ label: "Prepared by", value: "Prepared by" },
 	{ label: "Approved by", value: "Approved by" },
-	{
-		label: FormSignatoryTemporarySignatureLabel,
-		value: FormSignatoryTemporarySignatureLabel,
-	},
+];
+export const FormSignatoryTemporaryOptions = [
+	{ label: "Select", value: "" },
+	{ label: "Yes", value: "true" },
+	{ label: "No", value: "false" },
 ];
 export const FormSignatoryFilterOptions = [
 	{ label: "All signatories", value: "" },
@@ -32,6 +34,12 @@ const FormSignatoryTableColumns: ColumnDef<FormSignatoryRow>[] = [
 		meta: { className: "min-w-56" },
 	},
 	{
+		accessorKey: "isThisTemporary",
+		header: "Temporary?",
+		enableSorting: false,
+		meta: { className: "min-w-40" },
+	},
+	{
 		accessorKey: "name",
 		header: "Name",
 		enableSorting: false,
@@ -50,16 +58,16 @@ const FormSignatoryTableColumns: ColumnDef<FormSignatoryRow>[] = [
 		meta: { className: "min-w-72" },
 	},
 	{
-		accessorKey: "signatureValidUntil",
-		header: "Valid Until",
-		enableSorting: false,
-		meta: { className: "min-w-44" },
-	},
-	{
 		id: "preview",
 		header: "Preview",
 		enableSorting: false,
 		meta: { className: "min-w-48" },
+	},
+	{
+		accessorKey: "signatureValidUntil",
+		header: "Valid Until",
+		enableSorting: false,
+		meta: { className: "min-w-44" },
 	},
 	{
 		id: "actions",

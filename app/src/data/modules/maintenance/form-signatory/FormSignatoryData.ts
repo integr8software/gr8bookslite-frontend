@@ -27,10 +27,12 @@ function createSignatoryRow(
 	signatureName = "",
 	signaturePreview = "",
 	signatureValidUntil = "",
+	isThisTemporary: boolean | null = null,
 ): FormSignatoryRow {
 	return {
 		id,
 		label,
+		isThisTemporary,
 		name,
 		position,
 		signatureName,

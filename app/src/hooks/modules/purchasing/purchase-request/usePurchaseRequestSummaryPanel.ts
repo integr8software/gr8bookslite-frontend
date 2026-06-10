@@ -3,7 +3,6 @@
 import type { ChangeEvent } from "react";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FormSignatoryTemporarySignatureLabel } from "@/app/src/constants/modules/maintenance/form-signatory/FormSignatoryConstants";
 import { PurchaseRequestFormSignatoryModuleCodes } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { ResolveFormSignatorySetup } from "@/app/src/services/modules/maintenance/form-signatory/FormSignatoryApi";
@@ -60,6 +59,7 @@ export function usePurchaseRequestSummaryPanel(
 		approvedByOptions,
 		clearApprovedBy: () => {
 			updateField("approvedBy", "");
+			updateField("approvedByLabel", "Approved by");
 			updateField("approvedBySignatureFileName", "");
 			updateField("approvedBySignatureImageUrl", "");
 		},
@@ -69,11 +69,13 @@ export function usePurchaseRequestSummaryPanel(
 		},
 		clearPreparedBy: () => {
 			updateField("preparedBy", "");
+			updateField("preparedByLabel", "Prepared by");
 			updateField("preparedBySignatureFileName", "");
 			updateField("preparedBySignatureImageUrl", "");
 		},
 		handleApprovedByChange: (option: PurchaseRequestFormSignatoryOption) => {
 			updateField("approvedBy", option.name);
+			updateField("approvedByLabel", getDisplaySignatoryLabel(option));
 			updateField("approvedBySignatureFileName", option.signatureName);
 			updateField("approvedBySignatureImageUrl", option.signaturePreview);
 		},
@@ -81,6 +83,7 @@ export function usePurchaseRequestSummaryPanel(
 			handleLogoImageChange(event, updateField),
 		handlePreparedByChange: (option: PurchaseRequestFormSignatoryOption) => {
 			updateField("preparedBy", option.name);
+			updateField("preparedByLabel", getDisplaySignatoryLabel(option));
 			updateField("preparedBySignatureFileName", option.signatureName);
 			updateField("preparedBySignatureImageUrl", option.signaturePreview);
 		},
@@ -118,10 +121,12 @@ function getPreferredSignatoryOptions(
 	label: string,
 ) {
 	return rows.filter(
-		(row) =>
-			row.label === label ||
-			row.label === FormSignatoryTemporarySignatureLabel,
+		(row) => row.label === label,
 	);
+}
+
+function getDisplaySignatoryLabel(row: PurchaseRequestFormSignatoryOption) {
+	return row.isThisTemporary === true ? `Temporary ${row.label}` : row.label;
 }
 
 async function handleLogoImageChange(

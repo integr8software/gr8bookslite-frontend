@@ -23,6 +23,7 @@ export const PurchaseRequestItemValidationSchema = z.object({
 export const PurchaseRequestFormValidationSchema = z
 	.object({
 		approvedBy: z.string(),
+		approvedByLabel: z.string(),
 		bomNo: z.string(),
 		companyAddress: requiredText("Enter the company address."),
 		companyName: requiredText("Enter the company name."),
@@ -37,6 +38,7 @@ export const PurchaseRequestFormValidationSchema = z
 		logoImageUrl: requiredText("Upload a logo image."),
 		prDate: requiredText("Select a PR date."),
 		preparedBy: z.string(),
+		preparedByLabel: z.string(),
 		preparedBySignatureFileName: z.string(),
 		preparedBySignatureImageUrl: z.string(),
 		projectCode: z.string(),

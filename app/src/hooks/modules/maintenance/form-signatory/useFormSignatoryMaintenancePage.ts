@@ -17,7 +17,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
 	FormSignatoryMaxRows,
-	FormSignatoryTemporarySignatureLabel,
 	getFormSignatoryTableColumns,
 } from "@/app/src/constants/modules/maintenance/form-signatory/FormSignatoryConstants";
 import {
@@ -131,7 +130,7 @@ export function useFormSignatoryMaintenancePage() {
 		return filterRowsBySignatoryLabel(scopedRows, signatoryFilterLabel);
 	}, [rows, scopedEditRowId, signatoryFilterLabel]);
 	const showSignatureValidityColumn = visibleRows.some(
-		(row) => row.label === FormSignatoryTemporarySignatureLabel,
+		(row) => row.isThisTemporary === true,
 	);
 	const tableColumns = useMemo(
 		() => getFormSignatoryTableColumns(showSignatureValidityColumn),
@@ -691,14 +690,12 @@ function cloneRows(rows: FormSignatoryRow[]) {
 function mapRowsForSave(rows: FormSignatoryRow[]) {
 	return rows.map((row) => ({
 		label: row.label,
+		isThisTemporary: row.isThisTemporary ?? null,
 		name: row.name,
 		position: row.position || undefined,
 		signatureImage: row.signaturePreview || undefined,
 		signatureName: row.signatureName || undefined,
-		signatureValidUntil:
-			row.label === FormSignatoryTemporarySignatureLabel
-				? row.signatureValidUntil || undefined
-				: undefined,
+		signatureValidUntil: row.signatureValidUntil || undefined,
 	}));
 }
 

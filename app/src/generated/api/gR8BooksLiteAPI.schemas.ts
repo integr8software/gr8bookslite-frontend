@@ -1156,6 +1156,8 @@ export interface FormSignatoryRowResponseDto {
   signatureImage: string | null;
   /** @nullable */
   signatureValidUntil: string | null;
+  /** @nullable */
+  isThisTemporary: boolean | null;
 }
 
 export interface FormSignatorySetupResponseDto {
@@ -1216,6 +1218,7 @@ export interface FormSignatoryRowDto {
   signatureName?: string;
   signatureImage?: string;
   signatureValidUntil?: string;
+  isThisTemporary?: boolean | null;
 }
 
 export interface SaveFormSignatoryDto {

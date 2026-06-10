@@ -43,9 +43,11 @@ export type PurchaseRequestRecord = {
 	remarks: string;
 	forDepartment: string;
 	preparedBy: string;
+	preparedByLabel: string;
 	preparedBySignatureFileName: string;
 	preparedBySignatureImageUrl: string;
 	approvedBy: string;
+	approvedByLabel: string;
 	approvedBySignatureFileName: string;
 	approvedBySignatureImageUrl: string;
 	items: PurchaseRequestItem[];

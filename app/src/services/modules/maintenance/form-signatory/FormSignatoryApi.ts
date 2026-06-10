@@ -143,6 +143,7 @@ function MapFormSignatoryRow(
 	return {
 		id: String(row.id),
 		label: row.label,
+		isThisTemporary: row.isThisTemporary ?? null,
 		name: row.name,
 		position: row.position ?? "",
 		setupId,

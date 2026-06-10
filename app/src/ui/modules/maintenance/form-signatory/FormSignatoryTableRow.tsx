@@ -10,7 +10,7 @@ import {
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import {
 	FormSignatoryLabelOptions,
-	FormSignatoryTemporarySignatureLabel,
+	FormSignatoryTemporaryOptions,
 } from "@/app/src/constants/modules/maintenance/form-signatory/FormSignatoryConstants";
 import type { FormSignatoryRow } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
 
@@ -45,8 +45,9 @@ export function FormSignatoryTableRow({
 		onSignatureFileChange(row.id, event.target.files?.[0]);
 		event.target.value = "";
 	}
-	const isTemporarySignature =
-		row.label === FormSignatoryTemporarySignatureLabel;
+	const isTemporarySignature = row.isThisTemporary === true;
+	const displayLabel =
+		row.isThisTemporary === true ? `Temporary ${row.label}` : row.label;
 
 	return (
 		<tr className="align-middle">
@@ -54,23 +55,46 @@ export function FormSignatoryTableRow({
 				{rowNumber}
 			</td>
 			<td className="align-middle">
+				{isEditing ? (
+					<select
+						value={row.label}
+						onChange={(event) => {
+							onUpdateRow(row.id, {
+								label: event.target.value,
+							});
+						}}
+						className={inputClassNames}
+					>
+						{getLabelOptions(row.label).map((option) => (
+							<option key={option.value} value={option.value}>
+								{option.label}
+							</option>
+						))}
+					</select>
+				) : (
+					<input
+						type="text"
+						value={displayLabel}
+						disabled
+						readOnly
+						className={inputClassNames}
+					/>
+				)}
+			</td>
+			<td className="align-middle">
 				<select
-					value={row.label}
+					value={temporarySelectValue(row.isThisTemporary)}
 					disabled={!isEditing}
-					onChange={(event) => {
-						const nextLabel = event.target.value;
-
+					onChange={(event) =>
 						onUpdateRow(row.id, {
-							label: nextLabel,
-							signatureValidUntil:
-								nextLabel === FormSignatoryTemporarySignatureLabel
-									? row.signatureValidUntil
-									: "",
-						});
-					}}
+							isThisTemporary: parseTemporarySelectValue(
+								event.target.value,
+							),
+						})
+					}
 					className={inputClassNames}
 				>
-					{getLabelOptions(row.label).map((option) => (
+					{FormSignatoryTemporaryOptions.map((option) => (
 						<option key={option.value} value={option.value}>
 							{option.label}
 						</option>
@@ -134,41 +158,12 @@ export function FormSignatoryTableRow({
 					/>
 				</label>
 			</td>
-			{showSignatureValidity ? (
-				<td className="align-middle">
-					{isTemporarySignature ? (
-						<>
-							<input
-								type="date"
-								value={toDateInputValue(row.signatureValidUntil)}
-								disabled={!isEditing || !row.signaturePreview}
-								onChange={(event) =>
-									onUpdateRow(row.id, {
-										signatureValidUntil: event.target.value,
-									})
-								}
-								className={inputClassNames}
-								title={
-									row.signaturePreview
-										? "Set the last date this temporary signature can be used"
-										: "Upload or make a signature first"
-								}
-							/>
-							{isSignatureExpired(row.signatureValidUntil) ? (
-								<span className="mt-1 block text-xs font-semibold text-coralpink">
-									Expired
-								</span>
-							) : null}
-						</>
-					) : null}
-				</td>
-			) : null}
 			<td className="align-middle">
 				<div className="mx-auto flex h-18 items-center justify-center rounded-lg border border-dashed border-darknavy/14 bg-offwhite">
 					{row.signaturePreview ? (
 						<Image
 							src={row.signaturePreview}
-							alt={`${row.label} signature preview`}
+							alt={`${displayLabel} signature preview`}
 							width={160}
 							height={56}
 							unoptimized
@@ -181,13 +176,40 @@ export function FormSignatoryTableRow({
 					)}
 				</div>
 			</td>
+			{showSignatureValidity ? (
+				<td className="align-middle">
+					{isTemporarySignature ? (
+						<>
+							<input
+								type="date"
+								value={toDateInputValue(
+									row.signatureValidUntil,
+								)}
+								disabled={!isEditing}
+								onChange={(event) =>
+									onUpdateRow(row.id, {
+										signatureValidUntil: event.target.value,
+									})
+								}
+								className={inputClassNames}
+								title="Set the last date this temporary signature can be used"
+							/>
+							{isSignatureExpired(row.signatureValidUntil) ? (
+								<span className="mt-1 block text-xs font-semibold text-coralpink">
+									Expired
+								</span>
+							) : null}
+						</>
+					) : null}
+				</td>
+			) : null}
 			<td className="sticky right-0 z-10 bg-white align-middle shadow-[-10px_0_18px_-18px_rgba(15,23,42,0.65)]">
 				<ModuleTableActions>
 					{isEditing ? (
 						<>
 							<ModuleTableActionButton
 								icon={Signature}
-								label={`Make signature for ${row.label}`}
+								label={`Make signature for ${displayLabel}`}
 								onClick={() => onMakeSignature(row)}
 							/>
 							<ModuleTableActionButton
@@ -203,7 +225,7 @@ export function FormSignatoryTableRow({
 							<ModuleTableActionLink
 								variant="edit"
 								href={editHref}
-								label={`Edit ${row.label}`}
+								label={`Edit ${displayLabel}`}
 							/>
 							<ModuleTableActionButton
 								variant="delete"
@@ -245,6 +267,30 @@ function toDateInputValue(value: string) {
 	}
 
 	return value.slice(0, 10);
+}
+
+function temporarySelectValue(value: boolean | null | undefined) {
+	if (value === true) {
+		return "true";
+	}
+
+	if (value === false) {
+		return "false";
+	}
+
+	return "";
+}
+
+function parseTemporarySelectValue(value: string) {
+	if (value === "true") {
+		return true;
+	}
+
+	if (value === "false") {
+		return false;
+	}
+
+	return null;
 }
 
 function isSignatureExpired(value: string) {

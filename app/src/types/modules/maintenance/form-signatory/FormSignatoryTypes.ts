@@ -1,6 +1,7 @@
 export type FormSignatoryRow = {
 	id: string;
 	label: string;
+	isThisTemporary?: boolean | null;
 	name: string;
 	position: string;
 	setupId?: string;
@@ -69,6 +70,7 @@ export type FormSignatoryApiRow = {
 	signatureName: string | null;
 	signatureImage: string | null;
 	signatureValidUntil: string | null;
+	isThisTemporary: boolean | null;
 };
 
 export type FormSignatoryApiSetup = {
@@ -119,5 +121,6 @@ export type SaveFormSignatoryRequest = {
 		signatureName?: string;
 		signatureImage?: string;
 		signatureValidUntil?: string;
+		isThisTemporary?: boolean | null;
 	}>;
 };

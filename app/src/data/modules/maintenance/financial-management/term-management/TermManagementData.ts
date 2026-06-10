@@ -6,31 +6,37 @@ import type {
 export const MockTermManagements: TermManagement[] = [
 	{
 		id: "term-1",
-		description: "Standard payment terms",
+		name: "Standard payment terms",
 		datemode: "Month",
 		period: "1",
+		status: "Active",
 	},
 	{
 		id: "term-2",
-		description: "Annual review period",
+		name: "Annual review period",
 		datemode: "Year",
 		period: "1",
+		status: "Inactive",
 	},
 ];
 
 export const TermManagementInitialFormValues: TermManagementFormValues = {
-	description: "",
+	name: "",
 	datemode: "Month",
 	period: "",
+	status: "Active",
 };
 
 export function createTermManagementFormValues(
 	term: TermManagement,
 ): TermManagementFormValues {
+	const legacyTerm = term as TermManagement & { description?: string };
+
 	return {
-		description: term.description,
+		name: term.name ?? legacyTerm.description ?? "",
 		datemode: term.datemode,
 		period: term.period,
+		status: term.status ?? "Active",
 	};
 }
 
@@ -39,7 +45,10 @@ export function createTermManagementFromForm(
 ): TermManagement {
 	return {
 		id: `term-${Date.now()}`,
-		...values,
+		name: values.name.trim(),
+		datemode: values.datemode,
+		period: values.period.trim(),
+		status: values.status,
 	};
 }
 
@@ -49,7 +58,9 @@ export function updateTermManagementFromForm(
 ): TermManagement {
 	return {
 		...term,
-		...values,
+		name: values.name.trim(),
+		datemode: values.datemode,
+		period: values.period.trim(),
+		status: values.status,
 	};
 }
-

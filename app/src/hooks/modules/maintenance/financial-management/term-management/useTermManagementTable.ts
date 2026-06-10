@@ -22,7 +22,7 @@ export function useTermManagementTable(terms: TermManagement[]) {
 		pageSize: 5,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "description", desc: false },
+		{ id: "name", desc: false },
 	]);
 	const columns = useMemo<ColumnDef<TermManagement>[]>(
 		() =>

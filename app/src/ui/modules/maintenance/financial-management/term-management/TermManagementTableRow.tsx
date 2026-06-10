@@ -8,41 +8,61 @@ import {
 
 type TermManagementTableRowProps = {
 	term: TermManagement;
-	onDeleteTerm: (term: TermManagement) => void;
 	onEditTerm: (term: TermManagement) => void;
+	onToggleStatus: (term: TermManagement) => void;
 };
 
 export function TermManagementTableRow({
 	term,
-	onDeleteTerm,
 	onEditTerm,
+	onToggleStatus,
 }: TermManagementTableRowProps) {
+	const nextStatus = term.status === "Active" ? "Inactive" : "Active";
+
 	return (
 		<tr className="module-table-row">
 			<td className="px-4 py-4 font-medium text-darknavy">
-				{term.description}
+				{term.name}
 			</td>
 			<td className="px-4 py-4 text-darknavy">{term.datemode}</td>
 			<td className="px-4 py-4 text-darknavy">{term.period}</td>
 			<td className="px-4 py-4">
-				<ModuleTableActions>
+				<StatusBadge status={term.status} />
+			</td>
+			<td className="px-4 py-4">
+				<ModuleTableActions className="justify-center">
 					<ModuleTableActionLink
 						variant="view"
 						href={`${TermManagementHref}/view/${term.id}`}
-						label={`View ${term.description}`}
+						label={`View ${term.name}`}
 					/>
 					<ModuleTableActionButton
 						variant="edit"
 						onClick={() => onEditTerm(term)}
-						label={`Edit ${term.description}`}
+						label={`Edit ${term.name}`}
 					/>
 					<ModuleTableActionButton
-						variant="delete"
-						onClick={() => onDeleteTerm(term)}
-						label={`Delete ${term.description}`}
+						variant={nextStatus === "Inactive" ? "inactive" : "active"}
+						onClick={() => onToggleStatus(term)}
+						label={`Set ${term.name} as ${nextStatus.toLowerCase()}`}
 					/>
 				</ModuleTableActions>
 			</td>
 		</tr>
+	);
+}
+
+function StatusBadge({ status }: { status: TermManagement["status"] }) {
+	const statusClass =
+		status === "Active"
+			? "bg-citron/25 text-darknavy"
+			: "bg-darknavy/8 text-darknavy/55";
+
+	return (
+		<span
+			className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}
+		>
+			{status}
+		</span>
 	);
 }

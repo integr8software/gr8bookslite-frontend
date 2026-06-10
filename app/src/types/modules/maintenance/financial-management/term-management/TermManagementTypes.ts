@@ -1,16 +1,20 @@
 export type TermManagementDatemode = "Day" | "Month" | "Year";
 
+export type TermManagementStatus = "Active" | "Inactive";
+
 export type TermManagement = {
 	id: string;
-	description: string;
+	name: string;
 	datemode: TermManagementDatemode;
 	period: string;
+	status: TermManagementStatus;
 };
 
 export type TermManagementFormValues = {
-	description: string;
+	name: string;
 	datemode: TermManagementDatemode;
 	period: string;
+	status: TermManagementStatus;
 };
 
 export type TermManagementFormErrors = Partial<
@@ -20,6 +24,7 @@ export type TermManagementFormErrors = Partial<
 export type TermManagementActionMode = "add" | "edit" | "view";
 
 export type TermManagementTableColumnKey =
-	| "description"
+	| "name"
 	| "datemode"
-	| "period";
+	| "period"
+	| "status";

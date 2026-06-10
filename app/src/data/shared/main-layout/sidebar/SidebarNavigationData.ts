@@ -413,6 +413,13 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
         "accounting",
       ),
       item(
+        "cash-disbursement-revolving-fund",
+        "Revolving Fund",
+        "/cash-disbursement/revolving-fund",
+        "cashDisbursement",
+        "accounting",
+      ),
+      item(
         "cash-disbursement-request-payment",
         "Request For Payment",
         "/cash-disbursement/request-for-payment",

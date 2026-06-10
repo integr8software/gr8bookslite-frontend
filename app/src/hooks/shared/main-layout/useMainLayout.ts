@@ -2040,6 +2040,7 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "cash-disbursement-petty-cash-advance-replenishment":
     "Replenish petty cash advances.",
   "cash-disbursement-petty-cash-advance": "Record petty cash advances.",
+  "cash-disbursement-revolving-fund": "Manage revolving fund activity.",
   "cash-disbursement-request-for-payment": "Create and track payment requests.",
   "cash-disbursement-request-payment": "Create and track payment requests.",
   "cash-disbursement-advances-to-supplier":

@@ -238,6 +238,13 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
         "accounting",
       ),
       moduleItem(
+        "cash-disbursement-revolving-fund",
+        "Revolving Fund",
+        "/cash-disbursement/revolving-fund",
+        "cashDisbursement",
+        "accounting",
+      ),
+      moduleItem(
         "cash-disbursement-request-for-payment",
         "Request For Payment",
         "/cash-disbursement/request-for-payment",

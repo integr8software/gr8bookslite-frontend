@@ -3,4 +3,6 @@ export const UserRoleQueryKeys = {
 		["user-management", "branch-roles", unitId, "role", roleId] as const,
 	branchRoles: (unitId: string) =>
 		["user-management", "branch-roles", unitId, "roles"] as const,
+	permissionCatalog: (unitId: string) =>
+		["user-management", "branch-roles", unitId, "permission-catalog"] as const,
 };

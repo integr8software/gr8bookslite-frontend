@@ -111,8 +111,9 @@ function UserRoleFormPageInner() {
             {!page.isReadonly ? (
               <button
                 type="button"
+                disabled={!page.canSave}
                 onClick={() => setIsSaveDialogOpen(true)}
-                className={`${moduleHeaderActionClassNames.primary} max-sm:w-full`}
+                className={`${moduleHeaderActionClassNames.primary} max-sm:w-full disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 <Save className="h-4 w-4" aria-hidden="true" />
                 Save
@@ -124,6 +125,7 @@ function UserRoleFormPageInner() {
       <UserRoleForm
         errors={page.errors}
         isReadonly={page.isReadonly}
+        permissionCatalog={page.permissionCatalog}
         values={page.values}
         onSubmit={page.handleSubmit}
         onUpdateAccessRoles={page.updateAccessRoles}

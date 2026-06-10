@@ -4,13 +4,21 @@ import {
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 
 export type AccessModule = (typeof UserAccessRoleOptions)[number];
+export type AccessSubmodule = AccessModule["children"][number];
+
+export function getSubmodulePermissionActions(submodule: AccessSubmodule) {
+  return UserPermissionActions.filter(
+    (action) =>
+      !submodule.actions || submodule.actions.includes(action.value),
+  );
+}
 
 export function getEnabledCount(accessModule: AccessModule, values: string[]) {
   return accessModule.children.reduce(
     (count, child) =>
       count +
-      UserPermissionActions.filter((action) =>
-        values.includes(`${child.value}.${action.value}`),
+      getSubmodulePermissionActions(child).filter((action) =>
+        values.includes(`${child.permissionCode}.${action.value}`),
       ).length,
     0,
   );
@@ -21,9 +29,13 @@ export function getModuleActionState(
   actionValue: string,
   values: string[],
 ) {
-  const childPermissions = accessModule.children.map(
-    (child) => `${child.value}.${actionValue}`,
-  );
+  const childPermissions = accessModule.children
+    .filter((child) =>
+      getSubmodulePermissionActions(child).some(
+        (action) => action.value === actionValue,
+      ),
+    )
+    .map((child) => `${child.permissionCode}.${actionValue}`);
   const allowedCount = childPermissions.filter((permission) =>
     values.includes(permission),
   ).length;
@@ -40,7 +52,9 @@ export function getModulePermissionState(
   values: string[],
 ) {
   const modulePermissions = accessModule.children.flatMap((child) =>
-    UserPermissionActions.map((action) => `${child.value}.${action.value}`),
+    getSubmodulePermissionActions(child).map(
+      (action) => `${child.permissionCode}.${action.value}`,
+    ),
   );
   const allowedCount = modulePermissions.filter((permission) =>
     values.includes(permission),
@@ -54,16 +68,19 @@ export function getModulePermissionState(
   };
 }
 
-export function getSubmoduleState(submoduleValue: string, values: string[]) {
-  const permissions = UserPermissionActions.map(
-    (action) => `${submoduleValue}.${action.value}`,
+export function getSubmoduleState(
+  submodule: AccessSubmodule,
+  values: string[],
+) {
+  const permissions = getSubmodulePermissionActions(submodule).map(
+    (action) => `${submodule.permissionCode}.${action.value}`,
   );
   const allowedCount = permissions.filter((permission) =>
     values.includes(permission),
   ).length;
 
   return {
-    checked: allowedCount === permissions.length,
+    checked: permissions.length > 0 && allowedCount === permissions.length,
     enabledCount: allowedCount,
     isPartial: allowedCount > 0 && allowedCount < permissions.length,
   };
@@ -74,9 +91,13 @@ export function toggleModuleAction(
   actionValue: string,
   values: string[],
 ) {
-  const childPermissions = accessModule.children.map(
-    (child) => `${child.value}.${actionValue}`,
-  );
+  const childPermissions = accessModule.children
+    .filter((child) =>
+      getSubmodulePermissionActions(child).some(
+        (action) => action.value === actionValue,
+      ),
+    )
+    .map((child) => `${child.permissionCode}.${actionValue}`);
   const shouldAllow = childPermissions.some(
     (permission) => !values.includes(permission),
   );
@@ -87,11 +108,11 @@ export function toggleModuleAction(
 }
 
 export function toggleSubmodulePermissions(
-  submoduleValue: string,
+  submodule: AccessSubmodule,
   values: string[],
 ) {
-  const submodulePermissions = UserPermissionActions.map(
-    (action) => `${submoduleValue}.${action.value}`,
+  const submodulePermissions = getSubmodulePermissionActions(submodule).map(
+    (action) => `${submodule.permissionCode}.${action.value}`,
   );
   const shouldAllow = submodulePermissions.some(
     (permission) => !values.includes(permission),
@@ -113,7 +134,9 @@ export function toggleModulePermissions(
   values: string[],
 ) {
   const modulePermissions = accessModule.children.flatMap((child) =>
-    UserPermissionActions.map((action) => `${child.value}.${action.value}`),
+    getSubmodulePermissionActions(child).map(
+      (action) => `${child.permissionCode}.${action.value}`,
+    ),
   );
   const shouldAllow = modulePermissions.some(
     (permission) => !values.includes(permission),

@@ -35,7 +35,23 @@ export type BranchUserRolePermissionApiResponse = {
   canUpdate: boolean;
   canDelete: boolean;
   canApprove: boolean;
+  canCancel?: boolean;
+  canUncancel?: boolean;
   canExport: boolean;
+  actions?: string[];
+};
+
+export type BranchPermissionCatalogApiResponse = {
+  modules: {
+    code: string;
+    name: string;
+    submodules: {
+      code: string;
+      name: string;
+      permissionCode: string;
+      actions: string[];
+    }[];
+  }[];
 };
 
 export type BranchUserRoleApiResponse = {

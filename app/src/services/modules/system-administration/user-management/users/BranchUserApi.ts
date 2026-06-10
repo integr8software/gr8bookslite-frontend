@@ -73,14 +73,16 @@ function MapBranchUserRoleApiRecord(
 function MapPermissionActions(
 	permission: BranchUserRoleApiResponse["permissions"][number],
 ) {
-	return [
-		permission.canView ? "read" : null,
-		permission.canCreate ? "create" : null,
-		permission.canUpdate ? "update" : null,
-		permission.canDelete ? "delete" : null,
-		permission.canApprove ? "approve" : null,
-		permission.canExport ? "print-export" : null,
-	].filter((action): action is string => Boolean(action));
+	return permission.actions?.length
+		? permission.actions
+		: [
+				permission.canView ? "view" : null,
+				permission.canCreate ? "create" : null,
+				permission.canUpdate ? "update" : null,
+				permission.canCancel || permission.canDelete ? "cancel" : null,
+				permission.canUncancel ? "uncancel" : null,
+				permission.canExport ? "export" : null,
+			].filter((action): action is string => Boolean(action));
 }
 
 function MapUserStatus(status: string): UserManagementRecord["status"] {

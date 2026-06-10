@@ -1,4 +1,4 @@
-import { MainCompanyNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarNavigationData";
+import { SidebarModuleNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarModuleRegistry";
 import type {
   MainNavigationItem,
   MainNavigationSection,
@@ -16,27 +16,28 @@ export type UserRoleRecord = {
 export type UserRoleFormValues = Omit<UserRoleRecord, "id">;
 
 export const UserPermissionActions = [
-  { value: "read", label: "Read Only" },
+  { value: "view", label: "Read Only" },
   { value: "create", label: "Create" },
   { value: "update", label: "Update" },
-  { value: "delete", label: "Delete" },
-  { value: "approve", label: "Approve" },
-  { value: "print-export", label: "Print/Export" },
+  { value: "cancel", label: "Cancel" },
+  { value: "uncancel", label: "Uncancel" },
+  { value: "export", label: "Print/Export" },
 ] as const;
 
 export const UserAccessRoleOptions = createUserAccessRoleOptions(
-  MainCompanyNavigationSections,
+  SidebarModuleNavigationSections,
 );
 
-type UserAccessRoleOption = {
+export type UserAccessRoleOption = {
   value: string;
   label: string;
   children: UserAccessRoleSubmodule[];
 };
 
-type UserAccessRoleSubmodule = {
-  value: string;
+export type UserAccessRoleSubmodule = {
+  permissionCode: string;
   label: string;
+  actions?: string[];
 };
 
 type UserPermissionActionValue = (typeof UserPermissionActions)[number]["value"];
@@ -44,7 +45,7 @@ type UserPermissionActionValue = (typeof UserPermissionActions)[number]["value"]
 export const InitialUserRoleFormValues: UserRoleFormValues = {
   name: "",
   description: "",
-  accessRoles: ["dashboard-overview.read"],
+  accessRoles: [],
   status: "Active",
 };
 
@@ -61,10 +62,10 @@ export const InitialUserRoles: UserRoleRecord[] = [
     name: "Staff",
     description: "Can encode daily transactions and review assigned reports.",
     accessRoles: createAccessRoles([
-      "dashboard-overview",
-      "sales-sales-order",
-      "sales-sales-invoice",
-      "reports-books-of-accounts",
+      "DO",
+      "SO",
+      "SI",
+      "FR",
     ]),
     status: "Active",
   },
@@ -73,14 +74,14 @@ export const InitialUserRoles: UserRoleRecord[] = [
     name: "Manager",
     description: "Can approve and maintain team transactions.",
     accessRoles: [
-      ...createAccessRoles(["dashboard-overview"]),
-      ...createAccessRoles(["sales-sales-order", "sales-sales-invoice"], [
-        "read",
+      ...createAccessRoles(["DO"]),
+      ...createAccessRoles(["SO", "SI"], [
+        "view",
         "create",
         "update",
       ]),
-      ...createAccessRoles(["maintenance-charts-of-accounts"], [
-        "read",
+      ...createAccessRoles(["COA"], [
+        "view",
         "update",
       ]),
     ],
@@ -91,10 +92,10 @@ export const InitialUserRoles: UserRoleRecord[] = [
     name: "Auditor",
     description: "Can review system records and reports.",
     accessRoles: createAccessRoles([
-      "dashboard-overview",
-      "reports-books-of-accounts",
-      "reports-inventory-audit",
-      "maintenance-audit",
+      "DO",
+      "FR",
+      "IR",
+      "AT",
     ]),
     status: "Active",
   },
@@ -137,14 +138,19 @@ function collectNavigationSubmodules(
   return items.flatMap((item) =>
     item.children?.length
       ? collectNavigationSubmodules(item.children)
-      : [{ value: item.key, label: item.label }],
+      : [
+          {
+            permissionCode: item.permissionCode ?? item.key,
+            label: item.label,
+          },
+        ],
   );
 }
 
 function createAllAccessRoles() {
   return UserAccessRoleOptions.flatMap((accessModule) =>
     createAccessRoles(
-      accessModule.children.map((submodule) => submodule.value),
+      accessModule.children.map((submodule) => submodule.permissionCode),
       UserPermissionActions.map((action) => action.value),
     ),
   );
@@ -152,7 +158,7 @@ function createAllAccessRoles() {
 
 function createAccessRoles(
   submoduleValues: string[],
-  actionValues: UserPermissionActionValue[] = ["read"],
+  actionValues: UserPermissionActionValue[] = ["view"],
 ) {
   return submoduleValues.flatMap((submoduleValue) =>
     actionValues.map((actionValue) => `${submoduleValue}.${actionValue}`),

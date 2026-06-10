@@ -1,7 +1,6 @@
 import type {
 	WorkspaceAuditLogAction,
 	WorkspaceAuditLogDateRange,
-	WorkspaceAuditLogSeverity,
 	WorkspaceAuditLogTableColumnKey,
 } from "@/app/src/types/workspace/audit-logs/WorkspaceAuditLogTypes";
 
@@ -20,12 +19,6 @@ export const WorkspaceAuditLogActionOptions = [
 	"View",
 ] as const satisfies readonly WorkspaceAuditLogAction[];
 
-export const WorkspaceAuditLogSeverityOptions = [
-	"Info",
-	"Warning",
-	"Critical",
-] as const satisfies readonly WorkspaceAuditLogSeverity[];
-
 export const WorkspaceAuditLogDateRangeOptions = [
 	{ label: "All dates", value: "all" },
 	{ label: "Past 24 hours", value: "24h" },
@@ -41,11 +34,9 @@ export const WorkspaceAuditLogTableColumns: {
 	label: string;
 	className: string;
 }[] = [
-	{ key: "branchName", label: "Branch", className: "w-[18rem]" },
-	{ key: "module", label: "Module", className: "w-[18rem]" },
-	{ key: "action", label: "Action", className: "w-[10rem]" },
-	{ key: "actorName", label: "User", className: "w-[15rem]" },
-	{ key: "description", label: "Activity", className: "w-[34rem]" },
-	{ key: "severity", label: "Severity", className: "w-[10rem]" },
 	{ key: "createdAt", label: "Date", className: "w-[13rem]" },
+	{ key: "actorName", label: "User", className: "w-[15rem]" },
+	{ key: "action", label: "Action", className: "w-[10rem]" },
+	{ key: "description", label: "Activity", className: "w-[34rem]" },
+	{ key: "module", label: "Module", className: "w-[18rem]" },
 ];

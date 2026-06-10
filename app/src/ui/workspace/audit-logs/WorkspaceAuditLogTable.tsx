@@ -5,14 +5,12 @@ import {
 	WorkspaceAuditLogActionOptions,
 	WorkspaceAuditLogDateRangeOptions,
 	WorkspaceAuditLogPaginationStorageKey,
-	WorkspaceAuditLogSeverityOptions,
 } from "@/app/src/constants/workspace/audit-logs/WorkspaceAuditLogConstants";
 import type { useWorkspaceAuditLogListPage } from "@/app/src/hooks/workspace/audit-logs/useWorkspaceAuditLogListPage";
 import type {
 	WorkspaceAuditLogAction,
 	WorkspaceAuditLogDateRange,
 	WorkspaceAuditLogRecord,
-	WorkspaceAuditLogSeverity,
 } from "@/app/src/types/workspace/audit-logs/WorkspaceAuditLogTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
@@ -40,8 +38,6 @@ type WorkspaceAuditLogTableProps = Pick<
 	| "setDateRangeFilter"
 	| "setModuleFilter"
 	| "setQuery"
-	| "setSeverityFilter"
-	| "severityFilter"
 	| "table"
 >;
 
@@ -61,8 +57,6 @@ export function WorkspaceAuditLogTable({
 	setDateRangeFilter,
 	setModuleFilter,
 	setQuery,
-	setSeverityFilter,
-	severityFilter,
 	table,
 }: WorkspaceAuditLogTableProps) {
 	return (
@@ -72,19 +66,19 @@ export function WorkspaceAuditLogTable({
 				emptyDescription={
 					isError
 						? "The audit log service could not be reached. Refresh the page or try again."
-						: "Adjust branch, date range, module, action, or severity."
+						: "Adjust branch, date range, module, or action."
 				}
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle={
 					isError ? "Could not load audit logs" : "No audit logs found"
 				}
 				isLoading={isLoading}
-				minWidthClassName="min-w-[106rem]"
+				minWidthClassName="min-w-[90rem]"
 				paginationLabel="logs"
 				paginationStorageKey={WorkspaceAuditLogPaginationStorageKey}
 				table={table}
 				toolbar={
-					<ModuleTableToolbar className="xl:grid-cols-[minmax(24rem,2.4fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(9rem,0.7fr)]">
+					<ModuleTableToolbar className="xl:grid-cols-[minmax(24rem,2.4fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(9rem,0.7fr)]">
 						<ModuleTableSearch
 							label="Search workspace audit logs"
 							value={query}
@@ -135,20 +129,6 @@ export function WorkspaceAuditLogTable({
 							]}
 							onChange={(value) =>
 								setActionFilter(value as WorkspaceAuditLogAction | "all")
-							}
-						/>
-						<ModuleTableFilterSelect
-							label="Severity"
-							value={severityFilter}
-							options={[
-								{ label: "All severities", value: "all" },
-								...WorkspaceAuditLogSeverityOptions.map((severity) => ({
-									label: severity,
-									value: severity,
-								})),
-							]}
-							onChange={(value) =>
-								setSeverityFilter(value as WorkspaceAuditLogSeverity | "all")
 							}
 						/>
 						<ModuleTableResetButton onClick={resetFilters}>

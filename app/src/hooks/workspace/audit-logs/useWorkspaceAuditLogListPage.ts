@@ -25,7 +25,6 @@ import type {
 	WorkspaceAuditLogDateRange,
 	WorkspaceAuditLogFilters,
 	WorkspaceAuditLogRecord,
-	WorkspaceAuditLogSeverity,
 	WorkspaceAuditLogTableColumnKey,
 } from "@/app/src/types/workspace/audit-logs/WorkspaceAuditLogTypes";
 
@@ -40,7 +39,6 @@ const InitialFilters: WorkspaceAuditLogFilters = {
 	dateRange: "30d",
 	module: "all",
 	query: "",
-	severity: "all",
 };
 const EmptyWorkspaceAuditLogRecords: WorkspaceAuditLogRecord[] = [];
 
@@ -57,10 +55,11 @@ export function useWorkspaceAuditLogListPage({
 		{ id: "createdAt", desc: true },
 	]);
 	const recordsQuery = useQuery({
-		queryKey: WorkspaceAuditLogQueryKeys.records(),
-		queryFn: GetWorkspaceAuditLogs,
-		initialData: initialRecords,
-	});
+  queryKey: WorkspaceAuditLogQueryKeys.records(),
+  queryFn: GetWorkspaceAuditLogs,
+  initialData: initialRecords,
+  initialDataUpdatedAt: 0,
+});
 	const records = recordsQuery.data ?? EmptyWorkspaceAuditLogRecords;
 	const queryResult = useMemo(
 		() => queryWorkspaceAuditLogRecords(filters, records),
@@ -92,9 +91,6 @@ export function useWorkspaceAuditLogListPage({
 		onPaginationChange: setPagination,
 		onSortingChange: setSorting,
 	});
-	const criticalCount = queryResult.records.filter(
-		(record) => record.severity === "Critical",
-	).length;
 	const branchCount = new Set(
 		queryResult.records.map((record) => record.branchId),
 	).size;
@@ -114,7 +110,6 @@ export function useWorkspaceAuditLogListPage({
 		branchFilter: filters.branchId,
 		branchOptions: getWorkspaceAuditLogBranchOptions(records),
 		branchCount,
-		criticalCount,
 		dateRangeFilter: filters.dateRange,
 		filteredCount: queryResult.totalMatched,
 		isError: recordsQuery.isError,
@@ -124,7 +119,6 @@ export function useWorkspaceAuditLogListPage({
 		query: filters.query,
 		recordCount: records.length,
 		resetFilters,
-		severityFilter: filters.severity,
 		table,
 		setActionFilter: (action: WorkspaceAuditLogAction | "all") =>
 			updateFilters({ action }),
@@ -133,8 +127,6 @@ export function useWorkspaceAuditLogListPage({
 			updateFilters({ dateRange }),
 		setModuleFilter: (module: string) => updateFilters({ module }),
 		setQuery: (query: string) => updateFilters({ query }),
-		setSeverityFilter: (severity: WorkspaceAuditLogSeverity | "all") =>
-			updateFilters({ severity }),
 	};
 }
 
@@ -144,15 +136,16 @@ function createWorkspaceAuditLogColumn(
 	className: string,
 ): ColumnDef<WorkspaceAuditLogRecord> {
 	if (key === "createdAt") {
-		return {
-			id: key,
-			accessorFn: (record) =>
-				formatWorkspaceAuditLogCreatedAt(record.createdAt),
-			header: label,
-			sortingFn: "alphanumeric",
-			meta: { className },
-		};
-	}
+  return {
+    id: key,
+    accessorFn: (record) => formatWorkspaceAuditLogCreatedAt(record.createdAt),
+    header: label,
+    sortingFn: (rowA, rowB) =>
+      new Date(rowA.original.createdAt).getTime() -
+      new Date(rowB.original.createdAt).getTime(),
+    meta: { className },
+  };
+}
 
 	return {
 		accessorKey: key,

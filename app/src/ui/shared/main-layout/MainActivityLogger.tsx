@@ -19,7 +19,9 @@ export function MainActivityLogger({
 	currentBranch,
 }: MainActivityLoggerProps) {
 	const pathname = usePathname();
-	const moduleName = breadcrumbs[breadcrumbs.length - 1]?.label ?? "Module";
+	const activityContext = getActivityContext(breadcrumbs);
+	const moduleName = activityContext.moduleName;
+	const recordId = activityContext.recordId;
 
 	useEffect(() => {
 		if (!pathname || !moduleName || moduleName === "Module") {
@@ -38,12 +40,34 @@ export function MainActivityLogger({
 		void RecordWorkspaceActivity({
 			branchId: currentBranch?.id,
 			branchName: currentBranch?.name,
+			description: recordId
+				? `${moduleName} record ${recordId} was opened.`
+				: undefined,
+			entityId: recordId,
 			module: moduleName,
 			path: pathname,
 		}).catch(() => {
 			window.sessionStorage.removeItem(storageKey);
 		});
-	}, [currentBranch?.id, currentBranch?.name, moduleName, pathname]);
+	}, [currentBranch?.id, currentBranch?.name, moduleName, pathname, recordId]);
 
 	return null;
+}
+
+function getActivityContext(breadcrumbs: MainBreadcrumb[]) {
+	const labels = breadcrumbs
+		.map((breadcrumb) => breadcrumb.label.trim())
+		.filter(Boolean);
+	const recordId = [...labels].reverse().find(isRecordLabel);
+	const moduleName =
+		[...labels].reverse().find((label) => !isRecordLabel(label)) ?? "Module";
+
+	return {
+		moduleName,
+		recordId,
+	};
+}
+
+function isRecordLabel(label: string) {
+	return /^\d+$/.test(label);
 }

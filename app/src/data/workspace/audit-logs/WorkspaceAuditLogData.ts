@@ -66,10 +66,6 @@ function matchesWorkspaceAuditFilters(
 		return false;
 	}
 
-	if (filters.severity !== "all" && record.severity !== filters.severity) {
-		return false;
-	}
-
 	if (!isWithinDateRange(record.createdAt, filters.dateRange)) {
 		return false;
 	}
@@ -89,7 +85,6 @@ function matchesWorkspaceAuditFilters(
 		record.ipAddress,
 		record.module,
 		record.recordId,
-		record.severity,
 	]
 		.join(" ")
 		.toLowerCase()

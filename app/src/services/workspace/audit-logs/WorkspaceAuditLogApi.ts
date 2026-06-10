@@ -9,7 +9,6 @@ import type {
 import type {
 	WorkspaceAuditLogAction,
 	WorkspaceAuditLogRecord,
-	WorkspaceAuditLogSeverity,
 } from "@/app/src/types/workspace/audit-logs/WorkspaceAuditLogTypes";
 
 export type WorkspaceAuditLogApiRecord = WorkspaceAuditLogResponseDto;
@@ -24,12 +23,6 @@ const WorkspaceAuditLogActions: readonly WorkspaceAuditLogAction[] = [
 	"Reject",
 	"Update",
 	"View",
-];
-
-const WorkspaceAuditLogSeverities: readonly WorkspaceAuditLogSeverity[] = [
-	"Info",
-	"Warning",
-	"Critical",
 ];
 
 export async function GetWorkspaceAuditLogs() {
@@ -61,7 +54,6 @@ export function MapWorkspaceAuditLogApiRecord(
 		ipAddress: record.ipAddress ?? "",
 		module: NormalizeModule(record.module),
 		recordId: record.entityId ?? record.id,
-		severity: NormalizeSeverity(record.severity),
 	};
 }
 
@@ -77,10 +69,4 @@ function NormalizeAction(value: string): WorkspaceAuditLogAction {
 	const action = WorkspaceAuditLogActions.find((option) => option === value);
 
 	return action ?? "Update";
-}
-
-function NormalizeSeverity(value: string): WorkspaceAuditLogSeverity {
-	const severity = WorkspaceAuditLogSeverities.find((option) => option === value);
-
-	return severity ?? "Info";
 }

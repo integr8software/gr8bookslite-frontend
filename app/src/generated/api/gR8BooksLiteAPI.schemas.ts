@@ -1006,7 +1006,6 @@ export interface WorkspaceAuditLogResponseDto {
   module: string;
   branchId: string;
   branchName: string;
-  severity: string;
   createdAt: string;
 }
 
@@ -1017,6 +1016,10 @@ export interface RecordWorkspaceActivityDto {
   module: string;
   branchId?: string;
   branchName?: string;
+  action?: string;
+  description?: string;
+  entityType?: string;
+  entityId?: string;
 }
 
 export interface WorkspaceUserAssignmentDto {

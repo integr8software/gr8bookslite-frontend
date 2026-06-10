@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, AlertTriangle, GitBranch, ListChecks } from "lucide-react";
+import { Activity, GitBranch, ListChecks } from "lucide-react";
 import { useWorkspaceAuditLogListPage } from "@/app/src/hooks/workspace/audit-logs/useWorkspaceAuditLogListPage";
 import type { WorkspaceAuditLogRecord } from "@/app/src/types/workspace/audit-logs/WorkspaceAuditLogTypes";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
@@ -27,7 +27,6 @@ export function WorkspaceAuditLogListPage({
 			/>
 			<WorkspaceAuditLogSummary
 				branchCount={page.branchCount}
-				criticalCount={page.criticalCount}
 				filteredCount={page.filteredCount}
 				recordCount={page.recordCount}
 			/>
@@ -38,12 +37,10 @@ export function WorkspaceAuditLogListPage({
 
 function WorkspaceAuditLogSummary({
 	branchCount,
-	criticalCount,
 	filteredCount,
 	recordCount,
 }: {
 	branchCount: number;
-	criticalCount: number;
 	filteredCount: number;
 	recordCount: number;
 }) {
@@ -53,12 +50,6 @@ function WorkspaceAuditLogSummary({
 			label: "Matched Logs",
 			tone: "bg-skyblue/12 text-darknavy",
 			value: filteredCount,
-		},
-		{
-			icon: AlertTriangle,
-			label: "Critical",
-			tone: "bg-coralpink/12 text-coralpink",
-			value: criticalCount,
 		},
 		{
 			icon: GitBranch,
@@ -75,7 +66,7 @@ function WorkspaceAuditLogSummary({
 	];
 
 	return (
-		<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+		<div className="grid gap-3 md:grid-cols-3">
 			{metrics.map((metric) => {
 				const Icon = metric.icon;
 

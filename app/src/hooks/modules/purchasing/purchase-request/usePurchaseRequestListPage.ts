@@ -12,9 +12,13 @@ import {
 } from "@tanstack/react-table";
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import { usePurchaseRequestStore } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequest";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { recordPurchaseRequestAuditLog } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestAuditLog";
 
 export function usePurchaseRequestListPage() {
 	const { deleteRequest, isMutating, requests } = usePurchaseRequestStore();
+	const activeBranchId = useAppStore((state) => state.activeBranchId);
+	const activeBranchName = useAppStore((state) => state.activeBranchName);
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
 		pageSize: 5,
@@ -102,6 +106,10 @@ export function usePurchaseRequestListPage() {
 		}
 
 		deleteRequest(pendingDeleteRequest.id);
+		recordPurchaseRequestAuditLog("DELETE", pendingDeleteRequest, {
+			branchId: activeBranchId,
+			branchName: activeBranchName,
+		});
 		setPendingDeleteRequest(null);
 	}
 

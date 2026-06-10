@@ -204,7 +204,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     "/maintenance/item-management/items",
     "Configure item and warehouse master files used by inventory documents.",
     [
-      "Item Management defines item records, bundle components, categories, sub categories, item types, and sub item types used during document entry.",
+      "Item Management defines item records, bundle components, and the single Item Category classification tree used during document entry.",
       "Warehouse Management defines storage locations, access assignments, and warehouse item counts used for stock movement and reporting.",
     ],
     ["help-warehouse-management", "help-item-management", "help-inventory"],
@@ -226,7 +226,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     "/maintenance/item-management/items",
     "Maintain item records and bundle definitions used by sales, purchasing, and inventory documents.",
     [
-      "Items stores item names, codes, categories, types, predefined units, and other item details used during document entry.",
+      "Items stores item names, codes, categories, classifications, predefined units, and other item details used during document entry.",
       "Bundle-enabled items can define component rows so users can see the item mix behind packaged or grouped stock.",
       "Complete item setup helps users record stock movement accurately and supports item-level reporting.",
     ],
@@ -236,9 +236,9 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     "help-item-category",
     "Item Classifications",
     "/maintenance/item-management/item-category",
-    "Organize items by category/sub category and item type/sub item type.",
+    "Organize items in one parent-child Item Category hierarchy.",
     [
-      "Category and Item Type pages show their child classifications in expandable rows, so reusable sub categories and sub item types can stay visible with their parents.",
+      "The Item Category page shows every parent and child classification in expandable rows, including migrated legacy records.",
       "Use consistent classifications so receiving, issuing, sales, purchasing, and valuation documents remain easier to filter and report.",
     ],
     ["help-item-management", "help-inventory-reports"],

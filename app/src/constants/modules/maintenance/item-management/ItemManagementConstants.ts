@@ -1,6 +1,6 @@
 import type {
-	ItemSetupKind,
-	ItemSetupTableColumnKey,
+	ItemCategoryAccountingSetup,
+	ItemCategoryClassificationTableColumnKey,
 	ItemStatus,
 	ItemTableColumnKey,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
@@ -8,18 +8,40 @@ import { SystemUomOptions, SystemUomRows } from "@/app/src/data/shared/uom/UomDa
 
 export const ItemsHref = "/maintenance/item-management/items";
 export const ItemCategoryHref = "/maintenance/item-management/item-category";
-export const ItemSubcategoryHref =
-	"/maintenance/item-management/item-subcategory";
-export const ItemTypeHref = "/maintenance/item-management/item-type";
-export const ItemSubtypeHref = "/maintenance/item-management/item-subtype";
 
 export const ItemStatusOptions: ItemStatus[] = ["Active", "Inactive"];
 
 export const ItemUomDictionary = SystemUomRows;
 export const ItemUomOptions = SystemUomOptions;
 
-export const ItemSetupAllParentsValue = "__all_parents__";
-export const ItemSetupAllParentsRecordId = "item-setup-all-parents";
+export const ItemCategoryClassificationPaginationStorageKey =
+	"maintenance.item-management.item-category.classification";
+
+export const ItemCategoryUnassignedRecordId = "item-category-unassigned";
+
+export const ItemCategoryAccountingAccountOptions = [
+	"Inventory - Merchandise",
+	"Inventory - Supplies",
+	"Inventory - Finished Goods",
+	"Sales - Merchandise",
+	"Sales - Services",
+	"Cost of Sales - Merchandise",
+	"Purchases - Merchandise",
+	"Expense - Operating Supplies",
+	"Input VAT",
+	"Output VAT",
+] as const;
+
+export const ItemCategorySystemDefaultAccountingSetup: ItemCategoryAccountingSetup =
+	{
+		inventoryAccount: "Inventory - Merchandise",
+		salesAccount: "Sales - Merchandise",
+		costOfSalesAccount: "Cost of Sales - Merchandise",
+		purchaseAccount: "Purchases - Merchandise",
+		expenseAccount: "Expense - Operating Supplies",
+		inputVatAccount: "Input VAT",
+		outputVatAccount: "Output VAT",
+	};
 
 export const ItemSupplierOptions = [
 	"TechSource Inc.",
@@ -34,13 +56,6 @@ export const ItemWarehouseOptions = [
 ] as const;
 
 export const ItemsTablePaginationStorageKey = "maintenance.item-management.items";
-
-export const ItemSetupTablePaginationStorageKeys: Record<ItemSetupKind, string> = {
-	category: "maintenance.item-management.category",
-	subcategory: "maintenance.item-management.subcategory",
-	type: "maintenance.item-management.type",
-	subtype: "maintenance.item-management.subtype",
-};
 
 export const ItemsTableColumns: Array<
 	| {
@@ -58,16 +73,16 @@ export const ItemsTableColumns: Array<
 	{ key: "skuCode", label: "SKU", className: "w-[10rem]" },
 	{ key: "name", label: "Item", className: "w-[16rem]" },
 	{ key: "category", label: "Category", className: "w-[12rem]" },
-	{ key: "type", label: "Type", className: "w-[12rem]" },
+	{ key: "type", label: "Item Type", className: "w-[12rem]" },
 	{ key: "uom", label: "UOM", className: "w-[8rem]" },
 	{ key: "sellingPrice", label: "Selling Price", className: "w-[10rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
 	{ id: "actions", label: "Actions", className: "w-[10rem]" },
 ];
 
-export const ItemSetupTableColumns: Array<
+export const ItemCategoryClassificationTableColumns: Array<
 	| {
-			key: ItemSetupTableColumnKey;
+			key: ItemCategoryClassificationTableColumnKey;
 			label: string;
 			className: string;
 	  }
@@ -77,71 +92,16 @@ export const ItemSetupTableColumns: Array<
 			className: string;
 	  }
 > = [
-	{ key: "code", label: "Code", className: "w-[11rem]" },
-	{ key: "name", label: "Name", className: "w-[18rem]" },
-	{ key: "recordKindLabel", label: "Level", className: "w-[10rem]" },
-	{ key: "appliesToLabel", label: "Applies To", className: "w-[18rem]" },
-	{ key: "status", label: "Status", className: "w-[9rem]" },
-	{ id: "actions", label: "Actions", className: "w-[10rem]" },
-];
-
-export const ItemSetupChildKindByKind: Partial<
-	Record<ItemSetupKind, ItemSetupKind>
-> = {
-	category: "subcategory",
-	type: "subtype",
-};
-
-export const ItemSetupParentKindByKind: Partial<
-	Record<ItemSetupKind, ItemSetupKind>
-> = {
-	subcategory: "category",
-	subtype: "type",
-};
-
-export const ItemSetupConfigByKind: Record<
-	ItemSetupKind,
+	{ key: "name", label: "Category Name", className: "w-[34rem]" },
+	{ key: "parentName", label: "Parent Category", className: "w-[12rem]" },
 	{
-		href: string;
-		title: string;
-		singularTitle: string;
-		description: string;
-		eyebrow: string;
-	}
-> = {
-	category: {
-		href: ItemCategoryHref,
-		title: "Category",
-		singularTitle: "Item Category",
-		description:
-			"Maintain item categories and the sub categories that can be assigned to one, many, or all categories.",
-		eyebrow: "Item setup",
+		key: "accountingSetupStatus",
+		label: "Accounting Setup",
+		className: "w-[11rem]",
 	},
-	subcategory: {
-		href: ItemSubcategoryHref,
-		title: "Sub Category",
-		singularTitle: "Item Sub Category",
-		description:
-			"Maintain sub categories and choose which categories can use them.",
-		eyebrow: "Item setup",
-	},
-	type: {
-		href: ItemTypeHref,
-		title: "Item Type",
-		singularTitle: "Item Type",
-		description:
-			"Maintain item type classifications and the sub item types that can be reused across types.",
-		eyebrow: "Item setup",
-	},
-	subtype: {
-		href: ItemSubtypeHref,
-		title: "Sub Item Type",
-		singularTitle: "Sub Item Type",
-		description:
-			"Maintain sub item types and choose which item types can use them.",
-		eyebrow: "Item setup",
-	},
-};
+	{ key: "status", label: "Status", className: "w-[8rem]" },
+	{ id: "actions", label: "Actions", className: "w-[9rem] text-right" },
+];
 
 export const ItemsFormPageCopy = {
 	add: {
@@ -152,7 +112,7 @@ export const ItemsFormPageCopy = {
 	edit: {
 		title: "Edit Item",
 		description:
-			"Update item master data, classification, tracking, and bundle components.",
+			"Update item master data, item type, tracking, and bundle components.",
 	},
 	view: {
 		title: "Item",

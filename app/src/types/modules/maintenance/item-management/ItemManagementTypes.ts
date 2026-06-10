@@ -4,12 +4,33 @@ export type ItemSetupKind = "category" | "subcategory" | "type" | "subtype";
 
 export type ItemTaxType = "VATable" | "VATIncluded";
 
+export type ItemCategoryAccountingSetupStatus =
+	| "Configured"
+	| "Inherited"
+	| "Override"
+	| "Not Set";
+
+export type ItemCategoryAccountingSetupMode = "inherit" | "notSet" | "own";
+
+export type ItemCategoryAccountingSetup = {
+	inventoryAccount: string;
+	salesAccount: string;
+	costOfSalesAccount: string;
+	purchaseAccount: string;
+	expenseAccount: string;
+	inputVatAccount: string;
+	outputVatAccount: string;
+};
+
 export type ItemSetupRecord = {
 	id: string;
 	code: string;
 	name: string;
 	description: string;
 	parentIds?: string[];
+	accountingSetupMode?: ItemCategoryAccountingSetupMode;
+	accountingSetup?: Partial<ItemCategoryAccountingSetup>;
+	allowSubCategory?: boolean;
 	status: ItemStatus;
 };
 
@@ -98,11 +119,13 @@ export type ItemFormValues = {
 	bundleComponents: ItemBundleComponent[];
 };
 
-export type ItemSetupFormValues = {
-	code: string;
+export type ItemCategoryClassificationFormValues = {
 	name: string;
+	parentId: string;
 	description: string;
-	parentIds: string[];
+	accountingSetupMode: ItemCategoryAccountingSetupMode;
+	accountingSetup: ItemCategoryAccountingSetup;
+	allowSubCategory: boolean;
 	status: ItemStatus;
 };
 
@@ -110,7 +133,13 @@ export type ItemFormErrors = Partial<
 	Record<keyof ItemFormValues | "bundleComponents" | "suppliers", string>
 >;
 
-export type ItemSetupFormErrors = Partial<Record<keyof ItemSetupFormValues, string>>;
+export type ItemCategoryClassificationFormErrors = Partial<
+	Record<
+		| keyof ItemCategoryClassificationFormValues
+		| keyof ItemCategoryAccountingSetup,
+		string
+	>
+>;
 
 export type ItemActionMode = "add" | "edit" | "view";
 
@@ -124,21 +153,24 @@ export type ItemTableColumnKey =
 	| "sellingPrice"
 	| "status";
 
-export type ItemSetupTableColumnKey =
-	| "code"
+export type ItemCategoryClassificationTableColumnKey =
 	| "name"
-	| "recordKindLabel"
-	| "appliesToLabel"
+	| "parentName"
+	| "accountingSetupStatus"
 	| "status";
 
-export type ItemSetupTableRowData = {
+export type ItemCategoryClassificationTableRowData = {
 	id: string;
 	record: ItemSetupRecord;
 	recordKind: ItemSetupKind;
 	recordKindLabel: string;
 	level: number;
 	hasChildren: boolean;
+	parentId: string;
+	parentName: string;
+	accountingSetupStatus: ItemCategoryAccountingSetupStatus;
+	effectiveAccountingSetup?: ItemCategoryAccountingSetup;
+	inheritedAccountingSourceName?: string;
 	isVirtual?: boolean;
-	appliesToLabel: string;
-	parentRecord?: ItemSetupRecord;
+	usedByItemCount: number;
 };

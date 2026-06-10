@@ -69,9 +69,9 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
             "inventory",
           ),
           moduleItem(
-            "maintenance-item-type",
-            "Item Type",
-            "/maintenance/item-management/item-type",
+            "maintenance-item-promotions",
+            "Item Promotions",
+            "/maintenance/item-management/item-promotions",
             "maintenance.item",
             "inventory",
           ),

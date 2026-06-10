@@ -1,5 +1,5 @@
-import { ItemSetupFormPage } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemSetupFormPage";
+import { ItemCategoryClassificationFormPage } from "@/app/src/ui/modules/maintenance/item-management/item-category/ItemCategoryClassificationFormPage";
 
 export function ItemCategoryFormPage() {
-	return <ItemSetupFormPage kind="category" />;
+	return <ItemCategoryClassificationFormPage />;
 }

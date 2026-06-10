@@ -9,14 +9,14 @@ import { ItemsTableRow } from "@/app/src/ui/modules/maintenance/item-management/
 
 type ItemsTableProps = Pick<
 	ReturnType<typeof useItemsListPage>,
-	"isLoading" | "setPendingDeleteItem" | "table"
+	"isLoading" | "setPendingStatusItem" | "table"
 > & {
 	toolbar?: ReactNode;
 };
 
 export function ItemsTable({
 	isLoading,
-	setPendingDeleteItem,
+	setPendingStatusItem,
 	table,
 	toolbar,
 }: ItemsTableProps) {
@@ -34,7 +34,7 @@ export function ItemsTable({
 				<ItemsTableRow
 					key={id}
 					item={original}
-					onDeleteItem={setPendingDeleteItem}
+					onStatusChange={setPendingStatusItem}
 				/>
 			)}
 		/>

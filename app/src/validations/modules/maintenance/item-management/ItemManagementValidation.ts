@@ -1,9 +1,10 @@
 import { z } from "zod";
 import type {
+	ItemCategoryClassificationFormErrors,
+	ItemCategoryClassificationFormValues,
 	ItemFormErrors,
 	ItemFormValues,
-	ItemSetupFormErrors,
-	ItemSetupFormValues,
+	ItemSetupRecord,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 
 export const ItemBundleComponentValidationSchema = z.object({
@@ -40,7 +41,7 @@ export const ItemFormValidationSchema = z
 		category: z.string().trim().min(1, "Enter a category."),
 		subcategory: z.string().trim().min(1, "Enter a sub category."),
 		type: z.string().trim().min(1, "Enter an item type."),
-		subtype: z.string().trim().min(1, "Enter a sub item type."),
+		subtype: z.string().trim().min(1, "Enter an item subtype."),
 		uom: z.string().trim().min(1, "Enter a UOM."),
 		costPrice: z.number().nonnegative("Cost must not be negative."),
 		sellingPrice: z.number().nonnegative("Selling price must not be negative."),
@@ -96,13 +97,52 @@ export const ItemFormValidationSchema = z
 		});
 	});
 
-export const ItemSetupFormValidationSchema = z.object({
-	code: z.string().trim().min(1, "Enter a code."),
-	name: z.string().trim().min(1, "Enter a name."),
-	description: z.string().trim().optional(),
-	parentIds: z.array(z.string()),
-	status: z.enum(["Active", "Inactive"]),
+export const ItemCategoryAccountingSetupValidationSchema = z.object({
+	inventoryAccount: z.string().trim().min(1, "Select an inventory account."),
+	salesAccount: z.string().trim().min(1, "Select a sales account."),
+	costOfSalesAccount: z
+		.string()
+		.trim()
+		.min(1, "Select a cost of sales account."),
+	purchaseAccount: z.string().trim().min(1, "Select a purchase account."),
+	expenseAccount: z.string().trim().min(1, "Select an expense account."),
+	inputVatAccount: z.string().trim().min(1, "Select an input VAT account."),
+	outputVatAccount: z.string().trim().min(1, "Select an output VAT account."),
 });
+
+export const ItemCategoryClassificationFormValidationSchema = z
+	.object({
+		name: z.string().trim().min(1, "Enter a category name."),
+		parentId: z.string(),
+		description: z.string().trim().optional(),
+		accountingSetupMode: z.enum(["inherit", "notSet", "own"]),
+		accountingSetup: ItemCategoryAccountingSetupValidationSchema,
+		allowSubCategory: z.boolean(),
+		status: z.enum(["Active", "Inactive"], {
+			message: "Select a status.",
+		}),
+	})
+	.superRefine((values, context) => {
+		if (values.accountingSetupMode !== "own") {
+			return;
+		}
+
+		const result = ItemCategoryAccountingSetupValidationSchema.safeParse(
+			values.accountingSetup,
+		);
+
+		if (result.success) {
+			return;
+		}
+
+		result.error.issues.forEach((issue) => {
+			context.addIssue({
+				code: "custom",
+				message: issue.message,
+				path: issue.path,
+			});
+		});
+	});
 
 export function validateItemForm(values: ItemFormValues) {
 	const result = ItemFormValidationSchema.safeParse(values);
@@ -122,20 +162,84 @@ export function validateItemForm(values: ItemFormValues) {
 	}, {});
 }
 
-export function validateItemSetupForm(values: ItemSetupFormValues) {
-	const result = ItemSetupFormValidationSchema.safeParse(values);
+export function validateItemCategoryClassificationForm(
+	values: ItemCategoryClassificationFormValues,
+	options: {
+		recordId?: string;
+		records: ItemSetupRecord[];
+	} = { records: [] },
+) {
+	const result = ItemCategoryClassificationFormValidationSchema.safeParse(values);
+	const errors: ItemCategoryClassificationFormErrors = {};
 
-	if (result.success) {
-		return {};
+	if (!result.success) {
+		result.error.issues.forEach((issue) => {
+			const field = issue.path[0] as
+				| keyof ItemCategoryClassificationFormErrors
+				| undefined;
+
+			if (field) {
+				errors[field] = issue.message;
+			}
+		});
 	}
 
-	return result.error.issues.reduce<ItemSetupFormErrors>((errors, issue) => {
-		const field = issue.path[0] as keyof ItemSetupFormErrors | undefined;
+	if (values.parentId && options.recordId === values.parentId) {
+		errors.parentId = "A category cannot be its own parent.";
+	}
 
-		if (field) {
-			errors[field] = issue.message;
+	if (
+		values.parentId &&
+		options.recordId &&
+		isCircularParentSelection({
+			parentId: values.parentId,
+			recordId: options.recordId,
+			records: options.records,
+		})
+	) {
+		errors.parentId = "Choose a parent outside this category branch.";
+	}
+
+	return errors;
+}
+
+function isCircularParentSelection({
+	parentId,
+	recordId,
+	records,
+}: {
+	parentId: string;
+	recordId: string;
+	records: ItemSetupRecord[];
+}) {
+	const childrenByParentId = new Map<string, string[]>();
+
+	records.forEach((record) => {
+		(record.parentIds ?? []).forEach((currentParentId) => {
+			const children = childrenByParentId.get(currentParentId) ?? [];
+
+			children.push(record.id);
+			childrenByParentId.set(currentParentId, children);
+		});
+	});
+
+	const pending = [...(childrenByParentId.get(recordId) ?? [])];
+	const visited = new Set<string>();
+
+	while (pending.length > 0) {
+		const currentId = pending.pop();
+
+		if (!currentId || visited.has(currentId)) {
+			continue;
 		}
 
-		return errors;
-	}, {});
+		if (currentId === parentId) {
+			return true;
+		}
+
+		visited.add(currentId);
+		pending.push(...(childrenByParentId.get(currentId) ?? []));
+	}
+
+	return false;
 }

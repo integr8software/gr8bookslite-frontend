@@ -22,7 +22,7 @@ const AllItemCategoriesFilter = "All";
 const AllItemStatusesFilter = "All";
 
 export function useItemsListPage() {
-	const { deleteItem, isLoading, isMutating, items } = useItemManagementStore();
+	const { isLoading, isMutating, items, updateItem } = useItemManagementStore();
 	const [categoryFilter, setCategoryFilterState] = useState(
 		AllItemCategoriesFilter,
 	);
@@ -30,7 +30,7 @@ export function useItemsListPage() {
 	const [statusFilter, setStatusFilterState] = useState<
 		ItemStatus | typeof AllItemStatusesFilter
 	>(AllItemStatusesFilter);
-	const [pendingDeleteItem, setPendingDeleteItem] =
+	const [pendingStatusItem, setPendingStatusItem] =
 		useState<ItemRecord | null>(null);
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
@@ -132,28 +132,31 @@ export function useItemsListPage() {
 		table.setPageIndex(0);
 	}
 
-	function handleConfirmDelete() {
-		if (!pendingDeleteItem) {
+	function handleConfirmStatusChange() {
+		if (!pendingStatusItem) {
 			return;
 		}
 
-		deleteItem(pendingDeleteItem.id);
-		setPendingDeleteItem(null);
+		updateItem({
+			...pendingStatusItem,
+			status: pendingStatusItem.status === "Active" ? "Inactive" : "Active",
+		});
+		setPendingStatusItem(null);
 	}
 
 	return {
 		categoryFilter,
 		categoryFilterOptions,
-		handleConfirmDelete,
+		handleConfirmStatusChange,
 		handleQueryChange,
 		items,
 		isLoading,
 		isMutating,
-		pendingDeleteItem,
+		pendingStatusItem,
 		query,
 		resetFilters,
 		setCategoryFilter,
-		setPendingDeleteItem,
+		setPendingStatusItem,
 		setStatusFilter,
 		statusFilter,
 		table,

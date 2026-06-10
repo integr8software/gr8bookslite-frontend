@@ -145,9 +145,11 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 		}) => ({ kind, recordId }),
 		onSuccess: ({ kind, recordId }) => {
 			updateCachedSetupRecords(kind, (records) =>
-				records.filter((record) => record.id !== recordId),
+				records.map((record) =>
+					record.id === recordId ? { ...record, status: "Inactive" } : record,
+				),
 			);
-			toast.success("Setup record deleted.");
+			toast.success("Setup record set inactive.");
 		},
 	});
 

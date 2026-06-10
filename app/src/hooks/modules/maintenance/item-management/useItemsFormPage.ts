@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
@@ -22,7 +22,9 @@ import type {
 	ItemFormErrors,
 	ItemFormValues,
 	ItemRecord,
+	ItemSetupKind,
 	ItemSetupRecord,
+	ItemStatus,
 	ItemSupplierAssignment,
 	ItemUomConversion,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
@@ -42,7 +44,24 @@ export function useItemsFormPage() {
 	const router = useRouter();
 	const store = useItemManagementStore();
 	const { warehouses } = useWarehouseManagementStore();
-	const { addItem, deleteItem, isMutating, items, updateItem } = store;
+	const { addItem, isMutating, items, updateItem } = store;
+	const categoryRecords = store.getSetupRecords("category");
+	const subcategoryRecords = store.getSetupRecords("subcategory");
+	const typeRecords = store.getSetupRecords("type");
+	const subtypeRecords = store.getSetupRecords("subtype");
+	const setupRecords = useMemo<Record<ItemSetupKind, ItemSetupRecord[]>>(
+		() => ({
+			category: categoryRecords,
+			subcategory: subcategoryRecords,
+			type: typeRecords,
+			subtype: subtypeRecords,
+		}),
+		[categoryRecords, subcategoryRecords, subtypeRecords, typeRecords],
+	);
+	const typeParentIdsByTypeId = useMemo(
+		() => inferTypeParentIdsByTypeId(setupRecords, items),
+		[items, setupRecords],
+	);
 	const mode = getActionMode(pathname);
 	const existingItem = items.find((item) => item.id === params.recordId);
 	const isReadonly = mode === "view";
@@ -50,7 +69,9 @@ export function useItemsFormPage() {
 		existingItem ? createItemFormValues(existingItem) : ItemInitialFormValues,
 	);
 	const [errors, setErrors] = useState<ItemFormErrors>({});
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+	const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+	const nextStatus: ItemStatus =
+		existingItem?.status === "Active" ? "Inactive" : "Active";
 
 	function updateField<TKey extends keyof ItemFormValues>(
 		field: TKey,
@@ -68,6 +89,8 @@ export function useItemsFormPage() {
 
 			if (field === "category") {
 				nextValues.subcategory = "";
+				nextValues.type = "";
+				nextValues.subtype = "";
 			}
 
 			if (field === "type") {
@@ -87,7 +110,13 @@ export function useItemsFormPage() {
 		setErrors((current) => ({
 			...current,
 			[field]: undefined,
-			...(field === "category" ? { subcategory: undefined } : {}),
+			...(field === "category"
+				? {
+						subcategory: undefined,
+						subtype: undefined,
+						type: undefined,
+					}
+				: {}),
 			...(field === "type" ? { subtype: undefined } : {}),
 		}));
 	}
@@ -368,15 +397,18 @@ export function useItemsFormPage() {
 		router.push(ItemsHref);
 	}
 
-	function handleConfirmDelete() {
+	function handleConfirmStatusChange() {
 		if (!existingItem) {
-			toast.error("Could not find the item to delete.");
+			toast.error("Could not find the item to update.");
 			return;
 		}
 
-		deleteItem(existingItem.id);
-		setIsDeleteDialogOpen(false);
-		router.push(ItemsHref);
+		updateItem({
+			...existingItem,
+			status: nextStatus,
+		});
+		setValues((current) => ({ ...current, status: nextStatus }));
+		setIsStatusDialogOpen(false);
 	}
 
 	return {
@@ -384,30 +416,36 @@ export function useItemsFormPage() {
 		addBundleComponent,
 		addSupplier,
 		addUomConversion,
-		categoryOptions: createSetupOptions(store.getSetupRecords("category")),
+		categoryOptions: createCategorySetupOptions(setupRecords.category),
 		errors,
 		existingItem,
-		handleConfirmDelete,
+		handleConfirmStatusChange,
 		handleInputChange,
 		handleSubmit,
-		isDeleteDialogOpen,
 		isMutating,
 		isReadonly,
+		isStatusDialogOpen,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
+		nextStatus,
 		removeBundleComponent,
 		removeTag,
 		removeSupplier,
 		removeUomConversion,
-		setIsDeleteDialogOpen,
+		setIsStatusDialogOpen,
 		statusOptions: createSimpleOptions(["Active", "Inactive"]),
 		subcategoryOptions: createChildSetupOptions({
 			parentValue: values.category,
-			parentRecords: store.getSetupRecords("category"),
-			records: store.getSetupRecords("subcategory"),
+			parentRecords: setupRecords.category,
+			records: setupRecords.subcategory,
 		}),
 		supplierOptions: createSimpleOptions([...ItemSupplierOptions]),
-		typeOptions: createSetupOptions(store.getSetupRecords("type")),
+		typeOptions: createChildSetupOptions({
+			parentIdsByRecordId: typeParentIdsByTypeId,
+			parentValue: values.category,
+			parentRecords: setupRecords.category,
+			records: setupRecords.type,
+		}),
 		uomOptions: ItemUomDictionary.map((uom) => ({
 			description: `${uom.description} | ${uom.quantityKind}`,
 			label: uom.code,
@@ -432,8 +470,8 @@ export function useItemsFormPage() {
 		reorderSupplier,
 		subtypeOptions: createChildSetupOptions({
 			parentValue: values.type,
-			parentRecords: store.getSetupRecords("type"),
-			records: store.getSetupRecords("subtype"),
+			parentRecords: setupRecords.type,
+			records: setupRecords.subtype,
 		}),
 	};
 }
@@ -557,26 +595,79 @@ function getActionMode(pathname: string): ItemActionMode {
 	return "add";
 }
 
-function createSetupOptions(records: ItemSetupRecord[]) {
-	return records
-		.filter((record) => record.status === "Active")
-		.map((record) => ({
-			description: record.description,
-			label: record.code,
-			name: record.name,
-			value: record.name,
-		}));
+type ItemSetupOption = {
+	children?: ItemSetupOption[];
+	description?: string;
+	label?: string;
+	name: string;
+	value: string;
+};
+
+function createCategorySetupOptions(
+	records: ItemSetupRecord[],
+): ItemSetupOption[] {
+	const activeRecords = records.filter((record) => record.status === "Active");
+	const activeRecordIds = new Set(activeRecords.map((record) => record.id));
+	const recordsByParentId = new Map<string, ItemSetupRecord[]>();
+
+	activeRecords.forEach((record) => {
+		(record.parentIds ?? []).forEach((parentId) => {
+			const childRecords = recordsByParentId.get(parentId) ?? [];
+
+			childRecords.push(record);
+			recordsByParentId.set(parentId, childRecords);
+		});
+	});
+
+	return activeRecords
+		.filter((record) => {
+			const parentIds = record.parentIds ?? [];
+
+			return (
+				parentIds.length === 0 ||
+				parentIds.every((parentId) => !activeRecordIds.has(parentId))
+			);
+		})
+		.map((record) =>
+			createCategorySetupOption(record, recordsByParentId, new Set()),
+		);
+}
+
+function createCategorySetupOption(
+	record: ItemSetupRecord,
+	recordsByParentId: Map<string, ItemSetupRecord[]>,
+	visitedIds: Set<string>,
+): ItemSetupOption {
+	const nextVisitedIds = new Set(visitedIds);
+
+	nextVisitedIds.add(record.id);
+
+	const children = (recordsByParentId.get(record.id) ?? [])
+		.filter((childRecord) => !nextVisitedIds.has(childRecord.id))
+		.map((childRecord) =>
+			createCategorySetupOption(childRecord, recordsByParentId, nextVisitedIds),
+		);
+
+	return createSetupOption(record, {
+		children,
+		description:
+			children.length > 0
+				? `${record.description} Includes child categories.`
+				: record.description,
+	});
 }
 
 function createChildSetupOptions({
+	parentIdsByRecordId,
 	parentRecords,
 	parentValue,
 	records,
 }: {
+	parentIdsByRecordId?: Map<string, string[]>;
 	parentRecords: ItemSetupRecord[];
 	parentValue: string;
 	records: ItemSetupRecord[];
-}) {
+}): ItemSetupOption[] {
 	const parentRecord = parentRecords.find((record) => record.name === parentValue);
 
 	return records
@@ -585,19 +676,98 @@ function createChildSetupOptions({
 				return false;
 			}
 
-			const parentIds = record.parentIds ?? [];
+			if (!parentValue || !parentRecord) {
+				return true;
+			}
 
-			return parentIds.length === 0 || parentIds.includes(parentRecord?.id ?? "");
+			const parentIds = parentIdsByRecordId?.get(record.id) ?? record.parentIds ?? [];
+
+			return parentIds.length === 0 || parentIds.includes(parentRecord.id);
 		})
-		.map((record) => ({
-			description:
-				record.parentIds?.length === 0
-					? `${record.description} Reusable across all parent records.`
-					: record.description,
-			label: record.code,
-			name: record.name,
-			value: record.name,
-		}));
+		.map((record) =>
+			createSetupOption(record, {
+				description: createSetupOptionDescription(
+					record,
+					parentRecords,
+					parentIdsByRecordId,
+				),
+			}),
+		);
+}
+
+function createSetupOption(
+	record: ItemSetupRecord,
+	options: {
+		children?: ItemSetupOption[];
+		description?: string;
+	} = {},
+): ItemSetupOption {
+	return {
+		children: options.children?.length ? options.children : undefined,
+		description: options.description ?? record.description,
+		label: record.code,
+		name: record.name,
+		value: record.name,
+	};
+}
+
+function createSetupOptionDescription(
+	record: ItemSetupRecord,
+	parentRecords: ItemSetupRecord[],
+	parentIdsByRecordId?: Map<string, string[]>,
+) {
+	const parentIds = parentIdsByRecordId?.get(record.id) ?? record.parentIds ?? [];
+
+	if (parentIds.length === 0) {
+		return `${record.description} Reusable across all parent records.`;
+	}
+
+	const parentNames = parentIds
+		.map((parentId) => parentRecords.find((record) => record.id === parentId)?.name)
+		.filter((name): name is string => Boolean(name));
+
+	if (parentNames.length === 0) {
+		return record.description;
+	}
+
+	return `${record.description} Parent: ${parentNames.join(", ")}.`;
+}
+
+function inferTypeParentIdsByTypeId(
+	setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>,
+	items: ItemRecord[],
+) {
+	const categoryIdByName = new Map(
+		setupRecords.category.map((record) => [record.name, record.id]),
+	);
+	const inferred = new Map<string, Set<string>>();
+
+	setupRecords.type.forEach((typeRecord) => {
+		inferred.set(typeRecord.id, new Set(typeRecord.parentIds ?? []));
+	});
+
+	items.forEach((item) => {
+		const typeRecord = setupRecords.type.find(
+			(record) => record.name === item.type,
+		);
+		const categoryId = categoryIdByName.get(item.category);
+
+		if (!typeRecord || !categoryId) {
+			return;
+		}
+
+		const parentIds = inferred.get(typeRecord.id) ?? new Set<string>();
+
+		parentIds.add(categoryId);
+		inferred.set(typeRecord.id, parentIds);
+	});
+
+	return new Map(
+		Array.from(inferred.entries()).map(([typeId, parentIds]) => [
+			typeId,
+			Array.from(parentIds),
+		]),
+	);
 }
 
 function createSimpleOptions(options: string[]) {

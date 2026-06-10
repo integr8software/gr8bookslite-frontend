@@ -1,11 +1,14 @@
 import type {
+	ItemCategoryAccountingSetup,
+	ItemCategoryAccountingSetupMode,
+	ItemCategoryClassificationFormValues,
 	ItemFormValues,
 	ItemRecord,
 	ItemSetupKind,
 	ItemSetupRecord,
-	ItemSetupFormValues,
 	ItemSupplierAssignment,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
+import { ItemCategorySystemDefaultAccountingSetup } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 
 export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 	category: [
@@ -14,6 +17,16 @@ export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 			code: "SUP",
 			name: "Supplies",
 			description: "Consumable supplies and operating materials.",
+			accountingSetup: {
+				inventoryAccount: "Inventory - Supplies",
+				salesAccount: "Sales - Merchandise",
+				costOfSalesAccount: "Cost of Sales - Merchandise",
+				purchaseAccount: "Purchases - Merchandise",
+				expenseAccount: "Expense - Operating Supplies",
+				inputVatAccount: "Input VAT",
+				outputVatAccount: "Output VAT",
+			},
+			allowSubCategory: true,
 			status: "Active",
 		},
 		{
@@ -21,6 +34,7 @@ export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 			code: "FTW",
 			name: "Footwear",
 			description: "Shoes, sandals, and related wearable products.",
+			allowSubCategory: true,
 			status: "Active",
 		},
 		{
@@ -28,6 +42,16 @@ export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 			code: "BND",
 			name: "Bundles",
 			description: "Bundled items composed of multiple components.",
+			accountingSetup: {
+				inventoryAccount: "Inventory - Finished Goods",
+				salesAccount: "Sales - Merchandise",
+				costOfSalesAccount: "Cost of Sales - Merchandise",
+				purchaseAccount: "Purchases - Merchandise",
+				expenseAccount: "Expense - Operating Supplies",
+				inputVatAccount: "Input VAT",
+				outputVatAccount: "Output VAT",
+			},
+			allowSubCategory: true,
 			status: "Active",
 		},
 	],
@@ -38,6 +62,7 @@ export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 			name: "Office Supplies",
 			description: "Standard office consumables.",
 			parentIds: ["cat-supplies", "cat-bundles"],
+			allowSubCategory: true,
 			status: "Active",
 		},
 		{
@@ -46,6 +71,16 @@ export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 			name: "Men",
 			description: "Items commonly classified for men.",
 			parentIds: ["cat-footwear"],
+			accountingSetup: {
+				inventoryAccount: "Inventory - Merchandise",
+				salesAccount: "Sales - Merchandise",
+				costOfSalesAccount: "Cost of Sales - Merchandise",
+				purchaseAccount: "Purchases - Merchandise",
+				expenseAccount: "Expense - Operating Supplies",
+				inputVatAccount: "Input VAT",
+				outputVatAccount: "Output VAT",
+			},
+			allowSubCategory: true,
 			status: "Active",
 		},
 		{
@@ -54,6 +89,7 @@ export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 			name: "Women",
 			description: "Items commonly classified for women.",
 			parentIds: ["cat-footwear"],
+			allowSubCategory: true,
 			status: "Active",
 		},
 		{
@@ -62,6 +98,7 @@ export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 			name: "Promotional",
 			description: "Reusable sub category for promotional item groupings.",
 			parentIds: [],
+			allowSubCategory: true,
 			status: "Active",
 		},
 	],
@@ -71,6 +108,16 @@ export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 			code: "STK",
 			name: "Product",
 			description: "Items tracked as inventory stock.",
+			accountingSetup: {
+				inventoryAccount: "Inventory - Merchandise",
+				salesAccount: "Sales - Merchandise",
+				costOfSalesAccount: "Cost of Sales - Merchandise",
+				purchaseAccount: "Purchases - Merchandise",
+				expenseAccount: "Expense - Operating Supplies",
+				inputVatAccount: "Input VAT",
+				outputVatAccount: "Output VAT",
+			},
+			allowSubCategory: true,
 			status: "Active",
 		},
 		{
@@ -78,6 +125,7 @@ export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 			code: "BND",
 			name: "Bundle",
 			description: "Items composed of bundle components.",
+			allowSubCategory: true,
 			status: "Active",
 		},
 	],
@@ -88,6 +136,16 @@ export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 			name: "Standard",
 			description: "Standard item subtype.",
 			parentIds: ["type-stock", "type-bundle"],
+			accountingSetup: {
+				inventoryAccount: "Inventory - Merchandise",
+				salesAccount: "Sales - Merchandise",
+				costOfSalesAccount: "Cost of Sales - Merchandise",
+				purchaseAccount: "Purchases - Merchandise",
+				expenseAccount: "Expense - Operating Supplies",
+				inputVatAccount: "Input VAT",
+				outputVatAccount: "Output VAT",
+			},
+			allowSubCategory: false,
 			status: "Active",
 		},
 		{
@@ -96,6 +154,7 @@ export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 			name: "Sellable",
 			description: "Reusable subtype for items available for sale.",
 			parentIds: [],
+			allowSubCategory: false,
 			status: "Active",
 		},
 	],
@@ -273,13 +332,16 @@ export const ItemInitialFormValues: ItemFormValues = {
 	bundleComponents: [],
 };
 
-export const ItemSetupInitialFormValues: ItemSetupFormValues = {
-	code: "",
-	name: "",
-	description: "",
-	parentIds: [],
-	status: "Active",
-};
+export const ItemCategoryClassificationInitialFormValues: ItemCategoryClassificationFormValues =
+	{
+		name: "",
+		parentId: "",
+		description: "",
+		accountingSetupMode: "inherit",
+		accountingSetup: ItemCategorySystemDefaultAccountingSetup,
+		allowSubCategory: true,
+		status: "Active",
+	};
 
 export function createItemFormValues(item: ItemRecord): ItemFormValues {
 	return {
@@ -398,33 +460,104 @@ function getDefaultSupplier(suppliers: ItemSupplierAssignment[]) {
 	return suppliers.find((supplier) => supplier.isDefault)?.supplier ?? "";
 }
 
-export function createItemSetupFormValues(
+export function createItemCategoryClassificationFormValues(
 	record: ItemSetupRecord,
-): ItemSetupFormValues {
+): ItemCategoryClassificationFormValues {
+	const accountingSetup = normalizeItemCategoryAccountingSetup(
+		record.accountingSetup,
+	);
+
 	return {
-		code: record.code,
 		name: record.name,
+		parentId: record.parentIds?.[0] ?? "",
 		description: record.description,
-		parentIds: record.parentIds ?? [],
+		accountingSetupMode: getItemCategoryAccountingSetupMode(record),
+		accountingSetup,
+		allowSubCategory: record.allowSubCategory ?? true,
 		status: record.status,
 	};
 }
 
-export function createItemSetupRecord(
-	values: ItemSetupFormValues,
+export function createItemCategoryClassificationRecord(
+	values: ItemCategoryClassificationFormValues,
 ): ItemSetupRecord {
 	return {
-		id: `item-setup-${Date.now()}`,
-		...values,
+		id: `item-category-${Date.now()}`,
+		code: createItemCategoryCode(values.name),
+		name: values.name.trim(),
+		description: values.description.trim(),
+		parentIds: values.parentId ? [values.parentId] : [],
+		accountingSetupMode: values.accountingSetupMode,
+		accountingSetup: values.accountingSetupMode === "own"
+			? values.accountingSetup
+			: undefined,
+		allowSubCategory: values.allowSubCategory,
+		status: values.status,
 	};
 }
 
-export function updateItemSetupRecord(
+export function updateItemCategoryClassificationRecord(
 	record: ItemSetupRecord,
-	values: ItemSetupFormValues,
+	values: ItemCategoryClassificationFormValues,
 ): ItemSetupRecord {
 	return {
 		...record,
-		...values,
+		name: values.name.trim(),
+		description: values.description.trim(),
+		parentIds: values.parentId ? [values.parentId] : [],
+		accountingSetupMode: values.accountingSetupMode,
+		accountingSetup: values.accountingSetupMode === "own"
+			? values.accountingSetup
+			: undefined,
+		allowSubCategory: values.allowSubCategory,
+		status: values.status,
 	};
+}
+
+export function hasItemCategoryAccountingSetup(
+	accountingSetup: Partial<ItemCategoryAccountingSetup> | undefined,
+) {
+	if (!accountingSetup) {
+		return false;
+	}
+
+	return Object.values(accountingSetup).some((value) => Boolean(value?.trim()));
+}
+
+export function getItemCategoryAccountingSetupMode(
+	record: Pick<ItemSetupRecord, "accountingSetup" | "accountingSetupMode">,
+): ItemCategoryAccountingSetupMode {
+	if (record.accountingSetupMode) {
+		return record.accountingSetupMode;
+	}
+
+	return hasItemCategoryAccountingSetup(record.accountingSetup)
+		? "own"
+		: "inherit";
+}
+
+export function normalizeItemCategoryAccountingSetup(
+	accountingSetup: Partial<ItemCategoryAccountingSetup> | undefined,
+): ItemCategoryAccountingSetup {
+	return {
+		...ItemCategorySystemDefaultAccountingSetup,
+		...accountingSetup,
+	};
+}
+
+function createItemCategoryCode(name: string) {
+	const normalizedName = name.trim();
+
+	if (!normalizedName) {
+		return "CAT";
+	}
+
+	const initials = normalizedName
+		.split(/\s+/)
+		.filter(Boolean)
+		.map((part) => part.charAt(0).toUpperCase())
+		.join("")
+		.slice(0, 6);
+
+	return initials || "CAT";
 }

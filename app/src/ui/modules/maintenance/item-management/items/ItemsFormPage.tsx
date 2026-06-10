@@ -43,7 +43,8 @@ export function ItemsFormPage() {
 							isReadonly={page.isReadonly}
 							item={page.existingItem}
 							mode={page.mode}
-							onDeleteItem={() => page.setIsDeleteDialogOpen(true)}
+							nextStatus={page.existingItem ? page.nextStatus : undefined}
+							onStatusChange={() => page.setIsStatusDialogOpen(true)}
 						/>
 					}
 				/>
@@ -102,14 +103,20 @@ export function ItemsFormPage() {
 			</form>
 
 			<AppDialog
-				isOpen={page.isDeleteDialogOpen}
+				isOpen={page.isStatusDialogOpen}
 				isPending={page.isMutating}
-				title="Delete item?"
-				description={`This will remove ${page.existingItem?.name ?? "the selected item"}.`}
-				confirmLabel="Delete Item"
-				tone="danger"
-				onCancel={() => page.setIsDeleteDialogOpen(false)}
-				onConfirm={page.handleConfirmDelete}
+				title={
+					page.nextStatus === "Inactive"
+						? "Set item inactive?"
+						: "Reactivate item?"
+				}
+				description={`This will mark ${page.existingItem?.name ?? "the selected item"} as ${page.nextStatus.toLowerCase()}.`}
+				confirmLabel={
+					page.nextStatus === "Inactive" ? "Set Inactive" : "Reactivate"
+				}
+				tone={page.nextStatus === "Inactive" ? "danger" : "success"}
+				onCancel={() => page.setIsStatusDialogOpen(false)}
+				onConfirm={page.handleConfirmStatusChange}
 			/>
 		</>
 	);

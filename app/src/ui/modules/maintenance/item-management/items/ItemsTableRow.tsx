@@ -3,10 +3,10 @@ import { ItemRecordActions } from "@/app/src/ui/modules/maintenance/item-managem
 
 type ItemsTableRowProps = {
 	item: ItemRecord;
-	onDeleteItem: (item: ItemRecord) => void;
+	onStatusChange: (item: ItemRecord) => void;
 };
 
-export function ItemsTableRow({ item, onDeleteItem }: ItemsTableRowProps) {
+export function ItemsTableRow({ item, onStatusChange }: ItemsTableRowProps) {
 	return (
 		<tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
 			<td className="px-4 py-4 font-semibold">{item.code}</td>
@@ -31,12 +31,18 @@ export function ItemsTableRow({ item, onDeleteItem }: ItemsTableRowProps) {
 				}).format(item.sellingPrice)}
 			</td>
 			<td className="px-4 py-4">
-				<span className="inline-flex rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">
+				<span
+					className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+						item.status === "Active"
+							? "bg-emerald-50 text-emerald-700"
+							: "bg-amber-50 text-amber-700"
+					}`}
+				>
 					{item.status}
 				</span>
 			</td>
 			<td className="px-4 py-4">
-				<ItemRecordActions item={item} onDeleteItem={onDeleteItem} />
+				<ItemRecordActions item={item} onStatusChange={onStatusChange} />
 			</td>
 		</tr>
 	);

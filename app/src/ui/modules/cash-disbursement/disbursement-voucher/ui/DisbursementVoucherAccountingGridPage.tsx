@@ -2,6 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import type {
+  Content,
+  TableCell,
+  TDocumentDefinitions,
+} from "pdfmake/interfaces";
 import {
   ChevronDown,
   ClipboardPaste,
@@ -41,6 +48,8 @@ import {
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
+pdfMake.addVirtualFileSystem(pdfFonts);
+
 type EditableGridRow = {
   accountCode: string;
   accountName: string;
@@ -59,6 +68,13 @@ type GridColumnId =
   | "taxRate"
   | "debit"
   | "credit";
+
+type AccountingExportTheme = {
+  accentColor: string;
+  accentContrastColor: string;
+  excelAccentArgb: string;
+  excelAccentContrastArgb: string;
+};
 
 const TaxRateOptions = ["0%", "1%", "2%", "5%", "12%"];
 
@@ -123,6 +139,17 @@ const AccountingImportTemplateRows = [
     "",
   ],
 ];
+
+const AccountingImportTemplateColumnWidths = [18, 30, 44, 14, 18, 18];
+
+const AccountingExportColumnWidths: Record<GridColumnId, number> = {
+  accountCode: 18,
+  accountName: 30,
+  credit: 18,
+  debit: 18,
+  particulars: 44,
+  taxRate: 14,
+};
 
 const ImportClearActions: {
   label: string;
@@ -597,9 +624,39 @@ export function DisbursementVoucherAccountingGridPage() {
   }
 
   function handleExportRows() {
+    const { amountColumnIndexes, rows: workbookRows, visibleColumnIds } =
+      createAccountingExportRows();
+    const exportTheme = getAccountingExportTheme();
+    const workbookBytes = createAccountingWorkbook({
+      amountColumnIndexes,
+      columnWidths: visibleColumnIds.map(
+        (columnId) => AccountingExportColumnWidths[columnId],
+      ),
+      rows: workbookRows,
+      sheetName: "Accounting Entries",
+      theme: exportTheme,
+    });
+
+    downloadBytesFile(
+      "disbursement-voucher-accounting-entries.xlsx",
+      workbookBytes,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+  }
+
+  function handleExportPdfRows() {
+    const exportData = createAccountingExportRows();
+    const exportTheme = getAccountingExportTheme();
+
+    pdfMake
+      .createPdf(createAccountingPdfDefinition(exportData, session, exportTheme))
+      .download("disbursement-voucher-accounting-entries.pdf");
+  }
+
+  function createAccountingExportRows() {
     const exportColumnIds = visibleColumnOrder;
     const exportRows = rows.filter(hasRowData);
-    const csvRows = [
+    const workbookRows = [
       exportColumnIds.map(
         (columnId) => columnLabels[columnId] || DefaultGridColumnLabels[columnId],
       ),
@@ -607,15 +664,19 @@ export function DisbursementVoucherAccountingGridPage() {
         exportColumnIds.map((columnId) => getExportCellValue(row, columnId)),
       ),
     ];
-    const csvContent = csvRows
-      .map((row) => row.map(escapeCsvCell).join(","))
-      .join("\r\n");
-
-    downloadTextFile(
-      "disbursement-voucher-accounting-entries.csv",
-      csvContent,
-      "text/csv;charset=utf-8",
+    const amountColumnIndexes = new Set(
+      exportColumnIds
+        .map((columnId, columnIndex) =>
+          columnId === "debit" || columnId === "credit" ? columnIndex : null,
+        )
+        .filter((columnIndex): columnIndex is number => columnIndex !== null),
     );
+
+    return {
+      amountColumnIndexes,
+      rows: workbookRows,
+      visibleColumnIds: exportColumnIds,
+    };
   }
 
   function handleBackToVoucherForm() {
@@ -772,11 +833,22 @@ export function DisbursementVoucherAccountingGridPage() {
                 isReadonly={false}
                 rows={rows}
                 title="Data Entry"
+                exportOptions={[
+                  {
+                    id: "excel",
+                    label: "Excel (.xlsx)",
+                    onSelect: handleExportRows,
+                  },
+                  {
+                    id: "pdf",
+                    label: "PDF (.pdf)",
+                    onSelect: handleExportPdfRows,
+                  },
+                ]}
                 onAddRows={addBlankRows}
                 onAutoColumnWidth={autoSizeColumn}
                 onClearRows={clearRows}
                 onDuplicateRow={duplicateRow}
-                onExport={handleExportRows}
                 onFitColumnWidth={fitColumnWidth}
                 onImport={() => setIsImportDialogOpen(true)}
                 onInsertRow={insertRow}
@@ -2143,8 +2215,337 @@ function downloadAccountingImportTemplate() {
 }
 
 function createAccountingImportTemplateWorkbook() {
-  const rows = [AccountingImportTemplateHeaders, ...AccountingImportTemplateRows];
-  const worksheetXml = createAccountingTemplateWorksheetXml(rows);
+  return createAccountingWorkbook({
+    amountColumnIndexes: new Set([4, 5]),
+    columnWidths: AccountingImportTemplateColumnWidths,
+    rows: [AccountingImportTemplateHeaders, ...AccountingImportTemplateRows],
+    sheetName: "Accounting Entries",
+    theme: getAccountingExportTheme(),
+  });
+}
+
+function createAccountingPdfDefinition(
+  exportData: {
+    amountColumnIndexes: Set<number>;
+    rows: string[][];
+    visibleColumnIds: GridColumnId[];
+  },
+  session: DisbursementVoucherAccountingGridSession | null,
+  theme: AccountingExportTheme,
+): TDocumentDefinitions {
+  const [headers = [], ...bodyRows] = exportData.rows;
+  const values = session?.values;
+  const debitTotal = getPdfColumnTotal(bodyRows, exportData.visibleColumnIds, "debit");
+  const creditTotal = getPdfColumnTotal(bodyRows, exportData.visibleColumnIds, "credit");
+  const tableBody: TableCell[][] = [
+    headers.map((header) => pdfHeaderCell(header, theme)),
+    ...bodyRows.map((row) =>
+      row.map((value, columnIndex) =>
+        pdfBodyCell(value, exportData.amountColumnIndexes.has(columnIndex)),
+      ),
+    ),
+  ];
+
+  if (bodyRows.length === 0) {
+    tableBody.push([
+      {
+        text: "No accounting entries to export.",
+        colSpan: Math.max(headers.length, 1),
+        italics: true,
+        color: "#64748B",
+        margin: [4, 5, 4, 5],
+      },
+      ...Array.from({ length: Math.max(headers.length - 1, 0) }, () => ({})),
+    ]);
+  }
+
+  tableBody.push(
+    createPdfTotalsRow(headers.length, exportData.visibleColumnIds, debitTotal, creditTotal),
+  );
+
+  return {
+    pageSize: "A4",
+    pageOrientation: "landscape",
+    pageMargins: [24, 24, 24, 24],
+    defaultStyle: {
+      font: "Roboto",
+      fontSize: 8,
+      lineHeight: 1.15,
+    },
+    content: [
+      {
+        text: "DISBURSEMENT VOUCHER",
+        bold: true,
+        fontSize: 16,
+        color: "#212738",
+      },
+      {
+        text: "Accounting Entries",
+        bold: true,
+        fontSize: 10,
+        color: theme.accentColor,
+        margin: [0, 2, 0, 10],
+      },
+      createPdfVoucherDetails(values),
+      {
+        table: {
+          headerRows: 1,
+          widths: exportData.visibleColumnIds.map(getPdfColumnWidth),
+          body: tableBody,
+        },
+        layout: pdfGridLayout,
+        margin: [0, 10, 0, 0],
+      },
+    ],
+  };
+}
+
+function createPdfVoucherDetails(
+  values: DisbursementVoucherFormValues | undefined,
+): Content {
+  const detailRows = [
+    ["Voucher No.", values?.voucherNo || "-"],
+    ["Voucher Date", values?.voucherDate ? formatDateLabel(values.voucherDate) : "-"],
+    ["Payee", values?.vceName || "-"],
+    ["Payment Method", values?.paymentMethod || "-"],
+    ["Disbursement Type", values?.disbursementType || "-"],
+    ["Amount", values?.amount ? formatCurrency(Number(values.amount || 0)) : "-"],
+  ];
+
+  return {
+    table: {
+      widths: [80, "*", 88, "*", 92, "*"],
+      body: [
+        [
+          pdfDetailLabelCell(detailRows[0][0]),
+          pdfDetailValueCell(detailRows[0][1]),
+          pdfDetailLabelCell(detailRows[1][0]),
+          pdfDetailValueCell(detailRows[1][1]),
+          pdfDetailLabelCell(detailRows[5][0]),
+          pdfDetailValueCell(detailRows[5][1]),
+        ],
+        [
+          pdfDetailLabelCell(detailRows[2][0]),
+          pdfDetailValueCell(detailRows[2][1]),
+          pdfDetailLabelCell(detailRows[3][0]),
+          pdfDetailValueCell(detailRows[3][1]),
+          pdfDetailLabelCell(detailRows[4][0]),
+          pdfDetailValueCell(detailRows[4][1]),
+        ],
+      ],
+    },
+    layout: pdfGridLayout,
+  };
+}
+
+function pdfHeaderCell(text: string, theme: AccountingExportTheme): TableCell {
+  return {
+    text,
+    bold: true,
+    color: theme.accentContrastColor,
+    fillColor: theme.accentColor,
+    margin: [4, 4, 4, 4],
+  };
+}
+
+function pdfBodyCell(text: string, isAmountColumn: boolean): TableCell {
+  return {
+    text,
+    alignment: isAmountColumn ? "right" : "left",
+    margin: [4, 3, 4, 3],
+  };
+}
+
+function pdfDetailLabelCell(text: string): TableCell {
+  return {
+    text,
+    bold: true,
+    fillColor: "#F8FAFC",
+    color: "#475569",
+    margin: [4, 3, 4, 3],
+  };
+}
+
+function pdfDetailValueCell(text: string): TableCell {
+  return {
+    text,
+    bold: true,
+    color: "#212738",
+    margin: [4, 3, 4, 3],
+  };
+}
+
+function createPdfTotalsRow(
+  columnCount: number,
+  visibleColumnIds: GridColumnId[],
+  debitTotal: number,
+  creditTotal: number,
+): TableCell[] {
+  return visibleColumnIds.map((columnId, columnIndex) => {
+    if (columnIndex === 0) {
+      return {
+        text: "Total",
+        bold: true,
+        fillColor: "#F8FAFC",
+        margin: [4, 4, 4, 4],
+      };
+    }
+
+    if (columnId === "debit") {
+      return pdfTotalAmountCell(debitTotal);
+    }
+
+    if (columnId === "credit") {
+      return pdfTotalAmountCell(creditTotal);
+    }
+
+    return {
+      text: columnIndex < columnCount ? "" : "",
+      fillColor: "#F8FAFC",
+      margin: [4, 4, 4, 4],
+    };
+  });
+}
+
+function pdfTotalAmountCell(total: number): TableCell {
+  return {
+    text: formatAmountValue(total),
+    bold: true,
+    alignment: "right",
+    fillColor: "#F8FAFC",
+    margin: [4, 4, 4, 4],
+  };
+}
+
+function getPdfColumnTotal(
+  bodyRows: string[][],
+  visibleColumnIds: GridColumnId[],
+  targetColumnId: GridColumnId,
+) {
+  const targetIndex = visibleColumnIds.indexOf(targetColumnId);
+
+  if (targetIndex < 0) {
+    return 0;
+  }
+
+  return bodyRows.reduce(
+    (total, row) => total + normalizeAmount(row[targetIndex] ?? ""),
+    0,
+  );
+}
+
+function getPdfColumnWidth(columnId: GridColumnId) {
+  if (columnId === "particulars") {
+    return "*";
+  }
+
+  if (columnId === "accountName") {
+    return 120;
+  }
+
+  if (columnId === "debit" || columnId === "credit") {
+    return 74;
+  }
+
+  if (columnId === "taxRate") {
+    return 48;
+  }
+
+  return 78;
+}
+
+const pdfGridLayout = {
+  hLineColor: () => "#E5E7EB",
+  hLineWidth: () => 0.6,
+  paddingBottom: () => 0,
+  paddingLeft: () => 0,
+  paddingRight: () => 0,
+  paddingTop: () => 0,
+  vLineColor: () => "#E5E7EB",
+  vLineWidth: () => 0.6,
+};
+
+function getAccountingExportTheme(): AccountingExportTheme {
+  const accentColor = getCssColorVariable("--skyblue", "#57C4E5");
+  const accentContrastColor = getCssColorVariable(
+    "--skyblue-contrast",
+    "#FFFFFF",
+  );
+
+  return {
+    accentColor,
+    accentContrastColor,
+    excelAccentArgb: `FF${accentColor.slice(1).toUpperCase()}`,
+    excelAccentContrastArgb: `FF${accentContrastColor.slice(1).toUpperCase()}`,
+  };
+}
+
+function getCssColorVariable(variableName: string, fallback: string) {
+  if (typeof window === "undefined") {
+    return normalizeColorToHex(fallback);
+  }
+
+  const value = window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue(variableName)
+    .trim();
+
+  return normalizeColorToHex(value || fallback);
+}
+
+function normalizeColorToHex(value: string) {
+  const normalizedValue = value.trim();
+
+  if (/^#[0-9a-f]{6}$/i.test(normalizedValue)) {
+    return normalizedValue.toUpperCase();
+  }
+
+  if (/^#[0-9a-f]{3}$/i.test(normalizedValue)) {
+    const [, red, green, blue] = normalizedValue;
+
+    return `#${red}${red}${green}${green}${blue}${blue}`.toUpperCase();
+  }
+
+  const rgbMatch = normalizedValue.match(
+    /^rgba?\(\s*(\d{1,3})[\s,]+(\d{1,3})[\s,]+(\d{1,3})/i,
+  );
+
+  if (rgbMatch) {
+    return rgbPartsToHex(
+      Number(rgbMatch[1]),
+      Number(rgbMatch[2]),
+      Number(rgbMatch[3]),
+    );
+  }
+
+  return "#57C4E5";
+}
+
+function rgbPartsToHex(red: number, green: number, blue: number) {
+  return `#${[red, green, blue]
+    .map((part) =>
+      Math.max(0, Math.min(255, part)).toString(16).padStart(2, "0"),
+    )
+    .join("")}`.toUpperCase();
+}
+
+function createAccountingWorkbook({
+  amountColumnIndexes,
+  columnWidths,
+  rows,
+  sheetName,
+  theme,
+}: {
+  amountColumnIndexes: Set<number>;
+  columnWidths: number[];
+  rows: string[][];
+  sheetName: string;
+  theme: AccountingExportTheme;
+}) {
+  const worksheetXml = createAccountingTemplateWorksheetXml(rows, {
+    amountColumnIndexes,
+    columnWidths,
+  });
 
   return createStoredZipArchive([
     {
@@ -2156,6 +2557,7 @@ function createAccountingImportTemplateWorkbook() {
         '<Default Extension="xml" ContentType="application/xml"/>' +
         '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
         '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+        '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
         "</Types>",
     },
     {
@@ -2172,7 +2574,7 @@ function createAccountingImportTemplateWorkbook() {
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
         '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
         'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
-        "<sheets><sheet name=\"Accounting Entries\" sheetId=\"1\" r:id=\"rId1\"/></sheets>" +
+        `<sheets><sheet name="${escapeXmlAttribute(sheetName)}" sheetId="1" r:id="rId1"/></sheets>` +
         "</workbook>",
     },
     {
@@ -2181,7 +2583,12 @@ function createAccountingImportTemplateWorkbook() {
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
         '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
         '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
+        '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
         "</Relationships>",
+    },
+    {
+      name: "xl/styles.xml",
+      text: createAccountingTemplateStylesXml(theme),
     },
     {
       name: "xl/worksheets/sheet1.xml",
@@ -2190,33 +2597,99 @@ function createAccountingImportTemplateWorkbook() {
   ]);
 }
 
-function createAccountingTemplateWorksheetXml(rows: string[][]) {
+function createAccountingTemplateWorksheetXml(
+  rows: string[][],
+  {
+    amountColumnIndexes,
+    columnWidths,
+  }: {
+    amountColumnIndexes: Set<number>;
+    columnWidths: number[];
+  },
+) {
+  const maxColumnCount = Math.max(1, ...rows.map((row) => row.length));
+  const lastColumn = getExcelColumnLetters(maxColumnCount - 1);
+  const lastRow = rows.length;
+  const columnsXml = Array.from({ length: maxColumnCount })
+    .map((_, columnIndex) => {
+      const width = columnWidths[columnIndex] ?? 16;
+
+      return `<col min="${columnIndex + 1}" max="${columnIndex + 1}" width="${width}" customWidth="1"/>`;
+    })
+    .join("");
   const rowXml = rows
     .map((row, rowIndex) => {
       const rowNumber = rowIndex + 1;
       const cellXml = row
         .map((cell, columnIndex) => {
           const reference = `${getExcelColumnLetters(columnIndex)}${rowNumber}`;
+          const styleId =
+            rowIndex === 0 ? 1 : amountColumnIndexes.has(columnIndex) ? 3 : 0;
+          const normalizedAmount = cell.replace(/,/g, "");
 
-          return (
-            `<c r="${reference}" t="inlineStr">` +
-            `<is><t>${escapeXmlText(cell)}</t></is>` +
-            "</c>"
-          );
+          if (
+            rowIndex > 0 &&
+            amountColumnIndexes.has(columnIndex) &&
+            Number(normalizedAmount || 0) > 0
+          ) {
+            return `<c r="${reference}" s="${styleId}"><v>${normalizedAmount}</v></c>`;
+          }
+
+          return `<c r="${reference}" t="inlineStr" s="${styleId}"><is><t>${escapeXmlText(cell)}</t></is></c>`;
         })
         .join("");
+      const rowHeight = rowIndex === 0 ? ' ht="22" customHeight="1"' : "";
 
-      return `<row r="${rowNumber}">${cellXml}</row>`;
+      return `<row r="${rowNumber}"${rowHeight}>${cellXml}</row>`;
     })
     .join("");
 
   return (
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    `<dimension ref="A1:${lastColumn}${lastRow}"/>` +
+    '<sheetViews><sheetView workbookViewId="0" showGridLines="1">' +
+    '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>' +
+    '<selection pane="bottomLeft" activeCell="A2" sqref="A2"/>' +
+    "</sheetView></sheetViews>" +
+    "<sheetFormatPr defaultRowHeight=\"20\"/>" +
+    `<cols>${columnsXml}</cols>` +
     "<sheetData>" +
     rowXml +
     "</sheetData>" +
+    `<autoFilter ref="A1:${lastColumn}${lastRow}"/>` +
+    '<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>' +
     "</worksheet>"
+  );
+}
+
+function createAccountingTemplateStylesXml(theme: AccountingExportTheme) {
+  return (
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0.00"/></numFmts>' +
+    '<fonts count="2">' +
+    '<font><sz val="11"/><color rgb="FF212738"/><name val="Calibri"/></font>' +
+    `<font><b/><sz val="11"/><color rgb="${theme.excelAccentContrastArgb}"/><name val="Calibri"/></font>` +
+    "</fonts>" +
+    '<fills count="3">' +
+    '<fill><patternFill patternType="none"/></fill>' +
+    '<fill><patternFill patternType="gray125"/></fill>' +
+    `<fill><patternFill patternType="solid"><fgColor rgb="${theme.excelAccentArgb}"/><bgColor indexed="64"/></patternFill></fill>` +
+    "</fills>" +
+    '<borders count="2">' +
+    '<border><left/><right/><top/><bottom/><diagonal/></border>' +
+    '<border><left style="thin"><color rgb="FFE5E7EB"/></left><right style="thin"><color rgb="FFE5E7EB"/></right><top style="thin"><color rgb="FFE5E7EB"/></top><bottom style="thin"><color rgb="FFE5E7EB"/></bottom><diagonal/></border>' +
+    "</borders>" +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+    '<cellXfs count="4">' +
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"><alignment vertical="center"/></xf>' +
+    '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf>' +
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"><alignment vertical="center" wrapText="1"/></xf>' +
+    '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"><alignment horizontal="right" vertical="center"/></xf>' +
+    "</cellXfs>" +
+    '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +
+    "</styleSheet>"
   );
 }
 
@@ -2238,6 +2711,10 @@ function escapeXmlText(value: string) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+function escapeXmlAttribute(value: string) {
+  return escapeXmlText(value).replace(/"/g, "&quot;");
 }
 
 function createStoredZipArchive(files: { name: string; text: string }[]) {
@@ -2998,16 +3475,12 @@ function getEstimatedCharacterWidth(character: string) {
   return 7;
 }
 
-function escapeCsvCell(value: string) {
-  if (/[",\r\n]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
-  }
+function downloadBytesFile(fileName: string, content: Uint8Array, type: string) {
+  const buffer = new ArrayBuffer(content.byteLength);
 
-  return value;
-}
+  new Uint8Array(buffer).set(content);
 
-function downloadTextFile(fileName: string, content: string, type: string) {
-  const blob = new Blob([content], { type });
+  const blob = new Blob([buffer], { type });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
 

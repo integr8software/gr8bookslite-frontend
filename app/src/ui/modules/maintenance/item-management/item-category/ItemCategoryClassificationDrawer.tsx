@@ -65,6 +65,7 @@ function ItemCategoryClassificationDrawerPanel({
 					onAccountingFieldChange={page.handleAccountingFieldChange}
 					onAccountingModeChange={page.handleAccountingModeChange}
 					onInputChange={page.handleInputChange}
+					onParentChange={page.handleParentChange}
 				/>
 			</form>
 		</MaintenanceFormDrawer>

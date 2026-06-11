@@ -15,7 +15,7 @@ export function TermManagementDrawer({ isOpen, mode, onClose, term }: { isOpen: 
 function TermManagementDrawerPanel({ isOpen, mode, onClose, term }: { isOpen: boolean; mode: TermManagementActionMode; onClose: () => void; term?: TermManagement }) {
 	const page = useTermManagementFormPage({ existingTerm: term, mode, onSaved: onClose });
 	const copy = TermManagementActionCopy[mode];
-	return <MaintenanceFormDrawer description={copy.description} eyebrow="Accounting master data" formId={formId} isOpen={isOpen} isSaving={page.isMutating} onClose={onClose} title={copy.title}>
-		<form id={formId} onSubmit={page.handleSubmit} className="px-6 py-5"><TermManagementFields errors={page.errors} isReadonly={false} values={page.values} onInputChange={page.handleInputChange} /></form>
+	return <MaintenanceFormDrawer description={copy.description} eyebrow="Accounting master data" formId={formId} isOpen={isOpen} isReadonly={page.isReadonly} isSaving={page.isMutating} onClose={onClose} title={copy.title}>
+		<form id={formId} onSubmit={page.handleSubmit} className="px-6 py-5"><TermManagementFields errors={page.errors} isReadonly={page.isReadonly} values={page.values} onInputChange={page.handleInputChange} /></form>
 	</MaintenanceFormDrawer>;
 }

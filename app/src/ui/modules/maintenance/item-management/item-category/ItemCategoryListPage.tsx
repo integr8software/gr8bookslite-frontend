@@ -9,10 +9,8 @@ import {
 	Search,
 	Tags,
 } from "lucide-react";
-import Link from "next/link";
 import {
 	ItemCategoryClassificationPaginationStorageKey,
-	ItemCategoryHref,
 	ItemStatusOptions,
 } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import { useItemCategoryClassificationPage } from "@/app/src/hooks/modules/maintenance/item-management/useItemCategoryClassificationPage";
@@ -89,26 +87,18 @@ export function ItemCategoryListPage() {
 					</>
 				}
 				actions={
-					<>
-						<Link
-							href={`${ItemCategoryHref}/add`}
-							className={moduleHeaderActionClassNames.secondary}
-						>
-							<Plus className="h-4 w-4" aria-hidden="true" />
-							Open Add Page
-						</Link>
-						<button
-							type="button"
-							onClick={() => page.setDrawerState({ mode: "add" })}
-							className={moduleHeaderActionClassNames.primary}
-						>
-							<Plus className="h-4 w-4" aria-hidden="true" />
-							Add Category
-						</button>
-					</>
+					<button
+						type="button"
+						onClick={() => page.setDrawerState({ mode: "add" })}
+						className={moduleHeaderActionClassNames.primary}
+					>
+						<Plus className="h-4 w-4" aria-hidden="true" />
+						Add Category
+					</button>
 				}
 			/>
 			<ModuleMetrics metrics={metrics} />
+
 			<ModuleTable
 				emptyDescription="Add a category to start grouping inventory, services, and item groups."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}

@@ -10,8 +10,11 @@ import {
 	createTransactionTypeFromForm,
 	updateTransactionTypeFromForm,
 } from "@/app/src/data/modules/maintenance/financial-management/transaction-type/TransactionTypeData";
-import { getFallbackFormSignatoryModuleOptions } from "@/app/src/data/modules/maintenance/form-signatory/FormSignatoryData";
-import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
+import {
+	findModuleChartAccount,
+	getModuleChartAccounts,
+} from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import { getMaintenanceModuleOptions } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import type {
 	TransactionTypeActionMode,
 	TransactionType,
@@ -27,13 +30,28 @@ type TransactionTypeActionPageOptions = {
 	onSaved?: () => void;
 };
 
+const TransactionTypeExcludedModuleKeys = [
+	"dashboard-overview",
+	"maintenance-charts-of-accounts",
+	"maintenance-discount-management",
+	"reports-maintenance",
+	"reports-inventory",
+	"reports-bir",
+	"maintenance-users",
+	"maintenance-user-role",
+	"maintenance-approval",
+	"maintenance-audit",
+	"transaction-number-setup",
+	"system-administration-multi-currency-setup",
+	"maintenance-mail",
+];
+
 export function useTransactionTypeActionPage(
 	options: TransactionTypeActionPageOptions = {},
 ) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
-	const { accounts, flatAccounts } = useChartsOfAccounts();
 	const transactionTypes = useTransactionTypeStore((state) => state.transactionTypes);
 	const addTransactionType = useTransactionTypeStore(
 		(state) => state.addTransactionType,
@@ -46,12 +64,15 @@ export function useTransactionTypeActionPage(
 	const existingTransactionType = options.existingTransactionType ?? transactionTypes.find(
 		(transactionType) => transactionType.id === params.recordId,
 	);
-	const accountOptions = useMemo(
-		() => flatAccounts.map(({ account }) => account),
-		[flatAccounts],
-	);
 	const moduleOptions = useMemo(
-		() => getFallbackFormSignatoryModuleOptions(),
+		() => getMaintenanceModuleOptions(TransactionTypeExcludedModuleKeys),
+		[],
+	);
+	const accountOptions = useMemo(
+		() =>
+			getModuleChartAccounts({
+				moduleKey: "maintenance-transaction-type",
+			}),
 		[],
 	);
 	const isReadonly = mode === "view";
@@ -61,10 +82,9 @@ export function useTransactionTypeActionPage(
 			: TransactionTypeInitialFormValues,
 	);
 	const [errors, setErrors] = useState<TransactionTypeFormErrors>({});
-	const selectedAccount = accountOptions.find(
-		(account) =>
-			account.id === values.accountId ||
-			account.accountNumber === values.accountId,
+	const selectedAccount = findModuleChartAccount(
+		values.accountId,
+		accountOptions,
 	);
 
 	function updateField(
@@ -106,7 +126,10 @@ export function useTransactionTypeActionPage(
 			return;
 		}
 
-		updateField("moduleId", Array.isArray(nextValue) ? nextValue[0] ?? "" : nextValue);
+		updateField(
+			"moduleIds",
+			Array.isArray(nextValue) ? nextValue : nextValue ? [nextValue] : [],
+		);
 	}
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -140,7 +163,7 @@ export function useTransactionTypeActionPage(
 	}
 
 	return {
-		accountOptions: accounts,
+		accountOptions,
 		errors,
 		existingTransactionType,
 		handleAccountChange,

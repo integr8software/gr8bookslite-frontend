@@ -10,155 +10,334 @@ import type {
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { ItemCategorySystemDefaultAccountingSetup } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 
-export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
-	category: [
-		{
-			id: "cat-supplies",
-			code: "SUP",
-			name: "Supplies",
-			description: "Consumable supplies and operating materials.",
-			accountingSetup: {
-				inventoryAccount: "Inventory - Supplies",
-				salesAccount: "Sales - Merchandise",
-				costOfSalesAccount: "Cost of Sales - Merchandise",
-				purchaseAccount: "Purchases - Merchandise",
-				expenseAccount: "Expense - Operating Supplies",
-				inputVatAccount: "Input VAT",
-				outputVatAccount: "Output VAT",
-			},
-			allowSubCategory: true,
-			status: "Active",
-		},
-		{
-			id: "cat-footwear",
-			code: "FTW",
-			name: "Footwear",
-			description: "Shoes, sandals, and related wearable products.",
-			allowSubCategory: true,
-			status: "Active",
-		},
-		{
-			id: "cat-bundles",
-			code: "BND",
-			name: "Bundles",
-			description: "Bundled items composed of multiple components.",
-			accountingSetup: {
-				inventoryAccount: "Inventory - Finished Goods",
-				salesAccount: "Sales - Merchandise",
-				costOfSalesAccount: "Cost of Sales - Merchandise",
-				purchaseAccount: "Purchases - Merchandise",
-				expenseAccount: "Expense - Operating Supplies",
-				inputVatAccount: "Input VAT",
-				outputVatAccount: "Output VAT",
-			},
-			allowSubCategory: true,
-			status: "Active",
-		},
-	],
-	subcategory: [
-		{
-			id: "sub-office",
-			code: "OFF",
-			name: "Office Supplies",
-			description: "Standard office consumables.",
-			parentIds: ["cat-supplies", "cat-bundles"],
-			allowSubCategory: true,
-			status: "Active",
-		},
-		{
-			id: "sub-men",
-			code: "MEN",
-			name: "Men",
-			description: "Items commonly classified for men.",
-			parentIds: ["cat-footwear"],
-			accountingSetup: {
-				inventoryAccount: "Inventory - Merchandise",
-				salesAccount: "Sales - Merchandise",
-				costOfSalesAccount: "Cost of Sales - Merchandise",
-				purchaseAccount: "Purchases - Merchandise",
-				expenseAccount: "Expense - Operating Supplies",
-				inputVatAccount: "Input VAT",
-				outputVatAccount: "Output VAT",
-			},
-			allowSubCategory: true,
-			status: "Active",
-		},
-		{
-			id: "sub-women",
-			code: "WMN",
-			name: "Women",
-			description: "Items commonly classified for women.",
-			parentIds: ["cat-footwear"],
-			allowSubCategory: true,
-			status: "Active",
-		},
-		{
-			id: "sub-promotional",
-			code: "PRM",
-			name: "Promotional",
-			description: "Reusable sub category for promotional item groupings.",
-			parentIds: [],
-			allowSubCategory: true,
-			status: "Active",
-		},
-	],
-	type: [
-		{
-			id: "type-stock",
-			code: "STK",
-			name: "Product",
-			description: "Items tracked as inventory stock.",
-			accountingSetup: {
-				inventoryAccount: "Inventory - Merchandise",
-				salesAccount: "Sales - Merchandise",
-				costOfSalesAccount: "Cost of Sales - Merchandise",
-				purchaseAccount: "Purchases - Merchandise",
-				expenseAccount: "Expense - Operating Supplies",
-				inputVatAccount: "Input VAT",
-				outputVatAccount: "Output VAT",
-			},
-			allowSubCategory: true,
-			status: "Active",
-		},
-		{
-			id: "type-bundle",
-			code: "BND",
-			name: "Bundle",
-			description: "Items composed of bundle components.",
-			allowSubCategory: true,
-			status: "Active",
-		},
-	],
-	subtype: [
-		{
-			id: "subtype-standard",
-			code: "STD",
-			name: "Standard",
-			description: "Standard item subtype.",
-			parentIds: ["type-stock", "type-bundle"],
-			accountingSetup: {
-				inventoryAccount: "Inventory - Merchandise",
-				salesAccount: "Sales - Merchandise",
-				costOfSalesAccount: "Cost of Sales - Merchandise",
-				purchaseAccount: "Purchases - Merchandise",
-				expenseAccount: "Expense - Operating Supplies",
-				inputVatAccount: "Input VAT",
-				outputVatAccount: "Output VAT",
-			},
-			allowSubCategory: false,
-			status: "Active",
-		},
-		{
-			id: "subtype-sellable",
-			code: "SEL",
-			name: "Sellable",
-			description: "Reusable subtype for items available for sale.",
-			parentIds: [],
-			allowSubCategory: false,
-			status: "Active",
-		},
-	],
+type ItemCategoryTreeNode = {
+	name: string;
+	children?: ItemCategoryTreeNode[];
 };
+
+const ItemCategorySampleTree: ItemCategoryTreeNode[] = [
+	{
+		name: "Electronics",
+		children: [
+			{
+				name: "Audio & Video",
+				children: [
+					{ name: "Televisions" },
+					{ name: "Speakers" },
+					{ name: "Soundbars" },
+					{ name: "Home Theater Systems" },
+				],
+			},
+			{
+				name: "Cameras",
+				children: [
+					{ name: "DSLR Cameras" },
+					{ name: "Mirrorless Cameras" },
+					{ name: "Action Cameras" },
+				],
+			},
+			{
+				name: "Wearable Technology",
+				children: [{ name: "Smart Watches" }, { name: "Fitness Trackers" }],
+			},
+		],
+	},
+	{
+		name: "Computers & Accessories",
+		children: [
+			{
+				name: "Computers",
+				children: [
+					{ name: "Desktops" },
+					{
+						name: "Laptops",
+						children: [
+							{ name: "Business Laptops" },
+							{ name: "Gaming Laptops" },
+							{ name: "Student Laptops" },
+						],
+					},
+					{ name: "Workstations" },
+				],
+			},
+			{
+				name: "Computer Components",
+				children: [
+					{ name: "Processors" },
+					{ name: "Motherboards" },
+					{ name: "Memory (RAM)" },
+					{ name: "Graphics Cards" },
+					{ name: "Storage Devices" },
+				],
+			},
+			{
+				name: "Accessories",
+				children: [
+					{ name: "Keyboards" },
+					{ name: "Mice" },
+					{ name: "Monitors" },
+					{ name: "Printers" },
+				],
+			},
+		],
+	},
+	{
+		name: "Mobile Phones & Tablets",
+		children: [
+			{ name: "Smartphones" },
+			{ name: "Tablets" },
+			{
+				name: "Mobile Accessories",
+				children: [
+					{ name: "Cases" },
+					{ name: "Chargers" },
+					{ name: "Screen Protectors" },
+					{ name: "Power Banks" },
+				],
+			},
+			{ name: "Smart Devices" },
+		],
+	},
+	{
+		name: "Home Appliances",
+		children: [
+			{
+				name: "Kitchen Appliances",
+				children: [
+					{ name: "Refrigerators" },
+					{ name: "Microwave Ovens" },
+					{ name: "Rice Cookers" },
+				],
+			},
+			{
+				name: "Laundry Appliances",
+				children: [{ name: "Washing Machines" }, { name: "Dryers" }],
+			},
+			{
+				name: "Cleaning Appliances",
+				children: [{ name: "Vacuum Cleaners" }, { name: "Air Purifiers" }],
+			},
+		],
+	},
+	{
+		name: "Furniture",
+		children: [
+			{
+				name: "Office Furniture",
+				children: [
+					{ name: "Office Chairs" },
+					{ name: "Office Tables" },
+					{ name: "Filing Cabinets" },
+				],
+			},
+			{
+				name: "Home Furniture",
+				children: [{ name: "Sofas" }, { name: "Beds" }, { name: "Dining Sets" }],
+			},
+			{ name: "Outdoor Furniture" },
+		],
+	},
+	{
+		name: "Office Supplies",
+		children: [
+			{ name: "Paper Products" },
+			{ name: "Writing Materials" },
+			{ name: "Filing & Storage" },
+			{ name: "Office Equipment" },
+			{ name: "School Supplies" },
+		],
+	},
+	{
+		name: "Food & Beverages",
+		children: [
+			{
+				name: "Food",
+				children: [
+					{ name: "Snacks" },
+					{ name: "Canned Goods" },
+					{ name: "Frozen Foods" },
+					{ name: "Bakery Products" },
+				],
+			},
+			{
+				name: "Beverages",
+				children: [
+					{ name: "Coffee" },
+					{ name: "Tea" },
+					{ name: "Soft Drinks" },
+					{ name: "Bottled Water" },
+				],
+			},
+			{ name: "Ingredients" },
+		],
+	},
+	{
+		name: "Clothing & Apparel",
+		children: [
+			{ name: "Men's Clothing" },
+			{ name: "Women's Clothing" },
+			{ name: "Children's Clothing" },
+			{ name: "Footwear" },
+			{ name: "Fashion Accessories" },
+		],
+	},
+	{
+		name: "Health & Beauty",
+		children: [
+			{ name: "Skincare" },
+			{ name: "Cosmetics" },
+			{ name: "Personal Care" },
+			{ name: "Vitamins & Supplements" },
+			{ name: "Medical Supplies" },
+		],
+	},
+	{
+		name: "Automotive",
+		children: [
+			{
+				name: "Vehicle Parts",
+				children: [
+					{ name: "Engine Parts" },
+					{ name: "Brake Parts" },
+					{ name: "Suspension Parts" },
+				],
+			},
+			{ name: "Tires & Wheels" },
+			{ name: "Automotive Fluids" },
+			{ name: "Car Accessories" },
+		],
+	},
+	{
+		name: "Construction Materials",
+		children: [
+			{ name: "Cement & Concrete" },
+			{ name: "Steel & Metal" },
+			{ name: "Lumber & Wood" },
+			{ name: "Roofing Materials" },
+			{ name: "Electrical Materials" },
+			{ name: "Plumbing Materials" },
+		],
+	},
+	{
+		name: "Tools & Hardware",
+		children: [
+			{ name: "Hand Tools" },
+			{ name: "Power Tools" },
+			{ name: "Measuring Tools" },
+			{ name: "Safety Equipment" },
+			{
+				name: "Fasteners",
+				children: [
+					{ name: "Screws" },
+					{ name: "Nuts" },
+					{ name: "Bolts" },
+					{ name: "Washers" },
+				],
+			},
+		],
+	},
+	{
+		name: "Sports & Recreation",
+		children: [
+			{ name: "Fitness Equipment" },
+			{ name: "Outdoor Equipment" },
+			{ name: "Team Sports" },
+			{ name: "Cycling" },
+		],
+	},
+	{
+		name: "Toys & Games",
+		children: [
+			{ name: "Educational Toys" },
+			{ name: "Action Figures" },
+			{ name: "Board Games" },
+			{ name: "Video Games" },
+		],
+	},
+	{
+		name: "Books & Stationery",
+		children: [
+			{ name: "Books" },
+			{ name: "Notebooks" },
+			{ name: "Art Supplies" },
+			{ name: "Educational Materials" },
+		],
+	},
+	{
+		name: "Pet Supplies",
+		children: [
+			{ name: "Pet Food" },
+			{ name: "Pet Accessories" },
+			{ name: "Pet Healthcare" },
+			{ name: "Pet Toys" },
+		],
+	},
+	{
+		name: "Agricultural Products",
+		children: [
+			{ name: "Seeds" },
+			{ name: "Fertilizers" },
+			{ name: "Farm Equipment" },
+			{ name: "Animal Feed" },
+			{ name: "Crop Protection" },
+		],
+	},
+	{
+		name: "Software & Digital Products",
+		children: [
+			{ name: "Software Licenses" },
+			{ name: "SaaS Subscriptions" },
+			{ name: "Digital Downloads" },
+			{ name: "Templates" },
+			{ name: "Online Courses" },
+		],
+	},
+	{ name: "Other Products" },
+];
+
+export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
+	category: createItemCategorySampleRecords(ItemCategorySampleTree),
+	subcategory: [],
+	type: [],
+	subtype: [],
+};
+
+function createItemCategorySampleRecords(
+	nodes: ItemCategoryTreeNode[],
+	parentId?: string,
+	parentPath: string[] = [],
+): ItemSetupRecord[] {
+	return nodes.flatMap((node) => {
+		const path = [...parentPath, node.name];
+		const id = `cat-${path.map(createItemCategorySlug).join("-")}`;
+		const record: ItemSetupRecord = {
+			id,
+			code: createItemCategoryCode(node.name),
+			name: node.name,
+			description: `Product category for ${node.name}.`,
+			accountingSetupMode: parentId ? "inherit" : "notSet",
+			parentIds: parentId ? [parentId] : [],
+			allowSubCategory: true,
+			status: "Active",
+		};
+
+		return [
+			record,
+			...createItemCategorySampleRecords(node.children ?? [], id, path),
+		];
+	});
+}
+
+function createItemCategorySlug(name: string) {
+	const slug = name
+		.trim()
+		.toLowerCase()
+		.replace(/&/g, " and ")
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
+
+	return slug || "category";
+}
 
 export const MockItems: ItemRecord[] = [
 	{

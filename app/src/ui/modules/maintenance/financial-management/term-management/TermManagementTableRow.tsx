@@ -1,8 +1,6 @@
-import { TermManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 import {
 	ModuleTableActionButton,
-	ModuleTableActionLink,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
@@ -10,12 +8,14 @@ type TermManagementTableRowProps = {
 	term: TermManagement;
 	onEditTerm: (term: TermManagement) => void;
 	onToggleStatus: (term: TermManagement) => void;
+	onViewTerm: (term: TermManagement) => void;
 };
 
 export function TermManagementTableRow({
 	term,
 	onEditTerm,
 	onToggleStatus,
+	onViewTerm,
 }: TermManagementTableRowProps) {
 	const nextStatus = term.status === "Active" ? "Inactive" : "Active";
 
@@ -31,9 +31,9 @@ export function TermManagementTableRow({
 			</td>
 			<td className="px-4 py-4">
 				<ModuleTableActions className="justify-center">
-					<ModuleTableActionLink
+					<ModuleTableActionButton
 						variant="view"
-						href={`${TermManagementHref}/view/${term.id}`}
+						onClick={() => onViewTerm(term)}
 						label={`View ${term.name}`}
 					/>
 					<ModuleTableActionButton

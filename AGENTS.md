@@ -133,6 +133,7 @@ app/src/validations/modules/<domain>/<feature>/
 Use the shared module UI for list pages.
 
 - Use `app/src/ui/shared/module/ModuleHeader.tsx` for module page headers.
+- Use App Dialog when Activating/Deactivating Data.
 - Use `app/src/ui/shared/module/ModuleMetrics.tsx` for list-page metric
   strips. For the standard pattern: a `ModuleHeader`, a `ModuleMetrics` block, then
   the module table.
@@ -140,6 +141,9 @@ Use the shared module UI for list pages.
   module lists.
 - Use the rest of `app/src/ui/shared/module/module-table/` instead of creating
   custom table chrome.
+- Use `app/src/ui/shared/module/ModuleTooltip.tsx` on icon-only controls that
+  do not have visible labels. This also applies responsively when labels are
+  hidden on smaller screens.
 - Build TanStack table instances in feature hooks, not in UI components.
 - Keep table columns, pagination storage keys, hrefs, and option lists in
   constants.

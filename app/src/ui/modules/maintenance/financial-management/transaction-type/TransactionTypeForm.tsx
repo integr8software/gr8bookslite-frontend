@@ -1,19 +1,19 @@
 import type { ChangeEventHandler, ReactNode } from "react";
-import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
 import type {
 	TransactionTypeFormErrors,
 	TransactionTypeFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
-import type { FormSignatoryModuleOption } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
+import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type TransactionTypeFormProps = {
-	accountOptions: ChartAccount[];
+	accountOptions: ModuleChartAccount[];
 	errors: TransactionTypeFormErrors;
 	isReadonly: boolean;
-	moduleOptions: FormSignatoryModuleOption[];
+	moduleOptions: ModuleOption[];
 	values: TransactionTypeFormValues;
 	onAccountChange: (accountId: string) => void;
 	onInputChange: ChangeEventHandler<
@@ -83,17 +83,6 @@ export function TransactionTypeForm({
 					/>
 				</FormField>
 
-				<FormField label="Module" error={errors.moduleId} required>
-					<AppAdvancedDropdown
-						options={moduleDropdownOptions}
-						placeholder="Select available module"
-						readOnly={isReadonly}
-						searchPlaceholder="Search module"
-						value={values.moduleId}
-						onChange={onModuleChange}
-					/>
-				</FormField>
-
 				<FormField label="Account Title" error={errors.accountId} required>
 					<ChartAccountDropdown
 						accounts={accountOptions}
@@ -101,6 +90,18 @@ export function TransactionTypeForm({
 						readOnly={isReadonly}
 						value={values.accountId}
 						onChange={onAccountChange}
+					/>
+				</FormField>
+
+				<FormField label="Module" error={errors.moduleIds} required>
+					<AppAdvancedDropdown
+						options={moduleDropdownOptions}
+						placeholder="Select available module"
+						readOnly={isReadonly}
+						searchPlaceholder="Search module"
+						selectionMode="multiple"
+						value={values.moduleIds}
+						onChange={onModuleChange}
 					/>
 				</FormField>
 			</div>

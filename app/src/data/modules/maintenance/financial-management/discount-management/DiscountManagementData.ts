@@ -1,5 +1,5 @@
-import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
-import type { FormSignatoryModuleOption } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import type {
 	Discount,
 	DiscountManagementFormValues,
@@ -105,8 +105,8 @@ export function createDiscountManagementFormValues(
 
 export function createDiscountFromForm(
 	values: DiscountManagementFormValues,
-	account?: ChartAccount,
-	moduleOptions: FormSignatoryModuleOption[] = [],
+	account?: ModuleChartAccount,
+	moduleOptions: ModuleOption[] = [],
 ): Discount {
 	return {
 		id: `d_${Date.now().toString(36)}`,
@@ -126,8 +126,8 @@ export function createDiscountFromForm(
 export function updateDiscountFromForm(
 	discount: Discount,
 	values: DiscountManagementFormValues,
-	account?: ChartAccount,
-	moduleOptions: FormSignatoryModuleOption[] = [],
+	account?: ModuleChartAccount,
+	moduleOptions: ModuleOption[] = [],
 ): Discount {
 	return {
 		...discount,
@@ -146,7 +146,7 @@ export function updateDiscountFromForm(
 
 function getSelectedModuleNames(
 	moduleIds: string[],
-	moduleOptions: FormSignatoryModuleOption[],
+	moduleOptions: ModuleOption[],
 ) {
 	const nameById = new Map(
 		moduleOptions.map((option) => [option.value, option.label]),

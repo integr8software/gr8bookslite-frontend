@@ -25,7 +25,7 @@ export const AiAssistantSubtitle = "Guide, explain, open modules";
 export const AiAssistantWelcomeMessage =
   "Hi, I'm Neo AI. I can explain Gr8Books Neo modules and open the right page for you. How can I help?";
 
-export const AiAssistantInputPlaceholder = "Ask: open Purchase Request";
+export const AiAssistantInputPlaceholder = "Ask: Open Charts of Accounts";
 
 export const AiAssistantFallbackErrorMessage =
   "Neo AI can't process this at the moment, but I can still help you find and understand modules. Try asking me to open or explain a module.";

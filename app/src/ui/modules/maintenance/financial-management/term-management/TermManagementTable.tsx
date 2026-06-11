@@ -14,6 +14,7 @@ type TermManagementTableProps = {
 	toolbar?: ReactNode;
 	onEditTerm: (term: TermManagement) => void;
 	onToggleStatus: (term: TermManagement) => void;
+	onViewTerm: (term: TermManagement) => void;
 };
 
 export function TermManagementTable({
@@ -22,6 +23,7 @@ export function TermManagementTable({
 	toolbar,
 	onEditTerm,
 	onToggleStatus,
+	onViewTerm,
 }: TermManagementTableProps) {
 	const table = useTermManagementTable(terms);
 
@@ -41,6 +43,7 @@ export function TermManagementTable({
 					term={original}
 					onEditTerm={onEditTerm}
 					onToggleStatus={onToggleStatus}
+					onViewTerm={onViewTerm}
 				/>
 			)}
 		/>

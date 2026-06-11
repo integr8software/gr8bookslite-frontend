@@ -16,8 +16,8 @@ export function validateTransactionTypeForm(
 		errors.description = "Enter a description.";
 	}
 
-	if (!values.moduleId) {
-		errors.moduleId = "Select a module.";
+	if (values.moduleIds.length === 0) {
+		errors.moduleIds = "Select at least one module.";
 	}
 
 	if (!values.accountId) {

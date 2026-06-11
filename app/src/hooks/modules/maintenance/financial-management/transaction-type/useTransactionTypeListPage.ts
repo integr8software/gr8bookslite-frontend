@@ -18,6 +18,9 @@ export function useTransactionTypeListPage() {
 	const [statusFilter, setStatusFilter] = useState<
 		"" | (typeof TransactionTypeStatusOptions)[number]
 	>("");
+	const [moduleFilter, setModuleFilter] = useState("");
+	const [pendingStatusTransactionType, setPendingStatusTransactionType] =
+		useState<TransactionType | null>(null);
 
 	const filteredTransactionTypes = useMemo(() => {
 		const normalizedSearchTerm = searchTerm.trim().toLowerCase();
@@ -31,7 +34,8 @@ export function useTransactionTypeListPage() {
 				[
 					transactionType.name ?? legacyTransactionType.type,
 					transactionType.description,
-					transactionType.moduleName,
+					transactionType.moduleNames?.join(" ") ??
+						transactionType.moduleName,
 					transactionType.accountTitle,
 				]
 					.join(" ")
@@ -39,28 +43,91 @@ export function useTransactionTypeListPage() {
 					.includes(normalizedSearchTerm);
 			const matchesStatus =
 				!statusFilter || transactionType.status === statusFilter;
+			const matchesModule =
+				!moduleFilter ||
+				getTransactionTypeModuleValues(transactionType).includes(
+					moduleFilter,
+				);
 
-			return matchesSearch && matchesStatus;
+			return matchesSearch && matchesStatus && matchesModule;
 		});
-	}, [searchTerm, statusFilter, transactionTypes]);
+	}, [moduleFilter, searchTerm, statusFilter, transactionTypes]);
 
-	function toggleTransactionTypeStatus(transactionType: TransactionType) {
+	const moduleFilterOptions = useMemo(
+		() => createModuleFilterOptions(transactionTypes),
+		[transactionTypes],
+	);
+
+	function confirmTransactionTypeStatusChange() {
+		if (!pendingStatusTransactionType) {
+			return;
+		}
+
 		updateTransactionType({
-			...transactionType,
-			status: transactionType.status === "Active" ? "Inactive" : "Active",
+			...pendingStatusTransactionType,
+			status:
+				pendingStatusTransactionType.status === "Active"
+					? "Inactive"
+					: "Active",
 		});
+		setPendingStatusTransactionType(null);
 	}
 
 	return {
+		confirmTransactionTypeStatusChange,
 		filteredTransactionTypes,
 		isLoading,
 		isMutating,
+		moduleFilter,
+		moduleFilterOptions,
+		pendingStatusTransactionType,
 		searchTerm,
 		statusFilter,
 		transactionTypes,
+		setModuleFilter,
+		setPendingStatusTransactionType,
 		setSearchTerm,
 		setStatusFilter,
-		toggleTransactionTypeStatus,
 	};
+}
+
+function createModuleFilterOptions(transactionTypes: TransactionType[]) {
+	const moduleOptions = new Map<string, string>();
+
+	transactionTypes.forEach((transactionType) => {
+		const moduleIds = transactionType.moduleIds ?? [];
+		const moduleNames = transactionType.moduleNames ?? [];
+
+		if (moduleIds.length > 0) {
+			moduleIds.forEach((moduleId, index) => {
+				moduleOptions.set(
+					moduleId,
+					moduleNames[index] ?? moduleId,
+				);
+			});
+			return;
+		}
+
+		if (transactionType.moduleName) {
+			moduleOptions.set(
+				transactionType.moduleId ?? transactionType.moduleName,
+				transactionType.moduleName,
+			);
+		}
+	});
+
+	return Array.from(moduleOptions, ([value, label]) => ({
+		label,
+		value,
+	})).sort((first, second) => first.label.localeCompare(second.label));
+}
+
+function getTransactionTypeModuleValues(transactionType: TransactionType) {
+	return [
+		...(transactionType.moduleIds ?? []),
+		...(transactionType.moduleNames ?? []),
+		transactionType.moduleId,
+		transactionType.moduleName,
+	].filter(Boolean);
 }
 

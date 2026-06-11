@@ -20,6 +20,8 @@ export function useTermManagementListPage() {
 	const [statusFilter, setStatusFilter] =
 		useState<TermManagementStatusFilter>("");
 	const [query, setQuery] = useState("");
+	const [pendingStatusTerm, setPendingStatusTerm] =
+		useState<TermManagement | null>(null);
 
 	const filteredTerms = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
@@ -50,25 +52,32 @@ export function useTermManagementListPage() {
 		setQuery("");
 	}
 
-	function toggleTermStatus(term: TermManagement) {
+	function confirmTermStatusChange() {
+		if (!pendingStatusTerm) {
+			return;
+		}
+
 		updateTerm({
-			...term,
-			status: term.status === "Active" ? "Inactive" : "Active",
+			...pendingStatusTerm,
+			status: pendingStatusTerm.status === "Active" ? "Inactive" : "Active",
 		});
+		setPendingStatusTerm(null);
 	}
 
 	return {
+		confirmTermStatusChange,
 		datemodeFilter,
 		filteredTerms,
 		isLoading,
 		isMutating,
+		pendingStatusTerm,
 		query,
 		resetFilters,
 		setDatemodeFilter,
+		setPendingStatusTerm,
 		setQuery,
 		setStatusFilter,
 		statusFilter,
 		terms,
-		toggleTermStatus,
 	};
 }

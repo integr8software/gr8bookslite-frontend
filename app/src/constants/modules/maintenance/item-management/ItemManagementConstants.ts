@@ -26,10 +26,9 @@ export const ItemCategoryAccountingAccountOptions = [
 	"Sales - Merchandise",
 	"Sales - Services",
 	"Cost of Sales - Merchandise",
+	"Sales Discounts",
 	"Purchases - Merchandise",
 	"Expense - Operating Supplies",
-	"Input VAT",
-	"Output VAT",
 ] as const;
 
 export const ItemCategorySystemDefaultAccountingSetup: ItemCategoryAccountingSetup =
@@ -37,10 +36,9 @@ export const ItemCategorySystemDefaultAccountingSetup: ItemCategoryAccountingSet
 		inventoryAccount: "Inventory - Merchandise",
 		salesAccount: "Sales - Merchandise",
 		costOfSalesAccount: "Cost of Sales - Merchandise",
+		discountAccount: "Sales Discounts",
 		purchaseAccount: "Purchases - Merchandise",
 		expenseAccount: "Expense - Operating Supplies",
-		inputVatAccount: "Input VAT",
-		outputVatAccount: "Output VAT",
 	};
 
 export const ItemSupplierOptions = [

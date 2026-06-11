@@ -31,6 +31,8 @@ export function ItemCategoryClassificationTableRow({
 	row,
 }: ItemCategoryClassificationTableRowProps) {
 	const { record } = row;
+	const isStatusLockedByParent =
+		row.hasInactiveAncestor && record.status === "Inactive";
 
 	return (
 		<tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
@@ -139,11 +141,19 @@ export function ItemCategoryClassificationTableRow({
 						/>
 						<ModuleTableActionButton
 							variant={record.status === "Active" ? "inactive" : "active"}
+							disabled={isStatusLockedByParent}
 							onClick={() => onStatusChange(row)}
 							label={
-								record.status === "Active"
+								isStatusLockedByParent
+									? `Reactivate a parent category before reactivating ${record.name}`
+									: record.status === "Active"
 									? `Set ${record.name} inactive`
 									: `Reactivate ${record.name}`
+							}
+							title={
+								isStatusLockedByParent
+									? "Reactivate the parent category first."
+									: undefined
 							}
 						/>
 					</ModuleTableActions>

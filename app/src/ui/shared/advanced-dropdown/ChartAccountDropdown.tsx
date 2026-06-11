@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
@@ -12,10 +12,11 @@ type ChartAccountDropdownProps = Omit<
 	AppAdvancedDropdownProps,
 	"options" | "selectionMode" | "value" | "onChange" | "onSelectOption"
 > & {
-	accounts: ChartAccount[];
+	accounts: ModuleChartAccount[];
+	valueField?: "accountName" | "accountNumber" | "id";
 	value: string;
 	onChange: (accountId: string) => void;
-	onSelectAccount?: (account: ChartAccount | null) => void;
+	onSelectAccount?: (account: ModuleChartAccount | null) => void;
 };
 
 export function ChartAccountDropdown({
@@ -25,6 +26,7 @@ export function ChartAccountDropdown({
 	searchPlaceholder = "Search account name or code",
 	showSelectedDetails = false,
 	value,
+	valueField = "accountNumber",
 	onChange,
 	onSelectAccount,
 	...dropdownProps
@@ -36,16 +38,17 @@ export function ChartAccountDropdown({
 				flatAccounts.flatMap((account) => [
 					[account.id, account],
 					[account.accountNumber, account],
+					[account.accountName, account],
 				]),
 			),
 		[flatAccounts],
 	);
 	const accountOptions = useMemo(
-		() => createAccountOptions(flatAccounts),
-		[flatAccounts],
+		() => createAccountOptions(flatAccounts, valueField),
+		[flatAccounts, valueField],
 	);
 	const selectedAccount = accountByValue.get(value);
-	const normalizedValue = selectedAccount?.accountNumber ?? value;
+	const normalizedValue = selectedAccount?.[valueField] ?? value;
 
 	function handleChange(nextValue: string | string[]) {
 		const accountValue = Array.isArray(nextValue)
@@ -53,7 +56,7 @@ export function ChartAccountDropdown({
 			: nextValue;
 		const nextAccount = accountByValue.get(accountValue) ?? null;
 
-		onChange(nextAccount?.accountNumber ?? accountValue);
+		onChange(nextAccount?.[valueField] ?? accountValue);
 		onSelectAccount?.(nextAccount);
 	}
 
@@ -72,24 +75,27 @@ export function ChartAccountDropdown({
 }
 
 function createAccountOptions(
-	accounts: ChartAccount[],
+	accounts: ModuleChartAccount[],
+	valueField: "accountName" | "accountNumber" | "id",
 ): AppAdvancedDropdownOption[] {
-	return accounts.filter(isAccountSelectable).map((account) => ({
-		description: account.description || account.accountType,
-		label: account.accountNumber,
-		name: account.accountName,
-		value: account.accountNumber,
-	}));
+	return accounts
+		.filter(isAccountSelectable)
+		.map((account) => ({
+			description: account.description || account.accountType,
+			label: account.accountNumber,
+			name: account.accountName,
+			value: account[valueField],
+		}));
 }
 
-function flattenAccounts(accounts: ChartAccount[]): ChartAccount[] {
+function flattenAccounts(accounts: ModuleChartAccount[]): ModuleChartAccount[] {
 	return accounts.flatMap((account) => [
 		account,
 		...(account.children ? flattenAccounts(account.children) : []),
 	]);
 }
 
-function isAccountSelectable(account: ChartAccount) {
+function isAccountSelectable(account: ModuleChartAccount) {
 	return (
 		account.status === "Active" &&
 		!account.children?.length &&

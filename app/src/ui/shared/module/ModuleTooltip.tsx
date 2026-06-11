@@ -31,7 +31,7 @@ export function ModuleTooltip({
 			<span
 				role="tooltip"
 				className={joinClasses(
-					"pointer-events-none absolute z-[90] hidden w-max max-w-64 rounded-lg border border-darknavy/10 bg-white px-3 py-2 text-left shadow-[0_18px_50px_rgba(33,39,56,0.18)] group-hover/module-tooltip:block group-focus-within/module-tooltip:block",
+					"pointer-events-none invisible absolute z-[90] w-max max-w-64 rounded-lg border border-darknavy/10 bg-white px-3 py-2 text-left opacity-0 shadow-[0_18px_50px_rgba(33,39,56,0.18)] transition group-hover/module-tooltip:visible group-hover/module-tooltip:opacity-100 group-focus-within/module-tooltip:visible group-focus-within/module-tooltip:opacity-100",
 					position === "bottom" ? "top-full mt-2" : "bottom-full mb-2",
 					align === "start" && "left-0",
 					align === "center" && "left-1/2 -translate-x-1/2",

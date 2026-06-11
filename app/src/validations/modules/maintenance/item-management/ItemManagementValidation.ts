@@ -104,10 +104,12 @@ export const ItemCategoryAccountingSetupValidationSchema = z.object({
 		.string()
 		.trim()
 		.min(1, "Select a cost of sales account."),
+	discountAccount: z
+		.string()
+		.trim()
+		.min(1, "Select a discount account."),
 	purchaseAccount: z.string().trim().min(1, "Select a purchase account."),
 	expenseAccount: z.string().trim().min(1, "Select an expense account."),
-	inputVatAccount: z.string().trim().min(1, "Select an input VAT account."),
-	outputVatAccount: z.string().trim().min(1, "Select an output VAT account."),
 });
 
 export const ItemCategoryClassificationFormValidationSchema = z

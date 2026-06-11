@@ -1,7 +1,7 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import { Info } from "lucide-react";
+import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
-	ItemCategoryAccountingAccountOptions,
 	ItemCategorySystemDefaultAccountingSetup,
 	ItemStatusOptions,
 } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
@@ -11,11 +11,17 @@ import type {
 	ItemCategoryClassificationFormErrors,
 	ItemCategoryClassificationFormValues,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
+import {
+	AppAdvancedDropdown,
+	type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 
 type ItemCategoryParentOption = {
 	id: string;
 	kindLabel: string;
 	label: string;
+	pathName: string;
 };
 
 type ItemCategoryClassificationFieldsProps = {
@@ -31,20 +37,20 @@ type ItemCategoryClassificationFieldsProps = {
 	onInputChange: ChangeEventHandler<
 		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 	>;
+	onParentChange: (parentId: string) => void;
 };
 
 const AccountingFields: Array<{
 	key: keyof ItemCategoryAccountingSetup;
 	label: string;
 }> = [
-	{ key: "inventoryAccount", label: "Inventory Account" },
-	{ key: "salesAccount", label: "Sales Account" },
-	{ key: "costOfSalesAccount", label: "Cost of Sales Account" },
-	{ key: "purchaseAccount", label: "Purchase Account" },
-	{ key: "expenseAccount", label: "Expense Account" },
-	{ key: "inputVatAccount", label: "Input VAT Account" },
-	{ key: "outputVatAccount", label: "Output VAT Account" },
-];
+		{ key: "inventoryAccount", label: "Inventory Account" },
+		{ key: "salesAccount", label: "Sales Account" },
+		{ key: "costOfSalesAccount", label: "Cost of Sales Account" },
+		{ key: "discountAccount", label: "Discount Account" },
+		{ key: "purchaseAccount", label: "Purchase Account" },
+		{ key: "expenseAccount", label: "Expense Account" },
+	];
 
 export function ItemCategoryClassificationFields({
 	errors,
@@ -52,10 +58,18 @@ export function ItemCategoryClassificationFields({
 	onAccountingFieldChange,
 	onAccountingModeChange,
 	onInputChange,
+	onParentChange,
 	parentOptions,
 	values,
 }: ItemCategoryClassificationFieldsProps) {
 	const isAccountingReadonly = isReadonly || values.accountingSetupMode !== "own";
+	const parentDropdownOptions: AppAdvancedDropdownOption[] = parentOptions.map(
+		(option) => ({
+			label: option.pathName,
+			name: option.label,
+			value: option.id,
+		}),
+	);
 
 	return (
 		<div className="grid gap-4">
@@ -72,20 +86,16 @@ export function ItemCategoryClassificationFields({
 						/>
 					</FormField>
 					<FormField label="Parent Category" error={errors.parentId}>
-						<select
-							name="parentId"
+						<AppAdvancedDropdown
+							options={parentDropdownOptions}
+							placeholder=""
+							readOnly={isReadonly}
+							searchPlaceholder="Search parent category"
+							showSelectionIndicator={false}
+							showSelectedDetails
 							value={values.parentId}
-							onChange={onInputChange}
-							disabled={isReadonly}
-							className={fieldClassName}
-						>
-							<option value="">---</option>
-							{parentOptions.map((option) => (
-								<option key={option.id} value={option.id}>
-									{option.label} - {option.kindLabel}
-								</option>
-							))}
-						</select>
+							onChange={(value) => onParentChange(String(value))}
+						/>
 					</FormField>
 					<FormField label="Allow Sub Category">
 						<span className="flex min-h-11 items-center gap-3 rounded-md border border-darknavy/15 bg-white px-3 text-sm font-semibold text-darknavy">
@@ -195,20 +205,19 @@ export function ItemCategoryClassificationFields({
 							error={errors[field.key]}
 							required={values.accountingSetupMode === "own"}
 						>
-							<select
-								value={values.accountingSetup[field.key]}
-								onChange={(event) =>
-									onAccountingFieldChange(field.key, event.target.value)
-								}
+							<ChartAccountDropdown
+								accounts={getModuleChartAccounts({
+									moduleKey: "maintenance-item-category",
+									purpose: field.key,
+								})}
 								disabled={isAccountingReadonly}
-								className={fieldClassName}
-							>
-								{ItemCategoryAccountingAccountOptions.map((account) => (
-									<option key={account} value={account}>
-										{account}
-									</option>
-								))}
-							</select>
+								placeholder=""
+								searchPlaceholder="Search account title"
+								showSelectionIndicator={false}
+								valueField="accountName"
+								value={values.accountingSetup[field.key]}
+								onChange={(value) => onAccountingFieldChange(field.key, value)}
+							/>
 						</FormField>
 					))}
 				</div>
@@ -230,11 +239,10 @@ function AccountingModeOption({
 }) {
 	return (
 		<label
-			className={`inline-flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold transition ${
-				checked
-					? "border-skyblue bg-skyblue/10 text-darknavy"
-					: "border-darknavy/10 bg-white text-darknavy/70"
-			} ${disabled ? "cursor-default opacity-70" : "cursor-pointer"}`}
+			className={`inline-flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold transition ${checked
+				? "border-skyblue bg-skyblue/10 text-darknavy"
+				: "border-darknavy/10 bg-white text-darknavy/70"
+				} ${disabled ? "cursor-default opacity-70" : "cursor-pointer"}`}
 		>
 			<input
 				type="radio"

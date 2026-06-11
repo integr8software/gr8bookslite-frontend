@@ -20,10 +20,11 @@ import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { TermManagementTable } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementTable";
 import { TermManagementDrawer } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementDrawer";
 
-type DrawerState = { mode: "add" | "edit"; term?: TermManagement } | null;
+type DrawerState = { mode: "add" | "edit" | "view"; term?: TermManagement } | null;
 
 export function TermManagementListPage() {
 	const page = useTermManagementListPage();
@@ -134,9 +135,32 @@ export function TermManagementListPage() {
 					</ModuleTableToolbar>
 				}
 				onEditTerm={(term) => setDrawerState({ mode: "edit", term })}
-				onToggleStatus={page.toggleTermStatus}
+				onToggleStatus={page.setPendingStatusTerm}
+				onViewTerm={(term) => setDrawerState({ mode: "view", term })}
 			/>
 			<TermManagementDrawer isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} term={drawerState?.term} />
+			<AppDialog
+				isOpen={Boolean(page.pendingStatusTerm)}
+				isPending={page.isMutating}
+				title={
+					page.pendingStatusTerm?.status === "Active"
+						? "Set term inactive?"
+						: "Reactivate term?"
+				}
+				description={
+					page.pendingStatusTerm?.status === "Active"
+						? `${page.pendingStatusTerm.name} will remain in history and references, but will no longer be active for normal selection.`
+						: `${page.pendingStatusTerm?.name ?? "This term"} will be available for selection again.`
+				}
+				confirmLabel={
+					page.pendingStatusTerm?.status === "Active"
+						? "Set Inactive"
+						: "Reactivate"
+				}
+				tone={page.pendingStatusTerm?.status === "Active" ? "danger" : "success"}
+				onCancel={() => page.setPendingStatusTerm(null)}
+				onConfirm={page.confirmTermStatusChange}
+			/>
 		</section>
 	);
 }

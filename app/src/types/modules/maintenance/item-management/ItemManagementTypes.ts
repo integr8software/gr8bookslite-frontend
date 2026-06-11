@@ -16,10 +16,9 @@ export type ItemCategoryAccountingSetup = {
 	inventoryAccount: string;
 	salesAccount: string;
 	costOfSalesAccount: string;
+	discountAccount: string;
 	purchaseAccount: string;
 	expenseAccount: string;
-	inputVatAccount: string;
-	outputVatAccount: string;
 };
 
 export type ItemSetupRecord = {
@@ -31,6 +30,8 @@ export type ItemSetupRecord = {
 	accountingSetupMode?: ItemCategoryAccountingSetupMode;
 	accountingSetup?: Partial<ItemCategoryAccountingSetup>;
 	allowSubCategory?: boolean;
+	parentInactiveSourceIds?: string[];
+	statusBeforeParentInactive?: ItemStatus;
 	status: ItemStatus;
 };
 
@@ -168,8 +169,10 @@ export type ItemCategoryClassificationTableRowData = {
 	hasChildren: boolean;
 	parentId: string;
 	parentName: string;
+	pathName: string;
 	accountingSetupStatus: ItemCategoryAccountingSetupStatus;
 	effectiveAccountingSetup?: ItemCategoryAccountingSetup;
+	hasInactiveAncestor?: boolean;
 	inheritedAccountingSourceName?: string;
 	isVirtual?: boolean;
 	usedByItemCount: number;

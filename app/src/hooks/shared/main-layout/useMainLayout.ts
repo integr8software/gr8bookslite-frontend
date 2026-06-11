@@ -1992,6 +1992,7 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "maintenance-items": "Maintain item master records.",
   "maintenance-warehouse": "Maintain warehouse records and storage locations.",
   "maintenance-item": "Maintain item master records.",
+  "maintenance-item-bundle": "Maintain item bundle records.",
   "maintenance-item-category": "Maintain the item category hierarchy.",
   "maintenance-item-promotions": "Maintain item promotion records and rules.",
   "maintenance-party-management":

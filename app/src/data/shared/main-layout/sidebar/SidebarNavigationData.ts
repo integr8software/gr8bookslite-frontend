@@ -239,6 +239,13 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
             "inventory",
           ),
           child(
+            "maintenance-item-bundle",
+            "Item Bundle",
+            "/maintenance/item-management/item-bundle",
+            "maintenance.item",
+            "inventory",
+          ),
+          child(
             "maintenance-item-category",
             "Item Category",
             "/maintenance/item-management/item-category",

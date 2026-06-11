@@ -129,6 +129,13 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
             "inventory",
           ),
           moduleItem(
+            "maintenance-item-bundle",
+            "Item Bundle",
+            "/maintenance/item-management/item-bundle",
+            "maintenance.item",
+            "inventory",
+          ),
+          moduleItem(
             "maintenance-item-category",
             "Item Category",
             "/maintenance/item-management/item-category",

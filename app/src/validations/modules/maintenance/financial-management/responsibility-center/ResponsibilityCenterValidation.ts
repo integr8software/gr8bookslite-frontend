@@ -10,12 +10,10 @@ export function validateResponsibilityCenterForm(
 	currentCenterId?: string,
 ) {
 	const errors: ResponsibilityCenterFormErrors = {};
-	const normalizedCode = normalizeResponsibilityCenterCode(values.code);
+	const normalizedCode = normalizeResponsibilityCenterCode(
+		values.code || values.name,
+	);
 	const normalizedName = values.name.trim().toLowerCase();
-
-	if (!normalizedCode) {
-		errors.code = "Code is required.";
-	}
 
 	if (!values.name.trim()) {
 		errors.name = "Name is required.";
@@ -57,7 +55,7 @@ export function validateResponsibilityCenterForm(
 				center.code.toUpperCase() === normalizedCode,
 		)
 	) {
-		errors.code = "Code already exists.";
+		errors.name = "Name creates a duplicate code.";
 	}
 
 	if (

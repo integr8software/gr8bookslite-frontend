@@ -58,7 +58,6 @@ export type ResponsibilityCenterFormErrors = Partial<
 >;
 
 export type ResponsibilityCenterTableColumnKey =
-	| "code"
 	| "name"
 	| "category"
 	| "parentId"

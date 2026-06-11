@@ -132,7 +132,7 @@ export function createResponsibilityCenterFromForm(
 
 	return {
 		id: `rc-${Date.now()}`,
-		code: normalizeCode(values.code),
+		code: normalizeCode(values.code || values.name),
 		name: values.name.trim(),
 		category: values.category,
 		financialType: values.financialType,

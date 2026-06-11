@@ -24,7 +24,7 @@ export function useResponsibilityCenterTable(
 		pageSize: 5,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "code", desc: false },
+		{ id: "name", desc: false },
 	]);
 	const columns = useMemo<ColumnDef<ResponsibilityCenter>[]>(
 		() =>

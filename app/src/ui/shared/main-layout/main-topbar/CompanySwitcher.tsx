@@ -20,6 +20,7 @@ type CompanySwitcherProps = {
 	canAccessWorkspace: boolean;
 	currentCompany: MainCompany;
 	isOpen: boolean;
+	spotlightId?: string;
 	variant?: SwitcherVariant;
 	onClose: () => void;
 	onSelectCompany: (companyId: string) => void;
@@ -35,6 +36,7 @@ export function CompanySwitcher({
 	canAccessWorkspace,
 	currentCompany,
 	isOpen,
+	spotlightId,
 	variant = "desktop",
 	onClose,
 	onSelectCompany,
@@ -62,6 +64,7 @@ export function CompanySwitcher({
 					: "w-full",
 			)}
 			data-main-switcher-root
+			data-spotlight-id={spotlightId}
 		>
 			<button
 				type="button"

@@ -1,4 +1,7 @@
-import type { TermManagementDatemode } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
+import type {
+	TermManagementDatemode,
+	TermManagementStatus,
+} from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 
 export const TermManagementHref =
 	"/maintenance/term-management";
@@ -8,31 +11,41 @@ export const TermManagementTablePaginationStorageKey =
 
 export const TermManagementTableColumns = [
 	{
-		key: "description",
-		label: "Description",
-		className: "w-[38%]",
+		key: "name",
+		label: "Name",
+		className: "w-[32%]",
 	},
 	{
 		key: "datemode",
 		label: "Datemode",
-		className: "w-[22%]",
+		className: "w-[18%]",
 	},
 	{
 		key: "period",
 		label: "Period",
-		className: "w-[20%]",
+		className: "w-[16%]",
+	},
+	{
+		key: "status",
+		label: "Status",
+		className: "w-[16%]",
 	},
 	{
 		label: "Actions",
-		className: "w-[20%] text-right",
+		className: "w-[18%] text-center",
 	},
 ] as const;
 
-export const TermManagementDatemodeOptions: TermManagementDatemode[] = [
+export const TermManagementDatemodeOptions = [
 	"Day",
 	"Month",
 	"Year",
-];
+] as const satisfies readonly TermManagementDatemode[];
+
+export const TermManagementStatusOptions = [
+	"Active",
+	"Inactive",
+] as const satisfies readonly TermManagementStatus[];
 
 export const TermManagementActionCopy = {
 	add: {

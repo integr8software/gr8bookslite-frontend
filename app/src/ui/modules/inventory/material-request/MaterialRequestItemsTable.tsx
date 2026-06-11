@@ -104,6 +104,10 @@ export function MaterialRequestItemsTable({
 		MaterialRequestItemColumnId[]
 	>([]);
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+	const [viewedRemarks, setViewedRemarks] = useState<{
+		rowNo: number;
+		value: string;
+	} | null>(null);
 	const [touchedItemCellIds, setTouchedItemCellIds] = useState<Set<string>>(
 		() => new Set(),
 	);
@@ -271,12 +275,14 @@ export function MaterialRequestItemsTable({
 				width: resolvedColumnWidths[columnId],
 				widthClassName: "",
 				widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
-				renderCell: (item, _index, cellContext) =>
+				renderCell: (item, index, cellContext) =>
 					renderItemCell({
 						cellContext,
 						columnId,
 						isReadonly,
 						item,
+						rowNo: index + 1,
+						onViewRemarks: setViewedRemarks,
 						onUpdateItem: handleUpdateItem,
 						validationMessage: itemValidationMessages.get(item.id)?.[columnId],
 					}),
@@ -562,6 +568,10 @@ export function MaterialRequestItemsTable({
 				}}
 				requiredColumnIds={requiredColumnIds}
 			/>
+			<MaterialRequestRemarksViewDialog
+				viewedRemarks={viewedRemarks}
+				onClose={() => setViewedRemarks(null)}
+			/>
 		</>
 	);
 }
@@ -571,6 +581,8 @@ function renderItemCell({
 	columnId,
 	isReadonly,
 	item,
+	rowNo,
+	onViewRemarks,
 	onUpdateItem,
 	validationMessage,
 }: {
@@ -578,6 +590,8 @@ function renderItemCell({
 	columnId: MaterialRequestItemColumnId;
 	isReadonly: boolean;
 	item: MaterialRequestItem;
+	rowNo: number;
+	onViewRemarks: (remarks: { rowNo: number; value: string }) => void;
 	onUpdateItem: (
 		itemId: string,
 		field: keyof MaterialRequestItem,
@@ -619,6 +633,27 @@ function renderItemCell({
 		);
 	}
 
+	if (columnId === "remarks") {
+		return (
+			<div className="flex items-center gap-2">
+				<ItemInput
+					readOnly={isReadonly}
+					tabIndex={cellContext.focusableTabIndex}
+					validationMessage={validationMessage}
+					value={item.remarks}
+					onChange={(value) => onUpdateItem(item.id, "remarks", value)}
+				/>
+				<button
+					type="button"
+					onClick={() => onViewRemarks({ rowNo, value: item.remarks })}
+					className="mr-2 inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-skyblue/25 bg-skyblue/8 px-3 text-xs font-semibold text-skyblue transition hover:bg-skyblue/14"
+				>
+					View
+				</button>
+			</div>
+		);
+	}
+
 	return (
 		<ItemInput
 			readOnly={isReadonly}
@@ -627,6 +662,73 @@ function renderItemCell({
 			value={String(item[columnId] ?? "")}
 			onChange={(value) => onUpdateItem(item.id, columnId, value)}
 		/>
+	);
+}
+
+function MaterialRequestRemarksViewDialog({
+	viewedRemarks,
+	onClose,
+}: {
+	viewedRemarks: { rowNo: number; value: string } | null;
+	onClose: () => void;
+}) {
+	if (!viewedRemarks) {
+		return null;
+	}
+
+	return (
+		<div
+			role="presentation"
+			className="fixed inset-0 z-[140] flex items-end justify-center bg-slate-950/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6"
+			onMouseDown={(event) => {
+				if (event.target === event.currentTarget) {
+					onClose();
+				}
+			}}
+		>
+			<section
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="material-request-remarks-view-title"
+				className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-[18px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)]"
+			>
+				<div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
+					<div>
+						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-skyblue">
+							Material Request
+						</p>
+						<h2
+							id="material-request-remarks-view-title"
+							className="mt-1 text-lg font-semibold text-darknavy"
+						>
+							Remarks Row {viewedRemarks.rowNo}
+						</h2>
+					</div>
+					<button
+						type="button"
+						onClick={onClose}
+						className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-darknavy/6 hover:text-darknavy"
+						aria-label="Close remarks view"
+					>
+						<X className="h-4 w-4" aria-hidden="true" />
+					</button>
+				</div>
+				<div className="min-h-0 overflow-auto px-5 py-5">
+					<p className="app-theme-field-readonly whitespace-pre-wrap break-words rounded-lg border p-4 text-sm leading-7">
+						{viewedRemarks.value.trim() || "No remarks encoded."}
+					</p>
+				</div>
+				<div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
+					<button
+						type="button"
+						onClick={onClose}
+						className="inline-flex h-10 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
+					>
+						Close
+					</button>
+				</div>
+			</section>
+		</div>
 	);
 }
 

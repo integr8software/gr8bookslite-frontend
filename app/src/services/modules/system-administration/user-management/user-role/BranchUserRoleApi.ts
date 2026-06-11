@@ -1,22 +1,17 @@
 import {
-	UserAccessRoleOptions,
+	type UserAccessRoleOption,
 	type UserRoleFormValues,
 	type UserRoleRecord,
 } from "@/app/src/data/modules/system-administration/user-management/user-role/UserRoleData";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import type { BranchUserRoleApiResponse } from "@/app/src/types/modules/user-management/UserListTypes";
+import type {
+	BranchPermissionCatalogApiResponse,
+	BranchUserRoleApiResponse,
+} from "@/app/src/types/modules/user-management/UserListTypes";
 
 type BranchRolePermissionPayload = {
-	moduleCode: string;
-	moduleName: string;
 	permissionCode: string;
-	permissionName: string;
-	canView: boolean;
-	canCreate: boolean;
-	canUpdate: boolean;
-	canDelete: boolean;
-	canApprove: boolean;
-	canExport: boolean;
+	actions: string[];
 };
 
 type BranchRolePayload = {
@@ -35,6 +30,22 @@ export async function GetBranchRoles(unitId: string) {
 	return response.data.roles.map(MapBranchRoleApiRecord);
 }
 
+export async function GetBranchPermissionCatalog(unitId: string) {
+	const response = await ApiClient.get<BranchPermissionCatalogApiResponse>(
+		`/company/units/${unitId}/roles/permission-catalog`,
+	);
+
+	return response.data.modules.map((module): UserAccessRoleOption => ({
+		value: module.code,
+		label: module.name,
+		children: module.submodules.map((submodule) => ({
+			permissionCode: submodule.permissionCode,
+			label: submodule.name,
+			actions: submodule.actions,
+		})),
+	}));
+}
+
 export async function GetBranchRole(
 	unitId: string,
 	roleId: string,
@@ -49,10 +60,11 @@ export async function GetBranchRole(
 export async function CreateBranchRole(
 	unitId: string,
 	values: UserRoleFormValues,
+	permissionCatalog: UserAccessRoleOption[],
 ) {
 	const response = await ApiClient.post<{ role: BranchUserRoleApiResponse }>(
 		`/company/units/${unitId}/roles`,
-		MapUserRoleFormValuesToPayload(values),
+		MapUserRoleFormValuesToPayload(values, permissionCatalog),
 		{ timeout: BranchRoleWriteTimeoutMs },
 	);
 
@@ -63,10 +75,11 @@ export async function UpdateBranchRole(
 	unitId: string,
 	roleId: string,
 	values: UserRoleFormValues,
+	permissionCatalog: UserAccessRoleOption[],
 ) {
 	const response = await ApiClient.patch<{ role: BranchUserRoleApiResponse }>(
 		`/company/units/${unitId}/roles/${roleId}`,
-		MapUserRoleFormValuesToPayload(values),
+		MapUserRoleFormValuesToPayload(values, permissionCatalog),
 		{ timeout: BranchRoleWriteTimeoutMs },
 	);
 
@@ -104,63 +117,57 @@ function MapBranchRoleApiRecord(role: BranchUserRoleApiResponse): UserRoleRecord
 function MapPermissionActions(
 	permission: BranchUserRoleApiResponse["permissions"][number],
 ) {
-	return [
-		permission.canView ? "read" : null,
-		permission.canCreate ? "create" : null,
-		permission.canUpdate ? "update" : null,
-		permission.canDelete ? "delete" : null,
-		permission.canApprove ? "approve" : null,
-		permission.canExport ? "print-export" : null,
-	].filter((action): action is string => Boolean(action));
+	return permission.actions?.length
+		? permission.actions
+		: [
+				permission.canView ? "view" : null,
+				permission.canCreate ? "create" : null,
+				permission.canUpdate ? "update" : null,
+				permission.canCancel ? "cancel" : null,
+				permission.canUncancel ? "uncancel" : null,
+				permission.canExport ? "export" : null,
+			].filter((action): action is string => Boolean(action));
 }
 
 function MapUserRoleFormValuesToPayload(
 	values: UserRoleFormValues,
+	permissionCatalog: UserAccessRoleOption[],
 ): BranchRolePayload {
 	return {
 		name: values.name,
 		description: values.description.trim() || null,
-		permissions: BuildPermissionPayload(values.accessRoles),
+		permissions: BuildPermissionPayload(values.accessRoles, permissionCatalog),
 	};
 }
 
-function BuildPermissionPayload(accessRoles: string[]) {
+function BuildPermissionPayload(
+	accessRoles: string[],
+	permissionCatalog: UserAccessRoleOption[],
+) {
 	const selectedAccessRoles = new Set(accessRoles);
 
-	return UserAccessRoleOptions.flatMap((accessModule) =>
+	return permissionCatalog.flatMap((accessModule) =>
 		accessModule.children.flatMap((submodule) => {
-			const canView = selectedAccessRoles.has(`${submodule.value}.read`);
-			const canCreate = selectedAccessRoles.has(`${submodule.value}.create`);
-			const canUpdate = selectedAccessRoles.has(`${submodule.value}.update`);
-			const canDelete = selectedAccessRoles.has(`${submodule.value}.delete`);
-			const canApprove = selectedAccessRoles.has(`${submodule.value}.approve`);
-			const canExport = selectedAccessRoles.has(
-				`${submodule.value}.print-export`,
-			);
+			const actions = (submodule.actions ?? [
+				"view",
+				"create",
+				"update",
+				"cancel",
+				"uncancel",
+				"export",
+			])
+				.filter((action) =>
+					selectedAccessRoles.has(`${submodule.permissionCode}.${action}`),
+				);
 
-			if (
-				!canView &&
-				!canCreate &&
-				!canUpdate &&
-				!canDelete &&
-				!canApprove &&
-				!canExport
-			) {
+			if (actions.length === 0) {
 				return [];
 			}
 
 			return [
 				{
-					moduleCode: accessModule.value,
-					moduleName: accessModule.label,
-					permissionCode: submodule.value,
-					permissionName: submodule.label,
-					canView,
-					canCreate,
-					canUpdate,
-					canDelete,
-					canApprove,
-					canExport,
+					permissionCode: submodule.permissionCode,
+					actions,
 				},
 			];
 		}),

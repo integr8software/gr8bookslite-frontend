@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import type { OnboardingValues } from "@/app/src/data/onboarding/OnboardingTypes";
-import { PricingPlans, type BillingCycle, type PricingPlan } from "@/app/src/data/pricing/PricingData";
+import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingTypes";
 import { GetOnboardingDraft } from "@/app/src/services/onboarding/OnboardingApi";
 import type { OnboardingDraft } from "@/app/src/services/onboarding/OnboardingApiTypes";
+import { MapOnboardingPlanToPricingPlan } from "@/app/src/services/onboarding/OnboardingPlanMapper";
 
 function Wait(milliseconds: number) {
   return new Promise((resolve) => {
@@ -35,12 +36,8 @@ function GetDraftStepIndex(draft: OnboardingDraft | null) {
   return 1;
 }
 
-function GetDraftPlan(planCode: string | null | undefined) {
-  if (!planCode) {
-    return null;
-  }
-
-  return PricingPlans.find((plan) => plan.code === planCode) ?? null;
+function GetDraftPlan(draft: OnboardingDraft | null) {
+  return draft?.plan ? MapOnboardingPlanToPricingPlan(draft.plan) : null;
 }
 
 type UseOnboardingDraftParams = {
@@ -104,7 +101,7 @@ export function useOnboardingDraft({
         }
 
         const draftCompanyDetails = draft.companyDetails;
-        const selectedDraftPlan = GetDraftPlan(draft.plan?.code);
+        const selectedDraftPlan = GetDraftPlan(draft);
 
         setSelectedPlan(selectedDraftPlan);
         setSelectedBillingCycle(GetUiBillingCycle(draft.billingCycle));

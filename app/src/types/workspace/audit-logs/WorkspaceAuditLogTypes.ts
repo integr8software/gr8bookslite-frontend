@@ -11,8 +11,6 @@ export type WorkspaceAuditLogAction =
 	| "Update"
 	| "View";
 
-export type WorkspaceAuditLogSeverity = "Info" | "Warning" | "Critical";
-
 export type WorkspaceAuditLogRecord = {
 	id: string;
 	action: WorkspaceAuditLogAction;
@@ -25,17 +23,15 @@ export type WorkspaceAuditLogRecord = {
 	ipAddress: string;
 	module: string;
 	recordId: string;
-	severity: WorkspaceAuditLogSeverity;
 };
 
 export type WorkspaceAuditLogTableColumnKey =
-	| "branchName"
-	| "module"
-	| "action"
+	| "createdAt"
 	| "actorName"
+	| "action"
 	| "description"
-	| "severity"
-	| "createdAt";
+	| "module"
+	| "branchName";
 
 export type WorkspaceAuditLogFilters = {
 	action: WorkspaceAuditLogAction | "all";
@@ -43,5 +39,4 @@ export type WorkspaceAuditLogFilters = {
 	dateRange: WorkspaceAuditLogDateRange;
 	module: string;
 	query: string;
-	severity: WorkspaceAuditLogSeverity | "all";
 };

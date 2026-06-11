@@ -55,7 +55,7 @@ export const InitialAppPaymentTypeRecords: PaymentTypeRecord[] = [
     withBank: false,
     status: "Active",
     accountCode: "1001111",
-    accountTitle: "Cash on Hand",
+    accountTitle: "Cash in Hand",
   },
   {
     id: "payment-type-3",

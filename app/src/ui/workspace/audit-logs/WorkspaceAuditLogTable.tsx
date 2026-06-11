@@ -1,18 +1,16 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { RefreshCw, Search } from "lucide-react";
 import {
 	WorkspaceAuditLogActionOptions,
 	WorkspaceAuditLogDateRangeOptions,
 	WorkspaceAuditLogPaginationStorageKey,
-	WorkspaceAuditLogSeverityOptions,
 } from "@/app/src/constants/workspace/audit-logs/WorkspaceAuditLogConstants";
 import type { useWorkspaceAuditLogListPage } from "@/app/src/hooks/workspace/audit-logs/useWorkspaceAuditLogListPage";
 import type {
 	WorkspaceAuditLogAction,
 	WorkspaceAuditLogDateRange,
 	WorkspaceAuditLogRecord,
-	WorkspaceAuditLogSeverity,
 } from "@/app/src/types/workspace/audit-logs/WorkspaceAuditLogTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
@@ -21,6 +19,7 @@ import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { WorkspaceAuditLogTableRow } from "@/app/src/ui/workspace/audit-logs/WorkspaceAuditLogTableRow";
 
 type WorkspaceAuditLogTableProps = Pick<
@@ -31,6 +30,8 @@ type WorkspaceAuditLogTableProps = Pick<
 	| "dateRangeFilter"
 	| "isError"
 	| "isLoading"
+	| "isSyncing"
+	| "lastSyncedAt"
 	| "moduleFilter"
 	| "moduleOptions"
 	| "query"
@@ -40,8 +41,6 @@ type WorkspaceAuditLogTableProps = Pick<
 	| "setDateRangeFilter"
 	| "setModuleFilter"
 	| "setQuery"
-	| "setSeverityFilter"
-	| "severityFilter"
 	| "table"
 >;
 
@@ -52,6 +51,8 @@ export function WorkspaceAuditLogTable({
 	dateRangeFilter,
 	isError,
 	isLoading,
+	isSyncing,
+	lastSyncedAt,
 	moduleFilter,
 	moduleOptions,
 	query,
@@ -61,30 +62,46 @@ export function WorkspaceAuditLogTable({
 	setDateRangeFilter,
 	setModuleFilter,
 	setQuery,
-	setSeverityFilter,
-	severityFilter,
 	table,
 }: WorkspaceAuditLogTableProps) {
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+			<div className="flex flex-wrap items-center justify-between gap-3 border-b border-darknavy/10 px-4 py-3">
+				<p className="text-sm font-semibold text-darknavy">Activity stream</p>
+				<div className="flex items-center gap-2 text-xs font-semibold text-darknavy/58">
+					<RefreshCw
+						className={joinClasses(
+							"h-3.5 w-3.5",
+							isSyncing ? "animate-spin text-skyblue" : "text-citron",
+						)}
+						aria-hidden="true"
+					/>
+					<span>{isSyncing ? "Syncing" : "Live"}</span>
+					{lastSyncedAt > 0 ? (
+						<span className="font-medium text-darknavy/42">
+							Updated {formatWorkspaceAuditLogSyncTime(lastSyncedAt)}
+						</span>
+					) : null}
+				</div>
+			</div>
 			<ModuleTable<WorkspaceAuditLogRecord>
 				variant="embedded"
 				emptyDescription={
 					isError
 						? "The audit log service could not be reached. Refresh the page or try again."
-						: "Adjust branch, date range, module, action, or severity."
+						: "Adjust branch, date range, module, or action."
 				}
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle={
 					isError ? "Could not load audit logs" : "No audit logs found"
 				}
 				isLoading={isLoading}
-				minWidthClassName="min-w-[106rem]"
+				minWidthClassName="min-w-[90rem]"
 				paginationLabel="logs"
 				paginationStorageKey={WorkspaceAuditLogPaginationStorageKey}
 				table={table}
 				toolbar={
-					<ModuleTableToolbar className="xl:grid-cols-[minmax(24rem,2.4fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(9rem,0.7fr)]">
+					<ModuleTableToolbar className="xl:grid-cols-[minmax(24rem,2.4fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(9rem,0.7fr)]">
 						<ModuleTableSearch
 							label="Search workspace audit logs"
 							value={query}
@@ -137,20 +154,6 @@ export function WorkspaceAuditLogTable({
 								setActionFilter(value as WorkspaceAuditLogAction | "all")
 							}
 						/>
-						<ModuleTableFilterSelect
-							label="Severity"
-							value={severityFilter}
-							options={[
-								{ label: "All severities", value: "all" },
-								...WorkspaceAuditLogSeverityOptions.map((severity) => ({
-									label: severity,
-									value: severity,
-								})),
-							]}
-							onChange={(value) =>
-								setSeverityFilter(value as WorkspaceAuditLogSeverity | "all")
-							}
-						/>
 						<ModuleTableResetButton onClick={resetFilters}>
 							Reset
 						</ModuleTableResetButton>
@@ -162,4 +165,12 @@ export function WorkspaceAuditLogTable({
 			/>
 		</div>
 	);
+}
+
+function formatWorkspaceAuditLogSyncTime(value: number) {
+	return new Intl.DateTimeFormat(undefined, {
+		hour: "numeric",
+		minute: "2-digit",
+		second: "2-digit",
+	}).format(new Date(value));
 }

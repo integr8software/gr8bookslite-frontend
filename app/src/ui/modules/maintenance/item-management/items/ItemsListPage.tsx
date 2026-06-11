@@ -30,7 +30,7 @@ export function ItemsListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Items"
-				description="Maintain item master records, classifications, and bundle component definitions."
+				description="Maintain item master records, item types, and bundle component definitions."
 				eyebrow={
 					<>
 						<Package className="h-3.5 w-3.5" aria-hidden="true" />
@@ -87,7 +87,7 @@ export function ItemsListPage() {
 
 			<ItemsTable
 				isLoading={page.isLoading}
-				setPendingDeleteItem={page.setPendingDeleteItem}
+				setPendingStatusItem={page.setPendingStatusItem}
 				table={page.table}
 				toolbar={
 					<ModuleTableToolbar>
@@ -131,14 +131,28 @@ export function ItemsListPage() {
 			/>
 
 			<AppDialog
-				isOpen={Boolean(page.pendingDeleteItem)}
+				isOpen={Boolean(page.pendingStatusItem)}
 				isPending={page.isMutating}
-				title="Delete item?"
-				description={`This will remove ${page.pendingDeleteItem?.name ?? "the selected item"}.`}
-				confirmLabel="Delete Item"
-				tone="danger"
-				onCancel={() => page.setPendingDeleteItem(null)}
-				onConfirm={page.handleConfirmDelete}
+				title={
+					page.pendingStatusItem?.status === "Active"
+						? "Set item inactive?"
+						: "Reactivate item?"
+				}
+				description={
+					page.pendingStatusItem?.status === "Active"
+						? `${page.pendingStatusItem.name} will remain in history and references, but will no longer be active for normal selection.`
+						: `${page.pendingStatusItem?.name ?? "This item"} will be available for selection again.`
+				}
+				confirmLabel={
+					page.pendingStatusItem?.status === "Active"
+						? "Set Inactive"
+						: "Reactivate"
+				}
+				tone={
+					page.pendingStatusItem?.status === "Active" ? "danger" : "success"
+				}
+				onCancel={() => page.setPendingStatusItem(null)}
+				onConfirm={page.handleConfirmStatusChange}
 			/>
 		</section>
 	);

@@ -1,5 +1,7 @@
 import type {
   DisbursementAttachment,
+  DisbursementVoucherBankAccount,
+  DisbursementVoucherPaymentAccount,
   DisbursementVoucherCopyFromRecord,
   DisbursementVoucherCopySource,
   DisbursementLineEntry,
@@ -21,6 +23,37 @@ export const DisbursementVoucherInitialEntryDraft: DisbursementVoucherEntryDraft
     taxRate: "0%",
     taxDetails: createTaxDetails(0, "0%"),
   };
+
+export const DisbursementVoucherBankAccounts: DisbursementVoucherBankAccount[] =
+  [
+    {
+      id: "bank-bdo-operating",
+      accountCode: "1010102001",
+      accountTitle: "Cash in Bank - BDO Operating",
+      bankName: "BDO Unibank",
+      branch: "Makati Corporate Branch",
+      accountName: "Gr8Books Operating Account",
+      accountNo: "1000-2201-44",
+    },
+    {
+      id: "bank-metrobank-checking",
+      accountCode: "1010102002",
+      accountTitle: "Cash in Bank - Metrobank Checking",
+      bankName: "Metrobank",
+      branch: "BGC Finance Center",
+      accountName: "Gr8Books Checking Account",
+      accountNo: "0028-4511-90",
+    },
+    {
+      id: "bank-bpi-payroll",
+      accountCode: "1010102003",
+      accountTitle: "Cash in Bank - BPI Payroll",
+      bankName: "BPI",
+      branch: "Ortigas Business Center",
+      accountName: "Gr8Books Payroll Account",
+      accountNo: "7781-0042-16",
+    },
+  ];
 
 export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
   {
@@ -142,8 +175,10 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     invoiceReferenceNo: "INV-OFF-5521",
     paymentDueDate: "2026-05-21",
     paymentDetails: {
+      bankAccountCode: "1010102001",
       bankAccountName: "North Harbor Office Depot",
       bankAccountNo: "1000-2201-44",
+      bankAccountTitle: "Cash in Bank - BDO Operating",
       bankBranch: "Makati Corporate Branch",
       bankName: "BDO Unibank",
       checkDate: "",
@@ -198,8 +233,10 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     invoiceReferenceNo: "RET-0503-24",
     paymentDueDate: "2026-05-17",
     paymentDetails: {
+      bankAccountCode: "1010102002",
       bankAccountName: "Santos and Velasco Legal",
       bankAccountNo: "0028-4511-90",
+      bankAccountTitle: "Cash in Bank - Metrobank Checking",
       bankBranch: "BGC Finance Center",
       bankName: "Metrobank",
       checkDate: "2026-05-05",
@@ -304,6 +341,9 @@ export function sanitizeDisbursementVoucherRecord(
 ): DisbursementVoucherRecord {
   return {
     ...voucher,
+    paymentDetails: normalizePaymentDetails(
+      voucher.paymentDetails ?? createEmptyPaymentDetails(),
+    ),
     attachments: removeLegacyMockAttachments(voucher.attachments),
   };
 }
@@ -313,7 +353,7 @@ export const DisbursementVoucherCopySources: DisbursementVoucherCopySource[] = [
   "Accounts Payable Voucher",
   "Advances to Supplier",
   "Cash Advance",
-  "Petty Cash Replenishment",
+  "Petty Cash Fund Replenishment",
   "Purchase Order",
 ];
 
@@ -359,8 +399,8 @@ export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromReco
     ),
     createDisbursementVoucherCopyFromRecord(
       "copy-dv-1006",
-      "Petty Cash Replenishment",
-      "PCR-2026-0012",
+      "Petty Cash Fund Replenishment",
+      "PCFR-2026-0012",
       "VCE-TPI-611",
       MockDisbursementTransactions[5],
     ),
@@ -563,11 +603,22 @@ export function createDisbursementLineEntry(
 
 export function createAutoDisbursementLineEntries(
   transaction: DisbursementTransactionRecord,
+  bankAccount?: DisbursementVoucherBankAccount | null,
+  paymentAccount?: DisbursementVoucherPaymentAccount | null,
 ): DisbursementLineEntry[] {
   const amount = transaction.amount;
   const debitAccount = getDebitAccountTemplate(transaction);
-  const creditAccount = getCreditAccountTemplate(transaction);
+  const creditAccount = getCreditAccountTemplate(
+    transaction,
+    bankAccount,
+    paymentAccount,
+  );
   const taxRate = getDefaultTaxRate(transaction);
+  const creditParticulars = createCreditParticulars(
+    transaction,
+    bankAccount,
+    paymentAccount,
+  );
 
   return [
     {
@@ -585,7 +636,7 @@ export function createAutoDisbursementLineEntries(
       id: `auto-credit-${transaction.id}`,
       accountCode: creditAccount.accountCode,
       accountName: creditAccount.accountName,
-      particulars: `Settlement for ${transaction.payee}`,
+      particulars: creditParticulars,
       debit: 0,
       credit: amount,
       taxRate: "0%",
@@ -593,6 +644,61 @@ export function createAutoDisbursementLineEntries(
       status: "Balanced",
     },
   ];
+}
+
+export function applyBankAccountToPaymentDetails(
+  paymentDetails: DisbursementVoucherPaymentDetails,
+  bankAccount: DisbursementVoucherBankAccount | null,
+): DisbursementVoucherPaymentDetails {
+  if (!bankAccount) {
+    return {
+      ...paymentDetails,
+      bankAccountCode: "",
+      bankAccountTitle: "",
+    };
+  }
+
+  return {
+    ...paymentDetails,
+    bankAccountCode: bankAccount.accountCode,
+    bankAccountTitle: bankAccount.accountTitle,
+    bankAccountName: bankAccount.accountName,
+    bankAccountNo: bankAccount.accountNo,
+    bankBranch: bankAccount.branch,
+    bankName: bankAccount.bankName,
+  };
+}
+
+export function applyBankAccountToDisbursementLineEntries(
+  entries: DisbursementLineEntry[],
+  bankAccount: DisbursementVoucherBankAccount | null,
+  paymentAccount?: DisbursementVoucherPaymentAccount | null,
+) {
+  if (!bankAccount) {
+    return entries;
+  }
+
+  return entries.map((entry) =>
+    isBankReplaceableCreditEntry(entry)
+      ? {
+          ...entry,
+          accountCode: bankAccount.accountCode,
+          accountName: formatBankPaymentAccountName(bankAccount),
+          particulars: createCreditParticulars(undefined, bankAccount, paymentAccount),
+        }
+      : entry,
+  );
+}
+
+function isBankReplaceableCreditEntry(entry: DisbursementLineEntry) {
+  return (
+    entry.id.startsWith("auto-credit-") ||
+    entry.accountName === "Cash in Bank" ||
+    entry.accountName.startsWith("Cash in Bank - ") ||
+    entry.accountName === "Check Disbursement Clearing" ||
+    entry.accountName === "Online Payment Clearing" ||
+    entry.accountName === "Petty Cash Fund"
+  );
 }
 
 export function createTaxDetails(amount: number, taxRate: string): DisbursementTaxDetails {
@@ -785,7 +891,32 @@ function getDebitAccountTemplate(transaction: DisbursementTransactionRecord) {
   };
 }
 
-function getCreditAccountTemplate(transaction: DisbursementTransactionRecord) {
+function getCreditAccountTemplate(
+  transaction: DisbursementTransactionRecord,
+  bankAccount?: DisbursementVoucherBankAccount | null,
+  paymentAccount?: DisbursementVoucherPaymentAccount | null,
+) {
+  if (bankAccount) {
+    return {
+      accountCode: bankAccount.accountCode,
+      accountName: formatBankPaymentAccountName(bankAccount),
+    };
+  }
+
+  if (paymentAccount?.accountCode.trim() || paymentAccount?.accountTitle.trim()) {
+    return {
+      accountCode: paymentAccount.accountCode.trim(),
+      accountName: getPaymentAccountName(paymentAccount),
+    };
+  }
+
+  if (transaction.paymentMethod === "Cash") {
+    return {
+      accountCode: "1001111",
+      accountName: "Cash in Hand",
+    };
+  }
+
   if (transaction.paymentMethod === "Petty Cash") {
     return {
       accountCode: "1005-001",
@@ -813,6 +944,56 @@ function getCreditAccountTemplate(transaction: DisbursementTransactionRecord) {
   };
 }
 
+function formatBankPaymentAccountName(
+  bankAccount: DisbursementVoucherBankAccount,
+) {
+  const bankLabel = getBankDisplayName(bankAccount.bankName);
+
+  return bankLabel ? `Cash in Bank - ${bankLabel}` : "Cash in Bank";
+}
+
+function getBankDisplayName(bankName: string) {
+  const trimmedName = bankName.trim();
+
+  if (!trimmedName) {
+    return "";
+  }
+
+  return trimmedName.split(/\s+/)[0];
+}
+
+function getPaymentAccountName(
+  paymentAccount: DisbursementVoucherPaymentAccount,
+) {
+  if (paymentAccount.paymentType === "Cash") {
+    return "Cash in Hand";
+  }
+
+  return paymentAccount.accountTitle.trim() || paymentAccount.paymentType;
+}
+
+function createCreditParticulars(
+  transaction?: DisbursementTransactionRecord,
+  bankAccount?: DisbursementVoucherBankAccount | null,
+  paymentAccount?: DisbursementVoucherPaymentAccount | null,
+) {
+  const payee = transaction?.payee ? ` for ${transaction.payee}` : "";
+  const paymentType = paymentAccount?.paymentType ?? transaction?.paymentMethod;
+  const paymentLabel = paymentType ? ` via ${paymentType}` : "";
+
+  if (bankAccount) {
+    return [
+      `Settlement${payee}${paymentLabel}`,
+      bankAccount.bankName,
+      bankAccount.branch,
+    ]
+      .filter(Boolean)
+      .join(" - ");
+  }
+
+  return `Settlement${payee}${paymentLabel}`;
+}
+
 function getDefaultTaxRate(transaction: DisbursementTransactionRecord) {
   if (transaction.disbursementType === "Operating Expense") {
     return "5%";
@@ -835,10 +1016,12 @@ function roundCurrency(value: number) {
   return Number(value.toFixed(2));
 }
 
-function createEmptyPaymentDetails(): DisbursementVoucherPaymentDetails {
+export function createEmptyPaymentDetails(): DisbursementVoucherPaymentDetails {
   return {
+    bankAccountCode: "",
     bankAccountName: "",
     bankAccountNo: "",
+    bankAccountTitle: "",
     bankBranch: "",
     bankName: "",
     checkDate: "",
@@ -851,8 +1034,10 @@ function normalizePaymentDetails(
   paymentDetails: DisbursementVoucherPaymentDetails,
 ): DisbursementVoucherPaymentDetails {
   return {
+    bankAccountCode: paymentDetails.bankAccountCode?.trim() ?? "",
     bankAccountName: paymentDetails.bankAccountName.trim(),
     bankAccountNo: paymentDetails.bankAccountNo.trim(),
+    bankAccountTitle: paymentDetails.bankAccountTitle?.trim() ?? "",
     bankBranch: paymentDetails.bankBranch.trim(),
     bankName: paymentDetails.bankName.trim(),
     checkDate: paymentDetails.checkDate,

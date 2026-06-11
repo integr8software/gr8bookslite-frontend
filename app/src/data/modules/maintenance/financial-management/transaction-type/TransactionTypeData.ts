@@ -1,5 +1,5 @@
-import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
-import type { FormSignatoryModuleOption } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import type {
 	TransactionType,
 	TransactionTypeFormValues,
@@ -137,7 +137,7 @@ export const MockTransactionTypes: TransactionType[] = [
 export const TransactionTypeInitialFormValues: TransactionTypeFormValues = {
 	name: "",
 	description: "",
-	moduleId: "",
+	moduleIds: [],
 	status: "Active",
 	accountId: "",
 };
@@ -152,7 +152,7 @@ export function createTransactionTypeFormValues(
 	return {
 		name: transactionType.name ?? legacyTransactionType.type ?? "",
 		description: transactionType.description,
-		moduleId: transactionType.moduleId ?? "",
+		moduleIds: getTransactionTypeModuleIds(transactionType),
 		status: transactionType.status,
 		accountId: transactionType.accountId ?? transactionType.accountCode ?? "",
 	};
@@ -160,15 +160,19 @@ export function createTransactionTypeFormValues(
 
 export function createTransactionTypeFromForm(
 	values: TransactionTypeFormValues,
-	account?: ChartAccount,
-	moduleOptions: FormSignatoryModuleOption[] = [],
+	account?: ModuleChartAccount,
+	moduleOptions: ModuleOption[] = [],
 ): TransactionType {
+	const moduleNames = getSelectedModuleNames(values.moduleIds, moduleOptions);
+
 	return {
 		id: `transaction-type-${Date.now()}`,
 		name: values.name.trim(),
 		description: values.description.trim(),
-		moduleId: values.moduleId,
-		moduleName: getSelectedModuleName(values.moduleId, moduleOptions),
+		moduleId: values.moduleIds[0] ?? "",
+		moduleName: moduleNames[0] ?? "",
+		moduleIds: values.moduleIds,
+		moduleNames,
 		status: values.status,
 		accountId: account?.accountNumber,
 		accountCode: account?.accountNumber,
@@ -179,15 +183,19 @@ export function createTransactionTypeFromForm(
 export function updateTransactionTypeFromForm(
 	transactionType: TransactionType,
 	values: TransactionTypeFormValues,
-	account?: ChartAccount,
-	moduleOptions: FormSignatoryModuleOption[] = [],
+	account?: ModuleChartAccount,
+	moduleOptions: ModuleOption[] = [],
 ): TransactionType {
+	const moduleNames = getSelectedModuleNames(values.moduleIds, moduleOptions);
+
 	return {
 		...transactionType,
 		name: values.name.trim(),
 		description: values.description.trim(),
-		moduleId: values.moduleId,
-		moduleName: getSelectedModuleName(values.moduleId, moduleOptions),
+		moduleId: values.moduleIds[0] ?? "",
+		moduleName: moduleNames[0] ?? "",
+		moduleIds: values.moduleIds,
+		moduleNames,
 		status: values.status,
 		accountId: account?.accountNumber,
 		accountCode: account?.accountNumber,
@@ -195,14 +203,23 @@ export function updateTransactionTypeFromForm(
 	};
 }
 
-function getSelectedModuleName(
-	moduleId: string,
-	moduleOptions: FormSignatoryModuleOption[],
+function getSelectedModuleNames(
+	moduleIds: string[],
+	moduleOptions: ModuleOption[],
 ) {
-	return (
-		moduleOptions.find((option) => option.value === moduleId)?.label ??
-		moduleId
+	return moduleIds.map(
+		(moduleId) =>
+			moduleOptions.find((option) => option.value === moduleId)?.label ??
+			moduleId,
 	);
+}
+
+function getTransactionTypeModuleIds(transactionType: TransactionType) {
+	return transactionType.moduleIds?.length
+		? [...transactionType.moduleIds]
+		: transactionType.moduleId
+			? [transactionType.moduleId]
+			: [];
 }
 
 function createMockTransactionType({
@@ -230,6 +247,8 @@ function createMockTransactionType({
 		description,
 		moduleId,
 		moduleName,
+		moduleIds: [moduleId],
+		moduleNames: [moduleName],
 		accountId: accountNumber,
 		accountCode: accountNumber,
 		accountTitle,

@@ -21,6 +21,8 @@ import type {
 import type { AiAssistantPurchaseRequestPrefill } from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
 import { validatePurchaseRequestForm } from "@/app/src/validations/modules/purchasing/purchase-request/PurchaseRequestValidation";
 import { usePurchaseRequestStore } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequest";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { recordPurchaseRequestAuditLog } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestAuditLog";
 
 export function usePurchaseRequestFormPage() {
 	const router = useRouter();
@@ -28,6 +30,8 @@ export function usePurchaseRequestFormPage() {
 	const params = useParams<{ recordId?: string }>();
 	const searchParams = useSearchParams();
 	const { addRequest, requests, updateRequest } = usePurchaseRequestStore();
+	const activeBranchId = useAppStore((state) => state.activeBranchId);
+	const activeBranchName = useAppStore((state) => state.activeBranchName);
 	const mode = getPurchaseRequestFormMode(pathname);
 	const isReadonly = mode === "view";
 	const existingRequest = requests.find((request) => request.id === params.recordId);
@@ -145,9 +149,17 @@ export function usePurchaseRequestFormPage() {
 
 			if (mode === "edit") {
 				updateRequest(nextRequest);
+				recordPurchaseRequestAuditLog("UPDATE", nextRequest, {
+					branchId: activeBranchId,
+					branchName: activeBranchName,
+				});
 				toast.success("Purchase request updated.");
 			} else {
 				addRequest(nextRequest);
+				recordPurchaseRequestAuditLog("CREATE", nextRequest, {
+					branchId: activeBranchId,
+					branchName: activeBranchName,
+				});
 				toast.success("Purchase request created.");
 			}
 

@@ -60,6 +60,7 @@ export function focusModuleDataEntryCell({
 export function focusModuleDataEntryCellEditor(
 	cell: HTMLElement,
 	tableElement?: HTMLDivElement | null,
+	options: { shouldSelect?: boolean } = {},
 ) {
 	const editor = getModuleDataEntryCellEditor(cell);
 
@@ -75,7 +76,11 @@ export function focusModuleDataEntryCellEditor(
 		editor instanceof HTMLInputElement ||
 		editor instanceof HTMLTextAreaElement
 	) {
-		editor.select();
+		if (options.shouldSelect ?? true) {
+			editor.select();
+		} else {
+			moveTextEditorCaretToEnd(editor);
+		}
 	}
 
 	return true;
@@ -127,6 +132,18 @@ function getModuleDataEntryCellEditor(cell: HTMLElement) {
 	return cell.querySelector<HTMLElement>(
 		"input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable='true']",
 	);
+}
+
+function moveTextEditorCaretToEnd(
+	editor: HTMLInputElement | HTMLTextAreaElement,
+) {
+	const valueLength = editor.value.length;
+
+	try {
+		editor.setSelectionRange(valueLength, valueLength);
+	} catch {
+		// Some input types, such as number, do not support text selection ranges.
+	}
 }
 
 function replaceInputValue(input: HTMLInputElement, text: string) {

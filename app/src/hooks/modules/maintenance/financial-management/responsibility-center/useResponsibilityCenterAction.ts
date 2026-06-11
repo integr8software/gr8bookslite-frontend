@@ -55,8 +55,25 @@ export function useResponsibilityCenterAction(
 	) {
 		const field = event.target.name as keyof ResponsibilityCenterFormValues;
 		const value =
-			field === "code" ? event.target.value.toUpperCase() : event.target.value;
+			event.target instanceof HTMLInputElement &&
+			event.target.type === "checkbox"
+				? event.target.checked
+				: field === "code"
+					? event.target.value.toUpperCase()
+					: event.target.value;
 
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({ ...current, [field]: value }));
+		setErrors((current) => ({ ...current, [field]: undefined }));
+	}
+
+	function onFieldChange<TKey extends keyof ResponsibilityCenterFormValues>(
+		field: TKey,
+		value: ResponsibilityCenterFormValues[TKey],
+	) {
 		if (isReadonly) {
 			return;
 		}
@@ -116,6 +133,7 @@ export function useResponsibilityCenterAction(
 		parentOptions,
 		values,
 		onConfirmStatusChange,
+		onFieldChange,
 		onInputChange,
 		onSubmit,
 		setIsStatusDialogOpen,

@@ -1,11 +1,9 @@
-import { TransactionTypeHref } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
 import type {
 	TransactionType,
 	TransactionTypeTableRecord,
 } from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
 import {
 	ModuleTableActionButton,
-	ModuleTableActionLink,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
@@ -13,12 +11,14 @@ type TransactionTypeTableRowProps = {
 	transactionType: TransactionTypeTableRecord;
 	onEdit: (transactionType: TransactionType) => void;
 	onToggleStatus: (transactionType: TransactionType) => void;
+	onView: (transactionType: TransactionType) => void;
 };
 
 export function TransactionTypeTableRow({
 	transactionType,
 	onEdit,
 	onToggleStatus,
+	onView,
 }: TransactionTypeTableRowProps) {
 	return (
 		<tr className="module-table-row">
@@ -39,9 +39,9 @@ export function TransactionTypeTableRow({
 			</td>
 			<td className="px-4 py-4">
 				<ModuleTableActions>
-					<ModuleTableActionLink
+					<ModuleTableActionButton
 						variant="view"
-						href={`${TransactionTypeHref}/view/${transactionType.id}`}
+						onClick={() => onView(transactionType)}
 						label={`View ${transactionType.name}`}
 					/>
 					<ModuleTableActionButton

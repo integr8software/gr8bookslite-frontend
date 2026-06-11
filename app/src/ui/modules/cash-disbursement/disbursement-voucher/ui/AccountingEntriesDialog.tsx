@@ -156,6 +156,9 @@ export function AccountingEntriesDialog({
     return Number(entryDraft.debit || 0) || Number(entryDraft.credit || 0);
   }
 
+  const hasDebitAmount = Number(entryDraft.debit || 0) > 0;
+  const hasCreditAmount = Number(entryDraft.credit || 0) > 0;
+
   function updateDraftField(
     field: keyof Omit<DisbursementVoucherEntryDraft, "taxRate" | "taxDetails">,
     value: string,
@@ -402,6 +405,7 @@ export function AccountingEntriesDialog({
                         onChange={(event) =>
                           updateDraftField("debit", event.target.value)
                         }
+                        disabled={hasCreditAmount}
                         className={`${EntryFieldClassName} text-right`}
                         placeholder="0.00"
                       />
@@ -412,6 +416,7 @@ export function AccountingEntriesDialog({
                         onChange={(event) =>
                           updateDraftField("credit", event.target.value)
                         }
+                        disabled={hasDebitAmount}
                         className={`${EntryFieldClassName} text-right`}
                         placeholder="0.00"
                       />

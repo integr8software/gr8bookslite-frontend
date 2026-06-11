@@ -1,11 +1,15 @@
 import type { FormEvent } from "react";
-import type { UserRoleFormValues } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type {
+	UserAccessRoleOption,
+	UserRoleFormValues,
+} from "@/app/src/data/modules/system-administration/user-management/user-role/UserRoleData";
 import type { UserRoleFormErrors } from "@/app/src/types/modules/user-management/UserManagementTypes";
 import { UserRolePermissionsPanel } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRolePermissionsPanel";
 
 export function UserRoleForm({
 	errors,
 	isReadonly,
+	permissionCatalog,
 	values,
 	onSubmit,
 	onUpdateAccessRoles,
@@ -13,6 +17,7 @@ export function UserRoleForm({
 }: {
 	errors: UserRoleFormErrors;
 	isReadonly: boolean;
+	permissionCatalog: UserAccessRoleOption[];
 	values: UserRoleFormValues;
 	onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 	onUpdateAccessRoles: (accessRoles: string[]) => void;
@@ -66,6 +71,7 @@ export function UserRoleForm({
 						<UserRolePermissionsPanel
 							error={errors.accessRoles}
 							isReadonly={isReadonly}
+							permissionCatalog={permissionCatalog}
 							values={values.accessRoles}
 							onUpdateAccessRoles={onUpdateAccessRoles}
 						/>

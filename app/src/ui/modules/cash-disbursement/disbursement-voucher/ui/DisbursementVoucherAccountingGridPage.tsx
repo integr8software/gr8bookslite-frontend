@@ -2,9 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import type {
+  Content,
+  TableCell,
+  TDocumentDefinitions,
+} from "pdfmake/interfaces";
 import {
   ChevronDown,
   ClipboardPaste,
+  CirclePlus,
   Download,
   Eye,
   FileText,
@@ -14,7 +22,9 @@ import {
   X,
 } from "lucide-react";
 import {
+  DisbursementVoucherBankAccounts,
   DisbursementVoucherInitialEntryDraft,
+  createAutoDisbursementLineEntries,
   createTaxDetails,
   formatCurrency,
   formatDateLabel,
@@ -28,6 +38,7 @@ import type {
   DisbursementTransactionRecord,
   DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import { InitialAppPaymentTypeRecords } from "@/app/src/ui/shared/transaction-setup/AppPaymentTypeDialog";
 import {
   readAccountingGridSession,
   writeAccountingGridSession,
@@ -40,6 +51,8 @@ import {
   type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+
+pdfMake.addVirtualFileSystem(pdfFonts);
 
 type EditableGridRow = {
   accountCode: string;
@@ -59,6 +72,13 @@ type GridColumnId =
   | "taxRate"
   | "debit"
   | "credit";
+
+type AccountingExportTheme = {
+  accentColor: string;
+  accentContrastColor: string;
+  excelAccentArgb: string;
+  excelAccentContrastArgb: string;
+};
 
 const TaxRateOptions = ["0%", "1%", "2%", "5%", "12%"];
 
@@ -87,13 +107,13 @@ const DefaultGridColumnLabels: Record<GridColumnId, string> = {
   taxRate: "Tax Rate",
 };
 
-const GridColumnWidthClassNames: Record<GridColumnId, string> = {
-  accountCode: "w-[12rem]",
-  accountName: "w-[16rem]",
-  credit: "w-[11rem]",
-  debit: "w-[11rem]",
-  particulars: "w-[22rem]",
-  taxRate: "w-[10rem]",
+const DefaultGridColumnWidths: Record<GridColumnId, number> = {
+  accountCode: 190,
+  accountName: 240,
+  credit: 165,
+  debit: 165,
+  particulars: 330,
+  taxRate: 150,
 };
 
 const AccountingImportTemplateHeaders = [
@@ -124,6 +144,17 @@ const AccountingImportTemplateRows = [
   ],
 ];
 
+const AccountingImportTemplateColumnWidths = [18, 30, 44, 14, 18, 18];
+
+const AccountingExportColumnWidths: Record<GridColumnId, number> = {
+  accountCode: 18,
+  accountName: 30,
+  credit: 18,
+  debit: 18,
+  particulars: 44,
+  taxRate: 14,
+};
+
 const ImportClearActions: {
   label: string;
   value: ModuleDataEntryClearAction;
@@ -145,6 +176,10 @@ export function DisbursementVoucherAccountingGridPage() {
   const [visibleColumnIds, setVisibleColumnIds] =
     useState<GridColumnId[]>(DefaultGridColumnOrder);
   const [columnLabels, setColumnLabels] = useState(DefaultGridColumnLabels);
+  const [columnWidths, setColumnWidths] = useState(DefaultGridColumnWidths);
+  const [autoWidthColumnIds, setAutoWidthColumnIds] = useState<GridColumnId[]>(
+    [],
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -208,13 +243,28 @@ export function DisbursementVoucherAccountingGridPage() {
   const visibleColumnOrder = columnOrder.filter((columnId) =>
     visibleColumnIds.includes(columnId),
   );
+  const resolvedColumnWidths = useMemo<Record<GridColumnId, number>>(() => {
+    const nextWidths = { ...columnWidths };
+
+    autoWidthColumnIds.forEach((columnId) => {
+      nextWidths[columnId] = calculateGridColumnFitWidth({
+        columnId,
+        columnLabels,
+        rows,
+      });
+    });
+
+    return nextWidths;
+  }, [autoWidthColumnIds, columnLabels, columnWidths, rows]);
   const columns: ModuleDataEntryColumn<EditableGridRow>[] =
     visibleColumnOrder.map((columnId) => ({
       header: columnLabels[columnId],
       id: columnId,
       isRemovable: !ProtectedGridColumnIds.has(columnId),
       renderCell: (row) => renderGridCell(row, columnId),
-      widthClassName: GridColumnWidthClassNames[columnId],
+      width: resolvedColumnWidths[columnId],
+      widthClassName: "",
+      widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
     }));
   const columnOptions: ModuleDataEntryColumnOption[] = columnOrder.map(
     (columnId) => ({
@@ -222,6 +272,8 @@ export function DisbursementVoucherAccountingGridPage() {
       isHideable: !ProtectedGridColumnIds.has(columnId),
       isVisible: visibleColumnIds.includes(columnId),
       label: columnLabels[columnId] || DefaultGridColumnLabels[columnId],
+      width: resolvedColumnWidths[columnId],
+      widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
     }),
   );
   const previewValues = session
@@ -239,13 +291,16 @@ export function DisbursementVoucherAccountingGridPage() {
     field: keyof Omit<EditableGridRow, "id" | "taxDetails">,
     value: string,
   ) {
+    const nextValue =
+      field === "debit" || field === "credit" ? formatAmountInput(value) : value;
+
     setRows((currentRows) =>
       currentRows.map((row) => {
         if (row.id !== rowId) {
           return row;
         }
 
-        const nextRow = { ...row, [field]: value };
+        const nextRow = { ...row, [field]: nextValue };
 
         if (field === "debit" || field === "credit" || field === "taxRate") {
           const amount = normalizeAmount(nextRow.debit || nextRow.credit);
@@ -347,11 +402,81 @@ export function DisbursementVoucherAccountingGridPage() {
     setErrorMessage(null);
   }
 
+  function applyAutoEntries() {
+    if (!session || !selectedTransaction) {
+      return;
+    }
+
+    const selectedBankAccount =
+      DisbursementVoucherBankAccounts.find(
+        (bankAccount) =>
+          bankAccount.accountCode ===
+          session.values.paymentDetails.bankAccountCode,
+      ) ?? null;
+    const selectedPaymentTypeRecord =
+      InitialAppPaymentTypeRecords.find(
+        (record) => record.paymentType === session.values.paymentMethod,
+      ) ?? null;
+
+    setRows(
+      createInitialRows(
+        createAutoDisbursementLineEntries(
+          selectedTransaction,
+          selectedBankAccount,
+          selectedPaymentTypeRecord,
+        ),
+      ),
+    );
+    setImportedImportAttachment(null);
+    setErrorMessage(null);
+  }
+
   function updateColumnHeader(columnId: string, header: string) {
     setColumnLabels((currentLabels) => ({
       ...currentLabels,
       [columnId]: header,
     }));
+  }
+
+  function updateColumnWidth(columnId: string, width: number) {
+    if (!isGridColumnId(columnId)) {
+      return;
+    }
+
+    setAutoWidthColumnIds((currentColumnIds) =>
+      currentColumnIds.filter((currentColumnId) => currentColumnId !== columnId),
+    );
+    setColumnWidths((currentWidths) => ({
+      ...currentWidths,
+      [columnId]: Math.min(800, Math.max(50, Math.round(width))),
+    }));
+  }
+
+  function autoSizeColumn(columnId: string) {
+    if (!isGridColumnId(columnId)) {
+      return;
+    }
+
+    setAutoWidthColumnIds((currentColumnIds) =>
+      currentColumnIds.includes(columnId)
+        ? currentColumnIds
+        : [...currentColumnIds, columnId],
+    );
+  }
+
+  function fitColumnWidth(columnId: string) {
+    if (!isGridColumnId(columnId)) {
+      return;
+    }
+
+    updateColumnWidth(
+      columnId,
+      calculateGridColumnFitWidth({
+        columnId,
+        columnLabels,
+        rows,
+      }),
+    );
   }
 
   function moveColumn(fromColumnId: string, toColumnId: string) {
@@ -419,7 +544,7 @@ export function DisbursementVoucherAccountingGridPage() {
         <select
           value={row.taxRate}
           onChange={(event) => updateRow(row.id, "taxRate", event.target.value)}
-          className={gridCellControlClassName()}
+          className={gridCellControlClassName("app-select-control")}
         >
           {TaxRateOptions.map((option) => (
             <option key={option} value={option}>
@@ -431,11 +556,14 @@ export function DisbursementVoucherAccountingGridPage() {
     }
 
     if (columnId === "debit" || columnId === "credit") {
+      const oppositeColumnId = columnId === "debit" ? "credit" : "debit";
+
       return (
         <GridEntryInput
           value={row[columnId]}
           onChange={(value) => updateRow(row.id, columnId, value)}
-          type="number"
+          inputMode="decimal"
+          disabled={normalizeAmount(row[oppositeColumnId]) > 0}
           extraClassName="text-right"
         />
       );
@@ -532,9 +660,39 @@ export function DisbursementVoucherAccountingGridPage() {
   }
 
   function handleExportRows() {
+    const { amountColumnIndexes, rows: workbookRows, visibleColumnIds } =
+      createAccountingExportRows();
+    const exportTheme = getAccountingExportTheme();
+    const workbookBytes = createAccountingWorkbook({
+      amountColumnIndexes,
+      columnWidths: visibleColumnIds.map(
+        (columnId) => AccountingExportColumnWidths[columnId],
+      ),
+      rows: workbookRows,
+      sheetName: "Accounting Entries",
+      theme: exportTheme,
+    });
+
+    downloadBytesFile(
+      "disbursement-voucher-accounting-entries.xlsx",
+      workbookBytes,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+  }
+
+  function handleExportPdfRows() {
+    const exportData = createAccountingExportRows();
+    const exportTheme = getAccountingExportTheme();
+
+    pdfMake
+      .createPdf(createAccountingPdfDefinition(exportData, session, exportTheme))
+      .download("disbursement-voucher-accounting-entries.pdf");
+  }
+
+  function createAccountingExportRows() {
     const exportColumnIds = visibleColumnOrder;
     const exportRows = rows.filter(hasRowData);
-    const csvRows = [
+    const workbookRows = [
       exportColumnIds.map(
         (columnId) => columnLabels[columnId] || DefaultGridColumnLabels[columnId],
       ),
@@ -542,15 +700,19 @@ export function DisbursementVoucherAccountingGridPage() {
         exportColumnIds.map((columnId) => getExportCellValue(row, columnId)),
       ),
     ];
-    const csvContent = csvRows
-      .map((row) => row.map(escapeCsvCell).join(","))
-      .join("\r\n");
-
-    downloadTextFile(
-      "disbursement-voucher-accounting-entries.csv",
-      csvContent,
-      "text/csv;charset=utf-8",
+    const amountColumnIndexes = new Set(
+      exportColumnIds
+        .map((columnId, columnIndex) =>
+          columnId === "debit" || columnId === "credit" ? columnIndex : null,
+        )
+        .filter((columnIndex): columnIndex is number => columnIndex !== null),
     );
+
+    return {
+      amountColumnIndexes,
+      rows: workbookRows,
+      visibleColumnIds: exportColumnIds,
+    };
   }
 
   function handleBackToVoucherForm() {
@@ -671,6 +833,11 @@ export function DisbursementVoucherAccountingGridPage() {
               </div>
             </div>
 
+            <VoucherAccountingGridHeader
+              selectedTransaction={selectedTransaction}
+              values={session.values}
+            />
+
             <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <SummaryCard
                 label="Records"
@@ -692,6 +859,20 @@ export function DisbursementVoucherAccountingGridPage() {
             </div>
 
             <div className="mt-6">
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={applyAutoEntries}
+                  disabled={!selectedTransaction}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:border-skyblue/40 hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  <CirclePlus className="h-4 w-4" aria-hidden="true" />
+                  Auto Entries
+                </button>
+                <p className="text-sm text-darknavy/55">
+                  Rebuild default debit and credit lines from this voucher.
+                </p>
+              </div>
               <ModuleDataEntry
                 columns={columns}
                 columnOptions={columnOptions}
@@ -702,10 +883,23 @@ export function DisbursementVoucherAccountingGridPage() {
                 isReadonly={false}
                 rows={rows}
                 title="Data Entry"
+                exportOptions={[
+                  {
+                    id: "excel",
+                    label: "Excel (.xlsx)",
+                    onSelect: handleExportRows,
+                  },
+                  {
+                    id: "pdf",
+                    label: "PDF (.pdf)",
+                    onSelect: handleExportPdfRows,
+                  },
+                ]}
                 onAddRows={addBlankRows}
+                onAutoColumnWidth={autoSizeColumn}
                 onClearRows={clearRows}
                 onDuplicateRow={duplicateRow}
-                onExport={handleExportRows}
+                onFitColumnWidth={fitColumnWidth}
                 onImport={() => setIsImportDialogOpen(true)}
                 onInsertRow={insertRow}
                 onMoveColumn={moveColumn}
@@ -714,6 +908,7 @@ export function DisbursementVoucherAccountingGridPage() {
                 onRemoveRow={removeRow}
                 onToggleColumnVisibility={toggleColumnVisibility}
                 onUpdateColumnHeader={updateColumnHeader}
+                onUpdateColumnWidth={updateColumnWidth}
               />
             </div>
 
@@ -1868,13 +2063,110 @@ function SummaryCard({
   );
 }
 
+function VoucherAccountingGridHeader({
+  selectedTransaction,
+  values,
+}: {
+  selectedTransaction?: DisbursementTransactionRecord;
+  values: DisbursementVoucherFormValues;
+}) {
+  const headerFields = [
+    {
+      label: "Voucher No.",
+      value: values.voucherNo || "Draft",
+    },
+    {
+      label: "Voucher Date",
+      value: values.voucherDate ? formatDateLabel(values.voucherDate) : "-",
+    },
+    {
+      label: "Payee",
+      value: values.vceName || selectedTransaction?.payee || "-",
+    },
+    {
+      label: "Reference",
+      value: values.voucherReferenceNo || selectedTransaction?.transactionNo || "-",
+    },
+    {
+      label: "Payment",
+      value: formatPaymentHeaderValue(values, selectedTransaction),
+    },
+    {
+      label: "Amount",
+      value: formatCurrency(Number(values.amount || selectedTransaction?.amount || 0)),
+    },
+  ];
+
+  return (
+    <section className="mt-6 overflow-hidden rounded-lg border border-darknavy/10 bg-offwhite/45">
+      <div className="flex flex-col gap-3 border-b border-darknavy/10 bg-white px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">
+            Disbursement Voucher
+          </p>
+          <h2 className="mt-1 truncate text-xl font-semibold text-darknavy">
+            {values.voucherNo || "New Voucher"} Accounting Entries
+          </h2>
+        </div>
+        <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-skyblue/20 bg-skyblue/8 px-4 py-2 text-sm font-semibold text-skyblue sm:w-auto">
+          <FileText className="h-4 w-4" aria-hidden="true" />
+          {values.status || selectedTransaction?.status || "Draft"}
+        </div>
+      </div>
+      <div className="grid gap-px bg-darknavy/10 sm:grid-cols-2 xl:grid-cols-3">
+        {headerFields.map((field) => (
+          <div key={field.label} className="bg-white px-4 py-3 sm:px-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-darknavy/42">
+              {field.label}
+            </p>
+            <p className="mt-1 min-h-6 truncate text-sm font-semibold text-darknavy">
+              {field.value}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function formatPaymentHeaderValue(
+  values: DisbursementVoucherFormValues,
+  selectedTransaction?: DisbursementTransactionRecord,
+) {
+  const paymentMethod =
+    values.paymentMethod || selectedTransaction?.paymentMethod || "";
+  const bankLabel = getPaymentHeaderBankLabel(values);
+
+  if (!paymentMethod) {
+    return bankLabel || "-";
+  }
+
+  return bankLabel ? `${paymentMethod} - ${bankLabel}` : paymentMethod;
+}
+
+function getPaymentHeaderBankLabel(values: DisbursementVoucherFormValues) {
+  const bankName = values.paymentDetails.bankName.trim();
+
+  if (bankName) {
+    return bankName;
+  }
+
+  return values.paymentDetails.bankAccountTitle
+    .replace(/^Cash in Bank\s*-\s*/i, "")
+    .trim();
+}
+
 function GridEntryInput({
+  disabled = false,
   extraClassName,
+  inputMode,
   onChange,
   type = "text",
   value,
 }: {
+  disabled?: boolean;
   extraClassName?: string;
+  inputMode?: "decimal" | "numeric" | "text";
   onChange: (value: string) => void;
   type?: "number" | "text";
   value: string;
@@ -1882,9 +2174,11 @@ function GridEntryInput({
   return (
     <input
       type={type}
+      inputMode={inputMode}
       min={type === "number" ? "0" : undefined}
       value={value}
       onChange={(event) => onChange(event.target.value)}
+      disabled={disabled}
       className={gridCellControlClassName(extraClassName)}
     />
   );
@@ -1892,7 +2186,7 @@ function GridEntryInput({
 
 function gridCellControlClassName(extraClassName?: string) {
   return joinClasses(
-    "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35",
+    "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
     extraClassName,
   );
 }
@@ -1914,8 +2208,8 @@ function mapEntryToEditableRow(entry: DisbursementLineEntry): EditableGridRow {
   return {
     accountCode: entry.accountCode,
     accountName: entry.accountName,
-    credit: entry.credit > 0 ? entry.credit.toFixed(2) : "",
-    debit: entry.debit > 0 ? entry.debit.toFixed(2) : "",
+    credit: entry.credit > 0 ? formatAmountValue(entry.credit) : "",
+    debit: entry.debit > 0 ? formatAmountValue(entry.debit) : "",
     id: entry.id,
     particulars: entry.particulars,
     taxDetails: entry.taxDetails,
@@ -2001,8 +2295,337 @@ function downloadAccountingImportTemplate() {
 }
 
 function createAccountingImportTemplateWorkbook() {
-  const rows = [AccountingImportTemplateHeaders, ...AccountingImportTemplateRows];
-  const worksheetXml = createAccountingTemplateWorksheetXml(rows);
+  return createAccountingWorkbook({
+    amountColumnIndexes: new Set([4, 5]),
+    columnWidths: AccountingImportTemplateColumnWidths,
+    rows: [AccountingImportTemplateHeaders, ...AccountingImportTemplateRows],
+    sheetName: "Accounting Entries",
+    theme: getAccountingExportTheme(),
+  });
+}
+
+function createAccountingPdfDefinition(
+  exportData: {
+    amountColumnIndexes: Set<number>;
+    rows: string[][];
+    visibleColumnIds: GridColumnId[];
+  },
+  session: DisbursementVoucherAccountingGridSession | null,
+  theme: AccountingExportTheme,
+): TDocumentDefinitions {
+  const [headers = [], ...bodyRows] = exportData.rows;
+  const values = session?.values;
+  const debitTotal = getPdfColumnTotal(bodyRows, exportData.visibleColumnIds, "debit");
+  const creditTotal = getPdfColumnTotal(bodyRows, exportData.visibleColumnIds, "credit");
+  const tableBody: TableCell[][] = [
+    headers.map((header) => pdfHeaderCell(header, theme)),
+    ...bodyRows.map((row) =>
+      row.map((value, columnIndex) =>
+        pdfBodyCell(value, exportData.amountColumnIndexes.has(columnIndex)),
+      ),
+    ),
+  ];
+
+  if (bodyRows.length === 0) {
+    tableBody.push([
+      {
+        text: "No accounting entries to export.",
+        colSpan: Math.max(headers.length, 1),
+        italics: true,
+        color: "#64748B",
+        margin: [4, 5, 4, 5],
+      },
+      ...Array.from({ length: Math.max(headers.length - 1, 0) }, () => ({})),
+    ]);
+  }
+
+  tableBody.push(
+    createPdfTotalsRow(headers.length, exportData.visibleColumnIds, debitTotal, creditTotal),
+  );
+
+  return {
+    pageSize: "A4",
+    pageOrientation: "landscape",
+    pageMargins: [24, 24, 24, 24],
+    defaultStyle: {
+      font: "Roboto",
+      fontSize: 8,
+      lineHeight: 1.15,
+    },
+    content: [
+      {
+        text: "DISBURSEMENT VOUCHER",
+        bold: true,
+        fontSize: 16,
+        color: "#212738",
+      },
+      {
+        text: "Accounting Entries",
+        bold: true,
+        fontSize: 10,
+        color: theme.accentColor,
+        margin: [0, 2, 0, 10],
+      },
+      createPdfVoucherDetails(values),
+      {
+        table: {
+          headerRows: 1,
+          widths: exportData.visibleColumnIds.map(getPdfColumnWidth),
+          body: tableBody,
+        },
+        layout: pdfGridLayout,
+        margin: [0, 10, 0, 0],
+      },
+    ],
+  };
+}
+
+function createPdfVoucherDetails(
+  values: DisbursementVoucherFormValues | undefined,
+): Content {
+  const detailRows = [
+    ["Voucher No.", values?.voucherNo || "-"],
+    ["Voucher Date", values?.voucherDate ? formatDateLabel(values.voucherDate) : "-"],
+    ["Payee", values?.vceName || "-"],
+    ["Payment Method", values?.paymentMethod || "-"],
+    ["Disbursement Type", values?.disbursementType || "-"],
+    ["Amount", values?.amount ? formatCurrency(Number(values.amount || 0)) : "-"],
+  ];
+
+  return {
+    table: {
+      widths: [80, "*", 88, "*", 92, "*"],
+      body: [
+        [
+          pdfDetailLabelCell(detailRows[0][0]),
+          pdfDetailValueCell(detailRows[0][1]),
+          pdfDetailLabelCell(detailRows[1][0]),
+          pdfDetailValueCell(detailRows[1][1]),
+          pdfDetailLabelCell(detailRows[5][0]),
+          pdfDetailValueCell(detailRows[5][1]),
+        ],
+        [
+          pdfDetailLabelCell(detailRows[2][0]),
+          pdfDetailValueCell(detailRows[2][1]),
+          pdfDetailLabelCell(detailRows[3][0]),
+          pdfDetailValueCell(detailRows[3][1]),
+          pdfDetailLabelCell(detailRows[4][0]),
+          pdfDetailValueCell(detailRows[4][1]),
+        ],
+      ],
+    },
+    layout: pdfGridLayout,
+  };
+}
+
+function pdfHeaderCell(text: string, theme: AccountingExportTheme): TableCell {
+  return {
+    text,
+    bold: true,
+    color: theme.accentContrastColor,
+    fillColor: theme.accentColor,
+    margin: [4, 4, 4, 4],
+  };
+}
+
+function pdfBodyCell(text: string, isAmountColumn: boolean): TableCell {
+  return {
+    text,
+    alignment: isAmountColumn ? "right" : "left",
+    margin: [4, 3, 4, 3],
+  };
+}
+
+function pdfDetailLabelCell(text: string): TableCell {
+  return {
+    text,
+    bold: true,
+    fillColor: "#F8FAFC",
+    color: "#475569",
+    margin: [4, 3, 4, 3],
+  };
+}
+
+function pdfDetailValueCell(text: string): TableCell {
+  return {
+    text,
+    bold: true,
+    color: "#212738",
+    margin: [4, 3, 4, 3],
+  };
+}
+
+function createPdfTotalsRow(
+  columnCount: number,
+  visibleColumnIds: GridColumnId[],
+  debitTotal: number,
+  creditTotal: number,
+): TableCell[] {
+  return visibleColumnIds.map((columnId, columnIndex) => {
+    if (columnIndex === 0) {
+      return {
+        text: "Total",
+        bold: true,
+        fillColor: "#F8FAFC",
+        margin: [4, 4, 4, 4],
+      };
+    }
+
+    if (columnId === "debit") {
+      return pdfTotalAmountCell(debitTotal);
+    }
+
+    if (columnId === "credit") {
+      return pdfTotalAmountCell(creditTotal);
+    }
+
+    return {
+      text: columnIndex < columnCount ? "" : "",
+      fillColor: "#F8FAFC",
+      margin: [4, 4, 4, 4],
+    };
+  });
+}
+
+function pdfTotalAmountCell(total: number): TableCell {
+  return {
+    text: formatAmountValue(total),
+    bold: true,
+    alignment: "right",
+    fillColor: "#F8FAFC",
+    margin: [4, 4, 4, 4],
+  };
+}
+
+function getPdfColumnTotal(
+  bodyRows: string[][],
+  visibleColumnIds: GridColumnId[],
+  targetColumnId: GridColumnId,
+) {
+  const targetIndex = visibleColumnIds.indexOf(targetColumnId);
+
+  if (targetIndex < 0) {
+    return 0;
+  }
+
+  return bodyRows.reduce(
+    (total, row) => total + normalizeAmount(row[targetIndex] ?? ""),
+    0,
+  );
+}
+
+function getPdfColumnWidth(columnId: GridColumnId) {
+  if (columnId === "particulars") {
+    return "*";
+  }
+
+  if (columnId === "accountName") {
+    return 120;
+  }
+
+  if (columnId === "debit" || columnId === "credit") {
+    return 74;
+  }
+
+  if (columnId === "taxRate") {
+    return 48;
+  }
+
+  return 78;
+}
+
+const pdfGridLayout = {
+  hLineColor: () => "#E5E7EB",
+  hLineWidth: () => 0.6,
+  paddingBottom: () => 0,
+  paddingLeft: () => 0,
+  paddingRight: () => 0,
+  paddingTop: () => 0,
+  vLineColor: () => "#E5E7EB",
+  vLineWidth: () => 0.6,
+};
+
+function getAccountingExportTheme(): AccountingExportTheme {
+  const accentColor = getCssColorVariable("--skyblue", "#57C4E5");
+  const accentContrastColor = getCssColorVariable(
+    "--skyblue-contrast",
+    "#FFFFFF",
+  );
+
+  return {
+    accentColor,
+    accentContrastColor,
+    excelAccentArgb: `FF${accentColor.slice(1).toUpperCase()}`,
+    excelAccentContrastArgb: `FF${accentContrastColor.slice(1).toUpperCase()}`,
+  };
+}
+
+function getCssColorVariable(variableName: string, fallback: string) {
+  if (typeof window === "undefined") {
+    return normalizeColorToHex(fallback);
+  }
+
+  const value = window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue(variableName)
+    .trim();
+
+  return normalizeColorToHex(value || fallback);
+}
+
+function normalizeColorToHex(value: string) {
+  const normalizedValue = value.trim();
+
+  if (/^#[0-9a-f]{6}$/i.test(normalizedValue)) {
+    return normalizedValue.toUpperCase();
+  }
+
+  if (/^#[0-9a-f]{3}$/i.test(normalizedValue)) {
+    const [, red, green, blue] = normalizedValue;
+
+    return `#${red}${red}${green}${green}${blue}${blue}`.toUpperCase();
+  }
+
+  const rgbMatch = normalizedValue.match(
+    /^rgba?\(\s*(\d{1,3})[\s,]+(\d{1,3})[\s,]+(\d{1,3})/i,
+  );
+
+  if (rgbMatch) {
+    return rgbPartsToHex(
+      Number(rgbMatch[1]),
+      Number(rgbMatch[2]),
+      Number(rgbMatch[3]),
+    );
+  }
+
+  return "#57C4E5";
+}
+
+function rgbPartsToHex(red: number, green: number, blue: number) {
+  return `#${[red, green, blue]
+    .map((part) =>
+      Math.max(0, Math.min(255, part)).toString(16).padStart(2, "0"),
+    )
+    .join("")}`.toUpperCase();
+}
+
+function createAccountingWorkbook({
+  amountColumnIndexes,
+  columnWidths,
+  rows,
+  sheetName,
+  theme,
+}: {
+  amountColumnIndexes: Set<number>;
+  columnWidths: number[];
+  rows: string[][];
+  sheetName: string;
+  theme: AccountingExportTheme;
+}) {
+  const worksheetXml = createAccountingTemplateWorksheetXml(rows, {
+    amountColumnIndexes,
+    columnWidths,
+  });
 
   return createStoredZipArchive([
     {
@@ -2014,6 +2637,7 @@ function createAccountingImportTemplateWorkbook() {
         '<Default Extension="xml" ContentType="application/xml"/>' +
         '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
         '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+        '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
         "</Types>",
     },
     {
@@ -2030,7 +2654,7 @@ function createAccountingImportTemplateWorkbook() {
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
         '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
         'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
-        "<sheets><sheet name=\"Accounting Entries\" sheetId=\"1\" r:id=\"rId1\"/></sheets>" +
+        `<sheets><sheet name="${escapeXmlAttribute(sheetName)}" sheetId="1" r:id="rId1"/></sheets>` +
         "</workbook>",
     },
     {
@@ -2039,7 +2663,12 @@ function createAccountingImportTemplateWorkbook() {
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
         '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
         '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
+        '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
         "</Relationships>",
+    },
+    {
+      name: "xl/styles.xml",
+      text: createAccountingTemplateStylesXml(theme),
     },
     {
       name: "xl/worksheets/sheet1.xml",
@@ -2048,33 +2677,99 @@ function createAccountingImportTemplateWorkbook() {
   ]);
 }
 
-function createAccountingTemplateWorksheetXml(rows: string[][]) {
+function createAccountingTemplateWorksheetXml(
+  rows: string[][],
+  {
+    amountColumnIndexes,
+    columnWidths,
+  }: {
+    amountColumnIndexes: Set<number>;
+    columnWidths: number[];
+  },
+) {
+  const maxColumnCount = Math.max(1, ...rows.map((row) => row.length));
+  const lastColumn = getExcelColumnLetters(maxColumnCount - 1);
+  const lastRow = rows.length;
+  const columnsXml = Array.from({ length: maxColumnCount })
+    .map((_, columnIndex) => {
+      const width = columnWidths[columnIndex] ?? 16;
+
+      return `<col min="${columnIndex + 1}" max="${columnIndex + 1}" width="${width}" customWidth="1"/>`;
+    })
+    .join("");
   const rowXml = rows
     .map((row, rowIndex) => {
       const rowNumber = rowIndex + 1;
       const cellXml = row
         .map((cell, columnIndex) => {
           const reference = `${getExcelColumnLetters(columnIndex)}${rowNumber}`;
+          const styleId =
+            rowIndex === 0 ? 1 : amountColumnIndexes.has(columnIndex) ? 3 : 0;
+          const normalizedAmount = cell.replace(/,/g, "");
 
-          return (
-            `<c r="${reference}" t="inlineStr">` +
-            `<is><t>${escapeXmlText(cell)}</t></is>` +
-            "</c>"
-          );
+          if (
+            rowIndex > 0 &&
+            amountColumnIndexes.has(columnIndex) &&
+            Number(normalizedAmount || 0) > 0
+          ) {
+            return `<c r="${reference}" s="${styleId}"><v>${normalizedAmount}</v></c>`;
+          }
+
+          return `<c r="${reference}" t="inlineStr" s="${styleId}"><is><t>${escapeXmlText(cell)}</t></is></c>`;
         })
         .join("");
+      const rowHeight = rowIndex === 0 ? ' ht="22" customHeight="1"' : "";
 
-      return `<row r="${rowNumber}">${cellXml}</row>`;
+      return `<row r="${rowNumber}"${rowHeight}>${cellXml}</row>`;
     })
     .join("");
 
   return (
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    `<dimension ref="A1:${lastColumn}${lastRow}"/>` +
+    '<sheetViews><sheetView workbookViewId="0" showGridLines="1">' +
+    '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>' +
+    '<selection pane="bottomLeft" activeCell="A2" sqref="A2"/>' +
+    "</sheetView></sheetViews>" +
+    "<sheetFormatPr defaultRowHeight=\"20\"/>" +
+    `<cols>${columnsXml}</cols>` +
     "<sheetData>" +
     rowXml +
     "</sheetData>" +
+    `<autoFilter ref="A1:${lastColumn}${lastRow}"/>` +
+    '<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>' +
     "</worksheet>"
+  );
+}
+
+function createAccountingTemplateStylesXml(theme: AccountingExportTheme) {
+  return (
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0.00"/></numFmts>' +
+    '<fonts count="2">' +
+    '<font><sz val="11"/><color rgb="FF212738"/><name val="Calibri"/></font>' +
+    `<font><b/><sz val="11"/><color rgb="${theme.excelAccentContrastArgb}"/><name val="Calibri"/></font>` +
+    "</fonts>" +
+    '<fills count="3">' +
+    '<fill><patternFill patternType="none"/></fill>' +
+    '<fill><patternFill patternType="gray125"/></fill>' +
+    `<fill><patternFill patternType="solid"><fgColor rgb="${theme.excelAccentArgb}"/><bgColor indexed="64"/></patternFill></fill>` +
+    "</fills>" +
+    '<borders count="2">' +
+    '<border><left/><right/><top/><bottom/><diagonal/></border>' +
+    '<border><left style="thin"><color rgb="FFE5E7EB"/></left><right style="thin"><color rgb="FFE5E7EB"/></right><top style="thin"><color rgb="FFE5E7EB"/></top><bottom style="thin"><color rgb="FFE5E7EB"/></bottom><diagonal/></border>' +
+    "</borders>" +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+    '<cellXfs count="4">' +
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"><alignment vertical="center"/></xf>' +
+    '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf>' +
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"><alignment vertical="center" wrapText="1"/></xf>' +
+    '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"><alignment horizontal="right" vertical="center"/></xf>' +
+    "</cellXfs>" +
+    '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +
+    "</styleSheet>"
   );
 }
 
@@ -2096,6 +2791,10 @@ function escapeXmlText(value: string) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+function escapeXmlAttribute(value: string) {
+  return escapeXmlText(value).replace(/"/g, "&quot;");
 }
 
 function createStoredZipArchive(files: { name: string; text: string }[]) {
@@ -2558,7 +3257,7 @@ function normalizeImportedAmount(value: string) {
   const normalized = value.replace(/[₱,$\s]/g, "").replace(/,/g, "");
   const amount = Number(normalized || 0);
 
-  return Number.isFinite(amount) && amount > 0 ? amount.toFixed(2) : "";
+  return Number.isFinite(amount) && amount > 0 ? formatAmountValue(amount) : "";
 }
 
 function normalizeTaxRate(value: string) {
@@ -2732,23 +3431,136 @@ function isCompleteRow(row: EditableGridRow) {
 }
 
 function normalizeAmount(value: string) {
-  return Number(value || 0) || 0;
+  return Number(value.replace(/,/g, "") || 0) || 0;
+}
+
+function formatAmountInput(value: string) {
+  const normalized = value.replace(/,/g, "").replace(/[^\d.]/g, "");
+
+  if (!normalized) {
+    return "";
+  }
+
+  const hasDecimal = normalized.includes(".");
+  const [rawWholePart = "", ...decimalParts] = normalized.split(".");
+  const wholePart = rawWholePart.replace(/^0+(?=\d)/, "");
+  const decimalPart = decimalParts.join("").slice(0, 2);
+  const formattedWholePart = formatAmountWholePart(wholePart);
+
+  if (!hasDecimal) {
+    return formattedWholePart;
+  }
+
+  return `${formattedWholePart || "0"}.${decimalPart}`;
+}
+
+function formatAmountValue(value: number) {
+  return value.toLocaleString("en-US", {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+  });
+}
+
+function formatAmountWholePart(value: string) {
+  if (!value) {
+    return "";
+  }
+
+  return Number(value).toLocaleString("en-US", {
+    maximumFractionDigits: 0,
+  });
 }
 
 function getExportCellValue(row: EditableGridRow, columnId: GridColumnId) {
   return row[columnId];
 }
 
-function escapeCsvCell(value: string) {
-  if (/[",\r\n]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
-  }
+let accountingGridTextMeasureContext:
+  | CanvasRenderingContext2D
+  | null
+  | undefined;
 
-  return value;
+function calculateGridColumnFitWidth({
+  columnId,
+  columnLabels,
+  rows,
+}: {
+  columnId: GridColumnId;
+  columnLabels: Record<GridColumnId, string>;
+  rows: EditableGridRow[];
+}) {
+  const headerWidth = estimateGridTextWidth(columnLabels[columnId], 76);
+  const contentWidth = rows.reduce(
+    (currentWidth, row) =>
+      Math.max(currentWidth, estimateGridTextWidth(row[columnId] ?? "", 24)),
+    50,
+  );
+
+  return Math.max(headerWidth, contentWidth);
 }
 
-function downloadTextFile(fileName: string, content: string, type: string) {
-  const blob = new Blob([content], { type });
+function estimateGridTextWidth(value: string, horizontalPadding: number) {
+  const textWidth = measureGridTextWidth(value);
+
+  return Math.min(800, Math.max(50, Math.ceil(textWidth + horizontalPadding)));
+}
+
+function measureGridTextWidth(value: string) {
+  const fallbackWidth = estimateFallbackTextWidth(value);
+
+  if (typeof document === "undefined") {
+    return fallbackWidth;
+  }
+
+  if (accountingGridTextMeasureContext === undefined) {
+    accountingGridTextMeasureContext = document
+      .createElement("canvas")
+      .getContext("2d");
+  }
+
+  if (!accountingGridTextMeasureContext) {
+    return fallbackWidth;
+  }
+
+  accountingGridTextMeasureContext.font =
+    "500 14px Inter, Arial, Helvetica, sans-serif";
+
+  return accountingGridTextMeasureContext.measureText(value).width;
+}
+
+function estimateFallbackTextWidth(value: string) {
+  return Array.from(value).reduce(
+    (width, character) => width + getEstimatedCharacterWidth(character),
+    0,
+  );
+}
+
+function getEstimatedCharacterWidth(character: string) {
+  if (character === " ") {
+    return 4;
+  }
+
+  if ("ilI.,:;!'`|".includes(character)) {
+    return 4.2;
+  }
+
+  if ("mwMW@#%&".includes(character)) {
+    return 9.2;
+  }
+
+  if (/[0-9]/.test(character)) {
+    return 7.4;
+  }
+
+  return 7;
+}
+
+function downloadBytesFile(fileName: string, content: Uint8Array, type: string) {
+  const buffer = new ArrayBuffer(content.byteLength);
+
+  new Uint8Array(buffer).set(content);
+
+  const blob = new Blob([buffer], { type });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
 

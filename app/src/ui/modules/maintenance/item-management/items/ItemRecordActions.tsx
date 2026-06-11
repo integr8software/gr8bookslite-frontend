@@ -8,12 +8,12 @@ import {
 
 type ItemRecordActionsProps = {
 	item: ItemRecord;
-	onDeleteItem: (item: ItemRecord) => void;
+	onStatusChange: (item: ItemRecord) => void;
 };
 
 export function ItemRecordActions({
 	item,
-	onDeleteItem,
+	onStatusChange,
 }: ItemRecordActionsProps) {
 	return (
 		<ModuleTableActions>
@@ -28,9 +28,13 @@ export function ItemRecordActions({
 				label={`Edit ${item.name}`}
 			/>
 			<ModuleTableActionButton
-				variant="delete"
-				onClick={() => onDeleteItem(item)}
-				label={`Delete ${item.name}`}
+				variant={item.status === "Active" ? "inactive" : "active"}
+				onClick={() => onStatusChange(item)}
+				label={
+					item.status === "Active"
+						? `Set ${item.name} inactive`
+						: `Reactivate ${item.name}`
+				}
 			/>
 		</ModuleTableActions>
 	);

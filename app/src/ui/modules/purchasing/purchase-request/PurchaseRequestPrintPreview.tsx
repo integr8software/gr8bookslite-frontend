@@ -158,14 +158,14 @@ export function PurchaseRequestPrintPreview({
 
 						<div className="grid grid-cols-[1fr_1fr_150px]">
 							<div className="min-h-14 border-r border-black px-1 py-1">
-								Prepared by:
+								{record.preparedByLabel || "Prepared by"}:
 								<SignatureNameBlock
 									name={record.preparedBy}
 									signatureImageUrl={record.preparedBySignatureImageUrl}
 								/>
 							</div>
 							<div className="min-h-14 border-r border-black px-1 py-1">
-								Approved by:
+								{record.approvedByLabel || "Approved by"}:
 								<SignatureNameBlock
 									name={record.approvedBy}
 									signatureImageUrl={record.approvedBySignatureImageUrl}

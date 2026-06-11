@@ -105,6 +105,7 @@ export function ResponsibilityCenterAction() {
 					isReadonly={action.isReadonly}
 					parentOptions={action.parentOptions}
 					values={action.values}
+					onFieldChange={action.onFieldChange}
 					onInputChange={action.onInputChange}
 				/>
 			</form>

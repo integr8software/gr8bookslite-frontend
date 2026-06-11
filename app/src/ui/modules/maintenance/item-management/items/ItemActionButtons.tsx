@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowLeft, Edit3, Save, Trash2, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2, CircleOff, Edit3, Save, X } from "lucide-react";
 import { ItemsHref } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import type {
 	ItemActionMode,
 	ItemRecord,
+	ItemStatus,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
@@ -11,15 +12,21 @@ type ItemActionButtonsProps = {
 	isReadonly: boolean;
 	item?: ItemRecord;
 	mode: ItemActionMode;
-	onDeleteItem: () => void;
+	nextStatus?: ItemStatus;
+	onStatusChange: () => void;
 };
 
 export function ItemActionButtons({
 	isReadonly,
 	item,
 	mode,
-	onDeleteItem,
+	nextStatus,
+	onStatusChange,
 }: ItemActionButtonsProps) {
+	const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
+	const statusLabel =
+		nextStatus === "Inactive" ? "Set Inactive" : "Reactivate";
+
 	return (
 		<>
 			<Link href={ItemsHref} className={moduleHeaderActionClassNames.secondary}>
@@ -35,14 +42,18 @@ export function ItemActionButtons({
 					Edit
 				</Link>
 			) : null}
-			{item ? (
+			{item && nextStatus ? (
 				<button
 					type="button"
-					onClick={onDeleteItem}
-					className={moduleHeaderActionClassNames.danger}
+					onClick={onStatusChange}
+					className={
+						nextStatus === "Inactive"
+							? moduleHeaderActionClassNames.danger
+							: moduleHeaderActionClassNames.secondary
+					}
 				>
-					<Trash2 className="h-4 w-4" aria-hidden="true" />
-					Delete
+					<StatusIcon className="h-4 w-4" aria-hidden="true" />
+					{statusLabel}
 				</button>
 			) : null}
 			{mode === "edit" && item ? (

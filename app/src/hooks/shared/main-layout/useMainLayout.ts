@@ -3,9 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getWorkspaceCompanyBranchesHref,
-} from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
+import { getWorkspaceCompanyBranchesHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import {
   MasterSubscriberManagementHref,
   getMasterSubscriberManagementSectionHref,
@@ -16,9 +14,7 @@ import {
   getMasterSubscriberManagementCompany,
   getMasterSubscriberManagementSubscriber,
 } from "@/app/src/data/master/subscriber-management/MasterSubscriberManagementData";
-import type {
-  MasterSubscriberManagementCompanySection,
-} from "@/app/src/types/master/subscriber-management/MasterSubscriberManagementTypes";
+import type { MasterSubscriberManagementCompanySection } from "@/app/src/types/master/subscriber-management/MasterSubscriberManagementTypes";
 import {
   getBranchDisplayLabel,
   stripHeadOfficeLabel,
@@ -60,9 +56,7 @@ import { ModuleHelpArticles } from "@/app/src/data/shared/module/module-help/Mod
 import { getHelpArticleForPath } from "@/app/src/data/shared/module/module-help/ModuleHelpUtils";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
-import {
-  useWorkspaceCompanyMainLayoutBranches,
-} from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyMainLayoutBranches";
+import { useWorkspaceCompanyMainLayoutBranches } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyMainLayoutBranches";
 import {
   GetAuthProfileAccess,
   GetAuthProfileCompanyId,
@@ -239,7 +233,7 @@ export function useMainLayout() {
   const subscriberManagementCompanyId = pathname.startsWith(
     MasterSubscriberManagementHref,
   )
-    ? searchParams.get("companyId") ?? undefined
+    ? (searchParams.get("companyId") ?? undefined)
     : undefined;
   const accessToken = storedAccessToken;
   const {
@@ -280,18 +274,14 @@ export function useMainLayout() {
 
     hasHandledAuthProfileErrorRef.current = true;
     NotifyAuthSessionExpired();
-  }, [
-    authProfileError,
-    isAuthProfileError,
-  ]);
-  const activeNavigationScope: MainNavigationScope =
-    isAccountRoute
-      ? "account"
-      : hasMasterAccess
-        ? "master"
-        : authProfile && isWorkspaceRoute
-          ? "workspace"
-          : "company";
+  }, [authProfileError, isAuthProfileError]);
+  const activeNavigationScope: MainNavigationScope = isAccountRoute
+    ? "account"
+    : hasMasterAccess
+      ? "master"
+      : authProfile && isWorkspaceRoute
+        ? "workspace"
+        : "company";
   const workspaceCompanies = useMemo(
     () =>
       authProfile && !isSuperAdmin
@@ -320,8 +310,7 @@ export function useMainLayout() {
     currentCompany.subscriptionPackage ?? MainLayoutDefaultSubscription;
   const { branches, isLoading: isBranchLoading } =
     useWorkspaceCompanyMainLayoutBranches({
-      company:
-        activeNavigationScope === "company" ? currentCompany : undefined,
+      company: activeNavigationScope === "company" ? currentCompany : undefined,
     });
 
   /* eslint-disable react-hooks/preserve-manual-memoization */
@@ -330,10 +319,10 @@ export function useMainLayout() {
       activeNavigationScope === "account"
         ? MainAccountNavigationSections
         : activeNavigationScope === "master"
-        ? MainMasterNavigationSections
-        : activeNavigationScope === "workspace"
-          ? MainWorkspaceNavigationSections
-          : MainCompanyNavigationSections;
+          ? MainMasterNavigationSections
+          : activeNavigationScope === "workspace"
+            ? MainWorkspaceNavigationSections
+            : MainCompanyNavigationSections;
 
     return filterMainNavigationSections(
       sourceSections,
@@ -362,10 +351,10 @@ export function useMainLayout() {
       activeNavigationScope === "account"
         ? MainAccountSearchItems
         : activeNavigationScope === "master"
-        ? MainMasterSearchItems
-        : activeNavigationScope === "workspace"
-          ? MainWorkspaceSearchItems
-          : MainCompanySearchItems;
+          ? MainMasterSearchItems
+          : activeNavigationScope === "workspace"
+            ? MainWorkspaceSearchItems
+            : MainCompanySearchItems;
 
     return filterMainSearchItems(sourceItems, displayUser, subscription);
   }, [activeNavigationScope, displayUser, subscription]);
@@ -384,10 +373,10 @@ export function useMainLayout() {
       : activeNavigationScope === "account" && hasWorkspaceAccess
         ? WorkspaceHomeHref
         : activeNavigationScope === "master"
-      ? MasterHomeHref
-      : activeNavigationScope === "workspace"
-        ? WorkspaceHomeHref
-        : companyHomeHref;
+          ? MasterHomeHref
+          : activeNavigationScope === "workspace"
+            ? WorkspaceHomeHref
+            : companyHomeHref;
   const switchCompanyMutation = useMutation({
     mutationFn: async ({
       companyId,
@@ -1020,8 +1009,8 @@ export function useMainLayout() {
     homeHref,
     isCompanySwitching: Boolean(
       shellContextSwitchMessage ||
-        switchingCompanyId ||
-        switchingAdministrationScope,
+      switchingCompanyId ||
+      switchingAdministrationScope,
     ),
     isLoggingOut: shellContextSwitchMessage === "Logging out...",
     companySwitchMessage:
@@ -1415,7 +1404,7 @@ function MapBackendPermissionAction(
     return "edit";
   }
 
-  if (action === "delete" || action === "cancel" || action === "uncancel") {
+  if (action === "cancel" || action === "uncancel") {
     return action;
   }
 
@@ -1614,7 +1603,8 @@ function buildMasterSubscriberManagementBreadcrumbs({
     recordId,
     selectedCompanyId,
   );
-  const sectionTitle = getMasterSubscriberManagementSectionPageTitle(sectionSegment);
+  const sectionTitle =
+    getMasterSubscriberManagementSectionPageTitle(sectionSegment);
 
   if (editSegment === "edit") {
     return [
@@ -1990,8 +1980,7 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Configure currencies, exchange rates, preferences, and rounding rules.",
   "maintenance-discount-management":
     "Maintain discount rules for sales and purchasing.",
-  "maintenance-term-management":
-    "Manage payment and collection terms.",
+  "maintenance-term-management": "Manage payment and collection terms.",
   "maintenance-transaction-type":
     "Configure transaction classifications and numbering behavior.",
   "maintenance-responsibility-center":
@@ -2003,10 +1992,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "maintenance-items": "Maintain item master records.",
   "maintenance-warehouse": "Maintain warehouse records and storage locations.",
   "maintenance-item": "Maintain item master records.",
-  "maintenance-item-category": "Group items by category.",
-  "maintenance-item-sub-category": "Group items by subcategory.",
-  "maintenance-item-type": "Maintain item type classifications.",
-  "maintenance-item-sub-type": "Maintain item subtype classifications.",
+  "maintenance-item-category": "Maintain the item category hierarchy.",
+  "maintenance-item-promotions": "Maintain item promotion records and rules.",
   "maintenance-party-management":
     "Maintain customers, suppliers, vendors, members, and employees.",
   "maintenance-party":
@@ -2036,8 +2023,12 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "cash-disbursement-petty-cash-voucher": "Record petty cash vouchers.",
   "cash-disbursement-petty-cash-fund":
     "Manage petty cash fund setup and balances.",
-  "cash-disbursement-petty-cash-replenishment": "Replenish petty cash funds.",
+  "cash-disbursement-petty-cash-fund-replenishment":
+    "Replenish petty cash funds.",
+  "cash-disbursement-petty-cash-advance-replenishment":
+    "Replenish petty cash advances.",
   "cash-disbursement-petty-cash-advance": "Record petty cash advances.",
+  "cash-disbursement-revolving-fund": "Manage revolving fund activity.",
   "cash-disbursement-request-for-payment": "Create and track payment requests.",
   "cash-disbursement-request-payment": "Create and track payment requests.",
   "cash-disbursement-advances-to-supplier":

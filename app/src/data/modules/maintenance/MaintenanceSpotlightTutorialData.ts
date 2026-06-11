@@ -54,21 +54,6 @@ export const MaintenanceSpotlightTutorialConfigs = [
     label: "Item category",
   },
   {
-    href: "/maintenance/item-management/item-subcategory",
-    addMode: "drawer",
-    label: "Item subcategory",
-  },
-  {
-    href: "/maintenance/item-management/item-type",
-    addMode: "drawer",
-    label: "Item type",
-  },
-  {
-    href: "/maintenance/item-management/item-subtype",
-    addMode: "drawer",
-    label: "Item subtype",
-  },
-  {
     href: "/maintenance/party-management",
     addMode: "route",
     label: "Party management",

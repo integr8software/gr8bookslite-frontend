@@ -5,18 +5,20 @@ import {
   BillingOptions,
   type BillingCycle,
   type PricingPlan,
-} from "@/app/src/data/pricing/PricingData";
+} from "@/app/src/data/pricing/PricingTypes";
 import { OnboardingPricingDesktopPlans } from "@/app/src/ui/onboarding/OnboardingPricingDesktopPlans";
 import { OnboardingPricingHero } from "@/app/src/ui/onboarding/OnboardingPricingHero";
 import { OnboardingPricingMobilePlans } from "@/app/src/ui/onboarding/OnboardingPricingMobilePlans";
 
 type OnboardingFreeTrialStepProps = {
+  plans: PricingPlan[];
   handlePlanSelection: (plan: PricingPlan, billingCycle: BillingCycle) => void;
   isSubmitting: boolean;
   submittingPlanCode: string | null;
 };
 
 export function OnboardingFreeTrialStep({
+  plans,
   handlePlanSelection,
   isSubmitting,
   submittingPlanCode,
@@ -79,6 +81,7 @@ export function OnboardingFreeTrialStep({
         </div>
 
         <OnboardingPricingMobilePlans
+          plans={plans}
           billingCycle={billingCycle}
           isSubmitting={isSubmitting}
           submittingPlanCode={submittingPlanCode}
@@ -87,6 +90,7 @@ export function OnboardingFreeTrialStep({
         />
 
         <OnboardingPricingDesktopPlans
+          plans={plans}
           billingCycle={billingCycle}
           isSubmitting={isSubmitting}
           submittingPlanCode={submittingPlanCode}

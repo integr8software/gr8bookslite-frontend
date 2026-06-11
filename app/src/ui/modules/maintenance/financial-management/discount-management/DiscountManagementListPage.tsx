@@ -15,6 +15,7 @@ import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { DiscountManagementTable } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementTable";
 import { DiscountManagementDrawer } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementDrawer";
 import type { Discount } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
@@ -25,9 +26,13 @@ export function DiscountManagementListPage() {
 	const discounts = useDiscountManagementStore((state) => state.discounts);
 	const updateDiscount = useDiscountManagementStore((state) => state.updateDiscount);
 	const isLoading = useDiscountManagementStore((state) => state.isLoading);
+	const isMutating = useDiscountManagementStore((state) => state.isMutating);
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	const [pendingStatusDiscount, setPendingStatusDiscount] =
+		useState<Discount | null>(null);
 	const [query, setQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState("All");
+	const [discountTypeFilter, setDiscountTypeFilter] = useState("All");
 	useMaintenanceAddDrawerSpotlight(
 		() => setDrawerState({ mode: "add" }),
 		() => setDrawerState(null),
@@ -38,8 +43,11 @@ export function DiscountManagementListPage() {
 		return discounts.filter((discount) => {
 			const matchesStatus =
 				statusFilter === "All" || discount.status === statusFilter;
+			const matchesDiscountType =
+				discountTypeFilter === "All" ||
+				discount.discountType === discountTypeFilter;
 
-			if (!matchesStatus) {
+			if (!matchesStatus || !matchesDiscountType) {
 				return false;
 			}
 
@@ -61,18 +69,25 @@ export function DiscountManagementListPage() {
 				.toLowerCase()
 				.includes(normalizedQuery);
 		});
-	}, [discounts, statusFilter, query]);
+	}, [discounts, discountTypeFilter, statusFilter, query]);
 
 	function resetFilters() {
 		setStatusFilter("All");
+		setDiscountTypeFilter("All");
 		setQuery("");
 	}
 
-	function toggleDiscountStatus(discount: Discount) {
+	function confirmDiscountStatusChange() {
+		if (!pendingStatusDiscount) {
+			return;
+		}
+
 		updateDiscount({
-			...discount,
-			status: discount.status === "Active" ? "Inactive" : "Active",
+			...pendingStatusDiscount,
+			status:
+				pendingStatusDiscount.status === "Active" ? "Inactive" : "Active",
 		});
+		setPendingStatusDiscount(null);
 	}
 
 	return (
@@ -124,12 +139,22 @@ export function DiscountManagementListPage() {
 				discounts={filteredDiscounts}
 				isLoading={isLoading}
 				toolbar={
-					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]">
+					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,1fr)]">
 						<ModuleTableSearch
 							label="Search discounts"
 							value={query}
 							onChange={setQuery}
 							placeholder="Search by name, description, value, module, or account"
+						/>
+						<ModuleTableFilterSelect
+							label="Discount Type"
+							value={discountTypeFilter}
+							options={[
+								{ label: "All", value: "All" },
+								{ label: "Percentage", value: "Percentage" },
+								{ label: "Fixed", value: "Fixed" },
+							]}
+							onChange={setDiscountTypeFilter}
 						/>
 						<ModuleTableFilterSelect
 							label="Status"
@@ -147,10 +172,32 @@ export function DiscountManagementListPage() {
 					</ModuleTableToolbar>
 				}
 				onEditDiscount={(discount) => setDrawerState({ mode: "edit", discount })}
-				onToggleStatus={toggleDiscountStatus}
+				onToggleStatus={setPendingStatusDiscount}
 				onViewDiscount={(discount) => setDrawerState({ mode: "view", discount })}
 			/>
 			<DiscountManagementDrawer discount={drawerState?.discount} isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} />
+			<AppDialog
+				isOpen={Boolean(pendingStatusDiscount)}
+				isPending={isMutating}
+				title={
+					pendingStatusDiscount?.status === "Active"
+						? "Set discount inactive?"
+						: "Reactivate discount?"
+				}
+				description={
+					pendingStatusDiscount?.status === "Active"
+						? `${pendingStatusDiscount.name} will remain in history and references, but will no longer be active for normal selection.`
+						: `${pendingStatusDiscount?.name ?? "This discount"} will be available for selection again.`
+				}
+				confirmLabel={
+					pendingStatusDiscount?.status === "Active"
+						? "Set Inactive"
+						: "Reactivate"
+				}
+				tone={pendingStatusDiscount?.status === "Active" ? "danger" : "success"}
+				onCancel={() => setPendingStatusDiscount(null)}
+				onConfirm={confirmDiscountStatusChange}
+			/>
 		</section>
 	);
 }

@@ -110,7 +110,7 @@ export function useTransactionNumberSetupStore<
 				) ?? TransactionNumberUsageLogs;
 			const setup = setups.find((current) => current.id === setupId);
 
-			if (!setup || setup.status !== "Active") {
+			if (!setup || setup.status !== "Active" || setup.inputMode !== "Auto") {
 				throw new Error("Setup is not available for generation.");
 			}
 

@@ -136,7 +136,7 @@ export function ItemFields({
 				</FormField>
 			</FieldPanel>
 
-			<FieldPanel title="Classification">
+			<FieldPanel title="Item Setup">
 				<FormField label="Category" error={errors.category} required>
 					<AppAdvancedDropdown
 						options={categoryOptions}
@@ -167,10 +167,10 @@ export function ItemFields({
 						onChange={(value) => onFieldChange("type", String(value))}
 					/>
 				</FormField>
-				<FormField label="Sub Item Type" error={errors.subtype} required>
+				<FormField label="Item Subtype" error={errors.subtype} required>
 					<AppAdvancedDropdown
 						options={subtypeOptions}
-						placeholder="Select sub item type"
+						placeholder="Select item subtype"
 						readOnly={isReadonly}
 						showSelectedDetails
 						value={values.subtype}

@@ -45,6 +45,7 @@ export type ModuleDataEntryTableProps<TRow extends { id: string }> = {
 	isRowNumberColumnFixed: boolean;
 	rows: TRow[];
 	scrollContainerRef: RefObject<HTMLDivElement | null>;
+	onAddRows: (count: number) => void;
 	onAutoColumnWidth?: (columnId: string) => void;
 	onClearCell?: (rowId: string, columnId: string) => void;
 	onClearRow?: (rowId: string) => void;
@@ -72,6 +73,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 	isRowNumberColumnFixed,
 	rows,
 	scrollContainerRef,
+	onAddRows,
 	onAutoColumnWidth,
 	onClearCell,
 	onClearRow,
@@ -178,6 +180,27 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 		);
 	}
 
+	function focusRelativeCellEditor(
+		currentCell: HTMLElement,
+		rowOffset: number,
+		columnOffset: number,
+	) {
+		const target = getCellTarget(currentCell);
+
+		if (!target) {
+			return;
+		}
+
+		const nextCell = focusCell(
+			clampIndex(target.rowIndex + rowOffset, rows.length),
+			clampIndex(target.columnIndex + columnOffset, columns.length),
+		);
+
+		if (nextCell) {
+			focusCellEditor(nextCell);
+		}
+	}
+
 	function focusLinearCell(currentCell: HTMLElement, offset: number) {
 		const target = getCellTarget(currentCell);
 
@@ -192,6 +215,40 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 		const nextColumnIndex = nextLinearIndex % columns.length;
 
 		focusCell(nextRowIndex, nextColumnIndex);
+	}
+
+	function focusLinearCellEditor(currentCell: HTMLElement, offset: number) {
+		const target = getCellTarget(currentCell);
+
+		if (!target) {
+			return;
+		}
+
+		const cellCount = rows.length * columns.length;
+		const linearIndex = target.rowIndex * columns.length + target.columnIndex;
+		const nextLinearIndex = linearIndex + offset;
+
+		if (nextLinearIndex >= cellCount) {
+			if (!canEditRows) {
+				return;
+			}
+
+			pendingFocusTargetRef.current = {
+				columnIndex: 0,
+				rowIndex: rows.length,
+			};
+			onAddRows(1);
+			return;
+		}
+
+		const clampedLinearIndex = clampIndex(nextLinearIndex, cellCount);
+		const nextRowIndex = Math.floor(clampedLinearIndex / columns.length);
+		const nextColumnIndex = clampedLinearIndex % columns.length;
+		const nextCell = focusCell(nextRowIndex, nextColumnIndex);
+
+		if (nextCell) {
+			focusCellEditor(nextCell);
+		}
 	}
 
 	function focusCellEditor(cell: HTMLElement) {
@@ -290,9 +347,35 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 			return;
 		}
 
+		if (event.key === "Enter") {
+			event.preventDefault();
+			focusLinearCellEditor(cell, event.shiftKey ? -1 : 1);
+			return;
+		}
+
 		if (event.key === "F2") {
 			event.preventDefault();
-			focusCellEditor(cell);
+			updateSelectionFromCell(cell);
+			focusModuleDataEntryCellEditor(cell, tableRef.current, {
+				shouldSelect: false,
+			});
+			return;
+		}
+
+		if (isEditing) {
+			if (event.key === "ArrowUp") {
+				event.preventDefault();
+				focusRelativeCellEditor(cell, -1, 0);
+			} else if (event.key === "ArrowDown") {
+				event.preventDefault();
+				focusRelativeCellEditor(cell, 1, 0);
+			} else if (event.key === "ArrowLeft") {
+				event.preventDefault();
+				focusRelativeCellEditor(cell, 0, -1);
+			} else if (event.key === "ArrowRight") {
+				event.preventDefault();
+				focusRelativeCellEditor(cell, 0, 1);
+			}
 			return;
 		}
 
@@ -490,7 +573,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 			onKeyDown={handleGridKeyDown}
 			onPaste={handleGridPaste}
 		>
-			<table className="w-max table-fixed border-separate border-spacing-0 text-left text-sm text-darknavy">
+			<table className="w-max min-w-full table-fixed border-separate border-spacing-0 text-left text-sm text-darknavy">
 				<ModuleDataEntryTableHeader
 					canEditColumns={canEditColumns}
 					columnDropTargetId={columnDropTargetId}

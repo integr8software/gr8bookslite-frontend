@@ -24,6 +24,7 @@ import {
 import { useBranchUserRoleContext } from "@/app/src/hooks/modules/system-administration/user-management/user-role/useBranchUserRoleContext";
 import {
 	CreateBranchRole,
+	GetBranchPermissionCatalog,
 	GetBranchRole,
 	UpdateBranchRole,
 	UpdateBranchRoleStatus,
@@ -48,6 +49,13 @@ export function useUserRoleFormPage() {
 		mode === "edit" &&
 		searchParams.get(UserManagementEditFromParam) ===
 			UserManagementEditFromViewValue;
+	const permissionCatalogQuery = useQuery({
+		enabled: Boolean(accessToken && branchId),
+		queryKey: UserRoleQueryKeys.permissionCatalog(branchId ?? ""),
+		queryFn: async () => GetBranchPermissionCatalog(branchId ?? ""),
+	});
+	const permissionCatalog = permissionCatalogQuery.data ?? [];
+	const canSave = permissionCatalog.length > 0 && !permissionCatalogQuery.isLoading;
 	const existingUserRoleQuery = useQuery({
 		enabled: Boolean(accessToken && branchId && params.recordId && mode !== "add"),
 		queryKey:
@@ -86,8 +94,9 @@ export function useUserRoleFormPage() {
 			if (!branchId) {
 				throw new Error("Select a branch before creating a user role.");
 			}
+			ensurePermissionCatalogAvailable(permissionCatalog);
 
-			return CreateBranchRole(branchId, nextValues);
+			return CreateBranchRole(branchId, nextValues, permissionCatalog);
 		},
 		onSuccess: (createdRole) => {
 			if (branchId) {
@@ -115,8 +124,14 @@ export function useUserRoleFormPage() {
 			if (!branchId || !existingUserRole) {
 				throw new Error("Select a branch before updating a user role.");
 			}
+			ensurePermissionCatalogAvailable(permissionCatalog);
 
-			return UpdateBranchRole(branchId, existingUserRole.id, nextValues);
+			return UpdateBranchRole(
+				branchId,
+				existingUserRole.id,
+				nextValues,
+				permissionCatalog,
+			);
 		},
 		onSuccess: (updatedRole) => {
 			if (branchId) {
@@ -224,6 +239,13 @@ export function useUserRoleFormPage() {
 			return "invalid";
 		}
 
+		if (!canSave) {
+			toast.error(
+				"The permission catalog is unavailable. Wait for it to load before saving.",
+			);
+			return "failed";
+		}
+
 		try {
 			if (mode === "edit" && existingUserRole) {
 				await updateMutation.mutateAsync(values);
@@ -250,6 +272,7 @@ export function useUserRoleFormPage() {
 
 	return {
 		cancelHref,
+		canSave,
 		editHref,
 		errors,
 		existingUserRole,
@@ -259,6 +282,7 @@ export function useUserRoleFormPage() {
 		isMutating,
 		isReadonly,
 		mode,
+		permissionCatalog,
 		needsRecord:
 			(mode === "edit" || mode === "view") && !existingUserRoleQuery.isLoading,
 		submitForm,
@@ -266,6 +290,14 @@ export function useUserRoleFormPage() {
 		updateField,
 		values,
 	};
+}
+
+function ensurePermissionCatalogAvailable(permissionCatalog: unknown[]) {
+	if (permissionCatalog.length === 0) {
+		throw new Error(
+			"The permission catalog is unavailable. Wait for it to load before saving.",
+		);
+	}
 }
 
 function getActionMode(pathname: string): UserManagementActionMode {

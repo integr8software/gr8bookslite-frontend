@@ -1,18 +1,18 @@
 import type { ChangeEventHandler, ReactNode } from "react";
-import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import type {
 	DiscountManagementFormErrors,
 	DiscountManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
-import type { FormSignatoryModuleOption } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
+import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type DiscountManagementFieldsProps = {
-	accountOptions: ChartAccount[];
+	accountOptions: ModuleChartAccount[];
 	errors: DiscountManagementFormErrors;
 	isReadonly: boolean;
-	moduleOptions: FormSignatoryModuleOption[];
+	moduleOptions: ModuleOption[];
 	values: DiscountManagementFormValues;
 	onAccountChange: (accountId: string) => void;
 	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;

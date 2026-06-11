@@ -102,6 +102,10 @@ export function ModuleDataEntryTableHeader<TRow>({
 						)}
 					</th>
 				))}
+				<th
+					aria-hidden="true"
+					className="sticky top-0 z-30 min-w-0 border border-skyblue/70 bg-skyblue p-0 shadow-sm"
+				/>
 			</tr>
 		</thead>
 	);

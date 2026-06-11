@@ -21,6 +21,9 @@ type ItemManagementStoreState = {
 	getSetupRecords: (kind: ItemSetupKind) => ItemSetupRecord[];
 	addSetupRecord: (kind: ItemSetupKind, record: ItemSetupRecord) => void;
 	updateSetupRecord: (kind: ItemSetupKind, record: ItemSetupRecord) => void;
+	updateSetupRecords: (
+		updates: Array<{ kind: ItemSetupKind; record: ItemSetupRecord }>,
+	) => void;
 	deleteSetupRecord: (kind: ItemSetupKind, recordId: string) => void;
 	isLoading: boolean;
 	isMutating: boolean;
@@ -135,6 +138,41 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 		},
 	});
 
+	const updateSetupRecordsMutation = useMutation({
+		mutationFn: async (
+			updates: Array<{ kind: ItemSetupKind; record: ItemSetupRecord }>,
+		) => updates,
+		onSuccess: (updates) => {
+			const updatesByKind = updates.reduce(
+				(groupedUpdates, update) => {
+					const kindUpdates = groupedUpdates[update.kind] ?? [];
+
+					kindUpdates.push(update.record);
+					groupedUpdates[update.kind] = kindUpdates;
+					return groupedUpdates;
+				},
+				{} as Partial<Record<ItemSetupKind, ItemSetupRecord[]>>,
+			);
+
+			(Object.entries(updatesByKind) as Array<
+				[ItemSetupKind, ItemSetupRecord[]]
+			>).forEach(([kind, kindUpdates]) => {
+				const updateById = new Map(
+					kindUpdates.map((record) => [record.id, record]),
+				);
+
+				updateCachedSetupRecords(kind, (records) =>
+					records.map((currentRecord) =>
+						updateById.get(currentRecord.id) ?? currentRecord,
+					),
+				);
+			});
+			toast.success(
+				updates.length === 1 ? "Setup record updated." : "Setup records updated.",
+			);
+		},
+	});
+
 	const deleteSetupMutation = useMutation({
 		mutationFn: async ({
 			kind,
@@ -145,9 +183,11 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 		}) => ({ kind, recordId }),
 		onSuccess: ({ kind, recordId }) => {
 			updateCachedSetupRecords(kind, (records) =>
-				records.filter((record) => record.id !== recordId),
+				records.map((record) =>
+					record.id === recordId ? { ...record, status: "Inactive" } : record,
+				),
 			);
-			toast.success("Setup record deleted.");
+			toast.success("Setup record set inactive.");
 		},
 	});
 
@@ -161,6 +201,8 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 			addSetupMutation.mutate({ kind, record }),
 		updateSetupRecord: (kind, record) =>
 			updateSetupMutation.mutate({ kind, record }),
+		updateSetupRecords: (updates) =>
+			updateSetupRecordsMutation.mutate(updates),
 		deleteSetupRecord: (kind, recordId) =>
 			deleteSetupMutation.mutate({ kind, recordId }),
 		isLoading:
@@ -175,6 +217,7 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 			deleteItemMutation.isPending ||
 			addSetupMutation.isPending ||
 			updateSetupMutation.isPending ||
+			updateSetupRecordsMutation.isPending ||
 			deleteSetupMutation.isPending,
 	};
 

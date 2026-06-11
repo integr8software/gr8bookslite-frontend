@@ -4,8 +4,10 @@ export type TransactionType = {
 	id: string;
 	name: string;
 	description: string;
-	moduleId: string;
-	moduleName: string;
+	moduleId?: string;
+	moduleName?: string;
+	moduleIds: string[];
+	moduleNames: string[];
 	status: TransactionTypeStatus;
 	accountId?: string;
 	accountCode?: string;
@@ -15,7 +17,7 @@ export type TransactionType = {
 export type TransactionTypeFormValues = {
 	name: string;
 	description: string;
-	moduleId: string;
+	moduleIds: string[];
 	status: TransactionTypeStatus;
 	accountId: string;
 };

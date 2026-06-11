@@ -1,55 +1,63 @@
 import { useMemo, useState } from "react";
 import { Check, ShieldCheck } from "lucide-react";
 import {
-  UserAccessRoleOptions,
   UserPermissionActions,
 } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type { UserAccessRoleOption } from "@/app/src/data/modules/system-administration/user-management/user-role/UserRoleData";
 import { UserRoleAccessToggle } from "@/app/src/ui/modules/system-administration/user-management/user-role/UserRoleAccessToggle";
 import {
   getEnabledCount,
   getModulePermissionState,
   getModuleActionState,
+  getSubmodulePermissionActions,
   getSubmoduleState,
   togglePermission,
   toggleModuleAction,
   toggleModulePermissions,
   toggleSubmodulePermissions,
   type AccessModule,
+  type AccessSubmodule,
 } from "@/app/src/ui/modules/system-administration/user-management/user-role/utils";
 
 export function UserRolePermissionsPanel({
   error,
   isReadonly,
+  permissionCatalog,
   values,
   onUpdateAccessRoles,
 }: {
   error?: string;
   isReadonly: boolean;
+  permissionCatalog: UserAccessRoleOption[];
   values: string[];
   onUpdateAccessRoles: (accessRoles: string[]) => void;
 }) {
   const [selectedModuleValue, setSelectedModuleValue] = useState<string>(
-    UserAccessRoleOptions[0]?.value ?? "",
+    permissionCatalog[0]?.value ?? "",
   );
   const selectedModule =
-    UserAccessRoleOptions.find((item) => item.value === selectedModuleValue) ??
-    UserAccessRoleOptions[0];
+    permissionCatalog.find((item) => item.value === selectedModuleValue) ??
+    permissionCatalog[0];
   const moduleStats = useMemo(
     () =>
-      UserAccessRoleOptions.map((accessModule) => ({
+      permissionCatalog.map((accessModule) => ({
         accessModule,
         enabledCount: getEnabledCount(accessModule, values),
-        totalCount: accessModule.children.length * UserPermissionActions.length,
+        totalCount: accessModule.children.reduce(
+          (count, submodule) =>
+            count + getSubmodulePermissionActions(submodule).length,
+          0,
+        ),
       })),
-    [values],
+    [permissionCatalog, values],
   );
 
   function updateModuleAction(accessModule: AccessModule, actionValue: string) {
     onUpdateAccessRoles(toggleModuleAction(accessModule, actionValue, values));
   }
 
-  function updateSubmoduleAll(submoduleValue: string) {
-    onUpdateAccessRoles(toggleSubmodulePermissions(submoduleValue, values));
+  function updateSubmoduleAll(submodule: AccessSubmodule) {
+    onUpdateAccessRoles(toggleSubmodulePermissions(submodule, values));
   }
 
   function updateModuleAll(accessModule: AccessModule) {
@@ -60,10 +68,17 @@ export function UserRolePermissionsPanel({
     onUpdateAccessRoles(togglePermission(permission, values));
   }
 
-  const selectedModulePermissionState = getModulePermissionState(
-    selectedModule,
-    values,
-  );
+  const selectedModulePermissionState = selectedModule
+    ? getModulePermissionState(selectedModule, values)
+    : { checked: false, enabledCount: 0, isPartial: false };
+
+  if (!selectedModule) {
+    return (
+      <div className="rounded-lg border border-darknavy/10 bg-white p-5 text-sm text-darknavy/55">
+        No active permission catalog entries are available for this branch.
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white">
@@ -158,20 +173,19 @@ export function UserRolePermissionsPanel({
           <div className="grid gap-3 p-4">
             <div className="grid gap-3 xl:hidden">
               {selectedModule.children.map((submodule) => {
-                const submoduleState = getSubmoduleState(
-                  submodule.value,
-                  values,
-                );
+                const submoduleActions =
+                  getSubmodulePermissionActions(submodule);
+                const submoduleState = getSubmoduleState(submodule, values);
 
                 return (
                   <article
-                    key={submodule.value}
+                    key={submodule.permissionCode}
                     className="rounded border border-darknavy/10 bg-white p-3"
                   >
                     <div className="grid gap-3">
                       <button
                         type="button"
-                        onClick={() => updateSubmoduleAll(submodule.value)}
+                        onClick={() => updateSubmoduleAll(submodule)}
                         disabled={isReadonly}
                         className="flex min-w-0 items-center gap-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
                       >
@@ -201,13 +215,13 @@ export function UserRolePermissionsPanel({
                           </span>
                           <span className="mt-1 block text-xs font-medium text-darknavy/48">
                             {submoduleState.enabledCount} of{" "}
-                            {UserPermissionActions.length} permissions allowed
+                            {submoduleActions.length} permissions allowed
                           </span>
                         </span>
                       </button>
                       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                        {UserPermissionActions.map((action) => {
-                          const permission = `${submodule.value}.${action.value}`;
+                        {submoduleActions.map((action) => {
+                          const permission = `${submodule.permissionCode}.${action.value}`;
 
                           return (
                             <UserRoleAccessToggle
@@ -273,14 +287,16 @@ export function UserRolePermissionsPanel({
                   </thead>
                   <tbody>
                     {selectedModule.children.map((submodule) => {
+                      const submoduleActions =
+                        getSubmodulePermissionActions(submodule);
                       const submoduleState = getSubmoduleState(
-                        submodule.value,
+                        submodule,
                         values,
                       );
 
                       return (
                         <tr
-                          key={submodule.value}
+                          key={submodule.permissionCode}
                           className="border-t border-darknavy/8"
                         >
                           <td className="px-4 py-3">
@@ -290,7 +306,7 @@ export function UserRolePermissionsPanel({
                               </p>
                               <p className="mt-1 text-xs text-darknavy/48">
                                 {submoduleState.enabledCount} of{" "}
-                                {UserPermissionActions.length} enabled
+                                {submoduleActions.length} enabled
                               </p>
                             </div>
                           </td>
@@ -300,23 +316,38 @@ export function UserRolePermissionsPanel({
                               disabled={isReadonly}
                               isPartial={submoduleState.isPartial}
                               label={`All permissions for ${submodule.label}`}
-                              onChange={() => updateSubmoduleAll(submodule.value)}
+                              onChange={() => updateSubmoduleAll(submodule)}
                             />
                           </td>
                           {UserPermissionActions.map((action) => {
-                            const permission = `${submodule.value}.${action.value}`;
+                            const permission = `${submodule.permissionCode}.${action.value}`;
+                            const isSupported = submoduleActions.some(
+                              (submoduleAction) =>
+                                submoduleAction.value === action.value,
+                            );
 
                             return (
                               <td
                                 key={permission}
                                 className="px-3 py-3 text-center"
                               >
-                                <PermissionCheckCell
-                                  checked={values.includes(permission)}
-                                  disabled={isReadonly}
-                                  label={`${submodule.label} ${action.label}`}
-                                  onChange={() => updateSinglePermission(permission)}
-                                />
+                                {isSupported ? (
+                                  <PermissionCheckCell
+                                    checked={values.includes(permission)}
+                                    disabled={isReadonly}
+                                    label={`${submodule.label} ${action.label}`}
+                                    onChange={() =>
+                                      updateSinglePermission(permission)
+                                    }
+                                  />
+                                ) : (
+                                  <span
+                                    className="text-sm text-darknavy/25"
+                                    title={`${action.label} is not supported for ${submodule.label}`}
+                                  >
+                                    -
+                                  </span>
+                                )}
                               </td>
                             );
                           })}

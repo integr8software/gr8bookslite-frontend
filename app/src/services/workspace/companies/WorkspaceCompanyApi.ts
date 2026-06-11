@@ -13,7 +13,7 @@ import {
 import type {
 	WorkspaceCompanyResponseDto,
 	WorkspaceCompanyUnitResponseDto,
-} from "@/app/src/generated/api/gR8BooksLiteAPI.schemas";
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
 	CreateWorkspaceCompanyApiRequest,
 	UpdateWorkspaceCompanyApiRequest,

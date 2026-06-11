@@ -1,6 +1,4 @@
 import { z } from "zod";
-import { FormSignatoryTemporarySignatureLabel } from "@/app/src/constants/modules/maintenance/form-signatory/FormSignatoryConstants";
-
 export const FormSignatorySchema = z.object({
 	branch: z.string().min(1, "Select a branch."),
 	module: z.string().min(1, "Select a module."),
@@ -8,6 +6,7 @@ export const FormSignatorySchema = z.object({
 		.array(
 			z.object({
 				label: z.string().trim().min(1, "Enter a signatory label."),
+				isThisTemporary: z.boolean().nullable().optional(),
 				name: z.string(),
 				position: z.string(),
 				signatureName: z.string(),
@@ -19,7 +18,7 @@ export const FormSignatorySchema = z.object({
 		.superRefine((rows, context) => {
 			for (const [index, row] of rows.entries()) {
 				if (
-					row.label === FormSignatoryTemporarySignatureLabel &&
+					row.isThisTemporary === true &&
 					row.signaturePreview &&
 					!row.signatureValidUntil
 				) {

@@ -40,8 +40,7 @@ export function useTransactionTypeTable(transactionTypes: TransactionType[]) {
 						transactionType.description,
 					accountLabel:
 						transactionType.accountTitle || "No account selected",
-					moduleLabel:
-						transactionType.moduleName || "No module selected",
+					moduleLabel: getTransactionTypeModuleLabel(transactionType),
 				};
 			}),
 		[transactionTypes],
@@ -94,4 +93,12 @@ function createTransactionTypeColumn(
 		sortingFn: "alphanumeric",
 		meta: { className },
 	};
+}
+
+function getTransactionTypeModuleLabel(transactionType: TransactionType) {
+	if (transactionType.moduleNames?.length) {
+		return transactionType.moduleNames.join(", ");
+	}
+
+	return transactionType.moduleName || "No module selected";
 }

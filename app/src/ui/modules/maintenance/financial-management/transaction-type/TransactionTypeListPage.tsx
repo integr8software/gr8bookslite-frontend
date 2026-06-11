@@ -5,6 +5,7 @@ import { useTransactionTypeListPage } from "@/app/src/hooks/modules/maintenance/
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { TransactionTypeFilters } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeFilters";
 import { TransactionTypeHeaderActions } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeHeaderActions";
 import { TransactionTypeTable } from "@/app/src/ui/modules/maintenance/financial-management/transaction-type/TransactionTypeTable";
@@ -12,7 +13,7 @@ import { TransactionTypeDrawer } from "@/app/src/ui/modules/maintenance/financia
 import { useState } from "react";
 import type { TransactionType } from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
 
-type DrawerState = { mode: "add" | "edit"; transactionType?: TransactionType } | null;
+type DrawerState = { mode: "add" | "edit" | "view"; transactionType?: TransactionType } | null;
 
 export function TransactionTypeListPage() {
 	const page = useTransactionTypeListPage();
@@ -72,16 +73,46 @@ export function TransactionTypeListPage() {
 				transactionTypes={page.filteredTransactionTypes}
 				toolbar={
 					<TransactionTypeFilters
+						moduleFilter={page.moduleFilter}
+						moduleFilterOptions={page.moduleFilterOptions}
 						searchTerm={page.searchTerm}
 						statusFilter={page.statusFilter}
+						onModuleFilterChange={page.setModuleFilter}
 						onSearchTermChange={page.setSearchTerm}
 						onStatusFilterChange={page.setStatusFilter}
 					/>
 				}
 				onEdit={(transactionType) => setDrawerState({ mode: "edit", transactionType })}
-				onToggleStatus={page.toggleTransactionTypeStatus}
+				onToggleStatus={page.setPendingStatusTransactionType}
+				onView={(transactionType) => setDrawerState({ mode: "view", transactionType })}
 			/>
 			<TransactionTypeDrawer isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} transactionType={drawerState?.transactionType} />
+			<AppDialog
+				isOpen={Boolean(page.pendingStatusTransactionType)}
+				isPending={page.isMutating}
+				title={
+					page.pendingStatusTransactionType?.status === "Active"
+						? "Set transaction type inactive?"
+						: "Reactivate transaction type?"
+				}
+				description={
+					page.pendingStatusTransactionType?.status === "Active"
+						? `${page.pendingStatusTransactionType.name} will remain in history and references, but will no longer be active for normal selection.`
+						: `${page.pendingStatusTransactionType?.name ?? "This transaction type"} will be available for selection again.`
+				}
+				confirmLabel={
+					page.pendingStatusTransactionType?.status === "Active"
+						? "Set Inactive"
+						: "Reactivate"
+				}
+				tone={
+					page.pendingStatusTransactionType?.status === "Active"
+						? "danger"
+						: "success"
+				}
+				onCancel={() => page.setPendingStatusTransactionType(null)}
+				onConfirm={page.confirmTransactionTypeStatusChange}
+			/>
 		</section>
 	);
 }

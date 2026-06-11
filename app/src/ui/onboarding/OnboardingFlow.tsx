@@ -18,6 +18,7 @@ export function OnboardingFlow() {
     logoPreviewUrl,
     selectedPlan,
     selectedBillingCycle,
+    plans,
     isSubmitting,
     submittingPlanCode,
     isDraftLoading,
@@ -46,6 +47,7 @@ export function OnboardingFlow() {
 
       {currentStep.currentStep === OnboardingSteps[0].currentStep ? (
         <OnboardingFreeTrialStep
+          plans={plans}
           handlePlanSelection={handlePlanSelection}
           isSubmitting={isSubmitting}
           submittingPlanCode={submittingPlanCode}

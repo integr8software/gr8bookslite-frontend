@@ -5,11 +5,10 @@ import {
 import type {
 	RecordWorkspaceActivityDto,
 	WorkspaceAuditLogResponseDto,
-} from "@/app/src/generated/api/gR8BooksLiteAPI.schemas";
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
 	WorkspaceAuditLogAction,
 	WorkspaceAuditLogRecord,
-	WorkspaceAuditLogSeverity,
 } from "@/app/src/types/workspace/audit-logs/WorkspaceAuditLogTypes";
 
 export type WorkspaceAuditLogApiRecord = WorkspaceAuditLogResponseDto;
@@ -24,12 +23,6 @@ const WorkspaceAuditLogActions: readonly WorkspaceAuditLogAction[] = [
 	"Reject",
 	"Update",
 	"View",
-];
-
-const WorkspaceAuditLogSeverities: readonly WorkspaceAuditLogSeverity[] = [
-	"Info",
-	"Warning",
-	"Critical",
 ];
 
 export async function GetWorkspaceAuditLogs() {
@@ -59,20 +52,21 @@ export function MapWorkspaceAuditLogApiRecord(
 		createdAt: record.createdAt,
 		description: record.description,
 		ipAddress: record.ipAddress ?? "",
-		module: record.module,
+		module: NormalizeModule(record.module),
 		recordId: record.entityId ?? record.id,
-		severity: NormalizeSeverity(record.severity),
 	};
+}
+
+function NormalizeModule(value: string) {
+	if (value.startsWith("txn-setup-")) {
+		return "Transaction Number Setup";
+	}
+
+	return value;
 }
 
 function NormalizeAction(value: string): WorkspaceAuditLogAction {
 	const action = WorkspaceAuditLogActions.find((option) => option === value);
 
 	return action ?? "Update";
-}
-
-function NormalizeSeverity(value: string): WorkspaceAuditLogSeverity {
-	const severity = WorkspaceAuditLogSeverities.find((option) => option === value);
-
-	return severity ?? "Info";
 }

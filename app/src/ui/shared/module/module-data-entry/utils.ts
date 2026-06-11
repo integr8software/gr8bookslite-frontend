@@ -2,10 +2,10 @@ import type { CSSProperties } from "react";
 import type { ModuleDataEntrySelection } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export const moduleDataEntryRowHeaderClassName =
-	"w-[5rem] min-w-[5rem] border border-darknavy/10 bg-offwhite px-2 py-1 text-center text-xs font-semibold text-darknavy/65";
+	"app-theme-field-readonly w-[5rem] min-w-[5rem] border px-2 py-1 text-center text-xs font-semibold";
 
 export const moduleDataEntryCellClassName =
-	"border border-darknavy/10 bg-white p-0 align-middle";
+	"app-theme-field border p-0 align-middle";
 
 export function clampIndex(index: number, length: number) {
 	if (length <= 0) {

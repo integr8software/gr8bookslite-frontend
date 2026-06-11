@@ -25,7 +25,6 @@ import type {
 	WorkspaceAuditLogDateRange,
 	WorkspaceAuditLogFilters,
 	WorkspaceAuditLogRecord,
-	WorkspaceAuditLogSeverity,
 	WorkspaceAuditLogTableColumnKey,
 } from "@/app/src/types/workspace/audit-logs/WorkspaceAuditLogTypes";
 
@@ -40,9 +39,9 @@ const InitialFilters: WorkspaceAuditLogFilters = {
 	dateRange: "30d",
 	module: "all",
 	query: "",
-	severity: "all",
 };
 const EmptyWorkspaceAuditLogRecords: WorkspaceAuditLogRecord[] = [];
+const WorkspaceAuditLogRealtimeRefetchIntervalMs = 5000;
 
 export function useWorkspaceAuditLogListPage({
 	initialRecords = EmptyWorkspaceAuditLogRecords,
@@ -60,6 +59,11 @@ export function useWorkspaceAuditLogListPage({
 		queryKey: WorkspaceAuditLogQueryKeys.records(),
 		queryFn: GetWorkspaceAuditLogs,
 		initialData: initialRecords,
+		initialDataUpdatedAt: 0,
+		refetchInterval: WorkspaceAuditLogRealtimeRefetchIntervalMs,
+		refetchOnReconnect: true,
+		refetchOnWindowFocus: true,
+		staleTime: 0,
 	});
 	const records = recordsQuery.data ?? EmptyWorkspaceAuditLogRecords;
 	const queryResult = useMemo(
@@ -92,9 +96,6 @@ export function useWorkspaceAuditLogListPage({
 		onPaginationChange: setPagination,
 		onSortingChange: setSorting,
 	});
-	const criticalCount = queryResult.records.filter(
-		(record) => record.severity === "Critical",
-	).length;
 	const branchCount = new Set(
 		queryResult.records.map((record) => record.branchId),
 	).size;
@@ -114,17 +115,17 @@ export function useWorkspaceAuditLogListPage({
 		branchFilter: filters.branchId,
 		branchOptions: getWorkspaceAuditLogBranchOptions(records),
 		branchCount,
-		criticalCount,
 		dateRangeFilter: filters.dateRange,
 		filteredCount: queryResult.totalMatched,
 		isError: recordsQuery.isError,
+		isSyncing: recordsQuery.isFetching && !recordsQuery.isLoading,
 		isLoading: recordsQuery.isLoading,
+		lastSyncedAt: recordsQuery.dataUpdatedAt,
 		moduleFilter: filters.module,
 		moduleOptions: getWorkspaceAuditLogModuleOptions(records),
 		query: filters.query,
 		recordCount: records.length,
 		resetFilters,
-		severityFilter: filters.severity,
 		table,
 		setActionFilter: (action: WorkspaceAuditLogAction | "all") =>
 			updateFilters({ action }),
@@ -133,8 +134,6 @@ export function useWorkspaceAuditLogListPage({
 			updateFilters({ dateRange }),
 		setModuleFilter: (module: string) => updateFilters({ module }),
 		setQuery: (query: string) => updateFilters({ query }),
-		setSeverityFilter: (severity: WorkspaceAuditLogSeverity | "all") =>
-			updateFilters({ severity }),
 	};
 }
 
@@ -146,10 +145,11 @@ function createWorkspaceAuditLogColumn(
 	if (key === "createdAt") {
 		return {
 			id: key,
-			accessorFn: (record) =>
-				formatWorkspaceAuditLogCreatedAt(record.createdAt),
+			accessorFn: (record) => formatWorkspaceAuditLogCreatedAt(record.createdAt),
 			header: label,
-			sortingFn: "alphanumeric",
+			sortingFn: (rowA, rowB) =>
+				new Date(rowA.original.createdAt).getTime() -
+				new Date(rowB.original.createdAt).getTime(),
 			meta: { className },
 		};
 	}

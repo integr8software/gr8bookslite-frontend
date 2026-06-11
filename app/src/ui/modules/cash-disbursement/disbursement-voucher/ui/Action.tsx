@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
+  DisbursementVoucherBankAccounts,
   createTaxDetails,
   createAutoDisbursementLineEntries,
   createDisbursementVoucherFormValues,
@@ -33,6 +34,7 @@ import {
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { InitialAppPaymentTypeRecords } from "@/app/src/ui/shared/transaction-setup/AppPaymentTypeDialog";
 import type {
   DisbursementLineEntry,
   DisbursementTaxDetails,
@@ -121,6 +123,21 @@ function DisbursementVoucherActionInner() {
   );
   const isBalanced =
     values.lineEntries.length > 1 && Math.abs(totalDebit - totalCredit) < 0.001;
+  const selectedPaymentTypeRecord = useMemo(
+    () =>
+      InitialAppPaymentTypeRecords.find(
+        (record) => record.paymentType === values.paymentMethod,
+      ) ?? null,
+    [values.paymentMethod],
+  );
+  const selectedBankAccount = useMemo(
+    () =>
+      DisbursementVoucherBankAccounts.find(
+        (bankAccount) =>
+          bankAccount.accountCode === values.paymentDetails.bankAccountCode,
+      ) ?? null,
+    [values.paymentDetails.bankAccountCode],
+  );
 
   if (!selectedTransaction && mode !== "add") {
     return <DisbursementVoucherNotFound />;
@@ -290,7 +307,11 @@ function DisbursementVoucherActionInner() {
 
     updateField(
       "lineEntries",
-      createAutoDisbursementLineEntries(selectedTransaction),
+      createAutoDisbursementLineEntries(
+        selectedTransaction,
+        selectedBankAccount,
+        selectedPaymentTypeRecord,
+      ),
     );
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
@@ -635,6 +656,7 @@ function VoucherEntriesStep({
           <EntryNumberInput
             value={entry.debit}
             onChange={(value) => onUpdateEntry(entry.id, "debit", value)}
+            disabled={Number(entry.credit || 0) > 0}
           />
         ),
       },
@@ -646,6 +668,7 @@ function VoucherEntriesStep({
           <EntryNumberInput
             value={entry.credit}
             onChange={(value) => onUpdateEntry(entry.id, "credit", value)}
+            disabled={Number(entry.debit || 0) > 0}
           />
         ),
       },
@@ -808,9 +831,11 @@ function EntryInput({
 }
 
 function EntryNumberInput({
+  disabled = false,
   onChange,
   value,
 }: {
+  disabled?: boolean;
   onChange: (value: number) => void;
   value: number;
 }) {
@@ -820,6 +845,7 @@ function EntryNumberInput({
       min="0"
       value={value || ""}
       onChange={(event) => onChange(Number(event.target.value))}
+      disabled={disabled}
       className={accountingCellControlClassName("text-right")}
     />
   );
@@ -827,7 +853,7 @@ function EntryNumberInput({
 
 function accountingCellControlClassName(extraClassName?: string) {
   return joinClasses(
-    "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:bg-offwhite/45",
+    "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
     extraClassName,
   );
 }

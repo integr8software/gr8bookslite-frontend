@@ -1,25 +1,41 @@
+import { z } from "zod";
 import type {
 	TermManagementFormErrors,
 	TermManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 
+const TermManagementFormSchema = z.object({
+	name: z.string().trim().min(1, "Enter a name."),
+	datemode: z.enum(["Day", "Month", "Year"], {
+		message: "Select a datemode.",
+	}),
+	period: z
+		.string()
+		.trim()
+		.min(1, "Enter a period.")
+		.refine((value) => Number(value) > 0 && !Number.isNaN(Number(value)), {
+			message: "Enter a valid period.",
+		}),
+	status: z.enum(["Active", "Inactive"], {
+		message: "Select a status.",
+	}),
+});
+
 export function validateTermManagementForm(
 	values: TermManagementFormValues,
 ): TermManagementFormErrors {
 	const errors: TermManagementFormErrors = {};
+	const result = TermManagementFormSchema.safeParse(values);
 
-	if (!values.description.trim()) {
-		errors.description = "Enter a description.";
+	if (result.success) {
+		return errors;
 	}
 
-	if (!values.datemode) {
-		errors.datemode = "Select a datemode.";
-	}
-
-	if (!values.period.trim()) {
-		errors.period = "Enter a period.";
-	} else if (Number(values.period) <= 0 || Number.isNaN(Number(values.period))) {
-		errors.period = "Enter a valid period.";
+	for (const issue of result.error.issues) {
+		const field = issue.path[0] as keyof TermManagementFormValues | undefined;
+		if (field && !errors[field]) {
+			errors[field] = issue.message;
+		}
 	}
 
 	return errors;

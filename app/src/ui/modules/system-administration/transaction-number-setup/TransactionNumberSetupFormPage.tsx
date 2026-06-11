@@ -1,10 +1,9 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeft, CircleOff, Edit3, ReceiptText, Save, X } from "lucide-react";
+import { ArrowLeft, Edit3, ReceiptText, Save, X } from "lucide-react";
 import { useTransactionNumberSetupFormPage } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetupFormPage";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -22,7 +21,6 @@ export function TransactionNumberSetupFormPage() {
 
 function TransactionNumberSetupFormPageInner() {
 	const page = useTransactionNumberSetupFormPage();
-	const [isInactiveDialogOpen, setIsInactiveDialogOpen] = useState(false);
 
 	if (page.needsRecord && !page.existingSetup) {
 		return <TransactionNumberSetupNotFound />;
@@ -76,16 +74,6 @@ function TransactionNumberSetupFormPageInner() {
 								Cancel
 							</Link>
 						) : null}
-						{page.existingSetup && page.existingSetup.status === "Active" ? (
-							<button
-								type="button"
-								onClick={() => setIsInactiveDialogOpen(true)}
-								className={moduleHeaderActionClassNames.danger}
-							>
-								<CircleOff className="h-4 w-4" aria-hidden="true" />
-								Set Inactive
-							</button>
-						) : null}
 						{!page.isReadonly ? (
 							<button
 								type="submit"
@@ -109,16 +97,6 @@ function TransactionNumberSetupFormPageInner() {
 				onModuleCodeChange={page.handleModuleCodeChange}
 				onSubmit={page.handleSubmit}
 				onToggleBranch={page.toggleBranch}
-			/>
-			<AppDialog
-				isOpen={isInactiveDialogOpen}
-				isPending={page.isMutating}
-				title="Set setup as inactive?"
-				description={`This will stop ${page.existingSetup?.moduleName ?? "the selected setup"} from generating new numbers.`}
-				confirmLabel="Set Inactive"
-				tone="danger"
-				onCancel={() => setIsInactiveDialogOpen(false)}
-				onConfirm={page.handleStatusChange}
 			/>
 		</section>
 	);

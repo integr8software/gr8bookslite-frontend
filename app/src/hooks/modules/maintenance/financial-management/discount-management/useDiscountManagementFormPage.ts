@@ -15,8 +15,11 @@ import {
 	createDiscountManagementFormValues,
 	updateDiscountFromForm,
 } from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
-import { getFallbackFormSignatoryModuleOptions } from "@/app/src/data/modules/maintenance/form-signatory/FormSignatoryData";
-import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
+import {
+	findModuleChartAccount,
+	getModuleChartAccounts,
+} from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import { getMaintenanceModuleOptions } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import type {
 	DiscountManagementActionMode,
 	Discount,
@@ -32,13 +35,29 @@ type DiscountManagementFormPageOptions = {
 	onSaved?: () => void;
 };
 
+const DiscountManagementExcludedModuleKeys = [
+	"dashboard-overview",
+	"maintenance-charts-of-accounts",
+	"maintenance-discount-management",
+	"cash-receipt-bank-reconciliation",
+	"reports-maintenance",
+	"reports-inventory",
+	"reports-bir",
+	"maintenance-users",
+	"maintenance-user-role",
+	"maintenance-approval",
+	"maintenance-audit",
+	"transaction-number-setup",
+	"system-administration-multi-currency-setup",
+	"maintenance-mail",
+];
+
 export function useDiscountManagementFormPage(
 	options: DiscountManagementFormPageOptions = {},
 ) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
-	const { accounts, flatAccounts } = useChartsOfAccounts();
 	const discounts = useDiscountManagementStore((state) => state.discounts);
 	const addDiscount = useDiscountManagementStore((state) => state.addDiscount);
 	const updateDiscount = useDiscountManagementStore(
@@ -49,12 +68,15 @@ export function useDiscountManagementFormPage(
 	const existingDiscount = options.existingDiscount ?? discounts.find(
 		(discount) => discount.id === params.recordId,
 	);
-	const accountOptions = useMemo(
-		() => flatAccounts.map(({ account }) => account),
-		[flatAccounts],
-	);
 	const moduleOptions = useMemo(
-		() => getFallbackFormSignatoryModuleOptions(),
+		() => getMaintenanceModuleOptions(DiscountManagementExcludedModuleKeys),
+		[],
+	);
+	const accountOptions = useMemo(
+		() =>
+			getModuleChartAccounts({
+				moduleKey: "maintenance-discount-management",
+			}),
 		[],
 	);
 	const [values, setValues] = useState<DiscountManagementFormValues>(() =>
@@ -65,10 +87,9 @@ export function useDiscountManagementFormPage(
 	const [errors, setErrors] = useState<DiscountManagementFormErrors>({});
 	const isReadonly = mode === "view";
 
-	const selectedAccount = accountOptions.find(
-		(account) =>
-			account.id === values.accountId ||
-			account.accountNumber === values.accountId,
+	const selectedAccount = findModuleChartAccount(
+		values.accountId,
+		accountOptions,
 	);
 
 	function updateField(
@@ -143,7 +164,7 @@ export function useDiscountManagementFormPage(
 	}
 
 	return {
-		accountOptions: accounts,
+		accountOptions,
 		errors,
 		existingDiscount,
 		handleAccountChange,

@@ -5,7 +5,7 @@ import {
   workspaceUsersControllerResendInvitationV1,
   workspaceUsersControllerUpdateV1,
 } from "@/app/src/generated/api/workspace-users/workspace-users";
-import type { WorkspaceUserResponseDto } from "@/app/src/generated/api/gR8BooksLiteAPI.schemas";
+import type { WorkspaceUserResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
   WorkspaceCompanyUserApiRecord,
   WorkspaceCompanyUserApiRequest,

@@ -14,6 +14,7 @@ type TransactionTypeTableProps = {
 	toolbar?: ReactNode;
 	onEdit: (transactionType: TransactionType) => void;
 	onToggleStatus: (transactionType: TransactionType) => void;
+	onView: (transactionType: TransactionType) => void;
 };
 
 export function TransactionTypeTable({
@@ -22,6 +23,7 @@ export function TransactionTypeTable({
 	toolbar,
 	onEdit,
 	onToggleStatus,
+	onView,
 }: TransactionTypeTableProps) {
 	const table = useTransactionTypeTable(transactionTypes);
 
@@ -41,6 +43,7 @@ export function TransactionTypeTable({
 					transactionType={original}
 					onEdit={onEdit}
 					onToggleStatus={onToggleStatus}
+					onView={onView}
 				/>
 			)}
 		/>

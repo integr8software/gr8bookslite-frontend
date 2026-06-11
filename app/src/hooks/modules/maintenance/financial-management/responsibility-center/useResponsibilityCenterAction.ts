@@ -55,7 +55,12 @@ export function useResponsibilityCenterAction(
 	) {
 		const field = event.target.name as keyof ResponsibilityCenterFormValues;
 		const value =
-			field === "code" ? event.target.value.toUpperCase() : event.target.value;
+			event.target instanceof HTMLInputElement &&
+			event.target.type === "checkbox"
+				? event.target.checked
+				: field === "code"
+					? event.target.value.toUpperCase()
+					: event.target.value;
 
 		if (isReadonly) {
 			return;

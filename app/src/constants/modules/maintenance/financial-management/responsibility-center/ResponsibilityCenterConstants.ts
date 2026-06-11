@@ -1,6 +1,7 @@
 import type {
+	ResponsibilityCenterCategory,
+	ResponsibilityCenterFinancialType,
 	ResponsibilityCenterStatus,
-	ResponsibilityCenterType,
 } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
 
 export const ResponsibilityCenterHref =
@@ -13,38 +14,62 @@ export const ResponsibilityCenterTableColumns = [
 	{
 		key: "code",
 		label: "Code",
-		className: "w-[14%]",
+		className: "w-[10%]",
 	},
 	{
 		key: "name",
 		label: "Name",
-		className: "w-[26%]",
+		className: "w-[32%] text-center",
 	},
 	{
-		key: "type",
-		label: "Type",
-		className: "w-[18%]",
+		key: "category",
+		label: "Category",
+		className: "w-[10%]",
+	},
+	{
+		key: "parentId",
+		label: "Parent Center",
+		className: "w-[12%]",
+	},
+	{
+		key: "financialType",
+		label: "Financial Type",
+		className: "w-[12%]",
 	},
 	{
 		key: "manager",
 		label: "Manager",
-		className: "w-[20%]",
+		className: "w-[10%]",
 	},
 	{
 		key: "status",
 		label: "Status",
-		className: "w-[12%]",
+		className: "w-[7%]",
 	},
 	{
 		label: "Actions",
-		className: "w-[10%] text-right",
+		className: "w-[7%] text-center",
 	},
 ] as const;
 
-export const ResponsibilityCenterTypeOptions: ResponsibilityCenterType[] = [
+export const ResponsibilityCenterCategoryOptions: ResponsibilityCenterCategory[] =
+	[
+		"Corporate",
+		"Division",
+		"Department",
+		"Section",
+		"Team",
+		"Branch",
+		"Building",
+		"Project",
+		"Business Unit",
+		"Region",
+	];
+
+export const ResponsibilityCenterFinancialTypeOptions: ResponsibilityCenterFinancialType[] = [
 	"Cost Center",
-	"Profit Center",
 	"Revenue Center",
+	"Profit Center",
 	"Investment Center",
 ];
 
@@ -57,7 +82,7 @@ export const ResponsibilityCenterActionCopy = {
 	add: {
 		title: "Add Responsibility Center",
 		description:
-			"Create a center used to assign accountability across financial reports and transactions.",
+			"Create an organizational unit for accountability, budgeting, and financial reporting.",
 	},
 	edit: {
 		title: "Edit Responsibility Center",
@@ -67,6 +92,6 @@ export const ResponsibilityCenterActionCopy = {
 	view: {
 		title: "View Responsibility Center",
 		description:
-			"Review the center details used for financial accountability.",
+			"Review organizational hierarchy and financial accountability settings.",
 	},
 } as const;

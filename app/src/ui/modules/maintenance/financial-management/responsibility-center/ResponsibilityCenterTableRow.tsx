@@ -1,11 +1,11 @@
-import { Building2 } from "lucide-react";
+import { Building2, CheckCircle2, CircleOff, Edit3, Eye } from "lucide-react";
 import { ResponsibilityCenterHref } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
 import {
-	ModuleTableActionButton,
-	ModuleTableActionLink,
-	ModuleTableActions,
-} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+	ModuleActionMenu,
+	type ModuleActionMenuItem,
+} from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type ResponsibilityCenterTableRowProps = {
 	center: ResponsibilityCenter;
@@ -28,12 +28,20 @@ export function ResponsibilityCenterTableRow({
 			<td className="px-4 py-4">
 				<CenterIdentity center={center} parentName={parentName} />
 			</td>
-			<td className="px-4 py-4 text-darknavy">{center.type}</td>
+			<td className="px-4 py-4">
+				<CategoryBadge category={center.category} />
+			</td>
+			<td className="px-4 py-4 text-darknavy">
+				{parentName || <span className="text-darknavy/35">-</span>}
+			</td>
+			<td className="px-4 py-4">
+				<FinancialTypeBadge financialType={center.financialType} />
+			</td>
 			<td className="px-4 py-4 text-darknavy">{center.manager || "-"}</td>
 			<td className="px-4 py-4">
 				<StatusBadge status={center.status} />
 			</td>
-			<td className="px-4 py-4">
+			<td className="px-4 py-4 text-center">
 				<RowActions
 					center={center}
 					onStatusChangeCenter={onStatusChangeCenter}
@@ -78,25 +86,59 @@ function RowActions({
 	onEditCenter: () => void;
 }) {
 	const nextStatus = center.status === "Active" ? "Inactive" : "Active";
+	const items: ModuleActionMenuItem[] = [
+		{
+			href: `${ResponsibilityCenterHref}/view/${center.id}`,
+			icon: Eye,
+			label: "View",
+			type: "link",
+		},
+		{
+			icon: Edit3,
+			label: "Edit",
+			onSelect: onEditCenter,
+			type: "button",
+		},
+		{
+			icon: nextStatus === "Active" ? CheckCircle2 : CircleOff,
+			label: `Set as ${nextStatus}`,
+			onSelect: () => onStatusChangeCenter(center),
+			tone: nextStatus === "Inactive" ? "danger" : "default",
+			type: "button",
+		},
+	];
 
 	return (
-		<ModuleTableActions>
-			<ModuleTableActionLink
-				variant="view"
-				href={`${ResponsibilityCenterHref}/view/${center.id}`}
-				label={`View ${center.name}`}
-			/>
-			<ModuleTableActionButton
-				variant="edit"
-				onClick={onEditCenter}
-				label={`Edit ${center.name}`}
-			/>
-			<ModuleTableActionButton
-				variant={nextStatus === "Inactive" ? "inactive" : "active"}
-				onClick={() => onStatusChangeCenter(center)}
-				label={`Set ${center.name} as ${nextStatus.toLowerCase()}`}
+		<ModuleTableActions className="justify-center">
+			<ModuleActionMenu
+				items={items}
+				label={`Actions for ${center.name}`}
 			/>
 		</ModuleTableActions>
+	);
+}
+
+export function CategoryBadge({
+	category,
+}: {
+	category: ResponsibilityCenter["category"];
+}) {
+	return (
+		<span className="inline-flex rounded-full bg-skyblue/12 px-2.5 py-1 text-xs font-semibold text-darknavy">
+			{category}
+		</span>
+	);
+}
+
+export function FinancialTypeBadge({
+	financialType,
+}: {
+	financialType: ResponsibilityCenter["financialType"];
+}) {
+	return (
+		<span className="inline-flex rounded-full bg-orange-500/10 px-2.5 py-1 text-xs font-semibold text-darknavy">
+			{financialType}
+		</span>
 	);
 }
 

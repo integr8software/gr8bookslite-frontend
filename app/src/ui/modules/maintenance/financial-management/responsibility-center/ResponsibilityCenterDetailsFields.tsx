@@ -1,7 +1,8 @@
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, ReactNode } from "react";
 import {
+	ResponsibilityCenterCategoryOptions,
+	ResponsibilityCenterFinancialTypeOptions,
 	ResponsibilityCenterStatusOptions,
-	ResponsibilityCenterTypeOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import type {
 	ResponsibilityCenter,
@@ -33,73 +34,66 @@ export function ResponsibilityCenterDetailsFields({
 	values,
 }: ResponsibilityCenterDetailsFieldsProps) {
 	return (
-		<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
-			<div className="grid gap-4 lg:grid-cols-2">
-				<Field label="Code" error={errors.code} required>
-					<input
-						name="code"
-						value={values.code}
-						onChange={onInputChange}
-						readOnly={isReadonly}
-						className={fieldClassName}
-						placeholder="ADM"
-					/>
-				</Field>
+		<div className="grid gap-4">
+			<FormSection title="Basic Information">
+				<div className="grid gap-4 lg:grid-cols-2">
+					<Field label="Code" error={errors.code} required>
+						<input
+							name="code"
+							value={values.code}
+							onChange={onInputChange}
+							readOnly={isReadonly}
+							className={fieldClassName}
+							placeholder="ADM"
+						/>
+					</Field>
 
-				<Field label="Name" error={errors.name} required>
-					<input
-						name="name"
-						value={values.name}
-						onChange={onInputChange}
-						readOnly={isReadonly}
-						className={fieldClassName}
-						placeholder="Administration"
-					/>
-				</Field>
+					<Field label="Name" error={errors.name} required>
+						<input
+							name="name"
+							value={values.name}
+							onChange={onInputChange}
+							readOnly={isReadonly}
+							className={fieldClassName}
+							placeholder="Administration"
+						/>
+					</Field>
 
-				<Field label="Type" required>
-					<select
-						name="type"
-						value={values.type}
-						onChange={onInputChange}
-						disabled={isReadonly}
-						className={fieldClassName}
-					>
-						{ResponsibilityCenterTypeOptions.map((type) => (
-							<option key={type} value={type}>
-								{type}
-							</option>
-						))}
-					</select>
-				</Field>
+					<Field label="Category" error={errors.category} required>
+						<select
+							name="category"
+							value={values.category}
+							onChange={onInputChange}
+							disabled={isReadonly}
+							className={fieldClassName}
+						>
+							{ResponsibilityCenterCategoryOptions.map((category) => (
+								<option key={category} value={category}>
+									{category}
+								</option>
+							))}
+						</select>
+					</Field>
 
-				<Field label="Status" required>
-					<select
-						name="status"
-						value={values.status}
-						onChange={onInputChange}
-						disabled={isReadonly}
-						className={fieldClassName}
-					>
-						{ResponsibilityCenterStatusOptions.map((status) => (
-							<option key={status} value={status}>
-								{status}
-							</option>
-						))}
-					</select>
-				</Field>
+					<Field label="Status" required>
+						<select
+							name="status"
+							value={values.status}
+							onChange={onInputChange}
+							disabled={isReadonly}
+							className={fieldClassName}
+						>
+							{ResponsibilityCenterStatusOptions.map((status) => (
+								<option key={status} value={status}>
+									{status}
+								</option>
+							))}
+						</select>
+					</Field>
+				</div>
+			</FormSection>
 
-				<Field label="Manager" error={errors.manager} required>
-					<input
-						name="manager"
-						value={values.manager}
-						onChange={onInputChange}
-						readOnly={isReadonly}
-						className={fieldClassName}
-						placeholder="Maria Santos"
-					/>
-				</Field>
-
+			<FormSection title="Hierarchy">
 				<Field label="Parent Center" error={errors.parentId}>
 					<select
 						name="parentId"
@@ -116,7 +110,77 @@ export function ResponsibilityCenterDetailsFields({
 						))}
 					</select>
 				</Field>
+			</FormSection>
 
+			<FormSection title="Accountability">
+				<div className="grid gap-4 lg:grid-cols-2">
+					<Field label="Manager" error={errors.manager} required>
+						<input
+							name="manager"
+							value={values.manager}
+							onChange={onInputChange}
+							readOnly={isReadonly}
+							className={fieldClassName}
+							placeholder="Maria Santos"
+						/>
+					</Field>
+
+					<Field
+						label="Financial Responsibility Type"
+						error={errors.financialType}
+						required
+					>
+						<select
+							name="financialType"
+							value={values.financialType}
+							onChange={onInputChange}
+							disabled={isReadonly}
+							className={fieldClassName}
+						>
+							{ResponsibilityCenterFinancialTypeOptions.map((type) => (
+								<option key={type} value={type}>
+									{type}
+								</option>
+							))}
+						</select>
+					</Field>
+				</div>
+			</FormSection>
+
+			<FormSection title="Reporting Configuration">
+				<div className="grid gap-3 sm:grid-cols-2">
+					<CheckboxField
+						name="allowBudgetAllocation"
+						label="Allow Budget Allocation"
+						checked={values.allowBudgetAllocation}
+						disabled={isReadonly}
+						onChange={onInputChange}
+					/>
+					<CheckboxField
+						name="allowExpensePosting"
+						label="Allow Expense Posting"
+						checked={values.allowExpensePosting}
+						disabled={isReadonly}
+						onChange={onInputChange}
+					/>
+					<CheckboxField
+						name="allowRevenuePosting"
+						label="Allow Revenue Posting"
+						checked={values.allowRevenuePosting}
+						disabled={isReadonly}
+						onChange={onInputChange}
+					/>
+					<CheckboxField
+						name="allowProjectAssignment"
+						label="Allow Project Assignment"
+						checked={values.allowProjectAssignment}
+						disabled={isReadonly}
+						onChange={onInputChange}
+					/>
+				</div>
+			</FormSection>
+
+			<FormSection title="Additional Information">
 				<Field label="Description" className="lg:col-span-2">
 					<textarea
 						name="description"
@@ -128,7 +192,56 @@ export function ResponsibilityCenterDetailsFields({
 						placeholder="Optional notes for reporting and accountability."
 					/>
 				</Field>
-			</div>
+			</FormSection>
 		</div>
+	);
+}
+
+function FormSection({
+	children,
+	title,
+}: {
+	children: ReactNode;
+	title: string;
+}) {
+	return (
+		<section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
+			<h3 className="mb-4 text-sm font-semibold text-darknavy">{title}</h3>
+			{children}
+		</section>
+	);
+}
+
+function CheckboxField({
+	checked,
+	disabled,
+	label,
+	name,
+	onChange,
+}: {
+	checked: boolean;
+	disabled: boolean;
+	label: string;
+	name: keyof Pick<
+		ResponsibilityCenterFormValues,
+		| "allowBudgetAllocation"
+		| "allowExpensePosting"
+		| "allowRevenuePosting"
+		| "allowProjectAssignment"
+	>;
+	onChange: ResponsibilityCenterDetailsFieldsProps["onInputChange"];
+}) {
+	return (
+		<label className="flex items-center gap-3 rounded-lg border border-darknavy/10 bg-white px-3 py-3 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5">
+			<input
+				type="checkbox"
+				name={name}
+				checked={checked}
+				disabled={disabled}
+				onChange={onChange}
+				className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+			/>
+			{label}
+		</label>
 	);
 }

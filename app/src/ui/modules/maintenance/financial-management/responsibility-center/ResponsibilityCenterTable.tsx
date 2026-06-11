@@ -10,18 +10,22 @@ import { ResponsibilityCenterTableRow } from "@/app/src/ui/modules/maintenance/f
 
 type ResponsibilityCenterTableProps = {
 	centers: ResponsibilityCenter[];
+	allCenters?: ResponsibilityCenter[];
 	toolbar?: ReactNode;
 	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
 	onEditCenter: (center: ResponsibilityCenter) => void;
 };
 
 export function ResponsibilityCenterTable({
+	allCenters,
 	centers,
 	toolbar,
 	onStatusChangeCenter,
 	onEditCenter,
 }: ResponsibilityCenterTableProps) {
-	const centerById = new Map(centers.map((center) => [center.id, center]));
+	const centerById = new Map(
+		(allCenters ?? centers).map((center) => [center.id, center]),
+	);
 	const table = useResponsibilityCenterTable(centers);
 
 	return (
@@ -29,7 +33,7 @@ export function ResponsibilityCenterTable({
 			emptyDescription="Add a center to start grouping financial accountability."
 			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 			emptyTitle="No responsibility centers yet"
-			minWidthClassName="min-w-[64rem]"
+			minWidthClassName="min-w-[76rem]"
 			paginationStorageKey={ResponsibilityCenterTablePaginationStorageKey}
 			table={table}
 			toolbar={toolbar}

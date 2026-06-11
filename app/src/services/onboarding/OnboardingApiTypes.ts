@@ -24,6 +24,42 @@ export type OnboardingDraftPlan = {
       display: string;
     } | null;
   };
+  prices: {
+    id: number;
+    billingCycle: "MONTHLY" | "QUARTERLY" | "YEARLY";
+    intervalCount: number;
+    intervalUnit: "DAY" | "MONTH" | "YEAR";
+    amountInCents: number;
+    display: string;
+    compareAtInCents: number | null;
+    compareAtDisplay: string | null;
+    isActive: boolean;
+  }[];
+  usageRules: {
+    id: number;
+    metric: "COMPANY" | "BRANCH" | "SATELLITE" | "USER";
+    freeCount: number;
+    unitPriceInCents: number;
+    unitPriceDisplay: string;
+    isActive: boolean;
+  }[];
+  discountTiers: {
+    id: number;
+    metric: "COMPANY" | "BRANCH" | "SATELLITE" | "USER";
+    thresholdCount: number;
+    discountPercent: number;
+    isActive: boolean;
+  }[];
+  moduleKeys: string[];
+  modules: {
+    id: number;
+    moduleKey: string;
+    isEnabled: boolean;
+  }[];
+};
+
+export type GetOnboardingPlansResponse = {
+  plans: OnboardingDraftPlan[];
 };
 
 export type OnboardingDraftCompanyDetails = {

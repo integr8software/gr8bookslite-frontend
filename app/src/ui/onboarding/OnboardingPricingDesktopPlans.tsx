@@ -2,13 +2,13 @@
 
 import { Check, LoaderCircle, MoveRight } from "lucide-react";
 import {
-  PricingPlans,
   type BillingCycle,
   type PricingPlan,
-} from "@/app/src/data/pricing/PricingData";
+} from "@/app/src/data/pricing/PricingTypes";
 import { OnboardingPlanComparisonRows } from "@/app/src/data/onboarding/OnboardingData";
 
 type OnboardingPricingDesktopPlansProps = {
+  plans: PricingPlan[];
   billingCycle: BillingCycle;
   isSubmitting: boolean;
   submittingPlanCode: string | null;
@@ -17,13 +17,14 @@ type OnboardingPricingDesktopPlansProps = {
 };
 
 export function OnboardingPricingDesktopPlans({
+  plans,
   billingCycle,
   isSubmitting,
   submittingPlanCode,
   onReviewPlans,
   onSelectPlan,
 }: OnboardingPricingDesktopPlansProps) {
-  const visiblePlans = PricingPlans.filter(
+  const visiblePlans = plans.filter(
     (plan) => plan.name !== "Additional Company",
   );
 

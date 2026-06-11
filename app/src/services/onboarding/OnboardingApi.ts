@@ -5,6 +5,7 @@ import { IsClientAuthSessionMarker } from "@/app/src/data/auth/AuthSessionStorag
 import type {
   CompleteOnboardingResponse,
   GetOnboardingDraftResponse,
+  GetOnboardingPlansResponse,
   SaveOnboardingBillingResponse,
   SaveOnboardingBillingRequest,
   SaveOnboardingCompanyDetailsRequest,
@@ -34,6 +35,17 @@ export async function SelectOnboardingPlan(
 export async function GetOnboardingDraft(accessToken: string | null) {
   const response = await ApiClient.get<GetOnboardingDraftResponse>(
     "/onboarding/draft",
+    {
+      headers: GetAuthorizationHeaders(accessToken),
+    },
+  );
+
+  return response.data;
+}
+
+export async function GetOnboardingPlans(accessToken: string | null) {
+  const response = await ApiClient.get<GetOnboardingPlansResponse>(
+    "/onboarding/plans",
     {
       headers: GetAuthorizationHeaders(accessToken),
     },

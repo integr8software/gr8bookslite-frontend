@@ -22,9 +22,6 @@ export function ResponsibilityCenterTableRow({
 }: ResponsibilityCenterTableRowProps) {
 	return (
 		<tr className="module-table-row">
-			<td className="px-4 py-4 font-medium text-darknavy">
-				{center.code}
-			</td>
 			<td className="px-4 py-4">
 				<CenterIdentity center={center} parentName={parentName} />
 			</td>

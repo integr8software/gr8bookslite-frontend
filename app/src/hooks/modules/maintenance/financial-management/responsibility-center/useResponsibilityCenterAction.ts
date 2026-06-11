@@ -70,6 +70,18 @@ export function useResponsibilityCenterAction(
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
+	function onFieldChange<TKey extends keyof ResponsibilityCenterFormValues>(
+		field: TKey,
+		value: ResponsibilityCenterFormValues[TKey],
+	) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({ ...current, [field]: value }));
+		setErrors((current) => ({ ...current, [field]: undefined }));
+	}
+
 	function onSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
@@ -121,6 +133,7 @@ export function useResponsibilityCenterAction(
 		parentOptions,
 		values,
 		onConfirmStatusChange,
+		onFieldChange,
 		onInputChange,
 		onSubmit,
 		setIsStatusDialogOpen,

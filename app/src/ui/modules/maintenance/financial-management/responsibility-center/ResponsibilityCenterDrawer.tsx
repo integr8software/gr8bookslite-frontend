@@ -60,6 +60,7 @@ function ResponsibilityCenterDrawerPanel({
 					isReadonly={false}
 					parentOptions={action.parentOptions}
 					values={action.values}
+					onFieldChange={action.onFieldChange}
 					onInputChange={action.onInputChange}
 				/>
 			</form>

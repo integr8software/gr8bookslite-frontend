@@ -262,7 +262,7 @@ export function ResponsibilityCenterMain() {
 						label="Search responsibility centers"
 						value={query}
 						onChange={setQuery}
-						placeholder="Search by code, name, manager, or parent center"
+						placeholder="Search by name, manager, or parent center"
 					/>
 					<ModuleTableFilterSelect
 						label="Category"

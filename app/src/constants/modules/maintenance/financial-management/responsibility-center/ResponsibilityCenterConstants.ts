@@ -12,34 +12,29 @@ export const ResponsibilityCenterTablePaginationStorageKey =
 
 export const ResponsibilityCenterTableColumns = [
 	{
-		key: "code",
-		label: "Code",
-		className: "w-[10%]",
-	},
-	{
 		key: "name",
 		label: "Name",
-		className: "w-[32%] text-center",
+		className: "w-[36%] text-center",
 	},
 	{
 		key: "category",
 		label: "Category",
-		className: "w-[10%]",
+		className: "w-[11%]",
 	},
 	{
 		key: "parentId",
 		label: "Parent Center",
-		className: "w-[12%]",
+		className: "w-[14%]",
 	},
 	{
 		key: "financialType",
 		label: "Financial Type",
-		className: "w-[12%]",
+		className: "w-[13%]",
 	},
 	{
 		key: "manager",
 		label: "Manager",
-		className: "w-[10%]",
+		className: "w-[11%]",
 	},
 	{
 		key: "status",

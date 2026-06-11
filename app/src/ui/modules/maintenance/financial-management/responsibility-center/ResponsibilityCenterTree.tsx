@@ -198,10 +198,7 @@ function TreeRow({
 						/>
 					</button>
 					<div className="min-w-0">
-						<div className="flex min-w-0 items-center gap-2">
-							<span className="shrink-0 rounded-md bg-darknavy/[0.04] px-2 py-1 text-xs font-bold text-darknavy ring-1 ring-darknavy/10">
-								{center.code}
-							</span>
+						<div className="flex min-w-0 items-center">
 							<h3 className="truncate text-sm font-semibold text-darknavy">
 								{center.name}
 							</h3>

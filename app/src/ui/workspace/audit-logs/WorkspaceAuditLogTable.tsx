@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { RefreshCw, Search } from "lucide-react";
 import {
 	WorkspaceAuditLogActionOptions,
 	WorkspaceAuditLogDateRangeOptions,
@@ -19,6 +19,7 @@ import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { WorkspaceAuditLogTableRow } from "@/app/src/ui/workspace/audit-logs/WorkspaceAuditLogTableRow";
 
 type WorkspaceAuditLogTableProps = Pick<
@@ -29,6 +30,8 @@ type WorkspaceAuditLogTableProps = Pick<
 	| "dateRangeFilter"
 	| "isError"
 	| "isLoading"
+	| "isSyncing"
+	| "lastSyncedAt"
 	| "moduleFilter"
 	| "moduleOptions"
 	| "query"
@@ -48,6 +51,8 @@ export function WorkspaceAuditLogTable({
 	dateRangeFilter,
 	isError,
 	isLoading,
+	isSyncing,
+	lastSyncedAt,
 	moduleFilter,
 	moduleOptions,
 	query,
@@ -61,6 +66,24 @@ export function WorkspaceAuditLogTable({
 }: WorkspaceAuditLogTableProps) {
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+			<div className="flex flex-wrap items-center justify-between gap-3 border-b border-darknavy/10 px-4 py-3">
+				<p className="text-sm font-semibold text-darknavy">Activity stream</p>
+				<div className="flex items-center gap-2 text-xs font-semibold text-darknavy/58">
+					<RefreshCw
+						className={joinClasses(
+							"h-3.5 w-3.5",
+							isSyncing ? "animate-spin text-skyblue" : "text-citron",
+						)}
+						aria-hidden="true"
+					/>
+					<span>{isSyncing ? "Syncing" : "Live"}</span>
+					{lastSyncedAt > 0 ? (
+						<span className="font-medium text-darknavy/42">
+							Updated {formatWorkspaceAuditLogSyncTime(lastSyncedAt)}
+						</span>
+					) : null}
+				</div>
+			</div>
 			<ModuleTable<WorkspaceAuditLogRecord>
 				variant="embedded"
 				emptyDescription={
@@ -142,4 +165,12 @@ export function WorkspaceAuditLogTable({
 			/>
 		</div>
 	);
+}
+
+function formatWorkspaceAuditLogSyncTime(value: number) {
+	return new Intl.DateTimeFormat(undefined, {
+		hour: "numeric",
+		minute: "2-digit",
+		second: "2-digit",
+	}).format(new Date(value));
 }

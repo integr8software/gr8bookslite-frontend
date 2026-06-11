@@ -41,6 +41,7 @@ const InitialFilters: WorkspaceAuditLogFilters = {
 	query: "",
 };
 const EmptyWorkspaceAuditLogRecords: WorkspaceAuditLogRecord[] = [];
+const WorkspaceAuditLogRealtimeRefetchIntervalMs = 5000;
 
 export function useWorkspaceAuditLogListPage({
 	initialRecords = EmptyWorkspaceAuditLogRecords,
@@ -55,11 +56,15 @@ export function useWorkspaceAuditLogListPage({
 		{ id: "createdAt", desc: true },
 	]);
 	const recordsQuery = useQuery({
-  queryKey: WorkspaceAuditLogQueryKeys.records(),
-  queryFn: GetWorkspaceAuditLogs,
-  initialData: initialRecords,
-  initialDataUpdatedAt: 0,
-});
+		queryKey: WorkspaceAuditLogQueryKeys.records(),
+		queryFn: GetWorkspaceAuditLogs,
+		initialData: initialRecords,
+		initialDataUpdatedAt: 0,
+		refetchInterval: WorkspaceAuditLogRealtimeRefetchIntervalMs,
+		refetchOnReconnect: true,
+		refetchOnWindowFocus: true,
+		staleTime: 0,
+	});
 	const records = recordsQuery.data ?? EmptyWorkspaceAuditLogRecords;
 	const queryResult = useMemo(
 		() => queryWorkspaceAuditLogRecords(filters, records),
@@ -113,7 +118,9 @@ export function useWorkspaceAuditLogListPage({
 		dateRangeFilter: filters.dateRange,
 		filteredCount: queryResult.totalMatched,
 		isError: recordsQuery.isError,
+		isSyncing: recordsQuery.isFetching && !recordsQuery.isLoading,
 		isLoading: recordsQuery.isLoading,
+		lastSyncedAt: recordsQuery.dataUpdatedAt,
 		moduleFilter: filters.module,
 		moduleOptions: getWorkspaceAuditLogModuleOptions(records),
 		query: filters.query,
@@ -136,16 +143,16 @@ function createWorkspaceAuditLogColumn(
 	className: string,
 ): ColumnDef<WorkspaceAuditLogRecord> {
 	if (key === "createdAt") {
-  return {
-    id: key,
-    accessorFn: (record) => formatWorkspaceAuditLogCreatedAt(record.createdAt),
-    header: label,
-    sortingFn: (rowA, rowB) =>
-      new Date(rowA.original.createdAt).getTime() -
-      new Date(rowB.original.createdAt).getTime(),
-    meta: { className },
-  };
-}
+		return {
+			id: key,
+			accessorFn: (record) => formatWorkspaceAuditLogCreatedAt(record.createdAt),
+			header: label,
+			sortingFn: (rowA, rowB) =>
+				new Date(rowA.original.createdAt).getTime() -
+				new Date(rowB.original.createdAt).getTime(),
+			meta: { className },
+		};
+	}
 
 	return {
 		accessorKey: key,

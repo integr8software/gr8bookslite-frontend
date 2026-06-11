@@ -26,7 +26,7 @@ import type {
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 
-type AppVceDialogProps = {
+type AppPartyDialogProps = {
   isOpen: boolean;
   suggestedPartyType?: PartyType;
   onClose: () => void;
@@ -40,26 +40,26 @@ const PartyTypeCardCopy: Record<
   Vendor: {
     title: "Add Vendor",
     description:
-      "Create a vendor VCE profile for supplier payments and purchasing workflows.",
+      "Create a vendor party profile for supplier payments and purchasing workflows.",
   },
   Customer: {
     title: "Add Customer",
     description:
-      "Create a customer VCE profile for billing, collections, and related transactions.",
+      "Create a customer party profile for billing, collections, and related transactions.",
   },
   Employee: {
     title: "Add Employee",
     description:
-      "Create an employee VCE profile for reimbursements, payroll-linked entries, and advances.",
+      "Create an employee party profile for reimbursements, payroll-linked entries, and advances.",
   },
 };
 
-export function AppVceDialog({
+export function AppPartyDialog({
   isOpen,
   suggestedPartyType = "Vendor",
   onClose,
   onSelect,
-}: AppVceDialogProps) {
+}: AppPartyDialogProps) {
   const records = usePartyManagementStore((state) => state.records);
 
   if (!isOpen) {
@@ -67,7 +67,7 @@ export function AppVceDialog({
   }
 
   return (
-    <AppVceDialogContent
+    <AppPartyDialogContent
       key={`${suggestedPartyType}-${records.length}`}
       records={records}
       suggestedPartyType={suggestedPartyType}
@@ -77,7 +77,7 @@ export function AppVceDialog({
   );
 }
 
-function AppVceDialogContent({
+function AppPartyDialogContent({
   records,
   suggestedPartyType,
   onClose,
@@ -335,16 +335,16 @@ function AppVceDialogContent({
       <section
         role="dialog"
         aria-modal="true"
-        aria-labelledby="vce-dialog-title"
+        aria-labelledby="party-dialog-title"
         className="flex max-h-[calc(100dvh-2rem)] w-full max-w-7xl flex-col overflow-hidden rounded-[28px] border border-white/20 bg-white shadow-[0_28px_90px_rgba(33,39,56,0.28)]"
       >
         <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 bg-white px-6 py-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
-              VCE Name Setup
+              Party Name Setup
             </p>
             <h2
-              id="vce-dialog-title"
+              id="party-dialog-title"
               className="mt-1 text-2xl font-semibold text-darknavy"
             >
               {dialogCopy.title}
@@ -371,7 +371,7 @@ function AppVceDialogContent({
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-darknavy">
-                    VCE type
+                    Party type
                   </p>
                   <p className="text-sm text-darknavy/55">
                     Pick the profile type first, then complete the information
@@ -434,7 +434,7 @@ function AppVceDialogContent({
             className="theme-accent-contrast-text inline-flex h-11 items-center justify-center gap-2 rounded-md bg-skyblue px-5 text-sm font-semibold transition hover:bg-skyblue/85"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
-            Save VCE Information
+            Save Party Information
           </button>
         </div>
       </section>
@@ -465,9 +465,9 @@ function getSingleSelectedValue(value: string | string[]) {
   return Array.isArray(value) ? (value[0] ?? "") : value;
 }
 
-export function mapPartyRecordToVceValue(record: PartyInformationRecord) {
+export function mapPartyRecordToPartyValue(record: PartyInformationRecord) {
   return {
-    vceCode: record.partyCodeNo,
-    vceName: getPartyDisplayName(record),
+    partyCode: record.partyCodeNo,
+    partyName: getPartyDisplayName(record),
   };
 }

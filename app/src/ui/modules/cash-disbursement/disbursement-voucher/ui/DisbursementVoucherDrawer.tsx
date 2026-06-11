@@ -7,9 +7,13 @@ import {
   DisbursementVoucherInitialEntryDraft,
   DisbursementVoucherCopyFromRecords,
   DisbursementVoucherCopySources,
+  DisbursementVoucherBankAccounts,
+  applyBankAccountToDisbursementLineEntries,
+  applyBankAccountToPaymentDetails,
   applyCopyFromRecordToDisbursementVoucherForm,
   createAttachmentPlaceholders,
   createAutoDisbursementLineEntries,
+  createEmptyPaymentDetails,
   createDisbursementVoucherFormValues,
   formatCurrency,
   formatDateLabel,
@@ -27,9 +31,9 @@ import {
   type AppPaymentTypeRecord,
 } from "@/app/src/ui/shared/transaction-setup/AppPaymentTypeDialog";
 import {
-  AppVceDialog,
-  mapPartyRecordToVceValue,
-} from "@/app/src/ui/shared/transaction-setup/AppVceDialog";
+  AppPartyDialog,
+  mapPartyRecordToPartyValue,
+} from "@/app/src/ui/shared/transaction-setup/AppPartyDialog";
 import {
   AppDisbursementTypeDialog,
   InitialAppDisbursementTypeRecords,
@@ -46,6 +50,7 @@ import {
 import { DisbursementVoucherCopyFromDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/ui/DisbursementVoucherCopyFromDialog";
 import type {
   DisbursementLineEntry,
+  DisbursementVoucherBankAccount,
   DisbursementPaymentMethod,
   DisbursementTransactionRecord,
   DisbursementType,
@@ -166,6 +171,14 @@ function DrawerPanel({
     [paymentTypeRecords, values.paymentMethod],
   );
   const requiresPaymentDetailsTab = Boolean(selectedPaymentTypeRecord?.withBank);
+  const selectedBankAccount = useMemo(
+    () =>
+      DisbursementVoucherBankAccounts.find(
+        (bankAccount) =>
+          bankAccount.accountCode === values.paymentDetails.bankAccountCode,
+      ) ?? null,
+    [values.paymentDetails.bankAccountCode],
+  );
   const resolvedActiveTab =
     !requiresPaymentDetailsTab && activeTab === "payment-details"
       ? "cash-disbursement"
@@ -193,36 +206,49 @@ function DrawerPanel({
       values.disbursementType,
     );
 
+    if (requiresPaymentDetailsTab && !selectedBankAccount) {
+      nextErrors.paymentDetails = "Bank is required for this payment type.";
+    }
+
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       setActiveTab("cash-disbursement");
       return;
     }
 
-    if (values.attachments.length === 0) {
-      updateField("attachments", createAttachmentPlaceholders());
-    }
-
-    if (values.lineEntries.length === 0 && selectedTransaction) {
-      updateField(
-        "lineEntries",
+    const nextLineEntries =
+      values.lineEntries.length === 0 && selectedTransaction
+        ? createAutoDisbursementLineEntries(
+            selectedTransaction,
+            selectedBankAccount,
+            selectedPaymentTypeRecord,
+          )
+        : values.lineEntries;
+    const nextValues: DisbursementVoucherFormValues = {
+      ...values,
+      attachments:
+        values.attachments.length === 0
+          ? createAttachmentPlaceholders()
+          : values.attachments,
+      lineEntries: applyBankAccountToDisbursementLineEntries(
         applyDisbursementTypeRecordToLineEntries(
-          createAutoDisbursementLineEntries(selectedTransaction),
+          nextLineEntries,
           selectedDisbursementTypeRecord,
         ),
-      );
-    }
-
-    if (selectedDisbursementTypeRecord) {
-      setEntryDraft((current) =>
-        applyDisbursementTypeRecordToEntryDraft(
-          current,
+        selectedBankAccount,
+        selectedPaymentTypeRecord,
+      ),
+    };
+    const nextEntryDraft = selectedDisbursementTypeRecord
+      ? applyDisbursementTypeRecordToEntryDraft(
+          entryDraft,
           selectedDisbursementTypeRecord,
-        ),
-      );
-    }
+        )
+      : entryDraft;
 
-    handleOpenGridView();
+    setValues(nextValues);
+    setEntryDraft(nextEntryDraft);
+    handleOpenGridView(nextValues, nextEntryDraft);
   }
 
   function handleFinalSave() {
@@ -282,12 +308,51 @@ function DrawerPanel({
     );
   }
 
-  function handleOpenGridView() {
+  function handlePaymentMethodChange(
+    paymentMethod: DisbursementPaymentMethod | "",
+  ) {
+    setValues((current) => ({
+      ...current,
+      paymentMethod,
+      paymentDetails: createEmptyPaymentDetails(),
+    }));
+    setErrors((current) => ({
+      ...current,
+      paymentDetails: undefined,
+      paymentMethod: undefined,
+    }));
+  }
+
+  function handleBankAccountChange(accountCode: string) {
+    const bankAccount =
+      DisbursementVoucherBankAccounts.find(
+        (account) => account.accountCode === accountCode,
+      ) ?? null;
+
+    setErrors((current) => ({ ...current, paymentDetails: undefined }));
+    setValues((current) => ({
+      ...current,
+      paymentDetails: applyBankAccountToPaymentDetails(
+        current.paymentDetails,
+        bankAccount,
+      ),
+      lineEntries: applyBankAccountToDisbursementLineEntries(
+        current.lineEntries,
+        bankAccount,
+        selectedPaymentTypeRecord,
+      ),
+    }));
+  }
+
+  function handleOpenGridView(
+    nextValues: DisbursementVoucherFormValues = values,
+    nextEntryDraft: DisbursementVoucherEntryDraft = entryDraft,
+  ) {
     writeAccountingGridSession({
-      entryDraft,
+      entryDraft: nextEntryDraft,
       mode,
       returnStep: "entries",
-      values,
+      values: nextValues,
     });
     router.push("/cash-disbursement/disbursement-voucher/accounting-grid");
   }
@@ -364,6 +429,7 @@ function DrawerPanel({
               transactions={transactions}
               values={values}
               onAmountChange={handleAmountChange}
+              onPaymentMethodChange={handlePaymentMethodChange}
               onOpenDisbursementTypeDialog={() =>
                 setIsDisbursementTypeDialogOpen(true)
               }
@@ -376,7 +442,9 @@ function DrawerPanel({
             <PaymentDetailsTab
               paymentMethod={values.paymentMethod}
               paymentDetails={values.paymentDetails}
+              bankAccounts={DisbursementVoucherBankAccounts}
               withBank={selectedPaymentTypeRecord?.withBank ?? false}
+              onBankAccountChange={handleBankAccountChange}
               onUpdateField={updateField}
             />
           ) : (
@@ -401,19 +469,19 @@ function DrawerPanel({
         onClose={() => setIsPaymentTypeDialogOpen(false)}
         onRecordsChange={setPaymentTypeRecords}
         onSelect={(value) => {
-          updateField("paymentMethod", value);
+          handlePaymentMethodChange(value);
           setIsPaymentTypeDialogOpen(false);
         }}
       />
 
-      <AppVceDialog
+      <AppPartyDialog
         isOpen={isVceDialogOpen}
         suggestedPartyType={getSuggestedPartyType(values.disbursementType)}
         onClose={() => setIsVceDialogOpen(false)}
         onSelect={(record) => {
-          const nextVce = mapPartyRecordToVceValue(record);
-          updateField("vceCode", nextVce.vceCode);
-          updateField("vceName", nextVce.vceName);
+          const nextParty = mapPartyRecordToPartyValue(record);
+          updateField("vceCode", nextParty.partyCode);
+          updateField("vceName", nextParty.partyName);
           setIsVceDialogOpen(false);
         }}
       />
@@ -506,6 +574,7 @@ function DetailsTab({
   transactions,
   values,
   onAmountChange,
+  onPaymentMethodChange,
   onOpenDisbursementTypeDialog,
   onOpenPaymentTypeDialog,
   onOpenVoucherTaxDialog,
@@ -521,6 +590,7 @@ function DetailsTab({
   transactions: DisbursementTransactionRecord[];
   values: DisbursementVoucherFormValues;
   onAmountChange: (value: string) => void;
+  onPaymentMethodChange: (paymentMethod: DisbursementPaymentMethod | "") => void;
   onOpenDisbursementTypeDialog: () => void;
   onOpenPaymentTypeDialog: () => void;
   onOpenVoucherTaxDialog: () => void;
@@ -559,8 +629,7 @@ function DetailsTab({
               <select
                 value={values.paymentMethod}
                 onChange={(event) =>
-                  onUpdateField(
-                    "paymentMethod",
+                  onPaymentMethodChange(
                     event.target.value as DisbursementPaymentMethod | "",
                   )
                 }
@@ -789,14 +858,18 @@ function AttachmentsTab({ values }: { values: DisbursementVoucherFormValues }) {
 }
 
 function PaymentDetailsTab({
+  bankAccounts,
   paymentDetails,
   paymentMethod,
   withBank,
+  onBankAccountChange,
   onUpdateField,
 }: {
+  bankAccounts: DisbursementVoucherBankAccount[];
   paymentDetails: DisbursementVoucherFormValues["paymentDetails"];
   paymentMethod: DisbursementVoucherFormValues["paymentMethod"];
   withBank: boolean;
+  onBankAccountChange: (accountCode: string) => void;
   onUpdateField: <TKey extends keyof DisbursementVoucherFormValues>(
     field: TKey,
     value: DisbursementVoucherFormValues[TKey],
@@ -830,6 +903,31 @@ function PaymentDetailsTab({
         </div>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <FieldShell label="Bank :">
+            <select
+              value={paymentDetails.bankAccountCode}
+              onChange={(event) => onBankAccountChange(event.target.value)}
+              className={`${FieldClassName} app-select-control`}
+            >
+              <option value="">--Select Bank--</option>
+              {bankAccounts.map((bankAccount) => (
+                <option
+                  key={bankAccount.accountCode}
+                  value={bankAccount.accountCode}
+                >
+                  {bankAccount.bankName} - {bankAccount.accountTitle}
+                </option>
+              ))}
+            </select>
+          </FieldShell>
+          <FieldShell label="Credit Account :">
+            <input
+              value={paymentDetails.bankAccountTitle}
+              readOnly
+              className={ReadOnlyFieldClassName}
+              placeholder="Auto-filled from selected bank"
+            />
+          </FieldShell>
           <FieldShell label="Bank Name :">
             <input
               value={paymentDetails.bankName}

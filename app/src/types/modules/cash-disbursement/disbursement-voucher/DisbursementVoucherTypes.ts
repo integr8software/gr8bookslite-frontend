@@ -33,13 +33,32 @@ export type DisbursementVoucherCopySource =
   | "Purchase Order";
 
 export type DisbursementVoucherPaymentDetails = {
+  bankAccountCode: string;
   bankAccountName: string;
   bankAccountNo: string;
+  bankAccountTitle: string;
   bankBranch: string;
   bankName: string;
   checkDate: string;
   checkNo: string;
   paymentReferenceNo: string;
+};
+
+export type DisbursementVoucherBankAccount = {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  bankName: string;
+  branch: string;
+  accountName: string;
+  accountNo: string;
+};
+
+export type DisbursementVoucherPaymentAccount = {
+  accountCode: string;
+  accountTitle: string;
+  paymentType: DisbursementPaymentMethod;
+  withBank: boolean;
 };
 
 export type DisbursementTransactionRecord = {

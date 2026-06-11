@@ -12,6 +12,7 @@ import type {
 import {
   ChevronDown,
   ClipboardPaste,
+  CirclePlus,
   Download,
   Eye,
   FileText,
@@ -21,7 +22,9 @@ import {
   X,
 } from "lucide-react";
 import {
+  DisbursementVoucherBankAccounts,
   DisbursementVoucherInitialEntryDraft,
+  createAutoDisbursementLineEntries,
   createTaxDetails,
   formatCurrency,
   formatDateLabel,
@@ -35,6 +38,7 @@ import type {
   DisbursementTransactionRecord,
   DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import { InitialAppPaymentTypeRecords } from "@/app/src/ui/shared/transaction-setup/AppPaymentTypeDialog";
 import {
   readAccountingGridSession,
   writeAccountingGridSession,
@@ -395,6 +399,35 @@ export function DisbursementVoucherAccountingGridPage() {
 
       return nextRows.length > 0 ? nextRows : [createBlankEditableRow()];
     });
+    setErrorMessage(null);
+  }
+
+  function applyAutoEntries() {
+    if (!session || !selectedTransaction) {
+      return;
+    }
+
+    const selectedBankAccount =
+      DisbursementVoucherBankAccounts.find(
+        (bankAccount) =>
+          bankAccount.accountCode ===
+          session.values.paymentDetails.bankAccountCode,
+      ) ?? null;
+    const selectedPaymentTypeRecord =
+      InitialAppPaymentTypeRecords.find(
+        (record) => record.paymentType === session.values.paymentMethod,
+      ) ?? null;
+
+    setRows(
+      createInitialRows(
+        createAutoDisbursementLineEntries(
+          selectedTransaction,
+          selectedBankAccount,
+          selectedPaymentTypeRecord,
+        ),
+      ),
+    );
+    setImportedImportAttachment(null);
     setErrorMessage(null);
   }
 
@@ -826,6 +859,20 @@ export function DisbursementVoucherAccountingGridPage() {
             </div>
 
             <div className="mt-6">
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={applyAutoEntries}
+                  disabled={!selectedTransaction}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:border-skyblue/40 hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  <CirclePlus className="h-4 w-4" aria-hidden="true" />
+                  Auto Entries
+                </button>
+                <p className="text-sm text-darknavy/55">
+                  Rebuild default debit and credit lines from this voucher.
+                </p>
+              </div>
               <ModuleDataEntry
                 columns={columns}
                 columnOptions={columnOptions}
@@ -2042,7 +2089,7 @@ function VoucherAccountingGridHeader({
     },
     {
       label: "Payment",
-      value: values.paymentMethod || selectedTransaction?.paymentMethod || "-",
+      value: formatPaymentHeaderValue(values, selectedTransaction),
     },
     {
       label: "Amount",
@@ -2080,6 +2127,33 @@ function VoucherAccountingGridHeader({
       </div>
     </section>
   );
+}
+
+function formatPaymentHeaderValue(
+  values: DisbursementVoucherFormValues,
+  selectedTransaction?: DisbursementTransactionRecord,
+) {
+  const paymentMethod =
+    values.paymentMethod || selectedTransaction?.paymentMethod || "";
+  const bankLabel = getPaymentHeaderBankLabel(values);
+
+  if (!paymentMethod) {
+    return bankLabel || "-";
+  }
+
+  return bankLabel ? `${paymentMethod} - ${bankLabel}` : paymentMethod;
+}
+
+function getPaymentHeaderBankLabel(values: DisbursementVoucherFormValues) {
+  const bankName = values.paymentDetails.bankName.trim();
+
+  if (bankName) {
+    return bankName;
+  }
+
+  return values.paymentDetails.bankAccountTitle
+    .replace(/^Cash in Bank\s*-\s*/i, "")
+    .trim();
 }
 
 function GridEntryInput({

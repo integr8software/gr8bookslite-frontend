@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
+  DisbursementVoucherBankAccounts,
   createTaxDetails,
   createAutoDisbursementLineEntries,
   createDisbursementVoucherFormValues,
@@ -33,6 +34,7 @@ import {
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { InitialAppPaymentTypeRecords } from "@/app/src/ui/shared/transaction-setup/AppPaymentTypeDialog";
 import type {
   DisbursementLineEntry,
   DisbursementTaxDetails,
@@ -121,6 +123,21 @@ function DisbursementVoucherActionInner() {
   );
   const isBalanced =
     values.lineEntries.length > 1 && Math.abs(totalDebit - totalCredit) < 0.001;
+  const selectedPaymentTypeRecord = useMemo(
+    () =>
+      InitialAppPaymentTypeRecords.find(
+        (record) => record.paymentType === values.paymentMethod,
+      ) ?? null,
+    [values.paymentMethod],
+  );
+  const selectedBankAccount = useMemo(
+    () =>
+      DisbursementVoucherBankAccounts.find(
+        (bankAccount) =>
+          bankAccount.accountCode === values.paymentDetails.bankAccountCode,
+      ) ?? null,
+    [values.paymentDetails.bankAccountCode],
+  );
 
   if (!selectedTransaction && mode !== "add") {
     return <DisbursementVoucherNotFound />;
@@ -290,7 +307,11 @@ function DisbursementVoucherActionInner() {
 
     updateField(
       "lineEntries",
-      createAutoDisbursementLineEntries(selectedTransaction),
+      createAutoDisbursementLineEntries(
+        selectedTransaction,
+        selectedBankAccount,
+        selectedPaymentTypeRecord,
+      ),
     );
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }

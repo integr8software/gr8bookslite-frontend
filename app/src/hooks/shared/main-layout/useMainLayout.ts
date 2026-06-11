@@ -1404,7 +1404,7 @@ function MapBackendPermissionAction(
     return "edit";
   }
 
-  if (action === "delete" || action === "cancel" || action === "uncancel") {
+  if (action === "cancel" || action === "uncancel") {
     return action;
   }
 

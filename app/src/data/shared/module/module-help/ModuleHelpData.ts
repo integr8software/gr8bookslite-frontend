@@ -535,7 +535,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     "Control module visibility through granular access actions.",
     [
       "A module appears when the current user has the required access for that module and the subscription includes the related product.",
-      "Action-level permissions support view, add, edit, delete, cancel, and uncancel access where applicable.",
+      "Action-level permissions support view, create, update, cancel, uncancel, and export access where applicable.",
     ],
     ["help-system-users", "help-branches", "help-dashboard"],
   ),

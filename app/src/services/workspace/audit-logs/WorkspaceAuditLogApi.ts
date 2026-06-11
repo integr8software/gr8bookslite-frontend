@@ -5,7 +5,7 @@ import {
 import type {
 	RecordWorkspaceActivityDto,
 	WorkspaceAuditLogResponseDto,
-} from "@/app/src/generated/api/gR8BooksLiteAPI.schemas";
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
 	WorkspaceAuditLogAction,
 	WorkspaceAuditLogRecord,

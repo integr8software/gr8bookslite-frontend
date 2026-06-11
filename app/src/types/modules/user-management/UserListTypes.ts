@@ -33,8 +33,6 @@ export type BranchUserRolePermissionApiResponse = {
   canView: boolean;
   canCreate: boolean;
   canUpdate: boolean;
-  canDelete: boolean;
-  canApprove: boolean;
   canCancel?: boolean;
   canUncancel?: boolean;
   canExport: boolean;

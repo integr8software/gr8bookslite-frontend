@@ -123,7 +123,7 @@ function MapPermissionActions(
 				permission.canView ? "view" : null,
 				permission.canCreate ? "create" : null,
 				permission.canUpdate ? "update" : null,
-				permission.canCancel || permission.canDelete ? "cancel" : null,
+				permission.canCancel ? "cancel" : null,
 				permission.canUncancel ? "uncancel" : null,
 				permission.canExport ? "export" : null,
 			].filter((action): action is string => Boolean(action));

@@ -4,7 +4,7 @@ import {
 	workspaceCompaniesControllerFindUnitsV1,
 	workspaceCompaniesControllerUpdateUnitV1,
 } from "@/app/src/generated/api/workspace-companies/workspace-companies";
-import type { WorkspaceCompanyUnitResponseDto } from "@/app/src/generated/api/gR8BooksLiteAPI.schemas";
+import type { WorkspaceCompanyUnitResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
 	WorkspaceCompanyBranchRecord,
 	WorkspaceCompanyStatus,

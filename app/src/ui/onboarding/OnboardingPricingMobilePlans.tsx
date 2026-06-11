@@ -2,13 +2,13 @@
 
 import { Check, LoaderCircle, MoveRight } from "lucide-react";
 import {
-  PricingPlans,
   type BillingCycle,
   type PricingPlan,
-} from "@/app/src/data/pricing/PricingData";
+} from "@/app/src/data/pricing/PricingTypes";
 import { OnboardingPlanComparisonRows } from "@/app/src/data/onboarding/OnboardingData";
 
 type OnboardingPricingMobilePlansProps = {
+  plans: PricingPlan[];
   billingCycle: BillingCycle;
   isSubmitting: boolean;
   submittingPlanCode: string | null;
@@ -17,12 +17,17 @@ type OnboardingPricingMobilePlansProps = {
 };
 
 export function OnboardingPricingMobilePlans({
+  plans,
   billingCycle,
   isSubmitting,
   submittingPlanCode,
   onReviewPlans,
   onSelectPlan,
 }: OnboardingPricingMobilePlansProps) {
+  const visiblePlans = plans.filter(
+    (plan) => plan.name !== "Additional Company",
+  );
+
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:hidden">
       <div className="rounded-3xl border border-darknavy/10 bg-linear-to-br from-offwhite to-white p-6 text-center">
@@ -45,28 +50,27 @@ export function OnboardingPricingMobilePlans({
       </div>
 
       <div className="space-y-4">
-        {PricingPlans.filter((plan) => plan.name !== "Additional Company").map(
-          (plan, planIndex) => {
-            const isHighlighted = plan.highlighted;
-            const price =
-              billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
-            const compareAtPrice =
-              billingCycle === "monthly"
-                ? plan.monthlyCompareAtPrice
-                : plan.yearlyCompareAtPrice;
-            const billingLabel = plan.billingLabel[billingCycle];
-            const isSubmittingThisPlan =
-              isSubmitting && submittingPlanCode === plan.code;
+        {visiblePlans.map((plan, planIndex) => {
+          const isHighlighted = plan.highlighted;
+          const price =
+            billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
+          const compareAtPrice =
+            billingCycle === "monthly"
+              ? plan.monthlyCompareAtPrice
+              : plan.yearlyCompareAtPrice;
+          const billingLabel = plan.billingLabel[billingCycle];
+          const isSubmittingThisPlan =
+            isSubmitting && submittingPlanCode === plan.code;
 
-            return (
-              <article
-                key={plan.name}
-                className={`relative overflow-hidden rounded-3xl border p-6 shadow-sm ${
-                  isHighlighted
-                    ? "border-skyblue/40 bg-[linear-gradient(180deg,rgba(209,246,235,0.95),rgba(255,255,255,1))]"
-                    : "border-darknavy/10 bg-white"
-                }`}
-              >
+          return (
+            <article
+              key={plan.name}
+              className={`relative overflow-hidden rounded-3xl border p-6 shadow-sm ${
+                isHighlighted
+                  ? "border-skyblue/40 bg-[linear-gradient(180deg,rgba(209,246,235,0.95),rgba(255,255,255,1))]"
+                  : "border-darknavy/10 bg-white"
+              }`}
+            >
                 {isHighlighted ? (
                   <div className="-mx-6 -mt-6 mb-6 flex items-stretch border-b border-skyblue/25 bg-[linear-gradient(180deg,rgba(209,246,235,0.92),rgba(209,246,235,0.68))]">
                     <div className="flex min-h-16 flex-1 items-center justify-center px-4 py-4">
@@ -153,10 +157,9 @@ export function OnboardingPricingMobilePlans({
                     />
                   ) : null}
                 </button>
-              </article>
-            );
-          },
-        )}
+            </article>
+          );
+        })}
       </div>
     </div>
   );

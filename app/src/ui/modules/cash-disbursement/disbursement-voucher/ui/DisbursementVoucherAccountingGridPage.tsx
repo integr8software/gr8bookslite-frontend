@@ -523,11 +523,14 @@ export function DisbursementVoucherAccountingGridPage() {
     }
 
     if (columnId === "debit" || columnId === "credit") {
+      const oppositeColumnId = columnId === "debit" ? "credit" : "debit";
+
       return (
         <GridEntryInput
           value={row[columnId]}
           onChange={(value) => updateRow(row.id, columnId, value)}
           inputMode="decimal"
+          disabled={normalizeAmount(row[oppositeColumnId]) > 0}
           extraClassName="text-right"
         />
       );
@@ -2080,12 +2083,14 @@ function VoucherAccountingGridHeader({
 }
 
 function GridEntryInput({
+  disabled = false,
   extraClassName,
   inputMode,
   onChange,
   type = "text",
   value,
 }: {
+  disabled?: boolean;
   extraClassName?: string;
   inputMode?: "decimal" | "numeric" | "text";
   onChange: (value: string) => void;
@@ -2099,6 +2104,7 @@ function GridEntryInput({
       min={type === "number" ? "0" : undefined}
       value={value}
       onChange={(event) => onChange(event.target.value)}
+      disabled={disabled}
       className={gridCellControlClassName(extraClassName)}
     />
   );
@@ -2106,7 +2112,7 @@ function GridEntryInput({
 
 function gridCellControlClassName(extraClassName?: string) {
   return joinClasses(
-    "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35",
+    "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
     extraClassName,
   );
 }

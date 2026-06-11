@@ -635,6 +635,7 @@ function VoucherEntriesStep({
           <EntryNumberInput
             value={entry.debit}
             onChange={(value) => onUpdateEntry(entry.id, "debit", value)}
+            disabled={Number(entry.credit || 0) > 0}
           />
         ),
       },
@@ -646,6 +647,7 @@ function VoucherEntriesStep({
           <EntryNumberInput
             value={entry.credit}
             onChange={(value) => onUpdateEntry(entry.id, "credit", value)}
+            disabled={Number(entry.debit || 0) > 0}
           />
         ),
       },
@@ -808,9 +810,11 @@ function EntryInput({
 }
 
 function EntryNumberInput({
+  disabled = false,
   onChange,
   value,
 }: {
+  disabled?: boolean;
   onChange: (value: number) => void;
   value: number;
 }) {
@@ -820,6 +824,7 @@ function EntryNumberInput({
       min="0"
       value={value || ""}
       onChange={(event) => onChange(Number(event.target.value))}
+      disabled={disabled}
       className={accountingCellControlClassName("text-right")}
     />
   );
@@ -827,7 +832,7 @@ function EntryNumberInput({
 
 function accountingCellControlClassName(extraClassName?: string) {
   return joinClasses(
-    "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:bg-offwhite/45",
+    "h-10 w-full rounded-none border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 disabled:cursor-not-allowed disabled:bg-offwhite/45 disabled:text-darknavy/35",
     extraClassName,
   );
 }

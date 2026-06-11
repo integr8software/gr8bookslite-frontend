@@ -353,6 +353,15 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 			return;
 		}
 
+		if (event.key === "F2") {
+			event.preventDefault();
+			updateSelectionFromCell(cell);
+			focusModuleDataEntryCellEditor(cell, tableRef.current, {
+				shouldSelect: false,
+			});
+			return;
+		}
+
 		if (isEditing) {
 			if (event.key === "ArrowUp") {
 				event.preventDefault();
@@ -367,12 +376,6 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 				event.preventDefault();
 				focusRelativeCellEditor(cell, 0, 1);
 			}
-			return;
-		}
-
-		if (event.key === "F2") {
-			event.preventDefault();
-			focusCellEditor(cell);
 			return;
 		}
 

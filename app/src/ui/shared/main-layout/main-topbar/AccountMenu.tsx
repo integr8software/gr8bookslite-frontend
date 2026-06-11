@@ -64,7 +64,7 @@ export function AccountMenu({
 			)}
 
 			{isOpen ? (
-				<div className="fixed right-3 top-14 z-50 w-[calc(100vw-1.5rem)] max-w-72 overflow-hidden rounded-lg border border-darknavy/10 bg-white p-1 shadow-[0_24px_70px_rgba(33,39,56,0.18)] md:absolute md:right-0 md:top-12 md:w-72">
+				<div className="fixed right-3 top-16 z-60 w-[min(18rem,calc(100vw-1.5rem))] overflow-hidden rounded-lg border border-darknavy/10 bg-white p-1 shadow-[0_24px_70px_rgba(33,39,56,0.18)] sm:right-4 lg:right-6">
 					<AccountDetails
 						currentUser={currentUser}
 						userDescriptor={userDescriptor}
@@ -115,7 +115,7 @@ function AccountDetails({
 					currentUser={currentUser}
 					className="h-9 w-9 rounded-md"
 				/>
-				<div className="min-w-0">
+				<div className="min-w-0 flex-1">
 					<p className="truncate text-sm font-semibold text-darknavy">
 						{currentUser.name}
 					</p>

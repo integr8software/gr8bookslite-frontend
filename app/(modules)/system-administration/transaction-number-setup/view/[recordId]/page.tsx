@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { TransactionNumberSetupFormPage } from "@/app/src/ui/modules/system-administration/transaction-number-setup/TransactionNumberSetupFormPage";
+import { TransactionNumberSetupHref } from "@/app/src/constants/modules/system-administration/transaction-number-setup/TransactionNumberSetupConstants";
 
 const PageTitle = "View Transaction Number Setup";
 
@@ -10,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function SystemAdministrationTransactionNumberSetupViewPage() {
-	return <TransactionNumberSetupFormPage />;
+	redirect(TransactionNumberSetupHref);
 }

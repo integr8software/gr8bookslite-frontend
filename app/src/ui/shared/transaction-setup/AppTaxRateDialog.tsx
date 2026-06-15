@@ -1,12 +1,17 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 import {
   createTaxDetails,
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+import { PhilippineTaxCodeRows } from "@/app/src/data/shared/tax/PhilippineAtcData";
 import type { DisbursementTaxDetails } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import {
+  AppAdvancedDropdown,
+  type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 export type AppTaxRateDialogValue = {
   taxDetails: DisbursementTaxDetails;
@@ -23,7 +28,7 @@ type AppTaxRateDialogProps = {
 
 export function AppTaxRateDialog({
   isOpen,
-  title = "Tax",
+  title = "Tax Setup",
   value,
   onClose,
   onSave,
@@ -55,15 +60,17 @@ function AppTaxRateDialogEditor({
   onSave: (value: AppTaxRateDialogValue) => void;
 }) {
   const [draftValue, setDraftValue] = useState(initialValue);
+  const ewtOptions = useMemo(() => createEwtOptions(), []);
 
-  function updateTaxRate(nextTaxRate: string) {
+  function updateVatCode(nextVatCode: string) {
     setDraftValue((current) => {
+      const nextTaxRate = getVatRateFromCode(nextVatCode);
+      const nextVatPercent = getVatPercentFromRate(nextTaxRate);
       const nextTaxDetails = syncTaxDetailsAmount(
         {
           ...current.taxDetails,
-          vatCode:
-            nextTaxRate !== "0%" ? `VAT-${nextTaxRate.replace("%", "")}` : "",
-          vatPercent: getVatPercentFromRate(nextTaxRate),
+          vatCode: nextVatCode === NoVatCode ? "" : nextVatCode,
+          vatPercent: nextVatPercent,
         },
         current.taxDetails.grossAmount,
         nextTaxRate,
@@ -112,7 +119,7 @@ function AppTaxRateDialogEditor({
         aria-labelledby="app-tax-rate-dialog-title"
         className="w-full max-w-2xl overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_16px_48px_rgba(33,39,56,0.18)]"
       >
-        <div className="flex items-center justify-between border-b border-darknavy/10 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-darknavy/10 px-5 py-4">
           <h3
             id="app-tax-rate-dialog-title"
             className="text-2xl font-medium text-darknavy"
@@ -146,18 +153,14 @@ function AppTaxRateDialogEditor({
           </TaxDialogRow>
 
           <TaxDialogRow label="VAT Code :">
-            <select
-              value={draftValue.taxRate}
-              onChange={(event) => updateTaxRate(event.target.value)}
-              className={`${FieldClassName} app-select-control`}
-            >
-              <option value="0%">--Select VAT Rate--</option>
-              <option value="1%">VAT 1%</option>
-              <option value="2%">VAT 2%</option>
-              <option value="5%">VAT 5%</option>
-              <option value="10%">VAT 10%</option>
-              <option value="12%">VAT 12%</option>
-            </select>
+            <AppAdvancedDropdown
+              value={normalizeVatDropdownValue(draftValue.taxDetails)}
+              isClearable={false}
+              options={VatRateOptions}
+              placeholder="--Select VAT Rate--"
+              searchPlaceholder="Search VAT rate"
+              onChange={(value) => updateVatCode(String(value))}
+            />
           </TaxDialogRow>
 
           <TaxDialogRow label="Percent :">
@@ -177,16 +180,14 @@ function AppTaxRateDialogEditor({
           </TaxDialogRow>
 
           <TaxDialogRow label="EWT Code :">
-            <select
+            <AppAdvancedDropdown
               value={draftValue.taxDetails.ewtCode}
-              onChange={(event) => updateEwtCode(event.target.value)}
-              className={`${FieldClassName} app-select-control`}
-            >
-              <option value="">--Select EWT Code--</option>
-              <option value="EWT-1">EWT-1</option>
-              <option value="EWT-2">EWT-2</option>
-              <option value="EWT-5">EWT-5</option>
-            </select>
+              emptyMessage="No EWT codes matched the search."
+              options={ewtOptions}
+              placeholder="Select EWT code"
+              searchPlaceholder="Search EWT code, rate, or description"
+              onChange={(value) => updateEwtCode(String(value))}
+            />
           </TaxDialogRow>
 
           <TaxDialogRow label="Percent :">
@@ -243,9 +244,6 @@ function TaxDialogRow({
   );
 }
 
-const FieldClassName =
-  "app-theme-field h-11 w-full rounded-md border px-3 text-sm outline-none transition focus:border-skyblue/40";
-
 const ReadOnlyFieldClassName =
   "app-theme-field-readonly h-11 w-full rounded-md border px-3 text-sm outline-none";
 
@@ -260,17 +258,103 @@ function getVatPercentFromRate(taxRate: string) {
 }
 
 function getEwtPercentFromCode(value: string) {
-  if (value === "EWT-1") {
-    return 1;
+  const matchedTaxRow = PhilippineTaxCodeRows.find(
+    (row) => row.taxType === "EWT" && row.taxCode === value,
+  );
+
+  if (matchedTaxRow) {
+    return matchedTaxRow.taxRate;
   }
 
-  if (value === "EWT-2") {
-    return 2;
+  const matchedPercent = value.match(/(\d+(?:\.\d+)?)(?!.*\d)/);
+
+  return matchedPercent ? Number.parseFloat(matchedPercent[1]) : 0;
+}
+
+const NoVatCode = "NO-VAT";
+
+const VatRateOptions: AppAdvancedDropdownOption[] = [
+  { name: "No VAT", label: "0%", value: NoVatCode },
+  ...createVatOptions(),
+];
+
+function getVatRateFromCode(vatCode: string) {
+  if (!vatCode || vatCode === NoVatCode) {
+    return "0%";
   }
 
-  if (value === "EWT-5") {
-    return 5;
+  const matchedTaxRow = PhilippineTaxCodeRows.find(
+    (row) =>
+      row.transactionType === "Purchases" &&
+      row.taxType === "INPUT VAT" &&
+      row.taxCode === vatCode,
+  );
+
+  if (matchedTaxRow) {
+    return `${matchedTaxRow.taxRate}%`;
   }
 
-  return 0;
+  if (vatCode === "VAT-5") {
+    return "5%";
+  }
+
+  if (vatCode === "VAT-12") {
+    return "12%";
+  }
+
+  return "0%";
+}
+
+function normalizeVatDropdownValue(taxDetails: DisbursementTaxDetails) {
+  if (!taxDetails.vatCode) {
+    return NoVatCode;
+  }
+
+  if (
+    VatRateOptions.some((option) => option.value === taxDetails.vatCode)
+  ) {
+    return taxDetails.vatCode;
+  }
+
+  const matchedTaxRow = PhilippineTaxCodeRows.find(
+    (row) =>
+      row.transactionType === "Purchases" &&
+      row.taxType === "INPUT VAT" &&
+      row.taxRate === taxDetails.vatPercent,
+  );
+
+  return matchedTaxRow?.taxCode ?? NoVatCode;
+}
+
+function createVatOptions(): AppAdvancedDropdownOption[] {
+  const uniqueOptions = new Map<string, AppAdvancedDropdownOption>();
+
+  PhilippineTaxCodeRows.filter(
+    (row) =>
+      row.transactionType === "Purchases" && row.taxType === "INPUT VAT",
+  ).forEach((row) => {
+    if (uniqueOptions.has(row.taxCode)) {
+      return;
+    }
+
+    uniqueOptions.set(row.taxCode, {
+      description: row.taxDescription,
+      label: `${row.taxRate}%`,
+      name: row.taxCode,
+      value: row.taxCode,
+    });
+  });
+
+  return Array.from(uniqueOptions.values());
+}
+
+function createEwtOptions(): AppAdvancedDropdownOption[] {
+  return PhilippineTaxCodeRows.filter(
+    (row) => row.transactionType === "Purchases" && row.taxType === "EWT",
+  ).map((row) => ({
+    description: row.taxDescription,
+    label: `${row.taxRate}%`,
+    name: row.taxCode,
+    value: row.taxCode,
+  }));
 }

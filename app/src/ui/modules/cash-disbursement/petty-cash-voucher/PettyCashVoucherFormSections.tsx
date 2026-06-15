@@ -4,13 +4,13 @@ import {
 	Field,
 	inputClassName,
 	secondaryButtonClassName,
-	type PettyCashVoucherFormPageState,
+	type PettyCashVoucherActionPageState,
 } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherFormControls";
 
 export function PettyCashVoucherDetailsFields({
 	page,
 }: {
-	page: PettyCashVoucherFormPageState;
+	page: PettyCashVoucherActionPageState;
 }) {
 	return (
 		<div className="rounded-xl border border-darknavy/10 bg-white p-6 shadow-sm">
@@ -163,7 +163,7 @@ function TextField({
 }: {
 	field: keyof PettyCashVoucherFormValues;
 	label: string;
-	page: PettyCashVoucherFormPageState;
+	page: PettyCashVoucherActionPageState;
 	placeholder?: string;
 	type?: string;
 }) {

@@ -54,7 +54,7 @@ export function ModuleHeader<TTitleElement extends ElementType = "h2">({
 					{title}
 					<BadgeCheck
 						className={joinClasses(
-							"ml-2 inline h-5 w-5 align-middle",
+							"ml-2 inline h-4 w-4 align-middle",
 							moduleAccentClassNames.iconText,
 						)}
 						aria-hidden="true"
@@ -104,13 +104,13 @@ const moduleHeaderVariantClassNames = {
 };
 
 const moduleHeaderTitleClassNames = {
-	card: "text-[1.9rem] font-semibold leading-tight text-darknavy sm:text-3xl",
-	panel: "text-[1.9rem] font-semibold leading-tight text-darknavy sm:text-3xl",
-	plain: "text-[1.9rem] font-semibold leading-tight text-darknavy sm:text-3xl",
+	card: "text-xl font-semibold leading-tight text-darknavy sm:text-2xl",
+	panel: "text-xl font-semibold leading-tight text-darknavy sm:text-2xl",
+	plain: "text-xl font-semibold leading-tight text-darknavy sm:text-2xl",
 };
 
 const moduleHeaderDescriptionClassNames = {
-	card: "mt-2 max-w-2xl text-sm leading-6 text-darknavy/65",
-	panel: "mt-2 max-w-2xl text-sm leading-6 text-darknavy/65",
-	plain: "mt-2 max-w-2xl text-sm leading-6 text-darknavy/65",
+	card: "mt-1.5 max-w-2xl text-sm leading-6 text-darknavy/65",
+	panel: "mt-1.5 max-w-2xl text-sm leading-6 text-darknavy/65",
+	plain: "mt-1.5 max-w-2xl text-sm leading-6 text-darknavy/65",
 };

@@ -15,7 +15,12 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus } from "lucide-react";
-import type { CSSProperties } from "react";
+import {
+	useEffect,
+	useState,
+	type CSSProperties,
+	type KeyboardEvent,
+} from "react";
 import type { ItemSupplierAssignment } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import {
 	AppAdvancedDropdown,
@@ -103,17 +108,29 @@ export function ItemSuppliersTable({
 					sensors={sensors}
 					onDragEnd={handleDragEnd}
 				>
-					<table className="w-full min-w-[42rem] text-left text-sm">
+					<table className="w-full min-w-[68rem] table-fixed text-left text-sm">
+						<colgroup>
+							<col className="w-12" />
+							<col className="w-[18rem]" />
+							<col className="w-[14rem]" />
+							<col className="w-[10rem]" />
+							<col className="w-[10rem]" />
+							<col className="w-[7rem]" />
+							<col className="w-[7rem]" />
+						</colgroup>
 						<thead className="bg-darknavy/[0.03] text-xs font-semibold uppercase tracking-wide text-darknavy/50">
 							<tr>
-								<th className="w-12 px-3 py-3">
+								<th className="px-3 py-3">
 									<span className="sr-only">Order</span>
 								</th>
 								<th className="px-3 py-3">Supplier</th>
+								<th className="px-3 py-3">Supplier Item Code</th>
+								<th className="px-3 py-3">Lead Time</th>
+								<th className="px-3 py-3">Cost</th>
 								<th className="px-3 py-3 text-center">
 									Default
 								</th>
-								<th className="px-3 py-3 text-right">
+								<th className="px-3 py-3 text-center">
 									Actions
 								</th>
 							</tr>
@@ -126,7 +143,7 @@ export function ItemSuppliersTable({
 								{suppliers.length === 0 ? (
 									<tr>
 										<td
-											colSpan={4}
+											colSpan={7}
 											className="px-3 py-6 text-center text-sm text-darknavy/55"
 										>
 											No suppliers added.
@@ -177,7 +194,7 @@ function SupplierRow({
 		transform,
 		transition,
 	} = useSortable({
-		disabled: isReadonly,
+		disabled: isReadonly || supplier.isDefault,
 		id: supplier.id,
 	});
 	const style: CSSProperties = {
@@ -196,8 +213,12 @@ function SupplierRow({
 			<td className="px-3 py-3">
 				<button
 					type="button"
-					disabled={isReadonly}
-					aria-label={`Drag ${supplier.supplier || "supplier"} to reorder`}
+					disabled={isReadonly || supplier.isDefault}
+					aria-label={
+						supplier.isDefault
+							? `${supplier.supplier || "Default supplier"} stays at the top`
+							: `Drag ${supplier.supplier || "supplier"} to reorder`
+					}
 					className="inline-flex h-9 w-9 items-center justify-center rounded-md text-darknavy/45 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/30 disabled:cursor-default disabled:opacity-30"
 					{...attributes}
 					{...listeners}
@@ -218,6 +239,41 @@ function SupplierRow({
 					}
 				/>
 			</td>
+			<td className="px-3 py-3">
+				<input
+					value={supplier.supplierItemCode}
+					onChange={(event) =>
+						onUpdateSupplier(
+							supplier.id,
+							"supplierItemCode",
+							event.target.value,
+						)
+					}
+					readOnly={isReadonly}
+					className={fieldClassName}
+					placeholder="Supplier SKU"
+				/>
+			</td>
+			<td className="px-3 py-3">
+				<input
+					value={supplier.leadTime}
+					onChange={(event) =>
+						onUpdateSupplier(supplier.id, "leadTime", event.target.value)
+					}
+					readOnly={isReadonly}
+					className={fieldClassName}
+					placeholder="3 days"
+				/>
+			</td>
+			<td className="px-3 py-3">
+				<DecimalNumberInput
+					value={supplier.lastCost}
+					readOnly={isReadonly}
+					onValueChange={(value) =>
+						onUpdateSupplier(supplier.id, "lastCost", String(value))
+					}
+				/>
+			</td>
 			<td className="px-3 py-3 text-center">
 				<input
 					type="radio"
@@ -230,8 +286,8 @@ function SupplierRow({
 					className="h-4 w-4 accent-skyblue disabled:cursor-default"
 				/>
 			</td>
-			<td className="px-3 py-3">
-				<div className="flex justify-end gap-1">
+			<td className="px-3 py-3 text-center">
+				<div className="flex justify-center gap-1">
 					{!isReadonly ? (
 						<ModuleTableActionButton
 							variant="delete"
@@ -242,5 +298,71 @@ function SupplierRow({
 				</div>
 			</td>
 		</tr>
+	);
+}
+
+const fieldClassName =
+	"min-h-10 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 read-only:bg-offwhite/65";
+
+function DecimalNumberInput({
+	readOnly,
+	value,
+	onValueChange,
+}: {
+	readOnly: boolean;
+	value: number;
+	onValueChange: (value: number) => void;
+}) {
+	const [draftValue, setDraftValue] = useState(String(value));
+
+	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- Keep the editable draft synchronized when parent numeric value changes.
+		setDraftValue(String(value));
+	}, [value]);
+
+	function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+		if (["e", "E", "+", "-"].includes(event.key)) {
+			event.preventDefault();
+		}
+	}
+
+	function handleChange(value: string) {
+		if (/[eE+-]/.test(value)) {
+			return;
+		}
+
+		setDraftValue(value);
+
+		if (!value.trim()) {
+			return;
+		}
+
+		const nextValue = Number(value);
+
+		if (Number.isFinite(nextValue) && nextValue >= 0) {
+			onValueChange(nextValue);
+		}
+	}
+
+	function handleBlur() {
+		if (!draftValue.trim()) {
+			onValueChange(0);
+			setDraftValue("0");
+		}
+	}
+
+	return (
+		<input
+			type="number"
+			min={0}
+			step="any"
+			inputMode="decimal"
+			value={draftValue}
+			onBlur={handleBlur}
+			onChange={(event) => handleChange(event.target.value)}
+			onKeyDown={handleKeyDown}
+			readOnly={readOnly}
+			className={fieldClassName}
+		/>
 	);
 }

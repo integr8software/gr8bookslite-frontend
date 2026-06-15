@@ -30,7 +30,7 @@ export function ItemsListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Items"
-				description="Maintain item master records, item types, and bundle component definitions."
+				description="Maintain products, services, assets, suppliers, categories, inventory setup, and pricing."
 				eyebrow={
 					<>
 						<Package className="h-3.5 w-3.5" aria-hidden="true" />
@@ -75,11 +75,11 @@ export function ItemsListPage() {
 						).length,
 					},
 					{
-						helper: "Items with bundle components",
+						helper: "Items tracked in inventory",
 						icon: Layers,
-						label: "Bundle Items",
+						label: "Tracked Items",
 						tone: "violet",
-						value: page.items.filter((item) => item.supportsBundle)
+						value: page.items.filter((item) => item.trackInventory)
 							.length,
 					},
 				]}
@@ -95,7 +95,7 @@ export function ItemsListPage() {
 							label="Search items"
 							value={page.query}
 							onChange={page.handleQueryChange}
-							placeholder="Search by item, code, category, type, or status"
+							placeholder="Search by item, code, category, model, or status"
 						/>
 						<ModuleTableFilterSelect
 							label="Category"

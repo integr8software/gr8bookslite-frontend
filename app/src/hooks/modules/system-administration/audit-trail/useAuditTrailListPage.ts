@@ -18,13 +18,12 @@ import {
 } from "@/app/src/data/modules/system-administration/audit-trail/AuditTrailData";
 import {
 	formatAuditTrailCreatedAt,
-	formatAuditTrailModuleTrail,
 } from "@/app/src/services/modules/system-administration/audit-trail/AuditTrailFormatters";
 import { AuditTrailQueryKeys } from "@/app/src/services/modules/system-administration/audit-trail/AuditTrailQueryKeys";
 import type {
 	AuditTrailAction,
+	AuditTrailDateRange,
 	AuditTrailRecord,
-	AuditTrailSeverity,
 	AuditTrailTableColumnKey,
 } from "@/app/src/types/modules/system-administration/audit-trail/AuditTrailTypes";
 
@@ -39,9 +38,8 @@ export function useAuditTrailListPage() {
 	const [actionFilter, setActionFilter] = useState<AuditTrailAction | "all">(
 		"all",
 	);
-	const [severityFilter, setSeverityFilter] = useState<
-		AuditTrailSeverity | "all"
-	>("all");
+	const [dateRangeFilter, setDateRangeFilter] =
+		useState<AuditTrailDateRange>("30d");
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
 		pageSize: 10,
@@ -61,7 +59,7 @@ export function useAuditTrailListPage() {
 				return false;
 			}
 
-			if (severityFilter !== "all" && record.severity !== severityFilter) {
+			if (!isWithinDateRange(record.createdAt, dateRangeFilter)) {
 				return false;
 			}
 
@@ -73,19 +71,18 @@ export function useAuditTrailListPage() {
 				record.action,
 				record.actorName,
 				record.actorRole,
+				record.branchName,
 				record.description,
+				record.entityId,
+				record.entityType,
 				record.ipAddress,
-				record.moduleLabel,
-				record.recordId,
-				record.section,
-				record.severity,
-				formatAuditTrailModuleTrail(record),
+				record.module,
 			]
 				.join(" ")
 				.toLowerCase()
 				.includes(normalizedQuery);
 		});
-	}, [actionFilter, moduleFilter, query, recordsQuery.data, severityFilter]);
+	}, [actionFilter, dateRangeFilter, moduleFilter, query, recordsQuery.data]);
 	const columns = useMemo<ColumnDef<AuditTrailRecord>[]>(
 		() =>
 			AuditTrailTableColumns.map((column) =>
@@ -128,31 +125,48 @@ export function useAuditTrailListPage() {
 		table.setPageIndex(0);
 	}
 
-	function handleSeverityFilterChange(value: AuditTrailSeverity | "all") {
-		setSeverityFilter(value);
+	function handleDateRangeFilterChange(value: AuditTrailDateRange) {
+		setDateRangeFilter(value);
 		table.setPageIndex(0);
 	}
 
 	return {
 		actionFilter,
-		criticalCount: recordsQuery.data.filter(
-			(record) => record.severity === "Critical",
-		).length,
+		dateRangeFilter,
+		filteredCount: filteredRecords.length,
 		handleActionFilterChange,
+		handleDateRangeFilterChange,
 		handleModuleFilterChange,
 		handleQueryChange,
-		handleSeverityFilterChange,
 		isLoading: recordsQuery.isLoading,
 		moduleFilter,
 		moduleOptions: AuditTrailModuleOptions,
+		matchedModuleCount: new Set(
+			filteredRecords.map((record) => record.moduleKey),
+		).size,
 		query,
 		recordCount: recordsQuery.data.length,
-		severityFilter,
 		table,
 		todayCount: recordsQuery.data.filter((record) =>
 			record.createdAt.startsWith("2026-05-23"),
 		).length,
 	};
+}
+
+function isWithinDateRange(createdAt: string, dateRange: AuditTrailDateRange) {
+	if (dateRange === "all") {
+		return true;
+	}
+
+	const rangeHours: Record<Exclude<AuditTrailDateRange, "all">, number> = {
+		"24h": 24,
+		"7d": 24 * 7,
+		"30d": 24 * 30,
+	};
+	const minimumTimestamp =
+		Date.now() - rangeHours[dateRange] * 60 * 60 * 1000;
+
+	return new Date(createdAt).getTime() >= minimumTimestamp;
 }
 
 function createAuditTrailColumn({

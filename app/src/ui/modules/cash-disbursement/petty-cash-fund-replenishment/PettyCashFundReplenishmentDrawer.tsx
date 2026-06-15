@@ -9,12 +9,12 @@ import {
 	PettyCashFundReplenishmentSummaryFields,
 	PettyCashFundReplenishmentToolbar,
 } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentFormSections";
-import type { PettyCashFundReplenishmentFormPageState } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentFormControls";
+import type { PettyCashFundReplenishmentActionPageState } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentFormControls";
 
 type PettyCashFundReplenishmentDrawerProps = {
 	isOpen: boolean;
 	onClose: () => void;
-	page: PettyCashFundReplenishmentFormPageState;
+	page: PettyCashFundReplenishmentActionPageState;
 	position?: ModuleDrawerPosition;
 };
 

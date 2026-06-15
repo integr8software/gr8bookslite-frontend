@@ -17,6 +17,7 @@ import {
 	Input,
 	Select,
 } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsControls";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 
 type AccountFieldsProps = {
 	account: ChartAccount | null;
@@ -220,11 +221,12 @@ function DescriptionField({
 }) {
 	return (
 		<Field label="Description" className="sm:col-span-2">
-			<textarea
+			<AppLimitedTextarea
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
 				placeholder="Internal reporting notes"
 				className="min-h-24 w-full rounded-lg border border-darknavy/10 bg-white px-3 py-2 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
+				counterMode="used"
 			/>
 		</Field>
 	);

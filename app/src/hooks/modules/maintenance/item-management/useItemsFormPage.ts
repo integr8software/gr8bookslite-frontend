@@ -17,14 +17,13 @@ import {
 } from "@/app/src/data/modules/maintenance/item-management/ItemManagementData";
 import type {
 	ItemActionMode,
-	ItemBundleComponent,
-	ItemBundleComponentItemOption,
 	ItemFormErrors,
 	ItemFormValues,
-	ItemRecord,
 	ItemSetupKind,
 	ItemSetupRecord,
 	ItemStatus,
+	ItemAttributeAssignment,
+	ItemPriceListAssignment,
 	ItemSupplierAssignment,
 	ItemUomConversion,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
@@ -35,6 +34,9 @@ import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item
 
 const NumberItemFormFields = new Set<keyof ItemFormValues>([
 	"costPrice",
+	"maximumStock",
+	"minimumStock",
+	"reorderLevel",
 	"sellingPrice",
 ]);
 
@@ -46,27 +48,20 @@ export function useItemsFormPage() {
 	const { warehouses } = useWarehouseManagementStore();
 	const { addItem, isMutating, items, updateItem } = store;
 	const categoryRecords = store.getSetupRecords("category");
-	const subcategoryRecords = store.getSetupRecords("subcategory");
-	const typeRecords = store.getSetupRecords("type");
-	const subtypeRecords = store.getSetupRecords("subtype");
 	const setupRecords = useMemo<Record<ItemSetupKind, ItemSetupRecord[]>>(
 		() => ({
 			category: categoryRecords,
-			subcategory: subcategoryRecords,
-			type: typeRecords,
-			subtype: subtypeRecords,
+			subcategory: [],
+			type: [],
+			subtype: [],
 		}),
-		[categoryRecords, subcategoryRecords, subtypeRecords, typeRecords],
-	);
-	const typeParentIdsByTypeId = useMemo(
-		() => inferTypeParentIdsByTypeId(setupRecords, items),
-		[items, setupRecords],
+		[categoryRecords],
 	);
 	const mode = getActionMode(pathname);
 	const existingItem = items.find((item) => item.id === params.recordId);
 	const isReadonly = mode === "view";
 	const [values, setValues] = useState<ItemFormValues>(() =>
-		existingItem ? createItemFormValues(existingItem) : ItemInitialFormValues,
+		existingItem ? createInitialItemFormValues(existingItem) : ItemInitialFormValues,
 	);
 	const [errors, setErrors] = useState<ItemFormErrors>({});
 	const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
@@ -87,37 +82,11 @@ export function useItemsFormPage() {
 				[field]: value,
 			};
 
-			if (field === "category") {
-				nextValues.subcategory = "";
-				nextValues.type = "";
-				nextValues.subtype = "";
-			}
-
-			if (field === "type") {
-				nextValues.subtype = "";
-			}
-
-			if (field === "supportsBundle" && value === true) {
-				nextValues.uomConversions = [];
-			}
-
-			if (field === "supportsBundle" && value === false) {
-				nextValues.bundleComponents = [];
-			}
-
 			return nextValues;
 		});
 		setErrors((current) => ({
 			...current,
 			[field]: undefined,
-			...(field === "category"
-				? {
-						subcategory: undefined,
-						subtype: undefined,
-						type: undefined,
-					}
-				: {}),
-			...(field === "type" ? { subtype: undefined } : {}),
 		}));
 	}
 
@@ -141,75 +110,6 @@ export function useItemsFormPage() {
 		updateField(name as keyof ItemFormValues, value as never);
 	}
 
-	function addBundleComponent() {
-		if (isReadonly) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			bundleComponents: [
-				...current.bundleComponents,
-				{
-					id: `bundle-component-${Date.now()}`,
-					itemId: "",
-					itemCode: "",
-					itemName: "",
-					quantity: 1,
-					uom: "",
-				},
-			],
-		}));
-		setErrors((current) => ({ ...current, bundleComponents: undefined }));
-	}
-
-	function updateBundleComponent(
-		componentId: string,
-		field: keyof ItemBundleComponent,
-		value: string,
-	) {
-		if (isReadonly) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			bundleComponents: current.bundleComponents.map((component) =>
-				component.id === componentId
-					? updateBundleComponentValue(component, field, value, items)
-					: component,
-			),
-		}));
-	}
-
-	function removeBundleComponent(componentId: string) {
-		if (isReadonly) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			bundleComponents: current.bundleComponents.filter(
-				(component) => component.id !== componentId,
-			),
-		}));
-	}
-
-	function reorderBundleComponent(componentId: string, overComponentId: string) {
-		if (isReadonly) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			bundleComponents: reorderRecordById(
-				current.bundleComponents,
-				componentId,
-				overComponentId,
-			),
-		}));
-	}
-
 	function addSupplier() {
 		if (isReadonly) {
 			return;
@@ -222,6 +122,9 @@ export function useItemsFormPage() {
 				{
 					id: `item-supplier-${Date.now()}`,
 					supplier: "",
+					supplierItemCode: "",
+					leadTime: "",
+					lastCost: 0,
 					isDefault: current.suppliers.length === 0,
 				},
 			],
@@ -240,19 +143,25 @@ export function useItemsFormPage() {
 
 		setValues((current) => ({
 			...current,
-			suppliers: current.suppliers.map((supplier) => {
-				if (supplier.id !== supplierId) {
-					return field === "isDefault" && value === true
-						? { ...supplier, isDefault: false }
-						: supplier;
-				}
+			suppliers: moveDefaultSupplierFirst(
+				current.suppliers.map((supplier) => {
+					if (supplier.id !== supplierId) {
+						return field === "isDefault" && value === true
+							? { ...supplier, isDefault: false }
+							: supplier;
+					}
 
-				if (field === "isDefault") {
-					return { ...supplier, isDefault: Boolean(value) };
-				}
+					if (field === "isDefault") {
+						return { ...supplier, isDefault: Boolean(value) };
+					}
 
-				return { ...supplier, [field]: String(value) };
-			}),
+					return {
+						...supplier,
+						[field]:
+							field === "lastCost" ? Number(value) || 0 : String(value),
+					};
+				}),
+			),
 		}));
 		setErrors((current) => ({ ...current, suppliers: undefined }));
 	}
@@ -264,8 +173,10 @@ export function useItemsFormPage() {
 
 		setValues((current) => ({
 			...current,
-			suppliers: ensureDefaultSupplier(
-				current.suppliers.filter((supplier) => supplier.id !== supplierId),
+			suppliers: moveDefaultSupplierFirst(
+				ensureDefaultSupplier(
+					current.suppliers.filter((supplier) => supplier.id !== supplierId),
+				),
 			),
 		}));
 		setErrors((current) => ({ ...current, suppliers: undefined }));
@@ -278,64 +189,10 @@ export function useItemsFormPage() {
 
 		setValues((current) => ({
 			...current,
-			suppliers: reorderRecordById(
+			suppliers: reorderSuppliers(
 				current.suppliers,
 				supplierId,
 				overSupplierId,
-			),
-		}));
-	}
-
-	function addUomConversion() {
-		if (isReadonly) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			uomConversions: [
-				...current.uomConversions,
-				{
-					id: `uom-conversion-${Date.now()}`,
-					fromUom: "BOX",
-					quantity: 1,
-					toUom: current.uom || "PCS",
-				},
-			],
-		}));
-	}
-
-	function updateUomConversion(
-		conversionId: string,
-		field: keyof ItemUomConversion,
-		value: string,
-	) {
-		if (isReadonly) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			uomConversions: current.uomConversions.map((conversion) =>
-				conversion.id === conversionId
-					? {
-							...conversion,
-							[field]: field === "quantity" ? Number(value) || 0 : value,
-						}
-					: conversion,
-			),
-		}));
-	}
-
-	function removeUomConversion(conversionId: string) {
-		if (isReadonly) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			uomConversions: current.uomConversions.filter(
-				(conversion) => conversion.id !== conversionId,
 			),
 		}));
 	}
@@ -369,6 +226,168 @@ export function useItemsFormPage() {
 			...current,
 			tags: current.tags.filter((currentTag) => currentTag !== tag),
 		}));
+	}
+
+	function addAttributeAssignment() {
+		if (isReadonly) {
+			return;
+		}
+
+		const firstAttribute = store.itemAttributes.find(
+			(attribute) => attribute.status === "Active",
+		);
+
+		setValues((current) => ({
+			...current,
+			attributeAssignments: [
+				...current.attributeAssignments,
+				{
+					id: `item-attribute-${Date.now()}`,
+					attributeId: firstAttribute?.id ?? "",
+					value: firstAttribute?.values[0] ?? "",
+				},
+			],
+		}));
+	}
+
+	function updateAttributeAssignment(
+		assignmentId: string,
+		field: keyof ItemAttributeAssignment,
+		value: string,
+	) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			attributeAssignments: current.attributeAssignments.map((assignment) => {
+				if (assignment.id !== assignmentId) {
+					return assignment;
+				}
+
+				if (field === "attributeId") {
+					const attribute = store.itemAttributes.find(
+						(currentAttribute) => currentAttribute.id === value,
+					);
+
+					return {
+						...assignment,
+						attributeId: value,
+						value: attribute?.values[0] ?? "",
+					};
+				}
+
+				return { ...assignment, [field]: value };
+			}),
+		}));
+	}
+
+	function removeAttributeAssignment(assignmentId: string) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			attributeAssignments: current.attributeAssignments.filter(
+				(assignment) => assignment.id !== assignmentId,
+			),
+		}));
+	}
+
+	function addUomConversion() {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			uomConversions: [
+				...current.uomConversions,
+				{
+					id: `item-uom-${Date.now()}`,
+					fromUom: current.uom,
+					quantity: 1,
+					toUom: "PCS",
+					priceBasis: "Source",
+					barcode: "",
+					isPurchaseDefault: false,
+					isSalesDefault: false,
+					isStockDefault: false,
+				},
+			],
+		}));
+	}
+
+	function updateUomConversion(
+		conversionId: string,
+		field: keyof ItemUomConversion,
+		value: string,
+	) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			uomConversions: current.uomConversions.map((conversion) =>
+				conversion.id === conversionId
+					? {
+							...conversion,
+							[field]:
+								field === "quantity"
+									? Number(value) || 0
+									: field === "isPurchaseDefault" ||
+										  field === "isSalesDefault" ||
+										  field === "isStockDefault"
+										? value === "true"
+										: value,
+						}
+					: conversion,
+			),
+		}));
+	}
+
+	function removeUomConversion(conversionId: string) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			uomConversions: current.uomConversions.filter(
+				(conversion) => conversion.id !== conversionId,
+			),
+		}));
+	}
+
+	function updatePriceListPrice(priceListId: string, price: number) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => {
+			const existingPrice = current.priceListPrices.find(
+				(priceListPrice) => priceListPrice.priceListId === priceListId,
+			);
+			const nextPrice: ItemPriceListAssignment = {
+				id: existingPrice?.id ?? `item-price-list-${Date.now()}-${priceListId}`,
+				priceListId,
+				price,
+			};
+
+			return {
+				...current,
+				priceListPrices: existingPrice
+					? current.priceListPrices.map((priceListPrice) =>
+							priceListPrice.priceListId === priceListId
+								? nextPrice
+								: priceListPrice,
+						)
+					: [...current.priceListPrices, nextPrice],
+			};
+		});
 	}
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -412,10 +431,11 @@ export function useItemsFormPage() {
 	}
 
 	return {
+		addAttributeAssignment,
 		addTag,
-		addBundleComponent,
 		addSupplier,
 		addUomConversion,
+		attributeRecords: store.itemAttributes,
 		categoryOptions: createCategorySetupOptions(setupRecords.category),
 		errors,
 		existingItem,
@@ -428,32 +448,22 @@ export function useItemsFormPage() {
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
 		nextStatus,
-		removeBundleComponent,
+		priceLists: store.priceLists,
+		removeAttributeAssignment,
 		removeTag,
 		removeSupplier,
 		removeUomConversion,
 		setIsStatusDialogOpen,
 		statusOptions: createSimpleOptions(["Active", "Inactive"]),
-		subcategoryOptions: createChildSetupOptions({
-			parentValue: values.category,
-			parentRecords: setupRecords.category,
-			records: setupRecords.subcategory,
-		}),
 		supplierOptions: createSimpleOptions([...ItemSupplierOptions]),
-		typeOptions: createChildSetupOptions({
-			parentIdsByRecordId: typeParentIdsByTypeId,
-			parentValue: values.category,
-			parentRecords: setupRecords.category,
-			records: setupRecords.type,
-		}),
 		uomOptions: ItemUomDictionary.map((uom) => ({
-			description: `${uom.description} | ${uom.quantityKind}`,
-			label: uom.code,
-			name: `${uom.description} (${uom.code})`,
+			description: `${uom.code} | ${uom.quantityKind}`,
+			name: uom.description,
 			value: uom.code,
 		})),
-		updateBundleComponent,
 		updateField,
+		updateAttributeAssignment,
+		updatePriceListPrice,
 		updateSupplier,
 		updateUomConversion,
 		values,
@@ -462,111 +472,39 @@ export function useItemsFormPage() {
 			values.defaultWarehouse,
 		),
 		warehouseOptions: createWarehouseOptions(warehouses),
-		bundleComponentItemOptions: createBundleComponentItemOptions(
-			items,
-			existingItem?.id,
-		),
-		reorderBundleComponent,
 		reorderSupplier,
-		subtypeOptions: createChildSetupOptions({
-			parentValue: values.type,
-			parentRecords: setupRecords.type,
-			records: setupRecords.subtype,
-		}),
 	};
 }
 
-function updateBundleComponentValue(
-	component: ItemBundleComponent,
-	field: keyof ItemBundleComponent,
-	value: string,
-	items: ItemRecord[],
-): ItemBundleComponent {
-	if (field === "quantity") {
-		return {
-			...component,
-			quantity: Number(value) || 0,
-		};
-	}
-
-	if (field !== "itemId") {
-		return {
-			...component,
-			[field]: value,
-		};
-	}
-
-	const selectedItem = items.find((item) => item.id === value);
-
-	if (!selectedItem) {
-		return {
-			...component,
-			itemId: "",
-			itemCode: "",
-			itemName: "",
-			uom: "",
-		};
-	}
-
-	return {
-		...component,
-		itemId: selectedItem.id,
-		itemCode: selectedItem.code,
-		itemName: selectedItem.name,
-		uom: selectedItem.uom,
-	};
-}
-
-function createBundleComponentItemOptions(
-	items: ItemRecord[],
-	currentItemId?: string,
-): ItemBundleComponentItemOption[] {
-	return items
-		.filter((item) => item.status === "Active" && item.id !== currentItemId)
-		.map((item) => ({
-			id: item.id,
-			itemCode: item.code,
-			itemName: item.name,
-			itemUom: item.uom,
-			uomOptions: createItemUomOptions(item),
-		}));
-}
-
-function createItemUomOptions(item: ItemRecord) {
-	const uomOptions = new Set([item.uom]);
-
-	item.uomConversions.forEach((conversion) => {
-		uomOptions.add(conversion.fromUom);
-		uomOptions.add(conversion.toUom);
-	});
-
-	return Array.from(uomOptions).filter(Boolean);
-}
-
-function reorderRecordById<TRecord extends { id: string }>(
-	records: TRecord[],
+function reorderSuppliers(
+	suppliers: ItemSupplierAssignment[],
 	recordId: string,
 	overRecordId: string,
 ) {
-	const currentIndex = records.findIndex((record) => record.id === recordId);
-	const nextIndex = records.findIndex((record) => record.id === overRecordId);
+	const currentIndex = suppliers.findIndex((record) => record.id === recordId);
+	const nextIndex = suppliers.findIndex((record) => record.id === overRecordId);
+	const movedSupplier = suppliers[currentIndex];
 
 	if (
 		currentIndex === -1 ||
 		nextIndex === -1 ||
 		currentIndex === nextIndex ||
 		nextIndex < 0 ||
-		nextIndex >= records.length
+		nextIndex >= suppliers.length ||
+		movedSupplier?.isDefault
 	) {
-		return records;
+		return suppliers;
 	}
 
-	const nextRecords = [...records];
+	const nextRecords = [...suppliers];
 	const [record] = nextRecords.splice(currentIndex, 1);
+	const defaultIndex = nextRecords.findIndex((supplier) => supplier.isDefault);
+	const protectedTopIndex = defaultIndex === -1 ? 0 : defaultIndex + 1;
+	const insertionIndex = Math.max(nextIndex, protectedTopIndex);
 
-	nextRecords.splice(nextIndex, 0, record);
+	nextRecords.splice(insertionIndex, 0, record);
 
-	return nextRecords;
+	return moveDefaultSupplierFirst(nextRecords);
 }
 
 function ensureDefaultSupplier(suppliers: ItemSupplierAssignment[]) {
@@ -581,6 +519,28 @@ function ensureDefaultSupplier(suppliers: ItemSupplierAssignment[]) {
 		...supplier,
 		isDefault: index === 0,
 	}));
+}
+
+function createInitialItemFormValues(item: Parameters<typeof createItemFormValues>[0]) {
+	const values = createItemFormValues(item);
+
+	return {
+		...values,
+		suppliers: moveDefaultSupplierFirst(values.suppliers),
+	};
+}
+
+function moveDefaultSupplierFirst(suppliers: ItemSupplierAssignment[]) {
+	const defaultSupplier = suppliers.find((supplier) => supplier.isDefault);
+
+	if (!defaultSupplier) {
+		return suppliers;
+	}
+
+	return [
+		defaultSupplier,
+		...suppliers.filter((supplier) => supplier.id !== defaultSupplier.id),
+	];
 }
 
 function getActionMode(pathname: string): ItemActionMode {
@@ -657,44 +617,6 @@ function createCategorySetupOption(
 	});
 }
 
-function createChildSetupOptions({
-	parentIdsByRecordId,
-	parentRecords,
-	parentValue,
-	records,
-}: {
-	parentIdsByRecordId?: Map<string, string[]>;
-	parentRecords: ItemSetupRecord[];
-	parentValue: string;
-	records: ItemSetupRecord[];
-}): ItemSetupOption[] {
-	const parentRecord = parentRecords.find((record) => record.name === parentValue);
-
-	return records
-		.filter((record) => {
-			if (record.status !== "Active") {
-				return false;
-			}
-
-			if (!parentValue || !parentRecord) {
-				return true;
-			}
-
-			const parentIds = parentIdsByRecordId?.get(record.id) ?? record.parentIds ?? [];
-
-			return parentIds.length === 0 || parentIds.includes(parentRecord.id);
-		})
-		.map((record) =>
-			createSetupOption(record, {
-				description: createSetupOptionDescription(
-					record,
-					parentRecords,
-					parentIdsByRecordId,
-				),
-			}),
-		);
-}
-
 function createSetupOption(
 	record: ItemSetupRecord,
 	options: {
@@ -705,69 +627,9 @@ function createSetupOption(
 	return {
 		children: options.children?.length ? options.children : undefined,
 		description: options.description ?? record.description,
-		label: record.code,
 		name: record.name,
 		value: record.name,
 	};
-}
-
-function createSetupOptionDescription(
-	record: ItemSetupRecord,
-	parentRecords: ItemSetupRecord[],
-	parentIdsByRecordId?: Map<string, string[]>,
-) {
-	const parentIds = parentIdsByRecordId?.get(record.id) ?? record.parentIds ?? [];
-
-	if (parentIds.length === 0) {
-		return `${record.description} Reusable across all parent records.`;
-	}
-
-	const parentNames = parentIds
-		.map((parentId) => parentRecords.find((record) => record.id === parentId)?.name)
-		.filter((name): name is string => Boolean(name));
-
-	if (parentNames.length === 0) {
-		return record.description;
-	}
-
-	return `${record.description} Parent: ${parentNames.join(", ")}.`;
-}
-
-function inferTypeParentIdsByTypeId(
-	setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>,
-	items: ItemRecord[],
-) {
-	const categoryIdByName = new Map(
-		setupRecords.category.map((record) => [record.name, record.id]),
-	);
-	const inferred = new Map<string, Set<string>>();
-
-	setupRecords.type.forEach((typeRecord) => {
-		inferred.set(typeRecord.id, new Set(typeRecord.parentIds ?? []));
-	});
-
-	items.forEach((item) => {
-		const typeRecord = setupRecords.type.find(
-			(record) => record.name === item.type,
-		);
-		const categoryId = categoryIdByName.get(item.category);
-
-		if (!typeRecord || !categoryId) {
-			return;
-		}
-
-		const parentIds = inferred.get(typeRecord.id) ?? new Set<string>();
-
-		parentIds.add(categoryId);
-		inferred.set(typeRecord.id, parentIds);
-	});
-
-	return new Map(
-		Array.from(inferred.entries()).map(([typeId, parentIds]) => [
-			typeId,
-			Array.from(parentIds),
-		]),
-	);
 }
 
 function createSimpleOptions(options: string[]) {

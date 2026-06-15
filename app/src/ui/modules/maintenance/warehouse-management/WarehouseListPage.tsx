@@ -16,6 +16,8 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import {
+	ModuleTableFilterSelect,
+	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
@@ -40,7 +42,7 @@ export function WarehouseListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Warehouse Management"
-				description="Maintain warehouse codes, available branches, and access assignments by location."
+				description="Maintain warehouse records, branch access, storage locations, stock visibility, and movement history."
 				eyebrow={
 					<>
 						<Warehouse className="h-3.5 w-3.5" aria-hidden="true" />
@@ -105,13 +107,50 @@ export function WarehouseListPage() {
 				onEditWarehouse={(warehouse) => setDrawerState({ mode: "edit", warehouse })}
 				table={page.table}
 				toolbar={
-					<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,1fr)]">
+					<ModuleTableToolbar>
 						<ModuleTableSearch
 							label="Search warehouses"
 							value={page.query}
 							onChange={page.handleQueryChange}
 							placeholder="Search by code, warehouse, branch, manager, or status"
 						/>
+						<ModuleTableFilterSelect
+							label="Branch"
+							value={page.branchFilter}
+							options={[
+								{ label: "All", value: "All" },
+								...page.branchFilterOptions.map((branch) => ({
+									label: branch,
+									value: branch,
+								})),
+							]}
+							onChange={page.setBranchFilter}
+						/>
+						<ModuleTableFilterSelect
+							label="Warehouse Type"
+							value={page.typeFilter}
+							options={[
+								{ label: "All", value: "All" },
+								...page.typeFilterOptions.map((type) => ({
+									label: type,
+									value: type,
+								})),
+							]}
+							onChange={page.setTypeFilter}
+						/>
+						<ModuleTableFilterSelect
+							label="Status"
+							value={page.statusFilter}
+							options={[
+								{ label: "All", value: "All" },
+								{ label: "Active", value: "Active" },
+								{ label: "Inactive", value: "Inactive" },
+							]}
+							onChange={page.setStatusFilter}
+						/>
+						<ModuleTableResetButton onClick={page.resetFilters}>
+							Reset
+						</ModuleTableResetButton>
 					</ModuleTableToolbar>
 				}
 			/>
@@ -120,9 +159,9 @@ export function WarehouseListPage() {
 			<AppDialog
 				isOpen={Boolean(page.pendingDeleteWarehouse)}
 				isPending={page.isMutating}
-				title="Delete warehouse?"
-				description={`This will remove ${page.pendingDeleteWarehouse?.name ?? "the selected warehouse"}.`}
-				confirmLabel="Delete Warehouse"
+				title="Set warehouse inactive?"
+				description={`${page.pendingDeleteWarehouse?.name ?? "The selected warehouse"} will remain in history and references, but will no longer be active for normal selection.`}
+				confirmLabel="Set Inactive"
 				tone="danger"
 				onCancel={() => page.setPendingDeleteWarehouse(null)}
 				onConfirm={page.handleConfirmDelete}

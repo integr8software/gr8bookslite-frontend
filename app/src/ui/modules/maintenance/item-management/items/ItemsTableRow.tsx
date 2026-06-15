@@ -16,19 +16,14 @@ export function ItemsTableRow({ item, onStatusChange }: ItemsTableRowProps) {
 				<div className="text-xs text-darknavy/55">{item.description}</div>
 			</td>
 			<td className="px-4 py-4">
-				<div>{item.category}</div>
-				<div className="text-xs text-darknavy/55">{item.subcategory}</div>
-			</td>
-			<td className="px-4 py-4">
-				<div>{item.type}</div>
-				<div className="text-xs text-darknavy/55">{item.subtype}</div>
+				{item.primaryCategory || item.category}
 			</td>
 			<td className="px-4 py-4">{item.uom}</td>
 			<td className="px-4 py-4">
-				{new Intl.NumberFormat("en-US", {
-					currency: "PHP",
-					style: "currency",
-				}).format(item.sellingPrice)}
+				{formatCurrency(item.costPrice)}
+			</td>
+			<td className="px-4 py-4">
+				{formatCurrency(item.sellingPrice)}
 			</td>
 			<td className="px-4 py-4">
 				<span
@@ -41,9 +36,16 @@ export function ItemsTableRow({ item, onStatusChange }: ItemsTableRowProps) {
 					{item.status}
 				</span>
 			</td>
-			<td className="px-4 py-4">
+			<td className="px-4 py-4 text-center">
 				<ItemRecordActions item={item} onStatusChange={onStatusChange} />
 			</td>
 		</tr>
 	);
+}
+
+function formatCurrency(value: number) {
+	return new Intl.NumberFormat("en-US", {
+		currency: "PHP",
+		style: "currency",
+	}).format(value);
 }

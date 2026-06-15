@@ -7,6 +7,7 @@ import type {
 import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 
 type DiscountManagementFieldsProps = {
 	accountOptions: ModuleChartAccount[];
@@ -15,7 +16,9 @@ type DiscountManagementFieldsProps = {
 	moduleOptions: ModuleOption[];
 	values: DiscountManagementFormValues;
 	onAccountChange: (accountId: string) => void;
-	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
+	onInputChange: ChangeEventHandler<
+		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+	>;
 	onModuleChange: (value: string | string[]) => void;
 };
 
@@ -67,12 +70,13 @@ export function DiscountManagementFields({
 					required
 					className="lg:col-span-2"
 				>
-					<input
+					<AppLimitedTextarea
 						name="description"
 						value={values.description}
 						onChange={onInputChange}
 						readOnly={isReadonly}
-						className={fieldClassName}
+						className={`${fieldClassName} min-h-24 py-3`}
+						counterMode="used"
 						placeholder="What is this discount for?"
 					/>
 				</FormField>

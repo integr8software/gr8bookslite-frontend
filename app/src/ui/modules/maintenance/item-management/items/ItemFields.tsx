@@ -1,4 +1,4 @@
-import type { ChangeEventHandler, ReactNode } from "react";
+import { useEffect, useState, type ChangeEventHandler, type KeyboardEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import type {
@@ -9,6 +9,7 @@ import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { ItemTagsInput } from "@/app/src/ui/modules/maintenance/item-management/items/ItemTagsInput";
 
 type ItemFieldsProps = {
@@ -16,9 +17,6 @@ type ItemFieldsProps = {
 	errors: ItemFormErrors;
 	isReadonly: boolean;
 	statusOptions: AppAdvancedDropdownOption[];
-	subcategoryOptions: AppAdvancedDropdownOption[];
-	subtypeOptions: AppAdvancedDropdownOption[];
-	typeOptions: AppAdvancedDropdownOption[];
 	uomOptions: AppAdvancedDropdownOption[];
 	values: ItemFormValues;
 	warehouseItemsHref?: string;
@@ -43,9 +41,6 @@ export function ItemFields({
 	onInputChange,
 	onRemoveTag,
 	statusOptions,
-	subcategoryOptions,
-	subtypeOptions,
-	typeOptions,
 	uomOptions,
 	values,
 	warehouseItemsHref,
@@ -96,14 +91,23 @@ export function ItemFields({
 						placeholder="Barcode"
 					/>
 				</FormField>
-				<FormField label="Third Party Code" error={errors.thirdPartyCode}>
-					<input
-						name="thirdPartyCode"
-						value={values.thirdPartyCode}
-						onChange={onInputChange}
+				<FormField label="Category" error={errors.primaryCategory} required>
+					<AppAdvancedDropdown
+						options={categoryOptions}
+						placeholder="Select category"
 						readOnly={isReadonly}
-						className={fieldClassName}
-						placeholder="Supplier or external code"
+						value={values.primaryCategory}
+						onChange={(value) =>
+							onFieldChange("primaryCategory", String(value))
+						}
+					/>
+				</FormField>
+				<FormField label="Unit of Measurement" error={errors.uom} required>
+					<AppAdvancedDropdown
+						options={uomOptions}
+						readOnly={isReadonly}
+						value={values.uom}
+						onChange={(value) => onFieldChange("uom", String(value))}
 					/>
 				</FormField>
 				<FormField label="Brand" error={errors.brand}>
@@ -116,13 +120,49 @@ export function ItemFields({
 						placeholder="Brand"
 					/>
 				</FormField>
+				<FormField label="Model" error={errors.model}>
+					<input
+						name="model"
+						value={values.model}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={fieldClassName}
+						placeholder="Model, series, or variant"
+					/>
+				</FormField>
+				<FormField
+					label="External Reference Code"
+					error={errors.externalReferenceCode}
+				>
+					<input
+						name="externalReferenceCode"
+						value={values.externalReferenceCode}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={fieldClassName}
+						placeholder="Marketplace, legacy, or external system code"
+					/>
+				</FormField>
+				<FormField
+					label="Responsibility / Cost Center"
+					error={errors.responsibilityCenter}
+				>
+					<input
+						name="responsibilityCenter"
+						value={values.responsibilityCenter}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={fieldClassName}
+						placeholder="Operations, Sales, Branch Setup"
+					/>
+				</FormField>
 				<FormField label="Description" error={errors.description} wide>
-					<textarea
+					<AppLimitedTextarea
 						name="description"
 						value={values.description}
 						onChange={onInputChange}
 						readOnly={isReadonly}
-						className={`${fieldClassName} min-h-24 py-3`}
+						className={`${fieldClassName} min-h-24 max-h-40 resize-y py-3`}
 						placeholder="Item notes"
 					/>
 				</FormField>
@@ -136,56 +176,99 @@ export function ItemFields({
 				</FormField>
 			</FieldPanel>
 
-			<FieldPanel title="Item Setup">
-				<FormField label="Category" error={errors.category} required>
-					<AppAdvancedDropdown
-						options={categoryOptions}
-						placeholder="Select category"
-						readOnly={isReadonly}
-						showSelectedDetails
-						value={values.category}
-						onChange={(value) => onFieldChange("category", String(value))}
-					/>
+			<FieldPanel title="Item Behavior">
+				<div className="rounded-md border border-skyblue/20 bg-skyblue/5 p-3 text-sm leading-6 text-darknavy/70 lg:col-span-2">
+					Behavior flags control where the item becomes available. Sellable
+					items appear in sales documents, purchasable items appear in
+					purchasing, tracked items appear in warehouse/inventory flows, and
+					lot or serial tracking enables the matching warehouse fields.
+				</div>
+				<ToggleField
+					checked={values.sellable}
+					isReadonly={isReadonly}
+					label="Sellable"
+					name="sellable"
+					onChange={onInputChange}
+				/>
+				<ToggleField
+					checked={values.purchasable}
+					isReadonly={isReadonly}
+					label="Purchasable"
+					name="purchasable"
+					onChange={onInputChange}
+				/>
+				<ToggleField
+					checked={values.trackInventory}
+					isReadonly={isReadonly}
+					label="Track Inventory"
+					name="trackInventory"
+					onChange={onInputChange}
+				/>
+				<ToggleField
+					checked={values.service}
+					isReadonly={isReadonly}
+					label="Service"
+					name="service"
+					onChange={onInputChange}
+				/>
+				<ToggleField
+					checked={values.asset}
+					isReadonly={isReadonly}
+					label="Asset"
+					name="asset"
+					onChange={onInputChange}
+				/>
+				<ToggleField
+					checked={values.hasVariants}
+					isReadonly={isReadonly}
+					label="Has Variants"
+					name="hasVariants"
+					onChange={onInputChange}
+				/>
+				<ToggleField
+					checked={values.lotTracking}
+					isReadonly={isReadonly}
+					label="Lot Tracking"
+					name="lotTracking"
+					onChange={onInputChange}
+				/>
+				<ToggleField
+					checked={values.serialTracking}
+					isReadonly={isReadonly}
+					label="Serial Tracking"
+					name="serialTracking"
+					onChange={onInputChange}
+				/>
+				<FormField label="Perishability" error={errors.perishability}>
+					<select
+						name="perishability"
+						value={values.perishability}
+						onChange={onInputChange}
+						disabled={isReadonly}
+						className={fieldClassName}
+					>
+						<option value="Non Perishable">Non Perishable</option>
+						<option value="Perishable">Perishable</option>
+					</select>
 				</FormField>
-				<FormField label="Sub Category" error={errors.subcategory} required>
-					<AppAdvancedDropdown
-						options={subcategoryOptions}
-						placeholder="Select sub category"
-						readOnly={isReadonly}
-						showSelectedDetails
-						value={values.subcategory}
-						onChange={(value) => onFieldChange("subcategory", String(value))}
-					/>
+				<FormField label="Status" error={errors.status} required>
+					<select
+						name="status"
+						value={values.status}
+						onChange={onInputChange}
+						disabled={isReadonly}
+						className={fieldClassName}
+					>
+						{statusOptions.map((status) => (
+							<option key={status.value} value={status.value}>
+								{status.name}
+							</option>
+						))}
+					</select>
 				</FormField>
-				<FormField label="Item Type" error={errors.type} required>
-					<AppAdvancedDropdown
-						options={typeOptions}
-						placeholder="Select item type"
-						readOnly={isReadonly}
-						showSelectedDetails
-						value={values.type}
-						onChange={(value) => onFieldChange("type", String(value))}
-					/>
-				</FormField>
-				<FormField label="Item Subtype" error={errors.subtype} required>
-					<AppAdvancedDropdown
-						options={subtypeOptions}
-						placeholder="Select item subtype"
-						readOnly={isReadonly}
-						showSelectedDetails
-						value={values.subtype}
-						onChange={(value) => onFieldChange("subtype", String(value))}
-					/>
-				</FormField>
-				<FormField label="Item UOM" error={errors.uom} required>
-					<AppAdvancedDropdown
-						options={uomOptions}
-						readOnly={isReadonly}
-						showSelectedDetails
-						value={values.uom}
-						onChange={(value) => onFieldChange("uom", String(value))}
-					/>
-				</FormField>
+			</FieldPanel>
+
+			<FieldPanel title="Inventory Setup">
 				<FormField label="Default Warehouse" error={errors.defaultWarehouse}>
 					<AppAdvancedDropdown
 						isClearable
@@ -207,41 +290,109 @@ export function ItemFields({
 						</Link>
 					) : null}
 				</FormField>
-				<ToggleField
-					checked={values.supportsBundle}
-					isReadonly={isReadonly}
-					label="Bundle Components"
-					name="supportsBundle"
-					onChange={onInputChange}
-				/>
-				<FormField label="Status" error={errors.status} required>
-					<select
-						name="status"
-						value={values.status}
-						onChange={onInputChange}
-						disabled={isReadonly}
-						className={fieldClassName}
-					>
-						{statusOptions.map((status) => (
-							<option key={status.value} value={status.value}>
-								{status.name}
-							</option>
-						))}
-					</select>
-				</FormField>
-			</FieldPanel>
-
-			<FieldPanel title="Pricing & Cost">
-				<FormField label="Cost" error={errors.costPrice}>
+				<FormField label="Default Location" error={errors.defaultLocation}>
 					<input
-						name="costPrice"
-						type="number"
-						min={0}
-						step="0.01"
-						value={values.costPrice}
+						name="defaultLocation"
+						value={values.defaultLocation}
 						onChange={onInputChange}
 						readOnly={isReadonly}
 						className={fieldClassName}
+						placeholder="WH-A-Z1-R01-S02-B03"
+					/>
+				</FormField>
+				<FormField label="Zone" error={errors.defaultZone}>
+					<input
+						name="defaultZone"
+						value={values.defaultZone}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={fieldClassName}
+						placeholder="Zone A"
+					/>
+				</FormField>
+				<FormField label="Rack" error={errors.defaultRack}>
+					<input
+						name="defaultRack"
+						value={values.defaultRack}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={fieldClassName}
+						placeholder="R01"
+					/>
+				</FormField>
+				<FormField label="Shelf" error={errors.defaultShelf}>
+					<input
+						name="defaultShelf"
+						value={values.defaultShelf}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={fieldClassName}
+						placeholder="S02"
+					/>
+				</FormField>
+				<FormField label="Bin" error={errors.defaultBin}>
+					<input
+						name="defaultBin"
+						value={values.defaultBin}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={fieldClassName}
+						placeholder="B03"
+					/>
+				</FormField>
+				<FormField label="Lot No." error={errors.defaultLotNo}>
+					<input
+						name="defaultLotNo"
+						value={values.defaultLotNo}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={fieldClassName}
+						placeholder="LOT-2026-001"
+					/>
+				</FormField>
+				<FormField label="Lead Time" error={errors.leadTime}>
+					<input
+						name="leadTime"
+						value={values.leadTime}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={fieldClassName}
+						placeholder="3 days"
+					/>
+				</FormField>
+				<FormField label="Reorder Level" error={errors.reorderLevel}>
+					<DecimalNumberInput
+						name="reorderLevel"
+						value={values.reorderLevel}
+						readOnly={isReadonly}
+						onValueChange={(value) => onFieldChange("reorderLevel", value)}
+					/>
+				</FormField>
+				<FormField label="Minimum Stock" error={errors.minimumStock}>
+					<DecimalNumberInput
+						name="minimumStock"
+						value={values.minimumStock}
+						readOnly={isReadonly}
+						onValueChange={(value) => onFieldChange("minimumStock", value)}
+					/>
+				</FormField>
+				<FormField label="Maximum Stock" error={errors.maximumStock}>
+					<DecimalNumberInput
+						name="maximumStock"
+						value={values.maximumStock}
+						readOnly={isReadonly}
+						onValueChange={(value) => onFieldChange("maximumStock", value)}
+					/>
+				</FormField>
+			</FieldPanel>
+
+			<FieldPanel title="Pricing and Tax">
+				<FormField label="Cost" error={errors.costPrice}>
+					<DecimalNumberInput
+						name="costPrice"
+						value={values.costPrice}
+						readOnly={isReadonly}
+						onValueChange={(value) => onFieldChange("costPrice", value)}
 					/>
 				</FormField>
 				<FormField label="Suggested Price">
@@ -249,31 +400,28 @@ export function ItemFields({
 						{formatCurrency(suggestedSellingPrice)}
 					</div>
 				</FormField>
-				<ToggleField
-					checked={values.isVatable}
-					isReadonly={isReadonly}
-					label="VATable"
-					name="isVatable"
-					onChange={onInputChange}
-				/>
-				<ToggleField
-					checked={values.isVatIncluded}
-					isReadonly={isReadonly}
-					label="VAT Included"
-					name="isVatIncluded"
-					onChange={onInputChange}
-				/>
 				<FormField label="Selling Price" error={errors.sellingPrice}>
-					<input
+					<DecimalNumberInput
 						name="sellingPrice"
-						type="number"
-						min={0}
-						step="0.01"
 						value={values.sellingPrice}
-						onChange={onInputChange}
 						readOnly={isReadonly}
-						className={fieldClassName}
+						onValueChange={(value) => onFieldChange("sellingPrice", value)}
 					/>
+				</FormField>
+				<FormField label="Tax Treatment" error={errors.taxTreatment}>
+					<select
+						name="taxTreatment"
+						value={values.taxTreatment}
+						onChange={onInputChange}
+						disabled={isReadonly}
+						className={fieldClassName}
+					>
+						{TaxTreatmentOptions.map((taxTreatment) => (
+							<option key={taxTreatment.value} value={taxTreatment.value}>
+								{taxTreatment.label}
+							</option>
+						))}
+					</select>
 				</FormField>
 			</FieldPanel>
 		</div>
@@ -281,11 +429,77 @@ export function ItemFields({
 }
 
 function createSuggestedSellingPrice(values: ItemFormValues) {
-	if (!values.isVatable && !values.isVatIncluded) {
+	if (values.taxTreatment !== "VAT Exclusive") {
 		return values.costPrice;
 	}
 
 	return values.costPrice * 1.12;
+}
+
+function DecimalNumberInput({
+	name,
+	readOnly,
+	value,
+	onValueChange,
+}: {
+	name: keyof ItemFormValues;
+	readOnly: boolean;
+	value: number;
+	onValueChange: (value: number) => void;
+}) {
+	const [draftValue, setDraftValue] = useState(String(value));
+
+	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- Keep the editable draft synchronized when parent numeric value changes.
+		setDraftValue(String(value));
+	}, [value]);
+
+	function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+		if (["e", "E", "+", "-"].includes(event.key)) {
+			event.preventDefault();
+		}
+	}
+
+	function handleChange(value: string) {
+		if (/[eE+-]/.test(value)) {
+			return;
+		}
+
+		setDraftValue(value);
+
+		if (!value.trim()) {
+			return;
+		}
+
+		const nextValue = Number(value);
+
+		if (Number.isFinite(nextValue) && nextValue >= 0) {
+			onValueChange(nextValue);
+		}
+	}
+
+	function handleBlur() {
+		if (!draftValue.trim()) {
+			onValueChange(0);
+			setDraftValue("0");
+		}
+	}
+
+	return (
+		<input
+			name={name}
+			type="number"
+			min={0}
+			step="any"
+			inputMode="decimal"
+			value={draftValue}
+			onBlur={handleBlur}
+			onChange={(event) => handleChange(event.target.value)}
+			onKeyDown={handleKeyDown}
+			readOnly={readOnly}
+			className={fieldClassName}
+		/>
+	);
 }
 
 function formatCurrency(value: number) {
@@ -369,3 +583,11 @@ function ToggleField({
 
 const fieldClassName =
 	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy read-only:bg-offwhite/65";
+
+const TaxTreatmentOptions = [
+	{ label: "VAT Exclusive (12%)", value: "VAT Exclusive" },
+	{ label: "VAT Inclusive (12%)", value: "VAT Inclusive" },
+	{ label: "VAT Exempt (0%)", value: "VAT Exempt" },
+	{ label: "Zero Rated (0%)", value: "Zero Rated" },
+	{ label: "Non-VAT (0%)", value: "Non-VAT" },
+] as const;

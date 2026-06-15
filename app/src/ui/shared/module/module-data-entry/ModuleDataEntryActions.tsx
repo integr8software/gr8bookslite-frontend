@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronDown, Download, Plus, Upload, X } from "lucide-react";
+import { ChevronDown, Download, Plus, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import {
 	useEffect,
 	useLayoutEffect,
@@ -20,19 +21,22 @@ import type {
 } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export function ModuleDataEntryToolbarButton({
+	disabled = false,
 	icon: Icon,
 	label,
 	onClick,
 }: {
-	icon: typeof Upload;
+	disabled?: boolean;
+	icon: LucideIcon;
 	label: string;
 	onClick: () => void;
 }) {
 	return (
 		<button
 			type="button"
+			disabled={disabled}
 			onClick={onClick}
-			className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-skyblue/20 bg-white px-3 text-xs font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+			className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-skyblue/20 bg-white px-3 text-xs font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45"
 		>
 			<Icon className="h-4 w-4" aria-hidden="true" />
 			{label}

@@ -7,6 +7,7 @@ import type {
 	ItemStatus,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type ItemActionButtonsProps = {
 	isReadonly: boolean;
@@ -29,14 +30,17 @@ export function ItemActionButtons({
 
 	return (
 		<>
-			<Link href={ItemsHref} className={moduleHeaderActionClassNames.secondary}>
+			<Link
+				href={ItemsHref}
+				className={joinClasses(responsiveActionClassName, moduleHeaderActionClassNames.secondary)}
+			>
 				<ArrowLeft className="h-4 w-4" aria-hidden="true" />
 				Back
 			</Link>
 			{mode === "view" && item ? (
 				<Link
 					href={`${ItemsHref}/edit/${item.id}`}
-					className={moduleHeaderActionClassNames.secondary}
+					className={joinClasses(responsiveActionClassName, moduleHeaderActionClassNames.secondary)}
 				>
 					<Edit3 className="h-4 w-4" aria-hidden="true" />
 					Edit
@@ -48,8 +52,8 @@ export function ItemActionButtons({
 					onClick={onStatusChange}
 					className={
 						nextStatus === "Inactive"
-							? moduleHeaderActionClassNames.danger
-							: moduleHeaderActionClassNames.secondary
+							? joinClasses(responsiveActionClassName, moduleHeaderActionClassNames.danger)
+							: joinClasses(responsiveActionClassName, moduleHeaderActionClassNames.secondary)
 					}
 				>
 					<StatusIcon className="h-4 w-4" aria-hidden="true" />
@@ -59,14 +63,17 @@ export function ItemActionButtons({
 			{mode === "edit" && item ? (
 				<Link
 					href={`${ItemsHref}/view/${item.id}`}
-					className={moduleHeaderActionClassNames.secondary}
+					className={joinClasses(responsiveActionClassName, moduleHeaderActionClassNames.secondary)}
 				>
 					<X className="h-4 w-4" aria-hidden="true" />
 					Cancel
 				</Link>
 			) : null}
 			{!isReadonly ? (
-				<button type="submit" className={moduleHeaderActionClassNames.primary}>
+				<button
+					type="submit"
+					className={joinClasses(responsiveActionClassName, moduleHeaderActionClassNames.primary)}
+				>
 					<Save className="h-4 w-4" aria-hidden="true" />
 					Save Item
 				</button>
@@ -74,4 +81,6 @@ export function ItemActionButtons({
 		</>
 	);
 }
+
+const responsiveActionClassName = "w-full sm:w-auto";
 

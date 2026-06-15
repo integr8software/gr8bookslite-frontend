@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { ItemPromotionsMain } from "@/app/src/ui/modules/maintenance/item-management/item-promotions/Main";
+import { ItemPromotionsListPage } from "@/app/src/ui/modules/maintenance/item-management/item-promotions/ItemPromotionsListPage";
 
 const PageTitle = "Item Promotions";
 
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function ItemPromotionsPage() {
-    return <ItemPromotionsMain />;
+    return <ItemPromotionsListPage />;
 }

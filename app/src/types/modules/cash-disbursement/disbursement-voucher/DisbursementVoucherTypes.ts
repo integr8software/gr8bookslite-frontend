@@ -1,8 +1,11 @@
 export type DisbursementVoucherStatus =
-  | "Approved"
-  | "Pending Review"
+  | "Active"
   | "Draft"
-  | "Rejected";
+  | "Pending"
+  | "Approved"
+  | "Disapproved"
+  | "Cancelled"
+  | "Completed";
 
 export type DisbursementPaymentMethod =
   | "Bank Transfer"
@@ -11,6 +14,12 @@ export type DisbursementPaymentMethod =
   | "Petty Cash"
   | (string & {});
 
+export type DisbursementPaymentClassification =
+  | "Cash"
+  | "With Bank"
+  | "Bank Transfer"
+  | "Debit";
+
 export type DisbursementType =
   | "Vendor Payment"
   | "Operating Expense"
@@ -18,7 +27,7 @@ export type DisbursementType =
   | "Capital Expenditure"
   | (string & {});
 
-export type VoucherCurrency = "PHP" | "USD";
+export type VoucherCurrency = "PHP" | "USD" | (string & {});
 
 export type WorkflowStep = "details" | "entries" | "review";
 
@@ -30,7 +39,8 @@ export type DisbursementVoucherCopySource =
   | "Advances to Supplier"
   | "Cash Advance"
   | "Petty Cash Fund Replenishment"
-  | "Purchase Order";
+  | "Purchase Order"
+  | (string & {});
 
 export type DisbursementVoucherPaymentDetails = {
   bankAccountCode: string;
@@ -41,7 +51,14 @@ export type DisbursementVoucherPaymentDetails = {
   bankName: string;
   checkDate: string;
   checkNo: string;
+  checkStatus?: string;
+  commission?: string;
+  payee?: string;
   paymentReferenceNo: string;
+  transferAccountName?: string;
+  transferAccountNo?: string;
+  transferToBank?: string;
+  transferTo?: string;
 };
 
 export type DisbursementVoucherBankAccount = {
@@ -55,10 +72,12 @@ export type DisbursementVoucherBankAccount = {
 };
 
 export type DisbursementVoucherPaymentAccount = {
-  accountCode: string;
-  accountTitle: string;
   paymentType: DisbursementPaymentMethod;
-  withBank: boolean;
+  type: DisbursementPaymentClassification;
+  status?: "Active" | "Inactive";
+  accountCode?: string;
+  accountTitle?: string;
+  withBank?: boolean;
 };
 
 export type DisbursementTransactionRecord = {
@@ -131,6 +150,7 @@ export type DisbursementVoucherRecord = {
   taxRate: string;
   taxDetails: DisbursementTaxDetails;
   remarks: string;
+  referenceModule: string;
   voucherReferenceNo: string;
   invoiceReferenceNo: string;
   paymentDueDate: string;
@@ -161,6 +181,7 @@ export type DisbursementVoucherFormValues = {
   taxRate: string;
   taxDetails: DisbursementTaxDetails;
   remarks: string;
+  referenceModule: string;
   voucherReferenceNo: string;
   invoiceReferenceNo: string;
   paymentDueDate: string;

@@ -1,10 +1,14 @@
 import type { ChangeEventHandler, ReactNode } from "react";
-import { WarehouseStatusOptions } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
+import {
+	WarehouseStatusOptions,
+	WarehouseTypeOptions,
+} from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import type {
 	WarehouseFormErrors,
 	WarehouseFormValues,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 
 type WarehouseFieldsProps = {
 	branchOptions: readonly string[];
@@ -46,13 +50,28 @@ export function WarehouseFields({
 						placeholder="Main Warehouse"
 					/>
 				</FormField>
+				<FormField label="Warehouse Type" error={errors.type} required>
+					<select
+						name="type"
+						value={values.type}
+						onChange={onInputChange}
+						className={fieldClassName}
+					>
+						{WarehouseTypeOptions.map((type) => (
+							<option key={type} value={type}>
+								{type}
+							</option>
+						))}
+					</select>
+				</FormField>
 				<FormField label="Description" error={errors.description}>
-					<textarea
+					<AppLimitedTextarea
 						name="description"
 						value={values.description}
 						onChange={onInputChange}
 						className={`${fieldClassName} min-h-24 py-3`}
 						placeholder="Usage notes for this warehouse"
+						counterMode="used"
 					/>
 				</FormField>
 				<FormField label="Address" error={errors.address} required>

@@ -47,7 +47,7 @@ export function WarehouseRecordActions({
 			<ModuleTableActionButton
 				variant="delete"
 				onClick={() => onDeleteWarehouse(warehouse)}
-				label={`Delete ${warehouse.name}`}
+				label={`Set ${warehouse.name} inactive`}
 			/>
 		</ModuleTableActions>
 	);

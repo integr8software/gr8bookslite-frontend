@@ -21,6 +21,15 @@ import type {
 	MaterialRequestStatus,
 } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
 import { validateMaterialRequestForm } from "@/app/src/validations/modules/inventory/material-request/MaterialRequestValidation";
+import {
+	appendModuleDataEntryRows,
+	clearModuleDataEntryRows,
+	duplicateModuleDataEntryRow,
+	insertModuleDataEntryRow,
+	moveModuleDataEntryRow,
+	pasteModuleDataEntryRows,
+	removeModuleDataEntryRow,
+} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRowUtils";
 
 export function useMaterialRequestFormPage() {
 	const router = useRouter();
@@ -112,10 +121,7 @@ export function useMaterialRequestFormPage() {
 
 		setValues((current) => ({
 			...current,
-			items: [
-				...current.items,
-				...Array.from({ length: count }, createEmptyItem),
-			],
+			items: appendModuleDataEntryRows(current.items, createEmptyItem, count),
 		}));
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
@@ -126,18 +132,14 @@ export function useMaterialRequestFormPage() {
 		}
 
 		setValues((current) => {
-			const rowIndex = current.items.findIndex((item) => item.id === itemId);
-			const insertIndex =
-				rowIndex === -1
-					? current.items.length
-					: rowIndex + (position === "below" ? 1 : 0);
-			const nextItems = [...current.items];
-
-			nextItems.splice(insertIndex, 0, createEmptyItem());
-
 			return {
 				...current,
-				items: nextItems,
+				items: insertModuleDataEntryRow(
+					current.items,
+					itemId,
+					position,
+					createEmptyItem,
+				),
 			};
 		});
 		setErrors((current) => ({ ...current, items: undefined }));
@@ -149,23 +151,11 @@ export function useMaterialRequestFormPage() {
 		}
 
 		setValues((current) => {
-			const rowIndex = current.items.findIndex((item) => item.id === itemId);
-			const sourceItem = current.items[rowIndex];
-
-			if (!sourceItem) {
-				return current;
-			}
-
-			const nextItems = [...current.items];
-
-			nextItems.splice(rowIndex + 1, 0, {
-				...sourceItem,
-				id: createMaterialRequestId("item"),
-			});
-
 			return {
 				...current,
-				items: nextItems,
+				items: duplicateModuleDataEntryRow(current.items, itemId, () =>
+					createMaterialRequestId("item"),
+				),
 			};
 		});
 		setErrors((current) => ({ ...current, items: undefined }));
@@ -177,21 +167,9 @@ export function useMaterialRequestFormPage() {
 		}
 
 		setValues((current) => {
-			const fromIndex = current.items.findIndex((item) => item.id === fromItemId);
-			const toIndex = current.items.findIndex((item) => item.id === toItemId);
-
-			if (fromIndex === -1 || toIndex === -1) {
-				return current;
-			}
-
-			const nextItems = [...current.items];
-			const [movedItem] = nextItems.splice(fromIndex, 1);
-
-			nextItems.splice(toIndex, 0, movedItem);
-
 			return {
 				...current,
-				items: nextItems,
+				items: moveModuleDataEntryRow(current.items, fromItemId, toItemId),
 			};
 		});
 		setErrors((current) => ({ ...current, items: undefined }));
@@ -204,10 +182,9 @@ export function useMaterialRequestFormPage() {
 
 		setValues((current) => ({
 			...current,
-			items:
-				current.items.length > 1
-					? current.items.filter((item) => item.id !== itemId)
-					: current.items,
+			items: removeModuleDataEntryRow(current.items, itemId, {
+				keepAtLeastOne: true,
+			}),
 		}));
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
@@ -237,14 +214,14 @@ export function useMaterialRequestFormPage() {
 		}
 
 		setValues((current) => {
-			const nextItems =
-				mode === "all"
-					? []
-					: current.items.filter((item) => !shouldClearItem(item, mode));
-
 			return {
 				...current,
-				items: nextItems.length > 0 ? nextItems : [createEmptyItem()],
+				items: clearModuleDataEntryRows(
+					current.items,
+					mode,
+					shouldClearItem,
+					createEmptyItem,
+				),
 			};
 		});
 		setErrors((current) => ({ ...current, items: undefined }));
@@ -259,27 +236,14 @@ export function useMaterialRequestFormPage() {
 		}
 
 		setValues((current) => {
-			const startIndex = current.items.findIndex(
-				(item) => item.id === startItemId,
-			);
-			const resolvedStartIndex =
-				startIndex === -1 ? current.items.length : startIndex;
-			const nextItems = [...current.items];
-
-			updates.forEach((update, rowOffset) => {
-				const itemIndex = resolvedStartIndex + rowOffset;
-				const currentItem = nextItems[itemIndex] ?? createEmptyItem();
-
-				nextItems[itemIndex] = {
-					...currentItem,
-					...update,
-					id: currentItem.id,
-				};
-			});
-
 			return {
 				...current,
-				items: nextItems,
+				items: pasteModuleDataEntryRows(
+					current.items,
+					startItemId,
+					updates,
+					createEmptyItem,
+				),
 			};
 		});
 		setErrors((current) => ({ ...current, items: undefined }));

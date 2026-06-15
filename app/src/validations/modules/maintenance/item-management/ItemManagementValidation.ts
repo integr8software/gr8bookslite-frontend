@@ -21,11 +21,31 @@ export const ItemUomConversionValidationSchema = z.object({
 	fromUom: z.string().trim().min(1, "Select the source UOM."),
 	quantity: z.number().positive("Conversion quantity must be greater than zero."),
 	toUom: z.string().trim().min(1, "Select the target UOM."),
+	priceBasis: z.enum(["Source", "Target"]).optional(),
+	barcode: z.string().trim().optional(),
+	isPurchaseDefault: z.boolean().optional(),
+	isSalesDefault: z.boolean().optional(),
+	isStockDefault: z.boolean().optional(),
+});
+
+export const ItemAttributeAssignmentValidationSchema = z.object({
+	id: z.string(),
+	attributeId: z.string().trim().min(1, "Select an attribute."),
+	value: z.string().trim().min(1, "Enter an attribute value."),
+});
+
+export const ItemPriceListAssignmentValidationSchema = z.object({
+	id: z.string(),
+	priceListId: z.string().trim().min(1, "Select a price list."),
+	price: z.number().nonnegative("Price must not be negative."),
 });
 
 export const ItemSupplierAssignmentValidationSchema = z.object({
 	id: z.string(),
 	supplier: z.string().trim().min(1, "Select a supplier."),
+	supplierItemCode: z.string().trim().optional(),
+	leadTime: z.string().trim().optional(),
+	lastCost: z.number().nonnegative("Last cost must not be negative."),
 	isDefault: z.boolean(),
 });
 
@@ -34,36 +54,55 @@ export const ItemFormValidationSchema = z
 		code: z.string().trim().min(1, "Enter an item code."),
 		skuCode: z.string().trim().optional(),
 		name: z.string().trim().min(1, "Enter an item name."),
-		thirdPartyCode: z.string().trim().optional(),
+		model: z.string().trim().optional(),
+		externalReferenceCode: z.string().trim().optional(),
 		brand: z.string().trim().optional(),
 		suppliers: z.array(ItemSupplierAssignmentValidationSchema),
 		barcode: z.string().trim().optional(),
-		category: z.string().trim().min(1, "Enter a category."),
-		subcategory: z.string().trim().min(1, "Enter a sub category."),
-		type: z.string().trim().min(1, "Enter an item type."),
-		subtype: z.string().trim().min(1, "Enter an item subtype."),
+		primaryCategory: z.string().trim().min(1, "Select a primary category."),
 		uom: z.string().trim().min(1, "Enter a UOM."),
+		responsibilityCenter: z.string().trim().optional(),
 		costPrice: z.number().nonnegative("Cost must not be negative."),
 		sellingPrice: z.number().nonnegative("Selling price must not be negative."),
-		isVatable: z.boolean(),
-		isVatIncluded: z.boolean(),
+		taxTreatment: z.enum([
+			"VAT Exclusive",
+			"VAT Inclusive",
+			"VAT Exempt",
+			"Zero Rated",
+			"Non-VAT",
+		]),
 		status: z.enum(["Active", "Inactive"]),
 		defaultWarehouse: z.string().trim().optional(),
-		supportsBundle: z.boolean(),
-		description: z.string().trim().optional(),
-		tags: z.array(z.string().trim().min(1)),
+		defaultLocation: z.string().trim().optional(),
+		defaultZone: z.string().trim().optional(),
+		defaultRack: z.string().trim().optional(),
+		defaultShelf: z.string().trim().optional(),
+		defaultBin: z.string().trim().optional(),
+		defaultLotNo: z.string().trim().optional(),
+		leadTime: z.string().trim().optional(),
+		reorderLevel: z.number().nonnegative("Reorder level must not be negative."),
+		minimumStock: z.number().nonnegative("Minimum stock must not be negative."),
+		maximumStock: z.number().nonnegative("Maximum stock must not be negative."),
+		perishability: z.enum(["Perishable", "Non Perishable"]),
+		sellable: z.boolean(),
+		purchasable: z.boolean(),
+		trackInventory: z.boolean(),
+		service: z.boolean(),
+		asset: z.boolean(),
+		hasVariants: z.boolean(),
+		lotTracking: z.boolean(),
+		serialTracking: z.boolean(),
+		attributeAssignments: z.array(ItemAttributeAssignmentValidationSchema),
 		uomConversions: z.array(ItemUomConversionValidationSchema),
-		bundleComponents: z.array(ItemBundleComponentValidationSchema),
+		priceListPrices: z.array(ItemPriceListAssignmentValidationSchema),
+		description: z
+			.string()
+			.trim()
+			.max(500, "Description must be 500 characters or fewer.")
+			.optional(),
+		tags: z.array(z.string().trim().min(1)),
 	})
 	.superRefine((values, context) => {
-		if (values.supportsBundle && values.bundleComponents.length === 0) {
-			context.addIssue({
-				code: "custom",
-				message: "Add at least one bundle component.",
-				path: ["bundleComponents"],
-			});
-		}
-
 		if (
 			values.suppliers.length > 0 &&
 			values.suppliers.filter((supplier) => supplier.isDefault).length !== 1
@@ -116,7 +155,11 @@ export const ItemCategoryClassificationFormValidationSchema = z
 	.object({
 		name: z.string().trim().min(1, "Enter a category name."),
 		parentId: z.string(),
-		description: z.string().trim().optional(),
+		description: z
+			.string()
+			.trim()
+			.max(500, "Description must be 500 characters or fewer.")
+			.optional(),
 		accountingSetupMode: z.enum(["inherit", "notSet", "own"]),
 		accountingSetup: ItemCategoryAccountingSetupValidationSchema,
 		allowSubCategory: z.boolean(),

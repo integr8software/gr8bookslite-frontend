@@ -1,7 +1,5 @@
 import type {
 	AuditTrailAction,
-	AuditTrailRecord,
-	AuditTrailSeverity,
 } from "@/app/src/types/modules/system-administration/audit-trail/AuditTrailTypes";
 
 export function formatAuditTrailCreatedAt(createdAt: string) {
@@ -14,30 +12,14 @@ export function formatAuditTrailCreatedAt(createdAt: string) {
 	}).format(new Date(createdAt));
 }
 
-export function formatAuditTrailModuleTrail(record: AuditTrailRecord) {
-	return record.trail.join(" / ");
-}
-
 export function getAuditTrailActionTone(action: AuditTrailAction) {
 	if (action === "Delete" || action === "Reject") {
 		return "danger";
 	}
 
-	if (action === "Approve" || action === "Generate") {
+	if (action === "Approve" || action === "Save" || action === "Export") {
 		return "success";
 	}
 
 	return "neutral";
-}
-
-export function getAuditTrailSeverityClassName(severity: AuditTrailSeverity) {
-	if (severity === "Critical") {
-		return "bg-coralpink/12 text-coralpink";
-	}
-
-	if (severity === "Warning") {
-		return "bg-citron/35 text-darknavy";
-	}
-
-	return "bg-skyblue/12 text-darknavy";
 }

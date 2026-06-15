@@ -14,7 +14,7 @@ import {
 	outlineButtonClassName,
 	ReadOnlyTotal,
 	secondaryButtonClassName,
-	type PettyCashFundReplenishmentFormPageState,
+	type PettyCashFundReplenishmentActionPageState,
 } from "@/app/src/ui/modules/cash-disbursement/petty-cash-fund-replenishment/PettyCashFundReplenishmentFormControls";
 
 const tableHeaderClassName = "border-b border-darknavy/10 px-3 py-3";
@@ -25,7 +25,7 @@ export function PettyCashFundReplenishmentToolbar({
 	page,
 }: {
 	onCancel: () => void;
-	page: PettyCashFundReplenishmentFormPageState;
+	page: PettyCashFundReplenishmentActionPageState;
 }) {
 	return (
 		<div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -68,7 +68,7 @@ export function PettyCashFundReplenishmentToolbar({
 export function PettyCashFundReplenishmentDetailsFields({
 	page,
 }: {
-	page: PettyCashFundReplenishmentFormPageState;
+	page: PettyCashFundReplenishmentActionPageState;
 }) {
 	return (
 		<div className="rounded-3xl border border-darknavy/10 bg-offwhite/80 p-6">
@@ -114,7 +114,7 @@ export function PettyCashFundReplenishmentDetailsFields({
 export function PettyCashFundReplenishmentSummaryFields({
 	page,
 }: {
-	page: PettyCashFundReplenishmentFormPageState;
+	page: PettyCashFundReplenishmentActionPageState;
 }) {
 	return (
 		<aside className="space-y-5 rounded-3xl border border-darknavy/10 bg-offwhite/80 p-6">
@@ -206,7 +206,7 @@ export function PettyCashFundReplenishmentSummaryFields({
 export function PettyCashFundReplenishmentEntriesTable({
 	page,
 }: {
-	page: PettyCashFundReplenishmentFormPageState;
+	page: PettyCashFundReplenishmentActionPageState;
 }) {
 	return (
 		<div className="rounded-3xl border border-darknavy/10 bg-white p-6 shadow-sm">
@@ -260,7 +260,7 @@ export function PettyCashFundReplenishmentEntriesTable({
 function PettyCashFundReplenishmentCopyFromMenu({
 	page,
 }: {
-	page: PettyCashFundReplenishmentFormPageState;
+	page: PettyCashFundReplenishmentActionPageState;
 }) {
 	return (
 		<div className="relative inline-flex">

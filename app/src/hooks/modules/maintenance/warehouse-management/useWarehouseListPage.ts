@@ -13,6 +13,7 @@ import {
 import { WarehouseManagementTableColumns } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import type {
 	WarehouseRecord,
+	WarehouseStatus,
 	WarehouseTableColumnKey,
 	WarehouseTableRecord,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
@@ -27,6 +28,11 @@ export function useWarehouseListPage() {
 		warehouses,
 	} = useWarehouseManagementStore();
 	const [query, setQuery] = useState("");
+	const [branchFilter, setBranchFilterState] = useState("All");
+	const [statusFilter, setStatusFilterState] = useState<WarehouseStatus | "All">(
+		"All",
+	);
+	const [typeFilter, setTypeFilterState] = useState("All");
 	const [pendingDeleteWarehouse, setPendingDeleteWarehouse] =
 		useState<WarehouseRecord | null>(null);
 	const [pagination, setPagination] = useState<PaginationState>({
@@ -41,20 +47,46 @@ export function useWarehouseListPage() {
 			warehouses.map((warehouse) => ({
 				...warehouse,
 				availableBranchLabel: getWarehouseAvailableBranchLabel(warehouse),
+				totalItems: warehouse.items.length,
+				inventoryValue: warehouse.items.reduce(
+					(total, item) => total + item.onHand * item.unitCost,
+					0,
+				),
 			})),
 		[warehouses],
+	);
+	const branchFilterOptions = useMemo(
+		() =>
+			createUniqueSortedOptions(
+				tableWarehouses.flatMap((warehouse) =>
+					warehouse.availableBranches.length > 0
+						? warehouse.availableBranches
+						: [warehouse.branchName],
+				),
+			),
+		[tableWarehouses],
+	);
+	const typeFilterOptions = useMemo(
+		() =>
+			createUniqueSortedOptions(
+				tableWarehouses.map((warehouse) => warehouse.type),
+			),
+		[tableWarehouses],
 	);
 	const filteredWarehouses = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
-		if (!normalizedQuery) {
-			return tableWarehouses;
-		}
-
 		return tableWarehouses.filter((warehouse) =>
+			(branchFilter === "All" ||
+				warehouse.availableBranches.includes(branchFilter) ||
+				warehouse.branchName === branchFilter) &&
+			(statusFilter === "All" || warehouse.status === statusFilter) &&
+			(typeFilter === "All" || warehouse.type === typeFilter) &&
+			(!normalizedQuery ||
 			[
 				warehouse.code,
 				warehouse.name,
+				warehouse.type,
 				warehouse.availableBranchLabel,
 				warehouse.managerName,
 				warehouse.status,
@@ -62,9 +94,9 @@ export function useWarehouseListPage() {
 			]
 				.join(" ")
 				.toLowerCase()
-				.includes(normalizedQuery),
+				.includes(normalizedQuery)),
 		);
-	}, [query, tableWarehouses]);
+	}, [branchFilter, query, statusFilter, tableWarehouses, typeFilter]);
 	const columns = useMemo<ColumnDef<WarehouseTableRecord>[]>(
 		() =>
 			WarehouseManagementTableColumns.map((column) => {
@@ -106,6 +138,29 @@ export function useWarehouseListPage() {
 		table.setPageIndex(0);
 	}
 
+	function resetFilters() {
+		setBranchFilterState("All");
+		setQuery("");
+		setStatusFilterState("All");
+		setTypeFilterState("All");
+		table.setPageIndex(0);
+	}
+
+	function setBranchFilter(value: string) {
+		setBranchFilterState(value);
+		table.setPageIndex(0);
+	}
+
+	function setStatusFilter(value: string) {
+		setStatusFilterState(value as WarehouseStatus | "All");
+		table.setPageIndex(0);
+	}
+
+	function setTypeFilter(value: string) {
+		setTypeFilterState(value);
+		table.setPageIndex(0);
+	}
+
 	function handleConfirmDelete() {
 		if (!pendingDeleteWarehouse) {
 			return;
@@ -116,14 +171,23 @@ export function useWarehouseListPage() {
 	}
 
 	return {
+		branchFilter,
+		branchFilterOptions,
 		handleConfirmDelete,
 		handleQueryChange,
 		isLoading,
 		isMutating,
 		pendingDeleteWarehouse,
 		query,
+		resetFilters,
+		setBranchFilter,
 		setPendingDeleteWarehouse,
+		setStatusFilter,
+		setTypeFilter,
+		statusFilter,
 		table,
+		typeFilter,
+		typeFilterOptions,
 		warehouses,
 	};
 }
@@ -136,7 +200,21 @@ function createWarehouseColumn(
 	return {
 		accessorKey: key,
 		header,
+		cell:
+			key === "inventoryValue"
+				? ({ getValue }) =>
+						new Intl.NumberFormat("en-US", {
+							currency: "PHP",
+							style: "currency",
+						}).format(Number(getValue()))
+				: undefined,
 		sortingFn: "alphanumeric",
 		meta: { className },
 	};
+}
+
+function createUniqueSortedOptions(values: string[]) {
+	return Array.from(
+		new Set(values.filter((value) => value.trim().length > 0)),
+	).sort((first, second) => first.localeCompare(second));
 }

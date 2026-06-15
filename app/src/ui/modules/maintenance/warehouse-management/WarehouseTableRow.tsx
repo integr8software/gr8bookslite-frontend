@@ -22,10 +22,18 @@ export function WarehouseTableRow({
 				<div className="font-medium">{warehouse.name}</div>
 				<div className="text-xs text-darknavy/55">{warehouse.address}</div>
 			</td>
+			<td className="px-4 py-4">{warehouse.type}</td>
 			<td className="px-4 py-4">
 				{warehouse.availableBranchLabel}
 			</td>
 			<td className="px-4 py-4">{warehouse.managerName}</td>
+			<td className="px-4 py-4">{warehouse.totalItems}</td>
+			<td className="px-4 py-4">
+				{new Intl.NumberFormat("en-US", {
+					currency: "PHP",
+					style: "currency",
+				}).format(warehouse.inventoryValue)}
+			</td>
 			<td className="px-4 py-4">
 				<span className="inline-flex rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">
 					{warehouse.status}

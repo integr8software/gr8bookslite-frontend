@@ -188,6 +188,17 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     ["help-general-journal", "help-reports"],
   ),
   article(
+    "help-payment-type",
+    "Payment Type",
+    "/maintenance/payment-type",
+    "Classify payment methods used by cash disbursement vouchers.",
+    [
+      "Payment Type stores the payment method name, payment classification, and active status.",
+      "The payment classification controls whether vouchers ask for no extra fields, bank/check details, bank transfer details, or debit memo details.",
+    ],
+    ["help-cash-disbursement", "help-transaction-type"],
+  ),
+  article(
     "help-responsibility-center",
     "Responsibility Center",
     "/maintenance/responsibility-center",

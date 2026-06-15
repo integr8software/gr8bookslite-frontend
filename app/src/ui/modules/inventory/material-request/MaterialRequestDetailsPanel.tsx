@@ -3,43 +3,25 @@
 import {
 	useMemo,
 	useState,
-	type ChangeEvent,
-	type FormEvent,
 } from "react";
 import { Plus } from "lucide-react";
-import { PartyTypeOptions } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import { GlobalReferenceModuleOptions } from "@/app/src/constants/shared/module/ReferenceModuleConstants";
 import {
-	PartyInformationInitialFormValues,
-	createPartyInformationRecord,
-	getPartyAtcCodeOptionsByClassification,
 	getPartyDisplayName,
-	isKnownPartyType,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
-import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
-import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
-import { usePhilippineAddressOptions } from "@/app/src/hooks/shared/address/ph/usePhilippineAddressOptions";
 import { useWarehouseManagementStore } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseManagement";
 import type {
 	MaterialRequestFormErrors,
 	MaterialRequestFormValues,
 } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
-import type {
-	PartyAddress,
-	PartyInformationFormErrors,
-	PartyInformationFormValues,
-	PartyInformationRecord,
-} from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import type { WarehouseActionMode } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
-import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
 import { WarehouseDrawer } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseDrawer";
 
 type MaterialRequestDetailsPanelProps = {
@@ -196,7 +178,7 @@ export function MaterialRequestDetailsPanel({
 				mode={"add" satisfies WarehouseActionMode}
 				onClose={() => setWarehouseDrawerTarget(null)}
 			/>
-			<MaterialRequestPartyDrawer
+			<PartyManagementDrawer
 				key={partyDrawerKey}
 				isOpen={!isReadonly && isPartyDrawerOpen}
 				isPending={isPartyMutating}
@@ -213,7 +195,6 @@ export function MaterialRequestDetailsPanel({
 }
 
 const RemarksLimit = 500;
-const PartyDrawerFormId = "material-request-party-drawer-form";
 const MaterialRequestFieldIds = {
 	documentDate: "material-request-document-date",
 	fromWarehouse: "material-request-from-warehouse",
@@ -375,304 +356,6 @@ function PartyNameField({
 				{errors.vceName ? <ErrorText message={errors.vceName} /> : null}
 			</div>
 		</div>
-	);
-}
-
-function MaterialRequestPartyDrawer({
-	isOpen,
-	isPending,
-	onAddRecord,
-	onClose,
-	onCreateParty,
-	records,
-}: {
-	isOpen: boolean;
-	isPending: boolean;
-	onAddRecord: (record: PartyInformationRecord) => void;
-	onClose: () => void;
-	onCreateParty: (record: PartyInformationRecord) => void;
-	records: PartyInformationRecord[];
-}) {
-	const [values, setValues] = useState<PartyInformationFormValues>(() =>
-		createPartyDrawerInitialValues(records),
-	);
-	const [errors, setErrors] = useState<PartyInformationFormErrors>({});
-	const addressOptions = usePhilippineAddressOptions({
-		cityMunicipalityCode: values.address.cityMunicipalityCode,
-		provinceCode: values.address.provinceCode,
-		regionCode: values.address.regionCode,
-	});
-	const isClassificationSelected = Boolean(values.classification);
-	const atcOptions = useMemo(
-		() => getPartyAtcCodeOptionsByClassification(values.classification),
-		[values.classification],
-	);
-
-	function updateField<TKey extends keyof PartyInformationFormValues>(
-		field: TKey,
-		value: PartyInformationFormValues[TKey],
-	) {
-		setValues((current) => {
-			if (field === "classification") {
-				return {
-					...current,
-					classification: value as PartyInformationFormValues["classification"],
-					partyName: "",
-					tradingName: "",
-					firstName: "",
-					middleName: "",
-					lastName: "",
-					suffixName: "",
-					atcCode: "",
-				};
-			}
-
-			return {
-				...current,
-				[field]: value,
-			};
-		});
-		setErrors((current) => ({ ...current, [field]: undefined }));
-	}
-
-	function updateAddressField(field: keyof PartyAddress, value: string) {
-		if (!isClassificationSelected) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			address: {
-				...current.address,
-				[field]: value,
-			},
-		}));
-	}
-
-	function handleInputChange(
-		event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-	) {
-		const field = event.target.name as keyof PartyInformationFormValues;
-		const value =
-			field === "tin"
-				? FormatTinNumber(event.target.value)
-				: field === "contactNo"
-					? FormatPhilippineContactNumber(event.target.value)
-					: event.target.value;
-
-		updateField(field, value as never);
-	}
-
-	function handleAddressInputChange(event: ChangeEvent<HTMLInputElement>) {
-		updateAddressField(event.target.name as keyof PartyAddress, event.target.value);
-	}
-
-	function handlePartyTypesChange(value: string | string[]) {
-		const selectedValues = Array.isArray(value) ? value : [value];
-		const partyTypes = selectedValues.filter(isKnownPartyType);
-
-		setValues((current) => ({
-			...current,
-			partyTypes,
-		}));
-		setErrors((current) => ({ ...current, partyTypes: undefined }));
-	}
-
-	function selectAtcCode(value: string | string[]) {
-		if (!isClassificationSelected) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			atcCode: getSingleSelectedValue(value),
-		}));
-		setErrors((current) => ({ ...current, atcCode: undefined }));
-	}
-
-	function selectRegion(value: string | string[]) {
-		if (!isClassificationSelected) {
-			return;
-		}
-
-		const code = getSingleSelectedValue(value);
-		const option = addressOptions.regionOptions.find(
-			(region) => region.value === code,
-		);
-
-		setValues((current) => ({
-			...current,
-			address: {
-				...current.address,
-				barangay: "",
-				barangayCode: "",
-				cityMunicipality: "",
-				cityMunicipalityCode: "",
-				province: "",
-				provinceCode: "",
-				region: option?.name ?? "",
-				regionCode: code,
-			},
-		}));
-		clearAddressErrors([
-			"regionCode",
-			"provinceCode",
-			"cityMunicipalityCode",
-			"barangayCode",
-		]);
-	}
-
-	function selectProvince(value: string | string[]) {
-		if (!isClassificationSelected) {
-			return;
-		}
-
-		const code = getSingleSelectedValue(value);
-		const option = addressOptions.provinceOptions.find(
-			(province) => province.value === code,
-		);
-
-		setValues((current) => ({
-			...current,
-			address: {
-				...current.address,
-				barangay: "",
-				barangayCode: "",
-				cityMunicipality: "",
-				cityMunicipalityCode: "",
-				province: option?.name ?? "",
-				provinceCode: code,
-			},
-		}));
-		clearAddressErrors(["provinceCode", "cityMunicipalityCode", "barangayCode"]);
-	}
-
-	function selectCityMunicipality(value: string | string[]) {
-		if (!isClassificationSelected) {
-			return;
-		}
-
-		const code = getSingleSelectedValue(value);
-		const option = addressOptions.cityMunicipalityOptions.find(
-			(cityMunicipality) => cityMunicipality.value === code,
-		);
-
-		setValues((current) => ({
-			...current,
-			address: {
-				...current.address,
-				barangay: "",
-				barangayCode: "",
-				cityMunicipality: option?.name ?? "",
-				cityMunicipalityCode: code,
-			},
-		}));
-		clearAddressErrors(["cityMunicipalityCode", "barangayCode"]);
-	}
-
-	function selectBarangay(value: string | string[]) {
-		if (!isClassificationSelected) {
-			return;
-		}
-
-		const code = getSingleSelectedValue(value);
-		const option = addressOptions.barangayOptions.find(
-			(barangay) => barangay.value === code,
-		);
-
-		setValues((current) => ({
-			...current,
-			address: {
-				...current.address,
-				barangay: option?.name ?? "",
-				barangayCode: code,
-			},
-		}));
-		clearAddressErrors(["barangayCode"]);
-	}
-
-	function clearAddressErrors(fields: (keyof PartyInformationFormErrors)[]) {
-		setErrors((current) => {
-			const nextErrors = { ...current };
-
-			for (const field of fields) {
-				nextErrors[field] = undefined;
-			}
-
-			return nextErrors;
-		});
-	}
-
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
-		const nextErrors = validatePartyInformationForm(values);
-
-		if (Object.keys(nextErrors).length > 0) {
-			setErrors(nextErrors);
-			return;
-		}
-
-		const record = createPartyInformationRecord(values);
-
-		onAddRecord(record);
-		onCreateParty(record);
-		onClose();
-	}
-
-	return (
-		<ModuleDrawer
-			description="Create a party code from the party-management fields, then use it on this material request."
-			footer={
-				<div className="flex flex-wrap justify-end gap-2">
-					<button
-						type="button"
-						onClick={onClose}
-						className={moduleDrawerSecondaryActionClassName}
-					>
-						Cancel
-					</button>
-					<button
-						type="submit"
-						form={PartyDrawerFormId}
-						disabled={isPending}
-						className={moduleDrawerPrimaryActionClassName}
-					>
-						Save Party
-					</button>
-				</div>
-			}
-			isOpen={isOpen}
-			maxWidthClassName="max-w-5xl"
-			onClose={onClose}
-			title="Add Party Code"
-		>
-			<form
-				id={PartyDrawerFormId}
-				onSubmit={handleSubmit}
-				noValidate
-				className="px-6 py-5"
-			>
-				<PartyInformationDetailsFields
-					addressOptions={addressOptions}
-					atcOptions={atcOptions}
-					errors={errors}
-					isClassificationSelected={isClassificationSelected}
-					isReadonly={false}
-					partyTypeOptions={PartyTypeOptions}
-					values={values}
-					onAddressInputChange={handleAddressInputChange}
-					onInputChange={handleInputChange}
-					onPartyTypesChange={handlePartyTypesChange}
-					onSelectBarangay={selectBarangay}
-					onSelectAtcCode={selectAtcCode}
-					onSelectCityMunicipality={selectCityMunicipality}
-					onSelectProvince={selectProvince}
-					onSelectRegion={selectRegion}
-					onUpdateField={updateField}
-				/>
-			</form>
-		</ModuleDrawer>
 	);
 }
 
@@ -871,35 +554,3 @@ function includeCurrentWarehouseOptions(
 
 	return Array.from(optionByValue.values());
 }
-
-function createPartyDrawerInitialValues(
-	records: PartyInformationRecord[],
-): PartyInformationFormValues {
-	return {
-		...PartyInformationInitialFormValues,
-		partyCodeNo: createNextPartyCode(records),
-		status: "Active",
-	};
-}
-
-function createNextPartyCode(records: PartyInformationRecord[]) {
-	const nextNumber =
-		records.reduce((highest, record) => {
-			const match = record.partyCodeNo.match(/(\d+)$/);
-			const number = match ? Number.parseInt(match[1], 10) : Number.NaN;
-
-			return Number.isFinite(number) ? Math.max(highest, number) : highest;
-		}, 0) + 1;
-
-	return `PTY-${nextNumber.toString().padStart(4, "0")}`;
-}
-
-function getSingleSelectedValue(value: string | string[]) {
-	return Array.isArray(value) ? (value[0] ?? "") : value;
-}
-
-const moduleDrawerSecondaryActionClassName =
-	"inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15";
-
-const moduleDrawerPrimaryActionClassName =
-	"theme-accent-contrast-text inline-flex h-10 items-center justify-center rounded-md bg-skyblue px-4 text-sm font-semibold shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45";

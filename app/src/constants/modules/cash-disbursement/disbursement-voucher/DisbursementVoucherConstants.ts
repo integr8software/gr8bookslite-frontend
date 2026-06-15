@@ -23,10 +23,23 @@ export const DisbursementVoucherWorkflowSteps = [
 ] as const;
 
 export const DisbursementVoucherStatusFilters = [
-  "All",
-  "Approved",
-  "Pending Review",
+  "all",
+  "Active",
   "Draft",
-  "Rejected",
+  "Pending",
+  "Approved",
+  "Disapproved",
+  "Cancelled",
+  "Completed",
 ] as const;
+
+export const DisbursementVoucherStatusFilterOptions = [
+  { label: "All Statuses", value: "all" },
+  ...DisbursementVoucherStatusFilters.filter((status) => status !== "all").map(
+    (status) => ({
+      label: status,
+      value: status,
+    }),
+  ),
+];
 

@@ -2,7 +2,14 @@ export type ItemStatus = "Active" | "Inactive";
 
 export type ItemSetupKind = "category" | "subcategory" | "type" | "subtype";
 
-export type ItemTaxType = "VATable" | "VATIncluded";
+export type ItemTaxTreatment =
+	| "VAT Exclusive"
+	| "VAT Inclusive"
+	| "VAT Exempt"
+	| "Zero Rated"
+	| "Non-VAT";
+
+export type ItemPerishability = "Perishable" | "Non Perishable";
 
 export type ItemCategoryAccountingSetupStatus =
 	| "Configured"
@@ -52,9 +59,27 @@ export type ItemBundleComponentItemOption = {
 	uomOptions: string[];
 };
 
+export type ItemBundleLine = {
+	id: string;
+	itemId: string;
+	quantity: number;
+};
+
+export type ItemBundleRecord = {
+	id: string;
+	bundlePrice: number;
+	code: string;
+	lines: ItemBundleLine[];
+	name: string;
+	status: ItemStatus;
+};
+
 export type ItemSupplierAssignment = {
 	id: string;
 	supplier: string;
+	supplierItemCode: string;
+	leadTime: string;
+	lastCost: number;
 	isDefault: boolean;
 };
 
@@ -63,6 +88,47 @@ export type ItemUomConversion = {
 	fromUom: string;
 	quantity: number;
 	toUom: string;
+	priceBasis?: "Source" | "Target";
+	barcode?: string;
+	isPurchaseDefault?: boolean;
+	isSalesDefault?: boolean;
+	isStockDefault?: boolean;
+};
+
+export type ItemAttributeUsage = "Variant" | "Stock Classification" | "Item Detail";
+
+export type ItemAttributeRecord = {
+	id: string;
+	code: string;
+	name: string;
+	usage: ItemAttributeUsage;
+	values: string[];
+	requiredOnItem: boolean;
+	affectsStock: boolean;
+	status: ItemStatus;
+};
+
+export type ItemAttributeAssignment = {
+	id: string;
+	attributeId: string;
+	value: string;
+};
+
+export type ItemPriceListRecord = {
+	id: string;
+	code: string;
+	name: string;
+	currency: string;
+	customerType: string;
+	pricingMode: "Manual" | "Cost Markup" | "Discount From Retail";
+	markupPercent: number;
+	status: ItemStatus;
+};
+
+export type ItemPriceListAssignment = {
+	id: string;
+	priceListId: string;
+	price: number;
 };
 
 export type ItemRecord = {
@@ -70,54 +136,92 @@ export type ItemRecord = {
 	code: string;
 	skuCode: string;
 	name: string;
-	thirdPartyCode: string;
+	model: string;
+	externalReferenceCode: string;
 	brand: string;
 	supplier: string;
 	suppliers: ItemSupplierAssignment[];
 	barcode: string;
 	category: string;
-	subcategory: string;
-	type: string;
-	subtype: string;
+	subcategory?: string;
+	type?: string;
+	subtype?: string;
+	primaryCategory: string;
+	categories: string[];
 	uom: string;
+	responsibilityCenter: string;
 	costPrice: number;
 	sellingPrice: number;
-	taxType?: ItemTaxType;
-	isVatable: boolean;
-	isVatIncluded: boolean;
+	taxTreatment: ItemTaxTreatment;
 	status: ItemStatus;
 	defaultWarehouse: string;
-	supportsBundle: boolean;
+	defaultLocation: string;
+	defaultZone: string;
+	defaultRack: string;
+	defaultShelf: string;
+	defaultBin: string;
+	defaultLotNo: string;
+	leadTime: string;
+	reorderLevel: number;
+	minimumStock: number;
+	maximumStock: number;
+	perishability: ItemPerishability;
+	sellable: boolean;
+	purchasable: boolean;
+	trackInventory: boolean;
+	service: boolean;
+	asset: boolean;
+	hasVariants: boolean;
+	lotTracking: boolean;
+	serialTracking: boolean;
+	attributeAssignments: ItemAttributeAssignment[];
+	uomConversions: ItemUomConversion[];
+	priceListPrices: ItemPriceListAssignment[];
 	description: string;
 	tags: string[];
-	uomConversions: ItemUomConversion[];
-	bundleComponents: ItemBundleComponent[];
 };
 
 export type ItemFormValues = {
 	code: string;
 	skuCode: string;
 	name: string;
-	thirdPartyCode: string;
+	model: string;
+	externalReferenceCode: string;
 	brand: string;
 	suppliers: ItemSupplierAssignment[];
 	barcode: string;
-	category: string;
-	subcategory: string;
-	type: string;
-	subtype: string;
+	primaryCategory: string;
 	uom: string;
+	responsibilityCenter: string;
 	costPrice: number;
 	sellingPrice: number;
-	isVatable: boolean;
-	isVatIncluded: boolean;
+	taxTreatment: ItemTaxTreatment;
 	status: ItemStatus;
 	defaultWarehouse: string;
-	supportsBundle: boolean;
+	defaultLocation: string;
+	defaultZone: string;
+	defaultRack: string;
+	defaultShelf: string;
+	defaultBin: string;
+	defaultLotNo: string;
+	leadTime: string;
+	reorderLevel: number;
+	minimumStock: number;
+	maximumStock: number;
+	perishability: ItemPerishability;
+	sellable: boolean;
+	purchasable: boolean;
+	trackInventory: boolean;
+	service: boolean;
+	asset: boolean;
+	hasVariants: boolean;
+	lotTracking: boolean;
+	serialTracking: boolean;
+	attributeAssignments: ItemAttributeAssignment[];
+	uomConversions: ItemUomConversion[];
+	priceListPrices: ItemPriceListAssignment[];
 	description: string;
 	tags: string[];
-	uomConversions: ItemUomConversion[];
-	bundleComponents: ItemBundleComponent[];
 };
 
 export type ItemCategoryClassificationFormValues = {
@@ -131,7 +235,7 @@ export type ItemCategoryClassificationFormValues = {
 };
 
 export type ItemFormErrors = Partial<
-	Record<keyof ItemFormValues | "bundleComponents" | "suppliers", string>
+	Record<keyof ItemFormValues | "suppliers", string>
 >;
 
 export type ItemCategoryClassificationFormErrors = Partial<
@@ -149,8 +253,8 @@ export type ItemTableColumnKey =
 	| "skuCode"
 	| "name"
 	| "category"
-	| "type"
 	| "uom"
+	| "costPrice"
 	| "sellingPrice"
 	| "status";
 

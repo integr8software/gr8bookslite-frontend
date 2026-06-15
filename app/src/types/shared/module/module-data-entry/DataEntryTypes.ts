@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
 
 export type ModuleDataEntryColumn<TRow> = {
 	header: string;
@@ -40,6 +41,14 @@ export type ModuleDataEntryExportOption = {
 	onSelect: () => void;
 };
 
+export type ModuleDataEntryToolbarAction = {
+	disabled?: boolean;
+	icon?: LucideIcon;
+	id: string;
+	label: string;
+	onSelect: () => void;
+};
+
 export type ModuleDataEntryClearAction =
 	| "all"
 	| "with-data"
@@ -65,6 +74,10 @@ export type ModuleDataEntryProps<TRow extends { id: string }> = {
 	emptyRowLabel?: string;
 	error?: string;
 	exportOptions?: ModuleDataEntryExportOption[];
+	footerDetails?: ReactNode;
+	summaryCells?: Record<string, ReactNode>;
+	summaryRowHeader?: ReactNode;
+	toolbarActions?: ModuleDataEntryToolbarAction[];
 	isDraggable?: boolean;
 	isReadonly: boolean;
 	isRowNumberColumnFixed?: boolean;

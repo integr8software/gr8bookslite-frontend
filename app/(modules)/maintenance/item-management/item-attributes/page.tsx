@@ -1,0 +1,14 @@
+import type { Metadata } from "next";
+import { AppName } from "@/app/src/data/shared/app/AppConstants";
+import { ItemAttributesListPage } from "@/app/src/ui/modules/maintenance/item-management/shared/ItemManagementSupportPage";
+
+const PageTitle = "Item Attributes";
+
+export const metadata: Metadata = {
+	title: `${PageTitle} | ${AppName}`,
+	description: `${PageTitle} page for ${AppName}.`,
+};
+
+export default function ItemAttributesPage() {
+	return <ItemAttributesListPage />;
+}

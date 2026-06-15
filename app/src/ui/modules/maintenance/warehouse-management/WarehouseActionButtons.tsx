@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Edit3, Package, Save, ShieldCheck, Trash2, X } from "lucide-react";
+import { ArrowLeft, CircleOff, Edit3, Package, Save, ShieldCheck, X } from "lucide-react";
 import {
 	WarehouseManagementHref,
 	createWarehouseAccessHref,
@@ -66,8 +66,8 @@ export function WarehouseActionButtons({
 					onClick={onDeleteWarehouse}
 					className={moduleHeaderActionClassNames.danger}
 				>
-					<Trash2 className="h-4 w-4" aria-hidden="true" />
-					Delete
+					<CircleOff className="h-4 w-4" aria-hidden="true" />
+					Set Inactive
 				</button>
 			) : null}
 			{mode === "edit" && warehouse ? (

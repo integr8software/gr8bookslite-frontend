@@ -6,12 +6,15 @@ import type {
   DisbursementVoucherCopySource,
   DisbursementLineEntry,
   DisbursementVoucherPaymentDetails,
+  DisbursementVoucherStatus,
   DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementVoucherEntryDraft,
   DisbursementVoucherFormValues,
   DisbursementVoucherRecord,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+
+export type DisbursementVoucherDisplayStatus = DisbursementVoucherStatus;
 
 export const DisbursementVoucherInitialEntryDraft: DisbursementVoucherEntryDraft =
   {
@@ -85,7 +88,7 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "Online Payment",
     disbursementType: "Operating Expense",
-    status: "Pending Review",
+    status: "Pending",
     costCenter: "CC-FAC-014",
   },
   {
@@ -117,7 +120,7 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "Bank Transfer",
     disbursementType: "Vendor Payment",
-    status: "Rejected",
+    status: "Disapproved",
     costCenter: "CC-SCM-018",
   },
   {
@@ -149,7 +152,7 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     currency: "PHP",
     paymentMethod: "Bank Transfer",
     disbursementType: "Capital Expenditure",
-    status: "Pending Review",
+    status: "Pending",
     costCenter: "CC-IT-305",
   },
 ];
@@ -171,6 +174,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     taxRate: "0%",
     taxDetails: createTaxDetails(18450, "0%"),
     remarks: "Rush replenishment approved for Q2 workspace consumables.",
+    referenceModule: "Accounts Payable Voucher",
     voucherReferenceNo: "DVR-2026-0094",
     invoiceReferenceNo: "INV-OFF-5521",
     paymentDueDate: "2026-05-21",
@@ -229,6 +233,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     taxRate: "5%",
     taxDetails: createTaxDetails(25000, "5%"),
     remarks: "Monthly legal retainer for regulatory and contract support.",
+    referenceModule: "Purchase Order",
     voucherReferenceNo: "DVR-2026-0081",
     invoiceReferenceNo: "RET-0503-24",
     paymentDueDate: "2026-05-17",
@@ -287,6 +292,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     taxRate: "0%",
     taxDetails: createTaxDetails(3200, "0%"),
     remarks: "Travel reimbursement for client branch roadshow.",
+    referenceModule: "Cash Advance",
     voucherReferenceNo: "DVR-2026-0067",
     invoiceReferenceNo: "TRV-APR-778",
     paymentDueDate: "2026-04-29",
@@ -341,10 +347,12 @@ export function sanitizeDisbursementVoucherRecord(
 ): DisbursementVoucherRecord {
   return {
     ...voucher,
+    referenceModule: voucher.referenceModule ?? "",
     paymentDetails: normalizePaymentDetails(
       voucher.paymentDetails ?? createEmptyPaymentDetails(),
     ),
     attachments: removeLegacyMockAttachments(voucher.attachments),
+    status: getDisbursementVoucherDisplayStatus(voucher.status),
   };
 }
 
@@ -353,8 +361,17 @@ export const DisbursementVoucherCopySources: DisbursementVoucherCopySource[] = [
   "Accounts Payable Voucher",
   "Advances to Supplier",
   "Cash Advance",
+  "Petty Cash Advance Excess",
+  "Cash Advance Liquidation",
+  "Petty Cash Replenishment",
   "Petty Cash Fund Replenishment",
   "Purchase Order",
+  "Receiving Report",
+  "Purchase Journal",
+  "Template",
+  "Importation",
+  "Real Estate Commission",
+  "Project",
 ];
 
 export const DisbursementVoucherCopyFromRecords: DisbursementVoucherCopyFromRecord[] =
@@ -440,6 +457,7 @@ export function createDisbursementVoucherFormValues(
       taxRate: voucher.taxRate,
       taxDetails: voucher.taxDetails,
       remarks: voucher.remarks,
+      referenceModule: voucher.referenceModule ?? "",
       voucherReferenceNo: voucher.voucherReferenceNo,
       invoiceReferenceNo: voucher.invoiceReferenceNo,
       paymentDueDate: voucher.paymentDueDate,
@@ -457,7 +475,7 @@ export function createDisbursementVoucherFormValues(
       transaction?.amount ?? 0,
       transaction ? getDefaultTaxRate(transaction) : "0%",
     ),
-    transactionId: transaction?.id ?? `dv-tx-${Date.now()}`,
+    transactionId: transaction?.id ?? "",
     voucherNo: createNextVoucherNumber(),
     voucherDate: todayDateValue(),
     paymentMethod: transaction?.paymentMethod ?? "",
@@ -469,6 +487,7 @@ export function createDisbursementVoucherFormValues(
     vceName: transaction?.payee ?? "",
     amount: transaction ? transaction.amount.toFixed(2) : "",
     remarks: transaction?.purpose ?? "",
+    referenceModule: "Disbursement Voucher",
     voucherReferenceNo: createVoucherReferenceNumber(),
     invoiceReferenceNo: "",
     paymentDueDate: transaction?.paymentDueDate ?? todayDateValue(),
@@ -506,6 +525,7 @@ export function createDisbursementVoucherFromForm(
       values.taxRate,
     ),
     remarks: values.remarks.trim(),
+    referenceModule: values.referenceModule.trim(),
     voucherReferenceNo: values.voucherReferenceNo.trim(),
     invoiceReferenceNo: values.invoiceReferenceNo.trim(),
     paymentDueDate: values.paymentDueDate,
@@ -523,7 +543,9 @@ export function createDisbursementTransactionFromForm(
 ): DisbursementTransactionRecord {
   return {
     id: transaction?.id ?? values.transactionId,
-    transactionNo: transaction?.transactionNo ?? createNextTransactionNumber(),
+    transactionNo:
+      transaction?.transactionNo ??
+      (values.transactionId.trim() || createNextTransactionNumber()),
     payee: values.vceName.trim() || transaction?.payee || "Unnamed Payee",
     purpose: values.remarks.trim() || transaction?.purpose || "Disbursement voucher",
     department: transaction?.department ?? "Finance Operations",
@@ -562,6 +584,7 @@ export function applyCopyFromRecordToDisbursementVoucherForm(
     taxRate: record.templateValues.taxRate,
     taxDetails: record.templateValues.taxDetails,
     remarks: record.templateValues.remarks,
+    referenceModule: record.templateValues.referenceModule || record.source,
     voucherReferenceNo: record.templateValues.voucherReferenceNo,
     invoiceReferenceNo: record.templateValues.invoiceReferenceNo,
     paymentDueDate: record.templateValues.paymentDueDate,
@@ -779,6 +802,32 @@ export function formatDateLabel(value: string) {
   }).format(new Date(value));
 }
 
+export function getDisbursementVoucherDisplayStatus(
+  status: string,
+): DisbursementVoucherDisplayStatus {
+  if (status === "Pending Review") {
+    return "Pending";
+  }
+
+  if (status === "Rejected") {
+    return "Disapproved";
+  }
+
+  if (
+    status === "Active" ||
+    status === "Draft" ||
+    status === "Pending" ||
+    status === "Approved" ||
+    status === "Disapproved" ||
+    status === "Cancelled" ||
+    status === "Completed"
+  ) {
+    return status;
+  }
+
+  return "Draft";
+}
+
 function todayDateValue() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -854,6 +903,7 @@ function createDisbursementVoucherCopyFromRecord(
       remarks:
         voucher?.remarks ??
         `${transaction.purpose} Copied from ${sourceNo}.`,
+      referenceModule: voucher?.referenceModule ?? source,
       invoiceReferenceNo:
         voucher?.invoiceReferenceNo ?? `${sourceNo}-REF`,
       attachments: voucher?.attachments ?? createAttachmentPlaceholders(),
@@ -903,9 +953,37 @@ function getCreditAccountTemplate(
     };
   }
 
-  if (paymentAccount?.accountCode.trim() || paymentAccount?.accountTitle.trim()) {
+  if (paymentAccount?.type === "Cash") {
     return {
-      accountCode: paymentAccount.accountCode.trim(),
+      accountCode: "1001111",
+      accountName: "Cash in Hand",
+    };
+  }
+
+  if (paymentAccount?.type === "With Bank") {
+    return {
+      accountCode: "1012-011",
+      accountName: "Check Disbursement Clearing",
+    };
+  }
+
+  if (paymentAccount?.type === "Debit") {
+    return {
+      accountCode: "1013-001",
+      accountName: "Debit Memo Clearing",
+    };
+  }
+
+  if (paymentAccount?.type === "Bank Transfer") {
+    return {
+      accountCode: "1010-001",
+      accountName: "Cash in Bank",
+    };
+  }
+
+  if (paymentAccount?.accountCode?.trim() || paymentAccount?.accountTitle?.trim()) {
+    return {
+      accountCode: paymentAccount.accountCode?.trim() ?? "",
       accountName: getPaymentAccountName(paymentAccount),
     };
   }
@@ -965,11 +1043,11 @@ function getBankDisplayName(bankName: string) {
 function getPaymentAccountName(
   paymentAccount: DisbursementVoucherPaymentAccount,
 ) {
-  if (paymentAccount.paymentType === "Cash") {
+  if (paymentAccount.type === "Cash" || paymentAccount.paymentType === "Cash") {
     return "Cash in Hand";
   }
 
-  return paymentAccount.accountTitle.trim() || paymentAccount.paymentType;
+  return paymentAccount.accountTitle?.trim() || paymentAccount.paymentType;
 }
 
 function createCreditParticulars(
@@ -1026,7 +1104,14 @@ export function createEmptyPaymentDetails(): DisbursementVoucherPaymentDetails {
     bankName: "",
     checkDate: "",
     checkNo: "",
+    checkStatus: "",
+    commission: "",
+    payee: "",
     paymentReferenceNo: "",
+    transferAccountName: "",
+    transferAccountNo: "",
+    transferToBank: "",
+    transferTo: "",
   };
 }
 
@@ -1042,6 +1127,13 @@ function normalizePaymentDetails(
     bankName: paymentDetails.bankName.trim(),
     checkDate: paymentDetails.checkDate,
     checkNo: paymentDetails.checkNo.trim(),
+    checkStatus: paymentDetails.checkStatus?.trim() ?? "",
+    commission: paymentDetails.commission?.trim() ?? "",
+    payee: paymentDetails.payee?.trim() ?? "",
     paymentReferenceNo: paymentDetails.paymentReferenceNo.trim(),
+    transferAccountName: paymentDetails.transferAccountName?.trim() ?? "",
+    transferAccountNo: paymentDetails.transferAccountNo?.trim() ?? "",
+    transferToBank: paymentDetails.transferToBank?.trim() ?? "",
+    transferTo: paymentDetails.transferTo?.trim() ?? "",
   };
 }

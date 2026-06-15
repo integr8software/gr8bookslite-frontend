@@ -18,6 +18,8 @@ const TenantScopedQueryPrefixes = [
   "maintenance",
   "multi-currency-setup",
   "party-management",
+  "payment-type",
+  "paymentType",
   "petty-cash",
   "purchase-request",
   "purchasing",

@@ -9,6 +9,7 @@ import {
 	type ClipboardEvent as ReactClipboardEvent,
 	type CSSProperties,
 	type KeyboardEvent as ReactKeyboardEvent,
+	type ReactNode,
 	type RefObject,
 } from "react";
 import { ModuleDataEntryTableBody } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTableBody";
@@ -24,6 +25,7 @@ import {
 import { ModuleDataEntryTableHeader } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTableHeader";
 import {
 	clampIndex,
+	createColumnWidthStyle,
 	isCellEditorElement,
 	isMinusKey,
 	isPlusKey,
@@ -45,6 +47,8 @@ export type ModuleDataEntryTableProps<TRow extends { id: string }> = {
 	isRowNumberColumnFixed: boolean;
 	rows: TRow[];
 	scrollContainerRef: RefObject<HTMLDivElement | null>;
+	summaryCells?: Record<string, ReactNode>;
+	summaryRowHeader?: ReactNode;
 	onAddRows: (count: number) => void;
 	onAutoColumnWidth?: (columnId: string) => void;
 	onClearCell?: (rowId: string, columnId: string) => void;
@@ -73,6 +77,8 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 	isRowNumberColumnFixed,
 	rows,
 	scrollContainerRef,
+	summaryCells,
+	summaryRowHeader,
 	onAddRows,
 	onAutoColumnWidth,
 	onClearCell,
@@ -642,6 +648,24 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 					onSelectionChange={updateSelectionFromCell}
 					onStartRowDrag={setDraggedRowId}
 				/>
+				{summaryCells ? (
+					<tfoot className="bg-offwhite/80 text-sm font-semibold text-darknavy">
+						<tr>
+							<td className="sticky left-0 z-30 border-t border-darknavy/10 bg-offwhite/90 px-3 py-3 text-center shadow-[6px_0_12px_rgba(33,39,56,0.08)]">
+								{summaryRowHeader}
+							</td>
+							{columns.map((column) => (
+								<td
+									key={column.id}
+									className="border-t border-darknavy/10 px-3 py-3 text-right"
+									style={createColumnWidthStyle(column.width)}
+								>
+									{summaryCells[column.id] ?? null}
+								</td>
+							))}
+						</tr>
+					</tfoot>
+				) : null}
 			</table>
 		</div>
 	);

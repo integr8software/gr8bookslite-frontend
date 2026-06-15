@@ -3,20 +3,35 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
+	MockItemAttributes,
+	MockItemBundles,
 	MockItems,
 	MockItemSetupRecords,
+	MockPriceLists,
 } from "@/app/src/data/modules/maintenance/item-management/ItemManagementData";
 import { ItemManagementQueryKeys } from "@/app/src/services/modules/maintenance/item-management/ItemManagementQueryKeys";
 import type {
+	ItemBundleRecord,
+	ItemAttributeRecord,
 	ItemRecord,
+	ItemPriceListRecord,
 	ItemSetupKind,
 	ItemSetupRecord,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 
 type ItemManagementStoreState = {
+	itemAttributes: ItemAttributeRecord[];
+	itemBundles: ItemBundleRecord[];
 	items: ItemRecord[];
+	priceLists: ItemPriceListRecord[];
+	addItemAttribute: (attribute: ItemAttributeRecord) => void;
+	addItemBundle: (bundle: ItemBundleRecord) => void;
 	addItem: (item: ItemRecord) => void;
+	addPriceList: (priceList: ItemPriceListRecord) => void;
+	updateItemAttribute: (attribute: ItemAttributeRecord) => void;
+	updateItemBundle: (bundle: ItemBundleRecord) => void;
 	updateItem: (item: ItemRecord) => void;
+	updatePriceList: (priceList: ItemPriceListRecord) => void;
 	deleteItem: (itemId: string) => void;
 	getSetupRecords: (kind: ItemSetupKind) => ItemSetupRecord[];
 	addSetupRecord: (kind: ItemSetupKind, record: ItemSetupRecord) => void;
@@ -37,6 +52,21 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 		queryKey: ItemManagementQueryKeys.items(),
 		queryFn: async () => MockItems,
 		initialData: MockItems,
+	});
+	const itemAttributesQuery = useQuery({
+		queryKey: ItemManagementQueryKeys.itemAttributes(),
+		queryFn: async () => MockItemAttributes,
+		initialData: MockItemAttributes,
+	});
+	const itemBundlesQuery = useQuery({
+		queryKey: ItemManagementQueryKeys.itemBundles(),
+		queryFn: async () => MockItemBundles,
+		initialData: MockItemBundles,
+	});
+	const priceListsQuery = useQuery({
+		queryKey: ItemManagementQueryKeys.priceLists(),
+		queryFn: async () => MockPriceLists,
+		initialData: MockPriceLists,
 	});
 	const setupQueries = {
 		category: useQuery({
@@ -65,6 +95,33 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 		queryClient.setQueryData<ItemRecord[]>(
 			ItemManagementQueryKeys.items(),
 			(currentItems = MockItems) => updater(currentItems),
+		);
+	}
+
+	function updateCachedItemBundles(
+		updater: (bundles: ItemBundleRecord[]) => ItemBundleRecord[],
+	) {
+		queryClient.setQueryData<ItemBundleRecord[]>(
+			ItemManagementQueryKeys.itemBundles(),
+			(currentBundles = MockItemBundles) => updater(currentBundles),
+		);
+	}
+
+	function updateCachedItemAttributes(
+		updater: (attributes: ItemAttributeRecord[]) => ItemAttributeRecord[],
+	) {
+		queryClient.setQueryData<ItemAttributeRecord[]>(
+			ItemManagementQueryKeys.itemAttributes(),
+			(currentAttributes = MockItemAttributes) => updater(currentAttributes),
+		);
+	}
+
+	function updateCachedPriceLists(
+		updater: (priceLists: ItemPriceListRecord[]) => ItemPriceListRecord[],
+	) {
+		queryClient.setQueryData<ItemPriceListRecord[]>(
+			ItemManagementQueryKeys.priceLists(),
+			(currentPriceLists = MockPriceLists) => updater(currentPriceLists),
 		);
 	}
 
@@ -101,8 +158,72 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 	const deleteItemMutation = useMutation({
 		mutationFn: async (itemId: string) => itemId,
 		onSuccess: (itemId) => {
-			updateCachedItems((items) => items.filter((item) => item.id !== itemId));
-			toast.success("Item deleted.");
+			updateCachedItems((items) =>
+				items.map((item) =>
+					item.id === itemId ? { ...item, status: "Inactive" } : item,
+				),
+			);
+			toast.success("Item set inactive.");
+		},
+	});
+
+	const addItemBundleMutation = useMutation({
+		mutationFn: async (bundle: ItemBundleRecord) => bundle,
+		onSuccess: (bundle) => {
+			updateCachedItemBundles((bundles) => [...bundles, bundle]);
+			toast.success("Item bundle created.");
+		},
+	});
+
+	const addItemAttributeMutation = useMutation({
+		mutationFn: async (attribute: ItemAttributeRecord) => attribute,
+		onSuccess: (attribute) => {
+			updateCachedItemAttributes((attributes) => [...attributes, attribute]);
+			toast.success("Item attribute created.");
+		},
+	});
+
+	const updateItemAttributeMutation = useMutation({
+		mutationFn: async (attribute: ItemAttributeRecord) => attribute,
+		onSuccess: (attribute) => {
+			updateCachedItemAttributes((attributes) =>
+				attributes.map((currentAttribute) =>
+					currentAttribute.id === attribute.id ? attribute : currentAttribute,
+				),
+			);
+			toast.success("Item attribute updated.");
+		},
+	});
+
+	const addPriceListMutation = useMutation({
+		mutationFn: async (priceList: ItemPriceListRecord) => priceList,
+		onSuccess: (priceList) => {
+			updateCachedPriceLists((priceLists) => [...priceLists, priceList]);
+			toast.success("Price list created.");
+		},
+	});
+
+	const updatePriceListMutation = useMutation({
+		mutationFn: async (priceList: ItemPriceListRecord) => priceList,
+		onSuccess: (priceList) => {
+			updateCachedPriceLists((priceLists) =>
+				priceLists.map((currentPriceList) =>
+					currentPriceList.id === priceList.id ? priceList : currentPriceList,
+				),
+			);
+			toast.success("Price list updated.");
+		},
+	});
+
+	const updateItemBundleMutation = useMutation({
+		mutationFn: async (bundle: ItemBundleRecord) => bundle,
+		onSuccess: (bundle) => {
+			updateCachedItemBundles((bundles) =>
+				bundles.map((currentBundle) =>
+					currentBundle.id === bundle.id ? bundle : currentBundle,
+				),
+			);
+			toast.success("Item bundle updated.");
 		},
 	});
 
@@ -192,9 +313,18 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 	});
 
 	const state: ItemManagementStoreState = {
+		itemAttributes: itemAttributesQuery.data,
+		itemBundles: itemBundlesQuery.data,
 		items: itemsQuery.data,
+		priceLists: priceListsQuery.data,
+		addItemAttribute: (attribute) => addItemAttributeMutation.mutate(attribute),
+		addItemBundle: (bundle) => addItemBundleMutation.mutate(bundle),
 		addItem: (item) => addItemMutation.mutate(item),
+		addPriceList: (priceList) => addPriceListMutation.mutate(priceList),
+		updateItemAttribute: (attribute) => updateItemAttributeMutation.mutate(attribute),
+		updateItemBundle: (bundle) => updateItemBundleMutation.mutate(bundle),
 		updateItem: (item) => updateItemMutation.mutate(item),
+		updatePriceList: (priceList) => updatePriceListMutation.mutate(priceList),
 		deleteItem: (itemId) => deleteItemMutation.mutate(itemId),
 		getSetupRecords: (kind) => setupQueries[kind].data,
 		addSetupRecord: (kind, record) =>
@@ -207,13 +337,22 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 			deleteSetupMutation.mutate({ kind, recordId }),
 		isLoading:
 			itemsQuery.isLoading ||
+			itemAttributesQuery.isLoading ||
+			itemBundlesQuery.isLoading ||
+			priceListsQuery.isLoading ||
 			setupQueries.category.isLoading ||
 			setupQueries.subcategory.isLoading ||
 			setupQueries.type.isLoading ||
 			setupQueries.subtype.isLoading,
 		isMutating:
 			addItemMutation.isPending ||
+			addItemAttributeMutation.isPending ||
+			addItemBundleMutation.isPending ||
+			addPriceListMutation.isPending ||
+			updateItemAttributeMutation.isPending ||
+			updateItemBundleMutation.isPending ||
 			updateItemMutation.isPending ||
+			updatePriceListMutation.isPending ||
 			deleteItemMutation.isPending ||
 			addSetupMutation.isPending ||
 			updateSetupMutation.isPending ||

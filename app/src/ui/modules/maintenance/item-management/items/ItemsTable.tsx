@@ -26,7 +26,7 @@ export function ItemsTable({
 			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 			emptyTitle="No items found"
 			isLoading={isLoading}
-			minWidthClassName="min-w-[92rem]"
+			minWidthClassName="min-w-[96rem]"
 			paginationStorageKey={ItemsTablePaginationStorageKey}
 			table={table}
 			toolbar={toolbar}

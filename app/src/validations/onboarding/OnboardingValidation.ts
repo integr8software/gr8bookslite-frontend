@@ -12,7 +12,7 @@ import {
   OnboardingReportYearBasisOptions,
 } from "@/app/src/data/onboarding/OnboardingData";
 
-const NamePattern = /^[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*$/;
+const NamePattern = /^[\p{L}\p{M}]+(?:[ .'-]+[\p{L}\p{M}]+)*$/u;
 
 function IsValidWebsiteUrl(value: string) {
   const candidate = /^[A-Za-z][A-Za-z\d+\-.]*:\/\//.test(value)

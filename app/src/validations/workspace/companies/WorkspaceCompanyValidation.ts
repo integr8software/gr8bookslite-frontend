@@ -13,7 +13,7 @@ import type {
 	WorkspaceCompanyUserFormValues,
 } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
-const NamePattern = /^[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*$/;
+const NamePattern = /^[\p{L}\p{M}]+(?:[ .'-]+[\p{L}\p{M}]+)*$/u;
 
 function getDigitsOnly(value: string) {
 	return value.replace(/\D/g, "");

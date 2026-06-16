@@ -4,7 +4,7 @@ export type MaterialRequestStatus =
 	| "Pending"
 	| "Approved"
 	| "Disapproved"
-	| "Completed"
+	| "Closed"
 	| "Cancelled";
 
 export type MaterialRequestHistoryEntry = {

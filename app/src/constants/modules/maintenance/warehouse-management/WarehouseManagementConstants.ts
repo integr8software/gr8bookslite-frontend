@@ -42,16 +42,6 @@ export const WarehouseAccessPermissionOptions = [
 	"View History",
 ] as const satisfies readonly WarehouseAccessPermission[];
 
-export const WarehouseTypeOptions = [
-	"Main Warehouse",
-	"Distribution Center",
-	"Retail Store",
-	"Raw Material Warehouse",
-	"Finished Goods Warehouse",
-	"Service Warehouse",
-	"Temporary Warehouse",
-] as const;
-
 export const WarehouseManagementTableColumns: Array<
 	| {
 			key: WarehouseTableColumnKey;
@@ -66,7 +56,6 @@ export const WarehouseManagementTableColumns: Array<
 > = [
 	{ key: "code", label: "Warehouse Code", className: "w-[12rem]" },
 	{ key: "name", label: "Warehouse", className: "w-[18rem]" },
-	{ key: "type", label: "Type", className: "w-[14rem]" },
 	{
 		key: "availableBranchLabel",
 		label: "Branch",

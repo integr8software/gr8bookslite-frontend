@@ -28,7 +28,7 @@ type AppTaxRateDialogProps = {
 
 export function AppTaxRateDialog({
   isOpen,
-  title = "Tax Setup",
+  title = "Tax",
   value,
   onClose,
   onSave,
@@ -69,7 +69,7 @@ function AppTaxRateDialogEditor({
       const nextTaxDetails = syncTaxDetailsAmount(
         {
           ...current.taxDetails,
-          vatCode: nextVatCode === NoVatCode ? "" : nextVatCode,
+          vatCode: nextVatCode,
           vatPercent: nextVatPercent,
         },
         current.taxDetails.grossAmount,
@@ -136,26 +136,28 @@ function AppTaxRateDialogEditor({
         </div>
 
         <div className="grid gap-3 px-4 py-4">
-          <TaxDialogRow label="Gross Amount :">
+          <TaxDialogRow controlId="tax-gross-amount" label="Gross Amount :">
             <input
+              id="tax-gross-amount"
               value={draftValue.taxDetails.grossAmount.toFixed(2)}
               readOnly
               className={`${ReadOnlyFieldClassName} text-right`}
             />
           </TaxDialogRow>
 
-          <TaxDialogRow label="Net Amount :">
+          <TaxDialogRow controlId="tax-net-amount" label="Net Amount :">
             <input
+              id="tax-net-amount"
               value={draftValue.taxDetails.netAmount.toFixed(2)}
               readOnly
               className={`${ReadOnlyFieldClassName} text-right`}
             />
           </TaxDialogRow>
 
-          <TaxDialogRow label="VAT Code :">
+          <TaxDialogRow controlId="tax-vat-code" isRequired label="Tax VAT">
             <AppAdvancedDropdown
+              id="tax-vat-code"
               value={normalizeVatDropdownValue(draftValue.taxDetails)}
-              isClearable={false}
               options={VatRateOptions}
               placeholder="--Select VAT Rate--"
               searchPlaceholder="Search VAT rate"
@@ -163,51 +165,57 @@ function AppTaxRateDialogEditor({
             />
           </TaxDialogRow>
 
-          <TaxDialogRow label="Percent :">
+          <TaxDialogRow controlId="tax-vat-percent" label="Percent :">
             <input
+              id="tax-vat-percent"
               value={formatPercentField(draftValue.taxDetails.vatPercent)}
               readOnly
               className={`${ReadOnlyFieldClassName} text-right`}
             />
           </TaxDialogRow>
 
-          <TaxDialogRow label="VAT Amount :">
+          <TaxDialogRow controlId="tax-vat-amount" label="VAT Amount :">
             <input
+              id="tax-vat-amount"
               value={draftValue.taxDetails.vatAmount.toFixed(2)}
               readOnly
               className={`${ReadOnlyFieldClassName} text-right`}
             />
           </TaxDialogRow>
 
-          <TaxDialogRow label="EWT Code :">
+          <TaxDialogRow controlId="tax-ewt-code" label="EWT Code :">
             <AppAdvancedDropdown
+              id="tax-ewt-code"
               value={draftValue.taxDetails.ewtCode}
               emptyMessage="No EWT codes matched the search."
               options={ewtOptions}
-              placeholder="Select EWT code"
+              placeholder="--Select EWT code--"
               searchPlaceholder="Search EWT code, rate, or description"
               onChange={(value) => updateEwtCode(String(value))}
             />
           </TaxDialogRow>
 
-          <TaxDialogRow label="Percent :">
+          <TaxDialogRow controlId="tax-ewt-percent" label="Percent :">
             <input
+              id="tax-ewt-percent"
               value={formatPercentField(draftValue.taxDetails.ewtPercent)}
               readOnly
               className={`${ReadOnlyFieldClassName} text-right`}
             />
           </TaxDialogRow>
 
-          <TaxDialogRow label="EWT Amount :">
+          <TaxDialogRow controlId="tax-ewt-amount" label="EWT Amount :">
             <input
+              id="tax-ewt-amount"
               value={draftValue.taxDetails.ewtAmount.toFixed(2)}
               readOnly
               className={`${ReadOnlyFieldClassName} text-right`}
             />
           </TaxDialogRow>
 
-          <TaxDialogRow label="Amount :">
+          <TaxDialogRow controlId="tax-amount" label="Amount :">
             <input
+              id="tax-amount"
               value={draftValue.taxDetails.amount.toFixed(2)}
               readOnly
               className={`${ReadOnlyFieldClassName} text-right`}
@@ -231,14 +239,21 @@ function AppTaxRateDialogEditor({
 
 function TaxDialogRow({
   children,
+  controlId,
+  isRequired = false,
   label,
 }: {
   children: ReactNode;
+  controlId: string;
+  isRequired?: boolean;
   label: string;
 }) {
   return (
     <div className="grid items-center gap-2 sm:grid-cols-[7.5rem_1fr]">
-      <label className="text-sm text-darknavy/82">{label}</label>
+      <label htmlFor={controlId} className="text-sm text-darknavy/82">
+        {label}
+        {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
+      </label>
       {children}
     </div>
   );
@@ -271,15 +286,10 @@ function getEwtPercentFromCode(value: string) {
   return matchedPercent ? Number.parseFloat(matchedPercent[1]) : 0;
 }
 
-const NoVatCode = "NO-VAT";
-
-const VatRateOptions: AppAdvancedDropdownOption[] = [
-  { name: "No VAT", label: "0%", value: NoVatCode },
-  ...createVatOptions(),
-];
+const VatRateOptions = createVatOptions();
 
 function getVatRateFromCode(vatCode: string) {
-  if (!vatCode || vatCode === NoVatCode) {
+  if (!vatCode) {
     return "0%";
   }
 
@@ -307,7 +317,7 @@ function getVatRateFromCode(vatCode: string) {
 
 function normalizeVatDropdownValue(taxDetails: DisbursementTaxDetails) {
   if (!taxDetails.vatCode) {
-    return NoVatCode;
+    return "";
   }
 
   if (
@@ -323,7 +333,7 @@ function normalizeVatDropdownValue(taxDetails: DisbursementTaxDetails) {
       row.taxRate === taxDetails.vatPercent,
   );
 
-  return matchedTaxRow?.taxCode ?? NoVatCode;
+  return matchedTaxRow?.taxCode ?? "";
 }
 
 function createVatOptions(): AppAdvancedDropdownOption[] {
@@ -338,9 +348,8 @@ function createVatOptions(): AppAdvancedDropdownOption[] {
     }
 
     uniqueOptions.set(row.taxCode, {
-      description: row.taxDescription,
       label: `${row.taxRate}%`,
-      name: row.taxCode,
+      name: row.taxDescription,
       value: row.taxCode,
     });
   });

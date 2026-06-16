@@ -2,7 +2,6 @@ import { z } from "zod";
 import {
 	WarehouseAccessLevelOptions,
 	WarehouseAccessPermissionOptions,
-	WarehouseTypeOptions,
 } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import type {
 	WarehouseAccessFormErrors,
@@ -14,7 +13,6 @@ import type {
 export const WarehouseFormValidationSchema = z.object({
 	code: z.string().trim().min(1, "Enter a warehouse code."),
 	name: z.string().trim().min(1, "Enter a warehouse name."),
-	type: z.enum(WarehouseTypeOptions),
 	availableBranches: z.array(z.string()).min(1, "Select at least one branch."),
 	managerName: z.string().trim().min(1, "Enter a warehouse manager."),
 	status: z.enum(["Active", "Inactive"]),

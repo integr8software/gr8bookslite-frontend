@@ -22,7 +22,6 @@ export function WarehouseTableRow({
 				<div className="font-medium">{warehouse.name}</div>
 				<div className="text-xs text-darknavy/55">{warehouse.address}</div>
 			</td>
-			<td className="px-4 py-4">{warehouse.type}</td>
 			<td className="px-4 py-4">
 				{warehouse.availableBranchLabel}
 			</td>

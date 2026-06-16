@@ -261,6 +261,7 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
 		createdAt: "2026-05-07T08:00:00.000Z",
 		updatedAt: "2026-05-12T08:00:00.000Z",
 	},
+	...createDisbursementVoucherMockParties(),
 ];
 
 export function createPartyInformationFormValues(
@@ -410,6 +411,150 @@ function normalizePartyContactNo(value: string) {
 	const contactNo = value.trim();
 
 	return contactNo === DefaultPhilippineContactNumber.trim() ? "" : contactNo;
+}
+
+function createDisbursementVoucherMockParties(): PartyInformationRecord[] {
+	const now = "2026-05-18T08:00:00.000Z";
+
+	return [
+		createMockParty({
+			id: "party-dv-office-depot",
+			partyCodeNo: "VCE-OD-204",
+			partyName: "North Harbor Office Depot",
+			tradingName: "North Harbor Office Depot",
+			tin: "201-442-901-000",
+			email: "billing@northharboroffice.example",
+			contactNo: "+63 917 820 1204",
+			createdAt: now,
+			updatedAt: now,
+		}),
+		createMockParty({
+			id: "party-dv-metro-utilities",
+			partyCodeNo: "VCE-MU-301",
+			partyName: "Metro Utilities Services",
+			tradingName: "Metro Utilities",
+			tin: "311-008-771-000",
+			email: "collections@metroutilities.example",
+			contactNo: "+63 917 830 1301",
+			createdAt: now,
+			updatedAt: now,
+		}),
+		createMockParty({
+			id: "party-dv-legal",
+			partyCodeNo: "VCE-LAW-108",
+			partyName: "Santos and Velasco Legal",
+			tradingName: "Santos and Velasco Legal",
+			tin: "108-552-664-000",
+			email: "billing@santosvelasco.example",
+			contactNo: "+63 917 810 1108",
+			createdAt: now,
+			updatedAt: now,
+		}),
+		createMockParty({
+			id: "party-dv-global-freight",
+			partyCodeNo: "VCE-GFM-412",
+			partyName: "Global Freight Movers",
+			tradingName: "Global Freight Movers",
+			tin: "412-226-880-000",
+			email: "ap@globalfreight.example",
+			contactNo: "+63 917 840 1412",
+			createdAt: now,
+			updatedAt: now,
+		}),
+		createMockParty({
+			id: "party-dv-techpro",
+			partyCodeNo: "VCE-TPI-506",
+			partyName: "TechPro Infrastructure",
+			tradingName: "TechPro Infrastructure",
+			tin: "506-119-742-000",
+			email: "billing@techproinfra.example",
+			contactNo: "+63 917 850 1506",
+			createdAt: now,
+			updatedAt: now,
+		}),
+		createMockParty({
+			classification: "Individual",
+			id: "party-dv-juan-dela-cruz",
+			partyCodeNo: "EMP-044",
+			firstName: "Juan",
+			middleName: "",
+			lastName: "Dela Cruz",
+			suffixName: "",
+			partyTypes: ["Employee"],
+			tin: "044-219-775-000",
+			email: "juan.delacruz@example.com",
+			contactNo: "+63 917 800 1044",
+			createdAt: now,
+			updatedAt: now,
+		}),
+	];
+}
+
+function createMockParty({
+	classification = "Non-Individual",
+	contactNo,
+	createdAt,
+	email,
+	firstName = "",
+	id,
+	lastName = "",
+	middleName = "",
+	partyCodeNo,
+	partyName = "",
+	partyTypes = ["Vendor"],
+	suffixName = "",
+	tin,
+	tradingName = "",
+	updatedAt,
+}: {
+	classification?: PartyClassification;
+	contactNo: string;
+	createdAt: string;
+	email: string;
+	firstName?: string;
+	id: string;
+	lastName?: string;
+	middleName?: string;
+	partyCodeNo: string;
+	partyName?: string;
+	partyTypes?: PartyType[];
+	suffixName?: string;
+	tin: string;
+	tradingName?: string;
+	updatedAt: string;
+}): PartyInformationRecord {
+	return {
+		id,
+		partyCodeNo,
+		classification,
+		partyTypes,
+		status: "Active",
+		partyName,
+		tradingName,
+		firstName,
+		middleName,
+		lastName,
+		suffixName,
+		address: {
+			addressLine1: "Makati Business District",
+			addressLine2: "",
+			barangay: "San Lorenzo",
+			barangayCode: "137602000",
+			cityMunicipality: "Makati City",
+			cityMunicipalityCode: "137602000",
+			province: "Metro Manila",
+			provinceCode: "137600000",
+			region: "National Capital Region",
+			regionCode: "130000000",
+		},
+		tin,
+		vatRegistrationType: classification === "Individual" ? "Non-VAT" : "VAT Registered",
+		atcCode: classification === "Individual" ? "WI 010" : "WC 158",
+		email,
+		contactNo,
+		createdAt,
+		updatedAt,
+	};
 }
 
 function createEmptyPartyAddress(): PartyAddress {

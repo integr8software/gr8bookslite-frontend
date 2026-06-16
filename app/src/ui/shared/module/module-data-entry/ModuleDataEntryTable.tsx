@@ -56,6 +56,7 @@ export type ModuleDataEntryTableProps<TRow extends { id: string }> = {
 	onDuplicateRow: (rowId: string) => void;
 	onFitColumnWidth?: (columnId: string) => void;
 	onInsertRow: (rowId: string, position: "above" | "below") => void;
+	onHideColumn?: (columnId: string) => void;
 	onMoveColumn?: (fromColumnId: string, toColumnId: string) => void;
 	onMoveRow: (fromRowId: string, toRowId: string) => void;
 	onPasteCells?: (
@@ -86,6 +87,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 	onDuplicateRow,
 	onFitColumnWidth,
 	onInsertRow,
+	onHideColumn,
 	onMoveColumn,
 	onMoveRow,
 	onPasteCells,
@@ -114,7 +116,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 	const canEditRows = !isReadonly;
 	const canEditColumns =
 		canEditRows &&
-		Boolean(onMoveColumn || onRemoveColumn || onUpdateColumnHeader);
+		Boolean(onMoveColumn || onHideColumn || onRemoveColumn || onUpdateColumnHeader);
 	const hasClearRowAction = Boolean(onClearRow);
 
 	const updateRowMenuPosition = useCallback((rowId: string) => {
@@ -606,6 +608,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 						setColumnDropTargetId(null);
 					}}
 					onFitColumnWidth={onFitColumnWidth}
+					onHideColumn={onHideColumn}
 					onMoveColumn={onMoveColumn}
 					onRemoveColumn={onRemoveColumn}
 					onStartColumnDrag={setDraggedColumnId}

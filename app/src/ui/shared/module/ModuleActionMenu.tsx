@@ -16,7 +16,7 @@ import {
 	moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
 
-type ModuleActionMenuTone = "default" | "danger";
+type ModuleActionMenuTone = "default" | "danger" | "primary";
 
 type BaseModuleActionMenuItem = {
 	icon: LucideIcon;
@@ -183,9 +183,12 @@ function ModuleActionMenuItemView({
 	const itemClassName = joinClasses(
 		"flex min-h-10 w-full items-center gap-3 whitespace-nowrap rounded-md px-3 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2",
 		moduleAccentClassNames.focusRing,
-		item.tone === "danger"
-			? "text-coralpink hover:bg-coralpink/10"
-			: joinClasses(
+		item.tone === "danger" &&
+			"text-coralpink hover:bg-coralpink/10",
+		item.tone === "primary" &&
+			"bg-emerald-50 text-darknavy hover:bg-emerald-100",
+		(!item.tone || item.tone === "default") &&
+			joinClasses(
 				"text-darknavy/72 hover:text-darknavy",
 				moduleAccentClassNames.hoverSoftBackground,
 			),

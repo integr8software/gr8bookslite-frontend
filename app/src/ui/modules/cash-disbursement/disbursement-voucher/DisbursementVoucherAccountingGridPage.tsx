@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import {
   DisbursementVoucherInitialEntryDraft,
+  createBlankDisbursementLineEntry,
   createTaxDetails,
   formatCurrency,
   formatDateLabel,
@@ -47,6 +48,11 @@ import {
   type ModuleDataEntryColumn,
   type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import {
+  MoneyNumberField,
+  formatMoneyNumberInput,
+  parseMoneyNumberInput,
+} from "@/app/src/ui/shared/money/MoneyNumberField";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
@@ -289,7 +295,9 @@ export function DisbursementVoucherAccountingGridPage() {
     value: string,
   ) {
     const nextValue =
-      field === "debit" || field === "credit" ? formatAmountInput(value) : value;
+      field === "debit" || field === "credit"
+        ? formatMoneyNumberInput(value)
+        : value;
 
     setRows((currentRows) =>
       currentRows.map((row) => {
@@ -527,12 +535,11 @@ export function DisbursementVoucherAccountingGridPage() {
       const oppositeColumnId = columnId === "debit" ? "credit" : "debit";
 
       return (
-        <GridEntryInput
+        <MoneyNumberField
           value={row[columnId]}
-          onChange={(value) => updateRow(row.id, columnId, value)}
-          inputMode="decimal"
+          onValueChange={(value) => updateRow(row.id, columnId, value)}
           disabled={normalizeAmount(row[oppositeColumnId]) > 0}
-          extraClassName="text-right"
+          className={gridCellControlClassName("text-right")}
         />
       );
     }
@@ -832,19 +839,19 @@ export function DisbursementVoucherAccountingGridPage() {
                 summaryCells={{
                   credit: formatCurrency(totals.totalCredit),
                   debit: formatCurrency(totals.totalDebit),
-                  particulars: (
-                    <span
-                      className={joinClasses(
-                        "font-semibold",
-                        totals.variance < 0.001
-                          ? "text-emerald-700"
-                          : "text-coralpink",
-                      )}
-                    >
-                      Variance: {formatCurrency(totals.variance)}
-                    </span>
-                  ),
                 }}
+                footerDetails={
+                  <span
+                    className={joinClasses(
+                      "text-sm font-semibold",
+                      totals.variance < 0.001
+                        ? "text-emerald-700"
+                        : "text-coralpink",
+                    )}
+                  >
+                    Variance: {formatCurrency(totals.variance)}
+                  </span>
+                }
                 title="Accounting Entries"
                 exportOptions={[
                   {
@@ -1630,7 +1637,7 @@ function GridPreviewDialog({
                   />
                   <PreviewInfoLine
                     label="Amount"
-                    value={formatCurrency(Number(values.amount || 0))}
+                    value={formatCurrency(parseMoneyNumberInput(values.amount))}
                   />
                   <PreviewInfoLine
                     label="Purpose"
@@ -1667,7 +1674,7 @@ function GridPreviewDialog({
                       Linked Voucher Amount
                     </p>
                     <p className="mt-2 text-3xl font-semibold text-darknavy">
-                      {formatCurrency(Number(values.amount || 0))}
+                      {formatCurrency(parseMoneyNumberInput(values.amount))}
                     </p>
                   </div>
                 </div>
@@ -2015,7 +2022,11 @@ function VoucherAccountingGridHeader({
     },
     {
       label: "Amount",
-      value: formatCurrency(Number(values.amount || selectedTransaction?.amount || 0)),
+      value: formatCurrency(
+        values.amount
+          ? parseMoneyNumberInput(values.amount)
+          : selectedTransaction?.amount || 0,
+      ),
     },
   ];
 
@@ -2311,7 +2322,10 @@ function createPdfVoucherDetails(
     ["Payee", values?.vceName || "-"],
     ["Payment Method", values?.paymentMethod || "-"],
     ["Disbursement Type", values?.disbursementType || "-"],
-    ["Amount", values?.amount ? formatCurrency(Number(values.amount || 0)) : "-"],
+    [
+      "Amount",
+      values?.amount ? formatCurrency(parseMoneyNumberInput(values.amount)) : "-",
+    ],
   ];
 
   return {
@@ -3353,43 +3367,13 @@ function isCompleteRow(row: EditableGridRow) {
 }
 
 function normalizeAmount(value: string) {
-  return Number(value.replace(/,/g, "") || 0) || 0;
-}
-
-function formatAmountInput(value: string) {
-  const normalized = value.replace(/,/g, "").replace(/[^\d.]/g, "");
-
-  if (!normalized) {
-    return "";
-  }
-
-  const hasDecimal = normalized.includes(".");
-  const [rawWholePart = "", ...decimalParts] = normalized.split(".");
-  const wholePart = rawWholePart.replace(/^0+(?=\d)/, "");
-  const decimalPart = decimalParts.join("").slice(0, 2);
-  const formattedWholePart = formatAmountWholePart(wholePart);
-
-  if (!hasDecimal) {
-    return formattedWholePart;
-  }
-
-  return `${formattedWholePart || "0"}.${decimalPart}`;
+  return parseMoneyNumberInput(value);
 }
 
 function formatAmountValue(value: number) {
   return value.toLocaleString("en-US", {
     maximumFractionDigits: 2,
     minimumFractionDigits: 2,
-  });
-}
-
-function formatAmountWholePart(value: string) {
-  if (!value) {
-    return "";
-  }
-
-  return Number(value).toLocaleString("en-US", {
-    maximumFractionDigits: 0,
   });
 }
 
@@ -3493,7 +3477,7 @@ function downloadBytesFile(fileName: string, content: Uint8Array, type: string) 
 }
 
 function buildLineEntries(rows: EditableGridRow[]): DisbursementLineEntry[] {
-  return rows.filter(hasRowValue).map((row) => {
+  const entries: DisbursementLineEntry[] = rows.filter(hasRowValue).map((row) => {
     const debit = normalizeAmount(row.debit);
     const credit = normalizeAmount(row.credit);
     const amount = debit || credit;
@@ -3510,6 +3494,8 @@ function buildLineEntries(rows: EditableGridRow[]): DisbursementLineEntry[] {
       taxRate: row.taxRate || "0%",
     };
   });
+
+  return entries.length > 0 ? entries : [createBlankDisbursementLineEntry()];
 }
 
 function createVoucherActionReturnHref(

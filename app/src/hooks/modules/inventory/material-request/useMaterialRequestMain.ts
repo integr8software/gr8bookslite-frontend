@@ -17,6 +17,11 @@ import type {
 } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
 import { useMaterialRequestStore } from "@/app/src/hooks/modules/inventory/material-request/useMaterialRequest";
 import { createMaterialRequestStatusHistoryEntry } from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
+import {
+	canApproveMaterialRequestStatus,
+	canCancelMaterialRequestStatus,
+	canDisapproveMaterialRequestStatus,
+} from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
 
 export function useMaterialRequestMain() {
 	const { deleteRequest, isLoading, isMutating, requests, updateRequest } =
@@ -82,10 +87,11 @@ export function useMaterialRequestMain() {
 
 		return {
 			totalRequests,
+			active: countByStatus(requests, "Active"),
 			pending: countByStatus(requests, "Pending"),
 			approved: countByStatus(requests, "Approved"),
 			disapproved: countByStatus(requests, "Disapproved"),
-			completed: countByStatus(requests, "Completed"),
+			closed: countByStatus(requests, "Closed"),
 		};
 	}, [requests]);
 
@@ -106,7 +112,7 @@ export function useMaterialRequestMain() {
 				id: "actions",
 				header: "Actions",
 				enableSorting: false,
-				meta: { className: "w-[10rem] text-right" },
+				meta: { className: "w-[10rem] text-center" },
 			},
 		],
 		[],
@@ -158,6 +164,10 @@ export function useMaterialRequestMain() {
 			return;
 		}
 
+		if (!canUpdateMaterialRequestStatus(request.status, status)) {
+			return;
+		}
+
 		updateRequest({
 			...request,
 			status,
@@ -194,6 +204,44 @@ export function useMaterialRequestMain() {
 		toWarehouseFilter,
 		updateRequestStatus,
 	};
+}
+
+function canUpdateMaterialRequestStatus(
+	currentStatus: MaterialRequestStatus,
+	nextStatus: MaterialRequestStatus,
+) {
+	if (nextStatus === "Approved") {
+		return canApproveMaterialRequestStatus(currentStatus);
+	}
+
+	if (nextStatus === "Disapproved") {
+		return canDisapproveMaterialRequestStatus(currentStatus);
+	}
+
+	if (nextStatus === "Cancelled") {
+		return canCancelMaterialRequestStatus(currentStatus);
+	}
+
+	if (nextStatus === "Pending") {
+		return (
+			currentStatus === "Approved" ||
+			currentStatus === "Disapproved" ||
+			currentStatus === "Cancelled"
+		);
+	}
+
+	if (
+		(nextStatus === "Active" || nextStatus === "Draft") &&
+		(currentStatus === "Approved" || currentStatus === "Disapproved")
+	) {
+		return true;
+	}
+
+	if (nextStatus === "Draft" || nextStatus === "Active") {
+		return currentStatus === "Cancelled";
+	}
+
+	return false;
 }
 
 function createColumn(

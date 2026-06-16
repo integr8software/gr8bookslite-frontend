@@ -9,6 +9,7 @@ import {
 	ChevronRight,
 	ClipboardPaste,
 	FileText,
+	MoreHorizontal,
 	Upload,
 	X,
 } from "lucide-react";
@@ -31,6 +32,7 @@ import {
 	type ModuleDataEntryColumnOption,
 	type ModuleDataEntryExportOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type MaterialRequestItemColumnId = Exclude<keyof MaterialRequestItem, "id">;
@@ -635,7 +637,7 @@ function renderItemCell({
 
 	if (columnId === "remarks") {
 		return (
-			<div className="flex items-center gap-2">
+			<div className="grid min-w-0 grid-cols-[minmax(0,1fr)_2.5rem]">
 				<ItemInput
 					readOnly={isReadonly}
 					tabIndex={cellContext.focusableTabIndex}
@@ -643,13 +645,16 @@ function renderItemCell({
 					value={item.remarks}
 					onChange={(value) => onUpdateItem(item.id, "remarks", value)}
 				/>
-				<button
-					type="button"
-					onClick={() => onViewRemarks({ rowNo, value: item.remarks })}
-					className="mr-2 inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-skyblue/25 bg-skyblue/8 px-3 text-xs font-semibold text-skyblue transition hover:bg-skyblue/14"
-				>
-					View
-				</button>
+				<ModuleTooltip title="Open remarks" align="end" className="h-10 w-10">
+					<button
+						type="button"
+						onClick={() => onViewRemarks({ rowNo, value: item.remarks })}
+						className="inline-flex h-10 w-10 items-center justify-center border-l border-darknavy/10 bg-white text-darknavy/65 transition hover:bg-skyblue/10 hover:text-darknavy focus:outline-none focus:ring-2 focus:ring-inset focus:ring-skyblue/35"
+						aria-label={`Open remarks for row ${rowNo}`}
+					>
+						<MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+					</button>
+				</ModuleTooltip>
 			</div>
 		);
 	}

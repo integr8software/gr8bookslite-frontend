@@ -1,3 +1,5 @@
+import type { DisbursementVoucherStatus } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+
 export const DisbursementVoucherHref =
   "/cash-disbursement/disbursement-voucher";
 
@@ -30,11 +32,11 @@ export const DisbursementVoucherStatusFilters = [
   "Approved",
   "Disapproved",
   "Cancelled",
-  "Completed",
+  "Closed",
 ] as const;
 
 export const DisbursementVoucherStatusFilterOptions = [
-  { label: "All Statuses", value: "all" },
+  { label: "All", value: "all" },
   ...DisbursementVoucherStatusFilters.filter((status) => status !== "all").map(
     (status) => ({
       label: status,
@@ -42,4 +44,35 @@ export const DisbursementVoucherStatusFilterOptions = [
     }),
   ),
 ];
+
+export function canEditDisbursementVoucherStatus(
+  status: DisbursementVoucherStatus,
+) {
+  return status === "Draft" || status === "Active";
+}
+
+export function canApproveDisbursementVoucherStatus(
+  status: DisbursementVoucherStatus,
+) {
+  return status === "Active" || status === "Pending" || status === "Approved";
+}
+
+export function canDisapproveDisbursementVoucherStatus(
+  status: DisbursementVoucherStatus,
+) {
+  return (
+    status === "Active" || status === "Pending" || status === "Disapproved"
+  );
+}
+
+export function canCancelDisbursementVoucherStatus(
+  status: DisbursementVoucherStatus,
+) {
+  return (
+    status === "Draft" ||
+    status === "Active" ||
+    status === "Pending" ||
+    status === "Cancelled"
+  );
+}
 

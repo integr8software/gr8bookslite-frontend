@@ -32,7 +32,6 @@ export function useWarehouseListPage() {
 	const [statusFilter, setStatusFilterState] = useState<WarehouseStatus | "All">(
 		"All",
 	);
-	const [typeFilter, setTypeFilterState] = useState("All");
 	const [pendingDeleteWarehouse, setPendingDeleteWarehouse] =
 		useState<WarehouseRecord | null>(null);
 	const [pagination, setPagination] = useState<PaginationState>({
@@ -66,13 +65,6 @@ export function useWarehouseListPage() {
 			),
 		[tableWarehouses],
 	);
-	const typeFilterOptions = useMemo(
-		() =>
-			createUniqueSortedOptions(
-				tableWarehouses.map((warehouse) => warehouse.type),
-			),
-		[tableWarehouses],
-	);
 	const filteredWarehouses = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
@@ -81,12 +73,10 @@ export function useWarehouseListPage() {
 				warehouse.availableBranches.includes(branchFilter) ||
 				warehouse.branchName === branchFilter) &&
 			(statusFilter === "All" || warehouse.status === statusFilter) &&
-			(typeFilter === "All" || warehouse.type === typeFilter) &&
 			(!normalizedQuery ||
 			[
 				warehouse.code,
 				warehouse.name,
-				warehouse.type,
 				warehouse.availableBranchLabel,
 				warehouse.managerName,
 				warehouse.status,
@@ -96,7 +86,7 @@ export function useWarehouseListPage() {
 				.toLowerCase()
 				.includes(normalizedQuery)),
 		);
-	}, [branchFilter, query, statusFilter, tableWarehouses, typeFilter]);
+	}, [branchFilter, query, statusFilter, tableWarehouses]);
 	const columns = useMemo<ColumnDef<WarehouseTableRecord>[]>(
 		() =>
 			WarehouseManagementTableColumns.map((column) => {
@@ -142,7 +132,6 @@ export function useWarehouseListPage() {
 		setBranchFilterState("All");
 		setQuery("");
 		setStatusFilterState("All");
-		setTypeFilterState("All");
 		table.setPageIndex(0);
 	}
 
@@ -153,11 +142,6 @@ export function useWarehouseListPage() {
 
 	function setStatusFilter(value: string) {
 		setStatusFilterState(value as WarehouseStatus | "All");
-		table.setPageIndex(0);
-	}
-
-	function setTypeFilter(value: string) {
-		setTypeFilterState(value);
 		table.setPageIndex(0);
 	}
 
@@ -183,11 +167,8 @@ export function useWarehouseListPage() {
 		setBranchFilter,
 		setPendingDeleteWarehouse,
 		setStatusFilter,
-		setTypeFilter,
 		statusFilter,
 		table,
-		typeFilter,
-		typeFilterOptions,
 		warehouses,
 	};
 }

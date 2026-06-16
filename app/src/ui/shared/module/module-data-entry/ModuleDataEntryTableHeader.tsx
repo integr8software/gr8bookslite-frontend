@@ -24,6 +24,7 @@ export function ModuleDataEntryTableHeader<TRow>({
 	onColumnDragOver,
 	onColumnDrop,
 	onFitColumnWidth,
+	onHideColumn,
 	onMoveColumn,
 	onRemoveColumn,
 	onStartColumnDrag,
@@ -41,6 +42,7 @@ export function ModuleDataEntryTableHeader<TRow>({
 	onColumnDragOver: (columnId: string) => void;
 	onColumnDrop: (columnId: string) => void;
 	onFitColumnWidth?: (columnId: string) => void;
+	onHideColumn?: (columnId: string) => void;
 	onMoveColumn?: (fromColumnId: string, toColumnId: string) => void;
 	onRemoveColumn?: (columnId: string) => void;
 	onStartColumnDrag: (columnId: string) => void;
@@ -92,6 +94,7 @@ export function ModuleDataEntryTableHeader<TRow>({
 								onMoveColumn={onMoveColumn}
 								onAutoColumnWidth={onAutoColumnWidth}
 								onFitColumnWidth={onFitColumnWidth}
+								onHideColumn={onHideColumn}
 								onRemoveColumn={onRemoveColumn}
 								onStartColumnDrag={onStartColumnDrag}
 								onUpdateColumnHeader={onUpdateColumnHeader}

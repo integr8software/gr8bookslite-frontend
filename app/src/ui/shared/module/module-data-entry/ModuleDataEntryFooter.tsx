@@ -10,14 +10,18 @@ export function ModuleDataEntryFooter({
 	entryCountLabel: string;
 }) {
 	return (
-		<div className="relative z-50 flex shrink-0 flex-col gap-3 rounded-b-lg border-t border-darknavy/10 bg-offwhite/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
-			<div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+		<div className="relative z-50 grid shrink-0 gap-3 rounded-b-lg border-t border-darknavy/10 bg-offwhite/50 px-5 py-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+			<div className="min-w-0">
 				<p className="text-sm font-medium text-darknavy/60">
 					{entryCountLabel}
 				</p>
+			</div>
+			<div className="flex min-w-0 justify-start sm:justify-center">
 				{details}
 			</div>
-			{actions}
+			<div className="flex min-w-0 justify-start sm:justify-end">
+				{actions}
+			</div>
 		</div>
 	);
 }

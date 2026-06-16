@@ -13,10 +13,11 @@ export const AuditTrailActionOptions = [
 	"Approve",
 	"Cancel",
 	"Delete",
+	"Disapproved",
 	"Edit",
 	"Export",
-	"Reject",
 	"Save",
+	"Uncancel",
 	"View",
 ] as const satisfies readonly AuditTrailAction[];
 

@@ -5,7 +5,7 @@ export type DisbursementVoucherStatus =
   | "Approved"
   | "Disapproved"
   | "Cancelled"
-  | "Completed";
+  | "Closed";
 
 export type DisbursementPaymentMethod =
   | "Bank Transfer"
@@ -33,13 +33,26 @@ export type WorkflowStep = "details" | "entries" | "review";
 
 export type DisbursementVoucherActionMode = "add" | "edit" | "view";
 
+export type DisbursementVoucherHistoryEntry = {
+  id: string;
+  action: string;
+  actor: string;
+  createdAt: string;
+  description: string;
+  status: DisbursementVoucherStatus;
+};
+
 export type DisbursementVoucherCopySource =
-  | "Loan"
-  | "Accounts Payable Voucher"
+  | "Account Payable Voucher"
   | "Advances to Supplier"
   | "Cash Advance"
+  | "Cash Advance Liquidation"
+  | "Petty Cash Advance Excess"
+  | "Petty Cash Replenishment"
   | "Petty Cash Fund Replenishment"
   | "Purchase Order"
+  | "Purchase Journal"
+  | "Receiving Report"
   | (string & {});
 
 export type DisbursementVoucherPaymentDetails = {
@@ -102,6 +115,12 @@ export type DisbursementLineEntry = {
   id: string;
   accountCode: string;
   accountName: string;
+  partyCode?: string;
+  partyName?: string;
+  responsibilityCenter?: string;
+  refId?: string;
+  vatType?: string;
+  atcCode?: string;
   particulars: string;
   debit: number;
   credit: number;
@@ -159,6 +178,7 @@ export type DisbursementVoucherRecord = {
   lineEntries: DisbursementLineEntry[];
   attachments: DisbursementAttachment[];
   status: DisbursementVoucherStatus;
+  history: DisbursementVoucherHistoryEntry[];
 };
 
 export type DisbursementVoucherPreviewRow = {
@@ -195,6 +215,12 @@ export type DisbursementVoucherFormValues = {
 export type DisbursementVoucherEntryDraft = {
   accountCode: string;
   accountName: string;
+  partyCode?: string;
+  partyName?: string;
+  responsibilityCenter?: string;
+  refId?: string;
+  vatType?: string;
+  atcCode?: string;
   particulars: string;
   debit: string;
   credit: string;
@@ -220,5 +246,6 @@ export type DisbursementVoucherCopyFromRecord = {
   partyCode: string;
   partyName: string;
   amount: string;
+  remarks: string;
   templateValues: DisbursementVoucherFormValues;
 };

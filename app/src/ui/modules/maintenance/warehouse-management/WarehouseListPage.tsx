@@ -127,18 +127,6 @@ export function WarehouseListPage() {
 							onChange={page.setBranchFilter}
 						/>
 						<ModuleTableFilterSelect
-							label="Warehouse Type"
-							value={page.typeFilter}
-							options={[
-								{ label: "All", value: "All" },
-								...page.typeFilterOptions.map((type) => ({
-									label: type,
-									value: type,
-								})),
-							]}
-							onChange={page.setTypeFilter}
-						/>
-						<ModuleTableFilterSelect
 							label="Status"
 							value={page.statusFilter}
 							options={[

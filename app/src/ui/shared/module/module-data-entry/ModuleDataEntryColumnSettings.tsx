@@ -1,15 +1,14 @@
 "use client";
 
 import {
-	Asterisk,
 	ChevronDown,
+	Check,
 	Eye,
 	EyeOff,
 	GripVertical,
 	Pencil,
-	Ruler,
 	Settings2,
-	StretchHorizontal,
+	X,
 } from "lucide-react";
 import {
 	useEffect,
@@ -19,23 +18,16 @@ import {
 	type CSSProperties,
 } from "react";
 import { createPortal } from "react-dom";
-import { ModuleDataEntryInlineRename } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInlineRename";
-import {
-	clampColumnWidth,
-	isDropAfter,
-} from "@/app/src/ui/shared/module/module-data-entry/utils";
+import { isDropAfter } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import type { ModuleDataEntryColumnSettingsButtonProps } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export function ModuleDataEntryColumnSettingsButton({
 	align = "left",
 	columns,
-	onAutoColumnWidth,
 	onMoveColumn,
-	onToggleColumnRequired,
 	onToggleColumnVisibility,
 	onUpdateColumnHeader,
-	onUpdateColumnWidth,
 }: ModuleDataEntryColumnSettingsButtonProps) {
 	const triggerRef = useRef<HTMLDivElement>(null);
 	const [isOpen, setIsOpen] = useState(false);
@@ -54,7 +46,7 @@ export function ModuleDataEntryColumnSettingsButton({
 		const rect = triggerRef.current.getBoundingClientRect();
 		const menuWidth = 360;
 		const viewportPadding = 8;
-		const preferredHeight = Math.min(440, 84 + columns.length * 58);
+		const preferredHeight = Math.min(440, 84 + columns.length * 50);
 		const left =
 			align === "right"
 				? Math.min(
@@ -147,7 +139,7 @@ export function ModuleDataEntryColumnSettingsButton({
 				aria-haspopup="menu"
 			>
 				<Settings2 className="h-4 w-4" aria-hidden="true" />
-				Columns
+				Column
 				<ChevronDown
 					className={joinClasses("h-4 w-4 transition", isOpen && "rotate-180")}
 					aria-hidden="true"
@@ -163,10 +155,10 @@ export function ModuleDataEntryColumnSettingsButton({
 						>
 							<div className="shrink-0 px-2 pb-2 pt-1">
 								<p className="text-xs font-semibold uppercase tracking-[0.16em] text-darknavy/45">
-									Column Settings
+									Column
 								</p>
 								<p className="mt-1 text-xs leading-5 text-darknavy/55">
-									Show, rename, and drag columns into the order you need.
+									Choose visible columns or edit column labels.
 								</p>
 							</div>
 							<div className="grid min-h-0 gap-2 overflow-y-auto pr-1">
@@ -175,17 +167,6 @@ export function ModuleDataEntryColumnSettingsButton({
 										Boolean(onToggleColumnVisibility) &&
 										column.isHideable !== false &&
 										(!column.isVisible || visibleColumnCount > 1);
-									const isRequiredColumn = Boolean(
-										column.isRequired && column.isVisible,
-									);
-									const canToggleRequired =
-										Boolean(onToggleColumnRequired) &&
-										column.isVisible &&
-										column.isRequirementConfigurable !== false;
-									const isAutoWidth = column.widthMode === "auto";
-									const canEditWidth =
-										Boolean(onUpdateColumnWidth) && !isAutoWidth;
-
 									return (
 										<div
 											key={column.id}
@@ -241,6 +222,17 @@ export function ModuleDataEntryColumnSettingsButton({
 											</span>
 											<InlineColumnName
 												label={column.label}
+												canHide={canHide}
+												isVisible={column.isVisible}
+												onToggleVisibility={
+													onToggleColumnVisibility
+														? () =>
+																onToggleColumnVisibility(
+																	column.id,
+																	!column.isVisible,
+																)
+														: undefined
+												}
 												onRename={
 													onUpdateColumnHeader
 														? (nextLabel) =>
@@ -248,127 +240,6 @@ export function ModuleDataEntryColumnSettingsButton({
 														: undefined
 												}
 											/>
-											<div className="flex items-center gap-1">
-												<button
-													type="button"
-													disabled={!canHide}
-													onClick={() =>
-														onToggleColumnVisibility?.(
-															column.id,
-															!column.isVisible,
-														)
-													}
-													className={joinClasses(
-														"inline-flex h-8 w-8 items-center justify-center rounded-md border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-40",
-														column.isVisible
-															? "border-skyblue/25 bg-skyblue/10 text-skyblue"
-															: "border-darknavy/10 bg-white text-darknavy/55 hover:bg-offwhite",
-													)}
-													aria-pressed={column.isVisible}
-													aria-label={`Toggle ${column.label} column visibility`}
-													title={column.isVisible ? "Hide column" : "Show column"}
-												>
-													{column.isVisible ? (
-														<Eye className="h-3.5 w-3.5" aria-hidden="true" />
-													) : (
-														<EyeOff
-															className="h-3.5 w-3.5"
-															aria-hidden="true"
-														/>
-													)}
-												</button>
-												{canToggleRequired ? (
-													<button
-														type="button"
-														onClick={() =>
-															onToggleColumnRequired?.(
-																column.id,
-																!isRequiredColumn,
-															)
-														}
-														className={joinClasses(
-															"inline-flex h-8 w-8 items-center justify-center rounded-md border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20",
-															isRequiredColumn
-																? "border-skyblue/25 bg-skyblue/10 text-skyblue"
-																: "border-darknavy/10 bg-white text-darknavy/55 hover:bg-offwhite",
-														)}
-														aria-pressed={isRequiredColumn}
-														aria-label={`Toggle ${column.label} required`}
-														title={
-															isRequiredColumn
-																? "Make optional"
-																: "Make required"
-														}
-													>
-														<Asterisk
-															className="h-3.5 w-3.5"
-															aria-hidden="true"
-														/>
-													</button>
-												) : null}
-											</div>
-											{onUpdateColumnWidth || onAutoColumnWidth ? (
-												<label className="col-span-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 border-t border-darknavy/8 pt-2 text-[11px] font-semibold text-darknavy/50">
-													Width
-													<div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1">
-														<div className="relative">
-															<input
-																type="number"
-																min="50"
-																max="800"
-																step="1"
-																value={column.width ?? 160}
-																disabled={!canEditWidth}
-																onChange={(event) =>
-																	onUpdateColumnWidth?.(
-																		column.id,
-																		clampColumnWidth(
-																			Number(event.target.value),
-																		),
-																	)
-																}
-																className="app-theme-field app-disabled-control h-8 w-full min-w-0 rounded-md border px-2 pr-7 text-xs font-semibold text-darknavy outline-none transition focus:border-skyblue/40 focus:ring-2 focus:ring-skyblue/15 disabled:cursor-not-allowed"
-																aria-label={`Set ${column.label} column width`}
-															/>
-															<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-darknavy/40">
-																px
-															</span>
-														</div>
-														{isAutoWidth && onUpdateColumnWidth ? (
-															<button
-																type="button"
-																onClick={() =>
-																	onUpdateColumnWidth(
-																		column.id,
-																		clampColumnWidth(column.width ?? 160),
-																	)
-																}
-																className="inline-flex h-8 items-center gap-1 rounded-md border border-darknavy/10 bg-white px-2 text-[11px] font-semibold text-darknavy/60 transition hover:border-skyblue/25 hover:bg-skyblue/10 hover:text-skyblue"
-																title="Switch back to manual width"
-															>
-																<Ruler
-																	className="h-3.5 w-3.5"
-																	aria-hidden="true"
-																/>
-																Manual
-															</button>
-														) : onAutoColumnWidth ? (
-															<button
-																type="button"
-																onClick={() => onAutoColumnWidth(column.id)}
-																className="inline-flex h-8 items-center gap-1 rounded-md border border-darknavy/10 bg-white px-2 text-[11px] font-semibold text-darknavy/60 transition hover:border-skyblue/25 hover:bg-skyblue/10 hover:text-skyblue"
-																title="Fit width automatically from the header and cell values"
-															>
-																<StretchHorizontal
-																	className="h-3.5 w-3.5"
-																	aria-hidden="true"
-																/>
-																Auto
-															</button>
-														) : null}
-													</div>
-												</label>
-											) : null}
 										</div>
 									);
 								})}
@@ -382,41 +253,121 @@ export function ModuleDataEntryColumnSettingsButton({
 }
 
 function InlineColumnName({
+	canHide,
+	isVisible,
 	label,
 	onRename,
+	onToggleVisibility,
 }: {
+	canHide: boolean;
+	isVisible: boolean;
 	label: string;
 	onRename?: (label: string) => void;
+	onToggleVisibility?: () => void;
 }) {
 	const [isRenaming, setIsRenaming] = useState(false);
+	const [draftLabel, setDraftLabel] = useState(label);
+
+	function startRenaming() {
+		setDraftLabel(label);
+		setIsRenaming(true);
+	}
+
+	function cancelRenaming() {
+		setDraftLabel(label);
+		setIsRenaming(false);
+	}
+
+	function saveRenaming() {
+		const nextLabel = draftLabel.trim();
+
+		if (nextLabel) {
+			onRename?.(nextLabel);
+		}
+
+		setIsRenaming(false);
+	}
 
 	return (
-		<div className="flex min-w-0 items-center gap-1">
+		<div className="contents">
 			{isRenaming && onRename ? (
-				<ModuleDataEntryInlineRename
-					label={label}
-					onCancel={() => setIsRenaming(false)}
-					onRename={(nextLabel) => {
-						onRename(nextLabel);
-						setIsRenaming(false);
+				<input
+					autoFocus
+					type="text"
+					value={draftLabel}
+					onChange={(event) => setDraftLabel(event.target.value)}
+					onKeyDown={(event) => {
+						if (event.key === "Enter") {
+							event.preventDefault();
+							saveRenaming();
+						}
+
+						if (event.key === "Escape") {
+							event.preventDefault();
+							cancelRenaming();
+						}
 					}}
+					className="app-theme-field h-8 min-w-0 rounded-md border px-2 text-sm font-semibold text-darknavy outline-none transition focus:border-skyblue/40 focus:ring-2 focus:ring-skyblue/15"
+					aria-label={`Rename ${label} column`}
 				/>
 			) : (
-				<span className="min-w-0 flex-1 truncate text-sm font-semibold text-darknavy">
+				<span className="min-w-0 truncate text-sm font-semibold text-darknavy">
 					{label}
 				</span>
 			)}
-			{onRename && !isRenaming ? (
-				<button
-					type="button"
-					onClick={() => setIsRenaming(true)}
-					className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-darknavy/10 bg-white text-darknavy/55 transition hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20"
-					aria-label={`Rename ${label} column`}
-					title={`Rename ${label} column`}
-				>
-					<Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-				</button>
-			) : null}
+			<div className="flex h-8 items-center justify-end gap-1">
+				{isRenaming && onRename ? (
+					<>
+						<button
+							type="button"
+							onClick={saveRenaming}
+							className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-skyblue/25 bg-skyblue/10 text-skyblue transition hover:bg-skyblue/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20"
+							aria-label={`Save ${label} column name`}
+							title="Save"
+						>
+							<Check className="h-3.5 w-3.5" aria-hidden="true" />
+						</button>
+						<button
+							type="button"
+							onClick={cancelRenaming}
+							className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-darknavy/10 bg-white text-darknavy/60 transition hover:bg-offwhite focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20"
+							aria-label={`Cancel editing ${label} column name`}
+							title="Cancel"
+						>
+							<X className="h-3.5 w-3.5" aria-hidden="true" />
+						</button>
+					</>
+				) : (
+					<>
+						<button
+							type="button"
+							disabled={!canHide}
+							onClick={onToggleVisibility}
+							className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-darknavy/10 bg-white text-darknavy/55 transition hover:border-skyblue/25 hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-40"
+							aria-pressed={isVisible}
+							aria-label={`${isVisible ? "Hide" : "Show"} ${label} column`}
+							title={isVisible ? "Hide column" : "Show column"}
+						>
+							{isVisible ? (
+								<Eye className="h-3.5 w-3.5" aria-hidden="true" />
+							) : (
+								<EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
+							)}
+						</button>
+						{onRename ? (
+							<button
+								type="button"
+								onClick={startRenaming}
+								className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-darknavy/10 bg-white text-darknavy/55 transition hover:border-skyblue/25 hover:bg-skyblue/10 hover:text-skyblue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/20"
+								aria-label={`Edit ${label} column`}
+								title={`Edit ${label} column`}
+							>
+								<Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+							</button>
+						) : null}
+					</>
+				)}
+			</div>
 		</div>
 	);
 }

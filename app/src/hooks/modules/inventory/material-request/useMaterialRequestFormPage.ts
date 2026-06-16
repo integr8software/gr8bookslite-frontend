@@ -3,7 +3,13 @@
 import { useMemo, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { MaterialRequestHref } from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
+import {
+	MaterialRequestHref,
+	canApproveMaterialRequestStatus,
+	canCancelMaterialRequestStatus,
+	canDisapproveMaterialRequestStatus,
+	canEditMaterialRequestStatus,
+} from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
 import {
 	createMaterialRequestFormValues,
 	createMaterialRequestId,
@@ -38,8 +44,14 @@ export function useMaterialRequestFormPage() {
 	const params = useParams<{ recordId?: string }>();
 	const { addRequest, requests, updateRequest } = useMaterialRequestStore();
 	const mode = getMaterialRequestFormMode(pathname);
-	const isReadonly = mode === "view";
 	const existingRequest = requests.find((request) => request.id === params.recordId);
+	const isReadonly =
+		mode === "view" ||
+		(mode === "edit"
+			? existingRequest
+				? !canEditMaterialRequestStatus(existingRequest.status)
+				: false
+			: false);
 	const backHref =
 		mode === "edit" && searchParams.get("from") === "view" && params.recordId
 			? `${MaterialRequestHref}/view/${params.recordId}`
@@ -312,6 +324,10 @@ export function useMaterialRequestFormPage() {
 			return;
 		}
 
+		if (!canUpdateMaterialRequestStatus(values.status, status)) {
+			return;
+		}
+
 		const nextRequest = createMaterialRequestRecord(
 			{
 				...values,
@@ -369,6 +385,44 @@ function getMaterialRequestFormMode(pathname: string): MaterialRequestFormMode {
 	}
 
 	return "add";
+}
+
+function canUpdateMaterialRequestStatus(
+	currentStatus: MaterialRequestStatus,
+	nextStatus: MaterialRequestStatus,
+) {
+	if (nextStatus === "Approved") {
+		return canApproveMaterialRequestStatus(currentStatus);
+	}
+
+	if (nextStatus === "Disapproved") {
+		return canDisapproveMaterialRequestStatus(currentStatus);
+	}
+
+	if (nextStatus === "Cancelled") {
+		return canCancelMaterialRequestStatus(currentStatus);
+	}
+
+	if (nextStatus === "Pending") {
+		return (
+			currentStatus === "Approved" ||
+			currentStatus === "Disapproved" ||
+			currentStatus === "Cancelled"
+		);
+	}
+
+	if (
+		(nextStatus === "Active" || nextStatus === "Draft") &&
+		(currentStatus === "Approved" || currentStatus === "Disapproved")
+	) {
+		return true;
+	}
+
+	if (nextStatus === "Draft" || nextStatus === "Active") {
+		return currentStatus === "Cancelled";
+	}
+
+	return false;
 }
 
 function createMaterialRequestErrorsAfterFieldUpdate<TKey extends keyof MaterialRequestFormValues>({

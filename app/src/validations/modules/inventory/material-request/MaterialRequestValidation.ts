@@ -79,7 +79,7 @@ export const MaterialRequestFormValidationSchema = z
 			"Pending",
 			"Approved",
 			"Disapproved",
-			"Completed",
+			"Closed",
 			"Cancelled",
 		]),
 		toWarehouse: requiredText("Select To Warehouse."),

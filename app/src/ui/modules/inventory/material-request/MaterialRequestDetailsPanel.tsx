@@ -5,7 +5,6 @@ import {
 	useState,
 } from "react";
 import { Plus } from "lucide-react";
-import { GlobalReferenceModuleOptions } from "@/app/src/constants/shared/module/ReferenceModuleConstants";
 import {
 	getPartyDisplayName,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
@@ -151,12 +150,13 @@ export function MaterialRequestDetailsPanel({
 							readOnly={isReadonly}
 							onChange={(value) => updateField("requestNo", value)}
 						/>
-						<ReferenceField
-							isReadonly={isReadonly}
-							moduleValue={values.referenceModule}
-							referenceNo={values.referenceNo}
-							onModuleChange={(value) => updateField("referenceModule", value)}
-							onReferenceNoChange={(value) => updateField("referenceNo", value)}
+						<Field
+							error={errors.referenceNo}
+							id={MaterialRequestFieldIds.referenceNo}
+							label="Reference No"
+							value={values.referenceNo}
+							readOnly={isReadonly}
+							onChange={(value) => updateField("referenceNo", value)}
 						/>
 						<Field
 							error={errors.documentDate}
@@ -195,24 +195,20 @@ export function MaterialRequestDetailsPanel({
 }
 
 const RemarksLimit = 500;
+const AttachedDropdownClassName =
+	"sm:[&_.app-advanced-dropdown-control]:rounded-r-none";
+const AttachedAddButtonClassName =
+	"inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none";
 const MaterialRequestFieldIds = {
 	documentDate: "material-request-document-date",
 	fromWarehouse: "material-request-from-warehouse",
-	partyMember: "material-request-party-member",
-	referenceModule: "material-request-reference-module",
+	partyName: "material-request-party-member",
 	referenceNo: "material-request-reference-no",
 	remarks: "material-request-remarks",
 	requestNo: "material-request-request-no",
 	status: "material-request-status",
 	toWarehouse: "material-request-to-warehouse",
 } as const;
-const ReferenceModuleDropdownOptions: AppAdvancedDropdownOption[] =
-	GlobalReferenceModuleOptions.filter((option) => option !== "").map(
-		(option) => ({
-			name: option,
-			value: option,
-		}),
-	);
 
 type FieldProps = {
 	error?: string;
@@ -255,11 +251,12 @@ function WarehouseDropdownField({
 				{label}
 			</FieldLabel>
 			<div>
-				<div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+				<div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
 					<AppAdvancedDropdown
 						aria-describedby={errorId}
 						aria-invalid={Boolean(error)}
 						aria-labelledby={labelId}
+						className={AttachedDropdownClassName}
 						id={id}
 						options={options}
 						placeholder="Select warehouse"
@@ -273,7 +270,7 @@ function WarehouseDropdownField({
 						type="button"
 						disabled={isReadonly}
 						onClick={onAddWarehouse}
-						className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-skyblue/25 bg-white px-4 text-sm font-semibold text-skyblue shadow-sm transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45"
+						className={AttachedAddButtonClassName}
 					>
 						<Plus className="h-4 w-4" aria-hidden="true" />
 						Add
@@ -312,30 +309,31 @@ function PartyNameField({
 
 	const errorId =
 		errors.vceCode || errors.vceName
-			? `${MaterialRequestFieldIds.partyMember}-error`
+			? `${MaterialRequestFieldIds.partyName}-error`
 			: undefined;
-	const labelId = `${MaterialRequestFieldIds.partyMember}-label`;
+	const labelId = `${MaterialRequestFieldIds.partyName}-label`;
 
 	return (
 		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
 			<FieldLabel
 				id={labelId}
-				htmlFor={MaterialRequestFieldIds.partyMember}
+				htmlFor={MaterialRequestFieldIds.partyName}
 				isRequired
 			>
 				Party Member
 			</FieldLabel>
 			<div>
-				<div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+				<div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
 					<AppAdvancedDropdown
 						aria-describedby={errorId}
 						aria-invalid={Boolean(errorId)}
 						aria-labelledby={labelId}
-						id={MaterialRequestFieldIds.partyMember}
+						className={AttachedDropdownClassName}
+						id={MaterialRequestFieldIds.partyName}
 						options={options}
-						placeholder="Select party member"
+						placeholder="Select Party Name"
 						readOnly={isReadonly}
-						searchPlaceholder="Search party member"
+						searchPlaceholder="Search Party Name"
 						showSelectedDetails
 						value={values.vceCode}
 						onChange={(value) => applyParty(String(value))}
@@ -344,7 +342,7 @@ function PartyNameField({
 						type="button"
 						disabled={isReadonly}
 						onClick={onAddParty}
-						className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-skyblue/25 bg-white px-4 text-sm font-semibold text-skyblue shadow-sm transition hover:bg-skyblue/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45"
+						className={AttachedAddButtonClassName}
 					>
 						<Plus className="h-4 w-4" aria-hidden="true" />
 						Add
@@ -354,74 +352,6 @@ function PartyNameField({
 					<ErrorText id={errorId} message={errors.vceCode} />
 				) : null}
 				{errors.vceName ? <ErrorText message={errors.vceName} /> : null}
-			</div>
-		</div>
-	);
-}
-
-function ReferenceField({
-	isReadonly,
-	moduleValue,
-	onModuleChange,
-	onReferenceNoChange,
-	referenceNo,
-}: {
-	isReadonly: boolean;
-	moduleValue: string;
-	onModuleChange: (value: string) => void;
-	onReferenceNoChange: (value: string) => void;
-	referenceNo: string;
-}) {
-	const hasReferenceModule = Boolean(moduleValue);
-
-	function handleModuleChange(value: string | string[]) {
-		const nextValue = Array.isArray(value) ? (value[0] ?? "") : value;
-
-		onModuleChange(nextValue);
-
-		if (!nextValue) {
-			onReferenceNoChange("");
-		}
-	}
-
-	const labelId = `${MaterialRequestFieldIds.referenceModule}-label`;
-
-	return (
-		<div className="grid gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
-			<FieldLabel
-				id={labelId}
-				htmlFor={MaterialRequestFieldIds.referenceModule}
-				isRequired={false}
-			>
-				Reference
-			</FieldLabel>
-			<div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-				<AppAdvancedDropdown
-					aria-labelledby={labelId}
-					className="[&_.app-advanced-dropdown-control]:rounded-r-none [&_.app-advanced-dropdown-control]:border-r-0 [&_.app-advanced-dropdown-control]:bg-white [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-menu]:min-w-64"
-					id={MaterialRequestFieldIds.referenceModule}
-					isClearable
-					options={ReferenceModuleDropdownOptions}
-					placeholder=""
-					readOnly={isReadonly}
-					searchPlaceholder="Search modules"
-					showSelectionIndicator={false}
-					value={moduleValue}
-					onChange={handleModuleChange}
-				/>
-				<input
-					id={MaterialRequestFieldIds.referenceNo}
-					type="text"
-					value={referenceNo}
-					disabled={!hasReferenceModule}
-					readOnly={isReadonly || !hasReferenceModule}
-					placeholder={hasReferenceModule ? "Reference number" : ""}
-					aria-label="Reference number"
-					onChange={(event) => onReferenceNoChange(event.target.value)}
-					className={fieldClassName(
-						"min-w-0 truncate rounded-l-none bg-white focus:z-10 disabled:cursor-not-allowed disabled:bg-offwhite/65 disabled:text-darknavy/45",
-					)}
-				/>
 			</div>
 		</div>
 	);

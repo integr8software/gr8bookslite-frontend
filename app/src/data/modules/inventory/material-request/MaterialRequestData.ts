@@ -7,7 +7,7 @@ import type {
 	MaterialRequestStatus,
 } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
 
-type LegacyMaterialRequestStatus = MaterialRequestStatus | "Rejected";
+type LegacyMaterialRequestStatus = MaterialRequestStatus | "Completed" | "Rejected";
 
 const materialRequestSeedRecordFixtures: Omit<
 	MaterialRequestRecord,
@@ -30,7 +30,7 @@ const materialRequestSeedRecordFixtures: Omit<
 		purpose: "Warehouse to warehouse replenishment",
 		requiresApproval: true,
 		remarks: "Priority release for active site materials.",
-		status: "Pending",
+		status: "Active",
 		items: [
 			createSeedItem("cement", "MAT-001", "Cement", "Bag", 80),
 			createSeedItem("sand", "MAT-002", "Sand", "Kg", 120),
@@ -261,10 +261,7 @@ export function createMaterialRequestRecord(
 	id = createMaterialRequestId("mr"),
 	history: MaterialRequestHistoryEntry[] = [],
 ): MaterialRequestRecord {
-	const status = normalizeMaterialRequestStatus(
-		values.status,
-		values.requiresApproval,
-	);
+	const status = normalizeMaterialRequestStatus(values.status);
 	const record = {
 		id,
 		...values,
@@ -391,6 +388,26 @@ export function getMaterialRequestUncancelStatus(
 	return lastNonCancelledStatus ?? (record.requiresApproval ? "Draft" : "Active");
 }
 
+export function getMaterialRequestUndoApprovalStatus(
+	record: Pick<
+		MaterialRequestRecord,
+		"history" | "requiresApproval" | "status"
+	>,
+): MaterialRequestStatus {
+	const lastOperationalStatus = [...record.history]
+		.reverse()
+		.find(
+			(entry) =>
+				entry.status !== record.status &&
+				entry.status !== "Approved" &&
+				entry.status !== "Disapproved" &&
+				entry.status !== "Cancelled" &&
+				entry.status !== "Closed",
+		)?.status;
+
+	return lastOperationalStatus ?? (record.requiresApproval ? "Pending" : "Active");
+}
+
 function createInitialMaterialRequestHistory(
 	record: Omit<MaterialRequestRecord, "history">,
 ): MaterialRequestHistoryEntry[] {
@@ -428,7 +445,7 @@ function createInitialMaterialRequestHistory(
 function normalizeMaterialRequestHistoryEntry(
 	entry: MaterialRequestHistoryEntry,
 ): MaterialRequestHistoryEntry {
-	const status = normalizeMaterialRequestStatus(entry.status, true);
+	const status = normalizeMaterialRequestStatus(entry.status);
 
 	return {
 		id: entry.id || createMaterialRequestId("history"),
@@ -465,8 +482,8 @@ function getMaterialRequestHistoryAction(status: MaterialRequestStatus) {
 		return "Activated";
 	}
 
-	if (status === "Completed") {
-		return "Completed";
+	if (status === "Closed") {
+		return "Closed";
 	}
 
 	if (status === "Pending") {
@@ -496,8 +513,8 @@ function getMaterialRequestHistoryDescription(
 		return `${requestNo} was restored to active processing.`;
 	}
 
-	if (status === "Completed") {
-		return `${requestNo} was completed.`;
+	if (status === "Closed") {
+		return `${requestNo} was closed.`;
 	}
 
 	if (status === "Draft") {
@@ -531,10 +548,7 @@ function createSeedItem(
 function normalizeMaterialRequestRecord(
 	record: MaterialRequestRecord,
 ): MaterialRequestRecord {
-	const status = normalizeMaterialRequestStatus(
-		record.status,
-		record.requiresApproval ?? true,
-	);
+	const status = normalizeMaterialRequestStatus(record.status);
 	const normalizedRecord = {
 		...record,
 		vceCode: record.vceCode ?? "",
@@ -568,22 +582,12 @@ function normalizeMaterialRequestRecord(
 
 function normalizeMaterialRequestStatus(
 	status: LegacyMaterialRequestStatus,
-	requiresApproval: boolean,
 ): MaterialRequestStatus {
-	const nextStatus = status === "Rejected" ? "Disapproved" : status;
-
 	if (status === "Completed") {
-		return requiresApproval ? "Approved" : "Active";
+		return "Closed";
 	}
 
-	if (
-		!requiresApproval &&
-		["Pending", "Approved", "Disapproved"].includes(nextStatus)
-	) {
-		return "Active";
-	}
-
-	return nextStatus;
+	return status === "Rejected" ? "Disapproved" : status;
 }
 
 function inferMaterialCategory(itemName: string) {

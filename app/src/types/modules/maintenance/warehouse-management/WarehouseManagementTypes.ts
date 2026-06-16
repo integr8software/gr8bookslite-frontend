@@ -99,7 +99,6 @@ export type WarehouseRecord = {
 export type WarehouseFormValues = {
 	code: string;
 	name: string;
-	type: string;
 	availableBranches: string[];
 	managerName: string;
 	status: WarehouseStatus;
@@ -120,7 +119,6 @@ export type WarehouseActionMode = "add" | "edit" | "view";
 export type WarehouseTableColumnKey =
 	| "code"
 	| "name"
-	| "type"
 	| "availableBranchLabel"
 	| "managerName"
 	| "totalItems"

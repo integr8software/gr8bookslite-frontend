@@ -5,39 +5,27 @@ import {
 	ReceiptText,
 	XCircle,
 } from "lucide-react";
-import { getDisbursementVoucherDisplayStatus } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+import {
+	getDisbursementVoucherDisplayStatus,
+	isDisbursementVoucherActiveStatus,
+} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type { DisbursementVoucherPreviewRow } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 
 export function DisbursementVoucherMetrics({
 	previewRows,
 }: {
 	previewRows: DisbursementVoucherPreviewRow[];
 }) {
-	const approvedCount = previewRows.filter(
-		(row) =>
-			getDisbursementVoucherDisplayStatus(
-				row.voucher?.status ?? row.transaction.status,
-			) === "Approved",
+	const activeCount = previewRows.filter((row) =>
+		isDisbursementVoucherActiveStatus(
+			row.voucher?.status ?? row.transaction.status,
+		),
 	).length;
-	const disapprovedCount = previewRows.filter(
-		(row) =>
-			getDisbursementVoucherDisplayStatus(
-				row.voucher?.status ?? row.transaction.status,
-			) === "Disapproved",
-	).length;
-	const pendingCount = previewRows.filter(
-		(row) =>
-			getDisbursementVoucherDisplayStatus(
-				row.voucher?.status ?? row.transaction.status,
-			) === "Pending",
-	).length;
-	const completedCount = previewRows.filter(
-		(row) =>
-			getDisbursementVoucherDisplayStatus(
-				row.voucher?.status ?? row.transaction.status,
-			) === "Completed",
-	).length;
+	const approvedCount = countPreviewRowsByStatus(previewRows, "Approved");
+	const disapprovedCount = countPreviewRowsByStatus(previewRows, "Disapproved");
+	const pendingCount = countPreviewRowsByStatus(previewRows, "Pending");
+	const closedCount = countPreviewRowsByStatus(previewRows, "Closed");
 	const cards = [
 		{
 			label: "Total Vouchers",
@@ -45,6 +33,13 @@ export function DisbursementVoucherMetrics({
 			summary: "All time",
 			icon: ReceiptText,
 			iconClassName: "bg-skyblue/20 text-skyblue",
+		},
+		{
+			label: "Active",
+			value: activeCount,
+			summary: formatPercentage(activeCount, previewRows.length),
+			icon: CheckCircle2,
+			iconClassName: "bg-emerald-50 text-emerald-700",
 		},
 		{
 			label: "Pending",
@@ -68,50 +63,29 @@ export function DisbursementVoucherMetrics({
 			iconClassName: "bg-coralpink/15 text-coralpink",
 		},
 		{
-			label: "Completed",
-			value: completedCount,
-			summary: formatPercentage(completedCount, previewRows.length),
+			label: "Closed",
+			value: closedCount,
+			summary: formatPercentage(closedCount, previewRows.length),
 			icon: PackageCheck,
 			iconClassName: "bg-skyblue/15 text-skyblue",
 		},
 	];
 
 	return (
-		<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-			{cards.map((card) => {
-				const Icon = card.icon;
-
-				return (
-					<div
-						key={card.label}
-						className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5"
-					>
-						<div className="flex items-center justify-between gap-4">
-							<div>
-								<p className="text-sm font-semibold text-darknavy">
-									{card.label}
-								</p>
-								<p className="mt-3 text-3xl font-semibold leading-none text-darknavy">
-									{card.value}
-								</p>
-								<p className="mt-2 text-xs font-medium text-darknavy/60">
-									{card.summary}
-								</p>
-							</div>
-							<span
-								className={joinClasses(
-									"inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full",
-									card.iconClassName,
-								)}
-							>
-								<Icon className="h-6 w-6" aria-hidden="true" />
-							</span>
-						</div>
-					</div>
-				);
-			})}
-		</div>
+		<ModuleStatisticCards items={cards} className="2xl:grid-cols-6" />
 	);
+}
+
+function countPreviewRowsByStatus(
+	previewRows: DisbursementVoucherPreviewRow[],
+	status: ReturnType<typeof getDisbursementVoucherDisplayStatus>,
+) {
+	return previewRows.filter(
+		(row) =>
+			getDisbursementVoucherDisplayStatus(
+				row.voucher?.status ?? row.transaction.status,
+			) === status,
+	).length;
 }
 
 function formatPercentage(value: number, total: number) {

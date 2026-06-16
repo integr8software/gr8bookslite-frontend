@@ -51,6 +51,11 @@ export function ModuleDataEntryExportButton({
 	const triggerRef = useRef<HTMLDivElement>(null);
 	const [isOpen, setIsOpen] = useState(false);
 	const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+	const orderedOptions = [...options].sort(
+		(firstOption, secondOption) =>
+			getExportOptionOrder(firstOption.id) -
+			getExportOptionOrder(secondOption.id),
+	);
 
 	useLayoutEffect(() => {
 		if (!isOpen || !triggerRef.current) {
@@ -59,7 +64,7 @@ export function ModuleDataEntryExportButton({
 
 		const rect = triggerRef.current.getBoundingClientRect();
 		const menuWidth = 176;
-		const menuHeight = Math.min(220, 24 + options.length * 38);
+		const menuHeight = Math.min(220, 24 + orderedOptions.length * 38);
 		const viewportPadding = 8;
 		const left =
 			align === "right"
@@ -78,7 +83,7 @@ export function ModuleDataEntryExportButton({
 				: Math.max(viewportPadding, rect.top - menuHeight - 6);
 
 		setMenuStyle({ left, top });
-	}, [align, isOpen, options.length]);
+	}, [align, isOpen, orderedOptions.length]);
 
 	useEffect(() => {
 		if (!isOpen) {
@@ -145,7 +150,7 @@ export function ModuleDataEntryExportButton({
 							style={menuStyle}
 							className="fixed z-130 grid w-44 gap-1 rounded-lg border border-darknavy/10 bg-white p-1.5 text-left shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
 						>
-							{options.map((option) => (
+							{orderedOptions.map((option) => (
 								<button
 									key={option.id}
 									type="button"
@@ -165,6 +170,22 @@ export function ModuleDataEntryExportButton({
 				: null}
 		</div>
 	);
+}
+
+function getExportOptionOrder(optionId: string) {
+	if (optionId === "csv") {
+		return 0;
+	}
+
+	if (optionId === "excel" || optionId === "xlsx") {
+		return 1;
+	}
+
+	if (optionId === "pdf") {
+		return 2;
+	}
+
+	return 3;
 }
 
 export function ModuleDataEntryClearButton({

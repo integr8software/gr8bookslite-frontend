@@ -257,8 +257,8 @@ export function PartyManagementDrawer({
 		});
 	}
 
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
+	function handleSubmit(event?: FormEvent<HTMLFormElement>) {
+		event?.preventDefault();
 
 		const nextErrors = validatePartyInformationForm(values);
 
@@ -287,8 +287,8 @@ export function PartyManagementDrawer({
 						Cancel
 					</button>
 					<button
-						type="submit"
-						form={PartyDrawerFormId}
+						type="button"
+						onClick={() => handleSubmit()}
 						disabled={isPending}
 						className={moduleDrawerPrimaryActionClassName}
 					>
@@ -301,10 +301,8 @@ export function PartyManagementDrawer({
 			onClose={onClose}
 			title={title}
 		>
-			<form
+			<div
 				id={PartyDrawerFormId}
-				onSubmit={handleSubmit}
-				noValidate
 				className="px-6 py-5"
 			>
 				<PartyInformationDetailsFields
@@ -325,7 +323,7 @@ export function PartyManagementDrawer({
 					onSelectRegion={selectRegion}
 					onUpdateField={updateField}
 				/>
-			</form>
+			</div>
 		</ModuleDrawer>
 	);
 }

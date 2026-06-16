@@ -16,16 +16,26 @@ import {
   useSearchParams,
 } from "next/navigation";
 import {
+  MoreHorizontal,
   Percent,
   Plus,
+  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
+import {
+  DisbursementVoucherHref,
+  canApproveDisbursementVoucherStatus,
+  canCancelDisbursementVoucherStatus,
+  canDisapproveDisbursementVoucherStatus,
+  canEditDisbursementVoucherStatus,
+} from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
   DisbursementVoucherCopyFromRecords,
   DisbursementVoucherCopySources,
   DisbursementVoucherBankAccounts,
-  applyCopyFromRecordToDisbursementVoucherForm,
+  applyCopyFromRecordsToDisbursementVoucherForm,
+  createBlankDisbursementLineEntry,
+  createDisbursementVoucherStatusHistoryEntry,
   createTaxDetails,
   createDisbursementTransactionFromForm,
   createDisbursementVoucherFormValues,
@@ -34,18 +44,21 @@ import {
   syncTaxDetailsAmount,
   updateDisbursementVoucherFromForm,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import { GlobalReferenceModuleOptions } from "@/app/src/constants/shared/module/ReferenceModuleConstants";
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import {
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/financial-management/payment-type/usePaymentType";
+import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/financial-management/responsibility-center/useResponsibilityCenter";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import {
   getPartyDisplayName,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import {
+  getModuleChartAccounts,
+  type ModuleChartAccount,
+} from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
   MockMultiCurrencySetupRecords,
   MultiCurrencyCatalog,
@@ -54,6 +67,7 @@ import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import {
   AppTaxRateDialog,
@@ -62,15 +76,17 @@ import {
 import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
 import type { AppDisbursementTypeRecord } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
 import type {
-  DisbursementType,
   DisbursementLineEntry,
   DisbursementTaxDetails,
   DisbursementTransactionRecord,
   DisbursementVoucherActionMode,
   DisbursementVoucherFormErrors,
   DisbursementVoucherFormValues,
+  DisbursementVoucherRecord,
+  DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/maintenance/financial-management/payment-type/PaymentTypeTypes";
+import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherActionHeader";
 import {
   clearAccountingGridSession,
@@ -83,6 +99,12 @@ import {
   type ModuleDataEntryColumn,
   type ModuleDataEntryColumnOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import {
+  MoneyNumberField,
+  formatMoneyNumberInput,
+  parseMoneyNumberInput,
+} from "@/app/src/ui/shared/money/MoneyNumberField";
+import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 const AppPaymentTypeDialog = dynamic(
@@ -100,14 +122,6 @@ const AppDisbursementTypeDialog = dynamic(
     ),
   { ssr: false },
 );
-
-const ReferenceModuleDropdownOptions: AppAdvancedDropdownOption[] =
-  GlobalReferenceModuleOptions.filter((option) => option !== "").map(
-    (option) => ({
-      name: option,
-      value: option,
-    }),
-  );
 
 export function DisbursementVoucherActionPage() {
   return (
@@ -166,14 +180,13 @@ function DisbursementVoucherActionInner() {
   const addTransaction = useDisbursementVoucherStore(
     (state) => state.addTransaction,
   );
+  const updateTransaction = useDisbursementVoucherStore(
+    (state) => state.updateTransaction,
+  );
   const addVoucher = useDisbursementVoucherStore((state) => state.addVoucher);
   const updateVoucher = useDisbursementVoucherStore(
     (state) => state.updateVoucher,
   );
-  const deleteVoucher = useDisbursementVoucherStore(
-    (state) => state.deleteVoucher,
-  );
-  const isMutating = useDisbursementVoucherStore((state) => state.isMutating);
   const routeTransactionId =
     mode === "add"
       ? (searchParams.get("transactionId") ?? "")
@@ -189,11 +202,13 @@ function DisbursementVoucherActionInner() {
     routeTransactionId,
   );
   const [values, setValues] = useState<DisbursementVoucherFormValues>(() =>
-    readAccountingGridSession()?.values ??
-      createDisbursementVoucherFormValues(routeTransaction, routeVoucher),
+    createInitialDisbursementVoucherFormValues({
+      mode,
+      transaction: routeTransaction,
+      voucher: routeVoucher,
+    }),
   );
   const [errors, setErrors] = useState<DisbursementVoucherFormErrors>({});
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
   const paymentTypeStore = usePaymentTypeStore();
   const paymentTypeRecords = paymentTypeStore.paymentTypes;
@@ -205,7 +220,6 @@ function DisbursementVoucherActionInner() {
   const [taxEditorTarget, setTaxEditorTarget] = useState<TaxEditorTarget>(null);
   const [taxEditorValues, setTaxEditorValues] =
     useState<AppTaxRateDialogValue | null>(null);
-  const isReadonly = mode === "view";
 
   useEffect(() => {
     clearAccountingGridSession();
@@ -216,6 +230,11 @@ function DisbursementVoucherActionInner() {
   const existingVoucher = vouchers.find(
     (voucher) => voucher.transactionId === values.transactionId,
   );
+  const currentStatus =
+    existingVoucher?.status ?? selectedTransaction?.status ?? values.status;
+  const isReadonly =
+    mode === "view" ||
+    (mode === "edit" && !canEditDisbursementVoucherStatus(currentStatus));
   const totalDebit = useMemo(
     () => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0),
     [values.lineEntries],
@@ -245,24 +264,33 @@ function DisbursementVoucherActionInner() {
   }
 
   function handleRemoveEntry(entryId: string) {
+    const nextEntries = values.lineEntries.filter((entry) => entry.id !== entryId);
+
     updateField(
       "lineEntries",
-      values.lineEntries.filter((entry) => entry.id !== entryId),
+      nextEntries.length > 0 ? nextEntries : [createBlankEntry()],
     );
   }
 
   function createBlankEntry(): DisbursementLineEntry {
-    return {
-      accountCode: "",
-      accountName: "",
-      credit: 0,
-      debit: 0,
-      id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      particulars: "",
-      status: "Pending",
-      taxDetails: createTaxDetails(0, "0%"),
-      taxRate: "0%",
-    };
+    const refId =
+      values.voucherReferenceNo ||
+      selectedTransaction?.transactionNo ||
+      values.transactionId;
+    const responsibilityCenter =
+      values.costCenter || selectedTransaction?.costCenter || "";
+
+    return createBlankDisbursementLineEntry({
+      partyCode: values.vceCode,
+      partyName: values.vceName,
+      refId,
+      responsibilityCenter,
+      taxDetails: {
+        ...createTaxDetails(0, "0%"),
+        refId,
+        responsibilityCenter,
+      },
+    });
   }
 
   function handleAddEntries(count = 1) {
@@ -282,6 +310,13 @@ function DisbursementVoucherActionInner() {
     field: keyof DisbursementLineEntry,
     value: string | number,
   ) {
+    handleUpdateEntryFields(entryId, { [field]: value });
+  }
+
+  function handleUpdateEntryFields(
+    entryId: string,
+    updates: Partial<DisbursementLineEntry>,
+  ) {
     updateField(
       "lineEntries",
       values.lineEntries.map((entry) => {
@@ -289,19 +324,20 @@ function DisbursementVoucherActionInner() {
           return entry;
         }
 
-        const nextEntry = { ...entry, [field]: value };
+        const nextEntry = normalizeDisbursementLineEntryFields({
+          ...entry,
+          ...updates,
+        });
 
-        if (field === "debit" || field === "credit" || field === "taxRate") {
-          const amount = Number(nextEntry.debit || 0) || Number(nextEntry.credit || 0);
-
-          nextEntry.taxDetails = syncTaxDetailsAmount(
-            nextEntry.taxDetails,
-            amount,
-            String(nextEntry.taxRate || "0%"),
-          );
+        if (Number(nextEntry.debit || 0) > 0) {
+          nextEntry.credit = 0;
         }
 
-        return nextEntry;
+        if (Number(nextEntry.credit || 0) > 0) {
+          nextEntry.debit = 0;
+        }
+
+        return syncDisbursementLineEntryTaxDetails(nextEntry);
       }),
     );
     setErrors((current) => ({
@@ -381,8 +417,14 @@ function DisbursementVoucherActionInner() {
       return;
     }
 
+    const normalizedEntry = syncDisbursementLineEntryTaxDetails(
+      normalizeDisbursementLineEntryFields(lineEntry),
+    );
+
     setTaxEditorTarget({ kind: "entry", entryId });
-    setTaxEditorValues(createTaxEditorValue(lineEntry.taxDetails, lineEntry.taxRate));
+    setTaxEditorValues(
+      createTaxEditorValue(normalizedEntry.taxDetails, normalizedEntry.taxRate),
+    );
   }
 
   function handleSaveTaxDetails(nextTaxValue: AppTaxRateDialogValue) {
@@ -403,10 +445,14 @@ function DisbursementVoucherActionInner() {
       values.lineEntries.map((entry) =>
         entry.id === taxEditorTarget.entryId
           ? {
-              ...entry,
-              taxRate: nextTaxValue.taxRate,
-              taxDetails: nextTaxValue.taxDetails,
-            }
+            ...entry,
+            atcCode: nextTaxValue.taxDetails.atcCode,
+            refId: nextTaxValue.taxDetails.refId,
+            responsibilityCenter: nextTaxValue.taxDetails.responsibilityCenter,
+            taxRate: nextTaxValue.taxRate,
+            taxDetails: nextTaxValue.taxDetails,
+            vatType: nextTaxValue.taxDetails.vatType,
+          }
           : entry,
       ),
     );
@@ -417,6 +463,10 @@ function DisbursementVoucherActionInner() {
 
   function handleSubmit(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
+
+    if (isReadonly) {
+      return;
+    }
 
     const detailsErrors = validateDisbursementVoucherDetails(values);
     const entryErrors = validateDisbursementVoucherEntries(values);
@@ -440,46 +490,84 @@ function DisbursementVoucherActionInner() {
     router.push(returnHref);
   }
 
-  function handleConfirmDelete() {
-    if (!existingVoucher) {
+  function handleUpdateStatus(status: DisbursementVoucherStatus) {
+    if (!canUpdateDisbursementVoucherStatus(currentStatus, status)) {
       return;
     }
 
-    deleteVoucher(existingVoucher.id);
-    setIsDeleteDialogOpen(false);
-    router.push(DisbursementVoucherHref);
+    setValues((currentValues) => ({ ...currentValues, status }));
+
+    if (existingVoucher) {
+      updateVoucher({
+        ...existingVoucher,
+        status,
+        history: [
+          ...(existingVoucher.history ?? []),
+          createDisbursementVoucherStatusHistoryEntry(
+            status,
+            existingVoucher.voucherNo,
+          ),
+        ],
+      });
+      return;
+    }
+
+    if (selectedTransaction) {
+      updateTransaction({ ...selectedTransaction, status });
+    }
+  }
+
+  function handleCreateDisbursementType(record: AppDisbursementTypeRecord) {
+    setDisbursementTypeRecords((currentRecords) => [
+      record,
+      ...currentRecords,
+    ]);
+
+    return record;
+  }
+
+  function handleUpdateDisbursementType(record: AppDisbursementTypeRecord) {
+    setDisbursementTypeRecords((currentRecords) =>
+      currentRecords.map((currentRecord) =>
+        currentRecord.id === record.id ? record : currentRecord,
+      ),
+    );
+
+    return record;
   }
 
   const actionContent = (
     <>
       <DisbursementVoucherActionHeader
-        mode={mode}
+        mode={isReadonly ? "view" : mode}
         transaction={selectedTransaction}
         voucher={existingVoucher}
-        onEditVoucher={
-          existingVoucher
-            ? () => router.push(`${DisbursementVoucherHref}/edit/${selectedTransaction?.id ?? ""}`)
-            : undefined
-        }
-        onDeleteVoucher={
-          existingVoucher ? () => setIsDeleteDialogOpen(true) : undefined
-        }
+        onUpdateStatus={handleUpdateStatus}
         onSubmit={() => handleSubmit()}
         copyFromRecords={DisbursementVoucherCopyFromRecords}
         copyFromSources={DisbursementVoucherCopySources}
         onCopyFrom={(recordIds) => {
-          const record = DisbursementVoucherCopyFromRecords.find(
-            (candidate) => candidate.id === recordIds[0],
-          );
+          const selectedRecords = recordIds
+            .map((recordId) =>
+              DisbursementVoucherCopyFromRecords.find(
+                (candidate) => candidate.id === recordId,
+              ),
+            )
+            .filter(
+              (
+                record,
+              ): record is (typeof DisbursementVoucherCopyFromRecords)[number] =>
+                Boolean(record),
+            );
 
-          if (!record) {
+          if (selectedRecords.length === 0) {
             return;
           }
 
           setValues((currentValues) =>
-            applyCopyFromRecordToDisbursementVoucherForm(
+            applyCopyFromRecordsToDisbursementVoucherForm(
               currentValues,
-              record,
+              selectedRecords,
             ),
           );
           setErrors({});
@@ -513,6 +601,7 @@ function DisbursementVoucherActionInner() {
         onMoveEntry={handleMoveEntry}
         onOpenEntryTaxEditor={handleOpenEntryTaxEditor}
         onUpdateEntry={handleUpdateEntry}
+        onUpdateEntryFields={handleUpdateEntryFields}
         totalCredit={totalCredit}
         totalDebit={totalDebit}
         onRemoveEntry={handleRemoveEntry}
@@ -530,19 +619,9 @@ function DisbursementVoucherActionInner() {
         </form>
       )}
 
-      <AppDialog
-        isOpen={isDeleteDialogOpen}
-        isPending={isMutating}
-        title="Delete this voucher?"
-        description={`This will remove ${existingVoucher?.voucherNo ?? "the selected voucher"} from the preview table.`}
-        confirmLabel="Delete Voucher"
-        tone="danger"
-        onCancel={() => setIsDeleteDialogOpen(false)}
-        onConfirm={handleConfirmDelete}
-      />
       <AppTaxRateDialog
         isOpen={Boolean(taxEditorTarget && taxEditorValues)}
-        title="Tax Setup"
+        title="Tax"
         value={taxEditorValues}
         onClose={() => {
           setTaxEditorTarget(null);
@@ -569,7 +648,8 @@ function DisbursementVoucherActionInner() {
         isOpen={!isReadonly && isDisbursementTypeDrawerOpen}
         records={disbursementTypeRecords}
         onClose={() => setIsDisbursementTypeDrawerOpen(false)}
-        onRecordsChange={setDisbursementTypeRecords}
+        onCreateRecord={handleCreateDisbursementType}
+        onUpdateRecord={handleUpdateDisbursementType}
         onSelect={(disbursementType) => {
           updateField("disbursementType", disbursementType);
           setIsDisbursementTypeDrawerOpen(false);
@@ -589,6 +669,71 @@ function getActionMode(pathname: string): DisbursementVoucherActionMode {
   }
 
   return "add";
+}
+
+function createInitialDisbursementVoucherFormValues({
+  mode,
+  transaction,
+  voucher,
+}: {
+  mode: DisbursementVoucherActionMode;
+  transaction?: DisbursementTransactionRecord;
+  voucher?: DisbursementVoucherRecord;
+}) {
+  const defaultValues = createDisbursementVoucherFormValues(transaction, voucher);
+  const session = readAccountingGridSession();
+
+  if (session?.mode !== mode) {
+    return defaultValues;
+  }
+
+  return {
+    ...defaultValues,
+    ...session.values,
+    referenceModule:
+      session.values.referenceModule.trim() || defaultValues.referenceModule,
+    voucherReferenceNo:
+      session.values.voucherReferenceNo.trim() ||
+      defaultValues.voucherReferenceNo,
+  };
+}
+
+function canUpdateDisbursementVoucherStatus(
+  currentStatus: DisbursementVoucherStatus,
+  nextStatus: DisbursementVoucherStatus,
+) {
+  if (nextStatus === "Approved") {
+    return canApproveDisbursementVoucherStatus(currentStatus);
+  }
+
+  if (nextStatus === "Disapproved") {
+    return canDisapproveDisbursementVoucherStatus(currentStatus);
+  }
+
+  if (nextStatus === "Cancelled") {
+    return canCancelDisbursementVoucherStatus(currentStatus);
+  }
+
+  if (nextStatus === "Pending") {
+    return (
+      currentStatus === "Approved" ||
+      currentStatus === "Disapproved" ||
+      currentStatus === "Cancelled"
+    );
+  }
+
+  if (
+    (nextStatus === "Active" || nextStatus === "Draft") &&
+    (currentStatus === "Approved" || currentStatus === "Disapproved")
+  ) {
+    return true;
+  }
+
+  if (nextStatus === "Draft" || nextStatus === "Active") {
+    return currentStatus === "Cancelled";
+  }
+
+  return false;
 }
 
 function createVoucherActionReturnHref(from: string | null, transactionId?: string) {
@@ -618,7 +763,7 @@ function createVoucherCurrencyOptions() {
 
 function createVoucherCurrencyDropdownOptions(): AppAdvancedDropdownOption[] {
   return createVoucherCurrencyOptions().map((currency) => ({
-    label: currency.name,
+    label: currency.isDefault ? `${currency.name} | Default` : currency.name,
     name: currency.code,
     value: currency.code,
   }));
@@ -637,6 +782,137 @@ function getVoucherCurrencyExchangeRate(currencyCode: string) {
   );
 
   return (matchedRate?.originalExchangeRate ?? 1).toFixed(4);
+}
+
+function createVoucherPaymentTypeOptions({
+  currentPaymentMethod,
+  paymentTypeRecords,
+  transactions,
+}: {
+  currentPaymentMethod: string;
+  paymentTypeRecords: AppPaymentTypeRecord[];
+  transactions: DisbursementTransactionRecord[];
+}): AppAdvancedDropdownOption[] {
+  const options = paymentTypeRecords
+    .filter((record) => record.status === "Active")
+    .map((record) => ({
+      label: record.type,
+      name: record.paymentType,
+      value: record.paymentType,
+    }));
+
+  transactions.forEach((transaction) => {
+    addUniqueDropdownOption(options, {
+      label: inferVoucherPaymentTypeClassification(transaction.paymentMethod),
+      name: transaction.paymentMethod,
+      value: transaction.paymentMethod,
+    });
+  });
+
+  if (currentPaymentMethod.trim()) {
+    addUniqueDropdownOption(options, {
+      label: inferVoucherPaymentTypeClassification(currentPaymentMethod),
+      name: currentPaymentMethod,
+      value: currentPaymentMethod,
+    });
+  }
+
+  return options;
+}
+
+function createVoucherPartyOptions({
+  currentPartyCode,
+  currentPartyName,
+  partyRecords,
+  transactions,
+}: {
+  currentPartyCode: string;
+  currentPartyName: string;
+  partyRecords: PartyInformationRecord[];
+  transactions: DisbursementTransactionRecord[];
+}): AppAdvancedDropdownOption[] {
+  const options = partyRecords
+    .filter((party) => party.status === "Active")
+    .map((party) => ({
+      description: party.partyTypes.join(", "),
+      label: party.partyCodeNo,
+      name: getPartyDisplayName(party),
+      value: party.partyCodeNo,
+    }));
+
+  transactions.forEach((transaction) => {
+    const matchedParty = findPartyRecordByName(partyRecords, transaction.payee);
+
+    addUniqueDropdownOption(options, {
+      description: matchedParty
+        ? matchedParty.partyTypes.join(", ")
+        : "Source transaction",
+      label: matchedParty?.partyCodeNo ?? "Source transaction",
+      name: transaction.payee,
+      value: matchedParty?.partyCodeNo ?? transaction.payee,
+    });
+  });
+
+  if (currentPartyCode.trim() || currentPartyName.trim()) {
+    addUniqueDropdownOption(options, {
+      description: "Current voucher value",
+      label: currentPartyCode || "Current voucher",
+      name: currentPartyName || currentPartyCode,
+      value: currentPartyCode || currentPartyName,
+    });
+  }
+
+  return options;
+}
+
+function addUniqueDropdownOption(
+  options: AppAdvancedDropdownOption[],
+  option: AppAdvancedDropdownOption,
+) {
+  if (!option.value.trim()) {
+    return;
+  }
+
+  if (options.some((currentOption) => currentOption.value === option.value)) {
+    return;
+  }
+
+  options.push(option);
+}
+
+function findPartyRecordByName(
+  partyRecords: PartyInformationRecord[],
+  name: string,
+) {
+  const normalizedName = name.trim().toLowerCase();
+
+  return partyRecords.find(
+    (party) => getPartyDisplayName(party).trim().toLowerCase() === normalizedName,
+  );
+}
+
+function inferVoucherPaymentTypeClassification(paymentMethod: string) {
+  const normalizedPaymentMethod = paymentMethod.toLowerCase();
+
+  if (normalizedPaymentMethod.includes("debit")) {
+    return "Debit";
+  }
+
+  if (
+    normalizedPaymentMethod.includes("check") ||
+    normalizedPaymentMethod.includes("cheque")
+  ) {
+    return "With Bank";
+  }
+
+  if (
+    normalizedPaymentMethod.includes("cash") ||
+    normalizedPaymentMethod.includes("petty")
+  ) {
+    return "Cash";
+  }
+
+  return "Bank Transfer";
 }
 
 function createTaxEditorValue(
@@ -662,6 +938,90 @@ function getVatTaxRateValue(
   }
 
   return "0%";
+}
+
+function createAccountingChartAccountOptions(
+  entries: DisbursementLineEntry[],
+): ModuleChartAccount[] {
+  const chartAccounts = getModuleChartAccounts();
+  const accountKeys = new Set(
+    chartAccounts.flatMap((account) => [
+      account.accountName.toLowerCase(),
+      account.accountNumber,
+    ]),
+  );
+  const customAccounts: ModuleChartAccount[] = [];
+
+  entries.forEach((entry) => {
+    const accountName = entry.accountName.trim();
+    const accountKey = accountName.toLowerCase();
+
+    if (!accountName || accountKeys.has(accountKey)) {
+      return;
+    }
+
+    accountKeys.add(accountKey);
+    customAccounts.push({
+      accountCategory: "Other",
+      accountName,
+      accountNumber: entry.accountCode,
+      accountType: "Expenses",
+      description: entry.accountCode,
+      id: `entry-account-${entry.id}`,
+    normalBalance: parseMoneyNumberInput(entry.credit) > 0 ? "Credit" : "Debit",
+      statementGroup: "Income Statement",
+      statementSection: "Accounting Entry",
+      status: "Active",
+    });
+  });
+
+  return [...chartAccounts, ...customAccounts];
+}
+
+function normalizeDisbursementLineEntryFields(
+  entry: DisbursementLineEntry,
+): DisbursementLineEntry {
+  const taxDetails = entry.taxDetails ?? createTaxDetails(0, "0%");
+
+  return {
+    ...entry,
+    atcCode: entry.atcCode ?? taxDetails.atcCode ?? "",
+    partyCode: entry.partyCode ?? "",
+    partyName: entry.partyName ?? "",
+    refId: entry.refId ?? taxDetails.refId ?? "",
+    responsibilityCenter:
+      entry.responsibilityCenter ?? taxDetails.responsibilityCenter ?? "",
+    taxDetails,
+    vatType: entry.vatType ?? taxDetails.vatType ?? "",
+  };
+}
+
+function syncDisbursementLineEntryTaxDetails(
+  entry: DisbursementLineEntry,
+): DisbursementLineEntry {
+  const amount =
+    parseMoneyNumberInput(entry.debit) || parseMoneyNumberInput(entry.credit);
+  const taxDetails = syncTaxDetailsAmount(
+    {
+      ...entry.taxDetails,
+      atcCode: entry.atcCode ?? entry.taxDetails.atcCode,
+      refId: entry.refId ?? entry.taxDetails.refId,
+      responsibilityCenter:
+        entry.responsibilityCenter ?? entry.taxDetails.responsibilityCenter,
+      vatType: entry.vatType ?? entry.taxDetails.vatType,
+    },
+    amount,
+    String(entry.taxRate || "0%"),
+  );
+
+  return {
+    ...entry,
+    atcCode: taxDetails.atcCode,
+    refId: taxDetails.refId,
+    responsibilityCenter: taxDetails.responsibilityCenter,
+    taxDetails,
+    vatType: taxDetails.vatType,
+  };
 }
 
 function VoucherWorkflowSkeleton() {
@@ -710,29 +1070,27 @@ function VoucherDetailsPanel({
     selectedTransaction?.transactionNo ?? values.transactionId;
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
     () =>
-      partyRecords.map((party) => ({
-        description: party.partyTypes.join(", "),
-        label: party.partyCodeNo,
-        name: getPartyDisplayName(party),
-        value: party.partyCodeNo,
-      })),
-    [partyRecords],
+      createVoucherPartyOptions({
+        currentPartyCode: values.vceCode,
+        currentPartyName: values.vceName,
+        partyRecords,
+        transactions,
+      }),
+    [partyRecords, transactions, values.vceCode, values.vceName],
   );
   const paymentTypeOptions = useMemo<AppAdvancedDropdownOption[]>(
     () =>
-      paymentTypeRecords
-        .filter((record) => record.status === "Active")
-        .map((record) => ({
-          label: record.type,
-          name: record.paymentType,
-          value: record.paymentType,
-        })),
-    [paymentTypeRecords],
+      createVoucherPaymentTypeOptions({
+        currentPaymentMethod: values.paymentMethod,
+        paymentTypeRecords,
+        transactions,
+      }),
+    [paymentTypeRecords, transactions, values.paymentMethod],
   );
   const currencyOptions = useMemo(() => createVoucherCurrencyDropdownOptions(), []);
 
   function updateAmount(nextAmount: string) {
-    const amount = Number(nextAmount || 0);
+    const amount = parseMoneyNumberInput(nextAmount);
 
     onUpdateField("amount", nextAmount);
     onUpdateField(
@@ -757,16 +1115,6 @@ function VoucherDetailsPanel({
     );
 
     onUpdateField("transactionId", matchedTransaction?.id ?? nextTransactionNumber);
-  }
-
-  function updateReferenceModule(value: string | string[]) {
-    const nextReferenceModule = Array.isArray(value) ? (value[0] ?? "") : value;
-
-    onUpdateField("referenceModule", nextReferenceModule);
-
-    if (!nextReferenceModule) {
-      onUpdateField("voucherReferenceNo", "");
-    }
   }
 
   function updatePaymentDetails(
@@ -820,15 +1168,21 @@ function VoucherDetailsPanel({
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2">
         <div className="grid min-w-0 gap-4">
-          <FieldShell label="Payment Type" error={errors.paymentMethod} isRequired>
-            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto]">
+          <FieldShell
+            controlId="disbursement-voucher-payment-type"
+            label="Payment Type"
+            error={errors.paymentMethod}
+            isRequired
+          >
+            <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
               <AppAdvancedDropdown
+                className={AttachedDropdownClassName}
+                id="disbursement-voucher-payment-type"
                 value={values.paymentMethod}
                 readOnly={isReadonly}
                 options={paymentTypeOptions}
                 placeholder="Select payment type"
                 searchPlaceholder="Search payment type"
-                className="[&_.app-advanced-dropdown-control]:rounded-r-none [&_.app-advanced-dropdown-control]:border-r-0 [&_.app-advanced-dropdown-control]:shadow-none"
                 onChange={(value) => {
                   const paymentMethod = String(value);
 
@@ -849,21 +1203,27 @@ function VoucherDetailsPanel({
                 type="button"
                 disabled={isReadonly}
                 onClick={onOpenPaymentTypeDialog}
-                className={`${FieldActionButtonClassName} rounded-l-none rounded-r-lg`}
+                className={AttachedAddButtonClassName}
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 Add
               </button>
             </div>
           </FieldShell>
-          <FieldShell label="Party Name" error={errors.vceCode || errors.vceName} isRequired>
-            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto]">
+          <FieldShell
+            controlId="disbursement-voucher-party"
+            label="Party Name"
+            error={errors.vceCode || errors.vceName}
+            isRequired
+          >
+            <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
               <AppAdvancedDropdown
-                className="[&_.app-advanced-dropdown-control]:rounded-r-none [&_.app-advanced-dropdown-control]:border-r-0 [&_.app-advanced-dropdown-control]:shadow-none"
+                className={AttachedDropdownClassName}
+                id="disbursement-voucher-party"
                 options={partyOptions}
-                placeholder="Select party"
+                placeholder="Select Party Name"
                 readOnly={isReadonly}
-                searchPlaceholder="Search party"
+                searchPlaceholder="Search Party Name"
                 value={values.vceCode}
                 onChange={(value) => {
                   const code = String(value);
@@ -877,16 +1237,21 @@ function VoucherDetailsPanel({
                 type="button"
                 disabled={isReadonly}
                 onClick={() => setIsPartyDrawerOpen(true)}
-                className={`${FieldActionButtonClassName} rounded-l-none rounded-r-lg`}
+                className={AttachedAddButtonClassName}
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 Add
               </button>
             </div>
           </FieldShell>
-          <FieldShell label="Currency" error={errors.currency}>
+          <FieldShell
+            controlId="disbursement-voucher-currency"
+            label="Currency"
+            error={errors.currency}
+          >
             <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <AppAdvancedDropdown
+                id="disbursement-voucher-currency"
                 value={values.currency}
                 readOnly={isReadonly}
                 isClearable={false}
@@ -902,32 +1267,37 @@ function VoucherDetailsPanel({
                 >
                   Exchange Rate
                 </label>
-                <input
+                <MoneyNumberField
                   id="disbursement-voucher-fx-rate"
                   value={values.fxRate}
                   readOnly={isReadonly}
-                  onChange={(event) => onUpdateField("fxRate", event.target.value)}
+                  onValueChange={(value) => onUpdateField("fxRate", value)}
                   className={`${FieldClassName} text-right`}
                 />
               </div>
             </div>
           </FieldShell>
-          <FieldShell label="Amount" error={errors.amount}>
-            <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-              <input
+          <FieldShell
+            controlId="disbursement-voucher-amount"
+            label="Amount"
+            error={errors.amount}
+          >
+            <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
+              <MoneyNumberField
+                id="disbursement-voucher-amount"
                 value={values.amount}
                 readOnly={isReadonly}
-                inputMode="decimal"
-                onChange={(event) => updateAmount(event.target.value)}
-                className={`${FieldClassName} text-right`}
+                onValueChange={updateAmount}
+                className={`${FieldClassName} text-right sm:rounded-r-none`}
               />
               <button
                 type="button"
                 onClick={onOpenTaxEditor}
                 disabled={isReadonly}
-                className={`${FieldActionButtonClassName} rounded-md`}
+                className={AttachedTaxButtonClassName}
               >
-                + Tax
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                Tax
               </button>
             </div>
             {amountTaxSummary ? (
@@ -936,8 +1306,13 @@ function VoucherDetailsPanel({
               </span>
             ) : null}
           </FieldShell>
-          <FieldShell label="Remarks" error={errors.remarks}>
+          <FieldShell
+            controlId="disbursement-voucher-remarks"
+            label="Remarks"
+            error={errors.remarks}
+          >
             <AppLimitedTextarea
+              id="disbursement-voucher-remarks"
               value={values.remarks}
               readOnly={isReadonly}
               onChange={(event) => onUpdateField("remarks", event.target.value)}
@@ -948,16 +1323,28 @@ function VoucherDetailsPanel({
         </div>
 
         <div className="grid min-w-0 content-start gap-4">
-          <FieldShell label="Transaction No." error={errors.transactionId} isRequired>
+          <FieldShell
+            controlId="disbursement-voucher-transaction-no"
+            label="Transaction No."
+            error={errors.transactionId}
+            isRequired
+          >
             <input
+              id="disbursement-voucher-transaction-no"
               value={transactionNumberValue}
               readOnly={isReadonly}
               onChange={(event) => updateTransactionNumber(event.target.value)}
               className={FieldClassName}
             />
           </FieldShell>
-          <FieldShell label="Document Date" error={errors.voucherDate} isRequired>
+          <FieldShell
+            controlId="disbursement-voucher-document-date"
+            label="Document Date"
+            error={errors.voucherDate}
+            isRequired
+          >
             <input
+              id="disbursement-voucher-document-date"
               type="date"
               value={values.voucherDate}
               readOnly={isReadonly}
@@ -967,33 +1354,28 @@ function VoucherDetailsPanel({
               className={FieldClassName}
             />
           </FieldShell>
-          <FieldShell label="Reference" error={errors.voucherReferenceNo}>
-            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-              <AppAdvancedDropdown
-                className="[&_.app-advanced-dropdown-control]:rounded-r-none [&_.app-advanced-dropdown-control]:border-r-0 [&_.app-advanced-dropdown-control]:bg-white [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-menu]:min-w-64"
-                isClearable
-                options={ReferenceModuleDropdownOptions}
-                placeholder=""
-                readOnly={isReadonly}
-                searchPlaceholder="Search modules"
-                showSelectionIndicator={false}
-                value={values.referenceModule}
-                onChange={updateReferenceModule}
-              />
-              <input
-                value={values.voucherReferenceNo}
-                disabled={!values.referenceModule}
-                readOnly={isReadonly || !values.referenceModule}
-                placeholder={values.referenceModule ? "Reference number" : ""}
-                onChange={(event) =>
-                  onUpdateField("voucherReferenceNo", event.target.value)
-                }
-                className={`${FieldClassName} min-w-0 truncate rounded-l-none bg-white focus:z-10 disabled:cursor-not-allowed disabled:bg-offwhite/65 disabled:text-darknavy/45`}
-              />
-            </div>
-          </FieldShell>
-          <FieldShell label="Status" error={errors.status}>
+          <FieldShell
+            controlId="disbursement-voucher-reference-no"
+            label="Reference No"
+            error={errors.voucherReferenceNo}
+          >
             <input
+              id="disbursement-voucher-reference-no"
+              value={values.voucherReferenceNo}
+              readOnly={isReadonly}
+              onChange={(event) =>
+                onUpdateField("voucherReferenceNo", event.target.value)
+              }
+              className={FieldClassName}
+            />
+          </FieldShell>
+          <FieldShell
+            controlId="disbursement-voucher-status"
+            label="Status"
+            error={errors.status}
+          >
+            <input
+              id="disbursement-voucher-status"
               value={values.status}
               readOnly
               className={`${FieldClassName} !bg-darknavy/5 text-darknavy/60`}
@@ -1053,16 +1435,18 @@ function PaymentTypeDetailsPanel({
 
   if (kind === "bank-transfer") {
     return (
-      <div className="mt-5 grid min-w-0 gap-x-8 gap-y-4 md:grid-cols-2 xl:grid-cols-4">
-        <FieldShell label="From Bank" compact>
+      <div className="mt-5 grid min-w-0 gap-x-8 gap-y-4 border-t border-darknavy/10 pt-5 md:grid-cols-2 xl:grid-cols-4">
+        <FieldShell controlId="disbursement-voucher-from-bank" label="From Bank" compact>
           <BankAccountSelect
+            id="disbursement-voucher-from-bank"
             isReadonly={isReadonly}
             value={values.paymentDetails.bankAccountCode}
             onChange={onUpdateBankAccount}
           />
         </FieldShell>
-        <FieldShell label="To Bank" compact>
+        <FieldShell controlId="disbursement-voucher-to-bank" label="To Bank" compact>
           <input
+            id="disbursement-voucher-to-bank"
             value={values.paymentDetails.transferToBank ?? ""}
             readOnly={isReadonly}
             onChange={(event) =>
@@ -1071,8 +1455,13 @@ function PaymentTypeDetailsPanel({
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell label="Account Name" compact>
+        <FieldShell
+          controlId="disbursement-voucher-transfer-account-name"
+          label="Account Name"
+          compact
+        >
           <input
+            id="disbursement-voucher-transfer-account-name"
             value={values.paymentDetails.transferAccountName ?? ""}
             readOnly={isReadonly}
             onChange={(event) =>
@@ -1081,8 +1470,13 @@ function PaymentTypeDetailsPanel({
             className={FieldClassName}
           />
         </FieldShell>
-        <FieldShell label="Account No." compact>
+        <FieldShell
+          controlId="disbursement-voucher-transfer-account-no"
+          label="Account No."
+          compact
+        >
           <input
+            id="disbursement-voucher-transfer-account-no"
             value={values.paymentDetails.transferAccountNo ?? ""}
             readOnly={isReadonly}
             onChange={(event) =>
@@ -1098,16 +1492,18 @@ function PaymentTypeDetailsPanel({
   const documentNoLabel = kind === "debit-memo" ? "Debit Memo" : "Check No.";
 
   return (
-    <div className="mt-5 grid min-w-0 gap-x-8 gap-y-4 md:grid-cols-2 xl:grid-cols-4">
-      <FieldShell label="Bank" compact>
+    <div className="mt-5 grid min-w-0 gap-x-8 gap-y-4 border-t border-darknavy/10 pt-5 md:grid-cols-2 xl:grid-cols-4">
+      <FieldShell controlId="disbursement-voucher-payment-bank" label="Bank" compact>
         <BankAccountSelect
+          id="disbursement-voucher-payment-bank"
           isReadonly={isReadonly}
           value={values.paymentDetails.bankAccountCode}
           onChange={onUpdateBankAccount}
         />
       </FieldShell>
-      <FieldShell label="Payee" compact>
+      <FieldShell controlId="disbursement-voucher-payment-payee" label="Payee" compact>
         <input
+          id="disbursement-voucher-payment-payee"
           value={values.paymentDetails.payee ?? values.vceName}
           readOnly={isReadonly}
           onChange={(event) =>
@@ -1116,8 +1512,13 @@ function PaymentTypeDetailsPanel({
           className={FieldClassName}
         />
       </FieldShell>
-      <FieldShell label={documentNoLabel} compact>
+      <FieldShell
+        controlId="disbursement-voucher-payment-document-no"
+        label={documentNoLabel}
+        compact
+      >
         <input
+          id="disbursement-voucher-payment-document-no"
           value={values.paymentDetails.checkNo}
           readOnly={isReadonly}
           onChange={(event) =>
@@ -1126,8 +1527,13 @@ function PaymentTypeDetailsPanel({
           className={FieldClassName}
         />
       </FieldShell>
-      <FieldShell label="Check Date" compact>
+      <FieldShell
+        controlId="disbursement-voucher-payment-check-date"
+        label="Check Date"
+        compact
+      >
         <input
+          id="disbursement-voucher-payment-check-date"
           type="date"
           value={values.paymentDetails.checkDate || values.voucherDate}
           readOnly={isReadonly}
@@ -1137,15 +1543,25 @@ function PaymentTypeDetailsPanel({
           className={FieldClassName}
         />
       </FieldShell>
-      <FieldShell label="Check Status" compact>
+      <FieldShell
+        controlId="disbursement-voucher-payment-check-status"
+        label="Check Status"
+        compact
+      >
         <input
+          id="disbursement-voucher-payment-check-status"
           value={values.paymentDetails.checkStatus ?? ""}
           readOnly
           className={`${FieldClassName} bg-darknavy/5 text-darknavy/55`}
         />
       </FieldShell>
-      <FieldShell label="Commission" compact>
+      <FieldShell
+        controlId="disbursement-voucher-payment-commission"
+        label="Commission"
+        compact
+      >
         <input
+          id="disbursement-voucher-payment-commission"
           value={values.paymentDetails.commission ?? ""}
           readOnly
           className={`${FieldClassName} bg-darknavy/5 text-darknavy/55`}
@@ -1156,16 +1572,19 @@ function PaymentTypeDetailsPanel({
 }
 
 function BankAccountSelect({
+  id,
   isReadonly,
   onChange,
   value,
 }: {
+  id?: string;
   isReadonly: boolean;
   onChange: (accountCode: string) => void;
   value: string;
 }) {
   return (
     <select
+      id={id}
       value={value}
       disabled={isReadonly}
       onChange={(event) => onChange(event.target.value)}
@@ -1241,37 +1660,59 @@ function getPaymentTypeDetailKind(
 function FieldShell({
   children,
   compact = false,
+  controlId,
   error,
   isRequired = false,
   label,
 }: {
   children: ReactNode;
   compact?: boolean;
+  controlId?: string;
   error?: string;
   isRequired?: boolean;
   label: string;
 }) {
+  const labelContent = (
+    <>
+      {label}
+      {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
+    </>
+  );
+
   if (compact) {
     return (
-      <label className="grid min-w-0 gap-2">
-        <span className="text-sm font-semibold text-darknavy">
-          {label}
-          {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
-        </span>
+      <div className="grid min-w-0 gap-2">
+        {controlId ? (
+          <label htmlFor={controlId} className="text-sm font-semibold text-darknavy">
+            {labelContent}
+          </label>
+        ) : (
+          <span className="text-sm font-semibold text-darknavy">
+            {labelContent}
+          </span>
+        )}
         {children}
         {error ? (
           <span className="text-xs font-medium text-coralpink">{error}</span>
         ) : null}
-      </label>
+      </div>
     );
   }
 
   return (
     <div className="grid min-w-0 gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
-      <span className="pt-2 text-sm font-semibold text-darknavy">
-        {label}
-        {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
-      </span>
+      {controlId ? (
+        <label
+          htmlFor={controlId}
+          className="pt-2 text-sm font-semibold text-darknavy"
+        >
+          {labelContent}
+        </label>
+      ) : (
+        <span className="pt-2 text-sm font-semibold text-darknavy">
+          {labelContent}
+        </span>
+      )}
       <div className="min-w-0">
         {children}
         {error ? (
@@ -1287,53 +1728,100 @@ function FieldShell({
 const FieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
 
-const FieldActionButtonClassName =
-  "theme-accent-contrast-text inline-flex h-11 w-24 shrink-0 items-center justify-center gap-2 bg-skyblue px-3 text-sm font-semibold transition hover:bg-skyblue/85 disabled:cursor-default disabled:opacity-50";
+const AttachedDropdownClassName =
+  "sm:[&_.app-advanced-dropdown-control]:rounded-r-none";
+
+const AttachedAddButtonClassName =
+  "inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none";
+
+const AttachedTaxButtonClassName =
+  "inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none";
 
 type DisbursementEntryColumnId =
   | "accountCode"
+  | "atcCode"
   | "accountName"
+  | "partyCode"
+  | "partyName"
   | "particulars"
+  | "refId"
+  | "responsibilityCenter"
   | "taxRate"
+  | "vatType"
   | "debit"
-  | "credit"
-  | "status";
+  | "credit";
 
 const DefaultDisbursementEntryColumnOrder: DisbursementEntryColumnId[] = [
   "accountCode",
   "accountName",
-  "particulars",
-  "taxRate",
   "debit",
   "credit",
-  "status",
+  "taxRate",
+  "particulars",
+  "partyCode",
+  "partyName",
+  "responsibilityCenter",
+  "refId",
+  "vatType",
+  "atcCode",
 ];
 
 const DefaultVisibleDisbursementEntryColumnOrder: DisbursementEntryColumnId[] = [
   "accountName",
-  "particulars",
-  "taxRate",
   "debit",
   "credit",
-  "status",
+  "taxRate",
+  "particulars",
 ];
 
 const ProtectedDisbursementEntryColumnIds = new Set<DisbursementEntryColumnId>([
   "accountName",
-  "particulars",
   "debit",
   "credit",
 ]);
 
 const DisbursementEntryColumnLabels: Record<DisbursementEntryColumnId, string> = {
   accountCode: "Account Code",
-  accountName: "Account Name",
+  accountName: "Account Title",
+  atcCode: "ATC Code",
   particulars: "Particulars",
-  taxRate: "Tax Rate",
+  partyCode: "Party Code",
+  partyName: "Party Name",
+  refId: "Reference No",
+  responsibilityCenter: "Responsibility Center",
+  taxRate: "Tax",
+  vatType: "VAT Type",
   debit: "Debit",
   credit: "Credit",
-  status: "Status",
 };
+
+const DefaultDisbursementEntryColumnWidths: Record<
+  DisbursementEntryColumnId,
+  number
+> = {
+  accountCode: 150,
+  accountName: 260,
+  atcCode: 150,
+  credit: 160,
+  debit: 160,
+  particulars: 320,
+  partyCode: 150,
+  partyName: 260,
+  refId: 180,
+  responsibilityCenter: 260,
+  taxRate: 160,
+  vatType: 150,
+};
+
+const AccountingPartyFallbackValuePrefix = "entry-party:";
+
+function getAccountingPartyFallbackValue(partyName: string) {
+  const normalizedPartyName = partyName.trim().toLowerCase();
+
+  return normalizedPartyName
+    ? `${AccountingPartyFallbackValuePrefix}${normalizedPartyName}`
+    : "";
+}
 
 function isDisbursementEntryColumnId(
   columnId: string,
@@ -1355,6 +1843,7 @@ function VoucherDataEntry({
   onMoveEntry,
   onOpenEntryTaxEditor,
   onUpdateEntry,
+  onUpdateEntryFields,
   totalCredit,
   totalDebit,
   onRemoveEntry,
@@ -1374,70 +1863,185 @@ function VoucherDataEntry({
     field: keyof DisbursementLineEntry,
     value: string | number,
   ) => void;
+  onUpdateEntryFields: (
+    entryId: string,
+    updates: Partial<DisbursementLineEntry>,
+  ) => void;
   totalCredit: number;
   totalDebit: number;
   onRemoveEntry: (entryId: string) => void;
 }) {
   const variance = Math.abs(totalDebit - totalCredit);
+  const partyRecords = usePartyManagementStore((state) => state.records);
+  const responsibilityCenters = useResponsibilityCenterStore(
+    (state) => state.centers,
+  );
+  const [particularsEditorEntryId, setParticularsEditorEntryId] = useState<
+    string | null
+  >(null);
   const [columnOrder, setColumnOrder] = useState<DisbursementEntryColumnId[]>(
     DefaultDisbursementEntryColumnOrder,
   );
   const [visibleColumnIds, setVisibleColumnIds] = useState<
     DisbursementEntryColumnId[]
   >(DefaultVisibleDisbursementEntryColumnOrder);
+  const [columnWidths, setColumnWidths] = useState(
+    DefaultDisbursementEntryColumnWidths,
+  );
+  const [columnLabels, setColumnLabels] = useState(DisbursementEntryColumnLabels);
   const visibleColumnOrder = columnOrder.filter((columnId) =>
     visibleColumnIds.includes(columnId),
   );
+  const chartAccounts = useMemo(
+    () => createAccountingChartAccountOptions(entries),
+    [entries],
+  );
+  const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
+    () => {
+      const options = partyRecords.map((party) => ({
+        description: party.partyTypes.join(", "),
+        label: party.partyCodeNo,
+        name: getPartyDisplayName(party),
+        value: party.partyCodeNo,
+      }));
+      const optionNames = new Set(
+        options.map((option) => option.name.toLowerCase()),
+      );
+      const customValues = new Set(options.map((option) => option.value));
+      const customOptions: AppAdvancedDropdownOption[] = [];
+
+      entries.forEach((entry) => {
+        const partyName = (entry.partyName ?? "").trim();
+        const value = getAccountingPartyFallbackValue(partyName);
+
+        if (
+          !partyName ||
+          optionNames.has(partyName.toLowerCase()) ||
+          customValues.has(value)
+        ) {
+          return;
+        }
+
+        customValues.add(value);
+        customOptions.push({
+          description: "Copied entry party",
+          label: entry.partyCode ?? "",
+          name: partyName,
+          value,
+        });
+      });
+
+      return [...options, ...customOptions];
+    },
+    [entries, partyRecords],
+  );
+  const responsibilityCenterOptions = useMemo<AppAdvancedDropdownOption[]>(
+    () => {
+      const options = responsibilityCenters
+        .filter((center) => center.status === "Active")
+        .map((center) => ({
+          description: `${center.category} / ${center.financialType}`,
+          label: center.code,
+          name: center.name,
+          value: center.code,
+        }));
+      const optionValues = new Set(options.map((option) => option.value));
+      const customOptions: AppAdvancedDropdownOption[] = [];
+
+      entries.forEach((entry) => {
+        const responsibilityCenter = (entry.responsibilityCenter ?? "").trim();
+
+        if (!responsibilityCenter || optionValues.has(responsibilityCenter)) {
+          return;
+        }
+
+        optionValues.add(responsibilityCenter);
+        customOptions.push({
+          description: "Copied responsibility center",
+          label: responsibilityCenter,
+          name: responsibilityCenter,
+          value: responsibilityCenter,
+        });
+      });
+
+      return [...options, ...customOptions];
+    },
+    [entries, responsibilityCenters],
+  );
+  const particularsEditorEntry =
+    entries.find((entry) => entry.id === particularsEditorEntryId) ?? null;
   const allColumns = useMemo<
     Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>
   >(
     () => ({
-      accountCode:
-      {
-        header: "Account Code",
+      accountCode: {
+        header: columnLabels.accountCode,
         id: "accountCode",
+        width: columnWidths.accountCode,
         widthClassName: "w-[12rem]",
         renderCell: (entry) => (
           <EntryInput
-            value={entry.accountCode}
-            onChange={(value) =>
-              onUpdateEntry(entry.id, "accountCode", value)
-            }
-            disabled={isReadonly}
+            value={entry.accountCode ?? ""}
+            onChange={() => undefined}
+            readOnly
           />
         ),
       },
       accountName: {
-        header: "Account Name",
+        header: columnLabels.accountName,
         id: "accountName",
-        widthClassName: "w-[16rem]",
+        width: columnWidths.accountName,
+        widthClassName: "w-[18rem]",
         renderCell: (entry) => (
-          <EntryInput
+          <ChartAccountDropdown
+            accounts={chartAccounts}
             value={entry.accountName}
-            onChange={(value) =>
-              onUpdateEntry(entry.id, "accountName", value)
+            valueField="accountName"
+            readOnly={isReadonly}
+            isClearable
+            className={AccountingDropdownClassName}
+            placeholder="Select account title"
+            searchPlaceholder="Search account title"
+            onChange={() => undefined}
+            onSelectAccount={(account) =>
+              onUpdateEntryFields(entry.id, {
+                accountCode: account?.accountNumber ?? "",
+                accountName: account?.accountName ?? "",
+              })
             }
-            disabled={isReadonly}
           />
         ),
       },
-      particulars: {
-        header: "Particulars",
-        id: "particulars",
-        widthClassName: "w-[22rem]",
+      debit: {
+        header: columnLabels.debit,
+        id: "debit",
+        width: columnWidths.debit,
+        widthClassName: "w-[11rem]",
         renderCell: (entry) => (
-          <EntryInput
-            value={entry.particulars}
-            onChange={(value) =>
-              onUpdateEntry(entry.id, "particulars", value)
-            }
-            disabled={isReadonly}
+          <EntryNumberInput
+            value={entry.debit}
+            onChange={(value) => onUpdateEntry(entry.id, "debit", value)}
+            disabled={isReadonly || parseMoneyNumberInput(entry.credit) > 0}
+          />
+        ),
+      },
+      credit: {
+        header: columnLabels.credit,
+        id: "credit",
+        width: columnWidths.credit,
+        widthClassName: "w-[11rem]",
+        renderCell: (entry) => (
+          <EntryNumberInput
+            value={entry.credit}
+            onChange={(value) => onUpdateEntry(entry.id, "credit", value)}
+            disabled={isReadonly || parseMoneyNumberInput(entry.debit) > 0}
           />
         ),
       },
       taxRate: {
-        header: "Tax Rate",
+        header: columnLabels.taxRate,
         id: "taxRate",
+        width: columnWidths.taxRate,
         widthClassName: "w-[11rem]",
         renderCell: (entry) => (
           <button
@@ -1456,50 +2060,139 @@ function VoucherDataEntry({
           </button>
         ),
       },
-      debit: {
-        header: "Debit",
-        id: "debit",
-        widthClassName: "w-[11rem]",
+      particulars: {
+        header: columnLabels.particulars,
+        id: "particulars",
+        width: columnWidths.particulars,
+        widthClassName: "w-[22rem]",
         renderCell: (entry) => (
-          <EntryNumberInput
-            value={entry.debit}
-            onChange={(value) => onUpdateEntry(entry.id, "debit", value)}
-            disabled={isReadonly || Number(entry.credit || 0) > 0}
-          />
-        ),
-      },
-      credit: {
-        header: "Credit",
-        id: "credit",
-        widthClassName: "w-[11rem]",
-        renderCell: (entry) => (
-          <EntryNumberInput
-            value={entry.credit}
-            onChange={(value) => onUpdateEntry(entry.id, "credit", value)}
-            disabled={isReadonly || Number(entry.debit || 0) > 0}
-          />
-        ),
-      },
-      status: {
-        header: "Status",
-        id: "status",
-        widthClassName: "w-[10rem]",
-        renderCell: (entry) => (
-          <select
-            value={entry.status}
-            onChange={(event) =>
-              onUpdateEntry(entry.id, "status", event.target.value)
+          <ParticularsCell
+            entry={entry}
+            isReadonly={isReadonly}
+            onOpen={() => setParticularsEditorEntryId(entry.id)}
+            onUpdate={(value) =>
+              onUpdateEntry(entry.id, "particulars", value)
             }
+          />
+        ),
+      },
+      partyCode: {
+        header: columnLabels.partyCode,
+        id: "partyCode",
+        width: columnWidths.partyCode,
+        widthClassName: "w-[12rem]",
+        renderCell: (entry) => (
+          <EntryInput
+            value={entry.partyCode ?? ""}
+            onChange={() => undefined}
+            readOnly
+          />
+        ),
+      },
+      partyName: {
+        header: columnLabels.partyName,
+        id: "partyName",
+        width: columnWidths.partyName,
+        widthClassName: "w-[18rem]",
+        renderCell: (entry) => (
+          <AppAdvancedDropdown
+            value={
+              entry.partyCode ||
+              getAccountingPartyFallbackValue(entry.partyName ?? "")
+            }
+            readOnly={isReadonly}
+            options={partyOptions}
+            placeholder="Select Party Name"
+            searchPlaceholder="Search Party Name"
+            className={AccountingDropdownClassName}
+            onChange={(value) => {
+              const selectedValue = String(value);
+              const party = partyOptions.find(
+                (option) => option.value === selectedValue,
+              );
+              const isFallbackValue = selectedValue.startsWith(
+                AccountingPartyFallbackValuePrefix,
+              );
+
+              onUpdateEntryFields(entry.id, {
+                partyCode: isFallbackValue ? "" : selectedValue,
+                partyName: party?.name ?? "",
+              });
+            }}
+          />
+        ),
+      },
+      responsibilityCenter: {
+        header: columnLabels.responsibilityCenter,
+        id: "responsibilityCenter",
+        width: columnWidths.responsibilityCenter,
+        widthClassName: "w-[18rem]",
+        renderCell: (entry) => (
+          <AppAdvancedDropdown
+            value={entry.responsibilityCenter ?? ""}
+            readOnly={isReadonly}
+            options={responsibilityCenterOptions}
+            placeholder="Select responsibility center"
+            searchPlaceholder="Search responsibility center"
+            className={AccountingDropdownClassName}
+            onChange={(value) =>
+              onUpdateEntry(entry.id, "responsibilityCenter", String(value))
+            }
+          />
+        ),
+      },
+      refId: {
+        header: columnLabels.refId,
+        id: "refId",
+        width: columnWidths.refId,
+        widthClassName: "w-[12rem]",
+        renderCell: (entry) => (
+          <EntryInput
+            value={entry.refId ?? ""}
+            onChange={(value) => onUpdateEntry(entry.id, "refId", value)}
             disabled={isReadonly}
-            className={accountingCellControlClassName()}
-          >
-            <option value="Pending">Pending</option>
-            <option value="Balanced">Balanced</option>
-          </select>
+          />
+        ),
+      },
+      vatType: {
+        header: columnLabels.vatType,
+        id: "vatType",
+        width: columnWidths.vatType,
+        widthClassName: "w-[12rem]",
+        renderCell: (entry) => (
+          <EntryInput
+            value={entry.vatType ?? ""}
+            onChange={(value) => onUpdateEntry(entry.id, "vatType", value)}
+            disabled={isReadonly}
+          />
+        ),
+      },
+      atcCode: {
+        header: columnLabels.atcCode,
+        id: "atcCode",
+        width: columnWidths.atcCode,
+        widthClassName: "w-[12rem]",
+        renderCell: (entry) => (
+          <EntryInput
+            value={entry.atcCode ?? ""}
+            onChange={(value) => onUpdateEntry(entry.id, "atcCode", value)}
+            disabled={isReadonly}
+          />
         ),
       },
     }),
-    [isReadonly, onOpenEntryTaxEditor, onUpdateEntry],
+    [
+      chartAccounts,
+      columnLabels,
+      columnWidths,
+      isReadonly,
+      onOpenEntryTaxEditor,
+      onUpdateEntry,
+      onUpdateEntryFields,
+      partyOptions,
+      responsibilityCenterOptions,
+      setParticularsEditorEntryId,
+    ],
   );
   const columns = useMemo<ModuleDataEntryColumn<DisbursementLineEntry>[]>(
     () => visibleColumnOrder.map((columnId) => allColumns[columnId]),
@@ -1511,10 +2204,49 @@ function VoucherDataEntry({
         id: columnId,
         isHideable: !ProtectedDisbursementEntryColumnIds.has(columnId),
         isVisible: visibleColumnIds.includes(columnId),
-        label: DisbursementEntryColumnLabels[columnId],
+        label: columnLabels[columnId],
+        width: columnWidths[columnId],
+        widthMode: "fixed",
       })),
-    [columnOrder, visibleColumnIds],
+    [columnLabels, columnOrder, columnWidths, visibleColumnIds],
   );
+
+  function updateColumnHeader(columnId: string, header: string) {
+    if (!isDisbursementEntryColumnId(columnId)) {
+      return;
+    }
+
+    setColumnLabels((currentLabels) => ({
+      ...currentLabels,
+      [columnId]: header,
+    }));
+  }
+
+  function updateColumnWidth(columnId: string, width: number) {
+    if (!isDisbursementEntryColumnId(columnId)) {
+      return;
+    }
+
+    setColumnWidths((currentWidths) => ({
+      ...currentWidths,
+      [columnId]: clampColumnWidth(width),
+    }));
+  }
+
+  function fitColumnWidth(columnId: string) {
+    if (!isDisbursementEntryColumnId(columnId)) {
+      return;
+    }
+
+    updateColumnWidth(
+      columnId,
+      calculateDisbursementEntryColumnFitWidth({
+        columnId,
+        columnLabels,
+        entries,
+      }),
+    );
+  }
 
   function moveColumn(fromColumnId: string, toColumnId: string) {
     if (!isDisbursementEntryColumnId(fromColumnId) || !isDisbursementEntryColumnId(toColumnId)) {
@@ -1565,20 +2297,19 @@ function VoucherDataEntry({
     });
   }
 
-  function handleExportEntriesCsv() {
-    const rows = [
-      ["Account Code", "Account Name", "Particulars", "Tax Rate", "Debit", "Credit", "Status"],
-      ...entries.map((entry) => [
-        entry.accountCode,
-        entry.accountName,
-        entry.particulars,
-        formatTaxRateSummary(entry.taxDetails),
-        String(entry.debit || ""),
-        String(entry.credit || ""),
-        entry.status,
-      ]),
+  function createExportRows() {
+    return [
+      visibleColumnOrder.map((columnId) => columnLabels[columnId]),
+      ...entries.map((entry) =>
+        visibleColumnOrder.map((columnId) =>
+          getDisbursementEntryExportCell(entry, columnId),
+        ),
+      ),
     ];
-    const csv = rows
+  }
+
+  function handleExportEntriesCsv() {
+    const csv = createExportRows()
       .map((row) =>
         row
           .map((cell) => `"${String(cell).replaceAll('"', '""')}"`)
@@ -1595,6 +2326,29 @@ function VoucherDataEntry({
     URL.revokeObjectURL(url);
   }
 
+  function handleExportEntriesExcel() {
+    const htmlRows = createExportRows()
+      .map(
+        (row) =>
+          `<tr>${row
+            .map((cell) => `<td>${escapeHtml(String(cell))}</td>`)
+            .join("")}</tr>`,
+      )
+      .join("");
+    const html = `<!doctype html><html><head><meta charset="utf-8" /></head><body><table>${htmlRows}</table></body></html>`;
+    downloadBlob(
+      new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8" }),
+      "disbursement-voucher-entries.xls",
+    );
+  }
+
+  function handleExportEntriesPdf() {
+    downloadBlob(
+      createSimplePdfBlob("Disbursement Voucher Entries", createExportRows()),
+      "disbursement-voucher-entries.pdf",
+    );
+  }
+
   return (
     <section className="min-w-0">
       <div className="min-w-0">
@@ -1607,22 +2361,32 @@ function VoucherDataEntry({
           summaryCells={{
             credit: formatAccountingAmount(totalCredit),
             debit: formatAccountingAmount(totalDebit),
-            particulars: (
-              <span
-                className={joinClasses(
-                  "font-semibold",
-                  variance < 0.001 ? "text-emerald-700" : "text-coralpink",
-                )}
-              >
-                Variance: {formatAccountingAmount(variance)}
-              </span>
-            ),
           }}
+          footerDetails={
+            <span
+              className={joinClasses(
+                "text-sm font-semibold",
+                variance < 0.001 ? "text-emerald-700" : "text-coralpink",
+              )}
+            >
+              Variance: {formatAccountingAmount(variance)}
+            </span>
+          }
           exportOptions={[
             {
               id: "csv",
-              label: "CSV (.csv)",
+              label: "CSV",
               onSelect: handleExportEntriesCsv,
+            },
+            {
+              id: "excel",
+              label: "Excel",
+              onSelect: handleExportEntriesExcel,
+            },
+            {
+              id: "pdf",
+              label: "PDF",
+              onSelect: handleExportEntriesPdf,
             },
           ]}
           isDraggable
@@ -1638,27 +2402,50 @@ function VoucherDataEntry({
           ]}
           title="Accounting Entries"
           onAddRows={onAddEntries}
+          onAutoColumnWidth={fitColumnWidth}
           onClearRows={onClearEntries}
           onDuplicateRow={onDuplicateEntry}
+          onFitColumnWidth={fitColumnWidth}
           onInsertRow={onInsertEntry}
           onMoveColumn={moveColumn}
           onMoveRow={onMoveEntry}
           onRemoveRow={onRemoveEntry}
           onToggleColumnVisibility={toggleColumnVisibility}
+          onUpdateColumnHeader={updateColumnHeader}
+          onUpdateColumnWidth={updateColumnWidth}
         />
 
       </div>
+      <ParticularsEditorDialog
+        key={particularsEditorEntry?.id ?? "closed"}
+        entry={particularsEditorEntry}
+        isReadonly={isReadonly}
+        onClose={() => setParticularsEditorEntryId(null)}
+        onSave={(value) => {
+          if (!particularsEditorEntry) {
+            return;
+          }
+
+          onUpdateEntry(particularsEditorEntry.id, "particulars", value);
+          setParticularsEditorEntryId(null);
+        }}
+      />
     </section>
   );
 }
 
+const AccountingDropdownClassName =
+  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+
 function EntryInput({
   disabled = false,
   onChange,
+  readOnly = false,
   value,
 }: {
   disabled?: boolean;
   onChange: (value: string) => void;
+  readOnly?: boolean;
   value: string;
 }) {
   return (
@@ -1667,9 +2454,276 @@ function EntryInput({
       value={value}
       onChange={(event) => onChange(event.target.value)}
       disabled={disabled}
+      readOnly={readOnly}
       className={accountingCellControlClassName()}
     />
   );
+}
+
+function ParticularsCell({
+  entry,
+  isReadonly,
+  onOpen,
+  onUpdate,
+}: {
+  entry: DisbursementLineEntry;
+  isReadonly: boolean;
+  onOpen: () => void;
+  onUpdate: (value: string) => void;
+}) {
+  return (
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_2.5rem]">
+      <EntryInput
+        value={entry.particulars}
+        onChange={onUpdate}
+        readOnly={isReadonly}
+      />
+      <button
+        type="button"
+        onClick={onOpen}
+        className="inline-flex h-10 items-center justify-center border-l border-darknavy/10 bg-white text-darknavy/65 transition hover:bg-skyblue/10 hover:text-darknavy focus:outline-none focus:ring-2 focus:ring-inset focus:ring-skyblue/35"
+        aria-label="Open particulars"
+      >
+        <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function ParticularsEditorDialog({
+  entry,
+  isReadonly,
+  onClose,
+  onSave,
+}: {
+  entry: DisbursementLineEntry | null;
+  isReadonly: boolean;
+  onClose: () => void;
+  onSave: (value: string) => void;
+}) {
+  const [draft, setDraft] = useState(entry?.particulars ?? "");
+  const textareaId = "disbursement-entry-particulars-dialog-text";
+
+  if (!entry) {
+    return null;
+  }
+
+  return (
+    <div
+      role="presentation"
+      className="fixed inset-0 z-80 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="disbursement-entry-particulars-dialog-title"
+        className="flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-white/20 bg-white shadow-[0_28px_90px_rgba(33,39,56,0.28)]"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
+          <div className="min-w-0">
+            <h2
+              id="disbursement-entry-particulars-dialog-title"
+              className="text-lg font-semibold text-darknavy"
+            >
+              Particulars
+            </h2>
+            <p className="mt-1 truncate text-sm text-darknavy/55">
+              {entry.accountName || "Accounting entry"}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-darknavy/60 transition hover:bg-skyblue/10 hover:text-darknavy"
+            aria-label="Close particulars dialog"
+          >
+            <X className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="min-h-0 overflow-y-auto px-5 py-4">
+          <label
+            htmlFor={textareaId}
+            className="text-sm font-semibold text-darknavy"
+          >
+            Details
+          </label>
+          <AppLimitedTextarea
+            id={textareaId}
+            value={draft}
+            readOnly={isReadonly}
+            onChange={(event) => setDraft(event.target.value)}
+            className="mt-2 min-h-48 w-full rounded-lg border border-darknavy/12 bg-white px-3 py-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/20 read-only:bg-offwhite/65"
+            counterMode="used"
+          />
+        </div>
+        <div className="shrink-0 border-t border-darknavy/10 px-5 py-4">
+          <div className="flex justify-end gap-2">
+            {isReadonly ? (
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5"
+              >
+                Close
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSave(draft)}
+                  className="theme-accent-contrast-text inline-flex h-10 items-center justify-center rounded-md bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85"
+                >
+                  Save
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function getDisbursementEntryExportCell(
+  entry: DisbursementLineEntry,
+  columnId: DisbursementEntryColumnId,
+) {
+  switch (columnId) {
+    case "accountCode":
+      return entry.accountCode ?? "";
+    case "accountName":
+      return entry.accountName ?? "";
+    case "atcCode":
+      return entry.atcCode ?? "";
+    case "particulars":
+      return entry.particulars ?? "";
+    case "partyCode":
+      return entry.partyCode ?? "";
+    case "partyName":
+      return entry.partyName ?? "";
+    case "refId":
+      return entry.refId ?? "";
+    case "responsibilityCenter":
+      return entry.responsibilityCenter ?? "";
+    case "taxRate":
+      return formatTaxRateSummary(entry.taxDetails);
+    case "vatType":
+      return entry.vatType ?? "";
+    case "debit":
+      return String(entry.debit || "");
+    case "credit":
+      return String(entry.credit || "");
+    default:
+      return "";
+  }
+}
+
+function calculateDisbursementEntryColumnFitWidth({
+  columnId,
+  columnLabels,
+  entries,
+}: {
+  columnId: DisbursementEntryColumnId;
+  columnLabels: Record<DisbursementEntryColumnId, string>;
+  entries: DisbursementLineEntry[];
+}) {
+  const headerWidth = estimateDisbursementEntryTextWidth(
+    columnLabels[columnId],
+    76,
+  );
+  const contentWidth = entries.reduce(
+    (currentWidth, entry) =>
+      Math.max(
+        currentWidth,
+        estimateDisbursementEntryTextWidth(
+          String(getDisbursementEntryExportCell(entry, columnId) ?? ""),
+          24,
+        ),
+      ),
+    50,
+  );
+
+  return Math.max(headerWidth, contentWidth);
+}
+
+function estimateDisbursementEntryTextWidth(value: string, padding: number) {
+  return clampColumnWidth(value.trim().length * 7.5 + padding);
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function createSimplePdfBlob(title: string, rows: string[][]) {
+  const lines = [title, "", ...rows.map((row) => row.join(" | "))];
+  const content = [
+    "BT",
+    "/F1 10 Tf",
+    "40 790 Td",
+    ...lines.flatMap((line, index) => [
+      index === 0 ? "/F1 14 Tf" : "/F1 9 Tf",
+      `(${escapePdfText(line.slice(0, 110))}) Tj`,
+      "0 -16 Td",
+    ]),
+    "ET",
+  ].join("\n");
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
+  ];
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+
+  const xrefOffset = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n`;
+  pdf += "0000000000 65535 f \n";
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+  return new Blob([pdf], { type: "application/pdf" });
+}
+
+function escapePdfText(value: string) {
+  return value
+    .replaceAll("\\", "\\\\")
+    .replaceAll("(", "\\(")
+    .replaceAll(")", "\\)");
 }
 
 function EntryNumberInput({
@@ -1681,12 +2735,31 @@ function EntryNumberInput({
   onChange: (value: number) => void;
   value: number;
 }) {
+  const [draftValue, setDraftValue] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const displayValue = isEditing
+    ? draftValue
+    : value > 0
+      ? formatMoneyNumberInput(String(value))
+      : "";
+
+  function handleValueChange(nextValue: string) {
+    setDraftValue(nextValue);
+    onChange(parseMoneyNumberInput(nextValue));
+  }
+
   return (
-    <input
-      type="number"
-      min="0"
-      value={value || ""}
-      onChange={(event) => onChange(Number(event.target.value))}
+    <MoneyNumberField
+      value={displayValue}
+      onValueChange={handleValueChange}
+      onFocus={() => {
+        setDraftValue(displayValue);
+        setIsEditing(true);
+      }}
+      onBlur={() => {
+        setDraftValue("");
+        setIsEditing(false);
+      }}
       disabled={disabled}
       className={accountingCellControlClassName("text-right")}
     />
@@ -1726,9 +2799,15 @@ function disbursementEntryHasData(entry: DisbursementLineEntry) {
   return (
     entry.accountCode.trim() !== "" ||
     entry.accountName.trim() !== "" ||
+    (entry.partyCode ?? "").trim() !== "" ||
+    (entry.partyName ?? "").trim() !== "" ||
+    (entry.responsibilityCenter ?? "").trim() !== "" ||
+    (entry.refId ?? "").trim() !== "" ||
+    (entry.vatType ?? "").trim() !== "" ||
+    (entry.atcCode ?? "").trim() !== "" ||
     entry.particulars.trim() !== "" ||
-    Number(entry.debit || 0) > 0 ||
-    Number(entry.credit || 0) > 0 ||
+    parseMoneyNumberInput(entry.debit) > 0 ||
+    parseMoneyNumberInput(entry.credit) > 0 ||
     entry.taxRate !== "0%"
   );
 }
@@ -1737,7 +2816,9 @@ function disbursementEntryIsComplete(entry: DisbursementLineEntry) {
   return (
     entry.accountCode.trim() !== "" &&
     entry.accountName.trim() !== "" &&
-    entry.particulars.trim() !== "" &&
-    (Number(entry.debit || 0) > 0 || Number(entry.credit || 0) > 0)
+    (parseMoneyNumberInput(entry.debit) > 0 ||
+      parseMoneyNumberInput(entry.credit) > 0) &&
+    !(parseMoneyNumberInput(entry.debit) > 0 &&
+      parseMoneyNumberInput(entry.credit) > 0)
   );
 }

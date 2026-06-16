@@ -12,6 +12,7 @@ const Actions = [
 	"Edit",
 	"Approve",
 	"Cancel",
+	"Uncancel",
 	"Export",
 ] as const satisfies readonly AuditTrailAction[];
 const BaseCreatedAt = Date.UTC(2026, 4, 23, 7, 30, 0);
@@ -58,10 +59,11 @@ function createAuditDescription(
 		Approve: "approved",
 		Cancel: "cancelled",
 		Delete: "deleted",
+		Disapproved: "disapproved",
 		Edit: "edited",
 		Export: "exported",
-		Reject: "rejected",
 		Save: "saved",
+		Uncancel: "uncancelled",
 		View: "viewed",
 	};
 
@@ -71,6 +73,10 @@ function createAuditDescription(
 
 	if (action === "Cancel") {
 		return `${moduleLabel} record ${recordId} was cancelled before completion.`;
+	}
+
+	if (action === "Uncancel") {
+		return `${moduleLabel} record ${recordId} was restored from cancelled status.`;
 	}
 
 	return `${moduleLabel} record ${recordId} was ${pastTenseByAction[action]}.`;

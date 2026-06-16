@@ -13,7 +13,7 @@ export function formatAuditTrailCreatedAt(createdAt: string) {
 }
 
 export function getAuditTrailActionTone(action: AuditTrailAction) {
-	if (action === "Delete" || action === "Reject") {
+	if (action === "Delete" || action === "Disapproved") {
 		return "danger";
 	}
 

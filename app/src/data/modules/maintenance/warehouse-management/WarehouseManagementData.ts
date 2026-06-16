@@ -213,7 +213,6 @@ export const MockWarehouses: WarehouseRecord[] = [
 export const WarehouseInitialFormValues: WarehouseFormValues = {
 	code: "",
 	name: "",
-	type: "Main Warehouse",
 	availableBranches: [],
 	managerName: "",
 	status: "Active",
@@ -228,7 +227,6 @@ export function createWarehouseFormValues(
 	return {
 		code: warehouse.code,
 		name: warehouse.name,
-		type: warehouse.type,
 		availableBranches: warehouse.availableBranches,
 		managerName: warehouse.managerName,
 		status: warehouse.status,
@@ -296,7 +294,7 @@ function createWarehouseRecordFields(values: WarehouseFormValues) {
 
 	return {
 		name: values.name,
-		type: values.type,
+		type: "Warehouse",
 		branchName,
 		availability: getWarehouseAvailability(availableBranches),
 		availableBranches,

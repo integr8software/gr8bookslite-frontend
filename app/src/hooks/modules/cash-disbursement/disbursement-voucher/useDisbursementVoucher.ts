@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import { DisbursementVoucherStatusFilters } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
   getDisbursementVoucherDisplayStatus,
+  isDisbursementVoucherActiveStatus,
   MockDisbursementTransactions,
   MockDisbursementVouchers,
   buildDisbursementVoucherPreviewRows,
@@ -27,6 +28,8 @@ import type {
   DisbursementTransactionRecord,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
+import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 
 type DisbursementVoucherStoreState = {
   previewRows: DisbursementVoucherPreviewRow[];
@@ -327,8 +330,12 @@ export function useDisbursementVoucherPreviewTable(
     from: "",
     to: "",
   });
+  const [amountRange, setAmountRangeState] = useState<AmountRangeValue>({
+    from: "",
+    to: "",
+  });
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "voucherDate", desc: true },
+    { id: "documentDate", desc: true },
   ]);
   const [statusFilter, setStatusFilterState] = useState<
     (typeof DisbursementVoucherStatusFilters)[number]
@@ -352,14 +359,19 @@ export function useDisbursementVoucherPreviewTable(
           row.voucher?.status ?? row.transaction.status,
         );
         const rowDate = row.voucher?.voucherDate ?? row.transaction.transactionDate;
+        const rowAmount = row.voucher?.amount ?? row.transaction.amount;
 
         return (
           searchable.includes(deferredQuery.toLowerCase()) &&
-          (statusFilter === "all" || rowStatus === statusFilter) &&
-          isDateInRange(rowDate, dateRange)
+          (statusFilter === "all" ||
+            (statusFilter === "Active"
+              ? isDisbursementVoucherActiveStatus(rowStatus)
+              : rowStatus === statusFilter)) &&
+          isDateInRange(rowDate, dateRange) &&
+          isAmountInRange(rowAmount, amountRange)
         );
       }),
-    [dateRange, deferredQuery, previewRows, statusFilter],
+    [amountRange, dateRange, deferredQuery, previewRows, statusFilter],
   );
   const columns = useMemo<ColumnDef<DisbursementVoucherPreviewRow>[]>(
     () => [
@@ -372,26 +384,26 @@ export function useDisbursementVoucherPreviewTable(
         meta: { className: "w-[12rem]" },
       },
       {
-        id: "payee",
+        id: "documentDate",
+        accessorFn: (row) =>
+          row.voucher?.voucherDate ?? row.transaction.transactionDate,
+        header: "Document Date",
+        sortingFn: "datetime",
+        meta: { className: "w-[10rem]" },
+      },
+      {
+        id: "partyName",
         accessorFn: (row) => row.transaction.payee,
-        header: "Payee",
+        header: "Party Name",
         sortingFn: "alphanumeric",
         meta: { className: "w-[18rem]" },
       },
       {
-        id: "type",
+        id: "paymentType",
         accessorFn: (row) => row.transaction.disbursementType,
-        header: "Type",
+        header: "Payment Type",
         sortingFn: "alphanumeric",
         meta: { className: "w-[12rem]" },
-      },
-      {
-        id: "voucherDate",
-        accessorFn: (row) =>
-          row.voucher?.voucherDate ?? row.transaction.transactionDate,
-        header: "Date",
-        sortingFn: "datetime",
-        meta: { className: "w-[10rem]" },
       },
       {
         id: "amount",
@@ -452,17 +464,25 @@ export function useDisbursementVoucherPreviewTable(
     table.setPageIndex(0);
   }
 
+  function setAmountRange(value: AmountRangeValue) {
+    setAmountRangeState(value);
+    table.setPageIndex(0);
+  }
+
   function resetFilters() {
     setQueryState("");
     setDateRangeState({ from: "", to: "" });
+    setAmountRangeState({ from: "", to: "" });
     setStatusFilterState("all");
     table.setPageIndex(0);
   }
 
   return {
+    amountRange,
     dateRange,
     query,
     resetFilters,
+    setAmountRange,
     setDateRange,
     setQuery,
     setStatusFilter,
@@ -470,6 +490,15 @@ export function useDisbursementVoucherPreviewTable(
     statusOptions: DisbursementVoucherStatusFilters,
     table,
   };
+}
+
+function isAmountInRange(value: number, range: AmountRangeValue) {
+  const fromAmount = range.from.trim() ? parseMoneyNumberInput(range.from) : 0;
+  const toAmount = range.to.trim()
+    ? parseMoneyNumberInput(range.to)
+    : Number.MAX_SAFE_INTEGER;
+
+  return value >= fromAmount && value <= toAmount;
 }
 
 function isDateInRange(value: string, range: DateRangeValue) {

@@ -4,7 +4,8 @@ export type AuditTrailAction =
 	| "Delete"
 	| "Edit"
 	| "Export"
-	| "Reject"
+	| "Disapproved"
+	| "Uncancel"
 	| "Save"
 	| "View";
 

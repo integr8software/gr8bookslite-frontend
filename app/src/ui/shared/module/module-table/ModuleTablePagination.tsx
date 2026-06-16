@@ -97,7 +97,7 @@ export function ModuleTablePagination({
 							onPageSizeChange(Number(event.target.value))
 						}
 						className={joinClasses(
-							"h-11 appearance-none rounded-lg border border-darknavy/10 bg-white px-4 pr-9 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition focus:ring-2",
+							"h-11 appearance-none rounded-lg border border-darknavy/10 bg-white px-4 pr-9 text-center text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition [text-align-last:center] focus:ring-2",
 							moduleAccentClassNames.hoverBorder,
 							"focus:border-[var(--skyblue)]",
 							moduleAccentClassNames.focusRing,

@@ -1,11 +1,14 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useState } from "react";
 import {
 	Ban,
 	CheckCircle2,
 	ClipboardList,
 	Edit3,
+	History,
 	Printer,
 	Save,
 	ThumbsDown,
@@ -15,8 +18,15 @@ import {
 import {
 	MaterialRequestActionPageCopy,
 	MaterialRequestHref,
+	canApproveMaterialRequestStatus,
+	canCancelMaterialRequestStatus,
+	canDisapproveMaterialRequestStatus,
+	canEditMaterialRequestStatus,
 } from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
-import { getMaterialRequestUncancelStatus } from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
+import {
+	getMaterialRequestUncancelStatus,
+	getMaterialRequestUndoApprovalStatus,
+} from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
 import type { useMaterialRequestFormPage } from "@/app/src/hooks/modules/inventory/material-request/useMaterialRequestFormPage";
 import {
 	ModuleHeader,
@@ -28,6 +38,14 @@ import {
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
 
 type MaterialRequestActionPageState = ReturnType<typeof useMaterialRequestFormPage>;
+
+const ModuleHistoryDialog = dynamic(
+	() =>
+		import("@/app/src/ui/shared/module/ModuleHistoryDialog").then(
+			(module) => module.ModuleHistoryDialog,
+		),
+	{ ssr: false },
+);
 
 export function MaterialRequestActionHeader({
 	page,
@@ -48,6 +66,7 @@ export function MaterialRequestActionHeader({
 					Inventory request
 				</>
 			}
+			actionsClassName="items-center gap-1"
 			actions={<MaterialRequestHeaderActions page={page} />}
 		/>
 	);
@@ -62,7 +81,13 @@ function getMaterialRequestHeaderTitle(page: MaterialRequestActionPageState) {
 
 	if (page.mode === "view") {
 		return requestNo
-			? `View Material Request - ${requestNo}`
+			? `View Material Request | ${requestNo}`
+			: "View Material Request";
+	}
+
+	if (page.isReadonly) {
+		return requestNo
+			? `View Material Request | ${requestNo}`
 			: "View Material Request";
 	}
 
@@ -76,7 +101,7 @@ function MaterialRequestHeaderActions({
 }: {
 	page: MaterialRequestActionPageState;
 }) {
-	if (page.mode === "view") {
+	if (page.mode === "view" || page.isReadonly) {
 		return <MaterialRequestViewActions page={page} />;
 	}
 
@@ -106,7 +131,11 @@ function MaterialRequestViewActions({
 }: {
 	page: MaterialRequestActionPageState;
 }) {
-	const actions = createViewActionItems(page);
+	const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+	const actions = createViewActionItems({
+		onOpenHistory: () => setIsHistoryOpen(true),
+		page,
+	});
 
 	return (
 		<>
@@ -136,69 +165,85 @@ function MaterialRequestViewActions({
 					);
 				})}
 			</div>
+			{isHistoryOpen ? (
+				<ModuleHistoryDialog
+					description="Status changes and major material request events."
+					history={page.existingRequest?.history ?? []}
+					isOpen
+					onClose={() => setIsHistoryOpen(false)}
+				/>
+			) : null}
 		</>
 	);
 }
 
-function createViewActionItems(
-	page: MaterialRequestActionPageState,
-): ModuleActionMenuItem[] {
-	const isCancelled = page.values.status === "Cancelled";
+function createViewActionItems({
+	onOpenHistory,
+	page,
+}: {
+	onOpenHistory: () => void;
+	page: MaterialRequestActionPageState;
+}): ModuleActionMenuItem[] {
 	const isApproved = page.values.status === "Approved";
 	const isDisapproved = page.values.status === "Disapproved";
+	const isCancelled = page.values.status === "Cancelled";
+	const approvalUndoStatus = page.existingRequest
+		? getMaterialRequestUndoApprovalStatus(page.existingRequest)
+		: page.values.requiresApproval
+			? "Pending"
+			: "Active";
 	const cancelStatus = isCancelled
 		? page.existingRequest
 			? getMaterialRequestUncancelStatus(page.existingRequest)
-			: page.values.requiresApproval
-				? "Draft"
-				: "Active"
+			: "Draft"
 		: "Cancelled";
-	const approvalRevertStatus = page.values.requiresApproval
-		? "Pending"
-		: "Active";
-	const canApprove =
-		page.values.requiresApproval &&
-		!isCancelled &&
-		!isDisapproved;
-	const canDisapprove =
-		page.values.requiresApproval &&
-		!isCancelled &&
-		!isApproved;
+	const canApprove = canApproveMaterialRequestStatus(page.values.status);
+	const canDisapprove = canDisapproveMaterialRequestStatus(page.values.status);
 
 	return [
-		{
-			href: `${MaterialRequestHref}/edit/${page.existingRequest?.id ?? ""}?from=view`,
-			icon: Edit3,
-			label: "Edit",
-			type: "link",
-		},
+		...(canEditMaterialRequestStatus(page.values.status)
+			? [
+				{
+					href: `${MaterialRequestHref}/edit/${page.existingRequest?.id ?? ""}?from=view`,
+					icon: Edit3,
+					label: "Edit",
+					type: "link",
+				} satisfies ModuleActionMenuItem,
+			]
+			: []),
 		{
 			disabled: !canApprove,
 			icon: isApproved ? Undo2 : CheckCircle2,
-			label: isApproved ? "Unapprove" : "Approve",
+			label: isApproved ? "Undo Approved" : "Approve",
 			onSelect: () =>
 				page.updateRequestStatus(
-					isApproved ? approvalRevertStatus : "Approved",
+					isApproved ? approvalUndoStatus : "Approved",
 				),
 			type: "button",
 		},
 		{
 			disabled: !canDisapprove,
 			icon: isDisapproved ? Undo2 : ThumbsDown,
-			label: isDisapproved ? "Undo Disapprove" : "Disapprove",
+			label: isDisapproved ? "Undo Disapproved" : "Disapprove",
 			onSelect: () =>
 				page.updateRequestStatus(
-					isDisapproved ? approvalRevertStatus : "Disapproved",
+					isDisapproved ? approvalUndoStatus : "Disapproved",
 				),
 			tone: isDisapproved ? "default" : "danger",
 			type: "button",
 		},
 		{
-			disabled: isApproved || isDisapproved,
+			disabled: !canCancelMaterialRequestStatus(page.values.status),
 			icon: isCancelled ? Undo2 : Ban,
-			label: isCancelled ? "Uncancel" : "Cancel",
+			label: isCancelled ? "Uncancelled" : "Cancel",
 			onSelect: () => page.updateRequestStatus(cancelStatus),
 			tone: isCancelled ? "default" : "danger",
+			type: "button",
+		},
+		{
+			icon: History,
+			label: "History",
+			onSelect: onOpenHistory,
 			type: "button",
 		},
 		{
@@ -242,9 +287,9 @@ function getViewActionButtonClassName(
 	}
 
 	if (
-		action.label === "Unapprove" ||
-		action.label === "Undo Disapprove" ||
-		action.label === "Uncancel"
+		action.label === "Undo Approved" ||
+		action.label === "Undo Disapproved" ||
+		action.label === "Uncancelled"
 	) {
 		return `${baseClassName} border-skyblue/35 bg-skyblue/10 text-skyblue hover:bg-skyblue/15 focus-visible:ring-skyblue/20`;
 	}

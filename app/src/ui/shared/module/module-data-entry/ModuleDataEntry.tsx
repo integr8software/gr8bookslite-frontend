@@ -191,6 +191,13 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 				onMoveColumn={onMoveColumn}
 				onMoveRow={onMoveRow}
 				onPasteCells={onPasteCells}
+				onHideColumn={
+					onRemoveColumn
+						? undefined
+						: onToggleColumnVisibility
+							? (columnId) => onToggleColumnVisibility(columnId, false)
+							: undefined
+				}
 				onRemoveColumn={onRemoveColumn}
 				onRemoveRow={onRemoveRow}
 				onUpdateColumnHeader={onUpdateColumnHeader}

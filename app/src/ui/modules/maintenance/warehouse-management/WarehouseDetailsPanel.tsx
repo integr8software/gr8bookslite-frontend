@@ -34,7 +34,6 @@ export function WarehouseDetailsPanel({ warehouse }: WarehouseDetailsPanelProps)
 				<div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 					<Detail label="Warehouse Code" value={warehouse.code} />
 					<Detail label="Warehouse Name" value={warehouse.name} />
-					<Detail label="Type" value={warehouse.type} />
 					<Detail label="Status" value={warehouse.status} />
 					<Detail
 						label="Available Branches"

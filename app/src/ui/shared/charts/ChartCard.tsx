@@ -46,7 +46,7 @@ export function ChartCard<TData extends Record<string, string | number>>({
 	valueFormatter = (value) => String(value),
 }: ChartCardProps<TData>) {
 	return (
-		<article className="workspace-chart-card rounded-[1.75rem] border p-5 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_26px_70px_rgba(33,39,56,0.12)]">
+		<article className="workspace-chart-card rounded-[1.75rem] border p-5">
 			<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
 				<div>
 					<p className="text-sm font-semibold text-darknavy">{title}</p>
@@ -243,6 +243,39 @@ function ChartTooltip({
 	);
 }
 
+function ChartHoverCursor({
+	height,
+	width,
+	x,
+	y,
+}: {
+	height?: number;
+	width?: number;
+	x?: number;
+	y?: number;
+}) {
+	if (
+		typeof height !== "number" ||
+		typeof width !== "number" ||
+		typeof x !== "number" ||
+		typeof y !== "number"
+	) {
+		return null;
+	}
+
+	return (
+		<rect
+			className="workspace-chart-hover-cursor"
+			height={height}
+			rx="10"
+			ry="10"
+			width={width}
+			x={x}
+			y={y}
+		/>
+	);
+}
+
 function createDonutData<TData extends Record<string, string | number>>(
 	data: TData[],
 	series: SharedChartSeries[],
@@ -268,6 +301,6 @@ const ChartMinWidth = 240;
 
 const TooltipProps = {
 	animationDuration: 0,
-	cursor: { fill: "var(--workspace-chart-hover-cursor)" },
+	cursor: <ChartHoverCursor />,
 	isAnimationActive: false,
 } as const;

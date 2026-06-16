@@ -34,7 +34,7 @@ export const useAccountPreferences = create<AccountPreferencesState>()(
   persist(
     (set) => ({
       hasHydrated: false,
-      theme: "classic-light",
+      theme: "system",
       accentColor: DefaultAccountAccentColor,
       notificationPreference: "all",
       profileDrafts: {},

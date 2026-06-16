@@ -114,7 +114,7 @@ export function WorkspaceUserAssignmentsSection({
 					return (
 						<article
 							key={assignment.companyId}
-							className="rounded-lg border border-darknavy/10 bg-offwhite/40 p-4"
+							className="workspace-user-assignment-card rounded-lg border p-4"
 						>
 							<div className="flex flex-wrap items-center justify-between gap-3">
 								<div>
@@ -139,7 +139,7 @@ export function WorkspaceUserAssignmentsSection({
 							</div>
 							<div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
 								{companyBranches.length === 0 ? (
-									<div className="rounded-md border border-darknavy/10 bg-white px-3 py-2 text-sm font-medium text-darknavy/50">
+									<div className="workspace-user-branch-card rounded-md border px-3 py-2 text-sm font-medium text-darknavy/50">
 										No active company units available.
 									</div>
 								) : null}
@@ -151,7 +151,7 @@ export function WorkspaceUserAssignmentsSection({
 									return (
 										<div
 											key={branch.id}
-											className="flex items-center gap-3 rounded-md border border-darknavy/10 bg-white px-3 py-2 text-sm font-medium text-darknavy"
+											className="workspace-user-branch-card flex items-center gap-3 rounded-md border px-3 py-2 text-sm font-medium text-darknavy"
 										>
 											<input
 												id={branchCheckboxId}

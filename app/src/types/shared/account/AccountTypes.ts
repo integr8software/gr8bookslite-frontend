@@ -12,7 +12,7 @@ export type AccountSettingsItemKey =
   | "accentColor"
   | "notificationPreference";
 
-export type AccountTheme = "classic-light" | "midnight-dark";
+export type AccountTheme = "system" | "classic-light" | "midnight-dark";
 
 export type AccountAccentColor =
   | "#57c4e5"

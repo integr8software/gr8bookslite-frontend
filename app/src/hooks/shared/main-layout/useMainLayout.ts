@@ -1983,17 +1983,30 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "maintenance-term-management": "Manage payment and collection terms.",
   "maintenance-transaction-type":
     "Configure transaction classifications and numbering behavior.",
+  "maintenance-payment-type":
+    "Maintain payment methods and classifications used by disbursement vouchers.",
   "maintenance-responsibility-center":
     "Maintain accountability centers for financial reporting.",
   "maintenance-warehouse-management":
     "Maintain warehouse records and storage locations.",
+  "maintenance-warehouses": "Maintain warehouse master records.",
+  "maintenance-warehouse-access": "Manage warehouse user permissions.",
+  "maintenance-storage-locations": "Maintain physical storage locations.",
+  "maintenance-warehouse-transfers": "Track warehouse transfers.",
+  "maintenance-warehouse-stock-inquiry": "View warehouse stock availability.",
+  "maintenance-warehouse-activity-history":
+    "Review warehouse operational activity.",
   "maintenance-item-management":
     "Maintain item master records, categories, and classifications.",
   "maintenance-items": "Maintain item master records.",
   "maintenance-warehouse": "Maintain warehouse records and storage locations.",
   "maintenance-item": "Maintain item master records.",
+  "maintenance-item-bundles": "Maintain item bundles.",
   "maintenance-item-category": "Maintain the item category hierarchy.",
+  "maintenance-item-attributes": "Maintain item attributes and variant values.",
   "maintenance-item-promotions": "Maintain item promotion records and rules.",
+  "maintenance-unit-of-measurement": "Maintain units and conversion rules.",
+  "maintenance-price-lists": "Maintain item price list records.",
   "maintenance-party-management":
     "Maintain customers, suppliers, vendors, members, and employees.",
   "maintenance-party":

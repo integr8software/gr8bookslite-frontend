@@ -4,7 +4,7 @@ export type MaterialRequestStatus =
 	| "Pending"
 	| "Approved"
 	| "Disapproved"
-	| "Completed"
+	| "Closed"
 	| "Cancelled";
 
 export type MaterialRequestHistoryEntry = {
@@ -20,14 +20,28 @@ export type MaterialRequestNumberValue = number | "";
 
 export type MaterialRequestItem = {
 	id: string;
+	batchNo: string;
 	barcode: string;
+	brand: string;
 	category: string;
+	color: string;
+	costCenter: string;
+	description: string;
+	expiryDate: string;
 	itemCode: string;
 	itemName: string;
 	lotNo: string;
+	location: string;
+	manufacturingDate: string;
+	model: string;
 	requestQuantity: MaterialRequestNumberValue;
+	serialNumber: string;
+	size: string;
 	stockQuantity: MaterialRequestNumberValue;
+	unitCost: MaterialRequestNumberValue;
+	unitPrice: MaterialRequestNumberValue;
 	uom: string;
+	warehouse: string;
 	remarks: string;
 };
 
@@ -42,7 +56,6 @@ export type MaterialRequestRecord = {
 	requestNo: string;
 	documentDate: string;
 	requiredDate: string;
-	fromWarehouse: string;
 	toWarehouse: string;
 	department: string;
 	vceCode: string;

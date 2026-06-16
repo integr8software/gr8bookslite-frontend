@@ -38,6 +38,8 @@ export const WarehouseAccessPermissionOptions = [
 	"Issue Stock",
 	"Transfer Stock",
 	"Adjust Stock",
+	"Manage Locations",
+	"View History",
 ] as const satisfies readonly WarehouseAccessPermission[];
 
 export const WarehouseManagementTableColumns: Array<
@@ -56,10 +58,12 @@ export const WarehouseManagementTableColumns: Array<
 	{ key: "name", label: "Warehouse", className: "w-[18rem]" },
 	{
 		key: "availableBranchLabel",
-		label: "Available Branches",
-		className: "w-[18rem]",
+		label: "Branch",
+		className: "w-[14rem]",
 	},
 	{ key: "managerName", label: "Manager", className: "w-[14rem]" },
+	{ key: "totalItems", label: "Total Items", className: "w-[10rem]" },
+	{ key: "inventoryValue", label: "Inventory Value", className: "w-[12rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
 	{ id: "actions", label: "Actions", className: "w-[14rem]" },
 ];

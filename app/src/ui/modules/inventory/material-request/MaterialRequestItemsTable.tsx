@@ -9,6 +9,7 @@ import {
 	ChevronRight,
 	ClipboardPaste,
 	FileText,
+	MoreHorizontal,
 	Upload,
 	X,
 } from "lucide-react";
@@ -31,6 +32,8 @@ import {
 	type ModuleDataEntryColumnOption,
 	type ModuleDataEntryExportOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleTextareaDialog } from "@/app/src/ui/shared/module/ModuleTextareaDialog";
+import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type MaterialRequestItemColumnId = Exclude<keyof MaterialRequestItem, "id">;
@@ -104,15 +107,24 @@ export function MaterialRequestItemsTable({
 		MaterialRequestItemColumnId[]
 	>([]);
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-	const [viewedRemarks, setViewedRemarks] = useState<{
+	const [remarksEditorTarget, setRemarksEditorTarget] = useState<{
+		itemId: string;
 		rowNo: number;
 		value: string;
 	} | null>(null);
 	const [touchedItemCellIds, setTouchedItemCellIds] = useState<Set<string>>(
 		() => new Set(),
 	);
-	const visibleColumnOrder = columnOrder.filter((columnId) =>
-		visibleColumnIds.includes(columnId),
+	const resolvedColumnOrder = useMemo(
+		() => mergeDefaultItemColumnOrder(columnOrder),
+		[columnOrder],
+	);
+	const resolvedVisibleColumnIds = useMemo(
+		() => resolveVisibleItemColumnIds(visibleColumnIds),
+		[visibleColumnIds],
+	);
+	const visibleColumnOrder = resolvedColumnOrder.filter((columnId) =>
+		resolvedVisibleColumnIds.includes(columnId),
 	);
 	const markItemCellTouched = useCallback(
 		(itemId: string, columnId: MaterialRequestItemColumnId) => {
@@ -282,7 +294,7 @@ export function MaterialRequestItemsTable({
 						isReadonly,
 						item,
 						rowNo: index + 1,
-						onViewRemarks: setViewedRemarks,
+						onOpenRemarks: setRemarksEditorTarget,
 						onUpdateItem: handleUpdateItem,
 						validationMessage: itemValidationMessages.get(item.id)?.[columnId],
 					}),
@@ -299,13 +311,13 @@ export function MaterialRequestItemsTable({
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
 		() =>
-			columnOrder.map((columnId) => ({
+			resolvedColumnOrder.map((columnId) => ({
 				id: columnId,
 				isHideable: !ProtectedItemColumnIds.has(columnId),
 				isRequired: requiredColumnIds.includes(columnId),
 				isRequirementConfigurable:
 					!DefaultRequiredItemColumnIds.has(columnId),
-				isVisible: visibleColumnIds.includes(columnId),
+				isVisible: resolvedVisibleColumnIds.includes(columnId),
 				label: columnLabels[columnId],
 				width: resolvedColumnWidths[columnId],
 				widthMode: autoWidthColumnIds.includes(columnId) ? "auto" : "fixed",
@@ -313,10 +325,10 @@ export function MaterialRequestItemsTable({
 		[
 			autoWidthColumnIds,
 			columnLabels,
-			columnOrder,
+			resolvedColumnOrder,
 			resolvedColumnWidths,
+			resolvedVisibleColumnIds,
 			requiredColumnIds,
-			visibleColumnIds,
 		],
 	);
 
@@ -396,28 +408,6 @@ export function MaterialRequestItemsTable({
 		});
 	}
 
-	function removeColumn(columnId: string) {
-		if (!isItemColumnId(columnId) || ProtectedItemColumnIds.has(columnId)) {
-			return;
-		}
-
-		setAutoWidthColumnIds((currentColumnIds) =>
-			currentColumnIds.filter((currentColumnId) => currentColumnId !== columnId),
-		);
-		setRequiredColumnIds((currentRequiredIds) =>
-			currentRequiredIds.filter(
-				(currentColumnId) => currentColumnId !== columnId,
-			),
-		);
-		setVisibleColumnIds((currentVisibleIds) =>
-			currentVisibleIds.length <= 1
-				? currentVisibleIds
-				: currentVisibleIds.filter(
-					(currentColumnId) => currentColumnId !== columnId,
-				),
-		);
-	}
-
 	function toggleColumnVisibility(columnId: string, isVisible: boolean) {
 		if (!isItemColumnId(columnId)) {
 			return;
@@ -441,7 +431,7 @@ export function MaterialRequestItemsTable({
 			if (isVisible) {
 				const nextVisibleIds = new Set([...currentVisibleIds, columnId]);
 
-				return columnOrder.filter((currentColumnId) =>
+				return resolvedColumnOrder.filter((currentColumnId) =>
 					nextVisibleIds.has(currentColumnId),
 				);
 			}
@@ -460,7 +450,7 @@ export function MaterialRequestItemsTable({
 		if (
 			!isItemColumnId(columnId) ||
 			DefaultRequiredItemColumnIds.has(columnId) ||
-			!visibleColumnIds.includes(columnId)
+			!resolvedVisibleColumnIds.includes(columnId)
 		) {
 			return;
 		}
@@ -551,7 +541,6 @@ export function MaterialRequestItemsTable({
 				onMoveColumn={moveColumn}
 				onMoveRow={onMoveItem}
 				onPasteCells={handlePasteItemCells}
-				onRemoveColumn={removeColumn}
 				onRemoveRow={onRemoveItem}
 				onToggleColumnRequired={toggleColumnRequired}
 				onToggleColumnVisibility={toggleColumnVisibility}
@@ -568,9 +557,23 @@ export function MaterialRequestItemsTable({
 				}}
 				requiredColumnIds={requiredColumnIds}
 			/>
-			<MaterialRequestRemarksViewDialog
-				viewedRemarks={viewedRemarks}
-				onClose={() => setViewedRemarks(null)}
+			<ModuleTextareaDialog
+				key={remarksEditorTarget?.itemId ?? "closed"}
+				isOpen={Boolean(remarksEditorTarget)}
+				isReadonly={isReadonly}
+				title="Remarks"
+				subtitle="Item Entry"
+				textareaId="material-request-item-remarks-dialog-text"
+				value={remarksEditorTarget?.value ?? ""}
+				onClose={() => setRemarksEditorTarget(null)}
+				onSave={(value) => {
+					if (!remarksEditorTarget) {
+						return;
+					}
+
+					handleUpdateItem(remarksEditorTarget.itemId, "remarks", value);
+					setRemarksEditorTarget(null);
+				}}
 			/>
 		</>
 	);
@@ -582,7 +585,7 @@ function renderItemCell({
 	isReadonly,
 	item,
 	rowNo,
-	onViewRemarks,
+	onOpenRemarks,
 	onUpdateItem,
 	validationMessage,
 }: {
@@ -591,7 +594,11 @@ function renderItemCell({
 	isReadonly: boolean;
 	item: MaterialRequestItem;
 	rowNo: number;
-	onViewRemarks: (remarks: { rowNo: number; value: string }) => void;
+	onOpenRemarks: (remarks: {
+		itemId: string;
+		rowNo: number;
+		value: string;
+	}) => void;
 	onUpdateItem: (
 		itemId: string,
 		field: keyof MaterialRequestItem,
@@ -621,7 +628,7 @@ function renderItemCell({
 		);
 	}
 
-	if (columnId === "requestQuantity" || columnId === "stockQuantity") {
+	if (isNumericItemColumn(columnId)) {
 		return (
 			<NumberInput
 				readOnly={isReadonly}
@@ -633,9 +640,21 @@ function renderItemCell({
 		);
 	}
 
+	if (isDateItemColumn(columnId)) {
+		return (
+			<DateInput
+				readOnly={isReadonly}
+				tabIndex={cellContext.focusableTabIndex}
+				validationMessage={validationMessage}
+				value={item[columnId]}
+				onChange={(value) => onUpdateItem(item.id, columnId, value)}
+			/>
+		);
+	}
+
 	if (columnId === "remarks") {
 		return (
-			<div className="flex items-center gap-2">
+			<div className="grid min-w-0 grid-cols-[minmax(0,1fr)_2.5rem]">
 				<ItemInput
 					readOnly={isReadonly}
 					tabIndex={cellContext.focusableTabIndex}
@@ -643,13 +662,22 @@ function renderItemCell({
 					value={item.remarks}
 					onChange={(value) => onUpdateItem(item.id, "remarks", value)}
 				/>
-				<button
-					type="button"
-					onClick={() => onViewRemarks({ rowNo, value: item.remarks })}
-					className="mr-2 inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-skyblue/25 bg-skyblue/8 px-3 text-xs font-semibold text-skyblue transition hover:bg-skyblue/14"
-				>
-					View
-				</button>
+				<ModuleTooltip title="Open remarks" align="end" className="h-10 w-10">
+					<button
+						type="button"
+						onClick={() =>
+							onOpenRemarks({
+								itemId: item.id,
+								rowNo,
+								value: item.remarks,
+							})
+						}
+						className="inline-flex h-10 w-10 items-center justify-center border-l border-darknavy/10 bg-white text-darknavy/65 transition hover:bg-skyblue/10 hover:text-darknavy focus:outline-none focus:ring-2 focus:ring-inset focus:ring-skyblue/35"
+						aria-label={`Open remarks for row ${rowNo}`}
+					>
+						<MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+					</button>
+				</ModuleTooltip>
 			</div>
 		);
 	}
@@ -662,73 +690,6 @@ function renderItemCell({
 			value={String(item[columnId] ?? "")}
 			onChange={(value) => onUpdateItem(item.id, columnId, value)}
 		/>
-	);
-}
-
-function MaterialRequestRemarksViewDialog({
-	viewedRemarks,
-	onClose,
-}: {
-	viewedRemarks: { rowNo: number; value: string } | null;
-	onClose: () => void;
-}) {
-	if (!viewedRemarks) {
-		return null;
-	}
-
-	return (
-		<div
-			role="presentation"
-			className="fixed inset-0 z-[140] flex items-end justify-center bg-slate-950/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6"
-			onMouseDown={(event) => {
-				if (event.target === event.currentTarget) {
-					onClose();
-				}
-			}}
-		>
-			<section
-				role="dialog"
-				aria-modal="true"
-				aria-labelledby="material-request-remarks-view-title"
-				className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-[18px] border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.18)]"
-			>
-				<div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
-					<div>
-						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-skyblue">
-							Material Request
-						</p>
-						<h2
-							id="material-request-remarks-view-title"
-							className="mt-1 text-lg font-semibold text-darknavy"
-						>
-							Remarks Row {viewedRemarks.rowNo}
-						</h2>
-					</div>
-					<button
-						type="button"
-						onClick={onClose}
-						className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-darknavy/60 transition hover:bg-darknavy/6 hover:text-darknavy"
-						aria-label="Close remarks view"
-					>
-						<X className="h-4 w-4" aria-hidden="true" />
-					</button>
-				</div>
-				<div className="min-h-0 overflow-auto px-5 py-5">
-					<p className="app-theme-field-readonly whitespace-pre-wrap break-words rounded-lg border p-4 text-sm leading-7">
-						{viewedRemarks.value.trim() || "No remarks encoded."}
-					</p>
-				</div>
-				<div className="flex justify-end border-t border-darknavy/10 px-5 py-4">
-					<button
-						type="button"
-						onClick={onClose}
-						className="inline-flex h-10 items-center justify-center rounded-xl border border-darknavy/12 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
-					>
-						Close
-					</button>
-				</div>
-			</section>
-		</div>
 	);
 }
 
@@ -1170,8 +1131,7 @@ function MaterialRequestImportPreviewTable({
 													message={row.fieldErrors[columnId]}
 												/>
 											</div>
-										) : columnId === "requestQuantity" ||
-											columnId === "stockQuantity" ? (
+										) : isNumericItemColumn(columnId) ? (
 											<div className="relative h-10 w-full">
 												<input
 													type="number"
@@ -1187,6 +1147,24 @@ function MaterialRequestImportPreviewTable({
 													}
 													className={previewCellClassName(
 														"text-right",
+														row.fieldErrors[columnId],
+													)}
+												/>
+												<CellValidationWarning
+													message={row.fieldErrors[columnId]}
+												/>
+											</div>
+										) : isDateItemColumn(columnId) ? (
+											<div className="relative h-10 w-full">
+												<input
+													type="date"
+													value={String(row.item[columnId] ?? "")}
+													aria-invalid={Boolean(row.fieldErrors[columnId])}
+													onChange={(event) =>
+														onUpdateItem(row.id, columnId, event.target.value)
+													}
+													className={previewCellClassName(
+														undefined,
 														row.fieldErrors[columnId],
 													)}
 												/>
@@ -1277,6 +1255,35 @@ function NumberInput({
 				tabIndex={tabIndex}
 				onChange={(event) => onChange(parseNumberInputValue(event.target.value))}
 				className={cellControlClassName("text-right", validationMessage)}
+			/>
+			<CellValidationWarning message={validationMessage} />
+		</div>
+	);
+}
+
+function DateInput({
+	onChange,
+	readOnly,
+	tabIndex,
+	validationMessage,
+	value,
+}: {
+	onChange: (value: string) => void;
+	readOnly: boolean;
+	tabIndex: number;
+	validationMessage?: string;
+	value: string;
+}) {
+	return (
+		<div className="relative h-10 w-full">
+			<input
+				type="date"
+				value={value}
+				readOnly={readOnly}
+				aria-invalid={Boolean(validationMessage)}
+				tabIndex={tabIndex}
+				onChange={(event) => onChange(event.target.value)}
+				className={cellControlClassName(undefined, validationMessage)}
 			/>
 			<CellValidationWarning message={validationMessage} />
 		</div>
@@ -1406,20 +1413,36 @@ function createImportPreviewRow(
 ): ImportPreviewRow {
 	const item: MaterialRequestItem = {
 		...emptyMaterialRequestItem,
+		batchNo: getImportedValue(row, indexes.batchNo),
 		barcode: getImportedValue(row, indexes.barcode),
+		brand: getImportedValue(row, indexes.brand),
 		category: getImportedValue(row, indexes.category),
+		color: getImportedValue(row, indexes.color),
+		costCenter: getImportedValue(row, indexes.costCenter),
+		description: getImportedValue(row, indexes.description),
+		expiryDate: getImportedValue(row, indexes.expiryDate),
 		id: createMaterialRequestId("import-item"),
 		itemCode: getImportedValue(row, indexes.itemCode),
 		itemName: getImportedValue(row, indexes.itemName),
 		lotNo: getImportedValue(row, indexes.lotNo),
+		location: getImportedValue(row, indexes.location),
+		manufacturingDate: getImportedValue(row, indexes.manufacturingDate),
+		model: getImportedValue(row, indexes.model),
 		requestQuantity: normalizeImportedNumber(
 			getImportedValue(row, indexes.requestQuantity),
 		),
 		remarks: getImportedValue(row, indexes.remarks),
+		serialNumber: getImportedValue(row, indexes.serialNumber),
+		size: getImportedValue(row, indexes.size),
 		stockQuantity: normalizeImportedNumber(
 			getImportedValue(row, indexes.stockQuantity),
 		),
+		unitCost: normalizeImportedNumber(getImportedValue(row, indexes.unitCost)),
+		unitPrice: normalizeImportedNumber(
+			getImportedValue(row, indexes.unitPrice),
+		),
 		uom: getImportedValue(row, indexes.uom) || emptyMaterialRequestItem.uom,
+		warehouse: getImportedValue(row, indexes.warehouse),
 	};
 
 	return {
@@ -1552,8 +1575,12 @@ function normalizeImportHeader(value: string): MaterialRequestItemColumnId | nul
 		return "barcode";
 	}
 
-	if (["itemname", "name", "description"].includes(normalized)) {
+	if (["itemname", "name"].includes(normalized)) {
 		return "itemName";
+	}
+
+	if (["description", "itemdescription", "desc"].includes(normalized)) {
+		return "description";
 	}
 
 	if (["itemcategory", "category"].includes(normalized)) {
@@ -1574,6 +1601,58 @@ function normalizeImportHeader(value: string): MaterialRequestItemColumnId | nul
 
 	if (["lotno", "lotnumber", "lot"].includes(normalized)) {
 		return "lotNo";
+	}
+
+	if (["serialnumber", "serialno", "serial", "sn"].includes(normalized)) {
+		return "serialNumber";
+	}
+
+	if (["expirydate", "expirationdate", "expiry", "expiration"].includes(normalized)) {
+		return "expiryDate";
+	}
+
+	if (["costcenter", "responsibilitycenter", "responsibility"].includes(normalized)) {
+		return "costCenter";
+	}
+
+	if (["color", "colour"].includes(normalized)) {
+		return "color";
+	}
+
+	if (["brand"].includes(normalized)) {
+		return "brand";
+	}
+
+	if (["size"].includes(normalized)) {
+		return "size";
+	}
+
+	if (["model"].includes(normalized)) {
+		return "model";
+	}
+
+	if (["manufacturingdate", "manufacturedate", "mfgdate"].includes(normalized)) {
+		return "manufacturingDate";
+	}
+
+	if (["location", "binlocation", "bin"].includes(normalized)) {
+		return "location";
+	}
+
+	if (["warehouse", "whse"].includes(normalized)) {
+		return "warehouse";
+	}
+
+	if (["unitcost", "cost"].includes(normalized)) {
+		return "unitCost";
+	}
+
+	if (["unitprice", "price"].includes(normalized)) {
+		return "unitPrice";
+	}
+
+	if (["batchno", "batchnumber", "batch"].includes(normalized)) {
+		return "batchNo";
 	}
 
 	if (["remarks", "remark", "notes", "memo"].includes(normalized)) {
@@ -1651,7 +1730,7 @@ function parsePastedItemCellValue(
 	columnId: MaterialRequestItemColumnId,
 	value: string,
 ) {
-	if (columnId === "requestQuantity" || columnId === "stockQuantity") {
+	if (isNumericItemColumn(columnId)) {
 		return normalizeImportedNumber(value);
 	}
 
@@ -1662,7 +1741,7 @@ function itemColumnHasRequiredValue(
 	item: MaterialRequestItem,
 	columnId: MaterialRequestItemColumnId,
 ) {
-	if (columnId === "requestQuantity" || columnId === "stockQuantity") {
+	if (isNumericItemColumn(columnId)) {
 		const value = item[columnId];
 
 		if (value === "") {
@@ -1737,21 +1816,90 @@ function formatTabularCell(value: string) {
 
 function materialRequestItemHasData(item: MaterialRequestItem) {
 	return (
+		item.batchNo.trim() !== "" ||
 		item.barcode.trim() !== "" ||
+		item.brand.trim() !== "" ||
 		item.category.trim() !== "" ||
+		item.color.trim() !== "" ||
+		item.costCenter.trim() !== "" ||
+		item.description.trim() !== "" ||
+		item.expiryDate.trim() !== "" ||
 		item.itemCode.trim() !== "" ||
 		item.itemName.trim() !== "" ||
 		item.lotNo.trim() !== "" ||
+		item.location.trim() !== "" ||
+		item.manufacturingDate.trim() !== "" ||
+		item.model.trim() !== "" ||
 		item.remarks.trim() !== "" ||
+		item.serialNumber.trim() !== "" ||
+		item.size.trim() !== "" ||
 		item.requestQuantity !== emptyMaterialRequestItem.requestQuantity ||
 		item.stockQuantity !== emptyMaterialRequestItem.stockQuantity ||
+		item.unitCost !== emptyMaterialRequestItem.unitCost ||
+		item.unitPrice !== emptyMaterialRequestItem.unitPrice ||
+		item.warehouse.trim() !== "" ||
 		item.uom !== emptyMaterialRequestItem.uom
 	);
+}
+
+function isNumericItemColumn(columnId: MaterialRequestItemColumnId) {
+	return (
+		columnId === "requestQuantity" ||
+		columnId === "stockQuantity" ||
+		columnId === "unitCost" ||
+		columnId === "unitPrice"
+	);
+}
+
+function isDateItemColumn(columnId: MaterialRequestItemColumnId) {
+	return columnId === "expiryDate" || columnId === "manufacturingDate";
 }
 
 function isItemColumnId(columnId: string): columnId is MaterialRequestItemColumnId {
 	return DefaultItemColumnOrder.includes(
 		columnId as MaterialRequestItemColumnId,
+	);
+}
+
+function mergeDefaultItemColumnOrder(
+	columnIds: MaterialRequestItemColumnId[],
+) {
+	const defaultColumnIds = new Set(DefaultItemColumnOrder);
+	const customColumnIds = columnIds.filter(
+		(columnId) => !defaultColumnIds.has(columnId),
+	);
+
+	return [...DefaultItemColumnOrder, ...customColumnIds];
+}
+
+function resolveVisibleItemColumnIds(
+	columnIds: MaterialRequestItemColumnId[],
+) {
+	const normalizedColumnIds = columnIds.filter(isItemColumnId);
+
+	if (isSameItemColumnOrder(normalizedColumnIds, LegacyDefaultItemColumnOrder)) {
+		return DefaultItemColumnOrder;
+	}
+
+	const visibleColumnIds = new Set([
+		...DefaultRequiredItemColumnOrder,
+		...normalizedColumnIds,
+	]);
+
+	return DefaultItemColumnOrder.filter((columnId) =>
+		visibleColumnIds.has(columnId),
+	);
+}
+
+function isSameItemColumnOrder(
+	firstColumnIds: MaterialRequestItemColumnId[],
+	secondColumnIds: readonly MaterialRequestItemColumnId[],
+) {
+	return (
+		firstColumnIds.length === secondColumnIds.length &&
+		firstColumnIds.every(
+			(columnId, index) => columnId === secondColumnIds[index],
+		)
 	);
 }
 
@@ -2072,6 +2220,32 @@ const DefaultItemColumnOrder = [
 	"itemCode",
 	"barcode",
 	"itemName",
+	"description",
+	"category",
+	"uom",
+	"serialNumber",
+	"batchNo",
+	"warehouse",
+	"location",
+	"costCenter",
+	"requestQuantity",
+	"stockQuantity",
+	"unitCost",
+	"unitPrice",
+	"lotNo",
+	"expiryDate",
+	"manufacturingDate",
+	"color",
+	"brand",
+	"size",
+	"model",
+	"remarks",
+] satisfies MaterialRequestItemColumnId[];
+
+const LegacyDefaultItemColumnOrder = [
+	"itemCode",
+	"barcode",
+	"itemName",
 	"category",
 	"uom",
 	"requestQuantity",
@@ -2094,39 +2268,81 @@ const DefaultRequiredItemColumnIds = new Set<MaterialRequestItemColumnId>(
 const ProtectedItemColumnIds = DefaultRequiredItemColumnIds;
 
 const DefaultItemColumnLabels: Record<MaterialRequestItemColumnId, string> = {
+	batchNo: "Batch No.",
 	barcode: "Barcode",
+	brand: "Brand",
 	category: "Item Category",
+	color: "Color",
+	costCenter: "Cost Center",
+	description: "Description",
+	expiryDate: "Expiry Date",
 	itemCode: "Item Code",
 	itemName: "Item Name",
 	lotNo: "Lot No.",
+	location: "Location",
+	manufacturingDate: "Manufacturing Date",
+	model: "Model",
 	remarks: "Remarks",
 	requestQuantity: "Request Quantity",
+	serialNumber: "Serial Number",
+	size: "Size",
 	stockQuantity: "Stock Quantity",
+	unitCost: "Unit Cost",
+	unitPrice: "Unit Price",
 	uom: "UOM",
+	warehouse: "Warehouse",
 };
 
 const DefaultItemColumnWidths: Record<MaterialRequestItemColumnId, number> = {
+	batchNo: 150,
 	barcode: 150,
+	brand: 150,
 	category: 190,
+	color: 130,
+	costCenter: 190,
+	description: 240,
+	expiryDate: 170,
 	itemCode: 150,
 	itemName: 220,
 	lotNo: 145,
+	location: 170,
+	manufacturingDate: 190,
+	model: 150,
 	remarks: 260,
 	requestQuantity: 190,
+	serialNumber: 180,
+	size: 120,
 	stockQuantity: 180,
+	unitCost: 150,
+	unitPrice: 150,
 	uom: 120,
+	warehouse: 170,
 };
 
 const DefaultImportIndexes: Partial<Record<MaterialRequestItemColumnId, number>> = {
+	batchNo: 7,
 	barcode: 1,
-	category: 3,
+	brand: 19,
+	category: 4,
+	color: 18,
+	costCenter: 10,
+	description: 3,
+	expiryDate: 16,
 	itemCode: 0,
 	itemName: 2,
-	lotNo: 7,
-	remarks: 8,
-	requestQuantity: 5,
-	stockQuantity: 6,
-	uom: 4,
+	lotNo: 15,
+	location: 9,
+	manufacturingDate: 17,
+	model: 21,
+	remarks: 22,
+	requestQuantity: 11,
+	serialNumber: 6,
+	size: 20,
+	stockQuantity: 12,
+	unitCost: 13,
+	unitPrice: 14,
+	uom: 5,
+	warehouse: 8,
 };
 
 let materialRequestTextMeasureContext:
@@ -2224,22 +2440,50 @@ const MaterialRequestImportTemplateRows = [
 		"ITM-0001",
 		"480000000001",
 		"Portland Cement",
+		"Portland cement bags",
 		"Construction Materials",
 		"Bag",
+		"SN-0001",
+		"BATCH-2406",
+		"Main Warehouse",
+		"Aisle 1",
+		"OPS",
 		"120",
 		"320",
+		"245.5",
+		"275",
 		"LOT-CEM-2405",
+		"2026-12-31",
+		"2024-01-15",
+		"Gray",
+		"BuildPro",
+		"40kg",
+		"CP-40",
 		"Priority site requirement",
 	],
 	[
 		"ITM-0002",
 		"480000000002",
 		"Steel Bar 10mm",
+		"Deformed steel bar",
 		"Construction Materials",
 		"Pcs",
+		"SN-0002",
+		"BATCH-2405",
+		"Site Warehouse 1",
+		"Rack B",
+		"STR",
 		"75",
 		"210",
+		"140",
+		"165",
 		"LOT-STL-2405",
+		"2028-01-31",
+		"2024-02-20",
+		"Silver",
+		"SteelMax",
+		"10mm",
+		"SB-10",
 		"For structural works",
 	],
 ];

@@ -6,7 +6,7 @@ import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import {
 	primaryButtonClassName,
 	secondaryButtonClassName,
-	type PettyCashVoucherFormPageState,
+	type PettyCashVoucherActionPageState,
 } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherFormControls";
 import {
 	PettyCashVoucherDetailsFields,
@@ -16,7 +16,7 @@ import {
 type PettyCashVoucherDrawerProps = {
 	isOpen: boolean;
 	onClose: () => void;
-	page: PettyCashVoucherFormPageState;
+	page: PettyCashVoucherActionPageState;
 	position?: ModuleDrawerPosition;
 };
 

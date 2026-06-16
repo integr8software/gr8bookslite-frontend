@@ -31,7 +31,6 @@ export function MaterialRequestTableRow({
 			<td className="px-4 py-4">
 				{formatMaterialRequestDate(request.documentDate)}
 			</td>
-			<td className="px-4 py-4">{request.fromWarehouse}</td>
 			<td className="px-4 py-4">{request.toWarehouse}</td>
 			<td className="px-4 py-4">
 				{getMaterialRequestItemSummary(request)}
@@ -39,7 +38,7 @@ export function MaterialRequestTableRow({
 			<td className="px-4 py-4">
 				<MaterialRequestStatusBadge status={request.status} />
 			</td>
-			<td className="px-4 py-4">
+			<td className="px-4 py-4 text-center">
 				<MaterialRequestRecordActions
 					request={request}
 					onDeleteRequest={onDeleteRequest}

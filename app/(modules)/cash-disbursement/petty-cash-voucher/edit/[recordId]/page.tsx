@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { PettyCashVoucherFormPage } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherFormPage";
+import { PettyCashVoucherActionPage } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherActionPage";
 
 const PageTitle = "Edit Petty Cash Voucher";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementPettyCashVoucherEditPage() {
-  return <PettyCashVoucherFormPage />;
+  return <PettyCashVoucherActionPage />;
 }
 
 

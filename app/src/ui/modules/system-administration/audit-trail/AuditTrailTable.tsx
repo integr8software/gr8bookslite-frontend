@@ -10,29 +10,29 @@ import { AuditTrailTableRow } from "@/app/src/ui/modules/system-administration/a
 type AuditTrailTableProps = Pick<
 	ReturnType<typeof useAuditTrailListPage>,
 	| "actionFilter"
+	| "dateRangeFilter"
 	| "handleActionFilterChange"
+	| "handleDateRangeFilterChange"
 	| "handleModuleFilterChange"
 	| "handleQueryChange"
-	| "handleSeverityFilterChange"
 	| "isLoading"
 	| "moduleFilter"
 	| "moduleOptions"
 	| "query"
-	| "severityFilter"
 	| "table"
 >;
 
 export function AuditTrailTable({
 	actionFilter,
+	dateRangeFilter,
 	handleActionFilterChange,
+	handleDateRangeFilterChange,
 	handleModuleFilterChange,
 	handleQueryChange,
-	handleSeverityFilterChange,
 	isLoading,
 	moduleFilter,
 	moduleOptions,
 	query,
-	severityFilter,
 	table,
 }: AuditTrailTableProps) {
 	return (
@@ -43,21 +43,21 @@ export function AuditTrailTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No audit trail records found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[92rem]"
+				minWidthClassName="min-w-[90rem]"
 				pageSizeOptions={[10, 20, 50]}
 				paginationStorageKey={AuditTrailPaginationStorageKey}
 				table={table}
 				toolbar={
 					<AuditTrailTableFilters
 						actionFilter={actionFilter}
+						dateRangeFilter={dateRangeFilter}
 						moduleFilter={moduleFilter}
 						moduleOptions={moduleOptions}
 						query={query}
-						severityFilter={severityFilter}
 						onActionFilterChange={handleActionFilterChange}
+						onDateRangeFilterChange={handleDateRangeFilterChange}
 						onModuleFilterChange={handleModuleFilterChange}
 						onQueryChange={handleQueryChange}
-						onSeverityFilterChange={handleSeverityFilterChange}
 					/>
 				}
 				renderRow={({ id, original }) => (

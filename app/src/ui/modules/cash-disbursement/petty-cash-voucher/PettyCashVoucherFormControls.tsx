@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { usePettyCashVoucherFormPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherFormPage";
 
-export type PettyCashVoucherFormPageState = ReturnType<
+export type PettyCashVoucherActionPageState = ReturnType<
   typeof usePettyCashVoucherFormPage
 >;
 

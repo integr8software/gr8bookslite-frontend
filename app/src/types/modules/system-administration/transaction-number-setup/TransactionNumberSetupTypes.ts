@@ -1,47 +1,4 @@
-export type TransactionNumberModuleCode =
-	| "party-management"
-	| "item-management"
-	| "official-receipt"
-	| "collection-receipt"
-	| "acknowledgement-receipt"
-	| "provisional-receipt"
-	| "bank-reconciliation"
-	| "product-distribution-center-warehouse"
-	| "disbursement-voucher"
-	| "cash-advance"
-	| "cash-advance-multiple-entry"
-	| "petty-cash-voucher"
-	| "petty-cash-fund"
-	| "petty-cash-fund-replenishment"
-	| "petty-cash-advance"
-	| "petty-cash-advance-replenishment"
-	| "request-for-payment"
-	| "advances-to-supplier"
-	| "account-payable-voucher"
-	| "journal-voucher"
-	| "debit-memo"
-	| "credit-memo"
-	| "sales-quotation"
-	| "sales-order"
-	| "sales-invoice"
-	| "billing"
-	| "billing-statement"
-	| "billing-invoice"
-	| "service-invoice"
-	| "cash-sales-invoice"
-	| "sales-journal"
-	| "statement-of-account"
-	| "material-request"
-	| "receiving-report"
-	| "goods-receipt"
-	| "goods-issue"
-	| "delivery-receipt"
-	| "pick-list"
-	| "purchasing-request"
-	| "canvass-form"
-	| "purchase-order"
-	| "purchase-journal"
-	| "fixed-assets";
+export type TransactionNumberModuleCode = string;
 
 export type TransactionNumberInputMode = "Auto" | "Manual";
 
@@ -51,6 +8,7 @@ export type TransactionNumberStatus = "Active" | "Inactive";
 
 export type TransactionNumberSetupRecord = {
 	id: string;
+	permissionId: number;
 	moduleCode: TransactionNumberModuleCode;
 	moduleName: string;
 	inputMode: TransactionNumberInputMode;
@@ -61,7 +19,6 @@ export type TransactionNumberSetupRecord = {
 	scope: TransactionNumberScope;
 	branchIds: string[];
 	status: TransactionNumberStatus;
-	description: string;
 	lastGeneratedNumber?: string;
 	lastGeneratedAt?: string;
 };
@@ -76,7 +33,6 @@ export type TransactionNumberSetupFormValues = {
 	scope: TransactionNumberScope;
 	branchIds: string[];
 	status: TransactionNumberStatus;
-	description: string;
 };
 
 export type TransactionNumberSetupFormErrors = Partial<

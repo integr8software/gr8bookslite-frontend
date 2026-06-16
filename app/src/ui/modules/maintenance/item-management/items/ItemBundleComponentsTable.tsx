@@ -15,7 +15,12 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus } from "lucide-react";
-import type { CSSProperties } from "react";
+import {
+	useEffect,
+	useState,
+	type CSSProperties,
+	type KeyboardEvent,
+} from "react";
 import type {
 	ItemBundleComponent,
 	ItemBundleComponentItemOption,
@@ -120,7 +125,7 @@ export function ItemBundleComponentsTable({
 									Quantity
 								</th>
 								<th className="px-3 py-3">UOM</th>
-								<th className="px-3 py-3 text-right">
+								<th className="px-3 py-3 text-center">
 									Actions
 								</th>
 							</tr>
@@ -250,19 +255,16 @@ function BundleComponentRow({
 				/>
 			</td>
 			<td className="px-3 py-3">
-				<input
-					type="number"
-					min={0}
+				<DecimalNumberInput
 					value={component.quantity}
-					onChange={(event) =>
+					readOnly={isReadonly}
+					onValueChange={(value) =>
 						onUpdateComponent(
 							component.id,
 							"quantity",
-							event.target.value,
+							String(value),
 						)
 					}
-					readOnly={isReadonly}
-					className={`${fieldClassName} text-right`}
 				/>
 			</td>
 			<td className="px-3 py-3">
@@ -288,9 +290,9 @@ function BundleComponentRow({
 					))}
 				</select>
 			</td>
-			<td className="px-3 py-3 text-right">
+			<td className="px-3 py-3 text-center">
 				{!isReadonly ? (
-					<div className="flex justify-end gap-1">
+					<div className="flex justify-center gap-1">
 						<ModuleTableActionButton
 							variant="delete"
 							label={`Remove ${component.itemName || "component"}`}
@@ -347,6 +349,69 @@ function createItemUomDescription(item: ItemBundleComponentItemOption) {
 				.filter((uom) => uom !== item.itemUom)
 				.join(", ")}`
 		: `Default ${item.itemUom}`;
+}
+
+function DecimalNumberInput({
+	readOnly,
+	value,
+	onValueChange,
+}: {
+	readOnly: boolean;
+	value: number;
+	onValueChange: (value: number) => void;
+}) {
+	const [draftValue, setDraftValue] = useState(String(value));
+
+	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- Keep the editable draft synchronized when parent numeric value changes.
+		setDraftValue(String(value));
+	}, [value]);
+
+	function handleChange(nextValue: string) {
+		if (/[eE+-]/.test(nextValue)) {
+			return;
+		}
+
+		setDraftValue(nextValue);
+
+		if (!nextValue.trim()) {
+			return;
+		}
+
+		const parsedValue = Number(nextValue);
+
+		if (Number.isFinite(parsedValue) && parsedValue >= 0) {
+			onValueChange(parsedValue);
+		}
+	}
+
+	function handleBlur() {
+		if (!draftValue.trim()) {
+			onValueChange(0);
+			setDraftValue("0");
+		}
+	}
+
+	function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+		if (["e", "E", "+", "-"].includes(event.key)) {
+			event.preventDefault();
+		}
+	}
+
+	return (
+		<input
+			type="number"
+			min={0}
+			step="any"
+			inputMode="decimal"
+			value={draftValue}
+			readOnly={readOnly}
+			onBlur={handleBlur}
+			onChange={(event) => handleChange(event.target.value)}
+			onKeyDown={handleKeyDown}
+			className={`${fieldClassName} text-right`}
+		/>
+	);
 }
 
 const fieldClassName =

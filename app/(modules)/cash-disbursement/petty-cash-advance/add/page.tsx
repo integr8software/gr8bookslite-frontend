@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { PettyCashAdvanceAction } from "@/app/src/ui/modules/cash-disbursement/petty-cash-advance/Action";
+import { PettyCashAdvanceActionPage } from "@/app/src/ui/modules/cash-disbursement/petty-cash-advance/PettyCashAdvanceActionPage";
 
 const PageTitle = "Add Petty Cash Advance";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementPettyCashAdvanceAddPage() {
-  return <PettyCashAdvanceAction />;
+  return <PettyCashAdvanceActionPage />;
 }
 
 

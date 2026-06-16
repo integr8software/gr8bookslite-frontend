@@ -1,12 +1,10 @@
 import { Plus } from "lucide-react";
 import {
-	WarehouseAccessLevelOptions,
 	WarehouseAccessPermissionOptions,
 	WarehouseStatusOptions,
 } from "@/app/src/constants/modules/maintenance/warehouse-management/WarehouseManagementConstants";
 import type {
 	WarehouseAccessFormErrors,
-	WarehouseAccessLevel,
 	WarehouseAccessPermission,
 	WarehouseAccessRecord,
 	WarehouseStatus,
@@ -62,12 +60,10 @@ export function WarehouseAccessTable({
 				</button>
 			</div>
 			<div className="overflow-x-auto">
-				<table className="w-full min-w-[72rem] text-left text-sm">
+				<table className="w-full min-w-[62rem] text-left text-sm">
 					<thead className="bg-darknavy/[0.03] text-xs font-semibold uppercase tracking-wide text-darknavy/50">
 						<tr>
 							<th className="px-4 py-3">Person</th>
-							<th className="px-4 py-3">Role</th>
-							<th className="px-4 py-3">Access</th>
 							<th className="px-4 py-3">Permissions</th>
 							<th className="px-4 py-3">Status</th>
 							<th className="px-4 py-3 text-right">Actions</th>
@@ -97,54 +93,12 @@ export function WarehouseAccessTable({
 										/>
 									</td>
 									<td className="px-4 py-4 align-top">
-										<input
-											value={access.role}
-											onChange={(event) =>
-												onUpdateAccess(
-													access.id,
-													"role",
-													event.target.value,
-												)
-											}
-											className={fieldClassName}
-											placeholder="Warehouse role"
-										/>
-										<FieldError
-											message={errors[access.id]?.role}
-										/>
-									</td>
-									<td className="px-4 py-4 align-top">
-										<select
-											value={access.accessLevel}
-											onChange={(event) =>
-												onUpdateAccess(
-													access.id,
-													"accessLevel",
-													event.target
-														.value as WarehouseAccessLevel,
-												)
-											}
-											className={fieldClassName}
-										>
-											{WarehouseAccessLevelOptions.map(
-												(level) => (
-													<option
-														key={level}
-														value={level}
-													>
-														{level}
-													</option>
-												),
-											)}
-										</select>
-									</td>
-									<td className="px-4 py-4 align-top">
-										<div className="grid gap-2 sm:grid-cols-2">
+										<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
 											{WarehouseAccessPermissionOptions.map(
 												(permission) => (
 													<label
 														key={permission}
-														className="flex min-h-9 items-center gap-2 rounded-md border border-darknavy/10 bg-offwhite/55 px-2.5 text-xs font-semibold text-darknavy"
+														className="flex min-h-10 items-center gap-2 rounded-md border border-darknavy/10 bg-offwhite/55 px-2.5 text-xs font-semibold text-darknavy transition hover:border-skyblue/35 hover:bg-skyblue/8"
 													>
 														<input
 															type="checkbox"
@@ -209,7 +163,7 @@ export function WarehouseAccessTable({
 						) : (
 							<tr>
 								<td
-									colSpan={6}
+									colSpan={4}
 									className="px-4 py-10 text-center text-sm text-darknavy/55"
 								>
 									No warehouse access has been assigned.

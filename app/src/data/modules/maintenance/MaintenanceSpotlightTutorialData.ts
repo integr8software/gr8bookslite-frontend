@@ -39,6 +39,11 @@ export const MaintenanceSpotlightTutorialConfigs = [
     label: "Transaction type",
   },
   {
+    href: "/maintenance/payment-type",
+    addMode: "drawer",
+    label: "Payment type",
+  },
+  {
     href: "/maintenance/form-signatory",
     addMode: "route",
     label: "Form signatory",

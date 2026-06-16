@@ -5,6 +5,7 @@ import type {
 import { AccountThemeCookieName } from "@/app/src/constants/shared/account/AccountThemeRoutes";
 
 const ThemeAttributeName = "data-app-theme";
+const SystemThemeMediaQuery = "(prefers-color-scheme: dark)";
 const AccentColorVariableName = "--skyblue";
 const AccentColorRgbVariableName = "--skyblue-rgb";
 const AccentContrastVariableName = "--skyblue-contrast";
@@ -16,8 +17,22 @@ export function ApplyAccountTheme(theme: AccountTheme) {
     return;
   }
 
-  document.documentElement.setAttribute(ThemeAttributeName, theme);
-  document.cookie = `${AccountThemeCookieName}=${theme}; path=/; max-age=31536000; samesite=lax`;
+  const resolvedTheme = ResolveAccountTheme(theme);
+
+  document.documentElement.setAttribute(ThemeAttributeName, resolvedTheme);
+  document.cookie = `${AccountThemeCookieName}=${resolvedTheme}; path=/; max-age=31536000; samesite=lax`;
+}
+
+export function ResolveAccountTheme(theme: AccountTheme) {
+  if (
+    theme === "system" &&
+    typeof window !== "undefined" &&
+    window.matchMedia(SystemThemeMediaQuery).matches
+  ) {
+    return "midnight-dark";
+  }
+
+  return theme === "midnight-dark" ? "midnight-dark" : "classic-light";
 }
 
 export function ApplyAccountAccentColor(accentColor: AccountAccentColor) {

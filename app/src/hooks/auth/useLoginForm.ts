@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   InitialAuthActionState,
@@ -50,6 +50,7 @@ async function EnsureFrontendSessionCreated() {
 export function useLoginForm() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const accessToken = useAppStore((state) => state.accessToken);
   const setAccessToken = useAppStore((state) => state.setAccessToken);
   const [state, setState] = useState<AuthActionState>(InitialAuthActionState);
@@ -71,6 +72,7 @@ export function useLoginForm() {
       ? state.redirectTo ?? GetFallbackPostAuthRedirectPath(accessToken)
       : null;
   const isResolvingPostAuthRef = useRef(false);
+  const isForcedLogin = searchParams.get("force") === "true";
 
   function updateValues(nextValues: Partial<LoginFormValues>) {
     setFormValues((currentValues) => ({
@@ -188,10 +190,10 @@ export function useLoginForm() {
   }
 
   useEffect(() => {
-    if (accessToken && !isResolvingPostAuthRef.current) {
+    if (accessToken && !isResolvingPostAuthRef.current && !isForcedLogin) {
       router.replace(GetFallbackPostAuthRedirectPath(accessToken));
     }
-  }, [accessToken, router]);
+  }, [accessToken, isForcedLogin, router]);
 
   return {
     state,

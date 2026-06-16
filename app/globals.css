@@ -20,6 +20,22 @@
   --input-text: rgba(33, 39, 56, 1);
   --input-text-muted: rgba(33, 39, 56, 0.7);
   --input-placeholder: rgba(33, 39, 56, 0.42);
+  --workspace-chart-card-bg: #ffffff;
+  --workspace-chart-card-border: rgba(33, 39, 56, 0.1);
+  --workspace-chart-plot-bg: #f8fafc;
+  --workspace-chart-grid: rgba(33, 39, 56, 0.08);
+  --workspace-chart-axis: rgba(33, 39, 56, 0.45);
+  --workspace-chart-axis-strong: rgba(33, 39, 56, 0.56);
+  --workspace-chart-legend: rgba(33, 39, 56, 0.72);
+  --workspace-chart-hover-cursor: rgba(87, 196, 229, 0.12);
+  --workspace-chart-tooltip-bg: rgba(33, 39, 56, 0.96);
+  --workspace-chart-tooltip-border: rgba(255, 255, 255, 0.12);
+  --workspace-chart-tooltip-title: #ffffff;
+  --workspace-chart-tooltip-muted: rgba(255, 255, 255, 0.76);
+  --workspace-user-assignment-bg: rgba(248, 250, 252, 0.78);
+  --workspace-user-assignment-border: rgba(33, 39, 56, 0.1);
+  --workspace-user-branch-bg: #ffffff;
+  --workspace-user-branch-border: rgba(33, 39, 56, 0.1);
 }
 
 :root[data-app-theme="classic-light"] {
@@ -75,6 +91,22 @@
   --input-text: #c9d1d9;
   --input-text-muted: #8b949e;
   --input-placeholder: #6e7681;
+  --workspace-chart-card-bg: #161b22;
+  --workspace-chart-card-border: #30363d;
+  --workspace-chart-plot-bg: #21262d;
+  --workspace-chart-grid: rgba(201, 209, 217, 0.1);
+  --workspace-chart-axis: rgba(201, 209, 217, 0.58);
+  --workspace-chart-axis-strong: rgba(201, 209, 217, 0.72);
+  --workspace-chart-legend: rgba(201, 209, 217, 0.82);
+  --workspace-chart-hover-cursor: rgba(88, 166, 255, 0.14);
+  --workspace-chart-tooltip-bg: rgba(13, 17, 23, 0.96);
+  --workspace-chart-tooltip-border: #484f58;
+  --workspace-chart-tooltip-title: #f0f6fc;
+  --workspace-chart-tooltip-muted: #8b949e;
+  --workspace-user-assignment-bg: #161b22;
+  --workspace-user-assignment-border: #30363d;
+  --workspace-user-branch-bg: #0d1117;
+  --workspace-user-branch-border: #30363d;
 }
 
 @theme inline {
@@ -446,6 +478,61 @@ button {
 .workspace-dashboard-layout {
   grid-auto-flow: dense;
   grid-auto-rows: 8px;
+}
+
+.workspace-chart-card {
+  background-color: var(--workspace-chart-card-bg);
+  border-color: var(--workspace-chart-card-border);
+  box-shadow: 0 20px 60px rgba(33, 39, 56, 0.08);
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.workspace-chart-card:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--skyblue) 24%,
+    var(--workspace-chart-card-border)
+  );
+  box-shadow: 0 18px 48px rgba(33, 39, 56, 0.1);
+}
+
+.workspace-chart-plot {
+  background-color: var(--workspace-chart-plot-bg);
+}
+
+.workspace-chart-tooltip {
+  background-color: var(--workspace-chart-tooltip-bg);
+  border-color: var(--workspace-chart-tooltip-border);
+}
+
+.workspace-chart-hover-cursor {
+  fill: var(--workspace-chart-hover-cursor);
+  pointer-events: none;
+}
+
+:root[data-app-theme="midnight-dark"] .workspace-chart-card {
+  box-shadow: var(--shadow-dark-lg);
+}
+
+:root[data-app-theme="midnight-dark"] .workspace-chart-card:hover {
+  border-color: color-mix(in srgb, var(--skyblue) 22%, #30363d);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.32) !important;
+}
+
+.workspace-user-assignment-card {
+  background-color: var(--workspace-user-assignment-bg);
+  border-color: var(--workspace-user-assignment-border);
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.workspace-user-branch-card {
+  background-color: var(--workspace-user-branch-bg);
+  border-color: var(--workspace-user-branch-border);
 }
 
 .module-table-header {

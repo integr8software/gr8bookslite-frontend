@@ -29,7 +29,7 @@ export const MaterialRequestStatusOptions: MaterialRequestStatus[] = [
 	"Approved",
 	"Disapproved",
 	"Cancelled",
-	"Completed",
+	"Closed",
 ];
 
 export const MaterialRequestWarehouseOptions = [
@@ -84,3 +84,24 @@ export const MaterialRequestActionPageCopy = {
 			"Review warehouse transfer request details and requested material lines.",
 	},
 } as const;
+
+export function canEditMaterialRequestStatus(status: MaterialRequestStatus) {
+	return status === "Draft" || status === "Active";
+}
+
+export function canApproveMaterialRequestStatus(status: MaterialRequestStatus) {
+	return status === "Active" || status === "Pending" || status === "Approved";
+}
+
+export function canDisapproveMaterialRequestStatus(status: MaterialRequestStatus) {
+	return status === "Active" || status === "Pending" || status === "Disapproved";
+}
+
+export function canCancelMaterialRequestStatus(status: MaterialRequestStatus) {
+	return (
+		status === "Draft" ||
+		status === "Active" ||
+		status === "Pending" ||
+		status === "Cancelled"
+	);
+}

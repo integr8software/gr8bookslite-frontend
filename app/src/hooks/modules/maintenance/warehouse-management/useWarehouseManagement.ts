@@ -64,12 +64,16 @@ export function useWarehouseManagementStore<
 		mutationFn: async (warehouseId: string) => warehouseId,
 		onSuccess: (warehouseId) => {
 			updateCachedWarehouses((warehouses) =>
-				warehouses.filter((warehouse) => warehouse.id !== warehouseId),
+				warehouses.map((warehouse) =>
+					warehouse.id === warehouseId
+						? { ...warehouse, status: "Inactive" }
+						: warehouse,
+				),
 			);
-			toast.success("Warehouse deleted.");
+			toast.success("Warehouse set inactive.");
 		},
 		onError: () => {
-			toast.error("Could not delete warehouse. Please try again.");
+			toast.error("Could not update warehouse status. Please try again.");
 		},
 	});
 

@@ -1,9 +1,7 @@
 import { UserCircle } from "lucide-react";
-import type {
-	UserManagementRecord,
-	UserRoleRecord,
-} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type { UserRoleRecord } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
 import type { UserListTableRecord } from "@/app/src/types/modules/user-management/UserListTypes";
+import type { UserManagementRecord } from "@/app/src/types/modules/user-management/UserManagementTypes";
 
 type UserListTableRowProps = {
 	isRoleUpdating?: boolean;

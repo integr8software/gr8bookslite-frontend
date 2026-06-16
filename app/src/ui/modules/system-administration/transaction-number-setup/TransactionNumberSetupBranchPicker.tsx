@@ -1,0 +1,60 @@
+import { Settings2 } from "lucide-react";
+import type { TransactionNumberScope } from "@/app/src/types/modules/system-administration/transaction-number-setup/TransactionNumberSetupTypes";
+
+type TransactionNumberSetupBranchPickerProps = {
+	branchOptions: Array<{ code: string; id: string; name: string }>;
+	scope: TransactionNumberScope;
+	selectedBranchIds: string[];
+	onToggleBranch: (branchId: string) => void;
+};
+
+export function TransactionNumberSetupBranchPicker({
+	branchOptions,
+	scope,
+	selectedBranchIds,
+	onToggleBranch,
+}: TransactionNumberSetupBranchPickerProps) {
+	const isAllBranches = scope === "all";
+
+	return (
+		<section className="rounded-md border border-darknavy/10">
+			<div className="flex items-center gap-2 border-b border-darknavy/10 px-4 py-3">
+				<Settings2
+					className="h-4 w-4 text-darknavy/55"
+					aria-hidden="true"
+				/>
+				<h3 className="text-sm font-semibold text-darknavy">
+					Branch coverage
+				</h3>
+			</div>
+			<div className="grid max-h-[24rem] gap-2 overflow-auto p-3">
+				{branchOptions.map((branch) => {
+					const checked =
+						isAllBranches || selectedBranchIds.includes(branch.id);
+
+					return (
+						<label
+							key={branch.id}
+							className="flex min-h-12 items-center gap-3 rounded-md border border-darknavy/10 bg-offwhite/45 px-3 text-sm font-semibold text-darknavy"
+						>
+							<input
+								type={scope === "branch" ? "radio" : "checkbox"}
+								checked={checked}
+								onChange={() => onToggleBranch(branch.id)}
+								className="h-4 w-4 accent-skyblue"
+							/>
+							<span className="min-w-0">
+								<span className="block truncate">
+									{branch.name}
+								</span>
+								<span className="block text-xs text-darknavy/45">
+									{branch.code}
+								</span>
+							</span>
+						</label>
+					);
+				})}
+			</div>
+		</section>
+	);
+}

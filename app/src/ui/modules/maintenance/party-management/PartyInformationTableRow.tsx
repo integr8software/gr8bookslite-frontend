@@ -23,6 +23,7 @@ export function PartyInformationTableRow({
 			<PartyInformationTableCell>
 				{record.partyTypesLabel}
 			</PartyInformationTableCell>
+			<PartyInformationTableCell>{record.addressLabel}</PartyInformationTableCell>
 			<PartyInformationTableCell>
 				<span
 					className={
@@ -34,9 +35,8 @@ export function PartyInformationTableRow({
 					{record.status}
 				</span>
 			</PartyInformationTableCell>
-			<PartyInformationTableCell>{record.addressLabel}</PartyInformationTableCell>
 			<PartyInformationTableCell align="center">
-				<PartyInformationRecordActions id={record.id} name={record.name} />
+				<PartyInformationRecordActions record={record} />
 			</PartyInformationTableCell>
 		</tr>
 	);

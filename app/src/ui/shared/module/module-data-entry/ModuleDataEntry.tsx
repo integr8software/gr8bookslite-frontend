@@ -27,6 +27,10 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 	emptyRowLabel = "line",
 	error,
 	exportOptions = [],
+	footerDetails,
+	summaryCells,
+	summaryRowHeader,
+	toolbarActions = [],
 	isDraggable = false,
 	isReadonly,
 	isRowNumberColumnFixed = false,
@@ -112,6 +116,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 				canEditRows={canEditRows}
 				columnOptions={columnOptions}
 				exportOptions={exportOptions}
+				toolbarActions={toolbarActions}
 				isAddOpen={openAddMenu === placement}
 				isClearOpen={openClearMenu === placement}
 				onAddColumn={onAddColumn}
@@ -174,6 +179,8 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 				isRowNumberColumnFixed={isRowNumberColumnFixed}
 				rows={rows}
 				scrollContainerRef={scrollContainerRef}
+				summaryCells={summaryCells}
+				summaryRowHeader={summaryRowHeader}
 				onAddRows={handleAddRows}
 				onAutoColumnWidth={onAutoColumnWidth}
 				onClearCell={onClearCell}
@@ -184,6 +191,13 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 				onMoveColumn={onMoveColumn}
 				onMoveRow={onMoveRow}
 				onPasteCells={onPasteCells}
+				onHideColumn={
+					onRemoveColumn
+						? undefined
+						: onToggleColumnVisibility
+							? (columnId) => onToggleColumnVisibility(columnId, false)
+							: undefined
+				}
 				onRemoveColumn={onRemoveColumn}
 				onRemoveRow={onRemoveRow}
 				onUpdateColumnHeader={onUpdateColumnHeader}
@@ -191,6 +205,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 			/>
 			<ModuleDataEntryFooter
 				actions={renderActions("footer")}
+				details={footerDetails}
 				entryCountLabel={entryCountLabel}
 			/>
 			{error ? <ModuleDataEntryError error={error} /> : null}

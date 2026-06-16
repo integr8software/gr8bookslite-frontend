@@ -13,10 +13,8 @@ import {
 import {
   UserListTableColumns,
 } from "@/app/src/constants/modules/user-management/UserListConstants";
-import type {
-  UserManagementRecord,
-  UserRoleRecord,
-} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type { UserRoleRecord } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type { UserManagementRecord } from "@/app/src/types/modules/user-management/UserManagementTypes";
 import type {
   UserListTableColumnKey,
   UserListTableRecord,

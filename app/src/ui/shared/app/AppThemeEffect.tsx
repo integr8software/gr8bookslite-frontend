@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   ApplyAccountAccentColor,
@@ -48,6 +48,7 @@ function IsModuleRoute(pathname: string | null) {
 
 export function AppThemeEffect() {
   const pathname = usePathname();
+  const [systemThemeVersion, setSystemThemeVersion] = useState(0);
   const theme = useAccountPreferences((state) => state.theme);
   const accentColor = useAccountPreferences((state) => state.accentColor);
   const resolvedTheme = ResolveTheme(pathname, theme);
@@ -55,7 +56,7 @@ export function AppThemeEffect() {
 
   useLayoutEffect(() => {
     ApplyAccountTheme(resolvedTheme);
-  }, [resolvedTheme]);
+  }, [resolvedTheme, systemThemeVersion]);
 
   useLayoutEffect(() => {
     ApplyAccountAccentColor(resolvedAccentColor);
@@ -80,6 +81,24 @@ export function AppThemeEffect() {
       window.removeEventListener("storage", handleAccountPreferencesStorage);
     };
   }, []);
+
+  useEffect(() => {
+    if (resolvedTheme !== "system") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    function handleSystemThemeChange() {
+      setSystemThemeVersion((currentVersion) => currentVersion + 1);
+    }
+
+    mediaQuery.addEventListener("change", handleSystemThemeChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleSystemThemeChange);
+    };
+  }, [resolvedTheme]);
 
   return null;
 }

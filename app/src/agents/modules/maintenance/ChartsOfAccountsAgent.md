@@ -11,7 +11,10 @@ Use this guide when working on the Charts of Accounts feature.
   React state, drawer logic, filters, sorting, pagination, and save/delete flow.
 
 - `app/src/data/modules/maintenance/financial-management/charts-of-accounts/`
-  Mock accounts, default form values, account mappers, and pure tree helpers.
+  Default form values, account mappers, and pure tree helpers.
+
+- `app/src/services/modules/maintenance/financial-management/charts-of-accounts/`
+  Backend API calls, response mappers, and React Query keys for the live Chart of Accounts module.
 
 - `app/src/constants/modules/maintenance/financial-management/charts-of-accounts/`
   Runtime values such as hrefs, nav labels, dropdown options, table columns, field definitions, and copy.
@@ -61,16 +64,16 @@ Use this guide when working on the Charts of Accounts feature.
 
 - `useChartsOfAccounts.ts`
   Owns feature behavior:
-    - account list state
-    - expanded tree ids
-    - active nav
-    - search and filters
-    - sorting
-    - pagination
-    - loading state
-    - drawer open/close state
-    - selected drawer account
-    - save and delete handlers
+  - backend Chart of Accounts tree query
+  - expanded tree ids
+  - active nav
+  - search and filters
+  - sorting
+  - pagination
+  - loading and mutation state
+  - drawer open/close state
+  - selected drawer account
+  - backend save and deactivate handlers
 
 The drawer is controlled here through `drawerAccount`, `isDrawerOpen`, `openAddDrawer`, `openEditDrawer`, and `closeDrawer`.
 
@@ -82,31 +85,36 @@ The drawer is controlled here through `drawerAccount`, `isDrawerOpen`, `openAddD
 - `ChartsOfAccountsDefaults.ts`
   Empty/default form values such as `EmptyBankDetails` and `EmptyAccountFormValues`.
 
-- `ChartsOfAccountsMockData.ts`
-  Mock chart account records.
-
 - `ChartsOfAccountsMappers.ts`
-  Pure conversion helpers such as `createAccountFromForm()` and `accountToFormValues()`.
+  Pure conversion helpers such as `accountToFormValues()`.
 
 - `ChartsOfAccountsTree.ts`
-  Pure tree helpers such as `flattenAccounts()`, `insertAccount()`, `updateAccountTree()`, and `removeAccount()`.
+  Pure tree helpers such as `flattenAccounts()`, `isSpecificAccount()`, and `moveOrReorderAccount()`.
+
+## Services
+
+- `ChartsOfAccountsApi.ts`
+  Calls `/api/v1/maintenance/chart-of-accounts`, maps backend enum/field names to the existing UI model, and sends create/update/deactivate requests. The backend owns account code generation.
+
+- `ChartsOfAccountsQueryKeys.ts`
+  React Query keys for the COA tree.
 
 ## Constants
 
 - `ChartsOfAccountsConstants.ts`
   Runtime values used by the app:
-    - `ChartsOfAccountsHref`
-    - account type options
-    - status options
-    - normal balance options
-    - account category options
-    - statement sections
-    - `ChartsOfAccountsNavs`
-    - action page copy
-    - drawer tabs
-    - bank field definitions
-    - table columns
-    - badge variant classes
+  - `ChartsOfAccountsHref`
+  - account type options
+  - status options
+  - normal balance options
+  - account category options
+  - statement sections
+  - `ChartsOfAccountsNavs`
+  - action page copy
+  - drawer tabs
+  - bank field definitions
+  - table columns
+  - badge variant classes
 
 Use constants for values React renders or JavaScript reads at runtime.
 
@@ -114,21 +122,21 @@ Use constants for values React renders or JavaScript reads at runtime.
 
 - `ChartsOfAccountsTypes.ts`
   TypeScript-only rules and shapes:
-    - `AccountType`
-    - `NormalBalance`
-    - `AccountStatus`
-    - `StatementGroup`
-    - `AccountCategory`
-    - `BankDetails`
-    - `BankDetailsKey`
-    - `ChartAccount`
-    - `ChartAccountFormValues`
-    - `FlattenedChartAccount`
-    - `FilterValue`
-    - `ChartsOfAccountsActionMode`
-    - `ChartsOfAccountsFormTab`
-    - `AccountSortKey`
-    - `SortDirection`
+  - `AccountType`
+  - `NormalBalance`
+  - `AccountStatus`
+  - `StatementGroup`
+  - `AccountCategory`
+  - `BankDetails`
+  - `BankDetailsKey`
+  - `ChartAccount`
+  - `ChartAccountFormValues`
+  - `FlattenedChartAccount`
+  - `FilterValue`
+  - `ChartsOfAccountsActionMode`
+  - `ChartsOfAccountsFormTab`
+  - `AccountSortKey`
+  - `SortDirection`
 
 Use types to describe what values are allowed. Types do not exist at runtime after TypeScript compiles.
 

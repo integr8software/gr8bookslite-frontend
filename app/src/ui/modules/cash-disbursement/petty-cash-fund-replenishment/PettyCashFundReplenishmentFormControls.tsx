@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { usePettyCashFundReplenishmentFormPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund-replenishment/usePettyCashFundReplenishmentFormPage";
 
-export type PettyCashFundReplenishmentFormPageState = ReturnType<
+export type PettyCashFundReplenishmentActionPageState = ReturnType<
   typeof usePettyCashFundReplenishmentFormPage
 >;
 

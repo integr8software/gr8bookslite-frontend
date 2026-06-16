@@ -1,13 +1,14 @@
 import { CheckCircle2, ClipboardList, Clock3, PackageCheck, XCircle } from "lucide-react";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 
 type MaterialRequestMetricsProps = {
 	metrics: {
 		totalRequests: number;
+		active: number;
 		pending: number;
 		approved: number;
 		disapproved: number;
-		completed: number;
+		closed: number;
 	};
 };
 
@@ -19,6 +20,13 @@ export function MaterialRequestMetrics({ metrics }: MaterialRequestMetricsProps)
 			summary: "All time",
 			icon: ClipboardList,
 			iconClassName: "bg-skyblue/20 text-skyblue",
+		},
+		{
+			label: "Active",
+			value: metrics.active,
+			summary: formatPercentage(metrics.active, metrics.totalRequests),
+			icon: CheckCircle2,
+			iconClassName: "bg-emerald-50 text-emerald-700",
 		},
 		{
 			label: "Pending",
@@ -42,49 +50,16 @@ export function MaterialRequestMetrics({ metrics }: MaterialRequestMetricsProps)
 			iconClassName: "bg-coralpink/15 text-coralpink",
 		},
 		{
-			label: "Completed",
-			value: metrics.completed,
-			summary: formatPercentage(metrics.completed, metrics.totalRequests),
+			label: "Closed",
+			value: metrics.closed,
+			summary: formatPercentage(metrics.closed, metrics.totalRequests),
 			icon: PackageCheck,
 			iconClassName: "bg-skyblue/15 text-skyblue",
 		},
 	];
 
 	return (
-		<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-			{cards.map((card) => {
-				const Icon = card.icon;
-
-				return (
-					<div
-						key={card.label}
-						className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5"
-					>
-						<div className="flex items-center justify-between gap-4">
-							<div>
-								<p className="text-sm font-semibold text-darknavy">
-									{card.label}
-								</p>
-								<p className="mt-3 text-3xl font-semibold leading-none text-darknavy">
-									{card.value}
-								</p>
-								<p className="mt-2 text-xs font-medium text-darknavy/60">
-									{card.summary}
-								</p>
-							</div>
-							<span
-								className={joinClasses(
-									"inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full",
-									card.iconClassName,
-								)}
-							>
-								<Icon className="h-6 w-6" aria-hidden="true" />
-							</span>
-						</div>
-					</div>
-				);
-			})}
-		</div>
+		<ModuleStatisticCards items={cards} className="2xl:grid-cols-6" />
 	);
 }
 

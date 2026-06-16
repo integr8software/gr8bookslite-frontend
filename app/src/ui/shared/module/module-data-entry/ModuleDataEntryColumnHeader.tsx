@@ -1,6 +1,7 @@
 "use client";
 
 import {
+	EyeOff,
 	GripVertical,
 	MoreVertical,
 	Pencil,
@@ -28,6 +29,7 @@ export function ModuleDataEntryColumnHeader<TRow>({
 	column,
 	onAutoColumnWidth,
 	onFitColumnWidth,
+	onHideColumn,
 	onMoveColumn,
 	onRemoveColumn,
 	onStartColumnDrag,
@@ -38,6 +40,7 @@ export function ModuleDataEntryColumnHeader<TRow>({
 	column: ModuleDataEntryColumn<TRow>;
 	onAutoColumnWidth?: (columnId: string) => void;
 	onFitColumnWidth?: (columnId: string) => void;
+	onHideColumn?: (columnId: string) => void;
 	onMoveColumn?: (fromColumnId: string, toColumnId: string) => void;
 	onRemoveColumn?: (columnId: string) => void;
 	onStartColumnDrag: (columnId: string) => void;
@@ -50,6 +53,13 @@ export function ModuleDataEntryColumnHeader<TRow>({
 	const menuRef = useRef<HTMLDivElement>(null);
 	const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
 	const isAutoWidth = column.widthMode === "auto";
+	const hasMenuActions = Boolean(
+		onUpdateColumnHeader ||
+			(isAutoWidth && onUpdateColumnWidth) ||
+			onAutoColumnWidth ||
+			onHideColumn ||
+			onRemoveColumn,
+	);
 
 	useLayoutEffect(() => {
 		if (!isMenuOpen || !menuTriggerRef.current) {
@@ -145,7 +155,7 @@ export function ModuleDataEntryColumnHeader<TRow>({
 			) : (
 				<span className="min-w-0 flex-1 truncate">{column.header}</span>
 			)}
-			{isRenaming ? null : (
+			{isRenaming || !hasMenuActions ? null : (
 				<button
 					ref={menuTriggerRef}
 					type="button"
@@ -157,12 +167,12 @@ export function ModuleDataEntryColumnHeader<TRow>({
 					<MoreVertical className="h-3.5 w-3.5" aria-hidden="true" />
 				</button>
 			)}
-			{!isRenaming && isMenuOpen && typeof document !== "undefined"
+			{!isRenaming && hasMenuActions && isMenuOpen && typeof document !== "undefined"
 				? createPortal(
 						<div
 							ref={menuRef}
 							style={menuStyle}
-							className="fixed z-130 grid w-36 gap-1 rounded-md border border-darknavy/10 bg-white p-1 text-darknavy shadow-lg"
+							className="fixed z-[130] grid min-w-36 gap-1 rounded-lg border border-darknavy/10 bg-white p-1.5 text-left text-darknavy shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
 						>
 							{onUpdateColumnHeader ? (
 								<button
@@ -208,6 +218,20 @@ export function ModuleDataEntryColumnHeader<TRow>({
 									Auto Width
 								</button>
 							) : null}
+							{onHideColumn ? (
+								<button
+									type="button"
+									disabled={!canRemove}
+									onClick={() => {
+										onHideColumn(column.id);
+										setIsMenuOpen(false);
+									}}
+									className="flex h-8 items-center gap-2 rounded px-2 text-xs font-semibold text-darknavy/70 transition hover:bg-skyblue/10 hover:text-darknavy disabled:cursor-not-allowed disabled:opacity-40"
+								>
+									<EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
+									Hide
+								</button>
+							) : null}
 							{onRemoveColumn ? (
 								<button
 									type="button"
@@ -242,9 +266,9 @@ export function ModuleDataEntryColumnHeader<TRow>({
 						event.stopPropagation();
 						const startX = event.clientX;
 						const startWidth =
+							column.width ??
 							event.currentTarget.closest("th")?.getBoundingClientRect()
 								.width ??
-							column.width ??
 							160;
 
 						function handlePointerMove(moveEvent: PointerEvent) {

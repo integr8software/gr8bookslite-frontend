@@ -3,6 +3,7 @@ import type {
 	DisbursementVoucherFormErrors,
 	DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 
 export function validateDisbursementVoucherDetails(
 	values: DisbursementVoucherFormValues,
@@ -43,6 +44,11 @@ export function validateDisbursementVoucherEntries(
 
 	if (values.lineEntries.length < 2) {
 		errors.lineEntries = "Add at least two line entries.";
+	} else if (values.lineEntries.some(entryHasMissingRequiredFields)) {
+		errors.lineEntries =
+			"Each line needs an account title, account code, and either a debit or credit amount.";
+	} else if (values.lineEntries.some(entryHasBothDebitAndCredit)) {
+		errors.lineEntries = "Each line can only carry a debit or a credit amount.";
 	} else if (totalDebit <= 0 || totalCredit <= 0) {
 		errors.lineEntries = "Entries must include both debit and credit values.";
 	} else if (Math.abs(totalDebit - totalCredit) > 0.001) {
@@ -60,15 +66,11 @@ export function validateDisbursementEntryDraft(
 	}
 
 	if (!draft.accountName.trim()) {
-		return "Account name is required.";
+		return "Account title is required.";
 	}
 
-	if (!draft.particulars.trim()) {
-		return "Particulars are required.";
-	}
-
-	const debit = Number(draft.debit || 0);
-	const credit = Number(draft.credit || 0);
+	const debit = parseMoneyNumberInput(draft.debit);
+	const credit = parseMoneyNumberInput(draft.credit);
 
 	if (debit <= 0 && credit <= 0) {
 		return "Enter a debit or credit amount.";
@@ -79,4 +81,26 @@ export function validateDisbursementEntryDraft(
 	}
 
 	return undefined;
+}
+
+function entryHasMissingRequiredFields(
+	entry: DisbursementVoucherFormValues["lineEntries"][number],
+) {
+	const debit = parseMoneyNumberInput(entry.debit);
+	const credit = parseMoneyNumberInput(entry.credit);
+
+	return (
+		!entry.accountName.trim() ||
+		!entry.accountCode.trim() ||
+		(debit <= 0 && credit <= 0)
+	);
+}
+
+function entryHasBothDebitAndCredit(
+	entry: DisbursementVoucherFormValues["lineEntries"][number],
+) {
+	return (
+		parseMoneyNumberInput(entry.debit) > 0 &&
+		parseMoneyNumberInput(entry.credit) > 0
+	);
 }

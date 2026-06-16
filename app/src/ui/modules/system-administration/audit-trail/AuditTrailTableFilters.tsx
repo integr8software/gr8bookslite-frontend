@@ -1,11 +1,11 @@
 import {
 	AuditTrailActionOptions,
-	AuditTrailSeverityOptions,
+	AuditTrailDateRangeOptions,
 } from "@/app/src/constants/modules/system-administration/audit-trail/AuditTrailConstants";
 import type {
 	AuditTrailAction,
+	AuditTrailDateRange,
 	AuditTrailModuleOption,
-	AuditTrailSeverity,
 } from "@/app/src/types/modules/system-administration/audit-trail/AuditTrailTypes";
 import {
 	ModuleTableResetButton,
@@ -16,26 +16,26 @@ import {
 
 type AuditTrailTableFiltersProps = {
 	actionFilter: AuditTrailAction | "all";
+	dateRangeFilter: AuditTrailDateRange;
 	moduleFilter: string;
 	moduleOptions: AuditTrailModuleOption[];
 	query: string;
-	severityFilter: AuditTrailSeverity | "all";
 	onActionFilterChange: (value: AuditTrailAction | "all") => void;
+	onDateRangeFilterChange: (value: AuditTrailDateRange) => void;
 	onModuleFilterChange: (value: string) => void;
 	onQueryChange: (value: string) => void;
-	onSeverityFilterChange: (value: AuditTrailSeverity | "all") => void;
 };
 
 export function AuditTrailTableFilters({
 	actionFilter,
+	dateRangeFilter,
 	moduleFilter,
 	moduleOptions,
 	onActionFilterChange,
+	onDateRangeFilterChange,
 	onModuleFilterChange,
 	onQueryChange,
-	onSeverityFilterChange,
 	query,
-	severityFilter,
 }: AuditTrailTableFiltersProps) {
 	return (
 		<ModuleTableToolbar className="rounded-none border-x-0 border-t-0 shadow-none xl:grid-cols-[minmax(24rem,2.5fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(11rem,1fr)]">
@@ -46,12 +46,20 @@ export function AuditTrailTableFilters({
 				placeholder="Search activity, user, module, record, or IP"
 			/>
 			<ModuleTableFilterSelect
+				label="Date"
+				value={dateRangeFilter}
+				options={AuditTrailDateRangeOptions}
+				onChange={(value) =>
+					onDateRangeFilterChange(value as AuditTrailDateRange)
+				}
+			/>
+			<ModuleTableFilterSelect
 				label="Module"
 				value={moduleFilter}
 				options={[
 					{ label: "All", value: "all" },
 					...moduleOptions.map((module) => ({
-						label: `${module.section} / ${module.label}`,
+						label: module.label,
 						value: module.key,
 					})),
 				]}
@@ -71,26 +79,12 @@ export function AuditTrailTableFilters({
 					onActionFilterChange(value as AuditTrailAction | "all")
 				}
 			/>
-			<ModuleTableFilterSelect
-				label="Severity"
-				value={severityFilter}
-				options={[
-					{ label: "All", value: "all" },
-					...AuditTrailSeverityOptions.map((severity) => ({
-						label: severity,
-						value: severity,
-					})),
-				]}
-				onChange={(value) =>
-					onSeverityFilterChange(value as AuditTrailSeverity | "all")
-				}
-			/>
 			<ModuleTableResetButton
 				onClick={() => {
 					onQueryChange("");
+					onDateRangeFilterChange("30d");
 					onModuleFilterChange("all");
 					onActionFilterChange("all");
-					onSeverityFilterChange("all");
 				}}
 			>
 				Reset

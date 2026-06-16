@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { ItemPromotionsAction } from "@/app/src/ui/modules/maintenance/item-management/item-promotions/Action";
+import { ItemPromotionsAction } from "@/app/src/ui/modules/maintenance/item-management/item-promotions/ItemPromotionsAction";
 
 const PageTitle = "Add Item Promotion";
 

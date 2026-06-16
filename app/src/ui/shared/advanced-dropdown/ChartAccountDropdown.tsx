@@ -80,12 +80,20 @@ function createAccountOptions(
 ): AppAdvancedDropdownOption[] {
 	return accounts
 		.filter(isAccountSelectable)
-		.map((account) => ({
-			description: account.description || account.accountType,
-			label: account.accountNumber,
-			name: account.accountName,
-			value: account[valueField],
-		}));
+		.map((account) => {
+			const description =
+				account.description.trim().toLowerCase() ===
+				account.accountName.trim().toLowerCase()
+					? ""
+					: account.description || account.accountType;
+
+			return {
+				description,
+				label: account.accountNumber,
+				name: account.accountName,
+				value: account[valueField],
+			};
+		});
 }
 
 function flattenAccounts(accounts: ModuleChartAccount[]): ModuleChartAccount[] {

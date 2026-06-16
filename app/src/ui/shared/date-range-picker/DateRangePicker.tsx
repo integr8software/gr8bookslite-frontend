@@ -38,6 +38,7 @@ export type DateRangePreset = {
 type DateRangePickerProps = {
 	className?: string;
 	label: string;
+	panelClassName?: string;
 	placeholder?: string;
 	presets?: readonly DateRangePreset[];
 	referenceDate?: Date | string;
@@ -141,6 +142,7 @@ export function DateRangePicker({
 	className,
 	label,
 	onChange,
+	panelClassName,
 	placeholder = "Select date range",
 	presets = DefaultDateRangePresets,
 	referenceDate,
@@ -350,7 +352,10 @@ export function DateRangePicker({
 							role="dialog"
 							aria-label={`${label} date range`}
 							style={panelStyle}
-							className="fixed z-50 max-h-[calc(100vh-2rem)] overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_20px_56px_rgba(33,39,56,0.14)]"
+							className={joinClasses(
+								"fixed z-50 max-h-[calc(100vh-2rem)] overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_20px_56px_rgba(33,39,56,0.14)]",
+								panelClassName,
+							)}
 						>
 							<div className="max-h-[calc(100vh-2rem)] overflow-auto">
 								<div className="grid lg:grid-cols-[13.5rem_1fr]">

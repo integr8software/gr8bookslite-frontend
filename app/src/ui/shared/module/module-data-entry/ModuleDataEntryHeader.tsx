@@ -20,7 +20,9 @@ export function ModuleDataEntryHeader({
 						{entryCountLabel}
 					</span>
 				</div>
-				<p className="mt-1 text-sm text-darknavy/60">{description}</p>
+				{description ? (
+					<p className="mt-1 text-sm text-darknavy/60">{description}</p>
+				) : null}
 			</div>
 			{actions ? (
 				<div className="flex w-full flex-wrap items-center gap-1.5 xl:w-auto xl:justify-end">

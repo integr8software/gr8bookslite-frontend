@@ -14,6 +14,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { DisbursementVoucherStatusFilters } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import {
+  getDisbursementVoucherDisplayStatus,
+  isDisbursementVoucherActiveStatus,
   MockDisbursementTransactions,
   MockDisbursementVouchers,
   buildDisbursementVoucherPreviewRows,
@@ -25,6 +27,9 @@ import type {
   DisbursementVoucherRecord,
   DisbursementTransactionRecord,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
+import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 
 type DisbursementVoucherStoreState = {
   previewRows: DisbursementVoucherPreviewRow[];
@@ -69,7 +74,12 @@ function readStoredTransactions() {
       storedTransactions,
     ) as DisbursementTransactionRecord[];
 
-    return Array.isArray(parsedTransactions) ? parsedTransactions : null;
+    return Array.isArray(parsedTransactions)
+      ? parsedTransactions.map((transaction) => ({
+          ...transaction,
+          status: getDisbursementVoucherDisplayStatus(transaction.status),
+        }))
+      : null;
   } catch {
     return null;
   }
@@ -316,12 +326,20 @@ export function useDisbursementVoucherPreviewTable(
     pageSize: 5,
   });
   const [query, setQueryState] = useState("");
+  const [dateRange, setDateRangeState] = useState<DateRangeValue>({
+    from: "",
+    to: "",
+  });
+  const [amountRange, setAmountRangeState] = useState<AmountRangeValue>({
+    from: "",
+    to: "",
+  });
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "voucherDate", desc: true },
+    { id: "documentDate", desc: true },
   ]);
   const [statusFilter, setStatusFilterState] = useState<
     (typeof DisbursementVoucherStatusFilters)[number]
-  >("All");
+  >("all");
   const deferredQuery = useDeferredValue(query);
   const filteredRows = useMemo(
     () =>
@@ -337,46 +355,55 @@ export function useDisbursementVoucherPreviewTable(
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
-        const rowStatus = row.voucher?.status ?? row.transaction.status;
+        const rowStatus = getDisbursementVoucherDisplayStatus(
+          row.voucher?.status ?? row.transaction.status,
+        );
+        const rowDate = row.voucher?.voucherDate ?? row.transaction.transactionDate;
+        const rowAmount = row.voucher?.amount ?? row.transaction.amount;
 
         return (
           searchable.includes(deferredQuery.toLowerCase()) &&
-          (statusFilter === "All" || rowStatus === statusFilter)
+          (statusFilter === "all" ||
+            (statusFilter === "Active"
+              ? isDisbursementVoucherActiveStatus(rowStatus)
+              : rowStatus === statusFilter)) &&
+          isDateInRange(rowDate, dateRange) &&
+          isAmountInRange(rowAmount, amountRange)
         );
       }),
-    [deferredQuery, previewRows, statusFilter],
+    [amountRange, dateRange, deferredQuery, previewRows, statusFilter],
   );
   const columns = useMemo<ColumnDef<DisbursementVoucherPreviewRow>[]>(
     () => [
       {
         id: "voucherNo",
         accessorFn: (row) =>
-          row.voucher?.voucherNo ?? `Preview ${row.transaction.transactionNo}`,
+          row.voucher?.voucherNo ?? row.transaction.transactionNo,
         header: "Voucher No.",
         sortingFn: "alphanumeric",
         meta: { className: "w-[12rem]" },
       },
       {
-        id: "payee",
+        id: "documentDate",
+        accessorFn: (row) =>
+          row.voucher?.voucherDate ?? row.transaction.transactionDate,
+        header: "Document Date",
+        sortingFn: "datetime",
+        meta: { className: "w-[10rem]" },
+      },
+      {
+        id: "partyName",
         accessorFn: (row) => row.transaction.payee,
-        header: "Payee",
+        header: "Party Name",
         sortingFn: "alphanumeric",
         meta: { className: "w-[18rem]" },
       },
       {
-        id: "type",
+        id: "paymentType",
         accessorFn: (row) => row.transaction.disbursementType,
-        header: "Type",
+        header: "Payment Type",
         sortingFn: "alphanumeric",
         meta: { className: "w-[12rem]" },
-      },
-      {
-        id: "voucherDate",
-        accessorFn: (row) =>
-          row.voucher?.voucherDate ?? row.transaction.transactionDate,
-        header: "Date",
-        sortingFn: "datetime",
-        meta: { className: "w-[10rem]" },
       },
       {
         id: "amount",
@@ -387,7 +414,10 @@ export function useDisbursementVoucherPreviewTable(
       },
       {
         id: "status",
-        accessorFn: (row) => row.voucher?.status ?? row.transaction.status,
+        accessorFn: (row) =>
+          getDisbursementVoucherDisplayStatus(
+            row.voucher?.status ?? row.transaction.status,
+          ),
         header: "Status",
         sortingFn: "alphanumeric",
         meta: { className: "w-[10rem]" },
@@ -429,20 +459,69 @@ export function useDisbursementVoucherPreviewTable(
     table.setPageIndex(0);
   }
 
+  function setDateRange(value: DateRangeValue) {
+    setDateRangeState(value);
+    table.setPageIndex(0);
+  }
+
+  function setAmountRange(value: AmountRangeValue) {
+    setAmountRangeState(value);
+    table.setPageIndex(0);
+  }
+
   function resetFilters() {
     setQueryState("");
-    setStatusFilterState("All");
+    setDateRangeState({ from: "", to: "" });
+    setAmountRangeState({ from: "", to: "" });
+    setStatusFilterState("all");
     table.setPageIndex(0);
   }
 
   return {
+    amountRange,
+    dateRange,
     query,
     resetFilters,
+    setAmountRange,
+    setDateRange,
     setQuery,
     setStatusFilter,
     statusFilter,
     statusOptions: DisbursementVoucherStatusFilters,
     table,
   };
+}
+
+function isAmountInRange(value: number, range: AmountRangeValue) {
+  const fromAmount = range.from.trim() ? parseMoneyNumberInput(range.from) : 0;
+  const toAmount = range.to.trim()
+    ? parseMoneyNumberInput(range.to)
+    : Number.MAX_SAFE_INTEGER;
+
+  return value >= fromAmount && value <= toAmount;
+}
+
+function isDateInRange(value: string, range: DateRangeValue) {
+  if (!range.from && !range.to) {
+    return true;
+  }
+
+  if (!value) {
+    return false;
+  }
+
+  const dateTime = new Date(value).setHours(0, 0, 0, 0);
+  const fromTime = range.from ? new Date(range.from).setHours(0, 0, 0, 0) : null;
+  const toTime = range.to ? new Date(range.to).setHours(0, 0, 0, 0) : null;
+
+  if (fromTime !== null && dateTime < fromTime) {
+    return false;
+  }
+
+  if (toTime !== null && dateTime > toTime) {
+    return false;
+  }
+
+  return true;
 }
 

@@ -1,20 +1,19 @@
 export type AuditTrailAction =
 	| "Approve"
-	| "Create"
+	| "Cancel"
 	| "Delete"
-	| "Generate"
-	| "Reject"
-	| "Update"
+	| "Edit"
+	| "Export"
+	| "Disapproved"
+	| "Uncancel"
+	| "Save"
 	| "View";
 
-export type AuditTrailSeverity = "Info" | "Warning" | "Critical";
+export type AuditTrailDateRange = "all" | "24h" | "7d" | "30d";
 
 export type AuditTrailModuleOption = {
-	href: string;
 	key: string;
 	label: string;
-	section: string;
-	trail: string[];
 };
 
 export type AuditTrailRecord = {
@@ -22,23 +21,20 @@ export type AuditTrailRecord = {
 	action: AuditTrailAction;
 	actorName: string;
 	actorRole: string;
+	branchId: string;
+	branchName: string;
 	createdAt: string;
 	description: string;
+	entityId: string | null;
+	entityType: string;
 	ipAddress: string;
-	moduleHref: string;
 	moduleKey: string;
-	moduleLabel: string;
-	recordId: string;
-	section: string;
-	severity: AuditTrailSeverity;
-	trail: string[];
+	module: string;
 };
 
 export type AuditTrailTableColumnKey =
-	| "moduleLabel"
-	| "action"
+	| "createdAt"
 	| "actorName"
-	| "recordId"
+	| "action"
 	| "description"
-	| "severity"
-	| "createdAt";
+	| "module";

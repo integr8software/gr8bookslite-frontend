@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { RequestForPaymentMain } from "@/app/src/ui/modules/cash-disbursement/request-for-payment/Main";
+import { RequestForPaymentListPage } from "@/app/src/ui/modules/cash-disbursement/request-for-payment/RequestForPaymentListPage";
 
 const PageTitle = "Request For Payment";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementRequestForPaymentPage() {
-  return <RequestForPaymentMain />;
+  return <RequestForPaymentListPage />;
 }
 
 

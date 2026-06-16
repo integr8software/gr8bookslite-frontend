@@ -62,9 +62,9 @@ export function WarehouseFormPage() {
 			<AppDialog
 				isOpen={page.isDeleteDialogOpen}
 				isPending={page.isMutating}
-				title="Delete warehouse?"
-				description={`This will remove ${page.existingWarehouse?.name ?? "the selected warehouse"}.`}
-				confirmLabel="Delete Warehouse"
+				title="Set warehouse inactive?"
+				description={`${page.existingWarehouse?.name ?? "The selected warehouse"} will remain in history and references, but will no longer be active for normal selection.`}
+				confirmLabel="Set Inactive"
 				tone="danger"
 				onCancel={() => page.setIsDeleteDialogOpen(false)}
 				onConfirm={page.handleConfirmDelete}

@@ -15,6 +15,7 @@ import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 
 type ItemCategoryParentOption = {
@@ -126,7 +127,7 @@ export function ItemCategoryClassificationFields({
 						</select>
 					</FormField>
 					<FormField label="Description" error={errors.description}>
-						<textarea
+						<AppLimitedTextarea
 							name="description"
 							value={values.description}
 							onChange={onInputChange}

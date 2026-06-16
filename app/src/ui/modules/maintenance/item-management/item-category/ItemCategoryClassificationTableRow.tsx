@@ -126,9 +126,9 @@ export function ItemCategoryClassificationTableRow({
 					{record.status}
 				</span>
 			</td>
-			<td className="px-4 py-4">
+			<td className="px-4 py-4 text-center">
 				{row.isVirtual ? null : (
-					<ModuleTableActions>
+					<ModuleTableActions className="justify-center">
 						<ModuleTableActionButton
 							variant="view"
 							onClick={() => onViewRecord(row)}

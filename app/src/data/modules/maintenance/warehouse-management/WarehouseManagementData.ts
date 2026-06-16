@@ -9,6 +9,7 @@ export const MockWarehouses: WarehouseRecord[] = [
 		id: "warehouse-main",
 		code: "WH-MAIN",
 		name: "Main Warehouse",
+		type: "Main Warehouse",
 		branchName: "Main Branch",
 		availability: "All Branches",
 		availableBranches: [],
@@ -21,7 +22,6 @@ export const MockWarehouses: WarehouseRecord[] = [
 			{
 				id: "access-1",
 				userName: "Maria Santos",
-				role: "Warehouse Manager",
 				accessLevel: "Manager",
 				permissions: [
 					"View Stock",
@@ -35,7 +35,6 @@ export const MockWarehouses: WarehouseRecord[] = [
 			{
 				id: "access-2",
 				userName: "Juan Dela Cruz",
-				role: "Picker",
 				accessLevel: "Picker",
 				permissions: ["View Stock", "Issue Stock", "Transfer Stock"],
 				status: "Active",
@@ -50,7 +49,12 @@ export const MockWarehouses: WarehouseRecord[] = [
 				category: "Supplies",
 				uom: "REAM",
 				onHand: 420,
+				reserved: 35,
 				allocated: 35,
+				lotNumber: "LOT-A4-2026-01",
+				serialNumber: "",
+				storageLocation: "WH-A-Z1-R01-S02-B03",
+				unitCost: 190,
 			},
 			{
 				id: "stock-2",
@@ -60,7 +64,74 @@ export const MockWarehouses: WarehouseRecord[] = [
 				category: "Bundles",
 				uom: "SET",
 				onHand: 18,
+				reserved: 4,
 				allocated: 4,
+				lotNumber: "",
+				serialNumber: "",
+				storageLocation: "WH-A-Z1-R02-S01-B01",
+				unitCost: 1850,
+			},
+		],
+		locations: [
+			{
+				id: "loc-main-a",
+				warehouseId: "warehouse-main",
+				warehouseName: "Main Warehouse",
+				zone: "Zone A",
+				aisle: "Aisle 1",
+				rackNo: "R01",
+				shelfNo: "S02",
+				binNo: "B03",
+				locationCode: "WH-A-Z1-R01-S02-B03",
+				status: "Active",
+			},
+			{
+				id: "loc-main-b",
+				warehouseId: "warehouse-main",
+				warehouseName: "Main Warehouse",
+				zone: "Zone A",
+				aisle: "Aisle 1",
+				rackNo: "R02",
+				shelfNo: "S01",
+				binNo: "B01",
+				locationCode: "WH-A-Z1-R02-S01-B01",
+				status: "Active",
+			},
+		],
+		movements: [
+			{
+				id: "move-main-1",
+				date: "2026-06-10",
+				referenceNumber: "GR-000128",
+				transactionType: "Goods Receipt",
+				item: "Office Paper A4",
+				quantityIn: 120,
+				quantityOut: 0,
+				balance: 420,
+				user: "Maria Santos",
+			},
+			{
+				id: "move-main-2",
+				date: "2026-06-11",
+				referenceNumber: "GI-000077",
+				transactionType: "Goods Issue",
+				item: "Starter Office Bundle",
+				quantityIn: 0,
+				quantityOut: 2,
+				balance: 18,
+				user: "Juan Dela Cruz",
+			},
+		],
+		transfers: [
+			{
+				id: "transfer-main-1",
+				date: "2026-06-12",
+				referenceNumber: "WT-000014",
+				sourceWarehouse: "Main Warehouse",
+				destinationWarehouse: "North Warehouse",
+				status: "In Transit",
+				requestedBy: "Maria Santos",
+				approvedBy: "Leo Reyes",
 			},
 		],
 	},
@@ -68,6 +139,7 @@ export const MockWarehouses: WarehouseRecord[] = [
 		id: "warehouse-north",
 		code: "WH-NORTH",
 		name: "North Warehouse",
+		type: "Distribution Center",
 		branchName: "North Branch",
 		availability: "Selected Branches",
 		availableBranches: ["Main Branch", "North Branch"],
@@ -80,7 +152,6 @@ export const MockWarehouses: WarehouseRecord[] = [
 			{
 				id: "access-3",
 				userName: "Leo Reyes",
-				role: "Warehouse Supervisor",
 				accessLevel: "Manager",
 				permissions: [
 					"View Stock",
@@ -100,9 +171,42 @@ export const MockWarehouses: WarehouseRecord[] = [
 				category: "Supplies",
 				uom: "ROLL",
 				onHand: 280,
+				reserved: 20,
 				allocated: 20,
+				lotNumber: "LOT-TR-2026-02",
+				serialNumber: "",
+				storageLocation: "WH-N-Z1-R01-S01-B02",
+				unitCost: 35,
 			},
 		],
+		locations: [
+			{
+				id: "loc-north-a",
+				warehouseId: "warehouse-north",
+				warehouseName: "North Warehouse",
+				zone: "Zone 1",
+				aisle: "Aisle 1",
+				rackNo: "R01",
+				shelfNo: "S01",
+				binNo: "B02",
+				locationCode: "WH-N-Z1-R01-S01-B02",
+				status: "Active",
+			},
+		],
+		movements: [
+			{
+				id: "move-north-1",
+				date: "2026-06-09",
+				referenceNumber: "GR-000119",
+				transactionType: "Goods Receipt",
+				item: "Thermal Receipt Roll",
+				quantityIn: 80,
+				quantityOut: 0,
+				balance: 280,
+				user: "Leo Reyes",
+			},
+		],
+		transfers: [],
 	},
 ];
 
@@ -141,6 +245,9 @@ export function createWarehouseRecord(
 		...createWarehouseRecordFields(values),
 		access: [],
 		items: [],
+		locations: [],
+		movements: [],
+		transfers: [],
 	};
 }
 
@@ -157,9 +264,10 @@ export function updateWarehouseRecord(
 
 export function getWarehouseAvailableStock(item: {
 	onHand: number;
-	allocated: number;
+	allocated?: number;
+	reserved?: number;
 }) {
-	return item.onHand - item.allocated;
+	return item.onHand - (item.reserved ?? item.allocated ?? 0);
 }
 
 export function getWarehouseAvailableBranchLabel(warehouse: {
@@ -186,6 +294,7 @@ function createWarehouseRecordFields(values: WarehouseFormValues) {
 
 	return {
 		name: values.name,
+		type: "Warehouse",
 		branchName,
 		availability: getWarehouseAvailability(availableBranches),
 		availableBranches,

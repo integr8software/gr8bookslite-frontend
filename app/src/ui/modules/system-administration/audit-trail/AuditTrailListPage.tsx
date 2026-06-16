@@ -1,10 +1,11 @@
 "use client";
 
-import { Activity, AlertTriangle, ListTree } from "lucide-react";
+import { Activity, ListChecks, ListTree } from "lucide-react";
 import { useAuditTrailListPage } from "@/app/src/hooks/modules/system-administration/audit-trail/useAuditTrailListPage";
 import {
 	ModuleHeader,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { AuditTrailTable } from "@/app/src/ui/modules/system-administration/audit-trail/AuditTrailTable";
 
 export function AuditTrailListPage() {
@@ -27,31 +28,34 @@ export function AuditTrailListPage() {
 			<div className="grid gap-3 lg:grid-cols-3">
 				<SummaryTile
 					icon={Activity}
-					label="Audit Events"
-					value={String(page.recordCount)}
+					label="Matched Logs"
+					tone="bg-skyblue/12 text-darknavy"
+					value={page.filteredCount}
 				/>
 				<SummaryTile
 					icon={ListTree}
-					label="Sidebar Modules"
-					value={String(page.moduleOptions.length)}
+					label="Modules"
+					tone="bg-citron/35 text-darknavy"
+					value={page.matchedModuleCount}
 				/>
 				<SummaryTile
-					icon={AlertTriangle}
-					label="Critical Events"
-					value={String(page.criticalCount)}
+					icon={ListChecks}
+					label="Total Logs"
+					tone="bg-offwhite text-darknavy"
+					value={page.recordCount}
 				/>
 			</div>
 			<AuditTrailTable
 				actionFilter={page.actionFilter}
+				dateRangeFilter={page.dateRangeFilter}
 				handleActionFilterChange={page.handleActionFilterChange}
+				handleDateRangeFilterChange={page.handleDateRangeFilterChange}
 				handleModuleFilterChange={page.handleModuleFilterChange}
 				handleQueryChange={page.handleQueryChange}
-				handleSeverityFilterChange={page.handleSeverityFilterChange}
 				isLoading={page.isLoading}
 				moduleFilter={page.moduleFilter}
 				moduleOptions={page.moduleOptions}
 				query={page.query}
-				severityFilter={page.severityFilter}
 				table={page.table}
 			/>
 		</section>
@@ -61,25 +65,28 @@ export function AuditTrailListPage() {
 function SummaryTile({
 	icon: Icon,
 	label,
+	tone,
 	value,
 }: {
 	icon: typeof Activity;
 	label: string;
-	value: string;
+	tone: string;
+	value: number;
 }) {
 	return (
 		<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm">
-			<div className="flex items-center gap-3">
-				<span className="flex h-10 w-10 items-center justify-center rounded-md bg-skyblue/15 text-darknavy">
-					<Icon className="h-5 w-5" aria-hidden="true" />
+			<div className="flex items-center justify-between gap-3">
+				<p className="text-sm font-medium text-darknavy/58">{label}</p>
+				<span
+					className={joinClasses(
+						"flex h-9 w-9 items-center justify-center rounded-lg",
+						tone,
+					)}
+				>
+					<Icon className="h-4 w-4" aria-hidden="true" />
 				</span>
-				<div>
-					<div className="text-xl font-semibold text-darknavy">{value}</div>
-					<div className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">
-						{label}
-					</div>
-				</div>
 			</div>
+			<p className="mt-3 text-2xl font-semibold text-darknavy">{value}</p>
 		</div>
 	);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useState, type MouseEvent } from "react";
 import { Building2, ExternalLink } from "lucide-react";
 import type {
@@ -17,7 +18,12 @@ import {
 	getBranchDisplayName,
 	getBranchScopedUsersHref,
 } from "@/app/src/ui/workspace/users-management/utils";
-import { MainLoadingScreen } from "@/app/src/ui/shared/app/MainLoadingScreen";
+
+const MainLoadingScreen = dynamic(() =>
+	import("@/app/src/ui/shared/app/MainLoadingScreen").then(
+		(module) => module.MainLoadingScreen,
+	),
+);
 
 export function WorkspaceUserAssignmentsSection({
 	availableCompanies,
@@ -91,7 +97,7 @@ export function WorkspaceUserAssignmentsSection({
 					type="button"
 					onClick={onAddCompany}
 					disabled={isReadonly || !selectedCompanyId}
-					className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-darknavy px-4 text-sm font-semibold text-white transition hover:bg-darknavy/90 disabled:cursor-not-allowed disabled:bg-darknavy/35"
+					className="theme-accent-contrast-text inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:bg-skyblue/35 disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
 				>
 					<Building2 className="h-4 w-4" aria-hidden="true" />
 					<span className="whitespace-nowrap">Add Company</span>
@@ -114,7 +120,7 @@ export function WorkspaceUserAssignmentsSection({
 					return (
 						<article
 							key={assignment.companyId}
-							className="rounded-lg border border-darknavy/10 bg-offwhite/40 p-4"
+							className="workspace-user-assignment-card rounded-lg border p-4"
 						>
 							<div className="flex flex-wrap items-center justify-between gap-3">
 								<div>
@@ -139,7 +145,7 @@ export function WorkspaceUserAssignmentsSection({
 							</div>
 							<div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
 								{companyBranches.length === 0 ? (
-									<div className="rounded-md border border-darknavy/10 bg-white px-3 py-2 text-sm font-medium text-darknavy/50">
+									<div className="workspace-user-branch-card rounded-md border px-3 py-2 text-sm font-medium text-darknavy/50">
 										No active company units available.
 									</div>
 								) : null}
@@ -151,7 +157,7 @@ export function WorkspaceUserAssignmentsSection({
 									return (
 										<div
 											key={branch.id}
-											className="flex items-center gap-3 rounded-md border border-darknavy/10 bg-white px-3 py-2 text-sm font-medium text-darknavy"
+											className="workspace-user-branch-card flex items-center gap-3 rounded-md border px-3 py-2 text-sm font-medium text-darknavy"
 										>
 											<input
 												id={branchCheckboxId}

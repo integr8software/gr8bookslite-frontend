@@ -123,6 +123,7 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"maintenance-term": CalendarClock,
 	"maintenance-term-management": CalendarClock,
 	"maintenance-transaction-type": Receipt,
+	"maintenance-payment-type": CreditCard,
 	"maintenance-responsibility-center": Target,
 	"maintenance-inventory-warehouse": Warehouse,
 	"maintenance-warehouse": Warehouse,

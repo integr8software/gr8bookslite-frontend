@@ -6,9 +6,10 @@ import { useItemsFormPage } from "@/app/src/hooks/modules/maintenance/item-manag
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ItemActionButtons } from "@/app/src/ui/modules/maintenance/item-management/items/ItemActionButtons";
-import { ItemBundleComponentsTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemBundleComponentsTable";
+import { ItemAttributesTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemAttributesTable";
 import { ItemFields } from "@/app/src/ui/modules/maintenance/item-management/items/ItemFields";
 import { ItemNotFound } from "@/app/src/ui/modules/maintenance/item-management/items/ItemNotFound";
+import { ItemPriceListsTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemPriceListsTable";
 import { ItemSuppliersTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemSuppliersTable";
 import { ItemUomConversionsTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemUomConversionsTable";
 
@@ -32,6 +33,7 @@ export function ItemsFormPage() {
 							: copy.title
 					}
 					description={copy.description}
+					actionsClassName="w-full sm:w-auto sm:justify-end"
 					eyebrow={
 						<>
 							<Package className="h-3.5 w-3.5" aria-hidden="true" />
@@ -54,9 +56,6 @@ export function ItemsFormPage() {
 					errors={page.errors}
 					isReadonly={page.isReadonly}
 					statusOptions={page.statusOptions}
-					subcategoryOptions={page.subcategoryOptions}
-					subtypeOptions={page.subtypeOptions}
-					typeOptions={page.typeOptions}
 					uomOptions={page.uomOptions}
 					values={page.values}
 					warehouseItemsHref={page.warehouseItemsHref}
@@ -78,28 +77,29 @@ export function ItemsFormPage() {
 					onUpdateSupplier={page.updateSupplier}
 				/>
 
-				{!page.values.supportsBundle ? (
-					<ItemUomConversionsTable
-						conversions={page.values.uomConversions}
-						isReadonly={page.isReadonly}
-						onAddConversion={page.addUomConversion}
-						onRemoveConversion={page.removeUomConversion}
-						onUpdateConversion={page.updateUomConversion}
-					/>
-				) : null}
+				<ItemAttributesTable
+					assignments={page.values.attributeAssignments}
+					attributes={page.attributeRecords}
+					isReadonly={page.isReadonly}
+					onAddAssignment={page.addAttributeAssignment}
+					onRemoveAssignment={page.removeAttributeAssignment}
+					onUpdateAssignment={page.updateAttributeAssignment}
+				/>
 
-				{page.values.supportsBundle ? (
-					<ItemBundleComponentsTable
-						components={page.values.bundleComponents}
-						error={page.errors.bundleComponents}
-						isReadonly={page.isReadonly}
-						itemOptions={page.bundleComponentItemOptions}
-						onAddComponent={page.addBundleComponent}
-						onReorderComponent={page.reorderBundleComponent}
-						onRemoveComponent={page.removeBundleComponent}
-						onUpdateComponent={page.updateBundleComponent}
-					/>
-				) : null}
+				<ItemUomConversionsTable
+					conversions={page.values.uomConversions}
+					isReadonly={page.isReadonly}
+					onAddConversion={page.addUomConversion}
+					onRemoveConversion={page.removeUomConversion}
+					onUpdateConversion={page.updateUomConversion}
+				/>
+
+				<ItemPriceListsTable
+					isReadonly={page.isReadonly}
+					priceLists={page.priceLists}
+					values={page.values}
+					onUpdatePrice={page.updatePriceListPrice}
+				/>
 			</form>
 
 			<AppDialog

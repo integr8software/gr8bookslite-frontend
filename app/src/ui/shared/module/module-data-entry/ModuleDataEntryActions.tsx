@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronDown, Download, Plus, Upload, X } from "lucide-react";
+import { ChevronDown, Download, Plus, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import {
 	useEffect,
 	useLayoutEffect,
@@ -20,19 +21,22 @@ import type {
 } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export function ModuleDataEntryToolbarButton({
+	disabled = false,
 	icon: Icon,
 	label,
 	onClick,
 }: {
-	icon: typeof Upload;
+	disabled?: boolean;
+	icon: LucideIcon;
 	label: string;
 	onClick: () => void;
 }) {
 	return (
 		<button
 			type="button"
+			disabled={disabled}
 			onClick={onClick}
-			className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-skyblue/20 bg-white px-3 text-xs font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20"
+			className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-skyblue/20 bg-white px-3 text-xs font-semibold text-skyblue shadow-sm transition hover:border-skyblue/35 hover:bg-skyblue/8 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45"
 		>
 			<Icon className="h-4 w-4" aria-hidden="true" />
 			{label}
@@ -47,6 +51,11 @@ export function ModuleDataEntryExportButton({
 	const triggerRef = useRef<HTMLDivElement>(null);
 	const [isOpen, setIsOpen] = useState(false);
 	const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+	const orderedOptions = [...options].sort(
+		(firstOption, secondOption) =>
+			getExportOptionOrder(firstOption.id) -
+			getExportOptionOrder(secondOption.id),
+	);
 
 	useLayoutEffect(() => {
 		if (!isOpen || !triggerRef.current) {
@@ -55,7 +64,7 @@ export function ModuleDataEntryExportButton({
 
 		const rect = triggerRef.current.getBoundingClientRect();
 		const menuWidth = 176;
-		const menuHeight = Math.min(220, 24 + options.length * 38);
+		const menuHeight = Math.min(220, 24 + orderedOptions.length * 38);
 		const viewportPadding = 8;
 		const left =
 			align === "right"
@@ -74,7 +83,7 @@ export function ModuleDataEntryExportButton({
 				: Math.max(viewportPadding, rect.top - menuHeight - 6);
 
 		setMenuStyle({ left, top });
-	}, [align, isOpen, options.length]);
+	}, [align, isOpen, orderedOptions.length]);
 
 	useEffect(() => {
 		if (!isOpen) {
@@ -141,7 +150,7 @@ export function ModuleDataEntryExportButton({
 							style={menuStyle}
 							className="fixed z-130 grid w-44 gap-1 rounded-lg border border-darknavy/10 bg-white p-1.5 text-left shadow-[0_18px_46px_rgba(33,39,56,0.18)]"
 						>
-							{options.map((option) => (
+							{orderedOptions.map((option) => (
 								<button
 									key={option.id}
 									type="button"
@@ -161,6 +170,22 @@ export function ModuleDataEntryExportButton({
 				: null}
 		</div>
 	);
+}
+
+function getExportOptionOrder(optionId: string) {
+	if (optionId === "csv") {
+		return 0;
+	}
+
+	if (optionId === "excel" || optionId === "xlsx") {
+		return 1;
+	}
+
+	if (optionId === "pdf") {
+		return 2;
+	}
+
+	return 3;
 }
 
 export function ModuleDataEntryClearButton({

@@ -53,20 +53,21 @@ export function useItemsListPage() {
 					item.skuCode,
 					item.name,
 					item.category,
-					item.subcategory,
-					item.type,
-					item.subtype,
+					item.model,
 					item.brand,
 					item.barcode,
-					item.supplier,
-					...(item.suppliers ?? []).map((supplier) => supplier.supplier),
 					item.status,
 				]
 					.join(" ")
 					.toLowerCase()
 					.includes(normalizedQuery)),
 		);
-	}, [categoryFilter, items, query, statusFilter]);
+	}, [
+		categoryFilter,
+		items,
+		query,
+		statusFilter,
+	]);
 	const categoryFilterOptions = useMemo(
 		() =>
 			Array.from(
@@ -168,11 +169,12 @@ function createItemColumn(
 	header: string,
 	className: string,
 ): ColumnDef<ItemRecord> {
-	if (key === "sellingPrice") {
+	if (key === "sellingPrice" || key === "costPrice") {
 		return {
 			id: key,
 			header,
-			accessorFn: (item) => item.sellingPrice,
+			accessorFn: (item) =>
+				key === "sellingPrice" ? item.sellingPrice : item.costPrice,
 			sortingFn: "alphanumeric",
 			meta: { className },
 		};

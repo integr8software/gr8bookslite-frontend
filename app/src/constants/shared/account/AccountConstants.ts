@@ -22,6 +22,18 @@ export const AccountThemeOptions: Array<{
   };
 }> = [
   {
+    value: "system",
+    label: "System",
+    description: "Automatically follows your device light or dark appearance.",
+    preview: {
+      surface: "#f8fafc",
+      panel: "#161b22",
+      accent: "#212738",
+      highlight: "#57c4e5",
+      text: "#c9d1d9",
+    },
+  },
+  {
     value: "classic-light",
     label: "Classic Light",
     description: `A bright default theme using the core ${AppName} palette.`,

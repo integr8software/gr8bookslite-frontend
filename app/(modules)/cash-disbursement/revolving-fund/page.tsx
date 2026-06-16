@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { RevolvingFundPage } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/RevolvingFundPage";
+import { RevolvingFundListPage } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/RevolvingFundListPage";
 
 const PageTitle = "Revolving Fund";
 
@@ -9,6 +9,6 @@ export const metadata: Metadata = {
   description: `${PageTitle} page for ${AppName}.`,
 };
 
-export default function CashDisbursementRevolvingFundPage() {
-  return <RevolvingFundPage />;
+export default function CashDisbursementRevolvingFundListPage() {
+  return <RevolvingFundListPage />;
 }

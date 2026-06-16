@@ -16,7 +16,7 @@ export function ItemRecordActions({
 	onStatusChange,
 }: ItemRecordActionsProps) {
 	return (
-		<ModuleTableActions>
+		<ModuleTableActions className="justify-center">
 			<ModuleTableActionLink
 				variant="view"
 				href={`${ItemsHref}/view/${item.id}`}

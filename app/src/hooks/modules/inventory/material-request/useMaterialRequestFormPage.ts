@@ -3,7 +3,13 @@
 import { useMemo, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { MaterialRequestHref } from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
+import {
+	MaterialRequestHref,
+	canApproveMaterialRequestStatus,
+	canCancelMaterialRequestStatus,
+	canDisapproveMaterialRequestStatus,
+	canEditMaterialRequestStatus,
+} from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
 import {
 	createMaterialRequestFormValues,
 	createMaterialRequestId,
@@ -21,6 +27,15 @@ import type {
 	MaterialRequestStatus,
 } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
 import { validateMaterialRequestForm } from "@/app/src/validations/modules/inventory/material-request/MaterialRequestValidation";
+import {
+	appendModuleDataEntryRows,
+	clearModuleDataEntryRows,
+	duplicateModuleDataEntryRow,
+	insertModuleDataEntryRow,
+	moveModuleDataEntryRow,
+	pasteModuleDataEntryRows,
+	removeModuleDataEntryRow,
+} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRowUtils";
 
 export function useMaterialRequestFormPage() {
 	const router = useRouter();
@@ -29,8 +44,14 @@ export function useMaterialRequestFormPage() {
 	const params = useParams<{ recordId?: string }>();
 	const { addRequest, requests, updateRequest } = useMaterialRequestStore();
 	const mode = getMaterialRequestFormMode(pathname);
-	const isReadonly = mode === "view";
 	const existingRequest = requests.find((request) => request.id === params.recordId);
+	const isReadonly =
+		mode === "view" ||
+		(mode === "edit"
+			? existingRequest
+				? !canEditMaterialRequestStatus(existingRequest.status)
+				: false
+			: false);
 	const backHref =
 		mode === "edit" && searchParams.get("from") === "view" && params.recordId
 			? `${MaterialRequestHref}/view/${params.recordId}`
@@ -73,9 +94,7 @@ export function useMaterialRequestFormPage() {
 		setErrors((current) =>
 			createMaterialRequestErrorsAfterFieldUpdate({
 				currentErrors: current,
-				currentValues: values,
 				field,
-				value,
 			}),
 		);
 	}
@@ -112,10 +131,7 @@ export function useMaterialRequestFormPage() {
 
 		setValues((current) => ({
 			...current,
-			items: [
-				...current.items,
-				...Array.from({ length: count }, createEmptyItem),
-			],
+			items: appendModuleDataEntryRows(current.items, createEmptyItem, count),
 		}));
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
@@ -126,18 +142,14 @@ export function useMaterialRequestFormPage() {
 		}
 
 		setValues((current) => {
-			const rowIndex = current.items.findIndex((item) => item.id === itemId);
-			const insertIndex =
-				rowIndex === -1
-					? current.items.length
-					: rowIndex + (position === "below" ? 1 : 0);
-			const nextItems = [...current.items];
-
-			nextItems.splice(insertIndex, 0, createEmptyItem());
-
 			return {
 				...current,
-				items: nextItems,
+				items: insertModuleDataEntryRow(
+					current.items,
+					itemId,
+					position,
+					createEmptyItem,
+				),
 			};
 		});
 		setErrors((current) => ({ ...current, items: undefined }));
@@ -149,23 +161,11 @@ export function useMaterialRequestFormPage() {
 		}
 
 		setValues((current) => {
-			const rowIndex = current.items.findIndex((item) => item.id === itemId);
-			const sourceItem = current.items[rowIndex];
-
-			if (!sourceItem) {
-				return current;
-			}
-
-			const nextItems = [...current.items];
-
-			nextItems.splice(rowIndex + 1, 0, {
-				...sourceItem,
-				id: createMaterialRequestId("item"),
-			});
-
 			return {
 				...current,
-				items: nextItems,
+				items: duplicateModuleDataEntryRow(current.items, itemId, () =>
+					createMaterialRequestId("item"),
+				),
 			};
 		});
 		setErrors((current) => ({ ...current, items: undefined }));
@@ -177,21 +177,9 @@ export function useMaterialRequestFormPage() {
 		}
 
 		setValues((current) => {
-			const fromIndex = current.items.findIndex((item) => item.id === fromItemId);
-			const toIndex = current.items.findIndex((item) => item.id === toItemId);
-
-			if (fromIndex === -1 || toIndex === -1) {
-				return current;
-			}
-
-			const nextItems = [...current.items];
-			const [movedItem] = nextItems.splice(fromIndex, 1);
-
-			nextItems.splice(toIndex, 0, movedItem);
-
 			return {
 				...current,
-				items: nextItems,
+				items: moveModuleDataEntryRow(current.items, fromItemId, toItemId),
 			};
 		});
 		setErrors((current) => ({ ...current, items: undefined }));
@@ -204,10 +192,9 @@ export function useMaterialRequestFormPage() {
 
 		setValues((current) => ({
 			...current,
-			items:
-				current.items.length > 1
-					? current.items.filter((item) => item.id !== itemId)
-					: current.items,
+			items: removeModuleDataEntryRow(current.items, itemId, {
+				keepAtLeastOne: true,
+			}),
 		}));
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
@@ -237,14 +224,14 @@ export function useMaterialRequestFormPage() {
 		}
 
 		setValues((current) => {
-			const nextItems =
-				mode === "all"
-					? []
-					: current.items.filter((item) => !shouldClearItem(item, mode));
-
 			return {
 				...current,
-				items: nextItems.length > 0 ? nextItems : [createEmptyItem()],
+				items: clearModuleDataEntryRows(
+					current.items,
+					mode,
+					shouldClearItem,
+					createEmptyItem,
+				),
 			};
 		});
 		setErrors((current) => ({ ...current, items: undefined }));
@@ -259,27 +246,14 @@ export function useMaterialRequestFormPage() {
 		}
 
 		setValues((current) => {
-			const startIndex = current.items.findIndex(
-				(item) => item.id === startItemId,
-			);
-			const resolvedStartIndex =
-				startIndex === -1 ? current.items.length : startIndex;
-			const nextItems = [...current.items];
-
-			updates.forEach((update, rowOffset) => {
-				const itemIndex = resolvedStartIndex + rowOffset;
-				const currentItem = nextItems[itemIndex] ?? createEmptyItem();
-
-				nextItems[itemIndex] = {
-					...currentItem,
-					...update,
-					id: currentItem.id,
-				};
-			});
-
 			return {
 				...current,
-				items: nextItems,
+				items: pasteModuleDataEntryRows(
+					current.items,
+					startItemId,
+					updates,
+					createEmptyItem,
+				),
 			};
 		});
 		setErrors((current) => ({ ...current, items: undefined }));
@@ -348,6 +322,10 @@ export function useMaterialRequestFormPage() {
 			return;
 		}
 
+		if (!canUpdateMaterialRequestStatus(values.status, status)) {
+			return;
+		}
+
 		const nextRequest = createMaterialRequestRecord(
 			{
 				...values,
@@ -407,39 +385,55 @@ function getMaterialRequestFormMode(pathname: string): MaterialRequestFormMode {
 	return "add";
 }
 
+function canUpdateMaterialRequestStatus(
+	currentStatus: MaterialRequestStatus,
+	nextStatus: MaterialRequestStatus,
+) {
+	if (nextStatus === "Approved") {
+		return canApproveMaterialRequestStatus(currentStatus);
+	}
+
+	if (nextStatus === "Disapproved") {
+		return canDisapproveMaterialRequestStatus(currentStatus);
+	}
+
+	if (nextStatus === "Cancelled") {
+		return canCancelMaterialRequestStatus(currentStatus);
+	}
+
+	if (nextStatus === "Pending") {
+		return (
+			currentStatus === "Approved" ||
+			currentStatus === "Disapproved" ||
+			currentStatus === "Cancelled"
+		);
+	}
+
+	if (
+		(nextStatus === "Active" || nextStatus === "Draft") &&
+		(currentStatus === "Approved" || currentStatus === "Disapproved")
+	) {
+		return true;
+	}
+
+	if (nextStatus === "Draft" || nextStatus === "Active") {
+		return currentStatus === "Cancelled";
+	}
+
+	return false;
+}
+
 function createMaterialRequestErrorsAfterFieldUpdate<TKey extends keyof MaterialRequestFormValues>({
 	currentErrors,
-	currentValues,
 	field,
-	value,
 }: {
 	currentErrors: MaterialRequestFormErrors;
-	currentValues: MaterialRequestFormValues;
 	field: TKey;
-	value: MaterialRequestFormValues[TKey];
 }) {
-	const nextErrors = {
+	return {
 		...currentErrors,
 		[field]: undefined,
 	};
-
-	if (field !== "fromWarehouse" && field !== "toWarehouse") {
-		return nextErrors;
-	}
-
-	const nextFromWarehouse =
-		field === "fromWarehouse" ? String(value) : currentValues.fromWarehouse;
-	const nextToWarehouse =
-		field === "toWarehouse" ? String(value) : currentValues.toWarehouse;
-
-	nextErrors.toWarehouse =
-		nextFromWarehouse &&
-		nextToWarehouse &&
-		nextFromWarehouse === nextToWarehouse
-			? "Select a different To Warehouse."
-			: undefined;
-
-	return nextErrors;
 }
 
 function shouldClearItem(
@@ -461,14 +455,28 @@ function shouldClearItem(
 
 function materialRequestItemHasData(item: MaterialRequestItem) {
 	return (
+		item.batchNo.trim() !== "" ||
 		item.barcode.trim() !== "" ||
+		item.brand.trim() !== "" ||
 		item.category.trim() !== "" ||
+		item.color.trim() !== "" ||
+		item.costCenter.trim() !== "" ||
+		item.description.trim() !== "" ||
+		item.expiryDate.trim() !== "" ||
 		item.itemCode.trim() !== "" ||
 		item.itemName.trim() !== "" ||
 		item.lotNo.trim() !== "" ||
+		item.location.trim() !== "" ||
+		item.manufacturingDate.trim() !== "" ||
+		item.model.trim() !== "" ||
 		item.remarks.trim() !== "" ||
+		item.serialNumber.trim() !== "" ||
+		item.size.trim() !== "" ||
 		item.requestQuantity !== emptyMaterialRequestItem.requestQuantity ||
 		item.stockQuantity !== emptyMaterialRequestItem.stockQuantity ||
+		item.unitCost !== emptyMaterialRequestItem.unitCost ||
+		item.unitPrice !== emptyMaterialRequestItem.unitPrice ||
+		item.warehouse.trim() !== "" ||
 		item.uom !== emptyMaterialRequestItem.uom
 	);
 }

@@ -6,17 +6,16 @@ import { createPortal } from "react-dom";
 import { ModuleDataEntryRowActions } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRowActions";
 import {
 	createColumnWidthStyle,
+	getColumnDisplayWidth,
 	isCellSelected,
 	isDropAfter,
 	isRowSelected,
 	moduleDataEntryCellClassName,
 	moduleDataEntryRowHeaderClassName,
+	type ModuleDataEntryDisplayColumn,
 } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import type {
-	ModuleDataEntryColumn,
-	ModuleDataEntrySelection,
-} from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
+import type { ModuleDataEntrySelection } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 	canEditRows,
@@ -46,7 +45,7 @@ export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 }: {
 	canEditRows: boolean;
 	columnDropTargetId: string | null;
-	columns: ModuleDataEntryColumn<TRow>[];
+	columns: ModuleDataEntryDisplayColumn<TRow>[];
 	draggedColumnId: string | null;
 	draggedRowId: string | null;
 	emptyRowLabel: string;
@@ -215,7 +214,7 @@ export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 											? "border-r-4 border-r-coralpink"
 											: "border-l-4 border-l-coralpink"),
 								)}
-								style={createColumnWidthStyle(column.width)}
+								style={createColumnWidthStyle(getColumnDisplayWidth(column))}
 							>
 								{isActiveCell ? (
 									<span
@@ -229,10 +228,6 @@ export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 							</td>
 						);
 					})}
-					<td
-						aria-hidden="true"
-						className="app-theme-field min-w-0 border p-0"
-					/>
 				</tr>
 			))}
 		</tbody>

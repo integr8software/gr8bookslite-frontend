@@ -76,10 +76,10 @@ export const PartyManagementTableColumns = [
     className: "w-[11rem]",
   },
   { key: "partyTypesLabel", label: "Type", className: "w-[12rem]" },
-  { key: "status", label: "Status", className: "w-[9rem]" },
   { key: "addressLabel", label: "Address", className: "w-[28rem]" },
+  { key: "status", label: "Status", className: "w-[9rem]" },
   {
     label: "Actions",
-    className: "w-[8rem] text-center",
+    className: "w-[12rem] text-center",
   },
 ] as const;

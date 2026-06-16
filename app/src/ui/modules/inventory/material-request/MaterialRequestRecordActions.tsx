@@ -1,6 +1,15 @@
 import { Ban, CheckCircle2, Edit3, Eye, ThumbsDown, Undo2 } from "lucide-react";
-import { MaterialRequestHref } from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
-import { getMaterialRequestUncancelStatus } from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
+import {
+	MaterialRequestHref,
+	canApproveMaterialRequestStatus,
+	canCancelMaterialRequestStatus,
+	canDisapproveMaterialRequestStatus,
+	canEditMaterialRequestStatus,
+} from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
+import {
+	getMaterialRequestUncancelStatus,
+	getMaterialRequestUndoApprovalStatus,
+} from "@/app/src/data/modules/inventory/material-request/MaterialRequestData";
 import type {
 	MaterialRequestRecord,
 	MaterialRequestStatus,
@@ -24,13 +33,13 @@ export function MaterialRequestRecordActions({
 	request,
 	onUpdateRequestStatus,
 }: MaterialRequestRecordActionsProps) {
-	const isCancelled = request.status === "Cancelled";
 	const isApproved = request.status === "Approved";
 	const isDisapproved = request.status === "Disapproved";
+	const isCancelled = request.status === "Cancelled";
+	const approvalUndoStatus = getMaterialRequestUndoApprovalStatus(request);
 	const cancelStatus = isCancelled
 		? getMaterialRequestUncancelStatus(request)
 		: "Cancelled";
-	const approvalRevertStatus = request.requiresApproval ? "Pending" : "Active";
 	const items: ModuleActionMenuItem[] = [
 		{
 			href: `${MaterialRequestHref}/view/${request.id}`,
@@ -38,45 +47,43 @@ export function MaterialRequestRecordActions({
 			label: "View",
 			type: "link",
 		},
+		...(canEditMaterialRequestStatus(request.status)
+			? [
+				{
+					href: `${MaterialRequestHref}/edit/${request.id}`,
+					icon: Edit3,
+					label: "Edit",
+					type: "link",
+				} satisfies ModuleActionMenuItem,
+			]
+			: []),
 		{
-			href: `${MaterialRequestHref}/edit/${request.id}`,
-			icon: Edit3,
-			label: "Edit",
-			type: "link",
-		},
-		{
-			disabled:
-				!request.requiresApproval ||
-				isCancelled ||
-				isDisapproved,
+			disabled: !canApproveMaterialRequestStatus(request.status),
 			icon: isApproved ? Undo2 : CheckCircle2,
-			label: isApproved ? "Unapprove" : "Approve",
+			label: isApproved ? "Undo Approved" : "Approve",
 			onSelect: () =>
 				onUpdateRequestStatus(
 					request,
-					isApproved ? approvalRevertStatus : "Approved",
+					isApproved ? approvalUndoStatus : "Approved",
 				),
 			type: "button",
 		},
 		{
-			disabled:
-				!request.requiresApproval ||
-				isCancelled ||
-				isApproved,
+			disabled: !canDisapproveMaterialRequestStatus(request.status),
 			icon: isDisapproved ? Undo2 : ThumbsDown,
-			label: isDisapproved ? "Undo Disapprove" : "Disapprove",
+			label: isDisapproved ? "Undo Disapproved" : "Disapprove",
 			onSelect: () =>
 				onUpdateRequestStatus(
 					request,
-					isDisapproved ? approvalRevertStatus : "Disapproved",
+					isDisapproved ? approvalUndoStatus : "Disapproved",
 				),
 			tone: isDisapproved ? "default" : "danger",
 			type: "button",
 		},
 		{
-			disabled: isApproved || isDisapproved,
+			disabled: !canCancelMaterialRequestStatus(request.status),
 			icon: isCancelled ? Undo2 : Ban,
-			label: isCancelled ? "Uncancel" : "Cancel",
+			label: isCancelled ? "Uncancelled" : "Cancel",
 			onSelect: () => onUpdateRequestStatus(request, cancelStatus),
 			tone: isCancelled ? "default" : "danger",
 			type: "button",
@@ -84,7 +91,7 @@ export function MaterialRequestRecordActions({
 	];
 
 	return (
-		<ModuleTableActions>
+		<ModuleTableActions className="!justify-center">
 			<ModuleActionMenu
 				items={items}
 				label={`Actions for material request ${request.requestNo}`}

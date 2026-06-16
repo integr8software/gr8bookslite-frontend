@@ -38,31 +38,44 @@ const requiredNumber = ({
 		.transform((value) => Number(value));
 
 export const MaterialRequestItemValidationSchema = z.object({
+	batchNo: z.string(),
 	barcode: z.string(),
+	brand: z.string(),
 	category: z.string(),
+	color: z.string(),
+	costCenter: z.string(),
+	description: z.string(),
+	expiryDate: z.string(),
 	id: z.string(),
 	itemCode: requiredText("Enter an item code."),
 	itemName: requiredText("Enter an item name."),
 	lotNo: z.string(),
+	location: z.string(),
+	manufacturingDate: z.string(),
+	model: z.string(),
 	requestQuantity: requiredNumber({
 		invalidMessage: "Enter a valid request quantity.",
 		isValid: (value) => value > 0,
 		requiredMessage: "Enter a request quantity.",
 	}),
 	remarks: z.string(),
+	serialNumber: z.string(),
+	size: z.string(),
 	stockQuantity: requiredNumber({
 		invalidMessage: "Enter a valid stock quantity.",
 		isValid: (value) => value >= 0,
 		requiredMessage: "Enter a stock quantity.",
 	}),
+	unitCost: z.union([z.literal(""), z.number()]),
+	unitPrice: z.union([z.literal(""), z.number()]),
 	uom: requiredText("Select a UOM."),
+	warehouse: z.string(),
 });
 
 export const MaterialRequestFormValidationSchema = z
 	.object({
 		department: requiredText("Enter a department."),
 		documentDate: requiredText("Select a document date."),
-		fromWarehouse: requiredText("Select a source warehouse."),
 		items: z.array(MaterialRequestItemValidationSchema),
 		projectName: z.string(),
 		projectRef: z.string(),
@@ -79,7 +92,7 @@ export const MaterialRequestFormValidationSchema = z
 			"Pending",
 			"Approved",
 			"Disapproved",
-			"Completed",
+			"Closed",
 			"Cancelled",
 		]),
 		toWarehouse: requiredText("Select To Warehouse."),
@@ -87,18 +100,6 @@ export const MaterialRequestFormValidationSchema = z
 		vceName: z.string(),
 	})
 	.superRefine((values, context) => {
-		if (
-			values.fromWarehouse &&
-			values.toWarehouse &&
-			values.fromWarehouse === values.toWarehouse
-		) {
-			context.addIssue({
-				code: "custom",
-				message: "Select a different To Warehouse.",
-				path: ["toWarehouse"],
-			});
-		}
-
 		const hasValidItem = values.items.some(
 			(item) =>
 				item.itemCode.trim() &&

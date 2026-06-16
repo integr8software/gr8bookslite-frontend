@@ -4,41 +4,31 @@ import type {
 	AuditTrailAction,
 	AuditTrailModuleOption,
 	AuditTrailRecord,
-	AuditTrailSeverity,
 } from "@/app/src/types/modules/system-administration/audit-trail/AuditTrailTypes";
 
 const Actions = [
 	"View",
-	"Create",
-	"Update",
+	"Save",
+	"Edit",
 	"Approve",
-	"Generate",
+	"Cancel",
+	"Uncancel",
+	"Export",
 ] as const satisfies readonly AuditTrailAction[];
-const Severities = [
-	"Info",
-	"Info",
-	"Info",
-	"Warning",
-	"Critical",
-] as const satisfies readonly AuditTrailSeverity[];
 const BaseCreatedAt = Date.UTC(2026, 4, 23, 7, 30, 0);
 const ActiveUsers = UserListMockData.filter((user) => user.status === "Active");
 
 export const AuditTrailModuleOptions: AuditTrailModuleOption[] =
 	MainCompanySearchItems.map((item) => ({
-		href: item.href,
 		key: item.key,
 		label: item.label,
-		section: item.section,
-		trail: [...item.trail, item.label],
 	}));
 
 export const MockAuditTrailRecords: AuditTrailRecord[] =
 	AuditTrailModuleOptions.map((module, index) => {
 		const actor = ActiveUsers[index % ActiveUsers.length] ?? ActiveUsers[0];
 		const action = Actions[index % Actions.length];
-		const severity = Severities[index % Severities.length];
-		const recordId = `${module.key
+		const entityId = `${module.key
 			.toUpperCase()
 			.replace(/[^A-Z0-9]+/g, "-")
 			.slice(0, 14)}-${String(index + 1).padStart(4, "0")}`;
@@ -48,16 +38,15 @@ export const MockAuditTrailRecords: AuditTrailRecord[] =
 			action,
 			actorName: actor?.name ?? "System",
 			actorRole: actor?.userRole ?? "System",
+			branchId: "workspace",
+			branchName: "Workspace",
 			createdAt: new Date(BaseCreatedAt - index * 17 * 60 * 1000).toISOString(),
-			description: createAuditDescription(action, module.label, recordId),
+			description: createAuditDescription(action, module.label, entityId),
+			entityId,
+			entityType: module.key,
 			ipAddress: `10.0.${index % 12}.${20 + (index % 80)}`,
-			moduleHref: module.href,
 			moduleKey: module.key,
-			moduleLabel: module.label,
-			recordId,
-			section: module.section,
-			severity,
-			trail: module.trail,
+			module: module.label,
 		};
 	});
 
@@ -68,11 +57,13 @@ function createAuditDescription(
 ) {
 	const pastTenseByAction: Record<AuditTrailAction, string> = {
 		Approve: "approved",
-		Create: "created",
+		Cancel: "cancelled",
 		Delete: "deleted",
-		Generate: "generated",
-		Reject: "rejected",
-		Update: "updated",
+		Disapproved: "disapproved",
+		Edit: "edited",
+		Export: "exported",
+		Save: "saved",
+		Uncancel: "uncancelled",
 		View: "viewed",
 	};
 
@@ -80,8 +71,12 @@ function createAuditDescription(
 		return `${moduleLabel} record ${recordId} moved to the next approval stage.`;
 	}
 
-	if (action === "Generate") {
-		return `${moduleLabel} generated a controlled document or transaction reference.`;
+	if (action === "Cancel") {
+		return `${moduleLabel} record ${recordId} was cancelled before completion.`;
+	}
+
+	if (action === "Uncancel") {
+		return `${moduleLabel} record ${recordId} was restored from cancelled status.`;
 	}
 
 	return `${moduleLabel} record ${recordId} was ${pastTenseByAction[action]}.`;

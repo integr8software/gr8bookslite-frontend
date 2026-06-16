@@ -7,9 +7,9 @@ import {
 
 type TransactionNumberSetupTableFiltersProps = {
 	query: string;
-	scopeFilter: "all" | "any" | "branch" | "shared";
+	scopeFilter: "all" | "any" | "branch";
 	onQueryChange: (value: string) => void;
-	onScopeFilterChange: (value: "all" | "any" | "branch" | "shared") => void;
+	onScopeFilterChange: (value: "all" | "any" | "branch") => void;
 };
 
 export function TransactionNumberSetupTableFilters({
@@ -30,14 +30,13 @@ export function TransactionNumberSetupTableFilters({
 				label="Mode"
 				value={scopeFilter}
 				options={[
-					{ label: "All", value: "any" },
-					{ label: "All", value: "all" },
+					{ label: "All modes", value: "any" },
+					{ label: "All branches", value: "all" },
 					{ label: "Per branch", value: "branch" },
-					{ label: "Shared selected", value: "shared" },
 				]}
 				onChange={(value) =>
 					onScopeFilterChange(
-						value as "all" | "any" | "branch" | "shared",
+						value as "all" | "any" | "branch",
 					)
 				}
 			/>

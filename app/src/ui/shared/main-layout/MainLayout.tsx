@@ -222,7 +222,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 					}
 					companyLogoUrl={
 						isAdministrationScope
-							? undefined
+							? currentUser.profileImageUrl
 							: currentCompany.logoUrl
 					}
 					companyLogoVariant={

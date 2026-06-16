@@ -69,13 +69,13 @@ export const ItemsTableColumns: Array<
 > = [
 	{ key: "code", label: "Item Code", className: "w-[10rem]" },
 	{ key: "skuCode", label: "SKU", className: "w-[10rem]" },
-	{ key: "name", label: "Item", className: "w-[16rem]" },
-	{ key: "category", label: "Category", className: "w-[12rem]" },
-	{ key: "type", label: "Item Type", className: "w-[12rem]" },
+	{ key: "name", label: "Item Name", className: "w-[18rem]" },
+	{ key: "category", label: "Category", className: "w-[14rem]" },
 	{ key: "uom", label: "UOM", className: "w-[8rem]" },
+	{ key: "costPrice", label: "Cost", className: "w-[10rem]" },
 	{ key: "sellingPrice", label: "Selling Price", className: "w-[10rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
-	{ id: "actions", label: "Actions", className: "w-[10rem]" },
+	{ id: "actions", label: "Actions", className: "w-[10rem] text-center" },
 ];
 
 export const ItemCategoryClassificationTableColumns: Array<
@@ -98,23 +98,23 @@ export const ItemCategoryClassificationTableColumns: Array<
 		className: "w-[11rem]",
 	},
 	{ key: "status", label: "Status", className: "w-[8rem]" },
-	{ id: "actions", label: "Actions", className: "w-[9rem] text-right" },
+	{ id: "actions", label: "Actions", className: "w-[9rem] text-center" },
 ];
 
 export const ItemsFormPageCopy = {
 	add: {
 		title: "Add Item",
 		description:
-			"Create an item master record and define bundle components when this item is sold or issued as a bundle.",
+			"Create an item master record for products, services, assets, and tracked inventory.",
 	},
 	edit: {
 		title: "Edit Item",
 		description:
-			"Update item master data, item type, tracking, and bundle components.",
+			"Update classification, behavior, supplier, inventory, pricing, and tax details.",
 	},
 	view: {
 		title: "Item",
 		description:
-			"Review item master information and bundle composition details.",
+			"Review item master information, supplier links, and inventory setup.",
 	},
 } as const;

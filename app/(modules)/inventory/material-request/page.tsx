@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { MaterialRequestListPage } from "@/app/src/ui/modules/inventory/material-request/MaterialRequestListPage";
+import { MaterialRequestMain } from "@/app/src/ui/modules/inventory/material-request/MaterialRequestMain";
 
 const PageTitle = "Material Request";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function InventoryMaterialRequestPage() {
-  return <MaterialRequestListPage />;
+  return <MaterialRequestMain />;
 }
 
 

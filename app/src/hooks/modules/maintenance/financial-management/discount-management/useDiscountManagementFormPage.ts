@@ -108,7 +108,9 @@ export function useDiscountManagementFormPage(
 	}
 
 	function handleInputChange(
-		event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+		event: ChangeEvent<
+			HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+		>,
 	) {
 		updateField(
 			event.target.name as keyof DiscountManagementFormValues,

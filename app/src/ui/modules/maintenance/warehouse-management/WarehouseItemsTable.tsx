@@ -10,15 +10,18 @@ export function WarehouseItemsTable({ warehouse }: { warehouse: WarehouseRecord 
 				{warehouse.items.length} item{warehouse.items.length === 1 ? "" : "s"} in
 				this warehouse
 			</div>
-			<table className="w-full min-w-[56rem] text-left text-sm">
+			<table className="w-full min-w-[92rem] text-left text-sm">
 				<thead className="bg-darknavy/[0.03] text-xs font-semibold uppercase tracking-wide text-darknavy/50">
 					<tr>
 						<th className="px-4 py-3">Item</th>
 						<th className="px-4 py-3">Category</th>
-						<th className="px-4 py-3 text-right">On Hand</th>
-						<th className="px-4 py-3 text-right">Allocated</th>
-						<th className="px-4 py-3 text-right">Available</th>
 						<th className="px-4 py-3">UOM</th>
+						<th className="px-4 py-3 text-right">On Hand</th>
+						<th className="px-4 py-3 text-right">Reserved</th>
+						<th className="px-4 py-3 text-right">Available</th>
+						<th className="px-4 py-3">Lot Number</th>
+						<th className="px-4 py-3">Serial Number</th>
+						<th className="px-4 py-3">Storage Location</th>
 					</tr>
 				</thead>
 				<tbody className="divide-y divide-darknavy/8">
@@ -34,16 +37,25 @@ export function WarehouseItemsTable({ warehouse }: { warehouse: WarehouseRecord 
 								<div className="text-xs text-darknavy/55">{item.itemCode}</div>
 							</td>
 							<td className="px-4 py-4 text-darknavy/70">{item.category}</td>
+							<td className="px-4 py-4 text-darknavy/70">{item.uom}</td>
 							<td className="px-4 py-4 text-right font-semibold">
 								{item.onHand.toLocaleString()}
 							</td>
 							<td className="px-4 py-4 text-right text-darknavy/70">
-								{item.allocated.toLocaleString()}
+								{item.reserved.toLocaleString()}
 							</td>
 							<td className="px-4 py-4 text-right font-semibold text-darknavy">
 								{getWarehouseAvailableStock(item).toLocaleString()}
 							</td>
-							<td className="px-4 py-4 text-darknavy/70">{item.uom}</td>
+							<td className="px-4 py-4 text-darknavy/70">
+								{item.lotNumber || "-"}
+							</td>
+							<td className="px-4 py-4 text-darknavy/70">
+								{item.serialNumber || "-"}
+							</td>
+							<td className="px-4 py-4 text-darknavy/70">
+								{item.storageLocation || "-"}
+							</td>
 						</tr>
 					))}
 				</tbody>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { CashAdvanceMain } from "@/app/src/ui/modules/cash-disbursement/cash-advance/Main";
+import { CashAdvanceListPage } from "@/app/src/ui/modules/cash-disbursement/cash-advance/CashAdvanceListPage";
 
 const PageTitle = "Cash Advance";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementCashAdvancePage() {
-  return <CashAdvanceMain />;
+  return <CashAdvanceListPage />;
 }
 
 

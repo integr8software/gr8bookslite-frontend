@@ -18,13 +18,16 @@ export const WarehouseFormValidationSchema = z.object({
 	status: z.enum(["Active", "Inactive"]),
 	address: z.string().trim().min(1, "Enter the warehouse address."),
 	contactNo: z.string().trim().min(1, "Enter a contact number."),
-	description: z.string().trim().optional(),
+	description: z
+		.string()
+		.trim()
+		.max(500, "Description must be 500 characters or fewer.")
+		.optional(),
 });
 
 export const WarehouseAccessRecordValidationSchema = z.object({
 	id: z.string(),
 	userName: z.string().trim().min(1, "Enter a person."),
-	role: z.string().trim().min(1, "Enter a role."),
 	accessLevel: z.enum(WarehouseAccessLevelOptions),
 	permissions: z
 		.array(z.enum(WarehouseAccessPermissionOptions))

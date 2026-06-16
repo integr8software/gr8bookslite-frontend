@@ -34,7 +34,6 @@ export function useWarehouseAccessPage() {
 			{
 				id: `access-${Date.now()}`,
 				userName: "",
-				role: "",
 				accessLevel: "Viewer",
 				permissions: ["View Stock"],
 				status: "Active",

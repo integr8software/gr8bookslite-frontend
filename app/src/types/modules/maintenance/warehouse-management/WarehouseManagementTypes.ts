@@ -7,7 +7,9 @@ export type WarehouseAccessPermission =
 	| "Receive Stock"
 	| "Issue Stock"
 	| "Transfer Stock"
-	| "Adjust Stock";
+	| "Adjust Stock"
+	| "Manage Locations"
+	| "View History";
 
 export type WarehouseBranchAvailability =
 	| "Home Branch Only"
@@ -17,7 +19,6 @@ export type WarehouseBranchAvailability =
 export type WarehouseAccessRecord = {
 	id: string;
 	userName: string;
-	role: string;
 	accessLevel: WarehouseAccessLevel;
 	permissions: WarehouseAccessPermission[];
 	status: WarehouseStatus;
@@ -31,13 +32,55 @@ export type WarehouseStockItem = {
 	category: string;
 	uom: string;
 	onHand: number;
+	reserved: number;
 	allocated: number;
+	lotNumber: string;
+	serialNumber: string;
+	storageLocation: string;
+	unitCost: number;
+};
+
+export type WarehouseStorageLocation = {
+	id: string;
+	warehouseId: string;
+	warehouseName: string;
+	zone: string;
+	aisle: string;
+	rackNo: string;
+	shelfNo: string;
+	binNo: string;
+	locationCode: string;
+	status: WarehouseStatus;
+};
+
+export type WarehouseStockMovement = {
+	id: string;
+	date: string;
+	referenceNumber: string;
+	transactionType: string;
+	item: string;
+	quantityIn: number;
+	quantityOut: number;
+	balance: number;
+	user: string;
+};
+
+export type WarehouseTransfer = {
+	id: string;
+	date: string;
+	referenceNumber: string;
+	sourceWarehouse: string;
+	destinationWarehouse: string;
+	status: string;
+	requestedBy: string;
+	approvedBy: string;
 };
 
 export type WarehouseRecord = {
 	id: string;
 	code: string;
 	name: string;
+	type: string;
 	branchName: string;
 	availability: WarehouseBranchAvailability;
 	availableBranches: string[];
@@ -48,6 +91,9 @@ export type WarehouseRecord = {
 	description: string;
 	access: WarehouseAccessRecord[];
 	items: WarehouseStockItem[];
+	locations: WarehouseStorageLocation[];
+	movements: WarehouseStockMovement[];
+	transfers: WarehouseTransfer[];
 };
 
 export type WarehouseFormValues = {
@@ -75,8 +121,12 @@ export type WarehouseTableColumnKey =
 	| "name"
 	| "availableBranchLabel"
 	| "managerName"
+	| "totalItems"
+	| "inventoryValue"
 	| "status";
 
 export type WarehouseTableRecord = WarehouseRecord & {
 	availableBranchLabel: string;
+	totalItems: number;
+	inventoryValue: number;
 };

@@ -15,6 +15,8 @@ export function validateDiscountManagementForm(
 
 	if (!values.description.trim()) {
 		errors.description = "Enter a description.";
+	} else if (values.description.trim().length > 500) {
+		errors.description = "Description must be 500 characters or fewer.";
 	}
 
 	if (!values.discountType) {

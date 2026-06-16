@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { TransactionNumberModuleCodes } from "@/app/src/constants/modules/system-administration/transaction-number-setup/TransactionNumberSetupConstants";
 import type {
 	TransactionNumberSetupFormErrors,
 	TransactionNumberSetupFormValues,
@@ -8,9 +7,7 @@ import type {
 
 export const TransactionNumberSetupFormSchema = z
 	.object({
-		moduleCode: z.enum(TransactionNumberModuleCodes, {
-			error: "Select a module.",
-		}),
+		moduleCode: z.string().trim().min(1, "Select a transaction type."),
 		inputMode: z.enum(["Auto", "Manual"]),
 		prefix: z
 			.string()
@@ -33,7 +30,6 @@ export const TransactionNumberSetupFormSchema = z
 		scope: z.enum(["all", "branch", "shared"]),
 		branchIds: z.array(z.string()),
 		status: z.enum(["Active", "Inactive"]),
-		description: z.string().trim().max(180, "Description is too long."),
 	})
 	.superRefine((values, context) => {
 		if (values.currentNumber < values.startingNumber) {

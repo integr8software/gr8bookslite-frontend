@@ -1,8 +1,6 @@
 import {
 	formatAuditTrailCreatedAt,
-	formatAuditTrailModuleTrail,
 	getAuditTrailActionTone,
-	getAuditTrailSeverityClassName,
 } from "@/app/src/services/modules/system-administration/audit-trail/AuditTrailFormatters";
 import type { AuditTrailRecord } from "@/app/src/types/modules/system-administration/audit-trail/AuditTrailTypes";
 
@@ -13,11 +11,16 @@ type AuditTrailTableRowProps = {
 export function AuditTrailTableRow({ record }: AuditTrailTableRowProps) {
 	return (
 		<tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
+			<td className="px-4 py-4 text-xs font-semibold text-darknavy/58">
+				{formatAuditTrailCreatedAt(record.createdAt)}
+			</td>
 			<td className="px-4 py-4">
-				<div className="font-semibold text-darknavy">{record.moduleLabel}</div>
-				<div className="text-xs text-darknavy/50">
-					{formatAuditTrailModuleTrail(record)}
-				</div>
+				<p className="text-sm font-semibold text-darknavy">
+					{record.actorName}
+				</p>
+			</td>
+			<td className="px-4 py-4">
+				<p className="text-sm font-semibold text-darknavy">{record.module}</p>
 			</td>
 			<td className="px-4 py-4">
 				<span className={getActionClassName(record.action)}>
@@ -25,29 +28,9 @@ export function AuditTrailTableRow({ record }: AuditTrailTableRowProps) {
 				</span>
 			</td>
 			<td className="px-4 py-4">
-				<div className="text-sm font-semibold text-darknavy">
-					{record.actorName}
-				</div>
-				<div className="text-xs text-darknavy/50">{record.actorRole}</div>
-			</td>
-			<td className="px-4 py-4 font-mono text-xs font-semibold text-darknavy/70">
-				{record.recordId}
-			</td>
-			<td className="px-4 py-4">
-				<div className="text-sm text-darknavy/75">{record.description}</div>
-				<div className="mt-1 text-xs text-darknavy/45">
-					IP {record.ipAddress}
-				</div>
-			</td>
-			<td className="px-4 py-4">
-				<span
-					className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getAuditTrailSeverityClassName(record.severity)}`}
-				>
-					{record.severity}
-				</span>
-			</td>
-			<td className="px-4 py-4 text-xs font-medium text-darknavy/65">
-				{formatAuditTrailCreatedAt(record.createdAt)}
+				<p className="line-clamp-2 text-sm leading-5 text-darknavy/72">
+					{record.description}
+				</p>
 			</td>
 		</tr>
 	);

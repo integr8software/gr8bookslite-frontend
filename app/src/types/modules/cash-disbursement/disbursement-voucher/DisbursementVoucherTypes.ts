@@ -1,8 +1,11 @@
 export type DisbursementVoucherStatus =
-  | "Approved"
-  | "Pending Review"
+  | "Active"
   | "Draft"
-  | "Rejected";
+  | "Pending"
+  | "Approved"
+  | "Disapproved"
+  | "Cancelled"
+  | "Closed";
 
 export type DisbursementPaymentMethod =
   | "Bank Transfer"
@@ -11,6 +14,12 @@ export type DisbursementPaymentMethod =
   | "Petty Cash"
   | (string & {});
 
+export type DisbursementPaymentClassification =
+  | "Cash"
+  | "With Bank"
+  | "Bank Transfer"
+  | "Debit";
+
 export type DisbursementType =
   | "Vendor Payment"
   | "Operating Expense"
@@ -18,19 +27,33 @@ export type DisbursementType =
   | "Capital Expenditure"
   | (string & {});
 
-export type VoucherCurrency = "PHP" | "USD";
+export type VoucherCurrency = "PHP" | "USD" | (string & {});
 
 export type WorkflowStep = "details" | "entries" | "review";
 
 export type DisbursementVoucherActionMode = "add" | "edit" | "view";
 
+export type DisbursementVoucherHistoryEntry = {
+  id: string;
+  action: string;
+  actor: string;
+  createdAt: string;
+  description: string;
+  status: DisbursementVoucherStatus;
+};
+
 export type DisbursementVoucherCopySource =
-  | "Loan"
-  | "Accounts Payable Voucher"
+  | "Account Payable Voucher"
   | "Advances to Supplier"
   | "Cash Advance"
+  | "Cash Advance Liquidation"
+  | "Petty Cash Advance Excess"
+  | "Petty Cash Replenishment"
   | "Petty Cash Fund Replenishment"
-  | "Purchase Order";
+  | "Purchase Order"
+  | "Purchase Journal"
+  | "Receiving Report"
+  | (string & {});
 
 export type DisbursementVoucherPaymentDetails = {
   bankAccountCode: string;
@@ -41,7 +64,14 @@ export type DisbursementVoucherPaymentDetails = {
   bankName: string;
   checkDate: string;
   checkNo: string;
+  checkStatus?: string;
+  commission?: string;
+  payee?: string;
   paymentReferenceNo: string;
+  transferAccountName?: string;
+  transferAccountNo?: string;
+  transferToBank?: string;
+  transferTo?: string;
 };
 
 export type DisbursementVoucherBankAccount = {
@@ -55,10 +85,12 @@ export type DisbursementVoucherBankAccount = {
 };
 
 export type DisbursementVoucherPaymentAccount = {
-  accountCode: string;
-  accountTitle: string;
   paymentType: DisbursementPaymentMethod;
-  withBank: boolean;
+  type: DisbursementPaymentClassification;
+  status?: "Active" | "Inactive";
+  accountCode?: string;
+  accountTitle?: string;
+  withBank?: boolean;
 };
 
 export type DisbursementTransactionRecord = {
@@ -83,6 +115,12 @@ export type DisbursementLineEntry = {
   id: string;
   accountCode: string;
   accountName: string;
+  partyCode?: string;
+  partyName?: string;
+  responsibilityCenter?: string;
+  refId?: string;
+  vatType?: string;
+  atcCode?: string;
   particulars: string;
   debit: number;
   credit: number;
@@ -131,6 +169,7 @@ export type DisbursementVoucherRecord = {
   taxRate: string;
   taxDetails: DisbursementTaxDetails;
   remarks: string;
+  referenceModule: string;
   voucherReferenceNo: string;
   invoiceReferenceNo: string;
   paymentDueDate: string;
@@ -139,6 +178,7 @@ export type DisbursementVoucherRecord = {
   lineEntries: DisbursementLineEntry[];
   attachments: DisbursementAttachment[];
   status: DisbursementVoucherStatus;
+  history: DisbursementVoucherHistoryEntry[];
 };
 
 export type DisbursementVoucherPreviewRow = {
@@ -161,6 +201,7 @@ export type DisbursementVoucherFormValues = {
   taxRate: string;
   taxDetails: DisbursementTaxDetails;
   remarks: string;
+  referenceModule: string;
   voucherReferenceNo: string;
   invoiceReferenceNo: string;
   paymentDueDate: string;
@@ -174,11 +215,23 @@ export type DisbursementVoucherFormValues = {
 export type DisbursementVoucherEntryDraft = {
   accountCode: string;
   accountName: string;
+  partyCode?: string;
+  partyName?: string;
+  responsibilityCenter?: string;
+  refId?: string;
+  vatType?: string;
+  atcCode?: string;
   particulars: string;
   debit: string;
   credit: string;
   taxRate: string;
   taxDetails: DisbursementTaxDetails;
+};
+
+export type DisbursementVoucherAccountingGridSession = {
+  entryDraft: DisbursementVoucherEntryDraft;
+  mode: "add" | "edit";
+  values: DisbursementVoucherFormValues;
 };
 
 export type DisbursementVoucherFormErrors = Partial<
@@ -199,5 +252,6 @@ export type DisbursementVoucherCopyFromRecord = {
   partyCode: string;
   partyName: string;
   amount: string;
+  remarks: string;
   templateValues: DisbursementVoucherFormValues;
 };

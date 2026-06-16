@@ -8,25 +8,17 @@ import {
   type UserRoleFormValues as UserRoleFormValuesSource,
   type UserRoleRecord as UserRoleRecordSource,
 } from "@/app/src/data/modules/system-administration/user-management/user-role/UserRoleData";
-
-export type UserStatus = "Active" | "Inactive" | "Pending";
-
-export type UserManagementRecord = {
-  id: string;
-  name: string;
-  email: string;
-  contactNumber: string;
-  userRoleId: string;
-  status: UserStatus;
-  lastLogin?: string;
-  profileImageUrl?: string;
-};
+import type {
+  UserFormValues,
+  UserManagementRecord,
+  UserStatus,
+} from "@/app/src/types/modules/user-management/UserManagementTypes";
 
 export type UserRoleRecord = UserRoleRecordSource;
 
-export type UserFormValues = Omit<UserManagementRecord, "id">;
-
 export type UserRoleFormValues = UserRoleFormValuesSource;
+
+export type { UserFormValues, UserManagementRecord, UserStatus };
 
 export {
   InitialUserRoles,

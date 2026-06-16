@@ -14,6 +14,7 @@ import type {
 	ModuleDataEntryClearAction,
 	ModuleDataEntryColumnOption,
 	ModuleDataEntryExportOption,
+	ModuleDataEntryToolbarAction,
 } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export function ModuleDataEntryActionGroup({
@@ -23,6 +24,7 @@ export function ModuleDataEntryActionGroup({
 	canEditRows,
 	columnOptions,
 	exportOptions,
+	toolbarActions,
 	isAddOpen,
 	isClearOpen,
 	onAddColumn,
@@ -45,6 +47,7 @@ export function ModuleDataEntryActionGroup({
 	canEditRows: boolean;
 	columnOptions: ModuleDataEntryColumnOption[];
 	exportOptions: ModuleDataEntryExportOption[];
+	toolbarActions: ModuleDataEntryToolbarAction[];
 	isAddOpen: boolean;
 	isClearOpen: boolean;
 	onAddColumn?: (columnId: string) => void;
@@ -63,6 +66,15 @@ export function ModuleDataEntryActionGroup({
 }) {
 	return (
 		<div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
+			{canEditRows ? toolbarActions.map((action) => (
+				<ModuleDataEntryToolbarButton
+					key={action.id}
+					disabled={action.disabled}
+					icon={action.icon ?? Upload}
+					label={action.label}
+					onClick={action.onSelect}
+				/>
+			)) : null}
 			{canEditRows && onImport ? (
 				<ModuleDataEntryToolbarButton
 					icon={Upload}

@@ -46,7 +46,7 @@ export function ChartCard<TData extends Record<string, string | number>>({
 	valueFormatter = (value) => String(value),
 }: ChartCardProps<TData>) {
 	return (
-		<article className="rounded-[1.75rem] border border-darknavy/10 bg-white p-5 shadow-[0_20px_60px_rgba(33,39,56,0.08)]">
+		<article className="workspace-chart-card rounded-[1.75rem] border p-5">
 			<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
 				<div>
 					<p className="text-sm font-semibold text-darknavy">{title}</p>
@@ -54,7 +54,7 @@ export function ChartCard<TData extends Record<string, string | number>>({
 				</div>
 			</div>
 
-			<div className="mt-5 h-72 min-h-72 min-w-0 rounded-3xl bg-offwhite p-4">
+			<div className="workspace-chart-plot mt-5 h-72 min-h-72 min-w-0 rounded-3xl p-4">
 				<ResponsiveContainer
 					width="100%"
 					height="100%"
@@ -156,18 +156,26 @@ function ChartScaffold({
 }) {
 	return (
 		<>
-			<CartesianGrid stroke="rgba(33,39,56,0.08)" vertical={false} />
+			<CartesianGrid stroke="var(--workspace-chart-grid)" vertical={false} />
 			<XAxis
 				dataKey={indexKey}
 				axisLine={false}
 				tickLine={false}
-				tick={{ fill: "rgba(33,39,56,0.5)", fontSize: 12, fontWeight: 700 }}
+				tick={{
+					fill: "var(--workspace-chart-axis-strong)",
+					fontSize: 12,
+					fontWeight: 700,
+				}}
 			/>
 			<YAxis
 				axisLine={false}
 				tickLine={false}
 				tickFormatter={(value) => valueFormatter(Number(value))}
-				tick={{ fill: "rgba(33,39,56,0.45)", fontSize: 12, fontWeight: 600 }}
+				tick={{
+					fill: "var(--workspace-chart-axis)",
+					fontSize: 12,
+					fontWeight: 600,
+				}}
 			/>
 			<Tooltip
 				content={<ChartTooltip valueFormatter={valueFormatter} />}
@@ -175,7 +183,12 @@ function ChartScaffold({
 			/>
 			<Legend
 				iconType="circle"
-				wrapperStyle={{ fontSize: 12, fontWeight: 600, paddingTop: 12 }}
+				wrapperStyle={{
+					color: "var(--workspace-chart-legend)",
+					fontSize: 12,
+					fontWeight: 600,
+					paddingTop: 12,
+				}}
 			/>
 		</>
 	);
@@ -201,22 +214,24 @@ function ChartTooltip({
 	}
 
 	return (
-		<div className="rounded-lg bg-darknavy px-3 py-2 text-white shadow-lg">
-			<p className="text-xs font-bold">{label}</p>
+		<div className="workspace-chart-tooltip rounded-xl border px-3 py-2 shadow-[0_18px_40px_rgba(15,23,42,0.18)] backdrop-blur">
+			<p className="text-xs font-bold text-[var(--workspace-chart-tooltip-title)]">
+				{label}
+			</p>
 			<dl className="mt-1 space-y-1">
 				{payload.map((item) => (
 					<div
 						key={item.name}
 						className="flex items-center justify-between gap-4"
 					>
-						<dt className="flex items-center gap-1.5 text-xs text-white/75">
+						<dt className="flex items-center gap-1.5 text-xs text-[var(--workspace-chart-tooltip-muted)]">
 							<span
 								className="h-2 w-2 rounded-full"
 								style={{ backgroundColor: item.color }}
 							/>
 							{item.name}
 						</dt>
-						<dd className="text-xs font-bold">
+						<dd className="text-xs font-bold text-[var(--workspace-chart-tooltip-title)]">
 							{typeof item.value === "number"
 								? valueFormatter(item.value)
 								: item.value}
@@ -225,6 +240,39 @@ function ChartTooltip({
 				))}
 			</dl>
 		</div>
+	);
+}
+
+function ChartHoverCursor({
+	height,
+	width,
+	x,
+	y,
+}: {
+	height?: number;
+	width?: number;
+	x?: number;
+	y?: number;
+}) {
+	if (
+		typeof height !== "number" ||
+		typeof width !== "number" ||
+		typeof x !== "number" ||
+		typeof y !== "number"
+	) {
+		return null;
+	}
+
+	return (
+		<rect
+			className="workspace-chart-hover-cursor"
+			height={height}
+			rx="10"
+			ry="10"
+			width={width}
+			x={x}
+			y={y}
+		/>
 	);
 }
 
@@ -253,5 +301,6 @@ const ChartMinWidth = 240;
 
 const TooltipProps = {
 	animationDuration: 0,
+	cursor: <ChartHoverCursor />,
 	isAnimationActive: false,
 } as const;

@@ -8,6 +8,7 @@ import type {
 import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 
 type TransactionTypeFormProps = {
 	accountOptions: ModuleChartAccount[];
@@ -73,12 +74,13 @@ export function TransactionTypeForm({
 					required
 					className="lg:col-span-2"
 				>
-					<input
+					<AppLimitedTextarea
 						name="description"
 						value={values.description}
 						onChange={onInputChange}
 						readOnly={isReadonly}
-						className={fieldClassName}
+						className={`${fieldClassName} min-h-24 py-3`}
+						counterMode="used"
 						placeholder="Enter description"
 					/>
 				</FormField>

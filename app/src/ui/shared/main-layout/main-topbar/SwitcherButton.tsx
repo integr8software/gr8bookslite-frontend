@@ -45,7 +45,9 @@ export function SwitcherButton({
 					<ImageSwatch
 						imageUrl={imageUrl}
 						className="h-5 w-5 rounded"
-					/>
+					>
+						<Icon className="h-4 w-4" aria-hidden="true" />
+					</ImageSwatch>
 				) : (
 					<Icon className="h-4 w-4" aria-hidden="true" />
 				)}

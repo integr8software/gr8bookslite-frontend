@@ -24,6 +24,10 @@ const DashboardBatchSize = 3;
 const NestedInitialCount = 5;
 const NestedBatchSize = 6;
 
+function shouldUseExactActiveMatch(item: MainNavigationItem) {
+	return item.key === "maintenance-warehouses";
+}
+
 type SidebarSectionProps = {
 	activeHref: string;
 	expandedKeys: string[];
@@ -228,7 +232,7 @@ export function SidebarItem({
 		hasSidebarItemIcon(item) ||
 		item.key === "maintenance-form-signatory" ||
 		item.accessKey === "maintenance.party" ||
-		item.accessKey === "maintenance.warehouse";
+		(item.accessKey === "maintenance.warehouse" && depth === 0);
 	const shouldShowModuleDot = !shouldShowIcon;
 	const childItems = item.children ?? [];
 	const isExpanded = expandedKeys.includes(item.key);
@@ -244,7 +248,9 @@ export function SidebarItem({
 		hasChildren && !isExactActive && (isDescendantActive || hasActiveChild);
 	const isActive = hasChildren
 		? isExactActive || isDescendantActive || hasActiveChild
-		: pathMatches(item.href, activeHref);
+		: shouldUseExactActiveMatch(item)
+			? isExactActive
+			: pathMatches(item.href, activeHref);
 	const paddingClass =
 		depth < 0
 			? "px-3"

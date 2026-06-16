@@ -48,9 +48,9 @@ export function PartyManagementListPage() {
 				value: page.analytics.individualpartyName,
 			},
 			{
-				helper: "Company profiles",
+				helper: "Non-individual profiles",
 				icon: Building2,
-				label: "Organizations",
+				label: "Non-Individual",
 				tone: "violet",
 				value: page.analytics.organizationpartyName,
 			},

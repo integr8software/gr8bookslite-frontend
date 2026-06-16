@@ -3,14 +3,13 @@
 import { ModuleDataEntryColumnHeader } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryColumnHeader";
 import {
 	createColumnWidthStyle,
+	getColumnDisplayWidth,
 	isColumnSelected,
 	isDropAfter,
+	type ModuleDataEntryDisplayColumn,
 } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import type {
-	ModuleDataEntryColumn,
-	ModuleDataEntrySelection,
-} from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
+import type { ModuleDataEntrySelection } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export function ModuleDataEntryTableHeader<TRow>({
 	canEditColumns,
@@ -33,7 +32,7 @@ export function ModuleDataEntryTableHeader<TRow>({
 }: {
 	canEditColumns: boolean;
 	columnDropTargetId: string | null;
-	columns: ModuleDataEntryColumn<TRow>[];
+	columns: ModuleDataEntryDisplayColumn<TRow>[];
 	draggedColumnId: string | null;
 	isRowNumberColumnFixed: boolean;
 	selection: ModuleDataEntrySelection | null;
@@ -85,7 +84,7 @@ export function ModuleDataEntryTableHeader<TRow>({
 									? "border-r-4 border-r-coralpink"
 									: "border-l-4 border-l-coralpink"),
 						)}
-						style={createColumnWidthStyle(column.width)}
+						style={createColumnWidthStyle(getColumnDisplayWidth(column))}
 					>
 						{canEditColumns ? (
 							<ModuleDataEntryColumnHeader
@@ -105,10 +104,6 @@ export function ModuleDataEntryTableHeader<TRow>({
 						)}
 					</th>
 				))}
-				<th
-					aria-hidden="true"
-					className="sticky top-0 z-30 min-w-0 border border-skyblue/70 bg-skyblue p-0 shadow-sm"
-				/>
 			</tr>
 		</thead>
 	);

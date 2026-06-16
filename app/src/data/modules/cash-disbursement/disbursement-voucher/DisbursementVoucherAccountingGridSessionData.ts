@@ -1,13 +1,4 @@
-import type {
-  DisbursementVoucherEntryDraft,
-  DisbursementVoucherFormValues,
-} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-
-export type DisbursementVoucherAccountingGridSession = {
-  entryDraft: DisbursementVoucherEntryDraft;
-  mode: "add" | "edit";
-  values: DisbursementVoucherFormValues;
-};
+import type { DisbursementVoucherAccountingGridSession } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
 const AccountingGridSessionStorageKey =
   "gr8books.disbursementVoucher.accountingGrid";

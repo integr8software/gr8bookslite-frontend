@@ -31,7 +31,6 @@ export function useMaterialRequestMain() {
 		pageSize: 5,
 	});
 	const [query, setQuery] = useState("");
-	const [fromWarehouseFilter, setFromWarehouseFilter] = useState("all");
 	const [toWarehouseFilter, setToWarehouseFilter] = useState("all");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [sorting, setSorting] = useState<SortingState>([
@@ -50,7 +49,6 @@ export function useMaterialRequestMain() {
 					request.requestNo,
 					request.referenceNo,
 					request.referenceModule,
-					request.fromWarehouse,
 					request.toWarehouse,
 					request.department,
 					request.purpose,
@@ -64,23 +62,15 @@ export function useMaterialRequestMain() {
 					.join(" ")
 					.toLowerCase()
 					.includes(normalizedQuery);
-			const matchesFromWarehouse =
-				fromWarehouseFilter === "all" ||
-				request.fromWarehouse === fromWarehouseFilter;
 			const matchesToWarehouse =
 				toWarehouseFilter === "all" ||
 				request.toWarehouse === toWarehouseFilter;
 			const matchesStatus =
 				statusFilter === "all" || request.status === statusFilter;
 
-			return (
-				matchesQuery &&
-				matchesFromWarehouse &&
-				matchesToWarehouse &&
-				matchesStatus
-			);
+			return matchesQuery && matchesToWarehouse && matchesStatus;
 		});
-	}, [fromWarehouseFilter, query, requests, statusFilter, toWarehouseFilter]);
+	}, [query, requests, statusFilter, toWarehouseFilter]);
 
 	const metrics = useMemo(() => {
 		const totalRequests = requests.length;
@@ -99,7 +89,6 @@ export function useMaterialRequestMain() {
 		() => [
 			createColumn("requestNo", "Material Request No.", "w-[12rem]"),
 			createColumn("documentDate", "Document Date", "w-[10rem]"),
-			createColumn("fromWarehouse", "From Warehouse", "w-[13rem]"),
 			createColumn("toWarehouse", "To Warehouse", "w-[13rem]"),
 			{
 				id: "materialSummary",
@@ -136,7 +125,6 @@ export function useMaterialRequestMain() {
 
 	function resetFilters() {
 		setQuery("");
-		setFromWarehouseFilter("all");
 		setToWarehouseFilter("all");
 		setStatusFilter("all");
 		table.setPageIndex(0);
@@ -180,7 +168,6 @@ export function useMaterialRequestMain() {
 
 	return {
 		filteredRequests,
-		fromWarehouseFilter,
 		handleConfirmDelete,
 		handleQueryChange,
 		isLoading,
@@ -189,10 +176,6 @@ export function useMaterialRequestMain() {
 		pendingDeleteRequest,
 		query,
 		resetFilters,
-		setFromWarehouseFilter: createFilterSetter(
-			setFromWarehouseFilter,
-			table.setPageIndex,
-		),
 		setPendingDeleteRequest,
 		setStatusFilter: createFilterSetter(setStatusFilter, table.setPageIndex),
 		setToWarehouseFilter: createFilterSetter(

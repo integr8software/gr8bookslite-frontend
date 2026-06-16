@@ -33,8 +33,6 @@ type MaterialRequestDetailsPanelProps = {
 	values: MaterialRequestFormValues;
 };
 
-type WarehouseDrawerTarget = null | "from" | "to";
-
 export function MaterialRequestDetailsPanel({
 	errors,
 	isReadonly,
@@ -47,8 +45,7 @@ export function MaterialRequestDetailsPanel({
 		isMutating: isPartyMutating,
 		records: partyRecords,
 	} = usePartyManagementStore();
-	const [warehouseDrawerTarget, setWarehouseDrawerTarget] =
-		useState<WarehouseDrawerTarget>(null);
+	const [isWarehouseDrawerOpen, setIsWarehouseDrawerOpen] = useState(false);
 	const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
 	const [partyDrawerKey, setPartyDrawerKey] = useState(0);
 	const remainingRemarks = Math.max(0, RemarksLimit - values.remarks.length);
@@ -61,9 +58,9 @@ export function MaterialRequestDetailsPanel({
 					name: warehouse.name,
 					value: warehouse.name,
 				})),
-				[values.fromWarehouse, values.toWarehouse],
+				[values.toWarehouse],
 			),
-		[values.fromWarehouse, values.toWarehouse, warehouses],
+		[values.toWarehouse, warehouses],
 	);
 	const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
 		() =>
@@ -87,17 +84,6 @@ export function MaterialRequestDetailsPanel({
 				<div className="grid gap-x-10 gap-y-5 xl:grid-cols-2">
 					<div className="grid content-start gap-4">
 						<WarehouseDropdownField
-							error={errors.fromWarehouse}
-							id={MaterialRequestFieldIds.fromWarehouse}
-							isReadonly={isReadonly}
-							isRequired
-							label="From Warehouse"
-							value={values.fromWarehouse}
-							options={warehouseOptions}
-							onAddWarehouse={() => setWarehouseDrawerTarget("from")}
-							onChange={(value) => updateField("fromWarehouse", value)}
-						/>
-						<WarehouseDropdownField
 							error={errors.toWarehouse}
 							id={MaterialRequestFieldIds.toWarehouse}
 							isReadonly={isReadonly}
@@ -105,7 +91,7 @@ export function MaterialRequestDetailsPanel({
 							label="To Warehouse"
 							value={values.toWarehouse}
 							options={warehouseOptions}
-							onAddWarehouse={() => setWarehouseDrawerTarget("to")}
+							onAddWarehouse={() => setIsWarehouseDrawerOpen(true)}
 							onChange={(value) => updateField("toWarehouse", value)}
 						/>
 						<PartyNameField
@@ -174,9 +160,9 @@ export function MaterialRequestDetailsPanel({
 			</div>
 
 			<WarehouseDrawer
-				isOpen={Boolean(warehouseDrawerTarget)}
+				isOpen={isWarehouseDrawerOpen}
 				mode={"add" satisfies WarehouseActionMode}
-				onClose={() => setWarehouseDrawerTarget(null)}
+				onClose={() => setIsWarehouseDrawerOpen(false)}
 			/>
 			<PartyManagementDrawer
 				key={partyDrawerKey}
@@ -201,7 +187,6 @@ const AttachedAddButtonClassName =
 	"inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none";
 const MaterialRequestFieldIds = {
 	documentDate: "material-request-document-date",
-	fromWarehouse: "material-request-from-warehouse",
 	partyName: "material-request-party-member",
 	referenceNo: "material-request-reference-no",
 	remarks: "material-request-remarks",

@@ -32,6 +32,7 @@ import { DisbursementVoucherHref } from "@/app/src/constants/modules/cash-disbur
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import { validateDisbursementVoucherEntries } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import type {
+  DisbursementVoucherAccountingGridSession,
   DisbursementLineEntry,
   DisbursementTaxDetails,
   DisbursementTransactionRecord,
@@ -40,8 +41,7 @@ import type {
 import {
   readAccountingGridSession,
   writeAccountingGridSession,
-  type DisbursementVoucherAccountingGridSession,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/AccountingGridSession";
+} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingGridSessionData";
 import {
   ModuleDataEntry,
   type ModuleDataEntryClearAction,
@@ -162,11 +162,11 @@ const ImportClearActions: {
   label: string;
   value: ModuleDataEntryClearAction;
 }[] = [
-  { label: "Clear All", value: "all" },
-  { label: "Clear With Data", value: "with-data" },
-  { label: "Clear Incomplete", value: "incomplete" },
-  { label: "Clear No Data", value: "no-data" },
-];
+    { label: "Clear All", value: "all" },
+    { label: "Clear With Data", value: "with-data" },
+    { label: "Clear Incomplete", value: "incomplete" },
+    { label: "Clear No Data", value: "no-data" },
+  ];
 
 export function DisbursementVoucherAccountingGridPage() {
   const router = useRouter();
@@ -238,8 +238,8 @@ export function DisbursementVoucherAccountingGridPage() {
     () =>
       session
         ? transactions.find(
-            (transaction) => transaction.id === session.values.transactionId,
-          )
+          (transaction) => transaction.id === session.values.transactionId,
+        )
         : undefined,
     [session, transactions],
   );
@@ -281,12 +281,12 @@ export function DisbursementVoucherAccountingGridPage() {
   );
   const previewValues = session
     ? withAccountingImportAttachment(
-        {
-          ...session.values,
-          lineEntries: previewEntries,
-        },
-        importedImportAttachment,
-      )
+      {
+        ...session.values,
+        lineEntries: previewEntries,
+      },
+      importedImportAttachment,
+    )
     : null;
 
   function updateRow(
@@ -481,8 +481,8 @@ export function DisbursementVoucherAccountingGridPage() {
       currentVisibleIds.length <= 1
         ? currentVisibleIds
         : currentVisibleIds.filter(
-            (currentColumnId) => currentColumnId !== columnId,
-          ),
+          (currentColumnId) => currentColumnId !== columnId,
+        ),
     );
   }
 
@@ -1976,13 +1976,12 @@ function SummaryCard({
 }) {
   return (
     <div
-      className={`rounded-[18px] border px-4 py-4 ${
-        tone === "balanced"
+      className={`rounded-[18px] border px-4 py-4 ${tone === "balanced"
           ? "border-citron/35 bg-citron/15"
           : tone === "warning"
             ? "border-coralpink/18 bg-coralpink/8"
             : "border-darknavy/10 bg-offwhite/35"
-      }`}
+        }`}
     >
       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/45">
         {label}
@@ -2903,8 +2902,8 @@ function parseImportPreviewRows(text: string) {
   const rows =
     delimiter === "\t"
       ? trimmedText
-          .split(/\r?\n/)
-          .map((line) => line.split("\t").map((cell) => cell.trim()))
+        .split(/\r?\n/)
+        .map((line) => line.split("\t").map((cell) => cell.trim()))
       : parseCsvRows(trimmedText);
 
   return rows
@@ -2961,9 +2960,9 @@ function isCompleteImportPreviewRow(row: string[]) {
 
   return Boolean(
     String(row[0] ?? "").trim() &&
-      String(row[1] ?? "").trim() &&
-      String(row[2] ?? "").trim() &&
-      (debit || credit),
+    String(row[1] ?? "").trim() &&
+    String(row[2] ?? "").trim() &&
+    (debit || credit),
   );
 }
 
@@ -2978,8 +2977,8 @@ function parseTabularText(text: string) {
   const rawRows =
     delimiter === "\t"
       ? trimmedText
-          .split(/\r?\n/)
-          .map((line) => line.split("\t").map((cell) => cell.trim()))
+        .split(/\r?\n/)
+        .map((line) => line.split("\t").map((cell) => cell.trim()))
       : parseCsvRows(trimmedText);
 
   return mapImportedRows(rawRows);
@@ -3006,8 +3005,8 @@ async function readXlsxAccountingRawRows(buffer: ArrayBuffer) {
       const rawValue =
         cellType === "inlineStr"
           ? Array.from(cell.getElementsByTagName("t"))
-              .map((node) => node.textContent ?? "")
-              .join("")
+            .map((node) => node.textContent ?? "")
+            .join("")
           : (cell.getElementsByTagName("v")[0]?.textContent ?? "");
       const value =
         cellType === "s" ? (sharedStrings[Number(rawValue)] ?? "") : rawValue;
@@ -3324,10 +3323,10 @@ function getExcelColumnIndex(reference: string) {
 function hasRowValue(row: EditableGridRow) {
   return Boolean(
     row.accountCode.trim() ||
-      row.accountName.trim() ||
-      row.particulars.trim() ||
-      normalizeAmount(row.debit) > 0 ||
-      normalizeAmount(row.credit) > 0,
+    row.accountName.trim() ||
+    row.particulars.trim() ||
+    normalizeAmount(row.debit) > 0 ||
+    normalizeAmount(row.credit) > 0,
   );
 }
 

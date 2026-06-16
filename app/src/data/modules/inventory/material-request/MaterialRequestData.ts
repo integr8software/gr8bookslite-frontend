@@ -3,6 +3,7 @@ import type {
 	MaterialRequestFormValues,
 	MaterialRequestHistoryEntry,
 	MaterialRequestItem,
+	MaterialRequestNumberValue,
 	MaterialRequestRecord,
 	MaterialRequestStatus,
 } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
@@ -18,7 +19,6 @@ const materialRequestSeedRecordFixtures: Omit<
 		requestNo: "MR-2024-128",
 		documentDate: "2024-05-29",
 		requiredDate: "2024-06-03",
-		fromWarehouse: "Main Warehouse",
 		toWarehouse: "Site Warehouse 1",
 		department: "Warehouse Operations",
 		vceCode: "PTY-0001",
@@ -44,7 +44,6 @@ const materialRequestSeedRecordFixtures: Omit<
 		requestNo: "MR-2024-127",
 		documentDate: "2024-05-28",
 		requiredDate: "2024-06-02",
-		fromWarehouse: "Main Warehouse",
 		toWarehouse: "Site Warehouse 2",
 		department: "Finishing",
 		vceCode: "PTY-0002",
@@ -68,7 +67,6 @@ const materialRequestSeedRecordFixtures: Omit<
 		requestNo: "MR-2024-126",
 		documentDate: "2024-05-27",
 		requiredDate: "2024-06-01",
-		fromWarehouse: "Central Warehouse",
 		toWarehouse: "Site Warehouse 1",
 		department: "Structural",
 		vceCode: "PTY-0003",
@@ -91,7 +89,6 @@ const materialRequestSeedRecordFixtures: Omit<
 		requestNo: "MR-2024-125",
 		documentDate: "2024-05-26",
 		requiredDate: "2024-05-31",
-		fromWarehouse: "Main Warehouse",
 		toWarehouse: "Site Warehouse 3",
 		department: "Electrical",
 		vceCode: "PTY-0004",
@@ -116,7 +113,6 @@ const materialRequestSeedRecordFixtures: Omit<
 		requestNo: "MR-2024-124",
 		documentDate: "2024-05-25",
 		requiredDate: "2024-05-30",
-		fromWarehouse: "Central Warehouse",
 		toWarehouse: "Site Warehouse 2",
 		department: "Plumbing",
 		vceCode: "PTY-0001",
@@ -140,7 +136,6 @@ const materialRequestSeedRecordFixtures: Omit<
 		requestNo: "MR-2024-123",
 		documentDate: "2024-05-24",
 		requiredDate: "2024-05-29",
-		fromWarehouse: "Main Warehouse",
 		toWarehouse: "Site Warehouse 4",
 		department: "Carpentry",
 		vceCode: "PTY-0002",
@@ -165,7 +160,6 @@ const materialRequestSeedRecordFixtures: Omit<
 		requestNo: "MR-2024-122",
 		documentDate: "2024-05-23",
 		requiredDate: "2024-05-28",
-		fromWarehouse: "Central Warehouse",
 		toWarehouse: "Site Warehouse 1",
 		department: "Civil",
 		vceCode: "PTY-0003",
@@ -194,14 +188,28 @@ export const materialRequestSeedRecords: MaterialRequestRecord[] =
 
 export const emptyMaterialRequestItem: MaterialRequestItem = {
 	id: "draft-item",
+	batchNo: "",
 	barcode: "",
+	brand: "",
 	category: "",
+	color: "",
+	costCenter: "",
+	description: "",
+	expiryDate: "",
 	itemCode: "",
 	itemName: "",
 	lotNo: "",
+	location: "",
+	manufacturingDate: "",
+	model: "",
 	requestQuantity: 1,
+	serialNumber: "",
+	size: "",
 	stockQuantity: 0,
+	unitCost: "",
+	unitPrice: "",
 	uom: "Pc",
+	warehouse: "",
 	remarks: "",
 };
 
@@ -213,7 +221,6 @@ export function createMaterialRequestFormValues(
 			requestNo: record.requestNo,
 			documentDate: record.documentDate,
 			requiredDate: record.requiredDate,
-			fromWarehouse: record.fromWarehouse,
 			toWarehouse: record.toWarehouse,
 			department: record.department,
 			vceCode: record.vceCode,
@@ -231,10 +238,9 @@ export function createMaterialRequestFormValues(
 	}
 
 	return {
-		requestNo: createNextMaterialRequestNo(materialRequestSeedRecords),
+		requestNo: "",
 		documentDate: new Date().toISOString().slice(0, 10),
 		requiredDate: new Date().toISOString().slice(0, 10),
-		fromWarehouse: "Main Warehouse",
 		toWarehouse: "",
 		department: "Warehouse Operations",
 		vceCode: "",
@@ -271,6 +277,8 @@ export function createMaterialRequestRecord(
 			id: item.id || createMaterialRequestId("item"),
 			requestQuantity: Number(item.requestQuantity) || 0,
 			stockQuantity: Number(item.stockQuantity) || 0,
+			unitCost: normalizeOptionalMaterialRequestNumber(item.unitCost),
+			unitPrice: normalizeOptionalMaterialRequestNumber(item.unitPrice),
 		})),
 	};
 
@@ -534,13 +542,27 @@ function createSeedItem(
 	return {
 		id,
 		barcode: `BC-${itemCode.replace(/\D/g, "").padStart(5, "0")}`,
+		batchNo: "",
+		brand: "",
 		category: inferMaterialCategory(itemName),
+		color: "",
+		costCenter: "",
+		description: "",
+		expiryDate: "",
 		itemCode,
 		itemName,
 		lotNo: "LOT-2024",
+		location: "",
+		manufacturingDate: "",
+		model: "",
 		requestQuantity,
+		serialNumber: "",
+		size: "",
 		stockQuantity: requestQuantity * 3,
+		unitCost: "",
+		unitPrice: "",
 		uom,
+		warehouse: "",
 		remarks: "",
 	};
 }
@@ -564,10 +586,15 @@ function normalizeMaterialRequestRecord(
 			...item,
 			barcode: item.barcode ?? "",
 			category: item.category ?? "",
+			description: item.description ?? "",
+			expiryDate: item.expiryDate ?? "",
 			itemName: item.itemName ?? "",
 			lotNo: item.lotNo ?? "",
+			manufacturingDate: item.manufacturingDate ?? "",
 			requestQuantity: Number(item.requestQuantity) || 0,
 			stockQuantity: Number(item.stockQuantity) || 0,
+			unitCost: normalizeOptionalMaterialRequestNumber(item.unitCost),
+			unitPrice: normalizeOptionalMaterialRequestNumber(item.unitPrice),
 		})),
 	};
 
@@ -588,6 +615,18 @@ function normalizeMaterialRequestStatus(
 	}
 
 	return status === "Rejected" ? "Disapproved" : status;
+}
+
+function normalizeOptionalMaterialRequestNumber(
+	value: MaterialRequestNumberValue | undefined,
+): MaterialRequestNumberValue {
+	if (value === "" || value == null) {
+		return "";
+	}
+
+	const numberValue = Number(value);
+
+	return Number.isFinite(numberValue) ? numberValue : "";
 }
 
 function inferMaterialCategory(itemName: string) {

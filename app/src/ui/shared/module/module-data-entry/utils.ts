@@ -1,5 +1,12 @@
 import type { CSSProperties } from "react";
-import type { ModuleDataEntrySelection } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
+import type {
+	ModuleDataEntryColumn,
+	ModuleDataEntrySelection,
+} from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
+
+export type ModuleDataEntryDisplayColumn<TRow> = ModuleDataEntryColumn<TRow> & {
+	displayWidth?: number;
+};
 
 export const moduleDataEntryRowHeaderClassName =
 	"app-theme-field-readonly w-[5rem] min-w-[5rem] border px-2 py-1 text-center text-xs font-semibold";
@@ -142,8 +149,16 @@ function parseClipboardCsvRows(text: string) {
 	);
 }
 
+const MinimumDataEntryColumnWidth = 112;
+
 export function clampColumnWidth(width: number) {
-	return Math.min(800, Math.max(50, Math.round(width || 50)));
+	return Math.min(
+		800,
+		Math.max(
+			MinimumDataEntryColumnWidth,
+			Math.round(width || MinimumDataEntryColumnWidth),
+		),
+	);
 }
 
 export function createColumnWidthStyle(
@@ -160,6 +175,12 @@ export function createColumnWidthStyle(
 		minWidth: pixelWidth,
 		width: pixelWidth,
 	};
+}
+
+export function getColumnDisplayWidth<TRow>(
+	column: ModuleDataEntryDisplayColumn<TRow>,
+) {
+	return column.displayWidth ?? column.width;
 }
 
 export function isDropAfter<TItemId extends string | null>(

@@ -94,9 +94,7 @@ export function useMaterialRequestFormPage() {
 		setErrors((current) =>
 			createMaterialRequestErrorsAfterFieldUpdate({
 				currentErrors: current,
-				currentValues: values,
 				field,
-				value,
 			}),
 		);
 	}
@@ -427,37 +425,15 @@ function canUpdateMaterialRequestStatus(
 
 function createMaterialRequestErrorsAfterFieldUpdate<TKey extends keyof MaterialRequestFormValues>({
 	currentErrors,
-	currentValues,
 	field,
-	value,
 }: {
 	currentErrors: MaterialRequestFormErrors;
-	currentValues: MaterialRequestFormValues;
 	field: TKey;
-	value: MaterialRequestFormValues[TKey];
 }) {
-	const nextErrors = {
+	return {
 		...currentErrors,
 		[field]: undefined,
 	};
-
-	if (field !== "fromWarehouse" && field !== "toWarehouse") {
-		return nextErrors;
-	}
-
-	const nextFromWarehouse =
-		field === "fromWarehouse" ? String(value) : currentValues.fromWarehouse;
-	const nextToWarehouse =
-		field === "toWarehouse" ? String(value) : currentValues.toWarehouse;
-
-	nextErrors.toWarehouse =
-		nextFromWarehouse &&
-		nextToWarehouse &&
-		nextFromWarehouse === nextToWarehouse
-			? "Select a different To Warehouse."
-			: undefined;
-
-	return nextErrors;
 }
 
 function shouldClearItem(
@@ -479,14 +455,28 @@ function shouldClearItem(
 
 function materialRequestItemHasData(item: MaterialRequestItem) {
 	return (
+		item.batchNo.trim() !== "" ||
 		item.barcode.trim() !== "" ||
+		item.brand.trim() !== "" ||
 		item.category.trim() !== "" ||
+		item.color.trim() !== "" ||
+		item.costCenter.trim() !== "" ||
+		item.description.trim() !== "" ||
+		item.expiryDate.trim() !== "" ||
 		item.itemCode.trim() !== "" ||
 		item.itemName.trim() !== "" ||
 		item.lotNo.trim() !== "" ||
+		item.location.trim() !== "" ||
+		item.manufacturingDate.trim() !== "" ||
+		item.model.trim() !== "" ||
 		item.remarks.trim() !== "" ||
+		item.serialNumber.trim() !== "" ||
+		item.size.trim() !== "" ||
 		item.requestQuantity !== emptyMaterialRequestItem.requestQuantity ||
 		item.stockQuantity !== emptyMaterialRequestItem.stockQuantity ||
+		item.unitCost !== emptyMaterialRequestItem.unitCost ||
+		item.unitPrice !== emptyMaterialRequestItem.unitPrice ||
+		item.warehouse.trim() !== "" ||
 		item.uom !== emptyMaterialRequestItem.uom
 	);
 }

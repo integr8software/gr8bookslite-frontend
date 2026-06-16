@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { ClipboardList, Download, Plus, Search, Upload } from "lucide-react";
 import {
-	MaterialRequestHref,
-	MaterialRequestStatusFilterOptions,
-	MaterialRequestTablePaginationStorageKey,
-	MaterialRequestWarehouseFilterOptions,
+				MaterialRequestHref,
+				MaterialRequestStatusFilterOptions,
+				MaterialRequestTablePaginationStorageKey,
+				MaterialRequestWarehouseFilterOptions,
 } from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
 import { useMaterialRequestMain } from "@/app/src/hooks/modules/inventory/material-request/useMaterialRequestMain";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -33,7 +33,7 @@ export function MaterialRequestMain() {
 				variant="panel"
 				titleAs="h1"
 				title="Material Request"
-				description="Create, track and manage material requests from warehouse to warehouse."
+				description="Create, track and manage material requests for warehouse fulfillment."
 				eyebrow={
 					<>
 						<ClipboardList className="h-3.5 w-3.5" aria-hidden="true" />
@@ -80,18 +80,12 @@ export function MaterialRequestMain() {
 				pageSizeOptions={[5, 10, 15, 20, 25, 50]}
 				table={page.table}
 				toolbar={
-					<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,2fr)_repeat(4,minmax(10rem,1fr))]">
+					<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,2fr)_repeat(3,minmax(10rem,1fr))]">
 						<ModuleTableSearch
 							label="Search material requests"
 							value={page.query}
 							onChange={page.handleQueryChange}
 							placeholder="Search by Material Request No., Material, or Reference"
-						/>
-						<ModuleTableFilterSelect
-							label="From Warehouse"
-							value={page.fromWarehouseFilter}
-							onChange={page.setFromWarehouseFilter}
-							options={MaterialRequestWarehouseFilterOptions}
 						/>
 						<ModuleTableFilterSelect
 							label="To Warehouse"

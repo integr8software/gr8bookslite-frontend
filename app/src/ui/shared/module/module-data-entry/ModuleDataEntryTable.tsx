@@ -4,6 +4,7 @@ import {
 	useCallback,
 	useEffect,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 	useState,
 	type ClipboardEvent as ReactClipboardEvent,
@@ -25,12 +26,15 @@ import {
 import { ModuleDataEntryTableHeader } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryTableHeader";
 import {
 	clampIndex,
+	clampColumnWidth,
 	createColumnWidthStyle,
+	getColumnDisplayWidth,
 	isCellEditorElement,
 	isMinusKey,
 	isPlusKey,
 	isTabularPaste,
 	parseClipboardRows,
+	type ModuleDataEntryDisplayColumn,
 } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import type {
 	ModuleDataEntryCellTarget,
@@ -108,6 +112,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 		null,
 	);
 	const tableRef = useRef<HTMLDivElement>(null);
+	const [containerWidth, setContainerWidth] = useState(0);
 	const rowMenuTriggerRefs = useRef(new Map<string, HTMLButtonElement>());
 	const pendingFocusTargetRef = useRef<{
 		columnIndex: number;
@@ -118,6 +123,11 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 		canEditRows &&
 		Boolean(onMoveColumn || onHideColumn || onRemoveColumn || onUpdateColumnHeader);
 	const hasClearRowAction = Boolean(onClearRow);
+	const shouldEnableVerticalScroll = rows.length > 8;
+	const displayColumns = useMemo(
+		() => createFullWidthColumns(columns, containerWidth),
+		[columns, containerWidth],
+	);
 
 	const updateRowMenuPosition = useCallback((rowId: string) => {
 		const trigger = rowMenuTriggerRefs.current.get(rowId);
@@ -485,6 +495,33 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 	}
 
 	useLayoutEffect(() => {
+		const tableElement = tableRef.current;
+
+		if (!tableElement) {
+			return;
+		}
+
+		const measuredElement = tableElement;
+
+		function updateContainerWidth() {
+			setContainerWidth(measuredElement.clientWidth);
+		}
+
+		updateContainerWidth();
+
+		if (typeof ResizeObserver === "undefined") {
+			window.addEventListener("resize", updateContainerWidth);
+
+			return () => window.removeEventListener("resize", updateContainerWidth);
+		}
+
+		const observer = new ResizeObserver(updateContainerWidth);
+		observer.observe(measuredElement);
+
+		return () => observer.disconnect();
+	}, []);
+
+	useLayoutEffect(() => {
 		if (!openMenuRowId) {
 			return;
 		}
@@ -576,7 +613,11 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 				tableRef.current = node;
 				scrollContainerRef.current = node;
 			}}
-			className="max-h-[30rem] overflow-auto"
+			className={
+				shouldEnableVerticalScroll
+					? "max-h-[30rem] overflow-auto"
+					: "overflow-x-auto overflow-y-hidden"
+			}
 			data-module-data-entry-table
 			onKeyDown={handleGridKeyDown}
 			onPaste={handleGridPaste}
@@ -585,7 +626,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 				<ModuleDataEntryTableHeader
 					canEditColumns={canEditColumns}
 					columnDropTargetId={columnDropTargetId}
-					columns={columns}
+					columns={displayColumns}
 					draggedColumnId={draggedColumnId}
 					isRowNumberColumnFixed={isRowNumberColumnFixed}
 					selection={selection}
@@ -618,7 +659,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 				<ModuleDataEntryTableBody
 					canEditRows={canEditRows}
 					columnDropTargetId={columnDropTargetId}
-					columns={columns}
+					columns={displayColumns}
 					draggedColumnId={draggedColumnId}
 					draggedRowId={draggedRowId}
 					emptyRowLabel={emptyRowLabel}
@@ -657,11 +698,11 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 							<td className="sticky left-0 z-30 border-t border-darknavy/10 bg-offwhite/90 px-3 py-3 text-center shadow-[6px_0_12px_rgba(33,39,56,0.08)]">
 								{summaryRowHeader}
 							</td>
-							{columns.map((column) => (
+							{displayColumns.map((column) => (
 								<td
 									key={column.id}
 									className="border-t border-darknavy/10 px-3 py-3 text-right"
-									style={createColumnWidthStyle(column.width)}
+									style={createColumnWidthStyle(getColumnDisplayWidth(column))}
 								>
 									{summaryCells[column.id] ?? null}
 								</td>
@@ -672,6 +713,45 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 			</table>
 		</div>
 	);
+}
+
+function createFullWidthColumns<TRow>(
+	columns: ModuleDataEntryColumn<TRow>[],
+	containerWidth: number,
+): ModuleDataEntryDisplayColumn<TRow>[] {
+	if (columns.length === 0 || containerWidth <= 0) {
+		return columns;
+	}
+
+	const rowNumberColumnWidth = 80;
+	const availableWidth = Math.max(0, containerWidth - rowNumberColumnWidth);
+	const columnWidths = columns.map((column) => clampColumnWidth(column.width ?? 160));
+	const totalColumnWidth = columnWidths.reduce(
+		(totalWidth, width) => totalWidth + width,
+		0,
+	);
+
+	if (totalColumnWidth >= availableWidth) {
+		return columns;
+	}
+
+	const extraWidth = availableWidth - totalColumnWidth;
+	const extraWidthPerColumn = Math.floor(extraWidth / columns.length);
+	let remainingWidth = extraWidth - extraWidthPerColumn * columns.length;
+
+	return columns.map((column, index) => {
+		const nextWidth =
+			columnWidths[index] + extraWidthPerColumn + (remainingWidth > 0 ? 1 : 0);
+
+		if (remainingWidth > 0) {
+			remainingWidth -= 1;
+		}
+
+		return {
+			...column,
+			displayWidth: nextWidth,
+		};
+	});
 }
 
 function isDataEntryTypingKey(event: ReactKeyboardEvent<HTMLElement>) {

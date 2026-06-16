@@ -266,9 +266,9 @@ export function ModuleDataEntryColumnHeader<TRow>({
 						event.stopPropagation();
 						const startX = event.clientX;
 						const startWidth =
+							column.width ??
 							event.currentTarget.closest("th")?.getBoundingClientRect()
 								.width ??
-							column.width ??
 							160;
 
 						function handlePointerMove(moveEvent: PointerEvent) {

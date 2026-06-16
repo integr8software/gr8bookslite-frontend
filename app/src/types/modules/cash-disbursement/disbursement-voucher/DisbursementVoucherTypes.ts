@@ -228,6 +228,12 @@ export type DisbursementVoucherEntryDraft = {
   taxDetails: DisbursementTaxDetails;
 };
 
+export type DisbursementVoucherAccountingGridSession = {
+  entryDraft: DisbursementVoucherEntryDraft;
+  mode: "add" | "edit";
+  values: DisbursementVoucherFormValues;
+};
+
 export type DisbursementVoucherFormErrors = Partial<
   Record<
     | keyof Omit<DisbursementVoucherFormValues, "lineEntries" | "attachments">

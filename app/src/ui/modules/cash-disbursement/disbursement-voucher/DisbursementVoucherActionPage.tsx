@@ -19,7 +19,6 @@ import {
   MoreHorizontal,
   Percent,
   Plus,
-  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
@@ -69,6 +68,7 @@ import {
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { ModuleTextareaDialog } from "@/app/src/ui/shared/module/ModuleTextareaDialog";
 import {
   AppTaxRateDialog,
   type AppTaxRateDialogValue,
@@ -88,10 +88,11 @@ import type {
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/maintenance/financial-management/payment-type/PaymentTypeTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherActionHeader";
+import { DisbursementEntryImportDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementEntryImportDialog";
 import {
   clearAccountingGridSession,
   readAccountingGridSession,
-} from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/AccountingGridSession";
+} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingGridSessionData";
 import { DisbursementVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherNotFound";
 import {
   ModuleDataEntry,
@@ -410,6 +411,35 @@ function DisbursementVoucherActionInner() {
     setErrors((current) => ({ ...current, lineEntries: undefined }));
   }
 
+  function handleImportEntries(importedEntries: DisbursementLineEntry[]) {
+    if (isReadonly || importedEntries.length === 0) {
+      return;
+    }
+
+    const nextImportedEntries = importedEntries.map((entry) =>
+      syncDisbursementLineEntryTaxDetails(
+        normalizeDisbursementLineEntryFields({
+          ...entry,
+          id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        }),
+      ),
+    );
+    const populatedEntries = values.lineEntries.filter(disbursementEntryHasData);
+
+    updateField(
+      "lineEntries",
+      populatedEntries.length > 0
+        ? [...populatedEntries, ...nextImportedEntries]
+        : nextImportedEntries,
+    );
+    setErrors((current) => ({
+      ...current,
+      entryDraft: undefined,
+      lineEntries: undefined,
+    }));
+    toast.success(`${importedEntries.length} accounting entries imported.`);
+  }
+
   function handleOpenEntryTaxEditor(entryId: string) {
     const lineEntry = values.lineEntries.find((entry) => entry.id === entryId);
 
@@ -598,6 +628,7 @@ function DisbursementVoucherActionInner() {
         onClearEntries={handleClearEntries}
         onDuplicateEntry={handleDuplicateEntry}
         onInsertEntry={handleInsertEntry}
+        onImportEntries={handleImportEntries}
         onMoveEntry={handleMoveEntry}
         onOpenEntryTaxEditor={handleOpenEntryTaxEditor}
         onUpdateEntry={handleUpdateEntry}
@@ -968,7 +999,7 @@ function createAccountingChartAccountOptions(
       accountType: "Expenses",
       description: entry.accountCode,
       id: `entry-account-${entry.id}`,
-    normalBalance: parseMoneyNumberInput(entry.credit) > 0 ? "Credit" : "Debit",
+      normalBalance: parseMoneyNumberInput(entry.credit) > 0 ? "Credit" : "Debit",
       statementGroup: "Income Statement",
       statementSection: "Accounting Entry",
       status: "Active",
@@ -1839,6 +1870,7 @@ function VoucherDataEntry({
   onAddDisbursementType,
   onClearEntries,
   onDuplicateEntry,
+  onImportEntries,
   onInsertEntry,
   onMoveEntry,
   onOpenEntryTaxEditor,
@@ -1855,6 +1887,7 @@ function VoucherDataEntry({
   onAddDisbursementType: () => void;
   onClearEntries: (action: ModuleDataEntryClearAction) => void;
   onDuplicateEntry: (entryId: string) => void;
+  onImportEntries: (entries: DisbursementLineEntry[]) => void;
   onInsertEntry: (entryId: string, position: "above" | "below") => void;
   onMoveEntry: (fromEntryId: string, toEntryId: string) => void;
   onOpenEntryTaxEditor: (entryId: string) => void;
@@ -1879,6 +1912,7 @@ function VoucherDataEntry({
   const [particularsEditorEntryId, setParticularsEditorEntryId] = useState<
     string | null
   >(null);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [columnOrder, setColumnOrder] = useState<DisbursementEntryColumnId[]>(
     DefaultDisbursementEntryColumnOrder,
   );
@@ -2406,6 +2440,7 @@ function VoucherDataEntry({
           onClearRows={onClearEntries}
           onDuplicateRow={onDuplicateEntry}
           onFitColumnWidth={fitColumnWidth}
+          onImport={() => setIsImportDialogOpen(true)}
           onInsertRow={onInsertEntry}
           onMoveColumn={moveColumn}
           onMoveRow={onMoveEntry}
@@ -2428,6 +2463,14 @@ function VoucherDataEntry({
 
           onUpdateEntry(particularsEditorEntry.id, "particulars", value);
           setParticularsEditorEntryId(null);
+        }}
+      />
+      <DisbursementEntryImportDialog
+        isOpen={isImportDialogOpen}
+        onClose={() => setIsImportDialogOpen(false)}
+        onImportEntries={(importedEntries) => {
+          onImportEntries(importedEntries);
+          setIsImportDialogOpen(false);
         }}
       />
     </section>
@@ -2501,98 +2544,17 @@ function ParticularsEditorDialog({
   onClose: () => void;
   onSave: (value: string) => void;
 }) {
-  const [draft, setDraft] = useState(entry?.particulars ?? "");
-  const textareaId = "disbursement-entry-particulars-dialog-text";
-
-  if (!entry) {
-    return null;
-  }
-
   return (
-    <div
-      role="presentation"
-      className="fixed inset-0 z-80 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="disbursement-entry-particulars-dialog-title"
-        className="flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-white/20 bg-white shadow-[0_28px_90px_rgba(33,39,56,0.28)]"
-      >
-        <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
-          <div className="min-w-0">
-            <h2
-              id="disbursement-entry-particulars-dialog-title"
-              className="text-lg font-semibold text-darknavy"
-            >
-              Particulars
-            </h2>
-            <p className="mt-1 truncate text-sm text-darknavy/55">
-              {entry.accountName || "Accounting entry"}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-darknavy/60 transition hover:bg-skyblue/10 hover:text-darknavy"
-            aria-label="Close particulars dialog"
-          >
-            <X className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </div>
-        <div className="min-h-0 overflow-y-auto px-5 py-4">
-          <label
-            htmlFor={textareaId}
-            className="text-sm font-semibold text-darknavy"
-          >
-            Details
-          </label>
-          <AppLimitedTextarea
-            id={textareaId}
-            value={draft}
-            readOnly={isReadonly}
-            onChange={(event) => setDraft(event.target.value)}
-            className="mt-2 min-h-48 w-full rounded-lg border border-darknavy/12 bg-white px-3 py-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/20 read-only:bg-offwhite/65"
-            counterMode="used"
-          />
-        </div>
-        <div className="shrink-0 border-t border-darknavy/10 px-5 py-4">
-          <div className="flex justify-end gap-2">
-            {isReadonly ? (
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5"
-              >
-                Close
-              </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSave(draft)}
-                  className="theme-accent-contrast-text inline-flex h-10 items-center justify-center rounded-md bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85"
-                >
-                  Save
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </section>
-    </div>
+    <ModuleTextareaDialog
+      isOpen={Boolean(entry)}
+      isReadonly={isReadonly}
+      title="Particulars"
+      subtitle={entry?.accountName || "Accounting entry"}
+      textareaId="disbursement-entry-particulars-dialog-text"
+      value={entry?.particulars ?? ""}
+      onClose={onClose}
+      onSave={onSave}
+    />
   );
 }
 

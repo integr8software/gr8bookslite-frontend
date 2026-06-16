@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useState, type MouseEvent } from "react";
 import { Building2, ExternalLink } from "lucide-react";
 import type {
@@ -17,7 +18,12 @@ import {
 	getBranchDisplayName,
 	getBranchScopedUsersHref,
 } from "@/app/src/ui/workspace/users-management/utils";
-import { MainLoadingScreen } from "@/app/src/ui/shared/app/MainLoadingScreen";
+
+const MainLoadingScreen = dynamic(() =>
+	import("@/app/src/ui/shared/app/MainLoadingScreen").then(
+		(module) => module.MainLoadingScreen,
+	),
+);
 
 export function WorkspaceUserAssignmentsSection({
 	availableCompanies,

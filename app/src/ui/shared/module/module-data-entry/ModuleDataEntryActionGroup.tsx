@@ -66,13 +66,6 @@ export function ModuleDataEntryActionGroup({
 }) {
 	return (
 		<div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
-			{canEditRows && onImport ? (
-				<ModuleDataEntryToolbarButton
-					icon={Upload}
-					label="Import"
-					onClick={onImport}
-				/>
-			) : null}
 			{canEditRows ? toolbarActions.map((action) => (
 				<ModuleDataEntryToolbarButton
 					key={action.id}
@@ -82,6 +75,13 @@ export function ModuleDataEntryActionGroup({
 					onClick={action.onSelect}
 				/>
 			)) : null}
+			{canEditRows && onImport ? (
+				<ModuleDataEntryToolbarButton
+					icon={Upload}
+					label="Import"
+					onClick={onImport}
+				/>
+			) : null}
 			{exportOptions.length > 0 ? (
 				<ModuleDataEntryExportButton align={align} options={exportOptions} />
 			) : onExport ? (

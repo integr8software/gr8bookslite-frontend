@@ -5,8 +5,7 @@ import { createMaintenanceAddDrawerSpotlightTutorialSteps } from "@/app/src/data
 export const ChartsOfAccountsSpotlightTutorialStorageVersion = "v1";
 export const ChartsOfAccountsSpotlightTutorialOpenEvent =
   "gr8booksneo:charts-of-accounts-spotlight-open";
-export const ChartsOfAccountsSpotlightTutorialStorageKey =
-  `gr8booksneo.spotlightTutorial.${ChartsOfAccountsSpotlightTutorialStorageVersion}.${ChartsOfAccountsHref}`;
+export const ChartsOfAccountsSpotlightTutorialStorageKey = `gr8booksneo.spotlightTutorial.${ChartsOfAccountsSpotlightTutorialStorageVersion}.${ChartsOfAccountsHref}`;
 
 export const ChartsOfAccountsSpotlightTutorialSteps = [
   {

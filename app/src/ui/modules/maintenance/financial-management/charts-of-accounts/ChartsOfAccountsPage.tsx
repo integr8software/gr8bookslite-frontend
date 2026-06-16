@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import {
-	CheckCircle2,
-	CirclePause,
-	Download,
-	Layers3,
-	ListTree,
-	Network,
-	Plus,
-	Upload,
+  CheckCircle2,
+  CirclePause,
+  Download,
+  Layers3,
+  ListTree,
+  Network,
+  Plus,
+  Upload,
 } from "lucide-react";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
 import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsDrawer";
@@ -20,8 +20,8 @@ import { Card } from "@/app/src/ui/modules/maintenance/financial-management/char
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccounts";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import {
-	ModuleHeader,
-	moduleHeaderActionClassNames,
+  ModuleHeader,
+  moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -164,14 +164,15 @@ export function ChartsOfAccountsMain() {
         account={coa.drawerAccount}
         accounts={accountOptions}
         isOpen={coa.isDrawerOpen}
+        isSaving={coa.isMutating}
         onClose={coa.closeDrawer}
         onSave={coa.saveAccount}
       />
       <AppDialog
         isOpen={Boolean(pendingDeleteAccount)}
-        title="Delete chart account?"
-        description={`This will remove ${pendingDeleteAccount?.accountName ?? "the selected account"} (${pendingDeleteAccount?.accountNumber ?? ""}).`}
-        confirmLabel="Delete Account"
+        title="Deactivate chart account?"
+        description={`This will mark ${pendingDeleteAccount?.accountName ?? "the selected account"} (${pendingDeleteAccount?.accountNumber ?? ""}) as inactive while keeping accounting history intact.`}
+        confirmLabel="Deactivate Account"
         tone="danger"
         onCancel={() => setPendingDeleteAccount(null)}
         onConfirm={handleConfirmDelete}
@@ -181,9 +182,9 @@ export function ChartsOfAccountsMain() {
 }
 
 function getAccountPercentage(count: number, total: number) {
-	if (total === 0) {
-		return 0;
-	}
+  if (total === 0) {
+    return 0;
+  }
 
-	return Math.round((count / total) * 100);
+  return Math.round((count / total) * 100);
 }

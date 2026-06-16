@@ -5,9 +5,7 @@ import {
   MaintenanceAddDrawerSpotlightTutorialCloseEvent,
   MaintenanceAddDrawerSpotlightTutorialOpenEvent,
 } from "@/app/src/data/modules/maintenance/MaintenanceSpotlightTutorialData";
-import {
-  ChartsOfAccountsSpotlightTutorialSteps,
-} from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
+import { ChartsOfAccountsSpotlightTutorialSteps } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
 import { useChartsOfAccountsSpotlightTutorial } from "@/app/src/hooks/modules/maintenance/financial-management/charts-of-accounts/useChartsOfAccountsSpotlightTutorial";
 import {
   SpotlightTour,
@@ -32,11 +30,7 @@ export function ChartsOfAccountsSpotlightTutorial() {
   return (
     <SpotlightTour
       ariaLabel="Chart of accounts tutorial"
-      badge={
-        <SpotlightTourBadge>
-          Charts of accounts guide
-        </SpotlightTourBadge>
-      }
+      badge={<SpotlightTourBadge>Charts of accounts guide</SpotlightTourBadge>}
       isOpen={isOpen}
       steps={ChartsOfAccountsSpotlightTutorialSteps}
       onComplete={() => {

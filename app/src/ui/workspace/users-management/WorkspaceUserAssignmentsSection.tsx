@@ -91,7 +91,7 @@ export function WorkspaceUserAssignmentsSection({
 					type="button"
 					onClick={onAddCompany}
 					disabled={isReadonly || !selectedCompanyId}
-					className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-darknavy px-4 text-sm font-semibold text-white transition hover:bg-darknavy/90 disabled:cursor-not-allowed disabled:bg-darknavy/35"
+					className="theme-accent-contrast-text inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:bg-skyblue/35 disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
 				>
 					<Building2 className="h-4 w-4" aria-hidden="true" />
 					<span className="whitespace-nowrap">Add Company</span>

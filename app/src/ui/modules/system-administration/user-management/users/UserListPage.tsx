@@ -16,7 +16,7 @@ import { UserListQueryKeys } from "@/app/src/services/modules/system-administrat
 import { UserListHeader } from "@/app/src/ui/modules/system-administration/user-management/users/UserListHeader";
 import { UserListTable } from "@/app/src/ui/modules/system-administration/user-management/users/UserListTable";
 import { UserListSpotlightTutorial } from "@/app/src/ui/modules/system-administration/user-management/users/UserListSpotlightTutorial";
-import type { UserManagementRecord } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type { UserManagementRecord } from "@/app/src/types/modules/user-management/UserManagementTypes";
 
 const BranchUsersContextParam = "workspaceBranchId";
 const BranchUsersNameParam = "branchName";

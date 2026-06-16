@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Building2, ChevronDown, LayoutDashboard } from "lucide-react";
 import type {
 	MainCompany,
@@ -54,6 +55,12 @@ export function CompanySwitcher({
 					? "Account"
 					: currentCompany.name;
 	const hasAdministrationOptions = canAccessMaster || canAccessWorkspace;
+	const logoUrls = Array.from(
+		new Set(
+			[currentCompany.logoUrl, ...availableCompanies.map((company) => company.logoUrl)]
+				.filter((logoUrl): logoUrl is string => Boolean(logoUrl)),
+		),
+	);
 
 	return (
 		<div
@@ -66,6 +73,21 @@ export function CompanySwitcher({
 			data-main-switcher-root
 			data-spotlight-id={spotlightId}
 		>
+			<span aria-hidden="true" className="hidden">
+				{logoUrls.map((logoUrl) => (
+					<Image
+						key={logoUrl}
+						src={logoUrl}
+						alt=""
+						width={1}
+						height={1}
+						fetchPriority="high"
+						loading="eager"
+						preload
+						unoptimized
+					/>
+				))}
+			</span>
 			<button
 				type="button"
 				onClick={onToggle}
@@ -85,7 +107,12 @@ export function CompanySwitcher({
 					<ImageSwatch
 						imageUrl={currentCompany.logoUrl}
 						className="h-5 w-5 rounded"
-					/>
+					>
+						<Building2
+							className="h-4 w-4 text-darknavy/55"
+							aria-hidden="true"
+						/>
+					</ImageSwatch>
 				) : (
 					<Building2
 						className="h-4 w-4 shrink-0 text-darknavy/55"

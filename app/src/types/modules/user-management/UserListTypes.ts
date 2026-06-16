@@ -1,4 +1,4 @@
-import type { UserManagementRecord } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type { UserManagementRecord } from "@/app/src/types/modules/user-management/UserManagementTypes";
 
 export type UserListStatus = "Active" | "Pending" | "Inactive";
 

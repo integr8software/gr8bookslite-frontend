@@ -1,9 +1,7 @@
 import { Search } from "lucide-react";
 import { UserListTablePaginationStorageKey } from "@/app/src/constants/modules/user-management/UserListConstants";
-import type {
-	UserManagementRecord,
-	UserRoleRecord,
-} from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type { UserRoleRecord } from "@/app/src/data/modules/system-administration/user-management/UserManagementData";
+import type { UserManagementRecord } from "@/app/src/types/modules/user-management/UserManagementTypes";
 import { useUserListTable } from "@/app/src/hooks/modules/system-administration/user-management/users/useUserList";
 import { UserListTableFilters } from "@/app/src/ui/modules/system-administration/user-management/users/UserListTableFilters";
 import { UserListTableRow } from "@/app/src/ui/modules/system-administration/user-management/users/UserListTableRow";

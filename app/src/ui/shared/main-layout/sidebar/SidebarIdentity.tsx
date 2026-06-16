@@ -1,5 +1,6 @@
 import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import { GradientBlurBackground } from "@/app/src/ui/shared/layout/GradientBlurBackground";
+import { ImageSwatch } from "@/app/src/ui/shared/main-layout/main-topbar/ImageSwatch";
 
 type SidebarLogoProps = {
   companyBadgeLabel?: string;
@@ -15,11 +16,12 @@ export function SidebarLogo({
 }: SidebarLogoProps) {
   if (companyLogoUrl) {
     return (
-      <span
-        aria-hidden="true"
-        className="block h-9 w-9 shrink-0 rounded-md bg-cover bg-center ring-1 ring-darknavy/10"
-        style={{ backgroundImage: `url("${companyLogoUrl}")` }}
-      />
+      <ImageSwatch
+        imageUrl={companyLogoUrl}
+        className="h-9 w-9 rounded-md text-sm font-bold ring-1 ring-darknavy/10"
+      >
+        {companyBadgeLabel ?? buildSidebarBadgeLabel(companyName)}
+      </ImageSwatch>
     );
   }
 

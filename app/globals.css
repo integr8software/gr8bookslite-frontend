@@ -618,6 +618,11 @@ button {
     var(--dashboard-section-row-span, 1);
 }
 
+.landing-page {
+  background: #f6f9fc;
+  color: #020617;
+}
+
 .landing-hero {
   perspective: 1200px;
 }
@@ -711,6 +716,50 @@ button {
   background: linear-gradient(135deg, #bae6fd, #38bdf8);
 }
 
+.landing-connected-flow {
+  opacity: 0.96;
+  filter: drop-shadow(0 26px 46px rgb(15 23 42 / 0.12));
+}
+
+.landing-flow-path {
+  stroke: rgb(14 116 144 / 0.46);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 9 13;
+  animation: landing-flow-dash 5.4s linear infinite;
+}
+
+.landing-flow-path-delay {
+  animation-delay: -2.2s;
+}
+
+.landing-flow-dot {
+  fill: #0ea5e9;
+  filter: drop-shadow(0 0 12px rgb(14 165 233 / 0.72));
+  transform-origin: center;
+  animation: landing-flow-dot-pulse 2.4s ease-in-out infinite;
+}
+
+.landing-connected-node {
+  animation: landing-connected-float 5.8s ease-in-out infinite;
+}
+
+.landing-connected-node:nth-of-type(3) {
+  animation-delay: -1.2s;
+}
+
+.landing-connected-node:nth-of-type(4) {
+  animation-delay: -2s;
+}
+
+.landing-connected-node:nth-of-type(5) {
+  animation-delay: -2.8s;
+}
+
+.landing-connected-hub {
+  animation: landing-connected-hub-pulse 4s ease-in-out infinite;
+}
+
 .landing-orbit {
   position: absolute;
   border: 1px solid rgba(3, 105, 161, 0.14);
@@ -795,6 +844,121 @@ button {
   animation-delay: calc(var(--step-index) * 120ms);
 }
 
+.landing-modules-section {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(14, 165, 233, 0.08), transparent 38%),
+    linear-gradient(90deg, rgba(241, 245, 249, 0.82), #ffffff 48%, rgba(240, 249, 255, 0.86));
+}
+
+.landing-section-kicker {
+  letter-spacing: 0.08em;
+}
+
+.landing-modules-summary {
+  max-width: 34rem;
+  border: 1px solid rgb(148 163 184 / 0.22);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.72);
+  padding: 1rem;
+  box-shadow: 0 18px 50px rgb(15 23 42 / 0.06);
+  backdrop-filter: blur(12px);
+}
+
+.landing-modules-summary strong {
+  display: block;
+  color: #0284c7;
+  font-size: 1.25rem;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.landing-modules-summary span {
+  margin-top: 0.35rem;
+  display: block;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.landing-module-marquee-wrap {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+.landing-module-marquee {
+  display: flex;
+  overflow: hidden;
+  padding-block: 0.35rem;
+}
+
+.landing-module-marquee:hover .landing-module-marquee-track {
+  animation-play-state: paused;
+}
+
+.landing-module-marquee-track {
+  display: flex;
+  width: max-content;
+  min-width: 200%;
+  gap: 1rem;
+  animation: landing-module-marquee 34s linear infinite;
+  will-change: transform;
+}
+
+.landing-module-card {
+  position: relative;
+  width: min(21rem, 78vw);
+  min-height: 13rem;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid rgb(148 163 184 / 0.28);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 0.94), rgb(248 250 252 / 0.88)),
+    #ffffff;
+  padding: 1.4rem;
+  box-shadow: 0 14px 42px rgb(15 23 42 / 0.08);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    background-color 220ms ease;
+}
+
+.landing-module-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 1rem 0;
+  height: 3px;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(90deg, transparent, #58a6ff, transparent);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.landing-module-card:hover {
+  transform: translateY(-5px);
+  border-color: rgb(14 165 233 / 0.58);
+  box-shadow: 0 22px 58px rgb(14 116 144 / 0.16);
+}
+
+.landing-module-card:hover::after {
+  opacity: 1;
+}
+
+.landing-module-icon {
+  box-shadow: inset 0 0 0 1px rgb(14 165 233 / 0.1);
+}
+
+.landing-module-signal {
+  width: 2.4rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgb(14 165 233 / 0.22), rgb(14 165 233 / 0.72));
+}
+
 .landing-module-tile {
   transition:
     transform 220ms ease,
@@ -826,6 +990,55 @@ button {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes landing-flow-dash {
+  to {
+    stroke-dashoffset: -88;
+  }
+}
+
+@keyframes landing-flow-dot-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.82);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.16);
+  }
+}
+
+@keyframes landing-connected-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes landing-connected-hub-pulse {
+  0%,
+  100% {
+    box-shadow: 0 18px 48px rgb(14 116 144 / 0.12);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    box-shadow: 0 26px 62px rgb(14 116 144 / 0.2);
+    transform: translate(-50%, -50%) scale(1.035);
+  }
+}
+
+@keyframes landing-module-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 0.5rem));
   }
 }
 
@@ -1326,6 +1539,11 @@ button {
   .neo-ai-launcher,
   .landing-chart-bar,
   .landing-step,
+  .landing-flow-path,
+  .landing-flow-dot,
+  .landing-connected-node,
+  .landing-connected-hub,
+  .landing-module-marquee-track,
   .draft-stack-card-front,
   .draft-stack-card-mid,
   .draft-stack-card-back,
@@ -1336,6 +1554,10 @@ button {
   }
 
   .landing-module-tile:hover {
+    transform: none;
+  }
+
+  .landing-module-card:hover {
     transform: none;
   }
 }

@@ -41,7 +41,7 @@ export const TransactionNumberSetupTableColumns: Array<
 			className: string;
 	  }
 > = [
-	{ key: "moduleName", label: "Module", className: "w-[18rem]" },
+	{ key: "moduleName", label: "Module Name", className: "w-[18rem]" },
 	{ key: "inputMode", label: "Input", className: "w-[8rem]" },
 	{ key: "scope", label: "Mode", className: "w-[10rem]" },
 	{ key: "branchScope", label: "Branches", className: "w-[18rem]" },

@@ -12,6 +12,18 @@ export function MainFooter() {
         className="flex flex-wrap items-center gap-x-4 gap-y-2"
       >
         <Link
+          href="/faq"
+          className="transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
+        >
+          FAQ
+        </Link>
+        <a
+          href="mailto:support@gr8booklite.com"
+          className="transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
+        >
+          Contact Support
+        </a>
+        <Link
           href="/terms-of-service"
           className="transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
         >

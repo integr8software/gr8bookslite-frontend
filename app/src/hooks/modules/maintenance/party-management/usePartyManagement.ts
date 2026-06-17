@@ -79,12 +79,22 @@ export function usePartyManagementStore<
 		useMutation({
 			mutationFn: async (record: PartyInformationRecord) => record,
 			onSuccess: (record) => {
+				const previousRecord = queryClient
+					.getQueryData<PartyInformationRecord[]>(
+						PartyManagementQueryKeys.records(),
+					)
+					?.find((currentRecord) => currentRecord.id === record.id);
+
 				updateCachedRecords((records) =>
 					records.map((currentRecord) =>
 						currentRecord.id === record.id ? record : currentRecord,
 					),
 				);
-				toast.success("Party information updated.");
+				toast.success(
+					previousRecord && previousRecord.status !== record.status
+						? `${getPartyDisplayName(record)} has been set as ${record.status.toLowerCase()}.`
+						: "Party information updated.",
+				);
 			},
 			onError: () => {
 				toast.error("Could not update party information. Please try again.");
@@ -123,7 +133,7 @@ export function usePartyManagementStore<
 export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
-		pageSize: 5,
+		pageSize: 10,
 	});
 	const [query, setQueryState] = useState("");
 	const [classificationFilter, setClassificationFilterState] = useState<

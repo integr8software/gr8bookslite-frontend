@@ -23,6 +23,7 @@ type TransactionNumberSequenceResponse = {
 	padding: number;
 	permissionId: number;
 	prefix: string;
+	suffix: string;
 	scope: Extract<TransactionNumberScope, "all" | "branch">;
 	startingNumber: number;
 	status: TransactionNumberStatus;
@@ -37,6 +38,7 @@ type UpdateTransactionNumberSequencePayload = {
 	moduleName: string;
 	padding: number;
 	prefix: string;
+	suffix: string;
 	scope: Extract<TransactionNumberScope, "all" | "branch">;
 	startingNumber: number;
 	status: TransactionNumberStatus;
@@ -99,6 +101,7 @@ function CreateTransactionNumberSetupPayload(
 		moduleName: setup.moduleName,
 		padding: setup.padding,
 		prefix: setup.prefix,
+		suffix: setup.suffix,
 		scope: setup.scope === "branch" ? "branch" : "all",
 		startingNumber: setup.startingNumber,
 		status: setup.status,
@@ -123,6 +126,7 @@ function MapTransactionNumberSequence(
 		padding: sequence.padding,
 		permissionId: sequence.permissionId,
 		prefix: sequence.prefix,
+		suffix: sequence.suffix ?? "",
 		scope: sequence.scope,
 		startingNumber: sequence.startingNumber,
 		status: sequence.status,

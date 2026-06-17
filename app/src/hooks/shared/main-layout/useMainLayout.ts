@@ -477,9 +477,13 @@ export function useMainLayout() {
       .slice(0, 12);
   }, [availableSearchItems, query]);
 
+  const profileScopedBranches = useMemo(
+    () => filterBranchesForProfileAccess(branches, authProfile, currentCompany.id),
+    [authProfile, branches, currentCompany.id],
+  );
   const accessibleBranches = useMemo(
-    () => sortBranchesByPriority(getAccessibleBranches(branches)),
-    [branches],
+    () => sortBranchesByPriority(getAccessibleBranches(profileScopedBranches)),
+    [profileScopedBranches],
   );
   const hasCompanyAdministrationAccess = hasCurrentCompanyAdministrationAccess(
     authProfile,
@@ -1197,6 +1201,53 @@ function hasCurrentCompanyBranchAccess(
     Boolean(companyMembership.accessibleUnitIds?.length) ||
     Boolean(companyMembership.units?.some((unit) => unit.isActive))
   );
+}
+
+function filterBranchesForProfileAccess(
+  branches: MainBranch[],
+  profile: AuthProfileResponse | undefined,
+  companyId: string,
+) {
+  if (!profile || branches.length === 0) {
+    return branches;
+  }
+
+  const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
+
+  if (effectiveRole === "SUPER_ADMIN" || effectiveRole === "ADMIN") {
+    return branches;
+  }
+
+  const numericCompanyId = parsePositiveInteger(companyId);
+
+  if (!numericCompanyId) {
+    return branches;
+  }
+
+  const companyMembership = profile.companies?.find(
+    (company) => company.companyId === numericCompanyId,
+  );
+
+  if (!companyMembership) {
+    return [];
+  }
+
+  if (
+    companyMembership.role === "ADMIN" ||
+    normalizeStatus(companyMembership.accessScope) === "COMPANY"
+  ) {
+    return branches;
+  }
+
+  const accessibleUnitIds = new Set(
+    (companyMembership.accessibleUnitIds ?? []).map(String),
+  );
+
+  if (accessibleUnitIds.size === 0) {
+    return [];
+  }
+
+  return branches.filter((branch) => accessibleUnitIds.has(branch.id));
 }
 
 function CreateWorkspaceCurrentUserFromProfile(

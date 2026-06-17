@@ -48,7 +48,7 @@ type WorkspaceUsersTableRecord = WorkspaceCompanyUserRecord & {
 
 type WorkspaceUsersAccessItem = {
 	name: string;
-	type: "Branch" | "Satellite";
+	type: "Branch" | "Head Office" | "Satellite";
 };
 
 type WorkspaceUsersTableColumnKey = keyof Pick<
@@ -595,19 +595,22 @@ function WorkspaceUsersAccessSummary({
 
 function AccessChip({ item }: { item: WorkspaceUsersAccessItem }) {
 	const isSatellite = item.type === "Satellite";
+	const isHeadOffice = item.type === "Head Office";
 
 	return (
 		<span
 			className={`max-w-[12rem] truncate rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ${
 				isSatellite
 					? "bg-[color-mix(in_srgb,var(--skyblue)_16%,var(--background))] text-[var(--foreground)] ring-[color-mix(in_srgb,var(--skyblue)_28%,transparent)]"
+					: isHeadOffice
+						? "bg-[color-mix(in_srgb,var(--foreground)_6%,var(--background))] text-[var(--foreground)] ring-[color-mix(in_srgb,var(--foreground)_16%,transparent)]"
 					: "bg-[color-mix(in_srgb,var(--foreground)_8%,var(--background))] text-[color-mix(in_srgb,var(--foreground)_82%,transparent)] ring-[color-mix(in_srgb,var(--foreground)_12%,transparent)]"
 			}`}
 			title={`${item.type}: ${item.name}`}
 		>
 			{item.name}
 			<span className="ml-1 text-[0.65rem] uppercase text-[color-mix(in_srgb,var(--foreground)_56%,transparent)]">
-				{isSatellite ? "Sat" : "Br"}
+				{isSatellite ? "Sat" : isHeadOffice ? "HO" : "Br"}
 			</span>
 		</span>
 	);
@@ -657,9 +660,7 @@ function createWorkspaceUsersTableRecords(
 			.map((assignment) => companyMap.get(assignment.companyId))
 			.filter(Boolean) as WorkspaceCompanyRecord[];
 		const assignedBranches = user.companyAssignments.flatMap((assignment) =>
-			assignment.branchIds
-				.map((branchId) => branchMap.get(branchId))
-				.filter(Boolean),
+			resolveAssignedBranches(assignment, branchMap),
 		) as WorkspaceCompanyBranchRecord[];
 
 		return {
@@ -682,21 +683,36 @@ function createWorkspaceUsersTableRecords(
 	});
 }
 
+function resolveAssignedBranches(
+	assignment: WorkspaceCompanyUserRecord["companyAssignments"][number],
+	branchMap: Map<string, WorkspaceCompanyBranchRecord>,
+) {
+	if (assignment.branches?.length) {
+		return assignment.branches;
+	}
+
+	return assignment.branchIds
+		.map((branchId) => branchMap.get(branchId))
+		.filter(Boolean);
+}
+
 function createAccessItems(
 	branches: WorkspaceCompanyBranchRecord[],
 ): WorkspaceUsersAccessItem[] {
 	const uniqueItems = new Map<string, WorkspaceUsersAccessItem>();
 
-	branches
-		.filter((branch) => !branch.isMain)
-		.forEach((branch) => {
-			const type = branch.branchType === "Satellite" ? "Satellite" : "Branch";
-			const key = `${type}:${branch.name}`;
+	branches.forEach((branch) => {
+		const type = branch.isMain
+			? "Head Office"
+			: branch.branchType === "Satellite"
+				? "Satellite"
+				: "Branch";
+		const key = `${type}:${branch.name}`;
 
-			if (!uniqueItems.has(key)) {
-				uniqueItems.set(key, { name: branch.name, type });
-			}
-		});
+		if (!uniqueItems.has(key)) {
+			uniqueItems.set(key, { name: branch.name, type });
+		}
+	});
 
 	return Array.from(uniqueItems.values());
 }

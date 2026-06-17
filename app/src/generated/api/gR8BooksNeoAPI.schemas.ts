@@ -827,6 +827,17 @@ export interface WorkspaceCompanyResponseDto {
 export interface WorkspaceUserCompanyAssignmentResponseDto {
   companyId: number;
   unitIds: number[];
+  units: WorkspaceUserAssignedUnitResponseDto[];
+}
+
+export interface WorkspaceUserAssignedUnitResponseDto {
+  id: number;
+  companyId: number;
+  type: WorkspaceCompanyUnitResponseDtoType;
+  name: string;
+  /** @nullable */
+  displayName: string | null;
+  isActive: boolean;
 }
 
 export interface WorkspaceUserResponseDto {
@@ -1331,4 +1342,3 @@ moduleCodes: string;
 };
 
 export type AiAssistantControllerChatV1201 = { [key: string]: unknown };
-

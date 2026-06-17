@@ -92,6 +92,7 @@ export type WorkspaceCompanyFormErrors = Partial<
 export type WorkspaceUserCompanyAssignment = {
   companyId: string;
   branchIds: string[];
+  branches?: WorkspaceCompanyBranchRecord[];
 };
 
 export type WorkspaceCompanyUserRecord = {
@@ -121,6 +122,16 @@ export type WorkspaceCompanyUserFormErrors = Partial<
 export type WorkspaceCompanyUserApiAssignment = {
   companyId: number;
   unitIds: number[];
+  units?: WorkspaceCompanyUserAssignedUnitApiRecord[];
+};
+
+export type WorkspaceCompanyUserAssignedUnitApiRecord = {
+  id: number;
+  companyId: number;
+  type: WorkspaceCompanyUnitApiType;
+  name: string;
+  displayName: string | null;
+  isActive: boolean;
 };
 
 export type WorkspaceCompanyUserApiStatus =

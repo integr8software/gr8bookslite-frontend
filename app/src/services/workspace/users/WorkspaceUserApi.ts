@@ -7,6 +7,10 @@ import {
 } from "@/app/src/generated/api/workspace-users/workspace-users";
 import type { WorkspaceUserResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
+  WorkspaceCompanyBranchRecord,
+  WorkspaceCompanyStatus,
+  WorkspaceCompanyUnitApiType,
+  WorkspaceCompanyUserAssignedUnitApiRecord,
   WorkspaceCompanyUserApiRecord,
   WorkspaceCompanyUserApiRequest,
   WorkspaceCompanyUserCancelInvitationResponse,
@@ -93,6 +97,7 @@ export function MapWorkspaceUserApiRecord(
   return {
     companyAssignments: user.companyAssignments.map((assignment) => ({
       branchIds: assignment.unitIds.map(String),
+      branches: assignment.units?.map(MapWorkspaceUserAssignedUnitApiRecord),
       companyId: String(assignment.companyId),
     })),
     companyId: primaryCompanyId ? String(primaryCompanyId) : "",
@@ -107,6 +112,40 @@ export function MapWorkspaceUserApiRecord(
     profileImageUrl: user.profileImageUrl ?? undefined,
     status: GetWorkspaceUserStatus(user.status),
   };
+}
+
+function MapWorkspaceUserAssignedUnitApiRecord(
+  unit: WorkspaceCompanyUserAssignedUnitApiRecord,
+): WorkspaceCompanyBranchRecord {
+  return {
+    address: "",
+    branchType: GetWorkspaceCompanyBranchType(unit.type),
+    code: "",
+    companyId: String(unit.companyId),
+    contactNumber: "",
+    email: "",
+    id: String(unit.id),
+    isMain: unit.type === "HEAD_OFFICE",
+    name: unit.displayName ?? unit.name,
+    status: GetWorkspaceCompanyUnitStatus(unit.isActive),
+    tin: "",
+  };
+}
+
+function GetWorkspaceCompanyBranchType(
+  type: WorkspaceCompanyUnitApiType,
+): WorkspaceCompanyBranchRecord["branchType"] {
+  if (type === "HEAD_OFFICE") {
+    return "Head Office";
+  }
+
+  return type === "SATELLITE" ? "Satellite" : "Branch";
+}
+
+function GetWorkspaceCompanyUnitStatus(
+  isActive: boolean,
+): WorkspaceCompanyStatus {
+  return isActive ? "Active" : "Inactive";
 }
 
 function GetWorkspaceUserStatus(

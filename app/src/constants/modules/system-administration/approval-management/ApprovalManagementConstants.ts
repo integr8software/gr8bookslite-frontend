@@ -1,6 +1,5 @@
 import type {
 	ApprovalAmountConditionOperator,
-	ApprovalManagementModuleCode,
 	ApprovalManagementStatus,
 	ApprovalManagementTableColumnKey,
 	ApprovalStageRequirement,
@@ -24,7 +23,7 @@ export const ApprovalManagementModuleCodes = [
 	"PR",
 	"PO",
 	"RR",
-] as const satisfies readonly ApprovalManagementModuleCode[];
+] as const satisfies readonly string[];
 
 export const ApprovalManagementModuleOptions = [
 	{ code: "DV", name: "Disbursement Voucher" },
@@ -34,11 +33,12 @@ export const ApprovalManagementModuleOptions = [
 	{ code: "PO", name: "Purchase Order" },
 	{ code: "RR", name: "Receiving Report" },
 ] as const satisfies ReadonlyArray<{
-	code: ApprovalManagementModuleCode;
+	code: string;
 	name: string;
 }>;
 
 export const ApprovalStageCountOptions = [1, 2, 3, 4, 5] as const;
+export const ApprovalAmountConditionLimit = 4;
 
 export const ApprovalStageRequirementOptions = [
 	{ label: "Any one approver", value: "any" },

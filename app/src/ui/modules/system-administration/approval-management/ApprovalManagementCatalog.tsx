@@ -1,0 +1,133 @@
+import { Search } from "lucide-react";
+import type {
+	ApprovalManagementRecord,
+	ApprovalManagementStatus,
+} from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
+import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { approvalManagementFieldClassName } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementUi";
+
+type ApprovalManagementCatalogProps = {
+	isLoading: boolean;
+	query: string;
+	selectedWorkflowId: string | null;
+	statusFilter: ApprovalManagementStatus | "any";
+	workflows: ApprovalManagementRecord[];
+	onQueryChange: (value: string) => void;
+	onSelectWorkflow: (workflowId: string) => void;
+	onStatusFilterChange: (value: ApprovalManagementStatus | "any") => void;
+};
+
+export function ApprovalManagementCatalog({
+	isLoading,
+	onQueryChange,
+	onSelectWorkflow,
+	onStatusFilterChange,
+	query,
+	selectedWorkflowId,
+	statusFilter,
+	workflows,
+}: ApprovalManagementCatalogProps) {
+	return (
+		<aside className="border-b border-darknavy/10 xl:border-b-0 xl:border-r">
+			<div className="grid gap-3 border-b border-darknavy/10 p-4">
+				<div>
+					<h2 className="text-sm font-semibold text-darknavy">
+						Approval workflows
+					</h2>
+					<p className="mt-1 text-xs font-medium text-darknavy/55">
+						Choose one workflow to edit. This keeps approval paths aligned.
+					</p>
+				</div>
+				<div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_10rem] xl:grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_10rem]">
+					<label className="relative block">
+						<Search
+							className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/38"
+							aria-hidden="true"
+						/>
+						<input
+							value={query}
+							onChange={(event) => onQueryChange(event.target.value)}
+							disabled={isLoading}
+							className={joinClasses(approvalManagementFieldClassName, "pl-9")}
+							placeholder="Search workflow or approver"
+						/>
+					</label>
+					<select
+						value={statusFilter}
+						onChange={(event) =>
+							onStatusFilterChange(
+								event.target.value as ApprovalManagementStatus | "any",
+							)
+						}
+						disabled={isLoading}
+						className={approvalManagementFieldClassName}
+						aria-label="Filter by workflow status"
+					>
+						<option value="any">All status</option>
+						<option value="Active">Active</option>
+						<option value="Inactive">Inactive</option>
+					</select>
+				</div>
+			</div>
+
+			<div className="grid grid-cols-[minmax(0,1fr)_7rem] border-b border-darknavy/10 bg-skyblue/12 px-4 py-2 text-xs font-semibold text-darknavy">
+				<span>Module</span>
+				<span>Code</span>
+			</div>
+			<div className="max-h-[34rem] overflow-auto">
+				{isLoading ? (
+					<ApprovalManagementCatalogSkeleton />
+				) : workflows.length > 0 ? (
+					workflows.map((workflow) => {
+						const isSelected = workflow.id === selectedWorkflowId;
+
+						return (
+							<button
+								key={workflow.id}
+								type="button"
+								onClick={() => onSelectWorkflow(workflow.id)}
+								className={joinClasses(
+									"grid w-full grid-cols-[minmax(0,1fr)_7rem] items-center gap-3 border-b border-darknavy/8 px-4 py-2.5 text-left text-sm transition hover:bg-offwhite/80",
+									isSelected ? "bg-citron/20" : "bg-white",
+								)}
+							>
+								<span
+									className={joinClasses(
+										"truncate text-darknavy",
+										isSelected ? "font-semibold" : "font-medium",
+									)}
+								>
+									{workflow.moduleName}
+								</span>
+								<span className="font-mono text-xs font-semibold text-darknavy/72">
+									{workflow.moduleCode}
+								</span>
+							</button>
+						);
+					})
+				) : (
+					<div className="p-6 text-sm font-medium text-darknavy/55">
+						No approval workflows match the current search.
+					</div>
+				)}
+			</div>
+		</aside>
+	);
+}
+
+function ApprovalManagementCatalogSkeleton() {
+	return (
+		<div aria-label="Loading approval workflows" aria-busy="true">
+			{Array.from({ length: 12 }).map((_, index) => (
+				<div
+					key={index}
+					className="grid min-h-[2.9rem] grid-cols-[minmax(0,1fr)_7rem] items-center gap-3 border-b border-darknavy/8 px-4 py-2.5"
+				>
+					<AppSkeleton className="h-4 w-3/4 rounded-md" />
+					<AppSkeleton className="h-3.5 w-12 rounded-md" />
+				</div>
+			))}
+		</div>
+	);
+}

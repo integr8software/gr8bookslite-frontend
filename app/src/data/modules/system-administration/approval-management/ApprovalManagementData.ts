@@ -10,6 +10,11 @@ import type {
 	ApprovalWorkflowFeatures,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
 
+export type ApprovalManagementModuleOption = {
+	code: string;
+	name: string;
+};
+
 export const ApprovalApproverOptions: ApprovalApproverOption[] =
 	UserListMockData.filter((user) => user.status === "Active").map((user) => ({
 		email: user.email,
@@ -26,6 +31,14 @@ const DefaultApprovalWorkflowFeatures: ApprovalWorkflowFeatures = {
 	multiLevelApproval: true,
 	slaMonitoring: false,
 };
+
+const DefaultApprovalLevelNames = [
+	"Preparer Review",
+	"Finance Review",
+	"Management Approval",
+	"Executive Approval",
+	"Board Approval",
+];
 
 export const MockApprovalManagementWorkflows: ApprovalManagementRecord[] = [
 	{
@@ -200,7 +213,10 @@ export function createApprovalManagementInitialFormValues(): ApprovalManagementF
 export function createApprovalManagementFormValues(
 	record: ApprovalManagementRecord,
 ): ApprovalManagementFormValues {
-	const stages = record.stages.map((stage) => ({ ...stage }));
+	const stages = record.stages.map((stage) => ({
+		...stage,
+		name: normalizeApprovalLevelName(stage.name, stage.sequence),
+	}));
 
 	return {
 		moduleCode: record.moduleCode,
@@ -230,7 +246,7 @@ export function createApprovalStagesForCount(
 			return {
 				...existingStage,
 				sequence: index + 1,
-				name: existingStage.name || `Stage ${index + 1}`,
+				name: normalizeApprovalLevelName(existingStage.name, index + 1),
 			};
 		}
 
@@ -249,7 +265,7 @@ export function createApprovalRoutingRule(
 	return {
 		id: `approval-route-${Date.now()}-${sequence}`,
 		sequence,
-		name: isDefaultRoute ? "Standard Flow" : "Amount Condition",
+		name: isDefaultRoute ? "Otherwise" : `Payment Condition ${sequence}`,
 		basis,
 		amountOperator: "greaterThan",
 		amountValue: isDefaultRoute ? "" : "100000",
@@ -265,7 +281,7 @@ export function createDefaultApprovalRoutingRules(
 	return [
 		createApprovalRoutingRule(1, stages, {
 			basis: "default",
-			name: "Standard Approval Path",
+			name: "Otherwise",
 		}),
 	];
 }
@@ -278,7 +294,7 @@ export function createStandardApprovalRoutingRules(
 		routingRules.find((rule) => rule.basis === "default") ??
 		createApprovalRoutingRule(1, stages, {
 			basis: "default",
-			name: "Standard Approval Path",
+			name: "Otherwise",
 		});
 
 	return syncApprovalRoutingRulesForStages(
@@ -288,7 +304,7 @@ export function createStandardApprovalRoutingRules(
 				amountValue: "",
 				amountValueTo: "",
 				basis: "default",
-				name: defaultRule.name || "Standard Approval Path",
+				name: defaultRule.name || "Otherwise",
 			},
 		],
 		stages,
@@ -300,12 +316,16 @@ export function createAmountConditionApprovalRoutingRules(
 	stages: ApprovalStageFormValues[],
 ) {
 	const fallbackStageIds = stages.slice(0, 1).map((stage) => stage.id);
-	const amountRule =
-		routingRules.find((rule) => rule.basis === "amount") ??
-		createApprovalRoutingRule(1, stages, {
-			basis: "amount",
-			name: "Amount Condition",
-		});
+	const amountRules = routingRules.filter((rule) => rule.basis === "amount");
+	const nextAmountRules = amountRules.length
+		? amountRules
+		: [
+				createApprovalRoutingRule(1, stages, {
+					amountValue: "5000",
+					basis: "amount",
+					name: "Payment Condition 1",
+				}),
+			];
 	const defaultRule =
 		routingRules.find((rule) => rule.basis === "default") ??
 		createApprovalRoutingRule(2, stages, {
@@ -319,11 +339,11 @@ export function createAmountConditionApprovalRoutingRules(
 
 	return syncApprovalRoutingRulesForStages(
 		[
-			{
+			...nextAmountRules.map((amountRule, index) => ({
 				...amountRule,
-				basis: "amount",
-				name: amountRule.name || "Amount Condition",
-			},
+				basis: "amount" as const,
+				name: amountRule.name || `Payment Condition ${index + 1}`,
+			})),
 			{
 				...defaultRule,
 				amountValue: "",
@@ -355,6 +375,12 @@ export function syncApprovalRoutingRulesForStages(
 				...rule,
 				stageIds: stageIds.length ? stageIds : fallbackStageIds,
 			};
+		}).sort((first, second) => {
+			if (first.basis === second.basis) {
+				return first.sequence - second.sequence;
+			}
+
+			return first.basis === "default" ? 1 : -1;
 		}),
 	);
 }
@@ -367,12 +393,13 @@ export function resequenceApprovalRoutingRules(
 		sequence: index + 1,
 		name:
 			rule.name.trim() ||
-			(rule.basis === "default" ? "Standard Approval Path" : "Amount Condition"),
+			(rule.basis === "default" ? "Otherwise" : `Payment Condition ${index + 1}`),
 	}));
 }
 
 export function createApprovalManagementRecord(
 	values: ApprovalManagementFormValues,
+	moduleOptions: ApprovalManagementModuleOption[] = [...ApprovalManagementModuleOptions],
 ): ApprovalManagementRecord {
 	const moduleCode = values.moduleCode || "DV";
 	const stages = normalizeApprovalStages(values.stages);
@@ -380,7 +407,7 @@ export function createApprovalManagementRecord(
 	return {
 		id: `approval-${Date.now()}`,
 		moduleCode,
-		moduleName: getApprovalManagementModuleName(moduleCode),
+		moduleName: getApprovalManagementModuleName(moduleCode, moduleOptions),
 		stageCount: values.stageCount,
 		stages,
 		routingRules: normalizeApprovalRoutingRules(values.routingRules, stages),
@@ -394,6 +421,7 @@ export function createApprovalManagementRecord(
 export function updateApprovalManagementRecord(
 	record: ApprovalManagementRecord,
 	values: ApprovalManagementFormValues,
+	moduleOptions: ApprovalManagementModuleOption[] = [...ApprovalManagementModuleOptions],
 ): ApprovalManagementRecord {
 	const moduleCode = values.moduleCode || record.moduleCode;
 	const stages = normalizeApprovalStages(values.stages);
@@ -401,7 +429,7 @@ export function updateApprovalManagementRecord(
 	return {
 		...record,
 		moduleCode,
-		moduleName: getApprovalManagementModuleName(moduleCode),
+		moduleName: getApprovalManagementModuleName(moduleCode, moduleOptions),
 		stageCount: values.stageCount,
 		stages,
 		routingRules: normalizeApprovalRoutingRules(values.routingRules, stages),
@@ -414,9 +442,10 @@ export function updateApprovalManagementRecord(
 
 export function getApprovalManagementModuleName(
 	moduleCode: ApprovalManagementModuleCode,
+	moduleOptions: ApprovalManagementModuleOption[] = [...ApprovalManagementModuleOptions],
 ) {
 	return (
-		ApprovalManagementModuleOptions.find((option) => option.code === moduleCode)
+		moduleOptions.find((option) => option.code === moduleCode)
 			?.name ?? moduleCode
 	);
 }
@@ -429,7 +458,7 @@ function createApprovalStage(sequence: number): ApprovalStageFormValues {
 	return {
 		id: `approval-stage-${Date.now()}-${sequence}`,
 		sequence,
-		name: `Stage ${sequence}`,
+		name: getDefaultApprovalLevelName(sequence),
 		approverIds: [],
 		requirement: "any",
 	};
@@ -439,9 +468,23 @@ function normalizeApprovalStages(stages: ApprovalStageFormValues[]) {
 	return stages.map((stage, index) => ({
 		...stage,
 		sequence: index + 1,
-		name: stage.name.trim() || `Stage ${index + 1}`,
+		name: normalizeApprovalLevelName(stage.name, index + 1),
 		approverIds: Array.from(new Set(stage.approverIds)),
 	}));
+}
+
+function getDefaultApprovalLevelName(sequence: number) {
+	return DefaultApprovalLevelNames[sequence - 1] ?? `Approval Level ${sequence}`;
+}
+
+function normalizeApprovalLevelName(name: string, sequence: number) {
+	const trimmedName = name.trim();
+
+	if (!trimmedName || /^stage\s+\d+$/i.test(trimmedName)) {
+		return getDefaultApprovalLevelName(sequence);
+	}
+
+	return trimmedName;
 }
 
 function normalizeApprovalRoutingRules(

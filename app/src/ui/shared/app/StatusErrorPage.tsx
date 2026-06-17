@@ -89,7 +89,7 @@ export function StatusErrorPage({ variant }: StatusErrorPageProps) {
 	return (
 		<main className="flex min-h-dvh items-center justify-center overflow-hidden bg-offwhite px-5 py-10 text-darknavy sm:px-8">
 			<section className="relative flex w-full max-w-5xl flex-col items-center gap-9 text-center lg:grid lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:text-left">
-				<div className="relative flex aspect-square w-full max-w-[330px] items-center justify-center sm:max-w-[390px] lg:mx-auto">
+				<div className="relative flex aspect-square w-full max-w-82.5 items-center justify-center sm:max-w-97.5 lg:mx-auto">
 					<div className="absolute inset-7 rounded-full border border-darknavy/10 bg-white/70 shadow-[0_24px_70px_rgba(33,39,56,0.12)]" />
 					<div className="absolute left-[17%] top-[22%] h-[33%] w-[52%] rotate-[-10deg] rounded-md border border-darknavy/10 bg-white shadow-[0_16px_40px_rgba(33,39,56,0.12)]" />
 					<div className="absolute bottom-[24%] right-[15%] h-[35%] w-[52%] rotate-[8deg] rounded-md border border-darknavy/10 bg-white shadow-[0_16px_40px_rgba(33,39,56,0.10)]" />

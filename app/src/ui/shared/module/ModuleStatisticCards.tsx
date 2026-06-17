@@ -47,7 +47,7 @@ function ModuleStatisticCard({ item }: { item: ModuleStatisticCardItem }) {
 					</p>
 					<p
 						className={joinClasses(
-							"mt-3 max-w-[9rem] truncate font-semibold leading-none text-darknavy",
+							"mt-3 max-w-36 truncate font-semibold leading-none text-darknavy",
 							getStatisticValueClassName(item.value),
 						)}
 					>

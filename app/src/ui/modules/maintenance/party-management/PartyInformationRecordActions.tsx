@@ -47,14 +47,14 @@ export function PartyInformationRecordActions({
 	return (
 		<>
 			<ModuleTableActions className="justify-center">
-				<ModuleTooltip title="View">
+				<ModuleTooltip align="end" position="top" title="View">
 					<ModuleTableActionLink
 						variant="view"
 						href={`${PartyManagementHref}/view/${record.id}`}
 						label={`View ${record.name}`}
 					/>
 				</ModuleTooltip>
-				<ModuleTooltip title="Edit">
+				<ModuleTooltip align="end" position="top" title="Edit">
 					<ModuleTableActionLink
 						variant="edit"
 						href={`${PartyManagementHref}/edit/${record.id}`}
@@ -62,7 +62,7 @@ export function PartyInformationRecordActions({
 					/>
 				</ModuleTooltip>
 				{record.status === "Active" ? (
-					<ModuleTooltip title="Set as Inactive">
+					<ModuleTooltip align="end" position="top" title="Set as Inactive">
 						<ModuleTableActionButton
 							disabled={isMutating}
 							variant="inactive"
@@ -71,7 +71,7 @@ export function PartyInformationRecordActions({
 						/>
 					</ModuleTooltip>
 				) : (
-					<ModuleTooltip title="Set as Active">
+					<ModuleTooltip align="end" position="top" title="Set as Active">
 						<ModuleTableActionButton
 							disabled={isMutating}
 							variant="active"

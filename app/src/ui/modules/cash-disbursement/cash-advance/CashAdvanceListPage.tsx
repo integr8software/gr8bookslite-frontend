@@ -171,7 +171,7 @@ const CashAdvanceColumns: ColumnDef<CashAdvanceRecord>[] = [
     id: "actions",
     enableSorting: false,
     header: "Actions",
-    meta: { className: "w-[9rem] text-right" },
+    meta: { className: "w-[5.5rem] px-3 text-center last:pr-3" },
   },
 ];
 
@@ -342,7 +342,7 @@ export function CashAdvanceListPage() {
               emptyDescription="Try a different party, transaction number, account, or status."
               emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
               emptyTitle="No cash advances matched"
-              minWidthClassName="min-w-[72rem]"
+              minWidthClassName="min-w-[66rem]"
               paginationLabel="entries"
               paginationStorageKey="cash-disbursement-cash-advance"
               pageSizeOptions={[5, 10, 15, 20, 25, 50]}
@@ -414,7 +414,7 @@ export function CashAdvanceListPage() {
                   <td className="px-4 py-4 align-top">
                     <StatusBadge status={original.status} />
                   </td>
-                  <td className="px-4 py-4 align-top">
+                  <td className="px-3 py-4 align-top text-center">
                     <RecordActions
                       record={original}
                       onStartNew={() => setIsDrawerOpen(true)}

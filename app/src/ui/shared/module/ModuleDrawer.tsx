@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
@@ -74,6 +75,24 @@ export function ModuleDrawer({
 	const positionStyles = drawerPositionStyles[position];
 	const sizeClassName =
 		position === "left" || position === "right" ? maxWidthClassName : "";
+
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		function handleKeyDown(event: KeyboardEvent) {
+			if (event.key === "Escape") {
+				onClose();
+			}
+		}
+
+		document.addEventListener("keydown", handleKeyDown);
+
+		return () => {
+			document.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [isOpen, onClose]);
 
 	return (
 		<AnimatePresence>

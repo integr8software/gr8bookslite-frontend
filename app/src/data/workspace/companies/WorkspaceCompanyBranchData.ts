@@ -4,6 +4,7 @@ import {
 import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import type {
 	CreateWorkspaceCompanyUnitRequest,
+	UpdateWorkspaceCompanyUnitRequest,
 } from "@/app/src/services/workspace/companies/WorkspaceCompanyUnitApi";
 import type {
 	WorkspaceCompanyBranchFormValues,
@@ -108,6 +109,29 @@ export function createWorkspaceCompanyUnitPayload(
 				: undefined,
 		tin: isSatellite ? undefined : values.tin.trim(),
 		type: isSatellite ? "SATELLITE" : "BRANCH",
+	};
+}
+
+export function createWorkspaceCompanyUnitUpdatePayload(
+	values: WorkspaceCompanyBranchFormValues,
+	headOfficeBranch?: WorkspaceCompanyBranchRecord,
+): UpdateWorkspaceCompanyUnitRequest {
+	const isSatellite = values.classification === "satellite";
+	const linkedMainBranchId =
+		values.linkedMainBranchId || headOfficeBranch?.id;
+	const parentUnitId = Number(linkedMainBranchId);
+
+	return {
+		address: optionalTrim(values.address),
+		code: createWorkspaceCompanyUnitCode(values.companyCode, values.name),
+		contactNumber: optionalTrim(values.contactNo),
+		email: optionalTrim(values.email)?.toLowerCase(),
+		name: values.name.trim(),
+		parentUnitId:
+			isSatellite && Number.isFinite(parentUnitId)
+				? parentUnitId
+				: undefined,
+		tin: isSatellite ? undefined : values.tin.trim(),
 	};
 }
 

@@ -15,7 +15,7 @@ import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import {
 	createWorkspaceCompanyBranchFormValues,
 	createWorkspaceCompanyBranchFormValuesFromRecord,
-	createWorkspaceCompanyUnitPayload,
+	createWorkspaceCompanyUnitUpdatePayload,
 	getWorkspaceCompanyHeadOfficeBranch,
 	getWorkspaceCompanyMainBranchOptions,
 } from "@/app/src/data/workspace/companies/WorkspaceCompanyBranchData";
@@ -251,7 +251,7 @@ export function useWorkspaceCompanyBranchesPage() {
 
 		updateBranchMutation.mutate({
 			branchId: selectedBranch.id,
-			payload: createWorkspaceCompanyUnitPayload(
+			payload: createWorkspaceCompanyUnitUpdatePayload(
 				selectedBranchValues,
 				headOfficeBranch,
 			),

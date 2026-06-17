@@ -30,9 +30,9 @@ export function TransactionNumberSetupTableFilters({
 				label="Mode"
 				value={scopeFilter}
 				options={[
-					{ label: "All modes", value: "any" },
-					{ label: "All branches", value: "all" },
-					{ label: "Per branch", value: "branch" },
+					{ label: "All", value: "any" },
+					{ label: "All Branches", value: "all" },
+					{ label: "Per Branch", value: "branch" },
 				]}
 				onChange={(value) =>
 					onScopeFilterChange(

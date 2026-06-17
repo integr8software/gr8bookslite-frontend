@@ -75,8 +75,10 @@ const FooterGroups = [
 	{
 		title: "Legal",
 		links: [
-			{ label: "Privacy Policy", href: "/privacy-policy" },
+			{ label: "FAQ", href: "/faq" },
+			{ label: "Contact Support", href: "mailto:support@gr8booklite.com" },
 			{ label: "Terms of Service", href: "/terms-of-service" },
+			{ label: "Privacy Policy", href: "/privacy-policy" },
 		],
 	},
 ] as const;

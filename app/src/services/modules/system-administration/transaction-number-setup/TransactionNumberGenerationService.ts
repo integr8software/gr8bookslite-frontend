@@ -11,10 +11,11 @@ type GenerateNextTransactionNumberInput = {
 };
 
 export function formatTransactionNumber(
-	setup: Pick<TransactionNumberSetupRecord, "currentNumber" | "padding" | "prefix">,
+	setup: Pick<TransactionNumberSetupRecord, "currentNumber" | "padding" | "prefix"> &
+		Partial<Pick<TransactionNumberSetupRecord, "suffix">>,
 	runningNumber = setup.currentNumber,
 ) {
-	return `${setup.prefix}${String(runningNumber).padStart(setup.padding, "0")}`;
+	return `${setup.prefix}${String(runningNumber).padStart(setup.padding, "0")}${setup.suffix ?? ""}`;
 }
 
 export function generateNextTransactionNumber({

@@ -114,7 +114,7 @@ export function PartyInformationDetailsFields({
 								onChange={onInputChange}
 								className={selectClassName}
 							>
-								<option value="">Select classification</option>
+								<option value="">--Select Classification--</option>
 								{PartyClassificationOptions.map((classification) => (
 									<option key={classification} value={classification}>
 										{classification}

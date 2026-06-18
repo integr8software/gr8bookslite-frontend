@@ -10,7 +10,7 @@ export type TransactionNumberSetupNumericFormValue = number | "";
 
 export type TransactionNumberSetupRecord = {
 	id: string;
-	permissionId: number;
+	platformSubmoduleId: number;
 	moduleCode: TransactionNumberModuleCode;
 	moduleName: string;
 	inputMode: TransactionNumberInputMode;

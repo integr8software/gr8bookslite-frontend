@@ -1,74 +1,24 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+	transactionNumberSequencesControllerFindBootstrapV1,
+	transactionNumberSequencesControllerUpdateV1,
+} from "@/app/src/generated/api/transaction-number-sequences/transaction-number-sequences";
 import type {
-	TransactionNumberInputMode,
-	TransactionNumberScope,
-	TransactionNumberSetupRecord,
-	TransactionNumberStatus,
-} from "@/app/src/types/modules/system-administration/transaction-number-setup/TransactionNumberSetupTypes";
-
-type TransactionNumberBranchResponse = {
-	code: string | null;
-	id: number;
-	name: string;
-};
-
-type TransactionNumberSequenceResponse = {
-	branchUnitId: number | null;
-	branchUnitIds: number[];
-	currentNumber: number;
-	id: number;
-	inputMode: TransactionNumberInputMode;
-	moduleCode: string;
-	moduleName: string;
-	padding: number;
-	permissionId: number;
-	prefix: string;
-	suffix: string;
-	scope: Extract<TransactionNumberScope, "all" | "branch">;
-	startingNumber: number;
-	status: TransactionNumberStatus;
-};
-
-type UpdateTransactionNumberSequencePayload = {
-	branchUnitId?: number;
-	branchUnitIds: number[];
-	currentNumber: number;
-	inputMode: TransactionNumberInputMode;
-	moduleCode: string;
-	moduleName: string;
-	padding: number;
-	prefix: string;
-	suffix: string;
-	scope: Extract<TransactionNumberScope, "all" | "branch">;
-	startingNumber: number;
-	status: TransactionNumberStatus;
-};
-
-type TransactionNumberBootstrapResponse = {
-	branches: TransactionNumberBranchResponse[];
-	sequences: TransactionNumberSequenceResponse[];
-};
-
-type SaveTransactionNumberSequenceResponse = {
-	message: string;
-	sequence: TransactionNumberSequenceResponse;
-};
-
-const TransactionNumberSequencesUrl =
-	"/system-administration/transaction-number-sequences";
+	TransactionNumberSequenceResponseDto,
+	UpdateTransactionNumberSequenceDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type { TransactionNumberSetupRecord } from "@/app/src/types/modules/system-administration/transaction-number-setup/TransactionNumberSetupTypes";
 
 export async function GetTransactionNumberSetupBootstrap() {
-	const response = await ApiClient.get<TransactionNumberBootstrapResponse>(
-		`${TransactionNumberSequencesUrl}/bootstrap`,
-	);
+	const response =
+		await transactionNumberSequencesControllerFindBootstrapV1();
 
 	return {
-		branches: response.data.branches.map((branch) => ({
+		branches: response.branches.map((branch) => ({
 			code: branch.code ?? "",
 			id: String(branch.id),
 			name: branch.name,
 		})),
-		setups: response.data.sequences.map(MapTransactionNumberSequence),
+		setups: response.sequences.map(MapTransactionNumberSequence),
 	};
 }
 
@@ -76,17 +26,17 @@ export async function UpdateTransactionNumberSetup(
 	setup: TransactionNumberSetupRecord,
 ) {
 	const values = CreateTransactionNumberSetupPayload(setup);
-	const response = await ApiClient.patch<SaveTransactionNumberSequenceResponse>(
-		`${TransactionNumberSequencesUrl}/${setup.permissionId}`,
+	const response = await transactionNumberSequencesControllerUpdateV1(
+		setup.platformSubmoduleId,
 		values,
 	);
 
-	return MapTransactionNumberSequence(response.data.sequence);
+	return MapTransactionNumberSequence(response.sequence);
 }
 
 function CreateTransactionNumberSetupPayload(
 	setup: TransactionNumberSetupRecord,
-): UpdateTransactionNumberSequencePayload {
+): UpdateTransactionNumberSequenceDto {
 	const branchUnitIds = setup.branchIds
 		.map((branchId) => Number(branchId))
 		.filter(Number.isFinite);
@@ -109,7 +59,7 @@ function CreateTransactionNumberSetupPayload(
 }
 
 function MapTransactionNumberSequence(
-	sequence: TransactionNumberSequenceResponse,
+	sequence: TransactionNumberSequenceResponseDto,
 ): TransactionNumberSetupRecord {
 	return {
 		branchIds:
@@ -119,12 +69,12 @@ function MapTransactionNumberSequence(
 						String(branchUnitId),
 					),
 		currentNumber: sequence.currentNumber,
-		id: String(sequence.permissionId),
+		id: String(sequence.platformSubmoduleId),
 		inputMode: sequence.inputMode,
 		moduleCode: sequence.moduleCode,
 		moduleName: sequence.moduleName,
 		padding: sequence.padding,
-		permissionId: sequence.permissionId,
+		platformSubmoduleId: sequence.platformSubmoduleId,
 		prefix: sequence.prefix,
 		suffix: sequence.suffix ?? "",
 		scope: sequence.scope,

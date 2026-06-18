@@ -42,7 +42,7 @@ export function TransactionNumberSetupCatalog({
 	}
 
 	return (
-		<aside className="border-b border-darknavy/10 xl:border-b-0 xl:border-r">
+		<aside className="flex min-h-0 flex-col overflow-hidden border-b border-darknavy/10 bg-white xl:m-4 xl:self-stretch xl:rounded-lg xl:border xl:border-darknavy/10 xl:shadow-sm xl:shadow-darknavy/5 xl:[contain:size]">
 			<div className="grid gap-3 border-b border-darknavy/10 p-4 xl:hidden">
 				<div>
 					<h2 className="text-sm font-semibold text-darknavy">
@@ -69,10 +69,11 @@ export function TransactionNumberSetupCatalog({
 						Transaction Modules
 					</h2>
 					<p className="mt-1 text-xs font-medium text-darknavy/55">
-						Choose a module, then update how its numbers are created.
+						Choose a module, then update how its numbers are
+						created.
 					</p>
 				</div>
-				<div className="grid gap-2">
+				<div className="grid gap-2 2xl:grid-cols-[minmax(0,1fr)_10rem]">
 					<label className="relative block">
 						<Search
 							className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/38"
@@ -100,19 +101,20 @@ export function TransactionNumberSetupCatalog({
 						}
 						disabled={isLoading}
 						className={transactionNumberFieldClassName}
-						aria-label="Filter by numbering mode"
+						aria-label="Filter by numbering scope"
 					>
-						<option value="any">All</option>
-						<option value="all">All Branches</option>
-						<option value="branch">Per Branch</option>
+						<option value="any">All scopes</option>
+						<option value="all">All branches</option>
+						<option value="branch">Separate per branch</option>
 					</select>
 				</div>
 			</div>
 
-			<div className="hidden border-b border-darknavy/10 bg-skyblue/12 px-4 py-2 text-xs font-semibold text-darknavy xl:block">
-				<span>Module Name</span>
+			<div className="hidden grid-cols-[minmax(0,1fr)_7rem] border-b border-darknavy/10 bg-skyblue/12 px-4 py-2 text-xs font-semibold text-darknavy xl:grid">
+				<span>Module</span>
+				<span>Code</span>
 			</div>
-			<div className="hidden max-h-[34rem] overflow-auto xl:block">
+			<div className="hidden min-h-0 flex-1 overflow-auto xl:block">
 				{isLoading ? (
 					<TransactionNumberSetupCatalogSkeleton />
 				) : setups.length > 0 ? (
@@ -125,7 +127,7 @@ export function TransactionNumberSetupCatalog({
 								type="button"
 								onClick={() => onSelectSetup(setup.id)}
 								className={joinClasses(
-									"block w-full border-b border-darknavy/8 px-4 py-2.5 text-left text-sm transition hover:bg-offwhite/80",
+									"grid w-full grid-cols-[minmax(0,1fr)_7rem] items-center gap-3 border-b border-darknavy/8 px-4 py-2.5 text-left text-sm transition hover:bg-offwhite/80",
 									isSelected ? "bg-citron/20" : "bg-white",
 								)}
 							>
@@ -138,6 +140,9 @@ export function TransactionNumberSetupCatalog({
 									)}
 								>
 									{setup.moduleName}
+								</span>
+								<span className="font-mono text-xs font-semibold text-darknavy/72">
+									{setup.moduleCode}
 								</span>
 							</button>
 						);
@@ -158,9 +163,10 @@ function TransactionNumberSetupCatalogSkeleton() {
 			{Array.from({ length: 12 }).map((_, index) => (
 				<div
 					key={index}
-					className="grid min-h-[2.9rem] items-center border-b border-darknavy/8 px-4 py-2.5"
+					className="grid min-h-[2.9rem] grid-cols-[minmax(0,1fr)_7rem] items-center gap-3 border-b border-darknavy/8 px-4 py-2.5"
 				>
 					<AppSkeleton className="h-4 w-3/4 rounded-md" />
+					<AppSkeleton className="h-3.5 w-12 rounded-md" />
 				</div>
 			))}
 		</div>

@@ -29,7 +29,7 @@ export function ApprovalManagementCatalog({
 	workflows,
 }: ApprovalManagementCatalogProps) {
 	return (
-		<aside className="border-b border-darknavy/10 xl:border-b-0 xl:border-r">
+		<aside className="flex min-h-0 flex-col overflow-hidden border-b border-darknavy/10 bg-white xl:m-4 xl:self-stretch xl:rounded-lg xl:border xl:border-darknavy/10 xl:shadow-sm xl:shadow-darknavy/5 xl:[contain:size]">
 			<div className="grid gap-3 border-b border-darknavy/10 p-4">
 				<div>
 					<h2 className="text-sm font-semibold text-darknavy">
@@ -75,7 +75,7 @@ export function ApprovalManagementCatalog({
 				<span>Module</span>
 				<span>Code</span>
 			</div>
-			<div className="max-h-[34rem] overflow-auto">
+			<div className="min-h-0 flex-1 overflow-auto">
 				{isLoading ? (
 					<ApprovalManagementCatalogSkeleton />
 				) : workflows.length > 0 ? (

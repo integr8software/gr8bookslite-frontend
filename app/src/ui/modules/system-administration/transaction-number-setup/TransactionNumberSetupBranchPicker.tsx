@@ -17,14 +17,14 @@ export function TransactionNumberSetupBranchPicker({
 	const isAllBranches = scope === "all";
 
 	return (
-		<section className="rounded-md border border-darknavy/10">
+		<section className="rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
 			<div className="flex items-start gap-2 border-b border-darknavy/10 px-4 py-3">
 				<Settings2
 					className="mt-0.5 h-4 w-4 text-darknavy/55"
 					aria-hidden="true"
 				/>
 				<div>
-					<h3 className="text-sm font-semibold text-darknavy">
+					<h3 className="text-base font-semibold text-darknavy">
 						Branch Coverage
 					</h3>
 					<p className="mt-1 text-xs font-medium text-darknavy/50">

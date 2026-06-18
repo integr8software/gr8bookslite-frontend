@@ -10,7 +10,7 @@ export function ApprovalManagementListPage() {
 	const page = useApprovalManagementListPage();
 
 	return (
-		<section className="grid gap-5">
+		<section className="grid min-h-0 gap-5">
 			<ModuleHeader
 				variant="panel"
 				titleAs="h1"
@@ -24,7 +24,7 @@ export function ApprovalManagementListPage() {
 				}
 			/>
 
-			<div className="grid min-h-[38rem] overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm xl:grid-cols-[minmax(22rem,0.85fr)_minmax(0,1.35fr)]">
+			<div className="grid min-h-[38rem] items-stretch overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm xl:grid-cols-[minmax(22rem,0.85fr)_minmax(0,1.35fr)]">
 				<ApprovalManagementCatalog
 					isLoading={page.isLoading}
 					query={page.query}

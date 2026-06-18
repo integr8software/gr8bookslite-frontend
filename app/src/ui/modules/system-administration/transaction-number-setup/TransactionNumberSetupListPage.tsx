@@ -10,7 +10,7 @@ export function TransactionNumberSetupListPage() {
 	const page = useTransactionNumberSetupListPage();
 
 	return (
-		<section className="grid gap-5">
+		<section className="grid min-h-0 gap-5">
 			<ModuleHeader
 				variant="panel"
 				titleAs="h1"
@@ -27,7 +27,7 @@ export function TransactionNumberSetupListPage() {
 				}
 			/>
 
-			<div className="grid overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm xl:min-h-152 xl:grid-cols-[minmax(22rem,0.8fr)_minmax(0,1.2fr)]">
+			<div className="grid min-h-[38rem] items-stretch overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm xl:grid-cols-[minmax(22rem,0.85fr)_minmax(0,1.35fr)]">
 				<TransactionNumberSetupCatalog
 					isLoading={page.isLoading}
 					query={page.query}

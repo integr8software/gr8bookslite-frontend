@@ -1,5 +1,5 @@
 import type { ChangeEventHandler, FormEventHandler } from "react";
-import { RefreshCw, Save } from "lucide-react";
+import { RefreshCw, Save, Settings2 } from "lucide-react";
 import {
 	TransactionNumberInputModeOptions,
 	TransactionNumberScopeOptions,
@@ -59,16 +59,26 @@ export function TransactionNumberSetupEditor({
 	return (
 		<form
 			onSubmit={onSubmit}
-			className="grid content-start gap-5 p-4 lg:p-5"
+			className="grid min-h-0 content-start gap-4 bg-offwhite/25 p-4 lg:p-5"
 		>
-			<div className="flex flex-wrap items-start justify-between gap-3">
-				<div>
-					<p className="text-xs font-semibold uppercase tracking-wide text-darknavy/45">
-						Selected module
-					</p>
-					<h2 className="mt-1 text-xl font-semibold text-darknavy">
+			<div className="flex flex-wrap items-center justify-between gap-4 border-b border-darknavy/10 pb-4">
+				<div className="min-w-0">
+					<h2 className="truncate text-xl font-semibold tracking-tight text-darknavy">
 						{selectedSetup.moduleName}
 					</h2>
+					<div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+						<span className="rounded-md border border-skyblue/15 bg-skyblue/8 px-2 py-0.5 font-mono text-skyblue">
+							{selectedSetup.moduleCode}
+						</span>
+						<span className="rounded-md border border-darknavy/8 bg-offwhite/60 px-2 py-0.5 text-darknavy/65">
+							{values.inputMode} numbering
+						</span>
+						<span className="rounded-md border border-darknavy/8 bg-offwhite/60 px-2 py-0.5 text-darknavy/55">
+							{values.scope === "all"
+								? "All branches"
+								: "Separate per branch"}
+						</span>
+					</div>
 				</div>
 				<button
 					type="submit"
@@ -83,11 +93,11 @@ export function TransactionNumberSetupEditor({
 					) : (
 						<Save className="h-4 w-4" aria-hidden="true" />
 					)}
-					Update
+					Update Setup
 				</button>
 			</div>
 
-			<div className="flex flex-col gap-5">
+			<div className="flex flex-col gap-4">
 				<TransactionNumberSetupNumberingSection
 					errors={errors}
 					nextNumberPreview={nextNumberPreview}
@@ -122,8 +132,17 @@ function TransactionNumberSetupNumberingSection({
 	const isManualMode = values.inputMode === "Manual";
 
 	return (
-		<section className="rounded-md border border-darknavy/10 p-4">
-			<div className="grid gap-4 md:grid-cols-2">
+		<section className="rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
+			<div className="flex items-center gap-2 border-b border-darknavy/10 px-4 py-3">
+				<Settings2
+					className="h-4 w-4 text-darknavy/55"
+					aria-hidden="true"
+				/>
+				<h3 className="text-base font-semibold text-darknavy">
+					Numbering Details
+				</h3>
+			</div>
+			<div className="grid gap-4 p-4 md:grid-cols-2">
 				<TransactionNumberSetupField
 					label="Branches"
 					error={errors.branchIds}
@@ -158,7 +177,10 @@ function TransactionNumberSetupNumberingSection({
 						))}
 					</select>
 				</TransactionNumberSetupField>
-				<TransactionNumberSetupField label="Prefix" error={errors.prefix}>
+				<TransactionNumberSetupField
+					label="Prefix"
+					error={errors.prefix}
+				>
 					<input
 						name="prefix"
 						value={values.prefix}
@@ -167,7 +189,10 @@ function TransactionNumberSetupNumberingSection({
 						className={`${transactionNumberFieldClassName} font-mono`}
 					/>
 				</TransactionNumberSetupField>
-				<TransactionNumberSetupField label="Suffix" error={errors.suffix}>
+				<TransactionNumberSetupField
+					label="Suffix"
+					error={errors.suffix}
+				>
 					<input
 						name="suffix"
 						value={values.suffix}
@@ -176,7 +201,10 @@ function TransactionNumberSetupNumberingSection({
 						className={`${transactionNumberFieldClassName} font-mono`}
 					/>
 				</TransactionNumberSetupField>
-				<TransactionNumberSetupField label="Digit" error={errors.padding}>
+				<TransactionNumberSetupField
+					label="Digit"
+					error={errors.padding}
+				>
 					<input
 						name="padding"
 						inputMode="numeric"

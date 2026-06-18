@@ -185,7 +185,7 @@ export default function Home() {
 
       <section
         id="modules"
-        className="landing-modules-section border-y border-slate-200 bg-white px-5 py-18 sm:px-8 lg:px-10"
+        className="landing-modules-section bg-white px-5 py-18 sm:px-8 lg:px-10"
       >
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-end">

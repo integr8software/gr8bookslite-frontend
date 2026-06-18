@@ -7,6 +7,7 @@ export type PricingFeature = {
 export type PricingPlan = {
   code: string;
   name: string;
+  description?: string;
   monthlyPrice: string;
   yearlyPrice: string;
   monthlyCompareAtPrice?: string;
@@ -42,6 +43,7 @@ export const PricingPlans: PricingPlan[] = [
   {
     code: "ACCOUNTING",
     name: "Accounting",
+    description: "Essential bookkeeping and financial tools for growing teams.",
     monthlyPrice: "PHP 399.00",
     yearlyPrice: "PHP 3,990.00",
     monthlyCompareAtPrice: "PHP 499.00",
@@ -62,6 +64,7 @@ export const PricingPlans: PricingPlan[] = [
   {
     code: "ACCOUNTING_INVENTORY",
     name: "Accounting & Inventory",
+    description: "Keep your books and stock movement in one connected workspace.",
     monthlyPrice: "PHP 499.00",
     yearlyPrice: "PHP 4,990.00",
     monthlyCompareAtPrice: "PHP 599.00",
@@ -83,6 +86,7 @@ export const PricingPlans: PricingPlan[] = [
   {
     code: "ADDITIONAL_COMPANY",
     name: "Additional Company",
+    description: "Bring another business entity into your existing workspace.",
     monthlyPrice: "PHP 100.00",
     yearlyPrice: "PHP 1,000.00",
     monthlyCompareAtPrice: "PHP 125.00",

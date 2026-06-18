@@ -103,9 +103,9 @@ export function TransactionNumberSetupCatalog({
 						className={transactionNumberFieldClassName}
 						aria-label="Filter by numbering scope"
 					>
-						<option value="any">All scopes</option>
-						<option value="all">All branches</option>
-						<option value="branch">Separate per branch</option>
+						<option value="any">All Scopes</option>
+						<option value="all">All Branches</option>
+						<option value="branch">Separate per Branch</option>
 					</select>
 				</div>
 			</div>

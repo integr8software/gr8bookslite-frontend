@@ -24,6 +24,7 @@ import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppSearchSuggestions } from "@/app/src/ui/shared/search-suggestions/AppSearchSuggestions";
 
 type FlowState = {
 	barangayCode: string;
@@ -392,6 +393,10 @@ function AutocompleteTester({
 		useState<AddressAutocompleteItem | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
+	const sortedAddresses = useMemo(
+		() => sortAutocompleteAddresses(addresses, withRegion),
+		[addresses, withRegion],
+	);
 
 	const selectedRegion = useMemo(
 		() => regions.find((region) => region.regionCode === regionCode),
@@ -567,65 +572,46 @@ function AutocompleteTester({
 		>
 			{error ? <InlineError message={error} /> : null}
 
-			<div className="grid gap-4">
-				<TextField
-					label="Search"
-					placeholder="Type barangay, city, province, or code"
-					value={query}
-					onChange={(value) => {
-						setQuery(value);
-						setSelectedAddress(null);
-						setResolvedState(EmptyFlowState);
-						setProvinces([]);
-						setCitiesMunicipalities([]);
-						setBarangays([]);
-						if (value.trim().length < 2) {
-							setAddresses([]);
-						}
-					}}
-				/>
-			</div>
-
-			<div className="grid gap-3">
-				<div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
-					<span>Results</span>
-					<span>{isLoading ? "Loading" : `${addresses.length} matches`}</span>
-				</div>
-				<div className="max-h-72 overflow-auto rounded-lg border border-slate-200 bg-slate-50">
-					{addresses.length > 0 ? (
-						addresses.map((address) => (
-							<button
-								key={address.barangay.code}
-								type="button"
-								className="block w-full border-b border-slate-200 px-4 py-3 text-left transition last:border-b-0 hover:bg-white"
-								onClick={() => void selectAutocompleteAddress(address)}
-							>
-								<span className="block text-sm font-semibold text-slate-900">
-									{formatAutocompleteLabel(address, withRegion)}
-								</span>
-								<span className="mt-1 block text-xs text-slate-500">
-									{withRegion
-										? "Includes region in label"
-										: "Region omitted from label"}
-								</span>
-							</button>
-						))
-					) : (
-						<div className="px-4 py-6 text-sm text-slate-500">
-							{query.trim().length < 2
-								? "Type at least two characters."
-								: "No matches yet."}
-						</div>
-					)}
-				</div>
-			</div>
+			<AppSearchSuggestions
+				emptyMessage="No matches yet."
+				getDescription={(address) =>
+					withRegion
+						? `Barangay - ${normalizeAddressText(address.barangay.name)}`
+						: `Address - ${formatAutocompleteLabel(address, false)}`
+				}
+				getKey={(address) => address.barangay.code}
+				getTitle={(address) => formatAutocompleteLabel(address, withRegion)}
+				id={
+					withRegion ? "address-autocomplete-region" : "address-autocomplete"
+				}
+				inputLabel="Search address"
+				isLoading={isLoading}
+				items={sortedAddresses}
+				maxVisibleItems={10}
+				minQueryLength={2}
+				placeholder="Type barangay, city, province, or code"
+				query={query}
+				resultIcon={MapPin}
+				onQueryChange={(value) => {
+					setQuery(value);
+					setSelectedAddress(null);
+					setResolvedState(EmptyFlowState);
+					setProvinces([]);
+					setCitiesMunicipalities([]);
+					setBarangays([]);
+					if (value.trim().length < 2) {
+						setAddresses([]);
+					}
+				}}
+				onSelect={(address) => void selectAutocompleteAddress(address)}
+			/>
 
 			<div className="grid gap-4 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-2">
 				<DropdownField
 					label="Region"
 					value={resolvedState.regionCode}
 					options={regions.map((region) => ({
-						name: region.name,
+						name: normalizeAddressText(region.name),
 						value: region.regionCode,
 					}))}
 					placeholder="Auto-filled region"
@@ -637,7 +623,7 @@ function AutocompleteTester({
 					label="Province"
 					value={resolvedState.provinceCode}
 					options={provinces.map((province) => ({
-						name: province.name,
+						name: normalizeAddressText(province.name),
 						value: province.provinceCode,
 					}))}
 					placeholder="Auto-filled province"
@@ -649,7 +635,7 @@ function AutocompleteTester({
 					label="City/Municipality"
 					value={resolvedState.cityMunicipalityCode}
 					options={citiesMunicipalities.map((cityMunicipality) => ({
-						name: cityMunicipality.name,
+						name: normalizeAddressText(cityMunicipality.name),
 						value: cityMunicipality.cityMunicipalityCode,
 					}))}
 					placeholder="Auto-filled city or municipality"
@@ -661,7 +647,7 @@ function AutocompleteTester({
 					label="Barangay"
 					value={resolvedState.barangayCode}
 					options={barangays.map((barangay) => ({
-						name: barangay.name,
+						name: normalizeAddressText(barangay.name),
 						value: barangay.barangayCode,
 					}))}
 					placeholder="Auto-filled barangay"
@@ -677,7 +663,7 @@ function AutocompleteTester({
 					selectedAddress
 						? formatAutocompleteLabel(selectedAddress, withRegion)
 						: selectedRegion
-							? `Filtered by ${selectedRegion.name}`
+							? `Filtered by ${normalizeAddressText(selectedRegion.name)}`
 							: ""
 				}
 				isLoading={isLoading}
@@ -739,6 +725,7 @@ function DropdownField({
 				options={options}
 				placeholder={placeholder}
 				searchPlaceholder={`Search ${label.toLowerCase()}`}
+				showSelectionIndicator={false}
 				value={value}
 				onChange={(nextValue) =>
 					onChange(Array.isArray(nextValue) ? (nextValue[0] ?? "") : nextValue)
@@ -825,7 +812,7 @@ function composeAddress({
 	street?: string;
 }) {
 	return [street, barangay, cityMunicipality, province, region]
-		.map((part) => part?.trim())
+		.map((part) => normalizeAddressText(part))
 		.filter(Boolean)
 		.join(", ");
 }
@@ -836,6 +823,7 @@ function composeAutocompleteShortLabel(address: AddressAutocompleteItem) {
 		address.cityMunicipality.name,
 		address.province.name,
 	]
+		.map((part) => normalizeAddressText(part))
 		.filter(Boolean)
 		.join(", ");
 }
@@ -847,6 +835,7 @@ function composeAutocompleteFullLabel(address: AddressAutocompleteItem) {
 		address.province.name,
 		address.region.name,
 	]
+		.map((part) => normalizeAddressText(part))
 		.filter(Boolean)
 		.join(", ");
 }
@@ -858,6 +847,37 @@ function formatAutocompleteLabel(
 	return withRegion
 		? composeAutocompleteFullLabel(address)
 		: composeAutocompleteShortLabel(address);
+}
+
+function sortAutocompleteAddresses(
+	addresses: AddressAutocompleteItem[],
+	withRegion: boolean,
+) {
+	return [...addresses].sort((firstAddress, secondAddress) =>
+		formatAutocompleteLabel(firstAddress, withRegion).localeCompare(
+			formatAutocompleteLabel(secondAddress, withRegion),
+			undefined,
+			{ sensitivity: "base" },
+		),
+	);
+}
+
+function normalizeAddressText(value?: string) {
+	const trimmedValue = value?.trim();
+
+	if (!trimmedValue) {
+		return "";
+	}
+
+	return trimmedValue
+		.toLocaleLowerCase()
+		.replace(/\b[a-z]/g, (letter) => letter.toLocaleUpperCase())
+		.replace(/\b(?:i|ii|iii|iv|v|vi|vii|viii|ix|x)(?:-[a-z])?\b/gi, (code) =>
+			code.toLocaleUpperCase(),
+		)
+		.replace(/\(([^)]+)\)/g, (_, text: string) =>
+			`(${text.toLocaleUpperCase()})`,
+		);
 }
 
 function getErrorMessage(error: unknown) {

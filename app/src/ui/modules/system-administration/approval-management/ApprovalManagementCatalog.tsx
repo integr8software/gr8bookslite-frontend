@@ -3,6 +3,10 @@ import type {
 	ApprovalManagementRecord,
 	ApprovalManagementStatus,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
+import {
+	AppAdvancedDropdown,
+	type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { approvalManagementFieldClassName } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementUi";
@@ -28,9 +32,42 @@ export function ApprovalManagementCatalog({
 	statusFilter,
 	workflows,
 }: ApprovalManagementCatalogProps) {
+	const dropdownOptions = workflows.map<AppAdvancedDropdownOption>((workflow) => ({
+		description: workflow.moduleCode,
+		label: workflow.status,
+		name: workflow.moduleName,
+		value: workflow.id,
+	}));
+
+	function handleDropdownChange(value: string | string[]) {
+		if (typeof value === "string" && value) {
+			onSelectWorkflow(value);
+		}
+	}
+
 	return (
 		<aside className="flex min-h-0 flex-col overflow-hidden border-b border-darknavy/10 bg-white xl:m-4 xl:self-stretch xl:rounded-lg xl:border xl:border-darknavy/10 xl:shadow-sm xl:shadow-darknavy/5 xl:[contain:size]">
-			<div className="grid gap-3 border-b border-darknavy/10 p-4">
+			<div className="grid gap-3 border-b border-darknavy/10 p-4 xl:hidden">
+				<div>
+					<h2 className="text-sm font-semibold text-darknavy">
+						Approval workflows
+					</h2>
+					<p className="mt-1 text-xs font-medium text-darknavy/55">
+						Choose one workflow to edit.
+					</p>
+				</div>
+				<AppAdvancedDropdown
+					disabled={isLoading}
+					emptyMessage="No approval workflows match the current search."
+					options={dropdownOptions}
+					placeholder="Select workflow"
+					searchPlaceholder="Search workflow"
+					value={selectedWorkflowId ?? ""}
+					onChange={handleDropdownChange}
+				/>
+			</div>
+
+			<div className="hidden gap-3 border-b border-darknavy/10 p-4 xl:grid">
 				<div>
 					<h2 className="text-sm font-semibold text-darknavy">
 						Approval workflows
@@ -39,7 +76,7 @@ export function ApprovalManagementCatalog({
 						Choose one workflow to edit. This keeps approval paths aligned.
 					</p>
 				</div>
-				<div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_10rem] xl:grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_10rem]">
+				<div className="grid gap-2 2xl:grid-cols-[minmax(0,1fr)_10rem]">
 					<label className="relative block">
 						<Search
 							className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/38"
@@ -64,18 +101,18 @@ export function ApprovalManagementCatalog({
 						className={approvalManagementFieldClassName}
 						aria-label="Filter by workflow status"
 					>
-						<option value="any">All status</option>
+						<option value="any">All Status</option>
 						<option value="Active">Active</option>
 						<option value="Inactive">Inactive</option>
 					</select>
 				</div>
 			</div>
 
-			<div className="grid grid-cols-[minmax(0,1fr)_7rem] border-b border-darknavy/10 bg-skyblue/12 px-4 py-2 text-xs font-semibold text-darknavy">
+			<div className="hidden grid-cols-[minmax(0,1fr)_7rem] border-b border-darknavy/10 bg-skyblue/12 px-4 py-2 text-xs font-semibold text-darknavy xl:grid">
 				<span>Module</span>
 				<span>Code</span>
 			</div>
-			<div className="min-h-0 flex-1 overflow-auto">
+			<div className="hidden min-h-0 flex-1 overflow-auto xl:block">
 				{isLoading ? (
 					<ApprovalManagementCatalogSkeleton />
 				) : workflows.length > 0 ? (

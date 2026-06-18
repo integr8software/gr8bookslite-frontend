@@ -1,10 +1,4 @@
-export type ApprovalManagementModuleCode =
-	| "DV"
-	| "CR"
-	| "JV"
-	| "PR"
-	| "PO"
-	| "RR";
+export type ApprovalManagementModuleCode = string;
 
 export type ApprovalStageRequirement = "any" | "all";
 

@@ -6,6 +6,8 @@ export type TransactionNumberScope = "all" | "branch" | "shared";
 
 export type TransactionNumberStatus = "Active" | "Inactive";
 
+export type TransactionNumberSetupNumericFormValue = number | "";
+
 export type TransactionNumberSetupRecord = {
 	id: string;
 	permissionId: number;
@@ -13,6 +15,7 @@ export type TransactionNumberSetupRecord = {
 	moduleName: string;
 	inputMode: TransactionNumberInputMode;
 	prefix: string;
+	suffix: string;
 	padding: number;
 	startingNumber: number;
 	currentNumber: number;
@@ -27,9 +30,10 @@ export type TransactionNumberSetupFormValues = {
 	moduleCode: TransactionNumberModuleCode | "";
 	inputMode: TransactionNumberInputMode;
 	prefix: string;
-	padding: number;
-	startingNumber: number;
-	currentNumber: number;
+	suffix: string;
+	padding: TransactionNumberSetupNumericFormValue;
+	startingNumber: TransactionNumberSetupNumericFormValue;
+	currentNumber: TransactionNumberSetupNumericFormValue;
 	scope: TransactionNumberScope;
 	branchIds: string[];
 	status: TransactionNumberStatus;

@@ -5,7 +5,6 @@ import { useState } from "react";
 import Link from "next/link";
 import {
 	Check,
-	LoaderCircle,
 	LockKeyhole,
 	Mail,
 	Phone,
@@ -22,9 +21,11 @@ import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
 import { AuthDivider } from "@/app/src/ui/auth/AuthDivider";
 import { AuthField } from "@/app/src/ui/auth/AuthField";
 import { AuthFormCard } from "@/app/src/ui/auth/AuthFormCard";
+import { AuthSwitchLink } from "@/app/src/ui/auth/AuthFormTransition";
 import { AuthGoogleButton } from "@/app/src/ui/auth/AuthGoogleButton";
 import { AuthPageShell } from "@/app/src/ui/auth/AuthPageShell";
 import { AuthPasswordRequirements } from "@/app/src/ui/auth/AuthPasswordRequirements";
+import { AuthSubmitButton } from "@/app/src/ui/auth/AuthSubmitButton";
 
 type SignUpFormValues = Required<
 	Pick<
@@ -246,31 +247,24 @@ export function SignUpForm() {
 						</p>
 					) : null}
 
-					<button
-						type="submit"
-						disabled={pending}
-						className="flex h-12 w-full items-center justify-center rounded-lg bg-darknavy px-5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(33,39,56,0.20)] transition hover:bg-sky-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/30 disabled:cursor-not-allowed disabled:opacity-60 sm:col-span-2"
-					>
-						{pending ? (
-							<>
-								<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-								Creating account...
-							</>
-						) : (
-							"Create account"
-						)}
-					</button>
+					<div className="sm:col-span-2">
+						<AuthSubmitButton
+							idleLabel="Create account"
+							pendingLabel="Creating account..."
+							pending={pending}
+						/>
+					</div>
 				</form>
 
 				<p className="mt-7 border-t border-darknavy/10 pt-7 text-center text-sm text-darknavy/60">
 					Already have an account?{" "}
-					<Link
+					<AuthSwitchLink
 						href="/login"
-						transitionTypes={["auth-back"]}
+						direction="back"
 						className="font-semibold text-darknavy transition hover:text-sky-700"
 					>
 						Sign in
-					</Link>
+					</AuthSwitchLink>
 				</p>
 			</AuthFormCard>
 		</AuthPageShell>

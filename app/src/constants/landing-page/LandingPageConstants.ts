@@ -4,9 +4,10 @@ import type {
 } from "@/app/src/types/landing-page/LandingPageTypes";
 
 export const LandingPageNavigationLinks = [
-	{ label: "Modules", href: "/modules" },
-	{ label: "Why Gr8Books", href: "/why-gr8books" },
-	{ label: "Pricing", href: "/pricing" },
+	{ label: "Product", href: "/#product" },
+	{ label: "Features", href: "/#features" },
+	{ label: "Testimonials", href: "/#testimonials" },
+	{ label: "Pricing", href: "/#pricing" },
 ] as const satisfies readonly LandingPageLink[];
 
 export const LandingPageFooterGroups = [

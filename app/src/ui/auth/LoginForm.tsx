@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { LoaderCircle, LockKeyhole, Mail } from "lucide-react";
+import { LockKeyhole, Mail } from "lucide-react";
 import { useGoogleAuthSessionRedirect } from "@/app/src/hooks/auth/useGoogleAuthSessionRedirect";
 import { useLoginForm } from "@/app/src/hooks/auth/useLoginForm";
 import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
 import { AuthDivider } from "@/app/src/ui/auth/AuthDivider";
 import { AuthField } from "@/app/src/ui/auth/AuthField";
 import { AuthFormCard } from "@/app/src/ui/auth/AuthFormCard";
+import { AuthSwitchLink } from "@/app/src/ui/auth/AuthFormTransition";
 import { AuthGoogleButton } from "@/app/src/ui/auth/AuthGoogleButton";
 import { AuthPageShell } from "@/app/src/ui/auth/AuthPageShell";
+import { AuthSubmitButton } from "@/app/src/ui/auth/AuthSubmitButton";
 import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
 import { MainLoadingScreen } from "@/app/src/ui/shared/app/MainLoadingScreen";
 
@@ -91,32 +93,23 @@ export function LoginForm() {
 						</Link>
 					</div>
 
-					<button
-						type="submit"
-						disabled={pending}
-						className="flex h-12 w-full items-center justify-center rounded-lg bg-darknavy px-5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(33,39,56,0.20)] transition hover:bg-sky-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/30 disabled:cursor-not-allowed disabled:opacity-60"
-					>
-						{pending ? (
-							<>
-								<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-								Signing in...
-							</>
-						) : (
-							"Sign in"
-						)}
-					</button>
+					<AuthSubmitButton
+						idleLabel="Sign in"
+						pendingLabel="Signing in..."
+						pending={pending}
+					/>
 				</form>
 
 				<div className="mt-8 border-t border-darknavy/10 pt-7 text-center">
 					<p className="text-sm text-darknavy/60">
 						Don&apos;t have an account?{" "}
-						<Link
+						<AuthSwitchLink
 							href="/signup"
-							transitionTypes={["auth-forward"]}
+							direction="forward"
 							className="font-semibold text-darknavy transition hover:text-sky-700"
 						>
 							Create one free
-						</Link>
+						</AuthSwitchLink>
 					</p>
 					<p className="mt-5 text-xs leading-5 text-darknavy/45">
 						By signing in, you agree to our{" "}

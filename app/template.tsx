@@ -1,11 +1,7 @@
 import type { ReactNode } from "react";
 import { ViewTransition } from "react";
 
-export default function AuthTemplate({
-	children,
-}: {
-	children: ReactNode;
-}) {
+export default function RootTemplate({ children }: Readonly<{ children: ReactNode }>) {
 	return (
 		<ViewTransition
 			enter={{

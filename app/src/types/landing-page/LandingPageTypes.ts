@@ -24,6 +24,10 @@ export type LandingPageHighlight = {
   text: string;
 };
 
+export type LandingPageFeature = LandingPageHighlight & {
+  bullets: readonly string[];
+};
+
 export type LandingPageFooterGroup = {
   title: string;
   links: readonly LandingPageLink[];

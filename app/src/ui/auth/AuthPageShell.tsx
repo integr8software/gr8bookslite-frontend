@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AuthFormTransition } from "@/app/src/ui/auth/AuthFormTransition";
 
 export function AuthPageShell({ children }: Readonly<{ children: ReactNode }>) {
 	return (
@@ -12,7 +13,7 @@ export function AuthPageShell({ children }: Readonly<{ children: ReactNode }>) {
 				aria-hidden="true"
 			/>
 			<section className="relative flex min-h-[calc(100vh-5rem)] items-center justify-center px-5 py-10 sm:px-8">
-				{children}
+				<AuthFormTransition>{children}</AuthFormTransition>
 			</section>
 		</main>
 	);

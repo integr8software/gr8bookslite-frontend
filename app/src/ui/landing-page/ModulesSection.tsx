@@ -4,14 +4,14 @@ import { motion } from "framer-motion";
 import { LandingPageModules } from "@/app/src/data/landing-page/LandingPageData";
 import { useLandingModuleCarousel } from "@/app/src/hooks/landing-page/useLandingModuleCarousel";
 import type { LandingPageModule } from "@/app/src/types/landing-page/LandingPageTypes";
-import { LandingPageIcon } from "@/app/src/ui/landing-page/LandingPageIcon";
+import { FeatureIcon } from "@/app/src/ui/landing-page/FeatureIcon";
 
-export function LandingModulesSection() {
+export function ModulesSection() {
 	const { trackRef, x, handleDragStart, handleDragEnd } =
 		useLandingModuleCarousel();
 
 	return (
-		<section className="landing-section landing-section-compact landing-modules-section bg-white">
+		<section className="landing-section landing-modules-section bg-white">
 			<div className="landing-section-content">
 				<div className="landing-module-marquee-wrap">
 					<div className="landing-module-marquee">
@@ -51,7 +51,7 @@ function LandingModuleCard({
 		<article className="landing-module-card group">
 			<div className="flex items-start justify-between gap-4">
 				<div className="landing-module-icon flex h-12 w-12 items-center justify-center rounded-md bg-sky-50 text-sky-700 transition group-hover:bg-white">
-					<LandingPageIcon name={module.icon} className="h-5 w-5" />
+					<FeatureIcon name={module.icon} className="h-5 w-5" />
 				</div>
 			</div>
 			<h3 className="mt-5 text-lg font-semibold text-slate-950">

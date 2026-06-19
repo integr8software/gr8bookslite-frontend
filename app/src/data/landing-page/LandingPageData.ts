@@ -1,7 +1,35 @@
 import type {
+	LandingPageFeature,
   LandingPageHighlight,
   LandingPageModule,
 } from "@/app/src/types/landing-page/LandingPageTypes";
+
+export const FeatureCards = [
+	{
+		icon: "sales",
+		title: "Automated invoicing",
+		text: "Create, send, and reconcile invoices from one connected sales workflow.",
+		bullets: ["Reusable transaction flows", "Connected customer records"],
+	},
+	{
+		icon: "accounting",
+		title: "Tax-ready records",
+		text: "Keep journals, ledgers, and source transactions organized for reporting.",
+		bullets: ["Structured financial records", "Audit-friendly history"],
+	},
+	{
+		icon: "reports",
+		title: "Bank-ready workflows",
+		text: "Bring cash activity and financial records into the same operating view.",
+		bullets: ["Clear transaction status", "Connected chart of accounts"],
+	},
+	{
+		icon: "approvals",
+		title: "Compliance controls",
+		text: "Use approvals, roles, and audit trails to keep work accountable.",
+		bullets: ["Role-based workspace access", "Traceable approval actions"],
+	},
+] as const satisfies readonly LandingPageFeature[];
 
 export const LandingPageBenefits = [
   "Accounting and inventory in one operating view",

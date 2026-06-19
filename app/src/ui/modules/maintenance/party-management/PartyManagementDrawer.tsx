@@ -72,7 +72,7 @@ export function PartyManagementDrawer({
 					...current,
 					classification: value as PartyInformationFormValues["classification"],
 					partyName: "",
-					tradingName: "",
+					tradeName: "",
 					firstName: "",
 					middleName: "",
 					lastName: "",

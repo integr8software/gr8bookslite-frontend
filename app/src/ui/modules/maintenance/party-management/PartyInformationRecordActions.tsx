@@ -45,7 +45,7 @@ export function PartyInformationRecordActions({
 
 	return (
 		<>
-			<ModuleTableActions className="justify-center">
+			<ModuleTableActions className="w-full !justify-center">
 				<ModuleTooltip align="end" position="top" title="View">
 					<ModuleTableActionLink
 						variant="view"
@@ -115,7 +115,7 @@ function createPartyInformationRecordFromTableRecord(
 		status: record.status,
 		suffixName: record.suffixName,
 		tin: record.tin,
-		tradingName: record.tradingName,
+		tradeName: record.tradeName,
 		updatedAt: record.updatedAt,
 		vatRegistrationType: record.vatRegistrationType,
 	};

@@ -130,7 +130,7 @@ function AppPartyDialogContent({
           ...current,
           classification: value as PartyInformationFormValues["classification"],
           partyName: "",
-          tradingName: "",
+          tradeName: "",
           firstName: "",
           middleName: "",
           lastName: "",
@@ -386,11 +386,10 @@ function AppPartyDialogContent({
                       key={currentType}
                       type="button"
                       onClick={() => handlePartyTypeChange(currentType)}
-                      className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${
-                        partyType === currentType
+                      className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${partyType === currentType
                           ? "theme-accent-contrast-text border-skyblue bg-skyblue"
                           : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/40 hover:bg-skyblue/8"
-                      }`}
+                        }`}
                     >
                       {currentType}
                     </button>

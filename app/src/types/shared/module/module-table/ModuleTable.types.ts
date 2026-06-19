@@ -11,6 +11,7 @@ export type ModuleTableProps<TData> = {
 	paginationLabel?: string;
 	paginationPageLimit?: number;
 	paginationStorageKey?: string;
+	paginationTotalRows?: number;
 	pageSizeOptions?: number[];
 	renderRow: (row: Row<TData>) => ReactNode;
 	skeletonRowCount?: number;

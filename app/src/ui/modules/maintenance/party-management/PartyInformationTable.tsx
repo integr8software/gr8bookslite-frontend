@@ -29,6 +29,7 @@ export function PartyInformationTable({
 				isLoading={isLoading}
 				minWidthClassName="min-w-[64rem]"
 				paginationStorageKey={PartyManagementTablePaginationStorageKey}
+				paginationTotalRows={partyTable.totalRows}
 				table={partyTable.table}
 				toolbar={
 					<PartyInformationTableFilters

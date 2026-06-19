@@ -77,7 +77,7 @@ export const PartyManagementTableColumns = [
   },
   { key: "partyTypesLabel", label: "Type", className: "w-[12rem]" },
   { key: "addressLabel", label: "Address", className: "w-[28rem]" },
-  { key: "status", label: "Status", className: "w-[9rem]" },
+  { key: "status", label: "Status", className: "w-[9rem] text-center" },
   {
     label: "Actions",
     className: "w-[12rem] text-center",

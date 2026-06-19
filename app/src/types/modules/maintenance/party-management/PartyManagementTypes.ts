@@ -33,7 +33,7 @@ export type PartyInformationRecord = {
   partyTypes: PartyType[];
   status: PartyInformationStatus;
   partyName: string;
-  tradingName: string;
+  tradeName: string;
   firstName: string;
   middleName: string;
   lastName: string;
@@ -54,7 +54,7 @@ export type PartyInformationFormValues = {
   partyTypes: PartyType[];
   status: PartyInformationStatus;
   partyName: string;
-  tradingName: string;
+  tradeName: string;
   firstName: string;
   middleName: string;
   lastName: string;
@@ -108,10 +108,31 @@ export type PartyInformationTableRecord = PartyInformationRecord & {
   partyTypesLabel: string;
 };
 
+export type PartyManagementListSort = {
+  desc: boolean;
+  id: PartyInformationTableColumnKey | "actions";
+};
+
+export type PartyManagementListQuery = {
+  classification: PartyClassification | "All";
+  pageIndex: number;
+  pageSize: number;
+  partyType: PartyType | "All";
+  query: string;
+  sort?: PartyManagementListSort;
+  status: PartyInformationStatus | "All";
+};
+
+export type PartyManagementListResponse = {
+  records: PartyInformationRecord[];
+  totalRows: number;
+};
+
 export type PartyManagementAnalytics = {
   activepartyName: number;
   inactivepartyName: number;
   individualpartyName: number;
+  multiTypepartyName: number;
   organizationpartyName: number;
   totalpartyName: number;
 };

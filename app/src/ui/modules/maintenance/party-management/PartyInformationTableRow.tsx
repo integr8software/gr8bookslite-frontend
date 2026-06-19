@@ -12,7 +12,7 @@ export function PartyInformationTableRow({
 			{row.getVisibleCells().map((cell) => (
 				<PartyInformationTableCell
 					key={cell.id}
-					align={cell.column.id === "actions" ? "center" : "left"}
+					align={isCenteredColumn(cell.column.id) ? "center" : "left"}
 				>
 					<PartyInformationCellContent
 						columnId={cell.column.id}
@@ -22,6 +22,10 @@ export function PartyInformationTableRow({
 			))}
 		</tr>
 	);
+}
+
+function isCenteredColumn(columnId: string) {
+	return columnId === "actions" || columnId === "status";
 }
 
 function PartyInformationCellContent({
@@ -48,9 +52,16 @@ function PartyInformationCellContent({
 			);
 		case "partyTypesLabel":
 			return (
-				<span className="inline-flex min-h-6 items-center rounded bg-darknavy/5 px-2 text-xs font-semibold text-darknavy/70 ring-1 ring-darknavy/10">
-					{record.partyTypesLabel}
-				</span>
+				<div className="flex flex-wrap items-center gap-1.5">
+					{record.partyTypes.map((partyType) => (
+						<span
+							key={partyType}
+							className="inline-flex min-h-6 items-center rounded bg-darknavy/5 px-2 text-xs font-semibold text-darknavy/70 ring-1 ring-darknavy/10"
+						>
+							{partyType}
+						</span>
+					))}
+				</div>
 			);
 		case "addressLabel":
 			return <span className="text-sm text-darknavy/75">{record.addressLabel}</span>;

@@ -128,7 +128,9 @@ export function PartyInformationDetailsFields({
 								isSearchable={false}
 								options={partyTypeSelectOptions}
 								placeholder="Select party type"
+								removeSelectionOnSelectedOptionClick={false}
 								selectionMode="multiple"
+								showSelectionRemoveButton={false}
 								value={values.partyTypes}
 								onChange={onPartyTypesChange}
 							/>
@@ -163,10 +165,10 @@ export function PartyInformationDetailsFields({
 								className={fieldClassName}
 							/>
 						</Field>
-						<Field label="Trading Name">
+						<Field label="Trade Name">
 							<input
-								name="tradingName"
-								value={values.tradingName}
+								name="tradeName"
+								value={values.tradeName}
 								onChange={onInputChange}
 								readOnly={isReadonly}
 								disabled={isDetailsDisabled}
@@ -295,7 +297,7 @@ export function PartyInformationDetailsFields({
 								onChange={onInputChange}
 								className={selectClassName}
 							>
-								<option value="">Select VAT type</option>
+								<option value="">--Select VAT Type--</option>
 								{VatRegistrationTypeOptions.map((type) => (
 									<option key={type} value={type}>
 										{type}

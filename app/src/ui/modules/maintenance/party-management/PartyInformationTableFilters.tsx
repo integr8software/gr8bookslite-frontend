@@ -51,7 +51,7 @@ export function PartyInformationTableFilters({
 			className="!gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3"
 			style={{
 				gridTemplateColumns:
-					"minmax(8rem,1.2fr) minmax(6rem,0.8fr) minmax(6rem,0.8fr) minmax(5.75rem,0.7fr) minmax(5.75rem,0.6fr) minmax(3.25rem,0.35fr)",
+					"minmax(8rem,1.2fr) minmax(6rem,0.8fr) minmax(6rem,0.8fr) minmax(5.75rem,0.7fr) 3.25rem 3.25rem",
 			}}
 		>
 			<ModuleTableSearch

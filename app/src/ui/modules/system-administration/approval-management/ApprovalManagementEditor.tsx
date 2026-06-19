@@ -110,7 +110,7 @@ export function ApprovalManagementEditor({
 	return (
 		<form
 			onSubmit={onSubmit}
-			className="grid min-h-0 content-start gap-4 bg-offwhite/25 p-4 lg:p-5"
+			className="approval-management-editor grid min-h-0 min-w-0 content-start gap-4 p-4 lg:p-5"
 		>
 			<div className="flex flex-wrap items-center justify-between gap-4 border-b border-darknavy/10 pb-4">
 				<div className="min-w-0">

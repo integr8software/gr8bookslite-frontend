@@ -212,8 +212,8 @@ export function MultiCurrencySetupListPage() {
 				actions={<HeaderActions onAddCurrency={openAddDrawer} />}
 			/>
 
-			<div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
-				<div className="grid gap-5">
+			<div className="grid min-w-0 gap-5 2xl:grid-cols-[minmax(0,1fr)_22rem]">
+				<div className="grid min-w-0 gap-5">
 					<MultiCurrencySetupTable
 						isLoading={page.isLoading}
 						records={page.filteredRecords}
@@ -248,7 +248,7 @@ export function MultiCurrencySetupListPage() {
 					/>
 				</div>
 
-				<aside className="grid content-start gap-5">
+				<aside className="grid min-w-0 content-start gap-5 md:grid-cols-2 2xl:grid-cols-1">
 					<BaseCurrencyCard
 						baseCurrencyCode={page.preferredBaseCurrencyCode}
 						onBaseCurrencyChange={handleBaseCurrencyChange}
@@ -318,16 +318,16 @@ function BaseCurrencyCard({
 				title="Base Currency"
 				description="Rates below refresh from this currency."
 			/>
-			<div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50/70 p-4">
+			<div className="mt-4 rounded-lg border border-emerald-500/25 bg-emerald-500/10 p-4">
 				<div className="flex items-center gap-3">
 					<div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white">
 						<CircleDollarSign className="h-5 w-5" aria-hidden="true" />
 					</div>
-					<div>
+					<div className="min-w-0">
 						<p className="font-semibold text-darknavy">
 							{baseCurrency?.code ?? baseCurrencyCode}
 						</p>
-						<p className="text-sm text-darknavy/60">
+						<p className="truncate text-sm text-darknavy/60">
 							{baseCurrency?.name ?? "Base currency"}
 						</p>
 					</div>
@@ -340,7 +340,7 @@ function BaseCurrencyCard({
 				<select
 					value={baseCurrencyCode}
 					onChange={(event) => onBaseCurrencyChange(event.target.value)}
-					className={fieldClassName}
+					className={selectFieldClassName}
 				>
 					{MultiCurrencyCatalog.map((currency) => (
 						<option key={currency.code} value={currency.code}>
@@ -379,7 +379,7 @@ function UpdateRatesCard({
 					onChange={(event) =>
 						onUpdateModeChange(event.target.value as MultiCurrencyRateUpdateMode)
 					}
-					className={fieldClassName}
+					className={selectFieldClassName}
 				>
 					<option value="unmodified">Only unmodified rates</option>
 					<option value="overwrite">Overwrite existing rates</option>
@@ -513,7 +513,7 @@ function CurrencySetupDrawer({
 							name="targetCurrencyCode"
 							value={values.targetCurrencyCode}
 							onChange={onChange}
-							className={fieldClassName}
+							className={selectFieldClassName}
 						>
 							{MultiCurrencyCatalog.filter(
 								(currency) => currency.code !== values.baseCurrencyCode,
@@ -546,7 +546,7 @@ function CurrencySetupDrawer({
 								name="source"
 								value={values.source}
 								onChange={onChange}
-								className={fieldClassName}
+								className={selectFieldClassName}
 							>
 								<option value="API">API</option>
 								<option value="Manual">Manual</option>
@@ -557,7 +557,7 @@ function CurrencySetupDrawer({
 								name="status"
 								value={values.status}
 								onChange={onChange}
-								className={fieldClassName}
+								className={selectFieldClassName}
 							>
 								<option value="Active">Active</option>
 								<option value="Inactive">Inactive</option>
@@ -732,4 +732,6 @@ function CheckLine({ children }: { children: ReactNode }) {
 }
 
 const fieldClassName =
-	"min-h-10 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5";
+	"app-theme-field min-h-10 w-full rounded-md border px-3 text-sm font-medium outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-60";
+
+const selectFieldClassName = `app-select-control ${fieldClassName}`;

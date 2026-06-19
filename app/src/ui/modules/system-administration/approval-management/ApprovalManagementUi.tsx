@@ -28,4 +28,4 @@ export const approvalManagementFieldClassName =
 	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy read-only:bg-offwhite/65";
 
 export const approvalManagementPrimaryButtonClassName =
-	"inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-skyblue/90 disabled:cursor-not-allowed disabled:opacity-60";
+	"theme-accent-contrast-text inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-semibold !text-[var(--skyblue-contrast)] shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)] disabled:cursor-not-allowed disabled:opacity-60";

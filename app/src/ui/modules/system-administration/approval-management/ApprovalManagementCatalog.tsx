@@ -46,7 +46,7 @@ export function ApprovalManagementCatalog({
 	}
 
 	return (
-		<aside className="flex min-h-0 flex-col overflow-hidden border-b border-darknavy/10 bg-white xl:m-4 xl:self-stretch xl:rounded-lg xl:border xl:border-darknavy/10 xl:shadow-sm xl:shadow-darknavy/5 xl:[contain:size]">
+		<aside className="approval-management-catalog flex min-h-0 min-w-0 flex-col overflow-hidden border-b xl:m-4 xl:self-stretch xl:rounded-lg xl:border xl:shadow-sm xl:shadow-darknavy/5 xl:[contain:size]">
 			<div className="grid gap-3 border-b border-darknavy/10 p-4 xl:hidden">
 				<div>
 					<h2 className="text-sm font-semibold text-darknavy">

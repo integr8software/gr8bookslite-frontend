@@ -24,7 +24,7 @@ export function ApprovalManagementListPage() {
 				}
 			/>
 
-			<div className="grid min-h-[38rem] items-stretch overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm xl:grid-cols-[minmax(22rem,0.85fr)_minmax(0,1.35fr)]">
+			<div className="approval-management-workspace grid min-h-[38rem] min-w-0 items-stretch overflow-hidden rounded-lg border shadow-sm xl:grid-cols-[minmax(20rem,0.8fr)_minmax(32rem,1.35fr)]">
 				<ApprovalManagementCatalog
 					isLoading={page.isLoading}
 					query={page.query}

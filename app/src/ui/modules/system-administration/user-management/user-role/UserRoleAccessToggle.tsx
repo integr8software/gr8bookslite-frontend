@@ -16,13 +16,13 @@ export function UserRoleAccessToggle({
       className={[
         "relative flex h-8 min-w-0 items-center justify-center rounded border px-2 text-center text-xs font-semibold leading-none transition",
         checked
-          ? "border-blue-200 bg-blue-50 text-blue-700"
+          ? "permission-neutral-control"
           : isPartial
-            ? "border-amber-200 bg-amber-50 text-amber-700"
+            ? "border-amber-500/35 bg-amber-500/12 text-amber-500"
             : "border-darknavy/10 bg-white text-darknavy/55",
         disabled
           ? "cursor-not-allowed opacity-60"
-          : "cursor-pointer hover:border-blue-200",
+          : "cursor-pointer",
       ]
         .filter(Boolean)
         .join(" ")}

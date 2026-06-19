@@ -36,6 +36,16 @@
   --workspace-user-assignment-border: rgba(33, 39, 56, 0.1);
   --workspace-user-branch-bg: #ffffff;
   --workspace-user-branch-border: rgba(33, 39, 56, 0.1);
+  --approval-workspace-bg: #ffffff;
+  --approval-editor-bg: #f4f6f8;
+  --approval-workspace-border: rgba(33, 39, 56, 0.1);
+  --permission-control-bg: #e8ebef;
+  --permission-control-border: #c9ced6;
+  --permission-control-text: #4b5563;
+  --permission-control-hover-bg: #dde1e7;
+  --permission-control-hover-border: #aeb6c2;
+  --permission-selected-bg: #e3e6ea;
+  --permission-selected-border: #aeb6c2;
 }
 
 :root[data-app-theme="classic-light"] {
@@ -107,6 +117,16 @@
   --workspace-user-assignment-border: #30363d;
   --workspace-user-branch-bg: #0d1117;
   --workspace-user-branch-border: #30363d;
+  --approval-workspace-bg: #161b22;
+  --approval-editor-bg: #21262d;
+  --approval-workspace-border: #30363d;
+  --permission-control-bg: #21262d;
+  --permission-control-border: #3d444d;
+  --permission-control-text: #b1bac4;
+  --permission-control-hover-bg: #292f36;
+  --permission-control-hover-border: #57606a;
+  --permission-selected-bg: #30363d;
+  --permission-selected-border: #57606a;
 }
 
 @theme inline {
@@ -151,17 +171,53 @@ body {
 }
 
 :root[data-app-theme="midnight-dark"] .bg-offwhite,
+:root[data-app-theme="midnight-dark"] .bg-offwhite\/90,
+:root[data-app-theme="midnight-dark"] .bg-offwhite\/80,
 :root[data-app-theme="midnight-dark"] .bg-offwhite\/72,
 :root[data-app-theme="midnight-dark"] .bg-offwhite\/70,
 :root[data-app-theme="midnight-dark"] .bg-offwhite\/65,
 :root[data-app-theme="midnight-dark"] .bg-offwhite\/60,
+:root[data-app-theme="midnight-dark"] .bg-offwhite\/55,
 :root[data-app-theme="midnight-dark"] .bg-offwhite\/50,
-:root[data-app-theme="midnight-dark"] .bg-offwhite\/45 {
+:root[data-app-theme="midnight-dark"] .bg-offwhite\/45,
+:root[data-app-theme="midnight-dark"] .bg-offwhite\/35,
+:root[data-app-theme="midnight-dark"] .bg-offwhite\/25 {
   background-color: var(--surface-secondary) !important;
 }
 
 :root[data-app-theme="midnight-dark"] .bg-darknavy {
   background-color: var(--surface-tertiary) !important;
+}
+
+.approval-management-workspace {
+  background-color: var(--approval-workspace-bg);
+  border-color: var(--approval-workspace-border);
+}
+
+.approval-management-editor {
+  background-color: var(--approval-editor-bg);
+}
+
+.approval-management-catalog {
+  background-color: var(--approval-workspace-bg);
+  border-color: var(--approval-workspace-border);
+}
+
+.permission-neutral-control {
+  background-color: var(--permission-control-bg);
+  border-color: var(--permission-control-border);
+  color: var(--permission-control-text);
+}
+
+.permission-neutral-control:not(:disabled):hover,
+label.permission-neutral-control:hover {
+  background-color: var(--permission-control-hover-bg);
+  border-color: var(--permission-control-hover-border);
+}
+
+.permission-neutral-selected {
+  background-color: var(--permission-selected-bg);
+  border-color: var(--permission-selected-border);
 }
 
 :root[data-app-theme="midnight-dark"] .border-darknavy\/10,

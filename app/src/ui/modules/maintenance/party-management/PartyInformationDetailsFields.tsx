@@ -514,7 +514,7 @@ function Field({
 	label: string;
 	required?: boolean;
 }) {
-	function handleLabelMouseDown(event: ReactMouseEvent<HTMLLabelElement>) {
+	function handleFieldMouseDown(event: ReactMouseEvent<HTMLDivElement>) {
 		const target = event.target;
 
 		if (
@@ -537,10 +537,14 @@ function Field({
 
 		event.preventDefault();
 		control.focus();
+
+		if (control.getAttribute("role") === "combobox") {
+			control.click();
+		}
 	}
 
 	return (
-		<label onMouseDown={handleLabelMouseDown}>
+		<div onMouseDown={handleFieldMouseDown}>
 			<span className="mb-2 block text-sm font-semibold text-darknavy">
 				{label}
 				{required ? <span className="text-coralpink"> *</span> : null}
@@ -551,7 +555,7 @@ function Field({
 					{error}
 				</span>
 			) : null}
-		</label>
+		</div>
 	);
 }
 

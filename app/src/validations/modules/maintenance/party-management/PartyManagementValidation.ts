@@ -17,6 +17,8 @@ const PhilippineContactNumberPattern = /^\+63 \d{3} \d{3} \d{4}$/;
 const PhilippineTinPattern = /^\d{3}-\d{3}-\d{3}-\d{3}$/;
 
 const PartyInformationAddressSchema = z.object({
+  id: z.string().trim().min(1),
+  addressName: z.string().trim().min(1, "Enter an address name."),
   addressLine1: z.string().trim(),
   addressLine2: z.string().trim(),
   barangay: z.string().trim(),
@@ -26,6 +28,9 @@ const PartyInformationAddressSchema = z.object({
     .string()
     .trim()
     .min(1, "Select a city or municipality."),
+  isBilling: z.boolean(),
+  isDefault: z.boolean(),
+  isDelivery: z.boolean(),
   province: z.string().trim(),
   provinceCode: z.string().trim().min(1, "Select a province."),
   region: z.string().trim(),
@@ -50,7 +55,17 @@ export const PartyInformationFormSchema = z
     middleName: z.string().trim(),
     lastName: z.string().trim(),
     suffixName: z.string().trim(),
-    address: PartyInformationAddressSchema,
+    address: z.any().optional(),
+    addresses: z
+      .array(PartyInformationAddressSchema)
+      .min(1, "Add at least one address."),
+    activeAddressId: z.string().trim(),
+    defaultReceivableAccount: z.string().trim(),
+    defaultPayableAccount: z.string().trim(),
+    employeeReceivableAccount: z.string().trim(),
+    employeeAdvanceAccount: z.string().trim(),
+    termId: z.string().trim(),
+    termName: z.string().trim(),
     tin: z
       .string()
       .trim()
@@ -115,6 +130,59 @@ export const PartyInformationFormSchema = z
         path: ["atcCode"],
       });
     }
+
+    const defaultAddressCount = values.addresses.filter(
+      (address) => address.isDefault,
+    ).length;
+
+    if (defaultAddressCount !== 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Set exactly one default address.",
+        path: ["addresses"],
+      });
+    }
+
+    if (
+      values.partyTypes.includes("Customer") &&
+      !values.defaultReceivableAccount
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select the default receivable account.",
+        path: ["defaultReceivableAccount"],
+      });
+    }
+
+    if (values.partyTypes.includes("Vendor") && !values.defaultPayableAccount) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select the default payable account.",
+        path: ["defaultPayableAccount"],
+      });
+    }
+
+    if (
+      values.partyTypes.includes("Employee") &&
+      !values.employeeReceivableAccount
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select the employee receivable account.",
+        path: ["employeeReceivableAccount"],
+      });
+    }
+
+    if (
+      values.partyTypes.includes("Employee") &&
+      !values.employeeAdvanceAccount
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select the employee advance account.",
+        path: ["employeeAdvanceAccount"],
+      });
+    }
   });
 
 export function validatePartyInformationForm(
@@ -143,6 +211,8 @@ export function validatePartyInformationForm(
       errors.firstName = issue.message;
     } else if (field === "lastName" && !errors.lastName) {
       errors.lastName = issue.message;
+    } else if (field === "addresses" && !errors.addresses) {
+      errors.addresses = issue.message;
     } else if (field === "partyCodeNo" && !errors.partyCodeNo) {
       errors.partyCodeNo = issue.message;
     } else if (field === "partyName" && !errors.partyName) {
@@ -164,6 +234,28 @@ export function validatePartyInformationForm(
       errors.barangayCode = issue.message;
     } else if (field === "tin" && !errors.tin) {
       errors.tin = issue.message;
+    } else if (
+      field === "defaultReceivableAccount" &&
+      !errors.defaultReceivableAccount
+    ) {
+      errors.defaultReceivableAccount = issue.message;
+    } else if (
+      field === "defaultPayableAccount" &&
+      !errors.defaultPayableAccount
+    ) {
+      errors.defaultPayableAccount = issue.message;
+    } else if (
+      field === "employeeReceivableAccount" &&
+      !errors.employeeReceivableAccount
+    ) {
+      errors.employeeReceivableAccount = issue.message;
+    } else if (
+      field === "employeeAdvanceAccount" &&
+      !errors.employeeAdvanceAccount
+    ) {
+      errors.employeeAdvanceAccount = issue.message;
+    } else if (field === "termId" && !errors.termId) {
+      errors.termId = issue.message;
     }
   }
 

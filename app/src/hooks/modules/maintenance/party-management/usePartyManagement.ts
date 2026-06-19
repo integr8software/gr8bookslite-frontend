@@ -189,6 +189,11 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 			statusFilter,
 		],
 	);
+	const hasActiveFilters =
+		query.trim().length > 0 ||
+		classificationFilter !== "All" ||
+		partyTypeFilter !== "All" ||
+		statusFilter !== "All";
 	const recordsVersion = useMemo(
 		() =>
 			records
@@ -218,6 +223,18 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 				partyTypesLabel: record.partyTypes.join(", "),
 			})),
 		[pagedRecords.records],
+	);
+	const exportAllRows = useMemo<PartyInformationTableRecord[]>(
+		() => records.map(createPartyInformationTableRecord),
+		[records],
+	);
+	const exportFilteredRows = useMemo<PartyInformationTableRecord[]>(
+		() =>
+			sortPartyManagementRecords(
+				filterPartyManagementRecords(records, queryParams),
+				queryParams,
+			).map(createPartyInformationTableRecord),
+		[queryParams, records],
 	);
 	const columns = useMemo<ColumnDef<PartyInformationTableRecord>[]>(
 		() =>
@@ -310,6 +327,9 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	return {
 		classificationFilter,
 		classificationOptions: PartyClassificationOptions,
+		exportAllRows,
+		exportFilteredRows,
+		hasActiveFilters,
 		partyTypeFilter,
 		partyTypeOptions: PartyTypeOptions,
 		query,
@@ -323,6 +343,81 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		table,
 		totalRows: pagedRecords.totalRows,
 	};
+}
+
+function createPartyInformationTableRecord(
+	record: PartyInformationRecord,
+): PartyInformationTableRecord {
+	return {
+		...record,
+		addressLabel: formatPartyAddress(record.address),
+		name: getPartyDisplayName(record),
+		partyTypesLabel: record.partyTypes.join(", "),
+	};
+}
+
+function filterPartyManagementRecords(
+	records: PartyInformationRecord[],
+	query: PartyManagementListQuery,
+) {
+	const normalizedQuery = query.query.trim().toLowerCase();
+
+	return records.filter((record) => {
+		const name = getPartyDisplayName(record).toLowerCase();
+		const address = formatPartyAddress(record.address).toLowerCase();
+
+		return (
+			(query.classification === "All" ||
+				record.classification === query.classification) &&
+			(query.partyType === "All" || record.partyTypes.includes(query.partyType)) &&
+			(query.status === "All" || record.status === query.status) &&
+			(!normalizedQuery ||
+				name.includes(normalizedQuery) ||
+				address.includes(normalizedQuery))
+		);
+	});
+}
+
+function sortPartyManagementRecords(
+	records: PartyInformationRecord[],
+	query: PartyManagementListQuery,
+) {
+	const sort = query.sort;
+
+	if (!sort || sort.id === "actions") {
+		return records;
+	}
+
+	return [...records].sort((leftRecord, rightRecord) => {
+		const leftValue = getSortablePartyManagementValue(leftRecord, sort.id);
+		const rightValue = getSortablePartyManagementValue(rightRecord, sort.id);
+		const comparison = leftValue.localeCompare(rightValue, undefined, {
+			numeric: true,
+			sensitivity: "base",
+		});
+
+		return sort.desc ? -comparison : comparison;
+	});
+}
+
+function getSortablePartyManagementValue(
+	record: PartyInformationRecord,
+	sortId: NonNullable<PartyManagementListQuery["sort"]>["id"],
+) {
+	switch (sortId) {
+		case "addressLabel":
+			return formatPartyAddress(record.address);
+		case "classification":
+			return record.classification;
+		case "name":
+			return getPartyDisplayName(record);
+		case "partyTypesLabel":
+			return record.partyTypes.join(", ");
+		case "status":
+			return record.status;
+		default:
+			return "";
+	}
 }
 
 function getPartyManagementListSort(

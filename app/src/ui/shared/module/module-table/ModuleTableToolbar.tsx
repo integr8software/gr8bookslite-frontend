@@ -5,11 +5,16 @@ import {
 	type ReactNode,
 } from "react";
 import { RefreshCw, Search } from "lucide-react";
+import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
 import {
 	joinClasses,
 	moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
 export { ModuleTableColumnVisibilityButton } from "@/app/src/ui/shared/module/module-table/ModuleTableColumnVisibilityButton";
+export {
+	ModuleTableExportButton,
+	type ModuleTableExportColumn,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableExportButton";
 
 export type ModuleTableFilterOption = {
 	label: ReactNode;
@@ -145,24 +150,29 @@ export function ModuleTableResetButton({
 	type = "button",
 	...props
 }: ModuleTableResetButtonProps) {
+	const tooltipTitle = typeof children === "string" ? children : "Refresh";
+
 	return (
-		<button
-			type={type}
-			className={joinClasses(
-				"inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-4",
-				moduleAccentClassNames.hoverBorder,
-				moduleAccentClassNames.hoverSoftBackground,
-				moduleAccentClassNames.focusRing,
-				className,
-			)}
-			{...props}
-		>
-			<RefreshCw
-				className={joinClasses("h-4 w-4", isRefreshing && "animate-spin")}
-				aria-hidden="true"
-			/>
-			{children}
-		</button>
+		<ModuleTooltip className="w-full" title={tooltipTitle} position="top">
+			<button
+				type={type}
+				aria-label={props["aria-label"] ?? tooltipTitle}
+				className={joinClasses(
+					"inline-flex h-12 w-full items-center justify-center rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-4",
+					moduleAccentClassNames.hoverBorder,
+					moduleAccentClassNames.hoverSoftBackground,
+					moduleAccentClassNames.focusRing,
+					className,
+				)}
+				{...props}
+			>
+				<RefreshCw
+					className={joinClasses("h-4 w-4", isRefreshing && "animate-spin")}
+					aria-hidden="true"
+				/>
+				<span className="sr-only">{tooltipTitle}</span>
+			</button>
+		</ModuleTooltip>
 	);
 }
 

@@ -45,11 +45,7 @@ function PartyInformationCellContent({
 				</div>
 			);
 		case "classification":
-			return (
-				<span className="inline-flex min-h-7 items-center rounded bg-skyblue/12 px-2.5 text-sm font-semibold text-darknavy ring-1 ring-skyblue/20">
-					{record.classification}
-				</span>
-			);
+			return <span className="text-sm text-darknavy">{record.classification}</span>;
 		case "partyTypesLabel":
 			return (
 				<div className="flex flex-wrap items-center gap-1.5">

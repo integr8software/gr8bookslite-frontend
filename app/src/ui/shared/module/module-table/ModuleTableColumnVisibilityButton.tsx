@@ -7,10 +7,12 @@ import {
 	useState,
 	type ComponentPropsWithoutRef,
 	type CSSProperties,
+	type DragEvent,
 } from "react";
 import { createPortal } from "react-dom";
 import type { Table } from "@tanstack/react-table";
 import { Check, Columns3, GripVertical } from "lucide-react";
+import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
 import {
 	joinClasses,
 	moduleAccentClassNames,
@@ -23,6 +25,11 @@ type ModuleTableColumnVisibilityButtonProps<TData> =
 		table: Table<TData>;
 	};
 
+type ColumnDropIndicator = {
+	columnId: string;
+	position: "after" | "before";
+};
+
 export function ModuleTableColumnVisibilityButton<TData>({
 	align = "right",
 	className,
@@ -32,6 +39,8 @@ export function ModuleTableColumnVisibilityButton<TData>({
 }: ModuleTableColumnVisibilityButtonProps<TData>) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
+	const [dropIndicator, setDropIndicator] =
+		useState<ColumnDropIndicator | null>(null);
 	const [menuListMaxHeight, setMenuListMaxHeight] = useState(320);
 	const [menuStyle, setMenuStyle] = useState<CSSProperties>({
 		left: 0,
@@ -65,7 +74,11 @@ export function ModuleTableColumnVisibilityButton<TData>({
 		);
 	}, [columns]);
 
-	function moveColumn(sourceColumnId: string, targetColumnId: string) {
+	function moveColumn(
+		sourceColumnId: string,
+		targetColumnId: string,
+		position: ColumnDropIndicator["position"] = "before",
+	) {
 		if (sourceColumnId === targetColumnId) {
 			return;
 		}
@@ -80,9 +93,37 @@ export function ModuleTableColumnVisibilityButton<TData>({
 
 		const nextColumnOrder = [...orderedColumnIds];
 		const [sourceColumn] = nextColumnOrder.splice(sourceIndex, 1);
+		const nextTargetIndex = nextColumnOrder.indexOf(targetColumnId);
 
-		nextColumnOrder.splice(targetIndex, 0, sourceColumn);
+		if (nextTargetIndex < 0) {
+			return;
+		}
+
+		nextColumnOrder.splice(
+			position === "after" ? nextTargetIndex + 1 : nextTargetIndex,
+			0,
+			sourceColumn,
+		);
 		table.setColumnOrder(nextColumnOrder);
+	}
+
+	function updateDropIndicator(
+		event: DragEvent<HTMLDivElement>,
+		columnId: string,
+	) {
+		if (!draggedColumnId || draggedColumnId === columnId) {
+			setDropIndicator(null);
+			return;
+		}
+
+		const rect = event.currentTarget.getBoundingClientRect();
+		const position = event.clientY > rect.top + rect.height / 2 ? "after" : "before";
+
+		setDropIndicator((current) =>
+			current?.columnId === columnId && current.position === position
+				? current
+				: { columnId, position },
+		);
 	}
 
 	useEffect(() => {
@@ -156,22 +197,24 @@ export function ModuleTableColumnVisibilityButton<TData>({
 			className={joinClasses("relative min-w-0", isOpen && "z-70", className)}
 			{...props}
 		>
-			<button
-				type="button"
-				aria-expanded={isOpen}
-				aria-haspopup="menu"
-				aria-label={label}
-				disabled={columns.length === 0}
-				onClick={() => setIsOpen((current) => !current)}
-				className={joinClasses(
-					"inline-flex h-12 w-full items-center justify-center rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white",
-					moduleAccentClassNames.hoverBorder,
-					moduleAccentClassNames.hoverSoftBackground,
-					moduleAccentClassNames.focusRing,
-				)}
-			>
-				<Columns3 className="h-4 w-4" aria-hidden="true" />
-			</button>
+			<ModuleTooltip className="w-full" title={label} position="top">
+				<button
+					type="button"
+					aria-expanded={isOpen}
+					aria-haspopup="menu"
+					aria-label={label}
+					disabled={columns.length === 0}
+					onClick={() => setIsOpen((current) => !current)}
+					className={joinClasses(
+						"inline-flex h-12 w-full items-center justify-center rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white",
+						moduleAccentClassNames.hoverBorder,
+						moduleAccentClassNames.hoverSoftBackground,
+						moduleAccentClassNames.focusRing,
+					)}
+				>
+					<Columns3 className="h-4 w-4" aria-hidden="true" />
+				</button>
+			</ModuleTooltip>
 
 			{isOpen && portalElement
 				? createPortal(
@@ -229,30 +272,55 @@ export function ModuleTableColumnVisibilityButton<TData>({
 								<div
 									key={column.id}
 									draggable
-									onDragStart={() => setDraggedColumnId(column.id)}
-									onDragEnd={() => setDraggedColumnId(null)}
+									onDragStart={() => {
+										setDraggedColumnId(column.id);
+										setDropIndicator(null);
+									}}
+									onDragEnd={() => {
+										setDraggedColumnId(null);
+										setDropIndicator(null);
+									}}
 									onDragOver={(event) => {
 										if (draggedColumnId && draggedColumnId !== column.id) {
 											event.preventDefault();
+											updateDropIndicator(event, column.id);
 										}
 									}}
 									onDrop={(event) => {
 										event.preventDefault();
 
 										if (draggedColumnId) {
-											moveColumn(draggedColumnId, column.id);
+											moveColumn(
+												draggedColumnId,
+												column.id,
+												dropIndicator?.columnId === column.id
+													? dropIndicator.position
+													: "before",
+											);
 										}
 
 										setDraggedColumnId(null);
+										setDropIndicator(null);
 									}}
 									className={joinClasses(
-										"flex min-h-10 w-full items-center gap-2 rounded-md px-2 text-sm font-semibold text-darknavy/75 transition",
+										"relative flex min-h-10 w-full items-center gap-2 rounded-md px-2 text-sm font-semibold text-darknavy/75 transition",
 										draggedColumnId === column.id && "opacity-55",
 										Boolean(draggedColumnId) &&
 											draggedColumnId !== column.id &&
 											"outline outline-1 outline-skyblue/25",
 									)}
 								>
+									{dropIndicator?.columnId === column.id ? (
+										<span
+											aria-hidden="true"
+											className={joinClasses(
+												"pointer-events-none absolute left-2 right-2 z-10 h-0.5 rounded-full bg-skyblue shadow-[0_0_0_3px_rgba(79,172,254,0.14)]",
+												dropIndicator.position === "before"
+													? "top-0"
+													: "bottom-0",
+											)}
+										/>
+									) : null}
 									<span className="inline-flex h-8 w-7 shrink-0 cursor-grab items-center justify-center rounded-md text-darknavy/35 active:cursor-grabbing">
 										<GripVertical className="h-4 w-4" aria-hidden="true" />
 									</span>

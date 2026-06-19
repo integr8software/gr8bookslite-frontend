@@ -14,12 +14,17 @@ export type VatRegistrationType =
   | "Services";
 
 export type PartyAddress = {
+  id: string;
+  addressName: string;
   addressLine1: string;
   addressLine2: string;
   barangay: string;
   barangayCode: string;
   cityMunicipality: string;
   cityMunicipalityCode: string;
+  isBilling: boolean;
+  isDefault: boolean;
+  isDelivery: boolean;
   province: string;
   provinceCode: string;
   region: string;
@@ -39,6 +44,13 @@ export type PartyInformationRecord = {
   lastName: string;
   suffixName: string;
   address: PartyAddress;
+  addresses: PartyAddress[];
+  defaultReceivableAccount: string;
+  defaultPayableAccount: string;
+  employeeReceivableAccount: string;
+  employeeAdvanceAccount: string;
+  termId: string;
+  termName: string;
   tin: string;
   vatRegistrationType: VatRegistrationType | "";
   atcCode: string;
@@ -60,6 +72,14 @@ export type PartyInformationFormValues = {
   lastName: string;
   suffixName: string;
   address: PartyAddress;
+  addresses: PartyAddress[];
+  activeAddressId: string;
+  defaultReceivableAccount: string;
+  defaultPayableAccount: string;
+  employeeReceivableAccount: string;
+  employeeAdvanceAccount: string;
+  termId: string;
+  termName: string;
   tin: string;
   vatRegistrationType: VatRegistrationType | "";
   atcCode: string;
@@ -75,11 +95,17 @@ export type PartyInformationFormErrors = Partial<{
   partyName: string;
   firstName: string;
   lastName: string;
+  addresses: string;
   regionCode: string;
   provinceCode: string;
   cityMunicipalityCode: string;
   barangayCode: string;
   atcCode: string;
+  defaultReceivableAccount: string;
+  defaultPayableAccount: string;
+  employeeReceivableAccount: string;
+  employeeAdvanceAccount: string;
+  termId: string;
   tin: string;
   email: string;
   contactNo: string;

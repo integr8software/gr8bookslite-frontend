@@ -126,6 +126,14 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   lastName: "",
   suffixName: "",
   address: createEmptyPartyAddress(),
+  addresses: [createEmptyPartyAddress()],
+  activeAddressId: "address-default",
+  defaultReceivableAccount: "",
+  defaultPayableAccount: "",
+  employeeReceivableAccount: "",
+  employeeAdvanceAccount: "",
+  termId: "",
+  termName: "",
   tin: "",
   vatRegistrationType: "",
   atcCode: "",
@@ -147,17 +155,29 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
     lastName: "",
     suffixName: "",
     address: {
+      id: "party-001-address-default",
+      addressName: "Default Address",
       addressLine1: "Unit 1204 Finance Center",
       addressLine2: "26th Street",
       barangay: "Bonifacio Global City",
       barangayCode: "137607000",
       cityMunicipality: "Taguig City",
       cityMunicipalityCode: "137607000",
+      isBilling: true,
+      isDefault: true,
+      isDelivery: true,
       province: "Metro Manila",
       provinceCode: "137600000",
       region: "National Capital Region",
       regionCode: "130000000",
     },
+    addresses: [],
+    defaultReceivableAccount: "1010200001",
+    defaultPayableAccount: "2010100001",
+    employeeReceivableAccount: "",
+    employeeAdvanceAccount: "",
+    termId: "term-1",
+    termName: "Standard payment terms",
     tin: "009-432-781-000",
     vatRegistrationType: "VAT Registered",
     atcCode: "WC 158",
@@ -179,17 +199,29 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
     lastName: "Reyes",
     suffixName: "",
     address: {
+      id: "party-002-address-default",
+      addressName: "Default Address",
       addressLine1: "42 Sampaguita Street",
       addressLine2: "",
       barangay: "San Lorenzo",
       barangayCode: "137602000",
       cityMunicipality: "Makati City",
       cityMunicipalityCode: "137602000",
+      isBilling: false,
+      isDefault: true,
+      isDelivery: false,
       province: "Metro Manila",
       provinceCode: "137600000",
       region: "National Capital Region",
       regionCode: "130000000",
     },
+    addresses: [],
+    defaultReceivableAccount: "",
+    defaultPayableAccount: "",
+    employeeReceivableAccount: "1010200002",
+    employeeAdvanceAccount: "1010300001",
+    termId: "",
+    termName: "",
     tin: "182-445-908-000",
     vatRegistrationType: "Services",
     atcCode: "WI 010",
@@ -211,17 +243,29 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
     lastName: "",
     suffixName: "",
     address: {
+      id: "party-003-address-default",
+      addressName: "Default Address",
       addressLine1: "Warehouse 8, Harbor Industrial Park",
       addressLine2: "R-10 Road",
       barangay: "Tangos North",
       barangayCode: "137503000",
       cityMunicipality: "Navotas City",
       cityMunicipalityCode: "137503000",
+      isBilling: true,
+      isDefault: true,
+      isDelivery: false,
       province: "Metro Manila",
       provinceCode: "137500000",
       region: "National Capital Region",
       regionCode: "130000000",
     },
+    addresses: [],
+    defaultReceivableAccount: "",
+    defaultPayableAccount: "2010100001",
+    employeeReceivableAccount: "",
+    employeeAdvanceAccount: "",
+    termId: "term-1",
+    termName: "Standard payment terms",
     tin: "742-118-306-000",
     vatRegistrationType: "VAT Registered",
     atcCode: "WC 160",
@@ -243,17 +287,29 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
     lastName: "Dela Cruz",
     suffixName: "Jr.",
     address: {
+      id: "party-004-address-default",
+      addressName: "Default Address",
       addressLine1: "15 Orchid Lane",
       addressLine2: "Phase 2",
       barangay: "Lahug",
       barangayCode: "072217000",
       cityMunicipality: "Cebu City",
       cityMunicipalityCode: "072217000",
+      isBilling: true,
+      isDefault: true,
+      isDelivery: true,
       province: "Cebu",
       provinceCode: "072200000",
       region: "Central Visayas",
       regionCode: "070000000",
     },
+    addresses: [],
+    defaultReceivableAccount: "1010200001",
+    defaultPayableAccount: "",
+    employeeReceivableAccount: "",
+    employeeAdvanceAccount: "",
+    termId: "term-1",
+    termName: "Standard payment terms",
     tin: "326-770-452-000",
     vatRegistrationType: "Non-VAT",
     atcCode: "WI 158",
@@ -268,6 +324,9 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
 export function createPartyInformationFormValues(
   record: PartyInformationRecord,
 ): PartyInformationFormValues {
+  const addresses = normalizePartyAddressesForForm(record);
+  const defaultAddress = getDefaultPartyAddress(addresses);
+
   return {
     partyCodeNo: record.partyCodeNo,
     classification: record.classification,
@@ -279,7 +338,15 @@ export function createPartyInformationFormValues(
     middleName: record.middleName,
     lastName: record.lastName,
     suffixName: record.suffixName,
-    address: { ...record.address },
+    address: { ...defaultAddress },
+    addresses,
+    activeAddressId: defaultAddress.id,
+    defaultReceivableAccount: record.defaultReceivableAccount ?? "",
+    defaultPayableAccount: record.defaultPayableAccount ?? "",
+    employeeReceivableAccount: record.employeeReceivableAccount ?? "",
+    employeeAdvanceAccount: record.employeeAdvanceAccount ?? "",
+    termId: record.termId ?? "",
+    termName: record.termName ?? "",
     tin: record.tin,
     vatRegistrationType: record.vatRegistrationType,
     atcCode: record.atcCode ? normalizePhilippineAtcCode(record.atcCode) : "",
@@ -312,7 +379,14 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
       values.classification === "Non-Individual"
         ? values.tradeName.trim() || null
         : null,
-    address: { ...values.address },
+    address: getDefaultPartyAddress(values.addresses),
+    addresses: normalizePartyAddresses(values.addresses),
+    defaultReceivableAccount: values.defaultReceivableAccount,
+    defaultPayableAccount: values.defaultPayableAccount,
+    employeeReceivableAccount: values.employeeReceivableAccount,
+    employeeAdvanceAccount: values.employeeAdvanceAccount,
+    termId: values.termId,
+    termName: values.termName,
     tin: values.tin.trim(),
     vatRegistrationType: values.vatRegistrationType,
     atcCode: values.atcCode ? normalizePhilippineAtcCode(values.atcCode) : "",
@@ -389,6 +463,9 @@ function normalizePartyRecordValues(
     throw new Error("Party classification is required.");
   }
 
+  const addresses = normalizePartyAddresses(values.addresses);
+  const defaultAddress = getDefaultPartyAddress(addresses);
+
   return {
     ...values,
     partyCodeNo: values.partyCodeNo.trim(),
@@ -406,7 +483,22 @@ function normalizePartyRecordValues(
       values.classification === "Individual" ? values.lastName.trim() : "",
     suffixName:
       values.classification === "Individual" ? values.suffixName.trim() : "",
-    address: normalizePartyAddress(values.address),
+    address: defaultAddress,
+    addresses,
+    defaultReceivableAccount: values.partyTypes.includes("Customer")
+      ? values.defaultReceivableAccount
+      : "",
+    defaultPayableAccount: values.partyTypes.includes("Vendor")
+      ? values.defaultPayableAccount
+      : "",
+    employeeReceivableAccount: values.partyTypes.includes("Employee")
+      ? values.employeeReceivableAccount
+      : "",
+    employeeAdvanceAccount: values.partyTypes.includes("Employee")
+      ? values.employeeAdvanceAccount
+      : "",
+    termId: values.termId,
+    termName: values.termName,
     tin: values.tin.trim(),
     atcCode: values.atcCode ? normalizePhilippineAtcCode(values.atcCode) : "",
     email: values.email.trim(),
@@ -543,17 +635,35 @@ function createMockParty({
     lastName,
     suffixName,
     address: {
+      id: `${id}-address-default`,
+      addressName: "Default Address",
       addressLine1: "Makati Business District",
       addressLine2: "",
       barangay: "San Lorenzo",
       barangayCode: "137602000",
       cityMunicipality: "Makati City",
       cityMunicipalityCode: "137602000",
+      isBilling: true,
+      isDefault: true,
+      isDelivery: false,
       province: "Metro Manila",
       provinceCode: "137600000",
       region: "National Capital Region",
       regionCode: "130000000",
     },
+    addresses: [],
+    defaultReceivableAccount: partyTypes.includes("Customer")
+      ? "1010200001"
+      : "",
+    defaultPayableAccount: partyTypes.includes("Vendor") ? "2010100001" : "",
+    employeeReceivableAccount: partyTypes.includes("Employee")
+      ? "1010200002"
+      : "",
+    employeeAdvanceAccount: partyTypes.includes("Employee")
+      ? "1010300001"
+      : "",
+    termId: partyTypes.includes("Employee") ? "" : "term-1",
+    termName: partyTypes.includes("Employee") ? "" : "Standard payment terms",
     tin,
     vatRegistrationType:
       classification === "Individual" ? "Non-VAT" : "VAT Registered",
@@ -567,12 +677,17 @@ function createMockParty({
 
 function createEmptyPartyAddress(): PartyAddress {
   return {
+    id: "address-default",
+    addressName: "Default Address",
     addressLine1: "",
     addressLine2: "",
     barangay: "",
     barangayCode: "",
     cityMunicipality: "",
     cityMunicipalityCode: "",
+    isBilling: false,
+    isDefault: true,
+    isDelivery: false,
     province: "",
     provinceCode: "",
     region: "",
@@ -582,15 +697,57 @@ function createEmptyPartyAddress(): PartyAddress {
 
 function normalizePartyAddress(address: PartyAddress): PartyAddress {
   return {
+    id: address.id,
+    addressName: address.addressName.trim() || "Address",
     addressLine1: address.addressLine1.trim(),
     addressLine2: address.addressLine2.trim(),
     barangay: address.barangay.trim(),
     barangayCode: address.barangayCode,
     cityMunicipality: address.cityMunicipality.trim(),
     cityMunicipalityCode: address.cityMunicipalityCode,
+    isBilling: address.isBilling,
+    isDefault: address.isDefault,
+    isDelivery: address.isDelivery,
     province: address.province.trim(),
     provinceCode: address.provinceCode,
     region: address.region.trim(),
     regionCode: address.regionCode,
   };
+}
+
+function normalizePartyAddresses(addresses: PartyAddress[]) {
+  const normalized = addresses.map(normalizePartyAddress);
+  const defaultIndex = normalized.findIndex((address) => address.isDefault);
+
+  if (defaultIndex === -1 && normalized[0]) {
+    normalized[0] = { ...normalized[0], isDefault: true };
+  }
+
+  return normalized.map((address, index) => ({
+    ...address,
+    isDefault: index === (defaultIndex === -1 ? 0 : defaultIndex),
+  }));
+}
+
+function normalizePartyAddressesForForm(record: PartyInformationRecord) {
+  const addresses =
+    record.addresses?.length > 0 ? record.addresses : [record.address];
+
+  return normalizePartyAddresses(
+    addresses.map((address, index) => ({
+      ...createEmptyPartyAddress(),
+      ...address,
+      id: address.id || `${record.id}-address-${index + 1}`,
+      addressName:
+        address.addressName || (index === 0 ? "Default Address" : "Address"),
+      isDefault: address.isDefault || index === 0,
+    })),
+  );
+}
+
+function getDefaultPartyAddress(addresses: PartyAddress[]) {
+  return (
+    normalizePartyAddresses(addresses).find((address) => address.isDefault) ??
+    createEmptyPartyAddress()
+  );
 }

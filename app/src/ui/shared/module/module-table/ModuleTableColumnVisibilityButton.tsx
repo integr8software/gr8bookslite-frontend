@@ -271,11 +271,6 @@ export function ModuleTableColumnVisibilityButton<TData>({
 							return (
 								<div
 									key={column.id}
-									draggable
-									onDragStart={() => {
-										setDraggedColumnId(column.id);
-										setDropIndicator(null);
-									}}
 									onDragEnd={() => {
 										setDraggedColumnId(null);
 										setDropIndicator(null);
@@ -304,7 +299,8 @@ export function ModuleTableColumnVisibilityButton<TData>({
 									}}
 									className={joinClasses(
 										"relative flex min-h-10 w-full items-center gap-2 rounded-md px-2 text-sm font-semibold text-darknavy/75 transition",
-										draggedColumnId === column.id && "opacity-55",
+										draggedColumnId === column.id &&
+											"bg-skyblue/10 opacity-75",
 										Boolean(draggedColumnId) &&
 											draggedColumnId !== column.id &&
 											"outline outline-1 outline-skyblue/25",
@@ -314,14 +310,24 @@ export function ModuleTableColumnVisibilityButton<TData>({
 										<span
 											aria-hidden="true"
 											className={joinClasses(
-												"pointer-events-none absolute left-2 right-2 z-10 h-0.5 rounded-full bg-skyblue shadow-[0_0_0_3px_rgba(79,172,254,0.14)]",
+												"pointer-events-none absolute left-2 right-2 z-10 h-1 rounded-full bg-skyblue shadow-[0_0_0_3px_rgba(33,39,56,0.16)]",
 												dropIndicator.position === "before"
 													? "top-0"
 													: "bottom-0",
 											)}
 										/>
 									) : null}
-									<span className="inline-flex h-8 w-7 shrink-0 cursor-grab items-center justify-center rounded-md text-darknavy/35 active:cursor-grabbing">
+									<span
+										draggable
+										onDragStart={(event) => {
+											event.dataTransfer.effectAllowed = "move";
+											event.dataTransfer.setData("text/plain", column.id);
+											setDraggedColumnId(column.id);
+											setDropIndicator(null);
+										}}
+										className="inline-flex h-8 w-7 shrink-0 cursor-grab items-center justify-center rounded-md bg-darknavy/5 text-darknavy/65 transition hover:bg-skyblue/10 hover:text-darknavy active:cursor-grabbing"
+										title="Drag column"
+									>
 										<GripVertical className="h-4 w-4" aria-hidden="true" />
 									</span>
 									<button

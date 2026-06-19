@@ -2,7 +2,7 @@
 
 import { useState, type DragEvent } from "react";
 import { flexRender, type Header, type Table } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, GripVertical } from "lucide-react";
 import {
 	getColumnClassName,
 	joinClasses,
@@ -79,17 +79,6 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 						<th
 							key={header.id}
 							colSpan={header.colSpan}
-							draggable={!header.isPlaceholder}
-							onDragStart={(event) => {
-								if (header.isPlaceholder) {
-									return;
-								}
-
-								event.dataTransfer.effectAllowed = "move";
-								event.dataTransfer.setData("text/plain", header.column.id);
-								setDraggedColumnId(header.column.id);
-								setDropIndicator(null);
-							}}
 							onDragEnd={() => {
 								setDraggedColumnId(null);
 								setDropIndicator(null);
@@ -122,9 +111,9 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 								setDropIndicator(null);
 							}}
 							className={joinClasses(
-								"relative whitespace-nowrap px-5 py-3 first:pl-6 last:pr-6",
-								!header.isPlaceholder && "cursor-grab active:cursor-grabbing",
-								draggedColumnId === header.column.id && "opacity-55",
+								"group relative whitespace-nowrap px-5 py-3 first:pl-6 last:pr-6",
+								draggedColumnId === header.column.id &&
+									"bg-skyblue/10 opacity-75",
 								getColumnClassName(header),
 							)}
 						>
@@ -132,20 +121,39 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 								<span
 									aria-hidden="true"
 									className={joinClasses(
-										"pointer-events-none absolute bottom-2 top-2 z-20 w-0.5 rounded-full bg-skyblue shadow-[0_0_0_3px_rgba(79,172,254,0.14)]",
+										"pointer-events-none absolute bottom-2 top-2 z-20 w-1 rounded-full bg-skyblue shadow-[0_0_0_3px_rgba(33,39,56,0.16)]",
 										dropIndicator.position === "before"
 											? "left-1"
 											: "right-1",
 									)}
 								/>
 							) : null}
-							{header.isPlaceholder ? null : header.column.getCanSort() ? (
-								<ModuleTableSortButton header={header} />
-							) : (
-								flexRender(
-									header.column.columnDef.header,
-									header.getContext(),
-								)
+							{header.isPlaceholder ? null : (
+								<div className="flex min-w-0 items-center gap-1.5">
+									<span
+										draggable
+										onDragStart={(event) => {
+											event.dataTransfer.effectAllowed = "move";
+											event.dataTransfer.setData("text/plain", header.column.id);
+											setDraggedColumnId(header.column.id);
+											setDropIndicator(null);
+										}}
+										className="inline-flex h-6 w-5 shrink-0 cursor-grab items-center justify-center rounded bg-darknavy/5 text-darknavy/65 transition hover:bg-skyblue/10 hover:text-darknavy active:cursor-grabbing group-hover:text-darknavy"
+										title="Drag column"
+									>
+										<GripVertical className="h-3.5 w-3.5" aria-hidden="true" />
+									</span>
+									{header.column.getCanSort() ? (
+										<ModuleTableSortButton header={header} />
+									) : (
+										<span className="truncate">
+											{flexRender(
+												header.column.columnDef.header,
+												header.getContext(),
+											)}
+										</span>
+									)}
+								</div>
 							)}
 						</th>
 					))}

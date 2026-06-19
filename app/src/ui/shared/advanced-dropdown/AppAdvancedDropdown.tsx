@@ -56,10 +56,12 @@ export type AppAdvancedDropdownProps = {
 	options: AppAdvancedDropdownOption[];
 	placeholder?: string;
 	readOnly?: boolean;
+	removeSelectionOnSelectedOptionClick?: boolean;
 	searchPlaceholder?: string;
 	selectionMode?: "single" | "multiple";
 	showSelectionIndicator?: boolean;
 	showSelectedDetails?: boolean;
+	showSelectionRemoveButton?: boolean;
 	value: string | string[];
 	onChange: (value: string | string[]) => void;
 	onSelectOption?: (option: AppAdvancedDropdownOption) => void;
@@ -89,10 +91,12 @@ export function AppAdvancedDropdown({
 	options,
 	placeholder = "Select option",
 	readOnly = false,
+	removeSelectionOnSelectedOptionClick = true,
 	searchPlaceholder = "Search options",
 	selectionMode = "single",
 	showSelectionIndicator = true,
 	showSelectedDetails = false,
+	showSelectionRemoveButton = true,
 	value,
 	onChange,
 	onSelectOption,
@@ -388,9 +392,21 @@ export function AppAdvancedDropdown({
 		}
 
 		if (selectionMode === "multiple") {
-			const nextValues = selectedValueSet.has(option.value)
-				? selectedValues.filter((selectedValue) => selectedValue !== option.value)
-				: [...selectedValues, option.value];
+			if (
+				selectedValueSet.has(option.value) &&
+				!removeSelectionOnSelectedOptionClick
+			) {
+				setQuery("");
+				onSelectOption?.(option);
+				return;
+			}
+
+			const nextValues =
+				selectedValueSet.has(option.value)
+					? selectedValues.filter(
+							(selectedValue) => selectedValue !== option.value,
+						)
+					: [...selectedValues, option.value];
 
 			onChange(nextValues);
 		} else {
@@ -551,7 +567,9 @@ export function AppAdvancedDropdown({
 									<SelectionChip
 										key={option.value}
 										disabled={disabled}
-										removable={!isInteractionLocked}
+										removable={
+											showSelectionRemoveButton && !isInteractionLocked
+										}
 										option={option}
 										onRemove={() => removeOption(option.value)}
 									/>

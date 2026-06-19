@@ -7,6 +7,8 @@ import type {
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import {
 	ModuleTableColumnVisibilityButton,
+	ModuleTableExportButton,
+	type ModuleTableExportColumn,
 	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
@@ -14,6 +16,9 @@ import {
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type PartyInformationTableFiltersProps = {
+	exportAllRows: PartyInformationTableRecord[];
+	exportFilteredRows: PartyInformationTableRecord[];
+	hasActiveFilters: boolean;
 	classificationFilter: PartyClassification | "All";
 	classificationOptions: readonly PartyClassification[];
 	partyTypeFilter: PartyType | "All";
@@ -31,6 +36,9 @@ type PartyInformationTableFiltersProps = {
 };
 
 export function PartyInformationTableFilters({
+	exportAllRows,
+	exportFilteredRows,
+	hasActiveFilters,
 	classificationFilter,
 	classificationOptions,
 	partyTypeFilter,
@@ -51,7 +59,7 @@ export function PartyInformationTableFilters({
 			className="!gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3"
 			style={{
 				gridTemplateColumns:
-					"minmax(8rem,1.2fr) minmax(6rem,0.8fr) minmax(6rem,0.8fr) minmax(5.75rem,0.7fr) minmax(5.75rem,0.6fr) minmax(3.25rem,0.35fr)",
+					"minmax(8rem,1.2fr) minmax(6rem,0.8fr) minmax(6rem,0.8fr) minmax(5.75rem,0.7fr) 3.25rem 3.25rem 3.25rem",
 			}}
 		>
 			<ModuleTableSearch
@@ -96,6 +104,15 @@ export function PartyInformationTableFilters({
 				}
 			/>
 			<ModuleTableColumnVisibilityButton table={table} />
+			<ModuleTableExportButton
+				allRows={exportAllRows}
+				columns={PartyInformationExportColumns}
+				fileName="party-information"
+				filteredRows={exportFilteredRows}
+				isFiltered={hasActiveFilters}
+				table={table}
+				title="Party Information"
+			/>
 			<ModuleTableResetButton
 				className="px-2"
 				isRefreshing={isRefreshing}
@@ -106,3 +123,23 @@ export function PartyInformationTableFilters({
 		</ModuleTableToolbar>
 	);
 }
+
+const PartyInformationExportColumns: ModuleTableExportColumn<PartyInformationTableRecord>[] =
+	[
+		{ header: "Party Code", value: "partyCodeNo" },
+		{ header: "Name", id: "name", value: "name" },
+		{ header: "Classification", id: "classification", value: "classification" },
+		{ header: "Party Type", id: "partyTypesLabel", value: "partyTypesLabel" },
+		{ header: "Status", id: "status", value: "status" },
+		{ header: "Address", id: "addressLabel", value: "addressLabel" },
+		{ header: "TIN", value: "tin" },
+		{ header: "VAT Registration Type", value: "vatRegistrationType" },
+		{ header: "BIR ATC Code", value: "atcCode" },
+		{ header: "Email", value: "email" },
+		{ header: "Contact No.", value: "contactNo" },
+		{ header: "Terms", value: "termName" },
+		{ header: "Default Receivable Account", value: "defaultReceivableAccount" },
+		{ header: "Default Payable Account", value: "defaultPayableAccount" },
+		{ header: "Employee Receivable Account", value: "employeeReceivableAccount" },
+		{ header: "Employee Advance Account", value: "employeeAdvanceAccount" },
+	];

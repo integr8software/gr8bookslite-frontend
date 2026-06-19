@@ -29,9 +29,13 @@ export function PartyInformationTable({
 				isLoading={isLoading}
 				minWidthClassName="min-w-[64rem]"
 				paginationStorageKey={PartyManagementTablePaginationStorageKey}
+				paginationTotalRows={partyTable.totalRows}
 				table={partyTable.table}
 				toolbar={
 					<PartyInformationTableFilters
+						exportAllRows={partyTable.exportAllRows}
+						exportFilteredRows={partyTable.exportFilteredRows}
+						hasActiveFilters={partyTable.hasActiveFilters}
 						classificationFilter={partyTable.classificationFilter}
 						classificationOptions={partyTable.classificationOptions}
 						partyTypeFilter={partyTable.partyTypeFilter}

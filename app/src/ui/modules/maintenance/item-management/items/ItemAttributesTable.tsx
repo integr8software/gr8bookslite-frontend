@@ -114,7 +114,7 @@ export function ItemAttributesTable({
 											}
 											className={fieldClassName}
 										>
-											<option value="">Select value</option>
+											<option value="">--Select Value--</option>
 											{(attribute?.values ?? []).map((value) => (
 												<option key={value} value={value}>
 													{value}

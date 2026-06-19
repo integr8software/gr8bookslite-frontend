@@ -20,6 +20,7 @@ export function ModuleTable<TData>({
 	paginationLabel = "records",
 	paginationPageLimit = 3,
 	paginationStorageKey,
+	paginationTotalRows,
 	pageSizeOptions = DefaultPageSizeOptions,
 	renderRow,
 	skeletonRowCount = 5,
@@ -35,7 +36,8 @@ export function ModuleTable<TData>({
 	const fallbackPageSize = pageSizeOptions[0];
 	const totalPages = table.getPageCount();
 	const safeTotalPages = Math.max(1, totalPages);
-	const totalRows = table.getPrePaginationRowModel().rows.length;
+	const totalRows =
+		paginationTotalRows ?? table.getPrePaginationRowModel().rows.length;
 	const firstRow =
 		totalRows === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
 	const lastRow =

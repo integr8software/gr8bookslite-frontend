@@ -1,195 +1,287 @@
 import { z } from "zod";
 import {
-	PartyClassificationOptions,
-	PartyInformationStatusOptions,
-	PartyTypeOptions,
-	VatRegistrationTypeOptions,
+  PartyClassificationOptions,
+  PartyInformationStatusOptions,
+  PartyTypeOptions,
+  VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import { getPartyAtcCodeOptionsByClassification } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { normalizePhilippineAtcCode } from "@/app/src/data/shared/tax/PhilippineAtcData";
 import type {
-	PartyInformationFormErrors,
-	PartyInformationFormValues,
+  PartyInformationFormErrors,
+  PartyInformationFormValues,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 
 const PhilippineContactNumberPattern = /^\+63 \d{3} \d{3} \d{4}$/;
 const PhilippineTinPattern = /^\d{3}-\d{3}-\d{3}-\d{3}$/;
 
 const PartyInformationAddressSchema = z.object({
-	addressLine1: z.string().trim(),
-	addressLine2: z.string().trim(),
-	barangay: z.string().trim(),
-	barangayCode: z.string().trim().min(1, "Select a barangay."),
-	cityMunicipality: z.string().trim(),
-	cityMunicipalityCode: z
-		.string()
-		.trim()
-		.min(1, "Select a city or municipality."),
-	province: z.string().trim(),
-	provinceCode: z.string().trim().min(1, "Select a province."),
-	region: z.string().trim(),
-	regionCode: z.string().trim().min(1, "Select a region."),
+  id: z.string().trim().min(1),
+  addressName: z.string().trim().min(1, "Enter an address name."),
+  addressLine1: z.string().trim(),
+  addressLine2: z.string().trim(),
+  barangay: z.string().trim(),
+  barangayCode: z.string().trim().min(1, "Select a barangay."),
+  cityMunicipality: z.string().trim(),
+  cityMunicipalityCode: z
+    .string()
+    .trim()
+    .min(1, "Select a city or municipality."),
+  isBilling: z.boolean(),
+  isDefault: z.boolean(),
+  isDelivery: z.boolean(),
+  province: z.string().trim(),
+  provinceCode: z.string().trim().min(1, "Select a province."),
+  region: z.string().trim(),
+  regionCode: z.string().trim().min(1, "Select a region."),
 });
 
 export const PartyInformationFormSchema = z
-	.object({
-		partyCodeNo: z.string().trim().min(1, "Party code is required."),
-		classification: z.enum(PartyClassificationOptions, {
-			error: "Select a party classification first.",
-		}),
-		partyTypes: z
-			.array(z.enum(PartyTypeOptions))
-			.min(1, "Select at least one party type."),
-		status: z.enum(PartyInformationStatusOptions, {
-			error: "Select a status.",
-		}),
-		partyName: z.string().trim(),
-		tradingName: z.string().trim(),
-		firstName: z.string().trim(),
-		middleName: z.string().trim(),
-		lastName: z.string().trim(),
-		suffixName: z.string().trim(),
-		address: PartyInformationAddressSchema,
-		tin: z
-			.string()
-			.trim()
-			.refine((value) => !value || PhilippineTinPattern.test(value), {
-				message: "Enter a valid TIN in the format 000-000-000-000.",
-			}),
-		vatRegistrationType: z.union([
-			z.literal(""),
-			z.enum(VatRegistrationTypeOptions),
-		]),
-		atcCode: z.string().trim(),
-		email: z
-			.string()
-			.trim()
-			.refine((value) => !value || isValidEmail(value), {
-				message: "Enter a valid email address.",
-			}),
-		contactNo: z
-			.string()
-			.trim()
-			.refine((value) => !value || isValidContactNo(value), {
-				message: "Enter a valid contact number in the format.",
-			}),
-	})
-	.superRefine((values, ctx) => {
-		if (
-			values.classification === "Non-Individual" &&
-			!values.partyName.trim()
-		) {
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message: "Party name is required.",
-				path: ["partyName"],
-			});
-		}
+  .object({
+    partyCodeNo: z.string().trim().min(1, "Party code is required."),
+    classification: z.enum(PartyClassificationOptions, {
+      error: "Select a party classification first.",
+    }),
+    partyTypes: z
+      .array(z.enum(PartyTypeOptions))
+      .min(1, "Select at least one party type."),
+    status: z.enum(PartyInformationStatusOptions, {
+      error: "Select a status.",
+    }),
+    partyName: z.string().trim(),
+    tradeName: z.string().trim(),
+    firstName: z.string().trim(),
+    middleName: z.string().trim(),
+    lastName: z.string().trim(),
+    suffixName: z.string().trim(),
+    address: z.any().optional(),
+    addresses: z
+      .array(PartyInformationAddressSchema)
+      .min(1, "Add at least one address."),
+    activeAddressId: z.string().trim(),
+    defaultReceivableAccount: z.string().trim(),
+    defaultPayableAccount: z.string().trim(),
+    employeeReceivableAccount: z.string().trim(),
+    employeeAdvanceAccount: z.string().trim(),
+    termId: z.string().trim(),
+    termName: z.string().trim(),
+    tin: z
+      .string()
+      .trim()
+      .refine((value) => !value || PhilippineTinPattern.test(value), {
+        message: "Enter a valid TIN in the format 000-000-000-000.",
+      }),
+    vatRegistrationType: z.union([
+      z.literal(""),
+      z.enum(VatRegistrationTypeOptions),
+    ]),
+    atcCode: z.string().trim(),
+    email: z
+      .string()
+      .trim()
+      .refine((value) => !value || isValidEmail(value), {
+        message: "Enter a valid email address.",
+      }),
+    contactNo: z
+      .string()
+      .trim()
+      .refine((value) => !value || isValidContactNo(value), {
+        message: "Enter a valid contact number in the format.",
+      }),
+  })
+  .superRefine((values, ctx) => {
+    if (
+      values.classification === "Non-Individual" &&
+      !values.partyName.trim()
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Party name is required.",
+        path: ["partyName"],
+      });
+    }
 
-		if (values.classification === "Individual") {
-			if (!values.firstName.trim()) {
-				ctx.addIssue({
-					code: z.ZodIssueCode.custom,
-					message: "First name is required.",
-					path: ["firstName"],
-				});
-			}
+    if (values.classification === "Individual") {
+      if (!values.firstName.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "First name is required.",
+          path: ["firstName"],
+        });
+      }
 
-			if (!values.lastName.trim()) {
-				ctx.addIssue({
-					code: z.ZodIssueCode.custom,
-					message: "Last name is required.",
-					path: ["lastName"],
-				});
-			}
-		}
+      if (!values.lastName.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Last name is required.",
+          path: ["lastName"],
+        });
+      }
+    }
 
-		if (
-			values.atcCode &&
-			!isKnownAtcCodeForClassification(values.atcCode, values.classification)
-		) {
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message: "Select a valid BIR ATC code from the list.",
-				path: ["atcCode"],
-			});
-		}
-	});
+    if (
+      values.atcCode &&
+      !isKnownAtcCodeForClassification(values.atcCode, values.classification)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select a valid BIR ATC code from the list.",
+        path: ["atcCode"],
+      });
+    }
+
+    const defaultAddressCount = values.addresses.filter(
+      (address) => address.isDefault,
+    ).length;
+
+    if (defaultAddressCount !== 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Set exactly one default address.",
+        path: ["addresses"],
+      });
+    }
+
+    if (
+      values.partyTypes.includes("Customer") &&
+      !values.defaultReceivableAccount
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select the default receivable account.",
+        path: ["defaultReceivableAccount"],
+      });
+    }
+
+    if (values.partyTypes.includes("Vendor") && !values.defaultPayableAccount) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select the default payable account.",
+        path: ["defaultPayableAccount"],
+      });
+    }
+
+    if (
+      values.partyTypes.includes("Employee") &&
+      !values.employeeReceivableAccount
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select the employee receivable account.",
+        path: ["employeeReceivableAccount"],
+      });
+    }
+
+    if (
+      values.partyTypes.includes("Employee") &&
+      !values.employeeAdvanceAccount
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select the employee advance account.",
+        path: ["employeeAdvanceAccount"],
+      });
+    }
+  });
 
 export function validatePartyInformationForm(
-	values: PartyInformationFormValues,
+  values: PartyInformationFormValues,
 ): PartyInformationFormErrors {
-	const parsed = PartyInformationFormSchema.safeParse(values);
+  const parsed = PartyInformationFormSchema.safeParse(values);
 
-	if (parsed.success) {
-		return {};
-	}
+  if (parsed.success) {
+    return {};
+  }
 
-	const errors: PartyInformationFormErrors = {};
+  const errors: PartyInformationFormErrors = {};
 
-	for (const issue of parsed.error.issues) {
-		const field = issue.path[issue.path.length - 1];
+  for (const issue of parsed.error.issues) {
+    const field = issue.path[issue.path.length - 1];
 
-		if (field === "atcCode" && !errors.atcCode) {
-			errors.atcCode = issue.message;
-		} else if (field === "classification" && !errors.classification) {
-			errors.classification = issue.message;
-		} else if (field === "contactNo" && !errors.contactNo) {
-			errors.contactNo = issue.message;
-		} else if (field === "email" && !errors.email) {
-			errors.email = issue.message;
-		} else if (field === "firstName" && !errors.firstName) {
-			errors.firstName = issue.message;
-		} else if (field === "lastName" && !errors.lastName) {
-			errors.lastName = issue.message;
-		} else if (field === "partyCodeNo" && !errors.partyCodeNo) {
-			errors.partyCodeNo = issue.message;
-		} else if (field === "partyName" && !errors.partyName) {
-			errors.partyName = issue.message;
-		} else if (field === "partyTypes" && !errors.partyTypes) {
-			errors.partyTypes = issue.message;
-		} else if (field === "status" && !errors.status) {
-			errors.status = issue.message;
-		} else if (field === "regionCode" && !errors.regionCode) {
-			errors.regionCode = issue.message;
-		} else if (field === "provinceCode" && !errors.provinceCode) {
-			errors.provinceCode = issue.message;
-		} else if (
-			field === "cityMunicipalityCode" &&
-			!errors.cityMunicipalityCode
-		) {
-			errors.cityMunicipalityCode = issue.message;
-		} else if (field === "barangayCode" && !errors.barangayCode) {
-			errors.barangayCode = issue.message;
-		} else if (field === "tin" && !errors.tin) {
-			errors.tin = issue.message;
-		}
-	}
+    if (field === "atcCode" && !errors.atcCode) {
+      errors.atcCode = issue.message;
+    } else if (field === "classification" && !errors.classification) {
+      errors.classification = issue.message;
+    } else if (field === "contactNo" && !errors.contactNo) {
+      errors.contactNo = issue.message;
+    } else if (field === "email" && !errors.email) {
+      errors.email = issue.message;
+    } else if (field === "firstName" && !errors.firstName) {
+      errors.firstName = issue.message;
+    } else if (field === "lastName" && !errors.lastName) {
+      errors.lastName = issue.message;
+    } else if (field === "addresses" && !errors.addresses) {
+      errors.addresses = issue.message;
+    } else if (field === "partyCodeNo" && !errors.partyCodeNo) {
+      errors.partyCodeNo = issue.message;
+    } else if (field === "partyName" && !errors.partyName) {
+      errors.partyName = issue.message;
+    } else if (field === "partyTypes" && !errors.partyTypes) {
+      errors.partyTypes = issue.message;
+    } else if (field === "status" && !errors.status) {
+      errors.status = issue.message;
+    } else if (field === "regionCode" && !errors.regionCode) {
+      errors.regionCode = issue.message;
+    } else if (field === "provinceCode" && !errors.provinceCode) {
+      errors.provinceCode = issue.message;
+    } else if (
+      field === "cityMunicipalityCode" &&
+      !errors.cityMunicipalityCode
+    ) {
+      errors.cityMunicipalityCode = issue.message;
+    } else if (field === "barangayCode" && !errors.barangayCode) {
+      errors.barangayCode = issue.message;
+    } else if (field === "tin" && !errors.tin) {
+      errors.tin = issue.message;
+    } else if (
+      field === "defaultReceivableAccount" &&
+      !errors.defaultReceivableAccount
+    ) {
+      errors.defaultReceivableAccount = issue.message;
+    } else if (
+      field === "defaultPayableAccount" &&
+      !errors.defaultPayableAccount
+    ) {
+      errors.defaultPayableAccount = issue.message;
+    } else if (
+      field === "employeeReceivableAccount" &&
+      !errors.employeeReceivableAccount
+    ) {
+      errors.employeeReceivableAccount = issue.message;
+    } else if (
+      field === "employeeAdvanceAccount" &&
+      !errors.employeeAdvanceAccount
+    ) {
+      errors.employeeAdvanceAccount = issue.message;
+    } else if (field === "termId" && !errors.termId) {
+      errors.termId = issue.message;
+    }
+  }
 
-	return errors;
+  return errors;
 }
 
 function isKnownAtcCodeForClassification(
-	value: string,
-	classification: PartyInformationFormValues["classification"],
+  value: string,
+  classification: PartyInformationFormValues["classification"],
 ) {
-	const normalizedCode = normalizePhilippineAtcCode(value);
+  const normalizedCode = normalizePhilippineAtcCode(value);
 
-	return getPartyAtcCodeOptionsByClassification(classification).some(
-		(option) => option.code === normalizedCode,
-	);
+  return getPartyAtcCodeOptionsByClassification(classification).some(
+    (option) => option.code === normalizedCode,
+  );
 }
 
 function isValidEmail(value: string) {
-	return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
 function isValidContactNo(value: string) {
-	const contactNo = value.trim();
+  const contactNo = value.trim();
 
-	return (
-		contactNo === DefaultPhilippineContactNumber.trim() ||
-		PhilippineContactNumberPattern.test(contactNo)
-	);
+  return (
+    contactNo === DefaultPhilippineContactNumber.trim() ||
+    PhilippineContactNumberPattern.test(contactNo)
+  );
 }

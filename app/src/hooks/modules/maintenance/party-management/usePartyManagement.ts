@@ -3,7 +3,6 @@
 import { useCallback, useMemo, useState } from "react";
 import {
 	getCoreRowModel,
-	getPaginationRowModel,
 	getSortedRowModel,
 	useReactTable,
 	type ColumnDef,
@@ -24,6 +23,7 @@ import {
 	PartyInformationInitialRecords,
 	getPartyDisplayName,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import { GetPartyManagementRecordsPage } from "@/app/src/services/modules/maintenance/party-management/PartyManagementApi";
 import { PartyManagementQueryKeys } from "@/app/src/services/modules/maintenance/party-management/PartyManagementQueryKeys";
 import type {
 	PartyClassification,
@@ -31,6 +31,7 @@ import type {
 	PartyInformationRecord,
 	PartyInformationTableColumnKey,
 	PartyInformationTableRecord,
+	PartyManagementListQuery,
 	PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 
@@ -109,8 +110,10 @@ export function usePartyManagementStore<
 		[mutateAddRecord],
 	);
 	const refreshRecords = useCallback(() => {
-		void recordsQuery.refetch();
-	}, [recordsQuery]);
+		void queryClient.invalidateQueries({
+			queryKey: PartyManagementQueryKeys.all(),
+		});
+	}, [queryClient]);
 	const updateRecord = useCallback(
 		(record: PartyInformationRecord) => mutateUpdateRecord(record),
 		[mutateUpdateRecord],
@@ -166,43 +169,73 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
 	]);
+	const queryParams = useMemo<PartyManagementListQuery>(
+		() => ({
+			classification: classificationFilter,
+			pageIndex: pagination.pageIndex,
+			pageSize: pagination.pageSize,
+			partyType: partyTypeFilter,
+			query,
+			sort: getPartyManagementListSort(sorting),
+			status: statusFilter,
+		}),
+		[
+			classificationFilter,
+			pagination.pageIndex,
+			pagination.pageSize,
+			partyTypeFilter,
+			query,
+			sorting,
+			statusFilter,
+		],
+	);
+	const hasActiveFilters =
+		query.trim().length > 0 ||
+		classificationFilter !== "All" ||
+		partyTypeFilter !== "All" ||
+		statusFilter !== "All";
+	const recordsVersion = useMemo(
+		() =>
+			records
+				.map((record) => `${record.id}:${record.updatedAt}:${record.status}`)
+				.join("|"),
+		[records],
+	);
+	const pageQuery = useQuery({
+		queryKey: PartyManagementQueryKeys.list(queryParams, recordsVersion),
+		queryFn: () =>
+			GetPartyManagementRecordsPage({
+				query: queryParams,
+				records,
+			}),
+		placeholderData: (previousData) => previousData,
+	});
+	const pagedRecords = pageQuery.data ?? {
+		records: [],
+		totalRows: 0,
+	};
 	const tableData = useMemo<PartyInformationTableRecord[]>(
 		() =>
-			records.map((record) => ({
+			pagedRecords.records.map((record) => ({
 				...record,
 				addressLabel: formatPartyAddress(record.address),
 				name: getPartyDisplayName(record),
 				partyTypesLabel: record.partyTypes.join(", "),
 			})),
+		[pagedRecords.records],
+	);
+	const exportAllRows = useMemo<PartyInformationTableRecord[]>(
+		() => records.map(createPartyInformationTableRecord),
 		[records],
 	);
-	const filteredRecords = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
-		const filteredBySelections = tableData.filter(
-			(record) =>
-				(classificationFilter === "All" ||
-					record.classification === classificationFilter) &&
-				(partyTypeFilter === "All" ||
-					record.partyTypes.includes(partyTypeFilter)) &&
-				(statusFilter === "All" || record.status === statusFilter),
-		);
-
-		if (!normalizedQuery) {
-			return filteredBySelections;
-		}
-
-		const nameMatches = filteredBySelections.filter((record) =>
-			record.name.toLowerCase().includes(normalizedQuery),
-		);
-
-		if (nameMatches.length > 0) {
-			return nameMatches;
-		}
-
-		return filteredBySelections.filter((record) =>
-			record.addressLabel.toLowerCase().includes(normalizedQuery),
-		);
-	}, [classificationFilter, partyTypeFilter, query, statusFilter, tableData]);
+	const exportFilteredRows = useMemo<PartyInformationTableRecord[]>(
+		() =>
+			sortPartyManagementRecords(
+				filterPartyManagementRecords(records, queryParams),
+				queryParams,
+			).map(createPartyInformationTableRecord),
+		[queryParams, records],
+	);
 	const columns = useMemo<ColumnDef<PartyInformationTableRecord>[]>(
 		() =>
 			PartyManagementTableColumns.map((column) => {
@@ -238,8 +271,11 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 
 	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
 	const table = useReactTable({
-		data: filteredRecords,
+		data: tableData,
 		columns,
+		manualPagination: true,
+		manualSorting: true,
+		rowCount: pagedRecords.totalRows,
 		state: {
 			columnOrder,
 			columnVisibility,
@@ -251,7 +287,6 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		onPaginationChange: setPagination,
 		onSortingChange: setSorting,
 		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 	});
 
@@ -292,6 +327,9 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	return {
 		classificationFilter,
 		classificationOptions: PartyClassificationOptions,
+		exportAllRows,
+		exportFilteredRows,
+		hasActiveFilters,
 		partyTypeFilter,
 		partyTypeOptions: PartyTypeOptions,
 		query,
@@ -303,6 +341,97 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		statusFilter,
 		statusOptions: PartyInformationStatusOptions,
 		table,
+		totalRows: pagedRecords.totalRows,
+	};
+}
+
+function createPartyInformationTableRecord(
+	record: PartyInformationRecord,
+): PartyInformationTableRecord {
+	return {
+		...record,
+		addressLabel: formatPartyAddress(record.address),
+		name: getPartyDisplayName(record),
+		partyTypesLabel: record.partyTypes.join(", "),
+	};
+}
+
+function filterPartyManagementRecords(
+	records: PartyInformationRecord[],
+	query: PartyManagementListQuery,
+) {
+	const normalizedQuery = query.query.trim().toLowerCase();
+
+	return records.filter((record) => {
+		const name = getPartyDisplayName(record).toLowerCase();
+		const address = formatPartyAddress(record.address).toLowerCase();
+
+		return (
+			(query.classification === "All" ||
+				record.classification === query.classification) &&
+			(query.partyType === "All" || record.partyTypes.includes(query.partyType)) &&
+			(query.status === "All" || record.status === query.status) &&
+			(!normalizedQuery ||
+				name.includes(normalizedQuery) ||
+				address.includes(normalizedQuery))
+		);
+	});
+}
+
+function sortPartyManagementRecords(
+	records: PartyInformationRecord[],
+	query: PartyManagementListQuery,
+) {
+	const sort = query.sort;
+
+	if (!sort || sort.id === "actions") {
+		return records;
+	}
+
+	return [...records].sort((leftRecord, rightRecord) => {
+		const leftValue = getSortablePartyManagementValue(leftRecord, sort.id);
+		const rightValue = getSortablePartyManagementValue(rightRecord, sort.id);
+		const comparison = leftValue.localeCompare(rightValue, undefined, {
+			numeric: true,
+			sensitivity: "base",
+		});
+
+		return sort.desc ? -comparison : comparison;
+	});
+}
+
+function getSortablePartyManagementValue(
+	record: PartyInformationRecord,
+	sortId: NonNullable<PartyManagementListQuery["sort"]>["id"],
+) {
+	switch (sortId) {
+		case "addressLabel":
+			return formatPartyAddress(record.address);
+		case "classification":
+			return record.classification;
+		case "name":
+			return getPartyDisplayName(record);
+		case "partyTypesLabel":
+			return record.partyTypes.join(", ");
+		case "status":
+			return record.status;
+		default:
+			return "";
+	}
+}
+
+function getPartyManagementListSort(
+	sorting: SortingState,
+): PartyManagementListQuery["sort"] {
+	const [sort] = sorting;
+
+	if (!sort) {
+		return undefined;
+	}
+
+	return {
+		desc: sort.desc,
+		id: sort.id as NonNullable<PartyManagementListQuery["sort"]>["id"],
 	};
 }
 

@@ -45,7 +45,7 @@ export function PartyInformationRecordActions({
 
 	return (
 		<>
-			<ModuleTableActions className="justify-center">
+			<ModuleTableActions className="w-full !justify-center">
 				<ModuleTooltip align="end" position="top" title="View">
 					<ModuleTableActionLink
 						variant="view"
@@ -100,11 +100,16 @@ function createPartyInformationRecordFromTableRecord(
 ): PartyInformationRecord {
 	return {
 		address: record.address,
+		addresses: record.addresses,
 		atcCode: record.atcCode,
 		classification: record.classification,
 		contactNo: record.contactNo,
 		createdAt: record.createdAt,
+		defaultPayableAccount: record.defaultPayableAccount,
+		defaultReceivableAccount: record.defaultReceivableAccount,
 		email: record.email,
+		employeeAdvanceAccount: record.employeeAdvanceAccount,
+		employeeReceivableAccount: record.employeeReceivableAccount,
 		firstName: record.firstName,
 		id: record.id,
 		lastName: record.lastName,
@@ -114,8 +119,10 @@ function createPartyInformationRecordFromTableRecord(
 		partyTypes: record.partyTypes,
 		status: record.status,
 		suffixName: record.suffixName,
+		termId: record.termId,
+		termName: record.termName,
 		tin: record.tin,
-		tradingName: record.tradingName,
+		tradeName: record.tradeName,
 		updatedAt: record.updatedAt,
 		vatRegistrationType: record.vatRegistrationType,
 	};

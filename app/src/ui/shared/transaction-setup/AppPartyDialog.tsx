@@ -7,6 +7,7 @@ import {
   FormatPhilippineContactNumber,
 } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
+import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
   PartyInformationInitialFormValues,
   createPartyInformationRecord,
@@ -15,6 +16,7 @@ import {
   isKnownPartyType,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
+import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
 import { usePhilippineAddressOptions } from "@/app/src/hooks/shared/address/ph/usePhilippineAddressOptions";
 import type {
   PartyAddress,
@@ -89,19 +91,39 @@ function AppPartyDialogContent({
   onSelect: (record: PartyInformationRecord) => void;
 }) {
   const addRecord = usePartyManagementStore((state) => state.addRecord);
+  const terms = useTermManagementStore((state) => state.terms);
   const [partyType, setPartyType] = useState<PartyType>(suggestedPartyType);
   const [values, setValues] = useState<PartyInformationFormValues>(() =>
     createDialogInitialValues(records, suggestedPartyType),
   );
   const [errors, setErrors] = useState<PartyInformationFormErrors>({});
+  const activeAddress =
+    values.addresses.find((address) => address.id === values.activeAddressId) ??
+    values.addresses[0] ??
+    values.address;
   const addressOptions = usePhilippineAddressOptions({
-    cityMunicipalityCode: values.address.cityMunicipalityCode,
-    provinceCode: values.address.provinceCode,
-    regionCode: values.address.regionCode,
+    cityMunicipalityCode: activeAddress.cityMunicipalityCode,
+    provinceCode: activeAddress.provinceCode,
+    regionCode: activeAddress.regionCode,
   });
   const atcOptions = useMemo(
     () => getPartyAtcCodeOptionsByClassification(values.classification),
     [values.classification],
+  );
+  const accountOptions = useMemo(
+    () => getModuleChartAccounts({ moduleKey: "maintenance-transaction-type" }),
+    [],
+  );
+  const termOptions = useMemo(
+    () =>
+      terms
+        .filter((term) => term.status === "Active")
+        .map((term) => ({
+          description: `${term.period} ${term.datemode.toLowerCase()}${term.period === "1" ? "" : "s"}`,
+          name: term.name,
+          value: term.id,
+        })),
+    [terms],
   );
   const isClassificationSelected = Boolean(values.classification);
   const dialogCopy = PartyTypeCardCopy[partyType];
@@ -130,7 +152,7 @@ function AppPartyDialogContent({
           ...current,
           classification: value as PartyInformationFormValues["classification"],
           partyName: "",
-          tradingName: "",
+          tradeName: "",
           firstName: "",
           middleName: "",
           lastName: "",
@@ -154,10 +176,11 @@ function AppPartyDialogContent({
 
     setValues((current) => ({
       ...current,
-      address: {
-        ...current.address,
-        [field]: value,
-      },
+      addresses: current.addresses.map((address) =>
+        address.id === current.activeAddressId
+          ? { ...address, [field]: value }
+          : address,
+      ),
     }));
   }
 
@@ -211,8 +234,10 @@ function AppPartyDialogContent({
 
     setValues((current) => ({
       ...current,
-      address: {
-        ...current.address,
+      addresses: current.addresses.map((address) =>
+        address.id === current.activeAddressId
+          ? {
+              ...address,
         barangay: "",
         barangayCode: "",
         cityMunicipality: "",
@@ -221,7 +246,9 @@ function AppPartyDialogContent({
         provinceCode: "",
         region: option?.name ?? "",
         regionCode: code,
-      },
+            }
+          : address,
+      ),
     }));
     setErrors((current) => ({
       ...current,
@@ -240,15 +267,19 @@ function AppPartyDialogContent({
 
     setValues((current) => ({
       ...current,
-      address: {
-        ...current.address,
+      addresses: current.addresses.map((address) =>
+        address.id === current.activeAddressId
+          ? {
+              ...address,
         barangay: "",
         barangayCode: "",
         cityMunicipality: "",
         cityMunicipalityCode: "",
         province: option?.name ?? "",
         provinceCode: code,
-      },
+            }
+          : address,
+      ),
     }));
     setErrors((current) => ({
       ...current,
@@ -266,13 +297,17 @@ function AppPartyDialogContent({
 
     setValues((current) => ({
       ...current,
-      address: {
-        ...current.address,
+      addresses: current.addresses.map((address) =>
+        address.id === current.activeAddressId
+          ? {
+              ...address,
         barangay: "",
         barangayCode: "",
         cityMunicipality: option?.name ?? "",
         cityMunicipalityCode: code,
-      },
+            }
+          : address,
+      ),
     }));
     setErrors((current) => ({
       ...current,
@@ -289,11 +324,15 @@ function AppPartyDialogContent({
 
     setValues((current) => ({
       ...current,
-      address: {
-        ...current.address,
+      addresses: current.addresses.map((address) =>
+        address.id === current.activeAddressId
+          ? {
+              ...address,
         barangay: option?.name ?? "",
         barangayCode: code,
-      },
+            }
+          : address,
+      ),
     }));
     setErrors((current) => ({ ...current, barangayCode: undefined }));
   }
@@ -305,6 +344,96 @@ function AppPartyDialogContent({
       partyTypes: [nextPartyType],
     }));
     setErrors((current) => ({ ...current, partyTypes: undefined }));
+  }
+
+  function addAddress() {
+    const id = `address-${Date.now().toString(36)}`;
+    setValues((current) => ({
+      ...current,
+      activeAddressId: id,
+      addresses: [
+        ...current.addresses,
+        {
+          id,
+          addressName: `Address ${current.addresses.length + 1}`,
+          addressLine1: "",
+          addressLine2: "",
+          barangay: "",
+          barangayCode: "",
+          cityMunicipality: "",
+          cityMunicipalityCode: "",
+          isBilling: false,
+          isDefault: false,
+          isDelivery: false,
+          province: "",
+          provinceCode: "",
+          region: "",
+          regionCode: "",
+        },
+      ],
+    }));
+  }
+
+  function removeAddress(addressId: string) {
+    setValues((current) => {
+      if (current.addresses.length <= 1) {
+        return current;
+      }
+
+      const nextAddresses = current.addresses.filter(
+        (address) => address.id !== addressId,
+      );
+
+      return {
+        ...current,
+        activeAddressId: nextAddresses[0]?.id ?? "",
+        addresses: nextAddresses.some((address) => address.isDefault)
+          ? nextAddresses
+          : nextAddresses.map((address, index) => ({
+              ...address,
+              isDefault: index === 0,
+            })),
+      };
+    });
+  }
+
+  function selectAddress(addressId: string) {
+    setValues((current) => ({ ...current, activeAddressId: addressId }));
+  }
+
+  function setDefaultAddress(addressId: string) {
+    setValues((current) => ({
+      ...current,
+      activeAddressId: addressId,
+      addresses: current.addresses.map((address) => ({
+        ...address,
+        isDefault: address.id === addressId,
+      })),
+    }));
+  }
+
+  function updateAddressMeta(
+    addressId: string,
+    field: "addressName" | "isBilling" | "isDelivery",
+    value: string | boolean,
+  ) {
+    setValues((current) => ({
+      ...current,
+      addresses: current.addresses.map((address) =>
+        address.id === addressId ? { ...address, [field]: value } : address,
+      ),
+    }));
+  }
+
+  function selectTerm(value: string | string[]) {
+    const termId = getSingleSelectedValue(value);
+    const term = terms.find((currentTerm) => currentTerm.id === termId);
+
+    setValues((current) => ({
+      ...current,
+      termId,
+      termName: term?.name ?? "",
+    }));
   }
 
   function handleSave() {
@@ -386,11 +515,10 @@ function AppPartyDialogContent({
                       key={currentType}
                       type="button"
                       onClick={() => handlePartyTypeChange(currentType)}
-                      className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${
-                        partyType === currentType
+                      className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${partyType === currentType
                           ? "theme-accent-contrast-text border-skyblue bg-skyblue"
                           : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/40 hover:bg-skyblue/8"
-                      }`}
+                        }`}
                     >
                       {currentType}
                     </button>
@@ -401,20 +529,28 @@ function AppPartyDialogContent({
 
             <PartyInformationDetailsFields
               addressOptions={addressOptions}
+              accountOptions={accountOptions}
               atcOptions={atcOptions}
               errors={errors}
               isClassificationSelected={isClassificationSelected}
               isReadonly={false}
               partyTypeOptions={[partyType]}
+              termOptions={termOptions}
               values={values}
+              onAddAddress={addAddress}
               onAddressInputChange={handleAddressInputChange}
               onInputChange={handleInputChange}
               onPartyTypesChange={handlePartyTypesChange}
+              onRemoveAddress={removeAddress}
               onSelectAtcCode={selectAtcCode}
+              onSelectAddress={selectAddress}
               onSelectBarangay={selectBarangay}
               onSelectCityMunicipality={selectCityMunicipality}
               onSelectProvince={selectProvince}
               onSelectRegion={selectRegion}
+              onSelectTerm={selectTerm}
+              onSetDefaultAddress={setDefaultAddress}
+              onUpdateAddressMeta={updateAddressMeta}
               onUpdateField={updateField}
             />
           </div>

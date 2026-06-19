@@ -1,8 +1,11 @@
+import { useState } from "react";
 import type {
 	ChangeEventHandler,
 	MouseEvent as ReactMouseEvent,
 	ReactNode,
 } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
 	PartyClassificationOptions,
 	PartyInformationStatusOptions,
@@ -23,6 +26,8 @@ import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
+import { AppSearchSuggestions } from "@/app/src/ui/shared/search-suggestions/AppSearchSuggestions";
 
 type PartyAddressOptionSet = {
 	barangayOptions: AppAdvancedDropdownOption[];
@@ -39,43 +44,67 @@ type PartyAddressOptionSet = {
 export function PartyInformationDetailsFields({
 	atcOptions,
 	addressOptions,
+	accountOptions,
 	errors,
 	isClassificationSelected,
 	isReadonly,
 	partyTypeOptions,
+	termOptions,
 	values,
 	onAddressInputChange,
+	onAddAddress,
 	onInputChange,
 	onPartyTypesChange,
+	onRemoveAddress,
 	onSelectBarangay,
 	onSelectAtcCode,
 	onSelectCityMunicipality,
 	onSelectProvince,
 	onSelectRegion,
+	onSelectAddress,
 	onUpdateField,
+	onSetDefaultAddress,
+	onSelectTerm,
+	onUpdateAddressMeta,
 }: {
 	addressOptions: PartyAddressOptionSet;
+	accountOptions: ModuleChartAccount[];
 	atcOptions: PartyAtcCodeOption[];
 	errors: PartyInformationFormErrors;
 	isClassificationSelected: boolean;
 	isReadonly: boolean;
 	partyTypeOptions: readonly PartyType[];
+	termOptions: AppAdvancedDropdownOption[];
 	values: PartyInformationFormValues;
 	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
+	onAddAddress: () => void;
 	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
 	onPartyTypesChange: (value: string | string[]) => void;
+	onRemoveAddress: (addressId: string) => void;
 	onSelectAtcCode: (value: string | string[]) => void;
 	onSelectBarangay: (value: string | string[]) => void;
 	onSelectCityMunicipality: (value: string | string[]) => void;
 	onSelectProvince: (value: string | string[]) => void;
 	onSelectRegion: (value: string | string[]) => void;
+	onSelectAddress: (addressId: string) => void;
 	onUpdateField: <TKey extends keyof PartyInformationFormValues>(
 		field: TKey,
 		value: PartyInformationFormValues[TKey],
 	) => void;
+	onSetDefaultAddress: (addressId: string) => void;
+	onSelectTerm: (value: string | string[]) => void;
+	onUpdateAddressMeta: (
+		addressId: string,
+		field: "addressName" | "isBilling" | "isDelivery",
+		value: string | boolean,
+	) => void;
 }) {
 	const isDetailsDisabled = isReadonly || !isClassificationSelected;
 	const showBusinessNameFields = values.classification !== "Individual";
+	const activeAddress =
+		values.addresses.find((address) => address.id === values.activeAddressId) ??
+		values.addresses[0] ??
+		values.address;
 	const partyTypeSelectOptions = partyTypeOptions.map((type) => ({
 		name: type,
 		value: type,
@@ -128,7 +157,9 @@ export function PartyInformationDetailsFields({
 								isSearchable={false}
 								options={partyTypeSelectOptions}
 								placeholder="Select party type"
+								removeSelectionOnSelectedOptionClick={false}
 								selectionMode="multiple"
+								showSelectionRemoveButton={false}
 								value={values.partyTypes}
 								onChange={onPartyTypesChange}
 							/>
@@ -163,10 +194,10 @@ export function PartyInformationDetailsFields({
 								className={fieldClassName}
 							/>
 						</Field>
-						<Field label="Trading Name">
+						<Field label="Trade Name">
 							<input
-								name="tradingName"
-								value={values.tradingName}
+								name="tradeName"
+								value={values.tradeName}
 								onChange={onInputChange}
 								readOnly={isReadonly}
 								disabled={isDetailsDisabled}
@@ -259,16 +290,22 @@ export function PartyInformationDetailsFields({
 				</div>
 
 				<AddressSection
-					address={values.address}
+					address={activeAddress}
+					addresses={values.addresses}
 					disabled={isDetailsDisabled}
 					errors={errors}
 					options={addressOptions}
 					title="Address"
+					onAddAddress={onAddAddress}
 					onAddressInputChange={onAddressInputChange}
+					onRemoveAddress={onRemoveAddress}
 					onSelectBarangay={onSelectBarangay}
 					onSelectCityMunicipality={onSelectCityMunicipality}
 					onSelectProvince={onSelectProvince}
 					onSelectRegion={onSelectRegion}
+					onSelectAddress={onSelectAddress}
+					onSetDefaultAddress={onSetDefaultAddress}
+					onUpdateAddressMeta={onUpdateAddressMeta}
 				/>
 
 				<div className="grid gap-4">
@@ -295,7 +332,7 @@ export function PartyInformationDetailsFields({
 								onChange={onInputChange}
 								className={selectClassName}
 							>
-								<option value="">Select VAT type</option>
+								<option value="">--Select VAT Type--</option>
 								{VatRegistrationTypeOptions.map((type) => (
 									<option key={type} value={type}>
 										{type}
@@ -314,35 +351,161 @@ export function PartyInformationDetailsFields({
 								onChange={onSelectAtcCode}
 							/>
 						</Field>
+						<Field label="Terms">
+							<AppAdvancedDropdown
+								disabled={isDetailsDisabled}
+								emptyMessage="No active terms found."
+								options={termOptions}
+								placeholder="Select terms"
+								searchPlaceholder="Search terms"
+								value={values.termId}
+								onChange={onSelectTerm}
+							/>
+						</Field>
 					</div>
+					<AccountFields
+						accountOptions={accountOptions}
+						disabled={isDetailsDisabled}
+						errors={errors}
+						values={values}
+						onUpdateField={onUpdateField}
+					/>
 				</div>
 			</div>
 		</section>
 	);
 }
 
+function AccountFields({
+	accountOptions,
+	disabled,
+	errors,
+	values,
+	onUpdateField,
+}: {
+	accountOptions: ModuleChartAccount[];
+	disabled: boolean;
+	errors: PartyInformationFormErrors;
+	values: PartyInformationFormValues;
+	onUpdateField: <TKey extends keyof PartyInformationFormValues>(
+		field: TKey,
+		value: PartyInformationFormValues[TKey],
+	) => void;
+}) {
+	const isCustomer = values.partyTypes.includes("Customer");
+	const isVendor = values.partyTypes.includes("Vendor");
+	const isEmployee = values.partyTypes.includes("Employee");
+
+	if (!isCustomer && !isVendor && !isEmployee) {
+		return null;
+	}
+
+	return (
+		<div className="grid gap-4 md:grid-cols-2">
+			{isCustomer ? (
+				<Field
+					label="Default Receivable Account"
+					error={errors.defaultReceivableAccount}
+					required
+				>
+					<ChartAccountDropdown
+						accounts={accountOptions}
+						disabled={disabled}
+						value={values.defaultReceivableAccount}
+						onChange={(value) =>
+							onUpdateField("defaultReceivableAccount", value)
+						}
+					/>
+				</Field>
+			) : null}
+			{isVendor ? (
+				<Field
+					label="Default Payable Account"
+					error={errors.defaultPayableAccount}
+					required
+				>
+					<ChartAccountDropdown
+						accounts={accountOptions}
+						disabled={disabled}
+						value={values.defaultPayableAccount}
+						onChange={(value) => onUpdateField("defaultPayableAccount", value)}
+					/>
+				</Field>
+			) : null}
+			{isEmployee ? (
+				<>
+					<Field
+						label="Employee Receivable Account"
+						error={errors.employeeReceivableAccount}
+						required
+					>
+						<ChartAccountDropdown
+							accounts={accountOptions}
+							disabled={disabled}
+							value={values.employeeReceivableAccount}
+							onChange={(value) =>
+								onUpdateField("employeeReceivableAccount", value)
+							}
+						/>
+					</Field>
+					<Field
+						label="Employee Advance Account"
+						error={errors.employeeAdvanceAccount}
+						required
+					>
+						<ChartAccountDropdown
+							accounts={accountOptions}
+							disabled={disabled}
+							value={values.employeeAdvanceAccount}
+							onChange={(value) =>
+								onUpdateField("employeeAdvanceAccount", value)
+							}
+						/>
+					</Field>
+				</>
+			) : null}
+		</div>
+	);
+}
+
 function AddressSection({
 	address,
+	addresses,
 	disabled,
 	errors,
 	options,
 	title,
+	onAddAddress,
 	onAddressInputChange,
+	onRemoveAddress,
 	onSelectBarangay,
 	onSelectCityMunicipality,
 	onSelectProvince,
 	onSelectRegion,
+	onSelectAddress,
+	onSetDefaultAddress,
+	onUpdateAddressMeta,
 }: {
 	address: PartyAddress;
+	addresses: PartyAddress[];
 	disabled: boolean;
 	errors: PartyInformationFormErrors;
 	options: PartyAddressOptionSet;
 	title: string;
+	onAddAddress: () => void;
 	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
+	onRemoveAddress: (addressId: string) => void;
 	onSelectBarangay: (value: string | string[]) => void;
 	onSelectCityMunicipality: (value: string | string[]) => void;
 	onSelectProvince: (value: string | string[]) => void;
 	onSelectRegion: (value: string | string[]) => void;
+	onSelectAddress: (addressId: string) => void;
+	onSetDefaultAddress: (addressId: string) => void;
+	onUpdateAddressMeta: (
+		addressId: string,
+		field: "addressName" | "isBilling" | "isDelivery",
+		value: string | boolean,
+	) => void;
 }) {
 	const isProvinceDisabled =
 		disabled ||
@@ -359,7 +522,86 @@ function AddressSection({
 
 	return (
 		<div className="grid gap-4">
-			<SectionHeading title={title} />
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<SectionHeading title={title} />
+				<button
+					type="button"
+					disabled={disabled}
+					onClick={onAddAddress}
+					className="inline-flex h-10 items-center gap-2 rounded-md border border-darknavy/10 px-3 text-sm font-semibold text-darknavy transition hover:bg-skyblue/10 disabled:cursor-not-allowed disabled:opacity-45"
+				>
+					<Plus className="h-4 w-4" aria-hidden="true" />
+					Add Address
+				</button>
+			</div>
+			{errors.addresses ? (
+				<span className="text-xs font-medium text-coralpink">
+					{errors.addresses}
+				</span>
+			) : null}
+			<AddressSelector
+				activeAddressId={address.id}
+				addresses={addresses}
+				disabled={disabled}
+				onRemoveAddress={onRemoveAddress}
+				onSelectAddress={onSelectAddress}
+			/>
+			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+				<AddressInput
+					disabled={disabled}
+					label="Address Name"
+					name="addressName"
+					placeholder="Main office"
+					value={address.addressName}
+					onChange={onAddressInputChange}
+				/>
+				<div className="grid gap-2">
+					<span className="mb-2 block text-sm font-semibold text-darknavy">
+						Classifications
+					</span>
+					<div className="flex h-11 items-center gap-3 rounded-lg border border-darknavy/10 bg-white px-3">
+						<label className="flex items-center gap-2 text-sm font-medium text-darknavy/75">
+							<input
+								type="checkbox"
+								checked={address.isDefault}
+								disabled={disabled || address.isDefault}
+								onChange={() => onSetDefaultAddress(address.id)}
+							/>
+							Default
+						</label>
+						<label className="flex items-center gap-2 text-sm font-medium text-darknavy/75">
+							<input
+								type="checkbox"
+								checked={address.isBilling}
+								disabled={disabled}
+								onChange={(event) =>
+									onUpdateAddressMeta(
+										address.id,
+										"isBilling",
+										event.target.checked,
+									)
+								}
+							/>
+							Billing
+						</label>
+						<label className="flex items-center gap-2 text-sm font-medium text-darknavy/75">
+							<input
+								type="checkbox"
+								checked={address.isDelivery}
+								disabled={disabled}
+								onChange={(event) =>
+									onUpdateAddressMeta(
+										address.id,
+										"isDelivery",
+										event.target.checked,
+									)
+								}
+							/>
+							Delivery
+						</label>
+					</div>
+				</div>
+			</div>
 			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 				<Field label="Region" error={errors.regionCode} required>
 					<AppAdvancedDropdown
@@ -479,6 +721,87 @@ function AddressInput({
 	);
 }
 
+function AddressSelector({
+	activeAddressId,
+	addresses,
+	disabled,
+	onRemoveAddress,
+	onSelectAddress,
+}: {
+	activeAddressId: string;
+	addresses: PartyAddress[];
+	disabled: boolean;
+	onRemoveAddress: (addressId: string) => void;
+	onSelectAddress: (addressId: string) => void;
+}) {
+	const [query, setQuery] = useState("");
+	const activeAddress = addresses.find((address) => address.id === activeAddressId);
+	const normalizedQuery = query.trim().toLowerCase();
+	const filteredAddresses = normalizedQuery
+		? addresses.filter((address) =>
+				[
+					address.addressName,
+					address.addressLine1,
+					address.addressLine2,
+					address.barangay,
+					address.cityMunicipality,
+					address.province,
+				]
+					.join(" ")
+					.toLowerCase()
+					.includes(normalizedQuery),
+			)
+		: addresses;
+
+	if (addresses.length <= 1) {
+		return (
+			<div className="rounded-lg border border-darknavy/10 bg-darknavy/[0.025] px-3 py-2 text-sm font-medium text-darknavy/70">
+				{activeAddress?.addressName || "Default Address"}
+			</div>
+		);
+	}
+
+	return (
+		<div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+			<AppSearchSuggestions
+				className="max-w-2xl"
+				emptyMessage="No address matches."
+				getDescription={(address) =>
+					[
+						address.isDefault ? "Default" : "",
+						address.isBilling ? "Billing" : "",
+						address.isDelivery ? "Delivery" : "",
+					]
+						.filter(Boolean)
+						.join(", ") || "Additional address"
+				}
+				getKey={(address) => address.id}
+				getTitle={(address) => address.addressName || "Address"}
+				inputLabel="Find address"
+				items={filteredAddresses}
+				maxVisibleItems={4}
+				minQueryLength={0}
+				placeholder="Find address"
+				query={query}
+				onQueryChange={setQuery}
+				onSelect={(address) => {
+					onSelectAddress(address.id);
+					setQuery(address.addressName);
+				}}
+			/>
+			<button
+				type="button"
+				disabled={disabled || addresses.length <= 1}
+				onClick={() => onRemoveAddress(activeAddressId)}
+				className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-coralpink/25 px-3 text-sm font-semibold text-coralpink transition hover:bg-coralpink/10 disabled:cursor-not-allowed disabled:opacity-45"
+			>
+				<Trash2 className="h-4 w-4" aria-hidden="true" />
+				Remove
+			</button>
+		</div>
+	);
+}
+
 function SectionHeading({
 	description,
 	title,
@@ -512,7 +835,7 @@ function Field({
 	label: string;
 	required?: boolean;
 }) {
-	function handleLabelMouseDown(event: ReactMouseEvent<HTMLLabelElement>) {
+	function handleFieldMouseDown(event: ReactMouseEvent<HTMLDivElement>) {
 		const target = event.target;
 
 		if (
@@ -535,10 +858,14 @@ function Field({
 
 		event.preventDefault();
 		control.focus();
+
+		if (control.getAttribute("role") === "combobox") {
+			control.click();
+		}
 	}
 
 	return (
-		<label onMouseDown={handleLabelMouseDown}>
+		<div onMouseDown={handleFieldMouseDown}>
 			<span className="mb-2 block text-sm font-semibold text-darknavy">
 				{label}
 				{required ? <span className="text-coralpink"> *</span> : null}
@@ -549,7 +876,7 @@ function Field({
 					{error}
 				</span>
 			) : null}
-		</label>
+		</div>
 	);
 }
 

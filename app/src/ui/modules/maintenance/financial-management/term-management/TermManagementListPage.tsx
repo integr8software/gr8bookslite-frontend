@@ -1,26 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { CalendarDays, Download, Hash, Plus, Upload } from "lucide-react";
-import {
-	TermManagementDatemodeOptions,
-	TermManagementStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+import { useMemo, useState } from "react";
+import { CalendarDays, CheckCircle2, CirclePause, Hash } from "lucide-react";
 import { useTermManagementListPage } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagementListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 import {
-	ModuleHeader,
-	moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
-import {
-	ModuleTableResetButton,
-	ModuleTableFilterSelect,
-	ModuleTableSearch,
-	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+	ModuleStatisticCards,
+	type ModuleStatisticCardItem,
+} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { TermManagementHeader } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementHeader";
+import { TermManagementImportDialog } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementImportDialog";
 import { TermManagementTable } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementTable";
 import { TermManagementDrawer } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementDrawer";
 
@@ -29,116 +20,103 @@ type DrawerState = { mode: "add" | "edit" | "view"; term?: TermManagement } | nu
 export function TermManagementListPage() {
 	const page = useTermManagementListPage();
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	const [isImportOpen, setIsImportOpen] = useState(false);
 	useMaintenanceAddDrawerSpotlight(
 		() => setDrawerState({ mode: "add" }),
 		() => setDrawerState(null),
 	);
+	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
+		() => [
+			{
+				icon: CalendarDays,
+				iconClassName: "bg-skyblue/20 text-skyblue",
+				label: "Total Terms",
+				summary: "All term definitions",
+				value: page.terms.length,
+			},
+			{
+				icon: CheckCircle2,
+				iconClassName: "bg-emerald-50 text-emerald-700",
+				label: "Active Terms",
+				summary: "Available for selection",
+				value: page.terms.filter((term) => term.status === "Active").length,
+			},
+			{
+				icon: CirclePause,
+				iconClassName: "bg-amber-50 text-amber-700",
+				label: "Inactive Terms",
+				summary: "Currently inactive",
+				value: page.terms.filter((term) => term.status === "Inactive").length,
+			},
+			{
+				icon: Hash,
+				iconClassName: "bg-cyan-50 text-cyan-700",
+				label: "Day Mode",
+				summary: "Uses day-based periods",
+				value: page.terms.filter((term) => term.datemode === "Day").length,
+			},
+			{
+				icon: CalendarDays,
+				iconClassName: "bg-violet-50 text-violet-700",
+				label: "Month Mode",
+				summary: "Uses month-based periods",
+				value: page.terms.filter((term) => term.datemode === "Month").length,
+			},
+			{
+				icon: CalendarDays,
+				iconClassName: "bg-slate-100 text-slate-700",
+				label: "Year Mode",
+				summary: "Uses year-based periods",
+				value: page.terms.filter((term) => term.datemode === "Year").length,
+			},
+		],
+		[page.terms],
+	);
+	const hasActiveFilters =
+		page.query.trim().length > 0 ||
+		page.datemodeFilter !== "All" ||
+		Boolean(page.statusFilter);
 
 	return (
 		<section className="grid gap-5">
-			<ModuleHeader
-				variant="panel"
-				titleAs="h1"
-				title="Term Management"
-				description="Manage datemode and period definitions used for term reporting and payment cycles."
-				eyebrow={
-					<>
-						<CalendarDays
-							className="h-3.5 w-3.5"
-							aria-hidden="true"
-						/>
-						Accounting master data
-					</>
-				}
-				actions={<TermManagementHeaderActions onAdd={() => setDrawerState({ mode: "add" })} />}
+			<TermManagementHeader
+				onAdd={() => setDrawerState({ mode: "add" })}
+				onImport={() => setIsImportOpen(true)}
 			/>
-
-			<ModuleMetrics
-				metrics={[
-					{
-						helper: "All term definitions",
-						icon: CalendarDays,
-						label: "Total Terms",
-						value: page.terms.length,
-					},
-					{
-						helper: "Uses day-based periods",
-						icon: Hash,
-						label: "Day Mode",
-						tone: "emerald",
-						value: page.terms.filter((term) => term.datemode === "Day")
-							.length,
-					},
-					{
-						helper: "Uses month-based periods",
-						icon: CalendarDays,
-						label: "Month Mode",
-						tone: "violet",
-						value: page.terms.filter((term) => term.datemode === "Month")
-							.length,
-					},
-					{
-						helper: "Uses year-based periods",
-						icon: CalendarDays,
-						label: "Year Mode",
-						tone: "amber",
-						value: page.terms.filter((term) => term.datemode === "Year")
-							.length,
-					},
-				]}
+			<ModuleStatisticCards
+				items={statisticCards}
+				className="2xl:grid-cols-6"
 			/>
 
 			<TermManagementTable
+				datemodeFilter={page.datemodeFilter}
+				filteredTerms={page.filteredTerms}
+				hasActiveFilters={hasActiveFilters}
 				isLoading={page.isLoading}
-				terms={page.filteredTerms}
-				toolbar={
-					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,1fr)]">
-						<ModuleTableSearch
-							label="Search terms"
-							value={page.query}
-							onChange={page.setQuery}
-							placeholder="Search by name, datemode, period, or status"
-						/>
-						<ModuleTableFilterSelect
-							label="Datemode"
-							value={page.datemodeFilter}
-							options={[
-								{ label: "All", value: "All" },
-								...TermManagementDatemodeOptions.map(
-									(datemode) => ({
-										label: datemode,
-										value: datemode,
-									}),
-								),
-							]}
-							onChange={page.setDatemodeFilter}
-						/>
-						<ModuleTableFilterSelect
-							label="Status"
-							value={page.statusFilter}
-							options={[
-								{ label: "All", value: "" },
-								...TermManagementStatusOptions.map((status) => ({
-									label: status,
-									value: status,
-								})),
-							]}
-							onChange={(value) =>
-								page.setStatusFilter(
-									value as "" | (typeof TermManagementStatusOptions)[number],
-								)
-							}
-						/>
-						<ModuleTableResetButton onClick={page.resetFilters}>
-							Reset
-						</ModuleTableResetButton>
-					</ModuleTableToolbar>
-				}
+				isRefreshing={page.isRefreshing}
+				query={page.query}
+				statusFilter={page.statusFilter}
+				terms={page.terms}
+				onDatemodeFilterChange={page.setDatemodeFilter}
 				onEditTerm={(term) => setDrawerState({ mode: "edit", term })}
+				onQueryChange={page.setQuery}
+				onRefresh={page.refreshTerms}
+				onStatusFilterChange={page.setStatusFilter}
 				onToggleStatus={page.setPendingStatusTerm}
 				onViewTerm={(term) => setDrawerState({ mode: "view", term })}
 			/>
-			<TermManagementDrawer isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} term={drawerState?.term} />
+			<TermManagementDrawer
+				isOpen={Boolean(drawerState)}
+				mode={drawerState?.mode ?? "add"}
+				onClose={() => setDrawerState(null)}
+				term={drawerState?.term}
+			/>
+			<TermManagementImportDialog
+				existingTerms={page.terms}
+				isOpen={isImportOpen}
+				onClose={() => setIsImportOpen(false)}
+				onImportTerms={page.addTerms}
+			/>
 			<AppDialog
 				isOpen={Boolean(page.pendingStatusTerm)}
 				isPending={page.isMutating}
@@ -162,34 +140,5 @@ export function TermManagementListPage() {
 				onConfirm={page.confirmTermStatusChange}
 			/>
 		</section>
-	);
-}
-
-function TermManagementHeaderActions({ onAdd }: { onAdd: () => void }) {
-	return (
-		<>
-			<button
-				type="button"
-				className={moduleHeaderActionClassNames.secondary}
-			>
-				<Upload className="h-4 w-4" aria-hidden="true" />
-				Import
-			</button>
-			<button
-				type="button"
-				className={moduleHeaderActionClassNames.secondary}
-			>
-				<Download className="h-4 w-4" aria-hidden="true" />
-				Export
-			</button>
-			<button
-				type="button"
-				onClick={onAdd}
-				className={moduleHeaderActionClassNames.primary}
-			>
-				<Plus className="h-4 w-4" aria-hidden="true" />
-				Add Term
-			</button>
-		</>
 	);
 }

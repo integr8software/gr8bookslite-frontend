@@ -112,6 +112,7 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 							}}
 							className={joinClasses(
 								"group relative whitespace-nowrap px-5 py-3 first:pl-6 last:pr-6",
+								isCenteredHeader(header) ? "text-center" : "text-left",
 								draggedColumnId === header.column.id &&
 									"bg-skyblue/10 opacity-75",
 								getColumnClassName(header),
@@ -129,7 +130,14 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 								/>
 							) : null}
 							{header.isPlaceholder ? null : (
-								<div className="flex min-w-0 items-center gap-1.5">
+								<div
+									className={joinClasses(
+										"flex min-w-0 items-center gap-1.5",
+										isCenteredHeader(header)
+											? "justify-center"
+											: "justify-start",
+									)}
+								>
 									<span
 										draggable
 										onDragStart={(event) => {
@@ -144,9 +152,17 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 										<GripVertical className="h-3.5 w-3.5" aria-hidden="true" />
 									</span>
 									{header.column.getCanSort() ? (
-										<ModuleTableSortButton header={header} />
+										<ModuleTableSortButton
+											header={header}
+											align={isCenteredHeader(header) ? "center" : "left"}
+										/>
 									) : (
-										<span className="truncate">
+										<span
+											className={joinClasses(
+												"truncate",
+												isCenteredHeader(header) ? "text-center" : "text-left",
+											)}
+										>
 											{flexRender(
 												header.column.columnDef.header,
 												header.getContext(),
@@ -163,9 +179,15 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 	);
 }
 
+function isCenteredHeader<TData>(header: Header<TData, unknown>) {
+	return ["actions", "datemode", "period", "status"].includes(header.column.id);
+}
+
 function ModuleTableSortButton<TData>({
+	align,
 	header,
 }: {
+	align: "center" | "left";
 	header: Header<TData, unknown>;
 }) {
 	const sortDirection = header.column.getIsSorted();
@@ -188,11 +210,17 @@ function ModuleTableSortButton<TData>({
 			onClick={header.column.getToggleSortingHandler()}
 			aria-label={sortLabel}
 			className={joinClasses(
-				"inline-flex max-w-full items-center gap-2 rounded-md text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2",
+				"inline-flex max-w-full items-center gap-2 rounded-md transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2",
+				align === "center" ? "justify-center text-center" : "justify-start text-left",
 				moduleAccentClassNames.focusRing,
 			)}
 		>
-			<span className="truncate">
+			<span
+				className={joinClasses(
+					"truncate",
+					align === "center" ? "text-center" : "text-left",
+				)}
+			>
 				{flexRender(header.column.columnDef.header, header.getContext())}
 			</span>
 			<SortIcon

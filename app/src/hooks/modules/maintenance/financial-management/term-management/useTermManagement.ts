@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { MockTermManagements } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
@@ -10,10 +10,13 @@ import type { TermManagement } from "@/app/src/types/modules/maintenance/financi
 type TermManagementStoreState = {
 	terms: TermManagement[];
 	addTerm: (term: TermManagement) => void;
+	addTerms: (terms: TermManagement[]) => void;
 	updateTerm: (term: TermManagement) => void;
 	deleteTerm: (termId: string) => void;
 	isLoading: boolean;
+	isRefreshing: boolean;
 	isMutating: boolean;
+	refreshTerms: () => void;
 };
 
 export function useTermManagementStore<TSelected = TermManagementStoreState>(
@@ -25,6 +28,11 @@ export function useTermManagementStore<TSelected = TermManagementStoreState>(
 		queryFn: async () => MockTermManagements,
 		initialData: MockTermManagements,
 	});
+	const refreshTerms = useCallback(() => {
+		void queryClient.invalidateQueries({
+			queryKey: TermManagementQueryKeys.all(),
+		});
+	}, [queryClient]);
 
 	function updateCachedTerms(
 		updater: (terms: TermManagement[]) => TermManagement[],
@@ -43,6 +51,15 @@ export function useTermManagementStore<TSelected = TermManagementStoreState>(
 		},
 		onError: () => {
 			toast.error("Could not create term definition. Please try again.");
+		},
+	});
+	const addTermsMutation = useMutation({
+		mutationFn: async (terms: TermManagement[]) => terms,
+		onSuccess: (termsToAdd) => {
+			updateCachedTerms((terms) => [...terms, ...termsToAdd]);
+		},
+		onError: () => {
+			toast.error("Could not import term definitions. Please try again.");
 		},
 	});
 
@@ -78,18 +95,25 @@ export function useTermManagementStore<TSelected = TermManagementStoreState>(
 		() => ({
 			terms: termsQuery.data,
 			addTerm: (term) => addTermMutation.mutate(term),
+			addTerms: (terms) => addTermsMutation.mutate(terms),
 			updateTerm: (term) => updateTermMutation.mutate(term),
 			deleteTerm: (termId) => deleteTermMutation.mutate(termId),
 			isLoading: termsQuery.isLoading,
+			isRefreshing: termsQuery.isFetching && !termsQuery.isLoading,
 			isMutating:
 				addTermMutation.isPending ||
+				addTermsMutation.isPending ||
 				updateTermMutation.isPending ||
 				deleteTermMutation.isPending,
+			refreshTerms,
 		}),
 		[
 			addTermMutation,
+			addTermsMutation,
 			deleteTermMutation,
+			refreshTerms,
 			termsQuery.data,
+			termsQuery.isFetching,
 			termsQuery.isLoading,
 			updateTermMutation,
 		],

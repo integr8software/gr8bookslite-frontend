@@ -7,6 +7,7 @@ export const MockTermManagements: TermManagement[] = [
 	{
 		id: "term-1",
 		name: "Standard payment terms",
+		description: "Default monthly payment cycle for standard transactions.",
 		datemode: "Month",
 		period: "1",
 		status: "Active",
@@ -14,6 +15,7 @@ export const MockTermManagements: TermManagement[] = [
 	{
 		id: "term-2",
 		name: "Annual review period",
+		description: "Yearly review cadence for long-running agreements.",
 		datemode: "Year",
 		period: "1",
 		status: "Inactive",
@@ -22,6 +24,7 @@ export const MockTermManagements: TermManagement[] = [
 
 export const TermManagementInitialFormValues: TermManagementFormValues = {
 	name: "",
+	description: "",
 	datemode: "Month",
 	period: "",
 	status: "Active",
@@ -34,6 +37,7 @@ export function createTermManagementFormValues(
 
 	return {
 		name: term.name ?? legacyTerm.description ?? "",
+		description: term.description ?? "",
 		datemode: term.datemode,
 		period: term.period,
 		status: term.status ?? "Active",
@@ -46,6 +50,7 @@ export function createTermManagementFromForm(
 	return {
 		id: `term-${Date.now()}`,
 		name: values.name.trim(),
+		description: values.description.trim(),
 		datemode: values.datemode,
 		period: values.period.trim(),
 		status: values.status,
@@ -59,6 +64,7 @@ export function updateTermManagementFromForm(
 	return {
 		...term,
 		name: values.name.trim(),
+		description: values.description.trim(),
 		datemode: values.datemode,
 		period: values.period.trim(),
 		status: values.status,

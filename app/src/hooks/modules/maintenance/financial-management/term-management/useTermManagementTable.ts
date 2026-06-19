@@ -3,8 +3,10 @@
 import { useMemo, useState } from "react";
 import {
 	type ColumnDef,
+	type ColumnOrderState,
 	type PaginationState,
 	type SortingState,
+	type VisibilityState,
 	getCoreRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
@@ -19,8 +21,17 @@ import type {
 export function useTermManagementTable(terms: TermManagement[]) {
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
-		pageSize: 5,
+		pageSize: 10,
 	});
+	const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(() =>
+		TermManagementTableColumns.map((column) =>
+			"key" in column ? column.key : "actions",
+		),
+	);
+	const [columnVisibility, setColumnVisibility] =
+		useState<VisibilityState>({
+			description: false,
+		});
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
 	]);
@@ -32,7 +43,7 @@ export function useTermManagementTable(terms: TermManagement[]) {
 						id: "actions",
 						header: column.label,
 						enableSorting: false,
-						meta: { className: column.className },
+						meta: { className: column.className, label: column.label },
 					};
 				}
 
@@ -50,9 +61,13 @@ export function useTermManagementTable(terms: TermManagement[]) {
 		data: terms,
 		columns,
 		state: {
+			columnOrder,
+			columnVisibility,
 			pagination,
 			sorting,
 		},
+		onColumnOrderChange: setColumnOrder,
+		onColumnVisibilityChange: setColumnVisibility,
 		onPaginationChange: setPagination,
 		onSortingChange: setSorting,
 		getCoreRowModel: getCoreRowModel(),
@@ -70,6 +85,6 @@ function createTermManagementColumn(
 		accessorKey: key,
 		header,
 		sortingFn: "alphanumeric",
-		meta: { className },
+		meta: { className, label: header },
 	};
 }

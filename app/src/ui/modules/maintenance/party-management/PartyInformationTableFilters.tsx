@@ -56,18 +56,16 @@ export function PartyInformationTableFilters({
 }: PartyInformationTableFiltersProps) {
 	return (
 		<ModuleTableToolbar
-			className="!gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3"
-			style={{
-				gridTemplateColumns:
-					"minmax(8rem,1.2fr) minmax(6rem,0.8fr) minmax(6rem,0.8fr) minmax(5.75rem,0.7fr) 3.25rem 3.25rem 3.25rem",
-			}}
+			className="!grid-cols-2 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)_3.25rem_3.25rem_3.25rem]"
 		>
-			<ModuleTableSearch
-				label="Search parties"
-				value={query}
-				onChange={onQueryChange}
-				placeholder="Search by name or address"
-			/>
+			<div className="col-span-2">
+				<ModuleTableSearch
+					label="Search parties"
+					value={query}
+					onChange={onQueryChange}
+					placeholder="Search by name or address"
+				/>
+			</div>
 			<ModuleTableFilterSelect
 				label="Classification"
 				value={classificationFilter}

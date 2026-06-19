@@ -5,8 +5,10 @@ import {
 	useRef,
 	useState,
 	type ComponentPropsWithoutRef,
+	type CSSProperties,
 	type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import type { Table } from "@tanstack/react-table";
 import { Check, Download, FileDown, FileSpreadsheet, FileText } from "lucide-react";
 import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
@@ -83,6 +85,16 @@ export function ModuleTableExportButton<TData>({
 		useState<ModuleTableExportColumnScope>("visible");
 	const [recordScope, setRecordScope] = useState<ModuleTableExportScope>("all");
 	const containerRef = useRef<HTMLDivElement>(null);
+	const menuRef = useRef<HTMLDivElement>(null);
+	const portalElement =
+		typeof document === "undefined" ? null : document.body;
+	const [menuStyle, setMenuStyle] = useState<CSSProperties>({
+		left: 0,
+		position: "fixed",
+		top: 0,
+		visibility: "hidden",
+		width: 288,
+	});
 	const safeFilteredRows = filteredRows ?? allRows;
 	const hasRows = allRows.length > 0 || safeFilteredRows.length > 0;
 	const canExportFiltered = isFiltered && safeFilteredRows.length > 0;
@@ -94,10 +106,35 @@ export function ModuleTableExportButton<TData>({
 			return;
 		}
 
+		function updateMenuPosition() {
+			const rect = containerRef.current?.getBoundingClientRect();
+
+			if (!rect) {
+				return;
+			}
+
+			const menuWidth = 288;
+			const viewportPadding = 12;
+			const preferredLeft = rect.right - menuWidth;
+			const maxLeft = window.innerWidth - menuWidth - viewportPadding;
+
+			setMenuStyle({
+				left: Math.max(viewportPadding, Math.min(preferredLeft, maxLeft)),
+				position: "fixed",
+				top: rect.bottom + 8,
+				visibility: "visible",
+				width: menuWidth,
+			});
+		}
+
 		function handlePointerDown(event: PointerEvent) {
 			const target = event.target;
 
-			if (target instanceof Node && !containerRef.current?.contains(target)) {
+			if (
+				target instanceof Node &&
+				!containerRef.current?.contains(target) &&
+				!menuRef.current?.contains(target)
+			) {
 				setIsOpen(false);
 			}
 		}
@@ -108,12 +145,17 @@ export function ModuleTableExportButton<TData>({
 			}
 		}
 
+		updateMenuPosition();
 		document.addEventListener("pointerdown", handlePointerDown);
 		document.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("resize", updateMenuPosition);
+		window.addEventListener("scroll", updateMenuPosition, true);
 
 		return () => {
 			document.removeEventListener("pointerdown", handlePointerDown);
 			document.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("resize", updateMenuPosition);
+			window.removeEventListener("scroll", updateMenuPosition, true);
 		};
 	}, [isOpen]);
 
@@ -188,10 +230,13 @@ export function ModuleTableExportButton<TData>({
 				</button>
 			</ModuleTooltip>
 
-			{isOpen ? (
+			{isOpen && portalElement
+				? createPortal(
 				<div
+					ref={menuRef}
 					role="menu"
-					className="absolute right-0 top-full z-[80] mt-2 w-72 overflow-hidden rounded-lg border border-darknavy/10 bg-white text-darknavy shadow-[0_18px_50px_rgba(33,39,56,0.18)]"
+					style={menuStyle}
+					className="z-[80] overflow-hidden rounded-lg border border-darknavy/10 bg-white text-darknavy shadow-[0_18px_50px_rgba(33,39,56,0.18)]"
 				>
 					<div className="border-b border-darknavy/10 px-3 py-2">
 						<span className="text-xs font-bold uppercase tracking-wide text-darknavy/55">
@@ -259,8 +304,10 @@ export function ModuleTableExportButton<TData>({
 							})}
 						</div>
 					</div>
-				</div>
-			) : null}
+				</div>,
+					portalElement,
+				)
+				: null}
 		</div>
 	);
 }

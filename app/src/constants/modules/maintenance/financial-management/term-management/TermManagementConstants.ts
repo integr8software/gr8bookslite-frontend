@@ -6,6 +6,13 @@ import type {
 export const TermManagementHref =
 	"/maintenance/term-management";
 
+export const TermManagementParentLabel = "Accounting master data";
+
+export const TermManagementTitle = "Term Management";
+
+export const TermManagementDescription =
+	"Manage datemode and period definitions used for term reporting and payment cycles.";
+
 export const TermManagementTablePaginationStorageKey =
 	"maintenance:financial-management:term-management";
 
@@ -13,26 +20,31 @@ export const TermManagementTableColumns = [
 	{
 		key: "name",
 		label: "Name",
-		className: "w-[32%]",
+		className: "w-[20%]",
+	},
+	{
+		key: "description",
+		label: "Description",
+		className: "w-[28%]",
 	},
 	{
 		key: "datemode",
 		label: "Datemode",
-		className: "w-[18%]",
+		className: "w-[13%]",
 	},
 	{
 		key: "period",
 		label: "Period",
-		className: "w-[16%]",
+		className: "w-[11%]",
 	},
 	{
 		key: "status",
 		label: "Status",
-		className: "w-[16%]",
+		className: "w-[12%]",
 	},
 	{
 		label: "Actions",
-		className: "w-[18%] text-center",
+		className: "w-[16%] text-center",
 	},
 ] as const;
 

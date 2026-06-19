@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, Plus } from "lucide-react";
+import { Building2, Plus, Upload } from "lucide-react";
 import {
 	PartyInformationDescription,
 	PartyInformationTitle,
@@ -18,6 +18,7 @@ export function PartyInformationHeader() {
 			titleAs="h1"
 			title={PartyInformationTitle}
 			description={PartyInformationDescription}
+			actionsClassName="w-full justify-start sm:ml-auto sm:w-auto sm:justify-end sm:self-start"
 			eyebrow={
 				<>
 					<Building2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -25,13 +26,22 @@ export function PartyInformationHeader() {
 				</>
 			}
 			actions={
-				<Link
-					href={`${PartyManagementHref}/add`}
-					className={moduleHeaderActionClassNames.primary}
-				>
-					<Plus className="h-4 w-4" aria-hidden="true" />
-					Add Party
-				</Link>
+				<>
+					<button
+						type="button"
+						className={`${moduleHeaderActionClassNames.secondary} order-2 sm:order-1`}
+					>
+						<Upload className="h-4 w-4" aria-hidden="true" />
+						Import
+					</button>
+					<Link
+						href={`${PartyManagementHref}/add`}
+						className={`${moduleHeaderActionClassNames.primary} order-1 sm:order-2`}
+					>
+						<Plus className="h-4 w-4" aria-hidden="true" />
+						Add Party
+					</Link>
+				</>
 			}
 		/>
 	);

@@ -13,9 +13,12 @@ type TermManagementStatusFilter =
 
 export function useTermManagementListPage() {
 	const terms = useTermManagementStore((state) => state.terms);
+	const addTerms = useTermManagementStore((state) => state.addTerms);
 	const updateTerm = useTermManagementStore((state) => state.updateTerm);
 	const isLoading = useTermManagementStore((state) => state.isLoading);
+	const isRefreshing = useTermManagementStore((state) => state.isRefreshing);
 	const isMutating = useTermManagementStore((state) => state.isMutating);
+	const refreshTerms = useTermManagementStore((state) => state.refreshTerms);
 	const [datemodeFilter, setDatemodeFilter] = useState("All");
 	const [statusFilter, setStatusFilter] =
 		useState<TermManagementStatusFilter>("");
@@ -39,7 +42,7 @@ export function useTermManagementListPage() {
 				return true;
 			}
 
-			return [term.name, term.datemode, term.period, term.status]
+			return [term.name, term.description, term.datemode, term.period, term.status]
 				.join(" ")
 				.toLowerCase()
 				.includes(normalizedQuery);
@@ -66,12 +69,15 @@ export function useTermManagementListPage() {
 
 	return {
 		confirmTermStatusChange,
+		addTerms,
 		datemodeFilter,
 		filteredTerms,
 		isLoading,
+		isRefreshing,
 		isMutating,
 		pendingStatusTerm,
 		query,
+		refreshTerms,
 		resetFilters,
 		setDatemodeFilter,
 		setPendingStatusTerm,

@@ -6,6 +6,10 @@ import type {
 
 const TermManagementFormSchema = z.object({
 	name: z.string().trim().min(1, "Enter a name."),
+	description: z
+		.string()
+		.trim()
+		.max(500, "Description must be 500 characters or fewer."),
 	datemode: z.enum(["Day", "Month", "Year"], {
 		message: "Select a datemode.",
 	}),

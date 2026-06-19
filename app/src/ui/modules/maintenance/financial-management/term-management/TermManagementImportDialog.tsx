@@ -8,6 +8,7 @@ import {
 	Download,
 	LoaderCircle,
 	Plus,
+	Trash2,
 	Upload,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -18,15 +19,18 @@ import type {
 	TermManagement,
 	TermManagementDatemode,
 } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
+import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 type TermImportColumnId = "name" | "datemode" | "period";
 type TermImportCellErrors = Partial<Record<TermImportColumnId, string[]>>;
+type TermImportCellWarnings = Partial<Record<TermImportColumnId, string[]>>;
 
 type TermImportPreviewRow = {
 	cellErrors: TermImportCellErrors;
+	cellWarnings: TermImportCellWarnings;
 	id: string;
 	rowErrors: string[];
 	rowNumber: number;
@@ -50,10 +54,10 @@ const DefaultColumnIndexes: Record<TermImportColumnId, number> = {
 	period: 2,
 };
 const ImportFieldOrder: TermImportColumnId[] = ["name", "datemode", "period"];
-const PreviewPageSize = 8;
+const PreviewPageSize = 10;
 const ImportBatchSize = 25;
 const MinImportFileSizeBytes = 1;
-const MaxImportFileSizeBytes = 5 * 1024 * 1024;
+const MaxImportFileSizeBytes = 2 * 1024 * 1024;
 
 export function TermManagementImportDialog({
 	existingTerms,
@@ -71,6 +75,9 @@ export function TermManagementImportDialog({
 	const [previewRows, setPreviewRows] = useState<TermImportPreviewRow[]>([]);
 	const [previewPage, setPreviewPage] = useState(1);
 	const [progress, setProgress] = useState<ImportProgress | null>(null);
+	const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(
+		() => new Set(),
+	);
 	const existingNames = useMemo(
 		() => new Set(existingTerms.map((term) => normalizeTermName(term.name))),
 		[existingTerms],
@@ -92,6 +99,10 @@ export function TermManagementImportDialog({
 		progress && progress.total > 0
 			? Math.round((progress.imported / progress.total) * 100)
 			: 0;
+	const visibleRowIds = visibleRows.map((row) => row.id);
+	const areAllVisibleRowsSelected =
+		visibleRows.length > 0 &&
+		visibleRowIds.every((rowId) => selectedRowIds.has(rowId));
 
 	function resetImportState() {
 		if (progress) {
@@ -101,17 +112,53 @@ export function TermManagementImportDialog({
 		setImportError(null);
 		setPreviewRows([]);
 		setPreviewPage(1);
+		setSelectedRowIds(new Set());
 	}
 
-	function previewImportText(text: string) {
+	function previewImportText(text: string, append = false) {
 		try {
-			const rows = parseTermImportText(text);
+			let skippedCount = 0;
 
-			setPreviewRows(rows);
-			setPreviewPage(1);
-			setImportError(null);
+			if (append) {
+				const parsedRows = parseTermImportText(
+					text,
+					getNextImportRowNumber(previewRows),
+				);
+				const filteredRows = removeDuplicateImportRows(
+					parsedRows,
+					previewRows,
+					existingNames,
+				);
+				const uniqueRows = filteredRows.rows;
+				const nextRows = renumberImportRows([...previewRows, ...uniqueRows]);
+
+				skippedCount = filteredRows.skippedCount;
+				setPreviewRows(nextRows);
+				setSelectedRowIds(new Set());
+				setPreviewPage(
+					Math.max(1, Math.ceil(nextRows.length / PreviewPageSize)),
+				);
+			} else {
+				const parsedRows = parseTermImportText(text);
+				const filteredRows = removeDuplicateImportRows(
+					parsedRows,
+					[],
+					existingNames,
+				);
+				const uniqueRows = filteredRows.rows;
+
+				skippedCount = filteredRows.skippedCount;
+				setPreviewRows(renumberImportRows(uniqueRows));
+				setPreviewPage(1);
+				setSelectedRowIds(new Set());
+			}
+
+			setImportError(
+				skippedCount > 0
+					? `${skippedCount} duplicate ${skippedCount === 1 ? "row was" : "rows were"} skipped.`
+					: null,
+			);
 		} catch (error) {
-			setPreviewRows([]);
 			setImportError(
 				error instanceof Error
 					? error.message
@@ -125,7 +172,54 @@ export function TermManagementImportDialog({
 			...rows,
 			createBlankImportRow(getNextImportRowNumber(rows)),
 		]);
+		setSelectedRowIds(new Set());
 		setImportError(null);
+	}
+
+	function removeSelectedRows() {
+		if (selectedRowIds.size === 0 || progress) {
+			return;
+		}
+
+		const nextRows = renumberImportRows(
+			previewRows.filter((row) => !selectedRowIds.has(row.id)),
+		);
+
+		setPreviewRows(nextRows);
+		setSelectedRowIds(new Set());
+		setPreviewPage((page) =>
+			Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))),
+		);
+	}
+
+	function toggleRowSelection(rowId: string, isSelected: boolean) {
+		setSelectedRowIds((current) => {
+			const nextSelected = new Set(current);
+
+			if (isSelected) {
+				nextSelected.add(rowId);
+			} else {
+				nextSelected.delete(rowId);
+			}
+
+			return nextSelected;
+		});
+	}
+
+	function toggleVisibleRowSelection(isSelected: boolean) {
+		setSelectedRowIds((current) => {
+			const nextSelected = new Set(current);
+
+			visibleRowIds.forEach((rowId) => {
+				if (isSelected) {
+					nextSelected.add(rowId);
+				} else {
+					nextSelected.delete(rowId);
+				}
+			});
+
+			return nextSelected;
+		});
 	}
 
 	function updatePreviewCell(
@@ -133,22 +227,40 @@ export function TermManagementImportDialog({
 		field: TermImportColumnId,
 		value: string,
 	) {
+		if (field === "name") {
+			const normalizedName = normalizeTermName(value);
+			const hasDuplicateName =
+				Boolean(normalizedName) &&
+				(existingNames.has(normalizedName) ||
+					previewRows.some(
+						(row) =>
+							row.id !== rowId &&
+							normalizeTermName(row.term.name) === normalizedName,
+					));
+
+			if (hasDuplicateName) {
+				setImportError("Duplicate names are not accepted.");
+				return;
+			}
+		}
+
 		setPreviewRows((rows) =>
 			rows.map((row) =>
 				row.id === rowId
 					? {
-							...row,
-							term: {
-								...row.term,
-								[field]:
-									field === "datemode"
-										? normalizeImportedDatemode(value)
-											: value,
-							},
-						}
+						...row,
+						term: {
+							...row.term,
+							[field]:
+								field === "datemode"
+									? normalizeImportedDatemode(value)
+									: value,
+						},
+					}
 					: row,
 			),
 		);
+		setImportError(null);
 	}
 
 	async function handleFileUpload(file: File | undefined) {
@@ -160,7 +272,6 @@ export function TermManagementImportDialog({
 
 		if (sizeError) {
 			setImportError(sizeError);
-			setPreviewRows([]);
 			return;
 		}
 
@@ -169,9 +280,8 @@ export function TermManagementImportDialog({
 		try {
 			const text = await readTermImportFileText(file);
 
-			previewImportText(text);
+			previewImportText(text, true);
 		} catch (error) {
-			setPreviewRows([]);
 			setImportError(
 				error instanceof Error
 					? error.message
@@ -204,6 +314,7 @@ export function TermManagementImportDialog({
 			return;
 		}
 
+		setImportError(null);
 		setPreviewRows((rows) => {
 			const startRowIndex = rows.findIndex((row) => row.id === rowId);
 
@@ -212,6 +323,11 @@ export function TermManagementImportDialog({
 			}
 
 			const nextRows = [...rows];
+			const seenNames = new Set([
+				...Array.from(existingNames),
+				...rows.map((row) => normalizeTermName(row.term.name)).filter(Boolean),
+			]);
+			let skippedCount = 0;
 
 			pastedRows.forEach((pastedRow, pastedRowIndex) => {
 				const targetIndex = startRowIndex + pastedRowIndex;
@@ -234,15 +350,48 @@ export function TermManagementImportDialog({
 					) as never;
 				});
 
+				const normalizedName = normalizeTermName(nextTerm.name);
+				const originalName = normalizeTermName(targetRow.term.name);
+				const isExistingTargetRow = targetIndex < rows.length;
+
+				if (
+					normalizedName &&
+					seenNames.has(normalizedName) &&
+					(!isExistingTargetRow || normalizedName !== originalName)
+				) {
+					skippedCount += 1;
+					return;
+				}
+
+				if (originalName) {
+					seenNames.delete(originalName);
+				}
+				if (normalizedName) {
+					seenNames.add(normalizedName);
+				}
+
 				nextRows[targetIndex] = {
 					...targetRow,
 					term: nextTerm,
 				};
 			});
 
+			if (skippedCount > 0) {
+				setImportError(
+					`${skippedCount} duplicate ${skippedCount === 1 ? "row was" : "rows were"} skipped.`,
+				);
+			}
+
 			return nextRows;
 		});
-		setImportError(null);
+	}
+
+	function pasteIntoPreviewGrid(text: string) {
+		if (!text.trim() || progress) {
+			return;
+		}
+
+		previewImportText(text, true);
 	}
 
 	async function handleImport() {
@@ -285,53 +434,52 @@ export function TermManagementImportDialog({
 			description="Upload, validate, edit, and import data in queued batches."
 			onClose={onClose}
 			actions={
-				<div className="grid gap-3 sm:grid-cols-[minmax(12rem,1fr)_auto_auto_auto]">
-					<label
-						onDragOver={(event) => event.preventDefault()}
-						onDrop={(event) => {
-							event.preventDefault();
-							void handleFileUpload(event.dataTransfer.files[0]);
-						}}
-						className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-skyblue/35 bg-skyblue/8 px-4 text-sm font-semibold text-skyblue transition hover:bg-skyblue/12"
-					>
-						{isParsing ? (
-							<LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-						) : (
-							<Upload className="h-4 w-4" aria-hidden="true" />
-						)}
-						Upload File
-						<input
-							type="file"
-							accept=".xlsx,.csv,.tsv,.txt"
+				<div className="grid gap-3 lg:grid-cols-[minmax(18rem,1fr)_auto]">
+					<ClickOrDragDropFile
+						accept=".xlsx,.csv,.tsv,.txt"
+						acceptedFileLabel=".xlsx, .csv, .tsv, .txt"
+						className="inline-flex min-h-20 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-skyblue/35 bg-skyblue/8 px-4 py-3 text-center text-sm font-semibold text-skyblue transition hover:bg-skyblue/12"
+						disabled={Boolean(progress)}
+						isBusy={isParsing}
+						label="Upload or Drag and Drop Files"
+						size="medium"
+						stackable
+						onFileSelect={(file) => void handleFileUpload(file)}
+					/>
+					<div className="flex flex-wrap items-start justify-end gap-2">
+						<button
+							type="button"
+							onClick={() => void downloadTermImportTemplate()}
 							disabled={Boolean(progress)}
-							className="sr-only"
-							onChange={(event) => handleFileUpload(event.target.files?.[0])}
-						/>
-					</label>
-					<button
-						type="button"
-						onClick={() => void downloadTermImportTemplate()}
-						disabled={Boolean(progress)}
-						className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55"
-					>
-						<Download className="h-4 w-4" aria-hidden="true" />
-						Template
-					</button>
-					<button
-						type="button"
-						onClick={addBlankRow}
-						disabled={Boolean(progress)}
-						className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55"
-					>
-						<Plus className="h-4 w-4" aria-hidden="true" />
-						Add Row
-					</button>
-					<p className="text-xs font-medium text-darknavy/45 sm:col-span-4">
-						Accepted: .xlsx, .csv, .tsv, .txt. Size:{" "}
-						{formatFileSize(MinImportFileSizeBytes)} to{" "}
-						{formatFileSize(MaxImportFileSizeBytes)}. Drag a file onto Upload File,
-						or paste copied spreadsheet data directly into any editable cell.
-					</p>
+							className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55"
+						>
+							<Download className="h-4 w-4" aria-hidden="true" />
+							Template
+						</button>
+						<button
+							type="button"
+							onClick={addBlankRow}
+							disabled={Boolean(progress)}
+							className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55"
+						>
+							<Plus className="h-4 w-4" aria-hidden="true" />
+							Add Row
+						</button>
+					</div>
+					<div className="grid gap-2 text-xs font-medium text-darknavy/45 lg:col-span-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+						<p>
+							Accepted: .xlsx, .csv, .tsv, .txt. Size:{" "}
+							{formatFileSize(MinImportFileSizeBytes)} to{" "}
+							{formatFileSize(MaxImportFileSizeBytes)}. Upload one file at a
+							time; each upload or grid paste adds rows. Duplicate names are not
+							accepted.
+						</p>
+						<div className="flex flex-wrap gap-2 font-semibold text-darknavy/60">
+							<span>Rows: {validatedRows.length}</span>
+							<span>Valid: {validatedRows.length - invalidRows.length}</span>
+							<span>Incorrect: {invalidRows.length}</span>
+						</div>
+					</div>
 				</div>
 			}
 			progress={
@@ -390,15 +538,6 @@ export function TermManagementImportDialog({
 			}
 		>
 			<div className="grid min-h-0 content-start gap-3">
-				<div className="grid gap-2 rounded-lg border border-darknavy/10 bg-darknavy/[0.025] p-3 sm:grid-cols-3">
-					<ImportSummaryCard label="Rows" value={validatedRows.length} />
-					<ImportSummaryCard
-						label="Valid"
-						value={validatedRows.length - invalidRows.length}
-					/>
-					<ImportSummaryCard label="With Errors" value={invalidRows.length} />
-				</div>
-
 				{importError ? (
 					<div className="flex gap-2 rounded-md border border-coralpink/25 bg-coralpink/8 px-3 py-2 text-sm font-medium text-coralpink">
 						<AlertCircle
@@ -409,13 +548,47 @@ export function TermManagementImportDialog({
 					</div>
 				) : null}
 
-				<div className="overflow-hidden rounded-lg border border-darknavy/10">
+				<div
+					tabIndex={0}
+					onPaste={(event) => {
+						const target = event.target;
+
+						if (
+							target instanceof HTMLInputElement ||
+							target instanceof HTMLSelectElement ||
+							target instanceof HTMLTextAreaElement
+						) {
+							return;
+						}
+
+						const text = event.clipboardData.getData("text");
+
+						if (text.trim()) {
+							event.preventDefault();
+							pasteIntoPreviewGrid(text);
+						}
+					}}
+					className="overflow-hidden rounded-lg border border-darknavy/10 outline-none focus:ring-2 focus:ring-skyblue/15"
+					aria-label="Import preview grid. Paste copied Excel rows here."
+				>
 					<div className="overflow-x-auto">
 						<table className="w-full min-w-[44rem] text-left text-sm text-darknavy">
 							<thead className="bg-darknavy/[0.035] text-xs uppercase text-darknavy/55">
 								<tr>
-									<th className="w-16 px-3 py-2">Row</th>
-									<th className="px-3 py-2">Name</th>
+									<th className="sticky left-0 z-20 w-12 bg-slate-50 px-3 py-2">
+										<input
+											type="checkbox"
+											checked={areAllVisibleRowsSelected}
+											disabled={visibleRows.length === 0 || Boolean(progress)}
+											onChange={(event) =>
+												toggleVisibleRowSelection(event.target.checked)
+											}
+											aria-label="Select visible import rows"
+											className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+										/>
+									</th>
+									<th className="sticky left-12 z-20 w-16 bg-slate-50 px-3 py-2">Row</th>
+									<th className="sticky left-28 z-20 min-w-56 bg-slate-50 px-3 py-2">Name</th>
 									<th className="w-40 px-3 py-2">Datemode</th>
 									<th className="w-32 px-3 py-2">Period</th>
 								</tr>
@@ -426,17 +599,19 @@ export function TermManagementImportDialog({
 										<TermImportPreviewTableRow
 											key={row.id}
 											row={row}
+											isSelected={selectedRowIds.has(row.id)}
 											onUpdateCell={updatePreviewCell}
 											onPasteCell={pasteIntoPreviewCell}
+											onToggleSelected={toggleRowSelection}
 										/>
 									))
 								) : (
 									<tr>
 										<td
-											colSpan={4}
+											colSpan={5}
 											className="px-3 py-10 text-center text-sm font-medium text-darknavy/45"
 										>
-											Upload a file or paste rows to preview terms.
+											Upload a file, or focus here and paste copied Excel rows.
 										</td>
 									</tr>
 								)}
@@ -447,7 +622,16 @@ export function TermManagementImportDialog({
 						<span className="text-xs font-semibold text-darknavy/55">
 							Page {safePreviewPage} of {totalPages}
 						</span>
-						<div className="flex gap-2">
+						<div className="flex flex-wrap gap-2">
+							<button
+								type="button"
+								disabled={selectedRowIds.size === 0 || Boolean(progress)}
+								onClick={removeSelectedRows}
+								className="inline-flex h-8 items-center gap-1 rounded-md border border-coralpink/25 px-2 text-xs font-semibold text-coralpink transition hover:bg-coralpink/8 disabled:cursor-not-allowed disabled:opacity-45"
+							>
+								<Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+								Remove Row
+							</button>
 							<button
 								type="button"
 								disabled={safePreviewPage <= 1}
@@ -478,10 +662,13 @@ export function TermManagementImportDialog({
 
 function TermImportPreviewTableRow({
 	row,
+	isSelected,
 	onUpdateCell,
 	onPasteCell,
+	onToggleSelected,
 }: {
 	row: TermImportPreviewRow;
+	isSelected: boolean;
 	onUpdateCell: (
 		rowId: string,
 		field: TermImportColumnId,
@@ -492,15 +679,49 @@ function TermImportPreviewTableRow({
 		field: TermImportColumnId,
 		text: string,
 	) => void;
+	onToggleSelected: (rowId: string, isSelected: boolean) => void;
 }) {
+	const stickyCellBackground = rowHasErrors(row)
+		? "bg-coralpink/[0.025]"
+		: "bg-white";
+
 	return (
 		<>
 			<tr className={rowHasErrors(row) ? "bg-coralpink/[0.025]" : undefined}>
-				<td className="px-3 py-2 align-top font-semibold">{row.rowNumber}</td>
-				<td className="px-3 py-2 align-top">
+				<td
+					className={joinClasses(
+						"sticky left-0 z-10 px-3 py-2 align-top",
+						stickyCellBackground,
+					)}
+				>
+					<input
+						type="checkbox"
+						checked={isSelected}
+						onChange={(event) =>
+							onToggleSelected(row.id, event.target.checked)
+						}
+						aria-label={`Select row ${row.rowNumber}`}
+						className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+					/>
+				</td>
+				<td
+					className={joinClasses(
+						"sticky left-12 z-10 px-3 py-2 align-top font-semibold",
+						stickyCellBackground,
+					)}
+				>
+					{row.rowNumber}
+				</td>
+				<td
+					className={joinClasses(
+						"sticky left-28 z-10 min-w-56 px-3 py-2 align-top",
+						stickyCellBackground,
+					)}
+				>
 					<EditableImportCell
 						value={row.term.name}
 						errors={row.cellErrors.name}
+						warnings={row.cellWarnings.name}
 						onChange={(value) => onUpdateCell(row.id, "name", value)}
 						onPaste={(text) => onPasteCell(row.id, "name", text)}
 					/>
@@ -519,6 +740,7 @@ function TermImportPreviewTableRow({
 						type="number"
 						value={row.term.period}
 						errors={row.cellErrors.period}
+						warnings={row.cellWarnings.period}
 						onChange={(value) => onUpdateCell(row.id, "period", value)}
 						onPaste={(text) => onPasteCell(row.id, "period", text)}
 					/>
@@ -526,6 +748,7 @@ function TermImportPreviewTableRow({
 			</tr>
 			{row.rowErrors.length > 0 ? (
 				<tr className="bg-coralpink/[0.025]">
+					<td />
 					<td />
 					<td colSpan={3} className="px-3 pb-3 text-xs font-semibold text-coralpink">
 						{row.rowErrors.join(" ")}
@@ -538,12 +761,14 @@ function TermImportPreviewTableRow({
 
 function EditableImportCell({
 	errors,
+	warnings,
 	type = "text",
 	value,
 	onChange,
 	onPaste,
 }: {
 	errors?: string[];
+	warnings?: string[];
 	type?: "number" | "text";
 	value: string;
 	onChange: (value: string) => void;
@@ -555,22 +780,47 @@ function EditableImportCell({
 				type={type}
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
+				onKeyDown={(event) => {
+					if (
+						type === "number" &&
+						["-", "+", ".", "e", "E"].includes(event.key)
+					) {
+						event.preventDefault();
+					}
+				}}
 				onPaste={(event) => {
 					const text = event.clipboardData.getData("text");
+
+					if (
+						type === "number" &&
+						!isTabularPaste(text) &&
+						!/^\d+$/.test(text.trim())
+					) {
+						event.preventDefault();
+						return;
+					}
 
 					if (isTabularPaste(text)) {
 						event.preventDefault();
 						onPaste(text);
 					}
 				}}
+				onWheel={(event) => {
+					if (type === "number") {
+						event.currentTarget.blur();
+					}
+				}}
+				title={warnings?.join(" ")}
 				className={joinClasses(
 					"h-10 w-full rounded-md border bg-white px-2 text-sm font-medium text-darknavy outline-none transition focus:ring-2",
 					errors?.length
 						? "border-coralpink/45 focus:border-coralpink focus:ring-coralpink/15"
-						: "border-darknavy/12 focus:border-skyblue focus:ring-skyblue/15",
+						: warnings?.length
+							? "border-amber-400/70 focus:border-amber-500 focus:ring-amber-500/15"
+							: "border-darknavy/12 focus:border-skyblue focus:ring-skyblue/15",
 				)}
 			/>
-			<CellErrors errors={errors} />
+			<CellMessages errors={errors} />
 		</label>
 	);
 }
@@ -614,35 +864,31 @@ function EditableImportSelect<TOption extends string>({
 					</option>
 				))}
 			</select>
-			<CellErrors errors={errors} />
+			<CellMessages errors={errors} />
 		</label>
 	);
 }
 
-function CellErrors({ errors }: { errors?: string[] }) {
-	if (!errors?.length) {
-		return null;
+function CellMessages({
+	errors,
+}: {
+	errors?: string[];
+}) {
+	if (errors?.length) {
+		return (
+			<span className="mt-1 block text-xs font-semibold leading-4 text-coralpink">
+				{errors.join(" ")}
+			</span>
+		);
 	}
 
-	return (
-		<span className="mt-1 block text-xs font-semibold leading-4 text-coralpink">
-			{errors.join(" ")}
-		</span>
-	);
-}
-
-function ImportSummaryCard({ label, value }: { label: string; value: number }) {
-	return (
-		<div className="rounded-md bg-white px-3 py-2 shadow-sm">
-			<p className="text-xs font-semibold text-darknavy/50">{label}</p>
-			<p className="mt-1 text-xl font-semibold text-darknavy">{value}</p>
-		</div>
-	);
+	return null;
 }
 
 function createBlankImportRow(rowNumber: number): TermImportPreviewRow {
 	return {
 		cellErrors: {},
+		cellWarnings: {},
 		id: `term-import-preview-${rowNumber}-${Date.now()}`,
 		rowErrors: [],
 		rowNumber,
@@ -653,6 +899,45 @@ function createBlankImportRow(rowNumber: number): TermImportPreviewRow {
 			period: "",
 			status: "Active",
 		},
+	};
+}
+
+function renumberImportRows(rows: TermImportPreviewRow[]) {
+	return rows.map((row, index) => ({
+		...row,
+		rowNumber: index + 1,
+	}));
+}
+
+function removeDuplicateImportRows(
+	rows: TermImportPreviewRow[],
+	baseRows: TermImportPreviewRow[],
+	existingNames: Set<string>,
+) {
+	const seenNames = new Set([
+		...Array.from(existingNames),
+		...baseRows.map((row) => normalizeTermName(row.term.name)).filter(Boolean),
+	]);
+	const uniqueRows: TermImportPreviewRow[] = [];
+	let skippedCount = 0;
+
+	rows.forEach((row) => {
+		const normalizedName = normalizeTermName(row.term.name);
+
+		if (normalizedName && seenNames.has(normalizedName)) {
+			skippedCount += 1;
+			return;
+		}
+
+		if (normalizedName) {
+			seenNames.add(normalizedName);
+		}
+		uniqueRows.push(row);
+	});
+
+	return {
+		rows: uniqueRows,
+		skippedCount,
 	};
 }
 
@@ -769,7 +1054,10 @@ async function readTermImportXlsxRows(buffer: ArrayBuffer) {
 	return rows;
 }
 
-function parseTermImportText(text: string): TermImportPreviewRow[] {
+function parseTermImportText(
+	text: string,
+	startRowNumber = 1,
+): TermImportPreviewRow[] {
 	const rows = parseTermImportTabularRows(text).filter((row) =>
 		row.some((cell) => cell.trim() !== ""),
 	);
@@ -781,11 +1069,12 @@ function parseTermImportText(text: string): TermImportPreviewRow[] {
 	const headerIndexes = getTermImportHeaderIndexes(rows[0]);
 	const indexes = headerIndexes ?? DefaultColumnIndexes;
 	const dataRows = headerIndexes ? rows.slice(1) : rows;
+	const importBatchId = Date.now();
 
 	return dataRows
 		.filter((row) => row.some((cell) => cell.trim() !== ""))
 		.map((row, index) => {
-			const rowNumber = index + 1;
+			const rowNumber = startRowNumber + index;
 			const term = {
 				name: getImportedTermValue(row, indexes.name),
 				description: "",
@@ -798,7 +1087,8 @@ function parseTermImportText(text: string): TermImportPreviewRow[] {
 
 			return {
 				cellErrors: {},
-				id: `term-import-preview-${rowNumber}`,
+				cellWarnings: {},
+				id: `term-import-preview-${rowNumber}-${importBatchId}-${index}`,
 				rowErrors: [],
 				rowNumber,
 				term,
@@ -825,6 +1115,7 @@ function validateTermImportRows(
 
 	return rows.map((row) => {
 		const cellErrors: TermImportCellErrors = {};
+		const cellWarnings: TermImportCellWarnings = {};
 		const rowErrors: string[] = [];
 		const normalizedName = normalizeTermName(row.term.name);
 		const periodNumber = Number(row.term.period);
@@ -840,11 +1131,15 @@ function validateTermImportRows(
 		if (
 			!row.term.period.trim() ||
 			!Number.isFinite(periodNumber) ||
-			periodNumber <= 0
+			periodNumber < 0
 		) {
-			cellErrors.period = ["Period must be greater than 0."];
+			cellErrors.period = ["Period must be 0 or greater."];
 		} else if (!Number.isInteger(periodNumber)) {
 			cellErrors.period = ["Period must be a whole number."];
+		} else if (periodNumber === 0) {
+			cellWarnings.period = [
+				"Period is 0. Import only if this term should not add time.",
+			];
 		}
 
 		if (normalizedName && existingNames.has(normalizedName)) {
@@ -855,7 +1150,7 @@ function validateTermImportRows(
 			rowErrors.push("Duplicate name in import.");
 		}
 
-		return { ...row, cellErrors, rowErrors };
+		return { ...row, cellErrors, cellWarnings, rowErrors };
 	});
 }
 
@@ -899,8 +1194,8 @@ function parseTermImportTabularRows(text: string) {
 
 	return normalizedText.includes("\t")
 		? normalizedText
-				.split("\n")
-				.map((line) => line.split("\t").map((cell) => cell.trim()))
+			.split("\n")
+			.map((line) => line.split("\t").map((cell) => cell.trim()))
 		: parseTermImportCsvRows(normalizedText);
 }
 

@@ -74,16 +74,26 @@ export function TermManagementFields({
 					</select>
 				</FormField>
 
-				<FormField label="Period" error={errors.period} required>
+				<FormField
+					label="Period"
+					error={errors.period}
+					warning={
+						values.period.trim() === "0"
+							? "Period is 0. Save only if this term should not add time."
+							: undefined
+					}
+					required
+				>
 					<input
 						name="period"
 						type="number"
-						min={1}
+						min={0}
 						step={1}
 						value={values.period}
 						onChange={onInputChange}
 						onKeyDown={preventNonWholeNumberInput}
 						onPaste={preventNonWholeNumberPaste}
+						onWheel={(event) => event.currentTarget.blur()}
 						readOnly={isReadonly}
 						className={fieldClassName}
 						placeholder="Enter period"
@@ -116,12 +126,14 @@ function FormField({
 	error,
 	label,
 	required,
+	warning,
 }: {
 	children: ReactNode;
 	className?: string;
 	error?: string;
 	label: string;
 	required?: boolean;
+	warning?: string;
 }) {
 	return (
 		<label className={className}>
@@ -133,6 +145,10 @@ function FormField({
 			{error ? (
 				<span className="mt-1 block text-xs font-medium text-coralpink">
 					{error}
+				</span>
+			) : warning ? (
+				<span className="mt-1 block text-xs font-medium text-amber-600">
+					{warning}
 				</span>
 			) : null}
 		</label>

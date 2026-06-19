@@ -84,6 +84,38 @@ export function AppProviders({ children }: AppProvidersProps) {
     };
   }, [pathname]);
 
+  useEffect(() => {
+    function isNumberInputTarget(target: EventTarget | null) {
+      return target instanceof HTMLInputElement && target.type === "number";
+    }
+
+    function preventExponentNumberInput(event: KeyboardEvent) {
+      if (
+        (event.key === "e" || event.key === "E") &&
+        isNumberInputTarget(event.target)
+      ) {
+        event.preventDefault();
+      }
+    }
+
+    function preventNumberInputWheel(event: WheelEvent) {
+      if (isNumberInputTarget(event.target)) {
+        event.preventDefault();
+      }
+    }
+
+    window.addEventListener("keydown", preventExponentNumberInput, true);
+    window.addEventListener("wheel", preventNumberInputWheel, {
+      capture: true,
+      passive: false,
+    });
+
+    return () => {
+      window.removeEventListener("keydown", preventExponentNumberInput, true);
+      window.removeEventListener("wheel", preventNumberInputWheel, true);
+    };
+  }, []);
+
   async function redirectToLogin() {
     ClearLegacyAuthStorage();
     setAccessToken(null);

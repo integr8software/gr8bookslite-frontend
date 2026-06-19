@@ -17,7 +17,7 @@ const TermManagementFormSchema = z.object({
 		.string()
 		.trim()
 		.min(1, "Enter a period.")
-		.refine((value) => Number(value) > 0 && !Number.isNaN(Number(value)), {
+		.refine((value) => Number(value) >= 0 && !Number.isNaN(Number(value)), {
 			message: "Enter a valid period.",
 		}),
 	status: z.enum(["Active", "Inactive"], {

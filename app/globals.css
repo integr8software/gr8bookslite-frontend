@@ -12,7 +12,8 @@
 	--background-rgb: 248 250 252;
 	--background: var(--offwhite);
 	--foreground: var(--darknavy);
-	--font-inter: "Inter";
+	--font-body: var(--font-manrope);
+	--font-heading: var(--font-sora);
 	--input-surface: rgba(248, 250, 252, 0.8);
 	--input-surface-focus: #ffffff;
 	--input-surface-readonly: rgba(33, 39, 56, 0.04);
@@ -137,7 +138,7 @@
 	--color-citron: var(--citron);
 	--color-offwhite: var(--offwhite);
 	--color-skyblue: var(--skyblue);
-	--font-sans: var(--font-inter), Arial, Helvetica, sans-serif;
+	--font-sans: var(--font-body), Arial, Helvetica, sans-serif;
 	--font-mono: "Courier New", Courier, monospace;
 }
 
@@ -150,11 +151,21 @@ html {
 body {
 	background: var(--background);
 	color: var(--foreground);
-	font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+	font-family: var(--font-body), Arial, Helvetica, sans-serif;
 	color-scheme: light;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--font-heading), var(--font-body), Arial, Helvetica,
+		sans-serif;
 }
 
 :root[data-app-theme="midnight-dark"] body {

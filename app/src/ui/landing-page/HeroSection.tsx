@@ -48,7 +48,7 @@ export function HeroSection() {
 					</div>
 				</div>
 
-				<div className="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-3 lg:grid-cols-4">
+				<div className="mx-auto mt-10 hidden max-w-3xl grid-cols-2 gap-3 sm:grid lg:grid-cols-4">
 					{ProofPoints.map((point) => (
 						<div
 							key={point.value}
@@ -88,7 +88,7 @@ function HeroBackdrop() {
 function ProductPreview() {
 	return (
 		<div
-			className="relative mx-auto mt-12 max-w-6xl"
+			className="relative mx-auto mt-12 hidden max-w-6xl sm:block"
 			aria-label="Product dashboard preview highlighting smart categorization and live inventory sync"
 		>
 			<div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-skyblue/10 blur-3xl" />

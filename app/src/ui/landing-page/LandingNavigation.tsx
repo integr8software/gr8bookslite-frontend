@@ -12,8 +12,8 @@ export function LandingNavigation() {
 
 	return (
 		<header className="relative z-30 border-b border-darknavy/10 bg-white/90 backdrop-blur-xl">
-			<div className="mx-auto flex min-h-18 max-w-7xl items-center justify-between gap-3 px-5 sm:px-8 lg:px-10">
-				<Link href="/" className="shrink-0 text-xl font-semibold">
+			<div className="mx-auto flex min-h-18 max-w-7xl items-center justify-between gap-2 px-3 sm:gap-3 sm:px-8 lg:px-10">
+				<Link href="/" className="shrink-0 text-lg font-semibold sm:text-xl">
 					<LogoText brandSuffixClassName="text-sm" />
 				</Link>
 
@@ -30,7 +30,7 @@ export function LandingNavigation() {
 				</nav>
 
 				<div className="flex shrink-0 items-center gap-2">
-					<div className="hidden sm:block">
+					<div>
 						<LandingActionLink
 							href="/login"
 							variant="navigation"
@@ -39,13 +39,15 @@ export function LandingNavigation() {
 						Log in
 						</LandingActionLink>
 					</div>
-					<LandingActionLink
-						href="/signup"
-						showArrow
-						transitionType="auth-forward"
-					>
-						Start free
-					</LandingActionLink>
+					<div className="[&_a]:min-h-10 [&_a]:px-3 [&_a]:text-xs [&_svg]:hidden sm:[&_a]:min-h-12 sm:[&_a]:px-6 sm:[&_a]:text-sm sm:[&_svg]:block">
+						<LandingActionLink
+							href="/signup"
+							showArrow
+							transitionType="auth-forward"
+						>
+							Start free
+						</LandingActionLink>
+					</div>
 					<button
 						type="button"
 						className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-darknavy transition hover:bg-offwhite md:hidden"

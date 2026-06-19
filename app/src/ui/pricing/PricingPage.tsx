@@ -11,7 +11,6 @@ import {
 	type BillingCycle,
 	type PricingPlan,
 } from "@/app/src/data/pricing/PricingData";
-import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 
 type PricingPageProps = {
 	onGetStarted?: (plan: PricingPlan, billingCycle: BillingCycle) => void;
@@ -29,33 +28,9 @@ export function PricingPage({ onGetStarted }: PricingPageProps) {
 
 	return (
 		<main className="relative min-h-screen overflow-hidden bg-offwhite text-darknavy">
-			<div className="pointer-events-none absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_78%_18%,rgba(87,196,229,0.20),transparent_30%),radial-gradient(circle_at_14%_4%,rgba(209,214,70,0.12),transparent_24%)]" />
+			<div className="pointer-events-none absolute inset-x-0 top-0 h-136 bg-[radial-gradient(circle_at_78%_18%,rgba(87,196,229,0.20),transparent_30%),radial-gradient(circle_at_14%_4%,rgba(209,214,70,0.12),transparent_24%)]" />
 
-			<header className="relative z-10 border-b border-darknavy/10 bg-offwhite/70 backdrop-blur-xl">
-				<div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 lg:px-10">
-					<Link href="/" className="text-xl font-semibold">
-						<LogoText brandSuffixClassName="text-sm" />
-					</Link>
-
-					<div className="flex items-center gap-2">
-						<Link
-							href="/login"
-							className="hidden rounded-lg px-4 py-2 text-sm font-semibold text-darknavy/70 transition hover:bg-white sm:inline-flex"
-						>
-							Log in
-						</Link>
-
-						<Link
-							href="/signup"
-							className="inline-flex min-h-10 items-center justify-center rounded-lg bg-darknavy px-5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sky-700"
-						>
-							Start free
-						</Link>
-					</div>
-				</div>
-			</header>
-
-			<section className="relative z-[1] mx-auto max-w-7xl px-5 pb-20 pt-12 sm:px-8 lg:px-10 lg:pt-20">
+			<section className="relative z-1 mx-auto max-w-7xl px-5 pb-20 pt-12 sm:px-8 lg:px-10 lg:pt-20">
 				<div className="mx-auto max-w-4xl text-center">
 					<h1 className="mt-6 text-4xl font-bold leading-[1.08] tracking-[-0.035em] text-darknavy sm:text-6xl lg:text-7xl">
 						One platform. The right plan for your business.
@@ -77,7 +52,7 @@ export function PricingPage({ onGetStarted }: PricingPageProps) {
 								type="button"
 								onClick={() => setBillingCycle(option.value)}
 								aria-pressed={isActive}
-								className={`flex h-12 min-w-[6.5rem] flex-col items-center justify-center rounded-lg border px-5 text-sm font-semibold leading-tight outline-none transition-all duration-200 focus-visible:ring-4 focus-visible:ring-skyblue/30 sm:min-w-[7.5rem] sm:px-7 ${
+								className={`group flex h-12 min-w-26 flex-col items-center justify-center rounded-lg border px-5 text-sm font-semibold leading-tight outline-none transition-all duration-200 focus-visible:ring-4 focus-visible:ring-skyblue/30 sm:min-w-30 sm:px-7 ${
 									isActive
 										? "border-darknavy bg-darknavy text-white shadow-sm ring-1 ring-darknavy/20"
 										: "border-transparent text-darknavy/60 hover:border-darknavy/10 hover:bg-offwhite hover:text-darknavy"
@@ -90,7 +65,7 @@ export function PricingPage({ onGetStarted }: PricingPageProps) {
 										className={`mt-0.5 text-[10px] font-extrabold uppercase leading-none ${
 											isActive
 												? "text-citron"
-												: "text-sky-700"
+												: "text-sky-700 group-hover:text-citron"
 										}`}
 									>
 										Save 2 months
@@ -166,9 +141,7 @@ function PricingCard({
 				damping: 24,
 			}}
 			className={`group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white p-6 pt-8 outline-none transition-colors duration-300 sm:p-7 ${
-				isActive
-					? "border-skyblue shadow-[0_24px_70px_rgba(87,196,229,0.22)]"
-					: "border-darknavy/10 shadow-[0_14px_42px_rgba(33,39,56,0.06)]"
+				isActive ? "border-skyblue " : "border-darknavy/10 "
 			}`}
 		>
 			<motion.div
@@ -219,7 +192,7 @@ function PricingCard({
 			<ul className="mt-4 flex-1 space-y-3.5 text-sm text-darknavy/75">
 				{plan.features.map((feature) => (
 					<li key={feature.label} className="flex items-start gap-3">
-						<span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-skyblue/15">
+						<span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ">
 							<Check
 								className="h-2.5 w-2.5 text-sky-800"
 								strokeWidth={3}
@@ -259,5 +232,5 @@ function PricingCard({
 }
 
 function getCtaClasses() {
-	return "mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-darknavy px-5 text-sm font-bold text-white transition hover:bg-citron hover:text-darknavy focus-visible:ring-4 focus-visible:ring-skyblue/30";
+	return "mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-darknavy px-5 text-sm font-bold text-white transition text-white transition hover:bg-sky-700";
 }

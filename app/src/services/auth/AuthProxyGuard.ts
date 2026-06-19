@@ -14,10 +14,12 @@ const PublicPathPrefixes = [
   "/error",
   "/forgot-password",
   LOGIN_PATH,
+  "/modules",
   "/pricing",
   "/privacy-policy",
   "/signup",
   "/terms-of-service",
+  "/why-gr8books",
 ] as const;
 const UnrestrictedPublicPathPrefixes = [
   "/privacy-policy",

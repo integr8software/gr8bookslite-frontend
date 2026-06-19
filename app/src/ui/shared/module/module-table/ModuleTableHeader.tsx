@@ -1,5 +1,5 @@
 import { flexRender, type Header, type Table } from "@tanstack/react-table";
-import { ChevronsUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import {
 	getColumnClassName,
 	joinClasses,
@@ -15,7 +15,7 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 						<th
 							key={header.id}
 							className={joinClasses(
-								"px-5 py-5 first:pl-6 last:pr-6",
+								"whitespace-nowrap px-5 py-3 first:pl-6 last:pr-6",
 								getColumnClassName(header),
 							)}
 						>
@@ -41,24 +41,38 @@ function ModuleTableSortButton<TData>({
 	header: Header<TData, unknown>;
 }) {
 	const sortDirection = header.column.getIsSorted();
+	const SortIcon =
+		sortDirection === "asc"
+			? ArrowUp
+			: sortDirection === "desc"
+				? ArrowDown
+				: ArrowUpDown;
+	const sortLabel =
+		sortDirection === "asc"
+			? "Sorted ascending"
+			: sortDirection === "desc"
+				? "Sorted descending"
+				: "Sort column";
 
 	return (
 		<button
 			type="button"
 			onClick={header.column.getToggleSortingHandler()}
+			aria-label={sortLabel}
 			className={joinClasses(
-				"inline-flex items-center gap-2 rounded-md text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2",
+				"inline-flex max-w-full items-center gap-2 rounded-md text-left transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2",
 				moduleAccentClassNames.focusRing,
 			)}
 		>
-			{flexRender(header.column.columnDef.header, header.getContext())}
-			<ChevronsUpDown
+			<span className="truncate">
+				{flexRender(header.column.columnDef.header, header.getContext())}
+			</span>
+			<SortIcon
 				className={joinClasses(
-					"h-3.5 w-3.5",
+					"h-3.5 w-3.5 shrink-0",
 					sortDirection
 						? moduleAccentClassNames.iconText
 						: "text-darknavy/45",
-					sortDirection === "desc" && "rotate-180",
 				)}
 				aria-hidden="true"
 			/>

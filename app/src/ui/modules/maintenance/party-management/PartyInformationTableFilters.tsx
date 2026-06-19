@@ -1,9 +1,12 @@
+import type { Table } from "@tanstack/react-table";
 import type {
 	PartyClassification,
 	PartyInformationStatus,
+	PartyInformationTableRecord,
 	PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import {
+	ModuleTableColumnVisibilityButton,
 	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
@@ -18,10 +21,12 @@ type PartyInformationTableFiltersProps = {
 	query: string;
 	statusFilter: PartyInformationStatus | "All";
 	statusOptions: readonly PartyInformationStatus[];
+	table: Table<PartyInformationTableRecord>;
+	isRefreshing: boolean;
 	onClassificationFilterChange: (value: PartyClassification | "All") => void;
 	onPartyTypeFilterChange: (value: PartyType | "All") => void;
 	onQueryChange: (value: string) => void;
-	onResetFilters: () => void;
+	onRefresh: () => void;
 	onStatusFilterChange: (value: PartyInformationStatus | "All") => void;
 };
 
@@ -33,19 +38,27 @@ export function PartyInformationTableFilters({
 	query,
 	statusFilter,
 	statusOptions,
+	table,
+	isRefreshing,
 	onClassificationFilterChange,
 	onPartyTypeFilterChange,
 	onQueryChange,
-	onResetFilters,
+	onRefresh,
 	onStatusFilterChange,
 }: PartyInformationTableFiltersProps) {
 	return (
-		<ModuleTableToolbar className="rounded-none border-x-0 border-t-0 shadow-none lg:grid-cols-[minmax(22rem,2fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,0.8fr)_minmax(10rem,0.7fr)]">
+		<ModuleTableToolbar
+			className="!gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3"
+			style={{
+				gridTemplateColumns:
+					"minmax(8rem,1.2fr) minmax(6rem,0.8fr) minmax(6rem,0.8fr) minmax(5.75rem,0.7fr) minmax(5.75rem,0.6fr) minmax(3.25rem,0.35fr)",
+			}}
+		>
 			<ModuleTableSearch
 				label="Search parties"
 				value={query}
 				onChange={onQueryChange}
-				placeholder="Search by party, type, status, or address"
+				placeholder="Search by name or address"
 			/>
 			<ModuleTableFilterSelect
 				label="Classification"
@@ -82,8 +95,13 @@ export function PartyInformationTableFilters({
 					onStatusFilterChange(value as PartyInformationStatus | "All")
 				}
 			/>
-			<ModuleTableResetButton onClick={onResetFilters}>
-				Reset
+			<ModuleTableColumnVisibilityButton table={table} />
+			<ModuleTableResetButton
+				className="px-2"
+				isRefreshing={isRefreshing}
+				onClick={onRefresh}
+			>
+				<span className="sr-only">Refresh</span>
 			</ModuleTableResetButton>
 		</ModuleTableToolbar>
 	);

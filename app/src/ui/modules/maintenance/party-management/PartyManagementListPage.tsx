@@ -64,7 +64,9 @@ export function PartyManagementListPage() {
 			<ModuleMetrics metrics={metrics} />
 			<PartyInformationTable
 				isLoading={page.isLoading}
+				isRefreshing={page.isRefreshing}
 				records={page.records}
+				onRefresh={page.refreshRecords}
 			/>
 		</section>
 	);

@@ -7,8 +7,10 @@ import {
 	getSortedRowModel,
 	useReactTable,
 	type ColumnDef,
+	type ColumnOrderState,
 	type PaginationState,
 	type SortingState,
+	type VisibilityState,
 } from "@tanstack/react-table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -35,8 +37,10 @@ import type {
 type PartyManagementStoreState = {
 	isLoading: boolean;
 	isMutating: boolean;
+	isRefreshing: boolean;
 	records: PartyInformationRecord[];
 	addRecord: (record: PartyInformationRecord) => void;
+	refreshRecords: () => void;
 	updateRecord: (record: PartyInformationRecord) => void;
 };
 
@@ -104,6 +108,9 @@ export function usePartyManagementStore<
 		(record: PartyInformationRecord) => mutateAddRecord(record),
 		[mutateAddRecord],
 	);
+	const refreshRecords = useCallback(() => {
+		void recordsQuery.refetch();
+	}, [recordsQuery]);
 	const updateRecord = useCallback(
 		(record: PartyInformationRecord) => mutateUpdateRecord(record),
 		[mutateUpdateRecord],
@@ -114,7 +121,9 @@ export function usePartyManagementStore<
 			addRecord,
 			isLoading: recordsQuery.isLoading,
 			isMutating: isAddingRecord || isUpdatingRecord,
+			isRefreshing: recordsQuery.isFetching && !recordsQuery.isLoading,
 			records: recordsQuery.data,
+			refreshRecords,
 			updateRecord,
 		}),
 		[
@@ -122,7 +131,9 @@ export function usePartyManagementStore<
 			isAddingRecord,
 			isUpdatingRecord,
 			recordsQuery.data,
+			recordsQuery.isFetching,
 			recordsQuery.isLoading,
+			refreshRecords,
 			updateRecord,
 		],
 	);
@@ -135,6 +146,13 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		pageIndex: 0,
 		pageSize: 10,
 	});
+	const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(() =>
+		PartyManagementTableColumns.map((column) =>
+			"key" in column ? column.key : "actions",
+		),
+	);
+	const [columnVisibility, setColumnVisibility] =
+		useState<VisibilityState>({});
 	const [query, setQueryState] = useState("");
 	const [classificationFilter, setClassificationFilterState] = useState<
 		PartyClassification | "All"
@@ -158,32 +176,33 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 			})),
 		[records],
 	);
-	const filteredRecords = useMemo(
-		() =>
-			tableData.filter((record) => {
-				const searchable = [
-					record.partyCodeNo,
-					record.name,
-					record.classification,
-					record.partyTypesLabel,
-					record.status,
-					record.addressLabel,
-				]
-					.filter(Boolean)
-					.join(" ")
-					.toLowerCase();
+	const filteredRecords = useMemo(() => {
+		const normalizedQuery = query.trim().toLowerCase();
+		const filteredBySelections = tableData.filter(
+			(record) =>
+				(classificationFilter === "All" ||
+					record.classification === classificationFilter) &&
+				(partyTypeFilter === "All" ||
+					record.partyTypes.includes(partyTypeFilter)) &&
+				(statusFilter === "All" || record.status === statusFilter),
+		);
 
-				return (
-					searchable.includes(query.toLowerCase()) &&
-					(classificationFilter === "All" ||
-						record.classification === classificationFilter) &&
-					(partyTypeFilter === "All" ||
-						record.partyTypes.includes(partyTypeFilter)) &&
-					(statusFilter === "All" || record.status === statusFilter)
-				);
-			}),
-		[classificationFilter, partyTypeFilter, query, statusFilter, tableData],
-	);
+		if (!normalizedQuery) {
+			return filteredBySelections;
+		}
+
+		const nameMatches = filteredBySelections.filter((record) =>
+			record.name.toLowerCase().includes(normalizedQuery),
+		);
+
+		if (nameMatches.length > 0) {
+			return nameMatches;
+		}
+
+		return filteredBySelections.filter((record) =>
+			record.addressLabel.toLowerCase().includes(normalizedQuery),
+		);
+	}, [classificationFilter, partyTypeFilter, query, statusFilter, tableData]);
 	const columns = useMemo<ColumnDef<PartyInformationTableRecord>[]>(
 		() =>
 			PartyManagementTableColumns.map((column) => {
@@ -192,7 +211,7 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 						id: "actions",
 						header: column.label,
 						enableSorting: false,
-						meta: { className: column.className },
+						meta: { className: column.className, label: column.label },
 					};
 				}
 
@@ -222,9 +241,13 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		data: filteredRecords,
 		columns,
 		state: {
+			columnOrder,
+			columnVisibility,
 			pagination,
 			sorting,
 		},
+		onColumnOrderChange: setColumnOrder,
+		onColumnVisibilityChange: setColumnVisibility,
 		onPaginationChange: setPagination,
 		onSortingChange: setSorting,
 		getCoreRowModel: getCoreRowModel(),
@@ -306,6 +329,6 @@ function createPartyInformationColumn(
 		accessorKey: key,
 		header,
 		sortingFn: "alphanumeric",
-		meta: { className },
+		meta: { className, label: header },
 	};
 }

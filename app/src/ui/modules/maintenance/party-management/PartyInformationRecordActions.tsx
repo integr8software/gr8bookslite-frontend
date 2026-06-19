@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PartyManagementHref } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import type {
+	PartyInformationRecord,
 	PartyInformationStatus,
 	PartyInformationTableRecord,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
@@ -34,10 +35,8 @@ export function PartyInformationRecordActions({
 			return;
 		}
 
-		const { addressLabel, name, partyTypesLabel, ...partyRecord } = record;
-
 		updateRecord({
-			...partyRecord,
+			...createPartyInformationRecordFromTableRecord(record),
 			status: statusToSet,
 			updatedAt: new Date().toISOString(),
 		});
@@ -94,4 +93,30 @@ export function PartyInformationRecordActions({
 			/>
 		</>
 	);
+}
+
+function createPartyInformationRecordFromTableRecord(
+	record: PartyInformationTableRecord,
+): PartyInformationRecord {
+	return {
+		address: record.address,
+		atcCode: record.atcCode,
+		classification: record.classification,
+		contactNo: record.contactNo,
+		createdAt: record.createdAt,
+		email: record.email,
+		firstName: record.firstName,
+		id: record.id,
+		lastName: record.lastName,
+		middleName: record.middleName,
+		partyCodeNo: record.partyCodeNo,
+		partyName: record.partyName,
+		partyTypes: record.partyTypes,
+		status: record.status,
+		suffixName: record.suffixName,
+		tin: record.tin,
+		tradingName: record.tradingName,
+		updatedAt: record.updatedAt,
+		vatRegistrationType: record.vatRegistrationType,
+	};
 }

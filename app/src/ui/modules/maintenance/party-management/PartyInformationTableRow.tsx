@@ -1,45 +1,76 @@
+import type { Row } from "@tanstack/react-table";
 import type { PartyInformationTableRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { PartyInformationRecordActions } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationRecordActions";
 
 export function PartyInformationTableRow({
-	record,
+	row,
 }: {
-	record: PartyInformationTableRecord;
+	row: Row<PartyInformationTableRecord>;
 }) {
 	return (
 		<tr className="module-table-row">
-			<td className="px-4 py-3">
+			{row.getVisibleCells().map((cell) => (
+				<PartyInformationTableCell
+					key={cell.id}
+					align={cell.column.id === "actions" ? "center" : "left"}
+				>
+					<PartyInformationCellContent
+						columnId={cell.column.id}
+						record={row.original}
+					/>
+				</PartyInformationTableCell>
+			))}
+		</tr>
+	);
+}
+
+function PartyInformationCellContent({
+	columnId,
+	record,
+}: {
+	columnId: string;
+	record: PartyInformationTableRecord;
+}) {
+	switch (columnId) {
+		case "name":
+			return (
 				<div className="min-w-0">
-					<p className="truncate text-xs font-semibold text-darknavy">
+					<p className="truncate text-sm font-semibold text-darknavy">
 						{record.name}
 					</p>
 				</div>
-			</td>
-			<PartyInformationTableCell>
-				<span className="inline-flex min-h-6 items-center rounded bg-skyblue/12 px-2.5 text-xs font-semibold text-darknavy ring-1 ring-skyblue/20">
+			);
+		case "classification":
+			return (
+				<span className="inline-flex min-h-7 items-center rounded bg-skyblue/12 px-2.5 text-sm font-semibold text-darknavy ring-1 ring-skyblue/20">
 					{record.classification}
 				</span>
-			</PartyInformationTableCell>
-			<PartyInformationTableCell>
-				{record.partyTypesLabel}
-			</PartyInformationTableCell>
-			<PartyInformationTableCell>{record.addressLabel}</PartyInformationTableCell>
-			<PartyInformationTableCell>
+			);
+		case "partyTypesLabel":
+			return (
+				<span className="inline-flex min-h-6 items-center rounded bg-darknavy/5 px-2 text-xs font-semibold text-darknavy/70 ring-1 ring-darknavy/10">
+					{record.partyTypesLabel}
+				</span>
+			);
+		case "addressLabel":
+			return <span className="text-sm text-darknavy/75">{record.addressLabel}</span>;
+		case "status":
+			return (
 				<span
 					className={
 						record.status === "Active"
-							? "inline-flex rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700"
-							: "inline-flex rounded-md bg-darknavy/5 px-2 py-1 text-xs font-semibold text-darknavy/55"
+							? "inline-flex rounded-md bg-emerald-50 px-2 py-1 text-sm font-semibold text-emerald-700"
+							: "inline-flex rounded-md bg-darknavy/5 px-2 py-1 text-sm font-semibold text-darknavy/55"
 					}
 				>
 					{record.status}
 				</span>
-			</PartyInformationTableCell>
-			<PartyInformationTableCell align="center">
-				<PartyInformationRecordActions record={record} />
-			</PartyInformationTableCell>
-		</tr>
-	);
+			);
+		case "actions":
+			return <PartyInformationRecordActions record={record} />;
+		default:
+			return null;
+	}
 }
 
 function PartyInformationTableCell({
@@ -51,7 +82,7 @@ function PartyInformationTableCell({
 }) {
 	return (
 		<td
-			className={`px-4 py-3 align-middle text-xs text-darknavy first:pl-5 last:pr-5 ${align === "center" ? "text-center" : "text-left"
+			className={`px-4 py-3 align-middle text-sm text-darknavy first:pl-5 last:pr-5 ${align === "center" ? "text-center" : "text-left"
 				}`}
 		>
 			{children}

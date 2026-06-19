@@ -8,10 +8,14 @@ import { PartyInformationTableRow } from "@/app/src/ui/modules/maintenance/party
 
 export function PartyInformationTable({
 	isLoading,
+	isRefreshing,
 	records,
+	onRefresh,
 }: {
 	isLoading: boolean;
+	isRefreshing: boolean;
 	records: PartyInformationRecord[];
+	onRefresh: () => void;
 }) {
 	const partyTable = usePartyManagementTable(records);
 
@@ -35,15 +39,17 @@ export function PartyInformationTable({
 						query={partyTable.query}
 						statusFilter={partyTable.statusFilter}
 						statusOptions={partyTable.statusOptions}
+						table={partyTable.table}
 						onClassificationFilterChange={partyTable.setClassificationFilter}
 						onPartyTypeFilterChange={partyTable.setPartyTypeFilter}
 						onQueryChange={partyTable.setQuery}
-						onResetFilters={partyTable.resetFilters}
+						onRefresh={onRefresh}
+						isRefreshing={isRefreshing}
 						onStatusFilterChange={partyTable.setStatusFilter}
 					/>
 				}
-				renderRow={({ id, original }) => (
-					<PartyInformationTableRow key={id} record={original} />
+				renderRow={(row) => (
+					<PartyInformationTableRow key={row.id} row={row} />
 				)}
 			/>
 		</div>

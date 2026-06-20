@@ -65,7 +65,10 @@ export function WorkspaceAuditLogTable({
 	table,
 }: WorkspaceAuditLogTableProps) {
 	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+		<div
+			data-spotlight-id="workspace-audit-table"
+			className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm"
+		>
 			<div className="flex flex-wrap items-center justify-between gap-3 border-b border-darknavy/10 px-4 py-3">
 				<p className="text-sm font-semibold text-darknavy">Activity stream</p>
 				<div className="flex items-center gap-2 text-xs font-semibold text-darknavy/58">
@@ -101,7 +104,10 @@ export function WorkspaceAuditLogTable({
 				paginationStorageKey={WorkspaceAuditLogPaginationStorageKey}
 				table={table}
 				toolbar={
-					<ModuleTableToolbar className="xl:grid-cols-[minmax(24rem,2.4fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(9rem,0.7fr)]">
+					<ModuleTableToolbar
+						data-spotlight-id="workspace-audit-filters"
+						className="xl:grid-cols-[minmax(24rem,2.4fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(9rem,0.7fr)]"
+					>
 						<ModuleTableSearch
 							label="Search workspace audit logs"
 							value={query}

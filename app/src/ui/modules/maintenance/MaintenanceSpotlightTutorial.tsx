@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   createMaintenanceAddSpotlightTutorialSteps,
@@ -27,6 +26,11 @@ export function MaintenanceSpotlightTutorial() {
   const listConfig = getMaintenanceSpotlightTutorialConfig(pathname);
   const config = addConfig ?? listConfig;
   const href = config?.href ?? "";
+  const configLabel = config?.label ?? "";
+  const includeCreateStep = config?.includeCreateStep !== false;
+  const includeFiltersStep = config?.includeFiltersStep !== false;
+  const includeTableStep = config?.includeTableStep !== false;
+  const listAddMode = listConfig?.addMode;
   const tutorialHref = addConfig ? `${href}/add` : href;
   const { completeTutorial, isOpen, skipTutorial } = useSpotlightTutorial({
     href: tutorialHref,
@@ -35,27 +39,24 @@ export function MaintenanceSpotlightTutorial() {
       : MaintenanceSpotlightTutorialOpenEvent,
     storageKey: createMaintenanceSpotlightTutorialStorageKey(tutorialHref),
   });
-  const handleStepEnter = useCallback(
-    (_: unknown, index: number) => {
-      const listStepCount = createMaintenanceSpotlightTutorialSteps(
-        config?.label ?? "",
-      ).length;
+  function handleStepEnter(_: unknown, index: number) {
+    const listStepCount = createMaintenanceSpotlightTutorialSteps(
+      configLabel,
+      includeCreateStep,
+      includeFiltersStep,
+      includeTableStep,
+    ).length;
 
-      if (
-        listConfig?.addMode === "drawer" &&
-        index === listStepCount
-      ) {
-        window.dispatchEvent(
-          new Event(MaintenanceAddDrawerSpotlightTutorialOpenEvent),
-        );
-      }
+    if (listAddMode === "drawer" && index === listStepCount) {
+      window.dispatchEvent(
+        new Event(MaintenanceAddDrawerSpotlightTutorialOpenEvent),
+      );
+    }
 
-      if (listConfig?.addMode === "drawer" && index === listStepCount - 1) {
-        closeMaintenanceAddDrawer();
-      }
-    },
-    [config?.label, listConfig?.addMode],
-  );
+    if (listAddMode === "drawer" && index === listStepCount - 1) {
+      closeMaintenanceAddDrawer();
+    }
+  }
 
   if (!config) {
     return null;
@@ -64,14 +65,23 @@ export function MaintenanceSpotlightTutorial() {
   return (
     <SpotlightTour
       ariaLabel={`${config.label} tutorial`}
-      badge={<SpotlightTourBadge>Maintenance guide</SpotlightTourBadge>}
+      badge={
+        <SpotlightTourBadge>
+          {href.startsWith("/maintenance/") ? "Maintenance guide" : "Module guide"}
+        </SpotlightTourBadge>
+      }
       isOpen={isOpen}
       steps={
         addConfig
           ? createMaintenanceAddSpotlightTutorialSteps(config.label)
           : listConfig?.addMode === "drawer"
             ? createMaintenanceDrawerSpotlightTutorialSteps(config.label)
-          : createMaintenanceSpotlightTutorialSteps(config.label)
+          : createMaintenanceSpotlightTutorialSteps(
+              config.label,
+              includeCreateStep,
+              includeFiltersStep,
+              includeTableStep,
+            )
       }
       onStepEnter={handleStepEnter}
       onComplete={() => {

@@ -12,12 +12,15 @@ export const MaintenanceAddDrawerSpotlightTutorialCloseEvent =
   "gr8booksneo:maintenance-add-drawer-spotlight-close";
 
 type MaintenanceSpotlightTutorialConfig = {
-  addMode: "drawer" | "route";
-  href: string;
-  label: string;
+  readonly addMode: "drawer" | "none" | "route";
+  readonly href: string;
+  readonly includeCreateStep?: boolean;
+  readonly includeFiltersStep?: boolean;
+  readonly includeTableStep?: boolean;
+  readonly label: string;
 };
 
-export const MaintenanceSpotlightTutorialConfigs = [
+export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightTutorialConfig[] = [
   {
     href: "/maintenance/discount-management",
     addMode: "drawer",
@@ -54,6 +57,11 @@ export const MaintenanceSpotlightTutorialConfigs = [
     label: "Items",
   },
   {
+    href: "/maintenance/item-management/item-bundles",
+    addMode: "route",
+    label: "Item bundles",
+  },
+  {
     href: "/maintenance/item-management/item-category",
     addMode: "drawer",
     label: "Item category",
@@ -68,16 +76,128 @@ export const MaintenanceSpotlightTutorialConfigs = [
     addMode: "drawer",
     label: "Warehouse management",
   },
-] as const satisfies readonly MaintenanceSpotlightTutorialConfig[];
+  {
+    href: "/maintenance/item-management/item-attributes",
+    addMode: "none",
+    label: "Item attributes",
+  },
+  {
+    href: "/maintenance/item-management/unit-of-measurement",
+    addMode: "none",
+    label: "Unit of measurement",
+  },
+  {
+    href: "/maintenance/item-management/item-promotions",
+    addMode: "none",
+    label: "Item promotions",
+  },
+  {
+    href: "/maintenance/item-management/price-lists",
+    addMode: "none",
+    label: "Price lists",
+  },
+  {
+    href: "/maintenance/warehouse-management/access",
+    addMode: "none",
+    label: "Warehouse access",
+  },
+  {
+    href: "/maintenance/warehouse-management/storage-locations",
+    addMode: "none",
+    label: "Storage locations",
+  },
+  {
+    href: "/maintenance/warehouse-management/transfers",
+    addMode: "none",
+    label: "Warehouse transfers",
+  },
+  {
+    href: "/maintenance/warehouse-management/stock-inquiry",
+    addMode: "none",
+    includeCreateStep: false,
+    label: "Warehouse stock inquiry",
+  },
+  {
+    href: "/maintenance/warehouse-management/activity-history",
+    addMode: "none",
+    includeCreateStep: false,
+    label: "Warehouse activity history",
+  },
+  {
+    href: "/cash-disbursement/disbursement-voucher",
+    addMode: "none",
+    label: "Disbursement voucher",
+  },
+  {
+    href: "/cash-disbursement/cash-advance",
+    addMode: "none",
+    label: "Cash advance",
+  },
+  {
+    href: "/cash-disbursement/petty-cash-voucher",
+    addMode: "none",
+    label: "Petty cash voucher",
+  },
+  {
+    href: "/cash-disbursement/petty-cash-fund-replenishment",
+    addMode: "none",
+    label: "Petty cash fund replenishment",
+  },
+  {
+    href: "/cash-disbursement/petty-cash-advance-replenishment",
+    addMode: "none",
+    includeFiltersStep: false,
+    includeTableStep: false,
+    label: "Petty cash advance replenishment",
+  },
+  {
+    href: "/sales/sales-journal",
+    addMode: "none",
+    label: "Sales journal",
+  },
+  {
+    href: "/inventory/material-request",
+    addMode: "none",
+    label: "Material request",
+  },
+  {
+    href: "/purchasing/purchase-request",
+    addMode: "none",
+    label: "Purchase request",
+  },
+  {
+    href: "/system-administration/approval-management",
+    addMode: "none",
+    label: "Approval management",
+  },
+  {
+    href: "/system-administration/audit-trail",
+    addMode: "none",
+    includeCreateStep: false,
+    label: "Audit trail",
+  },
+  {
+    href: "/system-administration/transaction-number-setup",
+    addMode: "none",
+    label: "Transaction number setup",
+  },
+  {
+    href: "/system-administration/multi-currency-setup",
+    addMode: "none",
+    label: "Multi-currency setup",
+  },
+];
 
-export const MaintenanceAddSpotlightTutorialConfigs = [
-  ...MaintenanceSpotlightTutorialConfigs,
+export const MaintenanceAddSpotlightTutorialConfigs: readonly MaintenanceSpotlightTutorialConfig[] = [
+  ...MaintenanceSpotlightTutorialConfigs.filter(
+    (config) => config.addMode !== "none",
+  ),
   {
     href: ChartsOfAccountsHref,
     addMode: "route",
     label: "Chart of accounts",
   },
-] as const satisfies readonly MaintenanceSpotlightTutorialConfig[];
+];
 
 export function getMaintenanceSpotlightTutorialConfig(href: string) {
   return (
@@ -100,45 +220,59 @@ export function createMaintenanceSpotlightTutorialStorageKey(href: string) {
 
 export function createMaintenanceSpotlightTutorialSteps(
   label: string,
+  includeCreateStep = true,
+  includeFiltersStep = true,
+  includeTableStep = true,
 ): readonly SpotlightTourStep[] {
-  return [
+  const steps: SpotlightTourStep[] = [
     {
       key: "header",
       title: `Start with ${label}`,
       description:
-        "Use this maintenance page to review the module purpose and keep its main setup actions close at hand.",
+        "Use this page to review the module purpose and keep its main actions close at hand.",
       selectors: ["main h1"],
     },
-    {
+  ];
+
+  if (includeCreateStep) {
+    steps.push({
       key: "create",
-      title: "Create a new setup record",
+      title: "Start a new record",
       description:
-        "Use the primary action to add another maintenance record when your operational setup changes.",
+        "Use the primary action to add another record when your operational setup changes.",
       selectors: [
         "main a[href$='/add']",
         "main button[class*='bg-coralpink']",
         "main button[class*='bg-darknavy']",
         "main button",
       ],
-    },
-    {
+    });
+  }
+
+  if (includeFiltersStep) {
+    steps.push({
       key: "filters",
       title: "Narrow the records quickly",
       description:
-        "Use search and filters to focus the list before reviewing or updating maintenance records.",
+        "Use search and filters to focus the list before reviewing or updating records.",
       selectors: [
         "main input[type='search']",
         "main select",
       ],
-    },
-    {
+    });
+  }
+
+  if (includeTableStep) {
+    steps.push({
       key: "table",
       title: "Manage records from the table",
       description:
         "Review the available setup records and use their actions to open, edit, or update the entries you need.",
       selectors: ["main table"],
-    },
-  ];
+    });
+  }
+
+  return steps;
 }
 
 export function createMaintenanceAddSpotlightTutorialSteps(

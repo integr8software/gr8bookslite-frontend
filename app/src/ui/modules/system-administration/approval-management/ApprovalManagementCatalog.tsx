@@ -32,12 +32,14 @@ export function ApprovalManagementCatalog({
 	statusFilter,
 	workflows,
 }: ApprovalManagementCatalogProps) {
-	const dropdownOptions = workflows.map<AppAdvancedDropdownOption>((workflow) => ({
-		description: workflow.moduleCode,
-		label: workflow.status,
-		name: workflow.moduleName,
-		value: workflow.id,
-	}));
+	const dropdownOptions = workflows.map<AppAdvancedDropdownOption>(
+		(workflow) => ({
+			description: workflow.moduleCode,
+			label: workflow.status,
+			name: workflow.moduleName,
+			value: workflow.id,
+		}),
+	);
 
 	function handleDropdownChange(value: string | string[]) {
 		if (typeof value === "string" && value) {
@@ -73,7 +75,8 @@ export function ApprovalManagementCatalog({
 						Approval workflows
 					</h2>
 					<p className="mt-1 text-xs font-medium text-darknavy/55">
-						Choose one workflow to edit. This keeps approval paths aligned.
+						Choose one workflow to edit. This keeps approval paths
+						aligned.
 					</p>
 				</div>
 				<div className="grid gap-2 2xl:grid-cols-[minmax(0,1fr)_10rem]">
@@ -84,9 +87,14 @@ export function ApprovalManagementCatalog({
 						/>
 						<input
 							value={query}
-							onChange={(event) => onQueryChange(event.target.value)}
+							onChange={(event) =>
+								onQueryChange(event.target.value)
+							}
 							disabled={isLoading}
-							className={joinClasses(approvalManagementFieldClassName, "pl-9")}
+							className={joinClasses(
+								approvalManagementFieldClassName,
+								"pl-9",
+							)}
 							placeholder="Search workflow or approver"
 						/>
 					</label>
@@ -94,7 +102,9 @@ export function ApprovalManagementCatalog({
 						value={statusFilter}
 						onChange={(event) =>
 							onStatusFilterChange(
-								event.target.value as ApprovalManagementStatus | "any",
+								event.target.value as
+									| ApprovalManagementStatus
+									| "any",
 							)
 						}
 						disabled={isLoading}
@@ -132,12 +142,14 @@ export function ApprovalManagementCatalog({
 								<span
 									className={joinClasses(
 										"truncate text-darknavy",
-										isSelected ? "font-semibold" : "font-medium",
+										isSelected
+											? "font-semibold"
+											: "font-medium",
 									)}
 								>
 									{workflow.moduleName}
 								</span>
-								<span className="font-mono text-xs font-semibold text-darknavy/72">
+								<span className="text-xs font-bold text-darknavy/72">
 									{workflow.moduleCode}
 								</span>
 							</button>

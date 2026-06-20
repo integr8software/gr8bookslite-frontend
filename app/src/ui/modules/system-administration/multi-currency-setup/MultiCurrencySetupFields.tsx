@@ -56,7 +56,10 @@ export function MultiCurrencySetupFields({
 							className={fieldClassName}
 						>
 							{MultiCurrencyCatalog.map((currency) => (
-								<option key={currency.code} value={currency.code}>
+								<option
+									key={currency.code}
+									value={currency.code}
+								>
 									{currency.code} - {currency.name}
 								</option>
 							))}
@@ -76,14 +79,21 @@ export function MultiCurrencySetupFields({
 							className={fieldClassName}
 						>
 							{MultiCurrencyCatalog.map((currency) => (
-								<option key={currency.code} value={currency.code}>
+								<option
+									key={currency.code}
+									value={currency.code}
+								>
 									{currency.code} - {currency.name}
 								</option>
 							))}
 						</select>
 					</FormField>
 
-					<FormField label="Rate Date" error={errors.rateDate} required>
+					<FormField
+						label="Rate Date"
+						error={errors.rateDate}
+						required
+					>
 						<input
 							name="rateDate"
 							type="date"
@@ -142,12 +152,20 @@ export function MultiCurrencySetupFields({
 					/>
 					<ReadonlyRate
 						label="Fetched Exchange Rate"
-						value={isRateLoading ? "Fetching..." : fetchedExchangeRateDisplay}
+						value={
+							isRateLoading
+								? "Fetching..."
+								: fetchedExchangeRateDisplay
+						}
 						helper={`1 ${values.baseCurrencyCode} to ${values.targetCurrencyCode}`}
 					/>
 					<ReadonlyRate
 						label="Inverse Rate"
-						value={isRateLoading ? "Fetching..." : inverseExchangeRateDisplay}
+						value={
+							isRateLoading
+								? "Fetching..."
+								: inverseExchangeRateDisplay
+						}
 						helper={`1 ${values.targetCurrencyCode} to ${values.baseCurrencyCode}`}
 					/>
 				</div>
@@ -202,7 +220,7 @@ function ReadonlyRate({
 			<p className="text-xs font-semibold uppercase text-darknavy/55">
 				{label}
 			</p>
-			<p className="mt-2 truncate font-mono text-xl font-semibold text-darknavy">
+			<p className="mt-2 truncate text-xl font-semibold text-darknavy">
 				{value}
 			</p>
 			<p className="mt-1 truncate text-sm text-darknavy/55">{helper}</p>

@@ -67,7 +67,7 @@ export function TransactionNumberSetupEditor({
 						{selectedSetup.moduleName}
 					</h2>
 					<div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
-						<span className="rounded-md border border-skyblue/15 bg-skyblue/8 px-2 py-0.5 font-mono text-skyblue">
+						<span className="rounded-md border border-skyblue/15 bg-skyblue/8 px-2 py-0.5 text-skyblue">
 							{selectedSetup.moduleCode}
 						</span>
 						<span className="rounded-md border border-darknavy/8 bg-offwhite/60 px-2 py-0.5 text-darknavy/65">
@@ -233,7 +233,7 @@ function TransactionNumberSetupNumberingSection({
 					label="Next Number Preview"
 					className="md:col-span-2"
 				>
-					<div className="flex min-h-11 items-center rounded-md border border-darknavy/15 bg-offwhite/65 px-3 font-mono text-sm font-semibold text-darknavy">
+					<div className="flex min-h-11 items-center rounded-md border border-darknavy/15 bg-offwhite/65 px-3 text-sm font-semibold text-darknavy">
 						{nextNumberPreview}
 					</div>
 				</TransactionNumberSetupField>

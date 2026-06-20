@@ -141,7 +141,7 @@ export function TransactionNumberSetupCatalog({
 								>
 									{setup.moduleName}
 								</span>
-								<span className="font-mono text-xs font-semibold text-darknavy/72">
+								<span className="text-xs font-bold text-darknavy/72">
 									{setup.moduleCode}
 								</span>
 							</button>

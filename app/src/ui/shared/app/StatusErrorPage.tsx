@@ -28,7 +28,10 @@ type StatusErrorPageContent = {
 	title: string;
 };
 
-const statusErrorPageContent: Record<StatusErrorPageVariant, StatusErrorPageContent> = {
+const statusErrorPageContent: Record<
+	StatusErrorPageVariant,
+	StatusErrorPageContent
+> = {
 	"401": {
 		accentClassName: "bg-skyblue",
 		eyebrow: "Unauthorized access",
@@ -56,7 +59,8 @@ const statusErrorPageContent: Record<StatusErrorPageVariant, StatusErrorPageCont
 		secondaryIcon: ShieldAlert,
 		secondaryLabel: "Request access",
 		status: "403",
-		summary: "Your account is signed in, but it does not have permission for this area.",
+		summary:
+			"Your account is signed in, but it does not have permission for this area.",
 		title: "This page is outside your access.",
 	},
 	"500": {
@@ -94,17 +98,27 @@ export function StatusErrorPage({ variant }: StatusErrorPageProps) {
 					<div className="absolute left-[17%] top-[22%] h-[33%] w-[52%] rotate-[-10deg] rounded-md border border-darknavy/10 bg-white shadow-[0_16px_40px_rgba(33,39,56,0.12)]" />
 					<div className="absolute bottom-[24%] right-[15%] h-[35%] w-[52%] rotate-[8deg] rounded-md border border-darknavy/10 bg-white shadow-[0_16px_40px_rgba(33,39,56,0.10)]" />
 					<div className="relative z-10 flex h-[48%] w-[48%] items-center justify-center rounded-full border border-darknavy/10 bg-white shadow-[0_18px_45px_rgba(33,39,56,0.14)]">
-						<div className={`absolute -right-2 top-3 h-6 w-6 rounded-full ${content.accentClassName}`} />
-						<Icon className="h-[42%] w-[42%] text-darknavy" strokeWidth={1.8} aria-hidden="true" />
+						<div
+							className={`absolute -right-2 top-3 h-6 w-6 rounded-full ${content.accentClassName}`}
+						/>
+						<Icon
+							className="h-[42%] w-[42%] text-darknavy"
+							strokeWidth={1.8}
+							aria-hidden="true"
+						/>
 					</div>
-					<div className={`absolute bottom-[18%] left-[18%] h-3 w-[44%] rounded-full ${content.accentClassName}`} />
+					<div
+						className={`absolute bottom-[18%] left-[18%] h-3 w-[44%] rounded-full ${content.accentClassName}`}
+					/>
 					<div className="absolute bottom-[13%] left-[27%] h-2 w-[38%] rounded-full bg-darknavy/10" />
 				</div>
 
 				<div className="w-full max-w-xl">
-					<p className="text-xs font-bold uppercase tracking-[0.28em] text-darknavy/55">{content.eyebrow}</p>
+					<p className="text-xs font-bold uppercase tracking-[0.28em] text-darknavy/55">
+						{content.eyebrow}
+					</p>
 					<div className="mt-4 flex flex-col items-center gap-4 lg:items-start">
-						<span className="font-mono text-[clamp(4.75rem,16vw,8rem)] font-black leading-none text-darknavy">
+						<span className="text-[clamp(4.75rem,16vw,8rem)] font-black leading-none text-darknavy">
 							{content.status}
 						</span>
 						<div>
@@ -114,7 +128,9 @@ export function StatusErrorPage({ variant }: StatusErrorPageProps) {
 							<p className="mt-5 text-base font-semibold leading-7 text-darknavy/75 sm:text-lg">
 								{content.summary}
 							</p>
-							<p className="mt-3 text-sm leading-6 text-darknavy/55 sm:text-base">{content.helper}</p>
+							<p className="mt-3 text-sm leading-6 text-darknavy/55 sm:text-base">
+								{content.helper}
+							</p>
 						</div>
 					</div>
 
@@ -123,14 +139,20 @@ export function StatusErrorPage({ variant }: StatusErrorPageProps) {
 							href={content.primaryHref}
 							className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-darknavy px-5 py-3 text-sm font-bold text-white shadow-[0_16px_35px_rgba(33,39,56,0.20)] transition hover:-translate-y-0.5 hover:bg-darknavy/90 focus:outline-none focus:ring-2 focus:ring-skyblue focus:ring-offset-2 focus:ring-offset-offwhite"
 						>
-							<PrimaryIcon className="h-4 w-4" aria-hidden="true" />
+							<PrimaryIcon
+								className="h-4 w-4"
+								aria-hidden="true"
+							/>
 							{content.primaryLabel}
 						</Link>
 						<Link
 							href={content.secondaryHref}
 							className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-darknavy/15 bg-white px-5 py-3 text-sm font-bold text-darknavy shadow-[0_10px_24px_rgba(33,39,56,0.08)] transition hover:-translate-y-0.5 hover:border-darknavy/25 focus:outline-none focus:ring-2 focus:ring-skyblue focus:ring-offset-2 focus:ring-offset-offwhite"
 						>
-							<SecondaryIcon className="h-4 w-4" aria-hidden="true" />
+							<SecondaryIcon
+								className="h-4 w-4"
+								aria-hidden="true"
+							/>
 							{content.secondaryLabel}
 						</Link>
 					</div>

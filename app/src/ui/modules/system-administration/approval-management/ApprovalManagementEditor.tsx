@@ -118,7 +118,7 @@ export function ApprovalManagementEditor({
 						{selectedWorkflow.moduleName}
 					</h2>
 					<div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
-						<span className="rounded-md border border-skyblue/15 bg-skyblue/8 px-2 py-0.5 font-mono text-skyblue">
+						<span className="rounded-md border border-skyblue/15 bg-skyblue/8 px-2 py-0.5 text-skyblue">
 							{selectedWorkflow.moduleCode}
 						</span>
 						<span className="rounded-md border border-darknavy/8 bg-offwhite/60 px-2 py-0.5 text-darknavy/65">
@@ -266,7 +266,8 @@ function ApprovalMatrix({
 	const amountRuleCount = routingRules.filter(
 		(rule) => rule.basis === "amount",
 	).length;
-	const canAddAmountCondition = amountRuleCount < ApprovalAmountConditionLimit;
+	const canAddAmountCondition =
+		amountRuleCount < ApprovalAmountConditionLimit;
 	const [openRoutingRuleId, setOpenRoutingRuleId] = useState<string | null>(
 		null,
 	);
@@ -321,26 +322,26 @@ function ApprovalMatrix({
 									}
 									aria-pressed={isActive}
 								>
-								<span
-									className={
-										isActive
-											? "h-4 w-4 shrink-0 rounded-full border-4 border-skyblue bg-white"
-											: "h-4 w-4 shrink-0 rounded-full border border-darknavy/35 bg-white"
-									}
-									aria-hidden="true"
-								/>
-								<span
-									className={
-										isActive
-											? "h-8 w-px shrink-0 bg-skyblue/25"
-											: "h-8 w-px shrink-0 bg-darknavy/10"
-									}
-									aria-hidden="true"
-								/>
-								<span
-									className={
-										isActive
-											? "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-skyblue/20 bg-white text-skyblue"
+									<span
+										className={
+											isActive
+												? "h-4 w-4 shrink-0 rounded-full border-4 border-skyblue bg-white"
+												: "h-4 w-4 shrink-0 rounded-full border border-darknavy/35 bg-white"
+										}
+										aria-hidden="true"
+									/>
+									<span
+										className={
+											isActive
+												? "h-8 w-px shrink-0 bg-skyblue/25"
+												: "h-8 w-px shrink-0 bg-darknavy/10"
+										}
+										aria-hidden="true"
+									/>
+									<span
+										className={
+											isActive
+												? "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-skyblue/20 bg-white text-skyblue"
 												: "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-offwhite text-darknavy/60"
 										}
 									>
@@ -380,7 +381,9 @@ function ApprovalMatrix({
 							className="inline-flex min-h-9 items-center justify-center gap-2 rounded-md border border-skyblue/35 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm transition hover:bg-skyblue/10 disabled:cursor-not-allowed disabled:border-darknavy/10 disabled:bg-offwhite disabled:text-darknavy/40 disabled:shadow-none"
 						>
 							<Plus className="h-4 w-4" aria-hidden="true" />
-							{canAddAmountCondition ? "Add Condition" : "Limit Reached"}
+							{canAddAmountCondition
+								? "Add Condition"
+								: "Limit Reached"}
 						</button>
 					</div>
 				) : null}

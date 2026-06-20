@@ -205,10 +205,6 @@ h6 {
 	border-color: var(--approval-workspace-border);
 }
 
-.approval-management-editor {
-	background-color: var(--approval-editor-bg);
-}
-
 .approval-management-catalog {
 	background-color: var(--approval-workspace-bg);
 	border-color: var(--approval-workspace-border);

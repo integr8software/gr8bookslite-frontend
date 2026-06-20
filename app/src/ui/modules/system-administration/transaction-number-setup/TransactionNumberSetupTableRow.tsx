@@ -15,7 +15,9 @@ export function TransactionNumberSetupTableRow({
 	return (
 		<tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
 			<td className="px-4 py-4">
-				<div className="font-semibold text-darknavy">{setup.moduleName}</div>
+				<div className="font-semibold text-darknavy">
+					{setup.moduleName}
+				</div>
 			</td>
 			<td className="px-4 py-4">
 				<span className="inline-flex rounded-full bg-darknavy/8 px-3 py-1 text-xs font-semibold text-darknavy">
@@ -34,12 +36,12 @@ export function TransactionNumberSetupTableRow({
 			<td className="px-4 py-4 text-xs font-medium">
 				{formatBranchScopeLabel(setup, branchNameById)}
 			</td>
-			<td className="px-4 py-4 font-mono text-xs">{setup.prefix}</td>
-			<td className="px-4 py-4 text-right font-mono text-xs">
+			<td className="px-4 py-4 text-xs">{setup.prefix}</td>
+			<td className="px-4 py-4 text-right text-xs">
 				{setup.currentNumber}
 			</td>
 			<td className="px-4 py-4">
-				<div className="font-mono text-xs font-semibold text-darknavy">
+				<div className="text-xs font-semibold text-darknavy">
 					{formatTransactionNumber(setup)}
 				</div>
 				<div className="text-xs text-darknavy/45">

@@ -11,7 +11,9 @@ const PublicPathPrefixes = [
   "/",
   INVITATION_ACTIVATION_PATH,
   "/auth",
+  "/contact-support",
   "/error",
+  "/faq",
   "/forgot-password",
   LOGIN_PATH,
   "/pricing",
@@ -20,6 +22,8 @@ const PublicPathPrefixes = [
   "/terms-of-service",
 ] as const;
 const UnrestrictedPublicPathPrefixes = [
+  "/contact-support",
+  "/faq",
   "/privacy-policy",
   "/terms-of-service",
 ] as const;

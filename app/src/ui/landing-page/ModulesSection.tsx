@@ -11,7 +11,7 @@ export function ModulesSection() {
 		useLandingModuleCarousel();
 
 	return (
-		<section className="landing-section landing-modules-section bg-white">
+		<section className="landing-section landing-modules-section overflow-x-clip bg-white">
 			<div className="landing-section-content">
 				<div className="landing-module-marquee-wrap">
 					<div className="landing-module-marquee">

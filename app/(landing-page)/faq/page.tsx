@@ -4,6 +4,7 @@ import { FAQPage } from "@/app/src/ui/auth/FAQPage";
 
 export const metadata: Metadata = {
 	title: `FAQ | ${AppName}`,
+	description: `Find answers to common questions about ${AppName}, account access, accounting, inventory, and workspace management.`,
 };
 
 export default function Page() {

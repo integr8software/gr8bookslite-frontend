@@ -113,11 +113,17 @@ export function LoginForm() {
 					</p>
 					<p className="mt-5 text-xs leading-5 text-darknavy/45">
 						By signing in, you agree to our{" "}
-						<Link href="/terms-of-service" className="hover:text-sky-700">
+						<Link
+							href="/terms-of-service"
+							className="font-bold text-darknavy/70 hover:text-sky-700"
+						>
 							Terms of Service
 						</Link>{" "}
 						and{" "}
-						<Link href="/privacy-policy" className="hover:text-sky-700">
+						<Link
+							href="/privacy-policy"
+							className="font-bold text-darknavy/70 hover:text-sky-700"
+						>
 							Privacy Policy
 						</Link>
 						.

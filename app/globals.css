@@ -996,8 +996,14 @@ button {
 	line-height: 1.25;
 }
 
+.landing-modules-section {
+	overflow-x: clip;
+	contain: paint;
+}
+
 .landing-module-marquee-wrap {
 	width: 100vw;
+	max-width: 100vw;
 	margin-left: calc(50% - 50vw);
 	background: #ffffff;
 }

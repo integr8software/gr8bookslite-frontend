@@ -17,12 +17,12 @@ export function MainFooter() {
         >
           FAQ
         </Link>
-        <a
-          href="mailto:support@gr8booklite.com"
+        <Link
+          href="/contact-us"
           className="transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
         >
-          Contact Support
-        </a>
+          Contact Us
+        </Link>
         <Link
           href="/terms-of-service"
           className="transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"

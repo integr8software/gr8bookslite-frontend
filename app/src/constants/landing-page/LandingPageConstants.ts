@@ -27,7 +27,7 @@ export const LandingPageFooterGroups = [
     title: "Legal",
     links: [
       { label: "FAQ", href: "/faq" },
-      { label: "Contact Support", href: "/contact-support" },
+      { label: "Contact Us", href: "/contact-us" },
       { label: "Terms of Service", href: "/terms-of-service" },
       { label: "Privacy Policy", href: "/privacy-policy" },
     ],

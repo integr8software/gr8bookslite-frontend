@@ -73,7 +73,7 @@ const statusErrorPageContent: Record<
 		primaryLabel: "Try from dashboard",
 		secondaryHref: "mailto:legal@gr8booklite.com",
 		secondaryIcon: ShieldAlert,
-		secondaryLabel: "Contact support",
+		secondaryLabel: "Contact us",
 		status: "500",
 		summary: "Something went wrong on our side.",
 		title: "We hit a server problem.",

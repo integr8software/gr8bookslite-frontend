@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { FAQPage } from "@/app/src/ui/auth/FAQPage";
+import FAQPage from "@/app/src/ui/landing-page/FAQPage";
 
 export const metadata: Metadata = {
 	title: `FAQ | ${AppName}`,

@@ -74,7 +74,7 @@ export type AuthProfileResponse = {
     status: string;
     emailVerifiedAt: string | null;
     createdAt: string;
-    updatedAt: string;
+    updatedAt: string | null;
   };
   companyId?: number | null;
   role?: "ADMIN" | "USER" | null;

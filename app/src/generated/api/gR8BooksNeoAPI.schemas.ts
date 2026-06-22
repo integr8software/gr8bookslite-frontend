@@ -858,7 +858,8 @@ export interface WorkspaceUserResponseDto {
   profileImageUrl: string | null;
   companyAssignments: WorkspaceUserCompanyAssignmentResponseDto[];
   createdAt: string;
-  updatedAt: string;
+  /** @nullable */
+  updatedAt: string | null;
 }
 
 export interface WorkspaceCompanyManagementSummaryResponseDto {
@@ -1819,4 +1820,3 @@ export const ChartOfAccountsControllerFindNextCodeV1AccountLevel = {
 } as const;
 
 export type AiAssistantControllerChatV1201 = { [key: string]: unknown };
-

@@ -2,11 +2,13 @@ import type { Table } from "@tanstack/react-table";
 import {
 	TermManagementDatemodeOptions,
 	TermManagementStatusOptions,
+	TermManagementTableColumns,
 } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import type {
 	TermManagement,
 	TermManagementStatus,
 } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
+import type { TermManagementPermissions } from "@/app/src/services/modules/maintenance/financial-management/term-management/TermManagementApi";
 import {
 	ModuleTableColumnVisibilityButton,
 	ModuleTableExportButton,
@@ -23,6 +25,7 @@ type TermManagementTableFiltersProps = {
 	exportFilteredRows: TermManagement[];
 	hasActiveFilters: boolean;
 	isRefreshing: boolean;
+	permissions: TermManagementPermissions;
 	query: string;
 	statusFilter: "" | TermManagementStatus;
 	table: Table<TermManagement>;
@@ -38,6 +41,7 @@ export function TermManagementTableFilters({
 	exportFilteredRows,
 	hasActiveFilters,
 	isRefreshing,
+	permissions,
 	query,
 	statusFilter,
 	table,
@@ -83,15 +87,19 @@ export function TermManagementTableFilters({
 				}
 			/>
 			<ModuleTableColumnVisibilityButton table={table} />
-			<ModuleTableExportButton
-				allRows={exportAllRows}
-				columns={TermManagementExportColumns}
-				fileName="term-management"
-				filteredRows={exportFilteredRows}
-				isFiltered={hasActiveFilters}
-				table={table}
-				title="Term Management"
-			/>
+			{permissions.canExport ? (
+				<ModuleTableExportButton
+					allRows={exportAllRows}
+					columns={TermManagementExportColumns}
+					fileName="term-management"
+					filteredRows={exportFilteredRows}
+					isFiltered={hasActiveFilters}
+					table={table}
+					title="Term Management"
+				/>
+			) : (
+				<span aria-hidden="true" />
+			)}
 			<ModuleTableResetButton
 				className="px-2"
 				isRefreshing={isRefreshing}
@@ -104,9 +112,15 @@ export function TermManagementTableFilters({
 }
 
 const TermManagementExportColumns: ModuleTableExportColumn<TermManagement>[] = [
-	{ header: "Name", id: "name", value: "name" },
-	{ header: "Description", id: "description", value: "description" },
-	{ header: "Datemode", id: "datemode", value: "datemode" },
-	{ header: "Period", id: "period", value: "period" },
-	{ header: "Status", id: "status", value: "status" },
+	...TermManagementTableColumns.flatMap((column) =>
+		"key" in column
+			? [
+					{
+						header: column.label,
+						id: column.key,
+						value: column.key,
+					},
+				]
+			: [],
+	),
 ];

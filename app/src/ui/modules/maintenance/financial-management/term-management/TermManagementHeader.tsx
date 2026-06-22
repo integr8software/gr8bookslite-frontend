@@ -4,6 +4,7 @@ import {
 	TermManagementParentLabel,
 	TermManagementTitle,
 } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+import type { TermManagementPermissions } from "@/app/src/services/modules/maintenance/financial-management/term-management/TermManagementApi";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -12,9 +13,11 @@ import {
 export function TermManagementHeader({
 	onAdd,
 	onImport,
+	permissions,
 }: {
 	onAdd: () => void;
 	onImport: () => void;
+	permissions: TermManagementPermissions;
 }) {
 	return (
 		<ModuleHeader
@@ -31,22 +34,26 @@ export function TermManagementHeader({
 			}
 			actions={
 				<>
-					<button
-						type="button"
-						onClick={onImport}
-						className={`${moduleHeaderActionClassNames.secondary} order-2 lg:order-1`}
-					>
-						<Upload className="h-4 w-4" aria-hidden="true" />
-						Import
-					</button>
-					<button
-						type="button"
-						onClick={onAdd}
-						className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`}
-					>
-						<Plus className="h-4 w-4" aria-hidden="true" />
-						Add Term
-					</button>
+					{permissions.canImport ? (
+						<button
+							type="button"
+							onClick={onImport}
+							className={`${moduleHeaderActionClassNames.secondary} order-2 lg:order-1`}
+						>
+							<Upload className="h-4 w-4" aria-hidden="true" />
+							Import
+						</button>
+					) : null}
+					{permissions.canCreate ? (
+						<button
+							type="button"
+							onClick={onAdd}
+							className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`}
+						>
+							<Plus className="h-4 w-4" aria-hidden="true" />
+							Add Term
+						</button>
+					) : null}
 				</>
 			}
 		/>

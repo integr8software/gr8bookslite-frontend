@@ -9,6 +9,10 @@ export type TermManagement = {
 	datemode: TermManagementDatemode;
 	period: string;
 	status: TermManagementStatus;
+	createdBy?: string;
+	createdAt?: string;
+	updatedBy?: string | null;
+	updatedAt?: string;
 };
 
 export type TermManagementFormValues = {
@@ -30,4 +34,8 @@ export type TermManagementTableColumnKey =
 	| "description"
 	| "datemode"
 	| "period"
-	| "status";
+	| "status"
+	| "createdBy"
+	| "createdAt"
+	| "updatedBy"
+	| "updatedAt";

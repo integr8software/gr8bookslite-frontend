@@ -19,7 +19,7 @@ export const TermManagementTablePaginationStorageKey =
 export const TermManagementTableColumns = [
 	{
 		key: "name",
-		label: "Name",
+		label: "Term Name",
 		className: "w-[20%]",
 	},
 	{
@@ -29,7 +29,7 @@ export const TermManagementTableColumns = [
 	},
 	{
 		key: "datemode",
-		label: "Datemode",
+		label: "Date Mode",
 		className: "w-[13%]",
 	},
 	{
@@ -43,7 +43,27 @@ export const TermManagementTableColumns = [
 		className: "w-[12%]",
 	},
 	{
-		label: "Actions",
+		key: "createdBy",
+		label: "Created By",
+		className: "w-[14%]",
+	},
+	{
+		key: "createdAt",
+		label: "Created At",
+		className: "w-[16%]",
+	},
+	{
+		key: "updatedBy",
+		label: "Updated By",
+		className: "w-[14%]",
+	},
+	{
+		key: "updatedAt",
+		label: "Updated At",
+		className: "w-[16%]",
+	},
+	{
+		label: "Action",
 		className: "w-[16%] text-center",
 	},
 ] as const;

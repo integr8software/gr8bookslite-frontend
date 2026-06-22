@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Save } from "lucide-react";
+import { LoaderCircle, Save } from "lucide-react";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
@@ -14,6 +14,8 @@ type MaintenanceFormDrawerProps = {
 	isReadonly?: boolean;
 	isSaving: boolean;
 	onClose: () => void;
+	savingLabel?: string;
+	submitLabel?: string;
 	title: string;
 };
 
@@ -26,8 +28,14 @@ export function MaintenanceFormDrawer({
 	isReadonly = false,
 	isSaving,
 	onClose,
+	savingLabel = "Saving...",
+	submitLabel = "Save",
 	title,
 }: MaintenanceFormDrawerProps) {
+	const handleClose = () => {
+		if (!isSaving) onClose();
+	};
+
 	return (
 		<ModuleDrawer
 			isOpen={isOpen}
@@ -35,13 +43,13 @@ export function MaintenanceFormDrawer({
 			description={description}
 			eyebrow={eyebrow}
 			maxWidthClassName="max-w-4xl"
-			onClose={onClose}
+			onClose={handleClose}
 			spotlightId="maintenance-add-drawer"
 			footer={
 				<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 					<button
 						type="button"
-						onClick={onClose}
+						onClick={handleClose}
 						disabled={isSaving}
 						className={`${moduleHeaderActionClassNames.secondary} disabled:cursor-not-allowed disabled:opacity-60`}
 					>
@@ -55,8 +63,15 @@ export function MaintenanceFormDrawer({
 							disabled={isSaving}
 							className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
 						>
-							<Save className="h-4 w-4" aria-hidden="true" />
-							{isSaving ? "Saving..." : "Save"}
+							{isSaving ? (
+								<LoaderCircle
+									className="h-4 w-4 animate-spin"
+									aria-hidden="true"
+								/>
+							) : (
+								<Save className="h-4 w-4" aria-hidden="true" />
+							)}
+							{isSaving ? savingLabel : submitLabel}
 						</button>
 					)}
 				</div>

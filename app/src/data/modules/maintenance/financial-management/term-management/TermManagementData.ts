@@ -3,25 +3,6 @@ import type {
 	TermManagementFormValues,
 } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 
-export const MockTermManagements: TermManagement[] = [
-	{
-		id: "term-1",
-		name: "Standard payment terms",
-		description: "Default monthly payment cycle for standard transactions.",
-		datemode: "Month",
-		period: "1",
-		status: "Active",
-	},
-	{
-		id: "term-2",
-		name: "Annual review period",
-		description: "Yearly review cadence for long-running agreements.",
-		datemode: "Year",
-		period: "1",
-		status: "Inactive",
-	},
-];
-
 export const TermManagementInitialFormValues: TermManagementFormValues = {
 	name: "",
 	description: "",

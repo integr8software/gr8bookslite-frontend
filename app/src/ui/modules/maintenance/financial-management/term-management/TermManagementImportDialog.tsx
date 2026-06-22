@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	AlertCircle,
+	AlertTriangle,
+	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
 	Download,
@@ -41,6 +43,7 @@ type ImportProgress = {
 	imported: number;
 	total: number;
 };
+type TermImportMode = "all-valid" | "selected-valid";
 
 const TemplateHeaders = ["Name", "Datemode", "Period"];
 const DefaultColumnIndexes: Record<TermImportColumnId, number> = {
@@ -55,10 +58,12 @@ const MinImportFileSizeBytes = 1;
 const MaxImportFileSizeBytes = 2 * 1024 * 1024;
 
 export function TermManagementImportDialog({
+	existingTerms,
 	isOpen,
 	onClose,
 	onImportTerms,
 }: {
+	existingTerms: TermManagement[];
 	isOpen: boolean;
 	onClose: () => void;
 	onImportTerms: (terms: TermManagement[]) => Promise<TermManagement[]>;
@@ -69,17 +74,31 @@ export function TermManagementImportDialog({
 	const [previewPage, setPreviewPage] = useState(1);
 	const [progress, setProgress] = useState<ImportProgress | null>(null);
 	const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(false);
+	const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
+	const [importMode, setImportMode] = useState<TermImportMode>("all-valid");
 	const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(
 		() => new Set(),
 	);
 	const selectionMenuRef = useRef<HTMLTableCellElement>(null);
+	const importMenuRef = useRef<HTMLDivElement>(null);
+	const existingTermNames = useMemo(
+		() => new Map(
+			existingTerms.map((term) => [normalizeTermName(term.name), term.name]),
+		),
+		[existingTerms],
+	);
 	const validatedRows = useMemo(
-		() => validateTermImportRows(previewRows),
-		[previewRows],
+		() => validateTermImportRows(previewRows, existingTermNames),
+		[existingTermNames, previewRows],
 	);
 	const invalidRows = validatedRows.filter((row) => rowHasErrors(row));
-	const canImport =
-		validatedRows.length > 0 && invalidRows.length === 0 && !progress;
+	const validRows = validatedRows.filter((row) => !rowHasErrors(row));
+	const validSelectedRows = validRows.filter((row) => selectedRowIds.has(row.id));
+	const importableRows =
+		importMode === "selected-valid" ? validSelectedRows : validRows;
+	const canImport = importableRows.length > 0 && !progress;
+	const canImportAllValid = validRows.length > 0 && !progress;
+	const canImportSelectedValid = validSelectedRows.length > 0 && !progress;
 	const totalPages = Math.max(1, Math.ceil(validatedRows.length / PreviewPageSize));
 	const safePreviewPage = Math.min(previewPage, totalPages);
 	const visibleRows = validatedRows.slice(
@@ -120,6 +139,35 @@ export function TermManagementImportDialog({
 		};
 	}, [isSelectionMenuOpen]);
 
+	useEffect(() => {
+		if (!isImportMenuOpen) {
+			return;
+		}
+
+		function closeImportMenu(event: PointerEvent) {
+			if (
+				event.target instanceof Node &&
+				!importMenuRef.current?.contains(event.target)
+			) {
+				setIsImportMenuOpen(false);
+			}
+		}
+
+		function closeImportMenuOnEscape(event: KeyboardEvent) {
+			if (event.key === "Escape") {
+				setIsImportMenuOpen(false);
+			}
+		}
+
+		document.addEventListener("pointerdown", closeImportMenu);
+		document.addEventListener("keydown", closeImportMenuOnEscape);
+
+		return () => {
+			document.removeEventListener("pointerdown", closeImportMenu);
+			document.removeEventListener("keydown", closeImportMenuOnEscape);
+		};
+	}, [isImportMenuOpen]);
+
 	function resetImportState() {
 		if (progress) {
 			return;
@@ -130,6 +178,7 @@ export function TermManagementImportDialog({
 		setPreviewPage(1);
 		setSelectedRowIds(new Set());
 		setIsSelectionMenuOpen(false);
+		setIsImportMenuOpen(false);
 	}
 
 	function previewImportText(text: string, append = false) {
@@ -415,12 +464,30 @@ export function TermManagementImportDialog({
 		previewImportText(text, true);
 	}
 
-	async function handleImport() {
+	function setImportSelection(mode: TermImportMode) {
+		setImportMode(mode);
+		setIsImportMenuOpen(false);
+	}
+
+	async function handleImport(mode = importMode) {
+		const rowsToImport = mode === "selected-valid" ? validSelectedRows : validRows;
+
+		if (mode === "selected-valid" && selectedRowIds.size === 0) {
+			setImportError("Select at least one valid row to import.");
+			return;
+		}
+
+		if (mode === "selected-valid" && rowsToImport.length === 0) {
+			setImportError("Selected rows have errors. Fix them or choose valid rows.");
+			return;
+		}
+
 		if (!canImport) {
 			return;
 		}
 
-		const termsToImport = validatedRows.map((row, index) => ({
+		const importedRowIds = new Set(rowsToImport.map((row) => row.id));
+		const termsToImport = rowsToImport.map((row, index) => ({
 			...row.term,
 			id: `term-import-${Date.now()}-${index}`,
 		}));
@@ -447,8 +514,27 @@ export function TermManagementImportDialog({
 		toast.success(
 			`${termsToImport.length} term ${termsToImport.length === 1 ? "definition" : "definitions"} imported.`,
 		);
-		resetImportState();
-		onClose();
+		const nextRows = renumberImportRows(
+			previewRows.filter((row) => !importedRowIds.has(row.id)),
+		);
+
+		setPreviewRows(nextRows);
+		setSelectedRowIds((current) => {
+			const nextSelected = new Set(current);
+
+			importedRowIds.forEach((rowId) => nextSelected.delete(rowId));
+
+			return nextSelected;
+		});
+		setPreviewPage((page) =>
+			Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))),
+		);
+		setImportError(null);
+
+		if (nextRows.length === 0) {
+			resetImportState();
+			onClose();
+		}
 	}
 
 	return (
@@ -549,19 +635,61 @@ export function TermManagementImportDialog({
 					>
 						Cancel
 					</button>
-					<button
-						type="button"
-						onClick={() => void handleImport()}
-						disabled={!canImport}
-						className="order-1 col-span-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:order-none lg:col-span-1 lg:h-10 lg:w-auto"
+					<div
+						ref={importMenuRef}
+						className="order-1 col-span-2 relative flex w-full lg:order-none lg:col-span-1 lg:w-auto"
 					>
-						{progress ? (
-							<LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-						) : (
-							<Upload className="h-4 w-4" aria-hidden="true" />
-						)}
-						Import Data
-					</button>
+						<button
+							type="button"
+							onClick={() => void handleImport(importMode)}
+							disabled={!canImport}
+							className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-l-md bg-skyblue px-4 text-sm font-semibold text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:h-10 lg:w-auto"
+						>
+							{progress ? (
+								<LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+							) : (
+								<Upload className="h-4 w-4" aria-hidden="true" />
+							)}
+							{importMode === "selected-valid"
+								? "Import Selected"
+								: "Import Data"}
+						</button>
+						<button
+							type="button"
+							onClick={() => setIsImportMenuOpen((isOpen) => !isOpen)}
+							disabled={!canImportAllValid && !canImportSelectedValid}
+							className="inline-flex h-11 w-11 items-center justify-center rounded-r-md border-l border-white/25 bg-skyblue text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:h-10"
+							aria-label="Choose import type"
+							aria-expanded={isImportMenuOpen}
+						>
+							<ChevronDown className="h-4 w-4" aria-hidden="true" />
+						</button>
+						{isImportMenuOpen ? (
+							<div
+								role="menu"
+								className="absolute bottom-full right-0 z-50 mb-1 w-64 overflow-hidden rounded-md border border-darknavy/10 bg-white py-1 text-left text-xs font-semibold text-darknavy shadow-lg"
+							>
+								<button
+									type="button"
+									role="menuitem"
+									onClick={() => setImportSelection("all-valid")}
+									disabled={!canImportAllValid}
+									className="block w-full px-3 py-2 text-left hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
+								>
+									Import all valid rows ({validRows.length})
+								</button>
+								<button
+									type="button"
+									role="menuitem"
+									onClick={() => setImportSelection("selected-valid")}
+									disabled={!canImportSelectedValid}
+									className="block w-full border-t border-darknavy/8 px-3 py-2 text-left hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
+								>
+									Import selected valid rows ({validSelectedRows.length})
+								</button>
+							</div>
+						) : null}
+					</div>
 				</div>
 			}
 		>
@@ -800,6 +928,7 @@ function TermImportPreviewTableRow({
 					<EditableImportSelect
 						value={row.term.datemode}
 						errors={row.cellErrors.datemode}
+						warnings={row.cellWarnings.datemode}
 						options={TermManagementDatemodeOptions}
 						onChange={(value) => onUpdateCell(row.id, "datemode", value)}
 						onPaste={(text) => onPasteCell(row.id, "datemode", text)}
@@ -843,8 +972,10 @@ function EditableImportCell({
 	onChange: (value: string) => void;
 	onPaste: (text: string) => void;
 }) {
+	const messages = [...(errors ?? []), ...(warnings ?? [])];
+
 	return (
-		<label className="block">
+		<label className="relative block">
 			<input
 				type={type}
 				min={type === "number" ? 0 : undefined}
@@ -888,36 +1019,41 @@ function EditableImportCell({
 						event.currentTarget.blur();
 					}
 				}}
-				title={warnings?.join(" ")}
+				title={messages.join(" ")}
 				className={joinClasses(
 					"h-10 w-full rounded-md border bg-white px-2 text-sm font-medium text-darknavy outline-none transition focus:ring-2",
+					messages.length ? "pr-9" : "",
 					errors?.length
 						? "border-coralpink/45 focus:border-coralpink focus:ring-coralpink/15"
 						: warnings?.length
 							? "border-amber-400/70 focus:border-amber-500 focus:ring-amber-500/15"
-							: "border-darknavy/12 focus:border-skyblue focus:ring-skyblue/15",
+						: "border-darknavy/12 focus:border-skyblue focus:ring-skyblue/15",
 				)}
 			/>
-			<CellMessages errors={errors} />
+			<CellIssueIcon errors={errors} warnings={warnings} />
 		</label>
 	);
 }
 
 function EditableImportSelect<TOption extends string>({
 	errors,
+	warnings,
 	options,
 	value,
 	onChange,
 	onPaste,
 }: {
 	errors?: string[];
+	warnings?: string[];
 	options: readonly TOption[];
 	value: string;
 	onChange: (value: string) => void;
 	onPaste: (text: string) => void;
 }) {
+	const messages = [...(errors ?? []), ...(warnings ?? [])];
+
 	return (
-		<label className="block">
+		<label className="relative block">
 			<select
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
@@ -929,11 +1065,15 @@ function EditableImportSelect<TOption extends string>({
 						onPaste(text);
 					}
 				}}
+				title={messages.join(" ")}
 				className={joinClasses(
 					"h-10 w-full rounded-md border bg-white px-2 text-sm font-medium text-darknavy outline-none transition focus:ring-2",
+					messages.length ? "pr-9" : "",
 					errors?.length
 						? "border-coralpink/45 focus:border-coralpink focus:ring-coralpink/15"
-						: "border-darknavy/12 focus:border-skyblue focus:ring-skyblue/15",
+						: warnings?.length
+							? "border-amber-400/70 focus:border-amber-500 focus:ring-amber-500/15"
+							: "border-darknavy/12 focus:border-skyblue focus:ring-skyblue/15",
 				)}
 			>
 				{options.map((option) => (
@@ -942,25 +1082,40 @@ function EditableImportSelect<TOption extends string>({
 					</option>
 				))}
 			</select>
-			<CellMessages errors={errors} />
+			<CellIssueIcon errors={errors} warnings={warnings} />
 		</label>
 	);
 }
 
-function CellMessages({
+function CellIssueIcon({
 	errors,
+	warnings,
 }: {
 	errors?: string[];
+	warnings?: string[];
 }) {
-	if (errors?.length) {
-		return (
-			<span className="mt-1 block text-xs font-semibold leading-4 text-coralpink">
-				{errors.join(" ")}
-			</span>
-		);
+	const messages = [...(errors ?? []), ...(warnings ?? [])];
+
+	if (messages.length === 0) {
+		return null;
 	}
 
-	return null;
+	const hasErrors = Boolean(errors?.length);
+
+	return (
+		<span
+			className={joinClasses(
+				"absolute right-2 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full border bg-white",
+				hasErrors
+					? "border-coralpink/45 text-coralpink"
+					: "border-amber-400/70 text-amber-600",
+			)}
+			title={messages.join(" ")}
+			aria-label={messages.join(" ")}
+		>
+			<AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+		</span>
+	);
 }
 
 function createBlankImportRow(rowNumber: number): TermImportPreviewRow {
@@ -1171,7 +1326,10 @@ function parseTermImportText(
 		});
 }
 
-function validateTermImportRows(rows: TermImportPreviewRow[]) {
+function validateTermImportRows(
+	rows: TermImportPreviewRow[],
+	existingTermNames: Map<string, string>,
+) {
 	const importedNameCounts = new Map<string, number>();
 
 	rows.forEach((row) => {
@@ -1196,6 +1354,15 @@ function validateTermImportRows(rows: TermImportPreviewRow[]) {
 			cellErrors.name = ["Name is required."];
 		}
 
+		const existingTermName = existingTermNames.get(normalizedName);
+
+		if (existingTermName) {
+			cellErrors.name = [
+				...(cellErrors.name ?? []),
+				`Term already exists: ${existingTermName}.`,
+			];
+		}
+
 		if (!TermManagementDatemodeOptions.includes(row.term.datemode)) {
 			cellErrors.datemode = ["Datemode must be Day, Month, or Year."];
 		}
@@ -1215,7 +1382,10 @@ function validateTermImportRows(rows: TermImportPreviewRow[]) {
 		}
 
 		if (normalizedName && (importedNameCounts.get(normalizedName) ?? 0) > 1) {
-			rowErrors.push("Duplicate name in import.");
+			cellErrors.name = [
+				...(cellErrors.name ?? []),
+				"Duplicate name in import.",
+			];
 		}
 
 		return { ...row, cellErrors, cellWarnings, rowErrors };

@@ -49,17 +49,17 @@ export const TermManagementTableColumns = [
 	},
 	{
 		key: "createdAt",
-		label: "Created At",
+		label: "Date Created",
 		className: "w-[16%]",
 	},
 	{
 		key: "updatedBy",
-		label: "Updated By",
+		label: "Modified By",
 		className: "w-[14%]",
 	},
 	{
 		key: "updatedAt",
-		label: "Updated At",
+		label: "Date Modified",
 		className: "w-[16%]",
 	},
 	{

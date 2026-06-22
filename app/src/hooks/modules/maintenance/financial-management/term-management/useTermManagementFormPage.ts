@@ -103,6 +103,8 @@ export function useTermManagementFormPage(
 				return;
 			} else {
 				await addTerm(values);
+				setValues(TermManagementInitialFormValues);
+				setErrors({});
 			}
 
 			options.onSaved?.();

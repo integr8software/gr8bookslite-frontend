@@ -79,7 +79,7 @@ export function TermManagementListPage() {
 	const hasActiveFilters =
 		page.query.trim().length > 0 ||
 		page.datemodeFilter !== "All" ||
-		Boolean(page.statusFilter);
+		page.statusFilter !== "Active";
 
 	return (
 		<section className="grid gap-5">
@@ -120,6 +120,7 @@ export function TermManagementListPage() {
 			/>
 			{page.permissions.canImport ? (
 				<TermManagementImportDialog
+					existingTerms={page.terms}
 					isOpen={isImportOpen}
 					onClose={() => setIsImportOpen(false)}
 					onImportTerms={page.addTerms}

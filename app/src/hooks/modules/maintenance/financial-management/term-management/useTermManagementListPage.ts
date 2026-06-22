@@ -23,7 +23,7 @@ export function useTermManagementListPage() {
 	const refreshTerms = useTermManagementStore((state) => state.refreshTerms);
 	const [datemodeFilter, setDatemodeFilter] = useState("All");
 	const [statusFilter, setStatusFilter] =
-		useState<TermManagementStatusFilter>("");
+		useState<TermManagementStatusFilter>("Active");
 	const [query, setQuery] = useState("");
 	const [pendingStatusTerm, setPendingStatusTerm] =
 		useState<TermManagement | null>(null);
@@ -53,7 +53,7 @@ export function useTermManagementListPage() {
 
 	function resetFilters() {
 		setDatemodeFilter("All");
-		setStatusFilter("");
+		setStatusFilter("Active");
 		setQuery("");
 	}
 

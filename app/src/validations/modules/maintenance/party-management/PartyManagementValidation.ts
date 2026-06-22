@@ -143,46 +143,6 @@ export const PartyInformationFormSchema = z
       });
     }
 
-    if (
-      values.partyTypes.includes("Customer") &&
-      !values.defaultReceivableAccount
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Select the default receivable account.",
-        path: ["defaultReceivableAccount"],
-      });
-    }
-
-    if (values.partyTypes.includes("Vendor") && !values.defaultPayableAccount) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Select the default payable account.",
-        path: ["defaultPayableAccount"],
-      });
-    }
-
-    if (
-      values.partyTypes.includes("Employee") &&
-      !values.employeeReceivableAccount
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Select the employee receivable account.",
-        path: ["employeeReceivableAccount"],
-      });
-    }
-
-    if (
-      values.partyTypes.includes("Employee") &&
-      !values.employeeAdvanceAccount
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Select the employee advance account.",
-        path: ["employeeAdvanceAccount"],
-      });
-    }
   });
 
 export function validatePartyInformationForm(

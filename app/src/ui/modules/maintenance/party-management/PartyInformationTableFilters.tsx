@@ -138,6 +138,5 @@ const PartyInformationExportColumns: ModuleTableExportColumn<PartyInformationTab
 		{ header: "Terms", value: "termName" },
 		{ header: "Default Receivable Account", value: "defaultReceivableAccount" },
 		{ header: "Default Payable Account", value: "defaultPayableAccount" },
-		{ header: "Employee Receivable Account", value: "employeeReceivableAccount" },
-		{ header: "Employee Advance Account", value: "employeeAdvanceAccount" },
+		{ header: "Default Advance", value: "employeeAdvanceAccount" },
 	];

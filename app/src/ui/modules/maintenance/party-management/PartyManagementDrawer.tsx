@@ -7,6 +7,7 @@ import {
 	type FormEvent,
 } from "react";
 import { PartyTypeOptions } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
+import { formatTermDuration } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementDisplay";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
 	PartyInformationInitialFormValues,
@@ -27,6 +28,10 @@ import type {
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
+import type {
+	AddressAutocompleteDetails,
+	AddressAutocompleteItem,
+} from "@/app/src/services/shared/address/AddressReferenceApi";
 
 const PartyDrawerFormId = "party-management-drawer-form";
 
@@ -59,9 +64,14 @@ export function PartyManagementDrawer({
 		values.addresses[0] ??
 		values.address;
 	const addressOptions = usePhilippineAddressOptions({
+		barangayCode: activeAddress.barangayCode,
+		barangayName: activeAddress.barangay,
 		cityMunicipalityCode: activeAddress.cityMunicipalityCode,
+		cityMunicipalityName: activeAddress.cityMunicipality,
 		provinceCode: activeAddress.provinceCode,
+		provinceName: activeAddress.province,
 		regionCode: activeAddress.regionCode,
+		regionName: activeAddress.region,
 	});
 	const isClassificationSelected = Boolean(values.classification);
 	const atcOptions = useMemo(
@@ -77,7 +87,7 @@ export function PartyManagementDrawer({
 			terms
 				.filter((term) => term.status === "Active")
 				.map((term) => ({
-					description: `${term.period} ${term.datemode.toLowerCase()}${term.period === "1" ? "" : "s"}`,
+					description: formatTermDuration(term),
 					name: term.name,
 					value: term.id,
 				})),
@@ -167,42 +177,6 @@ export function PartyManagementDrawer({
 		setErrors((current) => ({ ...current, atcCode: undefined }));
 	}
 
-	function selectRegion(value: string | string[]) {
-		if (!isClassificationSelected) {
-			return;
-		}
-
-		const code = getSingleSelectedValue(value);
-		const option = addressOptions.regionOptions.find(
-			(region) => region.value === code,
-		);
-
-		setValues((current) => ({
-			...current,
-			addresses: current.addresses.map((address) =>
-				address.id === current.activeAddressId
-					? {
-							...address,
-				barangay: "",
-				barangayCode: "",
-				cityMunicipality: "",
-				cityMunicipalityCode: "",
-				province: "",
-				provinceCode: "",
-				region: option?.name ?? "",
-				regionCode: code,
-						}
-					: address,
-			),
-		}));
-		clearAddressErrors([
-			"regionCode",
-			"provinceCode",
-			"cityMunicipalityCode",
-			"barangayCode",
-		]);
-	}
-
 	function selectProvince(value: string | string[]) {
 		if (!isClassificationSelected) {
 			return;
@@ -225,11 +199,77 @@ export function PartyManagementDrawer({
 				cityMunicipalityCode: "",
 				province: option?.name ?? "",
 				provinceCode: code,
+				region: option?.regionName ?? "",
+				regionCode: option?.regionCode ?? "",
 						}
 					: address,
 			),
 		}));
-		clearAddressErrors(["provinceCode", "cityMunicipalityCode", "barangayCode"]);
+		clearAddressErrors([
+			"regionCode",
+			"provinceCode",
+			"cityMunicipalityCode",
+			"barangayCode",
+		]);
+	}
+
+	function selectAutocompleteAddress(
+		address: AddressAutocompleteItem,
+		details?: AddressAutocompleteDetails,
+	) {
+		if (!isClassificationSelected) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			addresses: current.addresses.map((currentAddress) =>
+				currentAddress.id === current.activeAddressId
+					? {
+							...currentAddress,
+							addressLine1:
+								details?.addressLine1 ?? currentAddress.addressLine1,
+							addressLine2:
+								details?.addressLine2 ?? currentAddress.addressLine2,
+							barangay: address.barangay.name,
+							barangayCode: address.barangay.code,
+							cityMunicipality: address.cityMunicipality.name,
+							cityMunicipalityCode: address.cityMunicipality.code,
+							province: address.province.name,
+							provinceCode: address.province.code,
+							region: address.region.name,
+							regionCode: address.region.code,
+						}
+					: currentAddress,
+			),
+		}));
+		clearAddressErrors([
+			"regionCode",
+			"provinceCode",
+			"cityMunicipalityCode",
+			"barangayCode",
+		]);
+	}
+
+	function syncAutocompleteAddressDetails(details: AddressAutocompleteDetails) {
+		if (!isClassificationSelected) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			addresses: current.addresses.map((currentAddress) =>
+				currentAddress.id === current.activeAddressId
+					? {
+							...currentAddress,
+							addressLine1:
+								details.addressLine1 ?? currentAddress.addressLine1,
+							addressLine2:
+								details.addressLine2 ?? currentAddress.addressLine2,
+						}
+					: currentAddress,
+			),
+		}));
 	}
 
 	function selectCityMunicipality(value: string | string[]) {
@@ -294,85 +334,6 @@ export function PartyManagementDrawer({
 
 			return nextErrors;
 		});
-	}
-
-	function addAddress() {
-		const id = `address-${Date.now().toString(36)}`;
-		setValues((current) => ({
-			...current,
-			activeAddressId: id,
-			addresses: [
-				...current.addresses,
-				{
-					id,
-					addressName: `Address ${current.addresses.length + 1}`,
-					addressLine1: "",
-					addressLine2: "",
-					barangay: "",
-					barangayCode: "",
-					cityMunicipality: "",
-					cityMunicipalityCode: "",
-					isBilling: false,
-					isDefault: false,
-					isDelivery: false,
-					province: "",
-					provinceCode: "",
-					region: "",
-					regionCode: "",
-				},
-			],
-		}));
-	}
-
-	function removeAddress(addressId: string) {
-		setValues((current) => {
-			if (current.addresses.length <= 1) {
-				return current;
-			}
-
-			const nextAddresses = current.addresses.filter(
-				(address) => address.id !== addressId,
-			);
-
-			return {
-				...current,
-				activeAddressId: nextAddresses[0]?.id ?? "",
-				addresses: nextAddresses.some((address) => address.isDefault)
-					? nextAddresses
-					: nextAddresses.map((address, index) => ({
-							...address,
-							isDefault: index === 0,
-						})),
-			};
-		});
-	}
-
-	function selectAddress(addressId: string) {
-		setValues((current) => ({ ...current, activeAddressId: addressId }));
-	}
-
-	function setDefaultAddress(addressId: string) {
-		setValues((current) => ({
-			...current,
-			activeAddressId: addressId,
-			addresses: current.addresses.map((address) => ({
-				...address,
-				isDefault: address.id === addressId,
-			})),
-		}));
-	}
-
-	function updateAddressMeta(
-		addressId: string,
-		field: "addressName" | "isBilling" | "isDelivery",
-		value: string | boolean,
-	) {
-		setValues((current) => ({
-			...current,
-			addresses: current.addresses.map((address) =>
-				address.id === addressId ? { ...address, [field]: value } : address,
-			),
-		}));
 	}
 
 	function selectTerm(value: string | string[]) {
@@ -444,20 +405,16 @@ export function PartyManagementDrawer({
 					partyTypeOptions={PartyTypeOptions}
 					termOptions={termOptions}
 					values={values}
-					onAddAddress={addAddress}
 					onAddressInputChange={handleAddressInputChange}
 					onInputChange={handleInputChange}
 					onPartyTypesChange={handlePartyTypesChange}
-					onRemoveAddress={removeAddress}
-					onSelectAddress={selectAddress}
 					onSelectBarangay={selectBarangay}
 					onSelectAtcCode={selectAtcCode}
+					onSelectAutocompleteAddress={selectAutocompleteAddress}
+					onSyncAutocompleteAddressDetails={syncAutocompleteAddressDetails}
 					onSelectCityMunicipality={selectCityMunicipality}
 					onSelectProvince={selectProvince}
-					onSelectRegion={selectRegion}
 					onSelectTerm={selectTerm}
-					onSetDefaultAddress={setDefaultAddress}
-					onUpdateAddressMeta={updateAddressMeta}
 					onUpdateField={updateField}
 				/>
 			</div>

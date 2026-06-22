@@ -184,6 +184,7 @@ export function TermManagementImportDialog({
 	function previewImportText(text: string, append = false) {
 		try {
 			let skippedCount = 0;
+			let nextRowCount = 0;
 
 			if (append) {
 				const parsedRows = parseTermImportText(
@@ -198,6 +199,7 @@ export function TermManagementImportDialog({
 				const nextRows = renumberImportRows([...previewRows, ...uniqueRows]);
 
 				skippedCount = filteredRows.skippedCount;
+				nextRowCount = nextRows.length;
 				setPreviewRows(nextRows);
 				setSelectedRowIds(new Set());
 				setPreviewPage(
@@ -212,13 +214,16 @@ export function TermManagementImportDialog({
 				const uniqueRows = filteredRows.rows;
 
 				skippedCount = filteredRows.skippedCount;
-				setPreviewRows(renumberImportRows(uniqueRows));
+				const nextRows = renumberImportRows(uniqueRows);
+
+				nextRowCount = nextRows.length;
+				setPreviewRows(nextRows);
 				setPreviewPage(1);
 				setSelectedRowIds(new Set());
 			}
 
 			setImportError(
-				skippedCount > 0
+				skippedCount > 0 && nextRowCount > 0
 					? `${skippedCount} duplicate ${skippedCount === 1 ? "row was" : "rows were"} skipped.`
 					: null,
 			);
@@ -249,6 +254,7 @@ export function TermManagementImportDialog({
 			previewRows.filter((row) => !selectedRowIds.has(row.id)),
 		);
 
+		setImportError(null);
 		setPreviewRows(nextRows);
 		setSelectedRowIds(new Set());
 		setPreviewPage((page) =>
@@ -869,8 +875,8 @@ function TermImportPreviewTableRow({
 	const stickyCellBackground = isSelected
 		? "bg-skyblue/10"
 		: rowHasErrors(row)
-		? "bg-coralpink/[0.025]"
-		: "bg-white";
+			? "bg-coralpink/[0.025]"
+			: "bg-white";
 
 	return (
 		<>
@@ -885,20 +891,20 @@ function TermImportPreviewTableRow({
 			>
 				<td
 					className={joinClasses(
-						"sticky left-0 z-10 w-16 px-2 py-2 align-top font-semibold",
+						"sticky left-0 z-10 w-16 px-2 py-2 align-middle font-semibold",
 						stickyCellBackground,
 					)}
 				>
 					<div className="flex items-center gap-2">
 						<input
-						type="checkbox"
-						checked={isSelected}
-						onClick={(event) => event.stopPropagation()}
-						onChange={(event) =>
-							onToggleSelected(row.id, event.target.checked)
-						}
-						aria-label={`Select row ${row.rowNumber}`}
-						className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+							type="checkbox"
+							checked={isSelected}
+							onClick={(event) => event.stopPropagation()}
+							onChange={(event) =>
+								onToggleSelected(row.id, event.target.checked)
+							}
+							aria-label={`Select row ${row.rowNumber}`}
+							className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
 						/>
 						<button
 							type="button"
@@ -912,7 +918,7 @@ function TermImportPreviewTableRow({
 				</td>
 				<td
 					className={joinClasses(
-						"sticky left-16 z-10 min-w-56 px-3 py-2 align-top",
+						"sticky left-16 z-10 min-w-56 px-3 py-2 align-middle",
 						stickyCellBackground,
 					)}
 				>
@@ -924,7 +930,7 @@ function TermImportPreviewTableRow({
 						onPaste={(text) => onPasteCell(row.id, "name", text)}
 					/>
 				</td>
-				<td className="px-3 py-2 align-top">
+				<td className="px-3 py-2 align-middle">
 					<EditableImportSelect
 						value={row.term.datemode}
 						errors={row.cellErrors.datemode}
@@ -934,7 +940,7 @@ function TermImportPreviewTableRow({
 						onPaste={(text) => onPasteCell(row.id, "datemode", text)}
 					/>
 				</td>
-				<td className="px-3 py-2 align-top">
+				<td className="px-3 py-2 align-middle">
 					<EditableImportCell
 						type="number"
 						value={row.term.period}
@@ -1027,7 +1033,7 @@ function EditableImportCell({
 						? "border-coralpink/45 focus:border-coralpink focus:ring-coralpink/15"
 						: warnings?.length
 							? "border-amber-400/70 focus:border-amber-500 focus:ring-amber-500/15"
-						: "border-darknavy/12 focus:border-skyblue focus:ring-skyblue/15",
+							: "border-darknavy/12 focus:border-skyblue focus:ring-skyblue/15",
 				)}
 			/>
 			<CellIssueIcon errors={errors} warnings={warnings} />

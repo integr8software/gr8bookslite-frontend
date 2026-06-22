@@ -54,6 +54,11 @@ export type AddressAutocompleteItem = {
 	};
 };
 
+export type AddressAutocompleteDetails = {
+	addressLine1?: string;
+	addressLine2?: string;
+};
+
 export const AddressReferenceQueryKeys = {
 	autocomplete: (query: string, regionCode: string) =>
 		["address-reference", "autocomplete", query, regionCode] as const,

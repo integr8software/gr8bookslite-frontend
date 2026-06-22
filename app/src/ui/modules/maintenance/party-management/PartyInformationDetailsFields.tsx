@@ -1,10 +1,8 @@
-import { useState } from "react";
-import type {
-	ChangeEventHandler,
-	MouseEvent as ReactMouseEvent,
-	ReactNode,
+import {
+	type ChangeEventHandler,
+	type MouseEvent as ReactMouseEvent,
+	type ReactNode,
 } from "react";
-import { Plus, Trash2 } from "lucide-react";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
 	PartyClassificationOptions,
@@ -26,8 +24,18 @@ import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppCollapsibleSection } from "@/app/src/ui/shared/app/AppCollapsibleSection";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
-import { AppSearchSuggestions } from "@/app/src/ui/shared/search-suggestions/AppSearchSuggestions";
+import type {
+	AddressAutocompleteDetails,
+	AddressAutocompleteItem,
+} from "@/app/src/services/shared/address/AddressReferenceApi";
+import { AppAddressAutocomplete } from "@/app/src/ui/shared/address/AppAddressAutocomplete";
+
+type PartyProvinceOption = AppAdvancedDropdownOption & {
+	regionCode: string;
+	regionName: string;
+};
 
 type PartyAddressOptionSet = {
 	barangayOptions: AppAdvancedDropdownOption[];
@@ -35,10 +43,7 @@ type PartyAddressOptionSet = {
 	isBarangaysLoading: boolean;
 	isCitiesMunicipalitiesLoading: boolean;
 	isProvincesLoading: boolean;
-	isRegionsLoading: boolean;
-	provinceOptions: AppAdvancedDropdownOption[];
-	regionOptions: AppAdvancedDropdownOption[];
-	requiresProvince: boolean;
+	provinceOptions: PartyProvinceOption[];
 };
 
 export function PartyInformationDetailsFields({
@@ -52,20 +57,16 @@ export function PartyInformationDetailsFields({
 	termOptions,
 	values,
 	onAddressInputChange,
-	onAddAddress,
 	onInputChange,
 	onPartyTypesChange,
-	onRemoveAddress,
 	onSelectBarangay,
 	onSelectAtcCode,
+	onSelectAutocompleteAddress,
+	onSyncAutocompleteAddressDetails,
 	onSelectCityMunicipality,
 	onSelectProvince,
-	onSelectRegion,
-	onSelectAddress,
 	onUpdateField,
-	onSetDefaultAddress,
 	onSelectTerm,
-	onUpdateAddressMeta,
 }: {
 	addressOptions: PartyAddressOptionSet;
 	accountOptions: ModuleChartAccount[];
@@ -77,27 +78,24 @@ export function PartyInformationDetailsFields({
 	termOptions: AppAdvancedDropdownOption[];
 	values: PartyInformationFormValues;
 	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
-	onAddAddress: () => void;
 	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
 	onPartyTypesChange: (value: string | string[]) => void;
-	onRemoveAddress: (addressId: string) => void;
 	onSelectAtcCode: (value: string | string[]) => void;
+	onSelectAutocompleteAddress: (
+		address: AddressAutocompleteItem,
+		details?: AddressAutocompleteDetails,
+	) => void;
+	onSyncAutocompleteAddressDetails?: (
+		details: AddressAutocompleteDetails,
+	) => void;
 	onSelectBarangay: (value: string | string[]) => void;
 	onSelectCityMunicipality: (value: string | string[]) => void;
 	onSelectProvince: (value: string | string[]) => void;
-	onSelectRegion: (value: string | string[]) => void;
-	onSelectAddress: (addressId: string) => void;
 	onUpdateField: <TKey extends keyof PartyInformationFormValues>(
 		field: TKey,
 		value: PartyInformationFormValues[TKey],
 	) => void;
-	onSetDefaultAddress: (addressId: string) => void;
 	onSelectTerm: (value: string | string[]) => void;
-	onUpdateAddressMeta: (
-		addressId: string,
-		field: "addressName" | "isBilling" | "isDelivery",
-		value: string | boolean,
-	) => void;
 }) {
 	const isDetailsDisabled = isReadonly || !isClassificationSelected;
 	const showBusinessNameFields = values.classification !== "Individual";
@@ -157,7 +155,7 @@ export function PartyInformationDetailsFields({
 								isSearchable={false}
 								options={partyTypeSelectOptions}
 								placeholder="Select party type"
-								removeSelectionOnSelectedOptionClick={false}
+								removeSelectionOnSelectedOptionClick
 								selectionMode="multiple"
 								showSelectionRemoveButton={false}
 								value={values.partyTypes}
@@ -291,26 +289,21 @@ export function PartyInformationDetailsFields({
 
 				<AddressSection
 					address={activeAddress}
-					addresses={values.addresses}
 					disabled={isDetailsDisabled}
 					errors={errors}
 					options={addressOptions}
 					title="Address"
-					onAddAddress={onAddAddress}
 					onAddressInputChange={onAddressInputChange}
-					onRemoveAddress={onRemoveAddress}
 					onSelectBarangay={onSelectBarangay}
+					onSelectAutocompleteAddress={onSelectAutocompleteAddress}
+					onSyncAutocompleteAddressDetails={onSyncAutocompleteAddressDetails}
 					onSelectCityMunicipality={onSelectCityMunicipality}
 					onSelectProvince={onSelectProvince}
-					onSelectRegion={onSelectRegion}
-					onSelectAddress={onSelectAddress}
-					onSetDefaultAddress={onSetDefaultAddress}
-					onUpdateAddressMeta={onUpdateAddressMeta}
 				/>
 
 				<div className="grid gap-4">
 					<SectionHeading title="Tax Information" />
-					<div className="grid gap-4 lg:grid-cols-3">
+					<div className="grid gap-4 lg:grid-cols-2">
 						<Field label="Tax Identification Number (TIN)" error={errors.tin}>
 							<input
 								name="tin"
@@ -322,6 +315,17 @@ export function PartyInformationDetailsFields({
 								disabled={isDetailsDisabled}
 								className={fieldClassName}
 								placeholder="000-000-000-000"
+							/>
+						</Field>
+						<Field label="Default Terms">
+							<AppAdvancedDropdown
+								disabled={isDetailsDisabled}
+								emptyMessage="No Active Terms Found."
+								options={termOptions}
+								placeholder="Select terms"
+								searchPlaceholder="Search Terms"
+								value={values.termId}
+								onChange={onSelectTerm}
 							/>
 						</Field>
 						<Field label="VAT Registration Type">
@@ -349,17 +353,6 @@ export function PartyInformationDetailsFields({
 								searchPlaceholder="Search ATC code, label, or description"
 								value={values.atcCode}
 								onChange={onSelectAtcCode}
-							/>
-						</Field>
-						<Field label="Terms">
-							<AppAdvancedDropdown
-								disabled={isDetailsDisabled}
-								emptyMessage="No active terms found."
-								options={termOptions}
-								placeholder="Select terms"
-								searchPlaceholder="Search terms"
-								value={values.termId}
-								onChange={onSelectTerm}
 							/>
 						</Field>
 					</div>
@@ -395,22 +388,31 @@ function AccountFields({
 	const isCustomer = values.partyTypes.includes("Customer");
 	const isVendor = values.partyTypes.includes("Vendor");
 	const isEmployee = values.partyTypes.includes("Employee");
-
-	if (!isCustomer && !isVendor && !isEmployee) {
-		return null;
-	}
+	const hasAccountingFields = isCustomer || isVendor || isEmployee;
+	const isAccountingDisabled = disabled || !hasAccountingFields;
 
 	return (
-		<div className="grid gap-4 md:grid-cols-2">
-			{isCustomer ? (
-				<Field
-					label="Default Receivable Account"
+		<div className="grid gap-4">
+			<div className="h-px bg-darknavy/10" aria-hidden="true" />
+			<AppCollapsibleSection
+				badge="Advanced"
+				description={
+					hasAccountingFields
+						? "Optional account defaults; system defaults are used when blank."
+						: "Select a party type to enable account overrides."
+				}
+				disabled={isAccountingDisabled}
+				title="Accounting"
+				contentClassName="grid gap-4 md:grid-cols-2"
+			>
+				{isCustomer ? (
+					<Field
+						label="Default Receivable Account"
 					error={errors.defaultReceivableAccount}
-					required
 				>
 					<ChartAccountDropdown
-						accounts={accountOptions}
-						disabled={disabled}
+							accounts={accountOptions}
+							disabled={isAccountingDisabled}
 						value={values.defaultReceivableAccount}
 						onChange={(value) =>
 							onUpdateField("defaultReceivableAccount", value)
@@ -422,211 +424,99 @@ function AccountFields({
 				<Field
 					label="Default Payable Account"
 					error={errors.defaultPayableAccount}
-					required
 				>
 					<ChartAccountDropdown
-						accounts={accountOptions}
-						disabled={disabled}
+							accounts={accountOptions}
+							disabled={isAccountingDisabled}
 						value={values.defaultPayableAccount}
 						onChange={(value) => onUpdateField("defaultPayableAccount", value)}
 					/>
 				</Field>
 			) : null}
 			{isEmployee ? (
-				<>
-					<Field
-						label="Employee Receivable Account"
-						error={errors.employeeReceivableAccount}
-						required
-					>
+				<Field
+					label="Default Advance"
+					error={errors.employeeAdvanceAccount}
+				>
 						<ChartAccountDropdown
 							accounts={accountOptions}
-							disabled={disabled}
-							value={values.employeeReceivableAccount}
-							onChange={(value) =>
-								onUpdateField("employeeReceivableAccount", value)
-							}
+							disabled={isAccountingDisabled}
+						value={values.employeeAdvanceAccount}
+						onChange={(value) =>
+							onUpdateField("employeeAdvanceAccount", value)
+						}
 						/>
 					</Field>
-					<Field
-						label="Employee Advance Account"
-						error={errors.employeeAdvanceAccount}
-						required
-					>
-						<ChartAccountDropdown
-							accounts={accountOptions}
-							disabled={disabled}
-							value={values.employeeAdvanceAccount}
-							onChange={(value) =>
-								onUpdateField("employeeAdvanceAccount", value)
-							}
-						/>
-					</Field>
-				</>
-			) : null}
+				) : null}
+			</AppCollapsibleSection>
 		</div>
 	);
 }
 
 function AddressSection({
 	address,
-	addresses,
 	disabled,
 	errors,
 	options,
 	title,
-	onAddAddress,
 	onAddressInputChange,
-	onRemoveAddress,
 	onSelectBarangay,
+	onSelectAutocompleteAddress,
+	onSyncAutocompleteAddressDetails,
 	onSelectCityMunicipality,
 	onSelectProvince,
-	onSelectRegion,
-	onSelectAddress,
-	onSetDefaultAddress,
-	onUpdateAddressMeta,
 }: {
 	address: PartyAddress;
-	addresses: PartyAddress[];
 	disabled: boolean;
 	errors: PartyInformationFormErrors;
 	options: PartyAddressOptionSet;
 	title: string;
-	onAddAddress: () => void;
 	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
-	onRemoveAddress: (addressId: string) => void;
 	onSelectBarangay: (value: string | string[]) => void;
+	onSelectAutocompleteAddress: (
+		address: AddressAutocompleteItem,
+		details?: AddressAutocompleteDetails,
+	) => void;
+	onSyncAutocompleteAddressDetails?: (
+		details: AddressAutocompleteDetails,
+	) => void;
 	onSelectCityMunicipality: (value: string | string[]) => void;
 	onSelectProvince: (value: string | string[]) => void;
-	onSelectRegion: (value: string | string[]) => void;
-	onSelectAddress: (addressId: string) => void;
-	onSetDefaultAddress: (addressId: string) => void;
-	onUpdateAddressMeta: (
-		addressId: string,
-		field: "addressName" | "isBilling" | "isDelivery",
-		value: string | boolean,
-	) => void;
 }) {
 	const isProvinceDisabled =
-		disabled ||
-		!address.regionCode ||
-		options.isProvincesLoading ||
-		(!options.requiresProvince && options.provinceOptions.length === 0);
+		disabled || options.isProvincesLoading;
 	const isCityMunicipalityDisabled =
 		disabled ||
-		!address.regionCode ||
 		options.isCitiesMunicipalitiesLoading ||
-		(options.requiresProvince && !address.provinceCode);
+		!address.provinceCode;
 	const isBarangayDisabled =
 		disabled || !address.cityMunicipalityCode || options.isBarangaysLoading;
 
 	return (
 		<div className="grid gap-4">
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<SectionHeading title={title} />
-				<button
-					type="button"
-					disabled={disabled}
-					onClick={onAddAddress}
-					className="inline-flex h-10 items-center gap-2 rounded-md border border-darknavy/10 px-3 text-sm font-semibold text-darknavy transition hover:bg-skyblue/10 disabled:cursor-not-allowed disabled:opacity-45"
-				>
-					<Plus className="h-4 w-4" aria-hidden="true" />
-					Add Address
-				</button>
-			</div>
+			<SectionHeading title={title} />
 			{errors.addresses ? (
 				<span className="text-xs font-medium text-coralpink">
 					{errors.addresses}
 				</span>
 			) : null}
-			<AddressSelector
-				activeAddressId={address.id}
-				addresses={addresses}
+			<AppAddressAutocomplete
 				disabled={disabled}
-				onRemoveAddress={onRemoveAddress}
-				onSelectAddress={onSelectAddress}
+				id={`party-address-autocomplete-${address.id}`}
+				syncDetailsOnQueryChange
+				value={address}
+				onDetailsChange={onSyncAutocompleteAddressDetails}
+				onSelect={onSelectAutocompleteAddress}
 			/>
 			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-				<AddressInput
-					disabled={disabled}
-					label="Address Name"
-					name="addressName"
-					placeholder="Main office"
-					value={address.addressName}
-					onChange={onAddressInputChange}
-				/>
-				<div className="grid gap-2">
-					<span className="mb-2 block text-sm font-semibold text-darknavy">
-						Classifications
-					</span>
-					<div className="flex h-11 items-center gap-3 rounded-lg border border-darknavy/10 bg-white px-3">
-						<label className="flex items-center gap-2 text-sm font-medium text-darknavy/75">
-							<input
-								type="checkbox"
-								checked={address.isDefault}
-								disabled={disabled || address.isDefault}
-								onChange={() => onSetDefaultAddress(address.id)}
-							/>
-							Default
-						</label>
-						<label className="flex items-center gap-2 text-sm font-medium text-darknavy/75">
-							<input
-								type="checkbox"
-								checked={address.isBilling}
-								disabled={disabled}
-								onChange={(event) =>
-									onUpdateAddressMeta(
-										address.id,
-										"isBilling",
-										event.target.checked,
-									)
-								}
-							/>
-							Billing
-						</label>
-						<label className="flex items-center gap-2 text-sm font-medium text-darknavy/75">
-							<input
-								type="checkbox"
-								checked={address.isDelivery}
-								disabled={disabled}
-								onChange={(event) =>
-									onUpdateAddressMeta(
-										address.id,
-										"isDelivery",
-										event.target.checked,
-									)
-								}
-							/>
-							Delivery
-						</label>
-					</div>
-				</div>
-			</div>
-			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-				<Field label="Region" error={errors.regionCode} required>
-					<AppAdvancedDropdown
-						disabled={disabled || options.isRegionsLoading}
-						options={options.regionOptions}
-						placeholder={
-							options.isRegionsLoading ? "Loading regions" : "Select region"
-						}
-						searchPlaceholder="Search region"
-						value={address.regionCode}
-						onChange={onSelectRegion}
-					/>
-				</Field>
 				<Field label="Province" error={errors.provinceCode} required>
 					<AppAdvancedDropdown
 						disabled={isProvinceDisabled}
 						options={options.provinceOptions}
 						placeholder={
-							!address.regionCode
-								? "Select region first"
-								: options.isProvincesLoading
-									? "Loading provinces"
-									: options.requiresProvince
-										? "Select province"
-										: "No province required"
+							options.isProvincesLoading
+								? "Loading provinces"
+								: "Select province"
 						}
 						searchPlaceholder="Search province"
 						value={address.provinceCode}
@@ -642,13 +532,11 @@ function AddressSection({
 						disabled={isCityMunicipalityDisabled}
 						options={options.cityMunicipalityOptions}
 						placeholder={
-							!address.regionCode
-								? "Select region first"
-								: options.requiresProvince && !address.provinceCode
-									? "Select province first"
-									: options.isCitiesMunicipalitiesLoading
-										? "Loading cities"
-										: "Select city or municipality"
+							!address.provinceCode
+								? "Select province first"
+								: options.isCitiesMunicipalitiesLoading
+									? "Loading cities"
+									: "Select city or municipality"
 						}
 						searchPlaceholder="Search city or municipality"
 						value={address.cityMunicipalityCode}
@@ -718,87 +606,6 @@ function AddressInput({
 				placeholder={placeholder}
 			/>
 		</Field>
-	);
-}
-
-function AddressSelector({
-	activeAddressId,
-	addresses,
-	disabled,
-	onRemoveAddress,
-	onSelectAddress,
-}: {
-	activeAddressId: string;
-	addresses: PartyAddress[];
-	disabled: boolean;
-	onRemoveAddress: (addressId: string) => void;
-	onSelectAddress: (addressId: string) => void;
-}) {
-	const [query, setQuery] = useState("");
-	const activeAddress = addresses.find((address) => address.id === activeAddressId);
-	const normalizedQuery = query.trim().toLowerCase();
-	const filteredAddresses = normalizedQuery
-		? addresses.filter((address) =>
-				[
-					address.addressName,
-					address.addressLine1,
-					address.addressLine2,
-					address.barangay,
-					address.cityMunicipality,
-					address.province,
-				]
-					.join(" ")
-					.toLowerCase()
-					.includes(normalizedQuery),
-			)
-		: addresses;
-
-	if (addresses.length <= 1) {
-		return (
-			<div className="rounded-lg border border-darknavy/10 bg-darknavy/[0.025] px-3 py-2 text-sm font-medium text-darknavy/70">
-				{activeAddress?.addressName || "Default Address"}
-			</div>
-		);
-	}
-
-	return (
-		<div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
-			<AppSearchSuggestions
-				className="max-w-2xl"
-				emptyMessage="No address matches."
-				getDescription={(address) =>
-					[
-						address.isDefault ? "Default" : "",
-						address.isBilling ? "Billing" : "",
-						address.isDelivery ? "Delivery" : "",
-					]
-						.filter(Boolean)
-						.join(", ") || "Additional address"
-				}
-				getKey={(address) => address.id}
-				getTitle={(address) => address.addressName || "Address"}
-				inputLabel="Find address"
-				items={filteredAddresses}
-				maxVisibleItems={4}
-				minQueryLength={0}
-				placeholder="Find address"
-				query={query}
-				onQueryChange={setQuery}
-				onSelect={(address) => {
-					onSelectAddress(address.id);
-					setQuery(address.addressName);
-				}}
-			/>
-			<button
-				type="button"
-				disabled={disabled || addresses.length <= 1}
-				onClick={() => onRemoveAddress(activeAddressId)}
-				className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-coralpink/25 px-3 text-sm font-semibold text-coralpink transition hover:bg-coralpink/10 disabled:cursor-not-allowed disabled:opacity-45"
-			>
-				<Trash2 className="h-4 w-4" aria-hidden="true" />
-				Remove
-			</button>
-		</div>
 	);
 }
 

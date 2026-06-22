@@ -14,6 +14,7 @@ import {
   PartyManagementHref,
   PartyTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
+import { formatTermDuration } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementDisplay";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import {
@@ -36,6 +37,10 @@ import type {
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
+import type {
+	AddressAutocompleteDetails,
+	AddressAutocompleteItem,
+} from "@/app/src/services/shared/address/AddressReferenceApi";
 
 export function usePartyManagementAction() {
   const router = useRouter();
@@ -64,9 +69,14 @@ export function usePartyManagementAction() {
     values.addresses[0] ??
     values.address;
   const addressOptions = usePhilippineAddressOptions({
+	barangayCode: activeAddress.barangayCode,
+	barangayName: activeAddress.barangay,
     cityMunicipalityCode: activeAddress.cityMunicipalityCode,
+	cityMunicipalityName: activeAddress.cityMunicipality,
     provinceCode: activeAddress.provinceCode,
+	provinceName: activeAddress.province,
     regionCode: activeAddress.regionCode,
+	regionName: activeAddress.region,
   });
   const isReadonly = mode === "view";
   const isClassificationSelected = Boolean(values.classification);
@@ -88,7 +98,7 @@ export function usePartyManagementAction() {
       terms
         .filter((term) => term.status === "Active")
         .map((term) => ({
-          description: `${term.period} ${term.datemode.toLowerCase()}${term.period === "1" ? "" : "s"}`,
+          description: formatTermDuration(term),
           name: term.name,
           value: term.id,
         })),
@@ -187,9 +197,7 @@ export function usePartyManagementAction() {
       defaultPayableAccount: partyTypes.includes("Vendor")
         ? current.defaultPayableAccount
         : "",
-      employeeReceivableAccount: partyTypes.includes("Employee")
-        ? current.employeeReceivableAccount
-        : "",
+      employeeReceivableAccount: "",
       employeeAdvanceAccount: partyTypes.includes("Employee")
         ? current.employeeAdvanceAccount
         : "",
@@ -270,6 +278,8 @@ export function usePartyManagementAction() {
         cityMunicipalityCode: "",
         province: option?.name ?? "",
         provinceCode: code,
+		region: option?.regionName ?? "",
+		regionCode: option?.regionCode ?? "",
             }
           : address,
       ),
@@ -279,6 +289,65 @@ export function usePartyManagementAction() {
       barangayCode: undefined,
       cityMunicipalityCode: undefined,
       provinceCode: undefined,
+		regionCode: undefined,
+    }));
+  }
+
+  function selectAutocompleteAddress(
+    address: AddressAutocompleteItem,
+		details?: AddressAutocompleteDetails,
+  ) {
+    if (isReadonly || !isClassificationSelected) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      addresses: current.addresses.map((currentAddress) =>
+        currentAddress.id === current.activeAddressId
+          ? {
+              ...currentAddress,
+				addressLine1: details?.addressLine1 ?? currentAddress.addressLine1,
+				addressLine2: details?.addressLine2 ?? currentAddress.addressLine2,
+              barangay: address.barangay.name,
+              barangayCode: address.barangay.code,
+              cityMunicipality: address.cityMunicipality.name,
+              cityMunicipalityCode: address.cityMunicipality.code,
+              province: address.province.name,
+              provinceCode: address.province.code,
+              region: address.region.name,
+              regionCode: address.region.code,
+            }
+          : currentAddress,
+      ),
+    }));
+    setErrors((current) => ({
+      ...current,
+      barangayCode: undefined,
+      cityMunicipalityCode: undefined,
+      provinceCode: undefined,
+      regionCode: undefined,
+    }));
+  }
+
+  function syncAutocompleteAddressDetails(details: AddressAutocompleteDetails) {
+    if (isReadonly || !isClassificationSelected) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      addresses: current.addresses.map((currentAddress) =>
+        currentAddress.id === current.activeAddressId
+          ? {
+              ...currentAddress,
+              addressLine1:
+                details.addressLine1 ?? currentAddress.addressLine1,
+              addressLine2:
+                details.addressLine2 ?? currentAddress.addressLine2,
+            }
+          : currentAddress,
+      ),
     }));
   }
 
@@ -508,6 +577,8 @@ export function usePartyManagementAction() {
     partyTypeOptions: PartyTypeOptions,
     removeAddress,
     selectBarangay,
+    selectAutocompleteAddress,
+    syncAutocompleteAddressDetails,
     selectCityMunicipality,
     selectProvince,
     selectRegion,

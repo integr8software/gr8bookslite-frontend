@@ -218,7 +218,7 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
     addresses: [],
     defaultReceivableAccount: "",
     defaultPayableAccount: "",
-    employeeReceivableAccount: "1010200002",
+    employeeReceivableAccount: "",
     employeeAdvanceAccount: "1010300001",
     termId: "",
     termName: "",
@@ -383,7 +383,7 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
     addresses: normalizePartyAddresses(values.addresses),
     defaultReceivableAccount: values.defaultReceivableAccount,
     defaultPayableAccount: values.defaultPayableAccount,
-    employeeReceivableAccount: values.employeeReceivableAccount,
+    employeeReceivableAccount: "",
     employeeAdvanceAccount: values.employeeAdvanceAccount,
     termId: values.termId,
     termName: values.termName,
@@ -491,9 +491,7 @@ function normalizePartyRecordValues(
     defaultPayableAccount: values.partyTypes.includes("Vendor")
       ? values.defaultPayableAccount
       : "",
-    employeeReceivableAccount: values.partyTypes.includes("Employee")
-      ? values.employeeReceivableAccount
-      : "",
+    employeeReceivableAccount: "",
     employeeAdvanceAccount: values.partyTypes.includes("Employee")
       ? values.employeeAdvanceAccount
       : "",
@@ -656,9 +654,7 @@ function createMockParty({
       ? "1010200001"
       : "",
     defaultPayableAccount: partyTypes.includes("Vendor") ? "2010100001" : "",
-    employeeReceivableAccount: partyTypes.includes("Employee")
-      ? "1010200002"
-      : "",
+    employeeReceivableAccount: "",
     employeeAdvanceAccount: partyTypes.includes("Employee")
       ? "1010300001"
       : "",

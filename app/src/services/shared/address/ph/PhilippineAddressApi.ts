@@ -25,6 +25,7 @@ export const PhilippineAddressQueryKeys = {
     ] as const,
   provinces: (regionCode: string) =>
     ["philippine-address", "provinces", regionCode] as const,
+  provincesAll: () => ["philippine-address", "provinces", "all"] as const,
   regions: () => ["philippine-address", "regions"] as const,
 };
 
@@ -48,6 +49,10 @@ export async function GetPhilippineProvincesByRegion(regionCode: string) {
       provinces.filter((province) => province.regionCode === regionCode),
     );
   }
+}
+
+export async function GetPhilippineProvinces() {
+  return sortByName(await getList<PhilippineProvince>("/provinces/"));
 }
 
 export async function GetPhilippineCitiesMunicipalities({

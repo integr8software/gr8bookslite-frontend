@@ -60,7 +60,7 @@ export function TermManagementTable({
 				variant="embedded"
 				emptyDescription="Add a term definition to start managing reporting and payment cycles."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No term records found"
+				emptyTitle="No Term Records Found"
 				isLoading={isLoading}
 				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={TermManagementTablePaginationStorageKey}

@@ -149,7 +149,7 @@ export type WorkspaceCompanyUserApiRecord = {
   profileImageUrl: string | null;
   companyAssignments: WorkspaceCompanyUserApiAssignment[];
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string | null;
 };
 
 export type WorkspaceCompanyUserApiRequest = {

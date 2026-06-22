@@ -22,7 +22,11 @@ export function TermManagementListPage() {
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	const [isImportOpen, setIsImportOpen] = useState(false);
 	useMaintenanceAddDrawerSpotlight(
-		() => setDrawerState({ mode: "add" }),
+		() => {
+			if (page.permissions.canCreate) {
+				setDrawerState({ mode: "add" });
+			}
+		},
 		() => setDrawerState(null),
 	);
 	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
@@ -32,45 +36,45 @@ export function TermManagementListPage() {
 				iconClassName: "bg-skyblue/20 text-skyblue",
 				label: "Total Terms",
 				summary: "All term definitions",
-				value: page.terms.length,
+				value: page.statistics.totalTerms,
 			},
 			{
 				icon: CheckCircle2,
 				iconClassName: "bg-emerald-50 text-emerald-700",
 				label: "Active Terms",
 				summary: "Available for selection",
-				value: page.terms.filter((term) => term.status === "Active").length,
+				value: page.statistics.activeTerms,
 			},
 			{
 				icon: CirclePause,
 				iconClassName: "bg-amber-50 text-amber-700",
 				label: "Inactive Terms",
 				summary: "Currently inactive",
-				value: page.terms.filter((term) => term.status === "Inactive").length,
+				value: page.statistics.inactiveTerms,
 			},
 			{
 				icon: Hash,
 				iconClassName: "bg-cyan-50 text-cyan-700",
 				label: "Day Mode",
 				summary: "Uses day-based periods",
-				value: page.terms.filter((term) => term.datemode === "Day").length,
+				value: page.statistics.dayTerms,
 			},
 			{
 				icon: CalendarDays,
 				iconClassName: "bg-violet-50 text-violet-700",
 				label: "Month Mode",
 				summary: "Uses month-based periods",
-				value: page.terms.filter((term) => term.datemode === "Month").length,
+				value: page.statistics.monthTerms,
 			},
 			{
 				icon: CalendarDays,
 				iconClassName: "bg-slate-100 text-slate-700",
 				label: "Year Mode",
 				summary: "Uses year-based periods",
-				value: page.terms.filter((term) => term.datemode === "Year").length,
+				value: page.statistics.yearTerms,
 			},
 		],
-		[page.terms],
+		[page.statistics],
 	);
 	const hasActiveFilters =
 		page.query.trim().length > 0 ||
@@ -82,9 +86,11 @@ export function TermManagementListPage() {
 			<TermManagementHeader
 				onAdd={() => setDrawerState({ mode: "add" })}
 				onImport={() => setIsImportOpen(true)}
+				permissions={page.permissions}
 			/>
 			<ModuleStatisticCards
 				items={statisticCards}
+				isLoading={page.isLoading}
 				className="2xl:grid-cols-6"
 			/>
 
@@ -97,6 +103,7 @@ export function TermManagementListPage() {
 				query={page.query}
 				statusFilter={page.statusFilter}
 				terms={page.terms}
+				permissions={page.permissions}
 				onDatemodeFilterChange={page.setDatemodeFilter}
 				onEditTerm={(term) => setDrawerState({ mode: "edit", term })}
 				onQueryChange={page.setQuery}
@@ -111,29 +118,30 @@ export function TermManagementListPage() {
 				onClose={() => setDrawerState(null)}
 				term={drawerState?.term}
 			/>
-			<TermManagementImportDialog
-				existingTerms={page.terms}
-				isOpen={isImportOpen}
-				onClose={() => setIsImportOpen(false)}
-				onImportTerms={page.addTerms}
-			/>
+			{page.permissions.canImport ? (
+				<TermManagementImportDialog
+					isOpen={isImportOpen}
+					onClose={() => setIsImportOpen(false)}
+					onImportTerms={page.addTerms}
+				/>
+			) : null}
 			<AppDialog
 				isOpen={Boolean(page.pendingStatusTerm)}
 				isPending={page.isMutating}
 				title={
 					page.pendingStatusTerm?.status === "Active"
-						? "Set term inactive?"
-						: "Reactivate term?"
+						? "Deactivate term?"
+						: "Activate term?"
 				}
 				description={
 					page.pendingStatusTerm?.status === "Active"
 						? `${page.pendingStatusTerm.name} will remain in history and references, but will no longer be active for normal selection.`
-						: `${page.pendingStatusTerm?.name ?? "This term"} will be available for selection again.`
+						: `${page.pendingStatusTerm?.name ?? "This term"} will be available for normal selection again.`
 				}
 				confirmLabel={
 					page.pendingStatusTerm?.status === "Active"
-						? "Set Inactive"
-						: "Reactivate"
+						? "Deactivate"
+						: "Activate"
 				}
 				tone={page.pendingStatusTerm?.status === "Active" ? "danger" : "success"}
 				onCancel={() => page.setPendingStatusTerm(null)}

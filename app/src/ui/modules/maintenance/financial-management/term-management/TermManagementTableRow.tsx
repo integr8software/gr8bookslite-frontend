@@ -1,4 +1,5 @@
 import type { Row } from "@tanstack/react-table";
+import type { TermManagementPermissions } from "@/app/src/services/modules/maintenance/financial-management/term-management/TermManagementApi";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
 import {
 	ModuleTableActionButton,
@@ -7,6 +8,7 @@ import {
 
 type TermManagementTableRowProps = {
 	row: Row<TermManagement>;
+	permissions: TermManagementPermissions;
 	onEditTerm: (term: TermManagement) => void;
 	onToggleStatus: (term: TermManagement) => void;
 	onViewTerm: (term: TermManagement) => void;
@@ -14,6 +16,7 @@ type TermManagementTableRowProps = {
 
 export function TermManagementTableRow({
 	row,
+	permissions,
 	onEditTerm,
 	onToggleStatus,
 	onViewTerm,
@@ -28,6 +31,7 @@ export function TermManagementTableRow({
 					<TermManagementCellContent
 						columnId={cell.column.id}
 						term={row.original}
+						permissions={permissions}
 						onEditTerm={onEditTerm}
 						onToggleStatus={onToggleStatus}
 						onViewTerm={onViewTerm}
@@ -45,29 +49,45 @@ function isCenteredColumn(columnId: string) {
 function TermManagementCellContent({
 	columnId,
 	term,
+	permissions,
 	onEditTerm,
 	onToggleStatus,
 	onViewTerm,
 }: {
 	columnId: string;
 	term: TermManagement;
+	permissions: TermManagementPermissions;
 	onEditTerm: (term: TermManagement) => void;
 	onToggleStatus: (term: TermManagement) => void;
 	onViewTerm: (term: TermManagement) => void;
 }) {
 	const nextStatus = term.status === "Active" ? "Inactive" : "Active";
+	const statusActionLabel =
+		term.status === "Active" ? "Deactivate" : "Activate";
 
 	switch (columnId) {
 		case "name":
 			return <span className="font-medium text-darknavy">{term.name}</span>;
 		case "description":
-			return <span className="text-darknavy/75">{term.description}</span>;
+			return (
+				<span className="block truncate text-darknavy/75" title={term.description}>
+					{term.description || ""}
+				</span>
+			);
 		case "datemode":
 			return <span>{term.datemode}</span>;
 		case "period":
 			return <span>{term.period}</span>;
 		case "status":
 			return <StatusBadge status={term.status} />;
+		case "createdBy":
+			return <span>{term.createdBy ?? ""}</span>;
+		case "createdAt":
+			return <span>{formatDateTime(term.createdAt)}</span>;
+		case "updatedBy":
+			return <span>{term.updatedBy ?? ""}</span>;
+		case "updatedAt":
+			return <span>{formatDateTime(term.updatedAt)}</span>;
 		case "actions":
 			return (
 				<ModuleTableActions className="w-full !justify-center">
@@ -76,21 +96,34 @@ function TermManagementCellContent({
 						onClick={() => onViewTerm(term)}
 						label={`View ${term.name}`}
 					/>
-					<ModuleTableActionButton
-						variant="edit"
-						onClick={() => onEditTerm(term)}
-						label={`Edit ${term.name}`}
-					/>
-					<ModuleTableActionButton
-						variant={nextStatus === "Inactive" ? "inactive" : "active"}
-						onClick={() => onToggleStatus(term)}
-						label={`Set ${term.name} as ${nextStatus.toLowerCase()}`}
-					/>
+					{permissions.canUpdate ? (
+						<>
+							<ModuleTableActionButton
+								variant="edit"
+								onClick={() => onEditTerm(term)}
+								label={`Edit ${term.name}`}
+							/>
+							<ModuleTableActionButton
+								variant={nextStatus === "Inactive" ? "inactive" : "active"}
+								onClick={() => onToggleStatus(term)}
+								label={`${statusActionLabel} ${term.name}`}
+							/>
+						</>
+					) : null}
 				</ModuleTableActions>
 			);
 		default:
 			return null;
 	}
+}
+
+function formatDateTime(value?: string) {
+	if (!value) return "—";
+
+	return new Intl.DateTimeFormat("en-US", {
+		dateStyle: "medium",
+		timeStyle: "short",
+	}).format(new Date(value));
 }
 
 function TermManagementTableCell({

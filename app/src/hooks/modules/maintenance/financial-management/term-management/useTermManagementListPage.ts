@@ -18,6 +18,8 @@ export function useTermManagementListPage() {
 	const isLoading = useTermManagementStore((state) => state.isLoading);
 	const isRefreshing = useTermManagementStore((state) => state.isRefreshing);
 	const isMutating = useTermManagementStore((state) => state.isMutating);
+	const permissions = useTermManagementStore((state) => state.permissions);
+	const statistics = useTermManagementStore((state) => state.statistics);
 	const refreshTerms = useTermManagementStore((state) => state.refreshTerms);
 	const [datemodeFilter, setDatemodeFilter] = useState("All");
 	const [statusFilter, setStatusFilter] =
@@ -60,11 +62,12 @@ export function useTermManagementListPage() {
 			return;
 		}
 
-		updateTerm({
+		void updateTerm({
 			...pendingStatusTerm,
 			status: pendingStatusTerm.status === "Active" ? "Inactive" : "Active",
-		});
-		setPendingStatusTerm(null);
+		}).then(() => {
+			setPendingStatusTerm(null);
+		}).catch(() => undefined);
 	}
 
 	return {
@@ -76,6 +79,7 @@ export function useTermManagementListPage() {
 		isRefreshing,
 		isMutating,
 		pendingStatusTerm,
+		permissions,
 		query,
 		refreshTerms,
 		resetFilters,
@@ -84,6 +88,7 @@ export function useTermManagementListPage() {
 		setQuery,
 		setStatusFilter,
 		statusFilter,
+		statistics,
 		terms,
 	};
 }

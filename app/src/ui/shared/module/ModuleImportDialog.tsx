@@ -50,13 +50,13 @@ export function ModuleImportDialog({
 				aria-modal="true"
 				aria-labelledby={titleId}
 				className={joinClasses(
-					"flex w-full flex-col overflow-hidden rounded-lg border border-white/20 bg-white shadow-[0_28px_90px_rgba(33,39,56,0.28)]",
+					"flex w-full flex-col overflow-hidden rounded-lg border border-white/20 bg-white shadow-[0_28px_90px_rgba(33,39,56,0.28)] [@media(max-height:640px)]:overflow-y-auto",
 					isMaximized
 						? "h-[calc(100dvh-1rem)] max-h-[calc(100dvh-1rem)] max-w-[calc(100vw-1rem)]"
-						: "max-h-[calc(100dvh-2rem)] max-w-6xl",
+						: "h-[calc(100dvh-2rem)] max-h-[52rem] max-w-6xl",
 				)}
 			>
-				<div className="flex items-start justify-between gap-4 border-b border-darknavy/10 px-5 py-4">
+				<div className="flex shrink-0 items-start justify-between gap-4 border-b border-darknavy/10 px-3 py-3 sm:px-5 sm:py-4">
 					<div className="min-w-0">
 						<h2 id={titleId} className="text-lg font-semibold text-darknavy">
 							{title}
@@ -88,13 +88,13 @@ export function ModuleImportDialog({
 					</div>
 				</div>
 				{actions ? (
-					<div className="border-b border-darknavy/10 bg-darknavy/[0.015] px-5 py-4">
+					<div className="shrink-0 border-b border-darknavy/10 bg-darknavy/[0.015] px-3 py-3 sm:px-5 sm:py-4">
 						{actions}
 					</div>
 				) : null}
-				{progress ? <div className="px-5 pt-4">{progress}</div> : null}
-				<div className="min-h-0 overflow-y-auto px-5 py-4">{children}</div>
-				<div className="border-t border-darknavy/10 px-5 py-4">{footer}</div>
+				{progress ? <div className="shrink-0 px-5 pt-4">{progress}</div> : null}
+				<div className="min-h-0 flex-1 overflow-hidden px-3 py-3 sm:px-5 sm:py-4 [@media(max-height:640px)]:min-h-64 [@media(max-height:640px)]:flex-none [@media(max-height:640px)]:overflow-visible">{children}</div>
+				<div className="shrink-0 border-t border-darknavy/10 px-3 py-3 sm:px-5 sm:py-4">{footer}</div>
 			</section>
 		</div>
 	);

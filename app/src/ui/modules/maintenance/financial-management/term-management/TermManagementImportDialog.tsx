@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	AlertCircle,
 	ChevronLeft,
@@ -43,11 +43,6 @@ type ImportProgress = {
 };
 
 const TemplateHeaders = ["Name", "Datemode", "Period"];
-const TemplateRows = [
-	["Net 30", "Day", "30"],
-	["Monthly billing", "Month", "1"],
-	["Annual review", "Year", "1"],
-];
 const DefaultColumnIndexes: Record<TermImportColumnId, number> = {
 	name: 0,
 	datemode: 1,
@@ -60,31 +55,27 @@ const MinImportFileSizeBytes = 1;
 const MaxImportFileSizeBytes = 2 * 1024 * 1024;
 
 export function TermManagementImportDialog({
-	existingTerms,
 	isOpen,
 	onClose,
 	onImportTerms,
 }: {
-	existingTerms: TermManagement[];
 	isOpen: boolean;
 	onClose: () => void;
-	onImportTerms: (terms: TermManagement[]) => void;
+	onImportTerms: (terms: TermManagement[]) => Promise<TermManagement[]>;
 }) {
 	const [importError, setImportError] = useState<string | null>(null);
 	const [isParsing, setIsParsing] = useState(false);
 	const [previewRows, setPreviewRows] = useState<TermImportPreviewRow[]>([]);
 	const [previewPage, setPreviewPage] = useState(1);
 	const [progress, setProgress] = useState<ImportProgress | null>(null);
+	const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(false);
 	const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(
 		() => new Set(),
 	);
-	const existingNames = useMemo(
-		() => new Set(existingTerms.map((term) => normalizeTermName(term.name))),
-		[existingTerms],
-	);
+	const selectionMenuRef = useRef<HTMLTableCellElement>(null);
 	const validatedRows = useMemo(
-		() => validateTermImportRows(previewRows, existingNames),
-		[existingNames, previewRows],
+		() => validateTermImportRows(previewRows),
+		[previewRows],
 	);
 	const invalidRows = validatedRows.filter((row) => rowHasErrors(row));
 	const canImport =
@@ -99,10 +90,35 @@ export function TermManagementImportDialog({
 		progress && progress.total > 0
 			? Math.round((progress.imported / progress.total) * 100)
 			: 0;
-	const visibleRowIds = visibleRows.map((row) => row.id);
-	const areAllVisibleRowsSelected =
-		visibleRows.length > 0 &&
-		visibleRowIds.every((rowId) => selectedRowIds.has(rowId));
+
+	useEffect(() => {
+		if (!isSelectionMenuOpen) {
+			return;
+		}
+
+		function closeSelectionMenu(event: PointerEvent) {
+			if (
+				event.target instanceof Node &&
+				!selectionMenuRef.current?.contains(event.target)
+			) {
+				setIsSelectionMenuOpen(false);
+			}
+		}
+
+		function closeSelectionMenuOnEscape(event: KeyboardEvent) {
+			if (event.key === "Escape") {
+				setIsSelectionMenuOpen(false);
+			}
+		}
+
+		document.addEventListener("pointerdown", closeSelectionMenu);
+		document.addEventListener("keydown", closeSelectionMenuOnEscape);
+
+		return () => {
+			document.removeEventListener("pointerdown", closeSelectionMenu);
+			document.removeEventListener("keydown", closeSelectionMenuOnEscape);
+		};
+	}, [isSelectionMenuOpen]);
 
 	function resetImportState() {
 		if (progress) {
@@ -113,6 +129,7 @@ export function TermManagementImportDialog({
 		setPreviewRows([]);
 		setPreviewPage(1);
 		setSelectedRowIds(new Set());
+		setIsSelectionMenuOpen(false);
 	}
 
 	function previewImportText(text: string, append = false) {
@@ -127,7 +144,6 @@ export function TermManagementImportDialog({
 				const filteredRows = removeDuplicateImportRows(
 					parsedRows,
 					previewRows,
-					existingNames,
 				);
 				const uniqueRows = filteredRows.rows;
 				const nextRows = renumberImportRows([...previewRows, ...uniqueRows]);
@@ -143,7 +159,6 @@ export function TermManagementImportDialog({
 				const filteredRows = removeDuplicateImportRows(
 					parsedRows,
 					[],
-					existingNames,
 				);
 				const uniqueRows = filteredRows.rows;
 
@@ -206,20 +221,24 @@ export function TermManagementImportDialog({
 		});
 	}
 
-	function toggleVisibleRowSelection(isSelected: boolean) {
+	function selectRows(scope: "page" | "all") {
+		const rowIds = (scope === "all" ? validatedRows : visibleRows).map(
+			(row) => row.id,
+		);
+
 		setSelectedRowIds((current) => {
 			const nextSelected = new Set(current);
 
-			visibleRowIds.forEach((rowId) => {
-				if (isSelected) {
-					nextSelected.add(rowId);
-				} else {
-					nextSelected.delete(rowId);
-				}
-			});
+			rowIds.forEach((rowId) => nextSelected.add(rowId));
 
 			return nextSelected;
 		});
+		setIsSelectionMenuOpen(false);
+	}
+
+	function clearRowSelection() {
+		setSelectedRowIds(new Set());
+		setIsSelectionMenuOpen(false);
 	}
 
 	function updatePreviewCell(
@@ -227,16 +246,19 @@ export function TermManagementImportDialog({
 		field: TermImportColumnId,
 		value: string,
 	) {
+		if (field === "period" && value.trim() && Number(value) < 0) {
+			return;
+		}
+
 		if (field === "name") {
 			const normalizedName = normalizeTermName(value);
 			const hasDuplicateName =
 				Boolean(normalizedName) &&
-				(existingNames.has(normalizedName) ||
-					previewRows.some(
-						(row) =>
-							row.id !== rowId &&
-							normalizeTermName(row.term.name) === normalizedName,
-					));
+				previewRows.some(
+					(row) =>
+						row.id !== rowId &&
+						normalizeTermName(row.term.name) === normalizedName,
+				);
 
 			if (hasDuplicateName) {
 				setImportError("Duplicate names are not accepted.");
@@ -323,10 +345,9 @@ export function TermManagementImportDialog({
 			}
 
 			const nextRows = [...rows];
-			const seenNames = new Set([
-				...Array.from(existingNames),
-				...rows.map((row) => normalizeTermName(row.term.name)).filter(Boolean),
-			]);
+			const seenNames = new Set(
+				rows.map((row) => normalizeTermName(row.term.name)).filter(Boolean),
+			);
 			let skippedCount = 0;
 
 			pastedRows.forEach((pastedRow, pastedRowIndex) => {
@@ -409,7 +430,12 @@ export function TermManagementImportDialog({
 		for (let index = 0; index < termsToImport.length; index += ImportBatchSize) {
 			const batch = termsToImport.slice(index, index + ImportBatchSize);
 
-			onImportTerms(batch);
+			try {
+				await onImportTerms(batch);
+			} catch {
+				setProgress(null);
+				return;
+			}
 			setProgress({
 				imported: Math.min(index + batch.length, termsToImport.length),
 				total: termsToImport.length,
@@ -446,12 +472,12 @@ export function TermManagementImportDialog({
 						stackable
 						onFileSelect={(file) => void handleFileUpload(file)}
 					/>
-					<div className="flex flex-wrap items-start justify-end gap-2">
+					<div className="grid grid-cols-2 gap-2 lg:flex lg:items-start lg:justify-end">
 						<button
 							type="button"
 							onClick={() => void downloadTermImportTemplate()}
 							disabled={Boolean(progress)}
-							className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55"
+							className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-3 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55 lg:w-auto lg:px-4"
 						>
 							<Download className="h-4 w-4" aria-hidden="true" />
 							Template
@@ -460,14 +486,17 @@ export function TermManagementImportDialog({
 							type="button"
 							onClick={addBlankRow}
 							disabled={Boolean(progress)}
-							className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55"
+							className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-3 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55 lg:w-auto lg:px-4"
 						>
 							<Plus className="h-4 w-4" aria-hidden="true" />
 							Add Row
 						</button>
 					</div>
-					<div className="grid gap-2 text-xs font-medium text-darknavy/45 lg:col-span-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-						<p>
+					<div className="grid gap-2 text-xs font-medium text-darknavy/45 lg:col-span-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+						<p className="sm:hidden">
+							Accepted: .xlsx, .csv, .tsv, .txt. Maximum size: 2 MB.
+						</p>
+						<p className="hidden sm:block">
 							Accepted: .xlsx, .csv, .tsv, .txt. Size:{" "}
 							{formatFileSize(MinImportFileSizeBytes)} to{" "}
 							{formatFileSize(MaxImportFileSizeBytes)}. Upload one file at a
@@ -502,42 +531,41 @@ export function TermManagementImportDialog({
 				) : null
 			}
 			footer={
-				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+				<div className="grid grid-cols-2 gap-2 lg:grid-cols-[auto_minmax(0,1fr)_auto_auto] lg:items-center">
 					<button
 						type="button"
 						onClick={resetImportState}
 						disabled={Boolean(progress)}
-						className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-55"
+						className="order-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-55 lg:order-none lg:w-auto"
 					>
 						Reset
 					</button>
-					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-						<button
-							type="button"
-							onClick={onClose}
-							disabled={Boolean(progress)}
-							className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-55"
-						>
-							Cancel
-						</button>
-						<button
-							type="button"
-							onClick={() => void handleImport()}
-							disabled={!canImport}
-							className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55"
-						>
-							{progress ? (
-								<LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-							) : (
-								<Upload className="h-4 w-4" aria-hidden="true" />
-							)}
-							Import Data
-						</button>
-					</div>
+					<div className="hidden lg:block" aria-hidden="true" />
+					<button
+						type="button"
+						onClick={onClose}
+						disabled={Boolean(progress)}
+						className="order-3 inline-flex h-10 w-full items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-55 lg:order-none lg:w-auto"
+					>
+						Cancel
+					</button>
+					<button
+						type="button"
+						onClick={() => void handleImport()}
+						disabled={!canImport}
+						className="order-1 col-span-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-skyblue px-4 text-sm font-semibold text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:order-none lg:col-span-1 lg:h-10 lg:w-auto"
+					>
+						{progress ? (
+							<LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+						) : (
+							<Upload className="h-4 w-4" aria-hidden="true" />
+						)}
+						Import Data
+					</button>
 				</div>
 			}
 		>
-			<div className="grid min-h-0 content-start gap-3">
+			<div className="flex h-full min-h-0 flex-col gap-3">
 				{importError ? (
 					<div className="flex gap-2 rounded-md border border-coralpink/25 bg-coralpink/8 px-3 py-2 text-sm font-medium text-coralpink">
 						<AlertCircle
@@ -568,29 +596,49 @@ export function TermManagementImportDialog({
 							pasteIntoPreviewGrid(text);
 						}
 					}}
-					className="overflow-hidden rounded-lg border border-darknavy/10 outline-none focus:ring-2 focus:ring-skyblue/15"
+					className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-darknavy/10 outline-none focus:ring-2 focus:ring-skyblue/15"
 					aria-label="Import preview grid. Paste copied Excel rows here."
 				>
-					<div className="overflow-x-auto">
+					<div className="min-h-36 flex-1 overflow-auto">
 						<table className="w-full min-w-[44rem] text-left text-sm text-darknavy">
-							<thead className="bg-darknavy/[0.035] text-xs uppercase text-darknavy/55">
+							<thead className="text-xs uppercase text-darknavy/55">
 								<tr>
-									<th className="sticky left-0 z-20 w-12 bg-slate-50 px-3 py-2">
+									<th ref={selectionMenuRef} className="sticky left-0 top-0 z-40 w-16 bg-slate-50 px-2 py-2">
 										<input
 											type="checkbox"
-											checked={areAllVisibleRowsSelected}
+											checked={selectedRowIds.size > 0}
+											readOnly
 											disabled={visibleRows.length === 0 || Boolean(progress)}
-											onChange={(event) =>
-												toggleVisibleRowSelection(event.target.checked)
-											}
-											aria-label="Select visible import rows"
-											className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+											onClick={(event) => {
+												event.preventDefault();
+												setIsSelectionMenuOpen((isOpen) => !isOpen);
+											}}
+											aria-label="Choose rows to select"
+											title="Choose rows to select"
+											className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20 disabled:opacity-45"
 										/>
+										{isSelectionMenuOpen ? (
+											<div
+												role="menu"
+												className="absolute left-2 top-full z-50 mt-1 w-48 overflow-hidden rounded-md border border-darknavy/10 bg-white py-1 text-left text-xs font-semibold normal-case text-darknavy shadow-lg"
+											>
+												<button type="button" role="menuitem" onClick={() => selectRows("page")} className="block w-full px-3 py-2 text-left hover:bg-skyblue/8">
+													Select current page
+												</button>
+												<button type="button" role="menuitem" onClick={() => selectRows("all")} className="block w-full px-3 py-2 text-left hover:bg-skyblue/8">
+													Select all records
+												</button>
+												{selectedRowIds.size > 0 ? (
+													<button type="button" role="menuitem" onClick={clearRowSelection} className="block w-full border-t border-darknavy/8 px-3 py-2 text-left text-coralpink hover:bg-coralpink/8">
+														Clear selection
+													</button>
+												) : null}
+											</div>
+										) : null}
 									</th>
-									<th className="sticky left-12 z-20 w-16 bg-slate-50 px-3 py-2">Row</th>
-									<th className="sticky left-28 z-20 min-w-56 bg-slate-50 px-3 py-2">Name</th>
-									<th className="w-40 px-3 py-2">Datemode</th>
-									<th className="w-32 px-3 py-2">Period</th>
+									<th className="sticky left-16 top-0 z-40 min-w-56 bg-slate-50 px-3 py-2">Name</th>
+									<th className="sticky top-0 z-30 w-40 bg-slate-50 px-3 py-2">Datemode</th>
+									<th className="sticky top-0 z-30 w-32 bg-slate-50 px-3 py-2">Period</th>
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-darknavy/8 bg-white">
@@ -608,7 +656,7 @@ export function TermManagementImportDialog({
 								) : (
 									<tr>
 										<td
-											colSpan={5}
+											colSpan={4}
 											className="px-3 py-10 text-center text-sm font-medium text-darknavy/45"
 										>
 											Upload a file, or focus here and paste copied Excel rows.
@@ -618,11 +666,18 @@ export function TermManagementImportDialog({
 							</tbody>
 						</table>
 					</div>
-					<div className="flex flex-col gap-2 border-t border-darknavy/10 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+					<div className="grid grid-cols-2 items-center gap-2 border-t border-darknavy/10 px-3 py-2 sm:grid-cols-[1fr_auto_1fr]">
 						<span className="text-xs font-semibold text-darknavy/55">
 							Page {safePreviewPage} of {totalPages}
 						</span>
-						<div className="flex flex-wrap gap-2">
+						{selectedRowIds.size > 0 ? (
+							<span className="col-span-2 row-start-2 justify-self-center text-xs font-semibold text-skyblue sm:col-span-1 sm:row-auto">
+								{selectedRowIds.size} of {validatedRows.length} selected
+							</span>
+						) : (
+							<span className="hidden sm:block" />
+						)}
+						<div className="flex flex-wrap justify-self-end gap-2">
 							<button
 								type="button"
 								disabled={selectedRowIds.size === 0 || Boolean(progress)}
@@ -630,7 +685,9 @@ export function TermManagementImportDialog({
 								className="inline-flex h-8 items-center gap-1 rounded-md border border-coralpink/25 px-2 text-xs font-semibold text-coralpink transition hover:bg-coralpink/8 disabled:cursor-not-allowed disabled:opacity-45"
 							>
 								<Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-								Remove Row
+								{selectedRowIds.size > 0
+									? `Remove ${selectedRowIds.size} ${selectedRowIds.size === 1 ? "Row" : "Rows"}`
+									: "Remove Row"}
 							</button>
 							<button
 								type="button"
@@ -681,40 +738,53 @@ function TermImportPreviewTableRow({
 	) => void;
 	onToggleSelected: (rowId: string, isSelected: boolean) => void;
 }) {
-	const stickyCellBackground = rowHasErrors(row)
+	const stickyCellBackground = isSelected
+		? "bg-skyblue/10"
+		: rowHasErrors(row)
 		? "bg-coralpink/[0.025]"
 		: "bg-white";
 
 	return (
 		<>
-			<tr className={rowHasErrors(row) ? "bg-coralpink/[0.025]" : undefined}>
+			<tr
+				className={
+					isSelected
+						? "bg-skyblue/10"
+						: rowHasErrors(row)
+							? "bg-coralpink/[0.025]"
+							: undefined
+				}
+			>
 				<td
 					className={joinClasses(
-						"sticky left-0 z-10 px-3 py-2 align-top",
+						"sticky left-0 z-10 w-16 px-2 py-2 align-top font-semibold",
 						stickyCellBackground,
 					)}
 				>
-					<input
+					<div className="flex items-center gap-2">
+						<input
 						type="checkbox"
 						checked={isSelected}
+						onClick={(event) => event.stopPropagation()}
 						onChange={(event) =>
 							onToggleSelected(row.id, event.target.checked)
 						}
 						aria-label={`Select row ${row.rowNumber}`}
 						className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
-					/>
+						/>
+						<button
+							type="button"
+							onClick={() => onToggleSelected(row.id, !isSelected)}
+							className="rounded px-0.5 text-left hover:text-skyblue focus:outline-none focus:ring-2 focus:ring-skyblue/20"
+							aria-label={`${isSelected ? "Deselect" : "Select"} row ${row.rowNumber}`}
+						>
+							{row.rowNumber}
+						</button>
+					</div>
 				</td>
 				<td
 					className={joinClasses(
-						"sticky left-12 z-10 px-3 py-2 align-top font-semibold",
-						stickyCellBackground,
-					)}
-				>
-					{row.rowNumber}
-				</td>
-				<td
-					className={joinClasses(
-						"sticky left-28 z-10 min-w-56 px-3 py-2 align-top",
+						"sticky left-16 z-10 min-w-56 px-3 py-2 align-top",
 						stickyCellBackground,
 					)}
 				>
@@ -747,8 +817,7 @@ function TermImportPreviewTableRow({
 				</td>
 			</tr>
 			{row.rowErrors.length > 0 ? (
-				<tr className="bg-coralpink/[0.025]">
-					<td />
+				<tr className={isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"}>
 					<td />
 					<td colSpan={3} className="px-3 pb-3 text-xs font-semibold text-coralpink">
 						{row.rowErrors.join(" ")}
@@ -778,8 +847,17 @@ function EditableImportCell({
 		<label className="block">
 			<input
 				type={type}
+				min={type === "number" ? 0 : undefined}
 				value={value}
-				onChange={(event) => onChange(event.target.value)}
+				onChange={(event) => {
+					const nextValue = event.target.value;
+
+					if (type === "number" && nextValue.trim() && Number(nextValue) < 0) {
+						return;
+					}
+
+					onChange(nextValue);
+				}}
 				onKeyDown={(event) => {
 					if (
 						type === "number" &&
@@ -912,12 +990,10 @@ function renumberImportRows(rows: TermImportPreviewRow[]) {
 function removeDuplicateImportRows(
 	rows: TermImportPreviewRow[],
 	baseRows: TermImportPreviewRow[],
-	existingNames: Set<string>,
 ) {
-	const seenNames = new Set([
-		...Array.from(existingNames),
-		...baseRows.map((row) => normalizeTermName(row.term.name)).filter(Boolean),
-	]);
+	const seenNames = new Set(
+		baseRows.map((row) => normalizeTermName(row.term.name)).filter(Boolean),
+	);
 	const uniqueRows: TermImportPreviewRow[] = [];
 	let skippedCount = 0;
 
@@ -964,7 +1040,6 @@ async function downloadTermImportTemplate() {
 		const worksheet = workbook.addWorksheet("Terms");
 
 		worksheet.addRow(TemplateHeaders);
-		TemplateRows.forEach((row) => worksheet.addRow(row));
 		for (let rowNumber = 2; rowNumber <= 101; rowNumber += 1) {
 			worksheet.getCell(`B${rowNumber}`).dataValidation = {
 				allowBlank: false,
@@ -998,7 +1073,7 @@ async function downloadTermImportTemplate() {
 }
 
 function createTermImportTemplateCsv() {
-	return [TemplateHeaders, ...TemplateRows]
+	return [TemplateHeaders]
 		.map((row) =>
 			row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","),
 		)
@@ -1096,10 +1171,7 @@ function parseTermImportText(
 		});
 }
 
-function validateTermImportRows(
-	rows: TermImportPreviewRow[],
-	existingNames: Set<string>,
-) {
+function validateTermImportRows(rows: TermImportPreviewRow[]) {
 	const importedNameCounts = new Map<string, number>();
 
 	rows.forEach((row) => {
@@ -1140,10 +1212,6 @@ function validateTermImportRows(
 			cellWarnings.period = [
 				"Period is 0. Import only if this term should not add time.",
 			];
-		}
-
-		if (normalizedName && existingNames.has(normalizedName)) {
-			rowErrors.push("Name already exists.");
 		}
 
 		if (normalizedName && (importedNameCounts.get(normalizedName) ?? 0) > 1) {

@@ -7,7 +7,6 @@ import { TermManagementHref } from "@/app/src/constants/modules/maintenance/fina
 import {
 	TermManagementInitialFormValues,
 	createTermManagementFormValues,
-	createTermManagementFromForm,
 	updateTermManagementFromForm,
 } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
 import type {
@@ -46,6 +45,7 @@ export function useTermManagementFormPage(
 			: TermManagementInitialFormValues,
 	);
 	const [errors, setErrors] = useState<TermManagementFormErrors>({});
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 	const nextStatus: TermManagementStatus =
 		existingTerm?.status === "Active" ? "Inactive" : "Active";
@@ -83,21 +83,35 @@ export function useTermManagementFormPage(
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
-			toast.error("Please fix the highlighted term fields.");
+			toast.error(
+				"Please review the highlighted fields and enter valid information.",
+			);
 			return;
 		}
 
-		if (mode === "edit" && existingTerm) {
-			updateTerm(updateTermManagementFromForm(existingTerm, values));
-		} else if (mode === "edit") {
-			toast.error("Could not find the term definition to update.");
-			return;
-		} else {
-			addTerm(createTermManagementFromForm(values));
-		}
+		void saveTerm();
+	}
 
-		options.onSaved?.();
-		if (!options.onSaved) router.push(TermManagementHref);
+	async function saveTerm() {
+		setIsSubmitting(true);
+
+		try {
+			if (mode === "edit" && existingTerm) {
+				await updateTerm(updateTermManagementFromForm(existingTerm, values));
+			} else if (mode === "edit") {
+				toast.error("Could not find the term definition to update.");
+				return;
+			} else {
+				await addTerm(values);
+			}
+
+			options.onSaved?.();
+			if (!options.onSaved) router.push(TermManagementHref);
+		} catch {
+			return;
+		} finally {
+			setIsSubmitting(false);
+		}
 	}
 
 	function handleConfirmStatusChange() {
@@ -120,6 +134,7 @@ export function useTermManagementFormPage(
 		handleInputChange,
 		handleSubmit,
 		isStatusDialogOpen,
+		isSubmitting,
 		isMutating,
 		isReadonly,
 		mode,

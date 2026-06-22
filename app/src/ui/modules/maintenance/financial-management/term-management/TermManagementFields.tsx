@@ -38,7 +38,7 @@ export function TermManagementFields({
 						onChange={onInputChange}
 						readOnly={isReadonly}
 						className={fieldClassName}
-						placeholder="Enter name"
+						placeholder="Enter Name..."
 					/>
 				</FormField>
 
@@ -53,8 +53,8 @@ export function TermManagementFields({
 						value={values.description}
 						onChange={onInputChange}
 						readOnly={isReadonly}
-						className={`${fieldClassName} min-h-24 resize-y py-3`}
-						placeholder="Enter description"
+						placeholder={isReadonly ? "No Description..." : "Enter Description..."}
+						className={`${fieldClassName} min-h-24 resize-y py-3 ${isReadonly ? "placeholder:italic" : ""}`}
 					/>
 				</FormField>
 
@@ -64,7 +64,7 @@ export function TermManagementFields({
 						value={values.datemode}
 						onChange={onInputChange}
 						disabled={isReadonly}
-						className={fieldClassName}
+						className={selectClassName}
 					>
 						{TermManagementDatemodeOptions.map((option) => (
 							<option key={option} value={option}>
@@ -106,7 +106,7 @@ export function TermManagementFields({
 						value={values.status}
 						onChange={onInputChange}
 						disabled={isReadonly}
-						className={fieldClassName}
+						className={selectClassName}
 					>
 						{TermManagementStatusOptions.map((statusOption) => (
 							<option key={statusOption} value={statusOption}>
@@ -136,7 +136,7 @@ function FormField({
 	warning?: string;
 }) {
 	return (
-		<label className={className}>
+		<div className={className}>
 			<span className="mb-2 block text-sm font-semibold text-darknavy">
 				{label}
 				{required ? <span className="text-coralpink"> *</span> : null}
@@ -151,12 +151,14 @@ function FormField({
 					{warning}
 				</span>
 			) : null}
-		</label>
+		</div>
 	);
 }
 
 const fieldClassName =
-	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5 read-only:bg-darknavy/[0.03]";
+	"h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.03] disabled:text-darknavy/70 disabled:placeholder:text-darknavy/32 read-only:bg-darknavy/[0.03] read-only:text-darknavy/70";
+
+const selectClassName = `app-select-control ${fieldClassName} enabled:bg-white enabled:text-darknavy disabled:bg-darknavy/[0.03] disabled:text-darknavy/70`;
 
 const blockedPeriodKeys = new Set(["e", "E", "+", "-", "."]);
 

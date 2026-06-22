@@ -1,12 +1,13 @@
 "use client";
 
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { usePasswordVisibility } from "@/app/src/hooks/shared/account/usePasswordVisibility";
 
 type OnboardingFieldProps = ComponentPropsWithoutRef<"input"> & {
   label: string;
   errors?: string[];
+  endAdornment?: ReactNode;
 };
 
 export function OnboardingField({
@@ -15,6 +16,7 @@ export function OnboardingField({
   id,
   name,
   className,
+  endAdornment,
   ...props
 }: OnboardingFieldProps) {
   const fieldId = id ?? String(name);
@@ -26,17 +28,17 @@ export function OnboardingField({
     togglePasswordVisibility,
   } = usePasswordVisibility(props.type);
   const fieldClassName =
-    `h-14 w-full rounded-md border bg-white px-4 text-base text-darknavy outline-none transition focus:ring-4 ${
+    `h-12 w-full rounded-lg border bg-offwhite px-4 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 hover:border-skyblue/60 focus:bg-white focus:ring-4 ${
       errors?.length
         ? "border-coralpink focus:border-coralpink focus:ring-coralpink/20"
-        : "border-darknavy/20 focus:border-skyblue focus:ring-skyblue/20"
-    } ${isPassword ? "pr-12" : ""} ${className ?? ""}`.trim();
+        : "border-darknavy/10 focus:border-skyblue focus:ring-skyblue/15"
+    } ${isPassword || endAdornment ? "pr-16" : ""} ${className ?? ""}`.trim();
 
   return (
     <div>
       <label
         htmlFor={fieldId}
-        className="mb-2 block text-sm font-medium text-darknavy"
+        className="mb-2 block text-sm font-semibold text-darknavy"
       >
         {label}
       </label>
@@ -63,10 +65,14 @@ export function OnboardingField({
               <Eye className="h-4 w-4" aria-hidden="true" />
             )}
           </button>
+        ) : endAdornment ? (
+          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+            {endAdornment}
+          </div>
         ) : null}
       </div>
       {errors?.length ? (
-        <p id={errorId} className="mt-2 text-sm text-coralpink">
+        <p id={errorId} className="mt-2 text-sm font-medium text-coralpink">
           {errors[0]}
         </p>
       ) : null}

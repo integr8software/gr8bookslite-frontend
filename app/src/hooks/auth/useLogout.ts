@@ -7,6 +7,7 @@ import { ClearPendingVerificationEmail } from "@/app/src/data/auth/AuthVerificat
 import { ClearAiAssistantStorage } from "@/app/src/data/shared/ai-assistant/AiAssistantData";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
+import { BeginIntentionalLogout } from "@/app/src/services/auth/AuthSessionExpired";
 
 export function useLogout() {
   const queryClient = useQueryClient();
@@ -17,6 +18,7 @@ export function useLogout() {
   const resetAppStore = useAppStore((state) => state.resetAppStore);
 
   return async function logout() {
+    BeginIntentionalLogout();
     beginShellContextSwitch("Logging out...");
 
     try {

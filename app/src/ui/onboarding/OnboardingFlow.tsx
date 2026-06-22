@@ -36,7 +36,7 @@ export function OnboardingFlow() {
   }
 
   return (
-    <>
+    <div className="space-y-8">
       <OnboardingProgressHeader
         currentStep={currentStep.currentStep}
         totalSteps={currentStep.totalSteps}
@@ -45,53 +45,59 @@ export function OnboardingFlow() {
         description={currentStep.description}
       />
 
-      {currentStep.currentStep === OnboardingSteps[0].currentStep ? (
-        <OnboardingFreeTrialStep
-          plans={plans}
-          handlePlanSelection={handlePlanSelection}
-          isSubmitting={isSubmitting}
-          submittingPlanCode={submittingPlanCode}
-        />
-      ) : null}
+      <div className="min-w-0">
+        {currentStep.currentStep === OnboardingSteps[0].currentStep ? (
+          <OnboardingFreeTrialStep
+            plans={plans}
+            handlePlanSelection={handlePlanSelection}
+            isSubmitting={isSubmitting}
+            submittingPlanCode={submittingPlanCode}
+          />
+        ) : null}
 
-      {currentStep.currentStep === OnboardingSteps[1].currentStep ? (
-        <OnboardingStepOne
-          values={values}
-          errors={errors}
-          logoInputKey={logoInputKey}
-          logoPreviewUrl={logoPreviewUrl}
-          isSubmitting={isSubmitting}
-          updateValue={updateValue}
-          setTaxpayerType={setTaxpayerType}
-          handleLogoChange={handleLogoChange}
-          handleLogoRemove={handleLogoRemove}
-          handleBack={handleBack}
-          handleNext={handleNext}
-        />
-      ) : null}
+        {currentStep.currentStep !== OnboardingSteps[0].currentStep ? (
+          <section className="rounded-2xl border border-darknavy/10 bg-white p-5 shadow-[0_20px_60px_rgba(33,39,56,0.09)] sm:p-8 lg:p-10">
+            {currentStep.currentStep === OnboardingSteps[1].currentStep ? (
+              <OnboardingStepOne
+                values={values}
+                errors={errors}
+                logoInputKey={logoInputKey}
+                logoPreviewUrl={logoPreviewUrl}
+                isSubmitting={isSubmitting}
+                updateValue={updateValue}
+                setTaxpayerType={setTaxpayerType}
+                handleLogoChange={handleLogoChange}
+                handleLogoRemove={handleLogoRemove}
+                handleBack={handleBack}
+                handleNext={handleNext}
+              />
+            ) : null}
 
-      {currentStep.currentStep === OnboardingSteps[2].currentStep ? (
-        <OnboardingBillingStep
-          values={values}
-          errors={errors}
-          selectedPlan={selectedPlan}
-          selectedBillingCycle={selectedBillingCycle}
-          isSubmitting={isSubmitting}
-          updateValue={updateValue}
-          handleBack={handleBack}
-          handleNext={handleNext}
-        />
-      ) : null}
+            {currentStep.currentStep === OnboardingSteps[2].currentStep ? (
+              <OnboardingBillingStep
+                values={values}
+                errors={errors}
+                selectedPlan={selectedPlan}
+                selectedBillingCycle={selectedBillingCycle}
+                isSubmitting={isSubmitting}
+                updateValue={updateValue}
+                handleBack={handleBack}
+                handleNext={handleNext}
+              />
+            ) : null}
 
-      {currentStep.currentStep === OnboardingSteps[3].currentStep ? (
-        <OnboardingReviewStep
-          values={values}
-          logoPreviewUrl={logoPreviewUrl}
-          isSubmitting={isSubmitting}
-          handleBack={handleBack}
-          handleFinish={handleNext}
-        />
-      ) : null}
-    </>
+            {currentStep.currentStep === OnboardingSteps[3].currentStep ? (
+              <OnboardingReviewStep
+                values={values}
+                logoPreviewUrl={logoPreviewUrl}
+                isSubmitting={isSubmitting}
+                handleBack={handleBack}
+                handleFinish={handleNext}
+              />
+            ) : null}
+          </section>
+        ) : null}
+      </div>
+    </div>
   );
 }

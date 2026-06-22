@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import type { PricingPlan } from "@/app/src/data/pricing/PricingTypes";
 import { GetOnboardingPlans } from "@/app/src/services/onboarding/OnboardingApi";
 import { MapOnboardingPlanToPricingPlan } from "@/app/src/services/onboarding/OnboardingPlanMapper";
+import { IsIntentionalLogoutInProgress } from "@/app/src/services/auth/AuthSessionExpired";
 
 type UseOnboardingPlansParams = {
   accessToken: string | null;
@@ -29,7 +30,7 @@ export function useOnboardingPlans({ accessToken }: UseOnboardingPlansParams) {
 
         setPlans(response.plans.map(MapOnboardingPlanToPricingPlan));
       } catch (error) {
-        if (!isActive) {
+        if (!isActive || IsIntentionalLogoutInProgress()) {
           return;
         }
 

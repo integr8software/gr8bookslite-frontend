@@ -7,6 +7,7 @@ import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingTy
 import { GetOnboardingDraft } from "@/app/src/services/onboarding/OnboardingApi";
 import type { OnboardingDraft } from "@/app/src/services/onboarding/OnboardingApiTypes";
 import { MapOnboardingPlanToPricingPlan } from "@/app/src/services/onboarding/OnboardingPlanMapper";
+import { IsIntentionalLogoutInProgress } from "@/app/src/services/auth/AuthSessionExpired";
 
 function Wait(milliseconds: number) {
   return new Promise((resolve) => {
@@ -143,7 +144,7 @@ export function useOnboardingDraft({
           cvc: "",
         }));
       } catch (error) {
-        if (!isActive) {
+        if (!isActive || IsIntentionalLogoutInProgress()) {
           return;
         }
 

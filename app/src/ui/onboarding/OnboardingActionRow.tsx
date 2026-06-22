@@ -20,19 +20,13 @@ export function OnboardingActionRow({
 	const isCirclePrimary = primaryVariant === "circle";
 
 	return (
-		<div
-			className={
-				showBack && !isCirclePrimary
-					? "grid gap-4 md:grid-cols-2"
-					: "flex justify-center"
-			}
-		>
+		<div className={showBack && !isCirclePrimary ? "flex flex-col-reverse gap-3 border-t border-darknavy/10 pt-6 sm:flex-row sm:justify-end" : "flex justify-center"}>
 			{showBack ? (
 				<button
 					type="button"
 					onClick={onBack}
 					disabled={isPending}
-					className="flex h-14 items-center justify-center gap-2 rounded-sm border border-darknavy/20 bg-white px-5 text-sm font-semibold text-darknavy transition hover:bg-offwhite disabled:cursor-not-allowed disabled:opacity-60"
+					className="flex h-12 min-w-32 items-center justify-center gap-2 rounded-lg border border-darknavy/10 bg-white px-5 text-sm font-semibold text-darknavy transition hover:border-darknavy/20 hover:bg-offwhite disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					<ArrowLeft className="h-4 w-4" />
 					<span>Back</span>
@@ -44,7 +38,7 @@ export function OnboardingActionRow({
 					type="button"
 					onClick={onPrimary}
 					disabled={isPending}
-					className="flex h-12 w-12 items-center justify-center rounded-full bg-darknavy text-offwhite transition hover:bg-darknavy/90 disabled:cursor-not-allowed disabled:bg-darknavy/50 animate-bounce-once"
+					className="flex h-12 w-12 items-center justify-center rounded-full bg-darknavy text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					{isPending ? (
 						<LoaderCircle
@@ -60,7 +54,7 @@ export function OnboardingActionRow({
 					type="button"
 					onClick={onPrimary}
 					disabled={isPending}
-					className="flex h-14 items-center justify-center gap-2 rounded-sm bg-black px-5 text-sm font-semibold text-white transition hover:bg-black/90 disabled:cursor-not-allowed disabled:bg-black/50"
+					className="flex h-12 min-w-40 items-center justify-center gap-2 rounded-lg bg-darknavy px-6 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(33,39,56,0.18)] transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					<span>{isPending ? "Saving..." : (primaryLabel ?? "Continue")}</span>
 					{isPending ? (

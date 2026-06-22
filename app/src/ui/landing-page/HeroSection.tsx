@@ -1,19 +1,5 @@
-import {
-	BarChart3,
-	BookOpen,
-	CirclePlay,
-	PackageCheck,
-	ShieldCheck,
-	Sparkles,
-} from "lucide-react";
+import { CirclePlay, PackageCheck, Sparkles } from "lucide-react";
 import { LandingActionLink } from "@/app/src/ui/landing-page/LandingActionLink";
-
-const ProofPoints = [
-	{ icon: BookOpen, value: "One workspace", label: "Connected books" },
-	{ icon: PackageCheck, value: "Live stock", label: "Inventory visibility" },
-	{ icon: ShieldCheck, value: "Controlled", label: "Roles and approvals" },
-	{ icon: BarChart3, value: "Clear reports", label: "Operational insight" },
-] as const;
 
 export function HeroSection() {
 	return (
@@ -22,19 +8,19 @@ export function HeroSection() {
 			className="landing-section relative overflow-hidden border-b border-darknavy/10 bg-white"
 		>
 			<HeroBackdrop />
-			<div className="landing-section-content relative z-10 text-center">
-				<div className="mx-auto max-w-4xl">
-					<h1 className="mx-auto max-w-4xl text-5xl font-semibold leading-[1.02] tracking-[-0.055em] text-darknavy sm:text-6xl lg:text-7xl">
+			<div className="landing-section-content relative z-10 grid items-center gap-14 text-center lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:text-left">
+				<div className="mx-auto max-w-xl lg:mx-0">
+					<h1 className="text-5xl font-semibold leading-[1.02] tracking-[-0.055em] text-darknavy sm:text-6xl lg:text-6xl xl:text-7xl">
 						Modern bookkeeping for the{" "}
 						<span className="text-sky-600">next generation</span> of
 						business.
 					</h1>
-					<p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-darknavy/60 sm:text-lg">
+					<p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-darknavy/60 sm:text-lg lg:mx-0">
 						Gr8Books Neo connects accounting, inventory, purchasing,
-						sales, approvals, and reporting—so your team can focus on
-						growth instead of reconciling scattered records.
+						sales, approvals, and reporting—so your team can focus
+						on growth instead of reconciling scattered records.
 					</p>
-					<div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+					<div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
 						<LandingActionLink href="/signup" showArrow>
 							Start for free
 						</LandingActionLink>
@@ -48,27 +34,6 @@ export function HeroSection() {
 					</div>
 				</div>
 
-				<div className="mx-auto mt-10 hidden max-w-3xl grid-cols-2 gap-3 sm:grid lg:grid-cols-4">
-					{ProofPoints.map((point) => (
-						<div
-							key={point.value}
-							className="flex items-center gap-3 rounded-xl border border-darknavy/10 bg-white/90 p-3 text-left shadow-sm"
-						>
-							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-skyblue/10 text-sky-700">
-								<point.icon className="h-4 w-4" />
-							</div>
-							<div className="min-w-0">
-								<p className="truncate text-sm font-bold text-darknavy">
-									{point.value}
-								</p>
-								<p className="truncate text-[11px] text-darknavy/45">
-									{point.label}
-								</p>
-							</div>
-						</div>
-					))}
-				</div>
-
 				<ProductPreview />
 			</div>
 		</section>
@@ -77,10 +42,13 @@ export function HeroSection() {
 
 function HeroBackdrop() {
 	return (
-		<div className="pointer-events-none absolute inset-0" aria-hidden="true">
+		<div
+			className="pointer-events-none absolute inset-0"
+			aria-hidden="true"
+		>
 			<div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(87,196,229,0.16),transparent_30%),radial-gradient(circle_at_12%_20%,rgba(209,214,70,0.10),transparent_22%)]" />
-			<div className="absolute inset-0 opacity-45 [background-image:radial-gradient(rgba(33,39,56,0.13)_1px,transparent_1px)] [background-size:24px_24px]" />
-			<div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-offwhite to-transparent" />
+			<div className="absolute inset-0 opacity-45 bg-[radial-gradient(rgba(33,39,56,0.13)_1px,transparent_1px)] bg-size-[24px_24px]" />
+			<div className="absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-offwhite to-transparent" />
 		</div>
 	);
 }
@@ -88,7 +56,7 @@ function HeroBackdrop() {
 function ProductPreview() {
 	return (
 		<div
-			className="relative mx-auto mt-12 hidden max-w-6xl sm:block"
+			className="relative hidden w-full lg:block"
 			aria-label="Product dashboard preview highlighting smart categorization and live inventory sync"
 		>
 			<div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-skyblue/10 blur-3xl" />
@@ -117,7 +85,7 @@ function ProductPreview() {
 					</div>
 					<div className="w-10" />
 				</div>
-				<div className="grid min-h-[25rem] md:grid-cols-[13rem_1fr]">
+				<div className="grid min-h-100 md:grid-cols-[13rem_1fr]">
 					<SkeletonSidebar />
 					<SkeletonDashboard />
 				</div>
@@ -142,9 +110,14 @@ function SkeletonSidebar() {
 					<div className="h-2 w-24 rounded-full bg-darknavy/20" />
 				</div>
 				{["w-20", "w-28", "w-16", "w-24"].map((width) => (
-					<div key={width} className="flex items-center gap-3 px-3 py-2">
+					<div
+						key={width}
+						className="flex items-center gap-3 px-3 py-2"
+					>
 						<div className="h-3.5 w-3.5 rounded bg-darknavy/10" />
-						<div className={`h-2 rounded-full bg-darknavy/10 ${width}`} />
+						<div
+							className={`h-2 rounded-full bg-darknavy/10 ${width}`}
+						/>
 					</div>
 				))}
 			</div>
@@ -175,7 +148,9 @@ function SkeletonDashboard() {
 						>
 							<div className="h-2 w-16 rounded-full bg-darknavy/10" />
 							<div className="mt-3 h-3.5 w-20 rounded-full bg-darknavy/80" />
-							<div className={`mt-3 h-1.5 w-12 rounded-full ${accent}`} />
+							<div
+								className={`mt-3 h-1.5 w-12 rounded-full ${accent}`}
+							/>
 						</div>
 					),
 				)}

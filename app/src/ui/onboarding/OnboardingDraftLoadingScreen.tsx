@@ -75,8 +75,16 @@ export function OnboardingDraftLoadingScreen({
   }
 
   return (
-    <main className="fixed inset-0 z-50 flex min-h-screen items-center justify-center bg-white px-6 py-10">
-      {content}
+    <main className="fixed inset-0 z-50 flex min-h-screen items-center justify-center overflow-hidden bg-offwhite px-6 py-10">
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_12%,rgba(209,214,70,0.10),transparent_24%),radial-gradient(circle_at_86%_18%,rgba(87,196,229,0.16),transparent_28%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(rgba(33,39,56,0.12)_1px,transparent_1px)] [background-size:24px_24px]"
+        aria-hidden="true"
+      />
+      <div className="relative">{content}</div>
     </main>
   );
 }

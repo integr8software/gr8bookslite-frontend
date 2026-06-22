@@ -1,6 +1,5 @@
 "use client";
 
-import { CalendarDays, ShieldCheck, Sparkles } from "lucide-react";
 import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingData";
 
 type OnboardingBillingSummaryCardProps = {
@@ -29,77 +28,53 @@ export function OnboardingBillingSummaryCard({
       : "Renews monthly after your free trial ends.";
 
   return (
-    <aside className="relative overflow-hidden rounded-3xl border border-darknavy/10 bg-darknavy p-6 text-offwhite shadow-[0_24px_70px_rgba(33,39,56,0.22)] sm:p-8">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(87,196,229,0.18),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(209,214,70,0.14),transparent_30%)]" />
-      <div className="absolute inset-0 opacity-[0.08] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-size-[18px_18px]" />
+    <aside className="overflow-hidden rounded-2xl border border-skyblue/30 bg-white text-darknavy shadow-[0_20px_50px_rgba(33,39,56,0.12)]">
+      <div className="bg-[radial-gradient(circle_at_90%_0%,rgba(87,196,229,0.42),transparent_42%),linear-gradient(145deg,#dff4fc_0%,#edf9fd_56%,#d4eff9_100%)] p-6 sm:p-7">
+        <h3 className="text-2xl font-semibold tracking-[-0.025em]">
+          {selectedPlan?.name ?? "No plan selected yet"}
+        </h3>
 
-      <div className="relative">
-        <div className="flex items-start justify-between gap-4">
+        <div className="mt-7 flex items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-citron">
-              Selected Plan
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">
+              After your trial
             </p>
-            <h3 className="mt-4 text-2xl font-semibold">
-              {selectedPlan?.name ?? "No plan selected yet"}
-            </h3>
+            <p className="mt-2 whitespace-nowrap text-4xl font-semibold tracking-[-0.04em]">
+              {selectedPrice ?? "Choose a plan"}
+            </p>
+            <p className="mt-1.5 text-sm text-darknavy/55">{cadenceLabel}</p>
           </div>
-
-          <div className="rounded-2xl border border-white/12 bg-white/8 p-3 shadow-[0_18px_35px_rgba(0,0,0,0.2)] backdrop-blur-md">
-            <Sparkles className="h-5 w-5 text-citron" />
-          </div>
+          <span className="mb-1 rounded-full bg-citron px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-darknavy">
+            15 days free
+          </span>
         </div>
+      </div>
 
-        <div className="mt-6 flex flex-wrap gap-3">
-          <div className="inline-flex items-center rounded-full border border-white/12 bg-white/8 px-3 py-2 text-xs font-medium text-offwhite/88 backdrop-blur-md">
-            <CalendarDays className="mr-2 h-4 w-4 text-skyblue" />
-            {billingLabel}
-          </div>
-          <div className="inline-flex items-center rounded-full border border-white/12 bg-white/8 px-3 py-2 text-xs font-medium text-offwhite/88 backdrop-blur-md">
-            <ShieldCheck className="mr-2 h-4 w-4 text-citron" />
-            Secure checkout
-          </div>
-        </div>
-
-        <div className="mt-8 rounded-3xl border border-white/10 bg-white/6 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-offwhite/55">
-            Billing Summary
-          </p>
-          <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0 flex-1">
-              <p className="whitespace-nowrap text-[2.4rem] leading-none font-semibold tracking-tight sm:text-4xl">
-                {selectedPrice ?? "Choose a plan first"}
-              </p>
-              <p className="mt-2 text-sm text-offwhite/70">
-                {cadenceLabel}
-              </p>
-            </div>
-            <div className="inline-flex self-start rounded-2xl bg-coralpink px-3 py-2 text-right text-xs font-semibold uppercase tracking-[0.18em] text-offwhite shadow-[0_14px_30px_rgba(249,112,104,0.3)] sm:self-auto">
-              Free Trial
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 space-y-4 rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-          <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4 text-sm">
-            <span className="text-offwhite/62">Plan</span>
-            <span className="font-medium text-offwhite">
+      <div className="p-6 sm:p-7">
+        <dl className="divide-y divide-darknavy/10">
+          <div className="flex items-center justify-between gap-5 pb-4 text-sm">
+            <dt className="text-darknavy/45">Plan</dt>
+            <dd className="text-right font-semibold text-darknavy">
               {selectedPlan?.name ?? "Pending selection"}
-            </span>
+            </dd>
           </div>
-          <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4 text-sm">
-            <span className="text-offwhite/62">Billing cycle</span>
-            <span className="font-medium text-offwhite">{billingLabel}</span>
+          <div className="flex items-center justify-between gap-5 py-4 text-sm">
+            <dt className="text-darknavy/45">Billing cycle</dt>
+            <dd className="text-right font-semibold text-darknavy">
+              {billingLabel}
+            </dd>
           </div>
-          <div className="flex items-start justify-between gap-4 text-sm">
-            <span className="text-offwhite/62">What happens next</span>
-            <span className="max-w-48 text-right leading-6 text-offwhite/82">
+          <div className="flex items-start justify-between gap-5 pt-4 text-sm">
+            <dt className="text-darknavy/45">Next payment</dt>
+            <dd className="max-w-52 text-right leading-6 text-darknavy/65">
               {renewalLabel}
-            </span>
+            </dd>
           </div>
-        </div>
+        </dl>
 
-        <p className="mt-6 text-sm leading-6 text-offwhite/75">
-          You can review pricing again by going back to the previous step.
+        <p className="mt-6 rounded-xl bg-skyblue/10 p-4 text-xs leading-5 text-darknavy/60">
+          No charge today. Your card is charged only after the free trial
+          ends.
         </p>
       </div>
     </aside>

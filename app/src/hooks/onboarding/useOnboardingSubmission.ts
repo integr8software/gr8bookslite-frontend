@@ -28,6 +28,7 @@ import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/Paym
 import {
   CreateFrontendAuthSession,
   GetAuthProfile,
+  SwitchCompanyContext,
 } from "@/app/src/services/auth/AuthApi";
 import {
   GetFallbackPostAuthRedirectPath,
@@ -79,6 +80,22 @@ async function DidBillingPersist(accessToken: string | null) {
   }
 
   return false;
+}
+
+async function GetCompletedOnboardingProfile(accessToken: string | null) {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const profile = await GetAuthProfile(accessToken);
+
+    if (!profile.onboarding.requiresCompanySetup) {
+      return profile;
+    }
+
+    if (attempt < 3) {
+      await Wait(750);
+    }
+  }
+
+  return null;
 }
 
 function IsRequestTimeout(error: unknown) {
@@ -154,6 +171,30 @@ export function useOnboardingSubmission({
 }: UseOnboardingSubmissionParams) {
   const router = useRouter();
   const resetAppStore = useAppStore((state) => state.resetAppStore);
+
+  async function redirectToCompletedOnboarding(
+    accessToken: string | null,
+  ) {
+    const profile = await GetCompletedOnboardingProfile(accessToken);
+
+    if (!profile) {
+      return false;
+    }
+
+    const companyId = GetAuthProfileCompanyId(profile);
+
+    if (companyId != null) {
+      const context = await SwitchCompanyContext(accessToken, companyId);
+      await CreateFrontendAuthSession(context.accessToken, false);
+    }
+
+    useAppStore.setState({
+      accessToken: AuthenticatedSessionMarker,
+      activeCompanyId: companyId,
+    });
+    router.replace(GetPostAuthRedirectPathFromProfile(profile));
+    return true;
+  }
 
   function canContinueFromStepOne() {
     const nextErrors = validateOnboardingStepOneValues(values);
@@ -367,6 +408,17 @@ export function useOnboardingSubmission({
           }
         } catch {
           // Fall through to the original timeout message when draft recovery fails.
+        }
+      }
+
+      if (isLastStep && IsRequestTimeout(error)) {
+        try {
+          if (await redirectToCompletedOnboarding(resolvedAccessToken)) {
+            toast.success("Onboarding completed successfully.");
+            return;
+          }
+        } catch {
+          // Preserve the timeout error when completion recovery is inconclusive.
         }
       }
 

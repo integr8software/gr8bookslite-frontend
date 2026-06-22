@@ -20,14 +20,14 @@ export function OnboardingSelectField({
   onChange,
 }: OnboardingSelectFieldProps) {
   const errorId = `${id}-error`;
-  const fieldClassName = `h-14 w-full appearance-none rounded-md border bg-white px-4 pr-12 text-base text-darknavy outline-none transition focus:ring-4 ${errors?.length
+  const fieldClassName = `h-12 w-full appearance-none rounded-lg border bg-offwhite px-4 pr-12 text-sm text-darknavy outline-none transition hover:border-skyblue/60 focus:bg-white focus:ring-4 ${errors?.length
     ? "border-coralpink focus:border-coralpink focus:ring-coralpink/20"
-    : "border-darknavy/20 focus:border-skyblue focus:ring-skyblue/20"
+    : "border-darknavy/10 focus:border-skyblue focus:ring-skyblue/15"
     }`;
 
   return (
     <div>
-      <label htmlFor={id} className="mb-2 block text-sm font-medium text-darknavy">
+      <label htmlFor={id} className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
       </label>
       <div className="relative">
@@ -50,7 +50,7 @@ export function OnboardingSelectField({
         <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-darknavy" />
       </div>
       {errors?.length ? (
-        <p id={errorId} className="mt-2 text-sm text-coralpink">
+        <p id={errorId} className="mt-2 text-sm font-medium text-coralpink">
           {errors[0]}
         </p>
       ) : null}

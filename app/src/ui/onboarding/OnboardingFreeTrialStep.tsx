@@ -34,20 +34,17 @@ export function OnboardingFreeTrialStep({
   }
 
   return (
-    <div className="mt-10 space-y-8">
+    <div className="space-y-8">
       <OnboardingPricingHero onReviewPlans={scrollToPricing} />
 
       <section
         ref={pricingSectionRef}
-        className="overflow-hidden rounded-4xl border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.08)]"
+        className="scroll-mt-8 overflow-hidden rounded-2xl border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.08)]"
       >
         <div className="border-b border-darknavy/10 bg-offwhite/50 px-6 py-8 sm:px-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-coralpink">
-                Pricing Overview
-              </p>
-              <h3 className="mt-3 text-3xl font-semibold tracking-tight text-darknavy">
+              <h3 className="text-3xl font-semibold tracking-tight text-darknavy">
                 Compare plans before you continue
               </h3>
               <p className="mt-3 text-sm leading-6 text-darknavy/65 sm:text-base">

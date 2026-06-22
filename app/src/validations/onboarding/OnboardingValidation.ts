@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import type {
   OnboardingFieldErrors,
   OnboardingValues,
@@ -103,11 +102,22 @@ const TINSchema = z
 const ContactNumberSchema = z
   .string()
   .trim()
-  .min(1, "Contact number is required.")
-  .refine(
-    (value) => value === FormatPhilippineContactNumber(value).trim(),
-    "Enter a valid contact number in the format.",
-  );
+  .superRefine((value, ctx) => {
+    if (value === "" || value === "+63") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Contact number is required.",
+      });
+      return;
+    }
+
+    if (!/^\+63 \d{3} \d{3} \d{4}$/.test(value)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Enter a valid contact number in the format +63 XXX XXX XXXX.",
+      });
+    }
+  });
 
 const CompanyEmailSchema = z
   .string()
@@ -115,17 +125,20 @@ const CompanyEmailSchema = z
   .min(1, "Company email is required.")
   .email("Enter a valid company email.");
 
-const LogoSchema = z
-  .instanceof(File, { message: "Upload a logo image." })
-  .refine((file) => file.size > 0, "Upload a logo image.")
-  .refine(
-    (file) => file.type.startsWith("image/"),
-    "Only image files are allowed.",
-  )
-  .refine(
-    (file) => file.size <= OnboardingMaxImageSizeBytes,
-    "Logo must be 5MB or smaller.",
-  );
+const LogoSchema = z.union([
+  z
+    .instanceof(File, { message: "Upload a logo image." })
+    .refine((file) => file.size > 0, "Upload a logo image.")
+    .refine(
+      (file) => file.type.startsWith("image/"),
+      "Only image files are allowed.",
+    )
+    .refine(
+      (file) => file.size <= OnboardingMaxImageSizeBytes,
+      "Logo must be 5MB or smaller.",
+    ),
+  z.string().trim().min(1, "Upload a logo image."),
+]);
 
 const ReportDateSchema = z
   .string()
@@ -280,11 +293,19 @@ export const OnboardingBillingStepSchema = z
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
+    const maximumExpiryYear = currentYear + 50;
 
     if (year < currentYear || (year === currentYear && month < currentMonth)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Card expiry date cannot be in the past.",
+        path: ["expiryYear"],
+      });
+    } else if (year > maximumExpiryYear) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Expiry year must be this year or no later than 50 years from now.",
         path: ["expiryYear"],
       });
     }
@@ -300,6 +321,10 @@ export type OnboardingBillingStepInput = z.infer<
 export function validateOnboardingStepOneValues(
   values: OnboardingValues,
 ): OnboardingFieldErrors {
+  const persistedLogo =
+    values.logoStoragePath.trim() ||
+    values.logoPublicUrl.trim() ||
+    values.logoName.trim();
   const parsed = OnboardingStepOneSchema.safeParse({
     ...getOnboardingIdentityPayload(values),
     address: values.address,
@@ -307,7 +332,7 @@ export function validateOnboardingStepOneValues(
     companyEmail: values.companyEmail,
     website: values.website,
     contactNumber: values.contactNumber,
-    logo: values.logoFile,
+    logo: values.logoFile ?? persistedLogo,
     reportYearBasis: values.reportYearBasis,
     reportStartDate: values.reportStartDate,
     reportEndDate: values.reportEndDate,

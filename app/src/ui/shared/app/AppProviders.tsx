@@ -11,6 +11,7 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { GetFrontendAuthSession } from "@/app/src/services/auth/AuthApi";
 import { CreateQueryClient } from "@/app/src/services/shared/app/QueryClient";
 import {
+  AuthLogoutStartedEventName,
   AuthSessionExpiredEventName,
 } from "@/app/src/services/auth/AuthSessionExpired";
 import { AppThemeEffect } from "@/app/src/ui/shared/app/AppThemeEffect";
@@ -77,10 +78,16 @@ export function AppProviders({ children }: AppProvidersProps) {
       setIsSessionExpiredDialogOpen(true);
     }
 
+    function handleLogoutStarted() {
+      setIsSessionExpiredDialogOpen(false);
+    }
+
     window.addEventListener(AuthSessionExpiredEventName, handleSessionExpired);
+    window.addEventListener(AuthLogoutStartedEventName, handleLogoutStarted);
 
     return () => {
       window.removeEventListener(AuthSessionExpiredEventName, handleSessionExpired);
+      window.removeEventListener(AuthLogoutStartedEventName, handleLogoutStarted);
     };
   }, [pathname]);
 

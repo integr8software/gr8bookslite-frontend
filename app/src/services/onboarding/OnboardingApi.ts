@@ -13,6 +13,8 @@ import type {
   UploadOnboardingCompanyLogoResponse,
 } from "@/app/src/services/onboarding/OnboardingApiTypes";
 
+const CompleteOnboardingTimeoutMs = 60000;
+
 function GetAuthorizationHeaders(accessToken: string | null) {
   if (!accessToken || IsClientAuthSessionMarker(accessToken)) {
     return undefined;
@@ -106,6 +108,7 @@ export async function CompleteOnboarding(accessToken: string | null) {
     {},
     {
       headers: GetAuthorizationHeaders(accessToken),
+      timeout: CompleteOnboardingTimeoutMs,
     },
   );
 

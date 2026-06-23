@@ -3,7 +3,7 @@ import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 
 export function LogoutLoadingScreen() {
 	return (
-		<main className="flex min-h-screen items-center justify-center overflow-hidden bg-offwhite px-6 py-10 text-darknavy">
+		<main className="fixed inset-0 z-[100] flex h-dvh items-center justify-center overflow-hidden bg-offwhite px-6 py-10 text-darknavy">
 			<section
 				className="flex w-full max-w-sm flex-col items-center rounded-lg border border-darknavy/10 bg-white px-6 py-10 text-center shadow-[0_24px_70px_rgba(33,39,56,0.12)] sm:px-10"
 				aria-busy="true"

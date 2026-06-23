@@ -137,6 +137,31 @@ export const ApprovalManagementFormSchema = z
 			});
 		}
 
+		const amountRules = values.routingRules
+			.map((rule, index) => ({ index, rule }))
+			.filter(({ rule }) => rule.basis === "amount");
+
+		amountRules.forEach(({ index, rule }, amountRuleIndex) => {
+			const previousAmountRule = amountRules[amountRuleIndex - 1];
+
+			if (!previousAmountRule) {
+				return;
+			}
+
+			const amount = parseCurrencyAmount(rule.amountValue);
+			const previousAmount = parseCurrencyAmount(
+				previousAmountRule.rule.amountValue,
+			);
+
+			if (amount > 0 && previousAmount > 0 && amount >= previousAmount) {
+				context.addIssue({
+					code: "custom",
+					message: `Amount must be lower than Payment Condition ${amountRuleIndex}.`,
+					path: ["routingRules", index, "amountValue"],
+				});
+			}
+		});
+
 		const stageIds = new Set(values.stages.map((stage) => stage.id));
 
 		values.routingRules.forEach((rule, index) => {

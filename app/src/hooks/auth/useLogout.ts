@@ -1,7 +1,6 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { ClearLegacyAuthStorage } from "@/app/src/data/auth/AuthSessionStorage";
 import { ClearPendingVerificationEmail } from "@/app/src/data/auth/AuthVerificationStorage";
 import { ClearAiAssistantStorage } from "@/app/src/data/shared/ai-assistant/AiAssistantData";
@@ -11,11 +10,9 @@ import { BeginIntentionalLogout } from "@/app/src/services/auth/AuthSessionExpir
 
 export function useLogout() {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const beginShellContextSwitch = useAppStore(
     (state) => state.beginShellContextSwitch,
   );
-  const resetAppStore = useAppStore((state) => state.resetAppStore);
 
   return async function logout() {
     BeginIntentionalLogout();
@@ -34,10 +31,7 @@ export function useLogout() {
       ClearAiAssistantStorage();
       queryClient.clear();
       queryClient.removeQueries({ queryKey: AuthQueryKeys.all });
-      resetAppStore();
-      beginShellContextSwitch("Logging out...");
-      router.replace("/login");
-      router.refresh();
+      window.location.replace("/login");
     }
   };
 }

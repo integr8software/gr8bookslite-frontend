@@ -11,8 +11,8 @@ export function LandingNavigation() {
 	const { isMenuOpen, toggleMenu, closeMenu } = useLandingNavigation();
 
 	return (
-		<header className="relative z-30 border-b border-darknavy/10 bg-white/90 backdrop-blur-xl">
-			<div className="mx-auto flex min-h-18 max-w-7xl items-center justify-between gap-2 px-4  lg:px-0 ">
+		<header className="relative z-30 border-b border-darknavy/10 bg-white/90 backdrop-blur-xl [view-transition-name:landing-navigation]">
+			<div className="landing-container flex min-h-18 items-center justify-between gap-2">
 				<Link
 					href="/"
 					className="shrink-0 text-lg font-semibold sm:text-xl"
@@ -75,7 +75,7 @@ export function LandingNavigation() {
 					id="landing-mobile-navigation"
 					className="absolute inset-x-0 top-full border-y border-darknavy/10 bg-white p-5 shadow-lg md:hidden"
 				>
-					<div className="mx-auto flex max-w-7xl flex-col gap-1">
+					<div className="landing-container flex flex-col gap-1">
 						{LandingPageNavigationLinks.map((link) => (
 							<Link
 								key={link.label}

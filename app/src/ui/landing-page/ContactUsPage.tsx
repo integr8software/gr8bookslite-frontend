@@ -48,7 +48,7 @@ const ContactUsPage = () => {
 			/>
 
 			{/* Content */}
-			<section className="bg-white mx-auto max-w-360 px-6 py-10 text-black">
+			<section className="mx-auto max-w-7xl bg-white px-5 py-10 text-black sm:px-8 lg:px-10">
 				<p className="mb-6">
 					Have a question or need help with {AppName}? Send us the
 					details of your concern and our team will help you find the

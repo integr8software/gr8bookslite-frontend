@@ -145,6 +145,7 @@
 html {
 	font-size: 90%;
 	scroll-behavior: smooth;
+	scrollbar-gutter: stable;
 	text-size-adjust: 100%;
 }
 
@@ -949,7 +950,7 @@ button {
 
 .landing-section {
 	width: 100%;
-	padding: 4rem 1.25rem;
+	padding-block: 4rem;
 }
 
 .landing-section-compact {
@@ -962,21 +963,27 @@ button {
 		linear-gradient(90deg, #edf7fc, #f0f8fc 48%, #eaf7fd);
 }
 
+.landing-container,
 .landing-section-content {
 	width: 100%;
-	max-width: 80rem;
+	max-width: 82.5rem;
 	margin-inline: auto;
+	padding-inline: 1.25rem;
 }
 
 @media (min-width: 40rem) {
-	.landing-section {
+	.landing-container,
+	.landing-section-content {
 		padding-inline: 2rem;
+		max-width: 84rem;
 	}
 }
 
 @media (min-width: 64rem) {
-	.landing-section {
+	.landing-container,
+	.landing-section-content {
 		padding-inline: 2.5rem;
+		max-width: 85rem;
 	}
 }
 
@@ -1215,6 +1222,17 @@ button {
 ::view-transition-group(.auth-back) {
 	animation-duration: 560ms;
 	overflow: clip;
+}
+
+::view-transition-group(landing-navigation),
+::view-transition-old(landing-navigation),
+::view-transition-new(landing-navigation) {
+	animation: none;
+}
+
+::view-transition-old(landing-navigation),
+::view-transition-new(landing-navigation) {
+	mix-blend-mode: normal;
 }
 
 @keyframes auth-slide {

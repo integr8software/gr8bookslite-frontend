@@ -21,11 +21,13 @@ export function OnboardingFlow() {
     plans,
     isSubmitting,
     submittingPlanCode,
+    furthestStepIndex,
     isDraftLoading,
     updateValue,
     setTaxpayerType,
     handleLogoChange,
     handleLogoRemove,
+    navigateToStep,
     handlePlanSelection,
     handleNext,
     handleBack,
@@ -43,6 +45,8 @@ export function OnboardingFlow() {
         progressPercent={currentStep.progressPercent}
         title={currentStep.title}
         description={currentStep.description}
+        furthestStep={furthestStepIndex + 1}
+        onStepSelect={(step) => navigateToStep(step - 1)}
       />
 
       <div className="min-w-0">
@@ -55,7 +59,21 @@ export function OnboardingFlow() {
           />
         ) : null}
 
-        {currentStep.currentStep !== OnboardingSteps[0].currentStep ? (
+        {currentStep.currentStep === OnboardingSteps[2].currentStep ? (
+          <OnboardingBillingStep
+            values={values}
+            errors={errors}
+            selectedPlan={selectedPlan}
+            selectedBillingCycle={selectedBillingCycle}
+            isSubmitting={isSubmitting}
+            updateValue={updateValue}
+            handleBack={handleBack}
+            handleNext={handleNext}
+          />
+        ) : null}
+
+        {currentStep.currentStep === OnboardingSteps[1].currentStep ||
+        currentStep.currentStep === OnboardingSteps[3].currentStep ? (
           <section className="rounded-2xl border border-darknavy/10 bg-white p-5 shadow-[0_20px_60px_rgba(33,39,56,0.09)] sm:p-8 lg:p-10">
             {currentStep.currentStep === OnboardingSteps[1].currentStep ? (
               <OnboardingStepOne
@@ -68,19 +86,6 @@ export function OnboardingFlow() {
                 setTaxpayerType={setTaxpayerType}
                 handleLogoChange={handleLogoChange}
                 handleLogoRemove={handleLogoRemove}
-                handleBack={handleBack}
-                handleNext={handleNext}
-              />
-            ) : null}
-
-            {currentStep.currentStep === OnboardingSteps[2].currentStep ? (
-              <OnboardingBillingStep
-                values={values}
-                errors={errors}
-                selectedPlan={selectedPlan}
-                selectedBillingCycle={selectedBillingCycle}
-                isSubmitting={isSubmitting}
-                updateValue={updateValue}
                 handleBack={handleBack}
                 handleNext={handleNext}
               />

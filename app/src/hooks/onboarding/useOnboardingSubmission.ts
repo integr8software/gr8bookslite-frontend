@@ -147,12 +147,14 @@ type UseOnboardingSubmissionParams = {
   isFirstStep: boolean;
   isLastStep: boolean;
   values: OnboardingValues;
+  hasPersistedBillingSetup: boolean;
   setErrors: React.Dispatch<React.SetStateAction<OnboardingFieldErrors>>;
   setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>;
   setSubmittingPlanCode: React.Dispatch<React.SetStateAction<string | null>>;
   setStepIndex: React.Dispatch<React.SetStateAction<number>>;
   setSelectedPlan: React.Dispatch<React.SetStateAction<PricingPlan | null>>;
   setSelectedBillingCycle: React.Dispatch<React.SetStateAction<BillingCycle>>;
+  setHasPersistedBillingSetup: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function useOnboardingSubmission({
@@ -162,12 +164,14 @@ export function useOnboardingSubmission({
   isFirstStep,
   isLastStep,
   values,
+  hasPersistedBillingSetup,
   setErrors,
   setIsSubmitting,
   setSubmittingPlanCode,
   setStepIndex,
   setSelectedPlan,
   setSelectedBillingCycle,
+  setHasPersistedBillingSetup,
 }: UseOnboardingSubmissionParams) {
   const router = useRouter();
   const resetAppStore = useAppStore((state) => state.resetAppStore);
@@ -264,7 +268,15 @@ export function useOnboardingSubmission({
     }
 
     if (stepIndex === 1 && !canContinueFromStepOne()) return;
-    if (stepIndex === 2 && !canContinueFromBillingStep()) return;
+    const isUsingPersistedBilling =
+      stepIndex === 2 &&
+      hasPersistedBillingSetup &&
+      values.cardNumber.trim() === "" &&
+      values.cvc.trim() === "";
+
+    if (stepIndex === 2 && !isUsingPersistedBilling && !canContinueFromBillingStep()) {
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -310,6 +322,11 @@ export function useOnboardingSubmission({
       }
 
       if (stepIndex === 2) {
+        if (isUsingPersistedBilling) {
+          setStepIndex((current) => current + 1);
+          return;
+        }
+
         const cardDigits = GetDigitsOnly(values.cardNumber);
         const paymentMethod = await CreatePaymongoCardPaymentMethod({
           cardholderName: values.cardholderName.trim(),
@@ -342,6 +359,7 @@ export function useOnboardingSubmission({
         }
 
         setStepIndex((current) => current + 1);
+        setHasPersistedBillingSetup(true);
         toast.success(
           billingResponse.pendingProviderActivation
             ? "Billing setup is pending while PayMongo subscription billing is being activated."

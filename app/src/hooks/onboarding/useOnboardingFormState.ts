@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type SetStateAction } from "react";
 import {
   GetSyncedReportEndDate,
   GetSyncedReportStartDate,
@@ -36,7 +36,10 @@ function FormatCardNumber(value: string) {
 }
 
 export function useOnboardingFormState() {
-  const [stepIndex, setStepIndex] = useState(0);
+  const [{ stepIndex, furthestStepIndex }, setStepNavigation] = useState({
+    stepIndex: 0,
+    furthestStepIndex: 0,
+  });
   const [values, setValues] = useState<OnboardingValues>(
     InitialOnboardingValues,
   );
@@ -46,6 +49,8 @@ export function useOnboardingFormState() {
   const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);
   const [selectedBillingCycle, setSelectedBillingCycle] =
     useState<BillingCycle>("monthly");
+  const [hasPersistedBillingSetup, setHasPersistedBillingSetup] =
+    useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittingPlanCode, setSubmittingPlanCode] = useState<string | null>(
     null,
@@ -74,6 +79,31 @@ export function useOnboardingFormState() {
     });
     previousStepIndexRef.current = stepIndex;
   }, [stepIndex]);
+
+  function setStepIndex(action: SetStateAction<number>) {
+    setStepNavigation((current) => {
+      const next =
+        typeof action === "function" ? action(current.stepIndex) : action;
+
+      return {
+        stepIndex: next,
+        furthestStepIndex: Math.max(current.furthestStepIndex, next),
+      };
+    });
+  }
+
+  function navigateToStep(nextStepIndex: number) {
+    if (
+      isSubmitting ||
+      nextStepIndex < 0 ||
+      nextStepIndex > furthestStepIndex
+    ) {
+      return;
+    }
+
+    setErrors({});
+    setStepIndex(nextStepIndex);
+  }
 
   function updateValue(key: keyof OnboardingValues, value: string) {
     if (key === "cardNumber") {
@@ -283,6 +313,8 @@ export function useOnboardingFormState() {
   return {
     stepIndex,
     setStepIndex,
+    furthestStepIndex,
+    navigateToStep,
     values,
     setValues,
     errors,
@@ -294,6 +326,8 @@ export function useOnboardingFormState() {
     setSelectedPlan,
     selectedBillingCycle,
     setSelectedBillingCycle,
+    hasPersistedBillingSetup,
+    setHasPersistedBillingSetup,
     isSubmitting,
     setIsSubmitting,
     submittingPlanCode,

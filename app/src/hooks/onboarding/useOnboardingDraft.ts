@@ -45,6 +45,7 @@ type UseOnboardingDraftParams = {
   accessToken: string | null;
   setSelectedPlan: React.Dispatch<React.SetStateAction<PricingPlan | null>>;
   setSelectedBillingCycle: React.Dispatch<React.SetStateAction<BillingCycle>>;
+  setHasPersistedBillingSetup: React.Dispatch<React.SetStateAction<boolean>>;
   setStepIndex: React.Dispatch<React.SetStateAction<number>>;
   setValues: React.Dispatch<React.SetStateAction<OnboardingValues>>;
   setPersistedLogoPreviewUrl: (value: string) => void;
@@ -54,6 +55,7 @@ export function useOnboardingDraft({
   accessToken,
   setSelectedPlan,
   setSelectedBillingCycle,
+  setHasPersistedBillingSetup,
   setStepIndex,
   setValues,
   setPersistedLogoPreviewUrl,
@@ -106,6 +108,7 @@ export function useOnboardingDraft({
 
         setSelectedPlan(selectedDraftPlan);
         setSelectedBillingCycle(GetUiBillingCycle(draft.billingCycle));
+        setHasPersistedBillingSetup(draft.hasBillingSetup);
         setStepIndex(GetDraftStepIndex(draft));
         setPersistedLogoPreviewUrl(draftCompanyDetails.logoPublicUrl ?? "");
         setValues((current) => ({
@@ -140,8 +143,8 @@ export function useOnboardingDraft({
             : "",
           expiryYear: draft.cardExpiryYear ? String(draft.cardExpiryYear) : "",
           billingAddress: draft.billingAddress ?? "",
-          cardNumber: "",
-          cvc: "",
+          cardNumber: current.cardNumber,
+          cvc: current.cvc,
         }));
       } catch (error) {
         if (!isActive || IsIntentionalLogoutInProgress()) {
@@ -170,6 +173,7 @@ export function useOnboardingDraft({
     hasResolvedDraft,
     resolvedAccessToken,
     setSelectedBillingCycle,
+    setHasPersistedBillingSetup,
     setSelectedPlan,
     setStepIndex,
     setPersistedLogoPreviewUrl,

@@ -35,7 +35,7 @@ export function LandingDocumentHeader({
 			/>
 			<div className="absolute -right-24 -bottom-24 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
 
-			<div className="relative mx-auto flex max-w-360 flex-col justify-between gap-6 px-6 py-16 sm:flex-row">
+			<div className="relative mx-auto flex max-w-7xl flex-col justify-between gap-6 px-5 py-16 sm:flex-row sm:px-8 lg:px-10">
 				<h1 className="text-4xl leading-tight font-extrabold tracking-tight sm:w-1/2 md:w-3/4 lg:w-1/2 md:text-6xl lg:text-7xl">
 					<span className="bg-linear-to-r from-white via-blue-200 to-cyan-300 bg-clip-text text-left text-transparent">
 						{title}

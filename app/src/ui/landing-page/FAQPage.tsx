@@ -13,7 +13,7 @@ const FAQPage = () => {
 			/>
 
 			{/* Content */}
-			<section className="bg-white mx-auto max-w-360 px-6 py-10 text-black">
+			<section className="mx-auto max-w-7xl bg-white px-5 py-10 text-black sm:px-8 lg:px-10">
 				<p className="mb-6">
 					Find quick answers to common questions about {AppName},
 					account access, workspace management, accounting, inventory,

@@ -20,7 +20,7 @@ export function OnboardingBillingStep({
 }: OnboardingBillingStepProps) {
   return (
     <div className="grid gap-8 lg:grid-cols-[1.12fr_0.88fr]">
-        <div className="space-y-6">
+        <div className="order-2 space-y-6 rounded-2xl border border-darknavy/10 bg-white p-5 shadow-[0_20px_60px_rgba(33,39,56,0.09)] sm:p-8 lg:order-1 lg:p-10">
           <div className="grid gap-5 md:grid-cols-2">
             <OnboardingField
               label="Cardholder Name"
@@ -127,10 +127,12 @@ export function OnboardingBillingStep({
           />
         </div>
 
-        <OnboardingBillingSummaryCard
-          selectedPlan={selectedPlan}
-          selectedBillingCycle={selectedBillingCycle}
-        />
+        <div className="order-1 lg:order-2">
+          <OnboardingBillingSummaryCard
+            selectedPlan={selectedPlan}
+            selectedBillingCycle={selectedBillingCycle}
+          />
+        </div>
 
     </div>
   );

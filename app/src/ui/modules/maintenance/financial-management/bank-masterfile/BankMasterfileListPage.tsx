@@ -8,7 +8,10 @@ import {
   Building2,
   CirclePause,
   Landmark,
+  Pencil,
   Plus,
+  Power,
+  PowerOff,
   RefreshCcw,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -41,6 +44,11 @@ type BankMasterfileRecord = {
   accountName: string;
   accountType: string | null;
   currencyCode: string | null;
+  currencyExchangeRate?: string | null;
+  isDefault?: boolean;
+  seriesStart?: string | null;
+  seriesEnd?: string | null;
+  seriesDigits?: number | null;
   status: BankStatus;
 };
 
@@ -53,13 +61,17 @@ type BankMasterfileResponse = {
   };
 };
 
+type NextAccountCodeResponse = {
+  accountCode: string;
+  parentAccountCode: string;
+  parentAccountTitle: string;
+};
+
 type BankFormValues = {
   bankName: string;
   branch: string;
-  accountName: string;
   accountNumber: string;
   accountType: string;
-  accountCode: string;
   currencyCode: string;
   currencyExchangeRate: string;
   seriesStart: string;
@@ -74,10 +86,8 @@ const EmptyBanks: BankMasterfileRecord[] = [];
 const EmptyBankFormValues: BankFormValues = {
   bankName: "",
   branch: "",
-  accountName: "",
   accountNumber: "",
   accountType: "Checking",
-  accountCode: "",
   currencyCode: "PHP",
   currencyExchangeRate: "",
   seriesStart: "",
@@ -98,25 +108,65 @@ const formId = "bank-masterfile-drawer-form";
 export function BankMasterfileListPage() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [editingBank, setEditingBank] = useState<BankMasterfileRecord | null>(
+    null,
+  );
   const [values, setValues] = useState<BankFormValues>(EmptyBankFormValues);
   const banksQuery = useQuery({
     queryKey: ["bankMasterfile", "list"],
     queryFn: loadBanks,
   });
+  const nextAccountCodeQuery = useQuery({
+    queryKey: ["bankMasterfile", "nextAccountCode"],
+    queryFn: loadNextAccountCode,
+    enabled: isDrawerOpen && !editingBank,
+  });
   const banks = banksQuery.data ?? EmptyBanks;
+  const displayedAccountName = buildAccountName(values);
+  const displayedAccountCode = editingBank
+    ? editingBank.accountCode
+    : nextAccountCodeQuery.data?.accountCode ?? "Auto series";
+
   const createBankMutation = useMutation({
     mutationFn: createBank,
     onSuccess: async () => {
       toast.success("Bank account created.");
-      setValues(EmptyBankFormValues);
-      setIsAddDrawerOpen(false);
+      closeDrawer();
       await banksQuery.refetch();
     },
     onError: (error) => {
       toast.error(formatLoadError(error));
     },
   });
+  const updateBankMutation = useMutation({
+    mutationFn: ({ id, values }: { id: string; values: BankFormValues }) =>
+      updateBank(id, values),
+    onSuccess: async () => {
+      toast.success("Bank account updated.");
+      closeDrawer();
+      await banksQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(formatLoadError(error));
+    },
+  });
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: BankStatus }) =>
+      updateBankStatus(id, status),
+    onSuccess: async (_response, variables) => {
+      toast.success(
+        variables.status === "ACTIVE"
+          ? "Bank account activated."
+          : "Bank account inactivated.",
+      );
+      await banksQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(formatLoadError(error));
+    },
+  });
+  const isSaving = createBankMutation.isPending || updateBankMutation.isPending;
 
   const filteredBanks = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -142,18 +192,48 @@ export function BankMasterfileListPage() {
   }, [banks, query, statusFilter]);
 
   function openAddDrawer() {
+    setEditingBank(null);
     setValues(EmptyBankFormValues);
-    setIsAddDrawerOpen(true);
+    setIsDrawerOpen(true);
+    void nextAccountCodeQuery.refetch();
+  }
+
+  function openEditDrawer(bank: BankMasterfileRecord) {
+    setEditingBank(bank);
+    setValues({
+      bankName: bank.bankName,
+      branch: bank.branch ?? "",
+      accountNumber: bank.accountNumber,
+      accountType: bank.accountType ?? "Checking",
+      currencyCode: bank.currencyCode ?? "PHP",
+      currencyExchangeRate: bank.currencyExchangeRate ?? "",
+      seriesStart: bank.seriesStart ?? "",
+      seriesEnd: bank.seriesEnd ?? "",
+      seriesDigits: bank.seriesDigits ? String(bank.seriesDigits) : "",
+      isDefault: bank.isDefault ?? false,
+      status: bank.status,
+    });
+    setIsDrawerOpen(true);
+  }
+
+  function closeDrawer() {
+    setIsDrawerOpen(false);
+    setEditingBank(null);
+    setValues(EmptyBankFormValues);
   }
 
   function updateField(
     event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
-    const { checked, name, type, value } = event.target;
+    const { name, type, value } = event.target;
+    const nextValue =
+      type === "checkbox" && event.target instanceof HTMLInputElement
+        ? event.target.checked
+        : value;
 
     setValues((current) => ({
       ...current,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: nextValue,
     }));
   }
 
@@ -165,7 +245,19 @@ export function BankMasterfileListPage() {
       return;
     }
 
+    if (editingBank) {
+      updateBankMutation.mutate({ id: editingBank.id, values });
+      return;
+    }
+
     createBankMutation.mutate(values);
+  }
+
+  function toggleBankStatus(bank: BankMasterfileRecord) {
+    updateStatusMutation.mutate({
+      id: bank.id,
+      status: bank.status === "ACTIVE" ? "INACTIVE" : "ACTIVE",
+    });
   }
 
   return (
@@ -262,6 +354,7 @@ export function BankMasterfileListPage() {
                 <th className="px-5 py-3 font-semibold">COA Code</th>
                 <th className="px-5 py-3 font-semibold">Currency</th>
                 <th className="px-5 py-3 font-semibold">Status</th>
+                <th className="px-5 py-3 text-right font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-darknavy/10 bg-white">
@@ -269,7 +362,7 @@ export function BankMasterfileListPage() {
                 <tr>
                   <td
                     className="px-5 py-8 text-center text-darknavy/60"
-                    colSpan={7}
+                    colSpan={8}
                   >
                     Loading bank records...
                   </td>
@@ -278,7 +371,7 @@ export function BankMasterfileListPage() {
                 <tr>
                   <td
                     className="px-5 py-8 text-center text-red-600"
-                    colSpan={7}
+                    colSpan={8}
                   >
                     {formatLoadError(banksQuery.error)}
                   </td>
@@ -287,7 +380,7 @@ export function BankMasterfileListPage() {
                 <tr>
                   <td
                     className="px-5 py-8 text-center text-darknavy/60"
-                    colSpan={7}
+                    colSpan={8}
                   >
                     No bank records found.
                   </td>
@@ -328,6 +421,46 @@ export function BankMasterfileListPage() {
                         {bank.status === "ACTIVE" ? "Active" : "Inactive"}
                       </span>
                     </td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          className={iconButtonClassName}
+                          onClick={() => openEditDrawer(bank)}
+                          title="Edit bank"
+                          aria-label={`Edit ${bank.bankName}`}
+                        >
+                          <Pencil className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className={joinClasses(
+                            iconButtonClassName,
+                            bank.status === "ACTIVE"
+                              ? "text-amber-700 hover:border-amber-300 hover:bg-amber-50"
+                              : "text-emerald-700 hover:border-emerald-300 hover:bg-emerald-50",
+                          )}
+                          onClick={() => toggleBankStatus(bank)}
+                          disabled={updateStatusMutation.isPending}
+                          title={
+                            bank.status === "ACTIVE"
+                              ? "Inactivate bank"
+                              : "Activate bank"
+                          }
+                          aria-label={
+                            bank.status === "ACTIVE"
+                              ? `Inactivate ${bank.bankName}`
+                              : `Activate ${bank.bankName}`
+                          }
+                        >
+                          {bank.status === "ACTIVE" ? (
+                            <PowerOff className="h-4 w-4" aria-hidden="true" />
+                          ) : (
+                            <Power className="h-4 w-4" aria-hidden="true" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -337,18 +470,21 @@ export function BankMasterfileListPage() {
       </div>
 
       <MaintenanceFormDrawer
-        description="Create a bank account and link it to Cash in Bank in the Chart of Accounts."
+        description="Create or update a bank account and keep its Cash in Bank chart account synchronized."
         eyebrow="Accounting master data"
         formId={formId}
-        isOpen={isAddDrawerOpen}
-        isSaving={createBankMutation.isPending}
-        onClose={() => setIsAddDrawerOpen(false)}
-        title="Add Bank"
+        isOpen={isDrawerOpen}
+        isSaving={isSaving}
+        onClose={closeDrawer}
+        title={editingBank ? "Edit Bank" : "Add Bank"}
       >
         <form id={formId} onSubmit={handleSubmit} className="px-6 py-5">
           <BankMasterfileFields
+            accountCode={displayedAccountCode}
+            accountName={displayedAccountName}
+            isCodeLoading={nextAccountCodeQuery.isFetching && !editingBank}
             values={values}
-            isSaving={createBankMutation.isPending}
+            isSaving={isSaving}
             onChange={updateField}
           />
         </form>
@@ -358,10 +494,16 @@ export function BankMasterfileListPage() {
 }
 
 function BankMasterfileFields({
+  accountCode,
+  accountName,
+  isCodeLoading,
   isSaving,
   values,
   onChange,
 }: {
+  accountCode: string;
+  accountName: string;
+  isCodeLoading: boolean;
   isSaving: boolean;
   values: BankFormValues;
   onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
@@ -390,16 +532,6 @@ function BankMasterfileFields({
               placeholder="Makati Branch"
             />
           </FormField>
-          <FormField label="Account Name">
-            <input
-              name="accountName"
-              value={values.accountName}
-              onChange={onChange}
-              disabled={isSaving}
-              className={fieldClassName}
-              placeholder="Cash in Bank - BDO"
-            />
-          </FormField>
           <FormField label="Account Number" required>
             <input
               name="accountNumber"
@@ -423,16 +555,20 @@ function BankMasterfileFields({
               <option value="Current">Current</option>
             </select>
           </FormField>
+          <FormField label="Account Name">
+            <input
+              value={accountName}
+              readOnly
+              disabled={isSaving}
+              className={readOnlyFieldClassName}
+            />
+          </FormField>
           <FormField label="Account Code">
             <input
-              name="accountCode"
-              value={values.accountCode}
-              onChange={onChange}
+              value={isCodeLoading ? "Loading..." : accountCode}
+              readOnly
               disabled={isSaving}
-              className={fieldClassName}
-              placeholder="Leave blank for auto"
-              inputMode="numeric"
-              maxLength={10}
+              className={readOnlyFieldClassName}
             />
           </FormField>
           <FormField label="Currency">
@@ -553,14 +689,41 @@ async function loadBanks() {
   return response.data.bankAccounts;
 }
 
+async function loadNextAccountCode() {
+  const response = await ApiClient.get<NextAccountCodeResponse>(
+    "/maintenance/financial-management/bank-masterfile/next-account-code",
+  );
+
+  return response.data;
+}
+
 async function createBank(values: BankFormValues) {
-  const payload = {
+  await ApiClient.post(
+    "/maintenance/financial-management/bank-masterfile",
+    toBankPayload(values),
+  );
+}
+
+async function updateBank(id: string, values: BankFormValues) {
+  await ApiClient.patch(
+    `/maintenance/financial-management/bank-masterfile/${id}`,
+    toBankPayload(values),
+  );
+}
+
+async function updateBankStatus(id: string, status: BankStatus) {
+  await ApiClient.patch(
+    `/maintenance/financial-management/bank-masterfile/${id}/status`,
+    { status },
+  );
+}
+
+function toBankPayload(values: BankFormValues) {
+  return {
     bankName: values.bankName.trim(),
     branch: cleanOptional(values.branch),
-    accountName: cleanOptional(values.accountName),
     accountNumber: values.accountNumber.trim(),
     accountType: cleanOptional(values.accountType),
-    accountCode: cleanOptional(values.accountCode),
     currencyCode: cleanOptional(values.currencyCode),
     currencyExchangeRate: toOptionalNumber(values.currencyExchangeRate),
     seriesStart: cleanOptional(values.seriesStart),
@@ -569,11 +732,17 @@ async function createBank(values: BankFormValues) {
     isDefault: values.isDefault,
     status: values.status,
   };
+}
 
-  await ApiClient.post(
-    "/maintenance/financial-management/bank-masterfile",
-    payload,
-  );
+function buildAccountName(values: BankFormValues) {
+  return [
+    "Cash in Bank",
+    values.bankName.trim(),
+    values.branch.trim(),
+    values.accountNumber.trim(),
+  ]
+    .filter(Boolean)
+    .join(" - ");
 }
 
 function cleanOptional(value: string) {
@@ -594,5 +763,11 @@ function formatLoadError(error: unknown) {
 
 const fieldClassName =
   "min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5";
+
+const readOnlyFieldClassName =
+  "min-h-11 w-full rounded-md border border-darknavy/10 bg-darknavy/[0.03] px-3 text-sm font-semibold text-darknavy/80 outline-none";
+
+const iconButtonClassName =
+  "inline-flex h-9 w-9 items-center justify-center rounded-md border border-darknavy/10 bg-white text-darknavy/70 transition hover:border-skyblue/40 hover:bg-skyblue/10 hover:text-darknavy disabled:cursor-not-allowed disabled:opacity-60";
 
 const selectClassName = `app-select-control ${fieldClassName}`;

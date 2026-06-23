@@ -16,6 +16,7 @@ const ModuleRecordIds = ["1001", "1002", "1003"];
 const PermissionCodeByNavigationKey: Record<string, string> = {
   "dashboard-overview": "DO",
   "maintenance-charts-of-accounts": "COA",
+  "maintenance-bank-masterfile": "BM",
   "maintenance-party-management": "PM",
   "maintenance-items": "I",
   "maintenance-item-category": "IC",
@@ -106,6 +107,13 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
         "Chart of Accounts",
         "/maintenance/charts-of-accounts",
         "maintenance.chartOfAccounts",
+        "accounting",
+      ),
+      moduleItem(
+        "maintenance-bank-masterfile",
+        "Bank Masterfile",
+        "/maintenance/bank-masterfile",
+        "maintenance.bankMasterfile",
         "accounting",
       ),
       moduleItem(

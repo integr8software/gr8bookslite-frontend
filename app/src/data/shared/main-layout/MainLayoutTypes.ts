@@ -43,6 +43,7 @@ export type MainAccessKey =
   | "canvass"
   | "fixedAsset"
   | "maintenance.chartOfAccounts"
+  | "maintenance.bankMasterfile"
   | "maintenance.currency"
   | "maintenance.party"
   | "maintenance.discount"
@@ -79,7 +80,11 @@ export type ModuleSubscriptionPlanId =
   | "INVENTORY"
   | "ACCOUNTING_INVENTORY";
 
-export type MainNavigationScope = "master" | "workspace" | "company" | "account";
+export type MainNavigationScope =
+  | "master"
+  | "workspace"
+  | "company"
+  | "account";
 
 export type MainPermissionMap = Partial<
   Record<string, Partial<Record<MainAccessAction, boolean>>>

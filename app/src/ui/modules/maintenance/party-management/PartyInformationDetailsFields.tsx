@@ -3,6 +3,8 @@ import {
 	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
 } from "react";
+import { MapPin, Plus, Trash2 } from "lucide-react";
+import { MaxPartyAddressCount } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
 	PartyClassificationOptions,
@@ -57,14 +59,19 @@ export function PartyInformationDetailsFields({
 	termOptions,
 	values,
 	onAddressInputChange,
+	onAddAddress,
 	onInputChange,
 	onPartyTypesChange,
+	onRemoveAddress,
+	onSelectAddress,
 	onSelectBarangay,
 	onSelectAtcCode,
 	onSelectAutocompleteAddress,
 	onSyncAutocompleteAddressDetails,
 	onSelectCityMunicipality,
 	onSelectProvince,
+	onSetDefaultAddress,
+	onUpdateAddressMeta,
 	onUpdateField,
 	onSelectTerm,
 }: {
@@ -77,9 +84,12 @@ export function PartyInformationDetailsFields({
 	partyTypeOptions: readonly PartyType[];
 	termOptions: AppAdvancedDropdownOption[];
 	values: PartyInformationFormValues;
+	onAddAddress: () => void;
 	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
 	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
 	onPartyTypesChange: (value: string | string[]) => void;
+	onRemoveAddress: (addressId: string) => void;
+	onSelectAddress: (addressId: string) => void;
 	onSelectAtcCode: (value: string | string[]) => void;
 	onSelectAutocompleteAddress: (
 		address: AddressAutocompleteItem,
@@ -91,6 +101,12 @@ export function PartyInformationDetailsFields({
 	onSelectBarangay: (value: string | string[]) => void;
 	onSelectCityMunicipality: (value: string | string[]) => void;
 	onSelectProvince: (value: string | string[]) => void;
+	onSetDefaultAddress: (addressId: string) => void;
+	onUpdateAddressMeta: (
+		addressId: string,
+		field: "addressName" | "isBilling" | "isDelivery",
+		value: string | boolean,
+	) => void;
 	onUpdateField: <TKey extends keyof PartyInformationFormValues>(
 		field: TKey,
 		value: PartyInformationFormValues[TKey],
@@ -272,10 +288,7 @@ export function PartyInformationDetailsFields({
 							onChange={onInputChange}
 							onFocus={() => {
 								if (!values.contactNo) {
-									onUpdateField(
-										"contactNo",
-										DefaultPhilippineContactNumber,
-									);
+									onUpdateField("contactNo", DefaultPhilippineContactNumber);
 								}
 							}}
 							readOnly={isReadonly}
@@ -289,16 +302,23 @@ export function PartyInformationDetailsFields({
 
 				<AddressSection
 					address={activeAddress}
+					addresses={values.addresses}
+					activeAddressId={values.activeAddressId}
 					disabled={isDetailsDisabled}
 					errors={errors}
 					options={addressOptions}
-					title="Address"
+					title="Addresses"
+					onAddAddress={onAddAddress}
 					onAddressInputChange={onAddressInputChange}
+					onRemoveAddress={onRemoveAddress}
+					onSelectAddress={onSelectAddress}
 					onSelectBarangay={onSelectBarangay}
 					onSelectAutocompleteAddress={onSelectAutocompleteAddress}
 					onSyncAutocompleteAddressDetails={onSyncAutocompleteAddressDetails}
 					onSelectCityMunicipality={onSelectCityMunicipality}
 					onSelectProvince={onSelectProvince}
+					onSetDefaultAddress={onSetDefaultAddress}
+					onUpdateAddressMeta={onUpdateAddressMeta}
 				/>
 
 				<div className="grid gap-4">
@@ -408,43 +428,42 @@ function AccountFields({
 				{isCustomer ? (
 					<Field
 						label="Default Receivable Account"
-					error={errors.defaultReceivableAccount}
-				>
-					<ChartAccountDropdown
-							accounts={accountOptions}
-							disabled={isAccountingDisabled}
-						value={values.defaultReceivableAccount}
-						onChange={(value) =>
-							onUpdateField("defaultReceivableAccount", value)
-						}
-					/>
-				</Field>
-			) : null}
-			{isVendor ? (
-				<Field
-					label="Default Payable Account"
-					error={errors.defaultPayableAccount}
-				>
-					<ChartAccountDropdown
-							accounts={accountOptions}
-							disabled={isAccountingDisabled}
-						value={values.defaultPayableAccount}
-						onChange={(value) => onUpdateField("defaultPayableAccount", value)}
-					/>
-				</Field>
-			) : null}
-			{isEmployee ? (
-				<Field
-					label="Default Advance"
-					error={errors.employeeAdvanceAccount}
-				>
+						error={errors.defaultReceivableAccount}
+					>
 						<ChartAccountDropdown
 							accounts={accountOptions}
 							disabled={isAccountingDisabled}
-						value={values.employeeAdvanceAccount}
-						onChange={(value) =>
-							onUpdateField("employeeAdvanceAccount", value)
-						}
+							value={values.defaultReceivableAccount}
+							onChange={(value) =>
+								onUpdateField("defaultReceivableAccount", value)
+							}
+						/>
+					</Field>
+				) : null}
+				{isVendor ? (
+					<Field
+						label="Default Payable Account"
+						error={errors.defaultPayableAccount}
+					>
+						<ChartAccountDropdown
+							accounts={accountOptions}
+							disabled={isAccountingDisabled}
+							value={values.defaultPayableAccount}
+							onChange={(value) =>
+								onUpdateField("defaultPayableAccount", value)
+							}
+						/>
+					</Field>
+				) : null}
+				{isEmployee ? (
+					<Field label="Default Advance" error={errors.employeeAdvanceAccount}>
+						<ChartAccountDropdown
+							accounts={accountOptions}
+							disabled={isAccountingDisabled}
+							value={values.employeeAdvanceAccount}
+							onChange={(value) =>
+								onUpdateField("employeeAdvanceAccount", value)
+							}
 						/>
 					</Field>
 				) : null}
@@ -455,23 +474,35 @@ function AccountFields({
 
 function AddressSection({
 	address,
+	addresses,
+	activeAddressId,
 	disabled,
 	errors,
 	options,
 	title,
+	onAddAddress,
 	onAddressInputChange,
+	onRemoveAddress,
+	onSelectAddress,
 	onSelectBarangay,
 	onSelectAutocompleteAddress,
 	onSyncAutocompleteAddressDetails,
 	onSelectCityMunicipality,
 	onSelectProvince,
+	onSetDefaultAddress,
+	onUpdateAddressMeta,
 }: {
 	address: PartyAddress;
+	addresses: PartyAddress[];
+	activeAddressId: string;
 	disabled: boolean;
 	errors: PartyInformationFormErrors;
 	options: PartyAddressOptionSet;
 	title: string;
+	onAddAddress: () => void;
 	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
+	onRemoveAddress: (addressId: string) => void;
+	onSelectAddress: (addressId: string) => void;
 	onSelectBarangay: (value: string | string[]) => void;
 	onSelectAutocompleteAddress: (
 		address: AddressAutocompleteItem,
@@ -482,24 +513,127 @@ function AddressSection({
 	) => void;
 	onSelectCityMunicipality: (value: string | string[]) => void;
 	onSelectProvince: (value: string | string[]) => void;
+	onSetDefaultAddress: (addressId: string) => void;
+	onUpdateAddressMeta: (
+		addressId: string,
+		field: "addressName" | "isBilling" | "isDelivery",
+		value: string | boolean,
+	) => void;
 }) {
-	const isProvinceDisabled =
-		disabled || options.isProvincesLoading;
+	const isProvinceDisabled = disabled || options.isProvincesLoading;
 	const isCityMunicipalityDisabled =
-		disabled ||
-		options.isCitiesMunicipalitiesLoading ||
-		!address.provinceCode;
+		disabled || options.isCitiesMunicipalitiesLoading || !address.provinceCode;
 	const isBarangayDisabled =
 		disabled || !address.cityMunicipalityCode || options.isBarangaysLoading;
+	const hasReachedAddressLimit = addresses.length >= MaxPartyAddressCount;
 
 	return (
 		<div className="grid gap-4">
-			<SectionHeading title={title} />
+			<div className="flex items-center justify-between gap-3">
+				<SectionHeading title={title} />
+				{!disabled ? (
+					<button
+						type="button"
+						onClick={onAddAddress}
+						disabled={hasReachedAddressLimit}
+						title={
+							hasReachedAddressLimit
+								? `Maximum of ${MaxPartyAddressCount} addresses reached`
+								: "Add address"
+						}
+						className="inline-flex h-9 items-center gap-2 rounded-md border border-darknavy/15 px-3 text-sm font-medium text-darknavy transition hover:border-skyblue hover:bg-skyblue/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/30 disabled:cursor-not-allowed disabled:opacity-45"
+					>
+						<Plus className="h-4 w-4" aria-hidden="true" />
+						Add address
+					</button>
+				) : null}
+			</div>
 			{errors.addresses ? (
 				<span className="text-xs font-medium text-coralpink">
 					{errors.addresses}
 				</span>
 			) : null}
+			<div
+				className="flex gap-2 overflow-x-auto pb-1"
+				role="tablist"
+				aria-label="Party addresses"
+			>
+				{addresses.map((item) => {
+					const isActive = item.id === activeAddressId;
+
+					return (
+						<button
+							key={item.id}
+							type="button"
+							role="tab"
+							aria-selected={isActive}
+							onClick={() => onSelectAddress(item.id)}
+							className={
+								isActive
+									? "inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md border border-skyblue bg-skyblue/8 px-3 text-sm font-medium text-darknavy"
+									: "inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md border border-darknavy/10 px-3 text-sm text-darknavy/70 transition hover:border-darknavy/25 hover:text-darknavy"
+							}
+						>
+							<MapPin className="h-4 w-4" aria-hidden="true" />
+							<span>{item.addressName}</span>
+							<AddressTags address={item} />
+						</button>
+					);
+				})}
+			</div>
+			<div className="grid gap-4 border-y border-darknavy/10 py-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+				<Field label="Address label" required>
+					<input
+						value={address.addressName}
+						onChange={(event) =>
+							onUpdateAddressMeta(address.id, "addressName", event.target.value)
+						}
+						readOnly={disabled || address.isDefault}
+						className={fieldClassName}
+						placeholder="e.g. Head Office"
+					/>
+				</Field>
+				<div className="flex flex-wrap items-center gap-3">
+					<label className="inline-flex h-9 min-w-24 items-center gap-2 text-sm text-darknavy">
+						<input
+							type="radio"
+							name="defaultPartyAddress"
+							checked={address.isDefault}
+							disabled={disabled}
+							onChange={() => onSetDefaultAddress(address.id)}
+							className="h-4 w-4 accent-skyblue"
+						/>
+						Default
+					</label>
+					<AddressTagCheckbox
+						checked={address.isBilling}
+						disabled={disabled}
+						label="Billing"
+						onChange={(checked) =>
+							onUpdateAddressMeta(address.id, "isBilling", checked)
+						}
+					/>
+					<AddressTagCheckbox
+						checked={address.isDelivery}
+						disabled={disabled}
+						label="Delivery"
+						onChange={(checked) =>
+							onUpdateAddressMeta(address.id, "isDelivery", checked)
+						}
+					/>
+					{!disabled && addresses.length > 1 ? (
+						<button
+							type="button"
+							onClick={() => onRemoveAddress(address.id)}
+							aria-label={`Remove ${address.addressName}`}
+							title="Remove address"
+							className="inline-flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
+						>
+							<Trash2 className="h-4 w-4" aria-hidden="true" />
+						</button>
+					) : null}
+				</div>
+			</div>
 			<AppAddressAutocomplete
 				disabled={disabled}
 				id={`party-address-autocomplete-${address.id}`}
@@ -580,6 +714,52 @@ function AddressSection({
 	);
 }
 
+function AddressTags({ address }: { address: PartyAddress }) {
+	const tags = [
+		address.isDefault ? "Default" : null,
+		address.isBilling ? "Billing" : null,
+		address.isDelivery ? "Delivery" : null,
+	].filter(Boolean);
+
+	return tags.length > 0 ? (
+		<span className="flex items-center gap-1">
+			{tags.map((tag) => (
+				<span
+					key={tag}
+					className="rounded bg-darknavy/7 px-1.5 py-0.5 text-[10px] font-medium text-darknavy/70"
+				>
+					{tag}
+				</span>
+			))}
+		</span>
+	) : null;
+}
+
+function AddressTagCheckbox({
+	checked,
+	disabled,
+	label,
+	onChange,
+}: {
+	checked: boolean;
+	disabled: boolean;
+	label: string;
+	onChange: (checked: boolean) => void;
+}) {
+	return (
+		<label className="inline-flex h-9 min-w-24 items-center gap-2 text-sm text-darknavy">
+			<input
+				type="checkbox"
+				checked={checked}
+				disabled={disabled}
+				onChange={(event) => onChange(event.target.checked)}
+				className="h-4 w-4 rounded accent-skyblue"
+			/>
+			{label}
+		</label>
+	);
+}
+
 function AddressInput({
 	disabled,
 	label,
@@ -645,10 +825,7 @@ function Field({
 	function handleFieldMouseDown(event: ReactMouseEvent<HTMLDivElement>) {
 		const target = event.target;
 
-		if (
-			!(target instanceof Element) ||
-			target.closest(fieldControlSelector)
-		) {
+		if (!(target instanceof Element) || target.closest(fieldControlSelector)) {
 			return;
 		}
 

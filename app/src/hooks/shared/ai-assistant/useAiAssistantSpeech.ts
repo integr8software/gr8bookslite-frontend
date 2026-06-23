@@ -57,8 +57,6 @@ export function useAiAssistantSpeech({
 		typeof window === "undefined" ? false : "speechSynthesis" in window,
 	);
 	const [isVoiceReplyEnabled, setIsVoiceReplyEnabled] = useState(false);
-	const [microphoneDiagnostics, setMicrophoneDiagnostics] =
-		useState<MicrophoneDiagnostics | null>(null);
 	const [speechError, setSpeechError] = useState<string | null>(null);
 
 	useEffect(() => {
@@ -114,7 +112,6 @@ export function useAiAssistantSpeech({
 		const microphoneAccess = await requestMicrophoneAccess();
 
 		if (!microphoneAccess.isAllowed) {
-			setMicrophoneDiagnostics(microphoneAccess.diagnostics ?? null);
 			setSpeechError(
 				microphoneAccess.message ??
 					"Microphone access is blocked. Allow microphone permission for this site, then try again.",
@@ -155,7 +152,6 @@ export function useAiAssistantSpeech({
 		};
 
 		setSpeechError(null);
-		setMicrophoneDiagnostics(null);
 		setIsListening(true);
 		mediaRecorder.start();
 		startSilenceDetection(stream);
@@ -188,7 +184,6 @@ export function useAiAssistantSpeech({
 		try {
 			setIsTranscribing(true);
 			setSpeechError(null);
-			setMicrophoneDiagnostics(null);
 
 			const response = await TranscribeAiAssistantAudio(audio);
 			const transcript = response.transcript.trim();
@@ -234,7 +229,6 @@ export function useAiAssistantSpeech({
 		isSpeechSynthesisSupported,
 		isTranscribing,
 		isVoiceReplyEnabled,
-		microphoneDiagnostics,
 		speechError,
 		toggleListening,
 		toggleVoiceReply,
@@ -334,7 +328,8 @@ async function requestMicrophoneAccess(): Promise<
 		return {
 			diagnostics: baseDiagnostics,
 			isAllowed: false,
-			message: "Voice input needs a secure browser context. Use HTTPS or localhost.",
+			message:
+				"Voice input needs a secure browser context. Use HTTPS or localhost.",
 		};
 	}
 
@@ -452,13 +447,17 @@ async function readMicrophoneDeviceSummary() {
 
 	try {
 		const devices = await navigator.mediaDevices.enumerateDevices();
-		const audioInputs = devices.filter((device) => device.kind === "audioinput");
+		const audioInputs = devices.filter(
+			(device) => device.kind === "audioinput",
+		);
 
 		if (audioInputs.length === 0) {
 			return "no audio input found";
 		}
 
-		const hasLabels = audioInputs.some((device) => device.label.trim().length > 0);
+		const hasLabels = audioInputs.some(
+			(device) => device.label.trim().length > 0,
+		);
 
 		return `${audioInputs.length} audio input${audioInputs.length === 1 ? "" : "s"}${hasLabels ? " visible" : " hidden until permission"}`;
 	} catch (error) {

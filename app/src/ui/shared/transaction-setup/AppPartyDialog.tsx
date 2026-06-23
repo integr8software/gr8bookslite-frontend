@@ -10,11 +10,14 @@ import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { formatTermDuration } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementDisplay";
 import {
+  MaxPartyAddressCount,
   PartyInformationInitialFormValues,
+  createEmptyPartyAddress,
   createPartyInformationRecord,
   getPartyAtcCodeOptionsByClassification,
   getPartyDisplayName,
   isKnownPartyType,
+  setPartyDefaultAddress,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
@@ -29,8 +32,8 @@ import type {
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import type {
-	AddressAutocompleteDetails,
-	AddressAutocompleteItem,
+  AddressAutocompleteDetails,
+  AddressAutocompleteItem,
 } from "@/app/src/services/shared/address/AddressReferenceApi";
 
 type AppPartyDialogProps = {
@@ -107,14 +110,14 @@ function AppPartyDialogContent({
     values.addresses[0] ??
     values.address;
   const addressOptions = usePhilippineAddressOptions({
-	barangayCode: activeAddress.barangayCode,
-	barangayName: activeAddress.barangay,
+    barangayCode: activeAddress.barangayCode,
+    barangayName: activeAddress.barangay,
     cityMunicipalityCode: activeAddress.cityMunicipalityCode,
-	cityMunicipalityName: activeAddress.cityMunicipality,
+    cityMunicipalityName: activeAddress.cityMunicipality,
     provinceCode: activeAddress.provinceCode,
-	provinceName: activeAddress.province,
+    provinceName: activeAddress.province,
     regionCode: activeAddress.regionCode,
-	regionName: activeAddress.region,
+    regionName: activeAddress.region,
   });
   const atcOptions = useMemo(
     () => getPartyAtcCodeOptionsByClassification(values.classification),
@@ -248,14 +251,14 @@ function AppPartyDialogContent({
         address.id === current.activeAddressId
           ? {
               ...address,
-        barangay: "",
-        barangayCode: "",
-        cityMunicipality: "",
-        cityMunicipalityCode: "",
-        province: option?.name ?? "",
-        provinceCode: code,
-		region: option?.regionName ?? "",
-		regionCode: option?.regionCode ?? "",
+              barangay: "",
+              barangayCode: "",
+              cityMunicipality: "",
+              cityMunicipalityCode: "",
+              province: option?.name ?? "",
+              provinceCode: code,
+              region: option?.regionName ?? "",
+              regionCode: option?.regionCode ?? "",
             }
           : address,
       ),
@@ -265,13 +268,13 @@ function AppPartyDialogContent({
       barangayCode: undefined,
       cityMunicipalityCode: undefined,
       provinceCode: undefined,
-		regionCode: undefined,
+      regionCode: undefined,
     }));
   }
 
   function selectAutocompleteAddress(
     address: AddressAutocompleteItem,
-		details?: AddressAutocompleteDetails,
+    details?: AddressAutocompleteDetails,
   ) {
     setValues((current) => ({
       ...current,
@@ -279,8 +282,10 @@ function AppPartyDialogContent({
         currentAddress.id === current.activeAddressId
           ? {
               ...currentAddress,
-				addressLine1: details?.addressLine1 ?? currentAddress.addressLine1,
-				addressLine2: details?.addressLine2 ?? currentAddress.addressLine2,
+              addressLine1:
+                details?.addressLine1 ?? currentAddress.addressLine1,
+              addressLine2:
+                details?.addressLine2 ?? currentAddress.addressLine2,
               barangay: address.barangay.name,
               barangayCode: address.barangay.code,
               cityMunicipality: address.cityMunicipality.name,
@@ -309,10 +314,8 @@ function AppPartyDialogContent({
         currentAddress.id === current.activeAddressId
           ? {
               ...currentAddress,
-              addressLine1:
-                details.addressLine1 ?? currentAddress.addressLine1,
-              addressLine2:
-                details.addressLine2 ?? currentAddress.addressLine2,
+              addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
+              addressLine2: details.addressLine2 ?? currentAddress.addressLine2,
             }
           : currentAddress,
       ),
@@ -331,10 +334,10 @@ function AppPartyDialogContent({
         address.id === current.activeAddressId
           ? {
               ...address,
-        barangay: "",
-        barangayCode: "",
-        cityMunicipality: option?.name ?? "",
-        cityMunicipalityCode: code,
+              barangay: "",
+              barangayCode: "",
+              cityMunicipality: option?.name ?? "",
+              cityMunicipalityCode: code,
             }
           : address,
       ),
@@ -358,8 +361,8 @@ function AppPartyDialogContent({
         address.id === current.activeAddressId
           ? {
               ...address,
-        barangay: option?.name ?? "",
-        barangayCode: code,
+              barangay: option?.name ?? "",
+              barangayCode: code,
             }
           : address,
       ),
@@ -384,6 +387,75 @@ function AppPartyDialogContent({
       ...current,
       termId,
       termName: term?.name ?? "",
+    }));
+  }
+
+  function addAddress() {
+    const id = `address-${Date.now().toString(36)}`;
+
+    setValues((current) =>
+      current.addresses.length >= MaxPartyAddressCount
+        ? current
+        : {
+            ...current,
+            activeAddressId: id,
+            addresses: [
+              ...current.addresses,
+              createEmptyPartyAddress({
+                id,
+                addressName: `Address ${current.addresses.length + 1}`,
+                isDefault: false,
+              }),
+            ],
+          },
+    );
+  }
+
+  function removeAddress(addressId: string) {
+    setValues((current) => {
+      if (current.addresses.length <= 1) {
+        return current;
+      }
+
+      const remaining = current.addresses.filter(
+        (address) => address.id !== addressId,
+      );
+      const addresses = setPartyDefaultAddress(remaining);
+
+      return {
+        ...current,
+        activeAddressId:
+          current.activeAddressId === addressId
+            ? (addresses[0]?.id ?? "")
+            : current.activeAddressId,
+        addresses,
+      };
+    });
+  }
+
+  function selectAddress(addressId: string) {
+    setValues((current) => ({ ...current, activeAddressId: addressId }));
+  }
+
+  function setDefaultAddress(addressId: string) {
+    setValues((current) => ({
+      ...current,
+      activeAddressId: addressId,
+      addresses: setPartyDefaultAddress(current.addresses, addressId),
+    }));
+    setErrors((current) => ({ ...current, addresses: undefined }));
+  }
+
+  function updateAddressMeta(
+    addressId: string,
+    field: "addressName" | "isBilling" | "isDelivery",
+    value: string | boolean,
+  ) {
+    setValues((current) => ({
+      ...current,
+      addresses: current.addresses.map((address) =>
+        address.id === addressId ? { ...address, [field]: value } : address,
+      ),
     }));
   }
 
@@ -466,10 +538,11 @@ function AppPartyDialogContent({
                       key={currentType}
                       type="button"
                       onClick={() => handlePartyTypeChange(currentType)}
-                      className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${partyType === currentType
+                      className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${
+                        partyType === currentType
                           ? "theme-accent-contrast-text border-skyblue bg-skyblue"
                           : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/40 hover:bg-skyblue/8"
-                        }`}
+                      }`}
                     >
                       {currentType}
                     </button>
@@ -488,9 +561,12 @@ function AppPartyDialogContent({
               partyTypeOptions={[partyType]}
               termOptions={termOptions}
               values={values}
+              onAddAddress={addAddress}
               onAddressInputChange={handleAddressInputChange}
               onInputChange={handleInputChange}
               onPartyTypesChange={handlePartyTypesChange}
+              onRemoveAddress={removeAddress}
+              onSelectAddress={selectAddress}
               onSelectAtcCode={selectAtcCode}
               onSelectAutocompleteAddress={selectAutocompleteAddress}
               onSyncAutocompleteAddressDetails={syncAutocompleteAddressDetails}
@@ -498,6 +574,8 @@ function AppPartyDialogContent({
               onSelectCityMunicipality={selectCityMunicipality}
               onSelectProvince={selectProvince}
               onSelectTerm={selectTerm}
+              onSetDefaultAddress={setDefaultAddress}
+              onUpdateAddressMeta={updateAddressMeta}
               onUpdateField={updateField}
             />
           </div>

@@ -18,6 +18,8 @@ import type {
   PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 
+export const MaxPartyAddressCount = 5;
+
 export const PartyAtcCodeOptions: PartyAtcCodeOption[] =
   createPartyAtcCodeOptions();
 
@@ -655,9 +657,7 @@ function createMockParty({
       : "",
     defaultPayableAccount: partyTypes.includes("Vendor") ? "2010100001" : "",
     employeeReceivableAccount: "",
-    employeeAdvanceAccount: partyTypes.includes("Employee")
-      ? "1010300001"
-      : "",
+    employeeAdvanceAccount: partyTypes.includes("Employee") ? "1010300001" : "",
     termId: partyTypes.includes("Employee") ? "" : "term-1",
     termName: partyTypes.includes("Employee") ? "" : "Standard payment terms",
     tin,
@@ -671,10 +671,16 @@ function createMockParty({
   };
 }
 
-function createEmptyPartyAddress(): PartyAddress {
+export function createEmptyPartyAddress(
+  options: {
+    addressName?: string;
+    id?: string;
+    isDefault?: boolean;
+  } = {},
+): PartyAddress {
   return {
-    id: "address-default",
-    addressName: "Default Address",
+    id: options.id ?? "address-default",
+    addressName: options.addressName ?? "Default Address",
     addressLine1: "",
     addressLine2: "",
     barangay: "",
@@ -682,7 +688,7 @@ function createEmptyPartyAddress(): PartyAddress {
     cityMunicipality: "",
     cityMunicipalityCode: "",
     isBilling: false,
-    isDefault: true,
+    isDefault: options.isDefault ?? true,
     isDelivery: false,
     province: "",
     provinceCode: "",
@@ -712,17 +718,39 @@ function normalizePartyAddress(address: PartyAddress): PartyAddress {
 }
 
 function normalizePartyAddresses(addresses: PartyAddress[]) {
-  const normalized = addresses.map(normalizePartyAddress);
-  const defaultIndex = normalized.findIndex((address) => address.isDefault);
+  return setPartyDefaultAddress(addresses.map(normalizePartyAddress));
+}
 
-  if (defaultIndex === -1 && normalized[0]) {
-    normalized[0] = { ...normalized[0], isDefault: true };
-  }
+export function setPartyDefaultAddress(
+  addresses: PartyAddress[],
+  addressId?: string,
+) {
+  const requestedIndex = addressId
+    ? addresses.findIndex((address) => address.id === addressId)
+    : -1;
+  const currentDefaultIndex = addresses.findIndex(
+    (address) => address.isDefault,
+  );
+  const defaultIndex =
+    requestedIndex >= 0
+      ? requestedIndex
+      : currentDefaultIndex >= 0
+        ? currentDefaultIndex
+        : 0;
 
-  return normalized.map((address, index) => ({
-    ...address,
-    isDefault: index === (defaultIndex === -1 ? 0 : defaultIndex),
-  }));
+  return addresses.map((address, index) => {
+    const isDefault = index === defaultIndex;
+
+    return {
+      ...address,
+      addressName: isDefault
+        ? "Default Address"
+        : address.addressName === "Default Address"
+          ? `Address ${index + 1}`
+          : address.addressName,
+      isDefault,
+    };
+  });
 }
 
 function normalizePartyAddressesForForm(record: PartyInformationRecord) {

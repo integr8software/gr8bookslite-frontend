@@ -119,7 +119,10 @@ export function AiAssistantChat() {
                 className="inline-flex h-9 w-9 items-center justify-center rounded-md text-[color-mix(in_srgb,var(--foreground)_58%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--skyblue)_12%,transparent)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {speech.isVoiceReplyEnabled ? (
-                  <Volume2 className="h-4.5 w-4.5 text-skyblue" aria-hidden="true" />
+                  <Volume2
+                    className="h-4.5 w-4.5 text-skyblue"
+                    aria-hidden="true"
+                  />
                 ) : (
                   <VolumeX className="h-4.5 w-4.5" aria-hidden="true" />
                 )}
@@ -177,8 +180,10 @@ export function AiAssistantChat() {
             onSubmit={submitMessage}
             className="border-t border-[color-mix(in_srgb,var(--skyblue)_24%,transparent)] p-3"
           >
-            {speech.isListening || speech.isTranscribing || speech.speechError ? (
-              <div className="mb-2 space-y-1">
+            {speech.isListening ||
+            speech.isTranscribing ||
+            speech.speechError ? (
+              <div className="mb-2">
                 <p
                   className={
                     speech.speechError
@@ -187,37 +192,10 @@ export function AiAssistantChat() {
                   }
                 >
                   {speech.speechError ??
-                    (speech.isTranscribing ? "Transcribing..." : "Recording...")}
+                    (speech.isTranscribing
+                      ? "Transcribing..."
+                      : "Recording...")}
                 </p>
-                {speech.microphoneDiagnostics ? (
-                  <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[11px] text-[color-mix(in_srgb,var(--foreground)_58%,transparent)]">
-                    <dt>Permission</dt>
-                    <dd>{speech.microphoneDiagnostics.permissionState ?? "unknown"}</dd>
-                    <dt>Policy</dt>
-                    <dd>
-                      {speech.microphoneDiagnostics.isMicrophonePolicyAllowed === null
-                        ? "unknown"
-                        : speech.microphoneDiagnostics.isMicrophonePolicyAllowed
-                          ? "allowed"
-                          : "blocked"}
-                    </dd>
-                    <dt>Context</dt>
-                    <dd>
-                      {speech.microphoneDiagnostics.isSecureContext
-                        ? "secure"
-                        : "not secure"}
-                      {speech.microphoneDiagnostics.isEmbedded ? ", embedded" : ""}
-                    </dd>
-                    <dt>Device</dt>
-                    <dd>{speech.microphoneDiagnostics.deviceSummary}</dd>
-                    {speech.microphoneDiagnostics.errorName ? (
-                      <>
-                        <dt>Error</dt>
-                        <dd>{speech.microphoneDiagnostics.errorName}</dd>
-                      </>
-                    ) : null}
-                  </dl>
-                ) : null}
               </div>
             ) : null}
             <div className="flex items-center gap-2">
@@ -236,7 +214,9 @@ export function AiAssistantChat() {
                   isSending ||
                   speech.isTranscribing
                 }
-                aria-label={speech.isListening ? "Stop recording" : "Start recording"}
+                aria-label={
+                  speech.isListening ? "Stop recording" : "Start recording"
+                }
                 title={
                   speech.isSpeechRecognitionSupported
                     ? "Record voice"
@@ -245,7 +225,10 @@ export function AiAssistantChat() {
                 className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--skyblue)_24%,transparent)] text-[color-mix(in_srgb,var(--foreground)_66%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--skyblue)_12%,transparent)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {speech.isListening ? (
-                  <MicOff className="h-4.5 w-4.5 text-red-600" aria-hidden="true" />
+                  <MicOff
+                    className="h-4.5 w-4.5 text-red-600"
+                    aria-hidden="true"
+                  />
                 ) : (
                   <Mic className="h-4.5 w-4.5" aria-hidden="true" />
                 )}

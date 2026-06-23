@@ -18,11 +18,14 @@ import { formatTermDuration } from "@/app/src/data/modules/maintenance/financial
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import {
+  MaxPartyAddressCount,
   PartyInformationInitialFormValues,
+  createEmptyPartyAddress,
   createPartyInformationFormValues,
   createPartyInformationRecord,
   getPartyAtcCodeOptionsByClassification,
   isKnownPartyType,
+  setPartyDefaultAddress,
   updatePartyInformationRecord,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
@@ -38,8 +41,8 @@ import type {
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import type {
-	AddressAutocompleteDetails,
-	AddressAutocompleteItem,
+  AddressAutocompleteDetails,
+  AddressAutocompleteItem,
 } from "@/app/src/services/shared/address/AddressReferenceApi";
 
 export function usePartyManagementAction() {
@@ -69,14 +72,14 @@ export function usePartyManagementAction() {
     values.addresses[0] ??
     values.address;
   const addressOptions = usePhilippineAddressOptions({
-	barangayCode: activeAddress.barangayCode,
-	barangayName: activeAddress.barangay,
+    barangayCode: activeAddress.barangayCode,
+    barangayName: activeAddress.barangay,
     cityMunicipalityCode: activeAddress.cityMunicipalityCode,
-	cityMunicipalityName: activeAddress.cityMunicipality,
+    cityMunicipalityName: activeAddress.cityMunicipality,
     provinceCode: activeAddress.provinceCode,
-	provinceName: activeAddress.province,
+    provinceName: activeAddress.province,
     regionCode: activeAddress.regionCode,
-	regionName: activeAddress.region,
+    regionName: activeAddress.region,
   });
   const isReadonly = mode === "view";
   const isClassificationSelected = Boolean(values.classification);
@@ -235,14 +238,14 @@ export function usePartyManagementAction() {
         address.id === current.activeAddressId
           ? {
               ...address,
-        barangay: "",
-        barangayCode: "",
-        cityMunicipality: "",
-        cityMunicipalityCode: "",
-        province: "",
-        provinceCode: "",
-        region: option?.name ?? "",
-        regionCode: code,
+              barangay: "",
+              barangayCode: "",
+              cityMunicipality: "",
+              cityMunicipalityCode: "",
+              province: "",
+              provinceCode: "",
+              region: option?.name ?? "",
+              regionCode: code,
             }
           : address,
       ),
@@ -272,14 +275,14 @@ export function usePartyManagementAction() {
         address.id === current.activeAddressId
           ? {
               ...address,
-        barangay: "",
-        barangayCode: "",
-        cityMunicipality: "",
-        cityMunicipalityCode: "",
-        province: option?.name ?? "",
-        provinceCode: code,
-		region: option?.regionName ?? "",
-		regionCode: option?.regionCode ?? "",
+              barangay: "",
+              barangayCode: "",
+              cityMunicipality: "",
+              cityMunicipalityCode: "",
+              province: option?.name ?? "",
+              provinceCode: code,
+              region: option?.regionName ?? "",
+              regionCode: option?.regionCode ?? "",
             }
           : address,
       ),
@@ -289,13 +292,13 @@ export function usePartyManagementAction() {
       barangayCode: undefined,
       cityMunicipalityCode: undefined,
       provinceCode: undefined,
-		regionCode: undefined,
+      regionCode: undefined,
     }));
   }
 
   function selectAutocompleteAddress(
     address: AddressAutocompleteItem,
-		details?: AddressAutocompleteDetails,
+    details?: AddressAutocompleteDetails,
   ) {
     if (isReadonly || !isClassificationSelected) {
       return;
@@ -307,8 +310,10 @@ export function usePartyManagementAction() {
         currentAddress.id === current.activeAddressId
           ? {
               ...currentAddress,
-				addressLine1: details?.addressLine1 ?? currentAddress.addressLine1,
-				addressLine2: details?.addressLine2 ?? currentAddress.addressLine2,
+              addressLine1:
+                details?.addressLine1 ?? currentAddress.addressLine1,
+              addressLine2:
+                details?.addressLine2 ?? currentAddress.addressLine2,
               barangay: address.barangay.name,
               barangayCode: address.barangay.code,
               cityMunicipality: address.cityMunicipality.name,
@@ -341,10 +346,8 @@ export function usePartyManagementAction() {
         currentAddress.id === current.activeAddressId
           ? {
               ...currentAddress,
-              addressLine1:
-                details.addressLine1 ?? currentAddress.addressLine1,
-              addressLine2:
-                details.addressLine2 ?? currentAddress.addressLine2,
+              addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
+              addressLine2: details.addressLine2 ?? currentAddress.addressLine2,
             }
           : currentAddress,
       ),
@@ -367,10 +370,10 @@ export function usePartyManagementAction() {
         address.id === current.activeAddressId
           ? {
               ...address,
-        barangay: "",
-        barangayCode: "",
-        cityMunicipality: option?.name ?? "",
-        cityMunicipalityCode: code,
+              barangay: "",
+              barangayCode: "",
+              cityMunicipality: option?.name ?? "",
+              cityMunicipalityCode: code,
             }
           : address,
       ),
@@ -398,8 +401,8 @@ export function usePartyManagementAction() {
         address.id === current.activeAddressId
           ? {
               ...address,
-        barangay: option?.name ?? "",
-        barangayCode: code,
+              barangay: option?.name ?? "",
+              barangayCode: code,
             }
           : address,
       ),
@@ -437,30 +440,22 @@ export function usePartyManagementAction() {
 
     const id = `address-${Date.now().toString(36)}`;
 
-    setValues((current) => ({
-      ...current,
-      activeAddressId: id,
-      addresses: [
-        ...current.addresses,
-        {
-          id,
-          addressName: `Address ${current.addresses.length + 1}`,
-          addressLine1: "",
-          addressLine2: "",
-          barangay: "",
-          barangayCode: "",
-          cityMunicipality: "",
-          cityMunicipalityCode: "",
-          isBilling: false,
-          isDefault: false,
-          isDelivery: false,
-          province: "",
-          provinceCode: "",
-          region: "",
-          regionCode: "",
-        },
-      ],
-    }));
+    setValues((current) =>
+      current.addresses.length >= MaxPartyAddressCount
+        ? current
+        : {
+            ...current,
+            activeAddressId: id,
+            addresses: [
+              ...current.addresses,
+              createEmptyPartyAddress({
+                id,
+                addressName: `Address ${current.addresses.length + 1}`,
+                isDefault: false,
+              }),
+            ],
+          },
+    );
   }
 
   function removeAddress(addressId: string) {
@@ -472,16 +467,14 @@ export function usePartyManagementAction() {
       const nextAddresses = current.addresses.filter(
         (address) => address.id !== addressId,
       );
-      const nextDefaultAddresses = nextAddresses.some((address) => address.isDefault)
-        ? nextAddresses
-        : nextAddresses.map((address, index) => ({
-            ...address,
-            isDefault: index === 0,
-          }));
+      const nextDefaultAddresses = setPartyDefaultAddress(nextAddresses);
 
       return {
         ...current,
-        activeAddressId: nextDefaultAddresses[0]?.id ?? "",
+        activeAddressId:
+          current.activeAddressId === addressId
+            ? (nextDefaultAddresses[0]?.id ?? "")
+            : current.activeAddressId,
         addresses: nextDefaultAddresses,
       };
     });
@@ -502,10 +495,7 @@ export function usePartyManagementAction() {
     setValues((current) => ({
       ...current,
       activeAddressId: addressId,
-      addresses: current.addresses.map((address) => ({
-        ...address,
-        isDefault: address.id === addressId,
-      })),
+      addresses: setPartyDefaultAddress(current.addresses, addressId),
     }));
     setErrors((current) => ({ ...current, addresses: undefined }));
   }

@@ -5,7 +5,10 @@ import {
   PartyTypeOptions,
   VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
-import { getPartyAtcCodeOptionsByClassification } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import {
+  MaxPartyAddressCount,
+  getPartyAtcCodeOptionsByClassification,
+} from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { normalizePhilippineAtcCode } from "@/app/src/data/shared/tax/PhilippineAtcData";
 import type {
@@ -58,7 +61,11 @@ export const PartyInformationFormSchema = z
     address: z.any().optional(),
     addresses: z
       .array(PartyInformationAddressSchema)
-      .min(1, "Add at least one address."),
+      .min(1, "Add at least one address.")
+      .max(
+        MaxPartyAddressCount,
+        `Add no more than ${MaxPartyAddressCount} addresses.`,
+      ),
     activeAddressId: z.string().trim(),
     defaultReceivableAccount: z.string().trim(),
     defaultPayableAccount: z.string().trim(),
@@ -142,7 +149,6 @@ export const PartyInformationFormSchema = z
         path: ["addresses"],
       });
     }
-
   });
 
 export function validatePartyInformationForm(

@@ -1,19 +1,17 @@
 "use client";
 
-import {
-	useMemo,
-	useState,
-	type ChangeEvent,
-	type FormEvent,
-} from "react";
+import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { PartyTypeOptions } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import { formatTermDuration } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementDisplay";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
+	MaxPartyAddressCount,
 	PartyInformationInitialFormValues,
+	createEmptyPartyAddress,
 	createPartyInformationRecord,
 	getPartyAtcCodeOptionsByClassification,
 	isKnownPartyType,
+	setPartyDefaultAddress,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
@@ -151,7 +149,10 @@ export function PartyManagementDrawer({
 	}
 
 	function handleAddressInputChange(event: ChangeEvent<HTMLInputElement>) {
-		updateAddressField(event.target.name as keyof PartyAddress, event.target.value);
+		updateAddressField(
+			event.target.name as keyof PartyAddress,
+			event.target.value,
+		);
 	}
 
 	function handlePartyTypesChange(value: string | string[]) {
@@ -193,14 +194,14 @@ export function PartyManagementDrawer({
 				address.id === current.activeAddressId
 					? {
 							...address,
-				barangay: "",
-				barangayCode: "",
-				cityMunicipality: "",
-				cityMunicipalityCode: "",
-				province: option?.name ?? "",
-				provinceCode: code,
-				region: option?.regionName ?? "",
-				regionCode: option?.regionCode ?? "",
+							barangay: "",
+							barangayCode: "",
+							cityMunicipality: "",
+							cityMunicipalityCode: "",
+							province: option?.name ?? "",
+							provinceCode: code,
+							region: option?.regionName ?? "",
+							regionCode: option?.regionCode ?? "",
 						}
 					: address,
 			),
@@ -262,10 +263,8 @@ export function PartyManagementDrawer({
 				currentAddress.id === current.activeAddressId
 					? {
 							...currentAddress,
-							addressLine1:
-								details.addressLine1 ?? currentAddress.addressLine1,
-							addressLine2:
-								details.addressLine2 ?? currentAddress.addressLine2,
+							addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
+							addressLine2: details.addressLine2 ?? currentAddress.addressLine2,
 						}
 					: currentAddress,
 			),
@@ -288,10 +287,10 @@ export function PartyManagementDrawer({
 				address.id === current.activeAddressId
 					? {
 							...address,
-				barangay: "",
-				barangayCode: "",
-				cityMunicipality: option?.name ?? "",
-				cityMunicipalityCode: code,
+							barangay: "",
+							barangayCode: "",
+							cityMunicipality: option?.name ?? "",
+							cityMunicipalityCode: code,
 						}
 					: address,
 			),
@@ -315,8 +314,8 @@ export function PartyManagementDrawer({
 				address.id === current.activeAddressId
 					? {
 							...address,
-				barangay: option?.name ?? "",
-				barangayCode: code,
+							barangay: option?.name ?? "",
+							barangayCode: code,
 						}
 					: address,
 			),
@@ -344,6 +343,75 @@ export function PartyManagementDrawer({
 			...current,
 			termId,
 			termName: term?.name ?? "",
+		}));
+	}
+
+	function addAddress() {
+		const id = `address-${Date.now().toString(36)}`;
+
+		setValues((current) =>
+			current.addresses.length >= MaxPartyAddressCount
+				? current
+				: {
+						...current,
+						activeAddressId: id,
+						addresses: [
+							...current.addresses,
+							createEmptyPartyAddress({
+								id,
+								addressName: `Address ${current.addresses.length + 1}`,
+								isDefault: false,
+							}),
+						],
+					},
+		);
+	}
+
+	function removeAddress(addressId: string) {
+		setValues((current) => {
+			if (current.addresses.length <= 1) {
+				return current;
+			}
+
+			const remaining = current.addresses.filter(
+				(address) => address.id !== addressId,
+			);
+			const addresses = setPartyDefaultAddress(remaining);
+
+			return {
+				...current,
+				activeAddressId:
+					current.activeAddressId === addressId
+						? (addresses[0]?.id ?? "")
+						: current.activeAddressId,
+				addresses,
+			};
+		});
+	}
+
+	function selectAddress(addressId: string) {
+		setValues((current) => ({ ...current, activeAddressId: addressId }));
+	}
+
+	function setDefaultAddress(addressId: string) {
+		setValues((current) => ({
+			...current,
+			activeAddressId: addressId,
+			addresses: setPartyDefaultAddress(current.addresses, addressId),
+		}));
+		setErrors((current) => ({ ...current, addresses: undefined }));
+	}
+
+	function updateAddressMeta(
+		addressId: string,
+		field: "addressName" | "isBilling" | "isDelivery",
+		value: string | boolean,
+	) {
+		setValues((current) => ({
+			...current,
+			addresses: current.addresses.map((address) =>
+				address.id === addressId ? { ...address, [field]: value } : address,
+			),
 		}));
 	}
 
@@ -391,10 +459,7 @@ export function PartyManagementDrawer({
 			onClose={onClose}
 			title={title}
 		>
-			<div
-				id={PartyDrawerFormId}
-				className="px-6 py-5"
-			>
+			<div id={PartyDrawerFormId} className="px-6 py-5">
 				<PartyInformationDetailsFields
 					addressOptions={addressOptions}
 					accountOptions={accountOptions}
@@ -405,9 +470,12 @@ export function PartyManagementDrawer({
 					partyTypeOptions={PartyTypeOptions}
 					termOptions={termOptions}
 					values={values}
+					onAddAddress={addAddress}
 					onAddressInputChange={handleAddressInputChange}
 					onInputChange={handleInputChange}
 					onPartyTypesChange={handlePartyTypesChange}
+					onRemoveAddress={removeAddress}
+					onSelectAddress={selectAddress}
 					onSelectBarangay={selectBarangay}
 					onSelectAtcCode={selectAtcCode}
 					onSelectAutocompleteAddress={selectAutocompleteAddress}
@@ -415,6 +483,8 @@ export function PartyManagementDrawer({
 					onSelectCityMunicipality={selectCityMunicipality}
 					onSelectProvince={selectProvince}
 					onSelectTerm={selectTerm}
+					onSetDefaultAddress={setDefaultAddress}
+					onUpdateAddressMeta={updateAddressMeta}
 					onUpdateField={updateField}
 				/>
 			</div>

@@ -12,7 +12,15 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import Image from "next/image";
-import { Loader2, SendHorizontal, X } from "lucide-react";
+import {
+  Loader2,
+  Mic,
+  MicOff,
+  SendHorizontal,
+  Volume2,
+  VolumeX,
+  X,
+} from "lucide-react";
 import {
   AiAssistantInputPlaceholder,
   AiAssistantLauncherPositionStorageKey,
@@ -21,6 +29,7 @@ import {
   AiAssistantSubtitle,
 } from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
 import { useAiAssistantChat } from "@/app/src/hooks/shared/ai-assistant/useAiAssistantChat";
+import { useAiAssistantSpeech } from "@/app/src/hooks/shared/ai-assistant/useAiAssistantSpeech";
 
 export function AiAssistantChat() {
   const {
@@ -36,6 +45,7 @@ export function AiAssistantChat() {
     setInput,
     submitMessage,
   } = useAiAssistantChat();
+  const speech = useAiAssistantSpeech({ messages, setInput });
   const launcher = useCornerLauncher(isOpen ? closeChat : openChat);
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -91,14 +101,38 @@ export function AiAssistantChat() {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={closeChat}
-              aria-label={`Close ${AiAssistantName}`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-[color-mix(in_srgb,var(--foreground)_58%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--skyblue)_12%,transparent)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-            >
-              <X className="h-4.5 w-4.5" aria-hidden="true" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={speech.toggleVoiceReply}
+                disabled={!speech.isSpeechSynthesisSupported}
+                aria-label={
+                  speech.isVoiceReplyEnabled
+                    ? "Turn off voice replies"
+                    : "Turn on voice replies"
+                }
+                title={
+                  speech.isSpeechSynthesisSupported
+                    ? "Voice replies"
+                    : "Voice replies are not supported in this browser"
+                }
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-[color-mix(in_srgb,var(--foreground)_58%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--skyblue)_12%,transparent)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {speech.isVoiceReplyEnabled ? (
+                  <Volume2 className="h-4.5 w-4.5 text-skyblue" aria-hidden="true" />
+                ) : (
+                  <VolumeX className="h-4.5 w-4.5" aria-hidden="true" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={closeChat}
+                aria-label={`Close ${AiAssistantName}`}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-[color-mix(in_srgb,var(--foreground)_58%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--skyblue)_12%,transparent)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+              >
+                <X className="h-4.5 w-4.5" aria-hidden="true" />
+              </button>
+            </div>
           </header>
 
           <div
@@ -143,6 +177,49 @@ export function AiAssistantChat() {
             onSubmit={submitMessage}
             className="border-t border-[color-mix(in_srgb,var(--skyblue)_24%,transparent)] p-3"
           >
+            {speech.isListening || speech.isTranscribing || speech.speechError ? (
+              <div className="mb-2 space-y-1">
+                <p
+                  className={
+                    speech.speechError
+                      ? "text-xs text-red-600"
+                      : "text-xs text-[color-mix(in_srgb,var(--foreground)_62%,transparent)]"
+                  }
+                >
+                  {speech.speechError ??
+                    (speech.isTranscribing ? "Transcribing..." : "Recording...")}
+                </p>
+                {speech.microphoneDiagnostics ? (
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[11px] text-[color-mix(in_srgb,var(--foreground)_58%,transparent)]">
+                    <dt>Permission</dt>
+                    <dd>{speech.microphoneDiagnostics.permissionState ?? "unknown"}</dd>
+                    <dt>Policy</dt>
+                    <dd>
+                      {speech.microphoneDiagnostics.isMicrophonePolicyAllowed === null
+                        ? "unknown"
+                        : speech.microphoneDiagnostics.isMicrophonePolicyAllowed
+                          ? "allowed"
+                          : "blocked"}
+                    </dd>
+                    <dt>Context</dt>
+                    <dd>
+                      {speech.microphoneDiagnostics.isSecureContext
+                        ? "secure"
+                        : "not secure"}
+                      {speech.microphoneDiagnostics.isEmbedded ? ", embedded" : ""}
+                    </dd>
+                    <dt>Device</dt>
+                    <dd>{speech.microphoneDiagnostics.deviceSummary}</dd>
+                    {speech.microphoneDiagnostics.errorName ? (
+                      <>
+                        <dt>Error</dt>
+                        <dd>{speech.microphoneDiagnostics.errorName}</dd>
+                      </>
+                    ) : null}
+                  </dl>
+                ) : null}
+              </div>
+            ) : null}
             <div className="flex items-center gap-2">
               <input
                 ref={inputRef}
@@ -151,6 +228,28 @@ export function AiAssistantChat() {
                 placeholder={AiAssistantInputPlaceholder}
                 className="app-theme-field min-h-10 min-w-0 flex-1 rounded-md border px-3 text-sm outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
               />
+              <button
+                type="button"
+                onClick={speech.toggleListening}
+                disabled={
+                  !speech.isSpeechRecognitionSupported ||
+                  isSending ||
+                  speech.isTranscribing
+                }
+                aria-label={speech.isListening ? "Stop recording" : "Start recording"}
+                title={
+                  speech.isSpeechRecognitionSupported
+                    ? "Record voice"
+                    : "Voice recording is not supported in this browser"
+                }
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--skyblue)_24%,transparent)] text-[color-mix(in_srgb,var(--foreground)_66%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--skyblue)_12%,transparent)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {speech.isListening ? (
+                  <MicOff className="h-4.5 w-4.5 text-red-600" aria-hidden="true" />
+                ) : (
+                  <Mic className="h-4.5 w-4.5" aria-hidden="true" />
+                )}
+              </button>
               <button
                 type="submit"
                 disabled={isSending || !input.trim()}

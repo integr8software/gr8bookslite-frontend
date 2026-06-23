@@ -3,7 +3,7 @@ import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsDa
 import type {
 	Discount,
 	DiscountManagementFormValues,
-} from "@/app/src/types/modules/maintenance/financial-management/discount-management/DiscountManagementTypes";
+} from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 
 export const MockDiscounts: Discount[] = [
 	{

@@ -29,7 +29,7 @@ import {
   updatePartyInformationRecord,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
+import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagement";
 import { usePhilippineAddressOptions } from "@/app/src/hooks/shared/address/ph/usePhilippineAddressOptions";
 import type {
   PartyAddress,

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { ChartsOfAccountsMain } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsPage";
+import { ChartsOfAccountsMain } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsPage";
 
 const PageTitle = "Charts Of Accounts";
 

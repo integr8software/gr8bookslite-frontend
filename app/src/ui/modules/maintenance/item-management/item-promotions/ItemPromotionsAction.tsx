@@ -12,7 +12,7 @@ import {
 	type ReactNode,
 } from "react";
 import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item-management/useItemManagement";
-import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/discount-management/useDiscountManagement";
+import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/discount-management/useDiscountManagement";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,

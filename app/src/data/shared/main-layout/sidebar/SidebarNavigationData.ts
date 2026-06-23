@@ -368,13 +368,6 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
         "maintenance.responsibilityCenter",
         "accounting",
       ),
-      child(
-        "maintenance-form-signatory",
-        "Form Signatory",
-        "/maintenance/form-signatory",
-        "settings",
-        "accounting",
-      ),
     ],
   },
   {
@@ -979,6 +972,13 @@ export const LegacyMainCompanyNavigationSections: MainNavigationSection[] = [
         "maintenance.currency",
         "accounting",
         ["view"],
+      ),
+      item(
+        "system-administration-form-signatory",
+        "Form Signatory",
+        "/system-administration/form-signatory",
+        "settings",
+        "accounting",
       ),
       item(
         "maintenance-mail",

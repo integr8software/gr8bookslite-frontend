@@ -2,7 +2,7 @@ import type {
 	PaymentTypeClassification,
 	PaymentTypeFormValues,
 	PaymentTypeRecord,
-} from "@/app/src/types/modules/maintenance/financial-management/payment-type/PaymentTypeTypes";
+} from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 
 export const PaymentTypeOptions: PaymentTypeClassification[] = [
 	"Cash",

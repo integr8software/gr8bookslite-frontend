@@ -20,7 +20,7 @@ import {
   setPartyDefaultAddress,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
-import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
+import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagement";
 import { usePhilippineAddressOptions } from "@/app/src/hooks/shared/address/ph/usePhilippineAddressOptions";
 import type {
   PartyAddress,
@@ -250,16 +250,16 @@ function AppPartyDialogContent({
       addresses: current.addresses.map((address) =>
         address.id === current.activeAddressId
           ? {
-              ...address,
-              barangay: "",
-              barangayCode: "",
-              cityMunicipality: "",
-              cityMunicipalityCode: "",
-              province: option?.name ?? "",
-              provinceCode: code,
-              region: option?.regionName ?? "",
-              regionCode: option?.regionCode ?? "",
-            }
+            ...address,
+            barangay: "",
+            barangayCode: "",
+            cityMunicipality: "",
+            cityMunicipalityCode: "",
+            province: option?.name ?? "",
+            provinceCode: code,
+            region: option?.regionName ?? "",
+            regionCode: option?.regionCode ?? "",
+          }
           : address,
       ),
     }));
@@ -281,20 +281,20 @@ function AppPartyDialogContent({
       addresses: current.addresses.map((currentAddress) =>
         currentAddress.id === current.activeAddressId
           ? {
-              ...currentAddress,
-              addressLine1:
-                details?.addressLine1 ?? currentAddress.addressLine1,
-              addressLine2:
-                details?.addressLine2 ?? currentAddress.addressLine2,
-              barangay: address.barangay.name,
-              barangayCode: address.barangay.code,
-              cityMunicipality: address.cityMunicipality.name,
-              cityMunicipalityCode: address.cityMunicipality.code,
-              province: address.province.name,
-              provinceCode: address.province.code,
-              region: address.region.name,
-              regionCode: address.region.code,
-            }
+            ...currentAddress,
+            addressLine1:
+              details?.addressLine1 ?? currentAddress.addressLine1,
+            addressLine2:
+              details?.addressLine2 ?? currentAddress.addressLine2,
+            barangay: address.barangay.name,
+            barangayCode: address.barangay.code,
+            cityMunicipality: address.cityMunicipality.name,
+            cityMunicipalityCode: address.cityMunicipality.code,
+            province: address.province.name,
+            provinceCode: address.province.code,
+            region: address.region.name,
+            regionCode: address.region.code,
+          }
           : currentAddress,
       ),
     }));
@@ -313,10 +313,10 @@ function AppPartyDialogContent({
       addresses: current.addresses.map((currentAddress) =>
         currentAddress.id === current.activeAddressId
           ? {
-              ...currentAddress,
-              addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
-              addressLine2: details.addressLine2 ?? currentAddress.addressLine2,
-            }
+            ...currentAddress,
+            addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
+            addressLine2: details.addressLine2 ?? currentAddress.addressLine2,
+          }
           : currentAddress,
       ),
     }));
@@ -333,12 +333,12 @@ function AppPartyDialogContent({
       addresses: current.addresses.map((address) =>
         address.id === current.activeAddressId
           ? {
-              ...address,
-              barangay: "",
-              barangayCode: "",
-              cityMunicipality: option?.name ?? "",
-              cityMunicipalityCode: code,
-            }
+            ...address,
+            barangay: "",
+            barangayCode: "",
+            cityMunicipality: option?.name ?? "",
+            cityMunicipalityCode: code,
+          }
           : address,
       ),
     }));
@@ -360,10 +360,10 @@ function AppPartyDialogContent({
       addresses: current.addresses.map((address) =>
         address.id === current.activeAddressId
           ? {
-              ...address,
-              barangay: option?.name ?? "",
-              barangayCode: code,
-            }
+            ...address,
+            barangay: option?.name ?? "",
+            barangayCode: code,
+          }
           : address,
       ),
     }));
@@ -397,17 +397,17 @@ function AppPartyDialogContent({
       current.addresses.length >= MaxPartyAddressCount
         ? current
         : {
-            ...current,
-            activeAddressId: id,
-            addresses: [
-              ...current.addresses,
-              createEmptyPartyAddress({
-                id,
-                addressName: `Address ${current.addresses.length + 1}`,
-                isDefault: false,
-              }),
-            ],
-          },
+          ...current,
+          activeAddressId: id,
+          addresses: [
+            ...current.addresses,
+            createEmptyPartyAddress({
+              id,
+              addressName: `Address ${current.addresses.length + 1}`,
+              isDefault: false,
+            }),
+          ],
+        },
     );
   }
 
@@ -538,11 +538,10 @@ function AppPartyDialogContent({
                       key={currentType}
                       type="button"
                       onClick={() => handlePartyTypeChange(currentType)}
-                      className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${
-                        partyType === currentType
+                      className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${partyType === currentType
                           ? "theme-accent-contrast-text border-skyblue bg-skyblue"
                           : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/40 hover:bg-skyblue/8"
-                      }`}
+                        }`}
                     >
                       {currentType}
                     </button>

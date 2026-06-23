@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { ResponsibilityCenterAction } from "@/app/src/ui/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterAction";
+import { ResponsibilityCenterAction } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterAction";
 
 const PageTitle = "Edit Responsibility Center";
 

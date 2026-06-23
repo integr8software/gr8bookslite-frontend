@@ -341,20 +341,6 @@ function useCornerLauncher(onClick: () => void) {
   );
 
   useEffect(() => {
-    function handleResize() {
-      setLauncherCorner((current) =>
-        GetLauncherCorner(ClampLauncherPosition(GetCornerPosition(current))),
-      );
-    }
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-  useEffect(() => {
     window.localStorage.setItem(
       AiAssistantLauncherPositionStorageKey,
       launcherCorner,
@@ -410,11 +396,7 @@ function useCornerLauncher(onClick: () => void) {
     onClick();
   }
 
-  const launcherPosition = GetCornerPosition(launcherCorner);
-  const launcherPositionStyle: CSSProperties = {
-    left: `${launcherPosition.x}px`,
-    top: `${launcherPosition.y}px`,
-  };
+  const launcherPositionStyle = GetLauncherPositionStyle(launcherCorner);
 
   return {
     handleClick,
@@ -425,6 +407,19 @@ function useCornerLauncher(onClick: () => void) {
     launcherCorner,
     launcherPositionStyle,
   };
+}
+
+function GetLauncherPositionStyle(corner: LauncherCorner): CSSProperties {
+  switch (corner) {
+    case "top-left":
+      return { left: LauncherMargin, top: LauncherMargin };
+    case "top-right":
+      return { right: LauncherMargin, top: LauncherMargin };
+    case "bottom-left":
+      return { bottom: LauncherMargin, left: LauncherMargin };
+    case "bottom-right":
+      return { bottom: LauncherMargin, right: LauncherMargin };
+  }
 }
 
 function GetInitialLauncherCorner(): LauncherCorner {
@@ -467,15 +462,18 @@ function GetCornerPosition(corner: LauncherCorner): LauncherPosition {
 }
 
 function ClampLauncherPosition(position: LauncherPosition): LauncherPosition {
+  const maxX = Math.max(
+    LauncherMargin,
+    window.innerWidth - LauncherSize - LauncherMargin,
+  );
+  const maxY = Math.max(
+    LauncherMargin,
+    window.innerHeight - LauncherSize - LauncherMargin,
+  );
+
   return {
-    x: Math.min(
-      Math.max(position.x, LauncherMargin),
-      window.innerWidth - LauncherSize - LauncherMargin,
-    ),
-    y: Math.min(
-      Math.max(position.y, LauncherMargin),
-      window.innerHeight - LauncherSize - LauncherMargin,
-    ),
+    x: Math.min(Math.max(position.x, LauncherMargin), maxX),
+    y: Math.min(Math.max(position.y, LauncherMargin), maxY),
   };
 }
 

@@ -5,8 +5,8 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PurchaseRequestFormSignatoryModuleCodes } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
-import { ResolveFormSignatorySetup } from "@/app/src/services/modules/maintenance/form-signatory/FormSignatoryApi";
-import { FormSignatoryQueryKeys } from "@/app/src/services/modules/maintenance/form-signatory/FormSignatoryQueryKeys";
+import { ResolveFormSignatorySetup } from "@/app/src/services/modules/system-administration/form-signatory/FormSignatoryApi";
+import { FormSignatoryQueryKeys } from "@/app/src/services/modules/system-administration/form-signatory/FormSignatoryQueryKeys";
 import { ReadFileAsDataUrl } from "@/app/src/services/shared/media/ImageCropper";
 import type {
 	PurchaseRequestFormSignatoryOption,

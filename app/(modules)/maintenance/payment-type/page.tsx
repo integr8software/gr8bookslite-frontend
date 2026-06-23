@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PaymentTypeListPage } from "@/app/src/ui/modules/maintenance/financial-management/payment-type/PaymentTypeListPage";
+import { PaymentTypeListPage } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeListPage";
 
 const PageTitle = "Payment Type";
 

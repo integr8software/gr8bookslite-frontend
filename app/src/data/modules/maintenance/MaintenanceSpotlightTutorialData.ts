@@ -47,11 +47,6 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Payment type",
   },
   {
-    href: "/maintenance/form-signatory",
-    addMode: "route",
-    label: "Form signatory",
-  },
-  {
     href: "/maintenance/item-management/items",
     addMode: "route",
     label: "Items",

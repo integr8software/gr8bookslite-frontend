@@ -1,4 +1,4 @@
-import type { TermManagement } from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
+import type { TermManagement } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 
 export function formatTermDuration(
   term: Pick<TermManagement, "datemode" | "period">,

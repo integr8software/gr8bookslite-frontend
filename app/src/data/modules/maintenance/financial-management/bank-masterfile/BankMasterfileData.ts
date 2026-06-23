@@ -1,7 +1,7 @@
 import type {
 	BankMasterfile,
 	BankMasterfileFormValues,
-} from "@/app/src/types/modules/maintenance/financial-management/bank-masterfile/BankMasterfileTypes";
+} from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 
 export const BankMasterfileInitialFormValues: BankMasterfileFormValues = {
 	bankName: "",

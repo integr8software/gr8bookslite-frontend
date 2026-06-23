@@ -3,7 +3,7 @@ import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsDa
 import type {
 	TransactionType,
 	TransactionTypeFormValues,
-} from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
+} from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
 
 export const MockTransactionTypes: TransactionType[] = [
 	createMockTransactionType({

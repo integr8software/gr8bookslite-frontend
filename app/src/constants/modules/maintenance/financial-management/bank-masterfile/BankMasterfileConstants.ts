@@ -1,4 +1,4 @@
-import type { BankMasterfileStatus } from "@/app/src/types/modules/maintenance/financial-management/bank-masterfile/BankMasterfileTypes";
+import type { BankMasterfileStatus } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 
 export const BankMasterfileHref = "/maintenance/bank-masterfile";
 

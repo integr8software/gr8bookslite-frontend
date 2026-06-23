@@ -1,7 +1,7 @@
 import type {
   ChartAccount,
   FlattenedChartAccount,
-} from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
+} from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 
 export function flattenAccounts(
   accounts: ChartAccount[],

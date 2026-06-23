@@ -49,7 +49,6 @@ import {
 import {
   MainLayoutDefaultSubscription,
   MainLayoutInitialNotifications,
-  MainLayoutRecentNavigationKeys,
 } from "@/app/src/data/shared/main-layout/MainLayoutDefaults";
 import { mapProfileCompanyUnitsToMainBranches } from "@/app/src/data/workspace/companies/WorkspaceCompanyMainLayoutBranchData";
 import { ModuleHelpArticles } from "@/app/src/data/shared/module/module-help/ModuleHelpData";
@@ -82,7 +81,6 @@ import type {
   MainBreadcrumb,
   MainBreadcrumbDropdownItem,
   MainNotificationTab,
-  MainQuickListTab,
 } from "@/app/src/types/shared/main-layout/MainLayoutTypes";
 
 const DefaultExpandedKeys = [
@@ -204,7 +202,6 @@ export function useMainLayout() {
     pathname: "",
     key: "",
   });
-  const [quickListTab, setQuickListTab] = useState<MainQuickListTab>("recent");
   const [notificationTab, setNotificationTab] =
     useState<MainNotificationTab>("all");
   const [manualExpandedKeys, setManualExpandedKeys] =
@@ -363,10 +360,7 @@ export function useMainLayout() {
       filterMainSearchItems(MainCompanySearchItems, displayUser, subscription),
     [displayUser, subscription],
   );
-  const companyHomeHref = getCompanyHomeHref(
-    companySearchItems,
-    MainLayoutRecentNavigationKeys,
-  );
+  const companyHomeHref = getCompanyHomeHref(companySearchItems);
   const homeHref =
     activeNavigationScope === "account" && hasMasterAccess
       ? MasterHomeHref
@@ -439,31 +433,6 @@ export function useMainLayout() {
       clearShellContextSwitch(false);
     },
   });
-
-  const recentlyVisitedModules = useMemo(() => {
-    if (activeNavigationScope !== "company") {
-      return [];
-    }
-
-    return findSearchItemsByKeys(
-      availableSearchItems,
-      MainLayoutRecentNavigationKeys,
-    );
-  }, [activeNavigationScope, availableSearchItems]);
-
-  const enabledQuickListTabs = useMemo(() => {
-    if (activeNavigationScope !== "company") {
-      return [] as MainQuickListTab[];
-    }
-
-    const tabs: MainQuickListTab[] = [];
-    tabs.push("recent");
-
-    return tabs;
-  }, [activeNavigationScope]);
-  const activeQuickListTab = enabledQuickListTabs.includes(quickListTab)
-    ? quickListTab
-    : (enabledQuickListTabs[0] ?? quickListTab);
 
   const searchResults = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -1001,7 +970,6 @@ export function useMainLayout() {
     currentCompany,
     currentHelpArticle,
     currentUser: displayUser,
-    enabledQuickListTabs,
     expandedKeys,
     hasAuthSession: Boolean(accessToken),
     hasBranchAccess,
@@ -1036,8 +1004,6 @@ export function useMainLayout() {
     navigationSections,
     notificationTab,
     query,
-    quickListTab: activeQuickListTab,
-    recentlyVisitedModules,
     searchResults,
     selectedHelpArticleKey,
     shouldAutoRevealActiveRoute,
@@ -1056,7 +1022,6 @@ export function useMainLayout() {
     selectCompany,
     setNotificationTab,
     setQuery: updateQuery,
-    setQuickListTab,
     setSelectedHelpArticleKey: selectHelpArticle,
     toggleExpandedKey,
     toggleNotifications,
@@ -1976,6 +1941,8 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "dashboard-overview": "View company activity, approvals, and performance.",
   "maintenance-charts-of-accounts":
     "Maintain account codes used by transactions and reports.",
+  "maintenance-bank-masterfile":
+    "Maintain company bank accounts and their linked Cash in Bank chart accounts.",
   "system-administration-multi-currency-setup":
     "Configure currencies, exchange rates, preferences, and rounding rules.",
   "maintenance-discount-management":
@@ -2011,7 +1978,7 @@ const NavigationDropdownHelperText: Record<string, string> = {
     "Maintain customers, suppliers, vendors, members, and employees.",
   "maintenance-party":
     "Maintain customers, suppliers, vendors, members, and employees.",
-  "maintenance-form-signatory":
+  "system-administration-form-signatory":
     "Manage authorized signatories for official documents.",
   "cash-receipt-official-receipt": "Record official customer payments.",
   "cash-receipt-collection-receipt":
@@ -2135,24 +2102,14 @@ function getItemTargetHref(item: MainNavigationItem): string {
   return getItemTargetHref(item.children[0]);
 }
 
-function findSearchItemsByKeys(items: MainSearchItem[], keys: string[]) {
-  return keys
-    .map((key) => items.find((item) => item.key === key))
-    .filter((item): item is MainSearchItem => Boolean(item));
-}
-
-function getCompanyHomeHref(items: MainSearchItem[], recentKeys: string[]) {
+function getCompanyHomeHref(items: MainSearchItem[]) {
   const dashboard = items.find((item) => item.key === "dashboard-overview");
 
   if (dashboard) {
     return dashboard.href;
   }
 
-  return (
-    findSearchItemsByKeys(items, recentKeys)[0]?.href ??
-    items[0]?.href ??
-    CompanyFallbackHomeHref
-  );
+  return items[0]?.href ?? CompanyFallbackHomeHref;
 }
 
 function getCompanyHomeHrefForProfile(profile: AuthProfileResponse) {
@@ -2170,7 +2127,7 @@ function getCompanyHomeHrefForProfile(profile: AuthProfileResponse) {
     subscription,
   );
 
-  return getCompanyHomeHref(items, MainLayoutRecentNavigationKeys);
+  return getCompanyHomeHref(items);
 }
 
 function sortBranchesByPriority(branches: MainBranch[]) {

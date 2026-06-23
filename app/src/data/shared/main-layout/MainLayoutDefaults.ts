@@ -30,14 +30,6 @@ export const MainLayoutSubscriptionPlans: MainSubscriptionOption[] = [
 
 export const MainLayoutDefaultSubscription = MainLayoutSubscriptionPlans[2];
 
-export const MainLayoutRecentNavigationKeys = [
-  "maintenance-approval",
-  "reports-financial",
-  "maintenance-users",
-  "inventory-receiving-report",
-  "cash-disbursement-voucher",
-];
-
 export const MainLayoutInitialNotifications: MainNotification[] = [
   {
     id: "notif-001",

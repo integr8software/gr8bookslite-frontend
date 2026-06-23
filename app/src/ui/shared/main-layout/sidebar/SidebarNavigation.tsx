@@ -230,7 +230,7 @@ export function SidebarItem({
 	const shouldShowIcon =
 		hasChildren ||
 		hasSidebarItemIcon(item) ||
-		item.key === "maintenance-form-signatory" ||
+		item.key === "system-administration-form-signatory" ||
 		item.accessKey === "maintenance.party" ||
 		(item.accessKey === "maintenance.warehouse" && depth === 0);
 	const shouldShowModuleDot = !shouldShowIcon;

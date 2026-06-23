@@ -1,7 +1,7 @@
 import type {
 	TermManagement,
 	TermManagementFormValues,
-} from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
+} from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 
 export const TermManagementInitialFormValues: TermManagementFormValues = {
 	name: "",

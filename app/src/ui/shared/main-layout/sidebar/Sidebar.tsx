@@ -2,10 +2,9 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Clock3, X } from "lucide-react";
+import { X } from "lucide-react";
 import type {
 	MainNavigationSection,
-	MainSearchItem,
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { SidebarIdentitySkeleton, SidebarLogo } from "./SidebarIdentity";
 import {
@@ -13,10 +12,7 @@ import {
 	SidebarItem,
 	SidebarSection,
 } from "./SidebarNavigation";
-import { joinClasses, pathMatches, useIncrementalVisibleCount } from "./utils";
-
-const QuickListInitialCount = 4;
-const QuickListBatchSize = 6;
+import { joinClasses, pathMatches } from "./utils";
 
 type MainSidebarProps = {
 	activeHref: string;
@@ -25,14 +21,12 @@ type MainSidebarProps = {
 	companyLogoUrl?: string;
 	companyLogoVariant?: "company" | "master-control";
 	typeOfCompany: string;
-	enabledQuickListTabs: Array<"recent">;
 	expandedKeys: string[];
 	homeHref: string;
 	isLoading?: boolean;
 	isOpen: boolean;
 	isTransitionEnabled: boolean;
 	navigationSections: MainNavigationSection[];
-	recentlyVisitedModules: MainSearchItem[];
 	shouldAutoScrollActiveItem: boolean;
 	onClose: () => void;
 	onNavigateFromSidebar: (href: string) => void;
@@ -46,14 +40,12 @@ export function MainSidebar({
 	companyLogoUrl,
 	companyLogoVariant,
 	typeOfCompany,
-	enabledQuickListTabs,
 	expandedKeys,
 	homeHref,
 	isLoading = false,
 	isOpen,
 	isTransitionEnabled,
 	navigationSections,
-	recentlyVisitedModules,
 	shouldAutoScrollActiveItem,
 	onClose,
 	onNavigateFromSidebar,
@@ -68,20 +60,6 @@ export function MainSidebar({
 	> | null>(null);
 	const sidebarNavigationHrefRef = useRef<string | null>(null);
 	const sidebarInteractionUntilRef = useRef(0);
-	const quickListItems = recentlyVisitedModules;
-	const shouldShowQuickList =
-		enabledQuickListTabs.includes("recent") && quickListItems.length > 0;
-	const [quickListVisibleCount, hasMoreQuickListItems, setQuickListSentinel] =
-		useIncrementalVisibleCount(
-			quickListItems.length,
-			QuickListInitialCount,
-			QuickListBatchSize,
-			true,
-		);
-	const visibleQuickListItems = quickListItems.slice(
-		0,
-		quickListVisibleCount,
-	);
 	const suppressAutoScrollFromSidebarInteraction = useCallback(() => {
 		sidebarInteractionUntilRef.current = Date.now() + 1800;
 
@@ -245,49 +223,6 @@ export function MainSidebar({
 					ref={scrollContainerRef}
 					className="min-h-0 flex-1 scroll-smooth overflow-y-auto overscroll-contain px-3 py-4"
 				>
-					{shouldShowQuickList ? (
-						<div className="mb-5">
-							<div className="mb-2 flex items-center gap-2 px-3">
-								<Clock3
-									className="h-3.5 w-3.5 shrink-0 text-darknavy/45"
-									aria-hidden="true"
-								/>
-								<p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">
-									Recently Viewed
-								</p>
-							</div>
-							<div className="space-y-1">
-								{visibleQuickListItems.map((item) => (
-									<Link
-										key={item.key}
-										href={item.href}
-										onClick={handleNavigateFromSidebar(
-											item.href,
-										)}
-										className="flex min-h-9 items-center gap-2 rounded-md px-3 text-sm text-darknavy/75 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
-									>
-										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-darknavy">
-											<Clock3
-												className="h-3.5 w-3.5"
-												aria-hidden="true"
-											/>
-										</span>
-										<span className="min-w-0 flex-1 truncate">
-											{item.label}
-										</span>
-									</Link>
-								))}
-								{hasMoreQuickListItems ? (
-									<div
-										ref={setQuickListSentinel}
-										className="h-3"
-										aria-hidden="true"
-									/>
-								) : null}
-							</div>
-						</div>
-					) : null}
-
 					<div className="space-y-2">
 						{navigationSections.map((section) =>
 							section.key === "workspace" ||

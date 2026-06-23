@@ -2,7 +2,7 @@ import { EmptyBankDetails } from "@/app/src/data/modules/maintenance/financial-m
 import type {
   ChartAccount,
   ChartAccountFormValues,
-} from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
+} from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 
 export function accountToFormValues(
   account: ChartAccount,

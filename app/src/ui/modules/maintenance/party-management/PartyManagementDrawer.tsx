@@ -16,7 +16,7 @@ import {
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { usePhilippineAddressOptions } from "@/app/src/hooks/shared/address/ph/usePhilippineAddressOptions";
-import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/financial-management/term-management/useTermManagement";
+import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagement";
 import type {
 	PartyAddress,
 	PartyInformationFormErrors,
@@ -193,16 +193,16 @@ export function PartyManagementDrawer({
 			addresses: current.addresses.map((address) =>
 				address.id === current.activeAddressId
 					? {
-							...address,
-							barangay: "",
-							barangayCode: "",
-							cityMunicipality: "",
-							cityMunicipalityCode: "",
-							province: option?.name ?? "",
-							provinceCode: code,
-							region: option?.regionName ?? "",
-							regionCode: option?.regionCode ?? "",
-						}
+						...address,
+						barangay: "",
+						barangayCode: "",
+						cityMunicipality: "",
+						cityMunicipalityCode: "",
+						province: option?.name ?? "",
+						provinceCode: code,
+						region: option?.regionName ?? "",
+						regionCode: option?.regionCode ?? "",
+					}
 					: address,
 			),
 		}));
@@ -227,20 +227,20 @@ export function PartyManagementDrawer({
 			addresses: current.addresses.map((currentAddress) =>
 				currentAddress.id === current.activeAddressId
 					? {
-							...currentAddress,
-							addressLine1:
-								details?.addressLine1 ?? currentAddress.addressLine1,
-							addressLine2:
-								details?.addressLine2 ?? currentAddress.addressLine2,
-							barangay: address.barangay.name,
-							barangayCode: address.barangay.code,
-							cityMunicipality: address.cityMunicipality.name,
-							cityMunicipalityCode: address.cityMunicipality.code,
-							province: address.province.name,
-							provinceCode: address.province.code,
-							region: address.region.name,
-							regionCode: address.region.code,
-						}
+						...currentAddress,
+						addressLine1:
+							details?.addressLine1 ?? currentAddress.addressLine1,
+						addressLine2:
+							details?.addressLine2 ?? currentAddress.addressLine2,
+						barangay: address.barangay.name,
+						barangayCode: address.barangay.code,
+						cityMunicipality: address.cityMunicipality.name,
+						cityMunicipalityCode: address.cityMunicipality.code,
+						province: address.province.name,
+						provinceCode: address.province.code,
+						region: address.region.name,
+						regionCode: address.region.code,
+					}
 					: currentAddress,
 			),
 		}));
@@ -262,10 +262,10 @@ export function PartyManagementDrawer({
 			addresses: current.addresses.map((currentAddress) =>
 				currentAddress.id === current.activeAddressId
 					? {
-							...currentAddress,
-							addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
-							addressLine2: details.addressLine2 ?? currentAddress.addressLine2,
-						}
+						...currentAddress,
+						addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
+						addressLine2: details.addressLine2 ?? currentAddress.addressLine2,
+					}
 					: currentAddress,
 			),
 		}));
@@ -286,12 +286,12 @@ export function PartyManagementDrawer({
 			addresses: current.addresses.map((address) =>
 				address.id === current.activeAddressId
 					? {
-							...address,
-							barangay: "",
-							barangayCode: "",
-							cityMunicipality: option?.name ?? "",
-							cityMunicipalityCode: code,
-						}
+						...address,
+						barangay: "",
+						barangayCode: "",
+						cityMunicipality: option?.name ?? "",
+						cityMunicipalityCode: code,
+					}
 					: address,
 			),
 		}));
@@ -313,10 +313,10 @@ export function PartyManagementDrawer({
 			addresses: current.addresses.map((address) =>
 				address.id === current.activeAddressId
 					? {
-							...address,
-							barangay: option?.name ?? "",
-							barangayCode: code,
-						}
+						...address,
+						barangay: option?.name ?? "",
+						barangayCode: code,
+					}
 					: address,
 			),
 		}));
@@ -353,17 +353,17 @@ export function PartyManagementDrawer({
 			current.addresses.length >= MaxPartyAddressCount
 				? current
 				: {
-						...current,
-						activeAddressId: id,
-						addresses: [
-							...current.addresses,
-							createEmptyPartyAddress({
-								id,
-								addressName: `Address ${current.addresses.length + 1}`,
-								isDefault: false,
-							}),
-						],
-					},
+					...current,
+					activeAddressId: id,
+					addresses: [
+						...current.addresses,
+						createEmptyPartyAddress({
+							id,
+							addressName: `Address ${current.addresses.length + 1}`,
+							isDefault: false,
+						}),
+					],
+				},
 		);
 	}
 

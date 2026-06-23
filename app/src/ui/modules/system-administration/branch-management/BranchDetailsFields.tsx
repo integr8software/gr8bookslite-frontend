@@ -9,7 +9,7 @@ import type {
   BranchManagementClassification,
   BranchManagementFormValues,
 } from "@/app/src/data/modules/system-administration/branch-management/BranchManagementData";
-import type { BranchFormErrors } from "@/app/src/types/modules/branch-manager/BranchActionTypes";
+import type { BranchFormErrors } from "@/app/src/types/workspace/branch-manager/BranchActionTypes";
 
 type BranchDetailsFieldsProps = {
   errors: BranchFormErrors;
@@ -316,11 +316,10 @@ function ClassificationButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-11 items-center justify-center gap-2 rounded-md border text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-70 ${
-        active
+      className={`flex h-11 items-center justify-center gap-2 rounded-md border text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-70 ${active
           ? "border-skyblue bg-skyblue/10 text-darknavy"
           : "border-darknavy/10 text-darknavy/65 hover:border-skyblue/50"
-      }`}
+        }`}
     >
       <Icon className="h-4 w-4" aria-hidden="true" />
       {label}

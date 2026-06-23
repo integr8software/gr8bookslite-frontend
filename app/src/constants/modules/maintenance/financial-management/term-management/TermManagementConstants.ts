@@ -1,7 +1,7 @@
 import type {
 	TermManagementDatemode,
 	TermManagementStatus,
-} from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
+} from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 
 export const TermManagementHref =
 	"/maintenance/term-management";

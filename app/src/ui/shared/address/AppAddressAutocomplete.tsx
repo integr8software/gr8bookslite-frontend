@@ -4,9 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
 import {
 	GetAddressAutocomplete,
-	type AddressAutocompleteDetails,
-	type AddressAutocompleteItem,
 } from "@/app/src/services/shared/address/AddressReferenceApi";
+import type {
+	AddressAutocompleteDetails,
+	AddressAutocompleteItem,
+} from "@/app/src/types/shared/address/AddressTypes";
 import { AppSearchSuggestions } from "@/app/src/ui/shared/search-suggestions/AppSearchSuggestions";
 
 export type AppAddressAutocompleteValue = {

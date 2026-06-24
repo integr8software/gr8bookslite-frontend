@@ -8,20 +8,19 @@ import {
 } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { formatTermDuration } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementDisplay";
 import {
   MaxPartyAddressCount,
   PartyInformationInitialFormValues,
   createEmptyPartyAddress,
   createPartyInformationRecord,
-  getPartyAtcCodeOptionsByClassification,
   getPartyDisplayName,
   isKnownPartyType,
   setPartyDefaultAddress,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
-import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagement";
-import { usePhilippineAddressOptions } from "@/app/src/hooks/shared/address/ph/usePhilippineAddressOptions";
+import { useTermDropdownOptions } from "@/app/src/hooks/modules/maintenance/term-management/useTermDropdownOptions";
+import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
 import type {
   PartyAddress,
   PartyInformationFormErrors,
@@ -34,7 +33,7 @@ import { validatePartyInformationForm } from "@/app/src/validations/modules/main
 import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,
-} from "@/app/src/services/shared/address/AddressReferenceApi";
+} from "@/app/src/types/shared/address/AddressTypes";
 
 type AppPartyDialogProps = {
   isOpen: boolean;
@@ -99,7 +98,7 @@ function AppPartyDialogContent({
   onSelect: (record: PartyInformationRecord) => void;
 }) {
   const addRecord = usePartyManagementStore((state) => state.addRecord);
-  const terms = useTermManagementStore((state) => state.terms);
+  const termDropdown = useTermDropdownOptions();
   const [partyType, setPartyType] = useState<PartyType>(suggestedPartyType);
   const [values, setValues] = useState<PartyInformationFormValues>(() =>
     createDialogInitialValues(records, suggestedPartyType),
@@ -109,7 +108,7 @@ function AppPartyDialogContent({
     values.addresses.find((address) => address.id === values.activeAddressId) ??
     values.addresses[0] ??
     values.address;
-  const addressOptions = usePhilippineAddressOptions({
+  const addressOptions = useAddressOptions({
     barangayCode: activeAddress.barangayCode,
     barangayName: activeAddress.barangay,
     cityMunicipalityCode: activeAddress.cityMunicipalityCode,
@@ -119,24 +118,10 @@ function AppPartyDialogContent({
     regionCode: activeAddress.regionCode,
     regionName: activeAddress.region,
   });
-  const atcOptions = useMemo(
-    () => getPartyAtcCodeOptionsByClassification(values.classification),
-    [values.classification],
-  );
+  const atcDropdown = usePartyAtcCodeOptions(values.classification);
   const accountOptions = useMemo(
     () => getModuleChartAccounts({ moduleKey: "maintenance-transaction-type" }),
     [],
-  );
-  const termOptions = useMemo(
-    () =>
-      terms
-        .filter((term) => term.status === "Active")
-        .map((term) => ({
-          description: formatTermDuration(term),
-          name: term.name,
-          value: term.id,
-        })),
-    [terms],
   );
   const isClassificationSelected = Boolean(values.classification);
   const dialogCopy = PartyTypeCardCopy[partyType];
@@ -381,7 +366,7 @@ function AppPartyDialogContent({
 
   function selectTerm(value: string | string[]) {
     const termId = getSingleSelectedValue(value);
-    const term = terms.find((currentTerm) => currentTerm.id === termId);
+    const term = termDropdown.terms.find((currentTerm) => currentTerm.id === termId);
 
     setValues((current) => ({
       ...current,
@@ -553,12 +538,12 @@ function AppPartyDialogContent({
             <PartyInformationDetailsFields
               addressOptions={addressOptions}
               accountOptions={accountOptions}
-              atcOptions={atcOptions}
+              atcOptions={atcDropdown.options}
               errors={errors}
               isClassificationSelected={isClassificationSelected}
               isReadonly={false}
               partyTypeOptions={[partyType]}
-              termOptions={termOptions}
+              termOptions={termDropdown.options}
               values={values}
               onAddAddress={addAddress}
               onAddressInputChange={handleAddressInputChange}

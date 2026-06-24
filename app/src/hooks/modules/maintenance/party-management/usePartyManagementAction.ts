@@ -14,7 +14,6 @@ import {
   PartyManagementHref,
   PartyTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
-import { formatTermDuration } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementDisplay";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import {
@@ -23,14 +22,14 @@ import {
   createEmptyPartyAddress,
   createPartyInformationFormValues,
   createPartyInformationRecord,
-  getPartyAtcCodeOptionsByClassification,
   isKnownPartyType,
   setPartyDefaultAddress,
   updatePartyInformationRecord,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagement";
-import { usePhilippineAddressOptions } from "@/app/src/hooks/shared/address/ph/usePhilippineAddressOptions";
+import { useTermDropdownOptions } from "@/app/src/hooks/modules/maintenance/term-management/useTermDropdownOptions";
+import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
 import type {
   PartyAddress,
   PartyInformationActionMode,
@@ -43,7 +42,7 @@ import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/par
 import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,
-} from "@/app/src/services/shared/address/AddressReferenceApi";
+} from "@/app/src/types/shared/address/AddressTypes";
 
 export function usePartyManagementAction() {
   const router = useRouter();
@@ -51,7 +50,7 @@ export function usePartyManagementAction() {
   const params = useParams<{ recordId?: string }>();
   const searchParams = useSearchParams();
   const partyManagement = usePartyManagementStore();
-  const terms = useTermManagementStore((state) => state.terms);
+  const termDropdown = useTermDropdownOptions();
   const mode = getActionMode(pathname);
   const openedFromView =
     mode === "edit" &&
@@ -71,7 +70,7 @@ export function usePartyManagementAction() {
     values.addresses.find((address) => address.id === values.activeAddressId) ??
     values.addresses[0] ??
     values.address;
-  const addressOptions = usePhilippineAddressOptions({
+  const addressOptions = useAddressOptions({
     barangayCode: activeAddress.barangayCode,
     barangayName: activeAddress.barangay,
     cityMunicipalityCode: activeAddress.cityMunicipalityCode,
@@ -85,27 +84,13 @@ export function usePartyManagementAction() {
   const isClassificationSelected = Boolean(values.classification);
   const nextStatus: PartyInformationStatus =
     existingRecord?.status === "Active" ? "Inactive" : "Active";
-  const atcOptions = useMemo(
-    () => getPartyAtcCodeOptionsByClassification(values.classification),
-    [values.classification],
-  );
+  const atcDropdown = usePartyAtcCodeOptions(values.classification);
   const accountOptions = useMemo(
     () =>
       getModuleChartAccounts({
         moduleKey: "maintenance-transaction-type",
       }),
     [],
-  );
-  const termOptions = useMemo(
-    () =>
-      terms
-        .filter((term) => term.status === "Active")
-        .map((term) => ({
-          description: formatTermDuration(term),
-          name: term.name,
-          value: term.id,
-        })),
-    [terms],
   );
   const viewHref = existingRecord
     ? `${PartyManagementHref}/view/${existingRecord.id}`
@@ -519,7 +504,7 @@ export function usePartyManagementAction() {
 
   function selectTerm(value: string | string[]) {
     const termId = getSingleSelectedValue(value);
-    const term = terms.find((currentTerm) => currentTerm.id === termId);
+    const term = termDropdown.terms.find((currentTerm) => currentTerm.id === termId);
 
     setValues((current) => ({
       ...current,
@@ -546,7 +531,7 @@ export function usePartyManagementAction() {
   return {
     addressOptions,
     accountOptions,
-    atcOptions,
+    atcOptions: atcDropdown.options,
     cancelHref,
     editHref,
     errors,
@@ -577,7 +562,7 @@ export function usePartyManagementAction() {
     selectTerm,
     setIsStatusDialogOpen,
     setDefaultAddress,
-    termOptions,
+    termOptions: termDropdown.options,
     updateAddressMeta,
     updateField,
     values,

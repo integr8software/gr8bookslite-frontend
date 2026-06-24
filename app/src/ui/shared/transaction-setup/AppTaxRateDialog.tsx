@@ -6,7 +6,8 @@ import {
   createTaxDetails,
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import { PhilippineTaxCodeRows } from "@/app/src/data/shared/tax/PhilippineAtcData";
+import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import type { DisbursementTaxDetails } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import {
   AppAdvancedDropdown,
@@ -60,11 +61,14 @@ function AppTaxRateDialogEditor({
   onSave: (value: AppTaxRateDialogValue) => void;
 }) {
   const [draftValue, setDraftValue] = useState(initialValue);
-  const ewtOptions = useMemo(() => createEwtOptions(), []);
+  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodes = taxCodesQuery.data ?? [];
+  const vatRateOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
+  const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
 
   function updateVatCode(nextVatCode: string) {
     setDraftValue((current) => {
-      const nextTaxRate = getVatRateFromCode(nextVatCode);
+      const nextTaxRate = getVatRateFromCode(nextVatCode, taxCodes);
       const nextVatPercent = getVatPercentFromRate(nextTaxRate);
       const nextTaxDetails = syncTaxDetailsAmount(
         {
@@ -85,7 +89,7 @@ function AppTaxRateDialogEditor({
 
   function updateEwtCode(nextEwtCode: string) {
     setDraftValue((current) => {
-      const nextEwtPercent = getEwtPercentFromCode(nextEwtCode);
+      const nextEwtPercent = getEwtPercentFromCode(nextEwtCode, taxCodes);
       const nextTaxDetails = syncTaxDetailsAmount(
         {
           ...current.taxDetails,
@@ -157,8 +161,8 @@ function AppTaxRateDialogEditor({
           <TaxDialogRow controlId="tax-vat-code" isRequired label="Tax VAT">
             <AppAdvancedDropdown
               id="tax-vat-code"
-              value={normalizeVatDropdownValue(draftValue.taxDetails)}
-              options={VatRateOptions}
+              value={normalizeVatDropdownValue(draftValue.taxDetails, taxCodes)}
+              options={vatRateOptions}
               placeholder="--Select VAT Rate--"
               searchPlaceholder="Search VAT rate"
               onChange={(value) => updateVatCode(String(value))}
@@ -272,13 +276,13 @@ function getVatPercentFromRate(taxRate: string) {
   return seededTaxDetails.vatPercent;
 }
 
-function getEwtPercentFromCode(value: string) {
-  const matchedTaxRow = PhilippineTaxCodeRows.find(
+function getEwtPercentFromCode(value: string, taxCodes: AlphanumericTaxCode[]) {
+  const matchedTaxRow = taxCodes.find(
     (row) => row.taxType === "EWT" && row.taxCode === value,
   );
 
   if (matchedTaxRow) {
-    return matchedTaxRow.taxRate;
+    return Number(matchedTaxRow.taxRate);
   }
 
   const matchedPercent = value.match(/(\d+(?:\.\d+)?)(?!.*\d)/);
@@ -286,14 +290,12 @@ function getEwtPercentFromCode(value: string) {
   return matchedPercent ? Number.parseFloat(matchedPercent[1]) : 0;
 }
 
-const VatRateOptions = createVatOptions();
-
-function getVatRateFromCode(vatCode: string) {
+function getVatRateFromCode(vatCode: string, taxCodes: AlphanumericTaxCode[]) {
   if (!vatCode) {
     return "0%";
   }
 
-  const matchedTaxRow = PhilippineTaxCodeRows.find(
+  const matchedTaxRow = taxCodes.find(
     (row) =>
       row.transactionType === "Purchases" &&
       row.taxType === "INPUT VAT" &&
@@ -315,31 +317,32 @@ function getVatRateFromCode(vatCode: string) {
   return "0%";
 }
 
-function normalizeVatDropdownValue(taxDetails: DisbursementTaxDetails) {
+function normalizeVatDropdownValue(
+  taxDetails: DisbursementTaxDetails,
+  taxCodes: AlphanumericTaxCode[],
+) {
   if (!taxDetails.vatCode) {
     return "";
   }
 
-  if (
-    VatRateOptions.some((option) => option.value === taxDetails.vatCode)
-  ) {
+  if (taxCodes.some((row) => row.taxCode === taxDetails.vatCode)) {
     return taxDetails.vatCode;
   }
 
-  const matchedTaxRow = PhilippineTaxCodeRows.find(
+  const matchedTaxRow = taxCodes.find(
     (row) =>
       row.transactionType === "Purchases" &&
       row.taxType === "INPUT VAT" &&
-      row.taxRate === taxDetails.vatPercent,
+      Number(row.taxRate) === taxDetails.vatPercent,
   );
 
   return matchedTaxRow?.taxCode ?? "";
 }
 
-function createVatOptions(): AppAdvancedDropdownOption[] {
+function createVatOptions(taxCodes: AlphanumericTaxCode[]): AppAdvancedDropdownOption[] {
   const uniqueOptions = new Map<string, AppAdvancedDropdownOption>();
 
-  PhilippineTaxCodeRows.filter(
+  taxCodes.filter(
     (row) =>
       row.transactionType === "Purchases" && row.taxType === "INPUT VAT",
   ).forEach((row) => {
@@ -357,8 +360,8 @@ function createVatOptions(): AppAdvancedDropdownOption[] {
   return Array.from(uniqueOptions.values());
 }
 
-function createEwtOptions(): AppAdvancedDropdownOption[] {
-  return PhilippineTaxCodeRows.filter(
+function createEwtOptions(taxCodes: AlphanumericTaxCode[]): AppAdvancedDropdownOption[] {
+  return taxCodes.filter(
     (row) => row.transactionType === "Purchases" && row.taxType === "EWT",
   ).map((row) => ({
     description: row.taxDescription,

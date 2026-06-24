@@ -11,10 +11,10 @@ import {
 } from "@/app/src/services/shared/address/AddressReferenceApi";
 import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
-const PhilippineAddressStaleTime = 24 * 60 * 60 * 1000;
+const AddressReferenceStaleTime = 24 * 60 * 60 * 1000;
 const NcrRegionCode = "130000000";
 
-export function usePhilippineAddressOptions({
+export function useAddressOptions({
 	barangayCode,
 	barangayName,
 	cityMunicipalityCode,
@@ -36,12 +36,12 @@ export function usePhilippineAddressOptions({
 	const regionsQuery = useQuery({
 		queryKey: AddressReferenceQueryKeys.regions(),
 		queryFn: GetAddressRegions,
-		staleTime: PhilippineAddressStaleTime,
+		staleTime: AddressReferenceStaleTime,
 	});
 	const provincesQuery = useQuery({
 		queryKey: AddressReferenceQueryKeys.provinces(""),
 		queryFn: () => GetAddressProvinces(),
-		staleTime: PhilippineAddressStaleTime,
+		staleTime: AddressReferenceStaleTime,
 	});
 	const provinceOptions = useMemo(
 		() => {
@@ -128,13 +128,13 @@ export function usePhilippineAddressOptions({
 				regionCode,
 			}),
 		enabled: canLoadCitiesMunicipalities,
-		staleTime: PhilippineAddressStaleTime,
+		staleTime: AddressReferenceStaleTime,
 	});
 	const barangaysQuery = useQuery({
 		queryKey: AddressReferenceQueryKeys.barangays(cityMunicipalityCode),
 		queryFn: () => GetAddressBarangays(cityMunicipalityCode),
 		enabled: Boolean(cityMunicipalityCode),
-		staleTime: PhilippineAddressStaleTime,
+		staleTime: AddressReferenceStaleTime,
 	});
 
 	const regionOptions = useMemo<AppAdvancedDropdownOption[]>(
@@ -146,22 +146,32 @@ export function usePhilippineAddressOptions({
 		[regionsQuery.data],
 	);
 	const cityMunicipalityOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
-		const options = (citiesMunicipalitiesQuery.data ?? []).map((cityMunicipality) => ({
+		const options = (citiesMunicipalitiesQuery.data ?? []).map(
+			(cityMunicipality) => ({
 				name: cityMunicipality.name,
 				value: cityMunicipality.cityMunicipalityCode,
-			}));
+			}),
+		);
 
-		if (cityMunicipalityCode && cityMunicipalityName && !options.some((option) => option.value === cityMunicipalityCode)) {
+		if (
+			cityMunicipalityCode &&
+			cityMunicipalityName &&
+			!options.some((option) => option.value === cityMunicipalityCode)
+		) {
 			options.push({ name: cityMunicipalityName, value: cityMunicipalityCode });
 		}
 
 		return options;
-	}, [citiesMunicipalitiesQuery.data, cityMunicipalityCode, cityMunicipalityName]);
+	}, [
+		citiesMunicipalitiesQuery.data,
+		cityMunicipalityCode,
+		cityMunicipalityName,
+	]);
 	const barangayOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
 		const options = (barangaysQuery.data ?? []).map((barangay) => ({
-				name: barangay.name,
-				value: barangay.barangayCode,
-			}));
+			name: barangay.name,
+			value: barangay.barangayCode,
+		}));
 
 		if (
 			barangayCode &&

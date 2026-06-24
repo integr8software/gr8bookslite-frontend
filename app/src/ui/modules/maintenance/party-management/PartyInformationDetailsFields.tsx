@@ -31,7 +31,7 @@ import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/Char
 import type {
 	AddressAutocompleteDetails,
 	AddressAutocompleteItem,
-} from "@/app/src/services/shared/address/AddressReferenceApi";
+} from "@/app/src/types/shared/address/AddressTypes";
 import { AppAddressAutocomplete } from "@/app/src/ui/shared/address/AppAddressAutocomplete";
 
 type PartyProvinceOption = AppAdvancedDropdownOption & {

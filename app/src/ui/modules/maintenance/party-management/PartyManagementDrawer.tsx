@@ -2,21 +2,20 @@
 
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { PartyTypeOptions } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
-import { formatTermDuration } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementDisplay";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
 	MaxPartyAddressCount,
 	PartyInformationInitialFormValues,
 	createEmptyPartyAddress,
 	createPartyInformationRecord,
-	getPartyAtcCodeOptionsByClassification,
 	isKnownPartyType,
 	setPartyDefaultAddress,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
-import { usePhilippineAddressOptions } from "@/app/src/hooks/shared/address/ph/usePhilippineAddressOptions";
-import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagement";
+import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
+import { useTermDropdownOptions } from "@/app/src/hooks/modules/maintenance/term-management/useTermDropdownOptions";
+import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
 	PartyAddress,
 	PartyInformationFormErrors,
@@ -29,7 +28,7 @@ import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/
 import type {
 	AddressAutocompleteDetails,
 	AddressAutocompleteItem,
-} from "@/app/src/services/shared/address/AddressReferenceApi";
+} from "@/app/src/types/shared/address/AddressTypes";
 
 const PartyDrawerFormId = "party-management-drawer-form";
 
@@ -55,13 +54,13 @@ export function PartyManagementDrawer({
 	const [values, setValues] = useState<PartyInformationFormValues>(() =>
 		createPartyDrawerInitialValues(records),
 	);
-	const terms = useTermManagementStore((state) => state.terms);
+	const termDropdown = useTermDropdownOptions();
 	const [errors, setErrors] = useState<PartyInformationFormErrors>({});
 	const activeAddress =
 		values.addresses.find((address) => address.id === values.activeAddressId) ??
 		values.addresses[0] ??
 		values.address;
-	const addressOptions = usePhilippineAddressOptions({
+	const addressOptions = useAddressOptions({
 		barangayCode: activeAddress.barangayCode,
 		barangayName: activeAddress.barangay,
 		cityMunicipalityCode: activeAddress.cityMunicipalityCode,
@@ -72,24 +71,10 @@ export function PartyManagementDrawer({
 		regionName: activeAddress.region,
 	});
 	const isClassificationSelected = Boolean(values.classification);
-	const atcOptions = useMemo(
-		() => getPartyAtcCodeOptionsByClassification(values.classification),
-		[values.classification],
-	);
+	const atcDropdown = usePartyAtcCodeOptions(values.classification);
 	const accountOptions = useMemo(
 		() => getModuleChartAccounts({ moduleKey: "maintenance-transaction-type" }),
 		[],
-	);
-	const termOptions = useMemo(
-		() =>
-			terms
-				.filter((term) => term.status === "Active")
-				.map((term) => ({
-					description: formatTermDuration(term),
-					name: term.name,
-					value: term.id,
-				})),
-		[terms],
 	);
 
 	function updateField<TKey extends keyof PartyInformationFormValues>(
@@ -337,7 +322,7 @@ export function PartyManagementDrawer({
 
 	function selectTerm(value: string | string[]) {
 		const termId = getSingleSelectedValue(value);
-		const term = terms.find((currentTerm) => currentTerm.id === termId);
+		const term = termDropdown.terms.find((currentTerm) => currentTerm.id === termId);
 
 		setValues((current) => ({
 			...current,
@@ -463,12 +448,12 @@ export function PartyManagementDrawer({
 				<PartyInformationDetailsFields
 					addressOptions={addressOptions}
 					accountOptions={accountOptions}
-					atcOptions={atcOptions}
+					atcOptions={atcDropdown.options}
 					errors={errors}
 					isClassificationSelected={isClassificationSelected}
 					isReadonly={false}
 					partyTypeOptions={PartyTypeOptions}
-					termOptions={termOptions}
+					termOptions={termDropdown.options}
 					values={values}
 					onAddAddress={addAddress}
 					onAddressInputChange={handleAddressInputChange}

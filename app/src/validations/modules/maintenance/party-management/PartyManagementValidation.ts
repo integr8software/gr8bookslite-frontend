@@ -7,10 +7,9 @@ import {
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
   MaxPartyAddressCount,
-  getPartyAtcCodeOptionsByClassification,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
-import { normalizePhilippineAtcCode } from "@/app/src/data/shared/tax/PhilippineAtcData";
+import { isAtcCodeLike } from "@/app/src/data/shared/tax/AtcCode";
 import type {
   PartyInformationFormErrors,
   PartyInformationFormValues,
@@ -129,7 +128,7 @@ export const PartyInformationFormSchema = z
 
     if (
       values.atcCode &&
-      !isKnownAtcCodeForClassification(values.atcCode, values.classification)
+      !isAtcCodeLike(values.atcCode)
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -226,17 +225,6 @@ export function validatePartyInformationForm(
   }
 
   return errors;
-}
-
-function isKnownAtcCodeForClassification(
-  value: string,
-  classification: PartyInformationFormValues["classification"],
-) {
-  const normalizedCode = normalizePhilippineAtcCode(value);
-
-  return getPartyAtcCodeOptionsByClassification(classification).some(
-    (option) => option.code === normalizedCode,
-  );
 }
 
 function isValidEmail(value: string) {

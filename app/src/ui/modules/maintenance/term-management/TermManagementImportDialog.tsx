@@ -13,6 +13,7 @@ import {
 	Upload,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
@@ -586,7 +587,8 @@ export function TermManagementImportDialog({
 					</div>
 					<div className="grid gap-2 text-xs font-medium text-darknavy/45 lg:col-span-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
 						<p className="sm:hidden">
-							Accepted: .xlsx, .csv, .tsv, .txt. Maximum size: 2 MB.
+							Accepted: .xlsx, .csv, .tsv, .txt. Maximum size:{" "}
+							{AppMaxFileUploadSizeLabel}.
 						</p>
 						<p className="hidden sm:block">
 							Accepted: .xlsx, .csv, .tsv, .txt. Size:{" "}

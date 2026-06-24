@@ -13,6 +13,7 @@ import {
 	Upload,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import type {
 	BankMasterfile,
 	BankMasterfileFormValues,
@@ -403,7 +404,10 @@ export function BankMasterfileImportDialog({
 						</button>
 					</div>
 					<div className="grid gap-2 text-xs font-medium text-darknavy/45 lg:col-span-2 lg:grid-cols-[1fr_auto]">
-						<p>Accepted: .xlsx, .csv, .tsv, .txt. Maximum size: 2 MB.</p>
+						<p>
+							Accepted: .xlsx, .csv, .tsv, .txt. Maximum size:{" "}
+							{AppMaxFileUploadSizeLabel}.
+						</p>
 						<div className="flex gap-3 font-semibold text-darknavy/60">
 							<span>Rows: {validatedRows.length}</span>
 							<span>Valid: {validRows.length}</span>

@@ -3,6 +3,7 @@ import type {
 	TermManagementDatemode,
 	TermManagementStatus,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
+import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 
 export const TermManagementHref =
 	"/maintenance/term-management";
@@ -115,7 +116,7 @@ export const TermImportFieldOrder: TermImportColumnId[] = [
 export const TermImportPreviewPageSize = 10;
 export const TermImportBatchSize = 25;
 export const TermImportMinFileSizeBytes = 1;
-export const TermImportMaxFileSizeBytes = 2 * 1024 * 1024;
+export const TermImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;
 
 export const TemplateHeaders = TermImportTemplateHeaders;
 export const DefaultColumnIndexes = TermImportDefaultColumnIndexes;

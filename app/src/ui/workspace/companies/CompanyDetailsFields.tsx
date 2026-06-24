@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type RefObject } from "react";
 import { CreditCard, ImageUp, X } from "lucide-react";
+import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import { OnboardingNonIndividualTypeOptions } from "@/app/src/data/onboarding/OnboardingData";
 import type {
 	BillingPaymentMethod,
@@ -750,7 +751,7 @@ function CompanyLogoField({
 				</div>
 			) : null}
 			<p className="mt-2 text-sm text-darknavy/55">
-				Upload your company or personal logo. Max 5MB.
+				Upload your company or personal logo. Max {AppMaxFileUploadSizeLabel}.
 			</p>
 			{error ? (
 				<p className="mt-2 text-sm font-medium text-coralpink">

@@ -10,6 +10,10 @@ import {
   X,
 } from "lucide-react";
 import {
+  AppMaxFileUploadSizeBytes,
+  AppMaxFileUploadSizeLabel,
+} from "@/app/src/constants/shared/app/AppConstants";
+import {
   createBlankDisbursementLineEntry,
   createTaxDetails,
   syncTaxDetailsAmount,
@@ -150,6 +154,12 @@ export function DisbursementEntryImportDialog({
 
   function handleFileUpload(file: File | undefined) {
     if (!file) {
+      return;
+    }
+
+    if (file.size > AppMaxFileUploadSizeBytes) {
+      setPreviewRows([]);
+      setImportError(`Upload a file up to ${AppMaxFileUploadSizeLabel}.`);
       return;
     }
 

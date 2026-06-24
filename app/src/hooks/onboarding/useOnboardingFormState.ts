@@ -2,10 +2,13 @@
 
 import { useEffect, useRef, useState, type SetStateAction } from "react";
 import {
+  AppMaxFileUploadSizeBytes,
+  AppMaxFileUploadSizeLabel,
+} from "@/app/src/constants/shared/app/AppConstants";
+import {
   GetSyncedReportEndDate,
   GetSyncedReportStartDate,
   IsValidOnboardingDateValue,
-  OnboardingMaxImageSizeBytes,
   OnboardingSteps,
 } from "@/app/src/data/onboarding/OnboardingData";
 import {
@@ -266,7 +269,7 @@ export function useOnboardingFormState() {
       return;
     }
 
-    if (file.size > OnboardingMaxImageSizeBytes) {
+    if (file.size > AppMaxFileUploadSizeBytes) {
       setValues((current) => ({
         ...current,
         logoFile: null,
@@ -277,7 +280,7 @@ export function useOnboardingFormState() {
       updateLogoPreviewUrl("");
       setErrors((current) => ({
         ...current,
-        logo: ["Logo must be 5MB or smaller."],
+        logo: [`Logo must be ${AppMaxFileUploadSizeLabel} or smaller.`],
       }));
       setLogoInputKey((current) => current + 1);
       return;

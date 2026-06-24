@@ -2,6 +2,7 @@ import type {
 	BankImportColumnId,
 	BankMasterfileStatus,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
+import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 
 export const BankMasterfileHref = "/maintenance/bank-masterfile";
 
@@ -88,7 +89,7 @@ export const BankImportFieldOrder: BankImportColumnId[] = [
 export const BankImportPreviewPageSize = 10;
 export const BankImportBatchSize = 25;
 export const BankImportMinFileSizeBytes = 1;
-export const BankImportMaxFileSizeBytes = 2 * 1024 * 1024;
+export const BankImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;
 
 export const TemplateHeaders = BankImportTemplateHeaders;
 export const ImportFieldOrder = BankImportFieldOrder;

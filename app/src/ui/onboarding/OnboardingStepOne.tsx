@@ -1,5 +1,6 @@
 "use client";
 
+import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import {
   DefaultPhilippineContactNumber,
   FormatPhilippineContactNumber,
@@ -172,7 +173,7 @@ export function OnboardingStepOne({
           label="Logo"
           fileName={values.logoName}
           previewUrl={logoPreviewUrl}
-          hint="Upload your company or personal logo. Max 5MB."
+          hint={`Upload your company or personal logo. Max ${AppMaxFileUploadSizeLabel}.`}
           inputKey={logoInputKey}
           errors={errors.logo}
           onChange={handleLogoChange}

@@ -16,6 +16,10 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
+	AppMaxFileUploadSizeBytes,
+	AppMaxFileUploadSizeLabel,
+} from "@/app/src/constants/shared/app/AppConstants";
+import {
 	FormSignatoryMaxRows,
 	getFormSignatoryTableColumns,
 } from "@/app/src/constants/modules/system-administration/form-signatory/FormSignatoryConstants";
@@ -474,6 +478,13 @@ export function useFormSignatoryMaintenancePage() {
 
 		if (!file.type.startsWith("image/")) {
 			toast.error("Please upload an image file.");
+			return;
+		}
+
+		if (file.size > AppMaxFileUploadSizeBytes) {
+			toast.error(
+				`Signature image must be ${AppMaxFileUploadSizeLabel} or smaller.`,
+			);
 			return;
 		}
 

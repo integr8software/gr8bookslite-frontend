@@ -1,4 +1,8 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+	AppMaxFileUploadSizeBytes,
+	AppMaxFileUploadSizeLabel,
+} from "@/app/src/constants/shared/app/AppConstants";
 import type {
 	AiAssistantChatMessage,
 	AiAssistantChatResponse,
@@ -37,6 +41,12 @@ export async function SendAiAssistantMessage({
 }
 
 export async function TranscribeAiAssistantAudio(audio: Blob) {
+	if (audio.size > AppMaxFileUploadSizeBytes) {
+		throw new Error(
+			`Audio recording must be ${AppMaxFileUploadSizeLabel} or smaller.`,
+		);
+	}
+
 	const formData = new FormData();
 	const extension = audio.type.includes("ogg")
 		? "ogg"

@@ -21,6 +21,10 @@ import {
   X,
 } from "lucide-react";
 import {
+  AppMaxFileUploadSizeBytes,
+  AppMaxFileUploadSizeLabel,
+} from "@/app/src/constants/shared/app/AppConstants";
+import {
   DisbursementVoucherInitialEntryDraft,
   createBlankDisbursementLineEntry,
   createTaxDetails,
@@ -578,6 +582,11 @@ export function DisbursementVoucherAccountingGridPage() {
   }
 
   async function handleImportFile(file: File) {
+    if (file.size > AppMaxFileUploadSizeBytes) {
+      setErrorMessage(`Upload a file up to ${AppMaxFileUploadSizeLabel}.`);
+      return;
+    }
+
     try {
       const previewText = await readAccountingImportFilePreviewText(file);
 

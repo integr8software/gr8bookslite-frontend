@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  AppMaxFileUploadSizeBytes,
+  AppMaxFileUploadSizeLabel,
+} from "@/app/src/constants/shared/app/AppConstants";
 import type {
   OnboardingFieldErrors,
   OnboardingValues,
@@ -6,7 +10,6 @@ import type {
 import {
   GetSyncedReportEndDate,
   IsValidOnboardingDateValue,
-  OnboardingMaxImageSizeBytes,
   OnboardingNonIndividualTypeOptions,
   OnboardingReportYearBasisOptions,
 } from "@/app/src/data/onboarding/OnboardingData";
@@ -134,8 +137,8 @@ const LogoSchema = z.union([
       "Only image files are allowed.",
     )
     .refine(
-      (file) => file.size <= OnboardingMaxImageSizeBytes,
-      "Logo must be 5MB or smaller.",
+      (file) => file.size <= AppMaxFileUploadSizeBytes,
+      `Logo must be ${AppMaxFileUploadSizeLabel} or smaller.`,
     ),
   z.string().trim().min(1, "Upload a logo image."),
 ]);

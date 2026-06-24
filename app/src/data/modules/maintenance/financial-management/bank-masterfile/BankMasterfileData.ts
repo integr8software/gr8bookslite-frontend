@@ -6,6 +6,7 @@ import {
 	BankMasterfileAccountTypeOptions,
 	BankMasterfileStatusOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import type {
 	BankImportCellErrors,
 	BankImportColumnId,
@@ -485,7 +486,9 @@ function isPositiveInteger(value: string) {
 
 export function validateImportFileSize(file: File) {
 	if (file.size < BankImportMinFileSizeBytes) return "The selected file is empty.";
-	if (file.size > BankImportMaxFileSizeBytes) return "Upload a file up to 2 MB.";
+	if (file.size > BankImportMaxFileSizeBytes) {
+		return `Upload a file up to ${AppMaxFileUploadSizeLabel}.`;
+	}
 	return null;
 }
 

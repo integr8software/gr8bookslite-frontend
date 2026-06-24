@@ -24,13 +24,13 @@ import {
 	ImportBatchSize,
 	PreviewPageSize,
 	TemplateHeaders,
-} from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileImportConstants";
+} from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
 import type {
 	BankImportColumnId,
 	BankImportPreviewRow,
 	ImportMode,
 	ImportProgress,
-} from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileImportTypes";
+} from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { BankImportRow } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileImportPreviewTableRow";
 import {
 	cleanBankValues,
@@ -47,7 +47,7 @@ import {
 	validateBankImportRows,
 	validateImportFileSize,
 	waitForNextBatch,
-} from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileImportUtils";
+} from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
 
 export function BankMasterfileImportDialog({
 	existingBanks,

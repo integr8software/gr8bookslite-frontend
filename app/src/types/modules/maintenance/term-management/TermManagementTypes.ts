@@ -39,3 +39,31 @@ export type TermManagementTableColumnKey =
 	| "createdAt"
 	| "updatedBy"
 	| "updatedAt";
+
+export type TermImportColumnId = "name" | "datemode" | "period";
+
+export type TermImportCellErrors = Partial<
+	Record<TermImportColumnId, string[]>
+>;
+
+export type TermImportCellWarnings = Partial<
+	Record<TermImportColumnId, string[]>
+>;
+
+export type TermImportPreviewRow = {
+	cellErrors: TermImportCellErrors;
+	cellWarnings: TermImportCellWarnings;
+	id: string;
+	rowErrors: string[];
+	rowNumber: number;
+	term: Omit<TermManagement, "id">;
+};
+
+export type TermImportProgress = {
+	imported: number;
+	total: number;
+};
+
+export type TermImportMode = "all-valid" | "selected-valid";
+
+export type ImportProgress = TermImportProgress;

@@ -23,13 +23,13 @@ import {
 	MaxImportFileSizeBytes,
 	MinImportFileSizeBytes,
 	PreviewPageSize,
-} from "@/app/src/ui/modules/maintenance/term-management/TermManagementImportConstants";
+} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import type {
 	ImportProgress,
 	TermImportColumnId,
 	TermImportMode,
 	TermImportPreviewRow,
-} from "@/app/src/ui/modules/maintenance/term-management/TermManagementImportTypes";
+} from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import { TermImportPreviewTableRow } from "@/app/src/ui/modules/maintenance/term-management/TermManagementImportPreviewTableRow";
 import {
 	createBlankImportRow,
@@ -48,7 +48,7 @@ import {
 	validateImportFileSize,
 	validateTermImportRows,
 	waitForNextImportBatch,
-} from "@/app/src/ui/modules/maintenance/term-management/TermManagementImportUtils";
+} from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
 
 export function TermManagementImportDialog({
 	existingTerms,

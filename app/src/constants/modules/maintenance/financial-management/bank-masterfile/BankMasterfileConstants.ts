@@ -1,4 +1,7 @@
-import type { BankMasterfileStatus } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
+import type {
+	BankImportColumnId,
+	BankMasterfileStatus,
+} from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 
 export const BankMasterfileHref = "/maintenance/bank-masterfile";
 
@@ -53,3 +56,43 @@ export const BankMasterfileActionCopy = {
 		description: "Review the bank account details before making changes.",
 	},
 } as const;
+
+export const BankImportTemplateHeaders = [
+	"Bank",
+	"Branch",
+	"Account Number",
+	"Account Type",
+	"Currency",
+	"Exchange Rate",
+	"Series Start",
+	"Series End",
+	"Series Digits",
+	"Default",
+	"Status",
+] as const;
+
+export const BankImportFieldOrder: BankImportColumnId[] = [
+	"bankName",
+	"branch",
+	"accountNumber",
+	"accountType",
+	"currencyCode",
+	"currencyExchangeRate",
+	"seriesStart",
+	"seriesEnd",
+	"seriesDigits",
+	"isDefault",
+	"status",
+];
+
+export const BankImportPreviewPageSize = 10;
+export const BankImportBatchSize = 25;
+export const BankImportMinFileSizeBytes = 1;
+export const BankImportMaxFileSizeBytes = 2 * 1024 * 1024;
+
+export const TemplateHeaders = BankImportTemplateHeaders;
+export const ImportFieldOrder = BankImportFieldOrder;
+export const PreviewPageSize = BankImportPreviewPageSize;
+export const ImportBatchSize = BankImportBatchSize;
+export const MinImportFileSizeBytes = BankImportMinFileSizeBytes;
+export const MaxImportFileSizeBytes = BankImportMaxFileSizeBytes;

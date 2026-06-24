@@ -7,8 +7,8 @@ import {
 import type {
 	BankImportColumnId,
 	BankImportPreviewRow,
-} from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileImportTypes";
-import { rowHasErrors } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileImportUtils";
+} from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
+import { rowHasErrors } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function BankImportRow({

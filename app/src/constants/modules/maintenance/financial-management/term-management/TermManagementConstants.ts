@@ -1,4 +1,5 @@
 import type {
+	TermImportColumnId,
 	TermManagementDatemode,
 	TermManagementStatus,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
@@ -96,3 +97,30 @@ export const TermManagementActionCopy = {
 			"Review the configured term details before making changes.",
 	},
 } as const;
+
+export const TermImportTemplateHeaders = ["Name", "Datemode", "Period"];
+
+export const TermImportDefaultColumnIndexes: Record<TermImportColumnId, number> = {
+	name: 0,
+	datemode: 1,
+	period: 2,
+};
+
+export const TermImportFieldOrder: TermImportColumnId[] = [
+	"name",
+	"datemode",
+	"period",
+];
+
+export const TermImportPreviewPageSize = 10;
+export const TermImportBatchSize = 25;
+export const TermImportMinFileSizeBytes = 1;
+export const TermImportMaxFileSizeBytes = 2 * 1024 * 1024;
+
+export const TemplateHeaders = TermImportTemplateHeaders;
+export const DefaultColumnIndexes = TermImportDefaultColumnIndexes;
+export const ImportFieldOrder = TermImportFieldOrder;
+export const PreviewPageSize = TermImportPreviewPageSize;
+export const ImportBatchSize = TermImportBatchSize;
+export const MinImportFileSizeBytes = TermImportMinFileSizeBytes;
+export const MaxImportFileSizeBytes = TermImportMaxFileSizeBytes;

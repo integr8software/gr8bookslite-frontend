@@ -50,3 +50,27 @@ export type BankMasterfileTableColumnKey =
 	| "status"
 	| "createdAt"
 	| "updatedAt";
+
+export type BankImportColumnId = keyof BankMasterfileFormValues;
+
+export type BankImportCellErrors = Partial<
+	Record<BankImportColumnId, string[]>
+>;
+
+export type BankImportPreviewRow = {
+	cellErrors: BankImportCellErrors;
+	id: string;
+	rowErrors: string[];
+	rowNumber: number;
+	values: BankMasterfileFormValues;
+};
+
+export type BankImportProgress = {
+	imported: number;
+	total: number;
+};
+
+export type BankImportMode = "all-valid" | "selected-valid";
+
+export type ImportProgress = BankImportProgress;
+export type ImportMode = BankImportMode;

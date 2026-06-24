@@ -5,11 +5,11 @@ import { TermManagementDatemodeOptions } from "@/app/src/constants/modules/maint
 import type {
 	TermImportColumnId,
 	TermImportPreviewRow,
-} from "@/app/src/ui/modules/maintenance/term-management/TermManagementImportTypes";
+} from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import {
 	isTabularPaste,
 	rowHasErrors,
-} from "@/app/src/ui/modules/maintenance/term-management/TermManagementImportUtils";
+} from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function TermImportPreviewTableRow({

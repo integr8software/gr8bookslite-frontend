@@ -62,7 +62,7 @@ function AppTaxRateDialogEditor({
 }) {
   const [draftValue, setDraftValue] = useState(initialValue);
   const taxCodesQuery = useAlphanumericTaxCodes();
-  const taxCodes = taxCodesQuery.data ?? [];
+  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const vatRateOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
   const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
 

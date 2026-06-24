@@ -1210,24 +1210,6 @@ function createNextTransactionNumber() {
   return `TXN-${currentYear}-${serial}`;
 }
 
-function createVoucherReferenceNumber() {
-  const currentYear = new Date().getFullYear();
-  const matchingSerials = MockDisbursementVouchers.map((voucher) => {
-    const matchedParts = voucher.voucherReferenceNo.match(/^DVR-(\d{4})-(\d{4})$/);
-
-    if (!matchedParts) {
-      return null;
-    }
-
-    const [, year, serial] = matchedParts;
-
-    return Number(year) === currentYear ? Number(serial) : null;
-  }).filter((value): value is number => value !== null);
-  const nextSerial = Math.max(0, ...matchingSerials) + 1;
-  const serial = String(nextSerial).padStart(4, "0");
-
-  return `DVR-${currentYear}-${serial}`;
-}
 
 function createDisbursementVoucherCopyFromRecord(
   id: string,

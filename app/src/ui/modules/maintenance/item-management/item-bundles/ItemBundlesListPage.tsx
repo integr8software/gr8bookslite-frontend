@@ -13,7 +13,7 @@ import Link from "next/link";
 import { CheckCircle2, CirclePause, Layers, Package, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
@@ -191,8 +191,8 @@ export function ItemBundlesListPage() {
 					</Link>
 				}
 			/>
-			<ModuleMetrics
-				metrics={[
+			<ModuleStatisticCards
+				items={[
 					{ helper: "Bundle records", icon: Layers, label: "Total Bundles", value: rows.length },
 					{ helper: "Available for selling", icon: CheckCircle2, label: "Active", tone: "emerald", value: activeCount },
 					{ helper: "Kept for history", icon: CirclePause, label: "Inactive", tone: "amber", value: rows.length - activeCount },

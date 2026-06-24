@@ -39,7 +39,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
 	ModuleTableActionButton,
@@ -253,8 +253,8 @@ export function UnitOfMeasurementListPage() {
 					</Link>
 				}
 			/>
-			<ModuleMetrics
-				metrics={[
+			<ModuleStatisticCards
+				items={[
 					{
 						helper: "Configured units",
 						icon: Ruler,

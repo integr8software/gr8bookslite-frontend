@@ -4,7 +4,7 @@ import { CheckCircle2, CirclePause, Receipt } from "lucide-react";
 import { useTransactionTypeListPage } from "@/app/src/hooks/modules/maintenance/transaction-type/useTransactionTypeListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { TransactionTypeFilters } from "@/app/src/ui/modules/maintenance/transaction-type/TransactionTypeFilters";
 import { TransactionTypeHeaderActions } from "@/app/src/ui/modules/maintenance/transaction-type/TransactionTypeHeaderActions";
@@ -39,8 +39,8 @@ export function TransactionTypeListPage() {
 				actions={<TransactionTypeHeaderActions onAdd={() => setDrawerState({ mode: "add" })} />}
 			/>
 
-			<ModuleMetrics
-				metrics={[
+			<ModuleStatisticCards
+				items={[
 					{
 						helper: "All transaction types",
 						icon: Receipt,

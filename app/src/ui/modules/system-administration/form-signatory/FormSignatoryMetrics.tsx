@@ -1,5 +1,5 @@
 import { FileSignature, Save, Signature } from "lucide-react";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 
 type FormSignatoryMetricsProps = {
 	eSignatureCount: number;
@@ -13,8 +13,8 @@ export function FormSignatoryMetrics({
 	signatureImageCount,
 }: FormSignatoryMetricsProps) {
 	return (
-		<ModuleMetrics
-			metrics={[
+		<ModuleStatisticCards
+			items={[
 				{
 					icon: FileSignature,
 					label: "No. of Signatories",

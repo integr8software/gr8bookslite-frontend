@@ -27,7 +27,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import {
 	ModuleTableResetButton,
 	ModuleTableFilterSelect,
@@ -233,7 +233,7 @@ export function ResponsibilityCenterMain() {
 					</button>
 				}
 			/>
-			<ModuleMetrics metrics={summaryCards} />
+			<ModuleStatisticCards items={summaryCards} />
 			<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
 				<div className="flex flex-col gap-3 border-b border-darknavy/10 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
 					<div>

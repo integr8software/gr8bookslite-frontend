@@ -27,7 +27,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
@@ -313,8 +313,8 @@ export function ItemManagementSupportPage({
 					</>
 				}
 			/>
-			<ModuleMetrics
-				metrics={[
+			<ModuleStatisticCards
+				items={[
 					{
 						helper: "Setup records",
 						icon: Icon,

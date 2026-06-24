@@ -14,7 +14,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import {
 	ModuleTableFilterSelect,
 	ModuleTableResetButton,
@@ -61,8 +61,8 @@ export function WarehouseListPage() {
 				}
 			/>
 
-			<ModuleMetrics
-				metrics={[
+			<ModuleStatisticCards
+				items={[
 					{
 						helper: "All warehouse records",
 						icon: Warehouse,

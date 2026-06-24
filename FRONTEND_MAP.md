@@ -180,7 +180,7 @@ graph TD
 - Module list chrome: `app/src/ui/shared/module/ModuleHeader.tsx`.
 - Table shell: `app/src/ui/shared/module/module-table/ModuleTable.tsx`.
 - Table pieces: `ModuleTableHeader.tsx`, `ModuleTableBody.tsx`, `ModuleTablePagination.tsx`, `utils.ts`.
-- Module utilities: `ModuleTableToolbar.tsx`, `ModuleTableActions.tsx`, `ModuleMetrics.tsx`, `ModuleDrawer.tsx`, `ModuleNotFound.tsx`.
+- Module utilities: `ModuleTableToolbar.tsx`, `ModuleTableActions.tsx`, `ModuleStatisticCards.tsx`, `ModuleDrawer.tsx`, `ModuleNotFound.tsx`.
 - App shell primitives: `app/src/ui/shared/app/*`.
 - Dialogs and reusable inputs: `app/src/ui/shared/transaction-setup/*`, `advanced-dropdown`, `tag-input`, `media`, `tour`.
 

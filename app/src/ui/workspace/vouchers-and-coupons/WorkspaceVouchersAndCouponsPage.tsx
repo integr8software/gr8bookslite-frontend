@@ -3,7 +3,7 @@
 import { BadgePercent, CheckCircle2, Tags, Ticket, Users } from "lucide-react";
 import { useWorkspaceVouchersAndCouponsPage } from "@/app/src/hooks/workspace/vouchers-and-coupons/useWorkspaceVouchersAndCouponsPage";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { WorkspaceVouchersAndCouponsTable } from "@/app/src/ui/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsTable";
 import { WorkspaceVouchersAndCouponsSpotlightTutorial } from "@/app/src/ui/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsSpotlightTutorial";
 
@@ -23,8 +23,8 @@ export function WorkspaceVouchersAndCouponsPage() {
 				/>
 			</div>
 			<div data-spotlight-id="workspace-vouchers-metrics">
-				<ModuleMetrics
-					metrics={[
+				<ModuleStatisticCards
+					items={[
 					{
 						icon: Tags,
 						label: "Assigned",

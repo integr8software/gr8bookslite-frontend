@@ -12,7 +12,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import {
 	ModuleTableResetButton,
 	ModuleTableFilterSelect,
@@ -48,8 +48,8 @@ export function ItemsListPage() {
 				}
 			/>
 
-			<ModuleMetrics
-				metrics={[
+			<ModuleStatisticCards
+				items={[
 					{
 						helper: "All item master records",
 						icon: Package,

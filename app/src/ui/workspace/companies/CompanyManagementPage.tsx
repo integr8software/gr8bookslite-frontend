@@ -12,7 +12,7 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { CompanyTable } from "@/app/src/ui/workspace/companies/CompanyTable";
 import { WorkspaceCompanySpotlightTutorial } from "@/app/src/ui/workspace/companies/WorkspaceCompanySpotlightTutorial";
 
@@ -78,8 +78,8 @@ export function CompanyManagementPage() {
         }
       />
       <div data-spotlight-id="workspace-company-metrics">
-        <ModuleMetrics
-          metrics={[
+        <ModuleStatisticCards
+          items={[
           {
             icon: Building2,
             label: "Total Companies",

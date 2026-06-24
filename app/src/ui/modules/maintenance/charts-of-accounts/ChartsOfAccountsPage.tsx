@@ -23,7 +23,7 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
 export function ChartsOfAccountsMain() {
@@ -90,8 +90,8 @@ export function ChartsOfAccountsMain() {
           }
         />
 
-        <ModuleMetrics
-          metrics={[
+        <ModuleStatisticCards
+          items={[
             {
               helper: "All accounts",
               icon: Layers3,

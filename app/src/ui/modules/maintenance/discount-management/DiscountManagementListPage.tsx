@@ -8,7 +8,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import {
 	ModuleTableResetButton,
 	ModuleTableFilterSelect,
@@ -106,8 +106,8 @@ export function DiscountManagementListPage() {
 				actions={<DiscountManagementHeaderActions onAdd={() => setDrawerState({ mode: "add" })} />}
 			/>
 
-			<ModuleMetrics
-				metrics={[
+			<ModuleStatisticCards
+				items={[
 					{
 						helper: "All discount definitions",
 						icon: Percent,

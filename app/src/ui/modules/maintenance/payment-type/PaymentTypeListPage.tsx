@@ -6,7 +6,7 @@ import { usePaymentTypeListPage } from "@/app/src/hooks/modules/maintenance/paym
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { PaymentTypeDrawer } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeDrawer";
 import { PaymentTypeFilters } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeFilters";
 import { PaymentTypeHeaderActions } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeHeaderActions";
@@ -46,8 +46,8 @@ export function PaymentTypeListPage() {
 				}
 			/>
 
-			<ModuleMetrics
-				metrics={[
+			<ModuleStatisticCards
+				items={[
 					{
 						helper: "All payment types",
 						icon: CreditCard,

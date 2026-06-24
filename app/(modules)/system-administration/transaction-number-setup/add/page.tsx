@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { TransactionNumberSetupHref } from "@/app/src/constants/modules/system-administration/transaction-number-setup/TransactionNumberSetupConstants";
 
 const PageTitle = "Add Transaction Number Setup";

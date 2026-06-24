@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { MailMaintenanceMain } from "@/app/src/ui/modules/system-administration/mail-maintenance/Main";
 
 const PageTitle = "Mail Maintenance";

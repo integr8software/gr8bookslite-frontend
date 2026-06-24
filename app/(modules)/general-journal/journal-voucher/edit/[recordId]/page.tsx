@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { JournalVoucherAction } from "@/app/src/ui/modules/general-journal/journal-voucher/Action";
 
 const PageTitle = "Edit Journal Voucher";

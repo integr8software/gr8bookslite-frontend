@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { ServiceInvoiceAction } from "@/app/src/ui/modules/sales/service-invoice/Action";
 
 const PageTitle = "Edit Service Invoice";

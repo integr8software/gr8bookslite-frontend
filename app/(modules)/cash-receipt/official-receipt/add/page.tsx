@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { OfficialReceiptAction } from "@/app/src/ui/modules/cash-receipt/official-receipt/Action";
 
 const PageTitle = "Add Official Receipt";

@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { AppDescription } from "@/app/src/constants/shared/app/AppMetadata";
 
 export const AppManifest: MetadataRoute.Manifest = {
 	name: AppName,
 	short_name: AppName,
-	description: `${AppName} frontend`,
+	description: AppDescription,
 	start_url: "/",
 	display: "standalone",
 	background_color: "#ecf2ef",

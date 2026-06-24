@@ -5,14 +5,36 @@ const AppMetadataBase = new URL(
 	process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
 );
 
-const AppDescription = `${AppName} frontend`;
+export const AppDescription =
+	"Gr8Books Neo is cloud accounting and inventory software that unifies purchasing, sales, cash management, approvals, and financial reporting for growing businesses.";
+
+export const AppKeywords = [
+	"Gr8Books Neo",
+	"cloud accounting software",
+	"inventory management software",
+	"business accounting system",
+	"accounting software Philippines",
+	"ERP software Philippines",
+	"purchasing management software",
+	"sales management software",
+	"cash management software",
+	"financial reporting software",
+	"accounts payable software",
+	"BIR accounting software",
+] as const;
 const AppMetaLogoPath = "/logo.png";
 const AppIconVersion = "robot-large-20260601";
 
 export const AppMetadata: Metadata = {
 	metadataBase: AppMetadataBase,
-	title: AppName,
+	applicationName: AppName,
+	title: `${AppName} | Cloud Accounting and Inventory Software`,
 	description: AppDescription,
+	keywords: [...AppKeywords],
+	category: "business software",
+	creator: AppName,
+	publisher: AppName,
+	referrer: "origin-when-cross-origin",
 	manifest: "/manifest.webmanifest",
 	icons: {
 		icon: [
@@ -56,7 +78,11 @@ export const AppMetadata: Metadata = {
 		],
 	},
 	openGraph: {
-		title: AppName,
+		type: "website",
+		locale: "en_PH",
+		url: "/",
+		siteName: AppName,
+		title: `${AppName} | Cloud Accounting and Inventory Software`,
 		description: AppDescription,
 		images: [
 			{
@@ -69,7 +95,7 @@ export const AppMetadata: Metadata = {
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: AppName,
+		title: `${AppName} | Cloud Accounting and Inventory Software`,
 		description: AppDescription,
 		images: [AppMetaLogoPath],
 	},

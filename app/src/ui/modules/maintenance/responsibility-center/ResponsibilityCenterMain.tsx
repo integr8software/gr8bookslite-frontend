@@ -52,6 +52,9 @@ export function ResponsibilityCenterMain() {
 	const isMutating = useResponsibilityCenterStore(
 		(state) => state.isMutating,
 	);
+	const lastSyncedAt = useResponsibilityCenterStore(
+		(state) => state.lastSyncedAt,
+	);
 	const [pendingStatusCenter, setPendingStatusCenter] =
 		useState<ResponsibilityCenter | null>(null);
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
@@ -321,6 +324,7 @@ export function ResponsibilityCenterMain() {
 				<ResponsibilityCenterTable
 					allCenters={centers}
 					centers={filteredCenters}
+					lastSyncedAt={lastSyncedAt}
 					onStatusChangeCenter={setPendingStatusCenter}
 					onEditCenter={(center) =>
 						setDrawerState({ center, mode: "edit" })

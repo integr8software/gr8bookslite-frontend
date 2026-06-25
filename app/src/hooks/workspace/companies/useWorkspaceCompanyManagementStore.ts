@@ -313,6 +313,7 @@ export function useWorkspaceCompanyManagementStore<
         deactivateCompanyMutation.mutateAsync(companyId),
       errorMessage,
       isLoading: managementSummaryQuery.isLoading,
+      lastSyncedAt: managementSummaryQuery.dataUpdatedAt,
       isMutating:
         addCompanyMutation.isPending ||
         addCompanyUserMutation.isPending ||
@@ -340,6 +341,7 @@ export function useWorkspaceCompanyManagementStore<
       errorMessage,
       includeUsers,
       managementSummaryQuery.data?.companies,
+      managementSummaryQuery.dataUpdatedAt,
       managementSummaryQuery.data?.users,
       managementSummaryQuery.isLoading,
       resendCompanyUserInvitationMutation,

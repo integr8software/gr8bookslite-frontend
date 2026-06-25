@@ -77,6 +77,7 @@ export function PartyManagementListPage() {
 			<PartyInformationTable
 				isLoading={page.isLoading}
 				isRefreshing={page.isRefreshing}
+				lastSyncedAt={page.lastSyncedAt}
 				records={page.records}
 				onRefresh={page.refreshRecords}
 			/>

@@ -15,6 +15,7 @@ type DiscountStoreState = {
 	addDiscount: (discount: Discount) => void;
 	updateDiscount: (discount: Discount) => void;
 	isLoading: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 };
 
@@ -69,6 +70,7 @@ export function useDiscountManagementStore<TSelected = DiscountStoreState>(
 			addDiscount: (discount) => addDiscountMutation.mutate(discount),
 			updateDiscount: (discount) => updateDiscountMutation.mutate(discount),
 			isLoading: discountsQuery.isLoading,
+			lastSyncedAt: discountsQuery.dataUpdatedAt,
 			isMutating:
 				addDiscountMutation.isPending ||
 				updateDiscountMutation.isPending,
@@ -76,6 +78,7 @@ export function useDiscountManagementStore<TSelected = DiscountStoreState>(
 		[
 			addDiscountMutation,
 			discountsQuery.data,
+			discountsQuery.dataUpdatedAt,
 			discountsQuery.isLoading,
 			updateDiscountMutation,
 		],

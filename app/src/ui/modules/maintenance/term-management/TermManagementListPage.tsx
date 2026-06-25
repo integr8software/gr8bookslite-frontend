@@ -100,6 +100,7 @@ export function TermManagementListPage() {
 				hasActiveFilters={hasActiveFilters}
 				isLoading={page.isLoading}
 				isRefreshing={page.isRefreshing}
+				lastSyncedAt={page.lastSyncedAt}
 				query={page.query}
 				statusFilter={page.statusFilter}
 				terms={page.terms}

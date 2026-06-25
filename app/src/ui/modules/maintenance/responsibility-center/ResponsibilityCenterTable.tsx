@@ -11,6 +11,7 @@ import { ResponsibilityCenterTableRow } from "@/app/src/ui/modules/maintenance/r
 type ResponsibilityCenterTableProps = {
 	centers: ResponsibilityCenter[];
 	allCenters?: ResponsibilityCenter[];
+	lastSyncedAt?: number | string | Date | null;
 	toolbar?: ReactNode;
 	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
 	onEditCenter: (center: ResponsibilityCenter) => void;
@@ -19,6 +20,7 @@ type ResponsibilityCenterTableProps = {
 export function ResponsibilityCenterTable({
 	allCenters,
 	centers,
+	lastSyncedAt,
 	toolbar,
 	onStatusChangeCenter,
 	onEditCenter,
@@ -33,9 +35,11 @@ export function ResponsibilityCenterTable({
 			emptyDescription="Add a center to start grouping financial accountability."
 			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 			emptyTitle="No responsibility centers yet"
+			lastSyncedAt={lastSyncedAt}
 			minWidthClassName="min-w-[76rem]"
 			paginationStorageKey={ResponsibilityCenterTablePaginationStorageKey}
 			table={table}
+			tableTitle="Responsibility centers"
 			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<ResponsibilityCenterTableRow

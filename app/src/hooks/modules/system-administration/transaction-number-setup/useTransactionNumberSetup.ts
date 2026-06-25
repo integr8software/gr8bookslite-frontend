@@ -14,6 +14,7 @@ import type { TransactionNumberSetupRecord } from "@/app/src/types/modules/syste
 type TransactionNumberSetupState = {
   branchOptions: TransactionNumberSetupBranchOption[];
   isLoading: boolean;
+  lastSyncedAt: number;
   isMutating: boolean;
   setups: TransactionNumberSetupRecord[];
   updateSetup: (setup: TransactionNumberSetupRecord) => void;
@@ -72,11 +73,18 @@ export function useTransactionNumberSetupStore<
     () => ({
       branchOptions,
       isLoading: setupsQuery.isLoading,
+      lastSyncedAt: setupsQuery.dataUpdatedAt,
       isMutating: updateSetupMutation.isPending,
       setups,
       updateSetup: (setup) => updateSetupMutation.mutate(setup),
     }),
-    [branchOptions, setups, setupsQuery.isLoading, updateSetupMutation],
+    [
+      branchOptions,
+      setups,
+      setupsQuery.dataUpdatedAt,
+      setupsQuery.isLoading,
+      updateSetupMutation,
+    ],
   );
 
   return selector ? selector(state) : (state as TSelected);

@@ -9,13 +9,14 @@ import { ItemsTableRow } from "@/app/src/ui/modules/maintenance/item-management/
 
 type ItemsTableProps = Pick<
 	ReturnType<typeof useItemsListPage>,
-	"isLoading" | "setPendingStatusItem" | "table"
+	"isLoading" | "lastSyncedAt" | "setPendingStatusItem" | "table"
 > & {
 	toolbar?: ReactNode;
 };
 
 export function ItemsTable({
 	isLoading,
+	lastSyncedAt,
 	setPendingStatusItem,
 	table,
 	toolbar,
@@ -28,7 +29,9 @@ export function ItemsTable({
 			isLoading={isLoading}
 			minWidthClassName="min-w-[96rem]"
 			paginationStorageKey={ItemsTablePaginationStorageKey}
+			lastSyncedAt={lastSyncedAt}
 			table={table}
+			tableTitle="Item master records"
 			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<ItemsTableRow

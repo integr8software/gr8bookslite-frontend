@@ -13,6 +13,7 @@ export function usePaymentTypeListPage() {
 	const paymentTypes = usePaymentTypeStore((state) => state.paymentTypes);
 	const updatePaymentType = usePaymentTypeStore((state) => state.updatePaymentType);
 	const isLoading = usePaymentTypeStore((state) => state.isLoading);
+	const lastSyncedAt = usePaymentTypeStore((state) => state.lastSyncedAt);
 	const isMutating = usePaymentTypeStore((state) => state.isMutating);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [typeFilter, setTypeFilter] = useState<"" | PaymentTypeClassification>(
@@ -55,6 +56,7 @@ export function usePaymentTypeListPage() {
 		confirmPaymentTypeStatusChange,
 		filteredPaymentTypes,
 		isLoading,
+		lastSyncedAt,
 		isMutating,
 		paymentTypes,
 		pendingStatusPaymentType,

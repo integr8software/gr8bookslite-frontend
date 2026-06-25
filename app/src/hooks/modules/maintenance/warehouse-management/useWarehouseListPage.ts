@@ -25,6 +25,7 @@ export function useWarehouseListPage() {
 		deleteWarehouse,
 		isLoading,
 		isMutating,
+		lastSyncedAt,
 		warehouses,
 	} = useWarehouseManagementStore();
 	const [query, setQuery] = useState("");
@@ -161,6 +162,7 @@ export function useWarehouseListPage() {
 		handleQueryChange,
 		isLoading,
 		isMutating,
+		lastSyncedAt,
 		pendingDeleteWarehouse,
 		query,
 		resetFilters,

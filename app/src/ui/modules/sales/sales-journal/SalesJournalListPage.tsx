@@ -25,6 +25,7 @@ export function SalesJournalListPage() {
 		handleQueryChange,
 		isLoading,
 		isMutating,
+		lastSyncedAt,
 		pendingDeleteRecord,
 		query,
 		setPendingDeleteRecord,
@@ -62,9 +63,11 @@ export function SalesJournalListPage() {
 					emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 					emptyTitle="No sales journals found"
 					isLoading={isLoading}
+					lastSyncedAt={lastSyncedAt}
 					minWidthClassName="min-w-[74rem]"
 					paginationStorageKey={SalesJournalTablePaginationStorageKey}
 					table={table}
+					tableTitle="Sales journals"
 					toolbar={
 						<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,1fr)]">
 							<ModuleTableSearch

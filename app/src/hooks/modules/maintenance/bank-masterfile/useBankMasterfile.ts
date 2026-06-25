@@ -36,6 +36,7 @@ type BankMasterfileStoreState = {
 	refreshNextAccountCode: () => void;
 	isLoading: boolean;
 	isRefreshing: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 };
 
@@ -178,6 +179,7 @@ export function useBankMasterfileStore<TSelected = BankMasterfileStoreState>(
 			refreshNextAccountCode,
 			isLoading: banksQuery.isLoading,
 			isRefreshing: banksQuery.isFetching && !banksQuery.isLoading,
+			lastSyncedAt: banksQuery.dataUpdatedAt,
 			isMutating:
 				addBankMutation.isPending ||
 				addBanksMutation.isPending ||
@@ -189,6 +191,7 @@ export function useBankMasterfileStore<TSelected = BankMasterfileStoreState>(
 		addBanksMutation,
 		authProfileQuery.data,
 		banksQuery.data,
+		banksQuery.dataUpdatedAt,
 		banksQuery.isFetching,
 		banksQuery.isLoading,
 		nextAccountCodeQuery.data,

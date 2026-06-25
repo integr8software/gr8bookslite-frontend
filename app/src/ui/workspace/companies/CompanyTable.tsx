@@ -38,11 +38,13 @@ export function CompanyTable({
 	branches,
 	companies,
 	isLoading,
+	lastSyncedAt,
 	onDeactivate,
 }: {
 	branches: WorkspaceCompanyBranchRecord[];
 	companies: WorkspaceCompanyRecord[];
 	isLoading: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	onDeactivate: (company: WorkspaceCompanyRecord) => void;
 }) {
 	const companyList = useWorkspaceCompaniesTable({
@@ -61,11 +63,13 @@ export function CompanyTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No companies found"
 				isLoading={isLoading}
+				lastSyncedAt={lastSyncedAt}
 				minWidthClassName="min-w-[72rem]"
 				paginationStorageKey={
 					WorkspaceCompaniesTablePaginationStorageKey
 				}
 				table={companyList.table}
+				tableTitle="Companies"
 				toolbar={
 					<CompanyTableFilters
 						planFilter={companyList.planFilter}

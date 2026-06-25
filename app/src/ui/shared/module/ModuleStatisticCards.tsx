@@ -145,7 +145,7 @@ const moduleStatisticCardIconClassNames: Record<
 	string
 > = {
 	amber: "bg-amber-50 text-amber-700",
-	blue: `${moduleAccentClassNames.softBackground} ${moduleAccentClassNames.text}`,
+	blue: `${moduleAccentClassNames.softBackground} ${moduleAccentClassNames.iconText}`,
 	cyan: "bg-cyan-50 text-cyan-700",
 	emerald: "bg-emerald-50 text-emerald-700",
 	slate: "bg-slate-100 text-slate-700",

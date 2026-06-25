@@ -104,9 +104,11 @@ export function ItemCategoryListPage() {
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No categories found"
 				isLoading={page.isLoading}
+				lastSyncedAt={page.lastSyncedAt}
 				minWidthClassName="min-w-[74rem]"
 				paginationStorageKey={ItemCategoryClassificationPaginationStorageKey}
 				table={page.table}
+				tableTitle="Category classifications"
 				toolbar={
 					<ModuleTableToolbar>
 						<ModuleTableSearch

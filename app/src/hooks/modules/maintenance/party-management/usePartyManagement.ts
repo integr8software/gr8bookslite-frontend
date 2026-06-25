@@ -37,6 +37,7 @@ import type {
 
 type PartyManagementStoreState = {
 	isLoading: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 	isRefreshing: boolean;
 	records: PartyInformationRecord[];
@@ -123,6 +124,7 @@ export function usePartyManagementStore<
 		() => ({
 			addRecord,
 			isLoading: recordsQuery.isLoading,
+			lastSyncedAt: recordsQuery.dataUpdatedAt,
 			isMutating: isAddingRecord || isUpdatingRecord,
 			isRefreshing: recordsQuery.isFetching && !recordsQuery.isLoading,
 			records: recordsQuery.data,
@@ -134,6 +136,7 @@ export function usePartyManagementStore<
 			isAddingRecord,
 			isUpdatingRecord,
 			recordsQuery.data,
+			recordsQuery.dataUpdatedAt,
 			recordsQuery.isFetching,
 			recordsQuery.isLoading,
 			refreshRecords,

@@ -18,6 +18,7 @@ type BankMasterfileTableProps = {
 	hasActiveFilters: boolean;
 	isLoading: boolean;
 	isRefreshing: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	permissions: BankMasterfilePermissions;
 	query: string;
 	statusFilter: "" | BankMasterfileStatus;
@@ -35,6 +36,7 @@ export function BankMasterfileTable({
 	hasActiveFilters,
 	isLoading,
 	isRefreshing,
+	lastSyncedAt,
 	permissions,
 	query,
 	statusFilter,
@@ -58,9 +60,12 @@ export function BankMasterfileTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No Bank Records Found"
 				isLoading={isLoading}
+				isSyncing={isRefreshing}
+				lastSyncedAt={lastSyncedAt}
 				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={BankMasterfileTablePaginationStorageKey}
 				table={table}
+				tableTitle="Bank accounts"
 				toolbar={
 					<BankMasterfileTableFilters
 						exportAllRows={banks}

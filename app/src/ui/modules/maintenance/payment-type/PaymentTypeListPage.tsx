@@ -77,6 +77,7 @@ export function PaymentTypeListPage() {
 
 			<PaymentTypeTable
 				isLoading={page.isLoading}
+				lastSyncedAt={page.lastSyncedAt}
 				paymentTypes={page.filteredPaymentTypes}
 				toolbar={
 					<PaymentTypeFilters

@@ -16,7 +16,8 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { recordPurchaseRequestAuditLog } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestAuditLog";
 
 export function usePurchaseRequestListPage() {
-	const { deleteRequest, isMutating, requests } = usePurchaseRequestStore();
+	const { deleteRequest, isMutating, lastSyncedAt, requests } =
+		usePurchaseRequestStore();
 	const activeBranchId = useAppStore((state) => state.activeBranchId);
 	const activeBranchName = useAppStore((state) => state.activeBranchName);
 	const [pagination, setPagination] = useState<PaginationState>({
@@ -118,6 +119,7 @@ export function usePurchaseRequestListPage() {
 		handleConfirmDelete,
 		handleQueryChange,
 		isMutating,
+		lastSyncedAt,
 		pendingDeleteRequest,
 		query,
 		setPendingDeleteRequest,

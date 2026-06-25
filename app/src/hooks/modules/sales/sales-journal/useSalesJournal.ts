@@ -13,6 +13,7 @@ type SalesJournalStoreState = {
 	updateRecord: (record: SalesJournalRecord) => void;
 	deleteRecord: (recordId: string) => void;
 	isLoading: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 };
 
@@ -81,6 +82,7 @@ export function useSalesJournalStore<TSelected = SalesJournalStoreState>(
 			updateRecord: (record) => updateRecordMutation.mutate(record),
 			deleteRecord: (recordId) => deleteRecordMutation.mutate(recordId),
 			isLoading: recordsQuery.isLoading,
+			lastSyncedAt: recordsQuery.dataUpdatedAt,
 			isMutating:
 				addRecordMutation.isPending ||
 				updateRecordMutation.isPending ||
@@ -90,6 +92,7 @@ export function useSalesJournalStore<TSelected = SalesJournalStoreState>(
 			addRecordMutation,
 			deleteRecordMutation,
 			recordsQuery.data,
+			recordsQuery.dataUpdatedAt,
 			recordsQuery.isLoading,
 			updateRecordMutation,
 		],

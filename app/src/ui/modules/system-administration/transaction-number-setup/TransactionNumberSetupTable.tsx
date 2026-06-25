@@ -13,6 +13,7 @@ type TransactionNumberSetupTableProps = Pick<
 	| "handleQueryChange"
 	| "handleScopeFilterChange"
 	| "isLoading"
+	| "lastSyncedAt"
 	| "query"
 	| "scopeFilter"
 	| "table"
@@ -23,6 +24,7 @@ export function TransactionNumberSetupTable({
 	handleQueryChange,
 	handleScopeFilterChange,
 	isLoading,
+	lastSyncedAt,
 	query,
 	scopeFilter,
 	table,
@@ -35,9 +37,11 @@ export function TransactionNumberSetupTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No numbering setups found"
 				isLoading={isLoading}
+				lastSyncedAt={lastSyncedAt}
 				minWidthClassName="min-w-[96rem]"
 				paginationStorageKey={TransactionNumberSetupPaginationStorageKey}
 				table={table}
+				tableTitle="Numbering setups"
 				toolbar={
 					<TransactionNumberSetupTableFilters
 						query={query}

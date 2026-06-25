@@ -14,6 +14,7 @@ import { DiscountManagementTableRow } from "@/app/src/ui/modules/maintenance/dis
 type DiscountManagementTableProps = {
 	discounts: Discount[];
 	isLoading: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	toolbar?: ReactNode;
 	onEditDiscount: (discount: DiscountManagementTableRecord) => void;
 	onToggleStatus: (discount: DiscountManagementTableRecord) => void;
@@ -23,6 +24,7 @@ type DiscountManagementTableProps = {
 export function DiscountManagementTable({
 	discounts,
 	isLoading,
+	lastSyncedAt,
 	toolbar,
 	onEditDiscount,
 	onToggleStatus,
@@ -38,7 +40,9 @@ export function DiscountManagementTable({
 			isLoading={isLoading}
 			minWidthClassName="min-w-[68rem]"
 			paginationStorageKey={DiscountManagementTablePaginationStorageKey}
+			lastSyncedAt={lastSyncedAt}
 			table={table}
+			tableTitle="Discount definitions"
 			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<DiscountManagementTableRow

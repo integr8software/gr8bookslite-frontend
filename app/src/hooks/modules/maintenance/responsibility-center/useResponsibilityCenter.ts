@@ -13,6 +13,7 @@ type ResponsibilityCenterStoreState = {
 	updateCenter: (center: ResponsibilityCenter) => void;
 	deleteCenter: (centerId: string) => void;
 	isLoading: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 };
 
@@ -87,6 +88,7 @@ export function useResponsibilityCenterStore<
 			updateCenter: (center) => updateCenterMutation.mutate(center),
 			deleteCenter: (centerId) => deleteCenterMutation.mutate(centerId),
 			isLoading: centersQuery.isLoading,
+			lastSyncedAt: centersQuery.dataUpdatedAt,
 			isMutating:
 				addCenterMutation.isPending ||
 				updateCenterMutation.isPending ||
@@ -95,6 +97,7 @@ export function useResponsibilityCenterStore<
 		[
 			addCenterMutation,
 			centersQuery.data,
+			centersQuery.dataUpdatedAt,
 			centersQuery.isLoading,
 			deleteCenterMutation,
 			updateCenterMutation,

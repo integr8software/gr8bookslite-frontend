@@ -87,6 +87,7 @@ export function ItemsListPage() {
 
 			<ItemsTable
 				isLoading={page.isLoading}
+				lastSyncedAt={page.lastSyncedAt}
 				setPendingStatusItem={page.setPendingStatusItem}
 				table={page.table}
 				toolbar={

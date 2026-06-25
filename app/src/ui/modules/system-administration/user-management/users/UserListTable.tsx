@@ -10,12 +10,14 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 export function UserListTable({
 	isLoading = false,
 	isRoleUpdating = false,
+	lastSyncedAt,
 	users,
 	userRoles,
 	onRoleChange,
 }: {
 	isLoading?: boolean;
 	isRoleUpdating?: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	users: UserManagementRecord[];
 	userRoles: UserRoleRecord[];
 	onRoleChange: (user: UserManagementRecord, userRoleId: string) => void;
@@ -33,9 +35,11 @@ export function UserListTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No users found"
 				isLoading={isLoading}
+				lastSyncedAt={lastSyncedAt}
 				minWidthClassName="min-w-[40rem] sm:min-w-[44rem] lg:min-w-[50rem]"
 				paginationStorageKey={UserListTablePaginationStorageKey}
 				table={userList.table}
+				tableTitle="Branch users"
 				toolbar={
 					<UserListTableFilters
 						query={userList.query}

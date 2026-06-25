@@ -55,11 +55,13 @@ export function useApprovalManagementListPage() {
 		inactivateWorkflow,
 		isLoading,
 		isMutating,
+		lastSyncedAt,
 		updateWorkflow,
 		workflows,
 	} = useApprovalManagementStore();
 	const {
 		isLoading: isModuleLoading,
+		lastSyncedAt: moduleLastSyncedAt,
 		setups: transactionNumberSetups,
 	} = useTransactionNumberSetupStore();
 	const moduleOptions = useMemo<ApprovalManagementModuleOption[]>(() => {
@@ -501,6 +503,7 @@ export function useApprovalManagementListPage() {
 		inactiveWorkflowCount: workflowRecords.length - activeWorkflowCount,
 		isLoading: isLoading || isModuleLoading,
 		isMutating,
+		lastSyncedAt: Math.max(lastSyncedAt, moduleLastSyncedAt),
 		moduleOptions,
 		pendingInactiveWorkflow,
 		query,

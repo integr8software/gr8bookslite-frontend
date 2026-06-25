@@ -24,6 +24,7 @@ export function PurchaseRequestListPage() {
 		handleConfirmDelete,
 		handleQueryChange,
 		isMutating,
+		lastSyncedAt,
 		pendingDeleteRequest,
 		query,
 		setPendingDeleteRequest,
@@ -65,11 +66,13 @@ export function PurchaseRequestListPage() {
 						<Search className="h-5 w-5" aria-hidden="true" />
 					}
 					emptyTitle="No purchase requests found"
+					lastSyncedAt={lastSyncedAt}
 					minWidthClassName="min-w-[74rem]"
 					paginationStorageKey={
 						PurchaseRequestTablePaginationStorageKey
 					}
 					table={table}
+					tableTitle="Purchase requests"
 					toolbar={
 						<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,1fr)]">
 							<ModuleTableSearch

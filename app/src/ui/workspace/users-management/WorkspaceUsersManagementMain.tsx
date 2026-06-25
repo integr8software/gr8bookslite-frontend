@@ -25,6 +25,7 @@ export function WorkspaceUsersManagementMain() {
     errorMessage,
     isLoading,
     isMutating,
+    lastSyncedAt,
     resendInvitation,
     users,
   } = useWorkspaceCompanyManagementStore((state) => ({
@@ -33,6 +34,7 @@ export function WorkspaceUsersManagementMain() {
     errorMessage: state.errorMessage,
     isLoading: state.isLoading,
     isMutating: state.isMutating,
+    lastSyncedAt: state.lastSyncedAt,
     resendInvitation: state.resendCompanyUserInvitation,
     users: state.users,
   }));
@@ -82,6 +84,7 @@ export function WorkspaceUsersManagementMain() {
       <WorkspaceUsersTable
         companies={companies}
         isLoading={isLoading}
+        lastSyncedAt={lastSyncedAt}
         isResendingInvitation={isMutating}
         onCancelInvitation={cancelInvitation}
         onEdit={(user) => setDrawerState({ mode: "edit", user })}

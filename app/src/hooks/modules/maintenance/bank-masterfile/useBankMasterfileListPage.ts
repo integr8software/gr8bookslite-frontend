@@ -20,6 +20,7 @@ export function useBankMasterfileListPage() {
 	);
 	const isLoading = useBankMasterfileStore((state) => state.isLoading);
 	const isRefreshing = useBankMasterfileStore((state) => state.isRefreshing);
+	const lastSyncedAt = useBankMasterfileStore((state) => state.lastSyncedAt);
 	const isMutating = useBankMasterfileStore((state) => state.isMutating);
 	const permissions = useBankMasterfileStore((state) => state.permissions);
 	const statistics = useBankMasterfileStore((state) => state.statistics);
@@ -82,6 +83,7 @@ export function useBankMasterfileListPage() {
 		isLoading,
 		isMutating,
 		isRefreshing,
+		lastSyncedAt,
 		pendingStatusBank,
 		permissions,
 		query,

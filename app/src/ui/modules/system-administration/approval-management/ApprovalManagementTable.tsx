@@ -13,6 +13,7 @@ type ApprovalManagementTableProps = Pick<
 	| "handleQueryChange"
 	| "handleStatusFilterChange"
 	| "isLoading"
+	| "lastSyncedAt"
 	| "query"
 	| "setPendingInactiveWorkflow"
 	| "statusFilter"
@@ -24,6 +25,7 @@ export function ApprovalManagementTable({
 	handleQueryChange,
 	handleStatusFilterChange,
 	isLoading,
+	lastSyncedAt,
 	query,
 	setPendingInactiveWorkflow,
 	statusFilter,
@@ -37,9 +39,11 @@ export function ApprovalManagementTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No approval workflows found"
 				isLoading={isLoading}
+				lastSyncedAt={lastSyncedAt}
 				minWidthClassName="min-w-[100rem]"
 				paginationStorageKey={ApprovalManagementPaginationStorageKey}
 				table={table}
+				tableTitle="Approval workflows"
 				toolbar={
 					<ApprovalManagementTableFilters
 						query={query}

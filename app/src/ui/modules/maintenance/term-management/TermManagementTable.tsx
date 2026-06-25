@@ -18,6 +18,7 @@ type TermManagementTableProps = {
 	hasActiveFilters: boolean;
 	isLoading: boolean;
 	isRefreshing: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	query: string;
 	statusFilter: "" | TermManagementStatus;
 	terms: TermManagement[];
@@ -37,6 +38,7 @@ export function TermManagementTable({
 	hasActiveFilters,
 	isLoading,
 	isRefreshing,
+	lastSyncedAt,
 	query,
 	statusFilter,
 	terms,
@@ -62,9 +64,12 @@ export function TermManagementTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No Term Records Found"
 				isLoading={isLoading}
+				isSyncing={isRefreshing}
+				lastSyncedAt={lastSyncedAt}
 				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={TermManagementTablePaginationStorageKey}
 				table={table}
+				tableTitle="Term definitions"
 				toolbar={
 					<TermManagementTableFilters
 						datemodeFilter={datemodeFilter}

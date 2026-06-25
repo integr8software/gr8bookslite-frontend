@@ -89,6 +89,7 @@ export function BankMasterfileListPage() {
 				hasActiveFilters={hasActiveFilters}
 				isLoading={page.isLoading}
 				isRefreshing={page.isRefreshing}
+				lastSyncedAt={page.lastSyncedAt}
 				permissions={page.permissions}
 				query={page.query}
 				statusFilter={page.statusFilter}

@@ -7,9 +7,11 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { ModuleTableSyncStatus } from "@/app/src/ui/shared/module/ModuleTableSyncStatus";
 
 type PaymentTypeTableProps = {
 	isLoading: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	paymentTypes: PaymentTypeRecord[];
 	toolbar?: ReactNode;
 	onEdit: (paymentType: PaymentTypeRecord) => void;
@@ -19,6 +21,7 @@ type PaymentTypeTableProps = {
 
 export function PaymentTypeTable({
 	isLoading,
+	lastSyncedAt,
 	paymentTypes,
 	toolbar,
 	onEdit,
@@ -27,6 +30,10 @@ export function PaymentTypeTable({
 }: PaymentTypeTableProps) {
 	return (
 		<section className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
+			<ModuleTableSyncStatus
+				lastSyncedAt={lastSyncedAt}
+				tableTitle="Payment types"
+			/>
 			{toolbar}
 			<div className="overflow-x-auto">
 				<table className="w-full min-w-[54rem] border-collapse text-left text-sm">

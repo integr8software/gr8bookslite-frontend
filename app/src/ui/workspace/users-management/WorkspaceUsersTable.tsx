@@ -87,6 +87,7 @@ const WorkspaceUsersTableColumns = [
 export function WorkspaceUsersTable({
 	companies,
 	isLoading,
+	lastSyncedAt,
 	isResendingInvitation,
 	onCancelInvitation,
 	onEdit,
@@ -95,6 +96,7 @@ export function WorkspaceUsersTable({
 }: {
 	companies: WorkspaceCompanyRecord[];
 	isLoading: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	isResendingInvitation: boolean;
 	onCancelInvitation: (userId: string) => Promise<unknown>;
 	onEdit: (user: WorkspaceCompanyUserRecord) => void;
@@ -116,9 +118,11 @@ export function WorkspaceUsersTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No workspace users found"
 				isLoading={isLoading}
+				lastSyncedAt={lastSyncedAt}
 				minWidthClassName="min-w-[102rem]"
 				paginationStorageKey={WorkspaceUsersTablePaginationStorageKey}
 				table={userList.table}
+				tableTitle="Workspace users"
 				toolbar={
 					<WorkspaceUsersTableFilters
 						branchFilter={userList.branchFilter}

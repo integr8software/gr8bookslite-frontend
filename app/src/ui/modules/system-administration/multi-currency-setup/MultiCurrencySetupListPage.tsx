@@ -214,6 +214,7 @@ export function MultiCurrencySetupListPage() {
 				<div className="grid min-w-0 gap-5">
 					<MultiCurrencySetupTable
 						isLoading={page.isLoading}
+						lastSyncedAt={page.lastSyncedAt}
 						records={page.filteredRecords}
 						toolbar={
 							<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,2fr)_minmax(12rem,1fr)_minmax(10rem,0.8fr)]">

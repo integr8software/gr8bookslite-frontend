@@ -37,6 +37,7 @@ export function useTransactionNumberSetupListPage() {
 	const {
 		isLoading,
 		isMutating,
+		lastSyncedAt,
 		branchOptions,
 		setups,
 		updateSetup,
@@ -296,6 +297,7 @@ export function useTransactionNumberSetupListPage() {
 		handleSubmit,
 		isLoading,
 		isMutating,
+		lastSyncedAt,
 		nextNumberPreview,
 		query,
 		scopeFilter,

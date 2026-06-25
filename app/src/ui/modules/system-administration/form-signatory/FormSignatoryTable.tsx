@@ -19,6 +19,7 @@ type FormSignatoryTableProps = Pick<
 	| "isEditing"
 	| "isLoading"
 	| "isScopedRowEdit"
+	| "lastSyncedAt"
 	| "maxRows"
 	| "module"
 	| "moduleOptions"
@@ -46,6 +47,7 @@ export function FormSignatoryTable({
 	isEditing,
 	isLoading,
 	isScopedRowEdit,
+	lastSyncedAt,
 	maxRows,
 	module,
 	moduleOptions,
@@ -66,11 +68,13 @@ export function FormSignatoryTable({
 			emptyDescription={getEmptyDescription(signatoryFilterLabel)}
 			emptyTitle={getEmptyTitle(signatoryFilterLabel)}
 			isLoading={isLoading}
+			lastSyncedAt={isEditing ? null : lastSyncedAt}
 			minWidthClassName="min-w-[96rem]"
 			paginationLabel="signatories"
 			paginationStorageKey={FormSignatoryPaginationStorageKey}
 			pageSizeOptions={[5]}
 			table={table}
+			tableTitle="Signatory setup"
 			toolbar={
 				<FormSignatoryToolbar
 					branch={branch}

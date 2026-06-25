@@ -41,6 +41,7 @@ export function FormSignatoryMaintenancePage() {
 				isEditing={page.isEditing}
 				isLoading={page.isLoading}
 				isScopedRowEdit={page.isScopedRowEdit}
+				lastSyncedAt={page.lastSyncedAt}
 				maxRows={page.maxRows}
 				module={page.module}
 				moduleOptions={page.moduleOptions}

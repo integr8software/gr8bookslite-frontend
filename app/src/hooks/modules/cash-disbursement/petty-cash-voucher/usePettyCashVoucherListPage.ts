@@ -113,6 +113,7 @@ export function usePettyCashVoucherListPage() {
     handleConfirmDelete,
     isLoading: vouchersQuery.isLoading,
     isMutating: deleteVoucherMutation.isPending,
+    lastSyncedAt: vouchersQuery.dataUpdatedAt,
     pendingDelete,
     searchQuery,
     resetFilters,

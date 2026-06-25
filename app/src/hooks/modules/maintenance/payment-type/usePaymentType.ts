@@ -17,6 +17,7 @@ type PaymentTypeStoreState = {
 	addPaymentType: (paymentType: PaymentTypeRecord) => void;
 	updatePaymentType: (paymentType: PaymentTypeRecord) => void;
 	isLoading: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 };
 
@@ -69,6 +70,7 @@ export function usePaymentTypeStore<TSelected = PaymentTypeStoreState>(
 		() => ({
 			addPaymentType: (paymentType) => addPaymentTypeMutation.mutate(paymentType),
 			isLoading: paymentTypesQuery.isLoading,
+			lastSyncedAt: paymentTypesQuery.dataUpdatedAt,
 			isMutating:
 				addPaymentTypeMutation.isPending ||
 				updatePaymentTypeMutation.isPending,
@@ -79,6 +81,7 @@ export function usePaymentTypeStore<TSelected = PaymentTypeStoreState>(
 		[
 			addPaymentTypeMutation,
 			paymentTypesQuery.data,
+			paymentTypesQuery.dataUpdatedAt,
 			paymentTypesQuery.isLoading,
 			updatePaymentTypeMutation,
 		],

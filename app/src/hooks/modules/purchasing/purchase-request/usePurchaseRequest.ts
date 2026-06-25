@@ -15,6 +15,7 @@ type PurchaseRequestStoreState = {
 	updateRequest: (request: PurchaseRequestRecord) => void;
 	deleteRequest: (requestId: string) => void;
 	isLoading: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 };
 
@@ -71,9 +72,15 @@ export function usePurchaseRequestStore<
 					currentRequests.filter((request) => request.id !== requestId),
 				),
 			isLoading: requestsQuery.isLoading,
+			lastSyncedAt: requestsQuery.dataUpdatedAt,
 			isMutating: saveRequestsMutation.isPending,
 		}),
-		[requestsQuery.data, requestsQuery.isLoading, saveRequestsMutation],
+		[
+			requestsQuery.data,
+			requestsQuery.dataUpdatedAt,
+			requestsQuery.isLoading,
+			saveRequestsMutation,
+		],
 	);
 
 	return selector ? selector(state) : (state as TSelected);

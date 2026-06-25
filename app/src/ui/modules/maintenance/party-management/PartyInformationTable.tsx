@@ -9,11 +9,13 @@ import { PartyInformationTableRow } from "@/app/src/ui/modules/maintenance/party
 export function PartyInformationTable({
 	isLoading,
 	isRefreshing,
+	lastSyncedAt,
 	records,
 	onRefresh,
 }: {
 	isLoading: boolean;
 	isRefreshing: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	records: PartyInformationRecord[];
 	onRefresh: () => void;
 }) {
@@ -27,10 +29,13 @@ export function PartyInformationTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No party records found"
 				isLoading={isLoading}
+				isSyncing={isRefreshing}
+				lastSyncedAt={lastSyncedAt}
 				minWidthClassName="min-w-[64rem]"
 				paginationStorageKey={PartyManagementTablePaginationStorageKey}
 				paginationTotalRows={partyTable.totalRows}
 				table={partyTable.table}
+				tableTitle="Party records"
 				toolbar={
 					<PartyInformationTableFilters
 						exportAllRows={partyTable.exportAllRows}

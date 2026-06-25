@@ -22,7 +22,8 @@ const AllItemCategoriesFilter = "All";
 const AllItemStatusesFilter = "All";
 
 export function useItemsListPage() {
-	const { isLoading, isMutating, items, updateItem } = useItemManagementStore();
+	const { isLoading, isMutating, items, lastSyncedAt, updateItem } =
+		useItemManagementStore();
 	const [categoryFilter, setCategoryFilterState] = useState(
 		AllItemCategoriesFilter,
 	);
@@ -153,6 +154,7 @@ export function useItemsListPage() {
 		items,
 		isLoading,
 		isMutating,
+		lastSyncedAt,
 		pendingStatusItem,
 		query,
 		resetFilters,

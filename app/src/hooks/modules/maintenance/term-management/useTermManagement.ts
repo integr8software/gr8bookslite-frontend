@@ -30,6 +30,7 @@ type TermManagementStoreState = {
 	deleteTerm: (termId: string) => void;
 	isLoading: boolean;
 	isRefreshing: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 	refreshTerms: () => void;
 };
@@ -174,6 +175,7 @@ export function useTermManagementStore<TSelected = TermManagementStoreState>(
 				deleteTerm: (termId) => deleteTermMutation.mutate(termId),
 				isLoading: termsQuery.isLoading,
 				isRefreshing: termsQuery.isFetching && !termsQuery.isLoading,
+				lastSyncedAt: termsQuery.dataUpdatedAt,
 				isMutating:
 					addTermMutation.isPending ||
 					addTermsMutation.isPending ||
@@ -189,6 +191,7 @@ export function useTermManagementStore<TSelected = TermManagementStoreState>(
 			deleteTermMutation,
 			refreshTerms,
 			termsQuery.data,
+			termsQuery.dataUpdatedAt,
 			termsQuery.isFetching,
 			termsQuery.isLoading,
 			updateTermMutation,

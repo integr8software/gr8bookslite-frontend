@@ -6,6 +6,8 @@ export type ModuleTableProps<TData> = {
 	emptyIcon?: ReactNode;
 	emptyTitle?: string;
 	isLoading?: boolean;
+	isSyncing?: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	maxHeightClassName?: string;
 	minWidthClassName?: string;
 	paginationLabel?: string;
@@ -16,6 +18,7 @@ export type ModuleTableProps<TData> = {
 	renderRow: (row: Row<TData>) => ReactNode;
 	skeletonRowCount?: number;
 	table: Table<TData>;
+	tableTitle?: ReactNode;
 	toolbar?: ReactNode;
 	variant?: "embedded" | "standalone";
 };

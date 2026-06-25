@@ -316,6 +316,7 @@ export function useChartsOfAccounts() {
     flatAccounts,
     isDrawerOpen,
     isLoading: accountsQuery.isLoading,
+    lastSyncedAt: accountsQuery.dataUpdatedAt,
     isMutating:
       saveAccountMutation.isPending || deactivateAccountMutation.isPending,
     searchQuery,

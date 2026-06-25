@@ -105,6 +105,10 @@ export function UserListPage() {
 			: "Open this page from a company branch to review assigned users.";
 	const users = branchUsersQuery.data ?? [];
 	const userRoles = branchRolesQuery.data ?? [];
+	const lastSyncedAt = Math.max(
+		branchUsersQuery.dataUpdatedAt,
+		branchRolesQuery.dataUpdatedAt,
+	);
 	const isLoading =
 		Boolean(branchId) &&
 		(branchUsersQuery.isLoading ||
@@ -121,6 +125,7 @@ export function UserListPage() {
 			<UserListTable
 				isLoading={isLoading}
 				isRoleUpdating={updateBranchRoleMutation.isPending}
+				lastSyncedAt={lastSyncedAt}
 				users={users}
 				userRoles={userRoles}
 				onRoleChange={(user, userRoleId) => {

@@ -103,6 +103,7 @@ export function WarehouseListPage() {
 
 			<WarehouseTable
 				isLoading={page.isLoading}
+				lastSyncedAt={page.lastSyncedAt}
 				setPendingDeleteWarehouse={page.setPendingDeleteWarehouse}
 				onEditWarehouse={(warehouse) => setDrawerState({ mode: "edit", warehouse })}
 				table={page.table}

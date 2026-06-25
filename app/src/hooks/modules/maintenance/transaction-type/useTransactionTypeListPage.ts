@@ -13,6 +13,7 @@ export function useTransactionTypeListPage() {
 		(state) => state.updateTransactionType,
 	);
 	const isLoading = useTransactionTypeStore((state) => state.isLoading);
+	const lastSyncedAt = useTransactionTypeStore((state) => state.lastSyncedAt);
 	const isMutating = useTransactionTypeStore((state) => state.isMutating);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState<
@@ -78,6 +79,7 @@ export function useTransactionTypeListPage() {
 		filteredTransactionTypes,
 		isLoading,
 		isMutating,
+		lastSyncedAt,
 		moduleFilter,
 		moduleFilterOptions,
 		pendingStatusTransactionType,

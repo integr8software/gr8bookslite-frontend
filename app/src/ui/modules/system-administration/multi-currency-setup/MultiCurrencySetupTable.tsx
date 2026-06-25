@@ -10,6 +10,7 @@ import { MultiCurrencySetupTableRow } from "@/app/src/ui/modules/system-administ
 
 type MultiCurrencySetupTableProps = {
 	isLoading: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	records: MultiCurrencySetupTableRecord[];
 	toolbar?: ReactNode;
 	onConfigureRecord: (record: MultiCurrencySetupTableRecord) => void;
@@ -19,6 +20,7 @@ type MultiCurrencySetupTableProps = {
 
 export function MultiCurrencySetupTable({
 	isLoading,
+	lastSyncedAt,
 	onConfigureRecord,
 	records,
 	toolbar,
@@ -33,9 +35,11 @@ export function MultiCurrencySetupTable({
 			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 			emptyTitle="No currency setups found"
 			isLoading={isLoading}
+			lastSyncedAt={lastSyncedAt}
 			minWidthClassName="min-w-[72rem]"
 			paginationStorageKey={MultiCurrencySetupTablePaginationStorageKey}
 			table={table}
+			tableTitle="Currency setups"
 			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<MultiCurrencySetupTableRow

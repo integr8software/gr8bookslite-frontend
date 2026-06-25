@@ -22,6 +22,7 @@ export function CompanyManagementPage() {
     companies: state.companies,
     deactivateCompany: state.deactivateCompany,
     isLoading: state.isLoading,
+    lastSyncedAt: state.lastSyncedAt,
     isMutating: state.isMutating,
   }), { includeUsers: false });
   const [pendingDeactivateCompany, setPendingDeactivateCompany] =
@@ -128,10 +129,11 @@ export function CompanyManagementPage() {
         />
       </div>
       <CompanyTable
-        branches={companyManagement.branches}
-        companies={companyManagement.companies}
-        isLoading={companyManagement.isLoading}
-        onDeactivate={setPendingDeactivateCompany}
+				branches={companyManagement.branches}
+				companies={companyManagement.companies}
+				isLoading={companyManagement.isLoading}
+				lastSyncedAt={companyManagement.lastSyncedAt}
+				onDeactivate={setPendingDeactivateCompany}
       />
       <AppDialog
         isOpen={Boolean(pendingDeactivateCompany)}

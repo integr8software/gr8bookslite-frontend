@@ -10,6 +10,7 @@ import { TransactionTypeTableRow } from "@/app/src/ui/modules/maintenance/transa
 
 type TransactionTypeTableProps = {
 	isLoading: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	transactionTypes: TransactionType[];
 	toolbar?: ReactNode;
 	onEdit: (transactionType: TransactionType) => void;
@@ -19,6 +20,7 @@ type TransactionTypeTableProps = {
 
 export function TransactionTypeTable({
 	isLoading,
+	lastSyncedAt,
 	transactionTypes,
 	toolbar,
 	onEdit,
@@ -33,9 +35,11 @@ export function TransactionTypeTable({
 			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 			emptyTitle="No transaction types found"
 			isLoading={isLoading}
+			lastSyncedAt={lastSyncedAt}
 			minWidthClassName="min-w-[64rem]"
 			paginationStorageKey={TransactionTypePaginationStorageKey}
 			table={table}
+			tableTitle="Transaction types"
 			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<TransactionTypeTableRow

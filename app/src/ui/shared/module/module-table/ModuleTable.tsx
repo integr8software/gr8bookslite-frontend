@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ModuleTableBody } from "@/app/src/ui/shared/module/module-table/ModuleTableBody";
 import { ModuleTableHeader } from "@/app/src/ui/shared/module/module-table/ModuleTableHeader";
 import { ModuleTablePagination } from "@/app/src/ui/shared/module/module-table/ModuleTablePagination";
+import { ModuleTableSyncStatus } from "@/app/src/ui/shared/module/ModuleTableSyncStatus";
 import type { ModuleTableProps } from "@/app/src/types/shared/module/module-table/ModuleTable.types";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
@@ -15,6 +16,8 @@ export function ModuleTable<TData>({
 	emptyIcon,
 	emptyTitle = "No records found",
 	isLoading = false,
+	isSyncing = false,
+	lastSyncedAt,
 	maxHeightClassName = "max-h-[58vh]",
 	minWidthClassName = "min-w-[78rem]",
 	paginationLabel = "records",
@@ -25,6 +28,7 @@ export function ModuleTable<TData>({
 	renderRow,
 	skeletonRowCount = 5,
 	table,
+	tableTitle,
 	toolbar,
 	variant = "standalone",
 }: ModuleTableProps<TData>) {
@@ -134,6 +138,11 @@ export function ModuleTable<TData>({
 					"rounded-lg border border-darknavy/10 shadow-sm shadow-darknavy/5",
 			)}
 		>
+			<ModuleTableSyncStatus
+				isSyncing={isSyncing}
+				lastSyncedAt={lastSyncedAt}
+				tableTitle={tableTitle}
+			/>
 			{toolbar ? <div className="border-b border-darknavy/10">{toolbar}</div> : null}
 			<div className={joinClasses(maxHeightClassName, "overflow-x-auto overflow-y-auto")}>
 				<table

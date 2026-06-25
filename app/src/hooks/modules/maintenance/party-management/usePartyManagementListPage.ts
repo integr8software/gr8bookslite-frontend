@@ -18,6 +18,7 @@ export function usePartyManagementListPage() {
     analytics,
     isLoading: partyManagement.isLoading,
     isRefreshing: partyManagement.isRefreshing,
+    lastSyncedAt: partyManagement.lastSyncedAt,
     records: partyManagement.records,
     refreshRecords: partyManagement.refreshRecords,
   };

@@ -565,6 +565,7 @@ export function useFormSignatoryMaintenancePage() {
 		isEditing,
 		isLoading:
 			!isAuthSessionReady || bootstrapQuery.isLoading,
+		lastSyncedAt: bootstrapQuery.dataUpdatedAt,
 		isRecordMissing:
 			actionMode === "edit" &&
 			!bootstrapQuery.isLoading &&

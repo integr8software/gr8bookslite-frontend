@@ -248,6 +248,7 @@ export function useItemCategoryClassificationPage() {
     handleStatusFilterChange,
     isLoading: store.isLoading,
     isMutating: store.isMutating,
+    lastSyncedAt: store.lastSyncedAt,
     metrics,
     pendingStatusRow,
     query,

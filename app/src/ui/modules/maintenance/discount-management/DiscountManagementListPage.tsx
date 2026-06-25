@@ -26,6 +26,7 @@ export function DiscountManagementListPage() {
 	const discounts = useDiscountManagementStore((state) => state.discounts);
 	const updateDiscount = useDiscountManagementStore((state) => state.updateDiscount);
 	const isLoading = useDiscountManagementStore((state) => state.isLoading);
+	const lastSyncedAt = useDiscountManagementStore((state) => state.lastSyncedAt);
 	const isMutating = useDiscountManagementStore((state) => state.isMutating);
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
 	const [pendingStatusDiscount, setPendingStatusDiscount] =
@@ -138,6 +139,7 @@ export function DiscountManagementListPage() {
 			<DiscountManagementTable
 				discounts={filteredDiscounts}
 				isLoading={isLoading}
+				lastSyncedAt={lastSyncedAt}
 				toolbar={
 					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,1fr)]">
 						<ModuleTableSearch

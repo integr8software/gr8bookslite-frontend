@@ -70,6 +70,7 @@ export function TransactionTypeListPage() {
 
 			<TransactionTypeTable
 				isLoading={page.isLoading}
+				lastSyncedAt={page.lastSyncedAt}
 				transactionTypes={page.filteredTransactionTypes}
 				toolbar={
 					<TransactionTypeFilters

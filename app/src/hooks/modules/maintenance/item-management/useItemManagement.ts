@@ -41,6 +41,7 @@ type ItemManagementStoreState = {
 	) => void;
 	deleteSetupRecord: (kind: ItemSetupKind, recordId: string) => void;
 	isLoading: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 };
 
@@ -344,6 +345,16 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 			setupQueries.subcategory.isLoading ||
 			setupQueries.type.isLoading ||
 			setupQueries.subtype.isLoading,
+		lastSyncedAt: Math.max(
+			itemsQuery.dataUpdatedAt,
+			itemAttributesQuery.dataUpdatedAt,
+			itemBundlesQuery.dataUpdatedAt,
+			priceListsQuery.dataUpdatedAt,
+			setupQueries.category.dataUpdatedAt,
+			setupQueries.subcategory.dataUpdatedAt,
+			setupQueries.type.dataUpdatedAt,
+			setupQueries.subtype.dataUpdatedAt,
+		),
 		isMutating:
 			addItemMutation.isPending ||
 			addItemAttributeMutation.isPending ||

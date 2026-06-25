@@ -73,9 +73,11 @@ export function PettyCashFundReplenishmentListPage() {
             emptyTitle="No replenishments found"
             emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
             isLoading={page.isLoading}
+            lastSyncedAt={page.lastSyncedAt}
             paginationLabel="replenishments"
             paginationStorageKey={PettyCashFundReplenishmentPaginationStorageKey}
             table={page.table}
+            tableTitle="Fund replenishments"
             toolbar={<PettyCashFundReplenishmentListFilters page={page} />}
             renderRow={({ id, original }) => (
               <PettyCashFundReplenishmentTableRow

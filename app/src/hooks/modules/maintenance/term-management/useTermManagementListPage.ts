@@ -17,6 +17,7 @@ export function useTermManagementListPage() {
 	const updateTerm = useTermManagementStore((state) => state.updateTerm);
 	const isLoading = useTermManagementStore((state) => state.isLoading);
 	const isRefreshing = useTermManagementStore((state) => state.isRefreshing);
+	const lastSyncedAt = useTermManagementStore((state) => state.lastSyncedAt);
 	const isMutating = useTermManagementStore((state) => state.isMutating);
 	const permissions = useTermManagementStore((state) => state.permissions);
 	const statistics = useTermManagementStore((state) => state.statistics);
@@ -77,6 +78,7 @@ export function useTermManagementListPage() {
 		filteredTerms,
 		isLoading,
 		isRefreshing,
+		lastSyncedAt,
 		isMutating,
 		pendingStatusTerm,
 		permissions,

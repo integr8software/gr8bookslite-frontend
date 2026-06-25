@@ -24,6 +24,7 @@ import { ChartsOfAccountsTableRow } from "@/app/src/ui/modules/maintenance/chart
 type ChartsOfAccountsTableProps = {
   expandedIds: Set<string>;
   isLoading: boolean;
+  lastSyncedAt?: number | string | Date | null;
   table: Table<FlattenedChartAccount>;
   toolbar?: ReactNode;
   onDelete: (account: ChartAccount) => void;
@@ -92,8 +93,10 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
         emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
         emptyTitle="No accounts found"
         isLoading={props.isLoading}
+        lastSyncedAt={props.lastSyncedAt}
         paginationLabel="accounts"
         table={props.table}
+        tableTitle="Ledger accounts"
         toolbar={props.toolbar}
         variant="embedded"
         renderRow={({ id, original }) => (

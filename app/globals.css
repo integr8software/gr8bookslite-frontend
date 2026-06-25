@@ -145,7 +145,7 @@
 html {
 	font-size: 90%;
 	scroll-behavior: smooth;
-	scrollbar-gutter: stable;
+	scrollbar-gutter: none;
 	text-size-adjust: 100%;
 }
 

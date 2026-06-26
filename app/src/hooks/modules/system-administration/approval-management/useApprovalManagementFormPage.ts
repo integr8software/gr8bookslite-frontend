@@ -7,6 +7,7 @@ import {
 	useRouter,
 	useSearchParams,
 } from "next/navigation";
+import toast from "react-hot-toast";
 import {
 	ApprovalManagementEditFromParam,
 	ApprovalManagementEditFromViewQuery,
@@ -177,21 +178,32 @@ export function useApprovalManagementFormPage() {
 			return;
 		}
 
-		setValues((current) => ({
-			...current,
-			routingRules: current.routingRules.map((rule) => {
-				if (rule.id !== routingRuleId) {
-					return rule;
-				}
+		setValues((current) => {
+			const nextValues = {
+				...current,
+				routingRules: current.routingRules.map((rule) => {
+					if (rule.id !== routingRuleId) {
+						return rule;
+					}
 
-				if (field === "basis" && value === "default") {
-					return rule;
-				}
+					if (field === "basis" && value === "default") {
+						return rule;
+					}
 
-				return { ...rule, [field]: value };
-			}),
-		}));
-		setErrors((current) => clearRoutingRuleError(current, routingRuleId, field));
+					return { ...rule, [field]: value };
+				}),
+			};
+
+			setErrors(
+				validateApprovalManagementForm({
+					currentRecordId: existingWorkflow?.id,
+					existingRecords: workflows,
+					values: nextValues,
+				}),
+			);
+
+			return nextValues;
+		});
 	}
 
 	function toggleRoutingRuleStage(routingRuleId: string, stageId: string) {
@@ -249,6 +261,7 @@ export function useApprovalManagementFormPage() {
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
+			toast.error("Please fix the highlighted approval workflow fields.");
 			return;
 		}
 

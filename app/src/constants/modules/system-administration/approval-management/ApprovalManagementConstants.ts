@@ -38,7 +38,7 @@ export const ApprovalManagementModuleOptions = [
 }>;
 
 export const ApprovalStageCountOptions = [1, 2, 3, 4, 5] as const;
-export const ApprovalAmountConditionLimit = 4;
+export const ApprovalAmountConditionLimit = 5;
 
 export const ApprovalStageRequirementOptions = [
 	{ label: "Any one approver", value: "any" },

@@ -223,7 +223,10 @@ export function createApprovalManagementFormValues(
 		stageCount: record.stageCount,
 		stages,
 		routingRules: syncApprovalRoutingRulesForStages(
-			record.routingRules.map((rule) => ({ ...rule, stageIds: [...rule.stageIds] })),
+			record.routingRules.map((rule) => ({
+				...rule,
+				stageIds: [...rule.stageIds],
+			})),
 			stages,
 		),
 		workflowFeatures: {
@@ -265,10 +268,10 @@ export function createApprovalRoutingRule(
 	return {
 		id: `approval-route-${Date.now()}-${sequence}`,
 		sequence,
-		name: isDefaultRoute ? "Otherwise" : `Payment Condition ${sequence}`,
+		name: isDefaultRoute ? "Otherwise" : `Condition ${sequence}`,
 		basis,
 		amountOperator: "greaterThan",
-		amountValue: isDefaultRoute ? "" : "100000",
+		amountValue: isDefaultRoute ? "" : "",
 		amountValueTo: "",
 		stageIds: stages.map((stage) => stage.id),
 		...overrides,
@@ -315,44 +318,26 @@ export function createAmountConditionApprovalRoutingRules(
 	routingRules: ApprovalRoutingRuleFormValues[],
 	stages: ApprovalStageFormValues[],
 ) {
-	const fallbackStageIds = stages.slice(0, 1).map((stage) => stage.id);
 	const amountRules = routingRules.filter((rule) => rule.basis === "amount");
-	const nextAmountRules = amountRules.length
-		? amountRules
-		: [
+
+	if (!amountRules.length) {
+		return syncApprovalRoutingRulesForStages(
+			[
 				createApprovalRoutingRule(1, stages, {
-					amountValue: "5000",
 					basis: "amount",
-					name: "Payment Condition 1",
+					name: "Condition 1",
 				}),
-			];
-	const defaultRule =
-		routingRules.find((rule) => rule.basis === "default") ??
-		createApprovalRoutingRule(2, stages, {
-			basis: "default",
-			name: "Otherwise",
-			stageIds: fallbackStageIds,
-		});
-	const defaultStageIds = routingRules.some((rule) => rule.basis === "amount")
-		? defaultRule.stageIds
-		: fallbackStageIds;
+			],
+			stages,
+		);
+	}
 
 	return syncApprovalRoutingRulesForStages(
-		[
-			...nextAmountRules.map((amountRule, index) => ({
-				...amountRule,
-				basis: "amount" as const,
-				name: amountRule.name || `Payment Condition ${index + 1}`,
-			})),
-			{
-				...defaultRule,
-				amountValue: "",
-				amountValueTo: "",
-				basis: "default",
-				name: defaultRule.name || "Otherwise",
-				stageIds: defaultStageIds,
-			},
-		],
+		amountRules.map((amountRule, index) => ({
+			...amountRule,
+			basis: "amount" as const,
+			name: amountRule.name || `Condition ${index + 1}`,
+		})),
 		stages,
 	);
 }
@@ -393,7 +378,7 @@ export function resequenceApprovalRoutingRules(
 		sequence: index + 1,
 		name:
 			rule.name.trim() ||
-			(rule.basis === "default" ? "Otherwise" : `Payment Condition ${index + 1}`),
+			(rule.basis === "default" ? "Otherwise" : `Condition ${index + 1}`),
 	}));
 }
 

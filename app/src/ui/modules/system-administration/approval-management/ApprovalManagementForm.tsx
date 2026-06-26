@@ -71,7 +71,11 @@ export function ApprovalManagementForm({
 	onWorkflowFeatureChange,
 	values,
 }: ApprovalManagementFormProps) {
-	const dropdownApproverOptions = createDropdownApproverOptions(approverOptions);
+	const dropdownApproverOptions =
+		createDropdownApproverOptions(approverOptions);
+	const visibleRoutingRules = hasAmountCondition
+		? values.routingRules.filter((rule) => rule.basis === "amount")
+		: values.routingRules;
 
 	return (
 		<form
@@ -84,13 +88,18 @@ export function ApprovalManagementForm({
 					Workflow Setup
 				</h2>
 				<div className="mt-4 grid gap-4 lg:grid-cols-2">
-					<FormField label="Module" error={errors.moduleCode} required>
+					<FormField
+						label="Module"
+						error={errors.moduleCode}
+						required
+					>
 						<select
 							name="moduleCode"
 							value={values.moduleCode}
 							onChange={(event) =>
 								onModuleCodeChange(
-									event.target.value as ApprovalManagementModuleCode,
+									event.target
+										.value as ApprovalManagementModuleCode,
 								)
 							}
 							disabled={isReadonly}
@@ -138,7 +147,11 @@ export function ApprovalManagementForm({
 							))}
 						</select>
 					</FormField>
-					<FormField label="Description" error={errors.description} wide>
+					<FormField
+						label="Description"
+						error={errors.description}
+						wide
+					>
 						<textarea
 							name="description"
 							value={values.description}
@@ -157,7 +170,8 @@ export function ApprovalManagementForm({
 						Approval Stages
 					</h2>
 					<span className="rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">
-						{values.stageCount} {values.stageCount === 1 ? "stage" : "stages"}
+						{values.stageCount}{" "}
+						{values.stageCount === 1 ? "stage" : "stages"}
 					</span>
 				</div>
 				{values.stages.map((stage) => {
@@ -185,11 +199,19 @@ export function ApprovalManagementForm({
 								</span>
 							</div>
 							<div className="grid gap-4 lg:grid-cols-2">
-								<FormField label="Stage Name" error={stageErrors.name} required>
+								<FormField
+									label="Stage Name"
+									error={stageErrors.name}
+									required
+								>
 									<input
 										value={stage.name}
 										onChange={(event) =>
-											onStageFieldChange(stage.id, "name", event.target.value)
+											onStageFieldChange(
+												stage.id,
+												"name",
+												event.target.value,
+											)
 										}
 										readOnly={isReadonly}
 										className={fieldClassName}
@@ -206,17 +228,23 @@ export function ApprovalManagementForm({
 											onStageFieldChange(
 												stage.id,
 												"requirement",
-												event.target.value as ApprovalStageRequirement,
+												event.target
+													.value as ApprovalStageRequirement,
 											)
 										}
 										disabled={isReadonly}
 										className={fieldClassName}
 									>
-										{ApprovalStageRequirementOptions.map((option) => (
-											<option key={option.value} value={option.value}>
-												{option.label}
-											</option>
-										))}
+										{ApprovalStageRequirementOptions.map(
+											(option) => (
+												<option
+													key={option.value}
+													value={option.value}
+												>
+													{option.label}
+												</option>
+											),
+										)}
 									</select>
 								</FormField>
 								<FormField
@@ -260,7 +288,9 @@ export function ApprovalManagementForm({
 						Approval Matrix
 					</h2>
 					<span className="rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">
-						{hasAmountCondition ? "Amount condition" : "Standard path"}
+						{hasAmountCondition
+							? "Amount condition"
+							: "Standard path"}
 					</span>
 				</div>
 				<div className="grid gap-3 md:grid-cols-2">
@@ -269,14 +299,18 @@ export function ApprovalManagementForm({
 						const isActive = isAmountOption
 							? hasAmountCondition
 							: !hasAmountCondition;
-						const Icon = isAmountOption ? CircleDollarSign : ListChecks;
+						const Icon = isAmountOption
+							? CircleDollarSign
+							: ListChecks;
 
 						return (
 							<button
 								key={option.value}
 								type="button"
 								disabled={isReadonly}
-								onClick={() => onAmountConditionModeChange(isAmountOption)}
+								onClick={() =>
+									onAmountConditionModeChange(isAmountOption)
+								}
 								className={
 									isActive
 										? "flex min-h-20 items-center gap-3 rounded-lg border border-skyblue bg-skyblue/12 px-4 py-3 text-left shadow-sm transition disabled:cursor-default disabled:opacity-90"
@@ -291,7 +325,10 @@ export function ApprovalManagementForm({
 											: "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-offwhite text-darknavy"
 									}
 								>
-									<Icon className="h-5 w-5" aria-hidden="true" />
+									<Icon
+										className="h-5 w-5"
+										aria-hidden="true"
+									/>
 								</span>
 								<span className="min-w-0">
 									<span className="block text-sm font-semibold text-darknavy">
@@ -306,14 +343,12 @@ export function ApprovalManagementForm({
 					})}
 				</div>
 				<div className="grid gap-3">
-					{values.routingRules.map((routingRule) => {
+					{visibleRoutingRules.map((routingRule) => {
 						const routingRuleErrors =
 							errors.routingRules?.[routingRule.id] ?? {};
 						const isDefaultRoute = routingRule.basis === "default";
 						const routeTitle = isDefaultRoute
-							? hasAmountCondition
-								? "Otherwise"
-								: "Standard Approval Path"
+							? "Standard Approval Path"
 							: "Amount Condition";
 
 						return (
@@ -347,7 +382,9 @@ export function ApprovalManagementForm({
 												: "rounded-full bg-citron/45 px-3 py-1 text-xs font-semibold text-darknavy"
 										}
 									>
-										{isDefaultRoute ? "No condition" : "Amount"}
+										{isDefaultRoute
+											? "No condition"
+											: "Amount"}
 									</span>
 								</div>
 								<div className="grid gap-4 lg:grid-cols-2">
@@ -373,7 +410,9 @@ export function ApprovalManagementForm({
 										errors={routingRuleErrors}
 										isReadonly={isReadonly}
 										routingRule={routingRule}
-										onRoutingRuleFieldChange={onRoutingRuleFieldChange}
+										onRoutingRuleFieldChange={
+											onRoutingRuleFieldChange
+										}
 									/>
 									<FormField
 										label="Approval Path"
@@ -389,7 +428,9 @@ export function ApprovalManagementForm({
 												>
 													<input
 														type="checkbox"
-														checked={routingRule.stageIds.includes(stage.id)}
+														checked={routingRule.stageIds.includes(
+															stage.id,
+														)}
 														onChange={() =>
 															onRoutingRuleStageToggle(
 																routingRule.id,
@@ -400,7 +441,8 @@ export function ApprovalManagementForm({
 														className="h-4 w-4 accent-darknavy"
 													/>
 													<span>
-														Stage {stage.sequence}: {stage.name}
+														Stage {stage.sequence}:{" "}
+														{stage.name}
 													</span>
 												</label>
 											))}
@@ -427,7 +469,10 @@ export function ApprovalManagementForm({
 								type="checkbox"
 								checked={values.workflowFeatures[feature.key]}
 								onChange={(event) =>
-									onWorkflowFeatureChange(feature.key, event.target.checked)
+									onWorkflowFeatureChange(
+										feature.key,
+										event.target.checked,
+									)
 								}
 								disabled={isReadonly}
 								className="h-4 w-4 accent-darknavy"
@@ -465,24 +510,31 @@ function RoutingConditionFields({
 	if (routingRule.basis === "amount") {
 		return (
 			<>
-				<FormField label="Amount Rule" error={errors.amountOperator} required>
+				<FormField
+					label="Amount Rule"
+					error={errors.amountOperator}
+					required
+				>
 					<select
 						value={routingRule.amountOperator}
 						onChange={(event) =>
 							onRoutingRuleFieldChange(
 								routingRule.id,
 								"amountOperator",
-								event.target.value as ApprovalRoutingRuleFormValues["amountOperator"],
+								event.target
+									.value as ApprovalRoutingRuleFormValues["amountOperator"],
 							)
 						}
 						disabled={isReadonly}
 						className={fieldClassName}
 					>
-						{ApprovalAmountConditionOperatorOptions.map((option) => (
-							<option key={option.value} value={option.value}>
-								{option.label}
-							</option>
-						))}
+						{ApprovalAmountConditionOperatorOptions.map(
+							(option) => (
+								<option key={option.value} value={option.value}>
+									{option.label}
+								</option>
+							),
+						)}
 					</select>
 				</FormField>
 				<FormField label="Amount" error={errors.amountValue} required>
@@ -502,7 +554,11 @@ function RoutingConditionFields({
 					/>
 				</FormField>
 				{routingRule.amountOperator === "between" ? (
-					<FormField label="Ending Amount" error={errors.amountValueTo} required>
+					<FormField
+						label="Ending Amount"
+						error={errors.amountValueTo}
+						required
+					>
 						<input
 							inputMode="decimal"
 							value={routingRule.amountValueTo}

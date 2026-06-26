@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import toast from "react-hot-toast";
 import {
 	type ColumnDef,
 	type PaginationState,
@@ -328,32 +329,20 @@ export function useApprovalManagementListPage() {
 				return current;
 			}
 
-			const fallbackStageIds = current.stages.map((stage) => stage.id);
-			const defaultRule =
-				current.routingRules.find((rule) => rule.basis === "default") ??
-				createApprovalRoutingRule(amountRules.length + 2, current.stages, {
-					basis: "default",
-					name: "Otherwise",
-					stageIds: current.stages.slice(0, 1).map((stage) => stage.id),
-				});
 			const nextAmountRule = createApprovalRoutingRule(
 				amountRules.length + 1,
 				current.stages,
 				{
 					basis: "amount",
-					amountValue: amountRules.length === 0 ? "5000" : "1000",
-					name: `Payment Condition ${amountRules.length + 1}`,
-					stageIds: fallbackStageIds.slice(
-						0,
-						Math.max(1, fallbackStageIds.length - amountRules.length),
-					),
+					name: `Condition ${amountRules.length + 1}`,
+					stageIds: current.stages.map((stage) => stage.id),
 				},
 			);
 
 			return {
 				...current,
 				routingRules: syncApprovalRoutingRulesForStages(
-					[...amountRules, nextAmountRule, defaultRule],
+					[...amountRules, nextAmountRule],
 					current.stages,
 				),
 			};
@@ -378,7 +367,7 @@ export function useApprovalManagementListPage() {
 				routingRules:
 					amountRuleCount > 0
 						? syncApprovalRoutingRulesForStages(nextRoutingRules, current.stages)
-						: createStandardApprovalRoutingRules(nextRoutingRules, current.stages),
+						: [],
 			};
 		});
 		setErrors((current) => ({
@@ -394,13 +383,24 @@ export function useApprovalManagementListPage() {
 		field: TKey,
 		value: ApprovalRoutingRuleFormValues[TKey],
 	) {
-		setValues((current) => ({
-			...current,
-			routingRules: current.routingRules.map((rule) =>
-				rule.id === routingRuleId ? { ...rule, [field]: value } : rule,
-			),
-		}));
-		setErrors((current) => clearRoutingRuleError(current, routingRuleId, field));
+		setValues((current) => {
+			const nextValues = {
+				...current,
+				routingRules: current.routingRules.map((rule) =>
+					rule.id === routingRuleId ? { ...rule, [field]: value } : rule,
+				),
+			};
+
+			setErrors(
+				validateApprovalManagementForm({
+					currentRecordId: selectedWorkflow?.id,
+					existingRecords: workflows,
+					values: nextValues,
+				}),
+			);
+
+			return nextValues;
+		});
 	}
 
 	function toggleRoutingRuleStage(routingRuleId: string, stageId: string) {
@@ -455,6 +455,7 @@ export function useApprovalManagementListPage() {
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
+			toast.error("Please fix the highlighted approval workflow fields.");
 			return;
 		}
 

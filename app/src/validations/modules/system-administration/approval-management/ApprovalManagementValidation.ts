@@ -114,20 +114,9 @@ export const ApprovalManagementFormSchema = z
 			}
 		});
 
-		const defaultRuleCount = values.routingRules.filter(
-			(rule) => rule.basis === "default",
-		).length;
 		const amountRuleCount = values.routingRules.filter(
 			(rule) => rule.basis === "amount",
 		).length;
-
-		if (defaultRuleCount !== 1) {
-			context.addIssue({
-				code: "custom",
-				message: "Keep exactly one default route for otherwise conditions.",
-				path: ["routingRules", 0, "basis"],
-			});
-		}
 
 		if (amountRuleCount > ApprovalAmountConditionLimit) {
 			context.addIssue({
@@ -140,26 +129,25 @@ export const ApprovalManagementFormSchema = z
 		const amountRules = values.routingRules
 			.map((rule, index) => ({ index, rule }))
 			.filter(({ rule }) => rule.basis === "amount");
+		const seenAmounts = new Set<number>();
 
-		amountRules.forEach(({ index, rule }, amountRuleIndex) => {
-			const previousAmountRule = amountRules[amountRuleIndex - 1];
+		amountRules.forEach(({ index, rule }) => {
+			const amount = parseCurrencyAmount(rule.amountValue);
 
-			if (!previousAmountRule) {
+			if (!amount || amount <= 0) {
 				return;
 			}
 
-			const amount = parseCurrencyAmount(rule.amountValue);
-			const previousAmount = parseCurrencyAmount(
-				previousAmountRule.rule.amountValue,
-			);
-
-			if (amount > 0 && previousAmount > 0 && amount >= previousAmount) {
+			if (seenAmounts.has(amount)) {
 				context.addIssue({
 					code: "custom",
-					message: `Amount must be lower than Payment Condition ${amountRuleIndex}.`,
+					message: "Each condition must use a unique amount.",
 					path: ["routingRules", index, "amountValue"],
 				});
+				return;
 			}
+
+			seenAmounts.add(amount);
 		});
 
 		const stageIds = new Set(values.stages.map((stage) => stage.id));

@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 
@@ -8,8 +11,21 @@ type MainLoadingScreenProps = {
 export function MainLoadingScreen({
 	message = "Opening your workspace...",
 }: MainLoadingScreenProps) {
+	useEffect(() => {
+		const previousHtmlOverflow = document.documentElement.style.overflow;
+		const previousBodyOverflow = document.body.style.overflow;
+
+		document.documentElement.style.overflow = "hidden";
+		document.body.style.overflow = "hidden";
+
+		return () => {
+			document.documentElement.style.overflow = previousHtmlOverflow;
+			document.body.style.overflow = previousBodyOverflow;
+		};
+	}, []);
+
 	return (
-		<main className="flex min-h-screen items-center justify-center overflow-hidden bg-background px-6 py-10 text-darknavy">
+		<main className="fixed inset-0 z-[100] flex h-dvh items-center justify-center overflow-hidden bg-background px-6 py-10 text-darknavy">
 			<section
 				className="flex w-full max-w-sm flex-col items-center text-center"
 				aria-busy="true"

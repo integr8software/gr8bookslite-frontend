@@ -10,7 +10,6 @@ import {
 	BadgeCheck,
 	ChevronDown,
 	CircleDollarSign,
-	Info,
 	ListChecks,
 	MoreVertical,
 	Plus,
@@ -239,8 +238,8 @@ export function ApprovalManagementEditor({
 function ApprovalMatrix({
 	errors,
 	hasAmountCondition,
-	onAmountConditionModeChange,
 	onAddAmountConditionRule,
+	onAmountConditionModeChange,
 	onRemoveAmountConditionRule,
 	onRoutingRuleFieldChange,
 	onRoutingRuleStageToggle,
@@ -271,7 +270,21 @@ function ApprovalMatrix({
 	const [openRoutingRuleId, setOpenRoutingRuleId] = useState<string | null>(
 		null,
 	);
-	const usesRouteAccordion = routingRules.length > 1;
+	const [showAmountConditionRules, setShowAmountConditionRules] =
+		useState(false);
+	const visibleRoutingRules = hasAmountCondition
+		? showAmountConditionRules
+			? routingRules.filter((rule) => rule.basis === "amount")
+			: []
+		: routingRules;
+	const usesRouteAccordion = visibleRoutingRules.length > 1;
+	const handleAddAmountConditionRule = () => {
+		if (amountRuleCount === 0 || showAmountConditionRules) {
+			onAddAmountConditionRule();
+		}
+
+		setShowAmountConditionRules(true);
+	};
 
 	return (
 		<section className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
@@ -287,7 +300,7 @@ function ApprovalMatrix({
 				</div>
 				<span className="rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">
 					{hasAmountCondition
-						? `${amountRuleCount} payment condition${amountRuleCount === 1 ? "" : "s"}`
+						? `${amountRuleCount} condition${amountRuleCount === 1 ? "" : "s"}`
 						: "Standard path"}
 				</span>
 			</div>
@@ -367,16 +380,15 @@ function ApprovalMatrix({
 					<div className="flex flex-wrap items-center justify-between gap-3">
 						<div>
 							<div className="text-base font-semibold text-darknavy">
-								Payment Conditions
+								Conditions
 							</div>
 							<div className="mt-0.5 text-xs font-medium text-darknavy/55">
-								Evaluate higher thresholds first, then use the
-								fallback rule.
+								Add up to five conditions.
 							</div>
 						</div>
 						<button
 							type="button"
-							onClick={onAddAmountConditionRule}
+							onClick={handleAddAmountConditionRule}
 							disabled={!canAddAmountCondition}
 							className="inline-flex min-h-9 items-center justify-center gap-2 rounded-md border border-skyblue/35 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm transition hover:bg-skyblue/10 disabled:cursor-not-allowed disabled:border-darknavy/10 disabled:bg-offwhite disabled:text-darknavy/40 disabled:shadow-none"
 						>
@@ -387,9 +399,8 @@ function ApprovalMatrix({
 						</button>
 					</div>
 				) : null}
-
 				<div className="grid gap-3">
-					{routingRules.map((routingRule) => {
+					{visibleRoutingRules.map((routingRule) => {
 						const routingRuleErrors =
 							errors.routingRules?.[routingRule.id] ?? {};
 						const isDefaultRoute = routingRule.basis === "default";
@@ -397,9 +408,7 @@ function ApprovalMatrix({
 							!usesRouteAccordion ||
 							openRoutingRuleId === routingRule.id;
 						const routeTitle = isDefaultRoute
-							? hasAmountCondition
-								? "Fallback Rule"
-								: "Standard Approval Path"
+							? "Standard Approval Path"
 							: routingRule.name ||
 								`Rule ${routingRule.sequence}`;
 						const selectedStages = stages.filter((stage) =>
@@ -572,13 +581,6 @@ function ApprovalMatrix({
 						);
 					})}
 				</div>
-				{hasAmountCondition ? (
-					<div className="flex items-center gap-2 rounded-md border border-skyblue/20 bg-skyblue/8 px-3 py-2 text-xs font-semibold text-skyblue">
-						<Info className="h-4 w-4 shrink-0" aria-hidden="true" />
-						Rules are evaluated from top to bottom. The first
-						matching rule will be applied.
-					</div>
-				) : null}
 			</div>
 		</section>
 	);
@@ -602,9 +604,11 @@ function RuleConditionSummary({
 			<p className="text-xs font-medium text-darknavy/55">
 				{formatApprovalRoutingCondition(routingRule)}
 			</p>
-			<p className="mt-0.5 text-base font-bold text-skyblue">
-				{formatPaymentAmount(routingRule)}
-			</p>
+			{routingRule.amountValue.trim() ? (
+				<p className="mt-0.5 text-base font-bold text-skyblue">
+					{formatPaymentAmount(routingRule)}
+				</p>
+			) : null}
 		</div>
 	);
 }

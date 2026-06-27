@@ -145,7 +145,7 @@ function EditableCell({
 				onChange={(event) => onUpdate(row.id, field, event.target.value)}
 				title={errors?.join(" ")}
 				className={joinClasses(
-					"h-9 w-full min-w-32 rounded-md border bg-white px-2 text-sm outline-none focus:border-skyblue",
+					"h-9 w-full min-w-0 rounded-md border bg-white px-2 text-sm outline-none focus:border-skyblue",
 					errors?.length ? "border-coralpink/60" : "border-darknavy/10",
 				)}
 			/>
@@ -186,7 +186,7 @@ function EditableSelect({
 				onChange={(event) => onUpdate(row.id, field, event.target.value)}
 				title={errors?.join(" ")}
 				className={joinClasses(
-					"h-9 w-full min-w-32 rounded-md border bg-white px-2 text-sm outline-none focus:border-skyblue",
+					"h-9 w-full min-w-0 rounded-md border bg-white px-2 text-sm outline-none focus:border-skyblue",
 					errors?.length ? "border-coralpink/60" : "border-darknavy/10",
 				)}
 			>

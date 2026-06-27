@@ -38,6 +38,7 @@ export function TermManagementHeader({
 						<button
 							type="button"
 							onClick={onImport}
+							data-spotlight-id="maintenance-import-records"
 							className={`${moduleHeaderActionClassNames.secondary} order-2 lg:order-1`}
 						>
 							<Upload className="h-4 w-4" aria-hidden="true" />
@@ -48,6 +49,7 @@ export function TermManagementHeader({
 						<button
 							type="button"
 							onClick={onAdd}
+							data-spotlight-id="maintenance-create-record"
 							className={`${moduleHeaderActionClassNames.primary} order-1 lg:order-2`}
 						>
 							<Plus className="h-4 w-4" aria-hidden="true" />

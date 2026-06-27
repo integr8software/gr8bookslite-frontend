@@ -649,6 +649,16 @@ button {
 	background-color: #f8fafc;
 }
 
+.module-import-preview-header {
+	background-color: #f8fafc;
+	color: color-mix(in srgb, var(--foreground) 72%, transparent);
+}
+
+.module-import-preview-header [role="separator"]:hover {
+	background-color: rgb(var(--skyblue-rgb) / 0.15);
+	border-color: rgb(var(--skyblue-rgb) / 0.75);
+}
+
 .module-table-row {
 	color: var(--foreground);
 	transition:
@@ -676,6 +686,16 @@ button {
 
 :root[data-app-theme="midnight-dark"] .module-table-sticky-header {
 	background-color: var(--surface-secondary);
+}
+
+:root[data-app-theme="midnight-dark"] .module-import-preview-header {
+	background-color: var(--surface-secondary);
+	color: color-mix(in srgb, var(--foreground) 78%, transparent);
+}
+
+:root[data-app-theme="midnight-dark"] .module-import-preview-header [role="separator"]:hover {
+	background-color: rgb(var(--skyblue-rgb) / 0.22);
+	border-color: rgb(var(--skyblue-rgb) / 0.88);
 }
 
 :root[data-app-theme="midnight-dark"] .module-table-row:hover {

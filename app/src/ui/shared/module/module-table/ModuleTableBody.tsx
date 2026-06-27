@@ -85,7 +85,10 @@ function ModuleTableEmptyRow({
 		<tr>
 			<td colSpan={colSpan} className="px-6 py-0 text-center">
 				<div className="flex min-h-72 w-full items-center justify-center">
-					<div className="mx-auto flex w-full max-w-sm flex-col items-center">
+					<div
+						data-spotlight-id="maintenance-empty-records"
+						className="mx-auto flex w-full max-w-sm flex-col items-center"
+					>
 						<span className="flex h-12 w-12 items-center justify-center rounded-lg bg-darknavy/8 text-darknavy/55">
 							{icon ?? (
 								<Search className="h-5 w-5" aria-hidden="true" />

@@ -20,6 +20,10 @@ import type {
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
+import {
+	ModuleImportResizableColumnHeader,
+	clampImportColumnWidth,
+} from "@/app/src/ui/shared/module/ModuleImportResizableColumnHeader";
 
 import {
 	ImportBatchSize,
@@ -68,31 +72,52 @@ export function BankMasterfileImportDialog({
 	const [previewRows, setPreviewRows] = useState<BankImportPreviewRow[]>([]);
 	const [previewPage, setPreviewPage] = useState(1);
 	const [progress, setProgress] = useState<ImportProgress | null>(null);
+	const [pristineManualRowIds, setPristineManualRowIds] = useState<Set<string>>(
+		() => new Set(),
+	);
 	const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(false);
 	const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
+	const [columnWidths, setColumnWidths] = useState(() =>
+		TemplateHeaders.map(() => 160),
+	);
+	const [validationColumnWidth, setValidationColumnWidth] = useState(240);
 	const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(
 		() => new Set(),
 	);
-	const [importMode, setImportMode] = useState<ImportMode>("all-valid");
+	const [importMode, setImportMode] = useState<ImportMode>("all-rows");
 	const selectionMenuRef = useRef<HTMLTableCellElement>(null);
 	const importMenuRef = useRef<HTMLDivElement>(null);
 	const validatedRows = useMemo(
 		() => validateBankImportRows(previewRows, existingBanks),
 		[existingBanks, previewRows],
 	);
-	const invalidRows = validatedRows.filter(rowHasErrors);
+	const displayedRows = useMemo(
+		() =>
+			validatedRows.map((row) =>
+				pristineManualRowIds.has(row.id)
+					? { ...row, cellErrors: {}, rowErrors: [] }
+					: row,
+			),
+		[pristineManualRowIds, validatedRows],
+	);
+	const invalidRows = displayedRows.filter(rowHasErrors);
+	const actualInvalidRows = validatedRows.filter(rowHasErrors);
 	const validRows = validatedRows.filter((row) => !rowHasErrors(row));
 	const validSelectedRows = validRows.filter((row) =>
 		selectedRowIds.has(row.id),
 	);
 	const importableRows =
-		importMode === "selected-valid" ? validSelectedRows : validRows;
+		importMode === "selected-valid"
+			? validSelectedRows
+			: importMode === "all-valid"
+				? validRows
+				: validatedRows;
 	const totalPages = Math.max(
 		1,
-		Math.ceil(validatedRows.length / PreviewPageSize),
+		Math.ceil(displayedRows.length / PreviewPageSize),
 	);
 	const safePreviewPage = Math.min(previewPage, totalPages);
-	const visibleRows = validatedRows.slice(
+	const visibleRows = displayedRows.slice(
 		(safePreviewPage - 1) * PreviewPageSize,
 		safePreviewPage * PreviewPageSize,
 	);
@@ -101,8 +126,21 @@ export function BankMasterfileImportDialog({
 		: 0;
 	const isBusy = Boolean(progress) || isParsing;
 	const canImport = importableRows.length > 0 && !isBusy;
+	const canImportAllRows = validatedRows.length > 0 && !isBusy;
 	const canImportAllValid = validRows.length > 0 && !isBusy;
 	const canImportSelectedValid = validSelectedRows.length > 0 && !isBusy;
+	const importTableWidth =
+		64 +
+		columnWidths.reduce((total, width) => total + width, 0) +
+		validationColumnWidth;
+
+	function updateColumnWidth(index: number, width: number) {
+		setColumnWidths((current) =>
+			current.map((currentWidth, currentIndex) =>
+				currentIndex === index ? clampImportColumnWidth(width) : currentWidth,
+			),
+		);
+	}
 
 	useEffect(() => {
 		if (!isSelectionMenuOpen) return;
@@ -160,8 +198,9 @@ export function BankMasterfileImportDialog({
 		setImportError(null);
 		setPreviewRows([]);
 		setPreviewPage(1);
+		setPristineManualRowIds(new Set());
 		setSelectedRowIds(new Set());
-		setImportMode("all-valid");
+		setImportMode("all-rows");
 		setIsSelectionMenuOpen(false);
 		setIsImportMenuOpen(false);
 	}
@@ -184,6 +223,13 @@ export function BankMasterfileImportDialog({
 		const nextRows = renumberRows([...previewRows, ...uniqueRows]);
 
 		setPreviewRows(nextRows);
+		setPristineManualRowIds((current) => {
+			const next = new Set(current);
+
+			uniqueRows.forEach((row) => next.delete(row.id));
+
+			return next;
+		});
 		setSelectedRowIds(new Set());
 		setPreviewPage(Math.max(1, Math.ceil(nextRows.length / PreviewPageSize)));
 		setImportError(null);
@@ -241,12 +287,11 @@ export function BankMasterfileImportDialog({
 	}
 
 	function addBlankRow() {
-		const nextRows = [
-			...previewRows,
-			createBlankRow(getNextRowNumber(previewRows)),
-		];
+		const blankRow = createBlankRow(getNextRowNumber(previewRows));
+		const nextRows = [...previewRows, blankRow];
 
 		setPreviewRows(nextRows);
+		setPristineManualRowIds((current) => new Set(current).add(blankRow.id));
 		setPreviewPage(Math.ceil(nextRows.length / PreviewPageSize));
 		setImportError(null);
 	}
@@ -256,6 +301,14 @@ export function BankMasterfileImportDialog({
 		field: BankImportColumnId,
 		value: string | boolean,
 	) {
+		setPristineManualRowIds((current) => {
+			if (!current.has(rowId)) return current;
+
+			const next = new Set(current);
+
+			next.delete(rowId);
+			return next;
+		});
 		setPreviewRows((rows) =>
 			rows.map((row) =>
 				row.id === rowId
@@ -314,6 +367,13 @@ export function BankMasterfileImportDialog({
 		);
 
 		setPreviewRows(nextRows);
+		setPristineManualRowIds((current) => {
+			const next = new Set(current);
+
+			selectedRowIds.forEach((rowId) => next.delete(rowId));
+
+			return next;
+		});
 		setSelectedRowIds(new Set());
 		setPreviewPage((page) =>
 			Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))),
@@ -322,6 +382,14 @@ export function BankMasterfileImportDialog({
 
 	async function handleImport() {
 		if (!canImport) return;
+
+		if (importMode === "all-rows" && actualInvalidRows.length > 0) {
+			setPristineManualRowIds(new Set());
+			setImportError(
+				`Fix or remove ${actualInvalidRows.length} incorrect ${actualInvalidRows.length === 1 ? "row" : "rows"} before importing. No rows were imported.`,
+			);
+			return;
+		}
 
 		const rows = importableRows;
 		const importedIds = new Set(rows.map((row) => row.id));
@@ -346,9 +414,16 @@ export function BankMasterfileImportDialog({
 				previewRows.filter((row) => !importedIds.has(row.id)),
 			);
 			setPreviewRows(nextRows);
+			setPristineManualRowIds((current) => {
+				const next = new Set(current);
+
+				importedIds.forEach((rowId) => next.delete(rowId));
+
+				return next;
+			});
 			setSelectedRowIds(new Set());
 			setPreviewPage(1);
-			setImportMode("all-valid");
+			setImportMode("all-rows");
 
 			if (nextRows.length === 0) onClose();
 		} catch (error) {
@@ -474,12 +549,14 @@ export function BankMasterfileImportDialog({
 							)}
 							{importMode === "selected-valid"
 								? "Import Selected"
-								: "Import Data"}
+								: importMode === "all-valid"
+									? "Import Valid"
+									: "Import Data"}
 						</button>
 						<button
 							type="button"
 							onClick={() => setIsImportMenuOpen((open) => !open)}
-							disabled={!canImportAllValid && !canImportSelectedValid}
+							disabled={!canImportAllRows && !canImportSelectedValid}
 							className="inline-flex h-11 w-11 items-center justify-center rounded-r-md border-l border-white/25 bg-skyblue text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:h-10"
 							aria-label="Choose import type"
 							aria-expanded={isImportMenuOpen}
@@ -494,9 +571,18 @@ export function BankMasterfileImportDialog({
 								<button
 									type="button"
 									role="menuitem"
+									onClick={() => setImportSelection("all-rows")}
+									disabled={!canImportAllRows}
+									className="block w-full px-3 py-2 text-left hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
+								>
+									Import all rows ({validatedRows.length})
+								</button>
+								<button
+									type="button"
+									role="menuitem"
 									onClick={() => setImportSelection("all-valid")}
 									disabled={!canImportAllValid}
-									className="block w-full px-3 py-2 text-left hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
+									className="block w-full border-t border-darknavy/8 px-3 py-2 text-left hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
 								>
 									Import all valid rows ({validRows.length})
 								</button>
@@ -545,12 +631,25 @@ export function BankMasterfileImportDialog({
 					aria-label="Bank import preview grid. Paste copied Excel rows here."
 				>
 					<div className="min-h-36 flex-1 overflow-auto">
-						<table className="w-full min-w-[118rem] text-left text-sm text-darknavy">
+						<table
+							className="table-fixed text-left text-sm text-darknavy"
+							style={{ width: `max(100%, ${importTableWidth}px)` }}
+						>
+							<colgroup>
+								<col style={{ width: 64 }} />
+								{columnWidths.map((width, index) => (
+									<col
+										key={`${TemplateHeaders[index]}-${index}`}
+										style={{ width }}
+									/>
+								))}
+								<col style={{ width: validationColumnWidth }} />
+							</colgroup>
 							<thead className="text-xs uppercase text-darknavy/55">
 								<tr>
 									<th
 										ref={selectionMenuRef}
-										className="sticky left-0 top-0 z-40 w-16 bg-slate-50 px-2 py-2"
+										className="module-import-preview-header sticky left-0 top-0 z-40 w-16 px-2 py-2"
 									>
 										<input
 											type="checkbox"
@@ -599,17 +698,21 @@ export function BankMasterfileImportDialog({
 											</div>
 										) : null}
 									</th>
-									{TemplateHeaders.map((header) => (
-										<th
+									{TemplateHeaders.map((header, index) => (
+										<ModuleImportResizableColumnHeader
 											key={header}
-											className="sticky top-0 z-30 min-w-36 bg-slate-50 px-2 py-2"
+											width={columnWidths[index] ?? 160}
+											onResize={(width) => updateColumnWidth(index, width)}
 										>
 											{header}
-										</th>
+										</ModuleImportResizableColumnHeader>
 									))}
-									<th className="sticky top-0 z-30 min-w-52 bg-slate-50 px-2 py-2">
+									<ModuleImportResizableColumnHeader
+										width={validationColumnWidth}
+										onResize={setValidationColumnWidth}
+									>
 										Validation
-									</th>
+									</ModuleImportResizableColumnHeader>
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-darknavy/8 bg-white">

@@ -124,14 +124,14 @@ export function useTransactionNumberSequencesControllerFindBootstrapV1<TData = A
 
 
 export const transactionNumberSequencesControllerUpdateV1 = (
-    platformSubmoduleId: number,
+    moduleId: number,
     updateTransactionNumberSequenceDto: UpdateTransactionNumberSequenceDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
       return OrvalApiClient<SaveTransactionNumberSequenceResponseDto>(
-      {url: `/api/v1/system-administration/transaction-number-sequences/${platformSubmoduleId}`, method: 'PATCH',
+      {url: `/api/v1/system-administration/transaction-number-sequences/${moduleId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateTransactionNumberSequenceDto, signal
     },
@@ -141,8 +141,8 @@ export const transactionNumberSequencesControllerUpdateV1 = (
 
 
 export const getTransactionNumberSequencesControllerUpdateV1MutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transactionNumberSequencesControllerUpdateV1>>, TError,{platformSubmoduleId: number;data: UpdateTransactionNumberSequenceDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof transactionNumberSequencesControllerUpdateV1>>, TError,{platformSubmoduleId: number;data: UpdateTransactionNumberSequenceDto}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transactionNumberSequencesControllerUpdateV1>>, TError,{moduleId: number;data: UpdateTransactionNumberSequenceDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof transactionNumberSequencesControllerUpdateV1>>, TError,{moduleId: number;data: UpdateTransactionNumberSequenceDto}, TContext> => {
 
 const mutationKey = ['transactionNumberSequencesControllerUpdateV1'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -154,10 +154,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof transactionNumberSequencesControllerUpdateV1>>, {platformSubmoduleId: number;data: UpdateTransactionNumberSequenceDto}> = (props) => {
-          const {platformSubmoduleId,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof transactionNumberSequencesControllerUpdateV1>>, {moduleId: number;data: UpdateTransactionNumberSequenceDto}> = (props) => {
+          const {moduleId,data} = props ?? {};
 
-          return  transactionNumberSequencesControllerUpdateV1(platformSubmoduleId,data,requestOptions)
+          return  transactionNumberSequencesControllerUpdateV1(moduleId,data,requestOptions)
         }
 
 
@@ -172,11 +172,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type TransactionNumberSequencesControllerUpdateV1MutationError = unknown
 
     export const useTransactionNumberSequencesControllerUpdateV1 = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transactionNumberSequencesControllerUpdateV1>>, TError,{platformSubmoduleId: number;data: UpdateTransactionNumberSequenceDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transactionNumberSequencesControllerUpdateV1>>, TError,{moduleId: number;data: UpdateTransactionNumberSequenceDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof transactionNumberSequencesControllerUpdateV1>>,
         TError,
-        {platformSubmoduleId: number;data: UpdateTransactionNumberSequenceDto},
+        {moduleId: number;data: UpdateTransactionNumberSequenceDto},
         TContext
       > => {
       return useMutation(getTransactionNumberSequencesControllerUpdateV1MutationOptions(options), queryClient);

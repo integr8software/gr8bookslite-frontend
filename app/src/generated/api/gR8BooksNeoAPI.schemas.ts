@@ -1631,7 +1631,7 @@ export const TransactionNumberSequenceResponseDtoStatus = {
 
 export interface TransactionNumberSequenceResponseDto {
   id: number;
-  platformSubmoduleId: number;
+  moduleId: number;
   moduleCode: string;
   moduleName: string;
   inputMode: TransactionNumberSequenceResponseDtoInputMode;

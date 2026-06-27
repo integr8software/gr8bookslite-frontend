@@ -27,7 +27,7 @@ export async function UpdateTransactionNumberSetup(
 ) {
 	const values = CreateTransactionNumberSetupPayload(setup);
 	const response = await transactionNumberSequencesControllerUpdateV1(
-		setup.platformSubmoduleId,
+		setup.moduleId,
 		values,
 	);
 
@@ -69,12 +69,12 @@ function MapTransactionNumberSequence(
 						String(branchUnitId),
 					),
 		currentNumber: sequence.currentNumber,
-		id: String(sequence.platformSubmoduleId),
+		id: String(sequence.moduleId),
 		inputMode: sequence.inputMode,
 		moduleCode: sequence.moduleCode,
 		moduleName: sequence.moduleName,
 		padding: sequence.padding,
-		platformSubmoduleId: sequence.platformSubmoduleId,
+		moduleId: sequence.moduleId,
 		prefix: sequence.prefix,
 		suffix: sequence.suffix ?? "",
 		scope: sequence.scope,

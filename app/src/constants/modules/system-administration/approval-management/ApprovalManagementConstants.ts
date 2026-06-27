@@ -16,27 +16,6 @@ export const ApprovalManagementEditFromParam = "from";
 export const ApprovalManagementEditFromViewValue = "view";
 export const ApprovalManagementEditFromViewQuery = `${ApprovalManagementEditFromParam}=${ApprovalManagementEditFromViewValue}`;
 
-export const ApprovalManagementModuleCodes = [
-	"DV",
-	"CR",
-	"JV",
-	"PR",
-	"PO",
-	"RR",
-] as const satisfies readonly string[];
-
-export const ApprovalManagementModuleOptions = [
-	{ code: "DV", name: "Disbursement Voucher" },
-	{ code: "CR", name: "Cash Receipt" },
-	{ code: "JV", name: "Journal Voucher" },
-	{ code: "PR", name: "Purchase Request" },
-	{ code: "PO", name: "Purchase Order" },
-	{ code: "RR", name: "Receiving Report" },
-] as const satisfies ReadonlyArray<{
-	code: string;
-	name: string;
-}>;
-
 export const ApprovalStageCountOptions = [1, 2, 3, 4, 5] as const;
 export const ApprovalAmountConditionLimit = 5;
 

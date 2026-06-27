@@ -113,12 +113,6 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Warehouse stock inquiry",
   },
   {
-    href: "/maintenance/warehouse-management/activity-history",
-    addMode: "none",
-    includeCreateStep: false,
-    label: "Warehouse activity history",
-  },
-  {
     href: "/cash-disbursement/disbursement-voucher",
     addMode: "none",
     label: "Disbursement voucher",

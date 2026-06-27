@@ -59,9 +59,6 @@ export type MainAccessKey =
   | "maintenance.workflow"
   | "maintenance.audit"
   | "maintenance.users"
-  | "maintenance.reports"
-  | "reports.accounting"
-  | "reports.inventory"
   | "settings"
   | "settings.permissions"
   | "settings.notifications"
@@ -108,7 +105,6 @@ export type MainIconName =
   | "profile"
   | "promotion"
   | "purchasing"
-  | "reports"
   | "sales"
   | "security"
   | "settings"
@@ -125,6 +121,7 @@ export type MainNavigationItem = {
   productKey?: MainProductKey;
   productKeys?: MainProductKey[];
   requiredActions?: MainAccessAction[];
+	iconName?: string | null;
   module?: {
     actions: Extract<MainAccessAction, "view" | "add" | "edit">[];
     recordIds?: string[];
@@ -137,6 +134,7 @@ export type MainNavigationSection = {
   title: string;
   href?: string;
   icon: MainIconName;
+  iconName?: string | null;
   accessKey: MainAccessKey;
   permissionCode?: string;
   productKey?: MainProductKey;

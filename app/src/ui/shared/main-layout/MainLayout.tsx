@@ -54,6 +54,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		canAccessMaster,
 		canAccessWorkspace,
 		canSwitchCompany,
+		companyUserModuleItems,
 		currentBranch,
 		currentCompany,
 		currentHelpArticle,
@@ -239,6 +240,10 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 					isOpen={isSidebarOpen}
 					isTransitionEnabled={isSidebarTransitionEnabled}
 					navigationSections={navigationSections}
+					userModuleItems={companyUserModuleItems}
+					canCustomizeSidebar={
+						activeNavigationScope === "company"
+					}
 					shouldAutoScrollActiveItem={shouldAutoRevealActiveRoute}
 					onClose={closeSidebar}
 					onNavigateFromSidebar={markSidebarNavigation}

@@ -47,6 +47,7 @@ export function AuthField({
           aria-describedby={errors?.length ? errorId : undefined}
           aria-invalid={errors?.length ? true : undefined}
           className={`h-12 w-full rounded-lg border border-darknavy/10 bg-offwhite px-4 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 hover:border-skyblue/60 focus:border-skyblue focus:bg-white focus:ring-4 focus:ring-skyblue/15 ${leadingIcon ? "pl-11" : ""} ${isPassword ? "pr-12" : ""}`}
+          suppressHydrationWarning
           {...props}
           type={inputType}
         />

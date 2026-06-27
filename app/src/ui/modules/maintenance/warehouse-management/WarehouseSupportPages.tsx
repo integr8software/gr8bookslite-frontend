@@ -15,7 +15,6 @@ import {
 	ArrowLeft,
 	CheckCircle2,
 	CirclePause,
-	History,
 	MapPin,
 	MoveRight,
 	Plus,
@@ -36,7 +35,6 @@ import type {
 	WarehouseAccessRecord,
 	WarehouseRecord,
 	WarehouseStatus,
-	WarehouseStockMovement,
 	WarehouseStorageLocation,
 	WarehouseTransfer,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
@@ -61,7 +59,6 @@ import {
 
 type WarehouseSupportPageKind =
 	| "access"
-	| "activity-history"
 	| "stock-inquiry"
 	| "storage-locations"
 	| "transfers";
@@ -111,13 +108,6 @@ const PageConfig = {
 			"Control which users can view, receive, issue, transfer, adjust, manage locations, and view warehouse history.",
 		icon: ShieldCheck,
 		title: "Warehouse Access",
-	},
-	"activity-history": {
-		actionLabel: "Add Activity",
-		description:
-			"Review warehouse receipts, issues, transfers, adjustments, and location movements.",
-		icon: History,
-		title: "Warehouse Activity History",
 	},
 	"stock-inquiry": {
 		actionLabel: "Refresh Inquiry",
@@ -662,22 +652,6 @@ function renderSupportFields({
 		);
 	}
 
-	if (kind === "activity-history") {
-		return (
-			<>
-				<WarehouseSelect readOnly={isReadonly} value={values.warehouseId} warehouses={warehouses} onChange={(value) => updateField("warehouseId", value)} />
-				<TextField label="Date" readOnly={isReadonly} type="date" value={values.date} onChange={(value) => updateField("date", value)} />
-				<TextField label="Reference Number" readOnly={isReadonly} value={values.referenceNumber} onChange={(value) => updateField("referenceNumber", value)} />
-				<TextField label="Transaction Type" readOnly={isReadonly} value={values.transactionType} onChange={(value) => updateField("transactionType", value)} />
-				<TextField label="Item" readOnly={isReadonly} value={values.item} onChange={(value) => updateField("item", value)} />
-				<TextField label="User" readOnly={isReadonly} value={values.user} onChange={(value) => updateField("user", value)} />
-				<TextField label="Quantity In" readOnly={isReadonly} type="number" value={values.quantityIn} onChange={(value) => updateField("quantityIn", value)} />
-				<TextField label="Quantity Out" readOnly={isReadonly} type="number" value={values.quantityOut} onChange={(value) => updateField("quantityOut", value)} />
-				<TextField label="Balance" readOnly={isReadonly} type="number" value={values.balance} onChange={(value) => updateField("balance", value)} />
-			</>
-		);
-	}
-
 	if (kind === "transfers") {
 		return (
 			<>
@@ -874,19 +848,6 @@ function createHeaders(kind: WarehouseSupportPageKind) {
 		];
 	}
 
-	if (kind === "activity-history") {
-		return [
-			"Warehouse",
-			"Timestamp",
-			"Reference Number",
-			"Action",
-			"Qty In",
-			"Qty Out",
-			"Balance",
-			"User",
-		];
-	}
-
 	return [
 		"Date",
 		"Transfer Number",
@@ -944,23 +905,6 @@ function createRows(kind: WarehouseSupportPageKind, warehouses: WarehouseRecord[
 					item.lotNumber || "-",
 					item.serialNumber || "-",
 					item.storageLocation || "-",
-				]),
-			),
-		);
-	}
-
-	if (kind === "activity-history") {
-		return warehouses.flatMap((warehouse) =>
-			warehouse.movements.map((movement) =>
-				createRecord(kind, warehouse.id, movement.id, [
-					warehouse.name,
-					movement.date,
-					movement.referenceNumber,
-					movement.transactionType,
-					String(movement.quantityIn),
-					String(movement.quantityOut),
-					String(movement.balance),
-					movement.user,
 				]),
 			),
 		);
@@ -1092,27 +1036,6 @@ function createFormFromRow(
 			: form;
 	}
 
-	if (row.kind === "activity-history") {
-		const record = warehouse.movements.find(
-			(movement) => movement.id === row.recordId,
-		);
-
-		return record
-			? {
-					...form,
-					balance: String(record.balance),
-					date: record.date,
-					item: record.item,
-					quantityIn: String(record.quantityIn),
-					quantityOut: String(record.quantityOut),
-					referenceNumber: record.referenceNumber,
-					transactionType: record.transactionType,
-					user: record.user,
-					warehouseId: warehouse.id,
-				}
-			: form;
-	}
-
 	if (row.kind === "transfers") {
 		const record = warehouse.transfers.find(
 			(transfer) => transfer.id === row.recordId,
@@ -1218,25 +1141,6 @@ function upsertRecordIntoWarehouse(
 		};
 	}
 
-	if (kind === "activity-history") {
-		const record: WarehouseStockMovement = {
-			balance: Number(form.balance) || 0,
-			date: form.date,
-			id: recordId ?? `move-${Date.now()}`,
-			item: form.item.trim(),
-			quantityIn: Number(form.quantityIn) || 0,
-			quantityOut: Number(form.quantityOut) || 0,
-			referenceNumber: form.referenceNumber.trim(),
-			transactionType: form.transactionType.trim(),
-			user: form.user.trim(),
-		};
-
-		return {
-			...warehouse,
-			movements: upsertById(warehouse.movements, record),
-		};
-	}
-
 	const record: WarehouseTransfer = {
 		approvedBy: form.approvedBy.trim(),
 		date: form.date,
@@ -1284,13 +1188,6 @@ function removeRecordFromWarehouse(
 		return {
 			...warehouse,
 			locations: warehouse.locations.filter((record) => record.id !== recordId),
-		};
-	}
-
-	if (kind === "activity-history") {
-		return {
-			...warehouse,
-			movements: warehouse.movements.filter((record) => record.id !== recordId),
 		};
 	}
 
@@ -1350,11 +1247,9 @@ function createReferenceNumber(kind: EditableSupportKind) {
 	const prefix =
 		kind === "transfers"
 			? "WT"
-			: kind === "activity-history"
-				? "WH-ACT"
-				: kind === "storage-locations"
-					? "LOC"
-					: "ACC";
+			: kind === "storage-locations"
+				? "LOC"
+				: "ACC";
 
 	return `${prefix}-${Date.now().toString().slice(-6)}`;
 }

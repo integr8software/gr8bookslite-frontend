@@ -1046,11 +1046,11 @@ function getRecordKindLabel(kind: ItemSetupKind, isVirtual?: boolean) {
   }
 
   if (kind === "type") {
-    return "Item Type";
+    return "Item Category";
   }
 
   if (kind === "subtype") {
-    return "Item Subtype";
+    return "Sub Category";
   }
 
   if (kind === "subcategory") {

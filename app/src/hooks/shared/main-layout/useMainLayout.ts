@@ -34,13 +34,12 @@ import {
 import {
   filterMainNavigationSections,
   filterMainSearchItems,
+  flattenSections,
   getAccessibleBranches,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 import {
   MainAccountNavigationSections,
   MainAccountSearchItems,
-  MainCompanyNavigationSections,
-  MainCompanySearchItems,
   MainMasterNavigationSections,
   MainMasterSearchItems,
   MainWorkspaceNavigationSections,
@@ -77,6 +76,7 @@ import {
 } from "@/app/src/services/auth/AuthQueryKeys";
 import { IsUnauthorizedApiError } from "@/app/src/services/shared/api/ApiClient";
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
+import { MapUserModulesToNavigation } from "@/app/src/data/shared/main-layout/sidebar/UserModuleNavigationAdapter";
 import type {
   MainBreadcrumb,
   MainBreadcrumbDropdownItem,
@@ -89,7 +89,6 @@ const DefaultExpandedKeys = [
   "workspace-user-management-section",
   "workspace-billing-and-subscription-section",
   "workspace-vouchers-and-coupons-section",
-  "workspace-reports-analytics-section",
   "workspace-audit-logs-section",
   "workspace-system-settings-section",
   "master-dashboard-section",
@@ -110,8 +109,6 @@ const DefaultExpandedKeys = [
   "cash-disbursement",
   "sales",
   "inventory",
-  "reports",
-  "reporting-analytics",
   "system-administration",
 ];
 
@@ -305,6 +302,25 @@ export function useMainLayout() {
     EmptyCompany;
   const subscription =
     currentCompany.subscriptionPackage ?? MainLayoutDefaultSubscription;
+  const companyUserModuleItems = useMemo(() => {
+    const userModules = GetAuthProfileAccess(authProfile)?.userModules;
+    const branchModules = userModules?.byBranch?.find(
+      (branch) => String(branch.branchUnitId) === activeBranchId,
+    );
+    const fallbackBranchModules = userModules?.byBranch?.find(
+      (branch) => branch.items.length > 0,
+    );
+
+    return branchModules?.items.length
+      ? branchModules.items
+      : fallbackBranchModules?.items ?? userModules?.items ?? [];
+  }, [activeBranchId, authProfile]);
+  const companyNavigationSections = useMemo(
+    () => {
+      return MapUserModulesToNavigation(companyUserModuleItems);
+    },
+    [companyUserModuleItems],
+  );
   const { branches, isLoading: isBranchLoading } =
     useWorkspaceCompanyMainLayoutBranches({
       company: activeNavigationScope === "company" ? currentCompany : undefined,
@@ -319,14 +335,15 @@ export function useMainLayout() {
           ? MainMasterNavigationSections
           : activeNavigationScope === "workspace"
             ? MainWorkspaceNavigationSections
-            : MainCompanyNavigationSections;
+            : companyNavigationSections;
 
+    if (activeNavigationScope === "company") return sourceSections;
     return filterMainNavigationSections(
       sourceSections,
       displayUser,
       subscription,
     );
-  }, [activeNavigationScope, displayUser, subscription]);
+  }, [activeNavigationScope, companyNavigationSections, displayUser, subscription]);
   const activeExpandedKeys = useMemo(
     () => getActiveExpandedKeys(navigationSections, pathname),
     [navigationSections, pathname],
@@ -351,14 +368,15 @@ export function useMainLayout() {
           ? MainMasterSearchItems
           : activeNavigationScope === "workspace"
             ? MainWorkspaceSearchItems
-            : MainCompanySearchItems;
+            : flattenSections(companyNavigationSections);
 
+    if (activeNavigationScope === "company") return sourceItems;
     return filterMainSearchItems(sourceItems, displayUser, subscription);
-  }, [activeNavigationScope, displayUser, subscription]);
+  }, [activeNavigationScope, companyNavigationSections, displayUser, subscription]);
   const companySearchItems = useMemo(
     () =>
-      filterMainSearchItems(MainCompanySearchItems, displayUser, subscription),
-    [displayUser, subscription],
+      flattenSections(companyNavigationSections),
+    [companyNavigationSections],
   );
   const companyHomeHref = getCompanyHomeHref(companySearchItems);
   const homeHref =
@@ -420,7 +438,7 @@ export function useMainLayout() {
         ),
         profile,
       );
-      router.push(getCompanyHomeHrefForProfile(profile));
+      router.push("/dashboard");
       releaseShellContextSwitchAfterFrame();
     },
     onError: (_error, variables) => {
@@ -1002,6 +1020,7 @@ export function useMainLayout() {
     isSidebarTransitionEnabled,
     moduleTitle,
     navigationSections,
+    companyUserModuleItems,
     notificationTab,
     query,
     searchResults,
@@ -1312,7 +1331,6 @@ function CreateNavigationPermissionMap() {
   const sections = [
     ...MainMasterNavigationSections,
     ...MainWorkspaceNavigationSections,
-    ...MainCompanyNavigationSections,
   ];
 
   for (const section of sections) {
@@ -1476,6 +1494,17 @@ function findNavigationTrail(
     const sectionHref = getSectionTargetHref(section);
 
     if (itemTrail.length > 0) {
+      if (isParentlessModuleSection(section)) {
+        return itemTrail.map((item, index) =>
+          index === 0
+            ? {
+                ...item,
+                dropdownItems: sectionDropdownItems,
+              }
+            : item,
+        );
+      }
+
       return [
         {
           key: section.key,
@@ -1500,6 +1529,16 @@ function findNavigationTrail(
   }
 
   return [];
+}
+
+function isParentlessModuleSection(section: MainNavigationSection) {
+  const onlyItem = section.items[0];
+
+  return (
+    section.key === `${onlyItem?.key}-root` &&
+    section.items.length === 1 &&
+    section.title === onlyItem.label
+  );
 }
 
 function buildMasterSubscriberManagementBreadcrumbs({
@@ -1934,8 +1973,6 @@ const NavigationDropdownHelperText: Record<string, string> = {
   inventory: "Track stock movements, requests, receipts, and issues.",
   purchasing: "Manage purchase requests, canvassing, and supplier orders.",
   others: "Track supporting asset and miscellaneous records.",
-  "reporting-analytics":
-    "Generate accounting, inventory, and compliance reports.",
   "system-administration":
     "Manage users, approvals, audits, numbering, currencies, and mail setup.",
   "dashboard-overview": "View company activity, approvals, and performance.",
@@ -1961,8 +1998,6 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "maintenance-storage-locations": "Maintain physical storage locations.",
   "maintenance-warehouse-transfers": "Track warehouse transfers.",
   "maintenance-warehouse-stock-inquiry": "View warehouse stock availability.",
-  "maintenance-warehouse-activity-history":
-    "Review warehouse operational activity.",
   "maintenance-item-management":
     "Maintain item master records, categories, and classifications.",
   "maintenance-items": "Maintain item master records.",
@@ -2053,32 +2088,6 @@ const NavigationDropdownHelperText: Record<string, string> = {
   "purchasing-journal": "Review and post purchase journal entries.",
   "others-fixed-asset": "Track fixed asset records and movements.",
   "fixed-asset-default": "Track fixed asset records and movements.",
-  "reports-maintenance": "Configure reusable report definitions and settings.",
-  "reports-financial": "Generate financial statements and ledger reports.",
-  "reports-books-of-accounts": "Generate books of accounts reports.",
-  "reports-general-ledger": "Review general ledger account activity.",
-  "reports-beginning-balance-general-ledger-uploader":
-    "Upload beginning general ledger balances.",
-  "reports-beginning-balance-subsidiary-ledger-uploader":
-    "Upload beginning subsidiary ledger balances.",
-  "reports-budget-uploader": "Upload financial budget records.",
-  "reports-verifier": "Verify uploaded financial records.",
-  "reports-journal-ledger": "Review journal ledger entries.",
-  "reports-trial-balance": "Generate trial balance summaries.",
-  "reports-balance-sheet": "Generate balance sheet statements.",
-  "reports-income-statement": "Generate income statement reports.",
-  "reports-cash-flow": "Generate cash flow statements.",
-  "reports-accounts-receivable": "Review customer receivable reports.",
-  "reports-ar-aging": "Analyze overdue customer balances by aging bucket.",
-  "reports-ar-statement": "Generate customer statements of account.",
-  "reports-inventory": "Generate inventory movement and valuation reports.",
-  "reports-inventory-audit": "Review inventory audit history.",
-  "reports-inventory-item-query": "Build item-level inventory queries.",
-  "reports-inventory-stock-movement": "Review stock movement activity.",
-  "reports-inventory-valuation": "Generate inventory valuation reports.",
-  "reports-bir": "Generate BIR compliance reports.",
-  "reports-bir-vat-relief": "Prepare VAT relief reporting data.",
-  "reports-bir-alpha-list": "Prepare alpha list reporting data.",
   "maintenance-user-management": "Manage users and roles.",
   "maintenance-users": "Create and maintain system user accounts.",
   "maintenance-user-role": "Maintain user role classifications.",
@@ -2110,24 +2119,6 @@ function getCompanyHomeHref(items: MainSearchItem[]) {
   }
 
   return items[0]?.href ?? CompanyFallbackHomeHref;
-}
-
-function getCompanyHomeHrefForProfile(profile: AuthProfileResponse) {
-  const currentUser = CreateWorkspaceCurrentUserFromProfile(profile);
-  const activeCompanyId = GetAuthProfileCompanyId(profile);
-  const companies = MapProfileCompaniesToMainCompanies(profile);
-  const currentCompany =
-    companies.find((company) => Number(company.id) === activeCompanyId) ??
-    companies[0];
-  const subscription =
-    currentCompany?.subscriptionPackage ?? MainLayoutDefaultSubscription;
-  const items = filterMainSearchItems(
-    MainCompanySearchItems,
-    currentUser,
-    subscription,
-  );
-
-  return getCompanyHomeHref(items);
 }
 
 function sortBranchesByPriority(branches: MainBranch[]) {

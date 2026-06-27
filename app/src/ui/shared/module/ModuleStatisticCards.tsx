@@ -63,30 +63,30 @@ function ModuleStatisticCard({ item }: { item: ModuleStatisticCardItem }) {
 		<div className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5">
 			<div className="flex items-center justify-between gap-4">
 				<div className="min-w-0">
-					<p className="truncate text-sm font-semibold text-darknavy">
+					<div className="truncate text-sm font-semibold text-darknavy">
 						{item.label}
-					</p>
-					<p
+					</div>
+					<div
 						className={joinClasses(
 							"mt-3 max-w-36 truncate font-semibold leading-none text-darknavy",
 							getStatisticValueClassName(item.value),
 						)}
 					>
 						{item.value}
-					</p>
+					</div>
 					{item.summary ? (
-						<p className="mt-2 truncate text-xs font-medium text-darknavy/60">
+						<div className="mt-2 truncate text-xs font-medium text-darknavy/60">
 							{item.summary}
-						</p>
+						</div>
 					) : item.helper ? (
-						<p
+						<div
 							className={joinClasses(
 								"mt-2 truncate text-xs font-medium text-darknavy/60",
 								item.tone === "emerald" && "text-emerald-600",
 							)}
 						>
 							{item.helper}
-						</p>
+						</div>
 					) : null}
 				</div>
 				<span

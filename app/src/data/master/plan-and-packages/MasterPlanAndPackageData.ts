@@ -1,5 +1,4 @@
 import {
-	MasterPlanAndPackageFeatureOptions,
 	MasterPlanAndPackageScaleUnitLabels,
 	MasterPlanAndPackageScaleUnits,
 	MasterPlanAndPackageScopeLabels,
@@ -14,12 +13,10 @@ import type {
 	MasterPlanAndPackageScaleUnit,
 } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 
-const FeatureLabelById = new Map(
-	MasterPlanAndPackageFeatureOptions.map((feature) => [
-		feature.id,
-		feature.name,
-	]),
-);
+const FeatureLabelById = new Map([
+	["ACCOUNTING", "Accounting"],
+	["INVENTORY", "Inventory"],
+]);
 
 export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 	{
@@ -27,12 +24,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		description:
 			"Entry accounting package with dashboard, financial maintenance, cash receipts, disbursements, journals, and reporting modules.",
 		featureIds: [
-			"dashboard-overview",
-			"maintenance-charts-of-accounts",
-			"cash-receipt-official-receipt",
-			"cash-disbursement-disbursement-voucher",
-			"general-journal-journal-voucher",
-			"sales-service-invoice",
+			"ACCOUNTING",
 		],
 		id: "plan-accounting-monthly",
 		name: "Accounting Essentials",
@@ -66,14 +58,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		description:
 			"Inventory and purchasing package for item maintenance, warehouse control, receiving, material requests, pick lists, and purchase workflows.",
 		featureIds: [
-			"dashboard-overview",
-			"maintenance-items",
-			"maintenance-warehouse-management",
-			"inventory-receiving-report",
-			"inventory-material-request",
-			"inventory-pick-list",
-			"purchasing-purchase-request",
-			"purchasing-purchase-order",
+			"INVENTORY",
 		],
 		id: "plan-inventory-quarter",
 		name: "Inventory Operations",
@@ -110,16 +95,8 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		description:
 			"Full operating package with accounting, inventory, purchasing, reports, administration, and shared maintenance modules.",
 		featureIds: [
-			"dashboard-overview",
-			"maintenance-party-management",
-			"cash-receipt-official-receipt",
-			"cash-disbursement-request-for-payment",
-			"accounts-payable-accounts-payable-voucher",
-			"general-journal-journal-voucher",
-			"sales-sales-invoice",
-			"inventory-receiving-report",
-			"purchasing-purchase-order",
-			"maintenance-users",
+			"ACCOUNTING",
+			"INVENTORY",
 		],
 		id: "plan-full-suite-annual",
 		name: "Full Suite",
@@ -156,10 +133,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		description:
 			"Light operating package for low-volume subscribers that need a simple base plan with predictable add-ons.",
 		featureIds: [
-			"dashboard-overview",
-			"cash-receipt-provisional-receipt",
-			"cash-disbursement-petty-cash-voucher",
-			"sales-service-invoice",
+			"ACCOUNTING",
 		],
 		id: "plan-transaction-lite",
 		name: "Transaction Lite",
@@ -193,12 +167,8 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 		description:
 			"Promotional upgrade package that discounts base subscription pricing while retaining standard module access and scale rules.",
 		featureIds: [
-			"dashboard-overview",
-			"maintenance-discount-management",
-			"sales-sales-quotation",
-			"sales-sales-invoice",
-			"inventory-inventory-account",
-			"maintenance-approval",
+			"ACCOUNTING",
+			"INVENTORY",
 		],
 		id: "plan-launch-upgrade",
 		name: "Launch Upgrade",
@@ -238,7 +208,7 @@ export const InitialMasterPlanAndPackageFormValues: MasterPlanAndPackageFormValu
 	{
 		code: "",
 		description: "",
-		featureIds: MasterPlanAndPackageFeatureOptions.map((feature) => feature.id),
+		featureIds: [],
 		branchAddOnPrice: 0,
 		branchIncludedFree: 1,
 		branchReductionTiers: createEmptyReductionTiers(),

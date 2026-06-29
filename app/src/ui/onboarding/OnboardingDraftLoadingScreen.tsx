@@ -4,10 +4,14 @@ import { Check, FileStack } from "lucide-react";
 
 type OnboardingDraftLoadingScreenProps = {
 	isFullScreen?: boolean;
+	message?: string;
+	description?: string;
 };
 
 export function OnboardingDraftLoadingScreen({
 	isFullScreen = false,
+	message = "Preparing your onboarding workspace",
+	description = "Checking your account and loading the setup steps.",
 }: OnboardingDraftLoadingScreenProps) {
 	const content = (
 		<section
@@ -56,7 +60,7 @@ export function OnboardingDraftLoadingScreen({
 			</div>
 
 			<p className="mt-5 text-sm font-semibold text-darknavy">
-				Restoring your unfinished onboarding draft
+				{message}
 				<span className="draft-loader-dots" aria-hidden="true">
 					<span>.</span>
 					<span>.</span>
@@ -64,7 +68,7 @@ export function OnboardingDraftLoadingScreen({
 				</span>
 			</p>
 			<p className="mt-2 max-w-xs text-xs leading-5 text-darknavy/55">
-				Filling in the details you already started.
+				{description}
 			</p>
 		</section>
 	);

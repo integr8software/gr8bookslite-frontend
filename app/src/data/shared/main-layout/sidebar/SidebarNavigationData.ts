@@ -101,6 +101,14 @@ export const MainMasterNavigationSections: MainNavigationSection[] = [
     "master-plan-and-packages",
   ),
   directSection(
+    "master-module-systems-section",
+    "System Maintenance",
+    "/master/module-systems",
+    "settings",
+    "workspace.platform.settings",
+    "master-module-systems",
+  ),
+  directSection(
     "master-subscription-section",
     "Subscription",
     "/master/subscriptions",

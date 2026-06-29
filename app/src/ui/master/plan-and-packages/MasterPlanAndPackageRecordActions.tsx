@@ -22,6 +22,7 @@ export function MasterPlanAndPackageRecordActions({
 
 	return (
 		<ModuleActionMenu
+			className="!justify-center"
 			label={`Open actions for ${record.name}`}
 			items={[
 				{

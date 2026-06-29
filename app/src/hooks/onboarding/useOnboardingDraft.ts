@@ -43,6 +43,7 @@ function GetDraftPlan(draft: OnboardingDraft | null) {
 
 type UseOnboardingDraftParams = {
   accessToken: string | null;
+  isAuthSessionReady: boolean;
   setSelectedPlan: React.Dispatch<React.SetStateAction<PricingPlan | null>>;
   setSelectedBillingCycle: React.Dispatch<React.SetStateAction<BillingCycle>>;
   setHasPersistedBillingSetup: React.Dispatch<React.SetStateAction<boolean>>;
@@ -53,6 +54,7 @@ type UseOnboardingDraftParams = {
 
 export function useOnboardingDraft({
   accessToken,
+  isAuthSessionReady,
   setSelectedPlan,
   setSelectedBillingCycle,
   setHasPersistedBillingSetup,
@@ -63,7 +65,9 @@ export function useOnboardingDraft({
   const [hasMounted, setHasMounted] = useState(false);
   const resolvedAccessToken = accessToken;
   const [hasResolvedDraft, setHasResolvedDraft] = useState(false);
-  const isDraftLoading = !hasMounted || !hasResolvedDraft;
+  const canLoadDraft = isAuthSessionReady && Boolean(accessToken);
+  const isDraftLoading =
+    !hasMounted || !isAuthSessionReady || (canLoadDraft && !hasResolvedDraft);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -76,7 +80,7 @@ export function useOnboardingDraft({
   }, []);
 
   useEffect(() => {
-    if (!hasMounted || hasResolvedDraft) {
+    if (!hasMounted || !canLoadDraft || hasResolvedDraft) {
       return;
     }
 
@@ -171,6 +175,7 @@ export function useOnboardingDraft({
   }, [
     hasMounted,
     hasResolvedDraft,
+    canLoadDraft,
     resolvedAccessToken,
     setSelectedBillingCycle,
     setHasPersistedBillingSetup,

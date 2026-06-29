@@ -47,6 +47,7 @@ import {
 } from "@/app/src/services/company/user-sidebar/UserSidebarApi";
 import { SidebarAllowedIcons } from "@/app/src/ui/shared/main-layout/sidebar/SidebarIcons";
 import { joinClasses } from "@/app/src/ui/shared/main-layout/utils";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleRouteMap";
 
 type TreeItem = Omit<UserSidebarApiItem, "children"> & { children: TreeItem[] };
 type AvailableModule = UserSidebarCustomization["availableModules"][number];
@@ -648,7 +649,7 @@ function createLink(module: AvailableModule): TreeItem {
 		moduleId: module.id,
 		moduleCode: module.code,
 		iconName: module.iconName,
-		href: module.route,
+		href: getModuleRoute(module.code),
 		children: [],
 	};
 }
@@ -768,7 +769,8 @@ function getModuleOptions(
 				id: item.moduleId,
 				code: item.moduleCode ?? item.key,
 				name: item.label,
-				route: item.href ?? item.route ?? null,
+				legacyRoute: item.legacyRoute ?? item.route ?? item.href ?? null,
+				route: getModuleRoute(item.moduleCode),
 				iconName: item.iconName,
 			});
 		}

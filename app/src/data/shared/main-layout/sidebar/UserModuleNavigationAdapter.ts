@@ -1,4 +1,5 @@
 import type { MainAccessKey, MainIconName, MainNavigationItem, MainNavigationSection } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import { getModuleRoute, MODULE_ROUTE_FALLBACK } from "@/app/src/data/shared/modules/ModuleRouteMap";
 import type { AuthUserModuleItem } from "@/app/src/services/auth/AuthApiTypes";
 
 const SectionAccess: Record<string, MainAccessKey> = {
@@ -36,10 +37,16 @@ export function MapUserModulesToNavigation(items: AuthUserModuleItem[]): MainNav
 
 function mapItem(item: AuthUserModuleItem): MainNavigationItem {
   const firstLink = findFirstLink(item);
+  const moduleHref =
+    item.itemType === "LINK"
+      ? getModuleRoute(item.moduleCode)
+      : firstLink
+        ? getModuleRoute(firstLink.moduleCode)
+        : MODULE_ROUTE_FALLBACK;
   return {
     key: item.key,
     label: item.label,
-    href: item.href ?? firstLink?.href ?? "/",
+    href: moduleHref,
     accessKey: getAccessKey(item),
     permissionCode: item.permissionCode ?? undefined,
     requiredActions: item.requiredActions?.includes("view") ? ["view"] : undefined,

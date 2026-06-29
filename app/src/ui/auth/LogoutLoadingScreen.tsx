@@ -27,10 +27,10 @@ export function LogoutLoadingScreen() {
 					<div className="absolute bottom-5 left-1/2 h-3 w-22 -translate-x-1/2 rounded-md bg-darknavy/14" />
 				</div>
 
-				<h1 className="mt-8 text-lg font-semibold text-darknavy">
+				<h1 className="mt-8 text-base font-semibold text-darknavy">
 					Logging you out
 				</h1>
-				<p className="mt-2 text-sm font-medium leading-6 text-darknavy/60">
+				<p className="mt-2 text-xs font-medium leading-5 text-darknavy/60">
 					Signing you out safely and closing your workspace session.
 				</p>
 			</section>

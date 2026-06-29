@@ -9,13 +9,22 @@ import { IsIntentionalLogoutInProgress } from "@/app/src/services/auth/AuthSessi
 
 type UseOnboardingPlansParams = {
   accessToken: string | null;
+  isAuthSessionReady: boolean;
 };
 
-export function useOnboardingPlans({ accessToken }: UseOnboardingPlansParams) {
+export function useOnboardingPlans({
+  accessToken,
+  isAuthSessionReady,
+}: UseOnboardingPlansParams) {
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const canLoadPlans = isAuthSessionReady && Boolean(accessToken);
 
   useEffect(() => {
+    if (!canLoadPlans) {
+      return;
+    }
+
     let isActive = true;
 
     async function loadPlans() {
@@ -51,10 +60,10 @@ export function useOnboardingPlans({ accessToken }: UseOnboardingPlansParams) {
     return () => {
       isActive = false;
     };
-  }, [accessToken]);
+  }, [accessToken, canLoadPlans]);
 
   return {
     plans,
-    isPlansLoading: isLoading,
+    isPlansLoading: canLoadPlans ? isLoading : !isAuthSessionReady,
   };
 }

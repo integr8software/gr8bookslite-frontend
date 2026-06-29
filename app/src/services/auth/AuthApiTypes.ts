@@ -54,6 +54,7 @@ export type AuthUserModuleItem = {
   sortOrder?: number;
   moduleId?: number | null;
   moduleCode?: string | null;
+  legacyRoute?: string | null;
   href?: string | null;
   route?: string | null;
   permissionCode?: string | null;

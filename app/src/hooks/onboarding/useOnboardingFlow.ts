@@ -8,10 +8,15 @@ import { useOnboardingSubmission } from "./useOnboardingSubmission";
 
 export function useOnboardingFlow() {
   const accessToken = useAppStore((state) => state.accessToken);
+  const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const formState = useOnboardingFormState();
-  const { plans, isPlansLoading } = useOnboardingPlans({ accessToken });
+  const { plans, isPlansLoading } = useOnboardingPlans({
+    accessToken,
+    isAuthSessionReady,
+  });
   const { resolvedAccessToken, isDraftLoading } = useOnboardingDraft({
     accessToken,
+    isAuthSessionReady,
     setSelectedPlan: formState.setSelectedPlan,
     setSelectedBillingCycle: formState.setSelectedBillingCycle,
     setHasPersistedBillingSetup: formState.setHasPersistedBillingSetup,

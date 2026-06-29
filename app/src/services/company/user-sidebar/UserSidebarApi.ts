@@ -9,7 +9,7 @@ export type UserSidebarCustomization = {
   userId: number;
   version: number;
   items: UserSidebarApiItem[];
-  availableModules: Array<{ id: number; code: string; name: string; route?: string | null; iconName?: string | null }>;
+  availableModules: Array<{ id: number; code: string; name: string; legacyRoute?: string | null; route?: string | null; iconName?: string | null }>;
   supportedIconNames: string[];
 };
 

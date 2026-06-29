@@ -138,8 +138,16 @@ export function useMasterPlanAndPackageListPage() {
 	}
 
 	return {
+		filteredRecords,
+		hasActiveFilters:
+			query.trim().length > 0 ||
+			scopeFilter !== "ALL" ||
+			statusFilter !== "ALL",
 		isLoading: plansQuery.isLoading,
+		isRefreshing: plansQuery.isFetching && !plansQuery.isLoading,
+		lastSyncedAt: plansQuery.dataUpdatedAt,
 		query,
+		records,
 		resetFilters,
 		scopeFilter,
 		setQuery,

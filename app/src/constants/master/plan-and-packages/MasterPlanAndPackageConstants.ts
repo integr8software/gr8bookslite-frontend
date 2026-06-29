@@ -1,7 +1,4 @@
-import type { MainNavigationItem } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
-import { SidebarModuleNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarModuleRegistry";
 import type {
-	MasterPlanAndPackageFeatureOption,
 	MasterPlanAndPackageScope,
 	MasterPlanAndPackageScalePeriod,
 	MasterPlanAndPackageScaleUnit,
@@ -88,17 +85,12 @@ export const MasterPlanAndPackageScaleUnitLabels = {
 	user: "User",
 } as const satisfies Record<MasterPlanAndPackageScaleUnit, string>;
 
-export const MasterPlanAndPackageFeatureOptions =
-	SidebarModuleNavigationSections.flatMap((section) =>
-		flattenFeatureOptions(section.items, section.title, [section.title]),
-	);
-
 export const MasterPlanAndPackageTableColumns = [
 	{ key: "name", label: "Plan", className: "w-[24rem]" },
 	{ key: "status", label: "Status", className: "w-[9rem]" },
 	{ key: "pricing", label: "Pricing", className: "w-[18rem]" },
 	{ key: "scalePricing", label: "Scale Pricing", className: "w-[22rem]" },
-	{ label: "Actions", className: "w-[6rem] text-right" },
+	{ label: "Actions", className: "w-[6rem] text-center" },
 ] as const satisfies readonly (
 	| {
 			key: MasterPlanAndPackageTableColumnKey;
@@ -107,26 +99,3 @@ export const MasterPlanAndPackageTableColumns = [
 	  }
 	| { label: string; className: string }
 )[];
-
-function flattenFeatureOptions(
-	items: MainNavigationItem[],
-	section: string,
-	trail: string[],
-): MasterPlanAndPackageFeatureOption[] {
-	return items.flatMap((item) => {
-		const currentTrail = [...trail, item.label];
-
-		if (item.children?.length) {
-			return flattenFeatureOptions(item.children, section, currentTrail);
-		}
-
-		return [
-			{
-				description: currentTrail.join(" / "),
-				id: item.permissionCode ?? item.key,
-				name: item.label,
-				section,
-			},
-		];
-	});
-}

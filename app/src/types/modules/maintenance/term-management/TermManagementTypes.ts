@@ -64,6 +64,6 @@ export type TermImportProgress = {
 	total: number;
 };
 
-export type TermImportMode = "all-valid" | "selected-valid";
+export type TermImportMode = "all-rows" | "all-valid" | "selected-valid";
 
 export type ImportProgress = TermImportProgress;

@@ -91,7 +91,7 @@ export function UserRolePermissionsPanel({
             Default Access Permission
           </h3>
           <p className="mt-1 text-xs text-darknavy/55">
-            Choose a module, then set its submodule access.
+            Choose a sidebar section, then set access for its modules.
           </p>
         </div>
       </div>
@@ -140,7 +140,7 @@ export function UserRolePermissionsPanel({
                         </span>
                       </span>
                       <span className="mt-1 block text-xs font-medium text-darknavy/48">
-                        {accessModule.children.length} submodules - {enabledCount} of{" "}
+                        {accessModule.children.length} modules - {enabledCount} of{" "}
                         {totalCount} allowed
                       </span>
                     </button>
@@ -245,7 +245,7 @@ export function UserRolePermissionsPanel({
                 <table className="w-full min-w-230 border-collapse text-left">
                   <thead className="bg-darknavy/3 text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/45">
                     <tr>
-                      <th className="px-4 py-3">Submodule</th>
+                      <th className="px-4 py-3">Module</th>
                       <th className="px-4 py-3 text-center">
                         <HeaderPermissionButton
                           checked={selectedModulePermissionState.checked}

@@ -1,19 +1,14 @@
-import { ApprovalManagementModuleOptions } from "@/app/src/constants/modules/system-administration/approval-management/ApprovalManagementConstants";
 import { UserListMockData } from "@/app/src/data/modules/system-administration/user-management/users/UserListData";
 import type {
 	ApprovalApproverOption,
 	ApprovalManagementFormValues,
 	ApprovalManagementModuleCode,
+	ApprovalManagementModuleOption,
 	ApprovalManagementRecord,
 	ApprovalRoutingRuleFormValues,
 	ApprovalStageFormValues,
 	ApprovalWorkflowFeatures,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
-
-export type ApprovalManagementModuleOption = {
-	code: string;
-	name: string;
-};
 
 export const ApprovalApproverOptions: ApprovalApproverOption[] =
 	UserListMockData.filter((user) => user.status === "Active").map((user) => ({
@@ -384,7 +379,7 @@ export function resequenceApprovalRoutingRules(
 
 export function createApprovalManagementRecord(
 	values: ApprovalManagementFormValues,
-	moduleOptions: ApprovalManagementModuleOption[] = [...ApprovalManagementModuleOptions],
+	moduleOptions: ApprovalManagementModuleOption[] = [],
 ): ApprovalManagementRecord {
 	const moduleCode = values.moduleCode || "DV";
 	const stages = normalizeApprovalStages(values.stages);
@@ -406,7 +401,7 @@ export function createApprovalManagementRecord(
 export function updateApprovalManagementRecord(
 	record: ApprovalManagementRecord,
 	values: ApprovalManagementFormValues,
-	moduleOptions: ApprovalManagementModuleOption[] = [...ApprovalManagementModuleOptions],
+	moduleOptions: ApprovalManagementModuleOption[] = [],
 ): ApprovalManagementRecord {
 	const moduleCode = values.moduleCode || record.moduleCode;
 	const stages = normalizeApprovalStages(values.stages);
@@ -427,7 +422,7 @@ export function updateApprovalManagementRecord(
 
 export function getApprovalManagementModuleName(
 	moduleCode: ApprovalManagementModuleCode,
-	moduleOptions: ApprovalManagementModuleOption[] = [...ApprovalManagementModuleOptions],
+	moduleOptions: ApprovalManagementModuleOption[] = [],
 ) {
 	return (
 		moduleOptions.find((option) => option.code === moduleCode)

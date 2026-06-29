@@ -90,10 +90,14 @@ function TermManagementCellContent({
 			return <span>{formatDateTime(term.updatedAt)}</span>;
 		case "actions":
 			return (
-				<ModuleTableActions className="w-full !justify-center">
+				<ModuleTableActions
+					data-spotlight-id="maintenance-record-actions"
+					className="w-full !justify-center"
+				>
 					<ModuleTableActionButton
 						variant="view"
 						onClick={() => onViewTerm(term)}
+						data-spotlight-id="maintenance-record-view"
 						label={`View ${term.name}`}
 					/>
 					{permissions.canUpdate ? (
@@ -101,11 +105,13 @@ function TermManagementCellContent({
 							<ModuleTableActionButton
 								variant="edit"
 								onClick={() => onEditTerm(term)}
+								data-spotlight-id="maintenance-record-edit"
 								label={`Edit ${term.name}`}
 							/>
 							<ModuleTableActionButton
 								variant={nextStatus === "Inactive" ? "inactive" : "active"}
 								onClick={() => onToggleStatus(term)}
+								data-spotlight-id="maintenance-record-status"
 								label={`${statusActionLabel} ${term.name}`}
 							/>
 						</>

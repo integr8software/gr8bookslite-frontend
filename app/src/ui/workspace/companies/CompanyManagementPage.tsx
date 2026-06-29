@@ -7,7 +7,6 @@ import { WorkspaceCompaniesHref } from "@/app/src/constants/workspace/WorkspaceC
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
 import type { WorkspaceCompanyRecord } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import {
   ModuleHeader,
   moduleHeaderActionClassNames,
@@ -80,51 +79,36 @@ export function CompanyManagementPage() {
       />
       <div data-spotlight-id="workspace-company-metrics">
         <ModuleStatisticCards
+          isLoading={companyManagement.isLoading}
           items={[
-          {
-            icon: Building2,
-            label: "Total Companies",
-            helper: `${activeCompanies} active companies`,
-            tone: "blue",
-            value: companyManagement.isLoading ? (
-              <AppSkeleton className="h-7 w-14 rounded-md" />
-            ) : (
-              companyManagement.companies.length
-            ),
-          },
-          {
-            icon: Users,
-            label: "Total Users",
-            helper: "Company-level users",
-            tone: "cyan",
-            value: companyManagement.isLoading ? (
-              <AppSkeleton className="h-7 w-14 rounded-md" />
-            ) : (
-              totalUsers
-            ),
-          },
-          {
-            icon: GitBranch,
-            label: "Additional Branches",
-            helper: "Across all companies",
-            tone: "emerald",
-            value: companyManagement.isLoading ? (
-              <AppSkeleton className="h-7 w-14 rounded-md" />
-            ) : (
-              totalBranches
-            ),
-          },
-          {
-            icon: ShieldCheck,
-            label: "Workspace Scope",
-            helper: "Company, branch, and role setup",
-            tone: "violet",
-            value: companyManagement.isLoading ? (
-              <AppSkeleton className="h-7 w-20 rounded-md" />
-            ) : (
-              "Admin"
-            ),
-          },
+            {
+              icon: Building2,
+              label: "Total Companies",
+              helper: `${activeCompanies} active companies`,
+              tone: "blue",
+              value: companyManagement.companies.length,
+            },
+            {
+              icon: Users,
+              label: "Total Users",
+              helper: "Company-level users",
+              tone: "cyan",
+              value: totalUsers,
+            },
+            {
+              icon: GitBranch,
+              label: "Additional Branches",
+              helper: "Across all companies",
+              tone: "emerald",
+              value: totalBranches,
+            },
+            {
+              icon: ShieldCheck,
+              label: "Workspace Scope",
+              helper: "Company, branch, and role setup",
+              tone: "violet",
+              value: "Admin",
+            },
           ]}
         />
       </div>

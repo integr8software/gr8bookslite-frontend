@@ -70,7 +70,7 @@ export type BankImportProgress = {
 	total: number;
 };
 
-export type BankImportMode = "all-valid" | "selected-valid";
+export type BankImportMode = "all-rows" | "all-valid" | "selected-valid";
 
 export type ImportProgress = BankImportProgress;
 export type ImportMode = BankImportMode;

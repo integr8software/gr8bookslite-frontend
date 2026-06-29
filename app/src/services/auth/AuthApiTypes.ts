@@ -45,6 +45,23 @@ export type AuthSystemRole = "SUPER_ADMIN" | "STANDARD";
 
 export type AuthMembershipRole = "ADMIN" | "USER" | null;
 
+export type AuthUserModuleItem = {
+  id: number;
+  key: string;
+  label: string;
+  itemType: "SECTION" | "CONTAINER" | "LINK";
+  iconName?: string | null;
+  sortOrder?: number;
+  moduleId?: number | null;
+  moduleCode?: string | null;
+  href?: string | null;
+  route?: string | null;
+  permissionCode?: string | null;
+  requiredActions?: string[];
+  category?: unknown;
+  children: AuthUserModuleItem[];
+};
+
 export type AuthProfileAccess = {
   id?: number;
   companyId?: number | null;
@@ -58,6 +75,13 @@ export type AuthProfileAccess = {
   accessScope?: string;
   enabledModules?: string[];
   permissions?: unknown[];
+  userModules?: {
+    items: AuthUserModuleItem[];
+    byBranch?: Array<{
+      branchUnitId: number;
+      items: AuthUserModuleItem[];
+    }>;
+  };
 };
 
 export type AuthProfileResponse = {

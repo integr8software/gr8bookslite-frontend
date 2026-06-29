@@ -75,7 +75,7 @@ export function TermImportPreviewTableRow({
 				</td>
 				<td
 					className={joinClasses(
-						"sticky left-16 z-10 min-w-56 px-3 py-2 align-middle",
+						"sticky left-16 z-10 px-3 py-2 align-middle",
 						stickyCellBackground,
 					)}
 				>

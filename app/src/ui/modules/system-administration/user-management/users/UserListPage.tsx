@@ -12,6 +12,7 @@ import {
 	GetBranchUsers,
 	UpdateBranchUserRole,
 } from "@/app/src/services/modules/system-administration/user-management/users/BranchUserApi";
+import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { UserListQueryKeys } from "@/app/src/services/modules/system-administration/user-management/users/UserListQueryKeys";
 import { UserListHeader } from "@/app/src/ui/modules/system-administration/user-management/users/UserListHeader";
 import { UserListTable } from "@/app/src/ui/modules/system-administration/user-management/users/UserListTable";
@@ -88,6 +89,10 @@ export function UserListPage() {
 						),
 				);
 			}
+			queryClient.invalidateQueries({ queryKey: AuthQueryKeys.profiles() });
+			queryClient.invalidateQueries({
+				queryKey: ["user-sidebar-customization"],
+			});
 
 			toast.success("User role updated.");
 		},

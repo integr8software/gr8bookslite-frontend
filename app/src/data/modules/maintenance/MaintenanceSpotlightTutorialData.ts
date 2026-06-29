@@ -16,6 +16,8 @@ type MaintenanceSpotlightTutorialConfig = {
   readonly href: string;
   readonly includeCreateStep?: boolean;
   readonly includeFiltersStep?: boolean;
+  readonly includeImportStep?: boolean;
+  readonly includeRecordActionSteps?: boolean;
   readonly includeTableStep?: boolean;
   readonly label: string;
 };
@@ -34,6 +36,8 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
   {
     href: "/maintenance/term-management",
     addMode: "drawer",
+    includeImportStep: true,
+    includeRecordActionSteps: true,
     label: "Term management",
   },
   {
@@ -111,12 +115,6 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     addMode: "none",
     includeCreateStep: false,
     label: "Warehouse stock inquiry",
-  },
-  {
-    href: "/maintenance/warehouse-management/activity-history",
-    addMode: "none",
-    includeCreateStep: false,
-    label: "Warehouse activity history",
   },
   {
     href: "/cash-disbursement/disbursement-voucher",
@@ -218,6 +216,11 @@ export function createMaintenanceSpotlightTutorialSteps(
   includeCreateStep = true,
   includeFiltersStep = true,
   includeTableStep = true,
+  includeImportStep = false,
+  includeRecordActionSteps = false,
+  hasRecordActions = false,
+  hasRecordEditAction = false,
+  hasRecordStatusAction = false,
 ): readonly SpotlightTourStep[] {
   const steps: SpotlightTourStep[] = [
     {
@@ -236,10 +239,24 @@ export function createMaintenanceSpotlightTutorialSteps(
       description:
         "Use the primary action to add another record when your operational setup changes.",
       selectors: [
+        "[data-spotlight-id='maintenance-create-record']",
         "main a[href$='/add']",
         "main button[class*='bg-coralpink']",
         "main button[class*='bg-darknavy']",
         "main button",
+      ],
+    });
+  }
+
+  if (includeImportStep) {
+    steps.push({
+      key: "import",
+      title: "Import existing records",
+      description:
+        "Use Import when you need to bring in prepared records from a spreadsheet or copied table data.",
+      selectors: [
+        "[data-spotlight-id='maintenance-import-records']",
+        "main button[aria-label='Import']",
       ],
     });
   }
@@ -251,8 +268,22 @@ export function createMaintenanceSpotlightTutorialSteps(
       description:
         "Use search and filters to focus the list before reviewing or updating records.",
       selectors: [
+        "[data-spotlight-id='maintenance-table-filters']",
         "main input[type='search']",
         "main select",
+      ],
+    });
+
+    steps.push({
+      key: "table-options",
+      title: "Use additional table options",
+      description:
+        "Save column visibility preferences, export records, or refresh the list when you need the latest setup data.",
+      selectors: [
+        "[data-spotlight-id='maintenance-table-options']",
+        "main button[aria-label='Columns']",
+        "main button[aria-label='Export']",
+        "main button[aria-label='Refresh']",
       ],
     });
   }
@@ -265,6 +296,60 @@ export function createMaintenanceSpotlightTutorialSteps(
         "Review the available setup records and use their actions to open, edit, or update the entries you need.",
       selectors: ["main table"],
     });
+  }
+
+  if (includeRecordActionSteps) {
+    if (hasRecordActions) {
+      steps.push({
+        key: "record-view",
+        title: "Review a record",
+        description:
+          "Use View to inspect an existing record without changing its saved details.",
+        selectors: [
+          "[data-spotlight-id='maintenance-record-view']",
+          "[data-spotlight-id='maintenance-record-actions']",
+        ],
+      });
+
+      if (hasRecordEditAction) {
+        steps.push({
+          key: "record-edit",
+          title: "Edit an existing record",
+          description:
+            "Use Edit when the selected record needs updated setup details.",
+          selectors: [
+            "[data-spotlight-id='maintenance-record-edit']",
+            "[data-spotlight-id='maintenance-record-actions']",
+          ],
+        });
+      }
+
+      if (hasRecordStatusAction) {
+        steps.push({
+          key: "record-status",
+          title: "Activate or deactivate records",
+          description:
+            "Use the status action to activate records that should be available, or deactivate records that should no longer be selected.",
+          selectors: [
+            "[data-spotlight-id='maintenance-record-status']",
+            "[data-spotlight-id='maintenance-record-actions']",
+          ],
+        });
+      }
+    } else {
+      steps.push({
+        key: "empty-records",
+        title: "Start with your first record",
+        description:
+          "There are no rows to edit or activate yet. Add a record first, or import prepared records when you already have setup data.",
+        selectors: [
+          "[data-spotlight-id='maintenance-create-record']",
+          "[data-spotlight-id='maintenance-import-records']",
+          "[data-spotlight-id='maintenance-empty-records']",
+          "main table",
+        ],
+      });
+    }
   }
 
   return steps;
@@ -314,9 +399,24 @@ export function createMaintenanceAddSpotlightTutorialSteps(
 
 export function createMaintenanceDrawerSpotlightTutorialSteps(
   label: string,
+  includeImportStep = false,
+  includeRecordActionSteps = false,
+  hasRecordActions = false,
+  hasRecordEditAction = false,
+  hasRecordStatusAction = false,
 ): readonly SpotlightTourStep[] {
   return [
-    ...createMaintenanceSpotlightTutorialSteps(label),
+    ...createMaintenanceSpotlightTutorialSteps(
+      label,
+      true,
+      true,
+      true,
+      includeImportStep,
+      includeRecordActionSteps,
+      hasRecordActions,
+      hasRecordEditAction,
+      hasRecordStatusAction,
+    ),
     ...createMaintenanceAddDrawerSpotlightTutorialSteps(label),
   ];
 }

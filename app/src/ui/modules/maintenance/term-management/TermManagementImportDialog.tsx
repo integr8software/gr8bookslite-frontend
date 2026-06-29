@@ -17,6 +17,10 @@ import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppCon
 import type { TermManagement } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
+import {
+	ModuleImportResizableColumnHeader,
+	clampImportColumnWidth,
+} from "@/app/src/ui/shared/module/ModuleImportResizableColumnHeader";
 
 import {
 	ImportBatchSize,
@@ -67,9 +71,19 @@ export function TermManagementImportDialog({
 	const [previewRows, setPreviewRows] = useState<TermImportPreviewRow[]>([]);
 	const [previewPage, setPreviewPage] = useState(1);
 	const [progress, setProgress] = useState<ImportProgress | null>(null);
+	const [pristineManualRowIds, setPristineManualRowIds] = useState<Set<string>>(
+		() => new Set(),
+	);
 	const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(false);
 	const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
-	const [importMode, setImportMode] = useState<TermImportMode>("all-valid");
+	const [importMode, setImportMode] = useState<TermImportMode>("all-rows");
+	const [columnWidths, setColumnWidths] = useState<
+		Record<TermImportColumnId, number>
+	>({
+		name: 224,
+		datemode: 160,
+		period: 128,
+	});
 	const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(
 		() => new Set(),
 	);
@@ -86,22 +100,37 @@ export function TermManagementImportDialog({
 		() => validateTermImportRows(previewRows, existingTermNames),
 		[existingTermNames, previewRows],
 	);
-	const invalidRows = validatedRows.filter((row) => rowHasErrors(row));
+	const displayedRows = useMemo(
+		() =>
+			validatedRows.map((row) =>
+				pristineManualRowIds.has(row.id)
+					? { ...row, cellErrors: {}, cellWarnings: {}, rowErrors: [] }
+					: row,
+			),
+		[pristineManualRowIds, validatedRows],
+	);
+	const invalidRows = displayedRows.filter((row) => rowHasErrors(row));
+	const actualInvalidRows = validatedRows.filter((row) => rowHasErrors(row));
 	const validRows = validatedRows.filter((row) => !rowHasErrors(row));
 	const validSelectedRows = validRows.filter((row) =>
 		selectedRowIds.has(row.id),
 	);
 	const importableRows =
-		importMode === "selected-valid" ? validSelectedRows : validRows;
+		importMode === "selected-valid"
+			? validSelectedRows
+			: importMode === "all-valid"
+				? validRows
+				: validatedRows;
 	const canImport = importableRows.length > 0 && !progress;
+	const canImportAllRows = validatedRows.length > 0 && !progress;
 	const canImportAllValid = validRows.length > 0 && !progress;
 	const canImportSelectedValid = validSelectedRows.length > 0 && !progress;
 	const totalPages = Math.max(
 		1,
-		Math.ceil(validatedRows.length / PreviewPageSize),
+		Math.ceil(displayedRows.length / PreviewPageSize),
 	);
 	const safePreviewPage = Math.min(previewPage, totalPages);
-	const visibleRows = validatedRows.slice(
+	const visibleRows = displayedRows.slice(
 		(safePreviewPage - 1) * PreviewPageSize,
 		safePreviewPage * PreviewPageSize,
 	);
@@ -109,6 +138,15 @@ export function TermManagementImportDialog({
 		progress && progress.total > 0
 			? Math.round((progress.imported / progress.total) * 100)
 			: 0;
+	const importTableWidth =
+		64 + ImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
+
+	function updateColumnWidth(field: TermImportColumnId, width: number) {
+		setColumnWidths((current) => ({
+			...current,
+			[field]: clampImportColumnWidth(width),
+		}));
+	}
 
 	useEffect(() => {
 		if (!isSelectionMenuOpen) {
@@ -176,7 +214,9 @@ export function TermManagementImportDialog({
 		setImportError(null);
 		setPreviewRows([]);
 		setPreviewPage(1);
+		setPristineManualRowIds(new Set());
 		setSelectedRowIds(new Set());
+		setImportMode("all-rows");
 		setIsSelectionMenuOpen(false);
 		setIsImportMenuOpen(false);
 	}
@@ -198,6 +238,13 @@ export function TermManagementImportDialog({
 				skippedCount = filteredRows.skippedCount;
 				nextRowCount = nextRows.length;
 				setPreviewRows(nextRows);
+				setPristineManualRowIds((current) => {
+					const next = new Set(current);
+
+					uniqueRows.forEach((row) => next.delete(row.id));
+
+					return next;
+				});
 				setSelectedRowIds(new Set());
 				setPreviewPage(
 					Math.max(1, Math.ceil(nextRows.length / PreviewPageSize)),
@@ -212,6 +259,7 @@ export function TermManagementImportDialog({
 
 				nextRowCount = nextRows.length;
 				setPreviewRows(nextRows);
+				setPristineManualRowIds(new Set());
 				setPreviewPage(1);
 				setSelectedRowIds(new Set());
 			}
@@ -231,10 +279,10 @@ export function TermManagementImportDialog({
 	}
 
 	function addBlankRow() {
-		setPreviewRows((rows) => [
-			...rows,
-			createBlankImportRow(getNextImportRowNumber(rows)),
-		]);
+		const blankRow = createBlankImportRow(getNextImportRowNumber(previewRows));
+
+		setPreviewRows([...previewRows, blankRow]);
+		setPristineManualRowIds((current) => new Set(current).add(blankRow.id));
 		setSelectedRowIds(new Set());
 		setImportError(null);
 	}
@@ -250,6 +298,13 @@ export function TermManagementImportDialog({
 
 		setImportError(null);
 		setPreviewRows(nextRows);
+		setPristineManualRowIds((current) => {
+			const next = new Set(current);
+
+			selectedRowIds.forEach((rowId) => next.delete(rowId));
+
+			return next;
+		});
 		setSelectedRowIds(new Set());
 		setPreviewPage((page) =>
 			Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))),
@@ -295,6 +350,17 @@ export function TermManagementImportDialog({
 		field: TermImportColumnId,
 		value: string,
 	) {
+		setPristineManualRowIds((current) => {
+			if (!current.has(rowId)) {
+				return current;
+			}
+
+			const next = new Set(current);
+
+			next.delete(rowId);
+			return next;
+		});
+
 		if (field === "period" && value.trim() && Number(value) < 0) {
 			return;
 		}
@@ -375,6 +441,17 @@ export function TermManagementImportDialog({
 		if (pastedRows.length === 0) {
 			return;
 		}
+
+		setPristineManualRowIds((current) => {
+			if (!current.has(rowId)) {
+				return current;
+			}
+
+			const next = new Set(current);
+
+			next.delete(rowId);
+			return next;
+		});
 
 		const startColumnIndex = ImportFieldOrder.indexOf(field);
 		const isSingleCellPaste =
@@ -471,10 +548,22 @@ export function TermManagementImportDialog({
 
 	async function handleImport(mode = importMode) {
 		const rowsToImport =
-			mode === "selected-valid" ? validSelectedRows : validRows;
+			mode === "selected-valid"
+				? validSelectedRows
+				: mode === "all-valid"
+					? validRows
+					: validatedRows;
 
 		if (mode === "selected-valid" && selectedRowIds.size === 0) {
 			setImportError("Select at least one valid row to import.");
+			return;
+		}
+
+		if (mode === "all-rows" && actualInvalidRows.length > 0) {
+			setPristineManualRowIds(new Set());
+			setImportError(
+				`Fix or remove ${actualInvalidRows.length} incorrect ${actualInvalidRows.length === 1 ? "row" : "rows"} before importing. No rows were imported.`,
+			);
 			return;
 		}
 
@@ -526,6 +615,13 @@ export function TermManagementImportDialog({
 		);
 
 		setPreviewRows(nextRows);
+		setPristineManualRowIds((current) => {
+			const nextSelected = new Set(current);
+
+			importedRowIds.forEach((rowId) => nextSelected.delete(rowId));
+
+			return nextSelected;
+		});
 		setSelectedRowIds((current) => {
 			const nextSelected = new Set(current);
 
@@ -533,6 +629,7 @@ export function TermManagementImportDialog({
 
 			return nextSelected;
 		});
+		setImportMode("all-rows");
 		setPreviewPage((page) =>
 			Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))),
 		);
@@ -599,7 +696,7 @@ export function TermManagementImportDialog({
 						</p>
 						<div className="flex flex-wrap gap-2 font-semibold text-darknavy/60">
 							<span>Rows: {validatedRows.length}</span>
-							<span>Valid: {validatedRows.length - invalidRows.length}</span>
+							<span>Valid: {validRows.length}</span>
 							<span>Incorrect: {invalidRows.length}</span>
 						</div>
 					</div>
@@ -663,12 +760,14 @@ export function TermManagementImportDialog({
 							)}
 							{importMode === "selected-valid"
 								? "Import Selected"
-								: "Import Data"}
+								: importMode === "all-valid"
+									? "Import Valid"
+									: "Import Data"}
 						</button>
 						<button
 							type="button"
 							onClick={() => setIsImportMenuOpen((isOpen) => !isOpen)}
-							disabled={!canImportAllValid && !canImportSelectedValid}
+							disabled={!canImportAllRows && !canImportSelectedValid}
 							className="inline-flex h-11 w-11 items-center justify-center rounded-r-md border-l border-white/25 bg-skyblue text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:h-10"
 							aria-label="Choose import type"
 							aria-expanded={isImportMenuOpen}
@@ -683,9 +782,18 @@ export function TermManagementImportDialog({
 								<button
 									type="button"
 									role="menuitem"
+									onClick={() => setImportSelection("all-rows")}
+									disabled={!canImportAllRows}
+									className="block w-full px-3 py-2 text-left hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
+								>
+									Import all rows ({validatedRows.length})
+								</button>
+								<button
+									type="button"
+									role="menuitem"
 									onClick={() => setImportSelection("all-valid")}
 									disabled={!canImportAllValid}
-									className="block w-full px-3 py-2 text-left hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
+									className="block w-full border-t border-darknavy/8 px-3 py-2 text-left hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
 								>
 									Import all valid rows ({validRows.length})
 								</button>
@@ -739,12 +847,21 @@ export function TermManagementImportDialog({
 					aria-label="Import preview grid. Paste copied Excel rows here."
 				>
 					<div className="min-h-36 flex-1 overflow-auto">
-						<table className="w-full min-w-[44rem] text-left text-sm text-darknavy">
+						<table
+							className="table-fixed text-left text-sm text-darknavy"
+							style={{ width: `max(100%, ${importTableWidth}px)` }}
+						>
+							<colgroup>
+								<col style={{ width: 64 }} />
+								{ImportFieldOrder.map((field) => (
+									<col key={field} style={{ width: columnWidths[field] }} />
+								))}
+							</colgroup>
 							<thead className="text-xs uppercase text-darknavy/55">
 								<tr>
 									<th
 										ref={selectionMenuRef}
-										className="sticky left-0 top-0 z-40 w-16 bg-slate-50 px-2 py-2"
+										className="module-import-preview-header sticky left-0 top-0 z-40 w-16 px-2 py-2"
 									>
 										<input
 											type="checkbox"
@@ -793,15 +910,28 @@ export function TermManagementImportDialog({
 											</div>
 										) : null}
 									</th>
-									<th className="sticky left-16 top-0 z-40 min-w-56 bg-slate-50 px-3 py-2">
+									<ModuleImportResizableColumnHeader
+										className="z-40 px-3"
+										left={64}
+										width={columnWidths.name}
+										onResize={(width) => updateColumnWidth("name", width)}
+									>
 										Name
-									</th>
-									<th className="sticky top-0 z-30 w-40 bg-slate-50 px-3 py-2">
+									</ModuleImportResizableColumnHeader>
+									<ModuleImportResizableColumnHeader
+										className="px-3"
+										width={columnWidths.datemode}
+										onResize={(width) => updateColumnWidth("datemode", width)}
+									>
 										Datemode
-									</th>
-									<th className="sticky top-0 z-30 w-32 bg-slate-50 px-3 py-2">
+									</ModuleImportResizableColumnHeader>
+									<ModuleImportResizableColumnHeader
+										className="px-3"
+										width={columnWidths.period}
+										onResize={(width) => updateColumnWidth("period", width)}
+									>
 										Period
-									</th>
+									</ModuleImportResizableColumnHeader>
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-darknavy/8 bg-white">

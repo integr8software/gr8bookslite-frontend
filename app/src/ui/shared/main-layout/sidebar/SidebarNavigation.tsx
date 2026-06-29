@@ -6,6 +6,7 @@ import type {
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import {
 	MainIcons,
+	SidebarAllowedIcons,
 	hasSidebarItemIcon,
 	renderSidebarItemIcon,
 } from "./SidebarIcons";
@@ -86,6 +87,14 @@ export function SidebarSection({
 		section.items[0]?.href === section.href
 			? section.items[0]
 			: null;
+	const SectionIcon =
+		section.iconName === null
+			? directItem
+				? SidebarAllowedIcons.link
+				: SidebarAllowedIcons.folder
+			: section.iconName
+				? SidebarAllowedIcons[section.iconName] ?? Icon
+				: Icon;
 	const isDirectActive = directItem
 		? pathMatches(directItem.href, activeHref)
 		: false;
@@ -125,7 +134,7 @@ export function SidebarSection({
 							: "text-darknavy hover:bg-darknavy/5",
 					)}
 				>
-					<Icon
+					<SectionIcon
 						className={joinClasses(
 							"h-4 w-4 shrink-0",
 							isDirectActive
@@ -153,7 +162,7 @@ export function SidebarSection({
 				aria-expanded={isExpanded}
 				className="flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-left text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
 			>
-				<Icon
+				<SectionIcon
 					className="h-4 w-4 shrink-0 text-darknavy/65"
 					aria-hidden="true"
 				/>
@@ -227,13 +236,20 @@ export function SidebarItem({
 	onToggleExpandedKey,
 }: SidebarItemProps) {
 	const hasChildren = Boolean(item.children?.length);
+	const hasNoIcon = item.iconName === null;
+	const shouldShowDefaultFolder = hasNoIcon && hasChildren;
+	const shouldShowDefaultFile = hasNoIcon && !hasChildren && depth < 0;
 	const shouldShowIcon =
-		hasChildren ||
-		hasSidebarItemIcon(item) ||
-		item.key === "system-administration-form-signatory" ||
-		item.accessKey === "maintenance.party" ||
-		(item.accessKey === "maintenance.warehouse" && depth === 0);
-	const shouldShowModuleDot = !shouldShowIcon;
+		hasNoIcon
+			? shouldShowDefaultFolder || shouldShowDefaultFile
+			: hasChildren ||
+				hasSidebarItemIcon(item) ||
+				item.key === "system-administration-form-signatory" ||
+				item.accessKey === "maintenance.party" ||
+				(item.accessKey === "maintenance.warehouse" && depth === 0);
+	const shouldShowModuleDot = hasNoIcon
+		? !shouldShowDefaultFolder && !shouldShowDefaultFile
+		: !shouldShowIcon;
 	const childItems = item.children ?? [];
 	const isExpanded = expandedKeys.includes(item.key);
 	const isExactActive = activeHref === item.href;
@@ -302,6 +318,9 @@ export function SidebarItem({
 								isAncestorActive,
 							)
 						: null}
+					{shouldShowModuleDot ? (
+						<SidebarModuleDot isActive={isActive || isAncestorActive} />
+					) : null}
 					<span className="min-w-0 flex-1 truncate">
 						{item.label}
 					</span>
@@ -378,17 +397,21 @@ export function SidebarItem({
 				? renderSidebarItemIcon(item, isActive, false)
 				: null}
 			{shouldShowModuleDot ? (
-				<span
-					className={joinClasses(
-						"h-1.5 w-1.5 shrink-0 rounded-full transition-colors group-hover:bg-skyblue",
-						isActive
-							? "bg-skyblue"
-							: "bg-darknavy/30",
-					)}
-					aria-hidden="true"
-				/>
+				<SidebarModuleDot isActive={isActive} />
 			) : null}
 			<span className="min-w-0 flex-1 truncate">{item.label}</span>
 		</Link>
+	);
+}
+
+function SidebarModuleDot({ isActive }: { isActive: boolean }) {
+	return (
+		<span
+			className={joinClasses(
+				"h-1.5 w-1.5 shrink-0 rounded-full transition-colors group-hover:bg-skyblue",
+				isActive ? "bg-skyblue" : "bg-darknavy/30",
+			)}
+			aria-hidden="true"
+		/>
 	);
 }

@@ -30,7 +30,7 @@ function collectModuleOptions(
 		if (item.module && !excludedKeys.has(item.key)) {
 			options.set(item.key, {
 				label: item.label,
-				value: item.key,
+				value: item.permissionCode ?? item.key,
 			});
 		}
 

@@ -123,7 +123,7 @@ function flattenFeatureOptions(
 		return [
 			{
 				description: currentTrail.join(" / "),
-				id: item.key,
+				id: item.permissionCode ?? item.key,
 				name: item.label,
 				section,
 			},

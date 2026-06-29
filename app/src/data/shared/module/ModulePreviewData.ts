@@ -16,6 +16,7 @@ import {
   UserRound,
   WalletCards,
   Warehouse,
+  BarChart3,
 } from "lucide-react";
 
 export type ModulePreviewMetric = {

@@ -1,5 +1,10 @@
 export type ApprovalManagementModuleCode = string;
 
+export type ApprovalManagementModuleOption = {
+	code: ApprovalManagementModuleCode;
+	name: string;
+};
+
 export type ApprovalStageRequirement = "any" | "all";
 
 export type ApprovalManagementStatus = "Active" | "Inactive";

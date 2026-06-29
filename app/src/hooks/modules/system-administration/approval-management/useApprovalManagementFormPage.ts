@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import {
 	useParams,
 	usePathname,
@@ -30,12 +30,14 @@ import type {
 	ApprovalManagementFormErrors,
 	ApprovalManagementFormValues,
 	ApprovalManagementModuleCode,
+	ApprovalManagementModuleOption,
 	ApprovalRoutingRuleFormValues,
 	ApprovalStageFormValues,
 	ApprovalWorkflowFeatureKey,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
 import { validateApprovalManagementForm } from "@/app/src/validations/modules/system-administration/approval-management/ApprovalManagementValidation";
 import { useApprovalManagementStore } from "@/app/src/hooks/modules/system-administration/approval-management/useApprovalManagement";
+import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetup";
 
 export function useApprovalManagementFormPage() {
 	const params = useParams<{ recordId?: string }>();
@@ -49,6 +51,26 @@ export function useApprovalManagementFormPage() {
 		updateWorkflow,
 		workflows,
 	} = useApprovalManagementStore();
+	const { setups: transactionNumberSetups } = useTransactionNumberSetupStore();
+	const moduleOptions = useMemo<ApprovalManagementModuleOption[]>(() => {
+		const sourceOptions = transactionNumberSetups.length
+			? transactionNumberSetups.map((setup) => ({
+					code: setup.moduleCode,
+					name: setup.moduleName,
+				}))
+			: workflows.map((workflow) => ({
+					code: workflow.moduleCode,
+					name: workflow.moduleName,
+				}));
+
+		return sourceOptions
+			.filter(
+				(option, index, options) =>
+					options.findIndex((current) => current.code === option.code) ===
+					index,
+			)
+			.sort((first, second) => first.name.localeCompare(second.name));
+	}, [transactionNumberSetups, workflows]);
 	const mode = getActionMode(pathname);
 	const existingWorkflow = workflows.find(
 		(workflow) => workflow.id === params.recordId,
@@ -266,12 +288,14 @@ export function useApprovalManagementFormPage() {
 		}
 
 		if (mode === "edit" && existingWorkflow) {
-			updateWorkflow(updateApprovalManagementRecord(existingWorkflow, values));
+			updateWorkflow(
+				updateApprovalManagementRecord(existingWorkflow, values, moduleOptions),
+			);
 			router.push(submitHref);
 			return;
 		}
 
-		addWorkflow(createApprovalManagementRecord(values));
+		addWorkflow(createApprovalManagementRecord(values, moduleOptions));
 		router.push(ApprovalManagementHref);
 	}
 
@@ -300,6 +324,7 @@ export function useApprovalManagementFormPage() {
 		isMutating,
 		isReadonly,
 		mode,
+		moduleOptions,
 		needsRecord: mode === "edit" || mode === "view",
 		toggleRoutingRuleStage,
 		updateAmountConditionMode,

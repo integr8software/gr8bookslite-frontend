@@ -105,6 +105,7 @@ function ApprovalManagementFormPageInner() {
 				errors={page.errors}
 				hasAmountCondition={page.hasAmountCondition}
 				isReadonly={page.isReadonly}
+				moduleOptions={page.moduleOptions}
 				values={page.values}
 				onAmountConditionModeChange={page.updateAmountConditionMode}
 				onInputChange={page.handleInputChange}

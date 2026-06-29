@@ -17,7 +17,6 @@ import {
 } from "@/app/src/constants/modules/system-administration/approval-management/ApprovalManagementConstants";
 import {
 	ApprovalApproverOptions,
-	type ApprovalManagementModuleOption,
 	createAmountConditionApprovalRoutingRules,
 	createApprovalManagementFormValues,
 	createApprovalManagementInitialFormValues,
@@ -40,6 +39,7 @@ import type {
 	ApprovalManagementFormErrors,
 	ApprovalManagementFormValues,
 	ApprovalManagementModuleCode,
+	ApprovalManagementModuleOption,
 	ApprovalManagementStatus,
 	ApprovalManagementTableColumnKey,
 	ApprovalRoutingRuleFormValues,

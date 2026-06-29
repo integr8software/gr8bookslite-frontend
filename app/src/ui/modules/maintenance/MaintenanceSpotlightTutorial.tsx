@@ -121,7 +121,9 @@ export function MaintenanceSpotlightTutorial() {
 
     scheduleRecordActionStateUpdate();
 
-    const observer = new MutationObserver(scheduleRecordActionStateUpdate);
+    const observer = new MutationObserver(() => {
+      scheduleRecordActionStateUpdate();
+    });
     observer.observe(document.body, {
       childList: true,
       subtree: true,
@@ -144,7 +146,9 @@ export function MaintenanceSpotlightTutorial() {
       ariaLabel={`${config.label} tutorial`}
       badge={
         <SpotlightTourBadge>
-          {href.startsWith("/maintenance/") ? "Maintenance guide" : "Module guide"}
+          {href.startsWith("/maintenance/")
+            ? "Maintenance guide"
+            : "Module guide"}
         </SpotlightTourBadge>
       }
       isOpen={isOpen}
@@ -160,17 +164,17 @@ export function MaintenanceSpotlightTutorial() {
                 hasRecordEditAction,
                 hasRecordStatusAction,
               )
-          : createMaintenanceSpotlightTutorialSteps(
-              config.label,
-              includeCreateStep,
-              includeFiltersStep,
-              includeTableStep,
-              includeImportStep,
-              includeRecordActionSteps,
-              hasRecordActions,
-              hasRecordEditAction,
-              hasRecordStatusAction,
-            )
+            : createMaintenanceSpotlightTutorialSteps(
+                config.label,
+                includeCreateStep,
+                includeFiltersStep,
+                includeTableStep,
+                includeImportStep,
+                includeRecordActionSteps,
+                hasRecordActions,
+                hasRecordEditAction,
+                hasRecordStatusAction,
+              )
       }
       onStepEnter={handleStepEnter}
       onComplete={() => {

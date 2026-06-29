@@ -3,7 +3,6 @@ import { CircleDollarSign, ListChecks } from "lucide-react";
 import {
 	ApprovalAmountConditionModeOptions,
 	ApprovalAmountConditionOperatorOptions,
-	ApprovalManagementModuleOptions,
 	ApprovalManagementStatusOptions,
 	ApprovalStageCountOptions,
 	ApprovalStageRequirementOptions,
@@ -14,6 +13,7 @@ import type {
 	ApprovalManagementFormErrors,
 	ApprovalManagementFormValues,
 	ApprovalManagementModuleCode,
+	ApprovalManagementModuleOption,
 	ApprovalRoutingRuleFormErrors,
 	ApprovalRoutingRuleFormValues,
 	ApprovalStageFormValues,
@@ -30,6 +30,7 @@ type ApprovalManagementFormProps = {
 	errors: ApprovalManagementFormErrors;
 	hasAmountCondition: boolean;
 	isReadonly: boolean;
+	moduleOptions: ApprovalManagementModuleOption[];
 	values: ApprovalManagementFormValues;
 	onAmountConditionModeChange: (hasAmountCondition: boolean) => void;
 	onInputChange: ChangeEventHandler<
@@ -61,6 +62,7 @@ export function ApprovalManagementForm({
 	errors,
 	hasAmountCondition,
 	isReadonly,
+	moduleOptions,
 	onAmountConditionModeChange,
 	onInputChange,
 	onModuleCodeChange,
@@ -106,7 +108,7 @@ export function ApprovalManagementForm({
 							className={fieldClassName}
 						>
 							<option value="">Select module</option>
-							{ApprovalManagementModuleOptions.map((option) => (
+							{moduleOptions.map((option) => (
 								<option key={option.code} value={option.code}>
 									{option.name} ({option.code})
 								</option>

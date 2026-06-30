@@ -41,13 +41,6 @@ export const ItemCategorySystemDefaultAccountingSetup: ItemCategoryAccountingSet
 		expenseAccount: "Expense - Operating Supplies",
 	};
 
-export const ItemSupplierOptions = [
-	"TechSource Inc.",
-	"Global Supply Co.",
-	"Prime Distributors",
-	"Northline Trading",
-] as const;
-
 export const ItemWarehouseOptions = [
 	"Main Warehouse",
 	"North Warehouse",

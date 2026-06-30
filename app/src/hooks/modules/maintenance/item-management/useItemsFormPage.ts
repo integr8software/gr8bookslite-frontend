@@ -4,7 +4,6 @@ import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
-	ItemSupplierOptions,
 	ItemUomDictionary,
 	ItemsHref,
 } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
@@ -27,8 +26,10 @@ import type {
 	ItemSupplierAssignment,
 	ItemUomConversion,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
+import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 import { validateItemForm } from "@/app/src/validations/modules/maintenance/item-management/ItemManagementValidation";
+import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
 import { useWarehouseManagementStore } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseManagement";
 import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item-management/useItemManagement";
 
@@ -45,6 +46,9 @@ export function useItemsFormPage() {
 	const pathname = usePathname();
 	const router = useRouter();
 	const store = useItemManagementStore();
+	const responsibilityCenters = useResponsibilityCenterStore(
+		(state) => state.centers,
+	);
 	const { warehouses } = useWarehouseManagementStore();
 	const { addItem, isMutating, items, updateItem } = store;
 	const categoryRecords = store.getSetupRecords("category");
@@ -233,19 +237,25 @@ export function useItemsFormPage() {
 			return;
 		}
 
-		const firstAttribute = store.itemAttributes.find(
-			(attribute) => attribute.status === "Active",
-		);
+		if (values.attributeAssignments.length >= 5) {
+			toast.error("You can add up to 5 item attributes.");
+			return;
+		}
+
+		if (
+			values.attributeAssignments.some(
+				(assignment) => !assignment.attributeId,
+			)
+		) {
+			toast.error("Select an attribute before adding another row.");
+			return;
+		}
 
 		setValues((current) => ({
 			...current,
 			attributeAssignments: [
 				...current.attributeAssignments,
-				{
-					id: `item-attribute-${Date.now()}`,
-					attributeId: firstAttribute?.id ?? "",
-					value: firstAttribute?.values[0] ?? "",
-				},
+				createEmptyAttributeAssignment(),
 			],
 		}));
 	}
@@ -267,6 +277,17 @@ export function useItemsFormPage() {
 				}
 
 				if (field === "attributeId") {
+					if (
+						value &&
+						current.attributeAssignments.some(
+							(currentAssignment) =>
+								currentAssignment.id !== assignmentId &&
+								currentAssignment.attributeId === value,
+						)
+					) {
+						return assignment;
+					}
+
 					const attribute = store.itemAttributes.find(
 						(currentAttribute) => currentAttribute.id === value,
 					);
@@ -292,6 +313,24 @@ export function useItemsFormPage() {
 			...current,
 			attributeAssignments: current.attributeAssignments.filter(
 				(assignment) => assignment.id !== assignmentId,
+			),
+		}));
+	}
+
+	function reorderAttributeAssignment(
+		assignmentId: string,
+		overAssignmentId: string,
+	) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			attributeAssignments: reorderItemAttributeAssignments(
+				current.attributeAssignments,
+				assignmentId,
+				overAssignmentId,
 			),
 		}));
 	}
@@ -453,9 +492,16 @@ export function useItemsFormPage() {
 		removeTag,
 		removeSupplier,
 		removeUomConversion,
+		reorderAttributeAssignment,
+		responsibilityCenterOptions:
+			createResponsibilityCenterOptions(responsibilityCenters),
 		setIsStatusDialogOpen,
 		statusOptions: createSimpleOptions(["Active", "Inactive"]),
-		supplierOptions: createSimpleOptions([...ItemSupplierOptions]),
+		supplierOptions: createSimpleOptions(
+			store.itemSuppliers
+				.filter((supplier) => supplier.status === "Active")
+				.map((supplier) => supplier.name),
+		),
 		uomOptions: ItemUomDictionary.map((uom) => ({
 			description: `${uom.code} | ${uom.quantityKind}`,
 			name: uom.description,
@@ -474,6 +520,40 @@ export function useItemsFormPage() {
 		warehouseOptions: createWarehouseOptions(warehouses),
 		reorderSupplier,
 	};
+}
+
+function createEmptyAttributeAssignment(): ItemAttributeAssignment {
+	return {
+		id: `item-attribute-${Date.now()}`,
+		attributeId: "",
+		value: "",
+	};
+}
+
+function reorderItemAttributeAssignments(
+	assignments: ItemAttributeAssignment[],
+	recordId: string,
+	overRecordId: string,
+) {
+	const currentIndex = assignments.findIndex((record) => record.id === recordId);
+	const nextIndex = assignments.findIndex((record) => record.id === overRecordId);
+
+	if (
+		currentIndex === -1 ||
+		nextIndex === -1 ||
+		currentIndex === nextIndex ||
+		nextIndex < 0 ||
+		nextIndex >= assignments.length
+	) {
+		return assignments;
+	}
+
+	const nextRecords = [...assignments];
+	const [record] = nextRecords.splice(currentIndex, 1);
+
+	nextRecords.splice(nextIndex, 0, record);
+
+	return nextRecords;
 }
 
 function reorderSuppliers(
@@ -637,6 +717,21 @@ function createSimpleOptions(options: string[]) {
 		name: option,
 		value: option,
 	}));
+}
+
+function createResponsibilityCenterOptions(
+	centers: ResponsibilityCenter[],
+): ItemSetupOption[] {
+	return centers
+		.filter(
+			(center) =>
+				center.status === "Active" && center.financialType === "Cost Center",
+		)
+		.map((center) => ({
+			description: `${center.code} | ${center.category}`,
+			name: center.name,
+			value: center.name,
+		}));
 }
 
 function createWarehouseOptions(warehouses: WarehouseRecord[]) {

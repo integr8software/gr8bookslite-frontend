@@ -5,9 +5,9 @@ import type {
   MasterAuditLogTableColumnKey,
 } from "@/app/src/types/master/audit-logs/MasterAuditLogTypes";
 import {
-  MainCompanySearchItems,
   MainWorkspaceSearchItems,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarNavigationData";
+import { MainModuleCatalogSearchItems } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
 export const MasterAuditLogsHref = "/master/audit-logs";
 
@@ -48,7 +48,7 @@ export const MasterAuditLogResultOptions = [
 
 export const MasterAuditLogModuleOptions = Array.from(
   new Set(
-    [...MainWorkspaceSearchItems, ...MainCompanySearchItems].map(
+    [...MainWorkspaceSearchItems, ...MainModuleCatalogSearchItems].map(
       (item) => item.label,
     ),
   ),

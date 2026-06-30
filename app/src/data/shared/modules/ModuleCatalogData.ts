@@ -5,6 +5,7 @@ import type {
   MainNavigationSection,
   MainProductKey,
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import { flattenSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 
 export type MainModuleAction = Extract<
   MainAccessAction,
@@ -78,7 +79,7 @@ const PermissionCodeByNavigationKey: Record<string, string> = {
   "maintenance-mail": "MM",
 };
 
-export const SidebarModuleNavigationSections: MainNavigationSection[] = [
+export const MainModuleCatalogSections: MainNavigationSection[] = [
   section("dashboard", "Dashboard", "/dashboard", "dashboard", "dashboard", [
     moduleItem(
       "dashboard-overview",
@@ -692,6 +693,10 @@ export const SidebarModuleNavigationSections: MainNavigationSection[] = [
     ],
   ),
 ];
+
+export const MainModuleCatalogSearchItems = flattenSections(
+  MainModuleCatalogSections,
+);
 
 function section(
   key: string,

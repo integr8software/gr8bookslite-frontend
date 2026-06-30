@@ -7,7 +7,7 @@ const TermsOfServiceForm = () => {
 		<main>
 			<LandingDocumentHeader
 				title="Terms of Service"
-				lastUpdated="May 6, 2025"
+				lastUpdated="June 30, 2026"
 				tone="indigo"
 			/>
 
@@ -163,7 +163,28 @@ const TermsOfServiceForm = () => {
 					{/* 10 */}
 					<div>
 						<h2 className="font-bold text-lg">
-							10. Changes to terms
+							10. Company data retention and deletion
+						</h2>
+						<p className="mt-1">
+							If a company workspace remains inactive for six (6)
+							months, or if the account is terminated, {AppName}{" "}
+							may permanently delete or wipe out the inactive
+							company data from active systems. Any backup that
+							may exist is for operational recovery only and does
+							not guarantee that inactive company data will remain
+							available to you after the retention period expires.
+							If your subscription expires, access to company data
+							may be suspended until you subscribe again or renew
+							your subscription. You are responsible for exporting
+							any needed records before the retention period
+							expires.
+						</p>
+					</div>
+
+					{/* 11 */}
+					<div>
+						<h2 className="font-bold text-lg">
+							11. Changes to terms
 						</h2>
 						<p className="mt-1">
 							We will notify you at least 14 days before
@@ -172,9 +193,9 @@ const TermsOfServiceForm = () => {
 						</p>
 					</div>
 
-					{/* 11 */}
+					{/* 12 */}
 					<div>
-						<h2 className="font-bold text-lg">11. Governing law</h2>
+						<h2 className="font-bold text-lg">12. Governing law</h2>
 						<p className="mt-1">
 							These Terms are governed by the laws of the Republic
 							of the Philippines. Disputes shall be resolved in
@@ -182,9 +203,9 @@ const TermsOfServiceForm = () => {
 						</p>
 					</div>
 
-					{/* 12 */}
+					{/* 13 */}
 					<div>
-						<h2 className="font-bold text-lg">12. Contact us</h2>
+						<h2 className="font-bold text-lg">13. Contact us</h2>
 						<p className="mt-1">
 							For questions, contact us at legal@gr8booklite.com
 						</p>

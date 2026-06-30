@@ -7,11 +7,15 @@ import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ItemActionButtons } from "@/app/src/ui/modules/maintenance/item-management/items/ItemActionButtons";
 import { ItemAttributesTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemAttributesTable";
-import { ItemFields } from "@/app/src/ui/modules/maintenance/item-management/items/ItemFields";
+import {
+	ItemBehaviorFields,
+	ItemInformationFields,
+	ItemInventoryFields,
+	ItemPricingTaxFields,
+} from "@/app/src/ui/modules/maintenance/item-management/items/ItemFields";
 import { ItemNotFound } from "@/app/src/ui/modules/maintenance/item-management/items/ItemNotFound";
 import { ItemPriceListsTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemPriceListsTable";
 import { ItemSuppliersTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemSuppliersTable";
-import { ItemUomConversionsTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemUomConversionsTable";
 
 export function ItemsFormPage() {
 	const page = useItemsFormPage();
@@ -51,10 +55,76 @@ export function ItemsFormPage() {
 					}
 				/>
 
-				<ItemFields
+				<ItemInformationFields
 					categoryOptions={page.categoryOptions}
 					errors={page.errors}
 					isReadonly={page.isReadonly}
+					responsibilityCenterOptions={page.responsibilityCenterOptions}
+					statusOptions={page.statusOptions}
+					uomOptions={page.uomOptions}
+					values={page.values}
+					warehouseItemsHref={page.warehouseItemsHref}
+					warehouseOptions={page.warehouseOptions}
+					onAddTag={page.addTag}
+					onFieldChange={page.updateField}
+					onInputChange={page.handleInputChange}
+					onRemoveTag={page.removeTag}
+				/>
+
+				<ItemAttributesTable
+					assignments={page.values.attributeAssignments}
+					attributes={page.attributeRecords}
+					isReadonly={page.isReadonly}
+					onAddAssignment={page.addAttributeAssignment}
+					onRemoveAssignment={page.removeAttributeAssignment}
+					onReorderAssignment={page.reorderAttributeAssignment}
+					onUpdateAssignment={page.updateAttributeAssignment}
+				/>
+
+				<ItemBehaviorFields
+					categoryOptions={page.categoryOptions}
+					errors={page.errors}
+					isReadonly={page.isReadonly}
+					responsibilityCenterOptions={page.responsibilityCenterOptions}
+					statusOptions={page.statusOptions}
+					uomOptions={page.uomOptions}
+					values={page.values}
+					warehouseItemsHref={page.warehouseItemsHref}
+					warehouseOptions={page.warehouseOptions}
+					onAddTag={page.addTag}
+					onFieldChange={page.updateField}
+					onInputChange={page.handleInputChange}
+					onRemoveTag={page.removeTag}
+				/>
+
+				<ItemPricingTaxFields
+					categoryOptions={page.categoryOptions}
+					errors={page.errors}
+					isReadonly={page.isReadonly}
+					responsibilityCenterOptions={page.responsibilityCenterOptions}
+					statusOptions={page.statusOptions}
+					uomOptions={page.uomOptions}
+					values={page.values}
+					warehouseItemsHref={page.warehouseItemsHref}
+					warehouseOptions={page.warehouseOptions}
+					onAddTag={page.addTag}
+					onFieldChange={page.updateField}
+					onInputChange={page.handleInputChange}
+					onRemoveTag={page.removeTag}
+				/>
+
+				<ItemPriceListsTable
+					isReadonly={page.isReadonly}
+					priceLists={page.priceLists}
+					values={page.values}
+					onUpdatePrice={page.updatePriceListPrice}
+				/>
+
+				<ItemInventoryFields
+					categoryOptions={page.categoryOptions}
+					errors={page.errors}
+					isReadonly={page.isReadonly}
+					responsibilityCenterOptions={page.responsibilityCenterOptions}
 					statusOptions={page.statusOptions}
 					uomOptions={page.uomOptions}
 					values={page.values}
@@ -75,30 +145,6 @@ export function ItemsFormPage() {
 					onReorderSupplier={page.reorderSupplier}
 					onRemoveSupplier={page.removeSupplier}
 					onUpdateSupplier={page.updateSupplier}
-				/>
-
-				<ItemAttributesTable
-					assignments={page.values.attributeAssignments}
-					attributes={page.attributeRecords}
-					isReadonly={page.isReadonly}
-					onAddAssignment={page.addAttributeAssignment}
-					onRemoveAssignment={page.removeAttributeAssignment}
-					onUpdateAssignment={page.updateAttributeAssignment}
-				/>
-
-				<ItemUomConversionsTable
-					conversions={page.values.uomConversions}
-					isReadonly={page.isReadonly}
-					onAddConversion={page.addUomConversion}
-					onRemoveConversion={page.removeUomConversion}
-					onUpdateConversion={page.updateUomConversion}
-				/>
-
-				<ItemPriceListsTable
-					isReadonly={page.isReadonly}
-					priceLists={page.priceLists}
-					values={page.values}
-					onUpdatePrice={page.updatePriceListPrice}
 				/>
 			</form>
 

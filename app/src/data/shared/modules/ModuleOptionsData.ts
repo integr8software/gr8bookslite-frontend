@@ -1,4 +1,4 @@
-import { SidebarModuleNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarModuleRegistry";
+import { MainModuleCatalogSections } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
 export type ModuleOption = {
 	label: string;
@@ -12,7 +12,7 @@ export function getMaintenanceModuleOptions(
 	const options = new Map<string, ModuleOption>();
 	const excludedKeySet = new Set(excludedKeys);
 
-	for (const section of SidebarModuleNavigationSections) {
+	for (const section of MainModuleCatalogSections) {
 		collectModuleOptions(section.items, options, excludedKeySet);
 	}
 
@@ -22,7 +22,7 @@ export function getMaintenanceModuleOptions(
 }
 
 function collectModuleOptions(
-	items: (typeof SidebarModuleNavigationSections)[number]["items"],
+	items: (typeof MainModuleCatalogSections)[number]["items"],
 	options: Map<string, ModuleOption>,
 	excludedKeys: Set<string>,
 ) {

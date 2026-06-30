@@ -22,7 +22,7 @@ export const MasterPlanAndPackageRecords: MasterPlanAndPackageRecord[] = [
 	{
 		code: "ACC-ESS",
 		description:
-			"Entry accounting package with dashboard, financial maintenance, cash receipts, disbursements, journals, and reporting modules.",
+			"Entry accounting package with dashboard, maintenance setup, cash receipts, disbursements, journals, and reporting modules.",
 		featureIds: [
 			"ACCOUNTING",
 		],

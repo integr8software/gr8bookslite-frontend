@@ -1,4 +1,4 @@
-import { SidebarModuleNavigationSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarModuleRegistry";
+import { MainModuleCatalogSections } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   MainNavigationItem,
   MainNavigationSection,
@@ -25,7 +25,7 @@ export const UserPermissionActions = [
 ] as const;
 
 export const UserAccessRoleOptions = createUserAccessRoleOptions(
-  SidebarModuleNavigationSections,
+  MainModuleCatalogSections,
 );
 
 export type UserAccessRoleOption = {

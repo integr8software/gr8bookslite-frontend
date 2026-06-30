@@ -99,6 +99,34 @@ Voice input should use a speech recognition provider or browser API that support
 - language auto-detection when available
 - clear error states for blocked microphone permissions
 
+Prefer browser capability detection over browser-name detection. Do not rely on
+checking whether the browser is Chrome or Edge before enabling speech input.
+Instead, detect whether the browser exposes native speech recognition:
+
+```ts
+const SpeechRecognitionConstructor =
+	window.SpeechRecognition ?? window.webkitSpeechRecognition;
+
+const isNativeSpeechRecognitionSupported = Boolean(
+	SpeechRecognitionConstructor,
+);
+```
+
+Chrome and Edge commonly expose native speech recognition through
+`webkitSpeechRecognition`, but this should be treated as an optional fast path,
+not the only speech-to-text path. Other Chromium-based browsers may expose the
+same API, and embedded browser contexts may behave differently from normal
+Chrome or Edge tabs.
+
+Recommended speech-to-text order:
+
+1. Use native browser speech recognition when the API is available and the user
+   grants microphone permission.
+2. Fall back to recorded audio plus the backend transcription provider when
+   native speech recognition is unavailable, unreliable, or produces an error.
+3. Show a clear unsupported state only when neither native speech recognition
+   nor backend audio transcription can run.
+
 Voice input states:
 
 - idle
@@ -495,6 +523,9 @@ Use this layer for:
 ## Implementation Notes
 
 - Prefer browser-native speech APIs only if they satisfy the supported browser requirements.
+- Use feature detection for `SpeechRecognition` or `webkitSpeechRecognition`; do not use Chrome or Edge user-agent checks as the source of truth.
+- Treat native browser speech recognition as a fast path for supported browsers, especially regular Chrome and Edge tabs.
+- Keep the existing recorded-audio-to-backend transcription flow as the fallback for unsupported browsers, embedded contexts, low-confidence transcripts, or native recognition errors.
 - If browser-native speech recognition is not reliable enough, use a dedicated speech-to-text provider.
 - Keep voice provider details behind `AiChatbotSpeech.ts` so the UI does not depend on a specific speech API.
 - Keep command execution permission-aware and route-aware.

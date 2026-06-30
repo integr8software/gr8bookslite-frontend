@@ -14,8 +14,6 @@ import {
 import Image from "next/image";
 import {
   Loader2,
-  Mic,
-  MicOff,
   SendHorizontal,
   Volume2,
   VolumeX,
@@ -23,13 +21,19 @@ import {
 } from "lucide-react";
 import {
   AiAssistantInputPlaceholder,
+  AiAssistantLauncherDragClickThresholdPx,
+  AiAssistantLauncherDragId,
+  AiAssistantLauncherMarginPx,
   AiAssistantLauncherPositionStorageKey,
+  AiAssistantLauncherSizePx,
   AiAssistantLogoSrc,
   AiAssistantName,
   AiAssistantSubtitle,
+  AiAssistantVoiceRepliesEnabled,
 } from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
 import { useAiAssistantChat } from "@/app/src/hooks/shared/ai-assistant/useAiAssistantChat";
 import { useAiAssistantSpeech } from "@/app/src/hooks/shared/ai-assistant/useAiAssistantSpeech";
+import { AiAssistantVoiceControl } from "@/app/src/ui/shared/ai-assistant/AiAssistantVoiceControl";
 
 export function AiAssistantChat() {
   const {
@@ -44,13 +48,19 @@ export function AiAssistantChat() {
     saveMessagesScroll,
     setInput,
     submitMessage,
+    submitMessageText,
   } = useAiAssistantChat();
-  const speech = useAiAssistantSpeech({ messages, setInput });
+  const speech = useAiAssistantSpeech({
+    isSending,
+    messages,
+    setInput,
+    submitCommand: submitMessageText,
+  });
   const launcher = useCornerLauncher(isOpen ? closeChat : openChat);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: DragClickThreshold,
+        distance: AiAssistantLauncherDragClickThresholdPx,
       },
     }),
   );
@@ -102,31 +112,33 @@ export function AiAssistantChat() {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={speech.toggleVoiceReply}
-                disabled={!speech.isSpeechSynthesisSupported}
-                aria-label={
-                  speech.isVoiceReplyEnabled
-                    ? "Turn off voice replies"
-                    : "Turn on voice replies"
-                }
-                title={
-                  speech.isSpeechSynthesisSupported
-                    ? "Voice replies"
-                    : "Voice replies are not supported in this browser"
-                }
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-[color-mix(in_srgb,var(--foreground)_58%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--skyblue)_12%,transparent)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {speech.isVoiceReplyEnabled ? (
-                  <Volume2
-                    className="h-4.5 w-4.5 text-skyblue"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <VolumeX className="h-4.5 w-4.5" aria-hidden="true" />
-                )}
-              </button>
+              {AiAssistantVoiceRepliesEnabled ? (
+                <button
+                  type="button"
+                  onClick={speech.toggleVoiceReply}
+                  disabled={!speech.isSpeechSynthesisSupported}
+                  aria-label={
+                    speech.isVoiceReplyEnabled
+                      ? "Turn off voice replies"
+                      : "Turn on voice replies"
+                  }
+                  title={
+                    speech.isSpeechSynthesisSupported
+                      ? "Voice replies"
+                      : "Voice replies are not supported in this browser"
+                  }
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md text-[color-mix(in_srgb,var(--foreground)_58%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--skyblue)_12%,transparent)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {speech.isVoiceReplyEnabled ? (
+                    <Volume2
+                      className="h-4.5 w-4.5 text-skyblue"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <VolumeX className="h-4.5 w-4.5" aria-hidden="true" />
+                  )}
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={closeChat}
@@ -180,7 +192,8 @@ export function AiAssistantChat() {
             onSubmit={submitMessage}
             className="border-t border-[color-mix(in_srgb,var(--skyblue)_24%,transparent)] p-3"
           >
-            {speech.isListening ||
+            {speech.isAutomaticModeEnabled ||
+            speech.isListening ||
             speech.isTranscribing ||
             speech.speechError ? (
               <div className="mb-2">
@@ -192,9 +205,17 @@ export function AiAssistantChat() {
                   }
                 >
                   {speech.speechError ??
-                    (speech.isTranscribing
-                      ? "Transcribing..."
-                      : "Recording...")}
+                    (speech.isAutomaticModeEnabled
+                      ? speech.isTranscribing
+                        ? "Automatic mode is transcribing..."
+                        : speech.isListening
+                          ? "Automatic mode is listening..."
+                          : "Automatic mode is waiting..."
+                      : speech.isTranscribing
+                        ? "Transcribing..."
+                        : speech.speechInputProvider === "native"
+                          ? "Listening..."
+                          : "Recording...")}
                 </p>
               </div>
             ) : null}
@@ -206,33 +227,7 @@ export function AiAssistantChat() {
                 placeholder={AiAssistantInputPlaceholder}
                 className="app-theme-field min-h-10 min-w-0 flex-1 rounded-md border px-3 text-sm outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20"
               />
-              <button
-                type="button"
-                onClick={speech.toggleListening}
-                disabled={
-                  !speech.isSpeechRecognitionSupported ||
-                  isSending ||
-                  speech.isTranscribing
-                }
-                aria-label={
-                  speech.isListening ? "Stop recording" : "Start recording"
-                }
-                title={
-                  speech.isSpeechRecognitionSupported
-                    ? "Record voice"
-                    : "Voice recording is not supported in this browser"
-                }
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--skyblue)_24%,transparent)] text-[color-mix(in_srgb,var(--foreground)_66%,transparent)] transition hover:bg-[color-mix(in_srgb,var(--skyblue)_12%,transparent)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {speech.isListening ? (
-                  <MicOff
-                    className="h-4.5 w-4.5 text-red-600"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <Mic className="h-4.5 w-4.5" aria-hidden="true" />
-                )}
-              </button>
+              <AiAssistantVoiceControl isSending={isSending} speech={speech} />
               <button
                 type="submit"
                 disabled={isSending || !input.trim()}
@@ -326,11 +321,6 @@ type LauncherPosition = {
 
 type LauncherCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
-const LauncherSize = 52;
-const LauncherMargin = 16;
-const DragClickThreshold = 6;
-const AiAssistantLauncherDragId = "ai-assistant-launcher";
-
 type DraggableLauncherControls = ReturnType<typeof useCornerLauncher>;
 
 function useCornerLauncher(onClick: () => void) {
@@ -362,8 +352,8 @@ function useCornerLauncher(onClick: () => void) {
 
     const delta = event.delta;
     const wasDragged =
-      Math.abs(delta.x) > DragClickThreshold ||
-      Math.abs(delta.y) > DragClickThreshold;
+      Math.abs(delta.x) > AiAssistantLauncherDragClickThresholdPx ||
+      Math.abs(delta.y) > AiAssistantLauncherDragClickThresholdPx;
 
     if (wasDragged) {
       const currentPosition = GetCornerPosition(launcherCorner);
@@ -412,13 +402,25 @@ function useCornerLauncher(onClick: () => void) {
 function GetLauncherPositionStyle(corner: LauncherCorner): CSSProperties {
   switch (corner) {
     case "top-left":
-      return { left: LauncherMargin, top: LauncherMargin };
+      return {
+        left: AiAssistantLauncherMarginPx,
+        top: AiAssistantLauncherMarginPx,
+      };
     case "top-right":
-      return { right: LauncherMargin, top: LauncherMargin };
+      return {
+        right: AiAssistantLauncherMarginPx,
+        top: AiAssistantLauncherMarginPx,
+      };
     case "bottom-left":
-      return { bottom: LauncherMargin, left: LauncherMargin };
+      return {
+        bottom: AiAssistantLauncherMarginPx,
+        left: AiAssistantLauncherMarginPx,
+      };
     case "bottom-right":
-      return { bottom: LauncherMargin, right: LauncherMargin };
+      return {
+        bottom: AiAssistantLauncherMarginPx,
+        right: AiAssistantLauncherMarginPx,
+      };
   }
 }
 
@@ -444,10 +446,12 @@ function IsLauncherCorner(corner: string | null): corner is LauncherCorner {
 }
 
 function GetCornerPosition(corner: LauncherCorner): LauncherPosition {
-  const left = LauncherMargin;
-  const right = window.innerWidth - LauncherSize - LauncherMargin;
-  const top = LauncherMargin;
-  const bottom = window.innerHeight - LauncherSize - LauncherMargin;
+  const left = AiAssistantLauncherMarginPx;
+  const right =
+    window.innerWidth - AiAssistantLauncherSizePx - AiAssistantLauncherMarginPx;
+  const top = AiAssistantLauncherMarginPx;
+  const bottom =
+    window.innerHeight - AiAssistantLauncherSizePx - AiAssistantLauncherMarginPx;
 
   switch (corner) {
     case "top-left":
@@ -463,23 +467,25 @@ function GetCornerPosition(corner: LauncherCorner): LauncherPosition {
 
 function ClampLauncherPosition(position: LauncherPosition): LauncherPosition {
   const maxX = Math.max(
-    LauncherMargin,
-    window.innerWidth - LauncherSize - LauncherMargin,
+    AiAssistantLauncherMarginPx,
+    window.innerWidth - AiAssistantLauncherSizePx - AiAssistantLauncherMarginPx,
   );
   const maxY = Math.max(
-    LauncherMargin,
-    window.innerHeight - LauncherSize - LauncherMargin,
+    AiAssistantLauncherMarginPx,
+    window.innerHeight - AiAssistantLauncherSizePx - AiAssistantLauncherMarginPx,
   );
 
   return {
-    x: Math.min(Math.max(position.x, LauncherMargin), maxX),
-    y: Math.min(Math.max(position.y, LauncherMargin), maxY),
+    x: Math.min(Math.max(position.x, AiAssistantLauncherMarginPx), maxX),
+    y: Math.min(Math.max(position.y, AiAssistantLauncherMarginPx), maxY),
   };
 }
 
 function GetLauncherCorner(position: LauncherPosition): LauncherCorner {
-  const isLeft = position.x + LauncherSize / 2 < window.innerWidth / 2;
-  const isTop = position.y + LauncherSize / 2 < window.innerHeight / 2;
+  const isLeft =
+    position.x + AiAssistantLauncherSizePx / 2 < window.innerWidth / 2;
+  const isTop =
+    position.y + AiAssistantLauncherSizePx / 2 < window.innerHeight / 2;
 
   if (isTop && isLeft) {
     return "top-left";

@@ -34,3 +34,22 @@ export type AiAssistantChatResponse = {
 	message: string;
 	action: AiAssistantAction | null;
 };
+
+export type AiAssistantSpeechInputProvider = "native" | "recording";
+
+export type AiAssistantVoiceInputMode = "manual" | "auto";
+
+export type AiAssistantSpeechControls = {
+	isAutomaticModeEnabled: boolean;
+	isListening: boolean;
+	isNativeSpeechRecognitionSupported: boolean;
+	isSpeechRecognitionSupported: boolean;
+	isSpeechSynthesisSupported: boolean;
+	isTranscribing: boolean;
+	isVoiceReplyEnabled: boolean;
+	speechError: string | null;
+	speechInputProvider: AiAssistantSpeechInputProvider | null;
+	toggleAutomaticMode: () => void;
+	toggleListening: () => void;
+	toggleVoiceReply: () => void;
+};

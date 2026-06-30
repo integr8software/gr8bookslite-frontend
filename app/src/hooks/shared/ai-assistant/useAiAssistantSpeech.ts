@@ -1,8 +1,35 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+	AiAssistantAutomaticModeUnsupportedMessage,
+	AiAssistantAutomaticRestartDelayMs,
+	AiAssistantDuplicateTranscriptWindowMs,
+	AiAssistantMicrophoneAccessBlockedMessage,
+	AiAssistantRecordingInitialGraceMs,
+	AiAssistantRecordingMaxDurationMs,
+	AiAssistantRecordingSilenceDurationMs,
+	AiAssistantRecordingSilenceRmsThreshold,
+	AiAssistantSpeechRecognitionUnsupportedMessage,
+	AiAssistantVoiceReplyUnsupportedMessage,
+} from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
 import { TranscribeAiAssistantAudio } from "@/app/src/services/shared/ai-assistant/AiAssistantApi";
-import type { AiAssistantChatMessage } from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
+import {
+	getNativeSpeechRecognitionErrorMessage,
+	getSpeechInputProvider,
+	getSpeechRecognitionConstructor,
+	getSupportedRecordingMimeType,
+	hasMediaRecorder,
+	hasNativeSpeechRecognition,
+	requestMicrophoneAccess,
+	type BrowserSpeechRecognition,
+	type BrowserSpeechRecognitionErrorEvent,
+} from "@/app/src/services/shared/ai-assistant/AiAssistantSpeechSupport";
+import type {
+	AiAssistantChatMessage,
+	AiAssistantSpeechControls,
+	AiAssistantSpeechInputProvider,
+} from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
 
 declare global {
 	interface Window {
@@ -11,59 +38,96 @@ declare global {
 }
 
 type UseAiAssistantSpeechParams = {
+	isSending: boolean;
 	messages: AiAssistantChatMessage[];
 	setInput: (value: string) => void;
+	submitCommand: (value: string) => Promise<void>;
 };
-
-type MicrophoneAccessResult = {
-	diagnostics?: MicrophoneDiagnostics;
-	isAllowed: boolean;
-	message?: string;
-};
-
-export type MicrophoneDiagnostics = {
-	deviceSummary: string;
-	errorName: string | null;
-	hasGetUserMedia: boolean;
-	isEmbedded: boolean;
-	isMicrophonePolicyAllowed: boolean | null;
-	isSecureContext: boolean;
-	permissionState: PermissionState | null;
-};
-
-const RecordingSilenceDurationMs = 3000;
-const RecordingInitialGraceMs = 1200;
-const RecordingMaxDurationMs = 15000;
-const RecordingSilenceRmsThreshold = 0.018;
 
 export function useAiAssistantSpeech({
+	isSending,
 	messages,
 	setInput,
-}: UseAiAssistantSpeechParams) {
+	submitCommand,
+}: UseAiAssistantSpeechParams): AiAssistantSpeechControls {
 	const audioContextRef = useRef<AudioContext | null>(null);
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 	const mediaStreamRef = useRef<MediaStream | null>(null);
 	const audioChunksRef = useRef<Blob[]>([]);
+	const nativeRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
 	const silenceAnimationFrameRef = useRef<number | null>(null);
+	const automaticRestartTimeoutRef = useRef<number | null>(null);
 	const recordingStartedAtRef = useRef(0);
 	const lastAudibleAtRef = useRef(0);
 	const lastSpokenMessageRef = useRef("");
+	const isAutomaticModeEnabledRef = useRef(false);
+	const isSendingRef = useRef(isSending);
+	const isTranscribingRef = useRef(false);
+	const recordingAutoSubmitRef = useRef(false);
+	const lastSubmittedTranscriptRef = useRef("");
+	const shouldRestartAutomaticModeRef = useRef(false);
+	const isSubmittingAutomaticTranscriptRef = useRef(false);
+	const ignoreNextNativeRecognitionErrorRef = useRef(false);
 	const [isListening, setIsListening] = useState(false);
 	const [isTranscribing, setIsTranscribing] = useState(false);
-	const [isSpeechRecognitionSupported] = useState(() =>
-		typeof window === "undefined" ? false : Boolean(window.MediaRecorder),
+	const [isAutomaticModeEnabled, setIsAutomaticModeEnabled] = useState(false);
+	const [speechInputProvider, setSpeechInputProvider] =
+		useState<AiAssistantSpeechInputProvider | null>(() =>
+			getSpeechInputProvider(),
+		);
+	const [isNativeSpeechRecognitionSupported] = useState(() =>
+		hasNativeSpeechRecognition(),
 	);
 	const [isSpeechSynthesisSupported] = useState(() =>
 		typeof window === "undefined" ? false : "speechSynthesis" in window,
 	);
 	const [isVoiceReplyEnabled, setIsVoiceReplyEnabled] = useState(false);
 	const [speechError, setSpeechError] = useState<string | null>(null);
+	const isSpeechRecognitionSupported = speechInputProvider !== null;
 
 	useEffect(() => {
 		return () => {
-			mediaRecorderRef.current?.stop();
-			stopSilenceDetection();
-			stopMediaStream();
+			const recognition = nativeRecognitionRef.current;
+			nativeRecognitionRef.current = null;
+
+			try {
+				recognition?.abort();
+			} catch {
+				// The browser may already have ended recognition during unmount.
+			}
+
+			const recorder = mediaRecorderRef.current;
+			mediaRecorderRef.current = null;
+
+			try {
+				if (recorder && recorder.state !== "inactive") {
+					recorder.onstop = null;
+					recorder.stop();
+				}
+			} catch {
+				// The recorder may already be stopped during browser teardown.
+			}
+
+			if (silenceAnimationFrameRef.current !== null) {
+				window.cancelAnimationFrame(silenceAnimationFrameRef.current);
+				silenceAnimationFrameRef.current = null;
+			}
+
+			const audioContext = audioContextRef.current;
+			audioContextRef.current = null;
+
+			if (audioContext && audioContext.state !== "closed") {
+				void audioContext.close();
+			}
+
+			mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+			mediaStreamRef.current = null;
+
+			if (automaticRestartTimeoutRef.current !== null) {
+				window.clearTimeout(automaticRestartTimeoutRef.current);
+				automaticRestartTimeoutRef.current = null;
+			}
+
 			window.speechSynthesis?.cancel();
 		};
 	}, []);
@@ -100,34 +164,210 @@ export function useAiAssistantSpeech({
 
 	async function toggleListening() {
 		if (!isSpeechRecognitionSupported) {
-			setSpeechError("Voice recording is not supported in this browser.");
+			setSpeechError(AiAssistantSpeechRecognitionUnsupportedMessage);
+			return;
+		}
+
+		if (isAutomaticModeEnabledRef.current) {
+			disableAutomaticMode();
 			return;
 		}
 
 		if (isListening) {
+			stopNativeRecognition("stop");
 			stopRecording();
 			return;
 		}
+
+		await startSpeechInput({ autoSubmit: false });
+	}
+
+	async function toggleAutomaticMode() {
+		if (!isSpeechRecognitionSupported) {
+			setSpeechError(AiAssistantAutomaticModeUnsupportedMessage);
+			return;
+		}
+
+		if (isAutomaticModeEnabledRef.current) {
+			disableAutomaticMode();
+			return;
+		}
+
+		isAutomaticModeEnabledRef.current = true;
+		setIsAutomaticModeEnabled(true);
+		await startSpeechInput({ autoSubmit: true });
+	}
+
+	function disableAutomaticMode() {
+		isAutomaticModeEnabledRef.current = false;
+		setIsAutomaticModeEnabled(false);
+		setSpeechError(null);
+		shouldRestartAutomaticModeRef.current = false;
+		clearAutomaticRestart();
+		stopNativeRecognition("abort", { ignoreError: true });
+		stopRecording();
+	}
+
+	async function startSpeechInput({ autoSubmit }: { autoSubmit: boolean }) {
+		setSpeechError(null);
+		clearAutomaticRestart();
+
+		if (hasNativeSpeechRecognition()) {
+			setSpeechInputProvider("native");
+			startNativeRecognition({ autoSubmit });
+			return;
+		}
+
+		if (!hasMediaRecorder()) {
+			setSpeechInputProvider(null);
+			setSpeechError(AiAssistantSpeechRecognitionUnsupportedMessage);
+			return;
+		}
+
+		setSpeechInputProvider("recording");
 
 		const microphoneAccess = await requestMicrophoneAccess();
 
 		if (!microphoneAccess.isAllowed) {
 			setSpeechError(
 				microphoneAccess.message ??
-					"Microphone access is blocked. Allow microphone permission for this site, then try again.",
+					AiAssistantMicrophoneAccessBlockedMessage,
 			);
+			disableAutomaticMode();
 			return;
 		}
 
 		if (!microphoneAccess.stream) {
 			setSpeechError("Microphone access did not return an audio stream.");
+			disableAutomaticMode();
 			return;
 		}
 
-		startRecording(microphoneAccess.stream);
+		startRecording(microphoneAccess.stream, autoSubmit);
 	}
 
-	function startRecording(stream: MediaStream) {
+	function startNativeRecognition({ autoSubmit }: { autoSubmit: boolean }) {
+		const SpeechRecognitionConstructor = getSpeechRecognitionConstructor();
+
+		if (!SpeechRecognitionConstructor) {
+			setSpeechError("Native speech recognition is not supported here.");
+			return;
+		}
+
+		stopNativeRecognition("abort", { ignoreError: true });
+
+		const recognition = new SpeechRecognitionConstructor();
+		nativeRecognitionRef.current = recognition;
+		recognition.continuous = autoSubmit;
+		recognition.interimResults = true;
+		recognition.maxAlternatives = 1;
+		recognition.lang = "";
+
+		recognition.onresult = (event) => {
+			let finalTranscript = "";
+			let interimTranscript = "";
+
+			for (let index = event.resultIndex; index < event.results.length; index += 1) {
+				const result = event.results[index];
+				const transcript = result[0]?.transcript ?? "";
+
+				if (result.isFinal) {
+					finalTranscript += transcript;
+				} else {
+					interimTranscript += transcript;
+				}
+			}
+
+			const normalizedFinalTranscript = finalTranscript.trim();
+			const visibleTranscript =
+				normalizedFinalTranscript || interimTranscript.trim();
+
+			if (visibleTranscript) {
+				setInput(visibleTranscript);
+			}
+
+			if (!normalizedFinalTranscript) {
+				return;
+			}
+
+			if (autoSubmit) {
+				void submitRecognizedTranscript(normalizedFinalTranscript);
+			} else {
+				setInput(normalizedFinalTranscript);
+			}
+		};
+
+		recognition.onerror = (event) => {
+			if (
+				ignoreNextNativeRecognitionErrorRef.current ||
+				event.error === "aborted" ||
+				(autoSubmit &&
+					isAutomaticModeEnabledRef.current &&
+					event.error === "no-speech")
+			) {
+				ignoreNextNativeRecognitionErrorRef.current = false;
+				return;
+			}
+
+			setSpeechError(getNativeSpeechRecognitionErrorMessage(event));
+		};
+
+		recognition.onend = () => {
+			if (nativeRecognitionRef.current === recognition) {
+				nativeRecognitionRef.current = null;
+			}
+
+			setIsListening(false);
+
+			if (autoSubmit && isAutomaticModeEnabledRef.current) {
+				scheduleAutomaticRestart();
+			}
+		};
+
+		try {
+			setSpeechError(null);
+			setIsListening(true);
+			recognition.start();
+		} catch (error) {
+			nativeRecognitionRef.current = null;
+			setIsListening(false);
+			setSpeechError(
+				error instanceof DOMException
+					? getNativeSpeechRecognitionErrorMessage({
+							error: error.name,
+						} as BrowserSpeechRecognitionErrorEvent)
+					: "Neo AI could not start voice recognition.",
+			);
+		}
+	}
+
+	function stopNativeRecognition(
+		action: "abort" | "stop",
+		options: { ignoreError?: boolean } = {},
+	) {
+		const recognition = nativeRecognitionRef.current;
+		nativeRecognitionRef.current = null;
+
+		if (!recognition) {
+			setIsListening(false);
+			return;
+		}
+
+		try {
+			ignoreNextNativeRecognitionErrorRef.current = Boolean(options.ignoreError);
+
+			if (action === "abort") {
+				recognition.abort();
+			} else {
+				recognition.stop();
+			}
+		} catch {
+			ignoreNextNativeRecognitionErrorRef.current = false;
+			setIsListening(false);
+		}
+	}
+
+	function startRecording(stream: MediaStream, autoSubmit: boolean) {
 		const mimeType = getSupportedRecordingMimeType();
 		const mediaRecorder = new MediaRecorder(
 			stream,
@@ -137,6 +377,7 @@ export function useAiAssistantSpeech({
 		audioChunksRef.current = [];
 		mediaStreamRef.current = stream;
 		mediaRecorderRef.current = mediaRecorder;
+		recordingAutoSubmitRef.current = autoSubmit;
 
 		mediaRecorder.ondataavailable = (event) => {
 			if (event.data.size > 0) {
@@ -145,10 +386,12 @@ export function useAiAssistantSpeech({
 		};
 
 		mediaRecorder.onstop = () => {
+			const shouldAutoSubmit = recordingAutoSubmitRef.current;
+
 			setIsListening(false);
 			stopSilenceDetection();
 			stopMediaStream();
-			void transcribeRecording();
+			void transcribeRecording({ autoSubmit: shouldAutoSubmit });
 		};
 
 		setSpeechError(null);
@@ -169,11 +412,12 @@ export function useAiAssistantSpeech({
 		recorder.stop();
 	}
 
-	async function transcribeRecording() {
+	async function transcribeRecording({ autoSubmit }: { autoSubmit: boolean }) {
 		const audioChunks = audioChunksRef.current;
 
 		if (audioChunks.length === 0) {
 			setSpeechError("No audio was recorded.");
+			restartAutomaticRecordingIfNeeded(autoSubmit);
 			return;
 		}
 
@@ -193,7 +437,11 @@ export function useAiAssistantSpeech({
 				return;
 			}
 
-			setInput(transcript);
+			if (autoSubmit) {
+				await submitRecognizedTranscript(transcript);
+			} else {
+				setInput(transcript);
+			}
 		} catch (error) {
 			setSpeechError(
 				error instanceof Error
@@ -203,12 +451,127 @@ export function useAiAssistantSpeech({
 		} finally {
 			setIsTranscribing(false);
 			audioChunksRef.current = [];
+			if (autoSubmit && !isAutomaticModeEnabledRef.current) {
+				return;
+			}
+
+			if (autoSubmit && isSendingRef.current) {
+				shouldRestartAutomaticModeRef.current = true;
+				return;
+			}
+
+			restartAutomaticRecordingIfNeeded(autoSubmit);
 		}
 	}
 
+	async function submitRecognizedTranscript(transcript: string) {
+		const normalizedTranscript = transcript.trim();
+
+		if (!normalizedTranscript) {
+			restartAutomaticRecordingIfNeeded(true);
+			return;
+		}
+
+		if (isSendingRef.current) {
+			shouldRestartAutomaticModeRef.current = true;
+			return;
+		}
+
+		if (normalizedTranscript === lastSubmittedTranscriptRef.current) {
+			restartAutomaticRecordingIfNeeded(true);
+			return;
+		}
+
+		lastSubmittedTranscriptRef.current = normalizedTranscript;
+		window.setTimeout(() => {
+			if (lastSubmittedTranscriptRef.current === normalizedTranscript) {
+				lastSubmittedTranscriptRef.current = "";
+			}
+		}, AiAssistantDuplicateTranscriptWindowMs);
+		setInput("");
+
+		if (isAutomaticModeEnabledRef.current) {
+			shouldRestartAutomaticModeRef.current = true;
+			isSubmittingAutomaticTranscriptRef.current = true;
+			stopNativeRecognition("abort", { ignoreError: true });
+			stopRecording();
+		}
+
+		try {
+			await submitCommand(normalizedTranscript);
+		} finally {
+			isSubmittingAutomaticTranscriptRef.current = false;
+		}
+
+		if (
+			isAutomaticModeEnabledRef.current &&
+			!isSendingRef.current &&
+			!isTranscribingRef.current &&
+			!isSubmittingAutomaticTranscriptRef.current
+		) {
+			shouldRestartAutomaticModeRef.current = false;
+			scheduleAutomaticRestart();
+		}
+	}
+
+	function restartAutomaticRecordingIfNeeded(autoSubmit: boolean) {
+		if (!autoSubmit || !isAutomaticModeEnabledRef.current) {
+			return;
+		}
+
+		scheduleAutomaticRestart();
+	}
+
+	function scheduleAutomaticRestart() {
+		clearAutomaticRestart();
+
+		if (
+			!isAutomaticModeEnabledRef.current ||
+			isSendingRef.current ||
+			isTranscribingRef.current ||
+			isSubmittingAutomaticTranscriptRef.current
+		) {
+			if (isAutomaticModeEnabledRef.current) {
+				shouldRestartAutomaticModeRef.current = true;
+			}
+			return;
+		}
+
+		automaticRestartTimeoutRef.current = window.setTimeout(() => {
+			if (!isAutomaticModeEnabledRef.current) {
+				return;
+			}
+
+			void startSpeechInput({ autoSubmit: true });
+		}, AiAssistantAutomaticRestartDelayMs);
+	}
+
+	function clearAutomaticRestart() {
+		if (automaticRestartTimeoutRef.current !== null) {
+			window.clearTimeout(automaticRestartTimeoutRef.current);
+			automaticRestartTimeoutRef.current = null;
+		}
+	}
+
+	useEffect(() => {
+		isSendingRef.current = isSending;
+		isTranscribingRef.current = isTranscribing;
+
+		if (
+			!isSending &&
+			!isTranscribing &&
+			shouldRestartAutomaticModeRef.current &&
+			isAutomaticModeEnabledRef.current &&
+			!isSubmittingAutomaticTranscriptRef.current
+		) {
+			shouldRestartAutomaticModeRef.current = false;
+			scheduleAutomaticRestart();
+		}
+	}, [isSending, isTranscribing]);
+
 	function toggleVoiceReply() {
 		if (!isSpeechSynthesisSupported) {
-			setSpeechError("Voice replies are not supported in this browser.");
+			setSpeechError(AiAssistantVoiceReplyUnsupportedMessage);
 			return;
 		}
 
@@ -224,12 +587,16 @@ export function useAiAssistantSpeech({
 	}
 
 	return {
+		isAutomaticModeEnabled,
 		isListening,
+		isNativeSpeechRecognitionSupported,
 		isSpeechRecognitionSupported,
 		isSpeechSynthesisSupported,
 		isTranscribing,
 		isVoiceReplyEnabled,
 		speechError,
+		speechInputProvider,
+		toggleAutomaticMode,
 		toggleListening,
 		toggleVoiceReply,
 	};
@@ -275,16 +642,19 @@ export function useAiAssistantSpeech({
 
 			const rms = Math.sqrt(sumSquares / samples.length);
 
-			if (rms > RecordingSilenceRmsThreshold) {
+			if (rms > AiAssistantRecordingSilenceRmsThreshold) {
 				lastAudibleAtRef.current = now;
 			}
 
 			const isPastGracePeriod =
-				now - recordingStartedAtRef.current > RecordingInitialGraceMs;
+				now - recordingStartedAtRef.current >
+				AiAssistantRecordingInitialGraceMs;
 			const isSilentLongEnough =
-				now - lastAudibleAtRef.current > RecordingSilenceDurationMs;
+				now - lastAudibleAtRef.current >
+				AiAssistantRecordingSilenceDurationMs;
 			const isTooLong =
-				now - recordingStartedAtRef.current > RecordingMaxDurationMs;
+				now - recordingStartedAtRef.current >
+				AiAssistantRecordingMaxDurationMs;
 
 			if ((isPastGracePeriod && isSilentLongEnough) || isTooLong) {
 				stopRecording();
@@ -316,172 +686,5 @@ export function useAiAssistantSpeech({
 	function stopMediaStream() {
 		mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
 		mediaStreamRef.current = null;
-	}
-}
-
-async function requestMicrophoneAccess(): Promise<
-	MicrophoneAccessResult & { stream?: MediaStream }
-> {
-	const baseDiagnostics = await collectMicrophoneDiagnostics();
-
-	if (!window.isSecureContext) {
-		return {
-			diagnostics: baseDiagnostics,
-			isAllowed: false,
-			message:
-				"Voice input needs a secure browser context. Use HTTPS or localhost.",
-		};
-	}
-
-	if (!navigator.mediaDevices?.getUserMedia) {
-		return {
-			diagnostics: baseDiagnostics,
-			isAllowed: false,
-			message: "This browser does not expose microphone recording to the app.",
-		};
-	}
-
-	if (baseDiagnostics.isMicrophonePolicyAllowed === false) {
-		return {
-			diagnostics: baseDiagnostics,
-			isAllowed: false,
-			message:
-				"Microphone access is blocked by the page container or browser permissions policy.",
-		};
-	}
-
-	try {
-		const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-		return { diagnostics: baseDiagnostics, isAllowed: true, stream };
-	} catch (error) {
-		const diagnostics = {
-			...baseDiagnostics,
-			errorName: error instanceof DOMException ? error.name : "Unknown",
-		};
-
-		console.info("Neo AI microphone access failed", diagnostics);
-
-		return {
-			diagnostics,
-			isAllowed: false,
-			message: GetMicrophoneAccessErrorMessage(error, diagnostics),
-		};
-	}
-}
-
-function getSupportedRecordingMimeType() {
-	const mimeTypes = [
-		"audio/webm;codecs=opus",
-		"audio/webm",
-		"audio/ogg;codecs=opus",
-		"audio/ogg",
-	];
-
-	return mimeTypes.find((mimeType) => MediaRecorder.isTypeSupported(mimeType));
-}
-
-function GetMicrophoneAccessErrorMessage(
-	error: unknown,
-	diagnostics: MicrophoneDiagnostics,
-) {
-	if (!(error instanceof DOMException)) {
-		return "Microphone access is blocked. Allow microphone permission for this site, then try again.";
-	}
-
-	switch (error.name) {
-		case "NotAllowedError":
-		case "PermissionDeniedError":
-			return diagnostics.permissionState === "denied"
-				? "The browser still reports microphone permission as blocked for this site. Reset the site permission or open the app in a regular Chrome/Edge tab."
-				: "Microphone permission was denied or blocked. Check the browser site settings for this page.";
-		case "NotFoundError":
-		case "DevicesNotFoundError":
-			return "No microphone was found on this device.";
-		case "NotReadableError":
-		case "TrackStartError":
-			return "The microphone is already in use by another app.";
-		case "SecurityError":
-			return "Microphone access is blocked by browser security or embedded app settings.";
-		default:
-			return "Microphone access is blocked. Allow microphone permission for this site, then try again.";
-	}
-}
-
-async function collectMicrophoneDiagnostics(): Promise<MicrophoneDiagnostics> {
-	const [permissionState, deviceSummary] = await Promise.all([
-		readMicrophonePermissionState(),
-		readMicrophoneDeviceSummary(),
-	]);
-
-	return {
-		deviceSummary,
-		errorName: null,
-		hasGetUserMedia: Boolean(navigator.mediaDevices?.getUserMedia),
-		isEmbedded: window.top !== window.self,
-		isMicrophonePolicyAllowed: readMicrophonePolicyAllowed(),
-		isSecureContext: window.isSecureContext,
-		permissionState,
-	};
-}
-
-async function readMicrophonePermissionState() {
-	if (!navigator.permissions?.query) {
-		return null;
-	}
-
-	try {
-		const status = await navigator.permissions.query({
-			name: "microphone" as PermissionName,
-		});
-
-		return status.state;
-	} catch {
-		return null;
-	}
-}
-
-async function readMicrophoneDeviceSummary() {
-	if (!navigator.mediaDevices?.enumerateDevices) {
-		return "unavailable";
-	}
-
-	try {
-		const devices = await navigator.mediaDevices.enumerateDevices();
-		const audioInputs = devices.filter(
-			(device) => device.kind === "audioinput",
-		);
-
-		if (audioInputs.length === 0) {
-			return "no audio input found";
-		}
-
-		const hasLabels = audioInputs.some(
-			(device) => device.label.trim().length > 0,
-		);
-
-		return `${audioInputs.length} audio input${audioInputs.length === 1 ? "" : "s"}${hasLabels ? " visible" : " hidden until permission"}`;
-	} catch (error) {
-		return error instanceof DOMException ? error.name : "read failed";
-	}
-}
-
-function readMicrophonePolicyAllowed() {
-	const documentWithPolicy = document as Document & {
-		featurePolicy?: {
-			allowsFeature: (feature: string) => boolean;
-		};
-		permissionsPolicy?: {
-			allowsFeature: (feature: string) => boolean;
-		};
-	};
-
-	try {
-		return (
-			documentWithPolicy.permissionsPolicy?.allowsFeature("microphone") ??
-			documentWithPolicy.featurePolicy?.allowsFeature("microphone") ??
-			null
-		);
-	} catch {
-		return null;
 	}
 }

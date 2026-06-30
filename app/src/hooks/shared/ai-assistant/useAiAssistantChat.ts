@@ -4,13 +4,16 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
 	AiAssistantFallbackErrorMessage,
-	AiAssistantPurchaseRequestPrefillStorageKey,
+	AiAssistantChatInputFocusDelayMs,
+	AiAssistantChatScrollBottomThresholdPx,
+	AiAssistantNavigationStartEvent,
 } from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
 import {
 	LoadAiAssistantChatMessages,
 	LoadAiAssistantChatOpenState,
 	SaveAiAssistantChatMessages,
 	SaveAiAssistantChatOpenState,
+	SaveAiAssistantPurchaseRequestPrefill,
 } from "@/app/src/data/shared/ai-assistant/AiAssistantData";
 import { SendAiAssistantMessage } from "@/app/src/services/shared/ai-assistant/AiAssistantApi";
 import type {
@@ -78,7 +81,10 @@ export function useAiAssistantChat() {
 
 	function openChat() {
 		setIsOpen(true);
-		window.setTimeout(() => inputRef.current?.focus(), 50);
+		window.setTimeout(
+			() => inputRef.current?.focus(),
+			AiAssistantChatInputFocusDelayMs,
+		);
 	}
 
 	function closeChat() {
@@ -100,6 +106,16 @@ export function useAiAssistantChat() {
 		event.preventDefault();
 
 		const nextInput = input.trim();
+
+		if (!nextInput || isSending) {
+			return;
+		}
+
+		await submitMessageText(nextInput);
+	}
+
+	async function submitMessageText(message: string) {
+		const nextInput = message.trim();
 
 		if (!nextInput || isSending) {
 			return;
@@ -148,20 +164,17 @@ export function useAiAssistantChat() {
 		}
 
 		if (action.type === "navigate") {
-			window.dispatchEvent(new Event("gr8books:navigation-start"));
+			window.dispatchEvent(new Event(AiAssistantNavigationStartEvent));
 			router.push(action.route);
 			return;
 		}
 
 		if (action.type === "open_form") {
 			if (action.target === "purchase_request" && action.prefill) {
-				window.localStorage.setItem(
-					AiAssistantPurchaseRequestPrefillStorageKey,
-					JSON.stringify(action.prefill),
-				);
+				SaveAiAssistantPurchaseRequestPrefill(action.prefill);
 			}
 
-			window.dispatchEvent(new Event("gr8books:navigation-start"));
+			window.dispatchEvent(new Event(AiAssistantNavigationStartEvent));
 			router.push(action.route);
 			return;
 		}
@@ -179,6 +192,7 @@ export function useAiAssistantChat() {
 		saveMessagesScroll,
 		setInput,
 		submitMessage,
+		submitMessageText,
 	};
 }
 
@@ -187,5 +201,8 @@ function getMaxScrollTop(element: HTMLDivElement) {
 }
 
 function isScrolledNearBottom(element: HTMLDivElement) {
-	return getMaxScrollTop(element) - element.scrollTop <= 24;
+	return (
+		getMaxScrollTop(element) - element.scrollTop <=
+		AiAssistantChatScrollBottomThresholdPx
+	);
 }

@@ -91,7 +91,6 @@ export function useMasterModuleSystemListPage() {
 			return matchesStatus && matchesQuery;
 		});
 	}, [query, records, statusFilter]);
-	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
 	const table = useReactTable({
 		columns: ModuleSystemColumns,
 		data: filteredRecords,

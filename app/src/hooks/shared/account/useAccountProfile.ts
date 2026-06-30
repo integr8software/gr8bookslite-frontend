@@ -34,6 +34,7 @@ type PendingAvatarCrop = {
 export function useAccountProfile() {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
   const profileDrafts = useAccountPreferences((state) => state.profileDrafts);
   const clearProfileDraft = useAccountPreferences((state) => state.clearProfileDraft);
   const updateProfileDraft = useAccountPreferences(
@@ -50,8 +51,8 @@ export function useAccountProfile() {
   const profileUserId = String(authProfile?.user.id ?? "local-account-user");
   const draft = profileDrafts[profileUserId];
   const profile = useMemo(
-    () => BuildAccountProfileViewModel(authProfile, draft),
-    [authProfile, draft],
+    () => BuildAccountProfileViewModel(authProfile, draft, activeBranchId),
+    [activeBranchId, authProfile, draft],
   );
   const visibleFieldKeys = useMemo(
     () => GetVisibleProfileFields(profile.role),

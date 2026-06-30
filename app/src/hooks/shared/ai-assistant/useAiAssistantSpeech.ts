@@ -567,6 +567,7 @@ export function useAiAssistantSpeech({
 			shouldRestartAutomaticModeRef.current = false;
 			scheduleAutomaticRestart();
 		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps -- scheduleAutomaticRestart reads latest speech state from refs.
 	}, [isSending, isTranscribing]);
 
 	function toggleVoiceReply() {

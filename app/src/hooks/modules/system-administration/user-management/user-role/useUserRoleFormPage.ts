@@ -84,9 +84,13 @@ export function useUserRoleFormPage() {
 		? `${UserRoleHref}/view/${existingUserRole.id}`
 		: UserRoleHref;
 	const submitHref =
-		mode === "edit" && wasOpenedFromView ? viewHref : UserRoleHref;
+		mode === "edit" && wasOpenedFromView
+			? viewHref
+			: UserRoleHref;
 	const cancelHref =
-		mode === "edit" && wasOpenedFromView ? viewHref : UserRoleHref;
+		mode === "edit" && wasOpenedFromView
+			? viewHref
+			: UserRoleHref;
 	const editHref = existingUserRole
 		? `${UserRoleHref}/edit/${existingUserRole.id}?${UserManagementEditFromViewQuery}`
 		: undefined;

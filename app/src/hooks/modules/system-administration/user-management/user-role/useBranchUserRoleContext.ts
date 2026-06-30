@@ -8,7 +8,9 @@ import {
 export function useBranchUserRoleContext() {
 	const storedAccessToken = useAppStore((state) => state.accessToken);
 	const storedActiveCompanyId = useAppStore((state) => state.activeCompanyId);
+	const storedActiveCompanyName = useAppStore((state) => state.activeCompanyName);
 	const storedActiveBranchId = useAppStore((state) => state.activeBranchId);
+	const storedActiveBranchName = useAppStore((state) => state.activeBranchName);
 	const accessToken = storedAccessToken;
 	const fallbackCompanyId = storedActiveCompanyId
 		? String(storedActiveCompanyId)
@@ -21,10 +23,19 @@ export function useBranchUserRoleContext() {
 		(storedActiveBranchId ? String(storedActiveBranchId) : null) ??
 		fallbackBranch?.id ??
 		null;
+	const branchName =
+		storedActiveBranchName ??
+		fallbackBranch?.name ??
+		null;
+	const companyId = fallbackCompanyId;
+	const companyName = storedActiveCompanyName ?? null;
 
 	return {
 		accessToken,
 		branchId,
-		isLoadingBranchContext: fallbackBranches.isLoading,
+		branchName,
+		companyId,
+		companyName,
+		isLoadingBranchContext: !branchId && fallbackBranches.isLoading,
 	};
 }

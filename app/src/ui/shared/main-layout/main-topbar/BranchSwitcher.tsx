@@ -250,7 +250,13 @@ function BranchSwitcherGroup({
 							<Link
 								key={item.key}
 								href={item.href}
-								onClick={() => {
+								onClick={(event) => {
+									if (isCurrentBranch) {
+										event.preventDefault();
+										onClose();
+										return;
+									}
+
 									if (item.branchId) {
 										onBranchSelectionStart(item.branchId);
 										onSelectBranch(item.branchId);

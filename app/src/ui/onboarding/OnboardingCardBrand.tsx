@@ -1,6 +1,4 @@
-import type { ReactNode } from "react";
 import { CreditCard } from "lucide-react";
-import cardImages from "react-payment-inputs/images";
 
 type CardBrand =
   | "visa"
@@ -50,18 +48,87 @@ export function OnboardingCardBrand({ value }: { value: string }) {
 
   const label = CardBrandLabels[brand];
 
-  if (brand === "amex") {
-    return <AmericanExpressLogo />;
+  switch (brand) {
+    case "visa":
+      return <CardLogo label={label} background="#1434CB" text="VISA" />;
+    case "mastercard":
+      return <MastercardLogo />;
+    case "amex":
+      return <AmericanExpressLogo />;
+    case "discover":
+      return <CardLogo label={label} background="#F58220" text="DISC" />;
+    case "jcb":
+      return <CardLogo label={label} background="#0B6CB8" text="JCB" />;
+    case "dinersclub":
+      return <CardLogo label={label} background="#0079BE" text="DINERS" />;
   }
+}
 
+function CardLogo({
+  background,
+  label,
+  text,
+}: {
+  background: string;
+  label: string;
+  text: string;
+}) {
   return (
     <svg
-      viewBox="0 0 24 16"
+      viewBox="0 0 64 40"
       role="img"
       aria-label={label}
       className="h-8 w-12 drop-shadow-sm"
     >
-      {cardImages[brand] as ReactNode}
+      <rect width="64" height="40" rx="5" fill={background} />
+      <rect
+        x="2"
+        y="2"
+        width="60"
+        height="36"
+        rx="4"
+        fill="none"
+        stroke="#fff"
+        strokeOpacity="0.42"
+        strokeWidth="1.5"
+      />
+      <text
+        x="32"
+        y="25"
+        fill="#fff"
+        fontSize={text.length > 4 ? "10" : "14"}
+        fontWeight="900"
+        textAnchor="middle"
+        letterSpacing="0"
+      >
+        {text}
+      </text>
+    </svg>
+  );
+}
+
+function MastercardLogo() {
+  return (
+    <svg
+      viewBox="0 0 64 40"
+      role="img"
+      aria-label="Mastercard"
+      className="h-8 w-12 drop-shadow-sm"
+    >
+      <rect width="64" height="40" rx="5" fill="#252525" />
+      <circle cx="27" cy="20" r="11" fill="#EB001B" />
+      <circle cx="37" cy="20" r="11" fill="#F79E1B" fillOpacity="0.9" />
+      <text
+        x="32"
+        y="34"
+        fill="#fff"
+        fontSize="6"
+        fontWeight="800"
+        textAnchor="middle"
+        letterSpacing="0"
+      >
+        Mastercard
+      </text>
     </svg>
   );
 }
@@ -92,7 +159,7 @@ function AmericanExpressLogo() {
         fontSize="9"
         fontWeight="900"
         textAnchor="middle"
-        letterSpacing="-0.4"
+        letterSpacing="0"
       >
         AMERICAN
       </text>
@@ -103,7 +170,7 @@ function AmericanExpressLogo() {
         fontSize="10"
         fontWeight="900"
         textAnchor="middle"
-        letterSpacing="-0.5"
+        letterSpacing="0"
       >
         EXPRESS
       </text>

@@ -83,25 +83,26 @@ export function MasterModuleSystemSidebarPage({ recordId }: { recordId: string }
 	);
 	const sidebarQuery = useMasterModuleSystemSidebarQuery(record?.id ?? null);
 	const [sidebarDraft, setSidebarDraft] = useState<MasterModuleSystemSidebarItem[]>([]);
-
-	useEffect(() => {
-		if (!record) return;
+	const [isSidebarDraftDirty, setIsSidebarDraftDirty] = useState(false);
+	const initialSidebarDraft = useMemo(() => {
+		if (!record) return [];
 		const configuredSidebar = record.sidebar.length
 			? record.sidebar
 			: (sidebarQuery.data?.fallbackSidebar ?? []);
-		setSidebarDraft(
-			normalizeSidebarTree(
-				ensureAssignedModuleLinks(cloneSidebar(configuredSidebar), record.modules),
-			),
+		return normalizeSidebarTree(
+			ensureAssignedModuleLinks(cloneSidebar(configuredSidebar), record.modules),
 		);
 	}, [record, sidebarQuery.data]);
+	const effectiveSidebarDraft = isSidebarDraftDirty
+		? sidebarDraft
+		: initialSidebarDraft;
 
 	const saveSidebarMutation = useMutation({
 		mutationFn: async () => {
 			if (!record) throw new Error("System not found.");
 			return saveMasterModuleSystemSidebar(
 				record.id,
-				normalizeSidebarTree(sidebarDraft),
+				normalizeSidebarTree(effectiveSidebarDraft),
 			);
 		},
 		onSuccess: async () => {
@@ -162,10 +163,13 @@ export function MasterModuleSystemSidebarPage({ recordId }: { recordId: string }
 				fallbackSidebar={sidebarQuery.data?.fallbackSidebar ?? []}
 				isLoading={sidebarQuery.isLoading}
 				isSaving={saveSidebarMutation.isPending}
-				items={sidebarDraft}
+				items={effectiveSidebarDraft}
 				modules={record.modules}
 				onSave={() => saveSidebarMutation.mutate()}
-				onUpdate={setSidebarDraft}
+				onUpdate={(items) => {
+					setIsSidebarDraftDirty(true);
+					setSidebarDraft(items);
+				}}
 			/>
 		</section>
 	);
@@ -406,13 +410,13 @@ function SidebarDropGap({
 }) {
 	const gap = { depth, index, parentKey };
 	const gapId = getSidebarGapId(gap);
-	const droppable = useDroppable({ id: gapId });
+	const { isOver, setNodeRef } = useDroppable({ id: gapId });
 	const isActive =
 		dropPreview?.mode === "gap" && dropPreview.targetKey === gapId;
 
 	return (
 		<div
-			ref={droppable.setNodeRef}
+			ref={setNodeRef}
 			className={joinClasses(
 				"group relative flex h-3 items-center transition",
 				depth === 1 && "pl-4",
@@ -422,7 +426,7 @@ function SidebarDropGap({
 			<div
 				className={joinClasses(
 					"relative h-1 w-full rounded-full transition",
-					isActive || droppable.isOver
+					isActive || isOver
 						? "bg-skyblue shadow-[0_0_0_3px_rgba(0,102,255,0.14)]"
 						: "bg-transparent group-hover:bg-skyblue/35",
 				)}
@@ -459,7 +463,14 @@ function SidebarTreeRow({
 	) => void;
 	onRemove: (key: string) => void;
 }) {
-	const sortable = useSortable({ id: item.key });
+	const {
+		attributes,
+		isDragging,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+	} = useSortable({ id: item.key });
 	const isStructural = item.itemType !== "LINK";
 	const previewMode = dropPreview?.targetKey === item.key ? dropPreview.mode : null;
 	const Icon = getSidebarItemIcon(item, depth);
@@ -468,14 +479,14 @@ function SidebarTreeRow({
 	return (
 		<div className="rounded-lg bg-white">
 			<div
-				ref={sortable.setNodeRef}
+				ref={setNodeRef}
 				style={{
-					transform: CSS.Transform.toString(sortable.transform),
-					transition: sortable.transition,
+					transform: CSS.Transform.toString(transform),
+					transition,
 				}}
 				className={joinClasses(
 					"group relative grid grid-cols-[auto_auto_minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-darknavy/8 bg-white px-3 py-2 transition",
-					sortable.isDragging && "opacity-45",
+					isDragging && "opacity-45",
 					isStructural && "bg-offwhite/45",
 					previewMode === "inside" &&
 						"border-skyblue/55 bg-skyblue/8 shadow-[inset_0_0_0_1px_rgba(0,102,255,0.18),0_0_0_2px_rgba(0,102,255,0.16)]",
@@ -484,8 +495,8 @@ function SidebarTreeRow({
 				<button
 					type="button"
 					aria-label={`Drag ${item.label}`}
-					{...sortable.attributes}
-					{...sortable.listeners}
+					{...attributes}
+					{...listeners}
 					className="inline-flex h-8 w-8 cursor-grab items-center justify-center rounded-md text-darknavy/45 transition hover:bg-darknavy/5 active:cursor-grabbing"
 				>
 					<Grip className="h-4 w-4" aria-hidden="true" />

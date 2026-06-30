@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -69,38 +69,56 @@ export function MasterModuleSystemFormPage({
 	);
 	const [metadataDraft, setMetadataDraft] = useState<DraftSystem>(EmptyDraft);
 	const [moduleDraft, setModuleDraft] = useState<Set<string>>(new Set());
-
-	useEffect(() => {
-		if (mode === "edit" && record) {
-			setMetadataDraft({
-				code: record.code,
-				name: record.name,
-				description: record.description,
-				sortOrder: record.sortOrder,
-				status: record.isActive ? "Active" : "Inactive",
-			});
-			setModuleDraft(new Set(record.modules.map((module) => module.code)));
-		}
-	}, [mode, record]);
+	const [isMetadataDirty, setIsMetadataDirty] = useState(false);
+	const [isModuleDraftDirty, setIsModuleDraftDirty] = useState(false);
+	const initialMetadataDraft = useMemo<DraftSystem>(
+		() =>
+			mode === "edit" && record
+				? {
+						code: record.code,
+						name: record.name,
+						description: record.description,
+						sortOrder: record.sortOrder,
+						status: record.isActive ? "Active" : "Inactive",
+					}
+				: EmptyDraft,
+		[mode, record],
+	);
+	const initialModuleDraft = useMemo(
+		() =>
+			mode === "edit" && record
+				? new Set(record.modules.map((module) => module.code))
+				: new Set<string>(),
+		[mode, record],
+	);
+	const effectiveMetadataDraft = isMetadataDirty
+		? metadataDraft
+		: initialMetadataDraft;
+	const effectiveModuleDraft = isModuleDraftDirty
+		? moduleDraft
+		: initialModuleDraft;
 
 	const saveMutation = useMutation({
 		mutationFn: async () => {
-			if (!metadataDraft.code.trim() || !metadataDraft.name.trim()) {
+			if (
+				!effectiveMetadataDraft.code.trim() ||
+				!effectiveMetadataDraft.name.trim()
+			) {
 				throw new Error("System code and name are required.");
 			}
 
 			if (mode === "add") {
 				const created = await createMasterModuleSystem({
-					code: metadataDraft.code,
-					name: metadataDraft.name,
-					description: metadataDraft.description || null,
-					sortOrder: Math.max(0, metadataDraft.sortOrder),
-					isActive: metadataDraft.status === "Active",
+					code: effectiveMetadataDraft.code,
+					name: effectiveMetadataDraft.name,
+					description: effectiveMetadataDraft.description || null,
+					sortOrder: Math.max(0, effectiveMetadataDraft.sortOrder),
+					isActive: effectiveMetadataDraft.status === "Active",
 				});
-				if (moduleDraft.size > 0) {
+				if (effectiveModuleDraft.size > 0) {
 					await saveMasterModuleSystemModules(
 						created.system.id,
-						Array.from(moduleDraft),
+						Array.from(effectiveModuleDraft),
 					);
 				}
 				return created.system;
@@ -108,13 +126,16 @@ export function MasterModuleSystemFormPage({
 
 			if (!record) throw new Error("System not found.");
 			await updateMasterModuleSystem(record.id, {
-				code: metadataDraft.code,
-				name: metadataDraft.name,
-				description: metadataDraft.description || null,
-				sortOrder: Math.max(0, metadataDraft.sortOrder),
-				isActive: metadataDraft.status === "Active",
+				code: effectiveMetadataDraft.code,
+				name: effectiveMetadataDraft.name,
+				description: effectiveMetadataDraft.description || null,
+				sortOrder: Math.max(0, effectiveMetadataDraft.sortOrder),
+				isActive: effectiveMetadataDraft.status === "Active",
 			});
-			await saveMasterModuleSystemModules(record.id, Array.from(moduleDraft));
+			await saveMasterModuleSystemModules(
+				record.id,
+				Array.from(effectiveModuleDraft),
+			);
 			return record;
 		},
 		onSuccess: async (system) => {
@@ -182,31 +203,40 @@ export function MasterModuleSystemFormPage({
 			/>
 			<div className="grid gap-5 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
 				<SystemDetailsPanel
-					draft={metadataDraft}
-					onUpdate={setMetadataDraft}
+					draft={effectiveMetadataDraft}
+					onUpdate={(draft) => {
+						setIsMetadataDirty(true);
+						setMetadataDraft(draft);
+					}}
 				/>
 				<AssignedModulesPanel
 					isLoading={modulesQuery.isLoading}
-					moduleDraft={moduleDraft}
+					moduleDraft={effectiveModuleDraft}
 					modules={modules}
-					onToggle={(moduleCode) =>
+					onToggle={(moduleCode) => {
+						setIsModuleDraftDirty(true);
 						setModuleDraft((current) => {
-							const next = new Set(current);
+							const next = new Set(
+								isModuleDraftDirty ? current : initialModuleDraft,
+							);
 							if (next.has(moduleCode)) next.delete(moduleCode);
 							else next.add(moduleCode);
 							return next;
-						})
-					}
-					onToggleMany={(moduleCodes, shouldSelect) =>
+						});
+					}}
+					onToggleMany={(moduleCodes, shouldSelect) => {
+						setIsModuleDraftDirty(true);
 						setModuleDraft((current) => {
-							const next = new Set(current);
+							const next = new Set(
+								isModuleDraftDirty ? current : initialModuleDraft,
+							);
 							for (const moduleCode of moduleCodes) {
 								if (shouldSelect) next.add(moduleCode);
 								else next.delete(moduleCode);
 							}
 							return next;
-						})
-					}
+						});
+					}}
 				/>
 			</div>
 		</section>

@@ -401,7 +401,10 @@ function InlineSidebarCustomizer({
 		() => (dirty ? items : sourceItems.map(normalize)),
 		[dirty, items, sourceItems],
 	);
-	const rootDroppable = useDroppable({ id: InlineCustomizerRootDropId });
+	const {
+		isOver: isRootDroppableOver,
+		setNodeRef: setRootDroppableNodeRef,
+	} = useDroppable({ id: InlineCustomizerRootDropId });
 	const save = useMutation({
 		mutationFn: async () => {
 			const customization = query.data ?? (await query.refetch()).data;
@@ -508,10 +511,10 @@ function InlineSidebarCustomizer({
 				onDragEnd={onDragEnd}
 			>
 				<div
-					ref={rootDroppable.setNodeRef}
+					ref={setRootDroppableNodeRef}
 					className={joinClasses(
 						"rounded-md transition",
-						rootDroppable.isOver && "bg-skyblue/5",
+						isRootDroppableOver && "bg-skyblue/5",
 					)}
 				>
 					<CustomizerGap
@@ -640,7 +643,14 @@ function InlineEditableRow({
 	openIconPickerId: number | null;
 	onOpenIconPickerChange: (itemId: number | null) => void;
 }) {
-	const sortable = useSortable({ id: String(item.id) });
+	const {
+		attributes,
+		isDragging: isSortableDragging,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+	} = useSortable({ id: String(item.id) });
 	const isStructural = item.itemType !== "LINK";
 	const configuredIcon = item.iconName ? SidebarAllowedIcons[item.iconName] : undefined;
 	const ConfiguredIcon = configuredIcon;
@@ -653,12 +663,12 @@ function InlineEditableRow({
 
 	return (
 		<div
-			ref={sortable.setNodeRef}
+			ref={setNodeRef}
 			style={{
-				transform: CSS.Transform.toString(sortable.transform),
-				transition: sortable.transition,
+				transform: CSS.Transform.toString(transform),
+				transition,
 			}}
-			className={joinClasses("rounded-md", sortable.isDragging && "opacity-45")}
+			className={joinClasses("rounded-md", isSortableDragging && "opacity-45")}
 		>
 			<div
 				className={joinClasses(
@@ -702,8 +712,8 @@ function InlineEditableRow({
 				<button
 					type="button"
 					aria-label={`Drag ${item.label}`}
-					{...sortable.attributes}
-					{...sortable.listeners}
+					{...attributes}
+					{...listeners}
 					className="grid h-7 w-7 shrink-0 cursor-grab place-items-center rounded text-darknavy/35 hover:bg-darknavy/5 hover:text-darknavy/55 active:cursor-grabbing"
 				>
 					<GripVertical className="h-3.5 w-3.5" />
@@ -775,7 +785,7 @@ function CustomizerGap({
 	isDragging: boolean;
 	onAddSection?: () => void;
 }) {
-	const droppable = useDroppable({
+	const { isOver, setNodeRef } = useDroppable({
 		id: getGapId({ type: "gap", parentId, index, depth }),
 	});
 	const widthClass =
@@ -783,7 +793,7 @@ function CustomizerGap({
 
 	return (
 		<div
-			ref={droppable.setNodeRef}
+			ref={setNodeRef}
 			className={joinClasses(
 				"group relative -my-px flex h-1 items-center",
 				depth === 1 && "pl-3",
@@ -794,7 +804,7 @@ function CustomizerGap({
 				className={joinClasses(
 					"relative h-px transition",
 					widthClass,
-					droppable.isOver ? "bg-skyblue" : "bg-transparent group-hover:bg-skyblue/45",
+					isOver ? "bg-skyblue" : "bg-transparent group-hover:bg-skyblue/45",
 				)}
 			>
 				{canAddSection && !isDragging ? (

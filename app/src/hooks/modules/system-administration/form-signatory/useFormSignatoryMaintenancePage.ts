@@ -23,11 +23,9 @@ import {
 	FormSignatoryMaxRows,
 	getFormSignatoryTableColumns,
 } from "@/app/src/constants/modules/system-administration/form-signatory/FormSignatoryConstants";
-import {
-	createEmptyFormSignatoryRow,
-	getFallbackFormSignatoryModuleOptions,
-} from "@/app/src/data/modules/system-administration/form-signatory/FormSignatoryData";
+import { createEmptyFormSignatoryRow } from "@/app/src/data/modules/system-administration/form-signatory/FormSignatoryData";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetup";
 import {
 	GetFormSignatoryBootstrap,
 	SaveFormSignatorySetup,
@@ -51,6 +49,10 @@ export function useFormSignatoryMaintenancePage() {
 	const queryClient = useQueryClient();
 	const accessToken = useAppStore((state) => state.accessToken);
 	const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
+	const {
+		isLoading: isApprovalModuleLoading,
+		setups: approvalModuleSetups,
+	} = useTransactionNumberSetupStore();
 	const actionMode = getActionMode(pathname);
 	const scopedEditRowId =
 		actionMode === "edit" ? searchParams.get("rowId") ?? "" : "";
@@ -103,23 +105,39 @@ export function useFormSignatoryMaintenancePage() {
 		return actionMode === "list" ? withAllOption(options) : options;
 	}, [actionMode, bootstrapQuery.data?.branches]);
 	const moduleOptions = useMemo<FormSignatoryModuleOption[]>(() => {
+		const approvalModuleOptions = approvalModuleSetups
+			.map<FormSignatoryModuleOption>((setup) => ({
+				id: String(setup.moduleId),
+				label: setup.moduleName,
+				value: setup.moduleCode,
+			}))
+			.filter(
+				(option, index, options) =>
+					options.findIndex((current) => current.value === option.value) ===
+					index,
+			)
+			.sort((left, right) => left.label.localeCompare(right.label));
+
+		if (approvalModuleOptions.length > 0) {
+			return actionMode === "list"
+				? withAllOption(approvalModuleOptions)
+				: [{ label: "Select Module", value: "" }, ...approvalModuleOptions];
+		}
+
 		if (!bootstrapQuery.data) {
 			return actionMode === "list"
 				? [{ label: "All", value: "" }]
 				: [{ label: "Loading modules...", value: "" }];
 		}
 
-		const apiOptions = bootstrapQuery.data.modules;
-		const options =
-			apiOptions.length > 1
-				? apiOptions
-				: [
-						{ label: "Select Module", value: "" },
-						...getFallbackFormSignatoryModuleOptions(),
-					];
+		const options = bootstrapQuery.data.modules.filter(
+			(option) => option.value,
+		);
 
-		return actionMode === "list" ? withAllOption(options) : options;
-	}, [actionMode, bootstrapQuery.data]);
+		return actionMode === "list"
+			? withAllOption(options)
+			: [{ label: "Select Module", value: "" }, ...options];
+	}, [actionMode, approvalModuleSetups, bootstrapQuery.data]);
 	const recordSetup =
 		actionMode === "edit" && params.recordId
 			? setups.find((setup) => setup.id === params.recordId)
@@ -564,7 +582,9 @@ export function useFormSignatoryMaintenancePage() {
 		handleSignatureFile,
 		isEditing,
 		isLoading:
-			!isAuthSessionReady || bootstrapQuery.isLoading,
+			!isAuthSessionReady ||
+			bootstrapQuery.isLoading ||
+			isApprovalModuleLoading,
 		lastSyncedAt: bootstrapQuery.dataUpdatedAt,
 		isRecordMissing:
 			actionMode === "edit" &&

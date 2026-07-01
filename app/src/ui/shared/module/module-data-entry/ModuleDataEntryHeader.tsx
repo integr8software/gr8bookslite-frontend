@@ -9,7 +9,7 @@ export function ModuleDataEntryHeader({
 	actions?: ReactNode;
 	description: string;
 	entryCountLabel: string;
-	title: string;
+	title: ReactNode;
 }) {
 	return (
 		<div className="relative z-50 flex shrink-0 flex-col gap-3 rounded-t-lg border-b border-darknavy/10 bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between">

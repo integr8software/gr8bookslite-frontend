@@ -54,14 +54,14 @@ export function BankMasterfileFields({
 							placeholder="Makati Branch"
 						/>
 					</FormField>
-					<FormField label="Account Number" error={errors.accountNumber} required>
+					<FormField label="Account Number" error={errors.accountNumber}>
 						<input
 							name="accountNumber"
 							value={values.accountNumber}
 							onChange={onInputChange}
 							readOnly={isReadonly}
 							className={fieldClassName}
-							placeholder="1234567890"
+							placeholder="Uses COA code if blank"
 						/>
 					</FormField>
 					<FormField label="Account Type" error={errors.accountType}>

@@ -70,7 +70,11 @@ function BankMasterfileCellContent({
 		case "branch":
 			return <span>{bank.branch || ""}</span>;
 		case "accountNumber":
-			return <span className="font-mono text-darknavy/80">{bank.accountNumber}</span>;
+			return (
+				<span className="font-mono text-darknavy/80">
+					{bank.accountNumber || bank.accountCode}
+				</span>
+			);
 		case "accountName":
 			return (
 				<span className="block truncate text-darknavy/75" title={bank.accountName}>

@@ -156,12 +156,6 @@ export function validateBankImportRows(
 		);
 		addRequiredError(
 			cellErrors,
-			"accountNumber",
-			values.accountNumber,
-			"Account number is required.",
-		);
-		addRequiredError(
-			cellErrors,
 			"currencyCode",
 			values.currencyCode,
 			"Currency is required.",

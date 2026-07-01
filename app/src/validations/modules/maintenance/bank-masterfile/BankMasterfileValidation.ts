@@ -12,10 +12,6 @@ export function validateBankMasterfileForm(
 		errors.bankName = "Bank is required.";
 	}
 
-	if (!values.accountNumber.trim()) {
-		errors.accountNumber = "Account number is required.";
-	}
-
 	if (!values.currencyCode.trim()) {
 		errors.currencyCode = "Currency is required.";
 	}

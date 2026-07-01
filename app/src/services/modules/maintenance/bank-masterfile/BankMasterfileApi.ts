@@ -173,7 +173,7 @@ function toApiBankPayload(bank: BankMasterfile | BankMasterfileFormValues) {
 	return {
 		bankName: bank.bankName.trim(),
 		branch: cleanOptional(bank.branch),
-		accountNumber: bank.accountNumber.trim(),
+		accountNumber: cleanOptional(bank.accountNumber),
 		accountType: cleanOptional(bank.accountType),
 		currencyCode: cleanOptional(bank.currencyCode),
 		currencyExchangeRate: toOptionalNumber(bank.currencyExchangeRate),

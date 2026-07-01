@@ -1,10 +1,19 @@
 import type {
+	TermImportColumnId,
 	TermManagementDatemode,
 	TermManagementStatus,
-} from "@/app/src/types/modules/maintenance/financial-management/term-management/TermManagementTypes";
+} from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
+import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 
 export const TermManagementHref =
 	"/maintenance/term-management";
+
+export const TermManagementParentLabel = "Accounting master data";
+
+export const TermManagementTitle = "Term Management";
+
+export const TermManagementDescription =
+	"Manage datemode and period definitions used for term reporting and payment cycles.";
 
 export const TermManagementTablePaginationStorageKey =
 	"maintenance:financial-management:term-management";
@@ -12,27 +21,52 @@ export const TermManagementTablePaginationStorageKey =
 export const TermManagementTableColumns = [
 	{
 		key: "name",
-		label: "Name",
-		className: "w-[32%]",
+		label: "Term Name",
+		className: "w-[20%]",
+	},
+	{
+		key: "description",
+		label: "Description",
+		className: "w-[28%]",
 	},
 	{
 		key: "datemode",
-		label: "Datemode",
-		className: "w-[18%]",
+		label: "Date Mode",
+		className: "w-[13%]",
 	},
 	{
 		key: "period",
 		label: "Period",
-		className: "w-[16%]",
+		className: "w-[11%]",
 	},
 	{
 		key: "status",
 		label: "Status",
+		className: "w-[12%]",
+	},
+	{
+		key: "createdBy",
+		label: "Created By",
+		className: "w-[14%]",
+	},
+	{
+		key: "createdAt",
+		label: "Date Created",
 		className: "w-[16%]",
 	},
 	{
-		label: "Actions",
-		className: "w-[18%] text-center",
+		key: "updatedBy",
+		label: "Modified By",
+		className: "w-[14%]",
+	},
+	{
+		key: "updatedAt",
+		label: "Date Modified",
+		className: "w-[16%]",
+	},
+	{
+		label: "Action",
+		className: "w-[16%] text-center",
 	},
 ] as const;
 
@@ -64,3 +98,30 @@ export const TermManagementActionCopy = {
 			"Review the configured term details before making changes.",
 	},
 } as const;
+
+export const TermImportTemplateHeaders = ["Name", "Datemode", "Period"];
+
+export const TermImportDefaultColumnIndexes: Record<TermImportColumnId, number> = {
+	name: 0,
+	datemode: 1,
+	period: 2,
+};
+
+export const TermImportFieldOrder: TermImportColumnId[] = [
+	"name",
+	"datemode",
+	"period",
+];
+
+export const TermImportPreviewPageSize = 10;
+export const TermImportBatchSize = 25;
+export const TermImportMinFileSizeBytes = 1;
+export const TermImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;
+
+export const TemplateHeaders = TermImportTemplateHeaders;
+export const DefaultColumnIndexes = TermImportDefaultColumnIndexes;
+export const ImportFieldOrder = TermImportFieldOrder;
+export const PreviewPageSize = TermImportPreviewPageSize;
+export const ImportBatchSize = TermImportBatchSize;
+export const MinImportFileSizeBytes = TermImportMinFileSizeBytes;
+export const MaxImportFileSizeBytes = TermImportMaxFileSizeBytes;

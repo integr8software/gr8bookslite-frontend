@@ -17,7 +17,10 @@ export function usePartyManagementListPage() {
   return {
     analytics,
     isLoading: partyManagement.isLoading,
+    isRefreshing: partyManagement.isRefreshing,
+    lastSyncedAt: partyManagement.lastSyncedAt,
     records: partyManagement.records,
+    refreshRecords: partyManagement.refreshRecords,
   };
 }
 
@@ -40,12 +43,17 @@ function getPartyManagementAnalytics(
         analytics.organizationpartyName += 1;
       }
 
+      if (record.partyTypes.length > 1) {
+        analytics.multiTypepartyName += 1;
+      }
+
       return analytics;
     },
     {
       activepartyName: 0,
       inactivepartyName: 0,
       individualpartyName: 0,
+      multiTypepartyName: 0,
       organizationpartyName: 0,
       totalpartyName: 0,
     },

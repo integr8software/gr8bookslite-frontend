@@ -15,7 +15,8 @@ import { useSalesJournalStore } from "@/app/src/hooks/modules/sales/sales-journa
 import type { SalesJournalRecord } from "@/app/src/types/modules/sales/sales-journal/SalesJournalTypes";
 
 export function useSalesJournalListPage() {
-	const { deleteRecord, isLoading, isMutating, records } = useSalesJournalStore();
+	const { deleteRecord, isLoading, isMutating, lastSyncedAt, records } =
+		useSalesJournalStore();
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
 		pageSize: 5,
@@ -113,6 +114,7 @@ export function useSalesJournalListPage() {
 		handleQueryChange,
 		isLoading,
 		isMutating,
+		lastSyncedAt,
 		pendingDeleteRecord,
 		query,
 		setPendingDeleteRecord,

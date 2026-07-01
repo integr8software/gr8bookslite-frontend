@@ -139,6 +139,7 @@ export function useAuditTrailListPage() {
 		handleModuleFilterChange,
 		handleQueryChange,
 		isLoading: recordsQuery.isLoading,
+		lastSyncedAt: recordsQuery.dataUpdatedAt,
 		moduleFilter,
 		moduleOptions: AuditTrailModuleOptions,
 		matchedModuleCount: new Set(

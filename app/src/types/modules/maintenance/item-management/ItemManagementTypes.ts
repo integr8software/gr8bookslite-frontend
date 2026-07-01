@@ -83,6 +83,15 @@ export type ItemSupplierAssignment = {
 	isDefault: boolean;
 };
 
+export type ItemSupplierRecord = {
+	id: string;
+	code: string;
+	name: string;
+	contactPerson: string;
+	contactDetails: string;
+	status: ItemStatus;
+};
+
 export type ItemUomConversion = {
 	id: string;
 	fromUom: string;

@@ -23,10 +23,12 @@ import { DisbursementVoucherRecordActions } from "@/app/src/ui/modules/cash-disb
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function DisbursementVoucherTable({
+	lastSyncedAt,
 	table,
 	toolbar,
 	onUpdateStatus,
 }: {
+	lastSyncedAt?: number | string | Date | null;
 	table: ReturnType<
 		typeof import("@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher").useDisbursementVoucherPreviewTable
 	>["table"];
@@ -44,8 +46,10 @@ export function DisbursementVoucherTable({
 			minWidthClassName="min-w-[87rem]"
 			paginationLabel="entries"
 			paginationStorageKey={DisbursementVoucherTablePaginationStorageKey}
+			lastSyncedAt={lastSyncedAt}
 			pageSizeOptions={[5, 10, 15, 20, 25, 50]}
 			table={table}
+			tableTitle="Voucher entries"
 			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<tr key={id} className="module-table-row border-b border-darknavy/8 last:border-b-0">

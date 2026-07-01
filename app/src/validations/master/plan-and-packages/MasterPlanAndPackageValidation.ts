@@ -29,7 +29,7 @@ const MasterPlanAndPackageFormSchema = z
 			.string()
 			.trim()
 			.min(10, "Description must be at least 10 characters."),
-		featureIds: z.array(z.string()).min(1, "Select at least one module feature."),
+		featureIds: z.array(z.string()).min(1, "Select at least one system."),
 		id: z.string().optional(),
 		branchAddOnPrice: z
 			.number()

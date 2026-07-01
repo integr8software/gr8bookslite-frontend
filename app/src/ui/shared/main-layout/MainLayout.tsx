@@ -54,11 +54,11 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		canAccessMaster,
 		canAccessWorkspace,
 		canSwitchCompany,
+		companyUserModuleItems,
 		currentBranch,
 		currentCompany,
 		currentHelpArticle,
 		currentUser,
-		enabledQuickListTabs,
 		expandedKeys,
 		hasBranchAccess,
 		helpArticles,
@@ -78,7 +78,6 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		navigationSections,
 		notificationTab,
 		query,
-		recentlyVisitedModules,
 		searchResults,
 		selectedHelpArticleKey,
 		shouldAutoRevealActiveRoute,
@@ -235,14 +234,16 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 							? administrationSidebarType
 							: (currentCompany.businessKind ?? "Company")
 					}
-					enabledQuickListTabs={enabledQuickListTabs}
 					expandedKeys={expandedKeys}
 					homeHref={homeHref}
 					isLoading={isProfileLoading}
 					isOpen={isSidebarOpen}
 					isTransitionEnabled={isSidebarTransitionEnabled}
 					navigationSections={navigationSections}
-					recentlyVisitedModules={recentlyVisitedModules}
+					userModuleItems={companyUserModuleItems}
+					canCustomizeSidebar={
+						activeNavigationScope === "company"
+					}
 					shouldAutoScrollActiveItem={shouldAutoRevealActiveRoute}
 					onClose={closeSidebar}
 					onNavigateFromSidebar={markSidebarNavigation}

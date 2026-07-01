@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-table";
 import {
 	BadgeDollarSign,
+	Building2,
 	CheckCircle2,
 	CirclePause,
 	ListChecks,
@@ -27,7 +28,7 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
@@ -41,11 +42,16 @@ import {
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item-management/useItemManagement";
-import type { ItemAttributeRecord } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
+import type {
+	ItemAttributeRecord,
+	ItemStatus,
+	ItemSupplierRecord,
+} from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 
 type ItemManagementSupportPageKind =
 	| "item-attributes"
 	| "price-lists"
+	| "suppliers"
 	| "unit-of-measurement";
 
 type SupportRecord = {
@@ -94,6 +100,14 @@ const PageConfig = {
 		tableHeaders: ["Price List Code", "Price List", "Customer Group", "Currency / Mode", "Status"],
 		title: "Price Lists",
 	},
+	suppliers: {
+		description: "Maintain reusable suppliers that can be assigned to item records for supplier order, costs, and purchasing references.",
+		actionLabel: "Add Supplier",
+		icon: Building2,
+		records: [],
+		tableHeaders: ["Supplier Code", "Supplier", "Contact Person", "Contact Details", "Status"],
+		title: "Suppliers",
+	},
 	"unit-of-measurement": {
 		description: "Maintain unit codes used by item records and item-specific conversions for purchasing, sales, stock, and barcode handling.",
 		actionLabel: "Add Unit",
@@ -129,15 +143,8 @@ export function ItemManagementSupportPage({
 }) {
 	const config = PageConfig[kind];
 	const Icon = config.icon;
-	const { itemAttributes } = useItemManagementStore();
-	const initialRecords = useMemo(
-		() =>
-			kind === "item-attributes"
-				? itemAttributes.map(createAttributeSupportRecord)
-				: config.records,
-		[config.records, itemAttributes, kind],
-	);
-	const [records, setRecords] = useState(() => initialRecords);
+	const store = useItemManagementStore();
+	const [localRecords, setLocalRecords] = useState(() => config.records);
 	const [modal, setModal] = useState<SupportModalState>(null);
 	const [pendingStatusRecord, setPendingStatusRecord] =
 		useState<SupportRecord | null>(null);
@@ -150,6 +157,17 @@ export function ItemManagementSupportPage({
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
 	]);
+	const records = useMemo(() => {
+		if (kind === "item-attributes") {
+			return store.itemAttributes.map(createAttributeSupportRecord);
+		}
+
+		if (kind === "suppliers") {
+			return store.itemSuppliers.map(createSupplierSupportRecord);
+		}
+
+		return localRecords;
+	}, [kind, localRecords, store.itemAttributes, store.itemSuppliers]);
 	const filteredRecords = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
@@ -259,7 +277,43 @@ export function ItemManagementSupportPage({
 				? normalizeAttributeSupportRecord(modal.record)
 				: modal.record;
 
-		setRecords((currentRecords) => {
+		if (kind === "item-attributes") {
+			const existingAttribute = store.itemAttributes.find(
+				(attribute) => attribute.id === nextRecord.id,
+			);
+			const nextAttribute = createItemAttributeRecord(
+				nextRecord,
+				existingAttribute,
+			);
+
+			if (modal.mode === "add") {
+				store.addItemAttribute(nextAttribute);
+			} else {
+				store.updateItemAttribute(nextAttribute);
+			}
+			setModal(null);
+			return;
+		}
+
+		if (kind === "suppliers") {
+			const existingSupplier = store.itemSuppliers.find(
+				(supplier) => supplier.id === nextRecord.id,
+			);
+			const nextSupplier = createItemSupplierRecord(
+				nextRecord,
+				existingSupplier,
+			);
+
+			if (modal.mode === "add") {
+				store.addItemSupplier(nextSupplier);
+			} else {
+				store.updateItemSupplier(nextSupplier);
+			}
+			setModal(null);
+			return;
+		}
+
+		setLocalRecords((currentRecords) => {
 			if (modal.mode === "add") {
 				return [...currentRecords, nextRecord];
 			}
@@ -276,16 +330,38 @@ export function ItemManagementSupportPage({
 			return;
 		}
 
-		setRecords((currentRecords) =>
-			currentRecords.map((record) =>
-				record.id === pendingStatusRecord.id
-					? {
-							...record,
-							status: nextPendingStatus,
-						}
-					: record,
-			),
-		);
+		const nextRecord = {
+			...pendingStatusRecord,
+			status: nextPendingStatus,
+		};
+
+		if (kind === "item-attributes") {
+			const existingAttribute = store.itemAttributes.find(
+				(attribute) => attribute.id === pendingStatusRecord.id,
+			);
+
+			if (existingAttribute) {
+				store.updateItemAttribute(
+					createItemAttributeRecord(nextRecord, existingAttribute),
+				);
+			}
+		} else if (kind === "suppliers") {
+			const existingSupplier = store.itemSuppliers.find(
+				(supplier) => supplier.id === pendingStatusRecord.id,
+			);
+
+			if (existingSupplier) {
+				store.updateItemSupplier(
+					createItemSupplierRecord(nextRecord, existingSupplier),
+				);
+			}
+		} else {
+			setLocalRecords((currentRecords) =>
+				currentRecords.map((record) =>
+					record.id === pendingStatusRecord.id ? nextRecord : record,
+				),
+			);
+		}
 		setPendingStatusRecord(null);
 	}
 
@@ -313,8 +389,8 @@ export function ItemManagementSupportPage({
 					</>
 				}
 			/>
-			<ModuleMetrics
-				metrics={[
+			<ModuleStatisticCards
+				items={[
 					{
 						helper: "Setup records",
 						icon: Icon,
@@ -459,6 +535,10 @@ export function ItemManagementSupportPage({
 
 export function ItemAttributesListPage() {
 	return <ItemManagementSupportPage kind="item-attributes" />;
+}
+
+export function ItemSuppliersListPage() {
+	return <ItemManagementSupportPage kind="suppliers" />;
 }
 
 export function PriceListsListPage() {
@@ -775,13 +855,26 @@ function createAttributeSupportRecord(
 	attribute: ItemAttributeRecord,
 ): SupportRecord {
 	return {
-		code: "",
-		description: "",
+		code: attribute.code,
+		description: attribute.usage,
 		detail: attribute.values.join(", "),
 		id: attribute.id,
 		name: attribute.name,
 		status: attribute.status,
 		valueEntries: attribute.values,
+	};
+}
+
+function createSupplierSupportRecord(
+	supplier: ItemSupplierRecord,
+): SupportRecord {
+	return {
+		code: supplier.code,
+		description: supplier.contactPerson,
+		detail: supplier.contactDetails,
+		id: supplier.id,
+		name: supplier.name,
+		status: supplier.status,
 	};
 }
 
@@ -799,13 +892,44 @@ function normalizeAttributeSupportRecord(record: SupportRecord): SupportRecord {
 	};
 }
 
+function createItemAttributeRecord(
+	record: SupportRecord,
+	existingAttribute?: ItemAttributeRecord,
+): ItemAttributeRecord {
+	return {
+		id: record.id,
+		code: record.code || existingAttribute?.code || "ATT-001",
+		name: record.name.trim(),
+		usage: existingAttribute?.usage ?? "Item Detail",
+		values: record.valueEntries ?? [],
+		requiredOnItem: existingAttribute?.requiredOnItem ?? false,
+		affectsStock: existingAttribute?.affectsStock ?? false,
+		status: record.status as ItemStatus,
+	};
+}
+
+function createItemSupplierRecord(
+	record: SupportRecord,
+	existingSupplier?: ItemSupplierRecord,
+): ItemSupplierRecord {
+	return {
+		id: record.id,
+		code: record.code || existingSupplier?.code || "SUP-001",
+		name: record.name.trim(),
+		contactPerson: record.description.trim(),
+		contactDetails: record.detail.trim(),
+		status: record.status as ItemStatus,
+	};
+}
+
 function createEmptyRecord(
 	kind: ItemManagementSupportPageKind,
 	nextRecordNumber: number,
 ): SupportRecord {
 	const prefixes: Record<ItemManagementSupportPageKind, string> = {
-		"item-attributes": "",
+		"item-attributes": "ATT",
 		"price-lists": "PL",
+		suppliers: "SUP",
 		"unit-of-measurement": "UOM",
 	};
 	const prefix = prefixes[kind];

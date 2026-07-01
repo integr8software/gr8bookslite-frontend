@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ApprovalAmountConditionLimit } from "@/app/src/constants/modules/system-administration/approval-management/ApprovalManagementConstants";
 import type {
 	ApprovalManagementFormErrors,
 	ApprovalManagementFormValues,
@@ -10,7 +11,7 @@ import type {
 const ApprovalStageSchema = z.object({
 	id: z.string().min(1),
 	sequence: z.number().int().positive(),
-	name: z.string().trim().min(1, "Stage name is required."),
+	name: z.string().trim().min(1, "Level name is required."),
 	approverIds: z.array(z.string()).min(1, "Select at least one approver."),
 	requirement: z.enum(["any", "all"]),
 });
@@ -29,7 +30,7 @@ const ApprovalRoutingRuleSchema = z
 		]),
 		amountValue: z.string(),
 		amountValueTo: z.string(),
-		stageIds: z.array(z.string()).min(1, "Choose at least one stage for this route."),
+		stageIds: z.array(z.string()).min(1, "Choose at least one level for this route."),
 	})
 	.superRefine((rule, context) => {
 		if (rule.basis === "amount") {
@@ -77,8 +78,8 @@ export const ApprovalManagementFormSchema = z
 	.object({
 		moduleCode: z
 			.string()
-			.min(1, "Select module.")
-			.pipe(z.enum(["DV", "CR", "JV", "PR", "PO", "RR"])),
+			.trim()
+			.min(1, "Select module."),
 		stageCount: z
 			.number()
 			.int("Stage count must be a whole number.")
@@ -87,11 +88,7 @@ export const ApprovalManagementFormSchema = z
 		stages: z.array(ApprovalStageSchema),
 		routingRules: z
 			.array(ApprovalRoutingRuleSchema)
-			.min(1, "Add at least one routing rule.")
-			.max(
-				2,
-				"Use only the standard path and one amount condition.",
-			),
+			.min(1, "Add at least one routing rule."),
 		workflowFeatures: ApprovalWorkflowFeaturesSchema,
 		status: z.enum(["Active", "Inactive"]),
 		description: z.string().trim().max(180, "Description is too long."),
@@ -100,7 +97,7 @@ export const ApprovalManagementFormSchema = z
 		if (values.stages.length !== values.stageCount) {
 			context.addIssue({
 				code: "custom",
-				message: "Stage count must match the approval stages.",
+				message: "Level count must match the approval levels.",
 				path: ["stageCount"],
 			});
 		}
@@ -111,23 +108,47 @@ export const ApprovalManagementFormSchema = z
 			if (uniqueApproverIds.size !== stage.approverIds.length) {
 				context.addIssue({
 					code: "custom",
-					message: "Remove duplicate approvers in this stage.",
+				message: "Remove duplicate approvers in this level.",
 					path: ["stages", index, "approverIds"],
 				});
 			}
 		});
 
-		const defaultRuleCount = values.routingRules.filter(
-			(rule) => rule.basis === "default",
+		const amountRuleCount = values.routingRules.filter(
+			(rule) => rule.basis === "amount",
 		).length;
 
-		if (defaultRuleCount !== 1) {
+		if (amountRuleCount > ApprovalAmountConditionLimit) {
 			context.addIssue({
 				code: "custom",
-				message: "Keep exactly one default route for otherwise conditions.",
+				message: `Amount conditions cannot exceed ${ApprovalAmountConditionLimit}.`,
 				path: ["routingRules", 0, "basis"],
 			});
 		}
+
+		const amountRules = values.routingRules
+			.map((rule, index) => ({ index, rule }))
+			.filter(({ rule }) => rule.basis === "amount");
+		const seenAmounts = new Set<number>();
+
+		amountRules.forEach(({ index, rule }) => {
+			const amount = parseCurrencyAmount(rule.amountValue);
+
+			if (!amount || amount <= 0) {
+				return;
+			}
+
+			if (seenAmounts.has(amount)) {
+				context.addIssue({
+					code: "custom",
+					message: "Each condition must use a unique amount.",
+					path: ["routingRules", index, "amountValue"],
+				});
+				return;
+			}
+
+			seenAmounts.add(amount);
+		});
 
 		const stageIds = new Set(values.stages.map((stage) => stage.id));
 
@@ -137,7 +158,7 @@ export const ApprovalManagementFormSchema = z
 			if (uniqueStageIds.size !== rule.stageIds.length) {
 				context.addIssue({
 					code: "custom",
-					message: "Remove duplicate stages from this route.",
+				message: "Remove duplicate levels from this route.",
 					path: ["routingRules", index, "stageIds"],
 				});
 			}
@@ -145,7 +166,7 @@ export const ApprovalManagementFormSchema = z
 			if (rule.stageIds.some((stageId) => !stageIds.has(stageId))) {
 				context.addIssue({
 					code: "custom",
-					message: "Choose stages that still exist in this workflow.",
+				message: "Choose levels that still exist in this workflow.",
 					path: ["routingRules", index, "stageIds"],
 				});
 			}

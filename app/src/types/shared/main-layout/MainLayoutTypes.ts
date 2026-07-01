@@ -1,7 +1,5 @@
 import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 
-export type MainQuickListTab = "recent";
-
 export type MainNotificationTab = "all" | "unread" | "read";
 
 export type MainBreadcrumbDropdownItem = {

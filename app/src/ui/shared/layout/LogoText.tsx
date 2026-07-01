@@ -14,14 +14,14 @@ export function LogoText({
 	return (
 		<span
 			className={joinClasses(
-				"inline-flex items-baseline tracking-tight",
+				"inline-flex items-baseline whitespace-nowrap tracking-tight",
 				className,
 			)}
 		>
 			<span className="brand-logo-text">Gr8Books</span>
 			<span
 				className={joinClasses(
-					"brand-accent-text ml-1 font-medium italic",
+					"brand-accent-text ml-1 pr-0.5 font-medium italic",
 					brandSuffixClassName,
 				)}
 			>

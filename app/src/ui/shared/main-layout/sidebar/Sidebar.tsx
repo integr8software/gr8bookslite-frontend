@@ -1,22 +1,64 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { Clock3, X } from "lucide-react";
+import {
+	GripVertical,
+	Save,
+	Settings2,
+	X,
+} from "lucide-react";
+import {
+	DndContext,
+	KeyboardSensor,
+	PointerSensor,
+	closestCenter,
+	useDroppable,
+	useSensor,
+	useSensors,
+	type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+	SortableContext,
+	arrayMove,
+	sortableKeyboardCoordinates,
+	useSortable,
+	verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import type {
 	MainNavigationSection,
-	MainSearchItem,
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
+import {
+	GetUserSidebarCustomization,
+	SaveUserSidebarCustomization,
+	type UserSidebarApiItem,
+} from "@/app/src/services/company/user-sidebar/UserSidebarApi";
 import { SidebarIdentitySkeleton, SidebarLogo } from "./SidebarIdentity";
+import { SidebarAllowedIcons } from "./SidebarIcons";
 import {
 	SidebarCategorySection,
 	SidebarItem,
 	SidebarSection,
 } from "./SidebarNavigation";
-import { joinClasses, pathMatches, useIncrementalVisibleCount } from "./utils";
+import { joinClasses, pathMatches } from "./utils";
 
-const QuickListInitialCount = 4;
-const QuickListBatchSize = 6;
+type TreeItem = Omit<UserSidebarApiItem, "children"> & { children: TreeItem[] };
+type GapDropData = {
+	type: "gap";
+	parentId: number | null;
+	index: number;
+	depth: number;
+};
+
+const InlineCustomizerRootDropId = "inline-sidebar-customizer-root";
+const InlineCustomizerGapPrefix = "inline-sidebar-gap:";
+const MaxCustomizationDepth = 2;
 
 type MainSidebarProps = {
 	activeHref: string;
@@ -25,14 +67,14 @@ type MainSidebarProps = {
 	companyLogoUrl?: string;
 	companyLogoVariant?: "company" | "master-control";
 	typeOfCompany: string;
-	enabledQuickListTabs: Array<"recent">;
 	expandedKeys: string[];
 	homeHref: string;
 	isLoading?: boolean;
 	isOpen: boolean;
 	isTransitionEnabled: boolean;
 	navigationSections: MainNavigationSection[];
-	recentlyVisitedModules: MainSearchItem[];
+	userModuleItems: UserSidebarApiItem[];
+	canCustomizeSidebar?: boolean;
 	shouldAutoScrollActiveItem: boolean;
 	onClose: () => void;
 	onNavigateFromSidebar: (href: string) => void;
@@ -46,19 +88,20 @@ export function MainSidebar({
 	companyLogoUrl,
 	companyLogoVariant,
 	typeOfCompany,
-	enabledQuickListTabs,
 	expandedKeys,
 	homeHref,
 	isLoading = false,
 	isOpen,
 	isTransitionEnabled,
 	navigationSections,
-	recentlyVisitedModules,
+	userModuleItems,
+	canCustomizeSidebar,
 	shouldAutoScrollActiveItem,
 	onClose,
 	onNavigateFromSidebar,
 	onToggleExpandedKey,
 }: MainSidebarProps) {
+	const [isCustomizing, setIsCustomizing] = useState(false);
 	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 	const pendingAutoScrollTimeoutRef = useRef<ReturnType<
 		typeof setTimeout
@@ -68,20 +111,6 @@ export function MainSidebar({
 	> | null>(null);
 	const sidebarNavigationHrefRef = useRef<string | null>(null);
 	const sidebarInteractionUntilRef = useRef(0);
-	const quickListItems = recentlyVisitedModules;
-	const shouldShowQuickList =
-		enabledQuickListTabs.includes("recent") && quickListItems.length > 0;
-	const [quickListVisibleCount, hasMoreQuickListItems, setQuickListSentinel] =
-		useIncrementalVisibleCount(
-			quickListItems.length,
-			QuickListInitialCount,
-			QuickListBatchSize,
-			true,
-		);
-	const visibleQuickListItems = quickListItems.slice(
-		0,
-		quickListVisibleCount,
-	);
 	const suppressAutoScrollFromSidebarInteraction = useCallback(() => {
 		sidebarInteractionUntilRef.current = Date.now() + 1800;
 
@@ -243,126 +272,630 @@ export function MainSidebar({
 
 				<div
 					ref={scrollContainerRef}
-					className="min-h-0 flex-1 scroll-smooth overflow-y-auto overscroll-contain px-3 py-4"
+					className={joinClasses(
+						"min-h-0 flex-1 scroll-smooth overflow-y-auto overflow-x-hidden overscroll-contain px-3 py-4",
+						isCustomizing && "pb-20",
+					)}
 				>
-					{shouldShowQuickList ? (
-						<div className="mb-5">
-							<div className="mb-2 flex items-center gap-2 px-3">
-								<Clock3
-									className="h-3.5 w-3.5 shrink-0 text-darknavy/45"
-									aria-hidden="true"
-								/>
-								<p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">
-									Recently Viewed
-								</p>
-							</div>
-							<div className="space-y-1">
-								{visibleQuickListItems.map((item) => (
-									<Link
-										key={item.key}
-										href={item.href}
-										onClick={handleNavigateFromSidebar(
-											item.href,
-										)}
-										className="flex min-h-9 items-center gap-2 rounded-md px-3 text-sm text-darknavy/75 transition hover:bg-darknavy/5 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25"
-									>
-										<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-darknavy">
-											<Clock3
-												className="h-3.5 w-3.5"
-												aria-hidden="true"
+					{isCustomizing ? (
+						<InlineSidebarCustomizer
+							userModuleItems={userModuleItems}
+							onCancel={() => setIsCustomizing(false)}
+							onSaved={() => setIsCustomizing(false)}
+						/>
+					) : (
+						<div className="space-y-2">
+							{navigationSections.map((section) =>
+								section.key === "workspace" ||
+								section.key === "workspace-modules" ? (
+									<div key={section.key} className="space-y-3">
+										<p className="px-3 text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/38">
+											{section.title}
+										</p>
+										{section.items.map((item) => (
+											<SidebarItem
+												key={item.key}
+												activeHref={activeHref}
+												expandedKeys={expandedKeys}
+												item={item}
+												depth={-1}
+												onInteract={
+													suppressAutoScrollFromSidebarInteraction
+												}
+												onNavigateFromSidebar={
+													handleNavigateFromSidebar
+												}
+												onToggleExpandedKey={
+													onToggleExpandedKey
+												}
 											/>
-										</span>
-										<span className="min-w-0 flex-1 truncate">
-											{item.label}
-										</span>
-									</Link>
-								))}
-								{hasMoreQuickListItems ? (
-									<div
-										ref={setQuickListSentinel}
-										className="h-3"
-										aria-hidden="true"
+										))}
+									</div>
+								) : isDirectNavigationSection(section) ? (
+									<SidebarSection
+										key={section.key}
+										activeHref={activeHref}
+										expandedKeys={expandedKeys}
+										section={section}
+										onInteract={
+											suppressAutoScrollFromSidebarInteraction
+										}
+										onNavigateFromSidebar={
+											handleNavigateFromSidebar
+										}
+										onToggleExpandedKey={onToggleExpandedKey}
 									/>
-								) : null}
-							</div>
+								) : isAdminNavigationSection(section) ? (
+									<SidebarCategorySection
+										key={section.key}
+										activeHref={activeHref}
+										expandedKeys={expandedKeys}
+										section={section}
+										onInteract={
+											suppressAutoScrollFromSidebarInteraction
+										}
+										onNavigateFromSidebar={
+											handleNavigateFromSidebar
+										}
+										onToggleExpandedKey={onToggleExpandedKey}
+									/>
+								) : (
+									<SidebarSection
+										key={section.key}
+										activeHref={activeHref}
+										expandedKeys={expandedKeys}
+										section={section}
+										onInteract={
+											suppressAutoScrollFromSidebarInteraction
+										}
+										onNavigateFromSidebar={
+											handleNavigateFromSidebar
+										}
+										onToggleExpandedKey={onToggleExpandedKey}
+									/>
+								),
+							)}
 						</div>
-					) : null}
-
-					<div className="space-y-2">
-						{navigationSections.map((section) =>
-							section.key === "workspace" ||
-							section.key === "workspace-modules" ? (
-								<div key={section.key} className="space-y-3">
-									<p className="px-3 text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/38">
-										{section.title}
-									</p>
-									{section.items.map((item) => (
-										<SidebarItem
-											key={item.key}
-											activeHref={activeHref}
-											expandedKeys={expandedKeys}
-											item={item}
-											depth={-1}
-											onInteract={
-												suppressAutoScrollFromSidebarInteraction
-											}
-											onNavigateFromSidebar={
-												handleNavigateFromSidebar
-											}
-											onToggleExpandedKey={
-												onToggleExpandedKey
-											}
-										/>
-									))}
-								</div>
-							) : isDirectNavigationSection(section) ? (
-								<SidebarSection
-									key={section.key}
-									activeHref={activeHref}
-									expandedKeys={expandedKeys}
-									section={section}
-									onInteract={
-										suppressAutoScrollFromSidebarInteraction
-									}
-									onNavigateFromSidebar={
-										handleNavigateFromSidebar
-									}
-									onToggleExpandedKey={onToggleExpandedKey}
-								/>
-							) : isAdminNavigationSection(section) ? (
-								<SidebarCategorySection
-									key={section.key}
-									activeHref={activeHref}
-									expandedKeys={expandedKeys}
-									section={section}
-									onInteract={
-										suppressAutoScrollFromSidebarInteraction
-									}
-									onNavigateFromSidebar={
-										handleNavigateFromSidebar
-									}
-									onToggleExpandedKey={onToggleExpandedKey}
-								/>
-							) : (
-								<SidebarSection
-									key={section.key}
-									activeHref={activeHref}
-									expandedKeys={expandedKeys}
-									section={section}
-									onInteract={
-										suppressAutoScrollFromSidebarInteraction
-									}
-									onNavigateFromSidebar={
-										handleNavigateFromSidebar
-									}
-									onToggleExpandedKey={onToggleExpandedKey}
-								/>
-							),
-						)}
-					</div>
+					)}
 				</div>
+				{canCustomizeSidebar && !isCustomizing ? <div className="border-t border-darknavy/10 p-3"><button type="button" onClick={() => setIsCustomizing(true)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-darknavy/65 hover:bg-darknavy/5 hover:text-darknavy"><Settings2 className="h-4 w-4"/>Customize sidebar</button></div> : null}
 			</div>
 		</aside>
+	);
+}
+
+function InlineSidebarCustomizer({
+	userModuleItems,
+	onCancel,
+	onSaved,
+}: {
+	userModuleItems: UserSidebarApiItem[];
+	onCancel: () => void;
+	onSaved: () => void;
+}) {
+	const companyId = useAppStore((state) => state.activeCompanyId);
+	const branchUnitId = useAppStore((state) => state.activeBranchId);
+	const accessToken = useAppStore((state) => state.accessToken);
+	const authProfileQuery = useAuthProfileQuery({ accessToken });
+	const targetUserId = authProfileQuery.data?.user.id;
+	const queryClient = useQueryClient();
+	const [items, setItems] = useState<TreeItem[]>([]);
+	const [dirty, setDirty] = useState(false);
+	const [activeDragId, setActiveDragId] = useState<string | null>(null);
+	const [openIconPickerId, setOpenIconPickerId] = useState<number | null>(null);
+	const sensors = useSensors(
+		useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+		useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+	);
+	const query = useQuery({
+		queryKey: ["user-sidebar-customization", companyId, branchUnitId, targetUserId],
+		queryFn: () =>
+			GetUserSidebarCustomization(companyId!, {
+				branchUnitId: branchUnitId!,
+				userId: targetUserId,
+			}),
+		enabled: Boolean(companyId && branchUnitId && targetUserId),
+	});
+	const sourceItems = query.data?.items ?? userModuleItems;
+	const displayedItems = useMemo(
+		() => (dirty ? items : sourceItems.map(normalize)),
+		[dirty, items, sourceItems],
+	);
+	const {
+		isOver: isRootDroppableOver,
+		setNodeRef: setRootDroppableNodeRef,
+	} = useDroppable({ id: InlineCustomizerRootDropId });
+	const save = useMutation({
+		mutationFn: async () => {
+			const customization = query.data ?? (await query.refetch()).data;
+			if (!customization) {
+				throw new Error("Sidebar version is unavailable.");
+			}
+
+			return SaveUserSidebarCustomization(
+				companyId!,
+				{ branchUnitId: branchUnitId!, userId: targetUserId },
+				{
+					version: customization.version,
+					items: displayedItems.map((item) => serialize(item)),
+					applyScope: "CURRENT_BRANCH",
+				},
+			);
+		},
+		onSuccess: (data) => {
+			setItems(data.items.map(normalize));
+			setDirty(false);
+			queryClient.setQueryData(
+				["user-sidebar-customization", companyId, branchUnitId, targetUserId],
+				data,
+			);
+			queryClient.invalidateQueries({ queryKey: AuthQueryKeys.profiles() });
+			toast.success("Sidebar saved");
+			onSaved();
+		},
+		onError: () => toast.error("Could not save sidebar changes."),
+	});
+
+	function update(nextItems: TreeItem[]) {
+		setItems(nextItems);
+		setDirty(true);
+	}
+
+	function addSection(index = displayedItems.length, parentId: number | null = null) {
+		const timestamp = Date.now();
+		const section: TreeItem = {
+			id: -timestamp,
+			key: `custom-section-${timestamp}`,
+			label: "New Section",
+			itemType: "SECTION",
+			iconName: null,
+			children: [],
+		};
+		if (parentId == null) {
+			update(insertAt(displayedItems, index, section));
+			return;
+		}
+		const parent = locate(displayedItems, parentId);
+		if (!parent || !canAddChildSection(parent)) return;
+		update(replaceChildren(displayedItems, parentId, insertAt(parent.item.children, index, section)));
+	}
+
+	function moveToRoot(itemId: number) {
+		const source = locate(displayedItems, itemId);
+		if (!source || source.parentId == null) return;
+		update([...removeItem(displayedItems, source.item.id), source.item]);
+	}
+
+	function onDragEnd({ active, over }: DragEndEvent) {
+		setActiveDragId(null);
+		if (!over || active.id === over.id) return;
+		const source = locate(displayedItems, Number(active.id));
+		if (!source) return;
+		const withoutSource = removeItem(displayedItems, source.item.id);
+
+		if (over.id === InlineCustomizerRootDropId) {
+			update([...withoutSource, source.item]);
+			return;
+		}
+
+		const gap = getGapData(over.id);
+		if (gap) {
+			const siblings =
+				gap.parentId == null
+					? withoutSource
+					: locate(withoutSource, gap.parentId)?.item.children ?? [];
+			update(replaceChildren(withoutSource, gap.parentId, insertAt(siblings, gap.index, source.item)));
+			return;
+		}
+
+		const target = locate(displayedItems, Number(over.id));
+		if (!target) return;
+		if (target.item.itemType !== "LINK" && canNest(source.item, target)) {
+			update(appendChild(withoutSource, target.item.id, source.item));
+			return;
+		}
+
+		if (source.parentId !== target.parentId) return;
+		const siblings =
+			source.parentId == null ? displayedItems : locate(displayedItems, source.parentId)!.item.children;
+		update(replaceChildren(displayedItems, source.parentId, arrayMove(siblings, source.index, target.index)));
+	}
+
+	return (
+		<div className="space-y-2">
+			<DndContext
+				sensors={sensors}
+				collisionDetection={closestCenter}
+				onDragStart={({ active }) => setActiveDragId(String(active.id))}
+				onDragCancel={() => setActiveDragId(null)}
+				onDragEnd={onDragEnd}
+			>
+				<div
+					ref={setRootDroppableNodeRef}
+					className={joinClasses(
+						"rounded-md transition",
+						isRootDroppableOver && "bg-skyblue/5",
+					)}
+				>
+					<CustomizerGap
+						depth={0}
+						index={0}
+						parentId={null}
+						canAddSection
+						isDragging={Boolean(activeDragId)}
+						onAddSection={() => addSection(0)}
+					/>
+					<InlineTree
+						items={displayedItems}
+						depth={0}
+						parentId={null}
+						isDragging={Boolean(activeDragId)}
+						onAddSection={addSection}
+						onChange={update}
+						onMoveToRoot={moveToRoot}
+						openIconPickerId={openIconPickerId}
+						onOpenIconPickerChange={setOpenIconPickerId}
+					/>
+				</div>
+			</DndContext>
+			<div className="fixed bottom-0 left-0 z-20 flex w-78 gap-2 border-t border-darknavy/10 bg-white px-3 py-3">
+				<button
+					type="button"
+					className="h-9 flex-1 rounded-md border border-darknavy/10 text-sm font-semibold text-darknavy"
+					onClick={onCancel}
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					disabled={!dirty || save.isPending}
+					className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-md bg-skyblue text-sm font-semibold text-white disabled:opacity-45"
+					onClick={() => save.mutate()}
+				>
+					<Save className="h-4 w-4" />
+					Save
+				</button>
+			</div>
+		</div>
+	);
+}
+
+function InlineTree({
+	items,
+	depth,
+	parentId,
+	isDragging,
+	onAddSection,
+	onChange,
+	onMoveToRoot,
+	openIconPickerId,
+	onOpenIconPickerChange,
+}: {
+	items: TreeItem[];
+	depth: number;
+	parentId: number | null;
+	isDragging: boolean;
+	onAddSection: (index?: number, parentId?: number | null) => void;
+	onChange: (items: TreeItem[]) => void;
+	onMoveToRoot: (itemId: number) => void;
+	openIconPickerId: number | null;
+	onOpenIconPickerChange: (itemId: number | null) => void;
+}) {
+	return (
+		<SortableContext
+			items={items.map((item) => String(item.id))}
+			strategy={verticalListSortingStrategy}
+		>
+			<div className="space-y-0.5">
+				{items.map((item, index) => (
+					<div key={item.id}>
+						<InlineEditableRow
+							item={item}
+							depth={depth}
+							parentId={parentId}
+							isDragging={isDragging}
+							onAddSection={onAddSection}
+							onPatch={(patch) =>
+								onChange(items.map((value) => value.id === item.id ? { ...value, ...patch } : value))
+							}
+							onChildren={(children) =>
+								onChange(items.map((value) => value.id === item.id ? { ...value, children } : value))
+							}
+							onMoveToRoot={onMoveToRoot}
+							openIconPickerId={openIconPickerId}
+							onOpenIconPickerChange={onOpenIconPickerChange}
+						/>
+						<CustomizerGap
+							depth={depth}
+							index={index + 1}
+							parentId={parentId}
+							canAddSection={depth === 0}
+							isDragging={isDragging}
+							onAddSection={() => onAddSection(index + 1, parentId)}
+						/>
+					</div>
+				))}
+			</div>
+		</SortableContext>
+	);
+}
+
+function InlineEditableRow({
+	item,
+	depth,
+	parentId,
+	isDragging,
+	onAddSection,
+	onPatch,
+	onChildren,
+	onMoveToRoot,
+	openIconPickerId,
+	onOpenIconPickerChange,
+}: {
+	item: TreeItem;
+	depth: number;
+	parentId: number | null;
+	isDragging: boolean;
+	onAddSection: (index?: number, parentId?: number | null) => void;
+	onPatch: (patch: Partial<TreeItem>) => void;
+	onChildren: (children: TreeItem[]) => void;
+	onMoveToRoot: (itemId: number) => void;
+	openIconPickerId: number | null;
+	onOpenIconPickerChange: (itemId: number | null) => void;
+}) {
+	const {
+		attributes,
+		isDragging: isSortableDragging,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+	} = useSortable({ id: String(item.id) });
+	const isStructural = item.itemType !== "LINK";
+	const configuredIcon = item.iconName ? SidebarAllowedIcons[item.iconName] : undefined;
+	const ConfiguredIcon = configuredIcon;
+	const shouldShowDefaultFolder = !configuredIcon && isStructural;
+	const shouldShowDefaultFile = !configuredIcon && !isStructural && parentId == null;
+	const shouldShowDefaultDot =
+		!configuredIcon && !shouldShowDefaultFolder && !shouldShowDefaultFile;
+	const rowPadding =
+		depth === 0 ? "px-3" : depth === 1 ? "pl-6 pr-3" : "pl-8 pr-3";
+
+	return (
+		<div
+			ref={setNodeRef}
+			style={{
+				transform: CSS.Transform.toString(transform),
+				transition,
+			}}
+			className={joinClasses("rounded-md", isSortableDragging && "opacity-45")}
+		>
+			<div
+				className={joinClasses(
+					"group flex min-h-8 w-full items-center gap-2 rounded-md py-1 text-sm hover:bg-darknavy/[0.035]",
+					rowPadding,
+				)}
+			>
+				<IconPicker
+					item={item}
+					showDefaultFolder={shouldShowDefaultFolder}
+					isOpen={openIconPickerId === item.id}
+					onOpenChange={(isOpen) => onOpenIconPickerChange(isOpen ? item.id : null)}
+					onChange={(iconName) => onPatch({ iconName })}
+				>
+					{shouldShowDefaultFolder ? (
+						<SidebarAllowedIcons.folder className="h-4 w-4 shrink-0 text-darknavy/65" />
+					) : shouldShowDefaultFile ? (
+						<SidebarAllowedIcons.link className="h-4 w-4 shrink-0 text-darknavy/65" />
+					) : shouldShowDefaultDot ? (
+						<span
+							aria-hidden="true"
+							className="h-1.5 w-1.5 shrink-0 rounded-full bg-darknavy/30 transition-colors group-hover:bg-skyblue"
+						/>
+					) : (
+						ConfiguredIcon ? (
+							<ConfiguredIcon className="h-4 w-4 shrink-0 text-darknavy/65" />
+						) : null
+					)}
+				</IconPicker>
+				<input
+					aria-label="Sidebar label"
+					value={item.label}
+					onChange={(event) => onPatch({ label: event.target.value })}
+					className={joinClasses(
+						"min-w-0 flex-1 bg-transparent outline-none",
+						isStructural
+							? "font-semibold text-darknavy"
+							: "font-medium text-darknavy/80",
+					)}
+				/>
+				<button
+					type="button"
+					aria-label={`Drag ${item.label}`}
+					{...attributes}
+					{...listeners}
+					className="grid h-7 w-7 shrink-0 cursor-grab place-items-center rounded text-darknavy/35 hover:bg-darknavy/5 hover:text-darknavy/55 active:cursor-grabbing"
+				>
+					<GripVertical className="h-3.5 w-3.5" />
+				</button>
+			</div>
+			{isStructural ? (
+				<div className="ml-3 border-l border-darknavy/10 pl-0.5">
+					<CustomizerGap
+						depth={depth + 1}
+						index={0}
+						parentId={item.id}
+						canAddSection={canAddChildSection({ item, depth })}
+						isDragging={isDragging}
+						onAddSection={() => onAddSection(0, item.id)}
+					/>
+					<SortableContext
+						items={item.children.map((child) => String(child.id))}
+						strategy={verticalListSortingStrategy}
+					>
+						<div>
+							{item.children.map((child, index) => (
+								<div key={child.id}>
+									<InlineEditableRow
+										item={child}
+										depth={depth + 1}
+										parentId={item.id}
+										isDragging={isDragging}
+										onAddSection={onAddSection}
+										onPatch={(patch) =>
+											onChildren(item.children.map((value) => value.id === child.id ? { ...value, ...patch } : value))
+										}
+										onChildren={(children) =>
+											onChildren(item.children.map((value) => value.id === child.id ? { ...value, children } : value))
+										}
+										onMoveToRoot={onMoveToRoot}
+										openIconPickerId={openIconPickerId}
+										onOpenIconPickerChange={onOpenIconPickerChange}
+									/>
+									<CustomizerGap
+										depth={depth + 1}
+										index={index + 1}
+										parentId={item.id}
+										canAddSection={canAddChildSection({ item, depth })}
+										isDragging={isDragging}
+										onAddSection={() => onAddSection(index + 1, item.id)}
+									/>
+								</div>
+							))}
+						</div>
+					</SortableContext>
+				</div>
+			) : null}
+		</div>
+	);
+}
+
+function CustomizerGap({
+	depth,
+	index,
+	parentId,
+	canAddSection,
+	isDragging,
+	onAddSection,
+}: {
+	depth: number;
+	index: number;
+	parentId: number | null;
+	canAddSection: boolean;
+	isDragging: boolean;
+	onAddSection?: () => void;
+}) {
+	const { isOver, setNodeRef } = useDroppable({
+		id: getGapId({ type: "gap", parentId, index, depth }),
+	});
+	const widthClass =
+		depth === 0 ? "w-full" : depth === 1 ? "w-[calc(100%-0.75rem)]" : "w-[calc(100%-1.5rem)]";
+
+	return (
+		<div
+			ref={setNodeRef}
+			className={joinClasses(
+				"group relative -my-px flex h-1 items-center",
+				depth === 1 && "pl-3",
+				depth >= 2 && "pl-6",
+			)}
+		>
+			<div
+				className={joinClasses(
+					"relative h-px transition",
+					widthClass,
+					isOver ? "bg-skyblue" : "bg-transparent group-hover:bg-skyblue/45",
+				)}
+			>
+				{canAddSection && !isDragging ? (
+					<button
+						type="button"
+						className="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 bg-white px-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-skyblue group-hover:inline-flex"
+						onClick={onAddSection}
+					>
+						Add Section
+					</button>
+				) : null}
+			</div>
+		</div>
+	);
+}
+
+function IconPicker({
+	children,
+	item,
+	showDefaultFolder,
+	isOpen,
+	onOpenChange,
+	onChange,
+}: {
+	children: ReactNode;
+	item: TreeItem;
+	showDefaultFolder: boolean;
+	isOpen: boolean;
+	onOpenChange: (isOpen: boolean) => void;
+	onChange: (iconName: string | null) => void;
+}) {
+	const currentValue = item.iconName ?? "";
+	const iconEntries = Object.entries(SidebarAllowedIcons).sort(([first], [second]) =>
+		first.localeCompare(second),
+	);
+
+	return (
+		<div className="relative h-7 w-7 shrink-0">
+			<button
+				type="button"
+				aria-label={`Change icon for ${item.label}`}
+				className="grid h-7 w-7 place-items-center rounded hover:bg-darknavy/5"
+				onClick={() => onOpenChange(!isOpen)}
+			>
+				{children}
+			</button>
+			{isOpen ? (
+				<div className="absolute left-0 top-8 z-30 grid max-h-52 w-44 grid-cols-5 gap-1 overflow-y-auto overflow-x-hidden rounded-md border border-darknavy/10 bg-white p-2 shadow-[0_14px_35px_rgba(33,39,56,0.16)]">
+					<button
+						type="button"
+						aria-label="Default icon"
+						title="Default"
+						className={joinClasses(
+							"grid h-7 w-7 place-items-center rounded border text-darknavy/55 hover:bg-skyblue/8",
+							currentValue === "" ? "border-skyblue bg-skyblue/10 text-skyblue" : "border-transparent",
+						)}
+						onClick={() => {
+							onChange(null);
+							onOpenChange(false);
+						}}
+					>
+						{showDefaultFolder ? (
+							<SidebarAllowedIcons.folder className="h-4 w-4" />
+						) : (
+							<span
+								aria-hidden="true"
+								className="h-1.5 w-1.5 rounded-full bg-current"
+							/>
+						)}
+					</button>
+					{iconEntries.map(([iconName, Icon]) => (
+						<button
+							key={iconName}
+							type="button"
+							aria-label={iconName}
+							title={iconName}
+							className={joinClasses(
+								"grid h-7 w-7 place-items-center rounded border text-darknavy/55 hover:bg-skyblue/8",
+								currentValue === iconName ? "border-skyblue bg-skyblue/10 text-skyblue" : "border-transparent",
+							)}
+							onClick={() => {
+								onChange(iconName);
+								onOpenChange(false);
+							}}
+						>
+							<Icon className="h-4 w-4" />
+						</button>
+					))}
+				</div>
+			) : null}
+		</div>
 	);
 }
 
@@ -380,4 +913,114 @@ function isDirectNavigationSection(section: MainNavigationSection) {
 			section.items.length === 1 &&
 			section.items[0]?.href === section.href,
 	);
+}
+
+function normalize(item: UserSidebarApiItem): TreeItem {
+	return { ...item, children: item.children.map(normalize) };
+}
+
+function serialize(item: TreeItem): UserSidebarApiItem {
+	return {
+		key: item.key,
+		label: item.label,
+		itemType: item.itemType,
+		moduleId: item.itemType === "LINK" ? item.moduleId : undefined,
+		iconName: item.iconName || undefined,
+		children: item.children.map(serialize),
+	} as UserSidebarApiItem;
+}
+
+function locate(
+	items: TreeItem[],
+	id: number,
+	parentId: number | null = null,
+	depth = 0,
+): { item: TreeItem; parentId: number | null; index: number; depth: number } | null {
+	for (const [index, item] of items.entries()) {
+		if (item.id === id) return { item, parentId, index, depth };
+		const child = locate(item.children, id, item.id, depth + 1);
+		if (child) return child;
+	}
+	return null;
+}
+
+function removeItem(items: TreeItem[], id: number): TreeItem[] {
+	return items
+		.filter((item) => item.id !== id)
+		.map((item) => ({ ...item, children: removeItem(item.children, id) }));
+}
+
+function replaceChildren(
+	items: TreeItem[],
+	parentId: number | null,
+	children: TreeItem[],
+): TreeItem[] {
+	if (parentId == null) return children;
+	return items.map((item) =>
+		item.id === parentId
+			? { ...item, children }
+			: { ...item, children: replaceChildren(item.children, parentId, children) },
+	);
+}
+
+function appendChild(
+	items: TreeItem[],
+	parentId: number,
+	child: TreeItem,
+): TreeItem[] {
+	return items.map((item) =>
+		item.id === parentId
+			? { ...item, children: [...item.children, child] }
+			: { ...item, children: appendChild(item.children, parentId, child) },
+	);
+}
+
+function insertAt(items: TreeItem[], index: number, item: TreeItem) {
+	return [...items.slice(0, index), item, ...items.slice(index)];
+}
+
+function canNest(
+	source: TreeItem,
+	target: { item: TreeItem; depth: number },
+) {
+	if (target.item.itemType === "LINK") return false;
+	if (source.itemType === "SECTION") {
+		return target.item.itemType === "SECTION" && target.depth < MaxCustomizationDepth - 1;
+	}
+	if (source.itemType === "CONTAINER" && target.depth >= MaxCustomizationDepth - 1) return false;
+	return target.depth + getTreeDepth(source) <= MaxCustomizationDepth;
+}
+
+function canAddChildSection(target: {
+	item: TreeItem;
+	depth: number;
+}) {
+	return target.item.itemType === "SECTION" && target.depth < MaxCustomizationDepth - 1;
+}
+
+function getTreeDepth(item: TreeItem): number {
+	return item.children.length
+		? 1 + Math.max(...item.children.map(getTreeDepth))
+		: 1;
+}
+
+function getGapId(data: GapDropData) {
+	return `${InlineCustomizerGapPrefix}${data.parentId ?? "root"}:${data.index}:${data.depth}`;
+}
+
+function getGapData(id: unknown): GapDropData | null {
+	const text = String(id);
+	if (!text.startsWith(InlineCustomizerGapPrefix)) return null;
+	const [parentToken, indexToken, depthToken] = text
+		.slice(InlineCustomizerGapPrefix.length)
+		.split(":");
+	const index = Number(indexToken);
+	const depth = Number(depthToken);
+	if (!Number.isInteger(index) || !Number.isInteger(depth)) return null;
+	return {
+		type: "gap",
+		parentId: parentToken === "root" ? null : Number(parentToken),
+		index,
+		depth,
+	};
 }

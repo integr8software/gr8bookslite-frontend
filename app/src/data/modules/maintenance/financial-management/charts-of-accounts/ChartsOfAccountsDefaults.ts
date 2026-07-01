@@ -1,7 +1,7 @@
 import type {
   BankDetails,
   ChartAccountFormValues,
-} from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
+} from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 
 export const EmptyBankDetails: BankDetails = {
   bankName: "",

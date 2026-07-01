@@ -18,6 +18,7 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleFieldsVisibilityDialog } from "@/app/src/ui/shared/module/ModuleFieldsVisibilityDialog";
 import {
   createTaxDetails,
   syncTaxDetailsAmount,
@@ -111,6 +112,18 @@ export function CashAdvanceFormPanel({
   const [partyCode, setPartyCode] = useState("");
   const [partyName, setPartyName] = useState("");
   const [amount, setAmount] = useState("");
+  const [referenceFields, setReferenceFields] = useState({
+    containerNo: "",
+    refNo: "",
+    projectRef: "",
+    importationRefNo: "",
+  });
+  const [visibleReferenceFields, setVisibleReferenceFields] = useState({
+    containerNo: true,
+    refNo: true,
+    projectRef: true,
+    importationRefNo: true,
+  });
   const [taxValue, setTaxValue] = useState<AppTaxRateDialogValue>(() => ({
     taxDetails: createTaxDetails(0, "0%"),
     taxRate: "0%",
@@ -132,9 +145,29 @@ export function CashAdvanceFormPanel({
     }));
   }
 
+  function updateReferenceField(
+    field: keyof typeof referenceFields,
+    value: string,
+  ) {
+    setReferenceFields((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+  function updateReferenceFieldVisibility(
+    field: keyof typeof visibleReferenceFields,
+    isVisible: boolean,
+  ) {
+    setVisibleReferenceFields((current) => ({
+      ...current,
+      [field]: isVisible,
+    }));
+  }
+
   return (
     <>
-      <section className="overflow-hidden">
+      <section className="overflow-visible">
       {showToolbar ? (
         <div className="flex flex-col gap-3 border-b border-darknavy/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <div className="flex flex-wrap items-center gap-2">
@@ -171,6 +204,43 @@ export function CashAdvanceFormPanel({
       </div>
 
       <form className="grid gap-6 px-6 py-6 xl:grid-cols-[1fr_0.72fr]">
+        <div className="flex justify-end xl:col-span-2">
+          <ModuleFieldsVisibilityDialog
+            buttonLabel="Reference Fields"
+            title="Reference fields visibility"
+            fields={[
+              {
+                id: "container-no",
+                label: "Container No.",
+                isVisible: visibleReferenceFields.containerNo,
+                onVisibleChange: (isVisible) =>
+                  updateReferenceFieldVisibility("containerNo", isVisible),
+              },
+              {
+                id: "ref-no",
+                label: "Ref No.",
+                isVisible: visibleReferenceFields.refNo,
+                onVisibleChange: (isVisible) =>
+                  updateReferenceFieldVisibility("refNo", isVisible),
+              },
+              {
+                id: "project-ref",
+                label: "ProjectRef",
+                isVisible: visibleReferenceFields.projectRef,
+                onVisibleChange: (isVisible) =>
+                  updateReferenceFieldVisibility("projectRef", isVisible),
+              },
+              {
+                id: "importation-ref-no",
+                label: "Importation Ref No",
+                isVisible: visibleReferenceFields.importationRefNo,
+                onVisibleChange: (isVisible) =>
+                  updateReferenceFieldVisibility("importationRefNo", isVisible),
+              },
+            ]}
+          />
+        </div>
+
         <div className="grid content-start gap-4">
           <FieldShell label="Party Code : *">
             <input value={partyCode} className={ReadOnlyFieldClassName} readOnly />
@@ -205,22 +275,29 @@ export function CashAdvanceFormPanel({
               }
             />
           </FieldShell>
-          <div className="grid gap-4 sm:grid-cols-[1fr_0.7fr]">
-            <FieldShell label="Cost Center :">
-              <select
-                disabled={isReadonly}
-                className={`${FieldClassName} app-select-control`}
-              >
-                <option value="">--Select Cost Center--</option>
-                <option value="operations">Operations</option>
-                <option value="admin">Admin</option>
-                <option value="sales">Sales</option>
-              </select>
-            </FieldShell>
+          <FieldShell label="Cost Center :">
+            <select
+              disabled={isReadonly}
+              className={`${FieldClassName} app-select-control`}
+            >
+              <option value="">--Select Cost Center--</option>
+              <option value="operations">Operations</option>
+              <option value="admin">Admin</option>
+              <option value="sales">Sales</option>
+            </select>
+          </FieldShell>
+          {visibleReferenceFields.containerNo ? (
             <FieldShell label="Container No. :">
-              <input readOnly={isReadonly} className={FieldClassName} />
+              <input
+                value={referenceFields.containerNo}
+                onChange={(event) =>
+                  updateReferenceField("containerNo", event.target.value)
+                }
+                readOnly={isReadonly}
+                className={FieldClassName}
+              />
             </FieldShell>
-          </div>
+          ) : null}
           <FieldShell label="Amount :">
             <ActionField
               actionLabel="Tax"
@@ -266,9 +343,18 @@ export function CashAdvanceFormPanel({
               className={FieldClassName}
             />
           </FieldShell>
-          <FieldShell label="Ref No. :">
-            <input readOnly={isReadonly} className={FieldClassName} />
-          </FieldShell>
+          {visibleReferenceFields.refNo ? (
+            <FieldShell label="Ref No. :">
+              <input
+                value={referenceFields.refNo}
+                onChange={(event) =>
+                  updateReferenceField("refNo", event.target.value)
+                }
+                readOnly={isReadonly}
+                className={FieldClassName}
+              />
+            </FieldShell>
+          ) : null}
           <FieldShell label="Status :">
             <input
               readOnly
@@ -276,12 +362,30 @@ export function CashAdvanceFormPanel({
               className={ReadOnlyFieldClassName}
             />
           </FieldShell>
-          <FieldShell label="ProjectRef :">
-            <input readOnly={isReadonly} className={FieldClassName} />
-          </FieldShell>
-          <FieldShell label="Importation Ref No :">
-            <input readOnly={isReadonly} className={FieldClassName} />
-          </FieldShell>
+          {visibleReferenceFields.projectRef ? (
+            <FieldShell label="ProjectRef :">
+              <input
+                value={referenceFields.projectRef}
+                onChange={(event) =>
+                  updateReferenceField("projectRef", event.target.value)
+                }
+                readOnly={isReadonly}
+                className={FieldClassName}
+              />
+            </FieldShell>
+          ) : null}
+          {visibleReferenceFields.importationRefNo ? (
+            <FieldShell label="Importation Ref No :">
+              <input
+                value={referenceFields.importationRefNo}
+                onChange={(event) =>
+                  updateReferenceField("importationRefNo", event.target.value)
+                }
+                readOnly={isReadonly}
+                className={FieldClassName}
+              />
+            </FieldShell>
+          ) : null}
         </div>
       </form>
       </section>

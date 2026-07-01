@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { MaterialRequestMain } from "@/app/src/ui/modules/inventory/material-request/MaterialRequestMain";
 
 const PageTitle = "Material Request";

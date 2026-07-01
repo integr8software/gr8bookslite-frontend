@@ -1,5 +1,6 @@
 "use client";
 
+import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import {
   DefaultPhilippineContactNumber,
   FormatPhilippineContactNumber,
@@ -49,19 +50,19 @@ export function OnboardingStepOne({
   const isOtherOrganizationType = values.nonIndividualType === "Others";
 
   return (
-    <div className="mt-10 space-y-6">
+    <div className="space-y-8">
       {/* Taxpayer Type Toggle */}
-      <div>
-        <p className="mb-2 block text-sm font-medium text-darknavy">
+      <section>
+        <p className="mb-3 block text-sm font-semibold text-darknavy">
           Taxpayer Type
         </p>
-        <div className="flex overflow-hidden rounded-md border border-darknavy/20">
+        <div className="grid grid-cols-2 gap-2 rounded-xl border border-darknavy/10 p-1.5">
           <button
             type="button"
             onClick={() => setTaxpayerType("individual")}
-            className={`flex-1 py-3 text-sm font-semibold transition ${isIndividual
-              ? "bg-black text-white"
-              : "bg-white text-darknavy hover:bg-offwhite"
+            className={`rounded-lg py-3 text-sm font-semibold transition ${isIndividual
+              ? "bg-darknavy text-white shadow-sm"
+              : "text-darknavy/55 hover:bg-offwhite hover:text-darknavy"
               }`}
           >
             Individual
@@ -69,9 +70,9 @@ export function OnboardingStepOne({
           <button
             type="button"
             onClick={() => setTaxpayerType("non-individual")}
-            className={`flex-1 border-l border-darknavy/20 py-3 text-sm font-semibold transition ${!isIndividual
-              ? "bg-black text-white"
-              : "bg-white text-darknavy hover:bg-offwhite"
+            className={`rounded-lg py-3 text-sm font-semibold transition ${!isIndividual
+              ? "bg-darknavy text-white shadow-sm"
+              : "text-darknavy/55 hover:bg-offwhite hover:text-darknavy"
               }`}
           >
             Non-Individual
@@ -83,11 +84,11 @@ export function OnboardingStepOne({
             Organization, Others
           </p>
         )}
-      </div>
+      </section>
 
       {/* Individual Fields */}
       {isIndividual ? (
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-3">
           <OnboardingField
             label="Last Name"
             id="lastName"
@@ -121,7 +122,7 @@ export function OnboardingStepOne({
         </div>
       ) : (
         /* Non-Individual Fields */
-        <div className="space-y-6">
+        <div className="space-y-5">
           <OnboardingField
             label="Company / Organization Name"
             id="companyName"
@@ -133,7 +134,7 @@ export function OnboardingStepOne({
             errors={errors.companyName}
           />
           <div
-            className={`grid gap-6 ${
+            className={`grid gap-5 ${
               isOtherOrganizationType ? "md:grid-cols-2" : "md:grid-cols-1"
             }`}
           >
@@ -165,18 +166,20 @@ export function OnboardingStepOne({
       )}
 
       {/* Logo */}
-      <OnboardingFileField
-        id="logo"
-        name="logo"
-        label="Logo"
-        fileName={values.logoName}
-        previewUrl={logoPreviewUrl}
-        hint="Upload your company or personal logo. Max 5MB."
-        inputKey={logoInputKey}
-        errors={errors.logo}
-        onChange={handleLogoChange}
-        onRemove={handleLogoRemove}
-      />
+      <div className="border-t border-darknavy/10 pt-8">
+        <OnboardingFileField
+          id="logo"
+          name="logo"
+          label="Logo"
+          fileName={values.logoName}
+          previewUrl={logoPreviewUrl}
+          hint={`Upload your company or personal logo. Max ${AppMaxFileUploadSizeLabel}.`}
+          inputKey={logoInputKey}
+          errors={errors.logo}
+          onChange={handleLogoChange}
+          onRemove={handleLogoRemove}
+        />
+      </div>
 
       {/* Address */}
       <OnboardingField
@@ -191,7 +194,7 @@ export function OnboardingStepOne({
       />
 
       {/* TIN + Company Email + Contact Number */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3">
         <OnboardingField
           label="Company Email"
           id="companyEmail"

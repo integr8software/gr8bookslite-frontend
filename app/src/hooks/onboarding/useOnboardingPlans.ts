@@ -5,16 +5,26 @@ import toast from "react-hot-toast";
 import type { PricingPlan } from "@/app/src/data/pricing/PricingTypes";
 import { GetOnboardingPlans } from "@/app/src/services/onboarding/OnboardingApi";
 import { MapOnboardingPlanToPricingPlan } from "@/app/src/services/onboarding/OnboardingPlanMapper";
+import { IsIntentionalLogoutInProgress } from "@/app/src/services/auth/AuthSessionExpired";
 
 type UseOnboardingPlansParams = {
   accessToken: string | null;
+  isAuthSessionReady: boolean;
 };
 
-export function useOnboardingPlans({ accessToken }: UseOnboardingPlansParams) {
+export function useOnboardingPlans({
+  accessToken,
+  isAuthSessionReady,
+}: UseOnboardingPlansParams) {
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const canLoadPlans = isAuthSessionReady && Boolean(accessToken);
 
   useEffect(() => {
+    if (!canLoadPlans) {
+      return;
+    }
+
     let isActive = true;
 
     async function loadPlans() {
@@ -29,7 +39,7 @@ export function useOnboardingPlans({ accessToken }: UseOnboardingPlansParams) {
 
         setPlans(response.plans.map(MapOnboardingPlanToPricingPlan));
       } catch (error) {
-        if (!isActive) {
+        if (!isActive || IsIntentionalLogoutInProgress()) {
           return;
         }
 
@@ -50,10 +60,10 @@ export function useOnboardingPlans({ accessToken }: UseOnboardingPlansParams) {
     return () => {
       isActive = false;
     };
-  }, [accessToken]);
+  }, [accessToken, canLoadPlans]);
 
   return {
     plans,
-    isPlansLoading: isLoading,
+    isPlansLoading: canLoadPlans ? isLoading : !isAuthSessionReady,
   };
 }

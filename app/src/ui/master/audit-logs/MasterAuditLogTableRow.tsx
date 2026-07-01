@@ -1,6 +1,4 @@
-import {
-	formatMasterAuditLogCreatedAt,
-} from "@/app/src/data/master/audit-logs/MasterAuditLogData";
+import { formatMasterAuditLogCreatedAt } from "@/app/src/data/master/audit-logs/MasterAuditLogData";
 import type {
 	MasterAuditLogAction,
 	MasterAuditLogRecord,
@@ -31,8 +29,10 @@ export function MasterAuditLogTableRow({
 				</p>
 			</td>
 			<td className="px-4 py-4">
-				<p className="text-sm font-semibold text-darknavy">{record.module}</p>
-				<p className="mt-1 font-mono text-xs font-semibold text-darknavy/42">
+				<p className="text-sm font-semibold text-darknavy">
+					{record.module}
+				</p>
+				<p className="mt-1 text-xs font-semibold text-darknavy/42">
 					{record.recordId}
 				</p>
 			</td>
@@ -40,13 +40,17 @@ export function MasterAuditLogTableRow({
 				<p className="text-sm font-semibold text-darknavy">
 					{record.actorName}
 				</p>
-				<p className="mt-1 text-xs text-darknavy/48">{record.actorRole}</p>
+				<p className="mt-1 text-xs text-darknavy/48">
+					{record.actorRole}
+				</p>
 			</td>
 			<td className="px-4 py-4">
 				<p className="line-clamp-2 text-sm leading-5 text-darknavy/72">
 					{record.description}
 				</p>
-				<p className="mt-1 text-xs text-darknavy/42">IP {record.ipAddress}</p>
+				<p className="mt-1 text-xs text-darknavy/42">
+					IP {record.ipAddress}
+				</p>
 			</td>
 			<td className="px-4 py-4">
 				<span className={getActionClassName(record.action)}>
@@ -83,9 +87,9 @@ function getActionClassName(action: MasterAuditLogAction) {
 			action === "Disapproved"
 			? "bg-coralpink/12 text-coralpink"
 			: action === "Approve" ||
-					action === "Create" ||
-					action === "Restore" ||
-					action === "Uncancel"
+				  action === "Create" ||
+				  action === "Restore" ||
+				  action === "Uncancel"
 				? "bg-citron/35 text-darknavy"
 				: "bg-skyblue/12 text-darknavy",
 	);

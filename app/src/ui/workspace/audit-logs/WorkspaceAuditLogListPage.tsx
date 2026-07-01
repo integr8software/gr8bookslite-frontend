@@ -6,6 +6,7 @@ import type { WorkspaceAuditLogRecord } from "@/app/src/types/workspace/audit-lo
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { WorkspaceAuditLogTable } from "@/app/src/ui/workspace/audit-logs/WorkspaceAuditLogTable";
+import { WorkspaceAuditLogSpotlightTutorial } from "@/app/src/ui/workspace/audit-logs/WorkspaceAuditLogSpotlightTutorial";
 
 type WorkspaceAuditLogListPageProps = {
 	initialRecords?: WorkspaceAuditLogRecord[];
@@ -18,18 +19,23 @@ export function WorkspaceAuditLogListPage({
 
 	return (
 		<section className="grid gap-5">
-			<ModuleHeader
-				variant="card"
-				titleAs="h1"
-				eyebrow="Company Administration"
-				title="Audit Logs"
-				description="Review company activity across branches, workspace users, modules, records, and approval-sensitive actions."
-			/>
-			<WorkspaceAuditLogSummary
-				branchCount={page.branchCount}
-				filteredCount={page.filteredCount}
-				recordCount={page.recordCount}
-			/>
+			<WorkspaceAuditLogSpotlightTutorial />
+			<div data-spotlight-id="workspace-audit-header">
+				<ModuleHeader
+					variant="card"
+					titleAs="h1"
+					eyebrow="Company Administration"
+					title="Audit Logs"
+					description="Review company activity across branches, workspace users, modules, records, and approval-sensitive actions."
+				/>
+			</div>
+			<div data-spotlight-id="workspace-audit-summary">
+				<WorkspaceAuditLogSummary
+					branchCount={page.branchCount}
+					filteredCount={page.filteredCount}
+					recordCount={page.recordCount}
+				/>
+			</div>
 			<WorkspaceAuditLogTable {...page} />
 		</section>
 	);

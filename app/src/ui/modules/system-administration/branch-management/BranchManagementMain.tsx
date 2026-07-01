@@ -16,6 +16,7 @@ export function BranchManagementMain() {
 	const deleteBranch = useBranchManagementStore(
 		(state) => state.deleteBranch,
 	);
+	const lastSyncedAt = useBranchManagementStore((state) => state.lastSyncedAt);
 
 	function handleDeleteBranch(branchId: string, branchName: string) {
 		if (!window.confirm(`Delete ${branchName}?`)) {
@@ -55,6 +56,7 @@ export function BranchManagementMain() {
 			/>
 			<BranchManagementTable
 				branches={branches}
+				lastSyncedAt={lastSyncedAt}
 				onDeleteBranch={handleDeleteBranch}
 			/>
 		</section>

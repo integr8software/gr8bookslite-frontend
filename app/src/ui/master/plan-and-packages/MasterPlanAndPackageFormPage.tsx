@@ -14,13 +14,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import {
-	MasterPlanAndPackageFeatureOptions,
 	MasterPlanAndPackagesHref,
 	MasterPlanAndPackageScaleUnitLabels,
 	MasterPlanAndPackageScopeLabels,
 	MasterPlanAndPackageScopeOptions,
 	MasterPlanAndPackageStatusOptions,
 } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
+import { useMasterModuleSystemsQuery } from "@/app/src/hooks/master/module-systems/useMasterModuleSystemsQuery";
 import { useMasterPlanAndPackageFormPage } from "@/app/src/hooks/master/plan-and-packages/useMasterPlanAndPackageFormPage";
 import type {
 	MasterPlanAndPackageFormErrors,
@@ -122,6 +122,20 @@ function MasterPlanAndPackageForm({
   onSave: () => void;
   onUpdate: (values: Partial<MasterPlanAndPackageFormValues>) => void;
 }) {
+  const systemsQuery = useMasterModuleSystemsQuery();
+  const systemOptions = useMemo(
+    () =>
+      (systemsQuery.data?.systems ?? [])
+        .filter((system) => system.isActive)
+        .map((system) => ({
+          description: `${system.moduleCount} modules`,
+          id: system.code,
+          name: system.name,
+          section: "Available systems",
+        })),
+    [systemsQuery.data],
+  );
+
   return (
     <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
       <div className="grid gap-5 p-5">
@@ -296,6 +310,8 @@ function MasterPlanAndPackageForm({
 
         <ModuleFeatureSelector
           error={errors.featureIds}
+          featureOptions={systemOptions}
+          isLoading={systemsQuery.isLoading}
           selectedFeatureIds={values.featureIds}
           onChange={(featureIds) => onUpdate({ featureIds })}
         />
@@ -525,10 +541,19 @@ function ScaleRuleSection({
 
 function ModuleFeatureSelector({
   error,
+  featureOptions,
+  isLoading,
   selectedFeatureIds,
   onChange,
 }: {
   error?: string;
+  featureOptions: Array<{
+    description: string;
+    id: string;
+    name: string;
+    section: string;
+  }>;
+  isLoading: boolean;
   selectedFeatureIds: string[];
   onChange: (featureIds: string[]) => void;
 }) {
@@ -538,13 +563,13 @@ function ModuleFeatureSelector({
     [selectedFeatureIds],
   );
   const allFeatureIds = useMemo(
-    () => MasterPlanAndPackageFeatureOptions.map((feature) => feature.id),
-    [],
+    () => featureOptions.map((feature) => feature.id),
+    [featureOptions],
   );
   const globalSelectionState = getSelectionState(allFeatureIds, selectedSet);
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
   const groupedFeatures = useMemo(() => {
-    const filteredFeatures = MasterPlanAndPackageFeatureOptions.filter(
+    const filteredFeatures = featureOptions.filter(
       (feature) => {
         if (!normalizedSearchTerm) {
           return true;
@@ -558,7 +583,7 @@ function ModuleFeatureSelector({
 
     return filteredFeatures.reduce<
       Array<{
-        features: typeof MasterPlanAndPackageFeatureOptions;
+        features: typeof featureOptions;
         section: string;
       }>
     >((groups, feature) => {
@@ -579,7 +604,7 @@ function ModuleFeatureSelector({
 
       return groups;
     }, []);
-  }, [normalizedSearchTerm]);
+  }, [featureOptions, normalizedSearchTerm]);
 
   function toggleFeature(featureId: string) {
     if (selectedSet.has(featureId)) {
@@ -607,7 +632,7 @@ function ModuleFeatureSelector({
     });
 
     onChange(
-      MasterPlanAndPackageFeatureOptions.filter((feature) =>
+      featureOptions.filter((feature) =>
         nextSelectedSet.has(feature.id),
       ).map((feature) => feature.id),
     );
@@ -621,9 +646,9 @@ function ModuleFeatureSelector({
             <Users className="h-4 w-4" aria-hidden="true" />
           </span>
           <div>
-            <h2 className="text-base font-semibold text-darknavy">Modules</h2>
-            <p className="mt-1 text-xs font-bold uppercase tracking-wide text-darknavy/42">
-              {selectedFeatureIds.length} selected
+              <h2 className="text-base font-semibold text-darknavy">Systems</h2>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wide text-darknavy/42">
+                {selectedFeatureIds.length} selected
             </p>
           </div>
         </div>
@@ -631,7 +656,7 @@ function ModuleFeatureSelector({
           <ModuleSelectionCheckbox
             checked={globalSelectionState === "all"}
             isIndeterminate={globalSelectionState === "partial"}
-            label="All modules"
+            label="All systems"
             selectedCount={selectedFeatureIds.length}
             totalCount={allFeatureIds.length}
             onChange={() =>
@@ -639,7 +664,7 @@ function ModuleFeatureSelector({
             }
           />
           <label className="relative block">
-            <span className="sr-only">Search modules</span>
+            <span className="sr-only">Search systems</span>
             <Search
               className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/38"
               aria-hidden="true"
@@ -647,14 +672,18 @@ function ModuleFeatureSelector({
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search modules"
+              placeholder="Search systems"
               className={joinClasses(ControlClassName, "pl-9")}
             />
           </label>
         </div>
       </div>
       <div className="max-h-120 overflow-y-auto rounded-lg border border-darknavy/10 bg-white shadow-sm">
-        {groupedFeatures.length > 0 ? (
+        {isLoading ? (
+          <p className="px-4 py-6 text-sm font-medium text-darknavy/55">
+            Loading systems...
+          </p>
+        ) : groupedFeatures.length > 0 ? (
           groupedFeatures.map((group) => {
             const groupFeatureIds = group.features.map((feature) => feature.id);
             const groupSelectionState = getSelectionState(
@@ -714,7 +743,7 @@ function ModuleFeatureSelector({
           })
         ) : (
           <p className="px-4 py-6 text-sm font-medium text-darknavy/55">
-            No modules match your search.
+            No systems match your search.
           </p>
         )}
       </div>

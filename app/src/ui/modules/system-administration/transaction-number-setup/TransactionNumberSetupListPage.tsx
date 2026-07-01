@@ -10,12 +10,12 @@ export function TransactionNumberSetupListPage() {
 	const page = useTransactionNumberSetupListPage();
 
 	return (
-		<section className="grid gap-5">
+		<section className="grid min-h-0 gap-5">
 			<ModuleHeader
 				variant="panel"
 				titleAs="h1"
 				title="Transaction Number Setup"
-				description="Select a transaction type, then update its numbering rules in one place."
+				description="Select a transaction module, then update how its document numbers are created."
 				eyebrow={
 					<>
 						<ReceiptText
@@ -27,7 +27,7 @@ export function TransactionNumberSetupListPage() {
 				}
 			/>
 
-			<div className="grid min-h-[38rem] overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm xl:grid-cols-[minmax(22rem,0.85fr)_minmax(0,1.35fr)]">
+			<div className="grid min-h-[38rem] items-stretch overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm xl:grid-cols-[minmax(22rem,0.85fr)_minmax(0,1.35fr)]">
 				<TransactionNumberSetupCatalog
 					isLoading={page.isLoading}
 					query={page.query}

@@ -24,7 +24,7 @@ import {
 } from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
 
 export function useMaterialRequestMain() {
-	const { deleteRequest, isLoading, isMutating, requests, updateRequest } =
+	const { deleteRequest, isLoading, isMutating, lastSyncedAt, requests, updateRequest } =
 		useMaterialRequestStore();
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
@@ -172,6 +172,7 @@ export function useMaterialRequestMain() {
 		handleQueryChange,
 		isLoading,
 		isMutating,
+		lastSyncedAt,
 		metrics,
 		pendingDeleteRequest,
 		query,

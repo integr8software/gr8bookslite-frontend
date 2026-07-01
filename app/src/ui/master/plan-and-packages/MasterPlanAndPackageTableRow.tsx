@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Row } from "@tanstack/react-table";
 import { getMasterPlanAndPackageViewHref } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import {
 	formatMasterPlanAndPackagePricing,
@@ -11,17 +12,48 @@ import { MasterPlanAndPackageStatusBadge } from "@/app/src/ui/master/plan-and-pa
 import { MasterPlanAndPackageRecordActions } from "@/app/src/ui/master/plan-and-packages/MasterPlanAndPackageRecordActions";
 
 type MasterPlanAndPackageTableRowProps = {
-	record: MasterPlanAndPackageRecord;
+	row: Row<MasterPlanAndPackageRecord>;
 	onToggleStatus: (recordId: string) => void;
 };
 
 export function MasterPlanAndPackageTableRow({
-	record,
+	row,
 	onToggleStatus,
 }: MasterPlanAndPackageTableRowProps) {
 	return (
 		<tr className="module-table-row">
-			<td className="px-4 py-4">
+			{row.getVisibleCells().map((cell) => (
+				<MasterPlanAndPackageTableCell
+					key={cell.id}
+					align={isCenteredColumn(cell.column.id) ? "center" : "left"}
+				>
+					<MasterPlanAndPackageCellContent
+						columnId={cell.column.id}
+						record={row.original}
+						onToggleStatus={onToggleStatus}
+					/>
+				</MasterPlanAndPackageTableCell>
+			))}
+		</tr>
+	);
+}
+
+function isCenteredColumn(columnId: string) {
+	return ["actions", "status"].includes(columnId);
+}
+
+function MasterPlanAndPackageCellContent({
+	columnId,
+	record,
+	onToggleStatus,
+}: {
+	columnId: string;
+	record: MasterPlanAndPackageRecord;
+	onToggleStatus: (recordId: string) => void;
+}) {
+	switch (columnId) {
+		case "name":
+			return (
 				<div className="min-w-0">
 					<Link
 						href={getMasterPlanAndPackageViewHref(record.id)}
@@ -46,29 +78,52 @@ export function MasterPlanAndPackageTableRow({
 						{record.description}
 					</p>
 				</div>
-			</td>
-			<td className="px-4 py-4">
-				<MasterPlanAndPackageStatusBadge status={record.status} />
-			</td>
-			<td className="px-4 py-4">
-				<p className="text-sm font-semibold text-darknavy">
-					{formatMasterPlanAndPackagePricing(record.pricing)}
-				</p>
-				<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/38">
-					{getMasterPlanAndPackagePricingSupportingText(record.pricing)}
-				</p>
-			</td>
-			<td className="px-4 py-4">
+			);
+		case "status":
+			return <MasterPlanAndPackageStatusBadge status={record.status} />;
+		case "pricing":
+			return (
+				<>
+					<p className="text-sm font-semibold text-darknavy">
+						{formatMasterPlanAndPackagePricing(record.pricing)}
+					</p>
+					<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-darknavy/38">
+						{getMasterPlanAndPackagePricingSupportingText(record.pricing)}
+					</p>
+				</>
+			);
+		case "scalePricing":
+			return (
 				<p className="text-sm font-semibold text-darknavy">
 					{formatMasterPlanAndPackageScalePricing(record.scalePricing)}
 				</p>
-			</td>
-			<td className="px-4 py-4">
+			);
+		case "actions":
+			return (
 				<MasterPlanAndPackageRecordActions
 					record={record}
 					onToggleStatus={onToggleStatus}
 				/>
-			</td>
-		</tr>
+			);
+		default:
+			return null;
+	}
+}
+
+function MasterPlanAndPackageTableCell({
+	align = "left",
+	children,
+}: {
+	align?: "center" | "left";
+	children: React.ReactNode;
+}) {
+	return (
+		<td
+			className={`align-middle text-sm text-darknavy ${
+				align === "center" ? "text-center" : "text-left"
+			}`}
+		>
+			{children}
+		</td>
 	);
 }

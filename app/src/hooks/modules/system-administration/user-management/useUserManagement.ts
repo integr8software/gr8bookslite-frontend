@@ -21,6 +21,7 @@ type UserManagementState = {
   updateUserRole: (userRole: UserRoleRecord) => void;
   deleteUserRole: (userRoleId: string) => void;
   isLoading: boolean;
+  lastSyncedAt: number;
   isMutating: boolean;
 };
 
@@ -145,6 +146,10 @@ export function useUserManagementStore<TSelected = UserManagementState>(
       deleteUserRole: (userRoleId) =>
         deleteUserRoleMutation.mutate(userRoleId),
       isLoading: usersQuery.isLoading || userRolesQuery.isLoading,
+      lastSyncedAt: Math.max(
+        usersQuery.dataUpdatedAt,
+        userRolesQuery.dataUpdatedAt,
+      ),
       isMutating:
         addUserMutation.isPending ||
         updateUserMutation.isPending ||
@@ -161,8 +166,10 @@ export function useUserManagementStore<TSelected = UserManagementState>(
       updateUserMutation,
       updateUserRoleMutation,
       userRolesQuery.data,
+      userRolesQuery.dataUpdatedAt,
       userRolesQuery.isLoading,
       usersQuery.data,
+      usersQuery.dataUpdatedAt,
       usersQuery.isLoading,
     ],
   );

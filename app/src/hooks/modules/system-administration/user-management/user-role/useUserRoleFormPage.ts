@@ -29,6 +29,7 @@ import {
 	UpdateBranchRole,
 	UpdateBranchRoleStatus,
 } from "@/app/src/services/modules/system-administration/user-management/user-role/BranchUserRoleApi";
+import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { UserRoleQueryKeys } from "@/app/src/services/modules/system-administration/user-management/user-role/UserRoleQueryKeys";
 import { UserListQueryKeys } from "@/app/src/services/modules/system-administration/user-management/users/UserListQueryKeys";
 import type {
@@ -83,9 +84,13 @@ export function useUserRoleFormPage() {
 		? `${UserRoleHref}/view/${existingUserRole.id}`
 		: UserRoleHref;
 	const submitHref =
-		mode === "edit" && wasOpenedFromView ? viewHref : UserRoleHref;
+		mode === "edit" && wasOpenedFromView
+			? viewHref
+			: UserRoleHref;
 	const cancelHref =
-		mode === "edit" && wasOpenedFromView ? viewHref : UserRoleHref;
+		mode === "edit" && wasOpenedFromView
+			? viewHref
+			: UserRoleHref;
 	const editHref = existingUserRole
 		? `${UserRoleHref}/edit/${existingUserRole.id}?${UserManagementEditFromViewQuery}`
 		: undefined;
@@ -106,6 +111,10 @@ export function useUserRoleFormPage() {
 				);
 				queryClient.invalidateQueries({
 					queryKey: UserListQueryKeys.branchRoles(branchId),
+				});
+				queryClient.invalidateQueries({ queryKey: AuthQueryKeys.profiles() });
+				queryClient.invalidateQueries({
+					queryKey: ["user-sidebar-customization"],
 				});
 			}
 
@@ -148,6 +157,10 @@ export function useUserRoleFormPage() {
 				);
 				queryClient.invalidateQueries({
 					queryKey: UserListQueryKeys.branchRoles(branchId),
+				});
+				queryClient.invalidateQueries({ queryKey: AuthQueryKeys.profiles() });
+				queryClient.invalidateQueries({
+					queryKey: ["user-sidebar-customization"],
 				});
 			}
 

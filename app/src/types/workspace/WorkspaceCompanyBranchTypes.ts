@@ -1,7 +1,7 @@
 import type {
 	BranchManagementFormValues,
 } from "@/app/src/data/modules/system-administration/branch-management/BranchManagementData";
-import type { BranchFormErrors } from "@/app/src/types/modules/branch-manager/BranchActionTypes";
+import type { BranchFormErrors } from "@/app/src/types/workspace/branch-manager/BranchActionTypes";
 import type {
 	WorkspaceCompanyBranchRecord,
 	WorkspaceCompanyRecord,

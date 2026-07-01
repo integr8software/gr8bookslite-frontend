@@ -11,6 +11,7 @@ export type WorkspaceCompanyManagementStoreState = {
   companies: WorkspaceCompanyRecord[];
   errorMessage: string | null;
   isLoading: boolean;
+  lastSyncedAt: number;
   isMutating: boolean;
   users: WorkspaceCompanyUserRecord[];
   addCompany: (

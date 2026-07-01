@@ -43,6 +43,7 @@ export type MainAccessKey =
   | "canvass"
   | "fixedAsset"
   | "maintenance.chartOfAccounts"
+  | "maintenance.bankMasterfile"
   | "maintenance.currency"
   | "maintenance.party"
   | "maintenance.discount"
@@ -58,9 +59,6 @@ export type MainAccessKey =
   | "maintenance.workflow"
   | "maintenance.audit"
   | "maintenance.users"
-  | "maintenance.reports"
-  | "reports.accounting"
-  | "reports.inventory"
   | "settings"
   | "settings.permissions"
   | "settings.notifications"
@@ -79,7 +77,11 @@ export type ModuleSubscriptionPlanId =
   | "INVENTORY"
   | "ACCOUNTING_INVENTORY";
 
-export type MainNavigationScope = "master" | "workspace" | "company" | "account";
+export type MainNavigationScope =
+  | "master"
+  | "workspace"
+  | "company"
+  | "account";
 
 export type MainPermissionMap = Partial<
   Record<string, Partial<Record<MainAccessAction, boolean>>>
@@ -103,7 +105,6 @@ export type MainIconName =
   | "profile"
   | "promotion"
   | "purchasing"
-  | "reports"
   | "sales"
   | "security"
   | "settings"
@@ -120,6 +121,7 @@ export type MainNavigationItem = {
   productKey?: MainProductKey;
   productKeys?: MainProductKey[];
   requiredActions?: MainAccessAction[];
+	iconName?: string | null;
   module?: {
     actions: Extract<MainAccessAction, "view" | "add" | "edit">[];
     recordIds?: string[];
@@ -132,6 +134,7 @@ export type MainNavigationSection = {
   title: string;
   href?: string;
   icon: MainIconName;
+  iconName?: string | null;
   accessKey: MainAccessKey;
   permissionCode?: string;
   productKey?: MainProductKey;

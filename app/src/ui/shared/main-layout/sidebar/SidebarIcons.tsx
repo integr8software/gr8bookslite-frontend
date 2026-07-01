@@ -2,9 +2,9 @@ import { createElement } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
 	Activity,
+	ArrowRightLeft,
 	BadgeDollarSign,
 	BadgePercent,
-	BarChart3,
 	BookOpen,
 	Boxes,
 	Building2,
@@ -12,23 +12,28 @@ import {
 	ClipboardList,
 	Coins,
 	CreditCard,
-	FileBarChart,
 	FileCheck2,
 	FileSignature,
 	FileText,
+	Folder,
 	Gauge,
 	GitBranch,
 	Landmark,
 	LayoutDashboard,
 	ListTree,
 	Mail,
+	MapPin,
 	Package,
+	PackageCheck,
 	Receipt,
 	ReceiptText,
+	Ruler,
 	Scale,
+	Search,
 	Settings,
 	ShieldCheck,
 	ShoppingCart,
+	Slice,
 	Tags,
 	Target,
 	UserCog,
@@ -36,6 +41,8 @@ import {
 	Users,
 	WalletCards,
 	Warehouse,
+	Weight,
+	WeightTilde,
 } from "lucide-react";
 import type {
 	MainIconName,
@@ -61,13 +68,45 @@ export const MainIcons: Record<MainIconName, LucideIcon> = {
 	profile: UserCircle,
 	promotion: BadgePercent,
 	purchasing: ShoppingCart,
-	reports: BarChart3,
 	sales: BadgeDollarSign,
 	security: ShieldCheck,
 	settings: Settings,
 	subscription: WalletCards,
 	support: Users,
 	user: UserCog,
+};
+
+export const SidebarAllowedIcons: Record<string, LucideIcon> = {
+	...MainIcons,
+	activity: Activity,
+	bank: Landmark,
+	calendar: CalendarClock,
+	clipboard: ClipboardList,
+	coins: Coins,
+	creditCard: CreditCard,
+	fileCheck: FileCheck2,
+	fileSignature: FileSignature,
+	folder: Folder,
+	gauge: Gauge,
+	link: FileText,
+	mail: Mail,
+	mapPin: MapPin,
+	package: Package,
+	packageCheck: PackageCheck,
+	receipt: ReceiptText,
+	ruler: Ruler,
+	scale: Scale,
+	search: Search,
+	shieldCheck: ShieldCheck,
+	slice: Slice,
+	tags: Tags,
+	target: Target,
+	arrowRightLeft: ArrowRightLeft,
+	users: Users,
+	accounting: Landmark,
+	warehouse: Warehouse,
+	weight: Weight,
+	weightTilde: WeightTilde,
 };
 
 const SidebarItemIcons: Record<string, LucideIcon> = {
@@ -84,7 +123,6 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"workspace-billing-and-subscription": WalletCards,
 	"workspace-invoices": FileText,
 	"workspace-vouchers-and-coupons": BadgePercent,
-	"workspace-reports-analytics": FileBarChart,
 	"workspace-modules-features": ListTree,
 	"workspace-domains-ports": GitBranch,
 	"workspace-integrations": Settings,
@@ -111,11 +149,11 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"workspace-module-inventory": Boxes,
 	"workspace-module-projects": ClipboardList,
 	"workspace-module-human-resources": Users,
-	"workspace-module-reports-analytics": FileBarChart,
 	"maintenance-financial": Landmark,
 	"maintenance-item-management": Package,
 	"maintenance-warehouse-management": Warehouse,
 	"maintenance-charts-of-accounts": Scale,
+	"maintenance-bank-masterfile": Landmark,
 	"system-administration-multi-currency-setup": Coins,
 	"transaction-number-setup": ReceiptText,
 	"maintenance-discount": BadgePercent,
@@ -127,34 +165,13 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"maintenance-responsibility-center": Target,
 	"maintenance-inventory-warehouse": Warehouse,
 	"maintenance-warehouse": Warehouse,
-	"maintenance-form-signatory": FileSignature,
+	"system-administration-form-signatory": FileSignature,
 	"maintenance-item": Package,
 	"maintenance-item-sub-category": Tags,
-	"maintenance-item-sub-type": Package,
 	"maintenance-party-management": Users,
 	"maintenance-party": Users,
 	"cash-disbursement-voucher": FileCheck2,
 	"cash-disbursement-request-payment": FileText,
-	"reports-maintenance": Settings,
-	"reports-financial": FileBarChart,
-	"reports-books-of-accounts": BookOpen,
-	"reports-general-ledger": BookOpen,
-	"reports-journal-ledger": BookOpen,
-	"reports-trial-balance": FileBarChart,
-	"reports-balance-sheet": FileBarChart,
-	"reports-income-statement": FileBarChart,
-	"reports-cash-flow": FileBarChart,
-	"reports-accounts-receivable": CreditCard,
-	"reports-ar-aging": CalendarClock,
-	"reports-ar-statement": FileText,
-	"reports-inventory": Boxes,
-	"reports-inventory-audit": Activity,
-	"reports-inventory-item-query": Package,
-	"reports-inventory-stock-movement": Warehouse,
-	"reports-inventory-valuation": FileBarChart,
-	"reports-bir": FileText,
-	"reports-bir-vat-relief": FileText,
-	"reports-bir-alpha-list": FileText,
 	"maintenance-user-management": UserCog,
 	"maintenance-users": UserCog,
 	"maintenance-user-role": Users,
@@ -166,7 +183,11 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 };
 
 export function hasSidebarItemIcon(item: MainNavigationItem) {
-	return Boolean(SidebarItemIcons[item.key]);
+	if (item.iconName === null) return false;
+	return Boolean(
+		(item.iconName && SidebarAllowedIcons[item.iconName]) ||
+			SidebarItemIcons[item.key],
+	);
 }
 
 export function renderSidebarItemIcon(
@@ -188,6 +209,11 @@ export function renderSidebarItemIcon(
 }
 
 function getSidebarItemIcon(item: MainNavigationItem) {
+	if (item.iconName === null) {
+		return item.children?.length ? SidebarAllowedIcons.folder : FileText;
+	}
+	const configuredIcon = item.iconName ? SidebarAllowedIcons[item.iconName] : undefined;
+	if (configuredIcon) return configuredIcon;
 	const exactIcon = SidebarItemIcons[item.key];
 
 	if (exactIcon) {
@@ -204,10 +230,6 @@ function getSidebarItemIcon(item: MainNavigationItem) {
 
 	if (item.key.includes("bank")) {
 		return Landmark;
-	}
-
-	if (item.key.includes("report")) {
-		return FileBarChart;
 	}
 
 	switch (item.accessKey) {
@@ -255,9 +277,6 @@ function getSidebarItemIcon(item: MainNavigationItem) {
 			return Receipt;
 		case "maintenance.responsibilityCenter":
 			return Target;
-		case "reports.accounting":
-		case "reports.inventory":
-			return FileBarChart;
 		default:
 			return FileText;
 	}

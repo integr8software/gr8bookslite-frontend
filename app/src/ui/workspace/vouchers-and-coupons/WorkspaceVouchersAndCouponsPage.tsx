@@ -3,23 +3,28 @@
 import { BadgePercent, CheckCircle2, Tags, Ticket, Users } from "lucide-react";
 import { useWorkspaceVouchersAndCouponsPage } from "@/app/src/hooks/workspace/vouchers-and-coupons/useWorkspaceVouchersAndCouponsPage";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { WorkspaceVouchersAndCouponsTable } from "@/app/src/ui/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsTable";
+import { WorkspaceVouchersAndCouponsSpotlightTutorial } from "@/app/src/ui/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsSpotlightTutorial";
 
 export function WorkspaceVouchersAndCouponsPage() {
 	const page = useWorkspaceVouchersAndCouponsPage();
 
 	return (
 		<section className="grid gap-5">
-			<ModuleHeader
-				variant="card"
-				titleAs="h1"
-				eyebrow="Workspace billing"
-				title="Vouchers and Coupons"
-				description="Subscriber voucher and coupon assignments based on the master subscriber setup."
-			/>
-			<ModuleMetrics
-				metrics={[
+			<WorkspaceVouchersAndCouponsSpotlightTutorial />
+			<div data-spotlight-id="workspace-vouchers-header">
+				<ModuleHeader
+					variant="card"
+					titleAs="h1"
+					eyebrow="Workspace billing"
+					title="Vouchers and Coupons"
+					description="Subscriber voucher and coupon assignments based on the master subscriber setup."
+				/>
+			</div>
+			<div data-spotlight-id="workspace-vouchers-metrics">
+				<ModuleStatisticCards
+					items={[
 					{
 						icon: Tags,
 						label: "Assigned",
@@ -55,8 +60,9 @@ export function WorkspaceVouchersAndCouponsPage() {
 						tone: "slate",
 						value: page.summary.subscriberCount,
 					},
-				]}
-			/>
+					]}
+				/>
+			</div>
 			<WorkspaceVouchersAndCouponsTable {...page} />
 		</section>
 	);

@@ -2,13 +2,13 @@ import type {
 	TransactionNumberSetupFormValues,
 	TransactionNumberSetupRecord,
 } from "@/app/src/types/modules/system-administration/transaction-number-setup/TransactionNumberSetupTypes";
-import type { WorkspaceCompanyRecord } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 
 export const TransactionNumberSetupInitialFormValues: TransactionNumberSetupFormValues =
 	{
 		moduleCode: "",
 		inputMode: "Auto",
 		prefix: "",
+		suffix: "",
 		padding: 6,
 		startingNumber: 1,
 		currentNumber: 1,
@@ -30,6 +30,7 @@ export function createTransactionNumberSetupFormValues(
 		moduleCode: record.moduleCode,
 		inputMode: record.inputMode,
 		prefix: record.prefix,
+		suffix: record.suffix,
 		padding: record.padding,
 		startingNumber: record.startingNumber,
 		currentNumber: record.currentNumber,
@@ -37,20 +38,6 @@ export function createTransactionNumberSetupFormValues(
 		branchIds: record.branchIds,
 		status: record.status,
 	};
-}
-
-export function getTransactionNumberSetupBranchOptions(
-	companies: WorkspaceCompanyRecord[],
-): TransactionNumberSetupBranchOption[] {
-	return companies
-		.flatMap((company) => company.branches ?? [])
-		.filter((branch) => branch.status === "Active")
-		.map((branch) => ({
-			code: branch.code,
-			id: branch.id,
-			name: branch.name,
-		}))
-		.sort((first, second) => first.name.localeCompare(second.name));
 }
 
 export function updateTransactionNumberSetupRecord(
@@ -65,13 +52,24 @@ export function updateTransactionNumberSetupRecord(
 		moduleName: record.moduleName,
 		inputMode: values.inputMode,
 		prefix: values.prefix.trim(),
-		padding: values.padding,
-		startingNumber: values.startingNumber,
-		currentNumber: values.currentNumber,
+		suffix: values.suffix.trim(),
+		padding: getNumericFormValue(values.padding, record.padding),
+		startingNumber: getNumericFormValue(
+			values.startingNumber,
+			record.startingNumber,
+		),
+		currentNumber: getNumericFormValue(
+			values.currentNumber,
+			record.currentNumber,
+		),
 		scope: values.scope,
 		branchIds: createTransactionNumberBranchIds(values),
 		status: values.status,
 	};
+}
+
+function getNumericFormValue(value: number | "", fallback: number) {
+	return value === "" ? fallback : value;
 }
 
 function createTransactionNumberBranchIds(

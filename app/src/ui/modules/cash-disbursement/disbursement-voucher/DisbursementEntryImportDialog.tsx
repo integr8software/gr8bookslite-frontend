@@ -10,6 +10,10 @@ import {
   X,
 } from "lucide-react";
 import {
+  AppMaxFileUploadSizeBytes,
+  AppMaxFileUploadSizeLabel,
+} from "@/app/src/constants/shared/app/AppConstants";
+import {
   createBlankDisbursementLineEntry,
   createTaxDetails,
   syncTaxDetailsAmount,
@@ -153,6 +157,12 @@ export function DisbursementEntryImportDialog({
       return;
     }
 
+    if (file.size > AppMaxFileUploadSizeBytes) {
+      setPreviewRows([]);
+      setImportError(`Upload a file up to ${AppMaxFileUploadSizeLabel}.`);
+      return;
+    }
+
     readDisbursementEntryImportFileText(file)
       .then((text) => {
         setPasteText(text);
@@ -284,7 +294,7 @@ export function DisbursementEntryImportDialog({
             </button>
 
             <div className="overflow-auto rounded-lg border border-darknavy/10">
-              <table className="w-full min-w-[56rem] border-separate border-spacing-0 text-left text-xs text-darknavy">
+              <table className="w-full min-w-4xl border-separate border-spacing-0 text-left text-xs text-darknavy">
                 <thead className="bg-offwhite text-darknavy/65">
                   <tr>
                     <th className="border-b border-darknavy/10 px-3 py-2">

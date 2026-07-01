@@ -2,7 +2,7 @@ import type {
 	ResponsibilityCenterCategory,
 	ResponsibilityCenterFinancialType,
 	ResponsibilityCenterStatus,
-} from "@/app/src/types/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterTypes";
+} from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 
 export const ResponsibilityCenterHref =
 	"/maintenance/responsibility-center";

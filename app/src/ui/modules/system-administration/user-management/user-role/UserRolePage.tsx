@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, ShieldCheck } from "lucide-react";
@@ -27,9 +27,22 @@ import {
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
 export function UserRolePage() {
+  return (
+    <Suspense fallback={null}>
+      <UserRolePageInner />
+    </Suspense>
+  );
+}
+
+function UserRolePageInner() {
   const queryClient = useQueryClient();
-  const { accessToken, branchId, isLoadingBranchContext } =
-    useBranchUserRoleContext();
+  const {
+    accessToken,
+    branchId,
+    branchName,
+    companyName,
+    isLoadingBranchContext,
+  } = useBranchUserRoleContext();
   const [pendingStatusRole, setPendingStatusRole] =
     useState<UserRoleRecord | null>(null);
   const userRolesQuery = useQuery({
@@ -98,6 +111,11 @@ export function UserRolePage() {
   const userRoles = userRolesQuery.data ?? [];
   const isLoading = isLoadingBranchContext || userRolesQuery.isLoading;
   const isMutating = statusMutation.isPending;
+  const addHref = `${UserRoleHref}/add`;
+  const description =
+    branchName && companyName
+      ? `Maintain access role templates for ${branchName} in ${companyName}.`
+      : "Maintain access role templates for the active branch.";
 
   return (
     <section className="grid gap-5">
@@ -107,7 +125,7 @@ export function UserRolePage() {
         data-spotlight-id="user-role-header"
         titleAs="h1"
         title="User Roles"
-        description="Maintain access role templates for users."
+        description={description}
         eyebrow={
           <>
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
@@ -117,7 +135,7 @@ export function UserRolePage() {
         actions={
           <>
             <Link
-              href={`${UserRoleHref}/add`}
+              href={addHref}
               data-spotlight-id="user-role-add"
               className={`${moduleHeaderActionClassNames.primary} max-sm:w-full`}
             >

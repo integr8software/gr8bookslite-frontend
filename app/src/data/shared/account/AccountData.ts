@@ -1,6 +1,10 @@
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
-import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
+import {
+  GetAuthProfileAccess,
+  GetAuthProfileCompanyId,
+  ResolveAuthProfileEffectiveRole,
+} from "@/app/src/services/auth/AuthProfileAccess";
 import type {
   AccountProfileDraft,
   AccountProfileFieldKey,
@@ -51,6 +55,7 @@ export function ResolveAccountVisibilityRole(
 export function BuildAccountProfileViewModel(
   profile: AuthProfileResponse | undefined,
   draft: AccountProfileDraft | undefined,
+  activeBranchId?: number | null,
 ): AccountProfileViewModel {
   const role = ResolveAccountVisibilityRole(profile);
   const fullName = draft?.fullName ?? profile?.user.name ?? "Account User";
@@ -73,7 +78,7 @@ export function BuildAccountProfileViewModel(
         ? draft.avatarDataUrl
         : profile?.user.avatarPublicUrl ?? null,
     initials: BuildInitials(fullName),
-    roleLabel: FormatRoleLabel(role),
+    roleLabel: ResolveAccountRoleLabel(profile, role, activeBranchId),
   };
 }
 
@@ -99,4 +104,47 @@ function FormatRoleLabel(role: AccountVisibilityRole) {
     default:
       return "User";
   }
+}
+
+function ResolveAccountRoleLabel(
+  profile: AuthProfileResponse | undefined,
+  role: AccountVisibilityRole,
+  activeBranchId?: number | null,
+) {
+  if (role === "SUPER_ADMIN") {
+    return FormatRoleLabel(role);
+  }
+
+  const access = GetAuthProfileAccess(profile);
+  const activeBranchAccess = access?.userModules?.byBranch?.find(
+    (branch) => branch.branchUnitId === activeBranchId,
+  );
+  const activeCompanyId = GetAuthProfileCompanyId(profile);
+  const activeCompanyMembership =
+    profile?.companies?.find(
+      (company) => company.companyId === activeCompanyId,
+    ) ?? profile?.companies?.[0];
+
+  return (
+    activeBranchAccess?.companyRoleName ??
+    access?.companyRoleName ??
+    FormatCompanyRoleName(
+      activeBranchAccess?.companyRoleCode ??
+        access?.companyRoleCode ??
+        activeCompanyMembership?.companyRoleCode,
+    ) ??
+    FormatRoleLabel(role)
+  );
+}
+
+function FormatCompanyRoleName(companyRoleCode: string | null | undefined) {
+  if (!companyRoleCode) {
+    return undefined;
+  }
+
+  return companyRoleCode
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
 }

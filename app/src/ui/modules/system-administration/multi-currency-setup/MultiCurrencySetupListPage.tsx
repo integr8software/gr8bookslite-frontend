@@ -9,9 +9,7 @@ import {
 	RefreshCcw,
 	Settings,
 } from "lucide-react";
-import {
-	MultiCurrencySetupStatusOptions,
-} from "@/app/src/constants/modules/system-administration/multi-currency-setup/MultiCurrencySetupConstants";
+import { MultiCurrencySetupStatusOptions } from "@/app/src/constants/modules/system-administration/multi-currency-setup/MultiCurrencySetupConstants";
 import {
 	DefaultWantedCurrencyCode,
 	MockMultiCurrencyAuditLogs,
@@ -111,14 +109,16 @@ export function MultiCurrencySetupListPage() {
 		page.setPreferredBaseCurrencyCode(value);
 
 		const nextWantedCode =
-			MultiCurrencyCatalog.find((currency) => currency.code !== value)?.code ??
-			DefaultWantedCurrencyCode;
+			MultiCurrencyCatalog.find((currency) => currency.code !== value)
+				?.code ?? DefaultWantedCurrencyCode;
 
 		page.setWantedCurrencyCode(nextWantedCode);
 	}
 
 	function handleDrawerChange(
-		event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+		event: ChangeEvent<
+			HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+		>,
 	) {
 		const { name, value } = event.target;
 
@@ -176,9 +176,7 @@ export function MultiCurrencySetupListPage() {
 
 		const nextRecord = {
 			baseCurrencyCode: drawerValues.baseCurrencyCode,
-			id:
-				drawerState?.record?.id ??
-				`mcs_${Date.now().toString(36)}`,
+			id: drawerState?.record?.id ?? `mcs_${Date.now().toString(36)}`,
 			notes: drawerValues.notes.trim() || undefined,
 			originalExchangeRate: Number(drawerValues.configuredExchangeRate),
 			rateDate: drawerValues.rateDate,
@@ -212,10 +210,11 @@ export function MultiCurrencySetupListPage() {
 				actions={<HeaderActions onAddCurrency={openAddDrawer} />}
 			/>
 
-			<div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
-				<div className="grid gap-5">
+			<div className="grid min-w-0 gap-5 2xl:grid-cols-[minmax(0,1fr)_22rem]">
+				<div className="grid min-w-0 gap-5">
 					<MultiCurrencySetupTable
 						isLoading={page.isLoading}
+						lastSyncedAt={page.lastSyncedAt}
 						records={page.filteredRecords}
 						toolbar={
 							<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,2fr)_minmax(12rem,1fr)_minmax(10rem,0.8fr)]">
@@ -230,14 +229,18 @@ export function MultiCurrencySetupListPage() {
 									value={page.statusFilter}
 									options={[
 										{ label: "All", value: "All" },
-										...MultiCurrencySetupStatusOptions.map((status) => ({
-											label: status,
-											value: status,
-										})),
+										...MultiCurrencySetupStatusOptions.map(
+											(status) => ({
+												label: status,
+												value: status,
+											}),
+										),
 									]}
 									onChange={page.setStatusFilter}
 								/>
-								<ModuleTableResetButton onClick={page.resetFilters}>
+								<ModuleTableResetButton
+									onClick={page.resetFilters}
+								>
 									Reset
 								</ModuleTableResetButton>
 							</ModuleTableToolbar>
@@ -248,7 +251,7 @@ export function MultiCurrencySetupListPage() {
 					/>
 				</div>
 
-				<aside className="grid content-start gap-5">
+				<aside className="grid min-w-0 content-start gap-5 md:grid-cols-2 2xl:grid-cols-1">
 					<BaseCurrencyCard
 						baseCurrencyCode={page.preferredBaseCurrencyCode}
 						onBaseCurrencyChange={handleBaseCurrencyChange}
@@ -318,16 +321,19 @@ function BaseCurrencyCard({
 				title="Base Currency"
 				description="Rates below refresh from this currency."
 			/>
-			<div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50/70 p-4">
+			<div className="mt-4 rounded-lg border border-emerald-500/25 bg-emerald-500/10 p-4">
 				<div className="flex items-center gap-3">
 					<div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white">
-						<CircleDollarSign className="h-5 w-5" aria-hidden="true" />
+						<CircleDollarSign
+							className="h-5 w-5"
+							aria-hidden="true"
+						/>
 					</div>
-					<div>
+					<div className="min-w-0">
 						<p className="font-semibold text-darknavy">
 							{baseCurrency?.code ?? baseCurrencyCode}
 						</p>
-						<p className="text-sm text-darknavy/60">
+						<p className="truncate text-sm text-darknavy/60">
 							{baseCurrency?.name ?? "Base currency"}
 						</p>
 					</div>
@@ -339,8 +345,10 @@ function BaseCurrencyCard({
 				</span>
 				<select
 					value={baseCurrencyCode}
-					onChange={(event) => onBaseCurrencyChange(event.target.value)}
-					className={fieldClassName}
+					onChange={(event) =>
+						onBaseCurrencyChange(event.target.value)
+					}
+					className={selectFieldClassName}
 				>
 					{MultiCurrencyCatalog.map((currency) => (
 						<option key={currency.code} value={currency.code}>
@@ -377,9 +385,11 @@ function UpdateRatesCard({
 				<select
 					value={updateMode}
 					onChange={(event) =>
-						onUpdateModeChange(event.target.value as MultiCurrencyRateUpdateMode)
+						onUpdateModeChange(
+							event.target.value as MultiCurrencyRateUpdateMode,
+						)
 					}
-					className={fieldClassName}
+					className={selectFieldClassName}
 				>
 					<option value="unmodified">Only unmodified rates</option>
 					<option value="overwrite">Overwrite existing rates</option>
@@ -389,7 +399,9 @@ function UpdateRatesCard({
 				type="button"
 				disabled={isMutating}
 				onClick={onUpdateRates}
-				className={moduleHeaderActionClassNames.secondary + " mt-4 w-full"}
+				className={
+					moduleHeaderActionClassNames.secondary + " mt-4 w-full"
+				}
 			>
 				<RefreshCcw className="h-4 w-4" aria-hidden="true" />
 				{isMutating ? "Updating..." : "Update Rates"}
@@ -403,11 +415,26 @@ function SummaryCard({ page }: { page: UseMultiCurrencySetupListPage }) {
 		<SectionCard>
 			<PanelHeader title="Summary" />
 			<div className="mt-4 grid gap-3">
-				<SummaryLine label="Base Currency" value={page.preferredBaseCurrencyCode} />
-				<SummaryLine label="Configured Currencies" value={String(page.baseRecords.length)} />
-				<SummaryLine label="API Rates" value={String(page.fetchedRates.length)} />
-				<SummaryLine label="Manual Overrides" value={String(page.manualRateCount)} />
-				<SummaryLine label="Rate Source" value={MultiCurrencySourceSummary.primarySource} />
+				<SummaryLine
+					label="Base Currency"
+					value={page.preferredBaseCurrencyCode}
+				/>
+				<SummaryLine
+					label="Configured Currencies"
+					value={String(page.baseRecords.length)}
+				/>
+				<SummaryLine
+					label="API Rates"
+					value={String(page.fetchedRates.length)}
+				/>
+				<SummaryLine
+					label="Manual Overrides"
+					value={String(page.manualRateCount)}
+				/>
+				<SummaryLine
+					label="Rate Source"
+					value={MultiCurrencySourceSummary.primarySource}
+				/>
 			</div>
 		</SectionCard>
 	);
@@ -416,19 +443,25 @@ function SummaryCard({ page }: { page: UseMultiCurrencySetupListPage }) {
 function SummarizedSettingsCard() {
 	return (
 		<SectionCard>
-			<PanelHeader title="Other Settings" description="Summarized for now." />
+			<PanelHeader
+				title="Other Settings"
+				description="Summarized for now."
+			/>
 			<div className="mt-4 grid gap-3 text-sm text-darknavy/70">
 				<CheckLine>
 					Preferences: daily rate, transaction date, 2 decimal places
 				</CheckLine>
 				<CheckLine>
-					Rounding rules: {MockMultiCurrencyRoundingRules.length} configured
+					Rounding rules: {MockMultiCurrencyRoundingRules.length}{" "}
+					configured
 				</CheckLine>
 				<CheckLine>
-					Rate history: {MockMultiCurrencyRateHistory.length} recent entries
+					Rate history: {MockMultiCurrencyRateHistory.length} recent
+					entries
 				</CheckLine>
 				<CheckLine>
-					Audit logs: {MockMultiCurrencyAuditLogs.length} recent changes
+					Audit logs: {MockMultiCurrencyAuditLogs.length} recent
+					changes
 				</CheckLine>
 			</div>
 		</SectionCard>
@@ -513,12 +546,16 @@ function CurrencySetupDrawer({
 							name="targetCurrencyCode"
 							value={values.targetCurrencyCode}
 							onChange={onChange}
-							className={fieldClassName}
+							className={selectFieldClassName}
 						>
 							{MultiCurrencyCatalog.filter(
-								(currency) => currency.code !== values.baseCurrencyCode,
+								(currency) =>
+									currency.code !== values.baseCurrencyCode,
 							).map((currency) => (
-								<option key={currency.code} value={currency.code}>
+								<option
+									key={currency.code}
+									value={currency.code}
+								>
 									{currency.code} - {currency.name}
 								</option>
 							))}
@@ -541,23 +578,31 @@ function CurrencySetupDrawer({
 					</DrawerField>
 
 					<div className="grid gap-4 sm:grid-cols-2">
-						<DrawerField error={drawerErrors.source} label="Source" required>
+						<DrawerField
+							error={drawerErrors.source}
+							label="Source"
+							required
+						>
 							<select
 								name="source"
 								value={values.source}
 								onChange={onChange}
-								className={fieldClassName}
+								className={selectFieldClassName}
 							>
 								<option value="API">API</option>
 								<option value="Manual">Manual</option>
 							</select>
 						</DrawerField>
-						<DrawerField error={drawerErrors.status} label="Status" required>
+						<DrawerField
+							error={drawerErrors.status}
+							label="Status"
+							required
+						>
 							<select
 								name="status"
 								value={values.status}
 								onChange={onChange}
-								className={fieldClassName}
+								className={selectFieldClassName}
 							>
 								<option value="Active">Active</option>
 								<option value="Inactive">Inactive</option>
@@ -565,7 +610,11 @@ function CurrencySetupDrawer({
 						</DrawerField>
 					</div>
 
-					<DrawerField error={drawerErrors.rateDate} label="Rate Date" required>
+					<DrawerField
+						error={drawerErrors.rateDate}
+						label="Rate Date"
+						required
+					>
 						<input
 							name="rateDate"
 							type="date"
@@ -703,7 +752,7 @@ function ReadonlyRate({
 			<p className="text-xs font-semibold uppercase text-darknavy/50">
 				{label}
 			</p>
-			<p className="mt-2 truncate font-mono text-base font-semibold text-darknavy">
+			<p className="mt-2 truncate text-base font-semibold text-darknavy">
 				{value}
 			</p>
 			<p className="mt-1 truncate text-xs text-darknavy/55">{helper}</p>
@@ -725,11 +774,16 @@ function SummaryLine({ label, value }: { label: string; value: string }) {
 function CheckLine({ children }: { children: ReactNode }) {
 	return (
 		<div className="flex gap-2">
-			<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+			<CheckCircle2
+				className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"
+				aria-hidden="true"
+			/>
 			<span>{children}</span>
 		</div>
 	);
 }
 
 const fieldClassName =
-	"min-h-10 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5";
+	"app-theme-field min-h-10 w-full rounded-md border px-3 text-sm font-medium outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-60";
+
+const selectFieldClassName = `app-select-control ${fieldClassName}`;

@@ -3,7 +3,7 @@ import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 
 export function LogoutLoadingScreen() {
 	return (
-		<main className="flex min-h-screen items-center justify-center overflow-hidden bg-offwhite px-6 py-10 text-darknavy">
+		<main className="fixed inset-0 z-[100] flex h-dvh items-center justify-center overflow-hidden bg-offwhite px-6 py-10 text-darknavy">
 			<section
 				className="flex w-full max-w-sm flex-col items-center rounded-lg border border-darknavy/10 bg-white px-6 py-10 text-center shadow-[0_24px_70px_rgba(33,39,56,0.12)] sm:px-10"
 				aria-busy="true"
@@ -27,10 +27,10 @@ export function LogoutLoadingScreen() {
 					<div className="absolute bottom-5 left-1/2 h-3 w-22 -translate-x-1/2 rounded-md bg-darknavy/14" />
 				</div>
 
-				<h1 className="mt-8 text-lg font-semibold text-darknavy">
+				<h1 className="mt-8 text-base font-semibold text-darknavy">
 					Logging you out
 				</h1>
-				<p className="mt-2 text-sm font-medium leading-6 text-darknavy/60">
+				<p className="mt-2 text-xs font-medium leading-5 text-darknavy/60">
 					Signing you out safely and closing your workspace session.
 				</p>
 			</section>

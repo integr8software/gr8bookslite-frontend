@@ -48,9 +48,11 @@ export function PettyCashVoucherListPage() {
             emptyTitle="No vouchers found"
             emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
             isLoading={page.isLoading}
+            lastSyncedAt={page.lastSyncedAt}
             paginationLabel="vouchers"
             paginationStorageKey={PettyCashVoucherPaginationStorageKey}
             table={page.table}
+            tableTitle="Petty cash vouchers"
             toolbar={<PettyCashVoucherListFilters page={page} />}
             renderRow={({ id, original }) => (
               <PettyCashVoucherTableRow

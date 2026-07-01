@@ -5,6 +5,7 @@ import type {
 } from "@/app/src/data/onboarding/OnboardingTypes";
 import { OnboardingActionRow } from "@/app/src/ui/onboarding/OnboardingActionRow";
 import { OnboardingBillingSummaryCard } from "@/app/src/ui/onboarding/OnboardingBillingSummaryCard";
+import { OnboardingCardBrand } from "@/app/src/ui/onboarding/OnboardingCardBrand";
 import { OnboardingField } from "@/app/src/ui/onboarding/OnboardingField";
 
 export function OnboardingBillingStep({
@@ -18,23 +19,9 @@ export function OnboardingBillingStep({
   handleNext,
 }: OnboardingBillingStepProps) {
   return (
-    <div className="mt-10 space-y-8">
-      <section className="rounded-3xl border border-darknavy/10 bg-linear-to-br from-offwhite via-white to-citron/10 p-6 shadow-sm sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-coralpink">
-          Billing
-        </p>
-        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-darknavy">
-          Add your billing details
-        </h2>
-        <p className="mt-4 max-w-2xl text-sm leading-6 text-darknavy/70 sm:text-base">
-          Your free trial starts first. Billing details are used for the plan
-          you selected and will only be charged after the trial ends.
-        </p>
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="space-y-6 rounded-3xl border border-darknavy/10 bg-white p-6 shadow-sm sm:p-8">
-          <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-8 lg:grid-cols-[1.12fr_0.88fr]">
+        <div className="order-2 space-y-6 rounded-2xl border border-darknavy/10 bg-white p-5 shadow-[0_20px_60px_rgba(33,39,56,0.09)] sm:p-8 lg:order-1 lg:p-10">
+          <div className="grid gap-5 md:grid-cols-2">
             <OnboardingField
               label="Cardholder Name"
               id="cardholderName"
@@ -72,9 +59,10 @@ export function OnboardingBillingStep({
             value={values.cardNumber}
             onChange={(event) => updateValue("cardNumber", event.target.value)}
             errors={errors.cardNumber}
+            endAdornment={<OnboardingCardBrand value={values.cardNumber} />}
           />
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             <OnboardingField
               label="Expiry Month"
               id="expiryMonth"
@@ -139,11 +127,13 @@ export function OnboardingBillingStep({
           />
         </div>
 
-        <OnboardingBillingSummaryCard
-          selectedPlan={selectedPlan}
-          selectedBillingCycle={selectedBillingCycle}
-        />
-      </section>
+        <div className="order-1 lg:order-2">
+          <OnboardingBillingSummaryCard
+            selectedPlan={selectedPlan}
+            selectedBillingCycle={selectedBillingCycle}
+          />
+        </div>
+
     </div>
   );
 }

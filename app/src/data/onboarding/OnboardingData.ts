@@ -79,8 +79,6 @@ export const OnboardingPlanComparisonRows = [
   },
 ] as const;
 
-export const OnboardingMaxImageSizeBytes = 5 * 1024 * 1024;
-
 const OnboardingMonthNames = [
   "January",
   "February",

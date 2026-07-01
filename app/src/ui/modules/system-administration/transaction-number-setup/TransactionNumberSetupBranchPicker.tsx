@@ -17,18 +17,23 @@ export function TransactionNumberSetupBranchPicker({
 	const isAllBranches = scope === "all";
 
 	return (
-		<section className="rounded-md border border-darknavy/10">
-			<div className="flex items-center gap-2 border-b border-darknavy/10 px-4 py-3">
+		<section className="rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
+			<div className="flex items-start gap-2 border-b border-darknavy/10 px-4 py-3">
 				<Settings2
-					className="h-4 w-4 text-darknavy/55"
+					className="mt-0.5 h-4 w-4 text-darknavy/55"
 					aria-hidden="true"
 				/>
-				<h3 className="text-sm font-semibold text-darknavy">
-					Branch coverage
-				</h3>
+				<div>
+					<h3 className="text-base font-semibold text-darknavy">
+						Branch Coverage
+					</h3>
+					<p className="mt-1 text-xs font-medium text-darknavy/50">
+						List of branches based on the current company.
+					</p>
+				</div>
 			</div>
 			<div className="grid max-h-[24rem] gap-2 overflow-auto p-3">
-				{branchOptions.map((branch) => {
+				{branchOptions.length > 0 ? branchOptions.map((branch) => {
 					const checked =
 						isAllBranches || selectedBranchIds.includes(branch.id);
 
@@ -53,7 +58,11 @@ export function TransactionNumberSetupBranchPicker({
 							</span>
 						</label>
 					);
-				})}
+				}) : (
+					<div className="rounded-md border border-darknavy/10 bg-offwhite/45 p-4 text-sm font-medium text-darknavy/55">
+						No active branches are available for the current company.
+					</div>
+				)}
 			</div>
 		</section>
 	);

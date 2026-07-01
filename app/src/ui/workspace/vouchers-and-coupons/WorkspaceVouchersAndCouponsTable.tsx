@@ -44,7 +44,10 @@ export function WorkspaceVouchersAndCouponsTable({
 	typeFilter,
 }: WorkspaceVouchersAndCouponsTableProps) {
 	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
+		<div
+			data-spotlight-id="workspace-vouchers-table"
+			className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5"
+		>
 			<ModuleTable<WorkspaceVouchersAndCouponsRecord>
 				variant="embedded"
 				emptyDescription="Try a different subscriber, code, type, status, invoice, or owner."
@@ -56,7 +59,10 @@ export function WorkspaceVouchersAndCouponsTable({
 				}
 				table={table}
 				toolbar={
-					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,1fr)]">
+					<ModuleTableToolbar
+						data-spotlight-id="workspace-vouchers-filters"
+						className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,1fr)]"
+					>
 						<ModuleTableSearch
 							label="Search voucher and coupon assignments"
 							value={query}

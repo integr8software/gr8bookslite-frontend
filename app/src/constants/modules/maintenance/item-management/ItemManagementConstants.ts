@@ -1,15 +1,46 @@
 import type {
 	ItemCategoryAccountingSetup,
 	ItemCategoryClassificationTableColumnKey,
+	ItemPerishability,
 	ItemStatus,
 	ItemTableColumnKey,
+	ItemTaxTreatment,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { SystemUomOptions, SystemUomRows } from "@/app/src/data/shared/uom/UomData";
 
 export const ItemsHref = "/maintenance/item-management/items";
 export const ItemCategoryHref = "/maintenance/item-management/item-category";
 
-export const ItemStatusOptions: ItemStatus[] = ["Active", "Inactive"];
+export const ItemStatusOptions = [
+	"Active",
+	"Inactive",
+] as const satisfies readonly ItemStatus[];
+
+export const ItemPerishabilityOptions = [
+	"Non Perishable",
+	"Perishable",
+] as const satisfies readonly ItemPerishability[];
+
+export const ItemTaxTreatmentOptions = [
+	"VAT Exclusive",
+	"VAT Inclusive",
+	"VAT Exempt",
+	"Zero Rated",
+	"Non-VAT",
+] as const satisfies readonly ItemTaxTreatment[];
+
+export const ItemTaxTreatmentSelectOptions = [
+	{ label: "VAT Exclusive (12%)", value: "VAT Exclusive" },
+	{ label: "VAT Inclusive (12%)", value: "VAT Inclusive" },
+	{ label: "VAT Exempt (0%)", value: "VAT Exempt" },
+	{ label: "Zero Rated (0%)", value: "Zero Rated" },
+	{ label: "Non-VAT (0%)", value: "Non-VAT" },
+] as const satisfies ReadonlyArray<{
+	label: string;
+	value: ItemTaxTreatment;
+}>;
+
+export const VatExclusiveTaxMultiplier = 1.12;
 
 export const ItemUomDictionary = SystemUomRows;
 export const ItemUomOptions = SystemUomOptions;
@@ -40,13 +71,6 @@ export const ItemCategorySystemDefaultAccountingSetup: ItemCategoryAccountingSet
 		purchaseAccount: "Purchases - Merchandise",
 		expenseAccount: "Expense - Operating Supplies",
 	};
-
-export const ItemSupplierOptions = [
-	"TechSource Inc.",
-	"Global Supply Co.",
-	"Prime Distributors",
-	"Northline Trading",
-] as const;
 
 export const ItemWarehouseOptions = [
 	"Main Warehouse",

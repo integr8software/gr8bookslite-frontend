@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { DiscountManagementListPage } from "@/app/src/ui/modules/maintenance/financial-management/discount-management/DiscountManagementListPage";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { DiscountManagementListPage } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementListPage";
 
 const PageTitle = "Discount Management";
 

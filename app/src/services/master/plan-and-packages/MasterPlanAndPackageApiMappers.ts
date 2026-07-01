@@ -47,7 +47,7 @@ export function mapMasterPlanAndPackageRecord(
 	return {
 		code: plan.code,
 		description: plan.description,
-		featureIds: plan.moduleKeys,
+		featureIds: plan.systemCodes.length > 0 ? plan.systemCodes : plan.moduleKeys,
 		id: String(plan.id),
 		name: plan.name,
 		pricing: {
@@ -88,7 +88,7 @@ export function mapCreateMasterPlanAndPackageRequest(
 				thresholdCount: tier.thresholdCount,
 			})),
 		],
-		moduleKeys: values.featureIds,
+		systemCodes: values.featureIds,
 		name: values.name.trim(),
 		prices: [
 			createPrice({

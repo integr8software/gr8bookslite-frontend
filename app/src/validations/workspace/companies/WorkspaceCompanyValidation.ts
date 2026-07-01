@@ -1,8 +1,11 @@
 import { z } from "zod";
 import {
+	AppMaxFileUploadSizeBytes,
+	AppMaxFileUploadSizeLabel,
+} from "@/app/src/constants/shared/app/AppConstants";
+import {
 	GetSyncedReportEndDate,
 	IsValidOnboardingDateValue,
-	OnboardingMaxImageSizeBytes,
 	OnboardingNonIndividualTypeOptions,
 } from "@/app/src/data/onboarding/OnboardingData";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
@@ -239,10 +242,10 @@ const WorkspaceCompanySchema = BaseWorkspaceCompanySchema.superRefine(
 				});
 			}
 
-			if (values.logoFile.size > OnboardingMaxImageSizeBytes) {
+			if (values.logoFile.size > AppMaxFileUploadSizeBytes) {
 				ctx.addIssue({
 					code: z.ZodIssueCode.custom,
-					message: "Logo must be 5MB or smaller.",
+					message: `Logo must be ${AppMaxFileUploadSizeLabel} or smaller.`,
 					path: ["logoName"],
 				});
 			}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { ChartsOfAccountsAction } from "@/app/src/ui/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsAction";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { ChartsOfAccountsAction } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsAction";
 
 const PageTitle = "View Charts Of Accounts";
 

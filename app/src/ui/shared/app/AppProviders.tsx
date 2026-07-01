@@ -11,6 +11,7 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { GetFrontendAuthSession } from "@/app/src/services/auth/AuthApi";
 import { CreateQueryClient } from "@/app/src/services/shared/app/QueryClient";
 import {
+  AuthLogoutStartedEventName,
   AuthSessionExpiredEventName,
 } from "@/app/src/services/auth/AuthSessionExpired";
 import { AppThemeEffect } from "@/app/src/ui/shared/app/AppThemeEffect";
@@ -77,12 +78,50 @@ export function AppProviders({ children }: AppProvidersProps) {
       setIsSessionExpiredDialogOpen(true);
     }
 
+    function handleLogoutStarted() {
+      setIsSessionExpiredDialogOpen(false);
+    }
+
     window.addEventListener(AuthSessionExpiredEventName, handleSessionExpired);
+    window.addEventListener(AuthLogoutStartedEventName, handleLogoutStarted);
 
     return () => {
       window.removeEventListener(AuthSessionExpiredEventName, handleSessionExpired);
+      window.removeEventListener(AuthLogoutStartedEventName, handleLogoutStarted);
     };
   }, [pathname]);
+
+  useEffect(() => {
+    function isNumberInputTarget(target: EventTarget | null) {
+      return target instanceof HTMLInputElement && target.type === "number";
+    }
+
+    function preventExponentNumberInput(event: KeyboardEvent) {
+      if (
+        (event.key === "e" || event.key === "E") &&
+        isNumberInputTarget(event.target)
+      ) {
+        event.preventDefault();
+      }
+    }
+
+    function preventNumberInputWheel(event: WheelEvent) {
+      if (isNumberInputTarget(event.target)) {
+        event.preventDefault();
+      }
+    }
+
+    window.addEventListener("keydown", preventExponentNumberInput, true);
+    window.addEventListener("wheel", preventNumberInputWheel, {
+      capture: true,
+      passive: false,
+    });
+
+    return () => {
+      window.removeEventListener("keydown", preventExponentNumberInput, true);
+      window.removeEventListener("wheel", preventNumberInputWheel, true);
+    };
+  }, []);
 
   async function redirectToLogin() {
     ClearLegacyAuthStorage();

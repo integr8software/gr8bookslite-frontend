@@ -7,6 +7,7 @@ import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingTy
 import { GetOnboardingDraft } from "@/app/src/services/onboarding/OnboardingApi";
 import type { OnboardingDraft } from "@/app/src/services/onboarding/OnboardingApiTypes";
 import { MapOnboardingPlanToPricingPlan } from "@/app/src/services/onboarding/OnboardingPlanMapper";
+import { IsIntentionalLogoutInProgress } from "@/app/src/services/auth/AuthSessionExpired";
 
 function Wait(milliseconds: number) {
   return new Promise((resolve) => {
@@ -42,8 +43,10 @@ function GetDraftPlan(draft: OnboardingDraft | null) {
 
 type UseOnboardingDraftParams = {
   accessToken: string | null;
+  isAuthSessionReady: boolean;
   setSelectedPlan: React.Dispatch<React.SetStateAction<PricingPlan | null>>;
   setSelectedBillingCycle: React.Dispatch<React.SetStateAction<BillingCycle>>;
+  setHasPersistedBillingSetup: React.Dispatch<React.SetStateAction<boolean>>;
   setStepIndex: React.Dispatch<React.SetStateAction<number>>;
   setValues: React.Dispatch<React.SetStateAction<OnboardingValues>>;
   setPersistedLogoPreviewUrl: (value: string) => void;
@@ -51,8 +54,10 @@ type UseOnboardingDraftParams = {
 
 export function useOnboardingDraft({
   accessToken,
+  isAuthSessionReady,
   setSelectedPlan,
   setSelectedBillingCycle,
+  setHasPersistedBillingSetup,
   setStepIndex,
   setValues,
   setPersistedLogoPreviewUrl,
@@ -60,7 +65,9 @@ export function useOnboardingDraft({
   const [hasMounted, setHasMounted] = useState(false);
   const resolvedAccessToken = accessToken;
   const [hasResolvedDraft, setHasResolvedDraft] = useState(false);
-  const isDraftLoading = !hasMounted || !hasResolvedDraft;
+  const canLoadDraft = isAuthSessionReady && Boolean(accessToken);
+  const isDraftLoading =
+    !hasMounted || !isAuthSessionReady || (canLoadDraft && !hasResolvedDraft);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -73,7 +80,7 @@ export function useOnboardingDraft({
   }, []);
 
   useEffect(() => {
-    if (!hasMounted || hasResolvedDraft) {
+    if (!hasMounted || !canLoadDraft || hasResolvedDraft) {
       return;
     }
 
@@ -105,6 +112,7 @@ export function useOnboardingDraft({
 
         setSelectedPlan(selectedDraftPlan);
         setSelectedBillingCycle(GetUiBillingCycle(draft.billingCycle));
+        setHasPersistedBillingSetup(draft.hasBillingSetup);
         setStepIndex(GetDraftStepIndex(draft));
         setPersistedLogoPreviewUrl(draftCompanyDetails.logoPublicUrl ?? "");
         setValues((current) => ({
@@ -139,11 +147,11 @@ export function useOnboardingDraft({
             : "",
           expiryYear: draft.cardExpiryYear ? String(draft.cardExpiryYear) : "",
           billingAddress: draft.billingAddress ?? "",
-          cardNumber: "",
-          cvc: "",
+          cardNumber: current.cardNumber,
+          cvc: current.cvc,
         }));
       } catch (error) {
-        if (!isActive) {
+        if (!isActive || IsIntentionalLogoutInProgress()) {
           return;
         }
 
@@ -167,8 +175,10 @@ export function useOnboardingDraft({
   }, [
     hasMounted,
     hasResolvedDraft,
+    canLoadDraft,
     resolvedAccessToken,
     setSelectedBillingCycle,
+    setHasPersistedBillingSetup,
     setSelectedPlan,
     setStepIndex,
     setPersistedLogoPreviewUrl,

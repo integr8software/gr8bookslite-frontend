@@ -41,6 +41,7 @@ type DisbursementVoucherStoreState = {
   updateVoucher: (voucher: DisbursementVoucherRecord) => void;
   deleteVoucher: (voucherId: string) => void;
   isLoading: boolean;
+  lastSyncedAt: number;
   isMutating: boolean;
 };
 
@@ -294,6 +295,10 @@ export function useDisbursementVoucherStore<
       updateVoucher: (voucher) => updateVoucherMutation.mutate(voucher),
       deleteVoucher: (voucherId) => deleteVoucherMutation.mutate(voucherId),
       isLoading: transactionsQuery.isLoading || vouchersQuery.isLoading,
+      lastSyncedAt: Math.max(
+        transactionsQuery.dataUpdatedAt,
+        vouchersQuery.dataUpdatedAt,
+      ),
       isMutating:
         addTransactionMutation.isPending ||
         addVoucherMutation.isPending ||
@@ -307,10 +312,12 @@ export function useDisbursementVoucherStore<
       deleteVoucherMutation,
       previewRows,
       transactionsQuery.data,
+      transactionsQuery.dataUpdatedAt,
       transactionsQuery.isLoading,
       updateTransactionMutation,
       updateVoucherMutation,
       vouchersQuery.data,
+      vouchersQuery.dataUpdatedAt,
       vouchersQuery.isLoading,
     ],
   );

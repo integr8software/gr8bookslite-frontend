@@ -16,6 +16,7 @@ type MultiCurrencySetupStoreState = {
 	addRecord: (record: MultiCurrencySetupRecord) => void;
 	deleteRecord: (id: string) => void;
 	isLoading: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 	records: MultiCurrencySetupRecord[];
 	replaceRecords: (records: MultiCurrencySetupRecord[]) => void;
@@ -105,6 +106,7 @@ export function useMultiCurrencySetupStore<
 			replaceRecords: (nextRecords) =>
 				replaceRecordsMutation.mutate(nextRecords),
 			isLoading: recordsQuery.isLoading,
+			lastSyncedAt: recordsQuery.dataUpdatedAt,
 			isMutating:
 				addRecordMutation.isPending ||
 				updateRecordMutation.isPending ||
@@ -116,6 +118,7 @@ export function useMultiCurrencySetupStore<
 			deleteRecordMutation,
 			replaceRecordsMutation,
 			recordsQuery.data,
+			recordsQuery.dataUpdatedAt,
 			recordsQuery.isLoading,
 			updateRecordMutation,
 		],

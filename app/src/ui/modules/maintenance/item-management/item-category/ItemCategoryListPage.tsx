@@ -20,9 +20,9 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import {
-	type ModuleMetricItem,
-	ModuleMetrics,
-} from "@/app/src/ui/shared/module/ModuleMetrics";
+	type ModuleStatisticCardItem,
+	ModuleStatisticCards,
+} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import {
 	ModuleTableFilterSelect,
@@ -43,7 +43,7 @@ const AccountingStatusOptions = [
 
 export function ItemCategoryListPage() {
 	const page = useItemCategoryClassificationPage();
-	const metrics: ModuleMetricItem[] = [
+	const metrics: ModuleStatisticCardItem[] = [
 		{
 			helper: "All parent and child category records",
 			icon: Tags,
@@ -97,16 +97,18 @@ export function ItemCategoryListPage() {
 					</button>
 				}
 			/>
-			<ModuleMetrics metrics={metrics} />
+			<ModuleStatisticCards items={metrics} />
 
 			<ModuleTable
 				emptyDescription="Add a category to start grouping inventory, services, and item groups."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No categories found"
 				isLoading={page.isLoading}
+				lastSyncedAt={page.lastSyncedAt}
 				minWidthClassName="min-w-[74rem]"
 				paginationStorageKey={ItemCategoryClassificationPaginationStorageKey}
 				table={page.table}
+				tableTitle="Category classifications"
 				toolbar={
 					<ModuleTableToolbar>
 						<ModuleTableSearch

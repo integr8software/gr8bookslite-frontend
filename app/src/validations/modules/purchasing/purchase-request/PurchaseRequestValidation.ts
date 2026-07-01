@@ -1,11 +1,14 @@
 import { z } from "zod";
+import {
+	AppMaxFileUploadSizeBytes,
+	AppMaxFileUploadSizeLabel,
+} from "@/app/src/constants/shared/app/AppConstants";
 import type {
 	PurchaseRequestFormErrors,
 	PurchaseRequestFormValues,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 
 const requiredText = (message: string) => z.string().trim().min(1, message);
-const MaxLogoImageSizeInBytes = 5 * 1024 * 1024;
 
 export const PurchaseRequestItemValidationSchema = z.object({
 	barcode: requiredText("Enter a barcode."),
@@ -73,32 +76,32 @@ export const PurchaseRequestFormValidationSchema = z
 			});
 		}
 
-		if (getDataUrlSizeInBytes(values.logoImageUrl) > MaxLogoImageSizeInBytes) {
+		if (getDataUrlSizeInBytes(values.logoImageUrl) > AppMaxFileUploadSizeBytes) {
 			context.addIssue({
 				code: "custom",
-				message: "Logo image must be 5MB or smaller.",
+				message: `Logo image must be ${AppMaxFileUploadSizeLabel} or smaller.`,
 				path: ["logoImageUrl"],
 			});
 		}
 
 		if (
 			getDataUrlSizeInBytes(values.preparedBySignatureImageUrl) >
-			MaxLogoImageSizeInBytes
+			AppMaxFileUploadSizeBytes
 		) {
 			context.addIssue({
 				code: "custom",
-				message: "Prepared by signature must be 5MB or smaller.",
+				message: `Prepared by signature must be ${AppMaxFileUploadSizeLabel} or smaller.`,
 				path: ["preparedBySignatureImageUrl"],
 			});
 		}
 
 		if (
 			getDataUrlSizeInBytes(values.approvedBySignatureImageUrl) >
-			MaxLogoImageSizeInBytes
+			AppMaxFileUploadSizeBytes
 		) {
 			context.addIssue({
 				code: "custom",
-				message: "Approved by signature must be 5MB or smaller.",
+				message: `Approved by signature must be ${AppMaxFileUploadSizeLabel} or smaller.`,
 				path: ["approvedBySignatureImageUrl"],
 			});
 		}

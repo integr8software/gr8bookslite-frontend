@@ -1,5 +1,9 @@
 import { Search } from "lucide-react";
 import type { TransactionNumberSetupRecord } from "@/app/src/types/modules/system-administration/transaction-number-setup/TransactionNumberSetupTypes";
+import {
+	AppAdvancedDropdown,
+	type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { transactionNumberFieldClassName } from "@/app/src/ui/modules/system-administration/transaction-number-setup/TransactionNumberSetupUi";
@@ -25,19 +29,51 @@ export function TransactionNumberSetupCatalog({
 	onScopeFilterChange,
 	onSelectSetup,
 }: TransactionNumberSetupCatalogProps) {
+	const dropdownOptions = setups.map<AppAdvancedDropdownOption>((setup) => ({
+		description: setup.moduleCode,
+		name: setup.moduleName,
+		value: setup.id,
+	}));
+
+	function handleDropdownChange(value: string | string[]) {
+		if (typeof value === "string" && value) {
+			onSelectSetup(value);
+		}
+	}
+
 	return (
-		<aside className="border-b border-darknavy/10 xl:border-b-0 xl:border-r">
-			<div className="grid gap-3 border-b border-darknavy/10 p-4">
+		<aside className="flex min-h-0 flex-col overflow-hidden border-b border-darknavy/10 bg-white xl:m-4 xl:self-stretch xl:rounded-lg xl:border xl:border-darknavy/10 xl:shadow-sm xl:shadow-darknavy/5 xl:[contain:size]">
+			<div className="grid gap-3 border-b border-darknavy/10 p-4 xl:hidden">
 				<div>
 					<h2 className="text-sm font-semibold text-darknavy">
-						Transaction types
+						Transaction Modules
 					</h2>
 					<p className="mt-1 text-xs font-medium text-darknavy/55">
-						Choose one setup to edit. This prevents duplicate
-						sequences.
+						Choose a module to configure.
 					</p>
 				</div>
-				<div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_10rem] xl:grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_10rem]">
+				<AppAdvancedDropdown
+					disabled={isLoading}
+					emptyMessage="No modules match the current search."
+					options={dropdownOptions}
+					placeholder="Select module"
+					searchPlaceholder="Search module"
+					value={selectedSetupId ?? ""}
+					onChange={handleDropdownChange}
+				/>
+			</div>
+
+			<div className="hidden gap-3 border-b border-darknavy/10 p-4 xl:grid">
+				<div>
+					<h2 className="text-sm font-semibold text-darknavy">
+						Transaction Modules
+					</h2>
+					<p className="mt-1 text-xs font-medium text-darknavy/55">
+						Choose a module, then update how its numbers are
+						created.
+					</p>
+				</div>
+				<div className="grid gap-2 2xl:grid-cols-[minmax(0,1fr)_10rem]">
 					<label className="relative block">
 						<Search
 							className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/38"
@@ -53,7 +89,7 @@ export function TransactionNumberSetupCatalog({
 								transactionNumberFieldClassName,
 								"pl-9",
 							)}
-							placeholder="Search transaction or type"
+							placeholder="Search module"
 						/>
 					</label>
 					<select
@@ -65,20 +101,20 @@ export function TransactionNumberSetupCatalog({
 						}
 						disabled={isLoading}
 						className={transactionNumberFieldClassName}
-						aria-label="Filter by numbering mode"
+						aria-label="Filter by numbering scope"
 					>
-						<option value="any">All modes</option>
-						<option value="all">All branches</option>
-						<option value="branch">Per branch</option>
+						<option value="any">All Scopes</option>
+						<option value="all">All Branches</option>
+						<option value="branch">Separate per Branch</option>
 					</select>
 				</div>
 			</div>
 
-			<div className="grid grid-cols-[minmax(0,1fr)_7rem] border-b border-darknavy/10 bg-skyblue/12 px-4 py-2 text-xs font-semibold text-darknavy">
-				<span>Transaction</span>
-				<span>Transaction Type</span>
+			<div className="hidden grid-cols-[minmax(0,1fr)_7rem] border-b border-darknavy/10 bg-skyblue/12 px-4 py-2 text-xs font-semibold text-darknavy xl:grid">
+				<span>Module</span>
+				<span>Code</span>
 			</div>
-			<div className="max-h-[34rem] overflow-auto">
+			<div className="hidden min-h-0 flex-1 overflow-auto xl:block">
 				{isLoading ? (
 					<TransactionNumberSetupCatalogSkeleton />
 				) : setups.length > 0 ? (
@@ -105,15 +141,15 @@ export function TransactionNumberSetupCatalog({
 								>
 									{setup.moduleName}
 								</span>
-								<span className="font-mono text-xs font-semibold text-darknavy/72">
-									{setup.prefix}
+								<span className="text-xs font-bold text-darknavy/72">
+									{setup.moduleCode}
 								</span>
 							</button>
 						);
 					})
 				) : (
 					<div className="p-6 text-sm font-medium text-darknavy/55">
-						No transaction types match the current search.
+						No modules match the current search.
 					</div>
 				)}
 			</div>
@@ -123,7 +159,7 @@ export function TransactionNumberSetupCatalog({
 
 function TransactionNumberSetupCatalogSkeleton() {
 	return (
-		<div aria-label="Loading transaction types" aria-busy="true">
+		<div aria-label="Loading transaction modules" aria-busy="true">
 			{Array.from({ length: 12 }).map((_, index) => (
 				<div
 					key={index}

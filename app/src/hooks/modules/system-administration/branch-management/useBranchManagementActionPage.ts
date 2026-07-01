@@ -16,7 +16,7 @@ import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
 	BranchActionMode,
 	BranchFormErrors,
-} from "@/app/src/types/modules/branch-manager/BranchActionTypes";
+} from "@/app/src/types/workspace/branch-manager/BranchActionTypes";
 import { useBranchManagementStore } from "@/app/src/hooks/modules/system-administration/branch-management/useBranchManagement";
 import { validateBranchForm } from "@/app/src/validations/modules/system-administration/branch-management/BranchManagementValidation";
 

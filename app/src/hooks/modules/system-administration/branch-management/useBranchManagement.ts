@@ -18,6 +18,7 @@ type BranchManagementStoreState = {
   updateBranch: (branch: MainBranch) => void;
   deleteBranch: (branchId: string) => void;
   isLoading: boolean;
+  lastSyncedAt: number;
   isMutating: boolean;
 };
 
@@ -88,6 +89,7 @@ export function useBranchManagementStore<TSelected = BranchManagementStoreState>
       updateBranch: (branch) => updateBranchMutation.mutate(branch),
       deleteBranch: (branchId) => deleteBranchMutation.mutate(branchId),
       isLoading: branchesQuery.isLoading,
+      lastSyncedAt: branchesQuery.dataUpdatedAt,
       isMutating:
         addBranchMutation.isPending ||
         updateBranchMutation.isPending ||
@@ -96,6 +98,7 @@ export function useBranchManagementStore<TSelected = BranchManagementStoreState>
     [
       addBranchMutation,
       branchesQuery.data,
+      branchesQuery.dataUpdatedAt,
       branchesQuery.isLoading,
       deleteBranchMutation,
       updateBranchMutation,

@@ -1,4 +1,4 @@
-import type { FormSignatoryRow } from "@/app/src/types/modules/maintenance/form-signatory/FormSignatoryTypes";
+import type { FormSignatoryRow } from "@/app/src/types/modules/system-administration/form-signatory/FormSignatoryTypes";
 
 export type PurchaseRequestStatus =
 	| "Draft"

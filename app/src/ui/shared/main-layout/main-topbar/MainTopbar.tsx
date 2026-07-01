@@ -545,6 +545,7 @@ export function MainTopbar({
 							canAccessWorkspace={canAccessWorkspace}
 							currentCompany={currentCompany}
 							isOpen={openSwitcherKey === "company"}
+							spotlightId="workspace-company-switcher"
 							variant="mobile"
 							onClose={closeSwitcher}
 							onSelectCompany={onSelectCompany}

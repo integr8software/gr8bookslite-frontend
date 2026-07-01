@@ -44,20 +44,29 @@ function PartyManagementFormPageInner() {
 				/>
 				<PartyInformationDetailsFields
 					addressOptions={page.addressOptions}
+					accountOptions={page.accountOptions}
 					atcOptions={page.atcOptions}
 					errors={page.errors}
 					isClassificationSelected={page.isClassificationSelected}
 					isReadonly={page.isReadonly}
 					partyTypeOptions={page.partyTypeOptions}
+					termOptions={page.termOptions}
 					values={page.values}
+					onAddAddress={page.addAddress}
 					onAddressInputChange={page.handleAddressInputChange}
 					onInputChange={page.handleInputChange}
 					onPartyTypesChange={page.handlePartyTypesChange}
+					onRemoveAddress={page.removeAddress}
 					onSelectBarangay={page.selectBarangay}
+					onSelectAddress={page.selectAddress}
 					onSelectAtcCode={page.selectAtcCode}
+					onSelectAutocompleteAddress={page.selectAutocompleteAddress}
+					onSyncAutocompleteAddressDetails={page.syncAutocompleteAddressDetails}
 					onSelectCityMunicipality={page.selectCityMunicipality}
 					onSelectProvince={page.selectProvince}
-					onSelectRegion={page.selectRegion}
+					onSelectTerm={page.selectTerm}
+					onSetDefaultAddress={page.setDefaultAddress}
+					onUpdateAddressMeta={page.updateAddressMeta}
 					onUpdateField={page.updateField}
 				/>
 			</form>

@@ -56,6 +56,15 @@ export type MasterPlanAndPackageApiRecord = {
 		isEnabled: boolean;
 		moduleKey: string;
 	}[];
+	systemCodes: string[];
+	systems: {
+		code: string;
+		description: string;
+		id: number;
+		isEnabled: boolean;
+		moduleCount: number;
+		name: string;
+	}[];
 	name: string;
 	prices: MasterPlanAndPackageApiPrice[];
 	pricing: {
@@ -79,7 +88,7 @@ export type CreateMasterPlanAndPackageRequest = {
 	code: string;
 	description: string | null;
 	discountTiers: MasterPlanAndPackageApiDiscountTier[];
-	moduleKeys: string[];
+	systemCodes: string[];
 	name: string;
 	prices: MasterPlanAndPackageApiPrice[];
 	scope: MasterPlanAndPackageApiScope;

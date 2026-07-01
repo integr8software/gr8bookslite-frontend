@@ -1,4 +1,4 @@
-import { MainCompanySearchItems } from "@/app/src/data/shared/main-layout/sidebar/SidebarNavigationData";
+import { MainModuleCatalogSearchItems } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import { UserListMockData } from "@/app/src/data/modules/system-administration/user-management/users/UserListData";
 import type {
 	AuditTrailAction,
@@ -19,7 +19,7 @@ const BaseCreatedAt = Date.UTC(2026, 4, 23, 7, 30, 0);
 const ActiveUsers = UserListMockData.filter((user) => user.status === "Active");
 
 export const AuditTrailModuleOptions: AuditTrailModuleOption[] =
-	MainCompanySearchItems.map((item) => ({
+	MainModuleCatalogSearchItems.map((item) => ({
 		key: item.key,
 		label: item.label,
 	}));

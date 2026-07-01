@@ -83,7 +83,7 @@ export function UserRolePermissionsPanel({
   return (
     <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white">
       <div className="flex items-start gap-3 border-b border-darknavy/10 px-4 py-4">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-blue-50 text-blue-600">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-darknavy/8 text-darknavy/65">
           <ShieldCheck className="h-5 w-5" aria-hidden="true" />
         </span>
         <div>
@@ -91,13 +91,13 @@ export function UserRolePermissionsPanel({
             Default Access Permission
           </h3>
           <p className="mt-1 text-xs text-darknavy/55">
-            Choose a module, then set its submodule access.
+            Choose a sidebar section, then set access for its modules.
           </p>
         </div>
       </div>
 
-      <div className="grid lg:items-start lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="border-b border-darknavy/10 bg-darknavy/1.5 p-3 lg:border-b-0 lg:border-r">
+      <div className="grid xl:items-start xl:grid-cols-[18rem_minmax(0,1fr)]">
+        <aside className="border-b border-darknavy/10 bg-darknavy/1.5 p-3 xl:border-b-0 xl:border-r">
           <div className="grid gap-2">
             {moduleStats.map(({ accessModule, enabledCount, totalCount }) => {
               const isActive = accessModule.value === selectedModule.value;
@@ -112,8 +112,8 @@ export function UserRolePermissionsPanel({
                   className={[
                     "grid gap-1 rounded border px-3 py-2 text-left transition",
                     isActive
-                      ? "border-blue-200 bg-white shadow-sm"
-                      : "border-transparent hover:border-darknavy/10 hover:bg-white/70",
+                      ? "permission-neutral-selected shadow-sm"
+                      : "border-transparent hover:border-darknavy/15 hover:bg-darknavy/5",
                   ]
                     .filter(Boolean)
                     .join(" ")}
@@ -130,7 +130,7 @@ export function UserRolePermissionsPanel({
                         </span>
                         <span
                           className={[
-                            "rounded bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700",
+                            "rounded bg-darknavy/8 px-2 py-0.5 text-xs font-semibold text-darknavy/65",
                             enabledCount ? "" : "invisible",
                           ]
                             .filter(Boolean)
@@ -140,7 +140,7 @@ export function UserRolePermissionsPanel({
                         </span>
                       </span>
                       <span className="mt-1 block text-xs font-medium text-darknavy/48">
-                        {accessModule.children.length} submodules - {enabledCount} of{" "}
+                        {accessModule.children.length} modules - {enabledCount} of{" "}
                         {totalCount} allowed
                       </span>
                     </button>
@@ -193,9 +193,9 @@ export function UserRolePermissionsPanel({
                           className={[
                             "flex h-7 w-7 shrink-0 items-center justify-center rounded border leading-none",
                             submoduleState.checked
-                              ? "border-blue-200 bg-blue-50 text-blue-700"
+                              ? "permission-neutral-control"
                               : submoduleState.isPartial
-                                ? "border-amber-200 bg-amber-50 text-amber-700"
+                                ? "border-amber-500/35 bg-amber-500/12 text-amber-500"
                                 : "border-darknavy/10 bg-darknavy/2 text-darknavy/35",
                           ].join(" ")}
                           aria-hidden="true"
@@ -245,7 +245,7 @@ export function UserRolePermissionsPanel({
                 <table className="w-full min-w-230 border-collapse text-left">
                   <thead className="bg-darknavy/3 text-[11px] font-semibold uppercase tracking-[0.18em] text-darknavy/45">
                     <tr>
-                      <th className="px-4 py-3">Submodule</th>
+                      <th className="px-4 py-3">Module</th>
                       <th className="px-4 py-3 text-center">
                         <HeaderPermissionButton
                           checked={selectedModulePermissionState.checked}
@@ -364,7 +364,7 @@ export function UserRolePermissionsPanel({
 
       <div className="flex flex-wrap items-center gap-5 border-t border-darknavy/10 px-4 py-3 text-xs font-semibold text-darknavy/60">
         <span className="inline-flex items-center gap-2">
-          <span className="h-3 w-3 rounded bg-blue-600" />
+          <span className="h-3 w-3 rounded bg-darknavy/65" />
           Allowed
         </span>
         <span className="inline-flex items-center gap-2">
@@ -404,13 +404,13 @@ function PermissionCheckCell({
       className={[
         "relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border align-middle leading-none transition",
         checked
-          ? "border-blue-200 bg-blue-50 text-blue-700"
+          ? "permission-neutral-control"
           : isPartial
-            ? "border-amber-200 bg-amber-50 text-amber-700"
+            ? "border-amber-500/35 bg-amber-500/12 text-amber-500"
             : "border-darknavy/10 bg-white text-darknavy/30",
         disabled
           ? "cursor-not-allowed opacity-60"
-          : "cursor-pointer hover:border-blue-200 hover:bg-blue-50/50",
+          : "cursor-pointer",
       ].join(" ")}
       title={label}
     >
@@ -453,13 +453,13 @@ function HeaderPermissionButton({
       className={[
         "inline-flex h-8 min-w-8 items-center justify-center rounded-md border px-2 text-center text-[11px] font-semibold uppercase leading-none tracking-[0.18em] transition",
         checked
-          ? "border-blue-200 bg-blue-50 text-blue-700"
+          ? "permission-neutral-control"
           : isPartial
-            ? "border-amber-200 bg-amber-50 text-amber-700"
+            ? "border-amber-500/35 bg-amber-500/12 text-amber-500"
             : "border-darknavy/10 bg-white text-darknavy/55",
         disabled
           ? "cursor-not-allowed opacity-60"
-          : "cursor-pointer hover:border-blue-200 hover:bg-blue-50/60",
+          : "cursor-pointer",
       ].join(" ")}
       aria-pressed={checked}
       title={label}

@@ -57,5 +57,5 @@ export function isLargeNotificationPanel() {
 }
 
 function getVisibleUserRole(currentUser: MainTopbarUser) {
-  return currentUser.userRole;
+  return currentUser.userRoleDetails?.name ?? currentUser.userRole;
 }

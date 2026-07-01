@@ -1,20 +1,36 @@
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
+import {
+	joinClasses,
+	moduleAccentClassNames,
+} from "@/app/src/ui/shared/module/module-table/utils";
+
+type ModuleStatisticCardTone =
+	| "amber"
+	| "blue"
+	| "cyan"
+	| "emerald"
+	| "slate"
+	| "violet";
 
 export type ModuleStatisticCardItem = {
+	helper?: ReactNode;
 	icon: LucideIcon;
-	iconClassName: string;
+	iconClassName?: string;
 	label: ReactNode;
 	summary?: ReactNode;
-	value: number | string;
+	tone?: ModuleStatisticCardTone;
+	value: ReactNode;
 };
 
 export function ModuleStatisticCards({
 	className,
+	isLoading = false,
 	items,
-}: {
-	className?: string;
+	...props
+}: ComponentPropsWithoutRef<"div"> & {
+	isLoading?: boolean;
 	items: ModuleStatisticCardItem[];
 }) {
 	if (items.length === 0) {
@@ -27,10 +43,15 @@ export function ModuleStatisticCards({
 				"grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
 				className,
 			)}
+			{...props}
 		>
-			{items.map((item) => (
-				<ModuleStatisticCard item={item} key={String(item.label)} />
-			))}
+			{items.map((item) =>
+				isLoading ? (
+					<ModuleStatisticCardSkeleton key={String(item.label)} />
+				) : (
+					<ModuleStatisticCard item={item} key={String(item.label)} />
+				),
+			)}
 		</div>
 	);
 }
@@ -42,27 +63,37 @@ function ModuleStatisticCard({ item }: { item: ModuleStatisticCardItem }) {
 		<div className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5">
 			<div className="flex items-center justify-between gap-4">
 				<div className="min-w-0">
-					<p className="truncate text-sm font-semibold text-darknavy">
+					<div className="truncate text-sm font-semibold text-darknavy">
 						{item.label}
-					</p>
-					<p
+					</div>
+					<div
 						className={joinClasses(
-							"mt-3 max-w-[9rem] truncate font-semibold leading-none text-darknavy",
+							"mt-3 max-w-36 truncate font-semibold leading-none text-darknavy",
 							getStatisticValueClassName(item.value),
 						)}
 					>
 						{item.value}
-					</p>
+					</div>
 					{item.summary ? (
-						<p className="mt-2 truncate text-xs font-medium text-darknavy/60">
+						<div className="mt-2 truncate text-xs font-medium text-darknavy/60">
 							{item.summary}
-						</p>
+						</div>
+					) : item.helper ? (
+						<div
+							className={joinClasses(
+								"mt-2 truncate text-xs font-medium text-darknavy/60",
+								item.tone === "emerald" && "text-emerald-600",
+							)}
+						>
+							{item.helper}
+						</div>
 					) : null}
 				</div>
 				<span
 					className={joinClasses(
 						"inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full",
-						item.iconClassName,
+						item.iconClassName ??
+							moduleStatisticCardIconClassNames[item.tone ?? "blue"],
 					)}
 				>
 					<Icon className="h-6 w-6" aria-hidden="true" />
@@ -72,7 +103,22 @@ function ModuleStatisticCard({ item }: { item: ModuleStatisticCardItem }) {
 	);
 }
 
-function getStatisticValueClassName(value: number | string) {
+function ModuleStatisticCardSkeleton() {
+	return (
+		<div className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5">
+			<div className="flex items-center justify-between gap-4">
+				<div className="min-w-0 flex-1">
+					<AppSkeleton className="h-4 w-24 rounded-md" />
+					<AppSkeleton className="mt-3 h-8 w-16 rounded-md" />
+					<AppSkeleton className="mt-2 h-3 w-32 rounded-md" />
+				</div>
+				<AppSkeleton className="h-14 w-14 shrink-0 rounded-full" />
+			</div>
+		</div>
+	);
+}
+
+function getStatisticValueClassName(value: ReactNode) {
 	const digitCount = String(value).length;
 
 	if (digitCount > 9) {
@@ -93,3 +139,15 @@ function getStatisticValueClassName(value: number | string) {
 
 	return "text-3xl";
 }
+
+const moduleStatisticCardIconClassNames: Record<
+	ModuleStatisticCardTone,
+	string
+> = {
+	amber: "bg-amber-50 text-amber-700",
+	blue: `${moduleAccentClassNames.softBackground} ${moduleAccentClassNames.iconText}`,
+	cyan: "bg-cyan-50 text-cyan-700",
+	emerald: "bg-emerald-50 text-emerald-700",
+	slate: "bg-slate-100 text-slate-700",
+	violet: "bg-violet-50 text-violet-700",
+};

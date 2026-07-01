@@ -36,6 +36,9 @@ export function DisbursementVoucherListPage() {
 	const previewRows = useDisbursementVoucherStore(
 		(state) => state.previewRows,
 	);
+	const lastSyncedAt = useDisbursementVoucherStore(
+		(state) => state.lastSyncedAt,
+	);
 	const updateTransaction = useDisbursementVoucherStore(
 		(state) => state.updateTransaction,
 	);
@@ -105,6 +108,7 @@ export function DisbursementVoucherListPage() {
 			<DisbursementVoucherMetrics previewRows={previewRows} />
 
 			<DisbursementVoucherTable
+				lastSyncedAt={lastSyncedAt}
 				table={previewTable.table}
 				toolbar={
 					<ModuleTableToolbar className="xl:grid-cols-[minmax(18rem,2fr)_minmax(14rem,1fr)_minmax(14rem,1fr)_minmax(12rem,1fr)_auto]">

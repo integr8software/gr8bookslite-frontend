@@ -31,6 +31,9 @@ export function useMultiCurrencySetupListPage() {
 		(state) => state.replaceRecords,
 	);
 	const isLoading = useMultiCurrencySetupStore((state) => state.isLoading);
+	const lastSyncedAt = useMultiCurrencySetupStore(
+		(state) => state.lastSyncedAt,
+	);
 	const isMutating = useMultiCurrencySetupStore((state) => state.isMutating);
 	const [preferredBaseCurrencyCode, setPreferredBaseCurrencyCode] = useState(
 		DefaultPreferredBaseCurrencyCode,
@@ -162,6 +165,7 @@ export function useMultiCurrencySetupListPage() {
 		fetchedRates,
 		filteredRecords,
 		isLoading: isLoading || ratesQuery.isLoading,
+		lastSyncedAt: Math.max(lastSyncedAt, ratesQuery.dataUpdatedAt),
 		isMutating,
 		manualRateCount,
 		preferredBaseCurrencyCode,

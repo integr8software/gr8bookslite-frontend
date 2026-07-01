@@ -134,9 +134,9 @@ Use the shared module UI for list pages.
 
 - Use `app/src/ui/shared/module/ModuleHeader.tsx` for module page headers.
 - Use App Dialog when Activating/Deactivating Data.
-- Use `app/src/ui/shared/module/ModuleMetrics.tsx` for list-page metric
-  strips. For the standard pattern: a `ModuleHeader`, a `ModuleMetrics` block, then
-  the module table.
+- Use `app/src/ui/shared/module/ModuleStatisticCards.tsx` for list-page
+  statistic cards. For the standard pattern: a `ModuleHeader`, a
+  `ModuleStatisticCards` block, then the module table.
 - Use `app/src/ui/shared/module/module-table/ModuleTable.tsx` for table-based
   module lists.
 - Use the rest of `app/src/ui/shared/module/module-table/` instead of creating
@@ -150,7 +150,7 @@ Use the shared module UI for list pages.
 - Keep row cells in `FeatureTableRow.tsx`.
 - Keep row action buttons in `FeatureRecordActions.tsx` when actions are
   reused or non-trivial.
-- Prefer `ModuleMetrics` over custom summary cards for common counts, status
+- Prefer `ModuleStatisticCards` over custom summary cards for common counts, status
   totals, and dashboard-style module facts. Keep metric labels short, values
   derived from feature state, and helper text concise.
 

@@ -16,6 +16,7 @@ type AuditTrailTableProps = Pick<
 	| "handleModuleFilterChange"
 	| "handleQueryChange"
 	| "isLoading"
+	| "lastSyncedAt"
 	| "moduleFilter"
 	| "moduleOptions"
 	| "query"
@@ -30,6 +31,7 @@ export function AuditTrailTable({
 	handleModuleFilterChange,
 	handleQueryChange,
 	isLoading,
+	lastSyncedAt,
 	moduleFilter,
 	moduleOptions,
 	query,
@@ -43,10 +45,12 @@ export function AuditTrailTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No audit trail records found"
 				isLoading={isLoading}
+				lastSyncedAt={lastSyncedAt}
 				minWidthClassName="min-w-[90rem]"
 				pageSizeOptions={[10, 20, 50]}
 				paginationStorageKey={AuditTrailPaginationStorageKey}
 				table={table}
+				tableTitle="Audit trail"
 				toolbar={
 					<AuditTrailTableFilters
 						actionFilter={actionFilter}

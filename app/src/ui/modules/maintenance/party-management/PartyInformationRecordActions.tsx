@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PartyManagementHref } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import type {
+	PartyInformationRecord,
 	PartyInformationStatus,
 	PartyInformationTableRecord,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
@@ -34,10 +35,8 @@ export function PartyInformationRecordActions({
 			return;
 		}
 
-		const { addressLabel, name, partyTypesLabel, ...partyRecord } = record;
-
 		updateRecord({
-			...partyRecord,
+			...createPartyInformationRecordFromTableRecord(record),
 			status: statusToSet,
 			updatedAt: new Date().toISOString(),
 		});
@@ -46,15 +45,15 @@ export function PartyInformationRecordActions({
 
 	return (
 		<>
-			<ModuleTableActions className="justify-center">
-				<ModuleTooltip title="View">
+			<ModuleTableActions className="w-full !justify-center">
+				<ModuleTooltip align="end" position="top" title="View">
 					<ModuleTableActionLink
 						variant="view"
 						href={`${PartyManagementHref}/view/${record.id}`}
 						label={`View ${record.name}`}
 					/>
 				</ModuleTooltip>
-				<ModuleTooltip title="Edit">
+				<ModuleTooltip align="end" position="top" title="Edit">
 					<ModuleTableActionLink
 						variant="edit"
 						href={`${PartyManagementHref}/edit/${record.id}`}
@@ -62,7 +61,7 @@ export function PartyInformationRecordActions({
 					/>
 				</ModuleTooltip>
 				{record.status === "Active" ? (
-					<ModuleTooltip title="Set as Inactive">
+					<ModuleTooltip align="end" position="top" title="Set as Inactive">
 						<ModuleTableActionButton
 							disabled={isMutating}
 							variant="inactive"
@@ -71,7 +70,7 @@ export function PartyInformationRecordActions({
 						/>
 					</ModuleTooltip>
 				) : (
-					<ModuleTooltip title="Set as Active">
+					<ModuleTooltip align="end" position="top" title="Set as Active">
 						<ModuleTableActionButton
 							disabled={isMutating}
 							variant="active"
@@ -94,4 +93,37 @@ export function PartyInformationRecordActions({
 			/>
 		</>
 	);
+}
+
+function createPartyInformationRecordFromTableRecord(
+	record: PartyInformationTableRecord,
+): PartyInformationRecord {
+	return {
+		address: record.address,
+		addresses: record.addresses,
+		atcCode: record.atcCode,
+		classification: record.classification,
+		contactNo: record.contactNo,
+		createdAt: record.createdAt,
+		defaultPayableAccount: record.defaultPayableAccount,
+		defaultReceivableAccount: record.defaultReceivableAccount,
+		email: record.email,
+		employeeAdvanceAccount: record.employeeAdvanceAccount,
+		employeeReceivableAccount: record.employeeReceivableAccount,
+		firstName: record.firstName,
+		id: record.id,
+		lastName: record.lastName,
+		middleName: record.middleName,
+		partyCodeNo: record.partyCodeNo,
+		partyName: record.partyName,
+		partyTypes: record.partyTypes,
+		status: record.status,
+		suffixName: record.suffixName,
+		termId: record.termId,
+		termName: record.termName,
+		tin: record.tin,
+		tradeName: record.tradeName,
+		updatedAt: record.updatedAt,
+		vatRegistrationType: record.vatRegistrationType,
+	};
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import {
+	type ColumnOrderState,
 	getCoreRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
@@ -7,6 +8,7 @@ import {
 	type ColumnDef,
 	type PaginationState,
 	type SortingState,
+	type VisibilityState,
 } from "@tanstack/react-table";
 import { ChevronDown, GitBranch, Search, Send } from "lucide-react";
 import {
@@ -26,6 +28,9 @@ import {
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import {
+	ModuleTableColumnVisibilityButton,
+	ModuleTableExportButton,
+	type ModuleTableExportColumn,
 	ModuleTableFilterSelect,
 	ModuleTableResetButton,
 	ModuleTableSearch,
@@ -48,7 +53,7 @@ type WorkspaceUsersTableRecord = WorkspaceCompanyUserRecord & {
 
 type WorkspaceUsersAccessItem = {
 	name: string;
-	type: "Branch" | "Satellite";
+	type: "Branch" | "Head Office" | "Satellite";
 };
 
 type WorkspaceUsersTableColumnKey = keyof Pick<
@@ -83,10 +88,16 @@ const WorkspaceUsersTableColumns = [
 	  }
 	| { label: string; className: string }
 )[];
+const DefaultColumnOrder = WorkspaceUsersTableColumns.map((column) =>
+	"key" in column ? column.key : "actions",
+);
+const DefaultColumnVisibility: VisibilityState = {};
+const DefaultSorting: SortingState = [{ id: "name", desc: false }];
 
 export function WorkspaceUsersTable({
 	companies,
 	isLoading,
+	lastSyncedAt,
 	isResendingInvitation,
 	onCancelInvitation,
 	onEdit,
@@ -95,6 +106,7 @@ export function WorkspaceUsersTable({
 }: {
 	companies: WorkspaceCompanyRecord[];
 	isLoading: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	isResendingInvitation: boolean;
 	onCancelInvitation: (userId: string) => Promise<unknown>;
 	onEdit: (user: WorkspaceCompanyUserRecord) => void;
@@ -104,6 +116,9 @@ export function WorkspaceUsersTable({
 	const userList = useWorkspaceUsersTable(users, companies);
 	const [pendingCancelUser, setPendingCancelUser] =
 		useState<WorkspaceCompanyUserRecord | null>(null);
+	const tableMinWidthClassName = getTableMinWidthClassName(
+		userList.table.getVisibleLeafColumns().length,
+	);
 
 	return (
 		<div
@@ -116,18 +131,24 @@ export function WorkspaceUsersTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No workspace users found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[102rem]"
+				lastSyncedAt={lastSyncedAt}
+				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={WorkspaceUsersTablePaginationStorageKey}
 				table={userList.table}
+				tableTitle="Workspace users"
 				toolbar={
 					<WorkspaceUsersTableFilters
+						allRows={userList.records}
 						branchFilter={userList.branchFilter}
 						branchOptions={userList.branchOptions}
 						companyFilter={userList.companyFilter}
 						companyOptions={userList.companyOptions}
+						filteredRows={userList.filteredRecords}
+						hasActiveFilters={userList.hasActiveFilters}
 						query={userList.query}
 						statusFilter={userList.statusFilter}
 						statusOptions={userList.statusOptions}
+						table={userList.table}
 						userTypeFilter={userList.userTypeFilter}
 						onBranchFilterChange={userList.setBranchFilter}
 						onCompanyFilterChange={userList.setCompanyFilter}
@@ -137,7 +158,7 @@ export function WorkspaceUsersTable({
 						onUserTypeFilterChange={userList.setUserTypeFilter}
 					/>
 				}
-				renderRow={({ id, original }) => (
+				renderRow={({ id, original, getVisibleCells }) => (
 					<WorkspaceUsersTableRow
 						key={id}
 						isResendingInvitation={isResendingInvitation}
@@ -145,6 +166,7 @@ export function WorkspaceUsersTable({
 						onEdit={onEdit}
 						onResendInvitation={onResendInvitation}
 						user={original}
+						visibleColumnIds={getVisibleCells().map((cell) => cell.column.id)}
 					/>
 				)}
 			/>
@@ -193,8 +215,12 @@ function useWorkspaceUsersTable(
 		"Regular" | typeof AllFilterValue
 	>(AllFilterValue);
 	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "name", desc: false },
+		...DefaultSorting,
 	]);
+	const [columnOrder, setColumnOrder] =
+		useState<ColumnOrderState>(DefaultColumnOrder);
+	const [columnVisibility, setColumnVisibility] =
+		useState<VisibilityState>(DefaultColumnVisibility);
 	const tableRecords = useMemo(
 		() => createWorkspaceUsersTableRecords(users, companies),
 		[companies, users],
@@ -253,10 +279,19 @@ function useWorkspaceUsersTable(
 	const table = useReactTable({
 		data: filteredUsers,
 		columns,
+		initialState: {
+			columnOrder: DefaultColumnOrder,
+			columnVisibility: DefaultColumnVisibility,
+			sorting: DefaultSorting,
+		},
 		state: {
+			columnOrder,
+			columnVisibility,
 			pagination,
 			sorting,
 		},
+		onColumnOrderChange: setColumnOrder,
+		onColumnVisibilityChange: setColumnVisibility,
 		onPaginationChange: setPagination,
 		onSortingChange: setSorting,
 		getCoreRowModel: getCoreRowModel(),
@@ -303,7 +338,15 @@ function useWorkspaceUsersTable(
 		branchOptions: getBranchFilterOptions(companies),
 		companyFilter,
 		companyOptions: getCompanyFilterOptions(companies),
+		filteredRecords: filteredUsers,
+		hasActiveFilters:
+			query.trim().length > 0 ||
+			statusFilter !== AllFilterValue ||
+			companyFilter !== AllFilterValue ||
+			branchFilter !== AllFilterValue ||
+			userTypeFilter !== AllFilterValue,
 		query,
+		records: tableRecords,
 		resetFilters,
 		setBranchFilter,
 		setCompanyFilter,
@@ -318,13 +361,17 @@ function useWorkspaceUsersTable(
 }
 
 function WorkspaceUsersTableFilters({
+	allRows,
 	branchFilter,
 	branchOptions,
 	companyFilter,
 	companyOptions,
+	filteredRows,
+	hasActiveFilters,
 	query,
 	statusFilter,
 	statusOptions,
+	table,
 	userTypeFilter,
 	onBranchFilterChange,
 	onCompanyFilterChange,
@@ -333,13 +380,17 @@ function WorkspaceUsersTableFilters({
 	onStatusFilterChange,
 	onUserTypeFilterChange,
 }: {
+	allRows: WorkspaceUsersTableRecord[];
 	branchFilter: string;
 	branchOptions: readonly { label: string; value: string }[];
 	companyFilter: string;
 	companyOptions: readonly { label: string; value: string }[];
+	filteredRows: WorkspaceUsersTableRecord[];
+	hasActiveFilters: boolean;
 	query: string;
 	statusFilter: WorkspaceUserStatus | typeof AllFilterValue;
 	statusOptions: readonly WorkspaceUserStatus[];
+	table: ReturnType<typeof useWorkspaceUsersTable>["table"];
 	userTypeFilter: "Regular" | typeof AllFilterValue;
 	onBranchFilterChange: (value: string) => void;
 	onCompanyFilterChange: (value: string) => void;
@@ -351,46 +402,64 @@ function WorkspaceUsersTableFilters({
 	return (
 		<ModuleTableToolbar
 			data-spotlight-id="workspace-users-filters"
-			className="rounded-none border-x-0 border-t-0 shadow-none lg:grid-cols-[minmax(24rem,2.2fr)_repeat(5,minmax(10rem,1fr))]"
+			className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(0,1fr)_auto]"
 		>
-			<ModuleTableSearch
-				label="Search users"
-				value={query}
-				onChange={onQueryChange}
-				placeholder="Search name, email, contact, company, or branch"
-			/>
-			<ModuleTableFilterSelect
-				label="Status"
-				options={getFilterOptions(statusOptions)}
-				value={statusFilter}
-				onChange={(value) =>
-					onStatusFilterChange(value as WorkspaceUserStatus | typeof AllFilterValue)
-				}
-			/>
-			<ModuleTableFilterSelect
-				label="Company"
-				options={companyOptions}
-				value={companyFilter}
-				onChange={onCompanyFilterChange}
-			/>
-			<ModuleTableFilterSelect
-				label="Branch/Satellite"
-				options={branchOptions}
-				value={branchFilter}
-				onChange={onBranchFilterChange}
-			/>
-			<ModuleTableFilterSelect
-				label="User Type"
-				options={[
-					{ label: "All", value: AllFilterValue },
-					{ label: RegularUserType, value: RegularUserType },
-				]}
-				value={userTypeFilter}
-				onChange={(value) =>
-					onUserTypeFilterChange(value as "Regular" | typeof AllFilterValue)
-				}
-			/>
-			<ModuleTableResetButton onClick={onResetFilters}>Reset</ModuleTableResetButton>
+			<div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(16rem,1.4fr)_minmax(9rem,0.8fr)_minmax(10rem,0.9fr)_minmax(11rem,0.9fr)_minmax(9rem,0.8fr)]">
+				<ModuleTableSearch
+					label="Search users"
+					value={query}
+					onChange={onQueryChange}
+					placeholder="Search name, email, contact, company, or branch"
+				/>
+				<ModuleTableFilterSelect
+					label="Company"
+					options={companyOptions}
+					value={companyFilter}
+					onChange={onCompanyFilterChange}
+				/>
+				<ModuleTableFilterSelect
+					label="Branch/Satellite"
+					options={branchOptions}
+					value={branchFilter}
+					onChange={onBranchFilterChange}
+				/>
+				<ModuleTableFilterSelect
+					label="User Type"
+					options={[
+						{ label: "All", value: AllFilterValue },
+						{ label: RegularUserType, value: RegularUserType },
+					]}
+					value={userTypeFilter}
+					onChange={(value) =>
+						onUserTypeFilterChange(value as "Regular" | typeof AllFilterValue)
+					}
+				/>
+				<ModuleTableFilterSelect
+					label="Status"
+					options={getFilterOptions(statusOptions)}
+					value={statusFilter}
+					onChange={(value) =>
+						onStatusFilterChange(
+							value as WorkspaceUserStatus | typeof AllFilterValue,
+						)
+					}
+				/>
+			</div>
+			<div className="grid grid-cols-3 gap-2 md:w-[10.75rem]">
+				<ModuleTableColumnVisibilityButton table={table} />
+				<ModuleTableExportButton
+					allRows={allRows}
+					columns={WorkspaceUsersExportColumns}
+					fileName="workspace-users"
+					filteredRows={filteredRows}
+					isFiltered={hasActiveFilters}
+					table={table}
+					title="Workspace Users"
+				/>
+				<ModuleTableResetButton className="px-2" onClick={onResetFilters}>
+					Reset
+				</ModuleTableResetButton>
+			</div>
 		</ModuleTableToolbar>
 	);
 }
@@ -401,12 +470,14 @@ function WorkspaceUsersTableRow({
 	onEdit,
 	onResendInvitation,
 	user,
+	visibleColumnIds,
 }: {
 	isResendingInvitation: boolean;
 	onCancelInvitation: (user: WorkspaceCompanyUserRecord) => void;
 	onEdit: (user: WorkspaceCompanyUserRecord) => void;
 	onResendInvitation: (userId: string) => Promise<unknown>;
 	user: WorkspaceUsersTableRecord;
+	visibleColumnIds: string[];
 }) {
 	const [pendingResendUserId, setPendingResendUserId] = useState<string | null>(
 		null,
@@ -425,44 +496,17 @@ function WorkspaceUsersTableRow({
 
 	return (
 		<tr className="module-table-row">
-			<td className="px-4 py-4">
-				<div className="flex min-w-0 items-center gap-3">
-					<WorkspaceManagementUserAvatar
-						imageUrl={user.profileImageUrl}
-						name={user.name}
-					/>
-					<span className="truncate text-sm font-semibold text-darknavy">
-						{user.name}
-					</span>
-				</div>
-			</td>
-			<WorkspaceUsersTableCell>{user.email}</WorkspaceUsersTableCell>
-			<WorkspaceUsersTableCell>
-				<AssignmentSummary
-					emptyLabel="-"
-					showAllLabel="Show all companies"
-					showLessLabel="Show fewer companies"
-					value={user.companyNames}
-				/>
-			</WorkspaceUsersTableCell>
-			<WorkspaceUsersTableCell>
-				<WorkspaceUsersAccessSummary items={user.accessItems} />
-			</WorkspaceUsersTableCell>
-			<WorkspaceUsersTableCell>
-				<WorkspaceManagementStatusBadge status={user.status} />
-			</WorkspaceUsersTableCell>
-			<WorkspaceUsersTableCell>{user.lastLogin ?? "-"}</WorkspaceUsersTableCell>
-			<WorkspaceUsersTableCell>{user.createdAt}</WorkspaceUsersTableCell>
-			<WorkspaceUsersTableCell align="center">
-				<UserRecordActions
-					isPendingResend={isPendingResend}
-					isResendingInvitation={isResendingInvitation}
-					onCancelInvitation={() => onCancelInvitation(user)}
-					onEdit={() => onEdit(user)}
-					onResendInvitation={handleResendInvitation}
-					user={user}
-				/>
-			</WorkspaceUsersTableCell>
+			{visibleColumnIds.map((columnId) =>
+				renderWorkspaceUsersTableCell({
+					columnId,
+					isPendingResend,
+					isResendingInvitation,
+					onCancelInvitation: () => onCancelInvitation(user),
+					onEdit: () => onEdit(user),
+					onResendInvitation: handleResendInvitation,
+					user,
+				}),
+			)}
 		</tr>
 	);
 }
@@ -483,6 +527,97 @@ function WorkspaceUsersTableCell({
 			{children}
 		</td>
 	);
+}
+
+function renderWorkspaceUsersTableCell({
+	columnId,
+	isPendingResend,
+	isResendingInvitation,
+	onCancelInvitation,
+	onEdit,
+	onResendInvitation,
+	user,
+}: {
+	columnId: string;
+	isPendingResend: boolean;
+	isResendingInvitation: boolean;
+	onCancelInvitation: () => void;
+	onEdit: () => void;
+	onResendInvitation: () => void;
+	user: WorkspaceUsersTableRecord;
+}) {
+	switch (columnId) {
+		case "name":
+			return (
+				<td key={columnId} className="px-4 py-4">
+					<div className="flex min-w-0 items-center gap-3">
+						<WorkspaceManagementUserAvatar
+							imageUrl={user.profileImageUrl}
+							name={user.name}
+						/>
+						<span className="truncate text-sm font-semibold text-darknavy">
+							{user.name}
+						</span>
+					</div>
+				</td>
+			);
+		case "email":
+			return (
+				<WorkspaceUsersTableCell key={columnId}>
+					{user.email}
+				</WorkspaceUsersTableCell>
+			);
+		case "companyNames":
+			return (
+				<WorkspaceUsersTableCell key={columnId}>
+					<AssignmentSummary
+						emptyLabel="-"
+						showAllLabel="Show all companies"
+						showLessLabel="Show fewer companies"
+						value={user.companyNames}
+					/>
+				</WorkspaceUsersTableCell>
+			);
+		case "accessSummary":
+			return (
+				<WorkspaceUsersTableCell key={columnId}>
+					<WorkspaceUsersAccessSummary items={user.accessItems} />
+				</WorkspaceUsersTableCell>
+			);
+		case "status":
+			return (
+				<WorkspaceUsersTableCell key={columnId}>
+					<WorkspaceManagementStatusBadge status={user.status} />
+				</WorkspaceUsersTableCell>
+			);
+		case "lastLogin":
+			return (
+				<WorkspaceUsersTableCell key={columnId}>
+					{user.lastLogin ?? "-"}
+				</WorkspaceUsersTableCell>
+			);
+		case "createdAt":
+			return (
+				<WorkspaceUsersTableCell key={columnId}>
+					{user.createdAt}
+				</WorkspaceUsersTableCell>
+			);
+		case "actions":
+			return (
+				<WorkspaceUsersTableCell key={columnId} align="center">
+					<UserRecordActions
+						isPendingResend={isPendingResend}
+						isResendingInvitation={isResendingInvitation}
+						onCancelInvitation={onCancelInvitation}
+						onEdit={onEdit}
+						onResendInvitation={onResendInvitation}
+						user={user}
+					/>
+				</WorkspaceUsersTableCell>
+			);
+		default:
+			return null;
+	}
 }
 
 function AssignmentSummary({
@@ -595,19 +730,22 @@ function WorkspaceUsersAccessSummary({
 
 function AccessChip({ item }: { item: WorkspaceUsersAccessItem }) {
 	const isSatellite = item.type === "Satellite";
+	const isHeadOffice = item.type === "Head Office";
 
 	return (
 		<span
 			className={`max-w-[12rem] truncate rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ${
 				isSatellite
 					? "bg-[color-mix(in_srgb,var(--skyblue)_16%,var(--background))] text-[var(--foreground)] ring-[color-mix(in_srgb,var(--skyblue)_28%,transparent)]"
+					: isHeadOffice
+						? "bg-[color-mix(in_srgb,var(--foreground)_6%,var(--background))] text-[var(--foreground)] ring-[color-mix(in_srgb,var(--foreground)_16%,transparent)]"
 					: "bg-[color-mix(in_srgb,var(--foreground)_8%,var(--background))] text-[color-mix(in_srgb,var(--foreground)_82%,transparent)] ring-[color-mix(in_srgb,var(--foreground)_12%,transparent)]"
 			}`}
 			title={`${item.type}: ${item.name}`}
 		>
 			{item.name}
 			<span className="ml-1 text-[0.65rem] uppercase text-[color-mix(in_srgb,var(--foreground)_56%,transparent)]">
-				{isSatellite ? "Sat" : "Br"}
+				{isSatellite ? "Sat" : isHeadOffice ? "HO" : "Br"}
 			</span>
 		</span>
 	);
@@ -657,9 +795,7 @@ function createWorkspaceUsersTableRecords(
 			.map((assignment) => companyMap.get(assignment.companyId))
 			.filter(Boolean) as WorkspaceCompanyRecord[];
 		const assignedBranches = user.companyAssignments.flatMap((assignment) =>
-			assignment.branchIds
-				.map((branchId) => branchMap.get(branchId))
-				.filter(Boolean),
+			resolveAssignedBranches(assignment, branchMap),
 		) as WorkspaceCompanyBranchRecord[];
 
 		return {
@@ -682,21 +818,36 @@ function createWorkspaceUsersTableRecords(
 	});
 }
 
+function resolveAssignedBranches(
+	assignment: WorkspaceCompanyUserRecord["companyAssignments"][number],
+	branchMap: Map<string, WorkspaceCompanyBranchRecord>,
+) {
+	if (assignment.branches?.length) {
+		return assignment.branches;
+	}
+
+	return assignment.branchIds
+		.map((branchId) => branchMap.get(branchId))
+		.filter(Boolean);
+}
+
 function createAccessItems(
 	branches: WorkspaceCompanyBranchRecord[],
 ): WorkspaceUsersAccessItem[] {
 	const uniqueItems = new Map<string, WorkspaceUsersAccessItem>();
 
-	branches
-		.filter((branch) => !branch.isMain)
-		.forEach((branch) => {
-			const type = branch.branchType === "Satellite" ? "Satellite" : "Branch";
-			const key = `${type}:${branch.name}`;
+	branches.forEach((branch) => {
+		const type = branch.isMain
+			? "Head Office"
+			: branch.branchType === "Satellite"
+				? "Satellite"
+				: "Branch";
+		const key = `${type}:${branch.name}`;
 
-			if (!uniqueItems.has(key)) {
-				uniqueItems.set(key, { name: branch.name, type });
-			}
-		});
+		if (!uniqueItems.has(key)) {
+			uniqueItems.set(key, { name: branch.name, type });
+		}
+	});
 
 	return Array.from(uniqueItems.values());
 }
@@ -704,6 +855,28 @@ function createAccessItems(
 function formatNames(records: { name: string }[]) {
 	return Array.from(new Set(records.map((record) => record.name))).join(", ");
 }
+
+function getTableMinWidthClassName(visibleColumnCount: number) {
+	if (visibleColumnCount >= 8) return "min-w-[102rem]";
+	if (visibleColumnCount === 7) return "min-w-[90rem]";
+	if (visibleColumnCount === 6) return "min-w-[78rem]";
+	if (visibleColumnCount === 5) return "min-w-[64rem]";
+	if (visibleColumnCount === 4) return "min-w-[52rem]";
+	return "min-w-[40rem]";
+}
+
+const WorkspaceUsersExportColumns: ModuleTableExportColumn<WorkspaceUsersTableRecord>[] =
+	WorkspaceUsersTableColumns.flatMap((column) =>
+		"key" in column
+			? [
+					{
+						header: column.label,
+						id: column.key,
+						value: column.key,
+					},
+				]
+			: [],
+	);
 
 function UserRecordActions({
 	isPendingResend,
@@ -768,7 +941,7 @@ function createActionColumn<TRecord>(
 		id: "actions",
 		header,
 		enableSorting: false,
-		meta: { className },
+		meta: { className, label: header },
 	};
 }
 
@@ -781,6 +954,6 @@ function createColumn(
 		accessorKey: key,
 		header,
 		sortingFn: "alphanumeric",
-		meta: { className },
+		meta: { className, label: header },
 	};
 }

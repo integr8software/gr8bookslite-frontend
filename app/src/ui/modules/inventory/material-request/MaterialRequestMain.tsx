@@ -74,10 +74,12 @@ export function MaterialRequestMain() {
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No material requests found"
 				isLoading={page.isLoading}
+				lastSyncedAt={page.lastSyncedAt}
 				minWidthClassName="min-w-[82rem]"
 				paginationLabel="entries"
 				paginationStorageKey={MaterialRequestTablePaginationStorageKey}
 				pageSizeOptions={[5, 10, 15, 20, 25, 50]}
+				tableTitle="Material requests"
 				table={page.table}
 				toolbar={
 					<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,2fr)_repeat(3,minmax(10rem,1fr))]">

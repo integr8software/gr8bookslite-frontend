@@ -2,15 +2,17 @@ import type { ReactNode } from "react";
 
 export function TransactionNumberSetupField({
 	children,
+	className,
 	error,
 	label,
 }: {
 	children: ReactNode;
+	className?: string;
 	error?: string;
 	label: string;
 }) {
 	return (
-		<label className="block">
+		<label className={className ? `block ${className}` : "block"}>
 			<span className="mb-2 block text-sm font-semibold text-darknavy">
 				{label}
 			</span>

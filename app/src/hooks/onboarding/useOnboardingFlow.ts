@@ -8,12 +8,18 @@ import { useOnboardingSubmission } from "./useOnboardingSubmission";
 
 export function useOnboardingFlow() {
   const accessToken = useAppStore((state) => state.accessToken);
+  const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const formState = useOnboardingFormState();
-  const { plans, isPlansLoading } = useOnboardingPlans({ accessToken });
+  const { plans, isPlansLoading } = useOnboardingPlans({
+    accessToken,
+    isAuthSessionReady,
+  });
   const { resolvedAccessToken, isDraftLoading } = useOnboardingDraft({
     accessToken,
+    isAuthSessionReady,
     setSelectedPlan: formState.setSelectedPlan,
     setSelectedBillingCycle: formState.setSelectedBillingCycle,
+    setHasPersistedBillingSetup: formState.setHasPersistedBillingSetup,
     setStepIndex: formState.setStepIndex,
     setValues: formState.setValues,
     setPersistedLogoPreviewUrl: formState.setPersistedLogoPreviewUrl,
@@ -26,12 +32,14 @@ export function useOnboardingFlow() {
       isFirstStep: formState.isFirstStep,
       isLastStep: formState.isLastStep,
       values: formState.values,
+      hasPersistedBillingSetup: formState.hasPersistedBillingSetup,
       setErrors: formState.setErrors,
       setIsSubmitting: formState.setIsSubmitting,
       setSubmittingPlanCode: formState.setSubmittingPlanCode,
       setStepIndex: formState.setStepIndex,
       setSelectedPlan: formState.setSelectedPlan,
       setSelectedBillingCycle: formState.setSelectedBillingCycle,
+      setHasPersistedBillingSetup: formState.setHasPersistedBillingSetup,
     });
 
   return {
@@ -45,6 +53,7 @@ export function useOnboardingFlow() {
     plans,
     isSubmitting: formState.isSubmitting,
     submittingPlanCode: formState.submittingPlanCode,
+    furthestStepIndex: formState.furthestStepIndex,
     isDraftLoading: isDraftLoading || isPlansLoading,
     isFirstStep: formState.isFirstStep,
     isLastStep: formState.isLastStep,
@@ -52,6 +61,7 @@ export function useOnboardingFlow() {
     setTaxpayerType: formState.setTaxpayerType,
     handleLogoChange: formState.handleLogoChange,
     handleLogoRemove: formState.handleLogoRemove,
+    navigateToStep: formState.navigateToStep,
     handlePlanSelection,
     handleNext,
     handleBack,

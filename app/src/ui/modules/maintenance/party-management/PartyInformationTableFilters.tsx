@@ -1,9 +1,14 @@
+import type { Table } from "@tanstack/react-table";
 import type {
 	PartyClassification,
 	PartyInformationStatus,
+	PartyInformationTableRecord,
 	PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import {
+	ModuleTableColumnVisibilityButton,
+	ModuleTableExportButton,
+	type ModuleTableExportColumn,
 	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
@@ -11,6 +16,9 @@ import {
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 type PartyInformationTableFiltersProps = {
+	exportAllRows: PartyInformationTableRecord[];
+	exportFilteredRows: PartyInformationTableRecord[];
+	hasActiveFilters: boolean;
 	classificationFilter: PartyClassification | "All";
 	classificationOptions: readonly PartyClassification[];
 	partyTypeFilter: PartyType | "All";
@@ -18,14 +26,19 @@ type PartyInformationTableFiltersProps = {
 	query: string;
 	statusFilter: PartyInformationStatus | "All";
 	statusOptions: readonly PartyInformationStatus[];
+	table: Table<PartyInformationTableRecord>;
+	isRefreshing: boolean;
 	onClassificationFilterChange: (value: PartyClassification | "All") => void;
 	onPartyTypeFilterChange: (value: PartyType | "All") => void;
 	onQueryChange: (value: string) => void;
-	onResetFilters: () => void;
+	onRefresh: () => void;
 	onStatusFilterChange: (value: PartyInformationStatus | "All") => void;
 };
 
 export function PartyInformationTableFilters({
+	exportAllRows,
+	exportFilteredRows,
+	hasActiveFilters,
 	classificationFilter,
 	classificationOptions,
 	partyTypeFilter,
@@ -33,20 +46,26 @@ export function PartyInformationTableFilters({
 	query,
 	statusFilter,
 	statusOptions,
+	table,
+	isRefreshing,
 	onClassificationFilterChange,
 	onPartyTypeFilterChange,
 	onQueryChange,
-	onResetFilters,
+	onRefresh,
 	onStatusFilterChange,
 }: PartyInformationTableFiltersProps) {
 	return (
-		<ModuleTableToolbar className="rounded-none border-x-0 border-t-0 shadow-none lg:grid-cols-[minmax(22rem,2fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,0.8fr)_minmax(10rem,0.7fr)]">
-			<ModuleTableSearch
-				label="Search parties"
-				value={query}
-				onChange={onQueryChange}
-				placeholder="Search by party, type, status, or address"
-			/>
+		<ModuleTableToolbar
+			className="!grid-cols-2 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)_3.25rem_3.25rem_3.25rem]"
+		>
+			<div className="col-span-2">
+				<ModuleTableSearch
+					label="Search parties"
+					value={query}
+					onChange={onQueryChange}
+					placeholder="Search by name or address"
+				/>
+			</div>
 			<ModuleTableFilterSelect
 				label="Classification"
 				value={classificationFilter}
@@ -82,9 +101,42 @@ export function PartyInformationTableFilters({
 					onStatusFilterChange(value as PartyInformationStatus | "All")
 				}
 			/>
-			<ModuleTableResetButton onClick={onResetFilters}>
-				Reset
+			<ModuleTableColumnVisibilityButton table={table} />
+			<ModuleTableExportButton
+				allRows={exportAllRows}
+				columns={PartyInformationExportColumns}
+				fileName="party-information"
+				filteredRows={exportFilteredRows}
+				isFiltered={hasActiveFilters}
+				table={table}
+				title="Party Information"
+			/>
+			<ModuleTableResetButton
+				className="px-2"
+				isRefreshing={isRefreshing}
+				onClick={onRefresh}
+			>
+				<span className="sr-only">Refresh</span>
 			</ModuleTableResetButton>
 		</ModuleTableToolbar>
 	);
 }
+
+const PartyInformationExportColumns: ModuleTableExportColumn<PartyInformationTableRecord>[] =
+	[
+		{ header: "Party Code", value: "partyCodeNo" },
+		{ header: "Name", id: "name", value: "name" },
+		{ header: "Classification", id: "classification", value: "classification" },
+		{ header: "Party Type", id: "partyTypesLabel", value: "partyTypesLabel" },
+		{ header: "Status", id: "status", value: "status" },
+		{ header: "Address", id: "addressLabel", value: "addressLabel" },
+		{ header: "TIN", value: "tin" },
+		{ header: "VAT Registration Type", value: "vatRegistrationType" },
+		{ header: "BIR ATC Code", value: "atcCode" },
+		{ header: "Email", value: "email" },
+		{ header: "Contact No.", value: "contactNo" },
+		{ header: "Terms", value: "termName" },
+		{ header: "Default Receivable Account", value: "defaultReceivableAccount" },
+		{ header: "Default Payable Account", value: "defaultPayableAccount" },
+		{ header: "Default Advance", value: "employeeAdvanceAccount" },
+	];

@@ -92,7 +92,7 @@ export function AppDialog({
   return (
     <div
       role="presentation"
-      className="app-dialog-backdrop fixed inset-0 z-80 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
+      className="app-dialog-backdrop fixed inset-0 z-140 flex items-center justify-center bg-slate-950/20 px-4 py-6 backdrop-blur-[1px]"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !isConfirmPending) {
           handleCancel();

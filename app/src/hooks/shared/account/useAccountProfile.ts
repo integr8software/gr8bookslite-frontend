@@ -3,6 +3,10 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import {
+  AppMaxFileUploadSizeBytes,
+  AppMaxFileUploadSizeLabel,
+} from "@/app/src/constants/shared/app/AppConstants";
 import { BuildAccountProfileViewModel, GetVisibleProfileFields } from "@/app/src/data/shared/account/AccountData";
 import {
   DefaultPhilippineContactNumber,
@@ -20,7 +24,6 @@ import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { ReadFileAsDataUrl } from "@/app/src/services/shared/media/ImageCropper";
 
 const AllowedAvatarMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
-const MaxAvatarSizeInBytes = 2 * 1024 * 1024;
 
 type PendingAvatarCrop = {
   fileName: string;
@@ -31,6 +34,7 @@ type PendingAvatarCrop = {
 export function useAccountProfile() {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
   const profileDrafts = useAccountPreferences((state) => state.profileDrafts);
   const clearProfileDraft = useAccountPreferences((state) => state.clearProfileDraft);
   const updateProfileDraft = useAccountPreferences(
@@ -47,8 +51,8 @@ export function useAccountProfile() {
   const profileUserId = String(authProfile?.user.id ?? "local-account-user");
   const draft = profileDrafts[profileUserId];
   const profile = useMemo(
-    () => BuildAccountProfileViewModel(authProfile, draft),
-    [authProfile, draft],
+    () => BuildAccountProfileViewModel(authProfile, draft, activeBranchId),
+    [activeBranchId, authProfile, draft],
   );
   const visibleFieldKeys = useMemo(
     () => GetVisibleProfileFields(profile.role),
@@ -157,8 +161,8 @@ export function useAccountProfile() {
       return;
     }
 
-    if (file.size > MaxAvatarSizeInBytes) {
-      toast.error("Avatar image must be 2MB or smaller.");
+    if (file.size > AppMaxFileUploadSizeBytes) {
+      toast.error(`Avatar image must be ${AppMaxFileUploadSizeLabel} or smaller.`);
       return;
     }
 
@@ -177,8 +181,8 @@ export function useAccountProfile() {
   }
 
   async function applyCroppedAvatar(file: File) {
-    if (file.size > MaxAvatarSizeInBytes) {
-      toast.error("Cropped avatar image must be 2MB or smaller.");
+    if (file.size > AppMaxFileUploadSizeBytes) {
+      toast.error(`Cropped avatar image must be ${AppMaxFileUploadSizeLabel} or smaller.`);
       return;
     }
 

@@ -1,36 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Building2, GitBranch, Plus, ShieldCheck, Users } from "lucide-react";
+import {
+  Building2,
+  CheckCircle,
+  CircleOff,
+  GitBranch,
+  Plus,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import { WorkspaceCompaniesHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
+import { useBillingPlansQuery } from "@/app/src/hooks/billing/useBillingPlansQuery";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
 import type { WorkspaceCompanyRecord } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { CompanyTable } from "@/app/src/ui/workspace/companies/CompanyTable";
 import { WorkspaceCompanySpotlightTutorial } from "@/app/src/ui/workspace/companies/WorkspaceCompanySpotlightTutorial";
 
 export function CompanyManagementPage() {
+  const accessToken = useAppStore((state) => state.accessToken);
   const companyManagement = useWorkspaceCompanyManagementStore((state) => ({
     branches: state.branches,
     companies: state.companies,
     deactivateCompany: state.deactivateCompany,
     isLoading: state.isLoading,
+    lastSyncedAt: state.lastSyncedAt,
     isMutating: state.isMutating,
   }), { includeUsers: false });
+  const plansQuery = useBillingPlansQuery({
+    accessToken,
+  });
   const [pendingDeactivateCompany, setPendingDeactivateCompany] =
     useState<WorkspaceCompanyRecord | null>(null);
+  const planOptions = useMemo(
+    () => plansQuery.data?.plans.map((plan) => plan.name) ?? [],
+    [plansQuery.data?.plans],
+  );
   const activeCompanies = companyManagement.companies.filter(
     (company) => company.status === "Active",
   ).length;
+  const inactiveCompanies = companyManagement.companies.filter(
+    (company) => company.status === "Inactive",
+  ).length;
   const totalBranches = companyManagement.companies.reduce(
     (total, company) => total + (company.totalBranches ?? 0),
+    0,
+  );
+  const additionalBranches = Math.max(
+    totalBranches - companyManagement.companies.length,
     0,
   );
   const totalUsers = companyManagement.companies.reduce(
@@ -78,52 +103,52 @@ export function CompanyManagementPage() {
         }
       />
       <div data-spotlight-id="workspace-company-metrics">
-        <ModuleMetrics
-          metrics={[
-          {
-            icon: Building2,
-            label: "Total Companies",
-            helper: `${activeCompanies} active companies`,
-            tone: "blue",
-            value: companyManagement.isLoading ? (
-              <AppSkeleton className="h-7 w-14 rounded-md" />
-            ) : (
-              companyManagement.companies.length
-            ),
-          },
-          {
-            icon: Users,
-            label: "Total Users",
-            helper: "Company-level users",
-            tone: "cyan",
-            value: companyManagement.isLoading ? (
-              <AppSkeleton className="h-7 w-14 rounded-md" />
-            ) : (
-              totalUsers
-            ),
-          },
-          {
-            icon: GitBranch,
-            label: "Additional Branches",
-            helper: "Across all companies",
-            tone: "emerald",
-            value: companyManagement.isLoading ? (
-              <AppSkeleton className="h-7 w-14 rounded-md" />
-            ) : (
-              totalBranches
-            ),
-          },
-          {
-            icon: ShieldCheck,
-            label: "Workspace Scope",
-            helper: "Company, branch, and role setup",
-            tone: "violet",
-            value: companyManagement.isLoading ? (
-              <AppSkeleton className="h-7 w-20 rounded-md" />
-            ) : (
-              "Admin"
-            ),
-          },
+        <ModuleStatisticCards
+          className="xl:grid-cols-6"
+          isLoading={companyManagement.isLoading}
+          items={[
+            {
+              icon: Building2,
+              label: "Total Companies",
+              helper: `${activeCompanies} active companies`,
+              tone: "blue",
+              value: companyManagement.companies.length,
+            },
+            {
+              icon: CheckCircle,
+              label: "Active Companies",
+              helper: "Ready for transactions",
+              tone: "emerald",
+              value: activeCompanies,
+            },
+            {
+              icon: CircleOff,
+              label: "Inactive Companies",
+              helper: "Currently deactivated",
+              tone: "amber",
+              value: inactiveCompanies,
+            },
+            {
+              icon: Users,
+              label: "Total Users",
+              helper: "Company-level users",
+              tone: "cyan",
+              value: totalUsers,
+            },
+            {
+              icon: GitBranch,
+              label: "Additional Branches",
+              helper: "Across all companies",
+              tone: "emerald",
+              value: additionalBranches,
+            },
+            {
+              icon: ShieldCheck,
+              label: "Workspace Scope",
+              helper: "Company, branch, and role setup",
+              tone: "violet",
+              value: "Admin",
+            },
           ]}
         />
       </div>
@@ -131,7 +156,9 @@ export function CompanyManagementPage() {
         branches={companyManagement.branches}
         companies={companyManagement.companies}
         isLoading={companyManagement.isLoading}
+        lastSyncedAt={companyManagement.lastSyncedAt}
         onDeactivate={setPendingDeactivateCompany}
+        planOptions={planOptions}
       />
       <AppDialog
         isOpen={Boolean(pendingDeactivateCompany)}

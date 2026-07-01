@@ -10,6 +10,7 @@ import {
   EmptyWorkspaceCompanyUsers,
   type WorkspaceCompanyManagementStoreState,
 } from "@/app/src/hooks/workspace/companies/WorkspaceCompanyManagementTypes";
+import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 import { BillingQueryKeys } from "@/app/src/services/billing/BillingQueryKeys";
 import { CreateSessionQueryOptions } from "@/app/src/services/shared/query/QueryProfiles";
 import {
@@ -106,6 +107,12 @@ export function useWorkspaceCompanyManagementStore<
     });
   }
 
+  function invalidateAuthProfile() {
+    void queryClient.invalidateQueries({
+      queryKey: AuthQueryKeys.profiles(),
+    });
+  }
+
   const addCompanyMutation = useMutation({
     mutationFn: async (values: WorkspaceCompanyFormValues) =>
       CreateWorkspaceCompany(values),
@@ -115,6 +122,7 @@ export function useWorkspaceCompanyManagementStore<
         queryKey: WorkspaceCompanyQueryKeys.companies(),
       });
       invalidateManagementSummary();
+      invalidateAuthProfile();
       void queryClient.invalidateQueries({
         queryKey: BillingQueryKeys.paymentMethods(),
       });
@@ -157,6 +165,7 @@ export function useWorkspaceCompanyManagementStore<
         queryKey: WorkspaceCompanyQueryKeys.companies(),
       });
       invalidateManagementSummary();
+      invalidateAuthProfile();
       toast.success("Company updated.");
     },
     onError: (error) => {
@@ -190,6 +199,7 @@ export function useWorkspaceCompanyManagementStore<
         queryKey: WorkspaceCompanyQueryKeys.companies(),
       });
       invalidateManagementSummary();
+      invalidateAuthProfile();
       toast.success("Company deactivated.");
     },
     onError: (error) => {
@@ -313,6 +323,7 @@ export function useWorkspaceCompanyManagementStore<
         deactivateCompanyMutation.mutateAsync(companyId),
       errorMessage,
       isLoading: managementSummaryQuery.isLoading,
+      lastSyncedAt: managementSummaryQuery.dataUpdatedAt,
       isMutating:
         addCompanyMutation.isPending ||
         addCompanyUserMutation.isPending ||
@@ -340,6 +351,7 @@ export function useWorkspaceCompanyManagementStore<
       errorMessage,
       includeUsers,
       managementSummaryQuery.data?.companies,
+      managementSummaryQuery.dataUpdatedAt,
       managementSummaryQuery.data?.users,
       managementSummaryQuery.isLoading,
       resendCompanyUserInvitationMutation,

@@ -44,6 +44,13 @@ function GetPaymongoErrorMessage(error: unknown) {
         ? primaryError.source.pointer
         : null;
 
+    if (
+      sourcePointer?.includes("exp_year") ||
+      detail?.toLowerCase().includes("exp_year")
+    ) {
+      return "Expiry year must be this year or no later than 50 years from now.";
+    }
+
     if (detail && sourcePointer) {
       return `${detail} (${sourcePointer})`;
     }

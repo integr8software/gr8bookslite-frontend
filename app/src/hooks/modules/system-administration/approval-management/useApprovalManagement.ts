@@ -11,6 +11,7 @@ type ApprovalManagementState = {
 	addWorkflow: (workflow: ApprovalManagementRecord) => void;
 	inactivateWorkflow: (workflowId: string) => void;
 	isLoading: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 	updateWorkflow: (workflow: ApprovalManagementRecord) => void;
 	workflows: ApprovalManagementRecord[];
@@ -87,6 +88,7 @@ export function useApprovalManagementStore<TSelected = ApprovalManagementState>(
 			inactivateWorkflow: (workflowId) =>
 				inactivateWorkflowMutation.mutate(workflowId),
 			isLoading: workflowsQuery.isLoading,
+			lastSyncedAt: workflowsQuery.dataUpdatedAt,
 			isMutating:
 				addWorkflowMutation.isPending ||
 				updateWorkflowMutation.isPending ||
@@ -99,6 +101,7 @@ export function useApprovalManagementStore<TSelected = ApprovalManagementState>(
 			inactivateWorkflowMutation,
 			updateWorkflowMutation,
 			workflowsQuery.data,
+			workflowsQuery.dataUpdatedAt,
 			workflowsQuery.isLoading,
 		],
 	);

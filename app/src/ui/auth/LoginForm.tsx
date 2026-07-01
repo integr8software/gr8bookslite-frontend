@@ -1,155 +1,135 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  LoaderCircle,
-} from "lucide-react";
-import { useLoginForm } from "@/app/src/hooks/auth/useLoginForm";
+import { LockKeyhole, Mail } from "lucide-react";
 import { useGoogleAuthSessionRedirect } from "@/app/src/hooks/auth/useGoogleAuthSessionRedirect";
+import { useLoginForm } from "@/app/src/hooks/auth/useLoginForm";
 import { BuildGoogleAuthUrl } from "@/app/src/services/auth/AuthApi";
+import { AuthDivider } from "@/app/src/ui/auth/AuthDivider";
+import { AuthField } from "@/app/src/ui/auth/AuthField";
+import { AuthFormCard } from "@/app/src/ui/auth/AuthFormCard";
+import { AuthSwitchLink } from "@/app/src/ui/auth/AuthFormTransition";
+import { AuthGoogleButton } from "@/app/src/ui/auth/AuthGoogleButton";
+import { AuthPageShell } from "@/app/src/ui/auth/AuthPageShell";
+import { AuthSubmitButton } from "@/app/src/ui/auth/AuthSubmitButton";
 import { OnboardingDraftLoadingScreen } from "@/app/src/ui/onboarding/OnboardingDraftLoadingScreen";
 import { MainLoadingScreen } from "@/app/src/ui/shared/app/MainLoadingScreen";
-import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
-import { AuthField } from "@/app/src/ui/auth/AuthField";
 
 export function LoginForm() {
-  const {
-    state,
-    pending,
-    isSystemRedirecting,
-    isOnboardingRedirecting,
-    values,
-    handleEmailChange,
-    handleSubmit,
-  } = useLoginForm();
-  const { redirectState: googleRedirectState } = useGoogleAuthSessionRedirect();
-  const googleAuthUrl = BuildGoogleAuthUrl("login");
+	const {
+		state,
+		pending,
+		isSystemRedirecting,
+		isOnboardingRedirecting,
+		values,
+		handleEmailChange,
+		handleSubmit,
+	} = useLoginForm();
+	const { redirectState: googleRedirectState } =
+		useGoogleAuthSessionRedirect();
+	const googleAuthUrl = BuildGoogleAuthUrl("login");
 
-  if (isOnboardingRedirecting || googleRedirectState === "onboarding") {
-    return <OnboardingDraftLoadingScreen isFullScreen />;
-  }
+	if (isOnboardingRedirecting || googleRedirectState === "onboarding") {
+		return <OnboardingDraftLoadingScreen isFullScreen />;
+	}
 
-  if (isSystemRedirecting || googleRedirectState === "system") {
-    return <MainLoadingScreen />;
-  }
+	if (isSystemRedirecting || googleRedirectState === "system") {
+		return <MainLoadingScreen />;
+	}
 
-  return (
-    <main className="min-h-screen bg-[#f6f9fc] text-slate-950">
-      <section className="flex min-h-screen items-center justify-center px-5 py-8 sm:px-8">
-        <div className="w-full max-w-md rounded-lg bg-white p-6 ring-1 ring-slate-200 sm:p-8">
-            <Link
-              href="/"
-              className="inline-flex text-xl font-semibold sm:text-2xl"
-            >
-              <LogoText brandSuffixClassName="text-sm" />
-            </Link>
+	return (
+		<AuthPageShell>
+			<AuthFormCard
+				title="Sign in to your account"
+				description="Access your accounting workspace, inventory, and team settings."
+			>
+				<div className="mt-8">
+					<AuthGoogleButton
+						href={googleAuthUrl}
+						label="Continue with Google"
+					/>
+				</div>
 
-            <div className="mt-10">
-              <p className="text-sm font-bold uppercase text-sky-700">
-                Welcome back
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 sm:text-5xl">
-                Sign in
-              </h1>
-              <p className="mt-3 max-w-sm text-sm leading-6 text-slate-600">
-                Continue to your accounting and inventory workspace.
-              </p>
-            </div>
+				<div className="my-7">
+					<AuthDivider />
+				</div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="mt-10 w-full space-y-4"
-              noValidate
-            >
-              <AuthField
-                label="Email Address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="Enter your email..."
-                value={values.email}
-                onChange={handleEmailChange}
-                errors={state.errors?.email}
-              />
-              <AuthField
-                label="Password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="Enter your password..."
-                errors={state.errors?.password}
-              />
+				<form onSubmit={handleSubmit} className="space-y-5" noValidate>
+					<AuthField
+						label="Email address"
+						name="email"
+						type="email"
+						autoComplete="email"
+						placeholder="you@company.com"
+						value={values.email}
+						onChange={handleEmailChange}
+						errors={state.errors?.email}
+						leadingIcon={<Mail className="h-4 w-4" />}
+					/>
+					<AuthField
+						label="Password"
+						name="password"
+						type="password"
+						autoComplete="current-password"
+						placeholder="Enter your password"
+						errors={state.errors?.password}
+						leadingIcon={<LockKeyhole className="h-4 w-4" />}
+					/>
 
-              <div className="flex flex-col gap-3 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="rememberMe"
-                    className="h-3.5 w-3.5 rounded border border-slate-300 text-sky-700 focus:ring-2 focus:ring-sky-300"
-                  />
-                  <span>Remember me</span>
-                </label>
+					<div className="flex items-center justify-between gap-4 text-sm">
+						<label className="flex cursor-pointer items-center gap-2.5 text-darknavy/60">
+							<input
+								type="checkbox"
+								name="rememberMe"
+								className="h-4 w-4 rounded border-darknavy/20 accent-skyblue focus:ring-2 focus:ring-skyblue/30"
+							/>
+							<span>Remember me</span>
+						</label>
+						<Link
+							href="/forgot-password"
+							className="font-semibold text-darknavy transition hover:text-sky-700"
+						>
+							Forgot password?
+						</Link>
+					</div>
 
-                <Link
-                  href="/forgot-password"
-                  className="font-semibold text-sky-700 transition hover:text-sky-900 sm:text-right"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
+					<AuthSubmitButton
+						idleLabel="Sign in"
+						pendingLabel="Signing in..."
+						pending={pending}
+					/>
+				</form>
 
-              <div className="flex justify-center pt-3">
-                <button
-                  type="submit"
-                  disabled={pending}
-                  aria-label={pending ? "Signing in" : "Sign in"}
-                  className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-950 text-white shadow-[0_14px_34px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-                >
-                  {pending ? (
-                    <LoaderCircle
-                      className="h-5 w-5 animate-spin"
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <ArrowRight aria-hidden="true" />
-                  )}
-                </button>
-              </div>
-
-              <div className="flex items-center gap-4 pt-2 text-sm text-slate-500">
-                <div className="h-px flex-1 bg-slate-200" />
-                <span>or</span>
-                <div className="h-px flex-1 bg-slate-200" />
-              </div>
-
-              <a
-                href={googleAuthUrl}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white/82 px-4 text-sm font-semibold text-slate-800 transition hover:border-sky-200 hover:bg-white"
-              >
-                <span>Continue with Google</span>
-                <Image
-                  src="/img/google-icon.png"
-                  alt="Google icon"
-                  width={18}
-                  height={18}
-                />
-              </a>
-            </form>
-
-            <p className="mt-5 text-center text-slate-600">
-              Don&apos;t have an account yet?{" "}
-              <Link
-                href="/signup"
-                transitionTypes={["auth-forward"]}
-                className="font-semibold text-sky-700 hover:text-sky-900"
-              >
-                Register
-              </Link>
-            </p>
-        </div>
-      </section>
-    </main>
-  );
+				<div className="mt-8 border-t border-darknavy/10 pt-7 text-center">
+					<p className="text-sm text-darknavy/60">
+						Don&apos;t have an account?{" "}
+						<AuthSwitchLink
+							href="/signup"
+							direction="forward"
+							className="font-semibold text-darknavy transition hover:text-sky-700"
+						>
+							Create one free
+						</AuthSwitchLink>
+					</p>
+					<p className="mt-5 text-xs leading-5 text-darknavy/45">
+						By signing in, you agree to our{" "}
+						<Link
+							href="/terms-of-service"
+							className="font-bold text-darknavy/70 hover:text-sky-700"
+						>
+							Terms of Service
+						</Link>{" "}
+						and{" "}
+						<Link
+							href="/privacy-policy"
+							className="font-bold text-darknavy/70 hover:text-sky-700"
+						>
+							Privacy Policy
+						</Link>
+						.
+					</p>
+				</div>
+			</AuthFormCard>
+		</AuthPageShell>
+	);
 }

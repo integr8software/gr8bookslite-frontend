@@ -25,7 +25,7 @@ export function MultiCurrencySetupTableRow({
 				</div>
 			</td>
 			<td className="px-4 py-4">
-				<div className="font-mono text-sm text-darknavy">
+				<div className="text-sm text-darknavy">
 					{record.currentExchangeRateDisplay}
 				</div>
 				<div className="mt-1 text-xs text-darknavy/50">
@@ -33,11 +33,13 @@ export function MultiCurrencySetupTableRow({
 				</div>
 			</td>
 			<td className="px-4 py-4">
-				<div className="font-mono text-sm font-semibold text-darknavy">
+				<div className="text-sm font-semibold text-darknavy">
 					{record.originalExchangeRateDisplay}
 				</div>
 				<div className="mt-1 text-xs text-darknavy/50">
-					{record.source === "Manual" ? "Manual override" : "API synced"}
+					{record.source === "Manual"
+						? "Manual override"
+						: "API synced"}
 				</div>
 			</td>
 			<td className="px-4 py-4">

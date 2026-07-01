@@ -7,6 +7,7 @@ export type PricingFeature = {
 export type PricingPlan = {
   code: string;
   name: string;
+  description?: string;
   monthlyPrice: string;
   yearlyPrice: string;
   monthlyCompareAtPrice?: string;

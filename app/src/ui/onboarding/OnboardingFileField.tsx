@@ -32,18 +32,18 @@ export function OnboardingFileField({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-2 block text-sm font-medium text-darknavy">
+      <label htmlFor={id} className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
       </label>
       <label
         htmlFor={id}
-        className={`flex h-14 cursor-pointer overflow-hidden rounded-md border bg-white ${errors?.length ? "border-coralpink" : "border-darknavy/20"
+        className={`flex h-12 cursor-pointer overflow-hidden rounded-lg border bg-offwhite transition hover:border-skyblue/60 ${errors?.length ? "border-coralpink" : "border-darknavy/10"
           }`}
       >
-        <span className="flex w-14 items-center justify-center bg-black text-white">
+        <span className="flex w-12 items-center justify-center bg-darknavy text-white">
           <ImageUp className="h-5 w-5" />
         </span>
-        <span className="flex min-w-0 flex-1 items-center px-4 text-base text-darknavy/65">
+        <span className="flex min-w-0 flex-1 items-center px-4 text-sm text-darknavy/60">
           <span className="truncate">{fileName || "Upload image"}</span>
         </span>
         {hasFile ? (
@@ -73,8 +73,8 @@ export function OnboardingFileField({
         />
       </label>
       {previewUrl ? (
-        <div className="mt-3 rounded-md border border-darknavy/10 p-3">
-          <div className="relative h-40 w-full overflow-hidden rounded-sm bg-white">
+        <div className="mt-3 rounded-xl border border-darknavy/10 bg-offwhite p-3">
+          <div className="relative h-36 w-full overflow-hidden rounded-lg bg-white">
             {/* User-uploaded preview URLs can be blob or backend-hosted values that don't work reliably with next/image. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -91,7 +91,7 @@ export function OnboardingFileField({
           {errors[0]}
         </p>
       ) : null}
-      {hint ? <p className="mt-2 text-sm text-darknavy/70">{hint}</p> : null}
+      {hint ? <p className="mt-2 text-xs text-darknavy/50">{hint}</p> : null}
     </div>
   );
 }

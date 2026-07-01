@@ -9,7 +9,7 @@ import { WarehouseTableRow } from "@/app/src/ui/modules/maintenance/warehouse-ma
 
 type WarehouseTableProps = Pick<
 	ReturnType<typeof useWarehouseListPage>,
-	"isLoading" | "setPendingDeleteWarehouse" | "table"
+	"isLoading" | "lastSyncedAt" | "setPendingDeleteWarehouse" | "table"
 > & {
 	toolbar?: ReactNode;
 	onEditWarehouse: (warehouse: ReturnType<typeof useWarehouseListPage>["warehouses"][number]) => void;
@@ -17,6 +17,7 @@ type WarehouseTableProps = Pick<
 
 export function WarehouseTable({
 	isLoading,
+	lastSyncedAt,
 	setPendingDeleteWarehouse,
 	table,
 	toolbar,
@@ -28,9 +29,11 @@ export function WarehouseTable({
 			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 			emptyTitle="No warehouses found"
 			isLoading={isLoading}
+			lastSyncedAt={lastSyncedAt}
 			minWidthClassName="min-w-[92rem]"
 			paginationStorageKey={WarehouseManagementTablePaginationStorageKey}
 			table={table}
+			tableTitle="Warehouses"
 			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<WarehouseTableRow

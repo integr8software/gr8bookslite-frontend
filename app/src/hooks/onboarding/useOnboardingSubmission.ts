@@ -28,6 +28,7 @@ import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/Paym
 import {
   CreateFrontendAuthSession,
   GetAuthProfile,
+  SwitchCompanyContext,
 } from "@/app/src/services/auth/AuthApi";
 import {
   GetFallbackPostAuthRedirectPath,
@@ -81,6 +82,22 @@ async function DidBillingPersist(accessToken: string | null) {
   return false;
 }
 
+async function GetCompletedOnboardingProfile(accessToken: string | null) {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const profile = await GetAuthProfile(accessToken);
+
+    if (!profile.onboarding.requiresCompanySetup) {
+      return profile;
+    }
+
+    if (attempt < 3) {
+      await Wait(750);
+    }
+  }
+
+  return null;
+}
+
 function IsRequestTimeout(error: unknown) {
   return (
     error instanceof Error &&
@@ -130,12 +147,14 @@ type UseOnboardingSubmissionParams = {
   isFirstStep: boolean;
   isLastStep: boolean;
   values: OnboardingValues;
+  hasPersistedBillingSetup: boolean;
   setErrors: React.Dispatch<React.SetStateAction<OnboardingFieldErrors>>;
   setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>;
   setSubmittingPlanCode: React.Dispatch<React.SetStateAction<string | null>>;
   setStepIndex: React.Dispatch<React.SetStateAction<number>>;
   setSelectedPlan: React.Dispatch<React.SetStateAction<PricingPlan | null>>;
   setSelectedBillingCycle: React.Dispatch<React.SetStateAction<BillingCycle>>;
+  setHasPersistedBillingSetup: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function useOnboardingSubmission({
@@ -145,15 +164,41 @@ export function useOnboardingSubmission({
   isFirstStep,
   isLastStep,
   values,
+  hasPersistedBillingSetup,
   setErrors,
   setIsSubmitting,
   setSubmittingPlanCode,
   setStepIndex,
   setSelectedPlan,
   setSelectedBillingCycle,
+  setHasPersistedBillingSetup,
 }: UseOnboardingSubmissionParams) {
   const router = useRouter();
   const resetAppStore = useAppStore((state) => state.resetAppStore);
+
+  async function redirectToCompletedOnboarding(
+    accessToken: string | null,
+  ) {
+    const profile = await GetCompletedOnboardingProfile(accessToken);
+
+    if (!profile) {
+      return false;
+    }
+
+    const companyId = GetAuthProfileCompanyId(profile);
+
+    if (companyId != null) {
+      const context = await SwitchCompanyContext(accessToken, companyId);
+      await CreateFrontendAuthSession(context.accessToken, false);
+    }
+
+    useAppStore.setState({
+      accessToken: AuthenticatedSessionMarker,
+      activeCompanyId: companyId,
+    });
+    router.replace(GetPostAuthRedirectPathFromProfile(profile));
+    return true;
+  }
 
   function canContinueFromStepOne() {
     const nextErrors = validateOnboardingStepOneValues(values);
@@ -223,7 +268,15 @@ export function useOnboardingSubmission({
     }
 
     if (stepIndex === 1 && !canContinueFromStepOne()) return;
-    if (stepIndex === 2 && !canContinueFromBillingStep()) return;
+    const isUsingPersistedBilling =
+      stepIndex === 2 &&
+      hasPersistedBillingSetup &&
+      values.cardNumber.trim() === "" &&
+      values.cvc.trim() === "";
+
+    if (stepIndex === 2 && !isUsingPersistedBilling && !canContinueFromBillingStep()) {
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -269,6 +322,11 @@ export function useOnboardingSubmission({
       }
 
       if (stepIndex === 2) {
+        if (isUsingPersistedBilling) {
+          setStepIndex((current) => current + 1);
+          return;
+        }
+
         const cardDigits = GetDigitsOnly(values.cardNumber);
         const paymentMethod = await CreatePaymongoCardPaymentMethod({
           cardholderName: values.cardholderName.trim(),
@@ -301,6 +359,7 @@ export function useOnboardingSubmission({
         }
 
         setStepIndex((current) => current + 1);
+        setHasPersistedBillingSetup(true);
         toast.success(
           billingResponse.pendingProviderActivation
             ? "Billing setup is pending while PayMongo subscription billing is being activated."
@@ -367,6 +426,17 @@ export function useOnboardingSubmission({
           }
         } catch {
           // Fall through to the original timeout message when draft recovery fails.
+        }
+      }
+
+      if (isLastStep && IsRequestTimeout(error)) {
+        try {
+          if (await redirectToCompletedOnboarding(resolvedAccessToken)) {
+            toast.success("Onboarding completed successfully.");
+            return;
+          }
+        } catch {
+          // Preserve the timeout error when completion recovery is inconclusive.
         }
       }
 

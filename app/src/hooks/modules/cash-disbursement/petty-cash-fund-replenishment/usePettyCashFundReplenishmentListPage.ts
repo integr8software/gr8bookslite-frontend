@@ -109,6 +109,7 @@ export function usePettyCashFundReplenishmentListPage() {
     handleConfirmDelete,
     isLoading: recordsQuery.isLoading,
     isMutating: deleteRecordMutation.isPending,
+    lastSyncedAt: recordsQuery.dataUpdatedAt,
     pendingDelete,
     searchQuery,
     resetFilters,

@@ -13,6 +13,10 @@ import {
 	Upload,
 	X,
 } from "lucide-react";
+import {
+	AppMaxFileUploadSizeBytes,
+	AppMaxFileUploadSizeLabel,
+} from "@/app/src/constants/shared/app/AppConstants";
 import { MaterialRequestUomOptions } from "@/app/src/constants/modules/inventory/material-request/MaterialRequestConstants";
 import {
 	createMaterialRequestId,
@@ -756,6 +760,14 @@ function MaterialRequestItemImportDialog({
 		const file = fileList?.[0];
 
 		if (!file) {
+			return;
+		}
+
+		if (file.size > AppMaxFileUploadSizeBytes) {
+			setImportError(
+				`Upload a file up to ${AppMaxFileUploadSizeLabel}.`,
+			);
+			setFileInputKey((current) => current + 1);
 			return;
 		}
 

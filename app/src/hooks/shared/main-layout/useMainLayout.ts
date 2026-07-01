@@ -34,13 +34,12 @@ import {
 import {
   filterMainNavigationSections,
   filterMainSearchItems,
+  flattenSections,
   getAccessibleBranches,
 } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 import {
   MainAccountNavigationSections,
   MainAccountSearchItems,
-  MainCompanyNavigationSections,
-  MainCompanySearchItems,
   MainMasterNavigationSections,
   MainMasterSearchItems,
   MainWorkspaceNavigationSections,
@@ -49,8 +48,8 @@ import {
 import {
   MainLayoutDefaultSubscription,
   MainLayoutInitialNotifications,
-  MainLayoutRecentNavigationKeys,
 } from "@/app/src/data/shared/main-layout/MainLayoutDefaults";
+import { MainBreadcrumbDropdownHelperText } from "@/app/src/data/shared/main-layout/breadcrumb/MainBreadcrumbData";
 import { mapProfileCompanyUnitsToMainBranches } from "@/app/src/data/workspace/companies/WorkspaceCompanyMainLayoutBranchData";
 import { ModuleHelpArticles } from "@/app/src/data/shared/module/module-help/ModuleHelpData";
 import { getHelpArticleForPath } from "@/app/src/data/shared/module/module-help/ModuleHelpUtils";
@@ -78,11 +77,11 @@ import {
 } from "@/app/src/services/auth/AuthQueryKeys";
 import { IsUnauthorizedApiError } from "@/app/src/services/shared/api/ApiClient";
 import type { AuthProfileResponse } from "@/app/src/services/auth/AuthApiTypes";
+import { MapUserModulesToNavigation } from "@/app/src/data/shared/main-layout/sidebar/UserModuleNavigationAdapter";
 import type {
   MainBreadcrumb,
   MainBreadcrumbDropdownItem,
   MainNotificationTab,
-  MainQuickListTab,
 } from "@/app/src/types/shared/main-layout/MainLayoutTypes";
 
 const DefaultExpandedKeys = [
@@ -91,7 +90,6 @@ const DefaultExpandedKeys = [
   "workspace-user-management-section",
   "workspace-billing-and-subscription-section",
   "workspace-vouchers-and-coupons-section",
-  "workspace-reports-analytics-section",
   "workspace-audit-logs-section",
   "workspace-system-settings-section",
   "master-dashboard-section",
@@ -112,8 +110,6 @@ const DefaultExpandedKeys = [
   "cash-disbursement",
   "sales",
   "inventory",
-  "reports",
-  "reporting-analytics",
   "system-administration",
 ];
 
@@ -126,6 +122,7 @@ const CompanyFallbackHomeHref = "/dashboard";
 const ShellContextSwitchFallbackMs = 8000;
 const BranchContextSwitchMinimumMs = 650;
 const TopbarContextSkeletonMs = 700;
+const ActiveBranchStorageKey = "gr8booksneo:main-layout:active-branch";
 const BranchUsersContextParam = "workspaceBranchId";
 const CompanyUsersContextParam = "workspaceCompanyId";
 const BranchUsersNameParam = "branchName";
@@ -204,7 +201,6 @@ export function useMainLayout() {
     pathname: "",
     key: "",
   });
-  const [quickListTab, setQuickListTab] = useState<MainQuickListTab>("recent");
   const [notificationTab, setNotificationTab] =
     useState<MainNotificationTab>("all");
   const [manualExpandedKeys, setManualExpandedKeys] =
@@ -216,7 +212,7 @@ export function useMainLayout() {
     pathname,
     value: "",
   });
-  const [activeBranchId, setActiveBranchId] = useState("");
+  const [selectedBranchId, setSelectedBranchId] = useState("");
   const [switchingCompanyName, setSwitchingCompanyName] = useState<
     string | null
   >(null);
@@ -257,9 +253,6 @@ export function useMainLayout() {
     authProfile && effectiveRole !== "SUPER_ADMIN"
       ? ProfileHasWorkspaceAccess(authProfile)
       : false;
-  const displayUser = authProfile
-    ? CreateWorkspaceCurrentUserFromProfile(authProfile)
-    : EmptyCurrentUser;
   const isProfileLoading =
     Boolean(accessToken) && !authProfile && isAuthProfileFetching;
 
@@ -312,71 +305,6 @@ export function useMainLayout() {
     useWorkspaceCompanyMainLayoutBranches({
       company: activeNavigationScope === "company" ? currentCompany : undefined,
     });
-
-  /* eslint-disable react-hooks/preserve-manual-memoization */
-  const navigationSections = useMemo(() => {
-    const sourceSections =
-      activeNavigationScope === "account"
-        ? MainAccountNavigationSections
-        : activeNavigationScope === "master"
-          ? MainMasterNavigationSections
-          : activeNavigationScope === "workspace"
-            ? MainWorkspaceNavigationSections
-            : MainCompanyNavigationSections;
-
-    return filterMainNavigationSections(
-      sourceSections,
-      displayUser,
-      subscription,
-    );
-  }, [activeNavigationScope, displayUser, subscription]);
-  const activeExpandedKeys = useMemo(
-    () => getActiveExpandedKeys(navigationSections, pathname),
-    [navigationSections, pathname],
-  );
-  const shouldAutoRevealActiveRoute = sidebarNavigationPath !== pathname;
-  const expandedKeys = useMemo(
-    () =>
-      Array.from(
-        new Set([
-          ...manualExpandedKeys,
-          ...(shouldAutoRevealActiveRoute ? activeExpandedKeys : []),
-        ]),
-      ),
-    [activeExpandedKeys, manualExpandedKeys, shouldAutoRevealActiveRoute],
-  );
-
-  const availableSearchItems = useMemo(() => {
-    const sourceItems =
-      activeNavigationScope === "account"
-        ? MainAccountSearchItems
-        : activeNavigationScope === "master"
-          ? MainMasterSearchItems
-          : activeNavigationScope === "workspace"
-            ? MainWorkspaceSearchItems
-            : MainCompanySearchItems;
-
-    return filterMainSearchItems(sourceItems, displayUser, subscription);
-  }, [activeNavigationScope, displayUser, subscription]);
-  const companySearchItems = useMemo(
-    () =>
-      filterMainSearchItems(MainCompanySearchItems, displayUser, subscription),
-    [displayUser, subscription],
-  );
-  const companyHomeHref = getCompanyHomeHref(
-    companySearchItems,
-    MainLayoutRecentNavigationKeys,
-  );
-  const homeHref =
-    activeNavigationScope === "account" && hasMasterAccess
-      ? MasterHomeHref
-      : activeNavigationScope === "account" && hasWorkspaceAccess
-        ? WorkspaceHomeHref
-        : activeNavigationScope === "master"
-          ? MasterHomeHref
-          : activeNavigationScope === "workspace"
-            ? WorkspaceHomeHref
-            : companyHomeHref;
   const switchCompanyMutation = useMutation({
     mutationFn: async ({
       companyId,
@@ -426,7 +354,7 @@ export function useMainLayout() {
         ),
         profile,
       );
-      router.push(getCompanyHomeHrefForProfile(profile));
+      router.push("/dashboard");
       releaseShellContextSwitchAfterFrame();
     },
     onError: (_error, variables) => {
@@ -440,46 +368,99 @@ export function useMainLayout() {
     },
   });
 
-  const recentlyVisitedModules = useMemo(() => {
-    if (activeNavigationScope !== "company") {
-      return [];
-    }
-
-    return findSearchItemsByKeys(
-      availableSearchItems,
-      MainLayoutRecentNavigationKeys,
-    );
-  }, [activeNavigationScope, availableSearchItems]);
-
-  const enabledQuickListTabs = useMemo(() => {
-    if (activeNavigationScope !== "company") {
-      return [] as MainQuickListTab[];
-    }
-
-    const tabs: MainQuickListTab[] = [];
-    tabs.push("recent");
-
-    return tabs;
-  }, [activeNavigationScope]);
-  const activeQuickListTab = enabledQuickListTabs.includes(quickListTab)
-    ? quickListTab
-    : (enabledQuickListTabs[0] ?? quickListTab);
-
-  const searchResults = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    if (!normalizedQuery) {
-      return availableSearchItems.slice(0, 8);
-    }
-
-    return availableSearchItems
-      .filter((item) => matchesSearchQuery(item, normalizedQuery))
-      .slice(0, 12);
-  }, [availableSearchItems, query]);
-
   const accessibleBranches = useMemo(
     () => sortBranchesByPriority(getAccessibleBranches(branches)),
     [branches],
+  );
+  const routedBranch = useMemo(() => {
+    if (!routedBranchId && !routedBranchName) {
+      return null;
+    }
+
+    const normalizedRoutedBranchName = normalizeBranchRouteToken(
+      routedBranchName ?? "",
+    );
+
+    return (
+      accessibleBranches.find((branch) => {
+        if (branch.id === routedBranchId) {
+          return true;
+        }
+
+        if (!normalizedRoutedBranchName) {
+          return false;
+        }
+
+        return (
+          normalizeBranchRouteToken(branch.name) === normalizedRoutedBranchName ||
+          normalizeBranchRouteToken(getBranchSwitcherLabel(branch)) ===
+            normalizedRoutedBranchName ||
+          normalizeBranchRouteToken(branch.code) === normalizedRoutedBranchName
+        );
+      }) ?? null
+    );
+  }, [accessibleBranches, routedBranchId, routedBranchName]);
+  const storedActiveBranchId = useMemo(() => {
+    if (
+      !authProfile?.user.id ||
+      !currentCompany.id ||
+      activeNavigationScope !== "company" ||
+      routedBranchId ||
+      routedBranchName ||
+      accessibleBranches.length === 0
+    ) {
+      return "";
+    }
+
+    const storedBranchId = readStoredActiveBranchId({
+      userId: authProfile.user.id,
+      companyId: currentCompany.id,
+    });
+
+    return storedBranchId &&
+      accessibleBranches.some((branch) => branch.id === storedBranchId)
+      ? storedBranchId
+      : "";
+  }, [
+    accessibleBranches,
+    activeNavigationScope,
+    authProfile,
+    currentCompany.id,
+    routedBranchId,
+    routedBranchName,
+  ]);
+  const selectedActiveBranchId =
+    selectedBranchId &&
+    accessibleBranches.some((branch) => branch.id === selectedBranchId)
+      ? selectedBranchId
+      : "";
+  const activeBranchId =
+    routedBranch?.id ??
+    (selectedActiveBranchId ||
+      storedActiveBranchId ||
+      accessibleBranches[0]?.id ||
+      "");
+  const displayUser = authProfile
+    ? CreateWorkspaceCurrentUserFromProfile(authProfile, activeBranchId)
+    : EmptyCurrentUser;
+  const companyUserModuleItems = useMemo(() => {
+    const userModules = GetAuthProfileAccess(authProfile)?.userModules;
+    const branchModules = userModules?.byBranch?.find(
+      (branch) => String(branch.branchUnitId) === activeBranchId,
+    );
+    const fallbackBranchModules = userModules?.byBranch?.find(
+      (branch) => branch.items.length > 0,
+    );
+
+    return branchModules?.items.length
+      ? branchModules.items
+      : fallbackBranchModules?.items ?? userModules?.items ?? [];
+  }, [activeBranchId, authProfile]);
+  const companyNavigationSections = useMemo(
+    () => {
+      return MapUserModulesToNavigation(companyUserModuleItems);
+    },
+    [companyUserModuleItems],
   );
   const hasCompanyAdministrationAccess = hasCurrentCompanyAdministrationAccess(
     authProfile,
@@ -499,6 +480,80 @@ export function useMainLayout() {
     accessibleBranches[0] ??
     null;
   const canManageBranches = displayUser.userRole === "Admin";
+
+  /* eslint-disable react-hooks/preserve-manual-memoization */
+  const navigationSections = useMemo(() => {
+    const sourceSections =
+      activeNavigationScope === "account"
+        ? MainAccountNavigationSections
+        : activeNavigationScope === "master"
+          ? MainMasterNavigationSections
+          : activeNavigationScope === "workspace"
+            ? MainWorkspaceNavigationSections
+            : companyNavigationSections;
+
+    if (activeNavigationScope === "company") return sourceSections;
+    return filterMainNavigationSections(
+      sourceSections,
+      displayUser,
+      subscription,
+    );
+  }, [activeNavigationScope, companyNavigationSections, displayUser, subscription]);
+  const activeExpandedKeys = useMemo(
+    () => getActiveExpandedKeys(navigationSections, pathname),
+    [navigationSections, pathname],
+  );
+  const shouldAutoRevealActiveRoute = sidebarNavigationPath !== pathname;
+  const expandedKeys = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...manualExpandedKeys,
+          ...(shouldAutoRevealActiveRoute ? activeExpandedKeys : []),
+        ]),
+      ),
+    [activeExpandedKeys, manualExpandedKeys, shouldAutoRevealActiveRoute],
+  );
+
+  const availableSearchItems = useMemo(() => {
+    const sourceItems =
+      activeNavigationScope === "account"
+        ? MainAccountSearchItems
+        : activeNavigationScope === "master"
+          ? MainMasterSearchItems
+          : activeNavigationScope === "workspace"
+            ? MainWorkspaceSearchItems
+            : flattenSections(companyNavigationSections);
+
+    if (activeNavigationScope === "company") return sourceItems;
+    return filterMainSearchItems(sourceItems, displayUser, subscription);
+  }, [activeNavigationScope, companyNavigationSections, displayUser, subscription]);
+  const searchResults = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return availableSearchItems.slice(0, 8);
+    }
+
+    return availableSearchItems
+      .filter((item) => matchesSearchQuery(item, normalizedQuery))
+      .slice(0, 12);
+  }, [availableSearchItems, query]);
+  const companySearchItems = useMemo(
+    () => flattenSections(companyNavigationSections),
+    [companyNavigationSections],
+  );
+  const companyHomeHref = getCompanyHomeHref(companySearchItems);
+  const homeHref =
+    activeNavigationScope === "account" && hasMasterAccess
+      ? MasterHomeHref
+      : activeNavigationScope === "account" && hasWorkspaceAccess
+        ? WorkspaceHomeHref
+        : activeNavigationScope === "master"
+          ? MasterHomeHref
+          : activeNavigationScope === "workspace"
+            ? WorkspaceHomeHref
+            : companyHomeHref;
   const clearShellContextSwitch = useCallback(
     (keepTopbarSkeleton = true) => {
       if (shellContextSettlingRef.current !== null) {
@@ -631,39 +686,6 @@ export function useMainLayout() {
   }, [availableCompanies, routedCompanyId]);
 
   useEffect(() => {
-    if (!routedBranchId && !routedBranchName) {
-      return;
-    }
-
-    const normalizedRoutedBranchName = normalizeBranchRouteToken(
-      routedBranchName ?? "",
-    );
-    const routedBranch = accessibleBranches.find((branch) => {
-      if (branch.id === routedBranchId) {
-        return true;
-      }
-
-      if (!normalizedRoutedBranchName) {
-        return false;
-      }
-
-      return (
-        normalizeBranchRouteToken(branch.name) === normalizedRoutedBranchName ||
-        normalizeBranchRouteToken(getBranchSwitcherLabel(branch)) ===
-          normalizedRoutedBranchName ||
-        normalizeBranchRouteToken(branch.code) === normalizedRoutedBranchName
-      );
-    });
-
-    if (!routedBranch) {
-      return;
-    }
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- route context shortcuts should sync the topbar branch when available.
-    setActiveBranchId(routedBranch.id);
-  }, [accessibleBranches, routedBranchId, routedBranchName]);
-
-  useEffect(() => {
     const numericCompanyId = Number(currentCompany.id);
 
     setStoredActiveCompanyId(
@@ -689,6 +711,33 @@ export function useMainLayout() {
       currentBranch ? getBranchSwitcherLabel(currentBranch) : null,
     );
   }, [currentBranch, setStoredActiveBranchContext]);
+
+  useEffect(() => {
+    if (
+      !authProfile?.user.id ||
+      !currentCompany.id ||
+      !activeBranchId ||
+      activeNavigationScope !== "company"
+    ) {
+      return;
+    }
+
+    if (!accessibleBranches.some((branch) => branch.id === activeBranchId)) {
+      return;
+    }
+
+    writeStoredActiveBranchId({
+      userId: authProfile.user.id,
+      companyId: currentCompany.id,
+      branchId: activeBranchId,
+    });
+  }, [
+    accessibleBranches,
+    activeBranchId,
+    activeNavigationScope,
+    authProfile?.user.id,
+    currentCompany.id,
+  ]);
 
   const branchDropdownItems = useMemo(() => {
     if (!shouldShowBranchSwitcher) {
@@ -883,6 +932,10 @@ export function useMainLayout() {
   }
 
   function selectBranch(branchId: string) {
+    if (branchId === activeBranchId) {
+      return;
+    }
+
     const selectedBranch = accessibleBranches.find(
       (branch) => branch.id === branchId,
     );
@@ -893,13 +946,22 @@ export function useMainLayout() {
         : "Switching branch...",
     );
     void PrepareQueryCacheForContextSwitch(queryClient);
-    setActiveBranchId(branchId);
+    setSelectedBranchId(branchId);
     setStoredActiveBranchContext(
       Number.isInteger(Number(branchId)) && Number(branchId) > 0
         ? Number(branchId)
         : null,
       selectedBranch ? getBranchSwitcherLabel(selectedBranch) : null,
     );
+
+    if (authProfile?.user.id && currentCompany.id) {
+      writeStoredActiveBranchId({
+        userId: authProfile.user.id,
+        companyId: currentCompany.id,
+        branchId,
+      });
+    }
+
     releaseShellContextSwitchAfterMinimumDelay();
   }
 
@@ -928,7 +990,7 @@ export function useMainLayout() {
     setSwitchingCompanyName(selectedCompany?.name ?? "company");
     setSwitchingCompanyId(companyId);
     setSwitchingAdministrationScope(null);
-    setActiveBranchId("");
+    setSelectedBranchId("");
     setSearchOpenPath(null);
     setNotificationsOpenPath(null);
     switchCompanyMutation.mutate({ companyId, requestId });
@@ -943,7 +1005,7 @@ export function useMainLayout() {
     setSwitchingCompanyId(null);
     setSwitchingAdministrationScope("workspace");
     beginShellContextSwitchWithFallback("Switching to workspace...");
-    setActiveBranchId("");
+    setSelectedBranchId("");
     setStoredActiveBranchContext(null, null);
     setStoredActiveCompanyId(null);
     setStoredActiveCompanyName(null);
@@ -962,7 +1024,7 @@ export function useMainLayout() {
     setSwitchingCompanyId(null);
     setSwitchingAdministrationScope("master");
     beginShellContextSwitchWithFallback("Switching to master control...");
-    setActiveBranchId("");
+    setSelectedBranchId("");
     setStoredActiveBranchContext(null, null);
     setStoredActiveCompanyId(null);
     setStoredActiveCompanyName(null);
@@ -1001,7 +1063,6 @@ export function useMainLayout() {
     currentCompany,
     currentHelpArticle,
     currentUser: displayUser,
-    enabledQuickListTabs,
     expandedKeys,
     hasAuthSession: Boolean(accessToken),
     hasBranchAccess,
@@ -1034,10 +1095,9 @@ export function useMainLayout() {
     isSidebarTransitionEnabled,
     moduleTitle,
     navigationSections,
+    companyUserModuleItems,
     notificationTab,
     query,
-    quickListTab: activeQuickListTab,
-    recentlyVisitedModules,
     searchResults,
     selectedHelpArticleKey,
     shouldAutoRevealActiveRoute,
@@ -1056,7 +1116,6 @@ export function useMainLayout() {
     selectCompany,
     setNotificationTab,
     setQuery: updateQuery,
-    setQuickListTab,
     setSelectedHelpArticleKey: selectHelpArticle,
     toggleExpandedKey,
     toggleNotifications,
@@ -1201,20 +1260,31 @@ function hasCurrentCompanyBranchAccess(
 
 function CreateWorkspaceCurrentUserFromProfile(
   profile: AuthProfileResponse,
+  activeBranchId?: string,
 ): MainCurrentUser {
   const [firstName, ...lastNameParts] = profile.user.name.trim().split(/\s+/);
   const lastName = lastNameParts.join(" ");
   const activeAccess = GetAuthProfileAccess(profile);
+  const activeBranchAccess = activeAccess?.userModules?.byBranch?.find(
+    (branch) => String(branch.branchUnitId) === activeBranchId,
+  );
   const activeCompanyId = GetAuthProfileCompanyId(profile);
   const activeCompanyMembership =
     profile.companies?.find(
       (company) => company.companyId === activeCompanyId,
     ) ?? profile.companies?.[0];
   const companyRoleName =
+    activeBranchAccess?.companyRoleName ??
     activeAccess?.companyRoleName ??
     FormatCompanyRoleName(
-      activeAccess?.companyRoleCode ?? activeCompanyMembership?.companyRoleCode,
+      activeBranchAccess?.companyRoleCode ??
+        activeAccess?.companyRoleCode ??
+        activeCompanyMembership?.companyRoleCode,
     );
+  const companyRoleCode =
+    activeBranchAccess?.companyRoleCode ??
+    activeAccess?.companyRoleCode ??
+    activeCompanyMembership?.companyRoleCode;
   const effectiveRole = ResolveAuthProfileEffectiveRole(profile);
   const userRole =
     effectiveRole === "SUPER_ADMIN"
@@ -1230,10 +1300,7 @@ function CreateWorkspaceCurrentUserFromProfile(
     : CreateNavigationPermissionMap();
   const userRoleDetails = companyRoleName
     ? {
-        id:
-          activeAccess?.companyRoleCode ??
-          activeCompanyMembership?.companyRoleCode ??
-          "user-role-workspace",
+        id: companyRoleCode ?? "user-role-workspace",
         name: companyRoleName,
         permissions:
           effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN"
@@ -1347,7 +1414,6 @@ function CreateNavigationPermissionMap() {
   const sections = [
     ...MainMasterNavigationSections,
     ...MainWorkspaceNavigationSections,
-    ...MainCompanyNavigationSections,
   ];
 
   for (const section of sections) {
@@ -1511,6 +1577,17 @@ function findNavigationTrail(
     const sectionHref = getSectionTargetHref(section);
 
     if (itemTrail.length > 0) {
+      if (isParentlessModuleSection(section)) {
+        return itemTrail.map((item, index) =>
+          index === 0
+            ? {
+                ...item,
+                dropdownItems: sectionDropdownItems,
+              }
+            : item,
+        );
+      }
+
       return [
         {
           key: section.key,
@@ -1535,6 +1612,16 @@ function findNavigationTrail(
   }
 
   return [];
+}
+
+function isParentlessModuleSection(section: MainNavigationSection) {
+  const onlyItem = section.items[0];
+
+  return (
+    section.key === `${onlyItem?.key}-root` &&
+    section.items.length === 1 &&
+    section.title === onlyItem.label
+  );
 }
 
 function buildMasterSubscriberManagementBreadcrumbs({
@@ -1955,171 +2042,8 @@ function getNavigationDropdownHelperText(key: string) {
     return undefined;
   }
 
-  return NavigationDropdownHelperText[key];
+  return MainBreadcrumbDropdownHelperText[key];
 }
-
-const NavigationDropdownHelperText: Record<string, string> = {
-  dashboard: "View company activity, approvals, and performance.",
-  maintenance: "Maintain reusable setup records for company operations.",
-  "cash-receipt": "Record and reconcile incoming payments.",
-  "cash-disbursement": "Prepare and track outgoing payments.",
-  "accounts-payable": "Manage supplier obligations and payable records.",
-  "general-journal": "Post manual journal entries and adjustments.",
-  sales: "Manage customer sales, billing, and account documents.",
-  inventory: "Track stock movements, requests, receipts, and issues.",
-  purchasing: "Manage purchase requests, canvassing, and supplier orders.",
-  others: "Track supporting asset and miscellaneous records.",
-  "reporting-analytics":
-    "Generate accounting, inventory, and compliance reports.",
-  "system-administration":
-    "Manage users, approvals, audits, numbering, currencies, and mail setup.",
-  "dashboard-overview": "View company activity, approvals, and performance.",
-  "maintenance-charts-of-accounts":
-    "Maintain account codes used by transactions and reports.",
-  "system-administration-multi-currency-setup":
-    "Configure currencies, exchange rates, preferences, and rounding rules.",
-  "maintenance-discount-management":
-    "Maintain discount rules for sales and purchasing.",
-  "maintenance-term-management": "Manage payment and collection terms.",
-  "maintenance-transaction-type":
-    "Configure transaction classifications and numbering behavior.",
-  "maintenance-payment-type":
-    "Maintain payment methods and classifications used by disbursement vouchers.",
-  "maintenance-responsibility-center":
-    "Maintain accountability centers for financial reporting.",
-  "maintenance-warehouse-management":
-    "Maintain warehouse records and storage locations.",
-  "maintenance-warehouses": "Maintain warehouse master records.",
-  "maintenance-warehouse-access": "Manage warehouse user permissions.",
-  "maintenance-storage-locations": "Maintain physical storage locations.",
-  "maintenance-warehouse-transfers": "Track warehouse transfers.",
-  "maintenance-warehouse-stock-inquiry": "View warehouse stock availability.",
-  "maintenance-warehouse-activity-history":
-    "Review warehouse operational activity.",
-  "maintenance-item-management":
-    "Maintain item master records, categories, and classifications.",
-  "maintenance-items": "Maintain item master records.",
-  "maintenance-warehouse": "Maintain warehouse records and storage locations.",
-  "maintenance-item": "Maintain item master records.",
-  "maintenance-item-bundles": "Maintain item bundles.",
-  "maintenance-item-category": "Maintain the item category hierarchy.",
-  "maintenance-item-attributes": "Maintain item attributes and variant values.",
-  "maintenance-item-promotions": "Maintain item promotion records and rules.",
-  "maintenance-unit-of-measurement": "Maintain units and conversion rules.",
-  "maintenance-price-lists": "Maintain item price list records.",
-  "maintenance-party-management":
-    "Maintain customers, suppliers, vendors, members, and employees.",
-  "maintenance-party":
-    "Maintain customers, suppliers, vendors, members, and employees.",
-  "maintenance-form-signatory":
-    "Manage authorized signatories for official documents.",
-  "cash-receipt-official-receipt": "Record official customer payments.",
-  "cash-receipt-collection-receipt":
-    "Record collections received from customers.",
-  "cash-receipt-acknowledgement-receipt":
-    "Acknowledge received payments before official posting.",
-  "cash-receipt-provisional-receipt":
-    "Record temporary receipts pending final confirmation.",
-  "cash-receipt-bank-reconciliation":
-    "Match bank transactions against company records.",
-  "cash-receipt-product-distribution-center-warehouse":
-    "Track product distribution center warehouse receipts.",
-  "cash-disbursement-disbursement-voucher":
-    "Prepare and track payment vouchers.",
-  "cash-disbursement-voucher": "Prepare and track payment vouchers.",
-  "cash-disbursement-cash-advance": "Record employee cash advances.",
-  "cash-disbursement-cash-advance-multiple-entry":
-    "Record cash advances across multiple entries.",
-  "cash-disbursement-cash-advance-multiple":
-    "Record cash advances across multiple entries.",
-  "cash-disbursement-petty-cash": "Record petty cash vouchers.",
-  "cash-disbursement-petty-cash-voucher": "Record petty cash vouchers.",
-  "cash-disbursement-petty-cash-fund":
-    "Manage petty cash fund setup and balances.",
-  "cash-disbursement-petty-cash-fund-replenishment":
-    "Replenish petty cash funds.",
-  "cash-disbursement-petty-cash-advance-replenishment":
-    "Replenish petty cash advances.",
-  "cash-disbursement-petty-cash-advance": "Record petty cash advances.",
-  "cash-disbursement-revolving-fund": "Manage revolving fund activity.",
-  "cash-disbursement-request-for-payment": "Create and track payment requests.",
-  "cash-disbursement-request-payment": "Create and track payment requests.",
-  "cash-disbursement-advances-to-supplier":
-    "Record supplier advances before final billing.",
-  "accounts-payable-accounts-payable-voucher":
-    "Create and track supplier payable vouchers.",
-  "accounts-payable-voucher": "Create and track supplier payable vouchers.",
-  "general-journal-journal-voucher":
-    "Post manual journal entries and adjustments.",
-  "general-journal-voucher": "Post manual journal entries and adjustments.",
-  "sales-debit-memo": "Record debit adjustments to customer accounts.",
-  "sales-credit-memo": "Record credit adjustments to customer accounts.",
-  "sales-sales-quotation": "Prepare customer sales quotations.",
-  "sales-quotation": "Prepare customer sales quotations.",
-  "sales-sales-order": "Convert approved quotes into sales orders.",
-  "sales-order": "Convert approved quotes into sales orders.",
-  "sales-sales-invoice": "Bill customers for delivered goods or services.",
-  "sales-invoice": "Bill customers for delivered goods or services.",
-  "sales-billing": "Manage customer billing records.",
-  "sales-billing-statement": "Generate customer billing statements.",
-  "sales-billing-invoice": "Create billing invoices.",
-  "sales-service-invoice": "Bill customers for services rendered.",
-  "sales-cash-sales-invoice": "Record immediate cash sales invoices.",
-  "sales-sales-journal": "Review and post sales journal entries.",
-  "sales-journal": "Review and post sales journal entries.",
-  "sales-statement-of-account": "Generate customer account statements.",
-  "sales-statement-account": "Generate customer account statements.",
-  "inventory-receiving-report": "Record received inventory items.",
-  "inventory-goods-receipt": "Record goods received into inventory.",
-  "inventory-inventory-account": "Monitor inventory account balances.",
-  "inventory-account": "Monitor inventory account balances.",
-  "inventory-material-request": "Request materials from inventory.",
-  "inventory-pick-list": "Prepare items for picking and release.",
-  "inventory-goods-issue": "Issue goods out of inventory.",
-  "inventory-delivery-receipt": "Record delivered goods and receipts.",
-  "purchasing-purchase-request": "Request items or services for purchase.",
-  "purchasing-request": "Request items or services for purchase.",
-  "purchasing-canvass-form": "Compare supplier canvass details.",
-  "purchasing-purchase-order": "Create and track supplier purchase orders.",
-  "purchasing-order": "Create and track supplier purchase orders.",
-  "purchasing-purchase-journal": "Review and post purchase journal entries.",
-  "purchasing-journal": "Review and post purchase journal entries.",
-  "others-fixed-asset": "Track fixed asset records and movements.",
-  "fixed-asset-default": "Track fixed asset records and movements.",
-  "reports-maintenance": "Configure reusable report definitions and settings.",
-  "reports-financial": "Generate financial statements and ledger reports.",
-  "reports-books-of-accounts": "Generate books of accounts reports.",
-  "reports-general-ledger": "Review general ledger account activity.",
-  "reports-beginning-balance-general-ledger-uploader":
-    "Upload beginning general ledger balances.",
-  "reports-beginning-balance-subsidiary-ledger-uploader":
-    "Upload beginning subsidiary ledger balances.",
-  "reports-budget-uploader": "Upload financial budget records.",
-  "reports-verifier": "Verify uploaded financial records.",
-  "reports-journal-ledger": "Review journal ledger entries.",
-  "reports-trial-balance": "Generate trial balance summaries.",
-  "reports-balance-sheet": "Generate balance sheet statements.",
-  "reports-income-statement": "Generate income statement reports.",
-  "reports-cash-flow": "Generate cash flow statements.",
-  "reports-accounts-receivable": "Review customer receivable reports.",
-  "reports-ar-aging": "Analyze overdue customer balances by aging bucket.",
-  "reports-ar-statement": "Generate customer statements of account.",
-  "reports-inventory": "Generate inventory movement and valuation reports.",
-  "reports-inventory-audit": "Review inventory audit history.",
-  "reports-inventory-item-query": "Build item-level inventory queries.",
-  "reports-inventory-stock-movement": "Review stock movement activity.",
-  "reports-inventory-valuation": "Generate inventory valuation reports.",
-  "reports-bir": "Generate BIR compliance reports.",
-  "reports-bir-vat-relief": "Prepare VAT relief reporting data.",
-  "reports-bir-alpha-list": "Prepare alpha list reporting data.",
-  "maintenance-user-management": "Manage users and roles.",
-  "maintenance-users": "Create and maintain system user accounts.",
-  "maintenance-user-role": "Maintain user role classifications.",
-  "maintenance-approval": "Configure approval workflows and rules.",
-  "maintenance-audit": "Review audit trail activity.",
-  "transaction-number-setup": "Configure transaction numbering sequences.",
-  "maintenance-mail": "Maintain mail server and notification settings.",
-};
 
 function getSectionTargetHref(section: MainNavigationSection) {
   return section.items[0]
@@ -2135,42 +2059,66 @@ function getItemTargetHref(item: MainNavigationItem): string {
   return getItemTargetHref(item.children[0]);
 }
 
-function findSearchItemsByKeys(items: MainSearchItem[], keys: string[]) {
-  return keys
-    .map((key) => items.find((item) => item.key === key))
-    .filter((item): item is MainSearchItem => Boolean(item));
-}
-
-function getCompanyHomeHref(items: MainSearchItem[], recentKeys: string[]) {
+function getCompanyHomeHref(items: MainSearchItem[]) {
   const dashboard = items.find((item) => item.key === "dashboard-overview");
 
   if (dashboard) {
     return dashboard.href;
   }
 
-  return (
-    findSearchItemsByKeys(items, recentKeys)[0]?.href ??
-    items[0]?.href ??
-    CompanyFallbackHomeHref
-  );
+  return items[0]?.href ?? CompanyFallbackHomeHref;
 }
 
-function getCompanyHomeHrefForProfile(profile: AuthProfileResponse) {
-  const currentUser = CreateWorkspaceCurrentUserFromProfile(profile);
-  const activeCompanyId = GetAuthProfileCompanyId(profile);
-  const companies = MapProfileCompaniesToMainCompanies(profile);
-  const currentCompany =
-    companies.find((company) => Number(company.id) === activeCompanyId) ??
-    companies[0];
-  const subscription =
-    currentCompany?.subscriptionPackage ?? MainLayoutDefaultSubscription;
-  const items = filterMainSearchItems(
-    MainCompanySearchItems,
-    currentUser,
-    subscription,
-  );
+function getActiveBranchStorageKey({
+  userId,
+  companyId,
+}: {
+  userId: number;
+  companyId: string;
+}) {
+  return `${ActiveBranchStorageKey}:user:${userId}:company:${companyId}`;
+}
 
-  return getCompanyHomeHref(items, MainLayoutRecentNavigationKeys);
+function readStoredActiveBranchId({
+  userId,
+  companyId,
+}: {
+  userId: number;
+  companyId: string;
+}) {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return window.localStorage.getItem(
+      getActiveBranchStorageKey({ userId, companyId }),
+    );
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredActiveBranchId({
+  userId,
+  companyId,
+  branchId,
+}: {
+  userId: number;
+  companyId: string;
+  branchId: string;
+}) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      getActiveBranchStorageKey({ userId, companyId }),
+      branchId,
+    );
+  } catch {
+  }
 }
 
 function sortBranchesByPriority(branches: MainBranch[]) {

@@ -35,9 +35,9 @@ export function OnboardingReportYearField({
     startDateLabel && endDateLabel ? `${startDateLabel} to ${endDateLabel}` : "";
 
   function getDateInputClassName(hasError: boolean) {
-    return `h-14 w-full rounded-md border bg-white px-4 text-base text-darknavy outline-none transition focus:ring-4 ${hasError
+    return `h-12 w-full rounded-lg border bg-offwhite px-4 text-sm text-darknavy outline-none transition hover:border-skyblue/60 focus:bg-white focus:ring-4 ${hasError
       ? "border-coralpink focus:border-coralpink focus:ring-coralpink/20"
-      : "border-darknavy/20 focus:border-skyblue focus:ring-skyblue/20"
+      : "border-darknavy/10 focus:border-skyblue focus:ring-skyblue/15"
       }`;
   }
 
@@ -49,7 +49,7 @@ export function OnboardingReportYearField({
         <div>
           <label
             htmlFor="reportStartDate"
-            className="mb-2 block text-sm font-medium text-darknavy"
+            className="mb-2 block text-sm font-semibold text-darknavy"
           >
             Reporting Year Start Date
           </label>
@@ -73,7 +73,7 @@ export function OnboardingReportYearField({
         <div>
           <label
             htmlFor="reportEndDate"
-            className="mb-2 block text-sm font-medium text-darknavy"
+            className="mb-2 block text-sm font-semibold text-darknavy"
           >
             Reporting Year End Date
           </label>
@@ -96,7 +96,7 @@ export function OnboardingReportYearField({
       </div>
 
       {reportRangeLabel ? (
-        <p className="mt-3 text-sm font-medium text-darknavy/70">
+        <p className="mt-3 text-xs font-medium text-darknavy/50">
           {reportRangeLabel}
         </p>
       ) : null}

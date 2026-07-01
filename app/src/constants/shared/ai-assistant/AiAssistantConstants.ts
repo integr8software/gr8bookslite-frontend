@@ -29,3 +29,48 @@ export const AiAssistantInputPlaceholder = "Ask: Open Charts of Accounts";
 
 export const AiAssistantFallbackErrorMessage =
   "Neo AI can't process this at the moment, but I can still help you find and understand modules. Try asking me to open or explain a module.";
+
+export const AiAssistantChatInputFocusDelayMs = 50;
+
+export const AiAssistantChatScrollBottomThresholdPx = 24;
+
+export const AiAssistantNavigationStartEvent = "gr8books:navigation-start";
+
+export const AiAssistantVoiceRepliesEnabled = false;
+
+export const AiAssistantVoiceModeOptions = [
+	{ label: "Manual", value: "manual" },
+	{ label: "Auto", value: "auto" },
+] as const;
+
+export const AiAssistantRecordingSilenceDurationMs = 3000;
+
+export const AiAssistantRecordingInitialGraceMs = 1200;
+
+export const AiAssistantRecordingMaxDurationMs = 15000;
+
+export const AiAssistantRecordingSilenceRmsThreshold = 0.018;
+
+export const AiAssistantAutomaticRestartDelayMs = 650;
+
+export const AiAssistantDuplicateTranscriptWindowMs = 4000;
+
+export const AiAssistantSpeechRecognitionUnsupportedMessage =
+	"Voice input is not supported in this browser.";
+
+export const AiAssistantAutomaticModeUnsupportedMessage =
+	"Automatic voice mode is not supported in this browser.";
+
+export const AiAssistantVoiceReplyUnsupportedMessage =
+	"Voice replies are not supported in this browser.";
+
+export const AiAssistantMicrophoneAccessBlockedMessage =
+	"Microphone access is blocked. Allow microphone permission for this site, then try again.";
+
+export const AiAssistantLauncherSizePx = 52;
+
+export const AiAssistantLauncherMarginPx = 16;
+
+export const AiAssistantLauncherDragClickThresholdPx = 6;
+
+export const AiAssistantLauncherDragId = "ai-assistant-launcher";

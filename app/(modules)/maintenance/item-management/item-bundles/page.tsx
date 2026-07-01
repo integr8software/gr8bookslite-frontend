@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { ItemBundlesListPage } from "@/app/src/ui/modules/maintenance/item-management/item-bundles/ItemBundlesListPage";
 
 const PageTitle = "Item Bundles";

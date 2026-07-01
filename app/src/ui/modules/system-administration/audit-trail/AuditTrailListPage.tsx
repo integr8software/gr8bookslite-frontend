@@ -53,6 +53,7 @@ export function AuditTrailListPage() {
 				handleModuleFilterChange={page.handleModuleFilterChange}
 				handleQueryChange={page.handleQueryChange}
 				isLoading={page.isLoading}
+				lastSyncedAt={page.lastSyncedAt}
 				moduleFilter={page.moduleFilter}
 				moduleOptions={page.moduleOptions}
 				query={page.query}

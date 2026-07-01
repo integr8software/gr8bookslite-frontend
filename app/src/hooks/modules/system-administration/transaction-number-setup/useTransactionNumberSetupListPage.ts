@@ -14,10 +14,8 @@ import { TransactionNumberSetupTableColumns } from "@/app/src/constants/modules/
 import {
 	TransactionNumberSetupInitialFormValues,
 	createTransactionNumberSetupFormValues,
-	getTransactionNumberSetupBranchOptions,
 	updateTransactionNumberSetupRecord,
 } from "@/app/src/data/modules/system-administration/transaction-number-setup/TransactionNumberSetupData";
-import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagementStore";
 import { formatTransactionNumber } from "@/app/src/services/modules/system-administration/transaction-number-setup/TransactionNumberGenerationService";
 import { formatBranchScopeLabel } from "@/app/src/services/modules/system-administration/transaction-number-setup/TransactionNumberSetupFormatters";
 import type {
@@ -39,13 +37,11 @@ export function useTransactionNumberSetupListPage() {
 	const {
 		isLoading,
 		isMutating,
+		lastSyncedAt,
+		branchOptions,
 		setups,
 		updateSetup,
 	} = useTransactionNumberSetupStore();
-	const companies = useWorkspaceCompanyManagementStore(
-		(state) => state.companies,
-		{ includeUsers: false },
-	);
 	const [query, setQuery] = useState("");
 	const [selectedSetupId, setSelectedSetupId] = useState<string | null>(
 		() => setups[0]?.id ?? null,
@@ -71,16 +67,12 @@ export function useTransactionNumberSetupListPage() {
 	const branchNameById = useMemo(
 		() =>
 			new Map(
-				getTransactionNumberSetupBranchOptions(companies).map((branch) => [
+				branchOptions.map((branch) => [
 					branch.id,
 					branch.name,
 				]),
 			),
-		[companies],
-	);
-	const branchOptions = useMemo(
-		() => getTransactionNumberSetupBranchOptions(companies),
-		[companies],
+		[branchOptions],
 	);
 	const filteredSetups = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
@@ -111,11 +103,14 @@ export function useTransactionNumberSetupListPage() {
 	const selectedSetup =
 		setups.find((setup) => setup.id === selectedSetupId) ?? setups[0];
 	const nextNumberPreview =
-		values.prefix && values.padding > 0
+		values.inputMode === "Manual"
+			? "Manual entry"
+			: values.prefix && values.padding !== "" && values.currentNumber !== "" && values.padding > 0
 			? formatTransactionNumber({
 					currentNumber: values.currentNumber,
 					padding: values.padding,
 					prefix: values.prefix,
+					suffix: values.suffix,
 				})
 			: "Set prefix and digits";
 	const columns = useMemo<ColumnDef<TransactionNumberSetupRecord>[]>(
@@ -196,6 +191,7 @@ export function useTransactionNumberSetupListPage() {
 			if (
 				field === "startingNumber" &&
 				typeof value === "number" &&
+				typeof current.currentNumber === "number" &&
 				current.currentNumber < value
 			) {
 				nextValues.currentNumber = value;
@@ -211,7 +207,19 @@ export function useTransactionNumberSetupListPage() {
 
 			return nextValues;
 		});
-		setErrors((current) => ({ ...current, [field]: undefined }));
+		setErrors((current) => {
+			const nextErrors = { ...current, [field]: undefined };
+
+			if (field === "inputMode" && value === "Manual") {
+				nextErrors.prefix = undefined;
+				nextErrors.suffix = undefined;
+				nextErrors.padding = undefined;
+				nextErrors.startingNumber = undefined;
+				nextErrors.currentNumber = undefined;
+			}
+
+			return nextErrors;
+		});
 	}
 
 	function handleInputChange(
@@ -222,9 +230,13 @@ export function useTransactionNumberSetupListPage() {
 		const { name, value } = event.target;
 
 		if (NumberFields.has(name as keyof TransactionNumberSetupFormValues)) {
+			if (!/^\d*$/.test(value)) {
+				return;
+			}
+
 			updateField(
 				name as keyof TransactionNumberSetupFormValues,
-				Number(value) as never,
+				(value === "" ? "" : Number(value)) as never,
 			);
 			return;
 		}
@@ -285,6 +297,7 @@ export function useTransactionNumberSetupListPage() {
 		handleSubmit,
 		isLoading,
 		isMutating,
+		lastSyncedAt,
 		nextNumberPreview,
 		query,
 		scopeFilter,

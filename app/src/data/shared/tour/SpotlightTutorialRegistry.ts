@@ -13,7 +13,11 @@ import { UserListSpotlightTutorialOpenEvent } from "@/app/src/data/modules/syste
 import { WorkspaceCompaniesHref, WorkspaceUsersManagementHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import { WorkspaceBillingSubscriptionHref } from "@/app/src/constants/workspace/billing-and-subscription/WorkspaceBillingSubscriptionConstants";
 import { WorkspaceBillingSpotlightTutorialOpenEvent } from "@/app/src/data/workspace/billing-and-subscription/WorkspaceBillingSpotlightTutorialData";
-import { WorkspaceCompanyAddHref, WorkspaceCompanySpotlightTutorialOpenEvent } from "@/app/src/data/workspace/companies/WorkspaceCompanySpotlightTutorialData";
+import { WorkspaceAuditLogSpotlightTutorialOpenEvent } from "@/app/src/data/workspace/audit-logs/WorkspaceAuditLogSpotlightTutorialData";
+import { WorkspaceAuditLogsHref } from "@/app/src/constants/workspace/audit-logs/WorkspaceAuditLogConstants";
+import { WorkspaceCompanySpotlightTutorialOpenEvent } from "@/app/src/data/workspace/companies/WorkspaceCompanySpotlightTutorialData";
+import { WorkspaceVouchersAndCouponsSpotlightTutorialOpenEvent } from "@/app/src/data/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsSpotlightTutorialData";
+import { WorkspaceVouchersAndCouponsHref } from "@/app/src/constants/workspace/vouchers-and-coupons/WorkspaceVouchersAndCouponsConstants";
 import { WorkspaceUsersSpotlightTutorialOpenEvent } from "@/app/src/data/workspace/users-management/WorkspaceUsersSpotlightTutorialData";
 import {
   WorkspaceUserDrawerSpotlightTutorialOpenEvent,
@@ -37,8 +41,10 @@ const SpotlightTutorialEventsByHref: Readonly<Record<string, string>> = {
   "/master/dashboard": WorkspaceSpotlightTutorialOpenEvent,
   "/workspace/dashboard": WorkspaceSpotlightTutorialOpenEvent,
   [WorkspaceBillingSubscriptionHref]: WorkspaceBillingSpotlightTutorialOpenEvent,
+  [WorkspaceAuditLogsHref]: WorkspaceAuditLogSpotlightTutorialOpenEvent,
   [WorkspaceCompaniesHref]: WorkspaceCompanySpotlightTutorialOpenEvent,
-  [WorkspaceCompanyAddHref]: WorkspaceCompanySpotlightTutorialOpenEvent,
+  [WorkspaceVouchersAndCouponsHref]:
+    WorkspaceVouchersAndCouponsSpotlightTutorialOpenEvent,
   [WorkspaceUsersManagementHref]: WorkspaceUsersSpotlightTutorialOpenEvent,
   [BranchManagementHref]: BranchManagementSpotlightTutorialOpenEvent,
   [ChartsOfAccountsHref]: ChartsOfAccountsSpotlightTutorialOpenEvent,

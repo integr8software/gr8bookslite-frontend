@@ -56,10 +56,12 @@ export type AppAdvancedDropdownProps = {
 	options: AppAdvancedDropdownOption[];
 	placeholder?: string;
 	readOnly?: boolean;
+	removeSelectionOnSelectedOptionClick?: boolean;
 	searchPlaceholder?: string;
 	selectionMode?: "single" | "multiple";
 	showSelectionIndicator?: boolean;
 	showSelectedDetails?: boolean;
+	showSelectionRemoveButton?: boolean;
 	value: string | string[];
 	onChange: (value: string | string[]) => void;
 	onSelectOption?: (option: AppAdvancedDropdownOption) => void;
@@ -89,10 +91,12 @@ export function AppAdvancedDropdown({
 	options,
 	placeholder = "Select option",
 	readOnly = false,
+	removeSelectionOnSelectedOptionClick = true,
 	searchPlaceholder = "Search options",
 	selectionMode = "single",
 	showSelectionIndicator = true,
 	showSelectedDetails = false,
+	showSelectionRemoveButton = true,
 	value,
 	onChange,
 	onSelectOption,
@@ -187,6 +191,29 @@ export function AppAdvancedDropdown({
 
 		return () => {
 			document.removeEventListener("mousedown", handlePointerDown);
+		};
+	}, [isOpen]);
+
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		function handleFocusIn(event: FocusEvent) {
+			const target = event.target as Node;
+
+			if (
+				!rootRef.current?.contains(target) &&
+				!menuRef.current?.contains(target)
+			) {
+				setIsOpen(false);
+			}
+		}
+
+		document.addEventListener("focusin", handleFocusIn);
+
+		return () => {
+			document.removeEventListener("focusin", handleFocusIn);
 		};
 	}, [isOpen]);
 
@@ -380,6 +407,10 @@ export function AppAdvancedDropdown({
 		if (event.key === "Escape") {
 			setIsOpen(false);
 		}
+
+		if (event.key === "Tab") {
+			setIsOpen(false);
+		}
 	}
 
 	function selectOption(option: AppAdvancedDropdownOption) {
@@ -388,9 +419,21 @@ export function AppAdvancedDropdown({
 		}
 
 		if (selectionMode === "multiple") {
-			const nextValues = selectedValueSet.has(option.value)
-				? selectedValues.filter((selectedValue) => selectedValue !== option.value)
-				: [...selectedValues, option.value];
+			if (
+				selectedValueSet.has(option.value) &&
+				!removeSelectionOnSelectedOptionClick
+			) {
+				setQuery("");
+				onSelectOption?.(option);
+				return;
+			}
+
+			const nextValues =
+				selectedValueSet.has(option.value)
+					? selectedValues.filter(
+							(selectedValue) => selectedValue !== option.value,
+						)
+					: [...selectedValues, option.value];
 
 			onChange(nextValues);
 		} else {
@@ -512,21 +555,22 @@ export function AppAdvancedDropdown({
 				aria-controls={listboxId}
 				aria-activedescendant={isOpen ? activeOptionId : undefined}
 				aria-describedby={resolvedAriaDescribedBy}
-				aria-disabled={isInteractionLocked}
+				aria-disabled={disabled || undefined}
 				aria-expanded={isOpen}
 				aria-haspopup="listbox"
 				aria-invalid={resolvedAriaInvalid || undefined}
 				aria-labelledby={resolvedAriaLabelledBy}
+				aria-readonly={readOnly || undefined}
 				tabIndex={isInteractionLocked ? -1 : 0}
 				onClick={handleControlClick}
 				onKeyDown={handleComboboxKeyDown}
 				className={joinClasses(
-					"app-advanced-dropdown-control w-full rounded-lg border border-darknavy/10 text-sm outline-none transition",
+					"app-advanced-dropdown-control app-disabled-control w-full rounded-lg border border-darknavy/10 text-sm outline-none transition",
 					isMultiple ? "min-h-11 px-2 py-1.5" : "h-11 px-3",
 					disabled
-						? "pointer-events-none cursor-not-allowed bg-darknavy/5 text-darknavy/35 shadow-none"
+						? "pointer-events-none cursor-not-allowed shadow-none"
 						: readOnly
-							? "pointer-events-none cursor-default bg-darknavy/[0.03] text-darknavy shadow-none"
+							? "pointer-events-none cursor-default border-darknavy/10 bg-darknavy/[0.025] text-darknavy/70 shadow-none"
 							: "cursor-pointer bg-white text-darknavy focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",
 				)}
 			>
@@ -551,7 +595,9 @@ export function AppAdvancedDropdown({
 									<SelectionChip
 										key={option.value}
 										disabled={disabled}
-										removable={!isInteractionLocked}
+										removable={
+											showSelectionRemoveButton && !isInteractionLocked
+										}
 										option={option}
 										onRemove={() => removeOption(option.value)}
 									/>
@@ -568,7 +614,7 @@ export function AppAdvancedDropdown({
 								className={joinClasses(
 									"app-advanced-dropdown-placeholder px-0.5 text-darknavy/35",
 									isMultiple ? "py-1.5" : "py-1",
-									disabled && "text-darknavy/35",
+									disabled && "text-darknavy/32",
 								)}
 							>
 								{placeholder}
@@ -595,7 +641,7 @@ export function AppAdvancedDropdown({
 							className={joinClasses(
 								"pointer-events-none h-4 w-4 text-darknavy/40 transition",
 								isOpen && "rotate-180",
-								disabled && "text-darknavy/35",
+								disabled && "text-darknavy/30",
 							)}
 							aria-hidden="true"
 						/>
@@ -755,7 +801,7 @@ function SelectionChip({
 		<span
 			className={joinClasses(
 				"inline-flex h-7 max-w-full min-w-0 items-center gap-1 rounded-md bg-skyblue/15 px-2.5 text-xs font-semibold text-darknavy",
-				disabled && "bg-transparent text-darknavy/35",
+				disabled && "bg-white/45 text-darknavy/35 ring-1 ring-darknavy/5",
 			)}
 		>
 			<span className="min-w-0 truncate">{option.name}</span>
@@ -792,7 +838,7 @@ function SelectedSingle({
 			<span
 				className={joinClasses(
 					"truncate text-sm text-darknavy",
-					disabled && "text-darknavy/35",
+					disabled && "text-darknavy/45",
 				)}
 			>
 				{option.name}

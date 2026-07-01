@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -14,11 +15,12 @@ import type { SpotlightTourStep } from "@/app/src/types/shared/tour/SpotlightTou
 const SpotlightPadding = 12;
 const SpotlightCardWidth = 480;
 const SpotlightViewportGap = 20;
-const SpotlightMobileViewportGap = 16;
+const SpotlightMobileViewportGap = 24;
+const SpotlightMobileVerticalGap = 4;
 const SpotlightDesktopCardHeight = 390;
-const SpotlightMobileCardHeight = 436;
-const SpotlightMobileMascotWidth = 142;
-const SpotlightCompactMobileMascotWidth = 112;
+const SpotlightMobileCardHeight = 280;
+const SpotlightMobileMascotWidth = 118;
+const SpotlightCompactMobileMascotWidth = 96;
 const SpotlightDesktopMascotWidth = 256;
 const SpotlightMascotAspectRatio = 640 / 512;
 const SpotlightTargetTrackingFrames = 60;
@@ -105,6 +107,10 @@ function SpotlightTourContent({
     () => getResolvedAppearance(appearance),
   );
   const [viewportSize, setViewportSize] = useState(() => getViewportSize());
+  const [measuredCardHeight, setMeasuredCardHeight] = useState(
+    SpotlightMobileCardHeight,
+  );
+  const cardRef = useRef<HTMLElement | null>(null);
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const [cardPosition, setCardPosition] = useState<SpotlightCardPosition>({
     top: SpotlightViewportGap,
@@ -123,6 +129,8 @@ function SpotlightTourContent({
     cardPosition,
     viewportSize,
     mascotSize,
+    measuredCardHeight,
+    spotlightRect,
   );
 
   useEffect(() => {
@@ -171,6 +179,31 @@ function SpotlightTourContent({
       observer.disconnect();
     };
   }, [appearance]);
+
+  useEffect(() => {
+    const cardElement = cardRef.current;
+
+    if (!cardElement) {
+      return;
+    }
+    const observedCardElement: HTMLElement = cardElement;
+
+    function updateCardHeight() {
+      const nextHeight = observedCardElement.getBoundingClientRect().height;
+
+      if (nextHeight > 0) {
+        setMeasuredCardHeight(nextHeight);
+      }
+    }
+
+    const resizeObserver = new ResizeObserver(updateCardHeight);
+    resizeObserver.observe(observedCardElement);
+    updateCardHeight();
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (!activeStep) {
@@ -224,7 +257,7 @@ function SpotlightTourContent({
       const nextRect = getMeasuredSpotlightRect(currentTargetElement);
 
       setSpotlightRect(nextRect);
-      setCardPosition(getCardPosition(nextRect));
+      setCardPosition(getCardPosition(nextRect, measuredCardHeight));
 
       if (remainingTrackingFrames > 0) {
         remainingTrackingFrames -= 1;
@@ -252,7 +285,7 @@ function SpotlightTourContent({
       window.removeEventListener("scroll", restartMeasurements, true);
       resizeObserver.disconnect();
     };
-  }, [activeStep]);
+  }, [activeStep, measuredCardHeight]);
 
   const overlayStyles = useMemo(() => {
     if (!spotlightRect) {
@@ -335,75 +368,94 @@ function SpotlightTourContent({
       {overlayStyles ? (
         <>
           <div
-            className="fixed bg-slate-950/[0.36] backdrop-blur-[3px]"
+            className={`fixed backdrop-blur-[3px] ${
+              isLightAppearance ? "bg-slate-700/[0.24]" : "bg-slate-950/[0.52]"
+            }`}
             style={overlayStyles.top}
           />
           <div
-            className="fixed bg-slate-950/[0.36] backdrop-blur-[3px]"
+            className={`fixed backdrop-blur-[3px] ${
+              isLightAppearance ? "bg-slate-700/[0.24]" : "bg-slate-950/[0.52]"
+            }`}
             style={overlayStyles.left}
           />
           <div
-            className="fixed bg-slate-950/[0.36] backdrop-blur-[3px]"
+            className={`fixed backdrop-blur-[3px] ${
+              isLightAppearance ? "bg-slate-700/[0.24]" : "bg-slate-950/[0.52]"
+            }`}
             style={overlayStyles.right}
           />
           <div
-            className="fixed bg-slate-950/[0.36] backdrop-blur-[3px]"
+            className={`fixed backdrop-blur-[3px] ${
+              isLightAppearance ? "bg-slate-700/[0.24]" : "bg-slate-950/[0.52]"
+            }`}
             style={overlayStyles.bottom}
           />
           {overlayStyles.hideFrame ? null : (
             <div
-              className="pointer-events-none fixed rounded-[1.15rem] border border-cyan-200/25 shadow-[0_0_14px_rgba(34,211,238,0.16),inset_0_0_14px_rgba(125,211,252,0.1)]"
-              style={overlayStyles.frame}
-            />
+                className={`pointer-events-none fixed rounded-[1.15rem] border ${
+                  isLightAppearance
+                    ? "border-cyan-500/55 shadow-[0_0_18px_rgba(6,182,212,0.22),inset_0_0_14px_rgba(14,165,233,0.1)]"
+                    : "border-cyan-200/30 shadow-[0_0_18px_rgba(34,211,238,0.2),inset_0_0_14px_rgba(125,211,252,0.12)]"
+                }`}
+                style={overlayStyles.frame}
+              />
           )}
         </>
       ) : (
-        <div className="fixed inset-0 bg-slate-950/[0.36] backdrop-blur-[3px]" />
+        <div
+          className={`fixed inset-0 backdrop-blur-[3px] ${
+            isLightAppearance ? "bg-slate-700/[0.24]" : "bg-slate-950/[0.52]"
+          }`}
+        />
       )}
 
-      <Image
-        src={mascotImagePath}
-        alt=""
-        width={512}
-        height={640}
-        quality={95}
-        sizes="(min-width: 640px) 256px, (min-width: 380px) 142px, 112px"
-        aria-hidden="true"
-        className="pointer-events-none fixed h-auto select-none object-contain drop-shadow-[0_18px_22px_rgba(14,165,233,0.26)]"
-        style={{
-          ...mascotPosition,
-          width: mascotSize.width,
-        }}
-      />
+      {isMobileViewport ? null : (
+        <Image
+          src={mascotImagePath}
+          alt=""
+          width={512}
+          height={640}
+          quality={95}
+          sizes="256px"
+          aria-hidden="true"
+          className="pointer-events-none fixed h-auto select-none object-contain drop-shadow-[0_18px_22px_rgba(14,165,233,0.26)]"
+          style={{
+            ...mascotPosition,
+            width: mascotSize.width,
+          }}
+        />
+      )}
 
       <section
+        ref={cardRef}
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
-        className={`pointer-events-auto fixed w-[min(calc(100vw-2rem),480px)] overflow-hidden rounded-[1.35rem] p-px sm:rounded-[1.85rem] ${
+        className={`pointer-events-auto fixed w-[min(calc(100vw-3rem),480px)] overflow-hidden rounded-[1.2rem] p-px sm:w-[min(calc(100vw-2rem),480px)] sm:rounded-[1.85rem] ${
           isLightAppearance
-            ? "bg-[linear-gradient(135deg,rgba(103,232,249,0.48),rgba(167,139,250,0.24),rgba(34,211,238,0.38))] text-white shadow-[0_24px_64px_rgba(15,23,42,0.34),0_0_22px_rgba(103,232,249,0.12)]"
-            : "bg-[linear-gradient(135deg,rgba(103,232,249,0.46),rgba(167,139,250,0.22),rgba(34,211,238,0.38))] text-offwhite shadow-[0_24px_64px_rgba(15,23,42,0.42),0_0_24px_rgba(103,232,249,0.14)]"
+            ? "bg-[linear-gradient(135deg,rgba(6,182,212,0.72),rgba(99,102,241,0.3),rgba(14,165,233,0.62))] text-slate-900 shadow-[0_24px_64px_rgba(15,23,42,0.22),0_0_24px_rgba(14,165,233,0.18)]"
+            : "bg-[linear-gradient(135deg,rgba(103,232,249,0.5),rgba(129,140,248,0.24),rgba(34,211,238,0.42))] text-offwhite shadow-[0_24px_64px_rgba(2,6,23,0.58),0_0_28px_rgba(34,211,238,0.16)]"
         }`}
         style={{
           top: cardPosition.top,
           left: cardPosition.left,
           maxHeight: isMobileViewport
-            ? "calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom))"
+            ? "calc(100dvh - 3rem - env(safe-area-inset-top) - env(safe-area-inset-bottom))"
             : "calc(100dvh - 2rem)",
         }}
       >
         <div
-          className={`relative max-h-full overflow-x-hidden overflow-y-auto rounded-[1.3rem] border p-4 backdrop-blur-xl [contain:paint] sm:rounded-[1.8rem] sm:p-6 ${
+          className={`relative max-h-full overflow-x-hidden overflow-y-auto rounded-[1.15rem] border p-3 backdrop-blur-xl [contain:paint] sm:rounded-[1.8rem] sm:p-6 ${
             isLightAppearance
-              ? "border-white/[0.24] bg-slate-950/[0.82] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),inset_0_0_34px_rgba(56,189,248,0.08)]"
-              : "border-white/[0.14] bg-slate-950/[0.8] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_34px_rgba(56,189,248,0.1)]"
+              ? "border-white/80 bg-cyan-50/[0.94] shadow-[inset_0_1px_0_rgba(255,255,255,0.92),inset_0_0_40px_rgba(14,165,233,0.08)]"
+              : "border-white/[0.14] bg-slate-950/[0.9] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_38px_rgba(56,189,248,0.12)]"
           }`}
         >
           <div
             className={`pointer-events-none absolute inset-0 rounded-[1.3rem] bg-cover bg-center sm:rounded-[1.8rem] ${
               isLightAppearance
-                ? "opacity-24 mix-blend-screen"
+                ? "opacity-12 mix-blend-multiply"
                 : "opacity-26 mix-blend-screen"
             }`}
             style={{
@@ -413,12 +465,12 @@ function SpotlightTourContent({
           <div
             className={`pointer-events-none absolute inset-0 rounded-[1.8rem] ${
               isLightAppearance
-                ? "bg-[linear-gradient(180deg,rgba(2,6,23,0.5),rgba(2,6,23,0.7)),radial-gradient(circle_at_18%_18%,rgba(125,211,252,0.08),transparent_34%),radial-gradient(circle_at_82%_74%,rgba(216,180,254,0.06),transparent_38%)]"
-                : "bg-[linear-gradient(180deg,rgba(2,6,23,0.42),rgba(2,6,23,0.64)),radial-gradient(circle_at_22%_18%,rgba(125,211,252,0.08),transparent_34%),radial-gradient(circle_at_78%_78%,rgba(216,180,254,0.06),transparent_38%)]"
+                ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.48),rgba(236,254,255,0.72)),radial-gradient(circle_at_18%_18%,rgba(14,165,233,0.12),transparent_34%),radial-gradient(circle_at_82%_74%,rgba(129,140,248,0.1),transparent_38%)]"
+                : "bg-[linear-gradient(180deg,rgba(2,6,23,0.38),rgba(2,6,23,0.72)),radial-gradient(circle_at_22%_18%,rgba(125,211,252,0.1),transparent_34%),radial-gradient(circle_at_78%_78%,rgba(216,180,254,0.07),transparent_38%)]"
             }`}
           />
-          <div className="pointer-events-none absolute inset-0 rounded-[1.3rem] bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.18)_42%,transparent_49%),repeating-linear-gradient(0deg,rgba(125,211,252,0.1)_0px,rgba(125,211,252,0.1)_1px,transparent_3px,transparent_8px)] opacity-48 sm:rounded-[1.8rem]" />
-          <div className="pointer-events-none absolute inset-0 rounded-[1.3rem] bg-[linear-gradient(rgba(125,211,252,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(125,211,252,0.05)_1px,transparent_1px)] bg-[length:28px_28px] opacity-45 sm:rounded-[1.8rem]" />
+          <div className={`pointer-events-none absolute inset-0 rounded-[1.3rem] bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.28)_42%,transparent_49%),repeating-linear-gradient(0deg,rgba(14,165,233,0.1)_0px,rgba(14,165,233,0.1)_1px,transparent_3px,transparent_8px)] sm:rounded-[1.8rem] ${isLightAppearance ? "opacity-35" : "opacity-48"}`} />
+          <div className={`pointer-events-none absolute inset-0 rounded-[1.3rem] bg-[linear-gradient(rgba(14,165,233,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(14,165,233,0.07)_1px,transparent_1px)] bg-[length:28px_28px] sm:rounded-[1.8rem] ${isLightAppearance ? "opacity-30" : "opacity-45"}`} />
           <div className="spotlight-hologram-animated pointer-events-none absolute inset-0 rounded-[1.3rem] bg-[linear-gradient(90deg,rgba(34,211,238,0.16),transparent_24%,rgba(216,180,254,0.14)_54%,transparent_72%,rgba(125,211,252,0.12))] mix-blend-screen blur-[0.5px] [animation:spotlight-hologram-flicker_4.8s_ease-in-out_infinite] sm:rounded-[1.8rem]" />
           <div className="spotlight-hologram-animated pointer-events-none absolute inset-x-0 top-0 h-16 rounded-t-[1.3rem] bg-[linear-gradient(180deg,transparent,rgba(103,232,249,0.34),transparent)] mix-blend-screen [animation:spotlight-hologram-scan_3.8s_linear_infinite] sm:rounded-t-[1.8rem]" />
           <div className="spotlight-hologram-animated pointer-events-none absolute inset-0 rounded-[1.3rem] bg-[linear-gradient(90deg,rgba(34,211,238,0.42),transparent_38%,rgba(216,180,254,0.28))] mix-blend-screen [animation:spotlight-hologram-glitch_5.6s_steps(1,end)_infinite] sm:rounded-[1.8rem]" />
@@ -435,9 +487,9 @@ function SpotlightTourContent({
               <div>
                 {badge ? badge : null}
                 <h2
-                  className={`mt-4 text-xl font-semibold leading-tight tracking-tight sm:mt-5 sm:text-2xl ${
+                  className={`mt-3 text-lg font-semibold leading-tight tracking-tight sm:mt-5 sm:text-2xl ${
                     isLightAppearance
-                      ? "text-white drop-shadow-[0_0_12px_rgba(125,211,252,0.46)]"
+                      ? "text-slate-900 drop-shadow-[0_0_10px_rgba(255,255,255,0.7)]"
                       : "text-white drop-shadow-[0_0_12px_rgba(125,211,252,0.4)]"
                   }`}
                 >
@@ -447,44 +499,44 @@ function SpotlightTourContent({
               <button
                 type="button"
                 onClick={onSkip}
-                className={`rounded-full border p-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 ${
+                className={`rounded-full border p-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 sm:p-2 ${
                   isLightAppearance
-                    ? "border-cyan-100/28 bg-cyan-50/10 text-cyan-50 shadow-[0_0_12px_rgba(56,189,248,0.14)] hover:bg-white/16 hover:text-white"
+                    ? "border-sky-300/70 bg-white/70 text-slate-600 shadow-[0_4px_12px_rgba(14,165,233,0.12)] hover:border-sky-400 hover:bg-white hover:text-slate-900"
                     : "border-white/14 bg-white/[0.07] text-cyan-100 shadow-[0_0_12px_rgba(56,189,248,0.12)] hover:bg-white/[0.12] hover:text-white"
                 }`}
                 aria-label="Skip tutorial"
               >
-                <X className="h-4 w-4" aria-hidden="true" />
+                <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
               </button>
             </div>
 
             <p
-              className={`mt-4 text-sm leading-7 ${
+              className={`mt-3 text-xs leading-5 sm:mt-4 sm:text-sm sm:leading-7 ${
                 isLightAppearance
-                  ? "text-cyan-50/86 drop-shadow-[0_0_8px_rgba(103,232,249,0.2)]"
+                  ? "text-slate-700"
                   : "text-cyan-50/[0.84]"
               }`}
             >
               {activeStep.description}
             </p>
 
-            <div className="mt-5 flex items-center gap-2">
+            <div className="mt-4 flex items-center gap-1.5 sm:mt-5 sm:gap-2">
               {Array.from({ length: totalSteps }).map((_, index) => (
                 <span
                   key={steps[index]?.key ?? index}
                   className={`h-1.5 rounded-full transition-all ${
                     index === activeStepIndex
-                      ? "w-8 bg-cyan-300 shadow-[0_0_9px_rgba(34,211,238,0.62)]"
+                      ? "w-6 bg-cyan-300 shadow-[0_0_9px_rgba(34,211,238,0.62)] sm:w-8"
                       : isLightAppearance
-                        ? "w-3 bg-sky-200/70"
-                        : "w-3 bg-cyan-100/[0.22]"
+                        ? "w-2.5 bg-sky-300/70 sm:w-3"
+                        : "w-2.5 bg-cyan-100/[0.22] sm:w-3"
                   }`}
                 />
               ))}
               <span
                 className={`ml-auto text-xs font-medium uppercase tracking-[0.16em] ${
                   isLightAppearance
-                    ? "text-cyan-50/66 drop-shadow-[0_0_8px_rgba(103,232,249,0.34)]"
+                    ? "text-slate-500"
                     : "text-cyan-100/[0.62] drop-shadow-[0_0_8px_rgba(103,232,249,0.34)]"
                 }`}
               >
@@ -492,13 +544,13 @@ function SpotlightTourContent({
               </span>
             </div>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-4 flex flex-col gap-2 sm:mt-7 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <button
                 type="button"
                 onClick={onSkip}
-                className={`min-h-11 rounded-2xl px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 sm:min-h-0 ${
+                className={`min-h-8 rounded-xl px-3 py-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 sm:min-h-0 sm:rounded-2xl sm:py-2 sm:text-sm ${
                   isLightAppearance
-                    ? "text-cyan-50/78 hover:bg-white/15 hover:text-white"
+                    ? "text-slate-600 hover:bg-sky-100/80 hover:text-slate-900"
                     : "text-cyan-100/[0.78] hover:bg-white/10 hover:text-white"
                 }`}
               >
@@ -510,9 +562,9 @@ function SpotlightTourContent({
                   type="button"
                   onClick={goToPreviousStep}
                   disabled={!canGoBack}
-                  className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border px-4 text-sm font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 disabled:cursor-not-allowed disabled:opacity-40 sm:min-w-24 ${
+                  className={`inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-11 sm:min-w-24 sm:gap-2 sm:rounded-2xl sm:px-4 sm:text-sm ${
                     isLightAppearance
-                      ? "border-cyan-100/25 bg-white/[0.1] text-cyan-50 shadow-[inset_0_0_20px_rgba(56,189,248,0.16)] hover:bg-white/[0.18] hover:text-white"
+                      ? "border-sky-300/80 bg-white/70 text-slate-700 shadow-[0_4px_12px_rgba(14,165,233,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] hover:border-sky-400 hover:bg-white hover:text-slate-950"
                       : "border-cyan-100/25 bg-white/[0.08] text-cyan-50 shadow-[inset_0_0_20px_rgba(56,189,248,0.12)] hover:bg-white/[0.14]"
                   }`}
                 >
@@ -522,9 +574,9 @@ function SpotlightTourContent({
                 <button
                   type="button"
                   onClick={goToNextStep}
-                  className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 sm:min-w-24 ${
+                  className={`inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/50 sm:min-h-11 sm:min-w-24 sm:gap-2 sm:rounded-2xl sm:px-4 sm:text-sm ${
                     isLightAppearance
-                      ? "border-cyan-200/80 bg-cyan-300 text-slate-950 shadow-[0_0_14px_rgba(34,211,238,0.3),inset_0_1px_0_rgba(255,255,255,0.55)] hover:bg-cyan-200"
+                      ? "border-cyan-500/70 bg-cyan-500 text-white shadow-[0_6px_16px_rgba(6,182,212,0.28),inset_0_1px_0_rgba(255,255,255,0.32)] hover:bg-cyan-600"
                       : "border-cyan-100/45 bg-cyan-300 text-slate-950 shadow-[0_0_16px_rgba(34,211,238,0.36),inset_0_1px_0_rgba(255,255,255,0.58)] hover:bg-cyan-200"
                   }`}
                 >
@@ -551,13 +603,13 @@ export function SpotlightTourBadge({
 
   return (
     <span
-      className={`inline-flex min-h-10 max-w-full items-center gap-2 rounded-full border px-4 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.24em] shadow-[inset_0_1px_0_rgba(255,255,255,0.34),0_0_14px_rgba(34,211,238,0.16)] ${
+      className={`inline-flex min-h-8 max-w-full items-center gap-1.5 rounded-full border px-3 py-1 text-[0.58rem] font-semibold uppercase tracking-[0.2em] shadow-[inset_0_1px_0_rgba(255,255,255,0.34),0_0_14px_rgba(34,211,238,0.16)] sm:min-h-10 sm:gap-2 sm:px-4 sm:py-1.5 sm:text-[0.68rem] sm:tracking-[0.24em] ${
         resolvedAppearance === "light"
-          ? "border-cyan-100/35 bg-cyan-50/[0.14] text-cyan-50 drop-shadow-[0_0_8px_rgba(103,232,249,0.42)]"
+          ? "border-sky-300/80 bg-white/75 text-sky-800 shadow-[0_4px_12px_rgba(14,165,233,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
           : "border-cyan-100/26 bg-cyan-200/[0.1] text-cyan-100 drop-shadow-[0_0_8px_rgba(103,232,249,0.34)]"
       }`}
     >
-      <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+      <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
       {children}
     </span>
   );
@@ -567,25 +619,26 @@ function getSpotlightTarget(step: SpotlightTourStep) {
   let fallbackElement: HTMLElement | null = null;
 
   for (const selector of step.selectors) {
-    const element = document.querySelector<HTMLElement>(selector);
+    const elements = document.querySelectorAll<HTMLElement>(selector);
 
-    if (!element) {
-      continue;
-    }
+    for (const element of elements) {
+      if (!fallbackElement) {
+        fallbackElement = element;
+      }
 
-    if (!fallbackElement) {
-      fallbackElement = element;
-    }
-
-    if (isElementVisibleForSpotlight(element)) {
-      return element;
+      if (isElementVisibleForSpotlight(element)) {
+        return element;
+      }
     }
   }
 
   return fallbackElement;
 }
 
-function getCardPosition(rect: SpotlightRect): SpotlightCardPosition {
+function getCardPosition(
+  rect: SpotlightRect,
+  measuredCardHeight: number,
+): SpotlightCardPosition {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const isMobileViewport = viewportWidth < 640;
@@ -596,7 +649,7 @@ function getCardPosition(rect: SpotlightRect): SpotlightCardPosition {
   );
   const estimatedCardHeight = isMobileViewport
     ? Math.min(
-        SpotlightMobileCardHeight,
+        measuredCardHeight,
         viewportHeight - SpotlightMobileViewportGap * 2,
       )
     : Math.min(
@@ -621,12 +674,17 @@ function getCardPosition(rect: SpotlightRect): SpotlightCardPosition {
   );
   const spaceBelow = viewportHeight - (rect.top + rect.height);
   const spaceAbove = rect.top;
-  const bottomSheetTop = Math.max(
-    viewportGap,
-    viewportHeight - estimatedCardHeight - viewportGap,
-  );
+  const verticalGap = isMobileViewport
+    ? SpotlightMobileVerticalGap
+    : SpotlightViewportGap;
   const desiredTop = isMobileViewport
-    ? bottomSheetTop
+    ? spaceBelow >= estimatedCardHeight
+      ? rect.top + rect.height + verticalGap
+      : spaceAbove >= estimatedCardHeight
+        ? rect.top - estimatedCardHeight - verticalGap
+        : spaceAbove >= spaceBelow
+          ? rect.top - estimatedCardHeight - verticalGap
+          : rect.top + rect.height + verticalGap
     : (viewportWidth < 768
         ? spaceBelow >= estimatedCardHeight || spaceBelow >= spaceAbove
         : spaceBelow >= estimatedCardHeight || rect.top < 260)
@@ -634,8 +692,8 @@ function getCardPosition(rect: SpotlightRect): SpotlightCardPosition {
       : rect.top - estimatedCardHeight - SpotlightViewportGap;
   const top = clamp(
     desiredTop,
-    viewportGap,
-    viewportHeight - estimatedCardHeight - viewportGap,
+    verticalGap,
+    viewportHeight - estimatedCardHeight - verticalGap,
   );
 
   return {
@@ -648,6 +706,8 @@ function getMascotPosition(
   cardPosition: SpotlightCardPosition,
   viewportSize: { height: number; width: number },
   mascotSize: { height: number; width: number },
+  cardHeight: number,
+  spotlightRect: SpotlightRect | null,
 ): CSSProperties {
   const mascotCardOverlap = viewportSize.width < 640 ? 20 : -10;
   const cardWidth = Math.min(
@@ -656,6 +716,30 @@ function getMascotPosition(
   );
   const cardRight = cardPosition.left + cardWidth;
   const viewportGap = getViewportGap(viewportSize.width);
+
+  if (viewportSize.width < 640) {
+    const cardCenter = cardPosition.top + cardHeight / 2;
+    const spotlightCenter = spotlightRect
+      ? spotlightRect.top + spotlightRect.height / 2
+      : viewportSize.height / 2;
+    const shouldPlaceMascotBelowCard = cardCenter > spotlightCenter;
+    const desiredTop = shouldPlaceMascotBelowCard
+      ? cardPosition.top + cardHeight - 42
+      : cardPosition.top - mascotSize.height + 42;
+
+    return {
+      left: cardPosition.left + (cardWidth - mascotSize.width) / 2,
+      top: clamp(
+        desiredTop,
+        viewportGap,
+        Math.max(
+          viewportGap,
+          viewportSize.height - mascotSize.height - viewportGap,
+        ),
+      ),
+    };
+  }
+
   const canFitOnRight =
     viewportSize.width - cardRight >= mascotSize.width - mascotCardOverlap;
   const canFitOnLeft =

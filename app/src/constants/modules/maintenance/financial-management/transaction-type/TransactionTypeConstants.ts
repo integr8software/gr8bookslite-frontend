@@ -1,7 +1,7 @@
 import type {
 	TransactionTypeStatus,
 	TransactionTypeTableColumnKey,
-} from "@/app/src/types/modules/maintenance/financial-management/transaction-type/TransactionTypeTypes";
+} from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
 
 export const TransactionTypeHref =
 	"/maintenance/transaction-type";

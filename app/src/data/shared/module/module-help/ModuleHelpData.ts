@@ -89,7 +89,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Dashboard is the company landing area for summaries, saved views, approval queues, charts, and operational widgets.",
       "Users with add or edit access can configure dashboards, while view access controls which dashboards and widgets are visible.",
     ],
-    ["help-branches", "help-permissions", "help-reports"],
+    ["help-branches", "help-permissions", "help-dashboard"],
   ),
   article(
     "help-branches",
@@ -129,7 +129,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     [
       "help-charts-of-accounts",
       "help-responsibility-center",
-      "help-financial-reports",
+      "help-general-journal",
     ],
   ),
   article(
@@ -141,7 +141,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Charts of Accounts defines the account codes and classifications used by journal entries, vouchers, sales, purchases, and reports.",
       "Keep account names, account types, and posting behavior aligned with the company's reporting requirements.",
     ],
-    ["help-general-journal", "help-financial-reports"],
+    ["help-general-journal", "help-charts-of-accounts"],
   ),
   article(
     "help-currency",
@@ -174,7 +174,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Term Management stores due-date and payment-term definitions used in receivables, payables, sales, and purchasing documents.",
       "Terms help standardize credit periods and make aging reports more reliable.",
     ],
-    ["help-accounts-payable", "help-accounts-receivable-reports"],
+    ["help-accounts-payable", "help-sales"],
   ),
   article(
     "help-transaction-type",
@@ -185,7 +185,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Transaction types help categorize accounting documents and business operations.",
       "Use clear transaction type names so transaction lists and reports can be filtered without ambiguity.",
     ],
-    ["help-general-journal", "help-reports"],
+    ["help-general-journal", "help-charts-of-accounts"],
   ),
   article(
     "help-payment-type",
@@ -207,7 +207,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Responsibility Center stores cost, profit, revenue, and investment centers used to assign accountability across financial records.",
       "Keep center ownership and status current so transactions and reports can be grouped by the right operating responsibility.",
     ],
-    ["help-charts-of-accounts", "help-financial-reports"],
+    ["help-charts-of-accounts", "help-general-journal"],
   ),
   article(
     "help-maintenance-inventory",
@@ -229,7 +229,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Warehouse Management stores the locations where stock can be received, issued, transferred, counted, or valued.",
       "Use warehouse access and item count views to verify which users can work with a location and what stock is assigned to it.",
     ],
-    ["help-inventory", "help-inventory-reports"],
+    ["help-inventory", "help-warehouse-management"],
   ),
   article(
     "help-item-management",
@@ -252,7 +252,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "The Item Category page shows every parent and child classification in expandable rows, including migrated legacy records.",
       "Use consistent classifications so receiving, issuing, sales, purchasing, and valuation documents remain easier to filter and report.",
     ],
-    ["help-item-management", "help-inventory-reports"],
+    ["help-item-management", "help-inventory"],
   ),
   article(
     "help-maintenance-party",
@@ -277,7 +277,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     [
       "help-system-transaction-numbering",
       "help-sales",
-      "help-financial-reports",
+      "help-general-journal",
     ],
   ),
   article(
@@ -292,7 +292,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     [
       "help-system-transaction-numbering",
       "help-accounts-payable",
-      "help-financial-reports",
+      "help-accounts-payable",
     ],
   ),
   article(
@@ -315,7 +315,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "General Journal is used for accounting adjustments and journal vouchers that are not produced by standard sales, purchasing, receipt, or disbursement workflows.",
       "Use journal entries carefully because they affect ledgers, trial balance, balance sheet, and income statement reporting.",
     ],
-    ["help-charts-of-accounts", "help-financial-reports"],
+    ["help-charts-of-accounts", "help-general-journal"],
   ),
   article(
     "help-sales",
@@ -340,7 +340,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     [
       "help-maintenance-inventory",
       "help-warehouse-management",
-      "help-inventory-reports",
+      "help-inventory",
       "help-material-request",
       "help-data-entry-shortcuts",
     ],
@@ -390,7 +390,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Fixed Asset is used for asset-related records that need accounting visibility and operational tracking.",
       "Use this area for assets that should be maintained separately from normal inventory items.",
     ],
-    ["help-financial-reports", "help-general-journal"],
+    ["help-charts-of-accounts", "help-general-journal"],
   ),
   article(
     "help-system-users",
@@ -446,98 +446,6 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Consistent templates make approvals, account messages, and operational notifications clearer for users.",
     ],
     ["help-workspace-mail", "help-notifications"],
-  ),
-  article(
-    "help-reports",
-    "Reporting & Analytics",
-    "/reports",
-    "Access operational, accounting, inventory, and compliance reports.",
-    [
-      "Reporting and Analytics groups report maintenance, financial reports, inventory reports, and BIR reports.",
-      "Reports depend on clean setup records and accurate transactions, so maintenance quality directly affects report quality.",
-    ],
-    ["help-financial-reports", "help-inventory-reports", "help-bir-reports"],
-  ),
-  article(
-    "help-report-maintenance",
-    "Report Maintenance",
-    "/reports/maintenance",
-    "Maintain report setup and reusable reporting definitions.",
-    [
-      "Report Maintenance stores setup used by reporting screens, saved report definitions, and reusable report options.",
-      "Use report maintenance when report behavior needs to be configured separately from transaction entry.",
-    ],
-    ["help-reports", "help-permissions"],
-  ),
-  article(
-    "help-financial-reports",
-    "Financial Reports",
-    "/reports/financial",
-    "Review accounting reports such as books of accounts, ledgers, trial balance, balance sheet, income statement, cash flow, and receivables.",
-    [
-      "Financial Reports summarize accounting activity from journals, vouchers, receipts, disbursements, sales, payables, and other posted records.",
-      "Use these reports to review account balances, financial position, performance, cash movement, and customer receivables.",
-    ],
-    [
-      "help-general-journal",
-      "help-charts-of-accounts",
-      "help-accounts-receivable-reports",
-    ],
-  ),
-  article(
-    "help-books-ledgers",
-    "Books and Ledgers",
-    "/reports/financial/books-of-accounts",
-    "Review books of accounts, general ledger, and journal ledger details.",
-    [
-      "Books and ledger reports expose detailed accounting movement for account review and audit support.",
-      "Use these reports to trace where balances came from and which documents contributed to ledger activity.",
-    ],
-    ["help-financial-reports", "help-general-journal"],
-  ),
-  article(
-    "help-financial-statements",
-    "Financial Statements",
-    "/reports/financial/trial-balance",
-    "Review trial balance, balance sheet, income statement, and cash flow statement.",
-    [
-      "Financial statements summarize account balances and performance using the company's chart of accounts and posted transactions.",
-      "Use trial balance for account validation, balance sheet for financial position, income statement for performance, and cash flow for cash movement.",
-    ],
-    ["help-financial-reports", "help-charts-of-accounts"],
-  ),
-  article(
-    "help-accounts-receivable-reports",
-    "Accounts Receivable Reports",
-    "/reports/financial/accounts-receivable",
-    "Review customer aging and statement of account reports.",
-    [
-      "Accounts Receivable reports help monitor customer balances, due dates, aging buckets, and statement details.",
-      "These reports depend on accurate sales, receipt, party, and term records.",
-    ],
-    ["help-sales", "help-cash-receipt", "help-term"],
-  ),
-  article(
-    "help-inventory-reports",
-    "Inventory Reports",
-    "/reports/inventory",
-    "Review inventory audit, item query, stock movement, and valuation reports.",
-    [
-      "Inventory Reports summarize item activity, warehouse movement, audit details, and stock valuation.",
-      "Use these reports to analyze stock history, investigate item balances, and review inventory value.",
-    ],
-    ["help-inventory", "help-warehouse-management", "help-item-management"],
-  ),
-  article(
-    "help-bir-reports",
-    "BIR Reports",
-    "/reports/bir",
-    "Prepare compliance reports such as VAT Relief and Alpha List.",
-    [
-      "BIR Reports support compliance-oriented reporting based on recorded transactions and maintained party information.",
-      "Review setup and transaction accuracy before using these reports for tax-related submissions.",
-    ],
-    ["help-reports", "help-maintenance-party", "help-financial-reports"],
   ),
   article(
     "help-permissions",

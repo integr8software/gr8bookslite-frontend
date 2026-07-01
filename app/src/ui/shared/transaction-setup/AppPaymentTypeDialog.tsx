@@ -19,16 +19,16 @@ import {
 import {
   applyPaymentTypeListParams,
   type PaymentTypeSortKey,
-} from "@/app/src/services/modules/maintenance/financial-management/payment-type/PaymentTypeService";
+} from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeService";
 import type {
   PaymentTypeClassification,
   PaymentTypeFormErrors,
   PaymentTypeFormValues,
   PaymentTypeRecord,
   PaymentTypeStatus,
-} from "@/app/src/types/modules/maintenance/financial-management/payment-type/PaymentTypeTypes";
+} from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { validatePaymentTypeForm } from "@/app/src/validations/modules/maintenance/financial-management/payment-type/PaymentTypeValidation";
+import { validatePaymentTypeForm } from "@/app/src/validations/modules/maintenance/payment-type/PaymentTypeValidation";
 
 type PaymentTypeDialogMode = "list" | "add" | "edit" | "view";
 export type AppPaymentTypeRecord = PaymentTypeRecord;
@@ -407,9 +407,9 @@ function PaymentTypeListView({
     filteredRecords.length === 0
       ? 0
       : Math.min(
-          firstRecord + paginatedRecords.length - 1,
-          filteredRecords.length,
-        );
+        firstRecord + paginatedRecords.length - 1,
+        filteredRecords.length,
+      );
 
   return (
     <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] p-5">
@@ -885,11 +885,10 @@ function PaymentTypeBadge({ type }: { type: PaymentTypeClassification }) {
 function StatusBadge({ status }: { status: PaymentTypeStatus }) {
   return (
     <span
-      className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${
-        status === "Active"
-          ? "bg-citron/30 text-darknavy"
-          : "bg-coralpink/12 text-coralpink"
-      }`}
+      className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${status === "Active"
+        ? "bg-citron/30 text-darknavy"
+        : "bg-coralpink/12 text-coralpink"
+        }`}
     >
       {status}
     </span>

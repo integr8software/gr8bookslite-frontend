@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Search } from "lucide-react";
 import {
 	WorkspaceCompaniesTablePaginationStorageKey,
+	WorkspaceCompanyTableColumns,
 	getWorkspaceCompanyEditHref,
 	getWorkspaceCompanyHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
@@ -22,6 +23,9 @@ import {
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import {
+	ModuleTableColumnVisibilityButton,
+	ModuleTableExportButton,
+	type ModuleTableExportColumn,
 	ModuleTableFilterSelect,
 	ModuleTableResetButton,
 	ModuleTableSearch,
@@ -38,17 +42,25 @@ export function CompanyTable({
 	branches,
 	companies,
 	isLoading,
+	lastSyncedAt,
 	onDeactivate,
+	planOptions,
 }: {
 	branches: WorkspaceCompanyBranchRecord[];
 	companies: WorkspaceCompanyRecord[];
 	isLoading: boolean;
+	lastSyncedAt?: number | string | Date | null;
 	onDeactivate: (company: WorkspaceCompanyRecord) => void;
+	planOptions?: readonly WorkspaceCompanyPlan[];
 }) {
 	const companyList = useWorkspaceCompaniesTable({
 		branches,
 		companies,
+		planOptions,
 	});
+	const tableMinWidthClassName = getTableMinWidthClassName(
+		companyList.table.getVisibleLeafColumns().length,
+	);
 
 	return (
 		<div
@@ -61,18 +73,24 @@ export function CompanyTable({
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No companies found"
 				isLoading={isLoading}
-				minWidthClassName="min-w-[72rem]"
+				lastSyncedAt={lastSyncedAt}
+				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={
 					WorkspaceCompaniesTablePaginationStorageKey
 				}
 				table={companyList.table}
+				tableTitle="Companies"
 				toolbar={
 					<CompanyTableFilters
+						allRows={companyList.records}
+						filteredRows={companyList.filteredRecords}
+						hasActiveFilters={companyList.hasActiveFilters}
 						planFilter={companyList.planFilter}
 						planOptions={companyList.planOptions}
 						query={companyList.query}
 						statusFilter={companyList.statusFilter}
 						statusOptions={companyList.statusOptions}
+						table={companyList.table}
 						typeFilter={companyList.typeFilter}
 						typeOptions={companyList.typeOptions}
 						onPlanFilterChange={companyList.setPlanFilter}
@@ -95,11 +113,15 @@ export function CompanyTable({
 }
 
 function CompanyTableFilters({
+	allRows,
+	filteredRows,
+	hasActiveFilters,
 	planFilter,
 	planOptions,
 	query,
 	statusFilter,
 	statusOptions,
+	table,
 	typeFilter,
 	typeOptions,
 	onPlanFilterChange,
@@ -108,11 +130,15 @@ function CompanyTableFilters({
 	onStatusFilterChange,
 	onTypeFilterChange,
 }: {
+	allRows: WorkspaceCompanyTableRecord[];
+	filteredRows: WorkspaceCompanyTableRecord[];
+	hasActiveFilters: boolean;
 	planFilter: WorkspaceCompanyPlan | "All";
 	planOptions: readonly WorkspaceCompanyPlan[];
 	query: string;
 	statusFilter: WorkspaceCompanyStatus | "All";
 	statusOptions: readonly WorkspaceCompanyStatus[];
+	table: ReturnType<typeof useWorkspaceCompaniesTable>["table"];
 	typeFilter: WorkspaceCompanyType | "All";
 	typeOptions: readonly WorkspaceCompanyType[];
 	onPlanFilterChange: (value: WorkspaceCompanyPlan | "All") => void;
@@ -124,43 +150,57 @@ function CompanyTableFilters({
 	return (
 		<ModuleTableToolbar
 			data-spotlight-id="workspace-company-filters"
-			className="rounded-none border-x-0 border-t-0 shadow-none lg:grid-cols-[minmax(24rem,2.5fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]"
+			className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(0,1fr)_auto]"
 		>
-			<ModuleTableSearch
-				label="Search companies"
-				value={query}
-				onChange={onQueryChange}
-				placeholder="Search companies"
-			/>
-			<ModuleTableFilterSelect
-				label="Status"
-				value={statusFilter}
-				options={getFilterOptions(statusOptions)}
-				onChange={(value) =>
-					onStatusFilterChange(
-						value as WorkspaceCompanyStatus | "All",
-					)
-				}
-			/>
-			<ModuleTableFilterSelect
-				label="Type"
-				value={typeFilter}
-				options={getFilterOptions(typeOptions)}
-				onChange={(value) =>
-					onTypeFilterChange(value as WorkspaceCompanyType | "All")
-				}
-			/>
-			<ModuleTableFilterSelect
-				label="Plan"
-				value={planFilter}
-				options={getFilterOptions(planOptions)}
-				onChange={(value) =>
-					onPlanFilterChange(value as WorkspaceCompanyPlan | "All")
-				}
-			/>
-			<ModuleTableResetButton onClick={onResetFilters}>
-				Reset
-			</ModuleTableResetButton>
+			<div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(16rem,1.4fr)_minmax(9rem,0.8fr)_minmax(10rem,0.9fr)_minmax(9rem,0.8fr)]">
+				<ModuleTableSearch
+					label="Search companies"
+					value={query}
+					onChange={onQueryChange}
+					placeholder="Search companies"
+				/>
+				<ModuleTableFilterSelect
+					label="Type"
+					value={typeFilter}
+					options={getFilterOptions(typeOptions)}
+					onChange={(value) =>
+						onTypeFilterChange(value as WorkspaceCompanyType | "All")
+					}
+				/>
+				<ModuleTableFilterSelect
+					label="Plan"
+					value={planFilter}
+					options={getFilterOptions(planOptions)}
+					onChange={(value) =>
+						onPlanFilterChange(value as WorkspaceCompanyPlan | "All")
+					}
+				/>
+				<ModuleTableFilterSelect
+					label="Status"
+					value={statusFilter}
+					options={getFilterOptions(statusOptions)}
+					onChange={(value) =>
+						onStatusFilterChange(
+							value as WorkspaceCompanyStatus | "All",
+						)
+					}
+				/>
+			</div>
+			<div className="grid grid-cols-3 gap-2 md:w-[10.75rem]">
+				<ModuleTableColumnVisibilityButton table={table} />
+				<ModuleTableExportButton
+					allRows={allRows}
+					columns={WorkspaceCompanyExportColumns}
+					fileName="workspace-companies"
+					filteredRows={filteredRows}
+					isFiltered={hasActiveFilters}
+					table={table}
+					title="Workspace Companies"
+				/>
+				<ModuleTableResetButton className="px-2" onClick={onResetFilters}>
+					Reset
+				</ModuleTableResetButton>
+			</div>
 		</ModuleTableToolbar>
 	);
 }
@@ -208,7 +248,7 @@ function CompanyTableRow({
 			<CompanyTableCell>
 				<WorkspaceManagementPlanBadge plan={company.plan} />
 			</CompanyTableCell>
-			<CompanyTableCell>
+			<CompanyTableCell align="center">
 				<WorkspaceManagementStatusBadge status={company.status} />
 			</CompanyTableCell>
 			<CompanyTableCell align="center">
@@ -245,6 +285,27 @@ function getFilterOptions(options: readonly string[]) {
 		...options.map((option) => ({ label: option, value: option })),
 	];
 }
+
+function getTableMinWidthClassName(visibleColumnCount: number) {
+	if (visibleColumnCount >= 7) return "min-w-[72rem]";
+	if (visibleColumnCount === 6) return "min-w-[62rem]";
+	if (visibleColumnCount === 5) return "min-w-[52rem]";
+	if (visibleColumnCount === 4) return "min-w-[42rem]";
+	return "min-w-[34rem]";
+}
+
+const WorkspaceCompanyExportColumns: ModuleTableExportColumn<WorkspaceCompanyTableRecord>[] =
+	WorkspaceCompanyTableColumns.flatMap((column) =>
+		"key" in column
+			? [
+					{
+						header: column.label,
+						id: column.key,
+						value: column.key,
+					},
+				]
+			: [],
+	);
 
 function CompanyRecordActions({
 	company,

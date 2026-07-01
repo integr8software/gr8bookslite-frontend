@@ -33,7 +33,7 @@ import {
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleInfoTooltip as InfoTooltip } from "@/app/src/ui/shared/module/ModuleInfoTooltip";
-import { ModuleMetrics } from "@/app/src/ui/shared/module/ModuleMetrics";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { WorkspaceBillingSubscriptionRecordActions } from "@/app/src/ui/workspace/billing-and-subscription/WorkspaceBillingSubscriptionRecordActions";
 import { WorkspaceBillingSpotlightTutorial } from "@/app/src/ui/workspace/billing-and-subscription/WorkspaceBillingSpotlightTutorial";
@@ -53,8 +53,8 @@ export function WorkspaceBillingSubscriptionPage() {
 				description={`${page.subscriber.name} subscription billing, company pricing, renewal checks, cards, and promotions.`}
 			/>
 			<div data-spotlight-id="workspace-billing-metrics">
-				<ModuleMetrics
-					metrics={[
+				<ModuleStatisticCards
+					items={[
 					{
 						icon: Building2,
 						label: "Companies",

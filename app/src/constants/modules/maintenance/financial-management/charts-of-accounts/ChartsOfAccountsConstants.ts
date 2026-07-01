@@ -8,7 +8,7 @@ import type {
   ChartsOfAccountsFormTab,
   ChartsOfAccountsTableColumnKey,
   NormalBalance,
-} from "@/app/src/types/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsTypes";
+} from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 
 export const ChartsOfAccountsHref = "/maintenance/charts-of-accounts";
 

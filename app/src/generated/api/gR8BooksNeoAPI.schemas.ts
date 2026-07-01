@@ -159,10 +159,7 @@ export interface SelectOnboardingPlanDto {
 }
 
 export interface SaveOnboardingBillingDto {
-  /**
-     * @minLength 2
-     * @pattern ^[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*$
-     */
+  /** @minLength 2 */
   cardholderName: string;
   billingEmail: string;
   /** @pattern ^\d{4}$ */
@@ -199,7 +196,6 @@ export interface SaveOnboardingCompanyDetailsDto {
   lastName?: string;
   /** @minLength 2 */
   firstName?: string;
-  /** @pattern ^$|^[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*$ */
   middleName?: string;
   /** @minLength 2 */
   companyName?: string;
@@ -824,9 +820,29 @@ export interface WorkspaceCompanyResponseDto {
   updatedAt: string;
 }
 
+export type WorkspaceUserAssignedUnitResponseDtoType = typeof WorkspaceUserAssignedUnitResponseDtoType[keyof typeof WorkspaceUserAssignedUnitResponseDtoType];
+
+
+export const WorkspaceUserAssignedUnitResponseDtoType = {
+  HEAD_OFFICE: 'HEAD_OFFICE',
+  BRANCH: 'BRANCH',
+  SATELLITE: 'SATELLITE',
+} as const;
+
+export interface WorkspaceUserAssignedUnitResponseDto {
+  id: number;
+  companyId: number;
+  type: WorkspaceUserAssignedUnitResponseDtoType;
+  name: string;
+  /** @nullable */
+  displayName: string | null;
+  isActive: boolean;
+}
+
 export interface WorkspaceUserCompanyAssignmentResponseDto {
   companyId: number;
   unitIds: number[];
+  units: WorkspaceUserAssignedUnitResponseDto[];
 }
 
 export interface WorkspaceUserResponseDto {
@@ -842,7 +858,8 @@ export interface WorkspaceUserResponseDto {
   profileImageUrl: string | null;
   companyAssignments: WorkspaceUserCompanyAssignmentResponseDto[];
   createdAt: string;
-  updatedAt: string;
+  /** @nullable */
+  updatedAt: string | null;
 }
 
 export interface WorkspaceCompanyManagementSummaryResponseDto {
@@ -893,7 +910,6 @@ export interface CreateWorkspaceCompanyDto {
   lastName?: string;
   /** @minLength 2 */
   firstName?: string;
-  /** @pattern ^$|^[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*$ */
   middleName?: string;
   /** @minLength 2 */
   companyName?: string;
@@ -930,7 +946,6 @@ export interface UpdateWorkspaceCompanyDto {
   lastName?: string;
   /** @minLength 2 */
   firstName?: string;
-  /** @pattern ^$|^[A-Za-z]+(?:[ .'-]+[A-Za-z]+)*$ */
   middleName?: string;
   /** @minLength 2 */
   companyName?: string;
@@ -1264,6 +1279,435 @@ export interface SaveFormSignatoryResponseDto {
   setup: FormSignatorySetupResponseDto;
 }
 
+export type ChartAccountBankAccountResponseDtoStatus = typeof ChartAccountBankAccountResponseDtoStatus[keyof typeof ChartAccountBankAccountResponseDtoStatus];
+
+
+export const ChartAccountBankAccountResponseDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface ChartAccountBankAccountResponseDto {
+  id: number;
+  companyId: number;
+  coaId: number;
+  bankName: string;
+  /** @nullable */
+  branch: string | null;
+  accountNumber: string;
+  accountName: string;
+  /** @nullable */
+  currencyCode: string | null;
+  isDefault: boolean;
+  status: ChartAccountBankAccountResponseDtoStatus;
+}
+
+export type ChartAccountResponseDtoAccountLevel = typeof ChartAccountResponseDtoAccountLevel[keyof typeof ChartAccountResponseDtoAccountLevel];
+
+
+export const ChartAccountResponseDtoAccountLevel = {
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
+} as const;
+
+/**
+ * @nullable
+ */
+export type ChartAccountResponseDtoAccountType = typeof ChartAccountResponseDtoAccountType[keyof typeof ChartAccountResponseDtoAccountType] | null;
+
+
+export const ChartAccountResponseDtoAccountType = {
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
+} as const;
+
+/**
+ * @nullable
+ */
+export type ChartAccountResponseDtoAccountNature = typeof ChartAccountResponseDtoAccountNature[keyof typeof ChartAccountResponseDtoAccountNature] | null;
+
+
+export const ChartAccountResponseDtoAccountNature = {
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
+} as const;
+
+export type ChartAccountResponseDtoStatus = typeof ChartAccountResponseDtoStatus[keyof typeof ChartAccountResponseDtoStatus];
+
+
+export const ChartAccountResponseDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface ChartAccountResponseDto {
+  id: number;
+  companyId: number;
+  /** @nullable */
+  parentAccountId: number | null;
+  accountCode: string;
+  accountTitle: string;
+  accountLevel: ChartAccountResponseDtoAccountLevel;
+  /** @nullable */
+  accountType: ChartAccountResponseDtoAccountType;
+  /** @nullable */
+  accountNature: ChartAccountResponseDtoAccountNature;
+  /** @nullable */
+  accountGroup: string | null;
+  /** @nullable */
+  reportAlias: string | null;
+  /** @nullable */
+  class: string | null;
+  isPostingAccount: boolean;
+  withSubsidiary: boolean;
+  contraAccount: boolean;
+  showTotal: boolean;
+  /** @nullable */
+  orderNo: number | null;
+  status: ChartAccountResponseDtoStatus;
+  /** @nullable */
+  currencyCode: string | null;
+  /** @nullable */
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  bankAccounts: ChartAccountBankAccountResponseDto[];
+}
+
+export interface ChartAccountListResponseDto {
+  accounts: ChartAccountResponseDto[];
+}
+
+export type ChartAccountTreeNodeResponseDtoAccountLevel = typeof ChartAccountTreeNodeResponseDtoAccountLevel[keyof typeof ChartAccountTreeNodeResponseDtoAccountLevel];
+
+
+export const ChartAccountTreeNodeResponseDtoAccountLevel = {
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
+} as const;
+
+/**
+ * @nullable
+ */
+export type ChartAccountTreeNodeResponseDtoAccountType = typeof ChartAccountTreeNodeResponseDtoAccountType[keyof typeof ChartAccountTreeNodeResponseDtoAccountType] | null;
+
+
+export const ChartAccountTreeNodeResponseDtoAccountType = {
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
+} as const;
+
+/**
+ * @nullable
+ */
+export type ChartAccountTreeNodeResponseDtoAccountNature = typeof ChartAccountTreeNodeResponseDtoAccountNature[keyof typeof ChartAccountTreeNodeResponseDtoAccountNature] | null;
+
+
+export const ChartAccountTreeNodeResponseDtoAccountNature = {
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
+} as const;
+
+export type ChartAccountTreeNodeResponseDtoStatus = typeof ChartAccountTreeNodeResponseDtoStatus[keyof typeof ChartAccountTreeNodeResponseDtoStatus];
+
+
+export const ChartAccountTreeNodeResponseDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface ChartAccountTreeNodeResponseDto {
+  id: number;
+  companyId: number;
+  /** @nullable */
+  parentAccountId: number | null;
+  accountCode: string;
+  accountTitle: string;
+  accountLevel: ChartAccountTreeNodeResponseDtoAccountLevel;
+  /** @nullable */
+  accountType: ChartAccountTreeNodeResponseDtoAccountType;
+  /** @nullable */
+  accountNature: ChartAccountTreeNodeResponseDtoAccountNature;
+  /** @nullable */
+  accountGroup: string | null;
+  /** @nullable */
+  reportAlias: string | null;
+  /** @nullable */
+  class: string | null;
+  isPostingAccount: boolean;
+  withSubsidiary: boolean;
+  contraAccount: boolean;
+  showTotal: boolean;
+  /** @nullable */
+  orderNo: number | null;
+  status: ChartAccountTreeNodeResponseDtoStatus;
+  /** @nullable */
+  currencyCode: string | null;
+  /** @nullable */
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  bankAccounts: ChartAccountBankAccountResponseDto[];
+  children: ChartAccountTreeNodeResponseDto[];
+}
+
+export interface ChartAccountTreeResponseDto {
+  accounts: ChartAccountTreeNodeResponseDto[];
+}
+
+export interface ChartAccountNextCodeResponseDto {
+  accountCode: string;
+}
+
+export interface ChartAccountContainerResponseDto {
+  account: ChartAccountResponseDto;
+}
+
+export type CreateChartAccountDtoAccountLevel = typeof CreateChartAccountDtoAccountLevel[keyof typeof CreateChartAccountDtoAccountLevel];
+
+
+export const CreateChartAccountDtoAccountLevel = {
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
+} as const;
+
+export type CreateChartAccountDtoAccountType = typeof CreateChartAccountDtoAccountType[keyof typeof CreateChartAccountDtoAccountType];
+
+
+export const CreateChartAccountDtoAccountType = {
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
+} as const;
+
+export type CreateChartAccountDtoAccountNature = typeof CreateChartAccountDtoAccountNature[keyof typeof CreateChartAccountDtoAccountNature];
+
+
+export const CreateChartAccountDtoAccountNature = {
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
+} as const;
+
+export interface CreateChartAccountDto {
+  parentAccountId?: string;
+  accountLevel: CreateChartAccountDtoAccountLevel;
+  /** @maxLength 250 */
+  accountTitle: string;
+  accountType?: CreateChartAccountDtoAccountType;
+  accountNature?: CreateChartAccountDtoAccountNature;
+  /** @maxLength 50 */
+  accountGroup?: string;
+  /** @maxLength 250 */
+  reportAlias?: string;
+  /** @maxLength 50 */
+  class?: string;
+  isPostingAccount?: boolean;
+  withSubsidiary?: boolean;
+  contraAccount?: boolean;
+  showTotal?: boolean;
+  /** @minimum 0 */
+  orderNo?: number;
+  /** @maxLength 10 */
+  currencyCode?: string;
+}
+
+export interface ChartAccountSaveResponseDto {
+  message: string;
+  account: ChartAccountResponseDto;
+}
+
+export type UpdateChartAccountDtoAccountLevel = typeof UpdateChartAccountDtoAccountLevel[keyof typeof UpdateChartAccountDtoAccountLevel];
+
+
+export const UpdateChartAccountDtoAccountLevel = {
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
+} as const;
+
+export type UpdateChartAccountDtoAccountType = typeof UpdateChartAccountDtoAccountType[keyof typeof UpdateChartAccountDtoAccountType];
+
+
+export const UpdateChartAccountDtoAccountType = {
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
+} as const;
+
+export type UpdateChartAccountDtoAccountNature = typeof UpdateChartAccountDtoAccountNature[keyof typeof UpdateChartAccountDtoAccountNature];
+
+
+export const UpdateChartAccountDtoAccountNature = {
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
+} as const;
+
+export interface UpdateChartAccountDto {
+  parentAccountId?: string;
+  accountLevel?: UpdateChartAccountDtoAccountLevel;
+  /** @maxLength 250 */
+  accountTitle?: string;
+  accountType?: UpdateChartAccountDtoAccountType;
+  accountNature?: UpdateChartAccountDtoAccountNature;
+  /** @maxLength 50 */
+  accountGroup?: string;
+  /** @maxLength 250 */
+  reportAlias?: string;
+  /** @maxLength 50 */
+  class?: string;
+  isPostingAccount?: boolean;
+  withSubsidiary?: boolean;
+  contraAccount?: boolean;
+  showTotal?: boolean;
+  /** @minimum 0 */
+  orderNo?: number;
+  /** @maxLength 10 */
+  currencyCode?: string;
+}
+
+export type UpdateChartAccountStatusDtoStatus = typeof UpdateChartAccountStatusDtoStatus[keyof typeof UpdateChartAccountStatusDtoStatus];
+
+
+export const UpdateChartAccountStatusDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface UpdateChartAccountStatusDto {
+  status: UpdateChartAccountStatusDtoStatus;
+}
+
+export interface TransactionNumberBranchResponseDto {
+  id: number;
+  /** @nullable */
+  code: string | null;
+  name: string;
+}
+
+export type TransactionNumberSequenceResponseDtoInputMode = typeof TransactionNumberSequenceResponseDtoInputMode[keyof typeof TransactionNumberSequenceResponseDtoInputMode];
+
+
+export const TransactionNumberSequenceResponseDtoInputMode = {
+  Auto: 'Auto',
+  Manual: 'Manual',
+} as const;
+
+export type TransactionNumberSequenceResponseDtoScope = typeof TransactionNumberSequenceResponseDtoScope[keyof typeof TransactionNumberSequenceResponseDtoScope];
+
+
+export const TransactionNumberSequenceResponseDtoScope = {
+  all: 'all',
+  branch: 'branch',
+} as const;
+
+export type TransactionNumberSequenceResponseDtoStatus = typeof TransactionNumberSequenceResponseDtoStatus[keyof typeof TransactionNumberSequenceResponseDtoStatus];
+
+
+export const TransactionNumberSequenceResponseDtoStatus = {
+  Active: 'Active',
+  Inactive: 'Inactive',
+} as const;
+
+export interface TransactionNumberSequenceResponseDto {
+  id: number;
+  moduleId: number;
+  moduleCode: string;
+  moduleName: string;
+  inputMode: TransactionNumberSequenceResponseDtoInputMode;
+  prefix: string;
+  suffix: string;
+  padding: number;
+  startingNumber: number;
+  currentNumber: number;
+  scope: TransactionNumberSequenceResponseDtoScope;
+  /** @nullable */
+  branchUnitId: number | null;
+  branchUnitIds: number[];
+  status: TransactionNumberSequenceResponseDtoStatus;
+}
+
+export interface TransactionNumberSequenceBootstrapResponseDto {
+  branches: TransactionNumberBranchResponseDto[];
+  sequences: TransactionNumberSequenceResponseDto[];
+}
+
+export type UpdateTransactionNumberSequenceDtoInputMode = typeof UpdateTransactionNumberSequenceDtoInputMode[keyof typeof UpdateTransactionNumberSequenceDtoInputMode];
+
+
+export const UpdateTransactionNumberSequenceDtoInputMode = {
+  Auto: 'Auto',
+  Manual: 'Manual',
+} as const;
+
+export type UpdateTransactionNumberSequenceDtoScope = typeof UpdateTransactionNumberSequenceDtoScope[keyof typeof UpdateTransactionNumberSequenceDtoScope];
+
+
+export const UpdateTransactionNumberSequenceDtoScope = {
+  all: 'all',
+  branch: 'branch',
+} as const;
+
+export type UpdateTransactionNumberSequenceDtoStatus = typeof UpdateTransactionNumberSequenceDtoStatus[keyof typeof UpdateTransactionNumberSequenceDtoStatus];
+
+
+export const UpdateTransactionNumberSequenceDtoStatus = {
+  Active: 'Active',
+  Inactive: 'Inactive',
+} as const;
+
+export interface UpdateTransactionNumberSequenceDto {
+  /** @maxLength 80 */
+  moduleCode: string;
+  /** @maxLength 120 */
+  moduleName: string;
+  inputMode: UpdateTransactionNumberSequenceDtoInputMode;
+  /** @maxLength 40 */
+  prefix: string;
+  /** @maxLength 40 */
+  suffix?: string;
+  /**
+     * @minimum 1
+     * @maximum 12
+     */
+  padding: number;
+  /** @minimum 0 */
+  startingNumber: number;
+  /** @minimum 0 */
+  currentNumber: number;
+  scope: UpdateTransactionNumberSequenceDtoScope;
+  /** @items.minimum 1 */
+  branchUnitIds: number[];
+  /** @minimum 1 */
+  branchUnitId?: number;
+  status: UpdateTransactionNumberSequenceDtoStatus;
+}
+
+export interface SaveTransactionNumberSequenceResponseDto {
+  message: string;
+  sequence: TransactionNumberSequenceResponseDto;
+}
+
 export type AiAssistantChatMessageDtoRole = typeof AiAssistantChatMessageDtoRole[keyof typeof AiAssistantChatMessageDtoRole];
 
 
@@ -1330,5 +1774,49 @@ unitId: number;
 moduleCodes: string;
 };
 
-export type AiAssistantControllerChatV1201 = { [key: string]: unknown };
+export type ChartOfAccountsControllerFindAllV1Params = {
+/**
+ * @maxLength 120
+ */
+search?: string;
+accountLevel?: ChartOfAccountsControllerFindAllV1AccountLevel;
+status?: ChartOfAccountsControllerFindAllV1Status;
+parentAccountId?: string;
+};
 
+export type ChartOfAccountsControllerFindAllV1AccountLevel = typeof ChartOfAccountsControllerFindAllV1AccountLevel[keyof typeof ChartOfAccountsControllerFindAllV1AccountLevel];
+
+
+export const ChartOfAccountsControllerFindAllV1AccountLevel = {
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
+} as const;
+
+export type ChartOfAccountsControllerFindAllV1Status = typeof ChartOfAccountsControllerFindAllV1Status[keyof typeof ChartOfAccountsControllerFindAllV1Status];
+
+
+export const ChartOfAccountsControllerFindAllV1Status = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export type ChartOfAccountsControllerFindNextCodeV1Params = {
+parentAccountId?: string;
+accountLevel: ChartOfAccountsControllerFindNextCodeV1AccountLevel;
+};
+
+export type ChartOfAccountsControllerFindNextCodeV1AccountLevel = typeof ChartOfAccountsControllerFindNextCodeV1AccountLevel[keyof typeof ChartOfAccountsControllerFindNextCodeV1AccountLevel];
+
+
+export const ChartOfAccountsControllerFindNextCodeV1AccountLevel = {
+  MAJOR: 'MAJOR',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  SUB3: 'SUB3',
+  SPECIFIC: 'SPECIFIC',
+} as const;
+
+export type AiAssistantControllerChatV1201 = { [key: string]: unknown };

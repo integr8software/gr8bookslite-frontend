@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   createMaintenanceAddSpotlightTutorialSteps,
@@ -27,6 +27,16 @@ export function MaintenanceSpotlightTutorial() {
   const listConfig = getMaintenanceSpotlightTutorialConfig(pathname);
   const config = addConfig ?? listConfig;
   const href = config?.href ?? "";
+  const configLabel = config?.label ?? "";
+  const includeCreateStep = config?.includeCreateStep !== false;
+  const includeFiltersStep = config?.includeFiltersStep !== false;
+  const includeImportStep = config?.includeImportStep === true;
+  const includeRecordActionSteps = config?.includeRecordActionSteps === true;
+  const includeTableStep = config?.includeTableStep !== false;
+  const [hasRecordActions, setHasRecordActions] = useState(false);
+  const [hasRecordEditAction, setHasRecordEditAction] = useState(false);
+  const [hasRecordStatusAction, setHasRecordStatusAction] = useState(false);
+  const listAddMode = listConfig?.addMode;
   const tutorialHref = addConfig ? `${href}/add` : href;
   const { completeTutorial, isOpen, skipTutorial } = useSpotlightTutorial({
     href: tutorialHref,
@@ -35,27 +45,97 @@ export function MaintenanceSpotlightTutorial() {
       : MaintenanceSpotlightTutorialOpenEvent,
     storageKey: createMaintenanceSpotlightTutorialStorageKey(tutorialHref),
   });
-  const handleStepEnter = useCallback(
-    (_: unknown, index: number) => {
-      const listStepCount = createMaintenanceSpotlightTutorialSteps(
-        config?.label ?? "",
-      ).length;
+  function handleStepEnter(_: unknown, index: number) {
+    const listStepCount = createMaintenanceSpotlightTutorialSteps(
+      configLabel,
+      includeCreateStep,
+      includeFiltersStep,
+      includeTableStep,
+      includeImportStep,
+      includeRecordActionSteps,
+      hasRecordActions,
+      hasRecordEditAction,
+      hasRecordStatusAction,
+    ).length;
 
-      if (
-        listConfig?.addMode === "drawer" &&
-        index === listStepCount
-      ) {
-        window.dispatchEvent(
-          new Event(MaintenanceAddDrawerSpotlightTutorialOpenEvent),
+    if (listAddMode === "drawer" && index === listStepCount) {
+      window.dispatchEvent(
+        new Event(MaintenanceAddDrawerSpotlightTutorialOpenEvent),
+      );
+    }
+
+    if (listAddMode === "drawer" && index === listStepCount - 1) {
+      closeMaintenanceAddDrawer();
+    }
+  }
+
+  useEffect(() => {
+    let frameId: number | null = null;
+
+    function scheduleRecordActionStateUpdate(isEnabled = true) {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        if (!isEnabled) {
+          setHasRecordActions(false);
+          setHasRecordEditAction(false);
+          setHasRecordStatusAction(false);
+          return;
+        }
+
+        setHasRecordActions(
+          Boolean(
+            document.querySelector(
+              "[data-spotlight-id='maintenance-record-actions']",
+            ),
+          ),
         );
-      }
+        setHasRecordEditAction(
+          Boolean(
+            document.querySelector(
+              "[data-spotlight-id='maintenance-record-edit']",
+            ),
+          ),
+        );
+        setHasRecordStatusAction(
+          Boolean(
+            document.querySelector(
+              "[data-spotlight-id='maintenance-record-status']",
+            ),
+          ),
+        );
+      });
+    }
 
-      if (listConfig?.addMode === "drawer" && index === listStepCount - 1) {
-        closeMaintenanceAddDrawer();
+    if (!config || !includeRecordActionSteps) {
+      scheduleRecordActionStateUpdate(false);
+      return () => {
+        if (frameId !== null) {
+          window.cancelAnimationFrame(frameId);
+        }
+      };
+    }
+
+    scheduleRecordActionStateUpdate();
+
+    const observer = new MutationObserver(() => {
+      scheduleRecordActionStateUpdate();
+    });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
       }
-    },
-    [config?.label, listConfig?.addMode],
-  );
+      observer.disconnect();
+    };
+  }, [config, includeRecordActionSteps, pathname]);
 
   if (!config) {
     return null;
@@ -64,14 +144,37 @@ export function MaintenanceSpotlightTutorial() {
   return (
     <SpotlightTour
       ariaLabel={`${config.label} tutorial`}
-      badge={<SpotlightTourBadge>Maintenance guide</SpotlightTourBadge>}
+      badge={
+        <SpotlightTourBadge>
+          {href.startsWith("/maintenance/")
+            ? "Maintenance guide"
+            : "Module guide"}
+        </SpotlightTourBadge>
+      }
       isOpen={isOpen}
       steps={
         addConfig
           ? createMaintenanceAddSpotlightTutorialSteps(config.label)
           : listConfig?.addMode === "drawer"
-            ? createMaintenanceDrawerSpotlightTutorialSteps(config.label)
-          : createMaintenanceSpotlightTutorialSteps(config.label)
+            ? createMaintenanceDrawerSpotlightTutorialSteps(
+                config.label,
+                includeImportStep,
+                includeRecordActionSteps,
+                hasRecordActions,
+                hasRecordEditAction,
+                hasRecordStatusAction,
+              )
+            : createMaintenanceSpotlightTutorialSteps(
+                config.label,
+                includeCreateStep,
+                includeFiltersStep,
+                includeTableStep,
+                includeImportStep,
+                includeRecordActionSteps,
+                hasRecordActions,
+                hasRecordEditAction,
+                hasRecordStatusAction,
+              )
       }
       onStepEnter={handleStepEnter}
       onComplete={() => {

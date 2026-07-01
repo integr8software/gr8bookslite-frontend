@@ -5,54 +5,63 @@ import {
 	Building2,
 	CheckCircle2,
 	CirclePause,
+	Tags,
 	UserRound,
 	Users,
 } from "lucide-react";
 import { usePartyManagementListPage } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagementListPage";
 import {
-	ModuleMetrics,
-	type ModuleMetricItem,
-} from "@/app/src/ui/shared/module/ModuleMetrics";
+	ModuleStatisticCards,
+	type ModuleStatisticCardItem,
+} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { PartyInformationHeader } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationHeader";
 import { PartyInformationTable } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationTable";
 
 export function PartyManagementListPage() {
 	const page = usePartyManagementListPage();
-	const metrics = useMemo<ModuleMetricItem[]>(
+	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
 		() => [
 			{
-				helper: "All party records",
 				icon: Users,
+				iconClassName: "bg-skyblue/20 text-skyblue",
 				label: "Total Party Members",
+				summary: "All party records",
 				value: page.analytics.totalpartyName,
 			},
 			{
-				helper: "Available for transactions",
 				icon: CheckCircle2,
+				iconClassName: "bg-emerald-50 text-emerald-700",
 				label: "Active Members",
-				tone: "emerald",
+				summary: "Available for transactions",
 				value: page.analytics.activepartyName,
 			},
 			{
-				helper: "Currently inactive",
 				icon: CirclePause,
+				iconClassName: "bg-amber-50 text-amber-700",
 				label: "Inactive Members",
-				tone: "amber",
+				summary: "Currently inactive",
 				value: page.analytics.inactivepartyName,
 			},
 			{
-				helper: "Individual profiles",
 				icon: UserRound,
+				iconClassName: "bg-cyan-50 text-cyan-700",
 				label: "Individuals",
-				tone: "cyan",
+				summary: "Individual profiles",
 				value: page.analytics.individualpartyName,
 			},
 			{
-				helper: "Non-individual profiles",
 				icon: Building2,
+				iconClassName: "bg-violet-50 text-violet-700",
 				label: "Non-Individual",
-				tone: "violet",
+				summary: "Non-individual profiles",
 				value: page.analytics.organizationpartyName,
+			},
+			{
+				icon: Tags,
+				iconClassName: "bg-slate-100 text-slate-700",
+				label: "Multi-Type Parties",
+				summary: "Assigned multiple types",
+				value: page.analytics.multiTypepartyName,
 			},
 		],
 		[page.analytics],
@@ -61,10 +70,16 @@ export function PartyManagementListPage() {
 	return (
 		<section className="grid gap-5">
 			<PartyInformationHeader />
-			<ModuleMetrics metrics={metrics} />
+			<ModuleStatisticCards
+				items={statisticCards}
+				className="2xl:grid-cols-6"
+			/>
 			<PartyInformationTable
 				isLoading={page.isLoading}
+				isRefreshing={page.isRefreshing}
+				lastSyncedAt={page.lastSyncedAt}
 				records={page.records}
+				onRefresh={page.refreshRecords}
 			/>
 		</section>
 	);

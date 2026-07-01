@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import {
 	WorkspaceAuditLogActionOptions,
 	WorkspaceAuditLogDateRangeOptions,
@@ -19,7 +19,6 @@ import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { WorkspaceAuditLogTableRow } from "@/app/src/ui/workspace/audit-logs/WorkspaceAuditLogTableRow";
 
 type WorkspaceAuditLogTableProps = Pick<
@@ -65,25 +64,10 @@ export function WorkspaceAuditLogTable({
 	table,
 }: WorkspaceAuditLogTableProps) {
 	return (
-		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<div className="flex flex-wrap items-center justify-between gap-3 border-b border-darknavy/10 px-4 py-3">
-				<p className="text-sm font-semibold text-darknavy">Activity stream</p>
-				<div className="flex items-center gap-2 text-xs font-semibold text-darknavy/58">
-					<RefreshCw
-						className={joinClasses(
-							"h-3.5 w-3.5",
-							isSyncing ? "animate-spin text-skyblue" : "text-citron",
-						)}
-						aria-hidden="true"
-					/>
-					<span>{isSyncing ? "Syncing" : "Live"}</span>
-					{lastSyncedAt > 0 ? (
-						<span className="font-medium text-darknavy/42">
-							Updated {formatWorkspaceAuditLogSyncTime(lastSyncedAt)}
-						</span>
-					) : null}
-				</div>
-			</div>
+		<div
+			data-spotlight-id="workspace-audit-table"
+			className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm"
+		>
 			<ModuleTable<WorkspaceAuditLogRecord>
 				variant="embedded"
 				emptyDescription={
@@ -96,12 +80,18 @@ export function WorkspaceAuditLogTable({
 					isError ? "Could not load audit logs" : "No audit logs found"
 				}
 				isLoading={isLoading}
+				isSyncing={isSyncing}
+				lastSyncedAt={lastSyncedAt}
 				minWidthClassName="min-w-[90rem]"
 				paginationLabel="logs"
 				paginationStorageKey={WorkspaceAuditLogPaginationStorageKey}
 				table={table}
+				tableTitle="Activity stream"
 				toolbar={
-					<ModuleTableToolbar className="xl:grid-cols-[minmax(24rem,2.4fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(9rem,0.7fr)]">
+					<ModuleTableToolbar
+						data-spotlight-id="workspace-audit-filters"
+						className="xl:grid-cols-[minmax(24rem,2.4fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(9rem,0.7fr)]"
+					>
 						<ModuleTableSearch
 							label="Search workspace audit logs"
 							value={query}
@@ -165,12 +155,4 @@ export function WorkspaceAuditLogTable({
 			/>
 		</div>
 	);
-}
-
-function formatWorkspaceAuditLogSyncTime(value: number) {
-	return new Intl.DateTimeFormat(undefined, {
-		hour: "numeric",
-		minute: "2-digit",
-		second: "2-digit",
-	}).format(new Date(value));
 }

@@ -7,15 +7,20 @@ import {
   FormatPhilippineContactNumber,
 } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
+import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
+  MaxPartyAddressCount,
   PartyInformationInitialFormValues,
+  createEmptyPartyAddress,
   createPartyInformationRecord,
-  getPartyAtcCodeOptionsByClassification,
   getPartyDisplayName,
   isKnownPartyType,
+  setPartyDefaultAddress,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
-import { usePhilippineAddressOptions } from "@/app/src/hooks/shared/address/ph/usePhilippineAddressOptions";
+import { useTermDropdownOptions } from "@/app/src/hooks/modules/maintenance/term-management/useTermDropdownOptions";
+import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
 import type {
   PartyAddress,
   PartyInformationFormErrors,
@@ -25,6 +30,10 @@ import type {
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
+import type {
+  AddressAutocompleteDetails,
+  AddressAutocompleteItem,
+} from "@/app/src/types/shared/address/AddressTypes";
 
 type AppPartyDialogProps = {
   isOpen: boolean;
@@ -89,19 +98,30 @@ function AppPartyDialogContent({
   onSelect: (record: PartyInformationRecord) => void;
 }) {
   const addRecord = usePartyManagementStore((state) => state.addRecord);
+  const termDropdown = useTermDropdownOptions();
   const [partyType, setPartyType] = useState<PartyType>(suggestedPartyType);
   const [values, setValues] = useState<PartyInformationFormValues>(() =>
     createDialogInitialValues(records, suggestedPartyType),
   );
   const [errors, setErrors] = useState<PartyInformationFormErrors>({});
-  const addressOptions = usePhilippineAddressOptions({
-    cityMunicipalityCode: values.address.cityMunicipalityCode,
-    provinceCode: values.address.provinceCode,
-    regionCode: values.address.regionCode,
+  const activeAddress =
+    values.addresses.find((address) => address.id === values.activeAddressId) ??
+    values.addresses[0] ??
+    values.address;
+  const addressOptions = useAddressOptions({
+    barangayCode: activeAddress.barangayCode,
+    barangayName: activeAddress.barangay,
+    cityMunicipalityCode: activeAddress.cityMunicipalityCode,
+    cityMunicipalityName: activeAddress.cityMunicipality,
+    provinceCode: activeAddress.provinceCode,
+    provinceName: activeAddress.province,
+    regionCode: activeAddress.regionCode,
+    regionName: activeAddress.region,
   });
-  const atcOptions = useMemo(
-    () => getPartyAtcCodeOptionsByClassification(values.classification),
-    [values.classification],
+  const atcDropdown = usePartyAtcCodeOptions(values.classification);
+  const accountOptions = useMemo(
+    () => getModuleChartAccounts({ moduleKey: "maintenance-transaction-type" }),
+    [],
   );
   const isClassificationSelected = Boolean(values.classification);
   const dialogCopy = PartyTypeCardCopy[partyType];
@@ -130,7 +150,7 @@ function AppPartyDialogContent({
           ...current,
           classification: value as PartyInformationFormValues["classification"],
           partyName: "",
-          tradingName: "",
+          tradeName: "",
           firstName: "",
           middleName: "",
           lastName: "",
@@ -154,10 +174,11 @@ function AppPartyDialogContent({
 
     setValues((current) => ({
       ...current,
-      address: {
-        ...current.address,
-        [field]: value,
-      },
+      addresses: current.addresses.map((address) =>
+        address.id === current.activeAddressId
+          ? { ...address, [field]: value }
+          : address,
+      ),
     }));
   }
 
@@ -203,25 +224,29 @@ function AppPartyDialogContent({
     setErrors((current) => ({ ...current, atcCode: undefined }));
   }
 
-  function selectRegion(value: string | string[]) {
+  function selectProvince(value: string | string[]) {
     const code = getSingleSelectedValue(value);
-    const option = addressOptions.regionOptions.find(
-      (region) => region.value === code,
+    const option = addressOptions.provinceOptions.find(
+      (province) => province.value === code,
     );
 
     setValues((current) => ({
       ...current,
-      address: {
-        ...current.address,
-        barangay: "",
-        barangayCode: "",
-        cityMunicipality: "",
-        cityMunicipalityCode: "",
-        province: "",
-        provinceCode: "",
-        region: option?.name ?? "",
-        regionCode: code,
-      },
+      addresses: current.addresses.map((address) =>
+        address.id === current.activeAddressId
+          ? {
+            ...address,
+            barangay: "",
+            barangayCode: "",
+            cityMunicipality: "",
+            cityMunicipalityCode: "",
+            province: option?.name ?? "",
+            provinceCode: code,
+            region: option?.regionName ?? "",
+            regionCode: option?.regionCode ?? "",
+          }
+          : address,
+      ),
     }));
     setErrors((current) => ({
       ...current,
@@ -232,29 +257,53 @@ function AppPartyDialogContent({
     }));
   }
 
-  function selectProvince(value: string | string[]) {
-    const code = getSingleSelectedValue(value);
-    const option = addressOptions.provinceOptions.find(
-      (province) => province.value === code,
-    );
-
+  function selectAutocompleteAddress(
+    address: AddressAutocompleteItem,
+    details?: AddressAutocompleteDetails,
+  ) {
     setValues((current) => ({
       ...current,
-      address: {
-        ...current.address,
-        barangay: "",
-        barangayCode: "",
-        cityMunicipality: "",
-        cityMunicipalityCode: "",
-        province: option?.name ?? "",
-        provinceCode: code,
-      },
+      addresses: current.addresses.map((currentAddress) =>
+        currentAddress.id === current.activeAddressId
+          ? {
+            ...currentAddress,
+            addressLine1:
+              details?.addressLine1 ?? currentAddress.addressLine1,
+            addressLine2:
+              details?.addressLine2 ?? currentAddress.addressLine2,
+            barangay: address.barangay.name,
+            barangayCode: address.barangay.code,
+            cityMunicipality: address.cityMunicipality.name,
+            cityMunicipalityCode: address.cityMunicipality.code,
+            province: address.province.name,
+            provinceCode: address.province.code,
+            region: address.region.name,
+            regionCode: address.region.code,
+          }
+          : currentAddress,
+      ),
     }));
     setErrors((current) => ({
       ...current,
       barangayCode: undefined,
       cityMunicipalityCode: undefined,
       provinceCode: undefined,
+      regionCode: undefined,
+    }));
+  }
+
+  function syncAutocompleteAddressDetails(details: AddressAutocompleteDetails) {
+    setValues((current) => ({
+      ...current,
+      addresses: current.addresses.map((currentAddress) =>
+        currentAddress.id === current.activeAddressId
+          ? {
+            ...currentAddress,
+            addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
+            addressLine2: details.addressLine2 ?? currentAddress.addressLine2,
+          }
+          : currentAddress,
+      ),
     }));
   }
 
@@ -266,13 +315,17 @@ function AppPartyDialogContent({
 
     setValues((current) => ({
       ...current,
-      address: {
-        ...current.address,
-        barangay: "",
-        barangayCode: "",
-        cityMunicipality: option?.name ?? "",
-        cityMunicipalityCode: code,
-      },
+      addresses: current.addresses.map((address) =>
+        address.id === current.activeAddressId
+          ? {
+            ...address,
+            barangay: "",
+            barangayCode: "",
+            cityMunicipality: option?.name ?? "",
+            cityMunicipalityCode: code,
+          }
+          : address,
+      ),
     }));
     setErrors((current) => ({
       ...current,
@@ -289,11 +342,15 @@ function AppPartyDialogContent({
 
     setValues((current) => ({
       ...current,
-      address: {
-        ...current.address,
-        barangay: option?.name ?? "",
-        barangayCode: code,
-      },
+      addresses: current.addresses.map((address) =>
+        address.id === current.activeAddressId
+          ? {
+            ...address,
+            barangay: option?.name ?? "",
+            barangayCode: code,
+          }
+          : address,
+      ),
     }));
     setErrors((current) => ({ ...current, barangayCode: undefined }));
   }
@@ -305,6 +362,86 @@ function AppPartyDialogContent({
       partyTypes: [nextPartyType],
     }));
     setErrors((current) => ({ ...current, partyTypes: undefined }));
+  }
+
+  function selectTerm(value: string | string[]) {
+    const termId = getSingleSelectedValue(value);
+    const term = termDropdown.terms.find((currentTerm) => currentTerm.id === termId);
+
+    setValues((current) => ({
+      ...current,
+      termId,
+      termName: term?.name ?? "",
+    }));
+  }
+
+  function addAddress() {
+    const id = `address-${Date.now().toString(36)}`;
+
+    setValues((current) =>
+      current.addresses.length >= MaxPartyAddressCount
+        ? current
+        : {
+          ...current,
+          activeAddressId: id,
+          addresses: [
+            ...current.addresses,
+            createEmptyPartyAddress({
+              id,
+              addressName: `Address ${current.addresses.length + 1}`,
+              isDefault: false,
+            }),
+          ],
+        },
+    );
+  }
+
+  function removeAddress(addressId: string) {
+    setValues((current) => {
+      if (current.addresses.length <= 1) {
+        return current;
+      }
+
+      const remaining = current.addresses.filter(
+        (address) => address.id !== addressId,
+      );
+      const addresses = setPartyDefaultAddress(remaining);
+
+      return {
+        ...current,
+        activeAddressId:
+          current.activeAddressId === addressId
+            ? (addresses[0]?.id ?? "")
+            : current.activeAddressId,
+        addresses,
+      };
+    });
+  }
+
+  function selectAddress(addressId: string) {
+    setValues((current) => ({ ...current, activeAddressId: addressId }));
+  }
+
+  function setDefaultAddress(addressId: string) {
+    setValues((current) => ({
+      ...current,
+      activeAddressId: addressId,
+      addresses: setPartyDefaultAddress(current.addresses, addressId),
+    }));
+    setErrors((current) => ({ ...current, addresses: undefined }));
+  }
+
+  function updateAddressMeta(
+    addressId: string,
+    field: "addressName" | "isBilling" | "isDelivery",
+    value: string | boolean,
+  ) {
+    setValues((current) => ({
+      ...current,
+      addresses: current.addresses.map((address) =>
+        address.id === addressId ? { ...address, [field]: value } : address,
+      ),
+    }));
   }
 
   function handleSave() {
@@ -386,11 +523,10 @@ function AppPartyDialogContent({
                       key={currentType}
                       type="button"
                       onClick={() => handlePartyTypeChange(currentType)}
-                      className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${
-                        partyType === currentType
+                      className={`inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition ${partyType === currentType
                           ? "theme-accent-contrast-text border-skyblue bg-skyblue"
                           : "border-darknavy/12 bg-white text-darknavy hover:border-skyblue/40 hover:bg-skyblue/8"
-                      }`}
+                        }`}
                     >
                       {currentType}
                     </button>
@@ -401,20 +537,29 @@ function AppPartyDialogContent({
 
             <PartyInformationDetailsFields
               addressOptions={addressOptions}
-              atcOptions={atcOptions}
+              accountOptions={accountOptions}
+              atcOptions={atcDropdown.options}
               errors={errors}
               isClassificationSelected={isClassificationSelected}
               isReadonly={false}
               partyTypeOptions={[partyType]}
+              termOptions={termDropdown.options}
               values={values}
+              onAddAddress={addAddress}
               onAddressInputChange={handleAddressInputChange}
               onInputChange={handleInputChange}
               onPartyTypesChange={handlePartyTypesChange}
+              onRemoveAddress={removeAddress}
+              onSelectAddress={selectAddress}
               onSelectAtcCode={selectAtcCode}
+              onSelectAutocompleteAddress={selectAutocompleteAddress}
+              onSyncAutocompleteAddressDetails={syncAutocompleteAddressDetails}
               onSelectBarangay={selectBarangay}
               onSelectCityMunicipality={selectCityMunicipality}
               onSelectProvince={selectProvince}
-              onSelectRegion={selectRegion}
+              onSelectTerm={selectTerm}
+              onSetDefaultAddress={setDefaultAddress}
+              onUpdateAddressMeta={updateAddressMeta}
               onUpdateField={updateField}
             />
           </div>

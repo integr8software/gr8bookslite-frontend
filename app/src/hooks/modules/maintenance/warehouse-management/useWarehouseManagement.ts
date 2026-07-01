@@ -12,6 +12,7 @@ type WarehouseManagementStoreState = {
 	updateWarehouse: (warehouse: WarehouseRecord) => void;
 	deleteWarehouse: (warehouseId: string) => void;
 	isLoading: boolean;
+	lastSyncedAt: number;
 	isMutating: boolean;
 };
 
@@ -84,6 +85,7 @@ export function useWarehouseManagementStore<
 		deleteWarehouse: (warehouseId) =>
 			deleteWarehouseMutation.mutate(warehouseId),
 		isLoading: warehousesQuery.isLoading,
+		lastSyncedAt: warehousesQuery.dataUpdatedAt,
 		isMutating:
 			addWarehouseMutation.isPending ||
 			updateWarehouseMutation.isPending ||

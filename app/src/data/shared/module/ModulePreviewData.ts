@@ -2,7 +2,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   Activity,
   BadgeCheck,
-  BarChart3,
   Briefcase,
   Building2,
   FileText,
@@ -17,6 +16,7 @@ import {
   UserRound,
   WalletCards,
   Warehouse,
+  BarChart3,
 } from "lucide-react";
 
 export type ModulePreviewMetric = {
@@ -537,24 +537,6 @@ export const ModulePreviewPages: Record<string, ModulePreviewData> = {
       "Useful for testing forms, announcements, and people-data cards.",
       "Keeps the module naming close to the provided reference.",
       "Can later connect cleanly to HR-specific services and hooks.",
-    ],
-  },
-  reportsAnalytics: {
-    eyebrow: "Insights Module",
-    title: "Reports & Analytics",
-    description:
-      "A reporting destination mock for business summaries, exports, and cross-module insight cards.",
-    icon: BarChart3,
-    tone: "coral",
-    metrics: [
-      { label: "Saved Reports", value: "24" },
-      { label: "Dashboards", value: "06" },
-      { label: "Scheduled Runs", value: "13" },
-    ],
-    highlights: [
-      "Ideal for validating larger chart containers and report actions.",
-      "Acts as a realistic catch-all analytics surface for demos.",
-      "Rounds out the module catalog with a familiar admin destination.",
     ],
   },
 };

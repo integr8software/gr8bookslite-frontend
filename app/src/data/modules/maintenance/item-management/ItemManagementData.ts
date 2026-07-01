@@ -10,6 +10,7 @@ import type {
 	ItemSetupKind,
 	ItemSetupRecord,
 	ItemSupplierAssignment,
+	ItemSupplierRecord,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { ItemCategorySystemDefaultAccountingSetup } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 
@@ -666,6 +667,41 @@ export const MockItemAttributes: ItemAttributeRecord[] = [
 		values: ["A", "B", "C", "Return"],
 		requiredOnItem: false,
 		affectsStock: true,
+		status: "Active",
+	},
+];
+
+export const MockItemSuppliers: ItemSupplierRecord[] = [
+	{
+		id: "supplier-techsource",
+		code: "SUP-001",
+		name: "TechSource Inc.",
+		contactPerson: "Procurement Desk",
+		contactDetails: "procurement@techsource.example",
+		status: "Active",
+	},
+	{
+		id: "supplier-global-supply",
+		code: "SUP-002",
+		name: "Global Supply Co.",
+		contactPerson: "Customer Service",
+		contactDetails: "orders@globalsupply.example",
+		status: "Active",
+	},
+	{
+		id: "supplier-prime-distributors",
+		code: "SUP-003",
+		name: "Prime Distributors",
+		contactPerson: "Sales Team",
+		contactDetails: "sales@primedistributors.example",
+		status: "Active",
+	},
+	{
+		id: "supplier-northline",
+		code: "SUP-004",
+		name: "Northline Trading",
+		contactPerson: "Accounts Desk",
+		contactDetails: "accounts@northline.example",
 		status: "Active",
 	},
 ];

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { AppName } from "@/app/src/data/shared/app/AppConstants";
-import { TermManagementListPage } from "@/app/src/ui/modules/maintenance/financial-management/term-management/TermManagementListPage";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { TermManagementListPage } from "@/app/src/ui/modules/maintenance/term-management/TermManagementListPage";
 
 const PageTitle = "Term Management";
 

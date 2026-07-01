@@ -16,6 +16,30 @@ export type AiAssistantPurchaseRequestPrefill = {
 	}>;
 };
 
+export type AiAssistantTermManagementPrefill = {
+	name?: string;
+	description?: string;
+	datemode?: "Day" | "Month" | "Year";
+	period?: string;
+	status?: "Active" | "Inactive";
+};
+
+export type AiAssistantTermManagementAction = {
+	type: "term_management";
+	moduleCode: "TM";
+	command:
+		| "open"
+		| "search"
+		| "filter_status"
+		| "prepare_add"
+		| "preview_edit";
+	label?: string;
+	query?: string;
+	status?: "Active" | "Inactive";
+	prefill?: AiAssistantTermManagementPrefill;
+	targetTermName?: string;
+};
+
 export type AiAssistantAction =
 	| {
 			type: "navigate";
@@ -28,7 +52,8 @@ export type AiAssistantAction =
 			route: string;
 			label?: string;
 			prefill?: AiAssistantPurchaseRequestPrefill;
-	  };
+	  }
+	| AiAssistantTermManagementAction;
 
 export type AiAssistantChatResponse = {
 	message: string;

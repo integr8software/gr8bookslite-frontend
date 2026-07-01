@@ -1,6 +1,12 @@
 export const AiAssistantPurchaseRequestPrefillStorageKey =
   "gr8books.aiAssistant.purchaseRequestPrefill";
 
+export const AiAssistantTermManagementPendingActionStorageKey =
+	"gr8books.aiAssistant.termManagementPendingAction";
+
+export const AiAssistantTermManagementActionEvent =
+	"gr8books:ai-assistant:term-management-action";
+
 export const AiAssistantChatMessagesStorageKey =
   "gr8books.aiAssistant.chatMessages";
 
@@ -43,7 +49,7 @@ export const AiAssistantVoiceModeOptions = [
 	{ label: "Auto", value: "auto" },
 ] as const;
 
-export const AiAssistantRecordingSilenceDurationMs = 3000;
+export const AiAssistantRecordingSilenceDurationMs = 1500;
 
 export const AiAssistantRecordingInitialGraceMs = 1200;
 

@@ -29,6 +29,14 @@ export type TermManagementFormErrors = Partial<
 
 export type TermManagementActionMode = "add" | "edit" | "view";
 
+export type TermManagementDrawerState =
+	| {
+			initialValues?: TermManagementFormValues;
+			mode: TermManagementActionMode;
+			term?: TermManagement;
+	  }
+	| null;
+
 export type TermManagementTableColumnKey =
 	| "name"
 	| "description"

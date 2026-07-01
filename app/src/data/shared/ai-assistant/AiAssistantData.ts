@@ -5,11 +5,13 @@ import {
 	AiAssistantChatStorageVersionKey,
 	AiAssistantMaxStoredMessages,
 	AiAssistantPurchaseRequestPrefillStorageKey,
+	AiAssistantTermManagementPendingActionStorageKey,
 	AiAssistantWelcomeMessage,
 } from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
 import type {
 	AiAssistantChatMessage,
 	AiAssistantPurchaseRequestPrefill,
+	AiAssistantTermManagementAction,
 } from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
 
 export const AiAssistantInitialMessages: AiAssistantChatMessage[] = [
@@ -96,6 +98,49 @@ export function SaveAiAssistantPurchaseRequestPrefill(
 	);
 }
 
+export function SaveAiAssistantTermManagementPendingAction(
+	action: AiAssistantTermManagementAction,
+) {
+	if (typeof window === "undefined") {
+		return;
+	}
+
+	window.localStorage.setItem(
+		AiAssistantTermManagementPendingActionStorageKey,
+		JSON.stringify(action),
+	);
+}
+
+export function LoadAiAssistantTermManagementPendingAction() {
+	if (typeof window === "undefined") {
+		return null;
+	}
+
+	try {
+		const stored = window.localStorage.getItem(
+			AiAssistantTermManagementPendingActionStorageKey,
+		);
+
+		if (!stored) {
+			return null;
+		}
+
+		const parsed = JSON.parse(stored) as AiAssistantTermManagementAction;
+
+		return IsTermManagementAssistantAction(parsed) ? parsed : null;
+	} catch {
+		return null;
+	}
+}
+
+export function ClearAiAssistantTermManagementPendingAction() {
+	if (typeof window === "undefined") {
+		return;
+	}
+
+	window.localStorage.removeItem(AiAssistantTermManagementPendingActionStorageKey);
+}
+
 export function ClearAiAssistantStorage() {
 	if (typeof window === "undefined") {
 		return;
@@ -105,6 +150,7 @@ export function ClearAiAssistantStorage() {
 	window.localStorage.removeItem(AiAssistantChatOpenStorageKey);
 	window.localStorage.removeItem(AiAssistantChatStorageVersionKey);
 	window.localStorage.removeItem(AiAssistantPurchaseRequestPrefillStorageKey);
+	window.localStorage.removeItem(AiAssistantTermManagementPendingActionStorageKey);
 }
 
 function IsValidAiAssistantMessage(
@@ -121,6 +167,22 @@ function IsAiAssistantStorageCurrent() {
 	return (
 		window.localStorage.getItem(AiAssistantChatStorageVersionKey) ===
 		AiAssistantChatStorageVersion
+	);
+}
+
+function IsTermManagementAssistantAction(
+	action: AiAssistantTermManagementAction,
+): action is AiAssistantTermManagementAction {
+	return (
+		action?.type === "term_management" &&
+		action.moduleCode === "TM" &&
+		[
+			"open",
+			"search",
+			"filter_status",
+			"prepare_add",
+			"preview_edit",
+		].includes(action.command)
 	);
 }
 

@@ -7,6 +7,11 @@ import {
 } from "react";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import {
+	ItemPerishabilityOptions,
+	ItemTaxTreatmentSelectOptions,
+	VatExclusiveTaxMultiplier,
+} from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import type {
 	ItemFormErrors,
 	ItemFormValues,
@@ -270,8 +275,11 @@ export function ItemBehaviorFields({
 					disabled={isReadonly}
 					className={fieldClassName}
 				>
-					<option value="Non Perishable">Non Perishable</option>
-					<option value="Perishable">Perishable</option>
+					{ItemPerishabilityOptions.map((perishability) => (
+						<option key={perishability} value={perishability}>
+							{perishability}
+						</option>
+					))}
 				</select>
 			</FormField>
 			<FormField label="Status" error={errors.status} required>
@@ -333,7 +341,7 @@ export function ItemPricingTaxFields({
 					disabled={isReadonly}
 					className={fieldClassName}
 				>
-					{TaxTreatmentOptions.map((taxTreatment) => (
+					{ItemTaxTreatmentSelectOptions.map((taxTreatment) => (
 						<option key={taxTreatment.value} value={taxTreatment.value}>
 							{taxTreatment.label}
 						</option>
@@ -477,7 +485,7 @@ function createSuggestedSellingPrice(values: ItemFormValues) {
 		return values.costPrice;
 	}
 
-	return values.costPrice * 1.12;
+	return values.costPrice * VatExclusiveTaxMultiplier;
 }
 
 function DecimalNumberInput({
@@ -628,10 +636,3 @@ function ToggleField({
 const fieldClassName =
 	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy read-only:bg-offwhite/65";
 
-const TaxTreatmentOptions = [
-	{ label: "VAT Exclusive (12%)", value: "VAT Exclusive" },
-	{ label: "VAT Inclusive (12%)", value: "VAT Inclusive" },
-	{ label: "VAT Exempt (0%)", value: "VAT Exempt" },
-	{ label: "Zero Rated (0%)", value: "Zero Rated" },
-	{ label: "Non-VAT (0%)", value: "Non-VAT" },
-] as const;

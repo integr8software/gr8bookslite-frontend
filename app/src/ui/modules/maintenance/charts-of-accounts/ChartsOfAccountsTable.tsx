@@ -61,7 +61,7 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
       activeAccount
         ? {
           id: activeAccount.id,
-          isSpecific: isSpecificAccountNumber(activeAccount.accountNumber),
+          isSpecific: activeAccount.accountLevel === "SPECIFIC",
           parentId: activeAccount.parentId,
         }
         : undefined,
@@ -73,7 +73,7 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
 
     setActiveDragAccount(undefined);
 
-    if (!over || active.id === over.id) {
+    if (!over || active.id === over.id || !activeDragAccount?.isSpecific) {
       return;
     }
 
@@ -116,6 +116,3 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
   );
 }
 
-function isSpecificAccountNumber(accountNumber: string) {
-  return !accountNumber.endsWith("000");
-}

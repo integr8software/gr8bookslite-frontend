@@ -45,11 +45,12 @@ export function ChartsOfAccountsTableRow({
     listeners,
     setNodeRef: setDraggableNodeRef,
     transform,
-  } = useDraggable({ id: account.id });
+  } = useDraggable({ id: account.id, disabled: !isSpecificAccount(account) });
   const { isOver, setNodeRef: setDroppableNodeRef } = useDroppable({
     id: account.id,
   });
   const targetIsSpecific = isSpecificAccountNumber(account.accountNumber);
+  const accountIsSpecific = isSpecificAccount(account);
   const canDropOnAccount = getCanDropOnAccount({
     activeDragAccount,
     targetAccount: account,
@@ -86,6 +87,7 @@ export function ChartsOfAccountsTableRow({
       <td className="px-5 py-4">
         <AccountNameCell
           account={account}
+          canDrag={accountIsSpecific}
           expandedIds={expandedIds}
           dragAttributes={attributes}
           dragListeners={listeners}
@@ -116,6 +118,7 @@ export function ChartsOfAccountsTableRow({
 
 function AccountNameCell({
   account,
+  canDrag,
   expandedIds,
   dragAttributes,
   dragListeners,
@@ -123,6 +126,7 @@ function AccountNameCell({
   onToggleExpanded,
 }: {
   account: ChartAccount;
+  canDrag: boolean;
   expandedIds: Set<string>;
   dragAttributes: ReturnType<typeof useDraggable>["attributes"];
   dragListeners: ReturnType<typeof useDraggable>["listeners"];
@@ -152,8 +156,14 @@ function AccountNameCell({
       ) : null}
       <button
         type="button"
+        disabled={!canDrag}
         aria-label={`Drag ${account.accountName}`}
-        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-darknavy/40 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/30"
+        className={joinClasses(
+          "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/30",
+          canDrag
+            ? "text-darknavy/40 hover:bg-skyblue/10 hover:text-darknavy"
+            : "cursor-not-allowed text-darknavy/15",
+        )}
         {...dragAttributes}
         {...dragListeners}
       >
@@ -232,16 +242,24 @@ function RowActions({
 }) {
   return (
     <ModuleTableActions>
-      <ModuleTableActionButton
-        variant="edit"
-        label={`Edit ${account.accountName}`}
-        onClick={() => onEdit(account)}
-      />
-      <ModuleTableActionButton
-        variant="delete"
-        label={`Deactivate ${account.accountName}`}
-        onClick={() => onDelete(account)}
-      />
+      {isSpecificAccount(account) ? (
+        <>
+          <ModuleTableActionButton
+            variant="edit"
+            label={`Edit ${account.accountName}`}
+            onClick={() => onEdit(account)}
+          />
+          <ModuleTableActionButton
+            variant="delete"
+            label={`Deactivate ${account.accountName}`}
+            onClick={() => onDelete(account)}
+          />
+        </>
+      ) : null}
     </ModuleTableActions>
   );
+}
+
+function isSpecificAccount(account: ChartAccount) {
+  return account.accountLevel === "SPECIFIC";
 }

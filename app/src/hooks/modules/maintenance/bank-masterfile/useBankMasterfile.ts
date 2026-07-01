@@ -69,30 +69,33 @@ export function useBankMasterfileStore<TSelected = BankMasterfileStoreState>(
 	const queryClient = useQueryClient();
 	const accessToken = useAppStore((state) => state.accessToken);
 	const authProfileQuery = useAuthProfileQuery({ accessToken });
+	const companyId = authProfileQuery.data?.activeCompanyId ?? null;
 	const banksQuery = useQuery({
-		queryKey: BankMasterfileQueryKeys.banks(),
+		queryKey: BankMasterfileQueryKeys.banks(companyId),
 		queryFn: fetchBanks,
+		enabled: Boolean(companyId),
 	});
 	const nextAccountCodeQuery = useQuery({
-		queryKey: BankMasterfileQueryKeys.nextAccountCode(),
+		queryKey: BankMasterfileQueryKeys.nextAccountCode(companyId),
 		queryFn: fetchNextBankAccountCode,
+		enabled: Boolean(companyId),
 		retry: false,
 	});
 	const refreshBanks = useCallback(() => {
 		void queryClient.invalidateQueries({
-			queryKey: BankMasterfileQueryKeys.banks(),
+			queryKey: BankMasterfileQueryKeys.banks(companyId),
 		});
-	}, [queryClient]);
+	}, [companyId, queryClient]);
 	const refreshNextAccountCode = useCallback(() => {
 		void queryClient.invalidateQueries({
-			queryKey: BankMasterfileQueryKeys.nextAccountCode(),
+			queryKey: BankMasterfileQueryKeys.nextAccountCode(companyId),
 		});
-	}, [queryClient]);
+	}, [companyId, queryClient]);
 	const addBankMutation = useMutation({
 		mutationFn: createBank,
 		onSuccess: () => {
 			void queryClient.invalidateQueries({
-				queryKey: BankMasterfileQueryKeys.all(),
+				queryKey: BankMasterfileQueryKeys.all(companyId),
 			});
 			toast.success("Bank account created successfully.");
 		},
@@ -108,7 +111,7 @@ export function useBankMasterfileStore<TSelected = BankMasterfileStoreState>(
 		mutationFn: importBanks,
 		onSuccess: () => {
 			void queryClient.invalidateQueries({
-				queryKey: BankMasterfileQueryKeys.all(),
+				queryKey: BankMasterfileQueryKeys.all(companyId),
 			});
 			toast.success("Bank accounts imported successfully.");
 		},
@@ -124,7 +127,7 @@ export function useBankMasterfileStore<TSelected = BankMasterfileStoreState>(
 		mutationFn: updateBank,
 		onSuccess: (_, updatedBank) => {
 			void queryClient.invalidateQueries({
-				queryKey: BankMasterfileQueryKeys.all(),
+				queryKey: BankMasterfileQueryKeys.all(companyId),
 			});
 			toast.success(
 				updatedBank.status === "Active"
@@ -144,7 +147,7 @@ export function useBankMasterfileStore<TSelected = BankMasterfileStoreState>(
 		mutationFn: updateBankStatus,
 		onSuccess: (_, updatedBank) => {
 			void queryClient.invalidateQueries({
-				queryKey: BankMasterfileQueryKeys.all(),
+				queryKey: BankMasterfileQueryKeys.all(companyId),
 			});
 			toast.success(
 				`Bank account ${updatedBank.status === "Active" ? "activated" : "inactivated"} successfully.`,

@@ -1,6 +1,11 @@
 export const BankMasterfileQueryKeys = {
-	all: () => ["bank-masterfile"] as const,
-	banks: () => [...BankMasterfileQueryKeys.all(), "banks"] as const,
-	nextAccountCode: () =>
-		[...BankMasterfileQueryKeys.all(), "next-account-code"] as const,
+	all: (companyId?: number | null) =>
+		["bank-masterfile", companyId ?? "no-company"] as const,
+	banks: (companyId?: number | null) =>
+		[...BankMasterfileQueryKeys.all(companyId), "banks"] as const,
+	nextAccountCode: (companyId?: number | null) =>
+		[
+			...BankMasterfileQueryKeys.all(companyId),
+			"next-account-code",
+		] as const,
 };

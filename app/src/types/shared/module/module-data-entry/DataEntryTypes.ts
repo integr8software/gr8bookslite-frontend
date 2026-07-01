@@ -82,7 +82,7 @@ export type ModuleDataEntryProps<TRow extends { id: string }> = {
 	isReadonly: boolean;
 	isRowNumberColumnFixed?: boolean;
 	rows: TRow[];
-	title: string;
+	title: ReactNode;
 	addColumnOptions?: ModuleDataEntryAddColumnOption[];
 	columnOptions?: ModuleDataEntryColumnOption[];
 	getCellValue?: (row: TRow, columnId: string) => string;

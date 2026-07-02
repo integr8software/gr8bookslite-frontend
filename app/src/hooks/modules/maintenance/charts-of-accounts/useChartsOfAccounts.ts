@@ -6,6 +6,7 @@ import {
   type ColumnDef,
   type PaginationState,
   type SortingState,
+  type VisibilityState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -22,13 +23,14 @@ import {
   moveOrReorderAccount,
 } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
 import {
-  DeactivateChartAccount,
   FetchChartAccountsTree,
   SaveChartAccount,
+  UpdateChartAccountStatus,
 } from "@/app/src/services/modules/maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
 import type {
   AccountStatus,
   AccountType,
@@ -41,7 +43,8 @@ import type {
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import toast from "react-hot-toast";
 
-const PageSize = 20;
+const PageSize = 50;
+const DefaultColumnVisibility: VisibilityState = {};
 
 export function useChartsOfAccounts() {
   const queryClient = useQueryClient();
@@ -66,11 +69,16 @@ export function useChartsOfAccounts() {
   const [structureFilter, setStructureFilter] =
     useState<ChartAccountStructureFilter>("All");
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnVisibility, setColumnVisibility] =
+    useState<VisibilityState>(DefaultColumnVisibility);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: PageSize,
   });
   const [drawerAccount, setDrawerAccount] = useState<ChartAccount | null>(null);
+  const [drawerParentAccount, setDrawerParentAccount] =
+    useState<ChartAccount | null>(null);
+  const [drawerMode, setDrawerMode] = useState<"add" | "edit" | "view">("add");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -122,19 +130,46 @@ export function useChartsOfAccounts() {
     },
   });
 
-  const deactivateAccountMutation = useMutation({
-    mutationFn: DeactivateChartAccount,
+  const updateStatusMutation = useMutation({
+    mutationFn: ({
+      accountId,
+      status,
+    }: {
+      accountId: string;
+      status: AccountStatus;
+    }) => UpdateChartAccountStatus(accountId, status),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
       });
-      toast.success("Chart account deactivated.");
+      toast.success("Chart account status updated.");
     },
     onError: (error) => {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Could not deactivate chart account.",
+          : "Could not update chart account status.",
+      );
+    },
+  });
+
+  const importAccountsMutation = useMutation({
+    mutationFn: async (values: ChartAccountFormValues[]) => {
+      for (const value of values) {
+        await SaveChartAccount(value, null);
+      }
+    },
+    onSuccess: async (_, values) => {
+      await queryClient.invalidateQueries({
+        queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
+      });
+      toast.success(`${values.length} chart account${values.length === 1 ? "" : "s"} imported.`);
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not import chart accounts.",
       );
     },
   });
@@ -143,6 +178,10 @@ export function useChartsOfAccounts() {
 
   const visibleAccounts = useMemo(() => {
     const expanded = flatAccounts.filter(({ account }) => {
+      if (structureFilter === "Without Submodules") {
+        return true;
+      }
+
       let parentId = account.parentId;
 
       while (parentId) {
@@ -199,13 +238,15 @@ export function useChartsOfAccounts() {
 
   const columns = useMemo<ColumnDef<FlattenedChartAccount>[]>(
     () =>
-      ChartsOfAccountsTableColumns.map((column) => {
+      ChartsOfAccountsTableColumns.filter(
+        (column) => column.key !== "parentPath",
+      ).map((column) => {
         if (!column.key) {
           return {
             id: "actions",
             header: column.label,
             enableSorting: false,
-            meta: { className: column.className },
+            meta: { className: column.className, label: column.label },
           };
         }
 
@@ -216,7 +257,7 @@ export function useChartsOfAccounts() {
           column.sortable ?? true,
         );
       }),
-    [],
+    [structureFilter],
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table exposes table helper functions that React Compiler cannot memoize safely.
@@ -224,9 +265,11 @@ export function useChartsOfAccounts() {
     data: visibleAccounts,
     columns,
     state: {
+      columnVisibility,
       pagination,
       sorting,
     },
+    onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -280,13 +323,24 @@ export function useChartsOfAccounts() {
     table.setPageIndex(0);
   }
 
-  function openAddDrawer() {
+  function openAddDrawer(parentAccount: ChartAccount | null = null) {
     setDrawerAccount(null);
+    setDrawerParentAccount(parentAccount);
+    setDrawerMode("add");
     setIsDrawerOpen(true);
   }
 
   function openEditDrawer(account: ChartAccount) {
     setDrawerAccount(account);
+    setDrawerParentAccount(null);
+    setDrawerMode("edit");
+    setIsDrawerOpen(true);
+  }
+
+  function openViewDrawer(account: ChartAccount) {
+    setDrawerAccount(account);
+    setDrawerParentAccount(null);
+    setDrawerMode("view");
     setIsDrawerOpen(true);
   }
 
@@ -298,8 +352,15 @@ export function useChartsOfAccounts() {
     saveAccountMutation.mutate(values);
   }
 
-  function deleteAccount(accountId: string) {
-    deactivateAccountMutation.mutate(accountId);
+  async function importAccounts(values: ChartAccountFormValues[]) {
+    await importAccountsMutation.mutateAsync(values);
+  }
+
+  function updateAccountStatus(account: ChartAccount) {
+    updateStatusMutation.mutate({
+      accountId: account.id,
+      status: account.status === "Active" ? "Inactive" : "Active",
+    });
   }
 
   function reorderAccount(accountId: string, overAccountId: string) {
@@ -317,28 +378,47 @@ export function useChartsOfAccounts() {
     }
   }
 
+  const effectiveRole = ResolveAuthProfileEffectiveRole(authProfileQuery.data);
+  const canManage = effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN";
+  const permissions = {
+    canCreate: canManage,
+    canExport: canManage,
+    canImport: canManage,
+    canUpdate: canManage,
+    canView: true,
+  };
+
   return {
     accountTypeFilter,
     accounts,
     activeTab,
     drawerAccount,
+    drawerMode,
+    drawerParentAccount,
     expandedIds,
     flatAccounts,
     isDrawerOpen,
     isLoading: accountsQuery.isLoading,
+    isRefreshing: accountsQuery.isFetching && !accountsQuery.isLoading,
     lastSyncedAt: accountsQuery.dataUpdatedAt,
     isMutating:
-      saveAccountMutation.isPending || deactivateAccountMutation.isPending,
+      saveAccountMutation.isPending || updateStatusMutation.isPending,
+    isImporting: importAccountsMutation.isPending,
+    permissions,
     searchQuery,
     statusFilter,
     structureFilter,
     table,
     visibleAccounts,
     closeDrawer,
-    deleteAccount,
     openAddDrawer,
     openEditDrawer,
+    openViewDrawer,
+    refreshAccounts: () => {
+      void accountsQuery.refetch();
+    },
     reorderAccount,
+    importAccounts,
     saveAccount,
     resetFilters,
     setAccountTypeFilter: changeAccountTypeFilter,
@@ -347,6 +427,7 @@ export function useChartsOfAccounts() {
     setStatusFilter: changeStatusFilter,
     setStructureFilter: changeStructureFilter,
     toggleExpanded,
+    updateAccountStatus,
   };
 }
 
@@ -359,9 +440,10 @@ function createAccountColumn(
   return {
     id,
     header,
-    accessorFn: (row) => row.account[id],
+    accessorFn: (row) =>
+      id === "parentPath" ? row.parentPath : row.account[id],
     enableSorting,
     sortingFn: "alphanumeric",
-    meta: { className },
+    meta: { className, label: header },
   };
 }

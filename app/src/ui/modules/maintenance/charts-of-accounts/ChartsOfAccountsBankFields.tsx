@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { ChartsOfAccountsBankFields as BankFields } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
   BankDetailsKey,
@@ -20,16 +21,36 @@ export function ChartsOfAccountsBankFields({
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {BankFields.map((field) => (
-        <Field key={field.key} label={field.label}>
-          <Input
-            type={field.type ?? "text"}
-            value={values.bankDetails?.[field.key] ?? ""}
-            onChange={(event) =>
-              onBankFieldChange(field.key, event.target.value)
-            }
-          />
-        </Field>
+        <BankDetailField
+          key={field.key}
+          field={field}
+          value={values.bankDetails?.[field.key] ?? ""}
+          onChange={(value) => onBankFieldChange(field.key, value)}
+        />
       ))}
     </div>
+  );
+}
+
+function BankDetailField({
+  field,
+  value,
+  onChange,
+}: {
+  field: (typeof BankFields)[number];
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const inputId = useId();
+
+  return (
+    <Field label={field.label} htmlFor={inputId}>
+      <Input
+        id={inputId}
+        type={field.type ?? "text"}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </Field>
   );
 }

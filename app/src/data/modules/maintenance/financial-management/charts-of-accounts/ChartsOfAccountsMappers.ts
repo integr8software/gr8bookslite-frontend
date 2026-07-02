@@ -16,7 +16,6 @@ export function accountToFormValues(
     statementGroup: account.statementGroup,
     statementSection: account.statementSection,
     normalBalance: account.normalBalance,
-    accountCategory: account.accountCategory,
     description: account.description,
     status: account.status,
     showInReports: account.showInReports,

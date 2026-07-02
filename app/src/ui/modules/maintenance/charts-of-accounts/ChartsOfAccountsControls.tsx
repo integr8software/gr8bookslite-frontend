@@ -4,6 +4,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import {
   AccountTypeBadgeVariants,
+  AccountTypeLabels,
   BadgeVariantClasses,
 } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
@@ -59,7 +60,7 @@ export function Input({ className, ...props }: ComponentProps<"input">) {
   return (
     <input
       className={joinClasses(
-        "h-10 w-full rounded-md border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20",
+        "app-disabled-control app-data-entry-field h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 read-only:cursor-default disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35 disabled:placeholder:text-darknavy/32",
         className,
       )}
       {...props}
@@ -76,7 +77,9 @@ export function Select({
     <div className="relative">
       <select
         className={joinClasses(
-          "h-10 w-full appearance-none rounded-md border border-darknavy/10 bg-white px-3 pr-9 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20",
+          "app-select-control app-disabled-control h-11 w-full appearance-none rounded-lg border border-darknavy/10 bg-white px-3 pr-9 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35",
+          props.disabled &&
+            "border-darknavy/15 opacity-100",
           className,
         )}
         {...props}
@@ -95,26 +98,36 @@ export function Field({
   children,
   className,
   error,
+  htmlFor,
   label,
+  required = false,
 }: {
   children: ReactNode;
   className?: string;
   error?: string;
+  htmlFor?: string;
   label: string;
+  required?: boolean;
 }) {
   return (
-    <label className={joinClasses("grid gap-1.5", className)}>
-      <span className="flex items-center justify-between text-sm font-semibold text-darknavy/70">
-        {label}
-        {error ? <span className="text-xs text-red-500">{error}</span> : null}
-      </span>
+    <div className={joinClasses("grid gap-1.5", className)}>
+      <label
+        htmlFor={htmlFor}
+        className="flex items-center justify-between text-sm font-semibold text-darknavy/70"
+      >
+        <span>
+          {label}
+          {required ? <span className="text-coralpink"> *</span> : null}
+        </span>
+        {error ? <span className="text-xs text-coralpink">{error}</span> : null}
+      </label>
       {children}
-    </label>
+    </div>
   );
 }
 
 export function TypeBadge({ type }: { type: ChartAccount["accountType"] }) {
-  return <Badge variant={AccountTypeBadgeVariants[type]}>{type}</Badge>;
+  return <Badge variant={AccountTypeBadgeVariants[type]}>{AccountTypeLabels[type]}</Badge>;
 }
 
 export function Badge({

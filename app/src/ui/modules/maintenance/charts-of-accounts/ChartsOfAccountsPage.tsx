@@ -4,16 +4,17 @@ import { useState } from "react";
 import {
 	CheckCircle2,
 	CirclePause,
-	Download,
 	Layers3,
 	ListTree,
 	Network,
 	Plus,
+	ReceiptText,
 	Upload,
 } from "lucide-react";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsDrawer";
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsFilters";
+import { ChartsOfAccountsImportDialog } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsImportDialog";
 import { ChartsOfAccountsTable } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsTable";
 import { ChartsOfAccountsSpotlightTutorial } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsSpotlightTutorial";
 import { Card } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsControls";
@@ -29,6 +30,7 @@ import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 export function ChartsOfAccountsMain() {
 	const coa = useChartsOfAccounts();
 	const accountOptions = coa.flatAccounts.map((item) => item.account);
+	const [isImportOpen, setIsImportOpen] = useState(false);
 	const totalAccounts = coa.flatAccounts.length;
 	const activeAccounts = coa.flatAccounts.filter(
 		({ account }) => account.status === "Active",
@@ -38,17 +40,20 @@ export function ChartsOfAccountsMain() {
 		Boolean(account.children?.length),
 	).length;
 	const withoutSubmodules = totalAccounts - withSubmodules;
-	const [pendingDeleteAccount, setPendingDeleteAccount] =
+	const postingAccounts = coa.flatAccounts.filter(
+		({ account }) => account.isPostingAccount,
+	).length;
+	const [pendingStatusAccount, setPendingStatusAccount] =
 		useState<ChartAccount | null>(null);
 	useMaintenanceAddDrawerSpotlight(coa.openAddDrawer, coa.closeDrawer);
 
-	function handleConfirmDelete() {
-		if (!pendingDeleteAccount) {
+	function handleConfirmStatusChange() {
+		if (!pendingStatusAccount) {
 			return;
 		}
 
-		coa.deleteAccount(pendingDeleteAccount.id);
-		setPendingDeleteAccount(null);
+		coa.updateAccountStatus(pendingStatusAccount);
+		setPendingStatusAccount(null);
 	}
 
 	return (
@@ -68,6 +73,8 @@ export function ChartsOfAccountsMain() {
 								className={
 									moduleHeaderActionClassNames.secondary
 								}
+								disabled={!coa.permissions.canImport}
+								onClick={() => setIsImportOpen(true)}
 							>
 								<Upload
 									className="h-4 w-4"
@@ -77,20 +84,9 @@ export function ChartsOfAccountsMain() {
 							</button>
 							<button
 								type="button"
-								className={
-									moduleHeaderActionClassNames.secondary
-								}
-							>
-								<Download
-									className="h-4 w-4"
-									aria-hidden="true"
-								/>
-								Export
-							</button>
-							<button
-								type="button"
 								className={moduleHeaderActionClassNames.primary}
-								onClick={coa.openAddDrawer}
+								onClick={() => coa.openAddDrawer()}
+								disabled={!coa.permissions.canCreate}
 								data-spotlight-id="charts-of-accounts-add-account"
 							>
 								<Plus className="h-4 w-4" aria-hidden="true" />
@@ -136,7 +132,15 @@ export function ChartsOfAccountsMain() {
 							tone: "cyan",
 							value: withoutSubmodules,
 						},
+						{
+							helper: `${getAccountPercentage(postingAccounts, totalAccounts)}% of total`,
+							icon: ReceiptText,
+							label: "Posting Account",
+							tone: "slate",
+							value: postingAccounts,
+						},
 					]}
+					className="2xl:grid-cols-6"
 				/>
 
 				<Card
@@ -146,16 +150,24 @@ export function ChartsOfAccountsMain() {
 					<ChartsOfAccountsTable
 						expandedIds={coa.expandedIds}
 						isLoading={coa.isLoading}
+						isRefreshing={coa.isRefreshing}
 						lastSyncedAt={coa.lastSyncedAt}
+						permissions={coa.permissions}
 						table={coa.table}
 						toolbar={
 							<ChartsOfAccountsFilters
 								accountTypeFilter={coa.accountTypeFilter}
 								activeTab={coa.activeTab}
+								exportAllRows={coa.flatAccounts}
+								exportFilteredRows={coa.visibleAccounts}
+								isRefreshing={coa.isRefreshing}
+								permissions={coa.permissions}
 								searchQuery={coa.searchQuery}
 								statusFilter={coa.statusFilter}
 								structureFilter={coa.structureFilter}
+								table={coa.table}
 								onAccountTypeChange={coa.setAccountTypeFilter}
+								onRefresh={coa.refreshAccounts}
 								onResetFilters={coa.resetFilters}
 								onSearchChange={coa.setSearchQuery}
 								onStatusChange={coa.setStatusFilter}
@@ -163,10 +175,15 @@ export function ChartsOfAccountsMain() {
 								onTabChange={coa.setActiveTab}
 							/>
 						}
-						onDelete={setPendingDeleteAccount}
+						canDragRows={coa.structureFilter !== "Without Submodules"}
+						showHierarchyGuides={coa.structureFilter !== "Without Submodules"}
+						showParentColumn={false}
+						onAddChild={coa.openAddDrawer}
 						onEdit={coa.openEditDrawer}
 						onReorderAccount={coa.reorderAccount}
+						onStatusChange={setPendingStatusAccount}
 						onToggleExpanded={coa.toggleExpanded}
+						onView={coa.openViewDrawer}
 					/>
 				</Card>
 			</main>
@@ -176,17 +193,40 @@ export function ChartsOfAccountsMain() {
 				accounts={accountOptions}
 				isOpen={coa.isDrawerOpen}
 				isSaving={coa.isMutating}
+				mode={coa.drawerMode}
+				parentAccount={coa.drawerParentAccount}
 				onClose={coa.closeDrawer}
 				onSave={coa.saveAccount}
 			/>
+			{coa.permissions.canImport ? (
+				<ChartsOfAccountsImportDialog
+					accounts={accountOptions}
+					isOpen={isImportOpen}
+					onClose={() => setIsImportOpen(false)}
+					onImportAccounts={coa.importAccounts}
+				/>
+			) : null}
 			<AppDialog
-				isOpen={Boolean(pendingDeleteAccount)}
-				title="Deactivate chart account?"
-				description={`This will mark ${pendingDeleteAccount?.accountName ?? "the selected account"} (${pendingDeleteAccount?.accountNumber ?? ""}) as inactive while keeping accounting history intact.`}
-				confirmLabel="Deactivate Account"
-				tone="danger"
-				onCancel={() => setPendingDeleteAccount(null)}
-				onConfirm={handleConfirmDelete}
+				isOpen={Boolean(pendingStatusAccount)}
+				isPending={coa.isMutating}
+				title={
+					pendingStatusAccount?.status === "Active"
+						? "Deactivate chart account?"
+						: "Activate chart account?"
+				}
+				description={
+					pendingStatusAccount?.status === "Active"
+						? `${pendingStatusAccount.accountName} (${pendingStatusAccount.accountNumber}) will be inactive while keeping accounting history intact.`
+						: `${pendingStatusAccount?.accountName ?? "This account"} will be available for normal selection again.`
+				}
+				confirmLabel={
+					pendingStatusAccount?.status === "Active"
+						? "Deactivate"
+						: "Activate"
+				}
+				tone={pendingStatusAccount?.status === "Active" ? "danger" : "success"}
+				onCancel={() => setPendingStatusAccount(null)}
+				onConfirm={handleConfirmStatusChange}
 			/>
 		</section>
 	);

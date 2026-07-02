@@ -14,7 +14,7 @@ import {
 import { WorkspaceCompaniesHref } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
 import { useBillingPlansQuery } from "@/app/src/hooks/billing/useBillingPlansQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
-import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import { useWorkspaceCompanyManagementStore } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagementStore";
 import type { WorkspaceCompanyRecord } from "@/app/src/types/workspace/WorkspaceCompanyTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {

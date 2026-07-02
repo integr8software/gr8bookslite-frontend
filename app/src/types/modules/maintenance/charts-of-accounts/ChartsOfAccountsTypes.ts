@@ -15,19 +15,6 @@ export type AccountStatus = "Active" | "Inactive";
 
 export type StatementGroup = "Balance Sheet" | "Income Statement" | "Cash Flow";
 
-export type AccountCategory =
-  | "Header"
-  | "Cash in Bank"
-  | "Cash on Hand"
-  | "Receivable"
-  | "Inventory"
-  | "Payable"
-  | "Loan"
-  | "Revenue"
-  | "Cost of Sales"
-  | "Operating Expense"
-  | "Other";
-
 export type BankDetails = {
   bankName: string;
   bankAccountNumber: string;
@@ -53,7 +40,6 @@ export type ChartAccount = {
   statementGroup: StatementGroup;
   statementSection: string;
   normalBalance: NormalBalance;
-  accountCategory: AccountCategory;
   description: string;
   status: AccountStatus;
   showInReports: boolean;
@@ -62,11 +48,21 @@ export type ChartAccount = {
   children?: ChartAccount[];
 };
 
-export type ChartAccountFormValues = Omit<ChartAccount, "id" | "children">;
+export type ChartAccountFormValues = Omit<
+  ChartAccount,
+  "accountLevel" | "accountType" | "children" | "id" | "normalBalance" | "status"
+> & {
+  accountLevel: AccountLevel | "";
+  accountType: AccountType | "";
+  normalBalance: NormalBalance | "";
+  status: AccountStatus | "";
+};
 
 export type FlattenedChartAccount = {
   account: ChartAccount;
   level: number;
+  parentAccountNumber: string;
+  parentPath: string;
 };
 
 export type FilterValue<TValue> = TValue | "All";
@@ -84,6 +80,7 @@ export type ChartsOfAccountsTableColumnKey =
   | "accountNumber"
   | "accountName"
   | "accountType"
+  | "parentPath"
   | "statementGroup"
   | "statementSection"
   | "normalBalance"

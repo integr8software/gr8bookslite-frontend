@@ -6,10 +6,19 @@ import type {
 export function flattenAccounts(
   accounts: ChartAccount[],
   level = 0,
+  parentAccountNumber = "",
+  parentPath: string[] = [],
 ): FlattenedChartAccount[] {
+  const currentParentPath = parentPath.join(" > ");
+
   return accounts.flatMap((account) => [
-    { account, level },
-    ...flattenAccounts(account.children ?? [], level + 1),
+    { account, level, parentAccountNumber, parentPath: currentParentPath },
+    ...flattenAccounts(
+      account.children ?? [],
+      level + 1,
+      account.accountNumber,
+      [...parentPath, account.accountName],
+    ),
   ]);
 }
 

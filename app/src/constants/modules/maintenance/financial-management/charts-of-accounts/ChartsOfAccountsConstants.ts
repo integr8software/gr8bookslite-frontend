@@ -1,5 +1,4 @@
 import type {
-  AccountCategory,
   AccountLevel,
   AccountStatus,
   AccountType,
@@ -28,23 +27,22 @@ export const AccountTypes: AccountType[] = [
   "EXPENSE",
 ];
 
+export const AccountTypeLabels: Record<AccountType, string> = {
+  ASSET: "Asset",
+  LIABILITY: "Liabilities",
+  EQUITY: "Equity",
+  REVENUE: "Revenue",
+  EXPENSE: "Expenses",
+};
+
 export const AccountStatuses: AccountStatus[] = ["Active", "Inactive"];
 
 export const NormalBalances: NormalBalance[] = ["DEBIT", "CREDIT"];
 
-export const AccountCategories: AccountCategory[] = [
-  "Header",
-  "Cash in Bank",
-  "Cash on Hand",
-  "Receivable",
-  "Inventory",
-  "Payable",
-  "Loan",
-  "Revenue",
-  "Cost of Sales",
-  "Operating Expense",
-  "Other",
-];
+export const NormalBalanceLabels: Record<NormalBalance, string> = {
+  DEBIT: "Debit",
+  CREDIT: "Credit",
+};
 
 export const StatementSections = ["Balance Sheet", "Income Statement"];
 
@@ -111,17 +109,18 @@ export const ChartsOfAccountsTableColumns: Array<{
 }> = [
   { label: "Account Number", key: "accountNumber", className: "min-w-36" },
   { label: "Account Name", key: "accountName", className: "min-w-72" },
-  { label: "Account Type", key: "accountType", className: "min-w-32" },
+  { label: "Parent", key: "parentPath", className: "min-w-72" },
+  { label: "Account Type", key: "accountType", className: "min-w-32 text-center" },
   {
     label: "Statement Section",
     key: "statementSection",
-    className: "min-w-44",
+    className: "min-w-44 text-center",
   },
-  { label: "Account Nature", key: "normalBalance", className: "min-w-36" },
-  { label: "Status", key: "status", className: "min-w-28" },
+  { label: "Account Nature", key: "normalBalance", className: "min-w-36 text-center" },
+  { label: "Status", key: "status", className: "min-w-28 text-center" },
   {
     label: "Actions",
-    className: "module-table-sticky-header sticky right-0 min-w-28 text-right",
+    className: "min-w-36 text-center",
   },
 ];
 

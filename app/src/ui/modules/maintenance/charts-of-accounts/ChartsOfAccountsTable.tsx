@@ -24,13 +24,23 @@ import { ChartsOfAccountsTableRow } from "@/app/src/ui/modules/maintenance/chart
 type ChartsOfAccountsTableProps = {
   expandedIds: Set<string>;
   isLoading: boolean;
+  isRefreshing: boolean;
   lastSyncedAt?: number | string | Date | null;
   table: Table<FlattenedChartAccount>;
   toolbar?: ReactNode;
-  onDelete: (account: ChartAccount) => void;
+  canDragRows: boolean;
+  showHierarchyGuides: boolean;
+  showParentColumn: boolean;
+  permissions: {
+    canUpdate: boolean;
+    canView: boolean;
+  };
   onEdit: (account: ChartAccount) => void;
+  onAddChild: (account: ChartAccount) => void;
+  onStatusChange: (account: ChartAccount) => void;
   onReorderAccount: (accountId: string, overAccountId: string) => void;
   onToggleExpanded: (accountId: string) => void;
+  onView: (account: ChartAccount) => void;
 };
 
 type ActiveDragAccount = {
@@ -52,6 +62,10 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
   );
 
   function handleDragStart(event: DragStartEvent) {
+    if (!props.canDragRows) {
+      return;
+    }
+
     const activeAccount = props.table
       .getPrePaginationRowModel()
       .rows.find((row) => row.original.account.id === event.active.id)
@@ -73,7 +87,12 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
 
     setActiveDragAccount(undefined);
 
-    if (!over || active.id === over.id || !activeDragAccount?.isSpecific) {
+    if (
+      !props.canDragRows ||
+      !over ||
+      active.id === over.id ||
+      !activeDragAccount?.isSpecific
+    ) {
       return;
     }
 
@@ -93,8 +112,10 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
         emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
         emptyTitle="No accounts found"
         isLoading={props.isLoading}
+        isSyncing={props.isRefreshing}
         lastSyncedAt={props.lastSyncedAt}
         paginationLabel="accounts"
+        pageSizeOptions={[25, 50, 100, 150, 200]}
         table={props.table}
         tableTitle="Ledger accounts"
         toolbar={props.toolbar}
@@ -104,11 +125,18 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
             key={id}
             account={original.account}
             activeDragAccount={activeDragAccount}
+            canDragRows={props.canDragRows}
             expandedIds={props.expandedIds}
             level={original.level}
-            onDelete={props.onDelete}
+            parentPath={original.parentPath}
+            permissions={props.permissions}
+            showHierarchyGuides={props.showHierarchyGuides}
+            showParentColumn={props.showParentColumn}
+            onAddChild={props.onAddChild}
             onEdit={props.onEdit}
+            onStatusChange={props.onStatusChange}
             onToggleExpanded={props.onToggleExpanded}
+            onView={props.onView}
           />
         )}
       />

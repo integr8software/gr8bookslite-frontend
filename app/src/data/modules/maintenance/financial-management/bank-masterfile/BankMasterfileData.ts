@@ -2,11 +2,14 @@ import {
 	BankImportFieldOrder,
 	BankImportMaxFileSizeBytes,
 	BankImportMinFileSizeBytes,
+	BankImportTemplateSampleRow,
 	BankImportTemplateHeaders,
 	BankMasterfileAccountTypeOptions,
 	BankMasterfileStatusOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+import { FinancialManagementCashInBankAccountTitle } from "@/app/src/constants/modules/maintenance/financial-management/FinancialManagementAccountTitleConstants";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
+import { normalizeFinancialManagementAccountTitle } from "@/app/src/data/modules/maintenance/financial-management/FinancialManagementAccountTitleData";
 import type {
 	BankImportCellErrors,
 	BankImportColumnId,
@@ -72,7 +75,12 @@ export function updateBankMasterfileFromForm(
 export function buildBankMasterfileAccountName(
 	values: Pick<BankMasterfileFormValues, "bankName">,
 ) {
-	return ["Cash in Bank", values.bankName.trim()].filter(Boolean).join(" - ");
+	return [
+		FinancialManagementCashInBankAccountTitle,
+		normalizeFinancialManagementAccountTitle(values.bankName),
+	]
+		.filter(Boolean)
+		.join(" - ");
 }
 
 export function createBlankRow(rowNumber: number): BankImportPreviewRow {
@@ -160,6 +168,11 @@ export function validateBankImportRows(
 			values.currencyCode,
 			"Currency is required.",
 		);
+		if (values.status === "Active" && !values.accountNumber.trim()) {
+			cellErrors.accountNumber = [
+				"Account number is required before activating.",
+			];
+		}
 
 		if (
 			!BankMasterfileAccountTypeOptions.includes(values.accountType as never)
@@ -389,19 +402,7 @@ export async function downloadBankImportTemplate() {
 		const workbook = new ExcelJS.default.Workbook();
 		const worksheet = workbook.addWorksheet("Bank Accounts");
 		worksheet.addRow([...BankImportTemplateHeaders]);
-		worksheet.addRow([
-			"BDO",
-			"Makati",
-			"1234567890",
-			"Checking",
-			"PHP",
-			"",
-			"",
-			"",
-			"",
-			"No",
-			"Active",
-		]);
+		worksheet.addRow([...BankImportTemplateSampleRow]);
 		worksheet.getRow(1).font = { bold: true };
 		worksheet.columns.forEach((column) => {
 			column.width = 18;
@@ -435,6 +436,7 @@ export async function downloadBankImportTemplate() {
 			new Blob(
 				[
 					`${BankImportTemplateHeaders.join(",")}\nBDO,Makati,1234567890,Checking,PHP,,,,,No,Active\n`,
+					`${BankImportTemplateHeaders.join(",")}\n${BankImportTemplateSampleRow.join(",")}\n`,
 				],
 				{ type: "text/csv;charset=utf-8" },
 			),

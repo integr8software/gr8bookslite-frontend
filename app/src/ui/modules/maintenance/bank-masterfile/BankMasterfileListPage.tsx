@@ -68,7 +68,7 @@ export function BankMasterfileListPage() {
 		[page.statistics],
 	);
 	const hasActiveFilters =
-		page.query.trim().length > 0 || page.statusFilter !== "Active";
+		page.query.trim().length > 0 || page.statusFilter !== "";
 
 	return (
 		<section className="grid gap-5">

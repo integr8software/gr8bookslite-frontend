@@ -26,7 +26,7 @@ export function useBankMasterfileListPage() {
 	const statistics = useBankMasterfileStore((state) => state.statistics);
 	const refreshBanks = useBankMasterfileStore((state) => state.refreshBanks);
 	const [statusFilter, setStatusFilter] =
-		useState<BankMasterfileStatusFilter>("Active");
+		useState<BankMasterfileStatusFilter>("");
 	const [query, setQuery] = useState("");
 	const [pendingStatusBank, setPendingStatusBank] =
 		useState<BankMasterfile | null>(null);
@@ -58,7 +58,7 @@ export function useBankMasterfileListPage() {
 	}, [banks, query, statusFilter]);
 
 	function resetFilters() {
-		setStatusFilter("Active");
+		setStatusFilter("");
 		setQuery("");
 	}
 

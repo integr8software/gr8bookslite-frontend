@@ -1,4 +1,4 @@
-import { EmptyBankDetails } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsDefaults";
+import { normalizeFinancialManagementAccountTitle } from "@/app/src/data/modules/maintenance/financial-management/FinancialManagementAccountTitleData";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   AccountStatus,
@@ -118,7 +118,7 @@ export async function SaveChartAccount(
       );
   const savedAccount = response.data.account;
 
-  if (MapStatusToApi(values.status) !== savedAccount.status) {
+  if (values.status && MapStatusToApi(values.status) !== savedAccount.status) {
     await ApiClient.patch<ChartAccountSaveResponse>(
       `${ChartOfAccountsUrl}/${savedAccount.id}/status`,
       { status: MapStatusToApi(values.status) },
@@ -129,9 +129,16 @@ export async function SaveChartAccount(
 }
 
 export async function DeactivateChartAccount(accountId: string) {
+  return UpdateChartAccountStatus(accountId, "Inactive");
+}
+
+export async function UpdateChartAccountStatus(
+  accountId: string,
+  status: AccountStatus,
+) {
   const response = await ApiClient.patch<ChartAccountSaveResponse>(
     `${ChartOfAccountsUrl}/${accountId}/status`,
-    { status: "INACTIVE" satisfies ApiChartAccountStatus },
+    { status: MapStatusToApi(status) },
   );
 
   return MapChartAccount(response.data.account);
@@ -141,25 +148,21 @@ function CreateSaveChartAccountPayload(
   values: ChartAccountFormValues,
   account?: ChartAccount | null,
 ): SaveChartAccountPayload {
-  const currencyCode =
-    values.accountCategory === "Cash in Bank"
-      ? values.bankDetails?.currency
-      : undefined;
-
   const payload: SaveChartAccountPayload = {
-    accountGroup: GetAccountGroupLabel(values.accountLevel),
-    accountNature: values.normalBalance,
+    accountGroup: values.accountLevel
+      ? GetAccountGroupLabel(values.accountLevel)
+      : undefined,
+    accountNature: values.normalBalance || undefined,
     accountTitle: values.accountName,
-    accountType: values.accountType,
+    accountType: values.accountType || undefined,
     class: values.description ? values.description.slice(0, 50) : undefined,
-    currencyCode,
     isPostingAccount: values.isPostingAccount,
     reportAlias: values.statementSection,
     showTotal: values.showInReports,
   };
 
   if (!account || account.accountLevel !== values.accountLevel) {
-    payload.accountLevel = values.accountLevel;
+    payload.accountLevel = values.accountLevel || undefined;
   }
 
   if (!account || account.parentId !== values.parentId) {
@@ -170,25 +173,11 @@ function CreateSaveChartAccountPayload(
 }
 
 function MapChartAccount(account: ApiChartAccount): ChartAccount {
-  const firstBankAccount = account.bankAccounts[0];
-
   return {
-    accountCategory: MapAccountGroup(account.accountGroup),
     accountLevel: account.accountLevel,
-    accountName: account.accountTitle,
+    accountName: normalizeFinancialManagementAccountTitle(account.accountTitle),
     accountNumber: account.accountCode,
     accountType: account.accountType ?? "ASSET",
-    bankDetails: firstBankAccount
-      ? {
-          ...EmptyBankDetails,
-          accountType: "Checking",
-          bankAccountNumber: firstBankAccount.accountNumber,
-          bankName: firstBankAccount.bankName,
-          branch: firstBankAccount.branch ?? "",
-          currency:
-            firstBankAccount.currencyCode ?? account.currencyCode ?? "PHP",
-        }
-      : undefined,
     children: account.children?.map(MapChartAccount),
     description: account.class ?? "",
     id: String(account.id),
@@ -209,24 +198,6 @@ function MapStatusToApi(status: AccountStatus): ApiChartAccountStatus {
 
 function MapStatusFromApi(status: ApiChartAccountStatus): AccountStatus {
   return status === "INACTIVE" ? "Inactive" : "Active";
-}
-
-function MapAccountGroup(value: string | null) {
-  const allowedValues = [
-    "Header",
-    "Cash in Bank",
-    "Cash on Hand",
-    "Receivable",
-    "Inventory",
-    "Payable",
-    "Loan",
-    "Revenue",
-    "Cost of Sales",
-    "Operating Expense",
-    "Other",
-  ] as const;
-
-  return allowedValues.find((item) => item === value) ?? "Other";
 }
 
 function InferStatementGroup(account: ApiChartAccount): StatementGroup {

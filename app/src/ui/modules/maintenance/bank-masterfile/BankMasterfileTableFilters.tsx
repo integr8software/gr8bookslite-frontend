@@ -51,7 +51,7 @@ export function BankMasterfileTableFilters({
 				label="Search banks"
 				value={query}
 				onChange={onQueryChange}
-				placeholder="Search by bank, account number, account code, or currency"
+				placeholder="Search by bank, account number, account code, or account title"
 			/>
 			<ModuleTableFilterSelect
 				label="Status"

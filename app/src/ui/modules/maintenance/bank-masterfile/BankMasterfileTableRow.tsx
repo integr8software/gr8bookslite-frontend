@@ -63,6 +63,9 @@ function BankMasterfileCellContent({
 }) {
 	const nextStatus = bank.status === "Active" ? "Inactive" : "Active";
 	const statusActionLabel = bank.status === "Active" ? "Inactivate" : "Activate";
+	const canActivate =
+		bank.status === "Active" ||
+		(Boolean(bank.accountNumber.trim()) && Boolean(bank.accountName.trim()));
 
 	switch (columnId) {
 		case "bankName":
@@ -72,7 +75,7 @@ function BankMasterfileCellContent({
 		case "accountNumber":
 			return (
 				<span className="font-mono text-darknavy/80">
-					{bank.accountNumber || bank.accountCode}
+					{bank.accountNumber}
 				</span>
 			);
 		case "accountName":
@@ -111,7 +114,13 @@ function BankMasterfileCellContent({
 							<ModuleTableActionButton
 								variant={nextStatus === "Inactive" ? "inactive" : "active"}
 								onClick={() => onToggleStatus(bank)}
+								disabled={!canActivate}
 								label={`${statusActionLabel} ${bank.bankName}`}
+								title={
+									canActivate
+										? `${statusActionLabel} ${bank.bankName}`
+										: "Complete the account number and account name before activating."
+								}
 							/>
 						</>
 					) : null}

@@ -12,6 +12,10 @@ export function validateBankMasterfileForm(
 		errors.bankName = "Bank is required.";
 	}
 
+	if (values.status === "Active" && !values.accountNumber.trim()) {
+		errors.accountNumber = "Account number is required before activating.";
+	}
+
 	if (!values.currencyCode.trim()) {
 		errors.currencyCode = "Currency is required.";
 	}

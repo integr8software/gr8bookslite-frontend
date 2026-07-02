@@ -34,6 +34,7 @@ type ChartsOfAccountsTableRowProps = {
   };
   showHierarchyGuides: boolean;
   showParentColumn: boolean;
+  visibleColumnIds: string[];
   onAddChild: (account: ChartAccount) => void;
   onEdit: (account: ChartAccount) => void;
   onStatusChange: (account: ChartAccount) => void;
@@ -51,6 +52,7 @@ export function ChartsOfAccountsTableRow({
   permissions,
   showHierarchyGuides,
   showParentColumn,
+  visibleColumnIds,
   onAddChild,
   onEdit,
   onStatusChange,
@@ -89,6 +91,9 @@ export function ChartsOfAccountsTableRow({
     setDroppableNodeRef(node);
   }
 
+  const visibleColumnIdSet = new Set(visibleColumnIds);
+  const isColumnVisible = (columnId: string) => visibleColumnIdSet.has(columnId);
+
   return (
     <motion.tr
       ref={setRowNodeRef}
@@ -104,58 +109,78 @@ export function ChartsOfAccountsTableRow({
         dropMode === "inside" && "bg-skyblue/10 ring-1 ring-inset ring-skyblue/25",
       )}
     >
-      <td className="relative px-5 py-4 font-semibold text-darknavy">
-        {dropMode ? (
-          <DropPlacementIndicator
-            mode={dropMode}
-            accountName={account.accountName}
+      {isColumnVisible("accountNumber") ? (
+        <td className="relative px-5 py-4 font-semibold text-darknavy">
+          {dropMode ? (
+            <DropPlacementIndicator
+              mode={dropMode}
+              accountName={account.accountName}
+            />
+          ) : null}
+          {account.accountNumber}
+        </td>
+      ) : null}
+      {isColumnVisible("accountName") ? (
+        <td className="relative px-5 py-4">
+          {dropMode && !isColumnVisible("accountNumber") ? (
+            <DropPlacementIndicator
+              mode={dropMode}
+              accountName={account.accountName}
+            />
+          ) : null}
+          <AccountNameCell
+            account={account}
+            canDrag={canDragRows && accountIsSpecific}
+            expandedIds={expandedIds}
+            dragAttributes={attributes}
+            dragListeners={listeners}
+            level={level}
+            showHierarchyGuides={showHierarchyGuides}
+            onAddChild={onAddChild}
+            onToggleExpanded={onToggleExpanded}
           />
-        ) : null}
-        {account.accountNumber}
-      </td>
-      <td className="px-5 py-4">
-        <AccountNameCell
-          account={account}
-          canDrag={canDragRows && accountIsSpecific}
-          expandedIds={expandedIds}
-          dragAttributes={attributes}
-          dragListeners={listeners}
-          level={level}
-          showHierarchyGuides={showHierarchyGuides}
-          onAddChild={onAddChild}
-          onToggleExpanded={onToggleExpanded}
-        />
-      </td>
-      {showParentColumn ? (
+        </td>
+      ) : null}
+      {showParentColumn && isColumnVisible("parentPath") ? (
         <td className="px-5 py-4 text-darknavy/70">
           <span className="line-clamp-2 text-sm font-medium" title={parentPath}>
             {parentPath || "--"}
           </span>
         </td>
       ) : null}
-      <td className="px-5 py-4 text-center">
-        <TypeBadge type={account.accountType} />
-      </td>
-      <td className="px-5 py-4 text-center text-darknavy">{account.statementSection}</td>
-      <td className="px-5 py-4 text-center">
-        <Badge variant={account.normalBalance === "DEBIT" ? "blue" : "violet"}>
-          {NormalBalanceLabels[account.normalBalance]}
-        </Badge>
-      </td>
-      <td className="px-5 py-4 text-center">
-        <Badge variant={account.status === "Active" ? "green" : "gray"}>
-          {account.status}
-        </Badge>
-      </td>
-      <td className="px-5 py-4 text-center">
-        <RowActions
-          account={account}
-          permissions={permissions}
-          onEdit={onEdit}
-          onStatusChange={onStatusChange}
-          onView={onView}
-        />
-      </td>
+      {isColumnVisible("accountType") ? (
+        <td className="px-5 py-4 text-center">
+          <TypeBadge type={account.accountType} />
+        </td>
+      ) : null}
+      {isColumnVisible("statementSection") ? (
+        <td className="px-5 py-4 text-center text-darknavy">{account.statementSection}</td>
+      ) : null}
+      {isColumnVisible("normalBalance") ? (
+        <td className="px-5 py-4 text-center">
+          <Badge variant={account.normalBalance === "DEBIT" ? "blue" : "violet"}>
+            {NormalBalanceLabels[account.normalBalance]}
+          </Badge>
+        </td>
+      ) : null}
+      {isColumnVisible("status") ? (
+        <td className="px-5 py-4 text-center">
+          <Badge variant={account.status === "Active" ? "green" : "gray"}>
+            {account.status}
+          </Badge>
+        </td>
+      ) : null}
+      {isColumnVisible("actions") ? (
+        <td className="px-5 py-4 text-center">
+          <RowActions
+            account={account}
+            permissions={permissions}
+            onEdit={onEdit}
+            onStatusChange={onStatusChange}
+            onView={onView}
+          />
+        </td>
+      ) : null}
     </motion.tr>
   );
 }
@@ -224,11 +249,11 @@ function AccountNameCell({
             const isCurrentLevel = index === level - 1;
 
             return (
-              <span key={index} className="relative block w-7 shrink-0">
+              <span key={index} className="relative block w-5 shrink-0">
                 <span className="absolute bottom-[-1rem] left-1/2 top-[-1rem] border-l border-darknavy/20" />
                 {isCurrentLevel ? (
                   <>
-                    <span className="absolute left-1/2 top-1/2 h-px w-5 border-t border-darknavy/20" />
+                    <span className="absolute left-1/2 top-1/2 h-px w-3.5 border-t border-darknavy/20" />
                   </>
                 ) : null}
               </span>

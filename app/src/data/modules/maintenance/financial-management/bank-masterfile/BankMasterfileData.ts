@@ -9,7 +9,6 @@ import {
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
 import { FinancialManagementCashInBankAccountTitle } from "@/app/src/constants/modules/maintenance/financial-management/FinancialManagementAccountTitleConstants";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
-import { normalizeFinancialManagementAccountTitle } from "@/app/src/data/modules/maintenance/financial-management/FinancialManagementAccountTitleData";
 import type {
 	BankImportCellErrors,
 	BankImportColumnId,
@@ -73,11 +72,16 @@ export function updateBankMasterfileFromForm(
 }
 
 export function buildBankMasterfileAccountName(
-	values: Pick<BankMasterfileFormValues, "bankName">,
+	values: Pick<
+		BankMasterfileFormValues,
+		"bankName" | "branch" | "accountNumber"
+	>,
 ) {
 	return [
 		FinancialManagementCashInBankAccountTitle,
-		normalizeFinancialManagementAccountTitle(values.bankName),
+		values.bankName.trim(),
+		values.branch.trim(),
+		values.accountNumber.trim(),
 	]
 		.filter(Boolean)
 		.join(" - ");
@@ -167,6 +171,24 @@ export function validateBankImportRows(
 			"currencyCode",
 			values.currencyCode,
 			"Currency is required.",
+		);
+		addRequiredError(
+			cellErrors,
+			"seriesStart",
+			values.seriesStart,
+			"Series start is required.",
+		);
+		addRequiredError(
+			cellErrors,
+			"seriesEnd",
+			values.seriesEnd,
+			"Series end is required.",
+		);
+		addRequiredError(
+			cellErrors,
+			"seriesDigits",
+			values.seriesDigits,
+			"Series digits are required.",
 		);
 		if (values.status === "Active" && !values.accountNumber.trim()) {
 			cellErrors.accountNumber = [

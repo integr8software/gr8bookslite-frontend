@@ -181,7 +181,7 @@ export function BankMasterfileFields({
 
 			<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
 				<div className="grid gap-4 lg:grid-cols-3">
-					<FormField label="Series Start" error={errors.seriesStart}>
+					<FormField label="Series Start" error={errors.seriesStart} required>
 						<input
 							id="bank-masterfile-series-start"
 							name="seriesStart"
@@ -192,7 +192,7 @@ export function BankMasterfileFields({
 							placeholder="000001"
 						/>
 					</FormField>
-					<FormField label="Series End" error={errors.seriesEnd}>
+					<FormField label="Series End" error={errors.seriesEnd} required>
 						<input
 							id="bank-masterfile-series-end"
 							name="seriesEnd"
@@ -203,7 +203,7 @@ export function BankMasterfileFields({
 							placeholder="999999"
 						/>
 					</FormField>
-					<FormField label="Series Digits" error={errors.seriesDigits}>
+					<FormField label="Series Digits" error={errors.seriesDigits} required>
 						<input
 							id="bank-masterfile-series-digits"
 							name="seriesDigits"

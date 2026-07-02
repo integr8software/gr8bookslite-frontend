@@ -6,6 +6,7 @@ import {
   EmptyBankDetails,
   accountToFormValues,
 } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
+import { AccountLevelLabels } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import { FetchNextChartAccountCode } from "@/app/src/services/modules/maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import type {
   AccountLevel,
@@ -166,12 +167,11 @@ function DrawerPanel({
     setAccountCodeError("");
     setValues((current) => ({
       ...current,
-      accountLevel:
-        current.accountLevel && nextLevels.includes(current.accountLevel)
-        ? current.accountLevel
-        : nextLevels[0],
+      accountLevel: currentAccountLevelOrDefault(current.accountLevel, nextLevels),
       accountNumber: "",
+      isPostingAccount: true,
       parentId,
+      showInReports: true,
     }));
   }
 
@@ -297,10 +297,10 @@ function getDrawerTitle(
   }
 
   if (parentAccount) {
-    return "Add Account Title";
+    return `Add ${AccountLevelLabels.SPECIFIC}`;
   }
 
-  return "Add Account";
+  return `Add ${AccountLevelLabels.SPECIFIC}`;
 }
 
 function getDrawerDescription(parentAccount: ChartAccount | null) {
@@ -312,27 +312,23 @@ function getDrawerDescription(parentAccount: ChartAccount | null) {
 }
 
 function getAvailableAccountLevels(
-  accounts: ChartAccount[],
+  _accounts: ChartAccount[],
   parentAccountId: string | null,
 ): AccountLevel[] {
   if (!parentAccountId) {
     return ["SPECIFIC"];
   }
 
-  const parentAccount = accounts.find((item) => item.id === parentAccountId);
+  return ["SPECIFIC"];
+}
 
-  switch (parentAccount?.accountLevel) {
-    case "MAJOR":
-      return ["SPECIFIC"];
-    case "SUB1":
-      return ["SPECIFIC"];
-    case "SUB2":
-      return ["SPECIFIC"];
-    case "SUB3":
-      return ["SPECIFIC"];
-    default:
-      return ["SPECIFIC"];
-  }
+function currentAccountLevelOrDefault(
+  currentAccountLevel: AccountLevel | "",
+  availableAccountLevels: AccountLevel[],
+) {
+  return currentAccountLevel && availableAccountLevels.includes(currentAccountLevel)
+    ? currentAccountLevel
+    : availableAccountLevels[0];
 }
 
 function getStandardNormalBalance(accountType: AccountType | ""): NormalBalance | "" {

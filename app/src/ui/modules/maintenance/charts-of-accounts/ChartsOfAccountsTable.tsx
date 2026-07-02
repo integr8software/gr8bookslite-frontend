@@ -52,6 +52,9 @@ type ActiveDragAccount = {
 export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
   const [activeDragAccount, setActiveDragAccount] =
     useState<ActiveDragAccount>();
+  const visibleColumnIds = props.table
+    .getVisibleLeafColumns()
+    .map((column) => column.id);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 6 },
@@ -132,6 +135,7 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
             permissions={props.permissions}
             showHierarchyGuides={props.showHierarchyGuides}
             showParentColumn={props.showParentColumn}
+            visibleColumnIds={visibleColumnIds}
             onAddChild={props.onAddChild}
             onEdit={props.onEdit}
             onStatusChange={props.onStatusChange}

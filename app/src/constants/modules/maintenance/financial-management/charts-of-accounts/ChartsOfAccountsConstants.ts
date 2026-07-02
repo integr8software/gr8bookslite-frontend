@@ -21,6 +21,14 @@ export const AccountLevels: AccountLevel[] = [
   "SPECIFIC",
 ];
 
+export const AccountLevelLabels: Record<AccountLevel, string> = {
+  MAJOR: "Parent Account",
+  SUB1: "Sub Account",
+  SUB2: "Sub Account 2",
+  SUB3: "Sub Account 3",
+  SPECIFIC: "Specific Account",
+};
+
 export const AccountTypes: AccountType[] = [
   "ASSET",
   "LIABILITY",

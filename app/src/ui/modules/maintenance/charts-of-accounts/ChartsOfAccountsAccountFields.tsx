@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import {
+  AccountLevelLabels,
   AccountStatuses,
   AccountTypeLabels,
   AccountTypes,
@@ -60,11 +61,13 @@ export function ChartsOfAccountsAccountFields({
   const hasNonStandardNature =
     Boolean(values.accountType && values.normalBalance) &&
     values.normalBalance !== standardNormalBalance;
+  const accountLevelLabel = getAccountLevelLabel(values.accountLevel);
+  const requiresParentAccount = values.accountLevel !== "MAJOR";
   const isInvalid =
     submitted &&
     (!values.accountType ||
       !values.statementSection ||
-      !values.parentId ||
+      (requiresParentAccount && !values.parentId) ||
       !values.accountNumber ||
       !values.accountName ||
       !values.accountLevel ||
@@ -99,9 +102,10 @@ export function ChartsOfAccountsAccountFields({
         account={account}
         accounts={accounts}
         accountType={values.accountType}
-        disabled={!isReadOnly && !values.accountType}
-        error={parentAccountError}
+        disabled={!requiresParentAccount || (!isReadOnly && !values.accountType)}
+        error={requiresParentAccount ? parentAccountError : undefined}
         readOnly={isReadOnly}
+        required={requiresParentAccount}
         value={values.parentId}
         onChange={onParentChange}
       />
@@ -129,6 +133,7 @@ export function ChartsOfAccountsAccountFields({
           accountCodeError ||
           (isInvalid && !values.accountNumber ? "Required" : undefined)
         }
+        inputClassName="placeholder:italic"
         label="Account Number"
         placeholder={
           isAccountCodeLoading
@@ -146,11 +151,11 @@ export function ChartsOfAccountsAccountFields({
       <RequiredTextField
         error={isInvalid && !values.accountLevel ? "Required" : undefined}
         label="Account Level"
-        placeholder="Specific"
+        placeholder={accountLevelLabel}
         readOnly
         required
         submitted={submitted}
-        value="Specific"
+        value={accountLevelLabel}
         onChange={() => undefined}
       />
 
@@ -159,7 +164,7 @@ export function ChartsOfAccountsAccountFields({
         className="sm:col-span-2"
         error={isInvalid && !values.accountName ? "Required" : undefined}
         label="Account Name"
-        placeholder="Cash in Bank - BDO"
+        placeholder="Enter Account Title..."
         readOnly={isReadOnly}
         required
         submitted={submitted}
@@ -167,7 +172,7 @@ export function ChartsOfAccountsAccountFields({
         onChange={(value) => onFieldChange("accountName", value)}
       />
       <DescriptionField
-        disabled={isReadOnly}
+        readOnly={isReadOnly}
         value={values.description}
         onChange={(value) => onFieldChange("description", value)}
       />
@@ -200,6 +205,7 @@ function RequiredTextField({
   autoFocus,
   error,
   className,
+  inputClassName,
   label,
   placeholder,
   readOnly,
@@ -211,6 +217,7 @@ function RequiredTextField({
   autoFocus?: boolean;
   error?: string;
   className?: string;
+  inputClassName?: string;
   label: string;
   placeholder: string;
   readOnly?: boolean;
@@ -236,11 +243,14 @@ function RequiredTextField({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className={
-          readOnly
-            ? "bg-darknavy/[0.03] text-darknavy/75"
-            : submitted && !value
-              ? "border-red-300 ring-2 ring-red-100"
-              : undefined
+          [
+            readOnly
+              ? "bg-darknavy/[0.03] text-darknavy/75"
+              : submitted && !value
+                ? "border-red-300 ring-2 ring-red-100"
+                : "",
+            inputClassName ?? "",
+          ].join(" ")
         }
         placeholder={placeholder}
       />
@@ -255,6 +265,7 @@ function ParentAccountField({
   disabled,
   error,
   readOnly,
+  required = true,
   value,
   onChange,
 }: {
@@ -264,21 +275,23 @@ function ParentAccountField({
   disabled?: boolean;
   error?: string;
   readOnly?: boolean;
+  required?: boolean;
   value: string | null;
   onChange: (value: string | null) => void;
 }) {
   const dropdownId = useId();
 
   return (
-    <Field label="Parent Account" error={error} htmlFor={dropdownId} required>
+    <Field label="Parent Account" error={error} htmlFor={dropdownId} required={required}>
       <AppAdvancedDropdown
         ariaInvalid={Boolean(error)}
+        className={readOnly ? "charts-of-accounts-readonly-dropdown" : undefined}
         disabled={disabled}
         emptyMessage="No parent accounts found."
         isClearable
         id={dropdownId}
         options={createParentAccountOptions(accounts, account, accountType, value)}
-        placeholder="--Select Parent Account--"
+        placeholder={required ? "--Select Parent Account--" : "--No Parent Account--"}
         readOnly={readOnly}
         searchPlaceholder="Search account number or name"
         value={value ?? ""}
@@ -361,7 +374,7 @@ function SelectField({
   return (
     <Field label={label} error={error} htmlFor={selectId} required={required}>
       <Select
-        aria-disabled={readOnly || undefined}
+        aria-readonly={readOnly || undefined}
         disabled={disabled}
         id={selectId}
         tabIndex={readOnly ? -1 : undefined}
@@ -373,7 +386,7 @@ function SelectField({
         }}
         className={
           readOnly
-            ? "pointer-events-none cursor-default border-darknavy/10 bg-darknavy/[0.025] text-darknavy/70"
+            ? "pointer-events-none cursor-default border-darknavy/10 bg-white text-darknavy/70 shadow-none"
             : undefined
         }
       >
@@ -393,10 +406,12 @@ function SelectField({
 
 function DescriptionField({
   disabled,
+  readOnly,
   value,
   onChange,
 }: {
   disabled?: boolean;
+  readOnly?: boolean;
   value: string;
   onChange: (value: string) => void;
 }) {
@@ -408,9 +423,15 @@ function DescriptionField({
         id={textareaId}
         value={value}
         disabled={disabled}
+        readOnly={readOnly}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Internal reporting notes"
-        className="app-disabled-control min-h-24 w-full rounded-lg border border-darknavy/10 bg-white px-3 py-2 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35 disabled:placeholder:text-darknavy/32"
+        placeholder="Enter Description..."
+        className={[
+          "app-disabled-control min-h-24 w-full rounded-lg border border-darknavy/10 bg-white px-3 py-2 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35 disabled:placeholder:text-darknavy/32",
+          readOnly
+            ? "cursor-default bg-white text-darknavy/70 placeholder:text-darknavy/35"
+            : "",
+        ].join(" ")}
         counterMode="used"
       />
     </Field>
@@ -462,6 +483,10 @@ function getStandardNormalBalance(accountType: AccountType | ""): NormalBalance 
   return accountType === "ASSET" || accountType === "EXPENSE"
     ? "DEBIT"
     : "CREDIT";
+}
+
+function getAccountLevelLabel(accountLevel: AccountLevel | "") {
+  return accountLevel ? AccountLevelLabels[accountLevel] : "Account";
 }
 
 function createParentAccountOptions(

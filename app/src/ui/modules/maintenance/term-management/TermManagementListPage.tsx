@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { CalendarDays, CheckCircle2, CirclePause, Hash } from "lucide-react";
+import { useTermManagementAssistantActions } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagementAssistantActions";
 import { useTermManagementListPage } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagementListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
-import type { TermManagement } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
+import type { TermManagementDrawerState } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import {
 	ModuleStatisticCards,
 	type ModuleStatisticCardItem,
@@ -15,20 +16,29 @@ import { TermManagementImportDialog } from "@/app/src/ui/modules/maintenance/ter
 import { TermManagementTable } from "@/app/src/ui/modules/maintenance/term-management/TermManagementTable";
 import { TermManagementDrawer } from "@/app/src/ui/modules/maintenance/term-management/TermManagementDrawer";
 
-type DrawerState = { mode: "add" | "edit" | "view"; term?: TermManagement } | null;
-
 export function TermManagementListPage() {
 	const page = useTermManagementListPage();
-	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	const [drawerState, setDrawerState] =
+		useState<TermManagementDrawerState>(null);
 	const [isImportOpen, setIsImportOpen] = useState(false);
+	const closeDrawer = useCallback(() => setDrawerState(null), []);
+	const openDrawer = useCallback(
+		(state: TermManagementDrawerState) => setDrawerState(state),
+		[],
+	);
 	useMaintenanceAddDrawerSpotlight(
 		() => {
 			if (page.permissions.canCreate) {
 				setDrawerState({ mode: "add" });
 			}
 		},
-		() => setDrawerState(null),
+		closeDrawer,
 	);
+	useTermManagementAssistantActions({
+		closeDrawer,
+		openDrawer,
+		page,
+	});
 	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
 		() => [
 			{
@@ -114,9 +124,10 @@ export function TermManagementListPage() {
 				onViewTerm={(term) => setDrawerState({ mode: "view", term })}
 			/>
 			<TermManagementDrawer
+				initialValues={drawerState?.initialValues}
 				isOpen={Boolean(drawerState)}
 				mode={drawerState?.mode ?? "add"}
-				onClose={() => setDrawerState(null)}
+				onClose={closeDrawer}
 				term={drawerState?.term}
 			/>
 			{page.permissions.canImport ? (

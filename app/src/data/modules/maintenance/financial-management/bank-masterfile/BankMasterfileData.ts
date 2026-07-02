@@ -70,16 +70,9 @@ export function updateBankMasterfileFromForm(
 }
 
 export function buildBankMasterfileAccountName(
-	values: Pick<BankMasterfileFormValues, "bankName" | "branch" | "accountNumber">,
+	values: Pick<BankMasterfileFormValues, "bankName">,
 ) {
-	return [
-		"Cash in Bank",
-		values.bankName.trim(),
-		values.branch.trim(),
-		values.accountNumber.trim(),
-	]
-		.filter(Boolean)
-		.join(" - ");
+	return ["Cash in Bank", values.bankName.trim()].filter(Boolean).join(" - ");
 }
 
 export function createBlankRow(rowNumber: number): BankImportPreviewRow {

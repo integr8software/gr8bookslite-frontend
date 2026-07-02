@@ -1782,6 +1782,8 @@ type DisbursementEntryColumnId =
   | "debit"
   | "credit";
 
+type DisbursementEntryView = "accounting" | "expense";
+
 const DefaultDisbursementEntryColumnOrder: DisbursementEntryColumnId[] = [
   "accountCode",
   "accountName",
@@ -1912,6 +1914,8 @@ function VoucherDataEntry({
   const [particularsEditorEntryId, setParticularsEditorEntryId] = useState<
     string | null
   >(null);
+  const [entryView, setEntryView] =
+    useState<DisbursementEntryView>("accounting");
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [columnOrder, setColumnOrder] = useState<DisbursementEntryColumnId[]>(
     DefaultDisbursementEntryColumnOrder,
@@ -2232,6 +2236,140 @@ function VoucherDataEntry({
     () => visibleColumnOrder.map((columnId) => allColumns[columnId]),
     [allColumns, visibleColumnOrder],
   );
+  const expenseColumns = useMemo<
+    ModuleDataEntryColumn<DisbursementLineEntry>[]
+  >(
+    () => [
+      {
+        header: "Expense Type",
+        id: "expenseType",
+        width: 235,
+        widthClassName: "w-[15rem]",
+        renderCell: (entry) => (
+          <ChartAccountDropdown
+            accounts={chartAccounts}
+            value={entry.accountName}
+            valueField="accountName"
+            readOnly={isReadonly}
+            isClearable
+            className={AccountingDropdownClassName}
+            placeholder="Enter expense type"
+            searchPlaceholder="Search expense type"
+            onChange={() => undefined}
+            onSelectAccount={(account) =>
+              onUpdateEntryFields(entry.id, {
+                accountCode: account?.accountNumber ?? "",
+                accountName: account?.accountName ?? "",
+              })
+            }
+          />
+        ),
+      },
+      {
+        header: "Gross Receipt Amt",
+        id: "grossReceiptAmount",
+        width: 155,
+        widthClassName: "w-[10rem]",
+        renderCell: (entry) => (
+          <EntryNumberInput
+            value={entry.taxDetails.grossAmount}
+            onChange={(value) =>
+              onUpdateEntryFields(entry.id, {
+                credit: 0,
+                debit: value,
+                taxDetails: syncTaxDetailsAmount(
+                  entry.taxDetails,
+                  value,
+                  entry.taxRate,
+                ),
+              })
+            }
+            disabled={isReadonly}
+          />
+        ),
+      },
+      {
+        header: "VAT Ex Amt",
+        id: "vatExclusiveAmount",
+        width: 130,
+        widthClassName: "w-[9rem]",
+        renderCell: (entry) => (
+          <ExpenseAmountCell
+            value={Math.max(
+              0,
+              entry.taxDetails.grossAmount - entry.taxDetails.vatAmount,
+            )}
+            fractionDigits={4}
+          />
+        ),
+      },
+      {
+        header: "VAT",
+        id: "vatAmount",
+        width: 115,
+        widthClassName: "w-[8rem]",
+        renderCell: (entry) => (
+          <ExpenseTaxAmountButton
+            value={entry.taxDetails.vatAmount}
+            disabled={isReadonly}
+            onClick={() => onOpenEntryTaxEditor(entry.id)}
+          />
+        ),
+      },
+      {
+        header: "EWT",
+        id: "ewtAmount",
+        width: 115,
+        widthClassName: "w-[8rem]",
+        renderCell: (entry) => (
+          <ExpenseTaxAmountButton
+            value={entry.taxDetails.ewtAmount}
+            disabled={isReadonly}
+            onClick={() => onOpenEntryTaxEditor(entry.id)}
+          />
+        ),
+      },
+      {
+        header: "For Payment",
+        id: "forPayment",
+        width: 145,
+        widthClassName: "w-[9rem]",
+        renderCell: (entry) => (
+          <ExpenseAmountCell value={entry.taxDetails.netAmount} />
+        ),
+      },
+      {
+        ...allColumns.partyName,
+        header: "VCE Name",
+        id: "vceName",
+      },
+      {
+        ...allColumns.particulars,
+        header: "Particulars",
+      },
+      {
+        ...allColumns.vatType,
+        header: "VAT Type",
+      },
+      {
+        ...allColumns.atcCode,
+        header: "ATC Code",
+      },
+      {
+        ...allColumns.refId,
+        header: "Ref No.",
+      },
+    ],
+    [
+      allColumns,
+      chartAccounts,
+      isReadonly,
+      onOpenEntryTaxEditor,
+      onUpdateEntryFields,
+    ],
+  );
+  const activeColumns =
+    entryView === "expense" ? expenseColumns : columns;
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
       columnOrder.map((columnId) => ({
@@ -2387,15 +2525,19 @@ function VoucherDataEntry({
     <section className="min-w-0">
       <div className="min-w-0">
         <ModuleDataEntry
-          columns={columns}
+          columns={activeColumns}
           description=""
           emptyRowLabel="entry"
           error={errors.lineEntries}
-          columnOptions={columnOptions}
-          summaryCells={{
-            credit: formatAccountingAmount(totalCredit),
-            debit: formatAccountingAmount(totalDebit),
-          }}
+          columnOptions={entryView === "accounting" ? columnOptions : []}
+          summaryCells={
+            entryView === "accounting"
+              ? {
+                credit: formatAccountingAmount(totalCredit),
+                debit: formatAccountingAmount(totalDebit),
+              }
+              : undefined
+          }
           footerDetails={
             <span
               className={joinClasses(
@@ -2434,7 +2576,38 @@ function VoucherDataEntry({
               onSelect: onAddDisbursementType,
             },
           ]}
-          title="Accounting Entries"
+          title={
+            <div
+              role="tablist"
+              aria-label="Entry view"
+              className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
+            >
+              {([
+                ["accounting", "Accounting Entries"],
+                ["expense", "Expense Details"],
+              ] as const).map(([view, label]) => {
+                const isActive = entryView === view;
+
+                return (
+                  <button
+                    key={view}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setEntryView(view)}
+                    className={joinClasses(
+                      "h-8 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
+                      isActive
+                        ? "bg-white text-coralpink shadow-sm ring-1 ring-darknavy/10"
+                        : "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
+                    )}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          }
           onAddRows={onAddEntries}
           onAutoColumnWidth={fitColumnWidth}
           onClearRows={onClearEntries}
@@ -2500,6 +2673,51 @@ function EntryInput({
       readOnly={readOnly}
       className={accountingCellControlClassName()}
     />
+  );
+}
+
+function ExpenseAmountCell({
+  fractionDigits = 2,
+  value,
+}: {
+  fractionDigits?: number;
+  value: number;
+}) {
+  return (
+    <div className="flex h-10 w-full items-center justify-end bg-offwhite/45 px-3 text-sm font-medium tabular-nums text-darknavy/70">
+      {value.toLocaleString("en-US", {
+        minimumFractionDigits: fractionDigits,
+        maximumFractionDigits: fractionDigits,
+      })}
+    </div>
+  );
+}
+
+function ExpenseTaxAmountButton({
+  disabled,
+  onClick,
+  value,
+}: {
+  disabled: boolean;
+  onClick: () => void;
+  value: number;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={joinClasses(
+        accountingCellControlClassName("text-right tabular-nums"),
+        "hover:bg-skyblue/10 disabled:bg-offwhite/45",
+      )}
+      title="Edit tax details"
+    >
+      {value.toLocaleString("en-US", {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+      })}
+    </button>
   );
 }
 

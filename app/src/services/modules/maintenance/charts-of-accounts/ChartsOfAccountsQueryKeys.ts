@@ -1,9 +1,10 @@
 export const ChartsOfAccountsQueryKeys = {
-  tree: () =>
+  tree: (companyId?: number | null) =>
     [
       "maintenance",
       "financial-management",
       "charts-of-accounts",
+      companyId ?? "no-company",
       "tree",
     ] as const,
 };

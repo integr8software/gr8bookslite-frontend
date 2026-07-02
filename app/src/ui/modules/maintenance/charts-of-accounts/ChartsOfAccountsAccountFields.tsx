@@ -84,6 +84,7 @@ export function ChartsOfAccountsAccountFields({
         onChange={onParentChange}
       />
       <SelectField
+        disabled={Boolean(account)}
         label="Account Level"
         value={values.accountLevel}
         options={
@@ -242,11 +243,13 @@ function PostingAccountField({
 }
 
 function SelectField({
+  disabled,
   label,
   options,
   value,
   onChange,
 }: {
+  disabled?: boolean;
   label: string;
   options: readonly string[];
   value: string;
@@ -254,7 +257,11 @@ function SelectField({
 }) {
   return (
     <Field label={label}>
-      <Select value={value} onChange={(event) => onChange(event.target.value)}>
+      <Select
+        disabled={disabled}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      >
         {options.map((option) => (
           <option key={option} value={option}>
             {option}

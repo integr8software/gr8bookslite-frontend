@@ -19,7 +19,7 @@ export const EmptyBankDetails: BankDetails = {
 export const EmptyAccountFormValues: ChartAccountFormValues = {
   accountNumber: "",
   accountName: "",
-  accountLevel: "MAJOR",
+  accountLevel: "SPECIFIC",
   parentId: null,
   accountType: "ASSET",
   statementGroup: "Balance Sheet",
@@ -29,6 +29,6 @@ export const EmptyAccountFormValues: ChartAccountFormValues = {
   description: "",
   status: "Active",
   showInReports: true,
-  isPostingAccount: false,
+  isPostingAccount: true,
   bankDetails: EmptyBankDetails,
 };

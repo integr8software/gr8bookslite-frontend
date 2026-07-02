@@ -253,18 +253,18 @@ function getAvailableAccountLevels(
   parentAccountId: string | null,
 ): AccountLevel[] {
   if (!parentAccountId) {
-    return ["MAJOR"];
+    return ["SPECIFIC"];
   }
 
   const parentAccount = accounts.find((item) => item.id === parentAccountId);
 
   switch (parentAccount?.accountLevel) {
     case "MAJOR":
-      return ["SUB1", "SPECIFIC"];
+      return ["SPECIFIC"];
     case "SUB1":
-      return ["SUB2", "SPECIFIC"];
+      return ["SPECIFIC"];
     case "SUB2":
-      return ["SUB3", "SPECIFIC"];
+      return ["SPECIFIC"];
     case "SUB3":
       return ["SPECIFIC"];
     default:

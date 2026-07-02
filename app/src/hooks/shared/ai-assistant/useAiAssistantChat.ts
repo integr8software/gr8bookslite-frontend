@@ -7,6 +7,7 @@ import {
 	AiAssistantChatInputFocusDelayMs,
 	AiAssistantChatScrollBottomThresholdPx,
 	AiAssistantNavigationStartEvent,
+	AiAssistantTermManagementActionEvent,
 } from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
 import {
 	LoadAiAssistantChatMessages,
@@ -14,7 +15,9 @@ import {
 	SaveAiAssistantChatMessages,
 	SaveAiAssistantChatOpenState,
 	SaveAiAssistantPurchaseRequestPrefill,
+	SaveAiAssistantTermManagementPendingAction,
 } from "@/app/src/data/shared/ai-assistant/AiAssistantData";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleRouteMap";
 import { SendAiAssistantMessage } from "@/app/src/services/shared/ai-assistant/AiAssistantApi";
 import type {
 	AiAssistantAction,
@@ -177,6 +180,24 @@ export function useAiAssistantChat() {
 			window.dispatchEvent(new Event(AiAssistantNavigationStartEvent));
 			router.push(action.route);
 			return;
+		}
+
+		if (action.type === "term_management") {
+			const route = getModuleRoute(action.moduleCode);
+
+			SaveAiAssistantTermManagementPendingAction(action);
+
+			if (pathname === route) {
+				window.dispatchEvent(
+					new CustomEvent(AiAssistantTermManagementActionEvent, {
+						detail: action,
+					}),
+				);
+				return;
+			}
+
+			window.dispatchEvent(new Event(AiAssistantNavigationStartEvent));
+			router.push(route);
 		}
 	}
 

@@ -8,6 +8,7 @@ import { AuthQueryKeys } from "@/app/src/services/auth/AuthQueryKeys";
 const TenantScopedQueryPrefixes = [
   "approval-management",
   "audit-trail",
+  "bank-masterfile",
   "branch-management",
   "cash-disbursement",
   "discounts",

@@ -21,6 +21,7 @@ import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/term
 
 type TermManagementFormPageOptions = {
 	existingTerm?: TermManagement;
+	initialValues?: TermManagementFormValues;
 	mode?: TermManagementActionMode;
 	onSaved?: () => void;
 };
@@ -40,9 +41,11 @@ export function useTermManagementFormPage(
 		options.existingTerm ?? terms.find((term) => term.id === params.recordId);
 	const isReadonly = mode === "view";
 	const [values, setValues] = useState<TermManagementFormValues>(() =>
-		existingTerm
-			? createTermManagementFormValues(existingTerm)
-			: TermManagementInitialFormValues,
+		options.initialValues
+			? options.initialValues
+			: existingTerm
+				? createTermManagementFormValues(existingTerm)
+				: TermManagementInitialFormValues,
 	);
 	const [errors, setErrors] = useState<TermManagementFormErrors>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);

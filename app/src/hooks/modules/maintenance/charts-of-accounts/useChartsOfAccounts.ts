@@ -27,6 +27,8 @@ import {
   SaveChartAccount,
 } from "@/app/src/services/modules/maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import type {
   AccountStatus,
   AccountType,
@@ -43,9 +45,13 @@ const PageSize = 20;
 
 export function useChartsOfAccounts() {
   const queryClient = useQueryClient();
+  const accessToken = useAppStore((state) => state.accessToken);
+  const authProfileQuery = useAuthProfileQuery({ accessToken });
+  const companyId = authProfileQuery.data?.activeCompanyId ?? null;
   const accountsQuery = useQuery({
-    queryKey: ChartsOfAccountsQueryKeys.tree(),
+    queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
     queryFn: FetchChartAccountsTree,
+    enabled: Boolean(companyId),
   });
   const [accounts, setAccounts] = useState<ChartAccount[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
@@ -68,31 +74,35 @@ export function useChartsOfAccounts() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
+    if (!companyId) {
+      setAccounts([]);
+      setExpandedIds(new Set());
+      return;
+    }
+
     if (!accountsQuery.data) {
+      setAccounts([]);
+      setExpandedIds(new Set());
       return;
     }
 
     setAccounts(accountsQuery.data);
-    setExpandedIds((current) => {
-      if (current.size > 0) {
-        return current;
-      }
-
-      return new Set(
+    setExpandedIds(
+      new Set(
         flattenAccounts(accountsQuery.data)
           .filter(({ account }) => Boolean(account.children?.length))
           .slice(0, 8)
           .map(({ account }) => account.id),
-      );
-    });
-  }, [accountsQuery.data]);
+      ),
+    );
+  }, [accountsQuery.data, companyId]);
 
   const saveAccountMutation = useMutation({
     mutationFn: (values: ChartAccountFormValues) =>
       SaveChartAccount(values, drawerAccount),
     onSuccess: async (account) => {
       await queryClient.invalidateQueries({
-        queryKey: ChartsOfAccountsQueryKeys.tree(),
+        queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
       });
       setExpandedIds(
         (current) =>
@@ -116,7 +126,7 @@ export function useChartsOfAccounts() {
     mutationFn: DeactivateChartAccount,
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ChartsOfAccountsQueryKeys.tree(),
+        queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
       });
       toast.success("Chart account deactivated.");
     },

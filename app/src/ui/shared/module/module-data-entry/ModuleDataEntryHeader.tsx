@@ -15,13 +15,17 @@ export function ModuleDataEntryHeader({
 		<div className="relative z-50 flex shrink-0 flex-col gap-3 rounded-t-lg border-b border-darknavy/10 bg-white px-5 py-4 xl:flex-row xl:items-center xl:justify-between">
 			<div>
 				<div className="flex flex-wrap items-center gap-2">
-					<h2 className="text-base font-semibold text-darknavy">{title}</h2>
+					<div className="text-base font-semibold text-darknavy">
+						{title}
+					</div>
 					<span className="inline-flex h-6 items-center rounded-full border border-darknavy/10 bg-offwhite px-2.5 text-[11px] font-semibold text-darknavy/60">
 						{entryCountLabel}
 					</span>
 				</div>
 				{description ? (
-					<p className="mt-1 text-sm text-darknavy/60">{description}</p>
+					<p className="mt-1 text-sm text-darknavy/60">
+						{description}
+					</p>
 				) : null}
 			</div>
 			{actions ? (

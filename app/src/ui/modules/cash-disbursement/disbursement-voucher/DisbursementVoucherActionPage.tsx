@@ -16,7 +16,6 @@ import {
   useSearchParams,
 } from "next/navigation";
 import {
-  ChevronDown,
   MoreHorizontal,
   Percent,
   Plus,
@@ -2578,23 +2577,36 @@ function VoucherDataEntry({
             },
           ]}
           title={
-            <label className="relative inline-flex items-center">
-              <span className="sr-only">Entry view</span>
-              <select
-                value={entryView}
-                onChange={(event) =>
-                  setEntryView(event.target.value as DisbursementEntryView)
-                }
-                className="h-9 cursor-pointer appearance-none rounded-md border border-darknavy/15 bg-white py-1 pl-3 pr-9 text-sm font-semibold text-darknavy outline-none transition hover:border-coralpink/50 focus:border-coralpink focus:ring-2 focus:ring-coralpink/15"
-              >
-                <option value="accounting">Accounting Entries</option>
-                <option value="expense">Expense Details</option>
-              </select>
-              <ChevronDown
-                className="pointer-events-none absolute right-3 h-4 w-4 text-darknavy/50"
-                aria-hidden="true"
-              />
-            </label>
+            <div
+              role="tablist"
+              aria-label="Entry view"
+              className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
+            >
+              {([
+                ["accounting", "Accounting Entries"],
+                ["expense", "Expense Details"],
+              ] as const).map(([view, label]) => {
+                const isActive = entryView === view;
+
+                return (
+                  <button
+                    key={view}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setEntryView(view)}
+                    className={joinClasses(
+                      "h-8 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/25",
+                      isActive
+                        ? "bg-white text-coralpink shadow-sm ring-1 ring-darknavy/10"
+                        : "text-darknavy/55 hover:bg-white/70 hover:text-darknavy",
+                    )}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           }
           onAddRows={onAddEntries}
           onAutoColumnWidth={fitColumnWidth}

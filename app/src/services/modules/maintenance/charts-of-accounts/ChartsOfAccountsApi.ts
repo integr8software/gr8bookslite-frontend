@@ -1,4 +1,3 @@
-import { normalizeFinancialManagementAccountTitle } from "@/app/src/data/modules/maintenance/financial-management/FinancialManagementAccountTitleData";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   AccountStatus,
@@ -175,7 +174,7 @@ function CreateSaveChartAccountPayload(
 function MapChartAccount(account: ApiChartAccount): ChartAccount {
   return {
     accountLevel: account.accountLevel,
-    accountName: normalizeFinancialManagementAccountTitle(account.accountTitle),
+    accountName: account.accountTitle,
     accountNumber: account.accountCode,
     accountType: account.accountType ?? "ASSET",
     children: account.children?.map(MapChartAccount),

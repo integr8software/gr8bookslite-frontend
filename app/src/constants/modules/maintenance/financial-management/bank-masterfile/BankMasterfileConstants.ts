@@ -41,6 +41,8 @@ export const BankMasterfileAccountTypeOptions = [
 	"Current",
 ] as const;
 
+export const BankMasterfileBankNamePlaceholder = "Bank name";
+
 export const BankMasterfileActionCopy = {
 	add: {
 		title: "Add Bank",
@@ -70,6 +72,20 @@ export const BankImportTemplateHeaders = [
 	"Series Digits",
 	"Default",
 	"Status",
+] as const;
+
+export const BankImportTemplateSampleRow = [
+	BankMasterfileBankNamePlaceholder,
+	"Main Branch",
+	"1234567890",
+	"Checking",
+	"PHP",
+	"",
+	"",
+	"",
+	"",
+	"No",
+	"Active",
 ] as const;
 
 export const BankImportFieldOrder: BankImportColumnId[] = [

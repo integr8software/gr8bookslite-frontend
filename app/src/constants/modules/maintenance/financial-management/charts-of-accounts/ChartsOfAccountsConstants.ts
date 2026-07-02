@@ -8,8 +8,10 @@ import type {
   ChartsOfAccountsTableColumnKey,
   NormalBalance,
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
+import { FinancialManagementCashInBankAccountTitle } from "@/app/src/constants/modules/maintenance/financial-management/FinancialManagementAccountTitleConstants";
 
 export const ChartsOfAccountsHref = "/maintenance/charts-of-accounts";
+export const ChartsOfAccountsAccountNamePlaceholder = `${FinancialManagementCashInBankAccountTitle} - Bank Name`;
 
 export const AccountLevels: AccountLevel[] = [
   "MAJOR",

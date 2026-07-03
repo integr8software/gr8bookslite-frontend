@@ -260,7 +260,7 @@ export function useChartsOfAccounts() {
           column.sortable ?? true,
         );
       }),
-    [structureFilter],
+    [],
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table exposes table helper functions that React Compiler cannot memoize safely.

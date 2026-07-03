@@ -22,6 +22,7 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 import { ChartsOfAccountsTableRow } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsTableRow";
 
 type ChartsOfAccountsTableProps = {
+  accounts: ChartAccount[];
   expandedIds: Set<string>;
   isLoading: boolean;
   isRefreshing: boolean;
@@ -32,6 +33,7 @@ type ChartsOfAccountsTableProps = {
   showHierarchyGuides: boolean;
   showParentColumn: boolean;
   permissions: {
+    canCreate: boolean;
     canUpdate: boolean;
     canView: boolean;
   };
@@ -55,6 +57,9 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
   const visibleColumnIds = props.table
     .getVisibleLeafColumns()
     .map((column) => column.id);
+  const accountById = new Map(
+    props.accounts.map((account) => [account.id, account]),
+  );
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 6 },
@@ -131,6 +136,11 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
             canDragRows={props.canDragRows}
             expandedIds={props.expandedIds}
             level={original.level}
+            parentAccount={
+              original.account.parentId
+                ? accountById.get(original.account.parentId) ?? null
+                : null
+            }
             parentPath={original.parentPath}
             permissions={props.permissions}
             showHierarchyGuides={props.showHierarchyGuides}

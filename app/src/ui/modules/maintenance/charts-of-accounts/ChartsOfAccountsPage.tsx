@@ -148,6 +148,7 @@ export function ChartsOfAccountsMain() {
 					data-spotlight-id="charts-of-accounts-table"
 				>
 					<ChartsOfAccountsTable
+						accounts={accountOptions}
 						expandedIds={coa.expandedIds}
 						isLoading={coa.isLoading}
 						isRefreshing={coa.isRefreshing}

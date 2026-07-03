@@ -75,6 +75,11 @@ function DrawerPanel({
     () => getAvailableAccountLevels(accounts, values.parentId),
     [accounts, values.parentId],
   );
+  const accountNameError = getDuplicateAccountNameError(
+    accounts,
+    values,
+    account,
+  );
 
   useEffect(() => {
     if (!isOpen) {
@@ -157,6 +162,9 @@ function DrawerPanel({
           }
         : {}),
       ...(key === "accountLevel" ? { accountNumber: "" } : {}),
+      ...(key === "accountLevel"
+        ? { isPostingAccount: value === "SPECIFIC" }
+        : {}),
     }));
   }
 
@@ -167,7 +175,7 @@ function DrawerPanel({
     setAccountCodeError("");
     setValues((current) => ({
       ...current,
-      accountLevel: currentAccountLevelOrDefault(current.accountLevel, nextLevels),
+      accountLevel: currentAccountLevelOrDefault(current.accountLevel, nextLevels, !account),
       accountNumber: "",
       isPostingAccount: true,
       parentId,
@@ -204,6 +212,7 @@ function DrawerPanel({
       !values.parentId ||
       !values.accountNumber ||
       !values.accountName ||
+      accountNameError ||
       !values.accountLevel ||
       !values.normalBalance ||
       !values.status
@@ -255,6 +264,7 @@ function DrawerPanel({
           availableAccountLevels={availableAccountLevels}
           isAccountCodeLoading={isAccountCodeLoading}
           accountCodeError={accountCodeError}
+          accountNameError={accountNameError}
           isReadOnly={mode === "view"}
           parentAccountError={
             submitted && !values.parentId ? "Required" : undefined
@@ -312,20 +322,38 @@ function getDrawerDescription(parentAccount: ChartAccount | null) {
 }
 
 function getAvailableAccountLevels(
-  _accounts: ChartAccount[],
+  accounts: ChartAccount[],
   parentAccountId: string | null,
 ): AccountLevel[] {
   if (!parentAccountId) {
     return ["SPECIFIC"];
   }
 
-  return ["SPECIFIC"];
+  const parentAccount = findAccountById(accounts, parentAccountId);
+
+  switch (parentAccount?.accountLevel) {
+    case "MAJOR":
+      return ["SUB1", "SPECIFIC"];
+    case "SUB1":
+      return ["SUB2", "SPECIFIC"];
+    case "SUB2":
+      return ["SUB3", "SPECIFIC"];
+    case "SUB3":
+      return ["SPECIFIC"];
+    default:
+      return ["SPECIFIC"];
+  }
 }
 
 function currentAccountLevelOrDefault(
   currentAccountLevel: AccountLevel | "",
   availableAccountLevels: AccountLevel[],
+  preferSpecific = false,
 ) {
+  if (preferSpecific && availableAccountLevels.includes("SPECIFIC")) {
+    return "SPECIFIC";
+  }
+
   return currentAccountLevel && availableAccountLevels.includes(currentAccountLevel)
     ? currentAccountLevel
     : availableAccountLevels[0];
@@ -354,6 +382,7 @@ function getInitialFormValues(
     ...(account || !parentAccount
       ? {}
       : {
+          accountLevel: "SPECIFIC",
           accountType: parentAccount.accountType,
           normalBalance: getStandardNormalBalance(parentAccount.accountType),
           parentId: parentAccount.id,
@@ -364,4 +393,54 @@ function getInitialFormValues(
       ...(values.bankDetails ?? EmptyBankDetails),
     },
   };
+}
+
+function getDuplicateAccountNameError(
+  accounts: ChartAccount[],
+  values: ChartAccountFormValues,
+  account: ChartAccount | null,
+) {
+  const accountName = normalizeAccountTitle(values.accountName);
+
+  if (!accountName || !values.parentId) {
+    return undefined;
+  }
+
+  const duplicateAccount = flattenAccounts(accounts).find(
+    (item) =>
+      item.id !== account?.id &&
+      item.parentId === values.parentId &&
+      normalizeAccountTitle(item.accountName) === accountName,
+  );
+
+  return duplicateAccount
+    ? "An account with this title already exists under the selected parent."
+    : undefined;
+}
+
+function flattenAccounts(accounts: ChartAccount[]): ChartAccount[] {
+  return accounts.flatMap((account) => [
+    account,
+    ...flattenAccounts(account.children ?? []),
+  ]);
+}
+
+function normalizeAccountTitle(value: string) {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function findAccountById(accounts: ChartAccount[], accountId: string): ChartAccount | null {
+  for (const account of accounts) {
+    if (account.id === accountId) {
+      return account;
+    }
+
+    const childAccount = findAccountById(account.children ?? [], accountId);
+
+    if (childAccount) {
+      return childAccount;
+    }
+  }
+
+  return null;
 }

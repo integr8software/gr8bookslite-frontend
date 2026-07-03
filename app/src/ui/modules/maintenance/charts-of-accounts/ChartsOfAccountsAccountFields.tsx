@@ -32,6 +32,7 @@ type AccountFieldsProps = {
   account: ChartAccount | null;
   accounts: ChartAccount[];
   accountCodeError?: string;
+  accountNameError?: string;
   availableAccountLevels: AccountLevel[];
   isAccountCodeLoading?: boolean;
   isReadOnly?: boolean;
@@ -49,6 +50,8 @@ export function ChartsOfAccountsAccountFields({
   account,
   accounts,
   accountCodeError,
+  accountNameError,
+  availableAccountLevels,
   isAccountCodeLoading = false,
   isReadOnly = false,
   parentAccountError,
@@ -61,8 +64,8 @@ export function ChartsOfAccountsAccountFields({
   const hasNonStandardNature =
     Boolean(values.accountType && values.normalBalance) &&
     values.normalBalance !== standardNormalBalance;
-  const accountLevelLabel = getAccountLevelLabel(values.accountLevel);
   const requiresParentAccount = values.accountLevel !== "MAJOR";
+  const isEditing = Boolean(account);
   const isInvalid =
     submitted &&
     (!values.accountType ||
@@ -104,7 +107,7 @@ export function ChartsOfAccountsAccountFields({
         accountType={values.accountType}
         disabled={!requiresParentAccount || (!isReadOnly && !values.accountType)}
         error={requiresParentAccount ? parentAccountError : undefined}
-        readOnly={isReadOnly}
+        readOnly={isReadOnly || isEditing}
         required={requiresParentAccount}
         value={values.parentId}
         onChange={onParentChange}
@@ -148,21 +151,31 @@ export function ChartsOfAccountsAccountFields({
         value={values.accountNumber}
         onChange={() => undefined}
       />
-      <RequiredTextField
+      <SelectField
+        disabled={
+          (!isReadOnly && !values.parentId) ||
+          availableAccountLevels.length <= 1
+        }
         error={isInvalid && !values.accountLevel ? "Required" : undefined}
         label="Account Level"
-        placeholder={accountLevelLabel}
-        readOnly
+        value={values.accountLevel}
+        options={availableAccountLevels}
+        includePlaceholder={false}
+        readOnly={isReadOnly || isEditing}
         required
-        submitted={submitted}
-        value={accountLevelLabel}
-        onChange={() => undefined}
+        getOptionLabel={(option) =>
+          AccountLevelLabels[option as AccountLevel] ?? option
+        }
+        onChange={(value) => onFieldChange("accountLevel", value as never)}
       />
 
       <RequiredTextField
         autoFocus={!isReadOnly && !account && Boolean(values.parentId)}
         className="sm:col-span-2"
-        error={isInvalid && !values.accountName ? "Required" : undefined}
+        error={
+          accountNameError ||
+          (isInvalid && !values.accountName ? "Required" : undefined)
+        }
         label="Account Name"
         placeholder="Enter Account Title..."
         readOnly={isReadOnly}
@@ -179,7 +192,7 @@ export function ChartsOfAccountsAccountFields({
 
       <PostingAccountField
         checked={values.isPostingAccount}
-        disabled={isReadOnly}
+        disabled={isReadOnly || values.accountLevel !== "SPECIFIC"}
         onChange={(checked) => onFieldChange("isPostingAccount", checked)}
       />
       <ReportsField
@@ -290,7 +303,7 @@ function ParentAccountField({
         emptyMessage="No parent accounts found."
         isClearable
         id={dropdownId}
-        options={createParentAccountOptions(accounts, account, accountType, value)}
+        options={createParentAccountOptions(accounts, account, accountType)}
         placeholder={required ? "--Select Parent Account--" : "--No Parent Account--"}
         readOnly={readOnly}
         searchPlaceholder="Search account number or name"
@@ -485,26 +498,20 @@ function getStandardNormalBalance(accountType: AccountType | ""): NormalBalance 
     : "CREDIT";
 }
 
-function getAccountLevelLabel(accountLevel: AccountLevel | "") {
-  return accountLevel ? AccountLevelLabels[accountLevel] : "Account";
-}
-
 function createParentAccountOptions(
   accounts: ChartAccount[],
   account: ChartAccount | null,
   accountType: AccountType | "",
-  selectedParentId: string | null,
 ): AppAdvancedDropdownOption[] {
   return flattenChartAccounts(accounts)
     .filter((item) => {
       const isCurrentAccount = item.id === account?.id;
       const isSpecific = item.accountLevel === "SPECIFIC";
-      const hasSubParent = Boolean(
-        item.children?.some((child) => child.accountLevel !== "SPECIFIC"),
-      );
-      const isSelectedParent = item.id === selectedParentId;
+      const isDescendant = account
+        ? isDescendantAccount(account, item.id)
+        : false;
 
-      return !isCurrentAccount && !isSpecific && (!hasSubParent || isSelectedParent);
+      return !isCurrentAccount && !isSpecific && !isDescendant;
     })
     .filter((item) => !accountType || item.accountType === accountType)
     .map((item) => ({
@@ -513,6 +520,14 @@ function createParentAccountOptions(
       name: item.accountName,
       value: item.id,
     }));
+}
+
+function isDescendantAccount(account: ChartAccount, ancestorAccountId: string): boolean {
+  return (account.children ?? []).some(
+    (child) =>
+      child.id === ancestorAccountId ||
+      isDescendantAccount(child, ancestorAccountId),
+  );
 }
 
 function flattenChartAccounts(accounts: ChartAccount[]): ChartAccount[] {

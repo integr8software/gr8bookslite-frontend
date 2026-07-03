@@ -119,6 +119,7 @@ export const ChartsOfAccountsTableColumns: Array<{
 }> = [
   { label: "Account Number", key: "accountNumber", className: "min-w-36" },
   { label: "Account Name", key: "accountName", className: "min-w-72" },
+  { label: "Category", key: "accountLevel", className: "min-w-36 text-center" },
   { label: "Parent", key: "parentPath", className: "min-w-72" },
   { label: "Account Type", key: "accountType", className: "min-w-32 text-center" },
   {

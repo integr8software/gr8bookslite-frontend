@@ -37,6 +37,9 @@ type ApiChartAccount = {
   reportAlias: string | null;
   class: string | null;
   isPostingAccount: boolean;
+  isSystemDefault?: boolean;
+  isUserCreated?: boolean;
+  isBankLinked?: boolean;
   showTotal: boolean;
   status: ApiChartAccountStatus;
   currencyCode: string | null;
@@ -180,7 +183,10 @@ function MapChartAccount(account: ApiChartAccount): ChartAccount {
     children: account.children?.map(MapChartAccount),
     description: account.class ?? "",
     id: String(account.id),
+    isBankLinked: Boolean(account.isBankLinked ?? account.bankAccounts.length),
     isPostingAccount: account.isPostingAccount,
+    isSystemDefault: Boolean(account.isSystemDefault),
+    isUserCreated: Boolean(account.isUserCreated),
     normalBalance: account.accountNature ?? "DEBIT",
     parentId:
       account.parentAccountId === null ? null : String(account.parentAccountId),

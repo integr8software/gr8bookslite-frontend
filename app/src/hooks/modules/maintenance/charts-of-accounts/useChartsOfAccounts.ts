@@ -13,6 +13,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  AccountLevelLabels,
   ChartsOfAccountsTableColumns,
   ChartsOfAccountsNavs,
   type ChartsOfAccountsNav,
@@ -44,7 +45,9 @@ import type {
 import toast from "react-hot-toast";
 
 const PageSize = 50;
-const DefaultColumnVisibility: VisibilityState = {};
+const DefaultColumnVisibility: VisibilityState = {
+  accountLevel: false,
+};
 
 export function useChartsOfAccounts() {
   const queryClient = useQueryClient();
@@ -441,7 +444,11 @@ function createAccountColumn(
     id,
     header,
     accessorFn: (row) =>
-      id === "parentPath" ? row.parentPath : row.account[id],
+      id === "parentPath"
+        ? row.parentPath
+        : id === "accountLevel"
+          ? AccountLevelLabels[row.account.accountLevel]
+          : row.account[id],
     enableSorting,
     sortingFn: "alphanumeric",
     meta: { className, label: header },

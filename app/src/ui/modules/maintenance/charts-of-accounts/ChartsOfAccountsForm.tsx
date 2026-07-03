@@ -11,6 +11,7 @@ type ChartsOfAccountsFormProps = {
   account: ChartAccount | null;
   accounts: ChartAccount[];
   accountCodeError?: string;
+  accountNameError?: string;
   availableAccountLevels: AccountLevel[];
   isAccountCodeLoading?: boolean;
   isReadOnly?: boolean;

@@ -44,13 +44,24 @@ export type ChartAccount = {
   status: AccountStatus;
   showInReports: boolean;
   isPostingAccount: boolean;
+  isSystemDefault: boolean;
+  isUserCreated: boolean;
+  isBankLinked: boolean;
   bankDetails?: BankDetails;
   children?: ChartAccount[];
 };
 
 export type ChartAccountFormValues = Omit<
   ChartAccount,
-  "accountLevel" | "accountType" | "children" | "id" | "normalBalance" | "status"
+  | "accountLevel"
+  | "accountType"
+  | "children"
+  | "id"
+  | "isBankLinked"
+  | "isSystemDefault"
+  | "isUserCreated"
+  | "normalBalance"
+  | "status"
 > & {
   accountLevel: AccountLevel | "";
   accountType: AccountType | "";
@@ -79,6 +90,7 @@ export type ChartsOfAccountsFormTab = "Account Information" | "Bank Details";
 export type ChartsOfAccountsTableColumnKey =
   | "accountNumber"
   | "accountName"
+  | "accountLevel"
   | "accountType"
   | "parentPath"
   | "statementGroup"

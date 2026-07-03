@@ -3,9 +3,12 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { motion } from "framer-motion";
-import { ChevronRight, GripVertical } from "lucide-react";
+import { ChevronRight, GripVertical, Plus } from "lucide-react";
 import type { CSSProperties } from "react";
-import { NormalBalanceLabels } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+import {
+  AccountLevelLabels,
+  NormalBalanceLabels,
+} from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import {
   Badge,
@@ -28,7 +31,9 @@ type ChartsOfAccountsTableRowProps = {
   expandedIds: Set<string>;
   level: number;
   parentPath: string;
+  parentAccount: ChartAccount | null;
   permissions: {
+    canCreate: boolean;
     canUpdate: boolean;
     canView: boolean;
   };
@@ -48,6 +53,7 @@ export function ChartsOfAccountsTableRow({
   canDragRows,
   expandedIds,
   level,
+  parentAccount,
   parentPath,
   permissions,
   showHierarchyGuides,
@@ -93,6 +99,9 @@ export function ChartsOfAccountsTableRow({
 
   const visibleColumnIdSet = new Set(visibleColumnIds);
   const isColumnVisible = (columnId: string) => visibleColumnIdSet.has(columnId);
+  const addTitleParentAccount = accountIsSpecific ? parentAccount : account;
+  const canAddAccountTitle =
+    permissions.canCreate && Boolean(addTitleParentAccount);
 
   return (
     <motion.tr
@@ -102,7 +111,7 @@ export function ChartsOfAccountsTableRow({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18 }}
       className={joinClasses(
-        "module-table-row group text-darknavy",
+        "module-table-row group relative z-0 text-darknavy hover:z-30 focus-within:z-30",
         isDragging && "relative z-10 bg-skyblue/5 opacity-70 shadow-sm",
         dropMode === "before" &&
         "border-t-2 border-skyblue bg-skyblue/[0.035]",
@@ -135,10 +144,18 @@ export function ChartsOfAccountsTableRow({
             dragAttributes={attributes}
             dragListeners={listeners}
             level={level}
+            addTitleParentAccount={addTitleParentAccount}
+            canAddAccountTitle={canAddAccountTitle}
             showHierarchyGuides={showHierarchyGuides}
             onAddChild={onAddChild}
             onToggleExpanded={onToggleExpanded}
           />
+          {canAddAccountTitle && addTitleParentAccount ? (
+            <AddAccountTitleButton
+              parentAccount={addTitleParentAccount}
+              onAddChild={onAddChild}
+            />
+          ) : null}
         </td>
       ) : null}
       {showParentColumn && isColumnVisible("parentPath") ? (
@@ -146,6 +163,13 @@ export function ChartsOfAccountsTableRow({
           <span className="line-clamp-2 text-sm font-medium" title={parentPath}>
             {parentPath || "--"}
           </span>
+        </td>
+      ) : null}
+      {isColumnVisible("accountLevel") ? (
+        <td className="px-5 py-4 text-center">
+          <Badge variant="gray">
+            {AccountLevelLabels[account.accountLevel]}
+          </Badge>
         </td>
       ) : null}
       {isColumnVisible("accountType") ? (
@@ -224,6 +248,8 @@ function AccountNameCell({
   dragAttributes,
   dragListeners,
   level,
+  addTitleParentAccount,
+  canAddAccountTitle,
   showHierarchyGuides,
   onAddChild,
   onToggleExpanded,
@@ -234,11 +260,12 @@ function AccountNameCell({
   dragAttributes: ReturnType<typeof useDraggable>["attributes"];
   dragListeners: ReturnType<typeof useDraggable>["listeners"];
   level: number;
+  addTitleParentAccount: ChartAccount | null;
+  canAddAccountTitle: boolean;
   showHierarchyGuides: boolean;
   onAddChild: (account: ChartAccount) => void;
   onToggleExpanded: (accountId: string) => void;
 }) {
-  const canAddChild = account.accountLevel !== "SPECIFIC";
   const hasChildren = Boolean(account.children?.length);
 
   return (
@@ -298,12 +325,16 @@ function AccountNameCell({
         type="button"
         className="flex min-h-9 min-w-0 flex-1 flex-col justify-center rounded-md text-left outline-none transition focus-visible:ring-2 focus-visible:ring-skyblue/25"
         onClick={() => {
-          if (canAddChild) {
-            onAddChild(account);
+          if (canAddAccountTitle && addTitleParentAccount) {
+            onAddChild(addTitleParentAccount);
           }
         }}
-        disabled={!canAddChild}
-        title={canAddChild ? `Add account under ${account.accountName}` : undefined}
+        disabled={!canAddAccountTitle}
+        title={
+          addTitleParentAccount
+            ? `Add account title under ${addTitleParentAccount.accountName}`
+            : undefined
+        }
       >
         <p className="truncate font-semibold text-darknavy">
           {account.accountName}
@@ -315,6 +346,32 @@ function AccountNameCell({
         ) : null}
       </button>
     </div>
+  );
+}
+
+function AddAccountTitleButton({
+  parentAccount,
+  onAddChild,
+}: {
+  parentAccount: ChartAccount;
+  onAddChild: (account: ChartAccount) => void;
+}) {
+  const addTitleLabel = `Add account title under ${parentAccount.accountName}`;
+
+  return (
+    <button
+      type="button"
+      aria-label={addTitleLabel}
+      title={addTitleLabel}
+      className="absolute bottom-0 left-1/2 z-20 inline-flex -translate-x-1/2 translate-y-1/2 items-center gap-1.5 rounded-full border border-skyblue/25 bg-white px-3 py-1 text-[11px] font-bold uppercase text-skyblue opacity-0 shadow-[0_8px_24px_rgba(14,165,233,0.16)] transition hover:border-skyblue/45 hover:bg-skyblue/5 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/25 group-hover:opacity-100"
+      onClick={(event) => {
+        event.stopPropagation();
+        onAddChild(parentAccount);
+      }}
+    >
+      <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+      Add account title
+    </button>
   );
 }
 
@@ -357,6 +414,7 @@ function RowActions({
 }: {
   account: ChartAccount;
   permissions: {
+    canCreate: boolean;
     canUpdate: boolean;
     canView: boolean;
   };
@@ -365,6 +423,8 @@ function RowActions({
   onView: (account: ChartAccount) => void;
 }) {
   const nextStatus = account.status === "Active" ? "Inactive" : "Active";
+  const canManageAccount =
+    permissions.canUpdate && (account.isUserCreated || account.isBankLinked);
 
   return (
     <ModuleTableActions className="w-full !justify-center">
@@ -375,7 +435,7 @@ function RowActions({
           onClick={() => onView(account)}
         />
       ) : null}
-      {isSpecificAccount(account) && permissions.canUpdate ? (
+      {canManageAccount ? (
         <>
           <ModuleTableActionButton
             variant="edit"

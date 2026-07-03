@@ -36,6 +36,7 @@ type ImportColumnId =
   | "accountType"
   | "normalBalance"
   | "statementSection"
+  | "reportAlias"
   | "description"
   | "showInReports"
   | "isPostingAccount"
@@ -54,6 +55,7 @@ const ImportHeaders: Array<{ id: ImportColumnId; label: string }> = [
   { id: "accountType", label: "Account Type" },
   { id: "normalBalance", label: "Account Nature" },
   { id: "statementSection", label: "Statement Section" },
+  { id: "reportAlias", label: "Report Alias" },
   { id: "description", label: "Description" },
   { id: "showInReports", label: "Show In Reports" },
   { id: "isPostingAccount", label: "Posting Account" },
@@ -407,6 +409,7 @@ function createBlankRow(rowNumber: number): ImportPreviewRow {
       accountType: "",
       normalBalance: "",
       statementSection: "",
+      reportAlias: "",
       description: "",
       showInReports: "Yes",
       isPostingAccount: "Yes",
@@ -476,6 +479,9 @@ function createImportValues(
     showInReports: parseBoolean(row.values.showInReports, true),
     statementGroup: parent.statementGroup,
     statementSection: row.values.statementSection.trim() || parent.statementSection,
+    reportAlias: parseBoolean(row.values.showInReports, true)
+      ? row.values.reportAlias.trim()
+      : "",
     status: row.values.status as AccountStatus,
   };
 }

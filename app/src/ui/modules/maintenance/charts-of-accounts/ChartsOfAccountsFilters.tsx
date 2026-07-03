@@ -246,7 +246,7 @@ const ChartsOfAccountsExportColumns: ModuleTableExportColumn<FlattenedChartAccou
     { header: "Parent Account Number", id: "parentAccountNumber", value: (row) => row.parentAccountNumber },
     { header: "Parent", id: "parent", value: (row) => row.parentPath },
     { header: "Account Name", id: "accountName", value: (row) => row.account.accountName },
-    { header: "Category", id: "accountLevel", value: (row) => AccountLevelLabels[row.account.accountLevel] },
+    { header: "Account Level", id: "accountLevel", value: (row) => AccountLevelLabels[row.account.accountLevel] },
     { header: "Account Type", id: "accountType", value: (row) => AccountTypeLabels[row.account.accountType] },
     { header: "Statement Section", id: "statementSection", value: (row) => row.account.statementSection },
     { header: "Account Nature", id: "normalBalance", value: (row) => NormalBalanceLabels[row.account.normalBalance] },

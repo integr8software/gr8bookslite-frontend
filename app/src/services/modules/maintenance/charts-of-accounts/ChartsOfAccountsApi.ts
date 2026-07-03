@@ -34,8 +34,9 @@ type ApiChartAccount = {
   accountType: ApiChartAccountType | null;
   accountNature: ApiAccountNature | null;
   accountGroup: string | null;
+  statementSection: string | null;
   reportAlias: string | null;
-  class: string | null;
+  description: string | null;
   isPostingAccount: boolean;
   isSystemDefault?: boolean;
   isUserCreated?: boolean;
@@ -67,8 +68,9 @@ type SaveChartAccountPayload = {
   accountType?: ApiChartAccountType;
   accountNature?: ApiAccountNature;
   accountGroup?: string;
+  statementSection?: string;
   reportAlias?: string;
-  class?: string;
+  description?: string;
   isPostingAccount?: boolean;
   showTotal?: boolean;
   currencyCode?: string;
@@ -151,15 +153,14 @@ function CreateSaveChartAccountPayload(
   account?: ChartAccount | null,
 ): SaveChartAccountPayload {
   const payload: SaveChartAccountPayload = {
-    accountGroup: values.accountLevel
-      ? GetAccountGroupLabel(values.accountLevel)
-      : undefined,
+    accountGroup: "",
     accountNature: values.normalBalance || undefined,
     accountTitle: values.accountName,
     accountType: values.accountType || undefined,
-    class: values.description ? values.description.slice(0, 50) : undefined,
+    description: values.description || undefined,
     isPostingAccount: values.isPostingAccount,
-    reportAlias: values.statementSection,
+    reportAlias: values.showInReports ? values.reportAlias : "",
+    statementSection: values.statementSection,
     showTotal: values.showInReports,
   };
 
@@ -177,11 +178,12 @@ function CreateSaveChartAccountPayload(
 function MapChartAccount(account: ApiChartAccount): ChartAccount {
   return {
     accountLevel: account.accountLevel,
+    accountGroup: account.accountGroup ?? "",
     accountName: account.accountTitle,
     accountNumber: account.accountCode,
     accountType: account.accountType ?? "ASSET",
     children: account.children?.map(MapChartAccount),
-    description: account.class ?? "",
+    description: account.description ?? "",
     id: String(account.id),
     isBankLinked: Boolean(account.isBankLinked ?? account.bankAccounts.length),
     isPostingAccount: account.isPostingAccount,
@@ -192,7 +194,8 @@ function MapChartAccount(account: ApiChartAccount): ChartAccount {
       account.parentAccountId === null ? null : String(account.parentAccountId),
     showInReports: account.showTotal,
     statementGroup: InferStatementGroup(account),
-    statementSection: account.reportAlias ?? InferStatementGroup(account),
+    statementSection: account.statementSection ?? InferStatementGroup(account),
+    reportAlias: account.reportAlias ?? "",
     status: MapStatusFromApi(account.status),
   };
 }
@@ -211,19 +214,4 @@ function InferStatementGroup(account: ApiChartAccount): StatementGroup {
   }
 
   return "Balance Sheet";
-}
-
-function GetAccountGroupLabel(accountLevel: ApiChartAccountLevel) {
-  switch (accountLevel) {
-    case "MAJOR":
-      return "Major Acct Type";
-    case "SUB1":
-      return "Sub Acct 1";
-    case "SUB2":
-      return "Sub Acct 2";
-    case "SUB3":
-      return "Sub Acct 3";
-    case "SPECIFIC":
-      return "Specific Acct";
-  }
 }

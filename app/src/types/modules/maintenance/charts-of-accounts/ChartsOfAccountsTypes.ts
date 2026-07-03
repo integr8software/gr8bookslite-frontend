@@ -35,10 +35,12 @@ export type ChartAccount = {
   accountNumber: string;
   accountName: string;
   accountLevel: AccountLevel;
+  accountGroup: string;
   parentId: string | null;
   accountType: AccountType;
   statementGroup: StatementGroup;
   statementSection: string;
+  reportAlias: string;
   normalBalance: NormalBalance;
   description: string;
   status: AccountStatus;
@@ -54,6 +56,7 @@ export type ChartAccount = {
 export type ChartAccountFormValues = Omit<
   ChartAccount,
   | "accountLevel"
+  | "accountGroup"
   | "accountType"
   | "children"
   | "id"
@@ -95,6 +98,7 @@ export type ChartsOfAccountsTableColumnKey =
   | "parentPath"
   | "statementGroup"
   | "statementSection"
+  | "reportAlias"
   | "normalBalance"
   | "status";
 

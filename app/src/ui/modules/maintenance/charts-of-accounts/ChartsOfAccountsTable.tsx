@@ -123,6 +123,7 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
         isSyncing={props.isRefreshing}
         lastSyncedAt={props.lastSyncedAt}
         paginationLabel="accounts"
+        paginationStorageKey="maintenance:chart-of-accounts"
         pageSizeOptions={[25, 50, 100, 150, 200]}
         table={props.table}
         tableTitle="Ledger accounts"

@@ -24,6 +24,7 @@ export const EmptyAccountFormValues: ChartAccountFormValues = {
   accountType: "",
   statementGroup: "Balance Sheet",
   statementSection: "",
+  reportAlias: "",
   normalBalance: "",
   description: "",
   status: "Active",

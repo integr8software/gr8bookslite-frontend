@@ -47,6 +47,7 @@ import toast from "react-hot-toast";
 const PageSize = 50;
 const DefaultColumnVisibility: VisibilityState = {
   accountLevel: false,
+  reportAlias: false,
 };
 
 export function useChartsOfAccounts() {
@@ -83,6 +84,7 @@ export function useChartsOfAccounts() {
     useState<ChartAccount | null>(null);
   const [drawerMode, setDrawerMode] = useState<"add" | "edit" | "view">("add");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [savedAccountId, setSavedAccountId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!companyId) {
@@ -98,14 +100,7 @@ export function useChartsOfAccounts() {
     }
 
     setAccounts(accountsQuery.data);
-    setExpandedIds(
-      new Set(
-        flattenAccounts(accountsQuery.data)
-          .filter(({ account }) => Boolean(account.children?.length))
-          .slice(0, 8)
-          .map(({ account }) => account.id),
-      ),
-    );
+    setExpandedIds(getExpandableAccountIds(accountsQuery.data));
   }, [accountsQuery.data, companyId]);
 
   const saveAccountMutation = useMutation({
@@ -117,8 +112,13 @@ export function useChartsOfAccounts() {
       });
       setExpandedIds(
         (current) =>
-          new Set(account.parentId ? [...current, account.parentId] : current),
+          new Set([
+            ...current,
+            ...getAccountAncestorIds(accounts, account.parentId),
+            ...(account.parentId ? [account.parentId] : []),
+          ]),
       );
+      setSavedAccountId(account.id);
       closeDrawer();
       toast.success(
         drawerAccount ? "Chart account updated." : "Chart account created.",
@@ -279,6 +279,37 @@ export function useChartsOfAccounts() {
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
+
+  useEffect(() => {
+    if (!savedAccountId) {
+      return;
+    }
+
+    const rowIndex = table
+      .getPrePaginationRowModel()
+      .rows.findIndex((row) => row.original.account.id === savedAccountId);
+
+    if (rowIndex < 0) {
+      return;
+    }
+
+    const pageSize = table.getState().pagination.pageSize;
+    table.setPageIndex(Math.floor(rowIndex / pageSize));
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const row = document.querySelector(
+          `[data-chart-account-id="${savedAccountId}"]`,
+        );
+
+        row?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        setSavedAccountId(null);
+      });
+    });
+  }, [savedAccountId, table, visibleAccounts]);
 
   function toggleExpanded(accountId: string) {
     setExpandedIds((current) => {
@@ -453,4 +484,37 @@ function createAccountColumn(
     sortingFn: "alphanumeric",
     meta: { className, label: header },
   };
+}
+
+function getExpandableAccountIds(accounts: ChartAccount[]) {
+  return new Set(
+    flattenAccounts(accounts)
+      .filter(({ account }) => Boolean(account.children?.length))
+      .map(({ account }) => account.id),
+  );
+}
+
+function getAccountAncestorIds(
+  accounts: ChartAccount[],
+  parentAccountId: string | null,
+) {
+  if (!parentAccountId) {
+    return [];
+  }
+
+  const parentByAccountId = new Map<string, string | null>();
+
+  flattenAccounts(accounts).forEach(({ account }) => {
+    parentByAccountId.set(account.id, account.parentId);
+  });
+
+  const ancestorIds: string[] = [];
+  let currentAccountId: string | null = parentAccountId;
+
+  while (currentAccountId) {
+    ancestorIds.push(currentAccountId);
+    currentAccountId = parentByAccountId.get(currentAccountId) ?? null;
+  }
+
+  return ancestorIds;
 }

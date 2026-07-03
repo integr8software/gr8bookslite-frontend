@@ -1361,9 +1361,11 @@ export interface ChartAccountResponseDto {
   /** @nullable */
   accountGroup: string | null;
   /** @nullable */
+  statementSection: string | null;
+  /** @nullable */
   reportAlias: string | null;
   /** @nullable */
-  class: string | null;
+  description: string | null;
   isPostingAccount: boolean;
   withSubsidiary: boolean;
   contraAccount: boolean;
@@ -1443,9 +1445,11 @@ export interface ChartAccountTreeNodeResponseDto {
   /** @nullable */
   accountGroup: string | null;
   /** @nullable */
+  statementSection: string | null;
+  /** @nullable */
   reportAlias: string | null;
   /** @nullable */
-  class: string | null;
+  description: string | null;
   isPostingAccount: boolean;
   withSubsidiary: boolean;
   contraAccount: boolean;
@@ -1515,9 +1519,11 @@ export interface CreateChartAccountDto {
   /** @maxLength 50 */
   accountGroup?: string;
   /** @maxLength 250 */
+  statementSection?: string;
+  /** @maxLength 250 */
   reportAlias?: string;
-  /** @maxLength 50 */
-  class?: string;
+  /** @maxLength 500 */
+  description?: string;
   isPostingAccount?: boolean;
   withSubsidiary?: boolean;
   contraAccount?: boolean;
@@ -1573,9 +1579,11 @@ export interface UpdateChartAccountDto {
   /** @maxLength 50 */
   accountGroup?: string;
   /** @maxLength 250 */
+  statementSection?: string;
+  /** @maxLength 250 */
   reportAlias?: string;
-  /** @maxLength 50 */
-  class?: string;
+  /** @maxLength 500 */
+  description?: string;
   isPostingAccount?: boolean;
   withSubsidiary?: boolean;
   contraAccount?: boolean;

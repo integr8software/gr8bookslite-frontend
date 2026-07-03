@@ -200,6 +200,16 @@ export function ChartsOfAccountsAccountFields({
         disabled={isReadOnly}
         onChange={(checked) => onFieldChange("showInReports", checked)}
       />
+      {values.showInReports ? (
+        <RequiredTextField
+          label="Report Alias"
+          placeholder="Enter Report Alias..."
+          readOnly={isReadOnly}
+          submitted={submitted}
+          value={values.reportAlias}
+          onChange={(value) => onFieldChange("reportAlias", value)}
+        />
+      ) : null}
       <SelectField
         error={isInvalid && !values.status ? "Required" : undefined}
         label="Status"
@@ -438,6 +448,7 @@ function DescriptionField({
         disabled={disabled}
         readOnly={readOnly}
         onChange={(event) => onChange(event.target.value)}
+        maxLength={500}
         placeholder="Enter Description..."
         className={[
           "app-disabled-control min-h-24 w-full rounded-lg border border-darknavy/10 bg-white px-3 py-2 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35 disabled:placeholder:text-darknavy/32",

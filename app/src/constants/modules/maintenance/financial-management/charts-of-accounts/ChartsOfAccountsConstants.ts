@@ -22,8 +22,8 @@ export const AccountLevels: AccountLevel[] = [
 ];
 
 export const AccountLevelLabels: Record<AccountLevel, string> = {
-  MAJOR: "Parent Account",
-  SUB1: "Sub Account",
+  MAJOR: "Major Account",
+  SUB1: "Sub Account 1",
   SUB2: "Sub Account 2",
   SUB3: "Sub Account 3",
   SPECIFIC: "Specific Account",
@@ -119,15 +119,20 @@ export const ChartsOfAccountsTableColumns: Array<{
 }> = [
   { label: "Account Number", key: "accountNumber", className: "min-w-36" },
   { label: "Account Name", key: "accountName", className: "min-w-72" },
-  { label: "Category", key: "accountLevel", className: "min-w-36 text-center" },
   { label: "Parent", key: "parentPath", className: "min-w-72" },
   { label: "Account Type", key: "accountType", className: "min-w-32 text-center" },
+  { label: "Account Level", key: "accountLevel", className: "min-w-36 text-center" },
   {
     label: "Statement Section",
     key: "statementSection",
     className: "min-w-44 text-center",
   },
   { label: "Account Nature", key: "normalBalance", className: "min-w-36 text-center" },
+  {
+    label: "Report Alias",
+    key: "reportAlias",
+    className: "min-w-44 text-center",
+  },
   { label: "Status", key: "status", className: "min-w-28 text-center" },
   {
     label: "Actions",

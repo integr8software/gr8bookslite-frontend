@@ -42,7 +42,7 @@ export function ChartsOfAccountsDrawer({
 }: ChartsOfAccountsDrawerProps) {
   return (
     <DrawerPanel
-      key={account?.id ?? parentAccount?.id ?? "new-account"}
+      key={`${mode}-${account?.id ?? parentAccount?.id ?? "new-account"}`}
       account={account}
       accounts={accounts}
       isOpen={isOpen}
@@ -87,6 +87,10 @@ function DrawerPanel({
     }
 
     if (!values.parentId || !values.accountLevel) {
+      return;
+    }
+
+    if (!availableAccountLevels.includes(values.accountLevel)) {
       return;
     }
 
@@ -145,7 +149,7 @@ function DrawerPanel({
     return () => {
       isCurrent = false;
     };
-  }, [account, isOpen, values.accountLevel, values.parentId]);
+  }, [account, availableAccountLevels, isOpen, values.accountLevel, values.parentId]);
 
   function updateField<Key extends keyof ChartAccountFormValues>(
     key: Key,
@@ -205,15 +209,18 @@ function DrawerPanel({
       return;
     }
 
+    const requiresParentAccount = values.accountLevel !== "MAJOR";
+
     if (
       isAccountCodeLoading ||
       !values.accountType ||
       !values.statementSection ||
-      !values.parentId ||
+      (requiresParentAccount && !values.parentId) ||
       !values.accountNumber ||
       !values.accountName ||
       accountNameError ||
       !values.accountLevel ||
+      !availableAccountLevels.includes(values.accountLevel) ||
       !values.normalBalance ||
       !values.status
     ) {

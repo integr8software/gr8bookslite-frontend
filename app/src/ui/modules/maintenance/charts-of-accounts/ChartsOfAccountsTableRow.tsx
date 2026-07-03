@@ -106,6 +106,7 @@ export function ChartsOfAccountsTableRow({
   return (
     <motion.tr
       ref={setRowNodeRef}
+      data-chart-account-id={account.id}
       style={rowStyle}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -165,16 +166,16 @@ export function ChartsOfAccountsTableRow({
           </span>
         </td>
       ) : null}
+      {isColumnVisible("accountType") ? (
+        <td className="px-5 py-4 text-center">
+          <TypeBadge type={account.accountType} />
+        </td>
+      ) : null}
       {isColumnVisible("accountLevel") ? (
         <td className="px-5 py-4 text-center">
           <Badge variant="gray">
             {AccountLevelLabels[account.accountLevel]}
           </Badge>
-        </td>
-      ) : null}
-      {isColumnVisible("accountType") ? (
-        <td className="px-5 py-4 text-center">
-          <TypeBadge type={account.accountType} />
         </td>
       ) : null}
       {isColumnVisible("statementSection") ? (
@@ -185,6 +186,11 @@ export function ChartsOfAccountsTableRow({
           <Badge variant={account.normalBalance === "DEBIT" ? "blue" : "violet"}>
             {NormalBalanceLabels[account.normalBalance]}
           </Badge>
+        </td>
+      ) : null}
+      {isColumnVisible("reportAlias") ? (
+        <td className="px-5 py-4 text-center text-darknavy">
+          {account.showInReports ? account.reportAlias : ""}
         </td>
       ) : null}
       {isColumnVisible("status") ? (

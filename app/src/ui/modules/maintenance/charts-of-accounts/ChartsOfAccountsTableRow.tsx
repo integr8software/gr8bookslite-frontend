@@ -145,10 +145,7 @@ export function ChartsOfAccountsTableRow({
             dragAttributes={attributes}
             dragListeners={listeners}
             level={level}
-            addTitleParentAccount={addTitleParentAccount}
-            canAddAccountTitle={canAddAccountTitle}
             showHierarchyGuides={showHierarchyGuides}
-            onAddChild={onAddChild}
             onToggleExpanded={onToggleExpanded}
           />
           {canAddAccountTitle && addTitleParentAccount ? (
@@ -254,10 +251,7 @@ function AccountNameCell({
   dragAttributes,
   dragListeners,
   level,
-  addTitleParentAccount,
-  canAddAccountTitle,
   showHierarchyGuides,
-  onAddChild,
   onToggleExpanded,
 }: {
   account: ChartAccount;
@@ -266,16 +260,13 @@ function AccountNameCell({
   dragAttributes: ReturnType<typeof useDraggable>["attributes"];
   dragListeners: ReturnType<typeof useDraggable>["listeners"];
   level: number;
-  addTitleParentAccount: ChartAccount | null;
-  canAddAccountTitle: boolean;
   showHierarchyGuides: boolean;
-  onAddChild: (account: ChartAccount) => void;
   onToggleExpanded: (accountId: string) => void;
 }) {
   const hasChildren = Boolean(account.children?.length);
 
   return (
-    <div className="flex min-w-0 items-center gap-2">
+    <div className="flex min-w-0 items-center gap-1.5">
       {showHierarchyGuides && level > 0 ? (
         <div className="flex self-stretch" aria-hidden="true">
           {Array.from({ length: level }).map((_, index) => {
@@ -305,18 +296,12 @@ function AccountNameCell({
           <GripVertical className="h-4 w-4" aria-hidden="true" />
         </button>
       ) : null}
-      {showHierarchyGuides || hasChildren ? (
+      {hasChildren ? (
         <button
           type="button"
-          disabled={!hasChildren}
           onClick={() => onToggleExpanded(account.id)}
           aria-label={`Toggle ${account.accountName}`}
-          className={joinClasses(
-            "flex h-7 w-7 items-center justify-center rounded-md transition",
-            hasChildren
-              ? "text-darknavy/50 hover:bg-white hover:text-skyblue"
-              : "text-transparent",
-          )}
+          className="flex h-7 w-7 items-center justify-center rounded-md text-darknavy/50 transition hover:bg-white hover:text-skyblue"
         >
           <ChevronRight
             className={joinClasses(
@@ -327,21 +312,7 @@ function AccountNameCell({
           />
         </button>
       ) : null}
-      <button
-        type="button"
-        className="flex min-h-9 min-w-0 flex-1 flex-col justify-center rounded-md text-left outline-none transition focus-visible:ring-2 focus-visible:ring-skyblue/25"
-        onClick={() => {
-          if (canAddAccountTitle && addTitleParentAccount) {
-            onAddChild(addTitleParentAccount);
-          }
-        }}
-        disabled={!canAddAccountTitle}
-        title={
-          addTitleParentAccount
-            ? `Add account title under ${addTitleParentAccount.accountName}`
-            : undefined
-        }
-      >
+      <div className="flex min-h-9 min-w-0 flex-1 flex-col justify-center">
         <p className="truncate font-semibold text-darknavy">
           {account.accountName}
         </p>
@@ -350,7 +321,7 @@ function AccountNameCell({
             {account.description}
           </p>
         ) : null}
-      </button>
+      </div>
     </div>
   );
 }

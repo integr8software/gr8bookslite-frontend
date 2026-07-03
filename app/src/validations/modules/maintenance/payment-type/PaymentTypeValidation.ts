@@ -17,7 +17,7 @@ export function validatePaymentTypeForm(
 	}
 
 	if (!values.type) {
-		errors.type = "Payment type classification is required.";
+		errors.type = "Payment type category is required.";
 	}
 
 	if (!values.status) {

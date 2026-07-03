@@ -33,10 +33,10 @@ export function PaymentTypeFilters({
 				label="Search payment types"
 				value={searchTerm}
 				onChange={onSearchTermChange}
-				placeholder="Search by name or type"
+				placeholder="Search by name or category"
 			/>
 			<ModuleTableFilterSelect
-				label="Type"
+				label="Category"
 				value={typeFilter}
 				options={[
 					{ label: "All", value: "" },

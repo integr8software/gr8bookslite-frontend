@@ -8,6 +8,8 @@ export const PaymentTypeOptions: PaymentTypeClassification[] = [
 	"Cash",
 	"With Bank",
 	"Bank Transfer",
+	"Online Payment",
+	"Multiple Check",
 	"Debit",
 ];
 
@@ -41,25 +43,32 @@ export const MockPaymentTypes: PaymentTypeRecord[] = [
 		type: "Bank Transfer",
 	},
 	{
-		description: "Online payment through a bank portal or digital payment channel.",
-		id: "payment-type-4",
-		paymentType: "Online Payment",
-		status: "Active",
-		type: "Bank Transfer",
-	},
-	{
 		description: "Debit memo payment requiring bank and debit memo details.",
-		id: "payment-type-5",
+		id: "payment-type-4",
 		paymentType: "Debit Memo",
 		status: "Active",
 		type: "Debit",
 	},
 	{
-		description: "Petty cash release for reimbursements and small disbursements.",
-		id: "payment-type-6",
-		paymentType: "Petty Cash",
+		description: "Bank-issued manager's check payment.",
+		id: "payment-type-5",
+		paymentType: "Manager's Check",
 		status: "Active",
-		type: "Cash",
+		type: "Multiple Check",
+	},
+	{
+		description: "Real-time bank transfer through InstaPay.",
+		id: "payment-type-6",
+		paymentType: "InstaPay",
+		status: "Active",
+		type: "Online Payment",
+	},
+	{
+		description: "Digital wallet payment through an eWallet provider.",
+		id: "payment-type-7",
+		paymentType: "eWallet",
+		status: "Active",
+		type: "Online Payment",
 	},
 ];
 

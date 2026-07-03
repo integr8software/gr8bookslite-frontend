@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Home, Plus, Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   ModuleHeader,
   moduleHeaderActionClassNames,
@@ -8,38 +8,20 @@ import {
 
 export function ChartsOfAccountsHeader({
   onAddAccount,
+  canCreate,
 }: {
   onAddAccount: () => void;
+  canCreate: boolean;
 }) {
   return (
     <ModuleHeader
-      variant="panel"
+      variant="plain"
       data-spotlight-id="charts-of-accounts-header"
       titleAs="h1"
       title="Chart of Accounts"
-      description="Manage all company accounts and financial statement mapping"
-      eyebrow={
-        <>
-          <Home className="h-3.5 w-3.5" aria-hidden="true" />
-          Accounting master data
-        </>
-      }
+      description="Manage all company accounts and financial statement mapping."
       actions={
-        <>
-          <button
-            type="button"
-            className={moduleHeaderActionClassNames.secondary}
-          >
-            <Upload className="h-4 w-4" aria-hidden="true" />
-            Import
-          </button>
-          <button
-            type="button"
-            className={moduleHeaderActionClassNames.secondary}
-          >
-            <Download className="h-4 w-4" aria-hidden="true" />
-            Export
-          </button>
+        canCreate ? (
           <button
             type="button"
             className={moduleHeaderActionClassNames.primary}
@@ -49,7 +31,7 @@ export function ChartsOfAccountsHeader({
             <Plus className="h-4 w-4" aria-hidden="true" />
             Add Account
           </button>
-        </>
+        ) : null
       }
     />
   );

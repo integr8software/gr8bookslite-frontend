@@ -202,6 +202,7 @@ export function ChartsOfAccountsAccountFields({
       />
       {values.showInReports ? (
         <RequiredTextField
+          className="sm:col-span-2"
           label="Report Alias"
           placeholder="Enter Report Alias..."
           readOnly={isReadOnly}
@@ -269,7 +270,7 @@ function RequiredTextField({
           [
             readOnly
               ? "bg-darknavy/[0.03] text-darknavy/75"
-              : submitted && !value
+              : required && submitted && !value
                 ? "border-red-300 ring-2 ring-red-100"
                 : "",
             inputClassName ?? "",
@@ -395,7 +396,13 @@ function SelectField({
   const selectId = useId();
 
   return (
-    <Field label={label} error={error} htmlFor={selectId} required={required}>
+    <Field
+      label={label}
+      error={error}
+      helper={helper}
+      htmlFor={selectId}
+      required={required}
+    >
       <Select
         aria-readonly={readOnly || undefined}
         disabled={disabled}
@@ -422,7 +429,6 @@ function SelectField({
           </option>
         ))}
       </Select>
-      {helper ? <p className="mt-1 text-xs font-medium text-amber-600">{helper}</p> : null}
     </Field>
   );
 }
@@ -441,7 +447,11 @@ function DescriptionField({
   const textareaId = useId();
 
   return (
-    <Field label="Description" className="sm:col-span-2" htmlFor={textareaId}>
+    <Field
+      label="Description"
+      className="sm:col-span-2"
+      htmlFor={textareaId}
+    >
       <AppLimitedTextarea
         id={textareaId}
         value={value}

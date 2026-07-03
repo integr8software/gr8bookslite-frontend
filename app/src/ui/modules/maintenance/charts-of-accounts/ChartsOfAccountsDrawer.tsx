@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   EmptyAccountFormValues,
   EmptyBankDetails,
@@ -26,6 +26,7 @@ type ChartsOfAccountsDrawerProps = {
   isSaving?: boolean;
   mode?: "add" | "edit" | "view";
   parentAccount?: ChartAccount | null;
+  saveResetToken?: number;
   onClose: () => void;
   onSave: (values: ChartAccountFormValues) => void;
 };
@@ -37,6 +38,7 @@ export function ChartsOfAccountsDrawer({
   isSaving,
   mode = account ? "edit" : "add",
   parentAccount = null,
+  saveResetToken = 0,
   onClose,
   onSave,
 }: ChartsOfAccountsDrawerProps) {
@@ -49,6 +51,7 @@ export function ChartsOfAccountsDrawer({
       isSaving={isSaving}
       mode={mode}
       parentAccount={parentAccount}
+      saveResetToken={saveResetToken}
       onClose={onClose}
       onSave={onSave}
     />
@@ -62,6 +65,7 @@ function DrawerPanel({
   isSaving = false,
   mode = account ? "edit" : "add",
   parentAccount = null,
+  saveResetToken = 0,
   onClose,
   onSave,
 }: ChartsOfAccountsDrawerProps) {
@@ -71,6 +75,7 @@ function DrawerPanel({
   const [submitted, setSubmitted] = useState(false);
   const [isAccountCodeLoading, setIsAccountCodeLoading] = useState(false);
   const [accountCodeError, setAccountCodeError] = useState("");
+  const handledSaveResetToken = useRef(saveResetToken);
   const availableAccountLevels = useMemo(
     () => getAvailableAccountLevels(accounts, values.parentId),
     [accounts, values.parentId],
@@ -150,6 +155,22 @@ function DrawerPanel({
       isCurrent = false;
     };
   }, [account, availableAccountLevels, isOpen, values.accountLevel, values.parentId]);
+
+  useEffect(() => {
+    if (
+      mode !== "add" ||
+      saveResetToken === 0 ||
+      saveResetToken === handledSaveResetToken.current
+    ) {
+      return;
+    }
+
+    handledSaveResetToken.current = saveResetToken;
+    setValues(getInitialFormValues(null, parentAccount));
+    setSubmitted(false);
+    setIsAccountCodeLoading(false);
+    setAccountCodeError("");
+  }, [mode, parentAccount, saveResetToken]);
 
   function updateField<Key extends keyof ChartAccountFormValues>(
     key: Key,

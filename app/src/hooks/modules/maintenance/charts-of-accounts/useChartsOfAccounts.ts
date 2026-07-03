@@ -85,6 +85,7 @@ export function useChartsOfAccounts() {
   const [drawerMode, setDrawerMode] = useState<"add" | "edit" | "view">("add");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [savedAccountId, setSavedAccountId] = useState<string | null>(null);
+  const [saveResetToken, setSaveResetToken] = useState(0);
 
   useEffect(() => {
     if (!companyId) {
@@ -119,6 +120,9 @@ export function useChartsOfAccounts() {
           ]),
       );
       setSavedAccountId(account.id);
+      if (!drawerAccount) {
+        setSaveResetToken((current) => current + 1);
+      }
       closeDrawer();
       toast.success(
         drawerAccount ? "Chart account updated." : "Chart account created.",
@@ -152,27 +156,6 @@ export function useChartsOfAccounts() {
         error instanceof Error
           ? error.message
           : "Could not update chart account status.",
-      );
-    },
-  });
-
-  const importAccountsMutation = useMutation({
-    mutationFn: async (values: ChartAccountFormValues[]) => {
-      for (const value of values) {
-        await SaveChartAccount(value, null);
-      }
-    },
-    onSuccess: async (_, values) => {
-      await queryClient.invalidateQueries({
-        queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
-      });
-      toast.success(`${values.length} chart account${values.length === 1 ? "" : "s"} imported.`);
-    },
-    onError: (error) => {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Could not import chart accounts.",
       );
     },
   });
@@ -386,10 +369,6 @@ export function useChartsOfAccounts() {
     saveAccountMutation.mutate(values);
   }
 
-  async function importAccounts(values: ChartAccountFormValues[]) {
-    await importAccountsMutation.mutateAsync(values);
-  }
-
   function updateAccountStatus(account: ChartAccount) {
     updateStatusMutation.mutate({
       accountId: account.id,
@@ -417,7 +396,6 @@ export function useChartsOfAccounts() {
   const permissions = {
     canCreate: canManage,
     canExport: canManage,
-    canImport: canManage,
     canUpdate: canManage,
     canView: true,
   };
@@ -436,10 +414,10 @@ export function useChartsOfAccounts() {
     isRefreshing: accountsQuery.isFetching && !accountsQuery.isLoading,
     lastSyncedAt: accountsQuery.dataUpdatedAt,
     isMutating:
-      saveAccountMutation.isPending || updateStatusMutation.isPending,
-    isImporting: importAccountsMutation.isPending,
+    saveAccountMutation.isPending || updateStatusMutation.isPending,
     permissions,
     searchQuery,
+    saveResetToken,
     statusFilter,
     structureFilter,
     table,
@@ -452,7 +430,6 @@ export function useChartsOfAccounts() {
       void accountsQuery.refetch();
     },
     reorderAccount,
-    importAccounts,
     saveAccount,
     resetFilters,
     setAccountTypeFilter: changeAccountTypeFilter,

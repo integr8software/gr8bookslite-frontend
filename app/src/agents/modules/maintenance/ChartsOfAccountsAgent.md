@@ -24,7 +24,7 @@ Use this guide when working on the Charts of Accounts feature.
 
 ## UI Files
 
-- `ChartsOfAccountsPage.tsx`
+- `ChartsOfAccountsListPage.tsx`
   Main page composer. Calls `useChartsOfAccounts()` and connects the header, filters, table, and drawer.
 
 - `ChartsOfAccountsHeader.tsx`

@@ -7,30 +7,23 @@ import {
 	Layers3,
 	ListTree,
 	Network,
-	Plus,
 	ReceiptText,
-	Upload,
 } from "lucide-react";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsDrawer";
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsFilters";
-import { ChartsOfAccountsImportDialog } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsImportDialog";
+import { ChartsOfAccountsHeader } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsHeader";
 import { ChartsOfAccountsTable } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsTable";
 import { ChartsOfAccountsSpotlightTutorial } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsSpotlightTutorial";
 import { Card } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsControls";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/charts-of-accounts/useChartsOfAccounts";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
-import {
-	ModuleHeader,
-	moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
-export function ChartsOfAccountsMain() {
+export function ChartsOfAccountsListPage() {
 	const coa = useChartsOfAccounts();
 	const accountOptions = coa.flatAccounts.map((item) => item.account);
-	const [isImportOpen, setIsImportOpen] = useState(false);
 	const totalAccounts = coa.flatAccounts.length;
 	const activeAccounts = coa.flatAccounts.filter(
 		({ account }) => account.status === "Active",
@@ -60,40 +53,9 @@ export function ChartsOfAccountsMain() {
 		<section className="-mx-3 -my-4 min-h-[calc(100dvh-5rem)] bg-white text-darknavy sm:-mx-5 lg:-mx-6">
 			<ChartsOfAccountsSpotlightTutorial />
 			<main className="grid min-h-[calc(100dvh-5rem)] content-start gap-5 p-4 sm:p-6">
-				<ModuleHeader
-					variant="plain"
-					data-spotlight-id="charts-of-accounts-header"
-					titleAs="h1"
-					title="Chart of Accounts"
-					description="Manage all company accounts and financial statement mapping."
-					actions={
-						<>
-							<button
-								type="button"
-								className={
-									moduleHeaderActionClassNames.secondary
-								}
-								disabled={!coa.permissions.canImport}
-								onClick={() => setIsImportOpen(true)}
-							>
-								<Upload
-									className="h-4 w-4"
-									aria-hidden="true"
-								/>
-								Import
-							</button>
-							<button
-								type="button"
-								className={moduleHeaderActionClassNames.primary}
-								onClick={() => coa.openAddDrawer()}
-								disabled={!coa.permissions.canCreate}
-								data-spotlight-id="charts-of-accounts-add-account"
-							>
-								<Plus className="h-4 w-4" aria-hidden="true" />
-								Add Account
-							</button>
-						</>
-					}
+				<ChartsOfAccountsHeader
+					canCreate={coa.permissions.canCreate}
+					onAddAccount={() => coa.openAddDrawer()}
 				/>
 
 				<ModuleStatisticCards
@@ -196,17 +158,10 @@ export function ChartsOfAccountsMain() {
 				isSaving={coa.isMutating}
 				mode={coa.drawerMode}
 				parentAccount={coa.drawerParentAccount}
+				saveResetToken={coa.saveResetToken}
 				onClose={coa.closeDrawer}
 				onSave={coa.saveAccount}
 			/>
-			{coa.permissions.canImport ? (
-				<ChartsOfAccountsImportDialog
-					accounts={accountOptions}
-					isOpen={isImportOpen}
-					onClose={() => setIsImportOpen(false)}
-					onImportAccounts={coa.importAccounts}
-				/>
-			) : null}
 			<AppDialog
 				isOpen={Boolean(pendingStatusAccount)}
 				isPending={coa.isMutating}

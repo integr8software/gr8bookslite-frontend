@@ -1,7 +1,6 @@
 "use client";
 
 import type { ComponentProps, ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
 import {
   AccountTypeBadgeVariants,
   AccountTypeLabels,
@@ -86,10 +85,6 @@ export function Select({
       >
         {children}
       </select>
-      <ChevronDown
-        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/40"
-        aria-hidden="true"
-      />
     </div>
   );
 }
@@ -98,6 +93,7 @@ export function Field({
   children,
   className,
   error,
+  helper,
   htmlFor,
   label,
   required = false,
@@ -105,23 +101,35 @@ export function Field({
   children: ReactNode;
   className?: string;
   error?: string;
+  helper?: string;
   htmlFor?: string;
   label: string;
   required?: boolean;
 }) {
+  const message = error ?? helper;
+
   return (
     <div className={joinClasses("grid gap-1.5", className)}>
       <label
         htmlFor={htmlFor}
-        className="flex items-center justify-between text-sm font-semibold text-darknavy/70"
+        className="text-sm font-semibold text-darknavy/70"
       >
         <span>
           {label}
           {required ? <span className="text-coralpink"> *</span> : null}
         </span>
-        {error ? <span className="text-xs text-coralpink">{error}</span> : null}
       </label>
       {children}
+      {message ? (
+        <p
+          className={joinClasses(
+            "text-xs font-medium leading-4",
+            error ? "text-coralpink" : "text-amber-600",
+          )}
+        >
+          {message}
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -25,11 +25,10 @@ const ApprovalRoutingRuleSchema = z
 		amountOperator: z.enum([
 			"greaterThan",
 			"greaterThanOrEqual",
+			"lessThan",
 			"lessThanOrEqual",
-			"between",
 		]),
 		amountValue: z.string(),
-		amountValueTo: z.string(),
 		stageIds: z.array(z.string()).min(1, "Choose at least one level for this route."),
 	})
 	.superRefine((rule, context) => {
@@ -44,25 +43,6 @@ const ApprovalRoutingRuleSchema = z
 				});
 			}
 
-			if (rule.amountOperator === "between") {
-				const amountTo = parseCurrencyAmount(rule.amountValueTo);
-
-				if (!amountTo || amountTo <= 0) {
-					context.addIssue({
-						code: "custom",
-						message: "Enter an ending amount greater than zero.",
-						path: ["amountValueTo"],
-					});
-				}
-
-				if (amount && amountTo && amountTo <= amount) {
-					context.addIssue({
-						code: "custom",
-						message: "Ending amount must be greater than starting amount.",
-						path: ["amountValueTo"],
-					});
-				}
-			}
 		}
 	});
 
@@ -129,25 +109,25 @@ export const ApprovalManagementFormSchema = z
 		const amountRules = values.routingRules
 			.map((rule, index) => ({ index, rule }))
 			.filter(({ rule }) => rule.basis === "amount");
-		const seenAmounts = new Set<number>();
-
-		amountRules.forEach(({ index, rule }) => {
+		amountRules.forEach(({ index, rule }, ruleIndex) => {
 			const amount = parseCurrencyAmount(rule.amountValue);
 
 			if (!amount || amount <= 0) {
 				return;
 			}
 
-			if (seenAmounts.has(amount)) {
+			const previousRule = amountRules[ruleIndex - 1]?.rule;
+			const previousAmount = previousRule
+				? parseCurrencyAmount(previousRule.amountValue)
+				: 0;
+
+			if (previousRule && previousAmount > 0 && amount >= previousAmount) {
 				context.addIssue({
 					code: "custom",
-					message: "Each condition must use a unique amount.",
+					message: `Amount must be less than ${previousRule.name || `Condition ${previousRule.sequence}`} (${formatCurrencyAmount(previousAmount)}).`,
 					path: ["routingRules", index, "amountValue"],
 				});
-				return;
 			}
-
-			seenAmounts.add(amount);
 		});
 
 		const stageIds = new Set(values.stages.map((stage) => stage.id));
@@ -260,4 +240,13 @@ function parseCurrencyAmount(value: string) {
 	const amount = Number(value.replaceAll(",", "").trim());
 
 	return Number.isFinite(amount) ? amount : 0;
+}
+
+function formatCurrencyAmount(amount: number) {
+	return new Intl.NumberFormat("en-PH", {
+		style: "currency",
+		currency: "PHP",
+		maximumFractionDigits: 2,
+		minimumFractionDigits: 2,
+	}).format(amount);
 }

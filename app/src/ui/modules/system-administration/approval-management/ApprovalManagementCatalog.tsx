@@ -9,7 +9,9 @@ import {
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { approvalManagementFieldClassName } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementUi";
+
+const approvalManagementFieldClassName =
+	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy read-only:bg-offwhite/65";
 
 type ApprovalManagementCatalogProps = {
 	isLoading: boolean;

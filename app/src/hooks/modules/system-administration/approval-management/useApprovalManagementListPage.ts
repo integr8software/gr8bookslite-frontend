@@ -335,6 +335,7 @@ export function useApprovalManagementListPage() {
 				{
 					basis: "amount",
 					name: `Condition ${amountRules.length + 1}`,
+					amountValue: "",
 					stageIds: current.stages.map((stage) => stage.id),
 				},
 			);

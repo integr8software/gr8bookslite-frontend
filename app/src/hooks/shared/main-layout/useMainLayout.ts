@@ -72,6 +72,10 @@ import {
   PrepareQueryCacheForContextSwitch,
 } from "@/app/src/services/auth/AuthContextCache";
 import {
+  OnboardingRoutePath,
+  RequiresOnboarding,
+} from "@/app/src/services/auth/AuthRouteState";
+import {
   AuthQueryKeys,
   CreateAuthAccessTokenQueryScope,
 } from "@/app/src/services/auth/AuthQueryKeys";
@@ -255,6 +259,15 @@ export function useMainLayout() {
       : false;
   const isProfileLoading =
     Boolean(accessToken) && !authProfile && isAuthProfileFetching;
+  const shouldRedirectToOnboarding = RequiresOnboarding(authProfile);
+
+  useEffect(() => {
+    if (!shouldRedirectToOnboarding) {
+      return;
+    }
+
+    router.replace(OnboardingRoutePath);
+  }, [router, shouldRedirectToOnboarding]);
 
   useEffect(() => {
     if (
@@ -1084,7 +1097,9 @@ export function useMainLayout() {
             ? `Switching to ${switchingCompanyName}...`
             : "Switching company..."),
     isTopbarContextLoading: isShellContextSettling,
-    isShellLoading: !isAuthSessionReady || isProfileLoading,
+    isShellLoading:
+      !isAuthSessionReady || isProfileLoading || shouldRedirectToOnboarding,
+    isRedirectingToOnboarding: shouldRedirectToOnboarding,
     isProfileLoading,
     isBranchLoading,
     shouldShowBranchSwitcher,

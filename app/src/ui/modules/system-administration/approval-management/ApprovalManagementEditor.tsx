@@ -4,6 +4,7 @@ import {
 	useState,
 	type ChangeEventHandler,
 	type FormEventHandler,
+	type ReactNode,
 } from "react";
 import {
 	ArrowRight,
@@ -38,12 +39,13 @@ import type {
 	ApprovalStageFormValues,
 	ApprovalStageRequirement,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
-import {
-	ApprovalManagementField,
-	approvalManagementFieldClassName,
-	approvalManagementPrimaryButtonClassName,
-} from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementUi";
 import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
+
+const approvalManagementFieldClassName =
+	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy read-only:bg-offwhite/65";
+
+const approvalManagementPrimaryButtonClassName =
+	"theme-accent-contrast-text inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-semibold !text-[var(--skyblue-contrast)] shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)] disabled:cursor-not-allowed disabled:opacity-60";
 
 type ApprovalManagementEditorProps = {
 	approverOptions: ApprovalApproverOption[];
@@ -270,20 +272,12 @@ function ApprovalMatrix({
 	const [openRoutingRuleId, setOpenRoutingRuleId] = useState<string | null>(
 		null,
 	);
-	const [showAmountConditionRules, setShowAmountConditionRules] =
-		useState(false);
 	const visibleRoutingRules = hasAmountCondition
-		? showAmountConditionRules
-			? routingRules.filter((rule) => rule.basis === "amount")
-			: []
+		? routingRules.filter((rule) => rule.basis === "amount")
 		: routingRules;
 	const usesRouteAccordion = visibleRoutingRules.length > 1;
 	const handleAddAmountConditionRule = () => {
-		if (amountRuleCount === 0 || showAmountConditionRules) {
-			onAddAmountConditionRule();
-		}
-
-		setShowAmountConditionRules(true);
+		onAddAmountConditionRule();
 	};
 
 	return (
@@ -425,19 +419,17 @@ function ApprovalMatrix({
 								}
 							>
 								<div
+									onClick={() =>
+										setOpenRoutingRuleId(
+											isRouteOpen ? null : routingRule.id,
+										)
+									}
 									className={
-										"grid gap-3 p-3 lg:grid-cols-[minmax(15rem,0.85fr)_minmax(0,1.15fr)_auto]"
+										"grid cursor-pointer gap-3 p-3 lg:grid-cols-[minmax(15rem,0.85fr)_minmax(0,1.15fr)_auto]"
 									}
 								>
 									<button
 										type="button"
-										onClick={() =>
-											setOpenRoutingRuleId(
-												isRouteOpen
-													? null
-													: routingRule.id,
-											)
-										}
 										className="flex min-w-0 items-center gap-3 text-left"
 										aria-expanded={isRouteOpen}
 									>
@@ -472,11 +464,12 @@ function ApprovalMatrix({
 										amountRuleCount > 1 ? (
 											<button
 												type="button"
-												onClick={() =>
+												onClick={(event) => {
+													event.stopPropagation();
 													onRemoveAmountConditionRule(
 														routingRule.id,
-													)
-												}
+													);
+												}}
 												className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-darknavy/10 bg-white text-darknavy/55 transition hover:border-coralpink/40 hover:bg-coralpink/10 hover:text-coralpink"
 												aria-label={`Remove ${routeTitle}`}
 											>
@@ -489,13 +482,6 @@ function ApprovalMatrix({
 										{usesRouteAccordion ? (
 											<button
 												type="button"
-												onClick={() =>
-													setOpenRoutingRuleId(
-														isRouteOpen
-															? null
-															: routingRule.id,
-													)
-												}
 												className="inline-flex h-8 w-8 items-center justify-center rounded-md text-darknavy/55 transition hover:bg-white"
 												aria-label={`${isRouteOpen ? "Close" : "Open"} ${routeTitle}`}
 											>
@@ -667,12 +653,6 @@ function formatPaymentAmount(routingRule: ApprovalRoutingRuleFormValues) {
 		}).format(amount);
 	};
 
-	if (routingRule.amountOperator === "between") {
-		return `PHP ${formatAmount(routingRule.amountValue)} - PHP ${formatAmount(
-			routingRule.amountValueTo,
-		)}`;
-	}
-
 	return `PHP ${formatAmount(routingRule.amountValue)}`;
 }
 
@@ -735,27 +715,31 @@ function RoutingConditionFields({
 					placeholder="100000.00"
 				/>
 			</ApprovalManagementField>
-			{routingRule.amountOperator === "between" ? (
-				<ApprovalManagementField
-					label="Ending Amount"
-					error={errors.amountValueTo}
-				>
-					<input
-						inputMode="decimal"
-						value={routingRule.amountValueTo}
-						onChange={(event) =>
-							onRoutingRuleFieldChange(
-								routingRule.id,
-								"amountValueTo",
-								event.target.value,
-							)
-						}
-						className={approvalManagementFieldClassName}
-						placeholder="250000.00"
-					/>
-				</ApprovalManagementField>
-			) : null}
 		</>
+	);
+}
+
+function ApprovalManagementField({
+	children,
+	error,
+	label,
+}: {
+	children: ReactNode;
+	error?: string;
+	label: string;
+}) {
+	return (
+		<label className="block">
+			<span className="mb-2 block text-sm font-semibold text-darknavy">
+				{label}
+			</span>
+			{children}
+			{error ? (
+				<span className="mt-1 block text-xs font-medium text-coralpink">
+					{error}
+				</span>
+			) : null}
+		</label>
 	);
 }
 

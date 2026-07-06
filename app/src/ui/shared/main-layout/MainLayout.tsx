@@ -66,6 +66,7 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 		isCompanySwitching,
 		companySwitchMessage,
 		isLoggingOut,
+		isRedirectingToOnboarding,
 		isShellLoading,
 		isProfileLoading,
 		isTopbarContextLoading,
@@ -128,7 +129,15 @@ function MainLayoutContent({ children }: MainLayoutProps) {
 	}
 
 	if (isShellLoading) {
-		return <MainLoadingScreen message="Loading your workspace data..." />;
+		return (
+			<MainLoadingScreen
+				message={
+					isRedirectingToOnboarding
+						? "Returning to onboarding..."
+						: "Loading your workspace data..."
+				}
+			/>
+		);
 	}
 
 	if (isLoggingOut) {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { LogOut } from "lucide-react";
 import { LogoutButton } from "@/app/src/ui/auth/LogoutButton";
 import { OnboardingFlow } from "@/app/src/ui/onboarding/OnboardingFlow";
+import { OnboardingRouteGuard } from "@/app/src/ui/onboarding/OnboardingRouteGuard";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { LogoText } from "@/app/src/ui/shared/layout/LogoText";
 
@@ -34,9 +35,11 @@ export default function OnboardingPage() {
 				</div>
 			</nav>
 
-			<div className="relative z-10 mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
-				<OnboardingFlow />
-			</div>
+			<OnboardingRouteGuard>
+				<div className="relative z-10 mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+					<OnboardingFlow />
+				</div>
+			</OnboardingRouteGuard>
 		</main>
 	);
 }

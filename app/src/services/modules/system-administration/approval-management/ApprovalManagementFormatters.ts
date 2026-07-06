@@ -56,12 +56,6 @@ export function formatApprovalRoutingCondition(rule: ApprovalRoutingRuleRecord) 
 			)?.symbol ?? ">";
 		const amount = formatApprovalAmount(rule.amountValue);
 
-		if (rule.amountOperator === "between") {
-			return `Amount between ${amount} and ${formatApprovalAmount(
-				rule.amountValueTo,
-			)}`;
-		}
-
 		return `Amount ${operator} ${amount}`;
 	}
 }

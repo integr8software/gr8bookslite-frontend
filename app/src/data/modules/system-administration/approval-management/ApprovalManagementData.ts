@@ -65,18 +65,7 @@ export const MockApprovalManagementWorkflows: ApprovalManagementRecord[] = [
 				basis: "default",
 				amountOperator: "greaterThan",
 				amountValue: "",
-				amountValueTo: "",
 				stageIds: ["approval-dv-stage-1"],
-			},
-			{
-				id: "approval-dv-route-2",
-				sequence: 2,
-				name: "High value vouchers",
-				basis: "amount",
-				amountOperator: "greaterThan",
-				amountValue: "100000",
-				amountValueTo: "",
-				stageIds: ["approval-dv-stage-1", "approval-dv-stage-2"],
 			},
 		],
 		workflowFeatures: {
@@ -85,8 +74,7 @@ export const MockApprovalManagementWorkflows: ApprovalManagementRecord[] = [
 			slaMonitoring: true,
 		},
 		status: "Active",
-		description:
-			"Disbursement vouchers use finance review by default and add management approval above the transaction limit.",
+		description: "Disbursement vouchers use finance review by default.",
 		updatedAt: "2026-05-22T08:35:00.000Z",
 	},
 	{
@@ -125,22 +113,7 @@ export const MockApprovalManagementWorkflows: ApprovalManagementRecord[] = [
 				basis: "default",
 				amountOperator: "greaterThan",
 				amountValue: "",
-				amountValueTo: "",
 				stageIds: ["approval-pr-stage-1", "approval-pr-stage-2"],
-			},
-			{
-				id: "approval-pr-route-2",
-				sequence: 2,
-				name: "PO over 100k",
-				basis: "amount",
-				amountOperator: "greaterThan",
-				amountValue: "100000",
-				amountValueTo: "",
-				stageIds: [
-					"approval-pr-stage-1",
-					"approval-pr-stage-2",
-					"approval-pr-stage-3",
-				],
 			},
 		],
 		workflowFeatures: {
@@ -148,8 +121,7 @@ export const MockApprovalManagementWorkflows: ApprovalManagementRecord[] = [
 			escalationRules: true,
 		},
 		status: "Active",
-		description:
-			"Purchase requests pass through request and budget review, with final approval for amounts over 100k.",
+		description: "Purchase requests pass through request and budget review.",
 		updatedAt: "2026-05-21T15:10:00.000Z",
 	},
 	{
@@ -174,7 +146,6 @@ export const MockApprovalManagementWorkflows: ApprovalManagementRecord[] = [
 				basis: "default",
 				amountOperator: "greaterThan",
 				amountValue: "",
-				amountValueTo: "",
 				stageIds: ["approval-jv-stage-1"],
 			},
 		],
@@ -267,7 +238,6 @@ export function createApprovalRoutingRule(
 		basis,
 		amountOperator: "greaterThan",
 		amountValue: isDefaultRoute ? "" : "",
-		amountValueTo: "",
 		stageIds: stages.map((stage) => stage.id),
 		...overrides,
 	};
@@ -300,7 +270,6 @@ export function createStandardApprovalRoutingRules(
 			{
 				...defaultRule,
 				amountValue: "",
-				amountValueTo: "",
 				basis: "default",
 				name: defaultRule.name || "Otherwise",
 			},
@@ -477,7 +446,6 @@ function normalizeApprovalRoutingRules(
 		...rule,
 		name: rule.name.trim(),
 		amountValue: rule.amountValue.trim(),
-		amountValueTo: rule.amountValueTo.trim(),
 		stageIds: Array.from(new Set(rule.stageIds)).filter((stageId) =>
 			stageIdSet.has(stageId),
 		),

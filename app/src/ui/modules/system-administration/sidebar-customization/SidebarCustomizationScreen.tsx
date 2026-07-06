@@ -8,7 +8,6 @@ import {
 	KeyboardSensor,
 	PointerSensor,
 	closestCenter,
-	useDroppable,
 	useSensor,
 	useSensors,
 	type DragEndEvent,
@@ -22,7 +21,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-	ChevronUp,
 	Grip,
 	RotateCcw,
 	Save,
@@ -44,8 +42,6 @@ import { SidebarAllowedIcons } from "@/app/src/ui/shared/main-layout/sidebar/Sid
 import { joinClasses } from "@/app/src/ui/shared/main-layout/utils";
 
 type TreeItem = Omit<UserSidebarApiItem, "children"> & { children: TreeItem[] };
-
-const RootDropZoneId = "platform-module-sidebar-root-drop-zone";
 
 export function SidebarCustomizationScreen({
 	onClose,
@@ -150,33 +146,17 @@ export function SidebarCustomizationScreen({
 		setDirty(true);
 	}
 
-	function moveToRoot(itemId: number) {
-		const source = locate(items, itemId);
-		if (!source || source.parentId == null) return;
-		update([...removeItem(items, source.item.id), source.item]);
-	}
-
 	function onDragEnd({ active, over }: DragEndEvent) {
 		if (!over || active.id === over.id) return;
 
 		const source = locate(items, Number(active.id));
 		if (!source) return;
 
-		if (over.id === RootDropZoneId) {
-			update([...removeItem(items, source.item.id), source.item]);
-			return;
-		}
-
 		const target = locate(items, Number(over.id));
 		if (!target) return;
 
-		if (target.item.itemType !== "LINK" && canNest(source.item, target)) {
-			update(appendChild(removeItem(items, source.item.id), target.item.id, source.item));
-			return;
-		}
-
 		if (source.parentId !== target.parentId) {
-			toast.error("Drop on a section/folder, or drop on the root area.");
+			toast.error("Sidebar items can only be reordered within their current group.");
 			return;
 		}
 
@@ -236,12 +216,10 @@ export function SidebarCustomizationScreen({
 							</p>
 						</div>
 						<div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-							<RootDropZone />
 							<Tree
 								items={items}
 								icons={query.data.supportedIconNames}
 								onChange={update}
-								onMoveToRoot={moveToRoot}
 							/>
 						</div>
 						<footer className="flex justify-end gap-3 border-t border-darknavy/10 bg-white px-5 py-3">
@@ -291,34 +269,15 @@ function PanelMessage({ children }: { children: string }) {
 	return <div className="p-8 text-sm text-darknavy/65">{children}</div>;
 }
 
-function RootDropZone() {
-	const droppable = useDroppable({ id: RootDropZoneId });
-	return (
-		<div
-			ref={droppable.setNodeRef}
-			className={joinClasses(
-				"mb-3 rounded-md border border-dashed px-3 py-2 text-center text-xs transition",
-				droppable.isOver
-					? "border-skyblue bg-skyblue/10 text-skyblue"
-					: "border-darknavy/15 text-darknavy/35",
-			)}
-		>
-			Drop here to move an item to the sidebar root.
-		</div>
-	);
-}
-
 function Tree({
 	items,
 	icons,
 	onChange,
-	onMoveToRoot,
 	depth = 1,
 }: {
 	items: TreeItem[];
 	icons: string[];
 	onChange: (items: TreeItem[]) => void;
-	onMoveToRoot: (itemId: number) => void;
 	depth?: number;
 }) {
 	return (
@@ -328,13 +287,12 @@ function Tree({
 		>
 			<div className="space-y-1.5">
 				{items.map((item) => (
-						<SortableRow
-							key={item.id}
-							item={item}
-							depth={depth}
-							icons={icons}
-							onDelete={() => onChange(items.filter((value) => value.id !== item.id))}
-							onMoveToRoot={() => onMoveToRoot(item.id)}
+					<SortableRow
+						key={item.id}
+						item={item}
+						depth={depth}
+						icons={icons}
+						onDelete={() => onChange(items.filter((value) => value.id !== item.id))}
 						onChildren={(children) =>
 							onChange(
 								items.map((value) =>
@@ -354,14 +312,12 @@ function SortableRow({
 	depth,
 	icons,
 	onDelete,
-	onMoveToRoot,
 	onChildren,
 }: {
 	item: TreeItem;
 	depth: number;
 	icons: string[];
 	onDelete: () => void;
-	onMoveToRoot: () => void;
 	onChildren: (children: TreeItem[]) => void;
 }) {
 	const sortable = useSortable({ id: String(item.id) });
@@ -409,17 +365,6 @@ function SortableRow({
 				>
 					{item.label}
 				</span>
-				{depth > 1 ? (
-					<button
-						type="button"
-						className="grid h-7 w-7 place-items-center rounded text-darknavy/50 opacity-0 hover:bg-darknavy/5 group-hover:opacity-100"
-						onClick={onMoveToRoot}
-						aria-label={`Move ${item.label} to root`}
-						title="Move to root"
-					>
-						<ChevronUp className="h-3.5 w-3.5" />
-					</button>
-				) : null}
 				<button
 					type="button"
 					aria-label={`Remove ${item.label}`}
@@ -436,7 +381,6 @@ function SortableRow({
 						icons={icons}
 						depth={depth + 1}
 						onChange={onChildren}
-						onMoveToRoot={onMoveToRoot}
 					/>
 				</div>
 			) : null}
@@ -484,40 +428,6 @@ function replaceChildren(
 			? { ...item, children }
 			: { ...item, children: replaceChildren(item.children, parentId, children) },
 	);
-}
-
-function removeItem(items: TreeItem[], id: number): TreeItem[] {
-	return items
-		.filter((item) => item.id !== id)
-		.map((item) => ({ ...item, children: removeItem(item.children, id) }));
-}
-
-function appendChild(
-	items: TreeItem[],
-	parentId: number,
-	child: TreeItem,
-): TreeItem[] {
-	return items.map((item) =>
-		item.id === parentId
-			? { ...item, children: [...item.children, child] }
-			: { ...item, children: appendChild(item.children, parentId, child) },
-	);
-}
-
-function canNest(
-	source: TreeItem,
-	target: { item: TreeItem; depth: number },
-) {
-	if (source.itemType === "SECTION") return false;
-	if (target.item.itemType === "LINK") return false;
-	if (source.itemType === "CONTAINER" && target.depth >= 2) return false;
-	return target.depth + getTreeDepth(source) <= 3;
-}
-
-function getTreeDepth(item: TreeItem): number {
-	return item.children.length
-		? 1 + Math.max(...item.children.map(getTreeDepth))
-		: 1;
 }
 
 function getItemIcon(item: TreeItem, depth: number) {

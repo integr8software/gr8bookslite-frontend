@@ -77,7 +77,7 @@ export function BankMasterfileFields({
 							placeholder="Required before activation"
 						/>
 					</FormField>
-					<FormField label="Account Type" error={errors.accountType}>
+					<FormField label="Account Type" error={errors.accountType} required>
 						<select
 							id="bank-masterfile-account-type"
 							name="accountType"

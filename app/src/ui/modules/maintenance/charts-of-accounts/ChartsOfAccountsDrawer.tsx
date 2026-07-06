@@ -182,27 +182,50 @@ function DrawerPanel({
       ...(key === "accountType"
         ? {
             normalBalance: getStandardNormalBalance(value as AccountType | ""),
+            statementSection: getStandardStatementSection(
+              value as AccountType | "",
+            ),
             parentId: null,
             accountNumber: "",
+            isBankLinked: false,
           }
         : {}),
       ...(key === "accountLevel" ? { accountNumber: "" } : {}),
       ...(key === "accountLevel"
-        ? { isPostingAccount: value === "SPECIFIC" }
+        ? {
+            isBankLinked:
+              value === "SPECIFIC" && isCashInBankParent(accounts, current.parentId),
+            isPostingAccount: value === "SPECIFIC",
+          }
         : {}),
     }));
   }
 
   function updateParentAccount(parentId: string | null) {
     const nextLevels = getAvailableAccountLevels(accounts, parentId);
+    const nextAccountLevel = currentAccountLevelOrDefault(
+      values.accountLevel,
+      nextLevels,
+      !account,
+    );
+    const isBankLinked =
+      nextAccountLevel === "SPECIFIC" && isCashInBankParent(accounts, parentId);
 
     setIsAccountCodeLoading(false);
     setAccountCodeError("");
     setValues((current) => ({
       ...current,
-      accountLevel: currentAccountLevelOrDefault(current.accountLevel, nextLevels, !account),
+      accountLevel: nextAccountLevel,
       accountNumber: "",
+      accountType: isBankLinked ? "ASSET" : current.accountType,
+      isBankLinked,
       isPostingAccount: true,
+      normalBalance: isBankLinked
+        ? "DEBIT"
+        : getStandardNormalBalance(current.accountType),
+      statementSection: isBankLinked
+        ? "Balance Sheet"
+        : getStandardStatementSection(current.accountType),
       parentId,
       showInReports: true,
     }));
@@ -231,6 +254,12 @@ function DrawerPanel({
     }
 
     const requiresParentAccount = values.accountLevel !== "MAJOR";
+    const isBankDetailsIncomplete =
+      values.isBankLinked &&
+      (!values.bankDetails.bankName ||
+        !values.bankDetails.bankAccountNumber ||
+        !values.bankDetails.accountType ||
+        !values.bankDetails.currency);
 
     if (
       isAccountCodeLoading ||
@@ -243,7 +272,8 @@ function DrawerPanel({
       !values.accountLevel ||
       !availableAccountLevels.includes(values.accountLevel) ||
       !values.normalBalance ||
-      !values.status
+      !values.status ||
+      isBankDetailsIncomplete
     ) {
       return;
     }
@@ -256,6 +286,7 @@ function DrawerPanel({
       eyebrow={getDrawerEyebrow(account, parentAccount)}
       title={getDrawerTitle(mode, account, parentAccount)}
       description={getDrawerDescription(parentAccount)}
+      contentClassName="overflow-hidden"
       onClose={handleClose}
       spotlightId="maintenance-add-drawer"
       footer={
@@ -284,7 +315,10 @@ function DrawerPanel({
         </div>
       }
     >
-      <div data-spotlight-id="maintenance-add-drawer-fields">
+      <div
+        className="h-full min-h-0"
+        data-spotlight-id="maintenance-add-drawer-fields"
+      >
         <ChartsOfAccountsForm
           account={account}
           accounts={accounts}
@@ -397,6 +431,16 @@ function getStandardNormalBalance(accountType: AccountType | ""): NormalBalance 
     : "CREDIT";
 }
 
+function getStandardStatementSection(accountType: AccountType | "") {
+  if (!accountType) {
+    return "";
+  }
+
+  return accountType === "REVENUE" || accountType === "EXPENSE"
+    ? "Income Statement"
+    : "Balance Sheet";
+}
+
 function getInitialFormValues(
   account: ChartAccount | null,
   parentAccount: ChartAccount | null,
@@ -420,6 +464,10 @@ function getInitialFormValues(
     bankDetails: {
       ...(values.bankDetails ?? EmptyBankDetails),
     },
+    isBankLinked:
+      account?.isBankLinked ??
+      (values.accountLevel === "SPECIFIC" &&
+        isCashInBankAccount(parentAccount)),
   };
 }
 
@@ -471,4 +519,21 @@ function findAccountById(accounts: ChartAccount[], accountId: string): ChartAcco
   }
 
   return null;
+}
+
+function isCashInBankParent(
+  accounts: ChartAccount[],
+  parentAccountId: string | null,
+) {
+  if (!parentAccountId) {
+    return false;
+  }
+
+  return isCashInBankAccount(findAccountById(accounts, parentAccountId));
+}
+
+function isCashInBankAccount(account: ChartAccount | null | undefined) {
+  const label = account?.accountName.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+  return label === "cash in bank" || label === "cash in banks";
 }

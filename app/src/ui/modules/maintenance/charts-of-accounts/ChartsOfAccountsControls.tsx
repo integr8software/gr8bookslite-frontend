@@ -1,5 +1,6 @@
 "use client";
 
+import { forwardRef } from "react";
 import type { ComponentProps, ReactNode } from "react";
 import {
   AccountTypeBadgeVariants,
@@ -55,9 +56,11 @@ export function Button({
   );
 }
 
-export function Input({ className, ...props }: ComponentProps<"input">) {
+export const Input = forwardRef<HTMLInputElement, ComponentProps<"input">>(
+  function Input({ className, ...props }, ref) {
   return (
     <input
+      ref={ref}
       className={joinClasses(
         "app-disabled-control app-data-entry-field h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 read-only:cursor-default disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35 disabled:placeholder:text-darknavy/32",
         className,
@@ -65,16 +68,15 @@ export function Input({ className, ...props }: ComponentProps<"input">) {
       {...props}
     />
   );
-}
+  },
+);
 
-export function Select({
-  children,
-  className,
-  ...props
-}: ComponentProps<"select">) {
+export const Select = forwardRef<HTMLSelectElement, ComponentProps<"select">>(
+  function Select({ children, className, ...props }, ref) {
   return (
     <div className="relative">
       <select
+        ref={ref}
         className={joinClasses(
           "app-select-control app-disabled-control h-11 w-full appearance-none rounded-lg border border-darknavy/10 bg-white px-3 pr-9 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35",
           props.disabled &&
@@ -87,7 +89,8 @@ export function Select({
       </select>
     </div>
   );
-}
+  },
+);
 
 export function Field({
   children,
@@ -96,6 +99,7 @@ export function Field({
   helper,
   htmlFor,
   label,
+  reserveMessageSpace = false,
   required = false,
 }: {
   children: ReactNode;
@@ -104,12 +108,13 @@ export function Field({
   helper?: string;
   htmlFor?: string;
   label: string;
+  reserveMessageSpace?: boolean;
   required?: boolean;
 }) {
   const message = error ?? helper;
 
   return (
-    <div className={joinClasses("grid gap-1.5", className)}>
+    <div className={joinClasses("grid content-start gap-1.5 self-start", className)}>
       <label
         htmlFor={htmlFor}
         className="text-sm font-semibold text-darknavy/70"
@@ -120,14 +125,17 @@ export function Field({
         </span>
       </label>
       {children}
-      {message ? (
+      {message || reserveMessageSpace ? (
         <p
           className={joinClasses(
-            "text-xs font-medium leading-4",
+            "overflow-hidden text-ellipsis whitespace-nowrap text-xs font-medium leading-4",
+            message ? "min-h-4" : "h-0",
             error ? "text-coralpink" : "text-amber-600",
+            !message && "invisible",
           )}
+          title={message || undefined}
         >
-          {message}
+          {message || "No validation message"}
         </p>
       ) : null}
     </div>

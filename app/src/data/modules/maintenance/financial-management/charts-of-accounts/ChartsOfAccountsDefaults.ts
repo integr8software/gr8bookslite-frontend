@@ -7,13 +7,9 @@ export const EmptyBankDetails: BankDetails = {
   bankName: "",
   bankAccountNumber: "",
   branch: "",
-  swiftCode: "",
   currency: "PHP",
+  currencyExchangeRate: "",
   accountType: "Checking",
-  openingBalance: "0.00",
-  openingBalanceDate: "2026-01-01",
-  contactPerson: "",
-  contactNumber: "",
 };
 
 export const EmptyAccountFormValues: ChartAccountFormValues = {
@@ -30,5 +26,6 @@ export const EmptyAccountFormValues: ChartAccountFormValues = {
   status: "Active",
   showInReports: true,
   isPostingAccount: true,
+  isBankLinked: false,
   bankDetails: EmptyBankDetails,
 };

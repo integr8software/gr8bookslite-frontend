@@ -61,9 +61,15 @@ export function ChartsOfAccountsAccountFields({
   onParentChange,
 }: AccountFieldsProps) {
   const standardNormalBalance = getStandardNormalBalance(values.accountType);
+  const standardStatementSection = getStandardStatementSection(
+    values.accountType,
+  );
   const hasNonStandardNature =
     Boolean(values.accountType && values.normalBalance) &&
     values.normalBalance !== standardNormalBalance;
+  const hasNonStandardStatementSection =
+    Boolean(values.accountType && values.statementSection) &&
+    values.statementSection !== standardStatementSection;
   const requiresParentAccount = values.accountLevel !== "MAJOR";
   const isEditing = Boolean(account);
   const isInvalid =
@@ -78,13 +84,14 @@ export function ChartsOfAccountsAccountFields({
       !values.status);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid items-start gap-4 sm:grid-cols-2">
       <SelectField
         error={isInvalid && !values.accountType ? "Required" : undefined}
         label="Account Type"
         value={values.accountType}
         options={AccountTypes}
         readOnly={isReadOnly}
+        reserveMessageSpace={submitted}
         required
         getOptionLabel={(option) =>
           AccountTypeLabels[option as AccountType] ?? option
@@ -93,10 +100,16 @@ export function ChartsOfAccountsAccountFields({
       />
       <SelectField
         error={isInvalid && !values.statementSection ? "Required" : undefined}
+        helper={
+          hasNonStandardStatementSection
+            ? `${AccountTypeLabels[values.accountType as AccountType]} accounts are usually reported under ${standardStatementSection}.`
+            : undefined
+        }
         label="Statement Section"
         value={values.statementSection}
         options={StatementSections}
         readOnly={isReadOnly}
+        reserveMessageSpace={submitted}
         required
         onChange={(value) => onFieldChange("statementSection", value)}
       />
@@ -109,6 +122,7 @@ export function ChartsOfAccountsAccountFields({
         error={requiresParentAccount ? parentAccountError : undefined}
         readOnly={isReadOnly || isEditing}
         required={requiresParentAccount}
+        submitted={submitted}
         value={values.parentId}
         onChange={onParentChange}
       />
@@ -123,7 +137,8 @@ export function ChartsOfAccountsAccountFields({
         label="Account Nature"
         value={values.normalBalance}
         options={NormalBalances}
-        readOnly={isReadOnly}
+        readOnly={isReadOnly || values.isBankLinked}
+        reserveMessageSpace={submitted}
         required
         getOptionLabel={(option) =>
           NormalBalanceLabels[option as NormalBalance] ?? option
@@ -146,6 +161,7 @@ export function ChartsOfAccountsAccountFields({
               : "Select parent first"
         }
         readOnly
+        reserveMessageSpace={submitted}
         required
         submitted={submitted}
         value={values.accountNumber}
@@ -162,6 +178,7 @@ export function ChartsOfAccountsAccountFields({
         options={availableAccountLevels}
         includePlaceholder={false}
         readOnly={isReadOnly || isEditing}
+        reserveMessageSpace={submitted}
         required
         getOptionLabel={(option) =>
           AccountLevelLabels[option as AccountLevel] ?? option
@@ -192,7 +209,7 @@ export function ChartsOfAccountsAccountFields({
 
       <PostingAccountField
         checked={values.isPostingAccount}
-        disabled={isReadOnly || values.accountLevel !== "SPECIFIC"}
+        disabled={isReadOnly || values.isBankLinked || values.accountLevel !== "SPECIFIC"}
         onChange={(checked) => onFieldChange("isPostingAccount", checked)}
       />
       <ReportsField
@@ -218,6 +235,7 @@ export function ChartsOfAccountsAccountFields({
         options={AccountStatuses}
         includePlaceholder={false}
         readOnly={isReadOnly}
+        reserveMessageSpace={submitted}
         required
         onChange={(value) => onFieldChange("status", value as never)}
       />
@@ -233,6 +251,7 @@ function RequiredTextField({
   label,
   placeholder,
   readOnly,
+  reserveMessageSpace,
   required,
   submitted,
   value,
@@ -245,6 +264,7 @@ function RequiredTextField({
   label: string;
   placeholder: string;
   readOnly?: boolean;
+  reserveMessageSpace?: boolean;
   required?: boolean;
   submitted: boolean;
   value: string;
@@ -258,6 +278,7 @@ function RequiredTextField({
       error={error}
       className={className}
       htmlFor={inputId}
+      reserveMessageSpace={reserveMessageSpace}
       required={required}
     >
       <Input
@@ -290,6 +311,7 @@ function ParentAccountField({
   error,
   readOnly,
   required = true,
+  submitted,
   value,
   onChange,
 }: {
@@ -300,13 +322,20 @@ function ParentAccountField({
   error?: string;
   readOnly?: boolean;
   required?: boolean;
+  submitted: boolean;
   value: string | null;
   onChange: (value: string | null) => void;
 }) {
   const dropdownId = useId();
 
   return (
-    <Field label="Parent Account" error={error} htmlFor={dropdownId} required={required}>
+    <Field
+      label="Parent Account"
+      error={error}
+      htmlFor={dropdownId}
+      reserveMessageSpace={submitted}
+      required={required}
+    >
       <AppAdvancedDropdown
         ariaInvalid={Boolean(error)}
         className={readOnly ? "charts-of-accounts-readonly-dropdown" : undefined}
@@ -378,6 +407,7 @@ function SelectField({
   getOptionLabel,
   includePlaceholder = true,
   onChange,
+  reserveMessageSpace = false,
   readOnly,
   required,
 }: {
@@ -389,6 +419,7 @@ function SelectField({
   label: string;
   options: readonly string[];
   readOnly?: boolean;
+  reserveMessageSpace?: boolean;
   required?: boolean;
   value: string;
   onChange: (value: string) => void;
@@ -401,6 +432,7 @@ function SelectField({
       error={error}
       helper={helper}
       htmlFor={selectId}
+      reserveMessageSpace={reserveMessageSpace}
       required={required}
     >
       <Select
@@ -517,6 +549,16 @@ function getStandardNormalBalance(accountType: AccountType | ""): NormalBalance 
   return accountType === "ASSET" || accountType === "EXPENSE"
     ? "DEBIT"
     : "CREDIT";
+}
+
+function getStandardStatementSection(accountType: AccountType | "") {
+  if (!accountType) {
+    return "";
+  }
+
+  return accountType === "REVENUE" || accountType === "EXPENSE"
+    ? "Income Statement"
+    : "Balance Sheet";
 }
 
 function createParentAccountOptions(

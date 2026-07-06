@@ -102,13 +102,9 @@ export const ChartsOfAccountsBankFields: Array<{
   { label: "Bank Name", key: "bankName" },
   { label: "Bank Account Number", key: "bankAccountNumber" },
   { label: "Branch", key: "branch" },
-  { label: "SWIFT/BIC Code", key: "swiftCode" },
   { label: "Currency", key: "currency" },
+  { label: "Currency Exchange Rate", key: "currencyExchangeRate", type: "number" },
   { label: "Account Type", key: "accountType" },
-  { label: "Opening Balance", key: "openingBalance" },
-  { label: "Opening Balance Date", key: "openingBalanceDate", type: "date" },
-  { label: "Contact Person", key: "contactPerson" },
-  { label: "Contact Number", key: "contactNumber" },
 ];
 
 export const ChartsOfAccountsTableColumns: Array<{

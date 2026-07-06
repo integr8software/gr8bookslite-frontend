@@ -17,6 +17,8 @@ type ApiAccountNature = "DEBIT" | "CREDIT";
 type ApiChartAccountStatus = "ACTIVE" | "INACTIVE";
 
 type ApiBankAccount = {
+  accountType: string | null;
+  currencyExchangeRate?: string | number | null;
   accountName: string;
   accountNumber: string;
   bankName: string;
@@ -74,6 +76,16 @@ type SaveChartAccountPayload = {
   isPostingAccount?: boolean;
   showTotal?: boolean;
   currencyCode?: string;
+  status?: ApiChartAccountStatus;
+  linkedDetails?: {
+    kind: "BANK";
+    bankName?: string;
+    branch?: string;
+    accountNumber?: string;
+    accountType?: string;
+    currencyCode?: string;
+    currencyExchangeRate?: number;
+  };
 };
 
 const ChartOfAccountsUrl = "/maintenance/chart-of-accounts";
@@ -162,7 +174,21 @@ function CreateSaveChartAccountPayload(
     reportAlias: values.showInReports ? values.reportAlias : "",
     statementSection: values.statementSection,
     showTotal: values.showInReports,
+    status: values.status ? MapStatusToApi(values.status) : undefined,
   };
+
+  if (!account && values.isBankLinked) {
+    payload.currencyCode = cleanOptional(values.bankDetails.currency);
+    payload.linkedDetails = {
+      kind: "BANK",
+      bankName: cleanOptional(values.bankDetails.bankName),
+      branch: cleanOptional(values.bankDetails.branch),
+      accountNumber: cleanOptional(values.bankDetails.bankAccountNumber),
+      accountType: cleanOptional(values.bankDetails.accountType),
+      currencyCode: cleanOptional(values.bankDetails.currency),
+      currencyExchangeRate: toOptionalNumber(values.bankDetails.currencyExchangeRate),
+    };
+  }
 
   if (!account || account.accountLevel !== values.accountLevel) {
     payload.accountLevel = values.accountLevel || undefined;
@@ -176,6 +202,8 @@ function CreateSaveChartAccountPayload(
 }
 
 function MapChartAccount(account: ApiChartAccount): ChartAccount {
+  const bankAccount = account.bankAccounts[0];
+
   return {
     accountLevel: account.accountLevel,
     accountGroup: account.accountGroup ?? "",
@@ -197,6 +225,20 @@ function MapChartAccount(account: ApiChartAccount): ChartAccount {
     statementSection: account.statementSection ?? InferStatementGroup(account),
     reportAlias: account.reportAlias ?? "",
     status: MapStatusFromApi(account.status),
+    bankDetails: bankAccount
+      ? {
+          accountType: bankAccount.accountType ?? "",
+          bankAccountNumber: bankAccount.accountNumber,
+          bankName: bankAccount.bankName,
+          branch: bankAccount.branch ?? "",
+          currency: bankAccount.currencyCode ?? account.currencyCode ?? "PHP",
+          currencyExchangeRate:
+            bankAccount.currencyExchangeRate === undefined ||
+            bankAccount.currencyExchangeRate === null
+              ? ""
+              : String(bankAccount.currencyExchangeRate),
+        }
+      : undefined,
   };
 }
 
@@ -214,4 +256,12 @@ function InferStatementGroup(account: ApiChartAccount): StatementGroup {
   }
 
   return "Balance Sheet";
+}
+
+function cleanOptional(value: string) {
+  return value.trim() || undefined;
+}
+
+function toOptionalNumber(value: string) {
+  return value.trim() ? Number(value) : undefined;
 }

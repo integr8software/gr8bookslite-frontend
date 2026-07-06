@@ -21,6 +21,7 @@ export function accountToFormValues(
     status: account.status,
     showInReports: account.showInReports,
     isPostingAccount: account.isPostingAccount,
+    isBankLinked: account.isBankLinked,
     bankDetails: account.bankDetails ?? EmptyBankDetails,
   };
 }

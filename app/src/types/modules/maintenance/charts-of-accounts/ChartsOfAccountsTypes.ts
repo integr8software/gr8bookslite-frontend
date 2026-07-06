@@ -19,13 +19,9 @@ export type BankDetails = {
   bankName: string;
   bankAccountNumber: string;
   branch: string;
-  swiftCode: string;
   currency: string;
+  currencyExchangeRate: string;
   accountType: string;
-  openingBalance: string;
-  openingBalanceDate: string;
-  contactPerson: string;
-  contactNumber: string;
 };
 
 export type BankDetailsKey = keyof BankDetails;
@@ -70,6 +66,8 @@ export type ChartAccountFormValues = Omit<
   accountType: AccountType | "";
   normalBalance: NormalBalance | "";
   status: AccountStatus | "";
+  isBankLinked: boolean;
+  bankDetails: BankDetails;
 };
 
 export type FlattenedChartAccount = {
@@ -89,6 +87,24 @@ export type ChartAccountStructureFilter =
 export type ChartsOfAccountsActionMode = "add" | "edit" | "view";
 
 export type ChartsOfAccountsFormTab = "Account Information" | "Bank Details";
+
+export type ChartsOfAccountsFormProps = {
+  account: ChartAccount | null;
+  accounts: ChartAccount[];
+  accountCodeError?: string;
+  accountNameError?: string;
+  availableAccountLevels: AccountLevel[];
+  isAccountCodeLoading?: boolean;
+  isReadOnly?: boolean;
+  parentAccountError?: string;
+  submitted: boolean;
+  values: ChartAccountFormValues;
+  onFieldChange: <Key extends keyof ChartAccountFormValues>(
+    key: Key,
+    value: ChartAccountFormValues[Key],
+  ) => void;
+  onParentChange: (parentId: string | null) => void;
+};
 
 export type ChartsOfAccountsTableColumnKey =
   | "accountNumber"

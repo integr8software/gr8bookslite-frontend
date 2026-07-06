@@ -50,7 +50,7 @@ export function useMultiCurrencySetupFormPage() {
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const isReadonly = mode === "view";
 	const ratesQuery = useMultiCurrencySetupRates(values.baseCurrencyCode);
-	const fetchedRates = ratesQuery.data;
+	const fetchedRates = ratesQuery.data ?? [];
 	const fetchedRate = findFetchedRate(
 		fetchedRates,
 		values.targetCurrencyCode,
@@ -61,12 +61,14 @@ export function useMultiCurrencySetupFormPage() {
 	const originalExchangeRateDisplay =
 		originalExchangeRate == null
 			? "0.000000"
-			: formatExchangeRate(originalExchangeRate);
+			: formatExchangeRate(
+					originalExchangeRate === 0 ? 0 : 1 / originalExchangeRate,
+				);
 	const fetchedExchangeRateDisplay = fetchedRate
-		? formatExchangeRate(fetchedRate.exchangeRate)
+		? formatExchangeRate(fetchedRate.inverseExchangeRate)
 		: "0.000000";
 	const inverseExchangeRateDisplay = fetchedRate
-		? formatExchangeRate(fetchedRate.inverseExchangeRate)
+		? formatExchangeRate(fetchedRate.exchangeRate)
 		: "0.000000";
 	const baseOriginalExchangeRateDisplay = fetchedRate
 		? formatExchangeRate(fetchedRate.baseOriginalExchangeRate)

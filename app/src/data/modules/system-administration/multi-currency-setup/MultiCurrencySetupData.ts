@@ -23,7 +23,7 @@ export const MultiCurrencyCatalog: MultiCurrencyCatalogItem[] = [
 		name: "Philippine Peso",
 		referencePerUsd: 56.48,
 		source: "API",
-		symbol: "PHP",
+		symbol: "₱",
 	},
 	{
 		code: "USD",
@@ -33,7 +33,7 @@ export const MultiCurrencyCatalog: MultiCurrencyCatalogItem[] = [
 		name: "US Dollar",
 		referencePerUsd: 1,
 		source: "API",
-		symbol: "USD",
+		symbol: "$",
 	},
 	{
 		code: "EUR",
@@ -43,7 +43,7 @@ export const MultiCurrencyCatalog: MultiCurrencyCatalogItem[] = [
 		name: "Euro",
 		referencePerUsd: 0.92,
 		source: "API",
-		symbol: "EUR",
+		symbol: "€",
 	},
 	{
 		code: "JPY",
@@ -53,7 +53,7 @@ export const MultiCurrencyCatalog: MultiCurrencyCatalogItem[] = [
 		name: "Japanese Yen",
 		referencePerUsd: 156.74,
 		source: "API",
-		symbol: "JPY",
+		symbol: "¥",
 	},
 	{
 		code: "SGD",
@@ -63,7 +63,7 @@ export const MultiCurrencyCatalog: MultiCurrencyCatalogItem[] = [
 		name: "Singapore Dollar",
 		referencePerUsd: 1.35,
 		source: "API",
-		symbol: "SGD",
+		symbol: "S$",
 	},
 	{
 		code: "GBP",
@@ -73,7 +73,7 @@ export const MultiCurrencyCatalog: MultiCurrencyCatalogItem[] = [
 		name: "Pound Sterling",
 		referencePerUsd: 0.79,
 		source: "API",
-		symbol: "GBP",
+		symbol: "£",
 	},
 	{
 		code: "AUD",
@@ -83,7 +83,7 @@ export const MultiCurrencyCatalog: MultiCurrencyCatalogItem[] = [
 		name: "Australian Dollar",
 		referencePerUsd: 1.51,
 		source: "Manual",
-		symbol: "AUD",
+		symbol: "A$",
 	},
 	{
 		code: "CAD",
@@ -93,7 +93,7 @@ export const MultiCurrencyCatalog: MultiCurrencyCatalogItem[] = [
 		name: "Canadian Dollar",
 		referencePerUsd: 1.37,
 		source: "API",
-		symbol: "CAD",
+		symbol: "C$",
 	},
 	{
 		code: "INR",
@@ -103,15 +103,15 @@ export const MultiCurrencyCatalog: MultiCurrencyCatalogItem[] = [
 		name: "Indian Rupee",
 		referencePerUsd: 83.18,
 		source: "API",
-		symbol: "INR",
+		symbol: "₹",
 	},
 ];
 
 export const MultiCurrencySourceSummary = {
 	autoUpdate: true,
 	backupSource: "Manual Entry",
-	lastUpdated: "Jun 1, 2026 10:30 AM",
-	primarySource: "Open Exchange Rates",
+	lastUpdated: "Latest available reference date",
+	primarySource: "Frankfurter",
 	updateFrequency: "Daily",
 };
 
@@ -205,48 +205,22 @@ export const MockMultiCurrencyAuditLogs: MultiCurrencyAuditLogRecord[] = [
 	},
 ];
 
-export const MockMultiCurrencySetupRecords: MultiCurrencySetupRecord[] = [
-	{
-		id: "mcs_php_usd",
-		baseCurrencyCode: "PHP",
-		targetCurrencyCode: "USD",
-		originalExchangeRate: 0.017704,
-		rateDate: MultiCurrencyRateAsOf,
-		source: "API",
-		status: "Active",
-		notes: "Default bank settlement currency.",
-	},
-	{
-		id: "mcs_php_sgd",
-		baseCurrencyCode: "PHP",
-		targetCurrencyCode: "SGD",
-		originalExchangeRate: 0.023902,
-		rateDate: MultiCurrencyRateAsOf,
-		source: "API",
-		status: "Active",
-		notes: "Singapore supplier payments.",
-	},
-	{
-		id: "mcs_usd_php",
-		baseCurrencyCode: "USD",
-		targetCurrencyCode: "PHP",
-		originalExchangeRate: 56.48,
-		rateDate: MultiCurrencyRateAsOf,
-		source: "API",
-		status: "Active",
-		notes: "Dollar invoice conversion.",
-	},
-	{
-		id: "mcs_usd_eur",
-		baseCurrencyCode: "USD",
-		targetCurrencyCode: "EUR",
-		originalExchangeRate: 0.92,
-		rateDate: MultiCurrencyRateAsOf,
-		source: "Manual",
-		status: "Inactive",
-		notes: "Paused EU pricing feed.",
-	},
-];
+export const MockMultiCurrencySetupRecords: MultiCurrencySetupRecord[] =
+	MultiCurrencyCatalog.flatMap((baseCurrency) =>
+		MultiCurrencyCatalog.filter(
+			(targetCurrency) => targetCurrency.code !== baseCurrency.code,
+		).map((targetCurrency) => ({
+			baseCurrencyCode: baseCurrency.code,
+			id: `mcs_${baseCurrency.code.toLowerCase()}_${targetCurrency.code.toLowerCase()}`,
+			notes: `${targetCurrency.name} daily exchange rate.`,
+			originalExchangeRate:
+				targetCurrency.referencePerUsd / baseCurrency.referencePerUsd,
+			rateDate: MultiCurrencyRateAsOf,
+			source: targetCurrency.source,
+			status: targetCurrency.isEnabled ? "Active" : "Inactive",
+			targetCurrencyCode: targetCurrency.code,
+		})),
+	);
 
 export const MultiCurrencySetupInitialFormValues: MultiCurrencySetupFormValues =
 	{
@@ -368,14 +342,54 @@ export function updateMultiCurrencySetupRecord(
 export function createMultiCurrencySetupTableRecords(
 	records: MultiCurrencySetupRecord[],
 	fetchedRates: MultiCurrencyFetchedRate[],
+	baseCurrencyCode: string,
 ): MultiCurrencySetupTableRecord[] {
-	return records.map((record) => {
+	const baseCurrency = findCurrencyByCode(baseCurrencyCode);
+	const baseRate = findFetchedRate(fetchedRates, baseCurrencyCode);
+	const baseRecord: MultiCurrencySetupTableRecord[] = baseCurrency
+		? [
+				{
+					baseCurrencyCode,
+					baseCurrencyLabel: getCurrencyLabel(baseCurrencyCode),
+					currencyCode: baseCurrency.code,
+					currencyDescription: baseCurrency.name,
+					currencySymbol: baseCurrency.symbol,
+					currentExchangeRate: 1,
+					currentExchangeRateDisplay: formatExchangeRate(1),
+					dailyExchangeRate: 1,
+					dailyExchangeRateDisplay: formatExchangeRate(1),
+					id: `base_${baseCurrencyCode.toLowerCase()}`,
+					inverseExchangeRate: 1,
+					isBaseCurrency: true,
+					originalExchangeRate: 1,
+					originalExchangeRateDisplay: formatExchangeRate(1),
+					rateAsOf: baseRate?.rateAsOf ?? MultiCurrencyRateAsOf,
+					rateDate: baseRate?.rateAsOf ?? MultiCurrencyRateAsOf,
+					source: "API",
+					status: "Active",
+					targetCurrencyCode: baseCurrencyCode,
+					targetCurrencyLabel: getCurrencyLabel(baseCurrencyCode),
+					varianceDisplay: formatVariancePercent(0),
+					variancePercent: 0,
+				},
+			]
+		: [];
+	const currencyRecords = records.map((record) => {
 		const currentRate = findFetchedRate(
 			fetchedRates,
 			record.targetCurrencyCode,
 		);
 		const currentExchangeRate =
 			currentRate?.exchangeRate ?? record.originalExchangeRate;
+		const currency = findCurrencyByCode(record.targetCurrencyCode);
+		const configuredDailyRate =
+			record.originalExchangeRate === 0
+				? 0
+				: 1 / record.originalExchangeRate;
+		const dailyExchangeRate =
+			record.source === "Manual"
+				? configuredDailyRate
+				: currentRate?.inverseExchangeRate ?? configuredDailyRate;
 		const variancePercent = getExchangeRateVariancePercent(
 			record.originalExchangeRate,
 			currentExchangeRate,
@@ -384,9 +398,15 @@ export function createMultiCurrencySetupTableRecords(
 		return {
 			...record,
 			baseCurrencyLabel: getCurrencyLabel(record.baseCurrencyCode),
+			currencyCode: record.targetCurrencyCode,
+			currencyDescription: currency?.name ?? record.targetCurrencyCode,
+			currencySymbol: currency?.symbol ?? record.targetCurrencyCode,
 			currentExchangeRate,
 			currentExchangeRateDisplay: formatExchangeRate(currentExchangeRate),
+			dailyExchangeRate,
+			dailyExchangeRateDisplay: formatExchangeRate(dailyExchangeRate),
 			inverseExchangeRate: currentRate?.inverseExchangeRate ?? 0,
+			isBaseCurrency: false,
 			originalExchangeRateDisplay: formatExchangeRate(
 				record.originalExchangeRate,
 			),
@@ -396,6 +416,8 @@ export function createMultiCurrencySetupTableRecords(
 			variancePercent,
 		};
 	});
+
+	return [...baseRecord, ...currencyRecords];
 }
 
 export function getExchangeRateVariancePercent(

@@ -4,7 +4,9 @@ import { useMemo, useState } from "react";
 import {
 	type ColumnDef,
 	type PaginationState,
+	type RowModel,
 	type SortingState,
+	type Table,
 	getCoreRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
@@ -24,7 +26,7 @@ export function useMultiCurrencySetupTable(
 		pageSize: 5,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "targetCurrencyLabel", desc: false },
+		{ id: "currencyCode", desc: false },
 	]);
 	const columns = useMemo<ColumnDef<MultiCurrencySetupTableRecord>[]>(
 		() =>
@@ -59,8 +61,30 @@ export function useMultiCurrencySetupTable(
 		onSortingChange: setSorting,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
+		getSortedRowModel: getBaseFirstSortedRowModel(),
 	});
+}
+
+function getBaseFirstSortedRowModel() {
+	const getDefaultSortedRowModel =
+		getSortedRowModel<MultiCurrencySetupTableRecord>();
+
+	return (table: Table<MultiCurrencySetupTableRecord>) => {
+		const getRowModel = getDefaultSortedRowModel(table);
+
+		return (): RowModel<MultiCurrencySetupTableRecord> => {
+			const rowModel = getRowModel();
+
+			return {
+				...rowModel,
+				rows: [...rowModel.rows].sort(
+					(firstRow, secondRow) =>
+						Number(secondRow.original.isBaseCurrency) -
+						Number(firstRow.original.isBaseCurrency),
+				),
+			};
+		};
+	};
 }
 
 function createMultiCurrencySetupColumn(

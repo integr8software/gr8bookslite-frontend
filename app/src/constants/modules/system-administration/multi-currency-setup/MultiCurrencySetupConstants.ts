@@ -27,33 +27,43 @@ export const MultiCurrencySetupTableColumns: Array<
 	  }
 > = [
 	{
-		key: "targetCurrencyLabel",
+		key: "currencyCode",
 		label: "Currency",
-		className: "w-[22%]",
+		className: "w-[11%]",
 	},
 	{
-		key: "currentExchangeRateDisplay",
-		label: "API Rate",
-		className: "w-[18%]",
+		key: "currencyDescription",
+		label: "Description",
+		className: "w-[20%]",
 	},
 	{
-		key: "originalExchangeRateDisplay",
-		label: "Configured Rate",
-		className: "w-[18%]",
+		key: "currencySymbol",
+		label: "Symbol",
+		className: "w-[9%]",
 	},
 	{
-		key: "varianceDisplay",
-		label: "Variance",
-		className: "w-[14%]",
+		key: "dailyExchangeRateDisplay",
+		label: "Daily Exchange Rate",
+		className: "w-[17%]",
+	},
+	{
+		key: "rateAsOf",
+		label: "Rate Date",
+		className: "w-[13%]",
+	},
+	{
+		key: "source",
+		label: "Rate Type",
+		className: "w-[10%]",
 	},
 	{
 		key: "status",
-		label: "Status",
-		className: "w-[12%]",
+		label: "Availability",
+		className: "w-[9%]",
 	},
 	{
 		label: "Actions",
-		className: "w-[16%] text-right",
+		className: "w-[11%] text-right",
 	},
 ];
 

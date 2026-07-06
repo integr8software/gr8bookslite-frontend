@@ -5,7 +5,6 @@ import {
 	BankImportTemplateSampleRow,
 	BankImportTemplateHeaders,
 	BankMasterfileAccountTypeOptions,
-	BankMasterfileStatusOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
 import { FinancialManagementCashInBankAccountTitle } from "@/app/src/constants/modules/maintenance/financial-management/FinancialManagementAccountTitleConstants";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
@@ -84,6 +83,18 @@ export function buildBankMasterfileAccountName(
 	]
 		.filter(Boolean)
 		.join(" - ");
+}
+
+export function countUniqueBankNames(
+	banks: Pick<BankMasterfile, "bankName">[],
+) {
+	const names = new Set(
+		banks
+			.map((bank) => bank.bankName.trim().toLowerCase())
+			.filter(Boolean),
+	);
+
+	return names.size;
 }
 
 export function createBlankRow(rowNumber: number): BankImportPreviewRow {
@@ -314,16 +325,6 @@ export async function downloadBankImportTemplate() {
 				allowBlank: false,
 				formulae: [`"${BankMasterfileAccountTypeOptions.join(",")}"`],
 			};
-			worksheet.getCell(`J${row}`).dataValidation = {
-				type: "list",
-				allowBlank: false,
-				formulae: ['"No,Yes"'],
-			};
-			worksheet.getCell(`K${row}`).dataValidation = {
-				type: "list",
-				allowBlank: false,
-				formulae: [`"${BankMasterfileStatusOptions.join(",")}"`],
-			};
 		}
 		const buffer = await workbook.xlsx.writeBuffer();
 		downloadBlob(
@@ -336,7 +337,7 @@ export async function downloadBankImportTemplate() {
 		downloadBlob(
 			new Blob(
 				[
-					`${BankImportTemplateHeaders.join(",")}\nBDO,Makati,1234567890,Checking,PHP,,,,,No,Active\n`,
+					`${BankImportTemplateHeaders.join(",")}\nBDO,Makati,1234567890,Checking,PHP,,,,\n`,
 					`${BankImportTemplateHeaders.join(",")}\n${BankImportTemplateSampleRow.join(",")}\n`,
 				],
 				{ type: "text/csv;charset=utf-8" },

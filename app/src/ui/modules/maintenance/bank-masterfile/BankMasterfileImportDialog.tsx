@@ -74,7 +74,6 @@ export function BankMasterfileImportDialog({
 	const [columnWidths, setColumnWidths] = useState(() =>
 		TemplateHeaders.map(() => 160),
 	);
-	const [validationColumnWidth, setValidationColumnWidth] = useState(240);
 	const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(
 		() => new Set(),
 	);
@@ -124,9 +123,7 @@ export function BankMasterfileImportDialog({
 	const canImportAllValid = validRows.length > 0 && !isBusy;
 	const canImportSelectedValid = validSelectedRows.length > 0 && !isBusy;
 	const importTableWidth =
-		64 +
-		columnWidths.reduce((total, width) => total + width, 0) +
-		validationColumnWidth;
+		64 + columnWidths.reduce((total, width) => total + width, 0);
 
 	function updateColumnWidth(index: number, width: number) {
 		setColumnWidths((current) =>
@@ -637,7 +634,6 @@ export function BankMasterfileImportDialog({
 										style={{ width }}
 									/>
 								))}
-								<col style={{ width: validationColumnWidth }} />
 							</colgroup>
 							<thead className="text-xs uppercase text-darknavy/55">
 								<tr>
@@ -701,12 +697,6 @@ export function BankMasterfileImportDialog({
 											{header}
 										</ModuleImportResizableColumnHeader>
 									))}
-									<ModuleImportResizableColumnHeader
-										width={validationColumnWidth}
-										onResize={setValidationColumnWidth}
-									>
-										Validation
-									</ModuleImportResizableColumnHeader>
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-darknavy/8 bg-white">
@@ -724,7 +714,7 @@ export function BankMasterfileImportDialog({
 								) : (
 									<tr>
 										<td
-											colSpan={13}
+											colSpan={10}
 											className="px-3 py-10 text-center font-medium text-darknavy/45"
 										>
 											Upload a file, add a row, or paste copied Excel rows here.

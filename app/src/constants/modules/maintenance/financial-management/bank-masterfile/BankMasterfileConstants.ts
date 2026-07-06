@@ -90,8 +90,6 @@ export const BankImportTemplateHeaders = [
 	"Series Start",
 	"Series End",
 	"Series Digits",
-	"Default",
-	"Status",
 ] as const;
 
 export const BankImportTemplateSampleRow = [
@@ -104,8 +102,6 @@ export const BankImportTemplateSampleRow = [
 	"",
 	"",
 	"",
-	"No",
-	"Active",
 ] as const;
 
 export const BankImportFieldOrder: BankImportColumnId[] = [
@@ -118,8 +114,6 @@ export const BankImportFieldOrder: BankImportColumnId[] = [
 	"seriesStart",
 	"seriesEnd",
 	"seriesDigits",
-	"isDefault",
-	"status",
 ];
 
 export const BankImportPreviewPageSize = 10;

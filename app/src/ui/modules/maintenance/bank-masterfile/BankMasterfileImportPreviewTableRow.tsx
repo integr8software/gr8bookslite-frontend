@@ -2,7 +2,6 @@
 
 import {
 	BankMasterfileAccountTypeOptions,
-	BankMasterfileStatusOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
 import type {
 	BankImportColumnId,
@@ -10,6 +9,8 @@ import type {
 	BankImportRowProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { rowHasBankImportErrors } from "@/app/src/validations/modules/maintenance/bank-masterfile/BankMasterfileValidation";
+import { AlertCircle } from "lucide-react";
+import { ModuleImportCellIssueIcon } from "@/app/src/ui/shared/module/ModuleImportControls";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function BankImportRow({
@@ -20,6 +21,7 @@ export function BankImportRow({
 	onUpdate,
 }: BankImportRowProps) {
 	return (
+		<>
 		<tr className={rowHasBankImportErrors(row) ? "bg-coralpink/[0.025]" : undefined}>
 			<td className="sticky left-0 z-20 bg-inherit px-2 py-2">
 				<input
@@ -86,32 +88,25 @@ export function BankImportRow({
 				disabled={disabled}
 				onUpdate={onUpdate}
 			/>
-			<EditableSelect
-				row={row}
-				field="isDefault"
-				options={["No", "Yes"]}
-				disabled={disabled}
-				onUpdate={onUpdate}
-			/>
-			<EditableSelect
-				row={row}
-				field="status"
-				options={BankMasterfileStatusOptions}
-				disabled={disabled}
-				onUpdate={onUpdate}
-			/>
-			<td className="px-2 py-2 align-top text-xs">
-				{rowHasBankImportErrors(row) ? (
-					<span className="font-medium text-coralpink">
-						{[...row.rowErrors, ...Object.values(row.cellErrors).flat()].join(
-							" ",
-						)}
-					</span>
-				) : (
-					<span className="font-semibold text-emerald-700">Valid</span>
-				)}
-			</td>
 		</tr>
+		{row.rowErrors.length > 0 ? (
+			<tr className="bg-coralpink/[0.025]">
+				<td />
+				<td
+					colSpan={9}
+					className="px-2 pb-3 text-xs font-semibold text-coralpink"
+				>
+					<span className="inline-flex items-start gap-1.5">
+						<AlertCircle
+							className="mt-0.5 h-3.5 w-3.5 shrink-0"
+							aria-hidden="true"
+						/>
+						<span>{row.rowErrors.join(" ")}</span>
+					</span>
+				</td>
+			</tr>
+		) : null}
+		</>
 	);
 }
 
@@ -122,7 +117,7 @@ function EditableCell({
 	onUpdate,
 }: {
 	row: BankImportPreviewRow;
-	field: Exclude<BankImportColumnId, "isDefault" | "status">;
+	field: Exclude<BankImportColumnId, "accountType" | "isDefault" | "status">;
 	disabled: boolean;
 	onUpdate: (rowId: string, field: BankImportColumnId, value: string) => void;
 }) {
@@ -130,6 +125,7 @@ function EditableCell({
 
 	return (
 		<td className="px-1 py-1 align-top">
+			<label className="relative block">
 			<input
 				value={String(row.values[field])}
 				disabled={disabled}
@@ -137,9 +133,12 @@ function EditableCell({
 				title={errors?.join(" ")}
 				className={joinClasses(
 					"h-9 w-full min-w-0 rounded-md border bg-white px-2 text-sm outline-none focus:border-skyblue",
+					errors?.length ? "pr-9" : "",
 					errors?.length ? "border-coralpink/60" : "border-darknavy/10",
 				)}
 			/>
+			<ModuleImportCellIssueIcon errors={errors} />
+			</label>
 		</td>
 	);
 }
@@ -152,7 +151,7 @@ function EditableSelect({
 	onUpdate,
 }: {
 	row: BankImportPreviewRow;
-	field: "accountType" | "isDefault" | "status";
+	field: "accountType";
 	options: readonly string[];
 	disabled: boolean;
 	onUpdate: (
@@ -161,16 +160,12 @@ function EditableSelect({
 		value: string | boolean,
 	) => void;
 }) {
-	const value =
-		field === "isDefault"
-			? row.values.isDefault
-				? "Yes"
-				: "No"
-			: String(row.values[field]);
+	const value = String(row.values[field]);
 	const errors = row.cellErrors[field];
 
 	return (
 		<td className="px-1 py-1 align-top">
+			<label className="relative block">
 			<select
 				value={value}
 				disabled={disabled}
@@ -178,6 +173,7 @@ function EditableSelect({
 				title={errors?.join(" ")}
 				className={joinClasses(
 					"h-9 w-full min-w-0 rounded-md border bg-white px-2 text-sm outline-none focus:border-skyblue",
+					errors?.length ? "pr-9" : "",
 					errors?.length ? "border-coralpink/60" : "border-darknavy/10",
 				)}
 			>
@@ -187,6 +183,8 @@ function EditableSelect({
 					</option>
 				))}
 			</select>
+			<ModuleImportCellIssueIcon errors={errors} />
+			</label>
 		</td>
 	);
 }

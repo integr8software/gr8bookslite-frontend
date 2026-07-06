@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Banknote, CheckCircle2, CirclePause, Landmark } from "lucide-react";
+import { Building2, CheckCircle2, CirclePause, Landmark } from "lucide-react";
+import { countUniqueBankNames } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
 import { useBankMasterfileListPage } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type {
@@ -29,6 +30,18 @@ export function BankMasterfileListPage() {
 		},
 		() => setDrawerState(null),
 	);
+	const displayStatistics = useMemo(() => {
+		const totalBanks = page.banks.length;
+		const uniqueBanks = countUniqueBankNames(page.banks);
+		const activeBanks = countUniqueBankNames(
+			page.banks.filter((bank) => bank.status === "Active"),
+		);
+		const inactiveBanks = countUniqueBankNames(
+			page.banks.filter((bank) => bank.status === "Inactive"),
+		);
+
+		return { totalBanks, uniqueBanks, activeBanks, inactiveBanks };
+	}, [page.banks]);
 	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
 		() => [
 			{
@@ -36,31 +49,31 @@ export function BankMasterfileListPage() {
 				iconClassName: "bg-skyblue/20 text-skyblue",
 				label: "Total Banks",
 				summary: "All bank records",
-				value: page.statistics.totalBanks,
+				value: displayStatistics.totalBanks,
+			},
+			{
+				icon: Building2,
+				iconClassName: "bg-cyan-50 text-cyan-700",
+				label: "Number of Banks",
+				summary: "Unique bank names",
+				value: displayStatistics.uniqueBanks,
 			},
 			{
 				icon: CheckCircle2,
 				iconClassName: "bg-emerald-50 text-emerald-700",
 				label: "Active Banks",
 				summary: "Available for transactions",
-				value: page.statistics.activeBanks,
+				value: displayStatistics.activeBanks,
 			},
 			{
 				icon: CirclePause,
 				iconClassName: "bg-amber-50 text-amber-700",
 				label: "Inactive Banks",
 				summary: "Hidden from new transactions",
-				value: page.statistics.inactiveBanks,
-			},
-			{
-				icon: Banknote,
-				iconClassName: "bg-cyan-50 text-cyan-700",
-				label: "Default Banks",
-				summary: "Marked as default",
-				value: page.statistics.defaultBanks,
+				value: displayStatistics.inactiveBanks,
 			},
 		],
-		[page.statistics],
+		[displayStatistics],
 	);
 	const hasActiveFilters =
 		page.query.trim().length > 0 || page.statusFilter !== "";

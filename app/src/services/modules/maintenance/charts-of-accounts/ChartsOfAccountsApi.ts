@@ -1,4 +1,3 @@
-import { EmptyBankDetails } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsDefaults";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   AccountStatus,
@@ -18,6 +17,8 @@ type ApiAccountNature = "DEBIT" | "CREDIT";
 type ApiChartAccountStatus = "ACTIVE" | "INACTIVE";
 
 type ApiBankAccount = {
+  accountType: string | null;
+  currencyExchangeRate?: string | number | null;
   accountName: string;
   accountNumber: string;
   bankName: string;
@@ -35,9 +36,13 @@ type ApiChartAccount = {
   accountType: ApiChartAccountType | null;
   accountNature: ApiAccountNature | null;
   accountGroup: string | null;
+  statementSection: string | null;
   reportAlias: string | null;
-  class: string | null;
+  description: string | null;
   isPostingAccount: boolean;
+  isSystemDefault?: boolean;
+  isUserCreated?: boolean;
+  isBankLinked?: boolean;
   showTotal: boolean;
   status: ApiChartAccountStatus;
   currencyCode: string | null;
@@ -65,11 +70,22 @@ type SaveChartAccountPayload = {
   accountType?: ApiChartAccountType;
   accountNature?: ApiAccountNature;
   accountGroup?: string;
+  statementSection?: string;
   reportAlias?: string;
-  class?: string;
+  description?: string;
   isPostingAccount?: boolean;
   showTotal?: boolean;
   currencyCode?: string;
+  status?: ApiChartAccountStatus;
+  linkedDetails?: {
+    kind: "BANK";
+    bankName?: string;
+    branch?: string;
+    accountNumber?: string;
+    accountType?: string;
+    currencyCode?: string;
+    currencyExchangeRate?: number;
+  };
 };
 
 const ChartOfAccountsUrl = "/maintenance/chart-of-accounts";
@@ -118,7 +134,7 @@ export async function SaveChartAccount(
       );
   const savedAccount = response.data.account;
 
-  if (MapStatusToApi(values.status) !== savedAccount.status) {
+  if (values.status && MapStatusToApi(values.status) !== savedAccount.status) {
     await ApiClient.patch<ChartAccountSaveResponse>(
       `${ChartOfAccountsUrl}/${savedAccount.id}/status`,
       { status: MapStatusToApi(values.status) },
@@ -129,9 +145,16 @@ export async function SaveChartAccount(
 }
 
 export async function DeactivateChartAccount(accountId: string) {
+  return UpdateChartAccountStatus(accountId, "Inactive");
+}
+
+export async function UpdateChartAccountStatus(
+  accountId: string,
+  status: AccountStatus,
+) {
   const response = await ApiClient.patch<ChartAccountSaveResponse>(
     `${ChartOfAccountsUrl}/${accountId}/status`,
-    { status: "INACTIVE" satisfies ApiChartAccountStatus },
+    { status: MapStatusToApi(status) },
   );
 
   return MapChartAccount(response.data.account);
@@ -141,25 +164,34 @@ function CreateSaveChartAccountPayload(
   values: ChartAccountFormValues,
   account?: ChartAccount | null,
 ): SaveChartAccountPayload {
-  const currencyCode =
-    values.accountCategory === "Cash in Bank"
-      ? values.bankDetails?.currency
-      : undefined;
-
   const payload: SaveChartAccountPayload = {
-    accountGroup: GetAccountGroupLabel(values.accountLevel),
-    accountNature: values.normalBalance,
+    accountGroup: "",
+    accountNature: values.normalBalance || undefined,
     accountTitle: values.accountName,
-    accountType: values.accountType,
-    class: values.description ? values.description.slice(0, 50) : undefined,
-    currencyCode,
+    accountType: values.accountType || undefined,
+    description: values.description || undefined,
     isPostingAccount: values.isPostingAccount,
-    reportAlias: values.statementSection,
+    reportAlias: values.showInReports ? values.reportAlias : "",
+    statementSection: values.statementSection,
     showTotal: values.showInReports,
+    status: values.status ? MapStatusToApi(values.status) : undefined,
   };
 
+  if (!account && values.isBankLinked) {
+    payload.currencyCode = cleanOptional(values.bankDetails.currency);
+    payload.linkedDetails = {
+      kind: "BANK",
+      bankName: cleanOptional(values.bankDetails.bankName),
+      branch: cleanOptional(values.bankDetails.branch),
+      accountNumber: cleanOptional(values.bankDetails.bankAccountNumber),
+      accountType: cleanOptional(values.bankDetails.accountType),
+      currencyCode: cleanOptional(values.bankDetails.currency),
+      currencyExchangeRate: toOptionalNumber(values.bankDetails.currencyExchangeRate),
+    };
+  }
+
   if (!account || account.accountLevel !== values.accountLevel) {
-    payload.accountLevel = values.accountLevel;
+    payload.accountLevel = values.accountLevel || undefined;
   }
 
   if (!account || account.parentId !== values.parentId) {
@@ -170,36 +202,43 @@ function CreateSaveChartAccountPayload(
 }
 
 function MapChartAccount(account: ApiChartAccount): ChartAccount {
-  const firstBankAccount = account.bankAccounts[0];
+  const bankAccount = account.bankAccounts[0];
 
   return {
-    accountCategory: MapAccountGroup(account.accountGroup),
     accountLevel: account.accountLevel,
+    accountGroup: account.accountGroup ?? "",
     accountName: account.accountTitle,
     accountNumber: account.accountCode,
     accountType: account.accountType ?? "ASSET",
-    bankDetails: firstBankAccount
-      ? {
-          ...EmptyBankDetails,
-          accountType: "Checking",
-          bankAccountNumber: firstBankAccount.accountNumber,
-          bankName: firstBankAccount.bankName,
-          branch: firstBankAccount.branch ?? "",
-          currency:
-            firstBankAccount.currencyCode ?? account.currencyCode ?? "PHP",
-        }
-      : undefined,
     children: account.children?.map(MapChartAccount),
-    description: account.class ?? "",
+    description: account.description ?? "",
     id: String(account.id),
+    isBankLinked: Boolean(account.isBankLinked ?? account.bankAccounts.length),
     isPostingAccount: account.isPostingAccount,
+    isSystemDefault: Boolean(account.isSystemDefault),
+    isUserCreated: Boolean(account.isUserCreated),
     normalBalance: account.accountNature ?? "DEBIT",
     parentId:
       account.parentAccountId === null ? null : String(account.parentAccountId),
     showInReports: account.showTotal,
     statementGroup: InferStatementGroup(account),
-    statementSection: account.reportAlias ?? InferStatementGroup(account),
+    statementSection: account.statementSection ?? InferStatementGroup(account),
+    reportAlias: account.reportAlias ?? "",
     status: MapStatusFromApi(account.status),
+    bankDetails: bankAccount
+      ? {
+          accountType: bankAccount.accountType ?? "",
+          bankAccountNumber: bankAccount.accountNumber,
+          bankName: bankAccount.bankName,
+          branch: bankAccount.branch ?? "",
+          currency: bankAccount.currencyCode ?? account.currencyCode ?? "PHP",
+          currencyExchangeRate:
+            bankAccount.currencyExchangeRate === undefined ||
+            bankAccount.currencyExchangeRate === null
+              ? ""
+              : String(bankAccount.currencyExchangeRate),
+        }
+      : undefined,
   };
 }
 
@@ -211,24 +250,6 @@ function MapStatusFromApi(status: ApiChartAccountStatus): AccountStatus {
   return status === "INACTIVE" ? "Inactive" : "Active";
 }
 
-function MapAccountGroup(value: string | null) {
-  const allowedValues = [
-    "Header",
-    "Cash in Bank",
-    "Cash on Hand",
-    "Receivable",
-    "Inventory",
-    "Payable",
-    "Loan",
-    "Revenue",
-    "Cost of Sales",
-    "Operating Expense",
-    "Other",
-  ] as const;
-
-  return allowedValues.find((item) => item === value) ?? "Other";
-}
-
 function InferStatementGroup(account: ApiChartAccount): StatementGroup {
   if (account.accountType === "REVENUE" || account.accountType === "EXPENSE") {
     return "Income Statement";
@@ -237,17 +258,10 @@ function InferStatementGroup(account: ApiChartAccount): StatementGroup {
   return "Balance Sheet";
 }
 
-function GetAccountGroupLabel(accountLevel: ApiChartAccountLevel) {
-  switch (accountLevel) {
-    case "MAJOR":
-      return "Major Acct Type";
-    case "SUB1":
-      return "Sub Acct 1";
-    case "SUB2":
-      return "Sub Acct 2";
-    case "SUB3":
-      return "Sub Acct 3";
-    case "SPECIFIC":
-      return "Specific Acct";
-  }
+function cleanOptional(value: string) {
+  return value.trim() || undefined;
+}
+
+function toOptionalNumber(value: string) {
+  return value.trim() ? Number(value) : undefined;
 }

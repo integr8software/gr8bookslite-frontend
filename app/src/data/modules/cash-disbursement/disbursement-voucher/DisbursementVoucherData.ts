@@ -130,7 +130,7 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     paymentDueDate: "2026-05-23",
     amount: 8320.5,
     currency: "PHP",
-    paymentMethod: "Online Payment",
+    paymentMethod: "InstaPay",
     disbursementType: "Operating Expense",
     status: "Active",
     costCenter: "CC-FAC-014",
@@ -178,7 +178,7 @@ export const MockDisbursementTransactions: DisbursementTransactionRecord[] = [
     paymentDueDate: "2026-04-29",
     amount: 3200,
     currency: "PHP",
-    paymentMethod: "Petty Cash",
+    paymentMethod: "Cash",
     disbursementType: "Reimbursement",
     status: "Approved",
     costCenter: "CC-SAL-090",
@@ -335,7 +335,7 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
     transactionId: "dv-tx-1005",
     voucherNo: "DV-2026-0099",
     voucherDate: "2026-04-24",
-    paymentMethod: "Petty Cash",
+    paymentMethod: "Cash",
     disbursementType: "Reimbursement",
     currency: "PHP",
     fxRate: "1.0000",
@@ -366,9 +366,9 @@ export const MockDisbursementVouchers: DisbursementVoucherRecord[] = [
       },
       {
         id: "entry-1006",
-        accountCode: "1005-001",
-        accountName: "Petty Cash Fund",
-        particulars: "Petty cash release",
+        accountCode: "1001111",
+        accountName: "Cash in Hand",
+        particulars: "Cash reimbursement release",
         debit: 0,
         credit: 3200,
         taxRate: "0%",
@@ -941,8 +941,7 @@ function isBankReplaceableCreditEntry(entry: DisbursementLineEntry) {
     entry.accountName === "Cash in Bank" ||
     entry.accountName.startsWith("Cash in Bank - ") ||
     entry.accountName === "Check Disbursement Clearing" ||
-    entry.accountName === "Online Payment Clearing" ||
-    entry.accountName === "Petty Cash Fund"
+    entry.accountName === "Online Payment Clearing"
   );
 }
 
@@ -1295,7 +1294,10 @@ function getCreditAccountTemplate(
     };
   }
 
-  if (paymentAccount?.type === "With Bank") {
+  if (
+    paymentAccount?.type === "With Bank" ||
+    paymentAccount?.type === "Multiple Check"
+  ) {
     return {
       accountCode: "1012-011",
       accountName: "Check Disbursement Clearing",
@@ -1316,6 +1318,13 @@ function getCreditAccountTemplate(
     };
   }
 
+  if (paymentAccount?.type === "Online Payment") {
+    return {
+      accountCode: "1011-008",
+      accountName: "Online Payment Clearing",
+    };
+  }
+
   if (paymentAccount?.accountCode?.trim() || paymentAccount?.accountTitle?.trim()) {
     return {
       accountCode: paymentAccount.accountCode?.trim() ?? "",
@@ -1330,21 +1339,20 @@ function getCreditAccountTemplate(
     };
   }
 
-  if (transaction.paymentMethod === "Petty Cash") {
-    return {
-      accountCode: "1005-001",
-      accountName: "Petty Cash Fund",
-    };
-  }
-
-  if (transaction.paymentMethod === "Check") {
+  if (
+    transaction.paymentMethod === "Check" ||
+    transaction.paymentMethod === "Manager's Check"
+  ) {
     return {
       accountCode: "1012-011",
       accountName: "Check Disbursement Clearing",
     };
   }
 
-  if (transaction.paymentMethod === "Online Payment") {
+  if (
+    transaction.paymentMethod === "InstaPay" ||
+    transaction.paymentMethod === "eWallet"
+  ) {
     return {
       accountCode: "1011-008",
       accountName: "Online Payment Clearing",

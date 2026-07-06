@@ -15,12 +15,13 @@ export function accountToFormValues(
     accountType: account.accountType,
     statementGroup: account.statementGroup,
     statementSection: account.statementSection,
+    reportAlias: account.reportAlias,
     normalBalance: account.normalBalance,
-    accountCategory: account.accountCategory,
     description: account.description,
     status: account.status,
     showInReports: account.showInReports,
     isPostingAccount: account.isPostingAccount,
+    isBankLinked: account.isBankLinked,
     bankDetails: account.bankDetails ?? EmptyBankDetails,
   };
 }

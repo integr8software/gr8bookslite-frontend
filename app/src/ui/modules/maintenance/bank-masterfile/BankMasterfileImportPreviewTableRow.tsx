@@ -7,8 +7,9 @@ import {
 import type {
 	BankImportColumnId,
 	BankImportPreviewRow,
+	BankImportRowProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
-import { rowHasErrors } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
+import { rowHasBankImportErrors } from "@/app/src/validations/modules/maintenance/bank-masterfile/BankMasterfileValidation";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function BankImportRow({
@@ -17,19 +18,9 @@ export function BankImportRow({
 	disabled,
 	onToggle,
 	onUpdate,
-}: {
-	row: BankImportPreviewRow;
-	selected: boolean;
-	disabled: boolean;
-	onToggle: (rowId: string, selected: boolean) => void;
-	onUpdate: (
-		rowId: string,
-		field: BankImportColumnId,
-		value: string | boolean,
-	) => void;
-}) {
+}: BankImportRowProps) {
 	return (
-		<tr className={rowHasErrors(row) ? "bg-coralpink/[0.025]" : undefined}>
+		<tr className={rowHasBankImportErrors(row) ? "bg-coralpink/[0.025]" : undefined}>
 			<td className="sticky left-0 z-20 bg-inherit px-2 py-2">
 				<input
 					type="checkbox"
@@ -110,7 +101,7 @@ export function BankImportRow({
 				onUpdate={onUpdate}
 			/>
 			<td className="px-2 py-2 align-top text-xs">
-				{rowHasErrors(row) ? (
+				{rowHasBankImportErrors(row) ? (
 					<span className="font-medium text-coralpink">
 						{[...row.rowErrors, ...Object.values(row.cellErrors).flat()].join(
 							" ",

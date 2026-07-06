@@ -180,7 +180,15 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 }
 
 function isCenteredHeader<TData>(header: Header<TData, unknown>) {
-	return ["actions", "datemode", "period", "status"].includes(header.column.id);
+	return [
+		"actions",
+		"accountType",
+		"datemode",
+		"normalBalance",
+		"period",
+		"statementSection",
+		"status",
+	].includes(header.column.id);
 }
 
 function ModuleTableSortButton<TData>({

@@ -257,7 +257,7 @@ export function AppPaymentTypeDialog({
               Payment Type Maintenance
             </h2>
             <p className="mt-1 text-sm text-darknavy/55">
-              Maintain payment type name, classification type, and status.
+              Maintain payment type name, category, and status.
             </p>
           </div>
           <button
@@ -428,7 +428,7 @@ function PaymentTypeListView({
               type="search"
               value={query}
               onChange={(event) => onQueryChange(event.target.value)}
-              placeholder="Search payment type or type..."
+              placeholder="Search payment type or category..."
               className="h-11 w-full rounded-lg border border-darknavy/12 bg-offwhite/60 pl-10 pr-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:bg-white"
             />
           </span>
@@ -438,7 +438,7 @@ function PaymentTypeListView({
             htmlFor={typeFilterId}
             className="text-xs font-semibold uppercase text-darknavy/45"
           >
-            Type
+            Category
           </label>
           <select
             id={typeFilterId}
@@ -502,7 +502,7 @@ function PaymentTypeListView({
                 </th>
                 <th className="w-[22%] px-4 py-3">
                   <SortHeader
-                    label="Type"
+                    label="Category"
                     sortKey="type"
                     activeSortKey={sortBy}
                     direction={sortDirection}
@@ -654,7 +654,7 @@ function PaymentTypeFormView({
   const isReadonly = mode === "view";
   const nameInputId = "payment-type-dialog-name";
   const descriptionInputId = "payment-type-dialog-description";
-  const typeInputId = "payment-type-dialog-type";
+  const typeInputId = "payment-type-dialog-category";
   const statusInputId = "payment-type-dialog-status";
 
   return (
@@ -722,7 +722,7 @@ function PaymentTypeFormView({
 
           <div className="grid gap-2">
             <label htmlFor={typeInputId} className="text-sm font-semibold text-darknavy">
-              Type
+              Category
               <span className="ml-1 text-coralpink">*</span>
             </label>
             <select
@@ -741,7 +741,7 @@ function PaymentTypeFormView({
               }
               className={fieldClassName}
             >
-              <option value="">Select type</option>
+              <option value="">Select category</option>
               {PaymentTypeOptions.map((type) => (
                 <option key={type} value={type}>
                   {type}

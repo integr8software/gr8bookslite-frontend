@@ -46,6 +46,7 @@ export function useBankMasterfileFormPage(
 	);
 	const [errors, setErrors] = useState<BankMasterfileFormErrors>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [hasTouchedStatus, setHasTouchedStatus] = useState(false);
 
 	function updateField(
 		field: keyof BankMasterfileFormValues,
@@ -55,7 +56,13 @@ export function useBankMasterfileFormPage(
 			return;
 		}
 
-		setValues((current) => ({ ...current, [field]: value }));
+		setValues((current) => ({
+			...current,
+			[field]: value,
+			...(shouldAutoActivateBank(field, value, current)
+				? { status: "Active" as const }
+				: {}),
+		}));
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
@@ -69,7 +76,27 @@ export function useBankMasterfileFormPage(
 				? event.target.checked
 				: event.target.value;
 
+		if (field === "status") {
+			setHasTouchedStatus(true);
+		}
 		updateField(field, value);
+	}
+
+	function shouldAutoActivateBank(
+		field: keyof BankMasterfileFormValues,
+		value: BankMasterfileFormValues[keyof BankMasterfileFormValues],
+		current: BankMasterfileFormValues,
+	) {
+		return (
+			field === "accountNumber" &&
+			!hasTouchedStatus &&
+			mode === "edit" &&
+			existingBank?.status === "Inactive" &&
+			!existingBank.accountNumber.trim() &&
+			current.status === "Inactive" &&
+			typeof value === "string" &&
+			Boolean(value.trim())
+		);
 	}
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {

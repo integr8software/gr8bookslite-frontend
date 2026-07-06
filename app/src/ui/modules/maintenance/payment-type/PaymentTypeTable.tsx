@@ -40,7 +40,7 @@ export function PaymentTypeTable({
 					<thead className="bg-darknavy/[0.03] text-xs font-semibold uppercase tracking-[0.14em] text-darknavy/45">
 						<tr>
 							<th className="w-[45%] px-4 py-3">Name</th>
-							<th className="w-[22%] px-4 py-3">Type</th>
+							<th className="w-[22%] px-4 py-3">Category</th>
 							<th className="w-[15%] px-4 py-3">Status</th>
 							<th className="w-[18%] px-4 py-3 text-center">Actions</th>
 						</tr>

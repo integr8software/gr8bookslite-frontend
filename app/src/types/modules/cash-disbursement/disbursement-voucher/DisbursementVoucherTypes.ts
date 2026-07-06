@@ -10,14 +10,17 @@ export type DisbursementVoucherStatus =
 export type DisbursementPaymentMethod =
   | "Bank Transfer"
   | "Check"
-  | "Online Payment"
-  | "Petty Cash"
+  | "InstaPay"
+  | "eWallet"
+  | "Manager's Check"
   | (string & {});
 
 export type DisbursementPaymentClassification =
   | "Cash"
   | "With Bank"
   | "Bank Transfer"
+  | "Online Payment"
+  | "Multiple Check"
   | "Debit";
 
 export type DisbursementType =

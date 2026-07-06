@@ -4,7 +4,7 @@ import {
 	BankMasterfileParentLabel,
 	BankMasterfileTitle,
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
-import type { BankMasterfilePermissions } from "@/app/src/services/modules/maintenance/bank-masterfile/BankMasterfileApi";
+import type { BankMasterfilePermissions } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,

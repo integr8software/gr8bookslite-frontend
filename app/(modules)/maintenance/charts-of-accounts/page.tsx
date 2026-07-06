@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { ChartsOfAccountsMain } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsPage";
+import { ChartsOfAccountsListPage } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsListPage";
 
 const PageTitle = "Charts Of Accounts";
 
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function ChartsOfAccountsPage() {
-	return <ChartsOfAccountsMain />;
+	return <ChartsOfAccountsListPage />;
 }

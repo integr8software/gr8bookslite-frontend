@@ -5,8 +5,7 @@ import { Banknote, CheckCircle2, CirclePause, Landmark } from "lucide-react";
 import { useBankMasterfileListPage } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type {
-	BankMasterfile,
-	BankMasterfileActionMode,
+	BankMasterfileDrawerState,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import {
 	ModuleStatisticCards,
@@ -18,13 +17,9 @@ import { BankMasterfileHeader } from "@/app/src/ui/modules/maintenance/bank-mast
 import { BankMasterfileImportDialog } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileImportDialog";
 import { BankMasterfileTable } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileTable";
 
-type DrawerState =
-	| { mode: BankMasterfileActionMode; bank?: BankMasterfile }
-	| null;
-
 export function BankMasterfileListPage() {
 	const page = useBankMasterfileListPage();
-	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	const [drawerState, setDrawerState] = useState<BankMasterfileDrawerState>(null);
 	const [isImportOpen, setIsImportOpen] = useState(false);
 	useMaintenanceAddDrawerSpotlight(
 		() => {
@@ -68,7 +63,7 @@ export function BankMasterfileListPage() {
 		[page.statistics],
 	);
 	const hasActiveFilters =
-		page.query.trim().length > 0 || page.statusFilter !== "Active";
+		page.query.trim().length > 0 || page.statusFilter !== "";
 
 	return (
 		<section className="grid gap-5">

@@ -1,10 +1,15 @@
 import type {
 	BankImportColumnId,
+	BankMasterfile,
 	BankMasterfileStatus,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
+import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 export const BankMasterfileHref = "/maintenance/bank-masterfile";
+
+export const BankMasterfileApiPath =
+	"/maintenance/financial-management/bank-masterfile";
 
 export const BankMasterfileParentLabel = "Accounting master data";
 
@@ -20,8 +25,8 @@ export const BankMasterfileTableColumns = [
 	{ key: "bankName", label: "Bank", className: "w-[16%]" },
 	{ key: "branch", label: "Branch", className: "w-[16%]" },
 	{ key: "accountNumber", label: "Account Number", className: "w-[16%]" },
-	{ key: "accountName", label: "Account Name", className: "w-[26%]" },
-	{ key: "accountCode", label: "COA Code", className: "w-[13%]" },
+	{ key: "accountName", label: "Account Title", className: "w-[26%]" },
+	{ key: "accountCode", label: "Account Code", className: "w-[13%]" },
 	{ key: "currencyCode", label: "Currency", className: "w-[10%]" },
 	{ key: "isDefault", label: "Default", className: "w-[10%]" },
 	{ key: "status", label: "Status", className: "w-[11%]" },
@@ -40,6 +45,23 @@ export const BankMasterfileAccountTypeOptions = [
 	"Savings",
 	"Current",
 ] as const;
+
+export const BankMasterfileExportColumns: ModuleTableExportColumn<BankMasterfile>[] =
+	[
+		...BankMasterfileTableColumns.flatMap((column) =>
+			"key" in column
+				? [
+					{
+						header: column.label,
+						id: column.key,
+						value: column.key,
+					},
+				]
+				: [],
+		),
+	];
+
+export const BankMasterfileBankNamePlaceholder = "Bank name";
 
 export const BankMasterfileActionCopy = {
 	add: {
@@ -70,6 +92,20 @@ export const BankImportTemplateHeaders = [
 	"Series Digits",
 	"Default",
 	"Status",
+] as const;
+
+export const BankImportTemplateSampleRow = [
+	BankMasterfileBankNamePlaceholder,
+	"Main Branch",
+	"1234567890",
+	"Checking",
+	"PHP",
+	"",
+	"",
+	"",
+	"",
+	"No",
+	"Active",
 ] as const;
 
 export const BankImportFieldOrder: BankImportColumnId[] = [

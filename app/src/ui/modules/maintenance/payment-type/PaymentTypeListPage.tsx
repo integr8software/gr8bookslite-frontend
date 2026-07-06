@@ -32,7 +32,7 @@ export function PaymentTypeListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Payment Type"
-				description="Maintain payment type names, classifications, and active status for cash disbursement workflows."
+				description="Maintain payment type names, categories, and active status for cash disbursement workflows."
 				eyebrow={
 					<>
 						<CreditCard className="h-3.5 w-3.5" aria-hidden="true" />

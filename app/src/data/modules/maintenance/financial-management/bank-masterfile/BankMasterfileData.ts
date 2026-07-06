@@ -2,13 +2,14 @@ import {
 	BankImportFieldOrder,
 	BankImportMaxFileSizeBytes,
 	BankImportMinFileSizeBytes,
+	BankImportTemplateSampleRow,
 	BankImportTemplateHeaders,
 	BankMasterfileAccountTypeOptions,
 	BankMasterfileStatusOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+import { FinancialManagementCashInBankAccountTitle } from "@/app/src/constants/modules/maintenance/financial-management/FinancialManagementAccountTitleConstants";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import type {
-	BankImportCellErrors,
 	BankImportColumnId,
 	BankImportPreviewRow,
 	BankMasterfile,
@@ -70,9 +71,19 @@ export function updateBankMasterfileFromForm(
 }
 
 export function buildBankMasterfileAccountName(
-	values: Pick<BankMasterfileFormValues, "bankName">,
+	values: Pick<
+		BankMasterfileFormValues,
+		"bankName" | "branch" | "accountNumber"
+	>,
 ) {
-	return ["Cash in Bank", values.bankName.trim()].filter(Boolean).join(" - ");
+	return [
+		FinancialManagementCashInBankAccountTitle,
+		values.bankName.trim(),
+		values.branch.trim(),
+		values.accountNumber.trim(),
+	]
+		.filter(Boolean)
+		.join(" - ");
 }
 
 export function createBlankRow(rowNumber: number): BankImportPreviewRow {
@@ -130,101 +141,6 @@ export function parseBankImportRows(
 	});
 }
 
-export function validateBankImportRows(
-	rows: BankImportPreviewRow[],
-	existingBanks: BankMasterfile[],
-) {
-	const existingKeys = new Set(existingBanks.map(getBankKey));
-	const importCounts = new Map<string, number>();
-
-	rows.forEach((row) => {
-		const key = getBankKey(row.values);
-		importCounts.set(key, (importCounts.get(key) ?? 0) + 1);
-	});
-
-	return rows.map((row) => {
-		const cellErrors: BankImportCellErrors = {};
-		const rowErrors: string[] = [];
-		const values = row.values;
-		const key = getBankKey(values);
-
-		addRequiredError(
-			cellErrors,
-			"bankName",
-			values.bankName,
-			"Bank is required.",
-		);
-		addRequiredError(
-			cellErrors,
-			"accountNumber",
-			values.accountNumber,
-			"Account number is required.",
-		);
-		addRequiredError(
-			cellErrors,
-			"currencyCode",
-			values.currencyCode,
-			"Currency is required.",
-		);
-
-		if (
-			!BankMasterfileAccountTypeOptions.includes(values.accountType as never)
-		) {
-			cellErrors.accountType = ["Select a valid account type."];
-		}
-		if (!BankMasterfileStatusOptions.includes(values.status)) {
-			cellErrors.status = ["Select a valid status."];
-		}
-		if (
-			values.currencyExchangeRate &&
-			!isPositiveNumber(values.currencyExchangeRate)
-		) {
-			cellErrors.currencyExchangeRate = [
-				"Exchange rate must be a positive number.",
-			];
-		}
-		if (values.seriesDigits && !isPositiveInteger(values.seriesDigits)) {
-			cellErrors.seriesDigits = [
-				"Series digits must be a positive whole number.",
-			];
-		}
-		if (values.seriesStart && !/^\d+$/.test(values.seriesStart)) {
-			cellErrors.seriesStart = ["Series start must contain digits only."];
-		}
-		if (values.seriesEnd && !/^\d+$/.test(values.seriesEnd)) {
-			cellErrors.seriesEnd = ["Series end must contain digits only."];
-		}
-		if (
-			/^\d+$/.test(values.seriesStart) &&
-			/^\d+$/.test(values.seriesEnd) &&
-			Number(values.seriesStart) > Number(values.seriesEnd)
-		) {
-			cellErrors.seriesEnd = [
-				"Series end must be greater than or equal to series start.",
-			];
-		}
-		if (existingKeys.has(key))
-			rowErrors.push("This bank account already exists.");
-		if ((importCounts.get(key) ?? 0) > 1)
-			rowErrors.push("Duplicate bank account in import.");
-
-		return { ...row, cellErrors, rowErrors };
-	});
-}
-
-function addRequiredError(
-	errors: BankImportCellErrors,
-	field: BankImportColumnId,
-	value: string,
-	message: string,
-) {
-	if (!value.trim()) errors[field] = [message];
-}
-
-export function rowHasErrors(row: BankImportPreviewRow) {
-	return row.rowErrors.length > 0 || Object.keys(row.cellErrors).length > 0;
-}
-
 export function normalizeCellValue(
 	field: BankImportColumnId,
 	value: string | boolean,
@@ -272,14 +188,6 @@ export function getPreviewRowContentKey(row: BankImportPreviewRow) {
 	return BankImportFieldOrder.map((field) =>
 		String(row.values[field]).trim().toLowerCase(),
 	).join("|");
-}
-
-function getBankKey(
-	bank: Pick<BankMasterfileFormValues, "bankName" | "branch" | "accountNumber">,
-) {
-	return [bank.bankName, bank.branch, bank.accountNumber]
-		.map((value) => value.trim().toLowerCase())
-		.join("|");
 }
 
 function getHeaderIndexes(row: string[]) {
@@ -395,19 +303,7 @@ export async function downloadBankImportTemplate() {
 		const workbook = new ExcelJS.default.Workbook();
 		const worksheet = workbook.addWorksheet("Bank Accounts");
 		worksheet.addRow([...BankImportTemplateHeaders]);
-		worksheet.addRow([
-			"BDO",
-			"Makati",
-			"1234567890",
-			"Checking",
-			"PHP",
-			"",
-			"",
-			"",
-			"",
-			"No",
-			"Active",
-		]);
+		worksheet.addRow([...BankImportTemplateSampleRow]);
 		worksheet.getRow(1).font = { bold: true };
 		worksheet.columns.forEach((column) => {
 			column.width = 18;
@@ -441,6 +337,7 @@ export async function downloadBankImportTemplate() {
 			new Blob(
 				[
 					`${BankImportTemplateHeaders.join(",")}\nBDO,Makati,1234567890,Checking,PHP,,,,,No,Active\n`,
+					`${BankImportTemplateHeaders.join(",")}\n${BankImportTemplateSampleRow.join(",")}\n`,
 				],
 				{ type: "text/csv;charset=utf-8" },
 			),
@@ -467,16 +364,6 @@ function parseStatus(value: string): BankMasterfileStatus {
 	return value.trim().toLowerCase() === "inactive" ? "Inactive" : "Active";
 }
 
-function isPositiveNumber(value: string) {
-	const number = Number(value);
-	return Number.isFinite(number) && number > 0;
-}
-
-function isPositiveInteger(value: string) {
-	const number = Number(value);
-	return Number.isInteger(number) && number > 0;
-}
-
 export function validateImportFileSize(file: File) {
 	if (file.size < BankImportMinFileSizeBytes) return "The selected file is empty.";
 	if (file.size > BankImportMaxFileSizeBytes) {
@@ -487,4 +374,28 @@ export function validateImportFileSize(file: File) {
 
 export function waitForNextBatch() {
 	return new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+}
+
+export function getBankMasterfileTableMinWidthClassName(
+	visibleColumnCount: number,
+) {
+	if (visibleColumnCount >= 10) return "min-w-[136rem]";
+	if (visibleColumnCount === 9) return "min-w-[122rem]";
+	if (visibleColumnCount === 8) return "min-w-[108rem]";
+	if (visibleColumnCount === 7) return "min-w-[94rem]";
+	if (visibleColumnCount === 6) return "min-w-[80rem]";
+	return "min-w-[64rem]";
+}
+
+export function isBankMasterfileCenteredColumn(columnId: string) {
+	return ["actions", "currencyCode", "isDefault", "status"].includes(columnId);
+}
+
+export function formatBankMasterfileDateTime(value?: string) {
+	if (!value) return "-";
+
+	return new Intl.DateTimeFormat("en-US", {
+		dateStyle: "medium",
+		timeStyle: "short",
+	}).format(new Date(value));
 }

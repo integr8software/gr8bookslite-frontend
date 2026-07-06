@@ -1,23 +1,13 @@
-import type { ChangeEventHandler, ReactNode } from "react";
+import { isValidElement, useId } from "react";
 import {
 	BankMasterfileAccountTypeOptions,
 	BankMasterfileStatusOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
 import { buildBankMasterfileAccountName } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
 import type {
-	BankMasterfileFormErrors,
-	BankMasterfileFormValues,
+	BankMasterfileFieldsProps,
+	BankMasterfileFormFieldProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
-
-type BankMasterfileFieldsProps = {
-	accountCode: string;
-	errors: BankMasterfileFormErrors;
-	isAccountCodeLoading: boolean;
-	isReadonly: boolean;
-	mode: "add" | "edit" | "view";
-	values: BankMasterfileFormValues;
-	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
-};
 
 export function BankMasterfileFields({
 	accountCode,
@@ -36,6 +26,7 @@ export function BankMasterfileFields({
 				<div className="grid gap-4 lg:grid-cols-2">
 					<FormField label="Bank" error={errors.bankName} required>
 						<input
+							id="bank-masterfile-bank-name"
 							name="bankName"
 							value={values.bankName}
 							onChange={onInputChange}
@@ -46,6 +37,7 @@ export function BankMasterfileFields({
 					</FormField>
 					<FormField label="Branch" error={errors.branch}>
 						<input
+							id="bank-masterfile-branch"
 							name="branch"
 							value={values.branch}
 							onChange={onInputChange}
@@ -54,18 +46,29 @@ export function BankMasterfileFields({
 							placeholder="Makati Branch"
 						/>
 					</FormField>
-					<FormField label="Account Number" error={errors.accountNumber} required>
+					<FormField
+						label="Account Number"
+						error={errors.accountNumber}
+						helper={
+							values.status === "Inactive" && !values.accountNumber.trim()
+								? "Add an account number to activate this bank."
+								: undefined
+						}
+						required={values.status === "Active"}
+					>
 						<input
+							id="bank-masterfile-account-number"
 							name="accountNumber"
 							value={values.accountNumber}
 							onChange={onInputChange}
 							readOnly={isReadonly}
 							className={fieldClassName}
-							placeholder="1234567890"
+							placeholder="Required before activation"
 						/>
 					</FormField>
-					<FormField label="Account Type" error={errors.accountType}>
+					<FormField label="Account Type" error={errors.accountType} required>
 						<select
+							id="bank-masterfile-account-type"
 							name="accountType"
 							value={values.accountType}
 							onChange={onInputChange}
@@ -79,8 +82,13 @@ export function BankMasterfileFields({
 							))}
 						</select>
 					</FormField>
-					<FormField label="Account Name" className="lg:col-span-2">
+					<FormField
+						label="Account Title"
+						className="lg:col-span-2"
+						required={values.status === "Active"}
+					>
 						<input
+							id="bank-masterfile-account-title"
 							value={accountName}
 							readOnly
 							className={readOnlyFieldClassName}
@@ -88,6 +96,7 @@ export function BankMasterfileFields({
 					</FormField>
 					<FormField label="Account Code">
 						<input
+							id="bank-masterfile-account-code"
 							value={
 								mode === "add"
 									? isAccountCodeLoading
@@ -101,6 +110,7 @@ export function BankMasterfileFields({
 					</FormField>
 					<FormField label="Status" error={errors.status} required>
 						<select
+							id="bank-masterfile-status"
 							name="status"
 							value={values.status}
 							onChange={onInputChange}
@@ -116,6 +126,7 @@ export function BankMasterfileFields({
 					</FormField>
 					<FormField label="Currency" error={errors.currencyCode} required>
 						<input
+							id="bank-masterfile-currency-code"
 							name="currencyCode"
 							value={values.currencyCode}
 							onChange={onInputChange}
@@ -127,6 +138,7 @@ export function BankMasterfileFields({
 					</FormField>
 					<FormField label="Exchange Rate" error={errors.currencyExchangeRate}>
 						<input
+							id="bank-masterfile-currency-exchange-rate"
 							name="currencyExchangeRate"
 							type="number"
 							min="0"
@@ -138,9 +150,13 @@ export function BankMasterfileFields({
 							placeholder="Required for non-PHP"
 						/>
 					</FormField>
-					<label className="flex min-h-11 items-center justify-between rounded-lg border border-darknavy/10 px-3 text-sm font-semibold text-darknavy">
+					<label
+						htmlFor="bank-masterfile-is-default"
+						className="flex min-h-11 items-center justify-between rounded-lg border border-darknavy/10 px-3 text-sm font-semibold text-darknavy"
+					>
 						Default Bank
 						<input
+							id="bank-masterfile-is-default"
 							name="isDefault"
 							type="checkbox"
 							checked={values.isDefault}
@@ -154,8 +170,9 @@ export function BankMasterfileFields({
 
 			<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
 				<div className="grid gap-4 lg:grid-cols-3">
-					<FormField label="Series Start" error={errors.seriesStart}>
+					<FormField label="Series Start" error={errors.seriesStart} required>
 						<input
+							id="bank-masterfile-series-start"
 							name="seriesStart"
 							value={values.seriesStart}
 							onChange={onInputChange}
@@ -164,8 +181,9 @@ export function BankMasterfileFields({
 							placeholder="000001"
 						/>
 					</FormField>
-					<FormField label="Series End" error={errors.seriesEnd}>
+					<FormField label="Series End" error={errors.seriesEnd} required>
 						<input
+							id="bank-masterfile-series-end"
 							name="seriesEnd"
 							value={values.seriesEnd}
 							onChange={onInputChange}
@@ -174,8 +192,9 @@ export function BankMasterfileFields({
 							placeholder="999999"
 						/>
 					</FormField>
-					<FormField label="Series Digits" error={errors.seriesDigits}>
+					<FormField label="Series Digits" error={errors.seriesDigits} required>
 						<input
+							id="bank-masterfile-series-digits"
 							name="seriesDigits"
 							type="number"
 							min="1"
@@ -196,25 +215,32 @@ function FormField({
 	children,
 	className,
 	error,
+	helper,
 	label,
 	required,
-}: {
-	children: ReactNode;
-	className?: string;
-	error?: string;
-	label: string;
-	required?: boolean;
-}) {
+}: BankMasterfileFormFieldProps) {
+	const generatedId = useId();
+	const fieldId = isValidElement<{ id?: string }>(children)
+		? children.props.id ?? generatedId
+		: generatedId;
+
 	return (
 		<div className={className}>
-			<span className="mb-2 block text-sm font-semibold text-darknavy">
+			<label
+				htmlFor={fieldId}
+				className="mb-2 block text-sm font-semibold text-darknavy"
+			>
 				{label}
 				{required ? <span className="text-coralpink"> *</span> : null}
-			</span>
+			</label>
 			{children}
 			{error ? (
 				<span className="mt-1 block text-xs font-medium text-coralpink">
 					{error}
+				</span>
+			) : helper ? (
+				<span className="mt-1 block text-xs font-medium text-darknavy/55">
+					{helper}
 				</span>
 			) : null}
 		</div>

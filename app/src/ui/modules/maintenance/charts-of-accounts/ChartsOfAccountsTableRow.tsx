@@ -10,10 +10,10 @@ import {
   NormalBalanceLabels,
 } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import {
-  getCanDropOnAccount,
+  getDropPlacementMode,
   isSpecificAccountLevel,
   isSpecificAccountNumber,
-} from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsUiHelpers";
+} from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
 import type {
   ChartAccount,
   ChartsOfAccountsPermissions,
@@ -32,6 +32,7 @@ import {
 export function ChartsOfAccountsTableRow({
   account,
   activeDragAccount,
+  activeDropPlacement,
   canDragRows,
   expandedIds,
   level,
@@ -62,14 +63,14 @@ export function ChartsOfAccountsTableRow({
   });
   const targetIsSpecific = isSpecificAccountNumber(account.accountNumber);
   const accountIsSpecific = isSpecificAccountLevel(account);
-  const canDropOnAccount = getCanDropOnAccount({
+  const dropPlacementMode = getDropPlacementMode({
     activeDragAccount,
+    placement: activeDropPlacement ?? "before",
     targetAccount: account,
     targetIsSpecific,
   });
-  const showDropIndicator = isOver && canDropOnAccount && !isDragging;
   const dropMode =
-    showDropIndicator && accountIsSpecific ? "before" : showDropIndicator ? "inside" : null;
+    isOver && !isDragging && activeDropPlacement ? dropPlacementMode : null;
   const rowStyle: CSSProperties = {
     transform: CSS.Translate.toString(transform),
   };
@@ -98,6 +99,8 @@ export function ChartsOfAccountsTableRow({
         isDragging && "relative z-10 bg-skyblue/5 opacity-70 shadow-sm",
         dropMode === "before" &&
         "border-t-2 border-skyblue bg-skyblue/[0.035]",
+        dropMode === "after" &&
+        "border-b-2 border-skyblue bg-skyblue/[0.035]",
         dropMode === "inside" && "bg-skyblue/10 ring-1 ring-inset ring-skyblue/25",
       )}
     >
@@ -199,7 +202,7 @@ function DropPlacementIndicator({
   mode,
 }: {
   accountName: string;
-  mode: "before" | "inside";
+  mode: "before" | "inside" | "after";
 }) {
   if (mode === "inside") {
     return (
@@ -215,12 +218,15 @@ function DropPlacementIndicator({
 
   return (
     <span
-      className="pointer-events-none absolute -top-1 left-0 right-[calc(-100vw)] z-20 h-0.5 bg-skyblue shadow-[0_0_0_3px_rgba(14,165,233,0.14)]"
+      className={joinClasses(
+        "pointer-events-none absolute left-0 right-[calc(-100vw)] z-20 h-0.5 bg-skyblue shadow-[0_0_0_3px_rgba(14,165,233,0.14)]",
+        mode === "after" ? "-bottom-1" : "-top-1",
+      )}
       aria-hidden="true"
     >
       <span className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-2 border-white bg-skyblue shadow-sm" />
       <span className="absolute left-8 top-1/2 -translate-y-1/2 rounded-full border border-skyblue/30 bg-white px-2.5 py-1 text-[11px] font-bold uppercase text-skyblue shadow-[0_8px_24px_rgba(14,165,233,0.18)]">
-        Place before {accountName}
+        Place {mode} {accountName}
       </span>
     </span>
   );

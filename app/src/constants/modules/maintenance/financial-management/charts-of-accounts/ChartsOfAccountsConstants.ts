@@ -3,7 +3,6 @@ import type {
   AccountStatus,
   AccountType,
   BankDetailsKey,
-  ChartsOfAccountsActionMode,
   ChartsOfAccountsFormTab,
   ChartsOfAccountsNav,
   ChartsOfAccountsTableColumnKey,
@@ -66,29 +65,6 @@ export const ChartsOfAccountsNavs = [
   "Cash Flow",
   "Inactive Accounts",
 ] as const satisfies ChartsOfAccountsNav[];
-
-export const ChartsOfAccountsActionCopy: Record<
-  ChartsOfAccountsActionMode,
-  {
-    heading: string;
-    helper: string;
-  }
-> = {
-  add: {
-    heading: "Add Account",
-    helper: "Create new ledger accounts from the main Chart of Accounts page.",
-  },
-  edit: {
-    heading: "Edit Account",
-    helper:
-      "Open an account from the table to update its reporting and bank details.",
-  },
-  view: {
-    heading: "View Account",
-    helper:
-      "Select an account from the table to review its hierarchy and setup.",
-  },
-};
 
 export const ChartsOfAccountsDrawerTabs: ChartsOfAccountsFormTab[] = [
   "Account Information",

@@ -37,6 +37,7 @@ import type {
   ChartAccountStructureFilter,
   ChartAccount,
   ChartAccountFormValues,
+  ChartsOfAccountsDropPlacement,
   ChartsOfAccountsNav,
   ChartsOfAccountsTableColumnKey,
   FilterValue,
@@ -376,17 +377,29 @@ export function useChartsOfAccounts() {
     });
   }
 
-  function reorderAccount(accountId: string, overAccountId: string) {
+  function reorderAccount(
+    accountId: string,
+    overAccountId: string,
+    placement: ChartsOfAccountsDropPlacement,
+  ) {
+    const activeAccount = flatAccounts.find(
+      ({ account }) => account.id === accountId,
+    )?.account;
     const overAccount = flatAccounts.find(
       ({ account }) => account.id === overAccountId,
     )?.account;
 
     setAccounts((current) =>
-      moveOrReorderAccount(current, accountId, overAccountId),
+      moveOrReorderAccount(current, accountId, overAccountId, placement),
     );
     setSorting([]);
 
-    if (overAccount && !isSpecificAccount(overAccount)) {
+    if (
+      activeAccount &&
+      overAccount &&
+      !isSpecificAccount(overAccount) &&
+      placement === "inside"
+    ) {
       setExpandedIds((current) => new Set([...current, overAccount.id]));
     }
   }

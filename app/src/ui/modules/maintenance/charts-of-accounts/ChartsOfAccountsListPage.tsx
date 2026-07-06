@@ -9,7 +9,7 @@ import {
 	Network,
 	ReceiptText,
 } from "lucide-react";
-import { getAccountPercentage } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsUiHelpers";
+import { getAccountPercentage } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsDrawer";
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsFilters";

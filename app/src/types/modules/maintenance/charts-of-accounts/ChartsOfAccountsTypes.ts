@@ -94,9 +94,14 @@ export type ChartsOfAccountsNav =
   | "Cash Flow"
   | "Inactive Accounts";
 
-export type ChartsOfAccountsActionMode = "add" | "edit" | "view";
+export type ChartsOfAccountsDrawerMode = "add" | "edit" | "view";
 
-export type ChartsOfAccountsDrawerMode = ChartsOfAccountsActionMode;
+export type ChartsOfAccountsDropPlacement = "before" | "inside" | "after";
+
+export type ActiveDropTarget = {
+  id: string;
+  placement: ChartsOfAccountsDropPlacement;
+};
 
 export type ChartsOfAccountsFormTab = "Account Information" | "Bank Details";
 
@@ -186,7 +191,11 @@ export type ChartsOfAccountsTableProps = {
   onEdit: (account: ChartAccount) => void;
   onAddChild: (account: ChartAccount) => void;
   onStatusChange: (account: ChartAccount) => void;
-  onReorderAccount: (accountId: string, overAccountId: string) => void;
+  onReorderAccount: (
+    accountId: string,
+    overAccountId: string,
+    placement: ChartsOfAccountsDropPlacement,
+  ) => void;
   onToggleExpanded: (accountId: string) => void;
   onView: (account: ChartAccount) => void;
 };
@@ -194,6 +203,7 @@ export type ChartsOfAccountsTableProps = {
 export type ChartsOfAccountsTableRowProps = {
   account: ChartAccount;
   activeDragAccount?: ActiveDragAccount;
+  activeDropPlacement?: ChartsOfAccountsDropPlacement | null;
   canDragRows: boolean;
   expandedIds: Set<string>;
   level: number;

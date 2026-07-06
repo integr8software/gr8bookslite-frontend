@@ -8,13 +8,17 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragMoveEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { getEventCoordinates } from "@dnd-kit/utilities";
 import { Search } from "lucide-react";
 import { useState } from "react";
+import { getPointerDropPlacement } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
 import type {
   ActiveDragAccount,
+  ActiveDropTarget,
   ChartsOfAccountsTableProps,
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
@@ -23,6 +27,8 @@ import { ChartsOfAccountsTableRow } from "@/app/src/ui/modules/maintenance/chart
 export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
   const [activeDragAccount, setActiveDragAccount] =
     useState<ActiveDragAccount>();
+  const [activeDropTarget, setActiveDropTarget] =
+    useState<ActiveDropTarget | null>(null);
   const visibleColumnIds = props.table
     .getVisibleLeafColumns()
     .map((column) => column.id);
@@ -59,10 +65,43 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
     );
   }
 
+  function handleDragMove(event: DragMoveEvent) {
+    setActiveDropTarget(getActiveDropTarget(event));
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
+    const dropTarget = getActiveDropTarget(event);
 
     setActiveDragAccount(undefined);
+    setActiveDropTarget(null);
+
+    if (
+      !props.canDragRows ||
+      !over ||
+      active.id === over.id ||
+      !activeDragAccount?.isSpecific ||
+      !dropTarget
+    ) {
+      return;
+    }
+
+    props.onReorderAccount(
+      String(active.id),
+      dropTarget.id,
+      dropTarget.placement,
+    );
+  }
+
+  function handleDragCancel() {
+    setActiveDragAccount(undefined);
+    setActiveDropTarget(null);
+  }
+
+  function getActiveDropTarget(
+    event: DragMoveEvent | DragEndEvent,
+  ): ActiveDropTarget | null {
+    const { active, over } = event;
 
     if (
       !props.canDragRows ||
@@ -70,18 +109,33 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
       active.id === over.id ||
       !activeDragAccount?.isSpecific
     ) {
-      return;
+      return null;
     }
 
-    props.onReorderAccount(String(active.id), String(over.id));
+    const targetAccount = accountById.get(String(over.id));
+
+    if (!targetAccount) {
+      return null;
+    }
+
+    return {
+      id: String(over.id),
+      placement: getPointerDropPlacement({
+        pointerY: getPointerY(event),
+        targetAccountLevel: targetAccount.accountLevel,
+        targetHeight: over.rect.height,
+        targetTop: over.rect.top,
+      }),
+    };
   }
 
   return (
     <DndContext
       collisionDetection={closestCenter}
       sensors={sensors}
-      onDragCancel={() => setActiveDragAccount(undefined)}
+      onDragCancel={handleDragCancel}
       onDragEnd={handleDragEnd}
+      onDragMove={handleDragMove}
       onDragStart={handleDragStart}
     >
       <ModuleTable
@@ -103,6 +157,11 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
             key={id}
             account={original.account}
             activeDragAccount={activeDragAccount}
+            activeDropPlacement={
+              activeDropTarget?.id === original.account.id
+                ? activeDropTarget.placement
+                : null
+            }
             canDragRows={props.canDragRows}
             expandedIds={props.expandedIds}
             level={original.level}
@@ -126,5 +185,15 @@ export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
       />
     </DndContext>
   );
+}
+
+function getPointerY(event: DragMoveEvent | DragEndEvent) {
+  const initialCoordinates = getEventCoordinates(event.activatorEvent);
+
+  if (!initialCoordinates) {
+    return null;
+  }
+
+  return initialCoordinates.y + event.delta.y;
 }
 

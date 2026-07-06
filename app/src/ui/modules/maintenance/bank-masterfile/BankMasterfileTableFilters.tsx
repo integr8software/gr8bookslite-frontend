@@ -1,36 +1,19 @@
-import type { Table } from "@tanstack/react-table";
 import {
+	BankMasterfileExportColumns,
 	BankMasterfileStatusOptions,
-	BankMasterfileTableColumns,
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
-import type { BankMasterfilePermissions } from "@/app/src/services/modules/maintenance/bank-masterfile/BankMasterfileApi";
 import type {
-	BankMasterfile,
-	BankMasterfileStatus,
+	BankMasterfileStatusFilter,
+	BankMasterfileTableFiltersProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import {
 	ModuleTableColumnVisibilityButton,
 	ModuleTableExportButton,
-	type ModuleTableExportColumn,
 	ModuleTableFilterSelect,
 	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-
-type BankMasterfileTableFiltersProps = {
-	exportAllRows: BankMasterfile[];
-	exportFilteredRows: BankMasterfile[];
-	hasActiveFilters: boolean;
-	isRefreshing: boolean;
-	permissions: BankMasterfilePermissions;
-	query: string;
-	statusFilter: "" | BankMasterfileStatus;
-	table: Table<BankMasterfile>;
-	onQueryChange: (value: string) => void;
-	onRefresh: () => void;
-	onStatusFilterChange: (value: "" | BankMasterfileStatus) => void;
-};
 
 export function BankMasterfileTableFilters({
 	exportAllRows,
@@ -51,7 +34,7 @@ export function BankMasterfileTableFilters({
 				label="Search banks"
 				value={query}
 				onChange={onQueryChange}
-				placeholder="Search by bank, account number, account code, or currency"
+				placeholder="Search by bank, account number, account code, or account title"
 			/>
 			<ModuleTableFilterSelect
 				label="Status"
@@ -64,7 +47,7 @@ export function BankMasterfileTableFilters({
 					})),
 				]}
 				onChange={(value) =>
-					onStatusFilterChange(value as "" | BankMasterfileStatus)
+					onStatusFilterChange(value as BankMasterfileStatusFilter)
 				}
 			/>
 			<ModuleTableColumnVisibilityButton table={table} />
@@ -92,16 +75,3 @@ export function BankMasterfileTableFilters({
 	);
 }
 
-const BankMasterfileExportColumns: ModuleTableExportColumn<BankMasterfile>[] = [
-	...BankMasterfileTableColumns.flatMap((column) =>
-		"key" in column
-			? [
-				{
-					header: column.label,
-					id: column.key,
-					value: column.key,
-				},
-			]
-			: [],
-	),
-];

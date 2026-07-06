@@ -16,12 +16,12 @@ const formId = "payment-type-drawer-form";
 const PaymentTypeActionCopy = {
 	add: {
 		description:
-			"Create a payment type and classify how the voucher should collect payment details.",
+			"Create a payment type and choose how the voucher should collect payment details.",
 		title: "Add Payment Type",
 	},
 	edit: {
 		description:
-			"Update the payment type name, classification, and active status.",
+			"Update the payment type name, category, and active status.",
 		title: "Edit Payment Type",
 	},
 	view: {
@@ -125,7 +125,7 @@ function PaymentTypeDrawerPanel({
 				<div className="grid gap-4 sm:grid-cols-2">
 					<label className="grid gap-2">
 						<span className="text-sm font-semibold text-darknavy">
-							Type <span className="text-coralpink">*</span>
+							Category <span className="text-coralpink">*</span>
 						</span>
 						<select
 							value={page.values.type}
@@ -138,7 +138,7 @@ function PaymentTypeDrawerPanel({
 							}
 							className={fieldClassName}
 						>
-							<option value="">Select type</option>
+							<option value="">Select category</option>
 							{PaymentTypeOptions.map((typeOption) => (
 								<option key={typeOption} value={typeOption}>
 									{typeOption}

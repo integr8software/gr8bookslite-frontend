@@ -7,7 +7,7 @@ import {
 	getWorkspaceCompanyEditHref,
 	getWorkspaceCompanyHref,
 } from "@/app/src/constants/workspace/WorkspaceCompanyConstants";
-import { useWorkspaceCompaniesTable } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyManagement";
+import { useWorkspaceCompaniesTable } from "@/app/src/hooks/workspace/companies/useWorkspaceCompaniesTable";
 import type {
 	WorkspaceCompanyBranchRecord,
 	WorkspaceCompanyPlan,

@@ -20,11 +20,11 @@ Use this guide when working on the Charts of Accounts feature.
   Runtime values such as hrefs, nav labels, dropdown options, table columns, field definitions, and copy.
 
 - `app/src/types/modules/maintenance/financial-management/charts-of-accounts/`
-  TypeScript-only types for accounts, filters, form values, action modes, tabs, and sort keys.
+  TypeScript-only types for accounts, filters, form values, drawer modes, tabs, and sort keys.
 
 ## UI Files
 
-- `ChartsOfAccountsPage.tsx`
+- `ChartsOfAccountsListPage.tsx`
   Main page composer. Calls `useChartsOfAccounts()` and connects the header, filters, table, and drawer.
 
 - `ChartsOfAccountsHeader.tsx`
@@ -56,9 +56,6 @@ Use this guide when working on the Charts of Accounts feature.
 
 - `ChartsOfAccountsControls.tsx`
   Shared small UI controls for this module, such as `Card`, `Button`, `Input`, `Select`, `Field`, `Badge`, `TypeBadge`, `Tabs`, and `joinClasses`.
-
-- `ChartsOfAccountsAction.tsx`
-  Add/edit/view route placeholder screen with a friendly message and Back to Accounts link.
 
 ## Hook
 
@@ -110,7 +107,6 @@ The drawer is controlled here through `drawerAccount`, `isDrawerOpen`, `openAddD
   - account category options
   - statement sections
   - `ChartsOfAccountsNavs`
-  - action page copy
   - drawer tabs
   - bank field definitions
   - table columns
@@ -133,7 +129,7 @@ Use constants for values React renders or JavaScript reads at runtime.
   - `ChartAccountFormValues`
   - `FlattenedChartAccount`
   - `FilterValue`
-  - `ChartsOfAccountsActionMode`
+  - `ChartsOfAccountsDrawerMode`
   - `ChartsOfAccountsFormTab`
   - `AccountSortKey`
   - `SortDirection`

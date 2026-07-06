@@ -1,76 +1,20 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { BankMasterfileApiPath } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
 import type {
+	ApiBank,
+	ApiBankImportResponse,
+	ApiBankListResponse,
+	ApiBankSaveResponse,
+	ApiBankStatus,
+	ApiNextAccountCodeResponse,
 	BankMasterfile,
 	BankMasterfileFormValues,
+	BankMasterfileListResponse,
 	BankMasterfileStatus,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 
-type ApiBankStatus = "ACTIVE" | "INACTIVE";
-
-type ApiBank = {
-	id: string;
-	accountCode: string;
-	bankName: string;
-	branch: string | null;
-	accountNumber: string;
-	accountName: string;
-	accountType: string | null;
-	currencyCode: string | null;
-	currencyExchangeRate: string | null;
-	isDefault: boolean;
-	seriesStart: string | null;
-	seriesEnd: string | null;
-	seriesDigits: number | null;
-	status: ApiBankStatus;
-	createdAt: string;
-	updatedAt: string;
-};
-
-export type BankMasterfilePermissions = {
-	canView: boolean;
-	canCreate: boolean;
-	canUpdate: boolean;
-	canExport: boolean;
-	canImport: boolean;
-};
-
-export type BankMasterfileStatistics = {
-	totalBanks: number;
-	activeBanks: number;
-	inactiveBanks: number;
-	defaultBanks: number;
-};
-
-export type BankMasterfileListResponse = {
-	banks: BankMasterfile[];
-	statistics: BankMasterfileStatistics;
-	permissions: BankMasterfilePermissions;
-};
-
-type ApiBankListResponse = {
-	bankAccounts: ApiBank[];
-	statistics?: Partial<BankMasterfileStatistics>;
-	permissions?: Partial<BankMasterfilePermissions>;
-};
-
-type ApiBankSaveResponse = {
-	bankAccount: ApiBank;
-};
-
-type ApiBankImportResponse = {
-	bankAccounts: ApiBank[];
-};
-
-type ApiNextAccountCodeResponse = {
-	accountCode: string;
-	parentAccountCode: string;
-	parentAccountTitle: string;
-};
-
-const BankMasterfilePath = "/maintenance/financial-management/bank-masterfile";
-
 export async function fetchBanks(): Promise<BankMasterfileListResponse> {
-	const response = await ApiClient.get<ApiBankListResponse>(BankMasterfilePath);
+	const response = await ApiClient.get<ApiBankListResponse>(BankMasterfileApiPath);
 	const banks = response.data.bankAccounts.map(mapApiBank);
 
 	return {
@@ -97,7 +41,7 @@ export async function fetchBanks(): Promise<BankMasterfileListResponse> {
 
 export async function fetchNextBankAccountCode() {
 	const response = await ApiClient.get<ApiNextAccountCodeResponse>(
-		`${BankMasterfilePath}/next-account-code`,
+		`${BankMasterfileApiPath}/next-account-code`,
 	);
 
 	return response.data;
@@ -107,7 +51,7 @@ export async function createBank(
 	values: BankMasterfileFormValues,
 ): Promise<BankMasterfile> {
 	const response = await ApiClient.post<ApiBankSaveResponse>(
-		BankMasterfilePath,
+		BankMasterfileApiPath,
 		toApiBankPayload(values),
 	);
 
@@ -118,7 +62,7 @@ export async function updateBank(
 	bank: BankMasterfile,
 ): Promise<BankMasterfile> {
 	const response = await ApiClient.patch<ApiBankSaveResponse>(
-		`${BankMasterfilePath}/${bank.id}`,
+		`${BankMasterfileApiPath}/${bank.id}`,
 		toApiBankPayload(bank),
 	);
 
@@ -129,7 +73,7 @@ export async function updateBankStatus(
 	bank: BankMasterfile,
 ): Promise<BankMasterfile> {
 	const response = await ApiClient.patch<ApiBankSaveResponse>(
-		`${BankMasterfilePath}/${bank.id}/status`,
+		`${BankMasterfileApiPath}/${bank.id}/status`,
 		{ status: mapStatusToApi(bank.status) },
 	);
 
@@ -139,7 +83,7 @@ export async function importBanks(
 	banks: BankMasterfileFormValues[],
 ): Promise<BankMasterfile[]> {
 	const response = await ApiClient.post<ApiBankImportResponse>(
-		`${BankMasterfilePath}/import`,
+		`${BankMasterfileApiPath}/import`,
 		{
 			banks: banks.map(toApiBankPayload),
 		},
@@ -173,7 +117,7 @@ function toApiBankPayload(bank: BankMasterfile | BankMasterfileFormValues) {
 	return {
 		bankName: bank.bankName.trim(),
 		branch: cleanOptional(bank.branch),
-		accountNumber: bank.accountNumber.trim(),
+		accountNumber: cleanOptional(bank.accountNumber),
 		accountType: cleanOptional(bank.accountType),
 		currencyCode: cleanOptional(bank.currencyCode),
 		currencyExchangeRate: toOptionalNumber(bank.currencyExchangeRate),

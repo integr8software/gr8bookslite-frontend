@@ -7,7 +7,7 @@ import {
 import { useBankMasterfileFormPage } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileFormPage";
 import type {
 	BankMasterfile,
-	BankMasterfileActionMode,
+	BankMasterfileDrawerProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
 import { BankMasterfileFields } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileFields";
@@ -19,12 +19,7 @@ export function BankMasterfileDrawer({
 	isOpen,
 	mode,
 	onClose,
-}: {
-	bank?: BankMasterfile;
-	isOpen: boolean;
-	mode: BankMasterfileActionMode;
-	onClose: () => void;
-}) {
+}: BankMasterfileDrawerProps) {
 	return (
 		<BankMasterfileDrawerPanel
 			key={`${mode}-${bank?.id ?? "new"}`}
@@ -44,7 +39,7 @@ function BankMasterfileDrawerPanel({
 }: {
 	bank?: BankMasterfile;
 	isOpen: boolean;
-	mode: BankMasterfileActionMode;
+	mode: BankMasterfileDrawerProps["mode"];
 	onClose: () => void;
 }) {
 	const page = useBankMasterfileFormPage({

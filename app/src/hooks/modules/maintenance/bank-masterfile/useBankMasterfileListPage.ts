@@ -1,16 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BankMasterfileStatusOptions } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
 import { useBankMasterfileStore } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfile";
 import type {
 	BankMasterfile,
-	BankMasterfileStatus,
+	BankMasterfileStatusFilter,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
-
-type BankMasterfileStatusFilter =
-	| ""
-	| (typeof BankMasterfileStatusOptions)[number];
 
 export function useBankMasterfileListPage() {
 	const banks = useBankMasterfileStore((state) => state.banks);
@@ -26,7 +21,7 @@ export function useBankMasterfileListPage() {
 	const statistics = useBankMasterfileStore((state) => state.statistics);
 	const refreshBanks = useBankMasterfileStore((state) => state.refreshBanks);
 	const [statusFilter, setStatusFilter] =
-		useState<BankMasterfileStatusFilter>("Active");
+		useState<BankMasterfileStatusFilter>("");
 	const [query, setQuery] = useState("");
 	const [pendingStatusBank, setPendingStatusBank] =
 		useState<BankMasterfile | null>(null);
@@ -58,7 +53,7 @@ export function useBankMasterfileListPage() {
 	}, [banks, query, statusFilter]);
 
 	function resetFilters() {
-		setStatusFilter("Active");
+		setStatusFilter("");
 		setQuery("");
 	}
 
@@ -91,7 +86,7 @@ export function useBankMasterfileListPage() {
 		resetFilters,
 		setPendingStatusBank,
 		setQuery,
-		setStatusFilter: setStatusFilter as (value: "" | BankMasterfileStatus) => void,
+		setStatusFilter: setStatusFilter as (value: BankMasterfileStatusFilter) => void,
 		statistics,
 		statusFilter,
 	};

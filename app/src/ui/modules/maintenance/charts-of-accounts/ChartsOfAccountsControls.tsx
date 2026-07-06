@@ -1,9 +1,10 @@
 "use client";
 
+import { forwardRef } from "react";
 import type { ComponentProps, ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
 import {
   AccountTypeBadgeVariants,
+  AccountTypeLabels,
   BadgeVariantClasses,
 } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
@@ -55,66 +56,94 @@ export function Button({
   );
 }
 
-export function Input({ className, ...props }: ComponentProps<"input">) {
+export const Input = forwardRef<HTMLInputElement, ComponentProps<"input">>(
+  function Input({ className, ...props }, ref) {
   return (
     <input
+      ref={ref}
       className={joinClasses(
-        "h-10 w-full rounded-md border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20",
+        "app-disabled-control app-data-entry-field h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 read-only:cursor-default disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35 disabled:placeholder:text-darknavy/32",
         className,
       )}
       {...props}
     />
   );
-}
+  },
+);
 
-export function Select({
-  children,
-  className,
-  ...props
-}: ComponentProps<"select">) {
+export const Select = forwardRef<HTMLSelectElement, ComponentProps<"select">>(
+  function Select({ children, className, ...props }, ref) {
   return (
     <div className="relative">
       <select
+        ref={ref}
         className={joinClasses(
-          "h-10 w-full appearance-none rounded-md border border-darknavy/10 bg-white px-3 pr-9 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20",
+          "app-select-control app-disabled-control h-11 w-full appearance-none rounded-lg border border-darknavy/10 bg-white px-3 pr-9 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35",
+          props.disabled &&
+            "border-darknavy/15 opacity-100",
           className,
         )}
         {...props}
       >
         {children}
       </select>
-      <ChevronDown
-        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-darknavy/40"
-        aria-hidden="true"
-      />
     </div>
   );
-}
+  },
+);
 
 export function Field({
   children,
   className,
   error,
+  helper,
+  htmlFor,
   label,
+  reserveMessageSpace = false,
+  required = false,
 }: {
   children: ReactNode;
   className?: string;
   error?: string;
+  helper?: string;
+  htmlFor?: string;
   label: string;
+  reserveMessageSpace?: boolean;
+  required?: boolean;
 }) {
+  const message = error ?? helper;
+
   return (
-    <label className={joinClasses("grid gap-1.5", className)}>
-      <span className="flex items-center justify-between text-sm font-semibold text-darknavy/70">
-        {label}
-        {error ? <span className="text-xs text-red-500">{error}</span> : null}
-      </span>
+    <div className={joinClasses("grid content-start gap-1.5 self-start", className)}>
+      <label
+        htmlFor={htmlFor}
+        className="text-sm font-semibold text-darknavy/70"
+      >
+        <span>
+          {label}
+          {required ? <span className="text-coralpink"> *</span> : null}
+        </span>
+      </label>
       {children}
-    </label>
+      {message || reserveMessageSpace ? (
+        <p
+          className={joinClasses(
+            "overflow-hidden text-ellipsis whitespace-nowrap text-xs font-medium leading-4",
+            message ? "min-h-4" : "h-0",
+            error ? "text-coralpink" : "text-amber-600",
+            !message && "invisible",
+          )}
+          title={message || undefined}
+        >
+          {message || "No validation message"}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
 export function TypeBadge({ type }: { type: ChartAccount["accountType"] }) {
-  return <Badge variant={AccountTypeBadgeVariants[type]}>{type}</Badge>;
+  return <Badge variant={AccountTypeBadgeVariants[type]}>{AccountTypeLabels[type]}</Badge>;
 }
 
 export function Badge({

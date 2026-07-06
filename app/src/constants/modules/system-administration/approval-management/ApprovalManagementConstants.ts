@@ -47,8 +47,8 @@ export const ApprovalAmountConditionModeOptions = [
 export const ApprovalAmountConditionOperatorOptions = [
 	{ label: "Greater than", symbol: ">", value: "greaterThan" },
 	{ label: "Greater than or equal", symbol: ">=", value: "greaterThanOrEqual" },
+	{ label: "Less than", symbol: "<", value: "lessThan" },
 	{ label: "Less than or equal", symbol: "<=", value: "lessThanOrEqual" },
-	{ label: "Between", symbol: "between", value: "between" },
 ] as const satisfies ReadonlyArray<{
 	label: string;
 	symbol: string;

@@ -15,6 +15,7 @@ type ModuleDrawerProps = {
 	actions?: ReactNode;
 	children: ReactNode;
 	className?: string;
+	contentClassName?: string;
 	description?: ReactNode;
 	eyebrow?: ReactNode;
 	footer?: ReactNode;
@@ -61,6 +62,7 @@ export function ModuleDrawer({
 	actions,
 	children,
 	className,
+	contentClassName,
 	description,
 	eyebrow,
 	footer,
@@ -139,7 +141,12 @@ export function ModuleDrawer({
 							showCloseButton={showCloseButton}
 							title={title}
 						/>
-						<div className="min-h-0 flex-1 overflow-y-auto">
+						<div
+							className={joinClasses(
+								"min-h-0 flex-1 overflow-y-auto",
+								contentClassName,
+							)}
+						>
 							{children}
 						</div>
 						{footer ? (

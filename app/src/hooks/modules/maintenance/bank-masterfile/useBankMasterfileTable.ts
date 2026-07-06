@@ -32,7 +32,10 @@ const DefaultColumnOrder = BankMasterfileTableColumns.map((column) =>
 	"key" in column ? column.key : "actions",
 );
 const DefaultColumnVisibility: VisibilityState = {
+	accountCode: false,
+	currencyCode: false,
 	createdAt: false,
+	isDefault: false,
 	updatedAt: false,
 };
 const DefaultSorting: SortingState = [{ id: "bankName", desc: false }];

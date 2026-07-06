@@ -4,37 +4,28 @@ import type { ReactNode } from "react";
 import { ListTree, Network } from "lucide-react";
 import {
   AccountStatuses,
+  AccountTypeLabels,
   AccountTypes,
+  ChartsOfAccountsExportColumns,
   ChartsOfAccountsNavs,
-  type ChartsOfAccountsNav,
 } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
   AccountStatus,
   AccountType,
+  ChartsOfAccountsFiltersProps,
+  ChartsOfAccountsNav,
   ChartAccountStructureFilter,
   FilterValue,
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { Tabs } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsControls";
 import {
+  ModuleTableColumnVisibilityButton,
+  ModuleTableExportButton,
   ModuleTableResetButton,
   ModuleTableFilterSelect,
   ModuleTableSearch,
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-
-export type ChartsOfAccountsFiltersProps = {
-  accountTypeFilter: FilterValue<AccountType>;
-  activeTab: ChartsOfAccountsNav;
-  searchQuery: string;
-  statusFilter: FilterValue<AccountStatus>;
-  structureFilter: ChartAccountStructureFilter;
-  onAccountTypeChange: (value: FilterValue<AccountType>) => void;
-  onSearchChange: (value: string) => void;
-  onResetFilters: () => void;
-  onStatusChange: (value: FilterValue<AccountStatus>) => void;
-  onStructureChange: (value: ChartAccountStructureFilter) => void;
-  onTabChange: (value: ChartsOfAccountsNav) => void;
-};
 
 export function ChartsOfAccountsFilters({
   accountTypeFilter,
@@ -42,7 +33,13 @@ export function ChartsOfAccountsFilters({
   searchQuery,
   statusFilter,
   structureFilter,
+  exportAllRows,
+  exportFilteredRows,
+  isRefreshing,
+  permissions,
+  table,
   onAccountTypeChange,
+  onRefresh,
   onSearchChange,
   onResetFilters,
   onStatusChange,
@@ -52,16 +49,35 @@ export function ChartsOfAccountsFilters({
   return (
     <div>
       <div
-        className="flex flex-col gap-3 border-b border-darknavy/10 px-3 pt-2 sm:flex-row sm:items-end sm:justify-between"
+        className="grid gap-2 border-b border-darknavy/10 px-3 py-3 xl:flex xl:items-end xl:justify-between xl:pb-0 xl:pt-2"
         data-spotlight-id="charts-of-accounts-tabs"
       >
-        <Tabs
-          value={activeTab}
-          options={[...ChartsOfAccountsNavs]}
-          onChange={onTabChange}
-        />
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:hidden">
+          <ResponsiveFilterSelect
+            label="View"
+            value={activeTab}
+            options={[...ChartsOfAccountsNavs]}
+            onChange={(value) => onTabChange(value as ChartsOfAccountsNav)}
+          />
+          <ResponsiveFilterSelect
+            label="Structure"
+            value={structureFilter}
+            options={["All", "With Submodules", "Without Submodules"]}
+            onChange={(value) =>
+              onStructureChange(value as ChartAccountStructureFilter)
+            }
+          />
+        </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="hidden xl:block">
+          <Tabs
+            value={activeTab}
+            options={[...ChartsOfAccountsNavs]}
+            onChange={onTabChange}
+          />
+        </div>
+
+        <div className="hidden gap-2 overflow-x-auto pb-2 xl:flex">
           <StructureButton
             active={structureFilter === "With Submodules"}
             icon={<Network className="h-4 w-4" aria-hidden="true" />}
@@ -90,46 +106,112 @@ export function ChartsOfAccountsFilters({
       </div>
 
       <ModuleTableToolbar
-        className="rounded-none border-x-0 border-t-0 shadow-none xl:grid-cols-[minmax(24rem,2.5fr)_minmax(15rem,1fr)_minmax(15rem,1fr)_minmax(11rem,1fr)]"
+        className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3"
         data-spotlight-id="charts-of-accounts-filters"
       >
-        <ModuleTableSearch
-          label="Search accounts"
-          value={searchQuery}
-          onChange={onSearchChange}
-          placeholder="Search account number or name..."
-        />
-        <ModuleTableFilterSelect
-          label="Account Type"
-          value={accountTypeFilter}
-          options={[
-            { label: "All", value: "All" },
-            ...AccountTypes.map((type) => ({
-              label: type,
-              value: type,
-            })),
-          ]}
-          onChange={(value) =>
-            onAccountTypeChange(value as FilterValue<AccountType>)
-          }
-        />
-        <ModuleTableFilterSelect
-          label="Status"
-          value={statusFilter}
-          options={[
-            { label: "All", value: "All" },
-            ...AccountStatuses.map((status) => ({
-              label: status,
-              value: status,
-            })),
-          ]}
-          onChange={(value) =>
-            onStatusChange(value as FilterValue<AccountStatus>)
-          }
-        />
-        <ModuleTableResetButton onClick={onResetFilters} />
+        <div
+          data-spotlight-id="maintenance-table-filters"
+          className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:grid-cols-[minmax(11rem,1.2fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)_auto]"
+        >
+          <div className="col-span-2 sm:col-span-3 lg:col-span-1">
+            <ModuleTableSearch
+              label="Search accounts"
+              value={searchQuery}
+              onChange={onSearchChange}
+              placeholder="Search account code or name..."
+            />
+          </div>
+          <ModuleTableFilterSelect
+            label="Account Type"
+            value={accountTypeFilter}
+            options={[
+              { label: "All", value: "All" },
+              ...AccountTypes.map((type) => ({
+                label: AccountTypeLabels[type],
+                value: type,
+              })),
+            ]}
+            onChange={(value) =>
+              onAccountTypeChange(value as FilterValue<AccountType>)
+            }
+          />
+          <ModuleTableFilterSelect
+            label="Status"
+            value={statusFilter}
+            options={[
+              { label: "All", value: "All" },
+              ...AccountStatuses.map((status) => ({
+                label: status,
+                value: status,
+              })),
+            ]}
+            onChange={(value) =>
+              onStatusChange(value as FilterValue<AccountStatus>)
+            }
+          />
+          <div
+            data-spotlight-id="maintenance-table-options"
+            className="col-span-2 grid w-full grid-cols-3 gap-2 sm:col-span-1 sm:w-[10.75rem] sm:self-end"
+          >
+            <ModuleTableColumnVisibilityButton table={table} />
+            {permissions.canExport ? (
+              <ModuleTableExportButton
+                allRows={exportAllRows}
+                columns={ChartsOfAccountsExportColumns}
+                fileName="chart-of-accounts"
+                filteredRows={exportFilteredRows}
+                isFiltered={exportAllRows.length !== exportFilteredRows.length}
+                table={table}
+                title="Chart of Accounts"
+              />
+            ) : (
+              <span aria-hidden="true" />
+            )}
+            <ModuleTableResetButton
+              className="px-2"
+              isRefreshing={isRefreshing}
+              onClick={() => {
+                onResetFilters();
+                onRefresh();
+              }}
+            >
+              <span className="sr-only">Refresh</span>
+            </ModuleTableResetButton>
+          </div>
+        </div>
       </ModuleTableToolbar>
     </div>
+  );
+}
+
+function ResponsiveFilterSelect<TValue extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: TValue[];
+  value: TValue;
+  onChange: (value: TValue) => void;
+}) {
+  return (
+    <label className="relative block min-w-0">
+      <span className="absolute -top-2 left-3 z-10 bg-white px-1 text-xs font-semibold text-darknavy/70">
+        {label}
+      </span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value as TValue)}
+        className="h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10"
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 

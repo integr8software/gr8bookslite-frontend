@@ -407,6 +407,19 @@ select:-webkit-autofill:focus {
 	color: #212738;
 }
 
+.charts-of-accounts-readonly-dropdown
+	.app-advanced-dropdown-control[aria-readonly="true"] {
+	background-color: #ffffff !important;
+	border-color: rgba(33, 39, 56, 0.1) !important;
+	color: rgba(33, 39, 56, 0.72) !important;
+}
+
+.charts-of-accounts-readonly-dropdown
+	.app-advanced-dropdown-control[aria-readonly="true"]
+	* {
+	color: rgba(33, 39, 56, 0.72) !important;
+}
+
 .app-advanced-dropdown-search-input,
 .app-advanced-dropdown-option {
 	color: #212738;

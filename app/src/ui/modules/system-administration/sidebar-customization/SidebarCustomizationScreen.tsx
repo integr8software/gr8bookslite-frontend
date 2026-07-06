@@ -2,18 +2,16 @@
 
 /* eslint-disable react-hooks/refs, react-hooks/set-state-in-effect */
 
-import { createElement, useEffect, useMemo, useRef, useState } from "react";
+import { createElement, useEffect, useState } from "react";
 import {
 	DndContext,
 	KeyboardSensor,
 	PointerSensor,
 	closestCenter,
-	useDraggable,
 	useDroppable,
 	useSensor,
 	useSensors,
 	type DragEndEvent,
-	type UniqueIdentifier,
 } from "@dnd-kit/core";
 import {
 	SortableContext,
@@ -26,8 +24,6 @@ import { CSS } from "@dnd-kit/utilities";
 import {
 	ChevronUp,
 	Grip,
-	Pencil,
-	Plus,
 	RotateCcw,
 	Save,
 	Trash2,
@@ -43,17 +39,13 @@ import {
 	ResetUserSidebar,
 	SaveUserSidebarCustomization,
 	type UserSidebarApiItem,
-	type UserSidebarCustomization,
 } from "@/app/src/services/company/user-sidebar/UserSidebarApi";
 import { SidebarAllowedIcons } from "@/app/src/ui/shared/main-layout/sidebar/SidebarIcons";
 import { joinClasses } from "@/app/src/ui/shared/main-layout/utils";
-import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleRouteMap";
 
 type TreeItem = Omit<UserSidebarApiItem, "children"> & { children: TreeItem[] };
-type AvailableModule = UserSidebarCustomization["availableModules"][number];
 
 const RootDropZoneId = "platform-module-sidebar-root-drop-zone";
-const ModuleDragPrefix = "available-module:";
 
 export function SidebarCustomizationScreen({
 	onClose,
@@ -102,18 +94,6 @@ export function SidebarCustomizationScreen({
 		window.addEventListener("beforeunload", warn);
 		return () => window.removeEventListener("beforeunload", warn);
 	}, [dirty]);
-
-	const moduleOptions = useMemo(
-		() =>
-			query.data ? getModuleOptions(query.data.availableModules, query.data.items) : [],
-		[query.data],
-	);
-	const unplacedModules = useMemo(() => {
-		const placedModuleIds = new Set(
-			flatten(items).flatMap((item) => (item.moduleId ? [item.moduleId] : [])),
-		);
-		return moduleOptions.filter((module) => !placedModuleIds.has(module.id));
-	}, [items, moduleOptions]);
 
 	const save = useMutation({
 		mutationFn: () =>
@@ -170,21 +150,6 @@ export function SidebarCustomizationScreen({
 		setDirty(true);
 	}
 
-	function addNode(itemType: "SECTION" | "CONTAINER") {
-		const timestamp = Date.now();
-		update([
-			...items,
-			{
-				id: -timestamp,
-				key: `custom-${itemType.toLowerCase()}-${timestamp}`,
-				label: itemType === "SECTION" ? "New Section" : "New Folder",
-				itemType,
-				iconName: null,
-				children: [],
-			},
-		]);
-	}
-
 	function moveToRoot(itemId: number) {
 		const source = locate(items, itemId);
 		if (!source || source.parentId == null) return;
@@ -193,32 +158,6 @@ export function SidebarCustomizationScreen({
 
 	function onDragEnd({ active, over }: DragEndEvent) {
 		if (!over || active.id === over.id) return;
-
-		const activeModuleId = getDraggedModuleId(active.id);
-		if (activeModuleId != null) {
-			const moduleOption = moduleOptions.find((option) => option.id === activeModuleId);
-			if (!moduleOption) return;
-			const link = createLink(moduleOption);
-
-			if (over.id === RootDropZoneId) {
-				update([...items, link]);
-				return;
-			}
-
-			const target = locate(items, Number(over.id));
-			if (!target) return;
-			if (target.item.itemType !== "LINK" && canNest(link, target)) {
-				update(appendChild(items, target.item.id, link));
-				return;
-			}
-
-			const nextSiblings =
-				target.parentId == null
-					? insertAt(items, target.index + 1, link)
-					: insertAt(locate(items, target.parentId)!.item.children, target.index + 1, link);
-			update(replaceChildren(items, target.parentId, nextSiblings));
-			return;
-		}
 
 		const source = locate(items, Number(active.id));
 		if (!source) return;
@@ -304,7 +243,6 @@ export function SidebarCustomizationScreen({
 								onChange={update}
 								onMoveToRoot={moveToRoot}
 							/>
-							<AddDivider onAddSection={() => addNode("SECTION")} />
 						</div>
 						<footer className="flex justify-end gap-3 border-t border-darknavy/10 bg-white px-5 py-3">
 							<button
@@ -333,31 +271,15 @@ export function SidebarCustomizationScreen({
 					<aside className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-[0_18px_45px_rgba(33,39,56,0.08)]">
 						<div className="mb-3 flex items-center justify-between gap-3">
 							<div>
-								<h2 className="text-sm font-semibold">Available modules</h2>
+								<h2 className="text-sm font-semibold">Plan default</h2>
 								<p className="text-xs text-darknavy/50">
-									Drag a module into a section or folder.
+									Sidebar structure follows the active subscription plan.
 								</p>
 							</div>
-							<button
-								type="button"
-								className="inline-flex h-9 items-center gap-1.5 rounded-md border border-darknavy/10 px-3 text-xs font-semibold hover:bg-darknavy/5"
-								onClick={() => addNode("CONTAINER")}
-							>
-								<Plus className="h-3.5 w-3.5" />
-								Folder
-							</button>
 						</div>
-						<div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-							{unplacedModules.length ? (
-								unplacedModules.map((module) => (
-									<AvailableModuleCard key={module.id} module={module} />
-								))
-							) : (
-								<p className="rounded-md bg-darknavy/5 p-3 text-sm text-darknavy/60">
-									Every permitted module is placed.
-								</p>
-							)}
-						</div>
+						<p className="rounded-md bg-darknavy/5 p-3 text-sm text-darknavy/60">
+							Use this screen to reorder, hide, or reset default sidebar items. New modules are added through plan and module-system configuration.
+						</p>
 					</aside>
 				</div>
 			</DndContext>
@@ -382,23 +304,6 @@ function RootDropZone() {
 			)}
 		>
 			Drop here to move an item to the sidebar root.
-		</div>
-	);
-}
-
-function AddDivider({ onAddSection }: { onAddSection: () => void }) {
-	return (
-		<div className="my-4 flex items-center">
-			<span className="h-px flex-1 bg-skyblue" />
-			<button
-				type="button"
-				className="inline-flex h-7 items-center gap-1 rounded-md border border-skyblue bg-white px-3 text-xs font-semibold text-skyblue shadow-sm hover:bg-skyblue/5"
-				onClick={onAddSection}
-			>
-				<Plus className="h-3.5 w-3.5" />
-				Add section
-			</button>
-			<span className="h-px flex-1 bg-skyblue" />
 		</div>
 	);
 }
@@ -428,13 +333,6 @@ function Tree({
 						item={item}
 						depth={depth}
 						icons={icons}
-						onPatch={(patch) =>
-							onChange(
-								items.map((value) =>
-									value.id === item.id ? { ...value, ...patch } : value,
-								),
-							)
-						}
 						onDelete={() => onChange(items.filter((value) => value.id !== item.id))}
 						onMoveToRoot={() => onMoveToRoot(item.id)}
 						onChildren={(children) =>
@@ -455,7 +353,6 @@ function SortableRow({
 	item,
 	depth,
 	icons,
-	onPatch,
 	onDelete,
 	onMoveToRoot,
 	onChildren,
@@ -463,16 +360,13 @@ function SortableRow({
 	item: TreeItem;
 	depth: number;
 	icons: string[];
-	onPatch: (patch: Partial<TreeItem>) => void;
 	onDelete: () => void;
 	onMoveToRoot: () => void;
 	onChildren: (children: TreeItem[]) => void;
 }) {
 	const sortable = useSortable({ id: String(item.id) });
 	const Icon = getItemIcon(item, depth);
-	const defaultIconKind = getDefaultIconKind(item, depth);
 	const isStructural = item.itemType !== "LINK";
-	const labelInputRef = useRef<HTMLInputElement>(null);
 
 	return (
 		<div
@@ -507,31 +401,14 @@ function SortableRow({
 						className="h-1.5 w-1.5 shrink-0 rounded-full bg-darknavy/30 transition-colors group-hover:bg-skyblue"
 					/>
 				)}
-				<input
-					ref={labelInputRef}
-					aria-label="Label"
+				<span
 					className={joinClasses(
 						"min-w-0 flex-1 bg-transparent py-1 font-medium outline-none",
 						isStructural ? "uppercase text-darknavy" : "text-darknavy/90",
 					)}
-					value={item.label}
-					onChange={(event) => onPatch({ label: event.target.value })}
-				/>
-				<IconPicker
-					defaultIconKind={defaultIconKind}
-					icons={icons}
-					value={item.iconName ?? ""}
-					onChange={(iconName) => onPatch({ iconName })}
-				/>
-				<button
-					type="button"
-					className="grid h-7 w-7 place-items-center rounded text-darknavy/50 opacity-0 hover:bg-darknavy/5 group-hover:opacity-100"
-					aria-label={`Edit ${item.label}`}
-					title="Edit label"
-					onClick={() => labelInputRef.current?.focus()}
 				>
-					<Pencil className="h-3.5 w-3.5" />
-				</button>
+					{item.label}
+				</span>
 				{depth > 1 ? (
 					<button
 						type="button"
@@ -567,93 +444,6 @@ function SortableRow({
 	);
 }
 
-function AvailableModuleCard({ module }: { module: AvailableModule }) {
-	const draggable = useDraggable({ id: `${ModuleDragPrefix}${module.id}` });
-	const Icon = module.iconName ? SidebarAllowedIcons[module.iconName] : undefined;
-
-	return (
-		<button
-			ref={draggable.setNodeRef}
-			type="button"
-			{...draggable.attributes}
-			{...draggable.listeners}
-			className={joinClasses(
-				"flex h-11 cursor-grab items-center gap-2 rounded-md border border-darknavy/10 bg-white px-3 text-left text-xs font-semibold text-darknavy shadow-sm transition hover:border-skyblue/60 hover:bg-skyblue/5 active:cursor-grabbing",
-				draggable.isDragging && "opacity-50",
-			)}
-		>
-			<Grip className="h-3.5 w-3.5 shrink-0 text-darknavy/45" />
-			{Icon ? (
-				<Icon className="h-4 w-4 shrink-0 text-darknavy/60" />
-			) : (
-				<span className="h-4 w-4 shrink-0" />
-			)}
-			<span className="min-w-0 truncate">{module.name}</span>
-		</button>
-	);
-}
-
-function IconPicker({
-	defaultIconKind,
-	icons,
-	value,
-	onChange,
-}: {
-	defaultIconKind: "folder" | "dot";
-	icons: string[];
-	value: string;
-	onChange: (value: string | null) => void;
-}) {
-	return (
-		<div className="hidden max-w-24 gap-1 group-hover:flex">
-			{["", ...icons.slice(0, 5)].map((iconName) => {
-				const Icon = iconName ? SidebarAllowedIcons[iconName] : undefined;
-				return (
-					<button
-						key={iconName || "default"}
-						type="button"
-						title={iconName || "Default icon"}
-						aria-label={iconName || "Default icon"}
-						onClick={() => onChange(iconName || null)}
-						className={joinClasses(
-							"grid h-6 w-6 place-items-center rounded border",
-							value === iconName
-								? "border-skyblue bg-skyblue/10 text-skyblue"
-								: "border-darknavy/10 text-darknavy/45 hover:bg-darknavy/5",
-						)}
-					>
-						{Icon ? (
-							createElement(Icon, { className: "h-3 w-3" })
-						) : defaultIconKind === "folder" ? (
-							createElement(SidebarAllowedIcons.folder, { className: "h-3 w-3" })
-						) : (
-							<span
-								aria-hidden="true"
-								className="h-1.5 w-1.5 rounded-full bg-current"
-							/>
-						)}
-					</button>
-				);
-			})}
-		</div>
-	);
-}
-
-function createLink(module: AvailableModule): TreeItem {
-	const timestamp = Date.now();
-	return {
-		id: -timestamp,
-		key: `module-${module.code.toLowerCase()}-${timestamp}`,
-		label: module.name,
-		itemType: "LINK",
-		moduleId: module.id,
-		moduleCode: module.code,
-		iconName: module.iconName,
-		href: getModuleRoute(module.code),
-		children: [],
-	};
-}
-
 function normalize(item: UserSidebarApiItem): TreeItem {
 	return { ...item, children: item.children.map(normalize) };
 }
@@ -667,10 +457,6 @@ function serialize(item: TreeItem): UserSidebarApiItem {
 		iconName: item.iconName || undefined,
 		children: item.children.map(serialize),
 	} as UserSidebarApiItem;
-}
-
-function flatten(items: TreeItem[]): TreeItem[] {
-	return items.flatMap((item) => [item, ...flatten(item.children)]);
 }
 
 function locate(
@@ -718,10 +504,6 @@ function appendChild(
 	);
 }
 
-function insertAt(items: TreeItem[], index: number, item: TreeItem) {
-	return [...items.slice(0, index), item, ...items.slice(index)];
-}
-
 function canNest(
 	source: TreeItem,
 	target: { item: TreeItem; depth: number },
@@ -738,13 +520,6 @@ function getTreeDepth(item: TreeItem): number {
 		: 1;
 }
 
-function getDraggedModuleId(id: UniqueIdentifier) {
-	const text = String(id);
-	if (!text.startsWith(ModuleDragPrefix)) return null;
-	const value = Number(text.slice(ModuleDragPrefix.length));
-	return Number.isFinite(value) ? value : null;
-}
-
 function getItemIcon(item: TreeItem, depth: number) {
 	const configuredIcon = item.iconName ? SidebarAllowedIcons[item.iconName] : undefined;
 	if (configuredIcon) return configuredIcon;
@@ -755,31 +530,4 @@ function getItemIcon(item: TreeItem, depth: number) {
 
 function getDefaultIconKind(item: TreeItem, depth: number): "folder" | "dot" {
 	return depth <= 1 || item.children.length > 0 ? "folder" : "dot";
-}
-
-function getModuleOptions(
-	available: AvailableModule[],
-	roots: UserSidebarApiItem[],
-) {
-	const byId = new Map<number, AvailableModule>();
-	for (const moduleOption of available) byId.set(moduleOption.id, moduleOption);
-	for (const item of flattenApiItems(roots)) {
-		if (item.itemType === "LINK" && item.moduleId) {
-			byId.set(item.moduleId, {
-				id: item.moduleId,
-				code: item.moduleCode ?? item.key,
-				name: item.label,
-				legacyRoute: item.legacyRoute ?? item.route ?? item.href ?? null,
-				route: getModuleRoute(item.moduleCode),
-				iconName: item.iconName,
-			});
-		}
-	}
-	return Array.from(byId.values()).sort((first, second) =>
-		first.name.localeCompare(second.name),
-	);
-}
-
-function flattenApiItems(items: UserSidebarApiItem[]): UserSidebarApiItem[] {
-	return items.flatMap((item) => [item, ...flattenApiItems(item.children)]);
 }

@@ -1,51 +1,53 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ChartsOfAccountsDrawerTabs } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  EmptyAccountFormValues,
-  EmptyBankDetails,
-  accountToFormValues,
-} from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
+  currentAccountLevelOrDefault,
+  getAvailableAccountLevels,
+  getInitialFormValues,
+  getStandardNormalBalance,
+  getStandardStatementSection,
+  isCashInBankParent,
+} from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsFormHelpers";
+import { AccountLevelLabels } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import { FetchNextChartAccountCode } from "@/app/src/services/modules/maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import type {
-  AccountLevel,
-  BankDetailsKey,
+  AccountType,
   ChartAccount,
   ChartAccountFormValues,
-  ChartsOfAccountsFormTab,
+  ChartsOfAccountsDrawerMode,
+  ChartsOfAccountsDrawerProps,
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
-import { ChartsOfAccountsForm } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsForm";
 import {
-  Button,
-  Tabs,
-} from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsControls";
+  getDuplicateAccountNameError,
+  isAccountInformationIncomplete,
+  isBankDetailsIncomplete,
+} from "@/app/src/validations/modules/maintenance/charts-of-accounts/ChartsOfAccountsValidation";
+import { ChartsOfAccountsForm } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsForm";
+import { Button } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsControls";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
-
-type ChartsOfAccountsDrawerProps = {
-  account: ChartAccount | null;
-  accounts: ChartAccount[];
-  isOpen: boolean;
-  isSaving?: boolean;
-  onClose: () => void;
-  onSave: (values: ChartAccountFormValues) => void;
-};
 
 export function ChartsOfAccountsDrawer({
   account,
   accounts,
   isOpen,
   isSaving,
+  mode = account ? "edit" : "add",
+  parentAccount = null,
+  saveResetToken = 0,
   onClose,
   onSave,
 }: ChartsOfAccountsDrawerProps) {
   return (
     <DrawerPanel
-      key={account?.id ?? "new-account"}
+      key={`${mode}-${account?.id ?? parentAccount?.id ?? "new-account"}`}
       account={account}
       accounts={accounts}
       isOpen={isOpen}
       isSaving={isSaving}
+      mode={mode}
+      parentAccount={parentAccount}
+      saveResetToken={saveResetToken}
       onClose={onClose}
       onSave={onSave}
     />
@@ -57,30 +59,39 @@ function DrawerPanel({
   accounts,
   isOpen,
   isSaving = false,
+  mode = account ? "edit" : "add",
+  parentAccount = null,
+  saveResetToken = 0,
   onClose,
   onSave,
 }: ChartsOfAccountsDrawerProps) {
-  const [activeTab, setActiveTab] = useState<ChartsOfAccountsFormTab>(
-    "Account Information",
-  );
   const [values, setValues] = useState<ChartAccountFormValues>(() =>
-    getInitialFormValues(account),
+    getInitialFormValues(account, parentAccount),
   );
   const [submitted, setSubmitted] = useState(false);
   const [isAccountCodeLoading, setIsAccountCodeLoading] = useState(false);
   const [accountCodeError, setAccountCodeError] = useState("");
-
-  const showBankDetails = values.accountCategory === "Cash in Bank";
-  const tabs: ChartsOfAccountsFormTab[] = showBankDetails
-    ? ChartsOfAccountsDrawerTabs
-    : ["Account Information"];
+  const handledSaveResetToken = useRef(saveResetToken);
   const availableAccountLevels = useMemo(
     () => getAvailableAccountLevels(accounts, values.parentId),
     [accounts, values.parentId],
   );
+  const accountNameError = getDuplicateAccountNameError(
+    accounts,
+    values,
+    account,
+  );
 
   useEffect(() => {
     if (!isOpen) {
+      return;
+    }
+
+    if (!values.parentId || !values.accountLevel) {
+      return;
+    }
+
+    if (!availableAccountLevels.includes(values.accountLevel)) {
       return;
     }
 
@@ -94,9 +105,12 @@ function DrawerPanel({
     }
 
     let isCurrent = true;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- The drawer synchronizes its generated account-code request state with the selected parent/level.
-    setIsAccountCodeLoading(true);
-    setAccountCodeError("");
+    queueMicrotask(() => {
+      if (isCurrent) {
+        setIsAccountCodeLoading(true);
+        setAccountCodeError("");
+      }
+    });
 
     FetchNextChartAccountCode({
       accountLevel: values.accountLevel,
@@ -136,7 +150,23 @@ function DrawerPanel({
     return () => {
       isCurrent = false;
     };
-  }, [account, isOpen, values.accountLevel, values.parentId]);
+  }, [account, availableAccountLevels, isOpen, values.accountLevel, values.parentId]);
+
+  useEffect(() => {
+    if (
+      mode !== "add" ||
+      saveResetToken === 0 ||
+      saveResetToken === handledSaveResetToken.current
+    ) {
+      return;
+    }
+
+    handledSaveResetToken.current = saveResetToken;
+    setValues(getInitialFormValues(null, parentAccount));
+    setSubmitted(false);
+    setIsAccountCodeLoading(false);
+    setAccountCodeError("");
+  }, [mode, parentAccount, saveResetToken]);
 
   function updateField<Key extends keyof ChartAccountFormValues>(
     key: Key,
@@ -145,36 +175,60 @@ function DrawerPanel({
     setValues((current) => ({
       ...current,
       [key]: value,
+      ...(key === "accountType"
+        ? {
+            normalBalance: getStandardNormalBalance(value as AccountType | ""),
+            statementSection: getStandardStatementSection(
+              value as AccountType | "",
+            ),
+            parentId: null,
+            accountNumber: "",
+            isBankLinked: false,
+          }
+        : {}),
       ...(key === "accountLevel" ? { accountNumber: "" } : {}),
+      ...(key === "accountLevel"
+        ? {
+            isBankLinked:
+              value === "SPECIFIC" && isCashInBankParent(accounts, current.parentId),
+            isPostingAccount: value === "SPECIFIC",
+          }
+        : {}),
     }));
   }
 
   function updateParentAccount(parentId: string | null) {
     const nextLevels = getAvailableAccountLevels(accounts, parentId);
+    const nextAccountLevel = currentAccountLevelOrDefault(
+      values.accountLevel,
+      nextLevels,
+      !account,
+    );
+    const isBankLinked =
+      nextAccountLevel === "SPECIFIC" && isCashInBankParent(accounts, parentId);
 
+    setIsAccountCodeLoading(false);
+    setAccountCodeError("");
     setValues((current) => ({
       ...current,
-      accountLevel: nextLevels.includes(current.accountLevel)
-        ? current.accountLevel
-        : nextLevels[0],
+      accountLevel: nextAccountLevel,
       accountNumber: "",
+      accountType: isBankLinked ? "ASSET" : current.accountType,
+      isBankLinked,
+      isPostingAccount: true,
+      normalBalance: isBankLinked
+        ? "DEBIT"
+        : getStandardNormalBalance(current.accountType),
+      statementSection: isBankLinked
+        ? "Balance Sheet"
+        : getStandardStatementSection(current.accountType),
       parentId,
-    }));
-  }
-
-  function updateBankField(key: BankDetailsKey, value: string) {
-    setValues((current) => ({
-      ...current,
-      bankDetails: {
-        ...(current.bankDetails ?? EmptyBankDetails),
-        [key]: value,
-      },
+      showInReports: true,
     }));
   }
 
   function resetDrawerForm() {
-    setActiveTab("Account Information");
-    setValues(getInitialFormValues(account));
+    setValues(getInitialFormValues(account, parentAccount));
     setSubmitted(false);
     setIsAccountCodeLoading(false);
     setAccountCodeError("");
@@ -191,7 +245,27 @@ function DrawerPanel({
 
   function handleSubmit() {
     setSubmitted(true);
-    if (isAccountCodeLoading || !values.accountNumber || !values.accountName) {
+    if (mode === "view") {
+      return;
+    }
+
+    if (
+      isAccountCodeLoading ||
+      isAccountInformationIncomplete({
+        account,
+        accounts,
+        accountCodeError,
+        accountNameError,
+        availableAccountLevels,
+        isAccountCodeLoading,
+        isReadOnly: false,
+        submitted,
+        values,
+        onFieldChange: updateField,
+        onParentChange: updateParentAccount,
+      }) ||
+      (values.isBankLinked && isBankDetailsIncomplete(values))
+    ) {
       return;
     }
     onSave(values);
@@ -200,9 +274,10 @@ function DrawerPanel({
   return (
     <ModuleDrawer
       isOpen={isOpen}
-      eyebrow={account ? "Edit ledger account" : "Create ledger account"}
-      title={account ? account.accountName : "Add Account"}
-      description="Configure reporting, hierarchy, and bank setup."
+      eyebrow={getDrawerEyebrow(account, parentAccount)}
+      title={getDrawerTitle(mode, account, parentAccount)}
+      description={getDrawerDescription(parentAccount)}
+      contentClassName="overflow-hidden"
       onClose={handleClose}
       spotlightId="maintenance-add-drawer"
       footer={
@@ -210,36 +285,44 @@ function DrawerPanel({
           <Button variant="secondary" onClick={handleCancel}>
             Cancel
           </Button>
-          <div data-spotlight-id="maintenance-add-drawer-save">
-            <Button
-              disabled={isSaving || isAccountCodeLoading}
-              onClick={handleSubmit}
-            >
-              {isAccountCodeLoading
-                ? "Generating Code"
-                : account
-                  ? "Save Changes"
-                  : "Create Account"}
-            </Button>
-          </div>
+          {mode === "view" ? null : (
+            <div data-spotlight-id="maintenance-add-drawer-save">
+              <Button
+                disabled={isSaving || isAccountCodeLoading}
+                onClick={handleSubmit}
+              >
+                {isSaving
+                  ? account
+                    ? "Saving Changes..."
+                    : "Creating Account..."
+                  : isAccountCodeLoading
+                  ? "Generating Code"
+                  : account
+                    ? "Save Changes"
+                    : "Create Account"}
+              </Button>
+            </div>
+          )}
         </div>
       }
     >
-      <div className="border-b border-darknavy/10 px-6 py-4">
-        <Tabs value={activeTab} options={tabs} onChange={setActiveTab} />
-      </div>
-
-      <div data-spotlight-id="maintenance-add-drawer-fields">
+      <div
+        className="h-full min-h-0"
+        data-spotlight-id="maintenance-add-drawer-fields"
+      >
         <ChartsOfAccountsForm
           account={account}
           accounts={accounts}
-          activeTab={activeTab}
           submitted={submitted}
           availableAccountLevels={availableAccountLevels}
           isAccountCodeLoading={isAccountCodeLoading}
           accountCodeError={accountCodeError}
+          accountNameError={accountNameError}
+          isReadOnly={mode === "view"}
+          parentAccountError={
+            submitted && !values.parentId ? "Required" : undefined
+          }
           values={values}
-          onBankFieldChange={updateBankField}
           onFieldChange={updateField}
           onParentChange={updateParentAccount}
         />
@@ -248,41 +331,45 @@ function DrawerPanel({
   );
 }
 
-function getAvailableAccountLevels(
-  accounts: ChartAccount[],
-  parentAccountId: string | null,
-): AccountLevel[] {
-  if (!parentAccountId) {
-    return ["SPECIFIC"];
+function getDrawerEyebrow(
+  account: ChartAccount | null,
+  parentAccount: ChartAccount | null,
+) {
+  if (account) {
+    return "Edit ledger account";
   }
 
-  const parentAccount = accounts.find((item) => item.id === parentAccountId);
-
-  switch (parentAccount?.accountLevel) {
-    case "MAJOR":
-      return ["SPECIFIC"];
-    case "SUB1":
-      return ["SPECIFIC"];
-    case "SUB2":
-      return ["SPECIFIC"];
-    case "SUB3":
-      return ["SPECIFIC"];
-    default:
-      return ["SPECIFIC"];
+  if (parentAccount) {
+    return `Add under ${parentAccount.accountName}`;
   }
+
+  return "Create ledger account";
 }
 
-function getInitialFormValues(
+function getDrawerTitle(
+  mode: ChartsOfAccountsDrawerMode,
   account: ChartAccount | null,
-): ChartAccountFormValues {
-  const values = account
-    ? accountToFormValues(account)
-    : EmptyAccountFormValues;
+  parentAccount: ChartAccount | null,
+) {
+  if (mode === "view") {
+    return "View Account";
+  }
 
-  return {
-    ...values,
-    bankDetails: {
-      ...(values.bankDetails ?? EmptyBankDetails),
-    },
-  };
+  if (account) {
+    return account.accountName;
+  }
+
+  if (parentAccount) {
+    return `Add ${AccountLevelLabels.SPECIFIC}`;
+  }
+
+  return `Add ${AccountLevelLabels.SPECIFIC}`;
+}
+
+function getDrawerDescription(parentAccount: ChartAccount | null) {
+  if (parentAccount) {
+    return "Parent, type, statement section, nature, and account code are prefilled. Provide the account name to create the child account.";
+  }
+
+  return "Configure reporting, hierarchy, and bank setup.";
 }

@@ -1,15 +1,17 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
 import { TermManagementDatemodeOptions } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import type {
 	TermImportColumnId,
 	TermImportPreviewRow,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import {
-	isTabularPaste,
 	rowHasErrors,
 } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
+import {
+	ModuleImportEditableCell,
+	ModuleImportEditableSelect,
+} from "@/app/src/ui/shared/module/ModuleImportControls";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function TermImportPreviewTableRow({
@@ -79,7 +81,7 @@ export function TermImportPreviewTableRow({
 						stickyCellBackground,
 					)}
 				>
-					<EditableImportCell
+					<ModuleImportEditableCell
 						value={row.term.name}
 						errors={row.cellErrors.name}
 						warnings={row.cellWarnings.name}
@@ -88,7 +90,7 @@ export function TermImportPreviewTableRow({
 					/>
 				</td>
 				<td className="px-3 py-2 align-middle">
-					<EditableImportSelect
+					<ModuleImportEditableSelect
 						value={row.term.datemode}
 						errors={row.cellErrors.datemode}
 						warnings={row.cellWarnings.datemode}
@@ -98,7 +100,7 @@ export function TermImportPreviewTableRow({
 					/>
 				</td>
 				<td className="px-3 py-2 align-middle">
-					<EditableImportCell
+					<ModuleImportEditableCell
 						type="number"
 						value={row.term.period}
 						errors={row.cellErrors.period}
@@ -120,166 +122,5 @@ export function TermImportPreviewTableRow({
 				</tr>
 			) : null}
 		</>
-	);
-}
-
-function EditableImportCell({
-	errors,
-	warnings,
-	type = "text",
-	value,
-	onChange,
-	onPaste,
-}: {
-	errors?: string[];
-	warnings?: string[];
-	type?: "number" | "text";
-	value: string;
-	onChange: (value: string) => void;
-	onPaste: (text: string) => void;
-}) {
-	const messages = [...(errors ?? []), ...(warnings ?? [])];
-
-	return (
-		<label className="relative block">
-			<input
-				type={type}
-				min={type === "number" ? 0 : undefined}
-				value={value}
-				onChange={(event) => {
-					const nextValue = event.target.value;
-
-					if (type === "number" && nextValue.trim() && Number(nextValue) < 0) {
-						return;
-					}
-
-					onChange(nextValue);
-				}}
-				onKeyDown={(event) => {
-					if (
-						type === "number" &&
-						["-", "+", ".", "e", "E"].includes(event.key)
-					) {
-						event.preventDefault();
-					}
-				}}
-				onPaste={(event) => {
-					const text = event.clipboardData.getData("text");
-
-					if (
-						type === "number" &&
-						!isTabularPaste(text) &&
-						!/^\d+$/.test(text.trim())
-					) {
-						event.preventDefault();
-						return;
-					}
-
-					if (isTabularPaste(text)) {
-						event.preventDefault();
-						onPaste(text);
-					}
-				}}
-				onWheel={(event) => {
-					if (type === "number") {
-						event.currentTarget.blur();
-					}
-				}}
-				title={messages.join(" ")}
-				className={joinClasses(
-					"h-10 w-full rounded-md border bg-white px-2 text-sm font-medium text-darknavy outline-none transition focus:ring-2",
-					messages.length ? "pr-9" : "",
-					errors?.length
-						? "border-coralpink/45 focus:border-coralpink focus:ring-coralpink/15"
-						: warnings?.length
-							? "border-amber-400/70 focus:border-amber-500 focus:ring-amber-500/15"
-							: "border-darknavy/12 focus:border-skyblue focus:ring-skyblue/15",
-				)}
-			/>
-			<CellIssueIcon errors={errors} warnings={warnings} />
-		</label>
-	);
-}
-
-function EditableImportSelect<TOption extends string>({
-	errors,
-	warnings,
-	options,
-	value,
-	onChange,
-	onPaste,
-}: {
-	errors?: string[];
-	warnings?: string[];
-	options: readonly TOption[];
-	value: string;
-	onChange: (value: string) => void;
-	onPaste: (text: string) => void;
-}) {
-	const messages = [...(errors ?? []), ...(warnings ?? [])];
-
-	return (
-		<label className="relative block">
-			<select
-				value={value}
-				onChange={(event) => onChange(event.target.value)}
-				onPaste={(event) => {
-					const text = event.clipboardData.getData("text");
-
-					if (text.trim()) {
-						event.preventDefault();
-						onPaste(text);
-					}
-				}}
-				title={messages.join(" ")}
-				className={joinClasses(
-					"h-10 w-full rounded-md border bg-white px-2 text-sm font-medium text-darknavy outline-none transition focus:ring-2",
-					messages.length ? "pr-9" : "",
-					errors?.length
-						? "border-coralpink/45 focus:border-coralpink focus:ring-coralpink/15"
-						: warnings?.length
-							? "border-amber-400/70 focus:border-amber-500 focus:ring-amber-500/15"
-							: "border-darknavy/12 focus:border-skyblue focus:ring-skyblue/15",
-				)}
-			>
-				{options.map((option) => (
-					<option key={option} value={option}>
-						{option}
-					</option>
-				))}
-			</select>
-			<CellIssueIcon errors={errors} warnings={warnings} />
-		</label>
-	);
-}
-
-function CellIssueIcon({
-	errors,
-	warnings,
-}: {
-	errors?: string[];
-	warnings?: string[];
-}) {
-	const messages = [...(errors ?? []), ...(warnings ?? [])];
-
-	if (messages.length === 0) {
-		return null;
-	}
-
-	const hasErrors = Boolean(errors?.length);
-
-	return (
-		<span
-			className={joinClasses(
-				"absolute right-2 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full border bg-white",
-				hasErrors
-					? "border-coralpink/45 text-coralpink"
-					: "border-amber-400/70 text-amber-600",
-			)}
-			title={messages.join(" ")}
-			aria-label={messages.join(" ")}
-		>
-			<AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
-		</span>
 	);
 }

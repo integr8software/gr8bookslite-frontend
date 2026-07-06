@@ -14,8 +14,8 @@ export type ApprovalRoutingBasis = "default" | "amount";
 export type ApprovalAmountConditionOperator =
 	| "greaterThan"
 	| "greaterThanOrEqual"
-	| "lessThanOrEqual"
-	| "between";
+	| "lessThan"
+	| "lessThanOrEqual";
 
 export type ApprovalWorkflowFeatureKey =
 	| "makerCheckerApproval"
@@ -41,7 +41,6 @@ export type ApprovalRoutingRuleRecord = {
 	basis: ApprovalRoutingBasis;
 	amountOperator: ApprovalAmountConditionOperator;
 	amountValue: string;
-	amountValueTo: string;
 	stageIds: string[];
 };
 

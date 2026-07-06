@@ -555,28 +555,6 @@ function RoutingConditionFields({
 						placeholder="100000.00"
 					/>
 				</FormField>
-				{routingRule.amountOperator === "between" ? (
-					<FormField
-						label="Ending Amount"
-						error={errors.amountValueTo}
-						required
-					>
-						<input
-							inputMode="decimal"
-							value={routingRule.amountValueTo}
-							onChange={(event) =>
-								onRoutingRuleFieldChange(
-									routingRule.id,
-									"amountValueTo",
-									event.target.value,
-								)
-							}
-							readOnly={isReadonly}
-							className={fieldClassName}
-							placeholder="250000.00"
-						/>
-					</FormField>
-				) : null}
 			</>
 		);
 	}

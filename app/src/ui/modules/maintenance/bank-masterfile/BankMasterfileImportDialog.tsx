@@ -15,8 +15,7 @@ import {
 import toast from "react-hot-toast";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import type {
-	BankMasterfile,
-	BankMasterfileFormValues,
+	BankMasterfileImportDialogProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
@@ -48,25 +47,20 @@ import {
 	parseTabularText,
 	readBankImportFile,
 	renumberRows,
-	rowHasErrors,
-	validateBankImportRows,
 	validateImportFileSize,
 	waitForNextBatch,
 } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
+import {
+	rowHasBankImportErrors,
+	validateBankImportRows,
+} from "@/app/src/validations/modules/maintenance/bank-masterfile/BankMasterfileValidation";
 
 export function BankMasterfileImportDialog({
 	existingBanks,
 	isOpen,
 	onClose,
 	onImportBanks,
-}: {
-	existingBanks: BankMasterfile[];
-	isOpen: boolean;
-	onClose: () => void;
-	onImportBanks: (
-		banks: BankMasterfileFormValues[],
-	) => Promise<BankMasterfile[]>;
-}) {
+}: BankMasterfileImportDialogProps) {
 	const [importError, setImportError] = useState<string | null>(null);
 	const [isParsing, setIsParsing] = useState(false);
 	const [previewRows, setPreviewRows] = useState<BankImportPreviewRow[]>([]);
@@ -80,7 +74,6 @@ export function BankMasterfileImportDialog({
 	const [columnWidths, setColumnWidths] = useState(() =>
 		TemplateHeaders.map(() => 160),
 	);
-	const [validationColumnWidth, setValidationColumnWidth] = useState(240);
 	const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(
 		() => new Set(),
 	);
@@ -100,9 +93,9 @@ export function BankMasterfileImportDialog({
 			),
 		[pristineManualRowIds, validatedRows],
 	);
-	const invalidRows = displayedRows.filter(rowHasErrors);
-	const actualInvalidRows = validatedRows.filter(rowHasErrors);
-	const validRows = validatedRows.filter((row) => !rowHasErrors(row));
+	const invalidRows = displayedRows.filter(rowHasBankImportErrors);
+	const actualInvalidRows = validatedRows.filter(rowHasBankImportErrors);
+	const validRows = validatedRows.filter((row) => !rowHasBankImportErrors(row));
 	const validSelectedRows = validRows.filter((row) =>
 		selectedRowIds.has(row.id),
 	);
@@ -130,9 +123,7 @@ export function BankMasterfileImportDialog({
 	const canImportAllValid = validRows.length > 0 && !isBusy;
 	const canImportSelectedValid = validSelectedRows.length > 0 && !isBusy;
 	const importTableWidth =
-		64 +
-		columnWidths.reduce((total, width) => total + width, 0) +
-		validationColumnWidth;
+		64 + columnWidths.reduce((total, width) => total + width, 0);
 
 	function updateColumnWidth(index: number, width: number) {
 		setColumnWidths((current) =>
@@ -643,7 +634,6 @@ export function BankMasterfileImportDialog({
 										style={{ width }}
 									/>
 								))}
-								<col style={{ width: validationColumnWidth }} />
 							</colgroup>
 							<thead className="text-xs uppercase text-darknavy/55">
 								<tr>
@@ -707,12 +697,6 @@ export function BankMasterfileImportDialog({
 											{header}
 										</ModuleImportResizableColumnHeader>
 									))}
-									<ModuleImportResizableColumnHeader
-										width={validationColumnWidth}
-										onResize={setValidationColumnWidth}
-									>
-										Validation
-									</ModuleImportResizableColumnHeader>
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-darknavy/8 bg-white">
@@ -730,7 +714,7 @@ export function BankMasterfileImportDialog({
 								) : (
 									<tr>
 										<td
-											colSpan={13}
+											colSpan={10}
 											className="px-3 py-10 text-center font-medium text-darknavy/45"
 										>
 											Upload a file, add a row, or paste copied Excel rows here.

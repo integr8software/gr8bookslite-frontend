@@ -933,13 +933,21 @@ function inferVoucherPaymentTypeClassification(paymentMethod: string) {
     normalizedPaymentMethod.includes("check") ||
     normalizedPaymentMethod.includes("cheque")
   ) {
-    return "With Bank";
+    return normalizedPaymentMethod.includes("manager")
+      ? "Multiple Check"
+      : "With Bank";
   }
 
   if (
-    normalizedPaymentMethod.includes("cash") ||
-    normalizedPaymentMethod.includes("petty")
+    normalizedPaymentMethod.includes("instapay") ||
+    normalizedPaymentMethod.includes("ewallet") ||
+    normalizedPaymentMethod.includes("wallet") ||
+    normalizedPaymentMethod.includes("online")
   ) {
+    return "Online Payment";
+  }
+
+  if (normalizedPaymentMethod.includes("cash")) {
     return "Cash";
   }
 
@@ -1643,7 +1651,15 @@ function getPaymentTypeDetailKind(
     return "with-bank";
   }
 
+  if (paymentTypeRecord?.type === "Multiple Check") {
+    return "with-bank";
+  }
+
   if (paymentTypeRecord?.type === "Bank Transfer") {
+    return "bank-transfer";
+  }
+
+  if (paymentTypeRecord?.type === "Online Payment") {
     return "bank-transfer";
   }
 
@@ -1677,10 +1693,17 @@ function getPaymentTypeDetailKind(
   }
 
   if (
-    normalizedPaymentType === "cash" ||
-    normalizedPaymentType.includes("petty cash") ||
-    normalizedPaymentType.includes("g-cash") ||
+    normalizedPaymentType.includes("instapay") ||
+    normalizedPaymentType.includes("ewallet") ||
+    normalizedPaymentType.includes("wallet") ||
     normalizedPaymentType.includes("online")
+  ) {
+    return "bank-transfer";
+  }
+
+  if (
+    normalizedPaymentType === "cash" ||
+    normalizedPaymentType.includes("g-cash")
   ) {
     return "cash";
   }

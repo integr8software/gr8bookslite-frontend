@@ -2,33 +2,12 @@
 
 import { Search } from "lucide-react";
 import { BankMasterfileTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+import { getBankMasterfileTableMinWidthClassName } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
 import { useBankMasterfileTable } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileTable";
-import type { BankMasterfilePermissions } from "@/app/src/services/modules/maintenance/bank-masterfile/BankMasterfileApi";
-import type {
-	BankMasterfile,
-	BankMasterfileStatus,
-} from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
+import type { BankMasterfileTableProps } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { BankMasterfileTableFilters } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileTableFilters";
 import { BankMasterfileTableRow } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileTableRow";
-
-type BankMasterfileTableProps = {
-	banks: BankMasterfile[];
-	filteredBanks: BankMasterfile[];
-	hasActiveFilters: boolean;
-	isLoading: boolean;
-	isRefreshing: boolean;
-	lastSyncedAt?: number | string | Date | null;
-	permissions: BankMasterfilePermissions;
-	query: string;
-	statusFilter: "" | BankMasterfileStatus;
-	onEditBank: (bank: BankMasterfile) => void;
-	onQueryChange: (value: string) => void;
-	onRefresh: () => void;
-	onStatusFilterChange: (value: "" | BankMasterfileStatus) => void;
-	onToggleStatus: (bank: BankMasterfile) => void;
-	onViewBank: (bank: BankMasterfile) => void;
-};
 
 export function BankMasterfileTable({
 	banks,
@@ -48,7 +27,7 @@ export function BankMasterfileTable({
 	onViewBank,
 }: BankMasterfileTableProps) {
 	const table = useBankMasterfileTable(filteredBanks);
-	const tableMinWidthClassName = getTableMinWidthClassName(
+	const tableMinWidthClassName = getBankMasterfileTableMinWidthClassName(
 		table.getVisibleLeafColumns().length,
 	);
 
@@ -94,13 +73,4 @@ export function BankMasterfileTable({
 			/>
 		</div>
 	);
-}
-
-function getTableMinWidthClassName(visibleColumnCount: number) {
-	if (visibleColumnCount >= 10) return "min-w-[136rem]";
-	if (visibleColumnCount === 9) return "min-w-[122rem]";
-	if (visibleColumnCount === 8) return "min-w-[108rem]";
-	if (visibleColumnCount === 7) return "min-w-[94rem]";
-	if (visibleColumnCount === 6) return "min-w-[80rem]";
-	return "min-w-[64rem]";
 }

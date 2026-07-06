@@ -469,6 +469,26 @@ export function useMainLayout() {
       ? branchModules.items
       : fallbackBranchModules?.items ?? userModules?.items ?? [];
   }, [activeBranchId, authProfile]);
+  useEffect(() => {
+    if (activeNavigationScope !== "company" || !authProfile) return;
+
+    const activeAccess = GetAuthProfileAccess(authProfile);
+    const enabledModulesCount = activeAccess?.enabledModules?.length ?? 0;
+
+    if (enabledModulesCount > 0 && companyUserModuleItems.length === 0) {
+      console.warn("[Sidebar] Empty user module tree from auth profile.", {
+        companyId: activeAccess?.companyId ?? currentCompany.id,
+        branchUnitId: activeBranchId || null,
+        enabledModulesCount,
+      });
+    }
+  }, [
+    activeBranchId,
+    activeNavigationScope,
+    authProfile,
+    companyUserModuleItems.length,
+    currentCompany.id,
+  ]);
   const companyNavigationSections = useMemo(
     () => {
       return MapUserModulesToNavigation(companyUserModuleItems);

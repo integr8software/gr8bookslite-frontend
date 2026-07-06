@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
 	GripVertical,
@@ -382,7 +382,6 @@ function InlineSidebarCustomizer({
 	const [items, setItems] = useState<TreeItem[]>([]);
 	const [dirty, setDirty] = useState(false);
 	const [activeDragId, setActiveDragId] = useState<string | null>(null);
-	const [openIconPickerId, setOpenIconPickerId] = useState<number | null>(null);
 	const sensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
 		useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -439,25 +438,6 @@ function InlineSidebarCustomizer({
 	function update(nextItems: TreeItem[]) {
 		setItems(nextItems);
 		setDirty(true);
-	}
-
-	function addSection(index = displayedItems.length, parentId: number | null = null) {
-		const timestamp = Date.now();
-		const section: TreeItem = {
-			id: -timestamp,
-			key: `custom-section-${timestamp}`,
-			label: "New Section",
-			itemType: "SECTION",
-			iconName: null,
-			children: [],
-		};
-		if (parentId == null) {
-			update(insertAt(displayedItems, index, section));
-			return;
-		}
-		const parent = locate(displayedItems, parentId);
-		if (!parent || !canAddChildSection(parent)) return;
-		update(replaceChildren(displayedItems, parentId, insertAt(parent.item.children, index, section)));
 	}
 
 	function moveToRoot(itemId: number) {
@@ -521,20 +501,14 @@ function InlineSidebarCustomizer({
 						depth={0}
 						index={0}
 						parentId={null}
-						canAddSection
-						isDragging={Boolean(activeDragId)}
-						onAddSection={() => addSection(0)}
 					/>
 					<InlineTree
 						items={displayedItems}
 						depth={0}
 						parentId={null}
 						isDragging={Boolean(activeDragId)}
-						onAddSection={addSection}
 						onChange={update}
 						onMoveToRoot={moveToRoot}
-						openIconPickerId={openIconPickerId}
-						onOpenIconPickerChange={setOpenIconPickerId}
 					/>
 				</div>
 			</DndContext>
@@ -565,21 +539,15 @@ function InlineTree({
 	depth,
 	parentId,
 	isDragging,
-	onAddSection,
 	onChange,
 	onMoveToRoot,
-	openIconPickerId,
-	onOpenIconPickerChange,
 }: {
 	items: TreeItem[];
 	depth: number;
 	parentId: number | null;
 	isDragging: boolean;
-	onAddSection: (index?: number, parentId?: number | null) => void;
 	onChange: (items: TreeItem[]) => void;
 	onMoveToRoot: (itemId: number) => void;
-	openIconPickerId: number | null;
-	onOpenIconPickerChange: (itemId: number | null) => void;
 }) {
 	return (
 		<SortableContext
@@ -594,24 +562,15 @@ function InlineTree({
 							depth={depth}
 							parentId={parentId}
 							isDragging={isDragging}
-							onAddSection={onAddSection}
-							onPatch={(patch) =>
-								onChange(items.map((value) => value.id === item.id ? { ...value, ...patch } : value))
-							}
 							onChildren={(children) =>
 								onChange(items.map((value) => value.id === item.id ? { ...value, children } : value))
 							}
 							onMoveToRoot={onMoveToRoot}
-							openIconPickerId={openIconPickerId}
-							onOpenIconPickerChange={onOpenIconPickerChange}
 						/>
 						<CustomizerGap
 							depth={depth}
 							index={index + 1}
 							parentId={parentId}
-							canAddSection={depth === 0}
-							isDragging={isDragging}
-							onAddSection={() => onAddSection(index + 1, parentId)}
 						/>
 					</div>
 				))}
@@ -625,23 +584,15 @@ function InlineEditableRow({
 	depth,
 	parentId,
 	isDragging,
-	onAddSection,
-	onPatch,
 	onChildren,
 	onMoveToRoot,
-	openIconPickerId,
-	onOpenIconPickerChange,
 }: {
 	item: TreeItem;
 	depth: number;
 	parentId: number | null;
 	isDragging: boolean;
-	onAddSection: (index?: number, parentId?: number | null) => void;
-	onPatch: (patch: Partial<TreeItem>) => void;
 	onChildren: (children: TreeItem[]) => void;
 	onMoveToRoot: (itemId: number) => void;
-	openIconPickerId: number | null;
-	onOpenIconPickerChange: (itemId: number | null) => void;
 }) {
 	const {
 		attributes,
@@ -676,39 +627,28 @@ function InlineEditableRow({
 					rowPadding,
 				)}
 			>
-				<IconPicker
-					item={item}
-					showDefaultFolder={shouldShowDefaultFolder}
-					isOpen={openIconPickerId === item.id}
-					onOpenChange={(isOpen) => onOpenIconPickerChange(isOpen ? item.id : null)}
-					onChange={(iconName) => onPatch({ iconName })}
-				>
-					{shouldShowDefaultFolder ? (
-						<SidebarAllowedIcons.folder className="h-4 w-4 shrink-0 text-darknavy/65" />
-					) : shouldShowDefaultFile ? (
-						<SidebarAllowedIcons.link className="h-4 w-4 shrink-0 text-darknavy/65" />
-					) : shouldShowDefaultDot ? (
-						<span
-							aria-hidden="true"
-							className="h-1.5 w-1.5 shrink-0 rounded-full bg-darknavy/30 transition-colors group-hover:bg-skyblue"
-						/>
-					) : (
-						ConfiguredIcon ? (
-							<ConfiguredIcon className="h-4 w-4 shrink-0 text-darknavy/65" />
-						) : null
-					)}
-				</IconPicker>
-				<input
-					aria-label="Sidebar label"
-					value={item.label}
-					onChange={(event) => onPatch({ label: event.target.value })}
+				{shouldShowDefaultFolder ? (
+					<SidebarAllowedIcons.folder className="h-4 w-4 shrink-0 text-darknavy/65" />
+				) : shouldShowDefaultFile ? (
+					<SidebarAllowedIcons.link className="h-4 w-4 shrink-0 text-darknavy/65" />
+				) : shouldShowDefaultDot ? (
+					<span
+						aria-hidden="true"
+						className="h-1.5 w-1.5 shrink-0 rounded-full bg-darknavy/30 transition-colors group-hover:bg-skyblue"
+					/>
+				) : ConfiguredIcon ? (
+					<ConfiguredIcon className="h-4 w-4 shrink-0 text-darknavy/65" />
+				) : null}
+				<span
 					className={joinClasses(
 						"min-w-0 flex-1 bg-transparent outline-none",
 						isStructural
 							? "font-semibold text-darknavy"
 							: "font-medium text-darknavy/80",
 					)}
-				/>
+				>
+					{item.label}
+				</span>
 				<button
 					type="button"
 					aria-label={`Drag ${item.label}`}
@@ -725,9 +665,6 @@ function InlineEditableRow({
 						depth={depth + 1}
 						index={0}
 						parentId={item.id}
-						canAddSection={canAddChildSection({ item, depth })}
-						isDragging={isDragging}
-						onAddSection={() => onAddSection(0, item.id)}
 					/>
 					<SortableContext
 						items={item.children.map((child) => String(child.id))}
@@ -741,24 +678,15 @@ function InlineEditableRow({
 										depth={depth + 1}
 										parentId={item.id}
 										isDragging={isDragging}
-										onAddSection={onAddSection}
-										onPatch={(patch) =>
-											onChildren(item.children.map((value) => value.id === child.id ? { ...value, ...patch } : value))
-										}
 										onChildren={(children) =>
 											onChildren(item.children.map((value) => value.id === child.id ? { ...value, children } : value))
 										}
 										onMoveToRoot={onMoveToRoot}
-										openIconPickerId={openIconPickerId}
-										onOpenIconPickerChange={onOpenIconPickerChange}
 									/>
 									<CustomizerGap
 										depth={depth + 1}
 										index={index + 1}
 										parentId={item.id}
-										canAddSection={canAddChildSection({ item, depth })}
-										isDragging={isDragging}
-										onAddSection={() => onAddSection(index + 1, item.id)}
 									/>
 								</div>
 							))}
@@ -774,16 +702,10 @@ function CustomizerGap({
 	depth,
 	index,
 	parentId,
-	canAddSection,
-	isDragging,
-	onAddSection,
 }: {
 	depth: number;
 	index: number;
 	parentId: number | null;
-	canAddSection: boolean;
-	isDragging: boolean;
-	onAddSection?: () => void;
 }) {
 	const { isOver, setNodeRef } = useDroppable({
 		id: getGapId({ type: "gap", parentId, index, depth }),
@@ -806,95 +728,7 @@ function CustomizerGap({
 					widthClass,
 					isOver ? "bg-skyblue" : "bg-transparent group-hover:bg-skyblue/45",
 				)}
-			>
-				{canAddSection && !isDragging ? (
-					<button
-						type="button"
-						className="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 bg-white px-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-skyblue group-hover:inline-flex"
-						onClick={onAddSection}
-					>
-						Add Section
-					</button>
-				) : null}
-			</div>
-		</div>
-	);
-}
-
-function IconPicker({
-	children,
-	item,
-	showDefaultFolder,
-	isOpen,
-	onOpenChange,
-	onChange,
-}: {
-	children: ReactNode;
-	item: TreeItem;
-	showDefaultFolder: boolean;
-	isOpen: boolean;
-	onOpenChange: (isOpen: boolean) => void;
-	onChange: (iconName: string | null) => void;
-}) {
-	const currentValue = item.iconName ?? "";
-	const iconEntries = Object.entries(SidebarAllowedIcons).sort(([first], [second]) =>
-		first.localeCompare(second),
-	);
-
-	return (
-		<div className="relative h-7 w-7 shrink-0">
-			<button
-				type="button"
-				aria-label={`Change icon for ${item.label}`}
-				className="grid h-7 w-7 place-items-center rounded hover:bg-darknavy/5"
-				onClick={() => onOpenChange(!isOpen)}
-			>
-				{children}
-			</button>
-			{isOpen ? (
-				<div className="absolute left-0 top-8 z-30 grid max-h-52 w-44 grid-cols-5 gap-1 overflow-y-auto overflow-x-hidden rounded-md border border-darknavy/10 bg-white p-2 shadow-[0_14px_35px_rgba(33,39,56,0.16)]">
-					<button
-						type="button"
-						aria-label="Default icon"
-						title="Default"
-						className={joinClasses(
-							"grid h-7 w-7 place-items-center rounded border text-darknavy/55 hover:bg-skyblue/8",
-							currentValue === "" ? "border-skyblue bg-skyblue/10 text-skyblue" : "border-transparent",
-						)}
-						onClick={() => {
-							onChange(null);
-							onOpenChange(false);
-						}}
-					>
-						{showDefaultFolder ? (
-							<SidebarAllowedIcons.folder className="h-4 w-4" />
-						) : (
-							<span
-								aria-hidden="true"
-								className="h-1.5 w-1.5 rounded-full bg-current"
-							/>
-						)}
-					</button>
-					{iconEntries.map(([iconName, Icon]) => (
-						<button
-							key={iconName}
-							type="button"
-							aria-label={iconName}
-							title={iconName}
-							className={joinClasses(
-								"grid h-7 w-7 place-items-center rounded border text-darknavy/55 hover:bg-skyblue/8",
-								currentValue === iconName ? "border-skyblue bg-skyblue/10 text-skyblue" : "border-transparent",
-							)}
-							onClick={() => {
-								onChange(iconName);
-								onOpenChange(false);
-							}}
-						>
-							<Icon className="h-4 w-4" />
-						</button>
-					))}
-				</div>
-			) : null}
+			/>
 		</div>
 	);
 }
@@ -989,13 +823,6 @@ function canNest(
 	}
 	if (source.itemType === "CONTAINER" && target.depth >= MaxCustomizationDepth - 1) return false;
 	return target.depth + getTreeDepth(source) <= MaxCustomizationDepth;
-}
-
-function canAddChildSection(target: {
-	item: TreeItem;
-	depth: number;
-}) {
-	return target.item.itemType === "SECTION" && target.depth < MaxCustomizationDepth - 1;
 }
 
 function getTreeDepth(item: TreeItem): number {

@@ -1,15 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-	TermManagementStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagement";
-import type { TermManagement } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
-
-type TermManagementStatusFilter =
-	| ""
-	| (typeof TermManagementStatusOptions)[number];
+import type {
+	TermManagement,
+	TermManagementDatemodeFilter,
+	TermManagementStatusFilter,
+} from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 
 export function useTermManagementListPage() {
 	const terms = useTermManagementStore((state) => state.terms);
@@ -22,7 +19,8 @@ export function useTermManagementListPage() {
 	const permissions = useTermManagementStore((state) => state.permissions);
 	const statistics = useTermManagementStore((state) => state.statistics);
 	const refreshTerms = useTermManagementStore((state) => state.refreshTerms);
-	const [datemodeFilter, setDatemodeFilter] = useState("All");
+	const [datemodeFilter, setDatemodeFilter] =
+		useState<TermManagementDatemodeFilter>("All");
 	const [statusFilter, setStatusFilter] =
 		useState<TermManagementStatusFilter>("Active");
 	const [query, setQuery] = useState("");

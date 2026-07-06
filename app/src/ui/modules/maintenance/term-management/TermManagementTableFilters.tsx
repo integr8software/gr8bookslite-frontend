@@ -1,39 +1,21 @@
-import type { Table } from "@tanstack/react-table";
 import {
 	TermManagementDatemodeOptions,
+	TermManagementExportColumns,
 	TermManagementStatusOptions,
-	TermManagementTableColumns,
 } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import type {
-	TermManagement,
-	TermManagementStatus,
+	TermManagementDatemodeFilter,
+	TermManagementTableFiltersProps,
+	TermManagementStatusFilter,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
-import type { TermManagementPermissions } from "@/app/src/services/modules/maintenance/term-management/TermManagementApi";
 import {
 	ModuleTableColumnVisibilityButton,
 	ModuleTableExportButton,
-	type ModuleTableExportColumn,
 	ModuleTableFilterSelect,
 	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-
-type TermManagementTableFiltersProps = {
-	datemodeFilter: string;
-	exportAllRows: TermManagement[];
-	exportFilteredRows: TermManagement[];
-	hasActiveFilters: boolean;
-	isRefreshing: boolean;
-	permissions: TermManagementPermissions;
-	query: string;
-	statusFilter: "" | TermManagementStatus;
-	table: Table<TermManagement>;
-	onDatemodeFilterChange: (value: string) => void;
-	onQueryChange: (value: string) => void;
-	onRefresh: () => void;
-	onStatusFilterChange: (value: "" | TermManagementStatus) => void;
-};
 
 export function TermManagementTableFilters({
 	datemodeFilter,
@@ -74,7 +56,9 @@ export function TermManagementTableFilters({
 							value: datemode,
 						})),
 					]}
-					onChange={onDatemodeFilterChange}
+					onChange={(value) =>
+						onDatemodeFilterChange(value as TermManagementDatemodeFilter)
+					}
 				/>
 				<ModuleTableFilterSelect
 					label="Status"
@@ -87,7 +71,7 @@ export function TermManagementTableFilters({
 						})),
 					]}
 					onChange={(value) =>
-						onStatusFilterChange(value as "" | TermManagementStatus)
+						onStatusFilterChange(value as TermManagementStatusFilter)
 					}
 				/>
 			</div>
@@ -120,17 +104,3 @@ export function TermManagementTableFilters({
 		</ModuleTableToolbar>
 	);
 }
-
-const TermManagementExportColumns: ModuleTableExportColumn<TermManagement>[] = [
-	...TermManagementTableColumns.flatMap((column) =>
-		"key" in column
-			? [
-				{
-					header: column.label,
-					id: column.key,
-					value: column.key,
-				},
-			]
-			: [],
-	),
-];

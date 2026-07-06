@@ -58,6 +58,7 @@ type GapDropData = {
 
 const InlineCustomizerRootDropId = "inline-sidebar-customizer-root";
 const InlineCustomizerGapPrefix = "inline-sidebar-gap:";
+const MaxCustomizationDepth = 2;
 
 type MainSidebarProps = {
 	activeHref: string;
@@ -439,26 +440,26 @@ function InlineSidebarCustomizer({
 		setDirty(true);
 	}
 
+	function moveToRoot(itemId: number) {
+		const source = locate(displayedItems, itemId);
+		if (!source || source.parentId == null) return;
+		update([...removeItem(displayedItems, source.item.id), source.item]);
+	}
+
 	function onDragEnd({ active, over }: DragEndEvent) {
 		setActiveDragId(null);
 		if (!over || active.id === over.id) return;
 		const source = locate(displayedItems, Number(active.id));
 		if (!source) return;
+		const withoutSource = removeItem(displayedItems, source.item.id);
 
 		if (over.id === InlineCustomizerRootDropId) {
-			if (source.parentId !== null) {
-				toast.error("Sidebar items can only be reordered within their current group.");
-			}
+			update([...withoutSource, source.item]);
 			return;
 		}
 
 		const gap = getGapData(over.id);
 		if (gap) {
-			if (source.parentId !== gap.parentId) {
-				toast.error("Sidebar items can only be reordered within their current group.");
-				return;
-			}
-			const withoutSource = removeItem(displayedItems, source.item.id);
 			const siblings =
 				gap.parentId == null
 					? withoutSource
@@ -470,10 +471,12 @@ function InlineSidebarCustomizer({
 		const target = locate(displayedItems, Number(over.id));
 		if (!target) return;
 
-		if (source.parentId !== target.parentId) {
-			toast.error("Sidebar items can only be reordered within their current group.");
+		if (target.item.itemType !== "LINK" && canNest(source.item, target)) {
+			update(appendChild(withoutSource, target.item.id, source.item));
 			return;
 		}
+
+		if (source.parentId !== target.parentId) return;
 		const siblings =
 			source.parentId == null ? displayedItems : locate(displayedItems, source.parentId)!.item.children;
 		update(replaceChildren(displayedItems, source.parentId, arrayMove(siblings, source.index, target.index)));
@@ -506,6 +509,7 @@ function InlineSidebarCustomizer({
 						parentId={null}
 						isDragging={Boolean(activeDragId)}
 						onChange={update}
+						onMoveToRoot={moveToRoot}
 					/>
 				</div>
 			</DndContext>
@@ -537,12 +541,14 @@ function InlineTree({
 	parentId,
 	isDragging,
 	onChange,
+	onMoveToRoot,
 }: {
 	items: TreeItem[];
 	depth: number;
 	parentId: number | null;
 	isDragging: boolean;
 	onChange: (items: TreeItem[]) => void;
+	onMoveToRoot: (itemId: number) => void;
 }) {
 	return (
 		<SortableContext
@@ -560,6 +566,7 @@ function InlineTree({
 							onChildren={(children) =>
 								onChange(items.map((value) => value.id === item.id ? { ...value, children } : value))
 							}
+							onMoveToRoot={onMoveToRoot}
 						/>
 						<CustomizerGap
 							depth={depth}
@@ -579,12 +586,14 @@ function InlineEditableRow({
 	parentId,
 	isDragging,
 	onChildren,
+	onMoveToRoot,
 }: {
 	item: TreeItem;
 	depth: number;
 	parentId: number | null;
 	isDragging: boolean;
 	onChildren: (children: TreeItem[]) => void;
+	onMoveToRoot: (itemId: number) => void;
 }) {
 	const {
 		attributes,
@@ -673,6 +682,7 @@ function InlineEditableRow({
 										onChildren={(children) =>
 											onChildren(item.children.map((value) => value.id === child.id ? { ...value, children } : value))
 										}
+										onMoveToRoot={onMoveToRoot}
 									/>
 									<CustomizerGap
 										depth={depth + 1}
@@ -790,6 +800,36 @@ function replaceChildren(
 
 function insertAt(items: TreeItem[], index: number, item: TreeItem) {
 	return [...items.slice(0, index), item, ...items.slice(index)];
+}
+
+function appendChild(
+	items: TreeItem[],
+	parentId: number,
+	child: TreeItem,
+): TreeItem[] {
+	return items.map((item) =>
+		item.id === parentId
+			? { ...item, children: [...item.children, child] }
+			: { ...item, children: appendChild(item.children, parentId, child) },
+	);
+}
+
+function canNest(
+	source: TreeItem,
+	target: { item: TreeItem; depth: number },
+) {
+	if (target.item.itemType === "LINK") return false;
+	if (source.itemType === "SECTION") {
+		return target.item.itemType === "SECTION" && target.depth < MaxCustomizationDepth - 1;
+	}
+	if (source.itemType === "CONTAINER" && target.depth >= MaxCustomizationDepth - 1) return false;
+	return target.depth + getTreeDepth(source) <= MaxCustomizationDepth;
+}
+
+function getTreeDepth(item: TreeItem): number {
+	return item.children.length
+		? 1 + Math.max(...item.children.map(getTreeDepth))
+		: 1;
 }
 
 function getGapId(data: GapDropData) {

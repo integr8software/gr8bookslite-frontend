@@ -1,33 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChartsOfAccountsDrawerTabs } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
   BankDetailsKey,
   ChartsOfAccountsFormProps,
   ChartsOfAccountsFormTab,
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
+import {
+  isAccountInformationIncomplete,
+  isBankDetailsIncomplete,
+} from "@/app/src/validations/modules/maintenance/charts-of-accounts/ChartsOfAccountsValidation";
 import { ChartsOfAccountsAccountFields } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsAccountFields";
 import { ChartsOfAccountsBankFields } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsBankFields";
 
 export function ChartsOfAccountsForm(props: ChartsOfAccountsFormProps) {
-  const [activeTab, setActiveTab] =
+  const [selectedTab, setSelectedTab] =
     useState<ChartsOfAccountsFormTab>("Account Information");
   const visibleTabs = props.values.isBankLinked
     ? ChartsOfAccountsDrawerTabs
     : (["Account Information"] satisfies ChartsOfAccountsFormTab[]);
+  const activeTab = visibleTabs.includes(selectedTab)
+    ? selectedTab
+    : "Account Information";
   const hasBankDetailsError =
     props.submitted &&
     props.values.isBankLinked &&
     isBankDetailsIncomplete(props.values);
   const hasAccountInformationError =
     props.submitted && isAccountInformationIncomplete(props);
-
-  useEffect(() => {
-    if (!visibleTabs.includes(activeTab)) {
-      setActiveTab("Account Information");
-    }
-  }, [activeTab, visibleTabs]);
 
   function handleBankFieldChange(key: BankDetailsKey, value: string) {
     props.onFieldChange("bankDetails", {
@@ -43,7 +44,7 @@ export function ChartsOfAccountsForm(props: ChartsOfAccountsFormProps) {
         hasBankDetailsError={hasBankDetailsError}
         options={visibleTabs}
         value={activeTab}
-        onChange={setActiveTab}
+        onChange={setSelectedTab}
       />
 
       <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-5 pt-5">
@@ -105,33 +106,5 @@ function ChartsOfAccountsLinkedDetailsTabs({
         );
       })}
     </div>
-  );
-}
-
-function isAccountInformationIncomplete(props: ChartsOfAccountsFormProps) {
-  const { availableAccountLevels, values } = props;
-  const requiresParentAccount = values.accountLevel !== "MAJOR";
-
-  return (
-    !values.accountType ||
-    !values.statementSection ||
-    (requiresParentAccount && !values.parentId) ||
-    !values.accountNumber ||
-    !values.accountName ||
-    Boolean(props.accountCodeError) ||
-    Boolean(props.accountNameError) ||
-    !values.accountLevel ||
-    !availableAccountLevels.includes(values.accountLevel) ||
-    !values.normalBalance ||
-    !values.status
-  );
-}
-
-function isBankDetailsIncomplete(values: ChartsOfAccountsFormProps["values"]) {
-  return (
-    !values.bankDetails.bankName.trim() ||
-    !values.bankDetails.bankAccountNumber.trim() ||
-    !values.bankDetails.accountType.trim() ||
-    !values.bankDetails.currency.trim()
   );
 }

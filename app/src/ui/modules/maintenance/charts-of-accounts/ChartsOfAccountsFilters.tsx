@@ -1,56 +1,31 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { Table } from "@tanstack/react-table";
 import { ListTree, Network } from "lucide-react";
 import {
-  AccountLevelLabels,
   AccountStatuses,
   AccountTypeLabels,
   AccountTypes,
+  ChartsOfAccountsExportColumns,
   ChartsOfAccountsNavs,
-  NormalBalanceLabels,
-  type ChartsOfAccountsNav,
 } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
   AccountStatus,
   AccountType,
+  ChartsOfAccountsFiltersProps,
+  ChartsOfAccountsNav,
   ChartAccountStructureFilter,
   FilterValue,
-  FlattenedChartAccount,
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { Tabs } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsControls";
 import {
   ModuleTableColumnVisibilityButton,
   ModuleTableExportButton,
-  type ModuleTableExportColumn,
   ModuleTableResetButton,
   ModuleTableFilterSelect,
   ModuleTableSearch,
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-
-export type ChartsOfAccountsFiltersProps = {
-  accountTypeFilter: FilterValue<AccountType>;
-  activeTab: ChartsOfAccountsNav;
-  searchQuery: string;
-  statusFilter: FilterValue<AccountStatus>;
-  structureFilter: ChartAccountStructureFilter;
-  exportAllRows: FlattenedChartAccount[];
-  exportFilteredRows: FlattenedChartAccount[];
-  isRefreshing: boolean;
-  permissions: {
-    canExport: boolean;
-  };
-  table: Table<FlattenedChartAccount>;
-  onAccountTypeChange: (value: FilterValue<AccountType>) => void;
-  onRefresh: () => void;
-  onSearchChange: (value: string) => void;
-  onResetFilters: () => void;
-  onStatusChange: (value: FilterValue<AccountStatus>) => void;
-  onStructureChange: (value: ChartAccountStructureFilter) => void;
-  onTabChange: (value: ChartsOfAccountsNav) => void;
-};
 
 export function ChartsOfAccountsFilters({
   accountTypeFilter,
@@ -143,7 +118,7 @@ export function ChartsOfAccountsFilters({
               label="Search accounts"
               value={searchQuery}
               onChange={onSearchChange}
-              placeholder="Search account number or name..."
+              placeholder="Search account code or name..."
             />
           </div>
           <ModuleTableFilterSelect
@@ -239,21 +214,6 @@ function ResponsiveFilterSelect<TValue extends string>({
     </label>
   );
 }
-
-const ChartsOfAccountsExportColumns: ModuleTableExportColumn<FlattenedChartAccount>[] =
-  [
-    { header: "Account Number", id: "accountNumber", value: (row) => row.account.accountNumber },
-    { header: "Parent Account Number", id: "parentAccountNumber", value: (row) => row.parentAccountNumber },
-    { header: "Parent", id: "parent", value: (row) => row.parentPath },
-    { header: "Account Name", id: "accountName", value: (row) => row.account.accountName },
-    { header: "Account Level", id: "accountLevel", value: (row) => AccountLevelLabels[row.account.accountLevel] },
-    { header: "Account Type", id: "accountType", value: (row) => AccountTypeLabels[row.account.accountType] },
-    { header: "Statement Section", id: "statementSection", value: (row) => row.account.statementSection },
-    { header: "Account Nature", id: "normalBalance", value: (row) => NormalBalanceLabels[row.account.normalBalance] },
-    { header: "Description", id: "description", value: (row) => row.account.description },
-    { header: "Status", id: "status", value: (row) => row.account.status },
-    { header: "Posting Account", id: "isPostingAccount", value: (row) => row.account.isPostingAccount ? "Yes" : "No" },
-  ];
 
 function StructureButton({
   active,

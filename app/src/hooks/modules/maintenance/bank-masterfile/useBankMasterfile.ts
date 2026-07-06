@@ -13,13 +13,13 @@ import {
 	importBanks,
 	updateBank,
 	updateBankStatus,
-	type BankMasterfilePermissions,
-	type BankMasterfileStatistics,
 } from "@/app/src/services/modules/maintenance/bank-masterfile/BankMasterfileApi";
 import { BankMasterfileQueryKeys } from "@/app/src/services/modules/maintenance/bank-masterfile/BankMasterfileQueryKeys";
 import type {
 	BankMasterfile,
 	BankMasterfileFormValues,
+	BankMasterfilePermissions,
+	BankMasterfileStatistics,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 
 type BankMasterfileStoreState = {

@@ -1,22 +1,22 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
 	AlertCircle,
-	ChevronDown,
-	ChevronLeft,
-	ChevronRight,
 	Download,
-	LoaderCircle,
 	Plus,
-	Trash2,
-	Upload,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import type { TermManagement } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
+import {
+	ModuleImportFooter,
+	ModuleImportPaginationBar,
+	ModuleImportProgressPanel,
+	ModuleImportSelectionHeader,
+} from "@/app/src/ui/shared/module/ModuleImportControls";
 import {
 	ModuleImportResizableColumnHeader,
 	clampImportColumnWidth,
@@ -87,8 +87,6 @@ export function TermManagementImportDialog({
 	const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(
 		() => new Set(),
 	);
-	const selectionMenuRef = useRef<HTMLTableCellElement>(null);
-	const importMenuRef = useRef<HTMLDivElement>(null);
 	const existingTermNames = useMemo(
 		() =>
 			new Map(
@@ -134,10 +132,6 @@ export function TermManagementImportDialog({
 		(safePreviewPage - 1) * PreviewPageSize,
 		safePreviewPage * PreviewPageSize,
 	);
-	const progressPercent =
-		progress && progress.total > 0
-			? Math.round((progress.imported / progress.total) * 100)
-			: 0;
 	const importTableWidth =
 		64 + ImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
 
@@ -147,64 +141,6 @@ export function TermManagementImportDialog({
 			[field]: clampImportColumnWidth(width),
 		}));
 	}
-
-	useEffect(() => {
-		if (!isSelectionMenuOpen) {
-			return;
-		}
-
-		function closeSelectionMenu(event: PointerEvent) {
-			if (
-				event.target instanceof Node &&
-				!selectionMenuRef.current?.contains(event.target)
-			) {
-				setIsSelectionMenuOpen(false);
-			}
-		}
-
-		function closeSelectionMenuOnEscape(event: KeyboardEvent) {
-			if (event.key === "Escape") {
-				setIsSelectionMenuOpen(false);
-			}
-		}
-
-		document.addEventListener("pointerdown", closeSelectionMenu);
-		document.addEventListener("keydown", closeSelectionMenuOnEscape);
-
-		return () => {
-			document.removeEventListener("pointerdown", closeSelectionMenu);
-			document.removeEventListener("keydown", closeSelectionMenuOnEscape);
-		};
-	}, [isSelectionMenuOpen]);
-
-	useEffect(() => {
-		if (!isImportMenuOpen) {
-			return;
-		}
-
-		function closeImportMenu(event: PointerEvent) {
-			if (
-				event.target instanceof Node &&
-				!importMenuRef.current?.contains(event.target)
-			) {
-				setIsImportMenuOpen(false);
-			}
-		}
-
-		function closeImportMenuOnEscape(event: KeyboardEvent) {
-			if (event.key === "Escape") {
-				setIsImportMenuOpen(false);
-			}
-		}
-
-		document.addEventListener("pointerdown", closeImportMenu);
-		document.addEventListener("keydown", closeImportMenuOnEscape);
-
-		return () => {
-			document.removeEventListener("pointerdown", closeImportMenu);
-			document.removeEventListener("keydown", closeImportMenuOnEscape);
-		};
-	}, [isImportMenuOpen]);
 
 	function resetImportState() {
 		if (progress) {
@@ -704,112 +640,29 @@ export function TermManagementImportDialog({
 			}
 			progress={
 				progress ? (
-					<div className="rounded-lg border border-skyblue/20 bg-skyblue/8 p-3">
-						<div className="flex items-center justify-between gap-3 text-sm font-semibold text-darknavy">
-							<span>Importing queued data</span>
-							<span>{progressPercent}%</span>
-						</div>
-						<div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
-							<div
-								className="h-full rounded-full bg-skyblue transition-all"
-								style={{ width: `${progressPercent}%` }}
-							/>
-						</div>
-						<p className="mt-2 text-xs font-medium text-darknavy/55">
-							{progress.imported} of {progress.total} rows imported
-						</p>
-					</div>
+					<ModuleImportProgressPanel progress={progress} />
 				) : null
 			}
 			footer={
-				<div className="grid grid-cols-2 gap-2 lg:grid-cols-[auto_minmax(0,1fr)_auto_auto] lg:items-center">
-					<button
-						type="button"
-						onClick={resetImportState}
-						disabled={Boolean(progress)}
-						className="order-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-55 lg:order-none lg:w-auto"
-					>
-						Reset
-					</button>
-					<div className="hidden lg:block" aria-hidden="true" />
-					<button
-						type="button"
-						onClick={onClose}
-						disabled={Boolean(progress)}
-						className="order-3 inline-flex h-10 w-full items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-55 lg:order-none lg:w-auto"
-					>
-						Cancel
-					</button>
-					<div
-						ref={importMenuRef}
-						className="order-1 col-span-2 relative flex w-full lg:order-none lg:col-span-1 lg:w-auto"
-					>
-						<button
-							type="button"
-							onClick={() => void handleImport(importMode)}
-							disabled={!canImport}
-							className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-l-md bg-skyblue px-4 text-sm font-semibold text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:h-10 lg:w-auto"
-						>
-							{progress ? (
-								<LoaderCircle
-									className="h-4 w-4 animate-spin"
-									aria-hidden="true"
-								/>
-							) : (
-								<Upload className="h-4 w-4" aria-hidden="true" />
-							)}
-							{importMode === "selected-valid"
-								? "Import Selected"
-								: importMode === "all-valid"
-									? "Import Valid"
-									: "Import Data"}
-						</button>
-						<button
-							type="button"
-							onClick={() => setIsImportMenuOpen((isOpen) => !isOpen)}
-							disabled={!canImportAllRows && !canImportSelectedValid}
-							className="inline-flex h-11 w-11 items-center justify-center rounded-r-md border-l border-white/25 bg-skyblue text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:h-10"
-							aria-label="Choose import type"
-							aria-expanded={isImportMenuOpen}
-						>
-							<ChevronDown className="h-4 w-4" aria-hidden="true" />
-						</button>
-						{isImportMenuOpen ? (
-							<div
-								role="menu"
-								className="absolute bottom-full right-0 z-50 mb-1 w-64 overflow-hidden rounded-md border border-darknavy/10 bg-white py-1 text-left text-xs font-semibold text-darknavy shadow-lg"
-							>
-								<button
-									type="button"
-									role="menuitem"
-									onClick={() => setImportSelection("all-rows")}
-									disabled={!canImportAllRows}
-									className="block w-full px-3 py-2 text-left hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
-								>
-									Import all rows ({validatedRows.length})
-								</button>
-								<button
-									type="button"
-									role="menuitem"
-									onClick={() => setImportSelection("all-valid")}
-									disabled={!canImportAllValid}
-									className="block w-full border-t border-darknavy/8 px-3 py-2 text-left hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
-								>
-									Import all valid rows ({validRows.length})
-								</button>
-								<button
-									type="button"
-									role="menuitem"
-									onClick={() => setImportSelection("selected-valid")}
-									disabled={!canImportSelectedValid}
-									className="block w-full border-t border-darknavy/8 px-3 py-2 text-left hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-45"
-								>
-									Import selected valid rows ({validSelectedRows.length})
-								</button>
-							</div>
-						) : null}
-					</div>
-				</div>
+				<ModuleImportFooter
+					canImport={canImport}
+					canImportAllRows={canImportAllRows}
+					canImportAllValid={canImportAllValid}
+					canImportSelectedValid={canImportSelectedValid}
+					importMode={importMode}
+					isBusy={Boolean(progress)}
+					isImportMenuOpen={isImportMenuOpen}
+					selectedValidRowsCount={validSelectedRows.length}
+					totalRowsCount={validatedRows.length}
+					validRowsCount={validRows.length}
+					onCancel={onClose}
+					onImport={(mode) => void handleImport(mode)}
+					onReset={resetImportState}
+					onSetImportMode={setImportSelection}
+					onToggleImportMenu={() =>
+						setIsImportMenuOpen((isOpen) => !isOpen)
+					}
+				/>
 			}
 		>
 			<div className="flex h-full min-h-0 flex-col gap-3">
@@ -859,57 +712,17 @@ export function TermManagementImportDialog({
 							</colgroup>
 							<thead className="text-xs uppercase text-darknavy/55">
 								<tr>
-									<th
-										ref={selectionMenuRef}
-										className="module-import-preview-header sticky left-0 top-0 z-40 w-16 px-2 py-2"
-									>
-										<input
-											type="checkbox"
-											checked={selectedRowIds.size > 0}
-											readOnly
-											disabled={visibleRows.length === 0 || Boolean(progress)}
-											onClick={(event) => {
-												event.preventDefault();
-												setIsSelectionMenuOpen((isOpen) => !isOpen);
-											}}
-											aria-label="Choose rows to select"
-											title="Choose rows to select"
-											className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20 disabled:opacity-45"
-										/>
-										{isSelectionMenuOpen ? (
-											<div
-												role="menu"
-												className="absolute left-2 top-full z-50 mt-1 w-48 overflow-hidden rounded-md border border-darknavy/10 bg-white py-1 text-left text-xs font-semibold normal-case text-darknavy shadow-lg"
-											>
-												<button
-													type="button"
-													role="menuitem"
-													onClick={() => selectRows("page")}
-													className="block w-full px-3 py-2 text-left hover:bg-skyblue/8"
-												>
-													Select current page
-												</button>
-												<button
-													type="button"
-													role="menuitem"
-													onClick={() => selectRows("all")}
-													className="block w-full px-3 py-2 text-left hover:bg-skyblue/8"
-												>
-													Select all records
-												</button>
-												{selectedRowIds.size > 0 ? (
-													<button
-														type="button"
-														role="menuitem"
-														onClick={clearRowSelection}
-														className="block w-full border-t border-darknavy/8 px-3 py-2 text-left text-coralpink hover:bg-coralpink/8"
-													>
-														Clear selection
-													</button>
-												) : null}
-											</div>
-										) : null}
-									</th>
+									<ModuleImportSelectionHeader
+										checked={selectedRowIds.size > 0}
+										disabled={visibleRows.length === 0 || Boolean(progress)}
+										isOpen={isSelectionMenuOpen}
+										onClearSelection={clearRowSelection}
+										onSelectAll={() => selectRows("all")}
+										onSelectPage={() => selectRows("page")}
+										onToggleOpen={() =>
+											setIsSelectionMenuOpen((isOpen) => !isOpen)
+										}
+									/>
 									<ModuleImportResizableColumnHeader
 										className="z-40 px-3"
 										left={64}
@@ -959,51 +772,23 @@ export function TermManagementImportDialog({
 							</tbody>
 						</table>
 					</div>
-					<div className="grid grid-cols-2 items-center gap-2 border-t border-darknavy/10 px-3 py-2 sm:grid-cols-[1fr_auto_1fr]">
-						<span className="text-xs font-semibold text-darknavy/55">
-							Page {safePreviewPage} of {totalPages}
-						</span>
-						{selectedRowIds.size > 0 ? (
-							<span className="col-span-2 row-start-2 justify-self-center text-xs font-semibold text-skyblue sm:col-span-1 sm:row-auto">
-								{selectedRowIds.size} of {validatedRows.length} selected
-							</span>
-						) : (
-							<span className="hidden sm:block" />
-						)}
-						<div className="flex flex-wrap justify-self-end gap-2">
-							<button
-								type="button"
-								disabled={selectedRowIds.size === 0 || Boolean(progress)}
-								onClick={removeSelectedRows}
-								className="inline-flex h-8 items-center gap-1 rounded-md border border-coralpink/25 px-2 text-xs font-semibold text-coralpink transition hover:bg-coralpink/8 disabled:cursor-not-allowed disabled:opacity-45"
-							>
-								<Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-								{selectedRowIds.size > 0
-									? `Remove ${selectedRowIds.size} ${selectedRowIds.size === 1 ? "Row" : "Rows"}`
-									: "Remove Row"}
-							</button>
-							<button
-								type="button"
-								disabled={safePreviewPage <= 1}
-								onClick={() => setPreviewPage((page) => Math.max(1, page - 1))}
-								className="inline-flex h-8 items-center gap-1 rounded-md border border-darknavy/10 px-2 text-xs font-semibold text-darknavy disabled:cursor-not-allowed disabled:opacity-45"
-							>
-								<ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
-								Prev
-							</button>
-							<button
-								type="button"
-								disabled={safePreviewPage >= totalPages}
-								onClick={() =>
-									setPreviewPage((page) => Math.min(totalPages, page + 1))
-								}
-								className="inline-flex h-8 items-center gap-1 rounded-md border border-darknavy/10 px-2 text-xs font-semibold text-darknavy disabled:cursor-not-allowed disabled:opacity-45"
-							>
-								Next
-								<ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-							</button>
-						</div>
-					</div>
+					<ModuleImportPaginationBar
+						currentPage={safePreviewPage}
+						selectedCount={progress ? 0 : selectedRowIds.size}
+						selectedSummary={
+							selectedRowIds.size > 0
+								? `${selectedRowIds.size} of ${validatedRows.length} selected`
+								: null
+						}
+						totalPages={totalPages}
+						onNextPage={() =>
+							setPreviewPage((page) => Math.min(totalPages, page + 1))
+						}
+						onPreviousPage={() =>
+							setPreviewPage((page) => Math.max(1, page - 1))
+						}
+						onRemoveSelected={removeSelectedRows}
+					/>
 				</div>
 			</div>
 		</ModuleImportDialog>

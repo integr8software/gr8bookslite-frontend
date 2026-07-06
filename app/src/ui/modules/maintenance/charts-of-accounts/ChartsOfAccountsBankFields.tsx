@@ -33,15 +33,7 @@ export function ChartsOfAccountsBankFields({
   const firstInvalidField = RequiredBankFields.find(
     (field) => !values.bankDetails[field].trim(),
   );
-  const focusTargetRef = useRef<BankDetailsKey | null>(null);
-
-  if (!submitted) {
-    focusTargetRef.current = null;
-  } else if (!focusTargetRef.current) {
-    focusTargetRef.current = firstInvalidField ?? null;
-  }
-
-  const focusTarget = focusTargetRef.current;
+  const focusTarget = submitted ? firstInvalidField ?? null : null;
 
   return (
     <div className="grid items-start gap-4 sm:grid-cols-2">

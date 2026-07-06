@@ -16,7 +16,6 @@ import {
   AccountLevelLabels,
   ChartsOfAccountsTableColumns,
   ChartsOfAccountsNavs,
-  type ChartsOfAccountsNav,
 } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import {
   flattenAccounts,
@@ -38,6 +37,7 @@ import type {
   ChartAccountStructureFilter,
   ChartAccount,
   ChartAccountFormValues,
+  ChartsOfAccountsNav,
   ChartsOfAccountsTableColumnKey,
   FilterValue,
   FlattenedChartAccount,

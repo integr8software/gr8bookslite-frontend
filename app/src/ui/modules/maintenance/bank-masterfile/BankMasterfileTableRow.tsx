@@ -1,18 +1,16 @@
-import type { Row } from "@tanstack/react-table";
-import type { BankMasterfilePermissions } from "@/app/src/services/modules/maintenance/bank-masterfile/BankMasterfileApi";
-import type { BankMasterfile } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
+import {
+	formatBankMasterfileDateTime,
+	isBankMasterfileCenteredColumn,
+} from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
+import type {
+	BankMasterfile,
+	BankMasterfileCellContentProps,
+	BankMasterfileTableRowProps,
+} from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-
-type BankMasterfileTableRowProps = {
-	row: Row<BankMasterfile>;
-	permissions: BankMasterfilePermissions;
-	onEditBank: (bank: BankMasterfile) => void;
-	onToggleStatus: (bank: BankMasterfile) => void;
-	onViewBank: (bank: BankMasterfile) => void;
-};
 
 export function BankMasterfileTableRow({
 	row,
@@ -26,7 +24,7 @@ export function BankMasterfileTableRow({
 			{row.getVisibleCells().map((cell) => (
 				<BankMasterfileTableCell
 					key={cell.id}
-					align={isCenteredColumn(cell.column.id) ? "center" : "left"}
+					align={isBankMasterfileCenteredColumn(cell.column.id) ? "center" : "left"}
 				>
 					<BankMasterfileCellContent
 						columnId={cell.column.id}
@@ -42,10 +40,6 @@ export function BankMasterfileTableRow({
 	);
 }
 
-function isCenteredColumn(columnId: string) {
-	return ["actions", "currencyCode", "isDefault", "status"].includes(columnId);
-}
-
 function BankMasterfileCellContent({
 	bank,
 	columnId,
@@ -53,14 +47,7 @@ function BankMasterfileCellContent({
 	onEditBank,
 	onToggleStatus,
 	onViewBank,
-}: {
-	bank: BankMasterfile;
-	columnId: string;
-	permissions: BankMasterfilePermissions;
-	onEditBank: (bank: BankMasterfile) => void;
-	onToggleStatus: (bank: BankMasterfile) => void;
-	onViewBank: (bank: BankMasterfile) => void;
-}) {
+}: BankMasterfileCellContentProps) {
 	const nextStatus = bank.status === "Active" ? "Inactive" : "Active";
 	const statusActionLabel = bank.status === "Active" ? "Inactivate" : "Activate";
 	const canActivate =
@@ -93,9 +80,9 @@ function BankMasterfileCellContent({
 		case "status":
 			return <StatusBadge status={bank.status} />;
 		case "createdAt":
-			return <span>{formatDateTime(bank.createdAt)}</span>;
+			return <span>{formatBankMasterfileDateTime(bank.createdAt)}</span>;
 		case "updatedAt":
-			return <span>{formatDateTime(bank.updatedAt)}</span>;
+			return <span>{formatBankMasterfileDateTime(bank.updatedAt)}</span>;
 		case "actions":
 			return (
 				<ModuleTableActions className="w-full !justify-center">
@@ -129,15 +116,6 @@ function BankMasterfileCellContent({
 		default:
 			return null;
 	}
-}
-
-function formatDateTime(value?: string) {
-	if (!value) return "-";
-
-	return new Intl.DateTimeFormat("en-US", {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(new Date(value));
 }
 
 function BankMasterfileTableCell({

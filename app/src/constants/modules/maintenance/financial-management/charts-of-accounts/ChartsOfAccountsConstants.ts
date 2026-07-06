@@ -5,10 +5,13 @@ import type {
   BankDetailsKey,
   ChartsOfAccountsActionMode,
   ChartsOfAccountsFormTab,
+  ChartsOfAccountsNav,
   ChartsOfAccountsTableColumnKey,
+  FlattenedChartAccount,
   NormalBalance,
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { FinancialManagementCashInBankAccountTitle } from "@/app/src/constants/modules/maintenance/financial-management/FinancialManagementAccountTitleConstants";
+import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 export const ChartsOfAccountsHref = "/maintenance/charts-of-accounts";
 export const ChartsOfAccountsAccountNamePlaceholder = `${FinancialManagementCashInBankAccountTitle} - Bank Name`;
@@ -62,9 +65,7 @@ export const ChartsOfAccountsNavs = [
   "Income Statement",
   "Cash Flow",
   "Inactive Accounts",
-] as const;
-
-export type ChartsOfAccountsNav = (typeof ChartsOfAccountsNavs)[number];
+] as const satisfies ChartsOfAccountsNav[];
 
 export const ChartsOfAccountsActionCopy: Record<
   ChartsOfAccountsActionMode,
@@ -113,7 +114,7 @@ export const ChartsOfAccountsTableColumns: Array<{
   className?: string;
   sortable?: boolean;
 }> = [
-  { label: "Account Number", key: "accountNumber", className: "min-w-36" },
+  { label: "Account Code", key: "accountNumber", className: "min-w-36" },
   { label: "Account Name", key: "accountName", className: "min-w-72" },
   { label: "Parent", key: "parentPath", className: "min-w-72" },
   { label: "Account Type", key: "accountType", className: "min-w-32 text-center" },
@@ -135,6 +136,57 @@ export const ChartsOfAccountsTableColumns: Array<{
     className: "min-w-36 text-center",
   },
 ];
+
+export const ChartsOfAccountsExportColumns: ModuleTableExportColumn<FlattenedChartAccount>[] =
+  [
+    {
+      header: "Account Code",
+      id: "accountNumber",
+      value: (row) => row.account.accountNumber,
+    },
+    {
+      header: "Parent Account Code",
+      id: "parentAccountNumber",
+      value: (row) => row.parentAccountNumber,
+    },
+    { header: "Parent", id: "parent", value: (row) => row.parentPath },
+    {
+      header: "Account Name",
+      id: "accountName",
+      value: (row) => row.account.accountName,
+    },
+    {
+      header: "Account Level",
+      id: "accountLevel",
+      value: (row) => AccountLevelLabels[row.account.accountLevel],
+    },
+    {
+      header: "Account Type",
+      id: "accountType",
+      value: (row) => AccountTypeLabels[row.account.accountType],
+    },
+    {
+      header: "Statement Section",
+      id: "statementSection",
+      value: (row) => row.account.statementSection,
+    },
+    {
+      header: "Account Nature",
+      id: "normalBalance",
+      value: (row) => NormalBalanceLabels[row.account.normalBalance],
+    },
+    {
+      header: "Description",
+      id: "description",
+      value: (row) => row.account.description,
+    },
+    { header: "Status", id: "status", value: (row) => row.account.status },
+    {
+      header: "Posting Account",
+      id: "isPostingAccount",
+      value: (row) => (row.account.isPostingAccount ? "Yes" : "No"),
+    },
+  ];
 
 export const AccountTypeBadgeVariants: Record<
   AccountType,

@@ -9,6 +9,7 @@ import {
 	Network,
 	ReceiptText,
 } from "lucide-react";
+import { getAccountPercentage } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsUiHelpers";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsDrawer";
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsFilters";
@@ -186,12 +187,4 @@ export function ChartsOfAccountsListPage() {
 			/>
 		</section>
 	);
-}
-
-function getAccountPercentage(count: number, total: number) {
-	if (total === 0) {
-		return 0;
-	}
-
-	return Math.round((count / total) * 100);
 }

@@ -152,7 +152,7 @@ export function ChartsOfAccountsAccountFields({
           (isInvalid && !values.accountNumber ? "Required" : undefined)
         }
         inputClassName="placeholder:italic"
-        label="Account Number"
+        label="Account Code"
         placeholder={
           isAccountCodeLoading
             ? "Generating next code..."
@@ -346,7 +346,7 @@ function ParentAccountField({
         options={createParentAccountOptions(accounts, account, accountType)}
         placeholder={required ? "--Select Parent Account--" : "--No Parent Account--"}
         readOnly={readOnly}
-        searchPlaceholder="Search account number or name"
+        searchPlaceholder="Search account code or name"
         value={value ?? ""}
         onChange={(nextValue) =>
           onChange(

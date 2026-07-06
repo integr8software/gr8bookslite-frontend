@@ -1,3 +1,6 @@
+import type { ReactNode } from "react";
+import type { Table } from "@tanstack/react-table";
+
 export type AccountLevel = "MAJOR" | "SUB1" | "SUB2" | "SUB3" | "SPECIFIC";
 
 export type AccountType =
@@ -84,7 +87,16 @@ export type ChartAccountStructureFilter =
   | "With Submodules"
   | "Without Submodules";
 
+export type ChartsOfAccountsNav =
+  | "All Accounts"
+  | "Balance Sheet"
+  | "Income Statement"
+  | "Cash Flow"
+  | "Inactive Accounts";
+
 export type ChartsOfAccountsActionMode = "add" | "edit" | "view";
+
+export type ChartsOfAccountsDrawerMode = ChartsOfAccountsActionMode;
 
 export type ChartsOfAccountsFormTab = "Account Information" | "Bank Details";
 
@@ -119,3 +131,87 @@ export type ChartsOfAccountsTableColumnKey =
   | "status";
 
 export type SortDirection = "asc" | "desc";
+
+export type ChartsOfAccountsPermissions = {
+  canCreate: boolean;
+  canExport?: boolean;
+  canUpdate: boolean;
+  canView: boolean;
+};
+
+export type ChartsOfAccountsDrawerProps = {
+  account: ChartAccount | null;
+  accounts: ChartAccount[];
+  isOpen: boolean;
+  isSaving?: boolean;
+  mode?: ChartsOfAccountsDrawerMode;
+  parentAccount?: ChartAccount | null;
+  saveResetToken?: number;
+  onClose: () => void;
+  onSave: (values: ChartAccountFormValues) => void;
+};
+
+export type ChartsOfAccountsFiltersProps = {
+  accountTypeFilter: FilterValue<AccountType>;
+  activeTab: ChartsOfAccountsNav;
+  searchQuery: string;
+  statusFilter: FilterValue<AccountStatus>;
+  structureFilter: ChartAccountStructureFilter;
+  exportAllRows: FlattenedChartAccount[];
+  exportFilteredRows: FlattenedChartAccount[];
+  isRefreshing: boolean;
+  permissions: Pick<ChartsOfAccountsPermissions, "canExport">;
+  table: Table<FlattenedChartAccount>;
+  onAccountTypeChange: (value: FilterValue<AccountType>) => void;
+  onRefresh: () => void;
+  onSearchChange: (value: string) => void;
+  onResetFilters: () => void;
+  onStatusChange: (value: FilterValue<AccountStatus>) => void;
+  onStructureChange: (value: ChartAccountStructureFilter) => void;
+  onTabChange: (value: ChartsOfAccountsNav) => void;
+};
+
+export type ChartsOfAccountsTableProps = {
+  accounts: ChartAccount[];
+  expandedIds: Set<string>;
+  isLoading: boolean;
+  isRefreshing: boolean;
+  lastSyncedAt?: number | string | Date | null;
+  table: Table<FlattenedChartAccount>;
+  toolbar?: ReactNode;
+  canDragRows: boolean;
+  showHierarchyGuides: boolean;
+  showParentColumn: boolean;
+  permissions: Omit<ChartsOfAccountsPermissions, "canExport">;
+  onEdit: (account: ChartAccount) => void;
+  onAddChild: (account: ChartAccount) => void;
+  onStatusChange: (account: ChartAccount) => void;
+  onReorderAccount: (accountId: string, overAccountId: string) => void;
+  onToggleExpanded: (accountId: string) => void;
+  onView: (account: ChartAccount) => void;
+};
+
+export type ChartsOfAccountsTableRowProps = {
+  account: ChartAccount;
+  activeDragAccount?: ActiveDragAccount;
+  canDragRows: boolean;
+  expandedIds: Set<string>;
+  level: number;
+  parentPath: string;
+  parentAccount: ChartAccount | null;
+  permissions: Omit<ChartsOfAccountsPermissions, "canExport">;
+  showHierarchyGuides: boolean;
+  showParentColumn: boolean;
+  visibleColumnIds: string[];
+  onAddChild: (account: ChartAccount) => void;
+  onEdit: (account: ChartAccount) => void;
+  onStatusChange: (account: ChartAccount) => void;
+  onToggleExpanded: (accountId: string) => void;
+  onView: (account: ChartAccount) => void;
+};
+
+export type ActiveDragAccount = {
+  id: string;
+  isSpecific: boolean;
+  parentId: string | null;
+};

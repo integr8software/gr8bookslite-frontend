@@ -9,7 +9,16 @@ import {
   AccountLevelLabels,
   NormalBalanceLabels,
 } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
-import type { ChartAccount } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
+import {
+  getCanDropOnAccount,
+  isSpecificAccountLevel,
+  isSpecificAccountNumber,
+} from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsUiHelpers";
+import type {
+  ChartAccount,
+  ChartsOfAccountsPermissions,
+  ChartsOfAccountsTableRowProps,
+} from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import {
   Badge,
   TypeBadge,
@@ -19,33 +28,6 @@ import {
   ModuleTableActionButton,
   ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-
-type ChartsOfAccountsTableRowProps = {
-  account: ChartAccount;
-  activeDragAccount?: {
-    id: string;
-    isSpecific: boolean;
-    parentId: string | null;
-  };
-  canDragRows: boolean;
-  expandedIds: Set<string>;
-  level: number;
-  parentPath: string;
-  parentAccount: ChartAccount | null;
-  permissions: {
-    canCreate: boolean;
-    canUpdate: boolean;
-    canView: boolean;
-  };
-  showHierarchyGuides: boolean;
-  showParentColumn: boolean;
-  visibleColumnIds: string[];
-  onAddChild: (account: ChartAccount) => void;
-  onEdit: (account: ChartAccount) => void;
-  onStatusChange: (account: ChartAccount) => void;
-  onToggleExpanded: (accountId: string) => void;
-  onView: (account: ChartAccount) => void;
-};
 
 export function ChartsOfAccountsTableRow({
   account,
@@ -73,13 +55,13 @@ export function ChartsOfAccountsTableRow({
     transform,
   } = useDraggable({
     id: account.id,
-    disabled: !canDragRows || !isSpecificAccount(account),
+    disabled: !canDragRows || !isSpecificAccountLevel(account),
   });
   const { isOver, setNodeRef: setDroppableNodeRef } = useDroppable({
     id: account.id,
   });
   const targetIsSpecific = isSpecificAccountNumber(account.accountNumber);
-  const accountIsSpecific = isSpecificAccount(account);
+  const accountIsSpecific = isSpecificAccountLevel(account);
   const canDropOnAccount = getCanDropOnAccount({
     activeDragAccount,
     targetAccount: account,
@@ -352,36 +334,6 @@ function AddAccountTitleButton({
   );
 }
 
-function getCanDropOnAccount({
-  activeDragAccount,
-  targetAccount,
-  targetIsSpecific,
-}: {
-  activeDragAccount?: {
-    id: string;
-    isSpecific: boolean;
-    parentId: string | null;
-  };
-  targetAccount: ChartAccount;
-  targetIsSpecific: boolean;
-}) {
-  if (!activeDragAccount || activeDragAccount.id === targetAccount.id) {
-    return false;
-  }
-
-  if (activeDragAccount.isSpecific) {
-    return true;
-  }
-
-  return (
-    !targetIsSpecific && activeDragAccount.parentId === targetAccount.parentId
-  );
-}
-
-function isSpecificAccountNumber(accountNumber: string) {
-  return !accountNumber.endsWith("000");
-}
-
 function RowActions({
   account,
   permissions,
@@ -390,11 +342,7 @@ function RowActions({
   onView,
 }: {
   account: ChartAccount;
-  permissions: {
-    canCreate: boolean;
-    canUpdate: boolean;
-    canView: boolean;
-  };
+  permissions: Omit<ChartsOfAccountsPermissions, "canExport">;
   onEdit: (account: ChartAccount) => void;
   onStatusChange: (account: ChartAccount) => void;
   onView: (account: ChartAccount) => void;
@@ -428,8 +376,4 @@ function RowActions({
       ) : null}
     </ModuleTableActions>
   );
-}
-
-function isSpecificAccount(account: ChartAccount) {
-  return account.accountLevel === "SPECIFIC";
 }

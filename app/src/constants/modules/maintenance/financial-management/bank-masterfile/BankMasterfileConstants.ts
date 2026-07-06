@@ -1,10 +1,15 @@
 import type {
 	BankImportColumnId,
+	BankMasterfile,
 	BankMasterfileStatus,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
+import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 export const BankMasterfileHref = "/maintenance/bank-masterfile";
+
+export const BankMasterfileApiPath =
+	"/maintenance/financial-management/bank-masterfile";
 
 export const BankMasterfileParentLabel = "Accounting master data";
 
@@ -40,6 +45,21 @@ export const BankMasterfileAccountTypeOptions = [
 	"Savings",
 	"Current",
 ] as const;
+
+export const BankMasterfileExportColumns: ModuleTableExportColumn<BankMasterfile>[] =
+	[
+		...BankMasterfileTableColumns.flatMap((column) =>
+			"key" in column
+				? [
+					{
+						header: column.label,
+						id: column.key,
+						value: column.key,
+					},
+				]
+				: [],
+		),
+	];
 
 export const BankMasterfileBankNamePlaceholder = "Bank name";
 

@@ -15,8 +15,7 @@ import {
 import toast from "react-hot-toast";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import type {
-	BankMasterfile,
-	BankMasterfileFormValues,
+	BankMasterfileImportDialogProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
@@ -48,25 +47,20 @@ import {
 	parseTabularText,
 	readBankImportFile,
 	renumberRows,
-	rowHasErrors,
-	validateBankImportRows,
 	validateImportFileSize,
 	waitForNextBatch,
 } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
+import {
+	rowHasBankImportErrors,
+	validateBankImportRows,
+} from "@/app/src/validations/modules/maintenance/bank-masterfile/BankMasterfileValidation";
 
 export function BankMasterfileImportDialog({
 	existingBanks,
 	isOpen,
 	onClose,
 	onImportBanks,
-}: {
-	existingBanks: BankMasterfile[];
-	isOpen: boolean;
-	onClose: () => void;
-	onImportBanks: (
-		banks: BankMasterfileFormValues[],
-	) => Promise<BankMasterfile[]>;
-}) {
+}: BankMasterfileImportDialogProps) {
 	const [importError, setImportError] = useState<string | null>(null);
 	const [isParsing, setIsParsing] = useState(false);
 	const [previewRows, setPreviewRows] = useState<BankImportPreviewRow[]>([]);
@@ -100,9 +94,9 @@ export function BankMasterfileImportDialog({
 			),
 		[pristineManualRowIds, validatedRows],
 	);
-	const invalidRows = displayedRows.filter(rowHasErrors);
-	const actualInvalidRows = validatedRows.filter(rowHasErrors);
-	const validRows = validatedRows.filter((row) => !rowHasErrors(row));
+	const invalidRows = displayedRows.filter(rowHasBankImportErrors);
+	const actualInvalidRows = validatedRows.filter(rowHasBankImportErrors);
+	const validRows = validatedRows.filter((row) => !rowHasBankImportErrors(row));
 	const validSelectedRows = validRows.filter((row) =>
 		selectedRowIds.has(row.id),
 	);

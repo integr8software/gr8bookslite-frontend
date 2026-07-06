@@ -1,24 +1,13 @@
 import { isValidElement, useId } from "react";
-import type { ChangeEventHandler, ReactNode } from "react";
 import {
 	BankMasterfileAccountTypeOptions,
 	BankMasterfileStatusOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
 import { buildBankMasterfileAccountName } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
 import type {
-	BankMasterfileFormErrors,
-	BankMasterfileFormValues,
+	BankMasterfileFieldsProps,
+	BankMasterfileFormFieldProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
-
-type BankMasterfileFieldsProps = {
-	accountCode: string;
-	errors: BankMasterfileFormErrors;
-	isAccountCodeLoading: boolean;
-	isReadonly: boolean;
-	mode: "add" | "edit" | "view";
-	values: BankMasterfileFormValues;
-	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
-};
 
 export function BankMasterfileFields({
 	accountCode,
@@ -229,14 +218,7 @@ function FormField({
 	helper,
 	label,
 	required,
-}: {
-	children: ReactNode;
-	className?: string;
-	error?: string;
-	helper?: string;
-	label: string;
-	required?: boolean;
-}) {
+}: BankMasterfileFormFieldProps) {
 	const generatedId = useId();
 	const fieldId = isValidElement<{ id?: string }>(children)
 		? children.props.id ?? generatedId

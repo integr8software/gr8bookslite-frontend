@@ -12,44 +12,13 @@ import {
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { Search } from "lucide-react";
-import { useState, type ReactNode } from "react";
-import type { Table } from "@tanstack/react-table";
+import { useState } from "react";
 import type {
-  ChartAccount,
-  FlattenedChartAccount,
+  ActiveDragAccount,
+  ChartsOfAccountsTableProps,
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { ChartsOfAccountsTableRow } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsTableRow";
-
-type ChartsOfAccountsTableProps = {
-  accounts: ChartAccount[];
-  expandedIds: Set<string>;
-  isLoading: boolean;
-  isRefreshing: boolean;
-  lastSyncedAt?: number | string | Date | null;
-  table: Table<FlattenedChartAccount>;
-  toolbar?: ReactNode;
-  canDragRows: boolean;
-  showHierarchyGuides: boolean;
-  showParentColumn: boolean;
-  permissions: {
-    canCreate: boolean;
-    canUpdate: boolean;
-    canView: boolean;
-  };
-  onEdit: (account: ChartAccount) => void;
-  onAddChild: (account: ChartAccount) => void;
-  onStatusChange: (account: ChartAccount) => void;
-  onReorderAccount: (accountId: string, overAccountId: string) => void;
-  onToggleExpanded: (accountId: string) => void;
-  onView: (account: ChartAccount) => void;
-};
-
-type ActiveDragAccount = {
-  id: string;
-  isSpecific: boolean;
-  parentId: string | null;
-};
 
 export function ChartsOfAccountsTable(props: ChartsOfAccountsTableProps) {
   const [activeDragAccount, setActiveDragAccount] =

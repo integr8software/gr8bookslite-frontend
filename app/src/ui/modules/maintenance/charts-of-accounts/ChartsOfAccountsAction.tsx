@@ -7,11 +7,11 @@ import {
   ChartsOfAccountsActionCopy,
   ChartsOfAccountsHref,
 } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
-import type { ChartsOfAccountsActionMode } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
+import { getChartsOfAccountsActionMode } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsUiHelpers";
 
 export function ChartsOfAccountsAction() {
   const pathname = usePathname();
-  const mode = getActionMode(pathname);
+  const mode = getChartsOfAccountsActionMode(pathname);
   const copy = ChartsOfAccountsActionCopy[mode];
 
   return (
@@ -45,16 +45,4 @@ export function ChartsOfAccountsAction() {
       </div>
     </section>
   );
-}
-
-function getActionMode(pathname: string): ChartsOfAccountsActionMode {
-  if (pathname.includes("/edit/")) {
-    return "edit";
-  }
-
-  if (pathname.includes("/view/")) {
-    return "view";
-  }
-
-  return "add";
 }

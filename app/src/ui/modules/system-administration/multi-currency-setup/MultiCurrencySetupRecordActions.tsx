@@ -1,6 +1,10 @@
 import { Pencil, RefreshCcw, Trash2 } from "lucide-react";
 import type { MultiCurrencySetupTableRecord } from "@/app/src/types/modules/system-administration/multi-currency-setup/MultiCurrencySetupTypes";
-import { ModuleActionMenu } from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
+import {
+	ModuleTableActionButton,
+	ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type MultiCurrencySetupRecordActionsProps = {
 	record: MultiCurrencySetupTableRecord;
@@ -17,30 +21,39 @@ export function MultiCurrencySetupRecordActions({
 }: MultiCurrencySetupRecordActionsProps) {
 	const label = `${record.baseCurrencyCode} to ${record.targetCurrencyCode}`;
 
+	if (record.isBaseCurrency) {
+		return (
+			<span className="text-xs font-semibold text-darknavy/50">
+				Base currency
+			</span>
+		);
+	}
+
 	return (
-		<ModuleActionMenu
-			label={`Open ${label} actions`}
-			items={[
-				{
-					icon: Pencil,
-					label: "Configure",
-					onSelect: () => onConfigureRecord(record),
-					type: "button",
-				},
-				{
-					icon: RefreshCcw,
-					label: "Use API rate",
-					onSelect: () => onUpdateRecordRate(record),
-					type: "button",
-				},
-				{
-					icon: Trash2,
-					label: "Delete",
-					onSelect: () => onDeleteRecord(record),
-					tone: "danger",
-					type: "button",
-				},
-			]}
-		/>
+		<ModuleTableActions>
+			<ModuleTooltip align="end" position="top" title="Configure">
+				<ModuleTableActionButton
+					icon={Pencil}
+					label={`Configure ${label}`}
+					variant="edit"
+					onClick={() => onConfigureRecord(record)}
+				/>
+			</ModuleTooltip>
+			<ModuleTooltip align="end" position="top" title="Refresh rate">
+				<ModuleTableActionButton
+					icon={RefreshCcw}
+					label={`Refresh ${label} from Frankfurter`}
+					onClick={() => onUpdateRecordRate(record)}
+				/>
+			</ModuleTooltip>
+			<ModuleTooltip align="end" position="top" title="Delete">
+				<ModuleTableActionButton
+					icon={Trash2}
+					label={`Delete ${label}`}
+					variant="delete"
+					onClick={() => onDeleteRecord(record)}
+				/>
+			</ModuleTooltip>
+		</ModuleTableActions>
 	);
 }

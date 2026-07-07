@@ -72,7 +72,7 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 	}
 
 	return (
-		<thead className="module-table-header sticky top-0 z-10 bg-slate-50 text-xs font-bold text-darknavy/80">
+		<thead className="module-table-header sticky top-0 z-50 bg-slate-50 text-xs font-bold text-darknavy/80">
 			{table.getHeaderGroups().map((headerGroup) => (
 				<tr key={headerGroup.id} className="border-b border-darknavy/10">
 					{headerGroup.headers.map((header) => (
@@ -111,7 +111,7 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 								setDropIndicator(null);
 							}}
 							className={joinClasses(
-								"group relative whitespace-nowrap px-5 py-3 first:pl-6 last:pr-6",
+								"group relative bg-slate-50 whitespace-nowrap px-5 py-3 first:pl-6 last:pr-6",
 								isCenteredHeader(header) ? "text-center" : "text-left",
 								draggedColumnId === header.column.id &&
 									"bg-skyblue/10 opacity-75",

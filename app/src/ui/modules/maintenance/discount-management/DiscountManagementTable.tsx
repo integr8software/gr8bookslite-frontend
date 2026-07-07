@@ -1,58 +1,94 @@
 "use client";
 
 import { Search } from "lucide-react";
-import type { ReactNode } from "react";
 import { DiscountManagementTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
+import {
+	createDiscountManagementTableRecord,
+	getDiscountManagementTableMinWidthClassName,
+} from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
 import { useDiscountManagementTable } from "@/app/src/hooks/modules/maintenance/discount-management/useDiscountManagementTable";
 import type {
-	Discount,
-	DiscountManagementTableRecord,
+	DiscountManagementTableProps,
 } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
+import { DiscountManagementTableFilters } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementTableFilters";
 import { DiscountManagementTableRow } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementTableRow";
 
-type DiscountManagementTableProps = {
-	discounts: Discount[];
-	isLoading: boolean;
-	lastSyncedAt?: number | string | Date | null;
-	toolbar?: ReactNode;
-	onEditDiscount: (discount: DiscountManagementTableRecord) => void;
-	onToggleStatus: (discount: DiscountManagementTableRecord) => void;
-	onViewDiscount: (discount: DiscountManagementTableRecord) => void;
-};
-
 export function DiscountManagementTable({
-	discounts,
+	discountTypeFilter,
+	filteredDiscounts,
+	hasActiveFilters,
 	isLoading,
+	isRefreshing,
 	lastSyncedAt,
-	toolbar,
+	permissions,
+	query,
+	statusFilter,
+	tableTypeFilter,
+	discounts,
+	onDiscountTypeFilterChange,
 	onEditDiscount,
+	onQueryChange,
+	onRefresh,
+	onStatusFilterChange,
 	onToggleStatus,
+	onTypeFilterChange,
 	onViewDiscount,
 }: DiscountManagementTableProps) {
-	const table = useDiscountManagementTable(discounts);
+	const table = useDiscountManagementTable(filteredDiscounts);
+	const exportAllRows = discounts.map(createDiscountManagementTableRecord);
+	const exportFilteredRows = filteredDiscounts.map(
+		createDiscountManagementTableRecord,
+	);
+	const tableMinWidthClassName = getDiscountManagementTableMinWidthClassName(
+		table.getVisibleLeafColumns().length,
+	);
 
 	return (
-		<ModuleTable
-			emptyDescription="Add a discount to start mapping promotions to accounts."
-			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-			emptyTitle="No discounts yet"
-			isLoading={isLoading}
-			minWidthClassName="min-w-[68rem]"
-			paginationStorageKey={DiscountManagementTablePaginationStorageKey}
-			lastSyncedAt={lastSyncedAt}
-			table={table}
-			tableTitle="Discount definitions"
-			toolbar={toolbar}
-			renderRow={({ id, original }) => (
-				<DiscountManagementTableRow
-					key={id}
-					discount={original}
-					onEditDiscount={onEditDiscount}
-					onToggleStatus={onToggleStatus}
-					onViewDiscount={onViewDiscount}
-				/>
-			)}
-		/>
+		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
+			<ModuleTable
+				variant="embedded"
+				emptyDescription="Add a discount to start mapping purchase and sales discounts to accounts."
+				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+				emptyTitle="No Discount Records Found"
+				isLoading={isLoading}
+				isSyncing={isRefreshing}
+				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
+				paginationStorageKey={DiscountManagementTablePaginationStorageKey}
+				lastSyncedAt={lastSyncedAt}
+				table={table}
+				tableTitle="Discount definitions"
+				toolbar={
+					<DiscountManagementTableFilters
+						discountTypeFilter={discountTypeFilter}
+						exportAllRows={exportAllRows}
+						exportFilteredRows={exportFilteredRows}
+						hasActiveFilters={hasActiveFilters}
+						isRefreshing={isRefreshing}
+						permissions={permissions}
+						query={query}
+						statusFilter={statusFilter}
+						table={table}
+						typeFilter={tableTypeFilter}
+						onDiscountTypeFilterChange={onDiscountTypeFilterChange}
+						onQueryChange={onQueryChange}
+						onRefresh={onRefresh}
+						onStatusFilterChange={onStatusFilterChange}
+						onTypeFilterChange={onTypeFilterChange}
+					/>
+				}
+				renderRow={(row) => (
+					<DiscountManagementTableRow
+						key={row.id}
+						discount={row.original}
+						permissions={permissions}
+						row={row}
+						onEditDiscount={onEditDiscount}
+						onToggleStatus={onToggleStatus}
+						onViewDiscount={onViewDiscount}
+					/>
+				)}
+			/>
+		</div>
 	);
 }

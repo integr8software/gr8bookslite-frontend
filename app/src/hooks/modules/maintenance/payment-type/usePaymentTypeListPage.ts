@@ -5,21 +5,30 @@ import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/financial
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
 import type {
 	PaymentTypeClassification,
+	PaymentTypeClassificationFilter,
 	PaymentTypeRecord,
+	PaymentTypeStatusFilter,
 	PaymentTypeStatus,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 
 export function usePaymentTypeListPage() {
 	const paymentTypes = usePaymentTypeStore((state) => state.paymentTypes);
+	const addPaymentTypes = usePaymentTypeStore((state) => state.addPaymentTypes);
 	const updatePaymentType = usePaymentTypeStore((state) => state.updatePaymentType);
 	const isLoading = usePaymentTypeStore((state) => state.isLoading);
+	const isRefreshing = usePaymentTypeStore((state) => state.isRefreshing);
 	const lastSyncedAt = usePaymentTypeStore((state) => state.lastSyncedAt);
 	const isMutating = usePaymentTypeStore((state) => state.isMutating);
-	const [searchTerm, setSearchTerm] = useState("");
-	const [typeFilter, setTypeFilter] = useState<"" | PaymentTypeClassification>(
-		"",
+	const permissions = usePaymentTypeStore((state) => state.permissions);
+	const refreshPaymentTypes = usePaymentTypeStore(
+		(state) => state.refreshPaymentTypes,
 	);
-	const [statusFilter, setStatusFilter] = useState<"" | PaymentTypeStatus>("");
+	const statistics = usePaymentTypeStore((state) => state.statistics);
+	const [searchTerm, setSearchTerm] = useState("");
+	const [typeFilter, setTypeFilter] =
+		useState<PaymentTypeClassificationFilter>("");
+	const [statusFilter, setStatusFilter] =
+		useState<PaymentTypeStatusFilter>("Active");
 	const [pendingStatusPaymentType, setPendingStatusPaymentType] =
 		useState<PaymentTypeRecord | null>(null);
 
@@ -39,32 +48,45 @@ export function usePaymentTypeListPage() {
 		});
 	}, [paymentTypes, searchTerm, statusFilter, typeFilter]);
 
+	function resetFilters() {
+		setSearchTerm("");
+		setTypeFilter("");
+		setStatusFilter("Active");
+	}
+
 	function confirmPaymentTypeStatusChange() {
 		if (!pendingStatusPaymentType) {
 			return;
 		}
 
-		updatePaymentType({
+		void updatePaymentType({
 			...pendingStatusPaymentType,
 			status:
 				pendingStatusPaymentType.status === "Active" ? "Inactive" : "Active",
-		});
-		setPendingStatusPaymentType(null);
+		}).then(() => {
+			setPendingStatusPaymentType(null);
+		}).catch(() => undefined);
 	}
 
 	return {
 		confirmPaymentTypeStatusChange,
+		addPaymentTypes,
 		filteredPaymentTypes,
 		isLoading,
+		isRefreshing,
 		lastSyncedAt,
 		isMutating,
 		paymentTypes,
 		pendingStatusPaymentType,
+		permissions,
+		refreshPaymentTypes,
+		resetFilters,
 		searchTerm,
 		setPendingStatusPaymentType,
 		setSearchTerm,
 		setStatusFilter,
 		setTypeFilter,
+		statistics,
 		statusFilter,
 		typeFilter,
 		typeFilterOptions: PaymentTypeOptions,

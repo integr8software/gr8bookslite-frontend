@@ -30,11 +30,13 @@ export function ModuleTable<TData>({
 	table,
 	tableTitle,
 	toolbar,
+	useColumnSizing = false,
 	variant = "standalone",
 }: ModuleTableProps<TData>) {
 	const pathname = usePathname();
 	const [hasLoadedPagination, setHasLoadedPagination] = useState(false);
 	const rows = table.getRowModel().rows;
+	const visibleColumns = table.getVisibleLeafColumns();
 	const visibleColumnCount = table.getVisibleLeafColumns().length;
 	const pagination = table.getState().pagination;
 	const fallbackPageSize = pageSizeOptions[0];
@@ -148,9 +150,22 @@ export function ModuleTable<TData>({
 				<table
 					className={joinClasses(
 						"w-full border-collapse text-left text-sm text-darknavy",
+						useColumnSizing && "table-fixed",
 						minWidthClassName,
 					)}
+					style={
+						useColumnSizing
+							? { minWidth: table.getTotalSize() }
+							: undefined
+					}
 				>
+					{useColumnSizing ? (
+						<colgroup>
+							{visibleColumns.map((column) => (
+								<col key={column.id} style={{ width: column.getSize() }} />
+							))}
+						</colgroup>
+					) : null}
 					<ModuleTableHeader table={table} />
 					<ModuleTableBody
 						emptyDescription={emptyDescription}

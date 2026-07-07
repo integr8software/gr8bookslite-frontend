@@ -1,234 +1,170 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CheckCircle2, Download, Percent, Plus, Power, Upload } from "lucide-react";
-import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/discount-management/useDiscountManagement";
+import { useCallback, useMemo, useState } from "react";
+import {
+	CheckCircle2,
+	CirclePause,
+	Percent,
+	ShoppingCart,
+	Tags,
+	WalletCards,
+} from "lucide-react";
+import { useDiscountManagementListPage } from "@/app/src/hooks/modules/maintenance/discount-management/useDiscountManagementListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
+import type { DiscountManagementDrawerState } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 import {
-	ModuleHeader,
-	moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
-import {
-	ModuleTableResetButton,
-	ModuleTableFilterSelect,
-	ModuleTableSearch,
-	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+	ModuleStatisticCards,
+	type ModuleStatisticCardItem,
+} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { DiscountManagementTable } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementTable";
 import { DiscountManagementDrawer } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementDrawer";
-import type { Discount } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
-
-type DrawerState = { mode: "add" | "edit" | "view"; discount?: Discount } | null;
+import { DiscountManagementHeader } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementHeader";
+import { DiscountManagementImportDialog } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementImportDialog";
+import { DiscountManagementTable } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementTable";
 
 export function DiscountManagementListPage() {
-	const discounts = useDiscountManagementStore((state) => state.discounts);
-	const updateDiscount = useDiscountManagementStore((state) => state.updateDiscount);
-	const isLoading = useDiscountManagementStore((state) => state.isLoading);
-	const lastSyncedAt = useDiscountManagementStore((state) => state.lastSyncedAt);
-	const isMutating = useDiscountManagementStore((state) => state.isMutating);
-	const [drawerState, setDrawerState] = useState<DrawerState>(null);
-	const [pendingStatusDiscount, setPendingStatusDiscount] =
-		useState<Discount | null>(null);
-	const [query, setQuery] = useState("");
-	const [statusFilter, setStatusFilter] = useState("All");
-	const [discountTypeFilter, setDiscountTypeFilter] = useState("All");
+	const page = useDiscountManagementListPage();
+	const [drawerState, setDrawerState] =
+		useState<DiscountManagementDrawerState>(null);
+	const [isImportOpen, setIsImportOpen] = useState(false);
+	const closeDrawer = useCallback(() => setDrawerState(null), []);
 	useMaintenanceAddDrawerSpotlight(
-		() => setDrawerState({ mode: "add" }),
-		() => setDrawerState(null),
+		() => {
+			if (page.permissions.canCreate) {
+				setDrawerState({ mode: "add" });
+			}
+		},
+		closeDrawer,
 	);
-	const filteredDiscounts = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
-
-		return discounts.filter((discount) => {
-			const matchesStatus =
-				statusFilter === "All" || discount.status === statusFilter;
-			const matchesDiscountType =
-				discountTypeFilter === "All" ||
-				discount.discountType === discountTypeFilter;
-
-			if (!matchesStatus || !matchesDiscountType) {
-				return false;
-			}
-
-			if (!normalizedQuery) {
-				return true;
-			}
-
-			return [
-				discount.name ?? discount.description,
-				discount.description,
-				discount.discountType,
-				String(discount.amount),
-				(discount.moduleNames ?? []).join(" "),
-				discount.status,
-				discount.accountCode,
-				discount.accountTitle,
-			]
-				.join(" ")
-				.toLowerCase()
-				.includes(normalizedQuery);
-		});
-	}, [discounts, discountTypeFilter, statusFilter, query]);
-
-	function resetFilters() {
-		setStatusFilter("All");
-		setDiscountTypeFilter("All");
-		setQuery("");
-	}
-
-	function confirmDiscountStatusChange() {
-		if (!pendingStatusDiscount) {
-			return;
-		}
-
-		updateDiscount({
-			...pendingStatusDiscount,
-			status:
-				pendingStatusDiscount.status === "Active" ? "Inactive" : "Active",
-		});
-		setPendingStatusDiscount(null);
-	}
+	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
+		() => [
+			{
+				icon: Percent,
+				iconClassName: "bg-skyblue/20 text-skyblue",
+				label: "Total",
+				summary: "All discount records",
+				value: page.statistics.totalDiscounts,
+			},
+			{
+				icon: CheckCircle2,
+				iconClassName: "bg-emerald-50 text-emerald-700",
+				label: "Active",
+				summary: "Available for selection",
+				value: page.statistics.activeDiscounts,
+			},
+			{
+				icon: CirclePause,
+				iconClassName: "bg-amber-50 text-amber-700",
+				label: "Inactive",
+				summary: "Currently inactive",
+				value: page.statistics.inactiveDiscounts,
+			},
+			{
+				icon: ShoppingCart,
+				iconClassName: "bg-cyan-50 text-cyan-700",
+				label: "Purchases",
+				summary: "Purchase discounts",
+				value: page.statistics.purchaseDiscounts,
+			},
+			{
+				icon: WalletCards,
+				iconClassName: "bg-violet-50 text-violet-700",
+				label: "Sales",
+				summary: "Sales discounts",
+				value: page.statistics.salesDiscounts,
+			},
+			{
+				icon: Tags,
+				iconClassName: "bg-slate-100 text-slate-700",
+				label: "Percentage Type",
+				summary: "Percentage discounts",
+				value: page.statistics.percentageDiscounts,
+			},
+		],
+		[page.statistics],
+	);
+	const hasActiveFilters =
+		page.query.trim().length > 0 ||
+		page.typeFilter !== "All" ||
+		page.discountTypeFilter !== "All" ||
+		page.statusFilter !== "Active";
 
 	return (
 		<section className="grid gap-5">
-			<ModuleHeader
-				variant="panel"
-				titleAs="h1"
-				title="Discount Management"
-				description="Maintain discount definitions and map them to chart of accounts."
-				eyebrow={
-					<>
-						<Percent className="h-3.5 w-3.5" aria-hidden="true" />
-						Accounting master data
-					</>
-				}
-				actions={<DiscountManagementHeaderActions onAdd={() => setDrawerState({ mode: "add" })} />}
+			<DiscountManagementHeader
+				onAdd={() => setDrawerState({ mode: "add" })}
+				onImport={() => setIsImportOpen(true)}
+				permissions={page.permissions}
 			/>
-
 			<ModuleStatisticCards
-				items={[
-					{
-						helper: "All discount definitions",
-						icon: Percent,
-						label: "Total Discounts",
-						value: discounts.length,
-					},
-					{
-						helper: "Available for transactions",
-						icon: CheckCircle2,
-						label: "Active Discounts",
-						tone: "emerald",
-						value: discounts.filter((discount) =>
-							discount.status === "Active",
-						).length,
-					},
-					{
-						helper: "Hidden from new transactions",
-						icon: Power,
-						label: "Inactive Discounts",
-						tone: "amber",
-						value: discounts.filter((discount) =>
-							discount.status === "Inactive",
-						).length,
-					},
-				]}
+				items={statisticCards}
+				isLoading={page.isLoading}
+				className="xl:grid-cols-6"
 			/>
 
 			<DiscountManagementTable
-				discounts={filteredDiscounts}
-				isLoading={isLoading}
-				lastSyncedAt={lastSyncedAt}
-				toolbar={
-					<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,2.5fr)_minmax(13rem,1fr)_minmax(13rem,1fr)_minmax(11rem,1fr)]">
-						<ModuleTableSearch
-							label="Search discounts"
-							value={query}
-							onChange={setQuery}
-							placeholder="Search by name, description, value, module, or account"
-						/>
-						<ModuleTableFilterSelect
-							label="Discount Type"
-							value={discountTypeFilter}
-							options={[
-								{ label: "All", value: "All" },
-								{ label: "Percentage", value: "Percentage" },
-								{ label: "Fixed", value: "Fixed" },
-							]}
-							onChange={setDiscountTypeFilter}
-						/>
-						<ModuleTableFilterSelect
-							label="Status"
-							value={statusFilter}
-							options={[
-								{ label: "All", value: "All" },
-								{ label: "Active", value: "Active" },
-								{ label: "Inactive", value: "Inactive" },
-							]}
-							onChange={setStatusFilter}
-						/>
-						<ModuleTableResetButton onClick={resetFilters}>
-							Reset
-						</ModuleTableResetButton>
-					</ModuleTableToolbar>
+				discountTypeFilter={page.discountTypeFilter}
+				filteredDiscounts={page.filteredDiscounts}
+				hasActiveFilters={hasActiveFilters}
+				isLoading={page.isLoading}
+				isRefreshing={page.isRefreshing}
+				lastSyncedAt={page.lastSyncedAt}
+				permissions={page.permissions}
+				query={page.query}
+				statusFilter={page.statusFilter}
+				tableTypeFilter={page.typeFilter}
+				discounts={page.discounts}
+				onDiscountTypeFilterChange={page.setDiscountTypeFilter}
+				onEditDiscount={(discount) =>
+					setDrawerState({ discount, mode: "edit" })
 				}
-				onEditDiscount={(discount) => setDrawerState({ mode: "edit", discount })}
-				onToggleStatus={setPendingStatusDiscount}
-				onViewDiscount={(discount) => setDrawerState({ mode: "view", discount })}
+				onQueryChange={page.setQuery}
+				onRefresh={page.refreshDiscounts}
+				onStatusFilterChange={page.setStatusFilter}
+				onToggleStatus={page.setPendingStatusDiscount}
+				onTypeFilterChange={page.setTypeFilter}
+				onViewDiscount={(discount) =>
+					setDrawerState({ discount, mode: "view" })
+				}
 			/>
-			<DiscountManagementDrawer discount={drawerState?.discount} isOpen={Boolean(drawerState)} mode={drawerState?.mode ?? "add"} onClose={() => setDrawerState(null)} />
+			<DiscountManagementDrawer
+				discount={drawerState?.discount}
+				isOpen={Boolean(drawerState)}
+				mode={drawerState?.mode ?? "add"}
+				onClose={closeDrawer}
+			/>
+			{page.permissions.canImport ? (
+				<DiscountManagementImportDialog
+					existingDiscounts={page.discounts}
+					isOpen={isImportOpen}
+					onClose={() => setIsImportOpen(false)}
+					onImportDiscounts={page.addDiscounts}
+				/>
+			) : null}
 			<AppDialog
-				isOpen={Boolean(pendingStatusDiscount)}
-				isPending={isMutating}
+				isOpen={Boolean(page.pendingStatusDiscount)}
+				isPending={page.isMutating}
 				title={
-					pendingStatusDiscount?.status === "Active"
-						? "Set discount inactive?"
-						: "Reactivate discount?"
+					page.pendingStatusDiscount?.status === "Active"
+						? "Deactivate discount?"
+						: "Activate discount?"
 				}
 				description={
-					pendingStatusDiscount?.status === "Active"
-						? `${pendingStatusDiscount.name} will remain in history and references, but will no longer be active for normal selection.`
-						: `${pendingStatusDiscount?.name ?? "This discount"} will be available for selection again.`
+					page.pendingStatusDiscount?.status === "Active"
+						? `${page.pendingStatusDiscount.name} will remain in history and references, but will no longer be active for normal selection.`
+						: `${page.pendingStatusDiscount?.name ?? "This discount"} will be available for normal selection again.`
 				}
 				confirmLabel={
-					pendingStatusDiscount?.status === "Active"
-						? "Set Inactive"
-						: "Reactivate"
+					page.pendingStatusDiscount?.status === "Active"
+						? "Deactivate"
+						: "Activate"
 				}
-				tone={pendingStatusDiscount?.status === "Active" ? "danger" : "success"}
-				onCancel={() => setPendingStatusDiscount(null)}
-				onConfirm={confirmDiscountStatusChange}
+				tone={
+					page.pendingStatusDiscount?.status === "Active" ? "danger" : "success"
+				}
+				onCancel={() => page.setPendingStatusDiscount(null)}
+				onConfirm={page.confirmDiscountStatusChange}
 			/>
 		</section>
-	);
-}
-
-function DiscountManagementHeaderActions({ onAdd }: { onAdd: () => void }) {
-	return (
-		<>
-			<button
-				type="button"
-				className={moduleHeaderActionClassNames.secondary}
-			>
-				<Upload className="h-4 w-4" aria-hidden="true" />
-				Import
-			</button>
-			<button
-				type="button"
-				className={moduleHeaderActionClassNames.secondary}
-			>
-				<Download className="h-4 w-4" aria-hidden="true" />
-				Export
-			</button>
-			<button
-				type="button"
-				onClick={onAdd}
-				className={moduleHeaderActionClassNames.primary}
-			>
-				<Plus className="h-4 w-4" aria-hidden="true" />
-				Add Discount
-			</button>
-		</>
 	);
 }

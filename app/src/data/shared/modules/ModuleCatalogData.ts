@@ -18,6 +18,7 @@ const PermissionCodeByNavigationKey: Record<string, string> = {
   "dashboard-overview": "DO",
   "maintenance-charts-of-accounts": "COA",
   "maintenance-bank-masterfile": "BM",
+  "maintenance-default-account": "DA",
   "maintenance-party-management": "PM",
   "maintenance-items": "I",
   "maintenance-item-category": "IC",
@@ -110,6 +111,13 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "Bank Masterfile",
         "/maintenance/bank-masterfile",
         "maintenance.bankMasterfile",
+        "accounting",
+      ),
+      moduleItem(
+        "maintenance-default-account",
+        "Default Accounts",
+        "/maintenance/default-account",
+        "maintenance.defaultAccount",
         "accounting",
       ),
       moduleItem(

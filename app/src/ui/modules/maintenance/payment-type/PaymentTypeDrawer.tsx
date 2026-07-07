@@ -80,8 +80,12 @@ function PaymentTypeDrawerPanel({
 			formId={formId}
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
-			isSaving={page.isMutating}
+			isSaving={page.isSubmitting}
 			onClose={onClose}
+			savingLabel={
+				mode === "edit" ? "Updating Payment Type..." : "Saving Payment Type..."
+			}
+			submitLabel={mode === "edit" ? "Update Payment Type" : "Save Payment Type"}
 			title={copy.title}
 		>
 			<form id={formId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">

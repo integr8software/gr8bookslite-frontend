@@ -19,6 +19,10 @@ export function validateDiscountManagementForm(
 		errors.description = "Description must be 500 characters or fewer.";
 	}
 
+	if (!values.type) {
+		errors.type = "Select Purchase or Sales.";
+	}
+
 	if (!values.discountType) {
 		errors.discountType = "Select discount type.";
 	}
@@ -31,16 +35,8 @@ export function validateDiscountManagementForm(
 		errors.amount = "Enter a percentage from 0 to 100.";
 	}
 
-	if (values.moduleIds.length === 0) {
-		errors.moduleIds = "Select at least one module.";
-	}
-
 	if (!values.status) {
 		errors.status = "Select status.";
-	}
-
-	if (!values.accountId) {
-		errors.accountId = "Select an account.";
 	}
 
 	return errors;

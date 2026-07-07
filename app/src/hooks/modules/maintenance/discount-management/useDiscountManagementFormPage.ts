@@ -13,13 +13,11 @@ import {
 	DiscountManagementInitialFormValues,
 	createDiscountFromForm,
 	createDiscountManagementFormValues,
+	getDiscountAccountCode,
+	getDiscountAccountGroupPath,
+	getDiscountAccountTitle,
 	updateDiscountFromForm,
 } from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
-import {
-	findModuleChartAccount,
-	getModuleChartAccounts,
-} from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { getMaintenanceModuleOptions } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import type {
 	DiscountManagementActionMode,
 	Discount,
@@ -34,20 +32,6 @@ type DiscountManagementFormPageOptions = {
 	mode?: DiscountManagementActionMode;
 	onSaved?: () => void;
 };
-
-const DiscountManagementExcludedModuleKeys = [
-	"dashboard-overview",
-	"maintenance-charts-of-accounts",
-	"maintenance-discount-management",
-	"cash-receipt-bank-reconciliation",
-	"maintenance-users",
-	"maintenance-user-role",
-	"maintenance-approval",
-	"maintenance-audit",
-	"transaction-number-setup",
-	"system-administration-multi-currency-setup",
-	"maintenance-mail",
-];
 
 export function useDiscountManagementFormPage(
 	options: DiscountManagementFormPageOptions = {},
@@ -65,17 +49,6 @@ export function useDiscountManagementFormPage(
 	const existingDiscount = options.existingDiscount ?? discounts.find(
 		(discount) => discount.id === params.recordId,
 	);
-	const moduleOptions = useMemo(
-		() => getMaintenanceModuleOptions(DiscountManagementExcludedModuleKeys),
-		[],
-	);
-	const accountOptions = useMemo(
-		() =>
-			getModuleChartAccounts({
-				moduleKey: "maintenance-discount-management",
-			}),
-		[],
-	);
 	const [values, setValues] = useState<DiscountManagementFormValues>(() =>
 		existingDiscount
 			? createDiscountManagementFormValues(existingDiscount)
@@ -83,10 +56,13 @@ export function useDiscountManagementFormPage(
 	);
 	const [errors, setErrors] = useState<DiscountManagementFormErrors>({});
 	const isReadonly = mode === "view";
-
-	const selectedAccount = findModuleChartAccount(
-		values.accountId,
-		accountOptions,
+	const generatedAccount = useMemo(
+		() => ({
+			accountCode: getDiscountAccountCode(values.type, values.name),
+			accountGroupPath: getDiscountAccountGroupPath(values.type),
+			accountTitle: getDiscountAccountTitle(values.type, values.name),
+		}),
+		[values.name, values.type],
 	);
 
 	function updateField(
@@ -115,23 +91,7 @@ export function useDiscountManagementFormPage(
 		);
 	}
 
-	function handleAccountChange(accountId: string) {
-		if (isReadonly) {
-			return;
-		}
-
-		updateField("accountId", accountId);
-	}
-
-	function handleModuleChange(nextValue: string | string[]) {
-		if (isReadonly) {
-			return;
-		}
-
-		updateField("moduleIds", Array.isArray(nextValue) ? nextValue : [nextValue]);
-	}
-
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
 		const nextErrors = validateDiscountManagementForm(values);
@@ -143,19 +103,14 @@ export function useDiscountManagementFormPage(
 		}
 
 		if (mode === "edit" && existingDiscount) {
-			updateDiscount(
-				updateDiscountFromForm(
-					existingDiscount,
-					values,
-					selectedAccount,
-					moduleOptions,
-				),
+			await updateDiscount(
+				updateDiscountFromForm(existingDiscount, values),
 			);
 		} else if (mode === "edit") {
 			toast.error("Could not find the discount to update.");
 			return;
 		} else {
-			addDiscount(createDiscountFromForm(values, selectedAccount, moduleOptions));
+			await addDiscount(createDiscountFromForm(values));
 		}
 
 		options.onSaved?.();
@@ -163,19 +118,15 @@ export function useDiscountManagementFormPage(
 	}
 
 	return {
-		accountOptions,
 		errors,
 		existingDiscount,
-		handleAccountChange,
+		generatedAccount,
 		handleInputChange,
-		handleModuleChange,
 		handleSubmit,
 		isMutating,
 		isReadonly,
 		mode,
-		moduleOptions,
 		needsRecord: mode === "edit" || mode === "view",
-		selectedAccount,
 		values,
 	};
 }

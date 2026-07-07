@@ -65,6 +65,12 @@ export function updateTermManagementFromForm(
 	};
 }
 
+export function createExistingTermNameMap(terms: TermManagement[]) {
+	return new Map(
+		terms.map((term) => [normalizeTermName(term.name), term.name]),
+	);
+}
+
 export function createBlankImportRow(rowNumber: number): TermImportPreviewRow {
 	return {
 		cellErrors: {},
@@ -371,6 +377,25 @@ export function formatFileSize(bytes: number) {
 	const megabytes = kilobytes / 1024;
 
 	return `${megabytes.toFixed(megabytes >= 10 ? 0 : 1)} MB`;
+}
+
+export function isTermImportGridPasteTarget(target: EventTarget | null) {
+	return !(
+		target instanceof HTMLInputElement ||
+		target instanceof HTMLSelectElement ||
+		target instanceof HTMLTextAreaElement
+	);
+}
+
+export function getTermManagementTableMinWidthClassName(
+	visibleColumnCount: number,
+) {
+	if (visibleColumnCount >= 10) return "min-w-[136rem]";
+	if (visibleColumnCount === 9) return "min-w-[122rem]";
+	if (visibleColumnCount === 8) return "min-w-[108rem]";
+	if (visibleColumnCount === 7) return "min-w-[94rem]";
+	if (visibleColumnCount === 6) return "min-w-[80rem]";
+	return "min-w-[64rem]";
 }
 
 export function parseTermImportTabularRows(text: string) {

@@ -2,35 +2,14 @@
 
 import { Search } from "lucide-react";
 import { TermManagementTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+import { getTermManagementTableMinWidthClassName } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
 import { useTermManagementTable } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagementTable";
-import type { TermManagementPermissions } from "@/app/src/services/modules/maintenance/term-management/TermManagementApi";
 import type {
-	TermManagement,
-	TermManagementStatus,
+	TermManagementTableProps,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { TermManagementTableFilters } from "@/app/src/ui/modules/maintenance/term-management/TermManagementTableFilters";
 import { TermManagementTableRow } from "@/app/src/ui/modules/maintenance/term-management/TermManagementTableRow";
-
-type TermManagementTableProps = {
-	datemodeFilter: string;
-	filteredTerms: TermManagement[];
-	hasActiveFilters: boolean;
-	isLoading: boolean;
-	isRefreshing: boolean;
-	lastSyncedAt?: number | string | Date | null;
-	query: string;
-	statusFilter: "" | TermManagementStatus;
-	terms: TermManagement[];
-	permissions: TermManagementPermissions;
-	onDatemodeFilterChange: (value: string) => void;
-	onEditTerm: (term: TermManagement) => void;
-	onQueryChange: (value: string) => void;
-	onRefresh: () => void;
-	onStatusFilterChange: (value: "" | TermManagementStatus) => void;
-	onToggleStatus: (term: TermManagement) => void;
-	onViewTerm: (term: TermManagement) => void;
-};
 
 export function TermManagementTable({
 	datemodeFilter,
@@ -52,7 +31,7 @@ export function TermManagementTable({
 	onViewTerm,
 }: TermManagementTableProps) {
 	const table = useTermManagementTable(filteredTerms);
-	const tableMinWidthClassName = getTableMinWidthClassName(
+	const tableMinWidthClassName = getTermManagementTableMinWidthClassName(
 		table.getVisibleLeafColumns().length,
 	);
 
@@ -100,13 +79,4 @@ export function TermManagementTable({
 			/>
 		</div>
 	);
-}
-
-function getTableMinWidthClassName(visibleColumnCount: number) {
-	if (visibleColumnCount >= 10) return "min-w-[136rem]";
-	if (visibleColumnCount === 9) return "min-w-[122rem]";
-	if (visibleColumnCount === 8) return "min-w-[108rem]";
-	if (visibleColumnCount === 7) return "min-w-[94rem]";
-	if (visibleColumnCount === 6) return "min-w-[80rem]";
-	return "min-w-[64rem]";
 }

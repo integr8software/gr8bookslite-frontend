@@ -20,6 +20,7 @@ export type ModuleTableProps<TData> = {
 	table: Table<TData>;
 	tableTitle?: ReactNode;
 	toolbar?: ReactNode;
+	useColumnSizing?: boolean;
 	variant?: "embedded" | "standalone";
 };
 

@@ -233,6 +233,7 @@ export function useChartsOfAccounts() {
             id: "actions",
             header: column.label,
             enableSorting: false,
+            size: column.size,
             meta: { className: column.className, label: column.label },
           };
         }
@@ -241,6 +242,7 @@ export function useChartsOfAccounts() {
           column.key,
           column.label,
           column.className ?? "",
+          column.size,
           column.sortable ?? true,
         );
       }),
@@ -459,6 +461,7 @@ function createAccountColumn(
   id: ChartsOfAccountsTableColumnKey,
   header: string,
   className: string,
+  size: number,
   enableSorting = true,
 ): ColumnDef<FlattenedChartAccount> {
   return {
@@ -471,6 +474,7 @@ function createAccountColumn(
           ? AccountLevelLabels[row.account.accountLevel]
           : row.account[id],
     enableSorting,
+    size,
     sortingFn: "alphanumeric",
     meta: { className, label: header },
   };

@@ -36,10 +36,10 @@ export function MultiCurrencySetupTable({
 			emptyTitle="No currency setups found"
 			isLoading={isLoading}
 			lastSyncedAt={lastSyncedAt}
-			minWidthClassName="min-w-[72rem]"
+			minWidthClassName="min-w-[76rem]"
 			paginationStorageKey={MultiCurrencySetupTablePaginationStorageKey}
 			table={table}
-			tableTitle="Currency setups"
+			tableTitle="Currencies and daily exchange rates"
 			toolbar={toolbar}
 			renderRow={({ id, original }) => (
 				<MultiCurrencySetupTableRow

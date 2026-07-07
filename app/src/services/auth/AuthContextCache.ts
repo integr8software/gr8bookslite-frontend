@@ -11,6 +11,7 @@ const TenantScopedQueryPrefixes = [
   "bank-masterfile",
   "branch-management",
   "cash-disbursement",
+  "default-account",
   "discounts",
   "discount-management",
   "inventory",

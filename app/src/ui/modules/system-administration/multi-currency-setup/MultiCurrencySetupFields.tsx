@@ -104,7 +104,7 @@ export function MultiCurrencySetupFields({
 						/>
 					</FormField>
 
-					<FormField label="Status" error={errors.status} required>
+					<FormField label="Availability" error={errors.status} required>
 						<select
 							name="status"
 							value={values.status}
@@ -114,7 +114,7 @@ export function MultiCurrencySetupFields({
 						>
 							{MultiCurrencySetupStatusOptions.map((status) => (
 								<option key={status} value={status}>
-									{status}
+									{status === "Active" ? "Enabled" : "Disabled"}
 								</option>
 							))}
 						</select>
@@ -142,22 +142,22 @@ export function MultiCurrencySetupFields({
 						helper={getCurrencyLabel(values.baseCurrencyCode)}
 					/>
 					<ReadonlyRate
-						label="Original Exchange Rate"
+						label="Configured Daily Rate"
 						value={originalExchangeRateDisplay}
 						helper={
 							hasCurrencyPairChanged
 								? "Will refresh when saved"
-								: `Captured for ${values.targetCurrencyCode}`
+								: `1 ${values.targetCurrencyCode} in ${values.baseCurrencyCode}`
 						}
 					/>
 					<ReadonlyRate
-						label="Fetched Exchange Rate"
+						label="Frankfurter Rate"
 						value={
 							isRateLoading
 								? "Fetching..."
 								: fetchedExchangeRateDisplay
 						}
-						helper={`1 ${values.baseCurrencyCode} to ${values.targetCurrencyCode}`}
+						helper={`1 ${values.targetCurrencyCode} in ${values.baseCurrencyCode}`}
 					/>
 					<ReadonlyRate
 						label="Inverse Rate"
@@ -166,7 +166,7 @@ export function MultiCurrencySetupFields({
 								? "Fetching..."
 								: inverseExchangeRateDisplay
 						}
-						helper={`1 ${values.targetCurrencyCode} to ${values.baseCurrencyCode}`}
+						helper={`1 ${values.baseCurrencyCode} in ${values.targetCurrencyCode}`}
 					/>
 				</div>
 				{fetchedRate ? (

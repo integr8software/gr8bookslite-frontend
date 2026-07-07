@@ -31,7 +31,6 @@ import {
 import {
   DisbursementVoucherCopyFromRecords,
   DisbursementVoucherCopySources,
-  DisbursementVoucherBankAccounts,
   applyCopyFromRecordsToDisbursementVoucherForm,
   createBlankDisbursementLineEntry,
   createDisbursementVoucherStatusHistoryEntry,
@@ -49,6 +48,8 @@ import {
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
+import { useBankMasterfileStore } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfile";
+import { useDefaultAccountStore } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccount";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import {
@@ -76,6 +77,7 @@ import {
 import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
 import type { AppDisbursementTypeRecord } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
 import type {
+  DisbursementVoucherBankAccount,
   DisbursementLineEntry,
   DisbursementTaxDetails,
   DisbursementTransactionRecord,
@@ -86,6 +88,8 @@ import type {
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
+import type { BankMasterfile } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
+import type { DefaultAccount } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherActionHeader";
 import { DisbursementEntryImportDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementEntryImportDialog";
@@ -213,6 +217,12 @@ function DisbursementVoucherActionInner() {
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
   const paymentTypeStore = usePaymentTypeStore();
   const paymentTypeRecords = paymentTypeStore.paymentTypes;
+  const bankAccounts = useBankMasterfileStore((state) =>
+    createVoucherBankAccounts(state.banks),
+  );
+  const defaultAccounts = useDefaultAccountStore(
+    (state) => state.defaultAccounts,
+  );
   const [disbursementTypeRecords, setDisbursementTypeRecords] = useState(
     InitialDisbursementTypeRecords,
   );
@@ -440,6 +450,19 @@ function DisbursementVoucherActionInner() {
     toast.success(`${importedEntries.length} accounting entries imported.`);
   }
 
+  function handleReplaceLineEntries(nextEntries: DisbursementLineEntry[]) {
+    const amount = nextEntries
+      .filter((entry) => !isPaymentCreditEntry(entry))
+      .reduce((sum, entry) => sum + Number(entry.debit || 0), 0);
+
+    updateField("lineEntries", nextEntries);
+    updateField("amount", amount > 0 ? amount.toFixed(2) : "");
+    updateField(
+      "taxDetails",
+      syncTaxDetailsAmount(values.taxDetails, amount, values.taxRate),
+    );
+  }
+
   function handleOpenEntryTaxEditor(entryId: string) {
     const lineEntry = values.lineEntries.find((entry) => entry.id === entryId);
 
@@ -608,14 +631,11 @@ function DisbursementVoucherActionInner() {
       <VoucherDetailsPanel
         errors={errors}
         isReadonly={isReadonly}
+        bankAccounts={bankAccounts}
         paymentTypeRecords={paymentTypeRecords}
         transactions={transactions}
         values={values}
         onOpenPaymentTypeDialog={() => setIsPaymentTypeDialogOpen(true)}
-        onOpenTaxEditor={() => {
-          setTaxEditorTarget({ kind: "voucher" });
-          setTaxEditorValues(createTaxEditorValue(values.taxDetails, values.taxRate));
-        }}
         onUpdateField={updateField}
       />
 
@@ -623,6 +643,13 @@ function DisbursementVoucherActionInner() {
         errors={errors}
         entries={values.lineEntries}
         isReadonly={isReadonly}
+        defaultAccounts={defaultAccounts}
+        paymentMethod={values.paymentMethod}
+        paymentTypeRecord={
+          paymentTypeRecords.find(
+            (record) => record.paymentType === values.paymentMethod,
+          ) ?? null
+        }
         onAddEntries={handleAddEntries}
         onAddDisbursementType={() => setIsDisbursementTypeDrawerOpen(true)}
         onClearEntries={handleClearEntries}
@@ -631,6 +658,7 @@ function DisbursementVoucherActionInner() {
         onImportEntries={handleImportEntries}
         onMoveEntry={handleMoveEntry}
         onOpenEntryTaxEditor={handleOpenEntryTaxEditor}
+        onReplaceEntries={handleReplaceLineEntries}
         onUpdateEntry={handleUpdateEntry}
         onUpdateEntryFields={handleUpdateEntryFields}
         totalCredit={totalCredit}
@@ -712,6 +740,11 @@ function createInitialDisbursementVoucherFormValues({
   voucher?: DisbursementVoucherRecord;
 }) {
   const defaultValues = createDisbursementVoucherFormValues(transaction, voucher);
+
+  if (mode === "add") {
+    return defaultValues;
+  }
+
   const session = readAccountingGridSession();
 
   if (session?.mode !== mode) {
@@ -815,40 +848,34 @@ function getVoucherCurrencyExchangeRate(currencyCode: string) {
   return (matchedRate?.originalExchangeRate ?? 1).toFixed(4);
 }
 
+function createVoucherBankAccounts(
+  banks: BankMasterfile[],
+): DisbursementVoucherBankAccount[] {
+  return banks
+    .filter((bank) => bank.status === "Active")
+    .map((bank) => ({
+      id: bank.id,
+      accountCode: bank.accountCode,
+      accountTitle: bank.accountName,
+      bankName: bank.bankName,
+      branch: bank.branch,
+      accountName: bank.accountName,
+      accountNo: bank.accountNumber,
+    }));
+}
+
 function createVoucherPaymentTypeOptions({
-  currentPaymentMethod,
   paymentTypeRecords,
-  transactions,
 }: {
-  currentPaymentMethod: string;
   paymentTypeRecords: AppPaymentTypeRecord[];
-  transactions: DisbursementTransactionRecord[];
 }): AppAdvancedDropdownOption[] {
-  const options = paymentTypeRecords
+  return paymentTypeRecords
     .filter((record) => record.status === "Active")
     .map((record) => ({
       label: record.type,
       name: record.paymentType,
       value: record.paymentType,
     }));
-
-  transactions.forEach((transaction) => {
-    addUniqueDropdownOption(options, {
-      label: inferVoucherPaymentTypeClassification(transaction.paymentMethod),
-      name: transaction.paymentMethod,
-      value: transaction.paymentMethod,
-    });
-  });
-
-  if (currentPaymentMethod.trim()) {
-    addUniqueDropdownOption(options, {
-      label: inferVoucherPaymentTypeClassification(currentPaymentMethod),
-      name: currentPaymentMethod,
-      value: currentPaymentMethod,
-    });
-  }
-
-  return options;
 }
 
 function createVoucherPartyOptions({
@@ -922,38 +949,6 @@ function findPartyRecordByName(
   );
 }
 
-function inferVoucherPaymentTypeClassification(paymentMethod: string) {
-  const normalizedPaymentMethod = paymentMethod.toLowerCase();
-
-  if (normalizedPaymentMethod.includes("debit")) {
-    return "Debit";
-  }
-
-  if (
-    normalizedPaymentMethod.includes("check") ||
-    normalizedPaymentMethod.includes("cheque")
-  ) {
-    return normalizedPaymentMethod.includes("manager")
-      ? "Multiple Check"
-      : "With Bank";
-  }
-
-  if (
-    normalizedPaymentMethod.includes("instapay") ||
-    normalizedPaymentMethod.includes("ewallet") ||
-    normalizedPaymentMethod.includes("wallet") ||
-    normalizedPaymentMethod.includes("online")
-  ) {
-    return "Online Payment";
-  }
-
-  if (normalizedPaymentMethod.includes("cash")) {
-    return "Cash";
-  }
-
-  return "Bank Transfer";
-}
-
 function createTaxEditorValue(
   taxDetails: DisbursementTaxDetails,
   taxRate: string,
@@ -1017,6 +1012,35 @@ function createAccountingChartAccountOptions(
   return [...chartAccounts, ...customAccounts];
 }
 
+function createDefaultAccountExpenseOptions(
+  defaultAccounts: DefaultAccount[],
+): ModuleChartAccount[] {
+  return defaultAccounts
+    .filter((account) => account.status === "Active" && account.type === "EXPENSE")
+    .flatMap((account) =>
+      account.generatedAccounts
+        .filter(
+          (generatedAccount) =>
+            generatedAccount.role === "EXPENSE" &&
+            generatedAccount.status === "ACTIVE",
+        )
+        .map<ModuleChartAccount>((generatedAccount) => ({
+          accountCategory:
+            generatedAccount.accountNature ?? generatedAccount.role,
+          accountName: generatedAccount.accountTitle,
+          accountNumber: generatedAccount.accountCode,
+          accountType: generatedAccount.accountType ?? "Expenses",
+          description: account.defaultAccountName,
+          id: generatedAccount.chartAccountId,
+          normalBalance: "Debit",
+          statementGroup: "Income Statement",
+          statementSection:
+            generatedAccount.accountNature ?? "Default Account Expense",
+          status: "Active",
+        })),
+    );
+}
+
 function normalizeDisbursementLineEntryFields(
   entry: DisbursementLineEntry,
 ): DisbursementLineEntry {
@@ -1073,19 +1097,19 @@ function VoucherWorkflowSkeleton() {
 }
 
 function VoucherDetailsPanel({
+  bankAccounts,
   errors,
   isReadonly,
   onOpenPaymentTypeDialog,
-  onOpenTaxEditor,
   onUpdateField,
   paymentTypeRecords,
   transactions,
   values,
 }: {
+  bankAccounts: DisbursementVoucherBankAccount[];
   errors: DisbursementVoucherFormErrors;
   isReadonly: boolean;
   onOpenPaymentTypeDialog: () => void;
-  onOpenTaxEditor: () => void;
   onUpdateField: <TKey extends keyof DisbursementVoucherFormValues>(
     field: TKey,
     value: DisbursementVoucherFormValues[TKey],
@@ -1120,23 +1144,11 @@ function VoucherDetailsPanel({
   const paymentTypeOptions = useMemo<AppAdvancedDropdownOption[]>(
     () =>
       createVoucherPaymentTypeOptions({
-        currentPaymentMethod: values.paymentMethod,
         paymentTypeRecords,
-        transactions,
       }),
-    [paymentTypeRecords, transactions, values.paymentMethod],
+    [paymentTypeRecords],
   );
   const currencyOptions = useMemo(() => createVoucherCurrencyDropdownOptions(), []);
-
-  function updateAmount(nextAmount: string) {
-    const amount = parseMoneyNumberInput(nextAmount);
-
-    onUpdateField("amount", nextAmount);
-    onUpdateField(
-      "taxDetails",
-      syncTaxDetailsAmount(values.taxDetails, amount, values.taxRate),
-    );
-  }
 
   function updateCurrency(nextCurrency: string) {
     onUpdateField(
@@ -1165,10 +1177,50 @@ function VoucherDetailsPanel({
     });
   }
 
-  function updateBankAccount(accountCode: string) {
-    const bankAccount = DisbursementVoucherBankAccounts.find(
-      (account) => account.accountCode === accountCode,
+  function syncCashEntriesForPaymentType(paymentMethod: string) {
+    const paymentTypeRecord =
+      paymentTypeRecords.find((record) => record.paymentType === paymentMethod) ??
+      null;
+    const isCashPayment =
+      paymentTypeRecord?.type === "Cash" ||
+      paymentMethod.trim().toLowerCase() === "cash";
+
+    if (!isCashPayment) {
+      const currentBankAccount =
+        bankAccounts.find(
+          (account) =>
+            account.accountCode === values.paymentDetails.bankAccountCode,
+        ) ?? null;
+
+      onUpdateField(
+        "lineEntries",
+        currentBankAccount
+          ? createPaymentBalancedEntries(values.lineEntries, {
+            accountCode: currentBankAccount.accountCode,
+            accountName: currentBankAccount.accountTitle,
+            particulars: `Settlement via ${paymentMethod || "payment"}`,
+          })
+          : values.lineEntries.filter((entry) => !isPaymentCreditEntry(entry)),
+      );
+      return;
+    }
+
+    const expenseEntry = values.lineEntries.find((entry) => !isCashInHandEntry(entry));
+
+    if (!expenseEntry) {
+      return;
+    }
+
+    onUpdateField(
+      "lineEntries",
+      createCashExpenseBalancedEntries(values.lineEntries, expenseEntry.id, {}),
     );
+  }
+
+  function updateBankAccount(accountCode: string) {
+    const bankAccount = bankAccounts.find(
+      (account) => account.accountCode === accountCode,
+    ) ?? null;
 
     if (!bankAccount) {
       updatePaymentDetails({
@@ -1190,18 +1242,15 @@ function VoucherDetailsPanel({
       bankBranch: bankAccount.branch,
       bankName: bankAccount.bankName,
     });
+    onUpdateField(
+      "lineEntries",
+      createPaymentBalancedEntries(values.lineEntries, {
+        accountCode: bankAccount.accountCode,
+        accountName: bankAccount.accountTitle,
+        particulars: `Settlement via ${values.paymentMethod || "payment"}`,
+      }),
+    );
   }
-
-  const amountTaxSummary = [
-    values.taxDetails.vatPercent > 0
-      ? `VAT ${values.taxDetails.vatPercent}%`
-      : "",
-    values.taxDetails.ewtPercent > 0
-      ? `EWT ${values.taxDetails.ewtPercent}%`
-      : "",
-  ]
-    .filter(Boolean)
-    .join(" / ");
 
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
@@ -1236,6 +1285,7 @@ function VoucherDetailsPanel({
                     transferToBank: "",
                     transferTo: "",
                   });
+                  syncCashEntriesForPaymentType(paymentMethod);
                 }}
               />
               <button
@@ -1317,35 +1367,6 @@ function VoucherDetailsPanel({
             </div>
           </FieldShell>
           <FieldShell
-            controlId="disbursement-voucher-amount"
-            label="Amount"
-            error={errors.amount}
-          >
-            <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
-              <MoneyNumberField
-                id="disbursement-voucher-amount"
-                value={values.amount}
-                readOnly={isReadonly}
-                onValueChange={updateAmount}
-                className={`${FieldClassName} text-right sm:rounded-r-none`}
-              />
-              <button
-                type="button"
-                onClick={onOpenTaxEditor}
-                disabled={isReadonly}
-                className={AttachedTaxButtonClassName}
-              >
-                <Plus className="h-4 w-4" aria-hidden="true" />
-                Tax
-              </button>
-            </div>
-            {amountTaxSummary ? (
-              <span className="mt-1 block text-xs text-darknavy/45">
-                {amountTaxSummary}
-              </span>
-            ) : null}
-          </FieldShell>
-          <FieldShell
             controlId="disbursement-voucher-remarks"
             label="Remarks"
             error={errors.remarks}
@@ -1423,6 +1444,7 @@ function VoucherDetailsPanel({
         </div>
       </div>
       <PaymentTypeDetailsPanel
+        bankAccounts={bankAccounts}
         isReadonly={isReadonly}
         paymentType={values.paymentMethod}
         paymentTypeRecord={
@@ -1450,6 +1472,7 @@ function VoucherDetailsPanel({
 }
 
 function PaymentTypeDetailsPanel({
+  bankAccounts,
   isReadonly,
   onUpdateBankAccount,
   onUpdatePaymentDetails,
@@ -1457,6 +1480,7 @@ function PaymentTypeDetailsPanel({
   paymentTypeRecord,
   values,
 }: {
+  bankAccounts: DisbursementVoucherBankAccount[];
   isReadonly: boolean;
   onUpdateBankAccount: (accountCode: string) => void;
   onUpdatePaymentDetails: (
@@ -1477,6 +1501,7 @@ function PaymentTypeDetailsPanel({
       <div className="mt-5 grid min-w-0 gap-x-8 gap-y-4 border-t border-darknavy/10 pt-5 md:grid-cols-2 xl:grid-cols-4">
         <FieldShell controlId="disbursement-voucher-from-bank" label="From Bank" compact>
           <BankAccountSelect
+            bankAccounts={bankAccounts}
             id="disbursement-voucher-from-bank"
             isReadonly={isReadonly}
             value={values.paymentDetails.bankAccountCode}
@@ -1534,6 +1559,7 @@ function PaymentTypeDetailsPanel({
     <div className="mt-5 grid min-w-0 gap-x-8 gap-y-4 border-t border-darknavy/10 pt-5 md:grid-cols-2 xl:grid-cols-4">
       <FieldShell controlId="disbursement-voucher-payment-bank" label="Bank" compact>
         <BankAccountSelect
+          bankAccounts={bankAccounts}
           id="disbursement-voucher-payment-bank"
           isReadonly={isReadonly}
           value={values.paymentDetails.bankAccountCode}
@@ -1611,11 +1637,13 @@ function PaymentTypeDetailsPanel({
 }
 
 function BankAccountSelect({
+  bankAccounts,
   id,
   isReadonly,
   onChange,
   value,
 }: {
+  bankAccounts: DisbursementVoucherBankAccount[];
   id?: string;
   isReadonly: boolean;
   onChange: (accountCode: string) => void;
@@ -1630,7 +1658,7 @@ function BankAccountSelect({
       className={FieldClassName}
     >
       <option value="">--Select Bank--</option>
-      {DisbursementVoucherBankAccounts.map((bankAccount) => (
+      {bankAccounts.map((bankAccount) => (
         <option key={bankAccount.id} value={bankAccount.accountCode}>
           {bankAccount.bankName} - {bankAccount.accountNo}
         </option>
@@ -1788,9 +1816,6 @@ const AttachedDropdownClassName =
 const AttachedAddButtonClassName =
   "inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none";
 
-const AttachedTaxButtonClassName =
-  "inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none";
-
 type DisbursementEntryColumnId =
   | "accountCode"
   | "atcCode"
@@ -1870,6 +1895,8 @@ const DefaultDisbursementEntryColumnWidths: Record<
 };
 
 const AccountingPartyFallbackValuePrefix = "entry-party:";
+const CashInHandAccountCode = "1001111";
+const CashInHandAccountName = "Cash in Hand";
 
 function getAccountingPartyFallbackValue(partyName: string) {
   const normalizedPartyName = partyName.trim().toLowerCase();
@@ -1887,7 +1914,100 @@ function isDisbursementEntryColumnId(
   );
 }
 
+function isCashInHandEntry(entry: DisbursementLineEntry) {
+  return (
+    entry.accountCode === CashInHandAccountCode ||
+    entry.accountName.trim().toLowerCase() === CashInHandAccountName.toLowerCase()
+  );
+}
+
+function isPaymentCreditEntry(entry: DisbursementLineEntry) {
+  return (
+    isCashInHandEntry(entry) ||
+    entry.id.startsWith("payment-credit-") ||
+    entry.id.startsWith("cash-in-hand-")
+  );
+}
+
+function createCashExpenseBalancedEntries(
+  entries: DisbursementLineEntry[],
+  entryId: string,
+  updates: Partial<DisbursementLineEntry>,
+) {
+  const updatedEntries = entries.map((entry) => {
+    if (entry.id !== entryId) {
+      return entry;
+    }
+
+    const nextEntry = normalizeDisbursementLineEntryFields({
+      ...entry,
+      ...updates,
+      credit: 0,
+    });
+    const debitAmount = Number(nextEntry.debit || 0);
+
+    nextEntry.debit = debitAmount;
+    nextEntry.credit = 0;
+    return syncDisbursementLineEntryTaxDetails(nextEntry);
+  });
+  return createPaymentBalancedEntries(updatedEntries, {
+    accountCode: CashInHandAccountCode,
+    accountName: CashInHandAccountName,
+    particulars: "Cash payment",
+  });
+}
+
+function createPaymentBalancedEntries(
+  entries: DisbursementLineEntry[],
+  creditAccount: {
+    accountCode: string;
+    accountName: string;
+    particulars: string;
+  },
+) {
+  const expenseEntries = entries.filter((entry) => !isPaymentCreditEntry(entry));
+  const paymentEntry = entries.find(isPaymentCreditEntry);
+  const totalExpenseAmount = expenseEntries.reduce(
+    (sum, entry) => sum + Number(entry.debit || 0),
+    0,
+  );
+
+  if (totalExpenseAmount <= 0) {
+    return expenseEntries;
+  }
+
+  const referenceEntry = expenseEntries.find((entry) => entry.debit > 0) ?? expenseEntries[0];
+
+  return [
+    ...expenseEntries,
+    syncDisbursementLineEntryTaxDetails({
+      ...(paymentEntry ?? createBlankDisbursementLineEntry()),
+      accountCode: creditAccount.accountCode,
+      accountName: creditAccount.accountName,
+      credit: totalExpenseAmount,
+      debit: 0,
+      id:
+        paymentEntry?.id ??
+        `payment-credit-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      particulars: referenceEntry?.particulars || creditAccount.particulars,
+      partyCode: referenceEntry?.partyCode ?? "",
+      partyName: referenceEntry?.partyName ?? "",
+      refId: referenceEntry?.refId ?? "",
+      responsibilityCenter: referenceEntry?.responsibilityCenter ?? "",
+      status: "Balanced",
+      taxDetails: {
+        ...createTaxDetails(totalExpenseAmount, "0%"),
+        refId: referenceEntry?.refId ?? "",
+        responsibilityCenter: referenceEntry?.responsibilityCenter ?? "",
+      },
+      taxRate: "0%",
+      vatType: "",
+    }),
+  ];
+}
+
 function VoucherDataEntry({
+  defaultAccounts,
   entries,
   errors,
   isReadonly,
@@ -1899,12 +2019,16 @@ function VoucherDataEntry({
   onInsertEntry,
   onMoveEntry,
   onOpenEntryTaxEditor,
+  onReplaceEntries,
   onUpdateEntry,
   onUpdateEntryFields,
+  paymentMethod,
+  paymentTypeRecord,
   totalCredit,
   totalDebit,
   onRemoveEntry,
 }: {
+  defaultAccounts: DefaultAccount[];
   entries: DisbursementLineEntry[];
   errors: DisbursementVoucherFormErrors;
   isReadonly: boolean;
@@ -1916,6 +2040,7 @@ function VoucherDataEntry({
   onInsertEntry: (entryId: string, position: "above" | "below") => void;
   onMoveEntry: (fromEntryId: string, toEntryId: string) => void;
   onOpenEntryTaxEditor: (entryId: string) => void;
+  onReplaceEntries: (entries: DisbursementLineEntry[]) => void;
   onUpdateEntry: (
     entryId: string,
     field: keyof DisbursementLineEntry,
@@ -1925,6 +2050,8 @@ function VoucherDataEntry({
     entryId: string,
     updates: Partial<DisbursementLineEntry>,
   ) => void;
+  paymentMethod: string;
+  paymentTypeRecord: AppPaymentTypeRecord | null;
   totalCredit: number;
   totalDebit: number;
   onRemoveEntry: (entryId: string) => void;
@@ -1938,7 +2065,7 @@ function VoucherDataEntry({
     string | null
   >(null);
   const [entryView, setEntryView] =
-    useState<DisbursementEntryView>("accounting");
+    useState<DisbursementEntryView>("expense");
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [columnOrder, setColumnOrder] = useState<DisbursementEntryColumnId[]>(
     DefaultDisbursementEntryColumnOrder,
@@ -1955,6 +2082,14 @@ function VoucherDataEntry({
   );
   const chartAccounts = useMemo(
     () => createAccountingChartAccountOptions(entries),
+    [entries],
+  );
+  const expenseAccounts = useMemo(
+    () => createDefaultAccountExpenseOptions(defaultAccounts),
+    [defaultAccounts],
+  );
+  const expenseRows = useMemo(
+    () => entries.filter((entry) => !isPaymentCreditEntry(entry)),
     [entries],
   );
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
@@ -2031,6 +2166,23 @@ function VoucherDataEntry({
   );
   const particularsEditorEntry =
     entries.find((entry) => entry.id === particularsEditorEntryId) ?? null;
+
+  function updateExpenseEntryFields(
+    entryId: string,
+    updates: Partial<DisbursementLineEntry>,
+  ) {
+    const isCashPayment =
+      paymentTypeRecord?.type === "Cash" ||
+      paymentMethod.trim().toLowerCase() === "cash";
+
+    if (!isCashPayment) {
+      onUpdateEntryFields(entryId, updates);
+      return;
+    }
+
+    onReplaceEntries(createCashExpenseBalancedEntries(entries, entryId, updates));
+  }
+
   const allColumns = useMemo<
     Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>
   >(
@@ -2055,7 +2207,7 @@ function VoucherDataEntry({
         widthClassName: "w-[18rem]",
         renderCell: (entry) => (
           <ChartAccountDropdown
-            accounts={chartAccounts}
+            accounts={expenseAccounts}
             value={entry.accountName}
             valueField="accountName"
             readOnly={isReadonly}
@@ -2270,7 +2422,7 @@ function VoucherDataEntry({
         widthClassName: "w-[15rem]",
         renderCell: (entry) => (
           <ChartAccountDropdown
-            accounts={chartAccounts}
+            accounts={expenseAccounts}
             value={entry.accountName}
             valueField="accountName"
             readOnly={isReadonly}
@@ -2280,7 +2432,7 @@ function VoucherDataEntry({
             searchPlaceholder="Search expense type"
             onChange={() => undefined}
             onSelectAccount={(account) =>
-              onUpdateEntryFields(entry.id, {
+              updateExpenseEntryFields(entry.id, {
                 accountCode: account?.accountNumber ?? "",
                 accountName: account?.accountName ?? "",
               })
@@ -2297,7 +2449,7 @@ function VoucherDataEntry({
           <EntryNumberInput
             value={entry.taxDetails.grossAmount}
             onChange={(value) =>
-              onUpdateEntryFields(entry.id, {
+              updateExpenseEntryFields(entry.id, {
                 credit: 0,
                 debit: value,
                 taxDetails: syncTaxDetailsAmount(
@@ -2385,14 +2537,16 @@ function VoucherDataEntry({
     ],
     [
       allColumns,
-      chartAccounts,
+      expenseAccounts,
       isReadonly,
       onOpenEntryTaxEditor,
       onUpdateEntryFields,
+      updateExpenseEntryFields,
     ],
   );
   const activeColumns =
     entryView === "expense" ? expenseColumns : columns;
+  const activeRows = entryView === "expense" ? expenseRows : entries;
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
       columnOrder.map((columnId) => ({
@@ -2590,7 +2744,7 @@ function VoucherDataEntry({
           ]}
           isDraggable
           isReadonly={isReadonly}
-          rows={entries}
+          rows={activeRows}
           toolbarActions={[
             {
               id: "add-disbursement-type",
@@ -2606,8 +2760,8 @@ function VoucherDataEntry({
               className="inline-flex rounded-lg border border-darknavy/10 bg-offwhite/70 p-1"
             >
               {([
-                ["accounting", "Accounting Entries"],
                 ["expense", "Expense Details"],
+                ["accounting", "Accounting Entries"],
               ] as const).map(([view, label]) => {
                 const isActive = entryView === view;
 

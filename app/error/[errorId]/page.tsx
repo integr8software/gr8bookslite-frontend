@@ -5,6 +5,7 @@ import {
   StatusErrorPage,
   type StatusErrorPageVariant,
 } from "@/app/src/ui/shared/app/StatusErrorPage";
+import { AnimatedErrorPage } from "@/app/src/ui/shared/app/AnimatedErrorPage";
 
 const supportedErrorIds = ["401", "403", "500"] as const;
 
@@ -60,6 +61,10 @@ export default async function ErrorRoutePage({ params }: ErrorRoutePageProps) {
 
   if (!isSupportedErrorId(errorId)) {
     notFound();
+  }
+
+  if (errorId === "403" || errorId === "500") {
+    return <AnimatedErrorPage variant={errorId} />;
   }
 
   return <StatusErrorPage variant={errorId} />;

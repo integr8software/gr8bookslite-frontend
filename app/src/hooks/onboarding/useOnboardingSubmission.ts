@@ -2,6 +2,7 @@
 
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   AuthenticatedSessionMarker,
   ClearLegacyAuthStorage,
@@ -30,6 +31,10 @@ import {
   GetAuthProfile,
   SwitchCompanyContext,
 } from "@/app/src/services/auth/AuthApi";
+import {
+  AuthQueryKeys,
+  CreateAuthAccessTokenQueryScope,
+} from "@/app/src/services/auth/AuthQueryKeys";
 import {
   GetFallbackPostAuthRedirectPath,
   GetPostAuthRedirectPathFromProfile,
@@ -174,7 +179,24 @@ export function useOnboardingSubmission({
   setHasPersistedBillingSetup,
 }: UseOnboardingSubmissionParams) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const resetAppStore = useAppStore((state) => state.resetAppStore);
+
+  async function prepareCompletedAuthProfile(profile: Awaited<ReturnType<typeof GetAuthProfile>>) {
+    await queryClient.cancelQueries({
+      queryKey: AuthQueryKeys.profiles(),
+    });
+    queryClient.setQueryData(
+      AuthQueryKeys.profile(
+        CreateAuthAccessTokenQueryScope(AuthenticatedSessionMarker),
+      ),
+      profile,
+    );
+    await queryClient.invalidateQueries({
+      queryKey: AuthQueryKeys.profiles(),
+      refetchType: "inactive",
+    });
+  }
 
   async function redirectToCompletedOnboarding(
     accessToken: string | null,
@@ -196,6 +218,7 @@ export function useOnboardingSubmission({
       accessToken: AuthenticatedSessionMarker,
       activeCompanyId: companyId,
     });
+    await prepareCompletedAuthProfile(profile);
     router.replace(GetPostAuthRedirectPathFromProfile(profile));
     return true;
   }
@@ -379,13 +402,18 @@ export function useOnboardingSubmission({
 
           try {
             const profile = await GetAuthProfile();
+            const companyId = GetAuthProfileCompanyId(profile);
 
             useAppStore.setState({
               accessToken: AuthenticatedSessionMarker,
-              activeCompanyId: GetAuthProfileCompanyId(profile),
+              activeCompanyId: companyId,
             });
+            await prepareCompletedAuthProfile(profile);
             router.replace(GetPostAuthRedirectPathFromProfile(profile));
           } catch {
+            await queryClient.invalidateQueries({
+              queryKey: AuthQueryKeys.profiles(),
+            });
             router.replace(
               GetFallbackPostAuthRedirectPath(response.accessToken),
             );

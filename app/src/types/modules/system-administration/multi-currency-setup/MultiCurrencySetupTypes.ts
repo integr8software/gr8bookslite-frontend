@@ -49,18 +49,26 @@ export type MultiCurrencySetupFormErrors = Partial<
 export type MultiCurrencySetupActionMode = "add" | "edit" | "view";
 
 export type MultiCurrencySetupTableColumnKey =
-	| "baseCurrencyLabel"
-	| "currentExchangeRateDisplay"
-	| "originalExchangeRateDisplay"
+	| "currencyCode"
+	| "currencyDescription"
+	| "currencySymbol"
+	| "dailyExchangeRateDisplay"
+	| "rateAsOf"
+	| "source"
 	| "status"
-	| "targetCurrencyLabel"
-	| "varianceDisplay";
+	| "targetCurrencyLabel";
 
 export type MultiCurrencySetupTableRecord = MultiCurrencySetupRecord & {
 	baseCurrencyLabel: string;
+	currencyCode: string;
+	currencyDescription: string;
+	currencySymbol: string;
 	currentExchangeRate: number;
 	currentExchangeRateDisplay: string;
+	dailyExchangeRate: number;
+	dailyExchangeRateDisplay: string;
 	inverseExchangeRate: number;
+	isBaseCurrency: boolean;
 	originalExchangeRateDisplay: string;
 	rateAsOf: string;
 	targetCurrencyLabel: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import {
 	DefaultPreferredBaseCurrencyCode,
 	DefaultWantedCurrencyCode,
@@ -44,7 +45,10 @@ export function useMultiCurrencySetupListPage() {
 	const [statusFilter, setStatusFilter] = useState("All");
 	const [query, setQuery] = useState("");
 	const ratesQuery = useMultiCurrencySetupRates(preferredBaseCurrencyCode);
-	const fetchedRates = ratesQuery.data;
+	const fetchedRates = useMemo(
+		() => ratesQuery.data ?? [],
+		[ratesQuery.data],
+	);
 	const wantedRate = findFetchedRate(fetchedRates, wantedCurrencyCode);
 	const baseRecords = useMemo(
 		() =>
@@ -54,8 +58,13 @@ export function useMultiCurrencySetupListPage() {
 		[preferredBaseCurrencyCode, records],
 	);
 	const tableRecords = useMemo(
-		() => createMultiCurrencySetupTableRecords(baseRecords, fetchedRates),
-		[baseRecords, fetchedRates],
+		() =>
+			createMultiCurrencySetupTableRecords(
+				baseRecords,
+				fetchedRates,
+				preferredBaseCurrencyCode,
+			),
+		[baseRecords, fetchedRates, preferredBaseCurrencyCode],
 	);
 	const filteredRecords = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
@@ -70,8 +79,10 @@ export function useMultiCurrencySetupListPage() {
 			}
 
 			return [
-				record.baseCurrencyLabel,
-				record.targetCurrencyLabel,
+				record.currencyCode,
+				record.currencyDescription,
+				record.currencySymbol,
+				record.dailyExchangeRateDisplay,
 				record.status,
 				record.notes,
 			]
@@ -114,10 +125,16 @@ export function useMultiCurrencySetupListPage() {
 		updateRecord(record);
 	}
 
-	function updateCurrencyFromApi(record: MultiCurrencySetupTableRecord) {
-		const fetchedRate = findFetchedRate(fetchedRates, record.targetCurrencyCode);
+	async function updateCurrencyFromApi(record: MultiCurrencySetupTableRecord) {
+		const result = await ratesQuery.refetch();
+		const latestRates = result.data ?? fetchedRates;
+		const fetchedRate = findFetchedRate(
+			latestRates,
+			record.targetCurrencyCode,
+		);
 
 		if (!fetchedRate) {
+			toast.error("Could not fetch the latest Frankfurter rate.");
 			return;
 		}
 
@@ -129,7 +146,15 @@ export function useMultiCurrencySetupListPage() {
 		});
 	}
 
-	function updateRates(mode: MultiCurrencyRateUpdateMode) {
+	async function updateRates(mode: MultiCurrencyRateUpdateMode) {
+		const result = await ratesQuery.refetch();
+		const latestRates = result.data ?? fetchedRates;
+
+		if (result.isError && latestRates.length === 0) {
+			toast.error("Could not fetch the latest Frankfurter rates.");
+			return;
+		}
+
 		const nextRecords = records.map((record) => {
 			if (record.baseCurrencyCode !== preferredBaseCurrencyCode) {
 				return record;
@@ -139,7 +164,10 @@ export function useMultiCurrencySetupListPage() {
 				return record;
 			}
 
-			const fetchedRate = findFetchedRate(fetchedRates, record.targetCurrencyCode);
+			const fetchedRate = findFetchedRate(
+				latestRates,
+				record.targetCurrencyCode,
+			);
 
 			if (!fetchedRate) {
 				return record;

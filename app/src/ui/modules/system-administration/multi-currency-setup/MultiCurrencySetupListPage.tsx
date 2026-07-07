@@ -2,22 +2,11 @@
 
 import { useState, type ChangeEvent, type ReactNode } from "react";
 import toast from "react-hot-toast";
-import {
-	CheckCircle2,
-	CircleDollarSign,
-	Plus,
-	RefreshCcw,
-	Settings,
-} from "lucide-react";
+import { Plus, RefreshCcw, Settings } from "lucide-react";
 import { MultiCurrencySetupStatusOptions } from "@/app/src/constants/modules/system-administration/multi-currency-setup/MultiCurrencySetupConstants";
 import {
 	DefaultWantedCurrencyCode,
-	MockMultiCurrencyAuditLogs,
-	MockMultiCurrencyRateHistory,
-	MockMultiCurrencyRoundingRules,
 	MultiCurrencyCatalog,
-	MultiCurrencySourceSummary,
-	findCurrencyByCode,
 	findFetchedRate,
 	formatExchangeRate,
 } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
@@ -27,7 +16,6 @@ import {
 	useMultiCurrencySetupListPage,
 } from "@/app/src/hooks/modules/system-administration/multi-currency-setup/useMultiCurrencySetupListPage";
 import type {
-	MultiCurrencyRateUpdateMode,
 	MultiCurrencySetupDrawerMode,
 	MultiCurrencySetupDrawerValues,
 	MultiCurrencySetupTableRecord,
@@ -41,7 +29,6 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import {
 	ModuleTableFilterSelect,
-	ModuleTableResetButton,
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
@@ -64,17 +51,15 @@ export function MultiCurrencySetupListPage() {
 	const [drawerErrors, setDrawerErrors] = useState<
 		Partial<Record<keyof MultiCurrencySetupDrawerValues, string>>
 	>({});
-	const [updateMode, setUpdateMode] =
-		useState<MultiCurrencyRateUpdateMode>("unmodified");
 	const selectedApiRate = findFetchedRate(
 		page.fetchedRates,
 		drawerValues.targetCurrencyCode,
 	);
 	const selectedApiRateDisplay = selectedApiRate
-		? formatExchangeRate(selectedApiRate.exchangeRate)
+		? formatExchangeRate(selectedApiRate.inverseExchangeRate)
 		: "0.000000";
 	const selectedInverseRateDisplay = selectedApiRate
-		? formatExchangeRate(selectedApiRate.inverseExchangeRate)
+		? formatExchangeRate(selectedApiRate.exchangeRate)
 		: "0.000000";
 	const drawerTitle =
 		drawerState?.mode === "edit" ? "Configure Currency" : "Add Currency";
@@ -131,7 +116,7 @@ export function MultiCurrencySetupListPage() {
 					targetCurrencyCode: value,
 					configuredExchangeRate:
 						current.source === "API" && nextApiRate
-							? formatExchangeRate(nextApiRate.exchangeRate)
+							? formatExchangeRate(nextApiRate.inverseExchangeRate)
 							: current.configuredExchangeRate,
 				};
 			}
@@ -141,7 +126,7 @@ export function MultiCurrencySetupListPage() {
 					...current,
 					source: "API",
 					configuredExchangeRate: formatExchangeRate(
-						selectedApiRate.exchangeRate,
+						selectedApiRate.inverseExchangeRate,
 					),
 				};
 			}
@@ -178,7 +163,8 @@ export function MultiCurrencySetupListPage() {
 			baseCurrencyCode: drawerValues.baseCurrencyCode,
 			id: drawerState?.record?.id ?? `mcs_${Date.now().toString(36)}`,
 			notes: drawerValues.notes.trim() || undefined,
-			originalExchangeRate: Number(drawerValues.configuredExchangeRate),
+			originalExchangeRate:
+				1 / Number(drawerValues.configuredExchangeRate),
 			rateDate: drawerValues.rateDate,
 			source: drawerValues.source,
 			status: drawerValues.status,
@@ -200,7 +186,7 @@ export function MultiCurrencySetupListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Multi-Currency Setup"
-				description="Manage currencies, API exchange rates, and manual configured rates from one screen."
+				description="Manage currencies and daily Frankfurter exchange rates from one screen."
 				eyebrow={
 					<>
 						<Settings className="h-3.5 w-3.5" aria-hidden="true" />
@@ -210,62 +196,60 @@ export function MultiCurrencySetupListPage() {
 				actions={<HeaderActions onAddCurrency={openAddDrawer} />}
 			/>
 
-			<div className="grid min-w-0 gap-5 2xl:grid-cols-[minmax(0,1fr)_22rem]">
-				<div className="grid min-w-0 gap-5">
-					<MultiCurrencySetupTable
-						isLoading={page.isLoading}
-						lastSyncedAt={page.lastSyncedAt}
-						records={page.filteredRecords}
-						toolbar={
-							<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,2fr)_minmax(12rem,1fr)_minmax(10rem,0.8fr)]">
-								<ModuleTableSearch
-									label="Search currencies"
-									value={page.query}
-									onChange={page.setQuery}
-									placeholder="Search by currency, rate, status, or notes"
-								/>
-								<ModuleTableFilterSelect
-									label="Status"
-									value={page.statusFilter}
-									options={[
-										{ label: "All", value: "All" },
-										...MultiCurrencySetupStatusOptions.map(
-											(status) => ({
-												label: status,
-												value: status,
-											}),
-										),
-									]}
-									onChange={page.setStatusFilter}
-								/>
-								<ModuleTableResetButton
-									onClick={page.resetFilters}
-								>
-									Reset
-								</ModuleTableResetButton>
-							</ModuleTableToolbar>
-						}
-						onConfigureRecord={openEditDrawer}
-						onDeleteRecord={setPendingDelete}
-						onUpdateRecordRate={page.updateCurrencyFromApi}
-					/>
-				</div>
-
-				<aside className="grid min-w-0 content-start gap-5 md:grid-cols-2 2xl:grid-cols-1">
-					<BaseCurrencyCard
-						baseCurrencyCode={page.preferredBaseCurrencyCode}
-						onBaseCurrencyChange={handleBaseCurrencyChange}
-					/>
-					<UpdateRatesCard
-						isMutating={page.isMutating}
-						updateMode={updateMode}
-						onUpdateModeChange={setUpdateMode}
-						onUpdateRates={() => page.updateRates(updateMode)}
-					/>
-					<SummaryCard page={page} />
-					<SummarizedSettingsCard />
-				</aside>
-			</div>
+			<MultiCurrencySetupTable
+				isLoading={page.isLoading}
+				lastSyncedAt={page.lastSyncedAt}
+				records={page.filteredRecords}
+				toolbar={
+					<ModuleTableToolbar className="lg:grid-cols-[minmax(18rem,2fr)_minmax(11rem,0.8fr)_minmax(13rem,1fr)_minmax(10rem,0.8fr)]">
+						<ModuleTableSearch
+							label="Search currencies"
+							value={page.query}
+							onChange={page.setQuery}
+							placeholder="Search by currency, rate, availability, or notes"
+						/>
+						<ModuleTableFilterSelect
+							label="Availability"
+							value={page.statusFilter}
+							options={[
+								{ label: "All", value: "All" },
+								...MultiCurrencySetupStatusOptions.map((status) => ({
+									label:
+										status === "Active"
+											? "Enabled"
+											: "Disabled",
+									value: status,
+								})),
+							]}
+							onChange={page.setStatusFilter}
+						/>
+						<ModuleTableFilterSelect
+							label="Base Currency"
+							value={page.preferredBaseCurrencyCode}
+							options={MultiCurrencyCatalog.map((currency) => ({
+								label: `${currency.code} - ${currency.name}`,
+								value: currency.code,
+							}))}
+							onChange={handleBaseCurrencyChange}
+						/>
+						<button
+							type="button"
+							disabled={page.isMutating}
+							onClick={() => page.updateRates("unmodified")}
+							className={`${moduleHeaderActionClassNames.secondary} h-12 w-full rounded-lg`}
+						>
+							<RefreshCcw
+								className={`h-4 w-4 ${page.isMutating ? "animate-spin" : ""}`}
+								aria-hidden="true"
+							/>
+							{page.isMutating ? "Updating..." : "Update Rates"}
+						</button>
+					</ModuleTableToolbar>
+				}
+				onConfigureRecord={openEditDrawer}
+				onDeleteRecord={setPendingDelete}
+				onUpdateRecordRate={page.updateCurrencyFromApi}
+			/>
 
 			<CurrencySetupDrawer
 				apiRateDisplay={selectedApiRateDisplay}
@@ -306,168 +290,6 @@ function HeaderActions({ onAddCurrency }: { onAddCurrency: () => void }) {
 	);
 }
 
-function BaseCurrencyCard({
-	baseCurrencyCode,
-	onBaseCurrencyChange,
-}: {
-	baseCurrencyCode: string;
-	onBaseCurrencyChange: (value: string) => void;
-}) {
-	const baseCurrency = findCurrencyByCode(baseCurrencyCode);
-
-	return (
-		<SectionCard>
-			<PanelHeader
-				title="Base Currency"
-				description="Rates below refresh from this currency."
-			/>
-			<div className="mt-4 rounded-lg border border-emerald-500/25 bg-emerald-500/10 p-4">
-				<div className="flex items-center gap-3">
-					<div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white">
-						<CircleDollarSign
-							className="h-5 w-5"
-							aria-hidden="true"
-						/>
-					</div>
-					<div className="min-w-0">
-						<p className="font-semibold text-darknavy">
-							{baseCurrency?.code ?? baseCurrencyCode}
-						</p>
-						<p className="truncate text-sm text-darknavy/60">
-							{baseCurrency?.name ?? "Base currency"}
-						</p>
-					</div>
-				</div>
-			</div>
-			<label className="mt-4 block">
-				<span className="mb-2 block text-sm font-semibold text-darknavy">
-					Change Base Currency
-				</span>
-				<select
-					value={baseCurrencyCode}
-					onChange={(event) =>
-						onBaseCurrencyChange(event.target.value)
-					}
-					className={selectFieldClassName}
-				>
-					{MultiCurrencyCatalog.map((currency) => (
-						<option key={currency.code} value={currency.code}>
-							{currency.code} - {currency.name}
-						</option>
-					))}
-				</select>
-			</label>
-		</SectionCard>
-	);
-}
-
-function UpdateRatesCard({
-	isMutating,
-	onUpdateModeChange,
-	onUpdateRates,
-	updateMode,
-}: {
-	isMutating: boolean;
-	onUpdateModeChange: (mode: MultiCurrencyRateUpdateMode) => void;
-	onUpdateRates: () => void;
-	updateMode: MultiCurrencyRateUpdateMode;
-}) {
-	return (
-		<SectionCard>
-			<PanelHeader
-				title="Update Rates"
-				description={`Last updated ${MultiCurrencySourceSummary.lastUpdated}.`}
-			/>
-			<label className="mt-4 block">
-				<span className="mb-2 block text-sm font-semibold text-darknavy">
-					Apply Update To
-				</span>
-				<select
-					value={updateMode}
-					onChange={(event) =>
-						onUpdateModeChange(
-							event.target.value as MultiCurrencyRateUpdateMode,
-						)
-					}
-					className={selectFieldClassName}
-				>
-					<option value="unmodified">Only unmodified rates</option>
-					<option value="overwrite">Overwrite existing rates</option>
-				</select>
-			</label>
-			<button
-				type="button"
-				disabled={isMutating}
-				onClick={onUpdateRates}
-				className={
-					moduleHeaderActionClassNames.secondary + " mt-4 w-full"
-				}
-			>
-				<RefreshCcw className="h-4 w-4" aria-hidden="true" />
-				{isMutating ? "Updating..." : "Update Rates"}
-			</button>
-		</SectionCard>
-	);
-}
-
-function SummaryCard({ page }: { page: UseMultiCurrencySetupListPage }) {
-	return (
-		<SectionCard>
-			<PanelHeader title="Summary" />
-			<div className="mt-4 grid gap-3">
-				<SummaryLine
-					label="Base Currency"
-					value={page.preferredBaseCurrencyCode}
-				/>
-				<SummaryLine
-					label="Configured Currencies"
-					value={String(page.baseRecords.length)}
-				/>
-				<SummaryLine
-					label="API Rates"
-					value={String(page.fetchedRates.length)}
-				/>
-				<SummaryLine
-					label="Manual Overrides"
-					value={String(page.manualRateCount)}
-				/>
-				<SummaryLine
-					label="Rate Source"
-					value={MultiCurrencySourceSummary.primarySource}
-				/>
-			</div>
-		</SectionCard>
-	);
-}
-
-function SummarizedSettingsCard() {
-	return (
-		<SectionCard>
-			<PanelHeader
-				title="Other Settings"
-				description="Summarized for now."
-			/>
-			<div className="mt-4 grid gap-3 text-sm text-darknavy/70">
-				<CheckLine>
-					Preferences: daily rate, transaction date, 2 decimal places
-				</CheckLine>
-				<CheckLine>
-					Rounding rules: {MockMultiCurrencyRoundingRules.length}{" "}
-					configured
-				</CheckLine>
-				<CheckLine>
-					Rate history: {MockMultiCurrencyRateHistory.length} recent
-					entries
-				</CheckLine>
-				<CheckLine>
-					Audit logs: {MockMultiCurrencyAuditLogs.length} recent
-					changes
-				</CheckLine>
-			</div>
-		</SectionCard>
-	);
-}
-
 function CurrencySetupDrawer({
 	apiRateDisplay,
 	drawerErrors,
@@ -497,7 +319,7 @@ function CurrencySetupDrawer({
 		<ModuleDrawer
 			isOpen={isOpen}
 			title={title}
-			description="Review the API rate and set the configured rate used by transactions."
+			description="Review the automatic rate and set the daily rate used by transactions."
 			eyebrow="Multi-currency"
 			onClose={onClose}
 			maxWidthClassName="max-w-xl"
@@ -524,14 +346,14 @@ function CurrencySetupDrawer({
 				<div className="grid gap-3 rounded-lg border border-darknavy/10 bg-offwhite/65 p-4">
 					<div className="grid gap-3 sm:grid-cols-2">
 						<ReadonlyRate
-							label="API Exchange Rate"
+							label="Frankfurter Rate"
 							value={apiRateDisplay}
-							helper={`1 ${values.baseCurrencyCode} to ${values.targetCurrencyCode}`}
+							helper={`1 ${values.targetCurrencyCode} = ${apiRateDisplay} ${values.baseCurrencyCode}`}
 						/>
 						<ReadonlyRate
 							label="Inverse Rate"
 							value={inverseRateDisplay}
-							helper={`1 ${values.targetCurrencyCode} to ${values.baseCurrencyCode}`}
+							helper={`1 ${values.baseCurrencyCode} = ${inverseRateDisplay} ${values.targetCurrencyCode}`}
 						/>
 					</div>
 				</div>
@@ -564,7 +386,7 @@ function CurrencySetupDrawer({
 
 					<DrawerField
 						error={drawerErrors.configuredExchangeRate}
-						label="Configured Exchange Rate"
+						label={`Daily Exchange Rate (${values.baseCurrencyCode})`}
 						required
 					>
 						<input
@@ -580,7 +402,7 @@ function CurrencySetupDrawer({
 					<div className="grid gap-4 sm:grid-cols-2">
 						<DrawerField
 							error={drawerErrors.source}
-							label="Source"
+							label="Rate Type"
 							required
 						>
 							<select
@@ -589,13 +411,18 @@ function CurrencySetupDrawer({
 								onChange={onChange}
 								className={selectFieldClassName}
 							>
-								<option value="API">API</option>
+								<option value="API">Automatic</option>
 								<option value="Manual">Manual</option>
 							</select>
+							<p className="mt-1.5 text-xs leading-5 text-darknavy/50">
+								{values.source === "API"
+									? "Automatic rates refresh from Frankfurter."
+									: "Manual rates stay unchanged when “Keep manual rates” is selected during an update."}
+							</p>
 						</DrawerField>
 						<DrawerField
 							error={drawerErrors.status}
-							label="Status"
+							label="Availability"
 							required
 						>
 							<select
@@ -604,8 +431,8 @@ function CurrencySetupDrawer({
 								onChange={onChange}
 								className={selectFieldClassName}
 							>
-								<option value="Active">Active</option>
-								<option value="Inactive">Inactive</option>
+								<option value="Active">Enabled</option>
+								<option value="Inactive">Disabled</option>
 							</select>
 						</DrawerField>
 					</div>
@@ -652,7 +479,7 @@ function createEmptyDrawerValues(
 	return {
 		baseCurrencyCode: page.preferredBaseCurrencyCode,
 		configuredExchangeRate: fetchedRate
-			? formatExchangeRate(fetchedRate.exchangeRate)
+			? formatExchangeRate(fetchedRate.inverseExchangeRate)
 			: "1.000000",
 		notes: "",
 		rateDate: fetchedRate?.rateAsOf ?? "2026-06-01",
@@ -667,48 +494,17 @@ function createRecordDrawerValues(
 ): MultiCurrencySetupDrawerValues {
 	return {
 		baseCurrencyCode: record.baseCurrencyCode,
-		configuredExchangeRate: formatExchangeRate(record.originalExchangeRate),
+		configuredExchangeRate: formatExchangeRate(
+			record.originalExchangeRate === 0
+				? 0
+				: 1 / record.originalExchangeRate,
+		),
 		notes: record.notes ?? "",
 		rateDate: record.rateDate,
 		source: record.source ?? "API",
 		status: record.status,
 		targetCurrencyCode: record.targetCurrencyCode,
 	};
-}
-
-function SectionCard({
-	children,
-	className,
-}: {
-	children: ReactNode;
-	className?: string;
-}) {
-	return (
-		<div
-			className={`rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 ${className ?? ""}`}
-		>
-			{children}
-		</div>
-	);
-}
-
-function PanelHeader({
-	description,
-	title,
-}: {
-	description?: ReactNode;
-	title: ReactNode;
-}) {
-	return (
-		<div>
-			<h2 className="text-base font-semibold text-darknavy">{title}</h2>
-			{description ? (
-				<p className="mt-1 text-sm leading-6 text-darknavy/60">
-					{description}
-				</p>
-			) : null}
-		</div>
-	);
 }
 
 function DrawerField({
@@ -756,29 +552,6 @@ function ReadonlyRate({
 				{value}
 			</p>
 			<p className="mt-1 truncate text-xs text-darknavy/55">{helper}</p>
-		</div>
-	);
-}
-
-function SummaryLine({ label, value }: { label: string; value: string }) {
-	return (
-		<div className="flex items-start justify-between gap-3 text-sm">
-			<span className="text-darknavy/60">{label}</span>
-			<span className="max-w-[11rem] text-right font-semibold text-darknavy">
-				{value}
-			</span>
-		</div>
-	);
-}
-
-function CheckLine({ children }: { children: ReactNode }) {
-	return (
-		<div className="flex gap-2">
-			<CheckCircle2
-				className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"
-				aria-hidden="true"
-			/>
-			<span>{children}</span>
 		</div>
 	);
 }

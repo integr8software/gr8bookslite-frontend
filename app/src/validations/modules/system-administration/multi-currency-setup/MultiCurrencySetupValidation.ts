@@ -14,7 +14,7 @@ const MultiCurrencySetupSchema = z
 			.min(1, "Select the wanted currency."),
 		rateDate: z.string().trim().min(1, "Enter the rate date."),
 		status: z.enum(["Active", "Inactive"], {
-			error: "Select a status.",
+			error: "Select whether the currency is enabled.",
 		}),
 		notes: z.string(),
 	})
@@ -44,10 +44,10 @@ const MultiCurrencySetupDrawerSchema = z
 			}),
 		rateDate: z.string().trim().min(1, "Enter the rate date."),
 		source: z.enum(["API", "Manual"], {
-			error: "Select a rate source.",
+			error: "Select a rate type.",
 		}),
 		status: z.enum(["Active", "Inactive"], {
-			error: "Select a status.",
+			error: "Select whether the currency is enabled.",
 		}),
 		notes: z.string(),
 	})

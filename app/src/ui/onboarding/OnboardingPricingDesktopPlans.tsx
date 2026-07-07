@@ -27,11 +27,17 @@ export function OnboardingPricingDesktopPlans({
 	const visiblePlans = plans.filter(
 		(plan) => plan.name !== "Additional Company",
 	);
+	const pricingGridStyle = {
+		gridTemplateColumns: `minmax(220px, 1.2fr) repeat(${visiblePlans.length}, minmax(0, 1fr))`,
+	};
 
 	return (
 		<div className="hidden lg:block">
 			<div className="min-w-0">
-				<div className="grid grid-cols-[1.2fr_repeat(2,minmax(0,1fr))] border-b border-darknavy/10">
+				<div
+					className="grid border-b border-darknavy/10"
+					style={pricingGridStyle}
+				>
 					<div className="border-r border-darknavy/10 bg-linear-to-br from-offwhite to-white p-6 sm:p-8">
 						<div className="max-w-xs">
 							<p className="text-sm font-semibold text-darknavy">
@@ -150,11 +156,12 @@ export function OnboardingPricingDesktopPlans({
 				{OnboardingPlanComparisonRows.map((row, rowIndex) => (
 					<div
 						key={row.label}
-						className={`grid grid-cols-[1.2fr_repeat(2,minmax(0,1fr))] ${
+						className={`grid ${
 							rowIndex !== OnboardingPlanComparisonRows.length - 1
 								? "border-b border-darknavy/10"
 								: ""
 						}`}
+						style={pricingGridStyle}
 					>
 						<div className="border-r border-darknavy/10 bg-offwhite/45 px-6 py-5 text-sm font-medium text-darknavy sm:px-8">
 							{row.label}

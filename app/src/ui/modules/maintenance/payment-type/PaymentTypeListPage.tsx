@@ -1,29 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { CheckCircle2, CirclePause, CreditCard } from "lucide-react";
 import { usePaymentTypeListPage } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentTypeListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
+import {
+	ModuleStatisticCards,
+	type ModuleStatisticCardItem,
+} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { PaymentTypeDrawer } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeDrawer";
-import { PaymentTypeFilters } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeFilters";
+import { PaymentTypeImportDialog } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeImportDialog";
 import { PaymentTypeHeaderActions } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeHeaderActions";
 import { PaymentTypeTable } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeTable";
-import type { PaymentTypeRecord } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
-
-type DrawerState =
-	| { mode: "add" | "edit" | "view"; paymentType?: PaymentTypeRecord }
-	| null;
+import type { DrawerState } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 
 export function PaymentTypeListPage() {
 	const page = usePaymentTypeListPage();
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	const [isImportOpen, setIsImportOpen] = useState(false);
+	const closeDrawer = useCallback(() => setDrawerState(null), []);
 
 	useMaintenanceAddDrawerSpotlight(
-		() => setDrawerState({ mode: "add" }),
-		() => setDrawerState(null),
+		() => {
+			if (page.permissions.canCreate) {
+				setDrawerState({ mode: "add" });
+			}
+		},
+		closeDrawer,
+	);
+	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
+		() => [
+			{
+				helper: "All payment types",
+				icon: CreditCard,
+				label: "Total Types",
+				value: page.statistics.totalPaymentTypes,
+			},
+			{
+				helper: "Available for vouchers",
+				icon: CheckCircle2,
+				label: "Active Types",
+				tone: "emerald",
+				value: page.statistics.activePaymentTypes,
+			},
+			{
+				helper: "Currently inactive",
+				icon: CirclePause,
+				label: "Inactive Types",
+				tone: "amber",
+				value: page.statistics.inactivePaymentTypes,
+			},
+		],
+		[page.statistics],
 	);
 
 	return (
@@ -42,54 +72,32 @@ export function PaymentTypeListPage() {
 				actions={
 					<PaymentTypeHeaderActions
 						onAdd={() => setDrawerState({ mode: "add" })}
+						onImport={() => setIsImportOpen(true)}
+						permissions={page.permissions}
 					/>
 				}
 			/>
 
 			<ModuleStatisticCards
-				items={[
-					{
-						helper: "All payment types",
-						icon: CreditCard,
-						label: "Total Types",
-						value: page.paymentTypes.length,
-					},
-					{
-						helper: "Available for vouchers",
-						icon: CheckCircle2,
-						label: "Active Types",
-						tone: "emerald",
-						value: page.paymentTypes.filter(
-							(paymentType) => paymentType.status === "Active",
-						).length,
-					},
-					{
-						helper: "Currently inactive",
-						icon: CirclePause,
-						label: "Inactive Types",
-						tone: "amber",
-						value: page.paymentTypes.filter(
-							(paymentType) => paymentType.status === "Inactive",
-						).length,
-					},
-				]}
+				items={statisticCards}
+				isLoading={page.isLoading}
 			/>
 
 			<PaymentTypeTable
+				filteredPaymentTypes={page.filteredPaymentTypes}
 				isLoading={page.isLoading}
+				isRefreshing={page.isRefreshing}
 				lastSyncedAt={page.lastSyncedAt}
-				paymentTypes={page.filteredPaymentTypes}
-				toolbar={
-					<PaymentTypeFilters
-						searchTerm={page.searchTerm}
-						statusFilter={page.statusFilter}
-						typeFilter={page.typeFilter}
-						typeFilterOptions={page.typeFilterOptions}
-						onSearchTermChange={page.setSearchTerm}
-						onStatusFilterChange={page.setStatusFilter}
-						onTypeFilterChange={page.setTypeFilter}
-					/>
-				}
+				paymentTypes={page.paymentTypes}
+				permissions={page.permissions}
+				searchTerm={page.searchTerm}
+				statusFilter={page.statusFilter}
+				typeFilter={page.typeFilter}
+				typeFilterOptions={page.typeFilterOptions}
+				onRefresh={page.refreshPaymentTypes}
+				onSearchTermChange={page.setSearchTerm}
+				onStatusFilterChange={page.setStatusFilter}
+				onTypeFilterChange={page.setTypeFilter}
 				onEdit={(paymentType) =>
 					setDrawerState({ mode: "edit", paymentType })
 				}
@@ -102,9 +110,17 @@ export function PaymentTypeListPage() {
 			<PaymentTypeDrawer
 				isOpen={Boolean(drawerState)}
 				mode={drawerState?.mode ?? "add"}
-				onClose={() => setDrawerState(null)}
+				onClose={closeDrawer}
 				paymentType={drawerState?.paymentType}
 			/>
+			{page.permissions.canImport ? (
+				<PaymentTypeImportDialog
+					existingPaymentTypes={page.paymentTypes}
+					isOpen={isImportOpen}
+					onClose={() => setIsImportOpen(false)}
+					onImportPaymentTypes={page.addPaymentTypes}
+				/>
+			) : null}
 			<AppDialog
 				isOpen={Boolean(page.pendingStatusPaymentType)}
 				isPending={page.isMutating}

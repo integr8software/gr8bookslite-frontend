@@ -1,85 +1,177 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { MockDiscounts } from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
-import type { Discount } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
-
-const DiscountQueryKeys = {
-	discounts: () => ["discounts"],
-};
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
+import {
+	createDiscount,
+	fetchDiscounts,
+	importDiscounts,
+	updateDiscount,
+	type DiscountManagementListResponse,
+} from "@/app/src/services/modules/maintenance/discount-management/DiscountManagementApi";
+import { DiscountManagementQueryKeys } from "@/app/src/services/modules/maintenance/discount-management/DiscountManagementQueryKeys";
+import type {
+	Discount,
+	DiscountManagementFormValues,
+	DiscountManagementPermissions,
+	DiscountManagementStatistics,
+} from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 
 type DiscountStoreState = {
 	discounts: Discount[];
-	addDiscount: (discount: Discount) => void;
-	updateDiscount: (discount: Discount) => void;
+	addDiscount: (discount: DiscountManagementFormValues | Discount) => Promise<Discount>;
+	addDiscounts: (discounts: Discount[]) => Promise<Discount[]>;
+	updateDiscount: (discount: Discount) => Promise<Discount>;
+	permissions: DiscountManagementPermissions;
+	statistics: DiscountManagementStatistics;
 	isLoading: boolean;
+	isRefreshing: boolean;
 	lastSyncedAt: number;
 	isMutating: boolean;
+	refreshDiscounts: () => void;
+};
+
+const ReservedRoleDiscountPermissions: DiscountManagementPermissions = {
+	canView: true,
+	canCreate: true,
+	canUpdate: true,
+	canExport: true,
+	canImport: true,
+};
+
+const EmptyDiscountPermissions: DiscountManagementPermissions = {
+	canView: false,
+	canCreate: false,
+	canUpdate: false,
+	canExport: false,
+	canImport: false,
+};
+
+const EmptyDiscountStatistics: DiscountManagementStatistics = {
+	totalDiscounts: 0,
+	activeDiscounts: 0,
+	inactiveDiscounts: 0,
+	purchaseDiscounts: 0,
+	salesDiscounts: 0,
+	percentageDiscounts: 0,
 };
 
 export function useDiscountManagementStore<TSelected = DiscountStoreState>(
 	selector?: (state: DiscountStoreState) => TSelected,
 ) {
 	const queryClient = useQueryClient();
+	const accessToken = useAppStore((state) => state.accessToken);
+	const authProfileQuery = useAuthProfileQuery({ accessToken });
 	const discountsQuery = useQuery({
-		queryKey: DiscountQueryKeys.discounts(),
-		queryFn: async () => MockDiscounts,
-		initialData: MockDiscounts,
+		queryKey: DiscountManagementQueryKeys.discounts(),
+		queryFn: fetchDiscounts,
 	});
-
-	function updateCachedDiscounts(
-		updater: (discounts: Discount[]) => Discount[],
-	) {
-		queryClient.setQueryData<Discount[]>(
-			DiscountQueryKeys.discounts(),
-			(current = MockDiscounts) => updater(current),
-		);
-	}
+	const refreshDiscounts = useCallback(() => {
+		void queryClient.invalidateQueries({
+			queryKey: DiscountManagementQueryKeys.all(),
+		});
+	}, [queryClient]);
 
 	const addDiscountMutation = useMutation({
-		mutationFn: async (discount: Discount) => discount,
-		onSuccess: (discount) => {
-			updateCachedDiscounts((discounts) => [...discounts, discount]);
-			toast.success("Discount created.");
+		mutationFn: createDiscount,
+		onSuccess: () => {
+			void queryClient.invalidateQueries({
+				queryKey: DiscountManagementQueryKeys.all(),
+			});
+			toast.success("Discount created successfully.");
 		},
-		onError: () => {
-			toast.error("Could not create discount. Please try again.");
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not create discount. Please try again.",
+			);
+		},
+	});
+	const addDiscountsMutation = useMutation({
+		mutationFn: importDiscounts,
+		onSuccess: () => {
+			void queryClient.invalidateQueries({
+				queryKey: DiscountManagementQueryKeys.all(),
+			});
+		},
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not import discounts. Please try again.",
+			);
 		},
 	});
 
 	const updateDiscountMutation = useMutation({
-		mutationFn: async (discount: Discount) => discount,
-		onSuccess: (discount) => {
-			updateCachedDiscounts((discounts) =>
-				discounts.map((currentDiscount) =>
-					currentDiscount.id === discount.id ? discount : currentDiscount,
-				),
+		mutationFn: updateDiscount,
+		onSuccess: (_, updatedDiscount) => {
+			const previousDiscount = discountsQuery.data?.discounts.find(
+				(discount) => discount.id === updatedDiscount.id,
 			);
-			toast.success("Discount updated.");
+			const didStatusChange =
+				previousDiscount && previousDiscount.status !== updatedDiscount.status;
+
+			void queryClient.invalidateQueries({
+				queryKey: DiscountManagementQueryKeys.all(),
+			});
+			toast.success(
+				didStatusChange
+					? `Discount ${updatedDiscount.status === "Active" ? "activated" : "deactivated"} successfully.`
+					: "Discount updated successfully.",
+			);
 		},
-		onError: () => {
-			toast.error("Could not update discount. Please try again.");
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not update discount. Please try again.",
+			);
 		},
 	});
 
 	const state = useMemo<DiscountStoreState>(
-		() => ({
-			discounts: discountsQuery.data,
-			addDiscount: (discount) => addDiscountMutation.mutate(discount),
-			updateDiscount: (discount) => updateDiscountMutation.mutate(discount),
-			isLoading: discountsQuery.isLoading,
-			lastSyncedAt: discountsQuery.dataUpdatedAt,
-			isMutating:
-				addDiscountMutation.isPending ||
-				updateDiscountMutation.isPending,
-		}),
+		() => {
+			const effectiveRole = ResolveAuthProfileEffectiveRole(
+				authProfileQuery.data,
+			);
+			const hasReservedRoleAccess =
+				effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN";
+			const data = discountsQuery.data as DiscountManagementListResponse | undefined;
+
+			return {
+				discounts: data?.discounts ?? [],
+				permissions: hasReservedRoleAccess
+					? ReservedRoleDiscountPermissions
+					: (data?.permissions ?? EmptyDiscountPermissions),
+				statistics: data?.statistics ?? EmptyDiscountStatistics,
+				addDiscount: (discount) => addDiscountMutation.mutateAsync(discount),
+				addDiscounts: (discounts) => addDiscountsMutation.mutateAsync(discounts),
+				updateDiscount: (discount) => updateDiscountMutation.mutateAsync(discount),
+				isLoading: discountsQuery.isLoading,
+				isRefreshing: discountsQuery.isFetching && !discountsQuery.isLoading,
+				lastSyncedAt: discountsQuery.dataUpdatedAt,
+				isMutating:
+					addDiscountMutation.isPending ||
+					addDiscountsMutation.isPending ||
+					updateDiscountMutation.isPending,
+				refreshDiscounts,
+			};
+		},
 		[
 			addDiscountMutation,
-			discountsQuery.data,
+			addDiscountsMutation,
+			authProfileQuery.data,
 			discountsQuery.dataUpdatedAt,
+			discountsQuery.data,
+			discountsQuery.isFetching,
 			discountsQuery.isLoading,
+			refreshDiscounts,
 			updateDiscountMutation,
 		],
 	);

@@ -80,11 +80,125 @@ export function ChartsOfAccountsTableRow({
     setDroppableNodeRef(node);
   }
 
-  const visibleColumnIdSet = new Set(visibleColumnIds);
-  const isColumnVisible = (columnId: string) => visibleColumnIdSet.has(columnId);
+  const renderedColumnIds = visibleColumnIds.filter(
+    (columnId) => showParentColumn || columnId !== "parentPath",
+  );
+  const firstRenderedColumnId = renderedColumnIds[0];
   const addTitleParentAccount = accountIsSpecific ? parentAccount : account;
   const canAddAccountTitle =
-    permissions.canCreate && Boolean(addTitleParentAccount);
+    !activeDragAccount &&
+    permissions.canCreate &&
+    Boolean(addTitleParentAccount);
+
+  function renderCell(columnId: string) {
+    const showDropIndicator = dropMode && columnId === firstRenderedColumnId;
+
+    switch (columnId) {
+      case "accountNumber":
+        return (
+          <td key={columnId} className="relative px-5 py-4 font-semibold text-darknavy">
+            {showDropIndicator ? (
+              <DropPlacementIndicator
+                mode={dropMode}
+                accountName={account.accountName}
+              />
+            ) : null}
+            {account.accountNumber}
+          </td>
+        );
+      case "accountName":
+        return (
+          <td key={columnId} className="relative px-5 py-4">
+            {showDropIndicator ? (
+              <DropPlacementIndicator
+                mode={dropMode}
+                accountName={account.accountName}
+              />
+            ) : null}
+            <AccountNameCell
+              account={account}
+              canDrag={canDragRows && accountIsSpecific}
+              expandedIds={expandedIds}
+              dragAttributes={attributes}
+              dragListeners={listeners}
+              level={level}
+              showHierarchyGuides={showHierarchyGuides}
+              onToggleExpanded={onToggleExpanded}
+            />
+            {canAddAccountTitle && addTitleParentAccount ? (
+              <AddAccountTitleButton
+                parentAccount={addTitleParentAccount}
+                onAddChild={onAddChild}
+              />
+            ) : null}
+          </td>
+        );
+      case "parentPath":
+        return (
+          <td key={columnId} className="px-5 py-4 text-darknavy/70">
+            <span className="line-clamp-2 text-sm font-medium" title={parentPath}>
+              {parentPath || "--"}
+            </span>
+          </td>
+        );
+      case "accountType":
+        return (
+          <td key={columnId} className="px-5 py-4 text-center">
+            <TypeBadge type={account.accountType} />
+          </td>
+        );
+      case "accountLevel":
+        return (
+          <td key={columnId} className="px-5 py-4 text-center">
+            <Badge variant="gray">
+              {AccountLevelLabels[account.accountLevel]}
+            </Badge>
+          </td>
+        );
+      case "statementSection":
+        return (
+          <td key={columnId} className="px-5 py-4 text-center text-darknavy">
+            {account.statementSection}
+          </td>
+        );
+      case "normalBalance":
+        return (
+          <td key={columnId} className="px-5 py-4 text-center">
+            <Badge variant={account.normalBalance === "DEBIT" ? "blue" : "violet"}>
+              {NormalBalanceLabels[account.normalBalance]}
+            </Badge>
+          </td>
+        );
+      case "reportAlias":
+        return (
+          <td key={columnId} className="px-5 py-4 text-center text-darknavy">
+            {account.showInReports ? account.reportAlias : ""}
+          </td>
+        );
+      case "status":
+        return (
+          <td key={columnId} className="px-5 py-4 text-center">
+            <Badge variant={account.status === "Active" ? "green" : "gray"}>
+              {account.status}
+            </Badge>
+          </td>
+        );
+      case "actions":
+        return (
+          <td key={columnId} className="px-5 py-4 text-center">
+            <RowActions
+              account={account}
+              permissions={permissions}
+              onEdit={onEdit}
+              onStatusChange={onStatusChange}
+              onView={onView}
+            />
+          </td>
+        );
+      default:
+        return null;
+    }
+  }
 
   return (
     <motion.tr
@@ -104,95 +218,7 @@ export function ChartsOfAccountsTableRow({
         dropMode === "inside" && "bg-skyblue/10 ring-1 ring-inset ring-skyblue/25",
       )}
     >
-      {isColumnVisible("accountNumber") ? (
-        <td className="relative px-5 py-4 font-semibold text-darknavy">
-          {dropMode ? (
-            <DropPlacementIndicator
-              mode={dropMode}
-              accountName={account.accountName}
-            />
-          ) : null}
-          {account.accountNumber}
-        </td>
-      ) : null}
-      {isColumnVisible("accountName") ? (
-        <td className="relative px-5 py-4">
-          {dropMode && !isColumnVisible("accountNumber") ? (
-            <DropPlacementIndicator
-              mode={dropMode}
-              accountName={account.accountName}
-            />
-          ) : null}
-          <AccountNameCell
-            account={account}
-            canDrag={canDragRows && accountIsSpecific}
-            expandedIds={expandedIds}
-            dragAttributes={attributes}
-            dragListeners={listeners}
-            level={level}
-            showHierarchyGuides={showHierarchyGuides}
-            onToggleExpanded={onToggleExpanded}
-          />
-          {canAddAccountTitle && addTitleParentAccount ? (
-            <AddAccountTitleButton
-              parentAccount={addTitleParentAccount}
-              onAddChild={onAddChild}
-            />
-          ) : null}
-        </td>
-      ) : null}
-      {showParentColumn && isColumnVisible("parentPath") ? (
-        <td className="px-5 py-4 text-darknavy/70">
-          <span className="line-clamp-2 text-sm font-medium" title={parentPath}>
-            {parentPath || "--"}
-          </span>
-        </td>
-      ) : null}
-      {isColumnVisible("accountType") ? (
-        <td className="px-5 py-4 text-center">
-          <TypeBadge type={account.accountType} />
-        </td>
-      ) : null}
-      {isColumnVisible("accountLevel") ? (
-        <td className="px-5 py-4 text-center">
-          <Badge variant="gray">
-            {AccountLevelLabels[account.accountLevel]}
-          </Badge>
-        </td>
-      ) : null}
-      {isColumnVisible("statementSection") ? (
-        <td className="px-5 py-4 text-center text-darknavy">{account.statementSection}</td>
-      ) : null}
-      {isColumnVisible("normalBalance") ? (
-        <td className="px-5 py-4 text-center">
-          <Badge variant={account.normalBalance === "DEBIT" ? "blue" : "violet"}>
-            {NormalBalanceLabels[account.normalBalance]}
-          </Badge>
-        </td>
-      ) : null}
-      {isColumnVisible("reportAlias") ? (
-        <td className="px-5 py-4 text-center text-darknavy">
-          {account.showInReports ? account.reportAlias : ""}
-        </td>
-      ) : null}
-      {isColumnVisible("status") ? (
-        <td className="px-5 py-4 text-center">
-          <Badge variant={account.status === "Active" ? "green" : "gray"}>
-            {account.status}
-          </Badge>
-        </td>
-      ) : null}
-      {isColumnVisible("actions") ? (
-        <td className="px-5 py-4 text-center">
-          <RowActions
-            account={account}
-            permissions={permissions}
-            onEdit={onEdit}
-            onStatusChange={onStatusChange}
-            onView={onView}
-          />
-        </td>
-      ) : null}
+      {renderedColumnIds.map(renderCell)}
     </motion.tr>
   );
 }

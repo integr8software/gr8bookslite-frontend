@@ -16,6 +16,8 @@ export const MainBreadcrumbDropdownHelperText: Record<string, string> = {
     "Maintain account codes used by transactions and reports.",
   "maintenance-bank-masterfile":
     "Maintain company bank accounts and their linked Cash in Bank chart accounts.",
+  "maintenance-default-account":
+    "Maintain reusable account templates and generated Chart of Accounts records.",
   "system-administration-multi-currency-setup":
     "Configure currencies, exchange rates, preferences, and rounding rules.",
   "maintenance-discount-management":

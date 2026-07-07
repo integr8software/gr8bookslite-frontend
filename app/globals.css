@@ -652,6 +652,7 @@ button {
 }
 
 .module-table-header th {
+	background-color: #f8fafc;
 	color: color-mix(in srgb, var(--foreground) 75%, transparent);
 	font-size: 0.75rem;
 	font-weight: 600;
@@ -694,6 +695,10 @@ button {
 }
 
 :root[data-app-theme="midnight-dark"] .module-table-header {
+	background-color: var(--surface-secondary);
+}
+
+:root[data-app-theme="midnight-dark"] .module-table-header th {
 	background-color: var(--surface-secondary);
 }
 

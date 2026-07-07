@@ -35,12 +35,13 @@ export function usePaymentTypeActionPage({
 			: PaymentTypeInitialFormValues,
 	);
 	const [errors, setErrors] = useState<PaymentTypeFormErrors>({});
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	function handleInputChange<TKey extends keyof PaymentTypeFormValues>(
 		field: TKey,
 		value: PaymentTypeFormValues[TKey],
 	) {
-		if (isReadonly) {
+		if (isReadonly || isSubmitting) {
 			return;
 		}
 
@@ -48,7 +49,7 @@ export function usePaymentTypeActionPage({
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
 		if (isReadonly) {
@@ -63,21 +64,32 @@ export function usePaymentTypeActionPage({
 			return;
 		}
 
-		if (mode === "edit" && existingPaymentType) {
-			updatePaymentType(updatePaymentTypeFromForm(existingPaymentType, values));
-		} else {
-			addPaymentType(createPaymentTypeFromForm(values));
-		}
+		setIsSubmitting(true);
 
-		onSaved();
+		try {
+			if (mode === "edit" && existingPaymentType) {
+				await updatePaymentType(
+					updatePaymentTypeFromForm(existingPaymentType, values),
+				);
+			} else {
+				await addPaymentType(createPaymentTypeFromForm(values));
+			}
+
+			onSaved();
+		} catch {
+			return;
+		} finally {
+			setIsSubmitting(false);
+		}
 	}
 
 	return {
 		errors,
 		handleInputChange,
 		handleSubmit,
-		isMutating,
+		isMutating: isSubmitting || isMutating,
 		isReadonly,
+		isSubmitting: isSubmitting || isMutating,
 		values,
 	};
 }

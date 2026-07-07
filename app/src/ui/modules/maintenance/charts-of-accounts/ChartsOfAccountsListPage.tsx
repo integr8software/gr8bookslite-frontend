@@ -103,7 +103,8 @@ export function ChartsOfAccountsListPage() {
 							value: postingAccounts,
 						},
 					]}
-					className="2xl:grid-cols-6"
+					isLoading={coa.isLoading}
+					className="xl:grid-cols-6"
 				/>
 
 				<Card

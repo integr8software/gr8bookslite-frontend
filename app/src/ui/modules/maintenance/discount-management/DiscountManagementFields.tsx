@@ -1,86 +1,78 @@
 import type { ChangeEventHandler, ReactNode } from "react";
-import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import {
+	DiscountManagementStatusOptions,
+	DiscountManagementTypeOptions,
+	DiscountManagementValueTypeOptions,
+} from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
 import type {
 	DiscountManagementFormErrors,
 	DiscountManagementFormValues,
 } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
-import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
-import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
-import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 
 type DiscountManagementFieldsProps = {
-	accountOptions: ModuleChartAccount[];
 	errors: DiscountManagementFormErrors;
+	generatedAccount: {
+		accountCode: string;
+		accountGroupPath: string;
+		accountTitle: string;
+	};
 	isReadonly: boolean;
-	moduleOptions: ModuleOption[];
 	values: DiscountManagementFormValues;
-	onAccountChange: (accountId: string) => void;
 	onInputChange: ChangeEventHandler<
 		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 	>;
-	onModuleChange: (value: string | string[]) => void;
 };
 
 export function DiscountManagementFields({
-	accountOptions,
 	errors,
+	generatedAccount,
 	isReadonly,
-	moduleOptions,
 	values,
-	onAccountChange,
 	onInputChange,
-	onModuleChange,
 }: DiscountManagementFieldsProps) {
-	const moduleDropdownOptions = moduleOptions.map((option) => ({
-		name: option.label,
-		value: option.value,
-	}));
-
 	return (
-		<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
-			<div className="grid gap-4 lg:grid-cols-2">
-				<FormField label="Name" error={errors.name} required>
-					<input
-						name="name"
-						value={values.name}
-						onChange={onInputChange}
-						readOnly={isReadonly}
-						className={fieldClassName}
-						placeholder="Enter discount name"
-					/>
-				</FormField>
+		<div className="grid gap-4">
+			<FormField label="Name" error={errors.name} required>
+				<input
+					name="name"
+					value={values.name}
+					onChange={onInputChange}
+					readOnly={isReadonly}
+					className={fieldClassName}
+					placeholder="Enter discount name"
+				/>
+			</FormField>
 
-				<FormField label="Status" error={errors.status} required>
-					<select
-						name="status"
-						value={values.status}
-						onChange={onInputChange}
-						disabled={isReadonly}
-						className={selectClassName}
-					>
-						<option value="Active">Active</option>
-						<option value="Inactive">Inactive</option>
-					</select>
-				</FormField>
-
-				<FormField
-					label="Description"
-					error={errors.description}
-					required
-					className="lg:col-span-2"
+			<FormField label="Type" error={errors.type} required>
+				<select
+					name="type"
+					value={values.type}
+					onChange={onInputChange}
+					disabled={isReadonly}
+					className={selectClassName}
 				>
-					<AppLimitedTextarea
-						name="description"
-						value={values.description}
-						onChange={onInputChange}
-						readOnly={isReadonly}
-						className={`${fieldClassName} min-h-24 py-3`}
-						counterMode="used"
-						placeholder="What is this discount for?"
-					/>
-				</FormField>
+					{DiscountManagementTypeOptions.map((type) => (
+						<option key={type} value={type}>
+							{type}
+						</option>
+					))}
+				</select>
+			</FormField>
 
+			<FormField label="Description" error={errors.description} required>
+				<AppLimitedTextarea
+					name="description"
+					value={values.description}
+					onChange={onInputChange}
+					readOnly={isReadonly}
+					className={`${fieldClassName} min-h-24 py-3`}
+					counterMode="used"
+					placeholder="What is this discount for?"
+				/>
+			</FormField>
+
+			<div className="grid gap-4 lg:grid-cols-2">
 				<FormField label="Discount Type" error={errors.discountType} required>
 					<select
 						name="discountType"
@@ -89,8 +81,11 @@ export function DiscountManagementFields({
 						disabled={isReadonly}
 						className={selectClassName}
 					>
-						<option value="Percentage">Percentage</option>
-						<option value="Fixed">Fixed</option>
+						{DiscountManagementValueTypeOptions.map((type) => (
+							<option key={type} value={type}>
+								{type}
+							</option>
+						))}
 					</select>
 				</FormField>
 
@@ -112,29 +107,37 @@ export function DiscountManagementFields({
 						}
 					/>
 				</FormField>
-
-				<FormField label="Account Title" error={errors.accountId} required>
-					<ChartAccountDropdown
-						accounts={accountOptions}
-						placeholder="Search account by name or code"
-						readOnly={isReadonly}
-						value={values.accountId}
-						onChange={onAccountChange}
-					/>
-				</FormField>
-
-				<FormField label="Module" error={errors.moduleIds} required>
-					<AppAdvancedDropdown
-						options={moduleDropdownOptions}
-						placeholder="Select available module"
-						readOnly={isReadonly}
-						searchPlaceholder="Search module"
-						selectionMode="multiple"
-						value={values.moduleIds}
-						onChange={onModuleChange}
-					/>
-				</FormField>
 			</div>
+
+			{isReadonly ? (
+				<div className="grid gap-4 lg:grid-cols-2">
+					<ReadonlyField label="Account Code">
+						{generatedAccount.accountCode}
+					</ReadonlyField>
+					<ReadonlyField label="Account Title">
+						{generatedAccount.accountTitle}
+					</ReadonlyField>
+					<ReadonlyField label="Account Group" className="lg:col-span-2">
+						{generatedAccount.accountGroupPath}
+					</ReadonlyField>
+				</div>
+			) : null}
+
+			<FormField label="Status" error={errors.status} required>
+				<select
+					name="status"
+					value={values.status}
+					onChange={onInputChange}
+					disabled={isReadonly}
+					className={selectClassName}
+				>
+					{DiscountManagementStatusOptions.map((status) => (
+						<option key={status} value={status}>
+							{status}
+						</option>
+					))}
+				</select>
+			</FormField>
 		</div>
 	);
 }
@@ -165,6 +168,27 @@ function FormField({
 				</span>
 			) : null}
 		</label>
+	);
+}
+
+function ReadonlyField({
+	children,
+	className,
+	label,
+}: {
+	children: ReactNode;
+	className?: string;
+	label: string;
+}) {
+	return (
+		<div className={className}>
+			<span className="mb-2 block text-sm font-semibold text-darknavy">
+				{label}
+			</span>
+			<div className="min-h-11 rounded-md border border-darknavy/10 bg-darknavy/[0.03] px-3 py-2.5 text-sm font-medium text-darknavy">
+				{children}
+			</div>
+		</div>
 	);
 }
 

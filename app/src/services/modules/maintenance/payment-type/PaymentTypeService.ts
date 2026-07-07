@@ -1,4 +1,4 @@
-import { MockPaymentTypes } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
 	PaymentTypeClassification,
 	PaymentTypeRecord,
@@ -15,6 +15,69 @@ export type PaymentTypeListParams = {
 	type?: "" | PaymentTypeClassification;
 };
 
+type ApiPaymentTypeClassification =
+	| "CASH"
+	| "WITH_BANK"
+	| "BANK_TRANSFER"
+	| "ONLINE_PAYMENT"
+	| "MULTIPLE_CHECK"
+	| "DEBIT";
+type ApiPaymentTypeStatus = "ACTIVE" | "INACTIVE";
+
+type ApiPaymentType = {
+	id: string;
+	name: string;
+	description: string | null;
+	classification: ApiPaymentTypeClassification;
+	status: ApiPaymentTypeStatus;
+	createdBy: string | null;
+	createdAt: string;
+	updatedBy: string | null;
+	updatedAt: string;
+};
+
+export type PaymentTypePermissions = {
+	canView: boolean;
+	canCreate: boolean;
+	canUpdate: boolean;
+	canExport: boolean;
+	canImport: boolean;
+};
+
+export type PaymentTypeStatistics = {
+	totalPaymentTypes: number;
+	activePaymentTypes: number;
+	inactivePaymentTypes: number;
+	cashPaymentTypes: number;
+	withBankPaymentTypes: number;
+	bankTransferPaymentTypes: number;
+	onlinePaymentTypes: number;
+	multipleCheckPaymentTypes: number;
+	debitPaymentTypes: number;
+};
+
+export type PaymentTypeListResponse = {
+	paymentTypes: PaymentTypeRecord[];
+	statistics: PaymentTypeStatistics;
+	permissions: PaymentTypePermissions;
+};
+
+type ApiPaymentTypeListResponse = {
+	paymentTypes: ApiPaymentType[];
+	statistics: PaymentTypeStatistics;
+	permissions: PaymentTypePermissions;
+};
+
+type ApiPaymentTypeSaveResponse = {
+	paymentType: ApiPaymentType;
+};
+
+type ApiPaymentTypeImportResponse = {
+	paymentTypes: ApiPaymentType[];
+};
+
+const PaymentTypesPath = "/maintenance/financial-management/payment-types";
+
 const paymentTypeCollator = new Intl.Collator(undefined, {
 	numeric: true,
 	sensitivity: "base",
@@ -22,20 +85,54 @@ const paymentTypeCollator = new Intl.Collator(undefined, {
 
 export async function fetchPaymentTypes(
 	params: PaymentTypeListParams = {},
-): Promise<PaymentTypeRecord[]> {
-	return applyPaymentTypeListParams(MockPaymentTypes, params);
+): Promise<PaymentTypeListResponse> {
+	const response = await ApiClient.get<ApiPaymentTypeListResponse>(
+		PaymentTypesPath,
+		{
+			params: toApiPaymentTypeListParams(params),
+		},
+	);
+
+	return {
+		paymentTypes: response.data.paymentTypes.map(mapApiPaymentType),
+		statistics: response.data.statistics,
+		permissions: response.data.permissions,
+	};
 }
 
 export async function createPaymentType(
 	paymentType: PaymentTypeRecord,
 ): Promise<PaymentTypeRecord> {
-	return paymentType;
+	const response = await ApiClient.post<ApiPaymentTypeSaveResponse>(
+		PaymentTypesPath,
+		toApiPaymentTypePayload(paymentType),
+	);
+
+	return mapApiPaymentType(response.data.paymentType);
 }
 
 export async function updatePaymentType(
 	paymentType: PaymentTypeRecord,
 ): Promise<PaymentTypeRecord> {
-	return paymentType;
+	const response = await ApiClient.patch<ApiPaymentTypeSaveResponse>(
+		`${PaymentTypesPath}/${paymentType.id}`,
+		toApiPaymentTypePayload(paymentType),
+	);
+
+	return mapApiPaymentType(response.data.paymentType);
+}
+
+export async function importPaymentTypes(
+	paymentTypes: PaymentTypeRecord[],
+): Promise<PaymentTypeRecord[]> {
+	const response = await ApiClient.post<ApiPaymentTypeImportResponse>(
+		`${PaymentTypesPath}/import`,
+		{
+			paymentTypes: paymentTypes.map(toApiPaymentTypePayload),
+		},
+	);
+
+	return response.data.paymentTypes.map(mapApiPaymentType);
 }
 
 export function applyPaymentTypeListParams(
@@ -64,4 +161,85 @@ export function applyPaymentTypeListParams(
 
 			return sortDirection === "asc" ? result : -result;
 		});
+}
+
+function mapApiPaymentType(paymentType: ApiPaymentType): PaymentTypeRecord {
+	return {
+		id: paymentType.id,
+		description: paymentType.description ?? "",
+		paymentType: paymentType.name,
+		status: mapStatusFromApi(paymentType.status),
+		type: mapClassificationFromApi(paymentType.classification),
+		createdBy: paymentType.createdBy ?? "System Generated",
+		createdAt: paymentType.createdAt,
+		updatedBy: paymentType.updatedBy,
+		updatedAt: paymentType.updatedAt,
+	};
+}
+
+function toApiPaymentTypePayload(paymentType: PaymentTypeRecord) {
+	return {
+		name: paymentType.paymentType.trim(),
+		description: paymentType.description.trim(),
+		classification: mapClassificationToApi(paymentType.type),
+		status: mapStatusToApi(paymentType.status),
+	};
+}
+
+function toApiPaymentTypeListParams(params: PaymentTypeListParams) {
+	return {
+		search: params.search?.trim() || undefined,
+		sortBy: mapSortKeyToApi(params.sortBy),
+		sortDirection: params.sortDirection,
+		status: params.status ? mapStatusToApi(params.status) : undefined,
+		classification: params.type
+			? mapClassificationToApi(params.type)
+			: undefined,
+	};
+}
+
+function mapSortKeyToApi(sortBy?: PaymentTypeSortKey) {
+	if (!sortBy) {
+		return undefined;
+	}
+
+	if (sortBy === "paymentType") {
+		return "name";
+	}
+
+	if (sortBy === "type") {
+		return "classification";
+	}
+
+	return sortBy;
+}
+
+function mapClassificationFromApi(
+	value: ApiPaymentTypeClassification,
+): PaymentTypeClassification {
+	if (value === "CASH") return "Cash";
+	if (value === "WITH_BANK") return "With Bank";
+	if (value === "BANK_TRANSFER") return "Bank Transfer";
+	if (value === "ONLINE_PAYMENT") return "Online Payment";
+	if (value === "MULTIPLE_CHECK") return "Multiple Check";
+	return "Debit";
+}
+
+function mapClassificationToApi(
+	value: PaymentTypeClassification,
+): ApiPaymentTypeClassification {
+	if (value === "Cash") return "CASH";
+	if (value === "With Bank") return "WITH_BANK";
+	if (value === "Bank Transfer") return "BANK_TRANSFER";
+	if (value === "Online Payment") return "ONLINE_PAYMENT";
+	if (value === "Multiple Check") return "MULTIPLE_CHECK";
+	return "DEBIT";
+}
+
+function mapStatusFromApi(value: ApiPaymentTypeStatus): PaymentTypeStatus {
+	return value === "ACTIVE" ? "Active" : "Inactive";
+}
+
+function mapStatusToApi(value: PaymentTypeStatus): ApiPaymentTypeStatus {
+	return value === "Active" ? "ACTIVE" : "INACTIVE";
 }

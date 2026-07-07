@@ -4,6 +4,7 @@ export const MODULE_ROUTE_MAP = {
   DO: "/dashboard",
   COA: "/maintenance/charts-of-accounts",
   BM: "/maintenance/bank-masterfile",
+  DA: "/maintenance/default-account",
   PM: "/maintenance/party-management",
   I: "/maintenance/item-management/items",
   IB: "/maintenance/item-management/item-bundles",

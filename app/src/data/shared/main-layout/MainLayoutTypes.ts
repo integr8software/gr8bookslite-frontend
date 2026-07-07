@@ -44,6 +44,7 @@ export type MainAccessKey =
   | "fixedAsset"
   | "maintenance.chartOfAccounts"
   | "maintenance.bankMasterfile"
+  | "maintenance.defaultAccount"
   | "maintenance.currency"
   | "maintenance.party"
   | "maintenance.discount"

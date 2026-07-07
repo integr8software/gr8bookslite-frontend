@@ -14,7 +14,7 @@ import type {
   AccountLevel,
   AccountType,
   ChartAccount,
-  ChartAccountFormValues,
+  ChartsOfAccountsAccountFieldsProps,
   NormalBalance,
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import {
@@ -27,24 +27,6 @@ import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-
-type AccountFieldsProps = {
-  account: ChartAccount | null;
-  accounts: ChartAccount[];
-  accountCodeError?: string;
-  accountNameError?: string;
-  availableAccountLevels: AccountLevel[];
-  isAccountCodeLoading?: boolean;
-  isReadOnly?: boolean;
-  parentAccountError?: string;
-  submitted: boolean;
-  values: ChartAccountFormValues;
-  onFieldChange: <Key extends keyof ChartAccountFormValues>(
-    key: Key,
-    value: ChartAccountFormValues[Key],
-  ) => void;
-  onParentChange: (parentId: string | null) => void;
-};
 
 export function ChartsOfAccountsAccountFields({
   account,
@@ -59,7 +41,7 @@ export function ChartsOfAccountsAccountFields({
   values,
   onFieldChange,
   onParentChange,
-}: AccountFieldsProps) {
+}: ChartsOfAccountsAccountFieldsProps) {
   const standardNormalBalance = getStandardNormalBalance(values.accountType);
   const standardStatementSection = getStandardStatementSection(
     values.accountType,

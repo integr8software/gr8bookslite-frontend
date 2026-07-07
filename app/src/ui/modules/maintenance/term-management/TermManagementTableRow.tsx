@@ -1,18 +1,12 @@
-import type { Row } from "@tanstack/react-table";
 import type { TermManagementPermissions } from "@/app/src/services/modules/maintenance/term-management/TermManagementApi";
-import type { TermManagement } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
+import type {
+	TermManagement,
+	TermManagementTableRowProps,
+} from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-
-type TermManagementTableRowProps = {
-	row: Row<TermManagement>;
-	permissions: TermManagementPermissions;
-	onEditTerm: (term: TermManagement) => void;
-	onToggleStatus: (term: TermManagement) => void;
-	onViewTerm: (term: TermManagement) => void;
-};
 
 export function TermManagementTableRow({
 	row,

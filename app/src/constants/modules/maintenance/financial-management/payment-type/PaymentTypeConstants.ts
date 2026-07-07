@@ -18,6 +18,11 @@ export const PaymentTypeTitle = "Payment Type";
 export const PaymentTypeDescription =
 	"Maintain payment type names, categories, and active status for cash disbursement workflows.";
 
+export const PaymentTypeDrawerFormId = "payment-type-drawer-form";
+
+export const PaymentTypeFieldClassName =
+	"h-11 w-full rounded-lg border border-darknavy/12 bg-white px-3 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15 disabled:bg-darknavy/5 read-only:bg-darknavy/5";
+
 export const PaymentTypeTablePaginationStorageKey =
 	"maintenance:financial-management:payment-type";
 

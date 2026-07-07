@@ -18,6 +18,15 @@ export const BankMasterfileTitle = "Bank Masterfile";
 export const BankMasterfileDescription =
 	"Maintain company bank accounts and their linked Cash in Bank chart accounts.";
 
+export const BankMasterfileDrawerFormId = "bank-masterfile-drawer-form";
+
+export const BankMasterfileFieldClassName =
+	"h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.03] disabled:text-darknavy/70 disabled:placeholder:text-darknavy/32 read-only:bg-darknavy/[0.03] read-only:text-darknavy/70";
+
+export const BankMasterfileReadOnlyFieldClassName = `${BankMasterfileFieldClassName} bg-darknavy/[0.03] font-semibold text-darknavy/80`;
+
+export const BankMasterfileSelectClassName = `app-select-control ${BankMasterfileFieldClassName} enabled:bg-white enabled:text-darknavy disabled:bg-darknavy/[0.03] disabled:text-darknavy/70`;
+
 export const BankMasterfileTablePaginationStorageKey =
 	"maintenance:financial-management:bank-masterfile";
 

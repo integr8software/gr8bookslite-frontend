@@ -1,4 +1,5 @@
-import type { Table } from "@tanstack/react-table";
+import type { ChangeEventHandler } from "react";
+import type { Row, Table } from "@tanstack/react-table";
 import type { TermManagementPermissions } from "@/app/src/services/modules/maintenance/term-management/TermManagementApi";
 
 export type TermManagementDatemode = "Day" | "Month" | "Year";
@@ -44,6 +45,23 @@ export type TermManagementDrawerState =
 	  }
 	| null;
 
+export type TermManagementDrawerProps = {
+	initialValues?: TermManagementFormValues;
+	isOpen: boolean;
+	mode: TermManagementActionMode;
+	onClose: () => void;
+	term?: TermManagement;
+};
+
+export type TermManagementFieldsProps = {
+	errors: TermManagementFormErrors;
+	isReadonly: boolean;
+	values: TermManagementFormValues;
+	onInputChange: ChangeEventHandler<
+		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+	>;
+};
+
 export type TermManagementTableColumnKey =
 	| "name"
 	| "description"
@@ -71,6 +89,14 @@ export type TermManagementTableProps = {
 	onQueryChange: (value: string) => void;
 	onRefresh: () => void;
 	onStatusFilterChange: (value: TermManagementStatusFilter) => void;
+	onToggleStatus: (term: TermManagement) => void;
+	onViewTerm: (term: TermManagement) => void;
+};
+
+export type TermManagementTableRowProps = {
+	row: Row<TermManagement>;
+	permissions: TermManagementPermissions;
+	onEditTerm: (term: TermManagement) => void;
 	onToggleStatus: (term: TermManagement) => void;
 	onViewTerm: (term: TermManagement) => void;
 };

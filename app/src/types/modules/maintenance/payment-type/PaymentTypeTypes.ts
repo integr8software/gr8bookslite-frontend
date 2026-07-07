@@ -2,7 +2,7 @@ import type {
 	DisbursementPaymentClassification,
 	DisbursementPaymentMethod,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import type { Table } from "@tanstack/react-table";
+import type { Row, Table } from "@tanstack/react-table";
 import type { PaymentTypePermissions } from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeService";
 
 export type PaymentTypeStatus = "Active" | "Inactive";
@@ -41,6 +41,13 @@ export type DrawerState =
 
 export type PaymentTypeDrawerState = DrawerState;
 
+export type PaymentTypeDrawerProps = {
+	isOpen: boolean;
+	mode: PaymentTypeActionMode;
+	onClose: () => void;
+	paymentType?: PaymentTypeRecord;
+};
+
 export type PaymentTypeTableProps = {
 	filteredPaymentTypes: PaymentTypeRecord[];
 	isLoading: boolean;
@@ -58,6 +65,14 @@ export type PaymentTypeTableProps = {
 	onStatusFilterChange: (value: PaymentTypeStatusFilter) => void;
 	onToggleStatus: (paymentType: PaymentTypeRecord) => void;
 	onTypeFilterChange: (value: PaymentTypeClassificationFilter) => void;
+	onView: (paymentType: PaymentTypeRecord) => void;
+};
+
+export type PaymentTypeTableRowProps = {
+	row: Row<PaymentTypeRecord>;
+	permissions: PaymentTypePermissions;
+	onEdit: (paymentType: PaymentTypeRecord) => void;
+	onToggleStatus: (paymentType: PaymentTypeRecord) => void;
 	onView: (paymentType: PaymentTypeRecord) => void;
 };
 

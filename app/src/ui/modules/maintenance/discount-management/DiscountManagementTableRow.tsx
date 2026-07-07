@@ -1,21 +1,12 @@
-import type { Row } from "@tanstack/react-table";
 import type {
 	DiscountManagementPermissions,
 	DiscountManagementTableRecord,
+	DiscountManagementTableRowProps,
 } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-
-type DiscountManagementTableRowProps = {
-	discount: DiscountManagementTableRecord;
-	permissions: DiscountManagementPermissions;
-	row?: Row<DiscountManagementTableRecord>;
-	onEditDiscount: (discount: DiscountManagementTableRecord) => void;
-	onToggleStatus: (discount: DiscountManagementTableRecord) => void;
-	onViewDiscount: (discount: DiscountManagementTableRecord) => void;
-};
 
 export function DiscountManagementTableRow({
 	discount,

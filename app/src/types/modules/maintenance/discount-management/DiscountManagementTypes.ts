@@ -1,4 +1,5 @@
-import type { Table } from "@tanstack/react-table";
+import type { ChangeEventHandler } from "react";
+import type { Row, Table } from "@tanstack/react-table";
 
 export type DiscountType = "Percentage" | "Fixed";
 export type DiscountTransactionType = "Purchase" | "Sales";
@@ -43,6 +44,13 @@ export type DiscountManagementDrawerState =
 			mode: DiscountManagementActionMode;
 	  }
 	| null;
+
+export type DiscountManagementDrawerProps = {
+	discount?: Discount;
+	isOpen: boolean;
+	mode: DiscountManagementActionMode;
+	onClose: () => void;
+};
 
 export type DiscountManagementTableColumnKey =
 	| "name"
@@ -95,6 +103,29 @@ export type DiscountManagementTableProps = {
 	onStatusFilterChange: (value: DiscountStatusFilter) => void;
 	onToggleStatus: (discount: DiscountManagementTableRecord) => void;
 	onTypeFilterChange: (value: DiscountTypeFilter) => void;
+	onViewDiscount: (discount: DiscountManagementTableRecord) => void;
+};
+
+export type DiscountManagementFieldsProps = {
+	errors: DiscountManagementFormErrors;
+	generatedAccount: {
+		accountCode: string;
+		accountGroupPath: string;
+		accountTitle: string;
+	};
+	isReadonly: boolean;
+	values: DiscountManagementFormValues;
+	onInputChange: ChangeEventHandler<
+		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+	>;
+};
+
+export type DiscountManagementTableRowProps = {
+	discount: DiscountManagementTableRecord;
+	permissions: DiscountManagementPermissions;
+	row?: Row<DiscountManagementTableRecord>;
+	onEditDiscount: (discount: DiscountManagementTableRecord) => void;
+	onToggleStatus: (discount: DiscountManagementTableRecord) => void;
 	onViewDiscount: (discount: DiscountManagementTableRecord) => void;
 };
 

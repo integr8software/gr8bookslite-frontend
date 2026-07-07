@@ -15,6 +15,8 @@ export const DefaultAccountTitle = "Default Accounts";
 export const DefaultAccountDescription =
 	"Maintain reusable account templates that automatically create linked Chart of Accounts records.";
 
+export const DefaultAccountDrawerFormId = "default-account-drawer-form";
+
 export const DefaultAccountTablePaginationStorageKey =
 	"maintenance:financial-management:default-account";
 

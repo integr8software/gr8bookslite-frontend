@@ -2,6 +2,7 @@
 
 import {
   Suspense,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -2167,10 +2168,10 @@ function VoucherDataEntry({
   const particularsEditorEntry =
     entries.find((entry) => entry.id === particularsEditorEntryId) ?? null;
 
-  function updateExpenseEntryFields(
+  const updateExpenseEntryFields = useCallback((
     entryId: string,
     updates: Partial<DisbursementLineEntry>,
-  ) {
+  ) => {
     const isCashPayment =
       paymentTypeRecord?.type === "Cash" ||
       paymentMethod.trim().toLowerCase() === "cash";
@@ -2181,7 +2182,13 @@ function VoucherDataEntry({
     }
 
     onReplaceEntries(createCashExpenseBalancedEntries(entries, entryId, updates));
-  }
+  }, [
+    entries,
+    onReplaceEntries,
+    onUpdateEntryFields,
+    paymentMethod,
+    paymentTypeRecord?.type,
+  ]);
 
   const allColumns = useMemo<
     Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>
@@ -2207,7 +2214,7 @@ function VoucherDataEntry({
         widthClassName: "w-[18rem]",
         renderCell: (entry) => (
           <ChartAccountDropdown
-            accounts={expenseAccounts}
+            accounts={chartAccounts}
             value={entry.accountName}
             valueField="accountName"
             readOnly={isReadonly}
@@ -2540,7 +2547,6 @@ function VoucherDataEntry({
       expenseAccounts,
       isReadonly,
       onOpenEntryTaxEditor,
-      onUpdateEntryFields,
       updateExpenseEntryFields,
     ],
   );

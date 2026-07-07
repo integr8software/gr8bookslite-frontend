@@ -21,11 +21,6 @@ export const TermManagementDescription =
 
 export const TermManagementDrawerFormId = "term-management-drawer-form";
 
-export const TermManagementFieldClassName =
-	"h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.03] disabled:text-darknavy/70 disabled:placeholder:text-darknavy/32 read-only:bg-darknavy/[0.03] read-only:text-darknavy/70";
-
-export const TermManagementSelectClassName = `app-select-control ${TermManagementFieldClassName} enabled:bg-white enabled:text-darknavy disabled:bg-darknavy/[0.03] disabled:text-darknavy/70`;
-
 export const TermManagementTablePaginationStorageKey =
 	"maintenance:financial-management:term-management";
 
@@ -96,16 +91,16 @@ export const TermManagementExportColumns: ModuleTableExportColumn<TermManagement
 		),
 	];
 
-export const TermManagementDatemodeOptions = [
+export const TermManagementDatemodeOptions: TermManagementDatemode[] = [
 	"Day",
 	"Month",
 	"Year",
-] as const satisfies readonly TermManagementDatemode[];
+];
 
-export const TermManagementStatusOptions = [
+export const TermManagementStatusOptions: TermManagementStatus[] = [
 	"Active",
 	"Inactive",
-] as const satisfies readonly TermManagementStatus[];
+];
 
 export const TermManagementActionCopy = {
 	add: {

@@ -101,7 +101,7 @@ export function TermManagementListPage() {
 			<ModuleStatisticCards
 				items={statisticCards}
 				isLoading={page.isLoading}
-				className="2xl:grid-cols-6"
+				className="xl:grid-cols-6"
 			/>
 
 			<TermManagementTable

@@ -2,6 +2,7 @@
 
 import { type ChangeEvent, type FormEvent, useState } from "react";
 import { useDefaultAccountStore } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccount";
+import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
 import type {
 	DefaultAccount,
 	DefaultAccountActionMode,
@@ -11,6 +12,7 @@ import type {
 
 const EmptyDefaultAccountFormValues: DefaultAccountFormValues = {
 	type: "EXPENSE",
+	defaultAccountName: "",
 	description: "",
 	status: "Active",
 };
@@ -35,6 +37,7 @@ export function useDefaultAccountFormPage({
 		existingDefaultAccount
 			? {
 					type: existingDefaultAccount.type,
+					defaultAccountName: existingDefaultAccount.defaultAccountName,
 					description: existingDefaultAccount.description,
 					status: existingDefaultAccount.status,
 				}
@@ -44,17 +47,18 @@ export function useDefaultAccountFormPage({
 	const isReadonly = mode === "view";
 
 	function handleInputChange(
-		event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+		event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
 	) {
 		const { name, value } = event.target;
 		setValues((current) => ({ ...current, [name]: value }));
+		setErrors((current) => ({ ...current, [name]: undefined }));
 	}
 
 	function validate() {
 		const nextErrors: DefaultAccountFormErrors = {};
 
-		if (!values.description.trim()) {
-			nextErrors.description = "Description is required.";
+		if (!values.defaultAccountName.trim()) {
+			nextErrors.defaultAccountName = "Default Account Name is required.";
 		}
 
 		setErrors(nextErrors);
@@ -68,10 +72,32 @@ export function useDefaultAccountFormPage({
 			return;
 		}
 
-		if (mode === "edit" && existingDefaultAccount) {
-			await updateDefaultAccount({ ...existingDefaultAccount, ...values });
-		} else {
-			await addDefaultAccount(values);
+		try {
+			if (mode === "edit" && existingDefaultAccount) {
+				await updateDefaultAccount({ ...existingDefaultAccount, ...values });
+			} else {
+				await addDefaultAccount(values);
+			}
+		} catch (error) {
+			if (
+				error instanceof ApiClientError &&
+				error.message.toLowerCase().includes("default account name")
+			) {
+				setErrors((current) => ({
+					...current,
+					defaultAccountName: error.message,
+				}));
+				return;
+			}
+
+			setErrors((current) => ({
+				...current,
+				defaultAccountName:
+					error instanceof Error
+						? error.message
+						: "Could not save default account.",
+			}));
+			return;
 		}
 
 		onSaved();

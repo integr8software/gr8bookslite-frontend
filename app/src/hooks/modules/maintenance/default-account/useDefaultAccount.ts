@@ -8,7 +8,6 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
 import {
 	createDefaultAccount,
-	deleteDefaultAccount,
 	fetchDefaultAccounts,
 	updateDefaultAccount,
 	updateDefaultAccountStatus,
@@ -30,7 +29,6 @@ type DefaultAccountStoreState = {
 	updateDefaultAccountStatus: (
 		account: DefaultAccount,
 	) => Promise<DefaultAccount>;
-	deleteDefaultAccount: (account: DefaultAccount) => Promise<DefaultAccount>;
 	permissions: DefaultAccountPermissions;
 	statistics: DefaultAccountStatistics;
 	refreshDefaultAccounts: () => void;
@@ -52,7 +50,7 @@ const ReservedRolePermissions: DefaultAccountPermissions = {
 	canView: true,
 	canCreate: true,
 	canUpdate: true,
-	canDelete: true,
+	canDelete: false,
 	canExport: true,
 };
 
@@ -126,20 +124,6 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
 			);
 		},
 	});
-	const deleteDefaultAccountMutation = useMutation({
-		mutationFn: deleteDefaultAccount,
-		onSuccess: () => {
-			refreshDefaultAccounts();
-			toast.success("Default account deleted successfully.");
-		},
-		onError: (error) => {
-			toast.error(
-				error instanceof Error
-					? error.message
-					: "Could not delete default account. Please try again.",
-			);
-		},
-	});
 	const state = useMemo<DefaultAccountStoreState>(() => {
 		const effectiveRole = ResolveAuthProfileEffectiveRole(authProfileQuery.data);
 		const hasReservedRoleAccess =
@@ -157,8 +141,6 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
 				updateDefaultAccountMutation.mutateAsync(account),
 			updateDefaultAccountStatus: (account) =>
 				updateDefaultAccountStatusMutation.mutateAsync(account),
-			deleteDefaultAccount: (account) =>
-				deleteDefaultAccountMutation.mutateAsync(account),
 			refreshDefaultAccounts,
 			isLoading: defaultAccountsQuery.isLoading,
 			isRefreshing:
@@ -167,8 +149,7 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
 			isMutating:
 				addDefaultAccountMutation.isPending ||
 				updateDefaultAccountMutation.isPending ||
-				updateDefaultAccountStatusMutation.isPending ||
-				deleteDefaultAccountMutation.isPending,
+				updateDefaultAccountStatusMutation.isPending,
 		};
 	}, [
 		addDefaultAccountMutation,
@@ -177,7 +158,6 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
 		defaultAccountsQuery.dataUpdatedAt,
 		defaultAccountsQuery.isFetching,
 		defaultAccountsQuery.isLoading,
-		deleteDefaultAccountMutation,
 		refreshDefaultAccounts,
 		updateDefaultAccountMutation,
 		updateDefaultAccountStatusMutation,

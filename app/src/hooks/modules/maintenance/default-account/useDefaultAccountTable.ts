@@ -34,10 +34,10 @@ const DefaultColumnOrder = DefaultAccountTableColumns.map((column) =>
 	"key" in column ? column.key : "actions",
 );
 const DefaultColumnVisibility: VisibilityState = {
-	createdAt: false,
-	updatedAt: false,
+	description: false,
+	accountCode: false,
 };
-const DefaultSorting: SortingState = [{ id: "description", desc: false }];
+const DefaultSorting: SortingState = [{ id: "defaultAccountName", desc: false }];
 
 type DefaultAccountTablePreferences = {
 	columnOrder: ColumnOrderState;
@@ -273,13 +273,22 @@ function createDefaultAccountColumn(
 	header: string,
 	className: string,
 ): ColumnDef<DefaultAccount> {
-	if (key === "generatedAccounts") {
+	if (key === "accountCode") {
 		return {
 			id: key,
 			accessorFn: (row) =>
-				row.generatedAccounts
-					.map((account) => `${account.accountCode} ${account.accountTitle}`)
-					.join(" "),
+				row.generatedAccounts.map((account) => account.accountCode).join(" "),
+			header,
+			sortingFn: "alphanumeric",
+			meta: { className, label: header },
+		};
+	}
+
+	if (key === "accountName") {
+		return {
+			id: key,
+			accessorFn: (row) =>
+				row.generatedAccounts.map((account) => account.accountTitle).join(" "),
 			header,
 			sortingFn: "alphanumeric",
 			meta: { className, label: header },

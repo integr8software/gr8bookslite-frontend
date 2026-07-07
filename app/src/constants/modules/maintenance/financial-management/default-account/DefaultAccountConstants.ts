@@ -20,6 +20,11 @@ export const DefaultAccountTablePaginationStorageKey =
 
 export const DefaultAccountTableColumns = [
 	{
+		key: "defaultAccountName",
+		label: "Default Name",
+		className: "w-[24%]",
+	},
+	{
 		key: "description",
 		label: "Description",
 		className: "w-[24%]",
@@ -27,27 +32,22 @@ export const DefaultAccountTableColumns = [
 	{
 		key: "type",
 		label: "Type",
-		className: "w-[15%]",
+		className: "w-[14%]",
 	},
 	{
-		key: "generatedAccounts",
-		label: "Generated Accounts",
-		className: "w-[34%]",
+		key: "accountCode",
+		label: "Account Code",
+		className: "w-[16%]",
+	},
+	{
+		key: "accountName",
+		label: "Account Name",
+		className: "w-[30%]",
 	},
 	{
 		key: "status",
 		label: "Status",
 		className: "w-[11%]",
-	},
-	{
-		key: "createdAt",
-		label: "Date Created",
-		className: "w-[16%]",
-	},
-	{
-		key: "updatedAt",
-		label: "Date Modified",
-		className: "w-[16%]",
 	},
 	{
 		label: "Action",
@@ -85,6 +85,11 @@ export const DefaultAccountActionCopy = {
 
 export const DefaultAccountExportColumns: ModuleTableExportColumn<DefaultAccount>[] =
 	[
+		{
+			header: "Default Name",
+			id: "defaultAccountName",
+			value: "defaultAccountName",
+		},
 		{ header: "Description", id: "description", value: "description" },
 		{
 			header: "Type",
@@ -93,11 +98,17 @@ export const DefaultAccountExportColumns: ModuleTableExportColumn<DefaultAccount
 		},
 		{ header: "Status", id: "status", value: "status" },
 		{
-			header: "Generated Accounts",
-			id: "generated",
+			header: "Account Code",
+			id: "accountCode",
+			value: (row) =>
+				row.generatedAccounts.map((account) => account.accountCode).join("; "),
+		},
+		{
+			header: "Account Name",
+			id: "accountName",
 			value: (row) =>
 				row.generatedAccounts
-					.map((account) => `${account.accountCode} ${account.accountTitle}`)
+					.map((account) => account.accountTitle)
 					.join("; "),
 		},
 	];

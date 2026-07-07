@@ -81,21 +81,12 @@ export async function updateDefaultAccountStatus(
 	return mapApiDefaultAccount(response.data.defaultAccount);
 }
 
-export async function deleteDefaultAccount(
-	account: DefaultAccount,
-): Promise<DefaultAccount> {
-	const response = await ApiClient.delete<ApiDefaultAccountSaveResponse>(
-		`${DefaultAccountApiPath}/${account.id}`,
-	);
-
-	return mapApiDefaultAccount(response.data.defaultAccount);
-}
-
 function mapApiDefaultAccount(account: ApiDefaultAccount): DefaultAccount {
 	return {
 		id: account.id,
 		type: account.type,
-		description: account.description,
+		defaultAccountName: account.defaultAccountName,
+		description: account.description ?? "",
 		status: mapStatusFromApi(account.status),
 		generatedAccounts: account.generatedAccounts,
 		createdAt: account.createdAt,
@@ -106,6 +97,7 @@ function mapApiDefaultAccount(account: ApiDefaultAccount): DefaultAccount {
 function toApiPayload(account: DefaultAccount | DefaultAccountFormValues) {
 	return {
 		type: account.type,
+		defaultAccountName: account.defaultAccountName.trim(),
 		description: account.description.trim(),
 		status: mapStatusToApi(account.status),
 	};

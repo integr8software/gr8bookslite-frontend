@@ -5,7 +5,9 @@ import {
 	CheckCircle2,
 	CirclePause,
 	FileCog,
-	Layers3,
+	Package,
+	ReceiptText,
+	WalletCards,
 } from "lucide-react";
 import { useDefaultAccountListPage } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccountListPage";
 import type {
@@ -32,7 +34,7 @@ export function DefaultAccountListPage() {
 			{
 				icon: FileCog,
 				iconClassName: "bg-skyblue/20 text-skyblue",
-				label: "Total Templates",
+				label: "Total",
 				summary: "All default accounts",
 				value: page.statistics.totalDefaultAccounts,
 			},
@@ -51,9 +53,23 @@ export function DefaultAccountListPage() {
 				value: page.statistics.inactiveDefaultAccounts,
 			},
 			{
-				icon: Layers3,
+				icon: ReceiptText,
 				iconClassName: "bg-cyan-50 text-cyan-700",
-				label: "Fixed Assets",
+				label: "Collection",
+				summary: "Revenue templates",
+				value: page.statistics.collectionDefaultAccounts,
+			},
+			{
+				icon: WalletCards,
+				iconClassName: "bg-rose-50 text-rose-700",
+				label: "Expense",
+				summary: "Expense templates",
+				value: page.statistics.expenseDefaultAccounts,
+			},
+			{
+				icon: Package,
+				iconClassName: "bg-cyan-50 text-cyan-700",
+				label: "Fixed Asset",
 				summary: "Asset templates",
 				value: page.statistics.fixedAssetDefaultAccounts,
 			},
@@ -70,7 +86,7 @@ export function DefaultAccountListPage() {
 			<ModuleStatisticCards
 				items={statisticCards}
 				isLoading={page.isLoading}
-				className="xl:grid-cols-4"
+				className="xl:grid-cols-6"
 			/>
 			<DefaultAccountTable
 				defaultAccounts={page.defaultAccounts}
@@ -83,7 +99,6 @@ export function DefaultAccountListPage() {
 				query={page.query}
 				statusFilter={page.statusFilter}
 				typeFilter={page.typeFilter}
-				onDeleteDefaultAccount={page.setPendingDeleteAccount}
 				onEditDefaultAccount={(selected) =>
 					setDrawerState({ mode: "edit", defaultAccount: selected })
 				}
@@ -112,8 +127,8 @@ export function DefaultAccountListPage() {
 				}
 				description={
 					page.pendingStatusAccount?.status === "Active"
-						? `${page.pendingStatusAccount.description} will no longer be available for new setup selection.`
-						: `${page.pendingStatusAccount?.description ?? "This default account"} will be available again.`
+						? `${page.pendingStatusAccount.defaultAccountName} will no longer be available for new setup selection.`
+						: `${page.pendingStatusAccount?.defaultAccountName ?? "This default account"} will be available again.`
 				}
 				confirmLabel={
 					page.pendingStatusAccount?.status === "Active" ? "Inactivate" : "Activate"
@@ -121,16 +136,6 @@ export function DefaultAccountListPage() {
 				tone={page.pendingStatusAccount?.status === "Active" ? "danger" : "success"}
 				onCancel={() => page.setPendingStatusAccount(null)}
 				onConfirm={page.confirmStatusChange}
-			/>
-			<AppDialog
-				isOpen={Boolean(page.pendingDeleteAccount)}
-				isPending={page.isMutating}
-				title="Delete default account?"
-				description={`${page.pendingDeleteAccount?.description ?? "This default account"} and its generated accounts will be inactivated.`}
-				confirmLabel="Delete"
-				tone="danger"
-				onCancel={() => page.setPendingDeleteAccount(null)}
-				onConfirm={page.confirmDelete}
 			/>
 		</section>
 	);

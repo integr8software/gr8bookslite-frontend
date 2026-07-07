@@ -25,6 +25,7 @@ export type GeneratedDefaultAccount = {
 export type DefaultAccount = {
 	id: string;
 	type: DefaultAccountType;
+	defaultAccountName: string;
 	description: string;
 	status: DefaultAccountStatus;
 	generatedAccounts: GeneratedDefaultAccount[];
@@ -34,6 +35,7 @@ export type DefaultAccount = {
 
 export type DefaultAccountFormValues = {
 	type: DefaultAccountType;
+	defaultAccountName: string;
 	description: string;
 	status: DefaultAccountStatus;
 };
@@ -47,12 +49,12 @@ export type DefaultAccountStatusFilter = "" | DefaultAccountStatus;
 export type DefaultAccountTypeFilter = "" | DefaultAccountType;
 
 export type DefaultAccountTableColumnKey =
+	| "defaultAccountName"
 	| "description"
 	| "type"
-	| "generatedAccounts"
-	| "status"
-	| "createdAt"
-	| "updatedAt";
+	| "accountCode"
+	| "accountName"
+	| "status";
 
 export type DefaultAccountPermissions = {
 	canView: boolean;
@@ -74,6 +76,7 @@ export type DefaultAccountStatistics = {
 export type ApiDefaultAccount = {
 	id: string;
 	type: DefaultAccountType;
+	defaultAccountName: string;
 	description: string;
 	status: ApiDefaultAccountStatus;
 	generatedAccounts: GeneratedDefaultAccount[];
@@ -112,7 +115,6 @@ export type DefaultAccountTableProps = {
 	query: string;
 	statusFilter: DefaultAccountStatusFilter;
 	typeFilter: DefaultAccountTypeFilter;
-	onDeleteDefaultAccount: (account: DefaultAccount) => void;
 	onEditDefaultAccount: (account: DefaultAccount) => void;
 	onQueryChange: (value: string) => void;
 	onRefresh: () => void;

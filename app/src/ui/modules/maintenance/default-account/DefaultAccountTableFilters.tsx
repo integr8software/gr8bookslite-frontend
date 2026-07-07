@@ -41,7 +41,7 @@ export function DefaultAccountTableFilters({
 					label="Search default accounts"
 					value={query}
 					onChange={onQueryChange}
-					placeholder="Search by description, type, status, or generated account"
+					placeholder="Search by name, description, type, status, or account"
 				/>
 				<ModuleTableFilterSelect
 					label="Type"

@@ -13,9 +13,6 @@ export function useDefaultAccountListPage() {
 	const updateDefaultAccountStatus = useDefaultAccountStore(
 		(state) => state.updateDefaultAccountStatus,
 	);
-	const deleteDefaultAccount = useDefaultAccountStore(
-		(state) => state.deleteDefaultAccount,
-	);
 	const isLoading = useDefaultAccountStore((state) => state.isLoading);
 	const isRefreshing = useDefaultAccountStore((state) => state.isRefreshing);
 	const lastSyncedAt = useDefaultAccountStore((state) => state.lastSyncedAt);
@@ -30,8 +27,6 @@ export function useDefaultAccountListPage() {
 	const [typeFilter, setTypeFilter] = useState<DefaultAccountTypeFilter>("");
 	const [query, setQuery] = useState("");
 	const [pendingStatusAccount, setPendingStatusAccount] =
-		useState<DefaultAccount | null>(null);
-	const [pendingDeleteAccount, setPendingDeleteAccount] =
 		useState<DefaultAccount | null>(null);
 	const filteredDefaultAccounts = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
@@ -50,6 +45,7 @@ export function useDefaultAccountListPage() {
 			}
 
 			return [
+				account.defaultAccountName,
 				account.description,
 				account.type,
 				account.status,
@@ -84,18 +80,7 @@ export function useDefaultAccountListPage() {
 			.catch(() => undefined);
 	}
 
-	function confirmDelete() {
-		if (!pendingDeleteAccount) {
-			return;
-		}
-
-		void deleteDefaultAccount(pendingDeleteAccount)
-			.then(() => setPendingDeleteAccount(null))
-			.catch(() => undefined);
-	}
-
 	return {
-		confirmDelete,
 		confirmStatusChange,
 		defaultAccounts,
 		filteredDefaultAccounts,
@@ -103,13 +88,11 @@ export function useDefaultAccountListPage() {
 		isMutating,
 		isRefreshing,
 		lastSyncedAt,
-		pendingDeleteAccount,
 		pendingStatusAccount,
 		permissions,
 		query,
 		refreshDefaultAccounts,
 		resetFilters,
-		setPendingDeleteAccount,
 		setPendingStatusAccount,
 		setQuery,
 		setStatusFilter: setStatusFilter as (value: DefaultAccountStatusFilter) => void,

@@ -20,7 +20,6 @@ export function DefaultAccountTable({
 	query,
 	statusFilter,
 	typeFilter,
-	onDeleteDefaultAccount,
 	onEditDefaultAccount,
 	onQueryChange,
 	onRefresh,
@@ -70,7 +69,6 @@ export function DefaultAccountTable({
 						key={row.id}
 						row={row}
 						permissions={permissions}
-						onDeleteDefaultAccount={onDeleteDefaultAccount}
 						onEditDefaultAccount={onEditDefaultAccount}
 						onToggleStatus={onToggleStatus}
 						onViewDefaultAccount={onViewDefaultAccount}

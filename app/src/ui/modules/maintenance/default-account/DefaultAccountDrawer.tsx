@@ -64,11 +64,45 @@ function DefaultAccountDrawerPanel({
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
 			onClose={onClose}
-			savingLabel={mode === "edit" ? "Updating..." : "Saving..."}
+			savingLabel={
+				mode === "edit"
+					? "Updating Default Account..."
+					: "Saving Default Account..."
+			}
 			submitLabel={mode === "edit" ? "Update Default Account" : "Save Default Account"}
 			title={copy.title}
 		>
 			<form id={formId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
+				<label className="grid gap-2">
+					<span className="text-sm font-semibold text-darknavy">
+						Default Account Name <span className="text-coralpink">*</span>
+					</span>
+					<input
+						name="defaultAccountName"
+						value={page.values.defaultAccountName}
+						disabled={page.isReadonly}
+						onChange={page.handleInputChange}
+						placeholder="Office Supplies"
+						className="h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
+					/>
+					{page.errors.defaultAccountName ? (
+						<span className="text-xs font-semibold text-coralpink">
+							{page.errors.defaultAccountName}
+						</span>
+					) : null}
+				</label>
+				<label className="grid gap-2">
+					<span className="text-sm font-semibold text-darknavy">Description</span>
+					<textarea
+						name="description"
+						value={page.values.description}
+						disabled={page.isReadonly}
+						onChange={page.handleInputChange}
+						placeholder="Optional notes for this default account"
+						rows={3}
+						className="min-h-24 resize-none rounded-md border border-darknavy/10 bg-white px-3 py-2 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
+					/>
+				</label>
 				<label className="grid gap-2">
 					<span className="text-sm font-semibold text-darknavy">
 						Type <span className="text-coralpink">*</span>
@@ -86,24 +120,6 @@ function DefaultAccountDrawerPanel({
 							</option>
 						))}
 					</select>
-				</label>
-				<label className="grid gap-2">
-					<span className="text-sm font-semibold text-darknavy">
-						Description <span className="text-coralpink">*</span>
-					</span>
-					<input
-						name="description"
-						value={page.values.description}
-						disabled={page.isReadonly}
-						onChange={page.handleInputChange}
-						placeholder="Office Supplies"
-						className="h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
-					/>
-					{page.errors.description ? (
-						<span className="text-xs font-semibold text-coralpink">
-							{page.errors.description}
-						</span>
-					) : null}
 				</label>
 				<label className="grid gap-2">
 					<span className="text-sm font-semibold text-darknavy">Status</span>

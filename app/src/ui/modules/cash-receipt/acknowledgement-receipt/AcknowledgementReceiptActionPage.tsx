@@ -7,15 +7,15 @@ import {
   InitialAppDisbursementTypeRecords,
   type AppDisbursementTypeRecord,
 } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
-import { useOfficialReceiptActionForm } from "@/app/src/hooks/modules/cash-receipt/official-receipt/useOfficialReceipt";
+import { useAcknowledgementReceiptActionForm } from "@/app/src/hooks/modules/cash-receipt/acknowledgement-receipt/useAcknowledgementReceipt";
 import { getPartyDisplayName } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
-import type { OfficialReceiptActionMode } from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
+import type { AcknowledgementReceiptActionMode } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
 import type { DisbursementPaymentMethod, DisbursementType } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import { OfficialReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptActionHeader";
-import { OfficialReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptDetailsForm";
-import { OfficialReceiptEntries } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptEntries";
+import { AcknowledgementReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptActionHeader";
+import { AcknowledgementReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptDetailsForm";
+import { AcknowledgementReceiptEntries } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptEntries";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
 
 const AppPaymentTypeDialog = dynamic(
@@ -34,11 +34,11 @@ const AppDisbursementTypeDialog = dynamic(
   { ssr: false },
 );
 
-export function OfficialReceiptActionPage() {
+export function AcknowledgementReceiptActionPage() {
   const pathname = usePathname();
   const mode = getModeFromPathname(pathname);
   const isReadonly = mode === "view";
-  const receiptForm = useOfficialReceiptActionForm(mode);
+  const receiptForm = useAcknowledgementReceiptActionForm(mode);
   const paymentTypeStore = usePaymentTypeStore();
   const partyStore = usePartyManagementStore();
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
@@ -68,20 +68,20 @@ export function OfficialReceiptActionPage() {
   return (
     <>
       <section className="grid gap-5">
-        <OfficialReceiptActionHeader
+        <AcknowledgementReceiptActionHeader
           mode={mode}
           values={receiptForm.values}
           onCopyFrom={receiptForm.applyCopyFrom}
           onSubmit={receiptForm.submitReceipt}
         />
-        <OfficialReceiptDetailsForm
+        <AcknowledgementReceiptDetailsForm
           isReadonly={isReadonly}
           values={receiptForm.values}
           onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
           onOpenPaymentTypeDialog={() => setIsPaymentTypeDialogOpen(true)}
           onUpdateField={receiptForm.updateField}
         />
-        <OfficialReceiptEntries
+        <AcknowledgementReceiptEntries
           entryView={receiptForm.entryView}
           isReadonly={isReadonly}
           rows={receiptForm.values.lineEntries}
@@ -138,7 +138,7 @@ export function OfficialReceiptActionPage() {
   );
 }
 
-function getModeFromPathname(pathname: string): OfficialReceiptActionMode {
+function getModeFromPathname(pathname: string): AcknowledgementReceiptActionMode {
   if (pathname.includes("/view/")) {
     return "view";
   }

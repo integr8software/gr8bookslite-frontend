@@ -1,16 +1,16 @@
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
-  OfficialReceiptFormValues,
-  OfficialReceiptLineEntry,
-  OfficialReceiptRecord,
-  OfficialReceiptStatus,
-  OfficialReceiptTotals,
-} from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
+  AcknowledgementReceiptFormValues,
+  AcknowledgementReceiptLineEntry,
+  AcknowledgementReceiptRecord,
+  AcknowledgementReceiptStatus,
+  AcknowledgementReceiptTotals,
+} from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
 
-export const MockOfficialReceipts: OfficialReceiptRecord[] = [
+export const MockAcknowledgementReceipts: AcknowledgementReceiptRecord[] = [
   {
-    id: "or-001",
-    receiptNo: "OR-2026-0001",
+    id: "ar-001",
+    receiptNo: "AR-2026-0001",
     receiptDate: "2026-07-03",
     customerName: "Aster Foods Corporation",
     collectionType: "Customer payment",
@@ -19,8 +19,8 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     status: "Approved",
   },
   {
-    id: "or-002",
-    receiptNo: "OR-2026-0002",
+    id: "ar-002",
+    receiptNo: "AR-2026-0002",
     receiptDate: "2026-07-04",
     customerName: "Northline Retail Group",
     collectionType: "Service income",
@@ -29,8 +29,8 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     status: "Pending",
   },
   {
-    id: "or-003",
-    receiptNo: "OR-2026-0003",
+    id: "ar-003",
+    receiptNo: "AR-2026-0003",
     receiptDate: "2026-07-05",
     customerName: "Bluecrest Trading",
     collectionType: "Advance deposit",
@@ -39,8 +39,8 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     status: "Active",
   },
   {
-    id: "or-004",
-    receiptNo: "OR-2026-0004",
+    id: "ar-004",
+    receiptNo: "AR-2026-0004",
     receiptDate: "2026-07-06",
     customerName: "Mendoza and Lee Partners",
     collectionType: "Rental collection",
@@ -49,8 +49,8 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
     status: "Draft",
   },
   {
-    id: "or-005",
-    receiptNo: "OR-2026-0005",
+    id: "ar-005",
+    receiptNo: "AR-2026-0005",
     receiptDate: "2026-07-07",
     customerName: "Harborview Logistics",
     collectionType: "Customer payment",
@@ -60,33 +60,33 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
   },
 ];
 
-export const OfficialReceiptPaymentTypeOptions = [
+export const AcknowledgementReceiptPaymentTypeOptions = [
   { name: "Cash", value: "Cash" },
   { name: "Check", value: "Check" },
   { name: "Bank deposit", value: "Bank deposit" },
   { name: "Online transfer", value: "Online transfer" },
 ];
 
-export const OfficialReceiptPartyOptions = [
+export const AcknowledgementReceiptPartyOptions = [
   { name: "Aster Foods Corporation", value: "Aster Foods Corporation" },
   { name: "Northline Retail Group", value: "Northline Retail Group" },
   { name: "Bluecrest Trading", value: "Bluecrest Trading" },
   { name: "Harborview Logistics", value: "Harborview Logistics" },
 ];
 
-export const OfficialReceiptCurrencyOptions = [
+export const AcknowledgementReceiptCurrencyOptions = [
   { name: "PHP", value: "PHP" },
   { name: "USD", value: "USD" },
 ];
 
-export const OfficialReceiptCollectionTypeOptions = [
+export const AcknowledgementReceiptCollectionTypeOptions = [
   { name: "Customer payment", value: "Customer payment" },
   { name: "Service income", value: "Service income" },
   { name: "Advance deposit", value: "Advance deposit" },
   { name: "Rental collection", value: "Rental collection" },
 ];
 
-export const OfficialReceiptCopyFromRecords = [
+export const AcknowledgementReceiptCopyFromRecords = [
   {
     amount: "184,500.00",
     documentDate: "2026-07-08",
@@ -105,16 +105,16 @@ export const OfficialReceiptCopyFromRecords = [
   },
 ];
 
-export const OfficialReceiptCopySources = [
+export const AcknowledgementReceiptCopySources = [
   "Sales invoice",
   "Statement of account",
 ];
 
-export function createBlankOfficialReceiptLineEntry(
-  overrides: Partial<OfficialReceiptLineEntry> = {},
-): OfficialReceiptLineEntry {
+export function createBlankAcknowledgementReceiptLineEntry(
+  overrides: Partial<AcknowledgementReceiptLineEntry> = {},
+): AcknowledgementReceiptLineEntry {
   return {
-    id: `or-line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: `ar-line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     accountCode: "",
     accountTitle: "",
     collectionType: "",
@@ -130,9 +130,9 @@ export function createBlankOfficialReceiptLineEntry(
   };
 }
 
-export function createOfficialReceiptFormValues(): OfficialReceiptFormValues {
+export function createAcknowledgementReceiptFormValues(): AcknowledgementReceiptFormValues {
   return {
-    receiptNo: "OR-2026-0006",
+    receiptNo: "AR-2026-0006",
     receiptDate: "2026-07-08",
     referenceNo: "",
     customerName: "",
@@ -142,7 +142,7 @@ export function createOfficialReceiptFormValues(): OfficialReceiptFormValues {
     status: "Draft",
     remarks: "",
     lineEntries: [
-      createBlankOfficialReceiptLineEntry({
+      createBlankAcknowledgementReceiptLineEntry({
         accountCode: "1010",
         accountTitle: "Cash in Bank",
       }),
@@ -150,9 +150,9 @@ export function createOfficialReceiptFormValues(): OfficialReceiptFormValues {
   };
 }
 
-export function calculateOfficialReceiptTotals(
-  entries: OfficialReceiptLineEntry[],
-): OfficialReceiptTotals {
+export function calculateAcknowledgementReceiptTotals(
+  entries: AcknowledgementReceiptLineEntry[],
+): AcknowledgementReceiptTotals {
   return entries.reduce(
     (summary, entry) => ({
       credit: summary.credit + parseMoneyNumberInput(entry.credit),
@@ -174,21 +174,21 @@ export function calculateOfficialReceiptTotals(
   );
 }
 
-export function formatOfficialReceiptAmount(amount: number) {
+export function formatAcknowledgementReceiptAmount(amount: number) {
   return amount.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 }
 
-export function formatOfficialReceiptCurrency(amount: number) {
+export function formatAcknowledgementReceiptCurrency(amount: number) {
   return new Intl.NumberFormat("en-PH", {
     currency: "PHP",
     style: "currency",
   }).format(amount);
 }
 
-export function formatOfficialReceiptDate(value: string) {
+export function formatAcknowledgementReceiptDate(value: string) {
   return new Intl.DateTimeFormat("en-PH", {
     day: "2-digit",
     month: "short",
@@ -196,18 +196,18 @@ export function formatOfficialReceiptDate(value: string) {
   }).format(new Date(value));
 }
 
-export function countOfficialReceiptsByStatus(
-  receipts: OfficialReceiptRecord[],
-  status: OfficialReceiptStatus,
+export function countAcknowledgementReceiptsByStatus(
+  receipts: AcknowledgementReceiptRecord[],
+  status: AcknowledgementReceiptStatus,
 ) {
   return receipts.filter((receipt) => receipt.status === status).length;
 }
 
-export function isOfficialReceiptActiveStatus(status: OfficialReceiptStatus) {
+export function isAcknowledgementReceiptActiveStatus(status: AcknowledgementReceiptStatus) {
   return status === "Active" || status === "Approved";
 }
 
-export function formatOfficialReceiptPercentage(value: number, total: number) {
+export function formatAcknowledgementReceiptPercentage(value: number, total: number) {
   if (total === 0) {
     return "0.00% of total";
   }
@@ -215,7 +215,9 @@ export function formatOfficialReceiptPercentage(value: number, total: number) {
   return `${((value / total) * 100).toFixed(2)}% of total`;
 }
 
-export function officialReceiptEntryHasData(entry: OfficialReceiptLineEntry) {
+export function acknowledgementReceiptEntryHasData(
+  entry: AcknowledgementReceiptLineEntry,
+) {
   return (
     entry.accountCode.trim() !== "" ||
     entry.accountTitle.trim() !== "" ||
@@ -231,7 +233,9 @@ export function officialReceiptEntryHasData(entry: OfficialReceiptLineEntry) {
   );
 }
 
-export function officialReceiptEntryIsComplete(entry: OfficialReceiptLineEntry) {
+export function acknowledgementReceiptEntryIsComplete(
+  entry: AcknowledgementReceiptLineEntry,
+) {
   return (
     entry.collectionType.trim() !== "" &&
     entry.customerName.trim() !== "" &&

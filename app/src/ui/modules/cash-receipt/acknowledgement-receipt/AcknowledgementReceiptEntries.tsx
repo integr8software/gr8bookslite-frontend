@@ -1,18 +1,18 @@
 import { useCallback, useMemo } from "react";
 import { Plus } from "lucide-react";
 import {
-  calculateOfficialReceiptTotals,
-  createBlankOfficialReceiptLineEntry,
-  formatOfficialReceiptAmount,
-  officialReceiptEntryHasData,
-  officialReceiptEntryIsComplete,
-  OfficialReceiptCollectionTypeOptions,
-  OfficialReceiptPartyOptions,
-} from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
+  calculateAcknowledgementReceiptTotals,
+  createBlankAcknowledgementReceiptLineEntry,
+  formatAcknowledgementReceiptAmount,
+  acknowledgementReceiptEntryHasData,
+  acknowledgementReceiptEntryIsComplete,
+  AcknowledgementReceiptCollectionTypeOptions,
+  AcknowledgementReceiptPartyOptions,
+} from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
 import type {
-  OfficialReceiptEntryView,
-  OfficialReceiptLineEntry,
-} from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
+  AcknowledgementReceiptEntryView,
+  AcknowledgementReceiptLineEntry,
+} from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
 import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
@@ -29,34 +29,34 @@ import {
 } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-type OfficialReceiptEntriesProps = {
-  entryView: OfficialReceiptEntryView;
+type AcknowledgementReceiptEntriesProps = {
+  entryView: AcknowledgementReceiptEntryView;
   isReadonly: boolean;
-  rows: OfficialReceiptLineEntry[];
-  onEntryViewChange: (view: OfficialReceiptEntryView) => void;
+  rows: AcknowledgementReceiptLineEntry[];
+  onEntryViewChange: (view: AcknowledgementReceiptEntryView) => void;
   onOpenCollectionTypeDialog: () => void;
-  onRowsChange: (rows: OfficialReceiptLineEntry[]) => void;
+  onRowsChange: (rows: AcknowledgementReceiptLineEntry[]) => void;
 };
 
-export function OfficialReceiptEntries({
+export function AcknowledgementReceiptEntries({
   entryView,
   isReadonly,
   onEntryViewChange,
   onOpenCollectionTypeDialog,
   onRowsChange,
   rows,
-}: OfficialReceiptEntriesProps) {
+}: AcknowledgementReceiptEntriesProps) {
   const updateEntry = useCallback((
     rowId: string,
-    updates: Partial<OfficialReceiptLineEntry>,
+    updates: Partial<AcknowledgementReceiptLineEntry>,
   ) => {
     onRowsChange(
       rows.map((row) => (row.id === rowId ? { ...row, ...updates } : row)),
     );
   }, [onRowsChange, rows]);
-  const totals = useMemo(() => calculateOfficialReceiptTotals(rows), [rows]);
+  const totals = useMemo(() => calculateAcknowledgementReceiptTotals(rows), [rows]);
   const variance = Math.abs(totals.debit - totals.credit);
-  const columns = useMemo<ModuleDataEntryColumn<OfficialReceiptLineEntry>[]>(
+  const columns = useMemo<ModuleDataEntryColumn<AcknowledgementReceiptLineEntry>[]>(
     () =>
       entryView === "collection"
         ? createCollectionColumns(isReadonly, updateEntry)
@@ -81,18 +81,18 @@ export function OfficialReceiptEntries({
   function addRows(count: number) {
     onRowsChange([
       ...rows,
-      ...Array.from({ length: count }, () => createBlankOfficialReceiptLineEntry()),
+      ...Array.from({ length: count }, () => createBlankAcknowledgementReceiptLineEntry()),
     ]);
   }
 
   function clearRows(action: ModuleDataEntryClearAction) {
     if (action === "all") {
-      onRowsChange([createBlankOfficialReceiptLineEntry()]);
+      onRowsChange([createBlankAcknowledgementReceiptLineEntry()]);
       return;
     }
 
     const nextRows = rows.filter((row) => !shouldClearEntry(row, action));
-    onRowsChange(nextRows.length > 0 ? nextRows : [createBlankOfficialReceiptLineEntry()]);
+    onRowsChange(nextRows.length > 0 ? nextRows : [createBlankAcknowledgementReceiptLineEntry()]);
   }
 
   function duplicateRow(rowId: string) {
@@ -106,7 +106,7 @@ export function OfficialReceiptEntries({
     const nextRows = [...rows];
     nextRows.splice(rowIndex + 1, 0, {
       ...row,
-      id: createBlankOfficialReceiptLineEntry().id,
+      id: createBlankAcknowledgementReceiptLineEntry().id,
     });
     onRowsChange(nextRows);
   }
@@ -122,7 +122,7 @@ export function OfficialReceiptEntries({
     nextRows.splice(
       position === "above" ? rowIndex : rowIndex + 1,
       0,
-      createBlankOfficialReceiptLineEntry(),
+      createBlankAcknowledgementReceiptLineEntry(),
     );
     onRowsChange(nextRows);
   }
@@ -148,7 +148,7 @@ export function OfficialReceiptEntries({
 
   function removeRow(rowId: string) {
     const nextRows = rows.filter((row) => row.id !== rowId);
-    onRowsChange(nextRows.length > 0 ? nextRows : [createBlankOfficialReceiptLineEntry()]);
+    onRowsChange(nextRows.length > 0 ? nextRows : [createBlankAcknowledgementReceiptLineEntry()]);
   }
 
   return (
@@ -169,7 +169,7 @@ export function OfficialReceiptEntries({
             variance < 0.001 ? "text-emerald-700" : "text-coralpink",
           )}
         >
-          Variance: {formatOfficialReceiptAmount(variance)}
+          Variance: {formatAcknowledgementReceiptAmount(variance)}
         </span>
       }
       isDraggable
@@ -178,8 +178,8 @@ export function OfficialReceiptEntries({
       summaryCells={
         entryView === "accounting"
           ? {
-              credit: formatOfficialReceiptAmount(totals.credit),
-              debit: formatOfficialReceiptAmount(totals.debit),
+              credit: formatAcknowledgementReceiptAmount(totals.credit),
+              debit: formatAcknowledgementReceiptAmount(totals.debit),
             }
           : undefined
       }
@@ -214,8 +214,8 @@ function EntryViewTabs({
   entryView,
   onEntryViewChange,
 }: {
-  entryView: OfficialReceiptEntryView;
-  onEntryViewChange: (view: OfficialReceiptEntryView) => void;
+  entryView: AcknowledgementReceiptEntryView;
+  onEntryViewChange: (view: AcknowledgementReceiptEntryView) => void;
 }) {
   return (
     <div
@@ -255,9 +255,9 @@ function createCollectionColumns(
   isReadonly: boolean,
   onUpdateEntry: (
     rowId: string,
-    updates: Partial<OfficialReceiptLineEntry>,
+    updates: Partial<AcknowledgementReceiptLineEntry>,
   ) => void,
-): ModuleDataEntryColumn<OfficialReceiptLineEntry>[] {
+): ModuleDataEntryColumn<AcknowledgementReceiptLineEntry>[] {
   return [
     {
       header: "Collection Type",
@@ -266,7 +266,7 @@ function createCollectionColumns(
       widthClassName: "w-[14rem]",
       renderCell: (row) => (
         <EntryDropdown
-          options={OfficialReceiptCollectionTypeOptions}
+          options={AcknowledgementReceiptCollectionTypeOptions}
           placeholder="Enter collection type"
           readOnly={isReadonly}
           value={row.collectionType}
@@ -333,7 +333,7 @@ function createCollectionColumns(
       widthClassName: "w-[9rem]",
       renderCell: (row) => (
         <div className="flex h-10 w-full items-center justify-end bg-offwhite/45 px-3 text-sm font-medium tabular-nums text-darknavy/70">
-          {formatOfficialReceiptAmount(
+          {formatAcknowledgementReceiptAmount(
             parseMoneyNumberInput(row.grossReceipt) +
               parseMoneyNumberInput(row.vat) -
               parseMoneyNumberInput(row.ewt),
@@ -348,7 +348,7 @@ function createCollectionColumns(
       widthClassName: "w-[14rem]",
       renderCell: (row) => (
         <EntryDropdown
-          options={OfficialReceiptPartyOptions}
+          options={AcknowledgementReceiptPartyOptions}
           placeholder="Select Party Name"
           readOnly={isReadonly}
           value={row.customerName}
@@ -376,9 +376,9 @@ function createAccountingColumns(
   isReadonly: boolean,
   onUpdateEntry: (
     rowId: string,
-    updates: Partial<OfficialReceiptLineEntry>,
+    updates: Partial<AcknowledgementReceiptLineEntry>,
   ) => void,
-): ModuleDataEntryColumn<OfficialReceiptLineEntry>[] {
+): ModuleDataEntryColumn<AcknowledgementReceiptLineEntry>[] {
   return [
     {
       header: "Account Code",
@@ -533,18 +533,21 @@ function entryCellControlClassName(extraClassName?: string) {
 }
 
 function shouldClearEntry(
-  entry: OfficialReceiptLineEntry,
+  entry: AcknowledgementReceiptLineEntry,
   action: Exclude<ModuleDataEntryClearAction, "all">,
 ) {
   if (action === "with-data") {
-    return officialReceiptEntryHasData(entry);
+    return acknowledgementReceiptEntryHasData(entry);
   }
 
   if (action === "incomplete") {
-    return officialReceiptEntryHasData(entry) && !officialReceiptEntryIsComplete(entry);
+    return (
+      acknowledgementReceiptEntryHasData(entry) &&
+      !acknowledgementReceiptEntryIsComplete(entry)
+    );
   }
 
-  return !officialReceiptEntryHasData(entry);
+  return !acknowledgementReceiptEntryHasData(entry);
 }
 
 const EntryDropdownClassName =

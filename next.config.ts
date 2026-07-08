@@ -6,14 +6,16 @@ const nextConfig: NextConfig = {
 	turbopack: {
 		root: process.cwd(),
 	},
-	experimental: {
-		viewTransition: true,
-		staleTimes: {
-			dynamic: 30,
-			static: 300,
-		},
+experimental: {
+	viewTransition: true,
+	staleTimes: {
+		dynamic: 30,
+		static: 300,
 	},
-	async headers() {
+	serverActions: {
+		allowedOrigins: ["staging.gr8booksneo.integr8.com.ph"],
+	},
+},	async headers() {
 		return [
 			{
 				source: "/:path*",

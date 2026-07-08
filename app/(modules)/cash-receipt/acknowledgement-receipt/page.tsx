@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { AcknowledgementReceiptMain } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/Main";
+import { AcknowledgementReceiptListPage } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptListPage";
 
 const PageTitle = "Acknowledgement Receipt";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function CashReceiptAcknowledgementReceiptPage() {
-  return <AcknowledgementReceiptMain />;
+  return <AcknowledgementReceiptListPage />;
 }
 
 

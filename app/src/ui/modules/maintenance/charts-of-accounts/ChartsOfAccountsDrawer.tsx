@@ -215,7 +215,7 @@ function DrawerPanel({
       accountNumber: "",
       accountType: isBankLinked ? "ASSET" : current.accountType,
       isBankLinked,
-      isPostingAccount: true,
+      isPostingAccount: nextAccountLevel === "SPECIFIC",
       normalBalance: isBankLinked
         ? "DEBIT"
         : getStandardNormalBalance(current.accountType),
@@ -360,10 +360,22 @@ function getDrawerTitle(
   }
 
   if (parentAccount) {
-    return `Add ${AccountLevelLabels.SPECIFIC}`;
+    return `Add ${AccountLevelLabels[getDefaultChildAccountLevel(parentAccount)]}`;
   }
 
   return `Add ${AccountLevelLabels.SPECIFIC}`;
+}
+
+function getDefaultChildAccountLevel(parentAccount: ChartAccount) {
+  switch (parentAccount.accountLevel) {
+    case "MAJOR":
+      return "SUB1";
+    case "SUB1":
+    case "SUB2":
+    case "SUB3":
+    case "SPECIFIC":
+      return "SPECIFIC";
+  }
 }
 
 function getDrawerDescription(parentAccount: ChartAccount | null) {

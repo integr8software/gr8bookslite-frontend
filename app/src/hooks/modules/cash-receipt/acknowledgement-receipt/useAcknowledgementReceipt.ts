@@ -12,42 +12,42 @@ import {
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import {
-  createBlankOfficialReceiptLineEntry,
-  createOfficialReceiptFormValues,
-  MockOfficialReceipts,
-} from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
-import { OfficialReceiptStatusFilters } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
+  createBlankAcknowledgementReceiptLineEntry,
+  createAcknowledgementReceiptFormValues,
+  MockAcknowledgementReceipts,
+} from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
+import { AcknowledgementReceiptStatusFilters } from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
-  OfficialReceiptActionMode,
-  OfficialReceiptEntryView,
-  OfficialReceiptFormValues,
-  OfficialReceiptLineEntry,
-  OfficialReceiptRecord,
-  OfficialReceiptStatus,
-} from "@/app/src/types/modules/cash-receipt/official-receipt/OfficialReceiptTypes";
-import { validateOfficialReceiptForm } from "@/app/src/validations/modules/cash-receipt/official-receipt/OfficialReceiptValidation";
+  AcknowledgementReceiptActionMode,
+  AcknowledgementReceiptEntryView,
+  AcknowledgementReceiptFormValues,
+  AcknowledgementReceiptLineEntry,
+  AcknowledgementReceiptRecord,
+  AcknowledgementReceiptStatus,
+} from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
+import { validateAcknowledgementReceiptForm } from "@/app/src/validations/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptValidation";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
-type OfficialReceiptStoreState = {
+type AcknowledgementReceiptStoreState = {
   isLoading: boolean;
   lastSyncedAt: number;
-  receipts: OfficialReceiptRecord[];
+  receipts: AcknowledgementReceiptRecord[];
   updateReceiptStatus: (
-    receipt: OfficialReceiptRecord,
-    status: OfficialReceiptStatus,
+    receipt: AcknowledgementReceiptRecord,
+    status: AcknowledgementReceiptStatus,
   ) => void;
 };
 
-export function useOfficialReceiptStore<
-  TSelected = OfficialReceiptStoreState,
->(selector?: (state: OfficialReceiptStoreState) => TSelected) {
-  const [receipts, setReceipts] = useState(MockOfficialReceipts);
+export function useAcknowledgementReceiptStore<
+  TSelected = AcknowledgementReceiptStoreState,
+>(selector?: (state: AcknowledgementReceiptStoreState) => TSelected) {
+  const [receipts, setReceipts] = useState(MockAcknowledgementReceipts);
   const [lastSyncedAt] = useState(() => Date.now());
   const updateReceiptStatus = useCallback((
-    receipt: OfficialReceiptRecord,
-    status: OfficialReceiptStatus,
+    receipt: AcknowledgementReceiptRecord,
+    status: AcknowledgementReceiptStatus,
   ) => {
     setReceipts((currentReceipts) =>
       currentReceipts.map((currentReceipt) =>
@@ -59,10 +59,10 @@ export function useOfficialReceiptStore<
           : currentReceipt,
       ),
     );
-    toast.success(`Official receipt marked as ${status}.`);
+    toast.success(`Acknowledgement Receipt marked as ${status}.`);
   }, []);
 
-  const state = useMemo<OfficialReceiptStoreState>(
+  const state = useMemo<AcknowledgementReceiptStoreState>(
     () => ({
       isLoading: false,
       lastSyncedAt,
@@ -75,28 +75,28 @@ export function useOfficialReceiptStore<
   return selector ? selector(state) : (state as TSelected);
 }
 
-export function useOfficialReceiptActionForm(mode: OfficialReceiptActionMode) {
+export function useAcknowledgementReceiptActionForm(mode: AcknowledgementReceiptActionMode) {
   const [entryView, setEntryView] =
-    useState<OfficialReceiptEntryView>("collection");
-  const [values, setValues] = useState<OfficialReceiptFormValues>(
-    createOfficialReceiptFormValues,
+    useState<AcknowledgementReceiptEntryView>("collection");
+  const [values, setValues] = useState<AcknowledgementReceiptFormValues>(
+    createAcknowledgementReceiptFormValues,
   );
 
-  function updateField<Key extends keyof OfficialReceiptFormValues>(
+  function updateField<Key extends keyof AcknowledgementReceiptFormValues>(
     key: Key,
-    value: OfficialReceiptFormValues[Key],
+    value: AcknowledgementReceiptFormValues[Key],
   ) {
     setValues((current) => ({ ...current, [key]: value }));
   }
 
-  function updateLineEntries(lineEntries: OfficialReceiptLineEntry[]) {
+  function updateLineEntries(lineEntries: AcknowledgementReceiptLineEntry[]) {
     setValues((current) => ({ ...current, lineEntries }));
   }
 
-  function updateFirstLineEntry(updates: Partial<OfficialReceiptLineEntry>) {
+  function updateFirstLineEntry(updates: Partial<AcknowledgementReceiptLineEntry>) {
     setValues((current) => {
       const firstLineEntry =
-        current.lineEntries[0] ?? createBlankOfficialReceiptLineEntry();
+        current.lineEntries[0] ?? createBlankAcknowledgementReceiptLineEntry();
       const remainingLineEntries = current.lineEntries.slice(1);
 
       return {
@@ -122,23 +122,23 @@ export function useOfficialReceiptActionForm(mode: OfficialReceiptActionMode) {
       referenceNo: recordIds[0] ?? current.referenceNo,
       lineEntries: current.lineEntries.length
         ? current.lineEntries
-        : [createBlankOfficialReceiptLineEntry()],
+        : [createBlankAcknowledgementReceiptLineEntry()],
     }));
     toast.success("Copied receipt source details.");
   }
 
   function submitReceipt() {
-    const validation = validateOfficialReceiptForm(values);
+    const validation = validateAcknowledgementReceiptForm(values);
 
     if (!validation.isValid) {
-      toast.error(validation.message ?? "Review the official receipt details.");
+      toast.error(validation.message ?? "Review the Acknowledgement Receipt details.");
       return;
     }
 
     toast.success(
       mode === "edit"
-        ? "Official receipt updated."
-        : "Official receipt saved.",
+        ? "Acknowledgement Receipt updated."
+        : "Acknowledgement Receipt saved.",
     );
   }
 
@@ -154,7 +154,7 @@ export function useOfficialReceiptActionForm(mode: OfficialReceiptActionMode) {
   };
 }
 
-export function useOfficialReceiptTable(receipts: OfficialReceiptRecord[]) {
+export function useAcknowledgementReceiptTable(receipts: AcknowledgementReceiptRecord[]) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
@@ -172,7 +172,7 @@ export function useOfficialReceiptTable(receipts: OfficialReceiptRecord[]) {
     { id: "receiptDate", desc: true },
   ]);
   const [statusFilter, setStatusFilterState] = useState<
-    (typeof OfficialReceiptStatusFilters)[number]
+    (typeof AcknowledgementReceiptStatusFilters)[number]
   >("all");
   const deferredQuery = useDeferredValue(query);
   const filteredRows = useMemo(
@@ -196,7 +196,7 @@ export function useOfficialReceiptTable(receipts: OfficialReceiptRecord[]) {
       }),
     [amountRange, dateRange, deferredQuery, receipts, statusFilter],
   );
-  const columns = useMemo<ColumnDef<OfficialReceiptRecord>[]>(
+  const columns = useMemo<ColumnDef<AcknowledgementReceiptRecord>[]>(
     () => [
       {
         id: "receiptNo",
@@ -278,7 +278,7 @@ export function useOfficialReceiptTable(receipts: OfficialReceiptRecord[]) {
   }
 
   function setStatusFilter(
-    value: (typeof OfficialReceiptStatusFilters)[number],
+    value: (typeof AcknowledgementReceiptStatusFilters)[number],
   ) {
     setStatusFilterState(value);
     table.setPageIndex(0);

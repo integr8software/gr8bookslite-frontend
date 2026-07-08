@@ -23,7 +23,7 @@ export function getAvailableAccountLevels(
 
   switch (parentAccount?.accountLevel) {
     case "MAJOR":
-      return ["SUB1", "SPECIFIC"];
+      return ["SUB1"];
     case "SUB1":
       return ["SUB2", "SPECIFIC"];
     case "SUB2":
@@ -78,25 +78,33 @@ export function getInitialFormValues(
   const values = account
     ? accountToFormValues(account)
     : EmptyAccountFormValues;
+  const childAccountLevel = parentAccount
+    ? currentAccountLevelOrDefault(
+        "",
+        getAvailableAccountLevels([parentAccount], parentAccount.id),
+        true,
+      )
+    : values.accountLevel;
 
   return {
     ...values,
     ...(account || !parentAccount
       ? {}
       : {
-          accountLevel: "SPECIFIC",
+          accountLevel: childAccountLevel,
           accountType: parentAccount.accountType,
           normalBalance: getStandardNormalBalance(parentAccount.accountType),
           parentId: parentAccount.id,
           statementGroup: parentAccount.statementGroup,
           statementSection: parentAccount.statementSection,
+          isPostingAccount: childAccountLevel === "SPECIFIC",
         }),
     bankDetails: {
       ...(values.bankDetails ?? EmptyBankDetails),
     },
     isBankLinked:
       account?.isBankLinked ??
-      (values.accountLevel === "SPECIFIC" &&
+      (childAccountLevel === "SPECIFIC" &&
         isCashInBankAccount(parentAccount)),
   };
 }

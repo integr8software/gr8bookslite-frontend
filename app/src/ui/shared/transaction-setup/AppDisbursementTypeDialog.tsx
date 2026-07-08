@@ -52,6 +52,12 @@ type AppDisbursementTypeDialogProps = {
 	isLoading?: boolean;
 	isMutating?: boolean;
 	records: AppDisbursementTypeRecord[];
+	title?: string;
+	description?: string;
+	searchPlaceholder?: string;
+	saveErrorMessage?: string;
+	loadingLabel?: string;
+	emptyLabel?: string;
 	onClose: () => void;
 	onCreateRecord: (
 		record: AppDisbursementTypeRecord,
@@ -126,6 +132,12 @@ export function AppDisbursementTypeDialog({
 	isLoading = false,
 	isMutating = false,
 	records,
+	title = "Disbursement Type Maintenance",
+	description = "Maintain disbursement type name, classification type, and status.",
+	searchPlaceholder = "Search disbursement type or type...",
+	saveErrorMessage = "Could not save disbursement type. Please try again.",
+	loadingLabel = "Loading disbursement types...",
+	emptyLabel = "No disbursement types matched the current filter.",
 	onClose,
 	onCreateRecord,
 	onUpdateRecord,
@@ -292,7 +304,7 @@ export function AppDisbursementTypeDialog({
 				await onCreateRecord(createDisbursementTypeFromDraft(draft), draft);
 			}
 		} catch {
-			setFormSubmitError("Could not save disbursement type. Please try again.");
+			setFormSubmitError(saveErrorMessage);
 			return;
 		}
 
@@ -329,11 +341,9 @@ export function AppDisbursementTypeDialog({
 							id="disbursement-type-dialog-title"
 							className="text-lg font-semibold text-darknavy"
 						>
-							Disbursement Type Maintenance
+							{title}
 						</h2>
-						<p className="mt-1 text-sm text-darknavy/55">
-							Maintain disbursement type name, classification type, and status.
-						</p>
+						<p className="mt-1 text-sm text-darknavy/55">{description}</p>
 					</div>
 					<button
 						type="button"
@@ -347,12 +357,15 @@ export function AppDisbursementTypeDialog({
 				{mode === "list" ? (
 					<DisbursementTypeListView
 						filteredRecords={filteredRecords}
+						emptyLabel={emptyLabel}
 						isLoading={isLoading}
+						loadingLabel={loadingLabel}
 						pageIndex={safePageIndex}
 						pageSize={pageSize}
 						paginatedRecords={paginatedRecords}
 						query={query}
 						records={normalizedRecords}
+						searchPlaceholder={searchPlaceholder}
 						sortBy={sortBy}
 						sortDirection={sortDirection}
 						statusFilter={statusFilter}
@@ -425,13 +438,16 @@ export function AppDisbursementTypeDialog({
 }
 
 function DisbursementTypeListView({
+	emptyLabel,
 	filteredRecords,
 	isLoading,
+	loadingLabel,
 	pageIndex,
 	pageSize,
 	paginatedRecords,
 	query,
 	records,
+	searchPlaceholder,
 	sortBy,
 	sortDirection,
 	statusFilter,
@@ -450,13 +466,16 @@ function DisbursementTypeListView({
 	onUse,
 	onView,
 }: {
+	emptyLabel: string;
 	filteredRecords: AppDisbursementTypeRecord[];
 	isLoading: boolean;
+	loadingLabel: string;
 	pageIndex: number;
 	pageSize: number;
 	paginatedRecords: AppDisbursementTypeRecord[];
 	query: string;
 	records: AppDisbursementTypeRecord[];
+	searchPlaceholder: string;
 	sortBy: DisbursementTypeSortKey;
 	sortDirection: DisbursementTypeSortDirection;
 	statusFilter: DisbursementTypeFilterStatus;
@@ -506,7 +525,7 @@ function DisbursementTypeListView({
 							type="search"
 							value={query}
 							onChange={(event) => onQueryChange(event.target.value)}
-							placeholder="Search disbursement type or type..."
+							placeholder={searchPlaceholder}
 							className="h-11 w-full rounded-lg border border-darknavy/12 bg-offwhite/60 pl-10 pr-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:bg-white"
 						/>
 					</span>
@@ -610,7 +629,7 @@ function DisbursementTypeListView({
 										colSpan={4}
 										className="px-4 py-12 text-center text-sm text-darknavy/55"
 									>
-										Loading disbursement types...
+										{loadingLabel}
 									</td>
 								</tr>
 							) : filteredRecords.length > 0 ? (
@@ -645,7 +664,7 @@ function DisbursementTypeListView({
 										colSpan={4}
 										className="px-4 py-12 text-center text-sm text-darknavy/55"
 									>
-										No disbursement types matched the current filter.
+										{emptyLabel}
 									</td>
 								</tr>
 							)}

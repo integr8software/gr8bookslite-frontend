@@ -51,8 +51,8 @@ import {
 } from "@/app/src/data/shared/main-layout/MainLayoutDefaults";
 import { MainBreadcrumbDropdownHelperText } from "@/app/src/data/shared/main-layout/breadcrumb/MainBreadcrumbData";
 import { mapProfileCompanyUnitsToMainBranches } from "@/app/src/data/workspace/companies/WorkspaceCompanyMainLayoutBranchData";
-import { ModuleHelpArticles } from "@/app/src/data/shared/module/module-help/ModuleHelpData";
-import { getHelpArticleForPath } from "@/app/src/data/shared/module/module-help/ModuleHelpUtils";
+import { ModuleHelpArticles } from "@/app/src/data/shared/help/ModuleHelpData";
+import { getHelpArticleForPath } from "@/app/src/data/shared/help/ModuleHelpUtils";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { useWorkspaceCompanyMainLayoutBranches } from "@/app/src/hooks/workspace/companies/useWorkspaceCompanyMainLayoutBranches";

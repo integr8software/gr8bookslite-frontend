@@ -1,4 +1,4 @@
-import { ModulePreviewPages } from "@/app/src/data/shared/module/ModulePreviewData";
+import { ModulePreviewPages } from "@/app/src/data/shared/modules/ModulePreviewData";
 import { ModulePreviewPage } from "@/app/src/ui/shared/module/ModulePreviewPage";
 
 type MasterPreviewPageProps = {

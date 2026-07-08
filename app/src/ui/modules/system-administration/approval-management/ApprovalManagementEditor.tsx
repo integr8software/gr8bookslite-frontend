@@ -26,8 +26,12 @@ import {
 	ApprovalAmountConditionModeOptions,
 	ApprovalAmountConditionOperatorOptions,
 	ApprovalStageCountOptions,
-	ApprovalStageRequirementOptions,
 } from "@/app/src/constants/modules/system-administration/approval-management/ApprovalManagementConstants";
+import {
+	ApproverSetupMockData,
+	getApproverSetupInitials,
+	getApproverSetupUser,
+} from "@/app/src/data/modules/system-administration/user-management/approver-setup/ApproverSetupData";
 import { formatApprovalRoutingCondition } from "@/app/src/services/modules/system-administration/approval-management/ApprovalManagementFormatters";
 import type {
 	ApprovalApproverOption,
@@ -37,8 +41,12 @@ import type {
 	ApprovalRoutingRuleFormErrors,
 	ApprovalRoutingRuleFormValues,
 	ApprovalStageFormValues,
-	ApprovalStageRequirement,
 } from "@/app/src/types/modules/system-administration/approval-management/ApprovalManagementTypes";
+import type {
+	ApproverAssignmentType,
+	ApproverSetupRecord,
+} from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
+import type { UserListRecord } from "@/app/src/types/modules/user-management/UserListTypes";
 import { AppSkeleton } from "@/app/src/ui/shared/app/AppSkeleton";
 
 const approvalManagementFieldClassName =
@@ -46,6 +54,12 @@ const approvalManagementFieldClassName =
 
 const approvalManagementPrimaryButtonClassName =
 	"theme-accent-contrast-text inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[var(--skyblue)] bg-[var(--skyblue)] px-4 text-sm font-semibold !text-[var(--skyblue-contrast)] shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgb(var(--skyblue-rgb)/0.2)] disabled:cursor-not-allowed disabled:opacity-60";
+
+const approvalManagementApproverTypeOptions: ApproverAssignmentType[] = [
+	"Level-based",
+	"No condition",
+	"Temporary",
+];
 
 type ApprovalManagementEditorProps = {
 	approverOptions: ApprovalApproverOption[];
@@ -77,7 +91,6 @@ type ApprovalManagementEditorProps = {
 };
 
 export function ApprovalManagementEditor({
-	approverOptions,
 	errors,
 	isLoading,
 	isMutating,
@@ -87,11 +100,14 @@ export function ApprovalManagementEditor({
 	onRemoveAmountConditionRule,
 	onRoutingRuleFieldChange,
 	onRoutingRuleStageToggle,
-	onStageFieldChange,
 	onSubmit,
 	selectedWorkflow,
 	values,
 }: ApprovalManagementEditorProps) {
+	const [selectedApproverType, setSelectedApproverType] = useState<
+		ApproverAssignmentType | ""
+	>("");
+
 	if (isLoading) {
 		return <ApprovalManagementEditorSkeleton />;
 	}
@@ -213,11 +229,11 @@ export function ApprovalManagementEditor({
 				</div>
 			</section>
 
-			<ApprovalStagePicker
-				approverOptions={approverOptions}
-				errors={errors}
-				stages={values.stages}
-				onStageFieldChange={onStageFieldChange}
+			<ApprovalSetupLevelViewer
+				moduleName={selectedWorkflow.moduleName}
+				selectedApproverType={selectedApproverType}
+				stageCount={values.stageCount}
+				onApproverTypeChange={setSelectedApproverType}
 			/>
 
 			<ApprovalMatrix
@@ -743,24 +759,24 @@ function ApprovalManagementField({
 	);
 }
 
-function ApprovalStagePicker({
-	approverOptions,
-	errors,
-	onStageFieldChange,
-	stages,
+function ApprovalSetupLevelViewer({
+	moduleName,
+	onApproverTypeChange,
+	selectedApproverType,
+	stageCount,
 }: {
-	approverOptions: ApprovalApproverOption[];
-	errors: ApprovalManagementFormErrors;
-	stages: ApprovalStageFormValues[];
-	onStageFieldChange: <TKey extends keyof ApprovalStageFormValues>(
-		stageId: string,
-		field: TKey,
-		value: ApprovalStageFormValues[TKey],
-	) => void;
+	moduleName: string;
+	onApproverTypeChange: (type: ApproverAssignmentType | "") => void;
+	selectedApproverType: ApproverAssignmentType | "";
+	stageCount: number;
 }) {
-	const [openStageId, setOpenStageId] = useState<string | null>(null);
-	const effectiveOpenStageId =
-		stages.find((stage) => stage.id === openStageId)?.id ?? null;
+	const visibleSetupRecords = selectedApproverType
+		? getVisibleApproverSetupRecords(
+				moduleName,
+				selectedApproverType,
+				stageCount,
+			)
+		: [];
 
 	return (
 		<section className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm shadow-darknavy/5">
@@ -773,185 +789,177 @@ function ApprovalStagePicker({
 					Approval Levels
 				</h3>
 			</div>
-			<div className="p-4">
-				<div className="overflow-hidden rounded-lg border border-darknavy/10">
-					{stages.map((stage) => {
-						const stageErrors = errors.stages?.[stage.id] ?? {};
-						const isOpen = stage.id === effectiveOpenStageId;
-
-						return (
-							<div
-								key={stage.id}
-								className="relative border-b border-darknavy/10 last:border-b-0"
-							>
-								<button
-									type="button"
-									onClick={() =>
-										setOpenStageId(isOpen ? null : stage.id)
-									}
-									className="grid min-h-20 w-full grid-cols-[2.5rem_3rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 text-left transition hover:bg-offwhite/55"
-									aria-expanded={isOpen}
-								>
-									<span className="relative inline-flex h-full items-center justify-center">
-										<span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-skyblue/15" />
-										<span className="relative inline-flex h-7 w-7 items-center justify-center rounded-full bg-skyblue text-sm font-bold text-white shadow-sm">
-											{stage.sequence}
-										</span>
-									</span>
-									<span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-offwhite text-darknavy/60">
-										<UsersRound
-											className="h-5 w-5"
-											aria-hidden="true"
-										/>
-									</span>
-									<div className="min-w-0">
-										<div className="truncate text-sm font-semibold leading-5 text-darknavy">
-											{stage.name}
-										</div>
-										<div className="mt-0.5 text-xs font-medium text-darknavy/55">
-											{stage.requirement === "all"
-												? "All approvers"
-												: "Any one approver"}{" "}
-											<span className="px-1.5 text-darknavy/25">
-												-
-											</span>
-											{stage.approverIds.length} approver
-											{stage.approverIds.length === 1
-												? ""
-												: "s"}
-										</div>
-									</div>
-									<ChevronDown
-										className={`h-4 w-4 shrink-0 text-darknavy/55 transition ${isOpen ? "rotate-180" : ""}`}
-										aria-hidden="true"
-									/>
-								</button>
-								{isOpen ? (
-									<div className="grid gap-3 border-t border-darknavy/10 bg-offwhite/35 p-4 md:grid-cols-2">
-										<ApprovalManagementField
-											label="Level Name"
-											error={stageErrors.name}
-										>
-											<input
-												value={stage.name}
-												onChange={(event) =>
-													onStageFieldChange(
-														stage.id,
-														"name",
-														event.target.value,
-													)
-												}
-												className={
-													approvalManagementFieldClassName
-												}
-											/>
-										</ApprovalManagementField>
-										<ApprovalManagementField
-											label="Condition"
-											error={stageErrors.requirement}
-										>
-											<select
-												value={stage.requirement}
-												onChange={(event) =>
-													onStageFieldChange(
-														stage.id,
-														"requirement",
-														event.target
-															.value as ApprovalStageRequirement,
-													)
-												}
-												className={
-													approvalManagementFieldClassName
-												}
-											>
-												{ApprovalStageRequirementOptions.map(
-													(option) => (
-														<option
-															key={option.value}
-															value={option.value}
-														>
-															{option.label}
-														</option>
-													),
-												)}
-											</select>
-										</ApprovalManagementField>
-										<div className="md:col-span-2">
-											<div className="mb-2 text-sm font-semibold text-darknavy">
-												Approvers
-											</div>
-											<div className="grid max-h-36 gap-2 overflow-auto md:grid-cols-2">
-												{approverOptions.map(
-													(approver) => {
-														const checked =
-															stage.approverIds.includes(
-																approver.id,
-															);
-
-														return (
-															<label
-																key={
-																	approver.id
-																}
-																className="flex min-h-12 items-center gap-3 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy"
-															>
-																<input
-																	type="checkbox"
-																	checked={
-																		checked
-																	}
-																	onChange={() =>
-																		onStageFieldChange(
-																			stage.id,
-																			"approverIds",
-																			checked
-																				? stage.approverIds.filter(
-																						(
-																							approverId,
-																						) =>
-																							approverId !==
-																							approver.id,
-																					)
-																				: [
-																						...stage.approverIds,
-																						approver.id,
-																					],
-																		)
-																	}
-																	className="h-4 w-4 accent-skyblue"
-																/>
-																<span className="min-w-0">
-																	<span className="block truncate">
-																		{
-																			approver.name
-																		}
-																	</span>
-																	<span className="block text-xs text-darknavy/45">
-																		{
-																			approver.role
-																		}
-																	</span>
-																</span>
-															</label>
-														);
-													},
-												)}
-											</div>
-											{stageErrors.approverIds ? (
-												<span className="mt-1 block text-xs font-medium text-coralpink">
-													{stageErrors.approverIds}
-												</span>
-											) : null}
-										</div>
-									</div>
-								) : null}
-							</div>
-						);
-					})}
-				</div>
+			<div className="grid gap-4 p-4">
+				<ApprovalManagementField label="Select Approver Type">
+					<select
+						value={selectedApproverType}
+						onChange={(event) =>
+							onApproverTypeChange(
+								event.target.value as
+									| ApproverAssignmentType
+									| "",
+							)
+						}
+						className={approvalManagementFieldClassName}
+					>
+						<option value="">Select approver type</option>
+						{approvalManagementApproverTypeOptions.map((type) => (
+							<option key={type} value={type}>
+								{type}
+							</option>
+						))}
+					</select>
+				</ApprovalManagementField>
+				{selectedApproverType ? (
+					visibleSetupRecords.length > 0 ? (
+						<div className="grid gap-3">
+							{visibleSetupRecords.map((record) => (
+								<ApprovalSetupRecordCard
+									key={record.id}
+									record={record}
+								/>
+							))}
+						</div>
+					) : (
+						<div className="rounded-md border border-darknavy/10 bg-offwhite/45 px-4 py-3 text-sm font-medium text-darknavy/55">
+							No approver setup has been assigned for this type
+							and workflow yet.
+						</div>
+					)
+				) : null}
 			</div>
 		</section>
 	);
+}
+
+function ApprovalSetupRecordCard({ record }: { record: ApproverSetupRecord }) {
+	const approvers = record.userIds
+		.map((userId) => getApproverSetupUser(userId))
+		.filter((user): user is UserListRecord => Boolean(user));
+
+	return (
+		<article className="overflow-hidden rounded-lg border border-darknavy/10 bg-white">
+			<div className="grid min-h-20 grid-cols-[2.5rem_3rem_minmax(0,1fr)] items-center gap-3 border-b border-darknavy/10 px-4 py-3">
+				<span className="relative inline-flex h-full items-center justify-center">
+					<span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-skyblue/15" />
+					<span className="relative inline-flex h-7 w-7 items-center justify-center rounded-full bg-skyblue text-sm font-bold text-white shadow-sm">
+						{record.sequence}
+					</span>
+				</span>
+				<span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-offwhite text-darknavy/60">
+					<UsersRound className="h-5 w-5" aria-hidden="true" />
+				</span>
+				<div className="min-w-0">
+					<div className="truncate text-sm font-semibold leading-5 text-darknavy">
+						{record.levelName}
+					</div>
+					<div className="mt-0.5 text-xs font-medium text-darknavy/55">
+						{record.condition}
+						<span className="px-1.5 text-darknavy/25">-</span>
+						{record.userIds.length} approver
+						{record.userIds.length === 1 ? "" : "s"}
+					</div>
+				</div>
+			</div>
+			<div className="grid gap-3 bg-offwhite/35 p-4 md:grid-cols-2">
+				<ApprovalReadOnlyField
+					label="Level Name"
+					value={record.levelName}
+				/>
+				<ApprovalReadOnlyField
+					label="Condition"
+					value={record.condition}
+				/>
+				<ApprovalReadOnlyField label="Type" value={record.assignmentType} />
+				<ApprovalReadOnlyField
+					label="Module Scope"
+					value={record.moduleScope}
+				/>
+				<div className="md:col-span-2">
+					<div className="mb-2 text-sm font-semibold text-darknavy">
+						Approvers
+					</div>
+					<div className="grid gap-2 md:grid-cols-2">
+						{approvers.map((approver) => (
+							<div
+								key={approver.id}
+								className="flex min-h-14 items-center gap-3 rounded-md border border-darknavy/10 bg-white px-3 py-2"
+							>
+								<span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-darknavy text-xs font-bold text-white">
+									{getApproverSetupInitials(approver.name)}
+								</span>
+								<span className="min-w-0">
+									<span className="block truncate text-sm font-semibold text-darknavy">
+										{approver.name}
+									</span>
+									<span className="block truncate text-xs font-medium text-darknavy/45">
+										{approver.userRole}
+									</span>
+								</span>
+							</div>
+						))}
+					</div>
+				</div>
+			</div>
+		</article>
+	);
+}
+
+function ApprovalReadOnlyField({
+	label,
+	value,
+}: {
+	label: string;
+	value: string;
+}) {
+	return (
+		<label className="block">
+			<span className="mb-2 block text-sm font-semibold text-darknavy">
+				{label}
+			</span>
+			<input
+				value={value}
+				readOnly
+				className={`${approvalManagementFieldClassName} bg-offwhite/65`}
+			/>
+		</label>
+	);
+}
+
+function getVisibleApproverSetupRecords(
+	moduleName: string,
+	selectedApproverType: ApproverAssignmentType,
+	stageCount: number,
+) {
+	const normalizedModuleName = normalizeApprovalSetupText(moduleName);
+
+	return ApproverSetupMockData.filter((record) => {
+		if (
+			record.assignmentType !== selectedApproverType ||
+			record.status === "Expired" ||
+			record.sequence > stageCount
+		) {
+			return false;
+		}
+
+		const normalizedScope = normalizeApprovalSetupText(record.moduleScope);
+
+		return (
+			normalizedScope === normalizedModuleName ||
+			normalizedScope.includes(normalizedModuleName) ||
+			normalizedModuleName.includes(normalizedScope)
+		);
+	}).sort((firstRecord, secondRecord) => {
+		if (firstRecord.sequence !== secondRecord.sequence) {
+			return firstRecord.sequence - secondRecord.sequence;
+		}
+
+		return firstRecord.levelName.localeCompare(secondRecord.levelName);
+	});
+}
+
+function normalizeApprovalSetupText(value: string) {
+	return value.trim().toLowerCase().replaceAll(/\s+/g, " ");
 }
 
 function ApprovalManagementEditorSkeleton() {

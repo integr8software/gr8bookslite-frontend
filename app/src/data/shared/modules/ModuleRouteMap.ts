@@ -68,6 +68,7 @@ export const MODULE_ROUTE_MAP = {
   FA: "/others/fixed-asset",
   U: "/system-administration/user-management/users",
   UR: "/system-administration/user-management/user-role",
+  AS: "/system-administration/user-management/approver-setup",
   AM: "/system-administration/approval-management",
   AT: "/system-administration/audit-trail",
   TNS: "/system-administration/transaction-number-setup",

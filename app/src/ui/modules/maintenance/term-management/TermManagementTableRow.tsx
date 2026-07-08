@@ -1,6 +1,6 @@
-import type { TermManagementPermissions } from "@/app/src/services/modules/maintenance/term-management/TermManagementApi";
 import type {
 	TermManagement,
+	TermManagementPermissions,
 	TermManagementTableRowProps,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import {

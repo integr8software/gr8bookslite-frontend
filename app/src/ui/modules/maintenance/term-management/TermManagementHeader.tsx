@@ -4,7 +4,7 @@ import {
 	TermManagementParentLabel,
 	TermManagementTitle,
 } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
-import type { TermManagementPermissions } from "@/app/src/services/modules/maintenance/term-management/TermManagementApi";
+import type { TermManagementPermissions } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,

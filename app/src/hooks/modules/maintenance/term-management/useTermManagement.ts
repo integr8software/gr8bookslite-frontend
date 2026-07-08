@@ -10,14 +10,14 @@ import {
 	fetchTerms,
 	importTerms,
 	updateTerm,
-	type TermManagementPermissions,
-	type TermManagementStatistics,
 } from "@/app/src/services/modules/maintenance/term-management/TermManagementApi";
 import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
 import { TermManagementQueryKeys } from "@/app/src/services/modules/maintenance/term-management/TermManagementQueryKeys";
 import type {
 	TermManagement,
 	TermManagementFormValues,
+	TermManagementPermissions,
+	TermManagementStatistics,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 
 type TermManagementStoreState = {

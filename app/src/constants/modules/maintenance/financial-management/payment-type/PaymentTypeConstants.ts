@@ -11,6 +11,8 @@ import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-
 
 export const PaymentTypeHref = "/maintenance/payment-type";
 
+export const PaymentTypeApiPath = "/maintenance/payment-type-maintenance";
+
 export const PaymentTypeParentLabel = "Accounting master data";
 
 export const PaymentTypeTitle = "Payment Type";

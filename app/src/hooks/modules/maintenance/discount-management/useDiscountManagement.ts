@@ -11,12 +11,12 @@ import {
 	fetchDiscounts,
 	importDiscounts,
 	updateDiscount,
-	type DiscountManagementListResponse,
 } from "@/app/src/services/modules/maintenance/discount-management/DiscountManagementApi";
 import { DiscountManagementQueryKeys } from "@/app/src/services/modules/maintenance/discount-management/DiscountManagementQueryKeys";
 import type {
 	Discount,
 	DiscountManagementFormValues,
+	DiscountManagementListResponse,
 	DiscountManagementPermissions,
 	DiscountManagementStatistics,
 } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";

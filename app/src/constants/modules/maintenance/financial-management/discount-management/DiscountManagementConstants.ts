@@ -13,6 +13,8 @@ import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-
 export const DiscountManagementHref =
 	"/maintenance/discount-management";
 
+export const DiscountManagementApiPath = "/maintenance/discount-maintenance";
+
 export const DiscountManagementParentLabel = "Accounting master data";
 
 export const DiscountManagementTitle = "Discount Management";

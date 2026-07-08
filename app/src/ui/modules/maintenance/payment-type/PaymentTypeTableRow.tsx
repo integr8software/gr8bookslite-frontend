@@ -1,5 +1,5 @@
-import type { PaymentTypePermissions } from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeService";
 import type {
+	PaymentTypePermissions,
 	PaymentTypeRecord,
 	PaymentTypeTableRowProps,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";

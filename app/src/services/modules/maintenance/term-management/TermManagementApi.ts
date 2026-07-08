@@ -1,68 +1,23 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { TermManagementApiPath } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
 import type {
+	ApiTerm,
+	ApiTermDateMode,
+	ApiTermImportResponse,
+	ApiTermListResponse,
+	ApiTermSaveResponse,
+	ApiTermStatus,
 	TermManagement,
 	TermManagementDatemode,
 	TermManagementFormValues,
+	TermManagementListResponse,
 	TermManagementStatus,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 
-type ApiTermDateMode = "DAY" | "MONTH" | "YEAR";
-type ApiTermStatus = "ACTIVE" | "INACTIVE";
-
-type ApiTerm = {
-	id: string;
-	name: string;
-	description: string | null;
-	dateMode: ApiTermDateMode;
-	period: number;
-	status: ApiTermStatus;
-	createdBy: string | null;
-	createdAt: string;
-	updatedBy: string | null;
-	updatedAt: string;
-};
-
-export type TermManagementPermissions = {
-	canView: boolean;
-	canCreate: boolean;
-	canUpdate: boolean;
-	canExport: boolean;
-	canImport: boolean;
-};
-
-export type TermManagementStatistics = {
-	totalTerms: number;
-	activeTerms: number;
-	inactiveTerms: number;
-	dayTerms: number;
-	monthTerms: number;
-	yearTerms: number;
-};
-
-export type TermManagementListResponse = {
-	terms: TermManagement[];
-	statistics: TermManagementStatistics;
-	permissions: TermManagementPermissions;
-};
-
-type ApiTermListResponse = {
-	terms: ApiTerm[];
-	statistics: TermManagementStatistics;
-	permissions: TermManagementPermissions;
-};
-
-type ApiTermSaveResponse = {
-	term: ApiTerm;
-};
-
-type ApiTermImportResponse = {
-	terms: ApiTerm[];
-};
-
-const TermsPath = "/maintenance/financial-management/terms";
-
 export async function fetchTerms(): Promise<TermManagementListResponse> {
-	const response = await ApiClient.get<ApiTermListResponse>(TermsPath);
+	const response = await ApiClient.get<ApiTermListResponse>(
+		TermManagementApiPath,
+	);
 
 	return {
 		terms: response.data.terms.map(mapApiTerm),
@@ -75,7 +30,7 @@ export async function createTerm(
 	values: TermManagementFormValues,
 ): Promise<TermManagement> {
 	const response = await ApiClient.post<ApiTermSaveResponse>(
-		TermsPath,
+		TermManagementApiPath,
 		toApiTermPayload(values),
 	);
 
@@ -86,7 +41,7 @@ export async function updateTerm(
 	term: TermManagement,
 ): Promise<TermManagement> {
 	const response = await ApiClient.patch<ApiTermSaveResponse>(
-		`${TermsPath}/${term.id}`,
+		`${TermManagementApiPath}/${term.id}`,
 		toApiTermPayload(term),
 	);
 
@@ -97,7 +52,7 @@ export async function importTerms(
 	terms: TermManagement[],
 ): Promise<TermManagement[]> {
 	const response = await ApiClient.post<ApiTermImportResponse>(
-		`${TermsPath}/import`,
+		`${TermManagementApiPath}/import`,
 		{
 			terms: terms.map(toApiTermPayload),
 		},

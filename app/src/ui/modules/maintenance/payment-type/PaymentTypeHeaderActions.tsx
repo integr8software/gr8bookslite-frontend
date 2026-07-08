@@ -1,5 +1,5 @@
 import { Plus, Upload } from "lucide-react";
-import type { PaymentTypePermissions } from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeService";
+import type { PaymentTypePermissions } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function PaymentTypeHeaderActions({

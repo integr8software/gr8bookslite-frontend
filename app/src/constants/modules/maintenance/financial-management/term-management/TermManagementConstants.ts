@@ -12,6 +12,8 @@ import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-
 export const TermManagementHref =
 	"/maintenance/term-management";
 
+export const TermManagementApiPath = "/maintenance/term-maintenance";
+
 export const TermManagementParentLabel = "Accounting master data";
 
 export const TermManagementTitle = "Term Management";

@@ -84,6 +84,48 @@ export type DiscountManagementPermissions = {
 	canImport: boolean;
 };
 
+export type ApiDiscountType = "SALES" | "PURCHASE";
+export type ApiDiscountValueType = "PERCENTAGE" | "FIXED";
+export type ApiDiscountStatus = "ACTIVE" | "INACTIVE";
+
+export type ApiDiscount = {
+	id: string;
+	name: string;
+	description: string | null;
+	type: ApiDiscountType;
+	valueType: ApiDiscountValueType;
+	value: string;
+	status: ApiDiscountStatus;
+	chartAccountId: string;
+	accountCode: string;
+	accountTitle: string;
+	accountGroupPath: string;
+	createdBy: string | null;
+	createdAt: string;
+	updatedBy: string | null;
+	updatedAt: string;
+};
+
+export type DiscountManagementListResponse = {
+	discounts: Discount[];
+	statistics: DiscountManagementStatistics;
+	permissions: DiscountManagementPermissions;
+};
+
+export type ApiDiscountListResponse = {
+	discounts: ApiDiscount[];
+	statistics: DiscountManagementStatistics;
+	permissions: DiscountManagementPermissions;
+};
+
+export type ApiDiscountSaveResponse = {
+	discount: ApiDiscount;
+};
+
+export type ApiDiscountImportResponse = {
+	discounts: ApiDiscount[];
+};
+
 export type DiscountManagementTableProps = {
 	discountTypeFilter: DiscountValueTypeFilter;
 	filteredDiscounts: Discount[];

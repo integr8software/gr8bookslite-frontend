@@ -1,43 +1,70 @@
+import { z } from "zod";
+import {
+	DiscountManagementStatusOptions,
+	DiscountManagementTypeOptions,
+	DiscountManagementValueTypeOptions,
+} from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
 import type {
 	DiscountManagementFormErrors,
 	DiscountManagementFormValues,
 } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 
+export const DiscountManagementFormValidationSchema = z
+	.object({
+		name: z.string().trim().min(1, "Enter a discount name."),
+		description: z
+			.string()
+			.trim()
+			.min(1, "Enter a description.")
+			.max(500, "Description must be 500 characters or fewer."),
+		type: z.enum(DiscountManagementTypeOptions, {
+			message: "Select Purchase or Sales.",
+		}),
+		discountType: z.enum(DiscountManagementValueTypeOptions, {
+			message: "Select discount type.",
+		}),
+		amount: z.string().trim().min(1, "Enter a discount value."),
+		status: z.enum(DiscountManagementStatusOptions, {
+			message: "Select status.",
+		}),
+	})
+	.superRefine((values, context) => {
+		const amount = Number(values.amount);
+
+		if (Number.isNaN(amount) || amount < 0) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Enter a valid discount value.",
+				path: ["amount"],
+			});
+			return;
+		}
+
+		if (values.discountType === "Percentage" && amount > 100) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Enter a percentage from 0 to 100.",
+				path: ["amount"],
+			});
+		}
+	});
+
 export function validateDiscountManagementForm(
 	values: DiscountManagementFormValues,
 ): DiscountManagementFormErrors {
-	const errors: DiscountManagementFormErrors = {};
-	const amount = Number(values.amount);
+	const result = DiscountManagementFormValidationSchema.safeParse(values);
 
-	if (!values.name.trim()) {
-		errors.name = "Enter a discount name.";
-	}
+	return result.success ? {} : mapDiscountManagementIssues(result.error.issues);
+}
 
-	if (!values.description.trim()) {
-		errors.description = "Enter a description.";
-	} else if (values.description.trim().length > 500) {
-		errors.description = "Description must be 500 characters or fewer.";
-	}
+function mapDiscountManagementIssues(issues: z.ZodIssue[]) {
+	return issues.reduce<DiscountManagementFormErrors>((errors, issue) => {
+		const field = issue.path[0] as keyof DiscountManagementFormValues | undefined;
 
-	if (!values.type) {
-		errors.type = "Select Purchase or Sales.";
-	}
+		if (field && !errors[field]) {
+			errors[field] = issue.message;
+		}
 
-	if (!values.discountType) {
-		errors.discountType = "Select discount type.";
-	}
-
-	if (!values.amount.trim()) {
-		errors.amount = "Enter a discount value.";
-	} else if (Number.isNaN(amount) || amount < 0) {
-		errors.amount = "Enter a valid discount value.";
-	} else if (values.discountType === "Percentage" && amount > 100) {
-		errors.amount = "Enter a percentage from 0 to 100.";
-	}
-
-	if (!values.status) {
-		errors.status = "Select status.";
-	}
-
-	return errors;
+		return errors;
+	}, {});
 }

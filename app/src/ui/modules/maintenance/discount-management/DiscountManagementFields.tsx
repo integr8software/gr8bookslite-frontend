@@ -1,28 +1,13 @@
-import type { ChangeEventHandler, ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
+	DiscountManagementFieldClassName,
 	DiscountManagementStatusOptions,
+	DiscountManagementSelectClassName,
 	DiscountManagementTypeOptions,
 	DiscountManagementValueTypeOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
-import type {
-	DiscountManagementFormErrors,
-	DiscountManagementFormValues,
-} from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
+import type { DiscountManagementFieldsProps } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-
-type DiscountManagementFieldsProps = {
-	errors: DiscountManagementFormErrors;
-	generatedAccount: {
-		accountCode: string;
-		accountGroupPath: string;
-		accountTitle: string;
-	};
-	isReadonly: boolean;
-	values: DiscountManagementFormValues;
-	onInputChange: ChangeEventHandler<
-		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-	>;
-};
 
 export function DiscountManagementFields({
 	errors,
@@ -39,7 +24,7 @@ export function DiscountManagementFields({
 					value={values.name}
 					onChange={onInputChange}
 					readOnly={isReadonly}
-					className={fieldClassName}
+					className={DiscountManagementFieldClassName}
 					placeholder="Enter discount name"
 				/>
 			</FormField>
@@ -50,7 +35,7 @@ export function DiscountManagementFields({
 					value={values.type}
 					onChange={onInputChange}
 					disabled={isReadonly}
-					className={selectClassName}
+					className={DiscountManagementSelectClassName}
 				>
 					{DiscountManagementTypeOptions.map((type) => (
 						<option key={type} value={type}>
@@ -66,7 +51,7 @@ export function DiscountManagementFields({
 					value={values.description}
 					onChange={onInputChange}
 					readOnly={isReadonly}
-					className={`${fieldClassName} min-h-24 py-3`}
+					className={`${DiscountManagementFieldClassName} min-h-24 py-3`}
 					counterMode="used"
 					placeholder="What is this discount for?"
 				/>
@@ -79,7 +64,7 @@ export function DiscountManagementFields({
 						value={values.discountType}
 						onChange={onInputChange}
 						disabled={isReadonly}
-						className={selectClassName}
+							className={DiscountManagementSelectClassName}
 					>
 						{DiscountManagementValueTypeOptions.map((type) => (
 							<option key={type} value={type}>
@@ -99,7 +84,7 @@ export function DiscountManagementFields({
 						value={values.amount}
 						onChange={onInputChange}
 						readOnly={isReadonly}
-						className={fieldClassName}
+						className={DiscountManagementFieldClassName}
 						placeholder={
 							values.discountType === "Percentage"
 								? "Enter percentage"
@@ -129,7 +114,7 @@ export function DiscountManagementFields({
 					value={values.status}
 					onChange={onInputChange}
 					disabled={isReadonly}
-					className={selectClassName}
+					className={DiscountManagementSelectClassName}
 				>
 					{DiscountManagementStatusOptions.map((status) => (
 						<option key={status} value={status}>
@@ -192,7 +177,3 @@ function ReadonlyField({
 	);
 }
 
-const fieldClassName =
-	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5 read-only:bg-darknavy/[0.03]";
-
-const selectClassName = `app-select-control ${fieldClassName}`;

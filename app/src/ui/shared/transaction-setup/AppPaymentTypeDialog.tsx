@@ -18,13 +18,13 @@ import {
 } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
 import {
   applyPaymentTypeListParams,
-  type PaymentTypeSortKey,
 } from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeService";
 import type {
   PaymentTypeClassification,
   PaymentTypeFormErrors,
   PaymentTypeFormValues,
   PaymentTypeRecord,
+  PaymentTypeSortKey,
   PaymentTypeStatus,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";

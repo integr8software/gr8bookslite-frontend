@@ -2,9 +2,10 @@
 
 import { useEffect, useId, useRef } from "react";
 import { BankMasterfileAccountTypeOptions } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+import { ChartsOfAccountsRequiredBankFields } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
   BankDetailsKey,
-  ChartAccountFormValues,
+  ChartsOfAccountsBankFieldsProps,
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import {
   Field,
@@ -12,25 +13,13 @@ import {
   Select,
 } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsControls";
 
-const RequiredBankFields: BankDetailsKey[] = [
-  "bankName",
-  "bankAccountNumber",
-  "accountType",
-  "currency",
-];
-
 export function ChartsOfAccountsBankFields({
   readOnly = false,
   submitted,
   values,
   onBankFieldChange,
-}: {
-  readOnly?: boolean;
-  submitted: boolean;
-  values: ChartAccountFormValues;
-  onBankFieldChange: (key: BankDetailsKey, value: string) => void;
-}) {
-  const firstInvalidField = RequiredBankFields.find(
+}: ChartsOfAccountsBankFieldsProps) {
+  const firstInvalidField = ChartsOfAccountsRequiredBankFields.find(
     (field) => !values.bankDetails[field].trim(),
   );
   const focusTarget = submitted ? firstInvalidField ?? null : null;

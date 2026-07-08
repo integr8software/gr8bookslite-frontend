@@ -2,13 +2,43 @@ import type {
 	DisbursementPaymentClassification,
 	DisbursementPaymentMethod,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import type { Table } from "@tanstack/react-table";
-import type { PaymentTypePermissions } from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeService";
+import type { Row, Table } from "@tanstack/react-table";
 
 export type PaymentTypeStatus = "Active" | "Inactive";
 export type PaymentTypeClassification = DisbursementPaymentClassification;
 export type PaymentTypeStatusFilter = "" | PaymentTypeStatus;
 export type PaymentTypeClassificationFilter = "" | PaymentTypeClassification;
+export type PaymentTypeSortKey = "paymentType" | "type" | "status";
+
+export type PaymentTypeListParams = {
+	search?: string;
+	sortBy?: PaymentTypeSortKey;
+	sortDirection?: "asc" | "desc";
+	status?: "" | PaymentTypeStatus;
+	type?: "" | PaymentTypeClassification;
+};
+
+export type ApiPaymentTypeClassification =
+	| "CASH"
+	| "WITH_BANK"
+	| "BANK_TRANSFER"
+	| "ONLINE_PAYMENT"
+	| "MULTIPLE_CHECK"
+	| "DEBIT";
+
+export type ApiPaymentTypeStatus = "ACTIVE" | "INACTIVE";
+
+export type ApiPaymentType = {
+	id: string;
+	name: string;
+	description: string | null;
+	classification: ApiPaymentTypeClassification;
+	status: ApiPaymentTypeStatus;
+	createdBy: string | null;
+	createdAt: string;
+	updatedBy: string | null;
+	updatedAt: string;
+};
 
 export type PaymentTypeRecord = {
 	description: string;
@@ -41,6 +71,13 @@ export type DrawerState =
 
 export type PaymentTypeDrawerState = DrawerState;
 
+export type PaymentTypeDrawerProps = {
+	isOpen: boolean;
+	mode: PaymentTypeActionMode;
+	onClose: () => void;
+	paymentType?: PaymentTypeRecord;
+};
+
 export type PaymentTypeTableProps = {
 	filteredPaymentTypes: PaymentTypeRecord[];
 	isLoading: boolean;
@@ -61,6 +98,14 @@ export type PaymentTypeTableProps = {
 	onView: (paymentType: PaymentTypeRecord) => void;
 };
 
+export type PaymentTypeTableRowProps = {
+	row: Row<PaymentTypeRecord>;
+	permissions: PaymentTypePermissions;
+	onEdit: (paymentType: PaymentTypeRecord) => void;
+	onToggleStatus: (paymentType: PaymentTypeRecord) => void;
+	onView: (paymentType: PaymentTypeRecord) => void;
+};
+
 export type PaymentTypeTableColumnKey =
 	| "paymentType"
 	| "description"
@@ -70,6 +115,46 @@ export type PaymentTypeTableColumnKey =
 	| "createdAt"
 	| "updatedBy"
 	| "updatedAt";
+
+export type PaymentTypePermissions = {
+	canView: boolean;
+	canCreate: boolean;
+	canUpdate: boolean;
+	canExport: boolean;
+	canImport: boolean;
+};
+
+export type PaymentTypeStatistics = {
+	totalPaymentTypes: number;
+	activePaymentTypes: number;
+	inactivePaymentTypes: number;
+	cashPaymentTypes: number;
+	withBankPaymentTypes: number;
+	bankTransferPaymentTypes: number;
+	onlinePaymentTypes: number;
+	multipleCheckPaymentTypes: number;
+	debitPaymentTypes: number;
+};
+
+export type PaymentTypeListResponse = {
+	paymentTypes: PaymentTypeRecord[];
+	statistics: PaymentTypeStatistics;
+	permissions: PaymentTypePermissions;
+};
+
+export type ApiPaymentTypeListResponse = {
+	paymentTypes: ApiPaymentType[];
+	statistics: PaymentTypeStatistics;
+	permissions: PaymentTypePermissions;
+};
+
+export type ApiPaymentTypeSaveResponse = {
+	paymentType: ApiPaymentType;
+};
+
+export type ApiPaymentTypeImportResponse = {
+	paymentTypes: ApiPaymentType[];
+};
 
 export type PaymentTypeTableFiltersProps = {
 	exportAllRows: PaymentTypeRecord[];

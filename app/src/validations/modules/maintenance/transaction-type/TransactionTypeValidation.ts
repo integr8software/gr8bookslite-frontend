@@ -1,34 +1,41 @@
+import { z } from "zod";
 import type {
 	TransactionTypeFormErrors,
 	TransactionTypeFormValues,
 } from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
 
+const TransactionTypeStatusSchema = z.enum(["Active", "Inactive"], {
+	message: "Select status.",
+});
+
+export const TransactionTypeFormValidationSchema = z.object({
+	name: z.string().trim().min(1, "Enter a transaction type name."),
+	description: z
+		.string()
+		.trim()
+		.min(1, "Enter a description.")
+		.max(500, "Description must be 500 characters or fewer."),
+	moduleIds: z.array(z.string()).min(1, "Select at least one module."),
+	accountId: z.string().trim().min(1, "Select an account."),
+	status: TransactionTypeStatusSchema,
+});
+
 export function validateTransactionTypeForm(
 	values: TransactionTypeFormValues,
 ): TransactionTypeFormErrors {
-	const errors: TransactionTypeFormErrors = {};
+	const result = TransactionTypeFormValidationSchema.safeParse(values);
 
-	if (!values.name.trim()) {
-		errors.name = "Enter a transaction type name.";
-	}
+	return result.success ? {} : mapTransactionTypeIssues(result.error.issues);
+}
 
-	if (!values.description.trim()) {
-		errors.description = "Enter a description.";
-	} else if (values.description.trim().length > 500) {
-		errors.description = "Description must be 500 characters or fewer.";
-	}
+function mapTransactionTypeIssues(issues: z.ZodIssue[]) {
+	return issues.reduce<TransactionTypeFormErrors>((errors, issue) => {
+		const field = issue.path[0] as keyof TransactionTypeFormValues | undefined;
 
-	if (values.moduleIds.length === 0) {
-		errors.moduleIds = "Select at least one module.";
-	}
+		if (field && !errors[field]) {
+			errors[field] = issue.message;
+		}
 
-	if (!values.accountId) {
-		errors.accountId = "Select an account.";
-	}
-
-	if (!values.status) {
-		errors.status = "Select status.";
-	}
-
-	return errors;
+		return errors;
+	}, {});
 }

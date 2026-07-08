@@ -1,39 +1,68 @@
+import { z } from "zod";
 import type {
 	ResponsibilityCenter,
 	ResponsibilityCenterFormErrors,
 	ResponsibilityCenterFormValues,
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 
+const ResponsibilityCenterCategorySchema = z.enum(
+	[
+		"Corporate",
+		"Division",
+		"Department",
+		"Section",
+		"Team",
+		"Branch",
+		"Building",
+		"Project",
+		"Business Unit",
+		"Region",
+	],
+	{ message: "Category is required." },
+);
+
+const ResponsibilityCenterFinancialTypeSchema = z.enum(
+	[
+		"Cost Center",
+		"Revenue Center",
+		"Profit Center",
+		"Investment Center",
+	],
+	{ message: "Financial responsibility type is required." },
+);
+
+const ResponsibilityCenterStatusSchema = z.enum(["Active", "Inactive"], {
+	message: "Status is required.",
+});
+
+export const ResponsibilityCenterFormValidationSchema = z.object({
+	code: z.string(),
+	name: z.string().trim().min(1, "Name is required."),
+	category: ResponsibilityCenterCategorySchema,
+	financialType: ResponsibilityCenterFinancialTypeSchema,
+	manager: z.string().trim().min(1, "Manager is required."),
+	parentId: z.string(),
+	status: ResponsibilityCenterStatusSchema,
+	description: z.string(),
+	allowBudgetAllocation: z.boolean(),
+	allowExpensePosting: z.boolean(),
+	allowRevenuePosting: z.boolean(),
+	allowProjectAssignment: z.boolean(),
+});
+
 export function validateResponsibilityCenterForm(
 	values: ResponsibilityCenterFormValues,
 	centers: ResponsibilityCenter[],
 	currentCenterId?: string,
 ) {
-	const errors: ResponsibilityCenterFormErrors = {};
+	const result = ResponsibilityCenterFormValidationSchema.safeParse(values);
+	const errors: ResponsibilityCenterFormErrors = result.success
+		? {}
+		: mapResponsibilityCenterIssues(result.error.issues);
 	const normalizedCode = normalizeResponsibilityCenterCode(
 		values.code || values.name,
 	);
 	const normalizedName = values.name.trim().toLowerCase();
-
-	if (!values.name.trim()) {
-		errors.name = "Name is required.";
-	}
-
-	if (!values.category) {
-		errors.category = "Category is required.";
-	}
-
-	if (!values.financialType) {
-		errors.financialType = "Financial responsibility type is required.";
-	}
-
-	if (!values.manager.trim()) {
-		errors.manager = "Manager is required.";
-	}
-
-	if (!values.status) {
-		errors.status = "Status is required.";
-	}
 
 	if (values.parentId === currentCenterId) {
 		errors.parentId = "A center cannot report to itself.";
@@ -70,6 +99,18 @@ export function validateResponsibilityCenterForm(
 	}
 
 	return errors;
+}
+
+function mapResponsibilityCenterIssues(issues: z.ZodIssue[]) {
+	return issues.reduce<ResponsibilityCenterFormErrors>((errors, issue) => {
+		const field = issue.path[0] as keyof ResponsibilityCenterFormValues | undefined;
+
+		if (field && !errors[field]) {
+			errors[field] = issue.message;
+		}
+
+		return errors;
+	}, {});
 }
 
 function normalizeResponsibilityCenterCode(value: string) {

@@ -1,18 +1,12 @@
-import type { Row } from "@tanstack/react-table";
-import type { PaymentTypePermissions } from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeService";
-import type { PaymentTypeRecord } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
+import type {
+	PaymentTypePermissions,
+	PaymentTypeRecord,
+	PaymentTypeTableRowProps,
+} from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-
-type PaymentTypeTableRowProps = {
-	row: Row<PaymentTypeRecord>;
-	permissions: PaymentTypePermissions;
-	onEdit: (paymentType: PaymentTypeRecord) => void;
-	onToggleStatus: (paymentType: PaymentTypeRecord) => void;
-	onView: (paymentType: PaymentTypeRecord) => void;
-};
 
 export function PaymentTypeTableRow({
 	row,

@@ -11,11 +11,13 @@ import {
 	fetchPaymentTypes,
 	importPaymentTypes,
 	updatePaymentType,
-	type PaymentTypePermissions,
-	type PaymentTypeStatistics,
 } from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeService";
 import { PaymentTypeQueryKeys } from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeQueryKeys";
-import type { PaymentTypeRecord } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
+import type {
+	PaymentTypePermissions,
+	PaymentTypeRecord,
+	PaymentTypeStatistics,
+} from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 
 type PaymentTypeStoreState = {
 	paymentTypes: PaymentTypeRecord[];

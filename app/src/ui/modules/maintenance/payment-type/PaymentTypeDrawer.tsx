@@ -1,17 +1,19 @@
 "use client";
 
+import {
+	PaymentTypeDrawerFormId,
+	PaymentTypeFieldClassName,
+} from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
 import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
 import { usePaymentTypeActionPage } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentTypeActionPage";
 import type {
 	PaymentTypeActionMode,
 	PaymentTypeClassification,
-	PaymentTypeRecord,
+	PaymentTypeDrawerProps,
 	PaymentTypeStatus,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
-
-const formId = "payment-type-drawer-form";
 
 const PaymentTypeActionCopy = {
 	add: {
@@ -38,12 +40,7 @@ export function PaymentTypeDrawer({
 	mode,
 	onClose,
 	paymentType,
-}: {
-	isOpen: boolean;
-	mode: PaymentTypeActionMode;
-	onClose: () => void;
-	paymentType?: PaymentTypeRecord;
-}) {
+}: PaymentTypeDrawerProps) {
 	return (
 		<PaymentTypeDrawerPanel
 			key={`${mode}-${paymentType?.id ?? "new"}`}
@@ -60,12 +57,7 @@ function PaymentTypeDrawerPanel({
 	mode,
 	onClose,
 	paymentType,
-}: {
-	isOpen: boolean;
-	mode: PaymentTypeActionMode;
-	onClose: () => void;
-	paymentType?: PaymentTypeRecord;
-}) {
+}: PaymentTypeDrawerProps) {
 	const page = usePaymentTypeActionPage({
 		existingPaymentType: paymentType,
 		mode,
@@ -77,7 +69,7 @@ function PaymentTypeDrawerPanel({
 		<MaintenanceFormDrawer
 			description={copy.description}
 			eyebrow="Accounting master data"
-			formId={formId}
+			formId={PaymentTypeDrawerFormId}
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
@@ -88,7 +80,7 @@ function PaymentTypeDrawerPanel({
 			submitLabel={mode === "edit" ? "Update Payment Type" : "Save Payment Type"}
 			title={copy.title}
 		>
-			<form id={formId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
+			<form id={PaymentTypeDrawerFormId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
 				<label className="grid gap-2">
 					<span className="text-sm font-semibold text-darknavy">
 						Name <span className="text-coralpink">*</span>
@@ -99,7 +91,7 @@ function PaymentTypeDrawerPanel({
 						onChange={(event) =>
 							page.handleInputChange("paymentType", event.target.value)
 						}
-						className={fieldClassName}
+						className={PaymentTypeFieldClassName}
 					/>
 					{page.errors.paymentType ? (
 						<span className="text-xs font-semibold text-coralpink">
@@ -116,7 +108,7 @@ function PaymentTypeDrawerPanel({
 						onChange={(event) =>
 							page.handleInputChange("description", event.target.value)
 						}
-						className={`${fieldClassName} min-h-24 py-3`}
+						className={`${PaymentTypeFieldClassName} min-h-24 py-3`}
 						counterMode="used"
 					/>
 					{page.errors.description ? (
@@ -140,7 +132,7 @@ function PaymentTypeDrawerPanel({
 									event.target.value as PaymentTypeClassification,
 								)
 							}
-							className={fieldClassName}
+							className={PaymentTypeFieldClassName}
 						>
 							<option value="">Select category</option>
 							{PaymentTypeOptions.map((typeOption) => (
@@ -169,7 +161,7 @@ function PaymentTypeDrawerPanel({
 									event.target.value as PaymentTypeStatus,
 								)
 							}
-							className={fieldClassName}
+							className={PaymentTypeFieldClassName}
 						>
 							<option value="Active">Active</option>
 							<option value="Inactive">Inactive</option>
@@ -186,5 +178,3 @@ function PaymentTypeDrawerPanel({
 	);
 }
 
-const fieldClassName =
-	"h-11 w-full rounded-lg border border-darknavy/12 bg-white px-3 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15 disabled:bg-darknavy/5 read-only:bg-darknavy/5";

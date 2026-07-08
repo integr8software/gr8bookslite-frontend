@@ -123,6 +123,15 @@ export type ChartsOfAccountsFormProps = {
   onParentChange: (parentId: string | null) => void;
 };
 
+export type ChartsOfAccountsAccountFieldsProps = ChartsOfAccountsFormProps;
+
+export type ChartsOfAccountsBankFieldsProps = {
+  readOnly?: boolean;
+  submitted: boolean;
+  values: ChartAccountFormValues;
+  onBankFieldChange: (key: BankDetailsKey, value: string) => void;
+};
+
 export type ChartsOfAccountsTableColumnKey =
   | "accountNumber"
   | "accountName"

@@ -1,4 +1,4 @@
-import type { PaymentTypeListParams } from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeService";
+import type { PaymentTypeListParams } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 
 export const PaymentTypeQueryKeys = {
 	all: () => ["paymentType"],

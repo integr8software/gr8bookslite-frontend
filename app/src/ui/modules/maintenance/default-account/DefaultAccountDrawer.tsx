@@ -2,30 +2,21 @@
 
 import {
 	DefaultAccountActionCopy,
+	DefaultAccountDrawerFormId,
 	DefaultAccountStatusOptions,
 	DefaultAccountTitle,
 	DefaultAccountTypeOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/default-account/DefaultAccountConstants";
 import { useDefaultAccountFormPage } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccountFormPage";
-import type {
-	DefaultAccount,
-	DefaultAccountActionMode,
-} from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
+import type { DefaultAccountDrawerProps } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
-
-const formId = "default-account-drawer-form";
 
 export function DefaultAccountDrawer({
 	defaultAccount,
 	isOpen,
 	mode,
 	onClose,
-}: {
-	defaultAccount?: DefaultAccount;
-	isOpen: boolean;
-	mode: DefaultAccountActionMode;
-	onClose: () => void;
-}) {
+}: DefaultAccountDrawerProps) {
 	return (
 		<DefaultAccountDrawerPanel
 			key={`${mode}-${defaultAccount?.id ?? "new"}`}
@@ -42,12 +33,7 @@ function DefaultAccountDrawerPanel({
 	isOpen,
 	mode,
 	onClose,
-}: {
-	defaultAccount?: DefaultAccount;
-	isOpen: boolean;
-	mode: DefaultAccountActionMode;
-	onClose: () => void;
-}) {
+}: DefaultAccountDrawerProps) {
 	const page = useDefaultAccountFormPage({
 		existingDefaultAccount: defaultAccount,
 		mode,
@@ -59,7 +45,7 @@ function DefaultAccountDrawerPanel({
 		<MaintenanceFormDrawer
 			description={copy.description}
 			eyebrow={DefaultAccountTitle}
-			formId={formId}
+			formId={DefaultAccountDrawerFormId}
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
@@ -72,7 +58,7 @@ function DefaultAccountDrawerPanel({
 			submitLabel={mode === "edit" ? "Update Default Account" : "Save Default Account"}
 			title={copy.title}
 		>
-			<form id={formId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
+			<form id={DefaultAccountDrawerFormId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
 				<label className="grid gap-2">
 					<span className="text-sm font-semibold text-darknavy">
 						Default Account Name <span className="text-coralpink">*</span>

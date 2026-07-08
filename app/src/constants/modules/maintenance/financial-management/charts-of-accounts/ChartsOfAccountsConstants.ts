@@ -84,6 +84,13 @@ export const ChartsOfAccountsBankFields: Array<{
   { label: "Account Type", key: "accountType" },
 ];
 
+export const ChartsOfAccountsRequiredBankFields: BankDetailsKey[] = [
+  "bankName",
+  "bankAccountNumber",
+  "accountType",
+  "currency",
+];
+
 export const ChartsOfAccountsTableColumns: Array<{
   label: string;
   key?: ChartsOfAccountsTableColumnKey;

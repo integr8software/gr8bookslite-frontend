@@ -1,60 +1,25 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { DiscountManagementApiPath } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
 import type {
+	ApiDiscount,
+	ApiDiscountImportResponse,
+	ApiDiscountListResponse,
+	ApiDiscountSaveResponse,
+	ApiDiscountStatus,
+	ApiDiscountType,
+	ApiDiscountValueType,
 	Discount,
 	DiscountManagementFormValues,
-	DiscountManagementPermissions,
-	DiscountManagementStatistics,
+	DiscountManagementListResponse,
 	DiscountStatus,
 	DiscountTransactionType,
 	DiscountType,
 } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 
-type ApiDiscountType = "SALES" | "PURCHASE";
-type ApiDiscountValueType = "PERCENTAGE" | "FIXED";
-type ApiDiscountStatus = "ACTIVE" | "INACTIVE";
-
-type ApiDiscount = {
-	id: string;
-	name: string;
-	description: string | null;
-	type: ApiDiscountType;
-	valueType: ApiDiscountValueType;
-	value: string;
-	status: ApiDiscountStatus;
-	chartAccountId: string;
-	accountCode: string;
-	accountTitle: string;
-	accountGroupPath: string;
-	createdBy: string | null;
-	createdAt: string;
-	updatedBy: string | null;
-	updatedAt: string;
-};
-
-export type DiscountManagementListResponse = {
-	discounts: Discount[];
-	statistics: DiscountManagementStatistics;
-	permissions: DiscountManagementPermissions;
-};
-
-type ApiDiscountListResponse = {
-	discounts: ApiDiscount[];
-	statistics: DiscountManagementStatistics;
-	permissions: DiscountManagementPermissions;
-};
-
-type ApiDiscountSaveResponse = {
-	discount: ApiDiscount;
-};
-
-type ApiDiscountImportResponse = {
-	discounts: ApiDiscount[];
-};
-
-const DiscountsPath = "/maintenance/financial-management/discounts";
-
 export async function fetchDiscounts(): Promise<DiscountManagementListResponse> {
-	const response = await ApiClient.get<ApiDiscountListResponse>(DiscountsPath);
+	const response = await ApiClient.get<ApiDiscountListResponse>(
+		DiscountManagementApiPath,
+	);
 
 	return {
 		discounts: response.data.discounts.map(mapApiDiscount),
@@ -67,7 +32,7 @@ export async function createDiscount(
 	values: DiscountManagementFormValues | Discount,
 ): Promise<Discount> {
 	const response = await ApiClient.post<ApiDiscountSaveResponse>(
-		DiscountsPath,
+		DiscountManagementApiPath,
 		toApiDiscountPayload(values),
 	);
 
@@ -76,7 +41,7 @@ export async function createDiscount(
 
 export async function updateDiscount(discount: Discount): Promise<Discount> {
 	const response = await ApiClient.patch<ApiDiscountSaveResponse>(
-		`${DiscountsPath}/${discount.id}`,
+		`${DiscountManagementApiPath}/${discount.id}`,
 		toApiDiscountPayload(discount),
 	);
 
@@ -85,7 +50,7 @@ export async function updateDiscount(discount: Discount): Promise<Discount> {
 
 export async function importDiscounts(discounts: Discount[]): Promise<Discount[]> {
 	const response = await ApiClient.post<ApiDiscountImportResponse>(
-		`${DiscountsPath}/import`,
+		`${DiscountManagementApiPath}/import`,
 		{
 			discounts: discounts.map(toApiDiscountPayload),
 		},

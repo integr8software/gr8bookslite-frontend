@@ -1,5 +1,5 @@
-import type { Table } from "@tanstack/react-table";
-import type { TermManagementPermissions } from "@/app/src/services/modules/maintenance/term-management/TermManagementApi";
+import type { ChangeEventHandler } from "react";
+import type { Row, Table } from "@tanstack/react-table";
 
 export type TermManagementDatemode = "Day" | "Month" | "Year";
 
@@ -8,6 +8,22 @@ export type TermManagementStatus = "Active" | "Inactive";
 export type TermManagementDatemodeFilter = "All" | TermManagementDatemode;
 
 export type TermManagementStatusFilter = "" | TermManagementStatus;
+
+export type ApiTermDateMode = "DAY" | "MONTH" | "YEAR";
+export type ApiTermStatus = "ACTIVE" | "INACTIVE";
+
+export type ApiTerm = {
+	id: string;
+	name: string;
+	description: string | null;
+	dateMode: ApiTermDateMode;
+	period: number;
+	status: ApiTermStatus;
+	createdBy: string | null;
+	createdAt: string;
+	updatedBy: string | null;
+	updatedAt: string;
+};
 
 export type TermManagement = {
 	id: string;
@@ -44,6 +60,23 @@ export type TermManagementDrawerState =
 	  }
 	| null;
 
+export type TermManagementDrawerProps = {
+	initialValues?: TermManagementFormValues;
+	isOpen: boolean;
+	mode: TermManagementActionMode;
+	onClose: () => void;
+	term?: TermManagement;
+};
+
+export type TermManagementFieldsProps = {
+	errors: TermManagementFormErrors;
+	isReadonly: boolean;
+	values: TermManagementFormValues;
+	onInputChange: ChangeEventHandler<
+		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+	>;
+};
+
 export type TermManagementTableColumnKey =
 	| "name"
 	| "description"
@@ -54,6 +87,43 @@ export type TermManagementTableColumnKey =
 	| "createdAt"
 	| "updatedBy"
 	| "updatedAt";
+
+export type TermManagementPermissions = {
+	canView: boolean;
+	canCreate: boolean;
+	canUpdate: boolean;
+	canExport: boolean;
+	canImport: boolean;
+};
+
+export type TermManagementStatistics = {
+	totalTerms: number;
+	activeTerms: number;
+	inactiveTerms: number;
+	dayTerms: number;
+	monthTerms: number;
+	yearTerms: number;
+};
+
+export type TermManagementListResponse = {
+	terms: TermManagement[];
+	statistics: TermManagementStatistics;
+	permissions: TermManagementPermissions;
+};
+
+export type ApiTermListResponse = {
+	terms: ApiTerm[];
+	statistics: TermManagementStatistics;
+	permissions: TermManagementPermissions;
+};
+
+export type ApiTermSaveResponse = {
+	term: ApiTerm;
+};
+
+export type ApiTermImportResponse = {
+	terms: ApiTerm[];
+};
 
 export type TermManagementTableProps = {
 	datemodeFilter: TermManagementDatemodeFilter;
@@ -71,6 +141,14 @@ export type TermManagementTableProps = {
 	onQueryChange: (value: string) => void;
 	onRefresh: () => void;
 	onStatusFilterChange: (value: TermManagementStatusFilter) => void;
+	onToggleStatus: (term: TermManagement) => void;
+	onViewTerm: (term: TermManagement) => void;
+};
+
+export type TermManagementTableRowProps = {
+	row: Row<TermManagement>;
+	permissions: TermManagementPermissions;
+	onEditTerm: (term: TermManagement) => void;
 	onToggleStatus: (term: TermManagement) => void;
 	onViewTerm: (term: TermManagement) => void;
 };

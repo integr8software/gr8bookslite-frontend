@@ -1,6 +1,9 @@
 import { isValidElement, useId } from "react";
 import {
 	BankMasterfileAccountTypeOptions,
+	BankMasterfileFieldClassName,
+	BankMasterfileReadOnlyFieldClassName,
+	BankMasterfileSelectClassName,
 	BankMasterfileStatusOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
 import { buildBankMasterfileAccountName } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
@@ -31,7 +34,7 @@ export function BankMasterfileFields({
 							value={values.bankName}
 							onChange={onInputChange}
 							readOnly={isReadonly}
-							className={fieldClassName}
+							className={BankMasterfileFieldClassName}
 							placeholder="BDO"
 						/>
 					</FormField>
@@ -42,7 +45,7 @@ export function BankMasterfileFields({
 							value={values.branch}
 							onChange={onInputChange}
 							readOnly={isReadonly}
-							className={fieldClassName}
+							className={BankMasterfileFieldClassName}
 							placeholder="Makati Branch"
 						/>
 					</FormField>
@@ -62,7 +65,7 @@ export function BankMasterfileFields({
 							value={values.accountNumber}
 							onChange={onInputChange}
 							readOnly={isReadonly}
-							className={fieldClassName}
+							className={BankMasterfileFieldClassName}
 							placeholder="Required before activation"
 						/>
 					</FormField>
@@ -73,7 +76,7 @@ export function BankMasterfileFields({
 							value={values.accountType}
 							onChange={onInputChange}
 							disabled={isReadonly}
-							className={selectClassName}
+							className={BankMasterfileSelectClassName}
 						>
 							{BankMasterfileAccountTypeOptions.map((option) => (
 								<option key={option} value={option}>
@@ -91,7 +94,7 @@ export function BankMasterfileFields({
 							id="bank-masterfile-account-title"
 							value={accountName}
 							readOnly
-							className={readOnlyFieldClassName}
+							className={BankMasterfileReadOnlyFieldClassName}
 						/>
 					</FormField>
 					<FormField label="Account Code">
@@ -105,7 +108,7 @@ export function BankMasterfileFields({
 									: accountCode
 							}
 							readOnly
-							className={readOnlyFieldClassName}
+							className={BankMasterfileReadOnlyFieldClassName}
 						/>
 					</FormField>
 					<FormField label="Status" error={errors.status} required>
@@ -115,7 +118,7 @@ export function BankMasterfileFields({
 							value={values.status}
 							onChange={onInputChange}
 							disabled={isReadonly}
-							className={selectClassName}
+							className={BankMasterfileSelectClassName}
 						>
 							{BankMasterfileStatusOptions.map((status) => (
 								<option key={status} value={status}>
@@ -131,7 +134,7 @@ export function BankMasterfileFields({
 							value={values.currencyCode}
 							onChange={onInputChange}
 							readOnly={isReadonly}
-							className={fieldClassName}
+							className={BankMasterfileFieldClassName}
 							placeholder="PHP"
 							maxLength={10}
 						/>
@@ -146,7 +149,7 @@ export function BankMasterfileFields({
 							value={values.currencyExchangeRate}
 							onChange={onInputChange}
 							readOnly={isReadonly}
-							className={fieldClassName}
+							className={BankMasterfileFieldClassName}
 							placeholder="Required for non-PHP"
 						/>
 					</FormField>
@@ -177,7 +180,7 @@ export function BankMasterfileFields({
 							value={values.seriesStart}
 							onChange={onInputChange}
 							readOnly={isReadonly}
-							className={fieldClassName}
+							className={BankMasterfileFieldClassName}
 							placeholder="000001"
 						/>
 					</FormField>
@@ -188,7 +191,7 @@ export function BankMasterfileFields({
 							value={values.seriesEnd}
 							onChange={onInputChange}
 							readOnly={isReadonly}
-							className={fieldClassName}
+							className={BankMasterfileFieldClassName}
 							placeholder="999999"
 						/>
 					</FormField>
@@ -201,7 +204,7 @@ export function BankMasterfileFields({
 							value={values.seriesDigits}
 							onChange={onInputChange}
 							readOnly={isReadonly}
-							className={fieldClassName}
+							className={BankMasterfileFieldClassName}
 							placeholder="6"
 						/>
 					</FormField>
@@ -247,9 +250,3 @@ function FormField({
 	);
 }
 
-const fieldClassName =
-	"h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.03] disabled:text-darknavy/70 disabled:placeholder:text-darknavy/32 read-only:bg-darknavy/[0.03] read-only:text-darknavy/70";
-
-const readOnlyFieldClassName = `${fieldClassName} bg-darknavy/[0.03] font-semibold text-darknavy/80`;
-
-const selectClassName = `app-select-control ${fieldClassName} enabled:bg-white enabled:text-darknavy disabled:bg-darknavy/[0.03] disabled:text-darknavy/70`;

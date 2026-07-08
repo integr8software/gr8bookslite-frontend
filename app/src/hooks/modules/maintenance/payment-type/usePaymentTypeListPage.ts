@@ -4,11 +4,9 @@ import { useMemo, useState } from "react";
 import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
 import type {
-	PaymentTypeClassification,
 	PaymentTypeClassificationFilter,
 	PaymentTypeRecord,
 	PaymentTypeStatusFilter,
-	PaymentTypeStatus,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 
 export function usePaymentTypeListPage() {

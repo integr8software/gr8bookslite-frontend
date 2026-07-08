@@ -1,26 +1,15 @@
 import type {
-	ChangeEventHandler,
 	ClipboardEventHandler,
 	KeyboardEventHandler,
 	ReactNode,
 } from "react";
 import {
 	TermManagementDatemodeOptions,
+	TermManagementFieldClassName,
+	TermManagementSelectClassName,
 	TermManagementStatusOptions,
 } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
-import type {
-	TermManagementFormErrors,
-	TermManagementFormValues,
-} from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
-
-type TermManagementFieldsProps = {
-	errors: TermManagementFormErrors;
-	isReadonly: boolean;
-	values: TermManagementFormValues;
-	onInputChange: ChangeEventHandler<
-		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-	>;
-};
+import type { TermManagementFieldsProps } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 
 export function TermManagementFields({
 	errors,
@@ -37,7 +26,7 @@ export function TermManagementFields({
 						value={values.name}
 						onChange={onInputChange}
 						readOnly={isReadonly}
-						className={fieldClassName}
+						className={TermManagementFieldClassName}
 						placeholder="Enter Name..."
 					/>
 				</FormField>
@@ -54,7 +43,7 @@ export function TermManagementFields({
 						onChange={onInputChange}
 						readOnly={isReadonly}
 						placeholder={isReadonly ? "No Description..." : "Enter Description..."}
-						className={`${fieldClassName} min-h-24 resize-y py-3 ${isReadonly ? "placeholder:italic" : ""}`}
+						className={`${TermManagementFieldClassName} min-h-24 resize-y py-3 ${isReadonly ? "placeholder:italic" : ""}`}
 					/>
 				</FormField>
 
@@ -64,7 +53,7 @@ export function TermManagementFields({
 						value={values.datemode}
 						onChange={onInputChange}
 						disabled={isReadonly}
-						className={selectClassName}
+						className={TermManagementSelectClassName}
 					>
 						{TermManagementDatemodeOptions.map((option) => (
 							<option key={option} value={option}>
@@ -95,7 +84,7 @@ export function TermManagementFields({
 						onPaste={preventNonWholeNumberPaste}
 						onWheel={(event) => event.currentTarget.blur()}
 						readOnly={isReadonly}
-						className={fieldClassName}
+						className={TermManagementFieldClassName}
 						placeholder="Enter period"
 					/>
 				</FormField>
@@ -106,7 +95,7 @@ export function TermManagementFields({
 						value={values.status}
 						onChange={onInputChange}
 						disabled={isReadonly}
-						className={selectClassName}
+						className={TermManagementSelectClassName}
 					>
 						{TermManagementStatusOptions.map((statusOption) => (
 							<option key={statusOption} value={statusOption}>
@@ -154,11 +143,6 @@ function FormField({
 		</div>
 	);
 }
-
-const fieldClassName =
-	"h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.03] disabled:text-darknavy/70 disabled:placeholder:text-darknavy/32 read-only:bg-darknavy/[0.03] read-only:text-darknavy/70";
-
-const selectClassName = `app-select-control ${fieldClassName} enabled:bg-white enabled:text-darknavy disabled:bg-darknavy/[0.03] disabled:text-darknavy/70`;
 
 const blockedPeriodKeys = new Set(["e", "E", "+", "-", "."]);
 

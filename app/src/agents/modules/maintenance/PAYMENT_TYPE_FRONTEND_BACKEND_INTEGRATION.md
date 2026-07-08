@@ -8,7 +8,7 @@ This document describes the `Maintenance > Financial Management > Payment Type` 
 - Frontend data: `gr8bookslite-frontend/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData.ts`
 - Frontend hook/service: `gr8bookslite-frontend/app/src/hooks/modules/maintenance/payment-type/usePaymentType.ts`, `gr8bookslite-frontend/app/src/services/modules/maintenance/payment-type/PaymentTypeService.ts`
 - Term Management frontend API pattern: `gr8bookslite-frontend/app/src/services/modules/maintenance/term-management/TermManagementApi.ts`
-- Term Management backend pattern: `gr8bookslite-backend/src/modules/maintenance/terms`
+- Term Management backend pattern: `gr8bookslite-backend/src/modules/maintenance/term-management`
 - Frontend rules: `gr8bookslite-frontend/AGENTS.md`, `gr8bookslite-frontend/FRONTEND_MAP.md`
 - Backend modularity rules: `gr8bookslite-backend/docs/agents/ARCHITECTURE_MODULARITY_GUIDE.md`
 
@@ -43,7 +43,7 @@ Default payment types seeded per company:
 
 ## Backend Target
 
-Create a backend module parallel to `src/modules/maintenance/terms`:
+Create a backend module parallel to `src/modules/maintenance/term-management`:
 
 ```txt
 gr8bookslite-backend/src/modules/maintenance/payment-types/
@@ -107,7 +107,7 @@ Use a migration for the model and enums. Do not edit applied migrations.
 
 Create `default-payment-types.ts` beside the payment-types service. Treat the former frontend sample rows as backend defaults seeded per company.
 
-Seeder behavior should match `seedDefaultTermsForCompany`:
+Seeder behavior should match `seedCompanyTermManagementDefaults`:
 
 - Accept a Prisma transaction client or `PrismaService`.
 - Count active, non-deleted payment types for the company.
@@ -162,7 +162,7 @@ The frontend follows the Term Management feature shape: list, create, update, vi
 
 ### Service Rules
 
-Mirror `TermsService`:
+Mirror `TermManagementService`:
 
 - Resolve `companyId` from the current authenticated user.
 - Verify active company membership.

@@ -1,24 +1,16 @@
 import type { ReactNode } from "react";
-import type { Row } from "@tanstack/react-table";
 import {
 	getDefaultAccountTypeLabel,
 } from "@/app/src/constants/modules/maintenance/financial-management/default-account/DefaultAccountConstants";
 import type {
 	DefaultAccount,
 	DefaultAccountPermissions,
+	DefaultAccountTableRowProps,
 } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-
-type DefaultAccountTableRowProps = {
-	row: Row<DefaultAccount>;
-	permissions: DefaultAccountPermissions;
-	onEditDefaultAccount: (account: DefaultAccount) => void;
-	onToggleStatus: (account: DefaultAccount) => void;
-	onViewDefaultAccount: (account: DefaultAccount) => void;
-};
 
 export function DefaultAccountTableRow({
 	row,

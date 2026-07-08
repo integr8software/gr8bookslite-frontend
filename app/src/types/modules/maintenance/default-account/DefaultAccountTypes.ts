@@ -1,4 +1,4 @@
-import type { Table } from "@tanstack/react-table";
+import type { Row, Table } from "@tanstack/react-table";
 
 export type DefaultAccountType = "EXPENSE" | "COLLECTION" | "FIXED_ASSET";
 export type DefaultAccountStatus = "Active" | "Inactive";
@@ -104,6 +104,13 @@ export type DefaultAccountDrawerState =
 	| { mode: DefaultAccountActionMode; defaultAccount?: DefaultAccount }
 	| null;
 
+export type DefaultAccountDrawerProps = {
+	defaultAccount?: DefaultAccount;
+	isOpen: boolean;
+	mode: DefaultAccountActionMode;
+	onClose: () => void;
+};
+
 export type DefaultAccountTableProps = {
 	defaultAccounts: DefaultAccount[];
 	filteredDefaultAccounts: DefaultAccount[];
@@ -138,4 +145,12 @@ export type DefaultAccountTableFiltersProps = {
 	onRefresh: () => void;
 	onStatusFilterChange: (value: DefaultAccountStatusFilter) => void;
 	onTypeFilterChange: (value: DefaultAccountTypeFilter) => void;
+};
+
+export type DefaultAccountTableRowProps = {
+	row: Row<DefaultAccount>;
+	permissions: DefaultAccountPermissions;
+	onEditDefaultAccount: (account: DefaultAccount) => void;
+	onToggleStatus: (account: DefaultAccount) => void;
+	onViewDefaultAccount: (account: DefaultAccount) => void;
 };

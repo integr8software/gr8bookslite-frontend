@@ -2,6 +2,7 @@
 
 import {
 	BankMasterfileActionCopy,
+	BankMasterfileDrawerFormId,
 	BankMasterfileTitle,
 } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
 import { useBankMasterfileFormPage } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileFormPage";
@@ -11,8 +12,6 @@ import type {
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
 import { BankMasterfileFields } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileFields";
-
-const formId = "bank-masterfile-drawer-form";
 
 export function BankMasterfileDrawer({
 	bank,
@@ -54,7 +53,7 @@ function BankMasterfileDrawerPanel({
 		<MaintenanceFormDrawer
 			description={copy.description}
 			eyebrow={BankMasterfileTitle}
-			formId={formId}
+			formId={BankMasterfileDrawerFormId}
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
@@ -63,7 +62,7 @@ function BankMasterfileDrawerPanel({
 			submitLabel={mode === "edit" ? "Update Bank" : "Save Bank"}
 			title={copy.title}
 		>
-			<form id={formId} onSubmit={page.handleSubmit} className="px-6 py-5">
+			<form id={BankMasterfileDrawerFormId} onSubmit={page.handleSubmit} className="px-6 py-5">
 				<BankMasterfileFields
 					accountCode={accountCode}
 					errors={page.errors}

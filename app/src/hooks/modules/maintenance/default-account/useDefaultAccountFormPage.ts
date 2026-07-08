@@ -9,6 +9,7 @@ import type {
 	DefaultAccountFormErrors,
 	DefaultAccountFormValues,
 } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
+import { validateDefaultAccountForm } from "@/app/src/validations/modules/maintenance/default-account/DefaultAccountValidation";
 
 const EmptyDefaultAccountFormValues: DefaultAccountFormValues = {
 	type: "EXPENSE",
@@ -55,11 +56,7 @@ export function useDefaultAccountFormPage({
 	}
 
 	function validate() {
-		const nextErrors: DefaultAccountFormErrors = {};
-
-		if (!values.defaultAccountName.trim()) {
-			nextErrors.defaultAccountName = "Default Account Name is required.";
-		}
+		const nextErrors = validateDefaultAccountForm(values);
 
 		setErrors(nextErrors);
 		return Object.keys(nextErrors).length === 0;

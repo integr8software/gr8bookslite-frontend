@@ -1,82 +1,19 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { PaymentTypeApiPath } from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
 import type {
+	ApiPaymentType,
+	ApiPaymentTypeClassification,
+	ApiPaymentTypeImportResponse,
+	ApiPaymentTypeListResponse,
+	ApiPaymentTypeSaveResponse,
+	ApiPaymentTypeStatus,
 	PaymentTypeClassification,
+	PaymentTypeListParams,
+	PaymentTypeListResponse,
 	PaymentTypeRecord,
+	PaymentTypeSortKey,
 	PaymentTypeStatus,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
-
-export type PaymentTypeSortKey = "paymentType" | "type" | "status";
-
-export type PaymentTypeListParams = {
-	search?: string;
-	sortBy?: PaymentTypeSortKey;
-	sortDirection?: "asc" | "desc";
-	status?: "" | PaymentTypeStatus;
-	type?: "" | PaymentTypeClassification;
-};
-
-type ApiPaymentTypeClassification =
-	| "CASH"
-	| "WITH_BANK"
-	| "BANK_TRANSFER"
-	| "ONLINE_PAYMENT"
-	| "MULTIPLE_CHECK"
-	| "DEBIT";
-type ApiPaymentTypeStatus = "ACTIVE" | "INACTIVE";
-
-type ApiPaymentType = {
-	id: string;
-	name: string;
-	description: string | null;
-	classification: ApiPaymentTypeClassification;
-	status: ApiPaymentTypeStatus;
-	createdBy: string | null;
-	createdAt: string;
-	updatedBy: string | null;
-	updatedAt: string;
-};
-
-export type PaymentTypePermissions = {
-	canView: boolean;
-	canCreate: boolean;
-	canUpdate: boolean;
-	canExport: boolean;
-	canImport: boolean;
-};
-
-export type PaymentTypeStatistics = {
-	totalPaymentTypes: number;
-	activePaymentTypes: number;
-	inactivePaymentTypes: number;
-	cashPaymentTypes: number;
-	withBankPaymentTypes: number;
-	bankTransferPaymentTypes: number;
-	onlinePaymentTypes: number;
-	multipleCheckPaymentTypes: number;
-	debitPaymentTypes: number;
-};
-
-export type PaymentTypeListResponse = {
-	paymentTypes: PaymentTypeRecord[];
-	statistics: PaymentTypeStatistics;
-	permissions: PaymentTypePermissions;
-};
-
-type ApiPaymentTypeListResponse = {
-	paymentTypes: ApiPaymentType[];
-	statistics: PaymentTypeStatistics;
-	permissions: PaymentTypePermissions;
-};
-
-type ApiPaymentTypeSaveResponse = {
-	paymentType: ApiPaymentType;
-};
-
-type ApiPaymentTypeImportResponse = {
-	paymentTypes: ApiPaymentType[];
-};
-
-const PaymentTypesPath = "/maintenance/financial-management/payment-types";
 
 const paymentTypeCollator = new Intl.Collator(undefined, {
 	numeric: true,
@@ -87,7 +24,7 @@ export async function fetchPaymentTypes(
 	params: PaymentTypeListParams = {},
 ): Promise<PaymentTypeListResponse> {
 	const response = await ApiClient.get<ApiPaymentTypeListResponse>(
-		PaymentTypesPath,
+		PaymentTypeApiPath,
 		{
 			params: toApiPaymentTypeListParams(params),
 		},
@@ -104,7 +41,7 @@ export async function createPaymentType(
 	paymentType: PaymentTypeRecord,
 ): Promise<PaymentTypeRecord> {
 	const response = await ApiClient.post<ApiPaymentTypeSaveResponse>(
-		PaymentTypesPath,
+		PaymentTypeApiPath,
 		toApiPaymentTypePayload(paymentType),
 	);
 
@@ -115,7 +52,7 @@ export async function updatePaymentType(
 	paymentType: PaymentTypeRecord,
 ): Promise<PaymentTypeRecord> {
 	const response = await ApiClient.patch<ApiPaymentTypeSaveResponse>(
-		`${PaymentTypesPath}/${paymentType.id}`,
+		`${PaymentTypeApiPath}/${paymentType.id}`,
 		toApiPaymentTypePayload(paymentType),
 	);
 
@@ -126,7 +63,7 @@ export async function importPaymentTypes(
 	paymentTypes: PaymentTypeRecord[],
 ): Promise<PaymentTypeRecord[]> {
 	const response = await ApiClient.post<ApiPaymentTypeImportResponse>(
-		`${PaymentTypesPath}/import`,
+		`${PaymentTypeApiPath}/import`,
 		{
 			paymentTypes: paymentTypes.map(toApiPaymentTypePayload),
 		},

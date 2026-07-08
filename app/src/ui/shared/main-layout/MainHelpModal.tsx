@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BookOpenText, ChevronRight, Search, X } from "lucide-react";
-import type { ModuleHelpArticle } from "@/app/src/data/shared/module/module-help/ModuleHelpTypes";
+import type { ModuleHelpArticle } from "@/app/src/types/shared/module/ModuleHelpTypes";
 
 type MainHelpModalProps = {
   articles: ModuleHelpArticle[];

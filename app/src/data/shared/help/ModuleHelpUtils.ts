@@ -1,4 +1,4 @@
-import type { ModuleHelpArticle } from "@/app/src/data/shared/module/module-help/ModuleHelpTypes";
+import type { ModuleHelpArticle } from "@/app/src/types/shared/module/ModuleHelpTypes";
 
 export function getHelpArticleForPath(
   pathname: string,

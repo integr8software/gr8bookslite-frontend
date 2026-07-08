@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, Sparkles } from "lucide-react";
-import type { ModulePreviewData } from "@/app/src/data/shared/module/ModulePreviewData";
+import type { ModulePreviewData } from "@/app/src/data/shared/modules/ModulePreviewData";
 import {
 	joinClasses,
 	moduleAccentClassNames,

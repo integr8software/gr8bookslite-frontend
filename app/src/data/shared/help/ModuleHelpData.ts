@@ -1,6 +1,6 @@
-import type { ModuleHelpArticle } from "@/app/src/data/shared/module/module-help/ModuleHelpTypes";
-import { createHelpArticle as article } from "@/app/src/data/shared/module/module-help/ModuleHelpUtils";
-export { getHelpArticleForPath } from "@/app/src/data/shared/module/module-help/ModuleHelpUtils";
+import type { ModuleHelpArticle } from "@/app/src/types/shared/module/ModuleHelpTypes";
+import { createHelpArticle as article } from "@/app/src/data/shared/help/ModuleHelpUtils";
+export { getHelpArticleForPath } from "@/app/src/data/shared/help/ModuleHelpUtils";
 
 export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
@@ -384,7 +384,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-fixed-asset",
     "Fixed Asset",
-    "/fixed-asset",
+    "/others/fixed-asset",
     "Maintain fixed asset records for accounting and tracking.",
     [
       "Fixed Asset is used for asset-related records that need accounting visibility and operational tracking.",
@@ -417,7 +417,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-system-transaction-numbering",
     "Transaction Numbering",
-    "/system-administration/transaction-numbering",
+    "/system-administration/transaction-number-setup",
     "Configure transaction ID formats and running numbers.",
     [
       "Transaction Numbering defines document prefixes, digit padding, and sequence patterns such as DV000001.",

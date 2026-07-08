@@ -1,0 +1,31 @@
+name: Deploy Frontend Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy:
+    runs-on:
+      - self-hosted
+      - Windows
+      - X64
+
+    defaults:
+      run:
+        shell: powershell
+
+    steps:
+      - name: Deploy frontend from VPS folder
+        run: |
+          Set-Location "I:\Gr8BooksNeo\apps\frontend"
+
+          git fetch origin
+          git reset --hard origin/staging
+
+          npm install
+          npm run build
+
+          pm2 restart gr8booksneo-frontend-staging --update-env
+          pm2 save

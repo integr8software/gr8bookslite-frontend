@@ -3,6 +3,7 @@
 import type { HTMLAttributes } from "react";
 import { AlertCircle, CreditCard, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { useBillingSubscriptionManager } from "@/app/src/hooks/billing/useBillingSubscriptionManager";
+import { BillingMethodSelector } from "@/app/src/ui/billing/BillingMethodSelector";
 import {
   FormatBillingDate,
   FormatBillingPrice,
@@ -17,6 +18,7 @@ export function BillingPage() {
     plans,
     selectedPlanCode,
     selectedBillingCycle,
+    selectedBillingMode,
     paymentValues,
     paymentErrors,
     currentSubscription,
@@ -27,9 +29,11 @@ export function BillingPage() {
     hasBlockingSubscription,
     setSelectedPlanCode,
     setSelectedBillingCycle,
+    setSelectedBillingMode,
     updatePaymentValue,
     retryQueries,
     startSubscriptionSetup,
+    startManualCheckout,
     cancelSubscriptionNow,
   } = useBillingSubscriptionManager();
 
@@ -107,6 +111,10 @@ export function BillingPage() {
                 </div>
 
                 <dl className="grid gap-4 md:grid-cols-2">
+                  <BillingMetric
+                    label="Billing mode"
+                    value="Auto renewal"
+                  />
                   <BillingMetric
                     label="Billing cycle"
                     value={GetBillingCycleLabel(
@@ -297,8 +305,8 @@ export function BillingPage() {
               <h2 className="text-xl font-semibold text-darknavy">
                 Initial payment setup
               </h2>
-              <p className="mt-1 text-sm leading-6 text-darknavy/60">
-                In test mode, this creates a PayMongo payment method and attaches it to the backend-created subscription.
+                <p className="mt-1 text-sm leading-6 text-darknavy/60">
+                Choose manual checkout without saving a payment method, or use the existing auto-renewal card setup.
               </p>
             </div>
           </div>
@@ -309,91 +317,117 @@ export function BillingPage() {
             </div>
           ) : null}
 
-          <div className="mt-6 space-y-4">
-            <BillingInput
-              label="Cardholder name"
-              value={paymentValues.cardholderName}
-              onChange={(value) => updatePaymentValue("cardholderName", value)}
-              error={paymentErrors.cardholderName?.[0]}
-              placeholder="Juan Dela Cruz"
-            />
-            <BillingInput
-              label="Billing email"
-              value={paymentValues.billingEmail}
-              onChange={(value) => updatePaymentValue("billingEmail", value)}
-              error={paymentErrors.billingEmail?.[0]}
-              placeholder="billing@company.com"
-              type="email"
-            />
-            <BillingInput
-              label="Contact number"
-              value={paymentValues.contactNumber}
-              onChange={(value) => updatePaymentValue("contactNumber", value)}
-              error={paymentErrors.contactNumber?.[0]}
-              placeholder="+63 917 000 0000"
-            />
-            <BillingInput
-              label="Card number"
-              value={paymentValues.cardNumber}
-              onChange={(value) => updatePaymentValue("cardNumber", value)}
-              error={paymentErrors.cardNumber?.[0]}
-              placeholder="4343 4343 4343 4345"
-              inputMode="numeric"
-            />
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <BillingInput
-                label="Expiry month"
-                value={paymentValues.expiryMonth}
-                onChange={(value) => updatePaymentValue("expiryMonth", value)}
-                error={paymentErrors.expiryMonth?.[0]}
-                placeholder="MM"
-                inputMode="numeric"
-              />
-              <BillingInput
-                label="Expiry year"
-                value={paymentValues.expiryYear}
-                onChange={(value) => updatePaymentValue("expiryYear", value)}
-                error={paymentErrors.expiryYear?.[0]}
-                placeholder="YYYY"
-                inputMode="numeric"
-              />
-            </div>
-
-            <BillingInput
-              label="CVC"
-              value={paymentValues.cvc}
-              onChange={(value) => updatePaymentValue("cvc", value)}
-              error={paymentErrors.cvc?.[0]}
-              placeholder="123"
-              inputMode="numeric"
-            />
-
-            <BillingTextArea
-              label="Billing address"
-              value={paymentValues.billingAddress}
-              onChange={(value) => updatePaymentValue("billingAddress", value)}
-              error={paymentErrors.billingAddress?.[0]}
-              placeholder="Street address used for billing"
+          <div className="mt-6">
+            <BillingMethodSelector
+              disabled={isSubmitting || hasBlockingSubscription}
+              mode={selectedBillingMode}
+              onChange={setSelectedBillingMode}
             />
           </div>
+
+          {selectedBillingMode === "AUTO" ? (
+            <div className="mt-6 space-y-4">
+              <BillingInput
+                label="Cardholder name"
+                value={paymentValues.cardholderName}
+                onChange={(value) => updatePaymentValue("cardholderName", value)}
+                error={paymentErrors.cardholderName?.[0]}
+                placeholder="Juan Dela Cruz"
+              />
+              <BillingInput
+                label="Billing email"
+                value={paymentValues.billingEmail}
+                onChange={(value) => updatePaymentValue("billingEmail", value)}
+                error={paymentErrors.billingEmail?.[0]}
+                placeholder="billing@company.com"
+                type="email"
+              />
+              <BillingInput
+                label="Contact number"
+                value={paymentValues.contactNumber}
+                onChange={(value) => updatePaymentValue("contactNumber", value)}
+                error={paymentErrors.contactNumber?.[0]}
+                placeholder="+63 917 000 0000"
+              />
+              <BillingInput
+                label="Card number"
+                value={paymentValues.cardNumber}
+                onChange={(value) => updatePaymentValue("cardNumber", value)}
+                error={paymentErrors.cardNumber?.[0]}
+                placeholder="4343 4343 4343 4345"
+                inputMode="numeric"
+              />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <BillingInput
+                  label="Expiry month"
+                  value={paymentValues.expiryMonth}
+                  onChange={(value) => updatePaymentValue("expiryMonth", value)}
+                  error={paymentErrors.expiryMonth?.[0]}
+                  placeholder="MM"
+                  inputMode="numeric"
+                />
+                <BillingInput
+                  label="Expiry year"
+                  value={paymentValues.expiryYear}
+                  onChange={(value) => updatePaymentValue("expiryYear", value)}
+                  error={paymentErrors.expiryYear?.[0]}
+                  placeholder="YYYY"
+                  inputMode="numeric"
+                />
+              </div>
+
+              <BillingInput
+                label="CVC"
+                value={paymentValues.cvc}
+                onChange={(value) => updatePaymentValue("cvc", value)}
+                error={paymentErrors.cvc?.[0]}
+                placeholder="123"
+                inputMode="numeric"
+              />
+
+              <BillingTextArea
+                label="Billing address"
+                value={paymentValues.billingAddress}
+                onChange={(value) => updatePaymentValue("billingAddress", value)}
+                error={paymentErrors.billingAddress?.[0]}
+                placeholder="Street address used for billing"
+              />
+            </div>
+          ) : (
+            <div className="mt-6 rounded-2xl border border-skyblue/20 bg-skyblue/8 p-4 text-sm leading-6 text-darknavy/70">
+              Manual checkout is mocked in Phase 1. The future backend endpoint will create a PayMongo hosted checkout session and return the checkout URL.
+            </div>
+          )}
 
           <div className="mt-6 rounded-2xl border border-darknavy/10 bg-offwhite p-4 text-sm leading-6 text-darknavy/70">
             <div className="flex items-start gap-3">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-coralpink" />
               <p>
-                This frontend creates a PayMongo payment method with your public key, then hands the resulting payment method ID to the backend. Final subscription status still depends on PayMongo webhook confirmation.
+                {selectedBillingMode === "AUTO"
+                  ? "This frontend creates a PayMongo payment method with your public key, then hands the resulting payment method ID to the backend. Final subscription status still depends on PayMongo webhook confirmation."
+                  : "Manual payment redirects to hosted checkout and stores no payment method. Final activation will depend on webhook confirmation once Phase 2 backend support exists."}
               </p>
             </div>
           </div>
 
           <button
             type="button"
-            onClick={startSubscriptionSetup}
+            onClick={
+              selectedBillingMode === "AUTO"
+                ? startSubscriptionSetup
+                : startManualCheckout
+            }
             disabled={isSubmitting || hasBlockingSubscription}
             className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-darknavy px-5 text-sm font-semibold text-offwhite transition hover:bg-coralpink disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Starting subscription..." : "Create subscription and attach card"}
+            {isSubmitting
+              ? selectedBillingMode === "AUTO"
+                ? "Starting subscription..."
+                : "Creating checkout..."
+              : selectedBillingMode === "AUTO"
+                ? "Create subscription and attach card"
+                : "Continue to hosted checkout"}
           </button>
         </article>
       </section>

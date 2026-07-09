@@ -62,6 +62,7 @@ export type WorkspaceCompanyFormValues = {
   billingEmail: string;
   billingExpiryMonth: string;
   billingExpiryYear: string;
+  billingMode: "MANUAL" | "AUTO";
   billingPaymentMethodId: string;
   billingPlanCode: string;
   billingCycle: "MONTHLY" | "YEARLY";

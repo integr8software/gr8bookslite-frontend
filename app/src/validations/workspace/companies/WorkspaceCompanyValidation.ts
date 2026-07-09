@@ -137,6 +137,7 @@ const BaseWorkspaceCompanySchema = z.object({
 	billingEmail: z.string().trim(),
 	billingExpiryMonth: z.string().trim(),
 	billingExpiryYear: z.string().trim(),
+	billingMode: z.enum(["MANUAL", "AUTO"]),
 	billingPaymentMethodId: z.string().trim(),
 	billingPlanCode: z.string().trim(),
 	billingCycle: z.enum(["MONTHLY", "YEARLY"]),
@@ -380,7 +381,10 @@ export function validateWorkspaceCompanyForm(
 		errors.billingPlanCode ??= "Select a company plan.";
 	}
 
-	if (values.billingPaymentMethodId === "new-paymongo-card") {
+	if (
+		values.billingMode === "AUTO" &&
+		values.billingPaymentMethodId === "new-paymongo-card"
+	) {
 		const billingResult = WorkspaceCompanyBillingSchema.safeParse(values);
 
 		if (!billingResult.success) {

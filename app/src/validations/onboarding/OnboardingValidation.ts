@@ -347,6 +347,10 @@ export function validateOnboardingStepOneValues(
 export function validateOnboardingBillingValues(
   values: OnboardingValues,
 ): OnboardingFieldErrors {
+  if (values.billingMode === "MANUAL") {
+    return {};
+  }
+
   const parsed = OnboardingBillingStepSchema.safeParse({
     cardholderName: values.cardholderName,
     billingEmail: values.billingEmail,

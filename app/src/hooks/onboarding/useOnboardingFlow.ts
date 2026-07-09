@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { useOnboardingDraft } from "./useOnboardingDraft";
 import { useOnboardingFormState } from "./useOnboardingFormState";
@@ -7,6 +9,7 @@ import { useOnboardingPlans } from "./useOnboardingPlans";
 import { useOnboardingSubmission } from "./useOnboardingSubmission";
 
 export function useOnboardingFlow() {
+  const searchParams = useSearchParams();
   const accessToken = useAppStore((state) => state.accessToken);
   const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const formState = useOnboardingFormState();
@@ -32,6 +35,8 @@ export function useOnboardingFlow() {
       isFirstStep: formState.isFirstStep,
       isLastStep: formState.isLastStep,
       values: formState.values,
+      selectedBillingCycle: formState.selectedBillingCycle,
+      selectedPlan: formState.selectedPlan,
       hasPersistedBillingSetup: formState.hasPersistedBillingSetup,
       setErrors: formState.setErrors,
       setIsSubmitting: formState.setIsSubmitting,
@@ -41,6 +46,26 @@ export function useOnboardingFlow() {
       setSelectedBillingCycle: formState.setSelectedBillingCycle,
       setHasPersistedBillingSetup: formState.setHasPersistedBillingSetup,
     });
+
+  const manualBillingStatus = searchParams.get("manualBillingStatus");
+  const {
+    setHasPersistedBillingSetup,
+    setStepIndex,
+    setValues,
+  } = formState;
+
+  useEffect(() => {
+    if (manualBillingStatus !== "success") {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      billingMode: "MANUAL",
+    }));
+    setHasPersistedBillingSetup(true);
+    setStepIndex(3);
+  }, [manualBillingStatus, setHasPersistedBillingSetup, setStepIndex, setValues]);
 
   return {
     currentStep: formState.currentStep,

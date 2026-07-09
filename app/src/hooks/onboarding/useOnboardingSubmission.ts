@@ -26,6 +26,7 @@ import {
   UploadOnboardingCompanyLogo,
 } from "@/app/src/services/onboarding/OnboardingApi";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
+import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingMockApi";
 import {
   CreateFrontendAuthSession,
   GetAuthProfile,
@@ -152,6 +153,8 @@ type UseOnboardingSubmissionParams = {
   isFirstStep: boolean;
   isLastStep: boolean;
   values: OnboardingValues;
+  selectedBillingCycle: BillingCycle;
+  selectedPlan: PricingPlan | null;
   hasPersistedBillingSetup: boolean;
   setErrors: React.Dispatch<React.SetStateAction<OnboardingFieldErrors>>;
   setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>;
@@ -169,6 +172,8 @@ export function useOnboardingSubmission({
   isFirstStep,
   isLastStep,
   values,
+  selectedBillingCycle,
+  selectedPlan,
   hasPersistedBillingSetup,
   setErrors,
   setIsSubmitting,
@@ -350,6 +355,34 @@ export function useOnboardingSubmission({
           return;
         }
 
+        if (values.billingMode === "MANUAL") {
+          if (!selectedPlan) {
+            throw new Error("Select a plan before continuing to checkout.");
+          }
+
+          const checkout = await CreateManualCheckout({
+            amountLabel:
+              selectedBillingCycle === "yearly"
+                ? selectedPlan.yearlyPrice
+                : selectedPlan.monthlyPrice,
+            billingCycle: GetOnboardingApiBillingCycle(selectedBillingCycle),
+            companyName:
+              values.taxpayerType === "individual"
+                ? [values.firstName, values.middleName, values.lastName]
+                    .filter(Boolean)
+                    .join(" ")
+                : values.companyName,
+            planCode: selectedPlan.code,
+            planName: selectedPlan.name,
+            purpose: "ONBOARDING",
+            returnTo: "/onboarding",
+          });
+
+          toast.success("Opening hosted checkout preview.");
+          window.location.assign(checkout.checkoutUrl);
+          return;
+        }
+
         const cardDigits = GetDigitsOnly(values.cardNumber);
         const paymentMethod = await CreatePaymongoCardPaymentMethod({
           cardholderName: values.cardholderName.trim(),
@@ -391,7 +424,15 @@ export function useOnboardingSubmission({
         return;
       }
 
-      if (isLastStep) {
+		if (isLastStep) {
+			if (values.billingMode === "MANUAL" && hasPersistedBillingSetup) {
+				toast.success(
+					"Manual payment UX completed. Backend activation is scheduled for Phase 2.",
+				);
+				router.push(GetFallbackPostAuthRedirectPath(token));
+				return;
+			}
+
         const response = await CompleteOnboarding(token);
 
         toast.success(response.message);

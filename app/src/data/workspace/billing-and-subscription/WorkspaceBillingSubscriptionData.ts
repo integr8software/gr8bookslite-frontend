@@ -253,6 +253,10 @@ export function createWorkspaceBillingCompanyAccounts(
 			addOns,
 			appliedPromotion,
 			baseAmount,
+			billingMode:
+				company.status === "Scheduled" || company.status === "Past Due"
+					? "MANUAL"
+					: "AUTO",
 			billingCycle: subscriber.billingCycle,
 			branchCount: company.branchCount,
 			companyCount: 1,

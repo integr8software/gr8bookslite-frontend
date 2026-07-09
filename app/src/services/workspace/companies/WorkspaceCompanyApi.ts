@@ -313,7 +313,10 @@ function MapWorkspaceCompanyFormToCreateRequest(
 	}
 
 	const billingEmail = trimmedValues.billingEmail || trimmedValues.email;
-	const paymentMethodId = trimmedValues.billingPaymentMethodId;
+	const paymentMethodId =
+		trimmedValues.billingMode === "AUTO"
+			? trimmedValues.billingPaymentMethodId
+			: "setup-later";
 
 	request.billing = {
 		billingCycle: trimmedValues.billingCycle,
@@ -480,6 +483,7 @@ function TrimCompanyFormValues(values: WorkspaceCompanyFormValues) {
 		billingEmail: values.billingEmail.trim(),
 		billingExpiryMonth: values.billingExpiryMonth.trim(),
 		billingExpiryYear: values.billingExpiryYear.trim(),
+		billingMode: values.billingMode,
 		billingPaymentMethodId: values.billingPaymentMethodId.trim(),
 		billingPlanCode: values.billingPlanCode.trim(),
 		billingCycle: values.billingCycle,

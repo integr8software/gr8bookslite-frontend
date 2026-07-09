@@ -13,7 +13,7 @@ import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 const approvalManagementFieldClassName =
 	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy read-only:bg-offwhite/65";
 
-type ApprovalManagementCatalogProps = {
+type ApprovalManagementSidepanelProps = {
 	isLoading: boolean;
 	query: string;
 	selectedWorkflowId: string | null;
@@ -24,7 +24,7 @@ type ApprovalManagementCatalogProps = {
 	onStatusFilterChange: (value: ApprovalManagementStatus | "any") => void;
 };
 
-export function ApprovalManagementCatalog({
+export function ApprovalManagementSidepanel({
 	isLoading,
 	onQueryChange,
 	onSelectWorkflow,
@@ -33,7 +33,7 @@ export function ApprovalManagementCatalog({
 	selectedWorkflowId,
 	statusFilter,
 	workflows,
-}: ApprovalManagementCatalogProps) {
+}: ApprovalManagementSidepanelProps) {
 	const dropdownOptions = workflows.map<AppAdvancedDropdownOption>(
 		(workflow) => ({
 			description: workflow.moduleCode,
@@ -126,7 +126,7 @@ export function ApprovalManagementCatalog({
 			</div>
 			<div className="hidden min-h-0 flex-1 overflow-auto xl:block">
 				{isLoading ? (
-					<ApprovalManagementCatalogSkeleton />
+					<ApprovalManagementSidepanelSkeleton />
 				) : workflows.length > 0 ? (
 					workflows.map((workflow) => {
 						const isSelected = workflow.id === selectedWorkflowId;
@@ -167,7 +167,7 @@ export function ApprovalManagementCatalog({
 	);
 }
 
-function ApprovalManagementCatalogSkeleton() {
+function ApprovalManagementSidepanelSkeleton() {
 	return (
 		<div aria-label="Loading approval workflows" aria-busy="true">
 			{Array.from({ length: 12 }).map((_, index) => (

@@ -201,16 +201,6 @@ h6 {
 	background-color: var(--surface-tertiary) !important;
 }
 
-.approval-management-workspace {
-	background-color: var(--approval-workspace-bg);
-	border-color: var(--approval-workspace-border);
-}
-
-.approval-management-catalog {
-	background-color: var(--approval-workspace-bg);
-	border-color: var(--approval-workspace-border);
-}
-
 .permission-neutral-control {
 	background-color: var(--permission-control-bg);
 	border-color: var(--permission-control-border);

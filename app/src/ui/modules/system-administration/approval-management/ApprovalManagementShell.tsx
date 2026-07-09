@@ -27,7 +27,7 @@ export function ApprovalManagementShell() {
 				}
 			/>
 
-			<div className="approval-management-list-page grid min-h-152 min-w-0 items-stretch overflow-hidden rounded-lg border shadow-sm xl:grid-cols-[minmax(20rem,0.8fr)_minmax(32rem,1.35fr)]">
+			<div className="approval-management-list-page grid min-h-152 min-w-0 items-stretch overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm xl:grid-cols-[minmax(20rem,0.8fr)_minmax(32rem,1.35fr)]">
 				<ApprovalManagementSidepanel
 					isLoading={page.isLoading}
 					query={page.query}

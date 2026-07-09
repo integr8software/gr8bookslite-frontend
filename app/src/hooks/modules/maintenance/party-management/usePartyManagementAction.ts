@@ -487,7 +487,7 @@ export function usePartyManagementAction() {
 
   function updateAddressMeta(
     addressId: string,
-    field: "addressName" | "isBilling" | "isDelivery",
+    field: "addressName" | "isBilling" | "isDelivery" | "isForeign",
     value: string | boolean,
   ) {
     if (isReadonly) {

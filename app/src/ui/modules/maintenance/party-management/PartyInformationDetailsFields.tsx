@@ -105,7 +105,7 @@ export function PartyInformationDetailsFields({
 	onSetDefaultAddress: (addressId: string) => void;
 	onUpdateAddressMeta: (
 		addressId: string,
-		field: "addressName" | "isBilling" | "isDelivery",
+		field: "addressName" | "isBilling" | "isDelivery" | "isForeign",
 		value: string | boolean,
 	) => void;
 	onUpdateField: <TKey extends keyof PartyInformationFormValues>(
@@ -514,15 +514,14 @@ function AddressSection({
 	onSetDefaultAddress: (addressId: string) => void;
 	onUpdateAddressMeta: (
 		addressId: string,
-		field: "addressName" | "isBilling" | "isDelivery",
+		field: "addressName" | "isBilling" | "isDelivery" | "isForeign",
 		value: string | boolean,
 	) => void;
 }) {
-	const isProvinceDisabled = disabled || options.isProvincesLoading;
-	const isCityMunicipalityDisabled =
-		disabled || options.isCitiesMunicipalitiesLoading || !address.provinceCode;
-	const isBarangayDisabled =
-		disabled || !address.cityMunicipalityCode || options.isBarangaysLoading;
+	void options;
+	void onSelectBarangay;
+	void onSelectCityMunicipality;
+	void onSelectProvince;
 	const hasReachedAddressLimit = addresses.length >= MaxPartyAddressCount;
 	const [addressSearch, setAddressSearch] = useState("");
 	const normalizedAddressSearch = addressSearch.trim().toLocaleLowerCase();
@@ -541,27 +540,15 @@ function AddressSection({
 					{errors.addresses}
 				</span>
 			) : null}
-			<div className="overflow-hidden rounded-lg border border-darknavy/10 lg:grid lg:h-[34rem] lg:grid-cols-[20rem_minmax(0,1fr)]">
-				<aside className="flex min-h-0 flex-col border-b border-darknavy/10 bg-offwhite/45 lg:border-r lg:border-b-0">
-					<div className="flex items-start justify-between gap-3 border-b border-darknavy/10 p-4">
+			<div className="overflow-hidden rounded-lg border border-darknavy/10 lg:grid lg:h-[clamp(30rem,60vh,36rem)] lg:grid-cols-[clamp(17rem,24vw,20rem)_minmax(0,1fr)]">
+				<aside className="flex max-h-[22rem] min-h-0 flex-col border-b border-darknavy/10 bg-offwhite/45 lg:max-h-none lg:border-r lg:border-b-0">
+					<div className="flex min-h-[4.75rem] items-center justify-between gap-3 border-b border-darknavy/10 px-4 py-3">
 						<div>
 							<h3 className="text-sm font-semibold text-darknavy">Multiple Addresses</h3>
 							<p className="mt-1 text-xs text-darknavy/50">
 								Select an address to view or edit details.
 							</p>
 						</div>
-						{!disabled ? (
-							<button
-								type="button"
-								onClick={onAddAddress}
-								disabled={hasReachedAddressLimit}
-								title={hasReachedAddressLimit ? `Maximum of ${MaxPartyAddressCount} addresses reached` : "Add address"}
-								className="inline-flex h-8 shrink-0 items-center gap-1 rounded-md bg-skyblue px-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/30 disabled:cursor-not-allowed disabled:opacity-45"
-							>
-								<Plus className="h-3.5 w-3.5" aria-hidden="true" />
-								Add Address
-							</button>
-						) : null}
 					</div>
 					<div className="border-b border-darknavy/10 p-3">
 						<label className="relative block">
@@ -576,7 +563,7 @@ function AddressSection({
 							/>
 						</label>
 					</div>
-					<div className="min-h-0 flex-1 overflow-y-auto p-3" role="tablist" aria-label="Party addresses">
+					<div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3" role="tablist" aria-label="Party addresses">
 						{visibleAddresses.map((item) => {
 							const isActive = item.id === activeAddressId;
 							return (
@@ -611,92 +598,43 @@ function AddressSection({
 						) : null}
 					</div>
 				</aside>
-				<div className="grid min-h-0 content-start gap-4 overflow-y-auto p-4 sm:p-5">
-					<div className="flex items-center justify-between gap-3">
+				<div className="flex min-h-0 flex-col overflow-y-auto">
+					<div className="flex min-h-[4.75rem] flex-wrap items-center justify-between gap-3 border-b border-darknavy/10 px-4 py-3 sm:px-5">
 						<h3 className="text-sm font-semibold text-darknavy">Address Details</h3>
-						{!disabled && !address.isDefault && addresses.length > 1 ? (
-							<button
-								type="button"
-								onClick={() => onRemoveAddress(address.id)}
-								className="inline-flex h-8 items-center gap-1.5 rounded-md border border-coralpink/25 px-2.5 text-xs font-semibold text-coralpink transition hover:bg-coralpink/10"
-							>
-								<Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> Delete
-							</button>
-						) : null}
+						<div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+							{!disabled && !address.isDefault && addresses.length > 1 ? (
+								<button
+									type="button"
+									onClick={() => onRemoveAddress(address.id)}
+									className="inline-flex h-8 items-center gap-1.5 rounded-md border border-coralpink/25 px-2.5 text-xs font-semibold text-coralpink transition hover:bg-coralpink/10"
+								>
+									<Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> Delete
+								</button>
+							) : null}
+							{!disabled ? (
+								<button
+									type="button"
+									onClick={onAddAddress}
+									disabled={hasReachedAddressLimit}
+									title={hasReachedAddressLimit ? `Maximum of ${MaxPartyAddressCount} addresses reached` : "Add address"}
+									className="inline-flex h-8 shrink-0 items-center gap-1 rounded-md bg-skyblue px-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/30 disabled:cursor-not-allowed disabled:opacity-45"
+								>
+									<Plus className="h-3.5 w-3.5" aria-hidden="true" />
+									Add Address
+								</button>
+							) : null}
+						</div>
 					</div>
-					<div className="grid gap-4 md:grid-cols-2">
+					<div className="grid content-start gap-5 p-4 sm:p-5">
+					<div className="grid items-start gap-4 md:grid-cols-2">
 						<Field label="Address label" required>
 							<input value={address.addressName} onChange={(event) => onUpdateAddressMeta(address.id, "addressName", event.target.value)} readOnly={disabled} className={fieldClassName} placeholder="e.g. Head Office" />
 						</Field>
-						<AppAddressAutocomplete disabled={disabled} id={`party-address-autocomplete-${address.id}`} syncDetailsOnQueryChange value={address} onDetailsChange={onSyncAutocompleteAddressDetails} onSelect={onSelectAutocompleteAddress} />
-					</div>
-					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-				<Field label="Province" error={errors.provinceCode} required>
-					<AppAdvancedDropdown
-						disabled={isProvinceDisabled}
-						options={options.provinceOptions}
-						placeholder={
-							options.isProvincesLoading
-								? "Loading provinces"
-								: "Select province"
-						}
-						searchPlaceholder="Search province"
-						value={address.provinceCode}
-						onChange={onSelectProvince}
-					/>
-				</Field>
-				<Field
-					label="City or Municipality"
-					error={errors.cityMunicipalityCode}
-					required
-				>
-					<AppAdvancedDropdown
-						disabled={isCityMunicipalityDisabled}
-						options={options.cityMunicipalityOptions}
-						placeholder={
-							!address.provinceCode
-								? "Select province first"
-								: options.isCitiesMunicipalitiesLoading
-									? "Loading cities"
-									: "Select city or municipality"
-						}
-						searchPlaceholder="Search city or municipality"
-						value={address.cityMunicipalityCode}
-						onChange={onSelectCityMunicipality}
-					/>
-				</Field>
-				<Field label="Barangay" error={errors.barangayCode} required>
-					<AppAdvancedDropdown
-						disabled={isBarangayDisabled}
-						options={options.barangayOptions}
-						placeholder={
-							!address.cityMunicipalityCode
-								? "Select city first"
-								: options.isBarangaysLoading
-									? "Loading barangays"
-									: "Select barangay"
-						}
-						searchPlaceholder="Search barangay"
-						value={address.barangayCode}
-						onChange={onSelectBarangay}
-					/>
-				</Field>
-				<AddressInput
-					disabled={disabled}
-					label="Unit, Block, Lot, Building"
-					name="addressLine1"
-					placeholder="Unit 5B, Block 3, Lot 12"
-					value={address.addressLine1}
-					onChange={onAddressInputChange}
-				/>
-				<AddressInput
-					disabled={disabled}
-					label="Street, Subdivision, Village"
-					name="addressLine2"
-					placeholder="Mabini St., Greenfield Village"
-					value={address.addressLine2}
-					onChange={onAddressInputChange}
-				/>
+						{address.isForeign ? (
+							<AddressInput disabled={disabled} label="Full Address" name="addressLine1" placeholder="Enter the complete foreign address" value={address.addressLine1} onChange={onAddressInputChange} />
+						) : (
+							<AppAddressAutocomplete label="Full Address" disabled={disabled} id={`party-address-autocomplete-${address.id}`} syncDetailsOnQueryChange value={address} onDetailsChange={onSyncAutocompleteAddressDetails} onSelect={onSelectAutocompleteAddress} />
+						)}
 					</div>
 					{!address.isDefault ? (
 					<div className="border-t border-darknavy/10 pt-4">
@@ -708,9 +646,11 @@ function AddressSection({
 							</label>
 							<AddressTagCheckbox checked={address.isBilling} disabled={disabled} label="Billing" onChange={(checked) => onUpdateAddressMeta(address.id, "isBilling", checked)} />
 							<AddressTagCheckbox checked={address.isDelivery} disabled={disabled} label="Delivery" onChange={(checked) => onUpdateAddressMeta(address.id, "isDelivery", checked)} />
+							<AddressTagCheckbox checked={Boolean(address.isForeign)} disabled={disabled || addresses.some((item) => item.id !== address.id && item.isForeign)} label="Foreign Address" onChange={(checked) => onUpdateAddressMeta(address.id, "isForeign", checked)} />
 						</div>
 					</div>
 					) : null}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -732,6 +672,7 @@ function AddressTags({ address }: { address: PartyAddress }) {
 		address.isDefault ? "Default" : null,
 		!address.isDefault && address.isBilling ? "Billing" : null,
 		!address.isDefault && address.isDelivery ? "Delivery" : null,
+		!address.isDefault && address.isForeign ? "Foreign" : null,
 	].filter(Boolean);
 
 	return tags.length > 0 ? (

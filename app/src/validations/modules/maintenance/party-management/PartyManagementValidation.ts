@@ -24,19 +24,17 @@ const PartyInformationAddressSchema = z.object({
   addressLine1: z.string().trim(),
   addressLine2: z.string().trim(),
   barangay: z.string().trim(),
-  barangayCode: z.string().trim().min(1, "Select a barangay."),
+  barangayCode: z.string().trim(),
   cityMunicipality: z.string().trim(),
-  cityMunicipalityCode: z
-    .string()
-    .trim()
-    .min(1, "Select a city or municipality."),
+  cityMunicipalityCode: z.string().trim(),
   isBilling: z.boolean(),
   isDefault: z.boolean(),
   isDelivery: z.boolean(),
+  isForeign: z.boolean().optional(),
   province: z.string().trim(),
-  provinceCode: z.string().trim().min(1, "Select a province."),
+  provinceCode: z.string().trim(),
   region: z.string().trim(),
-  regionCode: z.string().trim().min(1, "Select a region."),
+  regionCode: z.string().trim(),
 });
 
 export const PartyInformationFormSchema = z
@@ -145,6 +143,34 @@ export const PartyInformationFormSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Set exactly one default address.",
+        path: ["addresses"],
+      });
+    }
+
+    if (values.addresses.filter((address) => address.isForeign).length > 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Only one foreign address can be added.",
+        path: ["addresses"],
+      });
+    }
+
+    if (
+      values.addresses.some(
+        (address) =>
+          ![
+            address.addressLine1,
+            address.addressLine2,
+            address.barangay,
+            address.cityMunicipality,
+            address.province,
+            address.region,
+          ].some((part) => part.trim()),
+      )
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Enter a full address for every address entry.",
         path: ["addresses"],
       });
     }

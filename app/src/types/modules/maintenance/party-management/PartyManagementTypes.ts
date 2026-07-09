@@ -25,6 +25,7 @@ export type PartyAddress = {
   isBilling: boolean;
   isDefault: boolean;
   isDelivery: boolean;
+  isForeign?: boolean;
   province: string;
   provinceCode: string;
   region: string;

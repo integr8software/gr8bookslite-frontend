@@ -393,7 +393,7 @@ export function PartyManagementDrawer({
 
 	function updateAddressMeta(
 		addressId: string,
-		field: "addressName" | "isBilling" | "isDelivery",
+		field: "addressName" | "isBilling" | "isDelivery" | "isForeign",
 		value: string | boolean,
 	) {
 		setValues((current) => ({

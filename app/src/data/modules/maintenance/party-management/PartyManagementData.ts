@@ -585,6 +585,7 @@ export function createEmptyPartyAddress(
     isBilling: false,
     isDefault: options.isDefault ?? true,
     isDelivery: false,
+    isForeign: false,
     province: "",
     provinceCode: "",
     region: "",
@@ -605,6 +606,7 @@ function normalizePartyAddress(address: PartyAddress): PartyAddress {
     isBilling: address.isBilling,
     isDefault: address.isDefault,
     isDelivery: address.isDelivery,
+    isForeign: address.isForeign ?? false,
     province: address.province.trim(),
     provinceCode: address.provinceCode,
     region: address.region.trim(),
@@ -641,6 +643,7 @@ export function setPartyDefaultAddress(
       isBilling: isDefault ? false : address.isBilling,
       isDefault,
       isDelivery: isDefault ? false : address.isDelivery,
+      isForeign: isDefault ? false : (address.isForeign ?? false),
     };
   }).sort((first, second) => Number(second.isDefault) - Number(first.isDefault));
 }

@@ -2,8 +2,9 @@ import {
 	type ChangeEventHandler,
 	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
+	useState,
 } from "react";
-import { MapPin, Plus, Trash2 } from "lucide-react";
+import { ChevronRight, MapPin, Plus, Search, Trash2 } from "lucide-react";
 import { MaxPartyAddressCount } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
@@ -307,7 +308,6 @@ export function PartyInformationDetailsFields({
 					disabled={isDetailsDisabled}
 					errors={errors}
 					options={addressOptions}
-					title="Addresses"
 					onAddAddress={onAddAddress}
 					onAddressInputChange={onAddressInputChange}
 					onRemoveAddress={onRemoveAddress}
@@ -479,7 +479,6 @@ function AddressSection({
 	disabled,
 	errors,
 	options,
-	title,
 	onAddAddress,
 	onAddressInputChange,
 	onRemoveAddress,
@@ -498,7 +497,6 @@ function AddressSection({
 	disabled: boolean;
 	errors: PartyInformationFormErrors;
 	options: PartyAddressOptionSet;
-	title: string;
 	onAddAddress: () => void;
 	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
 	onRemoveAddress: (addressId: string) => void;
@@ -526,123 +524,113 @@ function AddressSection({
 	const isBarangayDisabled =
 		disabled || !address.cityMunicipalityCode || options.isBarangaysLoading;
 	const hasReachedAddressLimit = addresses.length >= MaxPartyAddressCount;
+	const [addressSearch, setAddressSearch] = useState("");
+	const normalizedAddressSearch = addressSearch.trim().toLocaleLowerCase();
+	const visibleAddresses = [...addresses]
+		.sort((first, second) => Number(second.isDefault) - Number(first.isDefault))
+		.filter((item) =>
+			`${item.addressName} ${formatPartyAddress(item)}`
+				.toLocaleLowerCase()
+				.includes(normalizedAddressSearch),
+		);
 
 	return (
-		<div className="grid gap-4">
-			<div className="flex items-center justify-between gap-3">
-				<SectionHeading title={title} />
-				{!disabled ? (
-					<button
-						type="button"
-						onClick={onAddAddress}
-						disabled={hasReachedAddressLimit}
-						title={
-							hasReachedAddressLimit
-								? `Maximum of ${MaxPartyAddressCount} addresses reached`
-								: "Add address"
-						}
-						className="inline-flex h-9 items-center gap-2 rounded-md border border-darknavy/15 px-3 text-sm font-medium text-darknavy transition hover:border-skyblue hover:bg-skyblue/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/30 disabled:cursor-not-allowed disabled:opacity-45"
-					>
-						<Plus className="h-4 w-4" aria-hidden="true" />
-						Add address
-					</button>
-				) : null}
-			</div>
+		<div className="grid gap-3">
 			{errors.addresses ? (
 				<span className="text-xs font-medium text-coralpink">
 					{errors.addresses}
 				</span>
 			) : null}
-			<div
-				className="flex gap-2 overflow-x-auto pb-1"
-				role="tablist"
-				aria-label="Party addresses"
-			>
-				{addresses.map((item) => {
-					const isActive = item.id === activeAddressId;
-
-					return (
-						<button
-							key={item.id}
-							type="button"
-							role="tab"
-							aria-selected={isActive}
-							onClick={() => onSelectAddress(item.id)}
-							className={
-								isActive
-									? "inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md border border-skyblue bg-skyblue/8 px-3 text-sm font-medium text-darknavy"
-									: "inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md border border-darknavy/10 px-3 text-sm text-darknavy/70 transition hover:border-darknavy/25 hover:text-darknavy"
-							}
-						>
-							<MapPin className="h-4 w-4" aria-hidden="true" />
-							<span>{item.addressName}</span>
-							<AddressTags address={item} />
-						</button>
-					);
-				})}
-			</div>
-			<div className="grid gap-4 border-y border-darknavy/10 py-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-				<Field label="Address label" required>
-					<input
-						value={address.addressName}
-						onChange={(event) =>
-							onUpdateAddressMeta(address.id, "addressName", event.target.value)
-						}
-						readOnly={disabled || address.isDefault}
-						className={fieldClassName}
-						placeholder="e.g. Head Office"
-					/>
-				</Field>
-				<div className="flex flex-wrap items-center gap-3">
-					<label className="inline-flex h-9 min-w-24 items-center gap-2 text-sm text-darknavy">
-						<input
-							type="radio"
-							name="defaultPartyAddress"
-							checked={address.isDefault}
-							disabled={disabled}
-							onChange={() => onSetDefaultAddress(address.id)}
-							className="h-4 w-4 accent-skyblue"
-						/>
-						Default
-					</label>
-					<AddressTagCheckbox
-						checked={address.isBilling}
-						disabled={disabled}
-						label="Billing"
-						onChange={(checked) =>
-							onUpdateAddressMeta(address.id, "isBilling", checked)
-						}
-					/>
-					<AddressTagCheckbox
-						checked={address.isDelivery}
-						disabled={disabled}
-						label="Delivery"
-						onChange={(checked) =>
-							onUpdateAddressMeta(address.id, "isDelivery", checked)
-						}
-					/>
-					{!disabled && addresses.length > 1 ? (
-						<button
-							type="button"
-							onClick={() => onRemoveAddress(address.id)}
-							aria-label={`Remove ${address.addressName}`}
-							title="Remove address"
-							className="inline-flex h-9 w-9 items-center justify-center rounded-md text-coralpink transition hover:bg-coralpink/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coralpink/30"
-						>
-							<Trash2 className="h-4 w-4" aria-hidden="true" />
-						</button>
-					) : null}
-				</div>
-			</div>
-			<AppAddressAutocomplete
-				disabled={disabled}
-				id={`party-address-autocomplete-${address.id}`}
-				syncDetailsOnQueryChange
-				value={address}
-				onDetailsChange={onSyncAutocompleteAddressDetails}
-				onSelect={onSelectAutocompleteAddress}
-			/>
-			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+			<div className="overflow-hidden rounded-lg border border-darknavy/10 lg:grid lg:h-[34rem] lg:grid-cols-[20rem_minmax(0,1fr)]">
+				<aside className="flex min-h-0 flex-col border-b border-darknavy/10 bg-offwhite/45 lg:border-r lg:border-b-0">
+					<div className="flex items-start justify-between gap-3 border-b border-darknavy/10 p-4">
+						<div>
+							<h3 className="text-sm font-semibold text-darknavy">Multiple Addresses</h3>
+							<p className="mt-1 text-xs text-darknavy/50">
+								Select an address to view or edit details.
+							</p>
+						</div>
+						{!disabled ? (
+							<button
+								type="button"
+								onClick={onAddAddress}
+								disabled={hasReachedAddressLimit}
+								title={hasReachedAddressLimit ? `Maximum of ${MaxPartyAddressCount} addresses reached` : "Add address"}
+								className="inline-flex h-8 shrink-0 items-center gap-1 rounded-md bg-skyblue px-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/30 disabled:cursor-not-allowed disabled:opacity-45"
+							>
+								<Plus className="h-3.5 w-3.5" aria-hidden="true" />
+								Add Address
+							</button>
+						) : null}
+					</div>
+					<div className="border-b border-darknavy/10 p-3">
+						<label className="relative block">
+							<Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-darknavy/40" aria-hidden="true" />
+							<span className="sr-only">Search addresses</span>
+							<input
+								type="search"
+								value={addressSearch}
+								onChange={(event) => setAddressSearch(event.target.value)}
+								placeholder="Search addresses"
+								className="h-9 w-full rounded-md border border-darknavy/10 bg-white pr-3 pl-9 text-xs text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/15"
+							/>
+						</label>
+					</div>
+					<div className="min-h-0 flex-1 overflow-y-auto p-3" role="tablist" aria-label="Party addresses">
+						{visibleAddresses.map((item) => {
+							const isActive = item.id === activeAddressId;
+							return (
+								<button
+									key={item.id}
+									type="button"
+									role="tab"
+									aria-selected={isActive}
+									onClick={() => onSelectAddress(item.id)}
+									className={`flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left transition ${
+										isActive
+											? "border-skyblue bg-skyblue/10 shadow-sm"
+											: "border-transparent hover:border-darknavy/10 hover:bg-white"
+									}`}
+								>
+									<span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${isActive ? "bg-skyblue/15 text-skyblue" : "bg-darknavy/7 text-darknavy/45"}`}>
+										<MapPin className="h-4 w-4" aria-hidden="true" />
+									</span>
+									<span className="min-w-0 flex-1">
+										<span className="flex flex-wrap items-center gap-1.5">
+											<span className="truncate text-xs font-semibold text-darknavy">{item.addressName}</span>
+											<AddressTags address={item} />
+										</span>
+										<span className="mt-1 block truncate text-[11px] text-darknavy/55">{formatPartyAddress(item)}</span>
+									</span>
+									<ChevronRight className="h-4 w-4 shrink-0 text-darknavy/40" aria-hidden="true" />
+								</button>
+							);
+						})}
+						{visibleAddresses.length === 0 ? (
+							<p className="px-2 py-8 text-center text-xs text-darknavy/45">No matching addresses.</p>
+						) : null}
+					</div>
+				</aside>
+				<div className="grid min-h-0 content-start gap-4 overflow-y-auto p-4 sm:p-5">
+					<div className="flex items-center justify-between gap-3">
+						<h3 className="text-sm font-semibold text-darknavy">Address Details</h3>
+						{!disabled && !address.isDefault && addresses.length > 1 ? (
+							<button
+								type="button"
+								onClick={() => onRemoveAddress(address.id)}
+								className="inline-flex h-8 items-center gap-1.5 rounded-md border border-coralpink/25 px-2.5 text-xs font-semibold text-coralpink transition hover:bg-coralpink/10"
+							>
+								<Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> Delete
+							</button>
+						) : null}
+					</div>
+					<div className="grid gap-4 md:grid-cols-2">
+						<Field label="Address label" required>
+							<input value={address.addressName} onChange={(event) => onUpdateAddressMeta(address.id, "addressName", event.target.value)} readOnly={disabled} className={fieldClassName} placeholder="e.g. Head Office" />
+						</Field>
+						<AppAddressAutocomplete disabled={disabled} id={`party-address-autocomplete-${address.id}`} syncDetailsOnQueryChange value={address} onDetailsChange={onSyncAutocompleteAddressDetails} onSelect={onSelectAutocompleteAddress} />
+					</div>
+					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 				<Field label="Province" error={errors.provinceCode} required>
 					<AppAdvancedDropdown
 						disabled={isProvinceDisabled}
@@ -709,16 +697,41 @@ function AddressSection({
 					value={address.addressLine2}
 					onChange={onAddressInputChange}
 				/>
+					</div>
+					{!address.isDefault ? (
+					<div className="border-t border-darknavy/10 pt-4">
+						<p className="mb-2 text-xs font-semibold text-darknavy">Address Types</p>
+						<div className="flex flex-wrap gap-x-5 gap-y-1">
+							<label className="inline-flex h-9 items-center gap-2 text-sm text-darknavy">
+								<input type="radio" name="defaultPartyAddress" checked={address.isDefault} disabled={disabled} onChange={() => onSetDefaultAddress(address.id)} className="h-4 w-4 accent-skyblue" />
+								Default
+							</label>
+							<AddressTagCheckbox checked={address.isBilling} disabled={disabled} label="Billing" onChange={(checked) => onUpdateAddressMeta(address.id, "isBilling", checked)} />
+							<AddressTagCheckbox checked={address.isDelivery} disabled={disabled} label="Delivery" onChange={(checked) => onUpdateAddressMeta(address.id, "isDelivery", checked)} />
+						</div>
+					</div>
+					) : null}
+				</div>
 			</div>
 		</div>
 	);
 }
 
+function formatPartyAddress(address: PartyAddress) {
+	return [
+		address.addressLine1,
+		address.addressLine2,
+		address.barangay,
+		address.cityMunicipality,
+		address.province,
+	].filter(Boolean).join(", ") || "No address details yet";
+}
+
 function AddressTags({ address }: { address: PartyAddress }) {
 	const tags = [
 		address.isDefault ? "Default" : null,
-		address.isBilling ? "Billing" : null,
-		address.isDelivery ? "Delivery" : null,
+		!address.isDefault && address.isBilling ? "Billing" : null,
+		!address.isDefault && address.isDelivery ? "Delivery" : null,
 	].filter(Boolean);
 
 	return tags.length > 0 ? (

@@ -15,7 +15,7 @@ import type {
   PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 
-export const MaxPartyAddressCount = 5;
+export const MaxPartyAddressCount = 10;
 
 export const PartyAtcCodeSource = {
   label:
@@ -638,14 +638,11 @@ export function setPartyDefaultAddress(
 
     return {
       ...address,
-      addressName: isDefault
-        ? "Default Address"
-        : address.addressName === "Default Address"
-          ? `Address ${index + 1}`
-          : address.addressName,
+      isBilling: isDefault ? false : address.isBilling,
       isDefault,
+      isDelivery: isDefault ? false : address.isDelivery,
     };
-  });
+  }).sort((first, second) => Number(second.isDefault) - Number(first.isDefault));
 }
 
 function normalizePartyAddressesForForm(record: PartyInformationRecord) {

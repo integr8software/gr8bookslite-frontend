@@ -354,7 +354,11 @@ export function PartyManagementDrawer({
 
 	function removeAddress(addressId: string) {
 		setValues((current) => {
-			if (current.addresses.length <= 1) {
+			const addressToRemove = current.addresses.find(
+				(address) => address.id === addressId,
+			);
+
+			if (current.addresses.length <= 1 || addressToRemove?.isDefault) {
 				return current;
 			}
 

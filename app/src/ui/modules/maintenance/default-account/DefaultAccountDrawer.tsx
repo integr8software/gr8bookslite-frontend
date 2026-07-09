@@ -10,6 +10,10 @@ import {
 import { useDefaultAccountFormPage } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccountFormPage";
 import type { DefaultAccountDrawerProps } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import {
+	AppAdvancedDropdown,
+	type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 export function DefaultAccountDrawer({
 	defaultAccount,
@@ -40,6 +44,13 @@ function DefaultAccountDrawerPanel({
 		onSaved: onClose,
 	});
 	const copy = DefaultAccountActionCopy[mode];
+	const expenseParentOptions: AppAdvancedDropdownOption[] =
+		page.expenseParentOptions.map((account) => ({
+			value: account.id,
+			name: account.accountTitle,
+			label: account.accountCode,
+			description: account.accountLevel.replaceAll("_", " "),
+		}));
 
 	return (
 		<MaintenanceFormDrawer
@@ -107,6 +118,26 @@ function DefaultAccountDrawerPanel({
 						))}
 					</select>
 				</label>
+				{page.values.type === "EXPENSE" ? (
+					<label className="grid gap-2">
+						<span className="text-sm font-semibold text-darknavy">
+							Expense Parent
+						</span>
+						<AppAdvancedDropdown
+							value={page.values.expenseParentCoaId}
+							disabled={page.isReadonly || page.isLoadingExpenseParentOptions}
+							options={expenseParentOptions}
+							placeholder={
+								page.isLoadingExpenseParentOptions
+									? "Loading expense accounts..."
+									: "Default expense parent"
+							}
+							searchPlaceholder="Search expense accounts"
+							showSelectedDetails
+							onChange={page.handleExpenseParentChange}
+						/>
+					</label>
+				) : null}
 				<label className="grid gap-2">
 					<span className="text-sm font-semibold text-darknavy">Status</span>
 					<select

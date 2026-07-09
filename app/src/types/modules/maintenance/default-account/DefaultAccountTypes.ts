@@ -28,6 +28,7 @@ export type DefaultAccount = {
 	defaultAccountName: string;
 	description: string;
 	status: DefaultAccountStatus;
+	expenseParentCoaId?: string;
 	generatedAccounts: GeneratedDefaultAccount[];
 	createdAt?: string;
 	updatedAt?: string;
@@ -38,6 +39,7 @@ export type DefaultAccountFormValues = {
 	defaultAccountName: string;
 	description: string;
 	status: DefaultAccountStatus;
+	expenseParentCoaId: string;
 };
 
 export type DefaultAccountFormErrors = Partial<
@@ -92,6 +94,18 @@ export type ApiDefaultAccountListResponse = {
 
 export type ApiDefaultAccountSaveResponse = {
 	defaultAccount: ApiDefaultAccount;
+};
+
+export type DefaultAccountExpenseParentOption = {
+	id: string;
+	accountCode: string;
+	accountTitle: string;
+	accountLevel: string;
+	parentAccountId: string | null;
+};
+
+export type ApiDefaultAccountExpenseParentOptionsResponse = {
+	options: DefaultAccountExpenseParentOption[];
 };
 
 export type DefaultAccountListResponse = {

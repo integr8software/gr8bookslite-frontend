@@ -11,7 +11,9 @@ export function CreateQueryClient() {
       queries: {
         staleTime: DefaultQueryStaleTime,
         gcTime: DefaultQueryGcTime,
+        refetchOnMount: "always",
         refetchOnWindowFocus: false,
+        refetchOnReconnect: true,
         retry: (failureCount, error) =>
           !IsUnauthorizedApiError(error) && failureCount < 1,
       },

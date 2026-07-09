@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import {
 	type ColumnDef,
 	type PaginationState,
@@ -41,7 +42,7 @@ export function useItemsListPage() {
 		{ id: "name", desc: false },
 	]);
 	const filteredItems = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
+		const normalizedQuery = normalizeLowercaseText(query);
 
 		return items.filter((item) =>
 			(categoryFilter === AllItemCategoriesFilter ||

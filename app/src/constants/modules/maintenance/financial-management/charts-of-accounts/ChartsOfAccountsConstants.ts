@@ -117,6 +117,10 @@ export const ChartsOfAccountsTableColumns: Array<{
     size: 200,
   },
   { label: "Status", key: "status", className: "text-center", size: 100 },
+  { label: "Created By", key: "createdBy", className: "text-left", size: 160 },
+  { label: "Date Created", key: "createdAt", className: "text-left", size: 180 },
+  { label: "Updated By", key: "updatedBy", className: "text-left", size: 160 },
+  { label: "Date Modified", key: "updatedAt", className: "text-left", size: 180 },
   {
     label: "Actions",
     className: "text-center",
@@ -168,6 +172,10 @@ export const ChartsOfAccountsExportColumns: ModuleTableExportColumn<FlattenedCha
       value: (row) => row.account.description,
     },
     { header: "Status", id: "status", value: (row) => row.account.status },
+    { header: "Created By", id: "createdBy", value: (row) => row.account.createdBy },
+    { header: "Date Created", id: "createdAt", value: (row) => row.account.createdAt },
+    { header: "Updated By", id: "updatedBy", value: (row) => row.account.updatedBy },
+    { header: "Date Modified", id: "updatedAt", value: (row) => row.account.updatedAt },
     {
       header: "Posting Account",
       id: "isPostingAccount",

@@ -15,6 +15,7 @@ import type {
 	TermManagementFormValues,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
+import { formatFileSize } from "@/app/src/utils/file.util";
 
 export const TermManagementInitialFormValues: TermManagementFormValues = {
 	name: "",
@@ -361,22 +362,6 @@ export function validateImportFileSize(file: File) {
 	}
 
 	return null;
-}
-
-export function formatFileSize(bytes: number) {
-	if (bytes < 1024) {
-		return `${bytes} B`;
-	}
-
-	const kilobytes = bytes / 1024;
-
-	if (kilobytes < 1024) {
-		return `${kilobytes.toFixed(kilobytes >= 10 ? 0 : 1)} KB`;
-	}
-
-	const megabytes = kilobytes / 1024;
-
-	return `${megabytes.toFixed(megabytes >= 10 ? 0 : 1)} MB`;
 }
 
 export function isTermImportGridPasteTarget(target: EventTarget | null) {

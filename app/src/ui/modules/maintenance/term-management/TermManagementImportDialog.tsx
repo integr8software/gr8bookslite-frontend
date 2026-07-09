@@ -37,9 +37,9 @@ import type {
 import { TermImportPreviewTableRow } from "@/app/src/ui/modules/maintenance/term-management/TermManagementImportPreviewTableRow";
 import {
 	downloadTermImportTemplate,
-	formatFileSize,
 	isTermImportGridPasteTarget,
 } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
+import { formatFileSize } from "@/app/src/utils/file.util";
 
 export function TermManagementImportDialog({
 	existingTerms,

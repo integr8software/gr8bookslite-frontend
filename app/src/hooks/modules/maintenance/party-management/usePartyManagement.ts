@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import {
 	getCoreRowModel,
 	getSortedRowModel,
@@ -363,7 +364,7 @@ function filterPartyManagementRecords(
 	records: PartyInformationRecord[],
 	query: PartyManagementListQuery,
 ) {
-	const normalizedQuery = query.query.trim().toLowerCase();
+	const normalizedQuery = normalizeLowercaseText(query.query);
 
 	return records.filter((record) => {
 		const name = getPartyDisplayName(record).toLowerCase();

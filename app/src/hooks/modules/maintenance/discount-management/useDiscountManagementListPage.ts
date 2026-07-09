@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/discount-management/useDiscountManagement";
 import type {
 	Discount,
@@ -36,7 +37,7 @@ export function useDiscountManagementListPage() {
 		useState<Discount | null>(null);
 
 	const filteredDiscounts = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
+		const normalizedQuery = normalizeLowercaseText(query);
 
 		return discounts.filter((discount) => {
 			if (typeFilter !== "All" && discount.type !== typeFilter) {

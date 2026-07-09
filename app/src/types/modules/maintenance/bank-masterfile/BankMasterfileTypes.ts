@@ -20,7 +20,9 @@ export type BankMasterfile = {
 	seriesEnd: string;
 	seriesDigits: string;
 	status: BankMasterfileStatus;
+	createdBy?: string | null;
 	createdAt?: string;
+	updatedBy?: string | null;
 	updatedAt?: string;
 };
 
@@ -53,7 +55,9 @@ export type BankMasterfileTableColumnKey =
 	| "currencyCode"
 	| "isDefault"
 	| "status"
+	| "createdBy"
 	| "createdAt"
+	| "updatedBy"
 	| "updatedAt";
 
 export type BankImportColumnId = keyof BankMasterfileFormValues;
@@ -116,7 +120,9 @@ export type ApiBank = {
 	seriesEnd: string | null;
 	seriesDigits: number | null;
 	status: ApiBankStatus;
+	createdBy: string | null;
 	createdAt: string;
+	updatedBy: string | null;
 	updatedAt: string;
 };
 

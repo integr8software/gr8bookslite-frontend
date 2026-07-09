@@ -77,11 +77,11 @@ function TermManagementCellContent({
 		case "createdBy":
 			return <span>{term.createdBy ?? ""}</span>;
 		case "createdAt":
-			return <span>{formatDateTime(term.createdAt)}</span>;
+			return <span>{formatDateTime(term.createdAt, { emptyValue: "—", locale: "en-US" })}</span>;
 		case "updatedBy":
 			return <span>{term.updatedBy ?? ""}</span>;
 		case "updatedAt":
-			return <span>{formatDateTime(term.updatedAt)}</span>;
+			return <span>{formatDateTime(term.updatedAt, { emptyValue: "—", locale: "en-US" })}</span>;
 		case "actions":
 			return (
 				<ModuleTableActions
@@ -117,15 +117,6 @@ function TermManagementCellContent({
 	}
 }
 
-function formatDateTime(value?: string) {
-	if (!value) return "—";
-
-	return new Intl.DateTimeFormat("en-US", {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(new Date(value));
-}
-
 function TermManagementTableCell({
 	align = "left",
 	children,
@@ -156,3 +147,4 @@ function StatusBadge({ status }: { status: TermManagement["status"] }) {
 		</span>
 	);
 }
+import { formatDateTime } from "@/app/src/utils/date.util";

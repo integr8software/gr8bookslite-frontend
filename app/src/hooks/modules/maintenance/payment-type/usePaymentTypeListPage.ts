@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
 import type {
@@ -31,7 +32,7 @@ export function usePaymentTypeListPage() {
 		useState<PaymentTypeRecord | null>(null);
 
 	const filteredPaymentTypes = useMemo(() => {
-		const normalizedSearch = searchTerm.trim().toLowerCase();
+		const normalizedSearch = normalizeLowercaseText(searchTerm);
 
 		return paymentTypes.filter((paymentType) => {
 			const matchesSearch =

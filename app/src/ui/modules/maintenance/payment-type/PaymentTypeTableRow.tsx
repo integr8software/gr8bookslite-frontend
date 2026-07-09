@@ -86,11 +86,11 @@ function PaymentTypeCellContent({
 		case "createdBy":
 			return <span>{paymentType.createdBy ?? ""}</span>;
 		case "createdAt":
-			return <span>{formatDateTime(paymentType.createdAt)}</span>;
+			return <span>{formatDateTime(paymentType.createdAt, { emptyValue: "-", locale: "en-US" })}</span>;
 		case "updatedBy":
 			return <span>{paymentType.updatedBy ?? ""}</span>;
 		case "updatedAt":
-			return <span>{formatDateTime(paymentType.updatedAt)}</span>;
+			return <span>{formatDateTime(paymentType.updatedAt, { emptyValue: "-", locale: "en-US" })}</span>;
 		case "actions":
 			return (
 				<ModuleTableActions
@@ -126,15 +126,6 @@ function PaymentTypeCellContent({
 	}
 }
 
-function formatDateTime(value?: string) {
-	if (!value) return "-";
-
-	return new Intl.DateTimeFormat("en-US", {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(new Date(value));
-}
-
 function PaymentTypeTableCell({
 	align = "left",
 	children,
@@ -165,3 +156,4 @@ function StatusBadge({ status }: { status: PaymentTypeRecord["status"] }) {
 		</span>
 	);
 }
+import { formatDateTime } from "@/app/src/utils/date.util";

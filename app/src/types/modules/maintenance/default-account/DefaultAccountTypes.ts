@@ -30,7 +30,9 @@ export type DefaultAccount = {
 	status: DefaultAccountStatus;
 	expenseParentCoaId?: string;
 	generatedAccounts: GeneratedDefaultAccount[];
+	createdBy?: string | null;
 	createdAt?: string;
+	updatedBy?: string | null;
 	updatedAt?: string;
 };
 
@@ -56,7 +58,11 @@ export type DefaultAccountTableColumnKey =
 	| "type"
 	| "accountCode"
 	| "accountName"
-	| "status";
+	| "status"
+	| "createdBy"
+	| "createdAt"
+	| "updatedBy"
+	| "updatedAt";
 
 export type DefaultAccountPermissions = {
 	canView: boolean;
@@ -82,7 +88,9 @@ export type ApiDefaultAccount = {
 	description: string;
 	status: ApiDefaultAccountStatus;
 	generatedAccounts: GeneratedDefaultAccount[];
+	createdBy: string | null;
 	createdAt: string;
+	updatedBy: string | null;
 	updatedAt: string;
 };
 

@@ -16,9 +16,9 @@ import {
 } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
 import {
 	downloadDiscountImportTemplate,
-	formatFileSize,
 	isDiscountImportGridPasteTarget,
 } from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
+import { formatFileSize } from "@/app/src/utils/file.util";
 import { useDiscountManagementImportDialog } from "@/app/src/hooks/modules/maintenance/discount-management/useDiscountManagementImportDialog";
 import type { DiscountManagementImportDialogProps } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";

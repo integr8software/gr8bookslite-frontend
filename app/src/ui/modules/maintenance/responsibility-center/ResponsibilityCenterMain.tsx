@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { useMemo, useState, type ReactNode } from "react";
 import {
 	Building2,
@@ -131,7 +132,7 @@ export function ResponsibilityCenterMain() {
 		[centers],
 	);
 	const filteredCenters = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
+		const normalizedQuery = normalizeLowercaseText(query);
 
 		return centers.filter((center) => {
 			const parentName = center.parentId

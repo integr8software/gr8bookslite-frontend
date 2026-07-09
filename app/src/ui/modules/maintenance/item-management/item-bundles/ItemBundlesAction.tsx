@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@/app/src/utils/currency.util";
 import {
 	DndContext,
 	KeyboardSensor,
@@ -608,13 +609,6 @@ function getMode(pathname: string): BundleMode {
 	}
 
 	return "add";
-}
-
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("en-US", {
-		currency: "PHP",
-		style: "currency",
-	}).format(value);
 }
 
 function DecimalNumberInput({

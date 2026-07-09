@@ -108,7 +108,9 @@ function mapApiBank(bank: ApiBank): BankMasterfile {
 		seriesEnd: bank.seriesEnd ?? "",
 		seriesDigits: bank.seriesDigits ? String(bank.seriesDigits) : "",
 		status: mapStatusFromApi(bank.status),
+		createdBy: bank.createdBy,
 		createdAt: bank.createdAt,
+		updatedBy: bank.updatedBy,
 		updatedAt: bank.updatedAt,
 	};
 }

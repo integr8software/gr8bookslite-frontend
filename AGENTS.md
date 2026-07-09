@@ -32,6 +32,7 @@ app/
     services/
     types/
     ui/
+    utils/
     validations/
 ```
 
@@ -45,6 +46,7 @@ app/src/types/modules/<domain>/<feature>/       # TypeScript-only types
 app/src/constants/modules/<domain>/<feature>/   # hrefs, options, table config
 app/src/validations/modules/<domain>/<feature>/ # Zod schemas and validators
 app/src/services/modules/<domain>/<feature>/    # API/server/query helpers
+app/src/utils/                                  # shared pure formatting/normalization helpers
 ```
 
 Top-level areas follow the same split, for example:
@@ -63,6 +65,13 @@ When creating or refactoring a module:
 
 - Do not put hooks, constants, data, types, or validation inside `app/src/ui/...`.
 - Do not put validation in hooks or data. Put it in `app/src/validations/...`.
+- Put generic, side-effect-free helpers reused across unrelated modules in
+  `app/src/utils/`.
+- Keep feature-specific business rules and mappers in their feature's `data`,
+  `services`, or `validations` folder. Do not move them to `utils` merely
+  because they are functions.
+- Do not put React hooks, API calls, browser storage, application state, or
+  validation rules in `app/src/utils/`.
 - Use Zod for validation when adding new validation logic.
 - Keep route files thin.
 - Use `/add`, `/edit/[recordId]`, and `/view/[recordId]`. Never use `/add/new`.
@@ -237,10 +246,26 @@ Services:
 - API wrappers, server actions, TanStack Query key factories, and business
   operations that talk outside the UI layer.
 
+Utils:
+
+- Framework-independent, side-effect-free helpers shared by unrelated areas.
+- Formatting and generic normalization, such as currency, date/time, file size,
+  lowercase text, and whitespace normalization.
+- Utilities should accept the values and options they need as parameters rather
+  than reading feature state or environment state.
+- Prefer focused files such as `currency.util.ts`, `date.util.ts`,
+  `file.util.ts`, and `string.util.ts` over a generic `helpers.ts`.
+- Import utilities through the `@/` alias, for example
+  `@/app/src/utils/date.util`.
+- Keep validation in `app/src/validations/...`; never create a
+  `validation.util.ts` for application validation rules.
+
 # Naming
 
 - Use PascalCase for components, data files, constants, validations, and types.
 - Use React hook naming for hooks, such as `usePurchaseRequestFormPage.ts`.
+- Use lowercase concern-based names ending in `.util.ts` for shared utility
+  files, such as `currency.util.ts`.
 - Route-group folders stay lowercase where Next.js requires it.
 - Prefer feature-specific names over vague names.
 

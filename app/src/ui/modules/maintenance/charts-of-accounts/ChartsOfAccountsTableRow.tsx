@@ -14,6 +14,7 @@ import {
   isSpecificAccountLevel,
   isSpecificAccountNumber,
 } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
+import { formatDateTime } from "@/app/src/utils/date.util";
 import type {
   ChartAccount,
   ChartsOfAccountsPermissions,
@@ -183,6 +184,14 @@ export function ChartsOfAccountsTableRow({
             </Badge>
           </td>
         );
+      case "createdBy":
+        return <td key={columnId} className="px-5 py-4">{account.createdBy ?? ""}</td>;
+      case "createdAt":
+        return <td key={columnId} className="px-5 py-4">{formatDateTime(account.createdAt)}</td>;
+      case "updatedBy":
+        return <td key={columnId} className="px-5 py-4">{account.updatedBy ?? ""}</td>;
+      case "updatedAt":
+        return <td key={columnId} className="px-5 py-4">{formatDateTime(account.updatedAt)}</td>;
       case "actions":
         return (
           <td key={columnId} className="px-5 py-4 text-center">

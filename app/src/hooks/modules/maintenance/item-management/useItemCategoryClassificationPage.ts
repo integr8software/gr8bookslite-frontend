@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import {
   type ColumnDef,
   type PaginationState,
@@ -94,7 +95,7 @@ export function useItemCategoryClassificationPage() {
     [allRecords, setupRecords, store.items],
   );
   const filteredTableRows = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = normalizeLowercaseText(query);
 
     return tableRows.filter((row) => {
       if (

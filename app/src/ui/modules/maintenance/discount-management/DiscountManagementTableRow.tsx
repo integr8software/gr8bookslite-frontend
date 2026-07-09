@@ -3,6 +3,7 @@ import type {
 	DiscountManagementTableRecord,
 	DiscountManagementTableRowProps,
 } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
+import { formatDateTime } from "@/app/src/utils/date.util";
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,
@@ -101,6 +102,14 @@ function DiscountManagementCellContent({
 			);
 		case "status":
 			return <StatusBadge status={discount.status} />;
+		case "createdBy":
+			return <span>{discount.createdBy ?? ""}</span>;
+		case "createdAt":
+			return <span>{formatDateTime(discount.createdAt)}</span>;
+		case "updatedBy":
+			return <span>{discount.updatedBy ?? ""}</span>;
+		case "updatedAt":
+			return <span>{formatDateTime(discount.updatedAt)}</span>;
 		case "actions":
 			return (
 				<ModuleTableActions

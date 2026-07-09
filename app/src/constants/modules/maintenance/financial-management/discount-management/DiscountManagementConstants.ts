@@ -74,6 +74,10 @@ export const DiscountManagementTableColumns = [
 		label: "Status",
 		className: "w-[12%]",
 	},
+	{ key: "createdBy", label: "Created By", className: "w-[14%]" },
+	{ key: "createdAt", label: "Date Created", className: "w-[16%]" },
+	{ key: "updatedBy", label: "Updated By", className: "w-[14%]" },
+	{ key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
 	{
 		label: "Action",
 		className: "w-[16%] text-center",

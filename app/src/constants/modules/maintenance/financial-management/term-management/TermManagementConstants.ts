@@ -69,7 +69,7 @@ export const TermManagementTableColumns = [
 	},
 	{
 		key: "updatedBy",
-		label: "Modified By",
+		label: "Updated By",
 		className: "w-[14%]",
 	},
 	{

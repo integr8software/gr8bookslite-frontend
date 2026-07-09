@@ -102,7 +102,9 @@ function mapApiDefaultAccount(account: ApiDefaultAccount): DefaultAccount {
 		description: account.description ?? "",
 		status: mapStatusFromApi(account.status),
 		generatedAccounts: account.generatedAccounts,
+		createdBy: account.createdBy,
 		createdAt: account.createdAt,
+		updatedBy: account.updatedBy,
 		updatedAt: account.updatedAt,
 	};
 }

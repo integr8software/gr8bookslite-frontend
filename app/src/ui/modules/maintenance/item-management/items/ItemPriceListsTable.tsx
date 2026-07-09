@@ -1,4 +1,5 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
+import { formatCurrency } from "@/app/src/utils/currency.util";
 import type {
 	ItemFormValues,
 	ItemPriceListRecord,
@@ -148,13 +149,6 @@ function DecimalNumberInput({
 			className={`${fieldClassName} text-right`}
 		/>
 	);
-}
-
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("en-US", {
-		currency: "PHP",
-		style: "currency",
-	}).format(value);
 }
 
 const fieldClassName =

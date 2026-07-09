@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { useTermManagementStore } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagement";
 import type {
 	TermManagement,
@@ -28,7 +29,7 @@ export function useTermManagementListPage() {
 		useState<TermManagement | null>(null);
 
 	const filteredTerms = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
+		const normalizedQuery = normalizeLowercaseText(query);
 
 		return terms.filter((term) => {
 			if (datemodeFilter !== "All" && term.datemode !== datemodeFilter) {

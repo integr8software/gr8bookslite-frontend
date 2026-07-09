@@ -1,6 +1,6 @@
 # Gr8Books Neo Frontend Map
 
-Last updated: 2026-05-28
+Last updated: 2026-07-09
 
 Use this file as the first stop before changing the frontend. It is a compact graph of how the app is organized, where code belongs, and which files usually matter for common changes.
 
@@ -30,7 +30,9 @@ graph TD
   AppStore --> MainLayout[MainLayout shell]
   Pages --> FeatureUi[app/src/ui]
   FeatureUi --> Hooks[app/src/hooks]
+  FeatureUi --> Utils[app/src/utils]
   Hooks --> Services[app/src/services]
+  Hooks --> Utils
   Services --> ApiClient[Axios ApiClient]
   ApiClient --> Backend[Nest backend API]
 ```
@@ -71,6 +73,7 @@ graph TD
   Src --> Data[data]
   Src --> Types[types]
   Src --> Constants[constants]
+  Src --> Utils[utils]
   Src --> Validations[validations]
   Src --> Agents[agents]
   UI --> SharedUi[shared]
@@ -90,7 +93,29 @@ graph TD
 - `app/src/data/...`: mock/static records, defaults, local storage helpers, pure mappers.
 - `app/src/types/...`: TypeScript-only types.
 - `app/src/constants/...`: hrefs, options, table column config, storage keys, labels.
+- `app/src/utils/...`: generic, pure formatting and normalization helpers shared
+  across unrelated modules.
 - `app/src/validations/...`: Zod schemas and validation helpers.
+
+### Shared Utilities
+
+```txt
+app/src/utils/
+  currency.util.ts  # formatCurrency(value, currencyCode = "PHP")
+  date.util.ts      # formatDateTime(value, options)
+  file.util.ts      # formatFileSize(bytes)
+  string.util.ts    # lowercase-text and whitespace normalization
+```
+
+Utilities are framework-independent and side-effect-free. They receive their
+inputs through parameters and must not own React state, API access, browser
+storage, feature business rules, or validation rules.
+
+Use `app/src/utils` when the same generic behavior is needed by unrelated
+features. Keep feature-only helpers with the feature until they become genuinely
+shared. Keep pure feature mappers in `data`, external operations in `services`,
+stateful behavior in `hooks`, and Zod or application validation in
+`validations`.
 
 ## Shared Runtime Files
 
@@ -167,12 +192,14 @@ graph TD
   FeatureHook --> Constants[constants]
   FeatureHook --> DataMappers[data mappers/defaults]
   FeatureHook --> Validation[Zod validation]
+  FeatureHook --> Utils[shared pure utilities]
   FeatureHook --> QueryKeys[query keys]
   FeatureHook --> ApiService[API service]
   ApiService --> ApiClient[shared Axios client]
   ApiClient --> Backend[backend API]
   FeatureHook --> SharedTable[ModuleTable/TanStack table]
   ListOrForm --> SharedModuleUi[ModuleHeader/ModuleTable/etc]
+  ListOrForm --> Utils
 ```
 
 ## Shared UI To Reuse
@@ -190,6 +217,8 @@ graph TD
 - Add a CRUD module: create routes plus matching `ui`, `hooks`, `data`, `types`, `constants`, `validations`, and `services` folders as needed.
 - Add API access: use `ApiClient` from `app/src/services/shared/api/ApiClient.ts`; keep query keys in a service file near the feature.
 - Add form validation: put Zod schema and helper functions under `app/src/validations/...`.
+- Add shared formatting or normalization: put a focused, pure helper under
+  `app/src/utils/*.util.ts`; do not create a catch-all `helpers.ts`.
 - Add table behavior: build table state/columns in hooks/constants and render with shared `ModuleTable`.
 - Change shell navigation: start with `useMainLayout.ts`, sidebar files, and topbar files.
 - Change auth/session behavior: check `app/src/services/auth/*`, `app/src/data/auth/*`, `AppProviders.tsx`, and `useAppStore.ts`.

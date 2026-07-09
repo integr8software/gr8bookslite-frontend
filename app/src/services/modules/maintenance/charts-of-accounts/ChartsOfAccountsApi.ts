@@ -45,6 +45,10 @@ type ApiChartAccount = {
   isBankLinked?: boolean;
   showTotal: boolean;
   status: ApiChartAccountStatus;
+  createdBy: string | null;
+  createdAt: string;
+  updatedBy: string | null;
+  updatedAt: string;
   currencyCode: string | null;
   bankAccounts: ApiBankAccount[];
   children?: ApiChartAccount[];
@@ -225,6 +229,10 @@ function MapChartAccount(account: ApiChartAccount): ChartAccount {
     statementSection: account.statementSection ?? InferStatementGroup(account),
     reportAlias: account.reportAlias ?? "",
     status: MapStatusFromApi(account.status),
+    createdBy: account.createdBy,
+    createdAt: account.createdAt,
+    updatedBy: account.updatedBy,
+    updatedAt: account.updatedAt,
     bankDetails: bankAccount
       ? {
           accountType: bankAccount.accountType ?? "",

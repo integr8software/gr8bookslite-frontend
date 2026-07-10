@@ -40,6 +40,7 @@ export function PartyInformationDetailsFields({
 	accountOptions,
 	errors,
 	isClassificationSelected,
+	isPartyCodeReadonly = false,
 	isReadonly,
 	partyTypeOptions,
 	termOptions,
@@ -62,6 +63,7 @@ export function PartyInformationDetailsFields({
 	atcOptions: PartyAtcCodeOption[];
 	errors: PartyInformationFormErrors;
 	isClassificationSelected: boolean;
+	isPartyCodeReadonly?: boolean;
 	isReadonly: boolean;
 	partyTypeOptions: readonly PartyType[];
 	termOptions: AppAdvancedDropdownOption[];
@@ -132,7 +134,7 @@ export function PartyInformationDetailsFields({
 								name="partyCodeNo"
 								value={values.partyCodeNo}
 								onChange={onInputChange}
-								readOnly={isReadonly}
+								readOnly={isReadonly || isPartyCodeReadonly}
 								className={fieldClassName}
 							/>
 						</Field>
@@ -447,6 +449,7 @@ function AccountFields({
 						<ChartAccountDropdown
 							accounts={receivableAccountOptions}
 							disabled={isAccountingDisabled}
+							valueField="id"
 							value={values.defaultReceivableAccount}
 							onChange={(value) =>
 								onUpdateField("defaultReceivableAccount", value)
@@ -463,6 +466,7 @@ function AccountFields({
 						<ChartAccountDropdown
 							accounts={customerAdvanceAccountOptions}
 							disabled={isAccountingDisabled}
+							valueField="id"
 							value={values.customerAdvanceAccount}
 							onChange={(value) =>
 								onUpdateField("customerAdvanceAccount", value)
@@ -479,6 +483,7 @@ function AccountFields({
 						<ChartAccountDropdown
 							accounts={payableAccountOptions}
 							disabled={isAccountingDisabled}
+							valueField="id"
 							value={values.defaultPayableAccount}
 							onChange={(value) =>
 								onUpdateField("defaultPayableAccount", value)
@@ -495,6 +500,7 @@ function AccountFields({
 						<ChartAccountDropdown
 							accounts={vendorAdvanceAccountOptions}
 							disabled={isAccountingDisabled}
+							valueField="id"
 							value={values.vendorAdvanceAccount}
 							onChange={(value) => onUpdateField("vendorAdvanceAccount", value)}
 						/>
@@ -509,6 +515,7 @@ function AccountFields({
 						<ChartAccountDropdown
 							accounts={employeeAdvanceAccountOptions}
 							disabled={isAccountingDisabled}
+							valueField="id"
 							value={values.employeeAdvanceAccount}
 							onChange={(value) =>
 								onUpdateField("employeeAdvanceAccount", value)
@@ -525,6 +532,7 @@ function AccountFields({
 						<ChartAccountDropdown
 							accounts={employeePayableAccountOptions}
 							disabled={isAccountingDisabled}
+							valueField="id"
 							value={values.employeePayableAccount}
 							onChange={(value) =>
 								onUpdateField("employeePayableAccount", value)

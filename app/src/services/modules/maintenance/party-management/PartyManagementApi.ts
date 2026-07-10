@@ -1,11 +1,113 @@
+import { PartyManagementApiPath } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
 	getPartyDisplayName,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
+	ApiParty,
+	ApiPartyAddress,
+	ApiPartyClassification,
+	ApiPartyImportResponse,
+	ApiPartyListResponse,
+	ApiPartyPayload,
+	ApiPartySaveResponse,
+	ApiPartyStatus,
+	ApiPartyType,
+	ApiPartyVatRegistrationType,
+	PartyAddress,
+	PartyClassification,
 	PartyInformationRecord,
+	PartyInformationStatus,
 	PartyManagementListQuery,
 	PartyManagementListResponse,
+	PartyManagementPermissions,
+	PartyManagementStatistics,
+	PartyType,
+	VatRegistrationType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+
+const EmptyPartyStatistics: PartyManagementStatistics = {
+	activeParties: 0,
+	inactiveParties: 0,
+	individualParties: 0,
+	multiTypeParties: 0,
+	nonIndividualParties: 0,
+	totalParties: 0,
+};
+
+const EmptyPartyPermissions: PartyManagementPermissions = {
+	canView: false,
+	canCreate: false,
+	canUpdate: false,
+	canCancel: false,
+	canUncancel: false,
+	canExport: false,
+	canImport: false,
+};
+
+export async function fetchPartyManagementRecords(): Promise<{
+	permissions: PartyManagementPermissions;
+	records: PartyInformationRecord[];
+	statistics: PartyManagementStatistics;
+	totalRows: number;
+}> {
+	const response = await ApiClient.get<ApiPartyListResponse>(
+		PartyManagementApiPath,
+		{
+			params: {
+				page: 1,
+				pageSize: 500,
+				sortBy: "name",
+				sortDirection: "asc",
+			},
+		},
+	);
+
+	return {
+		permissions: response.data.permissions ?? EmptyPartyPermissions,
+		records: response.data.parties.map(mapApiParty),
+		statistics: response.data.statistics ?? EmptyPartyStatistics,
+		totalRows: response.data.totalRows,
+	};
+}
+
+export async function createPartyManagementRecord(
+	record: PartyInformationRecord,
+	options: { branchUnitId?: number | null } = {},
+): Promise<PartyInformationRecord> {
+	const response = await ApiClient.post<ApiPartySaveResponse>(
+		PartyManagementApiPath,
+		toApiPartyPayload(record, options),
+	);
+
+	return mapApiParty(response.data.party);
+}
+
+export async function updatePartyManagementRecord(
+	record: PartyInformationRecord,
+): Promise<PartyInformationRecord> {
+	const response = await ApiClient.patch<ApiPartySaveResponse>(
+		`${PartyManagementApiPath}/${record.id}`,
+		toApiPartyPayload(record),
+	);
+
+	return mapApiParty(response.data.party);
+}
+
+export async function importPartyManagementRecords(
+	records: PartyInformationRecord[],
+	options: { branchUnitId?: number | null } = {},
+): Promise<PartyInformationRecord[]> {
+	const response = await ApiClient.post<ApiPartyImportResponse>(
+		`${PartyManagementApiPath}/import`,
+		{
+			branchUnitId: options.branchUnitId ?? undefined,
+			parties: records.map((record) => toApiPartyPayload(record, options)),
+		},
+	);
+
+	return response.data.parties.map(mapApiParty);
+}
 
 export async function GetPartyManagementRecordsPage({
 	query,
@@ -26,6 +128,7 @@ export async function GetPartyManagementRecordsPage({
 			(query.status === "All" || record.status === query.status) &&
 			(!normalizedQuery ||
 				name.includes(normalizedQuery) ||
+				record.partyCodeNo.toLowerCase().includes(normalizedQuery) ||
 				address.includes(normalizedQuery))
 		);
 	});
@@ -35,6 +138,162 @@ export async function GetPartyManagementRecordsPage({
 	return {
 		records: sortedRecords.slice(startIndex, startIndex + query.pageSize),
 		totalRows: sortedRecords.length,
+	};
+}
+
+function mapApiParty(party: ApiParty): PartyInformationRecord {
+	const addresses = (party.addresses.length > 0
+		? party.addresses
+		: party.address
+			? [party.address]
+			: []).map(mapApiPartyAddress);
+	const address = addresses.find((current) => current.isDefault) ??
+		addresses[0] ??
+		createEmptyApiMappedAddress();
+
+	return {
+		id: party.id,
+		partyCodeNo: party.partyCodeNo,
+		classification: mapClassificationFromApi(party.classification),
+		partyTypes: party.partyTypes.map(mapPartyTypeFromApi),
+		status: mapStatusFromApi(party.status ?? "ACTIVE"),
+		partyName: party.partyName ?? "",
+		tradeName: party.tradeName ?? "",
+		firstName: party.firstName ?? "",
+		middleName: party.middleName ?? "",
+		lastName: party.lastName ?? "",
+		suffixName: party.suffixName ?? "",
+		address,
+		addresses,
+		defaultReceivableAccount: party.defaultReceivableAccount ?? "",
+		customerAdvanceAccount: party.customerAdvanceAccount ?? "",
+		defaultPayableAccount: party.defaultPayableAccount ?? "",
+		vendorAdvanceAccount: party.vendorAdvanceAccount ?? "",
+		employeeAdvanceAccount: party.employeeAdvanceAccount ?? "",
+		employeePayableAccount: party.employeePayableAccount ?? "",
+		termId: party.termId ?? "",
+		termName: party.termName ?? "",
+		tin: party.tin ?? "",
+		vatRegistrationType: party.vatRegistrationType
+			? mapVatRegistrationTypeFromApi(party.vatRegistrationType)
+			: "",
+		atcCode: party.atcCode ?? "",
+		email: party.email ?? "",
+		contactNo: party.contactNo ?? "",
+		createdAt: party.createdAt,
+		updatedAt: party.updatedAt,
+	};
+}
+
+function mapApiPartyAddress(address: ApiPartyAddress): PartyAddress {
+	return {
+		id: address.id ?? crypto.randomUUID(),
+		addressName: address.addressName,
+		addressLine1: address.addressLine1,
+		addressLine2: address.addressLine2,
+		barangay: address.barangay ?? "",
+		barangayCode: address.barangayCode ?? "",
+		cityMunicipality: address.cityMunicipality ?? "",
+		cityMunicipalityCode: address.cityMunicipalityCode ?? "",
+		isBilling: address.isBilling,
+		isBuilding: Boolean(address.isBuilding),
+		isDefault: address.isDefault,
+		isDelivery: address.isDelivery,
+		isForeign: Boolean(address.isForeign),
+		isHome: Boolean(address.isHome),
+		province: address.province ?? "",
+		provinceCode: address.provinceCode ?? "",
+		region: address.region ?? "",
+		regionCode: address.regionCode ?? "",
+	};
+}
+
+function toApiPartyPayload(
+	record: PartyInformationRecord,
+	options: { branchUnitId?: number | null } = {},
+): ApiPartyPayload {
+	return {
+		branchUnitId: options.branchUnitId ?? undefined,
+		partyCodeNo: record.partyCodeNo.trim(),
+		classification: mapClassificationToApi(record.classification),
+		partyTypes: record.partyTypes.map(mapPartyTypeToApi),
+		status: mapStatusToApi(record.status),
+		partyName:
+			record.classification === "Non-Individual"
+				? normalizeOptionalText(record.partyName)
+				: null,
+		tradeName:
+			record.classification === "Non-Individual"
+				? normalizeOptionalText(record.tradeName)
+				: null,
+		firstName:
+			record.classification === "Individual"
+				? normalizeOptionalText(record.firstName)
+				: null,
+		middleName:
+			record.classification === "Individual"
+				? normalizeOptionalText(record.middleName)
+				: null,
+		lastName:
+			record.classification === "Individual"
+				? normalizeOptionalText(record.lastName)
+				: null,
+		suffixName:
+			record.classification === "Individual"
+				? normalizeOptionalText(record.suffixName)
+				: null,
+		addresses: (record.addresses.length > 0
+			? record.addresses
+			: [record.address]
+		).map(toApiPartyAddressPayload),
+		defaultReceivableAccount: record.partyTypes.includes("Customer")
+			? normalizeOptionalText(record.defaultReceivableAccount)
+			: null,
+		customerAdvanceAccount: record.partyTypes.includes("Customer")
+			? normalizeOptionalText(record.customerAdvanceAccount)
+			: null,
+		defaultPayableAccount: record.partyTypes.includes("Vendor")
+			? normalizeOptionalText(record.defaultPayableAccount)
+			: null,
+		vendorAdvanceAccount: record.partyTypes.includes("Vendor")
+			? normalizeOptionalText(record.vendorAdvanceAccount)
+			: null,
+		employeeAdvanceAccount: record.partyTypes.includes("Employee")
+			? normalizeOptionalText(record.employeeAdvanceAccount)
+			: null,
+		employeePayableAccount: record.partyTypes.includes("Employee")
+			? normalizeOptionalText(record.employeePayableAccount)
+			: null,
+		termId: normalizeOptionalText(record.termId),
+		tin: normalizeOptionalText(record.tin),
+		vatRegistrationType: record.vatRegistrationType
+			? mapVatRegistrationTypeToApi(record.vatRegistrationType)
+			: null,
+		atcCode: normalizeOptionalText(record.atcCode),
+		email: normalizeOptionalText(record.email),
+		contactNo: normalizeOptionalText(record.contactNo),
+	};
+}
+
+function toApiPartyAddressPayload(address: PartyAddress): ApiPartyAddress {
+	return {
+		addressName: address.addressName.trim() || "Address",
+		addressLine1: address.addressLine1.trim(),
+		addressLine2: address.addressLine2.trim(),
+		barangay: normalizeOptionalText(address.barangay),
+		barangayCode: normalizeOptionalText(address.barangayCode),
+		cityMunicipality: normalizeOptionalText(address.cityMunicipality),
+		cityMunicipalityCode: normalizeOptionalText(address.cityMunicipalityCode),
+		isBilling: address.isBilling,
+		isBuilding: Boolean(address.isBuilding),
+		isDefault: address.isDefault,
+		isDelivery: address.isDelivery,
+		isForeign: Boolean(address.isForeign),
+		isHome: Boolean(address.isHome),
+		province: normalizeOptionalText(address.province),
+		provinceCode: normalizeOptionalText(address.provinceCode),
+		region: normalizeOptionalText(address.region),
+		regionCode: normalizeOptionalText(address.regionCode),
 	};
 }
 
@@ -92,4 +351,107 @@ function formatPartyAddress(address: PartyInformationRecord["address"]) {
 		.map((part) => part.trim())
 		.filter(Boolean)
 		.join(", ") || "-";
+}
+
+function mapClassificationFromApi(
+	value: ApiPartyClassification,
+): PartyClassification {
+	return value === "INDIVIDUAL" ? "Individual" : "Non-Individual";
+}
+
+function mapClassificationToApi(
+	value: PartyClassification,
+): ApiPartyClassification {
+	return value === "Individual" ? "INDIVIDUAL" : "NON_INDIVIDUAL";
+}
+
+function mapPartyTypeFromApi(value: ApiPartyType): PartyType {
+	if (value === "CUSTOMER") return "Customer";
+	if (value === "EMPLOYEE") return "Employee";
+	return "Vendor";
+}
+
+function mapPartyTypeToApi(value: PartyType): ApiPartyType {
+	if (value === "Customer") return "CUSTOMER";
+	if (value === "Employee") return "EMPLOYEE";
+	return "VENDOR";
+}
+
+function mapStatusFromApi(value: ApiPartyStatus): PartyInformationStatus {
+	return value === "ACTIVE" ? "Active" : "Inactive";
+}
+
+function mapStatusToApi(value: PartyInformationStatus): ApiPartyStatus {
+	return value === "Active" ? "ACTIVE" : "INACTIVE";
+}
+
+function mapVatRegistrationTypeFromApi(
+	value: ApiPartyVatRegistrationType,
+): VatRegistrationType {
+	switch (value) {
+		case "VAT_REGISTERED":
+			return "VAT Registered";
+		case "ZERO_RATED":
+			return "Zero Rated";
+		case "NON_VAT":
+			return "Non-VAT";
+		case "EXEMPT":
+			return "Exempt";
+		case "CAPITAL_GOODS":
+			return "Capital Goods";
+		case "OTHER_THAN_CAPITAL_GOODS":
+			return "Other Than Capital Goods";
+		case "SERVICES":
+			return "Services";
+	}
+}
+
+function mapVatRegistrationTypeToApi(
+	value: VatRegistrationType,
+): ApiPartyVatRegistrationType {
+	switch (value) {
+		case "VAT Registered":
+			return "VAT_REGISTERED";
+		case "Zero Rated":
+			return "ZERO_RATED";
+		case "Non-VAT":
+			return "NON_VAT";
+		case "Exempt":
+			return "EXEMPT";
+		case "Capital Goods":
+			return "CAPITAL_GOODS";
+		case "Other Than Capital Goods":
+			return "OTHER_THAN_CAPITAL_GOODS";
+		case "Services":
+			return "SERVICES";
+	}
+}
+
+function normalizeOptionalText(value: string | null | undefined) {
+	const normalized = value?.trim() ?? "";
+
+	return normalized || null;
+}
+
+function createEmptyApiMappedAddress(): PartyAddress {
+	return {
+		id: "address-default",
+		addressName: "Default Address",
+		addressLine1: "",
+		addressLine2: "",
+		barangay: "",
+		barangayCode: "",
+		cityMunicipality: "",
+		cityMunicipalityCode: "",
+		isBilling: false,
+		isBuilding: false,
+		isDefault: true,
+		isDelivery: false,
+		isForeign: false,
+		isHome: false,
+		province: "",
+		provinceCode: "",
+		region: "",
+		regionCode: "",
+	};
 }

@@ -49,6 +49,7 @@ function PartyManagementFormPageInner() {
 					atcOptions={page.atcOptions}
 					errors={page.errors}
 					isClassificationSelected={page.isClassificationSelected}
+					isPartyCodeReadonly={page.isPartyCodeReadonly}
 					isReadonly={page.isReadonly}
 					partyTypeOptions={page.partyTypeOptions}
 					termOptions={page.termOptions}

@@ -11,6 +11,8 @@ import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppCon
 
 export const PartyManagementHref = "/maintenance/party-management";
 
+export const PartyManagementApiPath = "/maintenance/party-maintenance";
+
 export const PartyManagementParentLabel = "Party management";
 
 export const PartyInformationTitle = "Party Information";

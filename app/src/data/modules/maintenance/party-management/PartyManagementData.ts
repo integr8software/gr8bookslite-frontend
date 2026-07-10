@@ -43,6 +43,15 @@ export const PartyDefaultAccountingAccounts = {
   vendorAdvanceAccount: "1010103003",
 } as const;
 
+type PartyDefaultAccountingAccountValues = {
+  customerAdvanceAccount: string;
+  defaultPayableAccount: string;
+  defaultReceivableAccount: string;
+  employeeAdvanceAccount: string;
+  employeePayableAccount: string;
+  vendorAdvanceAccount: string;
+};
+
 export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   partyCodeNo: "",
   classification: "",
@@ -1034,32 +1043,36 @@ export function applyPartyDefaultAccountingAccounts<
     | "employeePayableAccount"
     | "vendorAdvanceAccount"
   >,
->(values: TValues, partyTypes: PartyType[]) {
+>(
+  values: TValues,
+  partyTypes: PartyType[],
+  defaults: PartyDefaultAccountingAccountValues = PartyDefaultAccountingAccounts,
+) {
   return {
     ...values,
     defaultReceivableAccount: partyTypes.includes("Customer")
       ? values.defaultReceivableAccount ||
-        PartyDefaultAccountingAccounts.defaultReceivableAccount
+        defaults.defaultReceivableAccount
       : "",
     customerAdvanceAccount: partyTypes.includes("Customer")
       ? values.customerAdvanceAccount ||
-        PartyDefaultAccountingAccounts.customerAdvanceAccount
+        defaults.customerAdvanceAccount
       : "",
     defaultPayableAccount: partyTypes.includes("Vendor")
       ? values.defaultPayableAccount ||
-        PartyDefaultAccountingAccounts.defaultPayableAccount
+        defaults.defaultPayableAccount
       : "",
     vendorAdvanceAccount: partyTypes.includes("Vendor")
       ? values.vendorAdvanceAccount ||
-        PartyDefaultAccountingAccounts.vendorAdvanceAccount
+        defaults.vendorAdvanceAccount
       : "",
     employeeAdvanceAccount: partyTypes.includes("Employee")
       ? values.employeeAdvanceAccount ||
-        PartyDefaultAccountingAccounts.employeeAdvanceAccount
+        defaults.employeeAdvanceAccount
       : "",
     employeePayableAccount: partyTypes.includes("Employee")
       ? values.employeePayableAccount ||
-        PartyDefaultAccountingAccounts.employeePayableAccount
+        defaults.employeePayableAccount
       : "",
   };
 }

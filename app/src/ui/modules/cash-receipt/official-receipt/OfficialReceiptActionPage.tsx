@@ -16,6 +16,7 @@ import type { DisbursementPaymentMethod, DisbursementType } from "@/app/src/type
 import { OfficialReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptActionHeader";
 import { OfficialReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptDetailsForm";
 import { OfficialReceiptEntries } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptEntries";
+import { OfficialReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptReportPreview";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
 
 const AppPaymentTypeDialog = dynamic(
@@ -43,6 +44,7 @@ export function OfficialReceiptActionPage() {
   const partyStore = usePartyManagementStore();
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
+  const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isCollectionTypeDialogOpen, setIsCollectionTypeDialogOpen] =
     useState(false);
   const [collectionTypeRecords, setCollectionTypeRecords] = useState(
@@ -72,6 +74,7 @@ export function OfficialReceiptActionPage() {
           mode={mode}
           values={receiptForm.values}
           onCopyFrom={receiptForm.applyCopyFrom}
+          onPreview={() => setIsReportPreviewOpen(true)}
           onSubmit={receiptForm.submitReceipt}
         />
         <OfficialReceiptDetailsForm
@@ -90,6 +93,12 @@ export function OfficialReceiptActionPage() {
           onRowsChange={receiptForm.updateLineEntries}
         />
       </section>
+
+      <OfficialReceiptReportPreview
+        isOpen={isReportPreviewOpen}
+        values={receiptForm.values}
+        onClose={() => setIsReportPreviewOpen(false)}
+      />
 
       {!isReadonly && isPaymentTypeDialogOpen ? (
         <AppPaymentTypeDialog

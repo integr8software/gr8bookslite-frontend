@@ -16,6 +16,7 @@ import type { DisbursementPaymentMethod, DisbursementType } from "@/app/src/type
 import { AcknowledgementReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptActionHeader";
 import { AcknowledgementReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptDetailsForm";
 import { AcknowledgementReceiptEntries } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptEntries";
+import { AcknowledgementReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptReportPreview";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
 
 const AppPaymentTypeDialog = dynamic(
@@ -43,6 +44,7 @@ export function AcknowledgementReceiptActionPage() {
   const partyStore = usePartyManagementStore();
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
+  const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isCollectionTypeDialogOpen, setIsCollectionTypeDialogOpen] =
     useState(false);
   const [collectionTypeRecords, setCollectionTypeRecords] = useState(
@@ -72,6 +74,7 @@ export function AcknowledgementReceiptActionPage() {
           mode={mode}
           values={receiptForm.values}
           onCopyFrom={receiptForm.applyCopyFrom}
+          onPreview={() => setIsReportPreviewOpen(true)}
           onSubmit={receiptForm.submitReceipt}
         />
         <AcknowledgementReceiptDetailsForm
@@ -90,6 +93,12 @@ export function AcknowledgementReceiptActionPage() {
           onRowsChange={receiptForm.updateLineEntries}
         />
       </section>
+
+      <AcknowledgementReceiptReportPreview
+        isOpen={isReportPreviewOpen}
+        values={receiptForm.values}
+        onClose={() => setIsReportPreviewOpen(false)}
+      />
 
       {!isReadonly && isPaymentTypeDialogOpen ? (
         <AppPaymentTypeDialog

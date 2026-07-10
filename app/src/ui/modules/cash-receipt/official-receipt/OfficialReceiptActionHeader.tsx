@@ -13,18 +13,21 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type OfficialReceiptActionHeaderProps = {
   mode: OfficialReceiptActionMode;
   values: OfficialReceiptFormValues;
   onCopyFrom: (recordIds: string[]) => void;
+  onPreview: () => void;
   onSubmit: () => void;
 };
 
 export function OfficialReceiptActionHeader({
   mode,
   onCopyFrom,
+  onPreview,
   onSubmit,
   values,
 }: OfficialReceiptActionHeaderProps) {
@@ -53,6 +56,7 @@ export function OfficialReceiptActionHeader({
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back
           </Link>
+          <ReportPreviewAction onPreview={onPreview} />
           {mode === "view" ? null : (
             <>
               <Link href={OfficialReceiptHref} className={moduleHeaderActionClassNames.secondary}>

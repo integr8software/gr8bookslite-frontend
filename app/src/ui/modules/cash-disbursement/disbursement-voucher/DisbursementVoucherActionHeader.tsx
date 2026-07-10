@@ -15,6 +15,7 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import {
   AppCopyFromDropdown,
   type AppCopyFromRecord,
@@ -26,6 +27,7 @@ type DisbursementVoucherActionHeaderProps = {
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
   onUpdateStatus?: (status: DisbursementVoucherStatus) => void;
+  onPreview?: () => void;
   onSubmit?: () => void;
   copyFromRecords?: AppCopyFromRecord[];
   copyFromSources?: string[];
@@ -38,6 +40,7 @@ export function DisbursementVoucherActionHeader({
   transaction,
   voucher,
   onUpdateStatus,
+  onPreview,
   onSubmit,
   copyFromRecords = [],
   copyFromSources = [],
@@ -77,6 +80,7 @@ export function DisbursementVoucherActionHeader({
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back
           </Link>
+          {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
           {mode === "view" ? (
             <DisbursementVoucherViewActions
               transaction={transaction}

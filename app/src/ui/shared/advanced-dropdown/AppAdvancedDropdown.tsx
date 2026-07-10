@@ -502,6 +502,10 @@ export function AppAdvancedDropdown({
 							aria-hidden="true"
 						/>
 						<input
+							autoCapitalize="none"
+							autoComplete="off"
+							autoCorrect="off"
+							spellCheck={false}
 							value={query}
 							onChange={(event) => setQuery(event.target.value)}
 							onKeyDown={handleComboboxKeyDown}
@@ -568,7 +572,7 @@ export function AppAdvancedDropdown({
 					"app-advanced-dropdown-control app-disabled-control w-full rounded-lg border border-darknavy/10 text-sm outline-none transition",
 					isMultiple ? "min-h-11 px-2 py-1.5" : "h-11 px-3",
 					disabled
-						? "pointer-events-none cursor-not-allowed shadow-none"
+						? "pointer-events-none cursor-not-allowed bg-darknavy/[0.035] text-darknavy/35 shadow-none"
 						: readOnly
 							? "pointer-events-none cursor-default border-darknavy/10 bg-darknavy/[0.025] text-darknavy/70 shadow-none"
 							: "cursor-pointer bg-white text-darknavy focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10",

@@ -17,13 +17,13 @@ import {
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import {
-  MaxPartyAddressCount,
   PartyInformationInitialFormValues,
-  createEmptyPartyAddress,
+  applyPartyDefaultAccountingAccounts,
+  clearAddressRolesForPartyTypes,
   createPartyInformationFormValues,
   createPartyInformationRecord,
   isKnownPartyType,
-  setPartyDefaultAddress,
+  normalizePartyTypesForClassification,
   updatePartyInformationRecord,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
@@ -82,13 +82,14 @@ export function usePartyManagementAction() {
   });
   const isReadonly = mode === "view";
   const isClassificationSelected = Boolean(values.classification);
+  const canSave = isClassificationSelected && values.partyTypes.length > 0;
   const nextStatus: PartyInformationStatus =
     existingRecord?.status === "Active" ? "Inactive" : "Active";
   const atcDropdown = usePartyAtcCodeOptions(values.classification);
   const accountOptions = useMemo(
     () =>
       getModuleChartAccounts({
-        moduleKey: "maintenance-transaction-type",
+        moduleKey: "maintenance-party-management",
       }),
     [],
   );
@@ -111,9 +112,21 @@ export function usePartyManagementAction() {
 
     setValues((current) => {
       if (field === "classification") {
+        const classification =
+          value as PartyInformationFormValues["classification"];
+        const partyTypes = normalizePartyTypesForClassification(
+          current.partyTypes,
+          classification,
+        );
+        const accountingAccounts = applyPartyDefaultAccountingAccounts(
+          current,
+          partyTypes,
+        );
+
         return {
           ...current,
-          classification: value as PartyInformationFormValues["classification"],
+          classification,
+          partyTypes,
           partyName: "",
           tradeName: "",
           firstName: "",
@@ -121,6 +134,17 @@ export function usePartyManagementAction() {
           lastName: "",
           suffixName: "",
           atcCode: "",
+          addresses: clearAddressRolesForPartyTypes(
+            current.addresses,
+            partyTypes,
+            classification,
+          ),
+          defaultReceivableAccount: accountingAccounts.defaultReceivableAccount,
+          customerAdvanceAccount: accountingAccounts.customerAdvanceAccount,
+          defaultPayableAccount: accountingAccounts.defaultPayableAccount,
+          vendorAdvanceAccount: accountingAccounts.vendorAdvanceAccount,
+          employeeAdvanceAccount: accountingAccounts.employeeAdvanceAccount,
+          employeePayableAccount: accountingAccounts.employeePayableAccount,
         };
       }
 
@@ -132,7 +156,11 @@ export function usePartyManagementAction() {
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  function updateAddressField(field: keyof PartyAddress, value: string) {
+  function updateAddressField(
+    field: keyof PartyAddress,
+    value: string,
+    addressId?: string,
+  ) {
     if (isReadonly || !isClassificationSelected) {
       return;
     }
@@ -140,11 +168,14 @@ export function usePartyManagementAction() {
     setValues((current) => ({
       ...current,
       addresses: current.addresses.map((address) =>
-        address.id === current.activeAddressId
+        address.id === (addressId ?? current.activeAddressId)
           ? { ...address, [field]: value }
           : address,
       ),
     }));
+    if (field === "addressLine1" || field === "addressLine2") {
+      setErrors((current) => ({ ...current, [field]: undefined }));
+    }
   }
 
   function handleInputChange(
@@ -165,31 +196,40 @@ export function usePartyManagementAction() {
     updateAddressField(
       event.target.name as keyof PartyAddress,
       event.target.value,
+      event.currentTarget.dataset.addressId,
     );
   }
 
   function handlePartyTypesChange(value: string | string[]) {
-    if (isReadonly) {
+    if (isReadonly || !isClassificationSelected) {
       return;
     }
 
     const values = Array.isArray(value) ? value : [value];
     const partyTypes = values.filter(isKnownPartyType);
 
-    setValues((current) => ({
-      ...current,
-      partyTypes,
-      defaultReceivableAccount: partyTypes.includes("Customer")
-        ? current.defaultReceivableAccount
-        : "",
-      defaultPayableAccount: partyTypes.includes("Vendor")
-        ? current.defaultPayableAccount
-        : "",
-      employeeReceivableAccount: "",
-      employeeAdvanceAccount: partyTypes.includes("Employee")
-        ? current.employeeAdvanceAccount
-        : "",
-    }));
+    setValues((current) => {
+      const accountingAccounts = applyPartyDefaultAccountingAccounts(
+        current,
+        partyTypes,
+      );
+
+      return {
+        ...current,
+        partyTypes,
+        addresses: clearAddressRolesForPartyTypes(
+          current.addresses,
+          partyTypes,
+          current.classification,
+        ),
+        defaultReceivableAccount: accountingAccounts.defaultReceivableAccount,
+        customerAdvanceAccount: accountingAccounts.customerAdvanceAccount,
+        defaultPayableAccount: accountingAccounts.defaultPayableAccount,
+        vendorAdvanceAccount: accountingAccounts.vendorAdvanceAccount,
+        employeeAdvanceAccount: accountingAccounts.employeeAdvanceAccount,
+        employeePayableAccount: accountingAccounts.employeePayableAccount,
+      };
+    });
     setErrors((current) => ({ ...current, partyTypes: undefined }));
   }
 
@@ -244,7 +284,7 @@ export function usePartyManagementAction() {
     }));
   }
 
-  function selectProvince(value: string | string[]) {
+  function selectProvince(value: string | string[], addressId?: string) {
     if (isReadonly || !isClassificationSelected) {
       return;
     }
@@ -257,7 +297,7 @@ export function usePartyManagementAction() {
     setValues((current) => ({
       ...current,
       addresses: current.addresses.map((address) =>
-        address.id === current.activeAddressId
+        address.id === (addressId ?? current.activeAddressId)
           ? {
               ...address,
               barangay: "",
@@ -274,6 +314,8 @@ export function usePartyManagementAction() {
     }));
     setErrors((current) => ({
       ...current,
+      addressLine1: undefined,
+      addressLine2: undefined,
       barangayCode: undefined,
       cityMunicipalityCode: undefined,
       provinceCode: undefined,
@@ -284,6 +326,7 @@ export function usePartyManagementAction() {
   function selectAutocompleteAddress(
     address: AddressAutocompleteItem,
     details?: AddressAutocompleteDetails,
+    addressId?: string,
   ) {
     if (isReadonly || !isClassificationSelected) {
       return;
@@ -292,7 +335,7 @@ export function usePartyManagementAction() {
     setValues((current) => ({
       ...current,
       addresses: current.addresses.map((currentAddress) =>
-        currentAddress.id === current.activeAddressId
+        currentAddress.id === (addressId ?? current.activeAddressId)
           ? {
               ...currentAddress,
               addressLine1:
@@ -320,7 +363,10 @@ export function usePartyManagementAction() {
     }));
   }
 
-  function syncAutocompleteAddressDetails(details: AddressAutocompleteDetails) {
+  function syncAutocompleteAddressDetails(
+    details: AddressAutocompleteDetails,
+    addressId?: string,
+  ) {
     if (isReadonly || !isClassificationSelected) {
       return;
     }
@@ -328,7 +374,7 @@ export function usePartyManagementAction() {
     setValues((current) => ({
       ...current,
       addresses: current.addresses.map((currentAddress) =>
-        currentAddress.id === current.activeAddressId
+        currentAddress.id === (addressId ?? current.activeAddressId)
           ? {
               ...currentAddress,
               addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
@@ -337,9 +383,14 @@ export function usePartyManagementAction() {
           : currentAddress,
       ),
     }));
+    setErrors((current) => ({
+      ...current,
+      addressLine1: undefined,
+      addressLine2: undefined,
+    }));
   }
 
-  function selectCityMunicipality(value: string | string[]) {
+  function selectCityMunicipality(value: string | string[], addressId?: string) {
     if (isReadonly || !isClassificationSelected) {
       return;
     }
@@ -352,7 +403,7 @@ export function usePartyManagementAction() {
     setValues((current) => ({
       ...current,
       addresses: current.addresses.map((address) =>
-        address.id === current.activeAddressId
+        address.id === (addressId ?? current.activeAddressId)
           ? {
               ...address,
               barangay: "",
@@ -370,7 +421,7 @@ export function usePartyManagementAction() {
     }));
   }
 
-  function selectBarangay(value: string | string[]) {
+  function selectBarangay(value: string | string[], addressId?: string) {
     if (isReadonly || !isClassificationSelected) {
       return;
     }
@@ -383,7 +434,7 @@ export function usePartyManagementAction() {
     setValues((current) => ({
       ...current,
       addresses: current.addresses.map((address) =>
-        address.id === current.activeAddressId
+        address.id === (addressId ?? current.activeAddressId)
           ? {
               ...address,
               barangay: option?.name ?? "",
@@ -418,76 +469,14 @@ export function usePartyManagementAction() {
     );
   }
 
-  function addAddress() {
-    if (isReadonly || !isClassificationSelected) {
-      return;
-    }
-
-    const id = `address-${Date.now().toString(36)}`;
-
-    setValues((current) =>
-      current.addresses.length >= MaxPartyAddressCount
-        ? current
-        : {
-            ...current,
-            activeAddressId: id,
-            addresses: [
-              ...current.addresses,
-              createEmptyPartyAddress({
-                id,
-                addressName: `Address ${current.addresses.length + 1}`,
-                isDefault: false,
-              }),
-            ],
-          },
-    );
-  }
-
-  function removeAddress(addressId: string) {
-    if (isReadonly || values.addresses.length <= 1) {
-      return;
-    }
-
-    setValues((current) => {
-      const nextAddresses = current.addresses.filter(
-        (address) => address.id !== addressId,
-      );
-      const nextDefaultAddresses = setPartyDefaultAddress(nextAddresses);
-
-      return {
-        ...current,
-        activeAddressId:
-          current.activeAddressId === addressId
-            ? (nextDefaultAddresses[0]?.id ?? "")
-            : current.activeAddressId,
-        addresses: nextDefaultAddresses,
-      };
-    });
-  }
-
-  function selectAddress(addressId: string) {
-    setValues((current) => ({
-      ...current,
-      activeAddressId: addressId,
-    }));
-  }
-
-  function setDefaultAddress(addressId: string) {
-    if (isReadonly) {
-      return;
-    }
-
-    setValues((current) => ({
-      ...current,
-      activeAddressId: addressId,
-      addresses: setPartyDefaultAddress(current.addresses, addressId),
-    }));
-    setErrors((current) => ({ ...current, addresses: undefined }));
-  }
-
   function updateAddressMeta(
     addressId: string,
-    field: "addressName" | "isBilling" | "isDelivery",
+    field:
+      | "addressName"
+      | "isBilling"
+      | "isDelivery"
+      | "isForeign"
+      | "isHome",
     value: string | boolean,
   ) {
     if (isReadonly) {
@@ -497,7 +486,7 @@ export function usePartyManagementAction() {
     setValues((current) => ({
       ...current,
       addresses: current.addresses.map((address) =>
-        address.id === addressId ? { ...address, [field]: value } : address,
+        updateAddressRole(address, addressId, field, value),
       ),
     }));
   }
@@ -541,8 +530,8 @@ export function usePartyManagementAction() {
     handleInputChange,
     handlePartyTypesChange,
     handleSubmit,
-    addAddress,
     isClassificationSelected,
+    canSave,
     isMutating: partyManagement.isMutating,
     isReadonly,
     isStatusDialogOpen,
@@ -550,7 +539,6 @@ export function usePartyManagementAction() {
     needsRecord: mode === "edit" || mode === "view",
     nextStatus,
     partyTypeOptions: PartyTypeOptions,
-    removeAddress,
     selectBarangay,
     selectAutocompleteAddress,
     syncAutocompleteAddressDetails,
@@ -558,14 +546,33 @@ export function usePartyManagementAction() {
     selectProvince,
     selectRegion,
     selectAtcCode,
-    selectAddress,
     selectTerm,
     setIsStatusDialogOpen,
-    setDefaultAddress,
     termOptions: termDropdown.options,
     updateAddressMeta,
     updateField,
     values,
+  };
+}
+
+function updateAddressRole(
+  address: PartyAddress,
+  addressId: string,
+  field:
+    | "addressName"
+    | "isBilling"
+    | "isDelivery"
+    | "isForeign"
+    | "isHome",
+  value: string | boolean,
+) {
+  if (address.id !== addressId) {
+    return address;
+  }
+
+  return {
+    ...address,
+    [field]: value,
   };
 }
 

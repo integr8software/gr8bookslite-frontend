@@ -11,7 +11,7 @@ import {
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 
-export function PartyInformationHeader() {
+export function PartyInformationHeader({ onImport }: { onImport: () => void }) {
 	return (
 		<ModuleHeader
 			variant="panel"
@@ -29,6 +29,7 @@ export function PartyInformationHeader() {
 				<>
 					<button
 						type="button"
+						onClick={onImport}
 						className={`${moduleHeaderActionClassNames.secondary} order-2 sm:order-1`}
 					>
 						<Upload className="h-4 w-4" aria-hidden="true" />

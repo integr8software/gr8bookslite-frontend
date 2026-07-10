@@ -105,11 +105,12 @@ function createPartyInformationRecordFromTableRecord(
 		classification: record.classification,
 		contactNo: record.contactNo,
 		createdAt: record.createdAt,
+		customerAdvanceAccount: record.customerAdvanceAccount,
 		defaultPayableAccount: record.defaultPayableAccount,
 		defaultReceivableAccount: record.defaultReceivableAccount,
 		email: record.email,
 		employeeAdvanceAccount: record.employeeAdvanceAccount,
-		employeeReceivableAccount: record.employeeReceivableAccount,
+		employeePayableAccount: record.employeePayableAccount,
 		firstName: record.firstName,
 		id: record.id,
 		lastName: record.lastName,
@@ -124,6 +125,7 @@ function createPartyInformationRecordFromTableRecord(
 		tin: record.tin,
 		tradeName: record.tradeName,
 		updatedAt: record.updatedAt,
+		vendorAdvanceAccount: record.vendorAdvanceAccount,
 		vatRegistrationType: record.vatRegistrationType,
 	};
 }

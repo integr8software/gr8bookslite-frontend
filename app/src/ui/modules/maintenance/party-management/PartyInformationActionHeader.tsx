@@ -23,6 +23,7 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function PartyInformationActionHeader({
+	canSave = true,
 	cancelHref,
 	editHref,
 	isReadonly,
@@ -30,6 +31,7 @@ export function PartyInformationActionHeader({
 	nextStatus,
 	onStatusChange,
 }: {
+	canSave?: boolean;
 	cancelHref: string;
 	editHref?: string;
 	isReadonly: boolean;
@@ -102,7 +104,8 @@ export function PartyInformationActionHeader({
 					{!isReadonly ? (
 						<button
 							type="submit"
-							className={moduleHeaderActionClassNames.primary}
+							disabled={!canSave}
+							className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-45`}
 						>
 							<Save className="h-4 w-4" aria-hidden="true" />
 							Save Party

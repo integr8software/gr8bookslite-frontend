@@ -31,6 +31,7 @@ function PartyManagementFormPageInner() {
 		<>
 			<form onSubmit={page.handleSubmit} noValidate className="grid gap-5">
 				<PartyInformationActionHeader
+					canSave={page.canSave}
 					cancelHref={page.cancelHref}
 					editHref={page.editHref}
 					isReadonly={page.isReadonly}
@@ -52,20 +53,16 @@ function PartyManagementFormPageInner() {
 					partyTypeOptions={page.partyTypeOptions}
 					termOptions={page.termOptions}
 					values={page.values}
-					onAddAddress={page.addAddress}
 					onAddressInputChange={page.handleAddressInputChange}
 					onInputChange={page.handleInputChange}
 					onPartyTypesChange={page.handlePartyTypesChange}
-					onRemoveAddress={page.removeAddress}
 					onSelectBarangay={page.selectBarangay}
-					onSelectAddress={page.selectAddress}
 					onSelectAtcCode={page.selectAtcCode}
 					onSelectAutocompleteAddress={page.selectAutocompleteAddress}
 					onSyncAutocompleteAddressDetails={page.syncAutocompleteAddressDetails}
 					onSelectCityMunicipality={page.selectCityMunicipality}
 					onSelectProvince={page.selectProvince}
 					onSelectTerm={page.selectTerm}
-					onSetDefaultAddress={page.setDefaultAddress}
 					onUpdateAddressMeta={page.updateAddressMeta}
 					onUpdateField={page.updateField}
 				/>

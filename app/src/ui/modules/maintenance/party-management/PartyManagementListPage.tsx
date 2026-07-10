@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
 	Building2,
 	CheckCircle2,
@@ -15,9 +15,11 @@ import {
 	type ModuleStatisticCardItem,
 } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { PartyInformationHeader } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationHeader";
+import { PartyManagementImportDialog } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementImportDialog";
 import { PartyInformationTable } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationTable";
 
 export function PartyManagementListPage() {
+	const [isImportOpen, setIsImportOpen] = useState(false);
 	const page = usePartyManagementListPage();
 	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
 		() => [
@@ -69,7 +71,7 @@ export function PartyManagementListPage() {
 
 	return (
 		<section className="grid gap-5">
-			<PartyInformationHeader />
+			<PartyInformationHeader onImport={() => setIsImportOpen(true)} />
 			<ModuleStatisticCards
 				items={statisticCards}
 				className="2xl:grid-cols-6"
@@ -80,6 +82,12 @@ export function PartyManagementListPage() {
 				lastSyncedAt={page.lastSyncedAt}
 				records={page.records}
 				onRefresh={page.refreshRecords}
+			/>
+			<PartyManagementImportDialog
+				existingParties={page.records}
+				isOpen={isImportOpen}
+				onClose={() => setIsImportOpen(false)}
+				onImportParties={page.addRecords}
 			/>
 		</section>
 	);

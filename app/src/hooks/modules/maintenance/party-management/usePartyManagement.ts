@@ -43,6 +43,9 @@ type PartyManagementStoreState = {
 	isRefreshing: boolean;
 	records: PartyInformationRecord[];
 	addRecord: (record: PartyInformationRecord) => void;
+	addRecords: (
+		records: PartyInformationRecord[],
+	) => Promise<PartyInformationRecord[]>;
 	refreshRecords: () => void;
 	updateRecord: (record: PartyInformationRecord) => void;
 };
@@ -81,6 +84,19 @@ export function usePartyManagementStore<
 			toast.error("Could not create party information. Please try again.");
 		},
 	});
+	const { isPending: isAddingRecords, mutateAsync: mutateAddRecords } =
+		useMutation({
+			mutationFn: async (records: PartyInformationRecord[]) => records,
+			onSuccess: (records) => {
+				updateCachedRecords((currentRecords) => [
+					...currentRecords,
+					...records,
+				]);
+			},
+			onError: () => {
+				toast.error("Could not import party information. Please try again.");
+			},
+		});
 
 	const { isPending: isUpdatingRecord, mutate: mutateUpdateRecord } =
 		useMutation({
@@ -111,6 +127,10 @@ export function usePartyManagementStore<
 		(record: PartyInformationRecord) => mutateAddRecord(record),
 		[mutateAddRecord],
 	);
+	const addRecords = useCallback(
+		(records: PartyInformationRecord[]) => mutateAddRecords(records),
+		[mutateAddRecords],
+	);
 	const refreshRecords = useCallback(() => {
 		void queryClient.invalidateQueries({
 			queryKey: PartyManagementQueryKeys.all(),
@@ -124,9 +144,10 @@ export function usePartyManagementStore<
 	const state = useMemo<PartyManagementStoreState>(
 		() => ({
 			addRecord,
+			addRecords,
 			isLoading: recordsQuery.isLoading,
 			lastSyncedAt: recordsQuery.dataUpdatedAt,
-			isMutating: isAddingRecord || isUpdatingRecord,
+			isMutating: isAddingRecord || isAddingRecords || isUpdatingRecord,
 			isRefreshing: recordsQuery.isFetching && !recordsQuery.isLoading,
 			records: recordsQuery.data,
 			refreshRecords,
@@ -134,7 +155,9 @@ export function usePartyManagementStore<
 		}),
 		[
 			addRecord,
+			addRecords,
 			isAddingRecord,
+			isAddingRecords,
 			isUpdatingRecord,
 			recordsQuery.data,
 			recordsQuery.dataUpdatedAt,

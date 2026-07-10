@@ -23,8 +23,11 @@ export type PartyAddress = {
   cityMunicipality: string;
   cityMunicipalityCode: string;
   isBilling: boolean;
+  isBuilding?: boolean;
   isDefault: boolean;
   isDelivery: boolean;
+  isForeign?: boolean;
+  isHome?: boolean;
   province: string;
   provinceCode: string;
   region: string;
@@ -46,9 +49,11 @@ export type PartyInformationRecord = {
   address: PartyAddress;
   addresses: PartyAddress[];
   defaultReceivableAccount: string;
+  customerAdvanceAccount: string;
   defaultPayableAccount: string;
-  employeeReceivableAccount: string;
+  vendorAdvanceAccount: string;
   employeeAdvanceAccount: string;
+  employeePayableAccount: string;
   termId: string;
   termName: string;
   tin: string;
@@ -75,9 +80,11 @@ export type PartyInformationFormValues = {
   addresses: PartyAddress[];
   activeAddressId: string;
   defaultReceivableAccount: string;
+  customerAdvanceAccount: string;
   defaultPayableAccount: string;
-  employeeReceivableAccount: string;
+  vendorAdvanceAccount: string;
   employeeAdvanceAccount: string;
+  employeePayableAccount: string;
   termId: string;
   termName: string;
   tin: string;
@@ -96,15 +103,19 @@ export type PartyInformationFormErrors = Partial<{
   firstName: string;
   lastName: string;
   addresses: string;
+  addressLine1: string;
+  addressLine2: string;
   regionCode: string;
   provinceCode: string;
   cityMunicipalityCode: string;
   barangayCode: string;
   atcCode: string;
   defaultReceivableAccount: string;
+  customerAdvanceAccount: string;
   defaultPayableAccount: string;
-  employeeReceivableAccount: string;
+  vendorAdvanceAccount: string;
   employeeAdvanceAccount: string;
+  employeePayableAccount: string;
   termId: string;
   tin: string;
   email: string;
@@ -161,4 +172,67 @@ export type PartyManagementAnalytics = {
   multiTypepartyName: number;
   organizationpartyName: number;
   totalpartyName: number;
+};
+
+export type PartyImportColumnId =
+  | "partyCodeNo"
+  | "classification"
+  | "partyTypes"
+  | "partyName"
+  | "tradeName"
+  | "firstName"
+  | "middleName"
+  | "lastName"
+  | "suffixName"
+  | "tin"
+  | "vatRegistrationType"
+  | "atcCode"
+  | "email"
+  | "contactNo"
+  | "addressLine1"
+  | "addressLine2"
+  | "barangay"
+  | "cityMunicipality"
+  | "province"
+  | "region";
+
+export type PartyImportColumnHeader = {
+  className: string;
+  id: PartyImportColumnId;
+  label: string;
+};
+
+export type PartyImportColumnWidths = Record<PartyImportColumnId, number>;
+
+export type PartyImportCellErrors = Partial<
+  Record<PartyImportColumnId, string[]>
+>;
+
+export type PartyImportCellWarnings = Partial<
+  Record<PartyImportColumnId, string[]>
+>;
+
+export type PartyImportPreviewRow = {
+  cellErrors: PartyImportCellErrors;
+  cellWarnings: PartyImportCellWarnings;
+  id: string;
+  party: Omit<PartyInformationRecord, "id" | "createdAt" | "updatedAt">;
+  rowErrors: string[];
+  rowNumber: number;
+};
+
+export type PartyImportProgress = {
+  imported: number;
+  total: number;
+};
+
+export type PartyImportMode = "all-rows" | "all-valid" | "selected-valid";
+
+export type PartyManagementImportDialogProps = {
+  existingParties: PartyInformationRecord[];
+  isOpen: boolean;
+  onClose: () => void;
+  onImportParties: (
+    parties: PartyInformationRecord[],
+  ) => Promise<PartyInformationRecord[]>;
 };

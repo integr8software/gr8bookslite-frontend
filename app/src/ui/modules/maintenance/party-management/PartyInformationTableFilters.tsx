@@ -1,39 +1,18 @@
-import type { Table } from "@tanstack/react-table";
+import { PartyInformationExportColumns } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import type {
 	PartyClassification,
 	PartyInformationStatus,
-	PartyInformationTableRecord,
+	PartyInformationTableFiltersProps,
 	PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import {
 	ModuleTableColumnVisibilityButton,
 	ModuleTableExportButton,
-	type ModuleTableExportColumn,
 	ModuleTableResetButton,
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-
-type PartyInformationTableFiltersProps = {
-	exportAllRows: PartyInformationTableRecord[];
-	exportFilteredRows: PartyInformationTableRecord[];
-	hasActiveFilters: boolean;
-	classificationFilter: PartyClassification | "All";
-	classificationOptions: readonly PartyClassification[];
-	partyTypeFilter: PartyType | "All";
-	partyTypeOptions: readonly PartyType[];
-	query: string;
-	statusFilter: PartyInformationStatus | "All";
-	statusOptions: readonly PartyInformationStatus[];
-	table: Table<PartyInformationTableRecord>;
-	isRefreshing: boolean;
-	onClassificationFilterChange: (value: PartyClassification | "All") => void;
-	onPartyTypeFilterChange: (value: PartyType | "All") => void;
-	onQueryChange: (value: string) => void;
-	onRefresh: () => void;
-	onStatusFilterChange: (value: PartyInformationStatus | "All") => void;
-};
 
 export function PartyInformationTableFilters({
 	exportAllRows,
@@ -122,24 +101,3 @@ export function PartyInformationTableFilters({
 	);
 }
 
-const PartyInformationExportColumns: ModuleTableExportColumn<PartyInformationTableRecord>[] =
-	[
-		{ header: "Party Code", value: "partyCodeNo" },
-		{ header: "Name", id: "name", value: "name" },
-		{ header: "Classification", id: "classification", value: "classification" },
-		{ header: "Party Type", id: "partyTypesLabel", value: "partyTypesLabel" },
-		{ header: "Status", id: "status", value: "status" },
-		{ header: "Address", id: "addressLabel", value: "addressLabel" },
-		{ header: "TIN", value: "tin" },
-		{ header: "VAT Registration Type", value: "vatRegistrationType" },
-		{ header: "BIR ATC Code", value: "atcCode" },
-		{ header: "Email", value: "email" },
-		{ header: "Contact No.", value: "contactNo" },
-		{ header: "Terms", value: "termName" },
-		{ header: "Default Receivable Account", value: "defaultReceivableAccount" },
-		{ header: "Default Customer Advance Account", value: "customerAdvanceAccount" },
-		{ header: "Default Payable Account", value: "defaultPayableAccount" },
-		{ header: "Default Vendor Advance Account", value: "vendorAdvanceAccount" },
-		{ header: "Default Employee Advance Account", value: "employeeAdvanceAccount" },
-		{ header: "Default Employee Payable Account", value: "employeePayableAccount" },
-	];

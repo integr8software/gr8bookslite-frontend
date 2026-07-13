@@ -14,8 +14,7 @@ import {
 	PartyManagementParentLabel,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import type {
-	PartyInformationActionMode,
-	PartyInformationStatus,
+	PartyInformationActionHeaderProps,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import {
 	ModuleHeader,
@@ -30,15 +29,7 @@ export function PartyInformationActionHeader({
 	mode,
 	nextStatus,
 	onStatusChange,
-}: {
-	canSave?: boolean;
-	cancelHref: string;
-	editHref?: string;
-	isReadonly: boolean;
-	mode: PartyInformationActionMode;
-	nextStatus?: PartyInformationStatus;
-	onStatusChange?: () => void;
-}) {
+}: PartyInformationActionHeaderProps) {
 	const copy = PartyManagementActionCopy[mode];
 	const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
 	const statusLabel =

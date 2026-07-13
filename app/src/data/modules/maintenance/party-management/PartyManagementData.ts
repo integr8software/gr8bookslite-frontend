@@ -22,6 +22,7 @@ import type {
   PartyImportPreviewRow,
   PartyInformationFormValues,
   PartyInformationRecord,
+  PartyInformationTableRecord,
   PartyType,
   VatRegistrationType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
@@ -35,13 +36,22 @@ export const PartyAtcCodeSource = {
 };
 
 export const PartyDefaultAccountingAccounts = {
-  customerAdvanceAccount: "2010004001",
-  defaultPayableAccount: "2010001001",
-  defaultReceivableAccount: "1010103001",
-  employeeAdvanceAccount: "1010103004",
-  employeePayableAccount: "2010004001",
-  vendorAdvanceAccount: "1010103003",
+  customerAdvanceAccount: "",
+  defaultPayableAccount: "",
+  defaultReceivableAccount: "",
+  employeeAdvanceAccount: "",
+  employeePayableAccount: "",
+  vendorAdvanceAccount: "",
 } as const;
+
+type PartyDefaultAccountingAccountValues = {
+  customerAdvanceAccount: string;
+  defaultPayableAccount: string;
+  defaultReceivableAccount: string;
+  employeeAdvanceAccount: string;
+  employeePayableAccount: string;
+  vendorAdvanceAccount: string;
+};
 
 export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   partyCodeNo: "",
@@ -103,10 +113,10 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
       regionCode: "130000000",
     },
     addresses: [],
-    defaultReceivableAccount: "1010103001",
-    customerAdvanceAccount: "2010004001",
-    defaultPayableAccount: "2010001001",
-    vendorAdvanceAccount: "1010103003",
+    defaultReceivableAccount: "",
+    customerAdvanceAccount: "",
+    defaultPayableAccount: "",
+    vendorAdvanceAccount: "",
     employeeAdvanceAccount: "",
     employeePayableAccount: "",
     termId: "term-1",
@@ -153,8 +163,8 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
     customerAdvanceAccount: "",
     defaultPayableAccount: "",
     vendorAdvanceAccount: "",
-    employeeAdvanceAccount: "1010103004",
-    employeePayableAccount: "2010004001",
+    employeeAdvanceAccount: "",
+    employeePayableAccount: "",
     termId: "",
     termName: "",
     tin: "182-445-908-000",
@@ -197,8 +207,8 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
     addresses: [],
     defaultReceivableAccount: "",
     customerAdvanceAccount: "",
-    defaultPayableAccount: "2010001001",
-    vendorAdvanceAccount: "1010103003",
+    defaultPayableAccount: "",
+    vendorAdvanceAccount: "",
     employeeAdvanceAccount: "",
     employeePayableAccount: "",
     termId: "term-1",
@@ -241,8 +251,8 @@ export const PartyInformationInitialRecords: PartyInformationRecord[] = [
       regionCode: "070000000",
     },
     addresses: [],
-    defaultReceivableAccount: "1010103001",
-    customerAdvanceAccount: "2010004001",
+    defaultReceivableAccount: "",
+    customerAdvanceAccount: "",
     defaultPayableAccount: "",
     vendorAdvanceAccount: "",
     employeeAdvanceAccount: "",
@@ -395,6 +405,43 @@ export function updatePartyInformationRecord(
     ...record,
     ...normalizePartyRecordValues(values),
     updatedAt: new Date().toISOString(),
+  };
+}
+
+export function createPartyInformationRecordFromTableRecord(
+  record: PartyInformationTableRecord,
+): PartyInformationRecord {
+  return {
+    address: record.address,
+    addresses: record.addresses,
+    atcCode: record.atcCode,
+    classification: record.classification,
+    contactNo: record.contactNo,
+    createdBy: record.createdBy,
+    createdAt: record.createdAt,
+    customerAdvanceAccount: record.customerAdvanceAccount,
+    defaultPayableAccount: record.defaultPayableAccount,
+    defaultReceivableAccount: record.defaultReceivableAccount,
+    email: record.email,
+    employeeAdvanceAccount: record.employeeAdvanceAccount,
+    employeePayableAccount: record.employeePayableAccount,
+    firstName: record.firstName,
+    id: record.id,
+    lastName: record.lastName,
+    middleName: record.middleName,
+    partyCodeNo: record.partyCodeNo,
+    partyName: record.partyName,
+    partyTypes: record.partyTypes,
+    status: record.status,
+    suffixName: record.suffixName,
+    termId: record.termId,
+    termName: record.termName,
+    tin: record.tin,
+    tradeName: record.tradeName,
+    updatedBy: record.updatedBy,
+    updatedAt: record.updatedAt,
+    vendorAdvanceAccount: record.vendorAdvanceAccount,
+    vatRegistrationType: record.vatRegistrationType,
   };
 }
 
@@ -749,7 +796,6 @@ function createPartyImportPreviewRow(
       barangay: getImportedPartyValue(row, indexes.barangay),
       cityMunicipality: getImportedPartyValue(row, indexes.cityMunicipality),
       province: getImportedPartyValue(row, indexes.province),
-      region: getImportedPartyValue(row, indexes.region),
     },
     addresses: [],
     ...accountingAccounts,
@@ -918,6 +964,15 @@ export function validatePartyImportRows(
         "Address line 1 is blank. You can complete it after import.",
       ];
     }
+    if (!row.party.address.barangay.trim()) {
+      cellErrors.barangay = ["Barangay is required."];
+    }
+    if (!row.party.address.cityMunicipality.trim()) {
+      cellErrors.cityMunicipality = ["City/Municipality is required."];
+    }
+    if (!row.party.address.province.trim()) {
+      cellErrors.province = ["Province is required."];
+    }
 
     return { ...row, cellErrors, cellWarnings, rowErrors };
   });
@@ -982,7 +1037,7 @@ export function createPartyImportRecord(
     partyCodeNo: party.partyCodeNo.trim(),
     classification: party.classification,
     partyTypes,
-    status: party.status,
+    status: "Active",
     partyName:
       party.classification === "Non-Individual" ? party.partyName.trim() : "",
     tradeName:
@@ -1034,32 +1089,36 @@ export function applyPartyDefaultAccountingAccounts<
     | "employeePayableAccount"
     | "vendorAdvanceAccount"
   >,
->(values: TValues, partyTypes: PartyType[]) {
+>(
+  values: TValues,
+  partyTypes: PartyType[],
+  defaults: PartyDefaultAccountingAccountValues = PartyDefaultAccountingAccounts,
+) {
   return {
     ...values,
     defaultReceivableAccount: partyTypes.includes("Customer")
       ? values.defaultReceivableAccount ||
-        PartyDefaultAccountingAccounts.defaultReceivableAccount
+        defaults.defaultReceivableAccount
       : "",
     customerAdvanceAccount: partyTypes.includes("Customer")
       ? values.customerAdvanceAccount ||
-        PartyDefaultAccountingAccounts.customerAdvanceAccount
+        defaults.customerAdvanceAccount
       : "",
     defaultPayableAccount: partyTypes.includes("Vendor")
       ? values.defaultPayableAccount ||
-        PartyDefaultAccountingAccounts.defaultPayableAccount
+        defaults.defaultPayableAccount
       : "",
     vendorAdvanceAccount: partyTypes.includes("Vendor")
       ? values.vendorAdvanceAccount ||
-        PartyDefaultAccountingAccounts.vendorAdvanceAccount
+        defaults.vendorAdvanceAccount
       : "",
     employeeAdvanceAccount: partyTypes.includes("Employee")
       ? values.employeeAdvanceAccount ||
-        PartyDefaultAccountingAccounts.employeeAdvanceAccount
+        defaults.employeeAdvanceAccount
       : "",
     employeePayableAccount: partyTypes.includes("Employee")
       ? values.employeePayableAccount ||
-        PartyDefaultAccountingAccounts.employeePayableAccount
+        defaults.employeePayableAccount
       : "",
   };
 }
@@ -1279,14 +1338,12 @@ function createMockParty({
       regionCode: "130000000",
     },
     addresses: [],
-    defaultReceivableAccount: partyTypes.includes("Customer")
-      ? "1010103001"
-      : "",
-    customerAdvanceAccount: partyTypes.includes("Customer") ? "2010004001" : "",
-    defaultPayableAccount: partyTypes.includes("Vendor") ? "2010001001" : "",
-    vendorAdvanceAccount: partyTypes.includes("Vendor") ? "1010103003" : "",
-    employeeAdvanceAccount: partyTypes.includes("Employee") ? "1010103004" : "",
-    employeePayableAccount: partyTypes.includes("Employee") ? "2010004001" : "",
+    defaultReceivableAccount: "",
+    customerAdvanceAccount: "",
+    defaultPayableAccount: "",
+    vendorAdvanceAccount: "",
+    employeeAdvanceAccount: "",
+    employeePayableAccount: "",
     termId: partyTypes.includes("Employee") ? "" : "term-1",
     termName: partyTypes.includes("Employee") ? "" : "Standard payment terms",
     tin,
@@ -1615,8 +1672,6 @@ function normalizePartyImportHeader(value: string): PartyImportColumnId | null {
   if (["barangay", "brgy"].includes(normalized)) return "barangay";
   if (["citymunicipality", "city", "municipality"].includes(normalized)) return "cityMunicipality";
   if (["province"].includes(normalized)) return "province";
-  if (["region"].includes(normalized)) return "region";
-
   return null;
 }
 

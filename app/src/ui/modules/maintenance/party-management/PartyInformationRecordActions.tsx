@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { PartyManagementHref } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
+import { createPartyInformationRecordFromTableRecord } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import type {
-	PartyInformationRecord,
+	PartyInformationRecordActionsProps,
 	PartyInformationStatus,
-	PartyInformationTableRecord,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
@@ -18,9 +18,7 @@ import {
 
 export function PartyInformationRecordActions({
 	record,
-}: {
-	record: PartyInformationTableRecord;
-}) {
+}: PartyInformationRecordActionsProps) {
 	const [statusToSet, setStatusToSet] =
 		useState<PartyInformationStatus | null>(null);
 	const { isMutating, updateRecord } = usePartyManagementStore((state) => ({
@@ -93,39 +91,4 @@ export function PartyInformationRecordActions({
 			/>
 		</>
 	);
-}
-
-function createPartyInformationRecordFromTableRecord(
-	record: PartyInformationTableRecord,
-): PartyInformationRecord {
-	return {
-		address: record.address,
-		addresses: record.addresses,
-		atcCode: record.atcCode,
-		classification: record.classification,
-		contactNo: record.contactNo,
-		createdAt: record.createdAt,
-		customerAdvanceAccount: record.customerAdvanceAccount,
-		defaultPayableAccount: record.defaultPayableAccount,
-		defaultReceivableAccount: record.defaultReceivableAccount,
-		email: record.email,
-		employeeAdvanceAccount: record.employeeAdvanceAccount,
-		employeePayableAccount: record.employeePayableAccount,
-		firstName: record.firstName,
-		id: record.id,
-		lastName: record.lastName,
-		middleName: record.middleName,
-		partyCodeNo: record.partyCodeNo,
-		partyName: record.partyName,
-		partyTypes: record.partyTypes,
-		status: record.status,
-		suffixName: record.suffixName,
-		termId: record.termId,
-		termName: record.termName,
-		tin: record.tin,
-		tradeName: record.tradeName,
-		updatedAt: record.updatedAt,
-		vendorAdvanceAccount: record.vendorAdvanceAccount,
-		vatRegistrationType: record.vatRegistrationType,
-	};
 }

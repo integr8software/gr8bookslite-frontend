@@ -44,11 +44,11 @@ function PartyManagementFormPageInner() {
 					}
 				/>
 				<PartyInformationDetailsFields
-					addressOptions={page.addressOptions}
 					accountOptions={page.accountOptions}
 					atcOptions={page.atcOptions}
 					errors={page.errors}
 					isClassificationSelected={page.isClassificationSelected}
+					isPartyCodeReadonly={page.isPartyCodeReadonly}
 					isReadonly={page.isReadonly}
 					partyTypeOptions={page.partyTypeOptions}
 					termOptions={page.termOptions}
@@ -63,7 +63,6 @@ function PartyManagementFormPageInner() {
 					onSelectCityMunicipality={page.selectCityMunicipality}
 					onSelectProvince={page.selectProvince}
 					onSelectTerm={page.selectTerm}
-					onUpdateAddressMeta={page.updateAddressMeta}
 					onUpdateField={page.updateField}
 				/>
 			</form>

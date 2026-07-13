@@ -14,6 +14,7 @@ import {
 } from "@tanstack/react-table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
 	PartyClassificationOptions,
 	PartyInformationStatusOptions,
@@ -21,10 +22,15 @@ import {
 	PartyTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
-	PartyInformationInitialRecords,
 	getPartyDisplayName,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
-import { GetPartyManagementRecordsPage } from "@/app/src/services/modules/maintenance/party-management/PartyManagementApi";
+import {
+	GetPartyManagementRecordsPage,
+	createPartyManagementRecord,
+	fetchPartyManagementRecords,
+	importPartyManagementRecords,
+	updatePartyManagementRecord,
+} from "@/app/src/services/modules/maintenance/party-management/PartyManagementApi";
 import { PartyManagementQueryKeys } from "@/app/src/services/modules/maintenance/party-management/PartyManagementQueryKeys";
 import type {
 	PartyClassification,
@@ -33,6 +39,8 @@ import type {
 	PartyInformationTableColumnKey,
 	PartyInformationTableRecord,
 	PartyManagementListQuery,
+	PartyManagementPermissions,
+	PartyManagementStatistics,
 	PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 
@@ -42,22 +50,56 @@ type PartyManagementStoreState = {
 	isMutating: boolean;
 	isRefreshing: boolean;
 	records: PartyInformationRecord[];
-	addRecord: (record: PartyInformationRecord) => void;
+	permissions: PartyManagementPermissions;
+	statistics: PartyManagementStatistics;
+	addRecord: (record: PartyInformationRecord) => Promise<PartyInformationRecord>;
 	addRecords: (
 		records: PartyInformationRecord[],
 	) => Promise<PartyInformationRecord[]>;
 	refreshRecords: () => void;
-	updateRecord: (record: PartyInformationRecord) => void;
+	updateRecord: (record: PartyInformationRecord) => Promise<PartyInformationRecord>;
+};
+
+const EmptyPartyPermissions: PartyManagementPermissions = {
+	canView: false,
+	canCreate: false,
+	canUpdate: false,
+	canCancel: false,
+	canUncancel: false,
+	canExport: false,
+	canImport: false,
+};
+
+const EmptyPartyStatistics: PartyManagementStatistics = {
+	activeParties: 0,
+	inactiveParties: 0,
+	individualParties: 0,
+	multiTypeParties: 0,
+	nonIndividualParties: 0,
+	totalParties: 0,
+};
+const DefaultColumnVisibility: VisibilityState = {
+	billingAddressLabel: false,
+	createdAt: false,
+	createdBy: false,
+	email: false,
+	homeAddressLabel: false,
+	partyCodeNo: false,
+	shippingAddressLabel: false,
+	tin: false,
+	updatedAt: false,
+	updatedBy: false,
+	vatRegistrationType: false,
 };
 
 export function usePartyManagementStore<
 	TSelected = PartyManagementStoreState,
 >(selector?: (state: PartyManagementStoreState) => TSelected) {
 	const queryClient = useQueryClient();
+	const activeBranchId = useAppStore((state) => state.activeBranchId);
 	const recordsQuery = useQuery({
 		queryKey: PartyManagementQueryKeys.records(),
-		queryFn: async () => PartyInformationInitialRecords,
-		initialData: PartyInformationInitialRecords,
+		queryFn: fetchPartyManagementRecords,
 	});
 
 	const updateCachedRecords = useCallback(
@@ -66,61 +108,101 @@ export function usePartyManagementStore<
 				records: PartyInformationRecord[],
 			) => PartyInformationRecord[],
 		) => {
-			queryClient.setQueryData<PartyInformationRecord[]>(
+			queryClient.setQueryData<{
+				permissions: PartyManagementPermissions;
+				records: PartyInformationRecord[];
+				statistics: PartyManagementStatistics;
+				totalRows: number;
+			}>(
 				PartyManagementQueryKeys.records(),
-				(current = PartyInformationInitialRecords) => updater(current),
+				(current) => {
+					const currentRecords = current?.records ?? [];
+					const nextRecords = updater(currentRecords);
+
+					return {
+						permissions: current?.permissions ?? EmptyPartyPermissions,
+						records: nextRecords,
+						statistics: current?.statistics ?? EmptyPartyStatistics,
+						totalRows: nextRecords.length,
+					};
+				},
 			);
 		},
 		[queryClient],
 	);
 
-	const { isPending: isAddingRecord, mutate: mutateAddRecord } = useMutation({
-		mutationFn: async (record: PartyInformationRecord) => record,
+	const { isPending: isAddingRecord, mutateAsync: mutateAddRecord } = useMutation({
+		mutationFn: (record: PartyInformationRecord) =>
+			createPartyManagementRecord(record, { branchUnitId: activeBranchId }),
 		onSuccess: (record) => {
 			updateCachedRecords((records) => [...records, record]);
+			void queryClient.invalidateQueries({
+				queryKey: PartyManagementQueryKeys.all(),
+			});
 			toast.success("Party information created.");
 		},
-		onError: () => {
-			toast.error("Could not create party information. Please try again.");
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not create party information. Please try again.",
+			);
 		},
 	});
 	const { isPending: isAddingRecords, mutateAsync: mutateAddRecords } =
 		useMutation({
-			mutationFn: async (records: PartyInformationRecord[]) => records,
+			mutationFn: (records: PartyInformationRecord[]) =>
+				importPartyManagementRecords(records, { branchUnitId: activeBranchId }),
 			onSuccess: (records) => {
 				updateCachedRecords((currentRecords) => [
 					...currentRecords,
 					...records,
 				]);
+				void queryClient.invalidateQueries({
+					queryKey: PartyManagementQueryKeys.all(),
+				});
 			},
-			onError: () => {
-				toast.error("Could not import party information. Please try again.");
+			onError: (error) => {
+				toast.error(
+					error instanceof Error
+						? error.message
+						: "Could not import party information. Please try again.",
+				);
 			},
 		});
 
-	const { isPending: isUpdatingRecord, mutate: mutateUpdateRecord } =
+	const { isPending: isUpdatingRecord, mutateAsync: mutateUpdateRecord } =
 		useMutation({
-			mutationFn: async (record: PartyInformationRecord) => record,
+			mutationFn: updatePartyManagementRecord,
 			onSuccess: (record) => {
 				const previousRecord = queryClient
-					.getQueryData<PartyInformationRecord[]>(
+					.getQueryData<{
+						records: PartyInformationRecord[];
+					}>(
 						PartyManagementQueryKeys.records(),
 					)
-					?.find((currentRecord) => currentRecord.id === record.id);
+					?.records.find((currentRecord) => currentRecord.id === record.id);
 
 				updateCachedRecords((records) =>
 					records.map((currentRecord) =>
 						currentRecord.id === record.id ? record : currentRecord,
 					),
 				);
+				void queryClient.invalidateQueries({
+					queryKey: PartyManagementQueryKeys.all(),
+				});
 				toast.success(
 					previousRecord && previousRecord.status !== record.status
 						? `${getPartyDisplayName(record)} has been set as ${record.status.toLowerCase()}.`
 						: "Party information updated.",
 				);
 			},
-			onError: () => {
-				toast.error("Could not update party information. Please try again.");
+			onError: (error) => {
+				toast.error(
+					error instanceof Error
+						? error.message
+						: "Could not update party information. Please try again.",
+				);
 			},
 		});
 	const addRecord = useCallback(
@@ -149,7 +231,9 @@ export function usePartyManagementStore<
 			lastSyncedAt: recordsQuery.dataUpdatedAt,
 			isMutating: isAddingRecord || isAddingRecords || isUpdatingRecord,
 			isRefreshing: recordsQuery.isFetching && !recordsQuery.isLoading,
-			records: recordsQuery.data,
+			permissions: recordsQuery.data?.permissions ?? EmptyPartyPermissions,
+			records: recordsQuery.data?.records ?? [],
+			statistics: recordsQuery.data?.statistics ?? EmptyPartyStatistics,
 			refreshRecords,
 			updateRecord,
 		}),
@@ -182,7 +266,7 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		),
 	);
 	const [columnVisibility, setColumnVisibility] =
-		useState<VisibilityState>({});
+		useState<VisibilityState>(DefaultColumnVisibility);
 	const [query, setQueryState] = useState("");
 	const [classificationFilter, setClassificationFilterState] = useState<
 		PartyClassification | "All"
@@ -245,9 +329,17 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		() =>
 			pagedRecords.records.map((record) => ({
 				...record,
-				addressLabel: formatPartyAddress(record.address),
+				billingAddressLabel: formatPartyAddress(
+					getPartyAddressByRole(record, "billing"),
+				),
+				homeAddressLabel: formatPartyAddress(
+					getPartyAddressByRole(record, "home"),
+				),
 				name: getPartyDisplayName(record),
 				partyTypesLabel: record.partyTypes.join(", "),
+				shippingAddressLabel: formatPartyAddress(
+					getPartyAddressByRole(record, "shipping"),
+				),
 			})),
 		[pagedRecords.records],
 	);
@@ -300,6 +392,13 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	const table = useReactTable({
 		data: tableData,
 		columns,
+		initialState: {
+			columnOrder: PartyManagementTableColumns.map((column) =>
+				"key" in column ? column.key : "actions",
+			),
+			columnVisibility: DefaultColumnVisibility,
+			sorting: [{ id: "name", desc: false }],
+		},
 		manualPagination: true,
 		manualSorting: true,
 		rowCount: pagedRecords.totalRows,
@@ -377,9 +476,15 @@ function createPartyInformationTableRecord(
 ): PartyInformationTableRecord {
 	return {
 		...record,
-		addressLabel: formatPartyAddress(record.address),
+		billingAddressLabel: formatPartyAddress(
+			getPartyAddressByRole(record, "billing"),
+		),
+		homeAddressLabel: formatPartyAddress(getPartyAddressByRole(record, "home")),
 		name: getPartyDisplayName(record),
 		partyTypesLabel: record.partyTypes.join(", "),
+		shippingAddressLabel: formatPartyAddress(
+			getPartyAddressByRole(record, "shipping"),
+		),
 	};
 }
 
@@ -400,6 +505,10 @@ function filterPartyManagementRecords(
 			(query.status === "All" || record.status === query.status) &&
 			(!normalizedQuery ||
 				name.includes(normalizedQuery) ||
+				record.partyCodeNo.toLowerCase().includes(normalizedQuery) ||
+				record.email.toLowerCase().includes(normalizedQuery) ||
+				record.contactNo.toLowerCase().includes(normalizedQuery) ||
+				record.tin.toLowerCase().includes(normalizedQuery) ||
 				address.includes(normalizedQuery))
 		);
 	});
@@ -432,16 +541,38 @@ function getSortablePartyManagementValue(
 	sortId: NonNullable<PartyManagementListQuery["sort"]>["id"],
 ) {
 	switch (sortId) {
-		case "addressLabel":
-			return formatPartyAddress(record.address);
+		case "billingAddressLabel":
+			return formatPartyAddress(getPartyAddressByRole(record, "billing"));
 		case "classification":
 			return record.classification;
+		case "contactNo":
+			return record.contactNo;
+		case "createdAt":
+			return record.createdAt;
+		case "createdBy":
+			return record.createdBy ?? "";
+		case "email":
+			return record.email;
+		case "homeAddressLabel":
+			return formatPartyAddress(getPartyAddressByRole(record, "home"));
 		case "name":
 			return getPartyDisplayName(record);
 		case "partyTypesLabel":
 			return record.partyTypes.join(", ");
+		case "partyCodeNo":
+			return record.partyCodeNo;
+		case "shippingAddressLabel":
+			return formatPartyAddress(getPartyAddressByRole(record, "shipping"));
 		case "status":
 			return record.status;
+		case "tin":
+			return record.tin;
+		case "updatedAt":
+			return record.updatedAt;
+		case "updatedBy":
+			return record.updatedBy ?? "";
+		case "vatRegistrationType":
+			return record.vatRegistrationType;
 		default:
 			return "";
 	}
@@ -462,7 +593,11 @@ function getPartyManagementListSort(
 	};
 }
 
-function formatPartyAddress(address: PartyInformationRecord["address"]) {
+function formatPartyAddress(address?: PartyInformationRecord["address"] | null) {
+	if (!address) {
+		return "-";
+	}
+
 	return [
 		address.addressLine1,
 		address.addressLine2,
@@ -474,6 +609,19 @@ function formatPartyAddress(address: PartyInformationRecord["address"]) {
 		.map((part) => part.trim())
 		.filter(Boolean)
 		.join(", ") || "-";
+}
+
+function getPartyAddressByRole(
+	record: PartyInformationRecord,
+	role: "billing" | "home" | "shipping",
+) {
+	const addresses = record.addresses.length > 0 ? record.addresses : [record.address];
+
+	return addresses.find((address) => {
+		if (role === "billing") return address.isBilling;
+		if (role === "home") return address.isHome;
+		return address.isDelivery;
+	});
 }
 
 function createPartyInformationColumn(

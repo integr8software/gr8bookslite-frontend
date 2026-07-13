@@ -267,22 +267,6 @@ export const PartyInformationFormSchema = z
         return;
       }
 
-      if (!address.addressLine1.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Enter the unit, block, lot, or building.",
-          path: ["addresses", index, "addressLine1"],
-        });
-      }
-
-      if (!address.addressLine2.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Enter the street, subdivision, or village.",
-          path: ["addresses", index, "addressLine2"],
-        });
-      }
-
       if (!address.regionCode.trim()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

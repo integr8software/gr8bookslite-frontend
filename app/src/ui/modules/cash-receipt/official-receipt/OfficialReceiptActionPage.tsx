@@ -1,13 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   InitialAppDisbursementTypeRecords,
   type AppDisbursementTypeRecord,
 } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
 import { useOfficialReceiptActionForm } from "@/app/src/hooks/modules/cash-receipt/official-receipt/useOfficialReceipt";
+import { OfficialReceiptHref } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
 import { getPartyDisplayName } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
@@ -37,10 +38,15 @@ const AppDisbursementTypeDialog = dynamic(
 );
 
 export function OfficialReceiptActionPage() {
+  const params = useParams<{ recordId?: string }>();
   const pathname = usePathname();
+  const router = useRouter();
   const mode = getModeFromPathname(pathname);
   const isReadonly = mode === "view";
-  const receiptForm = useOfficialReceiptActionForm(mode);
+  const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
+  const receiptForm = useOfficialReceiptActionForm(mode, recordId, () => {
+    router.push(OfficialReceiptHref);
+  });
   const paymentTypeStore = usePaymentTypeStore();
   const partyStore = usePartyManagementStore();
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);

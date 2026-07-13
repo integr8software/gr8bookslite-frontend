@@ -13,8 +13,11 @@ import {
 import toast from "react-hot-toast";
 import {
   createBlankOfficialReceiptLineEntry,
+  createOfficialReceiptFormValuesFromRecord,
   createOfficialReceiptFormValues,
-  MockOfficialReceipts,
+  createOfficialReceiptRecordFromForm,
+  getInitialOfficialReceipts,
+  writeStoredOfficialReceipts,
 } from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
 import { OfficialReceiptStatusFilters } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
@@ -43,20 +46,28 @@ type OfficialReceiptStoreState = {
 export function useOfficialReceiptStore<
   TSelected = OfficialReceiptStoreState,
 >(selector?: (state: OfficialReceiptStoreState) => TSelected) {
-  const [receipts, setReceipts] = useState(MockOfficialReceipts);
+  const [receipts, setReceipts] = useState(getInitialOfficialReceipts);
   const [lastSyncedAt] = useState(() => Date.now());
   const updateReceiptStatus = useCallback((
     receipt: OfficialReceiptRecord,
     status: OfficialReceiptStatus,
   ) => {
     setReceipts((currentReceipts) =>
-      currentReceipts.map((currentReceipt) =>
-        currentReceipt.id === receipt.id
-          ? {
-              ...currentReceipt,
-              status,
-            }
-          : currentReceipt,
+      persistOfficialReceipts(
+        currentReceipts.map((currentReceipt) =>
+          currentReceipt.id === receipt.id
+            ? {
+                ...currentReceipt,
+                formValues: currentReceipt.formValues
+                  ? {
+                      ...currentReceipt.formValues,
+                      status,
+                    }
+                  : currentReceipt.formValues,
+                status,
+              }
+            : currentReceipt,
+        ),
       ),
     );
     toast.success(`Official receipt marked as ${status}.`);
@@ -75,12 +86,26 @@ export function useOfficialReceiptStore<
   return selector ? selector(state) : (state as TSelected);
 }
 
-export function useOfficialReceiptActionForm(mode: OfficialReceiptActionMode) {
+export function useOfficialReceiptActionForm(
+  mode: OfficialReceiptActionMode,
+  recordId?: string,
+  onSaved?: (record: OfficialReceiptRecord) => void,
+) {
+  const initialRecord =
+    mode === "add"
+      ? null
+      : getInitialOfficialReceipts().find((receipt) => receipt.id === recordId) ??
+        null;
   const [entryView, setEntryView] =
     useState<OfficialReceiptEntryView>("collection");
-  const [values, setValues] = useState<OfficialReceiptFormValues>(
-    createOfficialReceiptFormValues,
+  const [loadedRecord, setLoadedRecord] = useState<OfficialReceiptRecord | null>(
+    initialRecord,
   );
+  const [values, setValues] = useState<OfficialReceiptFormValues>(() =>
+    initialRecord
+      ? createOfficialReceiptFormValuesFromRecord(initialRecord)
+      : createOfficialReceiptFormValues(),
+    );
 
   function updateField<Key extends keyof OfficialReceiptFormValues>(
     key: Key,
@@ -135,11 +160,20 @@ export function useOfficialReceiptActionForm(mode: OfficialReceiptActionMode) {
       return;
     }
 
+    const nextRecord = createOfficialReceiptRecordFromForm(
+      values,
+      mode === "edit" ? loadedRecord ?? undefined : undefined,
+    );
+    const nextReceipts = upsertOfficialReceiptRecord(nextRecord);
+
+    writeStoredOfficialReceipts(nextReceipts);
+    setLoadedRecord(nextRecord);
     toast.success(
       mode === "edit"
         ? "Official receipt updated."
         : "Official receipt saved.",
     );
+    onSaved?.(nextRecord);
   }
 
   return {
@@ -152,6 +186,29 @@ export function useOfficialReceiptActionForm(mode: OfficialReceiptActionMode) {
     updateLineEntries,
     values,
   };
+}
+
+function persistOfficialReceipts(receipts: OfficialReceiptRecord[]) {
+  writeStoredOfficialReceipts(receipts);
+
+  return receipts;
+}
+
+function upsertOfficialReceiptRecord(record: OfficialReceiptRecord) {
+  const currentReceipts = getInitialOfficialReceipts();
+  const existingIndex = currentReceipts.findIndex(
+    (receipt) => receipt.id === record.id,
+  );
+
+  if (existingIndex === -1) {
+    return persistOfficialReceipts([record, ...currentReceipts]);
+  }
+
+  return persistOfficialReceipts(
+    currentReceipts.map((currentReceipt) =>
+      currentReceipt.id === record.id ? record : currentReceipt,
+    ),
+  );
 }
 
 export function useOfficialReceiptTable(receipts: OfficialReceiptRecord[]) {

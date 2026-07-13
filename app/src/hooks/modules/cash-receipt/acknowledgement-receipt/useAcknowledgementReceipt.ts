@@ -13,8 +13,11 @@ import {
 import toast from "react-hot-toast";
 import {
   createBlankAcknowledgementReceiptLineEntry,
+  createAcknowledgementReceiptFormValuesFromRecord,
   createAcknowledgementReceiptFormValues,
-  MockAcknowledgementReceipts,
+  createAcknowledgementReceiptRecordFromForm,
+  getInitialAcknowledgementReceipts,
+  writeStoredAcknowledgementReceipts,
 } from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
 import { AcknowledgementReceiptStatusFilters } from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
@@ -43,20 +46,28 @@ type AcknowledgementReceiptStoreState = {
 export function useAcknowledgementReceiptStore<
   TSelected = AcknowledgementReceiptStoreState,
 >(selector?: (state: AcknowledgementReceiptStoreState) => TSelected) {
-  const [receipts, setReceipts] = useState(MockAcknowledgementReceipts);
+  const [receipts, setReceipts] = useState(getInitialAcknowledgementReceipts);
   const [lastSyncedAt] = useState(() => Date.now());
   const updateReceiptStatus = useCallback((
     receipt: AcknowledgementReceiptRecord,
     status: AcknowledgementReceiptStatus,
   ) => {
     setReceipts((currentReceipts) =>
-      currentReceipts.map((currentReceipt) =>
-        currentReceipt.id === receipt.id
-          ? {
-              ...currentReceipt,
-              status,
-            }
-          : currentReceipt,
+      persistAcknowledgementReceipts(
+        currentReceipts.map((currentReceipt) =>
+          currentReceipt.id === receipt.id
+            ? {
+                ...currentReceipt,
+                formValues: currentReceipt.formValues
+                  ? {
+                      ...currentReceipt.formValues,
+                      status,
+                    }
+                  : currentReceipt.formValues,
+                status,
+              }
+            : currentReceipt,
+        ),
       ),
     );
     toast.success(`Acknowledgement Receipt marked as ${status}.`);
@@ -75,11 +86,26 @@ export function useAcknowledgementReceiptStore<
   return selector ? selector(state) : (state as TSelected);
 }
 
-export function useAcknowledgementReceiptActionForm(mode: AcknowledgementReceiptActionMode) {
+export function useAcknowledgementReceiptActionForm(
+  mode: AcknowledgementReceiptActionMode,
+  recordId?: string,
+  onSaved?: (record: AcknowledgementReceiptRecord) => void,
+) {
+  const initialRecord =
+    mode === "add"
+      ? null
+      : getInitialAcknowledgementReceipts().find(
+          (receipt) => receipt.id === recordId,
+        ) ?? null;
   const [entryView, setEntryView] =
     useState<AcknowledgementReceiptEntryView>("collection");
+  const [loadedRecord, setLoadedRecord] =
+    useState<AcknowledgementReceiptRecord | null>(initialRecord);
   const [values, setValues] = useState<AcknowledgementReceiptFormValues>(
-    createAcknowledgementReceiptFormValues,
+    () =>
+      initialRecord
+        ? createAcknowledgementReceiptFormValuesFromRecord(initialRecord)
+        : createAcknowledgementReceiptFormValues(),
   );
 
   function updateField<Key extends keyof AcknowledgementReceiptFormValues>(
@@ -135,11 +161,20 @@ export function useAcknowledgementReceiptActionForm(mode: AcknowledgementReceipt
       return;
     }
 
+    const nextRecord = createAcknowledgementReceiptRecordFromForm(
+      values,
+      mode === "edit" ? loadedRecord ?? undefined : undefined,
+    );
+    const nextReceipts = upsertAcknowledgementReceiptRecord(nextRecord);
+
+    writeStoredAcknowledgementReceipts(nextReceipts);
+    setLoadedRecord(nextRecord);
     toast.success(
       mode === "edit"
         ? "Acknowledgement Receipt updated."
         : "Acknowledgement Receipt saved.",
     );
+    onSaved?.(nextRecord);
   }
 
   return {
@@ -152,6 +187,33 @@ export function useAcknowledgementReceiptActionForm(mode: AcknowledgementReceipt
     updateLineEntries,
     values,
   };
+}
+
+function persistAcknowledgementReceipts(
+  receipts: AcknowledgementReceiptRecord[],
+) {
+  writeStoredAcknowledgementReceipts(receipts);
+
+  return receipts;
+}
+
+function upsertAcknowledgementReceiptRecord(
+  record: AcknowledgementReceiptRecord,
+) {
+  const currentReceipts = getInitialAcknowledgementReceipts();
+  const existingIndex = currentReceipts.findIndex(
+    (receipt) => receipt.id === record.id,
+  );
+
+  if (existingIndex === -1) {
+    return persistAcknowledgementReceipts([record, ...currentReceipts]);
+  }
+
+  return persistAcknowledgementReceipts(
+    currentReceipts.map((currentReceipt) =>
+      currentReceipt.id === record.id ? record : currentReceipt,
+    ),
+  );
 }
 
 export function useAcknowledgementReceiptTable(receipts: AcknowledgementReceiptRecord[]) {

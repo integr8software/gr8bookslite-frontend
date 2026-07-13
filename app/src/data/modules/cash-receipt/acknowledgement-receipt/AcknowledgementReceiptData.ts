@@ -60,6 +60,9 @@ export const MockAcknowledgementReceipts: AcknowledgementReceiptRecord[] = [
   },
 ];
 
+export const AcknowledgementReceiptStorageKey =
+  "gr8books.acknowledgement-receipt.receipts";
+
 export const AcknowledgementReceiptPaymentTypeOptions = [
   { name: "Cash", value: "Cash" },
   { name: "Check", value: "Check" },
@@ -148,6 +151,100 @@ export function createAcknowledgementReceiptFormValues(): AcknowledgementReceipt
       }),
     ],
   };
+}
+
+export function createAcknowledgementReceiptFormValuesFromRecord(
+  record: AcknowledgementReceiptRecord,
+): AcknowledgementReceiptFormValues {
+  if (record.formValues) {
+    return {
+      ...record.formValues,
+      lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
+    };
+  }
+
+  return {
+    ...createAcknowledgementReceiptFormValues(),
+    receiptNo: record.receiptNo,
+    receiptDate: record.receiptDate,
+    referenceNo: record.referenceNo,
+    customerName: record.customerName,
+    status: record.status,
+    lineEntries: [
+      createBlankAcknowledgementReceiptLineEntry({
+        collectionType: record.collectionType,
+        customerName: record.customerName,
+        credit: record.amount.toFixed(2),
+        grossReceipt: record.amount.toFixed(4),
+        referenceNo: record.referenceNo,
+      }),
+    ],
+  };
+}
+
+export function createAcknowledgementReceiptRecordFromForm(
+  values: AcknowledgementReceiptFormValues,
+  existingRecord?: AcknowledgementReceiptRecord,
+): AcknowledgementReceiptRecord {
+  const totals = calculateAcknowledgementReceiptTotals(values.lineEntries);
+  const firstEntry = values.lineEntries[0];
+  const amount = Math.max(totals.grossReceipt, totals.debit, totals.credit);
+
+  return {
+    id: existingRecord?.id ?? `ar-${Date.now()}`,
+    amount,
+    collectionType: firstEntry?.collectionType || "Customer payment",
+    customerName: values.customerName || firstEntry?.customerName || "",
+    formValues: {
+      ...values,
+      lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
+    },
+    receiptDate: values.receiptDate,
+    receiptNo: values.receiptNo,
+    referenceNo: values.referenceNo || firstEntry?.referenceNo || "",
+    status: normalizeAcknowledgementReceiptStatus(values.status),
+  };
+}
+
+export function readStoredAcknowledgementReceipts() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const storedReceipts = window.localStorage.getItem(
+    AcknowledgementReceiptStorageKey,
+  );
+
+  if (!storedReceipts) {
+    return null;
+  }
+
+  try {
+    const parsedReceipts = JSON.parse(
+      storedReceipts,
+    ) as AcknowledgementReceiptRecord[];
+
+    return Array.isArray(parsedReceipts) ? parsedReceipts : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeStoredAcknowledgementReceipts(
+  receipts: AcknowledgementReceiptRecord[],
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(
+    AcknowledgementReceiptStorageKey,
+    JSON.stringify(receipts),
+  );
+}
+
+export function getInitialAcknowledgementReceipts() {
+  return readStoredAcknowledgementReceipts() ?? MockAcknowledgementReceipts;
 }
 
 export function calculateAcknowledgementReceiptTotals(
@@ -243,4 +340,22 @@ export function acknowledgementReceiptEntryIsComplete(
       parseMoneyNumberInput(entry.debit) > 0 ||
       parseMoneyNumberInput(entry.credit) > 0)
   );
+}
+
+function normalizeAcknowledgementReceiptStatus(
+  value: string,
+): AcknowledgementReceiptStatus {
+  const statuses: AcknowledgementReceiptStatus[] = [
+    "Active",
+    "Approved",
+    "Cancelled",
+    "Closed",
+    "Disapproved",
+    "Draft",
+    "Pending",
+  ];
+
+  return statuses.includes(value as AcknowledgementReceiptStatus)
+    ? (value as AcknowledgementReceiptStatus)
+    : "Draft";
 }

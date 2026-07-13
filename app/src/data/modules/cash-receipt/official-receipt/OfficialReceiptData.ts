@@ -60,6 +60,9 @@ export const MockOfficialReceipts: OfficialReceiptRecord[] = [
   },
 ];
 
+export const OfficialReceiptStorageKey =
+  "gr8books.official-receipt.receipts";
+
 export const OfficialReceiptPaymentTypeOptions = [
   { name: "Cash", value: "Cash" },
   { name: "Check", value: "Check" },
@@ -148,6 +151,94 @@ export function createOfficialReceiptFormValues(): OfficialReceiptFormValues {
       }),
     ],
   };
+}
+
+export function createOfficialReceiptFormValuesFromRecord(
+  record: OfficialReceiptRecord,
+): OfficialReceiptFormValues {
+  if (record.formValues) {
+    return {
+      ...record.formValues,
+      lineEntries: record.formValues.lineEntries.map((entry) => ({ ...entry })),
+    };
+  }
+
+  return {
+    ...createOfficialReceiptFormValues(),
+    receiptNo: record.receiptNo,
+    receiptDate: record.receiptDate,
+    referenceNo: record.referenceNo,
+    customerName: record.customerName,
+    status: record.status,
+    lineEntries: [
+      createBlankOfficialReceiptLineEntry({
+        collectionType: record.collectionType,
+        customerName: record.customerName,
+        credit: record.amount.toFixed(2),
+        grossReceipt: record.amount.toFixed(4),
+        referenceNo: record.referenceNo,
+      }),
+    ],
+  };
+}
+
+export function createOfficialReceiptRecordFromForm(
+  values: OfficialReceiptFormValues,
+  existingRecord?: OfficialReceiptRecord,
+): OfficialReceiptRecord {
+  const totals = calculateOfficialReceiptTotals(values.lineEntries);
+  const firstEntry = values.lineEntries[0];
+  const amount = Math.max(totals.grossReceipt, totals.debit, totals.credit);
+
+  return {
+    id: existingRecord?.id ?? `or-${Date.now()}`,
+    amount,
+    collectionType: firstEntry?.collectionType || "Customer payment",
+    customerName: values.customerName || firstEntry?.customerName || "",
+    formValues: {
+      ...values,
+      lineEntries: values.lineEntries.map((entry) => ({ ...entry })),
+    },
+    receiptDate: values.receiptDate,
+    receiptNo: values.receiptNo,
+    referenceNo: values.referenceNo || firstEntry?.referenceNo || "",
+    status: normalizeOfficialReceiptStatus(values.status),
+  };
+}
+
+export function readStoredOfficialReceipts() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const storedReceipts = window.localStorage.getItem(OfficialReceiptStorageKey);
+
+  if (!storedReceipts) {
+    return null;
+  }
+
+  try {
+    const parsedReceipts = JSON.parse(storedReceipts) as OfficialReceiptRecord[];
+
+    return Array.isArray(parsedReceipts) ? parsedReceipts : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeStoredOfficialReceipts(receipts: OfficialReceiptRecord[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(
+    OfficialReceiptStorageKey,
+    JSON.stringify(receipts),
+  );
+}
+
+export function getInitialOfficialReceipts() {
+  return readStoredOfficialReceipts() ?? MockOfficialReceipts;
 }
 
 export function calculateOfficialReceiptTotals(
@@ -239,4 +330,20 @@ export function officialReceiptEntryIsComplete(entry: OfficialReceiptLineEntry) 
       parseMoneyNumberInput(entry.debit) > 0 ||
       parseMoneyNumberInput(entry.credit) > 0)
   );
+}
+
+function normalizeOfficialReceiptStatus(value: string): OfficialReceiptStatus {
+  const statuses: OfficialReceiptStatus[] = [
+    "Active",
+    "Approved",
+    "Cancelled",
+    "Closed",
+    "Disapproved",
+    "Draft",
+    "Pending",
+  ];
+
+  return statuses.includes(value as OfficialReceiptStatus)
+    ? (value as OfficialReceiptStatus)
+    : "Draft";
 }

@@ -83,7 +83,9 @@ export type PartyInformationRecord = {
   atcCode: string;
   email: string;
   contactNo: string;
+  createdBy?: string | null;
   createdAt: string;
+  updatedBy?: string | null;
   updatedAt: string;
 };
 
@@ -169,16 +171,29 @@ export type PartyAtcCodeOption = {
 };
 
 export type PartyInformationTableColumnKey =
-  | "addressLabel"
-  | "name"
+  | "billingAddressLabel"
   | "classification"
+  | "contactNo"
+  | "createdAt"
+  | "createdBy"
+  | "email"
+  | "homeAddressLabel"
+  | "name"
   | "partyTypesLabel"
-  | "status";
+  | "partyCodeNo"
+  | "shippingAddressLabel"
+  | "status"
+  | "tin"
+  | "updatedAt"
+  | "updatedBy"
+  | "vatRegistrationType";
 
 export type PartyInformationTableRecord = PartyInformationRecord & {
-  addressLabel: string;
+  billingAddressLabel: string;
+  homeAddressLabel: string;
   name: string;
   partyTypesLabel: string;
+  shippingAddressLabel: string;
 };
 
 export type PartyInformationTableProps = {
@@ -511,8 +526,7 @@ export type PartyImportColumnId =
   | "addressLine2"
   | "barangay"
   | "cityMunicipality"
-  | "province"
-  | "region";
+  | "province";
 
 export type PartyImportColumnHeader = {
   className: string;

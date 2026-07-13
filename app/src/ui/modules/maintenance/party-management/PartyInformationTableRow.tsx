@@ -4,6 +4,7 @@ import type {
 	PartyInformationTableRowProps,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { PartyInformationRecordActions } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationRecordActions";
+import { formatDateTime } from "@/app/src/utils/date.util";
 
 export function PartyInformationTableRow({
 	row,
@@ -37,6 +38,8 @@ function PartyInformationCellContent({
 	record: PartyInformationTableRecord;
 }) {
 	switch (columnId) {
+		case "partyCodeNo":
+			return <span className="font-medium text-darknavy">{record.partyCodeNo}</span>;
 		case "name":
 			return (
 				<div className="min-w-0">
@@ -60,8 +63,28 @@ function PartyInformationCellContent({
 					))}
 				</div>
 			);
-		case "addressLabel":
-			return <span className="text-sm text-darknavy/75">{record.addressLabel}</span>;
+		case "email":
+			return <TextCell value={record.email} />;
+		case "contactNo":
+			return <TextCell value={record.contactNo} />;
+		case "homeAddressLabel":
+			return <AddressCell value={record.homeAddressLabel} />;
+		case "billingAddressLabel":
+			return <AddressCell value={record.billingAddressLabel} />;
+		case "shippingAddressLabel":
+			return <AddressCell value={record.shippingAddressLabel} />;
+		case "tin":
+			return <TextCell value={record.tin} />;
+		case "vatRegistrationType":
+			return <TextCell value={record.vatRegistrationType} />;
+		case "createdBy":
+			return <TextCell value={record.createdBy ?? ""} />;
+		case "createdAt":
+			return <TextCell value={formatDateTime(record.createdAt)} />;
+		case "updatedBy":
+			return <TextCell value={record.updatedBy ?? ""} />;
+		case "updatedAt":
+			return <TextCell value={formatDateTime(record.updatedAt)} />;
 		case "status":
 			return (
 				<span
@@ -79,6 +102,18 @@ function PartyInformationCellContent({
 		default:
 			return null;
 	}
+}
+
+function TextCell({ value }: { value: string }) {
+	return <span className="text-sm text-darknavy/75">{value || "-"}</span>;
+}
+
+function AddressCell({ value }: { value: string }) {
+	return (
+		<span className="block truncate text-sm text-darknavy/75" title={value}>
+			{value || "-"}
+		</span>
+	);
 }
 
 function PartyInformationTableCell({

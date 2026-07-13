@@ -78,6 +78,19 @@ const EmptyPartyStatistics: PartyManagementStatistics = {
 	nonIndividualParties: 0,
 	totalParties: 0,
 };
+const DefaultColumnVisibility: VisibilityState = {
+	billingAddressLabel: false,
+	createdAt: false,
+	createdBy: false,
+	email: false,
+	homeAddressLabel: false,
+	partyCodeNo: false,
+	shippingAddressLabel: false,
+	tin: false,
+	updatedAt: false,
+	updatedBy: false,
+	vatRegistrationType: false,
+};
 
 export function usePartyManagementStore<
 	TSelected = PartyManagementStoreState,
@@ -253,7 +266,7 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		),
 	);
 	const [columnVisibility, setColumnVisibility] =
-		useState<VisibilityState>({});
+		useState<VisibilityState>(DefaultColumnVisibility);
 	const [query, setQueryState] = useState("");
 	const [classificationFilter, setClassificationFilterState] = useState<
 		PartyClassification | "All"
@@ -316,9 +329,17 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		() =>
 			pagedRecords.records.map((record) => ({
 				...record,
-				addressLabel: formatPartyAddress(record.address),
+				billingAddressLabel: formatPartyAddress(
+					getPartyAddressByRole(record, "billing"),
+				),
+				homeAddressLabel: formatPartyAddress(
+					getPartyAddressByRole(record, "home"),
+				),
 				name: getPartyDisplayName(record),
 				partyTypesLabel: record.partyTypes.join(", "),
+				shippingAddressLabel: formatPartyAddress(
+					getPartyAddressByRole(record, "shipping"),
+				),
 			})),
 		[pagedRecords.records],
 	);
@@ -371,6 +392,13 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	const table = useReactTable({
 		data: tableData,
 		columns,
+		initialState: {
+			columnOrder: PartyManagementTableColumns.map((column) =>
+				"key" in column ? column.key : "actions",
+			),
+			columnVisibility: DefaultColumnVisibility,
+			sorting: [{ id: "name", desc: false }],
+		},
 		manualPagination: true,
 		manualSorting: true,
 		rowCount: pagedRecords.totalRows,
@@ -448,9 +476,15 @@ function createPartyInformationTableRecord(
 ): PartyInformationTableRecord {
 	return {
 		...record,
-		addressLabel: formatPartyAddress(record.address),
+		billingAddressLabel: formatPartyAddress(
+			getPartyAddressByRole(record, "billing"),
+		),
+		homeAddressLabel: formatPartyAddress(getPartyAddressByRole(record, "home")),
 		name: getPartyDisplayName(record),
 		partyTypesLabel: record.partyTypes.join(", "),
+		shippingAddressLabel: formatPartyAddress(
+			getPartyAddressByRole(record, "shipping"),
+		),
 	};
 }
 
@@ -471,6 +505,10 @@ function filterPartyManagementRecords(
 			(query.status === "All" || record.status === query.status) &&
 			(!normalizedQuery ||
 				name.includes(normalizedQuery) ||
+				record.partyCodeNo.toLowerCase().includes(normalizedQuery) ||
+				record.email.toLowerCase().includes(normalizedQuery) ||
+				record.contactNo.toLowerCase().includes(normalizedQuery) ||
+				record.tin.toLowerCase().includes(normalizedQuery) ||
 				address.includes(normalizedQuery))
 		);
 	});
@@ -503,16 +541,38 @@ function getSortablePartyManagementValue(
 	sortId: NonNullable<PartyManagementListQuery["sort"]>["id"],
 ) {
 	switch (sortId) {
-		case "addressLabel":
-			return formatPartyAddress(record.address);
+		case "billingAddressLabel":
+			return formatPartyAddress(getPartyAddressByRole(record, "billing"));
 		case "classification":
 			return record.classification;
+		case "contactNo":
+			return record.contactNo;
+		case "createdAt":
+			return record.createdAt;
+		case "createdBy":
+			return record.createdBy ?? "";
+		case "email":
+			return record.email;
+		case "homeAddressLabel":
+			return formatPartyAddress(getPartyAddressByRole(record, "home"));
 		case "name":
 			return getPartyDisplayName(record);
 		case "partyTypesLabel":
 			return record.partyTypes.join(", ");
+		case "partyCodeNo":
+			return record.partyCodeNo;
+		case "shippingAddressLabel":
+			return formatPartyAddress(getPartyAddressByRole(record, "shipping"));
 		case "status":
 			return record.status;
+		case "tin":
+			return record.tin;
+		case "updatedAt":
+			return record.updatedAt;
+		case "updatedBy":
+			return record.updatedBy ?? "";
+		case "vatRegistrationType":
+			return record.vatRegistrationType;
 		default:
 			return "";
 	}
@@ -533,7 +593,11 @@ function getPartyManagementListSort(
 	};
 }
 
-function formatPartyAddress(address: PartyInformationRecord["address"]) {
+function formatPartyAddress(address?: PartyInformationRecord["address"] | null) {
+	if (!address) {
+		return "-";
+	}
+
 	return [
 		address.addressLine1,
 		address.addressLine2,
@@ -545,6 +609,19 @@ function formatPartyAddress(address: PartyInformationRecord["address"]) {
 		.map((part) => part.trim())
 		.filter(Boolean)
 		.join(", ") || "-";
+}
+
+function getPartyAddressByRole(
+	record: PartyInformationRecord,
+	role: "billing" | "home" | "shipping",
+) {
+	const addresses = record.addresses.length > 0 ? record.addresses : [record.address];
+
+	return addresses.find((address) => {
+		if (role === "billing") return address.isBilling;
+		if (role === "home") return address.isHome;
+		return address.isDelivery;
+	});
 }
 
 function createPartyInformationColumn(

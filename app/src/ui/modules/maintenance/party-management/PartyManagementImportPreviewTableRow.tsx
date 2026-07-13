@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  PartyImportPreviewColumnCount,
   PartyClassificationOptions,
   VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
@@ -147,7 +148,6 @@ export function PartyManagementImportPreviewTableRow({
             "barangay",
             "cityMunicipality",
             "province",
-            "region",
           ] as const
         ).map((field) => (
           <td key={field} className="px-3 py-2 align-middle">
@@ -164,7 +164,7 @@ export function PartyManagementImportPreviewTableRow({
         <tr className={isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"}>
           <td />
           <td
-            colSpan={20}
+            colSpan={PartyImportPreviewColumnCount - 1}
             className="px-3 pb-3 text-xs font-semibold text-coralpink"
           >
             {row.rowErrors.join(" ")}
@@ -218,8 +218,7 @@ function getPartyImportCellValue(
     field === "addressLine2" ||
     field === "barangay" ||
     field === "cityMunicipality" ||
-    field === "province" ||
-    field === "region"
+    field === "province"
   ) {
     return row.party.address[field];
   }

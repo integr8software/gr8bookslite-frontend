@@ -79,34 +79,58 @@ export const PartyManagementActionCopy = {
 } as const;
 
 export const PartyManagementTableColumns = [
-  { key: "name", label: "Name", className: "w-[22rem]" },
+  { key: "partyCodeNo", label: "Party Code", className: "w-[11rem]" },
+  { key: "name", label: "Party Name", className: "w-[22rem]" },
   {
     key: "classification",
     label: "Classification",
     className: "w-[11rem]",
   },
   { key: "partyTypesLabel", label: "Type", className: "w-[12rem]" },
-  { key: "addressLabel", label: "Address", className: "w-[28rem]" },
+  { key: "email", label: "Email Address", className: "w-[18rem]" },
+  { key: "contactNo", label: "Contact No", className: "w-[12rem]" },
+  { key: "homeAddressLabel", label: "Home Address", className: "w-[24rem]" },
+  {
+    key: "billingAddressLabel",
+    label: "Billing Address",
+    className: "w-[24rem]",
+  },
+  {
+    key: "shippingAddressLabel",
+    label: "Shipping Address",
+    className: "w-[24rem]",
+  },
+  { key: "tin", label: "TIN", className: "w-[12rem]" },
+  {
+    key: "vatRegistrationType",
+    label: "VAT Registration",
+    className: "w-[14rem]",
+  },
+  { key: "createdBy", label: "Created By", className: "w-[14rem]" },
+  { key: "createdAt", label: "Date Created", className: "w-[16rem]" },
+  { key: "updatedBy", label: "Updated By", className: "w-[14rem]" },
+  { key: "updatedAt", label: "Date Modified", className: "w-[16rem]" },
   { key: "status", label: "Status", className: "w-[9rem] text-center" },
   {
-    label: "Actions",
+    label: "Action",
     className: "w-[12rem] text-center",
   },
 ] as const;
 
 export const PartyInformationExportColumns: ModuleTableExportColumn<PartyInformationTableRecord>[] =
   [
-    { header: "Party Code", value: "partyCodeNo" },
-    { header: "Name", id: "name", value: "name" },
-    { header: "Classification", id: "classification", value: "classification" },
-    { header: "Party Type", id: "partyTypesLabel", value: "partyTypesLabel" },
-    { header: "Status", id: "status", value: "status" },
-    { header: "Address", id: "addressLabel", value: "addressLabel" },
-    { header: "TIN", value: "tin" },
-    { header: "VAT Registration Type", value: "vatRegistrationType" },
+    ...PartyManagementTableColumns.flatMap((column) =>
+      "key" in column
+        ? [
+            {
+              header: column.label,
+              id: column.key,
+              value: column.key,
+            },
+          ]
+        : [],
+    ),
     { header: "BIR ATC Code", value: "atcCode" },
-    { header: "Email", value: "email" },
-    { header: "Contact No.", value: "contactNo" },
     { header: "Terms", value: "termName" },
     { header: "Default Receivable Account", value: "defaultReceivableAccount" },
     { header: "Default Customer Advance Account", value: "customerAdvanceAccount" },
@@ -150,7 +174,6 @@ export const PartyImportTemplateHeaders = [
   "Barangay",
   "City/Municipality",
   "Province",
-  "Region",
 ];
 
 export const PartyImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
@@ -178,7 +201,6 @@ export const PartyImportDefaultColumnIndexes: Record<PartyImportColumnId, number
     barangay: 16,
     cityMunicipality: 17,
     province: 18,
-    region: 19,
   };
 
 export const PartyImportFieldOrder: PartyImportColumnId[] = [
@@ -201,7 +223,6 @@ export const PartyImportFieldOrder: PartyImportColumnId[] = [
   "barangay",
   "cityMunicipality",
   "province",
-  "region",
 ];
 
 export const PartyImportSelectionColumnWidth = 64;
@@ -226,7 +247,6 @@ export const PartyImportDefaultColumnWidths: PartyImportColumnWidths = {
   barangay: 180,
   cityMunicipality: 190,
   province: 180,
-  region: 220,
 };
 
 export const PartyImportColumnHeaders: PartyImportColumnHeader[] =

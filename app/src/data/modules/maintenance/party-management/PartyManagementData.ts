@@ -417,6 +417,7 @@ export function createPartyInformationRecordFromTableRecord(
     atcCode: record.atcCode,
     classification: record.classification,
     contactNo: record.contactNo,
+    createdBy: record.createdBy,
     createdAt: record.createdAt,
     customerAdvanceAccount: record.customerAdvanceAccount,
     defaultPayableAccount: record.defaultPayableAccount,
@@ -437,6 +438,7 @@ export function createPartyInformationRecordFromTableRecord(
     termName: record.termName,
     tin: record.tin,
     tradeName: record.tradeName,
+    updatedBy: record.updatedBy,
     updatedAt: record.updatedAt,
     vendorAdvanceAccount: record.vendorAdvanceAccount,
     vatRegistrationType: record.vatRegistrationType,
@@ -794,7 +796,6 @@ function createPartyImportPreviewRow(
       barangay: getImportedPartyValue(row, indexes.barangay),
       cityMunicipality: getImportedPartyValue(row, indexes.cityMunicipality),
       province: getImportedPartyValue(row, indexes.province),
-      region: getImportedPartyValue(row, indexes.region),
     },
     addresses: [],
     ...accountingAccounts,
@@ -963,6 +964,15 @@ export function validatePartyImportRows(
         "Address line 1 is blank. You can complete it after import.",
       ];
     }
+    if (!row.party.address.barangay.trim()) {
+      cellErrors.barangay = ["Barangay is required."];
+    }
+    if (!row.party.address.cityMunicipality.trim()) {
+      cellErrors.cityMunicipality = ["City/Municipality is required."];
+    }
+    if (!row.party.address.province.trim()) {
+      cellErrors.province = ["Province is required."];
+    }
 
     return { ...row, cellErrors, cellWarnings, rowErrors };
   });
@@ -1027,7 +1037,7 @@ export function createPartyImportRecord(
     partyCodeNo: party.partyCodeNo.trim(),
     classification: party.classification,
     partyTypes,
-    status: party.status,
+    status: "Active",
     partyName:
       party.classification === "Non-Individual" ? party.partyName.trim() : "",
     tradeName:
@@ -1662,8 +1672,6 @@ function normalizePartyImportHeader(value: string): PartyImportColumnId | null {
   if (["barangay", "brgy"].includes(normalized)) return "barangay";
   if (["citymunicipality", "city", "municipality"].includes(normalized)) return "cityMunicipality";
   if (["province"].includes(normalized)) return "province";
-  if (["region"].includes(normalized)) return "region";
-
   return null;
 }
 

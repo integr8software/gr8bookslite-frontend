@@ -620,8 +620,7 @@ function updatePartyImportRowCell(
     field === "addressLine2" ||
     field === "barangay" ||
     field === "cityMunicipality" ||
-    field === "province" ||
-    field === "region"
+    field === "province"
   ) {
     const address = {
       ...party.address,
@@ -673,6 +672,7 @@ function syncPartyImportRow(
   return {
     ...accountingAccounts,
     partyTypes,
+    status: "Active" as const,
     address,
     addresses: [address],
   };

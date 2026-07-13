@@ -16,6 +16,7 @@ import type { DisbursementPaymentMethod, DisbursementType } from "@/app/src/type
 import { AcknowledgementReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptActionHeader";
 import { AcknowledgementReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptDetailsForm";
 import { AcknowledgementReceiptEntries } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptEntries";
+import { openAcknowledgementReceiptPdf } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptPdf";
 import { AcknowledgementReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptReportPreview";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
 
@@ -98,6 +99,7 @@ export function AcknowledgementReceiptActionPage() {
         isOpen={isReportPreviewOpen}
         values={receiptForm.values}
         onClose={() => setIsReportPreviewOpen(false)}
+        onPrint={() => openAcknowledgementReceiptPdf(receiptForm.values)}
       />
 
       {!isReadonly && isPaymentTypeDialogOpen ? (

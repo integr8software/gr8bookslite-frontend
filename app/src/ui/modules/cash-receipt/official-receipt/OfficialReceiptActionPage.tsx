@@ -16,6 +16,7 @@ import type { DisbursementPaymentMethod, DisbursementType } from "@/app/src/type
 import { OfficialReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptActionHeader";
 import { OfficialReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptDetailsForm";
 import { OfficialReceiptEntries } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptEntries";
+import { openOfficialReceiptPdf } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptPdf";
 import { OfficialReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptReportPreview";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
 
@@ -98,6 +99,7 @@ export function OfficialReceiptActionPage() {
         isOpen={isReportPreviewOpen}
         values={receiptForm.values}
         onClose={() => setIsReportPreviewOpen(false)}
+        onPrint={() => openOfficialReceiptPdf(receiptForm.values)}
       />
 
       {!isReadonly && isPaymentTypeDialogOpen ? (

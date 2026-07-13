@@ -88,6 +88,10 @@ export function useOnboardingFormState() {
       const next =
         typeof action === "function" ? action(current.stepIndex) : action;
 
+      if (next === current.stepIndex) {
+        return current;
+      }
+
       return {
         stepIndex: next,
         furthestStepIndex: Math.max(current.furthestStepIndex, next),

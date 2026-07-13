@@ -59,10 +59,14 @@ export function useOnboardingFlow() {
       return;
     }
 
-    setValues((current) => ({
-      ...current,
-      billingMode: "MANUAL",
-    }));
+    setValues((current) =>
+      current.billingMode === "MANUAL"
+        ? current
+        : {
+            ...current,
+            billingMode: "MANUAL",
+          },
+    );
     setHasPersistedBillingSetup(true);
     setStepIndex(3);
   }, [manualBillingStatus, setHasPersistedBillingSetup, setStepIndex, setValues]);

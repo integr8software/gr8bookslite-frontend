@@ -94,6 +94,7 @@ import type { DefaultAccount } from "@/app/src/types/modules/maintenance/default
 import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherActionHeader";
 import { DisbursementVoucherReportPreview } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherReportPreview";
+import { openDisbursementVoucherPdf } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherPdf";
 import { DisbursementEntryImportDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementEntryImportDialog";
 import {
   clearAccountingGridSession,
@@ -686,6 +687,7 @@ function DisbursementVoucherActionInner() {
         isOpen={isReportPreviewOpen}
         values={values}
         onClose={() => setIsReportPreviewOpen(false)}
+        onPrint={() => openDisbursementVoucherPdf(values)}
       />
 
       <AppTaxRateDialog

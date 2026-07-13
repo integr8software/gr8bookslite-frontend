@@ -1,36 +1,80 @@
 import { BeginningBalanceUploaderColumns } from "@/app/src/constants/modules/beginning-balance-uploader/BeginningBalanceUploaderConstants";
 import type {
   BeginningBalanceUploaderField,
+  BeginningBalanceUploaderFormValues,
+  BeginningBalanceUploaderRecord,
   BeginningBalanceUploaderRow,
   BeginningBalanceUploaderTotals,
 } from "@/app/src/types/modules/beginning-balance-uploader/BeginningBalanceUploaderTypes";
 
 export const BeginningBalanceUploaderInitialRows: BeginningBalanceUploaderRow[] = [
-  createBeginningBalanceUploaderRow(1),
+  createBeginningBalanceUploaderRow("1"),
+];
+
+export const BeginningBalanceUploaderInitialFormValues: BeginningBalanceUploaderFormValues = {
+  currencyRate: "1.00",
+  currencyType: "PHP",
+  documentDate: new Date().toISOString().slice(0, 10),
+  remarks: "",
+  rows: BeginningBalanceUploaderInitialRows,
+  transactionNumber: "Generated on save",
+};
+
+export const MockBeginningBalanceUploaderRecords: BeginningBalanceUploaderRecord[] = [
+  createMockRecord({
+    id: "beginning-balance-001",
+    transactionNumber: "BB-2026-0001",
+    documentDate: "2026-01-01",
+    remarks: "Opening balances for fiscal year 2026",
+    status: "Posted",
+    rows: [
+      createMockRow("1", "1010103001", "Accounts Receivable - Trade", "PTY-0001", "Pacific Office Supplies Inc.", "Customer opening balance", "125000", ""),
+      createMockRow("2", "1010101001", "Cash on Hand", "PTY-0001", "Pacific Office Supplies Inc.", "Opening cash adjustment", "", "125000"),
+    ],
+  }),
+  createMockRecord({
+    id: "beginning-balance-002",
+    transactionNumber: "BB-2026-0002",
+    documentDate: "2026-01-02",
+    remarks: "Supplier balances carried forward",
+    status: "Draft",
+    rows: [
+      createMockRow("1", "1010400001", "Inventory - Merchandise", "PTY-0001", "Pacific Office Supplies Inc.", "Opening inventory", "85000", ""),
+      createMockRow("2", "2010001001", "Accounts Payable - Trade", "PTY-0001", "Pacific Office Supplies Inc.", "Supplier opening balance", "", "85000"),
+    ],
+  }),
+  createMockRecord({
+    id: "beginning-balance-003",
+    transactionNumber: "BB-2026-0003",
+    documentDate: "2026-01-03",
+    remarks: "Employee advances opening balance",
+    status: "Draft",
+    rows: [
+      createMockRow("1", "1010103004", "Advances to Employees", "PTY-0002", "Mara Santos Reyes", "Employee advance", "15000", ""),
+      createMockRow("2", "1010101001", "Cash on Hand", "PTY-0002", "Mara Santos Reyes", "Opening cash adjustment", "", "15000"),
+    ],
+  }),
 ];
 
 export function createBeginningBalanceUploaderRow(
-  id: number,
+  id: string,
 ): BeginningBalanceUploaderRow {
   return {
     id,
-    date: "",
-    refType: "",
-    refTransId: "",
     accntCode: "",
     accntTitle: "",
     partyCode: "",
     partyName: "",
+    particulars: "",
     debit: "",
     credit: "",
-    refNo: "",
   };
 }
 
 export function getNextBeginningBalanceUploaderRowId(
   rows: BeginningBalanceUploaderRow[],
 ) {
-  return Math.max(0, ...rows.map((row) => row.id)) + 1;
+  return String(Math.max(0, ...rows.map((row) => Number(row.id))) + 1);
 }
 
 export function getBeginningBalanceUploaderTotals(
@@ -73,13 +117,51 @@ export function normalizeBeginningBalancePastedCell(
   field: BeginningBalanceUploaderField,
   value: string,
 ) {
-  const trimmedValue = value.trim();
+  void field;
+  return value.trim();
+}
 
-  if (field !== "date") {
-    return trimmedValue;
-  }
+export function createBeginningBalanceUploaderFormValues(
+  record: BeginningBalanceUploaderRecord,
+): BeginningBalanceUploaderFormValues {
+  return {
+    currencyRate: record.currencyRate,
+    currencyType: record.currencyType,
+    documentDate: record.documentDate,
+    remarks: record.remarks,
+    rows: record.rows.map((row) => ({ ...row })),
+    transactionNumber: record.transactionNumber,
+  };
+}
 
-  return normalizeDateValue(trimmedValue);
+export function createBeginningBalanceUploaderRecord(
+  values: BeginningBalanceUploaderFormValues,
+): BeginningBalanceUploaderRecord {
+  const now = new Date().toISOString();
+  const sequence = Date.now().toString().slice(-6);
+
+  return {
+    ...values,
+    createdAt: now,
+    id: `beginning-balance-${Date.now()}`,
+    rows: values.rows.map((row) => ({ ...row })),
+    status: "Draft",
+    transactionNumber: `BB-${new Date().getFullYear()}-${sequence}`,
+    updatedAt: now,
+  };
+}
+
+export function updateBeginningBalanceUploaderRecord(
+  record: BeginningBalanceUploaderRecord,
+  values: BeginningBalanceUploaderFormValues,
+): BeginningBalanceUploaderRecord {
+  return {
+    ...record,
+    ...values,
+    rows: values.rows.map((row) => ({ ...row })),
+    transactionNumber: record.transactionNumber,
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 export function formatBeginningBalanceAmount(value: number) {
@@ -98,45 +180,37 @@ function normalizeHeader(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
-function normalizeDateValue(value: string) {
-  if (!value || /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return value;
-  }
-
-  const dateParts = value.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
-
-  if (!dateParts) {
-    return value;
-  }
-
-  const firstPart = Number(dateParts[1]);
-  const secondPart = Number(dateParts[2]);
-  const year = normalizeYear(dateParts[3]);
-  const month = firstPart > 12 ? secondPart : firstPart;
-  const day = firstPart > 12 ? firstPart : secondPart;
-
-  if (!isValidDateParts(year, month, day)) {
-    return value;
-  }
-
-  return `${year}-${padDatePart(month)}-${padDatePart(day)}`;
+function createMockRow(
+  id: string,
+  accntCode: string,
+  accntTitle: string,
+  partyCode: string,
+  partyName: string,
+  particulars: string,
+  debit: string,
+  credit: string,
+): BeginningBalanceUploaderRow {
+  return { id, accntCode, accntTitle, partyCode, partyName, particulars, debit, credit };
 }
 
-function normalizeYear(value: string) {
-  const year = Number(value);
-  return value.length === 2 ? 2000 + year : year;
-}
-
-function isValidDateParts(year: number, month: number, day: number) {
-  const date = new Date(year, month - 1, day);
-
-  return (
-    date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day
-  );
-}
-
-function padDatePart(value: number) {
-  return value.toString().padStart(2, "0");
+function createMockRecord({
+  id,
+  transactionNumber,
+  documentDate,
+  remarks,
+  status,
+  rows,
+}: Pick<BeginningBalanceUploaderRecord, "id" | "transactionNumber" | "documentDate" | "remarks" | "status" | "rows">): BeginningBalanceUploaderRecord {
+  return {
+    id,
+    transactionNumber,
+    documentDate,
+    remarks,
+    status,
+    rows,
+    currencyType: "PHP",
+    currencyRate: "1.00",
+    createdAt: `${documentDate}T08:00:00.000Z`,
+    updatedAt: `${documentDate}T08:00:00.000Z`,
+  };
 }

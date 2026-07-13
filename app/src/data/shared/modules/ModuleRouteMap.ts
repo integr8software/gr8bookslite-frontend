@@ -66,6 +66,7 @@ export const MODULE_ROUTE_MAP = {
   PO: "/purchasing/purchase-order",
   PJ: "/purchasing/purchase-journal",
   FA: "/others/fixed-asset",
+  BBU: "/others/beginning-balance-uploader",
   U: "/system-administration/user-management/users",
   UR: "/system-administration/user-management/user-role",
   AS: "/system-administration/user-management/approver-setup",

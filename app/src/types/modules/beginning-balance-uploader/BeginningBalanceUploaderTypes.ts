@@ -1,22 +1,17 @@
-import type { ClipboardEvent } from "react";
-
 export type BeginningBalanceUploaderField =
-  | "date"
-  | "refType"
-  | "refTransId"
   | "accntCode"
   | "accntTitle"
   | "partyCode"
   | "partyName"
+  | "particulars"
   | "debit"
-  | "credit"
-  | "refNo";
+  | "credit";
 
 export type BeginningBalanceUploaderRow = Record<
   BeginningBalanceUploaderField,
   string
 > & {
-  id: number;
+  id: string;
 };
 
 export type BeginningBalanceUploaderColumn = {
@@ -34,8 +29,22 @@ export type BeginningBalanceUploaderTotals = {
   variance: number;
 };
 
-export type BeginningBalanceUploaderPasteHandler = (
-  event: ClipboardEvent<HTMLInputElement>,
-  startRowIndex: number,
-  startField: BeginningBalanceUploaderField,
-) => void;
+export type BeginningBalanceUploaderActionMode = "add" | "edit" | "view";
+
+export type BeginningBalanceUploaderStatus = "Draft" | "Posted";
+
+export type BeginningBalanceUploaderFormValues = {
+  currencyRate: string;
+  currencyType: string;
+  documentDate: string;
+  remarks: string;
+  rows: BeginningBalanceUploaderRow[];
+  transactionNumber: string;
+};
+
+export type BeginningBalanceUploaderRecord = BeginningBalanceUploaderFormValues & {
+  createdAt: string;
+  id: string;
+  status: BeginningBalanceUploaderStatus;
+  updatedAt: string;
+};

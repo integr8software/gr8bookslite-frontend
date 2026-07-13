@@ -6,6 +6,7 @@ import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
 	ApiParty,
 	ApiPartyAddress,
+	ApiPartyAccountingOptionsResponse,
 	ApiPartyClassification,
 	ApiPartyImportResponse,
 	ApiPartyListResponse,
@@ -107,6 +108,14 @@ export async function importPartyManagementRecords(
 	);
 
 	return response.data.parties.map(mapApiParty);
+}
+
+export async function fetchPartyManagementAccountingOptions() {
+	const response = await ApiClient.get<ApiPartyAccountingOptionsResponse>(
+		`${PartyManagementApiPath}/accounting-options`,
+	);
+
+	return response.data;
 }
 
 export async function GetPartyManagementRecordsPage({

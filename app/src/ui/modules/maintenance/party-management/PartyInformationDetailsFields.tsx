@@ -3,7 +3,6 @@ import {
 	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
 } from "react";
-import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
 	PartyClassificationOptions,
 	PartyInformationStatusOptions,
@@ -14,6 +13,7 @@ import {
 	PhilippineContactNumberPlaceholder,
 } from "@/app/src/data/shared/contact/ContactData";
 import type {
+	PartyAccountingAccountOptions,
 	PartyAtcCodeOption,
 	PartyInformationFormErrors,
 	PartyInformationFormValues,
@@ -55,7 +55,7 @@ export function PartyInformationDetailsFields({
 	onUpdateField,
 	onSelectTerm,
 }: {
-	accountOptions: ModuleChartAccount[];
+	accountOptions: PartyAccountingAccountOptions;
 	atcOptions: PartyAtcCodeOption[];
 	errors: PartyInformationFormErrors;
 	isClassificationSelected: boolean;
@@ -90,10 +90,6 @@ export function PartyInformationDetailsFields({
 	const isDetailsDisabled =
 		isReadonly || !isClassificationSelected || !isPartyTypeSelected;
 	const showBusinessNameFields = values.classification !== "Individual";
-	const activeAddress =
-		values.addresses.find((address) => address.id === values.activeAddressId) ??
-		values.addresses[0] ??
-		values.address;
 	const visiblePartyTypeOptions =
 		values.classification === "Non-Individual"
 			? partyTypeOptions.filter((type) => type !== "Employee")
@@ -371,7 +367,7 @@ function AccountFields({
 	values,
 	onUpdateField,
 }: {
-	accountOptions: ModuleChartAccount[];
+	accountOptions: PartyAccountingAccountOptions;
 	disabled: boolean;
 	errors: PartyInformationFormErrors;
 	values: PartyInformationFormValues;
@@ -385,30 +381,16 @@ function AccountFields({
 	const isEmployee = values.partyTypes.includes("Employee");
 	const hasAccountingFields = isCustomer || isVendor || isEmployee;
 	const isAccountingDisabled = disabled || !hasAccountingFields;
-	const receivableAccountOptions = getPartyAccountOptions(
-		accountOptions,
-		"customerReceivable",
-	);
-	const customerAdvanceAccountOptions = getPartyAccountOptions(
-		accountOptions,
-		"customerAdvance",
-	);
-	const payableAccountOptions = getPartyAccountOptions(
-		accountOptions,
-		"vendorPayable",
-	);
-	const vendorAdvanceAccountOptions = getPartyAccountOptions(
-		accountOptions,
-		"vendorAdvance",
-	);
-	const employeeAdvanceAccountOptions = getPartyAccountOptions(
-		accountOptions,
-		"employeeAdvance",
-	);
-	const employeePayableAccountOptions = getPartyAccountOptions(
-		accountOptions,
-		"employeePayable",
-	);
+	const hasMissingAccountingFields =
+		(isCustomer &&
+			(!values.defaultReceivableAccount.trim() ||
+				!values.customerAdvanceAccount.trim())) ||
+		(isVendor &&
+			(!values.defaultPayableAccount.trim() ||
+				!values.vendorAdvanceAccount.trim())) ||
+		(isEmployee &&
+			(!values.employeeAdvanceAccount.trim() ||
+				!values.employeePayableAccount.trim()));
 
 	return (
 		<div className="grid gap-4">
@@ -421,7 +403,7 @@ function AccountFields({
 						: "Select a party type to enable account overrides."
 				}
 				disabled={isAccountingDisabled}
-				required={hasAccountingFields}
+				required={hasMissingAccountingFields}
 				title="Accounting"
 				contentClassName="grid gap-4 md:grid-cols-2"
 			>
@@ -432,7 +414,7 @@ function AccountFields({
 						required
 					>
 						<ChartAccountDropdown
-							accounts={receivableAccountOptions}
+							accounts={accountOptions.defaultReceivableAccount}
 							disabled={isAccountingDisabled}
 							valueField="id"
 							value={values.defaultReceivableAccount}
@@ -449,7 +431,7 @@ function AccountFields({
 						required
 					>
 						<ChartAccountDropdown
-							accounts={customerAdvanceAccountOptions}
+							accounts={accountOptions.customerAdvanceAccount}
 							disabled={isAccountingDisabled}
 							valueField="id"
 							value={values.customerAdvanceAccount}
@@ -466,7 +448,7 @@ function AccountFields({
 						required
 					>
 						<ChartAccountDropdown
-							accounts={payableAccountOptions}
+							accounts={accountOptions.defaultPayableAccount}
 							disabled={isAccountingDisabled}
 							valueField="id"
 							value={values.defaultPayableAccount}
@@ -483,7 +465,7 @@ function AccountFields({
 						required
 					>
 						<ChartAccountDropdown
-							accounts={vendorAdvanceAccountOptions}
+							accounts={accountOptions.vendorAdvanceAccount}
 							disabled={isAccountingDisabled}
 							valueField="id"
 							value={values.vendorAdvanceAccount}
@@ -498,7 +480,7 @@ function AccountFields({
 						required
 					>
 						<ChartAccountDropdown
-							accounts={employeeAdvanceAccountOptions}
+							accounts={accountOptions.employeeAdvanceAccount}
 							disabled={isAccountingDisabled}
 							valueField="id"
 							value={values.employeeAdvanceAccount}
@@ -515,7 +497,7 @@ function AccountFields({
 						required
 					>
 						<ChartAccountDropdown
-							accounts={employeePayableAccountOptions}
+							accounts={accountOptions.employeePayableAccount}
 							disabled={isAccountingDisabled}
 							valueField="id"
 							value={values.employeePayableAccount}
@@ -528,49 +510,6 @@ function AccountFields({
 			</AppCollapsibleSection>
 		</div>
 	);
-}
-
-type PartyAccountPurpose =
-	| "customerAdvance"
-	| "customerReceivable"
-	| "employeeAdvance"
-	| "employeePayable"
-	| "vendorAdvance"
-	| "vendorPayable";
-
-function getPartyAccountOptions(
-	accounts: ModuleChartAccount[],
-	purpose: PartyAccountPurpose,
-) {
-	return accounts.filter((account) => {
-		const accountName = account.accountName.toLowerCase();
-
-		switch (purpose) {
-			case "customerReceivable":
-				return (
-					account.accountCategory === "Accounts Receivables" &&
-					accountName.includes("receivable")
-				);
-			case "customerAdvance":
-				return account.accountCategory === "Other Current Liabilities";
-			case "vendorPayable":
-				return account.accountCategory === "Accounts Payables";
-			case "vendorAdvance":
-				return (
-					account.accountCategory === "Accounts Receivables" &&
-					accountName.includes("supplier")
-				);
-			case "employeeAdvance":
-				return (
-					account.accountCategory === "Accounts Receivables" &&
-					(accountName.includes("employee") ||
-						(accountName.includes("advance") &&
-							!accountName.includes("supplier")))
-				);
-			case "employeePayable":
-				return account.accountCategory === "Other Current Liabilities";
-		}
-	});
 }
 
 function SectionHeading({

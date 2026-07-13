@@ -10,6 +10,7 @@ import {
   PartyImportSelectionColumnWidth,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
+  applyPartyDefaultAccountingAccounts,
   createBlankPartyImportRow,
   createExistingPartyIdentityMap,
   createPartyImportRecord,
@@ -35,6 +36,10 @@ import type {
   PartyInformationRecord,
   PartyManagementImportDialogProps,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import {
+  type PartyDefaultAccountingAccountIds,
+  usePartyManagementAccountOptions,
+} from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagementAccountOptions";
 
 export function usePartyManagementImportDialog({
   existingParties,
@@ -44,6 +49,7 @@ export function usePartyManagementImportDialog({
   PartyManagementImportDialogProps,
   "existingParties" | "onClose" | "onImportParties"
 >) {
+  const partyAccountOptions = usePartyManagementAccountOptions();
   const [importError, setImportError] = useState<string | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const [previewRows, setPreviewRows] = useState<PartyImportPreviewRow[]>([]);
@@ -297,7 +303,14 @@ export function usePartyManagementImportDialog({
 
     setPreviewRows((rows) =>
       rows.map((row) =>
-        row.id === rowId ? updatePartyImportRowCell(row, field, value) : row,
+        row.id === rowId
+          ? updatePartyImportRowCell(
+              row,
+              field,
+              value,
+              partyAccountOptions.defaultAccounts,
+            )
+          : row,
       ),
     );
     setImportError(null);
@@ -396,7 +409,12 @@ export function usePartyManagementImportDialog({
             return;
           }
 
-          nextRow = updatePartyImportRowCell(nextRow, targetField, cellValue);
+          nextRow = updatePartyImportRowCell(
+            nextRow,
+            targetField,
+            cellValue,
+            partyAccountOptions.defaultAccounts,
+          );
         });
 
         const normalizedCode = normalizePartyIdentity(nextRow.party.partyCodeNo);
@@ -584,13 +602,17 @@ function updatePartyImportRowCell(
   row: PartyImportPreviewRow,
   field: PartyImportColumnId,
   value: string,
+  defaultAccounts: PartyDefaultAccountingAccountIds,
 ): PartyImportPreviewRow {
   const normalizedValue = normalizeImportedPartyCellValue(field, value);
   const party = { ...row.party };
 
   if (field === "partyTypes") {
     party.partyTypes = normalizedValue as PartyInformationRecord["partyTypes"];
-    return { ...row, party: syncPartyImportRow(party) };
+    return {
+      ...row,
+      party: syncPartyImportRow(party, defaultAccounts),
+    };
   }
 
   if (
@@ -618,41 +640,29 @@ function updatePartyImportRowCell(
 
   return {
     ...row,
-    party: syncPartyImportRow({
-      ...party,
-      [field]: normalizedValue,
-    }),
+    party: syncPartyImportRow(
+      {
+        ...party,
+        [field]: normalizedValue,
+      },
+      defaultAccounts,
+    ),
   };
 }
 
 function syncPartyImportRow(
   party: Omit<PartyInformationRecord, "id" | "createdAt" | "updatedAt">,
+  defaultAccounts: PartyDefaultAccountingAccountIds,
 ) {
   const partyTypes =
     party.classification === "Non-Individual"
       ? party.partyTypes.filter((partyType) => partyType !== "Employee")
       : party.partyTypes;
-  const accountingAccounts = {
-    ...party,
-    defaultReceivableAccount: partyTypes.includes("Customer")
-      ? party.defaultReceivableAccount || "1010103001"
-      : "",
-    customerAdvanceAccount: partyTypes.includes("Customer")
-      ? party.customerAdvanceAccount || "2010004001"
-      : "",
-    defaultPayableAccount: partyTypes.includes("Vendor")
-      ? party.defaultPayableAccount || "2010001001"
-      : "",
-    vendorAdvanceAccount: partyTypes.includes("Vendor")
-      ? party.vendorAdvanceAccount || "1010103003"
-      : "",
-    employeeAdvanceAccount: partyTypes.includes("Employee")
-      ? party.employeeAdvanceAccount || "1010103004"
-      : "",
-    employeePayableAccount: partyTypes.includes("Employee")
-      ? party.employeePayableAccount || "2010004001"
-      : "",
-  };
+  const accountingAccounts = applyPartyDefaultAccountingAccounts(
+    party,
+    partyTypes,
+    defaultAccounts,
+  );
   const address = {
     ...party.address,
     isBilling: partyTypes.includes("Customer") || partyTypes.includes("Vendor"),

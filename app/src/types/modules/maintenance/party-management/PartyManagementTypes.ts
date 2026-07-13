@@ -280,6 +280,42 @@ export type PartyAccountingAccountSummary = {
   accountTitle: string;
 };
 
+export type PartyAccountingAccountField =
+  | "customerAdvanceAccount"
+  | "defaultPayableAccount"
+  | "defaultReceivableAccount"
+  | "employeeAdvanceAccount"
+  | "employeePayableAccount"
+  | "vendorAdvanceAccount";
+
+export type PartyAccountingAccountOption = {
+  id: string;
+  accountNumber: string;
+  accountName: string;
+  accountType: string;
+  statementGroup: string;
+  statementSection: string;
+  normalBalance: "Debit" | "Credit";
+  accountCategory: string;
+  description: string;
+  status: "Active" | "Inactive";
+};
+
+export type PartyAccountingAccountIds = Record<
+  PartyAccountingAccountField,
+  string
+>;
+
+export type PartyAccountingAccountOptions = Record<
+  PartyAccountingAccountField,
+  PartyAccountingAccountOption[]
+>;
+
+export type ApiPartyAccountingOptionsResponse = {
+  defaultAccounts: PartyAccountingAccountIds;
+  accountOptions: PartyAccountingAccountOptions;
+};
+
 export type ApiPartyListResponse = {
   parties: ApiParty[];
   totalRows: number;

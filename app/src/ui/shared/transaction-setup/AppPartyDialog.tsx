@@ -7,7 +7,6 @@ import {
   FormatPhilippineContactNumber,
 } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
-import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
   PartyInformationInitialFormValues,
   applyPartyDefaultAccountingAccounts,
@@ -18,6 +17,10 @@ import {
   normalizePartyTypesForClassification,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
+import {
+  type PartyDefaultAccountingAccountIds,
+  usePartyManagementAccountOptions,
+} from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagementAccountOptions";
 import { useTermDropdownOptions } from "@/app/src/hooks/modules/maintenance/term-management/useTermDropdownOptions";
 import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
@@ -103,20 +106,30 @@ function AppPartyDialogContent({
   onSelect: (record: PartyInformationRecord) => void;
 }) {
   const addRecord = usePartyManagementStore((state) => state.addRecord);
+  const partyAccountOptions = usePartyManagementAccountOptions();
   const termDropdown = useTermDropdownOptions();
   const [partyType, setPartyType] = useState<PartyType>(suggestedPartyType);
   const [values, setValues] = useState<PartyInformationFormValues>(() =>
-    createDialogInitialValues(records, suggestedPartyType),
+    createDialogInitialValues(
+      records,
+      suggestedPartyType,
+      partyAccountOptions.defaultAccounts,
+    ),
   );
   const [errors, setErrors] = useState<PartyInformationFormErrors>({});
   const atcDropdown = usePartyAtcCodeOptions(values.classification);
-  const accountOptions = useMemo(
-    () => getModuleChartAccounts({ moduleKey: "maintenance-party-management" }),
-    [],
-  );
   const isClassificationSelected = Boolean(values.classification);
   const canSave = isClassificationSelected && values.partyTypes.length > 0;
   const dialogCopy = PartyTypeCardCopy[partyType];
+  const effectiveValues = useMemo(
+    () =>
+      applyPartyDefaultAccountingAccounts(
+        values,
+        values.partyTypes,
+        partyAccountOptions.defaultAccounts,
+      ),
+    [partyAccountOptions.defaultAccounts, values],
+  );
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -147,6 +160,7 @@ function AppPartyDialogContent({
         const accountingAccounts = applyPartyDefaultAccountingAccounts(
           current,
           partyTypes,
+          partyAccountOptions.defaultAccounts,
         );
 
         return {
@@ -235,6 +249,7 @@ function AppPartyDialogContent({
       const accountingAccounts = applyPartyDefaultAccountingAccounts(
         current,
         nextPartyTypes,
+        partyAccountOptions.defaultAccounts,
       );
 
       return {
@@ -417,6 +432,7 @@ function AppPartyDialogContent({
       const accountingAccounts = applyPartyDefaultAccountingAccounts(
         current,
         nextPartyTypes,
+        partyAccountOptions.defaultAccounts,
       );
 
       return {
@@ -450,33 +466,15 @@ function AppPartyDialogContent({
     }));
   }
 
-  function updateAddressMeta(
-    addressId: string,
-    field:
-      | "addressName"
-      | "isBilling"
-      | "isDelivery"
-      | "isForeign"
-      | "isHome",
-    value: string | boolean,
-  ) {
-    setValues((current) => ({
-      ...current,
-      addresses: current.addresses.map((address) =>
-        updateAddressRole(address, addressId, field, value),
-      ),
-    }));
-  }
-
   function handleSave() {
-    const nextErrors = validatePartyInformationForm(values);
+    const nextErrors = validatePartyInformationForm(effectiveValues);
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       return;
     }
 
-    const nextRecord = createPartyInformationRecord(values);
+    const nextRecord = createPartyInformationRecord(effectiveValues);
 
     addRecord(nextRecord);
     onSelect(nextRecord);
@@ -560,14 +558,14 @@ function AppPartyDialogContent({
             </section>
 
             <PartyInformationDetailsFields
-              accountOptions={accountOptions}
+              accountOptions={partyAccountOptions.accountOptions}
               atcOptions={atcDropdown.options}
               errors={errors}
               isClassificationSelected={isClassificationSelected}
               isReadonly={false}
               partyTypeOptions={[partyType]}
               termOptions={termDropdown.options}
-              values={values}
+              values={effectiveValues}
               onAddressInputChange={handleAddressInputChange}
               onInputChange={handleInputChange}
               onPartyTypesChange={handlePartyTypesChange}
@@ -609,6 +607,7 @@ function AppPartyDialogContent({
 function createDialogInitialValues(
   records: PartyInformationRecord[],
   partyType: PartyType,
+  defaultAccounts: PartyDefaultAccountingAccountIds,
 ): PartyInformationFormValues {
   const classification = partyType === "Employee" ? "Individual" : "Non-Individual";
 
@@ -616,6 +615,7 @@ function createDialogInitialValues(
     ...applyPartyDefaultAccountingAccounts(
       PartyInformationInitialFormValues,
       [partyType],
+      defaultAccounts,
     ),
     classification,
     addresses: clearAddressRolesForPartyTypes(
@@ -626,27 +626,6 @@ function createDialogInitialValues(
     contactNo: DefaultPhilippineContactNumber,
     partyCodeNo: createNextPartyCode(records),
     partyTypes: [partyType],
-  };
-}
-
-function updateAddressRole(
-  address: PartyAddress,
-  addressId: string,
-  field:
-    | "addressName"
-    | "isBilling"
-    | "isDelivery"
-    | "isForeign"
-    | "isHome",
-  value: string | boolean,
-) {
-  if (address.id !== addressId) {
-    return address;
-  }
-
-  return {
-    ...address,
-    [field]: value,
   };
 }
 

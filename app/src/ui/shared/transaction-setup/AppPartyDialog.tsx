@@ -20,7 +20,6 @@ import {
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import { useTermDropdownOptions } from "@/app/src/hooks/modules/maintenance/term-management/useTermDropdownOptions";
 import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
-import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
 import type {
   PartyAddress,
   PartyInformationFormErrors,
@@ -34,6 +33,12 @@ import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+
+type ProvinceDropdownOption = AppAdvancedDropdownOption & {
+  regionCode?: string;
+  regionName?: string;
+};
 
 type AppPartyDialogProps = {
   isOpen: boolean;
@@ -104,20 +109,6 @@ function AppPartyDialogContent({
     createDialogInitialValues(records, suggestedPartyType),
   );
   const [errors, setErrors] = useState<PartyInformationFormErrors>({});
-  const activeAddress =
-    values.addresses.find((address) => address.id === values.activeAddressId) ??
-    values.addresses[0] ??
-    values.address;
-  const addressOptions = useAddressOptions({
-    barangayCode: activeAddress.barangayCode,
-    barangayName: activeAddress.barangay,
-    cityMunicipalityCode: activeAddress.cityMunicipalityCode,
-    cityMunicipalityName: activeAddress.cityMunicipality,
-    provinceCode: activeAddress.provinceCode,
-    provinceName: activeAddress.province,
-    regionCode: activeAddress.regionCode,
-    regionName: activeAddress.region,
-  });
   const atcDropdown = usePartyAtcCodeOptions(values.classification);
   const accountOptions = useMemo(
     () => getModuleChartAccounts({ moduleKey: "maintenance-party-management" }),
@@ -275,11 +266,13 @@ function AppPartyDialogContent({
     setErrors((current) => ({ ...current, atcCode: undefined }));
   }
 
-  function selectProvince(value: string | string[], addressId?: string) {
+  function selectProvince(
+    value: string | string[],
+    addressId?: string,
+    selectedOption?: ProvinceDropdownOption,
+  ) {
     const code = getSingleSelectedValue(value);
-    const option = addressOptions.provinceOptions.find(
-      (province) => province.value === code,
-    );
+    const option = selectedOption;
 
     setValues((current) => ({
       ...current,
@@ -362,11 +355,13 @@ function AppPartyDialogContent({
     }));
   }
 
-  function selectCityMunicipality(value: string | string[], addressId?: string) {
+  function selectCityMunicipality(
+    value: string | string[],
+    addressId?: string,
+    selectedOption?: AppAdvancedDropdownOption,
+  ) {
     const code = getSingleSelectedValue(value);
-    const option = addressOptions.cityMunicipalityOptions.find(
-      (cityMunicipality) => cityMunicipality.value === code,
-    );
+    const option = selectedOption;
 
     setValues((current) => ({
       ...current,
@@ -389,11 +384,13 @@ function AppPartyDialogContent({
     }));
   }
 
-  function selectBarangay(value: string | string[], addressId?: string) {
+  function selectBarangay(
+    value: string | string[],
+    addressId?: string,
+    selectedOption?: AppAdvancedDropdownOption,
+  ) {
     const code = getSingleSelectedValue(value);
-    const option = addressOptions.barangayOptions.find(
-      (barangay) => barangay.value === code,
-    );
+    const option = selectedOption;
 
     setValues((current) => ({
       ...current,
@@ -563,7 +560,6 @@ function AppPartyDialogContent({
             </section>
 
             <PartyInformationDetailsFields
-              addressOptions={addressOptions}
               accountOptions={accountOptions}
               atcOptions={atcDropdown.options}
               errors={errors}
@@ -582,7 +578,6 @@ function AppPartyDialogContent({
               onSelectCityMunicipality={selectCityMunicipality}
               onSelectProvince={selectProvince}
               onSelectTerm={selectTerm}
-              onUpdateAddressMeta={updateAddressMeta}
               onUpdateField={updateField}
             />
           </div>

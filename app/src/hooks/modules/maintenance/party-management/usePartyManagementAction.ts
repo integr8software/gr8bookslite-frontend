@@ -50,6 +50,12 @@ import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+
+type ProvinceDropdownOption = AppAdvancedDropdownOption & {
+  regionCode?: string;
+  regionName?: string;
+};
 
 export function usePartyManagementAction() {
   const router = useRouter();
@@ -307,13 +313,17 @@ export function usePartyManagementAction() {
     }));
   }
 
-  function selectProvince(value: string | string[], addressId?: string) {
+  function selectProvince(
+    value: string | string[],
+    addressId?: string,
+    selectedOption?: ProvinceDropdownOption,
+  ) {
     if (isReadonly || !isClassificationSelected) {
       return;
     }
 
     const code = getSingleSelectedValue(value);
-    const option = addressOptions.provinceOptions.find(
+    const option = selectedOption ?? addressOptions.provinceOptions.find(
       (province) => province.value === code,
     );
 
@@ -413,13 +423,17 @@ export function usePartyManagementAction() {
     }));
   }
 
-  function selectCityMunicipality(value: string | string[], addressId?: string) {
+  function selectCityMunicipality(
+    value: string | string[],
+    addressId?: string,
+    selectedOption?: AppAdvancedDropdownOption,
+  ) {
     if (isReadonly || !isClassificationSelected) {
       return;
     }
 
     const code = getSingleSelectedValue(value);
-    const option = addressOptions.cityMunicipalityOptions.find(
+    const option = selectedOption ?? addressOptions.cityMunicipalityOptions.find(
       (cityMunicipality) => cityMunicipality.value === code,
     );
 
@@ -444,13 +458,17 @@ export function usePartyManagementAction() {
     }));
   }
 
-  function selectBarangay(value: string | string[], addressId?: string) {
+  function selectBarangay(
+    value: string | string[],
+    addressId?: string,
+    selectedOption?: AppAdvancedDropdownOption,
+  ) {
     if (isReadonly || !isClassificationSelected) {
       return;
     }
 
     const code = getSingleSelectedValue(value);
-    const option = addressOptions.barangayOptions.find(
+    const option = selectedOption ?? addressOptions.barangayOptions.find(
       (barangay) => barangay.value === code,
     );
 

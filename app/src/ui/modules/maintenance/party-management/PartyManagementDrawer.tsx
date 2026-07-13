@@ -36,8 +36,14 @@ import type {
 	AddressAutocompleteDetails,
 	AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 const PartyDrawerFormId = "party-management-drawer-form";
+
+type ProvinceDropdownOption = AppAdvancedDropdownOption & {
+	regionCode?: string;
+	regionName?: string;
+};
 
 export function PartyManagementDrawer({
 	description = "Create a party record from the party-management fields, then use it on this transaction.",
@@ -242,13 +248,17 @@ export function PartyManagementDrawer({
 		setErrors((current) => ({ ...current, atcCode: undefined }));
 	}
 
-	function selectProvince(value: string | string[], addressId?: string) {
+	function selectProvince(
+		value: string | string[],
+		addressId?: string,
+		selectedOption?: ProvinceDropdownOption,
+	) {
 		if (!isClassificationSelected) {
 			return;
 		}
 
 		const code = getSingleSelectedValue(value);
-		const option = addressOptions.provinceOptions.find(
+		const option = selectedOption ?? addressOptions.provinceOptions.find(
 			(province) => province.value === code,
 		);
 
@@ -342,13 +352,17 @@ export function PartyManagementDrawer({
 		clearAddressErrors(["addressLine1", "addressLine2"]);
 	}
 
-	function selectCityMunicipality(value: string | string[], addressId?: string) {
+	function selectCityMunicipality(
+		value: string | string[],
+		addressId?: string,
+		selectedOption?: AppAdvancedDropdownOption,
+	) {
 		if (!isClassificationSelected) {
 			return;
 		}
 
 		const code = getSingleSelectedValue(value);
-		const option = addressOptions.cityMunicipalityOptions.find(
+		const option = selectedOption ?? addressOptions.cityMunicipalityOptions.find(
 			(cityMunicipality) => cityMunicipality.value === code,
 		);
 
@@ -369,13 +383,17 @@ export function PartyManagementDrawer({
 		clearAddressErrors(["cityMunicipalityCode", "barangayCode"]);
 	}
 
-	function selectBarangay(value: string | string[], addressId?: string) {
+	function selectBarangay(
+		value: string | string[],
+		addressId?: string,
+		selectedOption?: AppAdvancedDropdownOption,
+	) {
 		if (!isClassificationSelected) {
 			return;
 		}
 
 		const code = getSingleSelectedValue(value);
-		const option = addressOptions.barangayOptions.find(
+		const option = selectedOption ?? addressOptions.barangayOptions.find(
 			(barangay) => barangay.value === code,
 		);
 
@@ -481,7 +499,6 @@ export function PartyManagementDrawer({
 		>
 			<div id={PartyDrawerFormId} className="px-6 py-5">
 				<PartyInformationDetailsFields
-					addressOptions={addressOptions}
 					accountOptions={partyAccountOptions.accountOptions}
 					atcOptions={atcDropdown.options}
 					errors={errors}
@@ -501,7 +518,6 @@ export function PartyManagementDrawer({
 					onSelectCityMunicipality={selectCityMunicipality}
 					onSelectProvince={selectProvince}
 					onSelectTerm={selectTerm}
-					onUpdateAddressMeta={updateAddressMeta}
 					onUpdateField={updateField}
 				/>
 			</div>

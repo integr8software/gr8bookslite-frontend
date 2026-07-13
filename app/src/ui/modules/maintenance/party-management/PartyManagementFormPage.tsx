@@ -44,7 +44,6 @@ function PartyManagementFormPageInner() {
 					}
 				/>
 				<PartyInformationDetailsFields
-					addressOptions={page.addressOptions}
 					accountOptions={page.accountOptions}
 					atcOptions={page.atcOptions}
 					errors={page.errors}
@@ -64,7 +63,6 @@ function PartyManagementFormPageInner() {
 					onSelectCityMunicipality={page.selectCityMunicipality}
 					onSelectProvince={page.selectProvince}
 					onSelectTerm={page.selectTerm}
-					onUpdateAddressMeta={page.updateAddressMeta}
 					onUpdateField={page.updateField}
 				/>
 			</form>

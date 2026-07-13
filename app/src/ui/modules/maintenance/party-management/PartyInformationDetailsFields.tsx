@@ -31,12 +31,10 @@ import type {
 } from "@/app/src/types/shared/address/AddressTypes";
 import {
 	PartyAddressContainer,
-	type PartyAddressOptionSet,
 } from "@/app/src/ui/modules/maintenance/party-management/PartyAddressContainer";
 
 export function PartyInformationDetailsFields({
 	atcOptions,
-	addressOptions,
 	accountOptions,
 	errors,
 	isClassificationSelected,
@@ -54,11 +52,9 @@ export function PartyInformationDetailsFields({
 	onSyncAutocompleteAddressDetails,
 	onSelectCityMunicipality,
 	onSelectProvince,
-	onUpdateAddressMeta,
 	onUpdateField,
 	onSelectTerm,
 }: {
-	addressOptions: PartyAddressOptionSet;
 	accountOptions: ModuleChartAccount[];
 	atcOptions: PartyAtcCodeOption[];
 	errors: PartyInformationFormErrors;
@@ -84,16 +80,6 @@ export function PartyInformationDetailsFields({
 	onSelectBarangay: (value: string | string[], addressId?: string) => void;
 	onSelectCityMunicipality: (value: string | string[], addressId?: string) => void;
 	onSelectProvince: (value: string | string[], addressId?: string) => void;
-	onUpdateAddressMeta: (
-		addressId: string,
-		field:
-			| "addressName"
-			| "isBilling"
-			| "isDelivery"
-			| "isForeign"
-			| "isHome",
-		value: string | boolean,
-	) => void;
 	onUpdateField: <TKey extends keyof PartyInformationFormValues>(
 		field: TKey,
 		value: PartyInformationFormValues[TKey],
@@ -301,7 +287,6 @@ export function PartyInformationDetailsFields({
 					addresses={values.addresses}
 					disabled={isDetailsDisabled}
 					errors={errors}
-					options={addressOptions}
 					partyTypes={values.partyTypes}
 					onAddressInputChange={onAddressInputChange}
 					onSelectBarangay={onSelectBarangay}
@@ -309,7 +294,6 @@ export function PartyInformationDetailsFields({
 					onSyncAutocompleteAddressDetails={onSyncAutocompleteAddressDetails}
 					onSelectCityMunicipality={onSelectCityMunicipality}
 					onSelectProvince={onSelectProvince}
-					onUpdateAddressMeta={onUpdateAddressMeta}
 				/>
 
 				<div className="grid gap-4">
@@ -437,6 +421,7 @@ function AccountFields({
 						: "Select a party type to enable account overrides."
 				}
 				disabled={isAccountingDisabled}
+				required={hasAccountingFields}
 				title="Accounting"
 				contentClassName="grid gap-4 md:grid-cols-2"
 			>

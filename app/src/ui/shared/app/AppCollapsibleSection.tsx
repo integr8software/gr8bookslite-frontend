@@ -9,6 +9,7 @@ export function AppCollapsibleSection({
 	defaultOpen = false,
 	description,
 	disabled = false,
+	required = false,
 	title,
 }: {
 	badge?: string;
@@ -18,6 +19,7 @@ export function AppCollapsibleSection({
 	defaultOpen?: boolean;
 	description?: string;
 	disabled?: boolean;
+	required?: boolean;
 	title: string;
 }) {
 	function preventToggle(event: MouseEvent | KeyboardEvent) {
@@ -86,6 +88,11 @@ export function AppCollapsibleSection({
 						<span>Disabled</span>
 					) : (
 						<>
+							{required ? (
+								<span className="group-open:hidden text-coralpink">
+									Required
+								</span>
+							) : null}
 							<span className="group-open:hidden">Show</span>
 							<span className="hidden group-open:inline">Hide</span>
 						</>

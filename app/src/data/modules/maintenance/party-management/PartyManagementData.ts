@@ -22,6 +22,7 @@ import type {
   PartyImportPreviewRow,
   PartyInformationFormValues,
   PartyInformationRecord,
+  PartyInformationTableRecord,
   PartyType,
   VatRegistrationType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
@@ -404,6 +405,41 @@ export function updatePartyInformationRecord(
     ...record,
     ...normalizePartyRecordValues(values),
     updatedAt: new Date().toISOString(),
+  };
+}
+
+export function createPartyInformationRecordFromTableRecord(
+  record: PartyInformationTableRecord,
+): PartyInformationRecord {
+  return {
+    address: record.address,
+    addresses: record.addresses,
+    atcCode: record.atcCode,
+    classification: record.classification,
+    contactNo: record.contactNo,
+    createdAt: record.createdAt,
+    customerAdvanceAccount: record.customerAdvanceAccount,
+    defaultPayableAccount: record.defaultPayableAccount,
+    defaultReceivableAccount: record.defaultReceivableAccount,
+    email: record.email,
+    employeeAdvanceAccount: record.employeeAdvanceAccount,
+    employeePayableAccount: record.employeePayableAccount,
+    firstName: record.firstName,
+    id: record.id,
+    lastName: record.lastName,
+    middleName: record.middleName,
+    partyCodeNo: record.partyCodeNo,
+    partyName: record.partyName,
+    partyTypes: record.partyTypes,
+    status: record.status,
+    suffixName: record.suffixName,
+    termId: record.termId,
+    termName: record.termName,
+    tin: record.tin,
+    tradeName: record.tradeName,
+    updatedAt: record.updatedAt,
+    vendorAdvanceAccount: record.vendorAdvanceAccount,
+    vatRegistrationType: record.vatRegistrationType,
   };
 }
 

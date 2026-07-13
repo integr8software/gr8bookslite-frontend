@@ -1,3 +1,10 @@
+import type { ChangeEventHandler } from "react";
+import type { Row, Table } from "@tanstack/react-table";
+import type {
+  AddressAutocompleteDetails,
+  AddressAutocompleteItem,
+} from "@/app/src/types/shared/address/AddressTypes";
+
 export type PartyClassification = "Individual" | "Non-Individual";
 
 export type PartyInformationStatus = "Active" | "Inactive";
@@ -139,6 +146,20 @@ export type PartyInformationFormErrors = Partial<{
 
 export type PartyInformationActionMode = "add" | "edit" | "view";
 
+export type PartyInformationActionHeaderProps = {
+  canSave?: boolean;
+  cancelHref: string;
+  editHref?: string;
+  isReadonly: boolean;
+  mode: PartyInformationActionMode;
+  nextStatus?: PartyInformationStatus;
+  onStatusChange?: () => void;
+};
+
+export type PartyInformationHeaderProps = {
+  onImport: () => void;
+};
+
 export type PartyAtcCodeOption = {
   category: string;
   classifications: PartyClassification[];
@@ -158,6 +179,146 @@ export type PartyInformationTableRecord = PartyInformationRecord & {
   addressLabel: string;
   name: string;
   partyTypesLabel: string;
+};
+
+export type PartyInformationTableProps = {
+  isLoading: boolean;
+  isRefreshing: boolean;
+  lastSyncedAt?: number | string | Date | null;
+  records: PartyInformationRecord[];
+  onRefresh: () => void;
+};
+
+export type PartyInformationTableRowProps = {
+  row: Row<PartyInformationTableRecord>;
+};
+
+export type PartyInformationRecordActionsProps = {
+  record: PartyInformationTableRecord;
+};
+
+export type PartyInformationTableFiltersProps = {
+  exportAllRows: PartyInformationTableRecord[];
+  exportFilteredRows: PartyInformationTableRecord[];
+  hasActiveFilters: boolean;
+  classificationFilter: PartyClassification | "All";
+  classificationOptions: readonly PartyClassification[];
+  partyTypeFilter: PartyType | "All";
+  partyTypeOptions: readonly PartyType[];
+  query: string;
+  statusFilter: PartyInformationStatus | "All";
+  statusOptions: readonly PartyInformationStatus[];
+  table: Table<PartyInformationTableRecord>;
+  isRefreshing: boolean;
+  onClassificationFilterChange: (value: PartyClassification | "All") => void;
+  onPartyTypeFilterChange: (value: PartyType | "All") => void;
+  onQueryChange: (value: string) => void;
+  onRefresh: () => void;
+  onStatusFilterChange: (value: PartyInformationStatus | "All") => void;
+};
+
+export type PartyAddressDropdownOption = {
+  children?: PartyAddressDropdownOption[];
+  description?: string;
+  disabled?: boolean;
+  href?: string;
+  label?: string;
+  name: string;
+  value: string;
+};
+
+export type PartyInformationFieldUpdateHandler = <
+  TKey extends keyof PartyInformationFormValues,
+>(
+  field: TKey,
+  value: PartyInformationFormValues[TKey],
+) => void;
+
+export type PartyInformationDetailsFieldsProps = {
+  accountOptions: PartyAccountingAccountOptions;
+  atcOptions: PartyAtcCodeOption[];
+  errors: PartyInformationFormErrors;
+  isClassificationSelected: boolean;
+  isPartyCodeReadonly?: boolean;
+  isReadonly: boolean;
+  partyTypeOptions: readonly PartyType[];
+  termOptions: PartyAddressDropdownOption[];
+  values: PartyInformationFormValues;
+  onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
+  onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
+  onPartyTypesChange: (value: string | string[]) => void;
+  onSelectAtcCode: (value: string | string[]) => void;
+  onSelectAutocompleteAddress: (
+    address: AddressAutocompleteItem,
+    details?: AddressAutocompleteDetails,
+    addressId?: string,
+  ) => void;
+  onSyncAutocompleteAddressDetails?: (
+    details: AddressAutocompleteDetails,
+    addressId?: string,
+  ) => void;
+  onSelectBarangay: (value: string | string[], addressId?: string) => void;
+  onSelectCityMunicipality: (value: string | string[], addressId?: string) => void;
+  onSelectProvince: (value: string | string[], addressId?: string) => void;
+  onUpdateField: PartyInformationFieldUpdateHandler;
+  onSelectTerm: (value: string | string[]) => void;
+};
+
+export type PartyAddressContainerProps = {
+  addresses: PartyAddress[];
+  disabled: boolean;
+  errors: PartyInformationFormErrors;
+  partyTypes: PartyType[];
+  onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
+  onSelectAutocompleteAddress: (
+    address: AddressAutocompleteItem,
+    details?: AddressAutocompleteDetails,
+    addressId?: string,
+  ) => void;
+  onSelectBarangay: (
+    value: string | string[],
+    addressId?: string,
+    option?: PartyAddressDropdownOption,
+  ) => void;
+  onSelectCityMunicipality: (
+    value: string | string[],
+    addressId?: string,
+    option?: PartyAddressDropdownOption,
+  ) => void;
+  onSelectProvince: (
+    value: string | string[],
+    addressId?: string,
+    option?: PartyProvinceOption,
+  ) => void;
+  onSyncAutocompleteAddressDetails?: (
+    details: AddressAutocompleteDetails,
+    addressId?: string,
+  ) => void;
+};
+
+export type PartyManagementDrawerProps = {
+  description?: string;
+  isOpen: boolean;
+  isPending: boolean;
+  onAddRecord: (record: PartyInformationRecord) => void;
+  onClose: () => void;
+  onCreateParty: (record: PartyInformationRecord) => void;
+  records: PartyInformationRecord[];
+  title?: string;
+};
+
+export type PartyProvinceOption = PartyAddressDropdownOption & {
+  regionCode?: string;
+  regionName?: string;
+};
+
+export type PartyAddressOptionSet = {
+  barangayOptions: PartyAddressDropdownOption[];
+  cityMunicipalityOptions: PartyAddressDropdownOption[];
+  isBarangaysLoading: boolean;
+  isCitiesMunicipalitiesLoading: boolean;
+  isProvincesLoading: boolean;
+  provinceOptions: PartyProvinceOption[];
 };
 
 export type PartyManagementListSort = {

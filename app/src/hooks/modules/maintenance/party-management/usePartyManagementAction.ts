@@ -36,6 +36,7 @@ import type {
   PartyInformationFormErrors,
   PartyInformationFormValues,
   PartyInformationStatus,
+  PartyProvinceOption,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
@@ -51,11 +52,6 @@ import type {
   AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-
-type ProvinceDropdownOption = AppAdvancedDropdownOption & {
-  regionCode?: string;
-  regionName?: string;
-};
 
 export function usePartyManagementAction() {
   const router = useRouter();
@@ -325,7 +321,7 @@ export function usePartyManagementAction() {
   function selectProvince(
     value: string | string[],
     addressId?: string,
-    selectedOption?: ProvinceDropdownOption,
+    selectedOption?: PartyProvinceOption,
   ) {
     if (isReadonly || !isClassificationSelected) {
       return;

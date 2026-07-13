@@ -5,11 +5,17 @@ import type {
 	MouseEvent as ReactMouseEvent,
 	ReactNode,
 } from "react";
+import {
+	PartyManagementFieldClassName,
+	PartyManagementFieldControlSelector,
+} from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
 import type {
+	PartyAddressContainerProps,
+	PartyAddressOptionSet,
 	PartyAddress,
 	PartyInformationFormErrors,
-	PartyType,
+	PartyProvinceOption,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import {
 	AppAdvancedDropdown,
@@ -20,20 +26,6 @@ import type {
 	AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
 import { AppAddressAutocomplete } from "@/app/src/ui/shared/address/AppAddressAutocomplete";
-
-export type PartyProvinceOption = AppAdvancedDropdownOption & {
-	regionCode?: string;
-	regionName?: string;
-};
-
-export type PartyAddressOptionSet = {
-	barangayOptions: AppAdvancedDropdownOption[];
-	cityMunicipalityOptions: AppAdvancedDropdownOption[];
-	isBarangaysLoading: boolean;
-	isCitiesMunicipalitiesLoading: boolean;
-	isProvincesLoading: boolean;
-	provinceOptions: PartyProvinceOption[];
-};
 
 export function PartyAddressContainer({
 	addresses,
@@ -46,37 +38,7 @@ export function PartyAddressContainer({
 	onSelectCityMunicipality,
 	onSelectProvince,
 	onSyncAutocompleteAddressDetails,
-}: {
-	addresses: PartyAddress[];
-	disabled: boolean;
-	errors: PartyInformationFormErrors;
-	partyTypes: PartyType[];
-	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
-	onSelectAutocompleteAddress: (
-		address: AddressAutocompleteItem,
-		details?: AddressAutocompleteDetails,
-		addressId?: string,
-	) => void;
-	onSelectBarangay: (
-		value: string | string[],
-		addressId?: string,
-		option?: AppAdvancedDropdownOption,
-	) => void;
-	onSelectCityMunicipality: (
-		value: string | string[],
-		addressId?: string,
-		option?: AppAdvancedDropdownOption,
-	) => void;
-	onSelectProvince: (
-		value: string | string[],
-		addressId?: string,
-		option?: PartyProvinceOption,
-	) => void;
-	onSyncAutocompleteAddressDetails?: (
-		details: AddressAutocompleteDetails,
-		addressId?: string,
-	) => void;
-}) {
+}: PartyAddressContainerProps) {
 	const hasCustomerRole = partyTypes.includes("Customer");
 	const hasVendorRole = partyTypes.includes("Vendor");
 	const hasEmployeeRole = partyTypes.includes("Employee");
@@ -501,7 +463,7 @@ function AddressInput({
 				autoComplete="new-password"
 				data-form-type="other"
 				disabled={disabled}
-				className={fieldClassName}
+				className={PartyManagementFieldClassName}
 				placeholder={placeholder}
 			/>
 		</Field>
@@ -533,12 +495,17 @@ function Field({
 	function handleFieldMouseDown(event: ReactMouseEvent<HTMLDivElement>) {
 		const target = event.target;
 
-		if (!(target instanceof Element) || target.closest(fieldControlSelector)) {
+		if (
+			!(target instanceof Element) ||
+			target.closest(PartyManagementFieldControlSelector)
+		) {
 			return;
 		}
 
 		const control =
-			event.currentTarget.querySelector<HTMLElement>(fieldControlSelector);
+			event.currentTarget.querySelector<HTMLElement>(
+				PartyManagementFieldControlSelector,
+			);
 
 		if (
 			!control ||
@@ -602,8 +569,3 @@ function SectionHeading({ title }: { title: string }) {
 	);
 }
 
-const fieldClassName =
-	"app-disabled-control h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35 disabled:placeholder:text-darknavy/32";
-
-const fieldControlSelector =
-	'[role="combobox"], input:not([type="hidden"]), select, textarea, button';

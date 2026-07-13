@@ -1,12 +1,13 @@
-import type { Row } from "@tanstack/react-table";
-import type { PartyInformationTableRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import type { ReactNode } from "react";
+import type {
+	PartyInformationTableRecord,
+	PartyInformationTableRowProps,
+} from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { PartyInformationRecordActions } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationRecordActions";
 
 export function PartyInformationTableRow({
 	row,
-}: {
-	row: Row<PartyInformationTableRecord>;
-}) {
+}: PartyInformationTableRowProps) {
 	return (
 		<tr className="module-table-row">
 			{row.getVisibleCells().map((cell) => (
@@ -85,7 +86,7 @@ function PartyInformationTableCell({
 	children,
 }: {
 	align?: "center" | "left";
-	children: React.ReactNode;
+	children: ReactNode;
 }) {
 	return (
 		<td

@@ -4,10 +4,12 @@ import type {
   PartyImportColumnWidths,
   PartyClassification,
   PartyInformationStatus,
+  PartyInformationTableRecord,
   PartyType,
   VatRegistrationType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
+import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
 export const PartyManagementHref = "/maintenance/party-management";
 
@@ -28,6 +30,8 @@ export const PartyManagementEditFromParam = "from";
 export const PartyManagementEditFromViewValue = "view";
 
 export const PartyManagementEditFromViewQuery = `${PartyManagementEditFromParam}=${PartyManagementEditFromViewValue}`;
+
+export const PartyManagementDrawerFormId = "party-management-drawer-form";
 
 export const PartyClassificationOptions = [
   "Individual",
@@ -89,6 +93,42 @@ export const PartyManagementTableColumns = [
     className: "w-[12rem] text-center",
   },
 ] as const;
+
+export const PartyInformationExportColumns: ModuleTableExportColumn<PartyInformationTableRecord>[] =
+  [
+    { header: "Party Code", value: "partyCodeNo" },
+    { header: "Name", id: "name", value: "name" },
+    { header: "Classification", id: "classification", value: "classification" },
+    { header: "Party Type", id: "partyTypesLabel", value: "partyTypesLabel" },
+    { header: "Status", id: "status", value: "status" },
+    { header: "Address", id: "addressLabel", value: "addressLabel" },
+    { header: "TIN", value: "tin" },
+    { header: "VAT Registration Type", value: "vatRegistrationType" },
+    { header: "BIR ATC Code", value: "atcCode" },
+    { header: "Email", value: "email" },
+    { header: "Contact No.", value: "contactNo" },
+    { header: "Terms", value: "termName" },
+    { header: "Default Receivable Account", value: "defaultReceivableAccount" },
+    { header: "Default Customer Advance Account", value: "customerAdvanceAccount" },
+    { header: "Default Payable Account", value: "defaultPayableAccount" },
+    { header: "Default Vendor Advance Account", value: "vendorAdvanceAccount" },
+    { header: "Default Employee Advance Account", value: "employeeAdvanceAccount" },
+    { header: "Default Employee Payable Account", value: "employeePayableAccount" },
+  ];
+
+export const PartyManagementFieldClassName =
+  "app-disabled-control h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35 disabled:placeholder:text-darknavy/32";
+
+export const PartyManagementSelectClassName = `app-select-control ${PartyManagementFieldClassName}`;
+
+export const PartyManagementFieldControlSelector =
+  '[role="combobox"], input:not([type="hidden"]), select, textarea, button';
+
+export const PartyManagementDrawerSecondaryActionClassName =
+  "inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15";
+
+export const PartyManagementDrawerPrimaryActionClassName =
+  "theme-accent-contrast-text inline-flex h-10 items-center justify-center rounded-md bg-skyblue px-4 text-sm font-semibold shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45";
 
 export const PartyImportTemplateHeaders = [
   "Party Code",

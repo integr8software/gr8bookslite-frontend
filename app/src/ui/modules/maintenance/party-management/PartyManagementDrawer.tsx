@@ -6,7 +6,12 @@ import {
 	type ChangeEvent,
 	type FormEvent,
 } from "react";
-import { PartyTypeOptions } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
+import {
+	PartyManagementDrawerPrimaryActionClassName,
+	PartyManagementDrawerFormId,
+	PartyManagementDrawerSecondaryActionClassName,
+	PartyTypeOptions,
+} from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
 	PartyInformationInitialFormValues,
 	applyPartyDefaultAccountingAccounts,
@@ -33,6 +38,8 @@ import type {
 	PartyInformationFormErrors,
 	PartyInformationFormValues,
 	PartyInformationRecord,
+	PartyManagementDrawerProps,
+	PartyProvinceOption,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
@@ -43,13 +50,6 @@ import type {
 } from "@/app/src/types/shared/address/AddressTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
-const PartyDrawerFormId = "party-management-drawer-form";
-
-type ProvinceDropdownOption = AppAdvancedDropdownOption & {
-	regionCode?: string;
-	regionName?: string;
-};
-
 export function PartyManagementDrawer({
 	description = "Create a party record from the party-management fields, then use it on this transaction.",
 	isOpen,
@@ -59,16 +59,7 @@ export function PartyManagementDrawer({
 	onCreateParty,
 	records,
 	title = "Add Party Code",
-}: {
-	description?: string;
-	isOpen: boolean;
-	isPending: boolean;
-	onAddRecord: (record: PartyInformationRecord) => void;
-	onClose: () => void;
-	onCreateParty: (record: PartyInformationRecord) => void;
-	records: PartyInformationRecord[];
-	title?: string;
-}) {
+}: PartyManagementDrawerProps) {
 	const [values, setValues] = useState<PartyInformationFormValues>(() =>
 		createPartyDrawerInitialValues(records),
 	);
@@ -265,7 +256,7 @@ export function PartyManagementDrawer({
 	function selectProvince(
 		value: string | string[],
 		addressId?: string,
-		selectedOption?: ProvinceDropdownOption,
+		selectedOption?: PartyProvinceOption,
 	) {
 		if (!isClassificationSelected) {
 			return;
@@ -474,7 +465,7 @@ export function PartyManagementDrawer({
 					<button
 						type="button"
 						onClick={onClose}
-						className={moduleDrawerSecondaryActionClassName}
+						className={PartyManagementDrawerSecondaryActionClassName}
 					>
 						Cancel
 					</button>
@@ -482,7 +473,7 @@ export function PartyManagementDrawer({
 						type="button"
 						onClick={() => handleSubmit()}
 						disabled={isPending || !canSave}
-						className={moduleDrawerPrimaryActionClassName}
+						className={PartyManagementDrawerPrimaryActionClassName}
 					>
 						Save Party
 					</button>
@@ -493,7 +484,7 @@ export function PartyManagementDrawer({
 			onClose={onClose}
 			title={title}
 		>
-			<div id={PartyDrawerFormId} className="px-6 py-5">
+			<div id={PartyManagementDrawerFormId} className="px-6 py-5">
 				<PartyInformationDetailsFields
 					accountOptions={partyAccountOptions.accountOptions}
 					atcOptions={atcDropdown.options}
@@ -547,8 +538,3 @@ function getSingleSelectedValue(value: string | string[]) {
 	return Array.isArray(value) ? (value[0] ?? "") : value;
 }
 
-const moduleDrawerSecondaryActionClassName =
-	"inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15";
-
-const moduleDrawerPrimaryActionClassName =
-	"theme-accent-contrast-text inline-flex h-10 items-center justify-center rounded-md bg-skyblue px-4 text-sm font-semibold shadow-sm transition hover:bg-skyblue/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45";

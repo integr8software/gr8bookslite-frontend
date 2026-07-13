@@ -1,10 +1,12 @@
 import {
-	type ChangeEventHandler,
 	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
 } from "react";
 import {
 	PartyClassificationOptions,
+	PartyManagementFieldClassName,
+	PartyManagementFieldControlSelector,
+	PartyManagementSelectClassName,
 	PartyInformationStatusOptions,
 	VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
@@ -14,21 +16,14 @@ import {
 } from "@/app/src/data/shared/contact/ContactData";
 import type {
 	PartyAccountingAccountOptions,
-	PartyAtcCodeOption,
 	PartyInformationFormErrors,
+	PartyInformationDetailsFieldsProps,
+	PartyInformationFieldUpdateHandler,
 	PartyInformationFormValues,
-	PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
-import {
-	AppAdvancedDropdown,
-	type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppCollapsibleSection } from "@/app/src/ui/shared/app/AppCollapsibleSection";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
-import type {
-	AddressAutocompleteDetails,
-	AddressAutocompleteItem,
-} from "@/app/src/types/shared/address/AddressTypes";
 import {
 	PartyAddressContainer,
 } from "@/app/src/ui/modules/maintenance/party-management/PartyAddressContainer";
@@ -54,38 +49,7 @@ export function PartyInformationDetailsFields({
 	onSelectProvince,
 	onUpdateField,
 	onSelectTerm,
-}: {
-	accountOptions: PartyAccountingAccountOptions;
-	atcOptions: PartyAtcCodeOption[];
-	errors: PartyInformationFormErrors;
-	isClassificationSelected: boolean;
-	isPartyCodeReadonly?: boolean;
-	isReadonly: boolean;
-	partyTypeOptions: readonly PartyType[];
-	termOptions: AppAdvancedDropdownOption[];
-	values: PartyInformationFormValues;
-	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
-	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
-	onPartyTypesChange: (value: string | string[]) => void;
-	onSelectAtcCode: (value: string | string[]) => void;
-	onSelectAutocompleteAddress: (
-		address: AddressAutocompleteItem,
-		details?: AddressAutocompleteDetails,
-		addressId?: string,
-	) => void;
-	onSyncAutocompleteAddressDetails?: (
-		details: AddressAutocompleteDetails,
-		addressId?: string,
-	) => void;
-	onSelectBarangay: (value: string | string[], addressId?: string) => void;
-	onSelectCityMunicipality: (value: string | string[], addressId?: string) => void;
-	onSelectProvince: (value: string | string[], addressId?: string) => void;
-	onUpdateField: <TKey extends keyof PartyInformationFormValues>(
-		field: TKey,
-		value: PartyInformationFormValues[TKey],
-	) => void;
-	onSelectTerm: (value: string | string[]) => void;
-}) {
+}: PartyInformationDetailsFieldsProps) {
 	const isPartyTypeSelected = values.partyTypes.length > 0;
 	const isDetailsDisabled =
 		isReadonly || !isClassificationSelected || !isPartyTypeSelected;
@@ -117,7 +81,7 @@ export function PartyInformationDetailsFields({
 								value={values.partyCodeNo}
 								onChange={onInputChange}
 								readOnly={isReadonly || isPartyCodeReadonly}
-								className={fieldClassName}
+								className={PartyManagementFieldClassName}
 							/>
 						</Field>
 						<Field
@@ -130,7 +94,7 @@ export function PartyInformationDetailsFields({
 								disabled={isReadonly}
 								value={values.classification}
 								onChange={onInputChange}
-								className={selectClassName}
+								className={PartyManagementSelectClassName}
 							>
 								<option value="">--Select Classification--</option>
 								{PartyClassificationOptions.map((classification) => (
@@ -163,7 +127,7 @@ export function PartyInformationDetailsFields({
 								disabled={isReadonly}
 								value={values.status}
 								onChange={onInputChange}
-								className={selectClassName}
+								className={PartyManagementSelectClassName}
 							>
 								{PartyInformationStatusOptions.map((status) => (
 									<option key={status} value={status}>
@@ -184,7 +148,7 @@ export function PartyInformationDetailsFields({
 								onChange={onInputChange}
 								readOnly={isReadonly}
 								disabled={isDetailsDisabled}
-								className={fieldClassName}
+								className={PartyManagementFieldClassName}
 							/>
 						</Field>
 						<Field label="Trade Name">
@@ -194,7 +158,7 @@ export function PartyInformationDetailsFields({
 								onChange={onInputChange}
 								readOnly={isReadonly}
 								disabled={isDetailsDisabled}
-								className={fieldClassName}
+								className={PartyManagementFieldClassName}
 							/>
 						</Field>
 					</div>
@@ -209,7 +173,7 @@ export function PartyInformationDetailsFields({
 								onChange={onInputChange}
 								readOnly={isReadonly}
 								disabled={isDetailsDisabled}
-								className={fieldClassName}
+								className={PartyManagementFieldClassName}
 							/>
 						</Field>
 						<Field label="Middle Name">
@@ -219,7 +183,7 @@ export function PartyInformationDetailsFields({
 								onChange={onInputChange}
 								readOnly={isReadonly}
 								disabled={isDetailsDisabled}
-								className={fieldClassName}
+								className={PartyManagementFieldClassName}
 							/>
 						</Field>
 						<Field label="Last Name" error={errors.lastName} required>
@@ -229,7 +193,7 @@ export function PartyInformationDetailsFields({
 								onChange={onInputChange}
 								readOnly={isReadonly}
 								disabled={isDetailsDisabled}
-								className={fieldClassName}
+								className={PartyManagementFieldClassName}
 							/>
 						</Field>
 						<Field label="Suffix">
@@ -239,7 +203,7 @@ export function PartyInformationDetailsFields({
 								onChange={onInputChange}
 								readOnly={isReadonly}
 								disabled={isDetailsDisabled}
-								className={fieldClassName}
+								className={PartyManagementFieldClassName}
 							/>
 						</Field>
 					</div>
@@ -254,7 +218,7 @@ export function PartyInformationDetailsFields({
 							onChange={onInputChange}
 							readOnly={isReadonly}
 							disabled={isDetailsDisabled}
-							className={fieldClassName}
+							className={PartyManagementFieldClassName}
 							placeholder="name@example.com"
 						/>
 					</Field>
@@ -273,7 +237,7 @@ export function PartyInformationDetailsFields({
 							readOnly={isReadonly}
 							disabled={isDetailsDisabled}
 							maxLength={16}
-							className={fieldClassName}
+							className={PartyManagementFieldClassName}
 							placeholder={PhilippineContactNumberPlaceholder}
 						/>
 					</Field>
@@ -304,7 +268,7 @@ export function PartyInformationDetailsFields({
 								onChange={onInputChange}
 								readOnly={isReadonly}
 								disabled={isDetailsDisabled}
-								className={fieldClassName}
+								className={PartyManagementFieldClassName}
 								placeholder="000-000-000-000"
 							/>
 						</Field>
@@ -325,7 +289,7 @@ export function PartyInformationDetailsFields({
 								disabled={isDetailsDisabled}
 								value={values.vatRegistrationType}
 								onChange={onInputChange}
-								className={selectClassName}
+								className={PartyManagementSelectClassName}
 							>
 								<option value="">--Select VAT Type--</option>
 								{VatRegistrationTypeOptions.map((type) => (
@@ -371,10 +335,7 @@ function AccountFields({
 	disabled: boolean;
 	errors: PartyInformationFormErrors;
 	values: PartyInformationFormValues;
-	onUpdateField: <TKey extends keyof PartyInformationFormValues>(
-		field: TKey,
-		value: PartyInformationFormValues[TKey],
-	) => void;
+	onUpdateField: PartyInformationFieldUpdateHandler;
 }) {
 	const isCustomer = values.partyTypes.includes("Customer");
 	const isVendor = values.partyTypes.includes("Vendor");
@@ -548,12 +509,17 @@ function Field({
 	function handleFieldMouseDown(event: ReactMouseEvent<HTMLDivElement>) {
 		const target = event.target;
 
-		if (!(target instanceof Element) || target.closest(fieldControlSelector)) {
+		if (
+			!(target instanceof Element) ||
+			target.closest(PartyManagementFieldControlSelector)
+		) {
 			return;
 		}
 
 		const control =
-			event.currentTarget.querySelector<HTMLElement>(fieldControlSelector);
+			event.currentTarget.querySelector<HTMLElement>(
+				PartyManagementFieldControlSelector,
+			);
 
 		if (
 			!control ||
@@ -587,10 +553,3 @@ function Field({
 	);
 }
 
-const fieldClassName =
-	"app-disabled-control h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35 disabled:placeholder:text-darknavy/32";
-
-const selectClassName = `app-select-control ${fieldClassName}`;
-
-const fieldControlSelector =
-	'[role="combobox"], input:not([type="hidden"]), select, textarea, button';

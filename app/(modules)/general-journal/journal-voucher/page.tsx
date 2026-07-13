@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { JournalVoucherMain } from "@/app/src/ui/modules/general-journal/journal-voucher/Main";
+import { JournalVoucherListPage } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherListPage";
 
 const PageTitle = "Journal Voucher";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function GeneralJournalJournalVoucherPage() {
-  return <JournalVoucherMain />;
+  return <JournalVoucherListPage />;
 }
 
 

@@ -5,6 +5,7 @@ import {
 	type KeyboardEvent,
 	type ReactNode,
 } from "react";
+import { formatCurrency } from "@/app/src/utils/currency.util";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import {
@@ -552,13 +553,6 @@ function DecimalNumberInput({
 			className={fieldClassName}
 		/>
 	);
-}
-
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("en-US", {
-		currency: "PHP",
-		style: "currency",
-	}).format(value);
 }
 
 function FieldPanel({

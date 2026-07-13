@@ -6,9 +6,8 @@ import {
   VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
-  MaxPartyAddressCount,
-} from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
-import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
+  DefaultPhilippineContactNumber,
+} from "@/app/src/data/shared/contact/ContactData";
 import { isAtcCodeLike } from "@/app/src/data/shared/tax/AtcCode";
 import type {
   PartyInformationFormErrors,
@@ -24,19 +23,19 @@ const PartyInformationAddressSchema = z.object({
   addressLine1: z.string().trim(),
   addressLine2: z.string().trim(),
   barangay: z.string().trim(),
-  barangayCode: z.string().trim().min(1, "Select a barangay."),
+  barangayCode: z.string().trim(),
   cityMunicipality: z.string().trim(),
-  cityMunicipalityCode: z
-    .string()
-    .trim()
-    .min(1, "Select a city or municipality."),
+  cityMunicipalityCode: z.string().trim(),
   isBilling: z.boolean(),
+  isBuilding: z.boolean().optional().default(false),
   isDefault: z.boolean(),
   isDelivery: z.boolean(),
+  isForeign: z.boolean().optional().default(false),
+  isHome: z.boolean().optional().default(false),
   province: z.string().trim(),
-  provinceCode: z.string().trim().min(1, "Select a province."),
+  provinceCode: z.string().trim(),
   region: z.string().trim(),
-  regionCode: z.string().trim().min(1, "Select a region."),
+  regionCode: z.string().trim(),
 });
 
 export const PartyInformationFormSchema = z
@@ -61,15 +60,14 @@ export const PartyInformationFormSchema = z
     addresses: z
       .array(PartyInformationAddressSchema)
       .min(1, "Add at least one address.")
-      .max(
-        MaxPartyAddressCount,
-        `Add no more than ${MaxPartyAddressCount} addresses.`,
-      ),
+      .max(3, "Add only one address per address type."),
     activeAddressId: z.string().trim(),
     defaultReceivableAccount: z.string().trim(),
+    customerAdvanceAccount: z.string().trim(),
     defaultPayableAccount: z.string().trim(),
-    employeeReceivableAccount: z.string().trim(),
+    vendorAdvanceAccount: z.string().trim(),
     employeeAdvanceAccount: z.string().trim(),
+    employeePayableAccount: z.string().trim(),
     termId: z.string().trim(),
     termName: z.string().trim(),
     tin: z
@@ -148,6 +146,159 @@ export const PartyInformationFormSchema = z
         path: ["addresses"],
       });
     }
+
+    if (
+      values.classification === "Non-Individual" &&
+      values.partyTypes.includes("Employee")
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Employee is only available for individual parties.",
+        path: ["partyTypes"],
+      });
+    }
+
+    const requiredAccountingFields = [
+      {
+        enabled: values.partyTypes.includes("Customer"),
+        field: "defaultReceivableAccount",
+        message: "Default receivable account is required.",
+      },
+      {
+        enabled: values.partyTypes.includes("Customer"),
+        field: "customerAdvanceAccount",
+        message: "Default customer advance account is required.",
+      },
+      {
+        enabled: values.partyTypes.includes("Vendor"),
+        field: "defaultPayableAccount",
+        message: "Default payable account is required.",
+      },
+      {
+        enabled: values.partyTypes.includes("Vendor"),
+        field: "vendorAdvanceAccount",
+        message: "Default vendor advance account is required.",
+      },
+      {
+        enabled: values.partyTypes.includes("Employee"),
+        field: "employeeAdvanceAccount",
+        message: "Default employee advance account is required.",
+      },
+      {
+        enabled: values.partyTypes.includes("Employee"),
+        field: "employeePayableAccount",
+        message: "Default employee payable account is required.",
+      },
+    ] as const;
+
+    requiredAccountingFields.forEach((accountField) => {
+      if (
+        accountField.enabled &&
+        !values[accountField.field].trim()
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: accountField.message,
+          path: [accountField.field],
+        });
+      }
+    });
+
+    const addressRoleChecks = [
+      {
+        enabled:
+          values.partyTypes.includes("Customer") ||
+          values.partyTypes.includes("Vendor"),
+        field: "isBilling",
+        label: "billing",
+      },
+      {
+        enabled: values.partyTypes.includes("Customer"),
+        field: "isDelivery",
+        label: "delivery",
+      },
+      {
+        enabled: values.partyTypes.includes("Employee"),
+        field: "isHome",
+        label: "home",
+      },
+    ] as const;
+
+    addressRoleChecks.forEach((role) => {
+      const selectedCount = values.addresses.filter((address) =>
+        Boolean(address[role.field]),
+      ).length;
+
+      if (selectedCount > 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Select only one ${role.label} address.`,
+          path: ["addresses"],
+        });
+      }
+
+      if (role.enabled && selectedCount === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Complete the ${role.label} address.`,
+          path: ["addresses"],
+        });
+      }
+
+      if (!role.enabled && selectedCount > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Remove the ${role.label} address role for this party type.`,
+          path: ["addresses"],
+        });
+      }
+    });
+
+    values.addresses.forEach((address, index) => {
+      if (address.isForeign) {
+        if (!address.addressLine1.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Enter the complete foreign address.",
+            path: ["addresses", index, "addressLine1"],
+          });
+        }
+
+        return;
+      }
+
+      if (!address.regionCode.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a region.",
+          path: ["addresses", index, "regionCode"],
+        });
+      }
+
+      if (!address.provinceCode.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a province.",
+          path: ["addresses", index, "provinceCode"],
+        });
+      }
+
+      if (!address.cityMunicipalityCode.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a city or municipality.",
+          path: ["addresses", index, "cityMunicipalityCode"],
+        });
+      }
+
+      if (!address.barangayCode.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a barangay.",
+          path: ["addresses", index, "barangayCode"],
+        });
+      }
+    });
   });
 
 export function validatePartyInformationForm(
@@ -178,6 +329,10 @@ export function validatePartyInformationForm(
       errors.lastName = issue.message;
     } else if (field === "addresses" && !errors.addresses) {
       errors.addresses = issue.message;
+    } else if (field === "addressLine1" && !errors.addressLine1) {
+      errors.addressLine1 = issue.message;
+    } else if (field === "addressLine2" && !errors.addressLine2) {
+      errors.addressLine2 = issue.message;
     } else if (field === "partyCodeNo" && !errors.partyCodeNo) {
       errors.partyCodeNo = issue.message;
     } else if (field === "partyName" && !errors.partyName) {
@@ -205,20 +360,30 @@ export function validatePartyInformationForm(
     ) {
       errors.defaultReceivableAccount = issue.message;
     } else if (
+      field === "customerAdvanceAccount" &&
+      !errors.customerAdvanceAccount
+    ) {
+      errors.customerAdvanceAccount = issue.message;
+    } else if (
       field === "defaultPayableAccount" &&
       !errors.defaultPayableAccount
     ) {
       errors.defaultPayableAccount = issue.message;
     } else if (
-      field === "employeeReceivableAccount" &&
-      !errors.employeeReceivableAccount
+      field === "vendorAdvanceAccount" &&
+      !errors.vendorAdvanceAccount
     ) {
-      errors.employeeReceivableAccount = issue.message;
+      errors.vendorAdvanceAccount = issue.message;
     } else if (
       field === "employeeAdvanceAccount" &&
       !errors.employeeAdvanceAccount
     ) {
       errors.employeeAdvanceAccount = issue.message;
+    } else if (
+      field === "employeePayableAccount" &&
+      !errors.employeePayableAccount
+    ) {
+      errors.employeePayableAccount = issue.message;
     } else if (field === "termId" && !errors.termId) {
       errors.termId = issue.message;
     }

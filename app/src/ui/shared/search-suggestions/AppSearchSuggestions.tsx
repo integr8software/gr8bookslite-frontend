@@ -199,6 +199,11 @@ export function AppSearchSuggestions<TItem>({
 				/>
 				<input
 					id={inputId}
+					autoCapitalize="none"
+					autoComplete="new-password"
+					autoCorrect="off"
+					data-form-type="other"
+					spellCheck={false}
 					value={query}
 					onChange={(event) => handleQueryChange(event.target.value)}
 					onFocus={onInputFocus}

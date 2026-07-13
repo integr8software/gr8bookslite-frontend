@@ -1,7 +1,7 @@
 import { Search } from "lucide-react";
 import { PartyManagementTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import { usePartyManagementTable } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
-import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import type { PartyInformationTableProps } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { PartyInformationTableFilters } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationTableFilters";
 import { PartyInformationTableRow } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationTableRow";
@@ -12,13 +12,7 @@ export function PartyInformationTable({
 	lastSyncedAt,
 	records,
 	onRefresh,
-}: {
-	isLoading: boolean;
-	isRefreshing: boolean;
-	lastSyncedAt?: number | string | Date | null;
-	records: PartyInformationRecord[];
-	onRefresh: () => void;
-}) {
+}: PartyInformationTableProps) {
 	const partyTable = usePartyManagementTable(records);
 
 	return (

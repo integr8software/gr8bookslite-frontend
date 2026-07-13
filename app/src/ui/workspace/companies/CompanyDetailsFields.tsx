@@ -21,6 +21,7 @@ import {
 	WorkspaceManagementFieldClassName,
 	WorkspaceManagementSection,
 } from "@/app/src/ui/workspace/WorkspaceManagementForm";
+import { BillingMethodSelector } from "@/app/src/ui/billing/BillingMethodSelector";
 
 const SetupLaterPaymentMethod = {
 	id: "setup-later",
@@ -397,6 +398,11 @@ export function CompanyDetailsFields({
 					className="mt-5"
 				>
 					<div className="grid gap-4">
+						<BillingMethodSelector
+							mode={values.billingMode}
+							onChange={(mode) => onUpdateField("billingMode", mode)}
+						/>
+
 						<div className="rounded-xl border border-darknavy/10 bg-offwhite/50 p-4">
 							<div className="mb-4 flex items-start gap-3">
 								<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-darknavy shadow-sm">
@@ -415,39 +421,46 @@ export function CompanyDetailsFields({
 									</p>
 								</div>
 							</div>
-							<div className="grid gap-4 lg:grid-cols-2">
-								<WorkspaceManagementField
-									label="Payment Method"
-									error={errors.billingPaymentMethodId}
-									required
-								>
-									<select
-										name="billingPaymentMethodId"
-										value={values.billingPaymentMethodId}
-										onChange={onInputChange}
-										className={
-											WorkspaceManagementFieldClassName
-										}
+							{values.billingMode === "AUTO" ? (
+								<div className="grid gap-4 lg:grid-cols-2">
+									<WorkspaceManagementField
+										label="Payment Method"
+										error={errors.billingPaymentMethodId}
+										required
 									>
-										{paymentMethodOptions.map((method) => (
-											<option
-												key={method.id}
-												value={method.id}
-											>
-												{method.label}
-											</option>
-										))}
-									</select>
-								</WorkspaceManagementField>
-								<p className="self-end text-sm leading-6 text-darknavy/55">
-									{isLoadingPaymentMethods
-										? "Loading saved PayMongo cards..."
-										: "Saved cards from previous company billing setup are available here."}
-								</p>
-							</div>
+										<select
+											name="billingPaymentMethodId"
+											value={values.billingPaymentMethodId}
+											onChange={onInputChange}
+											className={
+												WorkspaceManagementFieldClassName
+											}
+										>
+											{paymentMethodOptions.map((method) => (
+												<option
+													key={method.id}
+													value={method.id}
+												>
+													{method.label}
+												</option>
+											))}
+										</select>
+									</WorkspaceManagementField>
+									<p className="self-end text-sm leading-6 text-darknavy/55">
+										{isLoadingPaymentMethods
+											? "Loading saved PayMongo cards..."
+											: "Saved cards from previous company billing setup are available here."}
+									</p>
+								</div>
+							) : (
+								<div className="rounded-lg border border-skyblue/20 bg-white p-4 text-sm leading-6 text-darknavy/65">
+									Manual checkout will open after submit. No card is saved and no automatic renewal is enabled.
+								</div>
+							)}
 						</div>
 
-						{values.billingPaymentMethodId ===
+						{values.billingMode === "AUTO" &&
+						values.billingPaymentMethodId ===
 						"new-paymongo-card" ? (
 							<div className="grid gap-4 rounded-xl border border-darknavy/10 bg-white p-4 lg:grid-cols-2">
 								<WorkspaceManagementField

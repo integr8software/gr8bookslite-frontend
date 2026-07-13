@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import {
 	type ColumnDef,
 	type PaginationState,
@@ -165,7 +166,7 @@ export function UnitOfMeasurementListPage() {
 		{ id: "name", desc: false },
 	]);
 	const filteredRows = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
+		const normalizedQuery = normalizeLowercaseText(query);
 
 		return rows.filter(
 			(row) =>

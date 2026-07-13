@@ -1,13 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   InitialAppDisbursementTypeRecords,
   type AppDisbursementTypeRecord,
 } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
 import { useOfficialReceiptActionForm } from "@/app/src/hooks/modules/cash-receipt/official-receipt/useOfficialReceipt";
+import { OfficialReceiptHref } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
 import { getPartyDisplayName } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
@@ -16,6 +17,8 @@ import type { DisbursementPaymentMethod, DisbursementType } from "@/app/src/type
 import { OfficialReceiptActionHeader } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptActionHeader";
 import { OfficialReceiptDetailsForm } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptDetailsForm";
 import { OfficialReceiptEntries } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptEntries";
+import { openOfficialReceiptPdf } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptPdf";
+import { OfficialReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/official-receipt/OfficialReceiptReportPreview";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
 
 const AppPaymentTypeDialog = dynamic(
@@ -35,14 +38,20 @@ const AppDisbursementTypeDialog = dynamic(
 );
 
 export function OfficialReceiptActionPage() {
+  const params = useParams<{ recordId?: string }>();
   const pathname = usePathname();
+  const router = useRouter();
   const mode = getModeFromPathname(pathname);
   const isReadonly = mode === "view";
-  const receiptForm = useOfficialReceiptActionForm(mode);
+  const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
+  const receiptForm = useOfficialReceiptActionForm(mode, recordId, () => {
+    router.push(OfficialReceiptHref);
+  });
   const paymentTypeStore = usePaymentTypeStore();
   const partyStore = usePartyManagementStore();
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
+  const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isCollectionTypeDialogOpen, setIsCollectionTypeDialogOpen] =
     useState(false);
   const [collectionTypeRecords, setCollectionTypeRecords] = useState(
@@ -72,6 +81,7 @@ export function OfficialReceiptActionPage() {
           mode={mode}
           values={receiptForm.values}
           onCopyFrom={receiptForm.applyCopyFrom}
+          onPreview={() => setIsReportPreviewOpen(true)}
           onSubmit={receiptForm.submitReceipt}
         />
         <OfficialReceiptDetailsForm
@@ -90,6 +100,13 @@ export function OfficialReceiptActionPage() {
           onRowsChange={receiptForm.updateLineEntries}
         />
       </section>
+
+      <OfficialReceiptReportPreview
+        isOpen={isReportPreviewOpen}
+        values={receiptForm.values}
+        onClose={() => setIsReportPreviewOpen(false)}
+        onPrint={() => openOfficialReceiptPdf(receiptForm.values)}
+      />
 
       {!isReadonly && isPaymentTypeDialogOpen ? (
         <AppPaymentTypeDialog

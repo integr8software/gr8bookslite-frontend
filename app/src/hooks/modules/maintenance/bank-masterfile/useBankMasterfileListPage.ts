@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { useBankMasterfileStore } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfile";
 import type {
 	BankMasterfile,
@@ -26,7 +27,7 @@ export function useBankMasterfileListPage() {
 	const [pendingStatusBank, setPendingStatusBank] =
 		useState<BankMasterfile | null>(null);
 	const filteredBanks = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
+		const normalizedQuery = normalizeLowercaseText(query);
 
 		return banks.filter((bank) => {
 			if (statusFilter && bank.status !== statusFilter) {

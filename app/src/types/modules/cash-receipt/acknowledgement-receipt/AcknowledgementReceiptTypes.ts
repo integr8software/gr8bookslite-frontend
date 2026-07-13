@@ -16,6 +16,7 @@ export type AcknowledgementReceiptRecord = {
   amount: number;
   collectionType: string;
   customerName: string;
+  formValues?: AcknowledgementReceiptFormValues;
   receiptDate: string;
   receiptNo: string;
   referenceNo: string;

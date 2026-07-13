@@ -2,10 +2,12 @@ import { DefaultAccountApiPath } from "@/app/src/constants/modules/maintenance/f
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
 	ApiDefaultAccount,
+	ApiDefaultAccountExpenseParentOptionsResponse,
 	ApiDefaultAccountListResponse,
 	ApiDefaultAccountSaveResponse,
 	ApiDefaultAccountStatus,
 	DefaultAccount,
+	DefaultAccountExpenseParentOption,
 	DefaultAccountFormValues,
 	DefaultAccountListResponse,
 	DefaultAccountStatus,
@@ -59,6 +61,17 @@ export async function createDefaultAccount(
 	return mapApiDefaultAccount(response.data.defaultAccount);
 }
 
+export async function fetchDefaultAccountExpenseParentOptions(): Promise<
+	DefaultAccountExpenseParentOption[]
+> {
+	const response =
+		await ApiClient.get<ApiDefaultAccountExpenseParentOptionsResponse>(
+			`${DefaultAccountApiPath}/expense-parent-options`,
+		);
+
+	return response.data.options;
+}
+
 export async function updateDefaultAccount(
 	account: DefaultAccount,
 ): Promise<DefaultAccount> {
@@ -89,7 +102,9 @@ function mapApiDefaultAccount(account: ApiDefaultAccount): DefaultAccount {
 		description: account.description ?? "",
 		status: mapStatusFromApi(account.status),
 		generatedAccounts: account.generatedAccounts,
+		createdBy: account.createdBy,
 		createdAt: account.createdAt,
+		updatedBy: account.updatedBy,
 		updatedAt: account.updatedAt,
 	};
 }
@@ -100,6 +115,8 @@ function toApiPayload(account: DefaultAccount | DefaultAccountFormValues) {
 		defaultAccountName: account.defaultAccountName.trim(),
 		description: account.description.trim(),
 		status: mapStatusToApi(account.status),
+		expenseParentCoaId:
+			account.type === "EXPENSE" ? account.expenseParentCoaId || undefined : undefined,
 	};
 }
 

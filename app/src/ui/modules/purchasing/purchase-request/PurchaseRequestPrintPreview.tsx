@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Printer } from "lucide-react";
 import {
 	formatPurchaseRequestDate,
 	formatPurchaseRequestMoney,
@@ -8,7 +7,7 @@ import {
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
-import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ReportPrintAction } from "@/app/src/ui/shared/reports/Reports";
 import { openPurchaseRequestPdf } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestPdf";
 
 export function PurchaseRequestPrintPreview({
@@ -34,14 +33,9 @@ export function PurchaseRequestPrintPreview({
 							Formatted after the purchase request PDF layout.
 						</p>
 					</div>
-					<button
-						type="button"
-						onClick={() => openPurchaseRequestPdf(record)}
-						className={moduleHeaderActionClassNames.secondary}
-					>
-						<Printer className="h-4 w-4" aria-hidden="true" />
-						Print
-					</button>
+					<ReportPrintAction
+						onPrint={() => openPurchaseRequestPdf(record)}
+					/>
 				</div>
 			) : null}
 
@@ -68,7 +62,10 @@ export function PurchaseRequestPrintPreview({
 								<div className="text-base font-bold">
 									{record.companyName}
 								</div>
-								<div>VAT REG TIN :{FormatTinNumber(record.vatRegTin)}</div>
+								<div>
+									VAT REG TIN :
+									{FormatTinNumber(record.vatRegTin)}
+								</div>
 								<div>{record.companyAddress}</div>
 								<div>Telephone No: {record.telephoneNo}</div>
 							</div>
@@ -103,13 +100,17 @@ export function PurchaseRequestPrintPreview({
 									<PreviewTh>UOM</PreviewTh>
 									<PreviewTh align="right">Cost</PreviewTh>
 									<PreviewTh align="right">Qty</PreviewTh>
-									<PreviewTh align="right" edge="right">Amount</PreviewTh>
+									<PreviewTh align="right" edge="right">
+										Amount
+									</PreviewTh>
 								</tr>
 							</thead>
 							<tbody>
 								{record.items.map((item) => (
 									<tr key={item.id}>
-										<PreviewTd edge="left">{item.itemCode}</PreviewTd>
+										<PreviewTd edge="left">
+											{item.itemCode}
+										</PreviewTd>
 										<PreviewTd>{item.barcode}</PreviewTd>
 										<PreviewTd>
 											{item.description}
@@ -122,7 +123,9 @@ export function PurchaseRequestPrintPreview({
 											)}
 										</PreviewTd>
 										<PreviewTd align="right">
-											{formatPurchaseRequestQuantity(item.quantity)}
+											{formatPurchaseRequestQuantity(
+												item.quantity,
+											)}
 										</PreviewTd>
 										<PreviewTd align="right" edge="right">
 											{formatPurchaseRequestMoney(
@@ -144,13 +147,21 @@ export function PurchaseRequestPrintPreview({
 										Total :
 									</td>
 									<td className="border-y border-r border-black px-1 text-right font-bold">
-										{formatPurchaseRequestMoney(totalCost, record.currency)}
+										{formatPurchaseRequestMoney(
+											totalCost,
+											record.currency,
+										)}
 									</td>
 									<td className="border-y border-r border-black px-1 text-right font-bold">
-										{formatPurchaseRequestQuantity(totalQuantity)}
+										{formatPurchaseRequestQuantity(
+											totalQuantity,
+										)}
 									</td>
 									<td className="border-y border-black px-1 text-right font-bold">
-										{formatPurchaseRequestMoney(total, record.currency)}
+										{formatPurchaseRequestMoney(
+											total,
+											record.currency,
+										)}
 									</td>
 								</tr>
 							</tfoot>
@@ -161,14 +172,18 @@ export function PurchaseRequestPrintPreview({
 								{record.preparedByLabel || "Prepared by"}:
 								<SignatureNameBlock
 									name={record.preparedBy}
-									signatureImageUrl={record.preparedBySignatureImageUrl}
+									signatureImageUrl={
+										record.preparedBySignatureImageUrl
+									}
 								/>
 							</div>
 							<div className="min-h-14 border-r border-black px-1 py-1">
 								{record.approvedByLabel || "Approved by"}:
 								<SignatureNameBlock
 									name={record.approvedBy}
-									signatureImageUrl={record.approvedBySignatureImageUrl}
+									signatureImageUrl={
+										record.approvedBySignatureImageUrl
+									}
 								/>
 							</div>
 							<div className="px-2 py-1">

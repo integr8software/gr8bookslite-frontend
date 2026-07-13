@@ -16,6 +16,7 @@ import {
 	PaymentTypeImportTemplateHeaders,
 } from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
+import { formatFileSize } from "@/app/src/utils/file.util";
 
 export const PaymentTypeOptions: PaymentTypeClassification[] = [
 	"Cash",
@@ -348,24 +349,14 @@ export function paymentTypeImportRowHasErrors(
 
 export function validatePaymentTypeImportFileSize(file: File) {
 	if (file.size < PaymentTypeImportMinFileSizeBytes) {
-		return `Upload a file larger than ${formatPaymentTypeFileSize(PaymentTypeImportMinFileSizeBytes)}.`;
+		return `Upload a file larger than ${formatFileSize(PaymentTypeImportMinFileSizeBytes)}.`;
 	}
 
 	if (file.size > PaymentTypeImportMaxFileSizeBytes) {
-		return `Upload a file up to ${formatPaymentTypeFileSize(PaymentTypeImportMaxFileSizeBytes)}.`;
+		return `Upload a file up to ${formatFileSize(PaymentTypeImportMaxFileSizeBytes)}.`;
 	}
 
 	return null;
-}
-
-export function formatPaymentTypeFileSize(bytes: number) {
-	if (bytes < 1024) return `${bytes} B`;
-
-	const kilobytes = bytes / 1024;
-	if (kilobytes < 1024) return `${kilobytes.toFixed(kilobytes >= 10 ? 0 : 1)} KB`;
-
-	const megabytes = kilobytes / 1024;
-	return `${megabytes.toFixed(megabytes >= 10 ? 0 : 1)} MB`;
 }
 
 export function isPaymentTypeImportGridPasteTarget(target: EventTarget | null) {

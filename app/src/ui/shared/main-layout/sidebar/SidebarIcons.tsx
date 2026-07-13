@@ -177,6 +177,7 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"maintenance-user-management": UserCog,
 	"maintenance-users": UserCog,
 	"maintenance-user-role": Users,
+	"maintenance-approver-setup": ShieldCheck,
 	"branch-management": GitBranch,
 	"maintenance-approval": ShieldCheck,
 	"maintenance-audit": Activity,

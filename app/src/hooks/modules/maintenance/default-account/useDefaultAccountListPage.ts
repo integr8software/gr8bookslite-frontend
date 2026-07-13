@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { useDefaultAccountStore } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccount";
 import type {
 	DefaultAccount,
@@ -29,7 +30,7 @@ export function useDefaultAccountListPage() {
 	const [pendingStatusAccount, setPendingStatusAccount] =
 		useState<DefaultAccount | null>(null);
 	const filteredDefaultAccounts = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
+		const normalizedQuery = normalizeLowercaseText(query);
 
 		return defaultAccounts.filter((account) => {
 			if (statusFilter && account.status !== statusFilter) {

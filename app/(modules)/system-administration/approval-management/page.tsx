@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { ApprovalManagementListPage } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementListPage";
+import { ApprovalManagementShell } from "@/app/src/ui/modules/system-administration/approval-management/ApprovalManagementShell";
 
 const PageTitle = "Approval Management";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function SystemAdministrationApprovalManagementPage() {
-	return <ApprovalManagementListPage />;
+	return <ApprovalManagementShell />;
 }
 
 

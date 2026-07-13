@@ -21,6 +21,7 @@ import {
 	formatWorkspaceBillingPromotionValue,
 } from "@/app/src/data/workspace/billing-and-subscription/WorkspaceBillingSubscriptionData";
 import { useWorkspaceBillingSubscriptionPage } from "@/app/src/hooks/workspace/billing-and-subscription/useWorkspaceBillingSubscriptionPage";
+import type { BillingMode } from "@/app/src/data/billing/BillingTypes";
 import type {
 	WorkspaceBillingAddOnQuote,
 	WorkspaceBillingCompanyAccount,
@@ -31,6 +32,7 @@ import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { BillingMethodSelector } from "@/app/src/ui/billing/BillingMethodSelector";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleInfoTooltip as InfoTooltip } from "@/app/src/ui/shared/module/ModuleInfoTooltip";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
@@ -137,7 +139,7 @@ export function WorkspaceBillingSubscriptionPage() {
 								<th className="w-[14rem] px-4 py-3">Price</th>
 								<th className="w-[17rem] px-4 py-3">Usage and add-ons</th>
 								<th className="w-[13rem] px-4 py-3">Renewal</th>
-								<th className="w-[15rem] px-4 py-3">Card</th>
+								<th className="w-[15rem] px-4 py-3">Payment</th>
 								<th className="w-[18rem] px-4 py-3">Promotion</th>
 								<th className="w-[6rem] px-4 py-3 text-right">Action</th>
 							</tr>
@@ -161,6 +163,9 @@ export function WorkspaceBillingSubscriptionPage() {
 											isExpanded={isExpanded}
 											paymentMethods={page.paymentMethods}
 											selectedPaymentMethod={selectedPaymentMethod}
+											selectedBillingMode={page.getSelectedBillingMode(
+												account.id,
+											)}
 											selectedPaymentMethodId={page.getSelectedPaymentMethodId(
 												account.id,
 											)}
@@ -196,6 +201,9 @@ export function WorkspaceBillingSubscriptionPage() {
 													paymentMethodId,
 												)
 											}
+											onUpdateBillingMode={(billingMode) =>
+												page.updateBillingMode(account.id, billingMode)
+											}
 										/>
 									);
 								})
@@ -222,6 +230,7 @@ type CompanyBillingRowsProps = {
 	isExpanded: boolean;
 	paymentMethods: WorkspaceBillingPaymentMethodRecord[];
 	selectedPaymentMethod?: WorkspaceBillingPaymentMethodRecord;
+	selectedBillingMode: BillingMode;
 	selectedPaymentMethodId: string;
 	onApplyPromotion: (assignmentId: string) => void;
 	onApplyPromotionCode: () => void;
@@ -231,6 +240,7 @@ type CompanyBillingRowsProps = {
 	onPay: () => void;
 	onPromotionCodeChange: (code: string) => void;
 	onToggleExpanded: () => void;
+	onUpdateBillingMode: (billingMode: BillingMode) => void;
 	onUpdatePaymentMethod: (paymentMethodId: string) => void;
 	promotionCodeError?: string;
 	promotionCodeValue: string;
@@ -241,6 +251,7 @@ function CompanyBillingRows({
 	isExpanded,
 	paymentMethods,
 	selectedPaymentMethod,
+	selectedBillingMode,
 	selectedPaymentMethodId,
 	onApplyPromotion,
 	onApplyPromotionCode,
@@ -250,6 +261,7 @@ function CompanyBillingRows({
 	onPay,
 	onPromotionCodeChange,
 	onToggleExpanded,
+	onUpdateBillingMode,
 	onUpdatePaymentMethod,
 	promotionCodeError,
 	promotionCodeValue,
@@ -316,12 +328,24 @@ function CompanyBillingRows({
 					<RenewalBadge account={account} />
 				</td>
 				<td className="px-4 py-4">
-					<PaymentMethodSelect
-						paymentMethods={paymentMethods}
-						selectedPaymentMethodId={selectedPaymentMethodId}
-						onAddPaymentMethod={onAddPaymentMethod}
-						onUpdatePaymentMethod={onUpdatePaymentMethod}
-					/>
+					<div className="grid gap-2">
+						<BillingModeMiniSelect
+							mode={selectedBillingMode}
+							onChange={onUpdateBillingMode}
+						/>
+						{selectedBillingMode === "AUTO" ? (
+							<PaymentMethodSelect
+								paymentMethods={paymentMethods}
+								selectedPaymentMethodId={selectedPaymentMethodId}
+								onAddPaymentMethod={onAddPaymentMethod}
+								onUpdatePaymentMethod={onUpdatePaymentMethod}
+							/>
+						) : (
+							<p className="rounded-md bg-skyblue/10 px-2 py-1.5 text-xs font-medium leading-5 text-darknavy/65">
+								Hosted checkout, no saved card.
+							</p>
+						)}
+					</div>
 				</td>
 				<td className="px-4 py-4">
 					<PromotionSummary promotion={account.appliedPromotion} />
@@ -339,7 +363,9 @@ function CompanyBillingRows({
 					<td colSpan={7} className="bg-offwhite/70 px-4 py-4">
 						<ExpandedCompanyBilling
 							account={account}
+							selectedBillingMode={selectedBillingMode}
 							selectedPaymentMethod={selectedPaymentMethod}
+							onUpdateBillingMode={onUpdateBillingMode}
 							onApplyPromotion={onApplyPromotion}
 							onApplyPromotionCode={onApplyPromotionCode}
 							onClearPromotion={onClearPromotion}
@@ -456,6 +482,28 @@ function PaymentMethodSelect({
 	);
 }
 
+function BillingModeMiniSelect({
+	mode,
+	onChange,
+}: {
+	mode: BillingMode;
+	onChange: (mode: BillingMode) => void;
+}) {
+	return (
+		<label className="block">
+			<span className="sr-only">Billing method</span>
+			<select
+				value={mode}
+				onChange={(event) => onChange(event.target.value as BillingMode)}
+				className="h-9 w-full rounded-md border border-darknavy/10 bg-white px-2 text-xs font-semibold text-darknavy shadow-sm outline-none transition focus:border-skyblue focus:ring-4 focus:ring-skyblue/15"
+			>
+				<option value="MANUAL">Manual payment</option>
+				<option value="AUTO">Auto renewal</option>
+			</select>
+		</label>
+	);
+}
+
 type BillingDetailBadgeTone = "neutral" | "discount" | "percent";
 
 type PriceLineBadge = {
@@ -493,7 +541,9 @@ function PromotionSummary({
 
 type ExpandedCompanyBillingProps = {
 	account: WorkspaceBillingCompanyAccount;
+	selectedBillingMode: BillingMode;
 	selectedPaymentMethod?: WorkspaceBillingPaymentMethodRecord;
+	onUpdateBillingMode: (billingMode: BillingMode) => void;
 	onApplyPromotion: (assignmentId: string) => void;
 	onApplyPromotionCode: () => void;
 	onClearPromotion: () => void;
@@ -504,7 +554,9 @@ type ExpandedCompanyBillingProps = {
 
 function ExpandedCompanyBilling({
 	account,
+	selectedBillingMode,
 	selectedPaymentMethod,
+	onUpdateBillingMode,
 	onApplyPromotion,
 	onApplyPromotionCode,
 	onClearPromotion,
@@ -611,6 +663,12 @@ function ExpandedCompanyBilling({
 						</p>
 					</div>
 				) : null}
+			</section>
+			<section className="rounded-lg border border-darknavy/10 bg-white p-4 lg:col-span-3">
+				<BillingMethodSelector
+					mode={selectedBillingMode}
+					onChange={onUpdateBillingMode}
+				/>
 			</section>
 		</div>
 	);

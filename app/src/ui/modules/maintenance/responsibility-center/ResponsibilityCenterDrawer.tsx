@@ -1,22 +1,14 @@
 "use client";
 
-import { ResponsibilityCenterActionCopy } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
-import { useResponsibilityCenterAction } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenterAction";
-import type {
-	ResponsibilityCenter,
-	ResponsibilityCenterActionMode,
-} from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
+import {
+	ResponsibilityCenterActionCopy,
+	ResponsibilityCenterDrawerFormId,
+	ResponsibilityCenterTitle,
+} from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+import { useResponsibilityCenterFormPage } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenterFormPage";
+import type { ResponsibilityCenterDrawerProps } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 import { ResponsibilityCenterDetailsFields } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterDetailsFields";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
-
-const ResponsibilityCenterDrawerFormId = "responsibility-center-drawer-form";
-
-type ResponsibilityCenterDrawerProps = {
-	center?: ResponsibilityCenter;
-	isOpen: boolean;
-	mode: ResponsibilityCenterActionMode;
-	onClose: () => void;
-};
 
 export function ResponsibilityCenterDrawer(props: ResponsibilityCenterDrawerProps) {
 	return (
@@ -33,7 +25,7 @@ function ResponsibilityCenterDrawerPanel({
 	mode,
 	onClose,
 }: ResponsibilityCenterDrawerProps) {
-	const action = useResponsibilityCenterAction({
+	const page = useResponsibilityCenterFormPage({
 		center,
 		mode,
 		onSaved: onClose,
@@ -43,25 +35,34 @@ function ResponsibilityCenterDrawerPanel({
 	return (
 		<MaintenanceFormDrawer
 			description={copy.description}
-			eyebrow="Accounting master data"
+			eyebrow={ResponsibilityCenterTitle}
 			formId={ResponsibilityCenterDrawerFormId}
 			isOpen={isOpen}
-			isSaving={action.isMutating}
+			isReadonly={page.isReadonly}
+			isSaving={page.isSubmitting}
 			onClose={onClose}
+			savingLabel={
+				mode === "edit"
+					? "Updating Responsibility Center..."
+					: "Saving Responsibility Center..."
+			}
+			submitLabel={
+				mode === "edit" ? "Update Responsibility Center" : "Save Responsibility Center"
+			}
 			title={copy.title}
 		>
 			<form
 				id={ResponsibilityCenterDrawerFormId}
-				onSubmit={action.onSubmit}
+				onSubmit={page.handleSubmit}
 				className="px-6 py-5"
 			>
 				<ResponsibilityCenterDetailsFields
-					errors={action.errors}
-					isReadonly={false}
-					parentOptions={action.parentOptions}
-					values={action.values}
-					onFieldChange={action.onFieldChange}
-					onInputChange={action.onInputChange}
+					errors={page.errors}
+					isReadonly={page.isReadonly}
+					parentOptions={page.parentOptions}
+					values={page.values}
+					onFieldChange={page.handleFieldChange}
+					onInputChange={page.handleInputChange}
 				/>
 			</form>
 		</MaintenanceFormDrawer>

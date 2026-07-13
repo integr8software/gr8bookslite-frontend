@@ -1,5 +1,6 @@
 import type { ItemRecord } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
 import { ItemRecordActions } from "@/app/src/ui/modules/maintenance/item-management/items/ItemRecordActions";
+import { formatCurrency } from "@/app/src/utils/currency.util";
 
 type ItemsTableRowProps = {
 	item: ItemRecord;
@@ -43,9 +44,3 @@ export function ItemsTableRow({ item, onStatusChange }: ItemsTableRowProps) {
 	);
 }
 
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("en-US", {
-		currency: "PHP",
-		style: "currency",
-	}).format(value);
-}

@@ -8,6 +8,7 @@ import type {
 	MasterSubscriptionQuote,
 	MasterSubscriptionUnit,
 } from "@/app/src/types/master/subscriptions/MasterSubscriptionTypes";
+import type { BillingMode } from "@/app/src/data/billing/BillingTypes";
 
 export type WorkspaceBillingPromotionType = Extract<
 	MasterPromotionType,
@@ -87,6 +88,7 @@ export type WorkspaceBillingCompanyAccount = {
 	addOns: WorkspaceBillingAddOnQuote[];
 	appliedPromotion: WorkspaceBillingPromotionOption | null;
 	baseAmount: number;
+	billingMode: BillingMode;
 	billingCycle: MasterSubscriptionBillingCycle;
 	branchCount: number;
 	companyCount: number;

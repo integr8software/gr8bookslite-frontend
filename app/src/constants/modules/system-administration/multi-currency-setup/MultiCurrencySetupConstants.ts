@@ -49,21 +49,7 @@ export const MultiCurrencySetupTableColumns: Array<
 	{
 		key: "rateAsOf",
 		label: "Rate Date",
-		className: "w-[13%]",
-	},
-	{
-		key: "source",
-		label: "Rate Type",
-		className: "w-[10%]",
-	},
-	{
-		key: "status",
-		label: "Availability",
-		className: "w-[9%]",
-	},
-	{
-		label: "Actions",
-		className: "w-[11%] text-right",
+		className: "w-[14%]",
 	},
 ];
 

@@ -5,7 +5,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { MockResponsibilityCenters } from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
 import { ResponsibilityCenterQueryKeys } from "@/app/src/services/modules/maintenance/responsibility-center/ResponsibilityCenterQueryKeys";
-import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
+import type {
+	ResponsibilityCenter,
+	ResponsibilityCenterPermissions,
+	ResponsibilityCenterStatistics,
+} from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 
 type ResponsibilityCenterStoreState = {
 	centers: ResponsibilityCenter[];
@@ -13,8 +17,12 @@ type ResponsibilityCenterStoreState = {
 	updateCenter: (center: ResponsibilityCenter) => void;
 	deleteCenter: (centerId: string) => void;
 	isLoading: boolean;
+	isRefreshing: boolean;
 	lastSyncedAt: number;
 	isMutating: boolean;
+	permissions: ResponsibilityCenterPermissions;
+	refreshCenters: () => void;
+	statistics: ResponsibilityCenterStatistics;
 };
 
 export function useResponsibilityCenterStore<
@@ -26,6 +34,32 @@ export function useResponsibilityCenterStore<
 		queryFn: async () => MockResponsibilityCenters,
 		initialData: MockResponsibilityCenters,
 	});
+	const centers = centersQuery.data;
+	const dataUpdatedAt = centersQuery.dataUpdatedAt;
+	const isFetching = centersQuery.isFetching;
+	const isLoading = centersQuery.isLoading;
+	const refetchCenters = centersQuery.refetch;
+	const statistics = useMemo<ResponsibilityCenterStatistics>(
+		() => ({
+			totalCenters: centers.length,
+			activeCenters: centers.filter(
+				(center) => center.status === "Active",
+			).length,
+			inactiveCenters: centers.filter(
+				(center) => center.status === "Inactive",
+			).length,
+			departmentCenters: centers.filter(
+				(center) => center.category === "Department",
+			).length,
+			branchCenters: centers.filter(
+				(center) => center.category === "Branch",
+			).length,
+			projectCenters: centers.filter(
+				(center) => center.category === "Project",
+			).length,
+		}),
+		[centers],
+	);
 
 	function updateCachedCenters(
 		updater: (centers: ResponsibilityCenter[]) => ResponsibilityCenter[],
@@ -83,23 +117,37 @@ export function useResponsibilityCenterStore<
 
 	const state = useMemo<ResponsibilityCenterStoreState>(
 		() => ({
-			centers: centersQuery.data,
+			centers,
 			addCenter: (center) => addCenterMutation.mutate(center),
 			updateCenter: (center) => updateCenterMutation.mutate(center),
 			deleteCenter: (centerId) => deleteCenterMutation.mutate(centerId),
-			isLoading: centersQuery.isLoading,
-			lastSyncedAt: centersQuery.dataUpdatedAt,
+			isLoading,
+			isRefreshing: isFetching && !isLoading,
+			lastSyncedAt: dataUpdatedAt,
 			isMutating:
 				addCenterMutation.isPending ||
 				updateCenterMutation.isPending ||
 				deleteCenterMutation.isPending,
+			permissions: {
+				canCreate: true,
+				canExport: true,
+				canUpdate: true,
+				canView: true,
+			},
+			refreshCenters: () => {
+				void refetchCenters();
+			},
+			statistics,
 		}),
 		[
 			addCenterMutation,
-			centersQuery.data,
-			centersQuery.dataUpdatedAt,
-			centersQuery.isLoading,
+			centers,
+			dataUpdatedAt,
 			deleteCenterMutation,
+			isFetching,
+			isLoading,
+			refetchCenters,
+			statistics,
 			updateCenterMutation,
 		],
 	);

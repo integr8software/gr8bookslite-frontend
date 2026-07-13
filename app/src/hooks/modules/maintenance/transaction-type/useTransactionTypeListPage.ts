@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { useTransactionTypeStore } from "@/app/src/hooks/modules/maintenance/transaction-type/useTransactionType";
 import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
 import type { TransactionType } from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
@@ -24,7 +25,7 @@ export function useTransactionTypeListPage() {
 		useState<TransactionType | null>(null);
 
 	const filteredTransactionTypes = useMemo(() => {
-		const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+		const normalizedSearchTerm = normalizeLowercaseText(searchTerm);
 
 		return transactionTypes.filter((transactionType) => {
 			const legacyTransactionType = transactionType as TransactionType & {

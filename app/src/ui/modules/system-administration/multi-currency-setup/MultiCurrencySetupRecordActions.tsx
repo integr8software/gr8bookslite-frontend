@@ -42,7 +42,7 @@ export function MultiCurrencySetupRecordActions({
 			<ModuleTooltip align="end" position="top" title="Refresh rate">
 				<ModuleTableActionButton
 					icon={RefreshCcw}
-					label={`Refresh ${label} from Frankfurter`}
+					label={`Refresh ${label} from BSP`}
 					onClick={() => onUpdateRecordRate(record)}
 				/>
 			</ModuleTooltip>

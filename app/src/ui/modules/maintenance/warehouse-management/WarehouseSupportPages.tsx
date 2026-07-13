@@ -1,5 +1,7 @@
 "use client";
 
+import { formatCurrency } from "@/app/src/utils/currency.util";
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import {
 	type ColumnDef,
 	type PaginationState,
@@ -165,7 +167,7 @@ export function WarehouseSupportPage({ kind }: { kind: WarehouseSupportPageKind 
 	]);
 	const [pendingDelete, setPendingDelete] = useState<SupportRecord | null>(null);
 	const filteredRows = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
+		const normalizedQuery = normalizeLowercaseText(query);
 
 		return rows.filter(
 			(row) =>
@@ -1264,13 +1266,6 @@ function getActionMode(pathname: string): ModalMode {
 	}
 
 	return "add";
-}
-
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("en-US", {
-		currency: "PHP",
-		style: "currency",
-	}).format(value);
 }
 
 const fieldClassName =

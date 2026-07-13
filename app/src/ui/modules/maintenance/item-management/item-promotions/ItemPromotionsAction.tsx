@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@/app/src/utils/currency.util";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { ArrowLeft, BadgePercent, Save } from "lucide-react";
@@ -491,13 +492,6 @@ function getMode(pathname: string): PromotionMode {
 	}
 
 	return "add";
-}
-
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("en-US", {
-		currency: "PHP",
-		style: "currency",
-	}).format(value);
 }
 
 const fieldClassName =

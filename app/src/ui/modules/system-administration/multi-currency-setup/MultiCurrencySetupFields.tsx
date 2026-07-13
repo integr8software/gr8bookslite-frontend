@@ -151,7 +151,7 @@ export function MultiCurrencySetupFields({
 						}
 					/>
 					<ReadonlyRate
-						label="Frankfurter Rate"
+						label="BSP Rate"
 						value={
 							isRateLoading
 								? "Fetching..."

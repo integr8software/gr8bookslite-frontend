@@ -2,14 +2,17 @@
 
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import type { BillingMode } from "@/app/src/data/billing/BillingTypes";
 import {
 	findWorkspaceBillingPromotionByCode,
+	formatWorkspaceBillingCurrency,
 	WorkspaceBillingPaymentMethods,
 	WorkspaceBillingCurrentSubscriber,
 	createWorkspaceBillingCompanyAccounts,
 	getWorkspaceBillingDefaultPaymentMethodId,
 	getWorkspaceBillingSummary,
 } from "@/app/src/data/workspace/billing-and-subscription/WorkspaceBillingSubscriptionData";
+import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingMockApi";
 import { validateWorkspacePromotionCode } from "@/app/src/validations/workspace/billing-and-subscription/WorkspaceBillingSubscriptionValidation";
 
 type WorkspaceBillingRenewalFilter =
@@ -20,6 +23,8 @@ type WorkspaceBillingRenewalFilter =
 export function useWorkspaceBillingSubscriptionPage() {
 	const [selectedPaymentMethodIdsByCompany, setSelectedPaymentMethodIdsByCompany] =
 		useState<Record<string, string>>({});
+	const [selectedBillingModesByCompany, setSelectedBillingModesByCompany] =
+		useState<Record<string, BillingMode>>({});
 	const [appliedPromotionIdsByCompany, setAppliedPromotionIdsByCompany] =
 		useState<Record<string, string | undefined>>({});
 	const [promotionCodesByCompany, setPromotionCodesByCompany] =
@@ -71,6 +76,19 @@ export function useWorkspaceBillingSubscriptionPage() {
 
 	function getSelectedPaymentMethodId(companyId: string) {
 		return selectedPaymentMethodIdsByCompany[companyId] ?? defaultPaymentMethodId;
+	}
+
+	function getSelectedBillingMode(companyId: string) {
+		const account = accounts.find((current) => current.id === companyId);
+
+		return selectedBillingModesByCompany[companyId] ?? account?.billingMode ?? "MANUAL";
+	}
+
+	function updateBillingMode(companyId: string, billingMode: BillingMode) {
+		setSelectedBillingModesByCompany((current) => ({
+			...current,
+			[companyId]: billingMode,
+		}));
 	}
 
 	function updatePaymentMethod(companyId: string, paymentMethodId: string) {
@@ -207,13 +225,34 @@ export function useWorkspaceBillingSubscriptionPage() {
 		toast.success(`${account.name} cancellation review is ready.`);
 	}
 
-	function payCompany(companyId: string) {
+	async function payCompany(companyId: string) {
 		const account = accounts.find((current) => current.id === companyId);
 		const paymentMethod = WorkspaceBillingPaymentMethods.find(
 			(method) => method.id === getSelectedPaymentMethodId(companyId),
 		);
 
-		if (!account || !paymentMethod) {
+		if (!account) {
+			return;
+		}
+
+		if (getSelectedBillingMode(companyId) === "MANUAL") {
+			const session = await CreateManualCheckout({
+				amountLabel: formatWorkspaceBillingCurrency(account.totalDue),
+				billingCycle: account.billingCycle === "Annual" ? "YEARLY" : "MONTHLY",
+				companyId: account.id,
+				companyName: account.name,
+				planCode: account.planId,
+				planName: account.planName,
+				purpose: account.status === "Scheduled" ? "ADDITIONAL_COMPANY" : "RENEWAL",
+				returnTo: "/workspace/billing-and-subscription",
+			});
+
+			toast.success(`Opening hosted checkout preview for ${account.name}.`);
+			window.location.assign(session.checkoutUrl);
+			return;
+		}
+
+		if (!paymentMethod) {
 			return;
 		}
 
@@ -228,6 +267,7 @@ export function useWorkspaceBillingSubscriptionPage() {
 		filteredAccounts,
 		getPromotionCodeError,
 		getPromotionCodeValue,
+		getSelectedBillingMode,
 		getSelectedPaymentMethodId,
 		paymentMethods: WorkspaceBillingPaymentMethods,
 		query,
@@ -249,6 +289,7 @@ export function useWorkspaceBillingSubscriptionPage() {
 		setQuery,
 		setRenewalFilter,
 		updatePromotionCode,
+		updateBillingMode,
 		updatePaymentMethod,
 	};
 }

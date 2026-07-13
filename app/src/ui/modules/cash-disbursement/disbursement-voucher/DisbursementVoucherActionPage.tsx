@@ -93,6 +93,8 @@ import type { BankMasterfile } from "@/app/src/types/modules/maintenance/bank-ma
 import type { DefaultAccount } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherActionHeader";
+import { DisbursementVoucherReportPreview } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherReportPreview";
+import { openDisbursementVoucherPdf } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherPdf";
 import { DisbursementEntryImportDialog } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/DisbursementEntryImportDialog";
 import {
   clearAccountingGridSession,
@@ -227,6 +229,7 @@ function DisbursementVoucherActionInner() {
   const [disbursementTypeRecords, setDisbursementTypeRecords] = useState(
     InitialDisbursementTypeRecords,
   );
+  const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isDisbursementTypeDrawerOpen, setIsDisbursementTypeDrawerOpen] =
     useState(false);
   const [taxEditorTarget, setTaxEditorTarget] = useState<TaxEditorTarget>(null);
@@ -597,6 +600,7 @@ function DisbursementVoucherActionInner() {
         transaction={selectedTransaction}
         voucher={existingVoucher}
         onUpdateStatus={handleUpdateStatus}
+        onPreview={() => setIsReportPreviewOpen(true)}
         onSubmit={() => handleSubmit()}
         copyFromRecords={DisbursementVoucherCopyFromRecords}
         copyFromSources={DisbursementVoucherCopySources}
@@ -678,6 +682,13 @@ function DisbursementVoucherActionInner() {
           {actionContent}
         </form>
       )}
+
+      <DisbursementVoucherReportPreview
+        isOpen={isReportPreviewOpen}
+        values={values}
+        onClose={() => setIsReportPreviewOpen(false)}
+        onPrint={() => openDisbursementVoucherPdf(values)}
+      />
 
       <AppTaxRateDialog
         isOpen={Boolean(taxEditorTarget && taxEditorValues)}

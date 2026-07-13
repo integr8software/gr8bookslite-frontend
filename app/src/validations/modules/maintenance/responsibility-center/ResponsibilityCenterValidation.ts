@@ -17,8 +17,13 @@ const ResponsibilityCenterCategorySchema = z.enum(
 		"Project",
 		"Business Unit",
 		"Region",
+		"Salesman",
+		"Warehouse",
+		"Outlet",
+		"Sales Territory",
+		"Fleet",
 	],
-	{ message: "Category is required." },
+	{ message: "Type is required." },
 );
 
 const ResponsibilityCenterFinancialTypeSchema = z.enum(
@@ -28,7 +33,7 @@ const ResponsibilityCenterFinancialTypeSchema = z.enum(
 		"Profit Center",
 		"Investment Center",
 	],
-	{ message: "Financial responsibility type is required." },
+	{ message: "Classification is required." },
 );
 
 const ResponsibilityCenterStatusSchema = z.enum(["Active", "Inactive"], {
@@ -36,11 +41,11 @@ const ResponsibilityCenterStatusSchema = z.enum(["Active", "Inactive"], {
 });
 
 export const ResponsibilityCenterFormValidationSchema = z.object({
-	code: z.string(),
+	code: z.string().trim().min(1, "Code is required."),
 	name: z.string().trim().min(1, "Name is required."),
 	category: ResponsibilityCenterCategorySchema,
 	financialType: ResponsibilityCenterFinancialTypeSchema,
-	manager: z.string().trim().min(1, "Manager is required."),
+	manager: z.string(),
 	parentId: z.string(),
 	status: ResponsibilityCenterStatusSchema,
 	description: z.string(),
@@ -48,6 +53,8 @@ export const ResponsibilityCenterFormValidationSchema = z.object({
 	allowExpensePosting: z.boolean(),
 	allowRevenuePosting: z.boolean(),
 	allowProjectAssignment: z.boolean(),
+	isRequiredInTransactions: z.boolean(),
+	allowLineLevelAssignment: z.boolean(),
 });
 
 export function validateResponsibilityCenterForm(
@@ -84,7 +91,7 @@ export function validateResponsibilityCenterForm(
 				center.code.toUpperCase() === normalizedCode,
 		)
 	) {
-		errors.name = "Name creates a duplicate code.";
+		errors.code = "Code already exists.";
 	}
 
 	if (

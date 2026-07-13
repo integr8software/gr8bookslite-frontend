@@ -1,5 +1,7 @@
 "use client";
 
+import { formatCurrency } from "@/app/src/utils/currency.util";
+import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import {
 	type ColumnDef,
 	type PaginationState,
@@ -103,7 +105,7 @@ export function ItemBundlesListPage() {
 		{ id: "bundleItem", desc: false },
 	]);
 	const filteredRows = useMemo(() => {
-		const normalizedQuery = query.trim().toLowerCase();
+		const normalizedQuery = normalizeLowercaseText(query);
 
 		return rows.filter(
 			(row) =>
@@ -321,13 +323,6 @@ function StatusBadge({ status }: { status: string }) {
 			{status}
 		</span>
 	);
-}
-
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("en-US", {
-		currency: "PHP",
-		style: "currency",
-	}).format(value);
 }
 
 function formatComponents(components: BundleComponent[]) {

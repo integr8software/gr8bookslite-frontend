@@ -3,6 +3,7 @@ import {
   OnboardingReportYearBasisOptions,
 } from "@/app/src/data/onboarding/OnboardingData";
 import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingData";
+import type { BillingMode } from "@/app/src/data/billing/BillingTypes";
 
 export type OnboardingTaxpayerType = "individual" | "non-individual";
 export type OnboardingReportYearBasis =
@@ -32,7 +33,8 @@ export type OnboardingFieldErrors = Partial<
     | "expiryMonth"
     | "expiryYear"
     | "cvc"
-    | "billingAddress",
+    | "billingAddress"
+    | "billingMode",
     string[] | undefined
   >
 >;
@@ -68,6 +70,7 @@ export type OnboardingValues = {
   expiryYear: string;
   cvc: string;
   billingAddress: string;
+  billingMode: BillingMode;
 };
 
 export type OnboardingBillingStepProps = {
@@ -110,6 +113,7 @@ export const InitialOnboardingValues: OnboardingValues = {
   expiryYear: "",
   cvc: "",
   billingAddress: "",
+  billingMode: "MANUAL",
 };
 
 export type OnboardingActionState = {

@@ -49,6 +49,10 @@ const PageSize = 50;
 const DefaultColumnVisibility: VisibilityState = {
   accountLevel: false,
   reportAlias: false,
+  createdBy: false,
+  createdAt: false,
+  updatedBy: false,
+  updatedAt: false,
 };
 
 export function useChartsOfAccounts() {

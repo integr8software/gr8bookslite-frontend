@@ -54,8 +54,6 @@ export type MultiCurrencySetupTableColumnKey =
 	| "currencySymbol"
 	| "dailyExchangeRateDisplay"
 	| "rateAsOf"
-	| "source"
-	| "status"
 	| "targetCurrencyLabel";
 
 export type MultiCurrencySetupTableRecord = MultiCurrencySetupRecord & {

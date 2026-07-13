@@ -48,6 +48,10 @@ export type ChartAccount = {
   isSystemDefault: boolean;
   isUserCreated: boolean;
   isBankLinked: boolean;
+  createdBy: string | null;
+  createdAt: string;
+  updatedBy: string | null;
+  updatedAt: string;
   bankDetails?: BankDetails;
   children?: ChartAccount[];
 };
@@ -64,6 +68,10 @@ export type ChartAccountFormValues = Omit<
   | "isUserCreated"
   | "normalBalance"
   | "status"
+  | "createdBy"
+  | "createdAt"
+  | "updatedBy"
+  | "updatedAt"
 > & {
   accountLevel: AccountLevel | "";
   accountType: AccountType | "";
@@ -142,7 +150,11 @@ export type ChartsOfAccountsTableColumnKey =
   | "statementSection"
   | "reportAlias"
   | "normalBalance"
-  | "status";
+  | "status"
+  | "createdBy"
+  | "createdAt"
+  | "updatedBy"
+  | "updatedAt";
 
 export type SortDirection = "asc" | "desc";
 

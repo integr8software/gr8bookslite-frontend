@@ -6,12 +6,13 @@ import {
 	PartyManagementHref,
 	PartyManagementParentLabel,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
+import type { PartyInformationHeaderProps } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 
-export function PartyInformationHeader() {
+export function PartyInformationHeader({ onImport }: PartyInformationHeaderProps) {
 	return (
 		<ModuleHeader
 			variant="panel"
@@ -29,6 +30,7 @@ export function PartyInformationHeader() {
 				<>
 					<button
 						type="button"
+						onClick={onImport}
 						className={`${moduleHeaderActionClassNames.secondary} order-2 sm:order-1`}
 					>
 						<Upload className="h-4 w-4" aria-hidden="true" />

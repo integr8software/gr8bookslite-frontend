@@ -72,6 +72,10 @@ function mapApiDiscount(discount: ApiDiscount): Discount {
 		accountCode: discount.accountCode,
 		accountTitle: discount.accountTitle,
 		accountGroupPath: discount.accountGroupPath,
+		createdBy: discount.createdBy,
+		createdAt: discount.createdAt,
+		updatedBy: discount.updatedBy,
+		updatedAt: discount.updatedAt,
 	};
 }
 

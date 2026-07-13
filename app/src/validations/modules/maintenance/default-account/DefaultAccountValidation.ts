@@ -24,6 +24,7 @@ export const DefaultAccountFormValidationSchema = z.object({
 	status: z.enum(DefaultAccountStatusOptions, {
 		message: "Status is required.",
 	}),
+	expenseParentCoaId: z.string(),
 });
 
 export function validateDefaultAccountForm(

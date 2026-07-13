@@ -13,19 +13,13 @@ type MultiCurrencySetupTableProps = {
 	lastSyncedAt?: number | string | Date | null;
 	records: MultiCurrencySetupTableRecord[];
 	toolbar?: ReactNode;
-	onConfigureRecord: (record: MultiCurrencySetupTableRecord) => void;
-	onDeleteRecord: (record: MultiCurrencySetupTableRecord) => void;
-	onUpdateRecordRate: (record: MultiCurrencySetupTableRecord) => void;
 };
 
 export function MultiCurrencySetupTable({
 	isLoading,
 	lastSyncedAt,
-	onConfigureRecord,
 	records,
 	toolbar,
-	onDeleteRecord,
-	onUpdateRecordRate,
 }: MultiCurrencySetupTableProps) {
 	const table = useMultiCurrencySetupTable(records);
 
@@ -36,7 +30,7 @@ export function MultiCurrencySetupTable({
 			emptyTitle="No currency setups found"
 			isLoading={isLoading}
 			lastSyncedAt={lastSyncedAt}
-			minWidthClassName="min-w-[76rem]"
+			minWidthClassName="min-w-[52rem]"
 			paginationStorageKey={MultiCurrencySetupTablePaginationStorageKey}
 			table={table}
 			tableTitle="Currencies and daily exchange rates"
@@ -45,9 +39,6 @@ export function MultiCurrencySetupTable({
 				<MultiCurrencySetupTableRow
 					key={id}
 					record={original}
-					onConfigureRecord={onConfigureRecord}
-					onDeleteRecord={onDeleteRecord}
-					onUpdateRecordRate={onUpdateRecordRate}
 				/>
 			)}
 		/>

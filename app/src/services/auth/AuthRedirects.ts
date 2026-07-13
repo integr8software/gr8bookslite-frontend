@@ -102,12 +102,12 @@ export function GetFallbackPostAuthRedirectPath(
     return "/master/dashboard";
   }
 
-  if (payload.membershipRole === "ADMIN") {
-    return "/workspace/dashboard";
-  }
-
   if (payload.companyId != null) {
     return "/dashboard";
+  }
+
+  if (payload.membershipRole === "ADMIN") {
+    return "/workspace/dashboard";
   }
 
   return "/onboarding";
@@ -126,12 +126,12 @@ export function GetPostAuthRedirectPathFromProfile(
     return "/master/dashboard";
   }
 
-  if (effectiveRole === "ADMIN") {
-    return "/workspace/dashboard";
-  }
-
   if (GetAuthProfileCompanyId(profile) != null) {
     return "/dashboard";
+  }
+
+  if (effectiveRole === "ADMIN") {
+    return "/workspace/dashboard";
   }
 
   return "/onboarding";

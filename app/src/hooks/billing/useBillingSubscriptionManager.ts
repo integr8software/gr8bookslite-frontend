@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   InitialBillingPaymentFormValues,
+  type BillingMode,
   type BillingCycle,
   type BillingPaymentFormErrors,
   type BillingPaymentFormValues,
@@ -19,7 +20,9 @@ import {
 } from "@/app/src/services/billing/BillingApi";
 import { BillingQueryKeys } from "@/app/src/services/billing/BillingQueryKeys";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
+import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingMockApi";
 import { useBillingSubscriptionSetupQuery } from "@/app/src/hooks/billing/useBillingSubscriptionSetupQuery";
+import { FormatBillingPrice, GetPlanPriceForCycle } from "@/app/src/data/billing/BillingUtils";
 
 function GetBlockingSubscriptionStatuses() {
   return new Set(["INCOMPLETE", "TRIALING", "ACTIVE", "PAST_DUE", "UNPAID"]);
@@ -32,6 +35,8 @@ export function useBillingSubscriptionManager() {
   const [selectedPlanCode, setSelectedPlanCode] = useState<string>("");
   const [selectedBillingCycle, setSelectedBillingCycle] =
     useState<BillingCycle>("monthly");
+  const [selectedBillingMode, setSelectedBillingMode] =
+    useState<BillingMode>("MANUAL");
   const [paymentValues, setPaymentValues] = useState<BillingPaymentFormValues>(
     InitialBillingPaymentFormValues,
   );
@@ -51,6 +56,9 @@ export function useBillingSubscriptionManager() {
   const hasBlockingSubscription = currentSubscription
     ? GetBlockingSubscriptionStatuses().has(currentSubscription.status)
     : false;
+  const selectedPlan = subscriptionSetupQuery.data?.plans.find(
+    (plan) => plan.code === resolvedSelectedPlanCode,
+  );
 
   const subscribeMutation = useMutation({
     mutationFn: async () => {
@@ -119,6 +127,49 @@ export function useBillingSubscriptionManager() {
     },
   });
 
+  const manualCheckoutMutation = useMutation({
+    mutationFn: async () => {
+      if (!resolvedSelectedPlanCode || !selectedPlan) {
+        setPaymentErrors({
+          planCode: ["Select a billing plan before continuing."],
+        });
+        throw new Error("Select a billing plan before continuing.");
+      }
+
+      setPaymentErrors({});
+
+      const selectedPrice = GetPlanPriceForCycle(
+        selectedPlan,
+        selectedBillingCycle,
+      );
+
+      return CreateManualCheckout({
+        amountLabel: FormatBillingPrice(
+          selectedPrice.amountInCents,
+          selectedPlan.currency,
+        ),
+        billingCycle:
+          selectedBillingCycle === "yearly" ? "YEARLY" : "MONTHLY",
+        companyName: "Current company",
+        planCode: selectedPlan.code,
+        planName: selectedPlan.name,
+        purpose: "RENEWAL",
+        returnTo: "/workspace/billing-and-subscription",
+      });
+    },
+    onSuccess: (session) => {
+      toast.success("Opening hosted checkout preview.");
+      window.location.assign(session.checkoutUrl);
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "We could not start manual checkout right now.",
+      );
+    },
+  });
+
   const cancelSubscriptionMutation = useMutation({
     mutationFn: async (cancelAtPeriodEnd: boolean) => {
       if (!currentSubscription) {
@@ -154,20 +205,23 @@ export function useBillingSubscriptionManager() {
     plans: subscriptionSetupQuery.data?.plans ?? [],
     selectedPlanCode: resolvedSelectedPlanCode,
     selectedBillingCycle,
+    selectedBillingMode,
     paymentValues,
     paymentErrors,
     currentSubscription,
     isLoading:
       subscriptionSetupQuery.isLoading ||
       subscribeMutation.isPending ||
+      manualCheckoutMutation.isPending ||
       cancelSubscriptionMutation.isPending,
     isPlansLoading: subscriptionSetupQuery.isLoading,
     isSubscriptionLoading: subscriptionSetupQuery.isLoading,
-    isSubmitting: subscribeMutation.isPending,
+    isSubmitting: subscribeMutation.isPending || manualCheckoutMutation.isPending,
     isCancelling: cancelSubscriptionMutation.isPending,
     hasBlockingSubscription,
     setSelectedPlanCode,
     setSelectedBillingCycle,
+    setSelectedBillingMode,
     updatePaymentValue: (
       key: keyof BillingPaymentFormValues,
       value: string,
@@ -186,6 +240,9 @@ export function useBillingSubscriptionManager() {
     },
     startSubscriptionSetup: () => {
       subscribeMutation.mutate();
+    },
+    startManualCheckout: () => {
+      manualCheckoutMutation.mutate();
     },
     cancelSubscriptionNow: (cancelAtPeriodEnd: boolean) => {
       cancelSubscriptionMutation.mutate(cancelAtPeriodEnd);

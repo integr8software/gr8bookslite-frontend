@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { formatDateTime } from "@/app/src/utils/date.util";
 import {
 	getDefaultAccountTypeLabel,
 } from "@/app/src/constants/modules/maintenance/financial-management/default-account/DefaultAccountConstants";
@@ -109,6 +110,14 @@ function DefaultAccountCellContent({
 			);
 		case "status":
 			return <StatusBadge status={defaultAccount.status} />;
+		case "createdBy":
+			return <span>{defaultAccount.createdBy ?? ""}</span>;
+		case "createdAt":
+			return <span>{formatDateTime(defaultAccount.createdAt)}</span>;
+		case "updatedBy":
+			return <span>{defaultAccount.updatedBy ?? ""}</span>;
+		case "updatedAt":
+			return <span>{formatDateTime(defaultAccount.updatedAt)}</span>;
 		case "actions":
 			return (
 				<ModuleTableActions className="w-full !justify-center">

@@ -33,9 +33,14 @@ const DefaultAccountTablePreferencesModuleKey =
 const DefaultColumnOrder = DefaultAccountTableColumns.map((column) =>
 	"key" in column ? column.key : "actions",
 );
+const AuditColumnOrder = ["createdBy", "createdAt", "updatedBy", "updatedAt"];
 const DefaultColumnVisibility: VisibilityState = {
 	description: false,
 	accountCode: false,
+	createdBy: false,
+	createdAt: false,
+	updatedBy: false,
+	updatedAt: false,
 };
 const DefaultSorting: SortingState = [{ id: "defaultAccountName", desc: false }];
 
@@ -232,9 +237,19 @@ function normalizeTablePreferences(
 						typeof columnId === "string" && knownColumnIds.has(columnId),
 				)
 			: [];
+		const fixedTailColumnIds = new Set([...AuditColumnOrder, "actions"]);
+		const storedBodyOrder = storedOrder.filter(
+			(columnId) => !fixedTailColumnIds.has(columnId),
+		);
 		const columnOrder = [
-			...storedOrder,
-			...DefaultColumnOrder.filter((columnId) => !storedOrder.includes(columnId)),
+			...storedBodyOrder,
+			...DefaultColumnOrder.filter(
+				(columnId) =>
+					!fixedTailColumnIds.has(columnId) &&
+					!storedBodyOrder.includes(columnId),
+			),
+			...AuditColumnOrder,
+			"actions",
 		];
 		const columnVisibility = { ...DefaultColumnVisibility };
 

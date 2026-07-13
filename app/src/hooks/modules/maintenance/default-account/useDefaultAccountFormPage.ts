@@ -1,7 +1,12 @@
 "use client";
 
 import { type ChangeEvent, type FormEvent, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useDefaultAccountStore } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccount";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { fetchDefaultAccountExpenseParentOptions } from "@/app/src/services/modules/maintenance/default-account/DefaultAccountApi";
+import { DefaultAccountQueryKeys } from "@/app/src/services/modules/maintenance/default-account/DefaultAccountQueryKeys";
 import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
 import type {
 	DefaultAccount,
@@ -16,6 +21,7 @@ const EmptyDefaultAccountFormValues: DefaultAccountFormValues = {
 	defaultAccountName: "",
 	description: "",
 	status: "Active",
+	expenseParentCoaId: "",
 };
 
 export function useDefaultAccountFormPage({
@@ -34,6 +40,14 @@ export function useDefaultAccountFormPage({
 		(state) => state.updateDefaultAccount,
 	);
 	const isMutating = useDefaultAccountStore((state) => state.isMutating);
+	const accessToken = useAppStore((state) => state.accessToken);
+	const authProfileQuery = useAuthProfileQuery({ accessToken });
+	const companyId = authProfileQuery.data?.activeCompanyId ?? null;
+	const expenseParentOptionsQuery = useQuery({
+		queryKey: DefaultAccountQueryKeys.expenseParentOptions(companyId),
+		queryFn: fetchDefaultAccountExpenseParentOptions,
+		enabled: Boolean(companyId),
+	});
 	const [values, setValues] = useState<DefaultAccountFormValues>(
 		existingDefaultAccount
 			? {
@@ -41,6 +55,7 @@ export function useDefaultAccountFormPage({
 					defaultAccountName: existingDefaultAccount.defaultAccountName,
 					description: existingDefaultAccount.description,
 					status: existingDefaultAccount.status,
+					expenseParentCoaId: existingDefaultAccount.expenseParentCoaId ?? "",
 				}
 			: EmptyDefaultAccountFormValues,
 	);
@@ -51,8 +66,22 @@ export function useDefaultAccountFormPage({
 		event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
 	) {
 		const { name, value } = event.target;
-		setValues((current) => ({ ...current, [name]: value }));
+		setValues((current) => ({
+			...current,
+			[name]: value,
+			...(name === "type" && value !== "EXPENSE"
+				? { expenseParentCoaId: "" }
+				: {}),
+		}));
 		setErrors((current) => ({ ...current, [name]: undefined }));
+	}
+
+	function handleExpenseParentChange(value: string | string[]) {
+		setValues((current) => ({
+			...current,
+			expenseParentCoaId: Array.isArray(value) ? (value[0] ?? "") : value,
+		}));
+		setErrors((current) => ({ ...current, expenseParentCoaId: undefined }));
 	}
 
 	function validate() {
@@ -102,8 +131,11 @@ export function useDefaultAccountFormPage({
 
 	return {
 		errors,
+		expenseParentOptions: expenseParentOptionsQuery.data ?? [],
 		handleInputChange,
+		handleExpenseParentChange,
 		handleSubmit,
+		isLoadingExpenseParentOptions: expenseParentOptionsQuery.isLoading,
 		isReadonly,
 		isSubmitting: isMutating,
 		values,

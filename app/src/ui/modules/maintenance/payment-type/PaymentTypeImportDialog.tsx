@@ -16,9 +16,9 @@ import {
 } from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
 import {
 	downloadPaymentTypeImportTemplate,
-	formatPaymentTypeFileSize,
 	isPaymentTypeImportGridPasteTarget,
 } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+import { formatFileSize } from "@/app/src/utils/file.util";
 import { usePaymentTypeImportDialog } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentTypeImportDialog";
 import type { PaymentTypeImportDialogProps } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
@@ -92,8 +92,8 @@ export function PaymentTypeImportDialog({
 						</p>
 						<p className="hidden sm:block">
 							Accepted: .xlsx, .csv, .tsv, .txt. Size:{" "}
-							{formatPaymentTypeFileSize(MinImportFileSizeBytes)} to{" "}
-							{formatPaymentTypeFileSize(MaxImportFileSizeBytes)}. Upload one
+							{formatFileSize(MinImportFileSizeBytes)} to{" "}
+							{formatFileSize(MaxImportFileSizeBytes)}. Upload one
 							file at a time; each upload or grid paste adds rows. Duplicate
 							names are not accepted.
 						</p>

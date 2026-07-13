@@ -20,6 +20,10 @@ export type Discount = {
 	accountCode?: string;
 	accountTitle?: string;
 	accountGroupPath?: string;
+	createdBy?: string | null;
+	createdAt?: string;
+	updatedBy?: string | null;
+	updatedAt?: string;
 };
 
 export type DiscountManagementFormValues = {
@@ -60,7 +64,11 @@ export type DiscountManagementTableColumnKey =
 	| "amount"
 	| "accountCode"
 	| "accountTitle"
-	| "status";
+	| "status"
+	| "createdBy"
+	| "createdAt"
+	| "updatedBy"
+	| "updatedAt";
 
 export type DiscountManagementTableRecord = Discount & {
 	amountLabel: string;

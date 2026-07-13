@@ -79,8 +79,12 @@ function BankMasterfileCellContent({
 			return <span>{bank.isDefault ? "Yes" : "No"}</span>;
 		case "status":
 			return <StatusBadge status={bank.status} />;
+		case "createdBy":
+			return <span>{bank.createdBy ?? ""}</span>;
 		case "createdAt":
 			return <span>{formatBankMasterfileDateTime(bank.createdAt)}</span>;
+		case "updatedBy":
+			return <span>{bank.updatedBy ?? ""}</span>;
 		case "updatedAt":
 			return <span>{formatBankMasterfileDateTime(bank.updatedAt)}</span>;
 		case "actions":

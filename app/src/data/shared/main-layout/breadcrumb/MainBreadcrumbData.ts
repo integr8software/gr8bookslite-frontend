@@ -129,6 +129,7 @@ export const MainBreadcrumbDropdownHelperText: Record<string, string> = {
   "maintenance-user-management": "Manage users and roles.",
   "maintenance-users": "Create and maintain system user accounts.",
   "maintenance-user-role": "Maintain user role classifications.",
+  "maintenance-approver-setup": "Assign users as workflow approvers.",
   "maintenance-approval": "Configure approval workflows and rules.",
   "maintenance-audit": "Review audit trail activity.",
   "transaction-number-setup": "Configure transaction numbering sequences.",

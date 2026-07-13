@@ -4,6 +4,20 @@ export type BillingCycleApi = "MONTHLY" | "YEARLY";
 
 export type BillingPlanScope = "ONBOARDING" | "ADDITIONAL_COMPANY";
 
+export type BillingMode = "MANUAL" | "AUTO";
+
+export type ManualBillingPurpose =
+  | "ONBOARDING"
+  | "RENEWAL"
+  | "ADDITIONAL_COMPANY";
+
+export type ManualBillingCheckoutStatus =
+  | "pending"
+  | "success"
+  | "failed"
+  | "cancelled"
+  | "expired";
+
 export type BillingPlanPrice = {
   amountInCents: number | null;
   compareAtInCents: number | null;

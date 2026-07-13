@@ -31,6 +31,7 @@ const PaymentTypeTablePreferencesModuleKey = "maintenance:payment-type";
 const DefaultColumnOrder = PaymentTypeTableColumns.map((column) =>
 	"key" in column ? column.key : "actions",
 );
+const AuditColumnOrder = ["createdBy", "createdAt", "updatedBy", "updatedAt"];
 const DefaultColumnVisibility: VisibilityState = {
 	description: false,
 	createdBy: false,
@@ -229,9 +230,19 @@ function normalizeTablePreferences(
 						typeof columnId === "string" && knownColumnIds.has(columnId),
 				)
 			: [];
+		const fixedTailColumnIds = new Set([...AuditColumnOrder, "actions"]);
+		const storedBodyOrder = storedOrder.filter(
+			(columnId) => !fixedTailColumnIds.has(columnId),
+		);
 		const columnOrder = [
-			...storedOrder,
-			...DefaultColumnOrder.filter((columnId) => !storedOrder.includes(columnId)),
+			...storedBodyOrder,
+			...DefaultColumnOrder.filter(
+				(columnId) =>
+					!fixedTailColumnIds.has(columnId) &&
+					!storedBodyOrder.includes(columnId),
+			),
+			...AuditColumnOrder,
+			"actions",
 		];
 		const columnVisibility = { ...DefaultColumnVisibility };
 

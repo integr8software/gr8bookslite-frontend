@@ -1,117 +1,169 @@
-import { Building2, CheckCircle2, CircleOff, Edit3, Eye } from "lucide-react";
-import { ResponsibilityCenterHref } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
-import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
+import { formatDateTime } from "@/app/src/utils/date.util";
+import type {
+	ResponsibilityCenter,
+	ResponsibilityCenterPermissions,
+	ResponsibilityCenterTableRowProps,
+} from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 import {
-	ModuleActionMenu,
-	type ModuleActionMenuItem,
-} from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-
-type ResponsibilityCenterTableRowProps = {
-	center: ResponsibilityCenter;
-	parentName?: string;
-	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
-	onEditCenter: (center: ResponsibilityCenter) => void;
-};
+	ModuleTableActionButton,
+	ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 export function ResponsibilityCenterTableRow({
-	center,
-	parentName,
-	onStatusChangeCenter,
+	allCenters,
+	permissions,
+	row,
 	onEditCenter,
+	onToggleStatus,
+	onViewCenter,
 }: ResponsibilityCenterTableRowProps) {
 	return (
 		<tr className="module-table-row">
-			<td className="px-4 py-4">
-				<CenterIdentity center={center} parentName={parentName} />
-			</td>
-			<td className="px-4 py-4">
-				<CategoryBadge category={center.category} />
-			</td>
-			<td className="px-4 py-4 text-darknavy">
-				{parentName || <span className="text-darknavy/35">-</span>}
-			</td>
-			<td className="px-4 py-4">
-				<FinancialTypeBadge financialType={center.financialType} />
-			</td>
-			<td className="px-4 py-4 text-darknavy">{center.manager || "-"}</td>
-			<td className="px-4 py-4">
-				<StatusBadge status={center.status} />
-			</td>
-			<td className="px-4 py-4 text-center">
-				<RowActions
-					center={center}
-					onStatusChangeCenter={onStatusChangeCenter}
-					onEditCenter={() => onEditCenter(center)}
-				/>
-			</td>
+			{row.getVisibleCells().map((cell) => (
+				<ResponsibilityCenterTableCell
+					key={cell.id}
+					align={isCenteredColumn(cell.column.id) ? "center" : "left"}
+				>
+					<ResponsibilityCenterCellContent
+						allCenters={allCenters}
+						center={row.original}
+						columnId={cell.column.id}
+						permissions={permissions}
+						onEditCenter={onEditCenter}
+						onToggleStatus={onToggleStatus}
+						onViewCenter={onViewCenter}
+					/>
+				</ResponsibilityCenterTableCell>
+			))}
 		</tr>
 	);
 }
-function CenterIdentity({
-	center,
-	parentName,
-}: {
-	center: ResponsibilityCenter;
-	parentName?: string;
-}) {
-	return (
-		<div className="flex min-w-0 items-start gap-3">
-			<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-skyblue/15 text-darknavy">
-				<Building2 className="h-5 w-5" aria-hidden="true" />
-			</span>
-			<div className="min-w-0">
-				<h3 className="truncate text-sm font-semibold text-darknavy">
-					{center.name}
-				</h3>
-				<p className="mt-1 truncate text-xs text-darknavy/50">
-					{parentName
-						? `Reports to ${parentName}`
-						: "Top-level center"}
-				</p>
-			</div>
-		</div>
-	);
-}
-function RowActions({
-	center,
-	onStatusChangeCenter,
-	onEditCenter,
-}: {
-	center: ResponsibilityCenter;
-	onStatusChangeCenter: (center: ResponsibilityCenter) => void;
-	onEditCenter: () => void;
-}) {
-	const nextStatus = center.status === "Active" ? "Inactive" : "Active";
-	const items: ModuleActionMenuItem[] = [
-		{
-			href: `${ResponsibilityCenterHref}/view/${center.id}`,
-			icon: Eye,
-			label: "View",
-			type: "link",
-		},
-		{
-			icon: Edit3,
-			label: "Edit",
-			onSelect: onEditCenter,
-			type: "button",
-		},
-		{
-			icon: nextStatus === "Active" ? CheckCircle2 : CircleOff,
-			label: `Set as ${nextStatus}`,
-			onSelect: () => onStatusChangeCenter(center),
-			tone: nextStatus === "Inactive" ? "danger" : "default",
-			type: "button",
-		},
-	];
 
+function isCenteredColumn(columnId: string) {
+	return ["actions", "status", "financialType", "category"].includes(columnId);
+}
+
+function ResponsibilityCenterCellContent({
+	allCenters,
+	center,
+	columnId,
+	permissions,
+	onEditCenter,
+	onToggleStatus,
+	onViewCenter,
+}: {
+	allCenters: ResponsibilityCenter[];
+	center: ResponsibilityCenter;
+	columnId: string;
+	permissions: ResponsibilityCenterPermissions;
+	onEditCenter: (center: ResponsibilityCenter) => void;
+	onToggleStatus: (center: ResponsibilityCenter) => void;
+	onViewCenter: (center: ResponsibilityCenter) => void;
+}) {
+	const parentName = center.parentId
+		? allCenters.find((parentCenter) => parentCenter.id === center.parentId)?.name
+		: "";
+	const nextStatus = center.status === "Active" ? "Inactive" : "Active";
+	const statusActionLabel =
+		center.status === "Active" ? "Deactivate" : "Activate";
+
+	switch (columnId) {
+		case "name":
+			return <span className="font-medium text-darknavy">{center.name}</span>;
+		case "code":
+			return <span className="font-mono text-xs font-semibold">{center.code}</span>;
+		case "description":
+			return (
+				<span className="block truncate text-darknavy/75" title={center.description}>
+					{center.description ?? ""}
+				</span>
+			);
+		case "category":
+			return <CategoryBadge category={center.category} />;
+		case "parentId":
+			return parentName ? (
+				<span>{parentName}</span>
+			) : (
+				<span className="text-darknavy/35">-</span>
+			);
+		case "financialType":
+			return <FinancialTypeBadge financialType={center.financialType} />;
+		case "manager":
+			return <span>{center.manager || ""}</span>;
+		case "status":
+			return <StatusBadge status={center.status} />;
+		case "createdBy":
+			return <span>{center.createdBy ?? ""}</span>;
+		case "createdAt":
+			return (
+				<span>
+					{formatDateTime(center.createdAt, {
+						emptyValue: "-",
+						locale: "en-US",
+					})}
+				</span>
+			);
+		case "updatedBy":
+			return <span>{center.updatedBy ?? ""}</span>;
+		case "updatedAt":
+			return (
+				<span>
+					{formatDateTime(center.updatedAt, {
+						emptyValue: "-",
+						locale: "en-US",
+					})}
+				</span>
+			);
+		case "actions":
+			return (
+				<ModuleTableActions
+					data-spotlight-id="maintenance-record-actions"
+					className="w-full !justify-center"
+				>
+					{permissions.canView ? (
+						<ModuleTableActionButton
+							variant="view"
+							onClick={() => onViewCenter(center)}
+							data-spotlight-id="maintenance-record-view"
+							label={`View ${center.name}`}
+						/>
+					) : null}
+					{permissions.canUpdate ? (
+						<>
+							<ModuleTableActionButton
+								variant="edit"
+								onClick={() => onEditCenter(center)}
+								data-spotlight-id="maintenance-record-edit"
+								label={`Edit ${center.name}`}
+							/>
+							<ModuleTableActionButton
+								variant={nextStatus === "Inactive" ? "inactive" : "active"}
+								onClick={() => onToggleStatus(center)}
+								data-spotlight-id="maintenance-record-status"
+								label={`${statusActionLabel} ${center.name}`}
+							/>
+						</>
+					) : null}
+				</ModuleTableActions>
+			);
+		default:
+			return null;
+	}
+}
+
+function ResponsibilityCenterTableCell({
+	align = "left",
+	children,
+}: {
+	align?: "center" | "left";
+	children: React.ReactNode;
+}) {
 	return (
-		<ModuleTableActions className="justify-center">
-			<ModuleActionMenu
-				items={items}
-				label={`Actions for ${center.name}`}
-			/>
-		</ModuleTableActions>
+		<td
+			className={`px-4 py-4 align-middle text-sm text-darknavy ${align === "center" ? "text-center" : "text-left"}`}
+		>
+			{children}
+		</td>
 	);
 }
 

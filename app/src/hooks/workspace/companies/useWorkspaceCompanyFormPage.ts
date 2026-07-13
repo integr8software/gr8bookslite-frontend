@@ -17,6 +17,7 @@ import {
 } from "@/app/src/data/onboarding/OnboardingData";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
+import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingMockApi";
 import {
 	useWorkspaceCompanyManagementStore,
 	useWorkspaceCompanyRecord,
@@ -253,6 +254,21 @@ export function useWorkspaceCompanyFormPage() {
 		let didCreatePaymentMethod = false;
 
 		try {
+			if (values.billingMode === "MANUAL") {
+				const checkout = await CreateManualCheckout({
+					billingCycle: values.billingCycle,
+					companyName: getCompanyDisplayName(values),
+					planCode: values.billingPlanCode,
+					planName: values.billingPlanCode,
+					purpose: "ADDITIONAL_COMPANY",
+					returnTo: WorkspaceCompaniesHref,
+				});
+
+				toast.success("Opening hosted checkout preview.");
+				window.location.assign(checkout.checkoutUrl);
+				return;
+			}
+
 			const valuesToSave = await createTokenizedCompanyValues(values);
 			didCreatePaymentMethod =
 				values.billingPaymentMethodId === "new-paymongo-card";
@@ -310,7 +326,10 @@ export function useWorkspaceCompanyFormPage() {
 async function createTokenizedCompanyValues(
 	values: WorkspaceCompanyFormValues,
 ): Promise<WorkspaceCompanyFormValues> {
-	if (values.billingPaymentMethodId !== "new-paymongo-card") {
+	if (
+		values.billingMode !== "AUTO" ||
+		values.billingPaymentMethodId !== "new-paymongo-card"
+	) {
 		return values;
 	}
 

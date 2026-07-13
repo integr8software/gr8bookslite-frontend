@@ -28,6 +28,7 @@ export function AppAddressAutocomplete({
 	id,
 	label = "Search Address",
 	placeholder = "Type barangay, city, province, or code",
+	required = false,
 	syncDetailsOnQueryChange = false,
 	value,
 	onCompleteAddressChange,
@@ -38,6 +39,7 @@ export function AppAddressAutocomplete({
 	id: string;
 	label?: string;
 	placeholder?: string;
+	required?: boolean;
 	syncDetailsOnQueryChange?: boolean;
 	value: AppAddressAutocompleteValue;
 	onCompleteAddressChange?: (completeAddress: string) => void;
@@ -53,6 +55,7 @@ export function AppAddressAutocomplete({
 			id={id}
 			label={label}
 			placeholder={placeholder}
+			required={required}
 			syncDetailsOnQueryChange={syncDetailsOnQueryChange}
 			value={value}
 			onCompleteAddressChange={onCompleteAddressChange}
@@ -67,6 +70,7 @@ function StatefulAddressAutocomplete({
 	id,
 	label,
 	placeholder,
+	required,
 	syncDetailsOnQueryChange,
 	value,
 	onCompleteAddressChange,
@@ -77,6 +81,7 @@ function StatefulAddressAutocomplete({
 	id: string;
 	label: string;
 	placeholder: string;
+	required: boolean;
 	syncDetailsOnQueryChange: boolean;
 	value: AppAddressAutocompleteValue;
 	onCompleteAddressChange?: (completeAddress: string) => void;
@@ -169,7 +174,10 @@ function StatefulAddressAutocomplete({
 
 	return (
 		<div className="grid gap-2">
-			<span className="text-sm font-semibold text-darknavy">{label}</span>
+			<label htmlFor={id} className="text-sm font-semibold text-darknavy">
+				{label}
+				{required ? <span className="text-coralpink"> *</span> : null}
+			</label>
 			<AppSearchSuggestions
 				compact
 				emptyMessage="No address options found."
@@ -214,7 +222,9 @@ function StatefulAddressAutocomplete({
 				}}
 				onResultsClose={() => setIsResultsOpen(false)}
 				onSelect={(selectedAddress) => {
-					const selectedDetails = getAutocompleteAddressDetails(query, value);
+					const selectedDetails = getAutocompleteAddressDetails(query, value, {
+						preserveCurrentDetails: !hasAutocompleteDetailParts(query),
+					});
 					const selectedCompleteAddress = formatAutocompleteSuggestion(
 						selectedAddress,
 						query,
@@ -472,15 +482,6 @@ function getAutocompleteAddressDetails(
 }
 
 function getAutocompleteAddressDetailLines(detailParts: string[]) {
-	const firstStreetAddressIndex = detailParts.findIndex(isLikelyStreetAddress);
-
-	if (firstStreetAddressIndex >= 0) {
-		return {
-			addressLine1Parts: detailParts.slice(0, firstStreetAddressIndex),
-			addressLine2Parts: detailParts.slice(firstStreetAddressIndex),
-		};
-	}
-
 	const buildingParts = detailParts.filter(isBuildingAddressPart);
 
 	if (buildingParts.length > 0) {
@@ -489,6 +490,17 @@ function getAutocompleteAddressDetailLines(detailParts: string[]) {
 			addressLine2Parts: detailParts.filter(
 				(part) => !isBuildingAddressPart(part),
 			),
+		};
+	}
+
+	const streetParts = detailParts.filter(isLikelyStreetAddress);
+
+	if (streetParts.length > 0) {
+		return {
+			addressLine1Parts: detailParts.filter(
+				(part) => !isLikelyStreetAddress(part),
+			),
+			addressLine2Parts: streetParts,
 		};
 	}
 
@@ -504,11 +516,65 @@ function getAutocompleteDetailParts(query: string) {
 		/^(barangay|brgy\.?|bgy\.?)\b/i.test(part),
 	);
 	const detailParts =
-		barangayIndex >= 0 ? parts.slice(0, barangayIndex) : parts.slice(0, -3);
+		barangayIndex >= 0
+			? parts.slice(0, barangayIndex)
+			: getAutocompleteLeadingDetailParts(parts);
 
 	return getUniqueAutocompleteParts(
 		detailParts.filter((part) => !isCountryPart(part)),
 	);
+}
+
+function hasAutocompleteDetailParts(query: string) {
+	return getAutocompleteDetailParts(query).length > 0;
+}
+
+function getAutocompleteLeadingDetailParts(parts: string[]) {
+	const administrativeParts = getAutocompleteAdministrativeParts(
+		parts.join(", "),
+	);
+
+	if (administrativeParts.length === 0) {
+		return parts;
+	}
+
+	const administrativeStartIndex = findAutocompletePartsStartIndex(
+		parts,
+		administrativeParts,
+	);
+
+	if (administrativeStartIndex >= 0) {
+		return parts.slice(0, administrativeStartIndex);
+	}
+
+	return parts.slice(0, Math.max(0, parts.length - administrativeParts.length));
+}
+
+function findAutocompletePartsStartIndex(
+	parts: string[],
+	administrativeParts: string[],
+) {
+	const normalizedAdministrativeParts = administrativeParts.map(
+		normalizeAutocompleteText,
+	);
+
+	for (
+		let index = 0;
+		index <= parts.length - normalizedAdministrativeParts.length;
+		index += 1
+	) {
+		const matches = normalizedAdministrativeParts.every(
+			(administrativePart, offset) =>
+				normalizeAutocompleteText(parts[index + offset] ?? "") ===
+				administrativePart,
+		);
+
+		if (matches) {
+			return index;
+		}
+	}
+
+	return -1;
 }
 
 function getChangedAutocompleteDetailLine(

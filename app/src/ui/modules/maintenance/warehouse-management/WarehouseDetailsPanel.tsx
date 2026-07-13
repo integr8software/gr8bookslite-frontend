@@ -1,5 +1,6 @@
 import { getWarehouseAvailableBranchLabel } from "@/app/src/data/modules/maintenance/warehouse-management/WarehouseManagementData";
 import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
+import { formatCurrency } from "@/app/src/utils/currency.util";
 import type { ReactNode } from "react";
 
 type WarehouseDetailsPanelProps = {
@@ -225,13 +226,6 @@ function SimpleTable({
 			</table>
 		</div>
 	);
-}
-
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("en-US", {
-		currency: "PHP",
-		style: "currency",
-	}).format(value);
 }
 
 function Detail({

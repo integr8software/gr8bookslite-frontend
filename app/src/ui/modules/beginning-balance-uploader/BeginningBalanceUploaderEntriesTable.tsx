@@ -1,229 +1,147 @@
-import type { ClipboardEvent } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { useMemo } from "react";
 import {
-  BeginningBalanceUploaderColumns,
-  BeginningBalanceUploaderPageCopy,
-  BeginningBalanceUploaderRowBatchOptions,
-} from "@/app/src/constants/modules/beginning-balance-uploader/BeginningBalanceUploaderConstants";
+  ModuleDataEntry,
+  type ModuleDataEntryColumn,
+} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { BeginningBalanceUploaderColumns, BeginningBalanceUploaderPageCopy } from "@/app/src/constants/modules/beginning-balance-uploader/BeginningBalanceUploaderConstants";
 import { formatBeginningBalanceAmount } from "@/app/src/data/modules/beginning-balance-uploader/BeginningBalanceUploaderData";
-import type {
-  BeginningBalanceUploaderField,
-  BeginningBalanceUploaderRow,
-  BeginningBalanceUploaderTotals,
-} from "@/app/src/types/modules/beginning-balance-uploader/BeginningBalanceUploaderTypes";
-import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import {
+  getPartyDisplayName,
+  PartyInformationInitialRecords,
+} from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import type { BeginningBalanceUploaderField, BeginningBalanceUploaderRow, BeginningBalanceUploaderTotals } from "@/app/src/types/modules/beginning-balance-uploader/BeginningBalanceUploaderTypes";
+import type { ModuleDataEntryCellTarget } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
-type BeginningBalanceUploaderEntriesTableProps = {
-  rowBatchSize: number;
+type Props = {
   rows: BeginningBalanceUploaderRow[];
   totals: BeginningBalanceUploaderTotals;
-  onAddRows: () => void;
-  onDeleteRow: (rowId: number) => void;
-  onPasteRows: (
-    event: ClipboardEvent<HTMLInputElement>,
-    startRowIndex: number,
-    startField: BeginningBalanceUploaderField,
-  ) => void;
-  onRowBatchSizeChange: (value: number) => void;
-  onUpdateRow: (
-    rowId: number,
-    field: BeginningBalanceUploaderField,
-    value: string,
-  ) => void;
+  error?: string;
+  isReadonly: boolean;
+  onAddRows: (count?: number) => void;
+  onDeleteRow: (rowId: string) => void;
+  onPasteRows: (target: ModuleDataEntryCellTarget, rows: string[][]) => void;
+  onDuplicateRow: (rowId: string) => void;
+  onInsertRow: (rowId: string, position: "above" | "below") => void;
+  onMoveRow: (fromRowId: string, toRowId: string) => void;
+  onUpdateRow: (rowId: string, field: BeginningBalanceUploaderField, value: string) => void;
+  onUpdateRowFields: (rowId: string, values: Partial<BeginningBalanceUploaderRow>) => void;
 };
 
-export function BeginningBalanceUploaderEntriesTable({
-  rowBatchSize,
-  rows,
-  totals,
-  onAddRows,
-  onDeleteRow,
-  onPasteRows,
-  onRowBatchSizeChange,
-  onUpdateRow,
-}: BeginningBalanceUploaderEntriesTableProps) {
-  return (
-    <section className="rounded-lg border border-darknavy/10 bg-white shadow-sm">
-      <div className="flex flex-col gap-3 border-b border-darknavy/10 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-base font-semibold text-darknavy">
-            {BeginningBalanceUploaderPageCopy.entriesTitle}
-          </h2>
-          <p className="mt-1 text-sm text-darknavy/55">
-            {BeginningBalanceUploaderPageCopy.entriesDescription}
-          </p>
-        </div>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[72rem] border-separate border-spacing-0 text-left text-sm">
-          <thead>
-            <tr className="bg-darknavy/5 text-xs font-semibold uppercase text-darknavy/55">
-              <th className="w-12 border-b border-r border-darknavy/10 px-3 py-3 text-center">
-                #
-              </th>
-              {BeginningBalanceUploaderColumns.map((column) => (
-                <th
-                  key={column.field}
-                  className="border-b border-r border-darknavy/10 px-3 py-3"
-                >
-                  {column.label}
-                </th>
-              ))}
-              <th className="w-14 border-b border-darknavy/10 px-2 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, rowIndex) => (
-              <tr key={row.id} className="text-darknavy">
-                <td className="border-b border-r border-darknavy/10 bg-darknavy/5 px-3 py-2 text-center text-xs font-semibold text-darknavy/45">
-                  {rowIndex + 1}
-                </td>
-                {BeginningBalanceUploaderColumns.map((column) => (
-                  <GridCell
-                    key={column.field}
-                    align={column.align}
-                    inputMode={column.inputMode}
-                    placeholder={column.placeholder}
-                    type={column.type}
-                    value={row[column.field]}
-                    onChange={(value) =>
-                      onUpdateRow(row.id, column.field, value)
-                    }
-                    onPaste={(event) =>
-                      onPasteRows(event, rowIndex, column.field)
-                    }
-                  />
-                ))}
-                <td className="border-b border-darknavy/10 px-2 py-1">
-                  <button
-                    type="button"
-                    onClick={() => onDeleteRow(row.id)}
-                    aria-label={`Delete row ${rowIndex + 1}`}
-                    className="flex h-9 w-9 items-center justify-center rounded-md text-darknavy/45 transition hover:bg-coralpink/10 hover:text-coralpink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-                  >
-                    <Trash2 className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          <BeginningBalanceEntriesFooter totals={totals} />
-        </table>
-
-        <div className="flex justify-end gap-2 p-4">
-          <select
-            value={rowBatchSize}
-            onChange={(event) =>
-              onRowBatchSizeChange(Number(event.target.value))
-            }
-            className="block h-10 rounded-md border border-darknavy/10 bg-white px-3 text-sm text-darknavy shadow-sm outline-none transition focus:border-skyblue/45 focus:ring-2 focus:ring-skyblue/25"
-            aria-label="Rows to add"
-          >
-            {BeginningBalanceUploaderRowBatchOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={onAddRows}
-            className={moduleHeaderActionClassNames.secondary}
-          >
-            <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>Add Row</span>
-          </button>
-        </div>
-      </div>
-    </section>
+export function BeginningBalanceUploaderEntriesTable({ rows, totals, error, isReadonly, onAddRows, onDeleteRow, onDuplicateRow, onInsertRow, onMoveRow, onPasteRows, onUpdateRow, onUpdateRowFields }: Props) {
+  const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
+    () =>
+      PartyInformationInitialRecords.filter((party) => party.status === "Active").map(
+        (party) => ({
+          description: party.partyTypes.join(", "),
+          label: party.partyCodeNo,
+          name: getPartyDisplayName(party),
+          value: party.partyCodeNo,
+        }),
+      ),
+    [],
   );
-}
 
-type BeginningBalanceEntriesFooterProps = {
-  totals: BeginningBalanceUploaderTotals;
-};
+  const columns = useMemo<ModuleDataEntryColumn<BeginningBalanceUploaderRow>[]>(
+    () => BeginningBalanceUploaderColumns.map((column) => ({
+      id: column.field,
+      header: column.label,
+      widthClassName:
+        column.field === "accntTitle" || column.field === "partyName" || column.field === "particulars"
+          ? "w-[18rem]"
+          : "w-[12rem]",
+      renderCell: (row) => {
+        if (column.field === "accntTitle") {
+          return (
+            <ChartAccountDropdown
+              accounts={ModuleChartAccounts}
+              className={DataEntryDropdownClassName}
+              isClearable
+              menuPortal
+              placeholder="Select account title"
+              searchPlaceholder="Search account title or code"
+              value={row.accntTitle}
+              valueField="accountName"
+              readOnly={isReadonly}
+              onChange={() => undefined}
+              onSelectAccount={(account) =>
+                onUpdateRowFields(row.id, {
+                  accntCode: account?.accountNumber ?? "",
+                  accntTitle: account?.accountName ?? "",
+                })
+              }
+            />
+          );
+        }
 
-function BeginningBalanceEntriesFooter({
-  totals,
-}: BeginningBalanceEntriesFooterProps) {
-  return (
-    <tfoot>
-      <tr className="bg-darknavy/5 text-sm font-semibold text-darknavy">
-        <td className="border-t border-r border-darknavy/10 px-3 py-2 text-center text-xs uppercase text-darknavy/45">
-          Total
-        </td>
-        {BeginningBalanceUploaderColumns.map((column) => (
-          <td
-            key={column.field}
+        if (column.field === "partyName") {
+          return (
+            <AppAdvancedDropdown
+              className={DataEntryDropdownClassName}
+              isClearable
+              menuPortal
+              options={partyOptions}
+              placeholder="Select party name"
+              searchPlaceholder="Search party name or code"
+              showSelectedDetails
+              readOnly={isReadonly}
+              value={row.partyCode}
+              onChange={(value) => {
+                const partyCode = String(value);
+                const party = partyOptions.find((option) => option.value === partyCode);
+                onUpdateRowFields(row.id, {
+                  partyCode,
+                  partyName: party?.name ?? "",
+                });
+              }}
+            />
+          );
+        }
+
+        const isAutoFilled = column.field === "accntCode" || column.field === "partyCode";
+
+        return (
+          <input
+            type={column.type ?? "text"}
+            inputMode={column.inputMode}
+            readOnly={isReadonly || isAutoFilled}
+            value={row[column.field]}
+            placeholder={column.placeholder}
+            onChange={(event) => onUpdateRow(row.id, column.field, event.target.value)}
             className={joinClasses(
-              "border-t border-r border-darknavy/10 px-3 py-2",
+              "h-10 w-full border-0 bg-transparent px-3 text-sm text-darknavy outline-none focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35",
+              isAutoFilled && "bg-offwhite text-darknavy/60",
               column.align === "right" && "text-right tabular-nums",
-              column.field === "debit" && "font-semibold",
-              column.field === "credit" && "font-semibold",
-              column.field === "refNo" &&
-                (totals.variance === 0 ? "text-skyblue" : "text-coralpink"),
             )}
-          >
-            {getFooterValue(column.field, totals)}
-          </td>
-        ))}
-        <td className="border-t border-darknavy/10" />
-      </tr>
-    </tfoot>
+          />
+        );
+      },
+    })),
+    [isReadonly, onUpdateRow, onUpdateRowFields, partyOptions],
   );
+
+  return <ModuleDataEntry
+    columns={columns}
+    description={BeginningBalanceUploaderPageCopy.entriesDescription}
+    emptyRowLabel="entry"
+    error={error}
+    isDraggable
+    isReadonly={isReadonly}
+    rows={rows}
+    title={BeginningBalanceUploaderPageCopy.entriesTitle}
+    summaryCells={{ debit: formatBeginningBalanceAmount(totals.debit), credit: formatBeginningBalanceAmount(totals.credit) }}
+    footerDetails={<span className={joinClasses("font-semibold", Math.abs(totals.variance) < 0.001 ? "text-emerald-700" : "text-coralpink")}>Variance: {formatBeginningBalanceAmount(totals.variance)}</span>}
+    onAddRows={onAddRows}
+    onDuplicateRow={onDuplicateRow}
+    onInsertRow={onInsertRow}
+    onMoveRow={onMoveRow}
+    onPasteCells={onPasteRows}
+    onRemoveRow={onDeleteRow}
+  />;
 }
 
-type GridCellProps = {
-  align?: "left" | "right";
-  inputMode?: "decimal";
-  onChange: (value: string) => void;
-  onPaste: (event: ClipboardEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-  type?: "date" | "text";
-  value: string;
-};
-
-function GridCell({
-  align = "left",
-  inputMode,
-  onChange,
-  onPaste,
-  placeholder,
-  type = "text",
-  value,
-}: GridCellProps) {
-  return (
-    <td className="border-b border-r border-darknavy/10 p-0">
-      <input
-        type={type}
-        inputMode={inputMode}
-        value={value}
-        placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
-        onPaste={onPaste}
-        className={joinClasses(
-          "h-11 w-full border-0 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/25 focus:bg-skyblue/10 focus:ring-2 focus:ring-inset focus:ring-skyblue/35",
-          align === "right" && "text-right tabular-nums",
-        )}
-      />
-    </td>
-  );
-}
-
-function getFooterValue(
-  field: BeginningBalanceUploaderField,
-  totals: BeginningBalanceUploaderTotals,
-) {
-  switch (field) {
-    case "debit":
-      return formatBeginningBalanceAmount(totals.debit);
-    case "credit":
-      return formatBeginningBalanceAmount(totals.credit);
-    case "refNo":
-      return formatBeginningBalanceAmount(totals.variance);
-    default:
-      return "";
-  }
-}
+const DataEntryDropdownClassName =
+  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";

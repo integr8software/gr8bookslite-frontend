@@ -1,43 +1,34 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { ResponsibilityCenterHref } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+import { ResponsibilityCenterTypeDefinitions } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import {
 	ResponsibilityCenterInitialFormValues,
 	createResponsibilityCenterFormValues,
 	createResponsibilityCenterFromForm,
 	updateResponsibilityCenterFromForm,
 } from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
+import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
 import type {
-	ResponsibilityCenterActionMode,
 	ResponsibilityCenter,
+	ResponsibilityCenterActionMode,
 	ResponsibilityCenterFormErrors,
 	ResponsibilityCenterFormValues,
-	ResponsibilityCenterStatus,
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 import { validateResponsibilityCenterForm } from "@/app/src/validations/modules/maintenance/responsibility-center/ResponsibilityCenterValidation";
-import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
 
-type ResponsibilityCenterActionOptions = {
+type ResponsibilityCenterFormPageOptions = {
 	center?: ResponsibilityCenter;
-	mode?: ResponsibilityCenterActionMode;
+	mode: ResponsibilityCenterActionMode;
 	onSaved?: () => void;
 };
 
-export function useResponsibilityCenterAction(
-	options: ResponsibilityCenterActionOptions = {},
-) {
-	const router = useRouter();
-	const pathname = usePathname();
-	const params = useParams<{ recordId?: string }>();
+export function useResponsibilityCenterFormPage({
+	center,
+	mode,
+	onSaved,
+}: ResponsibilityCenterFormPageOptions) {
 	const store = useResponsibilityCenterStore();
-	const mode = options.mode ?? getActionMode(pathname);
-	const center =
-		options.center ?? store.centers.find(({ id }) => id === params.recordId);
 	const isReadonly = mode === "view";
-	const nextStatus: ResponsibilityCenterStatus =
-		center?.status === "Active" ? "Inactive" : "Active";
 	const [errors, setErrors] = useState<ResponsibilityCenterFormErrors>({});
-	const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 	const [values, setValues] = useState(() =>
 		center
 			? createResponsibilityCenterFormValues(center)
@@ -48,7 +39,7 @@ export function useResponsibilityCenterAction(
 		[store.centers, center?.id],
 	);
 
-	function onInputChange(
+	function handleInputChange(
 		event: ChangeEvent<
 			HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 		>,
@@ -66,11 +57,15 @@ export function useResponsibilityCenterAction(
 			return;
 		}
 
-		setValues((current) => ({ ...current, [field]: value }));
+		setValues((current) => ({
+			...current,
+			[field]: value,
+			...(field === "category" ? createTypeDefaults(String(value)) : {}),
+		}));
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
-	function onFieldChange<TKey extends keyof ResponsibilityCenterFormValues>(
+	function handleFieldChange<TKey extends keyof ResponsibilityCenterFormValues>(
 		field: TKey,
 		value: ResponsibilityCenterFormValues[TKey],
 	) {
@@ -78,11 +73,15 @@ export function useResponsibilityCenterAction(
 			return;
 		}
 
-		setValues((current) => ({ ...current, [field]: value }));
+		setValues((current) => ({
+			...current,
+			[field]: value,
+			...(field === "category" ? createTypeDefaults(String(value)) : {}),
+		}));
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
-	function onSubmit(event: FormEvent<HTMLFormElement>) {
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
 		const nextErrors = validateResponsibilityCenterForm(
@@ -102,48 +101,34 @@ export function useResponsibilityCenterAction(
 			store.addCenter(createResponsibilityCenterFromForm(values));
 		}
 
-		options.onSaved?.();
-		if (!options.onSaved) router.push(ResponsibilityCenterHref);
-	}
-
-	function onConfirmStatusChange() {
-		if (!center) {
-			return;
-		}
-
-		const nextCenter = {
-			...center,
-			status: nextStatus,
-			updatedAt: new Date().toISOString(),
-		};
-
-		store.updateCenter(nextCenter);
-		setValues((current) => ({ ...current, status: nextStatus }));
-		setIsStatusDialogOpen(false);
+		onSaved?.();
 	}
 
 	return {
-		center,
 		errors,
-		isMutating: store.isMutating,
 		isReadonly,
-		isStatusDialogOpen,
-		mode,
-		nextStatus,
+		isSubmitting: store.isMutating,
 		parentOptions,
 		values,
-		onConfirmStatusChange,
-		onFieldChange,
-		onInputChange,
-		onSubmit,
-		setIsStatusDialogOpen,
+		handleFieldChange,
+		handleInputChange,
+		handleSubmit,
 	};
 }
 
-function getActionMode(pathname: string): ResponsibilityCenterActionMode {
-	if (pathname.includes("/view/")) {
-		return "view";
+function createTypeDefaults(category: string) {
+	const definition = ResponsibilityCenterTypeDefinitions.find(
+		(typeDefinition) => typeDefinition.type === category,
+	);
+
+	if (!definition) {
+		return {};
 	}
 
-	return pathname.includes("/edit/") ? "edit" : "add";
+	return {
+		allowLineLevelAssignment:
+			definition.assignmentLevel === "Header and Line",
+		financialType: definition.financialType,
+		isRequiredInTransactions: definition.isRequiredInTransactions,
+	};
 }

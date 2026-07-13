@@ -1,0 +1,156 @@
+"use client";
+
+import { useCallback, useMemo, useState } from "react";
+import {
+	Building2,
+	CheckCircle2,
+	CirclePause,
+	FolderKanban,
+	Layers3,
+	Network,
+} from "lucide-react";
+import { useResponsibilityCenterListPage } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenterListPage";
+import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
+import type { ResponsibilityCenterDrawerState } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import {
+	ModuleStatisticCards,
+	type ModuleStatisticCardItem,
+} from "@/app/src/ui/shared/module/ModuleStatisticCards";
+import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterDrawer";
+import { ResponsibilityCenterHeader } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterHeader";
+import { ResponsibilityCenterTable } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterTable";
+
+export function ResponsibilityCenterListPage() {
+	const page = useResponsibilityCenterListPage();
+	const [drawerState, setDrawerState] =
+		useState<ResponsibilityCenterDrawerState>(null);
+	const closeDrawer = useCallback(() => setDrawerState(null), []);
+
+	useMaintenanceAddDrawerSpotlight(
+		() => {
+			if (page.permissions.canCreate) {
+				setDrawerState({ mode: "add" });
+			}
+		},
+		closeDrawer,
+	);
+
+	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
+		() => [
+			{
+				icon: Network,
+				iconClassName: "bg-skyblue/20 text-skyblue",
+				label: "Total Centers",
+				summary: "All responsibility centers",
+				value: page.statistics.totalCenters,
+			},
+			{
+				icon: CheckCircle2,
+				iconClassName: "bg-emerald-50 text-emerald-700",
+				label: "Active Centers",
+				summary: "Available for selection",
+				value: page.statistics.activeCenters,
+			},
+			{
+				icon: CirclePause,
+				iconClassName: "bg-amber-50 text-amber-700",
+				label: "Inactive Centers",
+				summary: "Currently inactive",
+				value: page.statistics.inactiveCenters,
+			},
+			{
+				icon: Layers3,
+				iconClassName: "bg-cyan-50 text-cyan-700",
+				label: "Departments",
+				summary: "Department dimensions",
+				value: page.statistics.departmentCenters,
+			},
+			{
+				icon: Building2,
+				iconClassName: "bg-violet-50 text-violet-700",
+				label: "Branches",
+				summary: "Branch dimensions",
+				value: page.statistics.branchCenters,
+			},
+			{
+				icon: FolderKanban,
+				iconClassName: "bg-slate-100 text-slate-700",
+				label: "Projects",
+				summary: "Project dimensions",
+				value: page.statistics.projectCenters,
+			},
+		],
+		[page.statistics],
+	);
+	const hasActiveFilters =
+		page.query.trim().length > 0 ||
+		page.categoryFilter !== "All" ||
+		page.financialTypeFilter !== "All" ||
+		page.statusFilter !== "Active";
+
+	return (
+		<section className="grid gap-5">
+			<ResponsibilityCenterHeader
+				onAdd={() => setDrawerState({ mode: "add" })}
+				permissions={page.permissions}
+			/>
+			<ModuleStatisticCards
+				items={statisticCards}
+				isLoading={page.isLoading}
+				className="xl:grid-cols-6"
+			/>
+			<ResponsibilityCenterTable
+				categoryFilter={page.categoryFilter}
+				centers={page.centers}
+				filteredCenters={page.filteredCenters}
+				financialTypeFilter={page.financialTypeFilter}
+				hasActiveFilters={hasActiveFilters}
+				isLoading={page.isLoading}
+				isRefreshing={page.isRefreshing}
+				lastSyncedAt={page.lastSyncedAt}
+				permissions={page.permissions}
+				query={page.query}
+				statusFilter={page.statusFilter}
+				onCategoryFilterChange={page.setCategoryFilter}
+				onEditCenter={(center) => setDrawerState({ center, mode: "edit" })}
+				onFinancialTypeFilterChange={page.setFinancialTypeFilter}
+				onQueryChange={page.setQuery}
+				onRefresh={page.refreshCenters}
+				onStatusFilterChange={page.setStatusFilter}
+				onToggleStatus={page.setPendingStatusCenter}
+				onViewCenter={(center) => setDrawerState({ center, mode: "view" })}
+			/>
+			<ResponsibilityCenterDrawer
+				center={drawerState?.center}
+				isOpen={Boolean(drawerState)}
+				mode={drawerState?.mode ?? "add"}
+				onClose={closeDrawer}
+			/>
+			<AppDialog
+				isOpen={Boolean(page.pendingStatusCenter)}
+				isPending={page.isMutating}
+				title={
+					page.pendingStatusCenter?.status === "Active"
+						? "Deactivate responsibility center?"
+						: "Activate responsibility center?"
+				}
+				description={
+					page.pendingStatusCenter?.status === "Active"
+						? `${page.pendingStatusCenter.name} will remain available in history, but will no longer be active for normal selection.`
+						: `${page.pendingStatusCenter?.name ?? "This responsibility center"} will be available for normal selection again.`
+				}
+				confirmLabel={
+					page.pendingStatusCenter?.status === "Active"
+						? "Deactivate"
+						: "Activate"
+				}
+				tone={
+					page.pendingStatusCenter?.status === "Active" ? "danger" : "success"
+				}
+				onCancel={() => page.setPendingStatusCenter(null)}
+				onConfirm={page.confirmCenterStatusChange}
+			/>
+		</section>
+	);
+}

@@ -26,7 +26,7 @@ import {
   UploadOnboardingCompanyLogo,
 } from "@/app/src/services/onboarding/OnboardingApi";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
-import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingMockApi";
+import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingApi";
 import {
   CreateFrontendAuthSession,
   GetAuthProfile,
@@ -378,7 +378,7 @@ export function useOnboardingSubmission({
             returnTo: "/onboarding",
           });
 
-          toast.success("Opening hosted checkout preview.");
+          toast.success("Opening PayMongo hosted checkout.");
           window.location.assign(checkout.checkoutUrl);
           return;
         }
@@ -424,16 +424,8 @@ export function useOnboardingSubmission({
         return;
       }
 
-		if (isLastStep) {
-			if (values.billingMode === "MANUAL" && hasPersistedBillingSetup) {
-				toast.success(
-					"Manual payment UX completed. Backend activation is scheduled for Phase 2.",
-				);
-				router.push(GetFallbackPostAuthRedirectPath(token));
-				return;
-			}
-
-        const response = await CompleteOnboarding(token);
+			if (isLastStep) {
+	        const response = await CompleteOnboarding(token);
 
         toast.success(response.message);
 

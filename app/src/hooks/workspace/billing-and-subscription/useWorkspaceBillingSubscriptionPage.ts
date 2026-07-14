@@ -12,7 +12,7 @@ import {
 	getWorkspaceBillingDefaultPaymentMethodId,
 	getWorkspaceBillingSummary,
 } from "@/app/src/data/workspace/billing-and-subscription/WorkspaceBillingSubscriptionData";
-import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingMockApi";
+import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingApi";
 import { validateWorkspacePromotionCode } from "@/app/src/validations/workspace/billing-and-subscription/WorkspaceBillingSubscriptionValidation";
 
 type WorkspaceBillingRenewalFilter =
@@ -247,7 +247,7 @@ export function useWorkspaceBillingSubscriptionPage() {
 				returnTo: "/workspace/billing-and-subscription",
 			});
 
-			toast.success(`Opening hosted checkout preview for ${account.name}.`);
+			toast.success(`Opening PayMongo hosted checkout for ${account.name}.`);
 			window.location.assign(session.checkoutUrl);
 			return;
 		}

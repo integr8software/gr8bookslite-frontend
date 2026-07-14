@@ -20,7 +20,7 @@ import {
 } from "@/app/src/services/billing/BillingApi";
 import { BillingQueryKeys } from "@/app/src/services/billing/BillingQueryKeys";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
-import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingMockApi";
+import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingApi";
 import { useBillingSubscriptionSetupQuery } from "@/app/src/hooks/billing/useBillingSubscriptionSetupQuery";
 import { FormatBillingPrice, GetPlanPriceForCycle } from "@/app/src/data/billing/BillingUtils";
 
@@ -158,7 +158,7 @@ export function useBillingSubscriptionManager() {
       });
     },
     onSuccess: (session) => {
-      toast.success("Opening hosted checkout preview.");
+      toast.success("Opening PayMongo hosted checkout.");
       window.location.assign(session.checkoutUrl);
     },
     onError: (error) => {

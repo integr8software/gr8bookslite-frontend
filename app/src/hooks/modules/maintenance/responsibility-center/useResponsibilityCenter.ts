@@ -1,9 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { MockResponsibilityCenters } from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
+import {
+	createResponsibilityCenter,
+	fetchResponsibilityCenters,
+	updateResponsibilityCenter,
+} from "@/app/src/services/modules/maintenance/responsibility-center/ResponsibilityCenterApi";
 import { ResponsibilityCenterQueryKeys } from "@/app/src/services/modules/maintenance/responsibility-center/ResponsibilityCenterQueryKeys";
 import type {
 	ResponsibilityCenter,
@@ -13,9 +20,8 @@ import type {
 
 type ResponsibilityCenterStoreState = {
 	centers: ResponsibilityCenter[];
-	addCenter: (center: ResponsibilityCenter) => void;
-	updateCenter: (center: ResponsibilityCenter) => void;
-	deleteCenter: (centerId: string) => void;
+	addCenter: (center: ResponsibilityCenter) => Promise<ResponsibilityCenter>;
+	updateCenter: (center: ResponsibilityCenter) => Promise<ResponsibilityCenter>;
 	isLoading: boolean;
 	isRefreshing: boolean;
 	lastSyncedAt: number;
@@ -25,132 +31,163 @@ type ResponsibilityCenterStoreState = {
 	statistics: ResponsibilityCenterStatistics;
 };
 
+const EmptyResponsibilityCenters: ResponsibilityCenter[] = [];
+const EmptyResponsibilityCenterPermissions: ResponsibilityCenterPermissions = {
+	canCreate: false,
+	canExport: false,
+	canUpdate: false,
+	canView: false,
+};
+const ReservedRoleResponsibilityCenterPermissions: ResponsibilityCenterPermissions = {
+	canCreate: true,
+	canExport: true,
+	canUpdate: true,
+	canView: true,
+};
+
 export function useResponsibilityCenterStore<
 	TSelected = ResponsibilityCenterStoreState,
 >(selector?: (state: ResponsibilityCenterStoreState) => TSelected) {
 	const queryClient = useQueryClient();
+	const accessToken = useAppStore((state) => state.accessToken);
+	const authProfileQuery = useAuthProfileQuery({ accessToken });
 	const centersQuery = useQuery({
 		queryKey: ResponsibilityCenterQueryKeys.centers(),
-		queryFn: async () => MockResponsibilityCenters,
-		initialData: MockResponsibilityCenters,
+		queryFn: fetchResponsibilityCenters,
 	});
-	const centers = centersQuery.data;
+	const centers = centersQuery.data?.centers ?? EmptyResponsibilityCenters;
 	const dataUpdatedAt = centersQuery.dataUpdatedAt;
 	const isFetching = centersQuery.isFetching;
 	const isLoading = centersQuery.isLoading;
-	const refetchCenters = centersQuery.refetch;
-	const statistics = useMemo<ResponsibilityCenterStatistics>(
-		() => ({
-			totalCenters: centers.length,
-			activeCenters: centers.filter(
-				(center) => center.status === "Active",
-			).length,
-			inactiveCenters: centers.filter(
-				(center) => center.status === "Inactive",
-			).length,
-			departmentCenters: centers.filter(
-				(center) => center.category === "Department",
-			).length,
-			branchCenters: centers.filter(
-				(center) => center.category === "Branch",
-			).length,
-			projectCenters: centers.filter(
-				(center) => center.category === "Project",
-			).length,
-		}),
-		[centers],
-	);
+	const statistics = centersQuery.data?.statistics ?? createEmptyStatistics();
+	const refreshCenters = useCallback(() => {
+		void queryClient.invalidateQueries({
+			queryKey: ResponsibilityCenterQueryKeys.all(),
+		});
+	}, [queryClient]);
 
 	function updateCachedCenters(
 		updater: (centers: ResponsibilityCenter[]) => ResponsibilityCenter[],
 	) {
-		queryClient.setQueryData<ResponsibilityCenter[]>(
+		queryClient.setQueryData(
 			ResponsibilityCenterQueryKeys.centers(),
-			(currentCenters = MockResponsibilityCenters) => updater(currentCenters),
+			(
+				current:
+					| {
+							centers: ResponsibilityCenter[];
+							statistics: ResponsibilityCenterStatistics;
+							permissions: ResponsibilityCenterPermissions;
+					  }
+					| undefined,
+			) => {
+				const currentData = current ?? {
+					centers: [],
+					statistics: createEmptyStatistics(),
+					permissions: createDefaultPermissions(),
+				};
+
+				return {
+					...currentData,
+					centers: updater(currentData.centers),
+				};
+			},
 		);
 	}
 
 	const addCenterMutation = useMutation({
-		mutationFn: async (center: ResponsibilityCenter) => center,
+		mutationFn: createResponsibilityCenter,
 		onSuccess: (center) => {
 			updateCachedCenters((centers) => [...centers, center]);
+			void queryClient.invalidateQueries({
+				queryKey: ResponsibilityCenterQueryKeys.all(),
+			});
 			toast.success("Responsibility center created.");
 		},
-		onError: () => {
-			toast.error("Could not create responsibility center. Please try again.");
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not create responsibility center. Please try again.",
+			);
 		},
 	});
 
 	const updateCenterMutation = useMutation({
-		mutationFn: async (center: ResponsibilityCenter) => center,
+		mutationFn: updateResponsibilityCenter,
 		onSuccess: (center) => {
 			updateCachedCenters((centers) =>
 				centers.map((currentCenter) =>
 					currentCenter.id === center.id ? center : currentCenter,
 				),
 			);
+			void queryClient.invalidateQueries({
+				queryKey: ResponsibilityCenterQueryKeys.all(),
+			});
 			toast.success("Responsibility center updated.");
 		},
-		onError: () => {
-			toast.error("Could not update responsibility center. Please try again.");
-		},
-	});
-
-	const deleteCenterMutation = useMutation({
-		mutationFn: async (centerId: string) => centerId,
-		onSuccess: (centerId) => {
-			updateCachedCenters((centers) =>
-				centers
-					.filter((center) => center.id !== centerId)
-					.map((center) =>
-						center.parentId === centerId
-							? { ...center, parentId: undefined }
-							: center,
-					),
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not update responsibility center. Please try again.",
 			);
-			toast.success("Responsibility center deleted.");
-		},
-		onError: () => {
-			toast.error("Could not delete responsibility center. Please try again.");
 		},
 	});
 
 	const state = useMemo<ResponsibilityCenterStoreState>(
-		() => ({
-			centers,
-			addCenter: (center) => addCenterMutation.mutate(center),
-			updateCenter: (center) => updateCenterMutation.mutate(center),
-			deleteCenter: (centerId) => deleteCenterMutation.mutate(centerId),
-			isLoading,
-			isRefreshing: isFetching && !isLoading,
-			lastSyncedAt: dataUpdatedAt,
-			isMutating:
-				addCenterMutation.isPending ||
-				updateCenterMutation.isPending ||
-				deleteCenterMutation.isPending,
-			permissions: {
-				canCreate: true,
-				canExport: true,
-				canUpdate: true,
-				canView: true,
-			},
-			refreshCenters: () => {
-				void refetchCenters();
-			},
-			statistics,
-		}),
+		() => {
+			const effectiveRole = ResolveAuthProfileEffectiveRole(
+				authProfileQuery.data,
+			);
+			const hasReservedRoleAccess =
+				effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN";
+
+			return {
+				centers,
+				addCenter: (center) => addCenterMutation.mutateAsync(center),
+				updateCenter: (center) => updateCenterMutation.mutateAsync(center),
+				isLoading,
+				isRefreshing: isFetching && !isLoading,
+				lastSyncedAt: dataUpdatedAt,
+				isMutating:
+					addCenterMutation.isPending ||
+					updateCenterMutation.isPending,
+				permissions: hasReservedRoleAccess
+					? ReservedRoleResponsibilityCenterPermissions
+					: (centersQuery.data?.permissions ??
+						EmptyResponsibilityCenterPermissions),
+				refreshCenters,
+				statistics,
+			};
+		},
 		[
 			addCenterMutation,
+			authProfileQuery.data,
 			centers,
+			centersQuery.data?.permissions,
 			dataUpdatedAt,
-			deleteCenterMutation,
 			isFetching,
 			isLoading,
-			refetchCenters,
+			refreshCenters,
 			statistics,
 			updateCenterMutation,
 		],
 	);
 
 	return selector ? selector(state) : (state as TSelected);
+}
+
+function createEmptyStatistics(): ResponsibilityCenterStatistics {
+	return {
+		totalCenters: 0,
+		activeCenters: 0,
+		inactiveCenters: 0,
+		departmentCenters: 0,
+		branchCenters: 0,
+		projectCenters: 0,
+	};
+}
+
+function createDefaultPermissions(): ResponsibilityCenterPermissions {
+	return EmptyResponsibilityCenterPermissions;
 }

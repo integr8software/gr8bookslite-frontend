@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
 	type ColumnDef,
-	type ColumnOrderState,
 	type PaginationState,
 	type SortingState,
 	type VisibilityState,
@@ -13,7 +12,12 @@ import {
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { ResponsibilityCenterTableColumns } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+import {
+	ResponsibilityCenterAuditColumnOrder,
+	ResponsibilityCenterDefaultColumnOrder,
+	ResponsibilityCenterDefaultColumnVisibility,
+	ResponsibilityCenterTableColumns,
+} from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
@@ -29,22 +33,10 @@ const ResponsibilityCenterTablePreferencesStorageKey =
 	"gr8booksneo:responsibility-center:table-preferences";
 const ResponsibilityCenterTablePreferencesModuleKey =
 	"maintenance:responsibility-center";
-const DefaultColumnOrder = ResponsibilityCenterTableColumns.map((column) =>
-	"key" in column ? column.key : "actions",
-);
-const AuditColumnOrder = ["createdBy", "createdAt", "updatedBy", "updatedAt"];
-const DefaultColumnVisibility: VisibilityState = {
-	code: false,
-	description: false,
-	createdBy: false,
-	createdAt: false,
-	updatedBy: false,
-	updatedAt: false,
-};
 const DefaultSorting: SortingState = [{ id: "name", desc: false }];
 
 type ResponsibilityCenterTablePreferences = {
-	columnOrder: ColumnOrderState;
+	columnOrder: string[];
 	columnVisibility: VisibilityState;
 	sorting: SortingState;
 };
@@ -77,9 +69,9 @@ export function useResponsibilityCenterTable(
 		pageSize: 10,
 	});
 	const [columnOrder, setColumnOrder] =
-		useState<ColumnOrderState>(DefaultColumnOrder);
+		useState<string[]>(ResponsibilityCenterDefaultColumnOrder);
 	const [columnVisibility, setColumnVisibility] =
-		useState<VisibilityState>(DefaultColumnVisibility);
+		useState<VisibilityState>(ResponsibilityCenterDefaultColumnVisibility);
 	const [sorting, setSorting] = useState<SortingState>(DefaultSorting);
 
 	useEffect(() => {
@@ -172,8 +164,8 @@ export function useResponsibilityCenterTable(
 		data: centers,
 		columns,
 		initialState: {
-			columnOrder: DefaultColumnOrder,
-			columnVisibility: DefaultColumnVisibility,
+			columnOrder: ResponsibilityCenterDefaultColumnOrder,
+			columnVisibility: ResponsibilityCenterDefaultColumnVisibility,
 			sorting: DefaultSorting,
 		},
 		state: {
@@ -216,9 +208,9 @@ function readTablePreferences(
 }
 
 function getDefaults(): ResponsibilityCenterTablePreferences {
-	return {
-		columnOrder: DefaultColumnOrder,
-		columnVisibility: DefaultColumnVisibility,
+		return {
+		columnOrder: ResponsibilityCenterDefaultColumnOrder,
+		columnVisibility: ResponsibilityCenterDefaultColumnVisibility,
 		sorting: DefaultSorting,
 	};
 }
@@ -232,28 +224,33 @@ function normalizeTablePreferences(
 		if (!value || typeof value !== "object") return defaults;
 
 		const parsed = value as Partial<ResponsibilityCenterTablePreferences>;
-		const knownColumnIds = new Set<string>(DefaultColumnOrder);
+		const knownColumnIds = new Set<string>(ResponsibilityCenterDefaultColumnOrder);
 		const storedOrder = Array.isArray(parsed.columnOrder)
 			? parsed.columnOrder.filter(
 					(columnId): columnId is string =>
 						typeof columnId === "string" && knownColumnIds.has(columnId),
 				)
 			: [];
-		const fixedTailColumnIds = new Set([...AuditColumnOrder, "actions"]);
+		const fixedTailColumnIds = new Set([
+			...ResponsibilityCenterAuditColumnOrder,
+			"actions",
+		]);
 		const storedBodyOrder = storedOrder.filter(
 			(columnId) => !fixedTailColumnIds.has(columnId),
 		);
 		const columnOrder = [
 			...storedBodyOrder,
-			...DefaultColumnOrder.filter(
+			...ResponsibilityCenterDefaultColumnOrder.filter(
 				(columnId) =>
 					!fixedTailColumnIds.has(columnId) &&
 					!storedBodyOrder.includes(columnId),
 			),
-			...AuditColumnOrder,
+			...ResponsibilityCenterAuditColumnOrder,
 			"actions",
 		];
-		const columnVisibility = { ...DefaultColumnVisibility };
+		const columnVisibility: VisibilityState = {
+			...ResponsibilityCenterDefaultColumnVisibility,
+		};
 
 		if (parsed.columnVisibility && typeof parsed.columnVisibility === "object") {
 			for (const [columnId, isVisible] of Object.entries(

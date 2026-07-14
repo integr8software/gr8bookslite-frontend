@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { useOnboardingDraft } from "./useOnboardingDraft";
@@ -10,6 +10,7 @@ import { useOnboardingSubmission } from "./useOnboardingSubmission";
 
 export function useOnboardingFlow() {
   const searchParams = useSearchParams();
+  const hasAppliedManualBillingReturnRef = useRef(false);
   const accessToken = useAppStore((state) => state.accessToken);
   const isAuthSessionReady = useAppStore((state) => state.isAuthSessionReady);
   const formState = useOnboardingFormState();
@@ -55,10 +56,14 @@ export function useOnboardingFlow() {
   } = formState;
 
   useEffect(() => {
-    if (manualBillingStatus !== "success") {
+    if (
+      manualBillingStatus !== "success" ||
+      hasAppliedManualBillingReturnRef.current
+    ) {
       return;
     }
 
+    hasAppliedManualBillingReturnRef.current = true;
     setValues((current) =>
       current.billingMode === "MANUAL"
         ? current

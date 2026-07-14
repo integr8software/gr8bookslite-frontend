@@ -17,14 +17,16 @@ jobs:
         shell: powershell
 
     steps:
-      - name: Deploy frontend from VPS folder
+      - name: Deploy frontend staging
         run: |
+          $ErrorActionPreference = "Stop"
+
           Set-Location "I:\Gr8BooksNeo\apps\frontend"
 
           git fetch origin
           git reset --hard origin/staging
 
-          npm install
+          npm ci
           npm run build
 
           pm2 restart gr8booksneo-frontend-staging --update-env

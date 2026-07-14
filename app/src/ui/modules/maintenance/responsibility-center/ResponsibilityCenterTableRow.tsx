@@ -98,7 +98,8 @@ function ResponsibilityCenterCellContent({
 			return (
 				<span>
 					{formatDateTime(center.createdAt, {
-						emptyValue: "-",
+						emptyValue: "",
+						invalidValue: "",
 						locale: "en-US",
 					})}
 				</span>
@@ -109,7 +110,8 @@ function ResponsibilityCenterCellContent({
 			return (
 				<span>
 					{formatDateTime(center.updatedAt, {
-						emptyValue: "-",
+						emptyValue: "",
+						invalidValue: "",
 						locale: "en-US",
 					})}
 				</span>
@@ -191,7 +193,7 @@ export function FinancialTypeBadge({
 	);
 }
 
-function StatusBadge({ status }: { status: ResponsibilityCenter["status"] }) {
+export function StatusBadge({ status }: { status: ResponsibilityCenter["status"] }) {
 	const statusClass =
 		status === "Active"
 			? "bg-citron/25 text-darknavy"

@@ -103,6 +103,7 @@ export function ResponsibilityCenterListPage() {
 			<ResponsibilityCenterTable
 				categoryFilter={page.categoryFilter}
 				centers={page.centers}
+				expandedTreeIds={page.expandedTreeIds}
 				filteredCenters={page.filteredCenters}
 				financialTypeFilter={page.financialTypeFilter}
 				hasActiveFilters={hasActiveFilters}
@@ -112,6 +113,8 @@ export function ResponsibilityCenterListPage() {
 				permissions={page.permissions}
 				query={page.query}
 				statusFilter={page.statusFilter}
+				treeTable={page.treeTable}
+				viewMode={page.viewMode}
 				onCategoryFilterChange={page.setCategoryFilter}
 				onEditCenter={(center) => setDrawerState({ center, mode: "edit" })}
 				onFinancialTypeFilterChange={page.setFinancialTypeFilter}
@@ -119,7 +122,9 @@ export function ResponsibilityCenterListPage() {
 				onRefresh={page.refreshCenters}
 				onStatusFilterChange={page.setStatusFilter}
 				onToggleStatus={page.setPendingStatusCenter}
+				onToggleTreeNode={page.toggleTreeNode}
 				onViewCenter={(center) => setDrawerState({ center, mode: "view" })}
+				onViewModeChange={page.setViewMode}
 			/>
 			<ResponsibilityCenterDrawer
 				center={drawerState?.center}

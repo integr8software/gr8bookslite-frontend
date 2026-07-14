@@ -81,7 +81,7 @@ export function useResponsibilityCenterFormPage({
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
 		const nextErrors = validateResponsibilityCenterForm(
@@ -95,13 +95,17 @@ export function useResponsibilityCenterFormPage({
 			return;
 		}
 
-		if (mode === "edit" && center) {
-			store.updateCenter(updateResponsibilityCenterFromForm(center, values));
-		} else {
-			store.addCenter(createResponsibilityCenterFromForm(values));
-		}
+		try {
+			if (mode === "edit" && center) {
+				await store.updateCenter(updateResponsibilityCenterFromForm(center, values));
+			} else {
+				await store.addCenter(createResponsibilityCenterFromForm(values));
+			}
 
-		onSaved?.();
+			onSaved?.();
+		} catch {
+			// Mutation handlers surface the error toast.
+		}
 	}
 
 	return {
@@ -126,9 +130,6 @@ function createTypeDefaults(category: string) {
 	}
 
 	return {
-		allowLineLevelAssignment:
-			definition.assignmentLevel === "Header and Line",
 		financialType: definition.financialType,
-		isRequiredInTransactions: definition.isRequiredInTransactions,
 	};
 }

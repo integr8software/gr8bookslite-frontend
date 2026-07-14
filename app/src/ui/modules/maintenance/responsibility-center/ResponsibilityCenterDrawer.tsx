@@ -1,14 +1,28 @@
 "use client";
 
+import type { ChangeEventHandler, ReactNode } from "react";
 import {
 	ResponsibilityCenterActionCopy,
+	ResponsibilityCenterCategoryOptions,
 	ResponsibilityCenterDrawerFormId,
+	ResponsibilityCenterFieldClassName,
+	ResponsibilityCenterFinancialTypeOptions,
+	ResponsibilityCenterStatusOptions,
 	ResponsibilityCenterTitle,
 } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import { useResponsibilityCenterFormPage } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenterFormPage";
-import type { ResponsibilityCenterDrawerProps } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
-import { ResponsibilityCenterDetailsFields } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterDetailsFields";
+import type {
+	ResponsibilityCenterDrawerProps,
+	ResponsibilityCenterFormErrors,
+	ResponsibilityCenterFormValues,
+	ResponsibilityCenter,
+} from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
+import {
+	AppAdvancedDropdown,
+	type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ResponsibilityCenterDrawer(props: ResponsibilityCenterDrawerProps) {
 	return (
@@ -56,7 +70,7 @@ function ResponsibilityCenterDrawerPanel({
 				onSubmit={page.handleSubmit}
 				className="px-6 py-5"
 			>
-				<ResponsibilityCenterDetailsFields
+				<ResponsibilityCenterDrawerFields
 					errors={page.errors}
 					isReadonly={page.isReadonly}
 					parentOptions={page.parentOptions}
@@ -66,5 +80,179 @@ function ResponsibilityCenterDrawerPanel({
 				/>
 			</form>
 		</MaintenanceFormDrawer>
+	);
+}
+
+function ResponsibilityCenterDrawerFields({
+	errors,
+	isReadonly,
+	onFieldChange,
+	onInputChange,
+	parentOptions,
+	values,
+}: {
+	errors: ResponsibilityCenterFormErrors;
+	isReadonly: boolean;
+	parentOptions: ResponsibilityCenter[];
+	values: ResponsibilityCenterFormValues;
+	onFieldChange: <TKey extends keyof ResponsibilityCenterFormValues>(
+		field: TKey,
+		value: ResponsibilityCenterFormValues[TKey],
+	) => void;
+	onInputChange: ChangeEventHandler<
+		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+	>;
+}) {
+	const parentDropdownOptions: AppAdvancedDropdownOption[] = parentOptions.map(
+		(center) => ({
+			description: center.financialType,
+			name: center.name,
+			value: center.id,
+		}),
+	);
+
+	return (
+		<div className="grid gap-4 lg:grid-cols-2">
+			<DrawerField label="Name" error={errors.name} required className="lg:col-span-2">
+				<input
+					name="name"
+					value={values.name}
+					onChange={onInputChange}
+					readOnly={isReadonly}
+					className={ResponsibilityCenterFieldClassName}
+					placeholder="Sales Department"
+				/>
+			</DrawerField>
+
+			<DrawerField label="Classification" error={errors.financialType} required>
+				<select
+					name="financialType"
+					value={values.financialType}
+					onChange={onInputChange}
+					disabled={isReadonly}
+					className={ResponsibilityCenterFieldClassName}
+				>
+					{ResponsibilityCenterFinancialTypeOptions.map((type) => (
+						<option key={type} value={type}>
+							{type}
+						</option>
+					))}
+				</select>
+			</DrawerField>
+
+			<DrawerField label="Type" error={errors.category} required>
+				<select
+					name="category"
+					value={values.category}
+					onChange={onInputChange}
+					disabled={isReadonly}
+					className={ResponsibilityCenterFieldClassName}
+				>
+					{ResponsibilityCenterCategoryOptions.map((category) => (
+						<option key={category} value={category}>
+							{category}
+						</option>
+					))}
+				</select>
+			</DrawerField>
+
+			<DrawerField label="Parent Center" error={errors.parentId}>
+				<AppAdvancedDropdown
+					options={parentDropdownOptions}
+					placeholder="No parent center"
+					readOnly={isReadonly}
+					searchPlaceholder="Search parent center"
+					showSelectionIndicator={false}
+					showSelectedDetails
+					value={values.parentId}
+					onChange={(value) => onFieldChange("parentId", String(value))}
+				/>
+			</DrawerField>
+
+			<DrawerField label="Code" error={errors.code} required>
+				<input
+					name="code"
+					value={values.code}
+					onChange={onInputChange}
+					readOnly={isReadonly}
+					className={ResponsibilityCenterFieldClassName}
+					placeholder="SALES"
+				/>
+			</DrawerField>
+
+			<DrawerField
+				label="Description"
+				error={errors.description}
+				className="lg:col-span-2"
+			>
+				<textarea
+					name="description"
+					value={values.description}
+					onChange={onInputChange}
+					readOnly={isReadonly}
+					className={joinClasses(
+						ResponsibilityCenterFieldClassName,
+						"min-h-24 resize-y py-3",
+					)}
+					placeholder="How this center is used in transactions and reports"
+				/>
+			</DrawerField>
+
+			<DrawerField label="Manager" error={errors.manager}>
+				<input
+					name="manager"
+					value={values.manager}
+					onChange={onInputChange}
+					readOnly={isReadonly}
+					className={ResponsibilityCenterFieldClassName}
+					placeholder="Maria Santos"
+				/>
+			</DrawerField>
+
+			<DrawerField label="Status" required>
+				<select
+					name="status"
+					value={values.status}
+					onChange={onInputChange}
+					disabled={isReadonly}
+					className={ResponsibilityCenterFieldClassName}
+				>
+					{ResponsibilityCenterStatusOptions.map((status) => (
+						<option key={status} value={status}>
+							{status}
+						</option>
+					))}
+				</select>
+			</DrawerField>
+		</div>
+	);
+}
+
+function DrawerField({
+	children,
+	className,
+	error,
+	label,
+	required,
+}: {
+	children: ReactNode;
+	className?: string;
+	error?: string;
+	label: string;
+	required?: boolean;
+}) {
+	return (
+		<label className={className}>
+			<span className="mb-2 block text-sm font-semibold text-darknavy">
+				{label}
+				{required ? <span className="text-coralpink"> *</span> : null}
+			</span>
+			{children}
+			{error ? (
+				<span className="mt-1 block text-xs font-medium text-coralpink">
+					{error}
+				</span>
+			) : null}
+		</label>
 	);
 }

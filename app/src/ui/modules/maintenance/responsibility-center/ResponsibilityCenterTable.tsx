@@ -8,10 +8,12 @@ import type { ResponsibilityCenterTableProps } from "@/app/src/types/modules/mai
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { ResponsibilityCenterTableFilters } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterTableFilters";
 import { ResponsibilityCenterTableRow } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterTableRow";
+import { ResponsibilityCenterTree } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterTree";
 
 export function ResponsibilityCenterTable({
 	categoryFilter,
 	centers,
+	expandedTreeIds,
 	filteredCenters,
 	financialTypeFilter,
 	hasActiveFilters,
@@ -21,6 +23,8 @@ export function ResponsibilityCenterTable({
 	permissions,
 	query,
 	statusFilter,
+	treeTable,
+	viewMode,
 	onCategoryFilterChange,
 	onEditCenter,
 	onFinancialTypeFilterChange,
@@ -28,58 +32,79 @@ export function ResponsibilityCenterTable({
 	onRefresh,
 	onStatusFilterChange,
 	onToggleStatus,
+	onToggleTreeNode,
 	onViewCenter,
+	onViewModeChange,
 }: ResponsibilityCenterTableProps) {
 	const table = useResponsibilityCenterTable(filteredCenters);
 	const tableMinWidthClassName = getResponsibilityCenterTableMinWidthClassName(
 		table.getVisibleLeafColumns().length,
 	);
+	const toolbar = (
+		<ResponsibilityCenterTableFilters
+			categoryFilter={categoryFilter}
+			exportAllRows={centers}
+			exportFilteredRows={filteredCenters}
+			financialTypeFilter={financialTypeFilter}
+			hasActiveFilters={hasActiveFilters}
+			isRefreshing={isRefreshing}
+			permissions={permissions}
+			query={query}
+			statusFilter={statusFilter}
+			table={viewMode === "tree" ? treeTable : table}
+			viewMode={viewMode}
+			onCategoryFilterChange={onCategoryFilterChange}
+			onFinancialTypeFilterChange={onFinancialTypeFilterChange}
+			onQueryChange={onQueryChange}
+			onRefresh={onRefresh}
+			onStatusFilterChange={onStatusFilterChange}
+			onViewModeChange={onViewModeChange}
+		/>
+	);
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
-			<ModuleTable
-				variant="embedded"
-				emptyDescription="Add a center to start grouping financial accountability."
-				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No Responsibility Center Records Found"
-				isLoading={isLoading}
-				isSyncing={isRefreshing}
-				lastSyncedAt={lastSyncedAt}
-				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
-				paginationStorageKey={ResponsibilityCenterTablePaginationStorageKey}
-				table={table}
-				tableTitle="Responsibility centers"
-				toolbar={
-					<ResponsibilityCenterTableFilters
-						categoryFilter={categoryFilter}
-						exportAllRows={centers}
-						exportFilteredRows={filteredCenters}
-						financialTypeFilter={financialTypeFilter}
-						hasActiveFilters={hasActiveFilters}
-						isRefreshing={isRefreshing}
-						permissions={permissions}
-						query={query}
-						statusFilter={statusFilter}
-						table={table}
-						onCategoryFilterChange={onCategoryFilterChange}
-						onFinancialTypeFilterChange={onFinancialTypeFilterChange}
-						onQueryChange={onQueryChange}
-						onRefresh={onRefresh}
-						onStatusFilterChange={onStatusFilterChange}
-					/>
-				}
-				renderRow={(row) => (
-					<ResponsibilityCenterTableRow
-						key={row.id}
-						allCenters={centers}
-						permissions={permissions}
-						row={row}
-						onEditCenter={onEditCenter}
-						onToggleStatus={onToggleStatus}
-						onViewCenter={onViewCenter}
-					/>
-				)}
-			/>
+			{viewMode === "tree" ? (
+				<ResponsibilityCenterTree
+					expandedIds={expandedTreeIds}
+					isLoading={isLoading}
+					isRefreshing={isRefreshing}
+					lastSyncedAt={lastSyncedAt}
+					permissions={permissions}
+					table={treeTable}
+					toolbar={toolbar}
+					onEditCenter={onEditCenter}
+					onToggleStatus={onToggleStatus}
+					onToggleTreeNode={onToggleTreeNode}
+					onViewCenter={onViewCenter}
+				/>
+			) : (
+				<ModuleTable
+					variant="embedded"
+					emptyDescription="Add a center to start grouping financial accountability."
+					emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
+					emptyTitle="No Responsibility Center Records Found"
+					isLoading={isLoading}
+					isSyncing={isRefreshing}
+					lastSyncedAt={lastSyncedAt}
+					minWidthClassName={`${tableMinWidthClassName} table-fixed`}
+					paginationStorageKey={ResponsibilityCenterTablePaginationStorageKey}
+					table={table}
+					tableTitle="Responsibility centers"
+					toolbar={toolbar}
+					renderRow={(row) => (
+						<ResponsibilityCenterTableRow
+							key={row.id}
+							allCenters={centers}
+							permissions={permissions}
+							row={row}
+							onEditCenter={onEditCenter}
+							onToggleStatus={onToggleStatus}
+							onViewCenter={onViewCenter}
+						/>
+					)}
+				/>
+			)}
 		</div>
 	);
 }

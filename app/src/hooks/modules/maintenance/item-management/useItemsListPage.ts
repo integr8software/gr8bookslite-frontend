@@ -21,6 +21,7 @@ import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item
 
 const AllItemCategoriesFilter = "All";
 const AllItemStatusesFilter = "All";
+const DefaultItemStatusFilter = "Active";
 
 export function useItemsListPage() {
 	const { isLoading, isMutating, items, lastSyncedAt, updateItem } =
@@ -31,12 +32,12 @@ export function useItemsListPage() {
 	const [query, setQuery] = useState("");
 	const [statusFilter, setStatusFilterState] = useState<
 		ItemStatus | typeof AllItemStatusesFilter
-	>(AllItemStatusesFilter);
+	>(DefaultItemStatusFilter);
 	const [pendingStatusItem, setPendingStatusItem] =
 		useState<ItemRecord | null>(null);
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
-		pageSize: 5,
+		pageSize: 10,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
@@ -121,7 +122,7 @@ export function useItemsListPage() {
 	function resetFilters() {
 		setCategoryFilterState(AllItemCategoriesFilter);
 		setQuery("");
-		setStatusFilterState(AllItemStatusesFilter);
+		setStatusFilterState(DefaultItemStatusFilter);
 		table.setPageIndex(0);
 	}
 

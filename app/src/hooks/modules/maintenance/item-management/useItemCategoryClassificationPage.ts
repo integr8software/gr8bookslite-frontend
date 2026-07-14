@@ -44,6 +44,7 @@ import { validateItemCategoryClassificationForm } from "@/app/src/validations/mo
 
 const AllStatusesFilter = "All";
 const AllAccountingStatusesFilter = "All";
+const DefaultStatusFilter = "Active";
 
 type ItemCategoryAccountingStatusFilter =
   | typeof AllAccountingStatusesFilter
@@ -75,7 +76,7 @@ export function useItemCategoryClassificationPage() {
   const [query, setQuery] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [statusFilter, setStatusFilterState] =
-    useState<ItemCategoryStatusFilter>(AllStatusesFilter);
+    useState<ItemCategoryStatusFilter>(DefaultStatusFilter);
   const tableRows = useMemo(
     () =>
       createItemCategoryClassificationRows({
@@ -205,7 +206,7 @@ export function useItemCategoryClassificationPage() {
   function resetFilters() {
     setAccountingFilterState(AllAccountingStatusesFilter);
     setQuery("");
-    setStatusFilterState(AllStatusesFilter);
+    setStatusFilterState(DefaultStatusFilter);
     table.setPageIndex(0);
   }
 

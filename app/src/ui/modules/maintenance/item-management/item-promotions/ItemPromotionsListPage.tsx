@@ -83,11 +83,11 @@ export function ItemPromotionsListPage() {
 	const [rows, setRows] = useState<PromotionRow[]>(PromotionRows);
 	const [pendingStatusRow, setPendingStatusRow] = useState<PromotionRow | null>(null);
 	const [query, setQuery] = useState("");
-	const [statusFilter, setStatusFilter] = useState("All");
+	const [statusFilter, setStatusFilter] = useState("Active");
 	const [typeFilter, setTypeFilter] = useState("All");
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
-		pageSize: 5,
+		pageSize: 10,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
@@ -243,7 +243,7 @@ export function ItemPromotionsListPage() {
 							onClick={() => {
 								setQuery("");
 								setTypeFilter("All");
-								setStatusFilter("All");
+								setStatusFilter("Active");
 								table.setPageIndex(0);
 							}}
 						/>

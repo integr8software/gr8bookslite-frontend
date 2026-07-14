@@ -19,7 +19,7 @@ export function useTransactionTypeListPage() {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState<
 		"" | (typeof TransactionTypeStatusOptions)[number]
-	>("");
+	>("Active");
 	const [moduleFilter, setModuleFilter] = useState("");
 	const [pendingStatusTransactionType, setPendingStatusTransactionType] =
 		useState<TransactionType | null>(null);

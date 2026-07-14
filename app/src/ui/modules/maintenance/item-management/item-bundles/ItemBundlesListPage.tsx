@@ -96,10 +96,10 @@ export function ItemBundlesListPage() {
 	const [rows, setRows] = useState<BundleRow[]>(BundleRows);
 	const [pendingStatusRow, setPendingStatusRow] = useState<BundleRow | null>(null);
 	const [query, setQuery] = useState("");
-	const [statusFilter, setStatusFilter] = useState("All");
+	const [statusFilter, setStatusFilter] = useState("Active");
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
-		pageSize: 5,
+		pageSize: 10,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "bundleItem", desc: false },
@@ -235,7 +235,7 @@ export function ItemBundlesListPage() {
 						<ModuleTableResetButton
 							onClick={() => {
 								setQuery("");
-								setStatusFilter("All");
+								setStatusFilter("Active");
 								table.setPageIndex(0);
 							}}
 						/>

@@ -84,14 +84,7 @@ function DiscountManagementCellContent({
 		case "discountType":
 			return <span>{discount.discountType}</span>;
 		case "amount":
-			return (
-				<div className="grid gap-0.5">
-					<span>{discount.amountLabel}</span>
-					<span className="text-xs font-medium text-darknavy/50">
-						{discount.valueLabel}
-					</span>
-				</div>
-			);
+			return <span>{discount.amountLabel}</span>;
 		case "accountCode":
 			return <span>{discount.accountCode}</span>;
 		case "accountTitle":

@@ -276,7 +276,7 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	>("All");
 	const [statusFilter, setStatusFilterState] = useState<
 		PartyInformationStatus | "All"
-	>("All");
+	>("Active");
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
 	]);
@@ -304,7 +304,7 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		query.trim().length > 0 ||
 		classificationFilter !== "All" ||
 		partyTypeFilter !== "All" ||
-		statusFilter !== "All";
+		statusFilter !== "Active";
 	const recordsVersion = useMemo(
 		() =>
 			records
@@ -420,7 +420,7 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		setQueryState("");
 		setClassificationFilterState("All");
 		setPartyTypeFilterState("All");
-		setStatusFilterState("All");
+		setStatusFilterState("Active");
 		resetPageIndex();
 	}, [resetPageIndex]);
 

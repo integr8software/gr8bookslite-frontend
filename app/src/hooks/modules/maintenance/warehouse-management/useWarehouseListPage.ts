@@ -32,13 +32,13 @@ export function useWarehouseListPage() {
 	const [query, setQuery] = useState("");
 	const [branchFilter, setBranchFilterState] = useState("All");
 	const [statusFilter, setStatusFilterState] = useState<WarehouseStatus | "All">(
-		"All",
+		"Active",
 	);
 	const [pendingDeleteWarehouse, setPendingDeleteWarehouse] =
 		useState<WarehouseRecord | null>(null);
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
-		pageSize: 5,
+		pageSize: 10,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
@@ -133,7 +133,7 @@ export function useWarehouseListPage() {
 	function resetFilters() {
 		setBranchFilterState("All");
 		setQuery("");
-		setStatusFilterState("All");
+		setStatusFilterState("Active");
 		table.setPageIndex(0);
 	}
 

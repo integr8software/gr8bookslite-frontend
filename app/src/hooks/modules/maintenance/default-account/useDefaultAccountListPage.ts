@@ -24,7 +24,7 @@ export function useDefaultAccountListPage() {
 		(state) => state.refreshDefaultAccounts,
 	);
 	const [statusFilter, setStatusFilter] =
-		useState<DefaultAccountStatusFilter>("");
+		useState<DefaultAccountStatusFilter>("Active");
 	const [typeFilter, setTypeFilter] = useState<DefaultAccountTypeFilter>("");
 	const [query, setQuery] = useState("");
 	const [pendingStatusAccount, setPendingStatusAccount] =
@@ -62,7 +62,7 @@ export function useDefaultAccountListPage() {
 	}, [defaultAccounts, query, statusFilter, typeFilter]);
 
 	function resetFilters() {
-		setStatusFilter("");
+		setStatusFilter("Active");
 		setTypeFilter("");
 		setQuery("");
 	}

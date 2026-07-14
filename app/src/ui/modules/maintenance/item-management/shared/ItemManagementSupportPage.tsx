@@ -150,10 +150,10 @@ export function ItemManagementSupportPage({
 	const [pendingStatusRecord, setPendingStatusRecord] =
 		useState<SupportRecord | null>(null);
 	const [query, setQuery] = useState("");
-	const [statusFilter, setStatusFilter] = useState("All");
+	const [statusFilter, setStatusFilter] = useState("Active");
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
-		pageSize: 5,
+		pageSize: 10,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
@@ -450,7 +450,7 @@ export function ItemManagementSupportPage({
 						<ModuleTableResetButton
 							onClick={() => {
 								setQuery("");
-								setStatusFilter("All");
+								setStatusFilter("Active");
 								table.setPageIndex(0);
 							}}
 						/>

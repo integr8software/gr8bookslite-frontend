@@ -156,11 +156,11 @@ export function UnitOfMeasurementListPage() {
 	const [pendingStatusRow, setPendingStatusRow] =
 		useState<UnitOfMeasurementRecord | null>(null);
 	const [query, setQuery] = useState("");
-	const [statusFilter, setStatusFilter] = useState("All");
+	const [statusFilter, setStatusFilter] = useState("Active");
 	const [quantityTypeFilter, setQuantityTypeFilter] = useState("All");
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
-		pageSize: 5,
+		pageSize: 10,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },
@@ -333,7 +333,7 @@ export function UnitOfMeasurementListPage() {
 							onClick={() => {
 								setQuery("");
 								setQuantityTypeFilter("All");
-								setStatusFilter("All");
+								setStatusFilter("Active");
 								table.setPageIndex(0);
 							}}
 						/>

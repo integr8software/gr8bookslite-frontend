@@ -318,10 +318,11 @@ function MapWorkspaceCompanyFormToCreateRequest(
 			? trimmedValues.billingPaymentMethodId
 			: "setup-later";
 
-	request.billing = {
-		billingCycle: trimmedValues.billingCycle,
-		billingEmail,
-		cardBrand: getCardBrand(trimmedValues.billingCardNumber),
+		request.billing = {
+			billingCycle: trimmedValues.billingCycle,
+			billingEmail,
+			billingMode: trimmedValues.billingMode,
+			cardBrand: getCardBrand(trimmedValues.billingCardNumber),
 		cardExpiryMonth: Number(trimmedValues.billingExpiryMonth) || undefined,
 		cardExpiryYear: Number(trimmedValues.billingExpiryYear) || undefined,
 		cardLast4: getCardLast4(trimmedValues.billingCardNumber),

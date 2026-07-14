@@ -282,6 +282,7 @@ export type WorkspaceCompanyApiRecord = {
 export type CreateWorkspaceCompanyBillingApiRequest = {
   planCode?: string;
   billingCycle?: "MONTHLY" | "YEARLY";
+  billingMode?: "MANUAL" | "AUTO";
   billingEmail?: string;
   paymentMethodId?: string;
   cardBrand?: string;

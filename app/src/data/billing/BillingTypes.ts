@@ -70,7 +70,7 @@ export type BillingPaymentMethod = {
 
 export type BillingInvoice = {
   id: number;
-  externalInvoiceId: string;
+  externalInvoiceId: string | null;
   externalPaymentIntentId: string | null;
   status: string;
   billingReason: string | null;

@@ -17,7 +17,7 @@ import {
 } from "@/app/src/data/onboarding/OnboardingData";
 import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { CreatePaymongoCardPaymentMethod } from "@/app/src/services/billing/PaymongoClient";
-import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingMockApi";
+import { CreateManualCheckout } from "@/app/src/services/billing/ManualBillingApi";
 import {
 	useWorkspaceCompanyManagementStore,
 	useWorkspaceCompanyRecord,
@@ -255,8 +255,10 @@ export function useWorkspaceCompanyFormPage() {
 
 		try {
 			if (values.billingMode === "MANUAL") {
+				const createdCompany = await addCompany(values);
 				const checkout = await CreateManualCheckout({
 					billingCycle: values.billingCycle,
+					companyId: createdCompany.id,
 					companyName: getCompanyDisplayName(values),
 					planCode: values.billingPlanCode,
 					planName: values.billingPlanCode,
@@ -264,7 +266,7 @@ export function useWorkspaceCompanyFormPage() {
 					returnTo: WorkspaceCompaniesHref,
 				});
 
-				toast.success("Opening hosted checkout preview.");
+				toast.success("Opening PayMongo hosted checkout.");
 				window.location.assign(checkout.checkoutUrl);
 				return;
 			}

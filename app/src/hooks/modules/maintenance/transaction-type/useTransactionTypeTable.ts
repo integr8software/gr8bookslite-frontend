@@ -20,7 +20,7 @@ import type {
 export function useTransactionTypeTable(transactionTypes: TransactionType[]) {
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
-		pageSize: 5,
+		pageSize: 10,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "name", desc: false },

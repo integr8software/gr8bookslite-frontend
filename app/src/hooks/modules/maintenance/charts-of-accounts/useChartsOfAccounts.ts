@@ -74,7 +74,7 @@ export function useChartsOfAccounts() {
   const [accountTypeFilter, setAccountTypeFilter] =
     useState<FilterValue<AccountType>>("All");
   const [statusFilter, setStatusFilter] =
-    useState<FilterValue<AccountStatus>>("All");
+    useState<FilterValue<AccountStatus>>("Active");
   const [structureFilter, setStructureFilter] =
     useState<ChartAccountStructureFilter>("All");
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -342,7 +342,7 @@ export function useChartsOfAccounts() {
     setActiveTab(ChartsOfAccountsNavs[0]);
     setSearchQuery("");
     setAccountTypeFilter("All");
-    setStatusFilter("All");
+    setStatusFilter("Active");
     setStructureFilter("All");
     table.setPageIndex(0);
   }

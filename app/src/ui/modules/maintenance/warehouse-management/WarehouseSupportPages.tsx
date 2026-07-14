@@ -157,10 +157,10 @@ export function WarehouseSupportPage({ kind }: { kind: WarehouseSupportPageKind 
 	const headers = createHeaders(kind);
 	const rows = useMemo(() => createRows(kind, warehouses), [kind, warehouses]);
 	const [query, setQuery] = useState("");
-	const [statusFilter, setStatusFilter] = useState("All");
+	const [statusFilter, setStatusFilter] = useState("Active");
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
-		pageSize: 5,
+		pageSize: 10,
 	});
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "col0", desc: false },
@@ -216,7 +216,7 @@ export function WarehouseSupportPage({ kind }: { kind: WarehouseSupportPageKind 
 	function refreshInquiry() {
 		if (kind === "stock-inquiry") {
 			setQuery("");
-			setStatusFilter("All");
+			setStatusFilter("Active");
 			table.setPageIndex(0);
 			return;
 		}
@@ -335,7 +335,7 @@ export function WarehouseSupportPage({ kind }: { kind: WarehouseSupportPageKind 
 						<ModuleTableResetButton
 							onClick={() => {
 								setQuery("");
-								setStatusFilter("All");
+								setStatusFilter("Active");
 								table.setPageIndex(0);
 							}}
 						/>

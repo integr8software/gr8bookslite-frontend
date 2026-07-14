@@ -27,7 +27,7 @@ export function DefaultAccountListPage() {
 	const [drawerState, setDrawerState] = useState<DefaultAccountDrawerState>(null);
 	const hasActiveFilters =
 		page.query.trim().length > 0 ||
-		page.statusFilter !== "" ||
+		page.statusFilter !== "Active" ||
 		page.typeFilter !== "";
 	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
 		() => [

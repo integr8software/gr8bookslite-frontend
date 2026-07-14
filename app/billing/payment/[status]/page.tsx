@@ -129,13 +129,14 @@ export default function ManualPaymentResultPage() {
       return;
     }
 
+    const resolvedPaymentAttemptId = paymentAttemptId;
     let isMounted = true;
     let intervalId: number | undefined;
 
     async function refreshPaymentAttemptStatus() {
       try {
         const paymentAttempt =
-          await GetManualPaymentAttemptStatus(paymentAttemptId);
+          await GetManualPaymentAttemptStatus(resolvedPaymentAttemptId);
 
         if (isMounted) {
           setProviderStatus(paymentAttempt.status);

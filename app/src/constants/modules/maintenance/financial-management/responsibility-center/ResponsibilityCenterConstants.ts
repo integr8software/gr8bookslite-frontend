@@ -10,6 +10,9 @@ import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-
 export const ResponsibilityCenterHref =
 	"/maintenance/responsibility-center";
 
+export const ResponsibilityCenterApiPath =
+	"/maintenance/financial-management/responsibility-centers";
+
 export const ResponsibilityCenterTablePaginationStorageKey =
 	"maintenance:financial-management:responsibility-center";
 
@@ -85,6 +88,37 @@ export const ResponsibilityCenterTableColumns = [
 		className: "w-[9rem] text-center",
 	},
 ] as const;
+
+export const ResponsibilityCenterDefaultColumnOrder =
+	ResponsibilityCenterTableColumns.map((column) =>
+		"key" in column ? column.key : "actions",
+	);
+
+export const ResponsibilityCenterTreeColumnOrder =
+	ResponsibilityCenterDefaultColumnOrder.filter(
+		(columnId) => columnId !== "parentId",
+	);
+
+export const ResponsibilityCenterAuditColumnOrder = [
+	"createdBy",
+	"createdAt",
+	"updatedBy",
+	"updatedAt",
+];
+
+export const ResponsibilityCenterDefaultColumnVisibility = {
+	code: false,
+	description: false,
+	createdBy: false,
+	createdAt: false,
+	updatedBy: false,
+	updatedAt: false,
+};
+
+export const ResponsibilityCenterTreeColumnVisibility = {
+	...ResponsibilityCenterDefaultColumnVisibility,
+	parentId: false,
+};
 
 export const ResponsibilityCenterExportColumns: ModuleTableExportColumn<ResponsibilityCenter>[] =
 	[
@@ -162,9 +196,6 @@ export const ResponsibilityCenterTypeDefinitions: ResponsibilityCenterTypeDefini
 			type: "Department",
 			origin: "User-defined",
 			financialType: "Cost Center",
-			isEnabled: true,
-			isRequiredInTransactions: false,
-			assignmentLevel: "Header and Line",
 			sortOrder: 10,
 			description: "Functional teams such as HR, Accounting, Sales, and IT.",
 			reportExamples: [
@@ -176,9 +207,6 @@ export const ResponsibilityCenterTypeDefinitions: ResponsibilityCenterTypeDefini
 			type: "Branch",
 			origin: "User-defined",
 			financialType: "Profit Center",
-			isEnabled: true,
-			isRequiredInTransactions: true,
-			assignmentLevel: "Header and Line",
 			sortOrder: 20,
 			description: "Locations or branches such as Cavite, Laguna, and Cebu.",
 			reportExamples: [
@@ -190,9 +218,6 @@ export const ResponsibilityCenterTypeDefinitions: ResponsibilityCenterTypeDefini
 			type: "Project",
 			origin: "User-defined",
 			financialType: "Cost Center",
-			isEnabled: true,
-			isRequiredInTransactions: false,
-			assignmentLevel: "Header and Line",
 			sortOrder: 30,
 			description: "Projects used for expense, revenue, and budget analysis.",
 			reportExamples: ["Expenses by Project", "Project Budget vs Actual"],
@@ -201,9 +226,6 @@ export const ResponsibilityCenterTypeDefinitions: ResponsibilityCenterTypeDefini
 			type: "Business Unit",
 			origin: "User-defined",
 			financialType: "Profit Center",
-			isEnabled: true,
-			isRequiredInTransactions: false,
-			assignmentLevel: "Header and Line",
 			sortOrder: 40,
 			description: "Operating units such as Retail, Wholesale, and Export.",
 			reportExamples: [
@@ -215,9 +237,6 @@ export const ResponsibilityCenterTypeDefinitions: ResponsibilityCenterTypeDefini
 			type: "Salesman",
 			origin: "User-defined",
 			financialType: "Revenue Center",
-			isEnabled: true,
-			isRequiredInTransactions: false,
-			assignmentLevel: "Header and Line",
 			sortOrder: 90,
 			description: "Salespeople used for sales and commission reporting.",
 			reportExamples: ["Sales by Salesman", "Commission Reports"],
@@ -226,9 +245,6 @@ export const ResponsibilityCenterTypeDefinitions: ResponsibilityCenterTypeDefini
 			type: "Warehouse",
 			origin: "User-defined",
 			financialType: "Cost Center",
-			isEnabled: true,
-			isRequiredInTransactions: false,
-			assignmentLevel: "Header and Line",
 			sortOrder: 100,
 			description: "Warehouses for stock and operating cost accountability.",
 			reportExamples: [
@@ -240,9 +256,6 @@ export const ResponsibilityCenterTypeDefinitions: ResponsibilityCenterTypeDefini
 			type: "Division",
 			origin: "User-defined",
 			financialType: "Profit Center",
-			isEnabled: true,
-			isRequiredInTransactions: false,
-			assignmentLevel: "Header and Line",
 			sortOrder: 110,
 			description: "High-level business divisions for rollup reporting.",
 			reportExamples: ["Profit by Division", "Sales by Division"],
@@ -251,9 +264,6 @@ export const ResponsibilityCenterTypeDefinitions: ResponsibilityCenterTypeDefini
 			type: "Region",
 			origin: "User-defined",
 			financialType: "Profit Center",
-			isEnabled: true,
-			isRequiredInTransactions: false,
-			assignmentLevel: "Header and Line",
 			sortOrder: 120,
 			description: "Geographic responsibility groups such as NCR or Visayas.",
 			reportExamples: ["Sales by Region", "Profit by Region"],

@@ -4,6 +4,7 @@ import type {
 	ResponsibilityCenterFormErrors,
 	ResponsibilityCenterFormValues,
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
+import { normalizeCodeWithHyphens } from "@/app/src/utils/string.util";
 
 const ResponsibilityCenterCategorySchema = z.enum(
 	[
@@ -49,12 +50,6 @@ export const ResponsibilityCenterFormValidationSchema = z.object({
 	parentId: z.string(),
 	status: ResponsibilityCenterStatusSchema,
 	description: z.string(),
-	allowBudgetAllocation: z.boolean(),
-	allowExpensePosting: z.boolean(),
-	allowRevenuePosting: z.boolean(),
-	allowProjectAssignment: z.boolean(),
-	isRequiredInTransactions: z.boolean(),
-	allowLineLevelAssignment: z.boolean(),
 });
 
 export function validateResponsibilityCenterForm(
@@ -66,9 +61,9 @@ export function validateResponsibilityCenterForm(
 	const errors: ResponsibilityCenterFormErrors = result.success
 		? {}
 		: mapResponsibilityCenterIssues(result.error.issues);
-	const normalizedCode = normalizeResponsibilityCenterCode(
-		values.code || values.name,
-	);
+	const normalizedCode = normalizeCodeWithHyphens(values.code || values.name, {
+		case: "upper",
+	});
 	const normalizedName = values.name.trim().toLowerCase();
 
 	if (values.parentId === currentCenterId) {
@@ -118,10 +113,6 @@ function mapResponsibilityCenterIssues(issues: z.ZodIssue[]) {
 
 		return errors;
 	}, {});
-}
-
-function normalizeResponsibilityCenterCode(value: string) {
-	return value.trim().replace(/\s+/g, "-").toUpperCase();
 }
 
 function createsCircularHierarchy(

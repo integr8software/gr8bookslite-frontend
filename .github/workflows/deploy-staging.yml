@@ -5,6 +5,10 @@ on:
     branches:
       - staging
 
+concurrency:
+  group: gr8booksneo-frontend-staging
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on:

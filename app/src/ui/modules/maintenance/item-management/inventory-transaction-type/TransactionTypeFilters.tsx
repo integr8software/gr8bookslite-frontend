@@ -1,21 +1,10 @@
-import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
+import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeConstants";
+import type { TransactionTypeFiltersProps } from "@/app/src/types/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeTypes";
 import {
 	ModuleTableFilterSelect,
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-
-type TransactionTypeFiltersProps = {
-	moduleFilter: string;
-	moduleFilterOptions: Array<{ label: string; value: string }>;
-	searchTerm: string;
-	statusFilter: "" | (typeof TransactionTypeStatusOptions)[number];
-	onModuleFilterChange: (value: string) => void;
-	onSearchTermChange: (value: string) => void;
-	onStatusFilterChange: (
-		value: "" | (typeof TransactionTypeStatusOptions)[number],
-	) => void;
-};
 
 export function TransactionTypeFilters({
 	moduleFilter,
@@ -29,7 +18,7 @@ export function TransactionTypeFilters({
 	return (
 		<ModuleTableToolbar className="lg:grid-cols-[minmax(24rem,3fr)_minmax(14rem,1fr)_minmax(14rem,1fr)]">
 			<ModuleTableSearch
-				label="Search transaction types"
+				label="Search inventory transaction types"
 				value={searchTerm}
 				onChange={onSearchTermChange}
 				placeholder="Search by name, description, module, or account"
@@ -55,9 +44,7 @@ export function TransactionTypeFilters({
 				]}
 				onChange={(value) =>
 					onStatusFilterChange(
-						value as
-							| ""
-							| (typeof TransactionTypeStatusOptions)[number],
+						value as TransactionTypeFiltersProps["statusFilter"],
 					)
 				}
 			/>

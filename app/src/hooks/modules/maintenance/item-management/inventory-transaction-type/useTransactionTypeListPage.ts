@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { normalizeLowercaseText } from "@/app/src/utils/string.util";
-import { useTransactionTypeStore } from "@/app/src/hooks/modules/maintenance/transaction-type/useTransactionType";
-import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
-import type { TransactionType } from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
+import { useTransactionTypeStore } from "@/app/src/hooks/modules/maintenance/item-management/inventory-transaction-type/useTransactionType";
+import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeConstants";
+import type { TransactionType } from "@/app/src/types/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeTypes";
 
 export function useTransactionTypeListPage() {
 	const transactionTypes = useTransactionTypeStore(

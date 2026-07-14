@@ -2,14 +2,14 @@ import { z } from "zod";
 import type {
 	TransactionTypeFormErrors,
 	TransactionTypeFormValues,
-} from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
+} from "@/app/src/types/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeTypes";
 
 const TransactionTypeStatusSchema = z.enum(["Active", "Inactive"], {
 	message: "Select status.",
 });
 
 export const TransactionTypeFormValidationSchema = z.object({
-	name: z.string().trim().min(1, "Enter a transaction type name."),
+	name: z.string().trim().min(1, "Enter an inventory transaction type name."),
 	description: z
 		.string()
 		.trim()

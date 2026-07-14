@@ -36,14 +36,14 @@ export const BankMasterfileTableColumns = [
 	{ key: "accountNumber", label: "Account Number", className: "w-[16%]" },
 	{ key: "accountName", label: "Account Title", className: "w-[26%]" },
 	{ key: "accountCode", label: "Account Code", className: "w-[13%]" },
-	{ key: "currencyCode", label: "Currency", className: "w-[10%]" },
-	{ key: "isDefault", label: "Default", className: "w-[10%]" },
-	{ key: "status", label: "Status", className: "w-[11%]" },
+	{ key: "currencyCode", label: "Currency", className: "w-[10%]", headerAlign: "center" },
+	{ key: "isDefault", label: "Default", className: "w-[10%]", headerAlign: "center" },
+	{ key: "status", label: "Status", className: "w-[11%]", headerAlign: "center" },
 	{ key: "createdBy", label: "Created By", className: "w-[14%]" },
 	{ key: "createdAt", label: "Date Created", className: "w-[16%]" },
 	{ key: "updatedBy", label: "Updated By", className: "w-[14%]" },
 	{ key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
-	{ label: "Action", className: "w-[16%] text-center" },
+	{ label: "Action", className: "w-[16%] text-center", headerAlign: "center" },
 ] as const;
 
 export const BankMasterfileStatusOptions = [

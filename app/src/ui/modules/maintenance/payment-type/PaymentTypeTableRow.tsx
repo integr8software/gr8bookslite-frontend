@@ -86,11 +86,11 @@ function PaymentTypeCellContent({
 		case "createdBy":
 			return <span>{paymentType.createdBy ?? ""}</span>;
 		case "createdAt":
-			return <span>{formatDateTime(paymentType.createdAt, { emptyValue: "-", locale: "en-US" })}</span>;
+			return <span>{formatDateTime(paymentType.createdAt, { emptyValue: "", locale: "en-US" })}</span>;
 		case "updatedBy":
 			return <span>{paymentType.updatedBy ?? ""}</span>;
 		case "updatedAt":
-			return <span>{formatDateTime(paymentType.updatedAt, { emptyValue: "-", locale: "en-US" })}</span>;
+			return <span>{formatDateTime(paymentType.updatedAt, { emptyValue: "", locale: "en-US" })}</span>;
 		case "actions":
 			return (
 				<ModuleTableActions

@@ -22,11 +22,11 @@ import type {
 	PartyInformationFormValues,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-import { AppCollapsibleSection } from "@/app/src/ui/shared/app/AppCollapsibleSection";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import {
 	PartyAddressContainer,
 } from "@/app/src/ui/modules/maintenance/party-management/PartyAddressContainer";
+import { AppTabs } from "@/app/src/ui/shared/app/AppTabs";
 
 export function PartyInformationDetailsFields({
 	atcOptions,
@@ -68,259 +68,320 @@ export function PartyInformationDetailsFields({
 		name: option.code,
 		value: option.code,
 	}));
+	const basicErrorCount = countErrors(errors, [
+		"partyCodeNo",
+		"classification",
+		"partyTypes",
+		"status",
+		"partyName",
+		"firstName",
+		"lastName",
+		"email",
+		"contactNo",
+	]);
+	const addressErrorCount = countErrors(errors, [
+		"addresses",
+		"addressLine1",
+		"addressLine2",
+		"regionCode",
+		"provinceCode",
+		"cityMunicipalityCode",
+		"barangayCode",
+	]);
+	const taxErrorCount = countErrors(errors, ["tin", "atcCode"]);
+	const accountingErrorCount = countErrors(errors, [
+		"termId",
+		"defaultReceivableAccount",
+		"customerAdvanceAccount",
+		"defaultPayableAccount",
+		"vendorAdvanceAccount",
+		"employeeAdvanceAccount",
+		"employeePayableAccount",
+	]);
 
 	return (
-		<section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
-			<div className="grid gap-6">
-				<div className="grid gap-4">
-					<SectionHeading title="Basic Information" />
-					<div className="grid gap-4 lg:grid-cols-4">
-						<Field label="Party Code" error={errors.partyCodeNo} required>
-							<input
-								name="partyCodeNo"
-								value={values.partyCodeNo}
-								onChange={onInputChange}
-								readOnly={isReadonly || isPartyCodeReadonly}
-								className={PartyManagementFieldClassName}
-							/>
-						</Field>
-						<Field
-							label="Party Classification"
-							error={errors.classification}
-							required
-						>
-							<select
-								name="classification"
-								disabled={isReadonly}
-								value={values.classification}
-								onChange={onInputChange}
-								className={PartyManagementSelectClassName}
-							>
-								<option value="">--Select Classification--</option>
-								{PartyClassificationOptions.map((classification) => (
-									<option key={classification} value={classification}>
-										{classification}
-									</option>
-								))}
-							</select>
-						</Field>
-						<Field label="Party Type" error={errors.partyTypes} required>
-							<AppAdvancedDropdown
-								disabled={isReadonly || !isClassificationSelected}
-								isSearchable={false}
-								options={partyTypeSelectOptions}
-								placeholder={
-									isClassificationSelected
-										? "Select party type"
-										: "Select classification first"
-								}
-								removeSelectionOnSelectedOptionClick
-								selectionMode="multiple"
-								showSelectionRemoveButton={false}
-								value={values.partyTypes}
-								onChange={onPartyTypesChange}
-							/>
-						</Field>
-						<Field label="Status" error={errors.status} required>
-							<select
-								name="status"
-								disabled={isReadonly}
-								value={values.status}
-								onChange={onInputChange}
-								className={PartyManagementSelectClassName}
-							>
-								{PartyInformationStatusOptions.map((status) => (
-									<option key={status} value={status}>
-										{status}
-									</option>
-								))}
-							</select>
-						</Field>
-					</div>
-				</div>
+		<AppTabs
+			ariaLabel="Party information sections"
+			tabs={[
+				{
+					id: "basic-information",
+					label: "Basic Information",
+					badge: basicErrorCount,
+					content: (
+						<div className="grid gap-5">
+							<SectionHeading title="Basic Information" />
+							<div className="grid gap-4 lg:grid-cols-3">
+								<Field label="Party Code" error={errors.partyCodeNo} required>
+									<input
+										name="partyCodeNo"
+										value={values.partyCodeNo}
+										onChange={onInputChange}
+										readOnly={isReadonly || isPartyCodeReadonly}
+										className={PartyManagementFieldClassName}
+									/>
+								</Field>
+								<Field
+									label="Party Classification"
+									error={errors.classification}
+									required
+								>
+									<select
+										name="classification"
+										disabled={isReadonly}
+										value={values.classification}
+										onChange={onInputChange}
+										className={PartyManagementSelectClassName}
+									>
+										<option value="">--Select Classification--</option>
+										{PartyClassificationOptions.map((classification) => (
+											<option key={classification} value={classification}>
+												{classification}
+											</option>
+										))}
+									</select>
+								</Field>
+								<Field label="Party Type" error={errors.partyTypes} required>
+									<AppAdvancedDropdown
+										disabled={isReadonly || !isClassificationSelected}
+										isSearchable={false}
+										options={partyTypeSelectOptions}
+										placeholder={
+											isClassificationSelected
+												? "Select party type"
+												: "Select classification first"
+										}
+										removeSelectionOnSelectedOptionClick
+										selectionMode="multiple"
+										showSelectionRemoveButton={false}
+										value={values.partyTypes}
+										onChange={onPartyTypesChange}
+									/>
+								</Field>
+							</div>
 
-				{showBusinessNameFields ? (
-					<div className="grid gap-4 lg:grid-cols-2">
-						<Field label="Party Name" error={errors.partyName} required>
-							<input
-								name="partyName"
-								value={values.partyName}
-								onChange={onInputChange}
-								readOnly={isReadonly}
-								disabled={isDetailsDisabled}
-								className={PartyManagementFieldClassName}
-							/>
-						</Field>
-						<Field label="Trade Name">
-							<input
-								name="tradeName"
-								value={values.tradeName}
-								onChange={onInputChange}
-								readOnly={isReadonly}
-								disabled={isDetailsDisabled}
-								className={PartyManagementFieldClassName}
-							/>
-						</Field>
-					</div>
-				) : null}
+							{showBusinessNameFields ? (
+								<div className="grid gap-4 lg:grid-cols-2">
+									<Field label="Party Name" error={errors.partyName} required>
+										<input
+											name="partyName"
+											value={values.partyName}
+											onChange={onInputChange}
+											readOnly={isReadonly}
+											disabled={isDetailsDisabled}
+											className={PartyManagementFieldClassName}
+										/>
+									</Field>
+									<Field label="Trade Name">
+										<input
+											name="tradeName"
+											value={values.tradeName}
+											onChange={onInputChange}
+											readOnly={isReadonly}
+											disabled={isDetailsDisabled}
+											className={PartyManagementFieldClassName}
+										/>
+									</Field>
+								</div>
+							) : null}
 
-				{values.classification === "Individual" ? (
-					<div className="grid gap-4 lg:grid-cols-4">
-						<Field label="First Name" error={errors.firstName} required>
-							<input
-								name="firstName"
-								value={values.firstName}
-								onChange={onInputChange}
-								readOnly={isReadonly}
-								disabled={isDetailsDisabled}
-								className={PartyManagementFieldClassName}
-							/>
-						</Field>
-						<Field label="Middle Name">
-							<input
-								name="middleName"
-								value={values.middleName}
-								onChange={onInputChange}
-								readOnly={isReadonly}
-								disabled={isDetailsDisabled}
-								className={PartyManagementFieldClassName}
-							/>
-						</Field>
-						<Field label="Last Name" error={errors.lastName} required>
-							<input
-								name="lastName"
-								value={values.lastName}
-								onChange={onInputChange}
-								readOnly={isReadonly}
-								disabled={isDetailsDisabled}
-								className={PartyManagementFieldClassName}
-							/>
-						</Field>
-						<Field label="Suffix">
-							<input
-								name="suffixName"
-								value={values.suffixName}
-								onChange={onInputChange}
-								readOnly={isReadonly}
-								disabled={isDetailsDisabled}
-								className={PartyManagementFieldClassName}
-							/>
-						</Field>
-					</div>
-				) : null}
+							{values.classification === "Individual" ? (
+								<div className="grid gap-4 lg:grid-cols-4">
+									<Field label="First Name" error={errors.firstName} required>
+										<input
+											name="firstName"
+											value={values.firstName}
+											onChange={onInputChange}
+											readOnly={isReadonly}
+											disabled={isDetailsDisabled}
+											className={PartyManagementFieldClassName}
+										/>
+									</Field>
+									<Field label="Middle Name">
+										<input
+											name="middleName"
+											value={values.middleName}
+											onChange={onInputChange}
+											readOnly={isReadonly}
+											disabled={isDetailsDisabled}
+											className={PartyManagementFieldClassName}
+										/>
+									</Field>
+									<Field label="Last Name" error={errors.lastName} required>
+										<input
+											name="lastName"
+											value={values.lastName}
+											onChange={onInputChange}
+											readOnly={isReadonly}
+											disabled={isDetailsDisabled}
+											className={PartyManagementFieldClassName}
+										/>
+									</Field>
+									<Field label="Suffix">
+										<input
+											name="suffixName"
+											value={values.suffixName}
+											onChange={onInputChange}
+											readOnly={isReadonly}
+											disabled={isDetailsDisabled}
+											className={PartyManagementFieldClassName}
+										/>
+									</Field>
+								</div>
+							) : null}
 
-				<div className="grid gap-4 lg:grid-cols-2">
-					<Field label="Email Address" error={errors.email}>
-						<input
-							name="email"
-							type="email"
-							value={values.email}
-							onChange={onInputChange}
-							readOnly={isReadonly}
+							<div className="grid gap-4 lg:grid-cols-2">
+								<Field label="Email Address" error={errors.email}>
+									<input
+										name="email"
+										type="email"
+										value={values.email}
+										onChange={onInputChange}
+										readOnly={isReadonly}
+										disabled={isDetailsDisabled}
+										className={PartyManagementFieldClassName}
+										placeholder="name@example.com"
+									/>
+								</Field>
+								<Field label="Contact No." error={errors.contactNo}>
+									<input
+										name="contactNo"
+										type="tel"
+										inputMode="numeric"
+										value={values.contactNo}
+										onChange={onInputChange}
+										onFocus={() => {
+											if (!values.contactNo) {
+												onUpdateField(
+													"contactNo",
+													DefaultPhilippineContactNumber,
+												);
+											}
+										}}
+										readOnly={isReadonly}
+										disabled={isDetailsDisabled}
+										maxLength={16}
+										className={PartyManagementFieldClassName}
+										placeholder={PhilippineContactNumberPlaceholder}
+									/>
+								</Field>
+							</div>
+							<div className="grid gap-4 lg:grid-cols-3">
+								<Field label="Status" error={errors.status} required>
+									<select
+										name="status"
+										disabled={isReadonly}
+										value={values.status}
+										onChange={onInputChange}
+										className={PartyManagementSelectClassName}
+									>
+										{PartyInformationStatusOptions.map((status) => (
+											<option key={status} value={status}>
+												{status}
+											</option>
+										))}
+									</select>
+								</Field>
+							</div>
+						</div>
+					),
+				},
+				{
+					id: "address",
+					label: "Address",
+					badge: addressErrorCount,
+					content: (
+						<PartyAddressContainer
+							addresses={values.addresses}
 							disabled={isDetailsDisabled}
-							className={PartyManagementFieldClassName}
-							placeholder="name@example.com"
+							errors={errors}
+							partyTypes={values.partyTypes}
+							onAddressInputChange={onAddressInputChange}
+							onSelectBarangay={onSelectBarangay}
+							onSelectAutocompleteAddress={onSelectAutocompleteAddress}
+							onSyncAutocompleteAddressDetails={
+								onSyncAutocompleteAddressDetails
+							}
+							onSelectCityMunicipality={onSelectCityMunicipality}
+							onSelectProvince={onSelectProvince}
 						/>
-					</Field>
-					<Field label="Contact No." error={errors.contactNo}>
-						<input
-							name="contactNo"
-							type="tel"
-							inputMode="numeric"
-							value={values.contactNo}
-							onChange={onInputChange}
-							onFocus={() => {
-								if (!values.contactNo) {
-									onUpdateField("contactNo", DefaultPhilippineContactNumber);
-								}
-							}}
-							readOnly={isReadonly}
-							disabled={isDetailsDisabled}
-							maxLength={16}
-							className={PartyManagementFieldClassName}
-							placeholder={PhilippineContactNumberPlaceholder}
-						/>
-					</Field>
-				</div>
-
-				<PartyAddressContainer
-					addresses={values.addresses}
-					disabled={isDetailsDisabled}
-					errors={errors}
-					partyTypes={values.partyTypes}
-					onAddressInputChange={onAddressInputChange}
-					onSelectBarangay={onSelectBarangay}
-					onSelectAutocompleteAddress={onSelectAutocompleteAddress}
-					onSyncAutocompleteAddressDetails={onSyncAutocompleteAddressDetails}
-					onSelectCityMunicipality={onSelectCityMunicipality}
-					onSelectProvince={onSelectProvince}
-				/>
-
-				<div className="grid gap-4">
-					<SectionHeading title="Tax Information" />
-					<div className="grid gap-4 lg:grid-cols-2">
-						<Field label="Tax Identification Number (TIN)" error={errors.tin}>
-							<input
-								name="tin"
-								inputMode="numeric"
-								maxLength={15}
-								value={values.tin}
-								onChange={onInputChange}
-								readOnly={isReadonly}
+					),
+				},
+				{
+					id: "tax-information",
+					label: "Tax Information",
+					badge: taxErrorCount,
+					content: (
+						<div className="grid gap-5">
+							<SectionHeading title="Tax Information" />
+							<div className="grid gap-4 lg:grid-cols-2">
+								<Field
+									label="Tax Identification Number (TIN)"
+									error={errors.tin}
+								>
+									<input
+										name="tin"
+										inputMode="numeric"
+										maxLength={15}
+										value={values.tin}
+										onChange={onInputChange}
+										readOnly={isReadonly}
+										disabled={isDetailsDisabled}
+										className={PartyManagementFieldClassName}
+										placeholder="000-000-000-000"
+									/>
+								</Field>
+								<Field label="VAT Registration Type">
+									<select
+										name="vatRegistrationType"
+										disabled={isDetailsDisabled}
+										value={values.vatRegistrationType}
+										onChange={onInputChange}
+										className={PartyManagementSelectClassName}
+									>
+										<option value="">--Select VAT Type--</option>
+										{VatRegistrationTypeOptions.map((type) => (
+											<option key={type} value={type}>
+												{type}
+											</option>
+										))}
+									</select>
+								</Field>
+								<Field label="BIR ATC Code" error={errors.atcCode}>
+									<AppAdvancedDropdown
+										disabled={isDetailsDisabled}
+										emptyMessage="No ATC codes match the selected classification."
+										options={atcSelectOptions}
+										placeholder="Select BIR ATC code"
+										searchPlaceholder="Search ATC code, label, or description"
+										value={values.atcCode}
+										onChange={onSelectAtcCode}
+									/>
+								</Field>
+							</div>
+						</div>
+					),
+				},
+				{
+					id: "accounting-information",
+					label: "Accounting Information",
+					badge: accountingErrorCount,
+					content: (
+						<div className="grid gap-5">
+							<SectionHeading title="Accounting Information" />
+							<AccountFields
+								accountOptions={accountOptions}
 								disabled={isDetailsDisabled}
-								className={PartyManagementFieldClassName}
-								placeholder="000-000-000-000"
+								errors={errors}
+								termOptions={termOptions}
+								values={values}
+								onSelectTerm={onSelectTerm}
+								onUpdateField={onUpdateField}
 							/>
-						</Field>
-						<Field label="Default Terms">
-							<AppAdvancedDropdown
-								disabled={isDetailsDisabled}
-								emptyMessage="No Active Terms Found."
-								options={termOptions}
-								placeholder="Select terms"
-								searchPlaceholder="Search Terms"
-								value={values.termId}
-								onChange={onSelectTerm}
-							/>
-						</Field>
-						<Field label="VAT Registration Type">
-							<select
-								name="vatRegistrationType"
-								disabled={isDetailsDisabled}
-								value={values.vatRegistrationType}
-								onChange={onInputChange}
-								className={PartyManagementSelectClassName}
-							>
-								<option value="">--Select VAT Type--</option>
-								{VatRegistrationTypeOptions.map((type) => (
-									<option key={type} value={type}>
-										{type}
-									</option>
-								))}
-							</select>
-						</Field>
-						<Field label="BIR ATC Code" error={errors.atcCode}>
-							<AppAdvancedDropdown
-								disabled={isDetailsDisabled}
-								emptyMessage="No ATC codes match the selected classification."
-								options={atcSelectOptions}
-								placeholder="Select BIR ATC code"
-								searchPlaceholder="Search ATC code, label, or description"
-								value={values.atcCode}
-								onChange={onSelectAtcCode}
-							/>
-						</Field>
-					</div>
-					<AccountFields
-						accountOptions={accountOptions}
-						disabled={isDetailsDisabled}
-						errors={errors}
-						values={values}
-						onUpdateField={onUpdateField}
-					/>
-				</div>
-			</div>
-		</section>
+						</div>
+					),
+				},
+			]}
+		/>
 	);
 }
 
@@ -328,13 +389,17 @@ function AccountFields({
 	accountOptions,
 	disabled,
 	errors,
+	termOptions,
 	values,
+	onSelectTerm,
 	onUpdateField,
 }: {
 	accountOptions: PartyAccountingAccountOptions;
 	disabled: boolean;
 	errors: PartyInformationFormErrors;
+	termOptions: PartyInformationDetailsFieldsProps["termOptions"];
 	values: PartyInformationFormValues;
+	onSelectTerm: PartyInformationDetailsFieldsProps["onSelectTerm"];
 	onUpdateField: PartyInformationFieldUpdateHandler;
 }) {
 	const isCustomer = values.partyTypes.includes("Customer");
@@ -342,135 +407,129 @@ function AccountFields({
 	const isEmployee = values.partyTypes.includes("Employee");
 	const hasAccountingFields = isCustomer || isVendor || isEmployee;
 	const isAccountingDisabled = disabled || !hasAccountingFields;
-	const hasMissingAccountingFields =
-		(isCustomer &&
-			(!values.defaultReceivableAccount.trim() ||
-				!values.customerAdvanceAccount.trim())) ||
-		(isVendor &&
-			(!values.defaultPayableAccount.trim() ||
-				!values.vendorAdvanceAccount.trim())) ||
-		(isEmployee &&
-			(!values.employeeAdvanceAccount.trim() ||
-				!values.employeePayableAccount.trim()));
 
 	return (
-		<div className="grid gap-4">
-			<div className="h-px bg-darknavy/10" aria-hidden="true" />
-			<AppCollapsibleSection
-				badge="Advanced"
-				description={
-					hasAccountingFields
-						? "Required account defaults are prefilled and can be configured."
-						: "Select a party type to enable account overrides."
-				}
-				disabled={isAccountingDisabled}
-				required={hasMissingAccountingFields}
-				title="Accounting"
-				contentClassName="grid gap-4 md:grid-cols-2"
-			>
-				{isCustomer ? (
-					<Field
-						label="Default Receivable Account"
-						error={errors.defaultReceivableAccount}
-						required
-					>
-						<ChartAccountDropdown
-							accounts={accountOptions.defaultReceivableAccount}
-							disabled={isAccountingDisabled}
-							valueField="id"
-							value={values.defaultReceivableAccount}
-							onChange={(value) =>
-								onUpdateField("defaultReceivableAccount", value)
-							}
-						/>
-					</Field>
-				) : null}
-				{isCustomer ? (
-					<Field
-						label="Default Customer Advance Account"
-						error={errors.customerAdvanceAccount}
-						required
-					>
-						<ChartAccountDropdown
-							accounts={accountOptions.customerAdvanceAccount}
-							disabled={isAccountingDisabled}
-							valueField="id"
-							value={values.customerAdvanceAccount}
-							onChange={(value) =>
-								onUpdateField("customerAdvanceAccount", value)
-							}
-						/>
-					</Field>
-				) : null}
-				{isVendor ? (
-					<Field
-						label="Default Payable Account"
-						error={errors.defaultPayableAccount}
-						required
-					>
-						<ChartAccountDropdown
-							accounts={accountOptions.defaultPayableAccount}
-							disabled={isAccountingDisabled}
-							valueField="id"
-							value={values.defaultPayableAccount}
-							onChange={(value) =>
-								onUpdateField("defaultPayableAccount", value)
-							}
-						/>
-					</Field>
-				) : null}
-				{isVendor ? (
-					<Field
-						label="Default Vendor Advance Account"
-						error={errors.vendorAdvanceAccount}
-						required
-					>
-						<ChartAccountDropdown
-							accounts={accountOptions.vendorAdvanceAccount}
-							disabled={isAccountingDisabled}
-							valueField="id"
-							value={values.vendorAdvanceAccount}
-							onChange={(value) => onUpdateField("vendorAdvanceAccount", value)}
-						/>
-					</Field>
-				) : null}
-				{isEmployee ? (
-					<Field
-						label="Default Employee Advance Account"
-						error={errors.employeeAdvanceAccount}
-						required
-					>
-						<ChartAccountDropdown
-							accounts={accountOptions.employeeAdvanceAccount}
-							disabled={isAccountingDisabled}
-							valueField="id"
-							value={values.employeeAdvanceAccount}
-							onChange={(value) =>
-								onUpdateField("employeeAdvanceAccount", value)
-							}
-						/>
-					</Field>
-				) : null}
-				{isEmployee ? (
-					<Field
-						label="Default Employee Payable Account"
-						error={errors.employeePayableAccount}
-						required
-					>
-						<ChartAccountDropdown
-							accounts={accountOptions.employeePayableAccount}
-							disabled={isAccountingDisabled}
-							valueField="id"
-							value={values.employeePayableAccount}
-							onChange={(value) =>
-								onUpdateField("employeePayableAccount", value)
-							}
-						/>
-					</Field>
-				) : null}
-			</AppCollapsibleSection>
+		<div className="grid gap-4 md:grid-cols-2">
+			{isCustomer ? (
+				<Field
+					label="Default Receivable Account"
+					error={errors.defaultReceivableAccount}
+					required
+				>
+					<ChartAccountDropdown
+						accounts={accountOptions.defaultReceivableAccount}
+						disabled={isAccountingDisabled}
+						valueField="id"
+						value={values.defaultReceivableAccount}
+						onChange={(value) =>
+							onUpdateField("defaultReceivableAccount", value)
+						}
+					/>
+				</Field>
+			) : null}
+			{isCustomer ? (
+				<Field
+					label="Default Customer Advance Account"
+					error={errors.customerAdvanceAccount}
+					required
+				>
+					<ChartAccountDropdown
+						accounts={accountOptions.customerAdvanceAccount}
+						disabled={isAccountingDisabled}
+						valueField="id"
+						value={values.customerAdvanceAccount}
+						onChange={(value) =>
+							onUpdateField("customerAdvanceAccount", value)
+						}
+					/>
+				</Field>
+			) : null}
+			{isVendor ? (
+				<Field
+					label="Default Payable Account"
+					error={errors.defaultPayableAccount}
+					required
+				>
+					<ChartAccountDropdown
+						accounts={accountOptions.defaultPayableAccount}
+						disabled={isAccountingDisabled}
+						valueField="id"
+						value={values.defaultPayableAccount}
+						onChange={(value) =>
+							onUpdateField("defaultPayableAccount", value)
+						}
+					/>
+				</Field>
+			) : null}
+			{isVendor ? (
+				<Field
+					label="Default Vendor Advance Account"
+					error={errors.vendorAdvanceAccount}
+					required
+				>
+					<ChartAccountDropdown
+						accounts={accountOptions.vendorAdvanceAccount}
+						disabled={isAccountingDisabled}
+						valueField="id"
+						value={values.vendorAdvanceAccount}
+						onChange={(value) => onUpdateField("vendorAdvanceAccount", value)}
+					/>
+				</Field>
+			) : null}
+			{isEmployee ? (
+				<Field
+					label="Default Employee Advance Account"
+					error={errors.employeeAdvanceAccount}
+					required
+				>
+					<ChartAccountDropdown
+						accounts={accountOptions.employeeAdvanceAccount}
+						disabled={isAccountingDisabled}
+						valueField="id"
+						value={values.employeeAdvanceAccount}
+						onChange={(value) =>
+							onUpdateField("employeeAdvanceAccount", value)
+						}
+					/>
+				</Field>
+			) : null}
+			{isEmployee ? (
+				<Field
+					label="Default Employee Payable Account"
+					error={errors.employeePayableAccount}
+					required
+				>
+					<ChartAccountDropdown
+						accounts={accountOptions.employeePayableAccount}
+						disabled={isAccountingDisabled}
+						valueField="id"
+						value={values.employeePayableAccount}
+						onChange={(value) =>
+							onUpdateField("employeePayableAccount", value)
+						}
+					/>
+				</Field>
+			) : null}
+			<Field label="Default Terms" error={errors.termId}>
+				<AppAdvancedDropdown
+					disabled={disabled}
+					emptyMessage="No Active Terms Found."
+					options={termOptions}
+					placeholder="Select terms"
+					searchPlaceholder="Search Terms"
+					value={values.termId}
+					onChange={onSelectTerm}
+				/>
+			</Field>
 		</div>
 	);
+}
+
+function countErrors(
+	errors: PartyInformationFormErrors,
+	fields: Array<keyof PartyInformationFormErrors>,
+) {
+	return fields.filter((field) => Boolean(errors[field])).length;
 }
 
 function SectionHeading({

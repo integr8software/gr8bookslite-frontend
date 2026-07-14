@@ -185,6 +185,14 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
             "maintenance.item",
             "inventory",
           ),
+          moduleItem(
+            "maintenance-transaction-type",
+            "Inventory Transaction Type",
+            "/maintenance/item-management/inventory-transaction-type",
+            "maintenance.transactionType",
+            "inventory",
+            ["accounting", "inventory"],
+          ),
         ],
       ),
       group(
@@ -243,13 +251,6 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "Term Management",
         "/maintenance/term-management",
         "maintenance.term",
-        "accounting",
-      ),
-      moduleItem(
-        "maintenance-transaction-type",
-        "Transaction Type",
-        "/maintenance/transaction-type",
-        "maintenance.transactionType",
         "accounting",
       ),
       moduleItem(

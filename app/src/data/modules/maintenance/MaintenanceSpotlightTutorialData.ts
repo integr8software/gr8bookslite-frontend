@@ -41,9 +41,9 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Term management",
   },
   {
-    href: "/maintenance/transaction-type",
+    href: "/maintenance/item-management/inventory-transaction-type",
     addMode: "drawer",
-    label: "Transaction type",
+    label: "Inventory transaction type",
   },
   {
     href: "/maintenance/payment-type",

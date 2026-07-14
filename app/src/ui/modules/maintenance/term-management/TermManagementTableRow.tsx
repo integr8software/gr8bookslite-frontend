@@ -77,11 +77,11 @@ function TermManagementCellContent({
 		case "createdBy":
 			return <span>{term.createdBy ?? ""}</span>;
 		case "createdAt":
-			return <span>{formatDateTime(term.createdAt, { emptyValue: "—", locale: "en-US" })}</span>;
+			return <span>{formatDateTime(term.createdAt, { emptyValue: "", locale: "en-US" })}</span>;
 		case "updatedBy":
 			return <span>{term.updatedBy ?? ""}</span>;
 		case "updatedAt":
-			return <span>{formatDateTime(term.updatedAt, { emptyValue: "—", locale: "en-US" })}</span>;
+			return <span>{formatDateTime(term.updatedAt, { emptyValue: "", locale: "en-US" })}</span>;
 		case "actions":
 			return (
 				<ModuleTableActions

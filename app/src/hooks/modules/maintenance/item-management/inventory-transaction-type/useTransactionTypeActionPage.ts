@@ -3,45 +3,32 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { TransactionTypeHref } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
+import { TransactionTypeHref } from "@/app/src/constants/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeConstants";
 import {
+	TransactionTypeAvailableModuleOptions,
 	TransactionTypeInitialFormValues,
 	createTransactionTypeFormValues,
 	createTransactionTypeFromForm,
 	updateTransactionTypeFromForm,
-} from "@/app/src/data/modules/maintenance/financial-management/transaction-type/TransactionTypeData";
+} from "@/app/src/data/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeData";
 import {
 	findModuleChartAccount,
 	getModuleChartAccounts,
 } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { getMaintenanceModuleOptions } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import type {
 	TransactionTypeActionMode,
 	TransactionType,
 	TransactionTypeFormErrors,
 	TransactionTypeFormValues,
-} from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
-import { validateTransactionTypeForm } from "@/app/src/validations/modules/maintenance/transaction-type/TransactionTypeValidation";
-import { useTransactionTypeStore } from "@/app/src/hooks/modules/maintenance/transaction-type/useTransactionType";
+} from "@/app/src/types/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeTypes";
+import { validateTransactionTypeForm } from "@/app/src/validations/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeValidation";
+import { useTransactionTypeStore } from "@/app/src/hooks/modules/maintenance/item-management/inventory-transaction-type/useTransactionType";
 
 type TransactionTypeActionPageOptions = {
 	existingTransactionType?: TransactionType;
 	mode?: TransactionTypeActionMode;
 	onSaved?: () => void;
 };
-
-const TransactionTypeExcludedModuleKeys = [
-	"dashboard-overview",
-	"maintenance-charts-of-accounts",
-	"maintenance-discount-management",
-	"maintenance-users",
-	"maintenance-user-role",
-	"maintenance-approval",
-	"maintenance-audit",
-	"transaction-number-setup",
-	"system-administration-multi-currency-setup",
-	"maintenance-mail",
-];
 
 export function useTransactionTypeActionPage(
 	options: TransactionTypeActionPageOptions = {},
@@ -62,7 +49,7 @@ export function useTransactionTypeActionPage(
 		(transactionType) => transactionType.id === params.recordId,
 	);
 	const moduleOptions = useMemo(
-		() => getMaintenanceModuleOptions(TransactionTypeExcludedModuleKeys),
+		() => TransactionTypeAvailableModuleOptions,
 		[],
 	);
 	const accountOptions = useMemo(
@@ -136,7 +123,9 @@ export function useTransactionTypeActionPage(
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
-			toast.error("Please correct the highlighted transaction type fields.");
+			toast.error(
+				"Please correct the highlighted inventory transaction type fields.",
+			);
 			return;
 		}
 

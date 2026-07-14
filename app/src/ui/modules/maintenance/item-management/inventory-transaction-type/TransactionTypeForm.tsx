@@ -1,10 +1,10 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
+import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeConstants";
 import type {
 	TransactionTypeFormErrors,
 	TransactionTypeFormValues,
-} from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
+} from "@/app/src/types/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeTypes";
 import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -48,7 +48,7 @@ export function TransactionTypeForm({
 						onChange={onInputChange}
 						readOnly={isReadonly}
 						className={fieldClassName}
-						placeholder="Enter transaction type name"
+						placeholder="Enter inventory transaction type name"
 					/>
 				</FormField>
 
@@ -95,12 +95,12 @@ export function TransactionTypeForm({
 					/>
 				</FormField>
 
-				<FormField label="Module" error={errors.moduleIds} required>
+				<FormField label="Inventory Module" error={errors.moduleIds} required>
 					<AppAdvancedDropdown
 						options={moduleDropdownOptions}
-						placeholder="Select available module"
+						placeholder="Select goods movement module"
 						readOnly={isReadonly}
-						searchPlaceholder="Search module"
+						searchPlaceholder="Search goods movement module"
 						selectionMode="multiple"
 						value={values.moduleIds}
 						onChange={onModuleChange}

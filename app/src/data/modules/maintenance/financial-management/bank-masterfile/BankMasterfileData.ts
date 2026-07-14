@@ -388,15 +388,3 @@ export function getBankMasterfileTableMinWidthClassName(
 	return "min-w-[64rem]";
 }
 
-export function isBankMasterfileCenteredColumn(columnId: string) {
-	return ["actions", "currencyCode", "isDefault", "status"].includes(columnId);
-}
-
-export function formatBankMasterfileDateTime(value?: string) {
-	if (!value) return "-";
-
-	return new Intl.DateTimeFormat("en-US", {
-		dateStyle: "medium",
-		timeStyle: "short",
-	}).format(new Date(value));
-}

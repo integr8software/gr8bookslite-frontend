@@ -1,9 +1,10 @@
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import type { ModuleOption } from "@/app/src/data/shared/modules/ModuleOptionsData";
+import { TransactionTypeModuleOptions } from "@/app/src/constants/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeConstants";
 import type {
 	TransactionType,
 	TransactionTypeFormValues,
-} from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
+} from "@/app/src/types/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeTypes";
 
 export const MockTransactionTypes: TransactionType[] = [
 	createMockTransactionType({
@@ -142,6 +143,9 @@ export const TransactionTypeInitialFormValues: TransactionTypeFormValues = {
 	accountId: "",
 };
 
+export const TransactionTypeAvailableModuleOptions: ModuleOption[] =
+	TransactionTypeModuleOptions.map((option) => ({ ...option }));
+
 export function createTransactionTypeFormValues(
 	transactionType: TransactionType,
 ): TransactionTypeFormValues {
@@ -254,4 +258,8 @@ function createMockTransactionType({
 		accountTitle,
 		status,
 	};
+}
+
+export function getTransactionTypeTableMinWidthClassName(columnCount: number) {
+	return columnCount > 5 ? "min-w-[72rem]" : "min-w-[64rem]";
 }

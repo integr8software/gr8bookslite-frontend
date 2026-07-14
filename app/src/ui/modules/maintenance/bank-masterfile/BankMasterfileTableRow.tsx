@@ -1,7 +1,3 @@
-import {
-	formatBankMasterfileDateTime,
-	isBankMasterfileCenteredColumn,
-} from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
 import type {
 	BankMasterfile,
 	BankMasterfileCellContentProps,
@@ -11,6 +7,8 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { getColumnHeaderAlign } from "@/app/src/ui/shared/module/module-table/utils";
+import { formatDateTime } from "@/app/src/utils/date.util";
 
 export function BankMasterfileTableRow({
 	row,
@@ -24,7 +22,7 @@ export function BankMasterfileTableRow({
 			{row.getVisibleCells().map((cell) => (
 				<BankMasterfileTableCell
 					key={cell.id}
-					align={isBankMasterfileCenteredColumn(cell.column.id) ? "center" : "left"}
+					align={getColumnHeaderAlign(cell.column.columnDef.meta) ?? "left"}
 				>
 					<BankMasterfileCellContent
 						columnId={cell.column.id}
@@ -82,11 +80,11 @@ function BankMasterfileCellContent({
 		case "createdBy":
 			return <span>{bank.createdBy ?? ""}</span>;
 		case "createdAt":
-			return <span>{formatBankMasterfileDateTime(bank.createdAt)}</span>;
+			return <span>{formatDateTime(bank.createdAt, { emptyValue: "", locale: "en-US" })}</span>;
 		case "updatedBy":
 			return <span>{bank.updatedBy ?? ""}</span>;
 		case "updatedAt":
-			return <span>{formatBankMasterfileDateTime(bank.updatedAt)}</span>;
+			return <span>{formatDateTime(bank.updatedAt, { emptyValue: "", locale: "en-US" })}</span>;
 		case "actions":
 			return (
 				<ModuleTableActions className="w-full !justify-center">

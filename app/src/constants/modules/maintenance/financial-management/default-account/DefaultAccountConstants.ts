@@ -35,6 +35,7 @@ export const DefaultAccountTableColumns = [
 		key: "type",
 		label: "Type",
 		className: "w-[14%]",
+		headerAlign: "center",
 	},
 	{
 		key: "accountCode",

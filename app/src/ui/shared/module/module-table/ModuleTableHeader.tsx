@@ -5,6 +5,7 @@ import { flexRender, type Header, type Table } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, GripVertical } from "lucide-react";
 import {
 	getColumnClassName,
+	isColumnHeaderCentered,
 	joinClasses,
 	moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
@@ -180,15 +181,10 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 }
 
 function isCenteredHeader<TData>(header: Header<TData, unknown>) {
-	return [
-		"actions",
-		"accountType",
-		"datemode",
-		"normalBalance",
-		"period",
-		"statementSection",
-		"status",
-	].includes(header.column.id);
+	return (
+		isColumnHeaderCentered(header) ||
+		["actions", "status"].includes(header.column.id)
+	);
 }
 
 function ModuleTableSortButton<TData>({

@@ -232,20 +232,25 @@ export function useChartsOfAccounts() {
       ChartsOfAccountsTableColumns.filter(
         (column) => column.key !== "parentPath",
       ).map((column) => {
+        const meta = {
+          className: column.className ?? "",
+          ...(column.headerAlign ? { headerAlign: column.headerAlign } : {}),
+        };
+
         if (!column.key) {
           return {
             id: "actions",
             header: column.label,
             enableSorting: false,
             size: column.size,
-            meta: { className: column.className, label: column.label },
+            meta: { ...meta, label: column.label },
           };
         }
 
         return createAccountColumn(
           column.key,
           column.label,
-          column.className ?? "",
+          meta,
           column.size,
           column.sortable ?? true,
         );
@@ -464,7 +469,10 @@ export function useChartsOfAccounts() {
 function createAccountColumn(
   id: ChartsOfAccountsTableColumnKey,
   header: string,
-  className: string,
+  meta: {
+    className: string;
+    headerAlign?: "center" | "left";
+  },
   size: number,
   enableSorting = true,
 ): ColumnDef<FlattenedChartAccount> {
@@ -480,7 +488,7 @@ function createAccountColumn(
     enableSorting,
     size,
     sortingFn: "alphanumeric",
-    meta: { className, label: header },
+    meta: { ...meta, label: header },
   };
 }
 

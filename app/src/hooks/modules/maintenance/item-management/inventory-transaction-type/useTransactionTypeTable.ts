@@ -10,12 +10,12 @@ import {
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { TransactionTypeTableColumns } from "@/app/src/constants/modules/maintenance/financial-management/transaction-type/TransactionTypeConstants";
+import { TransactionTypeTableColumns } from "@/app/src/constants/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeConstants";
 import type {
 	TransactionType,
 	TransactionTypeTableColumnKey,
 	TransactionTypeTableRecord,
-} from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
+} from "@/app/src/types/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeTypes";
 
 export function useTransactionTypeTable(transactionTypes: TransactionType[]) {
 	const [pagination, setPagination] = useState<PaginationState>({

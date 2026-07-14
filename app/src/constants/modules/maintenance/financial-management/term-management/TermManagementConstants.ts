@@ -46,11 +46,13 @@ export const TermManagementTableColumns = [
 		key: "datemode",
 		label: "Date Mode",
 		className: "w-[13%]",
+		headerAlign: "center",
 	},
 	{
 		key: "period",
 		label: "Period",
 		className: "w-[11%]",
+		headerAlign: "center",
 	},
 	{
 		key: "status",

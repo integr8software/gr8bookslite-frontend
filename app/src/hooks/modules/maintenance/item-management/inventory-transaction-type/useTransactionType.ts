@@ -3,9 +3,9 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { MockTransactionTypes } from "@/app/src/data/modules/maintenance/financial-management/transaction-type/TransactionTypeData";
-import { TransactionTypeQueryKeys } from "@/app/src/services/modules/maintenance/transaction-type/TransactionTypeQueryKeys";
-import type { TransactionType } from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
+import { MockTransactionTypes } from "@/app/src/data/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeData";
+import { TransactionTypeQueryKeys } from "@/app/src/services/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeQueryKeys";
+import type { TransactionType } from "@/app/src/types/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeTypes";
 
 type TransactionTypeStoreState = {
 	transactionTypes: TransactionType[];
@@ -43,10 +43,12 @@ export function useTransactionTypeStore<
 				...transactionTypes,
 				transactionType,
 			]);
-			toast.success("Transaction type created.");
+			toast.success("Inventory transaction type created.");
 		},
 		onError: () => {
-			toast.error("Could not create transaction type. Please try again.");
+			toast.error(
+				"Could not create inventory transaction type. Please try again.",
+			);
 		},
 	});
 
@@ -58,10 +60,12 @@ export function useTransactionTypeStore<
 					current.id === transactionType.id ? transactionType : current,
 				),
 			);
-			toast.success("Transaction type updated.");
+			toast.success("Inventory transaction type updated.");
 		},
 		onError: () => {
-			toast.error("Could not update transaction type. Please try again.");
+			toast.error(
+				"Could not update inventory transaction type. Please try again.",
+			);
 		},
 	});
 

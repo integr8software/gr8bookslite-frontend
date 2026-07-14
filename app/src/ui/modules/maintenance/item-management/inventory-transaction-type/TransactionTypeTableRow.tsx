@@ -1,7 +1,7 @@
 import type {
 	TransactionType,
 	TransactionTypeTableRecord,
-} from "@/app/src/types/modules/maintenance/transaction-type/TransactionTypeTypes";
+} from "@/app/src/types/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeTypes";
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,

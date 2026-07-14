@@ -123,7 +123,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     "/maintenance",
     "Configure accounting master files used across financial transactions.",
     [
-      "Financial Management groups setup records such as charts of accounts, discounts, payment terms, transaction types, and responsibility centers.",
+      "Financial Management groups setup records such as charts of accounts, discounts, payment terms, payment types, and responsibility centers.",
       "These records support accounting documents, ledgers, receivables, payables, and financial reports.",
     ],
     [
@@ -178,14 +178,14 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   ),
   article(
     "help-transaction-type",
-    "Transaction Type",
-    "/maintenance/transaction-type",
-    "Classify transactions for posting, filtering, and reporting.",
+    "Inventory Transaction Type",
+    "/maintenance/item-management/inventory-transaction-type",
+    "Classify goods receipt and goods issue inventory movements.",
     [
-      "Transaction types help categorize accounting documents and business operations.",
-      "Use clear transaction type names so transaction lists and reports can be filtered without ambiguity.",
+      "Inventory Transaction Type stores reusable movement reasons such as sales return, transfer, purchase return, spoilage, damaged item, freebies, and gifts.",
+      "Use clear inventory transaction type names so goods receipt and goods issue lists can be filtered without ambiguity.",
     ],
-    ["help-general-journal", "help-charts-of-accounts"],
+    ["help-item-management", "help-inventory"],
   ),
   article(
     "help-payment-type",
@@ -215,7 +215,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     "/maintenance/item-management/items",
     "Configure item and warehouse master files used by inventory documents.",
     [
-      "Item Management defines item records, bundle components, and the single Item Category classification tree used during document entry.",
+      "Item Management defines item records, bundle components, inventory transaction types, and the single Item Category classification tree used during document entry.",
       "Warehouse Management defines storage locations, access assignments, and warehouse item counts used for stock movement and reporting.",
     ],
     ["help-warehouse-management", "help-item-management", "help-inventory"],

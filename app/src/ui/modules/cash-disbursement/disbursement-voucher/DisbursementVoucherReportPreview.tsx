@@ -194,7 +194,7 @@ function DisbursementVoucherReportDocument({
 					<tfoot>
 						<tr className="font-bold">
 							<td
-								className="border-2 border-black px-2 py-1 text-right"
+								className="border-2 border-l-0 border-black px-2 py-1 text-right"
 								colSpan={4}
 							>
 								Total:
@@ -202,7 +202,7 @@ function DisbursementVoucherReportDocument({
 							<td className="border-2 border-black px-2 py-1 text-right">
 								{formatCurrency(totalDebit)}
 							</td>
-							<td className="border-2 border-black px-2 py-1 text-right">
+							<td className="border-2 border-r-0 border-black px-2 py-1 text-right">
 								{formatCurrency(totalCredit)}
 							</td>
 						</tr>
@@ -250,7 +250,7 @@ function MetaCell({ label, value }: { label: string; value: string }) {
 
 function ReportTableHeader({ children }: { children: ReactNode }) {
 	return (
-		<th className="border-2 border-black px-2 py-1 text-center font-bold">
+		<th className="border-2 border-black px-2 py-1 text-center font-bold first:border-l-0 last:border-r-0">
 			{children}
 		</th>
 	);
@@ -265,7 +265,7 @@ function ReportTableCell({
 }) {
 	return (
 		<td
-			className={`h-14 border-x-2 border-black px-1 py-1 align-top ${
+			className={`h-14 border-x-2 border-black px-1 py-1 align-top first:border-l-0 last:border-r-0 ${
 				align === "right" ? "text-right" : "text-left"
 			}`}
 		>

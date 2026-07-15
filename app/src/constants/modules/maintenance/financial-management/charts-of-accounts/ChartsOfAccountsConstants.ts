@@ -95,18 +95,17 @@ export const ChartsOfAccountsTableColumns: Array<{
   label: string;
   key?: ChartsOfAccountsTableColumnKey;
   className?: string;
-  headerAlign?: "center" | "left";
   size: number;
   sortable?: boolean;
 }> = [
   { label: "Account Code", key: "accountNumber", className: "text-left", size: 140 },
   { label: "Account Name", key: "accountName", className: "text-left", size: 500 },
   { label: "Parent", key: "parentPath", className: "text-left", size: 320 },
-  { label: "Account Type", key: "accountType", className: "text-center", headerAlign: "center", size: 140,
+  { label: "Account Type", key: "accountType", className: "text-center", size: 140,
   },
   { label: "Account Level", key: "accountLevel", className: "text-center", size: 140 },
-  { label: "Statement Section", key: "statementSection", className: "text-center", headerAlign: "center", size: 160 },
-  { label: "Account Nature", key: "normalBalance", className: "text-center", headerAlign: "center", size: 140 },
+  { label: "Statement Section", key: "statementSection", className: "text-center", size: 160 },
+  { label: "Account Nature", key: "normalBalance", className: "text-center", size: 140 },
   { label: "Report Alias", key: "reportAlias", className: "text-center", size: 200 },
   { label: "Status", key: "status", className: "text-center", size: 100 },
   { label: "Created By", key: "createdBy", className: "text-left", size: 160 },

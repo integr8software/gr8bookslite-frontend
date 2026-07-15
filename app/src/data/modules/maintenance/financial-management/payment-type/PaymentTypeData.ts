@@ -20,16 +20,16 @@ import { formatFileSize } from "@/app/src/utils/file.util";
 
 export const PaymentTypeOptions: PaymentTypeClassification[] = [
 	"Cash",
-	"With Bank",
 	"Bank Transfer",
-	"Online Payment",
-	"Multiple Check",
-	"Debit",
+	"Check",
+	"Digital Wallet",
+	"Non-Cash Settlement",
 ];
 
 export const PaymentTypeInitialFormValues: PaymentTypeFormValues = {
 	description: "",
 	paymentType: "",
+	sortOrder: "0",
 	status: "Active",
 	type: "",
 };
@@ -44,6 +44,7 @@ export function createPaymentTypeFormValues(
 	return {
 		description: record.description,
 		paymentType: record.paymentType,
+		sortOrder: String(record.sortOrder),
 		status: record.status,
 		type: record.type,
 	};
@@ -56,6 +57,7 @@ export function createPaymentTypeFromForm(
 		description: values.description.trim(),
 		id: `payment-type-${Date.now()}`,
 		paymentType: values.paymentType.trim(),
+		sortOrder: normalizePaymentTypeSortOrder(values.sortOrder),
 		status: values.status,
 		type: values.type || "Cash",
 	};
@@ -69,6 +71,7 @@ export function updatePaymentTypeFromForm(
 		...record,
 		description: values.description.trim(),
 		paymentType: values.paymentType.trim(),
+		sortOrder: normalizePaymentTypeSortOrder(values.sortOrder),
 		status: values.status,
 		type: values.type || record.type,
 	};
@@ -98,6 +101,7 @@ export function createBlankPaymentTypeImportRow(
 			description: "",
 			paymentType: "",
 			status: "Active",
+			sortOrder: 0,
 			type: "Cash",
 		},
 	};
@@ -275,6 +279,7 @@ export function parsePaymentTypeImportText(
 					description: getImportedPaymentTypeValue(row, indexes.description),
 					paymentType: getImportedPaymentTypeValue(row, indexes.paymentType),
 					status: "Active",
+					sortOrder: rowNumber * 10,
 					type: normalizeImportedPaymentTypeClassification(
 						getImportedPaymentTypeValue(row, indexes.type),
 					),
@@ -468,13 +473,21 @@ export function normalizeImportedPaymentTypeClassification(
 	const normalized = value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
 
 	if (normalized === "cash") return "Cash";
-	if (normalized === "withbank") return "With Bank";
 	if (normalized === "banktransfer") return "Bank Transfer";
-	if (normalized === "onlinepayment") return "Online Payment";
+	if (normalized === "check" || normalized === "withbank") return "Check";
 	if (normalized === "multiplecheck" || normalized === "multiplechecks") {
-		return "Multiple Check";
+		return "Check";
 	}
-	if (normalized === "debit") return "Debit";
+	if (normalized === "digitalwallet" || normalized === "ewallet") {
+		return "Digital Wallet";
+	}
+	if (
+		normalized === "noncashsettlement" ||
+		normalized === "debit" ||
+		normalized === "debitmemo"
+	) {
+		return "Non-Cash Settlement";
+	}
 
 	return value as PaymentTypeClassification;
 }
@@ -492,6 +505,12 @@ export function normalizeImportedPaymentTypeStatus(
 
 export function normalizePaymentTypeName(value: string) {
 	return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function normalizePaymentTypeSortOrder(value: string) {
+	const sortOrder = Number.parseInt(value, 10);
+
+	return Number.isFinite(sortOrder) && sortOrder >= 0 ? sortOrder : 0;
 }
 
 function formatPaymentTypeImportRowsAsText(rows: string[][]) {

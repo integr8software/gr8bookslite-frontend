@@ -85,18 +85,6 @@ export function BankMasterfileFields({
 							))}
 						</select>
 					</FormField>
-					<FormField
-						label="Account Title"
-						className="lg:col-span-2"
-						required={values.status === "Active"}
-					>
-						<input
-							id="bank-masterfile-account-title"
-							value={accountName}
-							readOnly
-							className={BankMasterfileReadOnlyFieldClassName}
-						/>
-					</FormField>
 					<FormField label="Account Code">
 						<input
 							id="bank-masterfile-account-code"
@@ -107,6 +95,17 @@ export function BankMasterfileFields({
 										: accountCode || "Auto series"
 									: accountCode
 							}
+							readOnly
+							className={BankMasterfileReadOnlyFieldClassName}
+						/>
+					</FormField>
+					<FormField
+						label="Account Title"
+						required={values.status === "Active"}
+					>
+						<input
+							id="bank-masterfile-account-title"
+							value={accountName}
 							readOnly
 							className={BankMasterfileReadOnlyFieldClassName}
 						/>

@@ -4,6 +4,7 @@ import type {
 	PartyInformationTableRowProps,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { PartyInformationRecordActions } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationRecordActions";
+import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 import { formatDateTime } from "@/app/src/utils/date.util";
 
 export function PartyInformationTableRow({
@@ -14,7 +15,7 @@ export function PartyInformationTableRow({
 			{row.getVisibleCells().map((cell) => (
 				<PartyInformationTableCell
 					key={cell.id}
-					align={isCenteredColumn(cell.column.id) ? "center" : "left"}
+					className={getColumnMetaClassName(cell.column.columnDef.meta)}
 				>
 					<PartyInformationCellContent
 						columnId={cell.column.id}
@@ -24,10 +25,6 @@ export function PartyInformationTableRow({
 			))}
 		</tr>
 	);
-}
-
-function isCenteredColumn(columnId: string) {
-	return columnId === "actions" || columnId === "status";
 }
 
 function PartyInformationCellContent({
@@ -67,12 +64,35 @@ function PartyInformationCellContent({
 			return <TextCell value={record.email} />;
 		case "contactNo":
 			return <TextCell value={record.contactNo} />;
+		case "landline":
+			return <TextCell value={record.landline ?? ""} />;
+		case "honorific":
+			return <TextCell value={record.honorific ?? ""} />;
+		case "gender":
+			return <TextCell value={record.gender ?? ""} />;
+		case "civilStatus":
+			return <TextCell value={record.civilStatus ?? ""} />;
+		case "nationality":
+			return <TextCell value={record.nationality ?? ""} />;
+		case "memberRegistrationDate":
+			return (
+				<TextCell
+					value={
+						record.memberRegistrationDate
+							? formatDateTime(record.memberRegistrationDate, {
+									emptyValue: "",
+									locale: "en-US",
+								})
+							: ""
+					}
+				/>
+			);
 		case "homeAddressLabel":
 			return <AddressCell value={record.homeAddressLabel} />;
 		case "billingAddressLabel":
 			return <AddressCell value={record.billingAddressLabel} />;
-		case "shippingAddressLabel":
-			return <AddressCell value={record.shippingAddressLabel} />;
+		case "deliveryAddressLabel":
+			return <AddressCell value={record.deliveryAddressLabel} />;
 		case "tin":
 			return <TextCell value={record.tin} />;
 		case "vatRegistrationType":
@@ -105,28 +125,27 @@ function PartyInformationCellContent({
 }
 
 function TextCell({ value }: { value: string }) {
-	return <span className="text-sm text-darknavy/75">{value || "-"}</span>;
+	return <span className="text-sm text-darknavy/75">{value || ""}</span>;
 }
 
 function AddressCell({ value }: { value: string }) {
 	return (
 		<span className="block truncate text-sm text-darknavy/75" title={value}>
-			{value || "-"}
+			{value || ""}
 		</span>
 	);
 }
 
 function PartyInformationTableCell({
-	align = "left",
+	className = "text-left",
 	children,
 }: {
-	align?: "center" | "left";
+	className?: string;
 	children: ReactNode;
 }) {
 	return (
 		<td
-			className={`px-4 py-3 align-middle text-sm text-darknavy first:pl-5 last:pr-5 ${align === "center" ? "text-center" : "text-left"
-				}`}
+			className={`px-4 py-3 align-middle text-sm text-darknavy first:pl-5 last:pr-5 ${className}`}
 		>
 			{children}
 		</td>

@@ -149,9 +149,6 @@ export function useBankMasterfileTable(banks: BankMasterfile[]) {
 				const meta = {
 					className: column.className,
 					label: column.label,
-					...("headerAlign" in column
-						? { headerAlign: column.headerAlign }
-						: {}),
 				};
 
 				if (!("key" in column)) {
@@ -295,7 +292,6 @@ function createBankMasterfileColumn(
 	header: string,
 	meta: {
 		className: string;
-		headerAlign?: "center" | "left";
 		label: string;
 	},
 ): ColumnDef<BankMasterfile> {

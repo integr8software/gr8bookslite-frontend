@@ -144,23 +144,20 @@ export function useTermManagementTable(terms: TermManagement[]) {
 	const columns = useMemo<ColumnDef<TermManagement>[]>(
 		() =>
 			TermManagementTableColumns.map((column) => {
-				const meta = {
-					className: column.className,
-					...("headerAlign" in column
-						? { headerAlign: column.headerAlign }
-						: {}),
-				};
-
 				if (!("key" in column)) {
 					return {
 						id: "actions",
 						header: column.label,
 						enableSorting: false,
-						meta: { ...meta, label: column.label },
+						meta: { className: column.className, label: column.label },
 					};
 				}
 
-				return createTermManagementColumn(column.key, column.label, meta);
+				return createTermManagementColumn(
+					column.key,
+					column.label,
+					column.className,
+				);
 			}),
 		[],
 	);
@@ -290,15 +287,12 @@ function normalizeTablePreferences(
 function createTermManagementColumn(
 	key: TermManagementTableColumnKey,
 	header: string,
-	meta: {
-		className: string;
-		headerAlign?: "center" | "left";
-	},
+	className: string,
 ): ColumnDef<TermManagement> {
 	return {
 		accessorKey: key,
 		header,
 		sortingFn: "alphanumeric",
-		meta: { ...meta, label: header },
+		meta: { className, label: header },
 	};
 }

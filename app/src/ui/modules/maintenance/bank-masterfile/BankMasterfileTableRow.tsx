@@ -7,7 +7,7 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-import { getColumnHeaderAlign } from "@/app/src/ui/shared/module/module-table/utils";
+import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 import { formatDateTime } from "@/app/src/utils/date.util";
 
 export function BankMasterfileTableRow({
@@ -22,7 +22,7 @@ export function BankMasterfileTableRow({
 			{row.getVisibleCells().map((cell) => (
 				<BankMasterfileTableCell
 					key={cell.id}
-					align={getColumnHeaderAlign(cell.column.columnDef.meta) ?? "left"}
+					className={getColumnMetaClassName(cell.column.columnDef.meta)}
 				>
 					<BankMasterfileCellContent
 						columnId={cell.column.id}
@@ -63,10 +63,10 @@ function BankMasterfileCellContent({
 					{bank.accountNumber}
 				</span>
 			);
-		case "accountName":
+		case "accountTitle":
 			return (
-				<span className="block truncate text-darknavy/75" title={bank.accountName}>
-					{bank.accountName}
+				<span className="block truncate text-darknavy/75" title={bank.accountTitle}>
+					{bank.accountTitle}
 				</span>
 			);
 		case "accountCode":
@@ -121,15 +121,15 @@ function BankMasterfileCellContent({
 }
 
 function BankMasterfileTableCell({
-	align = "left",
+	className = "text-left",
 	children,
 }: {
-	align?: "center" | "left";
+	className?: string;
 	children: React.ReactNode;
 }) {
 	return (
 		<td
-			className={`px-4 py-4 align-middle text-sm text-darknavy ${align === "center" ? "text-center" : "text-left"}`}
+			className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}
 		>
 			{children}
 		</td>

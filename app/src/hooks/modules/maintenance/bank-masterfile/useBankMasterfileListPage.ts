@@ -42,7 +42,7 @@ export function useBankMasterfileListPage() {
 				bank.bankName,
 				bank.branch,
 				bank.accountNumber,
-				bank.accountName,
+				bank.accountTitle,
 				bank.accountCode,
 				bank.currencyCode,
 				bank.status,

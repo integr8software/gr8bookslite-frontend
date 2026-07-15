@@ -8,6 +8,7 @@ export type ApiBankStatus = "ACTIVE" | "INACTIVE";
 export type BankMasterfile = {
 	id: string;
 	accountCode: string;
+	accountTitle: string;
 	bankName: string;
 	branch: string;
 	accountNumber: string;
@@ -50,7 +51,7 @@ export type BankMasterfileTableColumnKey =
 	| "bankName"
 	| "branch"
 	| "accountNumber"
-	| "accountName"
+	| "accountTitle"
 	| "accountCode"
 	| "currencyCode"
 	| "isDefault"
@@ -108,10 +109,14 @@ export type BankMasterfileListResponse = {
 export type ApiBank = {
 	id: string;
 	accountCode: string;
+	accountTitle?: string | null;
 	bankName: string;
 	branch: string | null;
 	accountNumber: string;
 	accountName: string;
+	chartAccount?: {
+		accountTitle?: string | null;
+	} | null;
 	accountType: string | null;
 	currencyCode: string | null;
 	currencyExchangeRate: string | null;

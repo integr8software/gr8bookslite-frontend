@@ -26,6 +26,9 @@ type PaymentTypeStoreState = {
 		paymentTypes: PaymentTypeRecord[],
 	) => Promise<PaymentTypeRecord[]>;
 	updatePaymentType: (paymentType: PaymentTypeRecord) => Promise<PaymentTypeRecord>;
+	reorderPaymentTypes: (
+		paymentTypes: PaymentTypeRecord[],
+	) => Promise<PaymentTypeRecord[]>;
 	permissions: PaymentTypePermissions;
 	statistics: PaymentTypeStatistics;
 	isLoading: boolean;
@@ -56,11 +59,10 @@ const EmptyPaymentTypeStatistics: PaymentTypeStatistics = {
 	activePaymentTypes: 0,
 	inactivePaymentTypes: 0,
 	cashPaymentTypes: 0,
-	withBankPaymentTypes: 0,
 	bankTransferPaymentTypes: 0,
-	onlinePaymentTypes: 0,
-	multipleCheckPaymentTypes: 0,
-	debitPaymentTypes: 0,
+	checkPaymentTypes: 0,
+	digitalWalletPaymentTypes: 0,
+	nonCashSettlementPaymentTypes: 0,
 };
 
 export function usePaymentTypeStore<TSelected = PaymentTypeStoreState>(
@@ -140,6 +142,24 @@ export function usePaymentTypeStore<TSelected = PaymentTypeStoreState>(
 		},
 	});
 
+	const reorderPaymentTypesMutation = useMutation({
+		mutationFn: (paymentTypes: PaymentTypeRecord[]) =>
+			Promise.all(paymentTypes.map(updatePaymentType)),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({
+				queryKey: PaymentTypeQueryKeys.all(),
+			});
+			toast.success("Payment type order updated successfully.");
+		},
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not update payment type order. Please try again.",
+			);
+		},
+	});
+
 	const state = useMemo<PaymentTypeStoreState>(
 		() => {
 			const effectiveRole = ResolveAuthProfileEffectiveRole(
@@ -160,6 +180,7 @@ export function usePaymentTypeStore<TSelected = PaymentTypeStoreState>(
 				isMutating:
 					addPaymentTypeMutation.isPending ||
 					addPaymentTypesMutation.isPending ||
+					reorderPaymentTypesMutation.isPending ||
 					updatePaymentTypeMutation.isPending,
 				paymentTypes: paymentTypesQuery.data?.paymentTypes ?? [],
 				permissions: hasReservedRoleAccess
@@ -167,6 +188,8 @@ export function usePaymentTypeStore<TSelected = PaymentTypeStoreState>(
 					: (paymentTypesQuery.data?.permissions ??
 						EmptyPaymentTypePermissions),
 				refreshPaymentTypes,
+				reorderPaymentTypes: (paymentTypes) =>
+					reorderPaymentTypesMutation.mutateAsync(paymentTypes),
 				statistics:
 					paymentTypesQuery.data?.statistics ?? EmptyPaymentTypeStatistics,
 				updatePaymentType: (paymentType) =>
@@ -182,6 +205,7 @@ export function usePaymentTypeStore<TSelected = PaymentTypeStoreState>(
 			paymentTypesQuery.isFetching,
 			paymentTypesQuery.isLoading,
 			refreshPaymentTypes,
+			reorderPaymentTypesMutation,
 			updatePaymentTypeMutation,
 		],
 	);

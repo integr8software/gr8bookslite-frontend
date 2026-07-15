@@ -4,11 +4,14 @@ import {
 } from "react";
 import {
 	PartyClassificationOptions,
+	PartyCivilStatusOptions,
+	PartyDefaultNationality,
+	PartyGenderOptions,
+	PartyHonorificOptions,
 	PartyManagementFieldClassName,
 	PartyManagementFieldControlSelector,
 	PartyManagementSelectClassName,
 	PartyInformationStatusOptions,
-	VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
 	DefaultPhilippineContactNumber,
@@ -36,13 +39,17 @@ export function PartyInformationDetailsFields({
 	isPartyCodeReadonly = false,
 	isReadonly,
 	partyTypeOptions,
+	taxMaintenanceOptions,
 	termOptions,
 	values,
+	syncedAddressSources,
 	onAddressInputChange,
+	onCopyAddress,
 	onInputChange,
 	onPartyTypesChange,
 	onSelectBarangay,
 	onSelectAtcCode,
+	onSelectVatRegistrationType,
 	onSelectAutocompleteAddress,
 	onSyncAutocompleteAddressDetails,
 	onSelectCityMunicipality,
@@ -54,13 +61,25 @@ export function PartyInformationDetailsFields({
 	const isDetailsDisabled =
 		isReadonly || !isClassificationSelected || !isPartyTypeSelected;
 	const showBusinessNameFields = values.classification !== "Individual";
+	const showPersonalInfoFields =
+		values.partyTypes.includes("Employee") || values.partyTypes.includes("Member");
+	const showMemberRegistrationDate = values.partyTypes.includes("Member");
+	const isMember = values.partyTypes.includes("Member");
 	const visiblePartyTypeOptions =
 		values.classification === "Non-Individual"
-			? partyTypeOptions.filter((type) => type !== "Employee")
+			? partyTypeOptions.filter(
+					(type) => type !== "Employee" && type !== "Member",
+				)
 			: partyTypeOptions;
 	const partyTypeSelectOptions = visiblePartyTypeOptions.map((type) => ({
 		name: type,
 		value: type,
+	}));
+	const honorificOptions = PartyHonorificOptions.map((honorific) => ({
+		description:
+			"description" in honorific ? honorific.description : undefined,
+		name: honorific.name,
+		value: honorific.name,
 	}));
 	const atcSelectOptions = atcOptions.map((option) => ({
 		description: `${option.category}. ${option.description}`,
@@ -76,10 +95,15 @@ export function PartyInformationDetailsFields({
 		"partyName",
 		"firstName",
 		"lastName",
+		"gender",
+		"civilStatus",
+		"nationality",
+		"memberRegistrationDate",
+	]);
+	const contactErrorCount = countErrors(errors, [
 		"email",
 		"contactNo",
-	]);
-	const addressErrorCount = countErrors(errors, [
+		"landline",
 		"addresses",
 		"addressLine1",
 		"addressLine2",
@@ -185,7 +209,7 @@ export function PartyInformationDetailsFields({
 							) : null}
 
 							{values.classification === "Individual" ? (
-								<div className="grid gap-4 lg:grid-cols-4">
+								<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)_minmax(0,1.15fr)_minmax(0,1.25fr)_minmax(0,0.85fr)]">
 									<Field label="First Name" error={errors.firstName} required>
 										<input
 											name="firstName"
@@ -226,10 +250,128 @@ export function PartyInformationDetailsFields({
 											className={PartyManagementFieldClassName}
 										/>
 									</Field>
+									<Field label="Honorific">
+										<AppAdvancedDropdown
+											disabled={isDetailsDisabled}
+											isSearchable={false}
+											options={honorificOptions}
+											placeholder="Select Honorific"
+											value={values.honorific}
+											onChange={(value) =>
+												onUpdateField(
+													"honorific",
+													getSingleSelectedValue(value),
+												)
+											}
+											showSelectionIndicator={false}
+											showSelectedDetails={false}
+										/>
+									</Field>
 								</div>
 							) : null}
 
-							<div className="grid gap-4 lg:grid-cols-2">
+							{showPersonalInfoFields ? (
+								<div className="grid gap-4 lg:grid-cols-3">
+									<Field label="Gender" error={errors.gender} required={isMember}>
+										<select
+											name="gender"
+											value={values.gender}
+											onChange={onInputChange}
+											disabled={isDetailsDisabled}
+											className={PartyManagementSelectClassName}
+										>
+											<option value="">--Select Gender--</option>
+											{PartyGenderOptions.map((gender) => (
+												<option key={gender} value={gender}>
+													{gender}
+												</option>
+											))}
+										</select>
+									</Field>
+									<Field
+										label="Civil Status"
+										error={errors.civilStatus}
+										required={isMember}
+									>
+										<select
+											name="civilStatus"
+											value={values.civilStatus}
+											onChange={onInputChange}
+											disabled={isDetailsDisabled}
+											className={PartyManagementSelectClassName}
+										>
+											<option value="">--Select Civil Status--</option>
+											{PartyCivilStatusOptions.map((civilStatus) => (
+												<option key={civilStatus} value={civilStatus}>
+													{civilStatus}
+												</option>
+											))}
+										</select>
+									</Field>
+									<Field
+										label="Nationality"
+										error={errors.nationality}
+										required={isMember}
+									>
+										<input
+											name="nationality"
+											value={values.nationality || PartyDefaultNationality}
+											onChange={onInputChange}
+											readOnly={isReadonly}
+											disabled={isDetailsDisabled}
+											className={PartyManagementFieldClassName}
+										/>
+									</Field>
+								</div>
+							) : null}
+
+							{showMemberRegistrationDate ? (
+								<div className="grid gap-4 lg:grid-cols-3">
+									<Field
+										label="Member Registration Date"
+										error={errors.memberRegistrationDate}
+										required
+									>
+										<input
+											name="memberRegistrationDate"
+											type="date"
+											value={values.memberRegistrationDate}
+											onChange={onInputChange}
+											readOnly={isReadonly}
+											disabled={isDetailsDisabled}
+											className={PartyManagementFieldClassName}
+										/>
+									</Field>
+									<StatusField
+										error={errors.status}
+										isReadonly={isReadonly}
+										value={values.status}
+										onChange={onInputChange}
+									/>
+								</div>
+							) : null}
+
+							{showMemberRegistrationDate ? null : (
+								<div className="grid gap-4 lg:grid-cols-3">
+									<StatusField
+										error={errors.status}
+										isReadonly={isReadonly}
+										value={values.status}
+										onChange={onInputChange}
+									/>
+								</div>
+							)}
+						</div>
+					),
+				},
+				{
+					id: "contact-information",
+					label: "Contact Information",
+					badge: contactErrorCount,
+					content: (
+						<div className="grid gap-5">
+							<SectionHeading title="Contact Information" />
+							<div className="grid gap-4 lg:grid-cols-3">
 								<Field label="Email Address" error={errors.email}>
 									<input
 										name="email"
@@ -242,7 +384,7 @@ export function PartyInformationDetailsFields({
 										placeholder="name@example.com"
 									/>
 								</Field>
-								<Field label="Contact No." error={errors.contactNo}>
+								<Field label="Mobile Number" error={errors.contactNo}>
 									<input
 										name="contactNo"
 										type="tel"
@@ -264,46 +406,37 @@ export function PartyInformationDetailsFields({
 										placeholder={PhilippineContactNumberPlaceholder}
 									/>
 								</Field>
-							</div>
-							<div className="grid gap-4 lg:grid-cols-3">
-								<Field label="Status" error={errors.status} required>
-									<select
-										name="status"
-										disabled={isReadonly}
-										value={values.status}
+								<Field label="Landline" error={errors.landline}>
+									<input
+										name="landline"
+										type="tel"
+										value={values.landline}
 										onChange={onInputChange}
-										className={PartyManagementSelectClassName}
-									>
-										{PartyInformationStatusOptions.map((status) => (
-											<option key={status} value={status}>
-												{status}
-											</option>
-										))}
-									</select>
+										readOnly={isReadonly}
+										disabled={isDetailsDisabled}
+										maxLength={40}
+										className={PartyManagementFieldClassName}
+										placeholder="(02) 8123 4567"
+									/>
 								</Field>
 							</div>
+							<PartyAddressContainer
+								addresses={values.addresses}
+								disabled={isDetailsDisabled}
+								errors={errors}
+								partyTypes={values.partyTypes}
+								syncedAddressSources={syncedAddressSources}
+								onAddressInputChange={onAddressInputChange}
+								onCopyAddress={onCopyAddress}
+								onSelectBarangay={onSelectBarangay}
+								onSelectAutocompleteAddress={onSelectAutocompleteAddress}
+								onSyncAutocompleteAddressDetails={
+									onSyncAutocompleteAddressDetails
+								}
+								onSelectCityMunicipality={onSelectCityMunicipality}
+								onSelectProvince={onSelectProvince}
+							/>
 						</div>
-					),
-				},
-				{
-					id: "address",
-					label: "Address",
-					badge: addressErrorCount,
-					content: (
-						<PartyAddressContainer
-							addresses={values.addresses}
-							disabled={isDetailsDisabled}
-							errors={errors}
-							partyTypes={values.partyTypes}
-							onAddressInputChange={onAddressInputChange}
-							onSelectBarangay={onSelectBarangay}
-							onSelectAutocompleteAddress={onSelectAutocompleteAddress}
-							onSyncAutocompleteAddressDetails={
-								onSyncAutocompleteAddressDetails
-							}
-							onSelectCityMunicipality={onSelectCityMunicipality}
-							onSelectProvince={onSelectProvince}
-						/>
 					),
 				},
 				{
@@ -331,20 +464,16 @@ export function PartyInformationDetailsFields({
 									/>
 								</Field>
 								<Field label="VAT Registration Type">
-									<select
-										name="vatRegistrationType"
+									<AppAdvancedDropdown
 										disabled={isDetailsDisabled}
-										value={values.vatRegistrationType}
-										onChange={onInputChange}
-										className={PartyManagementSelectClassName}
-									>
-										<option value="">--Select VAT Type--</option>
-										{VatRegistrationTypeOptions.map((type) => (
-											<option key={type} value={type}>
-												{type}
-											</option>
-										))}
-									</select>
+										emptyMessage="No active tax maintenance records found."
+										options={taxMaintenanceOptions}
+										placeholder="Select VAT type"
+										searchPlaceholder="Search VAT type"
+										showSelectedDetails
+										value={values.vatRegistrationTypeId}
+										onChange={onSelectVatRegistrationType}
+									/>
 								</Field>
 								<Field label="BIR ATC Code" error={errors.atcCode}>
 									<AppAdvancedDropdown
@@ -530,6 +659,40 @@ function countErrors(
 	fields: Array<keyof PartyInformationFormErrors>,
 ) {
 	return fields.filter((field) => Boolean(errors[field])).length;
+}
+
+function getSingleSelectedValue(value: string | string[]) {
+	return Array.isArray(value) ? (value[0] ?? "") : value;
+}
+
+function StatusField({
+	error,
+	isReadonly,
+	value,
+	onChange,
+}: {
+	error?: string;
+	isReadonly: boolean;
+	value: PartyInformationFormValues["status"];
+	onChange: PartyInformationDetailsFieldsProps["onInputChange"];
+}) {
+	return (
+		<Field label="Status" error={error} required>
+			<select
+				name="status"
+				disabled={isReadonly}
+				value={value}
+				onChange={onChange}
+				className={PartyManagementSelectClassName}
+			>
+				{PartyInformationStatusOptions.map((status) => (
+					<option key={status} value={status}>
+						{status}
+					</option>
+				))}
+			</select>
+		</Field>
+	);
 }
 
 function SectionHeading({

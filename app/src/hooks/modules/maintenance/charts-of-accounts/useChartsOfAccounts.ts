@@ -234,7 +234,6 @@ export function useChartsOfAccounts() {
       ).map((column) => {
         const meta = {
           className: column.className ?? "",
-          ...(column.headerAlign ? { headerAlign: column.headerAlign } : {}),
         };
 
         if (!column.key) {
@@ -471,7 +470,6 @@ function createAccountColumn(
   header: string,
   meta: {
     className: string;
-    headerAlign?: "center" | "left";
   },
   size: number,
   enableSorting = true,

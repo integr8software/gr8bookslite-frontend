@@ -66,6 +66,7 @@ export function updateBankMasterfileFromForm(
 		seriesEnd: values.seriesEnd.trim(),
 		seriesDigits: values.seriesDigits.trim(),
 		accountName: buildBankMasterfileAccountName(values),
+		accountTitle: buildBankMasterfileAccountName(values),
 	};
 }
 

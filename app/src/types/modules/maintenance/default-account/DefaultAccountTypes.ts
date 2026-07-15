@@ -78,7 +78,6 @@ export type DefaultAccountTablePreferences = {
 
 export type DefaultAccountColumnMeta = {
 	className: string;
-	headerAlign?: "center" | "left";
 };
 
 export type DefaultAccountPermissions = {

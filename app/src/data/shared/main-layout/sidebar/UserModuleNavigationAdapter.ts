@@ -68,6 +68,7 @@ function getAccessKey(item: AuthUserModuleItem): MainAccessKey {
   if (item.key.includes("user")) return "maintenance.users";
   if (item.key.includes("audit")) return "maintenance.audit";
   if (item.key.includes("approval")) return "maintenance.approval";
+  if (item.key.includes("tax-maintenance")) return "maintenance.taxMaintenance";
   if (item.key.includes("warehouse")) return "maintenance.warehouse";
   if (item.key.includes("item")) return "maintenance.item";
   return SectionAccess[item.key] ?? SectionAccess[sectionKey] ?? "settings";

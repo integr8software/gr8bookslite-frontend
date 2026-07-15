@@ -143,23 +143,18 @@ export function useDefaultAccountTable(defaultAccounts: DefaultAccount[]) {
 	const columns = useMemo<ColumnDef<DefaultAccount>[]>(
 		() =>
 			DefaultAccountTableColumns.map((column) => {
-				const meta = {
-					className: column.className,
-					...("headerAlign" in column
-						? { headerAlign: column.headerAlign }
-						: {}),
-				};
-
 				if (!("key" in column)) {
 					return {
 						id: "actions",
 						header: column.label,
 						enableSorting: false,
-						meta: { ...meta, label: column.label },
+						meta: { className: column.className, label: column.label },
 					};
 				}
 
-				return createDefaultAccountColumn(column.key, column.label, meta);
+				return createDefaultAccountColumn(column.key, column.label, {
+					className: column.className,
+				});
 			}),
 		[],
 	);

@@ -51,13 +51,17 @@ function PartyManagementFormPageInner() {
 					isPartyCodeReadonly={page.isPartyCodeReadonly}
 					isReadonly={page.isReadonly}
 					partyTypeOptions={page.partyTypeOptions}
+					taxMaintenanceOptions={page.taxMaintenanceOptions}
 					termOptions={page.termOptions}
 					values={page.values}
+					syncedAddressSources={page.syncedAddressSources}
 					onAddressInputChange={page.handleAddressInputChange}
+					onCopyAddress={page.copyAddress}
 					onInputChange={page.handleInputChange}
 					onPartyTypesChange={page.handlePartyTypesChange}
 					onSelectBarangay={page.selectBarangay}
 					onSelectAtcCode={page.selectAtcCode}
+					onSelectVatRegistrationType={page.selectVatRegistrationType}
 					onSelectAutocompleteAddress={page.selectAutocompleteAddress}
 					onSyncAutocompleteAddressDetails={page.syncAutocompleteAddressDetails}
 					onSelectCityMunicipality={page.selectCityMunicipality}

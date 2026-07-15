@@ -2,29 +2,29 @@ import type { Header } from "@tanstack/react-table";
 
 type ModuleTableColumnMeta = {
 	className?: string;
-	headerAlign?: "center" | "left";
 };
 
 export function getColumnClassName<TData>(header: Header<TData, unknown>) {
-	return getColumnMeta(header).className;
+	return getColumnMetaClassName(header.column.columnDef.meta);
 }
 
 export function isColumnHeaderCentered<TData>(header: Header<TData, unknown>) {
-	return getColumnHeaderAlign(header.column.columnDef.meta) === "center";
+	return hasClassName(
+		getColumnMetaClassName(header.column.columnDef.meta),
+		"text-center",
+	);
 }
 
-export function getColumnHeaderAlign(meta: unknown) {
-	return getModuleTableColumnMeta(meta).headerAlign;
-}
-
-function getColumnMeta<TData>(
-	header: Header<TData, unknown>,
-): ModuleTableColumnMeta {
-	return getModuleTableColumnMeta(header.column.columnDef.meta);
+export function getColumnMetaClassName(meta: unknown) {
+	return getModuleTableColumnMeta(meta).className;
 }
 
 function getModuleTableColumnMeta(meta: unknown): ModuleTableColumnMeta {
 	return (meta ?? {}) as ModuleTableColumnMeta;
+}
+
+function hasClassName(className: string | undefined, targetClassName: string) {
+	return className?.split(/\s+/).includes(targetClassName) ?? false;
 }
 
 export function getVisiblePaginationPages(

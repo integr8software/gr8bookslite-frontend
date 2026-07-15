@@ -23,6 +23,7 @@ export const MODULE_ROUTE_MAP = {
   TM: "/maintenance/term-management",
   PT: "/maintenance/payment-type",
   RC: "/maintenance/responsibility-center",
+  TXM: "/maintenance/tax-maintenance",
   OR: "/cash-receipt/official-receipt",
   CR: "/cash-receipt/collection-receipt",
   AR: "/cash-receipt/acknowledgement-receipt",

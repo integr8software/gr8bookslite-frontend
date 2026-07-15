@@ -96,6 +96,8 @@ function mapApiBank(bank: ApiBank): BankMasterfile {
 	return {
 		id: bank.id,
 		accountCode: bank.accountCode,
+		accountTitle:
+			bank.chartAccount?.accountTitle ?? bank.accountTitle ?? bank.accountName,
 		bankName: bank.bankName,
 		branch: bank.branch ?? "",
 		accountNumber: bank.accountNumber,

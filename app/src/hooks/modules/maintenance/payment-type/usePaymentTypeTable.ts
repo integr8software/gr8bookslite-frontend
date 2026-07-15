@@ -39,7 +39,7 @@ const DefaultColumnVisibility: VisibilityState = {
 	updatedBy: false,
 	updatedAt: false,
 };
-const DefaultSorting: SortingState = [{ id: "paymentType", desc: false }];
+const DefaultSorting: SortingState = [];
 
 type PaymentTypeTablePreferences = {
 	columnOrder: ColumnOrderState;

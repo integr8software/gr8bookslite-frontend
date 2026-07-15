@@ -34,16 +34,16 @@ export const BankMasterfileTableColumns = [
 	{ key: "bankName", label: "Bank", className: "w-[16%]" },
 	{ key: "branch", label: "Branch", className: "w-[16%]" },
 	{ key: "accountNumber", label: "Account Number", className: "w-[16%]" },
-	{ key: "accountName", label: "Account Title", className: "w-[26%]" },
 	{ key: "accountCode", label: "Account Code", className: "w-[13%]" },
-	{ key: "currencyCode", label: "Currency", className: "w-[10%]", headerAlign: "center" },
-	{ key: "isDefault", label: "Default", className: "w-[10%]", headerAlign: "center" },
-	{ key: "status", label: "Status", className: "w-[11%]", headerAlign: "center" },
+	{ key: "accountTitle", label: "Account Title", className: "w-[26%]" },
+	{ key: "currencyCode", label: "Currency", className: "w-[10%] text-center" },
+	{ key: "isDefault", label: "Default", className: "w-[10%] text-center" },
+	{ key: "status", label: "Status", className: "w-[11%] text-center" },
 	{ key: "createdBy", label: "Created By", className: "w-[14%]" },
 	{ key: "createdAt", label: "Date Created", className: "w-[16%]" },
 	{ key: "updatedBy", label: "Updated By", className: "w-[14%]" },
 	{ key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
-	{ label: "Action", className: "w-[16%] text-center", headerAlign: "center" },
+	{ label: "Action", className: "w-[16%] text-center" },
 ] as const;
 
 export const BankMasterfileStatusOptions = [

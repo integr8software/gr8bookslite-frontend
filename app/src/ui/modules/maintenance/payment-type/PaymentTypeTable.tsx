@@ -22,6 +22,7 @@ export function PaymentTypeTable({
 	typeFilterOptions,
 	onEdit,
 	onRefresh,
+	onReorder,
 	onSearchTermChange,
 	onStatusFilterChange,
 	onToggleStatus,
@@ -72,7 +73,11 @@ export function PaymentTypeTable({
 						key={row.id}
 						row={row}
 						permissions={permissions}
+						visiblePaymentTypeIds={filteredPaymentTypes.map(
+							(paymentType) => paymentType.id,
+						)}
 						onEdit={onEdit}
+						onReorder={onReorder}
 						onToggleStatus={onToggleStatus}
 						onView={onView}
 					/>

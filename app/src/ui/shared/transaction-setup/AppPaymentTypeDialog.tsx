@@ -64,6 +64,17 @@ const fieldClassName =
 const accentPrimaryButtonClassName =
   "theme-accent-contrast-text inline-flex items-center justify-center gap-2 rounded-lg bg-skyblue px-4 text-sm font-semibold transition hover:bg-skyblue/85";
 
+function createEmptyDraft(records: PaymentTypeRecord[]): PaymentTypeDraft {
+  return {
+    ...EmptyDraft,
+    sortOrder: String(getNextPaymentTypeSortOrder(records)),
+  };
+}
+
+function getNextPaymentTypeSortOrder(records: PaymentTypeRecord[]) {
+  return Math.max(0, ...records.map((record) => record.sortOrder)) + 10;
+}
+
 export function AppPaymentTypeDialog({
   isOpen,
   isLoading = false,
@@ -78,12 +89,14 @@ export function AppPaymentTypeDialog({
   const [typeFilter, setTypeFilter] = useState<PaymentTypeFilterType>("");
   const [statusFilter, setStatusFilter] =
     useState<PaymentTypeFilterStatus>("Active");
-  const [sortBy, setSortBy] = useState<PaymentTypeSortKey>("paymentType");
+  const [sortBy, setSortBy] = useState<PaymentTypeSortKey>("sortOrder");
   const [sortDirection, setSortDirection] =
     useState<PaymentTypeSortDirection>("asc");
   const [mode, setMode] = useState<PaymentTypeDialogMode>("list");
   const [activeRecordId, setActiveRecordId] = useState<string | null>(null);
-  const [draft, setDraft] = useState<PaymentTypeDraft>(EmptyDraft);
+  const [draft, setDraft] = useState<PaymentTypeDraft>(() =>
+    createEmptyDraft(records),
+  );
   const [formErrors, setFormErrors] = useState<PaymentTypeFormErrors>({});
   const [formSubmitError, setFormSubmitError] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
@@ -98,11 +111,11 @@ export function AppPaymentTypeDialog({
     setQuery("");
     setTypeFilter("");
     setStatusFilter("Active");
-    setSortBy("paymentType");
+    setSortBy("sortOrder");
     setSortDirection("asc");
     setMode("list");
     setActiveRecordId(null);
-    setDraft(EmptyDraft);
+    setDraft(createEmptyDraft(records));
     setFormErrors({});
     setFormSubmitError("");
     setPageIndex(0);
@@ -160,6 +173,7 @@ export function AppPaymentTypeDialog({
     setDraft({
       description: record.description,
       paymentType: record.paymentType,
+      sortOrder: String(record.sortOrder),
       type: record.type,
       status: record.status,
     });
@@ -222,7 +236,7 @@ export function AppPaymentTypeDialog({
     }
 
     setMode("list");
-    setDraft(EmptyDraft);
+    setDraft(createEmptyDraft(records));
     setActiveRecordId(null);
     setFormErrors({});
     setFormSubmitError("");
@@ -284,7 +298,7 @@ export function AppPaymentTypeDialog({
             totalPages={totalPages}
             typeFilter={typeFilter}
             onAdd={() => {
-              setDraft(EmptyDraft);
+              setDraft(createEmptyDraft(records));
               setActiveRecordId(null);
               setFormErrors({});
               setFormSubmitError("");
@@ -317,6 +331,7 @@ export function AppPaymentTypeDialog({
               }, {
                 description: record.description,
                 paymentType: record.paymentType,
+                sortOrder: String(record.sortOrder),
                 status: nextStatus,
                 type: record.type,
               });
@@ -491,7 +506,16 @@ function PaymentTypeListView({
           <table className="w-full min-w-[760px] border-collapse text-left">
             <thead className="bg-darknavy/[0.03] text-xs font-semibold uppercase text-darknavy/45">
               <tr>
-                <th className="w-[36%] px-4 py-3">
+                <th className="w-[12%] px-4 py-3">
+                  <SortHeader
+                    label="Order"
+                    sortKey="sortOrder"
+                    activeSortKey={sortBy}
+                    direction={sortDirection}
+                    onSortChange={onSortChange}
+                  />
+                </th>
+                <th className="w-[30%] px-4 py-3">
                   <SortHeader
                     label="Name"
                     sortKey="paymentType"
@@ -518,14 +542,14 @@ function PaymentTypeListView({
                     onSortChange={onSortChange}
                   />
                 </th>
-                <th className="w-[26%] px-4 py-3 text-center">Actions</th>
+                <th className="w-[20%] px-4 py-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-12 text-center text-sm text-darknavy/55"
                   >
                     Loading payment types...
@@ -537,6 +561,9 @@ function PaymentTypeListView({
                     key={record.id}
                     className="h-16 border-t border-darknavy/8 transition hover:bg-skyblue/5"
                   >
+                    <td className="px-4 py-3 align-middle text-sm font-semibold text-darknavy/65">
+                      {record.sortOrder}
+                    </td>
                     <td className="px-4 py-3 align-middle text-sm font-semibold text-darknavy">
                       {record.paymentType}
                     </td>
@@ -560,7 +587,7 @@ function PaymentTypeListView({
               ) : (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-12 text-center text-sm text-darknavy/55"
                   >
                     No payment types matched the current filter.
@@ -654,6 +681,7 @@ function PaymentTypeFormView({
   const isReadonly = mode === "view";
   const nameInputId = "payment-type-dialog-name";
   const descriptionInputId = "payment-type-dialog-description";
+  const sortOrderInputId = "payment-type-dialog-sort-order";
   const typeInputId = "payment-type-dialog-category";
   const statusInputId = "payment-type-dialog-status";
 
@@ -685,6 +713,40 @@ function PaymentTypeFormView({
                 className="text-xs font-semibold text-coralpink"
               >
                 {errors.paymentType}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="grid gap-2">
+            <label
+              htmlFor={sortOrderInputId}
+              className="text-sm font-semibold text-darknavy"
+            >
+              Order
+              <span className="ml-1 text-coralpink">*</span>
+            </label>
+            <input
+              id={sortOrderInputId}
+              type="number"
+              min={0}
+              step={1}
+              value={draft.sortOrder}
+              readOnly={isReadonly}
+              onChange={(event) =>
+                onDraftFieldChange("sortOrder", event.target.value)
+              }
+              aria-invalid={Boolean(errors.sortOrder)}
+              aria-describedby={
+                errors.sortOrder ? `${sortOrderInputId}-error` : undefined
+              }
+              className={fieldClassName}
+            />
+            {errors.sortOrder ? (
+              <span
+                id={`${sortOrderInputId}-error`}
+                className="text-xs font-semibold text-coralpink"
+              >
+                {errors.sortOrder}
               </span>
             ) : null}
           </div>

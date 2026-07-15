@@ -41,12 +41,12 @@ export const ResponsibilityCenterTableColumns = [
 	{
 		key: "financialType",
 		label: "Classification",
-		className: "w-[12rem]",
+		className: "w-[12rem] text-center",
 	},
 	{
 		key: "category",
 		label: "Type",
-		className: "w-[11rem]",
+		className: "w-[11rem] text-center",
 	},
 	{
 		key: "parentId",
@@ -61,7 +61,7 @@ export const ResponsibilityCenterTableColumns = [
 	{
 		key: "status",
 		label: "Status",
-		className: "w-[9rem]",
+		className: "w-[9rem] text-center",
 	},
 	{
 		key: "createdBy",

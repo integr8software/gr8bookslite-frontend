@@ -14,6 +14,9 @@ export function usePaymentTypeListPage() {
 	const paymentTypes = usePaymentTypeStore((state) => state.paymentTypes);
 	const addPaymentTypes = usePaymentTypeStore((state) => state.addPaymentTypes);
 	const updatePaymentType = usePaymentTypeStore((state) => state.updatePaymentType);
+	const reorderPaymentTypes = usePaymentTypeStore(
+		(state) => state.reorderPaymentTypes,
+	);
 	const isLoading = usePaymentTypeStore((state) => state.isLoading);
 	const isRefreshing = usePaymentTypeStore((state) => state.isRefreshing);
 	const lastSyncedAt = usePaymentTypeStore((state) => state.lastSyncedAt);
@@ -34,17 +37,23 @@ export function usePaymentTypeListPage() {
 	const filteredPaymentTypes = useMemo(() => {
 		const normalizedSearch = normalizeLowercaseText(searchTerm);
 
-		return paymentTypes.filter((paymentType) => {
-			const matchesSearch =
-				normalizedSearch.length === 0 ||
-				paymentType.paymentType.toLowerCase().includes(normalizedSearch) ||
-				paymentType.type.toLowerCase().includes(normalizedSearch);
-			const matchesType = !typeFilter || paymentType.type === typeFilter;
-			const matchesStatus =
-				!statusFilter || paymentType.status === statusFilter;
+		return paymentTypes
+			.filter((paymentType) => {
+				const matchesSearch =
+					normalizedSearch.length === 0 ||
+					paymentType.paymentType.toLowerCase().includes(normalizedSearch) ||
+					paymentType.type.toLowerCase().includes(normalizedSearch);
+				const matchesType = !typeFilter || paymentType.type === typeFilter;
+				const matchesStatus =
+					!statusFilter || paymentType.status === statusFilter;
 
-			return matchesSearch && matchesType && matchesStatus;
-		});
+				return matchesSearch && matchesType && matchesStatus;
+			})
+			.sort((left, right) =>
+				left.sortOrder === right.sortOrder
+					? left.paymentType.localeCompare(right.paymentType)
+					: left.sortOrder - right.sortOrder,
+			);
 	}, [paymentTypes, searchTerm, statusFilter, typeFilter]);
 
 	function resetFilters() {
@@ -67,6 +76,53 @@ export function usePaymentTypeListPage() {
 		}).catch(() => undefined);
 	}
 
+	function reorderPaymentType(
+		draggedPaymentTypeId: string,
+		targetPaymentTypeId: string,
+		placement: "before" | "after",
+	) {
+		const draggedIndex = filteredPaymentTypes.findIndex(
+			(paymentType) => paymentType.id === draggedPaymentTypeId,
+		);
+		const targetIndex = filteredPaymentTypes.findIndex(
+			(paymentType) => paymentType.id === targetPaymentTypeId,
+		);
+
+		if (draggedIndex < 0 || targetIndex < 0 || draggedIndex === targetIndex) {
+			return;
+		}
+
+		const nextPaymentTypes = [...filteredPaymentTypes];
+		const [draggedPaymentType] = nextPaymentTypes.splice(draggedIndex, 1);
+
+		if (!draggedPaymentType) {
+			return;
+		}
+
+		const adjustedTargetIndex = nextPaymentTypes.findIndex(
+			(paymentType) => paymentType.id === targetPaymentTypeId,
+		);
+		const insertIndex =
+			placement === "after" ? adjustedTargetIndex + 1 : adjustedTargetIndex;
+
+		nextPaymentTypes.splice(insertIndex, 0, draggedPaymentType);
+
+		const changedPaymentTypes = nextPaymentTypes
+			.map((paymentType, index) => ({
+				...paymentType,
+				sortOrder: (index + 1) * 10,
+			}))
+			.filter(
+				(paymentType) =>
+					paymentTypes.find((current) => current.id === paymentType.id)
+						?.sortOrder !== paymentType.sortOrder,
+			);
+
+		if (changedPaymentTypes.length > 0) {
+			void reorderPaymentTypes(changedPaymentTypes).catch(() => undefined);
+		}
+	}
+
 	return {
 		confirmPaymentTypeStatusChange,
 		addPaymentTypes,
@@ -79,6 +135,7 @@ export function usePaymentTypeListPage() {
 		pendingStatusPaymentType,
 		permissions,
 		refreshPaymentTypes,
+		reorderPaymentType,
 		resetFilters,
 		searchTerm,
 		setPendingStatusPaymentType,

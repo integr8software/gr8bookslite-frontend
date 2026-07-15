@@ -10,13 +10,16 @@ import {
 	PartyManagementDrawerPrimaryActionClassName,
 	PartyManagementDrawerFormId,
 	PartyManagementDrawerSecondaryActionClassName,
+	PartyDefaultNationality,
 	PartyTypeOptions,
+	VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
 	PartyInformationInitialFormValues,
 	applyPartyDefaultAccountingAccounts,
 	clearAddressRolesForPartyTypes,
 	createPartyInformationRecord,
+	hasPersonalInformationPartyType,
 	isKnownPartyType,
 	normalizePartyTypesForClassification,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
@@ -24,6 +27,7 @@ import { FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/Con
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
 import { useTermDropdownOptions } from "@/app/src/hooks/modules/maintenance/term-management/useTermDropdownOptions";
+import { useTaxMaintenanceOptions } from "@/app/src/hooks/modules/maintenance/tax-maintenance/useTaxMaintenanceOptions";
 import { usePartyManagementAccountOptions } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagementAccountOptions";
 import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetup";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
@@ -39,11 +43,13 @@ import type {
 	PartyInformationFormValues,
 	PartyInformationRecord,
 	PartyManagementDrawerProps,
+	PartyType,
 	PartyProvinceOption,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
+import { todayDateValue } from "@/app/src/utils/date.util";
 import type {
 	AddressAutocompleteDetails,
 	AddressAutocompleteItem,
@@ -63,9 +69,13 @@ export function PartyManagementDrawer({
 	const [values, setValues] = useState<PartyInformationFormValues>(() =>
 		createPartyDrawerInitialValues(records),
 	);
+	const [syncedAddressSources, setSyncedAddressSources] = useState<
+		Record<string, string>
+	>({});
 	const activeBranchId = useAppStore((state) => state.activeBranchId);
 	const partyAccountOptions = usePartyManagementAccountOptions();
 	const termDropdown = useTermDropdownOptions();
+	const taxMaintenanceDropdown = useTaxMaintenanceOptions();
 	const transactionNumberSetup = useTransactionNumberSetupStore();
 	const [errors, setErrors] = useState<PartyInformationFormErrors>({});
 	const activeAddress =
@@ -140,6 +150,10 @@ export function PartyManagementDrawer({
 					middleName: "",
 					lastName: "",
 					suffixName: "",
+					honorific: "",
+					gender: "",
+					civilStatus: "",
+					nationality: "",
 					atcCode: "",
 					addresses: clearAddressRolesForPartyTypes(
 						current.addresses,
@@ -172,14 +186,19 @@ export function PartyManagementDrawer({
 			return;
 		}
 
-		setValues((current) => ({
-			...current,
-			addresses: current.addresses.map((address) =>
-				address.id === (addressId ?? current.activeAddressId)
+		setValues((current) => {
+			const targetAddressId = addressId ?? current.activeAddressId;
+			const addresses = current.addresses.map((address) =>
+				address.id === targetAddressId
 					? { ...address, [field]: value }
 					: address,
-			),
-		}));
+			);
+
+			return {
+				...current,
+				addresses: applySyncedAddressValues(addresses, syncedAddressSources),
+			};
+		});
 		if (field === "addressLine1" || field === "addressLine2") {
 			setErrors((current) => ({ ...current, [field]: undefined }));
 		}
@@ -207,6 +226,54 @@ export function PartyManagementDrawer({
 		);
 	}
 
+	function copyAddress(sourceAddressId: string, targetAddressId: string) {
+		if (!isClassificationSelected) {
+			return;
+		}
+
+		if (!sourceAddressId) {
+			setSyncedAddressSources((current) =>
+				removeSyncedAddressSource(current, targetAddressId),
+			);
+			return;
+		}
+
+		if (sourceAddressId === targetAddressId) {
+			return;
+		}
+
+		setSyncedAddressSources((current) =>
+			createSyncedAddressSources(current, sourceAddressId, targetAddressId),
+		);
+		setValues((current) => {
+			const nextSyncedAddressSources = createSyncedAddressSources(
+				syncedAddressSources,
+				sourceAddressId,
+				targetAddressId,
+			);
+
+			return {
+				...current,
+				addresses: applySyncedAddressValues(
+					copyAddressValues(
+						current.addresses,
+						sourceAddressId,
+						targetAddressId,
+					),
+					nextSyncedAddressSources,
+				),
+			};
+		});
+		clearAddressErrors([
+			"addressLine1",
+			"addressLine2",
+			"regionCode",
+			"provinceCode",
+			"cityMunicipalityCode",
+			"barangayCode",
+		]);
+	}
+
 	function handlePartyTypesChange(value: string | string[]) {
 		if (!isClassificationSelected) {
 			return;
@@ -225,6 +292,13 @@ export function PartyManagementDrawer({
 			return {
 				...current,
 				partyTypes,
+				nationality:
+					hasPersonalInformationPartyType(partyTypes) && !current.nationality
+						? PartyDefaultNationality
+						: current.nationality,
+				memberRegistrationDate: partyTypes.includes("Member")
+					? current.memberRegistrationDate || todayDateValue()
+					: "",
 				addresses: clearAddressRolesForPartyTypes(
 					current.addresses,
 					partyTypes,
@@ -253,6 +327,32 @@ export function PartyManagementDrawer({
 		setErrors((current) => ({ ...current, atcCode: undefined }));
 	}
 
+	function selectVatRegistrationType(value: string | string[]) {
+		if (!isClassificationSelected) {
+			return;
+		}
+
+		const taxId = getSingleSelectedValue(value);
+		const tax = taxMaintenanceDropdown.taxes.find(
+			(currentTax) => currentTax.id === taxId,
+		);
+		const legacyVatRegistrationType =
+			VatRegistrationTypeOptions.find((option) => option === tax?.name) ?? "";
+
+		setValues((current) => ({
+			...current,
+			vatRegistrationTypeId: taxId,
+			vatRegistrationType: legacyVatRegistrationType,
+			vatRegistration: tax
+				? {
+						id: tax.id,
+						name: tax.name,
+						percentage: Number(tax.percentage),
+					}
+				: null,
+		}));
+	}
+
 	function selectProvince(
 		value: string | string[],
 		addressId?: string,
@@ -267,10 +367,10 @@ export function PartyManagementDrawer({
 			(province) => province.value === code,
 		);
 
-		setValues((current) => ({
-			...current,
-			addresses: current.addresses.map((address) =>
-				address.id === (addressId ?? current.activeAddressId)
+		setValues((current) => {
+			const targetAddressId = addressId ?? current.activeAddressId;
+			const addresses = current.addresses.map((address) =>
+				address.id === targetAddressId
 					? {
 						...address,
 						barangay: "",
@@ -283,8 +383,13 @@ export function PartyManagementDrawer({
 						regionCode: option?.regionCode ?? "",
 					}
 					: address,
-			),
-		}));
+			);
+
+			return {
+				...current,
+				addresses: applySyncedAddressValues(addresses, syncedAddressSources),
+			};
+		});
 		clearAddressErrors([
 			"regionCode",
 			"provinceCode",
@@ -302,10 +407,10 @@ export function PartyManagementDrawer({
 			return;
 		}
 
-		setValues((current) => ({
-			...current,
-			addresses: current.addresses.map((currentAddress) =>
-				currentAddress.id === (addressId ?? current.activeAddressId)
+		setValues((current) => {
+			const targetAddressId = addressId ?? current.activeAddressId;
+			const addresses = current.addresses.map((currentAddress) =>
+				currentAddress.id === targetAddressId
 					? {
 						...currentAddress,
 						addressLine1:
@@ -322,8 +427,13 @@ export function PartyManagementDrawer({
 						regionCode: address.region.code,
 					}
 					: currentAddress,
-			),
-		}));
+			);
+
+			return {
+				...current,
+				addresses: applySyncedAddressValues(addresses, syncedAddressSources),
+			};
+		});
 		clearAddressErrors([
 			"addressLine1",
 			"addressLine2",
@@ -342,18 +452,23 @@ export function PartyManagementDrawer({
 			return;
 		}
 
-		setValues((current) => ({
-			...current,
-			addresses: current.addresses.map((currentAddress) =>
-				currentAddress.id === (addressId ?? current.activeAddressId)
+		setValues((current) => {
+			const targetAddressId = addressId ?? current.activeAddressId;
+			const addresses = current.addresses.map((currentAddress) =>
+				currentAddress.id === targetAddressId
 					? {
 						...currentAddress,
 						addressLine1: details.addressLine1 ?? currentAddress.addressLine1,
 						addressLine2: details.addressLine2 ?? currentAddress.addressLine2,
 					}
 					: currentAddress,
-			),
-		}));
+			);
+
+			return {
+				...current,
+				addresses: applySyncedAddressValues(addresses, syncedAddressSources),
+			};
+		});
 		clearAddressErrors(["addressLine1", "addressLine2"]);
 	}
 
@@ -371,10 +486,10 @@ export function PartyManagementDrawer({
 			(cityMunicipality) => cityMunicipality.value === code,
 		);
 
-		setValues((current) => ({
-			...current,
-			addresses: current.addresses.map((address) =>
-				address.id === (addressId ?? current.activeAddressId)
+		setValues((current) => {
+			const targetAddressId = addressId ?? current.activeAddressId;
+			const addresses = current.addresses.map((address) =>
+				address.id === targetAddressId
 					? {
 						...address,
 						barangay: "",
@@ -383,8 +498,13 @@ export function PartyManagementDrawer({
 						cityMunicipalityCode: code,
 					}
 					: address,
-			),
-		}));
+			);
+
+			return {
+				...current,
+				addresses: applySyncedAddressValues(addresses, syncedAddressSources),
+			};
+		});
 		clearAddressErrors(["cityMunicipalityCode", "barangayCode"]);
 	}
 
@@ -402,18 +522,23 @@ export function PartyManagementDrawer({
 			(barangay) => barangay.value === code,
 		);
 
-		setValues((current) => ({
-			...current,
-			addresses: current.addresses.map((address) =>
-				address.id === (addressId ?? current.activeAddressId)
+		setValues((current) => {
+			const targetAddressId = addressId ?? current.activeAddressId;
+			const addresses = current.addresses.map((address) =>
+				address.id === targetAddressId
 					? {
 						...address,
 						barangay: option?.name ?? "",
 						barangayCode: code,
 					}
 					: address,
-			),
-		}));
+			);
+
+			return {
+				...current,
+				addresses: applySyncedAddressValues(addresses, syncedAddressSources),
+			};
+		});
 		clearAddressErrors(["barangayCode"]);
 	}
 
@@ -493,13 +618,17 @@ export function PartyManagementDrawer({
 					isPartyCodeReadonly={isAutoPartyCode}
 					isReadonly={false}
 					partyTypeOptions={PartyTypeOptions}
+					taxMaintenanceOptions={taxMaintenanceDropdown.options}
 					termOptions={termDropdown.options}
 					values={effectiveValues}
+					syncedAddressSources={syncedAddressSources}
 					onAddressInputChange={handleAddressInputChange}
+					onCopyAddress={copyAddress}
 					onInputChange={handleInputChange}
 					onPartyTypesChange={handlePartyTypesChange}
 					onSelectBarangay={selectBarangay}
 					onSelectAtcCode={selectAtcCode}
+					onSelectVatRegistrationType={selectVatRegistrationType}
 					onSelectAutocompleteAddress={selectAutocompleteAddress}
 					onSyncAutocompleteAddressDetails={syncAutocompleteAddressDetails}
 					onSelectCityMunicipality={selectCityMunicipality}
@@ -534,7 +663,75 @@ function createNextPartyCode(records: PartyInformationRecord[]) {
 	return `PTY-${nextNumber.toString().padStart(4, "0")}`;
 }
 
+function copyAddressValues(
+	addresses: PartyAddress[],
+	sourceAddressId: string,
+	targetAddressId: string,
+) {
+	const sourceAddress = addresses.find((address) => address.id === sourceAddressId);
+
+	if (!sourceAddress) {
+		return addresses;
+	}
+
+	return addresses.map((address) => {
+		if (address.id !== targetAddressId) {
+			return address;
+		}
+
+		return {
+			...address,
+			addressLine1: sourceAddress.addressLine1,
+			addressLine2: sourceAddress.addressLine2,
+			barangay: sourceAddress.barangay,
+			barangayCode: sourceAddress.barangayCode,
+			cityMunicipality: sourceAddress.cityMunicipality,
+			cityMunicipalityCode: sourceAddress.cityMunicipalityCode,
+			isForeign: sourceAddress.isForeign,
+			province: sourceAddress.province,
+			provinceCode: sourceAddress.provinceCode,
+			region: sourceAddress.region,
+			regionCode: sourceAddress.regionCode,
+		};
+	});
+}
+
+function createSyncedAddressSources(
+	current: Record<string, string>,
+	sourceAddressId: string,
+	targetAddressId: string,
+) {
+	return Object.fromEntries(
+		Object.entries({
+			...current,
+			[targetAddressId]: sourceAddressId,
+		}).filter(
+			([targetId, sourceId]) =>
+				targetId !== sourceAddressId && sourceId !== targetAddressId,
+		),
+	);
+}
+
+function removeSyncedAddressSource(
+	current: Record<string, string>,
+	targetAddressId: string,
+) {
+	return Object.fromEntries(
+		Object.entries(current).filter(([addressId]) => addressId !== targetAddressId),
+	);
+}
+
+function applySyncedAddressValues(
+	addresses: PartyAddress[],
+	syncedAddressSources: Record<string, string>,
+) {
+	return Object.entries(syncedAddressSources).reduce(
+		(currentAddresses, [targetAddressId, sourceAddressId]) =>
+			copyAddressValues(currentAddresses, sourceAddressId, targetAddressId),
+		addresses,
+	);
+}
+
 function getSingleSelectedValue(value: string | string[]) {
 	return Array.isArray(value) ? (value[0] ?? "") : value;
 }
-

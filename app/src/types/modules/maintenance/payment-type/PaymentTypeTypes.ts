@@ -8,7 +8,7 @@ export type PaymentTypeStatus = "Active" | "Inactive";
 export type PaymentTypeClassification = DisbursementPaymentClassification;
 export type PaymentTypeStatusFilter = "" | PaymentTypeStatus;
 export type PaymentTypeClassificationFilter = "" | PaymentTypeClassification;
-export type PaymentTypeSortKey = "paymentType" | "type" | "status";
+export type PaymentTypeSortKey = "paymentType" | "sortOrder" | "type" | "status";
 
 export type PaymentTypeListParams = {
 	search?: string;
@@ -20,11 +20,10 @@ export type PaymentTypeListParams = {
 
 export type ApiPaymentTypeClassification =
 	| "CASH"
-	| "WITH_BANK"
 	| "BANK_TRANSFER"
-	| "ONLINE_PAYMENT"
-	| "MULTIPLE_CHECK"
-	| "DEBIT";
+	| "CHECK"
+	| "DIGITAL_WALLET"
+	| "NON_CASH_SETTLEMENT";
 
 export type ApiPaymentTypeStatus = "ACTIVE" | "INACTIVE";
 
@@ -33,6 +32,7 @@ export type ApiPaymentType = {
 	name: string;
 	description: string | null;
 	classification: ApiPaymentTypeClassification;
+	sortOrder: number;
 	status: ApiPaymentTypeStatus;
 	createdBy: string | null;
 	createdAt: string;
@@ -44,6 +44,7 @@ export type PaymentTypeRecord = {
 	description: string;
 	id: string;
 	paymentType: DisbursementPaymentMethod;
+	sortOrder: number;
 	type: PaymentTypeClassification;
 	status: PaymentTypeStatus;
 	createdBy?: string | null;
@@ -55,6 +56,7 @@ export type PaymentTypeRecord = {
 export type PaymentTypeFormValues = {
 	description: string;
 	paymentType: string;
+	sortOrder: string;
 	type: PaymentTypeClassification | "";
 	status: PaymentTypeStatus;
 };
@@ -91,6 +93,11 @@ export type PaymentTypeTableProps = {
 	typeFilterOptions: PaymentTypeClassification[];
 	onEdit: (paymentType: PaymentTypeRecord) => void;
 	onRefresh: () => void;
+	onReorder: (
+		draggedPaymentTypeId: string,
+		targetPaymentTypeId: string,
+		placement: "before" | "after",
+	) => void;
 	onSearchTermChange: (value: string) => void;
 	onStatusFilterChange: (value: PaymentTypeStatusFilter) => void;
 	onToggleStatus: (paymentType: PaymentTypeRecord) => void;
@@ -101,7 +108,13 @@ export type PaymentTypeTableProps = {
 export type PaymentTypeTableRowProps = {
 	row: Row<PaymentTypeRecord>;
 	permissions: PaymentTypePermissions;
+	visiblePaymentTypeIds: string[];
 	onEdit: (paymentType: PaymentTypeRecord) => void;
+	onReorder: (
+		draggedPaymentTypeId: string,
+		targetPaymentTypeId: string,
+		placement: "before" | "after",
+	) => void;
 	onToggleStatus: (paymentType: PaymentTypeRecord) => void;
 	onView: (paymentType: PaymentTypeRecord) => void;
 };
@@ -129,11 +142,10 @@ export type PaymentTypeStatistics = {
 	activePaymentTypes: number;
 	inactivePaymentTypes: number;
 	cashPaymentTypes: number;
-	withBankPaymentTypes: number;
 	bankTransferPaymentTypes: number;
-	onlinePaymentTypes: number;
-	multipleCheckPaymentTypes: number;
-	debitPaymentTypes: number;
+	checkPaymentTypes: number;
+	digitalWalletPaymentTypes: number;
+	nonCashSettlementPaymentTypes: number;
 };
 
 export type PaymentTypeListResponse = {

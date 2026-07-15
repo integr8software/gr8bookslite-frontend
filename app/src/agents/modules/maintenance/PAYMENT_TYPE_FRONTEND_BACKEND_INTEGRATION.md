@@ -34,7 +34,8 @@ Default payment types seeded per company:
 | --- | --- | --- | --- |
 | Cash | Cash | Active | Cash payment without additional bank details. |
 | Check | With Bank | Active | Bank-issued check payment requiring bank and check details. |
-| Bank Transfer | Bank Transfer | Active | Transfer from one bank account to a recipient bank account. |
+| Bank Transfer within Company | Bank Transfer | Active | Transfer between bank accounts within the same company. |
+| Bank Transfer for Another Company | Bank Transfer | Active | Transfer from a company bank account to another company. |
 | Debit Memo | Debit | Active | Debit memo payment requiring bank and debit memo details. |
 | Manager's Check | Multiple Check | Active | Bank-issued manager's check payment. |
 | InstaPay | Online Payment | Active | Real-time bank transfer through InstaPay. |
@@ -283,12 +284,12 @@ List response:
     }
   ],
   "statistics": {
-    "totalPaymentTypes": 8,
-    "activePaymentTypes": 8,
+    "totalPaymentTypes": 9,
+    "activePaymentTypes": 9,
     "inactivePaymentTypes": 0,
     "cashPaymentTypes": 1,
     "withBankPaymentTypes": 1,
-    "bankTransferPaymentTypes": 1,
+    "bankTransferPaymentTypes": 2,
     "onlinePaymentTypes": 3,
     "multipleCheckPaymentTypes": 1,
     "debitPaymentTypes": 1
@@ -296,7 +297,7 @@ List response:
   "pagination": {
     "page": 1,
     "limit": 500,
-    "total": 8,
+    "total": 9,
     "totalPages": 1
   },
   "permissions": {

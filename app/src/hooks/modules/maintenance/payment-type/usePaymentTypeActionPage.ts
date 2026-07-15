@@ -26,13 +26,17 @@ export function usePaymentTypeActionPage({
 	onSaved: () => void;
 }) {
 	const addPaymentType = usePaymentTypeStore((state) => state.addPaymentType);
+	const paymentTypes = usePaymentTypeStore((state) => state.paymentTypes);
 	const updatePaymentType = usePaymentTypeStore((state) => state.updatePaymentType);
 	const isMutating = usePaymentTypeStore((state) => state.isMutating);
 	const isReadonly = mode === "view";
 	const [values, setValues] = useState<PaymentTypeFormValues>(() =>
 		existingPaymentType
 			? createPaymentTypeFormValues(existingPaymentType)
-			: PaymentTypeInitialFormValues,
+			: {
+					...PaymentTypeInitialFormValues,
+					sortOrder: String(getNextPaymentTypeSortOrder(paymentTypes)),
+				},
 	);
 	const [errors, setErrors] = useState<PaymentTypeFormErrors>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,4 +96,10 @@ export function usePaymentTypeActionPage({
 		isSubmitting: isSubmitting || isMutating,
 		values,
 	};
+}
+
+function getNextPaymentTypeSortOrder(paymentTypes: PaymentTypeRecord[]) {
+	return (
+		Math.max(0, ...paymentTypes.map((paymentType) => paymentType.sortOrder)) + 10
+	);
 }

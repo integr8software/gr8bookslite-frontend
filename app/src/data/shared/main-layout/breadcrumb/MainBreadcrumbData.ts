@@ -24,11 +24,15 @@ export const MainBreadcrumbDropdownHelperText: Record<string, string> = {
     "Maintain discount rules for sales and purchasing.",
   "maintenance-term-management": "Manage payment and collection terms.",
   "maintenance-transaction-type":
-    "Configure transaction classifications and numbering behavior.",
+    "Configure inventory movement classifications for goods receipt and goods issue.",
   "maintenance-payment-type":
     "Maintain payment methods and classifications used by disbursement vouchers.",
   "maintenance-responsibility-center":
     "Maintain accountability centers for financial reporting.",
+  "maintenance-tax-maintenance":
+    "Maintain VAT registration types and their related account titles.",
+  "financial-maintenance-tax-maintenance":
+    "Maintain VAT registration types and their related account titles.",
   "maintenance-warehouse-management":
     "Maintain warehouse records and storage locations.",
   "maintenance-warehouses": "Maintain warehouse master records.",

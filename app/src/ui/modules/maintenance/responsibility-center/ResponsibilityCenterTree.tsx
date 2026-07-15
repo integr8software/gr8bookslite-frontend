@@ -20,7 +20,10 @@ import {
 	FinancialTypeBadge,
 	StatusBadge,
 } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterTableRow";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	getColumnMetaClassName,
+	joinClasses,
+} from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ResponsibilityCenterTree({
 	expandedIds,
@@ -60,7 +63,10 @@ export function ResponsibilityCenterTree({
 					expandedIds={expandedIds}
 					node={row.original}
 					permissions={permissions}
-					visibleColumnIds={row.getVisibleCells().map((cell) => cell.column.id)}
+					visibleColumns={row.getVisibleCells().map((cell) => ({
+						className: getColumnMetaClassName(cell.column.columnDef.meta),
+						id: cell.column.id,
+					}))}
 					onEditCenter={onEditCenter}
 					onToggleStatus={onToggleStatus}
 					onToggleTreeNode={onToggleTreeNode}
@@ -75,7 +81,7 @@ function TreeRow({
 	expandedIds,
 	node,
 	permissions,
-	visibleColumnIds,
+	visibleColumns,
 	onEditCenter,
 	onToggleStatus,
 	onToggleTreeNode,
@@ -84,7 +90,7 @@ function TreeRow({
 	expandedIds: Set<string>;
 	node: FlattenedResponsibilityCenterTreeNode;
 	permissions: ResponsibilityCenterPermissions;
-	visibleColumnIds: string[];
+	visibleColumns: Array<{ className?: string; id: string }>;
 	onEditCenter: (center: ResponsibilityCenter) => void;
 	onToggleStatus: (center: ResponsibilityCenter) => void;
 	onToggleTreeNode: (centerId: string) => void;
@@ -92,16 +98,16 @@ function TreeRow({
 }) {
 	return (
 		<tr className="module-table-row text-darknavy">
-			{visibleColumnIds.map((columnId) => (
+			{visibleColumns.map((column) => (
 				<td
-					key={columnId}
+					key={column.id}
 					className={joinClasses(
 						"align-middle text-sm text-darknavy",
-						isCenteredColumn(columnId) ? "text-center" : "text-left",
+						column.className ?? "text-left",
 					)}
 				>
 					<TreeCell
-						columnId={columnId}
+						columnId={column.id}
 						expandedIds={expandedIds}
 						node={node}
 						permissions={permissions}
@@ -246,6 +252,3 @@ function TreeCell({
 	}
 }
 
-function isCenteredColumn(columnId: string) {
-	return ["actions", "status", "financialType", "category"].includes(columnId);
-}

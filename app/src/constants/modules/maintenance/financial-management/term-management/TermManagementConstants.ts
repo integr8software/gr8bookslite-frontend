@@ -45,17 +45,17 @@ export const TermManagementTableColumns = [
 	{
 		key: "datemode",
 		label: "Date Mode",
-		className: "w-[13%]",
+		className: "w-[13%] text-center",
 	},
 	{
 		key: "period",
 		label: "Period",
-		className: "w-[11%]",
+		className: "w-[11%] text-center",
 	},
 	{
 		key: "status",
 		label: "Status",
-		className: "w-[12%]",
+		className: "w-[12%] text-center",
 	},
 	{
 		key: "createdBy",

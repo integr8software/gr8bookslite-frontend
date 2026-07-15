@@ -95,6 +95,7 @@ export function PaymentTypeListPage() {
 				typeFilter={page.typeFilter}
 				typeFilterOptions={page.typeFilterOptions}
 				onRefresh={page.refreshPaymentTypes}
+				onReorder={page.reorderPaymentType}
 				onSearchTermChange={page.setSearchTerm}
 				onStatusFilterChange={page.setStatusFilter}
 				onTypeFilterChange={page.setTypeFilter}

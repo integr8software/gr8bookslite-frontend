@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  PartyImportFieldOrder,
   PartyImportPreviewColumnCount,
   PartyClassificationOptions,
   VatRegistrationTypeOptions,
@@ -83,80 +84,40 @@ export function PartyManagementImportPreviewTableRow({
             </button>
           </div>
         </td>
-        <td className="px-3 py-2 align-middle">
-          <ImportCell
-            row={row}
-            field="partyCodeNo"
-            onUpdateCell={onUpdateCell}
-            onPasteCell={onPasteCell}
-          />
-        </td>
-        <td className="px-3 py-2 align-middle">
-          <ModuleImportEditableSelect
-            value={row.party.classification}
-            errors={row.cellErrors.classification}
-            warnings={row.cellWarnings.classification}
-            options={PartyClassificationOptions}
-            onChange={(value) => onUpdateCell(row.id, "classification", value)}
-            onPaste={(text) => onPasteCell(row.id, "classification", text)}
-          />
-        </td>
-        <td className="px-3 py-2 align-middle">
-          <ImportCell row={row} field="partyTypes" onUpdateCell={onUpdateCell} onPasteCell={onPasteCell} />
-        </td>
-        {(
-          [
-            "partyName",
-            "tradeName",
-            "firstName",
-            "middleName",
-            "lastName",
-            "suffixName",
-            "tin",
-          ] as const
-        ).map((field) => (
+        {PartyImportFieldOrder.map((field) => (
           <td key={field} className="px-3 py-2 align-middle">
-            <ImportCell
-              row={row}
-              field={field}
-              onUpdateCell={onUpdateCell}
-              onPasteCell={onPasteCell}
-            />
-          </td>
-        ))}
-        <td className="px-3 py-2 align-middle">
-          <ModuleImportEditableSelect
-            value={row.party.vatRegistrationType}
-            errors={row.cellErrors.vatRegistrationType}
-            warnings={row.cellWarnings.vatRegistrationType}
-            options={["", ...VatRegistrationTypeOptions]}
-            onChange={(value) =>
-              onUpdateCell(row.id, "vatRegistrationType", value)
-            }
-            onPaste={(text) =>
-              onPasteCell(row.id, "vatRegistrationType", text)
-            }
-          />
-        </td>
-        {(
-          [
-            "atcCode",
-            "email",
-            "contactNo",
-            "addressLine1",
-            "addressLine2",
-            "barangay",
-            "cityMunicipality",
-            "province",
-          ] as const
-        ).map((field) => (
-          <td key={field} className="px-3 py-2 align-middle">
-            <ImportCell
-              row={row}
-              field={field}
-              onUpdateCell={onUpdateCell}
-              onPasteCell={onPasteCell}
-            />
+            {field === "classification" ? (
+              <ModuleImportEditableSelect
+                value={row.party.classification}
+                errors={row.cellErrors.classification}
+                warnings={row.cellWarnings.classification}
+                options={PartyClassificationOptions}
+                onChange={(value) =>
+                  onUpdateCell(row.id, "classification", value)
+                }
+                onPaste={(text) => onPasteCell(row.id, "classification", text)}
+              />
+            ) : field === "vatRegistrationType" ? (
+              <ModuleImportEditableSelect
+                value={row.party.vatRegistrationType}
+                errors={row.cellErrors.vatRegistrationType}
+                warnings={row.cellWarnings.vatRegistrationType}
+                options={["", ...VatRegistrationTypeOptions]}
+                onChange={(value) =>
+                  onUpdateCell(row.id, "vatRegistrationType", value)
+                }
+                onPaste={(text) =>
+                  onPasteCell(row.id, "vatRegistrationType", text)
+                }
+              />
+            ) : (
+              <ImportCell
+                row={row}
+                field={field}
+                onUpdateCell={onUpdateCell}
+                onPasteCell={onPasteCell}
+              />
+            )}
           </td>
         ))}
       </tr>
@@ -214,14 +175,68 @@ function getPartyImportCellValue(
   }
 
   if (
-    field === "addressLine1" ||
-    field === "addressLine2" ||
-    field === "barangay" ||
-    field === "cityMunicipality" ||
-    field === "province"
+    isPartyImportAddressColumn(field)
   ) {
-    return row.party.address[field];
+    return getPartyImportAddressValue(row, field);
   }
 
   return String(row.party[field] ?? "");
 }
+
+function getPartyImportAddressValue(
+  row: PartyImportPreviewRow,
+  field: PartyImportAddressColumnId,
+) {
+  const { property, role } = PartyImportAddressColumnMap[field];
+  const address =
+    role === "default"
+      ? row.party.address
+      : row.party.addresses.find((candidate) =>
+          partyImportAddressHasRole(candidate, role),
+        );
+
+  return String(address?.[property] ?? "");
+}
+
+function partyImportAddressHasRole(
+  address: PartyImportPreviewRow["party"]["address"],
+  role: PartyImportAddressRole,
+) {
+  if (role === "billing") return address.isBilling;
+  if (role === "delivery") return address.isDelivery;
+  if (role === "home") return address.isHome;
+
+  return address.isDefault;
+}
+
+function isPartyImportAddressColumn(
+  field: PartyImportColumnId,
+): field is PartyImportAddressColumnId {
+  return field in PartyImportAddressColumnMap;
+}
+
+const PartyImportAddressColumnMap = {
+  addressLine1: { property: "addressLine1", role: "default" },
+  addressLine2: { property: "addressLine2", role: "default" },
+  barangay: { property: "barangay", role: "default" },
+  cityMunicipality: { property: "cityMunicipality", role: "default" },
+  province: { property: "province", role: "default" },
+  homeAddressLine1: { property: "addressLine1", role: "home" },
+  homeAddressLine2: { property: "addressLine2", role: "home" },
+  homeBarangay: { property: "barangay", role: "home" },
+  homeCityMunicipality: { property: "cityMunicipality", role: "home" },
+  homeProvince: { property: "province", role: "home" },
+  billingAddressLine1: { property: "addressLine1", role: "billing" },
+  billingAddressLine2: { property: "addressLine2", role: "billing" },
+  billingBarangay: { property: "barangay", role: "billing" },
+  billingCityMunicipality: { property: "cityMunicipality", role: "billing" },
+  billingProvince: { property: "province", role: "billing" },
+  deliveryAddressLine1: { property: "addressLine1", role: "delivery" },
+  deliveryAddressLine2: { property: "addressLine2", role: "delivery" },
+  deliveryBarangay: { property: "barangay", role: "delivery" },
+  deliveryCityMunicipality: { property: "cityMunicipality", role: "delivery" },
+  deliveryProvince: { property: "province", role: "delivery" },
+} as const;
+
+type PartyImportAddressColumnId = keyof typeof PartyImportAddressColumnMap;
+type PartyImportAddressRole = "billing" | "default" | "delivery" | "home";

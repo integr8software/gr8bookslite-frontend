@@ -1294,17 +1294,14 @@ function getCreditAccountTemplate(
     };
   }
 
-  if (
-    paymentAccount?.type === "With Bank" ||
-    paymentAccount?.type === "Multiple Check"
-  ) {
+  if (paymentAccount?.type === "Check") {
     return {
       accountCode: "1012-011",
       accountName: "Check Disbursement Clearing",
     };
   }
 
-  if (paymentAccount?.type === "Debit") {
+  if (paymentAccount?.type === "Non-Cash Settlement") {
     return {
       accountCode: "1013-001",
       accountName: "Debit Memo Clearing",
@@ -1318,7 +1315,7 @@ function getCreditAccountTemplate(
     };
   }
 
-  if (paymentAccount?.type === "Online Payment") {
+  if (paymentAccount?.type === "Digital Wallet") {
     return {
       accountCode: "1011-008",
       accountName: "Online Payment Clearing",
@@ -1349,10 +1346,14 @@ function getCreditAccountTemplate(
     };
   }
 
-  if (
-    transaction.paymentMethod === "InstaPay" ||
-    transaction.paymentMethod === "eWallet"
-  ) {
+  if (transaction.paymentMethod === "Debit Memo") {
+    return {
+      accountCode: "1013-001",
+      accountName: "Debit Memo Clearing",
+    };
+  }
+
+  if (transaction.paymentMethod === "E-Wallet") {
     return {
       accountCode: "1011-008",
       accountName: "Online Payment Clearing",

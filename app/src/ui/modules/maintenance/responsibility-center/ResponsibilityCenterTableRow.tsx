@@ -8,6 +8,7 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ResponsibilityCenterTableRow({
 	allCenters,
@@ -22,7 +23,7 @@ export function ResponsibilityCenterTableRow({
 			{row.getVisibleCells().map((cell) => (
 				<ResponsibilityCenterTableCell
 					key={cell.id}
-					align={isCenteredColumn(cell.column.id) ? "center" : "left"}
+					className={getColumnMetaClassName(cell.column.columnDef.meta)}
 				>
 					<ResponsibilityCenterCellContent
 						allCenters={allCenters}
@@ -37,10 +38,6 @@ export function ResponsibilityCenterTableRow({
 			))}
 		</tr>
 	);
-}
-
-function isCenteredColumn(columnId: string) {
-	return ["actions", "status", "financialType", "category"].includes(columnId);
 }
 
 function ResponsibilityCenterCellContent({
@@ -154,15 +151,15 @@ function ResponsibilityCenterCellContent({
 }
 
 function ResponsibilityCenterTableCell({
-	align = "left",
+	className = "text-left",
 	children,
 }: {
-	align?: "center" | "left";
+	className?: string;
 	children: React.ReactNode;
 }) {
 	return (
 		<td
-			className={`px-4 py-4 align-middle text-sm text-darknavy ${align === "center" ? "text-center" : "text-left"}`}
+			className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}
 		>
 			{children}
 		</td>

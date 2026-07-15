@@ -1,7 +1,3 @@
-import {
-	formatBankMasterfileDateTime,
-	isBankMasterfileCenteredColumn,
-} from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
 import type {
 	BankMasterfile,
 	BankMasterfileCellContentProps,
@@ -11,6 +7,8 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
+import { formatDateTime } from "@/app/src/utils/date.util";
 
 export function BankMasterfileTableRow({
 	row,
@@ -24,7 +22,7 @@ export function BankMasterfileTableRow({
 			{row.getVisibleCells().map((cell) => (
 				<BankMasterfileTableCell
 					key={cell.id}
-					align={isBankMasterfileCenteredColumn(cell.column.id) ? "center" : "left"}
+					className={getColumnMetaClassName(cell.column.columnDef.meta)}
 				>
 					<BankMasterfileCellContent
 						columnId={cell.column.id}
@@ -65,10 +63,10 @@ function BankMasterfileCellContent({
 					{bank.accountNumber}
 				</span>
 			);
-		case "accountName":
+		case "accountTitle":
 			return (
-				<span className="block truncate text-darknavy/75" title={bank.accountName}>
-					{bank.accountName}
+				<span className="block truncate text-darknavy/75" title={bank.accountTitle}>
+					{bank.accountTitle}
 				</span>
 			);
 		case "accountCode":
@@ -82,11 +80,11 @@ function BankMasterfileCellContent({
 		case "createdBy":
 			return <span>{bank.createdBy ?? ""}</span>;
 		case "createdAt":
-			return <span>{formatBankMasterfileDateTime(bank.createdAt)}</span>;
+			return <span>{formatDateTime(bank.createdAt, { emptyValue: "", locale: "en-US" })}</span>;
 		case "updatedBy":
 			return <span>{bank.updatedBy ?? ""}</span>;
 		case "updatedAt":
-			return <span>{formatBankMasterfileDateTime(bank.updatedAt)}</span>;
+			return <span>{formatDateTime(bank.updatedAt, { emptyValue: "", locale: "en-US" })}</span>;
 		case "actions":
 			return (
 				<ModuleTableActions className="w-full !justify-center">
@@ -123,15 +121,15 @@ function BankMasterfileCellContent({
 }
 
 function BankMasterfileTableCell({
-	align = "left",
+	className = "text-left",
 	children,
 }: {
-	align?: "center" | "left";
+	className?: string;
 	children: React.ReactNode;
 }) {
 	return (
 		<td
-			className={`px-4 py-4 align-middle text-sm text-darknavy ${align === "center" ? "text-center" : "text-left"}`}
+			className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}
 		>
 			{children}
 		</td>

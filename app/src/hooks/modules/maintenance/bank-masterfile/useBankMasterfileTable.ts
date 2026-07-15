@@ -146,19 +146,24 @@ export function useBankMasterfileTable(banks: BankMasterfile[]) {
 	const columns = useMemo<ColumnDef<BankMasterfile>[]>(
 		() =>
 			BankMasterfileTableColumns.map((column) => {
+				const meta = {
+					className: column.className,
+					label: column.label,
+				};
+
 				if (!("key" in column)) {
 					return {
 						id: "actions",
 						header: column.label,
 						enableSorting: false,
-						meta: { className: column.className, label: column.label },
+						meta,
 					};
 				}
 
 				return createBankMasterfileColumn(
 					column.key,
 					column.label,
-					column.className,
+					meta,
 				);
 			}),
 		[],
@@ -285,12 +290,15 @@ function normalizeTablePreferences(
 function createBankMasterfileColumn(
 	key: BankMasterfileTableColumnKey,
 	header: string,
-	className: string,
+	meta: {
+		className: string;
+		label: string;
+	},
 ): ColumnDef<BankMasterfile> {
 	return {
 		accessorKey: key,
 		header,
 		sortingFn: "alphanumeric",
-		meta: { className, label: header },
+		meta,
 	};
 }

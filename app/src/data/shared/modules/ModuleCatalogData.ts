@@ -6,6 +6,7 @@ import type {
   MainProductKey,
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { flattenSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleRouteMap";
 
 export type MainModuleAction = Extract<
   MainAccessAction,
@@ -28,6 +29,8 @@ const PermissionCodeByNavigationKey: Record<string, string> = {
   "maintenance-transaction-type": "TT",
   "maintenance-payment-type": "PT",
   "maintenance-responsibility-center": "RC",
+  "maintenance-tax-maintenance": "TXM",
+  "financial-maintenance-tax-maintenance": "TXM",
   "system-administration-form-signatory": "FS",
   "cash-receipt-official-receipt": "OR",
   "cash-receipt-collection-receipt": "CR",
@@ -109,6 +112,13 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "accounting",
       ),
       moduleItem(
+        "maintenance-default-account",
+        "Default Accounts",
+        "/maintenance/default-account",
+        "maintenance.defaultAccount",
+        "accounting",
+      ),
+      moduleItem(
         "maintenance-bank-masterfile",
         "Bank Masterfile",
         "/maintenance/bank-masterfile",
@@ -116,10 +126,39 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "accounting",
       ),
       moduleItem(
-        "maintenance-default-account",
-        "Default Accounts",
-        "/maintenance/default-account",
-        "maintenance.defaultAccount",
+        "maintenance-payment-type",
+        "Payment Type",
+        "/maintenance/payment-type",
+        "maintenance.paymentType",
+        "accounting",
+      ),
+      moduleItem(
+        "maintenance-discount-management",
+        "Discount Management",
+        "/maintenance/discount-management",
+        "maintenance.discount",
+        "accounting",
+        ["accounting", "inventory"],
+      ),
+      moduleItem(
+        "maintenance-term-management",
+        "Term Management",
+        "/maintenance/term-management",
+        "maintenance.term",
+        "accounting",
+      ),
+      moduleItem(
+        "maintenance-tax-maintenance",
+        "Tax Maintenance",
+        MODULE_ROUTE_MAP.TXM,
+        "maintenance.taxMaintenance",
+        "accounting",
+      ),
+      moduleItem(
+        "maintenance-responsibility-center",
+        "Responsibility Center",
+        "/maintenance/responsibility-center",
+        "maintenance.responsibilityCenter",
         "accounting",
       ),
       moduleItem(
@@ -185,6 +224,14 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
             "maintenance.item",
             "inventory",
           ),
+          moduleItem(
+            "maintenance-transaction-type",
+            "Inventory Transaction Type",
+            "/maintenance/item-management/inventory-transaction-type",
+            "maintenance.transactionType",
+            "inventory",
+            ["accounting", "inventory"],
+          ),
         ],
       ),
       group(
@@ -229,42 +276,6 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
             "inventory",
           ),
         ],
-      ),
-      moduleItem(
-        "maintenance-discount-management",
-        "Discount Management",
-        "/maintenance/discount-management",
-        "maintenance.discount",
-        "accounting",
-        ["accounting", "inventory"],
-      ),
-      moduleItem(
-        "maintenance-term-management",
-        "Term Management",
-        "/maintenance/term-management",
-        "maintenance.term",
-        "accounting",
-      ),
-      moduleItem(
-        "maintenance-transaction-type",
-        "Transaction Type",
-        "/maintenance/transaction-type",
-        "maintenance.transactionType",
-        "accounting",
-      ),
-      moduleItem(
-        "maintenance-payment-type",
-        "Payment Type",
-        "/maintenance/payment-type",
-        "maintenance.paymentType",
-        "accounting",
-      ),
-      moduleItem(
-        "maintenance-responsibility-center",
-        "Responsibility Center",
-        "/maintenance/responsibility-center",
-        "maintenance.responsibilityCenter",
-        "accounting",
       ),
     ],
   ),

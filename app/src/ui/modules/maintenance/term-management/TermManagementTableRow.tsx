@@ -7,6 +7,7 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function TermManagementTableRow({
 	row,
@@ -20,7 +21,7 @@ export function TermManagementTableRow({
 			{row.getVisibleCells().map((cell) => (
 				<TermManagementTableCell
 					key={cell.id}
-					align={isCenteredColumn(cell.column.id) ? "center" : "left"}
+					className={getColumnMetaClassName(cell.column.columnDef.meta)}
 				>
 					<TermManagementCellContent
 						columnId={cell.column.id}
@@ -34,10 +35,6 @@ export function TermManagementTableRow({
 			))}
 		</tr>
 	);
-}
-
-function isCenteredColumn(columnId: string) {
-	return ["actions", "datemode", "period", "status"].includes(columnId);
 }
 
 function TermManagementCellContent({
@@ -77,11 +74,11 @@ function TermManagementCellContent({
 		case "createdBy":
 			return <span>{term.createdBy ?? ""}</span>;
 		case "createdAt":
-			return <span>{formatDateTime(term.createdAt, { emptyValue: "—", locale: "en-US" })}</span>;
+			return <span>{formatDateTime(term.createdAt, { emptyValue: "", locale: "en-US" })}</span>;
 		case "updatedBy":
 			return <span>{term.updatedBy ?? ""}</span>;
 		case "updatedAt":
-			return <span>{formatDateTime(term.updatedAt, { emptyValue: "—", locale: "en-US" })}</span>;
+			return <span>{formatDateTime(term.updatedAt, { emptyValue: "", locale: "en-US" })}</span>;
 		case "actions":
 			return (
 				<ModuleTableActions
@@ -118,15 +115,15 @@ function TermManagementCellContent({
 }
 
 function TermManagementTableCell({
-	align = "left",
+	className = "text-left",
 	children,
 }: {
-	align?: "center" | "left";
+	className?: string;
 	children: React.ReactNode;
 }) {
 	return (
 		<td
-			className={`px-4 py-4 align-middle text-sm text-darknavy ${align === "center" ? "text-center" : "text-left"}`}
+			className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}
 		>
 			{children}
 		</td>

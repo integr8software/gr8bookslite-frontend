@@ -23,7 +23,9 @@ import {
 } from "@/app/src/services/shared/table-preferences/TablePreferencesApi";
 import type {
 	DefaultAccount,
+	DefaultAccountColumnMeta,
 	DefaultAccountTableColumnKey,
+	DefaultAccountTablePreferences,
 } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
 
 const DefaultAccountTablePreferencesStorageKey =
@@ -43,12 +45,6 @@ const DefaultColumnVisibility: VisibilityState = {
 	updatedAt: false,
 };
 const DefaultSorting: SortingState = [{ id: "defaultAccountName", desc: false }];
-
-type DefaultAccountTablePreferences = {
-	columnOrder: ColumnOrderState;
-	columnVisibility: VisibilityState;
-	sorting: SortingState;
-};
 
 export function useDefaultAccountTable(defaultAccounts: DefaultAccount[]) {
 	const accessToken = useAppStore((state) => state.accessToken);
@@ -156,11 +152,9 @@ export function useDefaultAccountTable(defaultAccounts: DefaultAccount[]) {
 					};
 				}
 
-				return createDefaultAccountColumn(
-					column.key,
-					column.label,
-					column.className,
-				);
+				return createDefaultAccountColumn(column.key, column.label, {
+					className: column.className,
+				});
 			}),
 		[],
 	);
@@ -286,8 +280,10 @@ function normalizeTablePreferences(
 function createDefaultAccountColumn(
 	key: DefaultAccountTableColumnKey,
 	header: string,
-	className: string,
+	meta: DefaultAccountColumnMeta,
 ): ColumnDef<DefaultAccount> {
+	const columnMeta = { ...meta, label: header };
+
 	if (key === "accountCode") {
 		return {
 			id: key,
@@ -295,7 +291,7 @@ function createDefaultAccountColumn(
 				row.generatedAccounts.map((account) => account.accountCode).join(" "),
 			header,
 			sortingFn: "alphanumeric",
-			meta: { className, label: header },
+			meta: columnMeta,
 		};
 	}
 
@@ -306,7 +302,7 @@ function createDefaultAccountColumn(
 				row.generatedAccounts.map((account) => account.accountTitle).join(" "),
 			header,
 			sortingFn: "alphanumeric",
-			meta: { className, label: header },
+			meta: columnMeta,
 		};
 	}
 
@@ -316,7 +312,7 @@ function createDefaultAccountColumn(
 			accessorFn: (row) => getDefaultAccountTypeLabel(row.type),
 			header,
 			sortingFn: "alphanumeric",
-			meta: { className, label: header },
+			meta: columnMeta,
 		};
 	}
 
@@ -324,6 +320,6 @@ function createDefaultAccountColumn(
 		accessorKey: key,
 		header,
 		sortingFn: "alphanumeric",
-		meta: { className, label: header },
+		meta: columnMeta,
 	};
 }

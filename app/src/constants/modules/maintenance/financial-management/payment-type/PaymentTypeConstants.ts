@@ -32,7 +32,7 @@ export const PaymentTypeTableColumns = [
 	{ key: "paymentType", label: "Name", className: "w-[22%]" },
 	{ key: "description", label: "Description", className: "w-[28%]" },
 	{ key: "type", label: "Category", className: "w-[16%] text-center" },
-	{ key: "status", label: "Status", className: "w-[12%]" },
+	{ key: "status", label: "Status", className: "w-[12%] text-center" },
 	{ key: "createdBy", label: "Created By", className: "w-[14%]" },
 	{ key: "createdAt", label: "Date Created", className: "w-[16%]" },
 	{ key: "updatedBy", label: "Updated By", className: "w-[14%]" },
@@ -49,11 +49,10 @@ export const PaymentTypeExportColumns: ModuleTableExportColumn<PaymentTypeRecord
 
 export const PaymentTypeClassificationOptions = [
 	"Cash",
-	"With Bank",
 	"Bank Transfer",
-	"Online Payment",
-	"Multiple Check",
-	"Debit",
+	"Check",
+	"Digital Wallet",
+	"Non-Cash Settlement",
 ] as const satisfies readonly PaymentTypeClassification[];
 
 export const PaymentTypeStatusOptions = [

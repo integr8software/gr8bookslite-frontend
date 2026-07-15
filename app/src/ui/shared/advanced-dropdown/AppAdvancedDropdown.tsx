@@ -70,6 +70,7 @@ export type AppAdvancedDropdownProps = {
 const DropdownMenuGap = 4;
 const DropdownMenuMaxHeight = 320;
 const DropdownMenuMinHeight = 96;
+const DropdownPointerBoundaryPadding = 24;
 const DropdownMenuViewportPadding = 8;
 
 export function AppAdvancedDropdown({
@@ -109,6 +110,11 @@ export function AppAdvancedDropdown({
 	const [activeOptionValue, setActiveOptionValue] = useState("");
 	const [portalStyle, setPortalStyle] = useState<CSSProperties>({});
 	const menuRef = useRef<HTMLDivElement>(null);
+	const menuInteractionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+		null,
+	);
+	const isMenuInteractionActiveRef = useRef(false);
+	const isMenuPointerDownRef = useRef(false);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const selectedValues = useMemo(
 		() => (Array.isArray(value) ? value : value ? [value] : []),
@@ -176,46 +182,55 @@ export function AppAdvancedDropdown({
 			return;
 		}
 
-		function handlePointerDown(event: MouseEvent) {
-			const target = event.target as Node;
+		function handlePointerDown(event: PointerEvent) {
+			if (isEventInsideDropdown(event, rootRef.current, menuRef.current)) {
+				isMenuPointerDownRef.current = true;
+				keepMenuInteractionActive();
+				return;
+			}
 
+			isMenuPointerDownRef.current = false;
+			setIsOpen(false);
+		}
+
+		function handlePointerMove(event: PointerEvent) {
 			if (
-				!rootRef.current?.contains(target) &&
-				!menuRef.current?.contains(target)
+				isMenuPointerDownRef.current ||
+				isEventInsideDropdown(event, rootRef.current, menuRef.current)
 			) {
-				setIsOpen(false);
+				keepMenuInteractionActive();
 			}
 		}
 
-		document.addEventListener("mousedown", handlePointerDown);
+		function handlePointerUp() {
+			isMenuPointerDownRef.current = false;
+
+			if (menuInteractionTimeoutRef.current) {
+				clearTimeout(menuInteractionTimeoutRef.current);
+				menuInteractionTimeoutRef.current = null;
+			}
+
+			isMenuInteractionActiveRef.current = false;
+		}
+
+		document.addEventListener("pointerdown", handlePointerDown, true);
+		document.addEventListener("pointermove", handlePointerMove, true);
+		document.addEventListener("pointerup", handlePointerUp, true);
 
 		return () => {
-			document.removeEventListener("mousedown", handlePointerDown);
+			document.removeEventListener("pointerdown", handlePointerDown, true);
+			document.removeEventListener("pointermove", handlePointerMove, true);
+			document.removeEventListener("pointerup", handlePointerUp, true);
 		};
 	}, [isOpen]);
 
 	useEffect(() => {
-		if (!isOpen) {
-			return;
-		}
-
-		function handleFocusIn(event: FocusEvent) {
-			const target = event.target as Node;
-
-			if (
-				!rootRef.current?.contains(target) &&
-				!menuRef.current?.contains(target)
-			) {
-				setIsOpen(false);
-			}
-		}
-
-		document.addEventListener("focusin", handleFocusIn);
-
 		return () => {
-			document.removeEventListener("focusin", handleFocusIn);
+			if (menuInteractionTimeoutRef.current) {
+				clearTimeout(menuInteractionTimeoutRef.current);
+			}
 		};
-	}, [isOpen]);
+	}, []);
 
 	useEffect(() => {
 		if (typeof document === "undefined") {
@@ -267,13 +282,23 @@ export function AppAdvancedDropdown({
 			}
 		}
 
+		function handleScroll(event: Event) {
+			const target = event.target as Node | null;
+
+			if (target && menuRef.current?.contains(target)) {
+				return;
+			}
+
+			updatePortalStyle();
+		}
+
 		updatePortalStyle();
 		window.addEventListener("resize", updatePortalStyle);
-		window.addEventListener("scroll", updatePortalStyle, true);
+		window.addEventListener("scroll", handleScroll, true);
 
 		return () => {
 			window.removeEventListener("resize", updatePortalStyle);
-			window.removeEventListener("scroll", updatePortalStyle, true);
+			window.removeEventListener("scroll", handleScroll, true);
 		};
 	}, [isOpen, menuPortal]);
 
@@ -466,6 +491,19 @@ export function AppAdvancedDropdown({
 		onChange(selectionMode === "multiple" ? [] : "");
 	}
 
+	function keepMenuInteractionActive() {
+		isMenuInteractionActiveRef.current = true;
+
+		if (menuInteractionTimeoutRef.current) {
+			clearTimeout(menuInteractionTimeoutRef.current);
+		}
+
+		menuInteractionTimeoutRef.current = setTimeout(() => {
+			isMenuInteractionActiveRef.current = false;
+			menuInteractionTimeoutRef.current = null;
+		}, 400);
+	}
+
 	const menu = isOpen ? (
 		<div
 			ref={menuRef}
@@ -473,11 +511,28 @@ export function AppAdvancedDropdown({
 			role="listbox"
 			aria-multiselectable={selectionMode === "multiple"}
 			style={menuPortal ? portalStyle : undefined}
+			onMouseDownCapture={(event) => {
+				keepMenuInteractionActive();
+				event.stopPropagation();
+			}}
+			onPointerDownCapture={(event) => {
+				keepMenuInteractionActive();
+				event.stopPropagation();
+			}}
+			onScrollCapture={keepMenuInteractionActive}
+			onWheel={(event) => {
+				keepMenuInteractionActive();
+				event.stopPropagation();
+			}}
+			onTouchMove={(event) => {
+				keepMenuInteractionActive();
+				event.stopPropagation();
+			}}
 			className={joinClasses(
 				menuPortal
 					? "fixed z-130"
 					: "absolute left-0 top-full z-40 mt-1 w-full",
-				"app-advanced-dropdown-menu flex max-h-80 flex-col overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.14)]",
+				"app-advanced-dropdown-menu flex max-h-80 flex-col overflow-hidden overscroll-contain rounded-lg border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.14)]",
 			)}
 		>
 			{addAction ? (
@@ -518,7 +573,7 @@ export function AppAdvancedDropdown({
 					</div>
 				</div>
 			) : null}
-			<div className="grid min-h-0 gap-1 overflow-y-auto p-2">
+			<div className="grid min-h-0 gap-1 overflow-y-auto overscroll-contain p-2">
 				{hasOptions ? (
 					filteredOptions.map((option) => (
 						<OptionRow
@@ -837,6 +892,8 @@ function SelectedSingle({
 	option: AppAdvancedDropdownOption;
 	showDetails: boolean;
 }) {
+	const detailText = option.label ?? option.description;
+
 	return (
 		<span className="flex min-w-0 items-center gap-2 px-0.5">
 			<span
@@ -847,14 +904,14 @@ function SelectedSingle({
 			>
 				{option.name}
 			</span>
-			{showDetails && option.label ? (
+			{showDetails && detailText ? (
 				<span
 					className={joinClasses(
 						"truncate text-xs text-darknavy/55",
 						disabled && "text-darknavy/35",
 					)}
 				>
-					{option.label}
+					{detailText}
 				</span>
 			) : null}
 		</span>
@@ -911,6 +968,45 @@ function getPortalStyle(root: HTMLDivElement | null): CSSProperties | undefined 
 		top: rect.bottom + DropdownMenuGap,
 		width,
 	};
+}
+
+function isEventInsideDropdown(
+	event: MouseEvent | PointerEvent,
+	root: HTMLDivElement | null,
+	menu: HTMLDivElement | null,
+) {
+	const target = event.target as Node | null;
+
+	if (
+		(target && root?.contains(target)) ||
+		(target && menu?.contains(target))
+	) {
+		return true;
+	}
+
+	return (
+		isPointInsideElement(event, root) ||
+		isPointInsideElement(event, menu, DropdownPointerBoundaryPadding)
+	);
+}
+
+function isPointInsideElement(
+	event: MouseEvent | PointerEvent,
+	element: HTMLElement | null,
+	padding = 0,
+) {
+	if (!element) {
+		return false;
+	}
+
+	const rect = element.getBoundingClientRect();
+
+	return (
+		event.clientX >= rect.left - padding &&
+		event.clientX <= rect.right + padding &&
+		event.clientY >= rect.top - padding &&
+		event.clientY <= rect.bottom + padding
+	);
 }
 
 function flattenOptions(

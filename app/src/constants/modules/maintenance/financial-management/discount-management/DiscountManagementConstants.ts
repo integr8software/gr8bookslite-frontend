@@ -47,17 +47,17 @@ export const DiscountManagementTableColumns = [
 	{
 		key: "type",
 		label: "Type",
-		className: "w-[12%]",
+		className: "w-[12%] text-center",
 	},
 	{
 		key: "discountType",
 		label: "Discount Type",
-		className: "w-[14%]",
+		className: "w-[14%] text-center",
 	},
 	{
 		key: "amount",
 		label: "Value",
-		className: "w-[12%]",
+		className: "w-[12%] text-center",
 	},
 	{
 		key: "accountCode",
@@ -72,7 +72,7 @@ export const DiscountManagementTableColumns = [
 	{
 		key: "status",
 		label: "Status",
-		className: "w-[12%]",
+		className: "w-[12%] text-center",
 	},
 	{ key: "createdBy", label: "Created By", className: "w-[14%]" },
 	{ key: "createdAt", label: "Date Created", className: "w-[16%]" },

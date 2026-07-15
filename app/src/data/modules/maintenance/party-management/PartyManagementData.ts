@@ -5,6 +5,7 @@ import {
   PartyImportMaxFileSizeBytes,
   PartyImportMinFileSizeBytes,
   PartyImportTemplateHeaders,
+  PartyDefaultNationality,
   PartyTypeOptions,
   VatRegistrationTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
@@ -13,6 +14,20 @@ import {
   normalizeAtcCode,
 } from "@/app/src/data/shared/tax/AtcCode";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
+import {
+  applyDefaultAddressRoles,
+  clearAddressRolesForPartyTypes,
+  createEmptyPartyAddress,
+  getAddressRoleLabel,
+  getDefaultPartyAddress,
+  getPartyAddressRoles,
+  hasPersonalInformationPartyType,
+  normalizePartyAddresses,
+  normalizePartyAddressesForForm,
+  normalizePartyTypesForClassification,
+  setPartyDefaultAddress,
+} from "@/app/src/data/modules/maintenance/party-management/PartyManagementAddressData";
+import type { PartyAddressRole } from "@/app/src/data/modules/maintenance/party-management/PartyManagementAddressData";
 import type {
   PartyAddress,
   PartyClassification,
@@ -27,6 +42,7 @@ import type {
   VatRegistrationType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
+import { todayDateValue } from "@/app/src/utils/date.util";
 import { formatFileSize } from "@/app/src/utils/file.util";
 
 export const PartyAtcCodeSource = {
@@ -64,6 +80,11 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   middleName: "",
   lastName: "",
   suffixName: "",
+  honorific: "",
+  gender: "",
+  civilStatus: "",
+  nationality: PartyDefaultNationality,
+  memberRegistrationDate: "",
   address: createEmptyPartyAddress(),
   addresses: [createEmptyPartyAddress()],
   activeAddressId: "address-default",
@@ -77,198 +98,15 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   termName: "",
   tin: "",
   vatRegistrationType: "",
+  vatRegistrationTypeId: "",
+  vatRegistration: null,
   atcCode: "",
   email: "",
   contactNo: "",
+  landline: "",
 };
 
-export const PartyInformationInitialRecords: PartyInformationRecord[] = [
-  {
-    id: "party-001",
-    partyCodeNo: "PTY-0001",
-    classification: "Non-Individual",
-    partyTypes: ["Vendor", "Customer"],
-    status: "Active",
-    partyName: "Pacific Office Supplies Inc.",
-    tradeName: "Pacific Supplies",
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    suffixName: "",
-    address: {
-      id: "party-001-address-default",
-      addressName: "Default Address",
-      addressLine1: "Unit 1204 Finance Center",
-      addressLine2: "26th Street",
-      barangay: "Bonifacio Global City",
-      barangayCode: "137607000",
-      cityMunicipality: "Taguig City",
-      cityMunicipalityCode: "137607000",
-      isBilling: true,
-      isDefault: true,
-      isDelivery: true,
-      province: "Metro Manila",
-      provinceCode: "137600000",
-      region: "National Capital Region",
-      regionCode: "130000000",
-    },
-    addresses: [],
-    defaultReceivableAccount: "",
-    customerAdvanceAccount: "",
-    defaultPayableAccount: "",
-    vendorAdvanceAccount: "",
-    employeeAdvanceAccount: "",
-    employeePayableAccount: "",
-    termId: "term-1",
-    termName: "Standard payment terms",
-    tin: "009-432-781-000",
-    vatRegistrationType: "VAT Registered",
-    atcCode: "WC 158",
-    email: "billing@pacificsupplies.example",
-    contactNo: "+63 917 555 0182",
-    createdAt: "2026-05-01T08:00:00.000Z",
-    updatedAt: "2026-05-18T08:00:00.000Z",
-  },
-  {
-    id: "party-002",
-    partyCodeNo: "PTY-0002",
-    classification: "Individual",
-    partyTypes: ["Employee"],
-    status: "Active",
-    partyName: "",
-    tradeName: "",
-    firstName: "Mara",
-    middleName: "Santos",
-    lastName: "Reyes",
-    suffixName: "",
-    address: {
-      id: "party-002-address-default",
-      addressName: "Default Address",
-      addressLine1: "42 Sampaguita Street",
-      addressLine2: "",
-      barangay: "San Lorenzo",
-      barangayCode: "137602000",
-      cityMunicipality: "Makati City",
-      cityMunicipalityCode: "137602000",
-      isBilling: false,
-      isDefault: true,
-      isDelivery: false,
-      province: "Metro Manila",
-      provinceCode: "137600000",
-      region: "National Capital Region",
-      regionCode: "130000000",
-    },
-    addresses: [],
-    defaultReceivableAccount: "",
-    customerAdvanceAccount: "",
-    defaultPayableAccount: "",
-    vendorAdvanceAccount: "",
-    employeeAdvanceAccount: "",
-    employeePayableAccount: "",
-    termId: "",
-    termName: "",
-    tin: "182-445-908-000",
-    vatRegistrationType: "Services",
-    atcCode: "WI 010",
-    email: "mara.reyes@example.com",
-    contactNo: "+63 918 222 0199",
-    createdAt: "2026-05-03T08:00:00.000Z",
-    updatedAt: "2026-05-16T08:00:00.000Z",
-  },
-  {
-    id: "party-003",
-    partyCodeNo: "PTY-0003",
-    classification: "Non-Individual",
-    partyTypes: ["Vendor"],
-    status: "Inactive",
-    partyName: "Northfield Logistics Corporation",
-    tradeName: "Northfield Logistics",
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    suffixName: "",
-    address: {
-      id: "party-003-address-default",
-      addressName: "Default Address",
-      addressLine1: "Warehouse 8, Harbor Industrial Park",
-      addressLine2: "R-10 Road",
-      barangay: "Tangos North",
-      barangayCode: "137503000",
-      cityMunicipality: "Navotas City",
-      cityMunicipalityCode: "137503000",
-      isBilling: true,
-      isDefault: true,
-      isDelivery: false,
-      province: "Metro Manila",
-      provinceCode: "137500000",
-      region: "National Capital Region",
-      regionCode: "130000000",
-    },
-    addresses: [],
-    defaultReceivableAccount: "",
-    customerAdvanceAccount: "",
-    defaultPayableAccount: "",
-    vendorAdvanceAccount: "",
-    employeeAdvanceAccount: "",
-    employeePayableAccount: "",
-    termId: "term-1",
-    termName: "Standard payment terms",
-    tin: "742-118-306-000",
-    vatRegistrationType: "VAT Registered",
-    atcCode: "WC 160",
-    email: "ap@northfieldlogistics.example",
-    contactNo: "+63 919 441 7788",
-    createdAt: "2026-05-05T08:00:00.000Z",
-    updatedAt: "2026-05-14T08:00:00.000Z",
-  },
-  {
-    id: "party-004",
-    partyCodeNo: "PTY-0004",
-    classification: "Individual",
-    partyTypes: ["Customer"],
-    status: "Active",
-    partyName: "",
-    tradeName: "",
-    firstName: "Luis",
-    middleName: "Garcia",
-    lastName: "Dela Cruz",
-    suffixName: "Jr.",
-    address: {
-      id: "party-004-address-default",
-      addressName: "Default Address",
-      addressLine1: "15 Orchid Lane",
-      addressLine2: "Phase 2",
-      barangay: "Lahug",
-      barangayCode: "072217000",
-      cityMunicipality: "Cebu City",
-      cityMunicipalityCode: "072217000",
-      isBilling: true,
-      isDefault: true,
-      isDelivery: true,
-      province: "Cebu",
-      provinceCode: "072200000",
-      region: "Central Visayas",
-      regionCode: "070000000",
-    },
-    addresses: [],
-    defaultReceivableAccount: "",
-    customerAdvanceAccount: "",
-    defaultPayableAccount: "",
-    vendorAdvanceAccount: "",
-    employeeAdvanceAccount: "",
-    employeePayableAccount: "",
-    termId: "term-1",
-    termName: "Standard payment terms",
-    tin: "326-770-452-000",
-    vatRegistrationType: "Non-VAT",
-    atcCode: "WI 158",
-    email: "luis.delacruz@example.com",
-    contactNo: "+63 920 333 4455",
-    createdAt: "2026-05-07T08:00:00.000Z",
-    updatedAt: "2026-05-12T08:00:00.000Z",
-  },
-  ...createDisbursementVoucherMockParties(),
-];
+export { PartyInformationInitialRecords } from "@/app/src/data/modules/maintenance/party-management/PartyManagementSeedData";
 
 export function createPartyInformationFormValues(
   record: PartyInformationRecord,
@@ -298,6 +136,11 @@ export function createPartyInformationFormValues(
     middleName: record.middleName,
     lastName: record.lastName,
     suffixName: record.suffixName,
+    honorific: normalizePartyHonorific(record.honorific ?? ""),
+    gender: record.gender ?? "",
+    civilStatus: record.civilStatus ?? "",
+    nationality: record.nationality ?? PartyDefaultNationality,
+    memberRegistrationDate: record.memberRegistrationDate ?? "",
     address: { ...defaultAddress },
     addresses,
     activeAddressId: defaultAddress.id,
@@ -311,9 +154,12 @@ export function createPartyInformationFormValues(
     termName: record.termName ?? "",
     tin: record.tin,
     vatRegistrationType: record.vatRegistrationType,
+    vatRegistrationTypeId: record.vatRegistrationTypeId ?? "",
+    vatRegistration: record.vatRegistration ?? null,
     atcCode: record.atcCode ? normalizeAtcCode(record.atcCode) : "",
     email: record.email,
     contactNo: record.contactNo,
+    landline: record.landline ?? "",
   };
 }
 
@@ -354,6 +200,22 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
       values.classification === "Non-Individual"
         ? values.tradeName.trim() || null
         : null,
+    honorific:
+      values.classification === "Individual"
+        ? normalizePartyHonorific(values.honorific) || null
+        : null,
+    gender: hasPersonalInformationPartyType(partyTypes)
+      ? values.gender.trim() || null
+      : null,
+    civilStatus: hasPersonalInformationPartyType(partyTypes)
+      ? values.civilStatus.trim() || null
+      : null,
+    nationality: hasPersonalInformationPartyType(partyTypes)
+      ? values.nationality.trim() || PartyDefaultNationality
+      : null,
+    memberRegistrationDate: partyTypes.includes("Member")
+      ? values.memberRegistrationDate || todayDateValue()
+      : null,
     address: getDefaultPartyAddress(addresses),
     addresses,
     defaultReceivableAccount: partyTypes.includes("Customer")
@@ -378,9 +240,12 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
     termName: values.termName,
     tin: values.tin.trim(),
     vatRegistrationType: values.vatRegistrationType,
+    vatRegistrationTypeId: values.vatRegistrationTypeId,
+    vatRegistration: values.vatRegistration ?? null,
     atcCode: values.atcCode ? normalizeAtcCode(values.atcCode) : "",
     email: values.email.trim() || null,
     contactNo: normalizePartyContactNo(values.contactNo) || null,
+    landline: values.landline.trim() || null,
   };
 }
 
@@ -434,6 +299,11 @@ export function createPartyInformationRecordFromTableRecord(
     partyTypes: record.partyTypes,
     status: record.status,
     suffixName: record.suffixName,
+    honorific: record.honorific,
+    gender: record.gender,
+    civilStatus: record.civilStatus,
+    nationality: record.nationality,
+    memberRegistrationDate: record.memberRegistrationDate,
     termId: record.termId,
     termName: record.termName,
     tin: record.tin,
@@ -442,6 +312,8 @@ export function createPartyInformationRecordFromTableRecord(
     updatedAt: record.updatedAt,
     vendorAdvanceAccount: record.vendorAdvanceAccount,
     vatRegistrationType: record.vatRegistrationType,
+    vatRegistrationTypeId: record.vatRegistrationTypeId,
+    vatRegistration: record.vatRegistration,
   };
 }
 
@@ -516,6 +388,11 @@ export function createBlankPartyImportRow(
       middleName: "",
       lastName: "",
       suffixName: "",
+      honorific: "",
+      gender: "",
+      civilStatus: "",
+      nationality: "",
+      memberRegistrationDate: "",
       address,
       addresses: [address],
       defaultReceivableAccount: "",
@@ -528,9 +405,12 @@ export function createBlankPartyImportRow(
       termName: "",
       tin: "",
       vatRegistrationType: "",
+      vatRegistrationTypeId: "",
+      vatRegistration: null,
       atcCode: "",
       email: "",
       contactNo: "",
+      landline: "",
     },
     rowErrors: [],
     rowNumber,
@@ -604,8 +484,20 @@ export function normalizeImportedPartyCellValue(
     return normalizeImportedVatRegistrationType(value);
   }
 
+  if (field === "honorific") {
+    return normalizePartyHonorific(value);
+  }
+
   if (field === "tin") {
     return formatImportedTin(value);
+  }
+
+  if (field === "contactNo") {
+    return normalizePartyContactNo(value);
+  }
+
+  if (field === "memberRegistrationDate") {
+    return normalizeImportedDateValue(value);
   }
 
   if (field === "atcCode") {
@@ -758,26 +650,43 @@ function createPartyImportPreviewRow(
     partyTypes,
     classification,
   );
-  const address = createEmptyPartyAddress({
-    id: `party-import-${importBatchId}-${index}-address-default`,
-    isBilling:
-      normalizedPartyTypes.includes("Customer") ||
-      normalizedPartyTypes.includes("Vendor"),
-    isDefault: true,
-    isDelivery: normalizedPartyTypes.includes("Customer"),
-    isHome: normalizedPartyTypes.includes("Employee"),
-  });
   const accountingAccounts = applyPartyDefaultAccountingAccounts(
     {
-      customerAdvanceAccount: "",
-      defaultPayableAccount: "",
-      defaultReceivableAccount: "",
-      employeeAdvanceAccount: "",
-      employeePayableAccount: "",
-      vendorAdvanceAccount: "",
+      customerAdvanceAccount: getImportedPartyValue(
+        row,
+        indexes.customerAdvanceAccount,
+      ),
+      defaultPayableAccount: getImportedPartyValue(
+        row,
+        indexes.defaultPayableAccount,
+      ),
+      defaultReceivableAccount: getImportedPartyValue(
+        row,
+        indexes.defaultReceivableAccount,
+      ),
+      employeeAdvanceAccount: getImportedPartyValue(
+        row,
+        indexes.employeeAdvanceAccount,
+      ),
+      employeePayableAccount: getImportedPartyValue(
+        row,
+        indexes.employeePayableAccount,
+      ),
+      vendorAdvanceAccount: getImportedPartyValue(
+        row,
+        indexes.vendorAdvanceAccount,
+      ),
     },
     normalizedPartyTypes,
   );
+  const addresses = createImportPartyAddresses(
+    row,
+    indexes,
+    normalizedPartyTypes,
+    classification,
+    `party-import-${importBatchId}-${index}`,
+  );
+  const address = addresses[0] ?? createEmptyPartyAddress();
   const party: Omit<PartyInformationRecord, "id" | "createdAt" | "updatedAt"> = {
     partyCodeNo: getImportedPartyValue(row, indexes.partyCodeNo),
     classification,
@@ -789,18 +698,18 @@ function createPartyImportPreviewRow(
     middleName: getImportedPartyValue(row, indexes.middleName),
     lastName: getImportedPartyValue(row, indexes.lastName),
     suffixName: getImportedPartyValue(row, indexes.suffixName),
-    address: {
-      ...address,
-      addressLine1: getImportedPartyValue(row, indexes.addressLine1),
-      addressLine2: getImportedPartyValue(row, indexes.addressLine2),
-      barangay: getImportedPartyValue(row, indexes.barangay),
-      cityMunicipality: getImportedPartyValue(row, indexes.cityMunicipality),
-      province: getImportedPartyValue(row, indexes.province),
-    },
-    addresses: [],
+    honorific: normalizePartyHonorific(getImportedPartyValue(row, indexes.honorific)),
+    gender: getImportedPartyValue(row, indexes.gender),
+    civilStatus: getImportedPartyValue(row, indexes.civilStatus),
+    nationality: getImportedPartyValue(row, indexes.nationality),
+    memberRegistrationDate: normalizeImportedDateValue(
+      getImportedPartyValue(row, indexes.memberRegistrationDate),
+    ),
+    address,
+    addresses,
     ...accountingAccounts,
     termId: "",
-    termName: "",
+    termName: getImportedPartyValue(row, indexes.termName),
     tin: formatImportedTin(getImportedPartyValue(row, indexes.tin)),
     vatRegistrationType: normalizeImportedVatRegistrationType(
       getImportedPartyValue(row, indexes.vatRegistrationType),
@@ -808,9 +717,8 @@ function createPartyImportPreviewRow(
     atcCode: normalizeAtcCode(getImportedPartyValue(row, indexes.atcCode)),
     email: getImportedPartyValue(row, indexes.email),
     contactNo: getImportedPartyValue(row, indexes.contactNo),
+    landline: getImportedPartyValue(row, indexes.landline),
   };
-
-  party.addresses = [party.address];
 
   return {
     cellErrors: {},
@@ -819,6 +727,96 @@ function createPartyImportPreviewRow(
     party,
     rowErrors: [],
     rowNumber,
+  };
+}
+
+function createImportPartyAddresses(
+  row: string[],
+  indexes: Partial<Record<PartyImportColumnId, number>>,
+  partyTypes: PartyType[],
+  classification: PartyClassification,
+  idPrefix: string,
+) {
+  const roles = getPartyAddressRoles(
+    normalizePartyTypesForClassification(partyTypes, classification),
+  );
+  const fallbackAddress = {
+    addressLine1: getImportedPartyValue(row, indexes.addressLine1),
+    addressLine2: getImportedPartyValue(row, indexes.addressLine2),
+    barangay: getImportedPartyValue(row, indexes.barangay),
+    cityMunicipality: getImportedPartyValue(row, indexes.cityMunicipality),
+    province: getImportedPartyValue(row, indexes.province),
+  };
+  const addresses = roles.map((role, index) => {
+    const roleAddress = getImportedPartyAddressByRole(row, indexes, role);
+
+    return createEmptyPartyAddress({
+      id: `${idPrefix}-address-${role}`,
+      addressName: getAddressRoleLabel(role),
+      addressLine1: roleAddress.addressLine1 || fallbackAddress.addressLine1,
+      addressLine2: roleAddress.addressLine2 || fallbackAddress.addressLine2,
+      barangay: roleAddress.barangay || fallbackAddress.barangay,
+      cityMunicipality:
+        roleAddress.cityMunicipality || fallbackAddress.cityMunicipality,
+      province: roleAddress.province || fallbackAddress.province,
+      isBilling: role === "billing",
+      isDefault: index === 0,
+      isDelivery: role === "delivery",
+      isHome: role === "home",
+    });
+  });
+
+  if (addresses.length > 0) {
+    return addresses;
+  }
+
+  return [
+    createEmptyPartyAddress({
+      id: `${idPrefix}-address-default`,
+      addressName: "Address",
+      ...fallbackAddress,
+      isDefault: true,
+    }),
+  ];
+}
+
+function getImportedPartyAddressByRole(
+  row: string[],
+  indexes: Partial<Record<PartyImportColumnId, number>>,
+  role: PartyAddressRole,
+) {
+  if (role === "home") {
+    return {
+      addressLine1: getImportedPartyValue(row, indexes.homeAddressLine1),
+      addressLine2: getImportedPartyValue(row, indexes.homeAddressLine2),
+      barangay: getImportedPartyValue(row, indexes.homeBarangay),
+      cityMunicipality: getImportedPartyValue(row, indexes.homeCityMunicipality),
+      province: getImportedPartyValue(row, indexes.homeProvince),
+    };
+  }
+
+  if (role === "delivery") {
+    return {
+      addressLine1: getImportedPartyValue(row, indexes.deliveryAddressLine1),
+      addressLine2: getImportedPartyValue(row, indexes.deliveryAddressLine2),
+      barangay: getImportedPartyValue(row, indexes.deliveryBarangay),
+      cityMunicipality: getImportedPartyValue(
+        row,
+        indexes.deliveryCityMunicipality,
+      ),
+      province: getImportedPartyValue(row, indexes.deliveryProvince),
+    };
+  }
+
+  return {
+    addressLine1: getImportedPartyValue(row, indexes.billingAddressLine1),
+    addressLine2: getImportedPartyValue(row, indexes.billingAddressLine2),
+    barangay: getImportedPartyValue(row, indexes.billingBarangay),
+    cityMunicipality: getImportedPartyValue(
+      row,
+      indexes.billingCityMunicipality,
+    ),
+    province: getImportedPartyValue(row, indexes.billingProvince),
   };
 }
 
@@ -891,11 +889,12 @@ export function validatePartyImportRows(
     }
     if (
       row.party.classification === "Non-Individual" &&
-      row.party.partyTypes.includes("Employee")
+      (row.party.partyTypes.includes("Employee") ||
+        row.party.partyTypes.includes("Member"))
     ) {
       cellErrors.partyTypes = [
         ...(cellErrors.partyTypes ?? []),
-        "Employee is only available for individual parties.",
+        "Employee and Member are only available for individual parties.",
       ];
     }
 
@@ -959,20 +958,33 @@ export function validatePartyImportRows(
       ];
     }
 
-    if (!row.party.address.addressLine1.trim()) {
-      cellWarnings.addressLine1 = [
-        "Address line 1 is blank. You can complete it after import.",
+    if (row.party.partyTypes.includes("Member")) {
+      if (!row.party.gender?.trim()) {
+        cellErrors.gender = ["Gender is required for members."];
+      }
+      if (!row.party.civilStatus?.trim()) {
+        cellErrors.civilStatus = ["Civil status is required for members."];
+      }
+      if (!row.party.nationality?.trim()) {
+        cellErrors.nationality = ["Nationality is required for members."];
+      }
+      if (!row.party.memberRegistrationDate?.trim()) {
+        cellErrors.memberRegistrationDate = [
+          "Member registration date is required.",
+        ];
+      }
+    }
+
+    if (
+      row.party.memberRegistrationDate &&
+      !/^\d{4}-\d{2}-\d{2}$/.test(row.party.memberRegistrationDate)
+    ) {
+      cellErrors.memberRegistrationDate = [
+        "Member registration date must use YYYY-MM-DD.",
       ];
     }
-    if (!row.party.address.barangay.trim()) {
-      cellErrors.barangay = ["Barangay is required."];
-    }
-    if (!row.party.address.cityMunicipality.trim()) {
-      cellErrors.cityMunicipality = ["City/Municipality is required."];
-    }
-    if (!row.party.address.province.trim()) {
-      cellErrors.province = ["Province is required."];
-    }
+
+    validateImportedPartyAddresses(row.party, cellErrors, cellWarnings);
 
     return { ...row, cellErrors, cellWarnings, rowErrors };
   });
@@ -983,6 +995,132 @@ export function partyImportRowHasErrors(row: PartyImportPreviewRow) {
     row.rowErrors.length > 0 ||
     Object.values(row.cellErrors).some((errors) => Boolean(errors?.length))
   );
+}
+
+function validateImportedPartyAddresses(
+  party: Omit<PartyInformationRecord, "id" | "createdAt" | "updatedAt">,
+  cellErrors: PartyImportCellErrors,
+  cellWarnings: PartyImportCellWarnings,
+) {
+  const addresses =
+    party.addresses.length > 0 ? party.addresses : [party.address];
+
+  addresses.forEach((address, index) => {
+    const fieldMap = getPartyImportAddressFieldMap(address, index);
+
+    if (!address.addressLine1.trim()) {
+      cellWarnings[fieldMap.addressLine1] = [
+        "Address line 1 is blank. You can complete it after import.",
+      ];
+    }
+    if (!address.barangay.trim()) {
+      cellErrors[fieldMap.barangay] = ["Barangay is required."];
+    }
+    if (!address.cityMunicipality.trim()) {
+      cellErrors[fieldMap.cityMunicipality] = [
+        "City/Municipality is required.",
+      ];
+    }
+    if (!address.province.trim()) {
+      cellErrors[fieldMap.province] = ["Province is required."];
+    }
+  });
+}
+
+function getPartyImportAddressFieldMap(
+  address: PartyAddress,
+  index: number,
+): Record<
+  "addressLine1" | "addressLine2" | "barangay" | "cityMunicipality" | "province",
+  PartyImportColumnId
+> {
+  if (address.isHome) {
+    return {
+      addressLine1: "homeAddressLine1",
+      addressLine2: "homeAddressLine2",
+      barangay: "homeBarangay",
+      cityMunicipality: "homeCityMunicipality",
+      province: "homeProvince",
+    };
+  }
+
+  if (address.isDelivery) {
+    return {
+      addressLine1: "deliveryAddressLine1",
+      addressLine2: "deliveryAddressLine2",
+      barangay: "deliveryBarangay",
+      cityMunicipality: "deliveryCityMunicipality",
+      province: "deliveryProvince",
+    };
+  }
+
+  if (address.isBilling) {
+    return {
+      addressLine1: "billingAddressLine1",
+      addressLine2: "billingAddressLine2",
+      barangay: "billingBarangay",
+      cityMunicipality: "billingCityMunicipality",
+      province: "billingProvince",
+    };
+  }
+
+  return {
+    addressLine1: index === 0 ? "addressLine1" : "billingAddressLine1",
+    addressLine2: index === 0 ? "addressLine2" : "billingAddressLine2",
+    barangay: index === 0 ? "barangay" : "billingBarangay",
+    cityMunicipality:
+      index === 0 ? "cityMunicipality" : "billingCityMunicipality",
+    province: index === 0 ? "province" : "billingProvince",
+  };
+}
+
+function normalizeImportedPartyAddressesForRecord(
+  sourceAddresses: PartyAddress[],
+  partyTypes: PartyType[],
+  classification: PartyClassification,
+) {
+  const roles = getPartyAddressRoles(
+    normalizePartyTypesForClassification(partyTypes, classification),
+  );
+
+  if (roles.length === 0) {
+    const source = sourceAddresses[0] ?? createEmptyPartyAddress();
+
+    return [
+      {
+        ...source,
+        addressName: source.addressName || "Address",
+        isBilling: false,
+        isDefault: true,
+        isDelivery: false,
+        isHome: false,
+      },
+    ];
+  }
+
+  return roles.map((role, index) => {
+    const source =
+      sourceAddresses.find((address) => addressHasRole(address, role)) ??
+      sourceAddresses[index] ??
+      sourceAddresses[0] ??
+      createEmptyPartyAddress();
+
+    return {
+      ...source,
+      addressName: source.addressName || getAddressRoleLabel(role),
+      isBilling: role === "billing",
+      isDefault: index === 0,
+      isDelivery: role === "delivery",
+      isHome: role === "home",
+    };
+  });
+}
+
+function addressHasRole(address: PartyAddress, role: PartyAddressRole) {
+  if (role === "billing") return address.isBilling;
+  if (role === "delivery") return address.isDelivery;
+
+  return address.isHome;
 }
 
 export function validatePartyImportFileSize(file: File) {
@@ -1018,18 +1156,13 @@ export function createPartyImportRecord(
     party,
     partyTypes,
   );
-  const addresses = applyDefaultAddressRoles(
-    [
-      {
-        ...party.address,
-        addressName: party.address.addressName || "Default Address",
-        isDefault: true,
-      },
-    ],
+  const addresses = normalizeImportedPartyAddressesForRecord(
+    party.addresses.length > 0 ? party.addresses : [party.address],
     partyTypes,
     party.classification,
   );
   const address = addresses[0] ?? createEmptyPartyAddress();
+  const hasPersonalInformation = hasPersonalInformationPartyType(partyTypes);
 
   return {
     ...party,
@@ -1050,6 +1183,18 @@ export function createPartyImportRecord(
       party.classification === "Individual" ? party.lastName.trim() : "",
     suffixName:
       party.classification === "Individual" ? party.suffixName.trim() : "",
+    honorific:
+      party.classification === "Individual"
+        ? normalizePartyHonorific(party.honorific ?? "")
+        : "",
+    gender: hasPersonalInformation ? (party.gender ?? "").trim() : "",
+    civilStatus: hasPersonalInformation ? (party.civilStatus ?? "").trim() : "",
+    nationality: hasPersonalInformation
+      ? (party.nationality ?? "").trim() || PartyDefaultNationality
+      : "",
+    memberRegistrationDate: partyTypes.includes("Member")
+      ? party.memberRegistrationDate || todayDateValue()
+      : "",
     address,
     addresses,
     defaultReceivableAccount: partyTypes.includes("Customer")
@@ -1071,9 +1216,15 @@ export function createPartyImportRecord(
       ? accountingAccounts.employeePayableAccount
       : "",
     tin: party.tin.trim(),
+    termId: party.termId,
+    termName: party.termName.trim(),
+    vatRegistrationType: party.vatRegistrationType,
+    vatRegistrationTypeId: party.vatRegistrationTypeId,
+    vatRegistration: party.vatRegistration ?? null,
     atcCode: party.atcCode ? normalizeAtcCode(party.atcCode) : "",
     email: party.email.trim(),
     contactNo: normalizePartyContactNo(party.contactNo),
+    landline: party.landline?.trim() ?? "",
     createdAt: now,
     updatedAt: now,
   };
@@ -1162,6 +1313,20 @@ function normalizePartyRecordValues(
       values.classification === "Individual" ? values.lastName.trim() : "",
     suffixName:
       values.classification === "Individual" ? values.suffixName.trim() : "",
+    honorific:
+      values.classification === "Individual"
+        ? normalizePartyHonorific(values.honorific)
+        : "",
+    gender: hasPersonalInformationPartyType(partyTypes) ? values.gender.trim() : "",
+    civilStatus: hasPersonalInformationPartyType(partyTypes)
+      ? values.civilStatus.trim()
+      : "",
+    nationality: hasPersonalInformationPartyType(partyTypes)
+      ? values.nationality.trim() || PartyDefaultNationality
+      : "",
+    memberRegistrationDate: partyTypes.includes("Member")
+      ? values.memberRegistrationDate || todayDateValue()
+      : "",
     address: defaultAddress,
     addresses,
     partyTypes,
@@ -1186,9 +1351,13 @@ function normalizePartyRecordValues(
     termId: values.termId,
     termName: values.termName,
     tin: values.tin.trim(),
+    vatRegistrationType: values.vatRegistrationType,
+    vatRegistrationTypeId: values.vatRegistrationTypeId,
+    vatRegistration: values.vatRegistration ?? null,
     atcCode: values.atcCode ? normalizeAtcCode(values.atcCode) : "",
     email: values.email.trim(),
     contactNo: normalizePartyContactNo(values.contactNo),
+    landline: values.landline.trim(),
   };
 }
 
@@ -1198,388 +1367,17 @@ function normalizePartyContactNo(value: string) {
   return contactNo === DefaultPhilippineContactNumber.trim() ? "" : contactNo;
 }
 
-function createDisbursementVoucherMockParties(): PartyInformationRecord[] {
-  const now = "2026-05-18T08:00:00.000Z";
+export {
+  applyDefaultAddressRoles,
+  clearAddressRolesForPartyTypes,
+  createEmptyPartyAddress,
+  hasPersonalInformationPartyType,
+  normalizePartyTypesForClassification,
+  setPartyDefaultAddress,
+} from "@/app/src/data/modules/maintenance/party-management/PartyManagementAddressData";
 
-  return [
-    createMockParty({
-      id: "party-dv-office-depot",
-      partyCodeNo: "VCE-OD-204",
-      partyName: "North Harbor Office Depot",
-      tradeName: "North Harbor Office Depot",
-      tin: "201-442-901-000",
-      email: "billing@northharboroffice.example",
-      contactNo: "+63 917 820 1204",
-      createdAt: now,
-      updatedAt: now,
-    }),
-    createMockParty({
-      id: "party-dv-metro-utilities",
-      partyCodeNo: "VCE-MU-301",
-      partyName: "Metro Utilities Services",
-      tradeName: "Metro Utilities",
-      tin: "311-008-771-000",
-      email: "collections@metroutilities.example",
-      contactNo: "+63 917 830 1301",
-      createdAt: now,
-      updatedAt: now,
-    }),
-    createMockParty({
-      id: "party-dv-legal",
-      partyCodeNo: "VCE-LAW-108",
-      partyName: "Santos and Velasco Legal",
-      tradeName: "Santos and Velasco Legal",
-      tin: "108-552-664-000",
-      email: "billing@santosvelasco.example",
-      contactNo: "+63 917 810 1108",
-      createdAt: now,
-      updatedAt: now,
-    }),
-    createMockParty({
-      id: "party-dv-global-freight",
-      partyCodeNo: "VCE-GFM-412",
-      partyName: "Global Freight Movers",
-      tradeName: "Global Freight Movers",
-      tin: "412-226-880-000",
-      email: "ap@globalfreight.example",
-      contactNo: "+63 917 840 1412",
-      createdAt: now,
-      updatedAt: now,
-    }),
-    createMockParty({
-      id: "party-dv-techpro",
-      partyCodeNo: "VCE-TPI-506",
-      partyName: "TechPro Infrastructure",
-      tradeName: "TechPro Infrastructure",
-      tin: "506-119-742-000",
-      email: "billing@techproinfra.example",
-      contactNo: "+63 917 850 1506",
-      createdAt: now,
-      updatedAt: now,
-    }),
-    createMockParty({
-      classification: "Individual",
-      id: "party-dv-juan-dela-cruz",
-      partyCodeNo: "EMP-044",
-      firstName: "Juan",
-      middleName: "",
-      lastName: "Dela Cruz",
-      suffixName: "",
-      partyTypes: ["Employee"],
-      tin: "044-219-775-000",
-      email: "juan.delacruz@example.com",
-      contactNo: "+63 917 800 1044",
-      createdAt: now,
-      updatedAt: now,
-    }),
-  ];
-}
-
-function createMockParty({
-  classification = "Non-Individual",
-  contactNo,
-  createdAt,
-  email,
-  firstName = "",
-  id,
-  lastName = "",
-  middleName = "",
-  partyCodeNo,
-  partyName = "",
-  partyTypes = ["Vendor"],
-  suffixName = "",
-  tin,
-  tradeName = "",
-  updatedAt,
-}: {
-  classification?: PartyClassification;
-  contactNo: string;
-  createdAt: string;
-  email: string;
-  firstName?: string;
-  id: string;
-  lastName?: string;
-  middleName?: string;
-  partyCodeNo: string;
-  partyName?: string;
-  partyTypes?: PartyType[];
-  suffixName?: string;
-  tin: string;
-  tradeName?: string;
-  updatedAt: string;
-}): PartyInformationRecord {
-  return {
-    id,
-    partyCodeNo,
-    classification,
-    partyTypes,
-    status: "Active",
-    partyName,
-    tradeName,
-    firstName,
-    middleName,
-    lastName,
-    suffixName,
-    address: {
-      id: `${id}-address-default`,
-      addressName: "Default Address",
-      addressLine1: "Makati Business District",
-      addressLine2: "",
-      barangay: "San Lorenzo",
-      barangayCode: "137602000",
-      cityMunicipality: "Makati City",
-      cityMunicipalityCode: "137602000",
-      isBilling: true,
-      isDefault: true,
-      isDelivery: false,
-      province: "Metro Manila",
-      provinceCode: "137600000",
-      region: "National Capital Region",
-      regionCode: "130000000",
-    },
-    addresses: [],
-    defaultReceivableAccount: "",
-    customerAdvanceAccount: "",
-    defaultPayableAccount: "",
-    vendorAdvanceAccount: "",
-    employeeAdvanceAccount: "",
-    employeePayableAccount: "",
-    termId: partyTypes.includes("Employee") ? "" : "term-1",
-    termName: partyTypes.includes("Employee") ? "" : "Standard payment terms",
-    tin,
-    vatRegistrationType:
-      classification === "Individual" ? "Non-VAT" : "VAT Registered",
-    atcCode: classification === "Individual" ? "WI 010" : "WC 158",
-    email,
-    contactNo,
-    createdAt,
-    updatedAt,
-  };
-}
-
-export function createEmptyPartyAddress(
-  options: {
-    addressName?: string;
-    id?: string;
-    isBilling?: boolean;
-    isDefault?: boolean;
-    isDelivery?: boolean;
-    isHome?: boolean;
-  } = {},
-): PartyAddress {
-  return {
-    id: options.id ?? "address-default",
-    addressName: options.addressName ?? "Default Address",
-    addressLine1: "",
-    addressLine2: "",
-    barangay: "",
-    barangayCode: "",
-    cityMunicipality: "",
-    cityMunicipalityCode: "",
-    isBilling: Boolean(options.isBilling),
-    isBuilding: false,
-    isDefault: options.isDefault ?? true,
-    isDelivery: Boolean(options.isDelivery),
-    isForeign: false,
-    isHome: Boolean(options.isHome),
-    province: "",
-    provinceCode: "",
-    region: "",
-    regionCode: "",
-  };
-}
-
-function normalizePartyAddress(address: PartyAddress): PartyAddress {
-  return {
-    id: address.id,
-    addressName: address.addressName.trim() || "Address",
-    addressLine1: address.addressLine1.trim(),
-    addressLine2: address.addressLine2.trim(),
-    barangay: address.barangay.trim(),
-    barangayCode: address.barangayCode,
-    cityMunicipality: address.cityMunicipality.trim(),
-    cityMunicipalityCode: address.cityMunicipalityCode,
-    isBilling: address.isBilling,
-    isBuilding: Boolean(address.isBuilding),
-    isDefault: address.isDefault,
-    isDelivery: address.isDelivery,
-    isForeign: Boolean(address.isForeign),
-    isHome: Boolean(address.isHome),
-    province: address.province.trim(),
-    provinceCode: address.provinceCode,
-    region: address.region.trim(),
-    regionCode: address.regionCode,
-  };
-}
-
-function normalizePartyAddresses(
-  addresses: PartyAddress[],
-  partyTypes: PartyType[] = [],
-  classification: PartyClassification | "" = "",
-) {
-  return applyDefaultAddressRoles(
-    addresses.map(normalizePartyAddress),
-    partyTypes,
-    classification,
-  );
-}
-
-export function setPartyDefaultAddress(
-  addresses: PartyAddress[],
-  addressId?: string,
-) {
-  const requestedIndex = addressId
-    ? addresses.findIndex((address) => address.id === addressId)
-    : -1;
-  const currentDefaultIndex = addresses.findIndex(
-    (address) => address.isDefault,
-  );
-  const defaultIndex =
-    requestedIndex >= 0
-      ? requestedIndex
-      : currentDefaultIndex >= 0
-        ? currentDefaultIndex
-        : 0;
-
-  return addresses.map((address, index) => {
-    const isDefault = index === defaultIndex;
-
-    return {
-      ...address,
-      addressName: isDefault
-        ? address.addressName.trim() || "Default Address"
-        : address.addressName === "Default Address"
-          ? `Address ${index + 1}`
-          : address.addressName,
-      isBilling: address.isBilling,
-      isBuilding: address.isBuilding,
-      isDefault,
-      isDelivery: address.isDelivery,
-      isForeign: isDefault ? false : address.isForeign,
-      isHome: address.isHome,
-    };
-  }).sort((first, second) => Number(second.isDefault) - Number(first.isDefault));
-}
-
-export function clearAddressRolesForPartyTypes(
-  addresses: PartyAddress[],
-  partyTypes: PartyType[],
-  classification: PartyClassification | "" = "",
-) {
-  return applyDefaultAddressRoles(addresses, partyTypes, classification);
-}
-
-export function applyDefaultAddressRoles(
-  addresses: PartyAddress[],
-  partyTypes: PartyType[],
-  classification: PartyClassification | "" = "",
-) {
-  const normalizedPartyTypes = normalizePartyTypesForClassification(
-    partyTypes,
-    classification,
-  );
-  const addressRoles = getPartyAddressRoles(normalizedPartyTypes);
-
-  if (addressRoles.length === 0) {
-    return [createEmptyPartyAddress()];
-  }
-
-  return addressRoles.map((role, index) => {
-    const sourceAddress =
-      addresses.find((address) => getAddressRole(address) === role) ??
-      (role === "billing" ? addresses[0] : undefined);
-    const address = sourceAddress ?? createEmptyPartyAddress();
-
-    return {
-      ...address,
-      id: address.id && getAddressRole(address) === role ? address.id : `address-${role}`,
-      addressName: getAddressRoleLabel(role),
-      isBilling: role === "billing",
-      isBuilding: false,
-      isDefault: index === 0,
-      isDelivery: role === "shipping",
-      isHome: role === "home",
-    };
-  });
-}
-
-export function normalizePartyTypesForClassification(
-  partyTypes: PartyType[],
-  classification: PartyClassification | "",
-) {
-  if (!classification) {
-    return [];
-  }
-
-  return classification === "Non-Individual"
-    ? partyTypes.filter((partyType) => partyType !== "Employee")
-    : partyTypes;
-}
-
-function normalizePartyAddressesForForm(record: PartyInformationRecord) {
-  const addresses =
-    record.addresses?.length > 0 ? record.addresses : [record.address];
-
-  return normalizePartyAddresses(
-    addresses.map((address, index) => ({
-      ...createEmptyPartyAddress(),
-      ...address,
-      id: address.id || `${record.id}-address-${index + 1}`,
-      addressName:
-        address.addressName || (index === 0 ? "Default Address" : "Address"),
-      isDefault: address.isDefault || index === 0,
-    })),
-    record.partyTypes,
-    record.classification,
-  );
-}
-
-function getDefaultPartyAddress(addresses: PartyAddress[]) {
-  return (
-    setPartyDefaultAddress(addresses.map(normalizePartyAddress)).find(
-      (address) => address.isDefault,
-    ) ??
-    createEmptyPartyAddress()
-  );
-}
-
-type PartyAddressRole = "billing" | "home" | "shipping";
-
-function getPartyAddressRoles(partyTypes: PartyType[]): PartyAddressRole[] {
-  return [
-    partyTypes.includes("Employee") ? "home" : null,
-    partyTypes.includes("Customer") || partyTypes.includes("Vendor")
-      ? "billing"
-      : null,
-    partyTypes.includes("Customer") ? "shipping" : null,
-  ].filter((role): role is PartyAddressRole => Boolean(role));
-}
-
-function getAddressRole(address: PartyAddress): PartyAddressRole | undefined {
-  if (address.isHome) {
-    return "home";
-  }
-
-  if (address.isDelivery) {
-    return "shipping";
-  }
-
-  if (address.isBilling) {
-    return "billing";
-  }
-
-  return undefined;
-}
-
-function getAddressRoleLabel(role: PartyAddressRole) {
-  switch (role) {
-    case "billing":
-      return "Billing Address";
-    case "home":
-      return "Home Address";
-    case "shipping":
-      return "Shipping Address";
-  }
+function normalizePartyHonorific(value: string) {
+  return value.replace(/\s*\([^)]*\)\s*$/, "").trim();
 }
 
 export function parsePartyImportTabularRows(text: string) {
@@ -1658,20 +1456,55 @@ function normalizePartyImportHeader(value: string): PartyImportColumnId | null {
   if (["partytypes", "partytype", "type", "types"].includes(normalized)) return "partyTypes";
   if (["partyname", "name", "companyname", "organizationname"].includes(normalized)) return "partyName";
   if (["tradename"].includes(normalized)) return "tradeName";
+  if (["honorific", "title", "salutation"].includes(normalized)) return "honorific";
   if (["firstname", "givenname"].includes(normalized)) return "firstName";
   if (["middlename"].includes(normalized)) return "middleName";
   if (["lastname", "surname"].includes(normalized)) return "lastName";
   if (["suffixname", "suffix"].includes(normalized)) return "suffixName";
+  if (["gender", "sex"].includes(normalized)) return "gender";
+  if (["civilstatus", "maritalstatus"].includes(normalized)) return "civilStatus";
+  if (["nationality", "citizenship"].includes(normalized)) return "nationality";
+  if (
+    [
+      "memberregistrationdate",
+      "memberdate",
+      "registrationdate",
+      "membershipdate",
+    ].includes(normalized)
+  ) return "memberRegistrationDate";
   if (["tin", "tinno", "taxidentificationnumber"].includes(normalized)) return "tin";
   if (["vatregistrationtype", "vatregistry", "vat", "vattype"].includes(normalized)) return "vatRegistrationType";
   if (["atccode", "atc"].includes(normalized)) return "atcCode";
   if (["email", "emailaddress"].includes(normalized)) return "email";
-  if (["contactno", "contactnumber", "phone", "mobile"].includes(normalized)) return "contactNo";
+  if (["contactno", "contactnumber", "phone", "mobile", "mobilenumber"].includes(normalized)) return "contactNo";
+  if (["landline", "landlinenumber", "telephone"].includes(normalized)) return "landline";
   if (["addressline1", "address1"].includes(normalized)) return "addressLine1";
   if (["addressline2", "address2"].includes(normalized)) return "addressLine2";
   if (["barangay", "brgy"].includes(normalized)) return "barangay";
   if (["citymunicipality", "city", "municipality"].includes(normalized)) return "cityMunicipality";
   if (["province"].includes(normalized)) return "province";
+  if (["homeaddressline1", "homeaddress1"].includes(normalized)) return "homeAddressLine1";
+  if (["homeaddressline2", "homeaddress2"].includes(normalized)) return "homeAddressLine2";
+  if (["homebarangay", "homebrgy"].includes(normalized)) return "homeBarangay";
+  if (["homecitymunicipality", "homecity", "homemunicipality"].includes(normalized)) return "homeCityMunicipality";
+  if (["homeprovince"].includes(normalized)) return "homeProvince";
+  if (["billingaddressline1", "billingaddress1"].includes(normalized)) return "billingAddressLine1";
+  if (["billingaddressline2", "billingaddress2"].includes(normalized)) return "billingAddressLine2";
+  if (["billingbarangay", "billingbrgy"].includes(normalized)) return "billingBarangay";
+  if (["billingcitymunicipality", "billingcity", "billingmunicipality"].includes(normalized)) return "billingCityMunicipality";
+  if (["billingprovince"].includes(normalized)) return "billingProvince";
+  if (["deliveryaddressline1", "deliveryaddress1"].includes(normalized)) return "deliveryAddressLine1";
+  if (["deliveryaddressline2", "deliveryaddress2"].includes(normalized)) return "deliveryAddressLine2";
+  if (["deliverybarangay", "deliverybrgy"].includes(normalized)) return "deliveryBarangay";
+  if (["deliverycitymunicipality", "deliverycity", "deliverymunicipality"].includes(normalized)) return "deliveryCityMunicipality";
+  if (["deliveryprovince"].includes(normalized)) return "deliveryProvince";
+  if (["terms", "term", "termname", "defaultterms"].includes(normalized)) return "termName";
+  if (["defaultreceivableaccount", "defaultreceivableaccounttitle", "receivableaccount", "receivableaccounttitle"].includes(normalized)) return "defaultReceivableAccount";
+  if (["defaultcustomeradvanceaccount", "defaultcustomeradvanceaccounttitle", "customeradvanceaccount", "customeradvanceaccounttitle"].includes(normalized)) return "customerAdvanceAccount";
+  if (["defaultpayableaccount", "defaultpayableaccounttitle", "payableaccount", "payableaccounttitle"].includes(normalized)) return "defaultPayableAccount";
+  if (["defaultvendoradvanceaccount", "defaultvendoradvanceaccounttitle", "vendoradvanceaccount", "vendoradvanceaccounttitle"].includes(normalized)) return "vendorAdvanceAccount";
+  if (["defaultemployeeadvanceaccount", "defaultemployeeadvanceaccounttitle", "employeeadvanceaccount", "employeeadvanceaccounttitle"].includes(normalized)) return "employeeAdvanceAccount";
+  if (["defaultemployeepayableaccount", "defaultemployeepayableaccounttitle", "employeepayableaccount", "employeepayableaccounttitle"].includes(normalized)) return "employeePayableAccount";
   return null;
 }
 
@@ -1731,6 +1564,25 @@ function normalizeImportedVatRegistrationType(
         option.toLowerCase().replace(/[^a-z0-9]/g, "") === normalized,
     ) ?? (value as VatRegistrationType)
   );
+}
+
+function normalizeImportedDateValue(value: string) {
+  const dateValue = value.trim();
+
+  if (!dateValue) {
+    return "";
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+
+  const parsedDate = new Date(dateValue);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return dateValue;
+  }
+
+  return parsedDate.toISOString().slice(0, 10);
 }
 
 function formatImportedTin(value: string) {

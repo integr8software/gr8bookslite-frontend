@@ -8,6 +8,7 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function DiscountManagementTableRow({
 	discount,
@@ -25,7 +26,7 @@ export function DiscountManagementTableRow({
 				? visibleCells.map((cell) => (
 						<DiscountManagementTableCell
 							key={cell.id}
-							align={isCenteredColumn(cell.column.id) ? "center" : "left"}
+							className={getColumnMetaClassName(cell.column.columnDef.meta)}
 						>
 							<DiscountManagementCellContent
 								columnId={cell.column.id}
@@ -39,12 +40,6 @@ export function DiscountManagementTableRow({
 					))
 				: null}
 		</tr>
-	);
-}
-
-function isCenteredColumn(columnId: string) {
-	return ["actions", "type", "discountType", "amount", "status"].includes(
-		columnId,
 	);
 }
 
@@ -139,15 +134,15 @@ function DiscountManagementCellContent({
 }
 
 function DiscountManagementTableCell({
-	align = "left",
+	className = "text-left",
 	children,
 }: {
-	align?: "center" | "left";
+	className?: string;
 	children: React.ReactNode;
 }) {
 	return (
 		<td
-			className={`px-4 py-4 align-middle text-sm text-darknavy ${align === "center" ? "text-center" : "text-left"}`}
+			className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}
 		>
 			{children}
 		</td>

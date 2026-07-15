@@ -47,19 +47,20 @@ export function useAddressOptions({
 		() => {
 			const provinces = provincesQuery.data ?? [];
 			const loadedRegions = regionsQuery.data ?? [];
-			const regions = loadedRegions.some(
-				(region) => region.regionCode === NcrRegionCode,
-			)
-				? loadedRegions
-				: [
-						...loadedRegions,
-						{
-							id: 0,
-							name: "National Capital Region",
-							psgcCode: NcrRegionCode,
-							regionCode: NcrRegionCode,
-						},
-					];
+			const shouldAddNcrFallback =
+				loadedRegions.length > 0 &&
+				!loadedRegions.some((region) => region.regionCode === NcrRegionCode);
+			const regions = shouldAddNcrFallback
+				? [
+					...loadedRegions,
+					{
+						id: 0,
+						name: "National Capital Region",
+						psgcCode: NcrRegionCode,
+						regionCode: NcrRegionCode,
+					},
+				]
+				: loadedRegions;
 			const regionCodesWithProvinces = new Set(
 				provinces.map((province) => province.regionCode),
 			);

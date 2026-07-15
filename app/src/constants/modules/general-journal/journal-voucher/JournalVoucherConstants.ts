@@ -7,10 +7,26 @@ export const JournalVoucherTablePaginationStorageKey =
 
 export const JournalVoucherStatusOptions: JournalVoucherStatus[] = [
   "Draft",
-  "Open",
+  "Approved",
+  "Disapproved",
   "Posted",
   "Cancelled",
 ];
+
+export const JournalVoucherStatusFilters = [
+  "all",
+  "Draft",
+  "Approved",
+  "Disapproved",
+  "Posted",
+  "Cancelled",
+] as const;
+
+export const JournalVoucherStatusFilterOptions =
+  JournalVoucherStatusFilters.map((status) => ({
+    label: status === "all" ? "All" : status,
+    value: status,
+  }));
 
 export const JournalVoucherCurrencyOptions = [
   "PHP",
@@ -28,7 +44,7 @@ export const JournalVoucherVatTypeOptions = [
 
 export const JournalVoucherActionCopy = {
   add: {
-    title: "Add Journal Voucher",
+    title: "Create New Journal Voucher",
     description:
       "Encode the voucher header and balanced debit and credit entries.",
   },
@@ -48,14 +64,14 @@ export const JournalVoucherLineColumnIds = [
   "accountCode",
   "accountTitle",
   "particulars",
+  "debit",
+  "credit",
+  "vatType",
+  "atcCode",
   "partyCode",
   "partyName",
   "responsibilityCenter",
   "refNo",
-  "vatType",
-  "atcCode",
-  "debit",
-  "credit",
 ] as const;
 
 export type JournalVoucherLineColumnId =

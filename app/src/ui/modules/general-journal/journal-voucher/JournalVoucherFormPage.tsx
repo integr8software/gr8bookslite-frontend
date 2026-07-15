@@ -3,7 +3,6 @@
 import type { ChangeEventHandler } from "react";
 import {
   JournalVoucherCurrencyOptions,
-  JournalVoucherStatusOptions,
 } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
 import { useJournalVoucherFormPage } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucherFormPage";
 import { JournalVoucherDataEntryTable } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherDataEntryTable";
@@ -32,17 +31,9 @@ export function JournalVoucherFormPage() {
         <section className="grid gap-5 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
             <div className="grid gap-4">
-              <TextareaField
-                label="Remarks"
-                name="remarks"
-                value={page.values.remarks}
-                error={page.errors.remarks}
-                disabled={page.isReadonly}
-                onChange={page.handleInputChange}
-              />
               <div className="grid gap-4 sm:grid-cols-2">
                 <SelectField
-                  label="Currency Type *"
+                  label="Currency *"
                   name="currencyType"
                   value={page.values.currencyType}
                   error={page.errors.currencyType}
@@ -51,17 +42,25 @@ export function JournalVoucherFormPage() {
                   onChange={page.handleInputChange}
                 />
                 <TextField
-                  label="Currency Rate *"
+                  label="Exchange Rate *"
                   name="currencyRate"
                   type="number"
                   min="0"
                   step="0.000001"
                   value={String(page.values.currencyRate)}
                   error={page.errors.currencyRate}
-                  disabled={page.isReadonly}
+                  disabled={page.isReadonly || page.isExchangeRateLoading}
                   onChange={page.handleInputChange}
                 />
               </div>
+              <TextareaField
+                label="Remarks"
+                name="remarks"
+                value={page.values.remarks}
+                error={page.errors.remarks}
+                disabled={page.isReadonly}
+                onChange={page.handleInputChange}
+              />
             </div>
 
             <div className="grid content-start gap-4">
@@ -82,13 +81,13 @@ export function JournalVoucherFormPage() {
                 disabled={page.isReadonly}
                 onChange={page.handleInputChange}
               />
-              <SelectField
+              <TextField
                 label="Status *"
                 name="status"
                 value={page.values.status}
                 error={page.errors.status}
                 disabled={page.isReadonly}
-                options={JournalVoucherStatusOptions}
+                readOnly
                 onChange={page.handleInputChange}
               />
             </div>
@@ -121,6 +120,7 @@ type FieldProps = {
   value: string;
   type?: string;
   min?: string;
+  readOnly?: boolean;
   step?: string;
 };
 
@@ -133,6 +133,7 @@ function TextField({
   value,
   type = "text",
   min,
+  readOnly = false,
   step,
 }: FieldProps) {
   return (
@@ -146,6 +147,7 @@ function TextField({
         min={min}
         name={name}
         onChange={onChange}
+        readOnly={readOnly}
         step={step}
         type={type}
         value={value}

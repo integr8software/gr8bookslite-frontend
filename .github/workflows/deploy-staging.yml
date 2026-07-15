@@ -27,7 +27,7 @@ jobs:
 
           Set-Location "I:\Gr8BooksNeo\apps\frontend"
 
-          git fetch origin
+          git fetch origin staging:refs/remotes/origin/staging
           git reset --hard origin/staging
 
           npm ci

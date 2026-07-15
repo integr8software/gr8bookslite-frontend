@@ -29,7 +29,7 @@ export const paymongoWebhookControllerIngestWebhook = (
 
 
       return OrvalApiClient<void>(
-      {url: `/api/webhooks/paymongo`, method: 'POST', signal
+      {url: `/api/v1/webhooks/paymongo`, method: 'POST', signal
     },
       options);
     }

@@ -7,7 +7,7 @@ on:
 
 concurrency:
   group: gr8booksneo-frontend-staging
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -30,8 +30,10 @@ jobs:
           git fetch origin staging:refs/remotes/origin/staging
           git reset --hard origin/staging
 
+          pm2 stop gr8booksneo-frontend-staging
+
           npm ci
           npm run build
 
-          pm2 restart gr8booksneo-frontend-staging --update-env
+          pm2 startOrRestart ecosystem.config.cjs --update-env
           pm2 save

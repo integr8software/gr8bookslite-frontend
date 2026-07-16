@@ -105,7 +105,7 @@ export function OfficialReceiptActionPage() {
         isOpen={isReportPreviewOpen}
         values={receiptForm.values}
         onClose={() => setIsReportPreviewOpen(false)}
-        onPrint={() => openOfficialReceiptPdf(receiptForm.values)}
+        onGeneratePdf={() => openOfficialReceiptPdf(receiptForm.values)}
       />
 
       {!isReadonly && isPaymentTypeDialogOpen ? (

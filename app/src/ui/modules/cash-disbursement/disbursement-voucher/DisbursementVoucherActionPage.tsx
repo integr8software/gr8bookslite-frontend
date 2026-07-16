@@ -687,7 +687,7 @@ function DisbursementVoucherActionInner() {
         isOpen={isReportPreviewOpen}
         values={values}
         onClose={() => setIsReportPreviewOpen(false)}
-        onPrint={() => openDisbursementVoucherPdf(values)}
+        onGeneratePdf={() => openDisbursementVoucherPdf(values)}
       />
 
       <AppTaxRateDialog

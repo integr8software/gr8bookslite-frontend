@@ -113,7 +113,7 @@ export function ItemInformationFields({
 			<FormField label="Category" error={errors.primaryCategory} required>
 				<AppAdvancedDropdown
 					options={categoryOptions}
-					placeholder="Select category"
+					placeholder="--Select Category--"
 					readOnly={isReadonly}
 					value={values.primaryCategory}
 					onChange={(value) => onFieldChange("primaryCategory", String(value))}
@@ -167,7 +167,7 @@ export function ItemInformationFields({
 				<AppAdvancedDropdown
 					isClearable
 					options={responsibilityCenterOptions}
-					placeholder="Select cost center"
+					placeholder="--Select Cost Center--"
 					readOnly={isReadonly}
 					value={values.responsibilityCenter}
 					onChange={(value) =>
@@ -368,7 +368,7 @@ export function ItemInventoryFields({
 				<AppAdvancedDropdown
 					isClearable
 					options={warehouseOptions}
-					placeholder="Select default warehouse"
+					placeholder="--Select Default Warehouse--"
 					readOnly={isReadonly}
 					value={values.defaultWarehouse}
 					onChange={(value) => onFieldChange("defaultWarehouse", String(value))}

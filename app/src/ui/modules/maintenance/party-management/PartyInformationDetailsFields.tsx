@@ -171,8 +171,8 @@ export function PartyInformationDetailsFields({
 										options={partyTypeSelectOptions}
 										placeholder={
 											isClassificationSelected
-												? "Select party type"
-												: "Select classification first"
+												? "--Select Party Type--"
+												: "--Select Classification First--"
 										}
 										removeSelectionOnSelectedOptionClick
 										selectionMode="multiple"
@@ -255,7 +255,7 @@ export function PartyInformationDetailsFields({
 											disabled={isDetailsDisabled}
 											isSearchable={false}
 											options={honorificOptions}
-											placeholder="Select Honorific"
+											placeholder="--Select Honorific--"
 											value={values.honorific}
 											onChange={(value) =>
 												onUpdateField(
@@ -468,7 +468,7 @@ export function PartyInformationDetailsFields({
 										disabled={isDetailsDisabled}
 										emptyMessage="No active tax maintenance records found."
 										options={taxMaintenanceOptions}
-										placeholder="Select VAT type"
+										placeholder="--Select VAT Type--"
 										searchPlaceholder="Search VAT type"
 										showSelectedDetails
 										value={values.vatRegistrationTypeId}
@@ -480,7 +480,7 @@ export function PartyInformationDetailsFields({
 										disabled={isDetailsDisabled}
 										emptyMessage="No ATC codes match the selected classification."
 										options={atcSelectOptions}
-										placeholder="Select BIR ATC code"
+										placeholder="--Select BIR ATC Code--"
 										searchPlaceholder="Search ATC code, label, or description"
 										value={values.atcCode}
 										onChange={onSelectAtcCode}
@@ -644,7 +644,7 @@ function AccountFields({
 					disabled={disabled}
 					emptyMessage="No Active Terms Found."
 					options={termOptions}
-					placeholder="Select terms"
+					placeholder="--Select Terms--"
 					searchPlaceholder="Search Terms"
 					value={values.termId}
 					onChange={onSelectTerm}

@@ -214,7 +214,7 @@ function ItemAttributeRow({
 					isClearable
 					menuPortal
 					options={attributeOptions}
-					placeholder="Select attribute"
+					placeholder="--Select Attribute--"
 					readOnly={isReadonly}
 					showSelectedDetails
 					value={assignment.attributeId}

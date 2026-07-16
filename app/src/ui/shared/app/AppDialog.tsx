@@ -257,7 +257,7 @@ function AppDialogStatusIcon({
   );
 }
 
-function getDefaultIconTone(tone: AppDialogTone): AppDialogIconTone {
+function getDefaultIconTone(tone: AppDialogTone): AppDialogIconTone | null {
   if (tone === "activate" || tone === "deactivate") {
     return tone;
   }
@@ -274,7 +274,7 @@ function getDefaultIconTone(tone: AppDialogTone): AppDialogIconTone {
     return tone;
   }
 
-  return "question";
+  return null;
 }
 
 function getDefaultPendingLabel(tone: AppDialogTone) {

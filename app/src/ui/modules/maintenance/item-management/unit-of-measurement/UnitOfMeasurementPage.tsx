@@ -831,7 +831,7 @@ function UomSelect({
 			menuPortal
 			isClearable={false}
 			options={options}
-			placeholder="Select UOM"
+			placeholder="--Select UOM--"
 			readOnly={isReadonly}
 			searchPlaceholder="Search UOM"
 			showSelectedDetails

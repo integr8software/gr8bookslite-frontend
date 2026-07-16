@@ -18,93 +18,91 @@ export function TermManagementFields({
 	onInputChange,
 }: TermManagementFieldsProps) {
 	return (
-		<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
-			<div className="grid gap-4 lg:grid-cols-2">
-				<FormField label="Name" error={errors.name} className="lg:col-span-2" required>
-					<input
-						name="name"
-						value={values.name}
-						onChange={onInputChange}
-						readOnly={isReadonly}
-						className={TermManagementFieldClassName}
-						placeholder="Enter Name..."
-					/>
-				</FormField>
+		<div className="grid gap-4 lg:grid-cols-2">
+			<FormField label="Name" error={errors.name} className="lg:col-span-2" required>
+				<input
+					name="name"
+					value={values.name}
+					onChange={onInputChange}
+					readOnly={isReadonly}
+					className={TermManagementFieldClassName}
+					placeholder="Enter Name..."
+				/>
+			</FormField>
 
-				<FormField
-					label="Description"
-					error={errors.description}
-					className="lg:col-span-2"
+			<FormField
+				label="Description"
+				error={errors.description}
+				className="lg:col-span-2"
+			>
+				<textarea
+					name="description"
+					maxLength={500}
+					value={values.description}
+					onChange={onInputChange}
+					readOnly={isReadonly}
+					placeholder={isReadonly ? "No Description..." : "Enter Description..."}
+					className={`${TermManagementFieldClassName} min-h-24 resize-y py-3 ${isReadonly ? "placeholder:italic" : ""}`}
+				/>
+			</FormField>
+
+			<FormField label="Datemode" error={errors.datemode} required>
+				<select
+					name="datemode"
+					value={values.datemode}
+					onChange={onInputChange}
+					disabled={isReadonly}
+					className={TermManagementSelectClassName}
 				>
-					<textarea
-						name="description"
-						maxLength={500}
-						value={values.description}
-						onChange={onInputChange}
-						readOnly={isReadonly}
-						placeholder={isReadonly ? "No Description..." : "Enter Description..."}
-						className={`${TermManagementFieldClassName} min-h-24 resize-y py-3 ${isReadonly ? "placeholder:italic" : ""}`}
-					/>
-				</FormField>
+					{TermManagementDatemodeOptions.map((option) => (
+						<option key={option} value={option}>
+							{option}
+						</option>
+					))}
+				</select>
+			</FormField>
 
-				<FormField label="Datemode" error={errors.datemode} required>
-					<select
-						name="datemode"
-						value={values.datemode}
-						onChange={onInputChange}
-						disabled={isReadonly}
-						className={TermManagementSelectClassName}
-					>
-						{TermManagementDatemodeOptions.map((option) => (
-							<option key={option} value={option}>
-								{option}
-							</option>
-						))}
-					</select>
-				</FormField>
+			<FormField
+				label="Period"
+				error={errors.period}
+				warning={
+					values.period.trim() === "0"
+						? "Period is 0. Save only if this term should not add time."
+						: undefined
+				}
+				required
+			>
+				<input
+					name="period"
+					type="number"
+					min={0}
+					step={1}
+					value={values.period}
+					onChange={onInputChange}
+					onKeyDown={preventNonWholeNumberInput}
+					onPaste={preventNonWholeNumberPaste}
+					onWheel={(event) => event.currentTarget.blur()}
+					readOnly={isReadonly}
+					className={TermManagementFieldClassName}
+					placeholder="Enter period"
+				/>
+			</FormField>
 
-				<FormField
-					label="Period"
-					error={errors.period}
-					warning={
-						values.period.trim() === "0"
-							? "Period is 0. Save only if this term should not add time."
-							: undefined
-					}
-					required
+			<FormField label="Status" error={errors.status} required>
+				<select
+					name="status"
+					value={values.status}
+					onChange={onInputChange}
+					disabled={isReadonly}
+					className={TermManagementSelectClassName}
 				>
-					<input
-						name="period"
-						type="number"
-						min={0}
-						step={1}
-						value={values.period}
-						onChange={onInputChange}
-						onKeyDown={preventNonWholeNumberInput}
-						onPaste={preventNonWholeNumberPaste}
-						onWheel={(event) => event.currentTarget.blur()}
-						readOnly={isReadonly}
-						className={TermManagementFieldClassName}
-						placeholder="Enter period"
-					/>
-				</FormField>
-
-				<FormField label="Status" error={errors.status} required>
-					<select
-						name="status"
-						value={values.status}
-						onChange={onInputChange}
-						disabled={isReadonly}
-						className={TermManagementSelectClassName}
-					>
-						{TermManagementStatusOptions.map((statusOption) => (
-							<option key={statusOption} value={statusOption}>
-								{statusOption}
-							</option>
-						))}
-					</select>
-				</FormField>
-			</div>
+					{TermManagementStatusOptions.map((statusOption) => (
+						<option key={statusOption} value={statusOption}>
+							{statusOption}
+						</option>
+					))}
+				</select>
+			</FormField>
 		</div>
 	);
 }

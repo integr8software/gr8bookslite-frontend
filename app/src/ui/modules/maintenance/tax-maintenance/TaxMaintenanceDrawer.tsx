@@ -10,6 +10,7 @@ import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleCh
 import type {
   TaxMaintenance,
   TaxMaintenanceAccountField,
+  TaxMaintenanceDefaultAccountIds,
   TaxMaintenanceDrawerMode,
   TaxMaintenanceFormValues,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
@@ -23,17 +24,21 @@ import {
 
 const EmptyTaxFormValues: TaxMaintenanceFormValues = {
   name: "",
+  description: "",
   percentage: "0",
   inputVatAccountId: "",
   outputVatAccountId: "",
-  vatPayableAccountId: "",
-  deferredInputTaxAccountId: "",
-  deferredOutputVatAccountId: "",
+  deferredVatAccountId: "",
+  expandedWithholdingTaxAccountId: "",
+  creditableWithholdingTaxAccountId: "",
+  withholdingVatableTaxAccountId: "",
+  finalWithholdingTaxAccountId: "",
   status: "Active",
 };
 
 type TaxMaintenanceDrawerProps = {
   accountOptions: ModuleChartAccount[];
+  defaultAccountIds: TaxMaintenanceDefaultAccountIds;
   isOpen: boolean;
   isSaving: boolean;
   mode: TaxMaintenanceDrawerMode;
@@ -44,6 +49,7 @@ type TaxMaintenanceDrawerProps = {
 
 export function TaxMaintenanceDrawer({
   accountOptions,
+  defaultAccountIds,
   isOpen,
   isSaving,
   mode,
@@ -52,14 +58,16 @@ export function TaxMaintenanceDrawer({
   onSave,
 }: TaxMaintenanceDrawerProps) {
   const [values, setValues] = useState<TaxMaintenanceFormValues>(() =>
-    tax ? toFormValues(tax) : EmptyTaxFormValues,
+    tax ? toFormValues(tax) : createDefaultTaxFormValues(defaultAccountIds),
   );
   const [errors, setErrors] = useState<TaxMaintenanceFormErrors>({});
   const copy = TaxMaintenanceActionCopy[mode];
   const isReadonly = mode === "view";
 
   function handleInputChange(
-    event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    event: ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) {
     const field = event.target.name as keyof TaxMaintenanceFormValues;
     setValues((current) => ({ ...current, [field]: event.target.value }));
@@ -130,12 +138,24 @@ export function TaxMaintenanceDrawer({
 function toFormValues(tax: TaxMaintenance): TaxMaintenanceFormValues {
   return {
     name: tax.name,
+    description: tax.description,
     percentage: tax.percentage,
     inputVatAccountId: tax.inputVatAccountId,
     outputVatAccountId: tax.outputVatAccountId,
-    vatPayableAccountId: tax.vatPayableAccountId,
-    deferredInputTaxAccountId: tax.deferredInputTaxAccountId,
-    deferredOutputVatAccountId: tax.deferredOutputVatAccountId,
+    deferredVatAccountId: tax.deferredVatAccountId,
+    expandedWithholdingTaxAccountId: tax.expandedWithholdingTaxAccountId,
+    creditableWithholdingTaxAccountId: tax.creditableWithholdingTaxAccountId,
+    withholdingVatableTaxAccountId: tax.withholdingVatableTaxAccountId,
+    finalWithholdingTaxAccountId: tax.finalWithholdingTaxAccountId,
     status: tax.status,
+  };
+}
+
+function createDefaultTaxFormValues(
+  defaultAccountIds: TaxMaintenanceDefaultAccountIds,
+): TaxMaintenanceFormValues {
+  return {
+    ...EmptyTaxFormValues,
+    ...defaultAccountIds,
   };
 }

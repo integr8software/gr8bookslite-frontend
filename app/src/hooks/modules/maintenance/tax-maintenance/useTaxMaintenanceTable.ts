@@ -20,6 +20,7 @@ import {
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
   TaxMaintenance,
+  TaxMaintenanceAccountSummary,
   TaxMaintenanceTableColumnKey,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
 
@@ -109,26 +110,42 @@ function getTaxMaintenanceColumnValue(
 ) {
   switch (key) {
     case "inputVatAccountCode":
-      return tax.accounts?.inputVatAccount?.accountCode ?? "";
+      return getAccountCode(tax.accounts?.inputVatAccount);
     case "inputVatAccountTitle":
-      return tax.accounts?.inputVatAccount?.accountTitle ?? "";
+      return getAccountTitle(tax.accounts?.inputVatAccount);
     case "outputVatAccountCode":
-      return tax.accounts?.outputVatAccount?.accountCode ?? "";
+      return getAccountCode(tax.accounts?.outputVatAccount);
     case "outputVatAccountTitle":
-      return tax.accounts?.outputVatAccount?.accountTitle ?? "";
-    case "vatPayableAccountCode":
-      return tax.accounts?.vatPayableAccount?.accountCode ?? "";
-    case "vatPayableAccountTitle":
-      return tax.accounts?.vatPayableAccount?.accountTitle ?? "";
-    case "deferredInputTaxAccountCode":
-      return tax.accounts?.deferredInputTaxAccount?.accountCode ?? "";
-    case "deferredInputTaxAccountTitle":
-      return tax.accounts?.deferredInputTaxAccount?.accountTitle ?? "";
-    case "deferredOutputVatAccountCode":
-      return tax.accounts?.deferredOutputVatAccount?.accountCode ?? "";
-    case "deferredOutputVatAccountTitle":
-      return tax.accounts?.deferredOutputVatAccount?.accountTitle ?? "";
+      return getAccountTitle(tax.accounts?.outputVatAccount);
+    case "deferredVatAccountCode":
+      return getAccountCode(tax.accounts?.deferredVatAccount);
+    case "deferredVatAccountTitle":
+      return getAccountTitle(tax.accounts?.deferredVatAccount);
+    case "expandedWithholdingTaxAccountCode":
+      return getAccountCode(tax.accounts?.expandedWithholdingTaxAccount);
+    case "expandedWithholdingTaxAccountTitle":
+      return getAccountTitle(tax.accounts?.expandedWithholdingTaxAccount);
+    case "creditableWithholdingTaxAccountCode":
+      return getAccountCode(tax.accounts?.creditableWithholdingTaxAccount);
+    case "creditableWithholdingTaxAccountTitle":
+      return getAccountTitle(tax.accounts?.creditableWithholdingTaxAccount);
+    case "withholdingVatableTaxAccountCode":
+      return getAccountCode(tax.accounts?.withholdingVatableTaxAccount);
+    case "withholdingVatableTaxAccountTitle":
+      return getAccountTitle(tax.accounts?.withholdingVatableTaxAccount);
+    case "finalWithholdingTaxAccountCode":
+      return getAccountCode(tax.accounts?.finalWithholdingTaxAccount);
+    case "finalWithholdingTaxAccountTitle":
+      return getAccountTitle(tax.accounts?.finalWithholdingTaxAccount);
     default:
       return tax[key] ?? "";
   }
+}
+
+function getAccountCode(account?: TaxMaintenanceAccountSummary | null) {
+  return account?.accountCode ?? "";
+}
+
+function getAccountTitle(account?: TaxMaintenanceAccountSummary | null) {
+  return account?.accountTitle ?? "";
 }

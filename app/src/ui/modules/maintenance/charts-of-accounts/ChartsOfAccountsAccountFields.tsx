@@ -140,7 +140,7 @@ export function ChartsOfAccountsAccountFields({
             ? "Generating next code..."
             : values.parentId
               ? "Generated automatically"
-              : "Select parent first"
+              : "--Select Parent First--"
         }
         readOnly
         reserveMessageSpace={submitted}

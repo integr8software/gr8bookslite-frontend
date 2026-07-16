@@ -98,7 +98,7 @@ export function TransactionTypeForm({
 				<FormField label="Inventory Module" error={errors.moduleIds} required>
 					<AppAdvancedDropdown
 						options={moduleDropdownOptions}
-						placeholder="Select goods movement module"
+						placeholder="--Select Goods Movement Module--"
 						readOnly={isReadonly}
 						searchPlaceholder="Search goods movement module"
 						selectionMode="multiple"

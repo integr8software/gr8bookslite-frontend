@@ -57,15 +57,18 @@ export function formatTaxMaintenanceAccount(
 export function getTaxMaintenanceSearchText(tax: TaxMaintenance) {
   return [
     tax.name,
+    tax.description,
     tax.percentage,
     tax.status,
     tax.createdBy,
     tax.updatedBy,
     formatTaxMaintenanceAccount(tax.accounts?.inputVatAccount),
     formatTaxMaintenanceAccount(tax.accounts?.outputVatAccount),
-    formatTaxMaintenanceAccount(tax.accounts?.vatPayableAccount),
-    formatTaxMaintenanceAccount(tax.accounts?.deferredInputTaxAccount),
-    formatTaxMaintenanceAccount(tax.accounts?.deferredOutputVatAccount),
+    formatTaxMaintenanceAccount(tax.accounts?.deferredVatAccount),
+    formatTaxMaintenanceAccount(tax.accounts?.expandedWithholdingTaxAccount),
+    formatTaxMaintenanceAccount(tax.accounts?.creditableWithholdingTaxAccount),
+    formatTaxMaintenanceAccount(tax.accounts?.withholdingVatableTaxAccount),
+    formatTaxMaintenanceAccount(tax.accounts?.finalWithholdingTaxAccount),
   ]
     .join(" ")
     .toLowerCase();

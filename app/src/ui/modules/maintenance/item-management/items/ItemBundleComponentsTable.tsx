@@ -281,7 +281,7 @@ function BundleComponentRow({
 					className={fieldClassName}
 				>
 					{uomOptions.length === 0 ? (
-						<option value="">Select item first</option>
+						<option value="">--Select Item First--</option>
 					) : null}
 					{uomOptions.map((uom) => (
 						<option key={uom} value={uom}>

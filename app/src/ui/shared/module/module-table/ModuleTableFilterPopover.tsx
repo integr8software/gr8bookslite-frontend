@@ -35,7 +35,6 @@ type ModuleTableFilterPopoverProps = {
 	value: string;
 };
 
-const DefaultEmptyValue = "all";
 const PanelGap = 8;
 const PanelViewportPadding = 16;
 const PanelWidth = 320;
@@ -57,11 +56,13 @@ export function ModuleTableFilterPopover({
 	const [isOpen, setIsOpen] = useState(false);
 	const [draftValue, setDraftValue] = useState(value);
 	const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
+	const emptyValue = useMemo(() => getEmptyFilterValue(options), [options]);
+	const effectiveValue = value || emptyValue;
 	const selectedOption = useMemo(
-		() => options.find((option) => option.value === value),
-		[options, value],
+		() => options.find((option) => option.value === effectiveValue),
+		[options, effectiveValue],
 	);
-	const isEmpty = value === DefaultEmptyValue || !value;
+	const isEmpty = effectiveValue === emptyValue;
 	const displayLabel = selectedOption
 		? formatFilterOptionLabel(selectedOption.label)
 		: placeholder;
@@ -130,13 +131,13 @@ export function ModuleTableFilterPopover({
 			return;
 		}
 
-		setDraftValue(value);
+		setDraftValue(effectiveValue);
 		setIsOpen(true);
 	}
 
 	function clearSelection() {
-		setDraftValue(DefaultEmptyValue);
-		onChange(DefaultEmptyValue);
+		setDraftValue(emptyValue);
+		onChange(emptyValue);
 		setIsOpen(false);
 	}
 
@@ -146,7 +147,7 @@ export function ModuleTableFilterPopover({
 	}
 
 	function applySelection() {
-		onChange(draftValue || DefaultEmptyValue);
+		onChange(draftValue);
 		setIsOpen(false);
 	}
 
@@ -295,6 +296,15 @@ function formatFilterOptionLabel(label: ReactNode) {
 	}
 
 	return label;
+}
+
+function getEmptyFilterValue(options: readonly ModuleTableFilterPopoverOption[]) {
+	return (
+		options.find(
+			(option) =>
+				typeof option.label === "string" && /^All(\s|$)/i.test(option.label),
+		)?.value ?? ""
+	);
 }
 
 function getPanelStyle(anchor: HTMLElement | null): CSSProperties | undefined {

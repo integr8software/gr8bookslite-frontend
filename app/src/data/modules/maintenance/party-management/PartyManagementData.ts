@@ -15,8 +15,6 @@ import {
 } from "@/app/src/data/shared/tax/AtcCode";
 import { DefaultPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import {
-  applyDefaultAddressRoles,
-  clearAddressRolesForPartyTypes,
   createEmptyPartyAddress,
   getAddressRoleLabel,
   getDefaultPartyAddress,
@@ -25,7 +23,6 @@ import {
   normalizePartyAddresses,
   normalizePartyAddressesForForm,
   normalizePartyTypesForClassification,
-  setPartyDefaultAddress,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementAddressData";
 import type { PartyAddressRole } from "@/app/src/data/modules/maintenance/party-management/PartyManagementAddressData";
 import type {

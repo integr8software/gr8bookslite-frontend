@@ -231,7 +231,7 @@ function SupplierRow({
 					isClearable
 					menuPortal
 					options={supplierOptions}
-					placeholder="Select supplier"
+					placeholder="--Select Supplier--"
 					readOnly={isReadonly}
 					value={supplier.supplier}
 					onChange={(value) =>

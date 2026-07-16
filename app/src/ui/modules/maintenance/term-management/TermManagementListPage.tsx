@@ -20,8 +20,13 @@ export function TermManagementListPage() {
 	const page = useTermManagementListPage();
 	const [drawerState, setDrawerState] =
 		useState<TermManagementDrawerState>(null);
+	const [drawerVersion, setDrawerVersion] = useState(0);
 	const [isImportOpen, setIsImportOpen] = useState(false);
 	const closeDrawer = useCallback(() => setDrawerState(null), []);
+	const openAddDrawer = useCallback(() => {
+		setDrawerVersion((version) => version + 1);
+		setDrawerState({ mode: "add" });
+	}, []);
 	const openDrawer = useCallback(
 		(state: TermManagementDrawerState) => setDrawerState(state),
 		[],
@@ -29,7 +34,7 @@ export function TermManagementListPage() {
 	useMaintenanceAddDrawerSpotlight(
 		() => {
 			if (page.permissions.canCreate) {
-				setDrawerState({ mode: "add" });
+				openAddDrawer();
 			}
 		},
 		closeDrawer,
@@ -94,7 +99,7 @@ export function TermManagementListPage() {
 	return (
 		<section className="grid gap-5">
 			<TermManagementHeader
-				onAdd={() => setDrawerState({ mode: "add" })}
+				onAdd={openAddDrawer}
 				onImport={() => setIsImportOpen(true)}
 				permissions={page.permissions}
 			/>
@@ -124,6 +129,7 @@ export function TermManagementListPage() {
 				onViewTerm={(term) => setDrawerState({ mode: "view", term })}
 			/>
 			<TermManagementDrawer
+				key={`${drawerState?.mode ?? "closed"}-${drawerState?.term?.id ?? "new"}-${drawerVersion}`}
 				initialValues={drawerState?.initialValues}
 				isOpen={Boolean(drawerState)}
 				mode={drawerState?.mode ?? "add"}

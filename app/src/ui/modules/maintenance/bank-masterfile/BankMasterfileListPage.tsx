@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Building2, CheckCircle2, CirclePause, Landmark } from "lucide-react";
 import { countUniqueBankNames } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
 import { useBankMasterfileListPage } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileListPage";
@@ -21,14 +21,20 @@ import { BankMasterfileTable } from "@/app/src/ui/modules/maintenance/bank-maste
 export function BankMasterfileListPage() {
 	const page = useBankMasterfileListPage();
 	const [drawerState, setDrawerState] = useState<BankMasterfileDrawerState>(null);
+	const [drawerVersion, setDrawerVersion] = useState(0);
 	const [isImportOpen, setIsImportOpen] = useState(false);
+	const closeDrawer = useCallback(() => setDrawerState(null), []);
+	const openAddDrawer = useCallback(() => {
+		setDrawerVersion((version) => version + 1);
+		setDrawerState({ mode: "add" });
+	}, []);
 	useMaintenanceAddDrawerSpotlight(
 		() => {
 			if (page.permissions.canCreate) {
-				setDrawerState({ mode: "add" });
+				openAddDrawer();
 			}
 		},
-		() => setDrawerState(null),
+		closeDrawer,
 	);
 	const displayStatistics = useMemo(() => {
 		const totalBanks = page.banks.length;
@@ -81,7 +87,7 @@ export function BankMasterfileListPage() {
 	return (
 		<section className="grid gap-5">
 			<BankMasterfileHeader
-				onAdd={() => setDrawerState({ mode: "add" })}
+				onAdd={openAddDrawer}
 				onImport={() => setIsImportOpen(true)}
 				permissions={page.permissions}
 			/>
@@ -109,10 +115,11 @@ export function BankMasterfileListPage() {
 				onViewBank={(bank) => setDrawerState({ mode: "view", bank })}
 			/>
 			<BankMasterfileDrawer
+				key={`${drawerState?.mode ?? "closed"}-${drawerState?.bank?.id ?? "new"}-${drawerVersion}`}
 				bank={drawerState?.bank}
 				isOpen={Boolean(drawerState)}
 				mode={drawerState?.mode ?? "add"}
-				onClose={() => setDrawerState(null)}
+				onClose={closeDrawer}
 			/>
 			{page.permissions.canImport ? (
 				<BankMasterfileImportDialog

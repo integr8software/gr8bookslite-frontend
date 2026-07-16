@@ -83,7 +83,7 @@ function PaymentTypeDrawerPanel({
 			<form id={PaymentTypeDrawerFormId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
 				<label className="grid gap-2">
 					<span className="text-sm font-semibold text-darknavy">
-						Name <span className="text-coralpink">*</span>
+						Payment Type Name <span className="text-coralpink">*</span>
 					</span>
 					<input
 						value={page.values.paymentType}
@@ -134,7 +134,7 @@ function PaymentTypeDrawerPanel({
 							}
 							className={PaymentTypeFieldClassName}
 						>
-							<option value="">Select category</option>
+							<option value="">--Select Category--</option>
 							{PaymentTypeOptions.map((typeOption) => (
 								<option key={typeOption} value={typeOption}>
 									{typeOption}

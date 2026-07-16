@@ -21,7 +21,12 @@ export function TaxMaintenanceListPage() {
   const page = useTaxMaintenanceListPage();
   const [drawerState, setDrawerState] =
     useState<TaxMaintenanceDrawerState>(null);
+  const [drawerVersion, setDrawerVersion] = useState(0);
   const closeDrawer = useCallback(() => setDrawerState(null), []);
+  const openAddDrawer = useCallback(() => {
+    setDrawerVersion((version) => version + 1);
+    setDrawerState({ mode: "add" });
+  }, []);
   const statisticCards = useMemo<ModuleStatisticCardItem[]>(
     () => [
       {
@@ -63,7 +68,7 @@ export function TaxMaintenanceListPage() {
   return (
     <section className="grid gap-5">
       <TaxMaintenanceHeader
-        onAdd={() => setDrawerState({ mode: "add" })}
+        onAdd={openAddDrawer}
         permissions={page.permissions}
       />
       <ModuleStatisticCards
@@ -88,8 +93,9 @@ export function TaxMaintenanceListPage() {
         onViewTax={(tax) => setDrawerState({ mode: "view", tax })}
       />
       <TaxMaintenanceDrawer
-        key={`${drawerState?.mode ?? "closed"}-${drawerState?.tax?.id ?? "new"}`}
+        key={`${drawerState?.mode ?? "closed"}-${drawerState?.tax?.id ?? "new"}-${drawerVersion}-${page.accountOptions.length}-${Object.values(page.defaultAccountIds).join(":")}`}
         accountOptions={page.accountOptions}
+        defaultAccountIds={page.defaultAccountIds}
         isOpen={Boolean(drawerState)}
         isSaving={page.isMutating}
         mode={drawerState?.mode ?? "add"}

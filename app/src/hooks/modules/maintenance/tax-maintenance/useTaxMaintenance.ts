@@ -7,12 +7,10 @@ import {
   EmptyTaxMaintenancePermissions,
   EmptyTaxMaintenanceStatistics,
   ReservedRoleTaxMaintenancePermissions,
-  mapChartAccountToModuleChartAccount,
 } from "@/app/src/data/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceData";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
-import { FetchChartAccountsTree } from "@/app/src/services/modules/maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import {
   createTaxMaintenance,
   fetchTaxMaintenance,
@@ -21,8 +19,19 @@ import {
 import { TaxMaintenanceQueryKeys } from "@/app/src/services/modules/maintenance/tax-maintenance/TaxMaintenanceQueryKeys";
 import type {
   TaxMaintenance,
+  TaxMaintenanceDefaultAccountIds,
   TaxMaintenanceFormValues,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
+
+const EmptyTaxMaintenanceDefaultAccountIds: TaxMaintenanceDefaultAccountIds = {
+  inputVatAccountId: "",
+  outputVatAccountId: "",
+  deferredVatAccountId: "",
+  expandedWithholdingTaxAccountId: "",
+  creditableWithholdingTaxAccountId: "",
+  withholdingVatableTaxAccountId: "",
+  finalWithholdingTaxAccountId: "",
+};
 
 export function useTaxMaintenance() {
   const queryClient = useQueryClient();
@@ -31,10 +40,6 @@ export function useTaxMaintenance() {
   const taxQuery = useQuery({
     queryKey: TaxMaintenanceQueryKeys.list(),
     queryFn: fetchTaxMaintenance,
-  });
-  const accountsQuery = useQuery({
-    queryKey: ["taxMaintenance", "chartAccounts"],
-    queryFn: FetchChartAccountsTree,
   });
   const refresh = useCallback(() => {
     void queryClient.invalidateQueries({
@@ -84,16 +89,14 @@ export function useTaxMaintenance() {
       effectiveRole === "ADMIN" || effectiveRole === "SUPER_ADMIN";
 
     return {
-      accountOptions: (accountsQuery.data ?? []).map(
-        mapChartAccountToModuleChartAccount,
-      ),
+      accountOptions: taxQuery.data?.accountOptions ?? [],
       addTax: (values: TaxMaintenanceFormValues) =>
         createMutation.mutateAsync(values),
-      isLoading: taxQuery.isLoading || accountsQuery.isLoading,
+      defaultAccountIds:
+        taxQuery.data?.defaultAccountIds ?? EmptyTaxMaintenanceDefaultAccountIds,
+      isLoading: taxQuery.isLoading,
       isMutating: createMutation.isPending || updateMutation.isPending,
-      isRefreshing:
-        (taxQuery.isFetching && !taxQuery.isLoading) ||
-        (accountsQuery.isFetching && !accountsQuery.isLoading),
+      isRefreshing: taxQuery.isFetching && !taxQuery.isLoading,
       lastSyncedAt: taxQuery.dataUpdatedAt,
       permissions: hasReservedRoleAccess
         ? ReservedRoleTaxMaintenancePermissions
@@ -104,9 +107,6 @@ export function useTaxMaintenance() {
       updateTax: (tax: TaxMaintenance) => updateMutation.mutateAsync(tax),
     };
   }, [
-    accountsQuery.data,
-    accountsQuery.isFetching,
-    accountsQuery.isLoading,
     authProfileQuery.data,
     createMutation,
     refresh,

@@ -312,7 +312,7 @@ function AddressFields({
 						placeholder={
 							options.isProvincesLoading
 								? "Loading provinces"
-								: "Select province"
+								: "--Select Province--"
 						}
 						required
 						value={address.provinceCode}
@@ -340,10 +340,10 @@ function AddressFields({
 						options={options.cityMunicipalityOptions}
 						placeholder={
 							!address.provinceCode
-								? "Select province first"
+								? "--Select Province First--"
 								: options.isCitiesMunicipalitiesLoading
 									? "Loading cities"
-									: "Select city"
+									: "--Select City--"
 						}
 						required
 						value={address.cityMunicipalityCode}
@@ -367,10 +367,10 @@ function AddressFields({
 						options={options.barangayOptions}
 						placeholder={
 							!address.cityMunicipalityCode
-								? "Select city first"
+								? "--Select City First--"
 								: options.isBarangaysLoading
 									? "Loading barangays"
-									: "Select barangay"
+									: "--Select Barangay--"
 						}
 						required
 						value={address.barangayCode}

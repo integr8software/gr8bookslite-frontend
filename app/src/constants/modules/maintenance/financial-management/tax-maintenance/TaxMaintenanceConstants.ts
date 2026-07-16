@@ -49,48 +49,53 @@ export const TaxMaintenanceTablePaginationStorageKey =
   "maintenance:financial-management:tax-maintenance";
 
 export const TaxMaintenanceTableColumns = [
-  { key: "name", label: "Tax Name", className: "w-[16%]" },
+  { key: "name", label: "VAT Name", className: "w-[16%]" },
+  { key: "description", label: "Description", className: "w-[18%]" },
   { key: "percentage", label: "Percentage", className: "w-[10%] text-center" },
   { key: "inputVatAccountCode", label: "Input VAT Code", className: "w-[12%]" },
-  {
-    key: "inputVatAccountTitle",
-    label: "Input VAT Account Title",
-    className: "w-[18%]",
-  },
+  { key: "inputVatAccountTitle", label: "Input VAT Title", className: "w-[18%]" },
   { key: "outputVatAccountCode", label: "Output VAT Code", className: "w-[12%]" },
+  { key: "outputVatAccountTitle", label: "Output VAT Title", className: "w-[18%]" },
+  { key: "deferredVatAccountCode", label: "Deferred VAT Code", className: "w-[12%]" },
+  { key: "deferredVatAccountTitle", label: "Deferred VAT Title", className: "w-[18%]" },
   {
-    key: "outputVatAccountTitle",
-    label: "Output VAT Account Title",
-    className: "w-[18%]",
-  },
-  {
-    key: "vatPayableAccountCode",
-    label: "VAT Payable Code",
-    className: "w-[12%]",
-  },
-  {
-    key: "vatPayableAccountTitle",
-    label: "VAT Payable Account Title",
-    className: "w-[18%]",
-  },
-  {
-    key: "deferredInputTaxAccountCode",
-    label: "Deferred Input Tax Code",
+    key: "expandedWithholdingTaxAccountCode",
+    label: "Expanded Withholding TAX Code",
     className: "w-[14%]",
   },
   {
-    key: "deferredInputTaxAccountTitle",
-    label: "Deferred Input Tax Account Title",
+    key: "expandedWithholdingTaxAccountTitle",
+    label: "Expanded Withholding TAX Title",
     className: "w-[18%]",
   },
   {
-    key: "deferredOutputVatAccountCode",
-    label: "Deferred Output VAT Code",
+    key: "creditableWithholdingTaxAccountCode",
+    label: "Creditable Withholding TAX Code",
     className: "w-[14%]",
   },
   {
-    key: "deferredOutputVatAccountTitle",
-    label: "Deferred Output VAT Account Title",
+    key: "creditableWithholdingTaxAccountTitle",
+    label: "Creditable Withholding TAX Title",
+    className: "w-[18%]",
+  },
+  {
+    key: "withholdingVatableTaxAccountCode",
+    label: "Withholding Vatable TAX Code",
+    className: "w-[14%]",
+  },
+  {
+    key: "withholdingVatableTaxAccountTitle",
+    label: "Withholding Vatable TAX Title",
+    className: "w-[18%]",
+  },
+  {
+    key: "finalWithholdingTaxAccountCode",
+    label: "Final Withholding TAX Code",
+    className: "w-[14%]",
+  },
+  {
+    key: "finalWithholdingTaxAccountTitle",
+    label: "Final Withholding TAX Title",
     className: "w-[18%]",
   },
   { key: "status", label: "Status", className: "w-[12%] text-center" },
@@ -109,10 +114,21 @@ export const TaxMaintenanceDefaultColumnOrder = TaxMaintenanceTableColumns.map(
   (column) => ("key" in column ? column.key : "actions"),
 );
 export const TaxMaintenanceDefaultColumnVisibility: VisibilityState = {
-  deferredInputTaxAccountCode: false,
-  deferredInputTaxAccountTitle: false,
-  deferredOutputVatAccountCode: false,
-  deferredOutputVatAccountTitle: false,
+  description: false,
+  inputVatAccountCode: false,
+  inputVatAccountTitle: false,
+  outputVatAccountCode: false,
+  outputVatAccountTitle: false,
+  deferredVatAccountCode: false,
+  deferredVatAccountTitle: false,
+  expandedWithholdingTaxAccountCode: false,
+  expandedWithholdingTaxAccountTitle: false,
+  creditableWithholdingTaxAccountCode: false,
+  creditableWithholdingTaxAccountTitle: false,
+  withholdingVatableTaxAccountCode: false,
+  withholdingVatableTaxAccountTitle: false,
+  finalWithholdingTaxAccountCode: false,
+  finalWithholdingTaxAccountTitle: false,
   createdBy: false,
   createdAt: false,
   updatedBy: false,
@@ -124,7 +140,8 @@ export const TaxMaintenanceDefaultSorting: SortingState = [
 
 export const TaxMaintenanceExportColumns: ModuleTableExportColumn<TaxMaintenance>[] =
   [
-    { header: "Tax Name", id: "name", value: "name" },
+    { header: "VAT Name", id: "name", value: "name" },
+    { header: "Description", id: "description", value: "description" },
     {
       header: "Percentage",
       id: "percentage",
@@ -136,7 +153,7 @@ export const TaxMaintenanceExportColumns: ModuleTableExportColumn<TaxMaintenance
       value: (tax) => tax.accounts?.inputVatAccount?.accountCode ?? "",
     },
     {
-      header: "Input VAT Account Title",
+      header: "Input VAT Title",
       id: "inputVatAccountTitle",
       value: (tax) => tax.accounts?.inputVatAccount?.accountTitle ?? "",
     },
@@ -146,39 +163,67 @@ export const TaxMaintenanceExportColumns: ModuleTableExportColumn<TaxMaintenance
       value: (tax) => tax.accounts?.outputVatAccount?.accountCode ?? "",
     },
     {
-      header: "Output VAT Account Title",
+      header: "Output VAT Title",
       id: "outputVatAccountTitle",
       value: (tax) => tax.accounts?.outputVatAccount?.accountTitle ?? "",
     },
     {
-      header: "VAT Payable Code",
-      id: "vatPayableAccountCode",
-      value: (tax) => tax.accounts?.vatPayableAccount?.accountCode ?? "",
+      header: "Deferred VAT Code",
+      id: "deferredVatAccountCode",
+      value: (tax) => tax.accounts?.deferredVatAccount?.accountCode ?? "",
     },
     {
-      header: "VAT Payable Account Title",
-      id: "vatPayableAccountTitle",
-      value: (tax) => tax.accounts?.vatPayableAccount?.accountTitle ?? "",
+      header: "Deferred VAT Title",
+      id: "deferredVatAccountTitle",
+      value: (tax) => tax.accounts?.deferredVatAccount?.accountTitle ?? "",
     },
     {
-      header: "Deferred Input Tax Code",
-      id: "deferredInputTaxAccountCode",
-      value: (tax) => tax.accounts?.deferredInputTaxAccount?.accountCode ?? "",
+      header: "Expanded Withholding TAX Code",
+      id: "expandedWithholdingTaxAccountCode",
+      value: (tax) =>
+        tax.accounts?.expandedWithholdingTaxAccount?.accountCode ?? "",
     },
     {
-      header: "Deferred Input Tax Account Title",
-      id: "deferredInputTaxAccountTitle",
-      value: (tax) => tax.accounts?.deferredInputTaxAccount?.accountTitle ?? "",
+      header: "Expanded Withholding TAX Title",
+      id: "expandedWithholdingTaxAccountTitle",
+      value: (tax) =>
+        tax.accounts?.expandedWithholdingTaxAccount?.accountTitle ?? "",
     },
     {
-      header: "Deferred Output VAT Code",
-      id: "deferredOutputVatAccountCode",
-      value: (tax) => tax.accounts?.deferredOutputVatAccount?.accountCode ?? "",
+      header: "Creditable Withholding TAX Code",
+      id: "creditableWithholdingTaxAccountCode",
+      value: (tax) =>
+        tax.accounts?.creditableWithholdingTaxAccount?.accountCode ?? "",
     },
     {
-      header: "Deferred Output VAT Account Title",
-      id: "deferredOutputVatAccountTitle",
-      value: (tax) => tax.accounts?.deferredOutputVatAccount?.accountTitle ?? "",
+      header: "Creditable Withholding TAX Title",
+      id: "creditableWithholdingTaxAccountTitle",
+      value: (tax) =>
+        tax.accounts?.creditableWithholdingTaxAccount?.accountTitle ?? "",
+    },
+    {
+      header: "Withholding Vatable TAX Code",
+      id: "withholdingVatableTaxAccountCode",
+      value: (tax) =>
+        tax.accounts?.withholdingVatableTaxAccount?.accountCode ?? "",
+    },
+    {
+      header: "Withholding Vatable TAX Title",
+      id: "withholdingVatableTaxAccountTitle",
+      value: (tax) =>
+        tax.accounts?.withholdingVatableTaxAccount?.accountTitle ?? "",
+    },
+    {
+      header: "Final Withholding TAX Code",
+      id: "finalWithholdingTaxAccountCode",
+      value: (tax) =>
+        tax.accounts?.finalWithholdingTaxAccount?.accountCode ?? "",
+    },
+    {
+      header: "Final Withholding TAX Title",
+      id: "finalWithholdingTaxAccountTitle",
+      value: (tax) =>
+        tax.accounts?.finalWithholdingTaxAccount?.accountTitle ?? "",
     },
     { header: "Status", id: "status", value: "status" },
     { header: "Created By", id: "createdBy", value: "createdBy" },

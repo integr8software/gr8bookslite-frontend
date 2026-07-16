@@ -94,7 +94,7 @@ export function WarehouseFields({
 					<AppAdvancedDropdown
 						isClearable
 						options={branchDropdownOptions}
-						placeholder="Select branches"
+						placeholder="--Select Branches--"
 						selectionMode="multiple"
 						value={values.availableBranches}
 						onChange={onAvailableBranchesChange}

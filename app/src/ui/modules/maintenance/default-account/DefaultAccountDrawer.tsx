@@ -128,10 +128,9 @@ function DefaultAccountDrawerPanel({
 							placeholder={
 								page.isLoadingExpenseParentOptions
 									? "Loading expense accounts..."
-									: "Default expense parent"
+									: "--Select Expense Parent--"
 							}
 							searchPlaceholder="Search expense accounts"
-							showSelectedDetails
 							onChange={page.handleExpenseParentChange}
 						/>
 					</label>

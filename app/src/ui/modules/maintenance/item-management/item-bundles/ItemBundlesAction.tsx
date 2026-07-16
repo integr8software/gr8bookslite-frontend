@@ -461,7 +461,7 @@ function BundleLineRow({
 				<AppAdvancedDropdown
 					menuPortal
 					options={itemOptions}
-					placeholder="Select item"
+					placeholder="--Select Item--"
 					readOnly={isReadonly}
 					showSelectedDetails
 					value={line.itemId}

@@ -1,4 +1,3 @@
-import { PartyClassificationOptions } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import type {
   PartyAddress,
   PartyClassification,

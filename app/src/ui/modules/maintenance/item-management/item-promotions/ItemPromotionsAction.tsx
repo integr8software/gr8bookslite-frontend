@@ -311,7 +311,7 @@ export function ItemPromotionsAction() {
 						<AppAdvancedDropdown
 							menuPortal
 							options={discountOptions}
-							placeholder="Select accounting discount rule"
+							placeholder="--Select Accounting Discount Rule--"
 							readOnly={isReadonly}
 							value={values.discountId}
 							onChange={(value) => updateField("discountId", String(value))}
@@ -336,7 +336,7 @@ export function ItemPromotionsAction() {
 						<AppAdvancedDropdown
 							menuPortal
 							options={itemOptions}
-							placeholder="Select item"
+							placeholder="--Select Item--"
 							readOnly={isReadonly}
 							value={values.itemId}
 							onChange={(value) => updateField("itemId", String(value))}
@@ -348,7 +348,7 @@ export function ItemPromotionsAction() {
 							<AppAdvancedDropdown
 								menuPortal
 								options={bundleOptions}
-								placeholder="Select bundle"
+								placeholder="--Select Bundle--"
 								readOnly={isReadonly}
 								value={values.bundleId}
 								onChange={(value) => updateField("bundleId", String(value))}
@@ -361,7 +361,7 @@ export function ItemPromotionsAction() {
 							<AppAdvancedDropdown
 								menuPortal
 								options={itemOptions}
-								placeholder="Select free item"
+								placeholder="--Select Free Item--"
 								readOnly={isReadonly}
 								value={values.freeItemId}
 								onChange={(value) => updateField("freeItemId", String(value))}

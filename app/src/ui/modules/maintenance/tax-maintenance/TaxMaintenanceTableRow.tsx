@@ -1,5 +1,6 @@
 import type {
   TaxMaintenance,
+  TaxMaintenanceAccountSummary,
   TaxMaintenancePermissions,
   TaxMaintenanceTableRowProps,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
@@ -62,44 +63,68 @@ function TaxMaintenanceCellContent({
   switch (columnId) {
     case "name":
       return <span className="font-medium text-darknavy">{tax.name}</span>;
+    case "description":
+      return <AccountText value={tax.description} />;
     case "percentage":
       return <span>{formatTaxMaintenancePercentage(tax.percentage)}</span>;
     case "inputVatAccountCode":
-      return <AccountText value={tax.accounts?.inputVatAccount?.accountCode} />;
+      return <AccountText value={getAccountCode(tax.accounts?.inputVatAccount)} />;
     case "inputVatAccountTitle":
-      return <AccountText value={tax.accounts?.inputVatAccount?.accountTitle} />;
+      return <AccountText value={getAccountTitle(tax.accounts?.inputVatAccount)} />;
     case "outputVatAccountCode":
-      return <AccountText value={tax.accounts?.outputVatAccount?.accountCode} />;
+      return <AccountText value={getAccountCode(tax.accounts?.outputVatAccount)} />;
     case "outputVatAccountTitle":
-      return <AccountText value={tax.accounts?.outputVatAccount?.accountTitle} />;
-    case "vatPayableAccountCode":
-      return <AccountText value={tax.accounts?.vatPayableAccount?.accountCode} />;
-    case "vatPayableAccountTitle":
-      return (
-        <AccountText value={tax.accounts?.vatPayableAccount?.accountTitle} />
-      );
-    case "deferredInputTaxAccountCode":
+      return <AccountText value={getAccountTitle(tax.accounts?.outputVatAccount)} />;
+    case "deferredVatAccountCode":
+      return <AccountText value={getAccountCode(tax.accounts?.deferredVatAccount)} />;
+    case "deferredVatAccountTitle":
+      return <AccountText value={getAccountTitle(tax.accounts?.deferredVatAccount)} />;
+    case "expandedWithholdingTaxAccountCode":
       return (
         <AccountText
-          value={tax.accounts?.deferredInputTaxAccount?.accountCode}
+          value={getAccountCode(tax.accounts?.expandedWithholdingTaxAccount)}
         />
       );
-    case "deferredInputTaxAccountTitle":
+    case "expandedWithholdingTaxAccountTitle":
       return (
         <AccountText
-          value={tax.accounts?.deferredInputTaxAccount?.accountTitle}
+          value={getAccountTitle(tax.accounts?.expandedWithholdingTaxAccount)}
         />
       );
-    case "deferredOutputVatAccountCode":
+    case "creditableWithholdingTaxAccountCode":
       return (
         <AccountText
-          value={tax.accounts?.deferredOutputVatAccount?.accountCode}
+          value={getAccountCode(tax.accounts?.creditableWithholdingTaxAccount)}
         />
       );
-    case "deferredOutputVatAccountTitle":
+    case "creditableWithholdingTaxAccountTitle":
       return (
         <AccountText
-          value={tax.accounts?.deferredOutputVatAccount?.accountTitle}
+          value={getAccountTitle(tax.accounts?.creditableWithholdingTaxAccount)}
+        />
+      );
+    case "withholdingVatableTaxAccountCode":
+      return (
+        <AccountText
+          value={getAccountCode(tax.accounts?.withholdingVatableTaxAccount)}
+        />
+      );
+    case "withholdingVatableTaxAccountTitle":
+      return (
+        <AccountText
+          value={getAccountTitle(tax.accounts?.withholdingVatableTaxAccount)}
+        />
+      );
+    case "finalWithholdingTaxAccountCode":
+      return (
+        <AccountText
+          value={getAccountCode(tax.accounts?.finalWithholdingTaxAccount)}
+        />
+      );
+    case "finalWithholdingTaxAccountTitle":
+      return (
+        <AccountText
+          value={getAccountTitle(tax.accounts?.finalWithholdingTaxAccount)}
         />
       );
     case "status":
@@ -167,6 +192,14 @@ function TaxMaintenanceTableCell({
       {children}
     </td>
   );
+}
+
+function getAccountCode(account?: TaxMaintenanceAccountSummary | null) {
+  return account?.accountCode ?? "";
+}
+
+function getAccountTitle(account?: TaxMaintenanceAccountSummary | null) {
+  return account?.accountTitle ?? "";
 }
 
 function AccountText({ value }: { value?: string | null }) {

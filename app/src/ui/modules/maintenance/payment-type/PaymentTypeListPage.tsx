@@ -19,13 +19,18 @@ import type { DrawerState } from "@/app/src/types/modules/maintenance/payment-ty
 export function PaymentTypeListPage() {
 	const page = usePaymentTypeListPage();
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	const [drawerVersion, setDrawerVersion] = useState(0);
 	const [isImportOpen, setIsImportOpen] = useState(false);
 	const closeDrawer = useCallback(() => setDrawerState(null), []);
+	const openAddDrawer = useCallback(() => {
+		setDrawerVersion((version) => version + 1);
+		setDrawerState({ mode: "add" });
+	}, []);
 
 	useMaintenanceAddDrawerSpotlight(
 		() => {
 			if (page.permissions.canCreate) {
-				setDrawerState({ mode: "add" });
+				openAddDrawer();
 			}
 		},
 		closeDrawer,
@@ -71,7 +76,7 @@ export function PaymentTypeListPage() {
 				}
 				actions={
 					<PaymentTypeHeaderActions
-						onAdd={() => setDrawerState({ mode: "add" })}
+						onAdd={openAddDrawer}
 						onImport={() => setIsImportOpen(true)}
 						permissions={page.permissions}
 					/>
@@ -109,6 +114,7 @@ export function PaymentTypeListPage() {
 			/>
 
 			<PaymentTypeDrawer
+				key={`${drawerState?.mode ?? "closed"}-${drawerState?.paymentType?.id ?? "new"}-${drawerVersion}`}
 				isOpen={Boolean(drawerState)}
 				mode={drawerState?.mode ?? "add"}
 				onClose={closeDrawer}

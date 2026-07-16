@@ -25,189 +25,182 @@ export function BankMasterfileFields({
 
 	return (
 		<div className="grid gap-5">
-			<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
-				<div className="grid gap-4 lg:grid-cols-2">
-					<FormField label="Bank" error={errors.bankName} required>
-						<input
-							id="bank-masterfile-bank-name"
-							name="bankName"
-							value={values.bankName}
-							onChange={onInputChange}
-							readOnly={isReadonly}
-							className={BankMasterfileFieldClassName}
-							placeholder="BDO"
-						/>
-					</FormField>
-					<FormField label="Branch" error={errors.branch}>
-						<input
-							id="bank-masterfile-branch"
-							name="branch"
-							value={values.branch}
-							onChange={onInputChange}
-							readOnly={isReadonly}
-							className={BankMasterfileFieldClassName}
-							placeholder="Makati Branch"
-						/>
-					</FormField>
-					<FormField
-						label="Account Number"
-						error={errors.accountNumber}
-						helper={
-							values.status === "Inactive" && !values.accountNumber.trim()
-								? "Add an account number to activate this bank."
-								: undefined
+			<div className="grid gap-4 lg:grid-cols-2">
+				<FormField label="Bank Name" error={errors.bankName} required>
+					<input
+						id="bank-masterfile-bank-name"
+						name="bankName"
+						value={values.bankName}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={BankMasterfileFieldClassName}
+						placeholder="BDO"
+					/>
+				</FormField>
+				<FormField label="Branch" error={errors.branch}>
+					<input
+						id="bank-masterfile-branch"
+						name="branch"
+						value={values.branch}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={BankMasterfileFieldClassName}
+						placeholder="Makati Branch"
+					/>
+				</FormField>
+				<FormField
+					label="Account Number"
+					error={errors.accountNumber}
+					helper={
+						values.status === "Inactive" && !values.accountNumber.trim()
+							? "Add an account number to activate this bank."
+							: undefined
+					}
+					required={values.status === "Active"}
+				>
+					<input
+						id="bank-masterfile-account-number"
+						name="accountNumber"
+						value={values.accountNumber}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={BankMasterfileFieldClassName}
+						placeholder="Required before activation"
+					/>
+				</FormField>
+				<FormField label="Account Type" error={errors.accountType} required>
+					<select
+						id="bank-masterfile-account-type"
+						name="accountType"
+						value={values.accountType}
+						onChange={onInputChange}
+						disabled={isReadonly}
+						className={BankMasterfileSelectClassName}
+					>
+						{BankMasterfileAccountTypeOptions.map((option) => (
+							<option key={option} value={option}>
+								{option}
+							</option>
+						))}
+					</select>
+				</FormField>
+				<FormField label="Account Code">
+					<input
+						id="bank-masterfile-account-code"
+						value={
+							mode === "add"
+								? isAccountCodeLoading
+									? "Loading..."
+									: accountCode || "Auto series"
+								: accountCode
 						}
-						required={values.status === "Active"}
+						readOnly
+						className={BankMasterfileReadOnlyFieldClassName}
+					/>
+				</FormField>
+				<FormField label="Account Title" required={values.status === "Active"}>
+					<input
+						id="bank-masterfile-account-title"
+						value={accountName}
+						readOnly
+						className={BankMasterfileReadOnlyFieldClassName}
+					/>
+				</FormField>
+				<FormField label="Status" error={errors.status} required>
+					<select
+						id="bank-masterfile-status"
+						name="status"
+						value={values.status}
+						onChange={onInputChange}
+						disabled={isReadonly}
+						className={BankMasterfileSelectClassName}
 					>
-						<input
-							id="bank-masterfile-account-number"
-							name="accountNumber"
-							value={values.accountNumber}
-							onChange={onInputChange}
-							readOnly={isReadonly}
-							className={BankMasterfileFieldClassName}
-							placeholder="Required before activation"
-						/>
-					</FormField>
-					<FormField label="Account Type" error={errors.accountType} required>
-						<select
-							id="bank-masterfile-account-type"
-							name="accountType"
-							value={values.accountType}
-							onChange={onInputChange}
-							disabled={isReadonly}
-							className={BankMasterfileSelectClassName}
-						>
-							{BankMasterfileAccountTypeOptions.map((option) => (
-								<option key={option} value={option}>
-									{option}
-								</option>
-							))}
-						</select>
-					</FormField>
-					<FormField label="Account Code">
-						<input
-							id="bank-masterfile-account-code"
-							value={
-								mode === "add"
-									? isAccountCodeLoading
-										? "Loading..."
-										: accountCode || "Auto series"
-									: accountCode
-							}
-							readOnly
-							className={BankMasterfileReadOnlyFieldClassName}
-						/>
-					</FormField>
-					<FormField
-						label="Account Title"
-						required={values.status === "Active"}
-					>
-						<input
-							id="bank-masterfile-account-title"
-							value={accountName}
-							readOnly
-							className={BankMasterfileReadOnlyFieldClassName}
-						/>
-					</FormField>
-					<FormField label="Status" error={errors.status} required>
-						<select
-							id="bank-masterfile-status"
-							name="status"
-							value={values.status}
-							onChange={onInputChange}
-							disabled={isReadonly}
-							className={BankMasterfileSelectClassName}
-						>
-							{BankMasterfileStatusOptions.map((status) => (
-								<option key={status} value={status}>
-									{status}
-								</option>
-							))}
-						</select>
-					</FormField>
-					<FormField label="Currency" error={errors.currencyCode} required>
-						<input
-							id="bank-masterfile-currency-code"
-							name="currencyCode"
-							value={values.currencyCode}
-							onChange={onInputChange}
-							readOnly={isReadonly}
-							className={BankMasterfileFieldClassName}
-							placeholder="PHP"
-							maxLength={10}
-						/>
-					</FormField>
-					<FormField label="Exchange Rate" error={errors.currencyExchangeRate}>
-						<input
-							id="bank-masterfile-currency-exchange-rate"
-							name="currencyExchangeRate"
-							type="number"
-							min="0"
-							step="any"
-							value={values.currencyExchangeRate}
-							onChange={onInputChange}
-							readOnly={isReadonly}
-							className={BankMasterfileFieldClassName}
-							placeholder="Required for non-PHP"
-						/>
-					</FormField>
-					<label
-						htmlFor="bank-masterfile-is-default"
-						className="flex min-h-11 items-center justify-between rounded-lg border border-darknavy/10 px-3 text-sm font-semibold text-darknavy"
-					>
-						Default Bank
-						<input
-							id="bank-masterfile-is-default"
-							name="isDefault"
-							type="checkbox"
-							checked={values.isDefault}
-							onChange={onInputChange}
-							disabled={isReadonly}
-							className="h-5 w-5 rounded border-darknavy/20 text-skyblue focus:ring-2 focus:ring-skyblue/20"
-						/>
-					</label>
-				</div>
+						{BankMasterfileStatusOptions.map((status) => (
+							<option key={status} value={status}>
+								{status}
+							</option>
+						))}
+					</select>
+				</FormField>
+				<FormField label="Currency" error={errors.currencyCode} required>
+					<input
+						id="bank-masterfile-currency-code"
+						name="currencyCode"
+						value={values.currencyCode}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={BankMasterfileFieldClassName}
+						placeholder="PHP"
+						maxLength={10}
+					/>
+				</FormField>
+				<FormField label="Exchange Rate" error={errors.currencyExchangeRate}>
+					<input
+						id="bank-masterfile-currency-exchange-rate"
+						name="currencyExchangeRate"
+						type="number"
+						min="0"
+						step="any"
+						value={values.currencyExchangeRate}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={BankMasterfileFieldClassName}
+						placeholder="Required for non-PHP"
+					/>
+				</FormField>
+				<label
+					htmlFor="bank-masterfile-is-default"
+					className="flex h-11 self-end items-center justify-between rounded-lg border border-darknavy/10 px-3 text-sm font-semibold text-darknavy"
+				>
+					Default Bank
+					<input
+						id="bank-masterfile-is-default"
+						name="isDefault"
+						type="checkbox"
+						checked={values.isDefault}
+						onChange={onInputChange}
+						disabled={isReadonly}
+						className="h-5 w-5 rounded border-darknavy/20 text-skyblue focus:ring-2 focus:ring-skyblue/20"
+					/>
+				</label>
 			</div>
 
-			<div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">
-				<div className="grid gap-4 lg:grid-cols-3">
-					<FormField label="Series Start" error={errors.seriesStart} required>
-						<input
-							id="bank-masterfile-series-start"
-							name="seriesStart"
-							value={values.seriesStart}
-							onChange={onInputChange}
-							readOnly={isReadonly}
-							className={BankMasterfileFieldClassName}
-							placeholder="000001"
-						/>
-					</FormField>
-					<FormField label="Series End" error={errors.seriesEnd} required>
-						<input
-							id="bank-masterfile-series-end"
-							name="seriesEnd"
-							value={values.seriesEnd}
-							onChange={onInputChange}
-							readOnly={isReadonly}
-							className={BankMasterfileFieldClassName}
-							placeholder="999999"
-						/>
-					</FormField>
-					<FormField label="Series Digits" error={errors.seriesDigits} required>
-						<input
-							id="bank-masterfile-series-digits"
-							name="seriesDigits"
-							type="number"
-							min="1"
-							value={values.seriesDigits}
-							onChange={onInputChange}
-							readOnly={isReadonly}
-							className={BankMasterfileFieldClassName}
-							placeholder="6"
-						/>
-					</FormField>
-				</div>
+			<div className="grid gap-4 lg:grid-cols-3">
+				<FormField label="Series Start" error={errors.seriesStart} required>
+					<input
+						id="bank-masterfile-series-start"
+						name="seriesStart"
+						value={values.seriesStart}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={BankMasterfileFieldClassName}
+						placeholder="000001"
+					/>
+				</FormField>
+				<FormField label="Series End" error={errors.seriesEnd} required>
+					<input
+						id="bank-masterfile-series-end"
+						name="seriesEnd"
+						value={values.seriesEnd}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={BankMasterfileFieldClassName}
+						placeholder="999999"
+					/>
+				</FormField>
+				<FormField label="Series Digits" error={errors.seriesDigits} required>
+					<input
+						id="bank-masterfile-series-digits"
+						name="seriesDigits"
+						type="number"
+						min="1"
+						value={values.seriesDigits}
+						onChange={onInputChange}
+						readOnly={isReadonly}
+						className={BankMasterfileFieldClassName}
+						placeholder="6"
+					/>
+				</FormField>
 			</div>
 		</div>
 	);

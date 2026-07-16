@@ -18,6 +18,7 @@ import type {
 	SalesJournalActionMode,
 	SalesJournalFormErrors,
 	SalesJournalFormValues,
+	SalesJournalLine,
 	SalesJournalLineField,
 } from "@/app/src/types/modules/sales/sales-journal/SalesJournalTypes";
 import { validateSalesJournalForm } from "@/app/src/validations/modules/sales/sales-journal/SalesJournalValidation";
@@ -69,7 +70,9 @@ export function useSalesJournalFormPage() {
 		}
 
 		const normalizedValue =
-			field === "debit" || field === "credit" ? Number(value || 0) : value;
+			field === "debit" || field === "credit"
+				? Number(value.replaceAll(",", "") || 0)
+				: value;
 
 		setValues((current) => ({
 			...current,
@@ -87,6 +90,23 @@ export function useSalesJournalFormPage() {
 					[field]: undefined,
 				},
 			},
+		}));
+	}
+
+	function updateLines(lines: SalesJournalLine[]) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({
+			...current,
+			lines: renumberSalesJournalLines(lines),
+		}));
+		setErrors((current) => ({
+			...current,
+			balance: undefined,
+			lines: undefined,
+			lineErrors: undefined,
 		}));
 	}
 
@@ -173,6 +193,7 @@ export function useSalesJournalFormPage() {
 		submitSalesJournal,
 		totals,
 		updateLine,
+		updateLines,
 		values,
 	};
 }

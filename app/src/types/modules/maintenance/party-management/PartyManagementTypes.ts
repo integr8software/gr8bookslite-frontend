@@ -177,6 +177,7 @@ export type PartyInformationActionHeaderProps = {
   isReadonly: boolean;
   mode: PartyInformationActionMode;
   nextStatus?: PartyInformationStatus;
+  onSave?: () => void;
   onStatusChange?: () => void;
 };
 
@@ -202,7 +203,6 @@ export type PartyInformationTableColumnKey =
   | "email"
   | "gender"
   | "homeAddressLabel"
-  | "honorific"
   | "landline"
   | "memberRegistrationDate"
   | "name"

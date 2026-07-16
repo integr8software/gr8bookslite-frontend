@@ -1,3 +1,4 @@
+import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import type {
 	DiscountManagementTableRecord,
 	DiscountImportColumnHeader,
@@ -8,10 +9,10 @@ import type {
 	DiscountType,
 } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const DiscountManagementHref =
-	"/maintenance/discount-management";
+export const DiscountManagementHref = MODULE_ROUTE_MAP.DSM;
 
 export const DiscountManagementApiPath = "/maintenance/discount-maintenance";
 
@@ -83,6 +84,27 @@ export const DiscountManagementTableColumns = [
 		className: "w-[16%] text-center",
 	},
 ] as const;
+
+export const DiscountManagementTablePreferencesStorageKey =
+	"gr8booksneo:discount-management:table-preferences";
+export const DiscountManagementTablePreferencesModuleKey =
+	"maintenance:discount-management";
+export const DiscountManagementDefaultColumnOrder =
+	DiscountManagementTableColumns.map((column) =>
+		"key" in column ? column.key : "actions",
+	);
+export const DiscountManagementDefaultColumnVisibility: VisibilityState = {
+	description: false,
+	discountType: false,
+	accountCode: false,
+	createdBy: false,
+	createdAt: false,
+	updatedBy: false,
+	updatedAt: false,
+};
+export const DiscountManagementDefaultSorting: SortingState = [
+	{ id: "name", desc: false },
+];
 
 export const DiscountManagementExportColumns: ModuleTableExportColumn<DiscountManagementTableRecord>[] =
 	[

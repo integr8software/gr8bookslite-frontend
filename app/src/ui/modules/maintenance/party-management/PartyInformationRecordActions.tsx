@@ -85,7 +85,7 @@ export function PartyInformationRecordActions({
 				confirmLabel={
 					statusToSet === "Inactive" ? "Set as Inactive" : "Set as Active"
 				}
-				tone={statusToSet === "Inactive" ? "danger" : "success"}
+				tone={statusToSet === "Inactive" ? "deactivate" : "activate"}
 				onCancel={() => setStatusToSet(null)}
 				onConfirm={handleConfirmStatusChange}
 			/>

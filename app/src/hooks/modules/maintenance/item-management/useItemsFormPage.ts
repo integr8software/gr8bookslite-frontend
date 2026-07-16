@@ -429,14 +429,22 @@ export function useItemsFormPage() {
 		});
 	}
 
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
+	function validateBeforeSubmit() {
 		const nextErrors = validateItemForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
 			toast.error("Please fix the highlighted item fields.");
+			return false;
+		}
+
+		return true;
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -512,6 +520,7 @@ export function useItemsFormPage() {
 		updatePriceListPrice,
 		updateSupplier,
 		updateUomConversion,
+		validateBeforeSubmit,
 		values,
 		warehouseItemsHref: createSelectedWarehouseItemsHref(
 			warehouses,

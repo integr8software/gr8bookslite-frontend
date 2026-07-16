@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
-import { MODULE_ROUTE_FALLBACK, getModuleRoute } from "@/app/src/data/shared/modules/ModuleRouteMap";
+import { MODULE_ROUTE_FALLBACK, getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { GetAuthProfileAccess } from "@/app/src/services/auth/AuthProfileAccess";

@@ -120,8 +120,8 @@ export function TransactionTypeListPage() {
 				}
 				tone={
 					page.pendingStatusTransactionType?.status === "Active"
-						? "danger"
-						: "success"
+						? "deactivate"
+						: "activate"
 				}
 				onCancel={() => page.setPendingStatusTransactionType(null)}
 				onConfirm={page.confirmTransactionTypeStatusChange}

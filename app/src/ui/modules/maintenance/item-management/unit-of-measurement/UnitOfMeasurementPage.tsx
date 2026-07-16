@@ -32,6 +32,8 @@ import {
 } from "react";
 import { SystemUomRows } from "@/app/src/data/shared/uom/UomData";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { useAppDialogFormSubmit } from "@/app/src/hooks/shared/app/useAppDialogFormSubmit";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
@@ -56,6 +58,7 @@ import {
 
 const UnitOfMeasurementHref =
 	"/maintenance/item-management/unit-of-measurement";
+const UnitOfMeasurementFormId = "unit-of-measurement-form";
 
 type UnitStatus = "Active" | "Inactive";
 type QuantityMode = "Integer" | "Float";
@@ -387,7 +390,7 @@ export function UnitOfMeasurementListPage() {
 						: ""
 				}
 				confirmLabel={`Set ${nextPendingStatus}`}
-				tone={nextPendingStatus === "Inactive" ? "danger" : "success"}
+				tone={nextPendingStatus === "Inactive" ? "deactivate" : "activate"}
 				onCancel={() => setPendingStatusRow(null)}
 				onConfirm={confirmStatusChange}
 			/>
@@ -416,6 +419,17 @@ export function UnitOfMeasurementActionPage() {
 					status: "Active",
 				},
 	);
+	const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+	const {
+		closeDialog: closeSaveDialog,
+		isConfirmSubmitPending,
+		submitFromDialog,
+	} = useAppDialogFormSubmit({
+		formId: UnitOfMeasurementFormId,
+		isDialogOpen: isSaveDialogOpen,
+		isSubmitting: false,
+		onDialogOpenChange: setIsSaveDialogOpen,
+	});
 
 	if (needsRecord && !existingRecord) {
 		return (
@@ -527,7 +541,11 @@ export function UnitOfMeasurementActionPage() {
 				: "View Unit of Measurement";
 
 	return (
-		<form onSubmit={handleSubmit} className="grid gap-5">
+		<form
+			id={UnitOfMeasurementFormId}
+			onSubmit={handleSubmit}
+			className="grid gap-5"
+		>
 			<ModuleHeader
 				variant="panel"
 				titleAs="h1"
@@ -549,13 +567,33 @@ export function UnitOfMeasurementActionPage() {
 							Back
 						</Link>
 						{!isReadonly ? (
-							<button type="submit" className={moduleHeaderActionClassNames.primary}>
+							<button
+								type="button"
+								onClick={() => setIsSaveDialogOpen(true)}
+								className={moduleHeaderActionClassNames.primary}
+							>
 								<Save className="h-4 w-4" aria-hidden="true" />
 								Save Unit
 							</button>
 						) : null}
 					</>
 				}
+			/>
+			<AppDialog
+				confirmLabel="Confirm"
+				description={
+					mode === "edit"
+						? "This will update the selected unit with your latest changes."
+						: "This will create a new unit using the details you entered."
+				}
+				iconTone="question"
+				isOpen={isSaveDialogOpen}
+				isPending={isConfirmSubmitPending}
+				pendingLabel={getMaintenanceSavePendingLabel(mode)}
+				title={mode === "edit" ? "Save unit changes?" : "Save this unit?"}
+				tone="success"
+				onCancel={closeSaveDialog}
+				onConfirm={submitFromDialog}
 			/>
 			<section className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
 				<h2 className="text-base font-semibold text-darknavy">

@@ -53,6 +53,17 @@ export function usePaymentTypeActionPage({
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
+	function validateBeforeSubmit() {
+		const nextErrors = validatePaymentTypeForm(values);
+
+		if (Object.keys(nextErrors).length > 0) {
+			setErrors(nextErrors);
+			return false;
+		}
+
+		return true;
+	}
+
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
@@ -61,10 +72,7 @@ export function usePaymentTypeActionPage({
 			return;
 		}
 
-		const nextErrors = validatePaymentTypeForm(values);
-
-		if (Object.keys(nextErrors).length > 0) {
-			setErrors(nextErrors);
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -94,6 +102,7 @@ export function usePaymentTypeActionPage({
 		isMutating: isSubmitting || isMutating,
 		isReadonly,
 		isSubmitting: isSubmitting || isMutating,
+		validateBeforeSubmit,
 		values,
 	};
 }

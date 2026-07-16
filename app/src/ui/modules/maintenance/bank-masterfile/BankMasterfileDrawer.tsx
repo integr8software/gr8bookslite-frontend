@@ -11,6 +11,7 @@ import type {
 	BankMasterfileDrawerProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import { BankMasterfileFields } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileFields";
 
 export function BankMasterfileDrawer({
@@ -57,8 +58,9 @@ function BankMasterfileDrawerPanel({
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
+			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={mode === "edit" ? "Updating Bank..." : "Saving Bank..."}
+			savingLabel={getMaintenanceSavePendingLabel(mode)}
 			submitLabel={mode === "edit" ? "Update Bank" : "Save Bank"}
 			title={copy.title}
 		>

@@ -151,7 +151,7 @@ export function WarehouseListPage() {
 				title="Set warehouse inactive?"
 				description={`${page.pendingDeleteWarehouse?.name ?? "The selected warehouse"} will remain in history and references, but will no longer be active for normal selection.`}
 				confirmLabel="Set Inactive"
-				tone="danger"
+				tone="deactivate"
 				onCancel={() => page.setPendingDeleteWarehouse(null)}
 				onConfirm={page.handleConfirmDelete}
 			/>

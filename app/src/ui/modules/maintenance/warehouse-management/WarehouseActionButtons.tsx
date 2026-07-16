@@ -16,12 +16,14 @@ type WarehouseActionButtonsProps = {
 	mode: WarehouseActionMode;
 	warehouse?: WarehouseRecord;
 	onDeleteWarehouse: () => void;
+	onSaveWarehouse: () => void;
 };
 
 export function WarehouseActionButtons({
 	isReadonly,
 	mode,
 	onDeleteWarehouse,
+	onSaveWarehouse,
 	warehouse,
 }: WarehouseActionButtonsProps) {
 	return (
@@ -80,7 +82,11 @@ export function WarehouseActionButtons({
 				</Link>
 			) : null}
 			{!isReadonly ? (
-				<button type="submit" className={moduleHeaderActionClassNames.primary}>
+				<button
+					type="button"
+					onClick={onSaveWarehouse}
+					className={moduleHeaderActionClassNames.primary}
+				>
 					<Save className="h-4 w-4" aria-hidden="true" />
 					Save Warehouse
 				</button>

@@ -14,6 +14,7 @@ import {
 } from "react";
 import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/item-management/useItemManagement";
 import { useDiscountManagementStore } from "@/app/src/hooks/modules/maintenance/discount-management/useDiscountManagement";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
@@ -22,8 +23,11 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { useAppDialogFormSubmit } from "@/app/src/hooks/shared/app/useAppDialogFormSubmit";
 
 const ItemPromotionsHref = "/maintenance/item-management/item-promotions";
+const ItemPromotionsFormId = "item-promotions-form";
 
 type PromotionMode = "add" | "edit" | "view";
 type PromotionType =
@@ -157,6 +161,17 @@ export function ItemPromotionsAction() {
 					value: 0,
 				},
 	);
+	const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+	const {
+		closeDialog: closeSaveDialog,
+		isConfirmSubmitPending,
+		submitFromDialog,
+	} = useAppDialogFormSubmit({
+		formId: ItemPromotionsFormId,
+		isDialogOpen: isSaveDialogOpen,
+		isSubmitting: false,
+		onDialogOpenChange: setIsSaveDialogOpen,
+	});
 	const selectedItem = items.find((item) => item.id === values.itemId);
 	const freeItem = items.find((item) => item.id === values.freeItemId);
 	const selectedDiscount = discounts.find(
@@ -188,7 +203,11 @@ export function ItemPromotionsAction() {
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="grid gap-5">
+		<form
+			id={ItemPromotionsFormId}
+			onSubmit={handleSubmit}
+			className="grid gap-5"
+		>
 			<ModuleHeader
 				variant="panel"
 				titleAs="h1"
@@ -207,13 +226,37 @@ export function ItemPromotionsAction() {
 							Back
 						</Link>
 						{!isReadonly ? (
-							<button type="submit" className={moduleHeaderActionClassNames.primary}>
+							<button
+								type="button"
+								onClick={() => setIsSaveDialogOpen(true)}
+								className={moduleHeaderActionClassNames.primary}
+							>
 								<Save className="h-4 w-4" aria-hidden="true" />
 								Save Promotion
 							</button>
 						) : null}
 					</>
 				}
+			/>
+			<AppDialog
+				confirmLabel="Confirm"
+				description={
+					mode === "edit"
+						? "This will update the selected item promotion with your latest changes."
+						: "This will create a new item promotion using the details you entered."
+				}
+				iconTone="question"
+				isOpen={isSaveDialogOpen}
+				isPending={isConfirmSubmitPending}
+				pendingLabel={getMaintenanceSavePendingLabel(mode)}
+				title={
+					mode === "edit"
+						? "Save item promotion changes?"
+						: "Save this item promotion?"
+				}
+				tone="success"
+				onCancel={closeSaveDialog}
+				onConfirm={submitFromDialog}
 			/>
 			<section className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
 				<h2 className="text-base font-semibold text-darknavy">Promotion Details</h2>

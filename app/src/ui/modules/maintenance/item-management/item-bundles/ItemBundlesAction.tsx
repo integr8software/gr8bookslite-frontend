@@ -36,6 +36,7 @@ import type {
 	ItemBundleLine,
 	ItemRecord,
 } from "@/app/src/types/modules/maintenance/item-management/ItemManagementTypes";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
@@ -44,8 +45,11 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { useAppDialogFormSubmit } from "@/app/src/hooks/shared/app/useAppDialogFormSubmit";
 
 const ItemBundlesHref = "/maintenance/item-management/item-bundles";
+const ItemBundlesFormId = "item-bundles-form";
 
 type BundleMode = "add" | "edit" | "view";
 
@@ -100,6 +104,17 @@ export function ItemBundlesAction() {
 				},
 	);
 	const [errors, setErrors] = useState<BundleFormErrors>({});
+	const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+	const {
+		closeDialog: closeSaveDialog,
+		isConfirmSubmitPending,
+		submitFromDialog,
+	} = useAppDialogFormSubmit({
+		formId: ItemBundlesFormId,
+		isDialogOpen: isSaveDialogOpen,
+		isSubmitting: false,
+		onDialogOpenChange: setIsSaveDialogOpen,
+	});
 	const sensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
 		useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -193,14 +208,22 @@ export function ItemBundlesAction() {
 		});
 	}
 
+	function validateBeforeSubmit() {
+		const nextErrors = validateBundleForm(values, items);
+
+		if (hasBundleErrors(nextErrors)) {
+			setErrors(nextErrors);
+			return false;
+		}
+
+		return true;
+	}
+
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
 		if (!isReadonly) {
-			const nextErrors = validateBundleForm(values, items);
-
-			if (hasBundleErrors(nextErrors)) {
-				setErrors(nextErrors);
+			if (!validateBeforeSubmit()) {
 				return;
 			}
 
@@ -216,7 +239,7 @@ export function ItemBundlesAction() {
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="grid gap-5">
+		<form id={ItemBundlesFormId} onSubmit={handleSubmit} className="grid gap-5">
 			<ModuleHeader
 				variant="panel"
 				titleAs="h1"
@@ -235,13 +258,41 @@ export function ItemBundlesAction() {
 							Back
 						</Link>
 						{!isReadonly ? (
-							<button type="submit" className={moduleHeaderActionClassNames.primary}>
+							<button
+								type="button"
+								onClick={() => {
+									if (validateBeforeSubmit()) {
+										setIsSaveDialogOpen(true);
+									}
+								}}
+								className={moduleHeaderActionClassNames.primary}
+							>
 								<Save className="h-4 w-4" aria-hidden="true" />
 								Save Bundle
 							</button>
 						) : null}
 					</>
 				}
+			/>
+			<AppDialog
+				confirmLabel="Confirm"
+				description={
+					mode === "edit"
+						? "This will update the selected item bundle with your latest changes."
+						: "This will create a new item bundle using the details you entered."
+				}
+				iconTone="question"
+				isOpen={isSaveDialogOpen}
+				isPending={isConfirmSubmitPending}
+				pendingLabel={getMaintenanceSavePendingLabel(mode)}
+				title={
+					mode === "edit"
+						? "Save item bundle changes?"
+						: "Save this item bundle?"
+				}
+				tone="success"
+				onCancel={closeSaveDialog}
+				onConfirm={submitFromDialog}
 			/>
 			<section className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
 				<h2 className="text-base font-semibold text-darknavy">Bundle Information</h2>

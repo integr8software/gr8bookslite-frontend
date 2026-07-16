@@ -41,6 +41,8 @@ import type {
 	WarehouseTransfer,
 } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { useAppDialogFormSubmit } from "@/app/src/hooks/shared/app/useAppDialogFormSubmit";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -497,6 +499,18 @@ function SupportRecordForm({
 }) {
 	const values = form;
 	const isReadonly = mode === "view";
+	const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+	const formId = `warehouse-support-${kind}-form`;
+	const {
+		closeDialog: closeSaveDialog,
+		isConfirmSubmitPending,
+		submitFromDialog,
+	} = useAppDialogFormSubmit({
+		formId,
+		isDialogOpen: isSaveDialogOpen,
+		isSubmitting: isPending,
+		onDialogOpenChange: setIsSaveDialogOpen,
+	});
 	const title =
 		mode === "add"
 			? PageConfig[kind].actionLabel
@@ -520,7 +534,7 @@ function SupportRecordForm({
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="grid gap-5">
+		<form id={formId} onSubmit={handleSubmit} className="grid gap-5">
 			<ModuleHeader
 				variant="panel"
 				titleAs="h1"
@@ -547,7 +561,8 @@ function SupportRecordForm({
 						</Link>
 						{!isReadonly ? (
 							<button
-								type="submit"
+								type="button"
+								onClick={() => setIsSaveDialogOpen(true)}
 								disabled={isPending}
 								className={moduleHeaderActionClassNames.primary}
 							>
@@ -557,6 +572,22 @@ function SupportRecordForm({
 						) : null}
 					</>
 				}
+			/>
+			<AppDialog
+				confirmLabel="Confirm"
+				description={
+					mode === "edit"
+						? "This will update the selected warehouse setup record."
+						: "This will save the warehouse setup record."
+				}
+				iconTone="question"
+				isOpen={isSaveDialogOpen}
+				isPending={isConfirmSubmitPending}
+				pendingLabel={getMaintenanceSavePendingLabel(mode)}
+				title={mode === "edit" ? "Save changes?" : "Save this record?"}
+				tone="success"
+				onCancel={closeSaveDialog}
+				onConfirm={submitFromDialog}
 			/>
 			<section className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
 				<div className="grid gap-4 md:grid-cols-2">

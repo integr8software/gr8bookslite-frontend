@@ -26,6 +26,11 @@ import {
 import { ChartsOfAccountsForm } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsForm";
 import { Button } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsControls";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
+import {
+  AnimatedPendingLabel,
+  AppDialog,
+} from "@/app/src/ui/shared/app/AppDialog";
 
 export function ChartsOfAccountsDrawer({
   account,
@@ -71,11 +76,15 @@ function DrawerPanel({
   const [submitted, setSubmitted] = useState(false);
   const [isAccountCodeLoading, setIsAccountCodeLoading] = useState(false);
   const [accountCodeError, setAccountCodeError] = useState("");
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [isSaveConfirmPending, setIsSaveConfirmPending] = useState(false);
   const handledSaveResetToken = useRef(saveResetToken);
+  const hasSeenSavingFromDialog = useRef(false);
   const availableAccountLevels = useMemo(
     () => getAvailableAccountLevels(accounts, values.parentId),
     [accounts, values.parentId],
   );
+  const savePendingLabel = getMaintenanceSavePendingLabel(mode);
   const accountNameError = getDuplicateAccountNameError(
     accounts,
     values,
@@ -151,6 +160,37 @@ function DrawerPanel({
       isCurrent = false;
     };
   }, [account, availableAccountLevels, isOpen, values.accountLevel, values.parentId]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      hasSeenSavingFromDialog.current = false;
+      queueMicrotask(() => {
+        setIsSaveDialogOpen(false);
+        setIsSaveConfirmPending(false);
+      });
+      return;
+    }
+
+    if (!isSaveDialogOpen) {
+      hasSeenSavingFromDialog.current = false;
+      queueMicrotask(() => setIsSaveConfirmPending(false));
+      return;
+    }
+
+    if (isSaving) {
+      hasSeenSavingFromDialog.current = true;
+      queueMicrotask(() => setIsSaveConfirmPending(true));
+      return;
+    }
+
+    if (hasSeenSavingFromDialog.current) {
+      hasSeenSavingFromDialog.current = false;
+      queueMicrotask(() => {
+        setIsSaveDialogOpen(false);
+        setIsSaveConfirmPending(false);
+      });
+    }
+  }, [isOpen, isSaveDialogOpen, isSaving]);
 
   useEffect(() => {
     if (
@@ -243,10 +283,10 @@ function DrawerPanel({
     onClose();
   }
 
-  function handleSubmit() {
+  function validateBeforeSubmit() {
     setSubmitted(true);
     if (mode === "view") {
-      return;
+      return false;
     }
 
     if (
@@ -266,68 +306,102 @@ function DrawerPanel({
       }) ||
       (values.isBankLinked && isBankDetailsIncomplete(values))
     ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function handleSubmit() {
+    if (!validateBeforeSubmit()) {
       return;
     }
+
+    setIsSaveConfirmPending(true);
     onSave(values);
   }
 
   return (
-    <ModuleDrawer
-      isOpen={isOpen}
-      eyebrow={getDrawerEyebrow(account, parentAccount)}
-      title={getDrawerTitle(mode, account, parentAccount)}
-      description={getDrawerDescription(parentAccount)}
-      contentClassName="overflow-hidden"
-      onClose={handleClose}
-      spotlightId="maintenance-add-drawer"
-      footer={
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="secondary" onClick={handleCancel}>
-            Cancel
-          </Button>
-          {mode === "view" ? null : (
-            <div data-spotlight-id="maintenance-add-drawer-save">
-              <Button
-                disabled={isSaving || isAccountCodeLoading}
-                onClick={handleSubmit}
-              >
-                {isSaving
-                  ? account
-                    ? "Saving Changes..."
-                    : "Creating Account..."
-                  : isAccountCodeLoading
-                  ? "Generating Code"
-                  : account
-                    ? "Save Changes"
-                    : "Create Account"}
-              </Button>
-            </div>
-          )}
-        </div>
-      }
-    >
-      <div
-        className="h-full min-h-0"
-        data-spotlight-id="maintenance-add-drawer-fields"
+    <>
+      <ModuleDrawer
+        isOpen={isOpen}
+        eyebrow={getDrawerEyebrow(account, parentAccount)}
+        title={getDrawerTitle(mode, account, parentAccount)}
+        description={getDrawerDescription(parentAccount)}
+        contentClassName="overflow-hidden"
+        onClose={handleClose}
+        spotlightId="maintenance-add-drawer"
+        footer={
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="secondary" onClick={handleCancel}>
+              Cancel
+            </Button>
+            {mode === "view" ? null : (
+              <div data-spotlight-id="maintenance-add-drawer-save">
+                <Button
+                  disabled={isSaving || isAccountCodeLoading}
+                  onClick={() => {
+                    if (validateBeforeSubmit()) {
+                      setIsSaveDialogOpen(true);
+                    }
+                  }}
+                >
+                  {isSaving
+                    ? <AnimatedPendingLabel label={savePendingLabel} />
+                    : isAccountCodeLoading
+                    ? "Generating Code"
+                    : account
+                      ? "Save Changes"
+                      : "Create Account"}
+                </Button>
+              </div>
+            )}
+          </div>
+        }
       >
-        <ChartsOfAccountsForm
-          account={account}
-          accounts={accounts}
-          submitted={submitted}
-          availableAccountLevels={availableAccountLevels}
-          isAccountCodeLoading={isAccountCodeLoading}
-          accountCodeError={accountCodeError}
-          accountNameError={accountNameError}
-          isReadOnly={mode === "view"}
-          parentAccountError={
-            submitted && !values.parentId ? "Required" : undefined
+        <div
+          className="h-full min-h-0"
+          data-spotlight-id="maintenance-add-drawer-fields"
+        >
+          <ChartsOfAccountsForm
+            account={account}
+            accounts={accounts}
+            submitted={submitted}
+            availableAccountLevels={availableAccountLevels}
+            isAccountCodeLoading={isAccountCodeLoading}
+            accountCodeError={accountCodeError}
+            accountNameError={accountNameError}
+            isReadOnly={mode === "view"}
+            parentAccountError={
+              submitted && !values.parentId ? "Required" : undefined
+            }
+            values={values}
+            onFieldChange={updateField}
+            onParentChange={updateParentAccount}
+          />
+        </div>
+      </ModuleDrawer>
+      <AppDialog
+        confirmLabel="Confirm"
+        description={
+          account
+            ? "This will update the selected chart account with your latest changes."
+            : "This will create a new chart account using the details you entered."
+        }
+        iconTone="question"
+        isOpen={isSaveDialogOpen}
+        isPending={isSaving || isSaveConfirmPending}
+        pendingLabel={savePendingLabel}
+        title={account ? "Save chart account changes?" : "Create chart account?"}
+        tone="success"
+        onCancel={() => {
+          if (!isSaving && !isSaveConfirmPending) {
+            setIsSaveDialogOpen(false);
           }
-          values={values}
-          onFieldChange={updateField}
-          onParentChange={updateParentAccount}
-        />
-      </div>
-    </ModuleDrawer>
+        }}
+        onConfirm={handleSubmit}
+      />
+    </>
   );
 }
 

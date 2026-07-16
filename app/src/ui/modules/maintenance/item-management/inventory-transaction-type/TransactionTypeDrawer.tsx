@@ -8,6 +8,7 @@ import {
 import { useTransactionTypeActionPage } from "@/app/src/hooks/modules/maintenance/item-management/inventory-transaction-type/useTransactionTypeActionPage";
 import type { TransactionTypeDrawerProps } from "@/app/src/types/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeTypes";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import { TransactionTypeForm } from "@/app/src/ui/modules/maintenance/item-management/inventory-transaction-type/TransactionTypeForm";
 
 export function TransactionTypeDrawer(props: TransactionTypeDrawerProps) {
@@ -40,7 +41,9 @@ function TransactionTypeDrawerPanel({
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isMutating}
+			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
+			savingLabel={getMaintenanceSavePendingLabel(mode)}
 			title={copy.title}
 		>
 			<form

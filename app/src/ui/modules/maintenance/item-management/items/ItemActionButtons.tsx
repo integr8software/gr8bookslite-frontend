@@ -14,6 +14,7 @@ type ItemActionButtonsProps = {
 	item?: ItemRecord;
 	mode: ItemActionMode;
 	nextStatus?: ItemStatus;
+	onSave: () => void;
 	onStatusChange: () => void;
 };
 
@@ -22,6 +23,7 @@ export function ItemActionButtons({
 	item,
 	mode,
 	nextStatus,
+	onSave,
 	onStatusChange,
 }: ItemActionButtonsProps) {
 	const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
@@ -71,7 +73,8 @@ export function ItemActionButtons({
 			) : null}
 			{!isReadonly ? (
 				<button
-					type="submit"
+					type="button"
+					onClick={onSave}
 					className={joinClasses(responsiveActionClassName, moduleHeaderActionClassNames.primary)}
 				>
 					<Save className="h-4 w-4" aria-hidden="true" />

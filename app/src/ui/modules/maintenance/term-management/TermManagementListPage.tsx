@@ -156,7 +156,7 @@ export function TermManagementListPage() {
 						? "Deactivate"
 						: "Activate"
 				}
-				tone={page.pendingStatusTerm?.status === "Active" ? "danger" : "success"}
+				tone={page.pendingStatusTerm?.status === "Active" ? "deactivate" : "activate"}
 				onCancel={() => page.setPendingStatusTerm(null)}
 				onConfirm={page.confirmTermStatusChange}
 			/>

@@ -14,6 +14,7 @@ import type {
   TaxMaintenanceFormValues,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import { TaxMaintenanceFields } from "@/app/src/ui/modules/maintenance/tax-maintenance/TaxMaintenanceFields";
 import {
   type TaxMaintenanceFormErrors,
@@ -73,12 +74,21 @@ export function TaxMaintenanceDrawer({
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function validateBeforeSubmit() {
     const nextErrors = validateTaxMaintenanceForm(values);
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
+      return false;
+    }
+
+    return true;
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!validateBeforeSubmit()) {
       return;
     }
 
@@ -93,8 +103,9 @@ export function TaxMaintenanceDrawer({
       isOpen={isOpen}
       isReadonly={isReadonly}
       isSaving={isSaving}
+      onBeforeSaveConfirm={validateBeforeSubmit}
       onClose={onClose}
-      savingLabel={mode === "edit" ? "Updating Tax..." : "Saving Tax..."}
+      savingLabel={getMaintenanceSavePendingLabel(mode)}
       submitLabel={mode === "edit" ? "Update Tax" : "Save Tax"}
       title={copy.title}
     >

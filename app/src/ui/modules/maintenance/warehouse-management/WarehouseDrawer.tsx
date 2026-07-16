@@ -4,6 +4,7 @@ import { WarehouseFormPageCopy } from "@/app/src/constants/modules/maintenance/w
 import { useWarehouseFormPage } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseFormPage";
 import type { WarehouseActionMode, WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import { WarehouseFields } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseFields";
 
 const formId = "warehouse-drawer-form";
@@ -15,7 +16,7 @@ export function WarehouseDrawer({ isOpen, mode, onClose, warehouse }: { isOpen: 
 function WarehouseDrawerPanel({ isOpen, mode, onClose, warehouse }: { isOpen: boolean; mode: WarehouseActionMode; onClose: () => void; warehouse?: WarehouseRecord }) {
 	const page = useWarehouseFormPage({ existingWarehouse: warehouse, mode, onSaved: onClose });
 	const copy = WarehouseFormPageCopy[mode];
-	return <MaintenanceFormDrawer description={copy.description} eyebrow="Inventory maintenance" formId={formId} isOpen={isOpen} isSaving={page.isMutating} onClose={onClose} title={copy.title}>
+	return <MaintenanceFormDrawer description={copy.description} eyebrow="Inventory maintenance" formId={formId} isOpen={isOpen} isSaving={page.isMutating} onBeforeSaveConfirm={page.validateBeforeSubmit} onClose={onClose} savingLabel={getMaintenanceSavePendingLabel(mode)} title={copy.title}>
 		<form id={formId} onSubmit={page.handleSubmit} className="px-6 py-5"><WarehouseFields branchOptions={page.branchOptions} errors={page.errors} values={page.values} onAvailableBranchesChange={page.handleAvailableBranchesChange} onInputChange={page.handleInputChange} /></form>
 	</MaintenanceFormDrawer>;
 }

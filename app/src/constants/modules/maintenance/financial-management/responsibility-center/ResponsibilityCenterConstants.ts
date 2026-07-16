@@ -1,20 +1,30 @@
 import type {
+	SortingState,
+} from "@tanstack/react-table";
+import type {
 	ResponsibilityCenterCategory,
 	ResponsibilityCenterTypeDefinition,
 	ResponsibilityCenterFinancialType,
 	ResponsibilityCenter,
 	ResponsibilityCenterStatus,
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const ResponsibilityCenterHref =
-	"/maintenance/responsibility-center";
+export const ResponsibilityCenterHref = MODULE_ROUTE_MAP.RC;
 
 export const ResponsibilityCenterApiPath =
 	"/maintenance/financial-management/responsibility-centers";
 
 export const ResponsibilityCenterTablePaginationStorageKey =
 	"maintenance:financial-management:responsibility-center";
+export const ResponsibilityCenterTablePreferencesStorageKey =
+	"gr8booksneo:responsibility-center:table-preferences";
+export const ResponsibilityCenterTablePreferencesModuleKey =
+	"maintenance:responsibility-center";
+export const ResponsibilityCenterDefaultSorting: SortingState = [
+	{ id: "name", desc: false },
+];
 
 export const ResponsibilityCenterDrawerFormId =
 	"responsibility-center-drawer-form";

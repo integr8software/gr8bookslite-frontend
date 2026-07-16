@@ -91,6 +91,10 @@ export function useDefaultAccountFormPage({
 		return Object.keys(nextErrors).length === 0;
 	}
 
+	function validateBeforeSubmit() {
+		return validate();
+	}
+
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
@@ -138,6 +142,7 @@ export function useDefaultAccountFormPage({
 		isLoadingExpenseParentOptions: expenseParentOptionsQuery.isLoading,
 		isReadonly,
 		isSubmitting: isMutating,
+		validateBeforeSubmit,
 		values,
 	};
 }

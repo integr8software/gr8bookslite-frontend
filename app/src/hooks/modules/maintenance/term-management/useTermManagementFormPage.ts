@@ -79,9 +79,7 @@ export function useTermManagementFormPage(
 		);
 	}
 
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
+	function validateBeforeSubmit() {
 		const nextErrors = validateTermManagementForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
@@ -89,6 +87,16 @@ export function useTermManagementFormPage(
 			toast.error(
 				"Please review the highlighted fields and enter valid information.",
 			);
+			return false;
+		}
+
+		return true;
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -146,6 +154,7 @@ export function useTermManagementFormPage(
 		needsRecord: mode === "edit" || mode === "view",
 		nextStatus,
 		setIsStatusDialogOpen,
+		validateBeforeSubmit,
 		values,
 	};
 }

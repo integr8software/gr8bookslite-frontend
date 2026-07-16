@@ -113,7 +113,7 @@ export function TaxMaintenanceListPage() {
         confirmLabel={
           page.pendingStatusTax?.status === "Active" ? "Deactivate" : "Activate"
         }
-        tone={page.pendingStatusTax?.status === "Active" ? "danger" : "success"}
+        tone={page.pendingStatusTax?.status === "Active" ? "deactivate" : "activate"}
         onCancel={() => page.setPendingStatusTax(null)}
         onConfirm={page.confirmTaxStatusChange}
       />

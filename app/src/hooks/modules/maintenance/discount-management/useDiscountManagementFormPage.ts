@@ -91,14 +91,22 @@ export function useDiscountManagementFormPage(
 		);
 	}
 
-	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
+	function validateBeforeSubmit() {
 		const nextErrors = validateDiscountManagementForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
 			toast.error("Please fix the highlighted discount fields.");
+			return false;
+		}
+
+		return true;
+	}
+
+	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -127,6 +135,7 @@ export function useDiscountManagementFormPage(
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
+		validateBeforeSubmit,
 		values,
 	};
 }

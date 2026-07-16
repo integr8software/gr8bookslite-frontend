@@ -1,10 +1,13 @@
 "use client";
 
 import { Package } from "lucide-react";
+import { useState } from "react";
 import { ItemsFormPageCopy } from "@/app/src/constants/modules/maintenance/item-management/ItemManagementConstants";
 import { useItemsFormPage } from "@/app/src/hooks/modules/maintenance/item-management/useItemsFormPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { useAppDialogFormSubmit } from "@/app/src/hooks/shared/app/useAppDialogFormSubmit";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import { ItemActionButtons } from "@/app/src/ui/modules/maintenance/item-management/items/ItemActionButtons";
 import { ItemAttributesTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemAttributesTable";
 import {
@@ -17,9 +20,22 @@ import { ItemNotFound } from "@/app/src/ui/modules/maintenance/item-management/i
 import { ItemPriceListsTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemPriceListsTable";
 import { ItemSuppliersTable } from "@/app/src/ui/modules/maintenance/item-management/items/ItemSuppliersTable";
 
+const ItemsFormId = "items-form";
+
 export function ItemsFormPage() {
 	const page = useItemsFormPage();
 	const copy = ItemsFormPageCopy[page.mode];
+	const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+	const {
+		closeDialog: closeSaveDialog,
+		isConfirmSubmitPending,
+		submitFromDialog,
+	} = useAppDialogFormSubmit({
+		formId: ItemsFormId,
+		isDialogOpen: isSaveDialogOpen,
+		isSubmitting: page.isMutating,
+		onDialogOpenChange: setIsSaveDialogOpen,
+	});
 
 	if (page.needsRecord && !page.existingItem) {
 		return <ItemNotFound />;
@@ -27,7 +43,7 @@ export function ItemsFormPage() {
 
 	return (
 		<>
-			<form onSubmit={page.handleSubmit} className="grid gap-5">
+			<form id={ItemsFormId} onSubmit={page.handleSubmit} className="grid gap-5">
 				<ModuleHeader
 					variant="panel"
 					titleAs="h1"
@@ -50,6 +66,11 @@ export function ItemsFormPage() {
 							item={page.existingItem}
 							mode={page.mode}
 							nextStatus={page.existingItem ? page.nextStatus : undefined}
+							onSave={() => {
+								if (page.validateBeforeSubmit()) {
+									setIsSaveDialogOpen(true);
+								}
+							}}
 							onStatusChange={() => page.setIsStatusDialogOpen(true)}
 						/>
 					}
@@ -149,6 +170,23 @@ export function ItemsFormPage() {
 			</form>
 
 			<AppDialog
+				confirmLabel="Confirm"
+				description={
+					page.mode === "edit"
+						? "This will update the selected item with your latest changes."
+						: "This will create a new item using the details you entered."
+				}
+				iconTone="question"
+				isOpen={isSaveDialogOpen}
+				isPending={isConfirmSubmitPending}
+				pendingLabel={getMaintenanceSavePendingLabel(page.mode)}
+				title={page.mode === "edit" ? "Save item changes?" : "Save this item?"}
+				tone="success"
+				onCancel={closeSaveDialog}
+				onConfirm={submitFromDialog}
+			/>
+
+			<AppDialog
 				isOpen={page.isStatusDialogOpen}
 				isPending={page.isMutating}
 				title={
@@ -160,7 +198,7 @@ export function ItemsFormPage() {
 				confirmLabel={
 					page.nextStatus === "Inactive" ? "Set Inactive" : "Reactivate"
 				}
-				tone={page.nextStatus === "Inactive" ? "danger" : "success"}
+				tone={page.nextStatus === "Inactive" ? "deactivate" : "activate"}
 				onCancel={() => page.setIsStatusDialogOpen(false)}
 				onConfirm={page.handleConfirmStatusChange}
 			/>

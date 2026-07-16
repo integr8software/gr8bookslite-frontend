@@ -28,6 +28,7 @@ export function PartyInformationActionHeader({
 	isReadonly,
 	mode,
 	nextStatus,
+	onSave,
 	onStatusChange,
 }: PartyInformationActionHeaderProps) {
 	const copy = PartyManagementActionCopy[mode];
@@ -94,7 +95,8 @@ export function PartyInformationActionHeader({
 					) : null}
 					{!isReadonly ? (
 						<button
-							type="submit"
+							type="button"
+							onClick={onSave}
 							disabled={!canSave}
 							className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-45`}
 						>

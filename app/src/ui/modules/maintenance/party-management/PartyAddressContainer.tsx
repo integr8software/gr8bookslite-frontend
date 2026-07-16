@@ -386,7 +386,6 @@ function AddressFields({
 						id={getAddressControlId(sectionKey, address.id, "addressLine2")}
 						label="Street, Subdivision, Village"
 						name="addressLine2"
-						placeholder="Mabini St., Greenfield Village"
 						value={address.addressLine2}
 						onChange={onAddressInputChange}
 					/>
@@ -397,7 +396,6 @@ function AddressFields({
 						id={getAddressControlId(sectionKey, address.id, "addressLine1")}
 						label="Unit, Block, Lot, Building"
 						name="addressLine1"
-						placeholder="Unit 5B, Block 3, Lot 12"
 						value={address.addressLine1}
 						onChange={onAddressInputChange}
 					/>

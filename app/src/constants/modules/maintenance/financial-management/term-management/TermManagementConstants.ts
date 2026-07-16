@@ -1,3 +1,4 @@
+import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import type {
 	TermImportColumnId,
 	TermImportColumnHeader,
@@ -7,10 +8,10 @@ import type {
 	TermManagementStatus,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const TermManagementHref =
-	"/maintenance/term-management";
+export const TermManagementHref = MODULE_ROUTE_MAP.TM;
 
 export const TermManagementApiPath = "/maintenance/term-maintenance";
 
@@ -82,6 +83,24 @@ export const TermManagementTableColumns = [
 		className: "w-[16%] text-center",
 	},
 ] as const;
+
+export const TermManagementTablePreferencesStorageKey =
+	"gr8booksneo:term-management:table-preferences";
+export const TermManagementTablePreferencesModuleKey =
+	"maintenance:term-management";
+export const TermManagementDefaultColumnOrder = TermManagementTableColumns.map(
+	(column) => ("key" in column ? column.key : "actions"),
+);
+export const TermManagementDefaultColumnVisibility: VisibilityState = {
+	description: false,
+	createdBy: false,
+	createdAt: false,
+	updatedBy: false,
+	updatedAt: false,
+};
+export const TermManagementDefaultSorting: SortingState = [
+	{ id: "name", desc: false },
+];
 
 export const TermManagementExportColumns: ModuleTableExportColumn<TermManagement>[] =
 	[

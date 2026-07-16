@@ -186,8 +186,8 @@ export function ItemCategoryListPage() {
 				}
 				tone={
 					page.pendingStatusRow?.record.status === "Active"
-						? "danger"
-						: "success"
+						? "deactivate"
+						: "activate"
 				}
 				onCancel={() => page.setPendingStatusRow(null)}
 				onConfirm={page.handleConfirmStatusChange}

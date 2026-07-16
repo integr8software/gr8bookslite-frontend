@@ -67,7 +67,7 @@ export function usePaymentTypeListPage() {
 			return;
 		}
 
-		void updatePaymentType({
+		return updatePaymentType({
 			...pendingStatusPaymentType,
 			status:
 				pendingStatusPaymentType.status === "Active" ? "Inactive" : "Active",

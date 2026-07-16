@@ -38,7 +38,7 @@ export function useTaxMaintenanceListPage() {
       return;
     }
 
-    void taxMaintenance
+    return taxMaintenance
       .updateTax({
         ...pendingStatusTax,
         status: pendingStatusTax.status === "Active" ? "Inactive" : "Active",

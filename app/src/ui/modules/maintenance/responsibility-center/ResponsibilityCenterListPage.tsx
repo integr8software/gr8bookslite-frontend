@@ -113,6 +113,7 @@ export function ResponsibilityCenterListPage() {
 				permissions={page.permissions}
 				query={page.query}
 				statusFilter={page.statusFilter}
+				tablePreferences={page.tablePreferences}
 				treeTable={page.treeTable}
 				viewMode={page.viewMode}
 				onCategoryFilterChange={page.setCategoryFilter}
@@ -151,7 +152,9 @@ export function ResponsibilityCenterListPage() {
 						: "Activate"
 				}
 				tone={
-					page.pendingStatusCenter?.status === "Active" ? "danger" : "success"
+					page.pendingStatusCenter?.status === "Active"
+						? "deactivate"
+						: "activate"
 				}
 				onCancel={() => page.setPendingStatusCenter(null)}
 				onConfirm={page.confirmCenterStatusChange}

@@ -7,18 +7,21 @@ import {
 	getSortedRowModel,
 	useReactTable,
 	type ColumnDef,
-	type ColumnOrderState,
 	type PaginationState,
 	type SortingState,
-	type VisibilityState,
 } from "@tanstack/react-table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
+	PartyManagementDefaultColumnOrder,
+	PartyManagementDefaultColumnVisibility,
+	PartyManagementDefaultSorting,
 	PartyClassificationOptions,
 	PartyInformationStatusOptions,
 	PartyManagementTableColumns,
+	PartyManagementTablePreferencesModuleKey,
+	PartyManagementTablePreferencesStorageKey,
 	PartyTypeOptions,
 } from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
@@ -32,6 +35,7 @@ import {
 	updatePartyManagementRecord,
 } from "@/app/src/services/modules/maintenance/party-management/PartyManagementApi";
 import { PartyManagementQueryKeys } from "@/app/src/services/modules/maintenance/party-management/PartyManagementQueryKeys";
+import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
 	PartyClassification,
 	PartyInformationStatus,
@@ -77,25 +81,6 @@ const EmptyPartyStatistics: PartyManagementStatistics = {
 	multiTypeParties: 0,
 	nonIndividualParties: 0,
 	totalParties: 0,
-};
-const DefaultColumnVisibility: VisibilityState = {
-	billingAddressLabel: false,
-	civilStatus: false,
-	createdAt: false,
-	createdBy: false,
-	email: false,
-	gender: false,
-	homeAddressLabel: false,
-	honorific: false,
-	landline: false,
-	memberRegistrationDate: false,
-	nationality: false,
-	partyCodeNo: false,
-	deliveryAddressLabel: false,
-	tin: false,
-	updatedAt: false,
-	updatedBy: false,
-	vatRegistrationType: false,
 };
 
 export function usePartyManagementStore<
@@ -266,13 +251,20 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		pageIndex: 0,
 		pageSize: 10,
 	});
-	const [columnOrder, setColumnOrder] = useState<ColumnOrderState>(() =>
-		PartyManagementTableColumns.map((column) =>
-			"key" in column ? column.key : "actions",
-		),
-	);
-	const [columnVisibility, setColumnVisibility] =
-		useState<VisibilityState>(DefaultColumnVisibility);
+	const {
+		columnOrder,
+		columnVisibility,
+		sorting,
+		setColumnOrder,
+		setColumnVisibility,
+		setSorting,
+	} = useTablePreferences({
+		defaultColumnOrder: PartyManagementDefaultColumnOrder,
+		defaultColumnVisibility: PartyManagementDefaultColumnVisibility,
+		defaultSorting: PartyManagementDefaultSorting,
+		moduleKey: PartyManagementTablePreferencesModuleKey,
+		storageKey: PartyManagementTablePreferencesStorageKey,
+	});
 	const [query, setQueryState] = useState("");
 	const [classificationFilter, setClassificationFilterState] = useState<
 		PartyClassification | "All"
@@ -283,9 +275,6 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	const [statusFilter, setStatusFilterState] = useState<
 		PartyInformationStatus | "All"
 	>("Active");
-	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "name", desc: false },
-	]);
 	const queryParams = useMemo<PartyManagementListQuery>(
 		() => ({
 			classification: classificationFilter,
@@ -399,11 +388,9 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 		data: tableData,
 		columns,
 		initialState: {
-			columnOrder: PartyManagementTableColumns.map((column) =>
-				"key" in column ? column.key : "actions",
-			),
-			columnVisibility: DefaultColumnVisibility,
-			sorting: [{ id: "name", desc: false }],
+			columnOrder: PartyManagementDefaultColumnOrder,
+			columnVisibility: PartyManagementDefaultColumnVisibility,
+			sorting: PartyManagementDefaultSorting,
 		},
 		manualPagination: true,
 		manualSorting: true,
@@ -565,8 +552,6 @@ function getSortablePartyManagementValue(
 			return record.gender ?? "";
 		case "homeAddressLabel":
 			return formatPartyAddress(getPartyAddressByRole(record, "home"));
-		case "honorific":
-			return record.honorific ?? "";
 		case "landline":
 			return record.landline ?? "";
 		case "memberRegistrationDate":

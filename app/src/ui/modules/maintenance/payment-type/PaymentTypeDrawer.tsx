@@ -14,6 +14,7 @@ import type {
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 
 const PaymentTypeActionCopy = {
 	add: {
@@ -73,10 +74,9 @@ function PaymentTypeDrawerPanel({
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
+			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={
-				mode === "edit" ? "Updating Payment Type..." : "Saving Payment Type..."
-			}
+			savingLabel={getMaintenanceSavePendingLabel(mode)}
 			submitLabel={mode === "edit" ? "Update Payment Type" : "Save Payment Type"}
 			title={copy.title}
 		>

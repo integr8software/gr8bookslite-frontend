@@ -142,8 +142,8 @@ export function PaymentTypeListPage() {
 				}
 				tone={
 					page.pendingStatusPaymentType?.status === "Active"
-						? "danger"
-						: "success"
+						? "deactivate"
+						: "activate"
 				}
 				onCancel={() => page.setPendingStatusPaymentType(null)}
 				onConfirm={page.confirmPaymentTypeStatusChange}

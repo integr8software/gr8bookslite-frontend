@@ -3,17 +3,15 @@
 import { useMemo, useState } from "react";
 import {
 	type ColumnDef,
-	type ColumnOrderState,
 	type PaginationState,
-	type VisibilityState,
 	getCoreRowModel,
 	getPaginationRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
 import {
+	ResponsibilityCenterDefaultColumnOrder,
+	ResponsibilityCenterDefaultColumnVisibility,
 	ResponsibilityCenterTableColumns,
-	ResponsibilityCenterTreeColumnOrder,
-	ResponsibilityCenterTreeColumnVisibility,
 } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
 import {
 	buildResponsibilityCenterTree,
@@ -22,6 +20,7 @@ import {
 } from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
 import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
+import { useResponsibilityCenterTablePreferences } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenterTablePreferences";
 import type {
 	FlattenedResponsibilityCenterTreeNode,
 	ResponsibilityCenter,
@@ -68,11 +67,13 @@ export function useResponsibilityCenterListPage() {
 		pageIndex: 0,
 		pageSize: 10,
 	});
-	const [treeColumnOrder, setTreeColumnOrder] = useState<ColumnOrderState>(
-		ResponsibilityCenterTreeColumnOrder,
-	);
-	const [treeColumnVisibility, setTreeColumnVisibility] =
-		useState<VisibilityState>(ResponsibilityCenterTreeColumnVisibility);
+	const tablePreferences = useResponsibilityCenterTablePreferences();
+	const {
+		columnOrder: treeColumnOrder,
+		columnVisibility: treeColumnVisibility,
+		setColumnOrder: setTreeColumnOrder,
+		setColumnVisibility: setTreeColumnVisibility,
+	} = tablePreferences;
 	const [pendingStatusCenter, setPendingStatusCenter] =
 		useState<ResponsibilityCenter | null>(null);
 
@@ -168,8 +169,8 @@ export function useResponsibilityCenterListPage() {
 		data: flattenedTreeCenters,
 		columns: treeColumns,
 		initialState: {
-			columnOrder: ResponsibilityCenterTreeColumnOrder,
-			columnVisibility: ResponsibilityCenterTreeColumnVisibility,
+			columnOrder: ResponsibilityCenterDefaultColumnOrder,
+			columnVisibility: ResponsibilityCenterDefaultColumnVisibility,
 		},
 		state: {
 			columnOrder: treeColumnOrder,
@@ -188,13 +189,14 @@ export function useResponsibilityCenterListPage() {
 			return;
 		}
 
-		updateCenter({
+		return updateCenter({
 			...pendingStatusCenter,
 			status:
 				pendingStatusCenter.status === "Active" ? "Inactive" : "Active",
 			updatedAt: new Date().toISOString(),
-		});
-		setPendingStatusCenter(null);
+		})
+			.then(() => setPendingStatusCenter(null))
+			.catch(() => undefined);
 	}
 
 	function toggleTreeNode(centerId: string) {
@@ -235,6 +237,7 @@ export function useResponsibilityCenterListPage() {
 		setViewMode,
 		statistics,
 		statusFilter,
+		tablePreferences,
 		toggleTreeNode,
 		treeTable,
 		viewMode,

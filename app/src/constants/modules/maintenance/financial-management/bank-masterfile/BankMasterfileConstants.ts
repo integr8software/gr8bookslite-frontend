@@ -1,12 +1,14 @@
+import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import type {
 	BankImportColumnId,
 	BankMasterfile,
 	BankMasterfileStatus,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const BankMasterfileHref = "/maintenance/bank-masterfile";
+export const BankMasterfileHref = MODULE_ROUTE_MAP.BM;
 
 export const BankMasterfileApiPath =
 	"/maintenance/financial-management/bank-masterfile";
@@ -45,6 +47,26 @@ export const BankMasterfileTableColumns = [
 	{ key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
 	{ label: "Action", className: "w-[16%] text-center" },
 ] as const;
+
+export const BankMasterfileTablePreferencesStorageKey =
+	"gr8booksneo:bank-masterfile:table-preferences";
+export const BankMasterfileTablePreferencesModuleKey =
+	"maintenance:bank-masterfile";
+export const BankMasterfileDefaultColumnOrder = BankMasterfileTableColumns.map(
+	(column) => ("key" in column ? column.key : "actions"),
+);
+export const BankMasterfileDefaultColumnVisibility: VisibilityState = {
+	accountCode: false,
+	currencyCode: false,
+	createdBy: false,
+	createdAt: false,
+	isDefault: false,
+	updatedBy: false,
+	updatedAt: false,
+};
+export const BankMasterfileDefaultSorting: SortingState = [
+	{ id: "bankName", desc: false },
+];
 
 export const BankMasterfileStatusOptions = [
 	"Active",

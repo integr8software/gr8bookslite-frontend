@@ -182,7 +182,7 @@ export function ChartsOfAccountsListPage() {
 						? "Deactivate"
 						: "Activate"
 				}
-				tone={pendingStatusAccount?.status === "Active" ? "danger" : "success"}
+				tone={pendingStatusAccount?.status === "Active" ? "deactivate" : "activate"}
 				onCancel={() => setPendingStatusAccount(null)}
 				onConfirm={handleConfirmStatusChange}
 			/>

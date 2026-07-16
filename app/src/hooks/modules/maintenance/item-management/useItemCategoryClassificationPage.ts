@@ -370,9 +370,7 @@ export function useItemCategoryClassificationFormPage({
     updateField("parentId", parentId);
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  function validateBeforeSubmit() {
     const nextErrors = validateItemCategoryClassificationForm(values, {
       recordId: existingRef?.record.id,
       records: allRecords,
@@ -381,6 +379,16 @@ export function useItemCategoryClassificationFormPage({
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       toast.error("Please fix the highlighted category fields.");
+      return false;
+    }
+
+    return true;
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!validateBeforeSubmit()) {
       return;
     }
 
@@ -431,6 +439,7 @@ export function useItemCategoryClassificationFormPage({
     mode,
     needsRecord: mode === "edit" || mode === "view",
     parentOptions,
+    validateBeforeSubmit,
     values,
   };
 }

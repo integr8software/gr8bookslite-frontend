@@ -116,9 +116,7 @@ export function useTransactionTypeActionPage(
 		);
 	}
 
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
+	function validateBeforeSubmit() {
 		const nextErrors = validateTransactionTypeForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
@@ -126,6 +124,16 @@ export function useTransactionTypeActionPage(
 			toast.error(
 				"Please correct the highlighted inventory transaction type fields.",
 			);
+			return false;
+		}
+
+		return true;
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -162,6 +170,7 @@ export function useTransactionTypeActionPage(
 		moduleOptions,
 		needsRecord: mode === "edit" || mode === "view",
 		selectedAccount,
+		validateBeforeSubmit,
 		values,
 	};
 }

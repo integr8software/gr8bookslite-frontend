@@ -87,14 +87,22 @@ export function useWarehouseFormPage(options: WarehouseFormPageOptions = {}) {
 		);
 	}
 
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
+	function validateBeforeSubmit() {
 		const nextErrors = validateWarehouseForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
 			toast.error("Please fix the highlighted warehouse fields.");
+			return false;
+		}
+
+		return true;
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -142,6 +150,7 @@ export function useWarehouseFormPage(options: WarehouseFormPageOptions = {}) {
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
 		setIsDeleteDialogOpen,
+		validateBeforeSubmit,
 		values,
 	};
 }

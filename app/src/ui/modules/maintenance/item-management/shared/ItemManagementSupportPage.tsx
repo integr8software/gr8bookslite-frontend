@@ -25,6 +25,7 @@ import {
 import { useMemo, useState } from "react";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { AppLimitedTextareaMaxLength } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
@@ -526,7 +527,7 @@ export function ItemManagementSupportPage({
 						: ""
 				}
 				confirmLabel={`Set ${nextPendingStatus}`}
-				tone={nextPendingStatus === "Inactive" ? "danger" : "success"}
+				tone={nextPendingStatus === "Inactive" ? "deactivate" : "activate"}
 				onCancel={() => setPendingStatusRecord(null)}
 				onConfirm={confirmStatusChange}
 			/>
@@ -568,6 +569,9 @@ function SupportRecordModal({
 	) => void;
 	onSave: () => void;
 }) {
+	const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+	const [isSaveConfirmPending, setIsSaveConfirmPending] = useState(false);
+
 	if (!modal) {
 		return null;
 	}
@@ -602,7 +606,7 @@ function SupportRecordModal({
 					{!isReadonly ? (
 						<button
 							type="button"
-							onClick={onSave}
+							onClick={() => setIsSaveDialogOpen(true)}
 							className={moduleHeaderActionClassNames.primary}
 						>
 							<Save className="h-4 w-4" aria-hidden="true" />
@@ -612,6 +616,33 @@ function SupportRecordModal({
 				</div>
 			}
 		>
+			<AppDialog
+				confirmLabel="Confirm"
+				description={
+					modal.mode === "edit"
+						? "This will update the selected item setup record."
+						: "This will save the item setup record."
+				}
+				iconTone="question"
+				isOpen={isSaveDialogOpen}
+				isPending={isSaveConfirmPending}
+				pendingLabel={getMaintenanceSavePendingLabel(modal.mode)}
+				title={modal.mode === "edit" ? "Save changes?" : "Save this record?"}
+				tone="success"
+				onCancel={() => {
+					if (!isSaveConfirmPending) {
+						setIsSaveDialogOpen(false);
+					}
+				}}
+				onConfirm={() => {
+					setIsSaveConfirmPending(true);
+					onSave();
+					window.setTimeout(() => {
+						setIsSaveConfirmPending(false);
+						setIsSaveDialogOpen(false);
+					}, 700);
+				}}
+			/>
 			<div className="grid gap-4 px-6 py-5 md:grid-cols-2">
 				{kind === "item-attributes" ? (
 					<>

@@ -22,6 +22,7 @@ import {
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ResponsibilityCenterDrawer(props: ResponsibilityCenterDrawerProps) {
@@ -54,12 +55,9 @@ function ResponsibilityCenterDrawerPanel({
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
+			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={
-				mode === "edit"
-					? "Updating Responsibility Center..."
-					: "Saving Responsibility Center..."
-			}
+			savingLabel={getMaintenanceSavePendingLabel(mode)}
 			submitLabel={
 				mode === "edit" ? "Update Responsibility Center" : "Save Responsibility Center"
 			}

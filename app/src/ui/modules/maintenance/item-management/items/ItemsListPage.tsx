@@ -150,7 +150,9 @@ export function ItemsListPage() {
 						: "Reactivate"
 				}
 				tone={
-					page.pendingStatusItem?.status === "Active" ? "danger" : "success"
+					page.pendingStatusItem?.status === "Active"
+						? "deactivate"
+						: "activate"
 				}
 				onCancel={() => page.setPendingStatusItem(null)}
 				onConfirm={page.handleConfirmStatusChange}

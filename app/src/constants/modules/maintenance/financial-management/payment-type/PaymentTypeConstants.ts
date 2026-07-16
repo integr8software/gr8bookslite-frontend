@@ -1,3 +1,4 @@
+import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 import type {
 	PaymentTypeClassification,
@@ -7,9 +8,10 @@ import type {
 	PaymentTypeRecord,
 	PaymentTypeStatus,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const PaymentTypeHref = "/maintenance/payment-type";
+export const PaymentTypeHref = MODULE_ROUTE_MAP.PT;
 
 export const PaymentTypeApiPath = "/maintenance/payment-type-maintenance";
 
@@ -39,6 +41,21 @@ export const PaymentTypeTableColumns = [
 	{ key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
 	{ label: "Action", className: "w-[16%] text-center" },
 ] as const;
+
+export const PaymentTypeTablePreferencesStorageKey =
+	"gr8booksneo:payment-type:table-preferences";
+export const PaymentTypeTablePreferencesModuleKey = "maintenance:payment-type";
+export const PaymentTypeDefaultColumnOrder = PaymentTypeTableColumns.map(
+	(column) => ("key" in column ? column.key : "actions"),
+);
+export const PaymentTypeDefaultColumnVisibility: VisibilityState = {
+	description: false,
+	createdBy: false,
+	createdAt: false,
+	updatedBy: false,
+	updatedAt: false,
+};
+export const PaymentTypeDefaultSorting: SortingState = [];
 
 export const PaymentTypeExportColumns: ModuleTableExportColumn<PaymentTypeRecord>[] =
 	PaymentTypeTableColumns.flatMap((column) =>

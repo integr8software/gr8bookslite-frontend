@@ -10,6 +10,7 @@ import {
 import { useDefaultAccountFormPage } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccountFormPage";
 import type { DefaultAccountDrawerProps } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
@@ -60,12 +61,9 @@ function DefaultAccountDrawerPanel({
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
+			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={
-				mode === "edit"
-					? "Updating Default Account..."
-					: "Saving Default Account..."
-			}
+			savingLabel={getMaintenanceSavePendingLabel(mode)}
 			submitLabel={mode === "edit" ? "Update Default Account" : "Save Default Account"}
 			title={copy.title}
 		>

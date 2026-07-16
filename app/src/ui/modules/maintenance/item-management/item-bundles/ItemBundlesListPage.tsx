@@ -309,7 +309,7 @@ export function ItemBundlesListPage() {
 						: ""
 				}
 				confirmLabel={`Set ${nextPendingStatus}`}
-				tone={nextPendingStatus === "Inactive" ? "danger" : "success"}
+				tone={nextPendingStatus === "Inactive" ? "deactivate" : "activate"}
 				onCancel={() => setPendingStatusRow(null)}
 				onConfirm={confirmStatusChange}
 			/>

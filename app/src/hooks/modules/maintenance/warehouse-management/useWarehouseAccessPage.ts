@@ -102,12 +102,10 @@ export function useWarehouseAccessPage() {
 		});
 	}
 
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
+	function validateBeforeSubmit() {
 		if (!warehouse) {
 			toast.error("Could not find the warehouse to update.");
-			return;
+			return false;
 		}
 
 		const nextErrors = validateWarehouseAccess(accessRecords);
@@ -115,6 +113,16 @@ export function useWarehouseAccessPage() {
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
 			toast.error("Please fix the highlighted warehouse access rows.");
+			return false;
+		}
+
+		return true;
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!validateBeforeSubmit() || !warehouse) {
 			return;
 		}
 
@@ -131,6 +139,7 @@ export function useWarehouseAccessPage() {
 		removeAccess,
 		togglePermission,
 		updateAccess,
+		validateBeforeSubmit,
 		warehouse,
 		warehouseHref: warehouse
 			? `${WarehouseManagementHref}/view/${warehouse.id}`

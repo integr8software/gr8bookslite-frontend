@@ -1,4 +1,8 @@
 import type {
+  SortingState,
+  VisibilityState,
+} from "@tanstack/react-table";
+import type {
   AccountLevel,
   AccountStatus,
   AccountType,
@@ -10,9 +14,10 @@ import type {
   NormalBalance,
 } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { FinancialManagementCashInBankAccountTitle } from "@/app/src/constants/modules/maintenance/financial-management/FinancialManagementAccountTitleConstants";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const ChartsOfAccountsHref = "/maintenance/charts-of-accounts";
+export const ChartsOfAccountsHref = MODULE_ROUTE_MAP.COA;
 export const ChartsOfAccountsAccountNamePlaceholder = `${FinancialManagementCashInBankAccountTitle} - Bank Name`;
 
 export const AccountLevels: AccountLevel[] = [
@@ -114,6 +119,24 @@ export const ChartsOfAccountsTableColumns: Array<{
   { label: "Date Modified", key: "updatedAt", className: "text-left", size: 180 },
   { label: "Actions", className: "text-center", size: 120 },
 ];
+
+export const ChartsOfAccountsTablePreferencesStorageKey =
+  "gr8booksneo:charts-of-accounts:table-preferences";
+export const ChartsOfAccountsTablePreferencesModuleKey =
+  "maintenance:charts-of-accounts";
+export const ChartsOfAccountsDefaultColumnOrder =
+  ChartsOfAccountsTableColumns.filter((column) => column.key !== "parentPath").map(
+    (column) => column.key ?? "actions",
+  );
+export const ChartsOfAccountsDefaultColumnVisibility: VisibilityState = {
+  accountLevel: false,
+  reportAlias: false,
+  createdBy: false,
+  createdAt: false,
+  updatedBy: false,
+  updatedAt: false,
+};
+export const ChartsOfAccountsDefaultSorting: SortingState = [];
 
 export const ChartsOfAccountsExportColumns: ModuleTableExportColumn<FlattenedChartAccount>[] =
   [

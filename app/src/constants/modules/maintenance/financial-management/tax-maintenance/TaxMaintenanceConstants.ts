@@ -1,3 +1,4 @@
+import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import type {
   TaxMaintenance,
   TaxMaintenanceStatus,
@@ -6,7 +7,7 @@ import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-
 import {
   formatTaxMaintenancePercentage,
 } from "@/app/src/data/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceData";
-import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleRouteMap";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
 export const TaxMaintenanceHref = MODULE_ROUTE_MAP.TXM;
 
@@ -99,6 +100,27 @@ export const TaxMaintenanceTableColumns = [
   { key: "updatedAt", label: "Date Modified", className: "w-[16%]" },
   { label: "Action", className: "w-[16%] text-center" },
 ] as const;
+
+export const TaxMaintenanceTablePreferencesStorageKey =
+  "gr8booksneo:tax-maintenance:table-preferences";
+export const TaxMaintenanceTablePreferencesModuleKey =
+  "maintenance:tax-maintenance";
+export const TaxMaintenanceDefaultColumnOrder = TaxMaintenanceTableColumns.map(
+  (column) => ("key" in column ? column.key : "actions"),
+);
+export const TaxMaintenanceDefaultColumnVisibility: VisibilityState = {
+  deferredInputTaxAccountCode: false,
+  deferredInputTaxAccountTitle: false,
+  deferredOutputVatAccountCode: false,
+  deferredOutputVatAccountTitle: false,
+  createdBy: false,
+  createdAt: false,
+  updatedBy: false,
+  updatedAt: false,
+};
+export const TaxMaintenanceDefaultSorting: SortingState = [
+  { id: "name", desc: false },
+];
 
 export const TaxMaintenanceExportColumns: ModuleTableExportColumn<TaxMaintenance>[] =
   [

@@ -160,7 +160,9 @@ export function DiscountManagementListPage() {
 						: "Activate"
 				}
 				tone={
-					page.pendingStatusDiscount?.status === "Active" ? "danger" : "success"
+					page.pendingStatusDiscount?.status === "Active"
+						? "deactivate"
+						: "activate"
 				}
 				onCancel={() => page.setPendingStatusDiscount(null)}
 				onConfirm={page.confirmDiscountStatusChange}

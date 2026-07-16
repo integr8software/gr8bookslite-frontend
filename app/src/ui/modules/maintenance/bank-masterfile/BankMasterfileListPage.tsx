@@ -138,7 +138,7 @@ export function BankMasterfileListPage() {
 				confirmLabel={
 					page.pendingStatusBank?.status === "Active" ? "Inactivate" : "Activate"
 				}
-				tone={page.pendingStatusBank?.status === "Active" ? "danger" : "success"}
+				tone={page.pendingStatusBank?.status === "Active" ? "deactivate" : "activate"}
 				onCancel={() => page.setPendingStatusBank(null)}
 				onConfirm={page.confirmBankStatusChange}
 			/>

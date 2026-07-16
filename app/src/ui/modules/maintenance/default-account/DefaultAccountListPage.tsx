@@ -133,7 +133,7 @@ export function DefaultAccountListPage() {
 				confirmLabel={
 					page.pendingStatusAccount?.status === "Active" ? "Inactivate" : "Activate"
 				}
-				tone={page.pendingStatusAccount?.status === "Active" ? "danger" : "success"}
+				tone={page.pendingStatusAccount?.status === "Active" ? "deactivate" : "activate"}
 				onCancel={() => page.setPendingStatusAccount(null)}
 				onConfirm={page.confirmStatusChange}
 			/>

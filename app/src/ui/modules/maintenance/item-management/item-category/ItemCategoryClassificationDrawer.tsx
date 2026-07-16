@@ -6,6 +6,7 @@ import {
 	useItemCategoryClassificationFormPage,
 } from "@/app/src/hooks/modules/maintenance/item-management/useItemCategoryClassificationPage";
 import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
 import { ItemCategoryClassificationFields } from "@/app/src/ui/modules/maintenance/item-management/item-category/ItemCategoryClassificationFields";
 
 const FormId = "item-category-classification-drawer-form";
@@ -53,7 +54,9 @@ function ItemCategoryClassificationDrawerPanel({
 			isOpen={Boolean(drawerState)}
 			isReadonly={page.isReadonly}
 			isSaving={page.isMutating}
+			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
+			savingLabel={getMaintenanceSavePendingLabel(page.mode)}
 			title={title}
 		>
 			<form id={FormId} onSubmit={page.handleSubmit} className="px-6 py-5">

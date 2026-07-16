@@ -62,7 +62,7 @@ export function useTermManagementListPage() {
 			return;
 		}
 
-		void updateTerm({
+		return updateTerm({
 			...pendingStatusTerm,
 			status: pendingStatusTerm.status === "Active" ? "Inactive" : "Active",
 		}).then(() => {

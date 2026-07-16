@@ -1,142 +1,42 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import {
 	type ColumnDef,
 	type PaginationState,
-	type SortingState,
-	type VisibilityState,
 	getCoreRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
 import {
-	ResponsibilityCenterAuditColumnOrder,
 	ResponsibilityCenterDefaultColumnOrder,
 	ResponsibilityCenterDefaultColumnVisibility,
+	ResponsibilityCenterDefaultSorting,
 	ResponsibilityCenterTableColumns,
 } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
-import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
-import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
-import {
-	fetchTablePreference,
-	saveTablePreference,
-} from "@/app/src/services/shared/table-preferences/TablePreferencesApi";
 import type {
 	ResponsibilityCenter,
 	ResponsibilityCenterTableColumnKey,
+	ResponsibilityCenterTablePreferencesState,
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
-
-const ResponsibilityCenterTablePreferencesStorageKey =
-	"gr8booksneo:responsibility-center:table-preferences";
-const ResponsibilityCenterTablePreferencesModuleKey =
-	"maintenance:responsibility-center";
-const DefaultSorting: SortingState = [{ id: "name", desc: false }];
-
-type ResponsibilityCenterTablePreferences = {
-	columnOrder: string[];
-	columnVisibility: VisibilityState;
-	sorting: SortingState;
-};
 
 export function useResponsibilityCenterTable(
 	centers: ResponsibilityCenter[],
+	preferences: ResponsibilityCenterTablePreferencesState,
 ) {
-	const accessToken = useAppStore((state) => state.accessToken);
-	const authProfileQuery = useAuthProfileQuery({ accessToken });
-	const userId = authProfileQuery.data?.user.id;
-	const companyId = authProfileQuery.data?.activeCompanyId;
-	const preferencesScope = userId && companyId ? `${userId}:${companyId}` : null;
-	const tablePreferenceQuery = useQuery({
-		queryKey: [
-			"table-preferences",
-			ResponsibilityCenterTablePreferencesModuleKey,
-			userId,
-			companyId,
-		],
-		queryFn: () =>
-			fetchTablePreference(ResponsibilityCenterTablePreferencesModuleKey),
-		enabled: Boolean(preferencesScope),
-		retry: false,
-	});
-	const [loadedPreferencesScope, setLoadedPreferencesScope] = useState<
-		string | null
-	>(null);
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
 		pageSize: 10,
 	});
-	const [columnOrder, setColumnOrder] =
-		useState<string[]>(ResponsibilityCenterDefaultColumnOrder);
-	const [columnVisibility, setColumnVisibility] =
-		useState<VisibilityState>(ResponsibilityCenterDefaultColumnVisibility);
-	const [sorting, setSorting] = useState<SortingState>(DefaultSorting);
-
-	useEffect(() => {
-		if (
-			!userId ||
-			!companyId ||
-			!preferencesScope ||
-			!tablePreferenceQuery.isFetched
-		) {
-			return;
-		}
-
-		const preferences = tablePreferenceQuery.data
-			? normalizeTablePreferences(tablePreferenceQuery.data)
-			: readTablePreferences(userId, companyId);
-		setColumnOrder(preferences.columnOrder);
-		setColumnVisibility(preferences.columnVisibility);
-		setSorting(preferences.sorting);
-		setLoadedPreferencesScope(preferencesScope);
-	}, [
-		companyId,
-		preferencesScope,
-		tablePreferenceQuery.data,
-		tablePreferenceQuery.isFetched,
-		userId,
-	]);
-
-	useEffect(() => {
-		if (
-			!userId ||
-			!companyId ||
-			!preferencesScope ||
-			loadedPreferencesScope !== preferencesScope
-		) {
-			return;
-		}
-
-		const configuration = { columnOrder, columnVisibility, sorting };
-
-		try {
-			window.localStorage.setItem(
-				getTablePreferencesStorageKey(userId, companyId),
-				JSON.stringify(configuration),
-			);
-		} catch {
-			// Keep table configuration usable when browser storage is unavailable.
-		}
-
-		const saveTimer = window.setTimeout(() => {
-			void saveTablePreference(
-				ResponsibilityCenterTablePreferencesModuleKey,
-				configuration,
-			).catch(() => undefined);
-		}, 600);
-
-		return () => window.clearTimeout(saveTimer);
-	}, [
+	const {
 		columnOrder,
 		columnVisibility,
-		companyId,
-		loadedPreferencesScope,
-		preferencesScope,
 		sorting,
-		userId,
-	]);
+		setColumnOrder,
+		setColumnVisibility,
+		setSorting,
+	} = preferences;
 
 	const columns = useMemo<ColumnDef<ResponsibilityCenter>[]>(
 		() =>
@@ -166,7 +66,7 @@ export function useResponsibilityCenterTable(
 		initialState: {
 			columnOrder: ResponsibilityCenterDefaultColumnOrder,
 			columnVisibility: ResponsibilityCenterDefaultColumnVisibility,
-			sorting: DefaultSorting,
+			sorting: ResponsibilityCenterDefaultSorting,
 		},
 		state: {
 			columnOrder,
@@ -182,104 +82,6 @@ export function useResponsibilityCenterTable(
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 	});
-}
-
-function getTablePreferencesStorageKey(userId: number, companyId: number) {
-	return `${ResponsibilityCenterTablePreferencesStorageKey}:user:${userId}:company:${companyId}`;
-}
-
-function readTablePreferences(
-	userId: number,
-	companyId: number,
-): ResponsibilityCenterTablePreferences {
-	try {
-		const stored =
-			window.localStorage.getItem(
-				getTablePreferencesStorageKey(userId, companyId),
-			) ??
-			window.localStorage.getItem(
-				`${ResponsibilityCenterTablePreferencesStorageKey}:user:${userId}`,
-			);
-
-		return stored ? normalizeTablePreferences(JSON.parse(stored)) : getDefaults();
-	} catch {
-		return getDefaults();
-	}
-}
-
-function getDefaults(): ResponsibilityCenterTablePreferences {
-		return {
-		columnOrder: ResponsibilityCenterDefaultColumnOrder,
-		columnVisibility: ResponsibilityCenterDefaultColumnVisibility,
-		sorting: DefaultSorting,
-	};
-}
-
-function normalizeTablePreferences(
-	value: unknown,
-): ResponsibilityCenterTablePreferences {
-	const defaults = getDefaults();
-
-	try {
-		if (!value || typeof value !== "object") return defaults;
-
-		const parsed = value as Partial<ResponsibilityCenterTablePreferences>;
-		const knownColumnIds = new Set<string>(ResponsibilityCenterDefaultColumnOrder);
-		const storedOrder = Array.isArray(parsed.columnOrder)
-			? parsed.columnOrder.filter(
-					(columnId): columnId is string =>
-						typeof columnId === "string" && knownColumnIds.has(columnId),
-				)
-			: [];
-		const fixedTailColumnIds = new Set([
-			...ResponsibilityCenterAuditColumnOrder,
-			"actions",
-		]);
-		const storedBodyOrder = storedOrder.filter(
-			(columnId) => !fixedTailColumnIds.has(columnId),
-		);
-		const columnOrder = [
-			...storedBodyOrder,
-			...ResponsibilityCenterDefaultColumnOrder.filter(
-				(columnId) =>
-					!fixedTailColumnIds.has(columnId) &&
-					!storedBodyOrder.includes(columnId),
-			),
-			...ResponsibilityCenterAuditColumnOrder,
-			"actions",
-		];
-		const columnVisibility: VisibilityState = {
-			...ResponsibilityCenterDefaultColumnVisibility,
-		};
-
-		if (parsed.columnVisibility && typeof parsed.columnVisibility === "object") {
-			for (const [columnId, isVisible] of Object.entries(
-				parsed.columnVisibility,
-			)) {
-				if (knownColumnIds.has(columnId) && typeof isVisible === "boolean") {
-					columnVisibility[columnId] = isVisible;
-				}
-			}
-		}
-
-		const sorting = Array.isArray(parsed.sorting)
-			? parsed.sorting.filter(
-					(sort) =>
-						sort &&
-						typeof sort.id === "string" &&
-						knownColumnIds.has(sort.id) &&
-						typeof sort.desc === "boolean",
-				)
-			: DefaultSorting;
-
-		return {
-			columnOrder,
-			columnVisibility,
-			sorting: sorting.length > 0 ? sorting : DefaultSorting,
-		};
-	} catch {
-		return defaults;
-	}
 }
 
 function createResponsibilityCenterColumn(

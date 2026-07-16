@@ -63,7 +63,7 @@ export function useBankMasterfileListPage() {
 			return;
 		}
 
-		void updateBankStatus({
+		return updateBankStatus({
 			...pendingStatusBank,
 			status: pendingStatusBank.status === "Active" ? "Inactive" : "Active",
 		})

@@ -81,9 +81,7 @@ export function useResponsibilityCenterFormPage({
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
-	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
+	function validateBeforeSubmit() {
 		const nextErrors = validateResponsibilityCenterForm(
 			values,
 			store.centers,
@@ -92,6 +90,16 @@ export function useResponsibilityCenterFormPage({
 
 		if (Object.keys(nextErrors).length) {
 			setErrors(nextErrors);
+			return false;
+		}
+
+		return true;
+	}
+
+	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -117,6 +125,7 @@ export function useResponsibilityCenterFormPage({
 		handleFieldChange,
 		handleInputChange,
 		handleSubmit,
+		validateBeforeSubmit,
 	};
 }
 

@@ -99,9 +99,7 @@ export function useBankMasterfileFormPage(
 		);
 	}
 
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
+	function validateBeforeSubmit() {
 		const nextErrors = validateBankMasterfileForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
@@ -109,6 +107,16 @@ export function useBankMasterfileFormPage(
 			toast.error(
 				"Please review the highlighted fields and enter valid information.",
 			);
+			return false;
+		}
+
+		return true;
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -149,6 +157,7 @@ export function useBankMasterfileFormPage(
 		isSubmitting,
 		mode,
 		nextAccountCode,
+		validateBeforeSubmit,
 		values,
 	};
 }

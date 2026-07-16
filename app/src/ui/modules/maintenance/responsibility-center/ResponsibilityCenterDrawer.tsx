@@ -3,10 +3,8 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import {
 	ResponsibilityCenterActionCopy,
-	ResponsibilityCenterCategoryOptions,
 	ResponsibilityCenterDrawerFormId,
 	ResponsibilityCenterFieldClassName,
-	ResponsibilityCenterFinancialTypeOptions,
 	ResponsibilityCenterStatusOptions,
 	ResponsibilityCenterTitle,
 } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
@@ -16,6 +14,8 @@ import type {
 	ResponsibilityCenterFormErrors,
 	ResponsibilityCenterFormValues,
 	ResponsibilityCenter,
+	ResponsibilityCenterClassification,
+	ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 import {
 	AppAdvancedDropdown,
@@ -71,9 +71,13 @@ function ResponsibilityCenterDrawerPanel({
 				className="px-6 py-5"
 			>
 				<ResponsibilityCenterDrawerFields
+					classifications={page.classifications}
 					errors={page.errors}
 					isReadonly={page.isReadonly}
+					codePlaceholder={page.codePlaceholder}
+					nameLabel={page.nameLabel}
 					parentOptions={page.parentOptions}
+					typeOptions={page.typeOptions}
 					values={page.values}
 					onFieldChange={page.handleFieldChange}
 					onInputChange={page.handleInputChange}
@@ -84,16 +88,24 @@ function ResponsibilityCenterDrawerPanel({
 }
 
 function ResponsibilityCenterDrawerFields({
+	classifications,
 	errors,
 	isReadonly,
+	codePlaceholder,
+	nameLabel,
 	onFieldChange,
 	onInputChange,
 	parentOptions,
+	typeOptions,
 	values,
 }: {
+	classifications: ResponsibilityCenterClassification[];
 	errors: ResponsibilityCenterFormErrors;
 	isReadonly: boolean;
+	codePlaceholder: string;
+	nameLabel: string;
 	parentOptions: ResponsibilityCenter[];
+	typeOptions: ResponsibilityCenterTypeOption[];
 	values: ResponsibilityCenterFormValues;
 	onFieldChange: <TKey extends keyof ResponsibilityCenterFormValues>(
 		field: TKey,
@@ -113,50 +125,67 @@ function ResponsibilityCenterDrawerFields({
 
 	return (
 		<div className="grid gap-4 lg:grid-cols-2">
-			<DrawerField label="Name" error={errors.name} required className="lg:col-span-2">
+			<DrawerField label="Classification" error={errors.classificationId} required>
+				<select
+					name="classificationId"
+					value={values.classificationId}
+					onChange={onInputChange}
+					disabled={isReadonly}
+					className={ResponsibilityCenterFieldClassName}
+				>
+					<option value="">Select classification</option>
+					{classifications.map((classification) => (
+						<option key={classification.id} value={classification.id}>
+							{classification.name}
+						</option>
+					))}
+				</select>
+			</DrawerField>
+
+			<DrawerField label="Type" error={errors.typeId} required>
+				<select
+					name="typeId"
+					value={values.typeId}
+					onChange={onInputChange}
+					disabled={isReadonly || !values.classificationId}
+					className={ResponsibilityCenterFieldClassName}
+				>
+					<option value="">Select type</option>
+					{typeOptions.map((type) => (
+						<option key={type.id} value={type.id}>
+							{type.name}
+						</option>
+					))}
+				</select>
+			</DrawerField>
+
+			<DrawerField label={nameLabel} error={errors.name} required>
 				<input
 					name="name"
 					value={values.name}
 					onChange={onInputChange}
-					readOnly={isReadonly}
+					readOnly={isReadonly || !values.classificationId}
 					className={ResponsibilityCenterFieldClassName}
-					placeholder="Sales Department"
+					placeholder={
+						values.classificationId
+							? "Sales Department"
+							: "Select classification first"
+					}
 				/>
 			</DrawerField>
 
-			<DrawerField label="Classification" error={errors.financialType} required>
-				<select
-					name="financialType"
-					value={values.financialType}
+			<DrawerField label="Code" error={errors.code}>
+				<input
+					name="code"
+					value={values.code}
 					onChange={onInputChange}
-					disabled={isReadonly}
+					readOnly={isReadonly || !values.typeId}
 					className={ResponsibilityCenterFieldClassName}
-				>
-					{ResponsibilityCenterFinancialTypeOptions.map((type) => (
-						<option key={type} value={type}>
-							{type}
-						</option>
-					))}
-				</select>
+					placeholder={codePlaceholder}
+				/>
 			</DrawerField>
 
-			<DrawerField label="Type" error={errors.category} required>
-				<select
-					name="category"
-					value={values.category}
-					onChange={onInputChange}
-					disabled={isReadonly}
-					className={ResponsibilityCenterFieldClassName}
-				>
-					{ResponsibilityCenterCategoryOptions.map((category) => (
-						<option key={category} value={category}>
-							{category}
-						</option>
-					))}
-				</select>
-			</DrawerField>
-
-			<DrawerField label="Parent Center" error={errors.parentId}>
+			<DrawerField label="Parent Responsibility Center" error={errors.parentId}>
 				<AppAdvancedDropdown
 					options={parentDropdownOptions}
 					placeholder="No parent center"
@@ -166,35 +195,6 @@ function ResponsibilityCenterDrawerFields({
 					showSelectedDetails
 					value={values.parentId}
 					onChange={(value) => onFieldChange("parentId", String(value))}
-				/>
-			</DrawerField>
-
-			<DrawerField label="Code" error={errors.code} required>
-				<input
-					name="code"
-					value={values.code}
-					onChange={onInputChange}
-					readOnly={isReadonly}
-					className={ResponsibilityCenterFieldClassName}
-					placeholder="SALES"
-				/>
-			</DrawerField>
-
-			<DrawerField
-				label="Description"
-				error={errors.description}
-				className="lg:col-span-2"
-			>
-				<textarea
-					name="description"
-					value={values.description}
-					onChange={onInputChange}
-					readOnly={isReadonly}
-					className={joinClasses(
-						ResponsibilityCenterFieldClassName,
-						"min-h-24 resize-y py-3",
-					)}
-					placeholder="How this center is used in transactions and reports"
 				/>
 			</DrawerField>
 
@@ -223,6 +223,24 @@ function ResponsibilityCenterDrawerFields({
 						</option>
 					))}
 				</select>
+			</DrawerField>
+
+			<DrawerField
+				label="Description"
+				error={errors.description}
+				className="lg:col-span-2"
+			>
+				<textarea
+					name="description"
+					value={values.description}
+					onChange={onInputChange}
+					readOnly={isReadonly}
+					className={joinClasses(
+						ResponsibilityCenterFieldClassName,
+						"min-h-24 resize-y py-3",
+					)}
+					placeholder="How this center is used in transactions and reports"
+				/>
 			</DrawerField>
 		</div>
 	);

@@ -1,5 +1,4 @@
-import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
-import { ResponsibilityCenterTypeDefinitions } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import {
 	ResponsibilityCenterInitialFormValues,
 	createResponsibilityCenterFormValues,
@@ -7,11 +6,14 @@ import {
 	updateResponsibilityCenterFromForm,
 } from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
+import { fetchResponsibilityCenterCodeSuggestion } from "@/app/src/services/modules/maintenance/responsibility-center/ResponsibilityCenterApi";
 import type {
 	ResponsibilityCenter,
 	ResponsibilityCenterActionMode,
+	ResponsibilityCenterClassification,
 	ResponsibilityCenterFormErrors,
 	ResponsibilityCenterFormValues,
+	ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 import { validateResponsibilityCenterForm } from "@/app/src/validations/modules/maintenance/responsibility-center/ResponsibilityCenterValidation";
 
@@ -34,10 +36,58 @@ export function useResponsibilityCenterFormPage({
 			? createResponsibilityCenterFormValues(center)
 			: ResponsibilityCenterInitialFormValues,
 	);
+	const [hasManualCode, setHasManualCode] = useState(Boolean(center?.code));
 	const parentOptions = useMemo(
-		() => store.centers.filter(({ id }) => id !== center?.id),
+		() =>
+			store.centers.filter(
+				({ id, status }) => id !== center?.id && status === "Active",
+			),
 		[store.centers, center?.id],
 	);
+	const typeOptions = useMemo(
+		() =>
+			store.types.filter(
+				(type) => type.classificationId === values.classificationId,
+			),
+		[store.types, values.classificationId],
+	);
+	const nameLabel = values.classificationId && values.financialType
+		? `${values.financialType} Name`
+		: "Name";
+	const codePlaceholder = useMemo(() => {
+		const selectedType = store.types.find(({ id }) => id === values.typeId);
+
+		if (!selectedType) {
+			return "Select classification and type first";
+		}
+
+		return `${selectedType.classificationCode}-${selectedType.codePrefix}-001`;
+	}, [store.types, values.typeId]);
+
+	useEffect(() => {
+		if (!values.typeId || hasManualCode || mode !== "add") {
+			return;
+		}
+
+		let isMounted = true;
+
+		fetchResponsibilityCenterCodeSuggestion(values.typeId)
+			.then((code) => {
+				if (!isMounted) return;
+				setValues((current) =>
+					current.typeId === values.typeId && !current.code
+						? { ...current, code }
+						: current,
+				);
+			})
+			.catch(() => {
+				// Code remains manually editable if suggestion fails.
+			});
+
+		return () => {
+			isMounted = false;
+		};
+	}, [hasManualCode, mode, values.typeId]);
 
 	function handleInputChange(
 		event: ChangeEvent<
@@ -57,10 +107,21 @@ export function useResponsibilityCenterFormPage({
 			return;
 		}
 
+		if (field === "classificationId" || field === "typeId") {
+			setHasManualCode(false);
+		}
+
+		if (field === "code") {
+			setHasManualCode(String(value).trim().length > 0);
+		}
+
 		setValues((current) => ({
 			...current,
 			[field]: value,
-			...(field === "category" ? createTypeDefaults(String(value)) : {}),
+			...(field === "classificationId"
+				? createClassificationDefaults(String(value), store.classifications)
+				: {}),
+			...(field === "typeId" ? createTypeDefaults(String(value), store.types) : {}),
 		}));
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
@@ -73,10 +134,17 @@ export function useResponsibilityCenterFormPage({
 			return;
 		}
 
+		if (field === "classificationId" || field === "typeId") {
+			setHasManualCode(false);
+		}
+
 		setValues((current) => ({
 			...current,
 			[field]: value,
-			...(field === "category" ? createTypeDefaults(String(value)) : {}),
+			...(field === "classificationId"
+				? createClassificationDefaults(String(value), store.classifications)
+				: {}),
+			...(field === "typeId" ? createTypeDefaults(String(value), store.types) : {}),
 		}));
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
@@ -110,9 +178,13 @@ export function useResponsibilityCenterFormPage({
 
 	return {
 		errors,
+		classifications: store.classifications,
 		isReadonly,
 		isSubmitting: store.isMutating,
+		nameLabel,
+		codePlaceholder,
 		parentOptions,
+		typeOptions,
 		values,
 		handleFieldChange,
 		handleInputChange,
@@ -120,16 +192,33 @@ export function useResponsibilityCenterFormPage({
 	};
 }
 
-function createTypeDefaults(category: string) {
-	const definition = ResponsibilityCenterTypeDefinitions.find(
-		(typeDefinition) => typeDefinition.type === category,
-	);
+function createClassificationDefaults(
+	classificationId: string,
+	classifications: ResponsibilityCenterClassification[],
+) {
+	const classification = classifications.find(({ id }) => id === classificationId);
 
-	if (!definition) {
+	return {
+		typeId: "",
+		category: "Department" as const,
+		financialType: classification?.name ?? ("Cost Center" as const),
+		parentId: "",
+		code: "",
+	};
+}
+
+function createTypeDefaults(
+	typeId: string,
+	types: ResponsibilityCenterTypeOption[],
+) {
+	const type = types.find((typeOption) => typeOption.id === typeId);
+
+	if (!type) {
 		return {};
 	}
 
 	return {
-		financialType: definition.financialType,
+		financialType: type.classificationName,
+		code: "",
 	};
 }

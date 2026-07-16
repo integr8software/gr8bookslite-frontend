@@ -4,12 +4,13 @@ import type {
 	ResponsibilityCenterFormValues,
 	ResponsibilityCenterTreeNode,
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
-import { normalizeCodeWithHyphens } from "@/app/src/utils/string.util";
 
 export const ResponsibilityCenterInitialFormValues: ResponsibilityCenterFormValues =
 	{
 		code: "",
 		name: "",
+		classificationId: "",
+		typeId: "",
 		category: "Department",
 		financialType: "Cost Center",
 		manager: "",
@@ -85,6 +86,8 @@ export function createResponsibilityCenterFormValues(
 	return {
 		code: center.code,
 		name: center.name,
+		classificationId: center.classificationId,
+		typeId: center.typeId,
 		category: center.category,
 		financialType: center.financialType,
 		manager: center.manager,
@@ -101,10 +104,14 @@ export function createResponsibilityCenterFromForm(
 
 	return {
 		id: `rc-${Date.now()}`,
-		code: normalizeCodeWithHyphens(values.code || values.name, {
-			case: "upper",
-		}),
+		code: values.code.trim().toUpperCase(),
 		name: values.name.trim(),
+		classificationId: values.classificationId,
+		classificationCode: "",
+		classificationName: values.financialType,
+		typeId: values.typeId,
+		typeName: values.category,
+		typeCodePrefix: "",
 		category: values.category,
 		financialType: values.financialType,
 		manager: values.manager.trim(),

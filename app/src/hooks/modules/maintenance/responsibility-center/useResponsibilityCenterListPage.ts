@@ -32,8 +32,8 @@ import type {
 
 export function useResponsibilityCenterListPage() {
 	const centers = useResponsibilityCenterStore((state) => state.centers);
-	const updateCenter = useResponsibilityCenterStore(
-		(state) => state.updateCenter,
+	const updateCenterStatus = useResponsibilityCenterStore(
+		(state) => state.updateCenterStatus,
 	);
 	const isLoading = useResponsibilityCenterStore((state) => state.isLoading);
 	const isRefreshing = useResponsibilityCenterStore(
@@ -188,7 +188,7 @@ export function useResponsibilityCenterListPage() {
 			return;
 		}
 
-		updateCenter({
+		updateCenterStatus({
 			...pendingStatusCenter,
 			status:
 				pendingStatusCenter.status === "Active" ? "Inactive" : "Active",

@@ -15,116 +15,23 @@ const errorClassName = "mt-1 text-xs font-medium text-red-600";
 
 type SalesJournalDetailsPageProps = {
 	page: ReturnType<typeof useSalesJournalFormPage>;
+	section: SalesJournalDetailsSection;
 };
+
+export type SalesJournalDetailsSection = "amounts" | "customer" | "references";
 
 export function SalesJournalDetailsPage({
 	page,
+	section,
 }: SalesJournalDetailsPageProps) {
 	return (
 		<>
 			<section className="grid gap-4 rounded-md border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5">
-				<div className="grid gap-6 md:grid-cols-2">
-					<div className="grid gap-4">
-						<TextField
-							label="Party Code"
-							name="partyCode"
-							value={page.values.partyCode}
-							error={page.errors.partyCode}
-							disabled={page.isReadonly}
-							onChange={page.handleInputChange}
-						/>
-
-						<TextField
-							label="Party Name"
-							name="partyName"
-							value={page.values.partyName}
-							error={page.errors.partyName}
-							disabled={page.isReadonly}
-							onChange={page.handleInputChange}
-						/>
-
-						<SelectField
-							label="Currency"
-							name="currency"
-							value={page.values.currency}
-							error={page.errors.currency}
-							disabled={page.isReadonly}
-							options={SalesJournalCurrencyOptions}
-							onChange={page.handleInputChange}
-						/>
-
-						<TextField
-							label="Exchange Rate"
-							name="exchangeRate"
-							type="number"
-							min="0"
-							step="0.000001"
-							value={String(page.values.exchangeRate)}
-							error={page.errors.exchangeRate}
-							disabled={page.isReadonly}
-							onChange={page.handleInputChange}
-						/>
-
-						<TextField
-							label="Terms"
-							name="terms"
-							value={page.values.terms}
-							error={page.errors.terms}
-							disabled={page.isReadonly}
-							onChange={page.handleInputChange}
-						/>
-
-						<TextField
-							label="Due Date"
-							name="dueDate"
-							type="date"
-							value={page.values.dueDate}
-							error={page.errors.dueDate}
-							disabled={page.isReadonly}
-							onChange={page.handleInputChange}
-						/>
-					</div>
-
-					<div className="grid gap-4">
-						<TextField
-							label="Document No"
-							name="documentNo"
-							value={page.values.documentNo}
-							error={page.errors.documentNo}
-							disabled={page.isReadonly}
-							onChange={page.handleInputChange}
-						/>
-
-						<TextField
-							label="Document Date"
-							name="documentDate"
-							type="date"
-							value={page.values.documentDate}
-							error={page.errors.documentDate}
-							disabled={page.isReadonly}
-							onChange={page.handleInputChange}
-						/>
-
-						<SelectField
-							label="Status"
-							name="status"
-							value={page.values.status}
-							error={page.errors.status}
-							disabled={page.isReadonly}
-							options={SalesJournalStatusOptions}
-							onChange={page.handleInputChange}
-						/>
-
-						<TextField
-							label="Remarks"
-							name="remarks"
-							value={page.values.remarks}
-							error={page.errors.remarks}
-							disabled={page.isReadonly}
-							onChange={page.handleInputChange}
-						/>
-					</div>
-				</div>
+				{section === "customer" ? <SalesJournalCustomerSection page={page} /> : null}
+				{section === "amounts" ? <SalesJournalAmountsSection page={page} /> : null}
+				{section === "references" ? (
+					<SalesJournalReferencesSection page={page} />
+				) : null}
 			</section>
 
 			<section className="grid gap-4 rounded-md border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5">
@@ -344,12 +251,180 @@ export function SalesJournalDetailsPage({
 	);
 }
 
+function SalesJournalCustomerSection({
+	page,
+}: {
+	page: ReturnType<typeof useSalesJournalFormPage>;
+}) {
+	return (
+		<div className="grid gap-6 md:grid-cols-2">
+			<div className="grid gap-4">
+				<TextField
+					label="Code"
+					name="partyCode"
+					value={page.values.partyCode}
+					error={page.errors.partyCode}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+				<SelectField
+					label="Currency"
+					name="currency"
+					value={page.values.currency}
+					error={page.errors.currency}
+					disabled={page.isReadonly}
+					options={SalesJournalCurrencyOptions}
+					onChange={page.handleInputChange}
+				/>
+				<TextAreaField
+					label="Remarks"
+					name="remarks"
+					value={page.values.remarks}
+					error={page.errors.remarks}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+				<TextField
+					label="Due Date"
+					name="dueDate"
+					type="date"
+					value={page.values.dueDate}
+					error={page.errors.dueDate}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+			</div>
+			<div className="grid content-start gap-4">
+				<TextField
+					label="Name"
+					name="partyName"
+					value={page.values.partyName}
+					error={page.errors.partyName}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+				<TextField
+					label="FX Rate"
+					name="exchangeRate"
+					type="number"
+					min="0"
+					step="0.000001"
+					value={String(page.values.exchangeRate)}
+					error={page.errors.exchangeRate}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+				<TextField
+					label="Terms"
+					name="terms"
+					value={page.values.terms}
+					error={page.errors.terms}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+			</div>
+		</div>
+	);
+}
+
+function SalesJournalAmountsSection({
+	page,
+}: {
+	page: ReturnType<typeof useSalesJournalFormPage>;
+}) {
+	return (
+		<div className="grid gap-6 md:grid-cols-2">
+			<div className="grid content-start gap-4">
+				<ReadOnlyField
+					label="Total Debit"
+					value={formatSalesJournalAmount(page.totals.totalDebit)}
+				/>
+				<ReadOnlyField
+					label="Total Credit"
+					value={formatSalesJournalAmount(page.totals.totalCredit)}
+				/>
+				<ReadOnlyField
+					label="Variance"
+					value={formatSalesJournalAmount(Math.abs(page.totals.variance))}
+				/>
+			</div>
+			<div className="grid content-start gap-4">
+				<SelectField
+					label="Status"
+					name="status"
+					value={page.values.status}
+					error={page.errors.status}
+					disabled={page.isReadonly}
+					options={SalesJournalStatusOptions}
+					onChange={page.handleInputChange}
+				/>
+				<ReadOnlyField
+					label="Balance"
+					value={page.totals.isBalanced ? "Balanced" : "Needs balancing"}
+				/>
+			</div>
+		</div>
+	);
+}
+
+function SalesJournalReferencesSection({
+	page,
+}: {
+	page: ReturnType<typeof useSalesJournalFormPage>;
+}) {
+	const firstLine = page.values.lines[0];
+
+	return (
+		<div className="grid gap-6 md:grid-cols-2">
+			<div className="grid content-start gap-4">
+				<TextField
+					label="Trans No."
+					name="documentNo"
+					value={page.values.documentNo}
+					error={page.errors.documentNo}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+				<TextField
+					label="Document Date"
+					name="documentDate"
+					type="date"
+					value={page.values.documentDate}
+					error={page.errors.documentDate}
+					disabled={page.isReadonly}
+					onChange={page.handleInputChange}
+				/>
+			</div>
+			<div className="grid content-start gap-4">
+				<label className="block">
+					<span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-darknavy/60">
+						Ref No.
+					</span>
+					<input
+						className={fieldClassName}
+						disabled={page.isReadonly || !firstLine}
+						onChange={(event) => {
+							if (firstLine) {
+								page.updateLine(firstLine.id, "refNo", event.target.value);
+							}
+						}}
+						value={firstLine?.refNo ?? ""}
+					/>
+				</label>
+				<ReadOnlyField label="ProjectRef." value="" />
+			</div>
+		</div>
+	);
+}
+
 type FieldProps = {
 	disabled: boolean;
 	error?: string;
 	label: string;
 	name: string;
-	onChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
+	onChange: ChangeEventHandler<
+		HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+	>;
 	value: string;
 	type?: string;
 	min?: string;
@@ -383,6 +458,49 @@ function TextField({
 				value={value}
 			/>
 			{error ? <span className={errorClassName}>{error}</span> : null}
+		</label>
+	);
+}
+
+function TextAreaField({
+	disabled,
+	error,
+	label,
+	name,
+	onChange,
+	value,
+}: FieldProps) {
+	return (
+		<label className="block">
+			<span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-darknavy/60">
+				{label}
+			</span>
+			<textarea
+				className={`${fieldClassName} min-h-28 py-3`}
+				disabled={disabled}
+				name={name}
+				onChange={onChange}
+				value={value}
+			/>
+			{error ? <span className={errorClassName}>{error}</span> : null}
+			<span className="mt-1 block text-xs font-medium text-darknavy/45">
+				Characters remaining: {Math.max(250 - value.length, 0)}
+			</span>
+		</label>
+	);
+}
+
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
+	return (
+		<label className="block">
+			<span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-darknavy/60">
+				{label}
+			</span>
+			<input
+				className={`${fieldClassName} bg-offwhite text-darknavy/70`}
+				readOnly
+				value={value}
+			/>
 		</label>
 	);
 }

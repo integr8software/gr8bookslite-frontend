@@ -121,7 +121,10 @@ export function useSalesJournalFormPage() {
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
+		submitSalesJournal();
+	}
 
+	function submitSalesJournal() {
 		const nextErrors = validateSalesJournalForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
@@ -167,6 +170,7 @@ export function useSalesJournalFormPage() {
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
 		setIsDeleteDialogOpen,
+		submitSalesJournal,
 		totals,
 		updateLine,
 		values,

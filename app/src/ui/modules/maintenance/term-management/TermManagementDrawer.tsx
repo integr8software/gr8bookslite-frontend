@@ -4,11 +4,11 @@ import {
 	TermManagementActionCopy,
 	TermManagementDrawerFormId,
 	TermManagementTitle,
-} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+} from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import { useTermManagementFormPage } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagementFormPage";
 import type { TermManagementDrawerProps } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
-import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
-import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
+import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { TermManagementFields } from "@/app/src/ui/modules/maintenance/term-management/TermManagementFields";
 
 export function TermManagementDrawer({
@@ -48,7 +48,10 @@ function TermManagementDrawerPanel({
 		onSaved: onClose,
 	});
 	const copy = TermManagementActionCopy[mode];
-	return <MaintenanceFormDrawer description={copy.description} eyebrow={TermManagementTitle} formId={TermManagementDrawerFormId} isOpen={isOpen} isReadonly={page.isReadonly} isSaving={page.isSubmitting} onBeforeSaveConfirm={page.validateBeforeSubmit} onClose={onClose} savingLabel={getMaintenanceSavePendingLabel(mode)} submitLabel={mode === "edit" ? "Update Term" : "Save Term"} title={copy.title}>
+	return <ModuleDrawer description={copy.description} eyebrow={TermManagementTitle} formId={TermManagementDrawerFormId} isOpen={isOpen} isReadonly={page.isReadonly} isSaving={page.isSubmitting} onBeforeSaveConfirm={page.validateBeforeSubmit} onClose={onClose} savingLabel={getModuleSavePendingLabel(mode)} submitLabel={mode === "edit" ? "Update Term" : "Save Term"} title={copy.title}>
 		<form id={TermManagementDrawerFormId} onSubmit={page.handleSubmit} className="px-6 py-5"><TermManagementFields errors={page.errors} isReadonly={page.isReadonly} values={page.values} onInputChange={page.handleInputChange} /></form>
-	</MaintenanceFormDrawer>;
+	</ModuleDrawer>;
 }
+
+
+

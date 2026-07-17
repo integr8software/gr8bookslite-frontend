@@ -8,7 +8,7 @@ import {
 	TermManagementFieldClassName,
 	TermManagementSelectClassName,
 	TermManagementStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+} from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import type { TermManagementFieldsProps } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 
 export function TermManagementFields({
@@ -19,14 +19,14 @@ export function TermManagementFields({
 }: TermManagementFieldsProps) {
 	return (
 		<div className="grid gap-4 lg:grid-cols-2">
-			<FormField label="Name" error={errors.name} className="lg:col-span-2" required>
+			<FormField label="Term Name" error={errors.name} className="lg:col-span-2" required>
 				<input
 					name="name"
 					value={values.name}
 					onChange={onInputChange}
 					readOnly={isReadonly}
 					className={TermManagementFieldClassName}
-					placeholder="Enter Name..."
+					placeholder="Enter Term Name..."
 				/>
 			</FormField>
 
@@ -161,3 +161,4 @@ const preventNonWholeNumberPaste: ClipboardEventHandler<HTMLInputElement> = (
 		event.preventDefault();
 	}
 };
+

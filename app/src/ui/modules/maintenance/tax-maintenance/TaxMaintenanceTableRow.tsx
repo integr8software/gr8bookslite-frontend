@@ -6,11 +6,12 @@ import type {
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
 import {
   formatTaxMaintenancePercentage,
-} from "@/app/src/data/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceData";
+} from "@/app/src/data/modules/maintenance/tax-maintenance/TaxMaintenanceData";
 import {
   ModuleTableActionButton,
   ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 import { formatDateTime } from "@/app/src/utils/date.util";
 
@@ -128,7 +129,7 @@ function TaxMaintenanceCellContent({
         />
       );
     case "status":
-      return <StatusBadge status={tax.status} />;
+      return <ModuleStatusBadge status={tax.status} />;
     case "createdBy":
       return <span>{tax.createdBy ?? ""}</span>;
     case "createdAt":
@@ -210,17 +211,3 @@ function AccountText({ value }: { value?: string | null }) {
   );
 }
 
-function StatusBadge({ status }: { status: TaxMaintenance["status"] }) {
-  const statusClass =
-    status === "Active"
-      ? "bg-citron/25 text-darknavy"
-      : "bg-darknavy/8 text-darknavy/55";
-
-  return (
-    <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}
-    >
-      {status}
-    </span>
-  );
-}

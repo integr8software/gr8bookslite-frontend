@@ -19,12 +19,12 @@ import {
   ChartsOfAccountsTablePreferencesModuleKey,
   ChartsOfAccountsTablePreferencesStorageKey,
   ChartsOfAccountsNavs,
-} from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+} from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import {
   flattenAccounts,
   isSpecificAccount,
   moveOrReorderAccount,
-} from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
+} from "@/app/src/data/modules/maintenance/charts-of-accounts/ChartsOfAccountsData";
 import {
   FetchChartAccountsTree,
   SaveChartAccount,
@@ -536,3 +536,5 @@ function getAccountAncestorIds(
 
   return ancestorIds;
 }
+
+

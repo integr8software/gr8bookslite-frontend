@@ -17,7 +17,7 @@ import {
 	DefaultAccountTablePreferencesModuleKey,
 	DefaultAccountTablePreferencesStorageKey,
 	getDefaultAccountTypeLabel,
-} from "@/app/src/constants/modules/maintenance/financial-management/default-account/DefaultAccountConstants";
+} from "@/app/src/constants/modules/maintenance/default-account/DefaultAccountConstants";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
 	DefaultAccount,
@@ -135,3 +135,4 @@ function createDefaultAccountColumn(
 		meta: columnMeta,
 	};
 }
+

@@ -30,7 +30,7 @@ import {
 	MaxImportFileSizeBytes,
 	MinImportFileSizeBytes,
 	SelectionColumnWidth,
-} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+} from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import type {
 	TermManagementImportDialogProps,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
@@ -38,7 +38,7 @@ import { TermImportPreviewTableRow } from "@/app/src/ui/modules/maintenance/term
 import {
 	downloadTermImportTemplate,
 	isTermImportGridPasteTarget,
-} from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
+} from "@/app/src/data/modules/maintenance/term-management/TermManagementData";
 import { formatFileSize } from "@/app/src/utils/file.util";
 
 export function TermManagementImportDialog({
@@ -267,3 +267,5 @@ export function TermManagementImportDialog({
 		</ModuleImportDialog>
 	);
 }
+
+

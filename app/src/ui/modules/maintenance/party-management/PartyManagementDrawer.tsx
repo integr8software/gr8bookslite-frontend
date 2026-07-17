@@ -48,7 +48,7 @@ import type {
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
-import { MaintenanceSavingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
+import { ModuleSavingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
 import { todayDateValue } from "@/app/src/utils/date.util";
 import type {
@@ -630,7 +630,7 @@ export function PartyManagementDrawer({
 				iconTone="question"
 				isOpen={isSaveDialogOpen}
 				isPending={isPending || isSaveConfirmPending}
-				pendingLabel={MaintenanceSavingLabel}
+				pendingLabel={ModuleSavingLabel}
 				title="Save this party?"
 				tone="success"
 				onCancel={() => {
@@ -773,3 +773,5 @@ function applySyncedAddressValues(
 function getSingleSelectedValue(value: string | string[]) {
 	return Array.isArray(value) ? (value[0] ?? "") : value;
 }
+
+

@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
 	PaymentTypeClassificationOptions,
 	PaymentTypeStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
+} from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import type {
 	PaymentTypeFormErrors,
 	PaymentTypeFormValues,
@@ -47,3 +47,4 @@ function mapPaymentTypeIssues(issues: z.ZodIssue[]) {
 		return errors;
 	}, {});
 }
+

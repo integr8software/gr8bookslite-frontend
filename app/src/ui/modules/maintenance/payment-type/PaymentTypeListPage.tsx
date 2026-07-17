@@ -1,18 +1,15 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { CheckCircle2, CirclePause, CreditCard } from "lucide-react";
+import { useCallback, useState } from "react";
+import { CreditCard } from "lucide-react";
 import { usePaymentTypeListPage } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentTypeListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import {
-	ModuleStatisticCards,
-	type ModuleStatisticCardItem,
-} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { PaymentTypeDrawer } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeDrawer";
 import { PaymentTypeImportDialog } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeImportDialog";
 import { PaymentTypeHeaderActions } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeHeaderActions";
+import { PaymentTypeStatisticCards } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeStatisticCards";
 import { PaymentTypeTable } from "@/app/src/ui/modules/maintenance/payment-type/PaymentTypeTable";
 import type { DrawerState } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 
@@ -34,31 +31,6 @@ export function PaymentTypeListPage() {
 			}
 		},
 		closeDrawer,
-	);
-	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-		() => [
-			{
-				helper: "All payment types",
-				icon: CreditCard,
-				label: "Total Types",
-				value: page.statistics.totalPaymentTypes,
-			},
-			{
-				helper: "Available for vouchers",
-				icon: CheckCircle2,
-				label: "Active Types",
-				tone: "emerald",
-				value: page.statistics.activePaymentTypes,
-			},
-			{
-				helper: "Currently inactive",
-				icon: CirclePause,
-				label: "Inactive Types",
-				tone: "amber",
-				value: page.statistics.inactivePaymentTypes,
-			},
-		],
-		[page.statistics],
 	);
 
 	return (
@@ -83,8 +55,8 @@ export function PaymentTypeListPage() {
 				}
 			/>
 
-			<ModuleStatisticCards
-				items={statisticCards}
+			<PaymentTypeStatisticCards
+				statistics={page.statistics}
 				isLoading={page.isLoading}
 			/>
 

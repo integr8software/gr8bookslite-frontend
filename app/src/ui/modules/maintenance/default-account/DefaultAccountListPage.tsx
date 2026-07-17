@@ -1,25 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-	CheckCircle2,
-	CirclePause,
-	FileCog,
-	Package,
-	ReceiptText,
-	WalletCards,
-} from "lucide-react";
+import { useState } from "react";
 import { useDefaultAccountListPage } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccountListPage";
 import type {
 	DefaultAccountDrawerState,
 } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import {
-	ModuleStatisticCards,
-	type ModuleStatisticCardItem,
-} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { DefaultAccountDrawer } from "@/app/src/ui/modules/maintenance/default-account/DefaultAccountDrawer";
 import { DefaultAccountHeader } from "@/app/src/ui/modules/maintenance/default-account/DefaultAccountHeader";
+import { DefaultAccountStatisticCards } from "@/app/src/ui/modules/maintenance/default-account/DefaultAccountStatisticCards";
 import { DefaultAccountTable } from "@/app/src/ui/modules/maintenance/default-account/DefaultAccountTable";
 
 export function DefaultAccountListPage() {
@@ -29,53 +18,6 @@ export function DefaultAccountListPage() {
 		page.query.trim().length > 0 ||
 		page.statusFilter !== "Active" ||
 		page.typeFilter !== "";
-	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-		() => [
-			{
-				icon: FileCog,
-				iconClassName: "bg-skyblue/20 text-skyblue",
-				label: "Total",
-				summary: "All default accounts",
-				value: page.statistics.totalDefaultAccounts,
-			},
-			{
-				icon: CheckCircle2,
-				iconClassName: "bg-emerald-50 text-emerald-700",
-				label: "Active",
-				summary: "Available for setup",
-				value: page.statistics.activeDefaultAccounts,
-			},
-			{
-				icon: CirclePause,
-				iconClassName: "bg-amber-50 text-amber-700",
-				label: "Inactive",
-				summary: "Hidden from selection",
-				value: page.statistics.inactiveDefaultAccounts,
-			},
-			{
-				icon: ReceiptText,
-				iconClassName: "bg-cyan-50 text-cyan-700",
-				label: "Collection",
-				summary: "Revenue templates",
-				value: page.statistics.collectionDefaultAccounts,
-			},
-			{
-				icon: WalletCards,
-				iconClassName: "bg-rose-50 text-rose-700",
-				label: "Expense",
-				summary: "Expense templates",
-				value: page.statistics.expenseDefaultAccounts,
-			},
-			{
-				icon: Package,
-				iconClassName: "bg-cyan-50 text-cyan-700",
-				label: "Fixed Asset",
-				summary: "Asset templates",
-				value: page.statistics.fixedAssetDefaultAccounts,
-			},
-		],
-		[page.statistics],
-	);
 
 	return (
 		<section className="grid gap-5">
@@ -83,10 +25,9 @@ export function DefaultAccountListPage() {
 				permissions={page.permissions}
 				onAdd={() => setDrawerState({ mode: "add" })}
 			/>
-			<ModuleStatisticCards
-				items={statisticCards}
+			<DefaultAccountStatisticCards
+				statistics={page.statistics}
 				isLoading={page.isLoading}
-				className="xl:grid-cols-6"
 			/>
 			<DefaultAccountTable
 				defaultAccounts={page.defaultAccounts}

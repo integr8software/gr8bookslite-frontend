@@ -179,13 +179,13 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-transaction-type",
     "Inventory Transaction Type",
-    "/maintenance/item-management/inventory-transaction-type",
+    "/maintenance/inventory-transaction-type",
     "Classify goods receipt and goods issue inventory movements.",
     [
       "Inventory Transaction Type stores reusable movement reasons such as sales return, transfer, purchase return, spoilage, damaged item, freebies, and gifts.",
       "Use clear inventory transaction type names so goods receipt and goods issue lists can be filtered without ambiguity.",
     ],
-    ["help-item-management", "help-inventory"],
+    ["help-items", "help-inventory"],
   ),
   article(
     "help-payment-type",
@@ -212,18 +212,18 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-maintenance-inventory",
     "Inventory Maintenance",
-    "/maintenance/item-management/items",
+    "/maintenance/items",
     "Configure item and warehouse master files used by inventory documents.",
     [
-      "Item Management defines item records, bundle components, inventory transaction types, and the single Item Category classification tree used during document entry.",
+      "Items setup defines item records, bundle components, inventory transaction types, and the single Item Category classification tree used during document entry.",
       "Warehouse Management defines storage locations, access assignments, and warehouse item counts used for stock movement and reporting.",
     ],
-    ["help-warehouse-management", "help-item-management", "help-inventory"],
+    ["help-warehouse-management", "help-items", "help-inventory"],
   ),
   article(
     "help-warehouse-management",
     "Warehouse Management",
-    "/maintenance/warehouse-management",
+    "/maintenance/warehouses",
     "Maintain warehouse locations, access assignments, and item counts used by inventory transactions.",
     [
       "Warehouse Management stores the locations where stock can be received, issued, transferred, counted, or valued.",
@@ -232,9 +232,9 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     ["help-inventory", "help-warehouse-management"],
   ),
   article(
-    "help-item-management",
+    "help-items",
     "Items",
-    "/maintenance/item-management/items",
+    "/maintenance/items",
     "Maintain item records and bundle definitions used by sales, purchasing, and inventory documents.",
     [
       "Items stores item names, codes, categories, classifications, predefined units, and other item details used during document entry.",
@@ -246,13 +246,13 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
   article(
     "help-item-category",
     "Item Classifications",
-    "/maintenance/item-management/item-category",
+    "/maintenance/item-category",
     "Organize items in one parent-child Item Category hierarchy.",
     [
       "The Item Category page shows every parent and child classification in expandable rows, including migrated legacy records.",
       "Use consistent classifications so receiving, issuing, sales, purchasing, and valuation documents remain easier to filter and report.",
     ],
-    ["help-item-management", "help-inventory"],
+    ["help-items", "help-inventory"],
   ),
   article(
     "help-maintenance-party",
@@ -326,13 +326,13 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Sales modules support the revenue workflow from quotation and order through billing, invoicing, memo adjustments, and journal reporting.",
       "When inventory is enabled, sales documents can also reference item and stock information.",
     ],
-    ["help-maintenance-party", "help-item-management", "help-cash-receipt"],
+    ["help-maintenance-party", "help-items", "help-cash-receipt"],
   ),
   article(
     "help-inventory",
     "Inventory",
     "/inventory",
-    "Record stock documents such as receiving reports, goods receipts, goods issues, material requests, pick lists, delivery receipts, and inventory accounts.",
+    "Record stock documents such as receiving reports, goods receipts, goods issues, material requests, pick lists, delivery receipts, and inventory counts.",
     [
       "Inventory modules track stock activity across warehouses and items.",
       "Use inventory documents to capture receiving, issuing, movement, delivery, and stock account information for operational and reporting visibility.",
@@ -355,7 +355,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Use the Data Entry table to add item rows, reorder rows, configure visible columns, import item rows, export item rows, and validate required item details before saving the request.",
       "Data Entry shortcuts are available while focus is inside the item table: Ctrl + Plus adds a row below the active row, Ctrl + Minus removes the active row, F2 edits the active cell, Escape exits editing or closes the row menu, Tab and Shift + Tab move across cells, and arrow keys move between cells when a cell is not being edited.",
     ],
-    ["help-data-entry-shortcuts", "help-inventory", "help-item-management"],
+    ["help-data-entry-shortcuts", "help-inventory", "help-items"],
   ),
   article(
     "help-data-entry-shortcuts",
@@ -379,7 +379,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
       "Purchasing modules support procurement workflows from request and canvassing through ordering and journal review.",
       "Purchasing works best when suppliers, items, discounts, terms, and inventory setup are maintained consistently.",
     ],
-    ["help-maintenance-party", "help-item-management", "help-accounts-payable"],
+    ["help-maintenance-party", "help-items", "help-accounts-payable"],
   ),
   article(
     "help-fixed-asset",

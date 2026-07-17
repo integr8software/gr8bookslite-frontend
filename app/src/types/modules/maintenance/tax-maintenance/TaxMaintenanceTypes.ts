@@ -111,7 +111,14 @@ export type TaxMaintenanceStatistics = {
   inactiveTaxes: number;
 };
 
+export type TaxMaintenanceStatisticCardsProps = {
+  statistics: TaxMaintenanceStatistics;
+  isLoading?: boolean;
+};
+
 export type TaxMaintenanceDrawerMode = "add" | "edit" | "view";
+
+export type TaxMaintenanceTab = "tax" | "accounting";
 
 export type TaxMaintenanceDrawerState =
   | {
@@ -119,6 +126,17 @@ export type TaxMaintenanceDrawerState =
       tax?: TaxMaintenance;
     }
   | null;
+
+export type TaxMaintenanceDrawerProps = {
+  accountOptions: ModuleChartAccount[];
+  defaultAccountIds: TaxMaintenanceDefaultAccountIds;
+  isOpen: boolean;
+  isSaving: boolean;
+  mode: TaxMaintenanceDrawerMode;
+  tax?: TaxMaintenance;
+  onClose: () => void;
+  onSave: (values: TaxMaintenance | TaxMaintenanceFormValues) => Promise<void>;
+};
 
 export type TaxMaintenanceFieldsProps = {
   accountOptions: ModuleChartAccount[];

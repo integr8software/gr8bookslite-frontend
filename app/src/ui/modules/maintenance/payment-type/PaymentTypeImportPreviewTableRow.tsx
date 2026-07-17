@@ -1,11 +1,11 @@
 import {
 	PaymentTypeClassificationOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
+} from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import type {
 	PaymentTypeImportColumnId,
 	PaymentTypeImportPreviewRow,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
-import { paymentTypeImportRowHasErrors } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+import { paymentTypeImportRowHasErrors } from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
 import {
 	ModuleImportEditableCell,
 	ModuleImportEditableSelect,
@@ -126,3 +126,5 @@ export function PaymentTypeImportPreviewTableRow({
 		</>
 	);
 }
+
+

@@ -1,20 +1,16 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { CheckCircle2, CirclePause, ReceiptText } from "lucide-react";
+import { useCallback, useState } from "react";
 import { useTaxMaintenanceListPage } from "@/app/src/hooks/modules/maintenance/tax-maintenance/useTaxMaintenanceListPage";
 import type {
   TaxMaintenance,
   TaxMaintenanceDrawerState,
   TaxMaintenanceFormValues,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
-import {
-  ModuleStatisticCards,
-  type ModuleStatisticCardItem,
-} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { TaxMaintenanceDrawer } from "@/app/src/ui/modules/maintenance/tax-maintenance/TaxMaintenanceDrawer";
 import { TaxMaintenanceHeader } from "@/app/src/ui/modules/maintenance/tax-maintenance/TaxMaintenanceHeader";
+import { TaxMaintenanceStatisticCards } from "@/app/src/ui/modules/maintenance/tax-maintenance/TaxMaintenanceStatisticCards";
 import { TaxMaintenanceTable } from "@/app/src/ui/modules/maintenance/tax-maintenance/TaxMaintenanceTable";
 
 export function TaxMaintenanceListPage() {
@@ -27,32 +23,6 @@ export function TaxMaintenanceListPage() {
     setDrawerVersion((version) => version + 1);
     setDrawerState({ mode: "add" });
   }, []);
-  const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-    () => [
-      {
-        icon: ReceiptText,
-        iconClassName: "bg-skyblue/20 text-skyblue",
-        label: "Total Taxes",
-        summary: "All VAT registration types",
-        value: page.statistics.totalTaxes,
-      },
-      {
-        icon: CheckCircle2,
-        iconClassName: "bg-emerald-50 text-emerald-700",
-        label: "Active Taxes",
-        summary: "Available for party setup",
-        value: page.statistics.activeTaxes,
-      },
-      {
-        icon: CirclePause,
-        iconClassName: "bg-amber-50 text-amber-700",
-        label: "Inactive Taxes",
-        summary: "Currently inactive",
-        value: page.statistics.inactiveTaxes,
-      },
-    ],
-    [page.statistics],
-  );
   const hasActiveFilters =
     page.query.trim().length > 0 || page.statusFilter !== "Active";
 
@@ -71,8 +41,8 @@ export function TaxMaintenanceListPage() {
         onAdd={openAddDrawer}
         permissions={page.permissions}
       />
-      <ModuleStatisticCards
-        items={statisticCards}
+      <TaxMaintenanceStatisticCards
+        statistics={page.statistics}
         isLoading={page.isLoading}
       />
       <TaxMaintenanceTable

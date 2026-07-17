@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { getTaxMaintenanceSearchText } from "@/app/src/data/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceData";
+import { getTaxMaintenanceSearchText } from "@/app/src/data/modules/maintenance/tax-maintenance/TaxMaintenanceData";
 import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { useTaxMaintenance } from "@/app/src/hooks/modules/maintenance/tax-maintenance/useTaxMaintenance";
 import type {
@@ -59,3 +59,4 @@ export function useTaxMaintenanceListPage() {
     statusFilter,
   };
 }
+

@@ -8,7 +8,7 @@ import {
 	ImportFieldOrder,
 	PreviewPageSize,
 	SelectionColumnWidth,
-} from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
+} from "@/app/src/constants/modules/maintenance/discount-management/DiscountManagementConstants";
 import {
 	createBlankDiscountImportRow,
 	createExistingDiscountNameMap,
@@ -24,7 +24,7 @@ import {
 	validateDiscountImportRows,
 	validateImportFileSize,
 	waitForNextImportBatch,
-} from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
+} from "@/app/src/data/modules/maintenance/discount-management/DiscountManagementData";
 import type {
 	Discount,
 	DiscountImportColumnId,
@@ -564,3 +564,5 @@ function updateDiscountImportField(
 			return discount;
 	}
 }
+
+

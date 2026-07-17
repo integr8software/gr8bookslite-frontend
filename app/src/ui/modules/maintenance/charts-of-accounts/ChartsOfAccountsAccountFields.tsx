@@ -9,7 +9,7 @@ import {
   NormalBalanceLabels,
   NormalBalances,
   StatementSections,
-} from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+} from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
   AccountLevel,
   AccountType,
@@ -596,4 +596,5 @@ function flattenUniqueChartAccounts(
     ];
   });
 }
+
 

@@ -8,8 +8,8 @@ import {
   getStandardNormalBalance,
   getStandardStatementSection,
   isCashInBankParent,
-} from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsFormHelpers";
-import { AccountLevelLabels } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+} from "@/app/src/data/modules/maintenance/charts-of-accounts/ChartsOfAccountsFormHelpers";
+import { AccountLevelLabels } from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import { FetchNextChartAccountCode } from "@/app/src/services/modules/maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import type {
   AccountType,
@@ -26,7 +26,7 @@ import {
 import { ChartsOfAccountsForm } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsForm";
 import { Button } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsControls";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
-import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import {
   AnimatedPendingLabel,
   AppDialog,
@@ -84,7 +84,7 @@ function DrawerPanel({
     () => getAvailableAccountLevels(accounts, values.parentId),
     [accounts, values.parentId],
   );
-  const savePendingLabel = getMaintenanceSavePendingLabel(mode);
+  const savePendingLabel = getModuleSavePendingLabel(mode);
   const accountNameError = getDuplicateAccountNameError(
     accounts,
     values,
@@ -330,14 +330,14 @@ function DrawerPanel({
         description={getDrawerDescription(parentAccount)}
         contentClassName="overflow-hidden"
         onClose={handleClose}
-        spotlightId="maintenance-add-drawer"
+        spotlightId="module-drawer"
         footer={
           <div className="flex items-center justify-end gap-2">
             <Button variant="secondary" onClick={handleCancel}>
               Cancel
             </Button>
             {mode === "view" ? null : (
-              <div data-spotlight-id="maintenance-add-drawer-save">
+              <div data-spotlight-id="module-drawer-save">
                 <Button
                   disabled={isSaving || isAccountCodeLoading}
                   onClick={() => {
@@ -361,7 +361,7 @@ function DrawerPanel({
       >
         <div
           className="h-full min-h-0"
-          data-spotlight-id="maintenance-add-drawer-fields"
+          data-spotlight-id="module-drawer-fields"
         >
           <ChartsOfAccountsForm
             account={account}

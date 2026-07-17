@@ -1,4 +1,4 @@
-import { TaxMaintenanceApiPath } from "@/app/src/constants/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceConstants";
+import { TaxMaintenanceApiPath } from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   ApiTaxMaintenance,
@@ -119,3 +119,4 @@ function normalizeOptionalText(value: string | null | undefined) {
 
   return normalized || null;
 }
+

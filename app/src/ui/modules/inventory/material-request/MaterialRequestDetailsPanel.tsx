@@ -9,19 +9,19 @@ import {
 	getPartyDisplayName,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
-import { useWarehouseManagementStore } from "@/app/src/hooks/modules/maintenance/warehouse-management/useWarehouseManagement";
+import { useWarehousesStore } from "@/app/src/hooks/modules/maintenance/warehouses/useWarehouses";
 import type {
 	MaterialRequestFormErrors,
 	MaterialRequestFormValues,
 } from "@/app/src/types/modules/inventory/material-request/MaterialRequestTypes";
-import type { WarehouseActionMode } from "@/app/src/types/modules/maintenance/warehouse-management/WarehouseManagementTypes";
+import type { WarehouseActionMode } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
-import { WarehouseDrawer } from "@/app/src/ui/modules/maintenance/warehouse-management/WarehouseDrawer";
+import { WarehouseDrawer } from "@/app/src/ui/modules/maintenance/warehouses/WarehouseDrawer";
 
 type MaterialRequestDetailsPanelProps = {
 	errors: MaterialRequestFormErrors;
@@ -39,7 +39,7 @@ export function MaterialRequestDetailsPanel({
 	updateField,
 	values,
 }: MaterialRequestDetailsPanelProps) {
-	const { warehouses } = useWarehouseManagementStore();
+	const { warehouses } = useWarehousesStore();
 	const {
 		addRecord: addPartyRecord,
 		isMutating: isPartyMutating,

@@ -5,15 +5,14 @@ import type { ReactNode } from "react";
 import {
   TaxMaintenanceFieldClassName,
   TaxMaintenanceStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceConstants";
+} from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
 import type {
   TaxMaintenanceAccountField,
   TaxMaintenanceFieldsProps,
+  TaxMaintenanceTab,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
-
-type TaxMaintenanceTab = "tax" | "accounting";
 
 const accountFields: Array<{
   field: TaxMaintenanceAccountField;
@@ -67,7 +66,7 @@ export function TaxMaintenanceFields({
       {visibleTab === "tax" ? (
         <div className="grid gap-4 md:grid-cols-2">
           <Field
-            label="Name"
+            label="Tax Name"
             error={errors.name}
             required
             className="md:col-span-2"
@@ -218,3 +217,4 @@ function Field({
     </div>
   );
 }
+

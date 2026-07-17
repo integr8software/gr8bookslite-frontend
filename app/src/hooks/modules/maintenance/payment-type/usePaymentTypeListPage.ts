@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { normalizeLowercaseText } from "@/app/src/utils/string.util";
-import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
 import type {
 	PaymentTypeClassificationFilter,
@@ -148,3 +148,4 @@ export function usePaymentTypeListPage() {
 		typeFilterOptions: PaymentTypeOptions,
 	};
 }
+

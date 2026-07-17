@@ -1,21 +1,16 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { Building2, CheckCircle2, CirclePause, Landmark } from "lucide-react";
-import { countUniqueBankNames } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
+import { useCallback, useState } from "react";
 import { useBankMasterfileListPage } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type {
 	BankMasterfileDrawerState,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
-import {
-	ModuleStatisticCards,
-	type ModuleStatisticCardItem,
-} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { BankMasterfileDrawer } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileDrawer";
 import { BankMasterfileHeader } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileHeader";
 import { BankMasterfileImportDialog } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileImportDialog";
+import { BankMasterfileStatisticCards } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileStatisticCards";
 import { BankMasterfileTable } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileTable";
 
 export function BankMasterfileListPage() {
@@ -36,51 +31,6 @@ export function BankMasterfileListPage() {
 		},
 		closeDrawer,
 	);
-	const displayStatistics = useMemo(() => {
-		const totalBanks = page.banks.length;
-		const uniqueBanks = countUniqueBankNames(page.banks);
-		const activeBanks = countUniqueBankNames(
-			page.banks.filter((bank) => bank.status === "Active"),
-		);
-		const inactiveBanks = countUniqueBankNames(
-			page.banks.filter((bank) => bank.status === "Inactive"),
-		);
-
-		return { totalBanks, uniqueBanks, activeBanks, inactiveBanks };
-	}, [page.banks]);
-	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-		() => [
-			{
-				icon: Landmark,
-				iconClassName: "bg-skyblue/20 text-skyblue",
-				label: "Total Banks",
-				summary: "All bank records",
-				value: displayStatistics.totalBanks,
-			},
-			{
-				icon: Building2,
-				iconClassName: "bg-cyan-50 text-cyan-700",
-				label: "Number of Banks",
-				summary: "Unique bank names",
-				value: displayStatistics.uniqueBanks,
-			},
-			{
-				icon: CheckCircle2,
-				iconClassName: "bg-emerald-50 text-emerald-700",
-				label: "Active Banks",
-				summary: "Available for transactions",
-				value: displayStatistics.activeBanks,
-			},
-			{
-				icon: CirclePause,
-				iconClassName: "bg-amber-50 text-amber-700",
-				label: "Inactive Banks",
-				summary: "Hidden from new transactions",
-				value: displayStatistics.inactiveBanks,
-			},
-		],
-		[displayStatistics],
-	);
 	const hasActiveFilters =
 		page.query.trim().length > 0 || page.statusFilter !== "";
 
@@ -91,10 +41,9 @@ export function BankMasterfileListPage() {
 				onImport={() => setIsImportOpen(true)}
 				permissions={page.permissions}
 			/>
-			<ModuleStatisticCards
-				items={statisticCards}
+			<BankMasterfileStatisticCards
+				banks={page.banks}
 				isLoading={page.isLoading}
-				className="xl:grid-cols-4"
 			/>
 
 			<BankMasterfileTable
@@ -152,3 +101,4 @@ export function BankMasterfileListPage() {
 		</section>
 	);
 }
+

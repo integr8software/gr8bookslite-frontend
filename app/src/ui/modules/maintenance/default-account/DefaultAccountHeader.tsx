@@ -3,7 +3,7 @@ import {
 	DefaultAccountDescription,
 	DefaultAccountParentLabel,
 	DefaultAccountTitle,
-} from "@/app/src/constants/modules/maintenance/financial-management/default-account/DefaultAccountConstants";
+} from "@/app/src/constants/modules/maintenance/default-account/DefaultAccountConstants";
 import type { DefaultAccountPermissions } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
 import {
 	ModuleHeader,
@@ -45,3 +45,4 @@ export function DefaultAccountHeader({
 		/>
 	);
 }
+

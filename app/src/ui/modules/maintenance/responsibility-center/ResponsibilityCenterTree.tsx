@@ -1,8 +1,8 @@
 "use client";
 
 import { ChevronRight, Search } from "lucide-react";
-import { ResponsibilityCenterTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
-import { getResponsibilityCenterTableMinWidthClassName } from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
+import { ResponsibilityCenterTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
+import { getResponsibilityCenterTableMinWidthClassName } from "@/app/src/data/modules/maintenance/responsibility-center/ResponsibilityCenterData";
 import { formatDateTime } from "@/app/src/utils/date.util";
 import type {
 	FlattenedResponsibilityCenterTreeNode,
@@ -18,12 +18,12 @@ import {
 import {
 	CategoryBadge,
 	FinancialTypeBadge,
-	StatusBadge,
 } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterTableRow";
 import {
 	getColumnMetaClassName,
 	joinClasses,
 } from "@/app/src/ui/shared/module/module-table/utils";
+import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 
 export function ResponsibilityCenterTree({
 	expandedIds,
@@ -196,7 +196,7 @@ function TreeCell({
 				</span>
 			);
 		case "status":
-			return <StatusBadge status={center.status} />;
+			return <ModuleStatusBadge status={center.status} />;
 		case "createdBy":
 			return <span>{center.createdBy ?? ""}</span>;
 		case "createdAt":

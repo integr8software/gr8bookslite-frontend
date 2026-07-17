@@ -1,42 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import {
-	CheckCircle2,
-	CirclePause,
-	Layers3,
-	ListTree,
-	Network,
-	ReceiptText,
-} from "lucide-react";
-import { getAccountPercentage } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import { ChartsOfAccountsDrawer } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsDrawer";
 import { ChartsOfAccountsFilters } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsFilters";
 import { ChartsOfAccountsHeader } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsHeader";
+import { ChartsOfAccountsStatisticCards } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsStatisticCards";
 import { ChartsOfAccountsTable } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsTable";
 import { ChartsOfAccountsSpotlightTutorial } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsSpotlightTutorial";
 import { Card } from "@/app/src/ui/modules/maintenance/charts-of-accounts/ChartsOfAccountsControls";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/maintenance/charts-of-accounts/useChartsOfAccounts";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
-import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 
 export function ChartsOfAccountsListPage() {
 	const coa = useChartsOfAccounts();
 	const accountOptions = coa.flatAccounts.map((item) => item.account);
-	const totalAccounts = coa.flatAccounts.length;
-	const activeAccounts = coa.flatAccounts.filter(
-		({ account }) => account.status === "Active",
-	).length;
-	const inactiveAccounts = totalAccounts - activeAccounts;
-	const withSubmodules = coa.flatAccounts.filter(({ account }) =>
-		Boolean(account.children?.length),
-	).length;
-	const withoutSubmodules = totalAccounts - withSubmodules;
-	const postingAccounts = coa.flatAccounts.filter(
-		({ account }) => account.isPostingAccount,
-	).length;
 	const [pendingStatusAccount, setPendingStatusAccount] =
 		useState<ChartAccount | null>(null);
 	useMaintenanceAddDrawerSpotlight(coa.openAddDrawer, coa.closeDrawer);
@@ -59,52 +38,9 @@ export function ChartsOfAccountsListPage() {
 					onAddAccount={() => coa.openAddDrawer()}
 				/>
 
-				<ModuleStatisticCards
-					items={[
-						{
-							helper: "All accounts",
-							icon: Layers3,
-							label: "Total Accounts",
-							value: totalAccounts,
-						},
-						{
-							helper: `${getAccountPercentage(activeAccounts, totalAccounts)}% of total`,
-							icon: CheckCircle2,
-							label: "Active Accounts",
-							tone: "emerald",
-							value: activeAccounts,
-						},
-						{
-							helper: `${getAccountPercentage(inactiveAccounts, totalAccounts)}% of total`,
-							icon: CirclePause,
-							label: "Inactive Accounts",
-							tone: "amber",
-							value: inactiveAccounts,
-						},
-						{
-							helper: `${getAccountPercentage(withSubmodules, totalAccounts)}% of total`,
-							icon: Network,
-							label: "With Submodules",
-							tone: "violet",
-							value: withSubmodules,
-						},
-						{
-							helper: `${getAccountPercentage(withoutSubmodules, totalAccounts)}% of total`,
-							icon: ListTree,
-							label: "Without Submodules",
-							tone: "cyan",
-							value: withoutSubmodules,
-						},
-						{
-							helper: `${getAccountPercentage(postingAccounts, totalAccounts)}% of total`,
-							icon: ReceiptText,
-							label: "Posting Account",
-							tone: "slate",
-							value: postingAccounts,
-						},
-					]}
+				<ChartsOfAccountsStatisticCards
+					flatAccounts={coa.flatAccounts}
 					isLoading={coa.isLoading}
-					className="xl:grid-cols-6"
 				/>
 
 				<Card
@@ -189,3 +125,4 @@ export function ChartsOfAccountsListPage() {
 		</section>
 	);
 }
+

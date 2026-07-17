@@ -157,6 +157,11 @@ export type DefaultAccountTableProps = {
 	onViewDefaultAccount: (account: DefaultAccount) => void;
 };
 
+export type DefaultAccountStatisticCardsProps = {
+	statistics: DefaultAccountStatistics;
+	isLoading?: boolean;
+};
+
 export type DefaultAccountTableFiltersProps = {
 	exportAllRows: DefaultAccount[];
 	exportFilteredRows: DefaultAccount[];

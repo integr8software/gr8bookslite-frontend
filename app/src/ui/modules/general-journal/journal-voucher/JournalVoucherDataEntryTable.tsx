@@ -19,6 +19,8 @@ import type {
   JournalVoucherLine,
   JournalVoucherLineField,
 } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
+import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
@@ -558,7 +560,7 @@ function getJournalVoucherPartyFallbackValue(partyName: string) {
 }
 
 function createPartyOptions(
-  partyRecords: ReturnType<typeof usePartyManagementStore>["records"],
+  partyRecords: PartyInformationRecord[],
   lines: JournalVoucherLine[],
 ): AppAdvancedDropdownOption[] {
   const options = partyRecords.map((party) => ({
@@ -598,9 +600,7 @@ function createPartyOptions(
 }
 
 function createResponsibilityCenterOptions(
-  responsibilityCenters: ReturnType<
-    typeof useResponsibilityCenterStore
-  >["centers"],
+  responsibilityCenters: ResponsibilityCenter[],
   lines: JournalVoucherLine[],
 ): AppAdvancedDropdownOption[] {
   const options = responsibilityCenters

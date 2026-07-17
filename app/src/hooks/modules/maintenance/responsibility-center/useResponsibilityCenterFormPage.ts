@@ -1,11 +1,11 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
-import { ResponsibilityCenterTypeDefinitions } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+import { ResponsibilityCenterTypeDefinitions } from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
 import {
 	ResponsibilityCenterInitialFormValues,
 	createResponsibilityCenterFormValues,
 	createResponsibilityCenterFromForm,
 	updateResponsibilityCenterFromForm,
-} from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
+} from "@/app/src/data/modules/maintenance/responsibility-center/ResponsibilityCenterData";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
 import type {
 	ResponsibilityCenter,
@@ -142,3 +142,5 @@ function createTypeDefaults(category: string) {
 		financialType: definition.financialType,
 	};
 }
+
+

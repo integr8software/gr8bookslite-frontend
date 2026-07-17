@@ -1,24 +1,13 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import {
-	Building2,
-	CheckCircle2,
-	CirclePause,
-	FolderKanban,
-	Layers3,
-	Network,
-} from "lucide-react";
+import { useCallback, useState } from "react";
 import { useResponsibilityCenterListPage } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenterListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type { ResponsibilityCenterDrawerState } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import {
-	ModuleStatisticCards,
-	type ModuleStatisticCardItem,
-} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ResponsibilityCenterHeader } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterHeader";
+import { ResponsibilityCenterStatisticCards } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterStatisticCards";
 import { ResponsibilityCenterTable } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterTable";
 
 export function ResponsibilityCenterListPage() {
@@ -36,53 +25,6 @@ export function ResponsibilityCenterListPage() {
 		closeDrawer,
 	);
 
-	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-		() => [
-			{
-				icon: Network,
-				iconClassName: "bg-skyblue/20 text-skyblue",
-				label: "Total Centers",
-				summary: "All responsibility centers",
-				value: page.statistics.totalCenters,
-			},
-			{
-				icon: CheckCircle2,
-				iconClassName: "bg-emerald-50 text-emerald-700",
-				label: "Active Centers",
-				summary: "Available for selection",
-				value: page.statistics.activeCenters,
-			},
-			{
-				icon: CirclePause,
-				iconClassName: "bg-amber-50 text-amber-700",
-				label: "Inactive Centers",
-				summary: "Currently inactive",
-				value: page.statistics.inactiveCenters,
-			},
-			{
-				icon: Layers3,
-				iconClassName: "bg-cyan-50 text-cyan-700",
-				label: "Departments",
-				summary: "Department dimensions",
-				value: page.statistics.departmentCenters,
-			},
-			{
-				icon: Building2,
-				iconClassName: "bg-violet-50 text-violet-700",
-				label: "Branches",
-				summary: "Branch dimensions",
-				value: page.statistics.branchCenters,
-			},
-			{
-				icon: FolderKanban,
-				iconClassName: "bg-slate-100 text-slate-700",
-				label: "Projects",
-				summary: "Project dimensions",
-				value: page.statistics.projectCenters,
-			},
-		],
-		[page.statistics],
-	);
 	const hasActiveFilters =
 		page.query.trim().length > 0 ||
 		page.categoryFilter !== "All" ||
@@ -95,10 +37,9 @@ export function ResponsibilityCenterListPage() {
 				onAdd={() => setDrawerState({ mode: "add" })}
 				permissions={page.permissions}
 			/>
-			<ModuleStatisticCards
-				items={statisticCards}
+			<ResponsibilityCenterStatisticCards
+				statistics={page.statistics}
 				isLoading={page.isLoading}
-				className="xl:grid-cols-6"
 			/>
 			<ResponsibilityCenterTable
 				categoryFilter={page.categoryFilter}

@@ -1,18 +1,14 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { CalendarDays, CheckCircle2, CirclePause, Hash } from "lucide-react";
+import { useCallback, useState } from "react";
 import { useTermManagementAssistantActions } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagementAssistantActions";
 import { useTermManagementListPage } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagementListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type { TermManagementDrawerState } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
-import {
-	ModuleStatisticCards,
-	type ModuleStatisticCardItem,
-} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { TermManagementHeader } from "@/app/src/ui/modules/maintenance/term-management/TermManagementHeader";
 import { TermManagementImportDialog } from "@/app/src/ui/modules/maintenance/term-management/TermManagementImportDialog";
+import { TermManagementStatisticCards } from "@/app/src/ui/modules/maintenance/term-management/TermManagementStatisticCards";
 import { TermManagementTable } from "@/app/src/ui/modules/maintenance/term-management/TermManagementTable";
 import { TermManagementDrawer } from "@/app/src/ui/modules/maintenance/term-management/TermManagementDrawer";
 
@@ -44,53 +40,6 @@ export function TermManagementListPage() {
 		openDrawer,
 		page,
 	});
-	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-		() => [
-			{
-				icon: CalendarDays,
-				iconClassName: "bg-skyblue/20 text-skyblue",
-				label: "Total Terms",
-				summary: "All term definitions",
-				value: page.statistics.totalTerms,
-			},
-			{
-				icon: CheckCircle2,
-				iconClassName: "bg-emerald-50 text-emerald-700",
-				label: "Active Terms",
-				summary: "Available for selection",
-				value: page.statistics.activeTerms,
-			},
-			{
-				icon: CirclePause,
-				iconClassName: "bg-amber-50 text-amber-700",
-				label: "Inactive Terms",
-				summary: "Currently inactive",
-				value: page.statistics.inactiveTerms,
-			},
-			{
-				icon: Hash,
-				iconClassName: "bg-cyan-50 text-cyan-700",
-				label: "Day Mode",
-				summary: "Uses day-based periods",
-				value: page.statistics.dayTerms,
-			},
-			{
-				icon: CalendarDays,
-				iconClassName: "bg-violet-50 text-violet-700",
-				label: "Month Mode",
-				summary: "Uses month-based periods",
-				value: page.statistics.monthTerms,
-			},
-			{
-				icon: CalendarDays,
-				iconClassName: "bg-slate-100 text-slate-700",
-				label: "Year Mode",
-				summary: "Uses year-based periods",
-				value: page.statistics.yearTerms,
-			},
-		],
-		[page.statistics],
-	);
 	const hasActiveFilters =
 		page.query.trim().length > 0 ||
 		page.datemodeFilter !== "All" ||
@@ -103,10 +52,9 @@ export function TermManagementListPage() {
 				onImport={() => setIsImportOpen(true)}
 				permissions={page.permissions}
 			/>
-			<ModuleStatisticCards
-				items={statisticCards}
+			<TermManagementStatisticCards
+				statistics={page.statistics}
 				isLoading={page.isLoading}
-				className="xl:grid-cols-6"
 			/>
 
 			<TermManagementTable

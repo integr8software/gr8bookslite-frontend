@@ -6,7 +6,7 @@ import {
 	ResponsibilityCenterDefaultSorting,
 	ResponsibilityCenterTablePreferencesModuleKey,
 	ResponsibilityCenterTablePreferencesStorageKey,
-} from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+} from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type { ResponsibilityCenterTablePreferencesState } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 
@@ -19,3 +19,4 @@ export function useResponsibilityCenterTablePreferences(): ResponsibilityCenterT
 		storageKey: ResponsibilityCenterTablePreferencesStorageKey,
 	});
 }
+

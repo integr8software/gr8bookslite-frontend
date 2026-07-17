@@ -5,8 +5,8 @@ import {
 	BankMasterfileReadOnlyFieldClassName,
 	BankMasterfileSelectClassName,
 	BankMasterfileStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
-import { buildBankMasterfileAccountName } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
+} from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
+import { buildBankMasterfileAccountName } from "@/app/src/data/modules/maintenance/bank-masterfile/BankMasterfileData";
 import type {
 	BankMasterfileFieldsProps,
 	BankMasterfileFormFieldProps,
@@ -241,4 +241,6 @@ function FormField({
 		</div>
 	);
 }
+
+
 

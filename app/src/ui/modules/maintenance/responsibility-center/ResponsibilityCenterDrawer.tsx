@@ -9,7 +9,7 @@ import {
 	ResponsibilityCenterFinancialTypeOptions,
 	ResponsibilityCenterStatusOptions,
 	ResponsibilityCenterTitle,
-} from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+} from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
 import { useResponsibilityCenterFormPage } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenterFormPage";
 import type {
 	ResponsibilityCenterDrawerProps,
@@ -21,8 +21,8 @@ import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
-import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
+import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ResponsibilityCenterDrawer(props: ResponsibilityCenterDrawerProps) {
@@ -48,7 +48,7 @@ function ResponsibilityCenterDrawerPanel({
 	const copy = ResponsibilityCenterActionCopy[mode];
 
 	return (
-		<MaintenanceFormDrawer
+		<ModuleDrawer
 			description={copy.description}
 			eyebrow={ResponsibilityCenterTitle}
 			formId={ResponsibilityCenterDrawerFormId}
@@ -57,7 +57,7 @@ function ResponsibilityCenterDrawerPanel({
 			isSaving={page.isSubmitting}
 			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={getMaintenanceSavePendingLabel(mode)}
+			savingLabel={getModuleSavePendingLabel(mode)}
 			submitLabel={
 				mode === "edit" ? "Update Responsibility Center" : "Save Responsibility Center"
 			}
@@ -77,7 +77,7 @@ function ResponsibilityCenterDrawerPanel({
 					onInputChange={page.handleInputChange}
 				/>
 			</form>
-		</MaintenanceFormDrawer>
+		</ModuleDrawer>
 	);
 }
 
@@ -254,3 +254,6 @@ function DrawerField({
 		</label>
 	);
 }
+
+
+

@@ -1,8 +1,8 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { ResponsibilityCenterTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
-import { getResponsibilityCenterTableMinWidthClassName } from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
+import { ResponsibilityCenterTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
+import { getResponsibilityCenterTableMinWidthClassName } from "@/app/src/data/modules/maintenance/responsibility-center/ResponsibilityCenterData";
 import { useResponsibilityCenterTable } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenterTable";
 import type { ResponsibilityCenterTableProps } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
@@ -159,3 +159,5 @@ function ResponsibilityCenterListModeTable({
 		/>
 	);
 }
+
+

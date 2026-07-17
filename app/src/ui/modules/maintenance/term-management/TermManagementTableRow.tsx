@@ -7,6 +7,7 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function TermManagementTableRow({
@@ -70,7 +71,7 @@ function TermManagementCellContent({
 		case "period":
 			return <span>{term.period}</span>;
 		case "status":
-			return <StatusBadge status={term.status} />;
+			return <ModuleStatusBadge status={term.status} />;
 		case "createdBy":
 			return <span>{term.createdBy ?? ""}</span>;
 		case "createdAt":
@@ -130,18 +131,4 @@ function TermManagementTableCell({
 	);
 }
 
-function StatusBadge({ status }: { status: TermManagement["status"] }) {
-	const statusClass =
-		status === "Active"
-			? "bg-citron/25 text-darknavy"
-			: "bg-darknavy/8 text-darknavy/55";
-
-	return (
-		<span
-			className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}
-		>
-			{status}
-		</span>
-	);
-}
 import { formatDateTime } from "@/app/src/utils/date.util";

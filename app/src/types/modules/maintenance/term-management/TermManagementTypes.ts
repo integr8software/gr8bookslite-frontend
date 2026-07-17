@@ -111,6 +111,11 @@ export type TermManagementListResponse = {
 	permissions: TermManagementPermissions;
 };
 
+export type TermManagementStatisticCardsProps = {
+	statistics: TermManagementStatistics;
+	isLoading?: boolean;
+};
+
 export type ApiTermListResponse = {
 	terms: ApiTerm[];
 	statistics: TermManagementStatistics;

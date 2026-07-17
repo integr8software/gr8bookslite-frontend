@@ -47,23 +47,53 @@ function findModuleTitleByPath(
   items: AuthUserModuleItem[],
   pathname: string,
 ): string | null {
+  return findModuleTitleMatchByPath(items, pathname)?.title ?? null;
+}
+
+function findModuleTitleMatchByPath(
+  items: AuthUserModuleItem[],
+  pathname: string,
+): { routeLength: number; title: string } | null {
+  let bestMatch: { routeLength: number; title: string } | null = null;
   for (const item of items) {
-    if (item.itemType === "LINK" && itemMatchesPath(item, pathname)) {
-      return item.label;
+    if (item.itemType === "LINK") {
+      const routeLength = getItemMatchRouteLength(item, pathname);
+
+      if (routeLength > (bestMatch?.routeLength ?? -1)) {
+        bestMatch = { routeLength, title: item.label };
+      }
     }
 
-    const childTitle = findModuleTitleByPath(item.children, pathname);
+    const childMatch = findModuleTitleMatchByPath(
+      item.children,
+      pathname,
+    );
 
-    if (childTitle) {
-      return childTitle;
+    if (childMatch && childMatch.routeLength > (bestMatch?.routeLength ?? -1)) {
+      bestMatch = childMatch;
     }
   }
 
-  return null;
+  return bestMatch;
 }
 
-function itemMatchesPath(item: AuthUserModuleItem, pathname: string) {
-  return getItemRoutes(item).some((route) => pathMatches(route, pathname));
+function getItemMatchRouteLength(
+  item: AuthUserModuleItem,
+  pathname: string,
+): number {
+  return Math.max(...getMatchingRouteLengths(item, pathname), -1);
+}
+
+function getMatchingRouteLengths(
+  item: AuthUserModuleItem,
+  pathname: string,
+): number[] {
+  return [
+    ...getItemRoutes(item)
+      .filter((route) => pathMatches(route, pathname))
+      .map((route) => route.length),
+    ...item.children.flatMap((child) => getMatchingRouteLengths(child, pathname)),
+  ];
 }
 
 function getItemRoutes(item: AuthUserModuleItem) {

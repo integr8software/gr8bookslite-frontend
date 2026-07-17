@@ -6,11 +6,11 @@ import {
 	DefaultAccountStatusOptions,
 	DefaultAccountTitle,
 	DefaultAccountTypeOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/default-account/DefaultAccountConstants";
+} from "@/app/src/constants/modules/maintenance/default-account/DefaultAccountConstants";
 import { useDefaultAccountFormPage } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccountFormPage";
 import type { DefaultAccountDrawerProps } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
-import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
-import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
+import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
@@ -54,7 +54,7 @@ function DefaultAccountDrawerPanel({
 		}));
 
 	return (
-		<MaintenanceFormDrawer
+		<ModuleDrawer
 			description={copy.description}
 			eyebrow={DefaultAccountTitle}
 			formId={DefaultAccountDrawerFormId}
@@ -63,7 +63,7 @@ function DefaultAccountDrawerPanel({
 			isSaving={page.isSubmitting}
 			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={getMaintenanceSavePendingLabel(mode)}
+			savingLabel={getModuleSavePendingLabel(mode)}
 			submitLabel={mode === "edit" ? "Update Default Account" : "Save Default Account"}
 			title={copy.title}
 		>
@@ -174,6 +174,9 @@ function DefaultAccountDrawerPanel({
 					</div>
 				) : null}
 			</form>
-		</MaintenanceFormDrawer>
+		</ModuleDrawer>
 	);
 }
+
+
+

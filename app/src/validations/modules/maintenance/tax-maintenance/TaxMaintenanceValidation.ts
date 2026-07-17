@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TaxMaintenanceStatusOptions } from "@/app/src/constants/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceConstants";
+import { TaxMaintenanceStatusOptions } from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
 import type {
   TaxMaintenanceFormValues,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
@@ -72,3 +72,4 @@ function hasAllowedDecimalPlaces(value: string, maxDecimalPlaces: number) {
 
   return !decimalPart || decimalPart.length <= maxDecimalPlaces;
 }
+

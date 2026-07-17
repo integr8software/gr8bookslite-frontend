@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { formatTaxMaintenancePercentage } from "@/app/src/data/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceData";
+import { formatTaxMaintenancePercentage } from "@/app/src/data/modules/maintenance/tax-maintenance/TaxMaintenanceData";
 import { fetchTaxMaintenance } from "@/app/src/services/modules/maintenance/tax-maintenance/TaxMaintenanceApi";
 import { TaxMaintenanceQueryKeys } from "@/app/src/services/modules/maintenance/tax-maintenance/TaxMaintenanceQueryKeys";
 
@@ -27,3 +27,4 @@ export function useTaxMaintenanceOptions() {
     [query.data?.taxMaintenance, query.isLoading],
   );
 }
+

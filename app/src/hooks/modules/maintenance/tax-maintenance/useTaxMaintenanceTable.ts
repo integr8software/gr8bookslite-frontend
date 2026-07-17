@@ -16,7 +16,7 @@ import {
   TaxMaintenanceTableColumns,
   TaxMaintenanceTablePreferencesModuleKey,
   TaxMaintenanceTablePreferencesStorageKey,
-} from "@/app/src/constants/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceConstants";
+} from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
   TaxMaintenance,
@@ -149,3 +149,4 @@ function getAccountCode(account?: TaxMaintenanceAccountSummary | null) {
 function getAccountTitle(account?: TaxMaintenanceAccountSummary | null) {
   return account?.accountTitle ?? "";
 }
+

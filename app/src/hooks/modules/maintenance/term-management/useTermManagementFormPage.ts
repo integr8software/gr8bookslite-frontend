@@ -3,12 +3,12 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { TermManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+import { TermManagementHref } from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import {
 	TermManagementInitialFormValues,
 	createTermManagementFormValues,
 	updateTermManagementFromForm,
-} from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
+} from "@/app/src/data/modules/maintenance/term-management/TermManagementData";
 import type {
 	TermManagementActionMode,
 	TermManagement,
@@ -170,3 +170,5 @@ function getActionMode(pathname: string): TermManagementActionMode {
 
 	return "add";
 }
+
+

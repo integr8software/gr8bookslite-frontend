@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef } from "react";
-import { BankMasterfileAccountTypeOptions } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
-import { ChartsOfAccountsRequiredBankFields } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+import { BankMasterfileAccountTypeOptions } from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
+import { ChartsOfAccountsRequiredBankFields } from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
   BankDetailsKey,
   ChartsOfAccountsBankFieldsProps,
@@ -192,3 +192,4 @@ function BankAccountTypeField({
     </Field>
   );
 }
+

@@ -1,8 +1,8 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { TaxMaintenanceTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceConstants";
-import { getTaxMaintenanceTableMinWidthClassName } from "@/app/src/data/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceData";
+import { TaxMaintenanceTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
+import { getTaxMaintenanceTableMinWidthClassName } from "@/app/src/data/modules/maintenance/tax-maintenance/TaxMaintenanceData";
 import { useTaxMaintenanceTable } from "@/app/src/hooks/modules/maintenance/tax-maintenance/useTaxMaintenanceTable";
 import type { TaxMaintenanceTableProps } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
@@ -74,3 +74,5 @@ export function TaxMaintenanceTable({
     </div>
   );
 }
+
+

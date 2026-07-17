@@ -16,8 +16,8 @@ import {
 	DiscountManagementTableColumns,
 	DiscountManagementTablePreferencesModuleKey,
 	DiscountManagementTablePreferencesStorageKey,
-} from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
-import { createDiscountManagementTableRecord } from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
+} from "@/app/src/constants/modules/maintenance/discount-management/DiscountManagementConstants";
+import { createDiscountManagementTableRecord } from "@/app/src/data/modules/maintenance/discount-management/DiscountManagementData";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
 	Discount,
@@ -106,3 +106,5 @@ function createDiscountManagementColumn(
 		meta: { className, label: header },
 	};
 }
+
+

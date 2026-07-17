@@ -12,12 +12,12 @@ import {
 	ResponsibilityCenterDefaultColumnOrder,
 	ResponsibilityCenterDefaultColumnVisibility,
 	ResponsibilityCenterTableColumns,
-} from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+} from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
 import {
 	buildResponsibilityCenterTree,
 	flattenResponsibilityCenterTree,
 	getResponsibilityCenterExpandableIds,
-} from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
+} from "@/app/src/data/modules/maintenance/responsibility-center/ResponsibilityCenterData";
 import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
 import { useResponsibilityCenterTablePreferences } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenterTablePreferences";
@@ -256,3 +256,5 @@ function createResponsibilityCenterTreeColumn(
 		meta: { className, label: header },
 	};
 }
+
+

@@ -14,7 +14,7 @@ import {
 	ResponsibilityCenterDefaultColumnVisibility,
 	ResponsibilityCenterDefaultSorting,
 	ResponsibilityCenterTableColumns,
-} from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+} from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
 import type {
 	ResponsibilityCenter,
 	ResponsibilityCenterTableColumnKey,
@@ -96,3 +96,4 @@ function createResponsibilityCenterColumn(
 		meta: { className, label: header },
 	};
 }
+

@@ -201,6 +201,11 @@ export type BankMasterfileTableProps = {
 	onViewBank: (bank: BankMasterfile) => void;
 };
 
+export type BankMasterfileStatisticCardsProps = {
+	banks: BankMasterfile[];
+	isLoading?: boolean;
+};
+
 export type BankMasterfileTableFiltersProps = {
 	exportAllRows: BankMasterfile[];
 	exportFilteredRows: BankMasterfile[];

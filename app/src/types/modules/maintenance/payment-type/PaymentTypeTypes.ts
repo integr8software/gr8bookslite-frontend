@@ -154,6 +154,11 @@ export type PaymentTypeListResponse = {
 	permissions: PaymentTypePermissions;
 };
 
+export type PaymentTypeStatisticCardsProps = {
+	statistics: PaymentTypeStatistics;
+	isLoading?: boolean;
+};
+
 export type ApiPaymentTypeListResponse = {
 	paymentTypes: ApiPaymentType[];
 	statistics: PaymentTypeStatistics;

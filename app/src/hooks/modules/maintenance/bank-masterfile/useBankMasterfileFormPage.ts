@@ -6,7 +6,7 @@ import {
 	BankMasterfileInitialFormValues,
 	createBankMasterfileFormValues,
 	updateBankMasterfileFromForm,
-} from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
+} from "@/app/src/data/modules/maintenance/bank-masterfile/BankMasterfileData";
 import { useBankMasterfileStore } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfile";
 import type {
 	BankMasterfile,
@@ -161,3 +161,4 @@ export function useBankMasterfileFormPage(
 		values,
 	};
 }
+

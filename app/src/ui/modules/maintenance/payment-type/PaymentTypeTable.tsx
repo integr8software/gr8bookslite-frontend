@@ -1,8 +1,8 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { PaymentTypeTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
-import { getPaymentTypeTableMinWidthClassName } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+import { PaymentTypeTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
+import { getPaymentTypeTableMinWidthClassName } from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
 import { usePaymentTypeTable } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentTypeTable";
 import type { PaymentTypeTableProps } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
@@ -86,3 +86,5 @@ export function PaymentTypeTable({
 		</div>
 	);
 }
+
+

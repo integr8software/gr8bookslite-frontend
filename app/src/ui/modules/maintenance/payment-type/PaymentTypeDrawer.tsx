@@ -3,8 +3,8 @@
 import {
 	PaymentTypeDrawerFormId,
 	PaymentTypeFieldClassName,
-} from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
-import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+} from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
+import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
 import { usePaymentTypeActionPage } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentTypeActionPage";
 import type {
 	PaymentTypeActionMode,
@@ -13,8 +13,8 @@ import type {
 	PaymentTypeStatus,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
-import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
+import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 
 const PaymentTypeActionCopy = {
 	add: {
@@ -67,7 +67,7 @@ function PaymentTypeDrawerPanel({
 	const copy = PaymentTypeActionCopy[mode];
 
 	return (
-		<MaintenanceFormDrawer
+		<ModuleDrawer
 			description={copy.description}
 			eyebrow="Accounting master data"
 			formId={PaymentTypeDrawerFormId}
@@ -76,7 +76,7 @@ function PaymentTypeDrawerPanel({
 			isSaving={page.isSubmitting}
 			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={getMaintenanceSavePendingLabel(mode)}
+			savingLabel={getModuleSavePendingLabel(mode)}
 			submitLabel={mode === "edit" ? "Update Payment Type" : "Save Payment Type"}
 			title={copy.title}
 		>
@@ -174,7 +174,11 @@ function PaymentTypeDrawerPanel({
 					</label>
 				</div>
 			</form>
-		</MaintenanceFormDrawer>
+		</ModuleDrawer>
 	);
 }
+
+
+
+
 

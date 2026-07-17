@@ -418,6 +418,10 @@ export type PartyManagementAnalytics = {
   totalpartyName: number;
 };
 
+export type PartyManagementStatisticCardsProps = {
+  analytics: PartyManagementAnalytics;
+};
+
 export type ApiPartyAddress = {
   id?: string;
   addressName: string;

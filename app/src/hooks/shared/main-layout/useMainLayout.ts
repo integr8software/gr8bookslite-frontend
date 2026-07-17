@@ -49,7 +49,7 @@ import {
   MainLayoutDefaultSubscription,
   MainLayoutInitialNotifications,
 } from "@/app/src/data/shared/main-layout/MainLayoutDefaults";
-import { MainBreadcrumbDropdownHelperText } from "@/app/src/data/shared/main-layout/breadcrumb/MainBreadcrumbData";
+import { MainModuleCatalogHelperText } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import { mapProfileCompanyUnitsToMainBranches } from "@/app/src/data/workspace/companies/WorkspaceCompanyMainLayoutBranchData";
 import { ModuleHelpArticles } from "@/app/src/data/shared/help/ModuleHelpData";
 import { getHelpArticleForPath } from "@/app/src/data/shared/help/ModuleHelpUtils";
@@ -109,7 +109,6 @@ const DefaultExpandedKeys = [
   "master-system-settings-section",
   "dashboard",
   "maintenance",
-  "maintenance-item-management",
   "cash-receipt",
   "cash-disbursement",
   "sales",
@@ -1919,6 +1918,8 @@ function findItemTrail(
   pathname: string,
 ): NavigationTrailNode[] {
   const siblingDropdownItems = items.map(toDropdownItem);
+  let bestTrail: NavigationTrailNode[] = [];
+  let bestTrailHrefLength = -1;
 
   for (const item of items) {
     const childTrail = item.children
@@ -1926,7 +1927,7 @@ function findItemTrail(
       : [];
 
     if (childTrail.length > 0) {
-      return [
+      const candidateTrail = [
         {
           key: item.key,
           label: item.label,
@@ -1935,12 +1936,21 @@ function findItemTrail(
         },
         ...childTrail,
       ];
+
+      const candidateHrefLength = getTrailHrefLength(candidateTrail);
+
+      if (candidateHrefLength > bestTrailHrefLength) {
+        bestTrail = candidateTrail;
+        bestTrailHrefLength = candidateHrefLength;
+      }
+
+      continue;
     }
 
     const isCurrentItem = pathMatches(item.href, pathname);
 
     if (isCurrentItem) {
-      return [
+      const candidateTrail = [
         {
           key: item.key,
           label: item.label,
@@ -1948,10 +1958,20 @@ function findItemTrail(
           dropdownItems: siblingDropdownItems,
         },
       ];
+      const candidateHrefLength = getTrailHrefLength(candidateTrail);
+
+      if (candidateHrefLength > bestTrailHrefLength) {
+        bestTrail = candidateTrail;
+        bestTrailHrefLength = candidateHrefLength;
+      }
     }
   }
 
-  return [];
+  return bestTrail;
+}
+
+function getTrailHrefLength(trail: NavigationTrailNode[]) {
+  return trail.at(-1)?.href?.length ?? -1;
 }
 
 function getActiveExpandedKeys(
@@ -2077,7 +2097,7 @@ function getNavigationDropdownHelperText(key: string) {
     return undefined;
   }
 
-  return MainBreadcrumbDropdownHelperText[key];
+  return MainModuleCatalogHelperText[key];
 }
 
 function getSectionTargetHref(section: MainNavigationSection) {

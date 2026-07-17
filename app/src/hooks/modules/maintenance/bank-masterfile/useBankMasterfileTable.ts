@@ -16,7 +16,7 @@ import {
 	BankMasterfileTableColumns,
 	BankMasterfileTablePreferencesModuleKey,
 	BankMasterfileTablePreferencesStorageKey,
-} from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+} from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
 	BankMasterfile,
@@ -109,3 +109,4 @@ function createBankMasterfileColumn(
 		meta,
 	};
 }
+

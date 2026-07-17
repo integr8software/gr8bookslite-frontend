@@ -5,7 +5,7 @@ import {
   MaintenanceAddDrawerSpotlightTutorialCloseEvent,
   MaintenanceAddDrawerSpotlightTutorialOpenEvent,
 } from "@/app/src/data/modules/maintenance/MaintenanceSpotlightTutorialData";
-import { ChartsOfAccountsSpotlightTutorialSteps } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
+import { ChartsOfAccountsSpotlightTutorialSteps } from "@/app/src/data/modules/maintenance/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
 import { useChartsOfAccountsSpotlightTutorial } from "@/app/src/hooks/modules/maintenance/charts-of-accounts/useChartsOfAccountsSpotlightTutorial";
 import {
   SpotlightTour,
@@ -51,3 +51,4 @@ function closeMaintenanceAddDrawer() {
     new Event(MaintenanceAddDrawerSpotlightTutorialCloseEvent),
   );
 }
+

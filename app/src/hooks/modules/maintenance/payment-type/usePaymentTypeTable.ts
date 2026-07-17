@@ -16,7 +16,7 @@ import {
 	PaymentTypeTableColumns,
 	PaymentTypeTablePreferencesModuleKey,
 	PaymentTypeTablePreferencesStorageKey,
-} from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
+} from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
 	PaymentTypeRecord,
@@ -96,3 +96,4 @@ function createPaymentTypeColumn(
 		meta: { className, label: header },
 	};
 }
+

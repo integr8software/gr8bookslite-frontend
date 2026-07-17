@@ -5,7 +5,7 @@ import { getPartyDisplayName } from "@/app/src/data/modules/maintenance/party-ma
 import { usePartyManagementAction } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagementAction";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { useAppDialogFormSubmit } from "@/app/src/hooks/shared/app/useAppDialogFormSubmit";
-import { getMaintenanceSavePendingLabel } from "@/app/src/ui/modules/maintenance/shared/MaintenanceLoadingLabels";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { PartyInformationActionHeader } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationActionHeader";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
 import { PartyInformationNotFound } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationNotFound";
@@ -106,7 +106,7 @@ function PartyManagementFormPageInner() {
 				iconTone="question"
 				isOpen={isSaveDialogOpen}
 				isPending={isConfirmSubmitPending}
-				pendingLabel={getMaintenanceSavePendingLabel(page.mode)}
+				pendingLabel={getModuleSavePendingLabel(page.mode)}
 				title={page.mode === "edit" ? "Save party changes?" : "Save this party?"}
 				tone="success"
 				onCancel={closeSaveDialog}
@@ -128,3 +128,5 @@ function PartyManagementFormPageInner() {
 		</>
 	);
 }
+
+

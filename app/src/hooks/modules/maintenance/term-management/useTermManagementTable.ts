@@ -16,7 +16,7 @@ import {
 	TermManagementTableColumns,
 	TermManagementTablePreferencesModuleKey,
 	TermManagementTablePreferencesStorageKey,
-} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+} from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
 	TermManagement,
@@ -100,3 +100,4 @@ function createTermManagementColumn(
 		meta: { className, label: header },
 	};
 }
+

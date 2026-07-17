@@ -4,10 +4,10 @@ import {
 	DiscountManagementStatusOptions,
 	DiscountManagementTypeOptions,
 	DiscountManagementValueTypeOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
+} from "@/app/src/constants/modules/maintenance/discount-management/DiscountManagementConstants";
 import {
 	rowHasErrors,
-} from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
+} from "@/app/src/data/modules/maintenance/discount-management/DiscountManagementData";
 import type {
 	DiscountImportColumnId,
 	DiscountImportPreviewRow,
@@ -161,3 +161,5 @@ export function DiscountManagementImportPreviewTableRow({
 		</>
 	);
 }
+
+

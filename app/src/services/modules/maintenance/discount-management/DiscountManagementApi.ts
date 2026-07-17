@@ -1,5 +1,5 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import { DiscountManagementApiPath } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
+import { DiscountManagementApiPath } from "@/app/src/constants/modules/maintenance/discount-management/DiscountManagementConstants";
 import type {
 	ApiDiscount,
 	ApiDiscountImportResponse,
@@ -118,3 +118,4 @@ function mapStatusFromApi(value: ApiDiscountStatus): DiscountStatus {
 function mapStatusToApi(value: DiscountStatus): ApiDiscountStatus {
 	return value === "Active" ? "ACTIVE" : "INACTIVE";
 }
+

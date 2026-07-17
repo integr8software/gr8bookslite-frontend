@@ -7,7 +7,7 @@ import {
   EmptyTaxMaintenancePermissions,
   EmptyTaxMaintenanceStatistics,
   ReservedRoleTaxMaintenancePermissions,
-} from "@/app/src/data/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceData";
+} from "@/app/src/data/modules/maintenance/tax-maintenance/TaxMaintenanceData";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
@@ -117,3 +117,4 @@ export function useTaxMaintenance() {
     updateMutation,
   ]);
 }
+

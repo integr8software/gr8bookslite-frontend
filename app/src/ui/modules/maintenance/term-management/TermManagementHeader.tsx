@@ -3,7 +3,7 @@ import {
 	TermManagementDescription,
 	TermManagementParentLabel,
 	TermManagementTitle,
-} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+} from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import type { TermManagementPermissions } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import {
 	ModuleHeader,
@@ -61,3 +61,4 @@ export function TermManagementHeader({
 		/>
 	);
 }
+

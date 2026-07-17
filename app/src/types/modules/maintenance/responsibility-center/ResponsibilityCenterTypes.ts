@@ -187,6 +187,11 @@ export type ResponsibilityCenterListResponse = {
 	permissions: ResponsibilityCenterPermissions;
 };
 
+export type ResponsibilityCenterStatisticCardsProps = {
+	statistics: ResponsibilityCenterStatistics;
+	isLoading?: boolean;
+};
+
 export type ResponsibilityCenterTableProps = {
 	categoryFilter: string;
 	filteredCenters: ResponsibilityCenter[];

@@ -2,7 +2,7 @@ import {
 	TermManagementDatemodeOptions,
 	TermManagementExportColumns,
 	TermManagementStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+} from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import type {
 	TermManagementDatemodeFilter,
 	TermManagementTableFiltersProps,
@@ -104,3 +104,4 @@ export function TermManagementTableFilters({
 		</ModuleTableToolbar>
 	);
 }
+

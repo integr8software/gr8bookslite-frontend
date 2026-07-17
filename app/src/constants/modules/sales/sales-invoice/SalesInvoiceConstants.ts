@@ -1,4 +1,4 @@
-import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleRouteMap";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import { MainModuleCatalogSearchItems } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
 export const SalesInvoiceModuleKey = "sales-sales-invoice";

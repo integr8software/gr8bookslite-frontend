@@ -8,20 +8,28 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
 import {
 	createResponsibilityCenter,
+	fetchResponsibilityCenterClassifications,
+	fetchResponsibilityCenterTypes,
 	fetchResponsibilityCenters,
 	updateResponsibilityCenter,
+	updateResponsibilityCenterStatus,
 } from "@/app/src/services/modules/maintenance/responsibility-center/ResponsibilityCenterApi";
 import { ResponsibilityCenterQueryKeys } from "@/app/src/services/modules/maintenance/responsibility-center/ResponsibilityCenterQueryKeys";
 import type {
 	ResponsibilityCenter,
+	ResponsibilityCenterClassification,
 	ResponsibilityCenterPermissions,
 	ResponsibilityCenterStatistics,
+	ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 
 type ResponsibilityCenterStoreState = {
 	centers: ResponsibilityCenter[];
+	classifications: ResponsibilityCenterClassification[];
+	types: ResponsibilityCenterTypeOption[];
 	addCenter: (center: ResponsibilityCenter) => Promise<ResponsibilityCenter>;
 	updateCenter: (center: ResponsibilityCenter) => Promise<ResponsibilityCenter>;
+	updateCenterStatus: (center: ResponsibilityCenter) => Promise<ResponsibilityCenter>;
 	isLoading: boolean;
 	isRefreshing: boolean;
 	lastSyncedAt: number;
@@ -32,6 +40,9 @@ type ResponsibilityCenterStoreState = {
 };
 
 const EmptyResponsibilityCenters: ResponsibilityCenter[] = [];
+const EmptyResponsibilityCenterClassifications: ResponsibilityCenterClassification[] =
+	[];
+const EmptyResponsibilityCenterTypes: ResponsibilityCenterTypeOption[] = [];
 const EmptyResponsibilityCenterPermissions: ResponsibilityCenterPermissions = {
 	canCreate: false,
 	canExport: false,
@@ -55,7 +66,18 @@ export function useResponsibilityCenterStore<
 		queryKey: ResponsibilityCenterQueryKeys.centers(),
 		queryFn: fetchResponsibilityCenters,
 	});
+	const classificationsQuery = useQuery({
+		queryKey: ResponsibilityCenterQueryKeys.classifications(),
+		queryFn: fetchResponsibilityCenterClassifications,
+	});
+	const typesQuery = useQuery({
+		queryKey: ResponsibilityCenterQueryKeys.types(),
+		queryFn: () => fetchResponsibilityCenterTypes(),
+	});
 	const centers = centersQuery.data?.centers ?? EmptyResponsibilityCenters;
+	const classifications =
+		classificationsQuery.data ?? EmptyResponsibilityCenterClassifications;
+	const types = typesQuery.data ?? EmptyResponsibilityCenterTypes;
 	const dataUpdatedAt = centersQuery.dataUpdatedAt;
 	const isFetching = centersQuery.isFetching;
 	const isLoading = centersQuery.isLoading;
@@ -134,6 +156,28 @@ export function useResponsibilityCenterStore<
 		},
 	});
 
+	const updateCenterStatusMutation = useMutation({
+		mutationFn: updateResponsibilityCenterStatus,
+		onSuccess: (center) => {
+			updateCachedCenters((centers) =>
+				centers.map((currentCenter) =>
+					currentCenter.id === center.id ? center : currentCenter,
+				),
+			);
+			void queryClient.invalidateQueries({
+				queryKey: ResponsibilityCenterQueryKeys.all(),
+			});
+			toast.success("Responsibility center status updated.");
+		},
+		onError: (error) => {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not update responsibility center status. Please try again.",
+			);
+		},
+	});
+
 	const state = useMemo<ResponsibilityCenterStoreState>(
 		() => {
 			const effectiveRole = ResolveAuthProfileEffectiveRole(
@@ -144,14 +188,19 @@ export function useResponsibilityCenterStore<
 
 			return {
 				centers,
+				classifications,
+				types,
 				addCenter: (center) => addCenterMutation.mutateAsync(center),
 				updateCenter: (center) => updateCenterMutation.mutateAsync(center),
+				updateCenterStatus: (center) =>
+					updateCenterStatusMutation.mutateAsync(center),
 				isLoading,
 				isRefreshing: isFetching && !isLoading,
 				lastSyncedAt: dataUpdatedAt,
 				isMutating:
 					addCenterMutation.isPending ||
-					updateCenterMutation.isPending,
+					updateCenterMutation.isPending ||
+					updateCenterStatusMutation.isPending,
 				permissions: hasReservedRoleAccess
 					? ReservedRoleResponsibilityCenterPermissions
 					: (centersQuery.data?.permissions ??
@@ -164,13 +213,16 @@ export function useResponsibilityCenterStore<
 			addCenterMutation,
 			authProfileQuery.data,
 			centers,
+			classifications,
 			centersQuery.data?.permissions,
 			dataUpdatedAt,
 			isFetching,
 			isLoading,
 			refreshCenters,
 			statistics,
+			types,
 			updateCenterMutation,
+			updateCenterStatusMutation,
 		],
 	);
 

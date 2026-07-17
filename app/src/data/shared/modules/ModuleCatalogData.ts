@@ -23,7 +23,7 @@ export const MODULE_ROUTE_MAP = {
   I: "/maintenance/items",
   IB: "/maintenance/item-bundles",
   IC: "/maintenance/item-category",
-  IA2: "/maintenance/item-attributes",
+  IA: "/maintenance/item-attributes",
   UOM: "/maintenance/unit-of-measurement",
   IPR: "/maintenance/item-promotions",
   PLS: "/maintenance/price-lists",
@@ -350,7 +350,7 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
       moduleItem(
         "maintenance-item-attributes",
         "Item Attributes",
-        "IA2",
+        "IA",
         "maintenance.item",
         "inventory",
       ),

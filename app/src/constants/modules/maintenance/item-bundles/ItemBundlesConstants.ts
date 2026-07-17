@@ -1,6 +1,7 @@
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ItemBundleTableColumnKey } from "@/app/src/types/modules/maintenance/item-bundles/ItemBundlesTypes";
 
-export const ItemBundlesHref = "/maintenance/item-bundles";
+export const ItemBundlesHref = MODULE_ROUTE_MAP.IB;
 
 export const ItemBundlesFormId = "item-bundles-form";
 
@@ -40,6 +41,6 @@ export const ItemBundlesTableColumns: Array<
 		className: "w-[10rem] text-right",
 	},
 	{ key: "savings", label: "Savings", className: "w-[10rem] text-right" },
-	{ key: "status", label: "Status", className: "w-[9rem]" },
+	{ key: "status", label: "Status", className: "w-[9rem] text-center" },
 	{ id: "actions", label: "Actions", className: "w-[10rem] text-center" },
 ];

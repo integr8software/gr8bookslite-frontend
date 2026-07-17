@@ -2,31 +2,10 @@ import { Plus } from "lucide-react";
 import { WarehouseStatusOptions } from "@/app/src/constants/modules/maintenance/warehouses/WarehouseConstants";
 import { WarehouseAccessPermissionOptions } from "@/app/src/constants/modules/maintenance/warehouse-access/WarehouseAccessConstants";
 import type {
-	WarehouseAccessFormErrors,
-	WarehouseAccessPermission,
-	WarehouseAccessRecord,
-} from "@/app/src/types/modules/maintenance/warehouse-access/WarehouseAccessTypes";
-import type {
+	WarehouseAccessTableProps,
 	WarehouseStatus,
 } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
 import { ModuleTableActionButton } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-
-type WarehouseAccessTableProps = {
-	accessRecords: WarehouseAccessRecord[];
-	errors: WarehouseAccessFormErrors;
-	isPending: boolean;
-	onAddAccess: () => void;
-	onRemoveAccess: (accessId: string) => void;
-	onTogglePermission: (
-		accessId: string,
-		permission: WarehouseAccessPermission,
-	) => void;
-	onUpdateAccess: <TKey extends keyof WarehouseAccessRecord>(
-		accessId: string,
-		field: TKey,
-		value: WarehouseAccessRecord[TKey],
-	) => void;
-};
 
 export function WarehouseAccessTable({
 	accessRecords,

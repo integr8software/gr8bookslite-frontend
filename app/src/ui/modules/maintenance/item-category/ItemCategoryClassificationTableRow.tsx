@@ -115,7 +115,7 @@ export function ItemCategoryClassificationTableRow({
 					) : null}
 				</div>
 			</td>
-			<td className="px-4 py-4">
+			<td className="px-4 py-4 text-center">
 				<ModuleStatusBadge status={record.status} />
 			</td>
 			<td className="px-4 py-4 text-center">

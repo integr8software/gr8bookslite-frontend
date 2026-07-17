@@ -1,12 +1,7 @@
-import type { ItemRecord } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
+import type { ItemsTableRowProps } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
 import { ItemRecordActions } from "@/app/src/ui/modules/maintenance/items/ItemRecordActions";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { formatCurrency } from "@/app/src/utils/currency.util";
-
-type ItemsTableRowProps = {
-	item: ItemRecord;
-	onStatusChange: (item: ItemRecord) => void;
-};
 
 export function ItemsTableRow({ item, onStatusChange }: ItemsTableRowProps) {
 	return (
@@ -27,7 +22,7 @@ export function ItemsTableRow({ item, onStatusChange }: ItemsTableRowProps) {
 			<td className="px-4 py-4">
 				{formatCurrency(item.sellingPrice)}
 			</td>
-			<td className="px-4 py-4">
+			<td className="px-4 py-4 text-center">
 				<ModuleStatusBadge status={item.status} />
 			</td>
 			<td className="px-4 py-4 text-center">

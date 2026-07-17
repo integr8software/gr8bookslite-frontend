@@ -1,19 +1,13 @@
 "use client";
 
 import { Search } from "lucide-react";
-import type { ReactNode } from "react";
-import { WarehouseTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/warehouses/WarehouseConstants";
-import type { useWarehouseListPage } from "@/app/src/hooks/modules/maintenance/warehouses/useWarehouseListPage";
+import {
+	getWarehouseTableMinWidthClassName,
+	WarehouseTablePaginationStorageKey,
+} from "@/app/src/constants/modules/maintenance/warehouses/WarehouseConstants";
+import type { WarehouseTableProps } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { WarehouseTableRow } from "@/app/src/ui/modules/maintenance/warehouses/WarehouseTableRow";
-
-type WarehouseTableProps = Pick<
-	ReturnType<typeof useWarehouseListPage>,
-	"isLoading" | "lastSyncedAt" | "setPendingDeleteWarehouse" | "table"
-> & {
-	toolbar?: ReactNode;
-	onEditWarehouse: (warehouse: ReturnType<typeof useWarehouseListPage>["warehouses"][number]) => void;
-};
 
 export function WarehouseTable({
 	isLoading,
@@ -23,6 +17,10 @@ export function WarehouseTable({
 	toolbar,
 	onEditWarehouse,
 }: WarehouseTableProps) {
+	const tableMinWidthClassName = getWarehouseTableMinWidthClassName(
+		table.getVisibleLeafColumns().length,
+	);
+
 	return (
 		<ModuleTable
 			emptyDescription="Add a warehouse to start tracking access and item counts."
@@ -30,7 +28,7 @@ export function WarehouseTable({
 			emptyTitle="No warehouses found"
 			isLoading={isLoading}
 			lastSyncedAt={lastSyncedAt}
-			minWidthClassName="min-w-[92rem]"
+			minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 			paginationStorageKey={WarehouseTablePaginationStorageKey}
 			table={table}
 			tableTitle="Warehouses"

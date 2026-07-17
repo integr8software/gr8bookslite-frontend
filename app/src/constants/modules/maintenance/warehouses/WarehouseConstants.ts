@@ -1,15 +1,21 @@
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
 	WarehouseBranchAvailability,
 	WarehouseStatus,
 	WarehouseTableColumnKey,
+	WarehouseTableRecord,
 } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
+import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableExportButton";
 
-export const WarehouseHref = "/maintenance/warehouses";
+export const WarehouseHref = MODULE_ROUTE_MAP.WM;
 
 export const WarehouseTablePaginationStorageKey =
 	"maintenance.warehouses";
 
-export const WarehouseStatusOptions: WarehouseStatus[] = ["Active", "Inactive"];
+export const WarehouseStatusOptions = [
+	"Active",
+	"Inactive",
+] as const satisfies readonly WarehouseStatus[];
 
 export const WarehouseBranchOptions = [
 	"Main Branch",
@@ -46,9 +52,31 @@ export const WarehouseTableColumns: Array<
 	{ key: "managerName", label: "Manager", className: "w-[14rem]" },
 	{ key: "totalItems", label: "Total Items", className: "w-[10rem]" },
 	{ key: "inventoryValue", label: "Inventory Value", className: "w-[12rem]" },
-	{ key: "status", label: "Status", className: "w-[9rem]" },
-	{ id: "actions", label: "Actions", className: "w-[14rem]" },
+	{ key: "status", label: "Status", className: "w-[9rem] text-center" },
+	{ id: "actions", label: "Actions", className: "w-[14rem] text-center" },
 ];
+
+export const WarehouseExportColumns: ModuleTableExportColumn<WarehouseTableRecord>[] =
+	WarehouseTableColumns.flatMap((column) =>
+		"key" in column
+			? [
+					{
+						header: column.label,
+						id: column.key,
+						value: column.key,
+					},
+				]
+			: [],
+	);
+
+export function getWarehouseTableMinWidthClassName(visibleColumnCount: number) {
+	if (visibleColumnCount >= 10) return "min-w-[136rem]";
+	if (visibleColumnCount === 9) return "min-w-[122rem]";
+	if (visibleColumnCount === 8) return "min-w-[108rem]";
+	if (visibleColumnCount === 7) return "min-w-[94rem]";
+	if (visibleColumnCount === 6) return "min-w-[80rem]";
+	return "min-w-[64rem]";
+}
 
 export const WarehouseFormPageCopy = {
 	add: {

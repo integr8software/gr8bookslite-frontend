@@ -1,14 +1,5 @@
-import type {
-	WarehouseRecord,
-	WarehouseTableRecord,
-} from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
+import type { WarehouseTableRowProps } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
 import { WarehouseRecordActions } from "@/app/src/ui/modules/maintenance/warehouses/WarehouseRecordActions";
-
-type WarehouseTableRowProps = {
-	warehouse: WarehouseTableRecord;
-	onDeleteWarehouse: (warehouse: WarehouseRecord) => void;
-	onEditWarehouse: (warehouse: WarehouseRecord) => void;
-};
 
 export function WarehouseTableRow({
 	warehouse,
@@ -33,12 +24,12 @@ export function WarehouseTableRow({
 					style: "currency",
 				}).format(warehouse.inventoryValue)}
 			</td>
-			<td className="px-4 py-4">
+			<td className="px-4 py-4 text-center">
 				<span className="inline-flex rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">
 					{warehouse.status}
 				</span>
 			</td>
-			<td className="px-4 py-4">
+			<td className="px-4 py-4 text-center">
 				<WarehouseRecordActions
 					warehouse={warehouse}
 					onDeleteWarehouse={onDeleteWarehouse}

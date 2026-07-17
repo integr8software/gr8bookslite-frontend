@@ -37,7 +37,7 @@ export function ItemBundlesTableRow({
 			<td className="px-4 py-4 text-right font-semibold">
 				{formatCurrency(row.savings)}
 			</td>
-			<td className="px-4 py-4">
+			<td className="px-4 py-4 text-center">
 				<ModuleStatusBadge status={row.status} />
 			</td>
 			<td className="px-4 py-4 text-center">

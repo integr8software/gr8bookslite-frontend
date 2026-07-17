@@ -62,7 +62,7 @@ export function ModuleTableFilterPopover({
 		() => options.find((option) => option.value === effectiveValue),
 		[options, effectiveValue],
 	);
-	const isEmpty = effectiveValue === emptyValue;
+	const isShowingPlaceholder = !selectedOption;
 	const displayLabel = selectedOption
 		? formatFilterOptionLabel(selectedOption.label)
 		: placeholder;
@@ -180,14 +180,16 @@ export function ModuleTableFilterPopover({
 					<ListFilter
 						className={joinClasses(
 							"h-4 w-4 shrink-0",
-							isEmpty ? "text-darknavy/45" : moduleAccentClassNames.iconText,
+							isShowingPlaceholder
+								? "text-darknavy/45"
+								: moduleAccentClassNames.iconText,
 						)}
 						aria-hidden="true"
 					/>
 					<span
 						className={joinClasses(
 							"min-w-0 flex-1 truncate",
-							isEmpty && "font-medium text-darknavy/45",
+							isShowingPlaceholder && "font-medium text-darknavy/45",
 						)}
 					>
 						{displayLabel}

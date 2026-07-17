@@ -1,3 +1,6 @@
+import type { ReactNode } from "react";
+import type { useItemsListPage } from "@/app/src/hooks/modules/maintenance/items/useItemsListPage";
+
 export type ItemStatus = "Active" | "Inactive";
 
 export type ItemSetupKind = "category" | "subcategory" | "type" | "subtype";
@@ -256,6 +259,18 @@ export type ItemCategoryClassificationFormErrors = Partial<
 >;
 
 export type ItemActionMode = "add" | "edit" | "view";
+
+export type ItemsTableProps = Pick<
+	ReturnType<typeof useItemsListPage>,
+	"isLoading" | "lastSyncedAt" | "setPendingStatusItem" | "table"
+> & {
+	toolbar?: ReactNode;
+};
+
+export type ItemsTableRowProps = {
+	item: ItemRecord;
+	onStatusChange: (item: ItemRecord) => void;
+};
 
 export type ItemTableColumnKey =
 	| "code"

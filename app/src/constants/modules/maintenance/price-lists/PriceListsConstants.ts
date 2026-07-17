@@ -1,6 +1,7 @@
 import type { SortingState } from "@tanstack/react-table";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
-export const PriceListsHref = "/maintenance/price-lists";
+export const PriceListsHref = MODULE_ROUTE_MAP.PLS;
 
 export const PriceListsTitle = "Price Lists";
 

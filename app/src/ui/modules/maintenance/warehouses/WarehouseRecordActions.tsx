@@ -4,18 +4,12 @@ import {
 	createWarehouseAccessHref,
 	createWarehouseItemsHref,
 } from "@/app/src/constants/modules/maintenance/warehouses/WarehouseConstants";
-import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
+import type { WarehouseRecordActionsProps } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
 import {
 	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-
-type WarehouseRecordActionsProps = {
-	warehouse: WarehouseRecord;
-	onDeleteWarehouse: (warehouse: WarehouseRecord) => void;
-	onEditWarehouse: (warehouse: WarehouseRecord) => void;
-};
 
 export function WarehouseRecordActions({
 	warehouse,
@@ -23,7 +17,7 @@ export function WarehouseRecordActions({
 	onEditWarehouse,
 }: WarehouseRecordActionsProps) {
 	return (
-		<ModuleTableActions>
+		<ModuleTableActions className="justify-center">
 			<ModuleTableActionLink
 				variant="view"
 				href={`${WarehouseHref}/view/${warehouse.id}`}

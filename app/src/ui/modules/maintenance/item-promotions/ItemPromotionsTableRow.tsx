@@ -25,7 +25,7 @@ export function ItemPromotionsTableRow({
 				{row.discountManagementRule}
 			</td>
 			<td className="px-4 py-4 text-darknavy/70">{row.validity}</td>
-			<td className="px-4 py-4">
+			<td className="px-4 py-4 text-center">
 				<ModuleStatusBadge status={row.status} />
 			</td>
 			<td className="px-4 py-4 text-center">

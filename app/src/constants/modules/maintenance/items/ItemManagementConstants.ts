@@ -2,14 +2,17 @@ import type {
 	ItemCategoryAccountingSetup,
 	ItemCategoryClassificationTableColumnKey,
 	ItemPerishability,
+	ItemRecord,
 	ItemStatus,
 	ItemTableColumnKey,
 	ItemTaxTreatment,
 } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import { SystemUomOptions, SystemUomRows } from "@/app/src/data/shared/uom/UomData";
+import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableExportButton";
 
-export const ItemsHref = "/maintenance/items";
-export const ItemCategoryHref = "/maintenance/item-category";
+export const ItemsHref = MODULE_ROUTE_MAP.I;
+export const ItemCategoryHref = MODULE_ROUTE_MAP.IC;
 
 export const ItemStatusOptions = [
 	"Active",
@@ -98,9 +101,31 @@ export const ItemsTableColumns: Array<
 	{ key: "uom", label: "UOM", className: "w-[8rem]" },
 	{ key: "costPrice", label: "Cost", className: "w-[10rem]" },
 	{ key: "sellingPrice", label: "Selling Price", className: "w-[10rem]" },
-	{ key: "status", label: "Status", className: "w-[9rem]" },
+	{ key: "status", label: "Status", className: "w-[9rem] text-center" },
 	{ id: "actions", label: "Actions", className: "w-[10rem] text-center" },
 ];
+
+export const ItemsExportColumns: ModuleTableExportColumn<ItemRecord>[] =
+	ItemsTableColumns.flatMap((column) =>
+		"key" in column
+			? [
+					{
+						header: column.label,
+						id: column.key,
+						value: column.key,
+					},
+				]
+			: [],
+	);
+
+export function getItemsTableMinWidthClassName(visibleColumnCount: number) {
+	if (visibleColumnCount >= 10) return "min-w-[136rem]";
+	if (visibleColumnCount === 9) return "min-w-[122rem]";
+	if (visibleColumnCount === 8) return "min-w-[108rem]";
+	if (visibleColumnCount === 7) return "min-w-[94rem]";
+	if (visibleColumnCount === 6) return "min-w-[80rem]";
+	return "min-w-[64rem]";
+}
 
 export const ItemCategoryClassificationTableColumns: Array<
 	| {
@@ -121,7 +146,7 @@ export const ItemCategoryClassificationTableColumns: Array<
 		label: "Accounting Setup",
 		className: "w-[11rem]",
 	},
-	{ key: "status", label: "Status", className: "w-[8rem]" },
+	{ key: "status", label: "Status", className: "w-[8rem] text-center" },
 	{ id: "actions", label: "Actions", className: "w-[9rem] text-center" },
 ];
 

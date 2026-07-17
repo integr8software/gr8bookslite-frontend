@@ -8,6 +8,10 @@ import {
 	Warehouse,
 } from "lucide-react";
 import { useWarehouseListPage } from "@/app/src/hooks/modules/maintenance/warehouses/useWarehouseListPage";
+import {
+	WarehouseExportColumns,
+	WarehouseStatusOptions,
+} from "@/app/src/constants/modules/maintenance/warehouses/WarehouseConstants";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
@@ -16,6 +20,8 @@ import {
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import {
+	ModuleTableColumnVisibilityButton,
+	ModuleTableExportButton,
 	ModuleTableFilterSelect,
 	ModuleTableResetButton,
 	ModuleTableSearch,
@@ -24,13 +30,15 @@ import {
 import { WarehouseTable } from "@/app/src/ui/modules/maintenance/warehouses/WarehouseTable";
 import { WarehouseDrawer } from "@/app/src/ui/modules/maintenance/warehouses/WarehouseDrawer";
 import { useState } from "react";
-import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
-
-type DrawerState = { mode: "add" | "edit"; warehouse?: WarehouseRecord } | null;
+import type { DrawerState } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
 
 export function WarehouseListPage() {
 	const page = useWarehouseListPage();
 	const [drawerState, setDrawerState] = useState<DrawerState>(null);
+	const hasActiveFilters =
+		page.query.trim().length > 0 ||
+		page.branchFilter !== "All" ||
+		page.statusFilter !== "Active";
 	useMaintenanceAddDrawerSpotlight(
 		() => setDrawerState({ mode: "add" }),
 		() => setDrawerState(null),
@@ -62,6 +70,8 @@ export function WarehouseListPage() {
 			/>
 
 			<ModuleStatisticCards
+				isLoading={page.isLoading}
+				className="xl:grid-cols-4"
 				items={[
 					{
 						helper: "All warehouse records",
@@ -108,38 +118,62 @@ export function WarehouseListPage() {
 				onEditWarehouse={(warehouse) => setDrawerState({ mode: "edit", warehouse })}
 				table={page.table}
 				toolbar={
-					<ModuleTableToolbar>
-						<ModuleTableSearch
-							label="Search warehouses"
-							value={page.query}
-							onChange={page.handleQueryChange}
-							placeholder="Search by code, warehouse, branch, manager, or status"
-						/>
-						<ModuleTableFilterSelect
-							label="Branch"
-							value={page.branchFilter}
-							options={[
-								{ label: "All", value: "All" },
-								...page.branchFilterOptions.map((branch) => ({
-									label: branch,
-									value: branch,
-								})),
-							]}
-							onChange={page.setBranchFilter}
-						/>
-						<ModuleTableFilterSelect
-							label="Status"
-							value={page.statusFilter}
-							options={[
-								{ label: "All", value: "All" },
-								{ label: "Active", value: "Active" },
-								{ label: "Inactive", value: "Inactive" },
-							]}
-							onChange={page.setStatusFilter}
-						/>
-						<ModuleTableResetButton onClick={page.resetFilters}>
-							Reset
-						</ModuleTableResetButton>
+					<ModuleTableToolbar className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(0,1fr)_auto]">
+						<div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(11rem,1.2fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)]">
+							<ModuleTableSearch
+								label="Search warehouses"
+								value={page.query}
+								onChange={page.handleQueryChange}
+								placeholder="Search by code, warehouse, branch, manager, or status"
+							/>
+							<ModuleTableFilterSelect
+								label="Branch"
+								value={page.branchFilter}
+								options={[
+									{ label: "All", value: "All" },
+									...page.branchFilterOptions.map((branch) => ({
+										label: branch,
+										value: branch,
+									})),
+								]}
+								onChange={page.setBranchFilter}
+							/>
+							<ModuleTableFilterSelect
+								label="Status"
+								value={page.statusFilter}
+								options={[
+									{ label: "All", value: "All" },
+									...WarehouseStatusOptions.map((status) => ({
+										label: status,
+										value: status,
+									})),
+								]}
+								onChange={page.setStatusFilter}
+							/>
+						</div>
+						<div className="grid grid-cols-3 gap-2 md:w-[10.75rem]">
+							<ModuleTableColumnVisibilityButton table={page.table} />
+							<ModuleTableExportButton
+								allRows={page.tableWarehouses}
+								columns={WarehouseExportColumns}
+								fileName="warehouses"
+								filteredRows={page.filteredWarehouses}
+								isFiltered={hasActiveFilters}
+								table={page.table}
+								title="Warehouses"
+							/>
+							<ModuleTableResetButton
+								className="px-2"
+								isRefreshing={page.isRefreshing}
+								onClick={
+									hasActiveFilters ? page.resetFilters : page.refreshWarehouses
+								}
+							>
+								<span className="sr-only">
+									{hasActiveFilters ? "Reset" : "Refresh"}
+								</span>
+							</ModuleTableResetButton>
+						</div>
 					</ModuleTableToolbar>
 				}
 			/>

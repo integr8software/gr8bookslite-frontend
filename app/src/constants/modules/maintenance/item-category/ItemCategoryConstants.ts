@@ -1,10 +1,11 @@
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
 	ItemCategoryAccountingSetup,
 	ItemCategoryClassificationTableColumnKey,
 	ItemStatus,
 } from "@/app/src/types/modules/maintenance/item-category/ItemCategoryTypes";
 
-export const ItemCategoryHref = "/maintenance/item-category";
+export const ItemCategoryHref = MODULE_ROUTE_MAP.IC;
 
 export const ItemCategoryClassificationPaginationStorageKey =
 	"maintenance.item-category.classification";
@@ -57,6 +58,6 @@ export const ItemCategoryClassificationTableColumns: Array<
 		label: "Accounting Setup",
 		className: "w-[11rem]",
 	},
-	{ key: "status", label: "Status", className: "w-[8rem]" },
+	{ key: "status", label: "Status", className: "w-[8rem] text-center" },
 	{ id: "actions", label: "Actions", className: "w-[9rem] text-center" },
 ];

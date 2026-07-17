@@ -1,3 +1,4 @@
+import type { useWarehouseAccessListPage } from "@/app/src/hooks/modules/maintenance/warehouse-access/useWarehouseAccessListPage";
 import type { WarehouseStatus } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
 
 export type WarehouseAccessLevel = "Viewer" | "Picker" | "Manager";
@@ -38,4 +39,9 @@ export type WarehouseAccessListRecord = {
 	status: WarehouseStatus;
 	values: string[];
 	warehouseId: string;
+};
+
+export type WarehouseAccessTableProps = {
+	hasActiveFilters: boolean;
+	page: ReturnType<typeof useWarehouseAccessListPage>;
 };

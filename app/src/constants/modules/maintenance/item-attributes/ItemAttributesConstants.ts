@@ -1,6 +1,7 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
-export const ItemAttributesHref = "/maintenance/item-attributes";
+export const ItemAttributesHref = MODULE_ROUTE_MAP.IA;
 
 export const ItemAttributesTitle = "Item Attributes";
 

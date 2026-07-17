@@ -1,4 +1,6 @@
-export const StorageLocationsHref = "/maintenance/storage-locations";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
+
+export const StorageLocationsHref = MODULE_ROUTE_MAP.WSL;
 
 export const StorageLocationsApiPath = "/maintenance/storage-locations";
 
@@ -33,7 +35,12 @@ export const StorageLocationsTableColumns = [
 		valueIndex: 6,
 		className: "w-[16rem]",
 	},
-	{ id: "status", label: "Status", valueIndex: 7, className: "w-[10rem]" },
+	{
+		id: "status",
+		label: "Status",
+		valueIndex: 7,
+		className: "w-[10rem] text-center",
+	},
 	{ id: "actions", label: "Actions", className: "w-[9rem] text-center" },
 ] as const;
 

@@ -151,6 +151,7 @@ export function useItemsListPage() {
 	return {
 		categoryFilter,
 		categoryFilterOptions,
+		filteredItems,
 		handleConfirmStatusChange,
 		handleQueryChange,
 		items,

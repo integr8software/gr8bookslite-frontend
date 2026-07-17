@@ -1,9 +1,10 @@
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
 	ItemPromotionTableColumnKey,
 	ItemPromotionType,
 } from "@/app/src/types/modules/maintenance/item-promotions/ItemPromotionsTypes";
 
-export const ItemPromotionsHref = "/maintenance/item-promotions";
+export const ItemPromotionsHref = MODULE_ROUTE_MAP.IPR;
 
 export const ItemPromotionsFormId = "item-promotions-form";
 
@@ -46,6 +47,6 @@ export const ItemPromotionsTableColumns: Array<
 		className: "w-[18rem]",
 	},
 	{ key: "validity", label: "Validity", className: "w-[16rem]" },
-	{ key: "status", label: "Status", className: "w-[9rem]" },
+	{ key: "status", label: "Status", className: "w-[9rem] text-center" },
 	{ id: "actions", label: "Actions", className: "w-[10rem] text-center" },
 ];

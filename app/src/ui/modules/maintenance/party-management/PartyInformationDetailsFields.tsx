@@ -1,4 +1,7 @@
+"use client";
+
 import {
+	useState,
 	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
 } from "react";
@@ -22,6 +25,8 @@ import type {
 	PartyInformationFormErrors,
 	PartyInformationDetailsFieldsProps,
 	PartyInformationFieldUpdateHandler,
+	PartyInformationTab,
+	PartyInformationTabId,
 	PartyInformationFormValues,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -29,7 +34,9 @@ import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/Char
 import {
 	PartyAddressContainer,
 } from "@/app/src/ui/modules/maintenance/party-management/PartyAddressContainer";
-import { AppTabs } from "@/app/src/ui/shared/app/AppTabs";
+import {
+	ModuleTabs,
+} from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export function PartyInformationDetailsFields({
 	atcOptions,
@@ -57,6 +64,8 @@ export function PartyInformationDetailsFields({
 	onUpdateField,
 	onSelectTerm,
 }: PartyInformationDetailsFieldsProps) {
+	const [activeTab, setActiveTab] =
+		useState<PartyInformationTabId>("basic-information");
 	const isPartyTypeSelected = values.partyTypes.length > 0;
 	const isDetailsDisabled =
 		isReadonly || !isClassificationSelected || !isPartyTypeSelected;
@@ -123,10 +132,7 @@ export function PartyInformationDetailsFields({
 		"employeePayableAccount",
 	]);
 
-	return (
-		<AppTabs
-			ariaLabel="Party information sections"
-			tabs={[
+	const tabs: PartyInformationTab[] = [
 				{
 					id: "basic-information",
 					label: "Basic Information",
@@ -509,8 +515,21 @@ export function PartyInformationDetailsFields({
 						</div>
 					),
 				},
-			]}
-		/>
+			];
+	const activeTabContent = tabs.find((tab) => tab.id === activeTab)?.content;
+
+	return (
+		<div className="grid gap-5">
+			<ModuleTabs
+				activeTab={activeTab}
+				ariaLabel="Party information sections"
+				tabs={tabs}
+				onTabChange={setActiveTab}
+			/>
+			<section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
+				{activeTabContent}
+			</section>
+		</div>
 	);
 }
 

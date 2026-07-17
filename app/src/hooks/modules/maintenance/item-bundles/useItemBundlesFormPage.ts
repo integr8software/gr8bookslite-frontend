@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import {
 	DndContext,
@@ -32,6 +33,8 @@ import {
 	hasItemBundleErrors,
 	validateItemBundleForm,
 } from "@/app/src/validations/modules/maintenance/item-bundles/ItemBundlesValidation";
+import { fetchUnitsOfMeasurement } from "@/app/src/services/modules/maintenance/unit-of-measurement/UnitOfMeasurementApi";
+import { UnitOfMeasurementQueryKeys } from "@/app/src/services/modules/maintenance/unit-of-measurement/UnitOfMeasurementQueryKeys";
 import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 export function useItemBundlesFormPage() {
@@ -39,6 +42,10 @@ export function useItemBundlesFormPage() {
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
 	const { addBundle, bundles, updateBundle } = useItemBundles();
+	const unitsOfMeasurementQuery = useQuery({
+		queryKey: UnitOfMeasurementQueryKeys.list(),
+		queryFn: fetchUnitsOfMeasurement,
+	});
 	const mode = getItemBundleMode(pathname);
 	const isReadonly = mode === "view";
 	const existingBundle = bundles.find((bundle) => bundle.id === params.recordId);
@@ -157,7 +164,11 @@ export function useItemBundlesFormPage() {
 	}
 
 	function validateBeforeSubmit() {
-		const nextErrors = validateItemBundleForm(values, MockItems);
+		const nextErrors = validateItemBundleForm(
+			values,
+			MockItems,
+			unitsOfMeasurementQuery.data?.records ?? [],
+		);
 
 		if (hasItemBundleErrors(nextErrors)) {
 			setErrors(nextErrors);
@@ -201,6 +212,7 @@ export function useItemBundlesFormPage() {
 		mode,
 		sensors,
 		totals,
+		unitsOfMeasurement: unitsOfMeasurementQuery.data?.records ?? [],
 		values,
 		addLine,
 		removeLine,

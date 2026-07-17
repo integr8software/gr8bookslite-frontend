@@ -13,17 +13,17 @@ import {
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import {
-  ItemCategoryClassificationTableColumns,
+  ItemCategoryTableColumns,
   ItemCategorySystemDefaultAccountingSetup,
   ItemCategoryUnassignedRecordId,
 } from "@/app/src/constants/modules/maintenance/item-category/ItemCategoryConstants";
 import {
-  ItemCategoryClassificationInitialFormValues,
-  createItemCategoryClassificationFormValues,
-  createItemCategoryClassificationRecord,
+  ItemCategoryInitialFormValues,
+  createItemCategoryFormValues,
+  createItemCategoryRecord,
   getItemCategoryAccountingSetupMode,
   normalizeItemCategoryAccountingSetup,
-  updateItemCategoryClassificationRecord,
+  updateItemCategoryRecord,
 } from "@/app/src/data/modules/maintenance/item-category/ItemCategoryData";
 import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/items/useItemManagement";
 import type {
@@ -31,16 +31,16 @@ import type {
   ItemCategoryAccountingSetup,
   ItemCategoryAccountingSetupMode,
   ItemCategoryAccountingSetupStatus,
-  ItemCategoryClassificationFormErrors,
-  ItemCategoryClassificationFormValues,
-  ItemCategoryClassificationTableColumnKey,
-  ItemCategoryClassificationTableRowData,
+  ItemCategoryFormErrors,
+  ItemCategoryFormValues,
+  ItemCategoryTableColumnKey,
+  ItemCategoryTableRowData,
   ItemRecord,
   ItemSetupKind,
   ItemSetupRecord,
   ItemStatus,
 } from "@/app/src/types/modules/maintenance/item-category/ItemCategoryTypes";
-import { validateItemCategoryClassificationForm } from "@/app/src/validations/modules/maintenance/item-category/ItemCategoryValidation";
+import { validateItemCategoryForm } from "@/app/src/validations/modules/maintenance/item-category/ItemCategoryValidation";
 
 const AllStatusesFilter = "All";
 const AllAccountingStatusesFilter = "All";
@@ -54,10 +54,10 @@ type ItemCategoryStatusFilter = typeof AllStatusesFilter | ItemStatus;
 
 export type ItemCategoryDrawerState = {
   mode: ItemActionMode;
-  row?: ItemCategoryClassificationTableRowData;
+  row?: ItemCategoryTableRowData;
 } | null;
 
-export function useItemCategoryClassificationPage() {
+export function useItemCategoryPage() {
   const store = useItemManagementStore();
   const setupRecords = useSetupRecordsByKind(store.getSetupRecords);
   const allRecords = useAllSetupRecords(setupRecords);
@@ -72,14 +72,14 @@ export function useItemCategoryClassificationPage() {
     pageSize: 10,
   });
   const [pendingStatusRow, setPendingStatusRow] =
-    useState<ItemCategoryClassificationTableRowData | null>(null);
+    useState<ItemCategoryTableRowData | null>(null);
   const [query, setQuery] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [statusFilter, setStatusFilterState] =
     useState<ItemCategoryStatusFilter>(DefaultStatusFilter);
   const tableRows = useMemo(
     () =>
-      createItemCategoryClassificationRows({
+      createItemCategoryRows({
         expandedIds,
         items: store.items,
         setupRecords,
@@ -88,7 +88,7 @@ export function useItemCategoryClassificationPage() {
   );
   const metricRows = useMemo(
     () =>
-      createItemCategoryClassificationRows({
+      createItemCategoryRows({
         expandedIds: new Set(allRecords.map((record) => record.id)),
         items: store.items,
         setupRecords,
@@ -130,9 +130,9 @@ export function useItemCategoryClassificationPage() {
         .includes(normalizedQuery);
     });
   }, [accountingFilter, query, statusFilter, tableRows]);
-  const columns = useMemo<ColumnDef<ItemCategoryClassificationTableRowData>[]>(
+  const columns = useMemo<ColumnDef<ItemCategoryTableRowData>[]>(
     () =>
-      ItemCategoryClassificationTableColumns.map((column) => {
+      ItemCategoryTableColumns.map((column) => {
         if (!("key" in column)) {
           return {
             id: "actions",
@@ -142,7 +142,7 @@ export function useItemCategoryClassificationPage() {
           };
         }
 
-        return createItemCategoryClassificationColumn(
+        return createItemCategoryColumn(
           column.key,
           column.label,
           column.className,
@@ -263,14 +263,14 @@ export function useItemCategoryClassificationPage() {
   };
 }
 
-export function useItemCategoryClassificationFormPage({
+export function useItemCategoryFormPage({
   mode: providedMode,
   onSaved,
   row,
 }: {
   mode?: ItemActionMode;
   onSaved?: () => void;
-  row?: ItemCategoryClassificationTableRowData;
+  row?: ItemCategoryTableRowData;
 } = {}) {
   const store = useItemManagementStore();
   const setupRecords = useSetupRecordsByKind(store.getSetupRecords);
@@ -288,20 +288,20 @@ export function useItemCategoryClassificationFormPage({
     [row],
   );
   const isReadonly = mode === "view";
-  const [values, setValues] = useState<ItemCategoryClassificationFormValues>(
+  const [values, setValues] = useState<ItemCategoryFormValues>(
     () =>
       existingRef
         ? {
-            ...createItemCategoryClassificationFormValues(existingRef.record),
+            ...createItemCategoryFormValues(existingRef.record),
             parentId:
               existingRef.parentId &&
               existingRef.parentId !== ItemCategoryUnassignedRecordId
                 ? existingRef.parentId
                 : (existingRef.record.parentIds?.[0] ?? ""),
           }
-        : ItemCategoryClassificationInitialFormValues,
+        : ItemCategoryInitialFormValues,
   );
-  const [errors, setErrors] = useState<ItemCategoryClassificationFormErrors>(
+  const [errors, setErrors] = useState<ItemCategoryFormErrors>(
     {},
   );
   const parentOptions = useMemo(
@@ -315,8 +315,8 @@ export function useItemCategoryClassificationFormPage({
   );
 
   function updateField<
-    TField extends keyof ItemCategoryClassificationFormValues,
-  >(field: TField, value: ItemCategoryClassificationFormValues[TField]) {
+    TField extends keyof ItemCategoryFormValues,
+  >(field: TField, value: ItemCategoryFormValues[TField]) {
     if (isReadonly) {
       return;
     }
@@ -337,7 +337,7 @@ export function useItemCategoryClassificationFormPage({
         : event.target.value;
 
     updateField(
-      name as keyof ItemCategoryClassificationFormValues,
+      name as keyof ItemCategoryFormValues,
       value as never,
     );
   }
@@ -371,7 +371,7 @@ export function useItemCategoryClassificationFormPage({
   }
 
   function validateBeforeSubmit() {
-    const nextErrors = validateItemCategoryClassificationForm(values, {
+    const nextErrors = validateItemCategoryForm(values, {
       recordId: existingRef?.record.id,
       records: allRecords,
     });
@@ -398,7 +398,7 @@ export function useItemCategoryClassificationFormPage({
         return;
       }
 
-      const nextRecord = updateItemCategoryClassificationRecord(
+      const nextRecord = updateItemCategoryRecord(
         existingRef.record,
         values,
       );
@@ -421,7 +421,7 @@ export function useItemCategoryClassificationFormPage({
 
     store.addSetupRecord(
       "category",
-      createItemCategoryClassificationRecord(values),
+      createItemCategoryRecord(values),
     );
     onSaved?.();
   }
@@ -472,11 +472,11 @@ function useAllSetupRecords(
   );
 }
 
-function createItemCategoryClassificationColumn(
-  key: ItemCategoryClassificationTableColumnKey,
+function createItemCategoryColumn(
+  key: ItemCategoryTableColumnKey,
   header: string,
   className: string,
-): ColumnDef<ItemCategoryClassificationTableRowData> {
+): ColumnDef<ItemCategoryTableRowData> {
   if (key === "name") {
     return {
       id: key,
@@ -502,7 +502,7 @@ function createItemCategoryClassificationColumn(
   };
 }
 
-function createItemCategoryClassificationRows({
+function createItemCategoryRows({
   expandedIds,
   items,
   setupRecords,
@@ -596,7 +596,7 @@ function createRowsForRecord({
   record: ItemSetupRecord;
   setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>;
   typeParentIdsByTypeId: Map<string, string[]>;
-}): ItemCategoryClassificationTableRowData[] {
+}): ItemCategoryTableRowData[] {
   if (pathIds.includes(record.id)) {
     return [];
   }
@@ -627,7 +627,7 @@ function createRowsForRecord({
           status: "Inactive",
         } satisfies ItemSetupRecord)
       : record;
-  const row: ItemCategoryClassificationTableRowData = {
+  const row: ItemCategoryTableRowData = {
     id: `${kind}-${record.id}-${parentId || "root"}-${level}`,
     accountingSetupStatus,
     effectiveAccountingSetup,
@@ -898,7 +898,7 @@ function createParentOptions({
   items: ItemRecord[];
   setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>;
 }) {
-  const rows = createItemCategoryClassificationRows({
+  const rows = createItemCategoryRows({
     expandedIds: new Set(
       [
         ...setupRecords.category,

@@ -1,12 +1,10 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import {
-	ItemUomDictionary,
-	ItemsHref,
-} from "@/app/src/constants/modules/maintenance/items/ItemManagementConstants";
+import { ItemsHref } from "@/app/src/constants/modules/maintenance/items/ItemManagementConstants";
 import { createWarehouseItemsHref } from "@/app/src/constants/modules/maintenance/warehouses/WarehouseConstants";
 import {
 	ItemInitialFormValues,
@@ -24,7 +22,6 @@ import type {
 	ItemAttributeAssignment,
 	ItemPriceListAssignment,
 	ItemSupplierAssignment,
-	ItemUomConversion,
 } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { WarehouseRecord } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
@@ -32,6 +29,8 @@ import { validateItemForm } from "@/app/src/validations/modules/maintenance/item
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
 import { useWarehousesStore } from "@/app/src/hooks/modules/maintenance/warehouses/useWarehouses";
 import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/items/useItemManagement";
+import { fetchUnitsOfMeasurement } from "@/app/src/services/modules/maintenance/unit-of-measurement/UnitOfMeasurementApi";
+import { UnitOfMeasurementQueryKeys } from "@/app/src/services/modules/maintenance/unit-of-measurement/UnitOfMeasurementQueryKeys";
 
 const NumberItemFormFields = new Set<keyof ItemFormValues>([
 	"costPrice",
@@ -69,8 +68,27 @@ export function useItemsFormPage() {
 	);
 	const [errors, setErrors] = useState<ItemFormErrors>({});
 	const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+	const unitsOfMeasurementQuery = useQuery({
+		queryKey: UnitOfMeasurementQueryKeys.list(),
+		queryFn: fetchUnitsOfMeasurement,
+	});
 	const nextStatus: ItemStatus =
 		existingItem?.status === "Active" ? "Inactive" : "Active";
+	const uomOptions = useMemo(
+		() =>
+			(unitsOfMeasurementQuery.data?.records ?? [])
+				.filter(
+					(unit) =>
+						unit.status === "Active" ||
+						(values.uom.trim().length > 0 && unit.symbol === values.uom),
+				)
+				.map((unit) => ({
+					description: `${unit.symbol} | ${unit.quantityMode}`,
+					name: unit.name,
+					value: unit.symbol,
+				})),
+		[unitsOfMeasurementQuery.data?.records, values.uom],
+	);
 
 	function updateField<TKey extends keyof ItemFormValues>(
 		field: TKey,
@@ -335,72 +353,6 @@ export function useItemsFormPage() {
 		}));
 	}
 
-	function addUomConversion() {
-		if (isReadonly) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			uomConversions: [
-				...current.uomConversions,
-				{
-					id: `item-uom-${Date.now()}`,
-					fromUom: current.uom,
-					quantity: 1,
-					toUom: "PCS",
-					priceBasis: "Source",
-					barcode: "",
-					isPurchaseDefault: false,
-					isSalesDefault: false,
-					isStockDefault: false,
-				},
-			],
-		}));
-	}
-
-	function updateUomConversion(
-		conversionId: string,
-		field: keyof ItemUomConversion,
-		value: string,
-	) {
-		if (isReadonly) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			uomConversions: current.uomConversions.map((conversion) =>
-				conversion.id === conversionId
-					? {
-							...conversion,
-							[field]:
-								field === "quantity"
-									? Number(value) || 0
-									: field === "isPurchaseDefault" ||
-										  field === "isSalesDefault" ||
-										  field === "isStockDefault"
-										? value === "true"
-										: value,
-						}
-					: conversion,
-			),
-		}));
-	}
-
-	function removeUomConversion(conversionId: string) {
-		if (isReadonly) {
-			return;
-		}
-
-		setValues((current) => ({
-			...current,
-			uomConversions: current.uomConversions.filter(
-				(conversion) => conversion.id !== conversionId,
-			),
-		}));
-	}
-
 	function updatePriceListPrice(priceListId: string, price: number) {
 		if (isReadonly) {
 			return;
@@ -481,7 +433,6 @@ export function useItemsFormPage() {
 		addAttributeAssignment,
 		addTag,
 		addSupplier,
-		addUomConversion,
 		attributeRecords: store.itemAttributes,
 		categoryOptions: createCategorySetupOptions(setupRecords.category),
 		errors,
@@ -499,7 +450,6 @@ export function useItemsFormPage() {
 		removeAttributeAssignment,
 		removeTag,
 		removeSupplier,
-		removeUomConversion,
 		reorderAttributeAssignment,
 		responsibilityCenterOptions:
 			createResponsibilityCenterOptions(responsibilityCenters),
@@ -510,16 +460,11 @@ export function useItemsFormPage() {
 				.filter((supplier) => supplier.status === "Active")
 				.map((supplier) => supplier.name),
 		),
-		uomOptions: ItemUomDictionary.map((uom) => ({
-			description: `${uom.code} | ${uom.quantityKind}`,
-			name: uom.description,
-			value: uom.code,
-		})),
+		uomOptions,
 		updateField,
 		updateAttributeAssignment,
 		updatePriceListPrice,
 		updateSupplier,
-		updateUomConversion,
 		validateBeforeSubmit,
 		values,
 		warehouseItemsHref: createSelectedWarehouseItemsHref(

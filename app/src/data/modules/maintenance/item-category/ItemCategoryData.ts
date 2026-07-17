@@ -1,11 +1,11 @@
 export {
-	createItemCategoryClassificationFormValues,
-	createItemCategoryClassificationRecord,
+	createItemCategoryFormValues,
+	createItemCategoryRecord,
 	getItemCategoryAccountingSetupMode,
-	ItemCategoryClassificationInitialFormValues,
+	ItemCategoryInitialFormValues,
 	MockItemSetupRecords,
 	normalizeItemCategoryAccountingSetup,
-	updateItemCategoryClassificationRecord,
+	updateItemCategoryRecord,
 } from "@/app/src/data/modules/maintenance/items/ItemManagementData";
 
 export { MockItems } from "@/app/src/data/modules/maintenance/items/ItemManagementData";

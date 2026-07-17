@@ -1,7 +1,7 @@
 import type {
 	ItemCategoryAccountingSetup,
 	ItemCategoryAccountingSetupMode,
-	ItemCategoryClassificationFormValues,
+	ItemCategoryFormValues,
 	ItemAttributeRecord,
 	ItemBundleRecord,
 	ItemFormValues,
@@ -405,30 +405,6 @@ export const MockItems: ItemRecord[] = [
 			{ id: "item-paper-attr-material", attributeId: "attr-material", value: "Paper" },
 			{ id: "item-paper-attr-lot-grade", attributeId: "attr-lot-grade", value: "A" },
 		],
-		uomConversions: [
-			{
-				id: "item-paper-uom-ream-pcs",
-				fromUom: "REAM",
-				quantity: 500,
-				toUom: "PCS",
-				priceBasis: "Source",
-				barcode: "4801234567890",
-				isPurchaseDefault: true,
-				isSalesDefault: true,
-				isStockDefault: true,
-			},
-			{
-				id: "item-paper-uom-box-ream",
-				fromUom: "BOX",
-				quantity: 5,
-				toUom: "REAM",
-				priceBasis: "Source",
-				barcode: "",
-				isPurchaseDefault: false,
-				isSalesDefault: false,
-				isStockDefault: false,
-			},
-		],
 		priceListPrices: [
 			{ id: "item-paper-price-retail", priceListId: "price-retail", price: 250 },
 			{ id: "item-paper-price-wholesale", priceListId: "price-wholesale", price: 230 },
@@ -488,19 +464,6 @@ export const MockItems: ItemRecord[] = [
 		serialTracking: false,
 		attributeAssignments: [
 			{ id: "item-roll-attr-material", attributeId: "attr-material", value: "Paper" },
-		],
-		uomConversions: [
-			{
-				id: "item-roll-uom-box-roll",
-				fromUom: "BOX",
-				quantity: 50,
-				toUom: "ROLL",
-				priceBasis: "Source",
-				barcode: "4801234567906",
-				isPurchaseDefault: true,
-				isSalesDefault: false,
-				isStockDefault: false,
-			},
 		],
 		priceListPrices: [
 			{ id: "item-roll-price-retail", priceListId: "price-retail", price: 50 },
@@ -569,19 +532,6 @@ export const MockItems: ItemRecord[] = [
 		serialTracking: false,
 		attributeAssignments: [
 			{ id: "item-bundle-attr-material", attributeId: "attr-material", value: "Mixed" },
-		],
-		uomConversions: [
-			{
-				id: "item-bundle-uom-set-pcs",
-				fromUom: "SET",
-				quantity: 1,
-				toUom: "BUNDLE",
-				priceBasis: "Source",
-				barcode: "4801234567999",
-				isPurchaseDefault: false,
-				isSalesDefault: true,
-				isStockDefault: true,
-			},
 		],
 		priceListPrices: [
 			{ id: "item-bundle-price-retail", priceListId: "price-retail", price: 2450 },
@@ -759,7 +709,7 @@ export const ItemInitialFormValues: ItemFormValues = {
 	suppliers: [],
 	barcode: "",
 	primaryCategory: "",
-	uom: "PCS",
+	uom: "PC",
 	responsibilityCenter: "",
 	costPrice: 0,
 	sellingPrice: 0,
@@ -786,13 +736,12 @@ export const ItemInitialFormValues: ItemFormValues = {
 	lotTracking: false,
 	serialTracking: false,
 	attributeAssignments: [],
-	uomConversions: [],
 	priceListPrices: [],
 	description: "",
 	tags: [],
 };
 
-export const ItemCategoryClassificationInitialFormValues: ItemCategoryClassificationFormValues =
+export const ItemCategoryInitialFormValues: ItemCategoryFormValues =
 	{
 		name: "",
 		parentId: "",
@@ -841,7 +790,6 @@ export function createItemFormValues(item: ItemRecord): ItemFormValues {
 		lotTracking: item.lotTracking,
 		serialTracking: item.serialTracking,
 		attributeAssignments: item.attributeAssignments ?? [],
-		uomConversions: item.uomConversions ?? [],
 		priceListPrices: item.priceListPrices ?? [],
 		description: item.description,
 		tags: item.tags,
@@ -927,9 +875,9 @@ function getDefaultSupplier(suppliers: ItemSupplierAssignment[]) {
 	return suppliers.find((supplier) => supplier.isDefault)?.supplier ?? "";
 }
 
-export function createItemCategoryClassificationFormValues(
+export function createItemCategoryFormValues(
 	record: ItemSetupRecord,
-): ItemCategoryClassificationFormValues {
+): ItemCategoryFormValues {
 	const accountingSetup = normalizeItemCategoryAccountingSetup(
 		record.accountingSetup,
 	);
@@ -945,8 +893,8 @@ export function createItemCategoryClassificationFormValues(
 	};
 }
 
-export function createItemCategoryClassificationRecord(
-	values: ItemCategoryClassificationFormValues,
+export function createItemCategoryRecord(
+	values: ItemCategoryFormValues,
 ): ItemSetupRecord {
 	return {
 		id: `item-category-${Date.now()}`,
@@ -963,9 +911,9 @@ export function createItemCategoryClassificationRecord(
 	};
 }
 
-export function updateItemCategoryClassificationRecord(
+export function updateItemCategoryRecord(
 	record: ItemSetupRecord,
-	values: ItemCategoryClassificationFormValues,
+	values: ItemCategoryFormValues,
 ): ItemSetupRecord {
 	return {
 		...record,

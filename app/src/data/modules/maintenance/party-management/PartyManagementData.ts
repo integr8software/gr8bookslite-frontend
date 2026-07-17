@@ -103,8 +103,6 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   landline: "",
 };
 
-export { PartyInformationInitialRecords } from "@/app/src/data/modules/maintenance/party-management/PartyManagementSeedData";
-
 export function createPartyInformationFormValues(
   record: PartyInformationRecord,
 ): PartyInformationFormValues {

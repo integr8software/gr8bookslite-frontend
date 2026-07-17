@@ -1,14 +1,14 @@
 import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
 	ItemCategoryAccountingSetup,
-	ItemCategoryClassificationTableColumnKey,
+	ItemCategoryTableColumnKey,
 	ItemStatus,
 } from "@/app/src/types/modules/maintenance/item-category/ItemCategoryTypes";
 
 export const ItemCategoryHref = MODULE_ROUTE_MAP.IC;
 
-export const ItemCategoryClassificationPaginationStorageKey =
-	"maintenance.item-category.classification";
+export const ItemCategoryPaginationStorageKey =
+	"maintenance.item-category";
 
 export const ItemCategoryUnassignedRecordId = "item-category-unassigned";
 
@@ -39,9 +39,9 @@ export const ItemCategorySystemDefaultAccountingSetup: ItemCategoryAccountingSet
 		expenseAccount: "Expense - Operating Supplies",
 	};
 
-export const ItemCategoryClassificationTableColumns: Array<
+export const ItemCategoryTableColumns: Array<
 	| {
-			key: ItemCategoryClassificationTableColumnKey;
+			key: ItemCategoryTableColumnKey;
 			label: string;
 			className: string;
 	  }

@@ -2,6 +2,10 @@ export function normalizeLowercaseText(value: string) {
 	return value.trim().toLowerCase();
 }
 
+export function normalizeLowercaseWhitespace(value: string) {
+	return normalizeWhitespace(value).toLowerCase();
+}
+
 export function normalizeUppercaseText(value: string) {
 	return value.trim().toUpperCase();
 }

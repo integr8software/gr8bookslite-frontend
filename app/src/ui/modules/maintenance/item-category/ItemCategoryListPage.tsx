@@ -10,10 +10,10 @@ import {
 	Tags,
 } from "lucide-react";
 import {
-	ItemCategoryClassificationPaginationStorageKey,
+	ItemCategoryPaginationStorageKey,
 	ItemStatusOptions,
 } from "@/app/src/constants/modules/maintenance/item-category/ItemCategoryConstants";
-import { useItemCategoryClassificationPage } from "@/app/src/hooks/modules/maintenance/item-category/useItemCategoryClassificationPage";
+import { useItemCategoryPage } from "@/app/src/hooks/modules/maintenance/item-category/useItemCategoryPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
 	ModuleHeader,
@@ -30,9 +30,9 @@ import {
 	ModuleTableSearch,
 	ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-import { ItemCategoryClassificationDrawer } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryClassificationDrawer";
-import { ItemCategoryClassificationTableRow } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryClassificationTableRow";
-import { ItemCategoryConfigDescription } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryClassificationText";
+import { ItemCategoryDrawer } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryDrawer";
+import { ItemCategoryTableRow } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryTableRow";
+import { ItemCategoryConfigDescription } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryText";
 
 const AccountingStatusOptions = [
 	"Configured",
@@ -42,7 +42,7 @@ const AccountingStatusOptions = [
 ] as const;
 
 export function ItemCategoryListPage() {
-	const page = useItemCategoryClassificationPage();
+	const page = useItemCategoryPage();
 	const metrics: ModuleStatisticCardItem[] = [
 		{
 			helper: "All parent and child category records",
@@ -106,9 +106,9 @@ export function ItemCategoryListPage() {
 				isLoading={page.isLoading}
 				lastSyncedAt={page.lastSyncedAt}
 				minWidthClassName="min-w-[74rem]"
-				paginationStorageKey={ItemCategoryClassificationPaginationStorageKey}
+				paginationStorageKey={ItemCategoryPaginationStorageKey}
 				table={page.table}
-				tableTitle="Category classifications"
+				tableTitle="Item categories"
 				toolbar={
 					<ModuleTableToolbar>
 						<ModuleTableSearch
@@ -147,7 +147,7 @@ export function ItemCategoryListPage() {
 					</ModuleTableToolbar>
 				}
 				renderRow={({ id, original }) => (
-					<ItemCategoryClassificationTableRow
+					<ItemCategoryTableRow
 						key={id}
 						expandedIds={page.expandedIds}
 						row={original}
@@ -162,7 +162,7 @@ export function ItemCategoryListPage() {
 					/>
 				)}
 			/>
-			<ItemCategoryClassificationDrawer
+			<ItemCategoryDrawer
 				drawerState={page.drawerState}
 				onClose={() => page.setDrawerState(null)}
 			/>

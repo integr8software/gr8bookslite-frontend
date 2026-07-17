@@ -18,6 +18,7 @@ import {
 import { useItemBundlesFormPage } from "@/app/src/hooks/modules/maintenance/item-bundles/useItemBundlesFormPage";
 import type { ItemBundleLine } from "@/app/src/types/modules/maintenance/item-bundles/ItemBundlesTypes";
 import type { ItemRecord } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
+import type { UnitOfMeasurementRecord } from "@/app/src/types/modules/maintenance/unit-of-measurement/UnitOfMeasurementTypes";
 import { getItemAllowsDecimalQuantity } from "@/app/src/validations/modules/maintenance/item-bundles/ItemBundlesValidation";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import {
@@ -195,6 +196,7 @@ export function ItemBundlesFormPage() {
 											itemOptions={page.itemOptions}
 											lineErrors={page.errors.lineErrors?.[line.id]}
 											line={line}
+											unitsOfMeasurement={page.unitsOfMeasurement}
 											onRemove={page.removeLine}
 											onUpdate={page.updateLine}
 										/>
@@ -227,6 +229,7 @@ function BundleLineRow({
 	itemOptions,
 	lineErrors,
 	line,
+	unitsOfMeasurement,
 	onRemove,
 	onUpdate,
 }: {
@@ -235,6 +238,7 @@ function BundleLineRow({
 	itemOptions: AppAdvancedDropdownOption[];
 	lineErrors?: Partial<Record<"itemId" | "quantity", string>>;
 	line: ItemBundleLine;
+	unitsOfMeasurement: UnitOfMeasurementRecord[];
 	onRemove: (lineId: string) => void;
 	onUpdate: (lineId: string, update: Partial<ItemBundleLine>) => void;
 }) {
@@ -244,7 +248,10 @@ function BundleLineRow({
 		transform: CSS.Transform.toString(transform),
 		transition,
 	};
-	const allowDecimalQuantity = getItemAllowsDecimalQuantity(item);
+	const allowDecimalQuantity = getItemAllowsDecimalQuantity(
+		item,
+		unitsOfMeasurement,
+	);
 
 	return (
 		<tr ref={setNodeRef} style={style} className={isDragging ? "relative z-10 bg-skyblue/5 shadow-sm" : undefined}>

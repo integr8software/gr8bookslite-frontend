@@ -1,5 +1,5 @@
-import { ItemUomDictionary } from "@/app/src/constants/modules/maintenance/items/ItemManagementConstants";
 import type { ItemRecord } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
+import type { UnitOfMeasurementRecord } from "@/app/src/types/modules/maintenance/unit-of-measurement/UnitOfMeasurementTypes";
 import type {
 	ItemBundleFormErrors,
 	ItemBundleFormValues,
@@ -8,6 +8,7 @@ import type {
 export function validateItemBundleForm(
 	values: ItemBundleFormValues,
 	items: ItemRecord[],
+	unitsOfMeasurement: UnitOfMeasurementRecord[] = [],
 ): ItemBundleFormErrors {
 	const errors: ItemBundleFormErrors = {};
 	const lineErrors: NonNullable<ItemBundleFormErrors["lineErrors"]> = {};
@@ -39,10 +40,10 @@ export function validateItemBundleForm(
 		if (line.quantity <= 0) {
 			currentErrors.quantity = "Quantity must be greater than zero.";
 		} else if (
-			!getItemAllowsDecimalQuantity(selectedItem) &&
+			!getItemAllowsDecimalQuantity(selectedItem, unitsOfMeasurement) &&
 			!Number.isInteger(line.quantity)
 		) {
-			currentErrors.quantity = "PCS quantity must be a whole number.";
+			currentErrors.quantity = "This UOM requires a whole number.";
 		}
 
 		if (Object.keys(currentErrors).length > 0) {
@@ -67,13 +68,15 @@ export function hasItemBundleErrors(errors: ItemBundleFormErrors) {
 	);
 }
 
-export function getItemAllowsDecimalQuantity(item?: ItemRecord) {
+export function getItemAllowsDecimalQuantity(
+	item?: ItemRecord,
+	unitsOfMeasurement: UnitOfMeasurementRecord[] = [],
+) {
 	if (!item) {
 		return true;
 	}
 
-	const itemUom = ItemUomDictionary.find((uom) => uom.code === item.uom);
-	const uomCode = itemUom?.code ?? item.uom;
+	const itemUom = unitsOfMeasurement.find((uom) => uom.symbol === item.uom);
 
-	return uomCode !== "PCS";
+	return itemUom?.quantityMode !== "Integer";
 }

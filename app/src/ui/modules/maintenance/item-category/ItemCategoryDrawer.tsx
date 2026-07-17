@@ -1,17 +1,17 @@
 "use client";
 
-import { ItemCategoryConfigDescription } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryClassificationText";
+import { ItemCategoryConfigDescription } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryText";
 import {
 	type ItemCategoryDrawerState,
-	useItemCategoryClassificationFormPage,
-} from "@/app/src/hooks/modules/maintenance/item-category/useItemCategoryClassificationPage";
+	useItemCategoryFormPage,
+} from "@/app/src/hooks/modules/maintenance/item-category/useItemCategoryPage";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
-import { ItemCategoryClassificationFields } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryClassificationFields";
+import { ItemCategoryFields } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryFields";
 
-const FormId = "item-category-classification-drawer-form";
+const FormId = "item-category-drawer-form";
 
-export function ItemCategoryClassificationDrawer({
+export function ItemCategoryDrawer({
 	drawerState,
 	onClose,
 }: {
@@ -19,7 +19,7 @@ export function ItemCategoryClassificationDrawer({
 	onClose: () => void;
 }) {
 	return (
-		<ItemCategoryClassificationDrawerPanel
+		<ItemCategoryDrawerPanel
 			key={`${drawerState?.mode ?? "closed"}-${drawerState?.row?.id ?? "new"}`}
 			drawerState={drawerState}
 			onClose={onClose}
@@ -27,14 +27,14 @@ export function ItemCategoryClassificationDrawer({
 	);
 }
 
-function ItemCategoryClassificationDrawerPanel({
+function ItemCategoryDrawerPanel({
 	drawerState,
 	onClose,
 }: {
 	drawerState: ItemCategoryDrawerState;
 	onClose: () => void;
 }) {
-	const page = useItemCategoryClassificationFormPage({
+	const page = useItemCategoryFormPage({
 		mode: drawerState?.mode ?? "add",
 		onSaved: onClose,
 		row: drawerState?.row,
@@ -59,8 +59,12 @@ function ItemCategoryClassificationDrawerPanel({
 			savingLabel={getModuleSavePendingLabel(page.mode)}
 			title={title}
 		>
-			<form id={FormId} onSubmit={page.handleSubmit} className="px-6 py-5">
-				<ItemCategoryClassificationFields
+			<form
+				id={FormId}
+				onSubmit={page.handleSubmit}
+				className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
+			>
+				<ItemCategoryFields
 					errors={page.errors}
 					isReadonly={page.isReadonly}
 					parentOptions={page.parentOptions}

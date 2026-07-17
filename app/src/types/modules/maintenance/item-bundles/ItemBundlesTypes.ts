@@ -2,6 +2,7 @@ import type {
 	ItemRecord,
 	ItemStatus,
 } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
+import type { UnitOfMeasurementRecord } from "@/app/src/types/modules/maintenance/unit-of-measurement/UnitOfMeasurementTypes";
 
 export type ItemBundleLine = {
 	id: string;
@@ -74,6 +75,7 @@ export type ItemBundleFormPageState = {
 		originalCost: number;
 		originalSelling: number;
 	};
+	unitsOfMeasurement: UnitOfMeasurementRecord[];
 	values: ItemBundleFormValues;
 	addLine: () => void;
 	removeLine: (lineId: string) => void;

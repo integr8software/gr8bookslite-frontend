@@ -1,6 +1,6 @@
 import type {
 	ItemCategoryAccountingSetup,
-	ItemCategoryClassificationTableColumnKey,
+	ItemCategoryTableColumnKey,
 	ItemPerishability,
 	ItemRecord,
 	ItemStatus,
@@ -8,7 +8,6 @@ import type {
 	ItemTaxTreatment,
 } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
 import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
-import { SystemUomOptions, SystemUomRows } from "@/app/src/data/shared/uom/UomData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableExportButton";
 
 export const ItemsHref = MODULE_ROUTE_MAP.I;
@@ -45,10 +44,7 @@ export const ItemTaxTreatmentSelectOptions = [
 
 export const VatExclusiveTaxMultiplier = 1.12;
 
-export const ItemUomDictionary = SystemUomRows;
-export const ItemUomOptions = SystemUomOptions;
-
-export const ItemCategoryClassificationPaginationStorageKey =
+export const ItemCategoryPaginationStorageKey =
 	"maintenance.items.item-category.classification";
 
 export const ItemCategoryUnassignedRecordId = "item-category-unassigned";
@@ -127,9 +123,9 @@ export function getItemsTableMinWidthClassName(visibleColumnCount: number) {
 	return "min-w-[64rem]";
 }
 
-export const ItemCategoryClassificationTableColumns: Array<
+export const ItemCategoryTableColumns: Array<
 	| {
-			key: ItemCategoryClassificationTableColumnKey;
+			key: ItemCategoryTableColumnKey;
 			label: string;
 			className: string;
 	  }

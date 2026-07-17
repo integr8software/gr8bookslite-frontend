@@ -95,18 +95,6 @@ export type ItemSupplierRecord = {
 	status: ItemStatus;
 };
 
-export type ItemUomConversion = {
-	id: string;
-	fromUom: string;
-	quantity: number;
-	toUom: string;
-	priceBasis?: "Source" | "Target";
-	barcode?: string;
-	isPurchaseDefault?: boolean;
-	isSalesDefault?: boolean;
-	isStockDefault?: boolean;
-};
-
 export type ItemAttributeUsage = "Variant" | "Stock Classification" | "Item Detail";
 
 export type ItemAttributeRecord = {
@@ -187,7 +175,6 @@ export type ItemRecord = {
 	lotTracking: boolean;
 	serialTracking: boolean;
 	attributeAssignments: ItemAttributeAssignment[];
-	uomConversions: ItemUomConversion[];
 	priceListPrices: ItemPriceListAssignment[];
 	description: string;
 	tags: string[];
@@ -230,13 +217,12 @@ export type ItemFormValues = {
 	lotTracking: boolean;
 	serialTracking: boolean;
 	attributeAssignments: ItemAttributeAssignment[];
-	uomConversions: ItemUomConversion[];
 	priceListPrices: ItemPriceListAssignment[];
 	description: string;
 	tags: string[];
 };
 
-export type ItemCategoryClassificationFormValues = {
+export type ItemCategoryFormValues = {
 	name: string;
 	parentId: string;
 	description: string;
@@ -250,9 +236,9 @@ export type ItemFormErrors = Partial<
 	Record<keyof ItemFormValues | "suppliers", string>
 >;
 
-export type ItemCategoryClassificationFormErrors = Partial<
+export type ItemCategoryFormErrors = Partial<
 	Record<
-		| keyof ItemCategoryClassificationFormValues
+		| keyof ItemCategoryFormValues
 		| keyof ItemCategoryAccountingSetup,
 		string
 	>
@@ -282,13 +268,13 @@ export type ItemTableColumnKey =
 	| "sellingPrice"
 	| "status";
 
-export type ItemCategoryClassificationTableColumnKey =
+export type ItemCategoryTableColumnKey =
 	| "name"
 	| "parentName"
 	| "accountingSetupStatus"
 	| "status";
 
-export type ItemCategoryClassificationTableRowData = {
+export type ItemCategoryTableRowData = {
 	id: string;
 	record: ItemSetupRecord;
 	recordKind: ItemSetupKind;

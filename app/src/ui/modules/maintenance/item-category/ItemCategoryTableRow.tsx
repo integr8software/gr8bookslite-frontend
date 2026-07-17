@@ -1,5 +1,5 @@
 import { ChevronRight } from "lucide-react";
-import type { ItemCategoryClassificationTableRowData } from "@/app/src/types/modules/maintenance/item-category/ItemCategoryTypes";
+import type { ItemCategoryTableRowData } from "@/app/src/types/modules/maintenance/item-category/ItemCategoryTypes";
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,
@@ -7,13 +7,13 @@ import {
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 
-type ItemCategoryClassificationTableRowProps = {
+type ItemCategoryTableRowProps = {
 	expandedIds: Set<string>;
-	row: ItemCategoryClassificationTableRowData;
-	onEditRecord: (row: ItemCategoryClassificationTableRowData) => void;
-	onStatusChange: (row: ItemCategoryClassificationTableRowData) => void;
+	row: ItemCategoryTableRowData;
+	onEditRecord: (row: ItemCategoryTableRowData) => void;
+	onStatusChange: (row: ItemCategoryTableRowData) => void;
 	onToggleExpanded: (recordId: string) => void;
-	onViewRecord: (row: ItemCategoryClassificationTableRowData) => void;
+	onViewRecord: (row: ItemCategoryTableRowData) => void;
 };
 
 const AccountingBadgeClassNames = {
@@ -23,14 +23,14 @@ const AccountingBadgeClassNames = {
 	"Not Set": "bg-slate-100 text-slate-600 ring-slate-200",
 } as const;
 
-export function ItemCategoryClassificationTableRow({
+export function ItemCategoryTableRow({
 	expandedIds,
 	onEditRecord,
 	onStatusChange,
 	onToggleExpanded,
 	onViewRecord,
 	row,
-}: ItemCategoryClassificationTableRowProps) {
+}: ItemCategoryTableRowProps) {
 	const { record } = row;
 	const isStatusLockedByParent =
 		row.hasInactiveAncestor && record.status === "Inactive";

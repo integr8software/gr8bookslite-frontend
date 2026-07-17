@@ -12,6 +12,8 @@ import {
 import { GoodsIssueEntries } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueEntries";
 import { GoodsIssueFormHeader } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueFormHeader";
 import { GoodsIssueNotFound } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueNotFound";
+import { openGoodsIssuePdf } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssuePdf";
+import { GoodsIssueReportPreview } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueReportPreview";
 import {
 	ModuleTabs,
 	type ModuleTabItem,
@@ -27,6 +29,7 @@ export function GoodsIssueActionPage() {
 		typeof params.recordId === "string" ? params.recordId : undefined;
 	const [activeTab, setActiveTab] =
 		useState<GoodsIssueDetailsSection>("issue");
+	const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
 	const issueForm = useGoodsIssueActionForm(mode, recordId, () => {
 		router.push(GoodsIssueHref);
 	});
@@ -36,9 +39,11 @@ export function GoodsIssueActionPage() {
 	}
 
 	return (
+		<>
 		<section className="grid gap-5">
 			<GoodsIssueFormHeader
 				mode={mode}
+				onPreview={() => setIsReportPreviewOpen(true)}
 				values={issueForm.values}
 				onSubmit={issueForm.submitIssue}
 			/>
@@ -60,6 +65,13 @@ export function GoodsIssueActionPage() {
 				onRowsChange={issueForm.updateLineEntries}
 			/>
 		</section>
+		<GoodsIssueReportPreview
+			isOpen={isReportPreviewOpen}
+			values={issueForm.values}
+			onClose={() => setIsReportPreviewOpen(false)}
+			onGeneratePdf={() => openGoodsIssuePdf(issueForm.values)}
+		/>
+		</>
 	);
 }
 

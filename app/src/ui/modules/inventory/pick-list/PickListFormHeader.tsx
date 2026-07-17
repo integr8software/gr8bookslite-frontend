@@ -13,15 +13,18 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 type PickListFormHeaderProps = {
 	mode: PickListActionMode;
+	onPreview: () => void;
 	values: PickListFormValues;
 	onSubmit: () => void;
 };
 
 export function PickListFormHeader({
 	mode,
+	onPreview,
 	onSubmit,
 	values,
 }: PickListFormHeaderProps) {
@@ -44,16 +47,24 @@ export function PickListFormHeader({
 					: "Complete delivery, driver, cluster, and Party Code rows before saving."
 			}
 			actionsClassName="items-center justify-start gap-2 sm:shrink-0 sm:justify-end [&>a]:shrink-0 [&>button]:shrink-0"
-			actions={<PickListHeaderActions mode={mode} onSubmit={onSubmit} />}
+			actions={
+				<PickListHeaderActions
+					mode={mode}
+					onPreview={onPreview}
+					onSubmit={onSubmit}
+				/>
+			}
 		/>
 	);
 }
 
 function PickListHeaderActions({
 	mode,
+	onPreview,
 	onSubmit,
 }: {
 	mode: PickListActionMode;
+	onPreview: () => void;
 	onSubmit: () => void;
 }) {
 	const overflowItems = createOverflowItems(onSubmit);
@@ -64,6 +75,7 @@ function PickListHeaderActions({
 				<ArrowLeft className="h-4 w-4" aria-hidden="true" />
 				Back
 			</Link>
+			<ReportPreviewAction onPreview={onPreview} />
 			{mode === "view" ? null : (
 				<>
 					<div className="flex lg:hidden">

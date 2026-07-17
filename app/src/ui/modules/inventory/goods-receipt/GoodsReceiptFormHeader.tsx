@@ -13,15 +13,18 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 type GoodsReceiptFormHeaderProps = {
 	mode: GoodsReceiptActionMode;
+	onPreview: () => void;
 	values: GoodsReceiptFormValues;
 	onSubmit: () => void;
 };
 
 export function GoodsReceiptFormHeader({
 	mode,
+	onPreview,
 	onSubmit,
 	values,
 }: GoodsReceiptFormHeaderProps) {
@@ -44,16 +47,24 @@ export function GoodsReceiptFormHeader({
 					: "Complete transaction, warehouse, Party Code, references, and received item entries before saving."
 			}
 			actionsClassName="items-center justify-start gap-2 sm:shrink-0 sm:justify-end [&>a]:shrink-0 [&>button]:shrink-0"
-			actions={<GoodsReceiptHeaderActions mode={mode} onSubmit={onSubmit} />}
+			actions={
+				<GoodsReceiptHeaderActions
+					mode={mode}
+					onPreview={onPreview}
+					onSubmit={onSubmit}
+				/>
+			}
 		/>
 	);
 }
 
 function GoodsReceiptHeaderActions({
 	mode,
+	onPreview,
 	onSubmit,
 }: {
 	mode: GoodsReceiptActionMode;
+	onPreview: () => void;
 	onSubmit: () => void;
 }) {
 	const overflowItems = createOverflowItems(onSubmit);
@@ -67,6 +78,7 @@ function GoodsReceiptHeaderActions({
 				<ArrowLeft className="h-4 w-4" aria-hidden="true" />
 				Back
 			</Link>
+			<ReportPreviewAction onPreview={onPreview} />
 			{mode === "view" ? null : (
 				<>
 					<div className="flex lg:hidden">

@@ -13,15 +13,18 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 type GoodsIssueFormHeaderProps = {
 	mode: GoodsIssueActionMode;
+	onPreview: () => void;
 	values: GoodsIssueFormValues;
 	onSubmit: () => void;
 };
 
 export function GoodsIssueFormHeader({
 	mode,
+	onPreview,
 	onSubmit,
 	values,
 }: GoodsIssueFormHeaderProps) {
@@ -44,16 +47,24 @@ export function GoodsIssueFormHeader({
 					: "Complete transaction, warehouse, Party Code, references, and issued item entries before saving."
 			}
 			actionsClassName="items-center justify-start gap-2 sm:shrink-0 sm:justify-end [&>a]:shrink-0 [&>button]:shrink-0"
-			actions={<GoodsIssueHeaderActions mode={mode} onSubmit={onSubmit} />}
+			actions={
+				<GoodsIssueHeaderActions
+					mode={mode}
+					onPreview={onPreview}
+					onSubmit={onSubmit}
+				/>
+			}
 		/>
 	);
 }
 
 function GoodsIssueHeaderActions({
 	mode,
+	onPreview,
 	onSubmit,
 }: {
 	mode: GoodsIssueActionMode;
+	onPreview: () => void;
 	onSubmit: () => void;
 }) {
 	const overflowItems = createOverflowItems(onSubmit);
@@ -64,6 +75,7 @@ function GoodsIssueHeaderActions({
 				<ArrowLeft className="h-4 w-4" aria-hidden="true" />
 				Back
 			</Link>
+			<ReportPreviewAction onPreview={onPreview} />
 			{mode === "view" ? null : (
 				<>
 					<div className="flex lg:hidden">

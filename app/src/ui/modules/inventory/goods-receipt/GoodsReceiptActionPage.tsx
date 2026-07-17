@@ -12,6 +12,8 @@ import {
 import { GoodsReceiptEntries } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptEntries";
 import { GoodsReceiptFormHeader } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptFormHeader";
 import { GoodsReceiptNotFound } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptNotFound";
+import { openGoodsReceiptPdf } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptPdf";
+import { GoodsReceiptReportPreview } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptReportPreview";
 import {
 	ModuleTabs,
 	type ModuleTabItem,
@@ -27,6 +29,7 @@ export function GoodsReceiptActionPage() {
 		typeof params.recordId === "string" ? params.recordId : undefined;
 	const [activeTab, setActiveTab] =
 		useState<GoodsReceiptDetailsSection>("receipt");
+	const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
 	const receiptForm = useGoodsReceiptActionForm(mode, recordId, () => {
 		router.push(GoodsReceiptHref);
 	});
@@ -36,9 +39,11 @@ export function GoodsReceiptActionPage() {
 	}
 
 	return (
+		<>
 		<section className="grid gap-5">
 			<GoodsReceiptFormHeader
 				mode={mode}
+				onPreview={() => setIsReportPreviewOpen(true)}
 				values={receiptForm.values}
 				onSubmit={receiptForm.submitReceipt}
 			/>
@@ -60,6 +65,13 @@ export function GoodsReceiptActionPage() {
 				onRowsChange={receiptForm.updateLineEntries}
 			/>
 		</section>
+		<GoodsReceiptReportPreview
+			isOpen={isReportPreviewOpen}
+			values={receiptForm.values}
+			onClose={() => setIsReportPreviewOpen(false)}
+			onGeneratePdf={() => openGoodsReceiptPdf(receiptForm.values)}
+		/>
+		</>
 	);
 }
 

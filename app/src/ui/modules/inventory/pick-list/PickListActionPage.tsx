@@ -12,6 +12,8 @@ import {
 import { PickListEntries } from "@/app/src/ui/modules/inventory/pick-list/PickListEntries";
 import { PickListFormHeader } from "@/app/src/ui/modules/inventory/pick-list/PickListFormHeader";
 import { PickListNotFound } from "@/app/src/ui/modules/inventory/pick-list/PickListNotFound";
+import { openPickListPdf } from "@/app/src/ui/modules/inventory/pick-list/PickListPdf";
+import { PickListReportPreview } from "@/app/src/ui/modules/inventory/pick-list/PickListReportPreview";
 import {
 	ModuleTabs,
 	type ModuleTabItem,
@@ -27,6 +29,7 @@ export function PickListActionPage() {
 		typeof params.recordId === "string" ? params.recordId : undefined;
 	const [activeTab, setActiveTab] =
 		useState<PickListDetailsSection>("delivery");
+	const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
 	const pickListForm = usePickListActionForm(mode, recordId, () => {
 		router.push(PickListHref);
 	});
@@ -36,9 +39,11 @@ export function PickListActionPage() {
 	}
 
 	return (
+		<>
 		<section className="grid gap-5">
 			<PickListFormHeader
 				mode={mode}
+				onPreview={() => setIsReportPreviewOpen(true)}
 				values={pickListForm.values}
 				onSubmit={pickListForm.submitPickList}
 			/>
@@ -60,6 +65,13 @@ export function PickListActionPage() {
 				onRowsChange={pickListForm.updateLineEntries}
 			/>
 		</section>
+		<PickListReportPreview
+			isOpen={isReportPreviewOpen}
+			values={pickListForm.values}
+			onClose={() => setIsReportPreviewOpen(false)}
+			onGeneratePdf={() => openPickListPdf(pickListForm.values)}
+		/>
+		</>
 	);
 }
 

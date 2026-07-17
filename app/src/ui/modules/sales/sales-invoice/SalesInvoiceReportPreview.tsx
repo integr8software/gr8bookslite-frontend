@@ -29,7 +29,7 @@ export function SalesInvoiceReportPreview({
       title="Sales Invoice Preview"
       description="Review the printable sales invoice layout."
       onClose={onClose}
-      onPrint={onPrint}
+      onGeneratePdf={onPrint}
     >
       <div className="mx-auto min-w-[58rem] max-w-[58rem] bg-white p-6 text-sm text-darknavy shadow-sm">
         <div className="flex items-start justify-between border-b border-darknavy/15 pb-4">

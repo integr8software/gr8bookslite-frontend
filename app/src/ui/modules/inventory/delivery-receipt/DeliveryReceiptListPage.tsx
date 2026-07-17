@@ -78,7 +78,7 @@ export function DeliveryReceiptListPage() {
 			<DeliveryReceiptMetrics records={receipts} />
 
 			<ModuleTable
-				emptyDescription="Try a different transaction number, VCE, reference, or status."
+				emptyDescription="Try a different transaction number, Party Code, reference, or status."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No delivery receipts matched"
 				minWidthClassName="min-w-[76rem]"
@@ -94,7 +94,7 @@ export function DeliveryReceiptListPage() {
 							label="Search Delivery Receipts"
 							value={tableState.query}
 							onChange={tableState.setQuery}
-							placeholder="Search by trans no., VCE, or reference"
+							placeholder="Search by trans no., Party Code, or reference"
 						/>
 						<DateRangePicker
 							label="Date Range"

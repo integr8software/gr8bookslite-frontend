@@ -204,7 +204,7 @@ export function useGoodsReceiptTable(receipts: GoodsReceiptRecord[]) {
 			{
 				id: "vceName",
 				accessorKey: "vceName",
-				header: "VCE Name",
+				header: "Party Code",
 				sortingFn: "alphanumeric",
 				meta: { className: "w-[16rem]" },
 			},

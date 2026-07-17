@@ -18,11 +18,11 @@ export function validateGoodsReceiptForm(
 	}
 
 	if (!values.vceCode.trim()) {
-		return { isValid: false, message: "Enter the VCE code." };
+		return { isValid: false, message: "Enter the Party Code." };
 	}
 
 	if (!values.vceName.trim()) {
-		return { isValid: false, message: "Select or enter the VCE name." };
+		return { isValid: false, message: "Select or enter the Party Code." };
 	}
 
 	if (!values.transactionNo.trim()) {

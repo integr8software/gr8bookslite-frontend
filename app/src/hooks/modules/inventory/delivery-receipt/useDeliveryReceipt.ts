@@ -201,7 +201,7 @@ export function useDeliveryReceiptTable(receipts: DeliveryReceiptRecord[]) {
 			{
 				id: "customerName",
 				accessorKey: "customerName",
-				header: "VCE Name",
+				header: "Party Code",
 				sortingFn: "alphanumeric",
 				meta: { className: "w-[18rem]" },
 			},

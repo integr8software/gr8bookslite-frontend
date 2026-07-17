@@ -41,7 +41,7 @@ export function GoodsReceiptFormHeader({
 			description={
 				mode === "view"
 					? "Review transaction, warehouse, references, and received item entries."
-					: "Complete transaction, warehouse, VCE, references, and received item entries before saving."
+					: "Complete transaction, warehouse, Party Code, references, and received item entries before saving."
 			}
 			actionsClassName="items-center justify-start gap-2 sm:shrink-0 sm:justify-end [&>a]:shrink-0 [&>button]:shrink-0"
 			actions={<GoodsReceiptHeaderActions mode={mode} onSubmit={onSubmit} />}

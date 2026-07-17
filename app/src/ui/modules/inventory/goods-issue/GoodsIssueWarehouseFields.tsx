@@ -61,7 +61,7 @@ export function GoodsIssueWarehouseFields({
 				</FieldShell>
 				<TextField
 					id="goods-issue-vce-code"
-					label="VCECode"
+					label="Party Code"
 					isRequired
 					readOnly={isReadonly}
 					value={values.vceCode}
@@ -69,14 +69,14 @@ export function GoodsIssueWarehouseFields({
 				/>
 			</div>
 			<div className="grid min-w-0 content-start gap-4">
-				<FieldShell controlId="goods-issue-vce-name" label="VCEName" isRequired>
+				<FieldShell controlId="goods-issue-vce-name" label="Party Code" isRequired>
 					<AttachedDropdown
 						id="goods-issue-vce-name"
 						value={values.vceName}
 						readOnly={isReadonly}
 						options={GoodsIssuePartyOptions}
 						placeholder=""
-						searchPlaceholder="Search VCE"
+						searchPlaceholder="Search Party Code"
 						onAdd={() => undefined}
 						onChange={(value) => onUpdateField("vceName", value)}
 					/>

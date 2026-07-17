@@ -62,7 +62,7 @@ export function PickListListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Pick List"
-				description="Prepare driver, cluster, delivery, and VCE pick list entries."
+				description="Prepare driver, cluster, delivery, and Party Code pick list entries."
 				eyebrow={
 					<>
 						<ListChecks className="h-3.5 w-3.5" aria-hidden="true" />

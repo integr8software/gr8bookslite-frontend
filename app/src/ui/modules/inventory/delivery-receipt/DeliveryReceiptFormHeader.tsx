@@ -44,7 +44,7 @@ export function DeliveryReceiptFormHeader({
 			description={
 				mode === "view"
 					? "Review delivery details, customer references, vehicle information, and item entries."
-					: "Complete VCE details, delivery references, vehicle information, and item entries before saving."
+					: "Complete Party Code details, delivery references, vehicle information, and item entries before saving."
 			}
 			actionsClassName="items-center justify-start gap-2 sm:shrink-0 sm:justify-end [&>a]:shrink-0 [&>button]:shrink-0"
 			actions={

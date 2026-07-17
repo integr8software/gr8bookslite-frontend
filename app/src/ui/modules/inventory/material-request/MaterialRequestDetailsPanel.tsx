@@ -26,6 +26,7 @@ import { WarehouseDrawer } from "@/app/src/ui/modules/maintenance/warehouse-mana
 type MaterialRequestDetailsPanelProps = {
 	errors: MaterialRequestFormErrors;
 	isReadonly: boolean;
+	section: MaterialRequestDetailsSection;
 	updateField: <TKey extends keyof MaterialRequestFormValues>(
 		field: TKey,
 		value: MaterialRequestFormValues[TKey],
@@ -33,9 +34,12 @@ type MaterialRequestDetailsPanelProps = {
 	values: MaterialRequestFormValues;
 };
 
+export type MaterialRequestDetailsSection = "references" | "request" | "vendor";
+
 export function MaterialRequestDetailsPanel({
 	errors,
 	isReadonly,
+	section,
 	updateField,
 	values,
 }: MaterialRequestDetailsPanelProps) {
@@ -81,82 +85,153 @@ export function MaterialRequestDetailsPanel({
 	return (
 		<>
 			<div className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5">
-				<div className="grid gap-x-10 gap-y-5 xl:grid-cols-2">
-					<div className="grid content-start gap-4">
-						<WarehouseDropdownField
-							error={errors.toWarehouse}
-							id={MaterialRequestFieldIds.toWarehouse}
-							isReadonly={isReadonly}
-							isRequired
-							label="To Warehouse"
-							value={values.toWarehouse}
-							options={warehouseOptions}
-							onAddWarehouse={() => setIsWarehouseDrawerOpen(true)}
-							onChange={(value) => updateField("toWarehouse", value)}
-						/>
-						<PartyNameField
-							errors={errors}
-							isReadonly={isReadonly}
-							options={partyOptions}
-							values={values}
-							onAddParty={openPartyDrawer}
-							updateField={updateField}
-						/>
-						<div>
-							<label
-								htmlFor={MaterialRequestFieldIds.remarks}
-								className="block text-sm font-semibold text-darknavy"
-							>
-								Remarks
-							</label>
-							<textarea
-								id={MaterialRequestFieldIds.remarks}
-								value={values.remarks}
-								readOnly={isReadonly}
-								maxLength={RemarksLimit}
-								onChange={(event) =>
-									updateField("remarks", event.target.value)
-								}
-								rows={4}
-								className={fieldClassName("mt-2 min-h-28 py-2")}
+				{section === "request" ? (
+					<div className="grid gap-x-10 gap-y-5 xl:grid-cols-2">
+						<div className="grid content-start gap-4">
+							<WarehouseDropdownField
+								error={errors.toWarehouse}
+								id={MaterialRequestFieldIds.toWarehouse}
+								isReadonly={isReadonly}
+								isRequired
+								label="Warehouse"
+								value={values.toWarehouse}
+								options={warehouseOptions}
+								onAddWarehouse={() => setIsWarehouseDrawerOpen(true)}
+								onChange={(value) => updateField("toWarehouse", value)}
 							/>
-							<p className="mt-1 text-xs font-medium text-darknavy/55">
-								Characters remaining: {remainingRemarks}
-							</p>
+							<Field
+								error={errors.department}
+								id={MaterialRequestFieldIds.department}
+								isRequired
+								label="Requestor"
+								value={values.department}
+								readOnly={isReadonly}
+								onChange={(value) => updateField("department", value)}
+							/>
+						</div>
+						<div className="grid content-start gap-4">
+							<Field
+								error={errors.requestNo}
+								id={MaterialRequestFieldIds.requestNo}
+								isRequired
+								label="MR No."
+								value={values.requestNo}
+								readOnly={isReadonly}
+								onChange={(value) => updateField("requestNo", value)}
+							/>
+							<Field
+								error={errors.documentDate}
+								id={MaterialRequestFieldIds.documentDate}
+								label="Document Date"
+								isRequired
+								type="date"
+								value={values.documentDate}
+								readOnly={isReadonly}
+								onChange={(value) => updateField("documentDate", value)}
+							/>
+							<StatusField error={errors.status} status={values.status} />
 						</div>
 					</div>
+				) : null}
 
-					<div className="grid content-start gap-4">
-						<Field
-							error={errors.requestNo}
-							id={MaterialRequestFieldIds.requestNo}
-							isRequired
-							label="Material Request No."
-							value={values.requestNo}
-							readOnly={isReadonly}
-							onChange={(value) => updateField("requestNo", value)}
-						/>
-						<Field
-							error={errors.referenceNo}
-							id={MaterialRequestFieldIds.referenceNo}
-							label="Reference No"
-							value={values.referenceNo}
-							readOnly={isReadonly}
-							onChange={(value) => updateField("referenceNo", value)}
-						/>
-						<Field
-							error={errors.documentDate}
-							id={MaterialRequestFieldIds.documentDate}
-							isRequired
-							label="Documentation Date"
-							type="date"
-							value={values.documentDate}
-							readOnly={isReadonly}
-							onChange={(value) => updateField("documentDate", value)}
-						/>
-						<StatusField error={errors.status} status={values.status} />
+				{section === "vendor" ? (
+					<div className="grid gap-x-10 gap-y-5 xl:grid-cols-2">
+						<div className="grid content-start gap-4">
+							<PartyNameField
+								errors={errors}
+								isReadonly={isReadonly}
+								options={partyOptions}
+								values={values}
+								onAddParty={openPartyDrawer}
+								updateField={updateField}
+							/>
+							<Field
+								error={errors.vceCode}
+								id={MaterialRequestFieldIds.vceCode}
+								isRequired
+								label="Party Code"
+								value={values.vceCode}
+								readOnly={isReadonly}
+								onChange={(value) => updateField("vceCode", value)}
+							/>
+							<Field
+								error={errors.vceName}
+								id={MaterialRequestFieldIds.vceName}
+								isRequired
+								label="Party Code"
+								value={values.vceName}
+								readOnly={isReadonly}
+								onChange={(value) => updateField("vceName", value)}
+							/>
+						</div>
+						<div className="grid content-start gap-4">
+							<div>
+								<label
+									htmlFor={MaterialRequestFieldIds.remarks}
+									className="block text-sm font-semibold text-darknavy"
+								>
+									Remarks
+								</label>
+								<textarea
+									id={MaterialRequestFieldIds.remarks}
+									value={values.remarks}
+									readOnly={isReadonly}
+									maxLength={RemarksLimit}
+									onChange={(event) =>
+										updateField("remarks", event.target.value)
+									}
+									rows={4}
+									className={fieldClassName("mt-2 min-h-28 py-2")}
+								/>
+								<p className="mt-1 text-xs font-medium text-darknavy/55">
+									Characters remaining: {remainingRemarks}
+								</p>
+							</div>
+						</div>
 					</div>
-				</div>
+				) : null}
+
+				{section === "references" ? (
+					<div className="grid gap-x-10 gap-y-5 xl:grid-cols-2">
+						<div className="grid content-start gap-4">
+							<Field
+								error={errors.referenceNo}
+								id={MaterialRequestFieldIds.referenceNo}
+								label="Reference No"
+								value={values.referenceNo}
+								readOnly={isReadonly}
+								onChange={(value) => updateField("referenceNo", value)}
+							/>
+							<Field
+								error={errors.requiredDate}
+								id={MaterialRequestFieldIds.requiredDate}
+								label="Required Date"
+								type="date"
+								value={values.requiredDate}
+								readOnly={isReadonly}
+								onChange={(value) => updateField("requiredDate", value)}
+							/>
+						</div>
+						<div className="grid content-start gap-4">
+							<Field
+								error={errors.projectRef}
+								id={MaterialRequestFieldIds.projectRef}
+								label="ProjectRef."
+								value={values.projectRef}
+								readOnly={isReadonly}
+								onChange={(value) => updateField("projectRef", value)}
+							/>
+							<Field
+								error={errors.projectName}
+								id={MaterialRequestFieldIds.projectName}
+								label="ProjectName"
+								value={values.projectName}
+								readOnly={isReadonly}
+								onChange={(value) => updateField("projectName", value)}
+							/>
+						</div>
+					</div>
+				) : null}
 			</div>
 
 			<WarehouseDrawer
@@ -186,13 +261,19 @@ const AttachedDropdownClassName =
 const AttachedAddButtonClassName =
 	"inline-flex h-11 w-20 shrink-0 items-center justify-center gap-2 rounded-lg border border-darknavy/10 border-l-darknavy/20 bg-skyblue/8 px-3 text-sm font-semibold text-skyblue transition hover:border-skyblue/25 hover:bg-skyblue/12 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/15 disabled:cursor-not-allowed disabled:opacity-45 sm:rounded-l-none";
 const MaterialRequestFieldIds = {
+	department: "material-request-department",
 	documentDate: "material-request-document-date",
 	partyName: "material-request-party-member",
+	projectName: "material-request-project-name",
+	projectRef: "material-request-project-ref",
 	referenceNo: "material-request-reference-no",
 	remarks: "material-request-remarks",
 	requestNo: "material-request-request-no",
+	requiredDate: "material-request-required-date",
 	status: "material-request-status",
 	toWarehouse: "material-request-to-warehouse",
+	vceCode: "material-request-vce-code",
+	vceName: "material-request-vce-name",
 } as const;
 
 type FieldProps = {
@@ -305,7 +386,7 @@ function PartyNameField({
 				htmlFor={MaterialRequestFieldIds.partyName}
 				isRequired
 			>
-				Party Member
+				Requestor
 			</FieldLabel>
 			<div>
 				<div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">

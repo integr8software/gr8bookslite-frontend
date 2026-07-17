@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { CheckCircle2, CirclePause, ReceiptText } from "lucide-react";
+import { CheckCircle2, CirclePause, Landmark, ReceiptText } from "lucide-react";
 import type { TaxMaintenanceStatisticCardsProps } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
 import {
 	ModuleStatisticCards,
@@ -11,7 +11,26 @@ import {
 export function TaxMaintenanceStatisticCards({
 	isLoading,
 	statistics,
+	taxes,
 }: TaxMaintenanceStatisticCardsProps) {
+	const accountLinkCount = useMemo(
+		() =>
+			taxes.reduce(
+				(total, tax) =>
+					total +
+					[
+						tax.inputVatAccountId,
+						tax.outputVatAccountId,
+						tax.deferredVatAccountId,
+						tax.expandedWithholdingTaxAccountId,
+						tax.creditableWithholdingTaxAccountId,
+						tax.withholdingVatableTaxAccountId,
+						tax.finalWithholdingTaxAccountId,
+					].filter(Boolean).length,
+				0,
+			),
+		[taxes],
+	);
 	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
 		() => [
 			{
@@ -35,9 +54,22 @@ export function TaxMaintenanceStatisticCards({
 				summary: "Currently inactive",
 				value: statistics.inactiveTaxes,
 			},
+			{
+				icon: Landmark,
+				iconClassName: "bg-cyan-50 text-cyan-700",
+				label: "Account Links",
+				summary: "Configured COA links",
+				value: accountLinkCount,
+			},
 		],
-		[statistics],
+		[accountLinkCount, statistics],
 	);
 
-	return <ModuleStatisticCards items={statisticCards} isLoading={isLoading} />;
+	return (
+		<ModuleStatisticCards
+			items={statisticCards}
+			isLoading={isLoading}
+			className="xl:grid-cols-4"
+		/>
+	);
 }

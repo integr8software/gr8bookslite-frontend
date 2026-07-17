@@ -47,6 +47,7 @@ export function WarehouseAccessListPage() {
 			/>
 			<WarehouseAccessStatisticCards
 				isLoading={page.isLoading}
+				records={page.records}
 				statistics={page.statistics}
 			/>
 			<WarehouseAccessTable page={page} hasActiveFilters={hasActiveFilters} />

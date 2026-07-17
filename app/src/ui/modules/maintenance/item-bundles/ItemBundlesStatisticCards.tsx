@@ -11,6 +11,7 @@ export function ItemBundlesStatisticCards({
 }) {
 	return (
 		<ModuleStatisticCards
+			className="xl:grid-cols-4"
 			items={[
 				{
 					helper: "Bundle records",

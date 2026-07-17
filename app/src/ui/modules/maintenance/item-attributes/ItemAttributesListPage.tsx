@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, CirclePause, ListChecks, Plus } from "lucide-react";
+import { CheckCircle2, CirclePause, ListChecks, Plus, Tags } from "lucide-react";
 import {
 	ItemAttributesDescription,
 	ItemAttributesTitle,
@@ -66,7 +66,18 @@ export function ItemAttributesListPage() {
 						tone: "amber",
 						value: page.records.length - page.activeCount,
 					},
+					{
+						helper: "Configured values",
+						icon: Tags,
+						label: "Values",
+						tone: "violet",
+						value: page.records.reduce(
+							(total, record) => total + record.values.length,
+							0,
+						),
+					},
 				]}
+				className="xl:grid-cols-4"
 			/>
 			<ItemAttributesTable
 				table={page.table}

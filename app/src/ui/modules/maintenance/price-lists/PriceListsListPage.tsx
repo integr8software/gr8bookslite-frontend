@@ -1,6 +1,13 @@
 "use client";
 
-import { BadgeDollarSign, CheckCircle2, CirclePause, Plus, Search } from "lucide-react";
+import {
+	BadgeDollarSign,
+	CheckCircle2,
+	CirclePause,
+	Plus,
+	Search,
+	Users,
+} from "lucide-react";
 import {
 	PriceListsDescription,
 	PriceListsPaginationStorageKey,
@@ -68,7 +75,17 @@ export function PriceListsListPage() {
 						tone: "amber",
 						value: page.records.length - page.activeCount,
 					},
+					{
+						helper: "Customer groups",
+						icon: Users,
+						label: "Groups",
+						tone: "violet",
+						value: new Set(
+							page.records.map((record) => record.customerGroup),
+						).size,
+					},
 				]}
+				className="xl:grid-cols-4"
 			/>
 			<ModuleTable
 				emptyDescription="Add a price list to start maintaining pricing structures."

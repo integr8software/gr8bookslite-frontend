@@ -1,8 +1,10 @@
-import { CheckCircle2, CirclePause, MoveRight } from "lucide-react";
+import { CheckCircle2, CirclePause, MoveRight, Truck } from "lucide-react";
+import type { WarehouseModuleRecord } from "@/app/src/types/modules/maintenance/warehouses/WarehouseModuleTypes";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 
 type WarehouseTransferStatisticCardsProps = {
 	isLoading: boolean;
+	records: WarehouseModuleRecord[];
 	statistics: {
 		activeRecords: number;
 		otherRecords: number;
@@ -12,6 +14,7 @@ type WarehouseTransferStatisticCardsProps = {
 
 export function WarehouseTransferStatisticCards({
 	isLoading,
+	records,
 	statistics,
 }: WarehouseTransferStatisticCardsProps) {
 	return (
@@ -38,7 +41,16 @@ export function WarehouseTransferStatisticCards({
 					tone: "amber",
 					value: statistics.otherRecords,
 				},
+				{
+					helper: "Currently moving",
+					icon: Truck,
+					label: "In Transit",
+					tone: "violet",
+					value: records.filter((record) => record.status === "In Transit")
+						.length,
+				},
 			]}
+			className="xl:grid-cols-4"
 		/>
 	);
 }

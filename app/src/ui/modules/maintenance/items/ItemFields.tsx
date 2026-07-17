@@ -206,11 +206,20 @@ export function ItemBehaviorFields({
 }: ItemFieldsProps) {
 	return (
 		<FieldPanel title="Item Behavior">
-			<div className="rounded-md border border-skyblue/20 bg-skyblue/5 p-3 text-sm leading-6 text-darknavy/70 lg:col-span-2">
-				Behavior flags control where the item becomes available. Sellable items
-				appear in sales documents, purchasable items appear in purchasing,
-				tracked items appear in warehouse/inventory flows, and lot or serial
-				tracking enables the matching warehouse fields.
+			<div className="grid gap-3 lg:col-span-2 lg:grid-cols-3">
+				{ItemBehaviorGuide.map((behavior) => (
+					<div
+						key={behavior.title}
+						className="rounded-md border border-darknavy/10 bg-offwhite/55 p-3"
+					>
+						<div className="text-sm font-semibold text-darknavy">
+							{behavior.title}
+						</div>
+						<p className="mt-1 text-xs leading-5 text-darknavy/65">
+							{behavior.description}
+						</p>
+					</div>
+				))}
 			</div>
 			<ToggleField
 				checked={values.sellable}
@@ -626,6 +635,45 @@ function ToggleField({
 		</label>
 	);
 }
+
+const ItemBehaviorGuide = [
+	{
+		title: "Sellable Item",
+		description: "An item you can sell to customers.",
+	},
+	{
+		title: "Purchasable Item",
+		description: "An item you can buy from suppliers.",
+	},
+	{
+		title: "Raw Material",
+		description: "A material used to make another product.",
+	},
+	{
+		title: "Semi-Finished Goods / WIP",
+		description: "A partly finished product still used in production.",
+	},
+	{
+		title: "Finished Goods",
+		description: "A completed product ready to sell.",
+	},
+	{
+		title: "Service Item",
+		description: "A service with no stock quantity to track.",
+	},
+	{
+		title: "Non-Inventory Item",
+		description: "A bought or sold item where stock quantity is not tracked.",
+	},
+	{
+		title: "Fixed Asset Item",
+		description: "A long-term company asset, not for regular sale.",
+	},
+	{
+		title: "Consumable Item",
+		description: "An internal-use item that gets used up.",
+	},
+] as const;
 
 const fieldClassName =
 	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy read-only:bg-offwhite/65";

@@ -45,6 +45,7 @@ export function WarehouseStockInquiryListPage() {
 			/>
 			<WarehouseStockInquiryStatisticCards
 				isLoading={page.isLoading}
+				records={page.records}
 				statistics={page.statistics}
 			/>
 			<WarehouseStockInquiryTable

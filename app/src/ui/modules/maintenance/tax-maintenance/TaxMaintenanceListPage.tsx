@@ -43,6 +43,7 @@ export function TaxMaintenanceListPage() {
       />
       <TaxMaintenanceStatisticCards
         statistics={page.statistics}
+        taxes={page.taxes}
         isLoading={page.isLoading}
       />
       <TaxMaintenanceTable

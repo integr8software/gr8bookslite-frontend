@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle2, CirclePause, Package } from "lucide-react";
+import { CheckCircle2, CirclePause, Network, Package } from "lucide-react";
 import {
 	TransactionTypeDescription,
 	TransactionTypeParentLabel,
@@ -56,8 +56,15 @@ export function TransactionTypeListPage() {
 					(type) => type.status === "Inactive",
 				).length,
 			},
+			{
+				icon: Network,
+				iconClassName: "bg-cyan-50 text-cyan-700",
+				label: "Linked Modules",
+				summary: "Modules using transaction types",
+				value: page.moduleFilterOptions.length,
+			},
 		],
-		[page.transactionTypes],
+		[page.moduleFilterOptions.length, page.transactionTypes],
 	);
 
 	return (
@@ -78,6 +85,7 @@ export function TransactionTypeListPage() {
 
 			<ModuleStatisticCards
 				items={statisticCards}
+				className="xl:grid-cols-4"
 			/>
 
 			<TransactionTypeTable

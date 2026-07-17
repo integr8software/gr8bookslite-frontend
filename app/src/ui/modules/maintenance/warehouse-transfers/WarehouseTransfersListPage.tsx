@@ -47,6 +47,7 @@ export function WarehouseTransfersListPage() {
 			/>
 			<WarehouseTransferStatisticCards
 				isLoading={page.isLoading}
+				records={page.records}
 				statistics={page.statistics}
 			/>
 			<WarehouseTransferTable page={page} hasActiveFilters={hasActiveFilters} />

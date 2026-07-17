@@ -66,6 +66,7 @@ export function UnitOfMeasurementListPage() {
 				}
 			/>
 			<ModuleStatisticCards
+				className="xl:grid-cols-4"
 				items={[
 					{
 						helper: "Configured units",

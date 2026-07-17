@@ -37,8 +37,8 @@ export function TransactionTypeTableRow({
 			<td className="px-4 py-4 text-darknavy">
 				{transactionType.status}
 			</td>
-			<td className="px-4 py-4">
-				<ModuleTableActions>
+			<td className="px-4 py-4 text-center">
+				<ModuleTableActions className="justify-center">
 					<ModuleTableActionButton
 						variant="view"
 						onClick={() => onView(transactionType)}

@@ -97,7 +97,7 @@ export function ItemCategoryListPage() {
 					</button>
 				}
 			/>
-			<ModuleStatisticCards items={metrics} />
+			<ModuleStatisticCards items={metrics} className="xl:grid-cols-4" />
 
 			<ModuleTable
 				emptyDescription="Add a category to start grouping inventory, services, and item groups."

@@ -365,7 +365,7 @@ function PostingAccountField({
           Posting Account
         </span>
         <span className="text-xs text-darknavy/55">
-          Only posting accounts may receive journal entries
+          Allows journal entries
         </span>
       </span>
       <input

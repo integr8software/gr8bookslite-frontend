@@ -113,6 +113,7 @@ export type TaxMaintenanceStatistics = {
 
 export type TaxMaintenanceStatisticCardsProps = {
   statistics: TaxMaintenanceStatistics;
+  taxes: TaxMaintenance[];
   isLoading?: boolean;
 };
 

@@ -47,6 +47,7 @@ export function StorageLocationsListPage() {
 			/>
 			<StorageLocationStatisticCards
 				isLoading={page.isLoading}
+				records={page.records}
 				statistics={page.statistics}
 			/>
 			<StorageLocationTable page={page} hasActiveFilters={hasActiveFilters} />

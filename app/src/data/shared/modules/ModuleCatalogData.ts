@@ -3,7 +3,6 @@ import type {
   MainAccessKey,
   MainNavigationItem,
   MainNavigationSection,
-  MainProductKey,
 } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
 import { flattenSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 
@@ -249,8 +248,6 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
       "Dashboard Overview",
       "DO",
       "dashboard",
-      "core",
-      undefined,
       ["view"],
     ),
   ]),
@@ -265,123 +262,103 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "maintenance-charts-of-accounts",
         "Chart of Accounts",
         "COA",
-        "maintenance.chartOfAccounts",
-        "accounting",
+        "maintenance.chartOfAccounts"
       ),
       moduleItem(
         "maintenance-default-account",
         "Default Accounts",
         "DA",
-        "maintenance.defaultAccount",
-        "accounting",
+        "maintenance.defaultAccount"
       ),
       moduleItem(
         "maintenance-bank-masterfile",
         "Bank Masterfile",
         "BM",
-        "maintenance.bankMasterfile",
-        "accounting",
+        "maintenance.bankMasterfile"
       ),
       moduleItem(
         "maintenance-payment-type",
         "Payment Type",
         "PT",
-        "maintenance.paymentType",
-        "accounting",
+        "maintenance.paymentType"
       ),
       moduleItem(
         "maintenance-discount-management",
         "Discount Management",
         "DSM",
-        "maintenance.discount",
-        "accounting",
-        ["accounting", "inventory"],
+        "maintenance.discount"
       ),
       moduleItem(
         "maintenance-term-management",
         "Term Management",
         "TM",
-        "maintenance.term",
-        "accounting",
+        "maintenance.term"
       ),
       moduleItem(
         "maintenance-tax-maintenance",
         "Tax Maintenance",
         "TXM",
-        "maintenance.taxMaintenance",
-        "accounting",
+        "maintenance.taxMaintenance"
       ),
       moduleItem(
         "maintenance-responsibility-center",
         "Responsibility Center",
         "RC",
-        "maintenance.responsibilityCenter",
-        "accounting",
+        "maintenance.responsibilityCenter"
       ),
       moduleItem(
         "maintenance-party-management",
         "Party Management",
         "PM",
-        "maintenance.party",
-        "accounting",
-        ["accounting", "inventory"],
+        "maintenance.party"
       ),
       moduleItem(
         "maintenance-items",
         "Items",
         "I",
-        "maintenance.item",
-        "inventory",
+        "maintenance.item"
       ),
       moduleItem(
         "maintenance-item-bundles",
         "Item Bundles",
         "IB",
-        "maintenance.item",
-        "inventory",
+        "maintenance.item"
       ),
       moduleItem(
         "maintenance-item-category",
         "Item Category",
         "IC",
-        "maintenance.item",
-        "inventory",
+        "maintenance.item"
       ),
       moduleItem(
         "maintenance-item-attributes",
         "Item Attributes",
         "IA",
-        "maintenance.item",
-        "inventory",
+        "maintenance.item"
       ),
       moduleItem(
         "maintenance-unit-of-measurement",
         "Unit of Measurement",
         "UOM",
-        "maintenance.item",
-        "inventory",
+        "maintenance.item"
       ),
       moduleItem(
         "maintenance-item-promotions",
         "Item Promotions",
         "IPR",
-        "maintenance.item",
-        "inventory",
+        "maintenance.item"
       ),
       moduleItem(
         "maintenance-price-lists",
         "Price Lists",
         "PLS",
-        "maintenance.item",
-        "inventory",
+        "maintenance.item"
       ),
       moduleItem(
         "maintenance-transaction-type",
         "Inventory Transaction Type",
         "TT",
-        "maintenance.transactionType",
-        "inventory",
-        ["accounting", "inventory"],
+        "maintenance.transactionType"
       ),
       group(
         "maintenance-warehouse-management",
@@ -393,36 +370,31 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
             "maintenance-warehouses",
             "Warehouses",
             "WM",
-            "maintenance.warehouse",
-            "inventory",
+            "maintenance.warehouse"
           ),
           moduleItem(
             "maintenance-warehouse-access",
             "Warehouse Access",
             "WA",
-            "maintenance.warehouse",
-            "inventory",
+            "maintenance.warehouse"
           ),
           moduleItem(
             "maintenance-storage-locations",
             "Storage Locations",
             "WSL",
-            "maintenance.warehouse",
-            "inventory",
+            "maintenance.warehouse"
           ),
           moduleItem(
             "maintenance-warehouse-transfers",
             "Warehouse Transfers",
             "WT",
-            "maintenance.warehouse",
-            "inventory",
+            "maintenance.warehouse"
           ),
           moduleItem(
             "maintenance-warehouse-stock-inquiry",
             "Warehouse Stock Inquiry",
             "WSI",
-            "maintenance.warehouse",
-            "inventory",
+            "maintenance.warehouse"
           ),
         ],
       ),
@@ -439,44 +411,37 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "cash-receipt-official-receipt",
         "Official Receipt",
         "OR",
-        "cashReceipt",
-        "accounting",
+        "cashReceipt"
       ),
       moduleItem(
         "cash-receipt-collection-receipt",
         "Collection Receipt",
         "CR",
-        "cashReceipt",
-        "accounting",
+        "cashReceipt"
       ),
       moduleItem(
         "cash-receipt-acknowledgement-receipt",
         "Acknowledgement Receipt",
         "AR",
-        "cashReceipt",
-        "accounting",
+        "cashReceipt"
       ),
       moduleItem(
         "cash-receipt-provisional-receipt",
         "Provisional Receipt",
         "PVR",
-        "cashReceipt",
-        "accounting",
+        "cashReceipt"
       ),
       moduleItem(
         "cash-receipt-bank-reconciliation",
         "Bank Reconciliation",
         "BR",
-        "cashReceipt",
-        "accounting",
+        "cashReceipt"
       ),
       moduleItem(
         "cash-receipt-product-distribution-center-warehouse",
         "Product Distribution Center Warehouse",
         "PDCW",
-        "cashReceipt",
-        "accounting",
-        ["accounting", "inventory"],
+        "cashReceipt"
       ),
     ],
   ),
@@ -491,78 +456,67 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "cash-disbursement-disbursement-voucher",
         "Disbursement Voucher",
         "DV",
-        "cashDisbursement",
-        "accounting",
+        "cashDisbursement"
       ),
       moduleItem(
         "cash-disbursement-cash-advance",
         "Cash Advance",
         "CA",
-        "cashDisbursement",
-        "accounting",
+        "cashDisbursement"
       ),
       moduleItem(
         "cash-disbursement-cash-advance-multiple-entry",
         "Cash Advance Multiple Entry",
         "CAME",
-        "cashDisbursement",
-        "accounting",
+        "cashDisbursement"
       ),
       moduleItem(
         "cash-disbursement-petty-cash-voucher",
         "Petty Cash Voucher",
         "PCV",
-        "cashDisbursement",
-        "accounting",
+        "cashDisbursement"
       ),
       moduleItem(
         "cash-disbursement-petty-cash-fund",
         "Petty Cash Fund",
         "PCF",
-        "cashDisbursement",
-        "accounting",
+        "cashDisbursement"
       ),
       moduleItem(
         "cash-disbursement-petty-cash-fund-replenishment",
         "Petty Cash Fund Replenishment",
         "PCFR",
-        "cashDisbursement",
-        "accounting",
+        "cashDisbursement"
       ),
       moduleItem(
         "cash-disbursement-petty-cash-advance",
         "Petty Cash Advance",
         "PCA",
-        "cashDisbursement",
-        "accounting",
+        "cashDisbursement"
       ),
       moduleItem(
         "cash-disbursement-petty-cash-advance-replenishment",
         "Petty Cash Advance Replenishment",
         "PCAR",
-        "cashDisbursement",
-        "accounting",
+        "cashDisbursement"
       ),
       moduleItem(
         "cash-disbursement-revolving-fund",
         "Revolving Fund",
         "RF",
-        "cashDisbursement",
-        "accounting",
+        "cashDisbursement"
       ),
       moduleItem(
         "cash-disbursement-request-for-payment",
         "Request For Payment",
         "RFP",
-        "cashDisbursement",
-        "accounting",
+        "cashDisbursement"
       ),
       moduleItem(
         "cash-disbursement-advances-to-supplier",
         "Advances To Supplier",
         "ATS",
-        "cashDisbursement",
-        "accounting",
+        "cashDisbursement"
       ),
     ],
   ),
@@ -577,8 +531,7 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "accounts-payable-accounts-payable-voucher",
         "Accounts Payable Voucher",
         "APV",
-        "accountsPayable",
-        "accounting",
+        "accountsPayable"
       ),
     ],
   ),
@@ -593,8 +546,7 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "general-journal-journal-voucher",
         "Journal Voucher",
         "JV",
-        "generalJournal",
-        "accounting",
+        "generalJournal"
       ),
     ],
   ),
@@ -603,90 +555,73 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
       "sales-debit-memo",
       "Debit Memo",
       "DM",
-      "sales",
-      "accounting",
+      "sales"
     ),
     moduleItem(
       "sales-credit-memo",
       "Credit Memo",
       "CM",
-      "sales",
-      "accounting",
+      "sales"
     ),
     moduleItem(
       "sales-sales-quotation",
       "Sales Quotation",
       "SQ",
-      "sales",
-      "accounting",
-      ["accounting", "inventory"],
+      "sales"
     ),
     moduleItem(
       "sales-sales-order",
       "Sales Order",
       "SO",
-      "sales",
-      "accounting",
-      ["accounting", "inventory"],
+      "sales"
     ),
     moduleItem(
       "sales-sales-invoice",
       "Sales Invoice",
       "SI",
-      "sales",
-      "accounting",
-      ["accounting", "inventory"],
+      "sales"
     ),
     moduleItem(
       "sales-billing",
       "Billing",
       "B",
-      "sales",
-      "accounting",
+      "sales"
     ),
     moduleItem(
       "sales-billing-statement",
       "Billing Statement",
       "BS",
-      "sales",
-      "accounting",
+      "sales"
     ),
     moduleItem(
       "sales-billing-invoice",
       "Billing Invoice",
       "BI",
-      "sales",
-      "accounting",
+      "sales"
     ),
     moduleItem(
       "sales-service-invoice",
       "Service Invoice",
       "SVI",
-      "sales",
-      "accounting",
+      "sales"
     ),
     moduleItem(
       "sales-cash-sales-invoice",
       "Cash Sales Invoice",
       "CSI",
-      "sales",
-      "accounting",
-      ["accounting", "inventory"],
+      "sales"
     ),
     moduleItem(
       "sales-sales-journal",
       "Sales Journal",
       "SJ",
-      "sales",
-      "accounting",
-      ["accounting", "inventory"],
+      "sales"
     ),
     moduleItem(
       "sales-statement-of-account",
       "Statement of Account",
       "SOA",
-      "sales",
-      "accounting",
+      "sales"
     ),
   ]),
   section("inventory", "Inventory", "/inventory", "inventory", "inventory", [
@@ -694,50 +629,43 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
       "inventory-receiving-report",
       "Receiving Report",
       "RR",
-      "inventory",
-      "inventory",
+      "inventory"
     ),
     moduleItem(
       "inventory-goods-receipt",
       "Goods Receipt",
       "GR",
-      "inventory",
-      "inventory",
+      "inventory"
     ),
     moduleItem(
       "inventory-inventory-count",
       "Inventory Count",
       "INC",
-      "inventory",
-      "inventory",
+      "inventory"
     ),
     moduleItem(
       "inventory-material-request",
       "Material Request",
       "MR",
-      "inventory",
-      "inventory",
+      "inventory"
     ),
     moduleItem(
       "inventory-pick-list",
       "Pick List",
       "PL",
-      "inventory",
-      "inventory",
+      "inventory"
     ),
     moduleItem(
       "inventory-goods-issue",
       "Goods Issue",
       "GI",
-      "inventory",
-      "inventory",
+      "inventory"
     ),
     moduleItem(
       "inventory-delivery-receipt",
       "Delivery Receipt",
       "DR",
-      "inventory",
-      "inventory",
+      "inventory"
     ),
   ]),
   section(
@@ -751,29 +679,25 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "purchasing-purchase-request",
         "Purchase Request",
         "PR",
-        "purchasing",
-        "inventory",
+        "purchasing"
       ),
       moduleItem(
         "purchasing-canvass-form",
         "Canvass Form",
         "CF",
-        "canvass",
-        "inventory",
+        "canvass"
       ),
       moduleItem(
         "purchasing-purchase-order",
         "Purchase Order",
         "PO",
-        "purchasing",
-        "inventory",
+        "purchasing"
       ),
       moduleItem(
         "purchasing-purchase-journal",
         "Purchase Journal",
         "PJ",
-        "purchasing",
-        "inventory",
+        "purchasing"
       ),
     ],
   ),
@@ -782,15 +706,13 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
       "others-fixed-asset",
       "Fixed Asset",
       "FA",
-      "fixedAsset",
-      "accounting",
+      "fixedAsset"
     ),
     moduleItem(
       "others-beginning-balance-uploader",
       "Beginning Balance Uploader",
       "BBU",
-      "fixedAsset",
-      "accounting",
+      "fixedAsset"
     ),
   ]),
   section(
@@ -848,15 +770,13 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
         "system-administration-multi-currency-setup",
         "Multi-Currency Setup",
         "MCS",
-        "maintenance.currency",
-        "accounting",
+        "maintenance.currency"
       ),
       moduleItem(
         "system-administration-form-signatory",
         "Form Signatory",
         "FS",
-        "settings",
-        "accounting",
+        "settings"
       ),
       moduleItem(
         "maintenance-mail",
@@ -890,7 +810,7 @@ function group(
   accessKey: MainAccessKey,
   children: MainNavigationItem[],
 ): MainNavigationItem {
-  return { key, label, href, accessKey, productKey: "core", children };
+  return { key, label, href, accessKey, children };
 }
 
 function moduleItem(
@@ -898,8 +818,6 @@ function moduleItem(
   label: string,
   moduleCode: ModuleCode,
   accessKey: MainAccessKey,
-  productKey: MainProductKey = "core",
-  productKeys?: MainProductKey[],
   actions: MainModuleAction[] = CrudActions,
 ): MainNavigationItem {
   return {
@@ -908,8 +826,6 @@ function moduleItem(
     href: MODULE_ROUTE_MAP[moduleCode],
     accessKey,
     permissionCode: moduleCode,
-    productKey,
-    productKeys,
     requiredActions: ["view"],
     module: {
       actions,

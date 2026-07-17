@@ -72,8 +72,8 @@ export const TransactionTypeTableColumns: Array<
 		className: "w-[10%]",
 	},
 	{
-		label: "Actions",
-		className: "w-[8%] text-right",
+		label: "Action",
+		className: "w-[12%] text-center",
 	},
 ] as const;
 

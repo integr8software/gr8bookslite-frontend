@@ -1,7 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
-import { CheckCircle2, CirclePause, CreditCard } from "lucide-react";
+import {
+	Banknote,
+	CheckCircle2,
+	CirclePause,
+	CreditCard,
+	Landmark,
+	ReceiptText,
+	WalletCards,
+} from "lucide-react";
 import type { PaymentTypeStatisticCardsProps } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import {
 	ModuleStatisticCards,
@@ -34,9 +42,50 @@ export function PaymentTypeStatisticCards({
 				tone: "amber",
 				value: statistics.inactivePaymentTypes,
 			},
+			{
+				helper: "Cash payment types",
+				icon: Banknote,
+				label: "Cash",
+				tone: "cyan",
+				value: statistics.cashPaymentTypes,
+			},
+			{
+				helper: "Bank transfer types",
+				icon: Landmark,
+				label: "Bank Transfer",
+				tone: "violet",
+				value: statistics.bankTransferPaymentTypes,
+			},
+			{
+				helper: "Check payment types",
+				icon: ReceiptText,
+				label: "Check",
+				tone: "slate",
+				value: statistics.checkPaymentTypes,
+			},
+			{
+				helper: "Digital wallet types",
+				icon: WalletCards,
+				label: "Digital Wallet",
+				tone: "cyan",
+				value: statistics.digitalWalletPaymentTypes,
+			},
+			{
+				helper: "Non-cash settlement types",
+				icon: CreditCard,
+				label: "Non-Cash",
+				tone: "violet",
+				value: statistics.nonCashSettlementPaymentTypes,
+			},
 		],
 		[statistics],
 	);
 
-	return <ModuleStatisticCards items={statisticCards} isLoading={isLoading} />;
+	return (
+		<ModuleStatisticCards
+			items={statisticCards}
+			isLoading={isLoading}
+			className="xl:grid-cols-4"
+		/>
+	);
 }

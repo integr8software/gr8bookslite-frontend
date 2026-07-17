@@ -1,8 +1,10 @@
-import { CheckCircle2, CirclePause, MapPin } from "lucide-react";
+import { CheckCircle2, CirclePause, MapPin, Warehouse } from "lucide-react";
+import type { WarehouseModuleRecord } from "@/app/src/types/modules/maintenance/warehouses/WarehouseModuleTypes";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 
 type StorageLocationStatisticCardsProps = {
 	isLoading: boolean;
+	records: WarehouseModuleRecord[];
 	statistics: {
 		activeRecords: number;
 		otherRecords: number;
@@ -12,6 +14,7 @@ type StorageLocationStatisticCardsProps = {
 
 export function StorageLocationStatisticCards({
 	isLoading,
+	records,
 	statistics,
 }: StorageLocationStatisticCardsProps) {
 	return (
@@ -38,7 +41,15 @@ export function StorageLocationStatisticCards({
 					tone: "amber",
 					value: statistics.otherRecords,
 				},
+				{
+					helper: "Warehouses with locations",
+					icon: Warehouse,
+					label: "Warehouses",
+					tone: "violet",
+					value: new Set(records.map((record) => record.warehouseId)).size,
+				},
 			]}
+			className="xl:grid-cols-4"
 		/>
 	);
 }

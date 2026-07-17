@@ -7,7 +7,7 @@ import {
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
-import { ReportPrintAction } from "@/app/src/ui/shared/reports/Reports";
+import { ReportGeneratePdfAction } from "@/app/src/ui/shared/reports/Reports";
 import { openPurchaseRequestPdf } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestPdf";
 
 export function PurchaseRequestPrintPreview({
@@ -33,8 +33,8 @@ export function PurchaseRequestPrintPreview({
 							Formatted after the purchase request PDF layout.
 						</p>
 					</div>
-					<ReportPrintAction
-						onPrint={() => openPurchaseRequestPdf(record)}
+					<ReportGeneratePdfAction
+						onGeneratePdf={() => openPurchaseRequestPdf(record)}
 					/>
 				</div>
 			) : null}

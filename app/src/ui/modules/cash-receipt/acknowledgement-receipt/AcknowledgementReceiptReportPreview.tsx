@@ -11,14 +11,14 @@ import type { ReactNode } from "react";
 type AcknowledgementReceiptReportPreviewProps = {
 	isOpen: boolean;
 	onClose: () => void;
-	onPrint: () => void;
+	onGeneratePdf: () => void;
 	values: AcknowledgementReceiptFormValues;
 };
 
 export function AcknowledgementReceiptReportPreview({
 	isOpen,
 	onClose,
-	onPrint,
+	onGeneratePdf,
 	values,
 }: AcknowledgementReceiptReportPreviewProps) {
 	return (
@@ -29,7 +29,7 @@ export function AcknowledgementReceiptReportPreview({
 			title="Acknowledgement Receipt Preview"
 			description="Review the printable acknowledgement receipt layout."
 			onClose={onClose}
-			onPrint={onPrint}
+			onGeneratePdf={onGeneratePdf}
 		>
 			<AcknowledgementReceiptReportDocument values={values} />
 		</ReportPreviewDrawer>

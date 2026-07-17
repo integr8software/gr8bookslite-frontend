@@ -105,7 +105,7 @@ export function AcknowledgementReceiptActionPage() {
         isOpen={isReportPreviewOpen}
         values={receiptForm.values}
         onClose={() => setIsReportPreviewOpen(false)}
-        onPrint={() => openAcknowledgementReceiptPdf(receiptForm.values)}
+        onGeneratePdf={() => openAcknowledgementReceiptPdf(receiptForm.values)}
       />
 
       {!isReadonly && isPaymentTypeDialogOpen ? (

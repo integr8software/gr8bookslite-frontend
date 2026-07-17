@@ -11,14 +11,14 @@ import type { ReactNode } from "react";
 type OfficialReceiptReportPreviewProps = {
 	isOpen: boolean;
 	onClose: () => void;
-	onPrint: () => void;
+	onGeneratePdf: () => void;
 	values: OfficialReceiptFormValues;
 };
 
 export function OfficialReceiptReportPreview({
 	isOpen,
 	onClose,
-	onPrint,
+	onGeneratePdf,
 	values,
 }: OfficialReceiptReportPreviewProps) {
 	return (
@@ -29,7 +29,7 @@ export function OfficialReceiptReportPreview({
 			title="Official Receipt Preview"
 			description="Review the printable official receipt layout."
 			onClose={onClose}
-			onPrint={onPrint}
+			onGeneratePdf={onGeneratePdf}
 		>
 			<OfficialReceiptReportDocument values={values} />
 		</ReportPreviewDrawer>

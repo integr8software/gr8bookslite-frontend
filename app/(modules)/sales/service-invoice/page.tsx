@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { ServiceInvoiceMain } from "@/app/src/ui/modules/sales/service-invoice/Main";
+import { ServiceInvoiceListPage } from "@/app/src/ui/modules/sales/service-invoice/ServiceInvoiceListPage";
 
 const PageTitle = "Service Invoice";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function SalesServiceInvoicePage() {
-  return <ServiceInvoiceMain />;
+  return <ServiceInvoiceListPage />;
 }
 
 

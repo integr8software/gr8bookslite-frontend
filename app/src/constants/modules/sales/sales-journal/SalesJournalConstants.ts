@@ -12,6 +12,24 @@ export const SalesJournalStatusOptions: SalesJournalStatus[] = [
 	"Cancelled",
 ];
 
+export const SalesJournalStatusFilterOptions = [
+	{ label: "All statuses", value: "all" },
+	{ label: "Draft", value: "Draft" },
+	{ label: "Open", value: "Open" },
+	{ label: "Approved", value: "Approved" },
+	{ label: "Closed", value: "Closed" },
+	{ label: "Cancelled", value: "Cancelled" },
+] as const;
+
+export const SalesJournalStatusFilters = [
+	"all",
+	"Draft",
+	"Open",
+	"Approved",
+	"Closed",
+	"Cancelled",
+] as const;
+
 export const SalesJournalTablePaginationStorageKey =
 	"sales.sales-journal";
 

@@ -24,7 +24,7 @@ export function PurchaseRequestPreviewDrawer({
 			title="Print Preview"
 			description="Review the printable purchase request layout."
 			onClose={onClose}
-			onPrint={() => openPurchaseRequestPdf(record)}
+			onGeneratePdf={() => openPurchaseRequestPdf(record)}
 		>
 			<PurchaseRequestPrintPreview record={record} showControls={false} />
 		</ReportPreviewDrawer>

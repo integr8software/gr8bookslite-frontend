@@ -3,16 +3,21 @@ import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
 	ApiResponsibilityCenter,
 	ApiResponsibilityCenterCategory,
+	ApiResponsibilityCenterClassificationsResponse,
+	ApiResponsibilityCenterCodeSuggestionResponse,
 	ApiResponsibilityCenterFinancialType,
 	ApiResponsibilityCenterListResponse,
 	ApiResponsibilityCenterSaveResponse,
 	ApiResponsibilityCenterStatus,
+	ApiResponsibilityCenterTypesResponse,
 	ResponsibilityCenter,
 	ResponsibilityCenterCategory,
+	ResponsibilityCenterClassification,
 	ResponsibilityCenterFinancialType,
 	ResponsibilityCenterFormValues,
 	ResponsibilityCenterListResponse,
 	ResponsibilityCenterStatus,
+	ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 
 export async function fetchResponsibilityCenters(): Promise<ResponsibilityCenterListResponse> {
@@ -28,6 +33,58 @@ export async function fetchResponsibilityCenters(): Promise<ResponsibilityCenter
 		statistics: response.data.statistics,
 		permissions: response.data.permissions,
 	};
+}
+
+export async function fetchResponsibilityCenterClassifications(): Promise<
+	ResponsibilityCenterClassification[]
+> {
+	const response =
+		await ApiClient.get<ApiResponsibilityCenterClassificationsResponse>(
+			`${ResponsibilityCenterApiPath}/classifications`,
+		);
+
+	return response.data.classifications.map((classification) => ({
+		id: classification.id,
+		code: classification.code,
+		name: mapFinancialTypeFromLabel(classification.name),
+		trackingBehavior: classification.trackingBehavior,
+		isSystem: classification.isSystem,
+		status: classification.status,
+	}));
+}
+
+export async function fetchResponsibilityCenterTypes(
+	classificationId?: string,
+): Promise<ResponsibilityCenterTypeOption[]> {
+	const response = await ApiClient.get<ApiResponsibilityCenterTypesResponse>(
+		`${ResponsibilityCenterApiPath}/types`,
+		{ params: classificationId ? { classificationId } : undefined },
+	);
+
+	return response.data.types.map((type) => ({
+		id: type.id,
+		classificationId: type.classificationId,
+		classificationCode: type.classificationCode,
+		classificationName: mapFinancialTypeFromLabel(type.classificationName),
+		name: type.name,
+		codePrefix: type.codePrefix,
+		description: type.description,
+		sortOrder: type.sortOrder,
+		isRequired: type.isRequired,
+		status: type.status,
+	}));
+}
+
+export async function fetchResponsibilityCenterCodeSuggestion(
+	typeId: string,
+): Promise<string> {
+	const response =
+		await ApiClient.get<ApiResponsibilityCenterCodeSuggestionResponse>(
+			`${ResponsibilityCenterApiPath}/code-suggestion`,
+			{ params: { typeId } },
+		);
+
+	return response.data.code;
 }
 
 export async function createResponsibilityCenter(
@@ -70,6 +127,12 @@ function mapApiResponsibilityCenter(
 		id: center.id,
 		code: center.code,
 		name: center.name,
+		classificationId: center.classificationId,
+		classificationCode: center.classificationCode,
+		classificationName: mapFinancialTypeFromLabel(center.classificationName),
+		typeId: center.typeId,
+		typeName: center.typeName,
+		typeCodePrefix: center.typeCodePrefix,
 		category: mapCategoryFromApi(center.category),
 		financialType: mapFinancialTypeFromApi(center.financialType),
 		manager: center.manager ?? "",
@@ -89,13 +152,32 @@ function toApiResponsibilityCenterPayload(
 	return {
 		code: center.code.trim().toUpperCase(),
 		name: center.name.trim(),
-		category: mapCategoryToApi(center.category),
-		financialType: mapFinancialTypeToApi(center.financialType),
+		classificationId: center.classificationId,
+		typeId: center.typeId,
 		manager: center.manager.trim(),
 		parentId: center.parentId?.trim() || undefined,
 		status: mapStatusToApi(center.status),
 		description: center.description?.trim() ?? "",
 	};
+}
+
+function mapFinancialTypeFromLabel(
+	value: ApiResponsibilityCenterFinancialType | string,
+): ResponsibilityCenterFinancialType {
+	if (
+		value === "COST_CENTER" ||
+		value === "PROFIT_CENTER" ||
+		value === "REVENUE_CENTER" ||
+		value === "INVESTMENT_CENTER"
+	) {
+		return mapFinancialTypeFromApi(value);
+	}
+
+	const normalized = String(value).toLowerCase();
+	if (normalized.includes("revenue")) return "Revenue Center";
+	if (normalized.includes("profit")) return "Profit Center";
+	if (normalized.includes("investment")) return "Investment Center";
+	return "Cost Center";
 }
 
 function mapCategoryFromApi(
@@ -125,33 +207,6 @@ function mapCategoryFromApi(
 	return categories[value];
 }
 
-function mapCategoryToApi(
-	value: ResponsibilityCenterCategory,
-): ApiResponsibilityCenterCategory {
-	const categories: Record<
-		ResponsibilityCenterCategory,
-		ApiResponsibilityCenterCategory
-	> = {
-		Corporate: "CORPORATE",
-		Division: "DIVISION",
-		Department: "DEPARTMENT",
-		Section: "SECTION",
-		Team: "TEAM",
-		Branch: "BRANCH",
-		Building: "BUILDING",
-		Project: "PROJECT",
-		"Business Unit": "BUSINESS_UNIT",
-		Region: "REGION",
-		Salesman: "SALESMAN",
-		Warehouse: "WAREHOUSE",
-		Outlet: "OUTLET",
-		"Sales Territory": "SALES_TERRITORY",
-		Fleet: "FLEET",
-	};
-
-	return categories[value];
-}
-
 function mapFinancialTypeFromApi(
 	value: ApiResponsibilityCenterFinancialType,
 ): ResponsibilityCenterFinancialType {
@@ -163,22 +218,6 @@ function mapFinancialTypeFromApi(
 		PROFIT_CENTER: "Profit Center",
 		REVENUE_CENTER: "Revenue Center",
 		INVESTMENT_CENTER: "Investment Center",
-	};
-
-	return financialTypes[value];
-}
-
-function mapFinancialTypeToApi(
-	value: ResponsibilityCenterFinancialType,
-): ApiResponsibilityCenterFinancialType {
-	const financialTypes: Record<
-		ResponsibilityCenterFinancialType,
-		ApiResponsibilityCenterFinancialType
-	> = {
-		"Cost Center": "COST_CENTER",
-		"Profit Center": "PROFIT_CENTER",
-		"Revenue Center": "REVENUE_CENTER",
-		"Investment Center": "INVESTMENT_CENTER",
 	};
 
 	return financialTypes[value];

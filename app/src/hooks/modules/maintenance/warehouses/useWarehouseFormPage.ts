@@ -3,10 +3,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import {
-	WarehouseBranchOptions,
-	WarehouseHref,
-} from "@/app/src/constants/modules/maintenance/warehouses/WarehouseConstants";
+import { WarehouseHref } from "@/app/src/constants/modules/maintenance/warehouses/WarehouseConstants";
 import {
 	WarehouseInitialFormValues,
 	createWarehouseFormValues,
@@ -80,13 +77,6 @@ export function useWarehouseFormPage(options: WarehouseFormPageOptions = {}) {
 		);
 	}
 
-	function handleAvailableBranchesChange(value: string | string[]) {
-		updateField(
-			"availableBranches",
-			Array.isArray(value) ? value : value ? [value] : [],
-		);
-	}
-
 	function validateBeforeSubmit() {
 		const nextErrors = validateWarehouseForm(values);
 
@@ -137,10 +127,8 @@ export function useWarehouseFormPage(options: WarehouseFormPageOptions = {}) {
 	}
 
 	return {
-		branchOptions: WarehouseBranchOptions,
 		errors,
 		existingWarehouse,
-		handleAvailableBranchesChange,
 		handleConfirmDelete,
 		handleInputChange,
 		handleSubmit,

@@ -7,7 +7,7 @@ import type {
 export const WarehouseFormValidationSchema = z.object({
 	code: z.string().trim().min(1, "Enter a warehouse code."),
 	name: z.string().trim().min(1, "Enter a warehouse name."),
-	availableBranches: z.array(z.string()).min(1, "Select at least one branch."),
+	availableBranches: z.array(z.string()),
 	managerName: z.string().trim().min(1, "Enter a warehouse manager."),
 	status: z.enum(["Active", "Inactive"]),
 	address: z.string().trim().min(1, "Enter the warehouse address."),

@@ -75,10 +75,8 @@ export function WarehouseFormPage() {
 					<WarehouseDetailsPanel warehouse={page.existingWarehouse} />
 				) : (
 					<WarehouseFields
-						branchOptions={page.branchOptions}
 						errors={page.errors}
 						values={page.values}
-						onAvailableBranchesChange={page.handleAvailableBranchesChange}
 						onInputChange={page.handleInputChange}
 					/>
 				)}

@@ -6,10 +6,11 @@ import {
 	DefaultAccountStatusOptions,
 	DefaultAccountTitle,
 	DefaultAccountTypeOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/default-account/DefaultAccountConstants";
+} from "@/app/src/constants/modules/maintenance/default-account/DefaultAccountConstants";
 import { useDefaultAccountFormPage } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccountFormPage";
 import type { DefaultAccountDrawerProps } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
-import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
@@ -53,19 +54,16 @@ function DefaultAccountDrawerPanel({
 		}));
 
 	return (
-		<MaintenanceFormDrawer
+		<ModuleDrawer
 			description={copy.description}
 			eyebrow={DefaultAccountTitle}
 			formId={DefaultAccountDrawerFormId}
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
+			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={
-				mode === "edit"
-					? "Updating Default Account..."
-					: "Saving Default Account..."
-			}
+			savingLabel={getModuleSavePendingLabel(mode)}
 			submitLabel={mode === "edit" ? "Update Default Account" : "Save Default Account"}
 			title={copy.title}
 		>
@@ -130,10 +128,9 @@ function DefaultAccountDrawerPanel({
 							placeholder={
 								page.isLoadingExpenseParentOptions
 									? "Loading expense accounts..."
-									: "Default expense parent"
+									: "--Select Expense Parent--"
 							}
 							searchPlaceholder="Search expense accounts"
-							showSelectedDetails
 							onChange={page.handleExpenseParentChange}
 						/>
 					</label>
@@ -177,6 +174,9 @@ function DefaultAccountDrawerPanel({
 					</div>
 				) : null}
 			</form>
-		</MaintenanceFormDrawer>
+		</ModuleDrawer>
 	);
 }
+
+
+

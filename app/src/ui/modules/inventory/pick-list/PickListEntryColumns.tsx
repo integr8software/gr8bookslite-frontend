@@ -61,7 +61,7 @@ function entryCellControlClassName() {
 
 const PickListEntryColumnConfigs = [
 column("Party Code", "vceCode", 170, "w-[10.5rem]"),
-column("Party Code", "vceName", 320, "w-[20rem]"),
+column("Party Name", "vceName", 320, "w-[20rem]"),
 	column("Remarks", "remarks", 360, "w-[22.5rem]"),
 	column("RefNo", "referenceNo", 180, "w-[11.25rem]"),
 ];

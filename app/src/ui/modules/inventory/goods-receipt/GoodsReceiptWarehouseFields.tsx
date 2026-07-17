@@ -69,14 +69,14 @@ export function GoodsReceiptWarehouseFields({
 				/>
 			</div>
 			<div className="grid min-w-0 content-start gap-4">
-				<FieldShell controlId="goods-receipt-vce-name" label="Party Code" isRequired>
+				<FieldShell controlId="goods-receipt-vce-name" label="Party Name" isRequired>
 					<AttachedDropdown
 						id="goods-receipt-vce-name"
 						value={values.vceName}
 						readOnly={isReadonly}
 						options={GoodsReceiptPartyOptions}
 						placeholder=""
-						searchPlaceholder="Search Party Code"
+						searchPlaceholder="Search Party Name"
 						onAdd={() => undefined}
 						onChange={(value) => onUpdateField("vceName", value)}
 					/>

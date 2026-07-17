@@ -1,16 +1,35 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
+import { LoaderCircle, Power, PowerOff } from "lucide-react";
 
-export type AppDialogTone = "default" | "danger" | "success";
+export type AppDialogTone =
+  | "default"
+  | "danger"
+  | "success"
+  | "warning"
+  | "info"
+  | "question"
+  | "activate"
+  | "deactivate";
+export type AppDialogIconTone =
+  | "activate"
+  | "deactivate"
+  | "error"
+  | "info"
+  | "question"
+  | "success"
+  | "warning";
 
 export type AppDialogProps = {
+  animateIcon?: boolean;
   cancelLabel?: string;
+  confirmIcon?: ReactNode;
   confirmLabel?: string;
   confirmationLabel?: string;
   confirmationPhrase?: string;
   description: string;
+  iconTone?: AppDialogIconTone | false;
   isOpen: boolean;
   isPending?: boolean;
   pendingLabel?: string;
@@ -22,14 +41,17 @@ export type AppDialogProps = {
 };
 
 export function AppDialog({
+  animateIcon = true,
   cancelLabel = "Cancel",
+  confirmIcon,
   confirmLabel = "Confirm",
   confirmationLabel = "Confirmation",
   confirmationPhrase,
   description,
+  iconTone,
   isOpen,
   isPending = false,
-  pendingLabel = "Please wait...",
+  pendingLabel,
   showCancel = true,
   title,
   tone = "default",
@@ -39,9 +61,12 @@ export function AppDialog({
   const [confirmationValue, setConfirmationValue] = useState("");
   const [isConfirming, setIsConfirming] = useState(false);
   const isConfirmPending = isPending || isConfirming;
+  const resolvedPendingLabel = pendingLabel ?? getDefaultPendingLabel(tone);
   const canConfirm =
     !confirmationPhrase ||
     confirmationValue.trim().toLowerCase() === confirmationPhrase.toLowerCase();
+  const resolvedIconTone =
+    iconTone === false ? null : (iconTone ?? getDefaultIconTone(tone));
 
   const handleCancel = useCallback(() => {
     if (isConfirmPending) {
@@ -104,17 +129,20 @@ export function AppDialog({
         aria-modal="true"
         aria-labelledby="app-dialog-title"
         aria-describedby="app-dialog-description"
-        className="w-full max-w-md rounded-lg border border-darknavy/10 bg-white p-5 shadow-[0_28px_90px_rgba(33,39,56,0.24)]"
+        className="app-dialog-panel w-full max-w-md rounded-lg border border-darknavy/10 bg-white p-5 shadow-[0_28px_90px_rgba(33,39,56,0.24)]"
       >
+        {resolvedIconTone ? (
+          <AppDialogStatusIcon animate={animateIcon} tone={resolvedIconTone} />
+        ) : null}
         <h2
           id="app-dialog-title"
-          className="text-base font-semibold text-darknavy"
+          className="text-center text-base font-semibold text-darknavy"
         >
           {title}
         </h2>
         <p
           id="app-dialog-description"
-          className="mt-2 text-sm leading-6 text-darknavy/62"
+          className="mt-2 text-center text-sm leading-6 text-darknavy/62"
         >
           {description}
         </p>
@@ -132,17 +160,7 @@ export function AppDialog({
             />
           </label>
         ) : null}
-        <div className="mt-5 flex justify-end gap-2">
-          {showCancel ? (
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={isConfirmPending}
-              className="inline-flex h-10 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
-            >
-              {cancelLabel}
-            </button>
-          ) : null}
+        <div className="mt-5 flex justify-center gap-2">
           <button
             type="button"
             onClick={() => void handleConfirm()}
@@ -157,16 +175,118 @@ export function AppDialog({
             {isConfirmPending ? (
               <>
                 <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-                {pendingLabel}
+                <AnimatedPendingLabel label={resolvedPendingLabel} />
               </>
             ) : (
-              confirmLabel
+              <>
+                {confirmIcon ? (
+                  <span
+                    className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4"
+                    aria-hidden="true"
+                  >
+                    {confirmIcon}
+                  </span>
+                ) : null}
+                {confirmLabel}
+              </>
             )}
           </button>
+          {showCancel ? (
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={isConfirmPending}
+              className="app-dialog-cancel-button inline-flex h-10 min-w-32 items-center justify-center rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy transition hover:bg-darknavy/5 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35"
+            >
+              {cancelLabel}
+            </button>
+          ) : null}
         </div>
       </section>
     </div>
   );
+}
+
+export function AnimatedPendingLabel({ label }: { label: string }) {
+  const baseLabel = label.trim().replace(/\.+$/, "");
+  const accessibleLabel = `${baseLabel}...`;
+
+  return (
+    <span className="inline-flex items-baseline" aria-label={accessibleLabel}>
+      <span aria-hidden="true">{baseLabel}</span>
+      <span
+        className="inline-flex w-[1.15em] justify-start"
+        aria-hidden="true"
+      >
+        <span className="animate-pulse">.</span>
+        <span className="animate-pulse [animation-delay:160ms]">.</span>
+        <span className="animate-pulse [animation-delay:320ms]">.</span>
+      </span>
+    </span>
+  );
+}
+
+function AppDialogStatusIcon({
+  animate,
+  tone,
+}: {
+  animate: boolean;
+  tone: AppDialogIconTone;
+}) {
+  const isDoubleMark = tone === "error";
+  const StatusIcon =
+    tone === "activate" ? Power : tone === "deactivate" ? PowerOff : null;
+
+  return (
+    <span
+      className={`app-dialog-status-icon app-dialog-status-icon--${tone}`}
+      data-animated={animate ? "true" : "false"}
+      aria-hidden="true"
+    >
+      {StatusIcon ? (
+        <StatusIcon className="app-dialog-status-icon-symbol" strokeWidth={2.2} />
+      ) : (
+        <>
+          <span className="app-dialog-status-icon-mark" />
+          {isDoubleMark ? (
+            <span className="app-dialog-status-icon-mark" />
+          ) : null}
+        </>
+      )}
+    </span>
+  );
+}
+
+function getDefaultIconTone(tone: AppDialogTone): AppDialogIconTone | null {
+  if (tone === "activate" || tone === "deactivate") {
+    return tone;
+  }
+
+  if (tone === "danger") {
+    return "error";
+  }
+
+  if (tone === "success") {
+    return "success";
+  }
+
+  if (tone === "warning" || tone === "info" || tone === "question") {
+    return tone;
+  }
+
+  return null;
+}
+
+function getDefaultPendingLabel(tone: AppDialogTone) {
+  if (tone === "activate") {
+    return "Activating...";
+  }
+
+	if (tone === "deactivate") {
+		return "Inactivating...";
+	}
+
+  return "Please wait...";
 }
 
 function getConfirmButtonClassName({
@@ -188,5 +308,13 @@ function getConfirmButtonClassName({
     return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-coralpink text-white hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;
   }
 
-  return `${baseClassName} ${disabledClassName} ${pendingClassName} theme-accent-contrast-text bg-skyblue hover:bg-skyblue/85 focus-visible:ring-skyblue/35`;
+  if (tone === "activate") {
+    return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-emerald-500 text-white hover:bg-emerald-500/90 focus-visible:ring-emerald-500/35`;
+  }
+
+  if (tone === "deactivate") {
+    return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-coralpink text-white hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;
+  }
+
+  return `${baseClassName} ${disabledClassName} ${pendingClassName} app-dialog-primary-button`;
 }

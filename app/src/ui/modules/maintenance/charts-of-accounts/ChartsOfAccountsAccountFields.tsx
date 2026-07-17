@@ -9,7 +9,7 @@ import {
   NormalBalanceLabels,
   NormalBalances,
   StatementSections,
-} from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+} from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
   AccountLevel,
   AccountType,
@@ -140,7 +140,7 @@ export function ChartsOfAccountsAccountFields({
             ? "Generating next code..."
             : values.parentId
               ? "Generated automatically"
-              : "Select parent first"
+              : "--Select Parent First--"
         }
         readOnly
         reserveMessageSpace={submitted}
@@ -365,7 +365,7 @@ function PostingAccountField({
           Posting Account
         </span>
         <span className="text-xs text-darknavy/55">
-          Only posting accounts may receive journal entries
+          Allows journal entries
         </span>
       </span>
       <input
@@ -596,4 +596,5 @@ function flattenUniqueChartAccounts(
     ];
   });
 }
+
 

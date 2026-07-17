@@ -21,14 +21,14 @@ import {
 
 import {
 	TemplateHeaders,
-} from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+} from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
 import type {
 	BankMasterfileImportDialogProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { BankImportRow } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileImportPreviewTableRow";
 import {
 	downloadBankImportTemplate,
-} from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
+} from "@/app/src/data/modules/maintenance/bank-masterfile/BankMasterfileData";
 
 export function BankMasterfileImportDialog({
 	existingBanks,

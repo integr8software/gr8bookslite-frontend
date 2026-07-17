@@ -151,7 +151,7 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"workspace-module-projects": ClipboardList,
 	"workspace-module-human-resources": Users,
 	"maintenance-financial": Landmark,
-	"maintenance-item-management": Package,
+	"maintenance-items": Package,
 	"maintenance-warehouse-management": Warehouse,
 	"maintenance-charts-of-accounts": Scale,
 	"maintenance-bank-masterfile": Landmark,

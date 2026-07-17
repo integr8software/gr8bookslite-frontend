@@ -1,4 +1,8 @@
 import type {
+  SortingState,
+  VisibilityState,
+} from "@tanstack/react-table";
+import type {
   PartyImportColumnHeader,
   PartyImportColumnId,
   PartyImportColumnWidths,
@@ -9,9 +13,10 @@ import type {
   VatRegistrationType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-export const PartyManagementHref = "/maintenance/party-management";
+export const PartyManagementHref = MODULE_ROUTE_MAP.PM;
 
 export const PartyManagementApiPath = "/maintenance/party-maintenance";
 
@@ -117,7 +122,6 @@ export const PartyManagementActionCopy = {
 export const PartyManagementTableColumns = [
   { key: "partyCodeNo", label: "Party Code", className: "w-[11rem]" },
   { key: "name", label: "Party Name", className: "w-[22rem]" },
-  { key: "honorific", label: "Honorific", className: "w-[10rem]" },
   {
     key: "classification",
     label: "Classification",
@@ -162,6 +166,35 @@ export const PartyManagementTableColumns = [
     className: "w-[12rem] text-center",
   },
 ] as const;
+
+export const PartyManagementTablePreferencesStorageKey =
+  "gr8booksneo:party-management:table-preferences";
+export const PartyManagementTablePreferencesModuleKey =
+  "maintenance:party-management";
+export const PartyManagementDefaultColumnOrder = PartyManagementTableColumns.map(
+  (column) => ("key" in column ? column.key : "actions"),
+);
+export const PartyManagementDefaultColumnVisibility: VisibilityState = {
+  billingAddressLabel: false,
+  civilStatus: false,
+  createdAt: false,
+  createdBy: false,
+  email: false,
+  gender: false,
+  homeAddressLabel: false,
+  landline: false,
+  memberRegistrationDate: false,
+  nationality: false,
+  partyCodeNo: false,
+  deliveryAddressLabel: false,
+  tin: false,
+  updatedAt: false,
+  updatedBy: false,
+  vatRegistrationType: false,
+};
+export const PartyManagementDefaultSorting: SortingState = [
+  { id: "name", desc: false },
+];
 
 export const PartyInformationExportColumns: ModuleTableExportColumn<PartyInformationTableRecord>[] =
   [

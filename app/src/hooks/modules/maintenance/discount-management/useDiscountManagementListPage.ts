@@ -87,7 +87,7 @@ export function useDiscountManagementListPage() {
 			return;
 		}
 
-		void updateDiscount({
+		return updateDiscount({
 			...pendingStatusDiscount,
 			status:
 				pendingStatusDiscount.status === "Active" ? "Inactive" : "Active",

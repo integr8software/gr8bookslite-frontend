@@ -6,7 +6,7 @@ type TablePreferenceResponse = {
 	configuration: TablePreferenceConfiguration | null;
 };
 
-const TablePreferencesPath = "/workspace/table-preferences";
+const TablePreferencesPath = "/table-preferences";
 
 export async function fetchTablePreference(moduleKey: string) {
 	const response = await ApiClient.get<TablePreferenceResponse>(

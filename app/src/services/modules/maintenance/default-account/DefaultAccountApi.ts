@@ -1,4 +1,4 @@
-import { DefaultAccountApiPath } from "@/app/src/constants/modules/maintenance/financial-management/default-account/DefaultAccountConstants";
+import { DefaultAccountApiPath } from "@/app/src/constants/modules/maintenance/default-account/DefaultAccountConstants";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
 	ApiDefaultAccount,
@@ -127,3 +127,4 @@ function mapStatusFromApi(value: ApiDefaultAccountStatus): DefaultAccountStatus 
 function mapStatusToApi(value: DefaultAccountStatus): ApiDefaultAccountStatus {
 	return value === "Active" ? "ACTIVE" : "INACTIVE";
 }
+

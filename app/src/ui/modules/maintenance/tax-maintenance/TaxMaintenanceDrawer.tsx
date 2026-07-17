@@ -2,47 +2,29 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
+  EmptyTaxFormValues,
   TaxMaintenanceActionCopy,
   TaxMaintenanceDrawerFormId,
   TaxMaintenanceTitle,
-} from "@/app/src/constants/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceConstants";
-import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+} from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
 import type {
   TaxMaintenance,
   TaxMaintenanceAccountField,
-  TaxMaintenanceDrawerMode,
+  TaxMaintenanceDefaultAccountIds,
+  TaxMaintenanceDrawerProps,
   TaxMaintenanceFormValues,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
-import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { TaxMaintenanceFields } from "@/app/src/ui/modules/maintenance/tax-maintenance/TaxMaintenanceFields";
 import {
   type TaxMaintenanceFormErrors,
   validateTaxMaintenanceForm,
 } from "@/app/src/validations/modules/maintenance/tax-maintenance/TaxMaintenanceValidation";
 
-const EmptyTaxFormValues: TaxMaintenanceFormValues = {
-  name: "",
-  percentage: "0",
-  inputVatAccountId: "",
-  outputVatAccountId: "",
-  vatPayableAccountId: "",
-  deferredInputTaxAccountId: "",
-  deferredOutputVatAccountId: "",
-  status: "Active",
-};
-
-type TaxMaintenanceDrawerProps = {
-  accountOptions: ModuleChartAccount[];
-  isOpen: boolean;
-  isSaving: boolean;
-  mode: TaxMaintenanceDrawerMode;
-  tax?: TaxMaintenance;
-  onClose: () => void;
-  onSave: (values: TaxMaintenance | TaxMaintenanceFormValues) => Promise<void>;
-};
-
 export function TaxMaintenanceDrawer({
   accountOptions,
+  defaultAccountIds,
   isOpen,
   isSaving,
   mode,
@@ -51,14 +33,16 @@ export function TaxMaintenanceDrawer({
   onSave,
 }: TaxMaintenanceDrawerProps) {
   const [values, setValues] = useState<TaxMaintenanceFormValues>(() =>
-    tax ? toFormValues(tax) : EmptyTaxFormValues,
+    tax ? toFormValues(tax) : createDefaultTaxFormValues(defaultAccountIds),
   );
   const [errors, setErrors] = useState<TaxMaintenanceFormErrors>({});
   const copy = TaxMaintenanceActionCopy[mode];
   const isReadonly = mode === "view";
 
   function handleInputChange(
-    event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    event: ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) {
     const field = event.target.name as keyof TaxMaintenanceFormValues;
     setValues((current) => ({ ...current, [field]: event.target.value }));
@@ -73,12 +57,21 @@ export function TaxMaintenanceDrawer({
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function validateBeforeSubmit() {
     const nextErrors = validateTaxMaintenanceForm(values);
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
+      return false;
+    }
+
+    return true;
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!validateBeforeSubmit()) {
       return;
     }
 
@@ -86,15 +79,16 @@ export function TaxMaintenanceDrawer({
   }
 
   return (
-    <MaintenanceFormDrawer
+    <ModuleDrawer
       description={copy.description}
       eyebrow={TaxMaintenanceTitle}
       formId={TaxMaintenanceDrawerFormId}
       isOpen={isOpen}
       isReadonly={isReadonly}
       isSaving={isSaving}
+      onBeforeSaveConfirm={validateBeforeSubmit}
       onClose={onClose}
-      savingLabel={mode === "edit" ? "Updating Tax..." : "Saving Tax..."}
+      savingLabel={getModuleSavePendingLabel(mode)}
       submitLabel={mode === "edit" ? "Update Tax" : "Save Tax"}
       title={copy.title}
     >
@@ -112,19 +106,34 @@ export function TaxMaintenanceDrawer({
           onInputChange={handleInputChange}
         />
       </form>
-    </MaintenanceFormDrawer>
+    </ModuleDrawer>
   );
 }
 
 function toFormValues(tax: TaxMaintenance): TaxMaintenanceFormValues {
   return {
     name: tax.name,
+    description: tax.description,
     percentage: tax.percentage,
     inputVatAccountId: tax.inputVatAccountId,
     outputVatAccountId: tax.outputVatAccountId,
-    vatPayableAccountId: tax.vatPayableAccountId,
-    deferredInputTaxAccountId: tax.deferredInputTaxAccountId,
-    deferredOutputVatAccountId: tax.deferredOutputVatAccountId,
+    deferredVatAccountId: tax.deferredVatAccountId,
+    expandedWithholdingTaxAccountId: tax.expandedWithholdingTaxAccountId,
+    creditableWithholdingTaxAccountId: tax.creditableWithholdingTaxAccountId,
+    withholdingVatableTaxAccountId: tax.withholdingVatableTaxAccountId,
+    finalWithholdingTaxAccountId: tax.finalWithholdingTaxAccountId,
     status: tax.status,
   };
 }
+
+function createDefaultTaxFormValues(
+  defaultAccountIds: TaxMaintenanceDefaultAccountIds,
+): TaxMaintenanceFormValues {
+  return {
+    ...EmptyTaxFormValues,
+    ...defaultAccountIds,
+  };
+}
+
+
+

@@ -1,25 +1,14 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import {
-	CheckCircle2,
-	CirclePause,
-	Percent,
-	ShoppingCart,
-	Tags,
-	WalletCards,
-} from "lucide-react";
+import { useCallback, useState } from "react";
 import { useDiscountManagementListPage } from "@/app/src/hooks/modules/maintenance/discount-management/useDiscountManagementListPage";
 import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/maintenance/useMaintenanceAddDrawerSpotlight";
 import type { DiscountManagementDrawerState } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
-import {
-	ModuleStatisticCards,
-	type ModuleStatisticCardItem,
-} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { DiscountManagementDrawer } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementDrawer";
 import { DiscountManagementHeader } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementHeader";
 import { DiscountManagementImportDialog } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementImportDialog";
+import { DiscountManagementStatisticCards } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementStatisticCards";
 import { DiscountManagementTable } from "@/app/src/ui/modules/maintenance/discount-management/DiscountManagementTable";
 
 export function DiscountManagementListPage() {
@@ -36,53 +25,6 @@ export function DiscountManagementListPage() {
 		},
 		closeDrawer,
 	);
-	const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-		() => [
-			{
-				icon: Percent,
-				iconClassName: "bg-skyblue/20 text-skyblue",
-				label: "Total",
-				summary: "All discount records",
-				value: page.statistics.totalDiscounts,
-			},
-			{
-				icon: CheckCircle2,
-				iconClassName: "bg-emerald-50 text-emerald-700",
-				label: "Active",
-				summary: "Available for selection",
-				value: page.statistics.activeDiscounts,
-			},
-			{
-				icon: CirclePause,
-				iconClassName: "bg-amber-50 text-amber-700",
-				label: "Inactive",
-				summary: "Currently inactive",
-				value: page.statistics.inactiveDiscounts,
-			},
-			{
-				icon: ShoppingCart,
-				iconClassName: "bg-cyan-50 text-cyan-700",
-				label: "Purchases",
-				summary: "Purchase discounts",
-				value: page.statistics.purchaseDiscounts,
-			},
-			{
-				icon: WalletCards,
-				iconClassName: "bg-violet-50 text-violet-700",
-				label: "Sales",
-				summary: "Sales discounts",
-				value: page.statistics.salesDiscounts,
-			},
-			{
-				icon: Tags,
-				iconClassName: "bg-slate-100 text-slate-700",
-				label: "Percentage Type",
-				summary: "Percentage discounts",
-				value: page.statistics.percentageDiscounts,
-			},
-		],
-		[page.statistics],
-	);
 	const hasActiveFilters =
 		page.query.trim().length > 0 ||
 		page.typeFilter !== "All" ||
@@ -96,10 +38,9 @@ export function DiscountManagementListPage() {
 				onImport={() => setIsImportOpen(true)}
 				permissions={page.permissions}
 			/>
-			<ModuleStatisticCards
-				items={statisticCards}
+			<DiscountManagementStatisticCards
+				statistics={page.statistics}
 				isLoading={page.isLoading}
-				className="xl:grid-cols-6"
 			/>
 
 			<DiscountManagementTable
@@ -160,7 +101,9 @@ export function DiscountManagementListPage() {
 						: "Activate"
 				}
 				tone={
-					page.pendingStatusDiscount?.status === "Active" ? "danger" : "success"
+					page.pendingStatusDiscount?.status === "Active"
+						? "deactivate"
+						: "activate"
 				}
 				onCancel={() => page.setPendingStatusDiscount(null)}
 				onConfirm={page.confirmDiscountStatusChange}

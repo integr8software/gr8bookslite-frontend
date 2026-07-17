@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { ChartsOfAccountsHref } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+import { ChartsOfAccountsHref } from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import {
   ChartsOfAccountsSpotlightTutorialOpenEvent,
   ChartsOfAccountsSpotlightTutorialStorageKey,
-} from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
+} from "@/app/src/data/modules/maintenance/charts-of-accounts/ChartsOfAccountsSpotlightTutorialData";
 
 type SpotlightStorageValue = {
   status: "completed" | "skipped";
@@ -118,3 +118,5 @@ export function useChartsOfAccountsSpotlightTutorial() {
     );
   }
 }
+
+

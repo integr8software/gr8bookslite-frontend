@@ -221,6 +221,11 @@ export type ChartsOfAccountsTableProps = {
   onView: (account: ChartAccount) => void;
 };
 
+export type ChartsOfAccountsStatisticCardsProps = {
+	flatAccounts: FlattenedChartAccount[];
+	isLoading?: boolean;
+};
+
 export type ChartsOfAccountsTableRowProps = {
   account: ChartAccount;
   activeDragAccount?: ActiveDragAccount;

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { formatTermDuration } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementDisplay";
+import { formatTermDuration } from "@/app/src/data/modules/maintenance/term-management/TermManagementDisplay";
 import { fetchTerms } from "@/app/src/services/modules/maintenance/term-management/TermManagementApi";
 import { TermManagementQueryKeys } from "@/app/src/services/modules/maintenance/term-management/TermManagementQueryKeys";
 
@@ -31,3 +31,4 @@ export function useTermDropdownOptions() {
 		terms: termsQuery.data?.terms ?? [],
 	};
 }
+

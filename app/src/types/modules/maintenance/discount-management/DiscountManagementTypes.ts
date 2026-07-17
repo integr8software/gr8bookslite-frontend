@@ -156,6 +156,11 @@ export type DiscountManagementTableProps = {
 	onViewDiscount: (discount: DiscountManagementTableRecord) => void;
 };
 
+export type DiscountManagementStatisticCardsProps = {
+	statistics: DiscountManagementStatistics;
+	isLoading?: boolean;
+};
+
 export type DiscountManagementFieldsProps = {
 	errors: DiscountManagementFormErrors;
 	generatedAccount: {

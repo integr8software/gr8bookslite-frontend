@@ -1,4 +1,4 @@
-import { ResponsibilityCenterApiPath } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+import { ResponsibilityCenterApiPath } from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
 	ApiResponsibilityCenter,
@@ -234,3 +234,4 @@ function mapStatusToApi(
 ): ApiResponsibilityCenterStatus {
 	return value === "Active" ? "ACTIVE" : "INACTIVE";
 }
+

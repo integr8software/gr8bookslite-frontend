@@ -13,11 +13,11 @@ import {
 	MaxImportFileSizeBytes,
 	MinImportFileSizeBytes,
 	SelectionColumnWidth,
-} from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
+} from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import {
 	downloadPaymentTypeImportTemplate,
 	isPaymentTypeImportGridPasteTarget,
-} from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+} from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
 import { formatFileSize } from "@/app/src/utils/file.util";
 import { usePaymentTypeImportDialog } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentTypeImportDialog";
 import type { PaymentTypeImportDialogProps } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
@@ -258,3 +258,5 @@ export function PaymentTypeImportDialog({
 		</ModuleImportDialog>
 	);
 }
+
+

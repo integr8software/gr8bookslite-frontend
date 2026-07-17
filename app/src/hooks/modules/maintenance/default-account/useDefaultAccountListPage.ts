@@ -72,7 +72,7 @@ export function useDefaultAccountListPage() {
 			return;
 		}
 
-		void updateDefaultAccountStatus({
+		return updateDefaultAccountStatus({
 			...pendingStatusAccount,
 			status:
 				pendingStatusAccount.status === "Active" ? "Inactive" : "Active",

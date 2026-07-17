@@ -1,15 +1,17 @@
 import type {
   TaxMaintenance,
+  TaxMaintenanceAccountSummary,
   TaxMaintenancePermissions,
   TaxMaintenanceTableRowProps,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
 import {
   formatTaxMaintenancePercentage,
-} from "@/app/src/data/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceData";
+} from "@/app/src/data/modules/maintenance/tax-maintenance/TaxMaintenanceData";
 import {
   ModuleTableActionButton,
   ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 import { formatDateTime } from "@/app/src/utils/date.util";
 
@@ -62,48 +64,72 @@ function TaxMaintenanceCellContent({
   switch (columnId) {
     case "name":
       return <span className="font-medium text-darknavy">{tax.name}</span>;
+    case "description":
+      return <AccountText value={tax.description} />;
     case "percentage":
       return <span>{formatTaxMaintenancePercentage(tax.percentage)}</span>;
     case "inputVatAccountCode":
-      return <AccountText value={tax.accounts?.inputVatAccount?.accountCode} />;
+      return <AccountText value={getAccountCode(tax.accounts?.inputVatAccount)} />;
     case "inputVatAccountTitle":
-      return <AccountText value={tax.accounts?.inputVatAccount?.accountTitle} />;
+      return <AccountText value={getAccountTitle(tax.accounts?.inputVatAccount)} />;
     case "outputVatAccountCode":
-      return <AccountText value={tax.accounts?.outputVatAccount?.accountCode} />;
+      return <AccountText value={getAccountCode(tax.accounts?.outputVatAccount)} />;
     case "outputVatAccountTitle":
-      return <AccountText value={tax.accounts?.outputVatAccount?.accountTitle} />;
-    case "vatPayableAccountCode":
-      return <AccountText value={tax.accounts?.vatPayableAccount?.accountCode} />;
-    case "vatPayableAccountTitle":
-      return (
-        <AccountText value={tax.accounts?.vatPayableAccount?.accountTitle} />
-      );
-    case "deferredInputTaxAccountCode":
+      return <AccountText value={getAccountTitle(tax.accounts?.outputVatAccount)} />;
+    case "deferredVatAccountCode":
+      return <AccountText value={getAccountCode(tax.accounts?.deferredVatAccount)} />;
+    case "deferredVatAccountTitle":
+      return <AccountText value={getAccountTitle(tax.accounts?.deferredVatAccount)} />;
+    case "expandedWithholdingTaxAccountCode":
       return (
         <AccountText
-          value={tax.accounts?.deferredInputTaxAccount?.accountCode}
+          value={getAccountCode(tax.accounts?.expandedWithholdingTaxAccount)}
         />
       );
-    case "deferredInputTaxAccountTitle":
+    case "expandedWithholdingTaxAccountTitle":
       return (
         <AccountText
-          value={tax.accounts?.deferredInputTaxAccount?.accountTitle}
+          value={getAccountTitle(tax.accounts?.expandedWithholdingTaxAccount)}
         />
       );
-    case "deferredOutputVatAccountCode":
+    case "creditableWithholdingTaxAccountCode":
       return (
         <AccountText
-          value={tax.accounts?.deferredOutputVatAccount?.accountCode}
+          value={getAccountCode(tax.accounts?.creditableWithholdingTaxAccount)}
         />
       );
-    case "deferredOutputVatAccountTitle":
+    case "creditableWithholdingTaxAccountTitle":
       return (
         <AccountText
-          value={tax.accounts?.deferredOutputVatAccount?.accountTitle}
+          value={getAccountTitle(tax.accounts?.creditableWithholdingTaxAccount)}
+        />
+      );
+    case "withholdingVatableTaxAccountCode":
+      return (
+        <AccountText
+          value={getAccountCode(tax.accounts?.withholdingVatableTaxAccount)}
+        />
+      );
+    case "withholdingVatableTaxAccountTitle":
+      return (
+        <AccountText
+          value={getAccountTitle(tax.accounts?.withholdingVatableTaxAccount)}
+        />
+      );
+    case "finalWithholdingTaxAccountCode":
+      return (
+        <AccountText
+          value={getAccountCode(tax.accounts?.finalWithholdingTaxAccount)}
+        />
+      );
+    case "finalWithholdingTaxAccountTitle":
+      return (
+        <AccountText
+          value={getAccountTitle(tax.accounts?.finalWithholdingTaxAccount)}
         />
       );
     case "status":
-      return <StatusBadge status={tax.status} />;
+      return <ModuleStatusBadge status={tax.status} />;
     case "createdBy":
       return <span>{tax.createdBy ?? ""}</span>;
     case "createdAt":
@@ -169,6 +195,14 @@ function TaxMaintenanceTableCell({
   );
 }
 
+function getAccountCode(account?: TaxMaintenanceAccountSummary | null) {
+  return account?.accountCode ?? "";
+}
+
+function getAccountTitle(account?: TaxMaintenanceAccountSummary | null) {
+  return account?.accountTitle ?? "";
+}
+
 function AccountText({ value }: { value?: string | null }) {
   return (
     <span className="block truncate text-darknavy/75" title={value ?? ""}>
@@ -177,17 +211,3 @@ function AccountText({ value }: { value?: string | null }) {
   );
 }
 
-function StatusBadge({ status }: { status: TaxMaintenance["status"] }) {
-  const statusClass =
-    status === "Active"
-      ? "bg-citron/25 text-darknavy"
-      : "bg-darknavy/8 text-darknavy/55";
-
-  return (
-    <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}
-    >
-      {status}
-    </span>
-  );
-}

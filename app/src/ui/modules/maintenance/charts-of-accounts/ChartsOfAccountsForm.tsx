@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChartsOfAccountsDrawerTabs } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+import { ChartsOfAccountsDrawerTabs } from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
   BankDetailsKey,
   ChartsOfAccountsFormProps,
@@ -108,3 +108,4 @@ function ChartsOfAccountsLinkedDetailsTabs({
     </div>
   );
 }
+

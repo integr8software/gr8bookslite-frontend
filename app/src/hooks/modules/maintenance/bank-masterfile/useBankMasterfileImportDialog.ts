@@ -6,7 +6,7 @@ import {
 	ImportBatchSize,
 	PreviewPageSize,
 	TemplateHeaders,
-} from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+} from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
 import {
 	cleanBankValues,
 	createBlankRow,
@@ -19,7 +19,7 @@ import {
 	renumberRows,
 	validateImportFileSize,
 	waitForNextBatch,
-} from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
+} from "@/app/src/data/modules/maintenance/bank-masterfile/BankMasterfileData";
 import type {
 	BankImportColumnId,
 	BankImportMode,
@@ -407,3 +407,5 @@ export function useBankMasterfileImportDialog({
 		visibleRows,
 	};
 }
+
+

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TaxMaintenanceStatusOptions } from "@/app/src/constants/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceConstants";
+import { TaxMaintenanceStatusOptions } from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
 import type {
   TaxMaintenanceFormValues,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
@@ -8,7 +8,7 @@ export type TaxMaintenanceFormErrors = Partial<
   Record<keyof TaxMaintenanceFormValues, string>
 >;
 
-const OptionalAccountIdSchema = z.string().trim();
+const RequiredAccountIdSchema = z.string().trim().min(1, "Select an account.");
 
 export const TaxMaintenanceFormSchema = z.object({
   name: z
@@ -16,6 +16,10 @@ export const TaxMaintenanceFormSchema = z.object({
     .trim()
     .min(1, "Tax name is required.")
     .max(120, "Tax name must be 120 characters or less."),
+  description: z
+    .string()
+    .trim()
+    .max(500, "Description must be 500 characters or less."),
   percentage: z
     .string()
     .trim()
@@ -29,11 +33,13 @@ export const TaxMaintenanceFormSchema = z.object({
     .refine((value) => hasAllowedDecimalPlaces(value, 4), {
       message: "Percentage can have up to 4 decimal places.",
     }),
-  inputVatAccountId: OptionalAccountIdSchema,
-  outputVatAccountId: OptionalAccountIdSchema,
-  vatPayableAccountId: OptionalAccountIdSchema,
-  deferredInputTaxAccountId: OptionalAccountIdSchema,
-  deferredOutputVatAccountId: OptionalAccountIdSchema,
+  inputVatAccountId: RequiredAccountIdSchema,
+  outputVatAccountId: RequiredAccountIdSchema,
+  deferredVatAccountId: RequiredAccountIdSchema,
+  expandedWithholdingTaxAccountId: RequiredAccountIdSchema,
+  creditableWithholdingTaxAccountId: RequiredAccountIdSchema,
+  withholdingVatableTaxAccountId: RequiredAccountIdSchema,
+  finalWithholdingTaxAccountId: RequiredAccountIdSchema,
   status: z.enum(TaxMaintenanceStatusOptions, {
     error: "Select a valid status.",
   }),
@@ -66,3 +72,4 @@ function hasAllowedDecimalPlaces(value: string, maxDecimalPlaces: number) {
 
   return !decimalPart || decimalPart.length <= maxDecimalPlaces;
 }
+

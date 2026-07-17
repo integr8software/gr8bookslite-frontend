@@ -1,8 +1,8 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { TermManagementTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
-import { getTermManagementTableMinWidthClassName } from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
+import { TermManagementTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
+import { getTermManagementTableMinWidthClassName } from "@/app/src/data/modules/maintenance/term-management/TermManagementData";
 import { useTermManagementTable } from "@/app/src/hooks/modules/maintenance/term-management/useTermManagementTable";
 import type {
 	TermManagementTableProps,
@@ -80,3 +80,5 @@ export function TermManagementTable({
 		</div>
 	);
 }
+
+

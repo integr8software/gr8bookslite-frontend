@@ -4,13 +4,14 @@ import {
 	BankMasterfileActionCopy,
 	BankMasterfileDrawerFormId,
 	BankMasterfileTitle,
-} from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+} from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
 import { useBankMasterfileFormPage } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileFormPage";
 import type {
 	BankMasterfile,
 	BankMasterfileDrawerProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
-import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { BankMasterfileFields } from "@/app/src/ui/modules/maintenance/bank-masterfile/BankMasterfileFields";
 
 export function BankMasterfileDrawer({
@@ -50,15 +51,16 @@ function BankMasterfileDrawerPanel({
 	const accountCode = mode === "add" ? page.nextAccountCode : (bank?.accountCode ?? "");
 
 	return (
-		<MaintenanceFormDrawer
+		<ModuleDrawer
 			description={copy.description}
 			eyebrow={BankMasterfileTitle}
 			formId={BankMasterfileDrawerFormId}
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
+			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={mode === "edit" ? "Updating Bank..." : "Saving Bank..."}
+			savingLabel={getModuleSavePendingLabel(mode)}
 			submitLabel={mode === "edit" ? "Update Bank" : "Save Bank"}
 			title={copy.title}
 		>
@@ -73,6 +75,9 @@ function BankMasterfileDrawerPanel({
 					onInputChange={page.handleInputChange}
 				/>
 			</form>
-		</MaintenanceFormDrawer>
+		</ModuleDrawer>
 	);
 }
+
+
+

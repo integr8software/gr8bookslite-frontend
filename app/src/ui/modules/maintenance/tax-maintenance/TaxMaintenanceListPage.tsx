@@ -1,53 +1,28 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { CheckCircle2, CirclePause, ReceiptText } from "lucide-react";
+import { useCallback, useState } from "react";
 import { useTaxMaintenanceListPage } from "@/app/src/hooks/modules/maintenance/tax-maintenance/useTaxMaintenanceListPage";
 import type {
   TaxMaintenance,
   TaxMaintenanceDrawerState,
   TaxMaintenanceFormValues,
 } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
-import {
-  ModuleStatisticCards,
-  type ModuleStatisticCardItem,
-} from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { TaxMaintenanceDrawer } from "@/app/src/ui/modules/maintenance/tax-maintenance/TaxMaintenanceDrawer";
 import { TaxMaintenanceHeader } from "@/app/src/ui/modules/maintenance/tax-maintenance/TaxMaintenanceHeader";
+import { TaxMaintenanceStatisticCards } from "@/app/src/ui/modules/maintenance/tax-maintenance/TaxMaintenanceStatisticCards";
 import { TaxMaintenanceTable } from "@/app/src/ui/modules/maintenance/tax-maintenance/TaxMaintenanceTable";
 
 export function TaxMaintenanceListPage() {
   const page = useTaxMaintenanceListPage();
   const [drawerState, setDrawerState] =
     useState<TaxMaintenanceDrawerState>(null);
+  const [drawerVersion, setDrawerVersion] = useState(0);
   const closeDrawer = useCallback(() => setDrawerState(null), []);
-  const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-    () => [
-      {
-        icon: ReceiptText,
-        iconClassName: "bg-skyblue/20 text-skyblue",
-        label: "Total Taxes",
-        summary: "All VAT registration types",
-        value: page.statistics.totalTaxes,
-      },
-      {
-        icon: CheckCircle2,
-        iconClassName: "bg-emerald-50 text-emerald-700",
-        label: "Active Taxes",
-        summary: "Available for party setup",
-        value: page.statistics.activeTaxes,
-      },
-      {
-        icon: CirclePause,
-        iconClassName: "bg-amber-50 text-amber-700",
-        label: "Inactive Taxes",
-        summary: "Currently inactive",
-        value: page.statistics.inactiveTaxes,
-      },
-    ],
-    [page.statistics],
-  );
+  const openAddDrawer = useCallback(() => {
+    setDrawerVersion((version) => version + 1);
+    setDrawerState({ mode: "add" });
+  }, []);
   const hasActiveFilters =
     page.query.trim().length > 0 || page.statusFilter !== "Active";
 
@@ -63,11 +38,12 @@ export function TaxMaintenanceListPage() {
   return (
     <section className="grid gap-5">
       <TaxMaintenanceHeader
-        onAdd={() => setDrawerState({ mode: "add" })}
+        onAdd={openAddDrawer}
         permissions={page.permissions}
       />
-      <ModuleStatisticCards
-        items={statisticCards}
+      <TaxMaintenanceStatisticCards
+        statistics={page.statistics}
+        taxes={page.taxes}
         isLoading={page.isLoading}
       />
       <TaxMaintenanceTable
@@ -88,8 +64,9 @@ export function TaxMaintenanceListPage() {
         onViewTax={(tax) => setDrawerState({ mode: "view", tax })}
       />
       <TaxMaintenanceDrawer
-        key={`${drawerState?.mode ?? "closed"}-${drawerState?.tax?.id ?? "new"}`}
+        key={`${drawerState?.mode ?? "closed"}-${drawerState?.tax?.id ?? "new"}-${drawerVersion}-${page.accountOptions.length}-${Object.values(page.defaultAccountIds).join(":")}`}
         accountOptions={page.accountOptions}
+        defaultAccountIds={page.defaultAccountIds}
         isOpen={Boolean(drawerState)}
         isSaving={page.isMutating}
         mode={drawerState?.mode ?? "add"}
@@ -113,7 +90,7 @@ export function TaxMaintenanceListPage() {
         confirmLabel={
           page.pendingStatusTax?.status === "Active" ? "Deactivate" : "Activate"
         }
-        tone={page.pendingStatusTax?.status === "Active" ? "danger" : "success"}
+        tone={page.pendingStatusTax?.status === "Active" ? "deactivate" : "activate"}
         onCancel={() => page.setPendingStatusTax(null)}
         onConfirm={page.confirmTaxStatusChange}
       />

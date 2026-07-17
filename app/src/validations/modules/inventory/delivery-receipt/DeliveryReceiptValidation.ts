@@ -17,7 +17,7 @@ export function validateDeliveryReceiptForm(
 	}
 
 	if (!values.vceName.trim()) {
-		return { isValid: false, message: "Select or enter the Party Code." };
+		return { isValid: false, message: "Select or enter the Party Name." };
 	}
 
 	if (!values.transactionNo.trim()) {

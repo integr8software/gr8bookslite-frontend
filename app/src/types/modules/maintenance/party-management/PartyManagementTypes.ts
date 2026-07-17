@@ -1,9 +1,10 @@
-import type { ChangeEventHandler } from "react";
+import type { ChangeEventHandler, ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
+import type { ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export type PartyClassification = "Individual" | "Non-Individual";
 
@@ -170,6 +171,16 @@ export type PartyInformationFormErrors = Partial<{
 
 export type PartyInformationActionMode = "add" | "edit" | "view";
 
+export type PartyInformationTabId =
+  | "accounting-information"
+  | "basic-information"
+  | "contact-information"
+  | "tax-information";
+
+export type PartyInformationTab = ModuleTabItem<PartyInformationTabId> & {
+  content: ReactNode;
+};
+
 export type PartyInformationActionHeaderProps = {
   canSave?: boolean;
   cancelHref: string;
@@ -177,6 +188,7 @@ export type PartyInformationActionHeaderProps = {
   isReadonly: boolean;
   mode: PartyInformationActionMode;
   nextStatus?: PartyInformationStatus;
+  onSave?: () => void;
   onStatusChange?: () => void;
 };
 
@@ -202,7 +214,6 @@ export type PartyInformationTableColumnKey =
   | "email"
   | "gender"
   | "homeAddressLabel"
-  | "honorific"
   | "landline"
   | "memberRegistrationDate"
   | "name"
@@ -416,6 +427,10 @@ export type PartyManagementAnalytics = {
   multiTypepartyName: number;
   organizationpartyName: number;
   totalpartyName: number;
+};
+
+export type PartyManagementStatisticCardsProps = {
+  analytics: PartyManagementAnalytics;
 };
 
 export type ApiPartyAddress = {

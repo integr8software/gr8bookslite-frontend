@@ -5,7 +5,7 @@ import {
 	DiscountManagementSelectClassName,
 	DiscountManagementTypeOptions,
 	DiscountManagementValueTypeOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
+} from "@/app/src/constants/modules/maintenance/discount-management/DiscountManagementConstants";
 import type { DiscountManagementFieldsProps } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 
@@ -45,7 +45,7 @@ export function DiscountManagementFields({
 				</select>
 			</FormField>
 
-			<FormField label="Description" error={errors.description} required>
+			<FormField label="Description" error={errors.description}>
 				<AppLimitedTextarea
 					name="description"
 					value={values.description}
@@ -176,4 +176,5 @@ function ReadonlyField({
 		</div>
 	);
 }
+
 

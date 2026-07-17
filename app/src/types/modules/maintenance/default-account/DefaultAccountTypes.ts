@@ -1,10 +1,4 @@
-import type {
-	ColumnOrderState,
-	Row,
-	SortingState,
-	Table,
-	VisibilityState,
-} from "@tanstack/react-table";
+import type { Row, Table } from "@tanstack/react-table";
 
 export type DefaultAccountType = "EXPENSE" | "COLLECTION" | "FIXED_ASSET";
 export type DefaultAccountStatus = "Active" | "Inactive";
@@ -69,12 +63,6 @@ export type DefaultAccountTableColumnKey =
 	| "createdAt"
 	| "updatedBy"
 	| "updatedAt";
-
-export type DefaultAccountTablePreferences = {
-	columnOrder: ColumnOrderState;
-	columnVisibility: VisibilityState;
-	sorting: SortingState;
-};
 
 export type DefaultAccountColumnMeta = {
 	className: string;
@@ -167,6 +155,11 @@ export type DefaultAccountTableProps = {
 	onToggleStatus: (account: DefaultAccount) => void;
 	onTypeFilterChange: (value: DefaultAccountTypeFilter) => void;
 	onViewDefaultAccount: (account: DefaultAccount) => void;
+};
+
+export type DefaultAccountStatisticCardsProps = {
+	statistics: DefaultAccountStatistics;
+	isLoading?: boolean;
 };
 
 export type DefaultAccountTableFiltersProps = {

@@ -3,7 +3,7 @@ import {
 	DiscountManagementDescription,
 	DiscountManagementParentLabel,
 	DiscountManagementTitle,
-} from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
+} from "@/app/src/constants/modules/maintenance/discount-management/DiscountManagementConstants";
 import type { DiscountManagementPermissions } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 import {
 	ModuleHeader,
@@ -61,3 +61,4 @@ export function DiscountManagementHeader({
 		/>
 	);
 }
+

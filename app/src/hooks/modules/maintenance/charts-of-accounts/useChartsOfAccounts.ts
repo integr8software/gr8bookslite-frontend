@@ -5,8 +5,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   type ColumnDef,
   type PaginationState,
-  type SortingState,
-  type VisibilityState,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -14,14 +12,19 @@ import {
 } from "@tanstack/react-table";
 import {
   AccountLevelLabels,
+  ChartsOfAccountsDefaultColumnOrder,
+  ChartsOfAccountsDefaultColumnVisibility,
+  ChartsOfAccountsDefaultSorting,
   ChartsOfAccountsTableColumns,
+  ChartsOfAccountsTablePreferencesModuleKey,
+  ChartsOfAccountsTablePreferencesStorageKey,
   ChartsOfAccountsNavs,
-} from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+} from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import {
   flattenAccounts,
   isSpecificAccount,
   moveOrReorderAccount,
-} from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
+} from "@/app/src/data/modules/maintenance/charts-of-accounts/ChartsOfAccountsData";
 import {
   FetchChartAccountsTree,
   SaveChartAccount,
@@ -30,6 +33,7 @@ import {
 import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
 import type {
   AccountStatus,
@@ -46,14 +50,6 @@ import type {
 import toast from "react-hot-toast";
 
 const PageSize = 50;
-const DefaultColumnVisibility: VisibilityState = {
-  accountLevel: false,
-  reportAlias: false,
-  createdBy: false,
-  createdAt: false,
-  updatedBy: false,
-  updatedAt: false,
-};
 
 export function useChartsOfAccounts() {
   const queryClient = useQueryClient();
@@ -64,6 +60,20 @@ export function useChartsOfAccounts() {
     queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
     queryFn: FetchChartAccountsTree,
     enabled: Boolean(companyId),
+  });
+  const {
+    columnOrder,
+    columnVisibility,
+    sorting,
+    setColumnOrder,
+    setColumnVisibility,
+    setSorting,
+  } = useTablePreferences({
+    defaultColumnOrder: ChartsOfAccountsDefaultColumnOrder,
+    defaultColumnVisibility: ChartsOfAccountsDefaultColumnVisibility,
+    defaultSorting: ChartsOfAccountsDefaultSorting,
+    moduleKey: ChartsOfAccountsTablePreferencesModuleKey,
+    storageKey: ChartsOfAccountsTablePreferencesStorageKey,
   });
   const [accounts, setAccounts] = useState<ChartAccount[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
@@ -77,9 +87,6 @@ export function useChartsOfAccounts() {
     useState<FilterValue<AccountStatus>>("Active");
   const [structureFilter, setStructureFilter] =
     useState<ChartAccountStructureFilter>("All");
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] =
-    useState<VisibilityState>(DefaultColumnVisibility);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: PageSize,
@@ -261,11 +268,18 @@ export function useChartsOfAccounts() {
   const table = useReactTable({
     data: visibleAccounts,
     columns,
+    initialState: {
+      columnOrder: ChartsOfAccountsDefaultColumnOrder,
+      columnVisibility: ChartsOfAccountsDefaultColumnVisibility,
+      sorting: ChartsOfAccountsDefaultSorting,
+    },
     state: {
+      columnOrder,
       columnVisibility,
       pagination,
       sorting,
     },
+    onColumnOrderChange: setColumnOrder,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
@@ -522,3 +536,5 @@ function getAccountAncestorIds(
 
   return ancestorIds;
 }
+
+

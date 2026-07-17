@@ -3,7 +3,7 @@ import {
 	BankMasterfileDescription,
 	BankMasterfileParentLabel,
 	BankMasterfileTitle,
-} from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+} from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
 import type { BankMasterfilePermissions } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import {
 	ModuleHeader,
@@ -59,3 +59,4 @@ export function BankMasterfileHeader({
 		/>
 	);
 }
+

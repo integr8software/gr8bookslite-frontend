@@ -90,7 +90,7 @@ export function AppAdvancedDropdown({
 	menuPortal = true,
 	name,
 	options,
-	placeholder = "Select option",
+	placeholder = "--Select Option--",
 	readOnly = false,
 	removeSelectionOnSelectedOptionClick = true,
 	searchPlaceholder = "Search options",

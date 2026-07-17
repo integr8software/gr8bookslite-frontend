@@ -8,12 +8,12 @@ import type { CSSProperties } from "react";
 import {
   AccountLevelLabels,
   NormalBalanceLabels,
-} from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+} from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import {
   getDropPlacementMode,
   isSpecificAccountLevel,
   isSpecificAccountNumber,
-} from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
+} from "@/app/src/data/modules/maintenance/charts-of-accounts/ChartsOfAccountsData";
 import { formatDateTime } from "@/app/src/utils/date.util";
 import type {
   ChartAccount,

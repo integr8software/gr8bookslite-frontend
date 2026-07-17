@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ModuleTableBody } from "@/app/src/ui/shared/module/module-table/ModuleTableBody";
 import { ModuleTableHeader } from "@/app/src/ui/shared/module/module-table/ModuleTableHeader";
@@ -34,6 +34,7 @@ export function ModuleTable<TData>({
 	variant = "standalone",
 }: ModuleTableProps<TData>) {
 	const pathname = usePathname();
+	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const [hasLoadedPagination, setHasLoadedPagination] = useState(false);
 	const rows = table.getRowModel().rows;
 	const visibleColumns = table.getVisibleLeafColumns();
@@ -146,7 +147,10 @@ export function ModuleTable<TData>({
 				tableTitle={tableTitle}
 			/>
 			{toolbar ? <div className="border-b border-darknavy/10">{toolbar}</div> : null}
-			<div className={joinClasses(maxHeightClassName, "overflow-x-auto overflow-y-auto")}>
+			<div
+				ref={scrollContainerRef}
+				className={joinClasses(maxHeightClassName, "overflow-x-auto overflow-y-auto")}
+			>
 				<table
 					className={joinClasses(
 						"w-full border-collapse text-left text-sm text-darknavy",
@@ -166,7 +170,10 @@ export function ModuleTable<TData>({
 							))}
 						</colgroup>
 					) : null}
-					<ModuleTableHeader table={table} />
+					<ModuleTableHeader
+						scrollContainerRef={scrollContainerRef}
+						table={table}
+					/>
 					<ModuleTableBody
 						emptyDescription={emptyDescription}
 						emptyIcon={emptyIcon}

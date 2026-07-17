@@ -15,7 +15,7 @@ import {
   PaymentTypeInitialFormValues,
   PaymentTypeOptions,
   updatePaymentTypeFromForm,
-} from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+} from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
 import {
   applyPaymentTypeListParams,
 } from "@/app/src/services/modules/maintenance/payment-type/PaymentTypeService";
@@ -1074,3 +1074,4 @@ function PaymentTypeActionMenuButton({
 }
 
 const DefaultPageSizeOptions = [5, 10, 15, 20, 25, 50] as const;
+

@@ -201,7 +201,7 @@ export function useGoodsIssueTable(issues: GoodsIssueRecord[]) {
 			{
 				id: "vceName",
 				accessorKey: "vceName",
-				header: "Party Code",
+				header: "Party Name",
 				sortingFn: "alphanumeric",
 				meta: { className: "w-[16rem]" },
 			},

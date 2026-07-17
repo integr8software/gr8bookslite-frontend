@@ -1,7 +1,7 @@
 import {
 	BankMasterfileExportColumns,
 	BankMasterfileStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+} from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
 import type {
 	BankMasterfileStatusFilter,
 	BankMasterfileTableFiltersProps,
@@ -74,4 +74,3 @@ export function BankMasterfileTableFilters({
 		</ModuleTableToolbar>
 	);
 }
-

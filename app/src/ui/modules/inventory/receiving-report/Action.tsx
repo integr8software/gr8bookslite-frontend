@@ -259,7 +259,7 @@ function ReceivingReportVendorSection({
 					onChange={onChange}
 				/>
 				<TextField
-					label="Party Code"
+					label="Party Name"
 					name="vceName"
 					value={values.vceName}
 					disabled={isReadonly}

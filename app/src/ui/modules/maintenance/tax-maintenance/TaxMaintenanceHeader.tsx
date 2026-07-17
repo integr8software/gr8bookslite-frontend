@@ -3,7 +3,7 @@ import {
   TaxMaintenanceDescription,
   TaxMaintenanceParentLabel,
   TaxMaintenanceTitle,
-} from "@/app/src/constants/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceConstants";
+} from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
 import type { TaxMaintenancePermissions } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
 import {
   ModuleHeader,
@@ -46,3 +46,4 @@ export function TaxMaintenanceHeader({
     />
   );
 }
+

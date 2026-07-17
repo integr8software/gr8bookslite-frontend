@@ -66,8 +66,6 @@ function PartyInformationCellContent({
 			return <TextCell value={record.contactNo} />;
 		case "landline":
 			return <TextCell value={record.landline ?? ""} />;
-		case "honorific":
-			return <TextCell value={record.honorific ?? ""} />;
 		case "gender":
 			return <TextCell value={record.gender ?? ""} />;
 		case "civilStatus":

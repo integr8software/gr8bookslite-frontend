@@ -42,7 +42,7 @@ export function ModuleStatisticCards({
 	return (
 		<div
 			className={joinClasses(
-				"grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
+				getStatisticGridClassName(items.length),
 				className,
 			)}
 			{...props}
@@ -56,6 +56,14 @@ export function ModuleStatisticCards({
 			)}
 		</div>
 	);
+}
+
+function getStatisticGridClassName(itemCount: number) {
+	if (itemCount > 0 && itemCount % 4 === 0) {
+		return "grid gap-4 sm:grid-cols-2 2xl:grid-cols-4";
+	}
+
+	return "grid gap-4 sm:grid-cols-2 lg:grid-cols-3";
 }
 
 function ModuleStatisticCard({ item }: { item: ModuleStatisticCardItem }) {

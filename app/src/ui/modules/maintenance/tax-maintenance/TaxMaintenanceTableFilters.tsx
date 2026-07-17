@@ -1,7 +1,7 @@
 import {
   TaxMaintenanceExportColumns,
   TaxMaintenanceStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceConstants";
+} from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
 import type {
   TaxMaintenanceStatusFilter,
   TaxMaintenanceTableFiltersProps,
@@ -86,3 +86,4 @@ export function TaxMaintenanceTableFilters({
     </ModuleTableToolbar>
   );
 }
+

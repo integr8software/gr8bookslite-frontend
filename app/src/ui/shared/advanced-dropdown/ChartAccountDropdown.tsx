@@ -22,7 +22,7 @@ type ChartAccountDropdownProps = Omit<
 export function ChartAccountDropdown({
 	accounts,
 	emptyMessage = "No chart accounts found.",
-	placeholder = "Select account",
+	placeholder = "--Select Account--",
 	searchPlaceholder = "Search account name or code",
 	showSelectedDetails = false,
 	value,

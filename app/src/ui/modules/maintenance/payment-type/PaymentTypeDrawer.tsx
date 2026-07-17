@@ -3,8 +3,8 @@
 import {
 	PaymentTypeDrawerFormId,
 	PaymentTypeFieldClassName,
-} from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
-import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+} from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
+import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
 import { usePaymentTypeActionPage } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentTypeActionPage";
 import type {
 	PaymentTypeActionMode,
@@ -13,7 +13,8 @@ import type {
 	PaymentTypeStatus,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 
 const PaymentTypeActionCopy = {
 	add: {
@@ -66,24 +67,23 @@ function PaymentTypeDrawerPanel({
 	const copy = PaymentTypeActionCopy[mode];
 
 	return (
-		<MaintenanceFormDrawer
+		<ModuleDrawer
 			description={copy.description}
 			eyebrow="Accounting master data"
 			formId={PaymentTypeDrawerFormId}
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
+			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={
-				mode === "edit" ? "Updating Payment Type..." : "Saving Payment Type..."
-			}
+			savingLabel={getModuleSavePendingLabel(mode)}
 			submitLabel={mode === "edit" ? "Update Payment Type" : "Save Payment Type"}
 			title={copy.title}
 		>
 			<form id={PaymentTypeDrawerFormId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
 				<label className="grid gap-2">
 					<span className="text-sm font-semibold text-darknavy">
-						Name <span className="text-coralpink">*</span>
+						Payment Type Name <span className="text-coralpink">*</span>
 					</span>
 					<input
 						value={page.values.paymentType}
@@ -134,7 +134,7 @@ function PaymentTypeDrawerPanel({
 							}
 							className={PaymentTypeFieldClassName}
 						>
-							<option value="">Select category</option>
+							<option value="">--Select Category--</option>
 							{PaymentTypeOptions.map((typeOption) => (
 								<option key={typeOption} value={typeOption}>
 									{typeOption}
@@ -174,7 +174,11 @@ function PaymentTypeDrawerPanel({
 					</label>
 				</div>
 			</form>
-		</MaintenanceFormDrawer>
+		</ModuleDrawer>
 	);
 }
+
+
+
+
 

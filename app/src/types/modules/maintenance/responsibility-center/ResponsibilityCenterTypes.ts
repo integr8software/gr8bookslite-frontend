@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
+import type { TablePreferencesState } from "@/app/src/types/shared/table-preferences/TablePreferencesTypes";
 
 export type ResponsibilityCenterStatus = "Active" | "Inactive";
 export type ResponsibilityCenterStatusFilter = "" | ResponsibilityCenterStatus;
@@ -256,6 +257,11 @@ export type ResponsibilityCenterListResponse = {
 	permissions: ResponsibilityCenterPermissions;
 };
 
+export type ResponsibilityCenterStatisticCardsProps = {
+	statistics: ResponsibilityCenterStatistics;
+	isLoading?: boolean;
+};
+
 export type ResponsibilityCenterTableProps = {
 	categoryFilter: string;
 	filteredCenters: ResponsibilityCenter[];
@@ -268,6 +274,7 @@ export type ResponsibilityCenterTableProps = {
 	permissions: ResponsibilityCenterPermissions;
 	query: string;
 	statusFilter: ResponsibilityCenterStatusFilter;
+	tablePreferences: ResponsibilityCenterTablePreferencesState;
 	treeTable: Table<FlattenedResponsibilityCenterTreeNode>;
 	viewMode: ResponsibilityCenterViewMode;
 	centers: ResponsibilityCenter[];
@@ -282,6 +289,8 @@ export type ResponsibilityCenterTableProps = {
 	onViewCenter: (center: ResponsibilityCenter) => void;
 	onViewModeChange: (viewMode: ResponsibilityCenterViewMode) => void;
 };
+
+export type ResponsibilityCenterTablePreferencesState = TablePreferencesState;
 
 export type ResponsibilityCenterTreeProps = {
 	expandedIds: Set<string>;

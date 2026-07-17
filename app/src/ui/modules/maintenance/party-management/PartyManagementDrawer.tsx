@@ -43,11 +43,12 @@ import type {
 	PartyInformationFormValues,
 	PartyInformationRecord,
 	PartyManagementDrawerProps,
-	PartyType,
 	PartyProvinceOption,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { ModuleSavingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
 import { todayDateValue } from "@/app/src/utils/date.util";
 import type {
@@ -78,6 +79,8 @@ export function PartyManagementDrawer({
 	const taxMaintenanceDropdown = useTaxMaintenanceOptions();
 	const transactionNumberSetup = useTransactionNumberSetupStore();
 	const [errors, setErrors] = useState<PartyInformationFormErrors>({});
+	const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+	const [isSaveConfirmPending, setIsSaveConfirmPending] = useState(false);
 	const activeAddress =
 		values.addresses.find((address) => address.id === values.activeAddressId) ??
 		values.addresses[0] ??
@@ -565,13 +568,21 @@ export function PartyManagementDrawer({
 		}));
 	}
 
-	function handleSubmit(event?: FormEvent<HTMLFormElement>) {
-		event?.preventDefault();
-
+	function validateBeforeSubmit() {
 		const nextErrors = validatePartyInformationForm(effectiveValues);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
+			return false;
+		}
+
+		return true;
+	}
+
+	function handleSubmit(event?: FormEvent<HTMLFormElement>) {
+		event?.preventDefault();
+
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -596,7 +607,11 @@ export function PartyManagementDrawer({
 					</button>
 					<button
 						type="button"
-						onClick={() => handleSubmit()}
+						onClick={() => {
+							if (validateBeforeSubmit()) {
+								setIsSaveDialogOpen(true);
+							}
+						}}
 						disabled={isPending || !canSave}
 						className={PartyManagementDrawerPrimaryActionClassName}
 					>
@@ -609,6 +624,29 @@ export function PartyManagementDrawer({
 			onClose={onClose}
 			title={title}
 		>
+			<AppDialog
+				confirmLabel="Confirm"
+				description="This will create a new party using the details you entered."
+				iconTone="question"
+				isOpen={isSaveDialogOpen}
+				isPending={isPending || isSaveConfirmPending}
+				pendingLabel={ModuleSavingLabel}
+				title="Save this party?"
+				tone="success"
+				onCancel={() => {
+					if (!isPending && !isSaveConfirmPending) {
+						setIsSaveDialogOpen(false);
+					}
+				}}
+				onConfirm={() => {
+					setIsSaveConfirmPending(true);
+					handleSubmit();
+					window.setTimeout(() => {
+						setIsSaveConfirmPending(false);
+						setIsSaveDialogOpen(false);
+					}, 700);
+				}}
+			/>
 			<div id={PartyManagementDrawerFormId} className="px-6 py-5">
 				<PartyInformationDetailsFields
 					accountOptions={partyAccountOptions.accountOptions}
@@ -735,3 +773,5 @@ function applySyncedAddressValues(
 function getSingleSelectedValue(value: string | string[]) {
 	return Array.isArray(value) ? (value[0] ?? "") : value;
 }
+
+

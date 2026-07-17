@@ -8,7 +8,7 @@ import {
   AccountTypes,
   ChartsOfAccountsExportColumns,
   ChartsOfAccountsNavs,
-} from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+} from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import type {
   AccountStatus,
   AccountType,
@@ -242,3 +242,4 @@ function StructureButton({
     </button>
   );
 }
+

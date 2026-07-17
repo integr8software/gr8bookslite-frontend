@@ -1,8 +1,8 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { DefaultAccountTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/default-account/DefaultAccountConstants";
-import { getDefaultAccountTableMinWidthClassName } from "@/app/src/data/modules/maintenance/financial-management/default-account/DefaultAccountData";
+import { DefaultAccountTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/default-account/DefaultAccountConstants";
+import { getDefaultAccountTableMinWidthClassName } from "@/app/src/data/modules/maintenance/default-account/DefaultAccountData";
 import { useDefaultAccountTable } from "@/app/src/hooks/modules/maintenance/default-account/useDefaultAccountTable";
 import type { DefaultAccountTableProps } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
@@ -78,3 +78,5 @@ export function DefaultAccountTable({
 		</div>
 	);
 }
+
+

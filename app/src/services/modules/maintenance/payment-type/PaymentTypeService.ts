@@ -1,5 +1,5 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import { PaymentTypeApiPath } from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
+import { PaymentTypeApiPath } from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import type {
 	ApiPaymentType,
 	ApiPaymentTypeClassification,
@@ -187,3 +187,4 @@ function mapStatusFromApi(value: ApiPaymentTypeStatus): PaymentTypeStatus {
 function mapStatusToApi(value: PaymentTypeStatus): ApiPaymentTypeStatus {
 	return value === "Active" ? "ACTIVE" : "INACTIVE";
 }
+

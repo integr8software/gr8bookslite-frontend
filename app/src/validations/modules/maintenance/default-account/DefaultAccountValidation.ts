@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
 	DefaultAccountStatusOptions,
 	DefaultAccountTypeOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/default-account/DefaultAccountConstants";
+} from "@/app/src/constants/modules/maintenance/default-account/DefaultAccountConstants";
 import type {
 	DefaultAccountFormErrors,
 	DefaultAccountFormValues,
@@ -46,3 +46,4 @@ function mapDefaultAccountIssues(issues: z.ZodIssue[]) {
 		return errors;
 	}, {});
 }
+

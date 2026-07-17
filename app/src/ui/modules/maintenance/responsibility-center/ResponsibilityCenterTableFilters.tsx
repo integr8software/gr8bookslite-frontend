@@ -6,7 +6,7 @@ import {
 	ResponsibilityCenterExportColumns,
 	ResponsibilityCenterFinancialTypeOptions,
 	ResponsibilityCenterStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+} from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
 import type {
 	ResponsibilityCenterStatusFilter,
 	ResponsibilityCenterTableFiltersProps,
@@ -232,3 +232,4 @@ function ResponsiveFilterSelect<TValue extends string>({
 function getViewModeLabel(value: ResponsibilityCenterViewMode) {
 	return value === "tree" ? "Tree View" : "List View";
 }
+

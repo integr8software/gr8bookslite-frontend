@@ -39,14 +39,14 @@ export function DeliveryReceiptCustomerFields({
 					value={values.vceCode}
 					onChange={(value) => onUpdateField("vceCode", value)}
 				/>
-				<FieldShell controlId="delivery-receipt-vce-name" label="Party Code" isRequired>
+				<FieldShell controlId="delivery-receipt-vce-name" label="Party Name" isRequired>
 					<AttachedDropdown
 						id="delivery-receipt-vce-name"
 						value={values.vceName}
 						readOnly={isReadonly}
 						options={DeliveryReceiptPartyOptions}
 						placeholder=""
-						searchPlaceholder="Search Party Code"
+						searchPlaceholder="Search Party Name"
 						onAdd={() => undefined}
 						onChange={(value) => onUpdateField("vceName", value)}
 					/>

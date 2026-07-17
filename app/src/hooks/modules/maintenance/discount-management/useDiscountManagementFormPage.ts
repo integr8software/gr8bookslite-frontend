@@ -8,7 +8,7 @@ import {
 } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { DiscountManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
+import { DiscountManagementHref } from "@/app/src/constants/modules/maintenance/discount-management/DiscountManagementConstants";
 import {
 	DiscountManagementInitialFormValues,
 	createDiscountFromForm,
@@ -17,7 +17,7 @@ import {
 	getDiscountAccountGroupPath,
 	getDiscountAccountTitle,
 	updateDiscountFromForm,
-} from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
+} from "@/app/src/data/modules/maintenance/discount-management/DiscountManagementData";
 import type {
 	DiscountManagementActionMode,
 	Discount,
@@ -91,14 +91,22 @@ export function useDiscountManagementFormPage(
 		);
 	}
 
-	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
+	function validateBeforeSubmit() {
 		const nextErrors = validateDiscountManagementForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
 			toast.error("Please fix the highlighted discount fields.");
+			return false;
+		}
+
+		return true;
+	}
+
+	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -127,6 +135,7 @@ export function useDiscountManagementFormPage(
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
+		validateBeforeSubmit,
 		values,
 	};
 }
@@ -142,3 +151,5 @@ function getActionMode(pathname: string): DiscountManagementActionMode {
 
 	return "add";
 }
+
+

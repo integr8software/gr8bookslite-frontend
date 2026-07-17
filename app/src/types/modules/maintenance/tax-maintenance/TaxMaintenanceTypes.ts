@@ -16,18 +16,23 @@ export type TaxMaintenanceAccountSummary = {
 export type TaxMaintenance = {
   id: string;
   name: string;
+  description: string;
   percentage: string;
   inputVatAccountId: string;
   outputVatAccountId: string;
-  vatPayableAccountId: string;
-  deferredInputTaxAccountId: string;
-  deferredOutputVatAccountId: string;
+  deferredVatAccountId: string;
+  expandedWithholdingTaxAccountId: string;
+  creditableWithholdingTaxAccountId: string;
+  withholdingVatableTaxAccountId: string;
+  finalWithholdingTaxAccountId: string;
   accounts?: {
     inputVatAccount: TaxMaintenanceAccountSummary | null;
     outputVatAccount: TaxMaintenanceAccountSummary | null;
-    vatPayableAccount: TaxMaintenanceAccountSummary | null;
-    deferredInputTaxAccount: TaxMaintenanceAccountSummary | null;
-    deferredOutputVatAccount: TaxMaintenanceAccountSummary | null;
+    deferredVatAccount: TaxMaintenanceAccountSummary | null;
+    expandedWithholdingTaxAccount: TaxMaintenanceAccountSummary | null;
+    creditableWithholdingTaxAccount: TaxMaintenanceAccountSummary | null;
+    withholdingVatableTaxAccount: TaxMaintenanceAccountSummary | null;
+    finalWithholdingTaxAccount: TaxMaintenanceAccountSummary | null;
   };
   status: TaxMaintenanceStatus;
   createdBy?: string | null;
@@ -41,15 +46,29 @@ export type TaxMaintenanceFormValues = Omit<
   "accounts" | "createdAt" | "createdBy" | "id" | "updatedAt" | "updatedBy"
 >;
 
+export type TaxMaintenanceDefaultAccountIds = Pick<
+  TaxMaintenanceFormValues,
+  | "creditableWithholdingTaxAccountId"
+  | "deferredVatAccountId"
+  | "expandedWithholdingTaxAccountId"
+  | "finalWithholdingTaxAccountId"
+  | "inputVatAccountId"
+  | "outputVatAccountId"
+  | "withholdingVatableTaxAccountId"
+>;
+
 export type ApiTaxMaintenance = {
   id: string;
   name: string;
+  description?: string | null;
   percentage: number;
   inputVatAccountId?: string | null;
   outputVatAccountId?: string | null;
-  vatPayableAccountId?: string | null;
-  deferredInputTaxAccountId?: string | null;
-  deferredOutputVatAccountId?: string | null;
+  deferredVatAccountId?: string | null;
+  expandedWithholdingTaxAccountId?: string | null;
+  creditableWithholdingTaxAccountId?: string | null;
+  withholdingVatableTaxAccountId?: string | null;
+  finalWithholdingTaxAccountId?: string | null;
   accounts?: TaxMaintenance["accounts"];
   status: ApiTaxMaintenanceStatus;
   createdBy?: string | null;
@@ -60,6 +79,8 @@ export type ApiTaxMaintenance = {
 
 export type ApiTaxMaintenanceListResponse = {
   taxMaintenance: ApiTaxMaintenance[];
+  accountOptions: ModuleChartAccount[];
+  defaultAccountIds: TaxMaintenanceDefaultAccountIds;
   statistics: TaxMaintenanceStatistics;
   permissions: TaxMaintenancePermissions;
 };
@@ -70,6 +91,8 @@ export type ApiTaxMaintenanceSaveResponse = {
 
 export type TaxMaintenanceListResponse = {
   taxMaintenance: TaxMaintenance[];
+  accountOptions: ModuleChartAccount[];
+  defaultAccountIds: TaxMaintenanceDefaultAccountIds;
   statistics: TaxMaintenanceStatistics;
   permissions: TaxMaintenancePermissions;
 };
@@ -88,7 +111,15 @@ export type TaxMaintenanceStatistics = {
   inactiveTaxes: number;
 };
 
+export type TaxMaintenanceStatisticCardsProps = {
+  statistics: TaxMaintenanceStatistics;
+  taxes: TaxMaintenance[];
+  isLoading?: boolean;
+};
+
 export type TaxMaintenanceDrawerMode = "add" | "edit" | "view";
+
+export type TaxMaintenanceTab = "tax" | "accounting";
 
 export type TaxMaintenanceDrawerState =
   | {
@@ -96,6 +127,17 @@ export type TaxMaintenanceDrawerState =
       tax?: TaxMaintenance;
     }
   | null;
+
+export type TaxMaintenanceDrawerProps = {
+  accountOptions: ModuleChartAccount[];
+  defaultAccountIds: TaxMaintenanceDefaultAccountIds;
+  isOpen: boolean;
+  isSaving: boolean;
+  mode: TaxMaintenanceDrawerMode;
+  tax?: TaxMaintenance;
+  onClose: () => void;
+  onSave: (values: TaxMaintenance | TaxMaintenanceFormValues) => Promise<void>;
+};
 
 export type TaxMaintenanceFieldsProps = {
   accountOptions: ModuleChartAccount[];
@@ -106,23 +148,32 @@ export type TaxMaintenanceFieldsProps = {
     field: TaxMaintenanceAccountField,
     value: string,
   ) => void;
-  onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
+  onInputChange: ChangeEventHandler<
+    HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+  >;
 };
 
 export type TaxMaintenanceAccountField =
-  | "deferredInputTaxAccountId"
-  | "deferredOutputVatAccountId"
+  | "creditableWithholdingTaxAccountId"
+  | "deferredVatAccountId"
+  | "expandedWithholdingTaxAccountId"
+  | "finalWithholdingTaxAccountId"
   | "inputVatAccountId"
   | "outputVatAccountId"
-  | "vatPayableAccountId";
+  | "withholdingVatableTaxAccountId";
 
 export type TaxMaintenanceTableColumnKey =
   | "createdAt"
   | "createdBy"
-  | "deferredInputTaxAccountCode"
-  | "deferredInputTaxAccountTitle"
-  | "deferredOutputVatAccountCode"
-  | "deferredOutputVatAccountTitle"
+  | "creditableWithholdingTaxAccountCode"
+  | "creditableWithholdingTaxAccountTitle"
+  | "deferredVatAccountCode"
+  | "deferredVatAccountTitle"
+  | "description"
+  | "expandedWithholdingTaxAccountCode"
+  | "expandedWithholdingTaxAccountTitle"
+  | "finalWithholdingTaxAccountCode"
+  | "finalWithholdingTaxAccountTitle"
   | "inputVatAccountCode"
   | "inputVatAccountTitle"
   | "name"
@@ -132,8 +183,8 @@ export type TaxMaintenanceTableColumnKey =
   | "status"
   | "updatedAt"
   | "updatedBy"
-  | "vatPayableAccountCode"
-  | "vatPayableAccountTitle";
+  | "withholdingVatableTaxAccountCode"
+  | "withholdingVatableTaxAccountTitle";
 
 export type TaxMaintenanceTableProps = {
   filteredTaxes: TaxMaintenance[];

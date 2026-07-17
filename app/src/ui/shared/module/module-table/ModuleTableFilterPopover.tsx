@@ -35,10 +35,15 @@ type ModuleTableFilterPopoverProps = {
 	value: string;
 };
 
-const DefaultEmptyValue = "all";
 const PanelGap = 8;
 const PanelViewportPadding = 16;
 const PanelWidth = 320;
+const InitialPanelStyle: CSSProperties = {
+	left: 0,
+	opacity: 0,
+	pointerEvents: "none",
+	top: 0,
+};
 
 export function ModuleTableFilterPopover({
 	className,
@@ -56,12 +61,15 @@ export function ModuleTableFilterPopover({
 	const panelRef = useRef<HTMLDivElement>(null);
 	const [isOpen, setIsOpen] = useState(false);
 	const [draftValue, setDraftValue] = useState(value);
-	const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
+	const [panelStyle, setPanelStyle] =
+		useState<CSSProperties>(InitialPanelStyle);
+	const emptyValue = useMemo(() => getEmptyFilterValue(options), [options]);
+	const effectiveValue = value || emptyValue;
 	const selectedOption = useMemo(
-		() => options.find((option) => option.value === value),
-		[options, value],
+		() => options.find((option) => option.value === effectiveValue),
+		[options, effectiveValue],
 	);
-	const isEmpty = value === DefaultEmptyValue || !value;
+	const isShowingPlaceholder = !selectedOption;
 	const displayLabel = selectedOption
 		? formatFilterOptionLabel(selectedOption.label)
 		: placeholder;
@@ -130,13 +138,14 @@ export function ModuleTableFilterPopover({
 			return;
 		}
 
-		setDraftValue(value);
+		setDraftValue(effectiveValue);
+		setPanelStyle(getPanelStyle(rootRef.current) ?? InitialPanelStyle);
 		setIsOpen(true);
 	}
 
 	function clearSelection() {
-		setDraftValue(DefaultEmptyValue);
-		onChange(DefaultEmptyValue);
+		setDraftValue(emptyValue);
+		onChange(emptyValue);
 		setIsOpen(false);
 	}
 
@@ -146,7 +155,7 @@ export function ModuleTableFilterPopover({
 	}
 
 	function applySelection() {
-		onChange(draftValue || DefaultEmptyValue);
+		onChange(draftValue);
 		setIsOpen(false);
 	}
 
@@ -179,14 +188,16 @@ export function ModuleTableFilterPopover({
 					<ListFilter
 						className={joinClasses(
 							"h-4 w-4 shrink-0",
-							isEmpty ? "text-darknavy/45" : moduleAccentClassNames.iconText,
+							isShowingPlaceholder
+								? "text-darknavy/45"
+								: moduleAccentClassNames.iconText,
 						)}
 						aria-hidden="true"
 					/>
 					<span
 						className={joinClasses(
 							"min-w-0 flex-1 truncate",
-							isEmpty && "font-medium text-darknavy/45",
+							isShowingPlaceholder && "font-medium text-darknavy/45",
 						)}
 					>
 						{displayLabel}
@@ -295,6 +306,15 @@ function formatFilterOptionLabel(label: ReactNode) {
 	}
 
 	return label;
+}
+
+function getEmptyFilterValue(options: readonly ModuleTableFilterPopoverOption[]) {
+	return (
+		options.find(
+			(option) =>
+				typeof option.label === "string" && /^All(\s|$)/i.test(option.label),
+		)?.value ?? ""
+	);
 }
 
 function getPanelStyle(anchor: HTMLElement | null): CSSProperties | undefined {

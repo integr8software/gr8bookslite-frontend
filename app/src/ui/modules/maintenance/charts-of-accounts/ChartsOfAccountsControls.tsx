@@ -6,7 +6,7 @@ import {
   AccountTypeBadgeVariants,
   AccountTypeLabels,
   BadgeVariantClasses,
-} from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+} from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import type { ChartAccount } from "@/app/src/types/modules/maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 
 export function Card({ children, className, ...props }: ComponentProps<"div">) {
@@ -198,3 +198,4 @@ export function Tabs<TValue extends string>({
 export function joinClasses(...classes: Array<string | undefined | false>) {
   return classes.filter(Boolean).join(" ");
 }
+

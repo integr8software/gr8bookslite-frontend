@@ -8,6 +8,7 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function DiscountManagementTableRow({
@@ -89,7 +90,7 @@ function DiscountManagementCellContent({
 				</span>
 			);
 		case "status":
-			return <StatusBadge status={discount.status} />;
+			return <ModuleStatusBadge status={discount.status} />;
 		case "createdBy":
 			return <span>{discount.createdBy ?? ""}</span>;
 		case "createdAt":
@@ -149,17 +150,3 @@ function DiscountManagementTableCell({
 	);
 }
 
-function StatusBadge({ status }: { status: DiscountManagementTableRecord["status"] }) {
-	const statusClass =
-		status === "Active"
-			? "bg-citron/25 text-darknavy"
-			: "bg-darknavy/8 text-darknavy/55";
-
-	return (
-		<span
-			className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}
-		>
-			{status}
-		</span>
-	);
-}

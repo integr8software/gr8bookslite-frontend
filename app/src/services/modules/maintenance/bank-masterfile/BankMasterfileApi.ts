@@ -1,5 +1,5 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import { BankMasterfileApiPath } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+import { BankMasterfileApiPath } from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
 import type {
 	ApiBank,
 	ApiBankImportResponse,
@@ -148,3 +148,4 @@ function cleanOptional(value: string) {
 function toOptionalNumber(value: string) {
 	return value.trim() ? Number(value) : undefined;
 }
+

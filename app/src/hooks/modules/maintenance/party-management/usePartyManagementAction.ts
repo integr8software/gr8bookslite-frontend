@@ -40,7 +40,6 @@ import type {
   PartyInformationFormErrors,
   PartyInformationFormValues,
   PartyInformationStatus,
-  PartyType,
   PartyProvinceOption,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
@@ -620,13 +619,21 @@ export function usePartyManagementAction() {
     setErrors((current) => ({ ...current, barangayCode: undefined }));
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  function validateBeforeSubmit() {
     const nextErrors = validatePartyInformationForm(effectiveValues);
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
+      return false;
+    }
+
+    return true;
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!validateBeforeSubmit()) {
       return;
     }
 
@@ -730,6 +737,7 @@ export function usePartyManagementAction() {
     termOptions: termDropdown.options,
     updateAddressMeta,
     updateField,
+    validateBeforeSubmit,
     values: effectiveValues,
   };
 }

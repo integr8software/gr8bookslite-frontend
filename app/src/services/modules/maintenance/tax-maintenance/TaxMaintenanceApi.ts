@@ -1,4 +1,4 @@
-import { TaxMaintenanceApiPath } from "@/app/src/constants/modules/maintenance/financial-management/tax-maintenance/TaxMaintenanceConstants";
+import { TaxMaintenanceApiPath } from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   ApiTaxMaintenance,
@@ -26,6 +26,8 @@ export async function fetchTaxMaintenance(): Promise<TaxMaintenanceListResponse>
 
   return {
     taxMaintenance: response.data.taxMaintenance.map(mapApiTaxMaintenance),
+    accountOptions: response.data.accountOptions,
+    defaultAccountIds: response.data.defaultAccountIds,
     statistics: response.data.statistics,
     permissions: response.data.permissions,
   };
@@ -57,12 +59,18 @@ function mapApiTaxMaintenance(tax: ApiTaxMaintenance): TaxMaintenance {
   return {
     id: tax.id,
     name: tax.name,
+    description: tax.description ?? "",
     percentage: String(Number(tax.percentage)),
     inputVatAccountId: tax.inputVatAccountId ?? "",
     outputVatAccountId: tax.outputVatAccountId ?? "",
-    vatPayableAccountId: tax.vatPayableAccountId ?? "",
-    deferredInputTaxAccountId: tax.deferredInputTaxAccountId ?? "",
-    deferredOutputVatAccountId: tax.deferredOutputVatAccountId ?? "",
+    deferredVatAccountId: tax.deferredVatAccountId ?? "",
+    expandedWithholdingTaxAccountId:
+      tax.expandedWithholdingTaxAccountId ?? "",
+    creditableWithholdingTaxAccountId:
+      tax.creditableWithholdingTaxAccountId ?? "",
+    withholdingVatableTaxAccountId:
+      tax.withholdingVatableTaxAccountId ?? "",
+    finalWithholdingTaxAccountId: tax.finalWithholdingTaxAccountId ?? "",
     accounts: tax.accounts,
     status: mapStatusFromApi(tax.status),
     createdBy: tax.createdBy ?? "",
@@ -77,15 +85,22 @@ function toApiTaxMaintenancePayload(
 ) {
   return {
     name: values.name.trim(),
+    description: normalizeOptionalText(values.description),
     percentage: Number(values.percentage || 0),
     inputVatAccountId: normalizeOptionalText(values.inputVatAccountId),
     outputVatAccountId: normalizeOptionalText(values.outputVatAccountId),
-    vatPayableAccountId: normalizeOptionalText(values.vatPayableAccountId),
-    deferredInputTaxAccountId: normalizeOptionalText(
-      values.deferredInputTaxAccountId,
+    deferredVatAccountId: normalizeOptionalText(values.deferredVatAccountId),
+    expandedWithholdingTaxAccountId: normalizeOptionalText(
+      values.expandedWithholdingTaxAccountId,
     ),
-    deferredOutputVatAccountId: normalizeOptionalText(
-      values.deferredOutputVatAccountId,
+    creditableWithholdingTaxAccountId: normalizeOptionalText(
+      values.creditableWithholdingTaxAccountId,
+    ),
+    withholdingVatableTaxAccountId: normalizeOptionalText(
+      values.withholdingVatableTaxAccountId,
+    ),
+    finalWithholdingTaxAccountId: normalizeOptionalText(
+      values.finalWithholdingTaxAccountId,
     ),
     status: mapStatusToApi(values.status),
   };
@@ -104,3 +119,4 @@ function normalizeOptionalText(value: string | null | undefined) {
 
   return normalized || null;
 }
+

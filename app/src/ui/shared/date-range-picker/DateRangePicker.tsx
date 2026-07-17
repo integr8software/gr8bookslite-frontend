@@ -59,6 +59,12 @@ const PanelViewportPadding = 16;
 const PanelGap = 8;
 const PanelMaxWidth = 760;
 const PanelMinWidth = 300;
+const InitialPanelStyle: CSSProperties = {
+	left: 0,
+	opacity: 0,
+	pointerEvents: "none",
+	top: 0,
+};
 
 const DateFormatter = new Intl.DateTimeFormat("en-US", {
 	day: "numeric",
@@ -168,7 +174,8 @@ export function DateRangePicker({
 			getInitialVisibleDate(normalizedValue, startMonth, resolvedReferenceDate),
 		),
 	);
-	const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
+	const [panelStyle, setPanelStyle] =
+		useState<CSSProperties>(InitialPanelStyle);
 	const displayLabel = formatDateRangeLabel(normalizedValue, placeholder);
 	const isEmpty = isDateRangeEmpty(normalizedValue);
 
@@ -243,6 +250,7 @@ export function DateRangePicker({
 				),
 			),
 		);
+		setPanelStyle(getPanelStyle(rootRef.current) ?? InitialPanelStyle);
 		setIsOpen(true);
 	}
 

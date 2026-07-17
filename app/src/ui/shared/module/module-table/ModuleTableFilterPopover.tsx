@@ -38,6 +38,12 @@ type ModuleTableFilterPopoverProps = {
 const PanelGap = 8;
 const PanelViewportPadding = 16;
 const PanelWidth = 320;
+const InitialPanelStyle: CSSProperties = {
+	left: 0,
+	opacity: 0,
+	pointerEvents: "none",
+	top: 0,
+};
 
 export function ModuleTableFilterPopover({
 	className,
@@ -55,7 +61,8 @@ export function ModuleTableFilterPopover({
 	const panelRef = useRef<HTMLDivElement>(null);
 	const [isOpen, setIsOpen] = useState(false);
 	const [draftValue, setDraftValue] = useState(value);
-	const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
+	const [panelStyle, setPanelStyle] =
+		useState<CSSProperties>(InitialPanelStyle);
 	const emptyValue = useMemo(() => getEmptyFilterValue(options), [options]);
 	const effectiveValue = value || emptyValue;
 	const selectedOption = useMemo(
@@ -132,6 +139,7 @@ export function ModuleTableFilterPopover({
 		}
 
 		setDraftValue(effectiveValue);
+		setPanelStyle(getPanelStyle(rootRef.current) ?? InitialPanelStyle);
 		setIsOpen(true);
 	}
 

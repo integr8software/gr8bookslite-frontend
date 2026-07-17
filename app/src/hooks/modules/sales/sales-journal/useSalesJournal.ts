@@ -5,12 +5,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { MockSalesJournals } from "@/app/src/data/modules/sales/sales-journal/SalesJournalData";
 import { SalesJournalQueryKeys } from "@/app/src/services/modules/sales/sales-journal/SalesJournalQueryKeys";
-import type { SalesJournalRecord } from "@/app/src/types/modules/sales/sales-journal/SalesJournalTypes";
+import type {
+	SalesJournalRecord,
+	SalesJournalStatus,
+} from "@/app/src/types/modules/sales/sales-journal/SalesJournalTypes";
 
 type SalesJournalStoreState = {
 	records: SalesJournalRecord[];
 	addRecord: (record: SalesJournalRecord) => void;
 	updateRecord: (record: SalesJournalRecord) => void;
+	updateRecordStatus: (
+		record: SalesJournalRecord,
+		status: SalesJournalStatus,
+	) => void;
 	deleteRecord: (recordId: string) => void;
 	isLoading: boolean;
 	lastSyncedAt: number;
@@ -80,6 +87,8 @@ export function useSalesJournalStore<TSelected = SalesJournalStoreState>(
 			records: recordsQuery.data,
 			addRecord: (record) => addRecordMutation.mutate(record),
 			updateRecord: (record) => updateRecordMutation.mutate(record),
+			updateRecordStatus: (record, status) =>
+				updateRecordMutation.mutate({ ...record, status }),
 			deleteRecord: (recordId) => deleteRecordMutation.mutate(recordId),
 			isLoading: recordsQuery.isLoading,
 			lastSyncedAt: recordsQuery.dataUpdatedAt,

@@ -10,18 +10,39 @@ import {
 	type PaginationState,
 	type SortingState,
 } from "@tanstack/react-table";
+import { SalesJournalStatusFilters } from "@/app/src/constants/modules/sales/sales-journal/SalesJournalConstants";
 import { getSalesJournalTotals } from "@/app/src/data/modules/sales/sales-journal/SalesJournalData";
 import { useSalesJournalStore } from "@/app/src/hooks/modules/sales/sales-journal/useSalesJournal";
 import type { SalesJournalRecord } from "@/app/src/types/modules/sales/sales-journal/SalesJournalTypes";
+import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
+import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
 export function useSalesJournalListPage() {
-	const { deleteRecord, isLoading, isMutating, lastSyncedAt, records } =
+	const {
+		deleteRecord,
+		isLoading,
+		isMutating,
+		lastSyncedAt,
+		records,
+		updateRecordStatus,
+	} =
 		useSalesJournalStore();
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
 		pageSize: 5,
 	});
 	const [query, setQuery] = useState("");
+	const [dateRange, setDateRangeState] = useState<DateRangeValue>({
+		from: "",
+		to: "",
+	});
+	const [amountRange, setAmountRangeState] = useState<AmountRangeValue>({
+		from: "",
+		to: "",
+	});
+	const [statusFilter, setStatusFilterState] = useState<
+		(typeof SalesJournalStatusFilters)[number]
+	>("all");
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "documentDate", desc: true },
 	]);
@@ -31,12 +52,8 @@ export function useSalesJournalListPage() {
 	const filteredRecords = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
-		if (!normalizedQuery) {
-			return records;
-		}
-
-		return records.filter((record) =>
-			[
+		return records.filter((record) => {
+			const searchable = [
 				record.documentNo,
 				record.partyCode,
 				record.partyName,
@@ -44,10 +61,17 @@ export function useSalesJournalListPage() {
 				record.status,
 			]
 				.join(" ")
-				.toLowerCase()
-				.includes(normalizedQuery),
-		);
-	}, [query, records]);
+				.toLowerCase();
+			const totals = getSalesJournalTotals(record.lines);
+
+			return (
+				searchable.includes(normalizedQuery) &&
+				(statusFilter === "all" || record.status === statusFilter) &&
+				isDateInRange(record.documentDate, dateRange) &&
+				isAmountInRange(totals.totalDebit, amountRange)
+			);
+		});
+	}, [amountRange, dateRange, query, records, statusFilter]);
 
 	const columns = useMemo<ColumnDef<SalesJournalRecord>[]>(
 		() => [
@@ -100,6 +124,29 @@ export function useSalesJournalListPage() {
 		table.setPageIndex(0);
 	}
 
+	function setDateRange(value: DateRangeValue) {
+		setDateRangeState(value);
+		table.setPageIndex(0);
+	}
+
+	function setAmountRange(value: AmountRangeValue) {
+		setAmountRangeState(value);
+		table.setPageIndex(0);
+	}
+
+	function setStatusFilter(value: (typeof SalesJournalStatusFilters)[number]) {
+		setStatusFilterState(value);
+		table.setPageIndex(0);
+	}
+
+	function resetFilters() {
+		setQuery("");
+		setDateRangeState({ from: "", to: "" });
+		setAmountRangeState({ from: "", to: "" });
+		setStatusFilterState("all");
+		table.setPageIndex(0);
+	}
+
 	function handleConfirmDelete() {
 		if (!pendingDeleteRecord) {
 			return;
@@ -110,6 +157,8 @@ export function useSalesJournalListPage() {
 	}
 
 	return {
+		amountRange,
+		dateRange,
 		handleConfirmDelete,
 		handleQueryChange,
 		isLoading,
@@ -117,9 +166,42 @@ export function useSalesJournalListPage() {
 		lastSyncedAt,
 		pendingDeleteRecord,
 		query,
+		records,
+		resetFilters,
+		setAmountRange,
+		setDateRange,
 		setPendingDeleteRecord,
+		setStatusFilter,
+		statusFilter,
 		table,
+		updateRecordStatus,
 	};
+}
+
+function isAmountInRange(value: number, range: AmountRangeValue) {
+	const fromAmount = range.from.trim()
+		? Number(range.from.replaceAll(",", ""))
+		: 0;
+	const toAmount = range.to.trim()
+		? Number(range.to.replaceAll(",", ""))
+		: Number.MAX_SAFE_INTEGER;
+
+	return value >= fromAmount && value <= toAmount;
+}
+
+function isDateInRange(value: string, range: DateRangeValue) {
+	if (!range.from && !range.to) {
+		return true;
+	}
+
+	const dateTime = new Date(value).setHours(0, 0, 0, 0);
+	const fromTime = range.from ? new Date(range.from).setHours(0, 0, 0, 0) : null;
+	const toTime = range.to ? new Date(range.to).setHours(0, 0, 0, 0) : null;
+
+	return !(
+		(fromTime !== null && dateTime < fromTime) ||
+		(toTime !== null && dateTime > toTime)
+	);
 }
 
 function createColumn(

@@ -30,7 +30,7 @@ export function validatePickListForm(
 	if (!values.lineEntries.some(pickListEntryIsComplete)) {
 		return {
 			isValid: false,
-			message: "Add at least one pick list row with VCE code and VCE name.",
+			message: "Add at least one pick list row with Party Code.",
 		};
 	}
 

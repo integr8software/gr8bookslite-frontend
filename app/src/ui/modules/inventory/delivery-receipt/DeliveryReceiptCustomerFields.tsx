@@ -33,20 +33,20 @@ export function DeliveryReceiptCustomerFields({
 			<div className="grid min-w-0 content-start gap-3">
 				<TextField
 					id="delivery-receipt-vce-code"
-					label="VCE Code"
+					label="Party Code"
 					isRequired
 					readOnly={isReadonly}
 					value={values.vceCode}
 					onChange={(value) => onUpdateField("vceCode", value)}
 				/>
-				<FieldShell controlId="delivery-receipt-vce-name" label="VCE Name" isRequired>
+				<FieldShell controlId="delivery-receipt-vce-name" label="Party Name" isRequired>
 					<AttachedDropdown
 						id="delivery-receipt-vce-name"
 						value={values.vceName}
 						readOnly={isReadonly}
 						options={DeliveryReceiptPartyOptions}
 						placeholder=""
-						searchPlaceholder="Search VCE"
+						searchPlaceholder="Search Party Name"
 						onAdd={() => undefined}
 						onChange={(value) => onUpdateField("vceName", value)}
 					/>

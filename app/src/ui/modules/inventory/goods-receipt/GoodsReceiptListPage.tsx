@@ -65,7 +65,7 @@ export function GoodsReceiptListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Goods Receipt"
-				description="Prepare warehouse receipts, references, VCE details, and received item entries."
+				description="Prepare warehouse receipts, references, Party Code details, and received item entries."
 				eyebrow={
 					<>
 						<PackagePlus className="h-3.5 w-3.5" aria-hidden="true" />
@@ -78,7 +78,7 @@ export function GoodsReceiptListPage() {
 			<GoodsReceiptMetrics records={receipts} />
 
 			<ModuleTable
-				emptyDescription="Try a different GR number, transaction type, VCE, reference, or status."
+				emptyDescription="Try a different GR number, transaction type, Party Code, reference, or status."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No goods receipts matched"
 				minWidthClassName="min-w-[92rem]"
@@ -94,7 +94,7 @@ export function GoodsReceiptListPage() {
 							label="Search Goods Receipts"
 							value={tableState.query}
 							onChange={tableState.setQuery}
-							placeholder="Search by GR no., transaction type, VCE, or reference"
+							placeholder="Search by GR no., transaction type, Party Code, or reference"
 						/>
 						<DateRangePicker
 							label="Date Range"

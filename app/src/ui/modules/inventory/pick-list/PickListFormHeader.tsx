@@ -41,7 +41,7 @@ export function PickListFormHeader({
 			description={
 				mode === "view"
 					? "Review delivery, driver, cluster, and pick list rows."
-					: "Complete delivery, driver, cluster, and VCE rows before saving."
+					: "Complete delivery, driver, cluster, and Party Code rows before saving."
 			}
 			actionsClassName="items-center justify-start gap-2 sm:shrink-0 sm:justify-end [&>a]:shrink-0 [&>button]:shrink-0"
 			actions={<PickListHeaderActions mode={mode} onSubmit={onSubmit} />}

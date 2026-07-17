@@ -64,7 +64,7 @@ export function GoodsIssueListPage() {
 				variant="panel"
 				titleAs="h1"
 				title="Goods Issue"
-				description="Prepare source warehouse issues, references, VCE details, and item entries."
+				description="Prepare source warehouse issues, references, Party Code details, and item entries."
 				eyebrow={
 					<>
 						<PackageMinus className="h-3.5 w-3.5" aria-hidden="true" />
@@ -77,7 +77,7 @@ export function GoodsIssueListPage() {
 			<GoodsIssueMetrics records={issues} />
 
 			<ModuleTable
-				emptyDescription="Try a different GI number, transaction type, VCE, reference, or status."
+				emptyDescription="Try a different GI number, transaction type, Party Code, reference, or status."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
 				emptyTitle="No goods issues matched"
 				minWidthClassName="min-w-[92rem]"
@@ -93,7 +93,7 @@ export function GoodsIssueListPage() {
 							label="Search Goods Issues"
 							value={tableState.query}
 							onChange={tableState.setQuery}
-							placeholder="Search by GI no., transaction type, VCE, or reference"
+							placeholder="Search by GI no., transaction type, Party Code, or reference"
 						/>
 						<DateRangePicker
 							label="Date Range"

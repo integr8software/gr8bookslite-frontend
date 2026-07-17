@@ -17,7 +17,12 @@ export function UnitOfMeasurementFields({
 }: UnitOfMeasurementFieldsProps) {
 	return (
 		<div className="grid gap-4 lg:grid-cols-2">
-			<FormField label="Unit of Measurement" error={errors.name} required>
+			<FormField
+				label="Unit of Measurement"
+				error={errors.name}
+				className="lg:col-span-2"
+				required
+			>
 				<input
 					name="name"
 					value={values.name}
@@ -52,7 +57,7 @@ export function UnitOfMeasurementFields({
 					))}
 				</select>
 			</FormField>
-			<FormField label="Status" error={errors.status} required>
+			<FormField label="Status" error={errors.status} className="lg:col-span-2" required>
 				<select
 					name="status"
 					value={values.status}

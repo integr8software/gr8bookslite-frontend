@@ -117,13 +117,6 @@ export function useUnitOfMeasurementListPage(): UnitOfMeasurementListPageState {
 			});
 			toast.success("Unit of measurement created successfully.");
 		},
-		onError: (error) => {
-			toast.error(
-				error instanceof Error
-					? error.message
-					: "Could not create unit of measurement. Please try again.",
-			);
-		},
 	});
 	const updateMutation = useMutation({
 		mutationFn: updateUnitOfMeasurement,
@@ -143,13 +136,6 @@ export function useUnitOfMeasurementListPage(): UnitOfMeasurementListPageState {
 					: didStatusChange && updatedRecord.status === "Inactive"
 						? "Unit of measurement deactivated successfully."
 						: "Unit of measurement updated successfully.",
-			);
-		},
-		onError: (error) => {
-			toast.error(
-				error instanceof Error
-					? error.message
-					: "Could not update unit of measurement. Please try again.",
 			);
 		},
 	});
@@ -246,10 +232,18 @@ export function useUnitOfMeasurementListPage(): UnitOfMeasurementListPageState {
 	}
 
 	function toggleStatus(record: UnitOfMeasurementRecord) {
-		void updateMutation.mutateAsync({
-			...record,
-			status: record.status === "Active" ? "Inactive" : "Active",
-		});
+		void updateMutation
+			.mutateAsync({
+				...record,
+				status: record.status === "Active" ? "Inactive" : "Active",
+			})
+			.catch((error) => {
+				toast.error(
+					error instanceof Error
+						? error.message
+						: "Could not update unit of measurement. Please try again.",
+				);
+			});
 	}
 
 	function confirmStatusChange() {

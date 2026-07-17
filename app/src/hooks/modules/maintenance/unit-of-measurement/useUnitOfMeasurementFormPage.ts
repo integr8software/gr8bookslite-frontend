@@ -85,6 +85,22 @@ export function useUnitOfMeasurementFormPage({
 				symbol: values.symbol.trim().toUpperCase(),
 			});
 			onSaved?.();
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: "Could not save unit of measurement. Please try again.";
+			const field = getUnitOfMeasurementApiErrorField(message);
+
+			if (field) {
+				setErrors((current) => ({
+					...current,
+					[field]: getUnitOfMeasurementFieldErrorMessage(field),
+				}));
+				return;
+			}
+
+			toast.error(message);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -99,4 +115,26 @@ export function useUnitOfMeasurementFormPage({
 		validateBeforeSubmit,
 		values,
 	};
+}
+
+function getUnitOfMeasurementApiErrorField(
+	message: string,
+): keyof UnitOfMeasurementFormValues | null {
+	const normalizedMessage = message.toLowerCase();
+
+	if (normalizedMessage.includes("symbol")) {
+		return "symbol";
+	}
+
+	if (normalizedMessage.includes("name")) {
+		return "name";
+	}
+
+	return null;
+}
+
+function getUnitOfMeasurementFieldErrorMessage(
+	field: keyof UnitOfMeasurementFormValues,
+) {
+	return field === "symbol" ? "Symbol already exists." : "Name already exists.";
 }

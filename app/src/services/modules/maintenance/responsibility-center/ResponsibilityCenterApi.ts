@@ -63,7 +63,6 @@ export async function fetchResponsibilityCenterTypes(
 
 	return response.data.types.map((type) => ({
 		id: type.id,
-		companyId: type.companyId,
 		classificationId: type.classificationId,
 		classificationCode: type.classificationCode,
 		classificationName: mapFinancialTypeFromLabel(type.classificationName),

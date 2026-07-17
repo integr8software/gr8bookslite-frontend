@@ -50,7 +50,6 @@ export type ResponsibilityCenterClassification = {
 
 export type ResponsibilityCenterTypeOption = {
 	id: string;
-	companyId: number;
 	classificationId: string;
 	classificationCode: string;
 	classificationName: ResponsibilityCenterFinancialType;
@@ -228,7 +227,6 @@ export type ApiResponsibilityCenterClassification = {
 
 export type ApiResponsibilityCenterTypeOption = {
 	id: string;
-	companyId: number;
 	classificationId: string;
 	classificationCode: string;
 	classificationName: string;

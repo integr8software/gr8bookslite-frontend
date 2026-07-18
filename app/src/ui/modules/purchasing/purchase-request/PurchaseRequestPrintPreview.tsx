@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import {
 	formatPurchaseRequestDate,
-	formatPurchaseRequestMoney,
+	formatPurchaseRequestCurrency,
 	getPurchaseRequestItemAmount,
 	getPurchaseRequestTotal,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
@@ -22,7 +22,7 @@ export function PurchaseRequestPrintPreview({
 	const totalQuantity = getPurchaseRequestQuantityTotal(record);
 
 	return (
-		<div className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm">
+		<div className="bg-white">
 			{showControls ? (
 				<div className="purchase-request-print-controls mb-4 flex flex-wrap items-center justify-between gap-3">
 					<div>
@@ -39,9 +39,9 @@ export function PurchaseRequestPrintPreview({
 				</div>
 			) : null}
 
-			<div className="purchase-request-print-stage overflow-x-auto p-4">
-				<div className="purchase-request-print-document mx-auto min-h-auto w-198.5 p-8 text-[12px] text-black">
-					<div className="border-2 border-black">
+			<div className="purchase-request-print-stage overflow-x-auto bg-white p-4">
+				<div className="purchase-request-print-document mx-auto min-h-auto w-198.5 bg-white p-4 text-[12px] text-black">
+					<div className="border border-black">
 						<div className="grid grid-cols-[170px_1fr] gap-3 p-4">
 							<div className="flex items-center justify-center">
 								{record.logoImageUrl ? (
@@ -53,8 +53,8 @@ export function PurchaseRequestPrintPreview({
 										className="h-20 w-24 object-contain"
 									/>
 								) : (
-									<div className="grid h-20 w-24 place-items-center rounded-md bg-skyblue/15 text-center text-[10px] font-bold text-[#1a6290]">
-										Logo
+									<div className="grid h-20 w-24 place-items-center text-left text-[24px] font-bold leading-5 text-[#0b56b3]">
+										gr8books
 									</div>
 								)}
 							</div>
@@ -71,19 +71,19 @@ export function PurchaseRequestPrintPreview({
 							</div>
 						</div>
 
-						<div className="border-t border-black">
+						<div className="grid grid-cols-[1fr_260px] items-end border-t border-black">
 							<div className="px-3 py-2 text-2xl font-black tracking-tight">
 								PURCHASE REQUEST
 							</div>
+							<div className="px-3 py-2 text-right font-bold">
+								Purchase Request Date:{" "}
+								{formatPurchaseRequestDate(record.prDate)}
+							</div>
 						</div>
-						<div className="flex justify-between gap-4 border-t border-black px-1 py-1">
+						<div className="border-t border-black px-1 py-1">
 							<div>
 								<span className="font-bold">Supplier:</span>{" "}
 								{record.vceName}
-							</div>
-							<div className="shrink-0 font-bold">
-								Purchase Request Date:{" "}
-								{formatPurchaseRequestDate(record.prDate)}
 							</div>
 						</div>
 						<div className="min-h-24 border-t border-black px-1 py-1">
@@ -117,10 +117,7 @@ export function PurchaseRequestPrintPreview({
 										</PreviewTd>
 										<PreviewTd>{item.uom}</PreviewTd>
 										<PreviewTd align="right">
-											{formatPurchaseRequestMoney(
-												item.cost,
-												record.currency,
-											)}
+											{formatPurchaseRequestCurrency(item.cost)}
 										</PreviewTd>
 										<PreviewTd align="right">
 											{formatPurchaseRequestQuantity(
@@ -128,11 +125,8 @@ export function PurchaseRequestPrintPreview({
 											)}
 										</PreviewTd>
 										<PreviewTd align="right" edge="right">
-											{formatPurchaseRequestMoney(
-												getPurchaseRequestItemAmount(
-													item,
-												),
-												record.currency,
+											{formatPurchaseRequestCurrency(
+												getPurchaseRequestItemAmount(item),
 											)}
 										</PreviewTd>
 									</tr>
@@ -147,10 +141,7 @@ export function PurchaseRequestPrintPreview({
 										Total :
 									</td>
 									<td className="border-y border-r border-black px-1 text-right font-bold">
-										{formatPurchaseRequestMoney(
-											totalCost,
-											record.currency,
-										)}
+										{formatPurchaseRequestCurrency(totalCost)}
 									</td>
 									<td className="border-y border-r border-black px-1 text-right font-bold">
 										{formatPurchaseRequestQuantity(
@@ -158,17 +149,14 @@ export function PurchaseRequestPrintPreview({
 										)}
 									</td>
 									<td className="border-y border-black px-1 text-right font-bold">
-										{formatPurchaseRequestMoney(
-											total,
-											record.currency,
-										)}
+										{formatPurchaseRequestCurrency(total)}
 									</td>
 								</tr>
 							</tfoot>
 						</table>
 
 						<div className="grid grid-cols-[1fr_1fr_150px]">
-							<div className="min-h-14 border-r border-black px-1 py-1">
+							<div className="min-h-16 border-r border-black px-1 py-1">
 								{record.preparedByLabel || "Prepared by"}:
 								<SignatureNameBlock
 									name={record.preparedBy}
@@ -177,7 +165,7 @@ export function PurchaseRequestPrintPreview({
 									}
 								/>
 							</div>
-							<div className="min-h-14 border-r border-black px-1 py-1">
+							<div className="min-h-16 border-r border-black px-1 py-1">
 								{record.approvedByLabel || "Approved by"}:
 								<SignatureNameBlock
 									name={record.approvedBy}

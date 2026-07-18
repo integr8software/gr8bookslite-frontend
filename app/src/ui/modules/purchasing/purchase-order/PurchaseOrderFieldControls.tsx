@@ -1,46 +1,14 @@
 import type { ReactNode } from "react";
 
-export const PurchaseRequestFieldClassName =
-	"h-11 w-full min-w-0 rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15 disabled:bg-offwhite/65 disabled:text-darknavy/65";
-
-export const PurchaseRequestTextareaClassName =
-	"min-h-24 w-full min-w-0 rounded-lg border border-darknavy/10 bg-white px-3 py-3 text-sm text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15 disabled:bg-offwhite/65 disabled:text-darknavy/65";
-
-export type PurchaseRequestFieldUpdater<TValues> = <Key extends keyof TValues>(
+export type PurchaseOrderFieldUpdater<TValues> = <Key extends keyof TValues>(
 	key: Key,
 	value: TValues[Key],
 ) => void;
 
-export function PurchaseRequestFormField({
-	children,
-	className,
-	error,
-	label,
-	required,
-}: {
-	children: ReactNode;
-	className?: string;
-	error?: string;
-	label: string;
-	required?: boolean;
-}) {
-	return (
-		<label className={className}>
-			<span className="mb-2 block text-sm font-medium text-darknavy">
-				{label}
-				{required ? <span className="text-coralpink"> *</span> : null}
-			</span>
-			{children}
-			{error ? (
-				<span className="mt-2 block text-xs font-semibold text-coralpink">
-					{error}
-				</span>
-			) : null}
-		</label>
-	);
-}
+export const PurchaseOrderFieldClassName =
+	"app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
 
-export function PurchaseRequestFieldShell({
+export function FieldShell({
 	children,
 	controlId,
 	isRequired = false,
@@ -65,7 +33,7 @@ export function PurchaseRequestFieldShell({
 	);
 }
 
-export function PurchaseRequestTextField({
+export function TextField({
 	id,
 	isRequired = false,
 	label,
@@ -81,23 +49,19 @@ export function PurchaseRequestTextField({
 	value: string;
 }) {
 	return (
-		<PurchaseRequestFieldShell
-			controlId={id}
-			label={label}
-			isRequired={isRequired}
-		>
+		<FieldShell controlId={id} label={label} isRequired={isRequired}>
 			<input
 				id={id}
 				value={value}
 				readOnly={readOnly}
 				onChange={(event) => onChange(event.target.value)}
-				className={PurchaseRequestFieldClassName}
+				className={PurchaseOrderFieldClassName}
 			/>
-		</PurchaseRequestFieldShell>
+		</FieldShell>
 	);
 }
 
-export function PurchaseRequestDateField({
+export function DateField({
 	id,
 	isRequired = false,
 	label,
@@ -113,24 +77,20 @@ export function PurchaseRequestDateField({
 	value: string;
 }) {
 	return (
-		<PurchaseRequestFieldShell
-			controlId={id}
-			label={label}
-			isRequired={isRequired}
-		>
+		<FieldShell controlId={id} label={label} isRequired={isRequired}>
 			<input
 				id={id}
 				type="date"
 				value={value}
 				readOnly={readOnly}
 				onChange={(event) => onChange(event.target.value)}
-				className={PurchaseRequestFieldClassName}
+				className={PurchaseOrderFieldClassName}
 			/>
-		</PurchaseRequestFieldShell>
+		</FieldShell>
 	);
 }
 
-export function PurchaseRequestSelectField({
+export function SelectField({
 	id,
 	isRequired = false,
 	label,
@@ -148,17 +108,13 @@ export function PurchaseRequestSelectField({
 	value: string;
 }) {
 	return (
-		<PurchaseRequestFieldShell
-			controlId={id}
-			label={label}
-			isRequired={isRequired}
-		>
+		<FieldShell controlId={id} label={label} isRequired={isRequired}>
 			<select
 				id={id}
 				value={value}
 				disabled={readOnly}
 				onChange={(event) => onChange(event.target.value)}
-				className={PurchaseRequestFieldClassName}
+				className={PurchaseOrderFieldClassName}
 			>
 				{options.map((option) => (
 					<option key={option} value={option}>
@@ -166,11 +122,65 @@ export function PurchaseRequestSelectField({
 					</option>
 				))}
 			</select>
-		</PurchaseRequestFieldShell>
+		</FieldShell>
 	);
 }
 
-export function PurchaseRequestAttachedTextField({
+export function AmountField({
+	id,
+	label,
+	onChange,
+	readOnly,
+	value,
+}: {
+	id: string;
+	label: string;
+	onChange?: (value: number) => void;
+	readOnly: boolean;
+	value: number | string;
+}) {
+	return (
+		<FieldShell controlId={id} label={label}>
+			<input
+				id={id}
+				type="number"
+				value={value}
+				readOnly={readOnly || !onChange}
+				onChange={(event) => onChange?.(Number(event.target.value))}
+				className={`${PurchaseOrderFieldClassName} text-right tabular-nums`}
+			/>
+		</FieldShell>
+	);
+}
+
+export function CheckboxField({
+	id,
+	label,
+	onChange,
+	readOnly,
+	checked,
+}: {
+	id: string;
+	label: string;
+	onChange: (value: boolean) => void;
+	readOnly: boolean;
+	checked: boolean;
+}) {
+	return (
+		<FieldShell controlId={id} label={label}>
+			<input
+				id={id}
+				type="checkbox"
+				checked={checked}
+				disabled={readOnly}
+				onChange={(event) => onChange(event.target.checked)}
+				className="mt-3 h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/25"
+			/>
+		</FieldShell>
+	);
+}
+
+export function AttachedTextField({
 	id,
 	isRequired = false,
 	label,
@@ -188,18 +198,14 @@ export function PurchaseRequestAttachedTextField({
 	value: string;
 }) {
 	return (
-		<PurchaseRequestFieldShell
-			controlId={id}
-			label={label}
-			isRequired={isRequired}
-		>
+		<FieldShell controlId={id} label={label} isRequired={isRequired}>
 			<div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-0">
 				<input
 					id={id}
 					value={value}
 					readOnly={readOnly}
 					onChange={(event) => onChange(event.target.value)}
-					className={`${PurchaseRequestFieldClassName} sm:rounded-r-none`}
+					className={`${PurchaseOrderFieldClassName} sm:rounded-r-none`}
 				/>
 				<button
 					type="button"
@@ -210,6 +216,6 @@ export function PurchaseRequestAttachedTextField({
 					Add
 				</button>
 			</div>
-		</PurchaseRequestFieldShell>
+		</FieldShell>
 	);
 }

@@ -101,6 +101,15 @@ export function usePurchaseRequestFormPage() {
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
 
+	function updateItems(items: PurchaseRequestItem[]) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({ ...current, items }));
+		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
 	function addItem() {
 		if (isReadonly) {
 			return;
@@ -183,6 +192,7 @@ export function usePurchaseRequestFormPage() {
 		showPreview,
 		updateField,
 		updateItem,
+		updateItems,
 		values,
 	};
 }

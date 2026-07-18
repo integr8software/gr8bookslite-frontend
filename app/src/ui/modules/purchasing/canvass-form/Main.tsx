@@ -1,3 +1,1 @@
-export function CanvassFormMain() {
-  return null;
-}
+export { CanvassFormListPage as CanvassFormMain } from "@/app/src/ui/modules/purchasing/canvass-form/CanvassFormListPage";

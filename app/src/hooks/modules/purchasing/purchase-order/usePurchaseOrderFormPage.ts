@@ -9,6 +9,10 @@ import {
 	createPurchaseOrderRecord,
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import { usePurchaseOrderStore } from "@/app/src/hooks/modules/purchasing/purchase-order/usePurchaseOrder";
+import {
+	createModuleDraftKey,
+	useModuleDraft,
+} from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
 	PurchaseOrderFormErrors,
 	PurchaseOrderFormMode,
@@ -35,6 +39,16 @@ export function usePurchaseOrderFormPage() {
 		() => createPurchaseOrderRecord(values, params.recordId ?? "preview"),
 		[params.recordId, values],
 	);
+	const draft = useModuleDraft({
+		enabled: !isReadonly,
+		key: createModuleDraftKey({
+			mode,
+			moduleId: "purchasing:purchase-order",
+			recordId: params.recordId,
+		}),
+		setValues,
+		values,
+	});
 
 	function updateField<TKey extends keyof PurchaseOrderFormValues>(
 		field: TKey,
@@ -75,6 +89,7 @@ export function usePurchaseOrderFormPage() {
 				toast.success("Purchase order created.");
 			}
 
+			draft.clearDraft();
 			router.push(`${PurchaseOrderHref}/view/${nextOrder.id}`);
 		} catch {
 			toast.error("Could not save the purchase order. Please try again.");

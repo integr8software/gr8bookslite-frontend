@@ -9,6 +9,10 @@ import {
 	createCanvassFormValues,
 } from "@/app/src/data/modules/purchasing/canvass-form/CanvassFormData";
 import { useCanvassFormStore } from "@/app/src/hooks/modules/purchasing/canvass-form/useCanvassForm";
+import {
+	createModuleDraftKey,
+	useModuleDraft,
+} from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
 	CanvassFormItem,
 	CanvassFormMode,
@@ -35,6 +39,16 @@ export function useCanvassFormActionPage() {
 		() => createCanvassFormRecord(values, params.recordId ?? "preview"),
 		[params.recordId, values],
 	);
+	const draft = useModuleDraft({
+		enabled: !isReadonly,
+		key: createModuleDraftKey({
+			mode,
+			moduleId: "purchasing:canvass-form",
+			recordId: params.recordId,
+		}),
+		setValues,
+		values,
+	});
 
 	function updateField<TKey extends keyof CanvassFormValues>(
 		field: TKey,
@@ -68,6 +82,7 @@ export function useCanvassFormActionPage() {
 				addForm(nextForm);
 				toast.success("Canvass form created.");
 			}
+			draft.clearDraft();
 			router.push(`${CanvassFormHref}/view/${nextForm.id}`);
 		} catch {
 			toast.error("Could not save the canvass form. Please try again.");

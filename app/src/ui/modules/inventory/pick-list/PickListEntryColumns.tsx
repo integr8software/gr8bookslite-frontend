@@ -23,8 +23,10 @@ export function createPickListEntryColumns(
 		id: column.id,
 		width: column.width,
 		widthClassName: column.widthClassName,
-		renderCell: (row) => (
+		renderCell: (row, _index, context) => (
 			<EntryInput
+				id={context.fieldId}
+				name={context.fieldName}
 				value={String(row[column.id])}
 				readOnly={isReadonly}
 				onChange={(value) => onUpdateEntry(row.id, { [column.id]: value })}
@@ -34,16 +36,22 @@ export function createPickListEntryColumns(
 }
 
 function EntryInput({
+	id,
+	name,
 	onChange,
 	readOnly,
 	value,
 }: {
+	id: string;
+	name: string;
 	onChange: (value: string) => void;
 	readOnly: boolean;
 	value: string;
 }) {
 	return (
 		<input
+			id={id}
+			name={name}
 			type="text"
 			value={value}
 			readOnly={readOnly}
@@ -60,8 +68,8 @@ function entryCellControlClassName() {
 }
 
 const PickListEntryColumnConfigs = [
-column("Party Code", "vceCode", 170, "w-[10.5rem]"),
-column("Party Name", "vceName", 320, "w-[20rem]"),
+	column("Party Code", "vceCode", 170, "w-[10.5rem]"),
+	column("Party Name", "vceName", 320, "w-[20rem]"),
 	column("Remarks", "remarks", 360, "w-[22.5rem]"),
 	column("RefNo", "referenceNo", 180, "w-[11.25rem]"),
 ];

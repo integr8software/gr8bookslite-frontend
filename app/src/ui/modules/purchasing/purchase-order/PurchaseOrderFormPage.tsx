@@ -41,6 +41,7 @@ function PurchaseOrderFormPageInner() {
 	return (
 		<section className="grid gap-5">
 			<PurchaseOrderFormHeader
+				isSubmitting={page.isSubmitting}
 				mode={page.mode}
 				recordId={page.recordId}
 				values={page.values}

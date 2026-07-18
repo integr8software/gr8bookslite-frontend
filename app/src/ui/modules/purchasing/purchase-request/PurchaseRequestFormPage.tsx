@@ -133,11 +133,12 @@ function PurchaseRequestHeaderActions({
 			) : (
 				<button
 					type="button"
+					disabled={page.isSubmitting}
 					onClick={page.handleSubmit}
-					className={moduleHeaderActionClassNames.primary}
+					className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
 				>
 					<Save className="h-4 w-4" aria-hidden="true" />
-					Save
+					{page.isSubmitting ? "Saving..." : "Save"}
 				</button>
 			)}
 		</>

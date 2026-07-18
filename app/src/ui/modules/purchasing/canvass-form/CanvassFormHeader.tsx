@@ -15,6 +15,7 @@ import {
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 type CanvassFormHeaderProps = {
+	isSubmitting?: boolean;
 	mode: CanvassFormMode;
 	recordId?: string;
 	values: CanvassFormValues;
@@ -23,6 +24,7 @@ type CanvassFormHeaderProps = {
 };
 
 export function CanvassFormHeader({
+	isSubmitting = false,
 	mode,
 	onPreview,
 	onSubmit,
@@ -59,11 +61,12 @@ export function CanvassFormHeader({
 					) : (
 						<button
 							type="button"
+							disabled={isSubmitting}
 							onClick={onSubmit}
-							className={moduleHeaderActionClassNames.primary}
+							className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
 						>
 							<Save className="h-4 w-4" aria-hidden="true" />
-							Save
+							{isSubmitting ? "Saving..." : "Save"}
 						</button>
 					)}
 				</>

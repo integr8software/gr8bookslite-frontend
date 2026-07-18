@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { PurchaseOrderHref } from "@/app/src/constants/modules/purchasing/purchase-order/PurchaseOrderConstants";
@@ -13,6 +13,7 @@ import {
 	createModuleDraftKey,
 	useModuleDraft,
 } from "@/app/src/hooks/shared/module/useModuleDraft";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import type {
 	PurchaseOrderFormErrors,
 	PurchaseOrderFormMode,
@@ -34,6 +35,8 @@ export function usePurchaseOrderFormPage() {
 		createPurchaseOrderFormValues(existingOrder),
 	);
 	const [errors, setErrors] = useState<PurchaseOrderFormErrors>({});
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const isSubmittingRef = useRef(false);
 	const [showPreview, setShowPreview] = useState(searchParams.get("preview") === "1");
 	const previewRecord = useMemo(
 		() => createPurchaseOrderRecord(values, params.recordId ?? "preview"),
@@ -68,13 +71,24 @@ export function usePurchaseOrderFormPage() {
 	}
 
 	function handleSubmit() {
-		if (isReadonly) return;
+		if (isReadonly || isSubmittingRef.current) return;
 
+		const releaseSubmitLock = acquireModuleActionLock(
+			`purchasing:purchase-order:submit:${mode}:${params.recordId ?? values.transNo}`,
+		);
+
+		if (!releaseSubmitLock) return;
+
+		isSubmittingRef.current = true;
+		setIsSubmitting(true);
 		const nextErrors = validatePurchaseOrderForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
 			toast.error("Please complete the required purchase order fields.");
+			isSubmittingRef.current = false;
+			setIsSubmitting(false);
+			releaseSubmitLock();
 			return;
 		}
 
@@ -93,6 +107,9 @@ export function usePurchaseOrderFormPage() {
 			router.push(`${PurchaseOrderHref}/view/${nextOrder.id}`);
 		} catch {
 			toast.error("Could not save the purchase order. Please try again.");
+			isSubmittingRef.current = false;
+			setIsSubmitting(false);
+			releaseSubmitLock();
 		}
 	}
 
@@ -100,6 +117,7 @@ export function usePurchaseOrderFormPage() {
 		errors,
 		existingOrder,
 		handleSubmit,
+		isSubmitting,
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",

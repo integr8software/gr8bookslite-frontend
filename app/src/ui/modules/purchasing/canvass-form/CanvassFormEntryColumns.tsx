@@ -27,9 +27,11 @@ export function createCanvassFormEntryColumns(
 		id: column.id,
 		width: column.width,
 		widthClassName: column.widthClassName,
-		renderCell: (row) => (
+		renderCell: (row, _index, context) => (
 			<EntryCell
 				column={column}
+				fieldId={context.fieldId}
+				fieldName={context.fieldName}
 				isReadonly={isReadonly}
 				row={row}
 				onUpdateEntry={onUpdateEntry}
@@ -40,11 +42,15 @@ export function createCanvassFormEntryColumns(
 
 function EntryCell({
 	column,
+	fieldId,
+	fieldName,
 	isReadonly,
 	onUpdateEntry,
 	row,
 }: {
 	column: ColumnConfig;
+	fieldId: string;
+	fieldName: string;
 	isReadonly: boolean;
 	onUpdateEntry: EntryUpdater;
 	row: CanvassFormItem;
@@ -62,6 +68,8 @@ function EntryCell({
 	if (column.kind === "select") {
 		return (
 			<select
+				id={fieldId}
+				name={fieldName}
 				value={value}
 				disabled={isReadonly}
 				onChange={(event) =>
@@ -81,6 +89,8 @@ function EntryCell({
 	if (column.kind === "amount") {
 		return (
 			<MoneyNumberField
+				id={fieldId}
+				name={fieldName}
 				value={value}
 				readOnly={isReadonly}
 				onValueChange={(nextValue) =>
@@ -93,6 +103,8 @@ function EntryCell({
 
 	return (
 		<input
+			id={fieldId}
+			name={fieldName}
 			type="text"
 			value={value}
 			readOnly={isReadonly}

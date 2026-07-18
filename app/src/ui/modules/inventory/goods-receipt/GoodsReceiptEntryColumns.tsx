@@ -36,9 +36,11 @@ export function createGoodsReceiptEntryColumns(
 		id: column.id,
 		width: column.width,
 		widthClassName: column.widthClassName,
-		renderCell: (row) => (
+		renderCell: (row, _index, context) => (
 			<GoodsReceiptEntryCell
 				column={column}
+				fieldId={context.fieldId}
+				fieldName={context.fieldName}
 				isReadonly={isReadonly}
 				row={row}
 				onUpdateEntry={onUpdateEntry}
@@ -49,11 +51,15 @@ export function createGoodsReceiptEntryColumns(
 
 function GoodsReceiptEntryCell({
 	column,
+	fieldId,
+	fieldName,
 	isReadonly,
 	onUpdateEntry,
 	row,
 }: {
 	column: GoodsReceiptEntryColumnConfig;
+	fieldId: string;
+	fieldName: string;
 	isReadonly: boolean;
 	onUpdateEntry: GoodsReceiptEntryUpdater;
 	row: GoodsReceiptLineEntry;
@@ -63,6 +69,8 @@ function GoodsReceiptEntryCell({
 	if (column.kind === "dropdown") {
 		return (
 			<AppAdvancedDropdown
+				id={fieldId}
+				name={fieldName}
 				className={EntryDropdownClassName}
 				value={value}
 				options={column.options ?? []}
@@ -78,6 +86,8 @@ function GoodsReceiptEntryCell({
 	if (column.kind === "amount") {
 		return (
 			<MoneyNumberField
+				id={fieldId}
+				name={fieldName}
 				value={value}
 				readOnly={isReadonly}
 				onValueChange={(nextValue) =>
@@ -90,6 +100,8 @@ function GoodsReceiptEntryCell({
 
 	return (
 		<input
+			id={fieldId}
+			name={fieldName}
 			type="text"
 			value={value}
 			readOnly={isReadonly}

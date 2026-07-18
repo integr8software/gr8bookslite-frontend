@@ -28,23 +28,14 @@ export function CanvassFormRequestFields({
 	return (
 		<div className="grid min-w-0 gap-5 xl:grid-cols-2">
 			<div className="grid min-w-0 gap-4">
-				<div className="grid min-w-0 gap-4 sm:grid-cols-2">
-					<SelectField
-						id="canvass-form-currency"
-						label="Currency"
-						readOnly={isReadonly}
-						value={values.currency}
-						options={CanvassFormCurrencyOptions}
-						onChange={(value) => onUpdateField("currency", value)}
-					/>
-					<AmountField
-						id="canvass-form-exchange-rate"
-						label="Exchange Rate"
-						readOnly={isReadonly}
-						value={values.exchangeRate}
-						onChange={(value) => onUpdateField("exchangeRate", value)}
-					/>
-				</div>
+				<SelectField
+					id="canvass-form-currency"
+					label="Currency"
+					readOnly={isReadonly}
+					value={values.currency}
+					options={CanvassFormCurrencyOptions}
+					onChange={(value) => onUpdateField("currency", value)}
+				/>
 				<SelectField
 					id="canvass-form-purchase-type"
 					label="Purchase Type"
@@ -62,6 +53,15 @@ export function CanvassFormRequestFields({
 					value={values.requestedBy}
 					onChange={(value) => onUpdateField("requestedBy", value)}
 				/>
+			</div>
+			<div className="grid min-w-0 content-start gap-4">
+				<AmountField
+					id="canvass-form-exchange-rate"
+					label="Exchange Rate"
+					readOnly={isReadonly}
+					value={values.exchangeRate}
+					onChange={(value) => onUpdateField("exchangeRate", value)}
+				/>
 				<TextField
 					id="canvass-form-responsibility-center"
 					label="Responsibility Center"
@@ -77,7 +77,7 @@ export function CanvassFormRequestFields({
 					onChange={(value) => onUpdateField("requiredBefore", value)}
 				/>
 			</div>
-			<div className="grid min-w-0 content-start gap-4">
+			<div className="xl:col-span-2">
 				<FieldShell controlId="canvass-form-remarks" label="Remarks">
 					<AppLimitedTextarea
 						id="canvass-form-remarks"

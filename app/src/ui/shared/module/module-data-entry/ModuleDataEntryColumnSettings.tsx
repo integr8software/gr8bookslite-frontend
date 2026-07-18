@@ -293,6 +293,8 @@ function InlineColumnName({
 			{isRenaming && onRename ? (
 				<input
 					autoFocus
+					id={`module-data-entry-column-settings-rename-${sanitizeColumnSettingsFieldId(label)}`}
+					name="moduleDataEntryColumnSettingsRename"
 					type="text"
 					value={draftLabel}
 					onChange={(event) => setDraftLabel(event.target.value)}
@@ -370,4 +372,8 @@ function InlineColumnName({
 			</div>
 		</div>
 	);
+}
+
+function sanitizeColumnSettingsFieldId(value: string) {
+	return value.replace(/[^a-zA-Z0-9_-]/g, "-");
 }

@@ -40,6 +40,7 @@ function CanvassFormActionPageInner() {
 	return (
 		<section className="grid gap-5">
 			<CanvassFormHeader
+				isSubmitting={page.isSubmitting}
 				mode={page.mode}
 				recordId={page.recordId}
 				values={page.values}

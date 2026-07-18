@@ -39,9 +39,11 @@ export function createBillingInvoiceEntryColumns(
 		id: column.id,
 		width: column.width,
 		widthClassName: column.widthClassName,
-		renderCell: (row) => (
+		renderCell: (row, _index, context) => (
 			<BillingInvoiceEntryCell
 				column={column}
+				fieldId={context.fieldId}
+				fieldName={context.fieldName}
 				isReadonly={isReadonly}
 				row={row}
 				onUpdateEntry={onUpdateEntry}
@@ -52,11 +54,15 @@ export function createBillingInvoiceEntryColumns(
 
 function BillingInvoiceEntryCell({
 	column,
+	fieldId,
+	fieldName,
 	isReadonly,
 	onUpdateEntry,
 	row,
 }: {
 	column: BillingInvoiceEntryColumnConfig;
+	fieldId: string;
+	fieldName: string;
 	isReadonly: boolean;
 	onUpdateEntry: BillingInvoiceEntryUpdater;
 	row: BillingInvoiceLineEntry;
@@ -66,6 +72,8 @@ function BillingInvoiceEntryCell({
 	if (column.kind === "dropdown") {
 		return (
 			<EntryDropdown
+				id={fieldId}
+				name={fieldName}
 				options={column.options ?? []}
 				readOnly={isReadonly}
 				value={value}
@@ -79,6 +87,8 @@ function BillingInvoiceEntryCell({
 	if (column.kind === "amount") {
 		return (
 			<EntryAmountInput
+				id={fieldId}
+				name={fieldName}
 				value={value}
 				readOnly={isReadonly}
 				onValueChange={(nextValue) =>
@@ -90,6 +100,8 @@ function BillingInvoiceEntryCell({
 
 	return (
 		<EntryInput
+			id={fieldId}
+			name={fieldName}
 			value={value}
 			readOnly={isReadonly}
 			onChange={(nextValue) => onUpdateEntry(row.id, { [column.id]: nextValue })}
@@ -98,11 +110,15 @@ function BillingInvoiceEntryCell({
 }
 
 function EntryDropdown({
+	id,
+	name,
 	onChange,
 	options,
 	readOnly,
 	value,
 }: {
+	id: string;
+	name: string;
 	onChange: (value: string) => void;
 	options: AppAdvancedDropdownOption[];
 	readOnly: boolean;
@@ -110,6 +126,8 @@ function EntryDropdown({
 }) {
 	return (
 		<AppAdvancedDropdown
+			id={id}
+			name={name}
 			className={EntryDropdownClassName}
 			value={value}
 			options={options}
@@ -121,16 +139,22 @@ function EntryDropdown({
 }
 
 function EntryInput({
+	id,
+	name,
 	onChange,
 	readOnly,
 	value,
 }: {
+	id: string;
+	name: string;
 	onChange: (value: string) => void;
 	readOnly: boolean;
 	value: string;
 }) {
 	return (
 		<input
+			id={id}
+			name={name}
 			type="text"
 			value={value}
 			readOnly={readOnly}
@@ -141,16 +165,22 @@ function EntryInput({
 }
 
 function EntryAmountInput({
+	id,
+	name,
 	onValueChange,
 	readOnly,
 	value,
 }: {
+	id: string;
+	name: string;
 	onValueChange: (value: string) => void;
 	readOnly: boolean;
 	value: string;
 }) {
 	return (
 		<MoneyNumberField
+			id={id}
+			name={name}
 			value={value}
 			readOnly={readOnly}
 			onValueChange={onValueChange}

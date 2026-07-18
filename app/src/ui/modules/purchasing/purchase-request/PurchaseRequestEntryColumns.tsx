@@ -1,4 +1,8 @@
 import { PurchaseRequestUomOptions } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
+import {
+	formatPurchaseRequestCurrency,
+	getPurchaseRequestItemAmount,
+} from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import type { PurchaseRequestItem } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
@@ -28,9 +32,11 @@ export function createPurchaseRequestEntryColumns(
 		id: column.id,
 		width: column.width,
 		widthClassName: column.widthClassName,
-		renderCell: (row) => (
+		renderCell: (row, _index, context) => (
 			<PurchaseRequestEntryCell
 				column={column}
+				fieldId={context.fieldId}
+				fieldName={context.fieldName}
 				isReadonly={isReadonly}
 				row={row}
 				onUpdateEntry={onUpdateEntry}
@@ -41,11 +47,15 @@ export function createPurchaseRequestEntryColumns(
 
 function PurchaseRequestEntryCell({
 	column,
+	fieldId,
+	fieldName,
 	isReadonly,
 	onUpdateEntry,
 	row,
 }: {
 	column: PurchaseRequestEntryColumnConfig;
+	fieldId: string;
+	fieldName: string;
 	isReadonly: boolean;
 	onUpdateEntry: PurchaseRequestEntryUpdater;
 	row: PurchaseRequestItem;
@@ -63,6 +73,8 @@ function PurchaseRequestEntryCell({
 	if (column.kind === "select") {
 		return (
 			<select
+				id={fieldId}
+				name={fieldName}
 				value={value}
 				disabled={isReadonly}
 				onChange={(event) =>
@@ -82,6 +94,8 @@ function PurchaseRequestEntryCell({
 	if (column.kind === "amount") {
 		return (
 			<MoneyNumberField
+				id={fieldId}
+				name={fieldName}
 				value={value}
 				readOnly={isReadonly}
 				onValueChange={(nextValue) =>
@@ -94,6 +108,8 @@ function PurchaseRequestEntryCell({
 
 	return (
 		<input
+			id={fieldId}
+			name={fieldName}
 			type={column.kind === "date" ? "date" : "text"}
 			value={value}
 			readOnly={isReadonly}
@@ -126,10 +142,10 @@ const PurchaseRequestEntryColumnConfigs = [
 	column("UOM", "uom", "select", 120, "w-[7.5rem]"),
 	column("Qty", "quantity", "amount", 150, "w-[9.5rem]"),
 	column("LotNo", "lotNo", "text", 120, "w-[7.5rem]"),
-column("DateExpiry Date", "expiryDate", "date", 150, "w-[9.5rem]"),
-column("Cost", "cost", "amount", 160, "w-[10rem]"),
-column("Gross Amount", "grossAmount", "amount", 160, "w-[10rem]"),
-column("Res. Center", "responsibilityCenter", "text", 190, "w-[12rem]"),
+	column("DateExpiry Date", "expiryDate", "date", 150, "w-[9.5rem]"),
+	column("Cost", "cost", "amount", 160, "w-[10rem]"),
+	column("Gross Amount", "grossAmount", "amount", 160, "w-[10rem]"),
+	column("Res. Center", "responsibilityCenter", "text", 190, "w-[12rem]"),
 ];
 
 function column(
@@ -141,7 +157,3 @@ function column(
 ): PurchaseRequestEntryColumnConfig {
 	return { header, id, kind, width, widthClassName };
 }
-import {
-	formatPurchaseRequestCurrency,
-	getPurchaseRequestItemAmount,
-} from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";

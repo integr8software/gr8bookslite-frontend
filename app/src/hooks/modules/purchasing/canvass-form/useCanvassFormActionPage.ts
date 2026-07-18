@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { CanvassFormHref } from "@/app/src/constants/modules/purchasing/canvass-form/CanvassFormConstants";
@@ -13,6 +13,7 @@ import {
 	createModuleDraftKey,
 	useModuleDraft,
 } from "@/app/src/hooks/shared/module/useModuleDraft";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import type {
 	CanvassFormItem,
 	CanvassFormMode,
@@ -34,6 +35,8 @@ export function useCanvassFormActionPage() {
 		createCanvassFormValues(existingForm),
 	);
 	const [errors, setErrors] = useState<CanvassFormErrors>({});
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const isSubmittingRef = useRef(false);
 	const [showPreview, setShowPreview] = useState(searchParams.get("preview") === "1");
 	const previewRecord = useMemo(
 		() => createCanvassFormRecord(values, params.recordId ?? "preview"),
@@ -66,11 +69,23 @@ export function useCanvassFormActionPage() {
 	}
 
 	function handleSubmit() {
-		if (isReadonly) return;
+		if (isReadonly || isSubmittingRef.current) return;
+
+		const releaseSubmitLock = acquireModuleActionLock(
+			`purchasing:canvass-form:submit:${mode}:${params.recordId ?? values.transNo}`,
+		);
+
+		if (!releaseSubmitLock) return;
+
+		isSubmittingRef.current = true;
+		setIsSubmitting(true);
 		const nextErrors = validateCanvassForm(values);
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
 			toast.error("Please complete the required canvass form fields.");
+			isSubmittingRef.current = false;
+			setIsSubmitting(false);
+			releaseSubmitLock();
 			return;
 		}
 		try {
@@ -86,6 +101,9 @@ export function useCanvassFormActionPage() {
 			router.push(`${CanvassFormHref}/view/${nextForm.id}`);
 		} catch {
 			toast.error("Could not save the canvass form. Please try again.");
+			isSubmittingRef.current = false;
+			setIsSubmitting(false);
+			releaseSubmitLock();
 		}
 	}
 
@@ -93,6 +111,7 @@ export function useCanvassFormActionPage() {
 		errors,
 		existingForm,
 		handleSubmit,
+		isSubmitting,
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",

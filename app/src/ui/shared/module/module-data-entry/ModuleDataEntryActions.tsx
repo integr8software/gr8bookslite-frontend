@@ -665,6 +665,8 @@ function CustomAddRowsDialog({
 				<label className="mt-5 grid gap-2 text-sm font-semibold text-darknavy">
 					Rows
 					<input
+						id="module-data-entry-add-rows-count"
+						name="moduleDataEntryAddRowsCount"
 						type="number"
 						min="1"
 						max="100"

@@ -15,6 +15,7 @@ import {
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 type PurchaseOrderFormHeaderProps = {
+	isSubmitting?: boolean;
 	mode: PurchaseOrderFormMode;
 	recordId?: string;
 	values: PurchaseOrderFormValues;
@@ -23,6 +24,7 @@ type PurchaseOrderFormHeaderProps = {
 };
 
 export function PurchaseOrderFormHeader({
+	isSubmitting = false,
 	mode,
 	onPreview,
 	onSubmit,
@@ -62,11 +64,12 @@ export function PurchaseOrderFormHeader({
 					) : (
 						<button
 							type="button"
+							disabled={isSubmitting}
 							onClick={onSubmit}
-							className={moduleHeaderActionClassNames.primary}
+							className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
 						>
 							<Save className="h-4 w-4" aria-hidden="true" />
-							Save
+							{isSubmitting ? "Saving..." : "Save"}
 						</button>
 					)}
 				</>

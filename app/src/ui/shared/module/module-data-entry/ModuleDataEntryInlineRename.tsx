@@ -30,6 +30,8 @@ export function ModuleDataEntryInlineRename({
 	return (
 		<input
 			autoFocus
+			id={`module-data-entry-inline-rename-${sanitizeInlineRenameId(label)}`}
+			name="moduleDataEntryInlineRename"
 			type="text"
 			value={value}
 			onBlur={onCancel}
@@ -54,4 +56,8 @@ export function ModuleDataEntryInlineRename({
 			aria-label={`Rename ${label} column`}
 		/>
 	);
+}
+
+function sanitizeInlineRenameId(value: string) {
+	return value.replace(/[^a-zA-Z0-9_-]/g, "-");
 }

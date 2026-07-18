@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
 	loadPurchaseOrders,
 	savePurchaseOrders,
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import { PurchaseOrderQueryKeys } from "@/app/src/services/modules/purchasing/purchase-order/PurchaseOrderQueryKeys";
+import { useOptimisticModuleListMutation } from "@/app/src/hooks/shared/module/useOptimisticModuleListMutation";
 import type { PurchaseOrderRecord } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 
 type PurchaseOrderStoreState = {
@@ -22,29 +23,16 @@ type PurchaseOrderStoreState = {
 export function usePurchaseOrderStore<TSelected = PurchaseOrderStoreState>(
 	selector?: (state: PurchaseOrderStoreState) => TSelected,
 ) {
-	const queryClient = useQueryClient();
 	const ordersQuery = useQuery({
 		queryKey: PurchaseOrderQueryKeys.orders(),
 		queryFn: async () => loadPurchaseOrders(),
 		initialData: loadPurchaseOrders,
 	});
-	const saveOrdersMutation = useMutation({
-		mutationFn: async (
-			updater: (currentOrders: PurchaseOrderRecord[]) => PurchaseOrderRecord[],
-		) => {
-			const currentOrders =
-				queryClient.getQueryData<PurchaseOrderRecord[]>(
-					PurchaseOrderQueryKeys.orders(),
-				) ?? loadPurchaseOrders();
-			const nextOrders = updater(currentOrders);
-
-			savePurchaseOrders(nextOrders);
-
-			return nextOrders;
-		},
-		onSuccess: (nextOrders) => {
-			queryClient.setQueryData(PurchaseOrderQueryKeys.orders(), nextOrders);
-		},
+	const saveOrdersMutation = useOptimisticModuleListMutation<PurchaseOrderRecord>({
+		errorMessage: "Could not save the purchase order changes.",
+		getFallbackItems: loadPurchaseOrders,
+		persistItems: savePurchaseOrders,
+		queryKey: PurchaseOrderQueryKeys.orders(),
 	});
 	const state = useMemo<PurchaseOrderStoreState>(
 		() => ({

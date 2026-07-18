@@ -35,123 +35,119 @@ export function PurchaseOrderSupplierFields({
 
 	return (
 		<div className="grid min-w-0 gap-5 xl:grid-cols-2">
-			<div className="grid min-w-0 gap-4">
-				<TextField
-					id="purchase-order-vce-code"
-					label="VCE Code"
+			<div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+				<BooleanSelectField
+					id="purchase-order-partial-payment"
+					label="Partial Payment"
 					readOnly={isReadonly}
-					value={values.vceCode}
-					onChange={(value) => onUpdateField("vceCode", value)}
+					value={values.partialPayment ? "True" : "False"}
+					onChange={(value) =>
+						onUpdateField("partialPayment", value === "True")
+					}
 				/>
-				<AttachedTextField
-					id="purchase-order-vce-name"
-					label="VCE Name"
+				<BooleanSelectField
+					id="purchase-order-fixed-asset"
+					label="Fixed Asset"
 					readOnly={isReadonly}
-					value={values.vceName}
-					onAdd={() => undefined}
-					onChange={(value) => onUpdateField("vceName", value)}
-				/>
-				<div className="grid min-w-0 gap-4 sm:grid-cols-2">
-					<SelectField
-						id="purchase-order-currency"
-						label="Currency"
-						readOnly={isReadonly}
-						value={values.currency}
-						options={PurchaseOrderCurrencyOptions}
-						onChange={(value) => onUpdateField("currency", value)}
-					/>
-					<AmountField
-						id="purchase-order-exchange-rate"
-						label="Exchange Rate"
-						readOnly={isReadonly}
-						value={values.exchangeRate}
-						onChange={(value) => onUpdateField("exchangeRate", value)}
-					/>
-				</div>
-				<TextField
-					id="purchase-order-address"
-					label="Address"
-					readOnly={isReadonly}
-					value={values.address}
-					onChange={(value) => onUpdateField("address", value)}
-				/>
-				<TextField
-					id="purchase-order-contact-no"
-					label="Contact No."
-					readOnly={isReadonly}
-					value={values.contactNo}
-					onChange={(value) => onUpdateField("contactNo", value)}
-				/>
-				<TextField
-					id="purchase-order-email-address"
-					label="Email Address"
-					readOnly={isReadonly}
-					value={values.emailAddress}
-					onChange={(value) => onUpdateField("emailAddress", value)}
-				/>
-				<DateField
-					id="purchase-order-delivery-date"
-					label="Delivery Date"
-					readOnly={isReadonly}
-					value={values.deliveryDate}
-					onChange={(value) => onUpdateField("deliveryDate", value)}
+					value={values.fixedAsset ? "True" : "False"}
+					onChange={(value) => onUpdateField("fixedAsset", value === "True")}
 				/>
 			</div>
-			<div className="grid min-w-0 content-start gap-4">
+			<SelectField
+				id="purchase-order-purchase-type"
+				label="Purchase Type"
+				readOnly={isReadonly}
+				value={values.purchaseType}
+				options={PurchaseOrderTypeOptions}
+				onChange={(value) => onUpdateField("purchaseType", value)}
+			/>
+			<TextField
+				id="purchase-order-vce-code"
+				label="VCE Code"
+				readOnly={isReadonly}
+				value={values.vceCode}
+				onChange={(value) => onUpdateField("vceCode", value)}
+			/>
+			<AmountField
+				id="purchase-order-gross-amount"
+				label="Gross Amount"
+				readOnly
+				value={formatPurchaseOrderAmount(totals.grossAmount)}
+			/>
+			<AttachedTextField
+				id="purchase-order-vce-name"
+				label="VCE Name"
+				readOnly={isReadonly}
+				value={values.vceName}
+				onAdd={() => undefined}
+				onChange={(value) => onUpdateField("vceName", value)}
+			/>
+			<AmountField
+				id="purchase-order-discount-amount"
+				label="Discount Amount"
+				readOnly={isReadonly}
+				value={values.discountAmount}
+				onChange={(value) => onUpdateField("discountAmount", value)}
+			/>
+			<div className="grid min-w-0 gap-4 sm:grid-cols-2">
 				<SelectField
-					id="purchase-order-purchase-type"
-					label="Purchase Type"
+					id="purchase-order-currency"
+					label="Currency"
 					readOnly={isReadonly}
-					value={values.purchaseType}
-					options={PurchaseOrderTypeOptions}
-					onChange={(value) => onUpdateField("purchaseType", value)}
+					value={values.currency}
+					options={PurchaseOrderCurrencyOptions}
+					onChange={(value) => onUpdateField("currency", value)}
 				/>
 				<AmountField
-					id="purchase-order-gross-amount"
-					label="Gross Amount"
-					readOnly
-					value={formatPurchaseOrderAmount(totals.grossAmount)}
-				/>
-				<AmountField
-					id="purchase-order-discount-amount"
-					label="Discount Amount"
+					id="purchase-order-exchange-rate"
+					label="Exchange Rate"
 					readOnly={isReadonly}
-					value={values.discountAmount}
-					onChange={(value) => onUpdateField("discountAmount", value)}
+					value={values.exchangeRate}
+					onChange={(value) => onUpdateField("exchangeRate", value)}
 				/>
-				<AmountField
-					id="purchase-order-vat-amount"
-					label="VAT Amount"
-					readOnly={isReadonly}
-					value={values.vatAmount}
-					onChange={(value) => onUpdateField("vatAmount", value)}
-				/>
-				<AmountField
-					id="purchase-order-net-amount"
-					label="Net Amount"
-					readOnly
-					value={formatPurchaseOrderAmount(totals.netAmount)}
-				/>
-				<div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-					<BooleanSelectField
-						id="purchase-order-partial-payment"
-						label="Partial Payment"
-						readOnly={isReadonly}
-						value={values.partialPayment ? "True" : "False"}
-						onChange={(value) =>
-							onUpdateField("partialPayment", value === "True")
-						}
-					/>
-					<BooleanSelectField
-						id="purchase-order-fixed-asset"
-						label="Fixed Asset"
-						readOnly={isReadonly}
-						value={values.fixedAsset ? "True" : "False"}
-						onChange={(value) =>
-							onUpdateField("fixedAsset", value === "True")
-						}
-					/>
-				</div>
+			</div>
+			<AmountField
+				id="purchase-order-vat-amount"
+				label="VAT Amount"
+				readOnly={isReadonly}
+				value={values.vatAmount}
+				onChange={(value) => onUpdateField("vatAmount", value)}
+			/>
+			<TextField
+				id="purchase-order-address"
+				label="Address"
+				readOnly={isReadonly}
+				value={values.address}
+				onChange={(value) => onUpdateField("address", value)}
+			/>
+			<AmountField
+				id="purchase-order-net-amount"
+				label="Net Amount"
+				readOnly
+				value={formatPurchaseOrderAmount(totals.netAmount)}
+			/>
+			<TextField
+				id="purchase-order-contact-no"
+				label="Contact No."
+				readOnly={isReadonly}
+				value={values.contactNo}
+				onChange={(value) => onUpdateField("contactNo", value)}
+			/>
+			<TextField
+				id="purchase-order-email-address"
+				label="Email Address"
+				readOnly={isReadonly}
+				value={values.emailAddress}
+				onChange={(value) => onUpdateField("emailAddress", value)}
+			/>
+			<DateField
+				id="purchase-order-delivery-date"
+				label="Delivery Date"
+				readOnly={isReadonly}
+				value={values.deliveryDate}
+				onChange={(value) => onUpdateField("deliveryDate", value)}
+			/>
+			<div className="xl:col-span-2">
 				<FieldShell controlId="purchase-order-remarks" label="Remarks">
 					<AppLimitedTextarea
 						id="purchase-order-remarks"

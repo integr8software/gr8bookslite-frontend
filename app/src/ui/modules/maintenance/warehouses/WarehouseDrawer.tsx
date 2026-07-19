@@ -9,16 +9,63 @@ import { WarehouseFields } from "@/app/src/ui/modules/maintenance/warehouses/War
 
 const formId = "warehouse-drawer-form";
 
-export function WarehouseDrawer({ isOpen, mode, onClose, warehouse }: { isOpen: boolean; mode: WarehouseActionMode; onClose: () => void; warehouse?: WarehouseRecord }) {
-	return <WarehouseDrawerPanel key={`${mode}-${warehouse?.id ?? "new"}`} isOpen={isOpen} mode={mode} onClose={onClose} warehouse={warehouse} />;
+export function WarehouseDrawer({
+  isOpen,
+  mode,
+  onClose,
+  warehouse,
+}: {
+  isOpen: boolean;
+  mode: WarehouseActionMode;
+  onClose: () => void;
+  warehouse?: WarehouseRecord;
+}) {
+  return <WarehouseDrawerPanel key={`${mode}-${warehouse?.id ?? "new"}`} isOpen={isOpen} mode={mode} onClose={onClose} warehouse={warehouse} />;
 }
 
-function WarehouseDrawerPanel({ isOpen, mode, onClose, warehouse }: { isOpen: boolean; mode: WarehouseActionMode; onClose: () => void; warehouse?: WarehouseRecord }) {
-	const page = useWarehouseFormPage({ existingWarehouse: warehouse, mode, onSaved: onClose });
-	const copy = WarehouseFormPageCopy[mode];
-	return <ModuleDrawer description={copy.description} eyebrow="Inventory maintenance" formId={formId} isOpen={isOpen} isSaving={page.isMutating} onBeforeSaveConfirm={page.validateBeforeSubmit} onClose={onClose} savingLabel={getModuleSavePendingLabel(mode)} title={copy.title}>
-		<form id={formId} onSubmit={page.handleSubmit} className="px-6 py-5"><WarehouseFields errors={page.errors} values={page.values} onInputChange={page.handleInputChange} /></form>
-	</ModuleDrawer>;
+function WarehouseDrawerPanel({
+  isOpen,
+  mode,
+  onClose,
+  warehouse,
+}: {
+  isOpen: boolean;
+  mode: WarehouseActionMode;
+  onClose: () => void;
+  warehouse?: WarehouseRecord;
+}) {
+  const page = useWarehouseFormPage({
+    existingWarehouse: warehouse,
+    mode,
+    onSaved: onClose,
+  });
+  const copy = WarehouseFormPageCopy[mode];
+
+  return (
+    <ModuleDrawer
+      description={copy.description}
+      eyebrow="Inventory maintenance"
+      formId={formId}
+      isOpen={isOpen}
+      isReadonly={page.isReadonly}
+      isSaving={page.isMutating}
+      onBeforeSaveConfirm={page.validateBeforeSubmit}
+      onClose={onClose}
+      savingLabel={getModuleSavePendingLabel(mode)}
+      title={copy.title}
+    >
+      <form id={formId} onSubmit={page.handleSubmit} className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+        <WarehouseFields
+          branchOptions={page.branchOptions}
+          errors={page.errors}
+          isWarehouseCodeReadonly={page.isWarehouseCodeReadonly}
+          values={page.values}
+          onAvailabilityModeChange={page.updateAvailabilityMode}
+          onInputChange={page.handleInputChange}
+          onSetBranchSelection={page.setBranchSelection}
+          onToggleBranch={page.toggleBranch}
+        />
+      </form>
+    </ModuleDrawer>
+  );
 }
-
-

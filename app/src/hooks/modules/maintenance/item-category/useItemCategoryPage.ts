@@ -1,1083 +1,448 @@
 "use client";
 
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import toast from "react-hot-toast";
 import { normalizeLowercaseText } from "@/app/src/utils/string.util";
 import {
-  type ColumnDef,
-  type PaginationState,
-  type SortingState,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import toast from "react-hot-toast";
-import {
-  ItemCategoryTableColumns,
-  ItemCategorySystemDefaultAccountingSetup,
-  ItemCategoryUnassignedRecordId,
-} from "@/app/src/constants/modules/maintenance/item-category/ItemCategoryConstants";
-import {
-  ItemCategoryInitialFormValues,
-  createItemCategoryFormValues,
-  createItemCategoryRecord,
-  getItemCategoryAccountingSetupMode,
-  normalizeItemCategoryAccountingSetup,
-  updateItemCategoryRecord,
+	ItemCategoryInitialFormValues,
+	createAllItemCategorySetupRecords,
+	createItemCategoryFormValues,
+	createItemCategoryGeneratedAccountingSetup,
+	createItemCategoryParentOptions,
+	createItemCategoryRows,
+	getItemCategoryAccountingSetupMode,
+	normalizeRootItemCategoryAccountingSetup,
 } from "@/app/src/data/modules/maintenance/item-category/ItemCategoryData";
-import { useItemManagementStore } from "@/app/src/hooks/modules/maintenance/items/useItemManagement";
+import { useItemCategoryStore } from "@/app/src/hooks/modules/maintenance/item-category/useItemCategory";
 import type {
-  ItemActionMode,
-  ItemCategoryAccountingSetup,
-  ItemCategoryAccountingSetupMode,
-  ItemCategoryAccountingSetupStatus,
-  ItemCategoryFormErrors,
-  ItemCategoryFormValues,
-  ItemCategoryTableColumnKey,
-  ItemCategoryTableRowData,
-  ItemRecord,
-  ItemSetupKind,
-  ItemSetupRecord,
-  ItemStatus,
+	ItemActionMode,
+	ItemCategoryAccountingSetupMode,
+	ItemCategoryAccountingSetupStatusFilter,
+	ItemCategoryFormErrors,
+	ItemCategoryFormValues,
+	ItemCategoryStatusFilter,
+	ItemCategoryTableRowData,
+	ItemSetupKind,
+	ItemSetupRecord,
 } from "@/app/src/types/modules/maintenance/item-category/ItemCategoryTypes";
 import { validateItemCategoryForm } from "@/app/src/validations/modules/maintenance/item-category/ItemCategoryValidation";
 
-const AllStatusesFilter = "All";
-const AllAccountingStatusesFilter = "All";
+const AllStatusesFilter = "";
+const AllAccountingStatusesFilter = "";
 const DefaultStatusFilter = "Active";
 
-type ItemCategoryAccountingStatusFilter =
-  | typeof AllAccountingStatusesFilter
-  | ItemCategoryAccountingSetupStatus;
-
-type ItemCategoryStatusFilter = typeof AllStatusesFilter | ItemStatus;
-
 export type ItemCategoryDrawerState = {
-  mode: ItemActionMode;
-  row?: ItemCategoryTableRowData;
+	mode: ItemActionMode;
+	row?: ItemCategoryTableRowData;
 } | null;
 
 export function useItemCategoryPage() {
-  const store = useItemManagementStore();
-  const setupRecords = useSetupRecordsByKind(store.getSetupRecords);
-  const allRecords = useAllSetupRecords(setupRecords);
-  const [accountingFilter, setAccountingFilterState] =
-    useState<ItemCategoryAccountingStatusFilter>(AllAccountingStatusesFilter);
-  const [drawerState, setDrawerState] = useState<ItemCategoryDrawerState>(null);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(
-    () => new Set(allRecords.map((record) => record.id)),
-  );
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
-  });
-  const [pendingStatusRow, setPendingStatusRow] =
-    useState<ItemCategoryTableRowData | null>(null);
-  const [query, setQuery] = useState("");
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [statusFilter, setStatusFilterState] =
-    useState<ItemCategoryStatusFilter>(DefaultStatusFilter);
-  const tableRows = useMemo(
-    () =>
-      createItemCategoryRows({
-        expandedIds,
-        items: store.items,
-        setupRecords,
-      }),
-    [expandedIds, setupRecords, store.items],
-  );
-  const metricRows = useMemo(
-    () =>
-      createItemCategoryRows({
-        expandedIds: new Set(allRecords.map((record) => record.id)),
-        items: store.items,
-        setupRecords,
-      }),
-    [allRecords, setupRecords, store.items],
-  );
-  const filteredTableRows = useMemo(() => {
-    const normalizedQuery = normalizeLowercaseText(query);
+	const store = useItemCategoryStore();
+	const setupRecords = useSetupRecordsByKind(store.records);
+	const allRecords = useMemo(
+		() => createAllItemCategorySetupRecords(setupRecords),
+		[setupRecords],
+	);
+	const [accountingFilter, setAccountingFilterState] =
+		useState<ItemCategoryAccountingSetupStatusFilter>(
+			AllAccountingStatusesFilter,
+		);
+	const [drawerState, setDrawerState] = useState<ItemCategoryDrawerState>(null);
+	const [expandedIds, setExpandedIds] = useState<Set<string>>(
+		() => new Set(allRecords.map((record) => record.id)),
+	);
+	const [pendingStatusRow, setPendingStatusRow] =
+		useState<ItemCategoryTableRowData | null>(null);
+	const [query, setQuery] = useState("");
+	const [statusFilter, setStatusFilterState] =
+		useState<ItemCategoryStatusFilter>(DefaultStatusFilter);
+	const backendRowByRecordId = useMemo(
+		() => new Map(store.categories.map((row) => [row.record.id, row])),
+		[store.categories],
+	);
+	const tableRows = useMemo(
+		() =>
+			enrichItemCategoryRows(
+				createItemCategoryRows({
+					expandedIds,
+					items: [],
+					setupRecords,
+				}),
+				backendRowByRecordId,
+			),
+		[backendRowByRecordId, expandedIds, setupRecords],
+	);
+	const allRows = useMemo(
+		() =>
+			enrichItemCategoryRows(
+				createItemCategoryRows({
+					expandedIds: new Set(allRecords.map((record) => record.id)),
+					items: [],
+					setupRecords,
+				}).filter((row) => !row.isVirtual),
+				backendRowByRecordId,
+			),
+		[allRecords, backendRowByRecordId, setupRecords],
+	);
+	const filteredRows = useMemo(() => {
+		const normalizedQuery = normalizeLowercaseText(query);
 
-    return tableRows.filter((row) => {
-      if (
-        statusFilter !== AllStatusesFilter &&
-        row.record.status !== statusFilter
-      ) {
-        return false;
-      }
+		return tableRows.filter((row) => {
+			if (
+				statusFilter !== AllStatusesFilter &&
+				row.record.status !== statusFilter
+			) {
+				return false;
+			}
 
-      if (
-        accountingFilter !== AllAccountingStatusesFilter &&
-        row.accountingSetupStatus !== accountingFilter
-      ) {
-        return false;
-      }
+			if (
+				accountingFilter !== AllAccountingStatusesFilter &&
+				row.accountingSetupStatus !== accountingFilter
+			) {
+				return false;
+			}
 
-      if (!normalizedQuery) {
-        return true;
-      }
+			if (!normalizedQuery) {
+				return true;
+			}
 
-      return [
-        row.record.name,
-        row.record.description,
-        row.recordKindLabel,
-        row.parentName,
-        row.accountingSetupStatus,
-        row.record.status,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedQuery);
-    });
-  }, [accountingFilter, query, statusFilter, tableRows]);
-  const columns = useMemo<ColumnDef<ItemCategoryTableRowData>[]>(
-    () =>
-      ItemCategoryTableColumns.map((column) => {
-        if (!("key" in column)) {
-          return {
-            id: "actions",
-            header: column.label,
-            enableSorting: false,
-            meta: { className: column.className },
-          };
-        }
+			return [
+				row.record.name,
+				row.record.description,
+				row.recordKindLabel,
+				row.parentName,
+				row.accountingSetupStatus,
+				row.record.status,
+			]
+				.join(" ")
+				.toLowerCase()
+				.includes(normalizedQuery);
+		});
+	}, [accountingFilter, query, statusFilter, tableRows]);
+	const metrics = store.statistics;
 
-        return createItemCategoryColumn(
-          column.key,
-          column.label,
-          column.className,
-        );
-      }),
-    [],
-  );
+	function handleAccountingFilterChange(
+		value: ItemCategoryAccountingSetupStatusFilter,
+	) {
+		setAccountingFilterState(value);
+	}
 
-  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
-  const table = useReactTable({
-    data: filteredTableRows,
-    columns,
-    state: {
-      pagination,
-      sorting,
-    },
-    onPaginationChange: setPagination,
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  });
+	function handleQueryChange(value: string) {
+		setQuery(value);
+	}
 
-  function handleAccountingFilterChange(value: string) {
-    setAccountingFilterState(value as ItemCategoryAccountingStatusFilter);
-    table.setPageIndex(0);
-  }
+	function handleStatusFilterChange(value: ItemCategoryStatusFilter) {
+		setStatusFilterState(value);
+	}
 
-  function handleQueryChange(value: string) {
-    setQuery(value);
-    table.setPageIndex(0);
-  }
+	function handleConfirmStatusChange() {
+		if (!pendingStatusRow || pendingStatusRow.isVirtual) {
+			return;
+		}
 
-  function handleStatusFilterChange(value: string) {
-    setStatusFilterState(value as ItemCategoryStatusFilter);
-    table.setPageIndex(0);
-  }
+		const nextStatus =
+			pendingStatusRow.record.status === "Active" ? "Inactive" : "Active";
+		void store
+			.updateCategory(pendingStatusRow.record.id, {
+				...createItemCategoryFormValues(pendingStatusRow.record),
+				parentId: pendingStatusRow.parentId,
+				status: nextStatus,
+			})
+			.then(() => setPendingStatusRow(null))
+			.catch(() => undefined);
+	}
 
-  function handleConfirmStatusChange() {
-    if (!pendingStatusRow || pendingStatusRow.isVirtual) {
-      return;
-    }
+	function toggleExpanded(recordId: string) {
+		setExpandedIds((current) => {
+			const next = new Set(current);
 
-    const nextStatus =
-      pendingStatusRow.record.status === "Active" ? "Inactive" : "Active";
-    const updates = createStatusUpdates({
-      items: store.items,
-      record: {
-        ...pendingStatusRow.record,
-        statusBeforeParentInactive: undefined,
-        status: nextStatus,
-      },
-      recordKind: pendingStatusRow.recordKind,
-      setupRecords,
-    });
+			if (next.has(recordId)) {
+				next.delete(recordId);
+			} else {
+				next.add(recordId);
+			}
 
-    store.updateSetupRecords(updates);
-    setPendingStatusRow(null);
-  }
+			return next;
+		});
+	}
 
-  function resetFilters() {
-    setAccountingFilterState(AllAccountingStatusesFilter);
-    setQuery("");
-    setStatusFilterState(DefaultStatusFilter);
-    table.setPageIndex(0);
-  }
+	return {
+		accountingFilter,
+		allRows,
+		drawerState,
+		expandedIds,
+		filteredRows,
+		handleAccountingFilterChange,
+		handleConfirmStatusChange,
+		handleQueryChange,
+		handleStatusFilterChange,
+		isLoading: store.isLoading,
+		isRefreshing: store.isRefreshing,
+		isMutating: store.isMutating,
+		lastSyncedAt: store.lastSyncedAt,
+		metrics,
+		pendingStatusRow,
+		permissions: store.permissions,
+		query,
+		refreshCategories: store.refreshCategories,
+		setDrawerState,
+		setPendingStatusRow,
+		statusFilter,
+		toggleExpanded,
+	};
+}
 
-  function toggleExpanded(recordId: string) {
-    setExpandedIds((current) => {
-      const next = new Set(current);
+function enrichItemCategoryRows(
+	rows: ItemCategoryTableRowData[],
+	sourceRows: Map<string, ItemCategoryTableRowData>,
+) {
+	return rows.map((row) => {
+		const source = sourceRows.get(row.record.id);
 
-      if (next.has(recordId)) {
-        next.delete(recordId);
-      } else {
-        next.add(recordId);
-      }
+		if (!source) {
+			return row;
+		}
 
-      return next;
-    });
-  }
-
-  const metrics = useMemo(() => {
-    const realRows = metricRows.filter((row) => !row.isVirtual);
-
-    return {
-      activeCount: realRows.filter((row) => row.record.status === "Active")
-        .length,
-      inheritedCount: realRows.filter(
-        (row) => row.accountingSetupStatus === "Inherited",
-      ).length,
-      overrideCount: realRows.filter(
-        (row) => row.accountingSetupStatus === "Override",
-      ).length,
-      totalCount: realRows.length,
-    };
-  }, [metricRows]);
-
-  return {
-    accountingFilter,
-    drawerState,
-    expandedIds,
-    handleAccountingFilterChange,
-    handleConfirmStatusChange,
-    handleQueryChange,
-    handleStatusFilterChange,
-    isLoading: store.isLoading,
-    isMutating: store.isMutating,
-    lastSyncedAt: store.lastSyncedAt,
-    metrics,
-    pendingStatusRow,
-    query,
-    resetFilters,
-    setDrawerState,
-    setPendingStatusRow,
-    statusFilter,
-    table,
-    toggleExpanded,
-  };
+		return {
+			...row,
+			effectiveAccountingSetup:
+				source.effectiveAccountingSetup ?? row.effectiveAccountingSetup,
+			inheritedAccountingSourceName:
+				source.inheritedAccountingSourceName ?? row.inheritedAccountingSourceName,
+			usedByItemCount: source.usedByItemCount,
+		};
+	});
 }
 
 export function useItemCategoryFormPage({
-  mode: providedMode,
-  onSaved,
-  row,
+	mode: providedMode,
+	onSaved,
+	row,
 }: {
-  mode?: ItemActionMode;
-  onSaved?: () => void;
-  row?: ItemCategoryTableRowData;
+	mode?: ItemActionMode;
+	onSaved?: () => void;
+	row?: ItemCategoryTableRowData;
 } = {}) {
-  const store = useItemManagementStore();
-  const setupRecords = useSetupRecordsByKind(store.getSetupRecords);
-  const allRecords = useAllSetupRecords(setupRecords);
-  const mode = providedMode ?? "add";
-  const existingRef = useMemo(
-    () =>
-      row
-        ? {
-            kind: row.recordKind,
-            parentId: row.parentId,
-            record: row.record,
-          }
-        : undefined,
-    [row],
-  );
-  const isReadonly = mode === "view";
-  const [values, setValues] = useState<ItemCategoryFormValues>(
-    () =>
-      existingRef
-        ? {
-            ...createItemCategoryFormValues(existingRef.record),
-            parentId:
-              existingRef.parentId &&
-              existingRef.parentId !== ItemCategoryUnassignedRecordId
-                ? existingRef.parentId
-                : (existingRef.record.parentIds?.[0] ?? ""),
-          }
-        : ItemCategoryInitialFormValues,
-  );
-  const [errors, setErrors] = useState<ItemCategoryFormErrors>(
-    {},
-  );
-  const parentOptions = useMemo(
-    () =>
-      createParentOptions({
-        currentRecordId: existingRef?.record.id,
-        items: store.items,
-        setupRecords,
-      }),
-    [existingRef?.record.id, setupRecords, store.items],
-  );
+	const store = useItemCategoryStore();
+	const setupRecords = useSetupRecordsByKind(store.records);
+	const allRecords = useMemo(
+		() => createAllItemCategorySetupRecords(setupRecords),
+		[setupRecords],
+	);
+	const mode = providedMode ?? "add";
+	const existingRef = useMemo(
+		() =>
+			row
+				? {
+						kind: row.recordKind,
+						parentId: row.parentId,
+						record: row.record,
+					}
+				: undefined,
+		[row],
+	);
+	const isReadonly = mode === "view";
+	const [values, setValues] = useState<ItemCategoryFormValues>(() => {
+		const initialValues = existingRef
+			? {
+					...createItemCategoryFormValues(existingRef.record),
+					parentId:
+						existingRef.parentId && existingRef.parentId !== ""
+							? existingRef.parentId
+							: (existingRef.record.parentIds?.[0] ?? ""),
+				}
+			: ItemCategoryInitialFormValues;
 
-  function updateField<
-    TField extends keyof ItemCategoryFormValues,
-  >(field: TField, value: ItemCategoryFormValues[TField]) {
-    if (isReadonly) {
-      return;
-    }
+		return normalizeRootItemCategoryAccountingSetup(initialValues);
+	});
+	const [errors, setErrors] = useState<ItemCategoryFormErrors>({});
+	const parentOptions = useMemo(
+		() =>
+			createItemCategoryParentOptions({
+				currentRecordId: existingRef?.record.id,
+				items: [],
+				setupRecords,
+			}),
+		[existingRef?.record.id, setupRecords],
+	);
+	const needsInheritanceChangeConfirmation =
+		mode === "edit" &&
+		existingRef !== undefined &&
+		getItemCategoryAccountingSetupMode(existingRef.record) === "own" &&
+		values.accountingSetupMode === "inherit";
 
-    setValues((current) => ({ ...current, [field]: value }));
-    setErrors((current) => ({ ...current, [field]: undefined }));
-  }
+	function updateField<TField extends keyof ItemCategoryFormValues>(
+		field: TField,
+		value: ItemCategoryFormValues[TField],
+	) {
+		if (isReadonly) {
+			return;
+		}
 
-  function handleInputChange(
-    event: ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) {
-    const { name, type } = event.target;
-    const value =
-      type === "checkbox"
-        ? (event.target as HTMLInputElement).checked
-        : event.target.value;
+		setValues((current) => {
+			const nextValues = { ...current, [field]: value };
 
-    updateField(
-      name as keyof ItemCategoryFormValues,
-      value as never,
-    );
-  }
+			if (field === "name" && nextValues.accountingSetupMode === "own") {
+				return {
+					...nextValues,
+					accountingSetup: createItemCategoryGeneratedAccountingSetup(
+						String(value),
+					),
+				};
+			}
 
-  function handleAccountingFieldChange(
-    field: keyof ItemCategoryAccountingSetup,
-    value: string,
-  ) {
-    if (isReadonly || values.accountingSetupMode !== "own") {
-      return;
-    }
+			return nextValues;
+		});
+		setErrors((current) => ({ ...current, [field]: undefined }));
+	}
 
-    setValues((current) => ({
-      ...current,
-      accountingSetup: {
-        ...current.accountingSetup,
-        [field]: value,
-      },
-    }));
-    setErrors((current) => ({ ...current, [field]: undefined }));
-  }
+	function handleInputChange(
+		event: ChangeEvent<
+			HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+		>,
+	) {
+		const { name, type } = event.target;
+		const value =
+			type === "checkbox"
+				? (event.target as HTMLInputElement).checked
+				: event.target.value;
 
-  function handleAccountingModeChange(
-    accountingSetupMode: ItemCategoryAccountingSetupMode,
-  ) {
-    updateField("accountingSetupMode", accountingSetupMode);
-  }
+		updateField(name as keyof ItemCategoryFormValues, value as never);
+	}
 
-  function handleParentChange(parentId: string) {
-    updateField("parentId", parentId);
-  }
+	function handleAccountingModeChange(
+		accountingSetupMode: ItemCategoryAccountingSetupMode,
+	) {
+		if (isReadonly) {
+			return;
+		}
 
-  function validateBeforeSubmit() {
-    const nextErrors = validateItemCategoryForm(values, {
-      recordId: existingRef?.record.id,
-      records: allRecords,
-    });
+		setValues((current) => {
+			const nextAccountingSetupMode =
+				accountingSetupMode === "inherit" && !current.parentId
+					? "own"
+					: accountingSetupMode;
 
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
-      toast.error("Please fix the highlighted category fields.");
-      return false;
-    }
+			return {
+				...current,
+				accountingSetupMode: nextAccountingSetupMode,
+				accountingSetup:
+					nextAccountingSetupMode === "own"
+						? createItemCategoryGeneratedAccountingSetup(current.name)
+						: current.accountingSetup,
+			};
+		});
+		setErrors((current) => ({ ...current, accountingSetupMode: undefined }));
+	}
 
-    return true;
-  }
+	function handleParentChange(parentId: string) {
+		if (isReadonly) {
+			return;
+		}
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+		setValues((current) => {
+			const shouldSwitchMode =
+				mode === "add" &&
+				(current.accountingSetupMode === "inherit" ||
+					current.accountingSetupMode === "own");
+			const accountingSetupMode = shouldSwitchMode
+				? parentId
+					? "inherit"
+					: "own"
+				: current.accountingSetupMode;
 
-    if (!validateBeforeSubmit()) {
-      return;
-    }
+			return {
+				...current,
+				parentId,
+				accountingSetupMode,
+				accountingSetup:
+					accountingSetupMode === "own"
+						? createItemCategoryGeneratedAccountingSetup(current.name)
+						: current.accountingSetup,
+			};
+		});
+		setErrors((current) => ({ ...current, parentId: undefined }));
+	}
 
-    if (mode === "edit") {
-      if (!existingRef) {
-        toast.error("Could not find the category to update.");
-        return;
-      }
+	function validateBeforeSubmit() {
+		const normalizedValues = normalizeRootItemCategoryAccountingSetup(values);
+		const nextErrors = validateItemCategoryForm(normalizedValues, {
+			recordId: existingRef?.record.id,
+			records: allRecords,
+		});
 
-      const nextRecord = updateItemCategoryRecord(
-        existingRef.record,
-        values,
-      );
+		if (normalizedValues !== values) {
+			setValues(normalizedValues);
+		}
 
-      store.updateSetupRecords(
-        createStatusUpdates({
-          items: store.items,
-          record: nextRecord,
-          recordKind: existingRef.kind,
-          setupRecords,
-        }),
-      );
-      onSaved?.();
-      return;
-    }
+		if (Object.keys(nextErrors).length > 0) {
+			setErrors(nextErrors);
+			toast.error("Please fix the highlighted category fields.");
+			return false;
+		}
 
-    if (mode === "view") {
-      return;
-    }
+		return true;
+	}
 
-    store.addSetupRecord(
-      "category",
-      createItemCategoryRecord(values),
-    );
-    onSaved?.();
-  }
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
 
-  return {
-    errors,
-    existingRecord: existingRef?.record,
-    handleAccountingFieldChange,
-    handleAccountingModeChange,
-    handleInputChange,
-    handleParentChange,
-    handleSubmit,
-    isMutating: store.isMutating,
-    isReadonly,
-    mode,
-    needsRecord: mode === "edit" || mode === "view",
-    parentOptions,
-    validateBeforeSubmit,
-    values,
-  };
+		if (!validateBeforeSubmit()) {
+			return;
+		}
+
+		if (mode === "edit") {
+			if (!existingRef) {
+				toast.error("Could not find the category to update.");
+				return;
+			}
+
+			void store
+				.updateCategory(
+					existingRef.record.id,
+					normalizeRootItemCategoryAccountingSetup(values),
+				)
+				.then(() => onSaved?.())
+				.catch(() => undefined);
+			return;
+		}
+
+		if (mode === "view") {
+			return;
+		}
+
+		void store
+			.addCategory(normalizeRootItemCategoryAccountingSetup(values))
+			.then(() => onSaved?.())
+			.catch(() => undefined);
+	}
+
+	return {
+		errors,
+		existingRecord: existingRef?.record,
+		handleAccountingModeChange,
+		handleInputChange,
+		handleParentChange,
+		handleSubmit,
+		isMutating: store.isMutating,
+		isReadonly,
+		mode,
+		needsRecord: mode === "edit" || mode === "view",
+		needsInheritanceChangeConfirmation,
+		parentOptions,
+		validateBeforeSubmit,
+		values,
+	};
 }
 
-function useSetupRecordsByKind(
-  getSetupRecords: (kind: ItemSetupKind) => ItemSetupRecord[],
-) {
-  const category = getSetupRecords("category");
-  const subcategory = getSetupRecords("subcategory");
-  const type = getSetupRecords("type");
-  const subtype = getSetupRecords("subtype");
-
-  return useMemo(
-    () => ({ category, subcategory, type, subtype }),
-    [category, subcategory, subtype, type],
-  );
-}
-
-function useAllSetupRecords(
-  setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>,
-) {
-  return useMemo(
-    () => [
-      ...setupRecords.category,
-      ...setupRecords.subcategory,
-      ...setupRecords.type,
-      ...setupRecords.subtype,
-    ],
-    [setupRecords],
-  );
-}
-
-function createItemCategoryColumn(
-  key: ItemCategoryTableColumnKey,
-  header: string,
-  className: string,
-): ColumnDef<ItemCategoryTableRowData> {
-  if (key === "name") {
-    return {
-      id: key,
-      accessorFn: (row) => row.record.name,
-      header,
-      meta: { className },
-    };
-  }
-
-  if (key === "status") {
-    return {
-      id: key,
-      accessorFn: (row) => row.record.status,
-      header,
-      meta: { className },
-    };
-  }
-
-  return {
-    accessorKey: key,
-    header,
-    meta: { className },
-  };
-}
-
-function createItemCategoryRows({
-  expandedIds,
-  items,
-  setupRecords,
-}: {
-  expandedIds: Set<string>;
-  items: ItemRecord[];
-  setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>;
-}) {
-  const typeParentIdsByTypeId = inferTypeParentIdsByTypeId(setupRecords, items);
-  const rootCategories = setupRecords.category.filter(
-    (record) => (record.parentIds ?? []).length === 0,
-  );
-  const unassignedChildren = getUnassignedChildren({
-    setupRecords,
-    typeParentIdsByTypeId,
-  });
-  const rootRows = rootCategories.flatMap((record) =>
-    createRowsForRecord({
-      expandedIds,
-      items,
-      kind: "category",
-      level: 0,
-      parentAccountingSourceName: undefined,
-      parentEffectiveAccountingSetup: undefined,
-      parentId: "",
-      parentName: "",
-      pathIds: [],
-      pathNames: [],
-      record,
-      setupRecords,
-      typeParentIdsByTypeId,
-    }),
-  );
-
-  if (unassignedChildren.length === 0) {
-    return rootRows;
-  }
-
-  const unassignedRecord = createUnassignedRecord();
-
-  return [
-    ...rootRows,
-    ...createRowsForRecord({
-      expandedIds,
-      items,
-      kind: "category",
-      level: 0,
-      parentAccountingSourceName: undefined,
-      parentEffectiveAccountingSetup: undefined,
-      parentId: "",
-      parentName: "",
-      pathIds: [],
-      pathNames: [],
-      record: unassignedRecord,
-      setupRecords,
-      typeParentIdsByTypeId,
-      isVirtual: true,
-    }),
-  ];
-}
-
-function createRowsForRecord({
-  expandedIds,
-  hasInactiveAncestor = false,
-  isVirtual = false,
-  items,
-  kind,
-  level,
-  parentAccountingSourceName,
-  parentEffectiveAccountingSetup,
-  parentId,
-  parentName,
-  pathIds,
-  pathNames,
-  record,
-  setupRecords,
-  typeParentIdsByTypeId,
-}: {
-  expandedIds: Set<string>;
-  hasInactiveAncestor?: boolean;
-  isVirtual?: boolean;
-  items: ItemRecord[];
-  kind: ItemSetupKind;
-  level: number;
-  parentAccountingSourceName?: string;
-  parentEffectiveAccountingSetup?: ItemCategoryAccountingSetup;
-  parentId: string;
-  parentName: string;
-  pathIds: string[];
-  pathNames: string[];
-  record: ItemSetupRecord;
-  setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>;
-  typeParentIdsByTypeId: Map<string, string[]>;
-}): ItemCategoryTableRowData[] {
-  if (pathIds.includes(record.id)) {
-    return [];
-  }
-
-  const accountingSetupMode = getItemCategoryAccountingSetupMode(record);
-  const ownAccountingSetup =
-    accountingSetupMode === "own"
-      ? normalizeItemCategoryAccountingSetup(record.accountingSetup)
-      : undefined;
-  const accountingSetupStatus = getAccountingSetupStatus({
-    accountingSetupMode,
-    hasParentAccountingSetup: Boolean(parentEffectiveAccountingSetup),
-  });
-  const effectiveAccountingSetup =
-    accountingSetupMode === "notSet"
-      ? undefined
-      : (ownAccountingSetup ??
-        parentEffectiveAccountingSetup ??
-        ItemCategorySystemDefaultAccountingSetup);
-  const inheritedAccountingSourceName =
-    accountingSetupMode === "inherit"
-      ? (parentAccountingSourceName ?? "System Defaults")
-      : undefined;
-  const rowRecord =
-    hasInactiveAncestor && !isVirtual
-      ? ({
-          ...record,
-          status: "Inactive",
-        } satisfies ItemSetupRecord)
-      : record;
-  const row: ItemCategoryTableRowData = {
-    id: `${kind}-${record.id}-${parentId || "root"}-${level}`,
-    accountingSetupStatus,
-    effectiveAccountingSetup,
-    hasInactiveAncestor,
-    hasChildren: false,
-    inheritedAccountingSourceName,
-    isVirtual,
-    level,
-    parentId,
-    parentName,
-    pathName: `/${[...pathNames, record.name].join("/")}`,
-    record: rowRecord,
-    recordKind: kind,
-    recordKindLabel: getRecordKindLabel(kind, isVirtual),
-    usedByItemCount: isVirtual ? 0 : getUsedByItemCount(kind, record, items),
-  };
-  const children = createChildRecords({
-    parentKind: kind,
-    parentRecord: record,
-    setupRecords,
-    typeParentIdsByTypeId,
-  });
-
-  row.hasChildren = children.length > 0;
-
-  if (!row.hasChildren || !expandedIds.has(record.id)) {
-    return [row];
-  }
-
-  return [
-    row,
-    ...children.flatMap((child) =>
-      createRowsForRecord({
-        expandedIds,
-        hasInactiveAncestor:
-          hasInactiveAncestor || record.status === "Inactive",
-        items,
-        kind: child.kind,
-        level: level + 1,
-        parentAccountingSourceName: ownAccountingSetup
-          ? record.name
-          : inheritedAccountingSourceName,
-        parentEffectiveAccountingSetup: effectiveAccountingSetup,
-        parentId: record.id,
-        parentName: record.name,
-        pathIds: [...pathIds, record.id],
-        pathNames: [...pathNames, record.name],
-        record: child.record,
-        setupRecords,
-        typeParentIdsByTypeId,
-      }),
-    ),
-  ];
-}
-
-function createChildRecords({
-  parentKind,
-  parentRecord,
-  setupRecords,
-  typeParentIdsByTypeId,
-}: {
-  parentKind: ItemSetupKind;
-  parentRecord: ItemSetupRecord;
-  setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>;
-  typeParentIdsByTypeId: Map<string, string[]>;
-}) {
-  const children: Array<{ kind: ItemSetupKind; record: ItemSetupRecord }> = [];
-  const isUnassignedParent = parentRecord.id === ItemCategoryUnassignedRecordId;
-
-  if (!isUnassignedParent) {
-    children.push(
-      ...setupRecords.category
-        .filter((record) => (record.parentIds ?? []).includes(parentRecord.id))
-        .map((record) => ({ kind: "category" as const, record })),
-    );
-  }
-
-  if (parentKind === "category") {
-    children.push(
-      ...setupRecords.subcategory
-        .filter((record) =>
-          isUnassignedParent
-            ? (record.parentIds ?? []).length === 0
-            : (record.parentIds ?? []).includes(parentRecord.id),
-        )
-        .map((record) => ({ kind: "subcategory" as const, record })),
-    );
-    children.push(
-      ...setupRecords.type
-        .filter((record) => {
-          const parentIds = getTypeParentIds(record, typeParentIdsByTypeId);
-
-          return isUnassignedParent
-            ? parentIds.length === 0
-            : parentIds.includes(parentRecord.id);
-        })
-        .map((record) => ({ kind: "type" as const, record })),
-    );
-  }
-
-  if (parentKind === "type") {
-    children.push(
-      ...setupRecords.subtype
-        .filter((record) => {
-          const parentIds = record.parentIds ?? [];
-
-          return parentIds.length === 0 || parentIds.includes(parentRecord.id);
-        })
-        .map((record) => ({ kind: "subtype" as const, record })),
-    );
-  }
-
-  return children;
-}
-
-function createStatusUpdates({
-  items,
-  record,
-  recordKind,
-  setupRecords,
-}: {
-  items: ItemRecord[];
-  record: ItemSetupRecord;
-  recordKind: ItemSetupKind;
-  setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>;
-}) {
-  const updates = [{ kind: recordKind, record }];
-
-  if (record.status !== "Inactive" && record.status !== "Active") {
-    return updates;
-  }
-
-  const typeParentIdsByTypeId = inferTypeParentIdsByTypeId(setupRecords, items);
-  const shouldDisableDescendants = record.status === "Inactive";
-  const shouldRestoreDescendants = record.status === "Active";
-
-  collectDescendantRecords({
-    parentKind: recordKind,
-    parentRecord: record,
-    pathIds: [],
-    setupRecords,
-    typeParentIdsByTypeId,
-  }).forEach((descendant) => {
-    const nextDescendantRecord = shouldDisableDescendants
-      ? createParentDisabledRecord(descendant.record, record.id)
-      : createParentRestoredRecord(descendant.record, record.id);
-
-    if (!shouldDisableDescendants && !shouldRestoreDescendants) {
-      return;
-    }
-
-    updates.push({
-      kind: descendant.kind,
-      record: nextDescendantRecord,
-    });
-  });
-
-  return dedupeStatusUpdates(updates);
-}
-
-function createParentDisabledRecord(
-  record: ItemSetupRecord,
-  parentId: string,
-): ItemSetupRecord {
-  const parentInactiveSourceIds = Array.from(
-    new Set([...(record.parentInactiveSourceIds ?? []), parentId]),
-  );
-
-  return {
-    ...record,
-    statusBeforeParentInactive:
-      record.statusBeforeParentInactive ??
-      (record.parentInactiveSourceIds?.length ? undefined : record.status),
-    parentInactiveSourceIds,
-    status: "Inactive",
-  };
-}
-
-function createParentRestoredRecord(
-  record: ItemSetupRecord,
-  parentId: string,
-): ItemSetupRecord {
-  if (!record.statusBeforeParentInactive) {
-    return record;
-  }
-
-  const previousStatus = record.statusBeforeParentInactive;
-  const parentInactiveSourceIds = (record.parentInactiveSourceIds ?? []).filter(
-    (sourceId) => sourceId !== parentId,
-  );
-
-  if (parentInactiveSourceIds.length > 0) {
-    return {
-      ...record,
-      parentInactiveSourceIds,
-      status: "Inactive",
-    };
-  }
-
-  const restoredRecord = { ...record };
-
-  delete restoredRecord.parentInactiveSourceIds;
-  delete restoredRecord.statusBeforeParentInactive;
-
-  return {
-    ...restoredRecord,
-    status: previousStatus,
-  };
-}
-
-function collectDescendantRecords({
-  parentKind,
-  parentRecord,
-  pathIds,
-  setupRecords,
-  typeParentIdsByTypeId,
-}: {
-  parentKind: ItemSetupKind;
-  parentRecord: ItemSetupRecord;
-  pathIds: string[];
-  setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>;
-  typeParentIdsByTypeId: Map<string, string[]>;
-}): Array<{ kind: ItemSetupKind; record: ItemSetupRecord }> {
-  if (pathIds.includes(parentRecord.id)) {
-    return [];
-  }
-
-  const children = createChildRecords({
-    parentKind,
-    parentRecord,
-    setupRecords,
-    typeParentIdsByTypeId,
-  });
-
-  return children.flatMap((child) => [
-    child,
-    ...collectDescendantRecords({
-      parentKind: child.kind,
-      parentRecord: child.record,
-      pathIds: [...pathIds, parentRecord.id],
-      setupRecords,
-      typeParentIdsByTypeId,
-    }),
-  ]);
-}
-
-function dedupeStatusUpdates(
-  updates: Array<{ kind: ItemSetupKind; record: ItemSetupRecord }>,
-) {
-  const updateByKey = new Map<
-    string,
-    { kind: ItemSetupKind; record: ItemSetupRecord }
-  >();
-
-  updates.forEach((update) => {
-    updateByKey.set(`${update.kind}:${update.record.id}`, update);
-  });
-
-  return Array.from(updateByKey.values());
-}
-
-function createParentOptions({
-  currentRecordId,
-  items,
-  setupRecords,
-}: {
-  currentRecordId?: string;
-  items: ItemRecord[];
-  setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>;
-}) {
-  const rows = createItemCategoryRows({
-    expandedIds: new Set(
-      [
-        ...setupRecords.category,
-        ...setupRecords.subcategory,
-        ...setupRecords.type,
-        ...setupRecords.subtype,
-        createUnassignedRecord(),
-      ].map((record) => record.id),
-    ),
-    items,
-    setupRecords,
-  });
-  const blockedIds = new Set<string>(currentRecordId ? [currentRecordId] : []);
-
-  if (currentRecordId) {
-    rows
-      .filter((row) => row.parentId === currentRecordId)
-      .forEach((row) => blockedIds.add(row.record.id));
-  }
-
-  const seenIds = new Set<string>();
-
-  return rows
-    .filter((row) => !row.isVirtual)
-    .filter((row) => row.record.status === "Active")
-    .filter((row) => row.record.allowSubCategory !== false)
-    .filter((row) => !blockedIds.has(row.record.id))
-    .filter((row) => {
-      if (seenIds.has(row.record.id)) {
-        return false;
-      }
-
-      seenIds.add(row.record.id);
-      return true;
-    })
-    .map((row) => ({
-      id: row.record.id,
-      label: row.record.name,
-      kindLabel: row.recordKindLabel,
-      pathName: row.pathName,
-    }));
-}
-
-function inferTypeParentIdsByTypeId(
-  setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>,
-  items: ItemRecord[],
-) {
-  const categoryIdByName = new Map(
-    setupRecords.category.map((record) => [record.name, record.id]),
-  );
-  const inferred = new Map<string, Set<string>>();
-
-  setupRecords.type.forEach((typeRecord) => {
-    inferred.set(typeRecord.id, new Set(typeRecord.parentIds ?? []));
-  });
-
-  items.forEach((item) => {
-    const typeRecord = setupRecords.type.find(
-      (record) => record.name === item.type,
-    );
-    const categoryId = categoryIdByName.get(item.category);
-
-    if (!typeRecord || !categoryId) {
-      return;
-    }
-
-    const parentIds = inferred.get(typeRecord.id) ?? new Set<string>();
-
-    parentIds.add(categoryId);
-    inferred.set(typeRecord.id, parentIds);
-  });
-
-  return new Map(
-    Array.from(inferred.entries()).map(([typeId, parentIds]) => [
-      typeId,
-      Array.from(parentIds),
-    ]),
-  );
-}
-
-function getTypeParentIds(
-  record: ItemSetupRecord,
-  typeParentIdsByTypeId: Map<string, string[]>,
-) {
-  const explicitParentIds = record.parentIds ?? [];
-
-  return explicitParentIds.length > 0
-    ? explicitParentIds
-    : (typeParentIdsByTypeId.get(record.id) ?? []);
-}
-
-function getUnassignedChildren({
-  setupRecords,
-  typeParentIdsByTypeId,
-}: {
-  setupRecords: Record<ItemSetupKind, ItemSetupRecord[]>;
-  typeParentIdsByTypeId: Map<string, string[]>;
-}) {
-  return [
-    ...setupRecords.subcategory.filter(
-      (record) => (record.parentIds ?? []).length === 0,
-    ),
-    ...setupRecords.type.filter(
-      (record) => getTypeParentIds(record, typeParentIdsByTypeId).length === 0,
-    ),
-  ];
-}
-
-function getAccountingSetupStatus({
-  accountingSetupMode,
-  hasParentAccountingSetup,
-}: {
-  accountingSetupMode: ItemCategoryAccountingSetupMode;
-  hasParentAccountingSetup: boolean;
-}): ItemCategoryAccountingSetupStatus {
-  if (accountingSetupMode === "notSet") {
-    return "Not Set";
-  }
-
-  if (accountingSetupMode === "inherit") {
-    return "Inherited";
-  }
-
-  if (hasParentAccountingSetup) {
-    return "Override";
-  }
-
-  return "Configured";
-}
-
-function getUsedByItemCount(
-  kind: ItemSetupKind,
-  record: ItemSetupRecord,
-  items: ItemRecord[],
-) {
-  return items.filter((item) => {
-    if (kind === "category") {
-      return item.category === record.name;
-    }
-
-    if (kind === "subcategory") {
-      return item.subcategory === record.name;
-    }
-
-    if (kind === "type") {
-      return item.type === record.name;
-    }
-
-    return item.subtype === record.name;
-  }).length;
-}
-
-function getRecordKindLabel(kind: ItemSetupKind, isVirtual?: boolean) {
-  if (isVirtual) {
-    return "Unassigned";
-  }
-
-  if (kind === "type") {
-    return "Item Category";
-  }
-
-  if (kind === "subtype") {
-    return "Sub Category";
-  }
-
-  if (kind === "subcategory") {
-    return "Sub Category";
-  }
-
-  return "Item Category";
-}
-
-function createUnassignedRecord(): ItemSetupRecord {
-  return {
-    id: ItemCategoryUnassignedRecordId,
-    code: "UNASSIGNED",
-    name: "Unassigned",
-    description: "Records waiting for category assignment.",
-    allowSubCategory: true,
-    status: "Active",
-  };
+function useSetupRecordsByKind(records: ItemSetupRecord[]) {
+	return useMemo(
+		() => ({
+			category: records,
+			subcategory: [],
+			type: [],
+			subtype: [],
+		}) satisfies Record<ItemSetupKind, ItemSetupRecord[]>,
+		[records],
+	);
 }

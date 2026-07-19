@@ -25,10 +25,8 @@ export function usePaymentTypeActionPage({
 	mode: PaymentTypeActionMode;
 	onSaved: () => void;
 }) {
-	const addPaymentType = usePaymentTypeStore((state) => state.addPaymentType);
-	const paymentTypes = usePaymentTypeStore((state) => state.paymentTypes);
-	const updatePaymentType = usePaymentTypeStore((state) => state.updatePaymentType);
-	const isMutating = usePaymentTypeStore((state) => state.isMutating);
+	const { addPaymentType, isMutating, paymentTypes, updatePaymentType } =
+		usePaymentTypeStore();
 	const isReadonly = mode === "view";
 	const [values, setValues] = useState<PaymentTypeFormValues>(() =>
 		existingPaymentType

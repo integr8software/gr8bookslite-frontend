@@ -74,6 +74,7 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
 		queryKey: DefaultAccountQueryKeys.list(companyId),
 		queryFn: fetchDefaultAccounts,
 		enabled: Boolean(companyId),
+		retry: false,
 	});
 	const refreshDefaultAccounts = useCallback(() => {
 		void queryClient.invalidateQueries({

@@ -10,6 +10,7 @@ export function useTaxMaintenanceOptions() {
   const query = useQuery({
     queryKey: TaxMaintenanceQueryKeys.list(),
     queryFn: fetchTaxMaintenance,
+    retry: false,
   });
 
   return useMemo(

@@ -11,22 +11,18 @@ import type {
 } from "@/app/src/types/modules/maintenance/discount-management/DiscountManagementTypes";
 
 export function useDiscountManagementListPage() {
-	const discounts = useDiscountManagementStore((state) => state.discounts);
-	const addDiscounts = useDiscountManagementStore((state) => state.addDiscounts);
-	const updateDiscount = useDiscountManagementStore(
-		(state) => state.updateDiscount,
-	);
-	const isLoading = useDiscountManagementStore((state) => state.isLoading);
-	const isRefreshing = useDiscountManagementStore(
-		(state) => state.isRefreshing,
-	);
-	const lastSyncedAt = useDiscountManagementStore((state) => state.lastSyncedAt);
-	const isMutating = useDiscountManagementStore((state) => state.isMutating);
-	const permissions = useDiscountManagementStore((state) => state.permissions);
-	const statistics = useDiscountManagementStore((state) => state.statistics);
-	const refreshDiscounts = useDiscountManagementStore(
-		(state) => state.refreshDiscounts,
-	);
+	const {
+		addDiscounts,
+		discounts,
+		isLoading,
+		isMutating,
+		isRefreshing,
+		lastSyncedAt,
+		permissions,
+		refreshDiscounts,
+		statistics,
+		updateDiscount,
+	} = useDiscountManagementStore();
 	const [typeFilter, setTypeFilter] = useState<DiscountTypeFilter>("All");
 	const [discountTypeFilter, setDiscountTypeFilter] =
 		useState<DiscountValueTypeFilter>("All");

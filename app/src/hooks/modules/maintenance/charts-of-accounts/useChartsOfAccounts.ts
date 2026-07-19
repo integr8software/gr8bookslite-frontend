@@ -60,6 +60,7 @@ export function useChartsOfAccounts() {
     queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
     queryFn: FetchChartAccountsTree,
     enabled: Boolean(companyId),
+    retry: false,
   });
   const {
     columnOrder,

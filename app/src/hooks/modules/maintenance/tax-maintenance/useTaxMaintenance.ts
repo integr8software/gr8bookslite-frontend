@@ -40,6 +40,7 @@ export function useTaxMaintenance() {
   const taxQuery = useQuery({
     queryKey: TaxMaintenanceQueryKeys.list(),
     queryFn: fetchTaxMaintenance,
+    retry: false,
   });
   const refresh = useCallback(() => {
     void queryClient.invalidateQueries({

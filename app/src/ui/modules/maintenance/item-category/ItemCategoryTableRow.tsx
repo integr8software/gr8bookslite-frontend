@@ -1,15 +1,25 @@
 import { ChevronRight } from "lucide-react";
-import type { ItemCategoryTableRowData } from "@/app/src/types/modules/maintenance/item-category/ItemCategoryTypes";
+import type { Row } from "@tanstack/react-table";
+import type { ReactNode } from "react";
+import type {
+	ItemCategoryPermissions,
+	ItemCategoryTableRowData,
+} from "@/app/src/types/modules/maintenance/item-category/ItemCategoryTypes";
+import { formatDateTime } from "@/app/src/utils/date.util";
 import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	getColumnMetaClassName,
+	joinClasses,
+} from "@/app/src/ui/shared/module/module-table/utils";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 
 type ItemCategoryTableRowProps = {
 	expandedIds: Set<string>;
-	row: ItemCategoryTableRowData;
+	permissions: ItemCategoryPermissions;
+	row: Row<ItemCategoryTableRowData>;
 	onEditRecord: (row: ItemCategoryTableRowData) => void;
 	onStatusChange: (row: ItemCategoryTableRowData) => void;
 	onToggleExpanded: (recordId: string) => void;
@@ -19,8 +29,6 @@ type ItemCategoryTableRowProps = {
 const AccountingBadgeClassNames = {
 	Configured: "bg-emerald-50 text-emerald-700 ring-emerald-200",
 	Inherited: "bg-skyblue/12 text-darknavy ring-skyblue/25",
-	Override: "bg-citron/35 text-darknavy ring-citron/60",
-	"Not Set": "bg-slate-100 text-slate-600 ring-slate-200",
 } as const;
 
 export function ItemCategoryTableRow({
@@ -29,15 +37,64 @@ export function ItemCategoryTableRow({
 	onStatusChange,
 	onToggleExpanded,
 	onViewRecord,
+	permissions,
 	row,
 }: ItemCategoryTableRowProps) {
-	const { record } = row;
+	const rowData = row.original;
+	const { record } = rowData;
 	const isStatusLockedByParent =
-		row.hasInactiveAncestor && record.status === "Inactive";
+		Boolean(rowData.hasInactiveAncestor) && record.status === "Inactive";
 
 	return (
 		<tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
-			<td className="px-4 py-4">
+			{row.getVisibleCells().map((cell) => (
+				<ItemCategoryTableCell
+					key={cell.id}
+					className={getColumnMetaClassName(cell.column.columnDef.meta)}
+				>
+					<ItemCategoryCellContent
+						columnId={cell.column.id}
+						expandedIds={expandedIds}
+						isStatusLockedByParent={isStatusLockedByParent}
+						permissions={permissions}
+						row={rowData}
+						onEditRecord={onEditRecord}
+						onStatusChange={onStatusChange}
+						onToggleExpanded={onToggleExpanded}
+						onViewRecord={onViewRecord}
+					/>
+				</ItemCategoryTableCell>
+			))}
+		</tr>
+	);
+}
+
+function ItemCategoryCellContent({
+	columnId,
+	expandedIds,
+	isStatusLockedByParent,
+	onEditRecord,
+	onStatusChange,
+	onToggleExpanded,
+	onViewRecord,
+	permissions,
+	row,
+}: {
+	columnId: string;
+	expandedIds: Set<string>;
+	isStatusLockedByParent: boolean;
+	permissions: ItemCategoryPermissions;
+	row: ItemCategoryTableRowData;
+	onEditRecord: (row: ItemCategoryTableRowData) => void;
+	onStatusChange: (row: ItemCategoryTableRowData) => void;
+	onToggleExpanded: (recordId: string) => void;
+	onViewRecord: (row: ItemCategoryTableRowData) => void;
+}) {
+	const { record } = row;
+
+	switch (columnId) {
+		case "name":
+			return (
 				<div className="flex items-center gap-2">
 					{row.level > 0 ? (
 						<div className="flex self-stretch" aria-hidden="true">
@@ -78,7 +135,7 @@ export function ItemCategoryTableRow({
 							aria-hidden="true"
 						/>
 					</button>
-					<div className="min-w-0">
+					<div className="min-w-0 text-left">
 						<div className="font-medium">
 							{record.name}
 						</div>
@@ -93,15 +150,15 @@ export function ItemCategoryTableRow({
 						) : null}
 					</div>
 				</div>
-			</td>
-			<td className="px-4 py-4 text-sm text-darknavy/65">
-				{row.parentName}
-			</td>
-			<td className="px-4 py-4">
-				<div className="grid gap-1">
+			);
+		case "parentName":
+			return <span className="text-darknavy/65">{row.parentName}</span>;
+		case "accountingSetupStatus":
+			return (
+				<div className="grid justify-items-center gap-1">
 					<span
 						className={joinClasses(
-							"inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ring-1",
+							"inline-flex rounded-full px-3 py-1 text-xs font-semibold ring-1",
 							AccountingBadgeClassNames[row.accountingSetupStatus],
 						)}
 					>
@@ -109,48 +166,84 @@ export function ItemCategoryTableRow({
 					</span>
 					{row.accountingSetupStatus === "Inherited" &&
 					row.inheritedAccountingSourceName ? (
-						<span className="text-xs text-darknavy/50">
-							From {row.inheritedAccountingSourceName}
+						<span className="max-w-[9rem] text-xs text-darknavy/50">
+							{row.inheritedAccountingSourceName}
 						</span>
 					) : null}
 				</div>
-			</td>
-			<td className="px-4 py-4 text-center">
-				<ModuleStatusBadge status={record.status} />
-			</td>
-			<td className="px-4 py-4 text-center">
-				{row.isVirtual ? null : (
-					<ModuleTableActions className="justify-center">
+			);
+		case "status":
+			return <ModuleStatusBadge status={record.status} />;
+		case "createdBy":
+			return <span>{record.createdBy ?? ""}</span>;
+		case "createdAt":
+			return (
+				<span>{formatDateTime(record.createdAt, { emptyValue: "" })}</span>
+			);
+		case "updatedBy":
+			return <span>{record.updatedBy ?? ""}</span>;
+		case "updatedAt":
+			return (
+				<span>{formatDateTime(record.updatedAt, { emptyValue: "" })}</span>
+			);
+		case "actions":
+			return row.isVirtual ? null : (
+				<ModuleTableActions className="w-full justify-center">
+					{permissions.canView ? (
 						<ModuleTableActionButton
 							variant="view"
 							onClick={() => onViewRecord(row)}
 							label={`View ${record.name}`}
 						/>
-						<ModuleTableActionButton
-							variant="edit"
-							onClick={() => onEditRecord(row)}
-							label={`Edit ${record.name}`}
-						/>
-						<ModuleTableActionButton
-							variant={record.status === "Active" ? "inactive" : "active"}
-							disabled={isStatusLockedByParent}
-							onClick={() => onStatusChange(row)}
-							label={
-								isStatusLockedByParent
-									? `Reactivate a parent category before reactivating ${record.name}`
-									: record.status === "Active"
-									? `Set ${record.name} inactive`
-									: `Reactivate ${record.name}`
-							}
-							title={
-								isStatusLockedByParent
-									? "Reactivate the parent category first."
-									: undefined
-							}
-						/>
-					</ModuleTableActions>
-				)}
-			</td>
-		</tr>
+					) : null}
+					{permissions.canUpdate ? (
+						<>
+							<ModuleTableActionButton
+								variant="edit"
+								onClick={() => onEditRecord(row)}
+								label={`Edit ${record.name}`}
+							/>
+							<ModuleTableActionButton
+								variant={record.status === "Active" ? "inactive" : "active"}
+								disabled={isStatusLockedByParent}
+								onClick={() => onStatusChange(row)}
+								label={
+									isStatusLockedByParent
+										? `Reactivate a parent category before reactivating ${record.name}`
+										: record.status === "Active"
+											? `Set ${record.name} inactive`
+											: `Reactivate ${record.name}`
+								}
+								title={
+									isStatusLockedByParent
+										? "Reactivate the parent category first."
+										: undefined
+								}
+							/>
+						</>
+					) : null}
+				</ModuleTableActions>
+			);
+		default:
+			return null;
+	}
+}
+
+function ItemCategoryTableCell({
+	children,
+	className,
+}: {
+	children: ReactNode;
+	className?: string;
+}) {
+	return (
+		<td
+			className={joinClasses(
+				"px-4 py-4 align-middle text-sm text-darknavy",
+				className,
+			)}
+		>
+			{children}
+		</td>
 	);
 }

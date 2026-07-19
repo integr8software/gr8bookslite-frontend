@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Table } from "@tanstack/react-table";
 import type { useItemsListPage } from "@/app/src/hooks/modules/maintenance/items/useItemsListPage";
 
 export type ItemStatus = "Active" | "Inactive";
@@ -16,18 +17,20 @@ export type ItemPerishability = "Perishable" | "Non Perishable";
 
 export type ItemCategoryAccountingSetupStatus =
 	| "Configured"
-	| "Inherited"
-	| "Override"
-	| "Not Set";
+	| "Inherited";
 
-export type ItemCategoryAccountingSetupMode = "inherit" | "notSet" | "own";
+export type ItemCategoryAccountingSetupStatusFilter =
+	| ""
+	| ItemCategoryAccountingSetupStatus;
+
+export type ItemCategoryStatusFilter = "" | ItemStatus;
+
+export type ItemCategoryAccountingSetupMode = "inherit" | "own";
 
 export type ItemCategoryAccountingSetup = {
 	inventoryAccount: string;
 	salesAccount: string;
 	costOfSalesAccount: string;
-	discountAccount: string;
-	purchaseAccount: string;
 	expenseAccount: string;
 };
 
@@ -43,6 +46,10 @@ export type ItemSetupRecord = {
 	parentInactiveSourceIds?: string[];
 	statusBeforeParentInactive?: ItemStatus;
 	status: ItemStatus;
+	createdBy?: string;
+	createdAt?: string;
+	updatedBy?: string;
+	updatedAt?: string;
 };
 
 export type ItemBundleComponent = {
@@ -272,7 +279,11 @@ export type ItemCategoryTableColumnKey =
 	| "name"
 	| "parentName"
 	| "accountingSetupStatus"
-	| "status";
+	| "status"
+	| "createdBy"
+	| "createdAt"
+	| "updatedBy"
+	| "updatedAt";
 
 export type ItemCategoryTableRowData = {
 	id: string;
@@ -290,4 +301,53 @@ export type ItemCategoryTableRowData = {
 	inheritedAccountingSourceName?: string;
 	isVirtual?: boolean;
 	usedByItemCount: number;
+};
+
+export type ItemCategoryPermissions = {
+	canView: boolean;
+	canCreate: boolean;
+	canUpdate: boolean;
+	canExport: boolean;
+};
+
+export type ItemCategoryTableProps = {
+	accountingFilter: ItemCategoryAccountingSetupStatusFilter;
+	allRows: ItemCategoryTableRowData[];
+	expandedIds: Set<string>;
+	filteredRows: ItemCategoryTableRowData[];
+	hasActiveFilters: boolean;
+	isLoading: boolean;
+	isRefreshing: boolean;
+	lastSyncedAt?: number | string | Date | null;
+	permissions: ItemCategoryPermissions;
+	query: string;
+	statusFilter: ItemCategoryStatusFilter;
+	onAccountingFilterChange: (
+		value: ItemCategoryAccountingSetupStatusFilter,
+	) => void;
+	onEditRecord: (row: ItemCategoryTableRowData) => void;
+	onQueryChange: (value: string) => void;
+	onRefresh: () => void;
+	onStatusChange: (row: ItemCategoryTableRowData) => void;
+	onStatusFilterChange: (value: ItemCategoryStatusFilter) => void;
+	onToggleExpanded: (recordId: string) => void;
+	onViewRecord: (row: ItemCategoryTableRowData) => void;
+};
+
+export type ItemCategoryTableFiltersProps = {
+	accountingFilter: ItemCategoryAccountingSetupStatusFilter;
+	exportAllRows: ItemCategoryTableRowData[];
+	exportFilteredRows: ItemCategoryTableRowData[];
+	hasActiveFilters: boolean;
+	isRefreshing: boolean;
+	permissions: ItemCategoryPermissions;
+	query: string;
+	statusFilter: ItemCategoryStatusFilter;
+	table: Table<ItemCategoryTableRowData>;
+	onAccountingFilterChange: (
+		value: ItemCategoryAccountingSetupStatusFilter,
+	) => void;
+	onQueryChange: (value: string) => void;
+	onRefresh: () => void;
+	onStatusFilterChange: (value: ItemCategoryStatusFilter) => void;
 };

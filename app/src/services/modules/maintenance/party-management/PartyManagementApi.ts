@@ -10,6 +10,7 @@ import type {
 	ApiPartyClassification,
 	ApiPartyImportResponse,
 	ApiPartyListResponse,
+	ApiPartyOptionsResponse,
 	ApiPartyPayload,
 	ApiPartySaveResponse,
 	ApiPartyStatus,
@@ -26,6 +27,7 @@ import type {
 	PartyType,
 	VatRegistrationType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import type { ItemSupplierRecord } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
 
 const EmptyPartyStatistics: PartyManagementStatistics = {
 	activeParties: 0,
@@ -116,6 +118,23 @@ export async function fetchPartyManagementAccountingOptions() {
 	);
 
 	return response.data;
+}
+
+export async function fetchPartyOptions(
+	partyType: PartyType,
+): Promise<ItemSupplierRecord[]> {
+	const response = await ApiClient.get<ApiPartyOptionsResponse>(
+		`${PartyManagementApiPath}/options/${mapPartyTypeToApi(partyType)}`,
+	);
+
+	return response.data.parties.map((party) => ({
+		id: party.id,
+		code: party.partyCodeNo,
+		name: party.name,
+		contactPerson: party.name,
+		contactDetails: party.email || party.contactNo,
+		status: mapStatusFromApi(party.status),
+	}));
 }
 
 export async function GetPartyManagementRecordsPage({

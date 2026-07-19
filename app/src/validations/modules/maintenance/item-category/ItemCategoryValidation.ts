@@ -12,31 +12,121 @@ export const ItemCategoryAccountingSetupValidationSchema = z.object({
 		.string()
 		.trim()
 		.min(1, "Select a cost of sales account."),
-	discountAccount: z
-		.string()
-		.trim()
-		.min(1, "Select a discount account."),
-	purchaseAccount: z.string().trim().min(1, "Select a purchase account."),
 	expenseAccount: z.string().trim().min(1, "Select an expense account."),
 });
 
-export const ItemCategoryFormValidationSchema = z
+const ItemCategoryAccountingSetupInputSchema = z.object({
+	inventoryAccount: z.string(),
+	salesAccount: z.string(),
+	costOfSalesAccount: z.string(),
+	expenseAccount: z.string(),
+});
+
+const ItemCategoryBaseFormValidationSchema = z
 	.object({
-		name: z.string().trim().min(1, "Enter a category name."),
-		parentId: z.string(),
+		name: z
+			.string()
+			.trim()
+			.min(1, "Enter a category name.")
+			.max(120, "Category name must be 120 characters or fewer."),
+		parentId: z.string().trim(),
 		description: z
 			.string()
 			.trim()
-			.max(500, "Description must be 500 characters or fewer.")
-			.optional(),
-		accountingSetupMode: z.enum(["inherit", "notSet", "own"]),
-		accountingSetup: ItemCategoryAccountingSetupValidationSchema,
+			.max(500, "Description must be 500 characters or fewer."),
+		accountingSetupMode: z.enum(["inherit", "own"], {
+			message: "Choose how accounting accounts are assigned.",
+		}),
+		accountingSetup: ItemCategoryAccountingSetupInputSchema,
 		allowSubCategory: z.boolean(),
 		status: z.enum(["Active", "Inactive"], {
 			message: "Select a status.",
 		}),
-	})
-	.superRefine((values, context) => {
+	});
+
+export function createItemCategoryFormValidationSchema({
+	recordId,
+	records,
+}: {
+	recordId?: string;
+	records: ItemSetupRecord[];
+}) {
+	return ItemCategoryBaseFormValidationSchema.superRefine((values, context) => {
+		const currentRecord = recordId
+			? records.find((record) => record.id === recordId)
+			: undefined;
+		const isKeepingCurrentParent =
+			(currentRecord?.parentIds?.[0] ?? "") === values.parentId;
+
+		if (!values.parentId && values.accountingSetupMode === "inherit") {
+			context.addIssue({
+				code: "custom",
+				message: "Root categories must auto-create item accounts.",
+				path: ["accountingSetupMode"],
+			});
+		}
+
+		if (values.parentId) {
+			const parentRecord = records.find((record) => record.id === values.parentId);
+
+			if (recordId === values.parentId) {
+				context.addIssue({
+					code: "custom",
+					message: "A category cannot be its own parent.",
+					path: ["parentId"],
+				});
+			} else if (
+				recordId &&
+				isCircularParentSelection({
+					parentId: values.parentId,
+					recordId,
+					records,
+				})
+			) {
+				context.addIssue({
+					code: "custom",
+					message: "Choose a parent outside this category branch.",
+					path: ["parentId"],
+				});
+			} else if (!parentRecord) {
+				context.addIssue({
+					code: "custom",
+					message: "Choose an existing parent category.",
+					path: ["parentId"],
+				});
+			} else if (!isKeepingCurrentParent && parentRecord.status !== "Active") {
+				context.addIssue({
+					code: "custom",
+					message: "Choose an active parent category.",
+					path: ["parentId"],
+				});
+			} else if (
+				!isKeepingCurrentParent &&
+				parentRecord.allowSubCategory === false
+			) {
+				context.addIssue({
+					code: "custom",
+					message: "This parent does not allow subcategories.",
+					path: ["parentId"],
+				});
+			}
+		}
+
+		if (
+			hasDuplicateCategoryName({
+				name: values.name,
+				parentId: values.parentId,
+				recordId,
+				records,
+			})
+		) {
+			context.addIssue({
+				code: "custom",
+				message: "A category with this name already exists under this parent.",
+				path: ["name"],
+			});
+		}
+
 		if (values.accountingSetupMode !== "own") {
 			return;
 		}
@@ -57,6 +147,7 @@ export const ItemCategoryFormValidationSchema = z
 			});
 		});
 	});
+}
 
 export function validateItemCategoryForm(
 	values: ItemCategoryFormValues,
@@ -65,36 +156,56 @@ export function validateItemCategoryForm(
 		records: ItemSetupRecord[];
 	} = { records: [] },
 ) {
-	const result = ItemCategoryFormValidationSchema.safeParse(values);
+	const result = createItemCategoryFormValidationSchema(options).safeParse(
+		values,
+	);
 	const errors: ItemCategoryFormErrors = {};
 
 	if (!result.success) {
-		result.error.issues.forEach((issue) => {
+		for (const issue of result.error.issues) {
 			const field = issue.path[0] as keyof ItemCategoryFormErrors | undefined;
 
-			if (field) {
+			if (field && !errors[field]) {
 				errors[field] = issue.message;
 			}
-		});
-	}
-
-	if (values.parentId && options.recordId === values.parentId) {
-		errors.parentId = "A category cannot be its own parent.";
-	}
-
-	if (
-		values.parentId &&
-		options.recordId &&
-		isCircularParentSelection({
-			parentId: values.parentId,
-			recordId: options.recordId,
-			records: options.records,
-		})
-	) {
-		errors.parentId = "Choose a parent outside this category branch.";
+		}
 	}
 
 	return errors;
+}
+
+function hasDuplicateCategoryName({
+	name,
+	parentId,
+	recordId,
+	records,
+}: {
+	name: string;
+	parentId: string;
+	recordId?: string;
+	records: ItemSetupRecord[];
+}) {
+	const normalizedName = normalizeComparableValue(name);
+	const normalizedParentId = parentId.trim();
+
+	if (!normalizedName) {
+		return false;
+	}
+
+	return records.some((record) => {
+		if (record.id === recordId) {
+			return false;
+		}
+
+		return (
+			normalizeComparableValue(record.name) === normalizedName &&
+			(record.parentIds?.[0] ?? "") === normalizedParentId
+		);
+	});
+}
+
+function normalizeComparableValue(value: string) {
+	return value.trim().toLowerCase();
 }
 
 function isCircularParentSelection({

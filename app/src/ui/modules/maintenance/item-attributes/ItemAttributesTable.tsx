@@ -7,6 +7,11 @@ import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable
 import { ItemAttributesTableRow } from "@/app/src/ui/modules/maintenance/item-attributes/ItemAttributesTableRow";
 
 export function ItemAttributesTable({
+	emptyDescription,
+	emptyTitle,
+	isLoading,
+	isRefreshing,
+	lastSyncedAt,
 	table,
 	toolbar,
 	onEdit,
@@ -15,9 +20,15 @@ export function ItemAttributesTable({
 }: ItemAttributesTableProps) {
 	return (
 		<ModuleTable
-			emptyDescription="Add an item attribute to start maintaining reusable item values."
+			emptyDescription={
+				emptyDescription ??
+				"Add an item attribute to start maintaining reusable item values."
+			}
 			emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-			emptyTitle="No item attributes found"
+			emptyTitle={emptyTitle ?? "No item attributes found"}
+			isLoading={isLoading}
+			isSyncing={isRefreshing}
+			lastSyncedAt={lastSyncedAt}
 			minWidthClassName="min-w-[64rem]"
 			paginationStorageKey={ItemAttributesPaginationStorageKey}
 			table={table}

@@ -299,6 +299,13 @@ const ItemCategorySampleTree: ItemCategoryTreeNode[] = [
 	{ name: "Other Products" },
 ];
 
+const ItemCategorySeedAudit = {
+	createdAt: "2026-01-01T08:00:00.000Z",
+	createdBy: "System Seeder",
+	updatedAt: "2026-01-01T08:00:00.000Z",
+	updatedBy: "System Seeder",
+} as const;
+
 export const MockItemSetupRecords: Record<ItemSetupKind, ItemSetupRecord[]> = {
 	category: createItemCategorySampleRecords(ItemCategorySampleTree),
 	subcategory: [],
@@ -319,10 +326,11 @@ function createItemCategorySampleRecords(
 			code: createItemCategoryCode(node.name),
 			name: node.name,
 			description: `Product category for ${node.name}.`,
-			accountingSetupMode: parentId ? "inherit" : "notSet",
+			accountingSetupMode: parentId ? "inherit" : "own",
 			parentIds: parentId ? [parentId] : [],
 			allowSubCategory: true,
 			status: "Active",
+			...ItemCategorySeedAudit,
 		};
 
 		return [
@@ -746,8 +754,8 @@ export const ItemCategoryInitialFormValues: ItemCategoryFormValues =
 		name: "",
 		parentId: "",
 		description: "",
-		accountingSetupMode: "inherit",
-		accountingSetup: ItemCategorySystemDefaultAccountingSetup,
+		accountingSetupMode: "own",
+		accountingSetup: createItemCategoryGeneratedAccountingSetup(""),
 		allowSubCategory: true,
 		status: "Active",
 	};
@@ -896,18 +904,25 @@ export function createItemCategoryFormValues(
 export function createItemCategoryRecord(
 	values: ItemCategoryFormValues,
 ): ItemSetupRecord {
+	const name = values.name.trim();
+	const createdAt = new Date().toISOString();
+
 	return {
 		id: `item-category-${Date.now()}`,
-		code: createItemCategoryCode(values.name),
-		name: values.name.trim(),
+		code: createItemCategoryCode(name),
+		name,
 		description: values.description.trim(),
 		parentIds: values.parentId ? [values.parentId] : [],
 		accountingSetupMode: values.accountingSetupMode,
 		accountingSetup: values.accountingSetupMode === "own"
-			? values.accountingSetup
+			? createItemCategoryGeneratedAccountingSetup(name)
 			: undefined,
 		allowSubCategory: values.allowSubCategory,
 		status: values.status,
+		createdAt,
+		createdBy: "Current User",
+		updatedAt: createdAt,
+		updatedBy: "Current User",
 	};
 }
 
@@ -915,17 +930,21 @@ export function updateItemCategoryRecord(
 	record: ItemSetupRecord,
 	values: ItemCategoryFormValues,
 ): ItemSetupRecord {
+	const name = values.name.trim();
+
 	return {
 		...record,
-		name: values.name.trim(),
+		name,
 		description: values.description.trim(),
 		parentIds: values.parentId ? [values.parentId] : [],
 		accountingSetupMode: values.accountingSetupMode,
 		accountingSetup: values.accountingSetupMode === "own"
-			? values.accountingSetup
+			? createItemCategoryGeneratedAccountingSetup(name)
 			: undefined,
 		allowSubCategory: values.allowSubCategory,
 		status: values.status,
+		updatedAt: new Date().toISOString(),
+		updatedBy: "Current User",
 	};
 }
 
@@ -943,7 +962,13 @@ export function getItemCategoryAccountingSetupMode(
 	record: Pick<ItemSetupRecord, "accountingSetup" | "accountingSetupMode">,
 ): ItemCategoryAccountingSetupMode {
 	if (record.accountingSetupMode) {
-		return record.accountingSetupMode;
+		const accountingSetupMode = record.accountingSetupMode as
+			| ItemCategoryAccountingSetupMode
+			| "notSet";
+
+		return accountingSetupMode === "notSet"
+			? "inherit"
+			: accountingSetupMode;
 	}
 
 	return hasItemCategoryAccountingSetup(record.accountingSetup)
@@ -957,6 +982,19 @@ export function normalizeItemCategoryAccountingSetup(
 	return {
 		...ItemCategorySystemDefaultAccountingSetup,
 		...accountingSetup,
+	};
+}
+
+export function createItemCategoryGeneratedAccountingSetup(
+	categoryName: string,
+): ItemCategoryAccountingSetup {
+	const accountName = categoryName.trim() || "New Category";
+
+	return {
+		inventoryAccount: `Inventory - ${accountName}`,
+		salesAccount: `Sales - ${accountName}`,
+		costOfSalesAccount: `Cost of Sales - ${accountName}`,
+		expenseAccount: `Expense - ${accountName}`,
 	};
 }
 

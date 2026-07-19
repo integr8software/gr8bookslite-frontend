@@ -1,10 +1,6 @@
 import { useState, type ChangeEventHandler, type ReactNode } from "react";
 import { Info } from "lucide-react";
-import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import {
-	ItemCategorySystemDefaultAccountingSetup,
-	ItemStatusOptions,
-} from "@/app/src/constants/modules/maintenance/item-category/ItemCategoryConstants";
+import { ItemStatusOptions } from "@/app/src/constants/modules/maintenance/item-category/ItemCategoryConstants";
 import type {
 	ItemCategoryAccountingSetup,
 	ItemCategoryAccountingSetupMode,
@@ -16,9 +12,9 @@ import {
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 
 type ItemCategoryParentOption = {
+	accountingSetup?: ItemCategoryAccountingSetup;
 	id: string;
 	kindLabel: string;
 	label: string;
@@ -30,10 +26,6 @@ type ItemCategoryFieldsProps = {
 	isReadonly: boolean;
 	parentOptions: ItemCategoryParentOption[];
 	values: ItemCategoryFormValues;
-	onAccountingFieldChange: (
-		field: keyof ItemCategoryAccountingSetup,
-		value: string,
-	) => void;
 	onAccountingModeChange: (mode: ItemCategoryAccountingSetupMode) => void;
 	onInputChange: ChangeEventHandler<
 		HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -44,12 +36,24 @@ type ItemCategoryFieldsProps = {
 const AccountingFields: Array<{
 	key: keyof ItemCategoryAccountingSetup;
 	label: string;
+	parentAccount: string;
 }> = [
-	{ key: "inventoryAccount", label: "Inventory Account" },
-	{ key: "salesAccount", label: "Sales Account" },
-	{ key: "costOfSalesAccount", label: "Cost of Sales Account" },
-	{ key: "discountAccount", label: "Discount Account" },
-	{ key: "expenseAccount", label: "Expense Account" },
+	{
+		key: "inventoryAccount",
+		label: "Inventory Account",
+		parentAccount: "Item Inventories",
+	},
+	{ key: "salesAccount", label: "Sales Account", parentAccount: "Item Sales" },
+	{
+		key: "costOfSalesAccount",
+		label: "Cost of Sales Account",
+		parentAccount: "Item Cost of Sales",
+	},
+	{
+		key: "expenseAccount",
+		label: "Expense Account",
+		parentAccount: "Item Expenses",
+	},
 ];
 
 type ItemCategoryFormTab = "Basic Information" | "Accounting Setup";
@@ -62,14 +66,12 @@ const ItemCategoryFormTabs: ItemCategoryFormTab[] = [
 export function ItemCategoryFields({
 	errors,
 	isReadonly,
-	onAccountingFieldChange,
 	onAccountingModeChange,
 	onInputChange,
 	onParentChange,
 	parentOptions,
 	values,
 }: ItemCategoryFieldsProps) {
-	const isAccountingReadonly = isReadonly || values.accountingSetupMode !== "own";
 	const parentDropdownOptions: AppAdvancedDropdownOption[] = parentOptions.map(
 		(option) => ({
 			label: option.pathName,
@@ -79,6 +81,16 @@ export function ItemCategoryFields({
 	);
 	const [selectedTab, setSelectedTab] =
 		useState<ItemCategoryFormTab>("Basic Information");
+	const selectedParentName =
+		parentOptions.find((option) => option.id === values.parentId)?.label ??
+		"parent";
+	const inheritedAccountingSetup =
+		parentOptions.find((option) => option.id === values.parentId)
+			?.accountingSetup ?? values.accountingSetup;
+	const previewAccountingSetup =
+		values.accountingSetupMode === "inherit"
+			? inheritedAccountingSetup
+			: values.accountingSetup;
 
 	return (
 		<div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
@@ -100,7 +112,7 @@ export function ItemCategoryFields({
 						<FormField label="Parent Category" error={errors.parentId}>
 							<AppAdvancedDropdown
 								options={parentDropdownOptions}
-								placeholder=""
+								placeholder="No parent category"
 								readOnly={isReadonly}
 								searchPlaceholder="Search parent category"
 								showSelectionIndicator={false}
@@ -120,7 +132,7 @@ export function ItemCategoryFields({
 							/>
 						</FormField>
 						<div className="grid gap-4 lg:grid-cols-2">
-							<FormField label="Allow Sub Category">
+							<FormField label="Allow Subcategories">
 								<span className="flex min-h-11 items-center gap-3 rounded-md border border-darknavy/15 bg-white px-3 text-sm font-semibold text-darknavy">
 									<input
 										type="checkbox"
@@ -155,32 +167,24 @@ export function ItemCategoryFields({
 				{selectedTab === "Accounting Setup" ? (
 					<div>
 						<div className="flex flex-col gap-3 border-b border-darknavy/10 pb-4 sm:flex-row sm:items-start sm:justify-between">
-							<div>
-								<h3 className="text-base font-semibold text-darknavy">
-									Accounting Setup
-								</h3>
+							<div className="max-w-sm text-sm leading-6 text-darknavy/60">
+								Inherit parent accounts or auto-create item COA accounts.
 							</div>
 							<div
 								role="radiogroup"
 								aria-label="Accounting setup mode"
-								className="grid shrink-0 gap-2 sm:grid-cols-3"
+								className="grid shrink-0 gap-2 sm:grid-cols-2"
 							>
 								<AccountingModeOption
 									checked={values.accountingSetupMode === "inherit"}
-									disabled={isReadonly}
-									label="Inherit"
+									disabled={isReadonly || !values.parentId}
+									label="Inherit Parent"
 									onChange={() => onAccountingModeChange("inherit")}
-								/>
-								<AccountingModeOption
-									checked={values.accountingSetupMode === "notSet"}
-									disabled={isReadonly}
-									label="Not Set"
-									onChange={() => onAccountingModeChange("notSet")}
 								/>
 								<AccountingModeOption
 									checked={values.accountingSetupMode === "own"}
 									disabled={isReadonly}
-									label="Own Setup"
+									label="Auto-Create"
 									onChange={() => onAccountingModeChange("own")}
 								/>
 							</div>
@@ -190,24 +194,11 @@ export function ItemCategoryFields({
 							<div className="mt-4 flex gap-3 rounded-lg border border-skyblue/20 bg-skyblue/10 p-3 text-sm leading-6 text-darknavy/70">
 								<Info className="mt-0.5 h-4 w-4 shrink-0 text-skyblue" aria-hidden="true" />
 								<span>
-									Accounting fields are disabled. This category uses the nearest
-									parent setup, or system defaults when no parent setup exists. The
-									system default inventory account is{" "}
-									<strong>{ItemCategorySystemDefaultAccountingSetup.inventoryAccount}</strong>
-									.
+									This category uses the accounting setup from{" "}
+									<strong>{selectedParentName}</strong>.
 								</span>
 							</div>
 						) : null}
-						{values.accountingSetupMode === "notSet" ? (
-							<div className="mt-4 flex gap-3 rounded-lg border border-darknavy/10 bg-offwhite/70 p-3 text-sm leading-6 text-darknavy/70">
-								<Info className="mt-0.5 h-4 w-4 shrink-0 text-darknavy/45" aria-hidden="true" />
-								<span>
-									Accounting fields are disabled. This category has no accounting
-									setup and will not inherit a parent setup.
-								</span>
-							</div>
-						) : null}
-
 						<div className="mt-4 grid gap-4 lg:grid-cols-2">
 							{AccountingFields.map((field) => (
 								<FormField
@@ -216,19 +207,16 @@ export function ItemCategoryFields({
 									error={errors[field.key]}
 									required={values.accountingSetupMode === "own"}
 								>
-									<ChartAccountDropdown
-										accounts={getModuleChartAccounts({
-											moduleKey: "maintenance-item-category",
-											purpose: field.key,
-										})}
-										disabled={isAccountingReadonly}
-										placeholder=""
-										searchPlaceholder="Search account title"
-										showSelectionIndicator={false}
-										valueField="accountName"
-										value={values.accountingSetup[field.key]}
-										onChange={(value) => onAccountingFieldChange(field.key, value)}
-									/>
+									<div className="grid gap-2">
+										<input
+											value={previewAccountingSetup[field.key]}
+											readOnly
+											className={fieldClassName}
+										/>
+										<span className="text-xs font-medium text-darknavy/45">
+											Under {field.parentAccount}
+										</span>
+									</div>
 								</FormField>
 							))}
 						</div>

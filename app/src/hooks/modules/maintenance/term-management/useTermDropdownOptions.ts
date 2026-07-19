@@ -10,6 +10,7 @@ export function useTermDropdownOptions() {
 	const termsQuery = useQuery({
 		queryKey: TermManagementQueryKeys.terms(),
 		queryFn: fetchTerms,
+		retry: false,
 		staleTime: 5 * 60 * 1000,
 	});
 

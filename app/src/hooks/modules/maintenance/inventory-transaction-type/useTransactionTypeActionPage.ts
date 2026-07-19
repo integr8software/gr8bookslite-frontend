@@ -36,14 +36,12 @@ export function useTransactionTypeActionPage(
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
-	const transactionTypes = useTransactionTypeStore((state) => state.transactionTypes);
-	const addTransactionType = useTransactionTypeStore(
-		(state) => state.addTransactionType,
-	);
-	const updateTransactionType = useTransactionTypeStore(
-		(state) => state.updateTransactionType,
-	);
-	const isMutating = useTransactionTypeStore((state) => state.isMutating);
+	const {
+		addTransactionType,
+		isMutating,
+		transactionTypes,
+		updateTransactionType,
+	} = useTransactionTypeStore();
 	const mode = options.mode ?? getActionMode(pathname);
 	const existingTransactionType = options.existingTransactionType ?? transactionTypes.find(
 		(transactionType) => transactionType.id === params.recordId,

@@ -23,6 +23,7 @@ export function useItemPromotions<TSelected = ItemPromotionsStoreState>(
 		queryKey: ItemPromotionsQueryKeys.list(),
 		queryFn: async () => MockItemPromotions,
 		initialData: MockItemPromotions,
+		retry: false,
 	});
 
 	function updateCachedPromotions(

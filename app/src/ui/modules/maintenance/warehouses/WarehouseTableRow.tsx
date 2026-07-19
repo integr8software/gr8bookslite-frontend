@@ -1,41 +1,44 @@
 import type { WarehouseTableRowProps } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
 import { WarehouseRecordActions } from "@/app/src/ui/modules/maintenance/warehouses/WarehouseRecordActions";
+import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { formatDateTime } from "@/app/src/utils/date.util";
 
-export function WarehouseTableRow({
-	warehouse,
-	onDeleteWarehouse,
-	onEditWarehouse,
-}: WarehouseTableRowProps) {
-	return (
-		<tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
-			<td className="px-4 py-4 font-medium text-darknavy">{warehouse.code}</td>
-			<td className="px-4 py-4">
-				<div className="font-medium">{warehouse.name}</div>
-				<div className="text-xs text-darknavy/55">{warehouse.address}</div>
-			</td>
-			<td className="px-4 py-4">
-				{warehouse.availableBranchLabel}
-			</td>
-			<td className="px-4 py-4">{warehouse.managerName}</td>
-			<td className="px-4 py-4">{warehouse.totalItems}</td>
-			<td className="px-4 py-4">
-				{new Intl.NumberFormat("en-US", {
-					currency: "PHP",
-					style: "currency",
-				}).format(warehouse.inventoryValue)}
-			</td>
-			<td className="px-4 py-4 text-center">
-				<span className="inline-flex rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">
-					{warehouse.status}
-				</span>
-			</td>
-			<td className="px-4 py-4 text-center">
-				<WarehouseRecordActions
-					warehouse={warehouse}
-					onDeleteWarehouse={onDeleteWarehouse}
-					onEditWarehouse={onEditWarehouse}
-				/>
-			</td>
-		</tr>
-	);
+export function WarehouseTableRow({ warehouse, visibleColumnIds, onDeleteWarehouse, onEditWarehouse, onViewWarehouse }: WarehouseTableRowProps) {
+  return (
+    <tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
+      {visibleColumnIds.includes("code") ? <td className="px-4 py-4 font-medium text-darknavy">{warehouse.code}</td> : null}
+      {visibleColumnIds.includes("name") ? (
+        <td className="px-4 py-4">
+          <div className="font-medium">{warehouse.name}</div>
+        </td>
+      ) : null}
+      {visibleColumnIds.includes("description") ? <td className="px-4 py-4">{warehouse.description}</td> : null}
+      {visibleColumnIds.includes("address") ? <td className="px-4 py-4">{warehouse.address}</td> : null}
+      {visibleColumnIds.includes("availableBranchLabel") ? <td className="px-4 py-4">{warehouse.availableBranchLabel}</td> : null}
+      {visibleColumnIds.includes("managerName") ? <td className="px-4 py-4">{warehouse.managerName}</td> : null}
+      {visibleColumnIds.includes("createdBy") ? <td className="px-4 py-4">{warehouse.createdBy ?? ""}</td> : null}
+      {visibleColumnIds.includes("createdAt") ? (
+        <td className="px-4 py-4">{formatDateTime(warehouse.createdAt ?? undefined, { emptyValue: "", locale: "en-US" })}</td>
+      ) : null}
+      {visibleColumnIds.includes("updatedBy") ? <td className="px-4 py-4">{warehouse.updatedBy ?? ""}</td> : null}
+      {visibleColumnIds.includes("updatedAt") ? (
+        <td className="px-4 py-4">{formatDateTime(warehouse.updatedAt ?? undefined, { emptyValue: "", locale: "en-US" })}</td>
+      ) : null}
+      {visibleColumnIds.includes("status") ? (
+        <td className="px-4 py-4 text-center">
+          <ModuleStatusBadge status={warehouse.status} />
+        </td>
+      ) : null}
+      {visibleColumnIds.includes("actions") ? (
+        <td className="px-4 py-4 text-center">
+          <WarehouseRecordActions
+            warehouse={warehouse}
+            onDeleteWarehouse={onDeleteWarehouse}
+            onEditWarehouse={onEditWarehouse}
+            onViewWarehouse={onViewWarehouse}
+          />
+        </td>
+      ) : null}
+    </tr>
+  );
 }

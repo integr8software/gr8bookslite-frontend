@@ -46,8 +46,10 @@ type ItemManagementStoreState = {
 	) => void;
 	deleteSetupRecord: (kind: ItemSetupKind, recordId: string) => void;
 	isLoading: boolean;
+	isRefreshing: boolean;
 	lastSyncedAt: number;
 	isMutating: boolean;
+	refreshSetupRecords: () => void;
 };
 
 export function useItemManagementStore<TSelected = ItemManagementStoreState>(
@@ -58,47 +60,56 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 		queryKey: ItemManagementQueryKeys.items(),
 		queryFn: async () => MockItems,
 		initialData: MockItems,
+		retry: false,
 	});
 	const itemAttributesQuery = useQuery({
 		queryKey: ItemManagementQueryKeys.itemAttributes(),
 		queryFn: async () => MockItemAttributes,
 		initialData: MockItemAttributes,
+		retry: false,
 	});
 	const itemBundlesQuery = useQuery({
 		queryKey: ItemManagementQueryKeys.itemBundles(),
 		queryFn: async () => MockItemBundles,
 		initialData: MockItemBundles,
+		retry: false,
 	});
 	const itemSuppliersQuery = useQuery({
 		queryKey: ItemManagementQueryKeys.itemSuppliers(),
 		queryFn: async () => MockItemSuppliers,
 		initialData: MockItemSuppliers,
+		retry: false,
 	});
 	const priceListsQuery = useQuery({
 		queryKey: ItemManagementQueryKeys.priceLists(),
 		queryFn: async () => MockPriceLists,
 		initialData: MockPriceLists,
+		retry: false,
 	});
 	const setupQueries = {
 		category: useQuery({
 			queryKey: ItemManagementQueryKeys.setupRecords("category"),
 			queryFn: async () => MockItemSetupRecords.category,
 			initialData: MockItemSetupRecords.category,
+			retry: false,
 		}),
 		subcategory: useQuery({
 			queryKey: ItemManagementQueryKeys.setupRecords("subcategory"),
 			queryFn: async () => MockItemSetupRecords.subcategory,
 			initialData: MockItemSetupRecords.subcategory,
+			retry: false,
 		}),
 		type: useQuery({
 			queryKey: ItemManagementQueryKeys.setupRecords("type"),
 			queryFn: async () => MockItemSetupRecords.type,
 			initialData: MockItemSetupRecords.type,
+			retry: false,
 		}),
 		subtype: useQuery({
 			queryKey: ItemManagementQueryKeys.setupRecords("subtype"),
 			queryFn: async () => MockItemSetupRecords.subtype,
 			initialData: MockItemSetupRecords.subtype,
+			retry: false,
 		}),
 	};
 
@@ -388,6 +399,12 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 			setupQueries.subcategory.isLoading ||
 			setupQueries.type.isLoading ||
 			setupQueries.subtype.isLoading,
+		isRefreshing:
+			itemsQuery.isFetching ||
+			setupQueries.category.isFetching ||
+			setupQueries.subcategory.isFetching ||
+			setupQueries.type.isFetching ||
+			setupQueries.subtype.isFetching,
 		lastSyncedAt: Math.max(
 			itemsQuery.dataUpdatedAt,
 			itemAttributesQuery.dataUpdatedAt,
@@ -415,6 +432,18 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 			updateSetupMutation.isPending ||
 			updateSetupRecordsMutation.isPending ||
 			deleteSetupMutation.isPending,
+		refreshSetupRecords: () => {
+			void queryClient.invalidateQueries({
+				queryKey: ItemManagementQueryKeys.items(),
+			});
+			(["category", "subcategory", "type", "subtype"] as ItemSetupKind[]).forEach(
+				(kind) => {
+					void queryClient.invalidateQueries({
+						queryKey: ItemManagementQueryKeys.setupRecords(kind),
+					});
+				},
+			);
+		},
 	};
 
 	return selector ? selector(state) : (state as TSelected);

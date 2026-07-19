@@ -74,6 +74,7 @@ export function useBankMasterfileStore<TSelected = BankMasterfileStoreState>(
 		queryKey: BankMasterfileQueryKeys.banks(companyId),
 		queryFn: fetchBanks,
 		enabled: Boolean(companyId),
+		retry: false,
 	});
 	const nextAccountCodeQuery = useQuery({
 		queryKey: BankMasterfileQueryKeys.nextAccountCode(companyId),

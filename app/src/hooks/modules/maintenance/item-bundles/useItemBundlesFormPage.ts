@@ -45,6 +45,7 @@ export function useItemBundlesFormPage() {
 	const unitsOfMeasurementQuery = useQuery({
 		queryKey: UnitOfMeasurementQueryKeys.list(),
 		queryFn: fetchUnitsOfMeasurement,
+		retry: false,
 	});
 	const mode = getItemBundleMode(pathname);
 	const isReadonly = mode === "view";

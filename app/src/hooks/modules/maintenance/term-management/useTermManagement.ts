@@ -69,6 +69,7 @@ export function useTermManagementStore<TSelected = TermManagementStoreState>(
 	const termsQuery = useQuery({
 		queryKey: TermManagementQueryKeys.terms(),
 		queryFn: fetchTerms,
+		retry: false,
 	});
 	const refreshTerms = useCallback(() => {
 		void queryClient.invalidateQueries({

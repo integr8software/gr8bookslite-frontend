@@ -25,17 +25,13 @@ type BankMasterfileFormPageOptions = {
 export function useBankMasterfileFormPage(
 	options: BankMasterfileFormPageOptions = {},
 ) {
-	const addBank = useBankMasterfileStore((state) => state.addBank);
-	const updateBank = useBankMasterfileStore((state) => state.updateBank);
-	const nextAccountCode = useBankMasterfileStore(
-		(state) => state.nextAccountCode,
-	);
-	const isNextAccountCodeLoading = useBankMasterfileStore(
-		(state) => state.isNextAccountCodeLoading,
-	);
-	const refreshNextAccountCode = useBankMasterfileStore(
-		(state) => state.refreshNextAccountCode,
-	);
+	const {
+		addBank,
+		isNextAccountCodeLoading,
+		nextAccountCode,
+		refreshNextAccountCode,
+		updateBank,
+	} = useBankMasterfileStore();
 	const mode = options.mode ?? "add";
 	const existingBank = options.existingBank;
 	const isReadonly = mode === "view";

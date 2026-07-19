@@ -11,21 +11,19 @@ import type {
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 
 export function usePaymentTypeListPage() {
-	const paymentTypes = usePaymentTypeStore((state) => state.paymentTypes);
-	const addPaymentTypes = usePaymentTypeStore((state) => state.addPaymentTypes);
-	const updatePaymentType = usePaymentTypeStore((state) => state.updatePaymentType);
-	const reorderPaymentTypes = usePaymentTypeStore(
-		(state) => state.reorderPaymentTypes,
-	);
-	const isLoading = usePaymentTypeStore((state) => state.isLoading);
-	const isRefreshing = usePaymentTypeStore((state) => state.isRefreshing);
-	const lastSyncedAt = usePaymentTypeStore((state) => state.lastSyncedAt);
-	const isMutating = usePaymentTypeStore((state) => state.isMutating);
-	const permissions = usePaymentTypeStore((state) => state.permissions);
-	const refreshPaymentTypes = usePaymentTypeStore(
-		(state) => state.refreshPaymentTypes,
-	);
-	const statistics = usePaymentTypeStore((state) => state.statistics);
+	const {
+		addPaymentTypes,
+		isLoading,
+		isMutating,
+		isRefreshing,
+		lastSyncedAt,
+		paymentTypes,
+		permissions,
+		refreshPaymentTypes,
+		reorderPaymentTypes,
+		statistics,
+		updatePaymentType,
+	} = usePaymentTypeStore();
 	const [searchTerm, setSearchTerm] = useState("");
 	const [typeFilter, setTypeFilter] =
 		useState<PaymentTypeClassificationFilter>("");

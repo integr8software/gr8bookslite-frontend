@@ -10,16 +10,18 @@ import type {
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 
 export function useTermManagementListPage() {
-	const terms = useTermManagementStore((state) => state.terms);
-	const addTerms = useTermManagementStore((state) => state.addTerms);
-	const updateTerm = useTermManagementStore((state) => state.updateTerm);
-	const isLoading = useTermManagementStore((state) => state.isLoading);
-	const isRefreshing = useTermManagementStore((state) => state.isRefreshing);
-	const lastSyncedAt = useTermManagementStore((state) => state.lastSyncedAt);
-	const isMutating = useTermManagementStore((state) => state.isMutating);
-	const permissions = useTermManagementStore((state) => state.permissions);
-	const statistics = useTermManagementStore((state) => state.statistics);
-	const refreshTerms = useTermManagementStore((state) => state.refreshTerms);
+	const {
+		addTerms,
+		isLoading,
+		isMutating,
+		isRefreshing,
+		lastSyncedAt,
+		permissions,
+		refreshTerms,
+		statistics,
+		terms,
+		updateTerm,
+	} = useTermManagementStore();
 	const [datemodeFilter, setDatemodeFilter] =
 		useState<TermManagementDatemodeFilter>("All");
 	const [statusFilter, setStatusFilter] =

@@ -9,18 +9,18 @@ import type {
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 
 export function useBankMasterfileListPage() {
-	const banks = useBankMasterfileStore((state) => state.banks);
-	const addBanks = useBankMasterfileStore((state) => state.addBanks);
-	const updateBankStatus = useBankMasterfileStore(
-		(state) => state.updateBankStatus,
-	);
-	const isLoading = useBankMasterfileStore((state) => state.isLoading);
-	const isRefreshing = useBankMasterfileStore((state) => state.isRefreshing);
-	const lastSyncedAt = useBankMasterfileStore((state) => state.lastSyncedAt);
-	const isMutating = useBankMasterfileStore((state) => state.isMutating);
-	const permissions = useBankMasterfileStore((state) => state.permissions);
-	const statistics = useBankMasterfileStore((state) => state.statistics);
-	const refreshBanks = useBankMasterfileStore((state) => state.refreshBanks);
+	const {
+		addBanks,
+		banks,
+		isLoading,
+		isMutating,
+		isRefreshing,
+		lastSyncedAt,
+		permissions,
+		refreshBanks,
+		statistics,
+		updateBankStatus,
+	} = useBankMasterfileStore();
 	const [statusFilter, setStatusFilter] =
 		useState<BankMasterfileStatusFilter>("");
 	const [query, setQuery] = useState("");

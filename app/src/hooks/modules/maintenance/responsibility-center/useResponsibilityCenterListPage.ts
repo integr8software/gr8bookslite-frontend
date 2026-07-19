@@ -24,15 +24,17 @@ import type {
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 
 export function useResponsibilityCenterListPage() {
-  const centers = useResponsibilityCenterStore((state) => state.centers);
-  const updateCenterStatus = useResponsibilityCenterStore((state) => state.updateCenterStatus);
-  const isLoading = useResponsibilityCenterStore((state) => state.isLoading);
-  const isRefreshing = useResponsibilityCenterStore((state) => state.isRefreshing);
-  const lastSyncedAt = useResponsibilityCenterStore((state) => state.lastSyncedAt);
-  const isMutating = useResponsibilityCenterStore((state) => state.isMutating);
-  const permissions = useResponsibilityCenterStore((state) => state.permissions);
-  const refreshCenters = useResponsibilityCenterStore((state) => state.refreshCenters);
-  const statistics = useResponsibilityCenterStore((state) => state.statistics);
+  const {
+    centers,
+    isLoading,
+    isMutating,
+    isRefreshing,
+    lastSyncedAt,
+    permissions,
+    refreshCenters,
+    statistics,
+    updateCenterStatus,
+  } = useResponsibilityCenterStore();
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [financialTypeFilter, setFinancialTypeFilter] = useState("All");

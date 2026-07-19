@@ -65,14 +65,17 @@ export function useResponsibilityCenterStore<
 	const centersQuery = useQuery({
 		queryKey: ResponsibilityCenterQueryKeys.centers(),
 		queryFn: fetchResponsibilityCenters,
+		retry: false,
 	});
 	const classificationsQuery = useQuery({
 		queryKey: ResponsibilityCenterQueryKeys.classifications(),
 		queryFn: fetchResponsibilityCenterClassifications,
+		retry: false,
 	});
 	const typesQuery = useQuery({
 		queryKey: ResponsibilityCenterQueryKeys.types(),
 		queryFn: () => fetchResponsibilityCenterTypes(),
+		retry: false,
 	});
 	const centers = centersQuery.data?.centers ?? EmptyResponsibilityCenters;
 	const classifications =

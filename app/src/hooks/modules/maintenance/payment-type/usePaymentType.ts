@@ -74,6 +74,7 @@ export function usePaymentTypeStore<TSelected = PaymentTypeStoreState>(
 	const paymentTypesQuery = useQuery({
 		queryKey: PaymentTypeQueryKeys.paymentTypes(),
 		queryFn: () => fetchPaymentTypes(),
+		retry: false,
 	});
 	const refreshPaymentTypes = useCallback(() => {
 		void queryClient.invalidateQueries({

@@ -39,12 +39,8 @@ export function useDiscountManagementFormPage(
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
-	const discounts = useDiscountManagementStore((state) => state.discounts);
-	const addDiscount = useDiscountManagementStore((state) => state.addDiscount);
-	const updateDiscount = useDiscountManagementStore(
-		(state) => state.updateDiscount,
-	);
-	const isMutating = useDiscountManagementStore((state) => state.isMutating);
+	const { addDiscount, discounts, isMutating, updateDiscount } =
+		useDiscountManagementStore();
 	const mode = options.mode ?? getActionMode(pathname);
 	const existingDiscount = options.existingDiscount ?? discounts.find(
 		(discount) => discount.id === params.recordId,

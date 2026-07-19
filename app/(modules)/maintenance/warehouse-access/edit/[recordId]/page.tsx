@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { WarehouseAccessFormPage } from "@/app/src/ui/modules/maintenance/warehouse-access/WarehouseAccessFormPage";
+import { WarehouseAccessRecordFormPage } from "@/app/src/ui/modules/maintenance/warehouse-access/WarehouseAccessRecordFormPage";
 
 const PageTitle = "Edit Warehouse Access";
 
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function EditWarehouseAccessPage() {
-	return <WarehouseAccessFormPage />;
+	return <WarehouseAccessRecordFormPage />;
 }

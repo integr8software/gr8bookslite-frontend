@@ -7,15 +7,13 @@ import { TransactionTypeStatusOptions } from "@/app/src/constants/modules/mainte
 import type { TransactionType } from "@/app/src/types/modules/maintenance/inventory-transaction-type/TransactionTypeTypes";
 
 export function useTransactionTypeListPage() {
-	const transactionTypes = useTransactionTypeStore(
-		(state) => state.transactionTypes,
-	);
-	const updateTransactionType = useTransactionTypeStore(
-		(state) => state.updateTransactionType,
-	);
-	const isLoading = useTransactionTypeStore((state) => state.isLoading);
-	const lastSyncedAt = useTransactionTypeStore((state) => state.lastSyncedAt);
-	const isMutating = useTransactionTypeStore((state) => state.isMutating);
+	const {
+		isLoading,
+		isMutating,
+		lastSyncedAt,
+		transactionTypes,
+		updateTransactionType,
+	} = useTransactionTypeStore();
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState<
 		"" | (typeof TransactionTypeStatusOptions)[number]

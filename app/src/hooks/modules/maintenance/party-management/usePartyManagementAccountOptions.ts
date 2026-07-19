@@ -29,6 +29,7 @@ export function usePartyManagementAccountOptions() {
 	const query = useQuery({
 		queryKey: ["party-management", "accounting-options"],
 		queryFn: fetchPartyManagementAccountingOptions,
+		retry: false,
 		staleTime: 5 * 60 * 1000,
 	});
 

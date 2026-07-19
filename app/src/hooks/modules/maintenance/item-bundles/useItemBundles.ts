@@ -23,6 +23,7 @@ export function useItemBundles<TSelected = ItemBundlesStoreState>(
 		queryKey: ItemBundlesQueryKeys.list(),
 		queryFn: async () => MockItemBundles,
 		initialData: MockItemBundles,
+		retry: false,
 	});
 
 	function updateCachedBundles(

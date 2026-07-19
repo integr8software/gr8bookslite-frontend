@@ -91,6 +91,7 @@ export function usePartyManagementStore<
 	const recordsQuery = useQuery({
 		queryKey: PartyManagementQueryKeys.records(),
 		queryFn: fetchPartyManagementRecords,
+		retry: false,
 	});
 
 	const updateCachedRecords = useCallback(
@@ -315,6 +316,7 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 				records,
 			}),
 		placeholderData: (previousData) => previousData,
+		retry: false,
 	});
 	const pagedRecords = pageQuery.data ?? {
 		records: [],

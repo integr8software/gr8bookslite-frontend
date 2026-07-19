@@ -507,6 +507,21 @@ export type ApiParty = ApiPartyPayload & {
   updatedAt: string;
 };
 
+export type ApiPartyOption = {
+  id: string;
+  partyCodeNo: string;
+  classification: ApiPartyClassification;
+  partyTypes: ApiPartyType[];
+  name: string;
+  email: string;
+  contactNo: string;
+  status: ApiPartyStatus;
+};
+
+export type ApiPartyOptionsResponse = {
+  parties: ApiPartyOption[];
+};
+
 export type PartyVatRegistrationSummary = {
   id: string;
   name: string;

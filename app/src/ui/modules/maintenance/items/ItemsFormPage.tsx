@@ -1,13 +1,18 @@
 "use client";
 
 import { Package } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ItemsFormPageCopy } from "@/app/src/constants/modules/maintenance/items/ItemManagementConstants";
 import { useItemsFormPage } from "@/app/src/hooks/modules/maintenance/items/useItemsFormPage";
+import type {
+	ItemFormErrors,
+	ItemFormValues,
+} from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { useAppDialogFormSubmit } from "@/app/src/hooks/shared/app/useAppDialogFormSubmit";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { ItemActionButtons } from "@/app/src/ui/modules/maintenance/items/ItemActionButtons";
 import { ItemAttributesTable } from "@/app/src/ui/modules/maintenance/items/ItemAttributesTable";
 import {
@@ -22,10 +27,27 @@ import { ItemSuppliersTable } from "@/app/src/ui/modules/maintenance/items/ItemS
 
 const ItemsFormId = "items-form";
 
+type ItemFormTabId =
+	| "item-information"
+	| "attributes"
+	| "behavior"
+	| "pricing-tax"
+	| "price-lists"
+	| "inventory"
+	| "suppliers";
+
+type ItemFormTab = {
+	badge?: number;
+	content: ReactNode;
+	id: ItemFormTabId;
+	label: string;
+};
+
 export function ItemsFormPage() {
 	const page = useItemsFormPage();
 	const copy = ItemsFormPageCopy[page.mode];
 	const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+	const [activeTab, setActiveTab] = useState<ItemFormTabId>("item-information");
 	const {
 		closeDialog: closeSaveDialog,
 		isConfirmSubmitPending,
@@ -40,6 +62,135 @@ export function ItemsFormPage() {
 	if (page.needsRecord && !page.existingItem) {
 		return <ItemNotFound />;
 	}
+
+	const itemFieldsProps = {
+		categoryOptions: page.categoryOptions,
+		errors: page.errors,
+		isReadonly: page.isReadonly,
+		responsibilityCenterOptions: page.responsibilityCenterOptions,
+		statusOptions: page.statusOptions,
+		uomOptions: page.uomOptions,
+		values: page.values,
+		warehouseItemsHref: page.warehouseItemsHref,
+		warehouseOptions: page.warehouseOptions,
+		onAddTag: page.addTag,
+		onFieldChange: page.updateField,
+		onInputChange: page.handleInputChange,
+		onRemoveTag: page.removeTag,
+	};
+	const tabs: ItemFormTab[] = [
+		{
+			badge: countErrors(page.errors, [
+				"code",
+				"skuCode",
+				"name",
+				"model",
+				"externalReferenceCode",
+				"brand",
+				"barcode",
+				"primaryCategory",
+				"uom",
+				"responsibilityCenter",
+				"description",
+				"tags",
+			]),
+			content: <ItemInformationFields {...itemFieldsProps} />,
+			id: "item-information",
+			label: "Item Information",
+		},
+		{
+			badge: countErrors(page.errors, ["attributeAssignments"]),
+			content: (
+				<ItemAttributesTable
+					assignments={page.values.attributeAssignments}
+					attributes={page.attributeRecords}
+					isReadonly={page.isReadonly}
+					onAddAssignment={page.addAttributeAssignment}
+					onRemoveAssignment={page.removeAttributeAssignment}
+					onReorderAssignment={page.reorderAttributeAssignment}
+					onUpdateAssignment={page.updateAttributeAssignment}
+				/>
+			),
+			id: "attributes",
+			label: "Attributes",
+		},
+		{
+			badge: countErrors(page.errors, [
+				"perishability",
+				"sellable",
+				"purchasable",
+				"trackInventory",
+				"service",
+				"asset",
+				"hasVariants",
+				"lotTracking",
+				"serialTracking",
+				"status",
+			]),
+			content: <ItemBehaviorFields {...itemFieldsProps} />,
+			id: "behavior",
+			label: "Behavior",
+		},
+		{
+			badge: countErrors(page.errors, [
+				"costPrice",
+				"sellingPrice",
+				"taxTreatment",
+			]),
+			content: <ItemPricingTaxFields {...itemFieldsProps} />,
+			id: "pricing-tax",
+			label: "Pricing and Tax",
+		},
+		{
+			badge: countErrors(page.errors, ["priceListPrices"]),
+			content: (
+				<ItemPriceListsTable
+					isReadonly={page.isReadonly}
+					priceLists={page.priceLists}
+					values={page.values}
+					onUpdatePrice={page.updatePriceListPrice}
+				/>
+			),
+			id: "price-lists",
+			label: "Price Lists",
+		},
+		{
+			badge: countErrors(page.errors, [
+				"defaultWarehouse",
+				"defaultLocation",
+				"defaultZone",
+				"defaultRack",
+				"defaultShelf",
+				"defaultBin",
+				"defaultLotNo",
+				"leadTime",
+				"reorderLevel",
+				"minimumStock",
+				"maximumStock",
+			]),
+			content: <ItemInventoryFields {...itemFieldsProps} />,
+			id: "inventory",
+			label: "Inventory",
+		},
+		{
+			badge: countErrors(page.errors, ["suppliers"]),
+			content: (
+				<ItemSuppliersTable
+					error={page.errors.suppliers}
+					isReadonly={page.isReadonly}
+					supplierOptions={page.supplierOptions}
+					suppliers={page.values.suppliers}
+					onAddSupplier={page.addSupplier}
+					onReorderSupplier={page.reorderSupplier}
+					onRemoveSupplier={page.removeSupplier}
+					onUpdateSupplier={page.updateSupplier}
+				/>
+			),
+			id: "suppliers",
+			label: "Suppliers",
+		},
+	];
+	const activeTabContent = tabs.find((tab) => tab.id === activeTab)?.content;
 
 	return (
 		<>
@@ -76,97 +227,13 @@ export function ItemsFormPage() {
 					}
 				/>
 
-				<ItemInformationFields
-					categoryOptions={page.categoryOptions}
-					errors={page.errors}
-					isReadonly={page.isReadonly}
-					responsibilityCenterOptions={page.responsibilityCenterOptions}
-					statusOptions={page.statusOptions}
-					uomOptions={page.uomOptions}
-					values={page.values}
-					warehouseItemsHref={page.warehouseItemsHref}
-					warehouseOptions={page.warehouseOptions}
-					onAddTag={page.addTag}
-					onFieldChange={page.updateField}
-					onInputChange={page.handleInputChange}
-					onRemoveTag={page.removeTag}
+				<ModuleTabs
+					activeTab={activeTab}
+					ariaLabel="Item setup sections"
+					tabs={tabs}
+					onTabChange={setActiveTab}
 				/>
-
-				<ItemAttributesTable
-					assignments={page.values.attributeAssignments}
-					attributes={page.attributeRecords}
-					isReadonly={page.isReadonly}
-					onAddAssignment={page.addAttributeAssignment}
-					onRemoveAssignment={page.removeAttributeAssignment}
-					onReorderAssignment={page.reorderAttributeAssignment}
-					onUpdateAssignment={page.updateAttributeAssignment}
-				/>
-
-				<ItemBehaviorFields
-					categoryOptions={page.categoryOptions}
-					errors={page.errors}
-					isReadonly={page.isReadonly}
-					responsibilityCenterOptions={page.responsibilityCenterOptions}
-					statusOptions={page.statusOptions}
-					uomOptions={page.uomOptions}
-					values={page.values}
-					warehouseItemsHref={page.warehouseItemsHref}
-					warehouseOptions={page.warehouseOptions}
-					onAddTag={page.addTag}
-					onFieldChange={page.updateField}
-					onInputChange={page.handleInputChange}
-					onRemoveTag={page.removeTag}
-				/>
-
-				<ItemPricingTaxFields
-					categoryOptions={page.categoryOptions}
-					errors={page.errors}
-					isReadonly={page.isReadonly}
-					responsibilityCenterOptions={page.responsibilityCenterOptions}
-					statusOptions={page.statusOptions}
-					uomOptions={page.uomOptions}
-					values={page.values}
-					warehouseItemsHref={page.warehouseItemsHref}
-					warehouseOptions={page.warehouseOptions}
-					onAddTag={page.addTag}
-					onFieldChange={page.updateField}
-					onInputChange={page.handleInputChange}
-					onRemoveTag={page.removeTag}
-				/>
-
-				<ItemPriceListsTable
-					isReadonly={page.isReadonly}
-					priceLists={page.priceLists}
-					values={page.values}
-					onUpdatePrice={page.updatePriceListPrice}
-				/>
-
-				<ItemInventoryFields
-					categoryOptions={page.categoryOptions}
-					errors={page.errors}
-					isReadonly={page.isReadonly}
-					responsibilityCenterOptions={page.responsibilityCenterOptions}
-					statusOptions={page.statusOptions}
-					uomOptions={page.uomOptions}
-					values={page.values}
-					warehouseItemsHref={page.warehouseItemsHref}
-					warehouseOptions={page.warehouseOptions}
-					onAddTag={page.addTag}
-					onFieldChange={page.updateField}
-					onInputChange={page.handleInputChange}
-					onRemoveTag={page.removeTag}
-				/>
-
-				<ItemSuppliersTable
-					error={page.errors.suppliers}
-					isReadonly={page.isReadonly}
-					supplierOptions={page.supplierOptions}
-					suppliers={page.values.suppliers}
-					onAddSupplier={page.addSupplier}
-					onReorderSupplier={page.reorderSupplier}
-					onRemoveSupplier={page.removeSupplier}
-					onUpdateSupplier={page.updateSupplier}
-				/>
+				{activeTabContent}
 			</form>
 
 			<AppDialog
@@ -204,6 +271,13 @@ export function ItemsFormPage() {
 			/>
 		</>
 	);
+}
+
+function countErrors(
+	errors: ItemFormErrors,
+	fields: readonly (keyof ItemFormValues | "suppliers")[],
+) {
+	return fields.reduce((count, field) => count + (errors[field] ? 1 : 0), 0);
 }
 
 

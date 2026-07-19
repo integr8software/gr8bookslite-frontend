@@ -1,18 +1,15 @@
 "use client";
 
 import {
+	Ban,
 	CheckCircle2,
 	GitBranch,
 	Layers3,
 	Plus,
-	RefreshCcw,
-	Search,
+	Settings2,
 	Tags,
+	XCircle,
 } from "lucide-react";
-import {
-	ItemCategoryPaginationStorageKey,
-	ItemStatusOptions,
-} from "@/app/src/constants/modules/maintenance/item-category/ItemCategoryConstants";
 import { useItemCategoryPage } from "@/app/src/hooks/modules/maintenance/item-category/useItemCategoryPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import {
@@ -23,31 +20,21 @@ import {
 	type ModuleStatisticCardItem,
 	ModuleStatisticCards,
 } from "@/app/src/ui/shared/module/ModuleStatisticCards";
-import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import {
-	ModuleTableFilterSelect,
-	ModuleTableResetButton,
-	ModuleTableSearch,
-	ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { ItemCategoryDrawer } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryDrawer";
-import { ItemCategoryTableRow } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryTableRow";
+import { ItemCategoryTable } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryTable";
 import { ItemCategoryConfigDescription } from "@/app/src/ui/modules/maintenance/item-category/ItemCategoryText";
-
-const AccountingStatusOptions = [
-	"Configured",
-	"Inherited",
-	"Override",
-	"Not Set",
-] as const;
 
 export function ItemCategoryListPage() {
 	const page = useItemCategoryPage();
+	const hasActiveFilters =
+		page.query.trim().length > 0 ||
+		page.accountingFilter !== "" ||
+		page.statusFilter !== "Active";
 	const metrics: ModuleStatisticCardItem[] = [
 		{
 			helper: "All parent and child category records",
 			icon: Tags,
-			label: "Records",
+			label: "All Categories",
 			value: page.metrics.totalCount,
 		},
 		{
@@ -58,6 +45,20 @@ export function ItemCategoryListPage() {
 			value: page.metrics.activeCount,
 		},
 		{
+			helper: "Unavailable for selection",
+			icon: XCircle,
+			label: "Inactive",
+			tone: "slate",
+			value: page.metrics.inactiveCount,
+		},
+		{
+			helper: "Auto-created item accounts",
+			icon: Settings2,
+			label: "Configured",
+			tone: "blue",
+			value: page.metrics.configuredCount,
+		},
+		{
 			helper: "Using parent accounting setup",
 			icon: GitBranch,
 			label: "Inherited",
@@ -65,11 +66,11 @@ export function ItemCategoryListPage() {
 			value: page.metrics.inheritedCount,
 		},
 		{
-			helper: "Child setup overrides parent setup",
-			icon: RefreshCcw,
-			label: "Overrides",
+			helper: "Cannot add child categories",
+			icon: Ban,
+			label: "Subcategories Locked",
 			tone: "amber",
-			value: page.metrics.overrideCount,
+			value: page.metrics.subcategoryLockedCount,
 		},
 	];
 
@@ -87,80 +88,40 @@ export function ItemCategoryListPage() {
 					</>
 				}
 				actions={
-					<button
-						type="button"
-						onClick={() => page.setDrawerState({ mode: "add" })}
-						className={moduleHeaderActionClassNames.primary}
-					>
-						<Plus className="h-4 w-4" aria-hidden="true" />
-						Add Category
-					</button>
+					page.permissions.canCreate ? (
+						<button
+							type="button"
+							onClick={() => page.setDrawerState({ mode: "add" })}
+							className={moduleHeaderActionClassNames.primary}
+						>
+							<Plus className="h-4 w-4" aria-hidden="true" />
+							Add Category
+						</button>
+					) : null
 				}
 			/>
-			<ModuleStatisticCards items={metrics} className="xl:grid-cols-4" />
+			<ModuleStatisticCards items={metrics} className="xl:grid-cols-6" />
 
-			<ModuleTable
-				emptyDescription="Add a category to start grouping inventory, services, and item groups."
-				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No categories found"
+			<ItemCategoryTable
+				accountingFilter={page.accountingFilter}
+				allRows={page.allRows}
+				expandedIds={page.expandedIds}
+				filteredRows={page.filteredRows}
+				hasActiveFilters={hasActiveFilters}
 				isLoading={page.isLoading}
+				isRefreshing={page.isRefreshing}
 				lastSyncedAt={page.lastSyncedAt}
-				minWidthClassName="min-w-[74rem]"
-				paginationStorageKey={ItemCategoryPaginationStorageKey}
-				table={page.table}
-				tableTitle="Item categories"
-				toolbar={
-					<ModuleTableToolbar>
-						<ModuleTableSearch
-							label="Search item categories"
-							value={page.query}
-							onChange={page.handleQueryChange}
-							placeholder="Search category, parent, status, or accounting setup"
-						/>
-						<ModuleTableFilterSelect
-							label="Status"
-							value={page.statusFilter}
-							options={[
-								{ label: "All", value: "All" },
-								...ItemStatusOptions.map((status) => ({
-									label: status,
-									value: status,
-								})),
-							]}
-							onChange={page.handleStatusFilterChange}
-						/>
-						<ModuleTableFilterSelect
-							label="Accounting"
-							value={page.accountingFilter}
-							options={[
-								{ label: "All", value: "All" },
-								...AccountingStatusOptions.map((status) => ({
-									label: status,
-									value: status,
-								})),
-							]}
-							onChange={page.handleAccountingFilterChange}
-						/>
-						<ModuleTableResetButton onClick={page.resetFilters}>
-							Reset
-						</ModuleTableResetButton>
-					</ModuleTableToolbar>
-				}
-				renderRow={({ id, original }) => (
-					<ItemCategoryTableRow
-						key={id}
-						expandedIds={page.expandedIds}
-						row={original}
-						onEditRecord={(row) =>
-							page.setDrawerState({ mode: "edit", row })
-						}
-						onStatusChange={page.setPendingStatusRow}
-						onToggleExpanded={page.toggleExpanded}
-						onViewRecord={(row) =>
-							page.setDrawerState({ mode: "view", row })
-						}
-					/>
-				)}
+				permissions={page.permissions}
+				query={page.query}
+				statusFilter={page.statusFilter}
+				onAccountingFilterChange={page.handleAccountingFilterChange}
+				onEditRecord={(row) => page.setDrawerState({ mode: "edit", row })}
+				onQueryChange={page.handleQueryChange}
+				onRefresh={page.refreshCategories}
+				onStatusChange={page.setPendingStatusRow}
+				onStatusFilterChange={page.handleStatusFilterChange}
+				onToggleExpanded={page.toggleExpanded}
+				onViewRecord={(row) => page.setDrawerState({ mode: "view", row })}
 			/>
 			<ItemCategoryDrawer
 				drawerState={page.drawerState}

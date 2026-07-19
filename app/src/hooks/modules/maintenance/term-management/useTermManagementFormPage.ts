@@ -32,10 +32,7 @@ export function useTermManagementFormPage(
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
-	const terms = useTermManagementStore((state) => state.terms);
-	const addTerm = useTermManagementStore((state) => state.addTerm);
-	const updateTerm = useTermManagementStore((state) => state.updateTerm);
-	const isMutating = useTermManagementStore((state) => state.isMutating);
+	const { addTerm, isMutating, terms, updateTerm } = useTermManagementStore();
 	const mode = options.mode ?? getActionMode(pathname);
 	const existingTerm =
 		options.existingTerm ?? terms.find((term) => term.id === params.recordId);

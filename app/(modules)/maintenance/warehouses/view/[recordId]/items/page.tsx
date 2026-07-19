@@ -5,10 +5,10 @@ import { WarehouseItemsPage } from "@/app/src/ui/modules/maintenance/warehouses/
 const PageTitle = "Warehouse Items";
 
 export const metadata: Metadata = {
-	title: `${PageTitle} | ${AppName}`,
-	description: `${PageTitle} page for ${AppName}.`,
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
 };
 
 export default function WarehouseItemsRoutePage() {
-	return <WarehouseItemsPage />;
+  return <WarehouseItemsPage />;
 }

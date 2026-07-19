@@ -74,6 +74,7 @@ export function useUnitOfMeasurementListPage(): UnitOfMeasurementListPageState {
 	const recordsQuery = useQuery({
 		queryKey: UnitOfMeasurementQueryKeys.list(),
 		queryFn: fetchUnitsOfMeasurement,
+		retry: false,
 	});
 	const [drawer, setDrawer] = useState<UnitOfMeasurementDrawerState>(null);
 	const [pendingStatusRecord, setPendingStatusRecord] =

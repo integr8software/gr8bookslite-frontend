@@ -32,10 +32,6 @@ const ModuleChartAccountAccess: Record<string, Record<string, string[]>> = {
 			"cost-of-sales-merchandise",
 			"cost-of-sales-services",
 		],
-		discountAccount: [
-			"sales-discounts",
-			"sales-returns",
-		],
 		expenseAccount: [
 			"expense-operating-supplies",
 			"office-supplies-expense",
@@ -47,11 +43,6 @@ const ModuleChartAccountAccess: Record<string, Record<string, string[]>> = {
 			"inventory-supplies",
 			"inventory-finished-goods",
 			"inventory-raw-materials",
-		],
-		purchaseAccount: [
-			"purchases-merchandise",
-			"freight-in",
-			"accounts-payable-trade",
 		],
 		salesAccount: [
 			"sales-merchandise",

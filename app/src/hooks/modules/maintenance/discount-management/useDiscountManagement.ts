@@ -69,6 +69,7 @@ export function useDiscountManagementStore<TSelected = DiscountStoreState>(
 	const discountsQuery = useQuery({
 		queryKey: DiscountManagementQueryKeys.discounts(),
 		queryFn: fetchDiscounts,
+		retry: false,
 	});
 	const refreshDiscounts = useCallback(() => {
 		void queryClient.invalidateQueries({

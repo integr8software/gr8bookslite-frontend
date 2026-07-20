@@ -70,6 +70,7 @@ export const ItemFormValidationSchema = z
 		maximumStock: z.number().nonnegative("Maximum stock must not be negative."),
 		perishability: z.enum(ItemPerishabilityOptions),
 		behavior: z.enum(ItemBehaviorOptions),
+		behaviors: z.array(z.enum(ItemBehaviorOptions)).min(1, "Select at least one item behavior."),
 		sellable: z.boolean(),
 		purchasable: z.boolean(),
 		trackInventory: z.boolean(),

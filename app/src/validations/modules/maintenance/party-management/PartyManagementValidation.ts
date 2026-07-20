@@ -17,6 +17,8 @@ import type {
 const PhilippineContactNumberPattern = /^\+63 \d{3} \d{3} \d{4}$/;
 const PhilippineTinPattern = /^\d{3}-\d{3}-\d{3}-\d{3}$/;
 
+export const PartyInformationRequiredFieldsToastMessage = "Please fill up the required party fields.";
+
 const PartyInformationAddressSchema = z.object({
   id: z.string().trim().min(1),
   addressName: z.string().trim().min(1, "Enter an address name."),

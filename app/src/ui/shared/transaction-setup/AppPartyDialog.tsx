@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import toast from "react-hot-toast";
 import { Plus, Users, X } from "lucide-react";
 import {
   DefaultPhilippineContactNumber,
@@ -36,7 +37,10 @@ import type {
   PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
-import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
+import {
+  PartyInformationRequiredFieldsToastMessage,
+  validatePartyInformationForm,
+} from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,
@@ -549,6 +553,7 @@ function AppPartyDialogContent({
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
+      toast.error(PartyInformationRequiredFieldsToastMessage);
       return;
     }
 

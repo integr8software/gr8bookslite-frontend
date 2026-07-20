@@ -502,6 +502,7 @@ export function PartyInformationDetailsFields({
 										options={atcSelectOptions}
 										placeholder="--Select BIR ATC Code--"
 										searchPlaceholder="Search ATC code, label, or description"
+										showSelectedDetails
 										value={values.atcCode}
 										onChange={onSelectAtcCode}
 									/>

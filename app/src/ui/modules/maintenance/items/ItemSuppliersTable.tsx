@@ -17,6 +17,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Clock3, GripVertical, Plus } from "lucide-react";
 import {
 	useEffect,
+	useMemo,
 	useState,
 	type CSSProperties,
 	type KeyboardEvent,
@@ -201,6 +202,10 @@ function SupplierRow({
 		transform: CSS.Transform.toString(transform),
 		transition,
 	};
+	const rowSupplierOptions = useMemo(
+		() => createSupplierDropdownOptions(supplierOptions, supplier.supplier),
+		[supplier.supplier, supplierOptions],
+	);
 
 	return (
 		<tr
@@ -229,11 +234,14 @@ function SupplierRow({
 					<GripVertical className="h-4 w-4" aria-hidden="true" />
 				</button>
 			</td>
-			<td className="px-3 py-3">
+			<td
+				className="px-3 py-3"
+				onPointerDown={(event) => event.stopPropagation()}
+			>
 				<AppAdvancedDropdown
 					isClearable
 					menuPortal
-					options={supplierOptions}
+					options={rowSupplierOptions}
 					placeholder="--Select Supplier--"
 					readOnly={isReadonly}
 					value={supplier.supplier}
@@ -304,6 +312,26 @@ function SupplierRow({
 
 const fieldClassName =
 	"min-h-10 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 read-only:bg-offwhite/65";
+
+function createSupplierDropdownOptions(
+	options: AppAdvancedDropdownOption[],
+	currentSupplier: string,
+) {
+	const optionsByValue = new Map<string, AppAdvancedDropdownOption>();
+
+	for (const option of options) {
+		optionsByValue.set(option.value, option);
+	}
+
+	if (currentSupplier && !optionsByValue.has(currentSupplier)) {
+		optionsByValue.set(currentSupplier, {
+			name: currentSupplier,
+			value: currentSupplier,
+		});
+	}
+
+	return [...optionsByValue.values()];
+}
 
 const LeadTimeUnits = ["days", "weeks", "months"] as const;
 

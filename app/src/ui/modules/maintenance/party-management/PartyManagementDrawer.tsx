@@ -61,7 +61,10 @@ import type {
 	PartyProvinceOption,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import type { TaxMaintenance } from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
-import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
+import {
+	PartyInformationRequiredFieldsToastMessage,
+	validatePartyInformationForm,
+} from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { ModuleSavingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
@@ -631,6 +634,7 @@ export function PartyManagementDrawer({
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
+			toast.error(PartyInformationRequiredFieldsToastMessage);
 			return false;
 		}
 

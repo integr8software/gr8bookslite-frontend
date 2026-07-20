@@ -146,7 +146,7 @@ export function useItemsFormPage() {
       suppliers: [
         ...current.suppliers,
         {
-          id: `item-supplier-${Date.now()}`,
+          id: createItemSupplierId(),
           supplier: "",
           supplierItemCode: "",
           leadTime: "",
@@ -425,6 +425,12 @@ function createEmptyAttributeAssignment(): ItemAttributeAssignment {
     attributeId: "",
     value: "",
   };
+}
+
+function createItemSupplierId() {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? `item-supplier-${crypto.randomUUID()}`
+    : `item-supplier-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 function reorderItemAttributeAssignments(

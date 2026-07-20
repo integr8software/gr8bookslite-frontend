@@ -185,6 +185,7 @@ export type ItemRecord = {
 	maximumStock: number;
 	perishability: ItemPerishability;
 	behavior: ItemBehavior;
+	behaviors: ItemBehavior[];
 	sellable: boolean;
 	purchasable: boolean;
 	trackInventory: boolean;
@@ -228,6 +229,7 @@ export type ItemFormValues = {
 	maximumStock: number;
 	perishability: ItemPerishability;
 	behavior: ItemBehavior;
+	behaviors: ItemBehavior[];
 	sellable: boolean;
 	purchasable: boolean;
 	trackInventory: boolean;

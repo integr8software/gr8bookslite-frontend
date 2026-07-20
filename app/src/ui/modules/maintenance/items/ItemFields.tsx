@@ -16,14 +16,13 @@ import type {
 	ItemBehavior,
 	ItemFormErrors,
 	ItemFormValues,
-	ItemStatus,
 } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { AppRadioGroup } from "@/app/src/ui/shared/app/AppRadioGroup";
+import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { ItemTagsInput } from "@/app/src/ui/modules/maintenance/items/ItemTagsInput";
 
 export type ItemFieldsProps = {
@@ -210,9 +209,12 @@ export function ItemBehaviorFields({
 			return;
 		}
 
-		onFieldChange("behavior", behavior);
+		const nextBehaviors = toggleItemBehavior(values.behaviors, behavior);
+		const nextPrimaryBehavior = nextBehaviors[0] ?? values.behavior;
+		const flags = createItemBehaviorFlags(nextBehaviors);
 
-		const flags = ItemBehaviorFlagMap[behavior];
+		onFieldChange("behavior", nextPrimaryBehavior);
+		onFieldChange("behaviors", nextBehaviors);
 		onFieldChange("sellable", flags.sellable);
 		onFieldChange("purchasable", flags.purchasable);
 		onFieldChange("trackInventory", flags.trackInventory);
@@ -223,53 +225,60 @@ export function ItemBehaviorFields({
 	return (
 		<FieldPanel title="Item Behavior">
 			<div className="grid gap-3 lg:col-span-2 lg:grid-cols-3">
-				{ItemBehaviorGuide.map((behavior) => (
-					<button
-						key={behavior.title}
-						aria-pressed={values.behavior === behavior.title}
-						disabled={isReadonly}
-						type="button"
-						className={[
-							"min-h-20 rounded-md border p-3 text-left transition",
-							values.behavior === behavior.title
-								? "border-skyblue bg-skyblue/5 ring-2 ring-skyblue/15"
-								: "border-darknavy/10 bg-offwhite/55 hover:border-skyblue/55 hover:bg-skyblue/5",
-							isReadonly ? "cursor-default opacity-75" : "cursor-pointer",
-						]
-							.filter(Boolean)
-							.join(" ")}
-						onClick={() => handleBehaviorChange(behavior.title)}
-					>
-						<div className="flex items-start justify-between gap-3">
+				{ItemBehaviorGuide.map((behavior) => {
+					const isSelected = values.behaviors.includes(behavior.title);
+
+					return (
+						<button
+							key={behavior.title}
+							aria-pressed={isSelected}
+							disabled={isReadonly}
+							type="button"
+							className={[
+								"relative min-h-20 rounded-md border p-3 pr-11 text-left transition",
+								isSelected
+									? "border-skyblue bg-skyblue/5 ring-2 ring-skyblue/15"
+									: "border-darknavy/10 bg-offwhite/55 hover:border-skyblue/55 hover:bg-skyblue/5",
+								isReadonly ? "cursor-default opacity-75" : "cursor-pointer",
+							]
+								.filter(Boolean)
+								.join(" ")}
+							onClick={() => handleBehaviorChange(behavior.title)}
+						>
 							<div className="text-sm font-semibold text-darknavy">
 								{behavior.title}
 							</div>
 							<span
 								className={[
-									"flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition",
-									values.behavior === behavior.title
+									"absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full border transition",
+									isSelected
 										? "border-skyblue bg-skyblue text-white"
 										: "border-darknavy/15 bg-white",
 								]
 									.filter(Boolean)
 									.join(" ")}
 							>
-								{values.behavior === behavior.title ? (
+								{isSelected ? (
 									<Check className="h-3.5 w-3.5" aria-hidden="true" />
 								) : null}
 							</span>
-						</div>
-						<p className="mt-1 text-xs leading-5 text-darknavy/65">
-							{behavior.description}
-						</p>
-					</button>
-				))}
+							<p className="mt-1 text-xs leading-5 text-darknavy/65">
+								{behavior.description}
+							</p>
+						</button>
+					);
+				})}
+				{errors.behaviors ? (
+					<span className="text-xs font-medium text-coralpink lg:col-span-3">
+						{errors.behaviors}
+					</span>
+				) : null}
 			</div>
 			<FormField label="Status" error={errors.status} required>
-				<AppRadioGroup<ItemStatus>
-					name="item-status"
-					options={ItemStatusRadioOptions}
+				<AppSwitch
+					falseOption={InactiveStatusSwitchOption}
 					readOnly={isReadonly}
+					trueOption={ActiveStatusSwitchOption}
 					value={values.status}
 					onChange={(value) =>
 						onFieldChange("status", value)
@@ -465,6 +474,43 @@ function createSuggestedSellingPrice(values: ItemFormValues) {
 	}
 
 	return values.costPrice * VatExclusiveTaxMultiplier;
+}
+
+function toggleItemBehavior(
+	currentBehaviors: ItemBehavior[],
+	behavior: ItemBehavior,
+) {
+	if (currentBehaviors.includes(behavior)) {
+		return currentBehaviors.filter(
+			(currentBehavior) => currentBehavior !== behavior,
+		);
+	}
+
+	return [...currentBehaviors, behavior];
+}
+
+function createItemBehaviorFlags(behaviors: ItemBehavior[]) {
+	return behaviors.reduce(
+		(flags, behavior) => {
+			const behaviorFlags = ItemBehaviorFlagMap[behavior];
+
+			return {
+				asset: flags.asset || behaviorFlags.asset,
+				purchasable: flags.purchasable || behaviorFlags.purchasable,
+				sellable: flags.sellable || behaviorFlags.sellable,
+				service: flags.service || behaviorFlags.service,
+				trackInventory:
+					flags.trackInventory || behaviorFlags.trackInventory,
+			};
+		},
+		{
+			asset: false,
+			purchasable: false,
+			sellable: false,
+			service: false,
+			trackInventory: false,
+		},
+	);
 }
 
 function DecimalNumberInput({
@@ -691,10 +737,11 @@ const ItemBehaviorFlagMap = {
 	>
 >;
 
-const ItemStatusRadioOptions = [
-	{ label: "Active", value: "Active" },
-	{ label: "Inactive", value: "Inactive" },
-] as const;
+const ActiveStatusSwitchOption = { label: "Active", value: "Active" } as const;
+const InactiveStatusSwitchOption = {
+	label: "Inactive",
+	value: "Inactive",
+} as const;
 
 const fieldClassName =
 	"min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy read-only:bg-offwhite/65";

@@ -114,7 +114,7 @@ export function ItemsFormPage() {
 			label: "Attributes",
 		},
 		{
-			badge: countErrors(page.errors, ["behavior", "status"]),
+			badge: countErrors(page.errors, ["behavior", "behaviors", "status"]),
 			content: <ItemBehaviorFields {...itemFieldsProps} />,
 			id: "behavior",
 			label: "Behavior",

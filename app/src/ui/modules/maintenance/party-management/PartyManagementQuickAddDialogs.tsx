@@ -4,134 +4,18 @@ import {
 	useCallback,
 	useEffect,
 	useState,
+	type KeyboardEvent as ReactKeyboardEvent,
 	type ReactNode,
 } from "react";
 import toast from "react-hot-toast";
-import { EmptyTaxFormValues } from "@/app/src/constants/modules/maintenance/tax-maintenance/TaxMaintenanceConstants";
 import { TermManagementDatemodeOptions } from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
-import { createTaxMaintenance } from "@/app/src/services/modules/maintenance/tax-maintenance/TaxMaintenanceApi";
 import { createTerm } from "@/app/src/services/modules/maintenance/term-management/TermManagementApi";
-import type {
-	TaxMaintenance,
-	TaxMaintenanceDefaultAccountIds,
-} from "@/app/src/types/modules/maintenance/tax-maintenance/TaxMaintenanceTypes";
 import type {
 	TermManagement,
 	TermManagementDatemode,
 	TermManagementFormValues,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
-
-export function TaxRegistrationTypeDialog({
-	defaultAccountIds,
-	isOpen,
-	onClose,
-	onSaved,
-}: {
-	defaultAccountIds?: TaxMaintenanceDefaultAccountIds;
-	isOpen: boolean;
-	onClose: () => void;
-	onSaved: (tax: TaxMaintenance) => void;
-}) {
-	const [name, setName] = useState("");
-	const [percentage, setPercentage] = useState("0");
-	const [error, setError] = useState("");
-	const [isSaving, setIsSaving] = useState(false);
-
-	useEffect(() => {
-		if (!isOpen) {
-			return;
-		}
-
-		const timeoutId = window.setTimeout(() => {
-			setName("");
-			setPercentage("0");
-			setError("");
-		});
-
-		return () => window.clearTimeout(timeoutId);
-	}, [isOpen]);
-
-	const handleSave = useCallback(async () => {
-		const trimmedName = name.trim();
-
-		if (!trimmedName) {
-			setError("Tax registration type is required.");
-			return;
-		}
-
-		if (!defaultAccountIds) {
-			setError("Tax accounts are still loading.");
-			return;
-		}
-
-		setIsSaving(true);
-		setError("");
-
-		try {
-			const savedTax = await createTaxMaintenance({
-				...EmptyTaxFormValues,
-				...defaultAccountIds,
-				name: trimmedName,
-				percentage,
-				status: "Active",
-			});
-
-			onSaved(savedTax);
-			toast.success("Tax registration type saved.");
-		} catch (error) {
-			setError(getErrorMessage(error, "Could not save tax registration type."));
-		} finally {
-			setIsSaving(false);
-		}
-	}, [defaultAccountIds, name, onSaved, percentage]);
-
-	useDialogKeyboard({
-		canSubmit: true,
-		isOpen,
-		isPending: isSaving,
-		onClose,
-		onSubmit: handleSave,
-	});
-
-	if (!isOpen) {
-		return null;
-	}
-
-	return (
-		<QuickAddDialogShell
-			error={error}
-			isPending={isSaving}
-			title="Add Tax Registration Type"
-			onClose={onClose}
-			onSave={handleSave}
-		>
-			<label className="grid gap-2">
-				<span className="text-sm font-semibold text-darknavy">
-					Tax Registration Type <span className="text-coralpink">*</span>
-				</span>
-				<input
-					value={name}
-					disabled={isSaving}
-					onChange={(event) => setName(event.target.value)}
-					className="h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
-				/>
-			</label>
-			<label className="grid gap-2">
-				<span className="text-sm font-semibold text-darknavy">Percentage</span>
-				<input
-					type="number"
-					min="0"
-					max="100"
-					step="0.0001"
-					value={percentage}
-					disabled={isSaving}
-					onChange={(event) => setPercentage(event.target.value)}
-					className="h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
-				/>
-			</label>
-		</QuickAddDialogShell>
-	);
-}
+import { validateTermManagementForm } from "@/app/src/validations/modules/maintenance/term-management/TermManagementValidation";
 
 export function TermDialog({
 	isOpen,
@@ -172,8 +56,22 @@ export function TermDialog({
 	}, [isOpen]);
 
 	const handleSave = useCallback(async () => {
-		if (!values.name.trim()) {
-			setError("Term name is required.");
+		const normalizedValues = {
+			...values,
+			name: values.name.trim(),
+			period: normalizeWholeNumberText(values.period),
+		};
+		const nextErrors = validateTermManagementForm(normalizedValues);
+		const nextError =
+			nextErrors.name ??
+			nextErrors.datemode ??
+			nextErrors.period ??
+			nextErrors.status ??
+			nextErrors.description;
+
+		if (nextError) {
+			setValues(normalizedValues);
+			setError(nextError);
 			return;
 		}
 
@@ -181,7 +79,7 @@ export function TermDialog({
 		setError("");
 
 		try {
-			const savedTerm = await createTerm(values);
+			const savedTerm = await createTerm(normalizedValues);
 
 			onSaved(savedTerm);
 			toast.success("Terms saved.");
@@ -219,9 +117,10 @@ export function TermDialog({
 				<input
 					value={values.name}
 					disabled={isSaving}
-					onChange={(event) =>
-						setValues((current) => ({ ...current, name: event.target.value }))
-					}
+					onChange={(event) => {
+						setValues((current) => ({ ...current, name: event.target.value }));
+						setError("");
+					}}
 					className="h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
 				/>
 			</label>
@@ -249,17 +148,28 @@ export function TermDialog({
 				<label className="grid gap-2">
 					<span className="text-sm font-semibold text-darknavy">Period</span>
 					<input
-						type="number"
-						min="0"
-						step="1"
+						type="text"
+						inputMode="numeric"
+						pattern="[0-9]*"
 						value={values.period}
 						disabled={isSaving}
-						onChange={(event) =>
+						onChange={(event) => {
+							const period = normalizeWholeNumberText(event.target.value);
+
 							setValues((current) => ({
 								...current,
-								period: event.target.value,
-							}))
-						}
+								period,
+							}));
+							setError("");
+						}}
+						onKeyDown={preventNonWholeNumberInput}
+						onPaste={(event) => {
+							const pastedText = event.clipboardData.getData("text");
+
+							if (!isWholeNumberText(pastedText.trim())) {
+								event.preventDefault();
+							}
+						}}
 						className="h-11 rounded-md border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
 					/>
 				</label>
@@ -376,4 +286,20 @@ function useDialogKeyboard({
 
 function getErrorMessage(error: unknown, fallback: string) {
 	return error instanceof Error ? error.message : fallback;
+}
+
+const blockedWholeNumberKeys = new Set(["e", "E", "+", "-", "."]);
+
+function preventNonWholeNumberInput(event: ReactKeyboardEvent<HTMLInputElement>) {
+	if (blockedWholeNumberKeys.has(event.key)) {
+		event.preventDefault();
+	}
+}
+
+function normalizeWholeNumberText(value: string) {
+	return value.replace(/\D/g, "");
+}
+
+function isWholeNumberText(value: string) {
+	return /^\d+$/.test(value);
 }

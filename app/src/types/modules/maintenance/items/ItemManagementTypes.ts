@@ -4,6 +4,17 @@ import type { useItemsListPage } from "@/app/src/hooks/modules/maintenance/items
 
 export type ItemStatus = "Active" | "Inactive";
 
+export type ItemBehavior =
+	| "Sellable Item"
+	| "Purchasable Item"
+	| "Raw Material"
+	| "Semi-Finished Goods / WIP"
+	| "Finished Goods"
+	| "Service Item"
+	| "Non-Inventory Item"
+	| "Fixed Asset Item"
+	| "Consumable Item";
+
 export type ItemSetupKind = "category" | "subcategory" | "type" | "subtype";
 
 export type ItemTaxTreatment =
@@ -173,6 +184,7 @@ export type ItemRecord = {
 	minimumStock: number;
 	maximumStock: number;
 	perishability: ItemPerishability;
+	behavior: ItemBehavior;
 	sellable: boolean;
 	purchasable: boolean;
 	trackInventory: boolean;
@@ -215,6 +227,7 @@ export type ItemFormValues = {
 	minimumStock: number;
 	maximumStock: number;
 	perishability: ItemPerishability;
+	behavior: ItemBehavior;
 	sellable: boolean;
 	purchasable: boolean;
 	trackInventory: boolean;

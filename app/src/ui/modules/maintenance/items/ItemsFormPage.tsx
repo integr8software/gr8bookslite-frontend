@@ -32,7 +32,6 @@ type ItemFormTabId =
 	| "attributes"
 	| "behavior"
 	| "pricing-tax"
-	| "price-lists"
 	| "inventory"
 	| "suppliers";
 
@@ -96,7 +95,7 @@ export function ItemsFormPage() {
 			]),
 			content: <ItemInformationFields {...itemFieldsProps} />,
 			id: "item-information",
-			label: "Item Information",
+			label: "Basic Information",
 		},
 		{
 			badge: countErrors(page.errors, ["attributeAssignments"]),
@@ -115,18 +114,7 @@ export function ItemsFormPage() {
 			label: "Attributes",
 		},
 		{
-			badge: countErrors(page.errors, [
-				"perishability",
-				"sellable",
-				"purchasable",
-				"trackInventory",
-				"service",
-				"asset",
-				"hasVariants",
-				"lotTracking",
-				"serialTracking",
-				"status",
-			]),
+			badge: countErrors(page.errors, ["behavior", "status"]),
 			content: <ItemBehaviorFields {...itemFieldsProps} />,
 			id: "behavior",
 			label: "Behavior",
@@ -136,23 +124,21 @@ export function ItemsFormPage() {
 				"costPrice",
 				"sellingPrice",
 				"taxTreatment",
+				"priceListPrices",
 			]),
-			content: <ItemPricingTaxFields {...itemFieldsProps} />,
-			id: "pricing-tax",
-			label: "Pricing and Tax",
-		},
-		{
-			badge: countErrors(page.errors, ["priceListPrices"]),
 			content: (
-				<ItemPriceListsTable
-					isReadonly={page.isReadonly}
-					priceLists={page.priceLists}
-					values={page.values}
-					onUpdatePrice={page.updatePriceListPrice}
-				/>
+				<div className="grid gap-5">
+					<ItemPricingTaxFields {...itemFieldsProps} />
+					<ItemPriceListsTable
+						isReadonly={page.isReadonly}
+						priceLists={page.priceLists}
+						values={page.values}
+						onUpdatePrice={page.updatePriceListPrice}
+					/>
+				</div>
 			),
-			id: "price-lists",
-			label: "Price Lists",
+			id: "pricing-tax",
+			label: "Pricing",
 		},
 		{
 			badge: countErrors(page.errors, [
@@ -230,6 +216,7 @@ export function ItemsFormPage() {
 				<ModuleTabs
 					activeTab={activeTab}
 					ariaLabel="Item setup sections"
+					tabClassName="w-40 justify-center"
 					tabs={tabs}
 					onTabChange={setActiveTab}
 				/>

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+	ItemBehaviorOptions,
 	ItemPerishabilityOptions,
 	ItemStatusOptions,
 	ItemTaxTreatmentOptions,
@@ -68,6 +69,7 @@ export const ItemFormValidationSchema = z
 		minimumStock: z.number().nonnegative("Minimum stock must not be negative."),
 		maximumStock: z.number().nonnegative("Maximum stock must not be negative."),
 		perishability: z.enum(ItemPerishabilityOptions),
+		behavior: z.enum(ItemBehaviorOptions),
 		sellable: z.boolean(),
 		purchasable: z.boolean(),
 		trackInventory: z.boolean(),

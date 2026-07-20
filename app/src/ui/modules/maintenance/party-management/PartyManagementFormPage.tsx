@@ -16,10 +16,8 @@ import { PartyInformationNotFound } from "@/app/src/ui/modules/maintenance/party
 import {
 	PartyAccountTitleDialog,
 } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementDrawer";
-import {
-	TaxRegistrationTypeDialog,
-	TermDialog,
-} from "@/app/src/ui/modules/maintenance/party-management/PartyManagementQuickAddDialogs";
+import { TaxRegistrationTypeDialog } from "@/app/src/ui/modules/maintenance/party-management/PartyTaxRegistrationTypeDialog";
+import { TermDialog } from "@/app/src/ui/modules/maintenance/party-management/PartyManagementQuickAddDialogs";
 
 const PartyManagementFormId = "party-management-form";
 

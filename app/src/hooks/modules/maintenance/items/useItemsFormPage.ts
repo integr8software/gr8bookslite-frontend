@@ -276,12 +276,10 @@ export function useItemsFormPage() {
             return assignment;
           }
 
-          const attribute = itemAttributeOptionsQuery.data.find((currentAttribute) => currentAttribute.id === value);
-
           return {
             ...assignment,
             attributeId: value,
-            value: attribute?.values[0] ?? "",
+            value: "",
           };
         }
 
@@ -301,14 +299,14 @@ export function useItemsFormPage() {
     }));
   }
 
-  function reorderAttributeAssignment(assignmentId: string, overAssignmentId: string) {
+  function reorderAttributeAssignment(assignmentId: string, overAssignmentId: string, position: "after" | "before" = "before") {
     if (isReadonly) {
       return;
     }
 
     setValues((current) => ({
       ...current,
-      attributeAssignments: reorderItemAttributeAssignments(current.attributeAssignments, assignmentId, overAssignmentId),
+      attributeAssignments: reorderItemAttributeAssignments(current.attributeAssignments, assignmentId, overAssignmentId, position),
     }));
   }
 
@@ -429,7 +427,12 @@ function createEmptyAttributeAssignment(): ItemAttributeAssignment {
   };
 }
 
-function reorderItemAttributeAssignments(assignments: ItemAttributeAssignment[], recordId: string, overRecordId: string) {
+function reorderItemAttributeAssignments(
+  assignments: ItemAttributeAssignment[],
+  recordId: string,
+  overRecordId: string,
+  position: "after" | "before" = "before",
+) {
   const currentIndex = assignments.findIndex((record) => record.id === recordId);
   const nextIndex = assignments.findIndex((record) => record.id === overRecordId);
 
@@ -439,8 +442,13 @@ function reorderItemAttributeAssignments(assignments: ItemAttributeAssignment[],
 
   const nextRecords = [...assignments];
   const [record] = nextRecords.splice(currentIndex, 1);
+  const adjustedOverIndex = nextRecords.findIndex((currentRecord) => currentRecord.id === overRecordId);
 
-  nextRecords.splice(nextIndex, 0, record);
+  if (adjustedOverIndex === -1) {
+    return assignments;
+  }
+
+  nextRecords.splice(position === "after" ? adjustedOverIndex + 1 : adjustedOverIndex, 0, record);
 
   return nextRecords;
 }

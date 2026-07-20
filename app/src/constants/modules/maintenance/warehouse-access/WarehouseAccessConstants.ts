@@ -43,7 +43,7 @@ export const WarehouseAccessPermissionDescriptions: Record<WarehouseAccessPermis
   "Issue Stock": "Release warehouse stock",
   "Transfer Stock": "Move stock between warehouses",
   "Adjust Stock": "Correct inventory quantities",
-  "Manage Locations": "Maintain storage locations",
+  "Manage Locations": "Maintain warehouse storage",
   "View History": "Review stock movements",
 };
 

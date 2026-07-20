@@ -29,9 +29,24 @@ export const MODULE_ROUTE_MAP = {
   TT: "/maintenance/inventory-transaction-type",
   WM: "/maintenance/warehouses",
   WA: "/maintenance/warehouse-access",
-  WSL: "/maintenance/storage-locations",
+  WS: "/maintenance/warehouse-storage",
+  WSL: "/maintenance/warehouse-storage",
+  WLY: "/maintenance/warehouse-storage/layout",
+  WILS: "/maintenance/warehouse-storage/item-location-setup",
+  WCSR: "/maintenance/warehouse-storage/capacity-storage-rules",
+  WLA: "/maintenance/warehouse-storage/location-availability",
+  WLT: "/maintenance/warehouse-storage/location-templates",
+  WSBW: "/maintenance/warehouse-inventory/stock-by-warehouse",
+  WSBL: "/maintenance/warehouse-inventory/stock-by-location",
+  WSMH: "/maintenance/warehouse-inventory/stock-movement-history",
+  WIA: "/maintenance/warehouse-inventory/item-availability",
   WT: "/maintenance/warehouse-transfers",
-  WSI: "/maintenance/warehouse-stock-inquiry",
+  WLOCT: "/maintenance/warehouse-operations/location-transfer",
+  WRP: "/maintenance/warehouse-operations/receiving-putaway",
+  WPD: "/maintenance/warehouse-operations/picking-dispatch",
+  WSC: "/maintenance/warehouse-operations/stock-count",
+  WSA: "/maintenance/warehouse-operations/stock-adjustment",
+  WSI: "/maintenance/warehouse-inventory/item-availability",
   DSM: "/maintenance/discount-management",
   TM: "/maintenance/term-management",
   PT: "/maintenance/payment-type",
@@ -126,14 +141,31 @@ export const MainModuleCatalogHelperText: Record<string, string> = {
   "maintenance-tax-maintenance":
     "Maintain VAT registration types and their related account titles.",
   "maintenance-warehouse-management":
-    "Maintain warehouse records and storage locations.",
+    "Maintain warehouse records, storage setup, inventory visibility, and warehouse operations.",
   "maintenance-warehouses": "Maintain warehouse master records.",
   "maintenance-warehouse-access": "Manage warehouse user permissions.",
-  "maintenance-storage-locations": "Maintain physical storage locations.",
-  "maintenance-warehouse-transfers": "Track warehouse transfers.",
+  "maintenance-warehouse-storage": "Configure warehouse-scoped storage modules.",
+  "maintenance-storage-locations": "Maintain warehouse-scoped storage locations and codes.",
+  "maintenance-storage-layout": "Review one warehouse storage structure at a time.",
+  "maintenance-item-location-setup": "Assign item storage locations per warehouse.",
+  "maintenance-capacity-storage-rules": "Maintain warehouse location capacity and storage rules.",
+  "maintenance-location-availability": "Manage operational availability for warehouse locations.",
+  "maintenance-location-templates": "Prepare reusable warehouse storage layout templates.",
+  "maintenance-warehouse-inventory": "Review inventory by warehouse, location, movement, and item availability.",
+  "maintenance-stock-by-warehouse": "View stock balances summarized by warehouse.",
+  "maintenance-stock-by-location": "View stock balances by storage location.",
+  "maintenance-stock-movement-history": "Review warehouse and location movement history.",
+  "maintenance-item-availability": "View item availability across warehouses and locations.",
+  "maintenance-warehouse-operations": "Move, count, receive, pick, dispatch, and adjust warehouse inventory.",
+  "maintenance-warehouse-transfers": "Track stock transfers between warehouses.",
+  "maintenance-location-transfer": "Track stock transfers between locations in one warehouse.",
+  "maintenance-receiving-putaway": "Receive stock and assign putaway locations.",
+  "maintenance-picking-dispatch": "Pick stock from locations and dispatch it.",
+  "maintenance-stock-count": "Count stock by warehouse and location.",
+  "maintenance-stock-adjustment": "Adjust warehouse or location stock balances.",
   "maintenance-warehouse-stock-inquiry": "View warehouse stock availability.",
   "maintenance-items": "Maintain item master records.",
-  "maintenance-warehouse": "Maintain warehouse records and storage locations.",
+  "maintenance-warehouse": "Maintain warehouse records and warehouse storage.",
   "maintenance-item": "Maintain item master records.",
   "maintenance-item-bundles": "Maintain item bundles.",
   "maintenance-item-category": "Maintain the item category hierarchy.",
@@ -378,23 +410,125 @@ export const MainModuleCatalogSections: MainNavigationSection[] = [
             "WA",
             "maintenance.warehouse"
           ),
-          moduleItem(
-            "maintenance-storage-locations",
-            "Storage Locations",
-            "WSL",
-            "maintenance.warehouse"
+          group(
+            "maintenance-warehouse-storage",
+            "Warehouse Storage",
+            MODULE_ROUTE_MAP.WS,
+            "maintenance.warehouse",
+            [
+              moduleItem(
+                "maintenance-storage-locations",
+                "Storage Locations",
+                "WS",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-storage-layout",
+                "Storage Layout",
+                "WLY",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-item-location-setup",
+                "Item Location Setup",
+                "WILS",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-capacity-storage-rules",
+                "Capacity & Storage Rules",
+                "WCSR",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-location-availability",
+                "Location Availability",
+                "WLA",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-location-templates",
+                "Location Templates",
+                "WLT",
+                "maintenance.warehouse"
+              ),
+            ],
           ),
-          moduleItem(
-            "maintenance-warehouse-transfers",
-            "Warehouse Transfers",
-            "WT",
-            "maintenance.warehouse"
+          group(
+            "maintenance-warehouse-inventory",
+            "Warehouse Inventory",
+            MODULE_ROUTE_MAP.WSBW,
+            "maintenance.warehouse",
+            [
+              moduleItem(
+                "maintenance-stock-by-warehouse",
+                "Stock by Warehouse",
+                "WSBW",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-stock-by-location",
+                "Stock by Location",
+                "WSBL",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-stock-movement-history",
+                "Stock Movement History",
+                "WSMH",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-item-availability",
+                "Item Availability",
+                "WIA",
+                "maintenance.warehouse"
+              ),
+            ],
           ),
-          moduleItem(
-            "maintenance-warehouse-stock-inquiry",
-            "Warehouse Stock Inquiry",
-            "WSI",
-            "maintenance.warehouse"
+          group(
+            "maintenance-warehouse-operations",
+            "Warehouse Operations",
+            MODULE_ROUTE_MAP.WT,
+            "maintenance.warehouse",
+            [
+              moduleItem(
+                "maintenance-warehouse-transfers",
+                "Warehouse Transfer",
+                "WT",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-location-transfer",
+                "Location Transfer",
+                "WLOCT",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-receiving-putaway",
+                "Receiving & Putaway",
+                "WRP",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-picking-dispatch",
+                "Picking & Dispatch",
+                "WPD",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-stock-count",
+                "Stock Count",
+                "WSC",
+                "maintenance.warehouse"
+              ),
+              moduleItem(
+                "maintenance-stock-adjustment",
+                "Stock Adjustment",
+                "WSA",
+                "maintenance.warehouse"
+              ),
+            ],
           ),
         ],
       ),

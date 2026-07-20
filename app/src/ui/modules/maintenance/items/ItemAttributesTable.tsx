@@ -12,6 +12,10 @@ import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleH
 import { ModuleTableActionButton } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 const MaxItemAttributeAssignments = 5;
+type DropIndicator = {
+	assignmentId: string;
+	position: "after" | "before";
+};
 
 type ItemAttributesTableProps = {
 	assignments: ItemAttributeAssignment[];
@@ -19,7 +23,11 @@ type ItemAttributesTableProps = {
 	isReadonly: boolean;
 	onAddAssignment: () => void;
 	onRemoveAssignment: (assignmentId: string) => void;
-	onReorderAssignment: (assignmentId: string, overAssignmentId: string) => void;
+	onReorderAssignment: (
+		assignmentId: string,
+		overAssignmentId: string,
+		position: DropIndicator["position"],
+	) => void;
 	onUpdateAssignment: (
 		assignmentId: string,
 		field: keyof ItemAttributeAssignment,
@@ -46,6 +54,9 @@ export function ItemAttributesTable({
 	const [draggedAssignmentId, setDraggedAssignmentId] = useState<string | null>(
 		null,
 	);
+	const [dropIndicator, setDropIndicator] = useState<DropIndicator | null>(
+		null,
+	);
 	const hasAvailableAttribute = activeAttributes.some(
 		(attribute) =>
 			!assignments.some(
@@ -55,11 +66,19 @@ export function ItemAttributesTable({
 
 	function handleDrop(overAssignmentId: string) {
 		if (!draggedAssignmentId || draggedAssignmentId === overAssignmentId) {
+			setDropIndicator(null);
 			return;
 		}
 
-		onReorderAssignment(draggedAssignmentId, overAssignmentId);
+		onReorderAssignment(
+			draggedAssignmentId,
+			overAssignmentId,
+			dropIndicator?.assignmentId === overAssignmentId
+				? dropIndicator.position
+				: "before",
+		);
 		setDraggedAssignmentId(null);
+		setDropIndicator(null);
 	}
 
 	return (
@@ -86,7 +105,7 @@ export function ItemAttributesTable({
 					</button>
 				) : null}
 			</div>
-			<div className="mt-4 overflow-x-auto overflow-y-hidden pb-1">
+			<div className="mt-4 overflow-x-auto overflow-y-hidden rounded-lg border border-skyblue/15 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
 				<table className="w-full min-w-[46rem] table-fixed border-collapse text-left text-sm">
 					<colgroup>
 						<col className="w-8" />
@@ -95,18 +114,18 @@ export function ItemAttributesTable({
 						<col className="w-[16rem]" />
 						<col className="w-[7rem]" />
 					</colgroup>
-					<thead className="bg-darknavy/[0.03] text-xs font-semibold uppercase tracking-wide text-darknavy/50">
+					<thead className="border-b border-skyblue/15 bg-skyblue/[0.08] text-xs font-semibold uppercase tracking-wide text-darknavy/70">
 						<tr>
-							<th className="px-1 py-3">
+							<th className="px-1 py-3.5">
 								<span className="sr-only">Order</span>
 							</th>
-							<th className="px-1 py-3">No.</th>
-							<th className="px-3 py-3">Attribute</th>
-							<th className="px-3 py-3">Value</th>
-							<th className="px-3 py-3 text-center">Actions</th>
+							<th className="px-1 py-3.5">No.</th>
+							<th className="px-3 py-3.5">Attribute</th>
+							<th className="px-3 py-3.5">Value</th>
+							<th className="px-3 py-3.5 text-center">Actions</th>
 						</tr>
 					</thead>
-					<tbody className="divide-y divide-darknavy/8">
+					<tbody className="divide-y divide-skyblue/10">
 						{assignments.length === 0 ? (
 							<tr>
 								<td
@@ -126,9 +145,19 @@ export function ItemAttributesTable({
 								assignments={assignments}
 								attributes={attributes}
 								draggedAssignmentId={draggedAssignmentId}
+								dropIndicator={dropIndicator}
 								isReadonly={isReadonly}
-								onDragEnd={() => setDraggedAssignmentId(null)}
-								onDragStart={() => setDraggedAssignmentId(assignment.id)}
+								onDragEnd={() => {
+									setDraggedAssignmentId(null);
+									setDropIndicator(null);
+								}}
+								onDragOver={(position) =>
+									setDropIndicator({ assignmentId: assignment.id, position })
+								}
+								onDragStart={() => {
+									setDraggedAssignmentId(assignment.id);
+									setDropIndicator(null);
+								}}
 								onDrop={() => handleDrop(assignment.id)}
 								onRemoveAssignment={onRemoveAssignment}
 								onUpdateAssignment={onUpdateAssignment}
@@ -148,8 +177,10 @@ function ItemAttributeRow({
 	assignments,
 	attributes,
 	draggedAssignmentId,
+	dropIndicator,
 	isReadonly,
 	onDragEnd,
+	onDragOver,
 	onDragStart,
 	onDrop,
 	onRemoveAssignment,
@@ -161,8 +192,10 @@ function ItemAttributeRow({
 	assignments: ItemAttributeAssignment[];
 	attributes: ItemAttributeRecord[];
 	draggedAssignmentId: string | null;
+	dropIndicator: DropIndicator | null;
 	isReadonly: boolean;
 	onDragEnd: () => void;
+	onDragOver: (position: DropIndicator["position"]) => void;
 	onDragStart: () => void;
 	onDrop: () => void;
 	onRemoveAssignment: (assignmentId: string) => void;
@@ -182,16 +215,38 @@ function ItemAttributeRow({
 	);
 	const attributeOptions = createAttributeDropdownOptions(selectableAttributes);
 	const isDragging = draggedAssignmentId === assignment.id;
+	const indicatorPosition =
+		!isDragging && dropIndicator?.assignmentId === assignment.id
+			? dropIndicator.position
+			: null;
 
 	return (
 		<tr
 			onDragOver={(event) => {
-				if (!isReadonly) {
-					event.preventDefault();
+				if (isReadonly || !draggedAssignmentId || isDragging) {
+					return;
 				}
+
+				event.preventDefault();
+
+				const rect = event.currentTarget.getBoundingClientRect();
+				const position =
+					event.clientY - rect.top < rect.height / 2 ? "before" : "after";
+
+				onDragOver(position);
 			}}
 			onDrop={onDrop}
-			className={isDragging ? "relative z-10 bg-skyblue/5 shadow-sm" : undefined}
+			className={[
+				"relative transition-colors hover:bg-skyblue/[0.035]",
+				indicatorPosition
+					? "before:pointer-events-none before:absolute before:left-2 before:right-2 before:z-20 before:h-0.5 before:rounded-full before:bg-skyblue before:shadow-[0_0_0_1px_rgba(55,167,226,0.18),0_0_10px_rgba(55,167,226,0.35)] before:content-['']"
+					: "",
+				indicatorPosition === "before" ? "before:top-0" : "",
+				indicatorPosition === "after" ? "before:bottom-0" : "",
+				isDragging ? "relative z-10 bg-skyblue/8 shadow-sm" : "",
+			]
+				.filter(Boolean)
+				.join(" ")}
 		>
 			<td className="px-1 py-3 text-center">
 				<button
@@ -228,21 +283,17 @@ function ItemAttributeRow({
 				/>
 			</td>
 			<td className="px-3 py-3">
-				<select
+				<AppAdvancedDropdown
+					isClearable
+					menuPortal
+					options={createAttributeValueDropdownOptions(attribute)}
+					placeholder="--Select Value--"
+					readOnly={isReadonly || !attribute}
 					value={assignment.value}
-					disabled={isReadonly || !attribute}
-					onChange={(event) =>
-						onUpdateAssignment(assignment.id, "value", event.target.value)
+					onChange={(value) =>
+						onUpdateAssignment(assignment.id, "value", String(value))
 					}
-					className={fieldClassName}
-				>
-					<option value="">--Select Value--</option>
-					{(attribute?.values ?? []).map((value) => (
-						<option key={value} value={value}>
-							{value}
-						</option>
-					))}
-				</select>
+				/>
 			</td>
 			<td className="px-3 py-3 text-center">
 				{!isReadonly ? (
@@ -284,5 +335,11 @@ function createAttributeDropdownOptions(
 	}));
 }
 
-const fieldClassName =
-	"min-h-10 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-default disabled:bg-offwhite/65 disabled:text-darknavy";
+function createAttributeValueDropdownOptions(
+	attribute?: ItemAttributeRecord,
+): AppAdvancedDropdownOption[] {
+	return (attribute?.values ?? []).map((value) => ({
+		name: value,
+		value,
+	}));
+}

@@ -70,9 +70,15 @@ export function useTermManagementFormPage(
 			HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 		>,
 	) {
+		const field = event.target.name as keyof TermManagementFormValues;
+		const value =
+			field === "period"
+				? normalizeWholeNumberText(event.target.value)
+				: event.target.value;
+
 		updateField(
-			event.target.name as keyof TermManagementFormValues,
-			event.target.value,
+			field,
+			value,
 		);
 	}
 
@@ -154,6 +160,10 @@ export function useTermManagementFormPage(
 		validateBeforeSubmit,
 		values,
 	};
+}
+
+function normalizeWholeNumberText(value: string) {
+	return value.replace(/\D/g, "");
 }
 
 function getActionMode(pathname: string): TermManagementActionMode {

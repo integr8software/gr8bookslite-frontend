@@ -7,21 +7,23 @@ import {
 } from "react";
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { Check, ExternalLink } from "lucide-react";
 import {
-	ItemPerishabilityOptions,
 	ItemTaxTreatmentSelectOptions,
 	VatExclusiveTaxMultiplier,
 } from "@/app/src/constants/modules/maintenance/items/ItemManagementConstants";
 import type {
+	ItemBehavior,
 	ItemFormErrors,
 	ItemFormValues,
+	ItemStatus,
 } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { AppRadioGroup } from "@/app/src/ui/shared/app/AppRadioGroup";
 import { ItemTagsInput } from "@/app/src/ui/modules/maintenance/items/ItemTagsInput";
 
 export type ItemFieldsProps = {
@@ -69,7 +71,7 @@ export function ItemInformationFields({
 	values,
 }: ItemFieldsProps) {
 	return (
-		<FieldPanel title="Item Information">
+		<FieldPanel title="Basic Information">
 			<FormField label="Item Code" error={errors.code} required>
 				<input
 					name="code"
@@ -200,112 +202,79 @@ export function ItemInformationFields({
 export function ItemBehaviorFields({
 	errors,
 	isReadonly,
-	onInputChange,
-	statusOptions,
+	onFieldChange,
 	values,
 }: ItemFieldsProps) {
+	function handleBehaviorChange(behavior: ItemBehavior) {
+		if (isReadonly) {
+			return;
+		}
+
+		onFieldChange("behavior", behavior);
+
+		const flags = ItemBehaviorFlagMap[behavior];
+		onFieldChange("sellable", flags.sellable);
+		onFieldChange("purchasable", flags.purchasable);
+		onFieldChange("trackInventory", flags.trackInventory);
+		onFieldChange("service", flags.service);
+		onFieldChange("asset", flags.asset);
+	}
+
 	return (
 		<FieldPanel title="Item Behavior">
 			<div className="grid gap-3 lg:col-span-2 lg:grid-cols-3">
 				{ItemBehaviorGuide.map((behavior) => (
-					<div
+					<button
 						key={behavior.title}
-						className="rounded-md border border-darknavy/10 bg-offwhite/55 p-3"
+						aria-pressed={values.behavior === behavior.title}
+						disabled={isReadonly}
+						type="button"
+						className={[
+							"min-h-20 rounded-md border p-3 text-left transition",
+							values.behavior === behavior.title
+								? "border-skyblue bg-skyblue/5 ring-2 ring-skyblue/15"
+								: "border-darknavy/10 bg-offwhite/55 hover:border-skyblue/55 hover:bg-skyblue/5",
+							isReadonly ? "cursor-default opacity-75" : "cursor-pointer",
+						]
+							.filter(Boolean)
+							.join(" ")}
+						onClick={() => handleBehaviorChange(behavior.title)}
 					>
-						<div className="text-sm font-semibold text-darknavy">
-							{behavior.title}
+						<div className="flex items-start justify-between gap-3">
+							<div className="text-sm font-semibold text-darknavy">
+								{behavior.title}
+							</div>
+							<span
+								className={[
+									"flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition",
+									values.behavior === behavior.title
+										? "border-skyblue bg-skyblue text-white"
+										: "border-darknavy/15 bg-white",
+								]
+									.filter(Boolean)
+									.join(" ")}
+							>
+								{values.behavior === behavior.title ? (
+									<Check className="h-3.5 w-3.5" aria-hidden="true" />
+								) : null}
+							</span>
 						</div>
 						<p className="mt-1 text-xs leading-5 text-darknavy/65">
 							{behavior.description}
 						</p>
-					</div>
+					</button>
 				))}
 			</div>
-			<ToggleField
-				checked={values.sellable}
-				isReadonly={isReadonly}
-				label="Sellable"
-				name="sellable"
-				onChange={onInputChange}
-			/>
-			<ToggleField
-				checked={values.purchasable}
-				isReadonly={isReadonly}
-				label="Purchasable"
-				name="purchasable"
-				onChange={onInputChange}
-			/>
-			<ToggleField
-				checked={values.trackInventory}
-				isReadonly={isReadonly}
-				label="Track Inventory"
-				name="trackInventory"
-				onChange={onInputChange}
-			/>
-			<ToggleField
-				checked={values.service}
-				isReadonly={isReadonly}
-				label="Service"
-				name="service"
-				onChange={onInputChange}
-			/>
-			<ToggleField
-				checked={values.asset}
-				isReadonly={isReadonly}
-				label="Asset"
-				name="asset"
-				onChange={onInputChange}
-			/>
-			<ToggleField
-				checked={values.hasVariants}
-				isReadonly={isReadonly}
-				label="Has Variants"
-				name="hasVariants"
-				onChange={onInputChange}
-			/>
-			<ToggleField
-				checked={values.lotTracking}
-				isReadonly={isReadonly}
-				label="Lot Tracking"
-				name="lotTracking"
-				onChange={onInputChange}
-			/>
-			<ToggleField
-				checked={values.serialTracking}
-				isReadonly={isReadonly}
-				label="Serial Tracking"
-				name="serialTracking"
-				onChange={onInputChange}
-			/>
-			<FormField label="Perishability" error={errors.perishability}>
-				<select
-					name="perishability"
-					value={values.perishability}
-					onChange={onInputChange}
-					disabled={isReadonly}
-					className={fieldClassName}
-				>
-					{ItemPerishabilityOptions.map((perishability) => (
-						<option key={perishability} value={perishability}>
-							{perishability}
-						</option>
-					))}
-				</select>
-			</FormField>
 			<FormField label="Status" error={errors.status} required>
-				<select
-					name="status"
+				<AppRadioGroup<ItemStatus>
+					name="item-status"
+					options={ItemStatusRadioOptions}
+					readOnly={isReadonly}
 					value={values.status}
-					onChange={onInputChange}
-					disabled={isReadonly}
-					className={fieldClassName}
-				>
-					{statusOptions.map((status) => (
-						<option key={status.value} value={status.value}>
-							{status.name}
-						</option>
-					))}
-				</select>
+					onChange={(value) =>
+						onFieldChange("status", value)
+					}
+				/>
 			</FormField>
 		</FieldPanel>
 	);
@@ -608,34 +577,6 @@ function FormField({
 	);
 }
 
-function ToggleField({
-	checked,
-	isReadonly,
-	label,
-	name,
-	onChange,
-}: {
-	checked: boolean;
-	isReadonly: boolean;
-	label: string;
-	name: keyof ItemFormValues;
-	onChange: ChangeEventHandler<HTMLInputElement>;
-}) {
-	return (
-		<label className="flex min-h-11 items-center gap-3 self-end rounded-md border border-darknavy/10 bg-offwhite/55 px-3 text-sm font-semibold text-darknavy">
-			<input
-				name={name}
-				type="checkbox"
-				checked={checked}
-				onChange={onChange}
-				disabled={isReadonly}
-				className="h-4 w-4 accent-skyblue disabled:cursor-default"
-			/>
-			{label}
-		</label>
-	);
-}
-
 const ItemBehaviorGuide = [
 	{
 		title: "Sellable Item",
@@ -673,6 +614,86 @@ const ItemBehaviorGuide = [
 		title: "Consumable Item",
 		description: "An internal-use item that gets used up.",
 	},
+] as const satisfies ReadonlyArray<{
+	description: string;
+	title: ItemBehavior;
+}>;
+
+const ItemBehaviorFlagMap = {
+	"Sellable Item": {
+		asset: false,
+		purchasable: false,
+		sellable: true,
+		service: false,
+		trackInventory: false,
+	},
+	"Purchasable Item": {
+		asset: false,
+		purchasable: true,
+		sellable: false,
+		service: false,
+		trackInventory: false,
+	},
+	"Raw Material": {
+		asset: false,
+		purchasable: true,
+		sellable: false,
+		service: false,
+		trackInventory: true,
+	},
+	"Semi-Finished Goods / WIP": {
+		asset: false,
+		purchasable: false,
+		sellable: false,
+		service: false,
+		trackInventory: true,
+	},
+	"Finished Goods": {
+		asset: false,
+		purchasable: false,
+		sellable: true,
+		service: false,
+		trackInventory: true,
+	},
+	"Service Item": {
+		asset: false,
+		purchasable: false,
+		sellable: true,
+		service: true,
+		trackInventory: false,
+	},
+	"Non-Inventory Item": {
+		asset: false,
+		purchasable: true,
+		sellable: true,
+		service: false,
+		trackInventory: false,
+	},
+	"Fixed Asset Item": {
+		asset: true,
+		purchasable: true,
+		sellable: false,
+		service: false,
+		trackInventory: false,
+	},
+	"Consumable Item": {
+		asset: false,
+		purchasable: true,
+		sellable: false,
+		service: false,
+		trackInventory: true,
+	},
+} as const satisfies Record<
+	ItemBehavior,
+	Pick<
+		ItemFormValues,
+		"asset" | "purchasable" | "sellable" | "service" | "trackInventory"
+	>
+>;
+
+const ItemStatusRadioOptions = [
+	{ label: "Active", value: "Active" },
+	{ label: "Inactive", value: "Inactive" },
 ] as const;
 
 const fieldClassName =

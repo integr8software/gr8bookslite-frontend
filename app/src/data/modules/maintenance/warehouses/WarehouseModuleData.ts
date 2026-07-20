@@ -1,6 +1,6 @@
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import type { WarehouseAccessRecord } from "@/app/src/types/modules/maintenance/warehouse-access/WarehouseAccessTypes";
-import type { StorageLocationRecord } from "@/app/src/types/modules/maintenance/storage-locations/StorageLocationTypes";
+import type { WarehouseStorageRecord } from "@/app/src/types/modules/maintenance/warehouse-storage/WarehouseStorageTypes";
 import type { WarehouseTransferRecord } from "@/app/src/types/modules/maintenance/warehouse-transfers/WarehouseTransferTypes";
 import type { WarehouseRecord, WarehouseStatus } from "@/app/src/types/modules/maintenance/warehouses/WarehouseTypes";
 import type {
@@ -20,17 +20,16 @@ export function createWarehouseModuleRows(kind: WarehouseModulePageKind, warehou
     );
   }
 
-  if (kind === "storage-locations") {
+  if (kind === "warehouse-storage") {
     return warehouses.flatMap((warehouse) =>
       warehouse.locations.map((location) =>
         createWarehouseModuleRecord(kind, warehouse.id, location.id, [
-          warehouse.name,
-          location.zone || "-",
-          location.aisle || "-",
-          location.rackNo || "-",
-          location.shelfNo || "-",
-          location.binNo || "-",
           location.locationCode,
+          getLocationName(location),
+          warehouse.name,
+          createLocationPath(location),
+          location.locationType || "-",
+          String(warehouse.items.filter((item) => item.storageLocation === location.locationCode || item.storageLocation === location.locationName).length),
           location.status,
         ]),
       ),
@@ -81,19 +80,26 @@ export function createBlankWarehouseModuleForm(kind: WarehouseEditableSupportKin
     aisle: "",
     balance: "0",
     binNo: "",
+    capacity: "",
+    capacityUom: "units",
     date: new Date().toISOString().slice(0, 10),
     destinationWarehouse: warehouses.find((warehouse) => warehouse.id !== firstWarehouse?.id)?.name ?? "",
     item: "",
     locationCode: "",
+    locationName: "",
+    locationType: "General Storage",
+    notes: "",
     permissions: ["View Stock"],
     quantityIn: "0",
     quantityOut: "0",
     rackNo: "",
     referenceNumber: createWarehouseModuleReferenceNumber(kind),
     requestedBy: "",
+    room: "",
     shelfNo: "",
     sourceWarehouse: firstWarehouse?.name ?? "",
     status: kind === "transfers" ? "Draft" : "Active",
+    temperatureZone: "",
     transactionType: "",
     user: "",
     userEmail: "",
@@ -129,7 +135,7 @@ export function createWarehouseModuleFormFromRow(row: WarehouseModuleRecord, war
       : form;
   }
 
-  if (row.kind === "storage-locations") {
+  if (row.kind === "warehouse-storage") {
     const record = warehouse.locations.find((location) => location.id === row.recordId);
 
     return record
@@ -137,10 +143,17 @@ export function createWarehouseModuleFormFromRow(row: WarehouseModuleRecord, war
           ...form,
           aisle: record.aisle,
           binNo: record.binNo,
+          capacity: record.capacity ?? "",
+          capacityUom: record.capacityUom ?? "units",
           locationCode: record.locationCode,
+          locationName: record.locationName ?? "",
+          locationType: record.locationType ?? "General Storage",
+          notes: record.notes ?? "",
           rackNo: record.rackNo,
+          room: record.room ?? "",
           shelfNo: record.shelfNo,
           status: record.status,
+          temperatureZone: record.temperatureZone ?? "",
           warehouseId: warehouse.id,
           zone: record.zone,
         }
@@ -213,7 +226,7 @@ export function removeWarehouseModuleRecord(row: WarehouseModuleRecord, warehous
 
 export function toEditableWarehouseModuleKind(kind: WarehouseModulePageKind): WarehouseEditableSupportKind {
   if (kind === "stock-inquiry") {
-    return "storage-locations";
+    return "warehouse-storage";
   }
 
   return kind as WarehouseEditableSupportKind;
@@ -221,7 +234,7 @@ export function toEditableWarehouseModuleKind(kind: WarehouseModulePageKind): Wa
 
 function createWarehouseModuleRecord(kind: WarehouseModulePageKind, warehouseId: string, recordId: string, values: string[]): WarehouseModuleRecord {
   const status =
-    values.find((value) => ["Active", "Inactive", "Draft", "Submitted", "Approved", "In Transit", "Received", "Completed"].includes(value)) ?? "Active";
+    values.find((value) => ["Active", "Inactive", "Blocked", "Reserved", "Draft", "Submitted", "Approved", "In Transit", "Received", "Completed"].includes(value)) ?? "Active";
 
   return {
     id: `${kind}-${warehouseId}-${recordId}`,
@@ -256,15 +269,22 @@ function upsertRecordIntoWarehouse(
     };
   }
 
-  if (kind === "storage-locations") {
-    const record: StorageLocationRecord = {
+  if (kind === "warehouse-storage") {
+    const record: WarehouseStorageRecord = {
       aisle: form.aisle.trim(),
       binNo: form.binNo.trim(),
+      capacity: form.capacity.trim() || undefined,
+      capacityUom: form.capacityUom.trim() || undefined,
       id: recordId ?? `loc-${Date.now()}`,
       locationCode: form.locationCode.trim() || createLocationCode(form),
+      locationName: form.locationName.trim() || form.locationCode.trim() || createLocationCode(form),
+      locationType: form.locationType.trim() || undefined,
+      notes: form.notes.trim() || undefined,
       rackNo: form.rackNo.trim(),
+      room: form.room.trim() || undefined,
       shelfNo: form.shelfNo.trim(),
-      status: normalizeStatus(form.status),
+      status: normalizeWarehouseStorageStatus(form.status),
+      temperatureZone: form.temperatureZone.trim() || undefined,
       warehouseId: warehouse.id,
       warehouseName: warehouse.name,
       zone: form.zone.trim(),
@@ -301,7 +321,7 @@ function removeRecordFromWarehouse(warehouse: WarehouseRecord, kind: WarehouseEd
     };
   }
 
-  if (kind === "storage-locations") {
+  if (kind === "warehouse-storage") {
     return {
       ...warehouse,
       locations: warehouse.locations.filter((record) => record.id !== recordId),
@@ -324,15 +344,49 @@ function normalizeStatus(status: string): WarehouseStatus {
   return status === "Inactive" ? "Inactive" : "Active";
 }
 
+function normalizeWarehouseStorageStatus(status: string) {
+  if (status === "Inactive" || status === "Blocked" || status === "Reserved") {
+    return status;
+  }
+
+  return "Active";
+}
+
 function createLocationCode(form: WarehouseModuleFormValues) {
-  return [form.zone, form.rackNo, form.shelfNo, form.binNo]
-    .map((part) => part.trim())
+  const structuredCode = [form.zone, form.room, form.aisle, form.rackNo, form.shelfNo, form.binNo, form.temperatureZone]
+    .map((part) => part.trim().replace(/\s+/g, "").toUpperCase())
     .filter(Boolean)
     .join("-");
+
+  return structuredCode || form.locationName.trim().replace(/\s+/g, "-").toUpperCase();
+}
+
+function getLocationName(location: { locationCode: string; locationName?: string; zone: string; room?: string; aisle: string; rackNo: string; shelfNo: string; binNo: string; temperatureZone?: string }) {
+  return location.locationName?.trim() || location.locationCode || createLocationPath(location);
+}
+
+function createLocationPath(location: { locationCode: string; locationName?: string; zone: string; room?: string; aisle: string; rackNo: string; shelfNo: string; binNo: string; temperatureZone?: string }) {
+  const structuredParts = [
+    createPathPart("Zone", location.zone),
+    createPathPart("Room", location.room),
+    createPathPart("Aisle", location.aisle),
+    createPathPart("Rack", location.rackNo),
+    createPathPart("Level", location.shelfNo),
+    createPathPart("Bin", location.binNo),
+    createPathPart("Temp", location.temperatureZone),
+  ].filter(Boolean);
+
+  return structuredParts.join(" / ") || location.locationName?.trim() || location.locationCode || "-";
+}
+
+function createPathPart(label: string, value?: string) {
+  const normalizedValue = value?.trim();
+
+  return normalizedValue ? `${label} ${normalizedValue}` : "";
 }
 
 function createWarehouseModuleReferenceNumber(kind: WarehouseEditableSupportKind) {
-  const prefix = kind === "transfers" ? "WT" : kind === "storage-locations" ? "LOC" : "ACC";
+  const prefix = kind === "transfers" ? "WT" : kind === "warehouse-storage" ? "LOC" : "ACC";
 
   return `${prefix}-${Date.now().toString().slice(-6)}`;
 }

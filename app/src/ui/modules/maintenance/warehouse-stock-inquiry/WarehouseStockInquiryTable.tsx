@@ -35,22 +35,22 @@ export function WarehouseStockInquiryTable({
 		<div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm">
 			<ModuleTable
 				variant="embedded"
-				emptyDescription="No stock rows match the current inquiry filters."
+				emptyDescription="No availability rows match the current filters."
 				emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-				emptyTitle="No Warehouse Stock Found"
+				emptyTitle="No Item Availability Found"
 				isLoading={page.isLoading}
 				isSyncing={page.isRefreshing}
 				lastSyncedAt={page.lastSyncedAt}
 				minWidthClassName={`${tableMinWidthClassName} table-fixed`}
 				paginationStorageKey={WarehouseStockInquiryPaginationStorageKey}
 				table={page.table}
-				tableTitle="Warehouse stock inquiry"
+				tableTitle="Item availability"
 				toolbar={
 					<ModuleTableToolbar className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 md:!grid-cols-[minmax(0,1fr)_auto]">
 						<div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(11rem,1.2fr)_minmax(7rem,0.8fr)]">
 							<ModuleTableSearch
-								label="Search warehouse stock"
-								placeholder="Search warehouse stock"
+								label="Search item availability"
+								placeholder="Search item availability"
 								value={page.query}
 								onChange={page.setQuery}
 							/>
@@ -72,11 +72,11 @@ export function WarehouseStockInquiryTable({
 							<ModuleTableExportButton
 								allRows={page.records}
 								columns={WarehouseStockInquiryExportColumns}
-								fileName="warehouse-stock-inquiry"
+								fileName="item-availability"
 								filteredRows={page.filteredRecords}
 								isFiltered={hasActiveFilters}
 								table={page.table}
-								title="Warehouse Stock Inquiry"
+								title="Item Availability"
 							/>
 							<ModuleTableResetButton
 								aria-label={hasActiveFilters ? "Reset filters" : "Refresh inquiry"}

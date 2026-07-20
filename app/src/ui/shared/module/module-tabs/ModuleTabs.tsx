@@ -12,6 +12,7 @@ type ModuleTabsProps<TabId extends string> = {
 	activeTab: TabId;
 	ariaLabel: string;
 	onTabChange: (tab: TabId) => void;
+	tabClassName?: string;
 	tabs: readonly ModuleTabItem<TabId>[];
 };
 
@@ -19,6 +20,7 @@ export function ModuleTabs<TabId extends string>({
 	activeTab,
 	ariaLabel,
 	onTabChange,
+	tabClassName,
 	tabs,
 }: ModuleTabsProps<TabId>) {
 	return (
@@ -39,6 +41,7 @@ export function ModuleTabs<TabId extends string>({
 								isActive
 									? "bg-skyblue text-white shadow-sm"
 									: "text-darknavy/65 hover:bg-offwhite hover:text-darknavy",
+								tabClassName,
 							)}
 						>
 							<span>{tab.label}</span>

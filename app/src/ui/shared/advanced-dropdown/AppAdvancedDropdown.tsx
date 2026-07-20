@@ -320,6 +320,24 @@ export function AppAdvancedDropdown({
 			?.scrollIntoView({ block: "nearest" });
 	}, [activeOptionId, isOpen]);
 
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		const selectedOptionId = optionIdByValue.get(selectedValues[0] ?? "");
+
+		if (!selectedOptionId) {
+			return;
+		}
+
+		window.requestAnimationFrame(() => {
+			document
+				.getElementById(selectedOptionId)
+				?.scrollIntoView({ block: "start" });
+		});
+	}, [isOpen, optionIdByValue, selectedValues]);
+
 	function openOptions() {
 		if (isInteractionLocked) {
 			return;
@@ -540,7 +558,7 @@ export function AppAdvancedDropdown({
 				menuPortal
 					? "fixed z-130"
 					: "absolute left-0 top-full z-40 mt-1 w-full",
-				"app-advanced-dropdown-menu flex max-h-80 flex-col overflow-hidden overscroll-contain rounded-lg border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.14)]",
+				"app-advanced-dropdown-menu flex max-h-80 flex-col overflow-hidden overscroll-contain rounded-lg border border-darknavy/12 bg-white shadow-[0_18px_50px_rgba(33,39,56,0.16)]",
 			)}
 		>
 			{isSearchable || optionViewToggle ? (
@@ -803,11 +821,17 @@ function OptionRow({
 	const optionClassName =
 		view === "grid"
 			? getGridOptionClassName(isSelected, option.disabled, isActive)
-			: getOptionClassName(isSelected, option.disabled, isActive);
+			: getOptionClassName(
+					isSelected,
+					option.disabled,
+					isActive,
+					hasChildren,
+					level,
+				);
 	const content = (
 		<>
 			{showSelectionIndicator ? (
-				<span className="flex h-5 w-5 shrink-0 items-center justify-center">
+				<span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
 					{isSelected ? (
 						<Check className="h-4 w-4 text-skyblue" aria-hidden="true" />
 					) : null}
@@ -1127,12 +1151,15 @@ function getOptionClassName(
 	isSelected: boolean,
 	isDisabled?: boolean,
 	isActive?: boolean,
+	hasChildren?: boolean,
+	level = 0,
 ) {
 	return joinClasses(
-		"app-advanced-dropdown-option flex min-h-9 w-full items-center gap-2.5 rounded-md py-1.5 pr-3 text-left transition",
-		isSelected && "bg-skyblue/10 text-darknavy",
-		!isSelected && "text-darknavy hover:bg-skyblue/10",
-		isActive && !isDisabled && "bg-skyblue/15 ring-1 ring-inset ring-skyblue/25",
+		"app-advanced-dropdown-option flex min-h-9 w-full items-center gap-2.5 rounded-md border border-transparent py-1.5 pr-3 text-left transition",
+		hasChildren && !isSelected && level === 0 && "bg-darknavy/[0.025]",
+		isSelected && "text-darknavy",
+		!isSelected && "text-darknavy hover:border-skyblue/15 hover:bg-skyblue/[0.06]",
+		isActive && !isDisabled && "border-skyblue/25 bg-skyblue/[0.07]",
 		isDisabled && "cursor-not-allowed opacity-45",
 	);
 }

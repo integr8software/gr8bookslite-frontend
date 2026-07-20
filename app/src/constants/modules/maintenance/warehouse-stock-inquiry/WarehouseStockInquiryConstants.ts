@@ -6,10 +6,10 @@ export const WarehouseStockInquiryHref = MODULE_ROUTE_MAP.WSI;
 
 export const WarehouseStockInquiryApiPath = "/maintenance/warehouse-stock-inquiry";
 
-export const WarehouseStockInquiryTitle = "Warehouse Stock Inquiry";
+export const WarehouseStockInquiryTitle = "Item Availability";
 
 export const WarehouseStockInquiryDescription =
-	"View on-hand, reserved, available, and inventory value by warehouse, item, category, brand, supplier, lot, serial, and location.";
+	"View on-hand, reserved, available, and inventory value by warehouse, item, lot, serial, and storage location.";
 
 export const WarehouseStockInquiryActionLabel = "Refresh Inquiry";
 
@@ -77,4 +77,4 @@ export function getWarehouseStockInquiryTableMinWidthClassName(
 }
 
 export const WarehouseStockInquiryPaginationStorageKey =
-	"maintenance.warehouse-stock-inquiry";
+	"maintenance.item-availability";

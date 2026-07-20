@@ -216,7 +216,7 @@ export const ModuleHelpArticles: ModuleHelpArticle[] = [
     "Configure item and warehouse master files used by inventory documents.",
     [
       "Items setup defines item records, bundle components, inventory transaction types, and the single Item Category classification tree used during document entry.",
-      "Warehouse Management defines storage locations, access assignments, and warehouse item counts used for stock movement and reporting.",
+      "Warehouse Management defines warehouse storage, access assignments, and warehouse item counts used for stock movement and reporting.",
     ],
     ["help-warehouse-management", "help-items", "help-inventory"],
   ),

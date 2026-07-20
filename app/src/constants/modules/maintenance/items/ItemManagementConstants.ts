@@ -1,4 +1,5 @@
 import type {
+	ItemBehavior,
 	ItemCategoryAccountingSetup,
 	ItemCategoryTableColumnKey,
 	ItemPerishability,
@@ -22,6 +23,18 @@ export const ItemPerishabilityOptions = [
 	"Non Perishable",
 	"Perishable",
 ] as const satisfies readonly ItemPerishability[];
+
+export const ItemBehaviorOptions = [
+	"Sellable Item",
+	"Purchasable Item",
+	"Raw Material",
+	"Semi-Finished Goods / WIP",
+	"Finished Goods",
+	"Service Item",
+	"Non-Inventory Item",
+	"Fixed Asset Item",
+	"Consumable Item",
+] as const satisfies readonly ItemBehavior[];
 
 export const ItemTaxTreatmentOptions = [
 	"VAT Exclusive",

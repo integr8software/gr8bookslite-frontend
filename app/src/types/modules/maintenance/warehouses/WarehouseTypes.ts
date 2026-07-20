@@ -3,7 +3,7 @@ import type { useWarehouseListPage } from "@/app/src/hooks/modules/maintenance/w
 import type { WarehouseAccessRecord } from "@/app/src/types/modules/maintenance/warehouse-access/WarehouseAccessTypes";
 import type { WarehouseStockItem, WarehouseStockMovement } from "@/app/src/types/modules/maintenance/warehouse-stock-inquiry/WarehouseStockInquiryTypes";
 import type { WarehouseTransferRecord } from "@/app/src/types/modules/maintenance/warehouse-transfers/WarehouseTransferTypes";
-import type { StorageLocationRecord } from "@/app/src/types/modules/maintenance/storage-locations/StorageLocationTypes";
+import type { WarehouseStorageRecord } from "@/app/src/types/modules/maintenance/warehouse-storage/WarehouseStorageTypes";
 
 export type WarehouseStatus = "Active" | "Inactive";
 export type ApiWarehouseStatus = "ACTIVE" | "INACTIVE";
@@ -33,7 +33,7 @@ export type WarehouseRecord = {
   updatedAt: string | null;
   access: WarehouseAccessRecord[];
   items: WarehouseStockItem[];
-  locations: StorageLocationRecord[];
+  locations: WarehouseStorageRecord[];
   movements: WarehouseStockMovement[];
   transfers: WarehouseTransferRecord[];
 };

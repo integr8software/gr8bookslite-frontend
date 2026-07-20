@@ -14,7 +14,7 @@ import {
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus } from "lucide-react";
+import { Clock3, GripVertical, Plus } from "lucide-react";
 import {
 	useEffect,
 	useState,
@@ -102,7 +102,7 @@ export function ItemSuppliersTable({
 					{error}
 				</p>
 			) : null}
-			<div className="mt-4 overflow-auto">
+			<div className="mt-4 overflow-auto rounded-lg border border-skyblue/15 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
 				<DndContext
 					collisionDetection={closestCenter}
 					sensors={sensors}
@@ -118,19 +118,19 @@ export function ItemSuppliersTable({
 							<col className="w-[7rem]" />
 							<col className="w-[7rem]" />
 						</colgroup>
-						<thead className="bg-darknavy/[0.03] text-xs font-semibold uppercase tracking-wide text-darknavy/50">
+						<thead className="border-b border-skyblue/15 bg-skyblue/[0.08] text-xs font-semibold uppercase tracking-wide text-darknavy/70">
 							<tr>
-								<th className="px-3 py-3">
+								<th className="px-3 py-3.5">
 									<span className="sr-only">Order</span>
 								</th>
-								<th className="px-3 py-3">Supplier</th>
-								<th className="px-3 py-3">Supplier Item Code</th>
-								<th className="px-3 py-3">Lead Time</th>
-								<th className="px-3 py-3">Cost</th>
-								<th className="px-3 py-3 text-center">
+								<th className="px-3 py-3.5">Supplier</th>
+								<th className="px-3 py-3.5">Supplier Item Code</th>
+								<th className="px-3 py-3.5">Lead Time</th>
+								<th className="px-3 py-3.5">Cost</th>
+								<th className="px-3 py-3.5 text-center">
 									Default
 								</th>
-								<th className="px-3 py-3 text-center">
+								<th className="px-3 py-3.5 text-center">
 									Actions
 								</th>
 							</tr>
@@ -139,7 +139,7 @@ export function ItemSuppliersTable({
 							items={supplierIds}
 							strategy={verticalListSortingStrategy}
 						>
-							<tbody className="divide-y divide-darknavy/8">
+							<tbody className="divide-y divide-skyblue/10">
 								{suppliers.length === 0 ? (
 									<tr>
 										<td
@@ -206,9 +206,12 @@ function SupplierRow({
 		<tr
 			ref={setNodeRef}
 			style={style}
-			className={
-				isDragging ? "relative z-10 bg-skyblue/5 shadow-sm" : undefined
-			}
+			className={[
+				"transition-colors hover:bg-skyblue/[0.035]",
+				isDragging ? "relative z-10 bg-skyblue/8 shadow-sm" : "",
+			]
+				.filter(Boolean)
+				.join(" ")}
 		>
 			<td className="px-3 py-3">
 				<button
@@ -255,14 +258,12 @@ function SupplierRow({
 				/>
 			</td>
 			<td className="px-3 py-3">
-				<input
+				<LeadTimeInput
 					value={supplier.leadTime}
-					onChange={(event) =>
-						onUpdateSupplier(supplier.id, "leadTime", event.target.value)
-					}
 					readOnly={isReadonly}
-					className={fieldClassName}
-					placeholder="3 days"
+					onValueChange={(value) =>
+						onUpdateSupplier(supplier.id, "leadTime", value)
+					}
 				/>
 			</td>
 			<td className="px-3 py-3">
@@ -303,6 +304,83 @@ function SupplierRow({
 
 const fieldClassName =
 	"min-h-10 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 read-only:bg-offwhite/65";
+
+const LeadTimeUnits = ["days", "weeks", "months"] as const;
+
+function LeadTimeInput({
+	readOnly,
+	value,
+	onValueChange,
+}: {
+	readOnly: boolean;
+	value: string;
+	onValueChange: (value: string) => void;
+}) {
+	const parsedValue = parseLeadTime(value);
+
+	function updateLeadTime(quantity: string, unit = parsedValue.unit) {
+		if (!quantity.trim()) {
+			onValueChange("");
+			return;
+		}
+
+		onValueChange(`${quantity} ${unit}`);
+	}
+
+	return (
+		<div className="flex min-h-10 overflow-hidden rounded-md border border-darknavy/15 bg-white text-sm font-medium text-darknavy transition focus-within:border-skyblue focus-within:ring-2 focus-within:ring-skyblue/20">
+			<span className="flex w-10 items-center justify-center border-r border-darknavy/10 bg-skyblue/[0.06] text-skyblue">
+				<Clock3 className="h-4 w-4" aria-hidden="true" />
+			</span>
+			<input
+				type="number"
+				min={0}
+				inputMode="numeric"
+				value={parsedValue.quantity}
+				onChange={(event) => updateLeadTime(event.target.value)}
+				readOnly={readOnly}
+				className="min-w-0 flex-1 bg-white px-2 text-sm font-semibold text-darknavy outline-none placeholder:text-darknavy/35 read-only:bg-offwhite/65"
+				placeholder="0"
+			/>
+			<select
+				value={parsedValue.unit}
+				onChange={(event) =>
+					updateLeadTime(
+						parsedValue.quantity,
+						event.target.value as (typeof LeadTimeUnits)[number],
+					)
+				}
+				disabled={readOnly}
+				className="w-20 border-l border-darknavy/10 bg-offwhite/70 px-2 text-xs font-semibold uppercase tracking-wide text-darknavy/65 outline-none transition hover:bg-skyblue/[0.06] disabled:cursor-default disabled:text-darknavy/45"
+			>
+				{LeadTimeUnits.map((unit) => (
+					<option key={unit} value={unit}>
+						{unit}
+					</option>
+				))}
+			</select>
+		</div>
+	);
+}
+
+function parseLeadTime(value: string): {
+	quantity: string;
+	unit: (typeof LeadTimeUnits)[number];
+} {
+	const [, quantity = "", unit = "days"] =
+		value.trim().match(/^(\d+(?:\.\d+)?)\s*(days?|weeks?|months?)?/i) ?? [];
+	const normalizedUnit = unit.toLowerCase().replace(/s$/, "");
+
+	if (normalizedUnit === "week") {
+		return { quantity, unit: "weeks" };
+	}
+
+	if (normalizedUnit === "month") {
+		return { quantity, unit: "months" };
+	}
+
+	return { quantity, unit: "days" };
+}
 
 function DecimalNumberInput({
 	readOnly,

@@ -101,9 +101,9 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Warehouse access",
   },
   {
-    href: "/maintenance/storage-locations",
+    href: "/maintenance/warehouse-storage",
     addMode: "none",
-    label: "Storage locations",
+    label: "Warehouse storages",
   },
   {
     href: "/maintenance/warehouse-transfers",

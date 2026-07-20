@@ -3,12 +3,12 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { TermManagementHref } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+import { TermManagementHref } from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import {
 	TermManagementInitialFormValues,
 	createTermManagementFormValues,
 	updateTermManagementFromForm,
-} from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
+} from "@/app/src/data/modules/maintenance/term-management/TermManagementData";
 import type {
 	TermManagementActionMode,
 	TermManagement,
@@ -32,10 +32,7 @@ export function useTermManagementFormPage(
 	const router = useRouter();
 	const pathname = usePathname();
 	const params = useParams<{ recordId?: string }>();
-	const terms = useTermManagementStore((state) => state.terms);
-	const addTerm = useTermManagementStore((state) => state.addTerm);
-	const updateTerm = useTermManagementStore((state) => state.updateTerm);
-	const isMutating = useTermManagementStore((state) => state.isMutating);
+	const { addTerm, isMutating, terms, updateTerm } = useTermManagementStore();
 	const mode = options.mode ?? getActionMode(pathname);
 	const existingTerm =
 		options.existingTerm ?? terms.find((term) => term.id === params.recordId);
@@ -73,15 +70,19 @@ export function useTermManagementFormPage(
 			HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 		>,
 	) {
+		const field = event.target.name as keyof TermManagementFormValues;
+		const value =
+			field === "period"
+				? normalizeWholeNumberText(event.target.value)
+				: event.target.value;
+
 		updateField(
-			event.target.name as keyof TermManagementFormValues,
-			event.target.value,
+			field,
+			value,
 		);
 	}
 
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
+	function validateBeforeSubmit() {
 		const nextErrors = validateTermManagementForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
@@ -89,6 +90,16 @@ export function useTermManagementFormPage(
 			toast.error(
 				"Please review the highlighted fields and enter valid information.",
 			);
+			return false;
+		}
+
+		return true;
+	}
+
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -146,8 +157,13 @@ export function useTermManagementFormPage(
 		needsRecord: mode === "edit" || mode === "view",
 		nextStatus,
 		setIsStatusDialogOpen,
+		validateBeforeSubmit,
 		values,
 	};
+}
+
+function normalizeWholeNumberText(value: string) {
+	return value.replace(/\D/g, "");
 }
 
 function getActionMode(pathname: string): TermManagementActionMode {
@@ -161,3 +177,5 @@ function getActionMode(pathname: string): TermManagementActionMode {
 
 	return "add";
 }
+
+

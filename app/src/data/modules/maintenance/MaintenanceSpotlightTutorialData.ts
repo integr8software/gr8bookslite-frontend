@@ -1,5 +1,5 @@
 import type { SpotlightTourStep } from "@/app/src/types/shared/tour/SpotlightTourTypes";
-import { ChartsOfAccountsHref } from "@/app/src/constants/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsConstants";
+import { ChartsOfAccountsHref } from "@/app/src/constants/modules/maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 
 export const MaintenanceSpotlightTutorialOpenEvent =
   "gr8booksneo:maintenance-spotlight-open";
@@ -7,9 +7,9 @@ export const MaintenanceSpotlightTutorialOpenEvent =
 export const MaintenanceAddSpotlightTutorialOpenEvent =
   "gr8booksneo:maintenance-add-spotlight-open";
 export const MaintenanceAddDrawerSpotlightTutorialOpenEvent =
-  "gr8booksneo:maintenance-add-drawer-spotlight-open";
+  "gr8booksneo:module-drawer-spotlight-open";
 export const MaintenanceAddDrawerSpotlightTutorialCloseEvent =
-  "gr8booksneo:maintenance-add-drawer-spotlight-close";
+  "gr8booksneo:module-drawer-spotlight-close";
 
 type MaintenanceSpotlightTutorialConfig = {
   readonly addMode: "drawer" | "none" | "route";
@@ -41,9 +41,9 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Term management",
   },
   {
-    href: "/maintenance/transaction-type",
+    href: "/maintenance/inventory-transaction-type",
     addMode: "drawer",
-    label: "Transaction type",
+    label: "Inventory transaction type",
   },
   {
     href: "/maintenance/payment-type",
@@ -51,17 +51,17 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Payment type",
   },
   {
-    href: "/maintenance/item-management/items",
+    href: "/maintenance/items",
     addMode: "route",
     label: "Items",
   },
   {
-    href: "/maintenance/item-management/item-bundles",
+    href: "/maintenance/item-bundles",
     addMode: "route",
     label: "Item bundles",
   },
   {
-    href: "/maintenance/item-management/item-category",
+    href: "/maintenance/item-category",
     addMode: "drawer",
     label: "Item category",
   },
@@ -71,47 +71,47 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Party management",
   },
   {
-    href: "/maintenance/warehouse-management",
+    href: "/maintenance/warehouses",
     addMode: "drawer",
     label: "Warehouse management",
   },
   {
-    href: "/maintenance/item-management/item-attributes",
+    href: "/maintenance/item-attributes",
     addMode: "none",
     label: "Item attributes",
   },
   {
-    href: "/maintenance/item-management/unit-of-measurement",
+    href: "/maintenance/unit-of-measurement",
     addMode: "none",
     label: "Unit of measurement",
   },
   {
-    href: "/maintenance/item-management/item-promotions",
+    href: "/maintenance/item-promotions",
     addMode: "none",
     label: "Item promotions",
   },
   {
-    href: "/maintenance/item-management/price-lists",
+    href: "/maintenance/price-lists",
     addMode: "none",
     label: "Price lists",
   },
   {
-    href: "/maintenance/warehouse-management/access",
+    href: "/maintenance/warehouse-access",
     addMode: "none",
     label: "Warehouse access",
   },
   {
-    href: "/maintenance/warehouse-management/storage-locations",
+    href: "/maintenance/warehouse-storage",
     addMode: "none",
-    label: "Storage locations",
+    label: "Warehouse storages",
   },
   {
-    href: "/maintenance/warehouse-management/transfers",
+    href: "/maintenance/warehouse-transfers",
     addMode: "none",
     label: "Warehouse transfers",
   },
   {
-    href: "/maintenance/warehouse-management/stock-inquiry",
+    href: "/maintenance/warehouse-stock-inquiry",
     addMode: "none",
     includeCreateStep: false,
     label: "Warehouse stock inquiry",
@@ -430,21 +430,24 @@ export function createMaintenanceAddDrawerSpotlightTutorialSteps(
       title: `Add a new ${label} record`,
       description:
         "The Add drawer keeps the new maintenance record close to the list so you can complete the setup without leaving the module.",
-      selectors: ["[data-spotlight-id='maintenance-add-drawer']"],
+      selectors: ["[data-spotlight-id='module-drawer']"],
     },
     {
       key: "add-drawer-fields",
       title: "Complete the setup details",
       description:
         "Fill in the required fields and review the available options for the new maintenance record.",
-      selectors: ["[data-spotlight-id='maintenance-add-drawer-fields']"],
+      selectors: ["[data-spotlight-id='module-drawer-fields']"],
     },
     {
       key: "add-drawer-save",
       title: "Save the new record",
       description:
         "Save the drawer when the setup information is ready. The new entry will appear back in the maintenance list.",
-      selectors: ["[data-spotlight-id='maintenance-add-drawer-save']"],
+      selectors: ["[data-spotlight-id='module-drawer-save']"],
     },
   ];
 }
+
+
+

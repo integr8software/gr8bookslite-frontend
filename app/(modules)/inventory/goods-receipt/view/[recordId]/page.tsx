@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { GoodsReceiptAction } from "@/app/src/ui/modules/inventory/goods-receipt/Action";
+import { GoodsReceiptActionPage } from "@/app/src/ui/modules/inventory/goods-receipt/GoodsReceiptActionPage";
 
 const PageTitle = "View Goods Receipt";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function InventoryGoodsReceiptViewPage() {
-  return <GoodsReceiptAction />;
+  return <GoodsReceiptActionPage />;
 }
 
 

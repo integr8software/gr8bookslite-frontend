@@ -1,6 +1,12 @@
 "use client";
 
-import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { JournalVoucherHref } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
@@ -13,6 +19,7 @@ import {
   updateJournalVoucherFromForm,
 } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
 import { useJournalVoucherStore } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucher";
+import { FetchMultiCurrencyRates } from "@/app/src/services/modules/system-administration/multi-currency-setup/MultiCurrencySetupService";
 import type {
   JournalVoucherActionMode,
   JournalVoucherFormErrors,
@@ -40,6 +47,8 @@ export function useJournalVoucherFormPage() {
   );
   const [errors, setErrors] = useState<JournalVoucherFormErrors>({});
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isExchangeRateLoading, setIsExchangeRateLoading] = useState(false);
+  const exchangeRateRequestIdRef = useRef(0);
   const totals = useMemo(() => getJournalVoucherTotals(values.lines), [values.lines]);
 
   function handleInputChange(
@@ -50,16 +59,76 @@ export function useJournalVoucherFormPage() {
     }
 
     const field = event.target.name as keyof JournalVoucherFormValues;
+    const fieldValue = event.target.value;
+
+    if (field === "currencyType") {
+      void updateCurrencyFromExchangeRates(fieldValue);
+      return;
+    }
+
     const value =
       field === "currencyRate"
-        ? Number(event.target.value || 0)
-        : event.target.value;
+        ? Number(fieldValue || 0)
+        : fieldValue;
 
     setValues((current) => ({
       ...current,
       [field]: value,
     }));
     setErrors((current) => ({ ...current, [field]: undefined }));
+  }
+
+  async function updateCurrencyFromExchangeRates(currencyCode: string) {
+    const requestId = exchangeRateRequestIdRef.current + 1;
+
+    exchangeRateRequestIdRef.current = requestId;
+    setValues((current) => ({
+      ...current,
+      currencyType: currencyCode,
+      currencyRate: currencyCode === "PHP" ? 1 : current.currencyRate,
+    }));
+    setErrors((current) => ({
+      ...current,
+      currencyType: undefined,
+      currencyRate: undefined,
+    }));
+
+    if (currencyCode === "PHP") {
+      setIsExchangeRateLoading(false);
+      return;
+    }
+
+    setIsExchangeRateLoading(true);
+
+    try {
+      const rates = await FetchMultiCurrencyRates(currencyCode);
+      const phpRate = rates.find((rate) => rate.targetCurrencyCode === "PHP");
+
+      if (exchangeRateRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      if (!phpRate) {
+        throw new Error("No PHP exchange rate returned.");
+      }
+
+      setValues((current) => ({
+        ...current,
+        currencyRate: normalizeExchangeRate(phpRate.exchangeRate),
+      }));
+    } catch {
+      if (exchangeRateRequestIdRef.current === requestId) {
+        setErrors((current) => ({
+          ...current,
+          currencyRate: "Could not load the exchange rate.",
+        }));
+        toast.error("Could not load the exchange rate for the selected currency.");
+      }
+    } finally {
+      if (exchangeRateRequestIdRef.current === requestId) {
+        setIsExchangeRateLoading(false);
+      }
+    }
   }
 
   function updateLine(
@@ -225,7 +294,7 @@ export function useJournalVoucherFormPage() {
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
-      toast.error("Please balance the journal voucher before saving.");
+      toast.error("Please fix the highlighted journal voucher fields before saving.");
       return;
     }
 
@@ -253,15 +322,21 @@ export function useJournalVoucherFormPage() {
   }
 
   function clearLineError(lineId: string, field: JournalVoucherLineField) {
+    const fieldsToClear: JournalVoucherLineField[] =
+      field === "debit" || field === "credit" ? ["debit", "credit"] : [field];
+
     setErrors((current) => ({
       ...current,
       balance: undefined,
       lineErrors: {
         ...current.lineErrors,
-        [lineId]: {
-          ...current.lineErrors?.[lineId],
-          [field]: undefined,
-        },
+        [lineId]: fieldsToClear.reduce(
+          (lineErrors, currentField) => ({
+            ...lineErrors,
+            [currentField]: undefined,
+          }),
+          { ...current.lineErrors?.[lineId] },
+        ),
       },
     }));
   }
@@ -277,6 +352,7 @@ export function useJournalVoucherFormPage() {
     handleSubmit,
     insertLine,
     isDeleteDialogOpen,
+    isExchangeRateLoading,
     isMutating,
     isReadonly,
     mode,
@@ -322,6 +398,14 @@ function normalizeJournalVoucherLineUpdate(
   }
 
   return nextLine;
+}
+
+function normalizeExchangeRate(value: number) {
+  if (!Number.isFinite(value) || value <= 0) {
+    return 0;
+  }
+
+  return Number(value.toFixed(6));
 }
 
 function shouldClearLine(

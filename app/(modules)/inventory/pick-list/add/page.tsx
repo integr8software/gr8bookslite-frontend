@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { PickListAction } from "@/app/src/ui/modules/inventory/pick-list/Action";
+import { PickListActionPage } from "@/app/src/ui/modules/inventory/pick-list/PickListActionPage";
 
 const PageTitle = "Add Pick List";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function InventoryPickListAddPage() {
-  return <PickListAction />;
+  return <PickListActionPage />;
 }
 
 

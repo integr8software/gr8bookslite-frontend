@@ -15,7 +15,7 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { getEventCoordinates } from "@dnd-kit/utilities";
 import { Search } from "lucide-react";
 import { useState } from "react";
-import { getPointerDropPlacement } from "@/app/src/data/modules/maintenance/financial-management/charts-of-accounts/ChartsOfAccountsData";
+import { getPointerDropPlacement } from "@/app/src/data/modules/maintenance/charts-of-accounts/ChartsOfAccountsData";
 import type {
   ActiveDragAccount,
   ActiveDropTarget,
@@ -197,4 +197,5 @@ function getPointerY(event: DragMoveEvent | DragEndEvent) {
 
   return initialCoordinates.y + event.delta.y;
 }
+
 

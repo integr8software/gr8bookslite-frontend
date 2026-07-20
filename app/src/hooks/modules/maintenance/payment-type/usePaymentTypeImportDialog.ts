@@ -8,7 +8,7 @@ import {
 	ImportFieldOrder,
 	PreviewPageSize,
 	SelectionColumnWidth,
-} from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
+} from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import {
 	createBlankPaymentTypeImportRow,
 	createExistingPaymentTypeNameMap,
@@ -24,7 +24,7 @@ import {
 	validatePaymentTypeImportFileSize,
 	validatePaymentTypeImportRows,
 	waitForNextPaymentTypeImportBatch,
-} from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+} from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
 import type {
 	PaymentTypeImportDialogProps,
 	PaymentTypeImportColumnId,
@@ -604,3 +604,5 @@ export function usePaymentTypeImportDialog({
 		visibleRows,
 	};
 }
+
+

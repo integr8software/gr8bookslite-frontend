@@ -8,6 +8,7 @@ export type ApiBankStatus = "ACTIVE" | "INACTIVE";
 export type BankMasterfile = {
 	id: string;
 	accountCode: string;
+	accountTitle: string;
 	bankName: string;
 	branch: string;
 	accountNumber: string;
@@ -50,7 +51,7 @@ export type BankMasterfileTableColumnKey =
 	| "bankName"
 	| "branch"
 	| "accountNumber"
-	| "accountName"
+	| "accountTitle"
 	| "accountCode"
 	| "currencyCode"
 	| "isDefault"
@@ -108,10 +109,14 @@ export type BankMasterfileListResponse = {
 export type ApiBank = {
 	id: string;
 	accountCode: string;
+	accountTitle?: string | null;
 	bankName: string;
 	branch: string | null;
 	accountNumber: string;
 	accountName: string;
+	chartAccount?: {
+		accountTitle?: string | null;
+	} | null;
 	accountType: string | null;
 	currencyCode: string | null;
 	currencyExchangeRate: string | null;
@@ -161,11 +166,17 @@ export type BankMasterfileDrawerProps = {
 
 export type BankMasterfileFieldsProps = {
 	accountCode: string;
+	currencyOptions: Array<{
+		code: string;
+		country: string;
+		name: string;
+	}>;
 	errors: BankMasterfileFormErrors;
 	isAccountCodeLoading: boolean;
 	isReadonly: boolean;
 	mode: BankMasterfileActionMode;
 	values: BankMasterfileFormValues;
+	onCurrencyChange: (value: string) => void;
 	onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
 };
 
@@ -194,6 +205,11 @@ export type BankMasterfileTableProps = {
 	onStatusFilterChange: (value: BankMasterfileStatusFilter) => void;
 	onToggleStatus: (bank: BankMasterfile) => void;
 	onViewBank: (bank: BankMasterfile) => void;
+};
+
+export type BankMasterfileStatisticCardsProps = {
+	banks: BankMasterfile[];
+	isLoading?: boolean;
 };
 
 export type BankMasterfileTableFiltersProps = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { PurchaseRequestHref } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
@@ -22,6 +22,11 @@ import type { AiAssistantPurchaseRequestPrefill } from "@/app/src/types/shared/a
 import { validatePurchaseRequestForm } from "@/app/src/validations/modules/purchasing/purchase-request/PurchaseRequestValidation";
 import { usePurchaseRequestStore } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequest";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import {
+	createModuleDraftKey,
+	useModuleDraft,
+} from "@/app/src/hooks/shared/module/useModuleDraft";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { recordPurchaseRequestAuditLog } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestAuditLog";
 
 export function usePurchaseRequestFormPage() {
@@ -49,6 +54,8 @@ export function usePurchaseRequestFormPage() {
 		return applyAssistantPurchaseRequestPrefill(initialValues, assistantPrefill);
 	});
 	const [errors, setErrors] = useState<PurchaseRequestFormErrors>({});
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const isSubmittingRef = useRef(false);
 	const [showPreview, setShowPreview] = useState(searchParams.get("preview") === "1");
 
 	useEffect(() => {
@@ -63,6 +70,16 @@ export function usePurchaseRequestFormPage() {
 		() => createPurchaseRequestRecord(values, params.recordId ?? "preview"),
 		[params.recordId, values],
 	);
+	const draft = useModuleDraft({
+		enabled: !isReadonly,
+		key: createModuleDraftKey({
+			mode,
+			moduleId: "purchasing:purchase-request",
+			recordId: params.recordId,
+		}),
+		setValues,
+		values,
+	});
 
 	function updateField<TKey extends keyof PurchaseRequestFormValues>(
 		field: TKey,
@@ -101,6 +118,15 @@ export function usePurchaseRequestFormPage() {
 		setErrors((current) => ({ ...current, items: undefined }));
 	}
 
+	function updateItems(items: PurchaseRequestItem[]) {
+		if (isReadonly) {
+			return;
+		}
+
+		setValues((current) => ({ ...current, items }));
+		setErrors((current) => ({ ...current, items: undefined }));
+	}
+
 	function addItem() {
 		if (isReadonly) {
 			return;
@@ -132,15 +158,28 @@ export function usePurchaseRequestFormPage() {
 	}
 
 	function handleSubmit() {
-		if (isReadonly) {
+		if (isReadonly || isSubmittingRef.current) {
 			return;
 		}
 
+		const releaseSubmitLock = acquireModuleActionLock(
+			`purchasing:purchase-request:submit:${mode}:${params.recordId ?? values.transNo}`,
+		);
+
+		if (!releaseSubmitLock) {
+			return;
+		}
+
+		isSubmittingRef.current = true;
+		setIsSubmitting(true);
 		const nextErrors = validatePurchaseRequestForm(values);
 
 		if (Object.keys(nextErrors).length > 0) {
 			setErrors(nextErrors);
 			toast.error("Please complete the required purchase request fields.");
+			isSubmittingRef.current = false;
+			setIsSubmitting(false);
+			releaseSubmitLock();
 			return;
 		}
 
@@ -163,9 +202,13 @@ export function usePurchaseRequestFormPage() {
 				toast.success("Purchase request created.");
 			}
 
+			draft.clearDraft();
 			router.push(`${PurchaseRequestHref}/view/${nextRequest.id}`);
 		} catch {
 			toast.error("Could not save the purchase request. Please try again.");
+			isSubmittingRef.current = false;
+			setIsSubmitting(false);
+			releaseSubmitLock();
 		}
 	}
 
@@ -174,6 +217,7 @@ export function usePurchaseRequestFormPage() {
 		errors,
 		existingRequest,
 		handleSubmit,
+		isSubmitting,
 		isReadonly,
 		mode,
 		needsRecord: mode === "edit" || mode === "view",
@@ -183,6 +227,7 @@ export function usePurchaseRequestFormPage() {
 		showPreview,
 		updateField,
 		updateItem,
+		updateItems,
 		values,
 	};
 }

@@ -1,15 +1,16 @@
-import type { ChangeEventHandler } from "react";
+import type { ChangeEventHandler, ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,
 } from "@/app/src/types/shared/address/AddressTypes";
+import type { ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export type PartyClassification = "Individual" | "Non-Individual";
 
 export type PartyInformationStatus = "Active" | "Inactive";
 
-export type PartyType = "Vendor" | "Customer" | "Employee";
+export type PartyType = "Vendor" | "Customer" | "Employee" | "Member";
 
 export type VatRegistrationType =
   | "VAT Registered"
@@ -24,7 +25,7 @@ export type ApiPartyClassification = "INDIVIDUAL" | "NON_INDIVIDUAL";
 
 export type ApiPartyStatus = "ACTIVE" | "INACTIVE";
 
-export type ApiPartyType = "VENDOR" | "CUSTOMER" | "EMPLOYEE";
+export type ApiPartyType = "VENDOR" | "CUSTOMER" | "EMPLOYEE" | "MEMBER";
 
 export type ApiPartyVatRegistrationType =
   | "VAT_REGISTERED"
@@ -68,6 +69,11 @@ export type PartyInformationRecord = {
   middleName: string;
   lastName: string;
   suffixName: string;
+  honorific?: string;
+  gender?: string;
+  civilStatus?: string;
+  nationality?: string;
+  memberRegistrationDate?: string;
   address: PartyAddress;
   addresses: PartyAddress[];
   defaultReceivableAccount: string;
@@ -80,9 +86,12 @@ export type PartyInformationRecord = {
   termName: string;
   tin: string;
   vatRegistrationType: VatRegistrationType | "";
+  vatRegistrationTypeId?: string;
+  vatRegistration?: PartyVatRegistrationSummary | null;
   atcCode: string;
   email: string;
   contactNo: string;
+  landline?: string;
   createdBy?: string | null;
   createdAt: string;
   updatedBy?: string | null;
@@ -100,6 +109,11 @@ export type PartyInformationFormValues = {
   middleName: string;
   lastName: string;
   suffixName: string;
+  honorific: string;
+  gender: string;
+  civilStatus: string;
+  nationality: string;
+  memberRegistrationDate: string;
   address: PartyAddress;
   addresses: PartyAddress[];
   activeAddressId: string;
@@ -113,9 +127,12 @@ export type PartyInformationFormValues = {
   termName: string;
   tin: string;
   vatRegistrationType: VatRegistrationType | "";
+  vatRegistrationTypeId: string;
+  vatRegistration?: PartyVatRegistrationSummary | null;
   atcCode: string;
   email: string;
   contactNo: string;
+  landline: string;
 };
 
 export type PartyInformationFormErrors = Partial<{
@@ -125,6 +142,11 @@ export type PartyInformationFormErrors = Partial<{
   status: string;
   partyName: string;
   firstName: string;
+  honorific: string;
+  gender: string;
+  civilStatus: string;
+  nationality: string;
+  memberRegistrationDate: string;
   lastName: string;
   addresses: string;
   addressLine1: string;
@@ -144,9 +166,20 @@ export type PartyInformationFormErrors = Partial<{
   tin: string;
   email: string;
   contactNo: string;
+  landline: string;
 }>;
 
 export type PartyInformationActionMode = "add" | "edit" | "view";
+
+export type PartyInformationTabId =
+  | "accounting-information"
+  | "basic-information"
+  | "contact-information"
+  | "tax-information";
+
+export type PartyInformationTab = ModuleTabItem<PartyInformationTabId> & {
+  content: ReactNode;
+};
 
 export type PartyInformationActionHeaderProps = {
   canSave?: boolean;
@@ -155,6 +188,7 @@ export type PartyInformationActionHeaderProps = {
   isReadonly: boolean;
   mode: PartyInformationActionMode;
   nextStatus?: PartyInformationStatus;
+  onSave?: () => void;
   onStatusChange?: () => void;
 };
 
@@ -173,15 +207,20 @@ export type PartyAtcCodeOption = {
 export type PartyInformationTableColumnKey =
   | "billingAddressLabel"
   | "classification"
+  | "civilStatus"
   | "contactNo"
   | "createdAt"
   | "createdBy"
   | "email"
+  | "gender"
   | "homeAddressLabel"
+  | "landline"
+  | "memberRegistrationDate"
   | "name"
+  | "nationality"
   | "partyTypesLabel"
   | "partyCodeNo"
-  | "shippingAddressLabel"
+  | "deliveryAddressLabel"
   | "status"
   | "tin"
   | "updatedAt"
@@ -190,10 +229,10 @@ export type PartyInformationTableColumnKey =
 
 export type PartyInformationTableRecord = PartyInformationRecord & {
   billingAddressLabel: string;
+  deliveryAddressLabel: string;
   homeAddressLabel: string;
   name: string;
   partyTypesLabel: string;
-  shippingAddressLabel: string;
 };
 
 export type PartyInformationTableProps = {
@@ -257,12 +296,22 @@ export type PartyInformationDetailsFieldsProps = {
   isPartyCodeReadonly?: boolean;
   isReadonly: boolean;
   partyTypeOptions: readonly PartyType[];
+  taxMaintenanceOptions: PartyAddressDropdownOption[];
   termOptions: PartyAddressDropdownOption[];
   values: PartyInformationFormValues;
+  syncedAddressSources?: Record<string, string>;
+  canAddAccountTitle?: boolean;
+  canAddTaxRegistrationType?: boolean;
+  canAddTerm?: boolean;
+  onAddAccountTitle?: (field: PartyAccountingAccountField) => void;
+  onAddTaxRegistrationType?: () => void;
+  onAddTerm?: () => void;
   onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
+  onCopyAddress: (sourceAddressId: string, targetAddressId: string) => void;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
   onPartyTypesChange: (value: string | string[]) => void;
   onSelectAtcCode: (value: string | string[]) => void;
+  onSelectVatRegistrationType: (value: string | string[]) => void;
   onSelectAutocompleteAddress: (
     address: AddressAutocompleteItem,
     details?: AddressAutocompleteDetails,
@@ -284,7 +333,9 @@ export type PartyAddressContainerProps = {
   disabled: boolean;
   errors: PartyInformationFormErrors;
   partyTypes: PartyType[];
+  syncedAddressSources?: Record<string, string>;
   onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
+  onCopyAddress: (sourceAddressId: string, targetAddressId: string) => void;
   onSelectAutocompleteAddress: (
     address: AddressAutocompleteItem,
     details?: AddressAutocompleteDetails,
@@ -384,6 +435,10 @@ export type PartyManagementAnalytics = {
   totalpartyName: number;
 };
 
+export type PartyManagementStatisticCardsProps = {
+  analytics: PartyManagementAnalytics;
+};
+
 export type ApiPartyAddress = {
   id?: string;
   addressName: string;
@@ -417,6 +472,11 @@ export type ApiPartyPayload = {
   middleName?: string | null;
   lastName?: string | null;
   suffixName?: string | null;
+  honorific?: string | null;
+  gender?: string | null;
+  civilStatus?: string | null;
+  nationality?: string | null;
+  memberRegistrationDate?: string | null;
   addresses: ApiPartyAddress[];
   defaultReceivableAccount?: string | null;
   customerAdvanceAccount?: string | null;
@@ -427,9 +487,11 @@ export type ApiPartyPayload = {
   termId?: string | null;
   tin?: string | null;
   vatRegistrationType?: ApiPartyVatRegistrationType | null;
+  vatRegistrationTypeId?: string | null;
   atcCode?: string | null;
   email?: string | null;
   contactNo?: string | null;
+  landline?: string | null;
 };
 
 export type ApiParty = ApiPartyPayload & {
@@ -443,12 +505,36 @@ export type ApiParty = ApiPartyPayload & {
     employeePayableAccount: PartyAccountingAccountSummary | null;
     vendorAdvanceAccount: PartyAccountingAccountSummary | null;
   };
+  vatRegistration?: ApiPartyVatRegistrationSummary | null;
   termName?: string | null;
   createdBy?: string | null;
   createdAt: string;
   updatedBy?: string | null;
   updatedAt: string;
 };
+
+export type ApiPartyOption = {
+  id: string;
+  partyCodeNo: string;
+  classification: ApiPartyClassification;
+  partyTypes: ApiPartyType[];
+  name: string;
+  email: string;
+  contactNo: string;
+  status: ApiPartyStatus;
+};
+
+export type ApiPartyOptionsResponse = {
+  parties: ApiPartyOption[];
+};
+
+export type PartyVatRegistrationSummary = {
+  id: string;
+  name: string;
+  percentage: number;
+};
+
+export type ApiPartyVatRegistrationSummary = PartyVatRegistrationSummary;
 
 export type PartyAccountingAccountSummary = {
   id: string;
@@ -513,20 +599,48 @@ export type PartyImportColumnId =
   | "partyTypes"
   | "partyName"
   | "tradeName"
+  | "honorific"
   | "firstName"
   | "middleName"
   | "lastName"
   | "suffixName"
+  | "gender"
+  | "civilStatus"
+  | "nationality"
+  | "memberRegistrationDate"
   | "tin"
   | "vatRegistrationType"
   | "atcCode"
   | "email"
   | "contactNo"
+  | "landline"
   | "addressLine1"
   | "addressLine2"
   | "barangay"
   | "cityMunicipality"
-  | "province";
+  | "province"
+  | "homeAddressLine1"
+  | "homeAddressLine2"
+  | "homeBarangay"
+  | "homeCityMunicipality"
+  | "homeProvince"
+  | "billingAddressLine1"
+  | "billingAddressLine2"
+  | "billingBarangay"
+  | "billingCityMunicipality"
+  | "billingProvince"
+  | "deliveryAddressLine1"
+  | "deliveryAddressLine2"
+  | "deliveryBarangay"
+  | "deliveryCityMunicipality"
+  | "deliveryProvince"
+  | "termName"
+  | "defaultReceivableAccount"
+  | "customerAdvanceAccount"
+  | "defaultPayableAccount"
+  | "vendorAdvanceAccount"
+  | "employeeAdvanceAccount"
+  | "employeePayableAccount";
 
 export type PartyImportColumnHeader = {
   className: string;

@@ -28,6 +28,10 @@ import {
   waitForNextPartyImportBatch,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import type {
+  PartyAccountingAccountField,
+  PartyAccountingAccountOption,
+  PartyAccountingAccountOptions,
+  PartyAddress,
   PartyImportColumnId,
   PartyImportColumnWidths,
   PartyImportMode,
@@ -40,6 +44,7 @@ import {
   type PartyDefaultAccountingAccountIds,
   usePartyManagementAccountOptions,
 } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagementAccountOptions";
+import { todayDateValue } from "@/app/src/utils/date.util";
 
 export function usePartyManagementImportDialog({
   existingParties,
@@ -495,7 +500,14 @@ export function usePartyManagementImportDialog({
 
     const importedRowIds = new Set(rowsToImport.map((row) => row.id));
     const partiesToImport = rowsToImport.map((row, index) =>
-      createPartyImportRecord(row.party, index),
+      createPartyImportRecord(
+        resolvePartyImportAccountingTitles(
+          row.party,
+          partyAccountOptions.accountOptions,
+          partyAccountOptions.defaultAccounts,
+        ),
+        index,
+      ),
     );
 
     setProgress({ imported: 0, total: partiesToImport.length });
@@ -616,24 +628,14 @@ function updatePartyImportRowCell(
   }
 
   if (
-    field === "addressLine1" ||
-    field === "addressLine2" ||
-    field === "barangay" ||
-    field === "cityMunicipality" ||
-    field === "province"
+    isPartyImportAddressColumn(field)
   ) {
-    const address = {
-      ...party.address,
-      [field]: normalizedValue as string,
-    };
-
     return {
       ...row,
-      party: {
-        ...party,
-        address,
-        addresses: [address],
-      },
+      party: syncPartyImportRow(
+        updatePartyImportAddressField(party, field, normalizedValue as string),
+        defaultAccounts,
+      ),
     };
   }
 
@@ -655,25 +657,278 @@ function syncPartyImportRow(
 ) {
   const partyTypes =
     party.classification === "Non-Individual"
-      ? party.partyTypes.filter((partyType) => partyType !== "Employee")
+      ? party.partyTypes.filter(
+          (partyType) => partyType !== "Employee" && partyType !== "Member",
+        )
       : party.partyTypes;
   const accountingAccounts = applyPartyDefaultAccountingAccounts(
     party,
     partyTypes,
     defaultAccounts,
   );
-  const address = {
-    ...party.address,
-    isBilling: partyTypes.includes("Customer") || partyTypes.includes("Vendor"),
-    isDelivery: partyTypes.includes("Customer"),
-    isHome: partyTypes.includes("Employee"),
-  };
+  const addresses = normalizePartyImportAddresses(
+    party.addresses.length > 0 ? party.addresses : [party.address],
+    partyTypes,
+  );
+  const address = addresses[0] ?? party.address;
+  const hasPersonalInformation =
+    partyTypes.includes("Employee") || partyTypes.includes("Member");
 
   return {
+    ...party,
     ...accountingAccounts,
     partyTypes,
     status: "Active" as const,
+    gender: hasPersonalInformation ? party.gender : "",
+    civilStatus: hasPersonalInformation ? party.civilStatus : "",
+    nationality: hasPersonalInformation ? party.nationality || "Filipino" : "",
+    memberRegistrationDate: partyTypes.includes("Member")
+      ? party.memberRegistrationDate || todayDateValue()
+      : "",
     address,
-    addresses: [address],
+    addresses,
   };
 }
+
+function resolvePartyImportAccountingTitles(
+  party: Omit<PartyInformationRecord, "id" | "createdAt" | "updatedAt">,
+  accountOptions: PartyAccountingAccountOptions,
+  defaultAccounts: PartyDefaultAccountingAccountIds,
+) {
+  const resolvedParty = { ...party };
+
+  AccountingImportFields.forEach((field) => {
+    resolvedParty[field] = resolvePartyImportAccountingValue(
+      party[field],
+      accountOptions[field],
+      defaultAccounts[field],
+    );
+  });
+
+  return resolvedParty;
+}
+
+function resolvePartyImportAccountingValue(
+  value: string,
+  options: PartyAccountingAccountOption[],
+  fallbackAccountId: string,
+) {
+  const normalizedValue = normalizeAccountLookupValue(value);
+
+  if (!normalizedValue) {
+    return fallbackAccountId;
+  }
+
+  const matchingOption = options.find((option) =>
+    [
+      option.id,
+      option.accountNumber,
+      option.accountName,
+      `${option.accountNumber} ${option.accountName}`,
+      `${option.accountNumber} - ${option.accountName}`,
+    ].some((candidate) => normalizeAccountLookupValue(candidate) === normalizedValue),
+  );
+
+  return matchingOption?.id ?? value;
+}
+
+function normalizeAccountLookupValue(value: string) {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+const AccountingImportFields: PartyAccountingAccountField[] = [
+  "customerAdvanceAccount",
+  "defaultPayableAccount",
+  "defaultReceivableAccount",
+  "employeeAdvanceAccount",
+  "employeePayableAccount",
+  "vendorAdvanceAccount",
+];
+
+function isPartyImportAddressColumn(
+  field: PartyImportColumnId,
+): field is PartyImportAddressColumnId {
+  return PartyImportAddressColumns.has(field as PartyImportAddressColumnId);
+}
+
+function updatePartyImportAddressField(
+  party: Omit<PartyInformationRecord, "id" | "createdAt" | "updatedAt">,
+  field: PartyImportAddressColumnId,
+  value: string,
+) {
+  const { role, property } = PartyImportAddressColumnMap[field];
+  const sourceAddresses =
+    party.addresses.length > 0 ? party.addresses : [party.address];
+  const addressIndex = findPartyImportAddressIndex(sourceAddresses, role);
+  const nextAddresses =
+    addressIndex >= 0 ? [...sourceAddresses] : [...sourceAddresses, party.address];
+  const targetIndex = addressIndex >= 0 ? addressIndex : nextAddresses.length - 1;
+  const targetAddress =
+    nextAddresses[targetIndex] ?? createBlankPartyImportAddress(role);
+  const nextAddress = {
+    ...targetAddress,
+    ...getPartyImportAddressRoleFlags(role),
+    [property]: value,
+  };
+
+  nextAddresses[targetIndex] = nextAddress;
+
+  return {
+    ...party,
+    address: targetIndex === 0 || nextAddress.isDefault ? nextAddress : party.address,
+    addresses: nextAddresses,
+  };
+}
+
+function normalizePartyImportAddresses(
+  sourceAddresses: PartyAddress[],
+  partyTypes: PartyInformationRecord["partyTypes"],
+) {
+  const roles = getPartyImportRoles(partyTypes);
+
+  if (roles.length === 0) {
+    const source = sourceAddresses[0] ?? createBlankPartyImportAddress("default");
+
+    return [
+      {
+        ...source,
+        addressName: source.addressName || "Address",
+        isBilling: false,
+        isDefault: true,
+        isDelivery: false,
+        isHome: false,
+      },
+    ];
+  }
+
+  return roles.map((role, index) => {
+    const source =
+      sourceAddresses.find((address) => partyImportAddressHasRole(address, role)) ??
+      sourceAddresses[index] ??
+      createBlankPartyImportAddress(role);
+
+    return {
+      ...source,
+      ...getPartyImportAddressRoleFlags(role),
+      addressName: source.addressName || PartyImportAddressRoleLabels[role],
+      isDefault: index === 0,
+    };
+  });
+}
+
+function getPartyImportRoles(partyTypes: PartyInformationRecord["partyTypes"]) {
+  const roles: PartyImportAddressRole[] = [];
+
+  if (partyTypes.includes("Customer") || partyTypes.includes("Vendor")) {
+    roles.push("billing");
+  }
+  if (partyTypes.includes("Customer")) {
+    roles.push("delivery");
+  }
+  if (partyTypes.includes("Employee") || partyTypes.includes("Member")) {
+    roles.push("home");
+  }
+
+  return roles;
+}
+
+function findPartyImportAddressIndex(
+  addresses: PartyAddress[],
+  role: PartyImportAddressRole,
+) {
+  if (role === "default") {
+    return 0;
+  }
+
+  return addresses.findIndex((address) => partyImportAddressHasRole(address, role));
+}
+
+function partyImportAddressHasRole(
+  address: PartyAddress,
+  role: PartyImportAddressRole,
+) {
+  if (role === "billing") return address.isBilling;
+  if (role === "delivery") return address.isDelivery;
+  if (role === "home") return address.isHome;
+
+  return address.isDefault;
+}
+
+function createBlankPartyImportAddress(role: PartyImportAddressRole): PartyAddress {
+  return {
+    addressLine1: "",
+    addressLine2: "",
+    addressName: PartyImportAddressRoleLabels[role],
+    barangay: "",
+    barangayCode: "",
+    cityMunicipality: "",
+    cityMunicipalityCode: "",
+    id: `party-import-address-${role}-${Date.now()}`,
+    isBuilding: false,
+    isForeign: false,
+    province: "",
+    provinceCode: "",
+    region: "",
+    regionCode: "",
+    ...getPartyImportAddressRoleFlags(role),
+  };
+}
+
+function getPartyImportAddressRoleFlags(role: PartyImportAddressRole) {
+  return {
+    isBilling: role === "billing",
+    isDefault: role === "default",
+    isDelivery: role === "delivery",
+    isHome: role === "home",
+  };
+}
+
+const PartyImportAddressRoleLabels = {
+  billing: "Billing Address",
+  default: "Address",
+  delivery: "Delivery Address",
+  home: "Home Address",
+} as const;
+
+const PartyImportAddressColumnMap = {
+  addressLine1: { property: "addressLine1", role: "default" },
+  addressLine2: { property: "addressLine2", role: "default" },
+  barangay: { property: "barangay", role: "default" },
+  cityMunicipality: { property: "cityMunicipality", role: "default" },
+  province: { property: "province", role: "default" },
+  homeAddressLine1: { property: "addressLine1", role: "home" },
+  homeAddressLine2: { property: "addressLine2", role: "home" },
+  homeBarangay: { property: "barangay", role: "home" },
+  homeCityMunicipality: { property: "cityMunicipality", role: "home" },
+  homeProvince: { property: "province", role: "home" },
+  billingAddressLine1: { property: "addressLine1", role: "billing" },
+  billingAddressLine2: { property: "addressLine2", role: "billing" },
+  billingBarangay: { property: "barangay", role: "billing" },
+  billingCityMunicipality: { property: "cityMunicipality", role: "billing" },
+  billingProvince: { property: "province", role: "billing" },
+  deliveryAddressLine1: { property: "addressLine1", role: "delivery" },
+  deliveryAddressLine2: { property: "addressLine2", role: "delivery" },
+  deliveryBarangay: { property: "barangay", role: "delivery" },
+  deliveryCityMunicipality: { property: "cityMunicipality", role: "delivery" },
+  deliveryProvince: { property: "province", role: "delivery" },
+} as const satisfies Record<
+  string,
+  {
+    property: keyof Pick<
+      PartyAddress,
+      | "addressLine1"
+      | "addressLine2"
+      | "barangay"
+      | "cityMunicipality"
+      | "province"
+    >;
+    role: PartyImportAddressRole;
+  }
+>;
+
+type PartyImportAddressColumnId = keyof typeof PartyImportAddressColumnMap;
+type PartyImportAddressRole = "billing" | "default" | "delivery" | "home";
+
+const PartyImportAddressColumns = new Set<PartyImportAddressColumnId>(
+  Object.keys(PartyImportAddressColumnMap) as PartyImportAddressColumnId[],
+);

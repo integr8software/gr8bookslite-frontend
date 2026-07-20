@@ -39,7 +39,7 @@ export function JournalVoucherTableRow({
       <td className="px-4 py-4">
         <div className="font-medium">{record.currencyType}</div>
         <div className="text-xs text-darknavy/55">
-          Rate {formatJournalVoucherAmount(record.currencyRate)}
+          Exchange Rate {formatJournalVoucherAmount(record.currencyRate)}
         </div>
       </td>
       <td className="px-4 py-4 text-right font-semibold tabular-nums">

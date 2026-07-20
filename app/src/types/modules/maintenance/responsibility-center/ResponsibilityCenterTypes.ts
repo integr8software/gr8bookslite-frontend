@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
+import type { TablePreferencesState } from "@/app/src/types/shared/table-preferences/TablePreferencesTypes";
 
 export type ResponsibilityCenterStatus = "Active" | "Inactive";
 export type ResponsibilityCenterStatusFilter = "" | ResponsibilityCenterStatus;
@@ -39,10 +40,38 @@ export type ResponsibilityCenterTypeDefinition = {
 	reportExamples: string[];
 };
 
+export type ResponsibilityCenterClassification = {
+	id: string;
+	code: string;
+	name: ResponsibilityCenterFinancialType;
+	trackingBehavior: string;
+	isSystem: boolean;
+	status: ApiResponsibilityCenterStatus;
+};
+
+export type ResponsibilityCenterTypeOption = {
+	id: string;
+	classificationId: string;
+	classificationCode: string;
+	classificationName: ResponsibilityCenterFinancialType;
+	name: string;
+	codePrefix: string;
+	description: string | null;
+	sortOrder: number;
+	isRequired: boolean;
+	status: ApiResponsibilityCenterStatus;
+};
+
 export type ResponsibilityCenter = {
 	id: string;
 	code: string;
 	name: string;
+	classificationId: string;
+	classificationCode: string;
+	classificationName: ResponsibilityCenterFinancialType;
+	typeId: string;
+	typeName: string;
+	typeCodePrefix: string;
 	category: ResponsibilityCenterCategory;
 	financialType: ResponsibilityCenterFinancialType;
 	manager: string;
@@ -85,6 +114,8 @@ export type ResponsibilityCenterDrawerProps = {
 export type ResponsibilityCenterFormValues = {
 	code: string;
 	name: string;
+	classificationId: string;
+	typeId: string;
 	category: ResponsibilityCenterCategory;
 	financialType: ResponsibilityCenterFinancialType;
 	manager: string;
@@ -156,6 +187,12 @@ export type ApiResponsibilityCenter = {
 	id: string;
 	code: string;
 	name: string;
+	classificationId: string;
+	classificationCode: string;
+	classificationName: ApiResponsibilityCenterFinancialType | string;
+	typeId: string;
+	typeName: ApiResponsibilityCenterCategory | string;
+	typeCodePrefix: string;
 	category: ApiResponsibilityCenterCategory;
 	financialType: ApiResponsibilityCenterFinancialType;
 	manager: string | null;
@@ -180,10 +217,49 @@ export type ApiResponsibilityCenterSaveResponse = {
 	center: ApiResponsibilityCenter;
 };
 
+export type ApiResponsibilityCenterClassification = {
+	id: string;
+	code: string;
+	name: string;
+	trackingBehavior: string;
+	isSystem: boolean;
+	status: ApiResponsibilityCenterStatus;
+};
+
+export type ApiResponsibilityCenterTypeOption = {
+	id: string;
+	classificationId: string;
+	classificationCode: string;
+	classificationName: string;
+	name: string;
+	codePrefix: string;
+	description: string | null;
+	sortOrder: number;
+	isRequired: boolean;
+	status: ApiResponsibilityCenterStatus;
+};
+
+export type ApiResponsibilityCenterClassificationsResponse = {
+	classifications: ApiResponsibilityCenterClassification[];
+};
+
+export type ApiResponsibilityCenterTypesResponse = {
+	types: ApiResponsibilityCenterTypeOption[];
+};
+
+export type ApiResponsibilityCenterCodeSuggestionResponse = {
+	code: string;
+};
+
 export type ResponsibilityCenterListResponse = {
 	centers: ResponsibilityCenter[];
 	statistics: ResponsibilityCenterStatistics;
 	permissions: ResponsibilityCenterPermissions;
+};
+
+export type ResponsibilityCenterStatisticCardsProps = {
+	statistics: ResponsibilityCenterStatistics;
+	isLoading?: boolean;
 };
 
 export type ResponsibilityCenterTableProps = {
@@ -198,6 +274,7 @@ export type ResponsibilityCenterTableProps = {
 	permissions: ResponsibilityCenterPermissions;
 	query: string;
 	statusFilter: ResponsibilityCenterStatusFilter;
+	tablePreferences: ResponsibilityCenterTablePreferencesState;
 	treeTable: Table<FlattenedResponsibilityCenterTreeNode>;
 	viewMode: ResponsibilityCenterViewMode;
 	centers: ResponsibilityCenter[];
@@ -212,6 +289,8 @@ export type ResponsibilityCenterTableProps = {
 	onViewCenter: (center: ResponsibilityCenter) => void;
 	onViewModeChange: (viewMode: ResponsibilityCenterViewMode) => void;
 };
+
+export type ResponsibilityCenterTablePreferencesState = TablePreferencesState;
 
 export type ResponsibilityCenterTreeProps = {
 	expandedIds: Set<string>;

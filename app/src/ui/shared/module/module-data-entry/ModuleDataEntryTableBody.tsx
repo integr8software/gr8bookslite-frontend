@@ -70,6 +70,8 @@ export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 }) {
 	const orderedRowIds = rows.map((item) => item.id);
 	const orderedColumnIds = columns.map((item) => item.id);
+	const createFieldId = (rowId: string, columnId: string) =>
+		`module-entry-${sanitizeFieldSegment(rowId)}-${sanitizeFieldSegment(columnId)}`;
 
 	return (
 		<tbody>
@@ -223,6 +225,8 @@ export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 									/>
 								) : null}
 								{column.renderCell(row, index, {
+									fieldId: createFieldId(row.id, column.id),
+									fieldName: `${row.id}.${column.id}`,
 									focusableTabIndex: -1,
 								})}
 							</td>
@@ -232,4 +236,8 @@ export function ModuleDataEntryTableBody<TRow extends { id: string }>({
 			))}
 		</tbody>
 	);
+}
+
+function sanitizeFieldSegment(value: string) {
+	return value.replace(/[^a-zA-Z0-9_-]/g, "-");
 }

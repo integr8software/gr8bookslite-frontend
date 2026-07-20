@@ -7,7 +7,7 @@ import type {
 } from "pdfmake/interfaces";
 import {
 	formatPurchaseRequestDate,
-	formatPurchaseRequestMoney,
+	formatPurchaseRequestCurrency,
 	getPurchaseRequestItemAmount,
 	getPurchaseRequestTotal,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
@@ -43,7 +43,7 @@ function createPurchaseRequestPdfDefinition(
 					widths: ["*"],
 					body: [
 						[createHeaderTable(record)],
-						[createTitleRow()],
+						[createTitleRow(record)],
 						[createSupplierRow(record)],
 						[createForRow(record)],
 						[createItemsTable(record)],
@@ -117,38 +117,38 @@ function createHeaderTable(record: PurchaseRequestRecord): TableCell {
 	};
 }
 
-function createTitleRow(): TableCell {
-	return {
-		text: "PURCHASE REQUEST",
-		bold: true,
-		fontSize: 18,
-		margin: [6, 7, 0, 6],
-	};
-}
-
-function createSupplierRow(record: PurchaseRequestRecord): TableCell {
+function createTitleRow(record: PurchaseRequestRecord): TableCell {
 	return {
 		table: {
-			widths: ["*", 180],
+			widths: ["*", 210],
 			body: [
 				[
 					{
-						text: [
-							{ text: "Supplier: ", bold: true },
-							{ text: record.vceName, bold: true },
-						],
-						margin: [3, 3, 3, 3],
+						text: "PURCHASE REQUEST",
+						bold: true,
+						fontSize: 18,
+						margin: [6, 8, 0, 6],
 					},
 					{
 						text: `Purchase Request Date: ${formatPurchaseRequestDate(record.prDate)}`,
 						bold: true,
 						alignment: "right",
-						margin: [3, 3, 6, 3],
+						margin: [0, 13, 7, 0],
 					},
 				],
 			],
 		},
 		layout: noBordersLayout,
+	};
+}
+
+function createSupplierRow(record: PurchaseRequestRecord): TableCell {
+	return {
+		text: [
+			{ text: "Supplier: ", bold: true },
+			{ text: record.vceName, bold: true },
+		],
+		margin: [3, 3, 3, 3],
 	};
 }
 
@@ -177,7 +177,7 @@ function createItemsTable(record: PurchaseRequestRecord): TableCell {
 			headerCell("Qty", "right"),
 			headerCell("Amount", "right"),
 		],
-		...record.items.map((item) => createItemRow(item, record.currency)),
+		...record.items.map((item) => createItemRow(item)),
 		[
 			{
 				text: "Total :",
@@ -189,7 +189,7 @@ function createItemsTable(record: PurchaseRequestRecord): TableCell {
 			{},
 			{},
 			{
-				text: formatPurchaseRequestMoney(totalCost, record.currency),
+				text: formatPurchaseRequestCurrency(totalCost),
 				bold: true,
 				alignment: "right",
 			},
@@ -199,10 +199,7 @@ function createItemsTable(record: PurchaseRequestRecord): TableCell {
 				alignment: "right",
 			},
 			{
-				text: formatPurchaseRequestMoney(
-					getPurchaseRequestTotal(record),
-					record.currency,
-				),
+				text: formatPurchaseRequestCurrency(getPurchaseRequestTotal(record)),
 				bold: true,
 				alignment: "right",
 			},
@@ -219,19 +216,16 @@ function createItemsTable(record: PurchaseRequestRecord): TableCell {
 	};
 }
 
-function createItemRow(
-	item: PurchaseRequestItem,
-	currency: string,
-): TableCell[] {
+function createItemRow(item: PurchaseRequestItem): TableCell[] {
 	return [
 		bodyCell(item.itemCode),
 		bodyCell(item.barcode),
 		bodyCell(item.description),
 		bodyCell(item.uom),
-		bodyCell(formatPurchaseRequestMoney(item.cost, currency), "right"),
+		bodyCell(formatPurchaseRequestCurrency(item.cost), "right"),
 		bodyCell(formatPurchaseRequestQuantity(item.quantity), "right"),
 		bodyCell(
-			formatPurchaseRequestMoney(getPurchaseRequestItemAmount(item), currency),
+			formatPurchaseRequestCurrency(getPurchaseRequestItemAmount(item)),
 			"right",
 		),
 	];

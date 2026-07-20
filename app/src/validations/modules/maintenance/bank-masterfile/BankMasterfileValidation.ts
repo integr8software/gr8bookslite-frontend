@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
 	BankMasterfileAccountTypeOptions,
 	BankMasterfileStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+} from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
 import type {
 	BankImportCellErrors,
 	BankImportColumnId,
@@ -266,3 +266,4 @@ function isPositiveInteger(value: string) {
 	const number = Number(value);
 	return Number.isInteger(number) && number > 0;
 }
+

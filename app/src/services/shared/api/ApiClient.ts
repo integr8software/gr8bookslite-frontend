@@ -3,6 +3,10 @@ import {
   FinishApiRequestTrace,
   StartApiRequestTrace,
 } from "@/app/src/services/shared/api/ApiRequestTrace";
+import {
+  BuildApiRequestDedupeKey,
+  RunDedupedApiRequest,
+} from "@/app/src/services/shared/api/ApiRequestDeduper";
 import { GetApiBaseUrl } from "@/app/src/services/shared/api/ApiUrl";
 import { NotifyAuthSessionExpired } from "@/app/src/services/auth/AuthSessionExpired";
 
@@ -104,3 +108,17 @@ ApiClient.interceptors.response.use(
     );
   },
 );
+
+const RawApiClientRequest = ApiClient.request.bind(ApiClient);
+
+ApiClient.request = ((config) => {
+  const key = BuildApiRequestDedupeKey({
+    baseURL: config.baseURL,
+    data: config.data,
+    method: config.method,
+    params: config.params,
+    url: config.url,
+  });
+
+  return RunDedupedApiRequest({ key }, () => RawApiClientRequest(config));
+}) as typeof ApiClient.request;

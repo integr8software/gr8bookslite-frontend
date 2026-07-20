@@ -3,8 +3,8 @@
 import {
 	PaymentTypeDrawerFormId,
 	PaymentTypeFieldClassName,
-} from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
-import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+} from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
+import { PaymentTypeOptions } from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
 import { usePaymentTypeActionPage } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentTypeActionPage";
 import type {
 	PaymentTypeActionMode,
@@ -13,7 +13,8 @@ import type {
 	PaymentTypeStatus,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 
 const PaymentTypeActionCopy = {
 	add: {
@@ -66,24 +67,23 @@ function PaymentTypeDrawerPanel({
 	const copy = PaymentTypeActionCopy[mode];
 
 	return (
-		<MaintenanceFormDrawer
+		<ModuleDrawer
 			description={copy.description}
 			eyebrow="Accounting master data"
 			formId={PaymentTypeDrawerFormId}
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
+			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={
-				mode === "edit" ? "Updating Payment Type..." : "Saving Payment Type..."
-			}
+			savingLabel={getModuleSavePendingLabel(mode)}
 			submitLabel={mode === "edit" ? "Update Payment Type" : "Save Payment Type"}
 			title={copy.title}
 		>
 			<form id={PaymentTypeDrawerFormId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
 				<label className="grid gap-2">
 					<span className="text-sm font-semibold text-darknavy">
-						Name <span className="text-coralpink">*</span>
+						Payment Type Name <span className="text-coralpink">*</span>
 					</span>
 					<input
 						value={page.values.paymentType}
@@ -96,6 +96,35 @@ function PaymentTypeDrawerPanel({
 					{page.errors.paymentType ? (
 						<span className="text-xs font-semibold text-coralpink">
 							{page.errors.paymentType}
+						</span>
+					) : null}
+				</label>
+
+				<label className="grid gap-2">
+					<span className="text-sm font-semibold text-darknavy">
+						Category <span className="text-coralpink">*</span>
+					</span>
+					<select
+						value={page.values.type}
+						disabled={page.isReadonly}
+						onChange={(event) =>
+							page.handleInputChange(
+								"type",
+								event.target.value as PaymentTypeClassification,
+							)
+						}
+						className={PaymentTypeFieldClassName}
+					>
+						<option value="">--Select Category--</option>
+						{PaymentTypeOptions.map((typeOption) => (
+							<option key={typeOption} value={typeOption}>
+								{typeOption}
+							</option>
+						))}
+					</select>
+					{page.errors.type ? (
+						<span className="text-xs font-semibold text-coralpink">
+							{page.errors.type}
 						</span>
 					) : null}
 				</label>
@@ -118,63 +147,36 @@ function PaymentTypeDrawerPanel({
 					) : null}
 				</label>
 
-				<div className="grid gap-4 sm:grid-cols-2">
-					<label className="grid gap-2">
-						<span className="text-sm font-semibold text-darknavy">
-							Category <span className="text-coralpink">*</span>
+				<label className="grid max-w-xs gap-2">
+					<span className="text-sm font-semibold text-darknavy">
+						Status <span className="text-coralpink">*</span>
+					</span>
+					<select
+						value={page.values.status}
+						disabled={page.isReadonly}
+						onChange={(event) =>
+							page.handleInputChange(
+								"status",
+								event.target.value as PaymentTypeStatus,
+							)
+						}
+						className={PaymentTypeFieldClassName}
+					>
+						<option value="Active">Active</option>
+						<option value="Inactive">Inactive</option>
+					</select>
+					{page.errors.status ? (
+						<span className="text-xs font-semibold text-coralpink">
+							{page.errors.status}
 						</span>
-						<select
-							value={page.values.type}
-							disabled={page.isReadonly}
-							onChange={(event) =>
-								page.handleInputChange(
-									"type",
-									event.target.value as PaymentTypeClassification,
-								)
-							}
-							className={PaymentTypeFieldClassName}
-						>
-							<option value="">Select category</option>
-							{PaymentTypeOptions.map((typeOption) => (
-								<option key={typeOption} value={typeOption}>
-									{typeOption}
-								</option>
-							))}
-						</select>
-						{page.errors.type ? (
-							<span className="text-xs font-semibold text-coralpink">
-								{page.errors.type}
-							</span>
-						) : null}
-					</label>
-
-					<label className="grid gap-2">
-						<span className="text-sm font-semibold text-darknavy">
-							Status <span className="text-coralpink">*</span>
-						</span>
-						<select
-							value={page.values.status}
-							disabled={page.isReadonly}
-							onChange={(event) =>
-								page.handleInputChange(
-									"status",
-									event.target.value as PaymentTypeStatus,
-								)
-							}
-							className={PaymentTypeFieldClassName}
-						>
-							<option value="Active">Active</option>
-							<option value="Inactive">Inactive</option>
-						</select>
-						{page.errors.status ? (
-							<span className="text-xs font-semibold text-coralpink">
-								{page.errors.status}
-							</span>
-						) : null}
-					</label>
-				</div>
+					) : null}
+				</label>
 			</form>
-		</MaintenanceFormDrawer>
+		</ModuleDrawer>
 	);
 }
+
+
+
+
 

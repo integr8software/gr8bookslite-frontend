@@ -10,14 +10,14 @@ import type { ReactNode } from "react";
 type DisbursementVoucherReportPreviewProps = {
 	isOpen: boolean;
 	onClose: () => void;
-	onPrint: () => void;
+	onGeneratePdf: () => void;
 	values: DisbursementVoucherFormValues;
 };
 
 export function DisbursementVoucherReportPreview({
 	isOpen,
 	onClose,
-	onPrint,
+	onGeneratePdf,
 	values,
 }: DisbursementVoucherReportPreviewProps) {
 	return (
@@ -28,7 +28,7 @@ export function DisbursementVoucherReportPreview({
 			title="Disbursement Voucher Preview"
 			description="Review the printable disbursement voucher layout."
 			onClose={onClose}
-			onPrint={onPrint}
+			onGeneratePdf={onGeneratePdf}
 		>
 			<div className="-m-6 overflow-x-auto p-6">
 				<div className="disbursement-voucher-print-root">

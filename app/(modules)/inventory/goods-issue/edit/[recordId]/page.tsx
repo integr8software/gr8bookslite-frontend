@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
-import { GoodsIssueAction } from "@/app/src/ui/modules/inventory/goods-issue/Action";
+import { GoodsIssueActionPage } from "@/app/src/ui/modules/inventory/goods-issue/GoodsIssueActionPage";
 
 const PageTitle = "Edit Goods Issue";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function InventoryGoodsIssueEditPage() {
-  return <GoodsIssueAction />;
+  return <GoodsIssueActionPage />;
 }
 
 

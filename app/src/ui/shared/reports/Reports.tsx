@@ -26,19 +26,19 @@ export function ReportPreviewAction({
 	);
 }
 
-type ReportPrintActionProps = {
+type ReportGeneratePdfActionProps = {
 	label?: string;
-	onPrint: () => void;
+	onGeneratePdf: () => void;
 };
 
-export function ReportPrintAction({
+export function ReportGeneratePdfAction({
 	label = "Print",
-	onPrint,
-}: ReportPrintActionProps) {
+	onGeneratePdf,
+}: ReportGeneratePdfActionProps) {
 	return (
 		<button
 			type="button"
-			onClick={onPrint}
+			onClick={onGeneratePdf}
 			className={moduleHeaderActionClassNames.secondary}
 		>
 			<Printer className="h-4 w-4" aria-hidden="true" />
@@ -55,7 +55,7 @@ type ReportPreviewDrawerProps = {
 	isOpen: boolean;
 	maxWidthClassName?: string;
 	onClose: () => void;
-	onPrint?: () => void;
+	onGeneratePdf?: () => void;
 	printLabel?: string;
 	title?: ReactNode;
 };
@@ -68,7 +68,7 @@ export function ReportPreviewDrawer({
 	isOpen,
 	maxWidthClassName = "max-w-6xl",
 	onClose,
-	onPrint,
+	onGeneratePdf,
 	printLabel,
 	title = "Print Preview",
 }: ReportPreviewDrawerProps) {
@@ -84,8 +84,11 @@ export function ReportPreviewDrawer({
 			position="bottom"
 			showCloseButton={false}
 			actions={
-				onPrint ? (
-					<ReportPrintAction label={printLabel} onPrint={onPrint} />
+				onGeneratePdf ? (
+					<ReportGeneratePdfAction
+						label={printLabel}
+						onGeneratePdf={onGeneratePdf}
+					/>
 				) : null
 			}
 		>

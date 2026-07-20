@@ -1,7 +1,7 @@
 import {
 	PaymentTypeExportColumns,
 	PaymentTypeStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
+} from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import {
 	ModuleTableColumnVisibilityButton,
 	ModuleTableExportButton,
@@ -102,3 +102,4 @@ export function PaymentTypeFilters({
 		</ModuleTableToolbar>
 	);
 }
+

@@ -1,15 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { LoaderCircle, Save, X } from "lucide-react";
+import {
+	AnimatedPendingLabel,
+	AppDialog,
+} from "@/app/src/ui/shared/app/AppDialog";
+import { useAppDialogFormSubmit } from "@/app/src/hooks/shared/app/useAppDialogFormSubmit";
+import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import {
 	joinClasses,
 	moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
 
 export type ModuleDrawerPosition = "bottom" | "left" | "right" | "top";
+
+export const ModuleSavingLabel = "Saving...";
+export const ModuleUpdatingLabel = "Updating...";
+
+export function getModuleSavePendingLabel(mode?: string | null) {
+	return mode === "edit" ? ModuleUpdatingLabel : ModuleSavingLabel;
+}
 
 type ModuleDrawerProps = {
 	actions?: ReactNode;
@@ -18,13 +31,21 @@ type ModuleDrawerProps = {
 	contentClassName?: string;
 	description?: ReactNode;
 	eyebrow?: ReactNode;
+	formId?: string;
 	footer?: ReactNode;
 	isOpen: boolean;
+	isReadonly?: boolean;
+	isSaving?: boolean;
 	maxWidthClassName?: string;
+	onBeforeSaveConfirm?: () => boolean;
 	onClose: () => void;
 	position?: ModuleDrawerPosition;
+	savingLabel?: string;
 	showCloseButton?: boolean;
 	spotlightId?: string;
+	spotlightFieldsId?: string;
+	spotlightSaveId?: string;
+	submitLabel?: string;
 	title: ReactNode;
 };
 
@@ -65,18 +86,90 @@ export function ModuleDrawer({
 	contentClassName,
 	description,
 	eyebrow,
+	formId,
 	footer,
 	isOpen,
+	isReadonly = false,
+	isSaving = false,
 	maxWidthClassName = "max-w-2xl",
+	onBeforeSaveConfirm,
 	onClose,
 	position = "right",
+	savingLabel = ModuleSavingLabel,
 	showCloseButton = true,
 	spotlightId,
+	spotlightFieldsId,
+	spotlightSaveId,
+	submitLabel = "Save",
 	title,
 }: ModuleDrawerProps) {
+	const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+	const {
+		closeDialog: closeSaveDialog,
+		isConfirmSubmitPending,
+		submitFromDialog,
+	} = useAppDialogFormSubmit({
+		formId: formId ?? "",
+		isContainerOpen: isOpen,
+		isDialogOpen: isSaveDialogOpen,
+		isSubmitting: isSaving,
+		onDialogOpenChange: setIsSaveDialogOpen,
+	});
 	const positionStyles = drawerPositionStyles[position];
 	const sizeClassName =
 		position === "left" || position === "right" ? maxWidthClassName : "";
+	const hasManagedFormFooter = Boolean(formId);
+	const handleClose = useCallback(() => {
+		if (!isSaving) {
+			onClose();
+		}
+	}, [isSaving, onClose]);
+	const handleSaveRequest = useCallback(() => {
+		if (isSaving || !formId) {
+			return;
+		}
+
+		if (onBeforeSaveConfirm && !onBeforeSaveConfirm()) {
+			return;
+		}
+
+		setIsSaveDialogOpen(true);
+	}, [formId, isSaving, onBeforeSaveConfirm]);
+	const resolvedFooter = footer ?? (hasManagedFormFooter ? (
+		<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+			<button
+				type="button"
+				onClick={handleClose}
+				disabled={isSaving}
+				className={`${moduleHeaderActionClassNames.secondary} disabled:cursor-not-allowed disabled:opacity-60`}
+			>
+				{isReadonly ? "Close" : "Cancel"}
+			</button>
+			{isReadonly ? null : (
+				<button
+					type="button"
+					onClick={handleSaveRequest}
+					data-spotlight-id={spotlightSaveId}
+					disabled={isSaving}
+					className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
+				>
+					{isSaving ? (
+						<LoaderCircle
+							className="h-4 w-4 animate-spin"
+							aria-hidden="true"
+						/>
+					) : (
+						<Save className="h-4 w-4" aria-hidden="true" />
+					)}
+					{isSaving ? (
+						<AnimatedPendingLabel label={savingLabel} />
+					) : (
+						submitLabel
+					)}
+				</button>
+			)}
+		</div>
+	) : undefined);
 
 	useEffect(() => {
 		if (!isOpen) {
@@ -84,8 +177,8 @@ export function ModuleDrawer({
 		}
 
 		function handleKeyDown(event: KeyboardEvent) {
-			if (event.key === "Escape") {
-				onClose();
+			if (event.key === "Escape" && !isModalDialogOpen()) {
+				handleClose();
 			}
 		}
 
@@ -94,12 +187,13 @@ export function ModuleDrawer({
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown);
 		};
-	}, [isOpen, onClose]);
+	}, [handleClose, isOpen]);
 
 	return (
-		<AnimatePresence>
-			{isOpen ? (
-				<>
+		<>
+			<AnimatePresence>
+				{isOpen ? (
+					<>
 					<motion.button
 						type="button"
 						aria-label="Close drawer overlay"
@@ -107,7 +201,7 @@ export function ModuleDrawer({
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						onClick={onClose}
+						onClick={handleClose}
 					/>
 					<motion.aside
 						role="dialog"
@@ -137,7 +231,7 @@ export function ModuleDrawer({
 							description={description}
 							eyebrow={eyebrow}
 							actions={actions}
-							onClose={onClose}
+							onClose={handleClose}
 							showCloseButton={showCloseButton}
 							title={title}
 						/>
@@ -147,17 +241,46 @@ export function ModuleDrawer({
 								contentClassName,
 							)}
 						>
-							{children}
+							{spotlightFieldsId ? (
+								<div data-spotlight-id={spotlightFieldsId}>
+									{children}
+								</div>
+							) : (
+								children
+							)}
 						</div>
-						{footer ? (
+						{resolvedFooter ? (
 							<div className="sticky bottom-0 border-t border-darknavy/10 bg-white px-6 py-4">
-								{footer}
+								{resolvedFooter}
 							</div>
 						) : null}
 					</motion.aside>
 				</>
+				) : null}
+			</AnimatePresence>
+			{formId ? (
+				<AppDialog
+					confirmLabel="Confirm"
+					description="This will save the details entered in this module form."
+					iconTone="question"
+					isOpen={isSaveDialogOpen}
+					isPending={isConfirmSubmitPending}
+					pendingLabel={savingLabel}
+					title={`${submitLabel}?`}
+					tone="success"
+					onCancel={closeSaveDialog}
+					onConfirm={submitFromDialog}
+				/>
 			) : null}
-		</AnimatePresence>
+		</>
+	);
+}
+
+function isModalDialogOpen() {
+	return Boolean(
+		document.querySelector(
+			'[role="dialog"][aria-modal="true"]:not([data-module-drawer="true"]), [role="alertdialog"][aria-modal="true"]',
+		),
 	);
 }
 

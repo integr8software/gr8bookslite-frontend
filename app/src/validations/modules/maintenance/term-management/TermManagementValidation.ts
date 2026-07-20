@@ -17,7 +17,7 @@ const TermManagementFormSchema = z.object({
 		.string()
 		.trim()
 		.min(1, "Enter a period.")
-		.refine((value) => Number.isInteger(Number(value)) && Number(value) >= 0, {
+		.refine((value) => /^\d+$/.test(value), {
 			message: "Enter a whole-number period of 0 or greater.",
 		}),
 	status: z.enum(["Active", "Inactive"], {

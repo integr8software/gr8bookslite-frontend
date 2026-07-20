@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, type DragEvent } from "react";
+import { useState, type DragEvent, type RefObject } from "react";
 import { flexRender, type Header, type Table } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, GripVertical } from "lucide-react";
 import {
 	getColumnClassName,
+	isColumnHeaderCentered,
 	joinClasses,
 	moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
@@ -14,7 +15,15 @@ type HeaderDropIndicator = {
 	position: "after" | "before";
 };
 
-export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
+type ModuleTableHeaderProps<TData> = {
+	scrollContainerRef?: RefObject<HTMLDivElement | null>;
+	table: Table<TData>;
+};
+
+export function ModuleTableHeader<TData>({
+	scrollContainerRef,
+	table,
+}: ModuleTableHeaderProps<TData>) {
 	const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
 	const [dropIndicator, setDropIndicator] =
 		useState<HeaderDropIndicator | null>(null);
@@ -71,6 +80,44 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 		);
 	}
 
+	function scrollDuringColumnDrag(event: DragEvent<HTMLElement>) {
+		if (!draggedColumnId) {
+			return;
+		}
+
+		const scrollContainer = scrollContainerRef?.current;
+
+		if (!scrollContainer) {
+			return;
+		}
+
+		const rect = scrollContainer.getBoundingClientRect();
+		const edgeThreshold = 96;
+		const maxStep = 28;
+		const leftDistance = event.clientX - rect.left;
+		const rightDistance = rect.right - event.clientX;
+		const topDistance = event.clientY - rect.top;
+		const bottomDistance = rect.bottom - event.clientY;
+		let deltaX = 0;
+		let deltaY = 0;
+
+		if (leftDistance < edgeThreshold) {
+			deltaX = -getAutoScrollStep(edgeThreshold - leftDistance, edgeThreshold, maxStep);
+		} else if (rightDistance < edgeThreshold) {
+			deltaX = getAutoScrollStep(edgeThreshold - rightDistance, edgeThreshold, maxStep);
+		}
+
+		if (topDistance < edgeThreshold) {
+			deltaY = -getAutoScrollStep(edgeThreshold - topDistance, edgeThreshold, maxStep);
+		} else if (bottomDistance < edgeThreshold) {
+			deltaY = getAutoScrollStep(edgeThreshold - bottomDistance, edgeThreshold, maxStep);
+		}
+
+		if (deltaX !== 0 || deltaY !== 0) {
+			scrollContainer.scrollBy({ left: deltaX, top: deltaY });
+		}
+	}
+
 	return (
 		<thead className="module-table-header sticky top-0 z-50 bg-slate-50 text-xs font-bold text-darknavy/80">
 			{table.getHeaderGroups().map((headerGroup) => (
@@ -84,14 +131,16 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 								setDropIndicator(null);
 							}}
 							onDragOver={(event) => {
-								if (
-									!header.isPlaceholder &&
-									draggedColumnId &&
-									draggedColumnId !== header.column.id
-								) {
+								if (!header.isPlaceholder && draggedColumnId) {
 									event.preventDefault();
 									event.dataTransfer.dropEffect = "move";
-									updateDropIndicator(event, header.column.id);
+									scrollDuringColumnDrag(event);
+
+									if (draggedColumnId !== header.column.id) {
+										updateDropIndicator(event, header.column.id);
+									} else {
+										setDropIndicator(null);
+									}
 								}
 							}}
 							onDrop={(event) => {
@@ -179,16 +228,18 @@ export function ModuleTableHeader<TData>({ table }: { table: Table<TData> }) {
 	);
 }
 
+function getAutoScrollStep(
+	overlap: number,
+	edgeThreshold: number,
+	maxStep: number,
+) {
+	const ratio = Math.max(0, Math.min(1, overlap / edgeThreshold));
+
+	return Math.max(4, Math.round(maxStep * ratio));
+}
+
 function isCenteredHeader<TData>(header: Header<TData, unknown>) {
-	return [
-		"actions",
-		"accountType",
-		"datemode",
-		"normalBalance",
-		"period",
-		"statementSection",
-		"status",
-	].includes(header.column.id);
+	return isColumnHeaderCentered(header);
 }
 
 function ModuleTableSortButton<TData>({

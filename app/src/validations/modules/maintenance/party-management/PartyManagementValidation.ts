@@ -17,6 +17,8 @@ import type {
 const PhilippineContactNumberPattern = /^\+63 \d{3} \d{3} \d{4}$/;
 const PhilippineTinPattern = /^\d{3}-\d{3}-\d{3}-\d{3}$/;
 
+export const PartyInformationRequiredFieldsToastMessage = "Please fill up the required party fields.";
+
 const PartyInformationAddressSchema = z.object({
   id: z.string().trim().min(1),
   addressName: z.string().trim().min(1, "Enter an address name."),
@@ -56,6 +58,16 @@ export const PartyInformationFormSchema = z
     middleName: z.string().trim(),
     lastName: z.string().trim(),
     suffixName: z.string().trim(),
+    honorific: z.string().trim(),
+    gender: z.string().trim(),
+    civilStatus: z.string().trim(),
+    nationality: z.string().trim(),
+    memberRegistrationDate: z
+      .string()
+      .trim()
+      .refine((value) => !value || /^\d{4}-\d{2}-\d{2}$/.test(value), {
+        message: "Enter a valid member registration date.",
+      }),
     address: z.any().optional(),
     addresses: z
       .array(PartyInformationAddressSchema)
@@ -80,6 +92,8 @@ export const PartyInformationFormSchema = z
       z.literal(""),
       z.enum(VatRegistrationTypeOptions),
     ]),
+    vatRegistrationTypeId: z.string().trim(),
+    vatRegistration: z.any().optional(),
     atcCode: z.string().trim(),
     email: z
       .string()
@@ -91,8 +105,9 @@ export const PartyInformationFormSchema = z
       .string()
       .trim()
       .refine((value) => !value || isValidContactNo(value), {
-        message: "Enter a valid contact number in the format.",
+        message: "Enter a valid mobile number in the format.",
       }),
+    landline: z.string().trim(),
   })
   .superRefine((values, ctx) => {
     if (
@@ -149,13 +164,48 @@ export const PartyInformationFormSchema = z
 
     if (
       values.classification === "Non-Individual" &&
-      values.partyTypes.includes("Employee")
+      (values.partyTypes.includes("Employee") ||
+        values.partyTypes.includes("Member"))
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Employee is only available for individual parties.",
+        message: "Employee and Member are only available for individual parties.",
         path: ["partyTypes"],
       });
+    }
+
+    if (values.partyTypes.includes("Member")) {
+      if (!values.gender.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Gender is required for members.",
+          path: ["gender"],
+        });
+      }
+
+      if (!values.civilStatus.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Civil status is required for members.",
+          path: ["civilStatus"],
+        });
+      }
+
+      if (!values.nationality.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Nationality is required for members.",
+          path: ["nationality"],
+        });
+      }
+
+      if (!values.memberRegistrationDate.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Member registration date is required.",
+          path: ["memberRegistrationDate"],
+        });
+      }
     }
 
     const requiredAccountingFields = [
@@ -218,7 +268,9 @@ export const PartyInformationFormSchema = z
         label: "delivery",
       },
       {
-        enabled: values.partyTypes.includes("Employee"),
+        enabled:
+          values.partyTypes.includes("Employee") ||
+          values.partyTypes.includes("Member"),
         field: "isHome",
         label: "home",
       },
@@ -317,10 +369,23 @@ export function validatePartyInformationForm(
 
     if (field === "atcCode" && !errors.atcCode) {
       errors.atcCode = issue.message;
+    } else if (field === "gender" && !errors.gender) {
+      errors.gender = issue.message;
+    } else if (field === "civilStatus" && !errors.civilStatus) {
+      errors.civilStatus = issue.message;
+    } else if (field === "nationality" && !errors.nationality) {
+      errors.nationality = issue.message;
     } else if (field === "classification" && !errors.classification) {
       errors.classification = issue.message;
     } else if (field === "contactNo" && !errors.contactNo) {
       errors.contactNo = issue.message;
+    } else if (field === "landline" && !errors.landline) {
+      errors.landline = issue.message;
+    } else if (
+      field === "memberRegistrationDate" &&
+      !errors.memberRegistrationDate
+    ) {
+      errors.memberRegistrationDate = issue.message;
     } else if (field === "email" && !errors.email) {
       errors.email = issue.message;
     } else if (field === "firstName" && !errors.firstName) {

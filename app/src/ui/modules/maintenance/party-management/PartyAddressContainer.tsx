@@ -32,7 +32,9 @@ export function PartyAddressContainer({
 	disabled,
 	errors,
 	partyTypes,
+	syncedAddressSources = {},
 	onAddressInputChange,
+	onCopyAddress,
 	onSelectAutocompleteAddress,
 	onSelectBarangay,
 	onSelectCityMunicipality,
@@ -42,9 +44,10 @@ export function PartyAddressContainer({
 	const hasCustomerRole = partyTypes.includes("Customer");
 	const hasVendorRole = partyTypes.includes("Vendor");
 	const hasEmployeeRole = partyTypes.includes("Employee");
-	const showHomeAddress = hasEmployeeRole;
+	const hasMemberRole = partyTypes.includes("Member");
+	const showHomeAddress = hasEmployeeRole || hasMemberRole;
 	const showBillingAddress = hasCustomerRole || hasVendorRole;
-	const showShippingAddress = hasCustomerRole;
+	const showDeliveryAddress = hasCustomerRole;
 	const addressSections = [
 		showHomeAddress
 			? {
@@ -60,11 +63,11 @@ export function PartyAddressContainer({
 					title: "Billing Address",
 				}
 			: null,
-		showShippingAddress
+		showDeliveryAddress
 			? {
-					address: findAddressByRole(addresses, "shipping"),
-					key: "shipping",
-					title: "Shipping Address",
+					address: findAddressByRole(addresses, "delivery"),
+					key: "delivery",
+					title: "Delivery Address",
 				}
 			: null,
 	].filter(
@@ -91,9 +94,15 @@ export function PartyAddressContainer({
 					address={section.address}
 					disabled={disabled}
 					errors={errors}
+					sameAsOptions={getSameAsAddressOptions(
+						visibleAddressSections,
+						section.address.id,
+					)}
+					syncedSourceAddressId={syncedAddressSources[section.address.id] ?? ""}
 					sectionKey={section.key}
 					title={section.title}
 					onAddressInputChange={onAddressInputChange}
+					onCopyAddress={onCopyAddress}
 					onSelectAutocompleteAddress={onSelectAutocompleteAddress}
 					onSelectBarangay={onSelectBarangay}
 					onSelectCityMunicipality={onSelectCityMunicipality}
@@ -109,9 +118,12 @@ function AddressSection({
 	address,
 	disabled,
 	errors,
+	sameAsOptions,
+	syncedSourceAddressId,
 	sectionKey,
 	title,
 	onAddressInputChange,
+	onCopyAddress,
 	onSelectAutocompleteAddress,
 	onSelectBarangay,
 	onSelectCityMunicipality,
@@ -121,9 +133,12 @@ function AddressSection({
 	address: PartyAddress;
 	disabled: boolean;
 	errors: PartyInformationFormErrors;
+	sameAsOptions: AppAdvancedDropdownOption[];
+	syncedSourceAddressId: string;
 	sectionKey: string;
 	title: string;
 	onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
+	onCopyAddress: (sourceAddressId: string, targetAddressId: string) => void;
 	onSelectAutocompleteAddress: (
 		address: AddressAutocompleteItem,
 		details?: AddressAutocompleteDetails,
@@ -159,13 +174,22 @@ function AddressSection({
 		regionCode: address.regionCode,
 		regionName: address.region,
 	});
+	const isSyncedAddress = Boolean(syncedSourceAddressId);
+	const areAddressFieldsDisabled = disabled || isSyncedAddress;
 
 	return (
 		<section className="grid gap-4">
-			<SectionHeading title={title} />
+			<SectionHeading
+				addressId={address.id}
+				disabled={disabled}
+				sameAsOptions={sameAsOptions}
+				syncedSourceAddressId={syncedSourceAddressId}
+				title={title}
+				onCopyAddress={onCopyAddress}
+			/>
 			<AddressFields
 				address={address}
-				disabled={disabled}
+				disabled={areAddressFieldsDisabled}
 				errors={errors}
 				options={options}
 				sectionKey={sectionKey}
@@ -182,7 +206,7 @@ function AddressSection({
 
 function findAddressByRole(
 	addresses: PartyAddress[],
-	role: "billing" | "home" | "shipping",
+	role: "billing" | "delivery" | "home",
 ) {
 	return addresses.find((address) => {
 		if (role === "billing") {
@@ -243,7 +267,9 @@ function AddressFields({
 }) {
 	return (
 		<div className="grid gap-4">
-			{address.isForeign ? (
+			{disabled ? (
+				<ReadOnlyAddressDisplay address={address} />
+			) : address.isForeign ? (
 				<AddressInput
 					addressId={address.id}
 					disabled={disabled}
@@ -286,7 +312,7 @@ function AddressFields({
 						placeholder={
 							options.isProvincesLoading
 								? "Loading provinces"
-								: "Select province"
+								: "--Select Province--"
 						}
 						required
 						value={address.provinceCode}
@@ -314,10 +340,10 @@ function AddressFields({
 						options={options.cityMunicipalityOptions}
 						placeholder={
 							!address.provinceCode
-								? "Select province first"
+								? "--Select Province First--"
 								: options.isCitiesMunicipalitiesLoading
 									? "Loading cities"
-									: "Select city"
+									: "--Select City--"
 						}
 						required
 						value={address.cityMunicipalityCode}
@@ -341,10 +367,10 @@ function AddressFields({
 						options={options.barangayOptions}
 						placeholder={
 							!address.cityMunicipalityCode
-								? "Select city first"
+								? "--Select City First--"
 								: options.isBarangaysLoading
 									? "Loading barangays"
-									: "Select barangay"
+									: "--Select Barangay--"
 						}
 						required
 						value={address.barangayCode}
@@ -360,7 +386,6 @@ function AddressFields({
 						id={getAddressControlId(sectionKey, address.id, "addressLine2")}
 						label="Street, Subdivision, Village"
 						name="addressLine2"
-						placeholder="Mabini St., Greenfield Village"
 						value={address.addressLine2}
 						onChange={onAddressInputChange}
 					/>
@@ -371,13 +396,53 @@ function AddressFields({
 						id={getAddressControlId(sectionKey, address.id, "addressLine1")}
 						label="Unit, Block, Lot, Building"
 						name="addressLine1"
-						placeholder="Unit 5B, Block 3, Lot 12"
 						value={address.addressLine1}
 						onChange={onAddressInputChange}
 					/>
 				</div>
 			) : null}
 		</div>
+	);
+}
+
+function getSameAsAddressOptions(
+	sections: Array<{ address: PartyAddress; key: string; title: string }>,
+	currentAddressId: string,
+): AppAdvancedDropdownOption[] {
+	return sections
+		.filter((section) => section.address.id !== currentAddressId)
+		.map((section) => ({
+			description: formatFullAddress(section.address),
+			name: `Same As ${section.title}`,
+			value: section.address.id,
+		}));
+}
+
+function ReadOnlyAddressDisplay({ address }: { address: PartyAddress }) {
+	return (
+		<Field label="Full Address">
+			<input
+				value={formatFullAddress(address)}
+				readOnly
+				disabled
+				className={PartyManagementFieldClassName}
+			/>
+		</Field>
+	);
+}
+
+function formatFullAddress(address: PartyAddress) {
+	return (
+		[
+			address.addressLine1,
+			address.addressLine2,
+			address.barangay,
+			address.cityMunicipality,
+			address.province,
+		]
+			.map((part) => part.trim())
+			.filter(Boolean)
+			.join(", ") || "-"
 	);
 }
 
@@ -558,14 +623,50 @@ function getAddressControlId(
 	return `party-address-${sectionKey}-${addressId}-${fieldName}`;
 }
 
-function SectionHeading({ title }: { title: string }) {
+function SectionHeading({
+	addressId,
+	disabled,
+	sameAsOptions,
+	syncedSourceAddressId,
+	title,
+	onCopyAddress,
+}: {
+	addressId: string;
+	disabled: boolean;
+	sameAsOptions: AppAdvancedDropdownOption[];
+	syncedSourceAddressId: string;
+	title: string;
+	onCopyAddress: (sourceAddressId: string, targetAddressId: string) => void;
+}) {
 	return (
-		<div className="flex items-center gap-3">
-			<h2 className="shrink-0 text-base font-semibold text-darknavy">
-				{title}
-			</h2>
-			<div className="h-px flex-1 bg-darknavy/10" aria-hidden="true" />
+		<div className="flex flex-wrap items-center gap-3">
+			<div className="flex min-w-0 flex-1 items-center gap-3">
+				<h2 className="shrink-0 text-base font-semibold text-darknavy">
+					{title}
+				</h2>
+				<div className="h-px flex-1 bg-darknavy/10" aria-hidden="true" />
+			</div>
+			{sameAsOptions.length > 0 ? (
+				<div className="w-full sm:w-64">
+					<AppAdvancedDropdown
+						disabled={disabled}
+						isSearchable={false}
+						options={sameAsOptions}
+						placeholder="Same As Address"
+						showSelectionIndicator={false}
+						value={syncedSourceAddressId}
+						onChange={(value) => {
+							const sourceAddressId = getSingleSelectedValue(value);
+							onCopyAddress(sourceAddressId, addressId);
+						}}
+					/>
+				</div>
+			) : null}
 		</div>
 	);
+}
+
+function getSingleSelectedValue(value: string | string[]) {
+	return Array.isArray(value) ? (value[0] ?? "") : value;
 }
 

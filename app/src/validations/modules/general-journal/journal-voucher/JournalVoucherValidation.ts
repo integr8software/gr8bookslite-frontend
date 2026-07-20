@@ -8,8 +8,8 @@ import type {
 const journalVoucherHeaderSchema = z.object({
   transactionNo: z.string().trim().min(1, "Enter a transaction number."),
   documentDate: z.string().trim().min(1, "Select a document date."),
-  currencyType: z.string().trim().min(1, "Select a currency type."),
-  currencyRate: z.number().positive("Enter a currency rate greater than zero."),
+  currencyType: z.string().trim().min(1, "Select a currency."),
+  currencyRate: z.number().positive("Enter an exchange rate greater than zero."),
   status: z.string().trim().min(1, "Select a status."),
 });
 
@@ -36,8 +36,8 @@ export function validateJournalVoucherForm(
     }
   }
 
-  if (values.lines.length < 2) {
-    errors.lines = "Add at least two journal lines.";
+  if (values.lines.length <= 1) {
+    errors.lines = "Add at least two journal voucher entry rows.";
   }
 
   for (const line of values.lines) {
@@ -58,8 +58,10 @@ export function validateJournalVoucherForm(
       }
 
       if (!hasDebit && !hasCredit) {
-        errors.lineErrors[line.id].debit =
-          "Enter either a debit or credit amount.";
+        const amountError = "Enter either a debit or credit amount.";
+
+        errors.lineErrors[line.id].debit = amountError;
+        errors.lineErrors[line.id].credit = amountError;
       }
     }
 
@@ -74,8 +76,8 @@ export function validateJournalVoucherForm(
 
   const totals = getJournalVoucherTotals(values.lines);
 
-  if (!totals.isBalanced) {
-    errors.balance = "Debit and credit totals must balance before saving.";
+  if (Math.abs(totals.variance) >= 0.001) {
+    errors.balance = "Variance must be zero before saving.";
   }
 
   return errors;

@@ -2,7 +2,7 @@
 
 import {
 	BankMasterfileAccountTypeOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
+} from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
 import type {
 	BankImportColumnId,
 	BankImportPreviewRow,

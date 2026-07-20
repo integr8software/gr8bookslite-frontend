@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ModuleDataEntry,
   type ModuleDataEntryColumn,
@@ -8,8 +9,9 @@ import { formatBeginningBalanceAmount } from "@/app/src/data/modules/beginning-b
 import { ModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
   getPartyDisplayName,
-  PartyInformationInitialRecords,
 } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
+import { fetchPartyManagementRecords } from "@/app/src/services/modules/maintenance/party-management/PartyManagementApi";
+import { PartyManagementQueryKeys } from "@/app/src/services/modules/maintenance/party-management/PartyManagementQueryKeys";
 import type { BeginningBalanceUploaderField, BeginningBalanceUploaderRow, BeginningBalanceUploaderTotals } from "@/app/src/types/modules/beginning-balance-uploader/BeginningBalanceUploaderTypes";
 import type { ModuleDataEntryCellTarget } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -32,9 +34,13 @@ type Props = {
 };
 
 export function BeginningBalanceUploaderEntriesTable({ rows, totals, error, isReadonly, onAddRows, onDeleteRow, onDuplicateRow, onInsertRow, onMoveRow, onPasteRows, onUpdateRow, onUpdateRowFields }: Props) {
+  const partiesQuery = useQuery({
+    queryKey: PartyManagementQueryKeys.records(),
+    queryFn: fetchPartyManagementRecords,
+  });
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
     () =>
-      PartyInformationInitialRecords.filter((party) => party.status === "Active").map(
+      (partiesQuery.data?.records ?? []).filter((party) => party.status === "Active").map(
         (party) => ({
           description: party.partyTypes.join(", "),
           label: party.partyCodeNo,
@@ -42,7 +48,7 @@ export function BeginningBalanceUploaderEntriesTable({ rows, totals, error, isRe
           value: party.partyCodeNo,
         }),
       ),
-    [],
+    [partiesQuery.data?.records],
   );
 
   const columns = useMemo<ModuleDataEntryColumn<BeginningBalanceUploaderRow>[]>(

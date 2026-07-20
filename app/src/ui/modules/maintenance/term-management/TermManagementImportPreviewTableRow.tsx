@@ -1,13 +1,13 @@
 "use client";
 
-import { TermManagementDatemodeOptions } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+import { TermManagementDatemodeOptions } from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import type {
 	TermImportColumnId,
 	TermImportPreviewRow,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
 import {
 	rowHasErrors,
-} from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
+} from "@/app/src/data/modules/maintenance/term-management/TermManagementData";
 import {
 	ModuleImportEditableCell,
 	ModuleImportEditableSelect,
@@ -124,3 +124,5 @@ export function TermImportPreviewTableRow({
 		</>
 	);
 }
+
+

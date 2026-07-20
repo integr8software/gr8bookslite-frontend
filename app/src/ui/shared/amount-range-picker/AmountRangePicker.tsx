@@ -41,6 +41,12 @@ const EmptyAmountRange: AmountRangeValue = { from: "", to: "" };
 const PanelViewportPadding = 16;
 const PanelGap = 8;
 const PanelWidth = 360;
+const InitialPanelStyle: CSSProperties = {
+	left: 0,
+	opacity: 0,
+	pointerEvents: "none",
+	top: 0,
+};
 
 export function AmountRangePicker({
 	className,
@@ -60,7 +66,8 @@ export function AmountRangePicker({
 	const [isOpen, setIsOpen] = useState(false);
 	const [draftRange, setDraftRange] =
 		useState<AmountRangeValue>(normalizedValue);
-	const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
+	const [panelStyle, setPanelStyle] =
+		useState<CSSProperties>(InitialPanelStyle);
 	const displayLabel = formatAmountRangeLabel(
 		normalizedValue,
 		placeholder,
@@ -129,6 +136,7 @@ export function AmountRangePicker({
 		}
 
 		setDraftRange(normalizedValue);
+		setPanelStyle(getPanelStyle(rootRef.current) ?? InitialPanelStyle);
 		setIsOpen(true);
 	}
 

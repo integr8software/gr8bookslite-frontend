@@ -18,7 +18,9 @@ export type ModuleStatisticCardItem = {
 	helper?: ReactNode;
 	icon: LucideIcon;
 	iconClassName?: string;
+	isActive?: boolean;
 	label: ReactNode;
+	onClick?: () => void;
 	summary?: ReactNode;
 	tone?: ModuleStatisticCardTone;
 	value: ReactNode;
@@ -40,7 +42,7 @@ export function ModuleStatisticCards({
 	return (
 		<div
 			className={joinClasses(
-				"grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
+				getStatisticGridClassName(items.length),
 				className,
 			)}
 			{...props}
@@ -56,49 +58,79 @@ export function ModuleStatisticCards({
 	);
 }
 
+function getStatisticGridClassName(itemCount: number) {
+	if (itemCount > 0 && itemCount % 4 === 0) {
+		return "grid gap-4 sm:grid-cols-2 2xl:grid-cols-4";
+	}
+
+	return "grid gap-4 sm:grid-cols-2 lg:grid-cols-3";
+}
+
 function ModuleStatisticCard({ item }: { item: ModuleStatisticCardItem }) {
 	const Icon = item.icon;
-
-	return (
-		<div className="rounded-lg border border-darknavy/10 bg-white p-5 shadow-sm shadow-darknavy/5">
-			<div className="flex items-center justify-between gap-4">
-				<div className="min-w-0">
-					<div className="truncate text-sm font-semibold text-darknavy">
-						{item.label}
-					</div>
-					<div
-						className={joinClasses(
-							"mt-3 max-w-36 truncate font-semibold leading-none text-darknavy",
-							getStatisticValueClassName(item.value),
-						)}
-					>
-						{item.value}
-					</div>
-					{item.summary ? (
-						<div className="mt-2 truncate text-xs font-medium text-darknavy/60">
-							{item.summary}
-						</div>
-					) : item.helper ? (
-						<div
-							className={joinClasses(
-								"mt-2 truncate text-xs font-medium text-darknavy/60",
-								item.tone === "emerald" && "text-emerald-600",
-							)}
-						>
-							{item.helper}
-						</div>
-					) : null}
+	const cardClassName = joinClasses(
+		"rounded-lg border border-darknavy/10 bg-white p-5 text-left shadow-sm shadow-darknavy/5 transition",
+		item.onClick &&
+			"cursor-pointer hover:border-skyblue/45 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/45 focus-visible:ring-offset-2",
+		item.isActive && "border-skyblue/60 ring-2 ring-skyblue/25",
+	);
+	const content = (
+		<div className="flex items-center justify-between gap-4">
+			<div className="min-w-0">
+				<div className="truncate text-sm font-semibold text-darknavy">
+					{item.label}
 				</div>
-				<span
+				<div
 					className={joinClasses(
-						"inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full",
-						item.iconClassName ??
-							moduleStatisticCardIconClassNames[item.tone ?? "blue"],
+						"mt-3 max-w-36 truncate font-semibold leading-none text-darknavy",
+						getStatisticValueClassName(item.value),
 					)}
 				>
-					<Icon className="h-6 w-6" aria-hidden="true" />
-				</span>
+					{item.value}
+				</div>
+				{item.summary ? (
+					<div className="mt-2 truncate text-xs font-medium text-darknavy/60">
+						{item.summary}
+					</div>
+				) : item.helper ? (
+					<div
+						className={joinClasses(
+							"mt-2 truncate text-xs font-medium text-darknavy/60",
+							item.tone === "emerald" && "text-emerald-600",
+						)}
+					>
+						{item.helper}
+					</div>
+				) : null}
 			</div>
+			<span
+				className={joinClasses(
+					"inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full",
+					item.iconClassName ??
+						moduleStatisticCardIconClassNames[item.tone ?? "blue"],
+				)}
+			>
+				<Icon className="h-6 w-6" aria-hidden="true" />
+			</span>
+		</div>
+	);
+
+	if (item.onClick) {
+		return (
+			<button
+				type="button"
+				className={cardClassName}
+				aria-pressed={item.isActive}
+				onClick={item.onClick}
+			>
+				{content}
+			</button>
+		);
+	}
+
+	return (
+		<div className={cardClassName}>
+			{content}
 		</div>
 	);
 }

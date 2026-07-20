@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
 	loadPurchaseRequests,
 	savePurchaseRequests,
 } from "@/app/src/data/modules/purchasing/purchase-request/PurchaseRequestData";
 import { PurchaseRequestQueryKeys } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestQueryKeys";
+import { useOptimisticModuleListMutation } from "@/app/src/hooks/shared/module/useOptimisticModuleListMutation";
 import type { PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 
 type PurchaseRequestStoreState = {
@@ -22,36 +23,19 @@ type PurchaseRequestStoreState = {
 export function usePurchaseRequestStore<
 	TSelected = PurchaseRequestStoreState,
 >(selector?: (state: PurchaseRequestStoreState) => TSelected) {
-	const queryClient = useQueryClient();
 	const requestsQuery = useQuery({
 		queryKey: PurchaseRequestQueryKeys.requests(),
 		queryFn: async () => loadPurchaseRequests(),
 		initialData: loadPurchaseRequests,
 	});
 
-	const saveRequestsMutation = useMutation({
-		mutationFn: async (
-			updater: (
-				currentRequests: PurchaseRequestRecord[],
-			) => PurchaseRequestRecord[],
-		) => {
-			const currentRequests =
-				queryClient.getQueryData<PurchaseRequestRecord[]>(
-					PurchaseRequestQueryKeys.requests(),
-				) ?? loadPurchaseRequests();
-			const nextRequests = updater(currentRequests);
-
-			savePurchaseRequests(nextRequests);
-
-			return nextRequests;
-		},
-		onSuccess: (nextRequests) => {
-			queryClient.setQueryData(
-				PurchaseRequestQueryKeys.requests(),
-				nextRequests,
-			);
-		},
-	});
+	const saveRequestsMutation =
+		useOptimisticModuleListMutation<PurchaseRequestRecord>({
+			errorMessage: "Could not save the purchase request changes.",
+			getFallbackItems: loadPurchaseRequests,
+			persistItems: savePurchaseRequests,
+			queryKey: PurchaseRequestQueryKeys.requests(),
+		});
 
 	const state = useMemo<PurchaseRequestStoreState>(
 		() => ({

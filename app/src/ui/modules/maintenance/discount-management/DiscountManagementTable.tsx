@@ -1,11 +1,11 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { DiscountManagementTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
+import { DiscountManagementTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/discount-management/DiscountManagementConstants";
 import {
 	createDiscountManagementTableRecord,
 	getDiscountManagementTableMinWidthClassName,
-} from "@/app/src/data/modules/maintenance/financial-management/discount-management/DiscountManagementData";
+} from "@/app/src/data/modules/maintenance/discount-management/DiscountManagementData";
 import { useDiscountManagementTable } from "@/app/src/hooks/modules/maintenance/discount-management/useDiscountManagementTable";
 import type {
 	DiscountManagementTableProps,
@@ -92,3 +92,5 @@ export function DiscountManagementTable({
 		</div>
 	);
 }
+
+

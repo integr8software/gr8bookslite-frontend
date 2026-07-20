@@ -80,6 +80,37 @@ When creating or refactoring a module:
   `PurchaseRequestTableRow.tsx`.
 - Avoid generic new module files named `Main.tsx`, `Action.tsx`, or `index.ts`.
 
+## Module Identity And Navigation
+
+Every feature module has one canonical identity. Keep these in sync whenever a
+module is created, renamed, moved, or removed:
+
+- Route folder: `app/(modules)/<domain>/<feature>/`.
+- Source folders:
+  `app/src/{ui,hooks,data,types,constants,validations,services}/modules/<domain>/<feature>/`.
+- Route constant: `FeatureHref` in
+  `app/src/constants/modules/<domain>/<feature>/FeatureConstants.ts`.
+- Frontend catalog: `MODULE_ROUTE_MAP`, `MainModuleCatalogHelperText`, and
+  `MainModuleCatalogSections` in
+  `app/src/data/shared/modules/ModuleCatalogData.ts`.
+- Sidebar/auth adapter behavior in
+  `app/src/data/shared/main-layout/sidebar/UserModuleNavigationAdapter.ts`
+  when backend module codes or saved sidebar payloads can be stale.
+- Help, tutorial, spotlight, search, and map docs that reference the module path
+  or label, especially `FRONTEND_MAP.md` and `app/src/data/shared/help/`.
+
+Do not leave old route folders or old feature source folders after a module
+rename. Search for the old feature slug, old display label, old module key, and
+old module code before finishing.
+
+For module renames, preserve user navigation by adding a narrow compatibility
+mapping when old backend/sidebar payloads may still exist. Legacy module codes,
+keys, or slugs should resolve to the new canonical route only for as long as
+the transition needs it.
+
+Use the final product/module name in UI labels. Use implementation terms only
+when the business concept needs them.
+
 Route files should look like:
 
 ```tsx

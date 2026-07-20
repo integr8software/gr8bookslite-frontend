@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import toast from "react-hot-toast";
 import { Plus, Users, X } from "lucide-react";
 import {
   DefaultPhilippineContactNumber,
   FormatPhilippineContactNumber,
 } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
+import {
+  PartyDefaultNationality,
+  VatRegistrationTypeOptions,
+} from "@/app/src/constants/modules/maintenance/party-management/PartyManagementConstants";
 import {
   PartyInformationInitialFormValues,
   applyPartyDefaultAccountingAccounts,
@@ -22,6 +27,7 @@ import {
   usePartyManagementAccountOptions,
 } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagementAccountOptions";
 import { useTermDropdownOptions } from "@/app/src/hooks/modules/maintenance/term-management/useTermDropdownOptions";
+import { useTaxMaintenanceOptions } from "@/app/src/hooks/modules/maintenance/tax-maintenance/useTaxMaintenanceOptions";
 import { usePartyAtcCodeOptions } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
   PartyAddress,
@@ -31,7 +37,10 @@ import type {
   PartyType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
 import { PartyInformationDetailsFields } from "@/app/src/ui/modules/maintenance/party-management/PartyInformationDetailsFields";
-import { validatePartyInformationForm } from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
+import {
+  PartyInformationRequiredFieldsToastMessage,
+  validatePartyInformationForm,
+} from "@/app/src/validations/modules/maintenance/party-management/PartyManagementValidation";
 import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,
@@ -68,6 +77,11 @@ const PartyTypeCardCopy: Record<
     title: "Add Employee",
     description:
       "Create an employee party profile for reimbursements, payroll-linked entries, and advances.",
+  },
+  Member: {
+    title: "Add Member",
+    description:
+      "Create a member party profile with home address, identity, and tax details.",
   },
 };
 
@@ -108,6 +122,7 @@ function AppPartyDialogContent({
   const addRecord = usePartyManagementStore((state) => state.addRecord);
   const partyAccountOptions = usePartyManagementAccountOptions();
   const termDropdown = useTermDropdownOptions();
+  const taxMaintenanceDropdown = useTaxMaintenanceOptions();
   const [partyType, setPartyType] = useState<PartyType>(suggestedPartyType);
   const [values, setValues] = useState<PartyInformationFormValues>(() =>
     createDialogInitialValues(
@@ -173,6 +188,10 @@ function AppPartyDialogContent({
           middleName: "",
           lastName: "",
           suffixName: "",
+          honorific: "",
+          gender: "",
+          civilStatus: "",
+          nationality: "",
           atcCode: "",
           addresses: clearAddressRolesForPartyTypes(
             current.addresses,
@@ -237,6 +256,30 @@ function AppPartyDialogContent({
     );
   }
 
+  function copyAddress(sourceAddressId: string, targetAddressId: string) {
+    if (!isClassificationSelected || sourceAddressId === targetAddressId) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      addresses: copyAddressValues(
+        current.addresses,
+        sourceAddressId,
+        targetAddressId,
+      ),
+    }));
+    setErrors((current) => ({
+      ...current,
+      addressLine1: undefined,
+      addressLine2: undefined,
+      barangayCode: undefined,
+      cityMunicipalityCode: undefined,
+      provinceCode: undefined,
+      regionCode: undefined,
+    }));
+  }
+
   function handlePartyTypesChange(value: string | string[]) {
     if (!isClassificationSelected) {
       return;
@@ -255,6 +298,10 @@ function AppPartyDialogContent({
       return {
         ...current,
         partyTypes: nextPartyTypes,
+        nationality:
+          nextPartyTypes.includes("Member") && !current.nationality
+            ? PartyDefaultNationality
+            : current.nationality,
         addresses: clearAddressRolesForPartyTypes(
           current.addresses,
           nextPartyTypes,
@@ -279,6 +326,28 @@ function AppPartyDialogContent({
       atcCode: code,
     }));
     setErrors((current) => ({ ...current, atcCode: undefined }));
+  }
+
+  function selectVatRegistrationType(value: string | string[]) {
+    const taxId = getSingleSelectedValue(value);
+    const tax = taxMaintenanceDropdown.taxes.find(
+      (currentTax) => currentTax.id === taxId,
+    );
+    const legacyVatRegistrationType =
+      VatRegistrationTypeOptions.find((option) => option === tax?.name) ?? "";
+
+    setValues((current) => ({
+      ...current,
+      vatRegistrationTypeId: taxId,
+      vatRegistrationType: legacyVatRegistrationType,
+      vatRegistration: tax
+        ? {
+            id: tax.id,
+            name: tax.name,
+            percentage: Number(tax.percentage),
+          }
+        : null,
+    }));
   }
 
   function selectProvince(
@@ -424,7 +493,9 @@ function AppPartyDialogContent({
 
   function handlePartyTypeChange(nextPartyType: PartyType) {
     const classification =
-      nextPartyType === "Employee" ? "Individual" : "Non-Individual";
+      nextPartyType === "Employee" || nextPartyType === "Member"
+        ? "Individual"
+        : "Non-Individual";
 
     setPartyType(nextPartyType);
     setValues((current) => {
@@ -439,6 +510,17 @@ function AppPartyDialogContent({
         ...current,
         classification,
         partyTypes: nextPartyTypes,
+        partyName: "",
+        tradeName: "",
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        suffixName: "",
+        honorific: "",
+        gender: "",
+        civilStatus: "",
+        nationality:
+          nextPartyType === "Member" ? PartyDefaultNationality : "",
         addresses: clearAddressRolesForPartyTypes(
           current.addresses,
           nextPartyTypes,
@@ -471,6 +553,7 @@ function AppPartyDialogContent({
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
+      toast.error(PartyInformationRequiredFieldsToastMessage);
       return;
     }
 
@@ -539,7 +622,7 @@ function AppPartyDialogContent({
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
-                {(["Vendor", "Customer", "Employee"] as const).map(
+                {(["Vendor", "Customer", "Employee", "Member"] as const).map(
                   (currentType) => (
                     <button
                       key={currentType}
@@ -564,9 +647,11 @@ function AppPartyDialogContent({
               isClassificationSelected={isClassificationSelected}
               isReadonly={false}
               partyTypeOptions={[partyType]}
+              taxMaintenanceOptions={taxMaintenanceDropdown.options}
               termOptions={termDropdown.options}
               values={effectiveValues}
               onAddressInputChange={handleAddressInputChange}
+              onCopyAddress={copyAddress}
               onInputChange={handleInputChange}
               onPartyTypesChange={handlePartyTypesChange}
               onSelectAtcCode={selectAtcCode}
@@ -576,6 +661,7 @@ function AppPartyDialogContent({
               onSelectCityMunicipality={selectCityMunicipality}
               onSelectProvince={selectProvince}
               onSelectTerm={selectTerm}
+              onSelectVatRegistrationType={selectVatRegistrationType}
               onUpdateField={updateField}
             />
           </div>
@@ -609,7 +695,8 @@ function createDialogInitialValues(
   partyType: PartyType,
   defaultAccounts: PartyDefaultAccountingAccountIds,
 ): PartyInformationFormValues {
-  const classification = partyType === "Employee" ? "Individual" : "Non-Individual";
+  const isIndividual = partyType === "Employee" || partyType === "Member";
+  const classification = isIndividual ? "Individual" : "Non-Individual";
 
   return {
     ...applyPartyDefaultAccountingAccounts(
@@ -624,6 +711,7 @@ function createDialogInitialValues(
       classification,
     ),
     contactNo: DefaultPhilippineContactNumber,
+    nationality: partyType === "Member" ? PartyDefaultNationality : "",
     partyCodeNo: createNextPartyCode(records),
     partyTypes: [partyType],
   };
@@ -633,6 +721,39 @@ function createNextPartyCode(records: PartyInformationRecord[]) {
   const nextNumber = records.length + 1;
 
   return `PTY-${nextNumber.toString().padStart(4, "0")}`;
+}
+
+function copyAddressValues(
+  addresses: PartyAddress[],
+  sourceAddressId: string,
+  targetAddressId: string,
+) {
+  const sourceAddress = addresses.find((address) => address.id === sourceAddressId);
+
+  if (!sourceAddress) {
+    return addresses;
+  }
+
+  return addresses.map((address) => {
+    if (address.id !== targetAddressId) {
+      return address;
+    }
+
+    return {
+      ...address,
+      addressLine1: sourceAddress.addressLine1,
+      addressLine2: sourceAddress.addressLine2,
+      barangay: sourceAddress.barangay,
+      barangayCode: sourceAddress.barangayCode,
+      cityMunicipality: sourceAddress.cityMunicipality,
+      cityMunicipalityCode: sourceAddress.cityMunicipalityCode,
+      isForeign: sourceAddress.isForeign,
+      province: sourceAddress.province,
+      provinceCode: sourceAddress.provinceCode,
+      region: sourceAddress.region,
+      regionCode: sourceAddress.regionCode,
+    };
+  });
 }
 
 function getSingleSelectedValue(value: string | string[]) {

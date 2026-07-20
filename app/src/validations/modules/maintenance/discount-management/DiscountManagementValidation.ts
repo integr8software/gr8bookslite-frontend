@@ -3,7 +3,7 @@ import {
 	DiscountManagementStatusOptions,
 	DiscountManagementTypeOptions,
 	DiscountManagementValueTypeOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/discount-management/DiscountManagementConstants";
+} from "@/app/src/constants/modules/maintenance/discount-management/DiscountManagementConstants";
 import type {
 	DiscountManagementFormErrors,
 	DiscountManagementFormValues,
@@ -15,7 +15,6 @@ export const DiscountManagementFormValidationSchema = z
 		description: z
 			.string()
 			.trim()
-			.min(1, "Enter a description.")
 			.max(500, "Description must be 500 characters or fewer."),
 		type: z.enum(DiscountManagementTypeOptions, {
 			message: "Select Purchase or Sales.",
@@ -68,3 +67,4 @@ function mapDiscountManagementIssues(issues: z.ZodIssue[]) {
 		return errors;
 	}, {});
 }
+

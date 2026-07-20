@@ -17,7 +17,7 @@ import {
 	SaveAiAssistantPurchaseRequestPrefill,
 	SaveAiAssistantTermManagementPendingAction,
 } from "@/app/src/data/shared/ai-assistant/AiAssistantData";
-import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleRouteMap";
+import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import { SendAiAssistantMessage } from "@/app/src/services/shared/ai-assistant/AiAssistantApi";
 import type {
 	AiAssistantAction,

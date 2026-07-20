@@ -2,7 +2,7 @@ import {
 	DefaultAccountExportColumns,
 	DefaultAccountStatusOptions,
 	DefaultAccountTypeOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/default-account/DefaultAccountConstants";
+} from "@/app/src/constants/modules/maintenance/default-account/DefaultAccountConstants";
 import type {
 	DefaultAccountStatusFilter,
 	DefaultAccountTableFiltersProps,
@@ -98,3 +98,4 @@ export function DefaultAccountTableFilters({
 		</ModuleTableToolbar>
 	);
 }
+

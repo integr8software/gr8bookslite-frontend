@@ -29,6 +29,7 @@ export function usePartyManagementAccountOptions() {
 	const query = useQuery({
 		queryKey: ["party-management", "accounting-options"],
 		queryFn: fetchPartyManagementAccountingOptions,
+		retry: false,
 		staleTime: 5 * 60 * 1000,
 	});
 
@@ -36,6 +37,7 @@ export function usePartyManagementAccountOptions() {
 		accountOptions: query.data?.accountOptions ?? EmptyPartyAccountingAccountOptions,
 		defaultAccounts: query.data?.defaultAccounts ?? EmptyPartyAccountingAccountIds,
 		isLoading: query.isLoading,
+		refetch: query.refetch,
 	};
 }
 

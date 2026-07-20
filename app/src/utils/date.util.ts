@@ -4,6 +4,10 @@ type FormatDateTimeOptions = {
 	locale?: string;
 };
 
+export function todayDateValue() {
+	return new Date().toISOString().slice(0, 10);
+}
+
 export function formatDateTime(
 	value?: Date | string,
 	{

@@ -42,8 +42,10 @@ const ResponsibilityCenterStatusSchema = z.enum(["Active", "Inactive"], {
 });
 
 export const ResponsibilityCenterFormValidationSchema = z.object({
-	code: z.string().trim().min(1, "Code is required."),
+	code: z.string(),
 	name: z.string().trim().min(1, "Name is required."),
+	classificationId: z.string().trim().min(1, "Classification is required."),
+	typeId: z.string().trim().min(1, "Type is required."),
 	category: ResponsibilityCenterCategorySchema,
 	financialType: ResponsibilityCenterFinancialTypeSchema,
 	manager: z.string(),
@@ -61,7 +63,7 @@ export function validateResponsibilityCenterForm(
 	const errors: ResponsibilityCenterFormErrors = result.success
 		? {}
 		: mapResponsibilityCenterIssues(result.error.issues);
-	const normalizedCode = normalizeCodeWithHyphens(values.code || values.name, {
+	const normalizedCode = normalizeCodeWithHyphens(values.code, {
 		case: "upper",
 	});
 	const normalizedName = values.name.trim().toLowerCase();

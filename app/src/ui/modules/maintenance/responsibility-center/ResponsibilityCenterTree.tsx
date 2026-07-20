@@ -1,8 +1,8 @@
 "use client";
 
 import { ChevronRight, Search } from "lucide-react";
-import { ResponsibilityCenterTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
-import { getResponsibilityCenterTableMinWidthClassName } from "@/app/src/data/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterData";
+import { ResponsibilityCenterTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
+import { getResponsibilityCenterTableMinWidthClassName } from "@/app/src/data/modules/maintenance/responsibility-center/ResponsibilityCenterData";
 import { formatDateTime } from "@/app/src/utils/date.util";
 import type {
 	FlattenedResponsibilityCenterTreeNode,
@@ -18,9 +18,12 @@ import {
 import {
 	CategoryBadge,
 	FinancialTypeBadge,
-	StatusBadge,
 } from "@/app/src/ui/modules/maintenance/responsibility-center/ResponsibilityCenterTableRow";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import {
+	getColumnMetaClassName,
+	joinClasses,
+} from "@/app/src/ui/shared/module/module-table/utils";
+import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 
 export function ResponsibilityCenterTree({
 	expandedIds,
@@ -60,7 +63,10 @@ export function ResponsibilityCenterTree({
 					expandedIds={expandedIds}
 					node={row.original}
 					permissions={permissions}
-					visibleColumnIds={row.getVisibleCells().map((cell) => cell.column.id)}
+					visibleColumns={row.getVisibleCells().map((cell) => ({
+						className: getColumnMetaClassName(cell.column.columnDef.meta),
+						id: cell.column.id,
+					}))}
 					onEditCenter={onEditCenter}
 					onToggleStatus={onToggleStatus}
 					onToggleTreeNode={onToggleTreeNode}
@@ -75,7 +81,7 @@ function TreeRow({
 	expandedIds,
 	node,
 	permissions,
-	visibleColumnIds,
+	visibleColumns,
 	onEditCenter,
 	onToggleStatus,
 	onToggleTreeNode,
@@ -84,7 +90,7 @@ function TreeRow({
 	expandedIds: Set<string>;
 	node: FlattenedResponsibilityCenterTreeNode;
 	permissions: ResponsibilityCenterPermissions;
-	visibleColumnIds: string[];
+	visibleColumns: Array<{ className?: string; id: string }>;
 	onEditCenter: (center: ResponsibilityCenter) => void;
 	onToggleStatus: (center: ResponsibilityCenter) => void;
 	onToggleTreeNode: (centerId: string) => void;
@@ -92,16 +98,16 @@ function TreeRow({
 }) {
 	return (
 		<tr className="module-table-row text-darknavy">
-			{visibleColumnIds.map((columnId) => (
+			{visibleColumns.map((column) => (
 				<td
-					key={columnId}
+					key={column.id}
 					className={joinClasses(
 						"align-middle text-sm text-darknavy",
-						isCenteredColumn(columnId) ? "text-center" : "text-left",
+						column.className ?? "text-left",
 					)}
 				>
 					<TreeCell
-						columnId={columnId}
+						columnId={column.id}
 						expandedIds={expandedIds}
 						node={node}
 						permissions={permissions}
@@ -190,7 +196,7 @@ function TreeCell({
 				</span>
 			);
 		case "status":
-			return <StatusBadge status={center.status} />;
+			return <ModuleStatusBadge status={center.status} />;
 		case "createdBy":
 			return <span>{center.createdBy ?? ""}</span>;
 		case "createdAt":
@@ -246,6 +252,3 @@ function TreeCell({
 	}
 }
 
-function isCenteredColumn(columnId: string) {
-	return ["actions", "status", "financialType", "category"].includes(columnId);
-}

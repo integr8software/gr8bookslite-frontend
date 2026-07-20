@@ -1,8 +1,8 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { BankMasterfileTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/financial-management/bank-masterfile/BankMasterfileConstants";
-import { getBankMasterfileTableMinWidthClassName } from "@/app/src/data/modules/maintenance/financial-management/bank-masterfile/BankMasterfileData";
+import { BankMasterfileTablePaginationStorageKey } from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
+import { getBankMasterfileTableMinWidthClassName } from "@/app/src/data/modules/maintenance/bank-masterfile/BankMasterfileData";
 import { useBankMasterfileTable } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileTable";
 import type { BankMasterfileTableProps } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";

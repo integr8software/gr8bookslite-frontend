@@ -5,6 +5,8 @@ import {
 	Check,
 	ChevronDown,
 	ExternalLink,
+	LayoutGrid,
+	List,
 	Plus,
 	Search,
 	X,
@@ -37,6 +39,8 @@ export type AppAdvancedDropdownAddAction = {
 	onClick: () => void;
 };
 
+export type AppAdvancedDropdownOptionView = "grid" | "list";
+
 export type AppAdvancedDropdownProps = {
 	addAction?: AppAdvancedDropdownAddAction;
 	"aria-describedby"?: string;
@@ -53,6 +57,7 @@ export type AppAdvancedDropdownProps = {
 	isSearchable?: boolean;
 	name?: string;
 	menuPortal?: boolean;
+	optionViewToggle?: boolean;
 	options: AppAdvancedDropdownOption[];
 	placeholder?: string;
 	readOnly?: boolean;
@@ -70,6 +75,7 @@ export type AppAdvancedDropdownProps = {
 const DropdownMenuGap = 4;
 const DropdownMenuMaxHeight = 320;
 const DropdownMenuMinHeight = 96;
+const DropdownPointerBoundaryPadding = 24;
 const DropdownMenuViewportPadding = 8;
 
 export function AppAdvancedDropdown({
@@ -88,8 +94,9 @@ export function AppAdvancedDropdown({
 	isSearchable = true,
 	menuPortal = true,
 	name,
+	optionViewToggle = false,
 	options,
-	placeholder = "Select option",
+	placeholder = "--Select Option--",
 	readOnly = false,
 	removeSelectionOnSelectedOptionClick = true,
 	searchPlaceholder = "Search options",
@@ -105,10 +112,17 @@ export function AppAdvancedDropdown({
 	const controlId = id ?? generatedId;
 	const listboxId = `${controlId}-listbox`;
 	const [isOpen, setIsOpen] = useState(false);
+	const [optionView, setOptionView] =
+		useState<AppAdvancedDropdownOptionView>("list");
 	const [query, setQuery] = useState("");
 	const [activeOptionValue, setActiveOptionValue] = useState("");
 	const [portalStyle, setPortalStyle] = useState<CSSProperties>({});
 	const menuRef = useRef<HTMLDivElement>(null);
+	const menuInteractionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+		null,
+	);
+	const isMenuInteractionActiveRef = useRef(false);
+	const isMenuPointerDownRef = useRef(false);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const selectedValues = useMemo(
 		() => (Array.isArray(value) ? value : value ? [value] : []),
@@ -176,46 +190,55 @@ export function AppAdvancedDropdown({
 			return;
 		}
 
-		function handlePointerDown(event: MouseEvent) {
-			const target = event.target as Node;
+		function handlePointerDown(event: PointerEvent) {
+			if (isEventInsideDropdown(event, rootRef.current, menuRef.current)) {
+				isMenuPointerDownRef.current = true;
+				keepMenuInteractionActive();
+				return;
+			}
 
+			isMenuPointerDownRef.current = false;
+			setIsOpen(false);
+		}
+
+		function handlePointerMove(event: PointerEvent) {
 			if (
-				!rootRef.current?.contains(target) &&
-				!menuRef.current?.contains(target)
+				isMenuPointerDownRef.current ||
+				isEventInsideDropdown(event, rootRef.current, menuRef.current)
 			) {
-				setIsOpen(false);
+				keepMenuInteractionActive();
 			}
 		}
 
-		document.addEventListener("mousedown", handlePointerDown);
+		function handlePointerUp() {
+			isMenuPointerDownRef.current = false;
+
+			if (menuInteractionTimeoutRef.current) {
+				clearTimeout(menuInteractionTimeoutRef.current);
+				menuInteractionTimeoutRef.current = null;
+			}
+
+			isMenuInteractionActiveRef.current = false;
+		}
+
+		document.addEventListener("pointerdown", handlePointerDown, true);
+		document.addEventListener("pointermove", handlePointerMove, true);
+		document.addEventListener("pointerup", handlePointerUp, true);
 
 		return () => {
-			document.removeEventListener("mousedown", handlePointerDown);
+			document.removeEventListener("pointerdown", handlePointerDown, true);
+			document.removeEventListener("pointermove", handlePointerMove, true);
+			document.removeEventListener("pointerup", handlePointerUp, true);
 		};
 	}, [isOpen]);
 
 	useEffect(() => {
-		if (!isOpen) {
-			return;
-		}
-
-		function handleFocusIn(event: FocusEvent) {
-			const target = event.target as Node;
-
-			if (
-				!rootRef.current?.contains(target) &&
-				!menuRef.current?.contains(target)
-			) {
-				setIsOpen(false);
-			}
-		}
-
-		document.addEventListener("focusin", handleFocusIn);
-
 		return () => {
-			document.removeEventListener("focusin", handleFocusIn);
+			if (menuInteractionTimeoutRef.current) {
+				clearTimeout(menuInteractionTimeoutRef.current);
+			}
 		};
-	}, [isOpen]);
+	}, []);
 
 	useEffect(() => {
 		if (typeof document === "undefined") {
@@ -267,13 +290,23 @@ export function AppAdvancedDropdown({
 			}
 		}
 
+		function handleScroll(event: Event) {
+			const target = event.target as Node | null;
+
+			if (target && menuRef.current?.contains(target)) {
+				return;
+			}
+
+			updatePortalStyle();
+		}
+
 		updatePortalStyle();
 		window.addEventListener("resize", updatePortalStyle);
-		window.addEventListener("scroll", updatePortalStyle, true);
+		window.addEventListener("scroll", handleScroll, true);
 
 		return () => {
 			window.removeEventListener("resize", updatePortalStyle);
-			window.removeEventListener("scroll", updatePortalStyle, true);
+			window.removeEventListener("scroll", handleScroll, true);
 		};
 	}, [isOpen, menuPortal]);
 
@@ -286,6 +319,24 @@ export function AppAdvancedDropdown({
 			.getElementById(activeOptionId)
 			?.scrollIntoView({ block: "nearest" });
 	}, [activeOptionId, isOpen]);
+
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		const selectedOptionId = optionIdByValue.get(selectedValues[0] ?? "");
+
+		if (!selectedOptionId) {
+			return;
+		}
+
+		window.requestAnimationFrame(() => {
+			document
+				.getElementById(selectedOptionId)
+				?.scrollIntoView({ block: "start" });
+		});
+	}, [isOpen, optionIdByValue, selectedValues]);
 
 	function openOptions() {
 		if (isInteractionLocked) {
@@ -466,6 +517,19 @@ export function AppAdvancedDropdown({
 		onChange(selectionMode === "multiple" ? [] : "");
 	}
 
+	function keepMenuInteractionActive() {
+		isMenuInteractionActiveRef.current = true;
+
+		if (menuInteractionTimeoutRef.current) {
+			clearTimeout(menuInteractionTimeoutRef.current);
+		}
+
+		menuInteractionTimeoutRef.current = setTimeout(() => {
+			isMenuInteractionActiveRef.current = false;
+			menuInteractionTimeoutRef.current = null;
+		}, 400);
+	}
+
 	const menu = isOpen ? (
 		<div
 			ref={menuRef}
@@ -473,13 +537,61 @@ export function AppAdvancedDropdown({
 			role="listbox"
 			aria-multiselectable={selectionMode === "multiple"}
 			style={menuPortal ? portalStyle : undefined}
+			onMouseDownCapture={(event) => {
+				keepMenuInteractionActive();
+				event.stopPropagation();
+			}}
+			onPointerDownCapture={(event) => {
+				keepMenuInteractionActive();
+				event.stopPropagation();
+			}}
+			onScrollCapture={keepMenuInteractionActive}
+			onWheel={(event) => {
+				keepMenuInteractionActive();
+				event.stopPropagation();
+			}}
+			onTouchMove={(event) => {
+				keepMenuInteractionActive();
+				event.stopPropagation();
+			}}
 			className={joinClasses(
 				menuPortal
 					? "fixed z-130"
 					: "absolute left-0 top-full z-40 mt-1 w-full",
-				"app-advanced-dropdown-menu flex max-h-80 flex-col overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-[0_18px_60px_rgba(33,39,56,0.14)]",
+				"app-advanced-dropdown-menu flex max-h-80 flex-col overflow-hidden overscroll-contain rounded-lg border border-darknavy/12 bg-white shadow-[0_18px_50px_rgba(33,39,56,0.16)]",
 			)}
 		>
+			{isSearchable || optionViewToggle ? (
+				<div className="border-b border-darknavy/10 p-2">
+					<div className="flex items-center gap-2">
+						{isSearchable ? (
+							<div className="app-advanced-dropdown-search-control flex h-10 min-w-0 flex-1 items-center gap-2 rounded-md border border-darknavy/10 px-2.5">
+								<Search
+									className="h-4 w-4 text-darknavy/35"
+									aria-hidden="true"
+								/>
+								<input
+									autoCapitalize="none"
+									autoComplete="off"
+									autoCorrect="off"
+									spellCheck={false}
+									value={query}
+									onChange={(event) => setQuery(event.target.value)}
+									onKeyDown={handleComboboxKeyDown}
+									aria-controls={listboxId}
+									aria-activedescendant={activeOptionId}
+									className="app-advanced-dropdown-search-input h-full min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none placeholder:text-darknavy/35"
+									placeholder={searchPlaceholder}
+									autoFocus
+								/>
+							</div>
+						) : null}
+						{optionViewToggle ? (
+							<ViewToggle value={optionView} onChange={setOptionView} />
+						) : null}
+					</div>
+				</div>
+			) : null}
 			{addAction ? (
 				<button
 					type="button"
@@ -494,31 +606,14 @@ export function AppAdvancedDropdown({
 					{addAction.label}
 				</button>
 			) : null}
-			{isSearchable ? (
-				<div className="border-b border-darknavy/10 p-2">
-					<div className="app-advanced-dropdown-search-control flex h-10 items-center gap-2 rounded-md border border-darknavy/10 px-2.5">
-						<Search
-							className="h-4 w-4 text-darknavy/35"
-							aria-hidden="true"
-						/>
-						<input
-							autoCapitalize="none"
-							autoComplete="off"
-							autoCorrect="off"
-							spellCheck={false}
-							value={query}
-							onChange={(event) => setQuery(event.target.value)}
-							onKeyDown={handleComboboxKeyDown}
-							aria-controls={listboxId}
-							aria-activedescendant={activeOptionId}
-							className="app-advanced-dropdown-search-input h-full min-w-0 flex-1 bg-transparent text-sm text-darknavy outline-none placeholder:text-darknavy/35"
-							placeholder={searchPlaceholder}
-							autoFocus
-						/>
-					</div>
-				</div>
-			) : null}
-			<div className="grid min-h-0 gap-1 overflow-y-auto p-2">
+			<div
+				className={joinClasses(
+					"min-h-0 overflow-y-auto overscroll-contain p-2",
+					optionViewToggle && optionView === "grid"
+						? "grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-4"
+						: "grid gap-1",
+				)}
+			>
 				{hasOptions ? (
 					filteredOptions.map((option) => (
 						<OptionRow
@@ -529,6 +624,7 @@ export function AppAdvancedDropdown({
 							}
 							level={0}
 							option={option}
+							view={optionViewToggle ? optionView : "list"}
 							selectedValues={selectedValueSet}
 							showSelectionIndicator={showSelectionIndicator}
 							onActive={setActiveOptionValue}
@@ -660,11 +756,49 @@ export function AppAdvancedDropdown({
 	);
 }
 
+function ViewToggle({
+	value,
+	onChange,
+}: {
+	value: AppAdvancedDropdownOptionView;
+	onChange: (value: AppAdvancedDropdownOptionView) => void;
+}) {
+	return (
+		<div className="flex h-10 shrink-0 overflow-hidden rounded-md border border-darknavy/10 bg-white">
+			<button
+				type="button"
+				aria-label="List view"
+				aria-pressed={value === "list"}
+				onClick={() => onChange("list")}
+				className={joinClasses(
+					"flex h-full w-10 items-center justify-center text-darknavy/55 transition hover:bg-skyblue/10 hover:text-darknavy",
+					value === "list" && "bg-skyblue/15 text-skyblue",
+				)}
+			>
+				<List className="h-4 w-4" aria-hidden="true" />
+			</button>
+			<button
+				type="button"
+				aria-label="Grid view"
+				aria-pressed={value === "grid"}
+				onClick={() => onChange("grid")}
+				className={joinClasses(
+					"flex h-full w-10 items-center justify-center border-l border-darknavy/10 text-darknavy/55 transition hover:bg-skyblue/10 hover:text-darknavy",
+					value === "grid" && "bg-skyblue/15 text-skyblue",
+				)}
+			>
+				<LayoutGrid className="h-4 w-4" aria-hidden="true" />
+			</button>
+		</div>
+	);
+}
+
 function OptionRow({
 	activeValue,
 	getOptionId,
 	level,
 	option,
+	view,
 	selectedValues,
 	showSelectionIndicator,
 	onActive,
@@ -674,6 +808,7 @@ function OptionRow({
 	getOptionId: (option: AppAdvancedDropdownOption) => string | undefined;
 	level: number;
 	option: AppAdvancedDropdownOption;
+	view: AppAdvancedDropdownOptionView;
 	selectedValues: Set<string>;
 	showSelectionIndicator: boolean;
 	onActive: (value: string) => void;
@@ -683,10 +818,20 @@ function OptionRow({
 	const isActive = activeValue === option.value;
 	const hasChildren = Boolean(option.children?.length);
 	const optionId = getOptionId(option);
+	const optionClassName =
+		view === "grid"
+			? getGridOptionClassName(isSelected, option.disabled, isActive)
+			: getOptionClassName(
+					isSelected,
+					option.disabled,
+					isActive,
+					hasChildren,
+					level,
+				);
 	const content = (
 		<>
 			{showSelectionIndicator ? (
-				<span className="flex h-5 w-5 shrink-0 items-center justify-center">
+				<span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
 					{isSelected ? (
 						<Check className="h-4 w-4 text-skyblue" aria-hidden="true" />
 					) : null}
@@ -712,7 +857,7 @@ function OptionRow({
 	);
 
 	return (
-		<div className="grid gap-1">
+		<div className={view === "grid" ? "grid min-w-0" : "grid gap-1"}>
 			{option.href ? (
 				<Link
 					href={option.href}
@@ -722,11 +867,7 @@ function OptionRow({
 					aria-disabled={option.disabled}
 					data-active={isActive ? "true" : undefined}
 					data-selected={isSelected ? "true" : undefined}
-					className={getOptionClassName(
-						isSelected,
-						option.disabled,
-						isActive,
-					)}
+					className={optionClassName}
 					onMouseEnter={() => {
 						if (!option.disabled) {
 							onActive(option.value);
@@ -738,7 +879,7 @@ function OptionRow({
 							event.preventDefault();
 						}
 					}}
-					style={{ paddingLeft: `${0.75 + level * 0.9}rem` }}
+					style={view === "list" ? { paddingLeft: `${0.75 + level * 0.9}rem` } : undefined}
 				>
 					{content}
 				</Link>
@@ -761,12 +902,8 @@ function OptionRow({
 							onActive(option.value);
 						}
 					}}
-					className={getOptionClassName(
-						isSelected,
-						option.disabled,
-						isActive,
-					)}
-					style={{ paddingLeft: `${0.75 + level * 0.9}rem` }}
+					className={optionClassName}
+					style={view === "list" ? { paddingLeft: `${0.75 + level * 0.9}rem` } : undefined}
 				>
 					{content}
 				</button>
@@ -779,6 +916,7 @@ function OptionRow({
 						getOptionId={getOptionId}
 						level={level + 1}
 						option={child}
+						view={view}
 						selectedValues={selectedValues}
 						showSelectionIndicator={showSelectionIndicator}
 						onActive={onActive}
@@ -837,6 +975,8 @@ function SelectedSingle({
 	option: AppAdvancedDropdownOption;
 	showDetails: boolean;
 }) {
+	const detailText = option.label ?? option.description;
+
 	return (
 		<span className="flex min-w-0 items-center gap-2 px-0.5">
 			<span
@@ -847,14 +987,14 @@ function SelectedSingle({
 			>
 				{option.name}
 			</span>
-			{showDetails && option.label ? (
+			{showDetails && detailText ? (
 				<span
 					className={joinClasses(
 						"truncate text-xs text-darknavy/55",
 						disabled && "text-darknavy/35",
 					)}
 				>
-					{option.label}
+					{detailText}
 				</span>
 			) : null}
 		</span>
@@ -911,6 +1051,45 @@ function getPortalStyle(root: HTMLDivElement | null): CSSProperties | undefined 
 		top: rect.bottom + DropdownMenuGap,
 		width,
 	};
+}
+
+function isEventInsideDropdown(
+	event: MouseEvent | PointerEvent,
+	root: HTMLDivElement | null,
+	menu: HTMLDivElement | null,
+) {
+	const target = event.target as Node | null;
+
+	if (
+		(target && root?.contains(target)) ||
+		(target && menu?.contains(target))
+	) {
+		return true;
+	}
+
+	return (
+		isPointInsideElement(event, root) ||
+		isPointInsideElement(event, menu, DropdownPointerBoundaryPadding)
+	);
+}
+
+function isPointInsideElement(
+	event: MouseEvent | PointerEvent,
+	element: HTMLElement | null,
+	padding = 0,
+) {
+	if (!element) {
+		return false;
+	}
+
+	const rect = element.getBoundingClientRect();
+
+	return (
+		event.clientX >= rect.left - padding &&
+		event.clientX <= rect.right + padding &&
+		event.clientY >= rect.top - padding &&
+		event.clientY <= rect.bottom + padding
+	);
 }
 
 function flattenOptions(
@@ -972,12 +1151,30 @@ function getOptionClassName(
 	isSelected: boolean,
 	isDisabled?: boolean,
 	isActive?: boolean,
+	hasChildren?: boolean,
+	level = 0,
 ) {
 	return joinClasses(
-		"app-advanced-dropdown-option flex min-h-9 w-full items-center gap-2.5 rounded-md py-1.5 pr-3 text-left transition",
-		isSelected && "bg-skyblue/10 text-darknavy",
-		!isSelected && "text-darknavy hover:bg-skyblue/10",
-		isActive && !isDisabled && "bg-skyblue/15 ring-1 ring-inset ring-skyblue/25",
+		"app-advanced-dropdown-option flex min-h-9 w-full items-center gap-2.5 rounded-md border border-transparent py-1.5 pr-3 text-left transition",
+		hasChildren && !isSelected && level === 0 && "bg-darknavy/[0.025]",
+		isSelected && "text-darknavy",
+		!isSelected && "text-darknavy hover:border-skyblue/15 hover:bg-skyblue/[0.06]",
+		isActive && !isDisabled && "border-skyblue/25 bg-skyblue/[0.07]",
+		isDisabled && "cursor-not-allowed opacity-45",
+	);
+}
+
+function getGridOptionClassName(
+	isSelected: boolean,
+	isDisabled?: boolean,
+	isActive?: boolean,
+) {
+	return joinClasses(
+		"app-advanced-dropdown-option flex min-h-20 w-full items-start gap-2 rounded-md border p-2 text-left transition",
+		isSelected
+			? "border-skyblue/35 bg-skyblue/10 text-darknavy"
+			: "border-darknavy/10 text-darknavy hover:border-skyblue/25 hover:bg-skyblue/10",
+		isActive && !isDisabled && "ring-2 ring-inset ring-skyblue/25",
 		isDisabled && "cursor-not-allowed opacity-45",
 	);
 }

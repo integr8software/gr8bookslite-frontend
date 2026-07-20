@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
 	PaymentTypeClassificationOptions,
 	PaymentTypeStatusOptions,
-} from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
+} from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import type {
 	PaymentTypeFormErrors,
 	PaymentTypeFormValues,
@@ -14,6 +14,12 @@ export const PaymentTypeFormValidationSchema = z.object({
 		.trim()
 		.max(500, "Description must be 500 characters or fewer."),
 	paymentType: z.string().trim().min(1, "Payment type name is required."),
+	sortOrder: z
+		.string()
+		.trim()
+		.refine((value) => /^\d+$/.test(value), {
+			message: "Order must be a whole number.",
+		}),
 	type: z.enum(PaymentTypeClassificationOptions, {
 		message: "Payment type category is required.",
 	}),
@@ -41,3 +47,4 @@ function mapPaymentTypeIssues(issues: z.ZodIssue[]) {
 		return errors;
 	}, {});
 }
+

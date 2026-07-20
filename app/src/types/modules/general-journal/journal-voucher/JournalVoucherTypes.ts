@@ -1,6 +1,7 @@
 export type JournalVoucherStatus =
   | "Draft"
-  | "Open"
+  | "Approved"
+  | "Disapproved"
   | "Posted"
   | "Cancelled";
 

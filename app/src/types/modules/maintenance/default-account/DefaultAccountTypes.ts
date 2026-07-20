@@ -64,6 +64,10 @@ export type DefaultAccountTableColumnKey =
 	| "updatedBy"
 	| "updatedAt";
 
+export type DefaultAccountColumnMeta = {
+	className: string;
+};
+
 export type DefaultAccountPermissions = {
 	canView: boolean;
 	canCreate: boolean;
@@ -87,6 +91,7 @@ export type ApiDefaultAccount = {
 	defaultAccountName: string;
 	description: string;
 	status: ApiDefaultAccountStatus;
+	expenseParentCoaId?: string | null;
 	generatedAccounts: GeneratedDefaultAccount[];
 	createdBy: string | null;
 	createdAt: string;
@@ -151,6 +156,11 @@ export type DefaultAccountTableProps = {
 	onToggleStatus: (account: DefaultAccount) => void;
 	onTypeFilterChange: (value: DefaultAccountTypeFilter) => void;
 	onViewDefaultAccount: (account: DefaultAccount) => void;
+};
+
+export type DefaultAccountStatisticCardsProps = {
+	statistics: DefaultAccountStatistics;
+	isLoading?: boolean;
 };
 
 export type DefaultAccountTableFiltersProps = {

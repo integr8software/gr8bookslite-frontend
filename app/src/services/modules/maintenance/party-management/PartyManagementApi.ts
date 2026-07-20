@@ -10,6 +10,7 @@ import type {
 	ApiPartyClassification,
 	ApiPartyImportResponse,
 	ApiPartyListResponse,
+	ApiPartyOptionsResponse,
 	ApiPartyPayload,
 	ApiPartySaveResponse,
 	ApiPartyStatus,
@@ -26,6 +27,7 @@ import type {
 	PartyType,
 	VatRegistrationType,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import type { ItemSupplierRecord } from "@/app/src/types/modules/maintenance/items/ItemManagementTypes";
 
 const EmptyPartyStatistics: PartyManagementStatistics = {
 	activeParties: 0,
@@ -118,6 +120,23 @@ export async function fetchPartyManagementAccountingOptions() {
 	return response.data;
 }
 
+export async function fetchPartyOptions(
+	partyType: PartyType,
+): Promise<ItemSupplierRecord[]> {
+	const response = await ApiClient.get<ApiPartyOptionsResponse>(
+		`${PartyManagementApiPath}/options/${mapPartyTypeToApi(partyType)}`,
+	);
+
+	return response.data.parties.map((party) => ({
+		id: party.id,
+		code: party.partyCodeNo,
+		name: party.name,
+		contactPerson: party.name,
+		contactDetails: party.email || party.contactNo,
+		status: mapStatusFromApi(party.status),
+	}));
+}
+
 export async function GetPartyManagementRecordsPage({
 	query,
 	records,
@@ -135,8 +154,8 @@ export async function GetPartyManagementRecordsPage({
 		const homeAddress = formatPartyAddress(
 			getPartyAddressByRole(record, "home"),
 		).toLowerCase();
-		const shippingAddress = formatPartyAddress(
-			getPartyAddressByRole(record, "shipping"),
+		const deliveryAddress = formatPartyAddress(
+			getPartyAddressByRole(record, "delivery"),
 		).toLowerCase();
 
 		return (
@@ -149,10 +168,11 @@ export async function GetPartyManagementRecordsPage({
 				record.partyCodeNo.toLowerCase().includes(normalizedQuery) ||
 				record.email.toLowerCase().includes(normalizedQuery) ||
 				record.contactNo.toLowerCase().includes(normalizedQuery) ||
+				(record.landline ?? "").toLowerCase().includes(normalizedQuery) ||
 				record.tin.toLowerCase().includes(normalizedQuery) ||
 				billingAddress.includes(normalizedQuery) ||
 				homeAddress.includes(normalizedQuery) ||
-				shippingAddress.includes(normalizedQuery) ||
+				deliveryAddress.includes(normalizedQuery) ||
 				address.includes(normalizedQuery))
 		);
 	});
@@ -187,6 +207,11 @@ function mapApiParty(party: ApiParty): PartyInformationRecord {
 		middleName: party.middleName ?? "",
 		lastName: party.lastName ?? "",
 		suffixName: party.suffixName ?? "",
+		honorific: normalizePartyHonorific(party.honorific ?? ""),
+		gender: party.gender ?? "",
+		civilStatus: party.civilStatus ?? "",
+		nationality: party.nationality ?? "",
+		memberRegistrationDate: party.memberRegistrationDate ?? "",
 		address,
 		addresses,
 		defaultReceivableAccount: party.defaultReceivableAccount ?? "",
@@ -201,9 +226,12 @@ function mapApiParty(party: ApiParty): PartyInformationRecord {
 		vatRegistrationType: party.vatRegistrationType
 			? mapVatRegistrationTypeFromApi(party.vatRegistrationType)
 			: "",
+		vatRegistrationTypeId: party.vatRegistrationTypeId ?? "",
+		vatRegistration: party.vatRegistration ?? null,
 		atcCode: party.atcCode ?? "",
 		email: party.email ?? "",
 		contactNo: party.contactNo ?? "",
+		landline: party.landline ?? "",
 		createdBy: party.createdBy ?? "",
 		createdAt: party.createdAt,
 		updatedBy: party.updatedBy ?? "",
@@ -268,6 +296,22 @@ function toApiPartyPayload(
 			record.classification === "Individual"
 				? normalizeOptionalText(record.suffixName)
 				: null,
+		honorific:
+			record.classification === "Individual"
+				? normalizeOptionalText(normalizePartyHonorific(record.honorific ?? ""))
+				: null,
+		gender: hasPersonalInformationPartyType(record.partyTypes)
+			? normalizeOptionalText(record.gender)
+			: null,
+		civilStatus: hasPersonalInformationPartyType(record.partyTypes)
+			? normalizeOptionalText(record.civilStatus)
+			: null,
+		nationality: hasPersonalInformationPartyType(record.partyTypes)
+			? normalizeOptionalText(record.nationality)
+			: null,
+		memberRegistrationDate: record.partyTypes.includes("Member")
+			? normalizeOptionalText(record.memberRegistrationDate)
+			: null,
 		addresses: (record.addresses.length > 0
 			? record.addresses
 			: [record.address]
@@ -295,9 +339,11 @@ function toApiPartyPayload(
 		vatRegistrationType: record.vatRegistrationType
 			? mapVatRegistrationTypeToApi(record.vatRegistrationType)
 			: null,
+		vatRegistrationTypeId: normalizeOptionalText(record.vatRegistrationTypeId),
 		atcCode: normalizeOptionalText(record.atcCode),
 		email: normalizeOptionalText(record.email),
 		contactNo: normalizeOptionalText(record.contactNo),
+		landline: normalizeOptionalText(record.landline),
 	};
 }
 
@@ -370,8 +416,8 @@ function getSortablePartyManagementValue(
 			return record.partyTypes.join(", ");
 		case "partyCodeNo":
 			return record.partyCodeNo;
-		case "shippingAddressLabel":
-			return formatPartyAddress(getPartyAddressByRole(record, "shipping"));
+		case "deliveryAddressLabel":
+			return formatPartyAddress(getPartyAddressByRole(record, "delivery"));
 		case "status":
 			return record.status;
 		case "tin":
@@ -407,7 +453,7 @@ function formatPartyAddress(address?: PartyInformationRecord["address"] | null) 
 
 function getPartyAddressByRole(
 	record: PartyInformationRecord,
-	role: "billing" | "home" | "shipping",
+	role: "billing" | "delivery" | "home",
 ) {
 	const addresses = record.addresses.length > 0 ? record.addresses : [record.address];
 
@@ -433,12 +479,14 @@ function mapClassificationToApi(
 function mapPartyTypeFromApi(value: ApiPartyType): PartyType {
 	if (value === "CUSTOMER") return "Customer";
 	if (value === "EMPLOYEE") return "Employee";
+	if (value === "MEMBER") return "Member";
 	return "Vendor";
 }
 
 function mapPartyTypeToApi(value: PartyType): ApiPartyType {
 	if (value === "Customer") return "CUSTOMER";
 	if (value === "Employee") return "EMPLOYEE";
+	if (value === "Member") return "MEMBER";
 	return "VENDOR";
 }
 
@@ -496,6 +544,14 @@ function normalizeOptionalText(value: string | null | undefined) {
 	const normalized = value?.trim() ?? "";
 
 	return normalized || null;
+}
+
+function normalizePartyHonorific(value: string) {
+	return value.replace(/\s*\([^)]*\)\s*$/, "").trim();
+}
+
+function hasPersonalInformationPartyType(partyTypes: PartyType[]) {
+	return partyTypes.includes("Employee") || partyTypes.includes("Member");
 }
 
 function createEmptyApiMappedAddress(): PartyAddress {

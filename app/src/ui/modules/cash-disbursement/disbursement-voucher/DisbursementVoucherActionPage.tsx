@@ -687,7 +687,7 @@ function DisbursementVoucherActionInner() {
         isOpen={isReportPreviewOpen}
         values={values}
         onClose={() => setIsReportPreviewOpen(false)}
-        onPrint={() => openDisbursementVoucherPdf(values)}
+        onGeneratePdf={() => openDisbursementVoucherPdf(values)}
       />
 
       <AppTaxRateDialog
@@ -1687,11 +1687,7 @@ function getPaymentTypeDetailKind(
     return "cash";
   }
 
-  if (paymentTypeRecord?.type === "With Bank") {
-    return "with-bank";
-  }
-
-  if (paymentTypeRecord?.type === "Multiple Check") {
+  if (paymentTypeRecord?.type === "Check") {
     return "with-bank";
   }
 
@@ -1699,11 +1695,11 @@ function getPaymentTypeDetailKind(
     return "bank-transfer";
   }
 
-  if (paymentTypeRecord?.type === "Online Payment") {
+  if (paymentTypeRecord?.type === "Digital Wallet") {
     return "bank-transfer";
   }
 
-  if (paymentTypeRecord?.type === "Debit") {
+  if (paymentTypeRecord?.type === "Non-Cash Settlement") {
     return "debit-memo";
   }
 
@@ -1734,7 +1730,10 @@ function getPaymentTypeDetailKind(
 
   if (
     normalizedPaymentType.includes("instapay") ||
+    normalizedPaymentType.includes("pesonet") ||
+    normalizedPaymentType.includes("peso net") ||
     normalizedPaymentType.includes("ewallet") ||
+    normalizedPaymentType.includes("e-wallet") ||
     normalizedPaymentType.includes("wallet") ||
     normalizedPaymentType.includes("online")
   ) {

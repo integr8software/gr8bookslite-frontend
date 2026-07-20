@@ -78,7 +78,7 @@ Registration points already expected for the module:
 
 - Backend module identity: `gr8bookslite-backend/prisma/seeds/moduleCatalog.ts`
 - Backend system sidebar: `gr8bookslite-backend/prisma/seeds/moduleSystemCatalog.ts`
-- Frontend route map: `app/src/data/shared/modules/ModuleRouteMap.ts`
+- Frontend module catalog and route map: `app/src/data/shared/modules/ModuleCatalogData.ts`
 - Frontend sidebar catalog: `app/src/data/shared/modules/ModuleCatalogData.ts`
 
 The backend owns module identity and permission metadata. The frontend owns the route:

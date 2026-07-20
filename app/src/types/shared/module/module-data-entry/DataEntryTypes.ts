@@ -16,6 +16,8 @@ export type ModuleDataEntryColumn<TRow> = {
 };
 
 export type ModuleDataEntryCellContext = {
+	fieldId: string;
+	fieldName: string;
 	focusableTabIndex: number;
 };
 

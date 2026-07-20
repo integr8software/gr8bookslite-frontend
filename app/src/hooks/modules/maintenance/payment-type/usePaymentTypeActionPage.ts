@@ -6,7 +6,7 @@ import {
 	createPaymentTypeFormValues,
 	createPaymentTypeFromForm,
 	updatePaymentTypeFromForm,
-} from "@/app/src/data/modules/maintenance/financial-management/payment-type/PaymentTypeData";
+} from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentType";
 import type {
 	PaymentTypeActionMode,
@@ -25,14 +25,16 @@ export function usePaymentTypeActionPage({
 	mode: PaymentTypeActionMode;
 	onSaved: () => void;
 }) {
-	const addPaymentType = usePaymentTypeStore((state) => state.addPaymentType);
-	const updatePaymentType = usePaymentTypeStore((state) => state.updatePaymentType);
-	const isMutating = usePaymentTypeStore((state) => state.isMutating);
+	const { addPaymentType, isMutating, paymentTypes, updatePaymentType } =
+		usePaymentTypeStore();
 	const isReadonly = mode === "view";
 	const [values, setValues] = useState<PaymentTypeFormValues>(() =>
 		existingPaymentType
 			? createPaymentTypeFormValues(existingPaymentType)
-			: PaymentTypeInitialFormValues,
+			: {
+					...PaymentTypeInitialFormValues,
+					sortOrder: String(getNextPaymentTypeSortOrder(paymentTypes)),
+				},
 	);
 	const [errors, setErrors] = useState<PaymentTypeFormErrors>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,6 +51,17 @@ export function usePaymentTypeActionPage({
 		setErrors((current) => ({ ...current, [field]: undefined }));
 	}
 
+	function validateBeforeSubmit() {
+		const nextErrors = validatePaymentTypeForm(values);
+
+		if (Object.keys(nextErrors).length > 0) {
+			setErrors(nextErrors);
+			return false;
+		}
+
+		return true;
+	}
+
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
@@ -57,10 +70,7 @@ export function usePaymentTypeActionPage({
 			return;
 		}
 
-		const nextErrors = validatePaymentTypeForm(values);
-
-		if (Object.keys(nextErrors).length > 0) {
-			setErrors(nextErrors);
+		if (!validateBeforeSubmit()) {
 			return;
 		}
 
@@ -90,6 +100,14 @@ export function usePaymentTypeActionPage({
 		isMutating: isSubmitting || isMutating,
 		isReadonly,
 		isSubmitting: isSubmitting || isMutating,
+		validateBeforeSubmit,
 		values,
 	};
 }
+
+function getNextPaymentTypeSortOrder(paymentTypes: PaymentTypeRecord[]) {
+	return (
+		Math.max(0, ...paymentTypes.map((paymentType) => paymentType.sortOrder)) + 10
+	);
+}
+

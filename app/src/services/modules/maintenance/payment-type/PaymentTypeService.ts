@@ -1,5 +1,5 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import { PaymentTypeApiPath } from "@/app/src/constants/modules/maintenance/financial-management/payment-type/PaymentTypeConstants";
+import { PaymentTypeApiPath } from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import type {
 	ApiPaymentType,
 	ApiPaymentTypeClassification,
@@ -94,7 +94,10 @@ export function applyPaymentTypeListParams(
 			return matchesSearch && matchesType && matchesStatus;
 		})
 		.sort((left, right) => {
-			const result = paymentTypeCollator.compare(left[sortBy], right[sortBy]);
+			const result =
+				sortBy === "sortOrder"
+					? left.sortOrder - right.sortOrder
+					: paymentTypeCollator.compare(left[sortBy], right[sortBy]);
 
 			return sortDirection === "asc" ? result : -result;
 		});
@@ -105,6 +108,7 @@ function mapApiPaymentType(paymentType: ApiPaymentType): PaymentTypeRecord {
 		id: paymentType.id,
 		description: paymentType.description ?? "",
 		paymentType: paymentType.name,
+		sortOrder: paymentType.sortOrder,
 		status: mapStatusFromApi(paymentType.status),
 		type: mapClassificationFromApi(paymentType.classification),
 		createdBy: paymentType.createdBy ?? "System Generated",
@@ -119,6 +123,7 @@ function toApiPaymentTypePayload(paymentType: PaymentTypeRecord) {
 		name: paymentType.paymentType.trim(),
 		description: paymentType.description.trim(),
 		classification: mapClassificationToApi(paymentType.type),
+		sortOrder: paymentType.sortOrder,
 		status: mapStatusToApi(paymentType.status),
 	};
 }
@@ -144,6 +149,10 @@ function mapSortKeyToApi(sortBy?: PaymentTypeSortKey) {
 		return "name";
 	}
 
+	if (sortBy === "sortOrder") {
+		return "sortOrder";
+	}
+
 	if (sortBy === "type") {
 		return "classification";
 	}
@@ -155,22 +164,20 @@ function mapClassificationFromApi(
 	value: ApiPaymentTypeClassification,
 ): PaymentTypeClassification {
 	if (value === "CASH") return "Cash";
-	if (value === "WITH_BANK") return "With Bank";
 	if (value === "BANK_TRANSFER") return "Bank Transfer";
-	if (value === "ONLINE_PAYMENT") return "Online Payment";
-	if (value === "MULTIPLE_CHECK") return "Multiple Check";
-	return "Debit";
+	if (value === "CHECK") return "Check";
+	if (value === "DIGITAL_WALLET") return "Digital Wallet";
+	return "Non-Cash Settlement";
 }
 
 function mapClassificationToApi(
 	value: PaymentTypeClassification,
 ): ApiPaymentTypeClassification {
 	if (value === "Cash") return "CASH";
-	if (value === "With Bank") return "WITH_BANK";
 	if (value === "Bank Transfer") return "BANK_TRANSFER";
-	if (value === "Online Payment") return "ONLINE_PAYMENT";
-	if (value === "Multiple Check") return "MULTIPLE_CHECK";
-	return "DEBIT";
+	if (value === "Check") return "CHECK";
+	if (value === "Digital Wallet") return "DIGITAL_WALLET";
+	return "NON_CASH_SETTLEMENT";
 }
 
 function mapStatusFromApi(value: ApiPaymentTypeStatus): PaymentTypeStatus {
@@ -180,3 +187,4 @@ function mapStatusFromApi(value: ApiPaymentTypeStatus): PaymentTypeStatus {
 function mapStatusToApi(value: PaymentTypeStatus): ApiPaymentTypeStatus {
 	return value === "Active" ? "ACTIVE" : "INACTIVE";
 }
+

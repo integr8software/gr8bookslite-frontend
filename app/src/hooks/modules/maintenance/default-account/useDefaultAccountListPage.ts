@@ -10,19 +10,17 @@ import type {
 } from "@/app/src/types/modules/maintenance/default-account/DefaultAccountTypes";
 
 export function useDefaultAccountListPage() {
-	const defaultAccounts = useDefaultAccountStore((state) => state.defaultAccounts);
-	const updateDefaultAccountStatus = useDefaultAccountStore(
-		(state) => state.updateDefaultAccountStatus,
-	);
-	const isLoading = useDefaultAccountStore((state) => state.isLoading);
-	const isRefreshing = useDefaultAccountStore((state) => state.isRefreshing);
-	const lastSyncedAt = useDefaultAccountStore((state) => state.lastSyncedAt);
-	const isMutating = useDefaultAccountStore((state) => state.isMutating);
-	const permissions = useDefaultAccountStore((state) => state.permissions);
-	const statistics = useDefaultAccountStore((state) => state.statistics);
-	const refreshDefaultAccounts = useDefaultAccountStore(
-		(state) => state.refreshDefaultAccounts,
-	);
+	const {
+		defaultAccounts,
+		isLoading,
+		isMutating,
+		isRefreshing,
+		lastSyncedAt,
+		permissions,
+		refreshDefaultAccounts,
+		statistics,
+		updateDefaultAccountStatus,
+	} = useDefaultAccountStore();
 	const [statusFilter, setStatusFilter] =
 		useState<DefaultAccountStatusFilter>("Active");
 	const [typeFilter, setTypeFilter] = useState<DefaultAccountTypeFilter>("");
@@ -72,7 +70,7 @@ export function useDefaultAccountListPage() {
 			return;
 		}
 
-		void updateDefaultAccountStatus({
+		return updateDefaultAccountStatus({
 			...pendingStatusAccount,
 			status:
 				pendingStatusAccount.status === "Active" ? "Inactive" : "Active",

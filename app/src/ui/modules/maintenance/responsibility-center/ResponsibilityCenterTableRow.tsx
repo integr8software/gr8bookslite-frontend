@@ -8,6 +8,8 @@ import {
 	ModuleTableActionButton,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ResponsibilityCenterTableRow({
 	allCenters,
@@ -22,7 +24,7 @@ export function ResponsibilityCenterTableRow({
 			{row.getVisibleCells().map((cell) => (
 				<ResponsibilityCenterTableCell
 					key={cell.id}
-					align={isCenteredColumn(cell.column.id) ? "center" : "left"}
+					className={getColumnMetaClassName(cell.column.columnDef.meta)}
 				>
 					<ResponsibilityCenterCellContent
 						allCenters={allCenters}
@@ -37,10 +39,6 @@ export function ResponsibilityCenterTableRow({
 			))}
 		</tr>
 	);
-}
-
-function isCenteredColumn(columnId: string) {
-	return ["actions", "status", "financialType", "category"].includes(columnId);
 }
 
 function ResponsibilityCenterCellContent({
@@ -91,7 +89,7 @@ function ResponsibilityCenterCellContent({
 		case "manager":
 			return <span>{center.manager || ""}</span>;
 		case "status":
-			return <StatusBadge status={center.status} />;
+			return <ModuleStatusBadge status={center.status} />;
 		case "createdBy":
 			return <span>{center.createdBy ?? ""}</span>;
 		case "createdAt":
@@ -154,15 +152,15 @@ function ResponsibilityCenterCellContent({
 }
 
 function ResponsibilityCenterTableCell({
-	align = "left",
+	className = "text-left",
 	children,
 }: {
-	align?: "center" | "left";
+	className?: string;
 	children: React.ReactNode;
 }) {
 	return (
 		<td
-			className={`px-4 py-4 align-middle text-sm text-darknavy ${align === "center" ? "text-center" : "text-left"}`}
+			className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}
 		>
 			{children}
 		</td>
@@ -193,17 +191,3 @@ export function FinancialTypeBadge({
 	);
 }
 
-export function StatusBadge({ status }: { status: ResponsibilityCenter["status"] }) {
-	const statusClass =
-		status === "Active"
-			? "bg-citron/25 text-darknavy"
-			: "bg-darknavy/8 text-darknavy/55";
-
-	return (
-		<span
-			className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}
-		>
-			{status}
-		</span>
-	);
-}

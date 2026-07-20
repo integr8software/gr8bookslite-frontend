@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   JournalVoucherLineColumnIds,
   JournalVoucherLineColumnLabels,
@@ -9,12 +9,23 @@ import {
   JournalVoucherVatTypeOptions,
   type JournalVoucherLineColumnId,
 } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
+import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { formatJournalVoucherAmount } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherData";
+import { getPartyDisplayName } from "@/app/src/data/modules/maintenance/party-management/PartyManagementData";
 import type { useJournalVoucherFormPage } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucherFormPage";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/maintenance/party-management/usePartyManagement";
+import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenter";
 import type {
   JournalVoucherLine,
   JournalVoucherLineField,
 } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
+import type { PartyInformationRecord } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import type { ResponsibilityCenter } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
+import {
+  AppAdvancedDropdown,
+  type AppAdvancedDropdownOption,
+} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import {
   ModuleDataEntry,
   type ModuleDataEntryColumn,
@@ -47,6 +58,23 @@ export function JournalVoucherDataEntryTable({
   const [columnWidths, setColumnWidths] = useState<
     Record<JournalVoucherLineColumnId, number>
   >({ ...JournalVoucherLineColumnWidths });
+  const partyRecords = usePartyManagementStore((state) => state.records);
+  const responsibilityCenters = useResponsibilityCenterStore(
+    (state) => state.centers,
+  );
+  const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
+  const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
+    () => createPartyOptions(partyRecords, page.values.lines),
+    [page.values.lines, partyRecords],
+  );
+  const responsibilityCenterOptions = useMemo<AppAdvancedDropdownOption[]>(
+    () =>
+      createResponsibilityCenterOptions(
+        responsibilityCenters,
+        page.values.lines,
+      ),
+    [page.values.lines, responsibilityCenters],
+  );
   const visibleColumnOrder = columnOrder.filter((columnId) =>
     visibleColumnIds.includes(columnId),
   );
@@ -55,7 +83,15 @@ export function JournalVoucherDataEntryTable({
       header: columnLabels[columnId],
       id: columnId,
       isRemovable: !JournalVoucherProtectedLineColumnIds.has(columnId),
-      renderCell: (line) => renderLineCell(page, line, columnId),
+      renderCell: (line) =>
+        renderLineCell(
+          page,
+          line,
+          columnId,
+          chartAccounts,
+          partyOptions,
+          responsibilityCenterOptions,
+        ),
       width: columnWidths[columnId],
       widthClassName: "",
       widthMode: "fixed",
@@ -256,7 +292,7 @@ export function JournalVoucherDataEntryTable({
         debit: formatJournalVoucherAmount(page.totals.totalDebit),
       }}
       summaryRowHeader="Totals"
-      title="Data Entry"
+      title="Journal Entries"
       onAddRows={page.addLines}
       onAutoColumnWidth={fitColumnWidth}
       onClearCell={clearCell}
@@ -278,11 +314,94 @@ function renderLineCell(
   page: ReturnType<typeof useJournalVoucherFormPage>,
   line: JournalVoucherLine,
   columnId: JournalVoucherLineColumnId,
+  chartAccounts: ReturnType<typeof getModuleChartAccounts>,
+  partyOptions: AppAdvancedDropdownOption[],
+  responsibilityCenterOptions: AppAdvancedDropdownOption[],
 ) {
   const lineErrors = page.errors.lineErrors?.[line.id] ?? {};
   const isReadonly = page.isReadonly;
 
   switch (columnId) {
+    case "accountCode":
+      return (
+        <LineInput
+          error={lineErrors.accountCode}
+          value={line.accountCode}
+          onChange={() => undefined}
+          readOnly
+        />
+      );
+    case "accountTitle":
+      return (
+        <ChartAccountDropdown
+          accounts={chartAccounts}
+          value={line.accountTitle}
+          valueField="accountName"
+          readOnly={isReadonly}
+          isClearable
+          className={accountingDropdownClassName(lineErrors.accountTitle)}
+          ariaInvalid={Boolean(lineErrors.accountTitle)}
+          placeholder="Select account title"
+          searchPlaceholder="Search account title"
+          onChange={() => undefined}
+          onSelectAccount={(account) => {
+            page.updateLine(line.id, "accountCode", account?.accountNumber ?? "");
+            page.updateLine(line.id, "accountTitle", account?.accountName ?? "");
+          }}
+        />
+      );
+    case "partyCode":
+      return (
+        <LineInput
+          value={line.partyCode}
+          onChange={() => undefined}
+          readOnly
+        />
+      );
+    case "partyName":
+      return (
+        <AppAdvancedDropdown
+          value={
+            line.partyCode ||
+            getJournalVoucherPartyFallbackValue(line.partyName ?? "")
+          }
+          readOnly={isReadonly}
+          options={partyOptions}
+          placeholder="Select Party Name"
+          searchPlaceholder="Search Party Name"
+          className={accountingDropdownClassName()}
+          onChange={(value) => {
+            const selectedValue = String(value);
+            const party = partyOptions.find(
+              (option) => option.value === selectedValue,
+            );
+            const isFallbackValue = selectedValue.startsWith(
+              JournalVoucherPartyFallbackValuePrefix,
+            );
+
+            page.updateLine(
+              line.id,
+              "partyCode",
+              isFallbackValue ? "" : selectedValue,
+            );
+            page.updateLine(line.id, "partyName", party?.name ?? "");
+          }}
+        />
+      );
+    case "responsibilityCenter":
+      return (
+        <AppAdvancedDropdown
+          value={line.responsibilityCenter}
+          readOnly={isReadonly}
+          options={responsibilityCenterOptions}
+          placeholder="Select responsibility center"
+          searchPlaceholder="Search responsibility center"
+          className={accountingDropdownClassName()}
+          onChange={(value) =>
+            page.updateLine(line.id, "responsibilityCenter", String(value))
+          }
+        />
+      );
     case "debit":
     case "credit":
       return (
@@ -317,14 +436,16 @@ function renderLineCell(
 }
 
 function LineInput({
-  disabled,
+  disabled = false,
   error,
   onChange,
+  readOnly = false,
   value,
 }: {
-  disabled: boolean;
+  disabled?: boolean;
   error?: string;
   onChange: (value: string) => void;
+  readOnly?: boolean;
   value: string;
 }) {
   return (
@@ -333,6 +454,7 @@ function LineInput({
       value={value}
       onChange={(event) => onChange(event.target.value)}
       disabled={disabled}
+      readOnly={readOnly}
       title={error}
       className={accountingCellControlClassName(
         error ? "ring-2 ring-inset ring-red-500/45" : "",
@@ -379,17 +501,136 @@ function LineAmountInput({
   onChange: (value: number) => void;
   value: number;
 }) {
+  const [draftValue, setDraftValue] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const displayValue = isEditing
+    ? draftValue
+    : value > 0
+      ? formatMoneyNumberInput(value.toFixed(2))
+      : "";
+
+  function handleValueChange(nextValue: string) {
+    setDraftValue(nextValue);
+    onChange(parseMoneyNumberInput(nextValue));
+  }
+
   return (
     <MoneyNumberField
-      value={value > 0 ? formatMoneyNumberInput(String(value)) : ""}
-      onValueChange={(nextValue) => onChange(parseMoneyNumberInput(nextValue))}
+      value={displayValue}
+      onValueChange={handleValueChange}
+      onFocus={() => {
+        setDraftValue(displayValue);
+        setIsEditing(true);
+      }}
+      onBlur={() => {
+        setDraftValue("");
+        setIsEditing(false);
+      }}
       disabled={disabled}
       title={error}
       className={accountingCellControlClassName(
-        joinClasses("text-right tabular-nums", error ? "ring-2 ring-inset ring-red-500/45" : ""),
+        joinClasses(
+          "text-right tabular-nums",
+          error ? "ring-2 ring-inset ring-red-500/45" : "",
+        ),
       )}
     />
   );
+}
+
+const AccountingDropdownBaseClassName =
+  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+
+function accountingDropdownClassName(error?: string) {
+  return joinClasses(
+    AccountingDropdownBaseClassName,
+    error &&
+      "[&_.app-advanced-dropdown-control]:ring-2 [&_.app-advanced-dropdown-control]:ring-inset [&_.app-advanced-dropdown-control]:ring-red-500/45",
+  );
+}
+
+const JournalVoucherPartyFallbackValuePrefix = "journal-voucher-party:";
+
+function getJournalVoucherPartyFallbackValue(partyName: string) {
+  const normalizedPartyName = partyName.trim().toLowerCase();
+
+  return normalizedPartyName
+    ? `${JournalVoucherPartyFallbackValuePrefix}${normalizedPartyName}`
+    : "";
+}
+
+function createPartyOptions(
+  partyRecords: PartyInformationRecord[],
+  lines: JournalVoucherLine[],
+): AppAdvancedDropdownOption[] {
+  const options = partyRecords.map((party) => ({
+    description: party.partyTypes.join(", "),
+    label: party.partyCodeNo,
+    name: getPartyDisplayName(party),
+    value: party.partyCodeNo,
+  }));
+  const optionNames = new Set(
+    options.map((option) => option.name.toLowerCase()),
+  );
+  const optionValues = new Set(options.map((option) => option.value));
+  const customOptions: AppAdvancedDropdownOption[] = [];
+
+  lines.forEach((line) => {
+    const partyName = line.partyName.trim();
+    const value = getJournalVoucherPartyFallbackValue(partyName);
+
+    if (
+      !partyName ||
+      optionNames.has(partyName.toLowerCase()) ||
+      optionValues.has(value)
+    ) {
+      return;
+    }
+
+    optionValues.add(value);
+    customOptions.push({
+      description: "Copied entry party",
+      label: line.partyCode,
+      name: partyName,
+      value,
+    });
+  });
+
+  return [...options, ...customOptions];
+}
+
+function createResponsibilityCenterOptions(
+  responsibilityCenters: ResponsibilityCenter[],
+  lines: JournalVoucherLine[],
+): AppAdvancedDropdownOption[] {
+  const options = responsibilityCenters
+    .filter((center) => center.status === "Active")
+    .map((center) => ({
+      description: `${center.category} / ${center.financialType}`,
+      label: center.code,
+      name: center.name,
+      value: center.name,
+    }));
+  const optionValues = new Set(options.map((option) => option.value));
+  const customOptions: AppAdvancedDropdownOption[] = [];
+
+  lines.forEach((line) => {
+    const responsibilityCenter = line.responsibilityCenter.trim();
+
+    if (!responsibilityCenter || optionValues.has(responsibilityCenter)) {
+      return;
+    }
+
+    optionValues.add(responsibilityCenter);
+    customOptions.push({
+      description: "Copied responsibility center",
+      label: responsibilityCenter,
+      name: responsibilityCenter,
+      value: responsibilityCenter,
+    });
+  });
+
+  return [...options, ...customOptions];
 }
 
 function accountingCellControlClassName(extraClassName?: string) {
@@ -414,7 +655,7 @@ function getLineExportCell(
   switch (columnId) {
     case "debit":
     case "credit":
-      return line[columnId] > 0 ? String(line[columnId]) : "";
+      return line[columnId] > 0 ? line[columnId].toFixed(2) : "";
     default:
       return String(line[columnId] ?? "");
   }

@@ -8,7 +8,7 @@ import {
 	PreviewPageSize,
 	SelectionColumnWidth,
 	DefaultColumnWidths,
-} from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+} from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import {
 	createBlankImportRow,
 	createExistingTermNameMap,
@@ -25,7 +25,7 @@ import {
 	validateImportFileSize,
 	validateTermImportRows,
 	waitForNextImportBatch,
-} from "@/app/src/data/modules/maintenance/financial-management/term-management/TermManagementData";
+} from "@/app/src/data/modules/maintenance/term-management/TermManagementData";
 import type {
 	ImportProgress,
 	TermImportColumnId,
@@ -586,3 +586,5 @@ export function useTermManagementImportDialog({
 		visibleRows,
 	};
 }
+
+

@@ -1,5 +1,5 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import { TermManagementApiPath } from "@/app/src/constants/modules/maintenance/financial-management/term-management/TermManagementConstants";
+import { TermManagementApiPath } from "@/app/src/constants/modules/maintenance/term-management/TermManagementConstants";
 import type {
 	ApiTerm,
 	ApiTermDateMode,
@@ -105,3 +105,4 @@ function mapStatusFromApi(value: ApiTermStatus): TermManagementStatus {
 function mapStatusToApi(value: TermManagementStatus): ApiTermStatus {
 	return value === "Active" ? "ACTIVE" : "INACTIVE";
 }
+

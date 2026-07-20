@@ -3,25 +3,26 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import {
 	ResponsibilityCenterActionCopy,
-	ResponsibilityCenterCategoryOptions,
 	ResponsibilityCenterDrawerFormId,
 	ResponsibilityCenterFieldClassName,
-	ResponsibilityCenterFinancialTypeOptions,
 	ResponsibilityCenterStatusOptions,
 	ResponsibilityCenterTitle,
-} from "@/app/src/constants/modules/maintenance/financial-management/responsibility-center/ResponsibilityCenterConstants";
+} from "@/app/src/constants/modules/maintenance/responsibility-center/ResponsibilityCenterConstants";
 import { useResponsibilityCenterFormPage } from "@/app/src/hooks/modules/maintenance/responsibility-center/useResponsibilityCenterFormPage";
 import type {
 	ResponsibilityCenterDrawerProps,
 	ResponsibilityCenterFormErrors,
 	ResponsibilityCenterFormValues,
 	ResponsibilityCenter,
+	ResponsibilityCenterClassification,
+	ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/maintenance/responsibility-center/ResponsibilityCenterTypes";
 import {
 	AppAdvancedDropdown,
 	type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-import { MaintenanceFormDrawer } from "@/app/src/ui/modules/maintenance/shared/MaintenanceFormDrawer";
+import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ResponsibilityCenterDrawer(props: ResponsibilityCenterDrawerProps) {
@@ -47,19 +48,16 @@ function ResponsibilityCenterDrawerPanel({
 	const copy = ResponsibilityCenterActionCopy[mode];
 
 	return (
-		<MaintenanceFormDrawer
+		<ModuleDrawer
 			description={copy.description}
 			eyebrow={ResponsibilityCenterTitle}
 			formId={ResponsibilityCenterDrawerFormId}
 			isOpen={isOpen}
 			isReadonly={page.isReadonly}
 			isSaving={page.isSubmitting}
+			onBeforeSaveConfirm={page.validateBeforeSubmit}
 			onClose={onClose}
-			savingLabel={
-				mode === "edit"
-					? "Updating Responsibility Center..."
-					: "Saving Responsibility Center..."
-			}
+			savingLabel={getModuleSavePendingLabel(mode)}
 			submitLabel={
 				mode === "edit" ? "Update Responsibility Center" : "Save Responsibility Center"
 			}
@@ -71,29 +69,41 @@ function ResponsibilityCenterDrawerPanel({
 				className="px-6 py-5"
 			>
 				<ResponsibilityCenterDrawerFields
+					classifications={page.classifications}
 					errors={page.errors}
 					isReadonly={page.isReadonly}
+					codePlaceholder={page.codePlaceholder}
+					nameLabel={page.nameLabel}
 					parentOptions={page.parentOptions}
+					typeOptions={page.typeOptions}
 					values={page.values}
 					onFieldChange={page.handleFieldChange}
 					onInputChange={page.handleInputChange}
 				/>
 			</form>
-		</MaintenanceFormDrawer>
+		</ModuleDrawer>
 	);
 }
 
 function ResponsibilityCenterDrawerFields({
+	classifications,
 	errors,
 	isReadonly,
+	codePlaceholder,
+	nameLabel,
 	onFieldChange,
 	onInputChange,
 	parentOptions,
+	typeOptions,
 	values,
 }: {
+	classifications: ResponsibilityCenterClassification[];
 	errors: ResponsibilityCenterFormErrors;
 	isReadonly: boolean;
+	codePlaceholder: string;
+	nameLabel: string;
 	parentOptions: ResponsibilityCenter[];
+	typeOptions: ResponsibilityCenterTypeOption[];
 	values: ResponsibilityCenterFormValues;
 	onFieldChange: <TKey extends keyof ResponsibilityCenterFormValues>(
 		field: TKey,
@@ -113,50 +123,67 @@ function ResponsibilityCenterDrawerFields({
 
 	return (
 		<div className="grid gap-4 lg:grid-cols-2">
-			<DrawerField label="Name" error={errors.name} required className="lg:col-span-2">
+			<DrawerField label="Classification" error={errors.classificationId} required>
+				<select
+					name="classificationId"
+					value={values.classificationId}
+					onChange={onInputChange}
+					disabled={isReadonly}
+					className={ResponsibilityCenterFieldClassName}
+				>
+					<option value="">Select classification</option>
+					{classifications.map((classification) => (
+						<option key={classification.id} value={classification.id}>
+							{classification.name}
+						</option>
+					))}
+				</select>
+			</DrawerField>
+
+			<DrawerField label="Type" error={errors.typeId} required>
+				<select
+					name="typeId"
+					value={values.typeId}
+					onChange={onInputChange}
+					disabled={isReadonly || !values.classificationId}
+					className={ResponsibilityCenterFieldClassName}
+				>
+					<option value="">Select type</option>
+					{typeOptions.map((type) => (
+						<option key={type.id} value={type.id}>
+							{type.name}
+						</option>
+					))}
+				</select>
+			</DrawerField>
+
+			<DrawerField label={nameLabel} error={errors.name} required>
 				<input
 					name="name"
 					value={values.name}
 					onChange={onInputChange}
-					readOnly={isReadonly}
+					readOnly={isReadonly || !values.classificationId}
 					className={ResponsibilityCenterFieldClassName}
-					placeholder="Sales Department"
+					placeholder={
+						values.classificationId
+							? "Sales Department"
+							: "Select classification first"
+					}
 				/>
 			</DrawerField>
 
-			<DrawerField label="Classification" error={errors.financialType} required>
-				<select
-					name="financialType"
-					value={values.financialType}
+			<DrawerField label="Code" error={errors.code}>
+				<input
+					name="code"
+					value={values.code}
 					onChange={onInputChange}
-					disabled={isReadonly}
+					readOnly={isReadonly || !values.typeId}
 					className={ResponsibilityCenterFieldClassName}
-				>
-					{ResponsibilityCenterFinancialTypeOptions.map((type) => (
-						<option key={type} value={type}>
-							{type}
-						</option>
-					))}
-				</select>
+					placeholder={codePlaceholder}
+				/>
 			</DrawerField>
 
-			<DrawerField label="Type" error={errors.category} required>
-				<select
-					name="category"
-					value={values.category}
-					onChange={onInputChange}
-					disabled={isReadonly}
-					className={ResponsibilityCenterFieldClassName}
-				>
-					{ResponsibilityCenterCategoryOptions.map((category) => (
-						<option key={category} value={category}>
-							{category}
-						</option>
-					))}
-				</select>
-			</DrawerField>
-
-			<DrawerField label="Parent Center" error={errors.parentId}>
+			<DrawerField label="Parent Responsibility Center" error={errors.parentId}>
 				<AppAdvancedDropdown
 					options={parentDropdownOptions}
 					placeholder="No parent center"
@@ -169,14 +196,14 @@ function ResponsibilityCenterDrawerFields({
 				/>
 			</DrawerField>
 
-			<DrawerField label="Code" error={errors.code} required>
+			<DrawerField label="Manager" error={errors.manager}>
 				<input
-					name="code"
-					value={values.code}
+					name="manager"
+					value={values.manager}
 					onChange={onInputChange}
 					readOnly={isReadonly}
 					className={ResponsibilityCenterFieldClassName}
-					placeholder="SALES"
+					placeholder="Maria Santos"
 				/>
 			</DrawerField>
 
@@ -195,17 +222,6 @@ function ResponsibilityCenterDrawerFields({
 						"min-h-24 resize-y py-3",
 					)}
 					placeholder="How this center is used in transactions and reports"
-				/>
-			</DrawerField>
-
-			<DrawerField label="Manager" error={errors.manager}>
-				<input
-					name="manager"
-					value={values.manager}
-					onChange={onInputChange}
-					readOnly={isReadonly}
-					className={ResponsibilityCenterFieldClassName}
-					placeholder="Maria Santos"
 				/>
 			</DrawerField>
 
@@ -256,3 +272,6 @@ function DrawerField({
 		</label>
 	);
 }
+
+
+

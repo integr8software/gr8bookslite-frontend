@@ -10,6 +10,7 @@ import {
 	joinClasses,
 	moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
+import { ModuleTableFilterPopover } from "@/app/src/ui/shared/module/module-table/ModuleTableFilterPopover";
 export { ModuleTableColumnVisibilityButton } from "@/app/src/ui/shared/module/module-table/ModuleTableColumnVisibilityButton";
 export {
 	ModuleTableExportButton,
@@ -106,41 +107,18 @@ export function ModuleTableFilterSelect({
 	onChange,
 	options,
 	value,
-	...props
+	disabled,
 }: ModuleTableFilterSelectProps) {
 	return (
-		<label className="relative block min-w-0">
-			<span className="absolute -top-2 left-3 z-10 bg-white px-1 text-xs font-semibold text-darknavy/70">
-				{label}
-			</span>
-			<select
-				value={value}
-				onChange={(event) => onChange(event.target.value)}
-				className={joinClasses(
-					"h-12 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-semibold text-darknavy shadow-sm shadow-darknavy/5 outline-none transition focus:ring-4",
-					moduleAccentClassNames.hoverBorder,
-					"focus:border-[rgb(var(--skyblue-rgb)/0.45)]",
-					moduleAccentClassNames.focusRing,
-					className,
-				)}
-				{...props}
-			>
-				{options.map((option) => (
-					<option key={String(option.value)} value={option.value}>
-						{formatFilterOptionLabel(option.label)}
-					</option>
-				))}
-			</select>
-		</label>
+		<ModuleTableFilterPopover
+			className={className}
+			disabled={disabled}
+			label={label}
+			value={value}
+			options={options}
+			onChange={onChange}
+		/>
 	);
-}
-
-function formatFilterOptionLabel(label: ReactNode) {
-	if (typeof label === "string" && /^All\s+\S/.test(label)) {
-		return "All";
-	}
-
-	return label;
 }
 
 export function ModuleTableResetButton({

@@ -1,8 +1,9 @@
 "use client";
 
 import { Suspense } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronUp, FileText, Printer, Save } from "lucide-react";
+import { ArrowLeft, FileText, Printer, Save } from "lucide-react";
 import {
 	PurchaseRequestFormPageCopy,
 	PurchaseRequestHref,
@@ -12,10 +13,16 @@ import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
-import { PurchaseRequestDetailsPanel } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestDetailsPanel";
-import { PurchaseRequestItemsTable } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestItemsTable";
+import {
+	PurchaseRequestDetailsForm,
+	type PurchaseRequestDetailsSection,
+} from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestDetailsForm";
+import { PurchaseRequestEntries } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestEntries";
 import { PurchaseRequestPreviewDrawer } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestPreviewDrawer";
-import { PurchaseRequestSummaryPanel } from "@/app/src/ui/modules/purchasing/purchase-request/PurchaseRequestSummaryPanel";
+import {
+	ModuleTabs,
+	type ModuleTabItem,
+} from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export function PurchaseRequestFormPage() {
 	return (
@@ -27,6 +34,8 @@ export function PurchaseRequestFormPage() {
 
 function PurchaseRequestFormPageInner() {
 	const page = usePurchaseRequestFormPage();
+	const [activeTab, setActiveTab] =
+		useState<PurchaseRequestDetailsSection>("supplier");
 	const title = getPurchaseRequestTitle(
 		page.mode,
 		page.existingRequest?.transNo,
@@ -53,25 +62,23 @@ function PurchaseRequestFormPageInner() {
 			/>
 
 			<div className="grid min-w-0 gap-5">
-				<PurchaseRequestDetailsPanel
-					errors={page.errors}
-					isReadonly={page.isReadonly}
-					updateField={page.updateField}
-					values={page.values}
+				<ModuleTabs
+					activeTab={activeTab}
+					ariaLabel="Purchase request sections"
+					tabs={PurchaseRequestTabs}
+					onTabChange={setActiveTab}
 				/>
-				<PurchaseRequestSummaryPanel
-					errors={page.errors}
+				<PurchaseRequestDetailsForm
 					isReadonly={page.isReadonly}
-					updateField={page.updateField}
+					section={activeTab}
 					values={page.values}
+					onUpdateField={page.updateField}
 				/>
-				<PurchaseRequestItemsTable
+				<PurchaseRequestEntries
 					error={page.errors.items}
-					items={page.values.items}
 					isReadonly={page.isReadonly}
-					onAddItem={page.addItem}
-					onRemoveItem={page.removeItem}
-					onUpdateItem={page.updateItem}
+					rows={page.values.items}
+					onRowsChange={page.updateItems}
 				/>
 			</div>
 
@@ -80,13 +87,14 @@ function PurchaseRequestFormPageInner() {
 				onClose={() => page.setShowPreview(false)}
 				record={page.previewRecord}
 			/>
-			<PurchaseRequestBottomPreviewButton
-				isOpen={page.showPreview}
-				onClick={() => page.setShowPreview(true)}
-			/>
 		</section>
 	);
 }
+
+const PurchaseRequestTabs = [
+	{ id: "supplier", label: "Supplier / Request" },
+	{ id: "references", label: "References / Project" },
+] satisfies ModuleTabItem<PurchaseRequestDetailsSection>[];
 
 type PurchaseRequestFormPageState = ReturnType<
 	typeof usePurchaseRequestFormPage
@@ -125,37 +133,15 @@ function PurchaseRequestHeaderActions({
 			) : (
 				<button
 					type="button"
+					disabled={page.isSubmitting}
 					onClick={page.handleSubmit}
-					className={moduleHeaderActionClassNames.primary}
+					className={`${moduleHeaderActionClassNames.primary} disabled:cursor-not-allowed disabled:opacity-60`}
 				>
 					<Save className="h-4 w-4" aria-hidden="true" />
-					Save
+					{page.isSubmitting ? "Saving..." : "Save"}
 				</button>
 			)}
 		</>
-	);
-}
-
-function PurchaseRequestBottomPreviewButton({
-	isOpen,
-	onClick,
-}: {
-	isOpen: boolean;
-	onClick: () => void;
-}) {
-	if (isOpen) {
-		return null;
-	}
-
-	return (
-		<button
-			type="button"
-			onClick={onClick}
-			aria-label="Open print preview"
-			className="fixed bottom-0 left-1/2 z-40 inline-flex h-10 w-28 -translate-x-1/2 items-center justify-center rounded-t-lg border border-b-0 border-darknavy/40 bg-white text-darknavy shadow-[0_-8px_28px_rgba(33,39,56,0.08)] transition hover:border-skyblue/35 hover:bg-skyblue/30"
-		>
-			<ChevronUp className="h-5 w-5" aria-hidden="true" />
-		</button>
 	);
 }
 

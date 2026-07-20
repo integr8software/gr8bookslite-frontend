@@ -33,13 +33,8 @@ export function useDefaultAccountFormPage({
 	mode: DefaultAccountActionMode;
 	onSaved: () => void;
 }) {
-	const addDefaultAccount = useDefaultAccountStore(
-		(state) => state.addDefaultAccount,
-	);
-	const updateDefaultAccount = useDefaultAccountStore(
-		(state) => state.updateDefaultAccount,
-	);
-	const isMutating = useDefaultAccountStore((state) => state.isMutating);
+	const { addDefaultAccount, isMutating, updateDefaultAccount } =
+		useDefaultAccountStore();
 	const accessToken = useAppStore((state) => state.accessToken);
 	const authProfileQuery = useAuthProfileQuery({ accessToken });
 	const companyId = authProfileQuery.data?.activeCompanyId ?? null;
@@ -47,6 +42,7 @@ export function useDefaultAccountFormPage({
 		queryKey: DefaultAccountQueryKeys.expenseParentOptions(companyId),
 		queryFn: fetchDefaultAccountExpenseParentOptions,
 		enabled: Boolean(companyId),
+		retry: false,
 	});
 	const [values, setValues] = useState<DefaultAccountFormValues>(
 		existingDefaultAccount
@@ -89,6 +85,10 @@ export function useDefaultAccountFormPage({
 
 		setErrors(nextErrors);
 		return Object.keys(nextErrors).length === 0;
+	}
+
+	function validateBeforeSubmit() {
+		return validate();
 	}
 
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -138,6 +138,8 @@ export function useDefaultAccountFormPage({
 		isLoadingExpenseParentOptions: expenseParentOptionsQuery.isLoading,
 		isReadonly,
 		isSubmitting: isMutating,
+		refreshExpenseParentOptions: expenseParentOptionsQuery.refetch,
+		validateBeforeSubmit,
 		values,
 	};
 }

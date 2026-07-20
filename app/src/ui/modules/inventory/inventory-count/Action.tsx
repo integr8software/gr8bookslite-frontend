@@ -22,11 +22,12 @@ import {
 	ReportPreviewAction,
 	ReportPreviewDrawer,
 } from "@/app/src/ui/shared/reports/Reports";
+import { openInventoryCountPdf } from "@/app/src/ui/modules/inventory/inventory-count/InventoryCountPdf";
 
 const InventoryCountHref = "/inventory/inventory-count";
 
 type InventoryCountMode = "add" | "edit" | "view";
-type InventoryCountLine = {
+export type InventoryCountLine = {
 	id: string;
 	itemCode: string;
 	itemName: string;
@@ -37,7 +38,7 @@ type InventoryCountLine = {
 	remarks: string;
 };
 
-type InventoryCountValues = {
+export type InventoryCountValues = {
 	countNo: string;
 	countDate: string;
 	warehouse: string;
@@ -180,7 +181,7 @@ export function InventoryCountAction() {
 				isOpen={isReportPreviewOpen}
 				values={values}
 				onClose={() => setIsReportPreviewOpen(false)}
-				onPrint={() => window.print()}
+				onPrint={() => openInventoryCountPdf(values)}
 			/>
 		</>
 	);
@@ -197,11 +198,6 @@ function InventoryCountReportPreview({
 	onPrint: () => void;
 	values: InventoryCountValues;
 }) {
-	const totalVariance = values.lines.reduce(
-		(total, row) => total + (Number.parseFloat(row.variance) || 0),
-		0,
-	);
-
 	return (
 		<ReportPreviewDrawer
 			isOpen={isOpen}
@@ -211,62 +207,52 @@ function InventoryCountReportPreview({
 			onClose={onClose}
 			onGeneratePdf={onPrint}
 		>
-			<div className="mx-auto w-full max-w-[58rem] bg-white p-3 text-[11px] text-black shadow-sm print:p-0 print:shadow-none">
-				<div className="border-2 border-black">
-					<div className="grid grid-cols-[9rem_1fr_9rem] items-start px-4 pt-4">
-						<div className="pt-1">
-							<img
-								src="/img/icons/gr8booksneo-logo-wide.png"
-								alt="Company logo"
-								className="h-20 w-28 object-contain"
-							/>
-						</div>
-						<div className="text-center">
-							<p className="text-base font-bold">Your Company Name Here</p>
-							<p className="mt-1 text-[11px] font-semibold">
-								VAT REG TIN : 000-000-000-000
-							</p>
-							<p className="mt-2 text-[11px] font-semibold">
-								Abc, 123, Sample, Malamig, City Of Mandaluyong, Ncr, Second District
-							</p>
-							<p className="mt-3 text-[11px] font-semibold">
-								Telephone No: 0967-237-4514
-							</p>
-						</div>
-						<div />
+			<div className="mx-auto w-full max-w-[58rem] min-h-[34rem] bg-white px-5 py-8 text-[11px] text-black shadow-sm print:p-0 print:shadow-none">
+				<div className="grid grid-cols-[9rem_1fr_9rem] items-start">
+					<div className="pt-1">
+						<img
+							src="/img/icons/gr8booksneo-logo-wide.png"
+							alt="Company logo"
+							className="h-20 w-28 object-contain"
+						/>
 					</div>
-
-					<div className="mt-4 grid grid-cols-[1fr_17rem] items-end border-b-2 border-black px-3 pb-1">
-						<h2 className="text-2xl font-black uppercase leading-none">
-							Inventory Count
-						</h2>
-						<p className="text-[11px] font-bold">
-							Inventory Count Date: {formatReportDate(values.countDate)}
+					<div className="text-center">
+						<p className="text-base font-bold">Your Company Name Here</p>
+						<p className="mt-1 text-[11px] font-semibold">
+							VAT REG TIN : 000-000-000-000
+						</p>
+						<p className="mt-2 text-[11px] font-semibold">
+							ABC, 123, Sample, Malamig, CITY OF MANDALUYONG, NCR, SECOND DISTRICT
+						</p>
+						<p className="mt-3 text-[11px] font-semibold">
+							Telephone No: 0967-237-4514
 						</p>
 					</div>
+					<div />
+				</div>
 
-					<div className="grid grid-cols-2 border-b border-black text-[11px] font-bold">
-						<ReportInfoCell label="Warehouse" value={values.warehouse} />
-						<ReportInfoCell label="Count No." value={values.countNo} />
-						<ReportInfoCell label="Item Category" value={values.category} />
-						<ReportInfoCell label="Status" value={values.status} />
-						<ReportInfoCell label="Counter" value={values.counter} />
-						<ReportInfoCell label="Contact No." value="" />
-					</div>
+				<h2 className="mt-8 text-center text-xl font-bold">
+					Inventory Count
+				</h2>
 
-					<div className="min-h-20 border-b border-black px-2 py-1 text-[11px] font-bold">
-						FOR: <span className="font-normal">{values.remarks || "\u00a0"}</span>
-					</div>
-
-					<table className="w-full border-collapse text-[10px]">
+				<div className="mt-7 overflow-hidden">
+					<table className="w-full table-fixed border-collapse border border-black text-[11px]">
+						<colgroup>
+							<col className="w-[16%]" />
+							<col className="w-[32%]" />
+							<col className="w-[8%]" />
+							<col className="w-[15%]" />
+							<col className="w-[15%]" />
+							<col className="w-[14%]" />
+						</colgroup>
 						<thead>
 							<tr>
 								<ReportHeaderCell>Item Code</ReportHeaderCell>
-								<ReportHeaderCell>Item Name</ReportHeaderCell>
+								<ReportHeaderCell>Description</ReportHeaderCell>
 								<ReportHeaderCell>UOM</ReportHeaderCell>
-								<ReportHeaderCell className="text-right">Stock On Hand</ReportHeaderCell>
-								<ReportHeaderCell className="text-right">Physical Count</ReportHeaderCell>
-								<ReportHeaderCell className="text-right">Variance</ReportHeaderCell>
+								<ReportHeaderCell>StockQTY</ReportHeaderCell>
+								<ReportHeaderCell>PhysicalQTY</ReportHeaderCell>
+								<ReportHeaderCell>VarianceQTY</ReportHeaderCell>
 							</tr>
 						</thead>
 						<tbody>
@@ -275,39 +261,13 @@ function InventoryCountReportPreview({
 									<ReportCell>{row.itemCode}</ReportCell>
 									<ReportCell>{row.itemName}</ReportCell>
 									<ReportCell>{row.uom}</ReportCell>
-									<ReportCell className="text-right">{row.systemQty}</ReportCell>
-									<ReportCell className="text-right">{row.countQty}</ReportCell>
-									<ReportCell className="text-right">{row.variance}</ReportCell>
+									<ReportCell>{formatQuantity(row.systemQty)}</ReportCell>
+									<ReportCell>{formatQuantity(row.countQty)}</ReportCell>
+									<ReportCell>{formatQuantity(row.variance)}</ReportCell>
 								</tr>
 							))}
 						</tbody>
 					</table>
-
-					<div className="grid grid-cols-[1fr_16rem] border-t border-black">
-						<div className="min-h-24" />
-						<div className="border-l border-black text-[11px] font-bold">
-							<ReportTotalRow label="Total Items" value={String(values.lines.length)} />
-							<ReportTotalRow label="Total Variance" value={totalVariance.toFixed(2)} />
-						</div>
-					</div>
-
-					<div className="grid grid-cols-[1fr_1fr_12rem] border-t border-black text-[11px]">
-						<div className="min-h-16 border-r border-black p-2">
-							<span className="font-bold">Prepared by:</span>
-						</div>
-						<div className="min-h-16 border-r border-black p-2">
-							<span className="font-bold">Approved by:</span>
-						</div>
-						<div className="p-2">
-							<p className="font-bold">IC No.:</p>
-							<p className="mt-5 text-right text-2xl font-black">
-								{formatReportNumber(values.countNo)}
-							</p>
-						</div>
-					</div>
-				</div>
-				<div className="mt-2 border-t-2 border-black pt-1">
-					<div className="border-t-2 border-black" />
 				</div>
 			</div>
 		</ReportPreviewDrawer>
@@ -379,23 +339,13 @@ function SelectField({
 	);
 }
 
-function ReportInfoCell({ label, value }: { label: string; value: string }) {
-	return (
-		<div className="border-b border-r border-black px-2 py-1 last:border-r-0 odd:border-r">
-			{label}: <span className="font-normal">{value || "\u00a0"}</span>
-		</div>
-	);
-}
-
 function ReportHeaderCell({
 	children,
-	className = "",
 }: {
 	children: ReactNode;
-	className?: string;
 }) {
 	return (
-		<th className={`border-b border-r border-black px-1 py-1 font-bold last:border-r-0 ${className}`}>
+		<th className="border border-black px-1.5 py-1.5 text-center font-bold">
 			{children}
 		</th>
 	);
@@ -403,49 +353,20 @@ function ReportHeaderCell({
 
 function ReportCell({
 	children,
-	className = "",
 }: {
 	children?: ReactNode;
-	className?: string;
 }) {
 	return (
-		<td className={`border-b border-r border-black px-1 py-1 last:border-r-0 ${className}`}>
+		<td className="border border-black px-1.5 py-1 text-center">
 			{children || "\u00a0"}
 		</td>
 	);
 }
 
-function ReportTotalRow({ label, value }: { label: string; value: string }) {
-	return (
-		<div className="grid grid-cols-[1fr_7rem] border-b border-black">
-			<div className="px-2 py-1 text-right">{label} :</div>
-			<div className="px-2 py-1 text-right">{value}</div>
-		</div>
-	);
-}
+function formatQuantity(value: string) {
+	const quantity = Number.parseFloat(value);
 
-function formatReportDate(value: string) {
-	if (!value) {
-		return "-";
-	}
-
-	const date = new Date(value);
-
-	if (Number.isNaN(date.getTime())) {
-		return value;
-	}
-
-	return new Intl.DateTimeFormat("en-US", {
-		day: "2-digit",
-		month: "2-digit",
-		year: "numeric",
-	}).format(date);
-}
-
-function formatReportNumber(value: string) {
-	const numeric = value.replace(/\D/g, "");
-
-	return numeric ? numeric.slice(-6).padStart(6, "0") : value || "-";
+	return Number.isFinite(quantity) ? quantity.toFixed(2) : "0.00";
 }
 
 function createInitialInventoryCountValues(): InventoryCountValues {
@@ -557,15 +478,23 @@ function InventoryCountDisplayTable({ rows }: { rows: InventoryCountLine[] }) {
 				</div>
 			</div>
 			<div className="overflow-x-auto">
-				<table className="min-w-[78rem] table-fixed border-collapse text-left text-xs text-darknavy">
+				<table className="w-full min-w-[56rem] table-fixed border-collapse text-left text-xs text-darknavy">
+					<colgroup>
+						<col className="w-[12%]" />
+						<col className="w-[32%]" />
+						<col className="w-[10%]" />
+						<col className="w-[15%]" />
+						<col className="w-[16%]" />
+						<col className="w-[15%]" />
+					</colgroup>
 					<thead>
 						<tr className="bg-[#f59e0b] text-white">
-							<HeaderCell className="w-[16%]">Item Code</HeaderCell>
-							<HeaderCell className="w-[28%]">Item Name</HeaderCell>
-							<HeaderCell className="w-[12%]">UOM</HeaderCell>
-							<HeaderCell className="w-[14%] text-right">Stock On Hand</HeaderCell>
-							<HeaderCell className="w-[15%] text-right">Physical Count</HeaderCell>
-							<HeaderCell className="w-[15%] text-right">Variance</HeaderCell>
+							<HeaderCell>Item Code</HeaderCell>
+							<HeaderCell>Item Name</HeaderCell>
+							<HeaderCell>UOM</HeaderCell>
+							<HeaderCell className="text-right">Stock On Hand</HeaderCell>
+							<HeaderCell className="text-right">Physical Count</HeaderCell>
+							<HeaderCell className="text-right">Variance</HeaderCell>
 						</tr>
 					</thead>
 					<tbody>

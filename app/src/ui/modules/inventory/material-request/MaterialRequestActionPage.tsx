@@ -9,6 +9,7 @@ import {
 	type MaterialRequestDetailsSection,
 } from "@/app/src/ui/modules/inventory/material-request/MaterialRequestDetailsPanel";
 import { MaterialRequestNotFound } from "@/app/src/ui/modules/inventory/material-request/MaterialRequestNotFound";
+import { MaterialRequestReportPreview } from "@/app/src/ui/modules/inventory/material-request/MaterialRequestReportPreview";
 import {
 	ModuleTabs,
 	type ModuleTabItem,
@@ -18,6 +19,7 @@ export function MaterialRequestActionPage() {
 	const page = useMaterialRequestFormPage();
 	const [activeTab, setActiveTab] =
 		useState<MaterialRequestDetailsSection>("request");
+	const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
 
 	if (page.needsRecord && !page.existingRequest) {
 		return <MaterialRequestNotFound />;
@@ -25,7 +27,10 @@ export function MaterialRequestActionPage() {
 
 	return (
 		<section className="grid gap-5">
-			<MaterialRequestActionHeader page={page} />
+			<MaterialRequestActionHeader
+				page={page}
+				onPreview={() => setIsReportPreviewOpen(true)}
+			/>
 
 			<ModuleTabs
 				activeTab={activeTab}
@@ -43,6 +48,12 @@ export function MaterialRequestActionPage() {
 			/>
 
 			<MaterialRequestDataEntry page={page} />
+
+			<MaterialRequestReportPreview
+				isOpen={isReportPreviewOpen}
+				values={page.values}
+				onClose={() => setIsReportPreviewOpen(false)}
+			/>
 		</section>
 	);
 }

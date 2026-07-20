@@ -116,6 +116,7 @@ export function MaterialRequestDetailsPanel({
 								isRequired
 								label="MR No."
 								value={values.requestNo}
+								disabled
 								readOnly={isReadonly}
 								onChange={(value) => updateField("requestNo", value)}
 							/>
@@ -151,6 +152,7 @@ export function MaterialRequestDetailsPanel({
 								isRequired
 								label="Party Code"
 								value={values.vceCode}
+								disabled
 								readOnly={isReadonly}
 								onChange={(value) => updateField("vceCode", value)}
 							/>
@@ -277,6 +279,7 @@ const MaterialRequestFieldIds = {
 } as const;
 
 type FieldProps = {
+	disabled?: boolean;
 	error?: string;
 	id: string;
 	isRequired?: boolean;
@@ -457,6 +460,7 @@ function StatusField({
 }
 
 function Field({
+	disabled = false,
 	error,
 	id,
 	isRequired = false,
@@ -478,6 +482,7 @@ function Field({
 					id={id}
 					type={type}
 					value={value}
+					disabled={disabled}
 					readOnly={readOnly}
 					aria-describedby={errorId}
 					aria-invalid={Boolean(error)}

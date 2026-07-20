@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
 	createColumnHelper,
 	getCoreRowModel,
@@ -8,20 +9,31 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import {
+	Ban,
+	CheckCircle2,
 	ClipboardList,
 	Clock3,
 	Download,
+	Edit3,
+	Eye,
 	PackageCheck,
 	Plus,
 	Search,
+	ThumbsDown,
+	Undo2,
 	Upload,
 } from "lucide-react";
+import {
+	ModuleActionMenu,
+	type ModuleActionMenuItem,
+} from "@/app/src/ui/shared/module/ModuleActionMenu";
 import {
 	ModuleHeader,
 	moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import {
+	ModuleTableActionButton,
 	ModuleTableActionLink,
 	ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
@@ -37,13 +49,22 @@ type InventoryCountRecord = {
 	category: string;
 	totalItems: number;
 	variance: string;
-	status: "Draft" | "In Progress" | "Approved";
+	status: InventoryCountStatus;
 };
 
+type InventoryCountStatus =
+	| "Approved"
+	| "Cancelled"
+	| "Disapproved"
+	| "Draft"
+	| "In Progress";
+
 export function InventoryCountMain() {
+	const [records, setRecords] = useState(InventoryCountRecords);
+
 	// eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns the table state lifecycle.
 	const table = useReactTable({
-		data: InventoryCountRecords,
+		data: records,
 		columns: InventoryCountColumns,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
@@ -54,6 +75,19 @@ export function InventoryCountMain() {
 			},
 		},
 	});
+
+	function updateInventoryCountStatus(
+		record: InventoryCountRecord,
+		status: InventoryCountStatus,
+	) {
+		setRecords((currentRecords) =>
+			currentRecords.map((currentRecord) =>
+				currentRecord.id === record.id
+					? { ...currentRecord, status }
+					: currentRecord,
+			),
+		);
+	}
 
 	return (
 		<section className="grid gap-5">
@@ -76,14 +110,14 @@ export function InventoryCountMain() {
 				items={[
 					{
 						label: "Count Sheets",
-						value: InventoryCountRecords.length,
+						value: records.length,
 						summary: "All time",
 						icon: ClipboardList,
 						iconClassName: "bg-skyblue/20 text-skyblue",
 					},
 					{
 						label: "In Progress",
-						value: InventoryCountRecords.filter(
+						value: records.filter(
 							(record) => record.status === "In Progress",
 						).length,
 						summary: "Open counts",
@@ -92,7 +126,7 @@ export function InventoryCountMain() {
 					},
 					{
 						label: "Approved",
-						value: InventoryCountRecords.filter(
+						value: records.filter(
 							(record) => record.status === "Approved",
 						).length,
 						summary: "Finalized",
@@ -101,7 +135,7 @@ export function InventoryCountMain() {
 					},
 					{
 						label: "Items Counted",
-						value: InventoryCountRecords.reduce(
+						value: records.reduce(
 							(total, record) => total + record.totalItems,
 							0,
 						),
@@ -139,24 +173,121 @@ export function InventoryCountMain() {
 						</td>
 						<td className="px-4 py-4">{original.status}</td>
 						<td className="px-4 py-4 text-center">
-							<ModuleTableActions className="justify-center">
-								<ModuleTableActionLink
-									href={`${InventoryCountHref}/view/${original.id}`}
-									label={`View ${original.countNo}`}
-									variant="view"
-								/>
-								<ModuleTableActionLink
-									href={`${InventoryCountHref}/edit/${original.id}`}
-									label={`Edit ${original.countNo}`}
-									variant="edit"
-								/>
-							</ModuleTableActions>
+							<InventoryCountRecordActions
+								record={original}
+								onUpdateStatus={updateInventoryCountStatus}
+							/>
 						</td>
 					</tr>
 				)}
 			/>
 		</section>
 	);
+}
+
+function InventoryCountRecordActions({
+	onUpdateStatus,
+	record,
+}: {
+	onUpdateStatus: (
+		record: InventoryCountRecord,
+		status: InventoryCountStatus,
+	) => void;
+	record: InventoryCountRecord;
+}) {
+	const isApproved = record.status === "Approved";
+	const isDisapproved = record.status === "Disapproved";
+	const isCancelled = record.status === "Cancelled";
+	const canEdit = canEditInventoryCountStatus(record.status);
+	const undoStatus: InventoryCountStatus = "In Progress";
+	const cancelStatus: InventoryCountStatus = isCancelled
+		? "Draft"
+		: "Cancelled";
+	const overflowItems: ModuleActionMenuItem[] = [
+		{
+			disabled: !canApproveInventoryCountStatus(record.status),
+			icon: isApproved ? Undo2 : CheckCircle2,
+			label: isApproved ? "Undo Approved" : "Approve",
+			onSelect: () =>
+				onUpdateStatus(record, isApproved ? undoStatus : "Approved"),
+			type: "button",
+		},
+		{
+			disabled: !canDisapproveInventoryCountStatus(record.status),
+			icon: isDisapproved ? Undo2 : ThumbsDown,
+			label: isDisapproved ? "Undo Disapproved" : "Disapprove",
+			onSelect: () =>
+				onUpdateStatus(record, isDisapproved ? undoStatus : "Disapproved"),
+			tone: isDisapproved ? "default" : "danger",
+			type: "button",
+		},
+		{
+			disabled: !canCancelInventoryCountStatus(record.status),
+			icon: isCancelled ? Undo2 : Ban,
+			label: isCancelled ? "Uncancelled" : "Cancel",
+			onSelect: () => onUpdateStatus(record, cancelStatus),
+			tone: isCancelled ? "default" : "danger",
+			type: "button",
+		},
+	];
+
+	return (
+		<ModuleTableActions className="!justify-center">
+			<ModuleTableActionLink
+				href={`${InventoryCountHref}/view/${record.id}`}
+				icon={Eye}
+				label={`View inventory count ${record.countNo}`}
+				title="View"
+				variant="view"
+			/>
+			{canEdit ? (
+				<ModuleTableActionLink
+					href={`${InventoryCountHref}/edit/${record.id}`}
+					icon={Edit3}
+					label={`Edit inventory count ${record.countNo}`}
+					title="Edit"
+					variant="edit"
+				/>
+			) : (
+				<ModuleTableActionButton
+					disabled
+					icon={Edit3}
+					label={`Edit inventory count ${record.countNo}`}
+					title="Edit"
+					variant="edit"
+				/>
+			)}
+			<ModuleActionMenu
+				className="[&>button]:h-9 [&>button]:w-9"
+				items={overflowItems}
+				label={`More actions for inventory count ${record.countNo}`}
+			/>
+		</ModuleTableActions>
+	);
+}
+
+function canEditInventoryCountStatus(status: InventoryCountStatus) {
+	return status === "Draft" || status === "In Progress";
+}
+
+function canApproveInventoryCountStatus(status: InventoryCountStatus) {
+	return (
+		status === "Draft" ||
+		status === "In Progress" ||
+		status === "Approved"
+	);
+}
+
+function canDisapproveInventoryCountStatus(status: InventoryCountStatus) {
+	return (
+		status === "Draft" ||
+		status === "In Progress" ||
+		status === "Disapproved"
+	);
+}
+
+function canCancelInventoryCountStatus(status: InventoryCountStatus) {
+	return status !== "Approved";
 }
 
 function InventoryCountHeaderActions() {

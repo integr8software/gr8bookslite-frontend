@@ -18,7 +18,11 @@ import {
 	ModuleActionMenu,
 	type ModuleActionMenuItem,
 } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+	ModuleTableActionButton,
+	ModuleTableActionLink,
+	ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
 type MaterialRequestRecordActionsProps = {
 	request: MaterialRequestRecord;
@@ -36,27 +40,12 @@ export function MaterialRequestRecordActions({
 	const isApproved = request.status === "Approved";
 	const isDisapproved = request.status === "Disapproved";
 	const isCancelled = request.status === "Cancelled";
+	const canEdit = canEditMaterialRequestStatus(request.status);
 	const approvalUndoStatus = getMaterialRequestUndoApprovalStatus(request);
 	const cancelStatus = isCancelled
 		? getMaterialRequestUncancelStatus(request)
 		: "Cancelled";
-	const items: ModuleActionMenuItem[] = [
-		{
-			href: `${MaterialRequestHref}/view/${request.id}`,
-			icon: Eye,
-			label: "View",
-			type: "link",
-		},
-		...(canEditMaterialRequestStatus(request.status)
-			? [
-				{
-					href: `${MaterialRequestHref}/edit/${request.id}`,
-					icon: Edit3,
-					label: "Edit",
-					type: "link",
-				} satisfies ModuleActionMenuItem,
-			]
-			: []),
+	const overflowItems: ModuleActionMenuItem[] = [
 		{
 			disabled: !canApproveMaterialRequestStatus(request.status),
 			icon: isApproved ? Undo2 : CheckCircle2,
@@ -92,9 +81,34 @@ export function MaterialRequestRecordActions({
 
 	return (
 		<ModuleTableActions className="!justify-center">
+			<ModuleTableActionLink
+				href={`${MaterialRequestHref}/view/${request.id}`}
+				icon={Eye}
+				label={`View material request ${request.requestNo}`}
+				title="View"
+				variant="view"
+			/>
+			{canEdit ? (
+				<ModuleTableActionLink
+					href={`${MaterialRequestHref}/edit/${request.id}`}
+					icon={Edit3}
+					label={`Edit material request ${request.requestNo}`}
+					title="Edit"
+					variant="edit"
+				/>
+			) : (
+				<ModuleTableActionButton
+					disabled
+					icon={Edit3}
+					label={`Edit material request ${request.requestNo}`}
+					title="Edit"
+					variant="edit"
+				/>
+			)}
 			<ModuleActionMenu
-				items={items}
-				label={`Actions for material request ${request.requestNo}`}
+				className="[&>button]:h-9 [&>button]:w-9"
+				items={overflowItems}
+				label={`More actions for material request ${request.requestNo}`}
 			/>
 		</ModuleTableActions>
 	);

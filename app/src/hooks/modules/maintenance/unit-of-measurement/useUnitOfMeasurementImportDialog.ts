@@ -34,6 +34,7 @@ import type {
 	UnitOfMeasurementImportPreviewRow,
 	UnitOfMeasurementImportProgress,
 } from "@/app/src/types/modules/maintenance/unit-of-measurement/UnitOfMeasurementTypes";
+import { reorderModuleImportRows } from "@/app/src/utils/module-import.util";
 
 export function useUnitOfMeasurementImportDialog({
 	existingRecords,
@@ -253,6 +254,10 @@ export function useUnitOfMeasurementImportDialog({
 				),
 			),
 		);
+	}
+
+	function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
+		setPreviewRows((rows) => renumberUnitOfMeasurementImportRows(reorderModuleImportRows(rows, sourceRowId, targetRowId, position)));
 	}
 
 	function toggleRowSelection(rowId: string, isSelected: boolean) {
@@ -654,6 +659,7 @@ export function useUnitOfMeasurementImportDialog({
 		isImportMenuOpen,
 		isParsing,
 		isSelectionMenuOpen,
+		movePreviewRow,
 		pasteIntoPreviewCell,
 		pasteIntoPreviewGrid,
 		progress,

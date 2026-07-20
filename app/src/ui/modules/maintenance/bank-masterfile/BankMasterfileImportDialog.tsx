@@ -2,17 +2,17 @@
 
 import {
 	AlertCircle,
-	Download,
-	Plus,
 } from "lucide-react";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import { useBankMasterfileImportDialog } from "@/app/src/hooks/modules/maintenance/bank-masterfile/useBankMasterfileImportDialog";
-import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
 import {
 	ModuleImportFooter,
+	ModuleImportEmptyDropzone,
+	ModuleImportHeaderActions,
 	ModuleImportPaginationBar,
 	ModuleImportProgressPanel,
+	ModuleImportRowNumberHeader,
 	ModuleImportSelectionHeader,
 } from "@/app/src/ui/shared/module/ModuleImportControls";
 import {
@@ -46,55 +46,12 @@ export function BankMasterfileImportDialog({
 		<ModuleImportDialog
 			isOpen={isOpen}
 			isBusy={Boolean(importDialog.progress)}
-			title="Import Data"
+			title="Import Bank Accounts"
 			titleId="bank-masterfile-import-title"
 			description="Upload, validate, edit, and import bank accounts in queued batches."
 			onClose={onClose}
 			actions={
-				<div className="grid gap-3 lg:grid-cols-[minmax(18rem,1fr)_auto]">
-					<ClickOrDragDropFile
-						accept=".xlsx,.csv,.tsv,.txt"
-						acceptedFileLabel=".xlsx, .csv, .tsv, .txt"
-						className="inline-flex min-h-20 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-skyblue/35 bg-skyblue/8 px-4 py-3 text-center text-sm font-semibold text-skyblue transition hover:bg-skyblue/12"
-						disabled={Boolean(importDialog.progress)}
-						isBusy={importDialog.isParsing}
-						label="Upload or Drag and Drop Files"
-						size="medium"
-						stackable
-						onFileSelect={(file) => void importDialog.handleFileUpload(file)}
-					/>
-					<div className="grid grid-cols-2 gap-2 lg:flex lg:items-start lg:justify-end">
-						<button
-							type="button"
-							onClick={() => void downloadBankImportTemplate()}
-							disabled={Boolean(importDialog.progress)}
-							className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-3 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55 lg:w-auto lg:px-4"
-						>
-							<Download className="h-4 w-4" aria-hidden="true" />
-							Template
-						</button>
-						<button
-							type="button"
-							onClick={importDialog.addBlankRow}
-							disabled={Boolean(importDialog.progress)}
-							className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-3 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55 lg:w-auto lg:px-4"
-						>
-							<Plus className="h-4 w-4" aria-hidden="true" />
-							Add Row
-						</button>
-					</div>
-					<div className="grid gap-2 text-xs font-medium text-darknavy/45 lg:col-span-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-						<p>
-							Accepted: .xlsx, .csv, .tsv, .txt. Maximum size:{" "}
-							{AppMaxFileUploadSizeLabel}.
-						</p>
-						<div className="flex flex-wrap gap-2 font-semibold text-darknavy/60">
-							<span>Rows: {importDialog.validatedRows.length}</span>
-							<span>Valid: {importDialog.validRows.length}</span>
-							<span>Incorrect: {importDialog.invalidRows.length}</span>
-						</div>
-					</div>
-				</div>
+				<ModuleImportHeaderActions accept=".xlsx,.csv,.tsv,.txt" disabled={Boolean(importDialog.progress)} isParsing={importDialog.isParsing} onDownloadTemplate={() => void downloadBankImportTemplate()} onFileSelect={(file) => void importDialog.handleFileUpload(file)} />
 			}
 			progress={
 				importDialog.progress ? (
@@ -103,10 +60,10 @@ export function BankMasterfileImportDialog({
 			}
 			footer={
 				<ModuleImportFooter
-					canImport={importDialog.canImport}
 					canImportAllRows={importDialog.canImportAllRows}
 					canImportAllValid={importDialog.canImportAllValid}
 					canImportSelectedValid={importDialog.canImportSelectedValid}
+					importLabel="Import Bank Accounts"
 					importMode={importDialog.importMode}
 					isBusy={Boolean(importDialog.progress)}
 					isImportMenuOpen={importDialog.isImportMenuOpen}
@@ -135,6 +92,8 @@ export function BankMasterfileImportDialog({
 				) : null}
 				<div
 					tabIndex={0}
+					onDragOver={(event) => { if (!importDialog.progress) event.preventDefault(); }}
+					onDrop={(event) => { event.preventDefault(); if (!importDialog.progress) void importDialog.handleFileUpload(event.dataTransfer.files[0]); }}
 					onPaste={(event) => {
 						if (
 							event.target instanceof HTMLInputElement ||
@@ -149,16 +108,17 @@ export function BankMasterfileImportDialog({
 							importDialog.pasteRows(text);
 						}
 					}}
-					className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-darknavy/10 outline-none focus:ring-2 focus:ring-skyblue/15"
+					className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-purple-200 shadow-[0_0_0_2px_rgba(168,85,247,0.08)] outline-none focus:ring-2 focus:ring-purple-500/15"
 					aria-label="Bank import preview grid. Paste copied Excel rows here."
 				>
 					<div className="min-h-36 flex-1 overflow-auto">
 						<table
-							className="table-fixed text-left text-sm text-darknavy"
-							style={{ width: `max(100%, ${importDialog.importTableWidth}px)` }}
+							className="module-import-preview-table table-fixed text-left text-sm text-darknavy"
+							style={{ width: `max(100%, ${importDialog.importTableWidth + 48}px)` }}
 						>
 							<colgroup>
-								<col style={{ width: 64 }} />
+								<col style={{ width: 44 }} />
+								<col style={{ width: 48 }} />
 								{importDialog.columnWidths.map((width, index) => (
 									<col
 										key={`${TemplateHeaders[index]}-${index}`}
@@ -184,6 +144,7 @@ export function BankMasterfileImportDialog({
 											)
 										}
 									/>
+									<ModuleImportRowNumberHeader />
 									{TemplateHeaders.map((header, index) => (
 										<ModuleImportResizableColumnHeader
 											key={header}
@@ -205,6 +166,8 @@ export function BankMasterfileImportDialog({
 											row={row}
 											selected={importDialog.selectedRowIds.has(row.id)}
 											disabled={Boolean(importDialog.progress)}
+											onMoveRow={importDialog.movePreviewRow}
+											onPasteCell={importDialog.pasteIntoPreviewCell}
 											onToggle={importDialog.toggleRow}
 											onUpdate={importDialog.updateCell}
 										/>
@@ -212,10 +175,10 @@ export function BankMasterfileImportDialog({
 								) : (
 									<tr>
 										<td
-											colSpan={10}
-											className="px-3 py-10 text-center font-medium text-darknavy/45"
+											colSpan={11}
+											className="module-import-empty-cell px-3 py-10 text-center font-medium text-darknavy/45"
 										>
-											Upload a file, add a row, or paste copied Excel rows here.
+											<ModuleImportEmptyDropzone accept=".xlsx,.csv,.tsv,.txt" acceptedFileLabel=".xlsx, .csv, .tsv, .txt" disabled={Boolean(importDialog.progress)} isParsing={importDialog.isParsing} maxFileSizeLabel={AppMaxFileUploadSizeLabel} onFileSelect={(file) => void importDialog.handleFileUpload(file)} />
 										</td>
 									</tr>
 								)}
@@ -224,15 +187,15 @@ export function BankMasterfileImportDialog({
 					</div>
 					<ModuleImportPaginationBar
 						currentPage={importDialog.safePreviewPage}
+						invalidCount={importDialog.invalidRows.length}
+						isBusy={Boolean(importDialog.progress)}
 						selectedCount={
 							importDialog.progress ? 0 : importDialog.selectedRowIds.size
 						}
-						selectedSummary={
-							importDialog.selectedRowIds.size > 0
-								? `${importDialog.selectedRowIds.size} selected`
-								: null
-						}
+						totalRowsCount={importDialog.validatedRows.length}
 						totalPages={importDialog.totalPages}
+						onAddRow={importDialog.addBlankRow}
+						onGoToPage={importDialog.setPreviewPage}
 						onNextPage={() =>
 							importDialog.setPreviewPage((page) =>
 								Math.min(importDialog.totalPages, page + 1),

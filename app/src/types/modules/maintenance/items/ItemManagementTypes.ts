@@ -12,7 +12,7 @@ export type ItemBehavior =
 	| "Finished Goods"
 	| "Service Item"
 	| "Non-Inventory Item"
-	| "Fixed Asset Item"
+	| "Asset"
 	| "Consumable Item";
 
 export type ItemSetupKind = "category" | "subcategory" | "type" | "subtype";

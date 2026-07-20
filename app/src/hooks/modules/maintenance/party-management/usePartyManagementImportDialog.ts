@@ -40,6 +40,7 @@ import type {
   PartyInformationRecord,
   PartyManagementImportDialogProps,
 } from "@/app/src/types/modules/maintenance/party-management/PartyManagementTypes";
+import { reorderModuleImportRows } from "@/app/src/utils/module-import.util";
 import {
   type PartyDefaultAccountingAccountIds,
   usePartyManagementAccountOptions,
@@ -238,6 +239,10 @@ export function usePartyManagementImportDialog({
         Math.min(page, Math.ceil(nextRows.length / PartyImportPreviewPageSize)),
       ),
     );
+  }
+
+  function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
+    setPreviewRows((rows) => renumberPartyImportRows(reorderModuleImportRows(rows, sourceRowId, targetRowId, position)));
   }
 
   function toggleRowSelection(rowId: string, isSelected: boolean) {
@@ -587,6 +592,7 @@ export function usePartyManagementImportDialog({
     isImportMenuOpen,
     isParsing,
     isSelectionMenuOpen,
+    movePreviewRow,
     pasteIntoPreviewCell,
     pasteIntoPreviewGrid,
     progress,

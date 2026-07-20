@@ -78,6 +78,10 @@ export function validateBankImportRows(
 	const importCounts = new Map<string, number>();
 
 	rows.forEach((row) => {
+		if (isBlankBankImportRow(row)) {
+			return;
+		}
+
 		const key = getBankKey(row.values);
 		importCounts.set(key, (importCounts.get(key) ?? 0) + 1);
 	});
@@ -86,14 +90,14 @@ export function validateBankImportRows(
 		const rowErrors: string[] = [];
 		const values = row.values;
 		const key = getBankKey(values);
-		const parsed = BankImportRowSchema.safeParse(values);
-		const cellErrors = parsed.success
-			? {}
-			: mapImportIssues(parsed.error.issues);
+		const isBlank = isBlankBankImportRow(row);
+		const parsed = isBlank ? null : BankImportRowSchema.safeParse(values);
+		const cellErrors =
+			!parsed || parsed.success ? {} : mapImportIssues(parsed.error.issues);
 
-		if (existingKeys.has(key))
+		if (!isBlank && existingKeys.has(key))
 			rowErrors.push("This bank account already exists.");
-		if ((importCounts.get(key) ?? 0) > 1)
+		if (!isBlank && (importCounts.get(key) ?? 0) > 1)
 			rowErrors.push("Duplicate bank account in import.");
 
 		return { ...row, cellErrors, rowErrors };
@@ -102,6 +106,24 @@ export function validateBankImportRows(
 
 export function rowHasBankImportErrors(row: BankImportPreviewRow) {
 	return row.rowErrors.length > 0 || Object.keys(row.cellErrors).length > 0;
+}
+
+export function isBlankBankImportRow(row: BankImportPreviewRow) {
+	const values = row.values;
+
+	return (
+		!values.bankName.trim() &&
+		!values.branch.trim() &&
+		!values.accountNumber.trim() &&
+		values.accountType === "Checking" &&
+		values.currencyCode === "PHP" &&
+		!values.currencyExchangeRate.trim() &&
+		!values.seriesStart.trim() &&
+		!values.seriesEnd.trim() &&
+		!values.seriesDigits.trim() &&
+		!values.isDefault &&
+		values.status === "Active"
+	);
 }
 
 function getBankKey(

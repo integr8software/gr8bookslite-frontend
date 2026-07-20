@@ -3,13 +3,18 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import {
 	AlertTriangle,
+	CheckSquare2,
 	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
+	Download,
 	LoaderCircle,
+	Plus,
+	Rows3,
 	Trash2,
 	Upload,
 } from "lucide-react";
+import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
 export type ModuleImportMode = "all-rows" | "all-valid" | "selected-valid";
@@ -18,6 +23,73 @@ export type ModuleImportProgress = {
 	imported: number;
 	total: number;
 };
+
+export function ModuleImportHeaderActions({
+	accept,
+	disabled,
+	isParsing,
+	onDownloadTemplate,
+	onFileSelect,
+}: {
+	accept: string;
+	disabled?: boolean;
+	isParsing?: boolean;
+	onDownloadTemplate: () => void;
+	onFileSelect: (file: File | undefined) => void;
+}) {
+	return (
+		<>
+			<ClickOrDragDropFile
+				accept={accept}
+				disabled={disabled}
+				isBusy={isParsing}
+				label="Upload"
+				size="short"
+				className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-3 text-xs font-semibold text-darknavy transition hover:bg-purple-500/8 disabled:cursor-not-allowed"
+				onFileSelect={onFileSelect}
+			/>
+			<button
+				type="button"
+				onClick={onDownloadTemplate}
+				disabled={disabled}
+				className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-3 text-xs font-semibold text-darknavy transition hover:bg-purple-500/8 disabled:cursor-not-allowed disabled:opacity-45"
+			>
+				<Download className="h-4 w-4" aria-hidden="true" />
+				<span className="hidden sm:inline">Template</span>
+			</button>
+		</>
+	);
+}
+
+export function ModuleImportEmptyDropzone({
+	accept,
+	acceptedFileLabel,
+	disabled,
+	isParsing,
+	maxFileSizeLabel,
+	onFileSelect,
+}: {
+	accept: string;
+	acceptedFileLabel: string;
+	disabled?: boolean;
+	isParsing?: boolean;
+	maxFileSizeLabel: string;
+	onFileSelect: (file: File | undefined) => void;
+}) {
+	return (
+		<ClickOrDragDropFile
+			accept={accept}
+			acceptedFileLabel={`${acceptedFileLabel} - Maximum size: ${maxFileSizeLabel}`}
+			disabled={disabled}
+			isBusy={isParsing}
+			label="Upload or Drag and Drop Files"
+			size="medium"
+			stackable
+			className="module-import-empty-dropzone mx-auto inline-flex min-h-20 w-[min(26rem,calc(100%-2rem))] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-purple-300 bg-purple-500/8 px-4 py-3 text-center text-sm font-semibold text-purple-500 transition hover:bg-purple-500/12"
+			onFileSelect={onFileSelect}
+		/>
+	);
+}
 
 export function ModuleImportProgressPanel({
 	label = "Importing queued data",
@@ -75,7 +147,7 @@ export function ModuleImportSelectionHeader({
 	return (
 		<th
 			ref={menuRef}
-			className="module-import-preview-header sticky left-0 top-0 z-40 w-16 px-2 py-2"
+			className="module-import-preview-header sticky left-0 top-0 z-40 h-10 w-11 px-0 text-center"
 		>
 			<input
 				type="checkbox"
@@ -88,7 +160,7 @@ export function ModuleImportSelectionHeader({
 				}}
 				aria-label="Choose rows to select"
 				title="Choose rows to select"
-				className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20 disabled:opacity-45"
+				className="h-4 w-4 rounded border-white/70 bg-white/15 text-white focus:ring-white/35 disabled:opacity-45"
 			/>
 			{isOpen ? (
 				<div
@@ -127,11 +199,70 @@ export function ModuleImportSelectionHeader({
 	);
 }
 
+export function ModuleImportRowNumberHeader() {
+	return (
+		<th className="module-import-preview-header sticky left-11 top-0 z-40 h-10 w-12 px-1 text-center">
+			No.
+		</th>
+	);
+}
+
+export function ModuleImportRowNumberCell({
+	disabled,
+	rowId,
+	rowNumber,
+	onMoveRow,
+}: {
+	disabled?: boolean;
+	rowId: string;
+	rowNumber: number;
+	onMoveRow?: (
+		sourceRowId: string,
+		targetRowId: string,
+		position: "before" | "after",
+	) => void;
+}) {
+	return (
+		<td
+			draggable={Boolean(onMoveRow) && !disabled}
+			onDragStart={(event) => {
+				event.dataTransfer.effectAllowed = "move";
+				event.dataTransfer.setData("text/x-module-import-row", rowId);
+			}}
+			onDragOver={(event) => {
+				if (!disabled && onMoveRow) {
+					event.preventDefault();
+					event.dataTransfer.dropEffect = "move";
+					event.currentTarget.dataset.dropPosition =
+					event.clientY < event.currentTarget.getBoundingClientRect().top + event.currentTarget.offsetHeight / 2
+						? "before"
+						: "after";
+				}
+			}}
+			onDragLeave={(event) => delete event.currentTarget.dataset.dropPosition}
+			onDrop={(event) => {
+				event.preventDefault();
+				const sourceRowId = event.dataTransfer.getData("text/x-module-import-row");
+				const position = event.currentTarget.dataset.dropPosition === "after" ? "after" : "before";
+				delete event.currentTarget.dataset.dropPosition;
+				if (sourceRowId && sourceRowId !== rowId) {
+					onMoveRow?.(sourceRowId, rowId, position);
+				}
+			}}
+			className="module-import-row-number sticky left-11 z-20 w-12 px-1 text-center font-semibold text-darknavy/70"
+		>
+			<span className={joinClasses("inline-flex items-center justify-center", onMoveRow && "cursor-grab active:cursor-grabbing")} title={onMoveRow ? `Drag row ${rowNumber} to reorder` : undefined}>
+				{rowNumber}
+			</span>
+		</td>
+	);
+}
+
 export function ModuleImportFooter({
-	canImport,
 	canImportAllRows,
 	canImportAllValid,
 	canImportSelectedValid,
+	importLabel,
 	importMode,
 	isBusy,
 	isImportMenuOpen,
@@ -144,10 +275,10 @@ export function ModuleImportFooter({
 	onSetImportMode,
 	onToggleImportMenu,
 }: {
-	canImport: boolean;
 	canImportAllRows: boolean;
 	canImportAllValid: boolean;
 	canImportSelectedValid: boolean;
+	importLabel: string;
 	importMode: ModuleImportMode;
 	isBusy?: boolean;
 	isImportMenuOpen: boolean;
@@ -164,6 +295,12 @@ export function ModuleImportFooter({
 		isImportMenuOpen,
 		onToggleImportMenu,
 	);
+	const canImportCurrentMode =
+		importMode === "selected-valid"
+			? canImportSelectedValid
+			: importMode === "all-valid"
+				? canImportAllValid
+				: canImportAllRows;
 
 	return (
 		<div className="grid grid-cols-2 gap-2 lg:grid-cols-[auto_minmax(0,1fr)_auto_auto] lg:items-center">
@@ -191,7 +328,7 @@ export function ModuleImportFooter({
 				<button
 					type="button"
 					onClick={() => onImport(importMode)}
-					disabled={!canImport}
+					disabled={!canImportCurrentMode}
 					className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-l-md bg-skyblue px-4 text-sm font-semibold text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:h-10 lg:w-auto"
 				>
 					{isBusy ? (
@@ -199,16 +336,12 @@ export function ModuleImportFooter({
 					) : (
 						<Upload className="h-4 w-4" aria-hidden="true" />
 					)}
-					{importMode === "selected-valid"
-						? "Import Selected"
-						: importMode === "all-valid"
-							? "Import Valid"
-							: "Import Data"}
+					{importLabel}
 				</button>
 				<button
 					type="button"
 					onClick={onToggleImportMenu}
-					disabled={!canImportAllRows && !canImportSelectedValid}
+					disabled={!canImportAllRows && !canImportAllValid && !canImportSelectedValid}
 					className="inline-flex h-11 w-11 items-center justify-center rounded-r-md border-l border-white/25 bg-skyblue text-white transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-55 lg:h-10"
 					aria-label="Choose import type"
 					aria-expanded={isImportMenuOpen}
@@ -271,36 +404,54 @@ function ImportModeMenuItem({
 
 export function ModuleImportPaginationBar({
 	currentPage,
+	invalidCount,
+	isBusy,
 	removeLabel,
 	selectedCount,
-	selectedSummary,
+	totalRowsCount,
 	totalPages,
+	onAddRow,
+	onGoToPage,
 	onNextPage,
 	onPreviousPage,
 	onRemoveSelected,
 }: {
 	currentPage: number;
+	invalidCount: number;
+	isBusy?: boolean;
 	removeLabel?: string;
 	selectedCount: number;
-	selectedSummary?: ReactNode;
+	totalRowsCount: number;
 	totalPages: number;
+	onAddRow: () => void;
+	onGoToPage: (page: number) => void;
 	onNextPage: () => void;
 	onPreviousPage: () => void;
 	onRemoveSelected: () => void;
 }) {
+	const visiblePages = getVisibleImportPages(currentPage, totalPages);
+
 	return (
-		<div className="grid grid-cols-2 items-center gap-2 border-t border-darknavy/10 px-3 py-2 sm:grid-cols-[1fr_auto_1fr]">
-			<span className="text-xs font-semibold text-darknavy/55">
-				Page {currentPage} of {totalPages}
-			</span>
-			{selectedSummary ? (
-				<span className="col-span-2 row-start-2 justify-self-center text-xs font-semibold text-skyblue sm:col-span-1 sm:row-auto">
-					{selectedSummary}
-				</span>
-			) : (
-				<span className="hidden sm:block" />
-			)}
-			<div className="flex flex-wrap justify-self-end gap-2">
+		<div className="grid items-center gap-2 border-t border-darknavy/10 bg-white px-2 py-1.5 lg:grid-cols-[1fr_auto_1fr]">
+			<div className="flex min-w-0 items-center gap-1">
+				<button type="button" disabled={currentPage <= 1} onClick={onPreviousPage} className="module-import-page-button" aria-label="Previous page">
+					<ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+				</button>
+				{visiblePages.map((page) => (
+					<button key={page} type="button" onClick={() => onGoToPage(page)} className={joinClasses("module-import-page-button", page === currentPage && "bg-purple-500 text-white") } aria-current={page === currentPage ? "page" : undefined}>
+						{page}
+					</button>
+				))}
+				<button type="button" disabled={currentPage >= totalPages} onClick={onNextPage} className="module-import-page-button" aria-label="Next page">
+					<ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+				</button>
+			</div>
+			<div className="flex items-center justify-center gap-3 text-xs font-semibold text-darknavy/55">
+				<ImportCount icon={<Rows3 className="h-4 w-4" />} label="Total Rows" value={totalRowsCount} />
+				<ImportCount icon={<CheckSquare2 className="h-4 w-4" />} label="Selected" value={selectedCount} />
+				<ImportCount icon={<AlertTriangle className="h-4 w-4" />} label="Invalid Rows" value={invalidCount} tone="danger" />
+			</div>
+			<div className="flex flex-wrap justify-self-end gap-1.5">
 				<button
 					type="button"
 					disabled={selectedCount === 0}
@@ -315,25 +466,32 @@ export function ModuleImportPaginationBar({
 				</button>
 				<button
 					type="button"
-					disabled={currentPage <= 1}
-					onClick={onPreviousPage}
-					className="inline-flex h-8 items-center gap-1 rounded-md border border-darknavy/10 px-2 text-xs font-semibold text-darknavy disabled:cursor-not-allowed disabled:opacity-45"
+					onClick={onAddRow}
+					disabled={isBusy}
+					className="inline-flex h-8 items-center gap-1.5 rounded-md border border-skyblue bg-skyblue px-3 text-xs font-bold text-white shadow-sm transition hover:bg-skyblue/85 disabled:cursor-not-allowed disabled:opacity-45"
 				>
-					<ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
-					Prev
-				</button>
-				<button
-					type="button"
-					disabled={currentPage >= totalPages}
-					onClick={onNextPage}
-					className="inline-flex h-8 items-center gap-1 rounded-md border border-darknavy/10 px-2 text-xs font-semibold text-darknavy disabled:cursor-not-allowed disabled:opacity-45"
-				>
-					Next
-					<ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+					<Plus className="h-3.5 w-3.5" aria-hidden="true" />
+					Add Row
 				</button>
 			</div>
 		</div>
 	);
+}
+
+function ImportCount({ icon, label, tone, value }: { icon: ReactNode; label: string; tone?: "danger"; value: number }) {
+	return (
+		<span className={joinClasses("inline-flex items-center gap-1", tone === "danger" && value > 0 ? "text-coralpink" : "")} title={`${label}: ${value}`}>
+			{icon}
+			<span className="hidden xl:inline">{label}:</span>
+			<span>{value}</span>
+		</span>
+	);
+}
+
+function getVisibleImportPages(currentPage: number, totalPages: number) {
+	const count = Math.min(5, totalPages);
+	const start = Math.max(1, Math.min(currentPage - 2, totalPages - count + 1));
+	return Array.from({ length: count }, (_, index) => start + index);
 }
 
 export function ModuleImportEditableCell({
@@ -400,7 +558,7 @@ export function ModuleImportEditableCell({
 				}}
 				title={messages.join(" ")}
 				className={joinClasses(
-					"h-10 w-full rounded-md border bg-white px-2 text-sm font-medium text-darknavy outline-none transition focus:ring-2",
+					"h-9 w-full rounded-md border bg-white px-2 text-sm font-medium text-darknavy outline-none transition focus:ring-2",
 					messages.length ? "pr-9" : "",
 					errors?.length
 						? "border-coralpink/45 focus:border-coralpink focus:ring-coralpink/15"
@@ -446,7 +604,7 @@ export function ModuleImportEditableSelect<TOption extends string>({
 				}}
 				title={messages.join(" ")}
 				className={joinClasses(
-					"h-10 w-full rounded-md border bg-white px-2 text-sm font-medium text-darknavy outline-none transition focus:ring-2",
+					"h-9 w-full rounded-md border bg-white px-2 text-sm font-medium text-darknavy outline-none transition focus:ring-2",
 					messages.length ? "pr-9" : "",
 					errors?.length
 						? "border-coralpink/45 focus:border-coralpink focus:ring-coralpink/15"

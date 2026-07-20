@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Download, Plus } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import {
 	PaymentTypeImportAcceptedFileExtensions,
@@ -8,25 +8,22 @@ import {
 	PaymentTypeImportColumnHeaders,
 	PaymentTypeImportFieldOrder,
 	PaymentTypeImportPreviewColumnCount,
-	PaymentTypeImportPreviewEmptyMessage,
 	PaymentTypeImportPreviewGridLabel,
-	MaxImportFileSizeBytes,
-	MinImportFileSizeBytes,
-	SelectionColumnWidth,
 } from "@/app/src/constants/modules/maintenance/payment-type/PaymentTypeConstants";
 import {
 	downloadPaymentTypeImportTemplate,
 	isPaymentTypeImportGridPasteTarget,
 } from "@/app/src/data/modules/maintenance/payment-type/PaymentTypeData";
-import { formatFileSize } from "@/app/src/utils/file.util";
 import { usePaymentTypeImportDialog } from "@/app/src/hooks/modules/maintenance/payment-type/usePaymentTypeImportDialog";
 import type { PaymentTypeImportDialogProps } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
-import { ClickOrDragDropFile } from "@/app/src/ui/shared/module/ClickOrDragDropFile";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
 import {
 	ModuleImportFooter,
+	ModuleImportEmptyDropzone,
+	ModuleImportHeaderActions,
 	ModuleImportPaginationBar,
 	ModuleImportProgressPanel,
+	ModuleImportRowNumberHeader,
 	ModuleImportSelectionHeader,
 } from "@/app/src/ui/shared/module/ModuleImportControls";
 import { ModuleImportResizableColumnHeader } from "@/app/src/ui/shared/module/ModuleImportResizableColumnHeader";
@@ -48,62 +45,18 @@ export function PaymentTypeImportDialog({
 		<ModuleImportDialog
 			isOpen={isOpen}
 			isBusy={Boolean(importDialog.progress)}
-			title="Import Data"
+			title="Import Payment Types"
 			titleId="payment-type-import-title"
 			description="Upload, validate, edit, and import data in queued batches."
 			onClose={onClose}
 			actions={
-				<div className="grid gap-3 lg:grid-cols-[minmax(18rem,1fr)_auto]">
-					<ClickOrDragDropFile
-						accept={PaymentTypeImportAcceptedFileExtensions}
-						acceptedFileLabel={PaymentTypeImportAcceptedFileLabel}
-						className="inline-flex min-h-20 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-skyblue/35 bg-skyblue/8 px-4 py-3 text-center text-sm font-semibold text-skyblue transition hover:bg-skyblue/12"
-						disabled={Boolean(importDialog.progress)}
-						isBusy={importDialog.isParsing}
-						label="Upload or Drag and Drop Files"
-						size="medium"
-						stackable
-						onFileSelect={(file) => void importDialog.handleFileUpload(file)}
-					/>
-					<div className="grid grid-cols-2 gap-2 lg:flex lg:items-start lg:justify-end">
-						<button
-							type="button"
-							onClick={() => void downloadPaymentTypeImportTemplate()}
-							disabled={Boolean(importDialog.progress)}
-							className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-3 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55 lg:w-auto lg:px-4"
-						>
-							<Download className="h-4 w-4" aria-hidden="true" />
-							Template
-						</button>
-						<button
-							type="button"
-							onClick={importDialog.addBlankRow}
-							disabled={Boolean(importDialog.progress)}
-							className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-darknavy/12 bg-white px-3 text-sm font-semibold text-darknavy transition hover:bg-skyblue/8 disabled:cursor-not-allowed disabled:opacity-55 lg:w-auto lg:px-4"
-						>
-							<Plus className="h-4 w-4" aria-hidden="true" />
-							Add Row
-						</button>
-					</div>
-					<div className="grid gap-2 text-xs font-medium text-darknavy/45 lg:col-span-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-						<p className="sm:hidden">
-							Accepted: .xlsx, .csv, .tsv, .txt. Maximum size:{" "}
-							{AppMaxFileUploadSizeLabel}.
-						</p>
-						<p className="hidden sm:block">
-							Accepted: .xlsx, .csv, .tsv, .txt. Size:{" "}
-							{formatFileSize(MinImportFileSizeBytes)} to{" "}
-							{formatFileSize(MaxImportFileSizeBytes)}. Upload one
-							file at a time; each upload or grid paste adds rows. Duplicate
-							names are not accepted.
-						</p>
-						<div className="flex flex-wrap gap-2 font-semibold text-darknavy/60">
-							<span>Rows: {importDialog.validatedRows.length}</span>
-							<span>Valid: {importDialog.validRows.length}</span>
-							<span>Incorrect: {importDialog.invalidRows.length}</span>
-						</div>
-					</div>
-				</div>
+				<ModuleImportHeaderActions
+					accept={PaymentTypeImportAcceptedFileExtensions}
+					disabled={Boolean(importDialog.progress)}
+					isParsing={importDialog.isParsing}
+					onDownloadTemplate={() => void downloadPaymentTypeImportTemplate()}
+					onFileSelect={(file) => void importDialog.handleFileUpload(file)}
+				/>
 			}
 			progress={
 				importDialog.progress ? (
@@ -112,10 +65,10 @@ export function PaymentTypeImportDialog({
 			}
 			footer={
 				<ModuleImportFooter
-					canImport={importDialog.canImport}
 					canImportAllRows={importDialog.canImportAllRows}
 					canImportAllValid={importDialog.canImportAllValid}
 					canImportSelectedValid={importDialog.canImportSelectedValid}
+					importLabel="Import Payment Types"
 					importMode={importDialog.importMode}
 					isBusy={Boolean(importDialog.progress)}
 					isImportMenuOpen={importDialog.isImportMenuOpen}
@@ -145,6 +98,8 @@ export function PaymentTypeImportDialog({
 
 				<div
 					tabIndex={0}
+					onDragOver={(event) => { if (!importDialog.progress) event.preventDefault(); }}
+					onDrop={(event) => { event.preventDefault(); if (!importDialog.progress) void importDialog.handleFileUpload(event.dataTransfer.files[0]); }}
 					onPaste={(event) => {
 						if (!isPaymentTypeImportGridPasteTarget(event.target)) {
 							return;
@@ -157,16 +112,17 @@ export function PaymentTypeImportDialog({
 							importDialog.pasteIntoPreviewGrid(text);
 						}
 					}}
-					className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-darknavy/10 outline-none focus:ring-2 focus:ring-skyblue/15"
+					className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-purple-200 shadow-[0_0_0_2px_rgba(168,85,247,0.08)] outline-none focus:ring-2 focus:ring-purple-500/15"
 					aria-label={PaymentTypeImportPreviewGridLabel}
 				>
 					<div className="min-h-36 flex-1 overflow-auto">
 						<table
-							className="table-fixed text-left text-sm text-darknavy"
-							style={{ width: `max(100%, ${importDialog.importTableWidth}px)` }}
+							className="module-import-preview-table table-fixed text-left text-sm text-darknavy"
+							style={{ width: `max(100%, ${importDialog.importTableWidth + 48}px)` }}
 						>
 							<colgroup>
-								<col style={{ width: SelectionColumnWidth }} />
+								<col style={{ width: 44 }} />
+								<col style={{ width: 48 }} />
 								{PaymentTypeImportFieldOrder.map((field) => (
 									<col
 										key={field}
@@ -192,11 +148,12 @@ export function PaymentTypeImportDialog({
 											)
 										}
 									/>
+									<ModuleImportRowNumberHeader />
 									{PaymentTypeImportColumnHeaders.map((column) => (
 										<ModuleImportResizableColumnHeader
 											key={column.id}
 											className={column.className}
-											left={column.stickyLeft}
+											left={column.stickyLeft === undefined ? undefined : 92}
 											width={importDialog.columnWidths[column.id]}
 											onResize={(width) =>
 												importDialog.updateColumnWidth(column.id, width)
@@ -216,16 +173,24 @@ export function PaymentTypeImportDialog({
 											isSelected={importDialog.selectedRowIds.has(row.id)}
 											onUpdateCell={importDialog.updatePreviewCell}
 											onPasteCell={importDialog.pasteIntoPreviewCell}
+											onMoveRow={importDialog.movePreviewRow}
 											onToggleSelected={importDialog.toggleRowSelection}
 										/>
 									))
 								) : (
 									<tr>
 										<td
-											colSpan={PaymentTypeImportPreviewColumnCount}
-											className="px-3 py-10 text-center text-sm font-medium text-darknavy/45"
+											colSpan={PaymentTypeImportPreviewColumnCount + 1}
+											className="module-import-empty-cell px-3 py-10 text-center text-sm font-medium text-darknavy/45"
 										>
-											{PaymentTypeImportPreviewEmptyMessage}
+											<ModuleImportEmptyDropzone
+												accept={PaymentTypeImportAcceptedFileExtensions}
+												acceptedFileLabel={PaymentTypeImportAcceptedFileLabel}
+												disabled={Boolean(importDialog.progress)}
+												isParsing={importDialog.isParsing}
+												maxFileSizeLabel={AppMaxFileUploadSizeLabel}
+												onFileSelect={(file) => void importDialog.handleFileUpload(file)}
+											/>
 										</td>
 									</tr>
 								)}
@@ -234,15 +199,15 @@ export function PaymentTypeImportDialog({
 					</div>
 					<ModuleImportPaginationBar
 						currentPage={importDialog.safePreviewPage}
+						invalidCount={importDialog.invalidRows.length}
+						isBusy={Boolean(importDialog.progress)}
 						selectedCount={
 							importDialog.progress ? 0 : importDialog.selectedRowIds.size
 						}
-						selectedSummary={
-							importDialog.selectedRowIds.size > 0
-								? `${importDialog.selectedRowIds.size} of ${importDialog.validatedRows.length} selected`
-								: null
-						}
+						totalRowsCount={importDialog.validatedRows.length}
 						totalPages={importDialog.totalPages}
+						onAddRow={importDialog.addBlankRow}
+						onGoToPage={importDialog.setPreviewPage}
 						onNextPage={() =>
 							importDialog.setPreviewPage((page) =>
 								Math.min(importDialog.totalPages, page + 1),

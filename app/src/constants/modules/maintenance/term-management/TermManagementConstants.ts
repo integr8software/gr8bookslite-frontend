@@ -200,7 +200,7 @@ export const TermImportPreviewGridLabel =
 export const TermImportPreviewEmptyMessage =
 	"Upload a file, or focus here and paste copied Excel rows.";
 
-export const TermImportPreviewPageSize = 10;
+export const TermImportPreviewPageSize = 20;
 export const TermImportBatchSize = 25;
 export const TermImportMinFileSizeBytes = 1;
 export const TermImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;

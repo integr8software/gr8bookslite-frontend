@@ -151,7 +151,7 @@ export const BankImportFieldOrder: BankImportColumnId[] = [
 	"seriesDigits",
 ];
 
-export const BankImportPreviewPageSize = 10;
+export const BankImportPreviewPageSize = 20;
 export const BankImportBatchSize = 25;
 export const BankImportMinFileSizeBytes = 1;
 export const BankImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;

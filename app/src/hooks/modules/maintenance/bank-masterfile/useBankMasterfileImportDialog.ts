@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import {
 	ImportBatchSize,
+	ImportFieldOrder,
 	PreviewPageSize,
 	TemplateHeaders,
 } from "@/app/src/constants/modules/maintenance/bank-masterfile/BankMasterfileConstants";
@@ -28,10 +29,12 @@ import type {
 	BankMasterfileImportDialogProps,
 } from "@/app/src/types/modules/maintenance/bank-masterfile/BankMasterfileTypes";
 import {
+	isBlankBankImportRow,
 	rowHasBankImportErrors,
 	validateBankImportRows,
 } from "@/app/src/validations/modules/maintenance/bank-masterfile/BankMasterfileValidation";
 import { clampImportColumnWidth } from "@/app/src/ui/shared/module/ModuleImportResizableColumnHeader";
+import { reorderModuleImportRows } from "@/app/src/utils/module-import.util";
 
 export function useBankMasterfileImportDialog({
 	existingBanks,
@@ -72,8 +75,9 @@ export function useBankMasterfileImportDialog({
 		[pristineManualRowIds, validatedRows],
 	);
 	const invalidRows = displayedRows.filter(rowHasBankImportErrors);
-	const actualInvalidRows = validatedRows.filter(rowHasBankImportErrors);
-	const validRows = validatedRows.filter((row) => !rowHasBankImportErrors(row));
+	const nonBlankRows = validatedRows.filter((row) => !isBlankBankImportRow(row));
+	const actualInvalidRows = nonBlankRows.filter(rowHasBankImportErrors);
+	const validRows = nonBlankRows.filter((row) => !rowHasBankImportErrors(row));
 	const validSelectedRows = validRows.filter((row) =>
 		selectedRowIds.has(row.id),
 	);
@@ -82,7 +86,7 @@ export function useBankMasterfileImportDialog({
 			? validSelectedRows
 			: importMode === "all-valid"
 				? validRows
-				: validatedRows;
+				: nonBlankRows;
 	const totalPages = Math.max(
 		1,
 		Math.ceil(displayedRows.length / PreviewPageSize),
@@ -196,6 +200,77 @@ export function useBankMasterfileImportDialog({
 		if (rows.length > 0) appendRows(rows);
 	}
 
+	function pasteIntoPreviewCell(
+		rowId: string,
+		field: BankImportColumnId,
+		text: string,
+	) {
+		const pastedRows = parseTabularText(text).filter((row) =>
+			row.some((cell) => cell.trim() !== ""),
+		);
+
+		if (pastedRows.length === 0) {
+			return;
+		}
+
+		const startColumnIndex = ImportFieldOrder.indexOf(field);
+		const isSingleCellPaste =
+			pastedRows.length === 1 && pastedRows[0]?.length === 1;
+
+		if (isSingleCellPaste) {
+			updateCell(rowId, field, pastedRows[0]?.[0] ?? "");
+			return;
+		}
+
+		setImportError(null);
+		setPreviewRows((rows) => {
+			const startRowIndex = rows.findIndex((row) => row.id === rowId);
+
+			if (startRowIndex < 0) {
+				return rows;
+			}
+
+			const nextRows = [...rows];
+			const touchedRowIds = new Set<string>();
+
+			pastedRows.forEach((pastedRow, pastedRowIndex) => {
+				const targetIndex = startRowIndex + pastedRowIndex;
+				const targetRow =
+					nextRows[targetIndex] ?? createBlankRow(getNextRowNumber(nextRows));
+				const nextValues = { ...targetRow.values };
+
+				pastedRow.forEach((cellValue, cellIndex) => {
+					const targetField = ImportFieldOrder[startColumnIndex + cellIndex];
+
+					if (!targetField) {
+						return;
+					}
+
+					nextValues[targetField] = normalizeCellValue(
+						targetField,
+						cellValue,
+					);
+				});
+
+				touchedRowIds.add(targetRow.id);
+				nextRows[targetIndex] = {
+					...targetRow,
+					values: nextValues,
+				};
+			});
+
+			setPristineManualRowIds((current) => {
+				const next = new Set(current);
+
+				touchedRowIds.forEach((touchedRowId) => next.delete(touchedRowId));
+
+				return next;
+			});
+
+			return renumberRows(nextRows);
+		});
+	}
+
 	function addBlankRow() {
 		const blankRow = createBlankRow(getNextRowNumber(previewRows));
 		const nextRows = [...previewRows, blankRow];
@@ -290,13 +365,17 @@ export function useBankMasterfileImportDialog({
 		);
 	}
 
+	function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
+		setPreviewRows((rows) => renumberRows(reorderModuleImportRows(rows, sourceRowId, targetRowId, position)));
+	}
+
 	async function handleImport(mode = importMode) {
 		const rowsToImport =
 			mode === "selected-valid"
 				? validSelectedRows
 				: mode === "all-valid"
 					? validRows
-					: validatedRows;
+					: nonBlankRows;
 
 		if (mode === "selected-valid" && selectedRowIds.size === 0) {
 			setImportError("Select at least one valid row to import.");
@@ -386,6 +465,8 @@ export function useBankMasterfileImportDialog({
 		isImportMenuOpen,
 		isParsing,
 		isSelectionMenuOpen,
+		movePreviewRow,
+		pasteIntoPreviewCell,
 		pasteRows,
 		progress,
 		removeSelectedRows,

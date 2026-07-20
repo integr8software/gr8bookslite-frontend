@@ -32,7 +32,7 @@ export const ItemBehaviorOptions = [
 	"Finished Goods",
 	"Service Item",
 	"Non-Inventory Item",
-	"Fixed Asset Item",
+	"Asset",
 	"Consumable Item",
 ] as const satisfies readonly ItemBehavior[];
 

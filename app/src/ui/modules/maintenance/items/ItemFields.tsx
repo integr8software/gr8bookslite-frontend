@@ -653,7 +653,7 @@ const ItemBehaviorGuide = [
 		description: "A bought or sold item where stock quantity is not tracked.",
 	},
 	{
-		title: "Fixed Asset Item",
+		title: "Asset",
 		description: "A long-term company asset, not for regular sale.",
 	},
 	{
@@ -715,7 +715,7 @@ const ItemBehaviorFlagMap = {
 		service: false,
 		trackInventory: false,
 	},
-	"Fixed Asset Item": {
+	Asset: {
 		asset: true,
 		purchasable: true,
 		sellable: false,

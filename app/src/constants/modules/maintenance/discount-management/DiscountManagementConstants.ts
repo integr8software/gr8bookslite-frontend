@@ -235,7 +235,7 @@ export const DiscountImportPreviewGridLabel =
 	"Discount import preview grid. Paste copied Excel rows here.";
 export const DiscountImportPreviewEmptyMessage =
 	"Upload a file, add a row, or focus here and paste copied Excel rows.";
-export const DiscountImportPreviewPageSize = 10;
+export const DiscountImportPreviewPageSize = 20;
 export const DiscountImportBatchSize = 25;
 export const DiscountImportMinFileSizeBytes = 1;
 export const DiscountImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;

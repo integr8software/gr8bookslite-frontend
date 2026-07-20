@@ -188,7 +188,7 @@ export const UnitOfMeasurementImportPreviewGridLabel =
 export const UnitOfMeasurementImportPreviewEmptyMessage =
 	"Upload a file, or focus here and paste copied Excel rows.";
 
-export const UnitOfMeasurementImportPreviewPageSize = 10;
+export const UnitOfMeasurementImportPreviewPageSize = 20;
 export const UnitOfMeasurementImportBatchSize = 25;
 export const UnitOfMeasurementImportMinFileSizeBytes = 1;
 export const UnitOfMeasurementImportMaxFileSizeBytes =

@@ -34,6 +34,7 @@ import type {
 	TermImportPreviewRow,
 	TermManagementImportDialogProps,
 } from "@/app/src/types/modules/maintenance/term-management/TermManagementTypes";
+import { reorderModuleImportRows } from "@/app/src/utils/module-import.util";
 
 export function useTermManagementImportDialog({
 	existingTerms,
@@ -215,6 +216,10 @@ export function useTermManagementImportDialog({
 		setPreviewPage((page) =>
 			Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))),
 		);
+	}
+
+	function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
+		setPreviewRows((rows) => renumberImportRows(reorderModuleImportRows(rows, sourceRowId, targetRowId, position)));
 	}
 
 	function toggleRowSelection(rowId: string, isSelected: boolean) {
@@ -564,6 +569,7 @@ export function useTermManagementImportDialog({
 		isImportMenuOpen,
 		isParsing,
 		isSelectionMenuOpen,
+		movePreviewRow,
 		pasteIntoPreviewCell,
 		pasteIntoPreviewGrid,
 		progress,

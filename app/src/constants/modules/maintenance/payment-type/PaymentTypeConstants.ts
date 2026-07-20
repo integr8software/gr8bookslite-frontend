@@ -131,7 +131,7 @@ export const PaymentTypeImportPreviewGridLabel =
 export const PaymentTypeImportPreviewEmptyMessage =
 	"Upload a file, or focus here and paste copied Excel rows.";
 
-export const PaymentTypeImportPreviewPageSize = 10;
+export const PaymentTypeImportPreviewPageSize = 20;
 export const PaymentTypeImportBatchSize = 25;
 export const PaymentTypeImportMinFileSizeBytes = 1;
 export const PaymentTypeImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;

@@ -33,6 +33,7 @@ import type {
 	PaymentTypeImportPreviewRow,
 	PaymentTypeImportProgress,
 } from "@/app/src/types/modules/maintenance/payment-type/PaymentTypeTypes";
+import { reorderModuleImportRows } from "@/app/src/utils/module-import.util";
 
 export function usePaymentTypeImportDialog({
 	existingPaymentTypes,
@@ -232,6 +233,10 @@ export function usePaymentTypeImportDialog({
 		setPreviewPage((page) =>
 			Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))),
 		);
+	}
+
+	function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
+		setPreviewRows((rows) => renumberPaymentTypeImportRows(reorderModuleImportRows(rows, sourceRowId, targetRowId, position)));
 	}
 
 	function toggleRowSelection(rowId: string, isSelected: boolean) {
@@ -582,6 +587,7 @@ export function usePaymentTypeImportDialog({
 		isImportMenuOpen,
 		isParsing,
 		isSelectionMenuOpen,
+		movePreviewRow,
 		pasteIntoPreviewCell,
 		pasteIntoPreviewGrid,
 		progress,

@@ -262,4 +262,10 @@ export type BankImportRowProps = {
 		field: BankImportColumnId,
 		value: string | boolean,
 	) => void;
+	onPasteCell: (
+		rowId: string,
+		field: BankImportColumnId,
+		text: string,
+	) => void;
+	onMoveRow: (sourceRowId: string, targetRowId: string, position: "before" | "after") => void;
 };

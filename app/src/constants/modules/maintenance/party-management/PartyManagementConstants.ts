@@ -440,7 +440,7 @@ export const PartyImportPreviewGridLabel =
 export const PartyImportPreviewEmptyMessage =
   "Upload a file, or focus here and paste copied Excel rows.";
 
-export const PartyImportPreviewPageSize = 10;
+export const PartyImportPreviewPageSize = 20;
 export const PartyImportBatchSize = 25;
 export const PartyImportMinFileSizeBytes = 1;
 export const PartyImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;

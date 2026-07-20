@@ -11,6 +11,7 @@ import {
 import {
 	ModuleImportEditableCell,
 	ModuleImportEditableSelect,
+	ModuleImportRowNumberCell,
 } from "@/app/src/ui/shared/module/ModuleImportControls";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 
@@ -19,6 +20,7 @@ export function TermImportPreviewTableRow({
 	isSelected,
 	onUpdateCell,
 	onPasteCell,
+	onMoveRow,
 	onToggleSelected,
 }: {
 	row: TermImportPreviewRow;
@@ -30,6 +32,7 @@ export function TermImportPreviewTableRow({
 	) => void;
 	onPasteCell: (rowId: string, field: TermImportColumnId, text: string) => void;
 	onToggleSelected: (rowId: string, isSelected: boolean) => void;
+	onMoveRow: (sourceRowId: string, targetRowId: string, position: "before" | "after") => void;
 }) {
 	const stickyCellBackground = isSelected
 		? "bg-skyblue/10"
@@ -48,13 +51,8 @@ export function TermImportPreviewTableRow({
 							: undefined
 				}
 			>
-				<td
-					className={joinClasses(
-						"sticky left-0 z-10 w-16 px-2 py-2 align-middle font-semibold",
-						stickyCellBackground,
-					)}
-				>
-					<div className="flex items-center gap-2">
+				<td className={joinClasses("sticky left-0 z-20 w-11 text-center", stickyCellBackground)}>
+					<div className="flex items-center justify-center">
 						<input
 							type="checkbox"
 							checked={isSelected}
@@ -65,19 +63,12 @@ export function TermImportPreviewTableRow({
 							aria-label={`Select row ${row.rowNumber}`}
 							className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
 						/>
-						<button
-							type="button"
-							onClick={() => onToggleSelected(row.id, !isSelected)}
-							className="rounded px-0.5 text-left hover:text-skyblue focus:outline-none focus:ring-2 focus:ring-skyblue/20"
-							aria-label={`${isSelected ? "Deselect" : "Select"} row ${row.rowNumber}`}
-						>
-							{row.rowNumber}
-						</button>
 					</div>
 				</td>
+				<ModuleImportRowNumberCell rowId={row.id} rowNumber={row.rowNumber} onMoveRow={onMoveRow} />
 				<td
 					className={joinClasses(
-						"sticky left-16 z-10 px-3 py-2 align-middle",
+						"sticky left-[5.75rem] z-10 px-3 py-2 align-middle",
 						stickyCellBackground,
 					)}
 				>
@@ -112,6 +103,7 @@ export function TermImportPreviewTableRow({
 			</tr>
 			{row.rowErrors.length > 0 ? (
 				<tr className={isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"}>
+					<td />
 					<td />
 					<td
 						colSpan={3}
